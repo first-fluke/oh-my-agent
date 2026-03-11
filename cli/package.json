@@ -1,6 +1,6 @@
 {
   "name": "oh-my-ag",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "description": "Professional agent skills for Google Antigravity IDE - PM, Frontend, Backend, Mobile, QA, and Debug specialists that work together seamlessly",
   "type": "module",
   "bin": {
