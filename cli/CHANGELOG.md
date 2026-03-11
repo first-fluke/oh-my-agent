@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.0](https://github.com/first-fluke/oh-my-ag/compare/cli-v1.27.0...cli-v1.28.0) (2026-03-11)
+
+
+### Features
+
+* **cli:** improve agent-facing ergonomics ([ca6661d](https://github.com/first-fluke/oh-my-ag/commit/ca6661d9e66f18868807b3f304ca59927b0af053))
+
 ## [1.27.0](https://github.com/first-fluke/oh-my-ag/compare/cli-v1.26.2...cli-v1.27.0) (2026-03-08)
 
 
