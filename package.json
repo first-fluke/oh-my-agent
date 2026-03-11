@@ -9,12 +9,16 @@
     "build": "bun run --cwd cli build",
     "dev": "bun run --cwd cli dev",
     "lint": "bun run --cwd cli lint && bun run --cwd web lint",
+    "prepare": "husky",
     "test": "bun run --cwd cli test",
     "web:dev": "bun run --cwd web dev",
     "web:build": "bun run --cwd web build",
     "web:lint": "bun run --cwd web lint"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.13"
+    "@biomejs/biome": "2.3.13",
+    "@commitlint/cli": "20.4.3",
+    "@commitlint/config-conventional": "20.4.3",
+    "husky": "9.1.7"
   }
 }
