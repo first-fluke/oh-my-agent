@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.0.3...cli-v2.0.4) (2026-03-13)
+
+
+### Bug Fixes
+
+* **release:** allow legacy publish without license file ([6c69839](https://github.com/first-fluke/oh-my-agent/commit/6c698394b23327bbc7bcff24076d5cc4d4440fcb))
+
+
+### Miscellaneous
+
+* sync prompt-manifest.json ([87b0e4d](https://github.com/first-fluke/oh-my-agent/commit/87b0e4d1b6c95cb6ca6e491a63133a8361ef7c3f))
+
 ## [2.0.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.0.2...cli-v2.0.3) (2026-03-13)
 
 
