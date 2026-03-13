@@ -5,22 +5,28 @@
   "tag-separator": "-",
   "separate-pull-requests": true,
   "packages": {
-    "cli": {
+    ".": {
       "component": "cli",
       "package-name": "oh-my-ag",
       "release-type": "node",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "cli/CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
+      "exclude-paths": ["web"],
       "extra-files": [
         {
           "type": "json",
-          "path": "/prompt-manifest.json",
+          "path": "cli/package.json",
           "jsonpath": "$.version"
         },
         {
           "type": "json",
-          "path": "/.agent/skills/_version.json",
+          "path": "prompt-manifest.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".agent/skills/_version.json",
           "jsonpath": "$.version"
         }
       ]

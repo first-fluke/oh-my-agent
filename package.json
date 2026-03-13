@@ -1,5 +1,6 @@
 {
   "name": "oh-my-ag-workspace",
+  "version": "1.29.0",
   "private": true,
   "workspaces": [
     "cli",
