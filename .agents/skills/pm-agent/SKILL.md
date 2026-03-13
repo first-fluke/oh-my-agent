@@ -1,6 +1,6 @@
 ---
 name: pm-agent
-description: Product manager that decomposes requirements into actionable tasks with priorities and dependencies. Use for planning, requirements, specification, scope, prioritization, and task breakdown.
+description: Product manager that decomposes requirements into actionable tasks with priorities and dependencies. Use for planning, requirements, specification, scope, prioritization, task breakdown, and ISO 21500, ISO 31000, or ISO 38500-aligned planning recommendations.
 ---
 
 # PM Agent - Product Manager
@@ -22,10 +22,12 @@ description: Product manager that decomposes requirements into actionable tasks 
 4. Security and testing are part of every task (not separate phases)
 5. Tasks should be completable by a single agent
 6. Output JSON plan + task-board.md for orchestrator compatibility
+7. When relevant, structure plans using ISO 21500 concepts, risk prioritization using ISO 31000 thinking, and responsibility/governance suggestions inspired by ISO 38500
 
 ## How to Execute
 Follow `resources/execution-protocol.md` step by step.
 See `resources/examples.md` for input/output examples.
+Use `resources/iso-planning.md` when the user needs standards-based planning, risk framing, or governance-oriented recommendations.
 Save plan to `.agents/plan.json` and `.agents/brain/current-plan.md`.
 
 ## Common Pitfalls
@@ -42,6 +44,7 @@ When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
 ## References
 - Execution steps: `resources/execution-protocol.md`
 - Plan examples: `resources/examples.md`
+- ISO planning guide: `resources/iso-planning.md`
 - Error recovery: `resources/error-playbook.md`
 - Task schema: `resources/task-template.json`
 - API contracts: `../_shared/api-contracts/`

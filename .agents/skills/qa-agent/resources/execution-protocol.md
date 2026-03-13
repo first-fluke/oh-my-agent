@@ -9,6 +9,7 @@
    - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
 4. **Budget context** — follow `../_shared/context-budget.md` (prioritize high-risk files)
 5. **After review**: add recurring issues to `../_shared/lessons-learned.md`
+6. **If standards matter**: read `resources/iso-quality.md`
 
 **⚠️ Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
 
@@ -31,6 +32,10 @@ Review in this priority order:
 3. **Accessibility**: WCAG 2.1 AA, keyboard nav, screen reader, contrast
 4. **Code Quality**: test coverage, complexity, architecture adherence
 
+When applicable, map findings and gaps to:
+- **ISO/IEC 25010** quality characteristics
+- **ISO/IEC 29119** test planning, design, traceability, and exit criteria
+
 Use `resources/checklist.md` (renamed qa-checklist) as the comprehensive review guide.
 
 ## Step 3: Report
@@ -39,6 +44,9 @@ Generate structured report with:
 - Findings grouped by severity (CRITICAL > HIGH > MEDIUM > LOW)
 - Each finding: file:line, description, remediation code
 - Performance metrics vs. targets
+- Standards suggestions when relevant:
+  - quality characteristics under-covered
+  - missing test design / traceability / exit criteria
 
 ## Step 4: Verify
 - Run `resources/self-check.md` to verify your own review quality

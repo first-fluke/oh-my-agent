@@ -98,3 +98,30 @@ Status: WARNING
 - [x] Performance targets met
 - [x] Test coverage > 80%
 ```
+
+## Example 4: Standards-Aligned QA Review
+
+**Input**: "Review this release candidate and suggest ISO 25010 / 29119 improvements"
+
+**Output**:
+```
+# QA Report: Release Candidate
+Status: WARNING
+
+## Standards Alignment
+
+### ISO/IEC 25010
+- Reliability gap: no chaos/failure-path validation for retry flows
+- Maintainability gap: business rules duplicated in 3 services
+- Security gap: privileged actions are not audit-logged consistently
+
+### ISO/IEC 29119
+- Missing requirement-to-test traceability for payment cancellation
+- No explicit exit criteria for regression approval
+- Edge-case test design is weak for invalid state transitions
+
+## Recommendations
+1. Add requirement-to-test mapping for payment, refund, and auth flows
+2. Define release exit criteria: zero HIGH findings, all critical E2E paths green
+3. Add state-transition and boundary-value tests for payment lifecycle
+```

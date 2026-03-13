@@ -8,6 +8,7 @@
    - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
 3. **Use reasoning templates** — for architecture decisions, use `../_shared/reasoning-templates.md` (decision matrix)
 4. **Check lessons** — read cross-domain section in `../_shared/lessons-learned.md`
+5. **If governance, risk, or formal planning matters** — read `resources/iso-planning.md`
 
 **⚠️ Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
 
@@ -19,6 +20,11 @@ Follow these steps in order (adjust depth by difficulty).
 - List edge cases and assumptions
 - Ask clarifying questions if ambiguous
 - Use Serena (if existing codebase): `get_symbols_overview` to understand current architecture
+- If risk or governance matters, identify:
+  - stakeholders
+  - constraints
+  - decision owners
+  - major delivery risks
 
 ## Step 2: Design Architecture
 - Select tech stack (frontend, backend, mobile, database, infra)
@@ -26,6 +32,10 @@ Follow these steps in order (adjust depth by difficulty).
 - Design data models (tables, relationships, indexes)
 - Identify security requirements (auth, validation, encryption)
 - Plan infrastructure (hosting, caching, CDN, monitoring)
+- When relevant:
+  - map plan structure to ISO 21500-style project management concepts
+  - record top risks and treatments using ISO 31000-style thinking
+  - note governance, responsibility, and approval needs using ISO 38500-style thinking
 
 ## Step 3: Decompose Tasks
 - Break into tasks completable by a single agent
@@ -40,6 +50,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Check: Are acceptance criteria measurable and testable?
 - Check: Is security considered from the start (not deferred)?
 - Check: Are API contracts defined before frontend/mobile tasks?
+- Check: Are major risks, owners, and approval points explicit when needed?
 - Output task-board.md format for orchestrator compatibility
 
 ## On Error

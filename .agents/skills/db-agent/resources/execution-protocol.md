@@ -10,6 +10,7 @@
    - Compliance or audit constraints, PII, multi-region, reporting needs
 3. **Budget context** — follow `../_shared/context-budget.md`
 4. **If vector search is involved**, read `resources/vector-db.md`
+5. **If security, audit, backup, or resilience requirements are central**, read `resources/iso-controls.md`
 
 ## Step 1: Explore
 - Identify actors and external views that need data
@@ -69,6 +70,8 @@
   - encryption at rest / in transit expectations
   - backup/restore traceability
   - retention and deletion obligations
+  - control guidance alignment for ISO 27001 / 27002
+  - continuity and recovery alignment for ISO 22301
 
 ## Step 3: Optimize
 - Validate hot paths against indexes and partitions
@@ -85,8 +88,7 @@
   - incremental backup cadence
   - retention window
   - restore validation frequency
-- Review anti-patterns in four buckets:
- - Review anti-patterns in five buckets:
+- Review anti-patterns in five buckets:
   - logical design
   - physical design
   - query design
@@ -113,7 +115,8 @@
   - retrieval evaluation set
   - re-index / re-embedding migration notes
 - Confirm anti-pattern findings were either fixed or explicitly accepted with rationale
-- Call out ISO 27001-relevant risks and recommended controls when applicable
+- Call out ISO 27001 / 27002-relevant risks and recommended controls when applicable
+- Call out ISO 22301-relevant continuity and recovery gaps when applicable
 - Call out any intentional denormalization or weaker consistency with reason
 
 ## On Error

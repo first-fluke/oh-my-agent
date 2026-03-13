@@ -119,3 +119,42 @@
   ]
 }
 ```
+
+## Example 3: Standards-Aligned Delivery Plan
+
+**Input**: "Plan this enterprise release with risk and governance considerations"
+
+**Output**:
+```json
+{
+  "project_name": "Enterprise Release Plan",
+  "architecture_decisions": [
+    {
+      "decision": "Use phased rollout with feature flags",
+      "rationale": "Reduces operational risk during release",
+      "alternatives_considered": ["big bang release", "tenant-by-tenant rollout"]
+    }
+  ],
+  "project_controls": {
+    "iso_21500": {
+      "scope_defined": true,
+      "stakeholders_identified": ["product", "security", "operations"],
+      "dependencies_mapped": true
+    },
+    "iso_31000": {
+      "top_risks": [
+        "migration rollback failure",
+        "auth regression on legacy users"
+      ],
+      "treatments": [
+        "pre-release restore drill",
+        "shadow auth validation"
+      ]
+    },
+    "iso_38500": {
+      "decision_owner": "engineering manager",
+      "approval_required_for": ["prod migration", "feature-flag enablement"]
+    }
+  }
+}
+```

@@ -149,6 +149,12 @@
 - [ ] Mobile responsive tested
 - [ ] Cross-browser tested (Chrome, Firefox, Safari)
 
+### Test Governance
+- [ ] Test levels and scope are defined clearly
+- [ ] Important requirements trace to test cases or test scenarios
+- [ ] Entry / exit criteria are defined for major release decisions
+- [ ] Test design technique is appropriate for risk and feature type
+
 ### Performance Tests
 - [ ] Load testing (1000 concurrent users)
 - [ ] Stress testing (identify breaking point)
@@ -187,6 +193,26 @@
 - [ ] Complex logic documented
 - [ ] Environment variables documented
 - [ ] No TODO/FIXME in production code
+
+---
+
+## ISO Quality Alignment
+
+### ISO/IEC 25010
+- [ ] Functional suitability considered
+- [ ] Performance efficiency considered
+- [ ] Compatibility considered where integration matters
+- [ ] Usability / accessibility considered
+- [ ] Reliability considered
+- [ ] Security considered
+- [ ] Maintainability considered
+- [ ] Portability considered when relevant
+
+### ISO/IEC 29119
+- [ ] Test strategy or test plan exists for significant changes
+- [ ] Test basis, test conditions, and expected results are clear
+- [ ] Risk-based prioritization is visible in test scope
+- [ ] Test evidence and traceability are sufficient for review or audit
 
 ---
 

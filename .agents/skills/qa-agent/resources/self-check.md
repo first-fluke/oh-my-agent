@@ -7,6 +7,7 @@ Verify your own review quality before submitting the QA report.
 - [ ] Security section covers OWASP Top 10 categories
 - [ ] Performance metrics include actual numbers vs. targets
 - [ ] Accessibility check covers Perceivable, Operable, Understandable, Robust
+- [ ] ISO/IEC 25010 and ISO/IEC 29119 suggestions were included when relevant
 
 ## Accuracy
 - [ ] Every finding includes file path and line number
@@ -19,6 +20,7 @@ Verify your own review quality before submitting the QA report.
 - [ ] Remediation code examples are correct and complete
 - [ ] Priorities are clearly ordered (what to fix first)
 - [ ] Estimated impact is noted for performance issues
+- [ ] Standards-based suggestions are practical, not ceremonial
 
 ## Report Quality
 - [ ] Overall status (PASS/WARNING/FAIL) matches findings

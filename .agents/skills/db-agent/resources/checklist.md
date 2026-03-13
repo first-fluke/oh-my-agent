@@ -51,4 +51,5 @@ Run through every item before submitting your work.
 ## Delivery
 - [ ] Assumptions, tradeoffs, and risks are explicit
 - [ ] Migration impact or rollout steps included when schema changes are proposed
-- [ ] ISO 27001-friendly suggestions included where design affects access control, logging, encryption, backup, recovery, or change management
+- [ ] ISO 27001 / 27002-friendly suggestions included where design affects access control, logging, encryption, backup, recovery, or change management
+- [ ] ISO 22301-friendly suggestions included where design affects resilience, failover, restore testing, RTO, or RPO

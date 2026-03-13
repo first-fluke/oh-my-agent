@@ -2,7 +2,7 @@
 
 Use this file when the user asks for DB review, schema critique, query critique, or remediation.
 
-## 1. ISO 27001-Oriented Suggestions
+## 1. ISO 27001 / 27002 / 22301-Oriented Suggestions
 
 When any of the following are weak or absent, recommend improvements explicitly:
 
@@ -14,6 +14,11 @@ When any of the following are weak or absent, recommend improvements explicitly:
 - schema change management and migration traceability
 - secure credential handling
 - deletion and archive controls for cold data
+- privileged access review and segregation of duties
+- secure configuration baselines and hardening guidance
+- business continuity planning assumptions for critical databases
+- recovery objectives such as RTO / RPO and restore evidence
+- failover, redundancy, and backup dependency visibility
 
 ## 2. Logical Design
 
