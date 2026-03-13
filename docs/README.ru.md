@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Deutsch](./README.de.md)
+[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Deutsch](./README.de.md)
 
 Идеальный мультиагентный оркестратор для агентного программирования.
 
@@ -19,10 +19,49 @@
 ## Оглавление
 
 - [Архитектура](#архитектура)
+- [Почему другой](#почему-другой)
+- [Совместимость](#совместимость)
+- [Спецификация `.agents`](#спецификация-agents)
 - [Что это такое?](#что-это-такое)
 - [Быстрый старт](#быстрый-старт)
 - [Спонсоры](#спонсоры)
 - [Лицензия](#лицензия)
+
+## Почему другой
+
+- **`.agents/` является источником истины**: skills, workflows, общие ресурсы и конфигурация живут в одной переносимой структуре проекта вместо того, чтобы быть запертыми внутри одного IDE плагина.
+- **Команды агентов на основе ролей**: агенты PM, QA, DB, Infra, Frontend, Backend, Mobile, Debug и Workflow моделируются как инженерная организация, а не просто куча промптов.
+- **Workflow-first оркестрация**: планирование, обзор, отладка и координированное выполнение являются workflows первого класса, а не запоздалыми мыслями.
+- **Стандарт-осознанный дизайн**: агенты теперь несут сфокусированное руководство для ISO-управляемого планирования, QA, непрерывности/безопасности баз данных и управления инфраструктурой.
+- **Построен для верификации**: дашборды, генерация манифестов, общие протоколы выполнения и структурированные выходы отдают предпочтение отслеживаемости над генерацией только на основе ощущений.
+
+## Совместимость
+
+`oh-my-agent` спроектирован вокруг `.agents/` и затем мостит к другим инструмент-специфичным папкам skills, когда это необходимо.
+
+| Инструмент / IDE | Источник Skills | Режим совместимости | Примечания |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | Нативный | Основная макет источника-истины |
+| Claude Code | `.claude/skills/` | Символьная ссылка на `.agents/skills/` | Управляется установщиком |
+| OpenCode | `.agents/skills/` | Нативно-совместимый | Использует тот же источник skills на уровне проекта |
+| Amp | `.agents/skills/` | Нативно-совместимый | Разделяет тот же источник на уровне проекта |
+| Codex CLI | `.agents/skills/` | Нативно-совместимый | Работает из того же источника skills проекта |
+| Cursor | `.agents/skills/` | Нативно-совместимый | Может потреблять тот же источник skills на уровне проекта |
+| GitHub Copilot | `.github/skills/` | Опциональная символьная ссылка | Устанавливается при выборе во время настройки |
+
+Смотрите [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) для текущей матрицы поддержки и примечаний о совместимости.
+
+## Спецификация `.agents`
+
+`oh-my-agent` рассматривает `.agents/` как переносимое соглашение проекта для skills, workflows и общего контекста агентов.
+
+- Skills живут в `.agents/skills/<skill-name>/SKILL.md`
+- Общие ресурсы живут в `.agents/skills/_shared/`
+- Workflows живут в `.agents/workflows/*.md`
+- Конфигурация проекта живет в `.agents/config/`
+- Метаданные CLI и упаковка остаются выровненными через сгенерированные манифесты
+
+Смотрите [AGENTS_SPEC.md](./AGENTS_SPEC.md) для макета проекта, требуемых файлов, правил совместимости и модели источника-истины.
 
 ## Архитектура
 

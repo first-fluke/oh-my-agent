@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
+[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
 O Orquestrador de Agentes Definitivo para codificação agêntica.
 
@@ -19,10 +19,49 @@ Orquestre 10 agentes especializados de domínio (PM, Frontend, Backend, DB, Mobi
 ## Índice
 
 - [Arquitetura](#arquitetura)
+- [Por que diferente](#por-que-diferente)
+- [Compatibilidade](#compatibilidade)
+- [Especificação `.agents`](#especificação-agents)
 - [O Que É Isso?](#o-que-é-isso)
 - [Início Rápido](#início-rápido)
 - [Patrocinadores](#patrocinadores)
 - [Licença](#licença)
+
+## Por que diferente
+
+- **`.agents/` é a fonte da verdade**: skills, workflows, recursos compartilhados e configuração vivem em uma estrutura de projeto portátil em vez de ficar presos dentro de um plugin IDE.
+- **Equipes de agentes baseadas em funções**: agentes PM, QA, DB, Infra, Frontend, Backend, Mobile, Debug e Workflow são modelados como uma organização de engenharia, não apenas uma pilha de prompts.
+- **Orquestração workflow-first**: planejamento, revisão, depuração e execução coordenada são workflows de primeira classe, não reflexões tardias.
+- **Design consciente de padrões**: agentes agora carregam orientação focada para planejamento ISO, QA, continuidade/segurança de banco de dados e governança de infraestrutura.
+- **Construído para verificação**: dashboards, geração de manifestos, protocolos de execução compartilhados e saídas estruturadas favorecem rastreabilidade sobre geração apenas por vibe.
+
+## Compatibilidade
+
+`oh-my-agent` é projetado em torno de `.agents/` e depois faz ponte para outras pastas de skills específicas de ferramentas quando necessário.
+
+| Ferramenta / IDE | Fonte de Skills | Modo de Interoperabilidade | Notas |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | Nativo | Layout principal fonte-da-verdade |
+| Claude Code | `.claude/skills/` | Symlink para `.agents/skills/` | Gerenciado pelo instalador |
+| OpenCode | `.agents/skills/` | Nativo-compatível | Usa a mesma fonte de skills de nível de projeto |
+| Amp | `.agents/skills/` | Nativo-compatível | Compartilha a mesma fonte de nível de projeto |
+| Codex CLI | `.agents/skills/` | Nativo-compatível | Funciona da mesma fonte de skills de projeto |
+| Cursor | `.agents/skills/` | Nativo-compatível | Pode consumir a mesma fonte de skills de nível de projeto |
+| GitHub Copilot | `.github/skills/` | Symlink opcional | Instalado quando selecionado durante o setup |
+
+Veja [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) para a matriz de suporte atual e notas de interoperabilidade.
+
+## Especificação `.agents`
+
+`oh-my-agent` trata `.agents/` como uma convenção de projeto portátil para skills, workflows e contexto compartilhado de agentes.
+
+- Skills vivem em `.agents/skills/<skill-name>/SKILL.md`
+- Recursos compartilhados vivem em `.agents/skills/_shared/`
+- Workflows vivem em `.agents/workflows/*.md`
+- Configuração do projeto vive em `.agents/config/`
+- Metadados CLI e empacotamento permanecem alinhados através de manifestos gerados
+
+Veja [AGENTS_SPEC.md](./AGENTS_SPEC.md) para o layout do projeto, arquivos necessários, regras de interoperabilidade e modelo fonte-da-verdade.
 
 ## Arquitetura
 

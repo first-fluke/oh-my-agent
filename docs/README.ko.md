@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
+[English](../README.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
 에이전트 코딩을 위한 궁극의 멀티 에이전트 오케스트레이터.
 
@@ -11,10 +11,49 @@
 ## 목차
 
 - [아키텍처](#아키텍처)
+- [다른 점](#다른-점)
+- [호환성](#호환성)
+- [`.agents` 명세](#agents-명세)
 - [이게 뭔가요?](#이게-뭔가요)
 - [빠른 시작](#빠른-시작)
 - [후원하기](#후원하기)
 - [라이선스](#라이선스)
+
+## 다른 점
+
+- **`.agents/` 가 single source of truth**: 스킬, 워크플로우, 공유 리소스, 설정이 하나의 이식 가능한 프로젝트 구조에 저장되며, 특정 IDE 플러그인 안에 갇히지 않습니다.
+- **역할 기반 에이전트 팀**: PM, QA, DB, Infra, Frontend, Backend, Mobile, Debug, Workflow 에이전트는 단순 프롬프트 모음이 아니라 엔지니어링 조직처럼 모델링됩니다.
+- **워크플로우 우선 오케스트레이션**: 기획, 검토, 디버그, 조정 실행이 사후 처리가 아닌 일급 워크플로우로 취급됩니다.
+- **표준 인지 설계**: 에이전트는 ISO 기반 기획, QA, 데이터베이스 연속성/보안, 인프라 거버넌스에 대한 집중 가이드를 제공합니다.
+- **검증 중심 설계**: 대시보드, 매니페스트 생성, 공유 실행 프로토콜, 구조화된 출력은 단순 생성보다 추적 가능성을 우선시합니다.
+
+## 호환성
+
+`oh-my-agent` 는 `.agents/` 를 중심으로 설계되었으며, 필요시 다른 도구별 스킬 폴더와 브리징합니다.
+
+| 도구 / IDE | 스킬 소스 | 상호운용 모드 | 참고 |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | 네이티브 | 주 single source-of-truth 레이아웃 |
+| Claude Code | `.claude/skills/` | `.agents/skills/` 로 심볼릭 링크 | 인스톨러가 관리 |
+| OpenCode | `.agents/skills/` | 네이티브 호환 | 동일 프로젝트 레벨 스킬 소스 사용 |
+| Amp | `.agents/skills/` | 네이티브 호환 | 동일 프로젝트 레벨 소스 공유 |
+| Codex CLI | `.agents/skills/` | 네이티브 호환 | 동일 프로젝트 스킬 소스에서 작동 |
+| Cursor | `.agents/skills/` | 네이티브 호환 | 동일 프로젝트 레벨 스킬 소스 소비 가능 |
+| GitHub Copilot | `.github/skills/` | 선택적 심볼릭 링크 | 설정 중 선택 시 설치 |
+
+자세한 지원 매트릭스와 상호운용성 노트는 [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) 를 참고하세요.
+
+## `.agents` 명세
+
+`oh-my-agent` 는 `.agents/` 를 에이전트 스킬, 워크플로우, 공유 컨텍스트를 위한 이식 가능한 프로젝트 규약으로 취급합니다.
+
+- 스킬: `.agents/skills/<skill-name>/SKILL.md`
+- 공유 리소스: `.agents/skills/_shared/`
+- 워크플로우: `.agents/workflows/*.md`
+- 프로젝트 설정: `.agents/config/`
+- CLI 메타데이터 및 패키징: 생성된 매니페스트를 통해 정렬 유지
+
+프로젝트 레이아웃, 필수 파일, 상호운용성 규칙, single source-of-truth 모델에 대한 자세한 내용은 [AGENTS_SPEC.md](./AGENTS_SPEC.md) 를 참고하세요.
 
 ## 이게 뭔가요?
 

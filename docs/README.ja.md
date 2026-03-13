@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
+[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
 エージェントコーディングのための究極のマルチエージェントオーケストレーター。
 
@@ -19,10 +19,49 @@
 ## 目次
 
 - [アーキテクチャ](#アーキテクチャ)
+- [なぜ違うのか](#なぜ違うのか)
+- [互換性](#互換性)
+- [`.agents` 仕様](#agents-仕様)
 - [これは何ですか？](#これは何ですか)
 - [クイックスタート](#クイックスタート)
 - [スポンサー](#スポンサー)
 - [ライセンス](#ライセンス)
+
+## なぜ違うのか
+
+- **`.agents/` が真の情報源**: スキル、ワークフロー、共有リソース、設定が 1 つのポータブルなプロジェクト構造に存在し、1 つの IDE プラグイン内に閉じ込められません。
+- **役割に基づくエージェントチーム**: PM、QA、DB、Infra、Frontend、Backend、Mobile、Debug、Workflow の各エージェントは、単なるプロンプトの山ではなく、エンジニアリング組織のようにモデル化されています。
+- **ワークフローファーストのオーケストレーション**: 計画、レビュー、デバッグ、調整された実行は、後付けではなくファーストクラスのワークフローです。
+- **標準認識設計**: エージェントは、ISO 駆動の計画、QA、データベースの継続性/セキュリティ、インフラガバナンスのための焦点を絞ったガイドを持っています。
+- **検証のために構築**: ダッシュボード、マニフェスト生成、共有実行プロトコル、構造化された出力は、トレース可能性を優先します。
+
+## 互換性
+
+`oh-my-agent` は `.agents/` を中心に設計されており、必要に応じて他のツール固有のスキルフォルダにブリッジします。
+
+| ツール / IDE | スキルソース | 相互運用モード | 備考 |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | ネイティブ | 主要な真の情報源レイアウト |
+| Claude Code | `.claude/skills/` | `.agents/skills/` へのシンボリックリンク | インストーラーが管理 |
+| OpenCode | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトレベルのスキルソースを使用 |
+| Amp | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトレベルのソースを共有 |
+| Codex CLI | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトスキルソースから動作 |
+| Cursor | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトレベルのスキルソースを消費可能 |
+| GitHub Copilot | `.github/skills/` | オプションのシンボリックリンク | 設定中に選択した場合にインストール |
+
+現在のサポートマトリックスと相互運用性のメモについては、[SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) を参照してください。
+
+## `.agents` 仕様
+
+`oh-my-agent` は `.agents/` を、エージェントスキル、ワークフロー、共有コンテキストのためのポータブルなプロジェクト規約として扱います。
+
+- スキル: `.agents/skills/<skill-name>/SKILL.md`
+- 共有リソース: `.agents/skills/_shared/`
+- ワークフロー: `.agents/workflows/*.md`
+- プロジェクト設定: `.agents/config/`
+- CLI メタデータとパッケージング: 生成されたマニフェストを通じて整合性を維持
+
+プロジェクトレイアウト、必須ファイル、相互運用性ルール、真の情報源モデルの詳細については、[AGENTS_SPEC.md](./AGENTS_SPEC.md) を参照してください。
 
 ## アーキテクチャ
 

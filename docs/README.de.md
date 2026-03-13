@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md)
+[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md)
 
 Der ultimative Agent Orchestrator für agentisches Coding.
 
@@ -19,10 +19,49 @@ Orchestrieren Sie 10 spezialisierte Domain-Agenten (PM, Frontend, Backend, DB, M
 ## Inhaltsverzeichnis
 
 - [Architektur](#architektur)
+- [Warum anders](#warum-anders)
+- [Kompatibilität](#kompatibilität)
+- [`.agents` Spezifikation](#agents-spezifikation)
 - [Was ist das?](#was-ist-das)
 - [Schnellstart](#schnellstart)
 - [Sponsoren](#sponsoren)
 - [Lizenz](#lizenz)
+
+## Warum anders
+
+- **`.agents/` ist die Single Source of Truth**: Skills, Workflows, gemeinsame Ressourcen und Konfiguration leben in einer portablen Projektstruktur statt in einem IDE-Plugin gefangen zu sein.
+- **Rollenbasierte Agententeams**: PM, QA, DB, Infra, Frontend, Backend, Mobile, Debug und Workflow Agenten sind wie eine Engineering-Organisation modelliert, nicht nur ein Haufen Prompts.
+- **Workflow-first Orchestrierung**: Planung, Review, Debugging und koordinierte Ausführung sind First-Class-Workflows, keine Nachgedanken.
+- **Standard-bewusstes Design**: Agenten tragen jetzt fokussierte Anleitung für ISO-getriebene Planung, QA, Datenbank-Kontinuität/Sicherheit und Infrastruktur-Governance.
+- **Für Verifikation gebaut**: Dashboards, Manifest-Generierung, gemeinsame Ausführungsprotokolle und strukturierte Ausgaben bevorzugen Rückverfolgbarkeit gegenüber reiner Vibe-Generierung.
+
+## Kompatibilität
+
+`oh-my-agent` ist um `.agents/` herum entworfen und überbrückt dann bei Bedarf zu anderen toolspezifischen Skill-Ordnern.
+
+| Tool / IDE | Skill-Quelle | Interop-Modus | Hinweise |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | Native | Primäre Source-of-Truth-Layout |
+| Claude Code | `.claude/skills/` | Symlink zu `.agents/skills/` | Vom Installer verwaltet |
+| OpenCode | `.agents/skills/` | Native-kompatibel | Verwendet dieselbe Projekt-Level-Skill-Quelle |
+| Amp | `.agents/skills/` | Native-kompatibel | Teilt dieselbe Projekt-Level-Quelle |
+| Codex CLI | `.agents/skills/` | Native-kompatibel | Arbeitet von derselben Projekt-Skill-Quelle |
+| Cursor | `.agents/skills/` | Native-kompatibel | Kann dieselbe Projekt-Level-Skill-Quelle konsumieren |
+| GitHub Copilot | `.github/skills/` | Optionale Symlink | Installiert bei Auswahl während des Setups |
+
+Siehe [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) für die aktuelle Support-Matrix und Interoperabilitäts-Hinweise.
+
+## `.agents` Spezifikation
+
+`oh-my-agent` behandelt `.agents/` als portable Projektkonvention für Agenten-Skills, Workflows und gemeinsamen Kontext.
+
+- Skills leben in `.agents/skills/<skill-name>/SKILL.md`
+- Gemeinsame Ressourcen leben in `.agents/skills/_shared/`
+- Workflows leben in `.agents/workflows/*.md`
+- Projektkonfiguration lebt in `.agents/config/`
+- CLI-Metadaten und Packaging bleiben durch generierte Manifeste ausgerichtet
+
+Siehe [AGENTS_SPEC.md](./AGENTS_SPEC.md) für das Projekt-Layout, erforderliche Dateien, Interoperabilitätsregeln und Source-of-Truth-Modell.
 
 ## Architektur
 

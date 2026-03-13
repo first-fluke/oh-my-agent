@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
+[English](../README.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
 终极代理编排器，适用于智能编程及更多场景。
 
@@ -11,11 +11,49 @@
 ## 目录
 
 - [架构](#架构)
+- [为何不同](#为何不同)
+- [兼容性](#兼容性)
+- [`.agents` 规范](#agents-规范)
 - [这是什么？](#这是什么)
 - [快速开始](#快速开始)
-- [文档](#文档)
 - [赞助商](#赞助商)
 - [许可证](#许可证)
+
+## 为何不同
+
+- **`.agents/` 是真实来源**：技能、工作流、共享资源和配置生活在一个可移植的项目结构中，而不是被困在某个 IDE 插件内。
+- **角色化代理团队**：PM、QA、DB、Infra、Frontend、Backend、Mobile、Debug 和 Workflow 代理被建模为工程组织，而不仅仅是一堆提示词。
+- **工作流优先编排**：规划、审查、调试和协调执行是一等公民的工作流，而不是事后想法。
+- **标准感知设计**：代理现在携带针对 ISO 驱动的规划、QA、数据库连续性/安全和基础设施治理的集中指导。
+- **为验证而生**：仪表盘、清单生成、共享执行协议和结构化输出 favor 可追溯性而非仅靠感觉生成。
+
+## 兼容性
+
+`oh-my-agent` 围绕 `.agents/` 设计，然后在需要时桥接到其他工具特定的技能文件夹。
+
+| 工具 / IDE | 技能来源 | 互操作模式 | 备注 |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | 原生 | 主要真实来源布局 |
+| Claude Code | `.claude/skills/` | 符号链接到 `.agents/skills/` | 由安装器管理 |
+| OpenCode | `.agents/skills/` | 原生兼容 | 使用相同的项目级技能来源 |
+| Amp | `.agents/skills/` | 原生兼容 | 共享相同的项目级来源 |
+| Codex CLI | `.agents/skills/` | 原生兼容 | 从相同的项目技能来源工作 |
+| Cursor | `.agents/skills/` | 原生兼容 | 可以消费相同的项目级技能来源 |
+| GitHub Copilot | `.github/skills/` | 可选符号链接 | 安装时选择时安装 |
+
+当前支持矩阵和互操作性说明请参阅 [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md)。
+
+## `.agents` 规范
+
+`oh-my-agent` 将 `.agents/` 视为用于代理技能、工作流和共享上下文的可移植项目约定。
+
+- 技能位于 `.agents/skills/<skill-name>/SKILL.md`
+- 共享资源位于 `.agents/skills/_shared/`
+- 工作流位于 `.agents/workflows/*.md`
+- 项目配置位于 `.agents/config/`
+- CLI 元数据和打包通过生成的清单保持一致
+
+有关项目布局、必需文件、互操作性规则和真实来源模型的详细信息，请参阅 [AGENTS_SPEC.md](./AGENTS_SPEC.md)。
 
 ## 架构
 

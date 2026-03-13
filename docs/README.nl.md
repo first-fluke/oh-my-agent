@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
+[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
 De Ultimate Agent Orchestrator voor agentisch programmeren.
 
@@ -19,10 +19,49 @@ Orkestreer 10 gespecialiseerde domein agents (PM, Frontend, Backend, DB, Mobile,
 ## Inhoudsopgave
 
 - [Architectuur](#architectuur)
+- [Waarom anders](#waarom-anders)
+- [Compatibiliteit](#compatibiliteit)
+- [`.agents` Specificatie](#agents-specificatie)
 - [Wat is dit?](#wat-is-dit)
 - [Snel starten](#snel-starten)
 - [Sponsors](#sponsors)
 - [Licentie](#licentie)
+
+## Waarom anders
+
+- **`.agents/` is de bron van waarheid**: skills, workflows, gedeelde bronnen en configuratie leven in één draagbare projectstructuur in plaats van gevangen te zitten in één IDE-plugin.
+- **Rolgebaseerde agentteams**: PM, QA, DB, Infra, Frontend, Backend, Mobile, Debug en Workflow agents zijn gemodelleerd als een engineeringorganisatie, niet zomaar een stapel prompts.
+- **Workflow-first orchestratie**: planning, review, debug en gecoördineerde uitvoering zijn first-class workflows, geen nagedachten.
+- **Standaard-bewust ontwerp**: agents dragen nu gerichte begeleiding voor ISO-gedreven planning, QA, databasecontinuïteit/veiligheid en infrastructuurgovernance.
+- **Gebouwd voor verificatie**: dashboards, manifestgeneratie, gedeelde uitvoeringsprotocollen en gestructureerde uitvoer geven de voorkeur aan traceerbaarheid boven alleen-vibe-generatie.
+
+## Compatibiliteit
+
+`oh-my-agent` is ontworpen rond `.agents/` en overbrugt dan naar andere toolspecifieke skillmappen wanneer nodig.
+
+| Tool / IDE | Skill Bron | Interop Mode | Notities |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | Native | Primaire bron-van-waarheid lay-out |
+| Claude Code | `.claude/skills/` | Symlink naar `.agents/skills/` | Beheerd door installer |
+| OpenCode | `.agents/skills/` | Native-compatibel | Gebruikt dezelfde projectniveau skillbron |
+| Amp | `.agents/skills/` | Native-compatibel | Deelt dezelfde projectniveau bron |
+| Codex CLI | `.agents/skills/` | Native-compatibel | Werkt vanaf dezelfde project skillbron |
+| Cursor | `.agents/skills/` | Native-compatibel | Kan dezelfde projectniveau skillbron consumeren |
+| GitHub Copilot | `.github/skills/` | Optionele symlink | Geïnstalleerd wanneer geselecteerd tijdens setup |
+
+Zie [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) voor de huidige supportmatrix en interoperabiliteitsnotities.
+
+## `.agents` Specificatie
+
+`oh-my-agent` behandelt `.agents/` als een draagbare projectconventie voor agent skills, workflows en gedeelde context.
+
+- Skills leven in `.agents/skills/<skill-name>/SKILL.md`
+- Gedeelde bronnen leven in `.agents/skills/_shared/`
+- Workflows leven in `.agents/workflows/*.md`
+- Projectconfiguratie leeft in `.agents/config/`
+- CLI-metagegevens en verpakking blijven uitgelijnd via gegenereerde manifesten
+
+Zie [AGENTS_SPEC.md](./AGENTS_SPEC.md) voor de projectlay-out, vereiste bestanden, interoperabiliteitsregels en bron-van-waarheid model.
 
 ## Architectuur
 
