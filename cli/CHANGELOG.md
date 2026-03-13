@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.0.6...cli-v2.0.7) (2026-03-13)
+
+
+### Refactoring
+
+* vendor-agnostic execution protocol injection ([61fc225](https://github.com/first-fluke/oh-my-agent/commit/61fc2259ec0c5294db9c994ef266d745e722bbbe))
+
+
+### Miscellaneous
+
+* sync prompt-manifest.json ([8b9ca59](https://github.com/first-fluke/oh-my-agent/commit/8b9ca597c3b3b906a7cdc0854aaf591e8a4e20dc))
+
 ## [2.0.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.0.5...cli-v2.0.6) (2026-03-13)
 
 
