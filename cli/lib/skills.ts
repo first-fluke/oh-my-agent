@@ -1,6 +1,14 @@
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readlinkSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import type { SkillInfo, SkillsRegistry } from "../types/index.js";
 
 export const REPO = "first-fluke/oh-my-agent";
@@ -263,6 +271,65 @@ export function getAllSkills(): SkillInfo[] {
     ...SKILLS.utility,
     ...SKILLS.infrastructure,
   ];
+}
+
+export type CliTool = "claude" | "copilot";
+
+export const CLI_SKILLS_DIR: Record<CliTool, string> = {
+  claude: ".claude/skills",
+  copilot: ".github/skills",
+};
+
+export function createCliSymlinks(
+  targetDir: string,
+  cliTools: CliTool[],
+  skillNames: string[],
+): { created: string[]; skipped: string[] } {
+  const created: string[] = [];
+  const skipped: string[] = [];
+  const ssotSkillsDir = resolve(targetDir, INSTALLED_SKILLS_DIR);
+
+  for (const cli of cliTools) {
+    const skillsDir = CLI_SKILLS_DIR[cli];
+    const linkRootDir = join(targetDir, skillsDir);
+
+    if (!existsSync(linkRootDir)) {
+      mkdirSync(linkRootDir, { recursive: true });
+    }
+
+    for (const skillName of skillNames) {
+      const source = join(ssotSkillsDir, skillName);
+      const link = join(linkRootDir, skillName);
+
+      if (!existsSync(source)) {
+        skipped.push(`${skillsDir}/${skillName} (source missing)`);
+        continue;
+      }
+
+      try {
+        const stat = lstatSync(link);
+        if (stat.isSymbolicLink()) {
+          const existing = resolve(dirname(link), readlinkSync(link));
+          if (existing === resolve(source)) {
+            skipped.push(`${skillsDir}/${skillName} (already linked)`);
+            continue;
+          }
+          unlinkSync(link);
+        } else {
+          skipped.push(`${skillsDir}/${skillName} (real dir exists)`);
+          continue;
+        }
+      } catch (_e) {
+        // Link doesn't exist yet — will create below
+      }
+
+      const relativePath = relative(linkRootDir, source);
+      symlinkSync(relativePath, link, "dir");
+      created.push(`${skillsDir}/${skillName}`);
+    }
+  }
+
+  return { created, skipped };
 }
 
 export async function installGlobalWorkflows(): Promise<void> {

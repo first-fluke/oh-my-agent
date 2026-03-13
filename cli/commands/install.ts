@@ -3,7 +3,11 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { checkStarred } from "../lib/github.js";
+import { migrateToAgents } from "../lib/migrate.js";
 import {
+  type CliTool,
+  createCliSymlinks,
   getAllSkills,
   INSTALLED_SKILLS_DIR,
   installConfigs,
@@ -13,7 +17,6 @@ import {
   installWorkflows,
   PRESETS,
 } from "../lib/skills.js";
-import { migrateToAgents } from "../lib/migrate.js";
 
 export async function install(): Promise<void> {
   console.clear();
@@ -72,6 +75,27 @@ export async function install(): Promise<void> {
     selectedSkills = PRESETS[projectType as string] ?? [];
   }
 
+  const cliSelection = await p.multiselect({
+    message: "Also create symlinks for other CLI tools?",
+    options: [
+      {
+        value: "claude",
+        label: "Claude Code",
+        hint: ".claude/skills/",
+      },
+      {
+        value: "copilot",
+        label: "GitHub Copilot",
+        hint: ".github/skills/",
+      },
+    ],
+    required: false,
+  });
+
+  const selectedClis: CliTool[] = p.isCancel(cliSelection)
+    ? []
+    : (cliSelection as CliTool[]);
+
   const cwd = process.cwd();
   const spinner = p.spinner();
   spinner.start("Installing skills...");
@@ -89,11 +113,30 @@ export async function install(): Promise<void> {
 
     spinner.stop("Skills installed!");
 
+    const cliSymlinks =
+      selectedClis.length > 0
+        ? createCliSymlinks(cwd, selectedClis, selectedSkills)
+        : { created: [], skipped: [] };
+
     p.note(
       [
         ...selectedSkills.map((s) => `${pc.green("✓")} ${s}`),
         "",
         pc.dim(`Location: ${join(cwd, INSTALLED_SKILLS_DIR)}`),
+        ...(cliSymlinks.created.length > 0
+          ? [
+              "",
+              pc.cyan("Symlinks:"),
+              ...cliSymlinks.created.map((s) => `${pc.green("→")} ${s}`),
+            ]
+          : []),
+        ...(cliSymlinks.skipped.length > 0
+          ? [
+              "",
+              pc.dim("Skipped:"),
+              ...cliSymlinks.skipped.map((s) => pc.dim(`  ${s}`)),
+            ]
+          : []),
       ].join("\n"),
       "Installed",
     );
@@ -239,10 +282,17 @@ export async function install(): Promise<void> {
 
     p.outro(pc.green("Done! Open your project in your IDE to use the skills."));
 
-    p.note(
-      `${pc.yellow("❤️")} Enjoying oh-my-agent? Give it a star or sponsor!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-agent")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
-      "Support",
-    );
+    if (checkStarred()) {
+      p.note(
+        `${pc.green("⭐")} Thank you for starring oh-my-agent!\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
+        "Support",
+      );
+    } else {
+      p.note(
+        `${pc.yellow("❤️")} Enjoying oh-my-agent? Give it a star or sponsor!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-agent")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
+        "Support",
+      );
+    }
   } catch (error) {
     spinner.stop("Installation failed");
     p.log.error(error instanceof Error ? error.message : String(error));

@@ -1,11 +1,18 @@
-import { existsSync, readdirSync, renameSync, rmSync, unlinkSync, lstatSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  unlinkSync,
+} from "node:fs";
 import { join } from "node:path";
 
-const LEGACY_DIRS = [".agent", ".cursor/skills", ".claude/skills", ".github/skills"] as const;
+const LEGACY_DIRS = [".agent", ".cursor/skills"] as const;
 
 /**
  * Migrate from legacy .agent/ to .agents/ canonical root.
- * Also cleans up legacy symlink directories (.cursor/skills, .claude/skills, .github/skills).
+ * Also cleans up legacy symlink directories (.cursor/skills).
  *
  * Safe to call multiple times — skips if already migrated.
  * Returns a list of actions taken for logging.
@@ -44,7 +51,7 @@ export function migrateToAgents(targetDir: string): string[] {
   }
 
   // Clean up legacy symlink directories
-  for (const legacyDir of [".cursor/skills", ".claude/skills", ".github/skills"]) {
+  for (const legacyDir of [".cursor/skills"]) {
     const dirPath = join(targetDir, legacyDir);
     if (!existsSync(dirPath)) continue;
 
@@ -69,7 +76,9 @@ export function migrateToAgents(targetDir: string): string[] {
         const remainingItems = readdirSync(dirPath);
         if (remainingItems.length === 0) {
           rmSync(dirPath, { recursive: true });
-          actions.push(`${legacyDir} (removed ${removedCount} symlinks, cleaned dir)`);
+          actions.push(
+            `${legacyDir} (removed ${removedCount} symlinks, cleaned dir)`,
+          );
         } else if (removedCount > 0) {
           actions.push(`${legacyDir} (removed ${removedCount} symlinks)`);
         }
