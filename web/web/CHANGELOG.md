@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/first-fluke/oh-my-agent/compare/web-v0.2.2...web-v0.2.3) (2026-03-13)
+
+
+### Documentation
+
+* **web:** fix header branding from oh-my-ag to oh-my-agent ([553edd3](https://github.com/first-fluke/oh-my-agent/commit/553edd34f8c2349d366772393f6616ec1c921a49))
+
 ## [0.2.2](https://github.com/first-fluke/oh-my-agent/compare/web-v0.2.1...web-v0.2.2) (2026-03-13)
 
 
