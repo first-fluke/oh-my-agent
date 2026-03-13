@@ -5,6 +5,17 @@ on:
     branches: [main]
     paths-ignore:
       - "prompt-manifest.json"
+  workflow_dispatch:
+    inputs:
+      force_cli_publish:
+        description: Force publish the current CLI release and artifacts
+        required: false
+        default: false
+        type: boolean
+      cli_tag_name:
+        description: Existing CLI release tag to publish to (for example cli-v2.0.1)
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -15,9 +26,9 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     outputs:
-      cli_release_created: ${{ steps.release.outputs['cli--release_created'] }}
-      cli_tag_name: ${{ steps.release.outputs['cli--tag_name'] }}
-      cli_version: ${{ steps.release.outputs['cli--version'] }}
+      cli_release_created: ${{ steps.release.outputs.release_created }}
+      cli_tag_name: ${{ steps.release.outputs.tag_name }}
+      cli_version: ${{ steps.release.outputs.version }}
       web_release_created: ${{ steps.release.outputs['web--release_created'] }}
       web_tag_name: ${{ steps.release.outputs['web--tag_name'] }}
       web_version: ${{ steps.release.outputs['web--version'] }}
@@ -32,10 +43,21 @@ jobs:
 
   publish-artifacts:
     needs: release-please
-    if: ${{ needs.release-please.outputs.cli_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.cli_release_created == 'true' || inputs.force_cli_publish }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: release_tag
+        env:
+          MANUAL_TAG: ${{ inputs.cli_tag_name }}
+        run: |
+          if [ -n "$MANUAL_TAG" ]; then
+            echo "value=$MANUAL_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=cli-v$(node -p "require('./cli/package.json').version")" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create tarball
         run: |
@@ -44,7 +66,7 @@ jobs:
 
       - name: Upload release artifacts
         env:
-          RELEASE_TAG: ${{ needs.release-please.outputs.cli_tag_name }}
+          RELEASE_TAG: ${{ steps.release_tag.outputs.value }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
@@ -55,7 +77,7 @@ jobs:
 
   publish-npm:
     needs: release-please
-    if: ${{ needs.release-please.outputs.cli_release_created == 'true' }}
+    if: ${{ needs.release-please.outputs.cli_release_created == 'true' || inputs.force_cli_publish }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
