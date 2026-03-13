@@ -2,7 +2,7 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Українська](./README.uk.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
-终极多代理驱动框架，适用于智能编程及更多场景。
+终极代理编排器，适用于智能编程及更多场景。
 
 通过 **Serena Memory** 编排 9 个专业领域代理（PM、Frontend、Backend、Mobile、QA、Debug、Brainstorm、DevWorkflow、Terraform）。支持并行 CLI 执行、实时可观测性仪表盘，以及零配置渐进式技能加载。开箱即用的代理编程解决方案。
 
