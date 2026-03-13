@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.4.0...cli-v2.4.1) (2026-03-13)
+
+
+### Documentation
+
+* add .agents spec and compatibility positioning ([54608d8](https://github.com/first-fluke/oh-my-agent/commit/54608d87abcf95a61e48acc48aeb161253041dea))
+* sync localized readmes and remove uk docs ([3808917](https://github.com/first-fluke/oh-my-agent/commit/3808917ced96721766535e7b17fc39436d3fbd36))
+* update translated README titles and descriptions ([5a10620](https://github.com/first-fluke/oh-my-agent/commit/5a1062055bc9286c2f3e418d22772e38eb65af4d))
+
+
+### Miscellaneous
+
+* **main:** release web 0.2.4 ([113a056](https://github.com/first-fluke/oh-my-agent/commit/113a056fab411ba71ea478a02d041251df7aa00b))
+* sync prompt-manifest.json [skip ci] ([0eb09b2](https://github.com/first-fluke/oh-my-agent/commit/0eb09b2659c30a7346a8ac6f95d8fcbff933e808))
+
 ## [2.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.3.0...cli-v2.4.0) (2026-03-13)
 
 
