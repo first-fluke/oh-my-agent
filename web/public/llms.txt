@@ -1,8 +1,8 @@
-# oh-my-ag Official Docs
+# oh-my-agent Official Docs
 
 > Official multi-agent orchestration documentation for Antigravity, focused on practical guides for setup, operations, and delivery workflows.
 
-This file follows the llms.txt format and curates the web Guide section of oh-my-ag documentation.
+This file follows the llms.txt format and curates the web Guide section of oh-my-agent documentation.
 Use English links for default parsing and Korean links when the user context is Korean.
 All links point to the published documentation on GitHub Pages.
 
