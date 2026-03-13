@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.0.0...cli-v2.0.1) (2026-03-13)
+
+
+### Miscellaneous
+
+* **main:** release web 0.2.1 ([43b65bd](https://github.com/first-fluke/oh-my-agent/commit/43b65bd5bf0201d383cfb2bbc98f7b5c8c15ec42))
+* **main:** release web 0.2.1 ([f9fd4b2](https://github.com/first-fluke/oh-my-agent/commit/f9fd4b23fefe9adf5c475ef5d22a706f33192ecb))
+* rename project to oh-my-agent ([9d6edbf](https://github.com/first-fluke/oh-my-agent/commit/9d6edbf46e49e14df817f6a5baabfee7719690f2))
+* sync prompt-manifest.json ([f04e473](https://github.com/first-fluke/oh-my-agent/commit/f04e473b951988f4e76f0ea7c346a6004d261abe))
+* sync prompt-manifest.json ([7969a6f](https://github.com/first-fluke/oh-my-agent/commit/7969a6f4805cf1e043d3d45d21f909d413e378df))
+
 ## [2.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v1.29.0...cli-v2.0.0) (2026-03-13)
 
 
