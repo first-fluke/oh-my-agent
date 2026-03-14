@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "2.4.1",
-  "releaseDate": "2026-03-13T23:37:49.346Z",
+  "releaseDate": "2026-03-14T00:56:12.361Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -126,8 +126,8 @@
     },
     {
       "path": ".agents/skills/backend-agent/SKILL.md",
-      "sha256": "d111df673b2e41ee7bb599cbafc8c36fdf0570449e1e9d9587ddbf6db7cf36e7",
-      "size": 3676
+      "sha256": "f4b896ec52557f82755e7233de30ebed0f1325bcf1719969ed51ff3c414a0aeb",
+      "size": 4249
     },
     {
       "path": ".agents/skills/backend-agent/resources/api-template.py",
@@ -136,8 +136,8 @@
     },
     {
       "path": ".agents/skills/backend-agent/resources/checklist.md",
-      "sha256": "0cb20455aac753c014b650fb74a193782267a4090526d375d256a44cb2eb709c",
-      "size": 1340
+      "sha256": "42dca446ffb93817a3ca17bd160a246520ddb4b57ed98bba02dae9b930ea3360",
+      "size": 1686
     },
     {
       "path": ".agents/skills/backend-agent/resources/error-playbook.md",
@@ -151,8 +151,13 @@
     },
     {
       "path": ".agents/skills/backend-agent/resources/execution-protocol.md",
-      "sha256": "b5c54ba2955d8f4b70294c2c958dde056874aba9ad280bc998e27c48c01f9bf6",
-      "size": 1946
+      "sha256": "09407ed81a81e185138073ba019082e08b11c7267755ff8656858e3ddae460ae",
+      "size": 2189
+    },
+    {
+      "path": ".agents/skills/backend-agent/resources/orm-reference.md",
+      "sha256": "47d943fe16ed8861da00e2e0d6d333e8bb658d7a187db90f7e42dc397394576c",
+      "size": 3976
     },
     {
       "path": ".agents/skills/backend-agent/resources/snippets.md",
@@ -161,8 +166,8 @@
     },
     {
       "path": ".agents/skills/backend-agent/resources/tech-stack.md",
-      "sha256": "540a07888a2cd119144c09dab85a508147da569e883b0d2c6ee4e831d666314b",
-      "size": 1200
+      "sha256": "2d49467253b2f747b092f37cbcfe749abfcb796ce52ede3188c2eaa52c5858d8",
+      "size": 1394
     },
     {
       "path": ".agents/skills/brainstorm/SKILL.md",
@@ -626,6 +631,6 @@
   "metadata": {
     "skillCount": 13,
     "workflowCount": 11,
-    "totalFiles": 123
+    "totalFiles": 124
   }
 }
