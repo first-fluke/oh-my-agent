@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.8.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.8.0...cli-v2.8.1) (2026-03-15)
+
+
+### Refactoring
+
+* **cli:** remove image export from visualize command ([a3b313c](https://github.com/first-fluke/oh-my-agent/commit/a3b313c98b43b038090cc8c879126f2ad523e799))
+
+
+### Miscellaneous
+
+* update lockfile after removing @resvg/resvg-js ([433c19d](https://github.com/first-fluke/oh-my-agent/commit/433c19d4e8e5b6e82eb289a0d27c2745870ac992))
+
 ## [2.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.7.0...cli-v2.8.0) (2026-03-15)
 
 
