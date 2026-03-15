@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "2.7.0",
-  "releaseDate": "2026-03-15T04:08:36.596Z",
+  "version": "2.8.0",
+  "releaseDate": "2026-03-15T01:42:36.787Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -276,8 +276,8 @@
     },
     {
       "path": ".agents/skills/dev-workflow/SKILL.md",
-      "sha256": "3feaeef3643f023988624078eae75ff3faff65c561b1810d944473104e5b6fa9",
-      "size": 8319
+      "sha256": "1bedd3c2dadd5ba34b7b569aa0c76f8169226c24759c1937376ce227f53f80ee",
+      "size": 8004
     },
     {
       "path": ".agents/skills/dev-workflow/resources/api-workflows.md",
@@ -536,8 +536,8 @@
     },
     {
       "path": ".agents/skills/tf-infra-agent/SKILL.md",
-      "sha256": "5403ed8a80d6e885224101fedfe64f0cbcc1d5b6c612cafb8d80d1cb028cf0df",
-      "size": 16324
+      "sha256": "75a7e295e325db1f41b370ee7c6747fea98a4d1d79e98de03ee16fb9e47044c1",
+      "size": 16009
     },
     {
       "path": ".agents/skills/tf-infra-agent/resources/cost-optimization.md",

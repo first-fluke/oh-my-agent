@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.7.0...cli-v2.8.0) (2026-03-15)
+
+
+### Features
+
+* **cli:** add visualize command for dependency graph ([e8ea4aa](https://github.com/first-fluke/oh-my-agent/commit/e8ea4aa2142675485460bd5f5ee9cbb8337174ee))
+
 ## [2.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.6.0...cli-v2.7.0) (2026-03-15)
 
 
