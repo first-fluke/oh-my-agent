@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.9.0...cli-v2.9.1) (2026-03-15)
+
+
+### Performance
+
+* **cli:** replace individual file downloads with tarball extraction ([f1a1927](https://github.com/first-fluke/oh-my-agent/commit/f1a19273888bfcaa821ef59d754621ec4f2f3606))
+
 ## [2.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.8.1...cli-v2.9.0) (2026-03-15)
 
 
