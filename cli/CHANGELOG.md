@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.5.0...cli-v2.6.0) (2026-03-15)
+
+
+### Features
+
+* **cli:** enhance retro command with rich metrics, time windows, and compare mode ([ad901aa](https://github.com/first-fluke/oh-my-agent/commit/ad901aad4e9d158e9ae7ce74e348ce27eedd1399))
+
+
+### Documentation
+
+* remove redundant integration option from README ([05ee5ab](https://github.com/first-fluke/oh-my-agent/commit/05ee5ab177f37e4b16df78d8c7961a06e9e60102))
+* remove workflow-guide from README graphs and tables ([22955be](https://github.com/first-fluke/oh-my-agent/commit/22955befc30b9288bc7c1d9e9e2e189133d38cc9))
+
+
+### Miscellaneous
+
+* **claude-agents:** translate Korean skill and agent descriptions to English ([1ec0b22](https://github.com/first-fluke/oh-my-agent/commit/1ec0b22558ee20268ce2935e630516ba5e0c434a))
+* sync prompt-manifest.json [skip ci] ([54ae747](https://github.com/first-fluke/oh-my-agent/commit/54ae74758e6941e4efd52707e719178bd7db9f39))
+* sync prompt-manifest.json [skip ci] ([7325bf7](https://github.com/first-fluke/oh-my-agent/commit/7325bf786e5c7746cb7639d813d9dd0e9426d430))
+
 ## [2.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.4.2...cli-v2.5.0) (2026-03-14)
 
 
