@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/first-fluke/oh-my-agent/compare/web-v0.2.4...web-v0.2.5) (2026-03-16)
+
+
+### Documentation
+
+* rename CLI command from oh-my-ag to oma in all web content ([19feda2](https://github.com/first-fluke/oh-my-agent/commit/19feda2e535326b87c39b464fc02766f5628108a))
+
 ## [0.2.4](https://github.com/first-fluke/oh-my-agent/compare/web-v0.2.3...web-v0.2.4) (2026-03-13)
 
 
