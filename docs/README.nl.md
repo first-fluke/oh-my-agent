@@ -6,7 +6,7 @@
 
 Het draagbare, rolgebaseerde agentharnas voor serieuze AI-ondersteunde engineering.
 
-Orkestreer 10 gespecialiseerde domeinagents (PM, Frontend, Backend, DB, Mobile, QA, Debug, Brainstorm, DevWorkflow, Terraform) via **Serena Memory**. `oh-my-agent` gebruikt `.agents/` als de enige bron van waarheid voor draagbare vaardigheden en workflows, en projecteert vervolgens compatibiliteit naar andere AI IDE's en CLI's. Het combineert rolgebaseerde agents, expliciete workflows, realtime waarneembaarheid en standaardbewuste begeleiding voor teams die minder AI-rommel en een meer gedisciplineerde uitvoering willen.
+Orkestreer 10 gespecialiseerde domeinagents (PM, Frontend, Backend, DB, Mobile, QA, Debug, Brainstorm, DevWorkflow, Terraform) via **Serena Memory**. `oh-my-agent` gebruikt `.agents/` als de enige bron van waarheid voor draagbare vaardigheden en workflows, en slaat een brug naar andere AI IDE's en CLI's zodat ze dezelfde skills kunnen gebruiken. Het combineert rolgebaseerde agents, expliciete workflows, realtime waarneembaarheid en standaardbewuste begeleiding voor teams die minder AI-rommel en een meer gedisciplineerde uitvoering willen.
 
 > **Vind je dit project leuk?** Geef het een ster!
 >
@@ -42,7 +42,7 @@ Orkestreer 10 gespecialiseerde domeinagents (PM, Frontend, Backend, DB, Mobile, 
 | Tool / IDE | Skill Bron | Interop Mode | Notities |
 |------------|---------------|--------------|-------|
 | Antigravity | `.agents/skills/` | Native | Primaire bron-van-waarheid lay-out |
-| Claude Code | `.claude/skills/` | Symlink naar `.agents/skills/` | Beheerd door installer |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Native + Adapter | domeinskills via symlink, workflow skills / subagents / CLAUDE.md native |
 | OpenCode | `.agents/skills/` | Native-compatibel | Gebruikt dezelfde projectniveau skillbron |
 | Amp | `.agents/skills/` | Native-compatibel | Deelt dezelfde projectniveau bron |
 | Codex CLI | `.agents/skills/` | Native-compatibel | Werkt vanaf dezelfde project skillbron |
@@ -50,6 +50,16 @@ Orkestreer 10 gespecialiseerde domeinagents (PM, Frontend, Backend, DB, Mobile, 
 | GitHub Copilot | `.github/skills/` | Optionele symlink | Geïnstalleerd wanneer geselecteerd tijdens setup |
 
 Zie [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) voor de huidige supportmatrix en interoperabiliteitsnotities.
+
+## Native integratie met Claude Code
+
+Claude Code heeft native eersteklas ondersteuning via drie mechanismen:
+
+- **`CLAUDE.md`** — wordt automatisch geladen bij elke sessiestart; bevat projectinformatie, architectuur en gedragsregels voor agents.
+- **`.claude/skills/`** — 12 workflow skills gekoppeld aan `.agents/workflows/` (bijv. `/orchestrate`, `/coordinate`, `/ultrawork`). Domeinskills zijn gesymlinkt vanuit `.agents/skills/`.
+- **`.claude/agents/`** — 7 subagents die via de Task tool worden aangeroepen: `backend-impl`, `frontend-impl`, `mobile-impl`, `db-impl`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+
+Luspatronen (Review Loop, Issue Remediation Loop, Phase Gate Loop) draaien rechtstreeks binnen Claude Code zonder externe CLI-polling.
 
 ## `.agents` Specificatie
 
@@ -175,7 +185,7 @@ Je hebt ook minimaal één CLI tool nodig:
 
 | CLI | Installeren | Authenticatie |
 |-----|-------------|---------------|
-| Gemini | `bun install --global @anthropic-ai/gemini-cli` | `gemini auth` |
+| Gemini | `bun install --global @google/gemini-cli` | `gemini auth` |
 | Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude auth` |
 | Codex | `bun install --global @openai/codex` | `codex auth` |
 | Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |

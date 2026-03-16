@@ -1,67 +1,23 @@
-# oh-my-agent: ポータブル・マルチエージェント・ハーネス
+# oh-my-agent: どのIDEでも使えるマルチエージェントハーネス
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
-本格的なAI支援エンジニアリングのための、ポータブルな役割ベースのエージェント・ハーネス。
+AIで本気の開発をしたいチームのためのエージェントハーネス。役割ごとにエージェントが分かれていて、特定のIDEに縛られません。
 
-**Serena Memory**を介して10の専門ドメインエージェント（PM、Frontend、Backend、DB、Mobile、QA、Debug、Brainstorm、DevWorkflow、Terraform）をオーケストレーションします。`oh-my-agent`は、ポータブルなスキルとワークフローの真の情報源（source of truth）として`.agents/`を使用し、その後他のAI IDEやCLIに互換性を投影します。役割ベースのエージェント、明示的なワークフロー、リアルタイムの可観測性、および標準を認識したガイダンスを組み合わせており、AIによる不要なコード（slop）を減らし、より規律ある実行を求めるチーム向けです。
-
-> **このプロジェクトが気に入りましたか？** スターをお願いします！
->
-> ```bash
-> gh api --method PUT /user/starred/first-fluke/oh-my-agent
-> ```
->
-> 最適化されたスターターテンプレートをお試しください: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
+**Serena Memory**で10の専門エージェント（PM、Frontend、Backend、DB、Mobile、QA、Debug、Brainstorm、DevWorkflow、Terraform）を連携させます。`oh-my-agent`は`.agents/`をスキルとワークフローの原本として使い、そこから他のAI IDEやCLIにつなぎます。役割を持ったエージェント、明確なワークフロー、リアルタイム監視、標準に沿ったガイドを組み合わせて、AIが雑に生成したコードを減らし、チームが体系的に動けるようにします。
 
 ## 目次
 
 - [アーキテクチャ](#アーキテクチャ)
-- [なぜ違うのか](#なぜ違うのか)
+- [何が違うのか](#何が違うのか)
 - [互換性](#互換性)
 - [`.agents` 仕様](#agents-仕様)
-- [これは何ですか？](#これは何ですか)
+- [何ができるのか](#何ができるのか)
 - [クイックスタート](#クイックスタート)
 - [スポンサー](#スポンサー)
 - [ライセンス](#ライセンス)
-
-## なぜ違うのか
-
-- **`.agents/` が真の情報源**: スキル、ワークフロー、共有リソース、設定が 1 つのポータブルなプロジェクト構造に存在し、1 つの IDE プラグイン内に閉じ込められません。
-- **役割に基づくエージェントチーム**: PM、QA、DB、Infra、Frontend、Backend、Mobile、Debug、Workflow の各エージェントは、単なるプロンプトの山ではなく、エンジニアリング組織のようにモデル化されています。
-- **ワークフローファーストのオーケストレーション**: 計画、レビュー、デバッグ、調整された実行は、後付けではなくファーストクラスのワークフローです。
-- **標準認識設計**: エージェントは、ISO 駆動の計画、QA、データベースの継続性/セキュリティ、インフラガバナンスのための焦点を絞ったガイドを持っています。
-- **検証のために構築**: ダッシュボード、マニフェスト生成、共有実行プロトコル、構造化された出力は、トレース可能性を優先します。
-
-## 互換性
-
-`oh-my-agent` は `.agents/` を中心に設計されており、必要に応じて他のツール固有のスキルフォルダにブリッジします。
-
-| ツール / IDE | スキルソース | 相互運用モード | 備考 |
-|------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | ネイティブ | 主要な真の情報源レイアウト |
-| Claude Code | `.claude/skills/` | `.agents/skills/` へのシンボリックリンク | インストーラーが管理 |
-| OpenCode | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトレベルのスキルソースを使用 |
-| Amp | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトレベルのソースを共有 |
-| Codex CLI | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトスキルソースから動作 |
-| Cursor | `.agents/skills/` | ネイティブ互換 | 同じプロジェクトレベルのスキルソースを消費可能 |
-| GitHub Copilot | `.github/skills/` | オプションのシンボリックリンク | 設定中に選択した場合にインストール |
-
-現在のサポートマトリックスと相互運用性のメモについては、[SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) を参照してください。
-
-## `.agents` 仕様
-
-`oh-my-agent` は `.agents/` を、エージェントスキル、ワークフロー、共有コンテキストのためのポータブルなプロジェクト規約として扱います。
-
-- スキル: `.agents/skills/<skill-name>/SKILL.md`
-- 共有リソース: `.agents/skills/_shared/`
-- ワークフロー: `.agents/workflows/*.md`
-- プロジェクト設定: `.agents/config/`
-- CLI メタデータとパッケージング: 生成されたマニフェストを通じて整合性を維持
-
-プロジェクトレイアウト、必須ファイル、相互運用性ルール、真の情報源モデルの詳細については、[AGENTS_SPEC.md](./AGENTS_SPEC.md) を参照してください。
 
 ## アーキテクチャ
 
@@ -107,52 +63,99 @@ flowchart TD
     Quality --> CMT([commit])
 ```
 
-## これは何ですか？
+## 何が違うのか
 
-マルチエージェント協業開発を可能にする**Agent Skills**のコレクションです。作業を専門エージェントに分散します:
+- **`.agents/`が原本です**: スキル、ワークフロー、共有リソース、設定がひとつのプロジェクト構造に入っていて、特定のIDEプラグインに閉じ込められません。
+- **エンジニアリング組織のように動きます**: PM、QA、DB、Infra、Frontend、Backend、Mobile、Debug、Workflowの各エージェントが、プロンプトの寄せ集めではなくチームとして役割を分担します。
+- **ワークフローが最初に来ます**: 企画、レビュー、デバッグ、協調実行がおまけではなく、コアのワークフローとして設計されています。
+- **標準を知っています**: ISO基準の企画、QA、DBセキュリティ、インフラガバナンスのガイドがエージェントに組み込まれています。
+- **検証できます**: ダッシュボード、マニフェスト生成、実行プロトコル、構造化された出力で結果を追跡できます。ただ生成するだけではありません。
 
-| エージェント | 専門分野 | トリガー |
+## 互換性
+
+`oh-my-agent`は`.agents/`を中心に設計されていて、必要に応じて他のツールのスキルフォルダとつなぎます。
+
+| ツール / IDE | スキルソース | 連携方式 | 備考 |
+|------------|---------------|--------------|-------|
+| Antigravity | `.agents/skills/` | ネイティブ | 原本のレイアウト |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | ネイティブ + アダプター | ドメインスキルはシンボリックリンク、ワークフロースキル・サブエージェント・CLAUDE.mdはネイティブ |
+| OpenCode | `.agents/skills/` | 互換 | 同じスキルソースを使用 |
+| Amp | `.agents/skills/` | 互換 | 同じソースを共有 |
+| Codex CLI | `.agents/skills/` | 互換 | 同じスキルソースで動作 |
+| Cursor | `.agents/skills/` | 互換 | 同じスキルソースを使用可能 |
+| GitHub Copilot | `.github/skills/` | シンボリックリンク（任意） | セットアップ時に選択するとインストール |
+
+サポート状況と連携方法は[SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md)を参照してください。
+
+### Claude Codeとのネイティブ連携
+
+Claude Codeはシンボリックリンクだけでなく、直接連携できます:
+
+- **`CLAUDE.md`** — プロジェクト情報、アーキテクチャ、ルール（Claude Codeが自動で読み込み）
+- **`.claude/skills/`** — `.agents/workflows/`から取り込んだ12のワークフロースキル（`/orchestrate`、`/coordinate`、`/ultrawork`など）
+- **`.claude/agents/`** — Task toolで起動する7つのサブエージェント（backend-impl、frontend-impl、mobile-impl、db-impl、qa-reviewer、debug-investigator、pm-planner）
+- **ループパターン** — CLIポーリングなしで、Task toolの同期結果を使ったReview Loop、Issue Remediation Loop、Phase Gate Loop
+
+ドメインスキル（backend-agent、frontend-agentなど）は`.agents/skills/`からのシンボリックリンクです。ワークフロースキルは`.agents/workflows/*.md`の原本を参照するネイティブSKILL.mdファイルです。
+
+## `.agents` 仕様
+
+`oh-my-agent`は`.agents/`を、エージェントスキル・ワークフロー・共有コンテキストを入れるプロジェクト規約として使います。
+
+- スキル: `.agents/skills/<skill-name>/SKILL.md`
+- 共有リソース: `.agents/skills/_shared/`
+- ワークフロー: `.agents/workflows/*.md`
+- プロジェクト設定: `.agents/config/`
+- CLIメタデータとパッケージングは生成されたマニフェストで管理
+
+レイアウト、必須ファイル、連携ルールの詳細は[AGENTS_SPEC.md](./AGENTS_SPEC.md)を参照してください。
+
+## 何ができるのか
+
+複数のエージェントが協力して開発する**Agent Skills**のコレクションです。専門エージェントに役割を分けて任せます:
+
+| エージェント | 担当 | こういう時に呼びます |
 |-------|---------------|----------|
-| **Brainstorm** | プランニング前のデザインファーストのアイデア出し | "brainstorm"、"ideate"、"explore idea" |
-| **PM Agent** | 要件分析、タスク分解、アーキテクチャ設計 | "plan"、"break down"、"what should we build" |
+| **Brainstorm** | 企画前にアイデアを探る | "brainstorm"、"ideate"、"explore idea" |
+| **PM Agent** | 要件分析、タスク分解、アーキテクチャ | "plan"、"break down"、"what should we build" |
 | **Frontend Agent** | React/Next.js、TypeScript、Tailwind CSS | "UI"、"component"、"styling" |
 | **Backend Agent** | FastAPI、PostgreSQL、JWT認証 | "API"、"database"、"authentication" |
-| **DB Agent** | SQL/NoSQLモデリング、正規化、整合性、バックアップ、容量見積もり | "ERD"、"スキーマ"、"データベース設計"、"インデックスチューニング" |
+| **DB Agent** | SQL/NoSQLモデリング、正規化、整合性、バックアップ | "ERD"、"schema"、"DB設計"、"index tuning" |
 | **Mobile Agent** | Flutterクロスプラットフォーム開発 | "mobile app"、"iOS/Android" |
 | **QA Agent** | OWASP Top 10セキュリティ、パフォーマンス、アクセシビリティ | "review security"、"audit"、"check performance" |
-| **Debug Agent** | バグ診断、根本原因分析、リグレッションテスト | "bug"、"error"、"crash" |
-| **Developer Workflow** | モノレポタスク自動化、mise タスク、CI/CD、マイグレーション、リリース | 「開発ワークフロー」「mise タスク」「CI/CD パイプライン」 |
-| **TF Infra Agent** | マルチクラウド IaC プロビジョニング（AWS、GCP、Azure、OCI） | 「インフラ」「terraform」「クラウドセットアップ」 |
-| **Orchestrator** | CLIベースの並列エージェント実行とSerena Memory | "spawn agent"、"parallel execution" |
-| **Commit** | Conventional Commitsによるプロジェクト固有のルール | "commit"、"save changes" |
+| **Debug Agent** | バグ診断、原因分析、回帰テスト | "bug"、"error"、"crash" |
+| **Developer Workflow** | モノレポ自動化、mise、CI/CD、リリース | "dev workflow"、"mise"、"CI/CD" |
+| **TF Infra Agent** | マルチクラウドIaC（AWS、GCP、Azure、OCI） | "infrastructure"、"terraform"、"cloud" |
+| **Orchestrator** | CLIでエージェントを並列実行 + Serena Memory | "spawn agent"、"parallel execution" |
+| **Commit** | Conventional Commitsのルールでコミット | "commit"、"save changes" |
 
 ## クイックスタート
 
-### 前提条件
+### 必要なもの
 
-- **AI IDE** (Antigravity, Claude Code, Codex, Gemini, etc.)
+- **AI IDE**（Antigravity、Claude Code、Codex、Geminiなど）
 
-### オプション1: ワンライン インストール（推奨）
+### オプション1: ワンラインインストール（推奨）
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-不足している依存関係（bun、uv）を自動的に検出してインストールし、対話型セットアップを起動します。
+足りない依存関係（bun、uv）を自動で見つけてインストールし、対話型セットアップを始めます。
 
 ### オプション2: 手動インストール
 
 ```bash
-# bunがない場合は先にインストール:
+# bunがなければ:
 # curl -fsSL https://bun.sh/install | bash
 
-# uvがない場合は先にインストール:
+# uvがなければ:
 # curl -LsSf https://astral.sh/uv/install.sh | sh
 
 bunx oh-my-agent
 ```
 
-プロジェクトタイプを選択すると、スキルが`.agents/skills/`にインストールされます。
+プロジェクトタイプを選ぶと`.agents/skills/`にスキルがインストールされます。
 
 | プリセット | スキル |
 |--------|--------|
@@ -163,72 +166,78 @@ bunx oh-my-agent
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
 | 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
 
-### オプション3: グローバルインストール (Orchestrator用)
+### オプション3: グローバルインストール（Orchestrator用）
 
-コアツールをグローバルに使用するか、SubAgent Orchestratorを実行するには:
+SubAgent Orchestratorを使うか、ツールをグローバルで使うには:
 
 ```bash
 bun install --global oh-my-agent
 ```
 
-最低1つのCLIツールも必要です:
+CLIツールが最低1つ必要です:
 
 | CLI | インストール | 認証 |
 |-----|---------|------|
-| Gemini | `bun install --global @anthropic-ai/gemini-cli` | `gemini auth` |
+| Gemini | `bun install --global @google/gemini-cli` | `gemini auth` |
 | Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude auth` |
 | Codex | `bun install --global @openai/codex` | `codex auth` |
 | Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
 
-### オプション4: 既存プロジェクトへの統合
+### オプション4: 既存プロジェクトに追加
 
-**推奨方法 (CLI):**
-
-プロジェクトルートで次のコマンドを実行すると、スキルとワークフローが自動的にインストール/更新されます:
+プロジェクトルートで実行すると、スキルとワークフローが自動インストールされます:
 
 ```bash
 bunx oh-my-agent
 ```
 
-> **ヒント:** インストール後に`bunx oh-my-agent doctor`を実行して、すべてが正しくセットアップされているか確認してください（グローバルワークフローを含む）。
+> **ヒント:** インストール後に`bunx oh-my-agent doctor`を実行すると、設定が正しいか確認できます。
 
-### 2. チャット
+### 2. チャットで使う
 
-**シンプルなタスク** (単一エージェントが自動起動):
+**複雑なプロジェクト**（/coordinate）:
 
 ```
-"Tailwind CSSとフォームバリデーションでログインフォームを作成"
+"ユーザー認証付きのTODOアプリを作って"
+→ /coordinate → PM Agentが企画 → Agent Managerでエージェント起動
+```
+
+**全力投入**（/ultrawork）:
+
+```
+"認証モジュールのリファクタリング、APIテスト追加、ドキュメント更新"
+→ /ultrawork → 独立したタスクがエージェント間で同時実行
+```
+
+**簡単なタスク**（エージェントが自動で起動）:
+
+```
+"Tailwind CSSでログインフォームを作って"
 → frontend-agentが起動
 ```
 
-**複雑なプロジェクト** (/coordinate ワークフロー):
-
-```
-"ユーザー認証付きのTODOアプリを構築"
-→ /coordinate → PM Agentが計画 → Agent Managerでエージェントを起動
-```
-
-**最大展開** (/ultrawork ワークフロー):
-
-```
-"認証モジュールのリファクタリング、APIテストの追加、ドキュメントの更新"
-→ /ultrawork → 独立タスクがエージェント間で並列実行
-```
-
-**変更をコミット** (conventional commits):
+**コミット**（Conventional Commits）:
 
 ```
 /commit
-→ 変更を分析し、コミットタイプ/スコープを提案し、Co-Authorでコミットを作成
+→ 変更を分析、コミットタイプ/スコープを提案、Co-Author付きでコミット
 ```
 
 ### 3. ダッシュボードで監視
 
-ダッシュボードのセットアップと使用方法の詳細は、[`web/content/ja/guide/usage.md`](./web/content/ja/guide/usage.md#リアルタイムダッシュボード)を参照してください.
+ダッシュボードの設定と使い方は[`web/content/ja/guide/usage.md`](./web/content/ja/guide/usage.md#リアルタイムダッシュボード)を参照してください。
 
 ## スポンサー
 
-このプロジェクトは寛大なスポンサーの皆様のおかげで維持されています。
+このプロジェクトはスポンサーの皆さんのおかげで維持されています。
+
+> **気に入りましたか？** スターをお願いします！
+>
+> ```bash
+> gh api --method PUT /user/starred/first-fluke/oh-my-agent
+> ```
+>
+> スターターテンプレートもあります: [fullstack-starter](https://github.com/first-fluke/fullstack-starter)
 
 <a href="https://github.com/sponsors/first-fluke">
   <img src="https://img.shields.io/badge/Sponsor-♥-ea4aaa?style=for-the-badge" alt="Sponsor" />
@@ -239,19 +248,19 @@ bunx oh-my-agent
 
 ### 🚀 Champion
 
-<!-- Championティア ($100/月) のロゴ -->
+<!-- Champion ($100/月) ロゴ -->
 
 ### 🛸 Booster
 
-<!-- Boosterティア ($30/月) のロゴ -->
+<!-- Booster ($30/月) ロゴ -->
 
 ### ☕ Contributor
 
-<!-- Contributorティア ($10/月) の名前 -->
+<!-- Contributor ($10/月) 名前 -->
 
 [スポンサーになる →](https://github.com/sponsors/first-fluke)
 
-サポーターの完全なリストは[SPONSORS.md](./SPONSORS.md)を参照してください。
+サポーターの一覧は[SPONSORS.md](./SPONSORS.md)を参照してください。
 
 ## スター履歴
 

@@ -6,7 +6,7 @@
 
 El arnés de agente portátil, basado en roles, para la ingeniería seria asistida por IA.
 
-Orquesta 10 agentes de dominio especializados (PM, Frontend, Backend, DB, Mobile, QA, Debug, Brainstorm, DevWorkflow, Terraform) a través de **Serena Memory**. `oh-my-agent` utiliza `.agents/` como la fuente de verdad para las habilidades y los flujos de trabajo portátiles, luego proyecta la compatibilidad a otras IDE y CLI de IA. Combina agentes basados en roles, flujos de trabajo explícitos, observabilidad en tiempo real y orientación con conocimiento de estándares para los equipos que desean menos desorden de IA y una ejecución más disciplinada.
+Orquesta 10 agentes de dominio especializados (PM, Frontend, Backend, DB, Mobile, QA, Debug, Brainstorm, DevWorkflow, Terraform) a través de **Serena Memory**. `oh-my-agent` utiliza `.agents/` como la fuente de verdad para las habilidades y los flujos de trabajo portátiles, y los adapta para funcionar con otras IDE y CLI de IA. Combina agentes basados en roles, flujos de trabajo explícitos, observabilidad en tiempo real y orientación con conocimiento de estándares para los equipos que desean menos desorden de IA y una ejecución más disciplinada.
 
 > **¿Te gusta este proyecto?** ¡Dale una estrella!
 >
@@ -42,7 +42,7 @@ Orquesta 10 agentes de dominio especializados (PM, Frontend, Backend, DB, Mobile
 | Herramienta / IDE | Fuente de Skills | Modo de Interoperabilidad | Notas |
 |------------|---------------|--------------|-------|
 | Antigravity | `.agents/skills/` | Nativo | Disposición principal fuente-de-verdad |
-| Claude Code | `.claude/skills/` | Enlace simbólico a `.agents/skills/` | Gestionado por el instalador |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativo + Adaptador | skills de dominio vía enlace simbólico, workflow skills / subagentes / CLAUDE.md nativo |
 | OpenCode | `.agents/skills/` | Nativo-compatible | Usa la misma fuente de skills a nivel de proyecto |
 | Amp | `.agents/skills/` | Nativo-compatible | Comparte la misma fuente a nivel de proyecto |
 | Codex CLI | `.agents/skills/` | Nativo-compatible | Funciona desde la misma fuente de skills |
@@ -50,6 +50,16 @@ Orquesta 10 agentes de dominio especializados (PM, Frontend, Backend, DB, Mobile
 | GitHub Copilot | `.github/skills/` | Enlace simbólico opcional | Instalado cuando se selecciona durante la configuración |
 
 Ver [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) para la matriz de soporte actual y notas de interoperabilidad.
+
+## Integración Nativa con Claude Code
+
+Claude Code tiene soporte nativo de primera clase a través de tres mecanismos:
+
+- **`CLAUDE.md`** — cargado automáticamente al inicio de cada sesión; contiene la información del proyecto, la arquitectura y las reglas de comportamiento del agente.
+- **`.claude/skills/`** — 12 workflow skills mapeados desde `.agents/workflows/` (por ejemplo, `/orchestrate`, `/coordinate`, `/ultrawork`). Los skills de dominio se enlazan simbólicamente desde `.agents/skills/`.
+- **`.claude/agents/`** — 7 subagentes invocados mediante la herramienta Task: `backend-impl`, `frontend-impl`, `mobile-impl`, `db-impl`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+
+Los patrones de bucle (Review Loop, Issue Remediation Loop, Phase Gate Loop) se ejecutan directamente dentro de Claude Code sin necesidad de sondear la CLI externa.
 
 ## Especificación `.agents`
 
@@ -175,7 +185,7 @@ También necesitarás al menos una herramienta CLI:
 
 | CLI | Instalar | Autenticación |
 |-----|---------|------|
-| Gemini | `bun install --global @anthropic-ai/gemini-cli` | `gemini auth` |
+| Gemini | `bun install --global @google/gemini-cli` | `gemini auth` |
 | Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude auth` |
 | Codex | `bun install --global @openai/codex` | `codex auth` |
 | Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
