@@ -18,7 +18,5 @@
     "claude-code",
     "codex",
     "gemini"
-  ],
-  "skills": "./.claude/skills/",
-  "agents": "./.claude/agents/"
+  ]
 }
