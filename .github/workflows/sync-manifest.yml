@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - ".agents/**"
+      - "skills/**"
+      - "agents/**"
       - "cli/generate-manifest.ts"
 
 jobs:
