@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.10.0...cli-v2.10.1) (2026-03-17)
+
+
+### Bug Fixes
+
+* **cli:** handle existing symlinks during reinstallation ([adf43a2](https://github.com/first-fluke/oh-my-agent/commit/adf43a29b640e171307fe0942f0e4ecd5dea405a))
+
+
+### Miscellaneous
+
+* **main:** release web 0.2.5 ([8471872](https://github.com/first-fluke/oh-my-agent/commit/847187209bfe721e3d452b376238e9fe153e1c24))
+* **main:** release web 0.2.5 ([8ef6562](https://github.com/first-fluke/oh-my-agent/commit/8ef6562bbeb3615f9b2c546933f9a3852332cce8))
+
 ## [2.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.9.1...cli-v2.10.0) (2026-03-16)
 
 
