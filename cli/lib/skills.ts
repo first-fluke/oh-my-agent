@@ -103,6 +103,21 @@ export const PRESETS: Record<string, string[]> = {
   ].map((s) => s.name),
 };
 
+/**
+ * Remove path if it exists as a symlink or file (not a real directory).
+ * Handles re-installation where symlinks from a previous install
+ * conflict with directory copies.
+ */
+function clearNonDirectory(path: string): void {
+  try {
+    if (!lstatSync(path).isDirectory()) {
+      unlinkSync(path);
+    }
+  } catch {
+    // Path doesn't exist
+  }
+}
+
 export function installSkill(
   sourceDir: string,
   skillName: string,
@@ -112,6 +127,7 @@ export function installSkill(
   if (!existsSync(src)) return false;
 
   const dest = join(targetDir, INSTALLED_SKILLS_DIR, skillName);
+  clearNonDirectory(dest);
   mkdirSync(dest, { recursive: true });
   cpSync(src, dest, { recursive: true, force: true });
   return true;
@@ -122,6 +138,7 @@ export function installShared(sourceDir: string, targetDir: string): void {
   if (!existsSync(src)) return;
 
   const dest = join(targetDir, INSTALLED_SKILLS_DIR, "_shared");
+  clearNonDirectory(dest);
   mkdirSync(dest, { recursive: true });
   cpSync(src, dest, { recursive: true, force: true });
 }
@@ -131,6 +148,7 @@ export function installWorkflows(sourceDir: string, targetDir: string): void {
   if (!existsSync(src)) return;
 
   const dest = join(targetDir, ".agents", "workflows");
+  clearNonDirectory(dest);
   mkdirSync(dest, { recursive: true });
   cpSync(src, dest, { recursive: true, force: true });
 }
@@ -171,13 +189,40 @@ export function installClaudeSkills(
   const destAgents = join(targetDir, ".claude", "agents");
 
   if (existsSync(srcSkills)) {
+    clearNonDirectory(destSkills);
+    // Clear symlinks inside destination that conflict with source directories
+    clearConflictingEntries(srcSkills, destSkills);
     mkdirSync(destSkills, { recursive: true });
     cpSync(srcSkills, destSkills, { recursive: true, force: true });
   }
 
   if (existsSync(srcAgents)) {
+    clearNonDirectory(destAgents);
+    clearConflictingEntries(srcAgents, destAgents);
     mkdirSync(destAgents, { recursive: true });
     cpSync(srcAgents, destAgents, { recursive: true, force: true });
+  }
+}
+
+/**
+ * For each entry in sourceDir that is a directory, remove the corresponding
+ * entry in destDir if it exists as a non-directory (symlink or file).
+ * Prevents cpSync from failing when overwriting symlinks with directories.
+ */
+function clearConflictingEntries(
+  sourceDir: string,
+  destDir: string,
+): void {
+  if (!existsSync(destDir)) return;
+
+  try {
+    for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        clearNonDirectory(join(destDir, entry.name));
+      }
+    }
+  } catch {
+    // Best-effort cleanup
   }
 }
 
