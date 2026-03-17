@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "first-fluke/oh-my-agent",
+  "name": "oh-my-agent",
   "owner": {
     "name": "First Fluke",
     "url": "https://github.com/first-fluke"
