@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.10.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.10.1...cli-v2.10.2) (2026-03-17)
+
+
+### Bug Fixes
+
+* remove slash from marketplace plugin name ([8ea9616](https://github.com/first-fluke/oh-my-agent/commit/8ea9616b6420405e797bb477ac4509ae740506d0))
+* remove slash from marketplace plugin name ([686250c](https://github.com/first-fluke/oh-my-agent/commit/686250ccc9888a9dc77e09a65f1d22a7ef04b650))
+* remove slash from marketplace plugin name ([15b1d0e](https://github.com/first-fluke/oh-my-agent/commit/15b1d0e5898e820ee7df2e00335617411469e1e8))
+
 ## [2.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.10.0...cli-v2.10.1) (2026-03-17)
 
 
