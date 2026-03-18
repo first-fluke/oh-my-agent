@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "2.11.2",
-  "releaseDate": "2026-03-18T11:07:58.709Z",
+  "releaseDate": "2026-03-18T14:17:14.159Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -121,7 +121,7 @@
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "17de045c7ff61f0c818a77a73764a9b0056c9c2f1fbe4d42490d28739a6da931",
+      "sha256": "39b217d2f7312f4b2b7a167cc3f0d2ff35c01647027fd2c46e0f329d8231db32",
       "size": 26
     },
     {
@@ -311,8 +311,8 @@
     },
     {
       "path": ".agents/skills/frontend-agent/SKILL.md",
-      "sha256": "bbe3e38344183ff2ef7fd214d96460de542cdd1274be5a39d684aee802ca6bcd",
-      "size": 6103
+      "sha256": "68d90dd32c091233214efb6580e4d33f7ea25b3de99b161d71d7139a32743ef0",
+      "size": 6402
     },
     {
       "path": ".agents/skills/frontend-agent/resources/checklist.md",
@@ -331,28 +331,28 @@
     },
     {
       "path": ".agents/skills/frontend-agent/resources/examples.md",
-      "sha256": "1a59963bdea83d894b1e7b70eced007d43f65b7d60a1c51d00f88f37fcc7644d",
-      "size": 2129
+      "sha256": "55a5ddf7d490753d0068b29252e2e79b37b2092ce4270bfc77bd47a8f2cb789c",
+      "size": 2139
     },
     {
       "path": ".agents/skills/frontend-agent/resources/execution-protocol.md",
-      "sha256": "f4ad6adca022bf60ac75040e05e1e41fefd75d826987872af36634a3d9bed217",
-      "size": 2208
+      "sha256": "d93d260aecee37e4000f00f5b3a82a8b1d0d0900e3accd1051c96f52b074eff2",
+      "size": 2236
     },
     {
       "path": ".agents/skills/frontend-agent/resources/snippets.md",
-      "sha256": "0a4c2b21a755c8bf7d7c85e2333cc9775bf20e01b2962533d4ca499ca14f5f47",
-      "size": 5134
+      "sha256": "cc83829de1e58c441bbab245c5aa7a6214610222e358e27a6a6119f0d0ea4b30",
+      "size": 6058
     },
     {
       "path": ".agents/skills/frontend-agent/resources/tailwind-rules.md",
-      "sha256": "34472ab5b5e46ecdaf51114652c7c0d5b3540b49d86fd4cbeb6b9d4bbcb9930b",
-      "size": 6657
+      "sha256": "99b9f27def43872358d52ce33fdd8ae191d6a3e1b423f1abef352603a6f8c82a",
+      "size": 6522
     },
     {
       "path": ".agents/skills/frontend-agent/resources/tech-stack.md",
-      "sha256": "6241dce75ebe4ee3746874edb6909c3ec1b3b9cca4884ab9ceb9263977d8c49e",
-      "size": 1115
+      "sha256": "9e41d88f070a583db91f26a6b645bc356787b01416e4f9cc080f8cd480c2b98c",
+      "size": 909
     },
     {
       "path": ".agents/skills/mobile-agent/SKILL.md",
