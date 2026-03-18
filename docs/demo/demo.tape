@@ -6,7 +6,7 @@ Output web/public/oh-my-ag.mp4
 Output docs/demo/oh-my-ag.gif
 
 Set Shell "bash"
-Set FontFamily "JetBrains Mono"
+Set FontFamily "Hack Nerd Font"
 Set FontSize 16
 Set Width 1200
 Set Height 620
