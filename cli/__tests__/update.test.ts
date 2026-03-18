@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import * as skills from "../lib/skills.js";
 
 vi.mock("../lib/manifest.js", () => ({

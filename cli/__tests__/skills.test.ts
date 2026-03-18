@@ -12,6 +12,7 @@ vi.mock("node:fs", () => ({
   existsSync: vi.fn(),
   mkdirSync: vi.fn(),
   cpSync: vi.fn(),
+  readdirSync: vi.fn(),
 }));
 
 describe("skills.ts - Workflow and Config Installation", () => {
@@ -55,12 +56,31 @@ describe("skills.ts - Workflow and Config Installation", () => {
   });
 
   describe("installConfigs", () => {
-    it("should copy config directory when it exists", () => {
+    it("should skip existing config files by default", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+        { name: "user-preferences.yaml", isDirectory: () => false },
+      ]);
+
+      installConfigs(mockSourceDir, mockTargetDir);
+
+      // existsSync returns true for dest file, so cpSync should NOT be called for config files
+      // Only mkdirSync should be called
+      expect(fs.cpSync).not.toHaveBeenCalledWith(
+        join(mockSourceDir, ".agents", "config"),
+        join(mockTargetDir, ".agents", "config"),
+        { recursive: true, force: true },
+      );
+    });
+
+    it("should overwrite config files with force flag", () => {
       (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
         true,
       );
 
-      installConfigs(mockSourceDir, mockTargetDir);
+      installConfigs(mockSourceDir, mockTargetDir, true);
 
       const configSrc = join(mockSourceDir, ".agents", "config");
       const configDest = join(mockTargetDir, ".agents", "config");
@@ -70,12 +90,29 @@ describe("skills.ts - Workflow and Config Installation", () => {
       });
     });
 
-    it("should copy mcp.json when it exists", () => {
+    it("should skip existing mcp.json by default", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        [],
+      );
+
+      installConfigs(mockSourceDir, mockTargetDir);
+
+      const mcpDest = join(mockTargetDir, ".agents", "mcp.json");
+      expect(fs.cpSync).not.toHaveBeenCalledWith(
+        join(mockSourceDir, ".agents", "mcp.json"),
+        mcpDest,
+      );
+    });
+
+    it("should overwrite mcp.json with force flag", () => {
       (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
         true,
       );
 
-      installConfigs(mockSourceDir, mockTargetDir);
+      installConfigs(mockSourceDir, mockTargetDir, true);
 
       const mcpSrc = join(mockSourceDir, ".agents", "mcp.json");
       const mcpDest = join(mockTargetDir, ".agents", "mcp.json");

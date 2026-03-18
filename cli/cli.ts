@@ -14,8 +14,8 @@ import { usage } from "./commands/usage.js";
 import { verify } from "./commands/verify.js";
 import { visualize } from "./commands/visualize.js";
 import { startDashboard } from "./dashboard.js";
-import { startTerminalDashboard } from "./terminal-dashboard.js";
 import pkg from "./package.json";
+import { startTerminalDashboard } from "./terminal-dashboard.js";
 
 const VERSION = pkg.version;
 const JSON_OUTPUT_ENV = "OH_MY_AG_OUTPUT_FORMAT";
@@ -439,9 +439,10 @@ addOutputOptions(
 program
   .command("update")
   .description("Update skills to latest version from registry")
+  .option("-f, --force", "Overwrite user-customized config files")
   .action(
-    runAction(async () => {
-      await update();
+    runAction(async (options: { force?: boolean }) => {
+      await update(options.force ?? false);
     }),
   );
 

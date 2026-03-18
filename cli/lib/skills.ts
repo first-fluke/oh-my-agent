@@ -153,19 +153,41 @@ export function installWorkflows(sourceDir: string, targetDir: string): void {
   cpSync(src, dest, { recursive: true, force: true });
 }
 
-export function installConfigs(sourceDir: string, targetDir: string): void {
+export function installConfigs(
+  sourceDir: string,
+  targetDir: string,
+  force = false,
+): void {
   const configSrc = join(sourceDir, ".agents", "config");
   if (existsSync(configSrc)) {
     const configDest = join(targetDir, ".agents", "config");
     mkdirSync(configDest, { recursive: true });
-    cpSync(configSrc, configDest, { recursive: true, force: true });
+
+    if (force) {
+      cpSync(configSrc, configDest, { recursive: true, force: true });
+    } else {
+      // Only copy config files that don't already exist (preserve user customizations)
+      for (const entry of readdirSync(configSrc, { withFileTypes: true })) {
+        const destPath = join(configDest, entry.name);
+        if (!existsSync(destPath)) {
+          cpSync(
+            join(configSrc, entry.name),
+            destPath,
+            entry.isDirectory() ? { recursive: true } : {},
+          );
+        }
+      }
+    }
   }
 
   const mcpSrc = join(sourceDir, ".agents", "mcp.json");
   if (existsSync(mcpSrc)) {
     const agentDir = join(targetDir, ".agents");
     mkdirSync(agentDir, { recursive: true });
-    cpSync(mcpSrc, join(agentDir, "mcp.json"));
+    const mcpDest = join(agentDir, "mcp.json");
+    if (force || !existsSync(mcpDest)) {
+      cpSync(mcpSrc, mcpDest);
+    }
   }
 }
 
@@ -209,10 +231,7 @@ export function installClaudeSkills(
  * entry in destDir if it exists as a non-directory (symlink or file).
  * Prevents cpSync from failing when overwriting symlinks with directories.
  */
-function clearConflictingEntries(
-  sourceDir: string,
-  destDir: string,
-): void {
+function clearConflictingEntries(sourceDir: string, destDir: string): void {
   if (!existsSync(destDir)) return;
 
   try {

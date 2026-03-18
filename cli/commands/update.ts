@@ -1,4 +1,4 @@
-import { cpSync } from "node:fs";
+import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -16,7 +16,7 @@ import {
 } from "../lib/skills.js";
 import { downloadAndExtract } from "../lib/tarball.js";
 
-export async function update(): Promise<void> {
+export async function update(force = false): Promise<void> {
   console.clear();
   p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent update ")));
 
@@ -44,19 +44,36 @@ export async function update(): Promise<void> {
       return;
     }
 
-    spinner.message(
-      `Downloading ${pc.cyan(remoteManifest.version)}...`,
-    );
+    spinner.message(`Downloading ${pc.cyan(remoteManifest.version)}...`);
 
     const { dir: repoDir, cleanup } = await downloadAndExtract();
 
     try {
       spinner.message("Copying files...");
 
+      // Preserve user-customized config files before bulk copy
+      const userPrefsPath = join(
+        cwd,
+        ".agents",
+        "config",
+        "user-preferences.yaml",
+      );
+      const mcpPath = join(cwd, ".agents", "mcp.json");
+      const savedUserPrefs =
+        !force && existsSync(userPrefsPath)
+          ? readFileSync(userPrefsPath)
+          : null;
+      const savedMcp =
+        !force && existsSync(mcpPath) ? readFileSync(mcpPath) : null;
+
       cpSync(join(repoDir, ".agents"), join(cwd, ".agents"), {
         recursive: true,
         force: true,
       });
+
+      // Restore user-customized config files
+      if (savedUserPrefs) writeFileSync(userPrefsPath, savedUserPrefs);
+      if (savedMcp) writeFileSync(mcpPath, savedMcp);
 
       await saveLocalVersion(cwd, remoteManifest.version);
 
