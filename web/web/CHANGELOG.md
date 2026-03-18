@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/first-fluke/oh-my-agent/compare/web-v0.2.5...web-v0.2.6) (2026-03-18)
+
+
+### Documentation
+
+* **web:** add missing agents and workflows across all 11 languages ([998924f](https://github.com/first-fluke/oh-my-agent/commit/998924fb38da8ec59cb93910217c40f149d478b7))
+
 ## [0.2.5](https://github.com/first-fluke/oh-my-agent/compare/web-v0.2.4...web-v0.2.5) (2026-03-16)
 
 
