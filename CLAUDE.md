@@ -6,9 +6,9 @@
 - **응답 언어**: 한국어 (`.agents/config/user-preferences.yaml` → `language: ko`)
 
 ## 아키텍처
-- **13 도메인 Skills**: `.agents/skills/` (심링크로 `.claude/skills/`에 노출)
-- **11 Workflows**: `.agents/workflows/` (`.claude/skills/`에 네이티브 skill로 매핑)
-- **7 서브에이전트**: `.claude/agents/` (Task tool로 스폰)
+- **13 도메인 Skills**: `.agents/skills/`
+- **11 Workflows**: `.agents/workflows/` (`skills/`에 네이티브 skill로 매핑)
+- **7 서브에이전트**: `agents/` (Task tool로 스폰)
 
 ## 네이티브 모드 매핑
 
@@ -33,7 +33,7 @@
 3. `.agents/skills/_shared/prompt-structure.md` — 4요소: Goal, Context, Constraints, Done When
 
 ## 서브에이전트 스폰 규칙
-- `.claude/agents/*.md` 정의 → Task tool로 스폰
+- `agents/*.md` 정의 → Task tool로 스폰
 - 병렬 스폰: 같은 메시지에서 복수 Task tool 호출
 - 결과: Task tool이 동기 반환 (CLI 폴링 불필요)
 - 에이전트 결과: `.agents/results/result-{agent}.md`에 기록
