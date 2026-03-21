@@ -11,12 +11,11 @@ Orchestrate 10 specialized domain agents (PM, Frontend, Backend, DB, Mobile, QA,
 ## Table of Contents
 
 - [What Is This?](#what-is-this)
-- [Architecture](#architecture)
 - [Why Different](#why-different)
 - [Quick Start](#quick-start)
+- [Architecture](#architecture)
 - [Sponsors](#sponsors)
 - [License](#license)
-
 
 ## What Is This?
 
@@ -38,49 +37,6 @@ A collection of **Agent Skills** enabling collaborative multi-agent development.
 | **Commit** | Conventional Commits with project-specific rules | "commit", "save changes" |
 
 
-## Architecture
-
-```mermaid
-flowchart TD
-    subgraph Workflows["Workflows"]
-        direction TB
-        W0["/brainstorm"]
-        W1["/coordinate"]
-        W1b["/ultrawork"]
-        W2["/orchestrate"]
-        W3["/plan"]
-        W4["/review"]
-        W5["/debug"]
-        W6["/deepinit"]
-    end
-
-    subgraph Orchestration["Orchestration"]
-        direction TB
-        PM[oma-pm]
-        ORC[oma-orchestrator]
-    end
-
-    subgraph Domain["Domain Agents"]
-        direction TB
-        FE[oma-frontend]
-        BE[oma-backend]
-        DB[oma-db]
-        MB[oma-mobile]
-        TF[oma-tf-infra]
-    end
-
-    subgraph Quality["Quality"]
-        direction TB
-        QA[oma-qa]
-        DBG[oma-debug]
-    end
-
-    Workflows --> Orchestration
-    Orchestration --> Domain
-    Domain --> Quality
-    Quality --> CMT([oma-commit])
-```
-
 
 ## Why Different
 
@@ -89,6 +45,7 @@ flowchart TD
 - **Workflow-first orchestration**: planning, review, debug, and coordinated execution are first-class workflows, not afterthoughts.
 - **Standards-aware by design**: agents now carry focused guidance for ISO-driven planning, QA, database continuity/security, and infrastructure governance.
 - **Built for verification**: dashboards, manifest generation, shared execution protocols, and structured outputs favor traceability over vibe-only generation.
+
 
 
 
@@ -182,6 +139,52 @@ You'll also need at least one CLI tool:
 For dashboard setup and usage details, see [`web/content/en/guide/usage.md`](./web/content/en/guide/usage.md#real-time-dashboards).
 
 
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Workflows["Workflows"]
+        direction TB
+        W0["/brainstorm"]
+        W1["/coordinate"]
+        W1b["/ultrawork"]
+        W2["/orchestrate"]
+        W3["/plan"]
+        W4["/review"]
+        W5["/debug"]
+        W6["/deepinit"]
+    end
+
+    subgraph Orchestration["Orchestration"]
+        direction TB
+        PM[oma-pm]
+        ORC[oma-orchestrator]
+    end
+
+    subgraph Domain["Domain Agents"]
+        direction TB
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
+    end
+
+    subgraph Quality["Quality"]
+        direction TB
+        QA[oma-qa]
+        DBG[oma-debug]
+    end
+
+    Workflows --> Orchestration
+    Orchestration --> Domain
+    Domain --> Quality
+    Quality --> CMT([oma-commit])
+```
+
+
+
 ## Sponsors
 
 This project is maintained thanks to our generous sponsors.
@@ -218,11 +221,8 @@ This project is maintained thanks to our generous sponsors.
 See [SPONSORS.md](./SPONSORS.md) for a full list of supporters.
 
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=first-fluke/oh-my-agent&type=date&legend=bottom-right)](https://www.star-history.com/#first-fluke/oh-my-agent&type=date&legend=bottom-right)
-
 
 ## License
 
 MIT
+
