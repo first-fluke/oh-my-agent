@@ -17,6 +17,9 @@ It is not a formal external standard. It is the interoperability contract used b
 .agents/
 ├── skills/
 │   ├── _shared/
+│   │   ├── core/
+│   │   ├── conditional/
+│   │   └── runtime/
 │   ├── <skill-name>/
 │   │   ├── SKILL.md
 │   │   └── resources/
@@ -61,11 +64,10 @@ Shared, non-skill-specific materials live under:
 
 This includes:
 
-- execution protocols
-- context loading rules
-- memory protocol
-- quality principles
-- shared templates
+- `core/` for commonly referenced guides and rules
+- `conditional/` for protocols loaded only when a workflow reaches a trigger
+- `runtime/` for CLI/runtime-injected protocols
+- shared templates such as `core/api-contracts/`
 
 ## Workflows
 

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { checkStarred } from "../lib/github.js";
-import { migrateToAgents } from "../lib/migrate.js";
+import { migrateSharedLayout, migrateToAgents } from "../lib/migrate.js";
 import {
   type CliTool,
   createCliSymlinks,
@@ -124,6 +124,14 @@ export async function install(): Promise<void> {
         spinner.start("Installing Claude Code skills...");
         installClaudeSkills(repoDir, cwd);
         spinner.stop("Claude Code skills installed!");
+      }
+
+      const sharedLayoutMigrations = migrateSharedLayout(cwd);
+      if (sharedLayoutMigrations.length > 0) {
+        p.note(
+          sharedLayoutMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+          "Shared layout migration",
+        );
       }
     } finally {
       cleanup();

@@ -160,11 +160,11 @@ bunx oh-my-agent
 | 预设 | 技能 |
 |------|------|
 | ✨ 全部 | 所有技能 |
-| 🌐 全栈 | brainstorm, frontend, backend, db, pm, qa, debug, commit |
-| 🎨 前端 | brainstorm, frontend, pm, qa, debug, commit |
-| ⚙️ 后端 | brainstorm, backend, db, pm, qa, debug, commit |
-| 📱 移动端 | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
+| 🌐 全栈 | oma-brainstorm, oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-commit |
+| 🎨 前端 | oma-brainstorm, oma-frontend, oma-pm, oma-qa, oma-debug, oma-commit |
+| ⚙️ 后端 | oma-brainstorm, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-commit |
+| 📱 移动端 | oma-brainstorm, oma-mobile, oma-pm, oma-qa, oma-debug, oma-commit |
+| 🚀 DevOps | oma-brainstorm, oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-commit |
 
 ### 选项 3：全局安装（用于编排器）
 
@@ -178,10 +178,10 @@ bun install --global oh-my-agent
 
 | CLI | 安装 | 认证 |
 |-----|------|------|
-| Gemini | `bun install --global @google/gemini-cli` | `gemini auth` |
-| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude auth` |
-| Codex | `bun install --global @openai/codex` | `codex auth` |
-| Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
+| Gemini | `bun install --global @google/gemini-cli` | Auto on first `gemini` run |
+| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | Auto on first `claude` run |
+| Codex | `bun install --global @openai/codex` | `codex login` |
+| Qwen | `bun install --global @qwen-code/qwen-code` | `/auth` inside CLI |
 
 ### 选项 4：集成到现有项目
 

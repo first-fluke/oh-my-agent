@@ -87,6 +87,13 @@ describe("agent command", () => {
         const target = pathArg.toString();
         if (target.includes("user-preferences.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
+        if (
+          target.includes(
+            ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
+          )
+        ) {
+          return true;
+        }
         if (target.includes("prompt.md")) return true;
         if (target === "/tmp") return true;
         return false;
@@ -103,6 +110,13 @@ describe("agent command", () => {
         (pathArg: fs.PathLike) => {
           const target = pathArg.toString();
           if (target.includes("prompt.md")) return "prompt content";
+          if (
+            target.includes(
+              ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
+            )
+          ) {
+            return "execution protocol";
+          }
           return "";
         },
       );
@@ -121,7 +135,10 @@ describe("agent command", () => {
 
       expect(child_process.spawn).toHaveBeenCalledWith(
         "gemini",
-        expect.arrayContaining(["-p", "prompt content"]),
+        expect.arrayContaining([
+          "-p",
+          "prompt content\n\nexecution protocol",
+        ]),
         expect.objectContaining({ cwd: expect.stringContaining("/tmp") }),
       );
       expect(mockFsFunctions.writeFileSync).toHaveBeenCalledWith(

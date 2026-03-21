@@ -166,11 +166,11 @@ Wybierz typ projektu, a umiejętności zostaną zainstalowane w `.agents/skills/
 | Predefiniowany | Umiejętności |
 |--------|--------|
 | ✨ All | Wszystkie |
-| 🌐 Fullstack | brainstorm, frontend, backend, db, pm, qa, debug, commit |
-| 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
-| ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
-| 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
+| 🌐 Fullstack | oma-brainstorm, oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-commit |
+| 🎨 Frontend | oma-brainstorm, oma-frontend, oma-pm, oma-qa, oma-debug, oma-commit |
+| ⚙️ Backend | oma-brainstorm, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-commit |
+| 📱 Mobile | oma-brainstorm, oma-mobile, oma-pm, oma-qa, oma-debug, oma-commit |
+| 🚀 DevOps | oma-brainstorm, oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-commit |
 
 ### Opcja 3: Instalacja globalna (Dla Orchestratora)
 
@@ -184,10 +184,10 @@ Potrzebujesz również co najmniej jednego narzędzia CLI:
 
 | CLI | Instalacja | Uwierzytelnianie |
 |-----|---------|------|
-| Gemini | `bun install --global @google/gemini-cli` | `gemini auth` |
-| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude auth` |
-| Codex | `bun install --global @openai/codex` | `codex auth` |
-| Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
+| Gemini | `bun install --global @google/gemini-cli` | Auto on first `gemini` run |
+| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | Auto on first `claude` run |
+| Codex | `bun install --global @openai/codex` | `codex login` |
+| Qwen | `bun install --global @qwen-code/qwen-code` | `/auth` inside CLI |
 
 ### Opcja 4: Integracja z istniejącym projektem
 

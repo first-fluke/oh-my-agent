@@ -132,8 +132,8 @@ Before submitting, run `resources/checklist.md`.
 
 ## Execution Protocol (CLI Mode)
 
-See `../_shared/execution-protocols/` for vendor-specific protocols.
-When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
+Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn`.
+Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ## References
 
@@ -145,11 +145,11 @@ When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
 - Tech stack: `resources/tech-stack.md`
 - Component template: `resources/component-template.tsx`
 - Tailwind rules: `resources/tailwind-rules.md`
-- Context loading: `../_shared/context-loading.md`
-- Reasoning templates: `../_shared/reasoning-templates.md`
-- Clarification: `../_shared/clarification-protocol.md`
-- Context budget: `../_shared/context-budget.md`
-- Lessons learned: `../_shared/lessons-learned.md`
+- Context loading: `../_shared/core/context-loading.md`
+- Reasoning templates: `../_shared/core/reasoning-templates.md`
+- Clarification: `../_shared/core/clarification-protocol.md`
+- Context budget: `../_shared/core/context-budget.md`
+- Lessons learned: `../_shared/core/lessons-learned.md`
 
 > [!IMPORTANT]
 > Treat `components/ui/*` as read-only. Create wrappers for customization.

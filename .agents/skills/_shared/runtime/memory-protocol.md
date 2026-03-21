@@ -1,6 +1,6 @@
 # Memory Protocol (CLI Mode)
 
-> **Note**: This file documents the default (Serena/MCP) memory protocol. For vendor-specific execution protocols, see `execution-protocols/`. The appropriate protocol is automatically injected by `oh-my-ag agent:spawn`.
+> **Note**: This file documents the default (Serena/MCP) memory protocol. Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn` from `execution-protocols/{vendor}.md`.
 
 When running as a CLI subagent, follow this protocol.
 
@@ -44,7 +44,7 @@ Memory base path is configurable via `memoryConfig.basePath` (default: `.serena/
 
 ## Experiment Tracking (Optional Extension)
 
-When a workflow activates Quality Score measurement (see `quality-score.md`), agents record experiments using the same memory tools.
+When a workflow activates Quality Score measurement (see `../conditional/quality-score.md`), agents record experiments using the same memory tools.
 
 ### Experiment Ledger Location
 
@@ -71,7 +71,7 @@ Row format: `| # | Phase | Agent | Hypothesis | Score Before | Score After | Del
 | Exploration experiments | Orchestrator (inline, after scoring) |
 | Final summary | Orchestrator (at session end) |
 
-See `experiment-ledger.md` for full format and analysis protocol.
+See `../conditional/experiment-ledger.md` for full format and analysis protocol.
 
 ---
 

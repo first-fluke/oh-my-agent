@@ -12,7 +12,7 @@ This saves context window and prevents confusion from irrelevant information.
 2. `resources/execution-protocol.md` — Execution protocol
 
 ### Load at Task Start
-3. `../_shared/difficulty-guide.md` — Difficulty assessment (Step 0)
+3. `../_shared/core/difficulty-guide.md` — Difficulty assessment (Step 0)
 
 ### Load Based on Difficulty
 4. **Simple**: Proceed to implementation without additional loading
@@ -22,13 +22,13 @@ This saves context window and prevents confusion from irrelevant information.
 ### Load During Execution as Needed
 7. `resources/checklist.md` — Load at Step 4 (Verify)
 8. `resources/error-playbook.md` — Load only when errors occur
-9. `../_shared/common-checklist.md` — For final verification of Complex tasks
-10. `../_shared/memory-protocol.md` — CLI mode only
+9. `../_shared/core/common-checklist.md` — For final verification of Complex tasks
+10. `../_shared/runtime/memory-protocol.md` — CLI mode only
 
 ### Load on Measurement / Exploration (Conditional)
-11. `../_shared/quality-score.md` — Load when Quality Score measurement is needed (VERIFY/SHIP gates)
-12. `../_shared/experiment-ledger.md` — Load when recording experiment results (after implementation changes)
-13. `../_shared/exploration-loop.md` — Load only when a gate fails twice on the same issue
+11. `../_shared/conditional/quality-score.md` — Load when Quality Score measurement is needed (VERIFY/SHIP gates)
+12. `../_shared/conditional/experiment-ledger.md` — Load when recording experiment results (after implementation changes)
+13. `../_shared/conditional/exploration-loop.md` — Load only when a gate fails twice on the same issue
 
 ---
 

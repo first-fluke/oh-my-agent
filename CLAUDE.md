@@ -28,9 +28,9 @@
 | `/deepinit` | `deepinit.md` | inline 프로젝트 초기화 |
 
 ## 필수 참조 (모든 skill 실행 전)
-1. `.agents/skills/_shared/skill-routing.md` — 에이전트 라우팅
-2. `.agents/skills/_shared/context-loading.md` — 리소스 선택적 로딩
-3. `.agents/skills/_shared/prompt-structure.md` — 4요소: Goal, Context, Constraints, Done When
+1. `.agents/skills/_shared/core/skill-routing.md` — 에이전트 라우팅
+2. `.agents/skills/_shared/core/context-loading.md` — 리소스 선택적 로딩
+3. `.agents/skills/_shared/core/prompt-structure.md` — 4요소: Goal, Context, Constraints, Done When
 
 ## 서브에이전트 스폰 규칙
 - `.claude/agents/*.md` 정의 → Task tool로 스폰

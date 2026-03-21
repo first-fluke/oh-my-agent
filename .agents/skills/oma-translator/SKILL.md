@@ -162,12 +162,12 @@ Before submitting, verify against `resources/translation-rubric.md` and `resourc
 
 ## Execution Protocol (CLI Mode)
 
-See `../_shared/execution-protocols/` for vendor-specific protocols.
-When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
+Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn`.
+Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ## References
 
 - Translation rubric: `resources/translation-rubric.md`
 - Anti-AI patterns: `resources/anti-ai-patterns.md`
-- Context loading: `../_shared/context-loading.md`
-- Quality principles: `../_shared/quality-principles.md`
+- Context loading: `../_shared/core/context-loading.md`
+- Quality principles: `../_shared/core/quality-principles.md`

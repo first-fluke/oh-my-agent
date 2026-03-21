@@ -1,12 +1,15 @@
 import {
   existsSync,
   lstatSync,
+  mkdirSync,
   readdirSync,
+  readFileSync,
   renameSync,
   rmSync,
   unlinkSync,
+  writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 const _LEGACY_DIRS = [".agent", ".cursor/skills"] as const;
 
@@ -140,6 +143,181 @@ export function migrateToAgents(targetDir: string): string[] {
         rmSync(oldPath);
         actions.push(`agents/${oldName} (removed, replaced by ${newName})`);
       }
+    }
+  }
+
+  return actions;
+}
+
+const SHARED_LAYOUT_MIGRATIONS = [
+  {
+    from: ".agents/skills/_shared/api-contracts/README.md",
+    to: ".agents/skills/_shared/core/api-contracts/README.md",
+  },
+  {
+    from: ".agents/skills/_shared/api-contracts/template.md",
+    to: ".agents/skills/_shared/core/api-contracts/template.md",
+  },
+  {
+    from: ".agents/skills/_shared/clarification-protocol.md",
+    to: ".agents/skills/_shared/core/clarification-protocol.md",
+  },
+  {
+    from: ".agents/skills/_shared/common-checklist.md",
+    to: ".agents/skills/_shared/core/common-checklist.md",
+  },
+  {
+    from: ".agents/skills/_shared/context-budget.md",
+    to: ".agents/skills/_shared/core/context-budget.md",
+  },
+  {
+    from: ".agents/skills/_shared/context-loading.md",
+    to: ".agents/skills/_shared/core/context-loading.md",
+  },
+  {
+    from: ".agents/skills/_shared/difficulty-guide.md",
+    to: ".agents/skills/_shared/core/difficulty-guide.md",
+  },
+  {
+    from: ".agents/skills/_shared/lessons-learned.md",
+    to: ".agents/skills/_shared/core/lessons-learned.md",
+  },
+  {
+    from: ".agents/skills/_shared/prompt-structure.md",
+    to: ".agents/skills/_shared/core/prompt-structure.md",
+  },
+  {
+    from: ".agents/skills/_shared/quality-principles.md",
+    to: ".agents/skills/_shared/core/quality-principles.md",
+  },
+  {
+    from: ".agents/skills/_shared/reasoning-templates.md",
+    to: ".agents/skills/_shared/core/reasoning-templates.md",
+  },
+  {
+    from: ".agents/skills/_shared/session-metrics.md",
+    to: ".agents/skills/_shared/core/session-metrics.md",
+  },
+  {
+    from: ".agents/skills/_shared/skill-routing.md",
+    to: ".agents/skills/_shared/core/skill-routing.md",
+  },
+  {
+    from: ".agents/skills/_shared/experiment-ledger.md",
+    to: ".agents/skills/_shared/conditional/experiment-ledger.md",
+  },
+  {
+    from: ".agents/skills/_shared/exploration-loop.md",
+    to: ".agents/skills/_shared/conditional/exploration-loop.md",
+  },
+  {
+    from: ".agents/skills/_shared/quality-score.md",
+    to: ".agents/skills/_shared/conditional/quality-score.md",
+  },
+  {
+    from: ".agents/skills/_shared/memory-protocol.md",
+    to: ".agents/skills/_shared/runtime/memory-protocol.md",
+  },
+  {
+    from: ".agents/skills/_shared/execution-protocols/claude.md",
+    to: ".agents/skills/_shared/runtime/execution-protocols/claude.md",
+  },
+  {
+    from: ".agents/skills/_shared/execution-protocols/codex.md",
+    to: ".agents/skills/_shared/runtime/execution-protocols/codex.md",
+  },
+  {
+    from: ".agents/skills/_shared/execution-protocols/gemini.md",
+    to: ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
+  },
+  {
+    from: ".agents/skills/_shared/execution-protocols/qwen.md",
+    to: ".agents/skills/_shared/runtime/execution-protocols/qwen.md",
+  },
+  {
+    from: ".agents/skills/_shared/multi-review-protocol.md",
+    to: ".agents/workflows/ultrawork/resources/multi-review-protocol.md",
+  },
+  {
+    from: ".agents/skills/_shared/phase-gates.md",
+    to: ".agents/workflows/ultrawork/resources/phase-gates.md",
+  },
+] as const;
+
+const LEGACY_SHARED_DIRS = [
+  ".agents/skills/_shared/api-contracts",
+  ".agents/skills/_shared/execution-protocols",
+] as const;
+
+function toBackupPath(targetDir: string, legacyPath: string): string {
+  const normalized = legacyPath.replace(/^\.agents\//, "");
+  return join(
+    targetDir,
+    ".agents",
+    ".migration-backup",
+    "shared-layout-v2",
+    normalized,
+  );
+}
+
+function toBackupLabel(legacyPath: string): string {
+  return join(
+    ".agents",
+    ".migration-backup",
+    "shared-layout-v2",
+    legacyPath.replace(/^\.agents\//, ""),
+  );
+}
+
+/**
+ * Migrate pre-v2.12 shared-resource layout to the nested core/conditional/runtime layout.
+ *
+ * Safe to call multiple times. If both legacy and target files exist:
+ * - identical content -> remove legacy path
+ * - different content -> back up the legacy file, then remove it
+ */
+export function migrateSharedLayout(targetDir: string): string[] {
+  const actions: string[] = [];
+
+  for (const migration of SHARED_LAYOUT_MIGRATIONS) {
+    const oldPath = join(targetDir, migration.from);
+    const newPath = join(targetDir, migration.to);
+
+    if (!existsSync(oldPath)) continue;
+
+    if (!existsSync(newPath)) {
+      mkdirSync(dirname(newPath), { recursive: true });
+      renameSync(oldPath, newPath);
+      actions.push(`${migration.from} → ${migration.to}`);
+      continue;
+    }
+
+    const oldContent = readFileSync(oldPath, "utf-8");
+    const newContent = readFileSync(newPath, "utf-8");
+
+    if (oldContent !== newContent) {
+      const backupPath = toBackupPath(targetDir, migration.from);
+      const backupLabel = toBackupLabel(migration.from);
+      mkdirSync(dirname(backupPath), { recursive: true });
+      writeFileSync(backupPath, oldContent, "utf-8");
+      actions.push(`${migration.from} → ${backupLabel} (backup)`);
+    }
+
+    rmSync(oldPath, { force: true });
+    actions.push(`${migration.from} (removed legacy path)`);
+  }
+
+  for (const legacyDir of LEGACY_SHARED_DIRS) {
+    const dirPath = join(targetDir, legacyDir);
+    if (!existsSync(dirPath)) continue;
+
+    try {
+      if (readdirSync(dirPath).length === 0) {
+        rmSync(dirPath, { recursive: true, force: true });
+        actions.push(`${legacyDir} (removed empty dir)`);
+      }
+    } catch {
+      // Best-effort cleanup
     }
   }
 

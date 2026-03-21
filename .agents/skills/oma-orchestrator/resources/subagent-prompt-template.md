@@ -40,7 +40,7 @@ If you are running low on turns, prioritize:
 
 ## Execution Protocol
 
-The execution protocol (state management, progress reporting, result format) is automatically injected by `oh-my-ag agent:spawn` based on the configured CLI vendor. See `.agents/skills/_shared/execution-protocols/` for vendor-specific protocols.
+The execution protocol (state management, progress reporting, result format) is automatically injected by `oh-my-ag agent:spawn` based on the configured CLI vendor. Source files live under `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
 
 Follow the injected execution protocol for:
 - Reading your task assignment on start

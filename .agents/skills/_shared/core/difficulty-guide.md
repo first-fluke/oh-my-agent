@@ -44,7 +44,7 @@ All agents assess task difficulty at the start and apply the appropriate protoco
 3. **Step 2.5 (Checkpoint)**: Record plan in `progress-{agent-id}.md`
 4. Step 3 (Implement): Full
 5. **Step 3.5 (Mid-check)**: Update progress at 50% implementation + verify direction
-6. Step 4 (Verify): Full + also execute `../_shared/common-checklist.md`
+6. Step 4 (Verify): Full + also execute `../_shared/core/common-checklist.md`
 
 ---
 

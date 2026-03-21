@@ -139,7 +139,7 @@ Human review is reserved for final approval, not catching lint errors.
 
 ## Clarification Debt (CD) Monitoring
 
-Track user corrections during session execution. See `../_shared/session-metrics.md` for full protocol.
+Track user corrections during session execution. See `../_shared/core/session-metrics.md` for full protocol.
 
 ### Event Classification
 When user sends feedback during session:
@@ -173,13 +173,13 @@ At session end, if CD >= 50:
 - Config: `config/cli-config.yaml`
 - Scripts: `scripts/spawn-agent.sh`, `scripts/parallel-run.sh`, `scripts/verify.sh`
 - Task templates: `templates/`
-- Skill routing: `../_shared/skill-routing.md`
+- Skill routing: `../_shared/core/skill-routing.md`
 - Verification: `scripts/verify.sh <agent-type>`
-- Session metrics: `../_shared/session-metrics.md`
-- API contracts: `../_shared/api-contracts/`
-- Context loading: `../_shared/context-loading.md`
-- Difficulty guide: `../_shared/difficulty-guide.md`
-- Reasoning templates: `../_shared/reasoning-templates.md`
-- Clarification protocol: `../_shared/clarification-protocol.md`
-- Context budget: `../_shared/context-budget.md`
-- Lessons learned: `../_shared/lessons-learned.md`
+- Session metrics: `../_shared/core/session-metrics.md`
+- API contracts: `../_shared/core/api-contracts/`
+- Context loading: `../_shared/core/context-loading.md`
+- Difficulty guide: `../_shared/core/difficulty-guide.md`
+- Reasoning templates: `../_shared/core/reasoning-templates.md`
+- Clarification protocol: `../_shared/core/clarification-protocol.md`
+- Context budget: `../_shared/core/context-budget.md`
+- Lessons learned: `../_shared/core/lessons-learned.md`

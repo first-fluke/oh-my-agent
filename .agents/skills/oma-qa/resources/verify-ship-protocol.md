@@ -70,7 +70,7 @@ Execution guide for VERIFY Phase (Steps 6-8) and SHIP Phase (Steps 14-17) in ult
 - [ ] lint passes
 - [ ] type check passes
 - [ ] test coverage >= 80%
-- [ ] `_shared/common-checklist.md` passes
+- [ ] `_shared/core/common-checklist.md` passes
 
 ---
 

@@ -44,12 +44,12 @@ Follow the brainstorm workflow step by step:
 
 ## Execution Protocol (CLI Mode)
 
-See `../_shared/execution-protocols/` for vendor-specific protocols.
-When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
+Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn`.
+Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ## References
-- Context loading: `../_shared/context-loading.md`
-- Reasoning templates: `../_shared/reasoning-templates.md`
-- Clarification protocol: `../_shared/clarification-protocol.md`
-- Quality principles: `../_shared/quality-principles.md`
-- Skill routing: `../_shared/skill-routing.md`
+- Context loading: `../_shared/core/context-loading.md`
+- Reasoning templates: `../_shared/core/reasoning-templates.md`
+- Clarification protocol: `../_shared/core/clarification-protocol.md`
+- Quality principles: `../_shared/core/quality-principles.md`
+- Skill routing: `../_shared/core/skill-routing.md`

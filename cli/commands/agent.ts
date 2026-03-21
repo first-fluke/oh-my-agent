@@ -530,6 +530,7 @@ function loadExecutionProtocol(vendor: string, cwd: string): string {
       ".agents",
       "skills",
       "_shared",
+      "runtime",
       "execution-protocols",
       `${vendor}.md`,
     ),

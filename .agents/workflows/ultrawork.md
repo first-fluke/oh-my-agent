@@ -13,18 +13,18 @@ description: Ultrawork - high-quality 5-phase development workflow with 11 revie
   - Tool names: configurable via `memoryConfig.tools` in `mcp.json`
   - Do NOT use raw file reads or grep as substitutes. MCP tools are the primary interface for code and memory operations.
 - **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Core Rules.
-- **Follow the context-loading guide.** Read `.agents/skills/_shared/context-loading.md` and load only task-relevant resources.
+- **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
 
 ---
 
 ## Phase 0: Initialization (DO NOT SKIP)
 
 1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
-2. Read `.agents/skills/_shared/context-loading.md` for resource loading strategy.
-3. Read `.agents/skills/_shared/memory-protocol.md` for memory protocol.
-4. Read `.agents/skills/_shared/multi-review-protocol.md` (11 review guides)
-5. Read `.agents/skills/_shared/quality-principles.md` (4 principles)
-6. Read `.agents/skills/_shared/phase-gates.md` (gate definitions)
+2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
+3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
+4. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (11 review guides)
+5. Read `.agents/skills/_shared/core/quality-principles.md` (4 principles)
+6. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
 7. Record session start using memory write tool:
    - Create `session-ultrawork.md` in the memory base path
    - Include: session start time, user request summary, workflow version (ultrawork)
@@ -76,8 +76,8 @@ Activate PM Agent to execute Steps 1-4:
 Spawn Implementation Agents (Backend/Frontend/Mobile) in parallel.
 Command:
 ```bash
-oh-my-ag agent:spawn backend "Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/context-loading.md rules." session-id -w ./backend &
-oh-my-ag agent:spawn frontend "Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/context-loading.md rules." session-id -w ./frontend &
+oh-my-ag agent:spawn backend "Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./backend &
+oh-my-ag agent:spawn frontend "Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./frontend &
 wait
 ```
 
@@ -122,7 +122,7 @@ If no measurement tools: skip — gates fall back to binary checklist.
 ### Step 6-8: QA Verification
 // turbo
 Spawn QA Agent to execute Steps 6-8.
-Command: `oh-my-ag agent:spawn qa-agent "Execute Phase 3 Verification. Step 6: Alignment Review. Step 7: Security/Bug Review (npm audit, OWASP). Step 8: Improvement/Regression Review. IMPORTANT: Follow .agents/skills/_shared/context-loading.md rules." session-id`
+Command: `oh-my-ag agent:spawn qa-agent "Execute Phase 3 Verification. Step 6: Alignment Review. Step 7: Security/Bug Review (npm audit, OWASP). Step 8: Improvement/Regression Review. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id`
 
 ---
 
@@ -179,7 +179,7 @@ If baseline was measured at Step 5.2:
 ### Step 9-13: Deep Refinement
 // turbo
 Spawn Debug Agent (or Senior Dev Agent) to execute Steps 9-13.
-Command: `oh-my-ag agent:spawn debug-agent "Execute Phase 4 Refine. Step 9: Split large files. Step 10: Integration check. Step 11: Side Effect analysis (find_referencing_symbols). Step 12: Consistency review. Step 13: Cleanup dead code. IMPORTANT: Follow .agents/skills/_shared/context-loading.md rules." session-id`
+Command: `oh-my-ag agent:spawn debug-agent "Execute Phase 4 Refine. Step 9: Split large files. Step 10: Integration check. Step 11: Side Effect analysis (find_referencing_symbols). Step 12: Consistency review. Step 13: Cleanup dead code. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id`
 
 ---
 
@@ -236,7 +236,7 @@ If baseline was measured at Step 5.2:
 ### Step 14-17: Final QA & Deployment Readiness
 // turbo
 Spawn QA Agent to execute Steps 14-17.
-Command: `oh-my-ag agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (lint/coverage). Step 15: UX Flow Verification. Step 16: Related Issues Review. Step 17: Deployment Readiness. IMPORTANT: Follow .agents/skills/_shared/context-loading.md rules." session-id`
+Command: `oh-my-ag agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (lint/coverage). Step 15: UX Flow Verification. Step 16: Related Issues Review. Step 17: Deployment Readiness. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id`
 
 ---
 

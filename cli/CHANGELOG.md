@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.12.0...cli-v3.0.0) (2026-03-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* All skill directory names changed from `{domain}-agent` to `oma-{domain}` prefix (e.g. `backend-agent` → `oma-backend`). Agent files renamed from `-impl` to role names (e.g. `backend-impl` → `backend-engineer`). `workflow-guide` renamed to `oma-coordination`.
+
+### Refactoring
+
+* rename skills to oma-* prefix and agents to role-based names ([766b1e2](https://github.com/first-fluke/oh-my-agent/commit/766b1e208f8397fd0835803e69b71b9a03a32ce4))
+
 ## [2.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.11.3...cli-v2.12.0) (2026-03-21)
 
 

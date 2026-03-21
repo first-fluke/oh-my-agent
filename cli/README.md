@@ -103,6 +103,7 @@ Domain skills (oma-backend, oma-frontend, etc.) remain as symlinks from `.agents
 
 - Skills live in `.agents/skills/<skill-name>/SKILL.md`
 - Shared resources live in `.agents/skills/_shared/`
+  and are grouped into `core/`, `conditional/`, and `runtime/`
 - Workflows live in `.agents/workflows/*.md`
 - Project config lives in `.agents/config/`
 - CLI metadata and packaging stay aligned through generated manifests
@@ -177,10 +178,10 @@ You'll also need at least one CLI tool:
 
 | CLI | Install | Auth |
 |-----|---------|------|
-| Gemini | `bun install --global @google/gemini-cli` | `gemini auth` |
-| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude auth` |
-| Codex | `bun install --global @openai/codex` | `codex auth` |
-| Qwen | `bun install --global @qwen-code/qwen` | `qwen auth` |
+| Gemini | `bun install --global @google/gemini-cli` | Auto on first `gemini` run |
+| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | Auto on first `claude` run |
+| Codex | `bun install --global @openai/codex` | `codex login` |
+| Qwen | `bun install --global @qwen-code/qwen-code` | `/auth` inside CLI |
 
 ### 2. Chat
 

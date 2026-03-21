@@ -29,8 +29,8 @@ Complex work is captured in plans with progress and decision logs. Plans live in
 ## Step 1: Analyze Scope
 
 1. **Decompose the request** using the prompt structure (Goal, Context, Constraints, Done When).
-   - See `_shared/prompt-structure.md` for the four-element framework.
-2. **Assess complexity** using `_shared/difficulty-guide.md`:
+   - See `_shared/core/prompt-structure.md` for the four-element framework.
+2. **Assess complexity** using `_shared/core/difficulty-guide.md`:
    - Simple → no exec-plan needed, execute directly
    - Medium → lightweight plan (skip Step 3)
    - Complex → full exec-plan with all sections
@@ -98,8 +98,8 @@ Generate `docs/exec-plans/active/{plan-name}.md` using this template:
 
 If the plan involves cross-boundary work (frontend ↔ backend, service ↔ service):
 
-1. Define API contracts using `_shared/api-contracts/template.md`.
-2. Save to `_shared/api-contracts/{contract-name}.md`.
+1. Define API contracts using `_shared/core/api-contracts/template.md`.
+2. Save to `_shared/core/api-contracts/{contract-name}.md`.
 3. Reference from the exec-plan.
 
 ---

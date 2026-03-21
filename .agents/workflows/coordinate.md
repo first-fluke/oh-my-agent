@@ -13,15 +13,15 @@ description: Coordinate multiple agents for a complex multi-domain project using
   - Tool names: configurable via `memoryConfig.tools` in `mcp.json`
   - Do NOT use raw file reads or grep as substitutes. MCP tools are the primary interface for code and memory operations.
 - **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Core Rules.
-- **Follow the context-loading guide.** Read `.agents/skills/_shared/context-loading.md` and load only task-relevant resources.
+- **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
 
 ---
 
 ## Step 0: Preparation (DO NOT SKIP)
 
 1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
-2. Read `.agents/skills/_shared/context-loading.md` for resource loading strategy.
-3. Read `.agents/skills/_shared/memory-protocol.md` for memory protocol.
+2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
+3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Record session start using memory write tool:
    - Create `session-coordinate.md` in the memory base path
    - Include: session start time, user request summary.

@@ -227,13 +227,13 @@ Follow the core workflow step by step:
 
 ## Execution Protocol (CLI Mode)
 
-See `../_shared/execution-protocols/` for vendor-specific protocols.
-When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
+Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn`.
+Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ## References
 
-- Clarification: `../_shared/clarification-protocol.md`
-- Difficulty assessment: `../_shared/difficulty-guide.md`
+- Clarification: `../_shared/core/clarification-protocol.md`
+- Difficulty assessment: `../_shared/core/difficulty-guide.md`
 
 ## Knowledge Reference
 

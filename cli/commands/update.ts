@@ -7,7 +7,7 @@ import {
   getLocalVersion,
   saveLocalVersion,
 } from "../lib/manifest.js";
-import { migrateToAgents } from "../lib/migrate.js";
+import { migrateSharedLayout, migrateToAgents } from "../lib/migrate.js";
 import {
   createCliSymlinks,
   detectExistingCliSymlinkDirs,
@@ -39,6 +39,13 @@ export async function update(force = false): Promise<void> {
     const localVersion = await getLocalVersion(cwd);
 
     if (localVersion === remoteManifest.version) {
+      const sharedLayoutMigrations = migrateSharedLayout(cwd);
+      if (sharedLayoutMigrations.length > 0) {
+        p.note(
+          sharedLayoutMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+          "Shared layout migration",
+        );
+      }
       spinner.stop(pc.green("Already up to date!"));
       p.outro(`Current version: ${pc.cyan(localVersion)}`);
       return;
@@ -74,6 +81,14 @@ export async function update(force = false): Promise<void> {
       // Restore user-customized config files
       if (savedUserPrefs) writeFileSync(userPrefsPath, savedUserPrefs);
       if (savedMcp) writeFileSync(mcpPath, savedMcp);
+
+      const sharedLayoutMigrations = migrateSharedLayout(cwd);
+      if (sharedLayoutMigrations.length > 0) {
+        p.note(
+          sharedLayoutMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+          "Shared layout migration",
+        );
+      }
 
       await saveLocalVersion(cwd, remoteManifest.version);
 

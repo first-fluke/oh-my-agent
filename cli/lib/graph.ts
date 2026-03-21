@@ -44,7 +44,11 @@ const AGENT_SKILL_MAP: Record<string, string> = {
 
 function findSharedRefs(content: string): string[] {
   const refs = new Set<string>();
-  for (const m of content.matchAll(/_shared\/([a-z][a-z0-9_-]*)/gi)) {
+  for (
+    const m of content.matchAll(
+      /_shared\/((?:[a-z][a-z0-9_-]*\/)*[a-z][a-z0-9_-]*)(?:\.md)?(?=[`)\s/}]|$)/gi,
+    )
+  ) {
     refs.add(m[1]);
   }
   return [...refs];
@@ -74,6 +78,36 @@ function tryDirEntries(dir: string) {
   } catch {
     return [];
   }
+}
+
+type SharedEntry = {
+  path: string;
+  isDirectory: boolean;
+};
+
+function listSharedEntries(dir: string, prefix = ""): SharedEntry[] {
+  const entries: SharedEntry[] = [];
+
+  for (const entry of tryDirEntries(dir)) {
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      entries.push({
+        path: relativePath,
+        isDirectory: true,
+      });
+      entries.push(...listSharedEntries(join(dir, entry.name), relativePath));
+      continue;
+    }
+
+    if (!entry.name.endsWith(".md")) continue;
+    entries.push({
+      path: relativePath.replace(/\.md$/, ""),
+      isDirectory: false,
+    });
+  }
+
+  return entries;
 }
 
 // ── Graph Builder ───────────────────────────────────────────────
@@ -127,20 +161,21 @@ export function buildGraph(root: string): Graph {
 
   // Shared
   const sharedDir = join(skillsBase, "_shared");
-  for (const entry of tryDirEntries(sharedDir)) {
-    const name = entry.isDirectory()
-      ? entry.name
-      : entry.name.replace(".md", "");
-    const id = `shared:${name}`;
+  for (const entry of listSharedEntries(sharedDir)) {
+    const id = `shared:${entry.path}`;
     nodes.push({
       id,
-      label: name,
+      label: entry.path,
       category: "shared",
       group: "Shared",
     });
-    if (!entry.isDirectory() && entry.name.endsWith(".md")) {
-      for (const ref of findSharedRefs(tryRead(join(sharedDir, entry.name)))) {
-        if (ref !== name) edge(id, `shared:${ref}`, "references");
+    if (!entry.isDirectory) {
+      for (
+        const ref of findSharedRefs(
+          tryRead(join(sharedDir, `${entry.path}.md`)),
+        )
+      ) {
+        if (ref !== entry.path) edge(id, `shared:${ref}`, "references");
       }
     }
   }

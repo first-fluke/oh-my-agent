@@ -2,9 +2,9 @@
 
 ## Step 0: Prepare
 
-1. Assess difficulty using `../../_shared/difficulty-guide.md`
-2. Check `../../_shared/lessons-learned.md` for past Terraform pitfalls
-3. If HIGH uncertainty, clarify per `../../_shared/clarification-protocol.md`
+1. Assess difficulty using `../../_shared/core/difficulty-guide.md`
+2. Check `../../_shared/core/lessons-learned.md` for past Terraform pitfalls
+3. If HIGH uncertainty, clarify per `../../_shared/core/clarification-protocol.md`
 4. Budget context: read symbols and file overviews, not whole files
 
 ## Step 1: Analyze
@@ -97,7 +97,7 @@ See `policy-testing-examples.md` for Terratest, Kitchen-Terraform, and CI/CD int
 ## Step 4: Verify
 
 1. Run `checklist.md` self-verification
-2. Run `../../_shared/common-checklist.md` common checks
+2. Run `../../_shared/core/common-checklist.md` common checks
 3. Confirm:
    - `terraform validate` passes
    - `terraform plan` shows expected changes only

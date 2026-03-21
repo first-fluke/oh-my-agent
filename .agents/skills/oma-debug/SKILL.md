@@ -36,8 +36,8 @@ Before submitting, run `resources/checklist.md`.
 
 ## Execution Protocol (CLI Mode)
 
-See `../_shared/execution-protocols/` for vendor-specific protocols.
-When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
+Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn`.
+Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ## References
 - Execution steps: `resources/execution-protocol.md`
@@ -47,7 +47,7 @@ When spawned via `oh-my-ag agent:spawn`, the protocol is injected automatically.
 - Bug report template: `resources/bug-report-template.md`
 - Common patterns: `resources/common-patterns.md`
 - Debugging checklist: `resources/debugging-checklist.md`
-- Context loading: `../_shared/context-loading.md`
-- Reasoning templates: `../_shared/reasoning-templates.md`
-- Context budget: `../_shared/context-budget.md`
-- Lessons learned: `../_shared/lessons-learned.md`
+- Context loading: `../_shared/core/context-loading.md`
+- Reasoning templates: `../_shared/core/reasoning-templates.md`
+- Context budget: `../_shared/core/context-budget.md`
+- Lessons learned: `../_shared/core/lessons-learned.md`
