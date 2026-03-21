@@ -1,5 +1,44 @@
 # Changelog
 
+## [4.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v3.0.0...cli-v4.0.0) (2026-03-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* oma-backend resources directory restructured with language-specific files moved to variants/ subdirectories.
+
+### Features
+
+* add /stack-set workflow and Node.js/Rust presets ([438d5fd](https://github.com/first-fluke/oh-my-agent/commit/438d5fd734bb1d0672616e626f333522a299839f))
+* add language variant selection to CLI install/update ([a62f81d](https://github.com/first-fluke/oh-my-agent/commit/a62f81dd83061c62f2eb94491968328d18bd9ce8))
+
+
+### Bug Fixes
+
+* address code review findings ([e395bce](https://github.com/first-fluke/oh-my-agent/commit/e395bce6ac3434f493eff0a912b5cfcdc57aba53))
+* address reviewer feedback on PR [#123](https://github.com/first-fluke/oh-my-agent/issues/123) ([bd1ba25](https://github.com/first-fluke/oh-my-agent/commit/bd1ba2570b43367c447ab08766c765b80aabd1ce))
+* correct preset tables, auth commands, and shared layout migration ([27d6bb0](https://github.com/first-fluke/oh-my-agent/commit/27d6bb04ccd19d3b7d5fca327ced4bddaa9abcfa))
+* detect legacy files before cpSync in update migration ([b88c7f4](https://github.com/first-fluke/oh-my-agent/commit/b88c7f4713b27d7b57a4386322ad7d4a2dc540c2))
+* read migration variant from repoDir and move variants/ cleanup after migration ([8f16788](https://github.com/first-fluke/oh-my-agent/commit/8f16788b05a257c23110e6e44e57bb3c5f0d51bc))
+
+
+### Refactoring
+
+* abstract oma-backend skill to be language-agnostic ([efe842e](https://github.com/first-fluke/oh-my-agent/commit/efe842e4ecf9eedaab97454c8de02678fe371a83))
+* abstract oma-backend to language-agnostic skill ([a3bdb1c](https://github.com/first-fluke/oh-my-agent/commit/a3bdb1ccd81eadf0118aed4aa21794ddfff0cfe9))
+
+
+### Documentation
+
+* add dev commands and clarify SSOT rules in CLAUDE.md ([bcddda6](https://github.com/first-fluke/oh-my-agent/commit/bcddda63bfc10d6d3518d5200fd1aa69da8060f8))
+* update documentation for backend stack abstraction ([2dc7743](https://github.com/first-fluke/oh-my-agent/commit/2dc77436cbd779f73f5ccaafa9ae243997af0b66))
+
+
+### Miscellaneous
+
+* **main:** release web 0.3.0 ([3544d60](https://github.com/first-fluke/oh-my-agent/commit/3544d60c3395fe16f5806249d5fd6c63d86a933d))
+* resolve merge conflicts with main shared layout restructure ([d6eff72](https://github.com/first-fluke/oh-my-agent/commit/d6eff72f5bef2b7731d2e23b2f3854ae396ac262))
+
 ## [3.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.12.0...cli-v3.0.0) (2026-03-21)
 
 
