@@ -15,6 +15,10 @@ It is not a formal external standard. It is the interoperability contract used b
 
 ```text
 .agents/
+├── agents/                 (abstract agent definitions — vendor-neutral SSOT)
+│   ├── backend-engineer.yaml
+│   ├── frontend-engineer.yaml
+│   └── ...
 ├── skills/
 │   ├── _shared/
 │   │   ├── core/
@@ -73,6 +77,28 @@ This includes:
 - `runtime/` for CLI/runtime-injected protocols
 - shared templates such as `core/api-contracts/`
 
+## Abstract Agent Definitions
+
+Vendor-neutral agent definitions live under:
+
+```text
+.agents/agents/<agent-name>.yaml
+```
+
+Each definition contains only portable fields:
+
+- `name` — agent identifier (e.g., `backend-engineer`)
+- `description` — role summary
+- `skills` — list of domain skills the agent may use
+
+These definitions contain no vendor-specific fields (no Claude `allowed_tools`, no Codex `model`, etc.). The CLI generates vendor-adapted files from these abstractions:
+
+- `.claude/agents/*.md` (Claude Code — Markdown with frontmatter)
+- `.codex/agents/*.toml` (Codex CLI — TOML format)
+- `.gemini/agents/*.md` (Gemini CLI — Markdown format)
+
+Antigravity IDE reads `.agents/agents/` directly but does not support custom subagent spawning.
+
 ## Workflows
 
 Multi-step orchestration flows live under:
@@ -106,11 +132,13 @@ Typical examples:
 
 Compatibility directories are projections, not separate sources of truth:
 
-- `.claude/skills/`
+- `.claude/skills/` (thin routers that delegate to `.agents/workflows/`)
+- `.codex/agents/` (generated from `.agents/agents/`)
+- `.gemini/agents/` (generated from `.agents/agents/`)
 - `.cursor/skills/`
 - `.github/skills/`
 
-Where supported, these should point back to `.agents/skills/` via symlinks or equivalent generated views.
+Where supported, these should point back to `.agents/` via symlinks or equivalent generated views. Vendor skill files (e.g., `.claude/skills/*/SKILL.md`) are thin routers — they contain only the routing logic to load the corresponding `.agents/workflows/*.md` source of truth, not the full workflow content.
 
 ### Claude Code Native Adapter
 
@@ -120,18 +148,18 @@ Claude Code uses a hybrid model beyond simple symlinks:
 .claude/
 ├── skills/
 │   ├── oma-backend/  → ../../.agents/skills/oma-backend  (symlink, domain skill, language-agnostic)
-│   ├── orchestrate/SKILL.md                                   (native, workflow skill)
+│   ├── orchestrate/SKILL.md                                   (thin router → .agents/workflows/orchestrate.md)
 │   └── ...
 ├── agents/
-│   ├── backend-engineer.md         (subagent definition)
-│   ├── qa-reviewer.md          (subagent definition)
+│   ├── backend-engineer.md         (generated from .agents/agents/backend-engineer.yaml)
+│   ├── qa-reviewer.md          (generated from .agents/agents/qa-reviewer.yaml)
 │   └── ...
 └── settings.local.json         (hooks for SSOT protection)
 ```
 
 - **Domain skills**: symlinked from `.agents/skills/` (unchanged)
-- **Workflow skills**: native SKILL.md files that reference `.agents/workflows/*.md` as the source of truth
-- **Subagents**: `.claude/agents/*.md` definitions spawned via Task tool, referencing domain skills via `skills:` frontmatter
+- **Workflow skills**: thin router SKILL.md files that delegate to `.agents/workflows/*.md` as the source of truth (they contain routing logic only, not workflow content)
+- **Subagents**: `.claude/agents/*.md` definitions generated from `.agents/agents/*.yaml` abstractions, spawned via Task tool
 - **CLAUDE.md**: project-level integration file auto-loaded by Claude Code
 
 All native files reference `.agents/` — they never replace or duplicate it.

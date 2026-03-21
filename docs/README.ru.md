@@ -77,11 +77,12 @@ flowchart TD
 
 | Инструмент / IDE | Источник навыков | Режим совместимости | Примечания |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Нативный | Основной макет источника истины |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Нативный + Адаптер | Симлинки для доменных навыков + нативные навыки рабочих процессов, субагенты и CLAUDE.md |
+| Antigravity | `.agents/skills/` | Нативный | Основной макет источника истины; без пользовательских субагентов |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Нативный + Адаптер | Симлинки для доменных навыков, тонкие маршрутизаторы для рабочих процессов, субагенты генерируются из `.agents/agents/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Нативный + Адаптер | Определения агентов в TOML, сгенерированные из `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Нативный + Адаптер | Определения агентов в MD, сгенерированные из `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Нативно совместимый | Использует тот же источник навыков на уровне проекта |
 | Amp | `.agents/skills/` | Нативно совместимый | Разделяет тот же источник на уровне проекта |
-| Codex CLI | `.agents/skills/` | Нативно совместимый | Работает из того же источника навыков проекта |
 | Cursor | `.agents/skills/` | Нативно совместимый | Может использовать тот же источник навыков на уровне проекта |
 | GitHub Copilot | `.github/skills/` | Опциональный симлинк | Устанавливается при выборе во время настройки |
 
@@ -92,17 +93,18 @@ flowchart TD
 Claude Code имеет полноценную нативную интеграцию, выходящую за рамки симлинков:
 
 - **`CLAUDE.md`** — идентификация проекта, архитектура и правила (автоматически загружается Claude Code)
-- **`.claude/skills/`** — 12 навыков рабочих процессов, отображённых из `.agents/workflows/` (например, `/orchestrate`, `/coordinate`, `/ultrawork`)
-- **`.claude/agents/`** — 7 определений субагентов, запускаемых через Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/skills/`** — 12 тонких маршрутизаторов SKILL.md, делегирующих в `.agents/workflows/` (например, `/orchestrate`, `/coordinate`, `/ultrawork`). Навыки вызываются явно через slash-команды, без автоматической активации по ключевым словам.
+- **`.claude/agents/`** — 7 определений субагентов, сгенерированных из `.agents/agents/*.yaml`, запускаемых через Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Нативные циклы** — Review Loop, Issue Remediation Loop и Phase Gate Loop с использованием синхронных результатов Task tool вместо CLI-поллинга
 
-Доменные навыки (oma-backend, oma-frontend и др.) остаются симлинками из `.agents/skills/`. Навыки рабочих процессов — это нативные файлы SKILL.md, ссылающиеся на соответствующий источник истины в `.agents/workflows/*.md`.
+Доменные навыки (oma-backend, oma-frontend и др.) остаются симлинками из `.agents/skills/`. Навыки рабочих процессов — это тонкие маршрутизаторы SKILL.md, делегирующие в соответствующий источник истины `.agents/workflows/*.md`.
 
 ## Спецификация `.agents`
 
 `oh-my-agent` рассматривает `.agents/` как переносимое соглашение проекта для навыков агентов, рабочих процессов и общего контекста.
 
 - Навыки хранятся в `.agents/skills/<skill-name>/SKILL.md`
+- Абстрактные определения агентов — в `.agents/agents/` (вендор-нейтральный SSOT; CLI генерирует `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` на их основе)
 - Общие ресурсы — в `.agents/skills/_shared/`
 - Рабочие процессы — в `.agents/workflows/*.md`
 - Конфигурация проекта — в `.agents/config/`
@@ -211,11 +213,11 @@ bunx oh-my-agent
 → /ultrawork → Независимые задачи выполняются параллельно через агентов
 ```
 
-**Простая задача** (один агент активируется автоматически):
+**Простая задача** (прямой вызов доменного навыка):
 
 ```
 "Создай форму входа с Tailwind CSS и валидацией полей"
-→ активируется oma-frontend
+→ навык oma-frontend
 ```
 
 **Фиксация изменений** (conventional commits):

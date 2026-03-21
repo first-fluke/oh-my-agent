@@ -77,11 +77,12 @@ flowchart TD
 
 | ツール / IDE | スキルソース | 連携方式 | 備考 |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | ネイティブ | 原本のレイアウト |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | ネイティブ + アダプター | ドメインスキルはシンボリックリンク、ワークフロースキル・サブエージェント・CLAUDE.mdはネイティブ |
+| Antigravity | `.agents/skills/` | ネイティブ | 原本のレイアウト。カスタムサブエージェントのスポーンは非対応 |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | ネイティブ + アダプター | ドメインスキルはシンボリックリンク、ワークフロースキルはシンルーター、サブエージェントは`.agents/agents/`から生成 |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | ネイティブ + アダプター | `.agents/agents/`からTOML形式でエージェント定義を生成 |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | ネイティブ + アダプター | `.agents/agents/`からMD形式でエージェント定義を生成 |
 | OpenCode | `.agents/skills/` | 互換 | 同じスキルソースを使用 |
 | Amp | `.agents/skills/` | 互換 | 同じソースを共有 |
-| Codex CLI | `.agents/skills/` | 互換 | 同じスキルソースで動作 |
 | Cursor | `.agents/skills/` | 互換 | 同じスキルソースを使用可能 |
 | GitHub Copilot | `.github/skills/` | シンボリックリンク（任意） | セットアップ時に選択するとインストール |
 
@@ -92,17 +93,18 @@ flowchart TD
 Claude Codeはシンボリックリンクだけでなく、直接連携できます:
 
 - **`CLAUDE.md`** — プロジェクト情報、アーキテクチャ、ルール（Claude Codeが自動で読み込み）
-- **`.claude/skills/`** — `.agents/workflows/`から取り込んだ12のワークフロースキル（`/orchestrate`、`/coordinate`、`/ultrawork`など）
-- **`.claude/agents/`** — Task toolで起動する7つのサブエージェント（backend-engineer、frontend-engineer、mobile-engineer、db-engineer、qa-reviewer、debug-investigator、pm-planner）
+- **`.claude/skills/`** — `.agents/workflows/`に委譲する12のシンルーターSKILL.md（`/orchestrate`、`/coordinate`、`/ultrawork`など）。スラッシュコマンドで明示的に呼び出し、キーワード自動起動はしません。
+- **`.claude/agents/`** — `.agents/agents/*.yaml`から生成された7つのサブエージェント、Task toolでスポーン（backend-engineer、frontend-engineer、mobile-engineer、db-engineer、qa-reviewer、debug-investigator、pm-planner）
 - **ループパターン** — CLIポーリングなしで、Task toolの同期結果を使ったReview Loop、Issue Remediation Loop、Phase Gate Loop
 
-ドメインスキル（oma-backend、oma-frontendなど）は`.agents/skills/`からのシンボリックリンクです。ワークフロースキルは`.agents/workflows/*.md`の原本を参照するネイティブSKILL.mdファイルです。
+ドメインスキル（oma-backend、oma-frontendなど）は`.agents/skills/`からのシンボリックリンクです。ワークフロースキルは対応する`.agents/workflows/*.md`の原本に委譲するシンルーターSKILL.mdファイルです。
 
 ## `.agents` 仕様
 
 `oh-my-agent`は`.agents/`を、エージェントスキル・ワークフロー・共有コンテキストを入れるプロジェクト規約として使います。
 
 - スキル: `.agents/skills/<skill-name>/SKILL.md`
+- 抽象エージェント定義: `.agents/agents/`（ベンダー中立のSSOT。CLIが`.claude/agents/`、`.codex/agents/`、`.gemini/agents/`を生成）
 - 共有リソース: `.agents/skills/_shared/`
 - ワークフロー: `.agents/workflows/*.md`
 - プロジェクト設定: `.agents/config/`
@@ -209,11 +211,11 @@ bunx oh-my-agent
 → /ultrawork → 独立したタスクがエージェント間で同時実行
 ```
 
-**簡単なタスク**（エージェントが自動で起動）:
+**簡単なタスク**（ドメインスキルを直接呼び出し）:
 
 ```
 "Tailwind CSSでログインフォームを作って"
-→ oma-frontendが起動
+→ oma-frontendスキル
 ```
 
 **コミット**（Conventional Commits）:

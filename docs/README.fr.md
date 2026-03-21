@@ -41,11 +41,12 @@ Orchestrez 10 agents de domaine spécialisés (PM, Frontend, Backend, DB, Mobile
 
 | Outil / IDE | Source des compétences | Mode d'interopérabilité | Notes |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Natif | Principale disposition source-de-vérité |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Natif + Adaptateur | Skills de domaine via lien symbolique, workflow skills, sous-agents et CLAUDE.md natifs |
+| Antigravity | `.agents/skills/` | Natif | Principale disposition source-de-vérité ; pas de sous-agents personnalisés |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Natif + Adaptateur | Skills de domaine via lien symbolique, workflow skills en tant que thin routers, sous-agents générés depuis `.agents/agents/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Natif + Adaptateur | Définitions d'agents en TOML générées depuis `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Natif + Adaptateur | Définitions d'agents en MD générées depuis `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Natif-compatible | Utilise la même source de compétences au niveau du projet |
 | Amp | `.agents/skills/` | Natif-compatible | Partage la même source au niveau du projet |
-| Codex CLI | `.agents/skills/` | Natif-compatible | Fonctionne à partir de la même source de compétences |
 | Cursor | `.agents/skills/` | Natif-compatible | Peut consommer la même source de compétences |
 | GitHub Copilot | `.github/skills/` | Lien symbolique optionnel | Installé lors de la sélection pendant la configuration |
 
@@ -56,17 +57,18 @@ Voir [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) pour la matrice de support act
 Claude Code bénéficie d'une intégration native de premier ordre, au-delà des simples liens symboliques :
 
 - **`CLAUDE.md`** — identité du projet, architecture et règles (chargé automatiquement par Claude Code)
-- **`.claude/skills/`** — 12 workflow skills issues de `.agents/workflows/` (ex. : `/orchestrate`, `/coordinate`, `/ultrawork`)
-- **`.claude/agents/`** — 7 définitions de sous-agents lancés via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/skills/`** — 12 fichiers SKILL.md thin router qui délèguent vers `.agents/workflows/` (ex. : `/orchestrate`, `/coordinate`, `/ultrawork`). Les skills sont invoquées explicitement via des commandes slash, sans activation automatique par mot-clé.
+- **`.claude/agents/`** — 7 définitions de sous-agents générées depuis `.agents/agents/*.yaml`, lancés via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Patterns de boucle natifs** — Review Loop, Issue Remediation Loop et Phase Gate Loop utilisant les résultats synchrones du Task tool, sans polling CLI
 
-Les skills de domaine (oma-backend, oma-frontend, etc.) restent des liens symboliques depuis `.agents/skills/`. Les workflow skills sont des fichiers SKILL.md natifs qui référencent le fichier `.agents/workflows/*.md` correspondant comme source de vérité.
+Les skills de domaine (oma-backend, oma-frontend, etc.) restent des liens symboliques depuis `.agents/skills/`. Les workflow skills sont des fichiers SKILL.md thin router qui délèguent vers le fichier `.agents/workflows/*.md` correspondant comme source de vérité.
 
 ## Spécification `.agents`
 
 `oh-my-agent` traite `.agents/` comme une convention de projet portable pour les compétences, workflows et contexte partagé des agents.
 
 - Les compétences vivent dans `.agents/skills/<skill-name>/SKILL.md`
+- Les définitions abstraites d'agents vivent dans `.agents/agents/` (SSOT neutre vis-à-vis des fournisseurs ; le CLI génère `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` à partir de celles-ci)
 - Les ressources partagées vivent dans `.agents/skills/_shared/`
 - Les workflows vivent dans `.agents/workflows/*.md`
 - La configuration du projet vit dans `.agents/config/`
@@ -205,11 +207,11 @@ bunx oh-my-agent
 
 ### 2. Discussion
 
-**Tâche simple** (agent unique s'active automatiquement) :
+**Tâche simple** (invoquer directement un skill de domaine) :
 
 ```
 "Créer un formulaire de connexion avec Tailwind CSS et validation de formulaire"
-→ oma-frontend s'active
+→ skill oma-frontend
 ```
 
 **Projet complexe** (/coordinate workflow) :

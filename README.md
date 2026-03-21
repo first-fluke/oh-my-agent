@@ -76,11 +76,12 @@ flowchart TD
 
 | Tool / IDE | Skills Source | Interop Mode | Notes |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Native | Primary source-of-truth layout |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Native + Adapter | Symlinks for domain skills + native workflow skills, subagents, and CLAUDE.md |
+| Antigravity | `.agents/skills/` | Native | Primary source-of-truth layout; no custom subagent spawning |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Native + Adapter | Symlinks for domain skills + thin router workflow skills, subagents generated from `.agents/agents/`, and CLAUDE.md |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Native + Adapter | Agent TOML generated from `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Native + Adapter | Agent MD generated from `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Native-compatible | Uses the same project-level skill source |
 | Amp | `.agents/skills/` | Native-compatible | Shares the same project-level source |
-| Codex CLI | `.agents/skills/` | Native-compatible | Works from the same project skill source |
 | Cursor | `.agents/skills/` | Native-compatible | Can consume the same project-level skill source |
 | GitHub Copilot | `.github/skills/` | Optional symlink | Installed when selected during setup |
 
@@ -91,17 +92,18 @@ See [SUPPORTED_AGENTS.md](./docs/SUPPORTED_AGENTS.md) for the current support ma
 Claude Code has first-class native integration beyond symlinks:
 
 - **`CLAUDE.md`** — project identity, architecture, and rules (auto-loaded by Claude Code)
-- **`.claude/skills/`** — 12 workflow skills mapped from `.agents/workflows/` (e.g., `/orchestrate`, `/coordinate`, `/ultrawork`)
-- **`.claude/agents/`** — 7 subagent definitions spawned via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/skills/`** — 12 thin router SKILL.md files that delegate to `.agents/workflows/` (e.g., `/orchestrate`, `/coordinate`, `/ultrawork`). Skills are explicitly invoked via slash commands, not keyword-auto-activated.
+- **`.claude/agents/`** — 7 subagent definitions generated from `.agents/agents/*.yaml`, spawned via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Native loop patterns** — Review Loop, Issue Remediation Loop, and Phase Gate Loop using synchronous Task tool results instead of CLI polling
 
-Domain skills (oma-backend, oma-frontend, etc.) remain as symlinks from `.agents/skills/`. Workflow skills are native SKILL.md files that reference the corresponding `.agents/workflows/*.md` source of truth.
+Domain skills (oma-backend, oma-frontend, etc.) remain as symlinks from `.agents/skills/`. Workflow skills are thin router SKILL.md files that delegate to the corresponding `.agents/workflows/*.md` source of truth.
 
 ## The `.agents` Spec
 
 `oh-my-agent` treats `.agents/` as a portable project convention for agent skills, workflows, and shared context.
 
 - Skills live in `.agents/skills/<skill-name>/SKILL.md`
+- Abstract agent definitions live in `.agents/agents/` (vendor-neutral SSOT; the CLI generates `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` from these)
 - Shared resources live in `.agents/skills/_shared/`
   and are grouped into `core/`, `conditional/`, and `runtime/`
 - Workflows live in `.agents/workflows/*.md`
@@ -199,11 +201,11 @@ You'll also need at least one CLI tool:
 → /ultrawork → Independent tasks execute in parallel across agents
 ```
 
-**Simple task** (single agent auto-activates):
+**Simple task** (invoke a domain skill directly):
 
 ```
 "Create a login form with Tailwind CSS and form validation"
-→ oma-frontend activates
+→ oma-frontend skill
 ```
 
 **Commit changes** (conventional commits):

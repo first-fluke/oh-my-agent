@@ -77,11 +77,12 @@ flowchart TD
 
 | 工具 / IDE | 技能来源 | 互操作模式 | 备注 |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | 原生 | 主要权威来源布局 |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | 原生 + 适配器 | 领域技能符号链接 + 原生工作流技能、子代理及 CLAUDE.md |
+| Antigravity | `.agents/skills/` | 原生 | 主要权威来源布局；不支持自定义子代理 |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | 原生 + 适配器 | 领域技能符号链接 + 薄路由工作流技能、从 `.agents/agents/` 生成的子代理 |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | 原生 + 适配器 | 从 `.agents/agents/` 生成 TOML 格式代理定义 |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | 原生 + 适配器 | 从 `.agents/agents/` 生成 MD 格式代理定义 |
 | OpenCode | `.agents/skills/` | 原生兼容 | 使用相同的项目级技能来源 |
 | Amp | `.agents/skills/` | 原生兼容 | 共享相同的项目级来源 |
-| Codex CLI | `.agents/skills/` | 原生兼容 | 从相同的项目技能来源工作 |
 | Cursor | `.agents/skills/` | 原生兼容 | 可使用相同的项目级技能来源 |
 | GitHub Copilot | `.github/skills/` | 可选符号链接 | 安装时按需选择 |
 
@@ -92,17 +93,18 @@ flowchart TD
 Claude Code 提供超越符号链接的一等原生集成：
 
 - **`CLAUDE.md`** — 项目标识、架构和规则（由 Claude Code 自动加载）
-- **`.claude/skills/`** — 从 `.agents/workflows/` 映射而来的 12 个工作流技能（如 `/orchestrate`、`/coordinate`、`/ultrawork`）
-- **`.claude/agents/`** — 通过 Task tool 调用的 7 个子代理定义（backend-engineer、frontend-engineer、mobile-engineer、db-engineer、qa-reviewer、debug-investigator、pm-planner）
+- **`.claude/skills/`** — 委托至 `.agents/workflows/` 的 12 个薄路由 SKILL.md（如 `/orchestrate`、`/coordinate`、`/ultrawork`）。技能通过斜杠命令显式调用，不会被关键字自动激活。
+- **`.claude/agents/`** — 从 `.agents/agents/*.yaml` 生成的 7 个子代理定义，通过 Task tool 调用（backend-engineer、frontend-engineer、mobile-engineer、db-engineer、qa-reviewer、debug-investigator、pm-planner）
 - **原生循环模式** — Review Loop、Issue Remediation Loop 和 Phase Gate Loop，使用同步 Task tool 结果，无需 CLI 轮询
 
-领域技能（oma-backend、oma-frontend 等）保持为 `.agents/skills/` 的符号链接。工作流技能是原生 SKILL.md 文件，引用对应的 `.agents/workflows/*.md` 权威来源。
+领域技能（oma-backend、oma-frontend 等）保持为 `.agents/skills/` 的符号链接。工作流技能是委托至对应 `.agents/workflows/*.md` 权威来源的薄路由 SKILL.md 文件。
 
 ## `.agents` 规范
 
 `oh-my-agent` 将 `.agents/` 视为代理技能、工作流和共享上下文的可移植项目约定。
 
 - 技能位于 `.agents/skills/<skill-name>/SKILL.md`
+- 抽象代理定义位于 `.agents/agents/`（供应商中立的 SSOT；CLI 从中生成 `.claude/agents/`、`.codex/agents/`、`.gemini/agents/`）
 - 共享资源位于 `.agents/skills/_shared/`
 - 工作流位于 `.agents/workflows/*.md`
 - 项目配置位于 `.agents/config/`
@@ -211,11 +213,11 @@ bunx oh-my-agent
 → /ultrawork → 各代理并行执行独立任务
 ```
 
-**简单任务**（单个代理自动激活）：
+**简单任务**（直接调用领域技能）：
 
 ```
 "用 Tailwind CSS 和表单验证创建一个登录表单"
-→ oma-frontend 自动激活
+→ oma-frontend 技能
 ```
 
 **提交变更**（conventional commits）：

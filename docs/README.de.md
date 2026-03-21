@@ -41,11 +41,12 @@ Orchestrieren Sie 10 spezialisierte Domain-Agenten (PM, Frontend, Backend, DB, M
 
 | Tool / IDE | Skill-Quelle | Interop-Modus | Hinweise |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Native | Primäre Source-of-Truth-Layout |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativ + Adapter | Domain-Skills per Symlink, Workflow-Skills / Subagenten / CLAUDE.md nativ |
+| Antigravity | `.agents/skills/` | Native | Primäre Source-of-Truth-Layout; keine benutzerdefinierten Subagenten |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativ + Adapter | Domain-Skills per Symlink, Workflow-Skills als Thin Router, Subagenten generiert aus `.agents/agents/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Nativ + Adapter | Agent-Definitionen als TOML generiert aus `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Nativ + Adapter | Agent-Definitionen als MD generiert aus `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Native-kompatibel | Verwendet dieselbe Projekt-Level-Skill-Quelle |
 | Amp | `.agents/skills/` | Native-kompatibel | Teilt dieselbe Projekt-Level-Quelle |
-| Codex CLI | `.agents/skills/` | Native-kompatibel | Arbeitet von derselben Projekt-Skill-Quelle |
 | Cursor | `.agents/skills/` | Native-kompatibel | Kann dieselbe Projekt-Level-Skill-Quelle konsumieren |
 | GitHub Copilot | `.github/skills/` | Optionale Symlink | Installiert bei Auswahl während des Setups |
 
@@ -56,8 +57,8 @@ Siehe [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) für die aktuelle Support-Mat
 Claude Code unterstützt `oh-my-agent` vollständig nativ — ohne Plugins.
 
 - **`CLAUDE.md`** — wird beim Start automatisch geladen; enthält Projektbeschreibung, Architektur und Agentenregeln.
-- **`.claude/skills/`** — 12 Workflow-Skills aus `.agents/workflows/` (z. B. `/orchestrate`, `/coordinate`, `/ultrawork`), direkt als Slash-Befehle verfügbar.
-- **`.claude/agents/`** — 7 Subagenten, die per Task-Tool gestartet werden: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+- **`.claude/skills/`** — 12 Thin-Router-SKILL.md-Dateien, die an `.agents/workflows/` delegieren (z. B. `/orchestrate`, `/coordinate`, `/ultrawork`). Skills werden explizit über Slash-Befehle aufgerufen, nicht automatisch durch Schlüsselwörter aktiviert.
+- **`.claude/agents/`** — 7 Subagenten, generiert aus `.agents/agents/*.yaml`, die per Task-Tool gestartet werden: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
 - **Loop-Muster** — Review Loop, Issue Remediation Loop und Phase Gate Loop laufen ohne CLI-Polling; das Task-Tool liefert Ergebnisse synchron zurück.
 
 ## `.agents` Spezifikation
@@ -65,6 +66,7 @@ Claude Code unterstützt `oh-my-agent` vollständig nativ — ohne Plugins.
 `oh-my-agent` behandelt `.agents/` als portable Projektkonvention für Agenten-Skills, Workflows und gemeinsamen Kontext.
 
 - Skills leben in `.agents/skills/<skill-name>/SKILL.md`
+- Abstrakte Agent-Definitionen leben in `.agents/agents/` (herstellerneutraler SSOT; die CLI generiert daraus `.claude/agents/`, `.codex/agents/`, `.gemini/agents/`)
 - Gemeinsame Ressourcen leben in `.agents/skills/_shared/`
 - Workflows leben in `.agents/workflows/*.md`
 - Projektkonfiguration lebt in `.agents/config/`
@@ -203,11 +205,11 @@ bunx oh-my-agent
 
 ### 2. Chatten
 
-**Einfache Aufgabe** (einzelner Agent aktiviert automatisch):
+**Einfache Aufgabe** (Domain-Skill direkt aufrufen):
 
 ```
 "Erstelle ein Login-Formular mit Tailwind CSS und Formularvalidierung"
-→ oma-frontend wird aktiviert
+→ oma-frontend Skill
 ```
 
 **Komplexes Projekt** (/coordinate Workflow):

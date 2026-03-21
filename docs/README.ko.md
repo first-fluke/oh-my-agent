@@ -77,11 +77,12 @@ flowchart TD
 
 | 도구 / IDE | 스킬 소스 | 연동 방식 | 참고 |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | 네이티브 | 원본 레이아웃 |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | 네이티브 + 어댑터 | 도메인 스킬은 심링크, 워크플로우 스킬/서브에이전트/CLAUDE.md는 네이티브 |
+| Antigravity | `.agents/skills/` | 네이티브 | 원본 레이아웃; 커스텀 서브에이전트 스폰 미지원 |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | 네이티브 + 어댑터 | 도메인 스킬은 심링크, 워크플로우 스킬은 씬 라우터, 서브에이전트는 `.agents/agents/`에서 생성 |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | 네이티브 + 어댑터 | `.agents/agents/`에서 TOML로 에이전트 정의 생성 |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | 네이티브 + 어댑터 | `.agents/agents/`에서 MD로 에이전트 정의 생성 |
 | OpenCode | `.agents/skills/` | 호환 | 같은 스킬 소스 사용 |
 | Amp | `.agents/skills/` | 호환 | 같은 소스 공유 |
-| Codex CLI | `.agents/skills/` | 호환 | 같은 스킬 소스에서 동작 |
 | Cursor | `.agents/skills/` | 호환 | 같은 스킬 소스 사용 가능 |
 | GitHub Copilot | `.github/skills/` | 심링크 (선택) | 설정 시 선택하면 설치 |
 
@@ -92,17 +93,18 @@ flowchart TD
 Claude Code는 심링크를 넘어서 직접 연동됩니다:
 
 - **`CLAUDE.md`** — 프로젝트 정보, 아키텍처, 규칙 (Claude Code가 자동으로 읽음)
-- **`.claude/skills/`** — `.agents/workflows/`에서 가져온 12개 워크플로우 스킬 (`/orchestrate`, `/coordinate`, `/ultrawork` 등)
-- **`.claude/agents/`** — Task tool로 띄우는 7개 서브에이전트 (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/skills/`** — `.agents/workflows/`로 위임하는 12개 씬 라우터 SKILL.md (`/orchestrate`, `/coordinate`, `/ultrawork` 등). 슬래시 커맨드로 명시적 호출만 허용되며, 키워드 자동 활성화되지 않습니다.
+- **`.claude/agents/`** — `.agents/agents/*.yaml`에서 생성된 7개 서브에이전트, Task tool로 스폰 (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **루프 패턴** — CLI 폴링 없이 Task tool의 동기 결과를 활용하는 Review Loop, Issue Remediation Loop, Phase Gate Loop
 
-도메인 스킬(oma-backend, oma-frontend 등)은 `.agents/skills/`에서 심링크로 가져옵니다. 워크플로우 스킬은 `.agents/workflows/*.md` 원본을 참조하는 네이티브 SKILL.md 파일입니다.
+도메인 스킬(oma-backend, oma-frontend 등)은 `.agents/skills/`에서 심링크로 가져옵니다. 워크플로우 스킬은 `.agents/workflows/*.md` 원본으로 위임하는 씬 라우터 SKILL.md 파일입니다.
 
 ## `.agents` 명세
 
 `oh-my-agent`는 `.agents/`를 에이전트 스킬, 워크플로우, 공유 컨텍스트를 담는 프로젝트 규약으로 씁니다.
 
 - 스킬: `.agents/skills/<skill-name>/SKILL.md`
+- 추상 에이전트 정의: `.agents/agents/` (벤더 중립 SSOT; CLI가 `.claude/agents/`, `.codex/agents/`, `.gemini/agents/`를 여기서 생성)
 - 공유 리소스: `.agents/skills/_shared/`
 - 워크플로우: `.agents/workflows/*.md`
 - 프로젝트 설정: `.agents/config/`
@@ -209,11 +211,11 @@ bunx oh-my-agent
 → /ultrawork → 독립된 작업이 에이전트 사이에서 동시 실행
 ```
 
-**간단한 작업** (에이전트가 알아서 활성화):
+**간단한 작업** (도메인 스킬 직접 호출):
 
 ```
 "Tailwind CSS로 로그인 폼 만들어줘"
-→ oma-frontend 활성화
+→ oma-frontend 스킬
 ```
 
 **커밋** (Conventional Commits):

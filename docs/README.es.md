@@ -41,11 +41,12 @@ Orquesta 10 agentes de dominio especializados (PM, Frontend, Backend, DB, Mobile
 
 | Herramienta / IDE | Fuente de Skills | Modo de Interoperabilidad | Notas |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Nativo | Disposición principal fuente-de-verdad |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativo + Adaptador | skills de dominio vía enlace simbólico, workflow skills / subagentes / CLAUDE.md nativo |
+| Antigravity | `.agents/skills/` | Nativo | Disposición principal fuente-de-verdad; sin subagentes personalizados |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativo + Adaptador | Skills de dominio vía enlace simbólico, workflow skills como thin routers, subagentes generados desde `.agents/agents/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Nativo + Adaptador | Definiciones de agentes en TOML generadas desde `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Nativo + Adaptador | Definiciones de agentes en MD generadas desde `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Nativo-compatible | Usa la misma fuente de skills a nivel de proyecto |
 | Amp | `.agents/skills/` | Nativo-compatible | Comparte la misma fuente a nivel de proyecto |
-| Codex CLI | `.agents/skills/` | Nativo-compatible | Funciona desde la misma fuente de skills |
 | Cursor | `.agents/skills/` | Nativo-compatible | Puede consumir la misma fuente de skills |
 | GitHub Copilot | `.github/skills/` | Enlace simbólico opcional | Instalado cuando se selecciona durante la configuración |
 
@@ -56,8 +57,8 @@ Ver [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) para la matriz de soporte actua
 Claude Code tiene soporte nativo de primera clase a través de tres mecanismos:
 
 - **`CLAUDE.md`** — cargado automáticamente al inicio de cada sesión; contiene la información del proyecto, la arquitectura y las reglas de comportamiento del agente.
-- **`.claude/skills/`** — 12 workflow skills mapeados desde `.agents/workflows/` (por ejemplo, `/orchestrate`, `/coordinate`, `/ultrawork`). Los skills de dominio se enlazan simbólicamente desde `.agents/skills/`.
-- **`.claude/agents/`** — 7 subagentes invocados mediante la herramienta Task: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+- **`.claude/skills/`** — 12 archivos SKILL.md thin router que delegan a `.agents/workflows/` (por ejemplo, `/orchestrate`, `/coordinate`, `/ultrawork`). Los skills se invocan explícitamente mediante comandos slash, sin activación automática por palabras clave. Los skills de dominio se enlazan simbólicamente desde `.agents/skills/`.
+- **`.claude/agents/`** — 7 subagentes generados desde `.agents/agents/*.yaml`, invocados mediante la herramienta Task: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
 
 Los patrones de bucle (Review Loop, Issue Remediation Loop, Phase Gate Loop) se ejecutan directamente dentro de Claude Code sin necesidad de sondear la CLI externa.
 
@@ -66,6 +67,7 @@ Los patrones de bucle (Review Loop, Issue Remediation Loop, Phase Gate Loop) se 
 `oh-my-agent` trata `.agents/` como una convención de proyecto portable para skills, workflows y contexto compartido de agentes.
 
 - Los skills viven en `.agents/skills/<skill-name>/SKILL.md`
+- Las definiciones abstractas de agentes viven en `.agents/agents/` (SSOT neutral al proveedor; el CLI genera `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` a partir de ellas)
 - Los recursos compartidos viven en `.agents/skills/_shared/`
 - Los workflows viven en `.agents/workflows/*.md`
 - La configuración del proyecto vive en `.agents/config/`
@@ -204,11 +206,11 @@ bunx oh-my-agent
 
 ### 2. Chat
 
-**Tarea simple** (un solo agente se auto-activa):
+**Tarea simple** (invocar skill de dominio directamente):
 
 ```
 "Crear un formulario de login con Tailwind CSS y validación de formularios"
-→ oma-frontend se activa
+→ skill oma-frontend
 ```
 
 **Proyecto complejo** (/coordinate workflow):

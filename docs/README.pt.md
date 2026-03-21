@@ -41,11 +41,12 @@ Orquestre 10 agentes de domínio especializados (PM, Frontend, Backend, DB, Mobi
 
 | Ferramenta / IDE | Fonte de Skills | Modo de Interoperabilidade | Notas |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Nativo | Layout principal fonte-da-verdade |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativo + Adaptador | Skills de domínio via symlink, workflow skills, subagentes e CLAUDE.md nativos |
+| Antigravity | `.agents/skills/` | Nativo | Layout principal fonte-da-verdade; sem suporte a subagentes customizados |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Nativo + Adaptador | Skills de domínio via symlink, workflow skills como thin routers, subagentes gerados de `.agents/agents/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Nativo + Adaptador | Definições de agentes em TOML geradas de `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Nativo + Adaptador | Definições de agentes em MD geradas de `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Nativo-compatível | Usa a mesma fonte de skills de nível de projeto |
 | Amp | `.agents/skills/` | Nativo-compatível | Compartilha a mesma fonte de nível de projeto |
-| Codex CLI | `.agents/skills/` | Nativo-compatível | Funciona da mesma fonte de skills de projeto |
 | Cursor | `.agents/skills/` | Nativo-compatível | Pode consumir a mesma fonte de skills de nível de projeto |
 | GitHub Copilot | `.github/skills/` | Symlink opcional | Instalado quando selecionado durante o setup |
 
@@ -56,17 +57,18 @@ Veja [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) para a matriz de suporte atual
 O Claude Code tem integração nativa de primeira classe, além dos symlinks:
 
 - **`CLAUDE.md`** — identidade do projeto, arquitetura e regras (carregado automaticamente pelo Claude Code)
-- **`.claude/skills/`** — 12 workflow skills mapeadas a partir de `.agents/workflows/` (ex.: `/orchestrate`, `/coordinate`, `/ultrawork`)
-- **`.claude/agents/`** — 7 definições de subagentes invocados via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/skills/`** — 12 arquivos SKILL.md thin router que delegam para `.agents/workflows/` (ex.: `/orchestrate`, `/coordinate`, `/ultrawork`). Skills são invocadas explicitamente via comandos slash, sem ativação automática por palavras-chave.
+- **`.claude/agents/`** — 7 definições de subagentes geradas de `.agents/agents/*.yaml`, invocados via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Padrões de loop nativos** — Review Loop, Issue Remediation Loop e Phase Gate Loop usando resultados síncronos do Task tool, sem necessidade de polling via CLI
 
-As skills de domínio (oma-backend, oma-frontend, etc.) permanecem como symlinks de `.agents/skills/`. As workflow skills são arquivos SKILL.md nativos que referenciam o `.agents/workflows/*.md` correspondente como fonte de verdade.
+As skills de domínio (oma-backend, oma-frontend, etc.) permanecem como symlinks de `.agents/skills/`. As workflow skills são arquivos SKILL.md thin router que delegam para o `.agents/workflows/*.md` correspondente como fonte de verdade.
 
 ## Especificação `.agents`
 
 `oh-my-agent` trata `.agents/` como uma convenção de projeto portátil para skills, workflows e contexto compartilhado de agentes.
 
 - Skills vivem em `.agents/skills/<skill-name>/SKILL.md`
+- Definições abstratas de agentes vivem em `.agents/agents/` (SSOT vendor-neutral; o CLI gera `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` a partir delas)
 - Recursos compartilhados vivem em `.agents/skills/_shared/`
 - Workflows vivem em `.agents/workflows/*.md`
 - Configuração do projeto vive em `.agents/config/`
@@ -205,11 +207,11 @@ bunx oh-my-agent
 
 ### 2. Chat
 
-**Tarefa simples** (agente único ativa automaticamente):
+**Tarefa simples** (invocar skill de domínio diretamente):
 
 ```
 "Criar um formulário de login com Tailwind CSS e validação de formulário"
-→ oma-frontend ativa
+→ skill oma-frontend
 ```
 
 **Projeto complexo** (/coordinate workflow):

@@ -41,11 +41,12 @@ Orkiestruj 10 wyspecjalizowanymi agentami domenowymi (PM, Frontend, Backend, DB,
 
 | Narzędzie / IDE | Źródło Skills | Tryb Interoperacyjności | Uwagi |
 |------------|---------------|--------------|-------|
-| Antigravity | `.agents/skills/` | Natywny | Główny układ źródła-prawdy |
-| Claude Code | `.claude/skills/` + `.claude/agents/` | Natywny + Adapter | skills domenowe przez dowiązanie symboliczne, skills workflow / subagenty / CLAUDE.md natywnie |
+| Antigravity | `.agents/skills/` | Natywny | Główny układ źródła-prawdy; brak niestandardowych subagentów |
+| Claude Code | `.claude/skills/` + `.claude/agents/` | Natywny + Adapter | Skills domenowe przez dowiązanie symboliczne, skills workflow jako thin routery, subagenty generowane z `.agents/agents/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | Natywny + Adapter | Definicje agentów w TOML generowane z `.agents/agents/` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Natywny + Adapter | Definicje agentów w MD generowane z `.agents/agents/` |
 | OpenCode | `.agents/skills/` | Natywnie-kompatybilny | Używa tego samego źródła skills na poziomie projektu |
 | Amp | `.agents/skills/` | Natywnie-kompatybilny | Dzieli to samo źródło na poziomie projektu |
-| Codex CLI | `.agents/skills/` | Natywnie-kompatybilny | Działa z tego samego źródła skills projektu |
 | Cursor | `.agents/skills/` | Natywnie-kompatybilny | Może konsumować to samo źródło skills na poziomie projektu |
 | GitHub Copilot | `.github/skills/` | Opcjonalne dowiązanie | Instalowane po wybraniu podczas konfiguracji |
 
@@ -56,8 +57,8 @@ Zobacz [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) dla aktualnej macierzy wspar
 Claude Code obsługuje `oh-my-agent` w pełni natywnie — bez żadnych wtyczek.
 
 - **`CLAUDE.md`** — plik ładowany automatycznie przy starcie; zawiera informacje o projekcie, architekturę i zasady działania agentów.
-- **`.claude/skills/`** — 12 skills workflow zmapowanych z `.agents/workflows/` (np. `/orchestrate`, `/coordinate`, `/ultrawork`); dostępne bezpośrednio jako polecenia slash.
-- **`.claude/agents/`** — 7 subagentów uruchamianych przez Task tool: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+- **`.claude/skills/`** — 12 plików SKILL.md thin router delegujących do `.agents/workflows/` (np. `/orchestrate`, `/coordinate`, `/ultrawork`). Skills są wywoływane jawnie przez komendy slash, bez automatycznej aktywacji słowami kluczowymi.
+- **`.claude/agents/`** — 7 subagentów wygenerowanych z `.agents/agents/*.yaml`, uruchamianych przez Task tool: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
 - **Wzorce pętli** — Review Loop, Issue Remediation Loop i Phase Gate Loop działają bez odpytywania CLI; Task tool zwraca wyniki synchronicznie.
 
 ## Specyfikacja `.agents`
@@ -65,6 +66,7 @@ Claude Code obsługuje `oh-my-agent` w pełni natywnie — bez żadnych wtyczek.
 `oh-my-agent` traktuje `.agents/` jako przenośną konwencję projektu dla skills, workflows i współdzielonego kontekstu agentów.
 
 - Skills żyją w `.agents/skills/<skill-name>/SKILL.md`
+- Abstrakcyjne definicje agentów żyją w `.agents/agents/` (SSOT neutralne wobec dostawców; CLI generuje `.claude/agents/`, `.codex/agents/`, `.gemini/agents/` z nich)
 - Zasoby współdzielone żyją w `.agents/skills/_shared/`
 - Workflows żyją w `.agents/workflows/*.md`
 - Konfiguracja projektu żyje w `.agents/config/`
@@ -203,11 +205,11 @@ bunx oh-my-agent
 
 ### 3. Chat
 
-**Proste zadanie** (pojedynczy agent aktywuje się automatycznie):
+**Proste zadanie** (bezpośrednie wywołanie skilla domenowego):
 
 ```
 "Utwórz formularz logowania z Tailwind CSS i walidacją formularza"
-→ aktywuje się oma-frontend
+→ skill oma-frontend
 ```
 
 **Złożony projekt** (/coordinate workflow):
