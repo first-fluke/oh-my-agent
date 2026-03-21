@@ -1,4 +1,13 @@
-import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  mkdirSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -66,6 +75,26 @@ export async function update(force = false): Promise<void> {
       const savedMcp =
         !force && existsSync(mcpPath) ? readFileSync(mcpPath) : null;
 
+      // Preserve stack/ directories (user-generated or preset)
+      const stackBackupDir = join(
+        tmpdir(),
+        `oma-stack-backup-${Date.now()}`,
+      );
+      const backendStackDir = join(
+        cwd,
+        ".agents",
+        "skills",
+        "oma-backend",
+        "stack",
+      );
+      const hasBackendStack = !force && existsSync(backendStackDir);
+      if (hasBackendStack) {
+        mkdirSync(stackBackupDir, { recursive: true });
+        cpSync(backendStackDir, join(stackBackupDir, "oma-backend"), {
+          recursive: true,
+        });
+      }
+
       cpSync(join(repoDir, ".agents"), join(cwd, ".agents"), {
         recursive: true,
         force: true,
@@ -74,6 +103,55 @@ export async function update(force = false): Promise<void> {
       // Restore user-customized config files
       if (savedUserPrefs) writeFileSync(userPrefsPath, savedUserPrefs);
       if (savedMcp) writeFileSync(mcpPath, savedMcp);
+
+      // Restore stack/ directories
+      if (hasBackendStack) {
+        mkdirSync(backendStackDir, { recursive: true });
+        cpSync(join(stackBackupDir, "oma-backend"), backendStackDir, {
+          recursive: true,
+          force: true,
+        });
+        rmSync(stackBackupDir, { recursive: true, force: true });
+      }
+
+      // Clean up variants/ from user project (not needed at runtime)
+      const backendVariantsDir = join(
+        cwd,
+        ".agents",
+        "skills",
+        "oma-backend",
+        "variants",
+      );
+      if (existsSync(backendVariantsDir)) {
+        rmSync(backendVariantsDir, { recursive: true, force: true });
+      }
+
+      // Migrate legacy Python resources to stack/ (one-time)
+      // Check for ANY of the legacy files, not just snippets.md
+      const legacyFiles = ["snippets.md", "tech-stack.md", "api-template.py"];
+      const backendResourcesDir = join(
+        cwd,
+        ".agents",
+        "skills",
+        "oma-backend",
+        "resources",
+      );
+      const hasLegacyFiles = legacyFiles.some((f) =>
+        existsSync(join(backendResourcesDir, f)),
+      );
+      if (hasLegacyFiles && !existsSync(backendStackDir)) {
+        mkdirSync(backendStackDir, { recursive: true });
+        for (const file of legacyFiles) {
+          const src = join(backendResourcesDir, file);
+          if (existsSync(src)) {
+            renameSync(src, join(backendStackDir, file));
+          }
+        }
+        writeFileSync(
+          join(backendStackDir, "stack.yaml"),
+          "language: python\nframework: fastapi\norm: sqlalchemy\nsource: migrated\n",
+        );
+      }
 
       await saveLocalVersion(cwd, remoteManifest.version);
 

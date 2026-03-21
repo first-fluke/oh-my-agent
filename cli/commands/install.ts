@@ -43,7 +43,11 @@ export async function install(): Promise<void> {
         hint: "Frontend + Backend + PM + QA",
       },
       { value: "frontend", label: "🎨 Frontend", hint: "React/Next.js" },
-      { value: "backend", label: "⚙️ Backend", hint: "FastAPI/Python" },
+      {
+        value: "backend",
+        label: "⚙️ Backend",
+        hint: "Python, Node.js, Rust, ...",
+      },
       { value: "mobile", label: "📱 Mobile", hint: "Flutter/Dart" },
       {
         value: "devops",
@@ -84,6 +88,37 @@ export async function install(): Promise<void> {
 
   const cwd = process.cwd();
 
+  // Ask for language variant when backend skill is selected
+  const variantSelections: Record<string, string> = {};
+  if (selectedSkills.includes("oma-backend")) {
+    const backendLang = await p.select({
+      message: "Backend language?",
+      options: [
+        {
+          value: "python",
+          label: "🐍 Python",
+          hint: "FastAPI/SQLAlchemy (default)",
+        },
+        {
+          value: "node",
+          label: "🟢 Node.js",
+          hint: "NestJS/Hono + Prisma/Drizzle",
+        },
+        { value: "rust", label: "🦀 Rust", hint: "Axum/Actix-web" },
+        {
+          value: "other",
+          label: "🔧 Other / Auto-detect",
+          hint: "Configure later with /stack-set",
+        },
+      ],
+      initialValue: "python",
+    });
+
+    if (!p.isCancel(backendLang) && backendLang !== "other") {
+      variantSelections["oma-backend"] = backendLang as string;
+    }
+  }
+
   const selectedClis: CliTool[] = ["claude"];
   const hasGithubDir = existsSync(join(cwd, ".github"));
   if (hasGithubDir) {
@@ -114,7 +149,7 @@ export async function install(): Promise<void> {
 
       for (const skillName of selectedSkills) {
         spinner.message(`Installing ${pc.cyan(skillName)}...`);
-        installSkill(repoDir, skillName, cwd);
+        installSkill(repoDir, skillName, cwd, variantSelections[skillName]);
       }
 
       spinner.stop("Skills installed!");

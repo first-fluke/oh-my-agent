@@ -5,8 +5,10 @@ import {
   mkdirSync,
   readdirSync,
   readlinkSync,
+  rmSync,
   symlinkSync,
   unlinkSync,
+  writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import type { SkillInfo, SkillsRegistry } from "../types/index.js";
@@ -17,7 +19,7 @@ export const INSTALLED_SKILLS_DIR = ".agents/skills";
 export const SKILLS: SkillsRegistry = {
   domain: [
     { name: "oma-frontend", desc: "React/Next.js UI specialist" },
-    { name: "oma-backend", desc: "FastAPI/SQLAlchemy API specialist" },
+    { name: "oma-backend", desc: "Backend API specialist (multi-language)" },
     {
       name: "oma-db",
       desc: "SQL/NoSQL data modeling, normalization, integrity, and capacity specialist",
@@ -123,6 +125,7 @@ export function installSkill(
   sourceDir: string,
   skillName: string,
   targetDir: string,
+  variant?: string,
 ): boolean {
   const src = join(sourceDir, ".agents", "skills", skillName);
   if (!existsSync(src)) return false;
@@ -131,6 +134,29 @@ export function installSkill(
   clearNonDirectory(dest);
   mkdirSync(dest, { recursive: true });
   cpSync(src, dest, { recursive: true, force: true });
+
+  // Copy selected variant from SOURCE to dest stack/ (use src to avoid partial-copy issues)
+  const variantSrcDir = join(src, "variants");
+  const stackDir = join(dest, "stack");
+
+  if (variant && existsSync(join(variantSrcDir, variant))) {
+    mkdirSync(stackDir, { recursive: true });
+    cpSync(join(variantSrcDir, variant), stackDir, {
+      recursive: true,
+      force: true,
+    });
+    writeFileSync(
+      join(stackDir, "stack.yaml"),
+      `language: ${variant}\nsource: preset\n`,
+    );
+  }
+
+  // Remove variants/ from user project (not needed at runtime)
+  const destVariantsDir = join(dest, "variants");
+  if (existsSync(destVariantsDir)) {
+    rmSync(destVariantsDir, { recursive: true, force: true });
+  }
+
   return true;
 }
 
