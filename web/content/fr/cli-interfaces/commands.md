@@ -20,7 +20,6 @@ oma stats                   # métriques de productivité
 oma retro                   # rapport rétrospectif
 oma cleanup                 # nettoyage des ressources orphelines
 oma bridge [url]            # MCP stdio -> streamable HTTP
-oma stack-set <stack>       # configurer la stack backend (python|node|rust)
 ```
 
 ## Commandes d'agent

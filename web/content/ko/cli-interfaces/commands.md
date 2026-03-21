@@ -20,7 +20,6 @@ oma stats                   # 생산성 지표
 oma retro                   # 회고 리포트
 oma cleanup                 # orphan 리소스 정리
 oma bridge [url]            # MCP stdio -> streamable HTTP
-oma stack-set <stack>       # 백엔드 언어 스택 설정 (python|node|rust)
 ```
 
 ## 에이전트 명령

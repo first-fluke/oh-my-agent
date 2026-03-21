@@ -20,7 +20,6 @@ oma stats                   # 生産性メトリクス
 oma retro                   # 振り返りレポート
 oma cleanup                 # 孤立リソースのクリーンアップ
 oma bridge [url]            # MCP stdio -> streamable HTTP
-oma stack-set <stack>       # バックエンド言語スタック設定 (python|node|rust)
 ```
 
 ## エージェントコマンド

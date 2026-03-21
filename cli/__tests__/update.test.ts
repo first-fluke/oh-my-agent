@@ -1,6 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import * as skills from "../lib/skills.js";
-import * as nodefs from "node:fs";
 
 vi.mock("../lib/manifest.js", () => ({
   fetchRemoteManifest: vi.fn(),
@@ -11,14 +10,6 @@ vi.mock("../lib/manifest.js", () => ({
 vi.mock("../lib/tarball.js", () => ({
   downloadAndExtract: vi.fn(),
 }));
-
-vi.mock("node:fs", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:fs")>();
-  return {
-    ...actual,
-    existsSync: vi.fn(),
-  };
-});
 
 describe("whitelist-based skill filtering", () => {
   it("getAllSkills should return only registered skills", () => {
@@ -69,64 +60,47 @@ describe("whitelist-based skill filtering", () => {
 });
 
 describe("update stack/ preservation logic", () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  it("should detect legacy snippets.md for migration", () => {
-    // Simulate: resources/snippets.md exists, stack/ does not
-    const existsSync = vi.mocked(nodefs.existsSync);
-    existsSync.mockImplementation((p: unknown) => {
-      const path = String(p);
-      if (path.includes("resources/snippets.md")) return true;
-      if (path.includes("/stack")) return false;
+  it("should detect legacy files for migration", () => {
+    const mockExistsSync = vi.fn((p: string) => {
+      if (p.includes("resources/snippets.md")) return true;
+      if (p.includes("/stack")) return false;
       return false;
     });
 
-    const legacySnippetsExists = existsSync(
-      "/project/.agents/skills/oma-backend/resources/snippets.md",
+    const legacyFiles = ["snippets.md", "tech-stack.md", "api-template.py"];
+    const hasLegacyFiles = legacyFiles.some((f) =>
+      mockExistsSync(`/project/.agents/skills/oma-backend/resources/${f}`),
     );
-    const backendStackExists = existsSync(
+    const hasBackendStack = mockExistsSync(
       "/project/.agents/skills/oma-backend/stack",
     );
 
-    // Migration condition from update.ts line 138:
-    // existsSync(legacySnippets) && !existsSync(backendStackDir)
-    const shouldMigrate = legacySnippetsExists && !backendStackExists;
-
-    expect(legacySnippetsExists).toBe(true);
-    expect(backendStackExists).toBe(false);
-    expect(shouldMigrate).toBe(true);
+    expect(hasLegacyFiles).toBe(true);
+    expect(hasBackendStack).toBe(false);
+    expect(hasLegacyFiles && !hasBackendStack).toBe(true);
   });
 
   it("should not migrate when stack/ already exists", () => {
-    // Simulate: both resources/snippets.md and stack/ exist
-    const existsSync = vi.mocked(nodefs.existsSync);
-    existsSync.mockImplementation((p: unknown) => {
-      const path = String(p);
-      if (path.includes("resources/snippets.md")) return true;
-      if (path.includes("/stack")) return true;
+    const mockExistsSync = vi.fn((p: string) => {
+      if (p.includes("resources/snippets.md")) return true;
+      if (p.includes("/stack")) return true;
       return false;
     });
 
-    const legacySnippetsExists = existsSync(
-      "/project/.agents/skills/oma-backend/resources/snippets.md",
+    const legacyFiles = ["snippets.md", "tech-stack.md", "api-template.py"];
+    const hasLegacyFiles = legacyFiles.some((f) =>
+      mockExistsSync(`/project/.agents/skills/oma-backend/resources/${f}`),
     );
-    const backendStackExists = existsSync(
+    const hasBackendStack = mockExistsSync(
       "/project/.agents/skills/oma-backend/stack",
     );
 
-    // Migration condition from update.ts line 138:
-    // existsSync(legacySnippets) && !existsSync(backendStackDir)
-    const shouldMigrate = legacySnippetsExists && !backendStackExists;
-
-    expect(legacySnippetsExists).toBe(true);
-    expect(backendStackExists).toBe(true);
-    expect(shouldMigrate).toBe(false);
+    expect(hasLegacyFiles).toBe(true);
+    expect(hasBackendStack).toBe(true);
+    expect(hasLegacyFiles && !hasBackendStack).toBe(false);
   });
 
   it("stack.yaml should contain migrated source marker", () => {
-    // The content written to stack.yaml during migration (update.ts line 158-160)
     const expectedStackYaml =
       "language: python\nframework: fastapi\norm: sqlalchemy\nsource: migrated\n";
 
@@ -134,8 +108,5 @@ describe("update stack/ preservation logic", () => {
     expect(expectedStackYaml).toContain("framework: fastapi");
     expect(expectedStackYaml).toContain("orm: sqlalchemy");
     expect(expectedStackYaml).toContain("source: migrated");
-    expect(expectedStackYaml).toBe(
-      "language: python\nframework: fastapi\norm: sqlalchemy\nsource: migrated\n",
-    );
   });
 });

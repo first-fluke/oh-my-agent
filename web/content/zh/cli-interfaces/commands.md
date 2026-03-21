@@ -20,7 +20,6 @@ oma stats                   # 生产力指标
 oma retro                   # 回顾报告
 oma cleanup                 # 清理孤立资源
 oma bridge [url]            # MCP stdio -> 可流式 HTTP
-oma stack-set <stack>       # 设置后端语言栈 (python|node|rust)
 ```
 
 ## 代理命令
