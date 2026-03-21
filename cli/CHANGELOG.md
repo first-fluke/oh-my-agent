@@ -1,5 +1,39 @@
 # Changelog
 
+## [4.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.1.0...cli-v4.2.0) (2026-03-21)
+
+
+### Features
+
+* add vendor adaptation infrastructure ([d7ab84d](https://github.com/first-fluke/oh-my-agent/commit/d7ab84d2c75234982f761bd512cb88df92aeafcb))
+
+
+### Bug Fixes
+
+* address reviewer feedback — inject Execution Protocol, remove deprecated calls ([848dca0](https://github.com/first-fluke/oh-my-agent/commit/848dca03d3bb2f9d2b26233cbf67d6e1b840eb49))
+* harden parseFrontmatter against inline --- and malformed YAML ([d51c05d](https://github.com/first-fluke/oh-my-agent/commit/d51c05d2b48bf1946d3d0e21e498d5fee84252ab))
+* regenerate .claude/agents with correct runtime/ execution protocol path ([bc286e6](https://github.com/first-fluke/oh-my-agent/commit/bc286e6f40b91a2eee7e957c9fe9f53aa5a7f57e))
+* simplify parseFrontmatter offset and anchor resultName regex ([7a7e6bc](https://github.com/first-fluke/oh-my-agent/commit/7a7e6bcd62ca9368340d45298cc81a32aaa92021))
+* update workflow count to 13, fix commit mapping, clarify skill-routing stage 2 ([1d515d4](https://github.com/first-fluke/oh-my-agent/commit/1d515d44d6a36e478d93e0c34eeb51dd88b000a4))
+* use withFileTypes, clearNonDirectory, scope Codex/Gemini docs as planned ([3ccd1c5](https://github.com/first-fluke/oh-my-agent/commit/3ccd1c5f4371f7751f79fbde0dacab890a4c9a6d))
+* wire up installVendorAdaptations and fix YAML escaping ([dc43298](https://github.com/first-fluke/oh-my-agent/commit/dc43298213edac608412a4b561698a60584d1ba4))
+
+
+### Refactoring
+
+* convert .claude/skills/ to thin routers and mark agents as derivatives ([3481a90](https://github.com/first-fluke/oh-my-agent/commit/3481a903bdc6603548348d00d74af44387766684))
+* extract abstract agent definitions to .agents/agents/ ([e8cd4b3](https://github.com/first-fluke/oh-my-agent/commit/e8cd4b35c6d6e117951a16ae41756167814a86ea))
+* move Execution Protocol to abstract agents with vendor placeholder ([7d3f160](https://github.com/first-fluke/oh-my-agent/commit/7d3f16089cd00cd94b25e05fd98ab67a07856e8f))
+* replace keyword-based auto-activation with explicit skill invocation ([6be9ce7](https://github.com/first-fluke/oh-my-agent/commit/6be9ce7f587e96539edf96cd049dbe274b27eb3c))
+* unify workflows and agents into .agents/ SSOT ([0195cd8](https://github.com/first-fluke/oh-my-agent/commit/0195cd806cb37aab7f6b15a4e2c4a8fbf3ce571b))
+* unify workflows with vendor detection branches ([162e59d](https://github.com/first-fluke/oh-my-agent/commit/162e59dfb0aa54c811919e4bd1a33c485d97aa4b))
+
+
+### Documentation
+
+* add SSOT workflow unification design and task plan ([f354723](https://github.com/first-fluke/oh-my-agent/commit/f3547239c7875b496fec16d205ee65fd2b697eb0))
+* update docs and README for SSOT unification ([72b7a71](https://github.com/first-fluke/oh-my-agent/commit/72b7a71c13b0903658352e3fc16066e0903acd4d))
+
 ## [4.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.0.0...cli-v4.1.0) (2026-03-21)
 
 
