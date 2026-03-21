@@ -57,8 +57,10 @@ name: [invalid yaml
 Body.`;
 
     const result = parseFrontmatter(content);
-    // Should not throw, returns empty frontmatter
-    expect(result.body).toBe(content);
+    // Should not throw, returns empty frontmatter and body without frontmatter block
+    expect(result.frontmatter).toEqual({});
+    expect(result.body).toContain("Body.");
+    expect(result.body).not.toContain("name: [invalid yaml");
   });
 
   it("should handle empty frontmatter", () => {

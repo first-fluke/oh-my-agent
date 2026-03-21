@@ -15,13 +15,15 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
     return { frontmatter: {}, body: content };
   }
 
-  const endIndex = trimmed.indexOf("---", 3);
+  const endIndex = trimmed.indexOf("\n---", 3);
   if (endIndex === -1) {
     return { frontmatter: {}, body: content };
   }
+  // Adjust to point to the start of "---" (skip the "\n")
+  const fmEnd = endIndex + 1;
 
-  const yamlBlock = trimmed.slice(3, endIndex).trim();
-  const body = trimmed.slice(endIndex + 3).replace(/^\n/, "");
+  const yamlBlock = trimmed.slice(3, fmEnd).trim();
+  const body = trimmed.slice(fmEnd + 3).replace(/^\n/, "");
 
   try {
     const parsed = parseYaml(yamlBlock);
@@ -29,7 +31,9 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
       parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
     return { frontmatter, body };
   } catch {
-    return { frontmatter: {}, body: content };
+    // Return body without frontmatter block even on parse failure
+    // to prevent duplicate frontmatter on regeneration
+    return { frontmatter: {}, body };
   }
 }
 
