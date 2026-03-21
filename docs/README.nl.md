@@ -57,7 +57,7 @@ Claude Code heeft native eersteklas ondersteuning via drie mechanismen:
 
 - **`CLAUDE.md`** — wordt automatisch geladen bij elke sessiestart; bevat projectinformatie, architectuur en gedragsregels voor agents.
 - **`.claude/skills/`** — 12 workflow skills gekoppeld aan `.agents/workflows/` (bijv. `/orchestrate`, `/coordinate`, `/ultrawork`). Domeinskills zijn gesymlinkt vanuit `.agents/skills/`.
-- **`.claude/agents/`** — 7 subagents die via de Task tool worden aangeroepen: `backend-impl`, `frontend-impl`, `mobile-impl`, `db-impl`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+- **`.claude/agents/`** — 7 subagents die via de Task tool worden aangeroepen: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
 
 Luspatronen (Review Loop, Issue Remediation Loop, Phase Gate Loop) draaien rechtstreeks binnen Claude Code zonder externe CLI-polling.
 
@@ -91,23 +91,23 @@ flowchart TD
 
     subgraph Orchestration["Orkestratie"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["Domein Agents"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["Kwaliteit"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -171,7 +171,7 @@ Selecteer je projecttype en skills worden geïnstalleerd in `.agents/skills/`.
 | 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### Optie 3: Globale installatie (voor Orchestrator)
 
@@ -208,7 +208,7 @@ bunx oh-my-agent
 
 ```
 "Maak een loginformulier met Tailwind CSS en formuliervalidatie"
-→ frontend-agent activeert
+→ oma-frontend activeert
 ```
 
 **Complex project** (/coordinate workflow):

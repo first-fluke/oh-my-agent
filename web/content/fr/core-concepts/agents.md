@@ -14,7 +14,7 @@ description: Types d'agents, stratégie d'espace de travail et flux d'orchestrat
 - DevOps : Dev-workflow
 - Assurance : QA, Debug
 - Localisation : Translator
-- Coordination : workflow-guide, orchestrator
+- Coordination : oma-coordination, oma-orchestrator
 
 ## Stratégie d'espace de travail
 

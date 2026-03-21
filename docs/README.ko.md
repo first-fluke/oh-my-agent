@@ -37,23 +37,23 @@ flowchart TD
 
     subgraph Orchestration["오케스트레이션"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["도메인 에이전트"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["품질"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -93,10 +93,10 @@ Claude Code는 심링크를 넘어서 직접 연동됩니다:
 
 - **`CLAUDE.md`** — 프로젝트 정보, 아키텍처, 규칙 (Claude Code가 자동으로 읽음)
 - **`.claude/skills/`** — `.agents/workflows/`에서 가져온 12개 워크플로우 스킬 (`/orchestrate`, `/coordinate`, `/ultrawork` 등)
-- **`.claude/agents/`** — Task tool로 띄우는 7개 서브에이전트 (backend-impl, frontend-impl, mobile-impl, db-impl, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/agents/`** — Task tool로 띄우는 7개 서브에이전트 (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **루프 패턴** — CLI 폴링 없이 Task tool의 동기 결과를 활용하는 Review Loop, Issue Remediation Loop, Phase Gate Loop
 
-도메인 스킬(backend-agent, frontend-agent 등)은 `.agents/skills/`에서 심링크로 가져옵니다. 워크플로우 스킬은 `.agents/workflows/*.md` 원본을 참조하는 네이티브 SKILL.md 파일입니다.
+도메인 스킬(oma-backend, oma-frontend 등)은 `.agents/skills/`에서 심링크로 가져옵니다. 워크플로우 스킬은 `.agents/workflows/*.md` 원본을 참조하는 네이티브 SKILL.md 파일입니다.
 
 ## `.agents` 명세
 
@@ -164,7 +164,7 @@ bunx oh-my-agent
 | 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### 옵션 3: 전역 설치 (Orchestrator용)
 
@@ -213,7 +213,7 @@ bunx oh-my-agent
 
 ```
 "Tailwind CSS로 로그인 폼 만들어줘"
-→ frontend-agent 활성화
+→ oma-frontend 활성화
 ```
 
 **커밋** (Conventional Commits):

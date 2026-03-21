@@ -18,20 +18,20 @@ oh-my-agent é um orquestrador multi-agente para o Antigravity IDE. Ele roteia s
 
 | Agente | Responsabilidade |
 |---|---|
-| workflow-guide | Coordena projetos complexos de múltiplos domínios |
-| pm-agent | Planejamento e decomposição de arquitetura |
-| frontend-agent | Implementação React/Next.js |
-| backend-agent | Implementação de API/banco de dados/autenticação |
-| mobile-agent | Implementação Flutter/mobile |
-| brainstorm | Ideação design-first e exploração de conceitos |
-| db-agent | Modelagem de banco de dados, design de esquemas e ajuste de consultas |
-| dev-workflow | Otimização de fluxo de trabalho de desenvolvimento e CI/CD |
-| tf-infra-agent | Provisionamento de infraestrutura como código com Terraform |
-| translator | Tradução multilíngue consciente do contexto |
-| qa-agent | Revisão de segurança/performance/acessibilidade |
-| debug-agent | Análise de causa raiz e correções seguras contra regressão |
-| orchestrator | Orquestração de sub-agentes via CLI |
-| commit | Workflow de commit convencional |
+| oma-coordination | Coordena projetos complexos de múltiplos domínios |
+| oma-pm | Planejamento e decomposição de arquitetura |
+| oma-frontend | Implementação React/Next.js |
+| oma-backend | Implementação de API/banco de dados/autenticação |
+| oma-mobile | Implementação Flutter/mobile |
+| oma-brainstorm | Ideação design-first e exploração de conceitos |
+| oma-db | Modelagem de banco de dados, design de esquemas e ajuste de consultas |
+| oma-dev-workflow | Otimização de fluxo de trabalho de desenvolvimento e CI/CD |
+| oma-tf-infra | Provisionamento de infraestrutura como código com Terraform |
+| oma-translator | Tradução multilíngue consciente do contexto |
+| oma-qa | Revisão de segurança/performance/acessibilidade |
+| oma-debug | Análise de causa raiz e correções seguras contra regressão |
+| oma-orchestrator | Orquestração de sub-agentes via CLI |
+| oma-commit | Workflow de commit convencional |
 
 ## Estrutura do Projeto
 

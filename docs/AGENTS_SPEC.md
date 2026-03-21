@@ -113,11 +113,11 @@ Claude Code uses a hybrid model beyond simple symlinks:
 ```text
 .claude/
 ├── skills/
-│   ├── backend-agent/  → ../../.agents/skills/backend-agent  (symlink, domain skill)
+│   ├── oma-backend/  → ../../.agents/skills/oma-backend  (symlink, domain skill)
 │   ├── orchestrate/SKILL.md                                   (native, workflow skill)
 │   └── ...
 ├── agents/
-│   ├── backend-impl.md         (subagent definition)
+│   ├── backend-engineer.md         (subagent definition)
 │   ├── qa-reviewer.md          (subagent definition)
 │   └── ...
 └── settings.local.json         (hooks for SSOT protection)

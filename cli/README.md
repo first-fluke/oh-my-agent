@@ -37,29 +37,29 @@ flowchart TD
 
     subgraph Orchestration["Orchestration"]
         direction TB
-        PM[pm-agent]
-        ORC[orchestrator]
+        PM[oma-pm]
+        ORC[oma-orchestrator]
     end
 
     subgraph Domain["Domain Agents"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["Quality"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([commit])
+    Quality --> CMT([oma-commit])
 ```
 
 ## Why Different
@@ -92,10 +92,10 @@ Claude Code has first-class native integration beyond symlinks:
 
 - **`CLAUDE.md`** — project identity, architecture, and rules (auto-loaded by Claude Code)
 - **`.claude/skills/`** — 12 workflow skills mapped from `.agents/workflows/` (e.g., `/orchestrate`, `/coordinate`, `/ultrawork`)
-- **`.claude/agents/`** — 7 subagent definitions spawned via Task tool (backend-impl, frontend-impl, mobile-impl, db-impl, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/agents/`** — 7 subagent definitions spawned via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Native loop patterns** — Review Loop, Issue Remediation Loop, and Phase Gate Loop using synchronous Task tool results instead of CLI polling
 
-Domain skills (backend-agent, frontend-agent, etc.) remain as symlinks from `.agents/skills/`. Workflow skills are native SKILL.md files that reference the corresponding `.agents/workflows/*.md` source of truth.
+Domain skills (oma-backend, oma-frontend, etc.) remain as symlinks from `.agents/skills/`. Workflow skills are native SKILL.md files that reference the corresponding `.agents/workflows/*.md` source of truth.
 
 ## The `.agents` Spec
 
@@ -115,7 +115,7 @@ A collection of **Agent Skills** enabling collaborative multi-agent development.
 
 | Agent | Specialization | Triggers |
 |-------|---------------|----------|
-| **Brainstorm** | Design-first ideation before planning | "brainstorm", "ideate", "explore idea" |
+| **Brainstorm** | Design-first ideation before planning | "oma-brainstorm", "ideate", "explore idea" |
 | **PM Agent** | Requirements analysis, task decomposition, architecture | "plan", "break down", "what should we build" |
 | **Frontend Agent** | React/Next.js, TypeScript, Tailwind CSS | "UI", "component", "styling" |
 | **Backend Agent** | FastAPI, PostgreSQL, JWT authentication | "API", "database", "authentication" |
@@ -126,7 +126,7 @@ A collection of **Agent Skills** enabling collaborative multi-agent development.
 | **Developer Workflow** | Monorepo task automation, mise tasks, CI/CD, migrations, release | "dev workflow", "mise tasks", "CI/CD pipeline" |
 | **TF Infra Agent** | Multi-cloud IaC provisioning (AWS, GCP, Azure, OCI) | "infrastructure", "terraform", "cloud setup" |
 | **Orchestrator** | CLI-based parallel agent execution with Serena Memory | "spawn agent", "parallel execution" |
-| **Commit** | Conventional Commits with project-specific rules | "commit", "save changes" |
+| **Commit** | Conventional Commits with project-specific rules | "oma-commit", "save changes" |
 
 ## Quick Start
 
@@ -159,11 +159,11 @@ Select your project type and skills will be installed to `.agents/skills/`, with
 | Preset | Skills |
 |--------|--------|
 | ✨ All | Everything |
-| 🌐 Fullstack | brainstorm, frontend, backend, db, pm, qa, debug, commit |
-| 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
-| ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
-| 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🌐 Fullstack | oma-brainstorm, frontend, backend, db, pm, qa, debug, oma-commit |
+| 🎨 Frontend | oma-brainstorm, frontend, pm, qa, debug, oma-commit |
+| ⚙️ Backend | oma-brainstorm, backend, db, pm, qa, debug, oma-commit |
+| 📱 Mobile | oma-brainstorm, mobile, pm, qa, debug, oma-commit |
+| 🚀 DevOps | oma-brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, oma-commit |
 
 ### Option 3: Global Installation (For Orchestrator)
 
@@ -202,7 +202,7 @@ You'll also need at least one CLI tool:
 
 ```
 "Create a login form with Tailwind CSS and form validation"
-→ frontend-agent activates
+→ oma-frontend activates
 ```
 
 **Commit changes** (conventional commits):

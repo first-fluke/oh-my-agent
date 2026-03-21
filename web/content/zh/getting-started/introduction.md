@@ -18,20 +18,20 @@ oh-my-agent 是面向 AI IDE 的多代理编排器。它将请求路由到专业
 
 | 代理 | 职责 |
 |------|------|
-| workflow-guide | 协调复杂的多领域项目 |
-| pm-agent | 规划与架构拆解 |
-| frontend-agent | React/Next.js 实现 |
-| backend-agent | API/数据库/认证实现 |
-| mobile-agent | Flutter/移动端实现 |
-| qa-agent | 安全/性能/无障碍评审 |
-| debug-agent | 根因分析与回归安全修复 |
-| brainstorm | 设计优先的构思与概念探索 |
-| db-agent | 数据库建模、模式设计和查询调优 |
-| dev-workflow | 开发工作流优化与 CI/CD |
-| tf-infra-agent | Terraform 基础设施即代码配置 |
-| translator | 上下文感知的多语言翻译 |
-| orchestrator | 基于 CLI 的子代理编排 |
-| commit | 约定式提交工作流 |
+| oma-coordination | 协调复杂的多领域项目 |
+| oma-pm | 规划与架构拆解 |
+| oma-frontend | React/Next.js 实现 |
+| oma-backend | API/数据库/认证实现 |
+| oma-mobile | Flutter/移动端实现 |
+| oma-qa | 安全/性能/无障碍评审 |
+| oma-debug | 根因分析与回归安全修复 |
+| oma-brainstorm | 设计优先的构思与概念探索 |
+| oma-db | 数据库建模、模式设计和查询调优 |
+| oma-dev-workflow | 开发工作流优化与 CI/CD |
+| oma-tf-infra | Terraform 基础设施即代码配置 |
+| oma-translator | 上下文感知的多语言翻译 |
+| oma-orchestrator | 基于 CLI 的子代理编排 |
+| oma-commit | 约定式提交工作流 |
 
 ## 项目结构
 

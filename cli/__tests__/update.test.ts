@@ -16,10 +16,10 @@ describe("whitelist-based skill filtering", () => {
     const allSkills = skills.getAllSkills();
     const skillNames = allSkills.map((s) => s.name);
 
-    expect(skillNames).toContain("frontend-agent");
-    expect(skillNames).toContain("backend-agent");
-    expect(skillNames).toContain("pm-agent");
-    expect(skillNames).toContain("commit");
+    expect(skillNames).toContain("oma-frontend");
+    expect(skillNames).toContain("oma-backend");
+    expect(skillNames).toContain("oma-pm");
+    expect(skillNames).toContain("oma-commit");
 
     expect(skillNames).not.toContain(".DS_Store");
     expect(skillNames).not.toContain("_version.json");
@@ -42,15 +42,15 @@ describe("whitelist-based skill filtering", () => {
     const skillNames = allSkills.map((s) => s.name);
 
     const expectedSkills = [
-      "frontend-agent",
-      "backend-agent",
-      "mobile-agent",
-      "pm-agent",
-      "qa-agent",
-      "workflow-guide",
-      "orchestrator",
-      "debug-agent",
-      "commit",
+      "oma-frontend",
+      "oma-backend",
+      "oma-mobile",
+      "oma-pm",
+      "oma-qa",
+      "oma-coordination",
+      "oma-orchestrator",
+      "oma-debug",
+      "oma-commit",
     ];
 
     for (const expected of expectedSkills) {

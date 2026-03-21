@@ -28,7 +28,7 @@ description: Vollständige Nutzungsanleitung mit Beispielen, Workflows, Dashboar
 ```
 
 **Was passiert:**
-- Antigravity erkennt, dass dies zu `frontend-agent` passt
+- Antigravity erkennt, dass dies zu `oma-frontend` passt
 - Der Skill wird automatisch geladen (Progressive Disclosure)
 - Sie erhalten eine React-Komponente mit TypeScript, Tailwind, Formularvalidierung
 
@@ -63,7 +63,7 @@ description: Vollständige Nutzungsanleitung mit Beispielen, Workflows, Dashboar
 
 **Was passiert:**
 
-1. **debug-agent aktiviert** — analysiert Fehler
+1. **oma-debug aktiviert** — analysiert Fehler
 2. **Grundursache gefunden** — Komponente mappt über `todos` bevor Daten geladen sind
 3. **Fix bereitgestellt** — Loading-States und Null-Checks hinzugefügt
 4. **Regressionstest geschrieben** — stellt sicher, dass Bug nicht zurückkehrt
@@ -176,20 +176,20 @@ Agenten können in separaten Verzeichnissen arbeiten, um Konflikte zu vermeiden.
 
 | Skill | Aktiviert automatisch für | Output |
 |-------|--------------------------|--------|
-| workflow-guide | Komplexe Multi-Domain-Projekte | Schritt-für-Schritt-Agent-Koordination |
-| pm-agent | "plane das", "schlüssele auf" | `.agents/plan.json` |
-| frontend-agent | UI, Komponenten, Styling | React-Komponenten, Tests |
-| backend-agent | APIs, Datenbanken, Auth | API-Endpoints, Modelle, Tests |
-| mobile-agent | Mobile Apps, iOS/Android | Flutter-Screens, State-Management |
-| brainstorm | Ideenfindung, Konzepterkundung | Design-Dokument |
-| db-agent | Datenbank, Schema, ERD, Migration | Schema-Design, Query-Tuning |
-| dev-workflow | CI/CD, Git Hooks, Monorepo-Setup | Workflow-Konfigurationen, Automatisierung |
-| tf-infra-agent | Terraform, Cloud-Infrastruktur | IaC-Module, State-Management |
-| translator | Übersetzung, mehrsprachige Inhalte | Tonerhaltende Übersetzung |
-| qa-agent | "Sicherheit prüfen", "Audit" | QA-Report mit priorisierten Fixes |
-| debug-agent | Bug-Reports, Fehlermeldungen | Gefixter Code, Regressionstests |
-| orchestrator | CLI Sub-Agent-Ausführung | Ergebnisse in `.agents/results/` |
-| commit | "commit", "Änderungen speichern" | Git-Commits (auto-split nach Feature) |
+| oma-coordination | Komplexe Multi-Domain-Projekte | Schritt-für-Schritt-Agent-Koordination |
+| oma-pm | "plane das", "schlüssele auf" | `.agents/plan.json` |
+| oma-frontend | UI, Komponenten, Styling | React-Komponenten, Tests |
+| oma-backend | APIs, Datenbanken, Auth | API-Endpoints, Modelle, Tests |
+| oma-mobile | Mobile Apps, iOS/Android | Flutter-Screens, State-Management |
+| oma-brainstorm | Ideenfindung, Konzepterkundung | Design-Dokument |
+| oma-db | Datenbank, Schema, ERD, Migration | Schema-Design, Query-Tuning |
+| oma-dev-workflow | CI/CD, Git Hooks, Monorepo-Setup | Workflow-Konfigurationen, Automatisierung |
+| oma-tf-infra | Terraform, Cloud-Infrastruktur | IaC-Module, State-Management |
+| oma-translator | Übersetzung, mehrsprachige Inhalte | Tonerhaltende Übersetzung |
+| oma-qa | "Sicherheit prüfen", "Audit" | QA-Report mit priorisierten Fixes |
+| oma-debug | Bug-Reports, Fehlermeldungen | Gefixter Code, Regressionstests |
+| oma-orchestrator | CLI Sub-Agent-Ausführung | Ergebnisse in `.agents/results/` |
+| oma-commit | "commit", "Änderungen speichern" | Git-Commits (auto-split nach Feature) |
 
 ---
 
@@ -221,7 +221,7 @@ Diese sind getrennt von **Skills** (die automatisch aktivieren). Workflows geben
 
 ```
 Sie: "Erstelle eine Button-Komponente"
-  → Antigravity lädt frontend-agent
+  → Antigravity lädt oma-frontend
   → Erhalten Sie Komponente sofort
 ```
 
@@ -229,7 +229,7 @@ Sie: "Erstelle eine Button-Komponente"
 
 ```
 Sie: "Baue eine TODO-App mit Authentifizierung"
-  → workflow-guide aktiviert automatisch
+  → oma-coordination aktiviert automatisch
   → PM Agent erstellt Plan
   → Sie spawnen Agenten via CLI (oma agent:spawn)
   → Agenten arbeiten parallel
@@ -249,7 +249,7 @@ Sie: /coordinate
 
 ```
 Sie: "Login-Button wirft TypeError"
-  → debug-agent aktiviert
+  → oma-debug aktiviert
   → Root-Cause-Analyse
   → Fix + Regressionstest
   → Ähnliche Patterns geprüft

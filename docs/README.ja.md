@@ -37,23 +37,23 @@ flowchart TD
 
     subgraph Orchestration["オーケストレーション"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["ドメインエージェント"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["品質"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -93,10 +93,10 @@ Claude Codeはシンボリックリンクだけでなく、直接連携できま
 
 - **`CLAUDE.md`** — プロジェクト情報、アーキテクチャ、ルール（Claude Codeが自動で読み込み）
 - **`.claude/skills/`** — `.agents/workflows/`から取り込んだ12のワークフロースキル（`/orchestrate`、`/coordinate`、`/ultrawork`など）
-- **`.claude/agents/`** — Task toolで起動する7つのサブエージェント（backend-impl、frontend-impl、mobile-impl、db-impl、qa-reviewer、debug-investigator、pm-planner）
+- **`.claude/agents/`** — Task toolで起動する7つのサブエージェント（backend-engineer、frontend-engineer、mobile-engineer、db-engineer、qa-reviewer、debug-investigator、pm-planner）
 - **ループパターン** — CLIポーリングなしで、Task toolの同期結果を使ったReview Loop、Issue Remediation Loop、Phase Gate Loop
 
-ドメインスキル（backend-agent、frontend-agentなど）は`.agents/skills/`からのシンボリックリンクです。ワークフロースキルは`.agents/workflows/*.md`の原本を参照するネイティブSKILL.mdファイルです。
+ドメインスキル（oma-backend、oma-frontendなど）は`.agents/skills/`からのシンボリックリンクです。ワークフロースキルは`.agents/workflows/*.md`の原本を参照するネイティブSKILL.mdファイルです。
 
 ## `.agents` 仕様
 
@@ -164,7 +164,7 @@ bunx oh-my-agent
 | 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### オプション3: グローバルインストール（Orchestrator用）
 
@@ -213,7 +213,7 @@ bunx oh-my-agent
 
 ```
 "Tailwind CSSでログインフォームを作って"
-→ frontend-agentが起動
+→ oma-frontendが起動
 ```
 
 **コミット**（Conventional Commits）:

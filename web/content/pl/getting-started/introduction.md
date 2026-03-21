@@ -18,20 +18,20 @@ oh-my-agent to wieloagentowy orkiestrator dla Antigravity IDE. Kieruje żądania
 
 | Agent | Odpowiedzialność |
 |---|---|
-| workflow-guide | Koordynuje złożone projekty wielodomenowe |
-| pm-agent | Planowanie i dekompozycja architektury |
-| frontend-agent | Implementacja React/Next.js |
-| backend-agent | Implementacja API/bazy danych/autoryzacji |
-| mobile-agent | Implementacja Flutter/mobile |
-| qa-agent | Przegląd bezpieczeństwa/wydajności/dostępności |
-| debug-agent | Analiza przyczyn źródłowych i poprawki bezpieczne dla regresji |
-| brainstorm | Ideacja z priorytetem projektowania i eksploracja koncepcji |
-| db-agent | Modelowanie baz danych, projektowanie schematów i optymalizacja zapytań |
-| dev-workflow | Optymalizacja przepływu pracy deweloperskiej i CI/CD |
-| tf-infra-agent | Provisioning infrastruktury jako kodu z Terraform |
-| translator | Kontekstowe tłumaczenie wielojęzyczne |
-| orchestrator | Orkiestracja podagentów oparta na CLI |
-| commit | Przepływ pracy konwencjonalnych commitów |
+| oma-coordination | Koordynuje złożone projekty wielodomenowe |
+| oma-pm | Planowanie i dekompozycja architektury |
+| oma-frontend | Implementacja React/Next.js |
+| oma-backend | Implementacja API/bazy danych/autoryzacji |
+| oma-mobile | Implementacja Flutter/mobile |
+| oma-qa | Przegląd bezpieczeństwa/wydajności/dostępności |
+| oma-debug | Analiza przyczyn źródłowych i poprawki bezpieczne dla regresji |
+| oma-brainstorm | Ideacja z priorytetem projektowania i eksploracja koncepcji |
+| oma-db | Modelowanie baz danych, projektowanie schematów i optymalizacja zapytań |
+| oma-dev-workflow | Optymalizacja przepływu pracy deweloperskiej i CI/CD |
+| oma-tf-infra | Provisioning infrastruktury jako kodu z Terraform |
+| oma-translator | Kontekstowe tłumaczenie wielojęzyczne |
+| oma-orchestrator | Orkiestracja podagentów oparta na CLI |
+| oma-commit | Przepływ pracy konwencjonalnych commitów |
 
 ## Struktura projektu
 

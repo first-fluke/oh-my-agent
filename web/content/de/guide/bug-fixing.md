@@ -37,7 +37,7 @@ Klassifizieren Sie frühzeitig, um die Reaktionsgeschwindigkeit zu wählen:
 4. Regressionstests für den fehlgeschlagenen Pfad hinzufügen.
 5. Angrenzende Pfade prüfen, die wahrscheinlich denselben Fehlermodus aufweisen.
 
-## Prompt-Vorlage für debug-agent
+## Prompt-Vorlage für oma-debug
 
 ```text
 Bug: <error/symptom>

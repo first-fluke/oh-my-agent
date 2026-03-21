@@ -14,7 +14,7 @@ description: Tipos de agentes, estratégia de workspace e fluxo de orquestraçã
 - DevOps: Dev-workflow
 - Garantia: QA, Debug
 - Localização: Translator
-- Coordenação: workflow-guide, orchestrator
+- Coordenação: oma-coordination, oma-orchestrator
 
 ## Estratégia de Workspace
 

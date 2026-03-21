@@ -14,7 +14,7 @@ description: Agent types, workspace strategy, and orchestration flow.
 - DevOps: Dev-workflow
 - Assurance: QA, Debug
 - Localization: Translator
-- Coordination: workflow-guide, orchestrator
+- Coordination: oma-coordination, oma-orchestrator
 
 ## Workspace Strategy
 

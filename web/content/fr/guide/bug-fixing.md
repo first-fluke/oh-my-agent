@@ -37,7 +37,7 @@ Classifiez rapidement pour choisir la vitesse de réponse :
 4. Ajouter des tests de régression pour le chemin défaillant.
 5. Revérifier les chemins adjacents susceptibles de partager le même mode de défaillance.
 
-## Modèle de prompt pour debug-agent
+## Modèle de prompt pour oma-debug
 
 ```text
 Bug: <error/symptom>

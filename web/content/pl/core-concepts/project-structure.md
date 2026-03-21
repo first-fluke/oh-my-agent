@@ -37,20 +37,20 @@ Szczegółowe drzewo katalogów dla tego repozytorium.
 │       │   ├── lessons-learned.md
 │       │   ├── verify.sh
 │       │   └── api-contracts/
-│       ├── backend-agent/              # FastAPI
-│       ├── brainstorm/                 # Ideacja i eksploracja koncepcji
-│       ├── commit/                     # Umiejętność conventional commits
-│       ├── db-agent/                   # Modelowanie baz danych i optymalizacja
-│       ├── debug-agent/                # Naprawianie błędów
-│       ├── dev-workflow/               # CI/CD i optymalizacja przepływu pracy
-│       ├── frontend-agent/             # React/Next.js
-│       ├── mobile-agent/               # Flutter
-│       ├── orchestrator/               # Uruchamiacz pod-agentów przez CLI
-│       ├── pm-agent/                   # Product manager
-│       ├── qa-agent/                   # Bezpieczeństwo i QA
-│       ├── tf-infra-agent/             # Terraform i infrastruktura jako kod
-│       ├── translator/                 # Tłumaczenie wielojęzyczne
-│       └── workflow-guide/             # Koordynacja multi-agentowa
+│       ├── oma-backend/              # FastAPI
+│       ├── oma-brainstorm/                 # Ideacja i eksploracja koncepcji
+│       ├── oma-commit/                     # Umiejętność conventional commits
+│       ├── oma-db/                   # Modelowanie baz danych i optymalizacja
+│       ├── oma-debug/                # Naprawianie błędów
+│       ├── oma-dev-workflow/               # CI/CD i optymalizacja przepływu pracy
+│       ├── oma-frontend/             # React/Next.js
+│       ├── oma-mobile/               # Flutter
+│       ├── oma-orchestrator/               # Uruchamiacz pod-agentów przez CLI
+│       ├── oma-pm/                   # Product manager
+│       ├── oma-qa/                   # Bezpieczeństwo i QA
+│       ├── oma-tf-infra/             # Terraform i infrastruktura jako kod
+│       ├── oma-translator/                 # Tłumaczenie wielojęzyczne
+│       └── oma-coordination/             # Koordynacja multi-agentowa
 │       # Każda umiejętność ma:
 │       #   SKILL.md              (~40 linii, zoptymalizowany tokenowo)
 │       #   resources/

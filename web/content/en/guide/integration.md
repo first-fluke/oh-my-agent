@@ -38,7 +38,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/skills .agents/workflows .agents/config .claude/skills
 
 # Copy only missing skill directories (example)
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -48,7 +48,7 @@ done
 [ -d .agents/skills/_shared ] || cp -r /path/to/oh-my-agent/.agents/skills/_shared .agents/skills/_shared
 
 # Compatibility symlinks
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit _shared; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit _shared; do
   [ -L ".agents/skills/$skill" ] || ln -s "../../.agents/skills/$skill" ".agents/skills/$skill"
   [ -L ".claude/skills/$skill" ] || ln -s "../../.agents/skills/$skill" ".claude/skills/$skill"
 done
@@ -120,10 +120,10 @@ If you select additional CLI tools, it will also create symlinks for those direc
 ### Symlink Structure
 
 ```text
-.agents/skills/frontend-agent/     ← Source (SSOT)
-.agents/skills/frontend-agent/      → ../../.agents/skills/frontend-agent/
-.claude/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/     ← Source (SSOT)
+.agents/skills/oma-frontend/      → ../../.agents/skills/oma-frontend/
+.claude/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 The installer skips existing symlinks and warns if a real directory exists at the target location.

@@ -57,7 +57,7 @@ Claude Code tiene soporte nativo de primera clase a través de tres mecanismos:
 
 - **`CLAUDE.md`** — cargado automáticamente al inicio de cada sesión; contiene la información del proyecto, la arquitectura y las reglas de comportamiento del agente.
 - **`.claude/skills/`** — 12 workflow skills mapeados desde `.agents/workflows/` (por ejemplo, `/orchestrate`, `/coordinate`, `/ultrawork`). Los skills de dominio se enlazan simbólicamente desde `.agents/skills/`.
-- **`.claude/agents/`** — 7 subagentes invocados mediante la herramienta Task: `backend-impl`, `frontend-impl`, `mobile-impl`, `db-impl`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+- **`.claude/agents/`** — 7 subagentes invocados mediante la herramienta Task: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
 
 Los patrones de bucle (Review Loop, Issue Remediation Loop, Phase Gate Loop) se ejecutan directamente dentro de Claude Code sin necesidad de sondear la CLI externa.
 
@@ -91,23 +91,23 @@ flowchart TD
 
     subgraph Orchestration["Orquestación"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["Agentes de Dominio"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["Calidad"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -171,7 +171,7 @@ Selecciona tu tipo de proyecto y los skills se instalarán en `.agents/skills/`.
 | 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### Opción 3: Instalación Global (Para Orchestrator)
 
@@ -208,7 +208,7 @@ bunx oh-my-agent
 
 ```
 "Crear un formulario de login con Tailwind CSS y validación de formularios"
-→ frontend-agent se activa
+→ oma-frontend se activa
 ```
 
 **Proyecto complejo** (/coordinate workflow):

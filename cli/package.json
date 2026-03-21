@@ -88,19 +88,19 @@
   "antigravity": {
     "skillsPath": ".agents/skills",
     "skills": [
-      "brainstorm",
-      "workflow-guide",
-      "pm-agent",
-      "frontend-agent",
-      "backend-agent",
-      "db-agent",
-      "mobile-agent",
-      "qa-agent",
-      "debug-agent",
-      "orchestrator",
-      "dev-workflow",
-      "tf-infra-agent",
-      "commit"
+      "oma-brainstorm",
+      "oma-coordination",
+      "oma-pm",
+      "oma-frontend",
+      "oma-backend",
+      "oma-db",
+      "oma-mobile",
+      "oma-qa",
+      "oma-debug",
+      "oma-orchestrator",
+      "oma-dev-workflow",
+      "oma-tf-infra",
+      "oma-commit"
     ]
   }
 }

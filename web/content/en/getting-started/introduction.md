@@ -18,20 +18,20 @@ oh-my-agent is a multi-agent orchestrator for AI IDEs. It routes requests to spe
 
 | Agent | Responsibility |
 |---|---|
-| workflow-guide | Coordinates complex multi-domain projects |
-| pm-agent | Planning and architecture decomposition |
-| frontend-agent | React/Next.js implementation |
-| backend-agent | API/database/auth implementation |
-| mobile-agent | Flutter/mobile implementation |
-| qa-agent | Security/performance/accessibility review |
-| debug-agent | Root-cause analysis and regression-safe fixes |
-| brainstorm | Design-first ideation and concept exploration |
-| db-agent | Database modeling, schema design, and query tuning |
-| dev-workflow | Developer workflow optimization and CI/CD |
-| tf-infra-agent | Terraform infrastructure-as-code provisioning |
-| translator | Context-aware multilingual translation |
-| orchestrator | CLI-based sub-agent orchestration |
-| commit | Conventional commit workflow |
+| oma-coordination | Coordinates complex multi-domain projects |
+| oma-pm | Planning and architecture decomposition |
+| oma-frontend | React/Next.js implementation |
+| oma-backend | API/database/auth implementation |
+| oma-mobile | Flutter/mobile implementation |
+| oma-qa | Security/performance/accessibility review |
+| oma-debug | Root-cause analysis and regression-safe fixes |
+| oma-brainstorm | Design-first ideation and concept exploration |
+| oma-db | Database modeling, schema design, and query tuning |
+| oma-dev-workflow | Developer workflow optimization and CI/CD |
+| oma-tf-infra | Terraform infrastructure-as-code provisioning |
+| oma-translator | Context-aware multilingual translation |
+| oma-orchestrator | CLI-based sub-agent orchestration |
+| oma-commit | Conventional commit workflow |
 
 ## Project Structure
 

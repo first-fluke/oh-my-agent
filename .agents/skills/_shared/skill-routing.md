@@ -1,6 +1,6 @@
 # Skill Routing Map
 
-Routing rules for Orchestrator and workflow-guide to assign tasks to the correct agent.
+Routing rules for oma-orchestrator and oma-coordination to assign tasks to the correct agent.
 
 ## Progressive Disclosure
 
@@ -17,19 +17,19 @@ Match the user's request keywords against each skill's `description`. Load full 
 
 | User Request Keywords | Primary Skill | Notes |
 |----------------------|---------------|-------|
-| API, endpoint, REST, GraphQL, database, migration | **backend-agent** | |
-| auth, JWT, login, register, password | **backend-agent** | Auth UI task can also be created for frontend |
-| UI, component, page, form, screen (web) | **frontend-agent** | |
-| style, Tailwind, responsive, CSS | **frontend-agent** | |
-| mobile, iOS, Android, Flutter, React Native, app | **mobile-agent** | |
-| offline, push notification, camera, GPS | **mobile-agent** | |
-| bug, error, crash, broken, slow | **debug-agent** | |
-| review, security, performance | **qa-agent** | |
-| accessibility, WCAG, a11y | **qa-agent** | |
-| brainstorm, ideate, design, explore, idea, concept | **brainstorm** | Run before pm-agent |
-| plan, breakdown, task, sprint | **pm-agent** | |
-| automatic, parallel, orchestrate | **orchestrator** | |
-| workflow, guide, manual, step-by-step | **workflow-guide** | |
+| API, endpoint, REST, GraphQL, database, migration | **oma-backend** | |
+| auth, JWT, login, register, password | **oma-backend** | Auth UI task can also be created for frontend |
+| UI, component, page, form, screen (web) | **oma-frontend** | |
+| style, Tailwind, responsive, CSS | **oma-frontend** | |
+| mobile, iOS, Android, Flutter, React Native, app | **oma-mobile** | |
+| offline, push notification, camera, GPS | **oma-mobile** | |
+| bug, error, crash, broken, slow | **oma-debug** | |
+| review, security, performance | **oma-qa** | |
+| accessibility, WCAG, a11y | **oma-qa** | |
+| brainstorm, ideate, design, explore, idea, concept | **oma-brainstorm** | Run before oma-pm |
+| plan, breakdown, task, sprint | **oma-pm** | |
+| automatic, parallel, orchestrate | **oma-orchestrator** | |
+| workflow, guide, manual, step-by-step | **oma-coordination** | |
 
 ---
 
@@ -37,34 +37,34 @@ Match the user's request keywords against each skill's `description`. Load full 
 
 | Request Pattern | Execution Order |
 |----------------|-----------------|
-| "Create a fullstack app" | pm → (backend + frontend) parallel → qa |
-| "Create a mobile app" | pm → (backend + mobile) parallel → qa |
-| "Fullstack + mobile" | pm → (backend + frontend + mobile) parallel → qa |
-| "Fix bug and review" | debug → qa |
-| "Add feature and test" | pm → relevant agent → qa |
-| "I have an idea for a feature" | brainstorm → pm → relevant agents → qa |
-| "Let's design something new" | brainstorm → pm → relevant agents → qa |
-| "Do everything automatically" | orchestrator (internally pm → agents → qa) |
-| "I'll manage manually" | workflow-guide |
+| "Create a fullstack app" | oma-pm → (oma-backend + oma-frontend) parallel → oma-qa |
+| "Create a mobile app" | oma-pm → (oma-backend + oma-mobile) parallel → oma-qa |
+| "Fullstack + mobile" | oma-pm → (oma-backend + oma-frontend + oma-mobile) parallel → oma-qa |
+| "Fix bug and review" | oma-debug → oma-qa |
+| "Add feature and test" | oma-pm → relevant agent → oma-qa |
+| "I have an idea for a feature" | oma-brainstorm → oma-pm → relevant agents → oma-qa |
+| "Let's design something new" | oma-brainstorm → oma-pm → relevant agents → oma-qa |
+| "Do everything automatically" | oma-orchestrator (internally oma-pm → agents → oma-qa) |
+| "I'll manage manually" | oma-coordination |
 
 ---
 
 ## Inter-Agent Dependency Rules
 
 ### Parallel Execution Possible (No Dependencies)
-- backend + frontend (when API contract is pre-defined)
-- backend + mobile (when API contract is pre-defined)
-- frontend + mobile (independent of each other)
+- oma-backend + oma-frontend (when API contract is pre-defined)
+- oma-backend + oma-mobile (when API contract is pre-defined)
+- oma-frontend + oma-mobile (independent of each other)
 
 ### Sequential Execution Required
-- brainstorm → pm (design comes before planning)
-- pm → all other agents (planning comes first)
-- implementation agent → qa (review after implementation complete)
-- implementation agent → debug (debugging after implementation complete)
-- backend → frontend/mobile (when executing parallel without API contract)
+- oma-brainstorm → oma-pm (design comes before planning)
+- oma-pm → all other agents (planning comes first)
+- implementation agent → oma-qa (review after implementation complete)
+- implementation agent → oma-debug (debugging after implementation complete)
+- oma-backend → oma-frontend/oma-mobile (when executing parallel without API contract)
 
 ### QA Is Always Last
-- qa-agent runs after all implementation tasks are complete
+- oma-qa runs after all implementation tasks are complete
 - Exception: Can run immediately if user requests review of specific files only
 
 ---
@@ -73,11 +73,11 @@ Match the user's request keywords against each skill's `description`. Load full 
 
 | Situation | Escalation Target |
 |-----------|------------------|
-| Agent finds bug in different domain | Create task for debug-agent |
+| Agent finds bug in different domain | Create task for oma-debug |
 | QA finds CRITICAL issue | Re-run relevant domain agent |
-| Architecture change needed | Request re-planning from pm-agent |
-| Performance issue found (during implementation) | Current agent fixes, debug-agent if severe |
-| API contract mismatch | Orchestrator re-runs backend agent |
+| Architecture change needed | Request re-planning from oma-pm |
+| Performance issue found (during implementation) | Current agent fixes, oma-debug if severe |
+| API contract mismatch | oma-orchestrator re-runs oma-backend |
 
 ---
 
@@ -85,9 +85,9 @@ Match the user's request keywords against each skill's `description`. Load full 
 
 | Agent | Default Turns | Max Turns (including retries) |
 |-------|--------------|------------------------------|
-| pm-agent | 10 | 15 |
-| backend-agent | 20 | 30 |
-| frontend-agent | 20 | 30 |
-| mobile-agent | 20 | 30 |
-| debug-agent | 15 | 25 |
-| qa-agent | 15 | 20 |
+| oma-pm | 10 | 15 |
+| oma-backend | 20 | 30 |
+| oma-frontend | 20 | 30 |
+| oma-mobile | 20 | 30 |
+| oma-debug | 15 | 25 |
+| oma-qa | 15 | 20 |

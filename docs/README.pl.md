@@ -57,7 +57,7 @@ Claude Code obsługuje `oh-my-agent` w pełni natywnie — bez żadnych wtyczek.
 
 - **`CLAUDE.md`** — plik ładowany automatycznie przy starcie; zawiera informacje o projekcie, architekturę i zasady działania agentów.
 - **`.claude/skills/`** — 12 skills workflow zmapowanych z `.agents/workflows/` (np. `/orchestrate`, `/coordinate`, `/ultrawork`); dostępne bezpośrednio jako polecenia slash.
-- **`.claude/agents/`** — 7 subagentów uruchamianych przez Task tool: `backend-impl`, `frontend-impl`, `mobile-impl`, `db-impl`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
+- **`.claude/agents/`** — 7 subagentów uruchamianych przez Task tool: `backend-engineer`, `frontend-engineer`, `mobile-engineer`, `db-engineer`, `qa-reviewer`, `debug-investigator`, `pm-planner`.
 - **Wzorce pętli** — Review Loop, Issue Remediation Loop i Phase Gate Loop działają bez odpytywania CLI; Task tool zwraca wyniki synchronicznie.
 
 ## Specyfikacja `.agents`
@@ -90,23 +90,23 @@ flowchart TD
 
     subgraph Orchestration["Orkiestracja"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["Agenci domenowi"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["Jakość"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -170,7 +170,7 @@ Wybierz typ projektu, a umiejętności zostaną zainstalowane w `.agents/skills/
 | 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### Opcja 3: Instalacja globalna (Dla Orchestratora)
 
@@ -207,7 +207,7 @@ bunx oh-my-agent
 
 ```
 "Utwórz formularz logowania z Tailwind CSS i walidacją formularza"
-→ aktywuje się frontend-agent
+→ aktywuje się oma-frontend
 ```
 
 **Złożony projekt** (/coordinate workflow):

@@ -66,7 +66,7 @@ Task tool spawn prompt example:
 ```
 Review the following files for security, performance, accessibility, and code quality issues:
 [file list]
-Follow .agents/skills/qa-agent/SKILL.md for review standards.
+Follow .agents/skills/oma-qa/SKILL.md for review standards.
 Report findings as: CRITICAL / HIGH / MEDIUM / LOW with file:line, description, and remediation code.
 ```
 
@@ -80,9 +80,9 @@ When user wants fixes too, execute review → fix → re-review loop:
     NO → Report and complete
     YES →
       [3] Spawn domain agent Task tool (issues + fix instructions)
-          - Backend issues → backend-impl agent
-          - Frontend issues → frontend-impl agent
-          - Mobile issues → mobile-impl agent
+          - Backend issues → backend-engineer agent
+          - Frontend issues → frontend-engineer agent
+          - Mobile issues → mobile-engineer agent
       [4] Receive fix results
       [5] Re-spawn qa-reviewer (re-review fixed code)
       [6] → Back to [2] (repeat up to 3 times)

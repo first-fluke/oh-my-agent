@@ -28,7 +28,7 @@ description: Full usage guide including examples, workflows, dashboard operation
 ```
 
 **What happens:**
-- The IDE detects this matches `frontend-agent`
+- The IDE detects this matches `oma-frontend`
 - The skill loads automatically (Progressive Disclosure)
 - You get a React component with TypeScript, Tailwind, form validation
 
@@ -63,7 +63,7 @@ description: Full usage guide including examples, workflows, dashboard operation
 
 **What happens:**
 
-1. **debug-agent activates** — analyzes error
+1. **oma-debug activates** — analyzes error
 2. **Root cause found** — component maps over `todos` before data loads
 3. **Fix provided** — loading states and null checks added
 4. **Regression test written** — ensures bug won't return
@@ -170,20 +170,20 @@ Agents can work in separate directories to avoid conflicts. Workspace is auto-de
 
 | Skill | Auto-activates for | Output |
 |-------|-------------------|--------|
-| workflow-guide | Complex multi-domain projects | Step-by-step agent coordination |
-| pm-agent | "plan this", "break down" | `.agents/plan.json` |
-| frontend-agent | UI, components, styling | React components, tests |
-| backend-agent | APIs, databases, auth | API endpoints, models, tests |
-| db-agent | Database, schema, ERD, migration | Schema design, query tuning |
-| mobile-agent | Mobile apps, iOS/Android | Flutter screens, state management |
-| brainstorm | Ideation, concept exploration | Design document |
-| dev-workflow | CI/CD, git hooks, monorepo setup | Workflow configs, automation |
-| tf-infra-agent | Terraform, cloud infra | IaC modules, state management |
-| translator | Translation, multilingual content | Translated text preserving tone |
-| qa-agent | "review security", "audit" | QA report with prioritized fixes |
-| debug-agent | Bug reports, error messages | Fixed code, regression tests |
-| orchestrator | CLI sub-agent execution | Results in `.agents/results/` |
-| commit | "commit", "커밋해줘" | Git commits (auto-splits by feature) |
+| oma-coordination | Complex multi-domain projects | Step-by-step agent coordination |
+| oma-pm | "plan this", "break down" | `.agents/plan.json` |
+| oma-frontend | UI, components, styling | React components, tests |
+| oma-backend | APIs, databases, auth | API endpoints, models, tests |
+| oma-db | Database, schema, ERD, migration | Schema design, query tuning |
+| oma-mobile | Mobile apps, iOS/Android | Flutter screens, state management |
+| oma-brainstorm | Ideation, concept exploration | Design document |
+| oma-dev-workflow | CI/CD, git hooks, monorepo setup | Workflow configs, automation |
+| oma-tf-infra | Terraform, cloud infra | IaC modules, state management |
+| oma-translator | Translation, multilingual content | Translated text preserving tone |
+| oma-qa | "review security", "audit" | QA report with prioritized fixes |
+| oma-debug | Bug reports, error messages | Fixed code, regression tests |
+| oma-orchestrator | CLI sub-agent execution | Results in `.agents/results/` |
+| oma-commit | "commit", "커밋해줘" | Git commits (auto-splits by feature) |
 
 ---
 
@@ -215,7 +215,7 @@ These are separate from **skills** (which auto-activate). Workflows give you exp
 
 ```
 You: "Create a button component"
-  → The IDE loads frontend-agent
+  → The IDE loads oma-frontend
   → Get component immediately
 ```
 
@@ -223,7 +223,7 @@ You: "Create a button component"
 
 ```
 You: "Build a TODO app with authentication"
-  → workflow-guide activates automatically
+  → oma-coordination activates automatically
   → PM Agent creates plan
   → You spawn agents via CLI (oma agent:spawn)
   → Agents work in parallel
@@ -243,7 +243,7 @@ You: /coordinate
 
 ```
 You: "Login button throws TypeError"
-  → debug-agent activates
+  → oma-debug activates
   → Root cause analysis
   → Fix + regression test
   → Similar patterns checked

@@ -28,7 +28,7 @@ description: Kompletny przewodnik użytkowania z przykładami, przepływami prac
 ```
 
 **Co się dzieje:**
-- Antigravity wykrywa, że pasuje to do `frontend-agent`
+- Antigravity wykrywa, że pasuje to do `oma-frontend`
 - Umiejętność ładuje się automatycznie (Progresywne ujawnianie)
 - Otrzymujesz komponent React z TypeScript, Tailwind, walidacją formularza
 
@@ -63,7 +63,7 @@ description: Kompletny przewodnik użytkowania z przykładami, przepływami prac
 
 **Co się dzieje:**
 
-1. **debug-agent aktywuje się** — analizuje błąd
+1. **oma-debug aktywuje się** — analizuje błąd
 2. **Znaleziona przyczyna źródłowa** — komponent mapuje `todos` zanim dane się załadują
 3. **Dostarczono poprawkę** — dodane stany ładowania i kontrole null
 4. **Napisany test regresji** — zapewnia że błąd się nie powtórzy
@@ -170,20 +170,20 @@ Agenci mogą pracować w oddzielnych katalogach aby uniknąć konfliktów. Works
 
 | Umiejętność | Auto-aktywuje się dla | Wynik |
 |-------|-------------------|--------|
-| workflow-guide | Złożonych projektów wielodomenowych | Koordynacja agentów krok po kroku |
-| pm-agent | "zaplanuj to", "rozbij" | `.agents/plan.json` |
-| frontend-agent | UI, komponenty, stylizacja | Komponenty React, testy |
-| backend-agent | API, bazy danych, uwierzytelnianie | Endpointy API, modele, testy |
-| mobile-agent | Aplikacje mobilne, iOS/Android | Ekrany Flutter, zarządzanie stanem |
-| brainstorm | Ideacja, eksploracja koncepcji | Dokument projektowy |
-| db-agent | Baza danych, schemat, ERD, migracja | Projektowanie schematów, optymalizacja zapytań |
-| dev-workflow | CI/CD, git hooks, konfiguracja monorepo | Konfiguracje przepływu, automatyzacja |
-| tf-infra-agent | Terraform, infrastruktura chmurowa | Moduły IaC, zarządzanie stanem |
-| translator | Tłumaczenie, treści wielojęzyczne | Przetłumaczony tekst z zachowaniem tonu |
-| qa-agent | "sprawdź bezpieczeństwo", "audyt" | Raport QA z priorytetowymi poprawkami |
-| debug-agent | Raporty błędów, komunikaty o błędach | Naprawiony kod, testy regresji |
-| orchestrator | Wykonywanie pod-agentów przez CLI | Wyniki w `.agents/results/` |
-| commit | "commit", "zapisz zmiany" | Commity Git (auto-podział według funkcji) |
+| oma-coordination | Złożonych projektów wielodomenowych | Koordynacja agentów krok po kroku |
+| oma-pm | "zaplanuj to", "rozbij" | `.agents/plan.json` |
+| oma-frontend | UI, komponenty, stylizacja | Komponenty React, testy |
+| oma-backend | API, bazy danych, uwierzytelnianie | Endpointy API, modele, testy |
+| oma-mobile | Aplikacje mobilne, iOS/Android | Ekrany Flutter, zarządzanie stanem |
+| oma-brainstorm | Ideacja, eksploracja koncepcji | Dokument projektowy |
+| oma-db | Baza danych, schemat, ERD, migracja | Projektowanie schematów, optymalizacja zapytań |
+| oma-dev-workflow | CI/CD, git hooks, konfiguracja monorepo | Konfiguracje przepływu, automatyzacja |
+| oma-tf-infra | Terraform, infrastruktura chmurowa | Moduły IaC, zarządzanie stanem |
+| oma-translator | Tłumaczenie, treści wielojęzyczne | Przetłumaczony tekst z zachowaniem tonu |
+| oma-qa | "sprawdź bezpieczeństwo", "audyt" | Raport QA z priorytetowymi poprawkami |
+| oma-debug | Raporty błędów, komunikaty o błędach | Naprawiony kod, testy regresji |
+| oma-orchestrator | Wykonywanie pod-agentów przez CLI | Wyniki w `.agents/results/` |
+| oma-commit | "commit", "zapisz zmiany" | Commity Git (auto-podział według funkcji) |
 
 ---
 
@@ -215,7 +215,7 @@ Są to oddzielne od **umiejętności** (które auto-aktywują się). Przepływy 
 
 ```
 Ty: "Utwórz komponent przycisku"
-  → Antigravity ładuje frontend-agent
+  → Antigravity ładuje oma-frontend
   → Otrzymujesz komponent natychmiast
 ```
 
@@ -223,7 +223,7 @@ Ty: "Utwórz komponent przycisku"
 
 ```
 Ty: "Zbuduj aplikację TODO z uwierzytelnianiem"
-  → workflow-guide aktywuje się automatycznie
+  → oma-coordination aktywuje się automatycznie
   → PM Agent tworzy plan
   → Uruchamiasz agentów przez CLI (oma agent:spawn)
   → Agenci pracują równolegle
@@ -243,7 +243,7 @@ Ty: /coordinate
 
 ```
 Ty: "Przycisk logowania rzuca TypeError"
-  → debug-agent aktywuje się
+  → oma-debug aktywuje się
   → Analiza przyczyny źródłowej
   → Poprawka + test regresji
   → Sprawdzone podobne wzorce

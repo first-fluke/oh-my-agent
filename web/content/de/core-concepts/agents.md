@@ -14,7 +14,7 @@ description: Agententypen, Workspace-Strategie und Orchestrierungsablauf.
 - DevOps: Dev-workflow
 - Qualitätssicherung: QA, Debug
 - Lokalisierung: Translator
-- Koordination: workflow-guide, orchestrator
+- Koordination: oma-coordination, oma-orchestrator
 
 ## Workspace-Strategie
 

@@ -18,20 +18,20 @@ oh-my-agent ist ein Multi-Agenten-Orchestrator für die Antigravity-IDE. Er leit
 
 | Agent | Verantwortlichkeit |
 |---|---|
-| workflow-guide | Koordiniert komplexe domänenübergreifende Projekte |
-| pm-agent | Planung und Architekturzerlegung |
-| frontend-agent | React/Next.js-Implementierung |
-| backend-agent | API-/Datenbank-/Auth-Implementierung |
-| mobile-agent | Flutter/Mobile-Implementierung |
-| qa-agent | Sicherheits-/Performance-/Barrierefreiheits-Review |
-| debug-agent | Ursachenanalyse und regressionssichere Korrekturen |
-| brainstorm | Design-First-Ideenfindung und Konzepterkundung |
-| db-agent | Datenbankmodellierung, Schema-Design und Query-Tuning |
-| dev-workflow | Entwickler-Workflow-Optimierung und CI/CD |
-| tf-infra-agent | Terraform Infrastructure-as-Code Bereitstellung |
-| translator | Kontextbewusste mehrsprachige Übersetzung |
-| orchestrator | CLI-basierte Sub-Agenten-Orchestrierung |
-| commit | Conventional-Commit-Workflow |
+| oma-coordination | Koordiniert komplexe domänenübergreifende Projekte |
+| oma-pm | Planung und Architekturzerlegung |
+| oma-frontend | React/Next.js-Implementierung |
+| oma-backend | API-/Datenbank-/Auth-Implementierung |
+| oma-mobile | Flutter/Mobile-Implementierung |
+| oma-qa | Sicherheits-/Performance-/Barrierefreiheits-Review |
+| oma-debug | Ursachenanalyse und regressionssichere Korrekturen |
+| oma-brainstorm | Design-First-Ideenfindung und Konzepterkundung |
+| oma-db | Datenbankmodellierung, Schema-Design und Query-Tuning |
+| oma-dev-workflow | Entwickler-Workflow-Optimierung und CI/CD |
+| oma-tf-infra | Terraform Infrastructure-as-Code Bereitstellung |
+| oma-translator | Kontextbewusste mehrsprachige Übersetzung |
+| oma-orchestrator | CLI-basierte Sub-Agenten-Orchestrierung |
+| oma-commit | Conventional-Commit-Workflow |
 
 ## Projektstruktur
 

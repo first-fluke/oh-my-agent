@@ -40,10 +40,10 @@ List all agents in `.claude/agents/` with their domains:
 
 | Domain | Agent File |
 |:-------|:-----------|
-| backend | `backend-impl.md` |
-| frontend | `frontend-impl.md` |
-| mobile | `mobile-impl.md` |
-| db | `db-impl.md` |
+| backend | `backend-engineer.md` |
+| frontend | `frontend-engineer.md` |
+| mobile | `mobile-engineer.md` |
+| db | `db-engineer.md` |
 | qa | `qa-reviewer.md` |
 | debug | `debug-investigator.md` |
 | pm | `pm-planner.md` |

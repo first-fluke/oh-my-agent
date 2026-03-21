@@ -31,13 +31,13 @@ const SKILL_CATS = Object.fromEntries(
 );
 
 const AGENT_SKILL_MAP: Record<string, string> = {
-  "backend-impl": "backend-agent",
-  "frontend-impl": "frontend-agent",
-  "db-impl": "db-agent",
-  "mobile-impl": "mobile-agent",
-  "pm-planner": "pm-agent",
-  "qa-reviewer": "qa-agent",
-  "debug-investigator": "debug-agent",
+  "backend-engineer": "oma-backend",
+  "frontend-engineer": "oma-frontend",
+  "db-engineer": "oma-db",
+  "mobile-engineer": "oma-mobile",
+  "pm-planner": "oma-pm",
+  "qa-reviewer": "oma-qa",
+  "debug-investigator": "oma-debug",
 };
 
 // ── Helpers ─────────────────────────────────────────────────────

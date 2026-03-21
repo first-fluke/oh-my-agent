@@ -14,7 +14,7 @@ description: Типы агентов, стратегия рабочих прос
 - DevOps: Dev-workflow
 - Обеспечение качества: QA, Debug
 - Локализация: Translator
-- Координация: workflow-guide, orchestrator
+- Координация: oma-coordination, oma-orchestrator
 
 ## Стратегия рабочих пространств
 

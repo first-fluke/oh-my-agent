@@ -38,7 +38,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/skills .agents/workflows .agents/config .claude/skills
 
 # 없는 스킬만 복사 (예시)
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -48,7 +48,7 @@ done
 [ -d .agents/skills/_shared ] || cp -r /path/to/oh-my-agent/.agents/skills/_shared .agents/skills/_shared
 
 # 호환 심링크 생성
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit _shared; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit _shared; do
   [ -L ".agents/skills/$skill" ] || ln -s "../../.agents/skills/$skill" ".agents/skills/$skill"
   [ -L ".claude/skills/$skill" ] || ln -s "../../.agents/skills/$skill" ".claude/skills/$skill"
 done
@@ -120,10 +120,10 @@ git commit -m "chore: checkpoint before oh-my-agent integration"
 ### 심링크 구조
 
 ```text
-.agents/skills/frontend-agent/     ← 출처 (SSOT)
-.agents/skills/frontend-agent/      → ../../.agents/skills/frontend-agent/
-.claude/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/     ← 출처 (SSOT)
+.agents/skills/oma-frontend/      → ../../.agents/skills/oma-frontend/
+.claude/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 설치 프로그램은 기존 심링크를 건 넘기고, 대상 위치에 실제 디렉토리가 있는 경우 경고합니다.

@@ -37,20 +37,20 @@ Gedetailleerde directory tree voor deze repository.
 │       │   ├── lessons-learned.md
 │       │   ├── verify.sh
 │       │   └── api-contracts/
-│       ├── backend-agent/              # FastAPI
-│       ├── brainstorm/                 # Design-first ideevorming
-│       ├── commit/                     # Conventional commits skill
-│       ├── db-agent/                   # Databasemodellering & queryoptimalisatie
-│       ├── debug-agent/                # Bug repareren
-│       ├── dev-workflow/               # CI/CD & ontwikkelworkflow
-│       ├── frontend-agent/             # React/Next.js
-│       ├── mobile-agent/               # Flutter
-│       ├── orchestrator/               # CLI-gebaseerde sub-agent spawner
-│       ├── pm-agent/                   # Product manager
-│       ├── qa-agent/                   # Beveiliging & QA
-│       ├── tf-infra-agent/             # Terraform infrastructure-as-code
-│       ├── translator/                 # Contextbewuste meertalige vertaling
-│       └── workflow-guide/             # Multi-agent coördinatie
+│       ├── oma-backend/              # FastAPI
+│       ├── oma-brainstorm/                 # Design-first ideevorming
+│       ├── oma-commit/                     # Conventional commits skill
+│       ├── oma-db/                   # Databasemodellering & queryoptimalisatie
+│       ├── oma-debug/                # Bug repareren
+│       ├── oma-dev-workflow/               # CI/CD & ontwikkelworkflow
+│       ├── oma-frontend/             # React/Next.js
+│       ├── oma-mobile/               # Flutter
+│       ├── oma-orchestrator/               # CLI-gebaseerde sub-agent spawner
+│       ├── oma-pm/                   # Product manager
+│       ├── oma-qa/                   # Beveiliging & QA
+│       ├── oma-tf-infra/             # Terraform infrastructure-as-code
+│       ├── oma-translator/                 # Contextbewuste meertalige vertaling
+│       └── oma-coordination/             # Multi-agent coördinatie
 │       # Elke skill heeft:
 │       #   SKILL.md              (~40 regels, token-geoptimaliseerd)
 │       #   resources/

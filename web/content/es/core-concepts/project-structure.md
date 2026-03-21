@@ -37,20 +37,20 @@ description: Árbol de directorios actualizado tras la separación de los worksp
 │       │   ├── lessons-learned.md
 │       │   ├── verify.sh
 │       │   └── api-contracts/
-│       ├── backend-agent/              # FastAPI
-│       ├── brainstorm/                 # Ideación y exploración de conceptos
-│       ├── commit/                     # Skill de conventional commits
-│       ├── db-agent/                   # Modelado de bases de datos y esquemas
-│       ├── debug-agent/                # Corrección de bugs
-│       ├── dev-workflow/               # Optimización de flujos de trabajo y CI/CD
-│       ├── frontend-agent/             # React/Next.js
-│       ├── mobile-agent/               # Flutter
-│       ├── orchestrator/               # Generador de sub-agentes basado en CLI
-│       ├── pm-agent/                   # Product manager
-│       ├── qa-agent/                   # Seguridad y QA
-│       ├── tf-infra-agent/             # Infraestructura como código con Terraform
-│       ├── translator/                 # Traducción multilingüe
-│       └── workflow-guide/             # Coordinación multi-agente
+│       ├── oma-backend/              # FastAPI
+│       ├── oma-brainstorm/                 # Ideación y exploración de conceptos
+│       ├── oma-commit/                     # Skill de conventional commits
+│       ├── oma-db/                   # Modelado de bases de datos y esquemas
+│       ├── oma-debug/                # Corrección de bugs
+│       ├── oma-dev-workflow/               # Optimización de flujos de trabajo y CI/CD
+│       ├── oma-frontend/             # React/Next.js
+│       ├── oma-mobile/               # Flutter
+│       ├── oma-orchestrator/               # Generador de sub-agentes basado en CLI
+│       ├── oma-pm/                   # Product manager
+│       ├── oma-qa/                   # Seguridad y QA
+│       ├── oma-tf-infra/             # Infraestructura como código con Terraform
+│       ├── oma-translator/                 # Traducción multilingüe
+│       └── oma-coordination/             # Coordinación multi-agente
 │       # Cada skill tiene:
 │       #   SKILL.md              (~40 líneas, optimizado para tokens)
 │       #   resources/

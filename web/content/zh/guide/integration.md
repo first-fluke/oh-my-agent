@@ -37,7 +37,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/workflows .agents/config
 
 # 仅复制缺失的技能目录（示例）
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -114,10 +114,10 @@ Also develop with other CLI tools?
 ### 符号链接结构
 
 ```
-.agents/skills/frontend-agent/      ← 源（唯一真实来源）
-.claude/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/
-.agents/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (OpenCode, Amp, Codex)
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/      ← 源（唯一真实来源）
+.claude/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/
+.agents/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (OpenCode, Amp, Codex)
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 安装器会跳过已存在的符号链接，如果目标位置存在真实目录则发出警告。

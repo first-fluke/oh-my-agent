@@ -28,20 +28,20 @@ Updated directory tree for the current monorepo layout (`cli` + `web` workspaces
 │   │   └── ultrawork.md
 │   └── skills/
 │       ├── _shared/
-│       ├── backend-agent/
-│       ├── brainstorm/
-│       ├── commit/
-│       ├── db-agent/
-│       ├── debug-agent/
-│       ├── dev-workflow/
-│       ├── frontend-agent/
-│       ├── mobile-agent/
-│       ├── orchestrator/
-│       ├── pm-agent/
-│       ├── qa-agent/
-│       ├── tf-infra-agent/
-│       ├── translator/
-│       └── workflow-guide/
+│       ├── oma-backend/
+│       ├── oma-brainstorm/
+│       ├── oma-commit/
+│       ├── oma-db/
+│       ├── oma-debug/
+│       ├── oma-dev-workflow/
+│       ├── oma-frontend/
+│       ├── oma-mobile/
+│       ├── oma-orchestrator/
+│       ├── oma-pm/
+│       ├── oma-qa/
+│       ├── oma-tf-infra/
+│       ├── oma-translator/
+│       └── oma-coordination/
 ├── .github/
 │   └── workflows/
 │       ├── release-please.yml

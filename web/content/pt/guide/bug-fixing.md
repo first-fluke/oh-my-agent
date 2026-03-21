@@ -37,7 +37,7 @@ Classifique cedo para escolher a velocidade de resposta:
 4. Adicione testes de regressão para o caminho com falha.
 5. Verifique novamente caminhos adjacentes que provavelmente compartilham o mesmo modo de falha.
 
-## Template de prompt para debug-agent
+## Template de prompt para oma-debug
 
 ```text
 Bug: <error/symptom>

@@ -18,7 +18,7 @@ description: Automated CLI-based parallel agent execution — spawn subagents vi
 
 ## Step 0: Preparation (DO NOT SKIP)
 
-1. Read `.agents/skills/workflow-guide/SKILL.md` and confirm Core Rules.
+1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
 2. Read `.agents/skills/_shared/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/memory-protocol.md` for memory protocol.
 

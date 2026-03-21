@@ -37,7 +37,7 @@ Klasyfikuj wcześnie, aby wybrać szybkość reakcji:
 4. Dodaj testy regresji dla wadliwej ścieżki.
 5. Sprawdź ponownie sąsiednie ścieżki, które mogą mieć ten sam tryb awarii.
 
-## Szablon promptu dla debug-agent
+## Szablon promptu dla oma-debug
 
 ```text
 Bug: <error/symptom>

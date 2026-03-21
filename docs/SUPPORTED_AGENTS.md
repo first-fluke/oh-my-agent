@@ -29,7 +29,7 @@ Claude Code extends beyond symlinks with a full native adapter layer:
 
 - **`CLAUDE.md`** at project root (auto-loaded by Claude Code)
 - **`.claude/skills/`** — 12 workflow skills mapped from `.agents/workflows/` as native SKILL.md files
-- **`.claude/agents/`** — 7 subagent definitions (backend-impl, frontend-impl, mobile-impl, db-impl, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/agents/`** — 7 subagent definitions (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Native loop patterns** — Review Loop, Issue Remediation Loop, Phase Gate Loop via Task tool
 - Domain skills remain as symlinks from `.agents/skills/` (coexist with native workflow skills)
 - `.agents/` is never modified — all native files reference it as the source of truth

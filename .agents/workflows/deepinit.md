@@ -76,7 +76,7 @@ Not all files are required. Generate only what is **discoverable and relevant** 
 
 ## Step 0: Preparation
 
-1. Read `.agents/skills/workflow-guide/SKILL.md` and confirm Core Rules.
+1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
 2. Check if `AGENTS.md`, `ARCHITECTURE.md`, or `docs/` already exists — if so, this is an **update run** (see Step 6).
 
 ---

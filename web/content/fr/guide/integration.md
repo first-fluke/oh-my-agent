@@ -37,7 +37,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/workflows .agents/config
 
 # Copy only missing skill directories (example)
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -114,10 +114,10 @@ Cela garantit une source unique de vérité tout en permettant aux skills de fon
 ### Structure des liens symboliques
 
 ```
-.agents/skills/frontend-agent/      ← Source (SSOT)
-.claude/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/
-.agents/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (OpenCode, Amp, Codex)
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/      ← Source (SSOT)
+.claude/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/
+.agents/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (OpenCode, Amp, Codex)
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 L'installateur ignore les liens symboliques existants et avertit si un répertoire réel existe à l'emplacement cible.

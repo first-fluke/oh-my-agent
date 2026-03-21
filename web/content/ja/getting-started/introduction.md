@@ -18,20 +18,20 @@ oh-my-agent は Antigravity IDE 向けのマルチエージェントオーケス
 
 | エージェント | 責務 |
 |---|---|
-| workflow-guide | 複雑なマルチドメインプロジェクトの調整 |
-| pm-agent | 計画とアーキテクチャ分解 |
-| frontend-agent | React/Next.js の実装 |
-| backend-agent | API/データベース/認証の実装 |
-| mobile-agent | Flutter/モバイルの実装 |
-| qa-agent | セキュリティ/パフォーマンス/アクセシビリティレビュー |
-| debug-agent | 根本原因分析とリグレッションセーフな修正 |
-| brainstorm | 設計優先のアイデア創出とコンセプト探索 |
-| db-agent | データベースモデリング、スキーマ設計、クエリチューニング |
-| dev-workflow | 開発ワークフロー最適化と CI/CD |
-| tf-infra-agent | Terraform インフラストラクチャ・アズ・コード プロビジョニング |
-| translator | コンテキスト対応多言語翻訳 |
-| orchestrator | CLI ベースのサブエージェントオーケストレーション |
-| commit | コンベンショナルコミットワークフロー |
+| oma-coordination | 複雑なマルチドメインプロジェクトの調整 |
+| oma-pm | 計画とアーキテクチャ分解 |
+| oma-frontend | React/Next.js の実装 |
+| oma-backend | API/データベース/認証の実装 |
+| oma-mobile | Flutter/モバイルの実装 |
+| oma-qa | セキュリティ/パフォーマンス/アクセシビリティレビュー |
+| oma-debug | 根本原因分析とリグレッションセーフな修正 |
+| oma-brainstorm | 設計優先のアイデア創出とコンセプト探索 |
+| oma-db | データベースモデリング、スキーマ設計、クエリチューニング |
+| oma-dev-workflow | 開発ワークフロー最適化と CI/CD |
+| oma-tf-infra | Terraform インフラストラクチャ・アズ・コード プロビジョニング |
+| oma-translator | コンテキスト対応多言語翻訳 |
+| oma-orchestrator | CLI ベースのサブエージェントオーケストレーション |
+| oma-commit | コンベンショナルコミットワークフロー |
 
 ## プロジェクト構成
 

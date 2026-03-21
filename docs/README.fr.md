@@ -57,10 +57,10 @@ Claude Code bénéficie d'une intégration native de premier ordre, au-delà des
 
 - **`CLAUDE.md`** — identité du projet, architecture et règles (chargé automatiquement par Claude Code)
 - **`.claude/skills/`** — 12 workflow skills issues de `.agents/workflows/` (ex. : `/orchestrate`, `/coordinate`, `/ultrawork`)
-- **`.claude/agents/`** — 7 définitions de sous-agents lancés via Task tool (backend-impl, frontend-impl, mobile-impl, db-impl, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/agents/`** — 7 définitions de sous-agents lancés via Task tool (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
 - **Patterns de boucle natifs** — Review Loop, Issue Remediation Loop et Phase Gate Loop utilisant les résultats synchrones du Task tool, sans polling CLI
 
-Les skills de domaine (backend-agent, frontend-agent, etc.) restent des liens symboliques depuis `.agents/skills/`. Les workflow skills sont des fichiers SKILL.md natifs qui référencent le fichier `.agents/workflows/*.md` correspondant comme source de vérité.
+Les skills de domaine (oma-backend, oma-frontend, etc.) restent des liens symboliques depuis `.agents/skills/`. Les workflow skills sont des fichiers SKILL.md natifs qui référencent le fichier `.agents/workflows/*.md` correspondant comme source de vérité.
 
 ## Spécification `.agents`
 
@@ -92,23 +92,23 @@ flowchart TD
 
     subgraph Orchestration["Orchestration"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["Agents de domaine"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["Qualité"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -172,7 +172,7 @@ Sélectionnez votre type de projet et les compétences seront installées dans `
 | 🎨 Frontend | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ Backend | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 Mobile | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### Option 3 : Installation globale (Pour Orchestrator)
 
@@ -209,7 +209,7 @@ bunx oh-my-agent
 
 ```
 "Créer un formulaire de connexion avec Tailwind CSS et validation de formulaire"
-→ frontend-agent s'active
+→ oma-frontend s'active
 ```
 
 **Projet complexe** (/coordinate workflow) :

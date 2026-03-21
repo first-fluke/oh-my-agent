@@ -18,20 +18,20 @@ oh-my-agent is een multi-agentorkestrator voor Antigravity IDE. Het routeert ver
 
 | Agent | Verantwoordelijkheid |
 |---|---|
-| workflow-guide | Coördineert complexe multidomain-projecten |
-| pm-agent | Planning en architectuuropsplitsing |
-| frontend-agent | React/Next.js-implementatie |
-| backend-agent | API/database/auth-implementatie |
-| mobile-agent | Flutter/mobiele implementatie |
-| brainstorm | Design-first ideevorming en conceptverkenning |
-| db-agent | Databasemodellering, schemaontwerp en queryoptimalisatie |
-| dev-workflow | Ontwikkelworkflow-optimalisatie en CI/CD |
-| tf-infra-agent | Terraform infrastructure-as-code provisioning |
-| translator | Contextbewuste meertalige vertaling |
-| qa-agent | Beveiligings-/prestatie-/toegankelijkheidsreview |
-| debug-agent | Hoofdoorzaakanalyse en regressieveilige fixes |
-| orchestrator | CLI-gebaseerde subagentorkestratie |
-| commit | Conventionele commitworkflow |
+| oma-coordination | Coördineert complexe multidomain-projecten |
+| oma-pm | Planning en architectuuropsplitsing |
+| oma-frontend | React/Next.js-implementatie |
+| oma-backend | API/database/auth-implementatie |
+| oma-mobile | Flutter/mobiele implementatie |
+| oma-brainstorm | Design-first ideevorming en conceptverkenning |
+| oma-db | Databasemodellering, schemaontwerp en queryoptimalisatie |
+| oma-dev-workflow | Ontwikkelworkflow-optimalisatie en CI/CD |
+| oma-tf-infra | Terraform infrastructure-as-code provisioning |
+| oma-translator | Contextbewuste meertalige vertaling |
+| oma-qa | Beveiligings-/prestatie-/toegankelijkheidsreview |
+| oma-debug | Hoofdoorzaakanalyse en regressieveilige fixes |
+| oma-orchestrator | CLI-gebaseerde subagentorkestratie |
+| oma-commit | Conventionele commitworkflow |
 
 ## Projectstructuur
 

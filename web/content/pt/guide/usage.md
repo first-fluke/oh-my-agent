@@ -28,7 +28,7 @@ description: Guia completo de uso incluindo exemplos, fluxos de trabalho, opera�
 ```
 
 **O que acontece:**
-- Antigravity detecta que isso corresponde ao `frontend-agent`
+- Antigravity detecta que isso corresponde ao `oma-frontend`
 - A habilidade carrega automaticamente (Divulgação Progressiva)
 - Você recebe um componente React com TypeScript, Tailwind, validação de formulário
 
@@ -63,7 +63,7 @@ description: Guia completo de uso incluindo exemplos, fluxos de trabalho, opera�
 
 **O que acontece:**
 
-1. **debug-agent ativa** — analisa o erro
+1. **oma-debug ativa** — analisa o erro
 2. **Causa raiz encontrada** — componente faz map sobre `todos` antes dos dados carregarem
 3. **Correção fornecida** — estados de carregamento e verificações de null adicionados
 4. **Teste de regressão escrito** — garante que o bug não retornará
@@ -170,20 +170,20 @@ Agentes podem trabalhar em diretórios separados para evitar conflitos. Workspac
 
 | Habilidade | Auto-ativa para | Saída |
 |-------|-------------------|--------|
-| workflow-guide | Projetos multi-domínio complexos | Coordenação de agentes passo a passo |
-| pm-agent | "planejar isso", "dividir" | `.agents/plan.json` |
-| frontend-agent | UI, componentes, estilo | Componentes React, testes |
-| backend-agent | APIs, bancos de dados, autenticação | Endpoints de API, modelos, testes |
-| mobile-agent | Apps mobile, iOS/Android | Telas Flutter, gestão de estado |
-| brainstorm | Ideação, exploração de conceitos | Documento de design |
-| db-agent | Banco de dados, esquema, ERD, migração | Design de esquema, ajuste de consultas |
-| dev-workflow | CI/CD, git hooks, configuração monorepo | Configurações de fluxo, automação |
-| tf-infra-agent | Terraform, infraestrutura cloud | Módulos IaC, gestão de estado |
-| translator | Tradução, conteúdo multilíngue | Texto traduzido preservando o tom |
-| qa-agent | "revisar segurança", "auditoria" | Relatório QA com correções priorizadas |
-| debug-agent | Relatórios de bug, mensagens de erro | Código corrigido, testes de regressão |
-| orchestrator | Execução de sub-agente CLI | Resultados em `.agents/results/` |
-| commit | "commit", "커밋해줘" | Commits Git (auto-divide por feature) |
+| oma-coordination | Projetos multi-domínio complexos | Coordenação de agentes passo a passo |
+| oma-pm | "planejar isso", "dividir" | `.agents/plan.json` |
+| oma-frontend | UI, componentes, estilo | Componentes React, testes |
+| oma-backend | APIs, bancos de dados, autenticação | Endpoints de API, modelos, testes |
+| oma-mobile | Apps mobile, iOS/Android | Telas Flutter, gestão de estado |
+| oma-brainstorm | Ideação, exploração de conceitos | Documento de design |
+| oma-db | Banco de dados, esquema, ERD, migração | Design de esquema, ajuste de consultas |
+| oma-dev-workflow | CI/CD, git hooks, configuração monorepo | Configurações de fluxo, automação |
+| oma-tf-infra | Terraform, infraestrutura cloud | Módulos IaC, gestão de estado |
+| oma-translator | Tradução, conteúdo multilíngue | Texto traduzido preservando o tom |
+| oma-qa | "revisar segurança", "auditoria" | Relatório QA com correções priorizadas |
+| oma-debug | Relatórios de bug, mensagens de erro | Código corrigido, testes de regressão |
+| oma-orchestrator | Execução de sub-agente CLI | Resultados em `.agents/results/` |
+| oma-commit | "commit", "커밋해줘" | Commits Git (auto-divide por feature) |
 
 ---
 
@@ -215,7 +215,7 @@ Estes são separados de **habilidades** (que auto-ativam). Fluxos de trabalho d�
 
 ```
 Você: "Criar um componente de botão"
-  → Antigravity carrega frontend-agent
+  → Antigravity carrega oma-frontend
   → Recebe componente imediatamente
 ```
 
@@ -223,7 +223,7 @@ Você: "Criar um componente de botão"
 
 ```
 Você: "Construir um app TODO com autenticação"
-  → workflow-guide ativa automaticamente
+  → oma-coordination ativa automaticamente
   → PM Agent cria plano
   → Você cria agentes via CLI (oma agent:spawn)
   → Agentes trabalham em paralelo
@@ -243,7 +243,7 @@ Você: /coordinate
 
 ```
 Você: "Botão de login lança TypeError"
-  → debug-agent ativa
+  → oma-debug ativa
   → Análise de causa raiz
   → Correção + teste de regressão
   → Padrões similares verificados

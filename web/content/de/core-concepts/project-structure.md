@@ -37,20 +37,20 @@ Detaillierter Verzeichnisbaum für dieses Repository.
 │       │   ├── lessons-learned.md
 │       │   ├── verify.sh
 │       │   └── api-contracts/
-│       ├── backend-agent/              # FastAPI
-│       ├── brainstorm/                 # Design-First-Ideenfindung
-│       ├── commit/                     # Conventional Commits Skill
-│       ├── db-agent/                   # Datenbankmodellierung & Query-Tuning
-│       ├── debug-agent/                # Bug-Behebung
-│       ├── dev-workflow/               # Entwickler-Workflow-Optimierung
-│       ├── frontend-agent/             # React/Next.js
-│       ├── mobile-agent/               # Flutter
-│       ├── orchestrator/               # CLI-basierter Sub-Agent-Spawner
-│       ├── pm-agent/                   # Produktmanager
-│       ├── qa-agent/                   # Sicherheit & QA
-│       ├── tf-infra-agent/             # Terraform IaC
-│       ├── translator/                 # Mehrsprachige Übersetzung
-│       └── workflow-guide/             # Multi-Agent-Koordination
+│       ├── oma-backend/              # FastAPI
+│       ├── oma-brainstorm/                 # Design-First-Ideenfindung
+│       ├── oma-commit/                     # Conventional Commits Skill
+│       ├── oma-db/                   # Datenbankmodellierung & Query-Tuning
+│       ├── oma-debug/                # Bug-Behebung
+│       ├── oma-dev-workflow/               # Entwickler-Workflow-Optimierung
+│       ├── oma-frontend/             # React/Next.js
+│       ├── oma-mobile/               # Flutter
+│       ├── oma-orchestrator/               # CLI-basierter Sub-Agent-Spawner
+│       ├── oma-pm/                   # Produktmanager
+│       ├── oma-qa/                   # Sicherheit & QA
+│       ├── oma-tf-infra/             # Terraform IaC
+│       ├── oma-translator/                 # Mehrsprachige Übersetzung
+│       └── oma-coordination/             # Multi-Agent-Koordination
 │       # Jeder Skill hat:
 │       #   SKILL.md              (~40 Zeilen, token-optimiert)
 │       #   resources/

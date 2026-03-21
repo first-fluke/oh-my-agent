@@ -28,7 +28,7 @@ description: Guía completa de uso incluyendo ejemplos, flujos de trabajo, opera
 ```
 
 **Qué sucede:**
-- Antigravity detecta que esto coincide con `frontend-agent`
+- Antigravity detecta que esto coincide con `oma-frontend`
 - El skill se carga automáticamente (Progressive Disclosure)
 - Obtienes un componente React con TypeScript, Tailwind, validación de formularios
 
@@ -63,7 +63,7 @@ description: Guía completa de uso incluyendo ejemplos, flujos de trabajo, opera
 
 **Qué sucede:**
 
-1. **debug-agent se activa** — analiza el error
+1. **oma-debug se activa** — analiza el error
 2. **Se encuentra la causa raíz** — componente mapea sobre `todos` antes de que se carguen los datos
 3. **Se proporciona la corrección** — se agregan estados de carga y verificaciones null
 4. **Se escribe prueba de regresión** — asegura que el bug no regrese
@@ -176,20 +176,20 @@ Los agentes pueden trabajar en directorios separados para evitar conflictos. El 
 
 | Skill | Se auto-activa para | Output |
 |-------|-------------------|--------|
-| workflow-guide | Proyectos multi-dominio complejos | Coordinación de agentes paso a paso |
-| pm-agent | "planificar esto", "descomponer" | `.agents/plan.json` |
-| frontend-agent | UI, componentes, estilos | Componentes React, pruebas |
-| backend-agent | APIs, bases de datos, autenticación | Endpoints API, modelos, pruebas |
-| mobile-agent | Apps móviles, iOS/Android | Pantallas Flutter, gestión de estado |
-| brainstorm | Ideación, exploración de conceptos | Documento de diseño |
-| db-agent | Base de datos, esquema, ERD, migración | Diseño de esquema, ajuste de consultas |
-| dev-workflow | CI/CD, git hooks, configuración monorepo | Configuraciones de flujo, automatización |
-| tf-infra-agent | Terraform, infraestructura cloud | Módulos IaC, gestión de estado |
-| translator | Traducción, contenido multilingüe | Texto traducido preservando el tono |
-| qa-agent | "revisar seguridad", "auditoría" | Reporte QA con correcciones priorizadas |
-| debug-agent | Reportes de bugs, mensajes de error | Código corregido, pruebas de regresión |
-| orchestrator | Ejecución de sub-agentes CLI | Resultados en `.agents/results/` |
-| commit | "commit", "커밋해줘" | Commits Git (auto-divide por feature) |
+| oma-coordination | Proyectos multi-dominio complejos | Coordinación de agentes paso a paso |
+| oma-pm | "planificar esto", "descomponer" | `.agents/plan.json` |
+| oma-frontend | UI, componentes, estilos | Componentes React, pruebas |
+| oma-backend | APIs, bases de datos, autenticación | Endpoints API, modelos, pruebas |
+| oma-mobile | Apps móviles, iOS/Android | Pantallas Flutter, gestión de estado |
+| oma-brainstorm | Ideación, exploración de conceptos | Documento de diseño |
+| oma-db | Base de datos, esquema, ERD, migración | Diseño de esquema, ajuste de consultas |
+| oma-dev-workflow | CI/CD, git hooks, configuración monorepo | Configuraciones de flujo, automatización |
+| oma-tf-infra | Terraform, infraestructura cloud | Módulos IaC, gestión de estado |
+| oma-translator | Traducción, contenido multilingüe | Texto traducido preservando el tono |
+| oma-qa | "revisar seguridad", "auditoría" | Reporte QA con correcciones priorizadas |
+| oma-debug | Reportes de bugs, mensajes de error | Código corregido, pruebas de regresión |
+| oma-orchestrator | Ejecución de sub-agentes CLI | Resultados en `.agents/results/` |
+| oma-commit | "commit", "커밋해줘" | Commits Git (auto-divide por feature) |
 
 ---
 
@@ -221,7 +221,7 @@ Estos son separados de **skills** (que se auto-activan). Los workflows te dan co
 
 ```
 Tú: "Crear un componente de botón"
-  → Antigravity carga frontend-agent
+  → Antigravity carga oma-frontend
   → Obtener componente inmediatamente
 ```
 
@@ -229,7 +229,7 @@ Tú: "Crear un componente de botón"
 
 ```
 Tú: "Construir una app TODO con autenticación"
-  → workflow-guide se activa automáticamente
+  → oma-coordination se activa automáticamente
   → PM Agent crea plan
   → Generas agentes mediante CLI (oma agent:spawn)
   → Los agentes trabajan en paralelo
@@ -249,7 +249,7 @@ Tú: /coordinate
 
 ```
 Tú: "El botón de login lanza TypeError"
-  → debug-agent se activa
+  → oma-debug se activa
   → Análisis de causa raíz
   → Corrección + prueba de regresión
   → Se verifican patrones similares

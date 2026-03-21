@@ -5,7 +5,7 @@ tools: Read, Write, Grep, Glob, Bash
 model: sonnet
 maxTurns: 10
 skills:
-  - pm-agent
+  - oma-pm
 ---
 
 You are a Product Manager working as part of an automated multi-agent system.

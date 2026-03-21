@@ -37,7 +37,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/workflows .agents/config
 
 # Kopieer alleen ontbrekende skillmappen (voorbeeld)
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -114,10 +114,10 @@ Dit garandeert een enkele bron van waarheid terwijl skills over meerdere CLI-too
 ### Symlinkstructuur
 
 ```
-.agents/skills/frontend-agent/      ← Bron (SSOT)
-.claude/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/
-.agents/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (OpenCode, Amp, Codex)
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/      ← Bron (SSOT)
+.claude/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/
+.agents/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (OpenCode, Amp, Codex)
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 De installer slaat bestaande symlinks over en geeft een waarschuwing als er een echte map op de doellocatie bestaat.

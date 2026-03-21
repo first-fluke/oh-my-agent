@@ -14,7 +14,7 @@ description: Typy agentów, strategia przestrzeni roboczych i przepływ orkiestr
 - DevOps: Dev-workflow
 - Zapewnienie jakości: QA, Debug
 - Lokalizacja: Translator
-- Koordynacja: workflow-guide, orchestrator
+- Koordynacja: oma-coordination, oma-orchestrator
 
 ## Strategia przestrzeni roboczych
 

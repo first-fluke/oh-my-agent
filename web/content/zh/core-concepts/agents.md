@@ -14,7 +14,7 @@ description: 代理类型、工作区策略与编排流程。
 - DevOps: Dev-workflow
 - 质量保障: QA, Debug
 - 本地化: Translator
-- 协调: workflow-guide, orchestrator
+- 协调: oma-coordination, oma-orchestrator
 
 ## 工作区策略
 

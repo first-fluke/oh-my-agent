@@ -37,20 +37,20 @@ Arborescence détaillée des répertoires pour ce dépôt.
 │       │   ├── lessons-learned.md
 │       │   ├── verify.sh
 │       │   └── api-contracts/
-│       ├── backend-agent/              # FastAPI
-│       ├── brainstorm/                 # Idéation et exploration de concepts
-│       ├── commit/                     # Compétence commits conventionnels
-│       ├── db-agent/                   # Base de données, schémas, requêtes
-│       ├── debug-agent/                # Correction bugs
-│       ├── dev-workflow/               # Workflows de développement et CI/CD
-│       ├── frontend-agent/             # React/Next.js
-│       ├── mobile-agent/               # Flutter
-│       ├── orchestrator/               # Générateur sous-agents basé CLI
-│       ├── pm-agent/                   # Chef de projet
-│       ├── qa-agent/                   # Sécurité & QA
-│       ├── tf-infra-agent/             # Infrastructure as code Terraform
-│       ├── translator/                 # Traduction multilingue
-│       └── workflow-guide/             # Coordination multi-agents
+│       ├── oma-backend/              # FastAPI
+│       ├── oma-brainstorm/                 # Idéation et exploration de concepts
+│       ├── oma-commit/                     # Compétence commits conventionnels
+│       ├── oma-db/                   # Base de données, schémas, requêtes
+│       ├── oma-debug/                # Correction bugs
+│       ├── oma-dev-workflow/               # Workflows de développement et CI/CD
+│       ├── oma-frontend/             # React/Next.js
+│       ├── oma-mobile/               # Flutter
+│       ├── oma-orchestrator/               # Générateur sous-agents basé CLI
+│       ├── oma-pm/                   # Chef de projet
+│       ├── oma-qa/                   # Sécurité & QA
+│       ├── oma-tf-infra/             # Infrastructure as code Terraform
+│       ├── oma-translator/                 # Traduction multilingue
+│       └── oma-coordination/             # Coordination multi-agents
 │       # Chaque compétence contient :
 │       #   SKILL.md              (~40 lignes, optimisé tokens)
 │       #   resources/

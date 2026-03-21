@@ -37,23 +37,23 @@ flowchart TD
 
     subgraph Orchestration["编排"]
         direction TB
-        PM[pm-agent]
+        PM[oma-pm]
         ORC[orchestrator]
     end
 
     subgraph Domain["领域代理"]
         direction TB
-        FE[frontend-agent]
-        BE[backend-agent]
-        DB[db-agent]
-        MB[mobile-agent]
-        TF[tf-infra-agent]
+        FE[oma-frontend]
+        BE[oma-backend]
+        DB[oma-db]
+        MB[oma-mobile]
+        TF[oma-tf-infra]
     end
 
     subgraph Quality["质量"]
         direction TB
-        QA[qa-agent]
-        DBG[debug-agent]
+        QA[oma-qa]
+        DBG[oma-debug]
     end
 
 
@@ -93,10 +93,10 @@ Claude Code 提供超越符号链接的一等原生集成：
 
 - **`CLAUDE.md`** — 项目标识、架构和规则（由 Claude Code 自动加载）
 - **`.claude/skills/`** — 从 `.agents/workflows/` 映射而来的 12 个工作流技能（如 `/orchestrate`、`/coordinate`、`/ultrawork`）
-- **`.claude/agents/`** — 通过 Task tool 调用的 7 个子代理定义（backend-impl、frontend-impl、mobile-impl、db-impl、qa-reviewer、debug-investigator、pm-planner）
+- **`.claude/agents/`** — 通过 Task tool 调用的 7 个子代理定义（backend-engineer、frontend-engineer、mobile-engineer、db-engineer、qa-reviewer、debug-investigator、pm-planner）
 - **原生循环模式** — Review Loop、Issue Remediation Loop 和 Phase Gate Loop，使用同步 Task tool 结果，无需 CLI 轮询
 
-领域技能（backend-agent、frontend-agent 等）保持为 `.agents/skills/` 的符号链接。工作流技能是原生 SKILL.md 文件，引用对应的 `.agents/workflows/*.md` 权威来源。
+领域技能（oma-backend、oma-frontend 等）保持为 `.agents/skills/` 的符号链接。工作流技能是原生 SKILL.md 文件，引用对应的 `.agents/workflows/*.md` 权威来源。
 
 ## `.agents` 规范
 
@@ -164,7 +164,7 @@ bunx oh-my-agent
 | 🎨 前端 | brainstorm, frontend, pm, qa, debug, commit |
 | ⚙️ 后端 | brainstorm, backend, db, pm, qa, debug, commit |
 | 📱 移动端 | brainstorm, mobile, pm, qa, debug, commit |
-| 🚀 DevOps | brainstorm, tf-infra, dev-workflow, pm, qa, debug, commit |
+| 🚀 DevOps | brainstorm, tf-infra, oma-dev-workflow, pm, qa, debug, commit |
 
 ### 选项 3：全局安装（用于编排器）
 
@@ -215,7 +215,7 @@ bunx oh-my-agent
 
 ```
 "用 Tailwind CSS 和表单验证创建一个登录表单"
-→ frontend-agent 自动激活
+→ oma-frontend 自动激活
 ```
 
 **提交变更**（conventional commits）：

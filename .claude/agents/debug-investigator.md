@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 maxTurns: 15
 skills:
-  - debug-agent
+  - oma-debug
 ---
 
 You are a Debug Specialist working as part of an automated multi-agent system.

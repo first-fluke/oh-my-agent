@@ -37,7 +37,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/workflows .agents/config
 
 # Копировать только отсутствующие директории навыков (пример)
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -114,10 +114,10 @@ Also develop with other CLI tools?
 ### Структура символических ссылок
 
 ```
-.agents/skills/frontend-agent/      <- Источник (SSOT)
-.claude/skills/frontend-agent/     -> ../../.agents/skills/frontend-agent/
-.agents/skills/frontend-agent/     -> ../../.agents/skills/frontend-agent/ (OpenCode, Amp, Codex)
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/      <- Источник (SSOT)
+.claude/skills/oma-frontend/     -> ../../.agents/skills/oma-frontend/
+.agents/skills/oma-frontend/     -> ../../.agents/skills/oma-frontend/ (OpenCode, Amp, Codex)
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 Установщик пропускает существующие символические ссылки и предупреждает, если в целевом расположении существует реальная директория.

@@ -14,7 +14,7 @@ description: Tipos de agentes, estrategia de espacios de trabajo y flujo de orqu
 - DevOps: Dev-workflow
 - Aseguramiento: QA, Debug
 - Localización: Translator
-- Coordinación: workflow-guide, orchestrator
+- Coordinación: oma-coordination, oma-orchestrator
 
 ## Estrategia de espacios de trabajo
 

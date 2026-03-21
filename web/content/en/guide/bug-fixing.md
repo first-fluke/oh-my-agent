@@ -37,7 +37,7 @@ Classify early to choose response speed:
 4. Add regression tests for the failing path.
 5. Re-check adjacent paths likely to share the same failure mode.
 
-## Prompt template for debug-agent
+## Prompt template for oma-debug
 
 ```text
 Bug: <error/symptom>

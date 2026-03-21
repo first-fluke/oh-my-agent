@@ -28,7 +28,7 @@ description: Volledige gebruiksgids met voorbeelden, workflows, dashboardbewerki
 ```
 
 **Wat gebeurt er:**
-- Antigravity detecteert dat dit overeenkomt met `frontend-agent`
+- Antigravity detecteert dat dit overeenkomt met `oma-frontend`
 - De skill laadt automatisch (Progressive Disclosure)
 - Je krijgt een React component met TypeScript, Tailwind, formuliervalidatie
 
@@ -63,7 +63,7 @@ description: Volledige gebruiksgids met voorbeelden, workflows, dashboardbewerki
 
 **Wat gebeurt er:**
 
-1. **debug-agent activeert** — analyseert fout
+1. **oma-debug activeert** — analyseert fout
 2. **Root cause gevonden** — component mapt over `todos` voordat data laadt
 3. **Fix geleverd** — loading states en null checks toegevoegd
 4. **Regressietest geschreven** — zorgt dat bug niet terugkeert
@@ -170,20 +170,20 @@ Agents kunnen werken in aparte directories om conflicten te vermijden. Workspace
 
 | Skill | Activeert automatisch voor | Output |
 |-------|---------------------------|--------|
-| workflow-guide | Complexe multi-domein projecten | Stap-voor-stap agent coördinatie |
-| pm-agent | "plan dit", "onderverdelen" | `.agents/plan.json` |
-| frontend-agent | UI, components, styling | React components, tests |
-| backend-agent | APIs, databases, auth | API endpoints, modellen, tests |
-| mobile-agent | Mobiele apps, iOS/Android | Flutter schermen, state management |
-| brainstorm | Ideevorming, conceptverkenning | Ontwerpdocument |
-| db-agent | Database, schema, ERD, migratie | Schemaontwerp, queryoptimalisatie |
-| dev-workflow | CI/CD, git hooks, monorepo-setup | Workflowconfiguraties, automatisering |
-| tf-infra-agent | Terraform, cloudinfrastructuur | IaC-modules, state-management |
-| translator | Vertaling, meertalige content | Vertaalde tekst met behoud van toon |
-| qa-agent | "review beveiliging", "audit" | QA rapport met geprioritiseerde fixes |
-| debug-agent | Bug rapporten, foutmeldingen | Gerepareerde code, regressietests |
-| orchestrator | CLI sub-agent uitvoering | Resultaten in `.agents/results/` |
-| commit | "commit", "wijzigingen opslaan" | Git commits (auto-splits per feature) |
+| oma-coordination | Complexe multi-domein projecten | Stap-voor-stap agent coördinatie |
+| oma-pm | "plan dit", "onderverdelen" | `.agents/plan.json` |
+| oma-frontend | UI, components, styling | React components, tests |
+| oma-backend | APIs, databases, auth | API endpoints, modellen, tests |
+| oma-mobile | Mobiele apps, iOS/Android | Flutter schermen, state management |
+| oma-brainstorm | Ideevorming, conceptverkenning | Ontwerpdocument |
+| oma-db | Database, schema, ERD, migratie | Schemaontwerp, queryoptimalisatie |
+| oma-dev-workflow | CI/CD, git hooks, monorepo-setup | Workflowconfiguraties, automatisering |
+| oma-tf-infra | Terraform, cloudinfrastructuur | IaC-modules, state-management |
+| oma-translator | Vertaling, meertalige content | Vertaalde tekst met behoud van toon |
+| oma-qa | "review beveiliging", "audit" | QA rapport met geprioritiseerde fixes |
+| oma-debug | Bug rapporten, foutmeldingen | Gerepareerde code, regressietests |
+| oma-orchestrator | CLI sub-agent uitvoering | Resultaten in `.agents/results/` |
+| oma-commit | "commit", "wijzigingen opslaan" | Git commits (auto-splits per feature) |
 
 ---
 
@@ -215,7 +215,7 @@ Deze zijn gescheiden van **skills** (die automatisch activeren). Workflows geven
 
 ```
 Jij: "Maak een knop component"
-  → Antigravity laadt frontend-agent
+  → Antigravity laadt oma-frontend
   → Krijg component direct
 ```
 
@@ -223,7 +223,7 @@ Jij: "Maak een knop component"
 
 ```
 Jij: "Bouw een TODO app met authenticatie"
-  → workflow-guide activeert automatisch
+  → oma-coordination activeert automatisch
   → PM Agent creëert plan
   → Jij spawnt agents via CLI (oma agent:spawn)
   → Agents werken parallel
@@ -243,7 +243,7 @@ Jij: /coordinate
 
 ```
 Jij: "Login knop gooit TypeError"
-  → debug-agent activeert
+  → oma-debug activeert
   → Root cause analyse
   → Fix + regressietest
   → Vergelijkbare patronen gecontroleerd

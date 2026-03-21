@@ -28,7 +28,7 @@ description: Guide complet incluant exemples, workflows, opérations de tableau 
 ```
 
 **Ce qui se passe :**
-- Antigravity détecte que cela correspond à `frontend-agent`
+- Antigravity détecte que cela correspond à `oma-frontend`
 - La compétence se charge automatiquement (Divulgation progressive)
 - Vous obtenez un composant React avec TypeScript, Tailwind, validation de formulaire
 
@@ -63,7 +63,7 @@ description: Guide complet incluant exemples, workflows, opérations de tableau 
 
 **Ce qui se passe :**
 
-1. **debug-agent s'active** — analyse l'erreur
+1. **oma-debug s'active** — analyse l'erreur
 2. **Cause racine trouvée** — le composant mappe sur `todos` avant chargement données
 3. **Correction fournie** — états de chargement et vérifications null ajoutés
 4. **Test de régression écrit** — assure que le bug ne reviendra pas
@@ -170,20 +170,20 @@ Les agents peuvent travailler dans répertoires séparés pour éviter conflits.
 
 | Compétence | S'active automatiquement pour | Sortie |
 |------------|------------------------------|--------|
-| workflow-guide | Projets multi-domaine complexes | Coordination d'agents étape par étape |
-| pm-agent | "planifier ceci", "décomposer" | `.agents/plan.json` |
-| frontend-agent | UI, composants, style | Composants React, tests |
-| backend-agent | APIs, bases de données, auth | Points terminaison API, modèles, tests |
-| mobile-agent | Applications mobiles, iOS/Android | Écrans Flutter, gestion état |
-| brainstorm | Idéation, exploration de concepts | Document de conception |
-| db-agent | Base de données, schéma, ERD, migration | Conception de schéma, optimisation |
-| dev-workflow | CI/CD, git hooks, configuration monorepo | Configurations, automatisation |
-| tf-infra-agent | Terraform, infrastructure cloud | Modules IaC, gestion d'état |
-| translator | Traduction, contenu multilingue | Texte traduit préservant le ton |
-| qa-agent | "vérifier sécurité", "audit" | Rapport QA avec corrections priorisées |
-| debug-agent | Rapports bugs, messages erreur | Code corrigé, tests régression |
-| orchestrator | Exécution sous-agents CLI | Résultats dans `.agents/results/` |
-| commit | "commit", "enregistrer" | Commits Git (auto-divisés par fonctionnalité) |
+| oma-coordination | Projets multi-domaine complexes | Coordination d'agents étape par étape |
+| oma-pm | "planifier ceci", "décomposer" | `.agents/plan.json` |
+| oma-frontend | UI, composants, style | Composants React, tests |
+| oma-backend | APIs, bases de données, auth | Points terminaison API, modèles, tests |
+| oma-mobile | Applications mobiles, iOS/Android | Écrans Flutter, gestion état |
+| oma-brainstorm | Idéation, exploration de concepts | Document de conception |
+| oma-db | Base de données, schéma, ERD, migration | Conception de schéma, optimisation |
+| oma-dev-workflow | CI/CD, git hooks, configuration monorepo | Configurations, automatisation |
+| oma-tf-infra | Terraform, infrastructure cloud | Modules IaC, gestion d'état |
+| oma-translator | Traduction, contenu multilingue | Texte traduit préservant le ton |
+| oma-qa | "vérifier sécurité", "audit" | Rapport QA avec corrections priorisées |
+| oma-debug | Rapports bugs, messages erreur | Code corrigé, tests régression |
+| oma-orchestrator | Exécution sous-agents CLI | Résultats dans `.agents/results/` |
+| oma-commit | "commit", "enregistrer" | Commits Git (auto-divisés par fonctionnalité) |
 
 ---
 
@@ -215,7 +215,7 @@ Ces commandes sont séparées des **compétences** (qui s'activent automatiqueme
 
 ```
 Vous : "Créer un composant bouton"
-  → Antigravity charge frontend-agent
+  → Antigravity charge oma-frontend
   → Obtenir composant immédiatement
 ```
 
@@ -223,7 +223,7 @@ Vous : "Créer un composant bouton"
 
 ```
 Vous : "Construire une application TODO avec authentification"
-  → workflow-guide s'active automatiquement
+  → oma-coordination s'active automatiquement
   → PM Agent crée plan
   → Vous générez agents via CLI (oma agent:spawn)
   → Agents travaillent en parallèle
@@ -243,7 +243,7 @@ Vous : /coordinate
 
 ```
 Vous : "Bouton connexion lance TypeError"
-  → debug-agent s'active
+  → oma-debug s'active
   → Analyse cause racine
   → Correction + test régression
   → Modèles similaires vérifiés

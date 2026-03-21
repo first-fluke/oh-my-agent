@@ -165,7 +165,7 @@ function readUserPreferences(cwd: string): UserPreferences | null {
 function readCliConfig(cwd: string): CliConfig | null {
   const configPath = findConfigFileUp(
     cwd,
-    path.join(".agents", "skills", "orchestrator", "config", "cli-config.yaml"),
+    path.join(".agents", "skills", "oma-orchestrator", "config", "cli-config.yaml"),
   );
   if (!configPath) return null;
   try {

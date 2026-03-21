@@ -26,10 +26,10 @@ sleep 0.8
 echo -e "  ${BOLD}Select a preset:${RESET}"
 echo ""
 echo -e "    ${INVERSE} ✨ All         ${RESET}  Everything"
-echo -e "    ${DIM} 🌐 Fullstack   ${RESET}  frontend, backend, pm, qa, debug, commit"
-echo -e "    ${DIM} 🎨 Frontend    ${RESET}  frontend, pm, qa, debug, commit"
-echo -e "    ${DIM} ⚙️  Backend     ${RESET}  backend, pm, qa, debug, commit"
-echo -e "    ${DIM} 📱 Mobile      ${RESET}  mobile, pm, qa, debug, commit"
+echo -e "    ${DIM} 🌐 Fullstack   ${RESET}  frontend, backend, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} 🎨 Frontend    ${RESET}  frontend, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} ⚙️  Backend     ${RESET}  backend, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} 📱 Mobile      ${RESET}  mobile, pm, qa, debug, oma-commit"
 echo ""
 sleep 1.2
 
@@ -39,7 +39,7 @@ sleep 0.3
 
 echo -e "  ${CYAN}◇${RESET} Installing skills..."
 echo ""
-skills=("workflow-guide" "pm-agent" "frontend-agent" "backend-agent" "mobile-agent" "qa-agent" "debug-agent" "orchestrator" "commit")
+skills=("oma-coordination" "oma-pm" "oma-frontend" "oma-backend" "oma-mobile" "oma-qa" "oma-debug" "oma-orchestrator" "oma-commit")
 for skill in "${skills[@]}"; do
   echo -e "    ${GREEN}✓${RESET} ${skill}"
   sleep 0.12

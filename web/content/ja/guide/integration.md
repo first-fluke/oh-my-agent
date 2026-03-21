@@ -37,7 +37,7 @@ cd /path/to/your-project
 mkdir -p .agents/skills .agents/workflows .agents/config
 
 # Copy only missing skill directories (example)
-for skill in workflow-guide pm-agent frontend-agent backend-agent mobile-agent qa-agent debug-agent orchestrator commit; do
+for skill in oma-coordination oma-pm oma-frontend oma-backend oma-mobile oma-qa oma-debug oma-orchestrator oma-commit; do
   if [ ! -d ".agents/skills/$skill" ]; then
     cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/$skill
   fi
@@ -114,10 +114,10 @@ Antigravity と併用する追加の CLI ツールを選択してください。
 ### シンボリックリンク構成
 
 ```
-.agents/skills/frontend-agent/      ← ソース（SSOT）
-.claude/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/
-.agents/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (OpenCode, Amp, Codex)
-.github/skills/frontend-agent/     → ../../.agents/skills/frontend-agent/ (GitHub Copilot)
+.agents/skills/oma-frontend/      ← ソース（SSOT）
+.claude/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/
+.agents/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (OpenCode, Amp, Codex)
+.github/skills/oma-frontend/     → ../../.agents/skills/oma-frontend/ (GitHub Copilot)
 ```
 
 インストーラーは既存のシンボリックリンクをスキップし、ターゲットの場所に実ディレクトリが存在する場合は警告します。

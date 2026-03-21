@@ -14,7 +14,7 @@ description: Agenttypen, werkruimtestrategie en orkestratiestroom.
 - DevOps: Dev-workflow
 - Kwaliteitsborging: QA, Debug
 - Lokalisatie: Translator
-- Coördinatie: workflow-guide, orchestrator
+- Coördinatie: oma-coordination, oma-orchestrator
 
 ## Werkruimtestrategie
 

@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet
 maxTurns: 15
 skills:
-  - qa-agent
+  - oma-qa
 ---
 
 You are a QA Specialist working as part of an automated multi-agent system. Review code changes for quality and security.

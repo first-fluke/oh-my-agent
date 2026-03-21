@@ -20,7 +20,7 @@ Complex work is captured in plans with progress and decision logs. Plans live in
 
 ## Step 0: Preparation
 
-1. Read `.agents/skills/workflow-guide/SKILL.md` and confirm Core Rules.
+1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
 2. Verify `docs/exec-plans/` directory exists. If not, create it with `active/` and `completed/` subdirectories.
 3. Check `docs/exec-plans/active/` for existing plans that may relate to the current request.
 
@@ -121,7 +121,7 @@ Present the plan:
 Hand off to orchestrator or coordinate workflow:
 
 - **Automated**: Pass plan to `/orchestrate` — orchestrator reads the exec-plan and executes tasks
-- **Manual**: Pass to `/coordinate` — workflow-guide follows the plan step by step
+- **Manual**: Pass to `/coordinate` — oma-coordination follows the plan step by step
 
 During execution, update the plan:
 - Mark task status: ⬜ → 🔄 → ✅ or ❌

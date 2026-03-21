@@ -37,7 +37,7 @@ Regression window (if known):
 4. 为失败路径添加回归测试。
 5. 重新检查可能存在相同故障模式的相邻路径。
 
-## debug-agent 的提示模板
+## oma-debug 的提示模板
 
 ```text
 Bug: <error/symptom>

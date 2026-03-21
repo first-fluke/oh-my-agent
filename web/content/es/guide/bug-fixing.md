@@ -37,7 +37,7 @@ Clasifique temprano para elegir la velocidad de respuesta:
 4. Agregar pruebas de regresion para la ruta que falla.
 5. Verificar rutas adyacentes que probablemente compartan el mismo modo de fallo.
 
-## Plantilla de prompt para debug-agent
+## Plantilla de prompt para oma-debug
 
 ```text
 Bug: <error/symptom>

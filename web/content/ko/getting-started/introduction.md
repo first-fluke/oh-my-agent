@@ -18,20 +18,20 @@ oh-my-agent는 AI IDE용 멀티 에이전트 오케스트레이터입니다. 요
 
 | 에이전트 | 역할 |
 |---|---|
-| workflow-guide | 복잡한 멀티 도메인 프로젝트 조율 |
-| pm-agent | 기획, 태스크 분해, 아키텍처 |
-| frontend-agent | React/Next.js 구현 |
-| backend-agent | API/DB/인증 구현 |
-| mobile-agent | Flutter/모바일 구현 |
-| qa-agent | 보안/성능/접근성 리뷰 |
-| debug-agent | 원인 분석 및 회귀 방지 수정 |
-| brainstorm | 설계 우선 아이디어 발굴 및 컨셉 탐색 |
-| db-agent | 데이터베이스 모델링, 스키마 설계, 쿼리 튜닝 |
-| dev-workflow | 개발 워크플로우 최적화 및 CI/CD |
-| tf-infra-agent | Terraform 인프라 코드 프로비저닝 |
-| translator | 컨텍스트 인식 다국어 번역 |
-| orchestrator | CLI 기반 서브에이전트 오케스트레이션 |
-| commit | Conventional Commit 워크플로우 |
+| oma-coordination | 복잡한 멀티 도메인 프로젝트 조율 |
+| oma-pm | 기획, 태스크 분해, 아키텍처 |
+| oma-frontend | React/Next.js 구현 |
+| oma-backend | API/DB/인증 구현 |
+| oma-mobile | Flutter/모바일 구현 |
+| oma-qa | 보안/성능/접근성 리뷰 |
+| oma-debug | 원인 분석 및 회귀 방지 수정 |
+| oma-brainstorm | 설계 우선 아이디어 발굴 및 컨셉 탐색 |
+| oma-db | 데이터베이스 모델링, 스키마 설계, 쿼리 튜닝 |
+| oma-dev-workflow | 개발 워크플로우 최적화 및 CI/CD |
+| oma-tf-infra | Terraform 인프라 코드 프로비저닝 |
+| oma-translator | 컨텍스트 인식 다국어 번역 |
+| oma-orchestrator | CLI 기반 서브에이전트 오케스트레이션 |
+| oma-commit | Conventional Commit 워크플로우 |
 
 ## 프로젝트 구조
 

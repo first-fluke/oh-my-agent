@@ -37,20 +37,20 @@ description: Árvore de diretórios atualizada após a separação dos workspace
 │       │   ├── lessons-learned.md
 │       │   ├── verify.sh
 │       │   └── api-contracts/
-│       ├── backend-agent/              # FastAPI
-│       ├── brainstorm/                 # Ideação design-first
-│       ├── commit/                     # Habilidade de commits convencionais
-│       ├── db-agent/                   # Banco de dados e esquemas
-│       ├── debug-agent/                # Correção de bugs
-│       ├── dev-workflow/               # CI/CD e fluxo de desenvolvimento
-│       ├── frontend-agent/             # React/Next.js
-│       ├── mobile-agent/               # Flutter
-│       ├── orchestrator/               # Criador de sub-agentes baseado em CLI
-│       ├── pm-agent/                   # Gerente de produto
-│       ├── qa-agent/                   # Segurança e QA
-│       ├── tf-infra-agent/             # Infraestrutura como código Terraform
-│       ├── translator/                 # Tradução multilíngue
-│       └── workflow-guide/             # Coordenação multi-agente
+│       ├── oma-backend/              # FastAPI
+│       ├── oma-brainstorm/                 # Ideação design-first
+│       ├── oma-commit/                     # Habilidade de commits convencionais
+│       ├── oma-db/                   # Banco de dados e esquemas
+│       ├── oma-debug/                # Correção de bugs
+│       ├── oma-dev-workflow/               # CI/CD e fluxo de desenvolvimento
+│       ├── oma-frontend/             # React/Next.js
+│       ├── oma-mobile/               # Flutter
+│       ├── oma-orchestrator/               # Criador de sub-agentes baseado em CLI
+│       ├── oma-pm/                   # Gerente de produto
+│       ├── oma-qa/                   # Segurança e QA
+│       ├── oma-tf-infra/             # Infraestrutura como código Terraform
+│       ├── oma-translator/                 # Tradução multilíngue
+│       └── oma-coordination/             # Coordenação multi-agente
 │       # Cada habilidade tem:
 │       #   SKILL.md              (~40 linhas, otimizado para tokens)
 │       #   resources/

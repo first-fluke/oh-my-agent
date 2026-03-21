@@ -37,7 +37,7 @@ Classificeer vroegtijdig om de reactiesnelheid te bepalen:
 4. Voeg regressietests toe voor het falende pad.
 5. Controleer aangrenzende paden die waarschijnlijk dezelfde foutmodus delen.
 
-## Promptsjabloon voor debug-agent
+## Promptsjabloon voor oma-debug
 
 ```text
 Bug: <error/symptom>

@@ -43,7 +43,7 @@ Hypothesis B: ...
 Execute each hypothesis **in isolation**.
 
 **In multi-agent mode** (`/orchestrate`, `/coordinate`):
-- Spawn the **same agent type** (e.g., `backend-impl`) multiple times with different prompts
+- Spawn the **same agent type** (e.g., `backend-engineer`) multiple times with different prompts
 - Each spawn includes the hypothesis context in the task description:
   ```
   Task: "Fix input validation using Hypothesis A: Zod schema at router level.

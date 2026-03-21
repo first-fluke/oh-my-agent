@@ -37,7 +37,7 @@ Regression window (if known):
 4. 失敗パスに対するリグレッションテストを追加する。
 5. 同じ障害モードを共有する可能性のある隣接パスを再確認する。
 
-## debug-agent 用プロンプトテンプレート
+## oma-debug 用プロンプトテンプレート
 
 ```text
 Bug: <error/symptom>

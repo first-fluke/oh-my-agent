@@ -88,5 +88,60 @@ export function migrateToAgents(targetDir: string): string[] {
     }
   }
 
+  // Migrate legacy skill/agent names to oma-* prefixed names (v2.12+)
+  const skillRenames: Record<string, string> = {
+    "backend-agent": "oma-backend",
+    "db-agent": "oma-db",
+    "debug-agent": "oma-debug",
+    "frontend-agent": "oma-frontend",
+    "mobile-agent": "oma-mobile",
+    "pm-agent": "oma-pm",
+    "qa-agent": "oma-qa",
+    "tf-infra-agent": "oma-tf-infra",
+    brainstorm: "oma-brainstorm",
+    commit: "oma-commit",
+    orchestrator: "oma-orchestrator",
+    "dev-workflow": "oma-dev-workflow",
+    translator: "oma-translator",
+    "workflow-guide": "oma-coordination",
+  };
+
+  const skillsDir = join(targetDir, ".agents", "skills");
+  if (existsSync(skillsDir)) {
+    for (const [oldName, newName] of Object.entries(skillRenames)) {
+      const oldPath = join(skillsDir, oldName);
+      const newPath = join(skillsDir, newName);
+      if (existsSync(oldPath) && !existsSync(newPath)) {
+        renameSync(oldPath, newPath);
+        actions.push(`skills/${oldName} → skills/${newName}`);
+      } else if (existsSync(oldPath) && existsSync(newPath)) {
+        rmSync(oldPath, { recursive: true });
+        actions.push(`skills/${oldName} (removed, replaced by ${newName})`);
+      }
+    }
+  }
+
+  const agentRenames: Record<string, string> = {
+    "backend-impl.md": "backend-engineer.md",
+    "db-impl.md": "db-engineer.md",
+    "frontend-impl.md": "frontend-engineer.md",
+    "mobile-impl.md": "mobile-engineer.md",
+  };
+
+  const agentsDir = join(targetDir, ".claude", "agents");
+  if (existsSync(agentsDir)) {
+    for (const [oldName, newName] of Object.entries(agentRenames)) {
+      const oldPath = join(agentsDir, oldName);
+      const newPath = join(agentsDir, newName);
+      if (existsSync(oldPath) && !existsSync(newPath)) {
+        renameSync(oldPath, newPath);
+        actions.push(`agents/${oldName} → agents/${newName}`);
+      } else if (existsSync(oldPath) && existsSync(newPath)) {
+        rmSync(oldPath);
+        actions.push(`agents/${oldName} (removed, replaced by ${newName})`);
+      }
+    }
+  }
+
   return actions;
 }

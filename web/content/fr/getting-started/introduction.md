@@ -18,20 +18,20 @@ oh-my-agent est un orchestrateur multi-agent pour l'IDE Antigravity. Il route le
 
 | Agent | Responsabilité |
 |---|---|
-| brainstorm | Idéation axée design et exploration de concepts |
-| db-agent | Modélisation de bases de données, conception de schémas et optimisation de requêtes |
-| dev-workflow | Optimisation des workflows de développement et CI/CD |
-| tf-infra-agent | Provisionnement d'infrastructure as code avec Terraform |
-| translator | Traduction multilingue contextuelle |
-| workflow-guide | Coordonne les projets complexes multi-domaines |
-| pm-agent | Planification et décomposition architecturale |
-| frontend-agent | Implémentation React/Next.js |
-| backend-agent | Implémentation API/base de données/authentification |
-| mobile-agent | Implémentation Flutter/mobile |
-| qa-agent | Revue sécurité/performance/accessibilité |
-| debug-agent | Analyse des causes racines et correctifs sans régression |
-| orchestrator | Orchestration de sous-agents via CLI |
-| commit | Workflow de commit conventionnel |
+| oma-brainstorm | Idéation axée design et exploration de concepts |
+| oma-db | Modélisation de bases de données, conception de schémas et optimisation de requêtes |
+| oma-dev-workflow | Optimisation des workflows de développement et CI/CD |
+| oma-tf-infra | Provisionnement d'infrastructure as code avec Terraform |
+| oma-translator | Traduction multilingue contextuelle |
+| oma-coordination | Coordonne les projets complexes multi-domaines |
+| oma-pm | Planification et décomposition architecturale |
+| oma-frontend | Implémentation React/Next.js |
+| oma-backend | Implémentation API/base de données/authentification |
+| oma-mobile | Implémentation Flutter/mobile |
+| oma-qa | Revue sécurité/performance/accessibilité |
+| oma-debug | Analyse des causes racines et correctifs sans régression |
+| oma-orchestrator | Orchestration de sous-agents via CLI |
+| oma-commit | Workflow de commit conventionnel |
 
 ## Structure du projet
 

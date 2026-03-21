@@ -27,11 +27,11 @@ sleep 0.8
 echo -e "  ${BOLD}Select a preset:${RESET}"
 echo ""
 echo -e "    ${INVERSE} ✨ All         ${RESET}  Everything (13 skills, 11 workflows)"
-echo -e "    ${DIM} 🌐 Fullstack   ${RESET}  frontend, backend, db, pm, qa, debug, commit"
-echo -e "    ${DIM} 🎨 Frontend    ${RESET}  frontend, pm, qa, debug, commit"
-echo -e "    ${DIM} ⚙️  Backend     ${RESET}  backend, db, pm, qa, debug, commit"
-echo -e "    ${DIM} 📱 Mobile      ${RESET}  mobile, pm, qa, debug, commit"
-echo -e "    ${DIM} 🏗️  Infra       ${RESET}  tf-infra, db, qa, debug, commit"
+echo -e "    ${DIM} 🌐 Fullstack   ${RESET}  frontend, backend, db, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} 🎨 Frontend    ${RESET}  frontend, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} ⚙️  Backend     ${RESET}  backend, db, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} 📱 Mobile      ${RESET}  mobile, pm, qa, debug, oma-commit"
+echo -e "    ${DIM} 🏗️  Infra       ${RESET}  tf-infra, db, qa, debug, oma-commit"
 echo ""
 sleep 1.2
 
@@ -41,7 +41,7 @@ sleep 0.3
 
 echo -e "  ${CYAN}◇${RESET} Installing skills..."
 echo ""
-skills=("brainstorm" "workflow-guide" "pm-agent" "frontend-agent" "backend-agent" "db-agent" "mobile-agent" "qa-agent" "debug-agent" "orchestrator" "dev-workflow" "tf-infra-agent" "commit")
+skills=("oma-brainstorm" "oma-coordination" "oma-pm" "oma-frontend" "oma-backend" "oma-db" "oma-mobile" "oma-qa" "oma-debug" "oma-orchestrator" "oma-dev-workflow" "oma-tf-infra" "oma-commit")
 for skill in "${skills[@]}"; do
   echo -e "    ${GREEN}✓${RESET} ${skill}"
   sleep 0.07
@@ -50,7 +50,7 @@ echo ""
 sleep 0.15
 
 echo -e "  ${CYAN}◇${RESET} Installing workflows..."
-workflows=("orchestrate" "coordinate" "ultrawork" "plan" "exec-plan" "brainstorm" "review" "debug" "setup" "tools" "deepinit")
+workflows=("orchestrate" "coordinate" "ultrawork" "plan" "exec-plan" "oma-brainstorm" "review" "debug" "setup" "tools" "deepinit")
 for wf in "${workflows[@]}"; do
   echo -e "    ${GREEN}✓${RESET} ${wf}"
   sleep 0.05

@@ -36,10 +36,10 @@ Spawn agents by priority tier:
 Agent mapping:
 | Domain | Subagent File |
 |:------|:---------------|
-| backend | `.claude/agents/backend-impl.md` |
-| frontend | `.claude/agents/frontend-impl.md` |
-| mobile | `.claude/agents/mobile-impl.md` |
-| db | `.claude/agents/db-impl.md` |
+| backend | `.claude/agents/backend-engineer.md` |
+| frontend | `.claude/agents/frontend-engineer.md` |
+| mobile | `.claude/agents/mobile-engineer.md` |
+| db | `.claude/agents/db-engineer.md` |
 | qa | `.claude/agents/qa-reviewer.md` |
 | debug | `.claude/agents/debug-investigator.md` |
 | pm | `.claude/agents/pm-planner.md` |
