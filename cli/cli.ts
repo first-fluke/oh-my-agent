@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { checkStatus, parallelRun, spawnAgent } from "./commands/agent.js";
+import { checkAuthStatus } from "./commands/auth.js";
 import { bridge } from "./commands/bridge.js";
 import { cleanup } from "./commands/cleanup.js";
 import { doctor } from "./commands/doctor.js";
@@ -421,6 +422,19 @@ program
       startDashboard();
     }),
   );
+
+addOutputOptions(
+  program
+    .command("auth:status")
+    .description("Check authentication status of all supported CLIs"),
+).action(
+  runAction(
+    async (options) => {
+      await checkAuthStatus(resolveJsonMode(options));
+    },
+    { supportsJsonOutput: true },
+  ),
+);
 
 addOutputOptions(
   program

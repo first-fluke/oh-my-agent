@@ -3,6 +3,12 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import {
+  isClaudeAuthenticated,
+  isCodexAuthenticated,
+  isGeminiAuthenticated,
+  isQwenAuthenticated,
+} from "./auth.js";
 import { checkStarred } from "../lib/github.js";
 import {
   getAllSkills,
@@ -120,6 +126,13 @@ export async function doctor(jsonMode = false): Promise<void> {
     checkCLI("qwen", "qwen", "bun install --global @qwen-code/qwen-code"),
   ]);
 
+  const authCheckers: Record<string, () => boolean> = {
+    gemini: isGeminiAuthenticated,
+    claude: isClaudeAuthenticated,
+    codex: isCodexAuthenticated,
+    qwen: isQwenAuthenticated,
+  };
+
   const mcpChecks = await Promise.all(
     clis
       .filter((c) => c.installed)
@@ -174,6 +187,7 @@ export async function doctor(jsonMode = false): Promise<void> {
         name: c.name,
         installed: c.installed,
         version: c.version || null,
+        authenticated: c.installed ? (authCheckers[c.name]?.() ?? false) : false,
       })),
       mcp: mcpChecks.map((c) => ({
         name: c.name,
@@ -206,22 +220,23 @@ export async function doctor(jsonMode = false): Promise<void> {
   const spinner = p.spinner();
 
   try {
-    const cliTable = [
-      pc.bold("🔍 CLI Installation Status"),
-      "┌─────────┬──────────┬─────────────┐",
-      `│ ${pc.bold("CLI")}     │ ${pc.bold("Status")}     │ ${pc.bold("Version")}       │`,
-      "├─────────┼──────────┼─────────────┤",
-      ...clis.map((cli) => {
-        const status = cli.installed
-          ? pc.green("✅ Installed")
-          : pc.red("❌ Missing");
-        const version = cli.version || "-";
-        return `│ ${cli.name.padEnd(7)} │ ${status.padEnd(8)} │ ${version.padEnd(11)} │`;
-      }),
-      "└─────────┴──────────┴─────────────┘",
-    ].join("\n");
+    const cliRows = clis.map((cli) => {
+      const status = cli.installed ? pc.green("✅") : pc.red("❌");
+      const version = cli.version || "-";
+      const auth = cli.installed
+        ? authCheckers[cli.name]?.()
+          ? pc.green("✅")
+          : pc.red("❌")
+        : pc.dim("-");
+      return `${status} ${cli.name.padEnd(8)} ${version.padEnd(12)} ${auth}`;
+    });
 
-    p.note(cliTable, "CLI Status");
+    p.note(
+      [`${"CLI".padEnd(11)} ${"Version".padEnd(12)} Auth`, ...cliRows].join(
+        "\n",
+      ),
+      "CLI Status",
+    );
 
     if (missingCLIs.length > 0) {
       p.note(
