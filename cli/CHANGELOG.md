@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.11.3...cli-v2.12.0) (2026-03-21)
+
+
+### Features
+
+* add autoresearch-inspired protocols with full infrastructure compatibility ([84b0c4d](https://github.com/first-fluke/oh-my-agent/commit/84b0c4d31e61ef4759ffd13bffc252d1f1e80e81))
+* autoresearch-inspired protocols v2 (infrastructure-compatible) ([2bc9b9c](https://github.com/first-fluke/oh-my-agent/commit/2bc9b9cf6fdb5a817b41652309f88fdd993f15f4))
+* **cli:** add auth:status command and integrate auth checks into doctor ([cdeaf53](https://github.com/first-fluke/oh-my-agent/commit/cdeaf53675ba83b9e68bda83443ebc5fe434357a))
+
+
+### Miscellaneous
+
+* **main:** release web 0.2.7 ([1a4a1cd](https://github.com/first-fluke/oh-my-agent/commit/1a4a1cd7eae4eeec868ff1b8cfd6cdd0340c56e9))
+
 ## [2.11.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v2.11.2...cli-v2.11.3) (2026-03-18)
 
 
