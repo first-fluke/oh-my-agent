@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.1...web-v0.3.2) (2026-03-22)
+
+
+### Documentation
+
+* simplify user-facing documentation and standardize structure ([fcbaad7](https://github.com/first-fluke/oh-my-agent/commit/fcbaad7a19b72a002193a0bb325bed10c3b27085))
+
 ## [0.3.1](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.0...web-v0.3.1) (2026-03-21)
 
 
