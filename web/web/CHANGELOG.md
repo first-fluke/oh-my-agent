@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.2...web-v0.3.3) (2026-03-22)
+
+
+### Documentation
+
+* add brew install oh-my-agent as global installation option ([026169e](https://github.com/first-fluke/oh-my-agent/commit/026169ef10b451fe72461979b13b778026371c83))
+
 ## [0.3.2](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.1...web-v0.3.2) (2026-03-22)
 
 
