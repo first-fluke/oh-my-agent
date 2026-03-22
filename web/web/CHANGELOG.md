@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.4](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.3...web-v0.3.4) (2026-03-22)
+
+
+### Documentation
+
+* add automated updates guide for GitHub Action ([261e842](https://github.com/first-fluke/oh-my-agent/commit/261e8425c46d622930857d667f3cda43093aad2e))
+* translate automated-updates guide to 9 languages ([c0934f0](https://github.com/first-fluke/oh-my-agent/commit/c0934f0ad3ddf9e92fbcf91c7e5ea99ab9e65a46))
+
 ## [0.3.3](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.2...web-v0.3.3) (2026-03-22)
 
 
