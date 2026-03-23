@@ -5,9 +5,9 @@
       "keywords": {
         "*": ["orchestrate"],
         "en": ["parallel", "do everything", "run everything"],
-        "ko": ["자동", "자동으로", "병렬", "전부 실행", "전부 해", "전부 돌려"],
-        "ja": ["オーケストレート", "並列", "自動", "全部実行"],
-        "zh": ["编排", "并行", "自动", "全部执行"],
+        "ko": ["자동 실행", "자동으로 실행", "자동으로 해", "병렬 실행", "전부 실행", "전부 해", "전부 돌려"],
+        "ja": ["オーケストレート", "並列実行", "自動実行", "全部実行"],
+        "zh": ["编排", "并行执行", "自动执行", "全部执行"],
         "es": ["orquestar", "paralelo", "ejecutar todo"],
         "fr": ["orchestrer", "parallèle", "tout exécuter"],
         "de": ["orchestrieren", "parallel", "alles ausführen"],
