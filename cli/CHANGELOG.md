@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.5.0...cli-v4.6.0) (2026-03-23)
+
+
+### Features
+
+* auto-enable codex_hooks feature flag on oma install ([fd94cb6](https://github.com/first-fluke/oh-my-agent/commit/fd94cb65a143a91255f8e68d63f7ccccb19fb030))
+
 ## [4.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.4.0...cli-v4.5.0) (2026-03-23)
 
 
