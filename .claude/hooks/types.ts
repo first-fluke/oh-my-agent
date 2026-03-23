@@ -1,40 +1,64 @@
 // Claude Code Hook Types for oh-my-agent
+// Shared across Claude Code, Codex CLI, and Gemini CLI
 
-// --- Hook Input Types ---
+// --- Vendor Detection ---
 
-export interface UserPromptSubmitInput {
-  sessionId: string;
-  messageId?: string;
-  prompt: string;
-}
+export type Vendor = "claude" | "codex" | "gemini";
 
-export interface StopInput {
-  sessionId: string;
-  messageId?: string;
+// --- Hook Input (unified) ---
+
+export interface HookInput {
+  prompt?: string;
+  sessionId?: string;
+  session_id?: string;
+  // Codex: snake_case fields
+  hook_event_name?: string;
+  cwd?: string;
+  // Gemini: AfterAgent fields
+  prompt_response?: string;
+  stop_hook_active?: boolean;
+  // Claude: Stop fields
   stopReason?: string;
 }
 
-// --- Hook Output Types ---
+// --- Hook Output Builders ---
 
-export interface HookAllowOutput {
-  additionalContext?: string;
+export function makePromptOutput(
+  vendor: Vendor,
+  additionalContext: string,
+): string {
+  switch (vendor) {
+    case "claude":
+      return JSON.stringify({ additionalContext });
+    case "codex":
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "UserPromptSubmit",
+          additionalContext,
+        },
+      });
+    case "gemini":
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "BeforeAgent",
+          additionalContext,
+        },
+      });
+  }
 }
 
-export interface HookBlockOutput {
-  decision: "block";
-  reason: string;
+export function makeBlockOutput(vendor: Vendor, reason: string): string {
+  switch (vendor) {
+    case "claude":
+    case "codex":
+      return JSON.stringify({ decision: "block", reason });
+    case "gemini":
+      // Gemini uses AfterAgent deny — same JSON shape
+      return JSON.stringify({ decision: "block", reason });
+  }
 }
 
-// --- Keyword Detection ---
-
-export interface TriggerRule {
-  workflow: string;
-  patterns: RegExp[];
-  /** If true, skip informational-context filtering */
-  exact?: boolean;
-}
-
-// --- Persistent Mode ---
+// --- Shared Types ---
 
 export interface ModeState {
   workflow: string;

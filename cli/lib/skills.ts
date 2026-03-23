@@ -386,20 +386,25 @@ function installClaudeWorkflowRouters(
 }
 
 /**
- * Install Claude Code hooks and merge settings.json.
- * Source: .claude/hooks/ (from downloaded repo)
- * Target: .claude/hooks/ + .claude/settings.json (hooks section merged)
+ * Copy shared hook scripts to a vendor's hooks directory.
+ * The same TypeScript hooks work across all vendors via auto-detection.
  */
-function installClaudeHooks(sourceDir: string, targetDir: string): void {
+function copyHookScripts(sourceDir: string, hooksDest: string): void {
   const hooksSrc = join(sourceDir, ".claude", "hooks");
   if (!existsSync(hooksSrc)) return;
 
-  const hooksDest = join(targetDir, ".claude", "hooks");
   mkdirSync(hooksDest, { recursive: true });
   cpSync(hooksSrc, hooksDest, { recursive: true, force: true });
+}
 
-  // Merge hooks config into .claude/settings.json (preserve existing settings)
-  const settingsPath = join(targetDir, ".claude", "settings.json");
+/**
+ * Merge hook entries into a JSON settings file (preserve existing settings).
+ */
+function mergeHooksIntoSettings(
+  settingsPath: string,
+  // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor
+  hookEntries: Record<string, any>,
+): void {
   // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
   let settings: any = {};
 
@@ -407,18 +412,36 @@ function installClaudeHooks(sourceDir: string, targetDir: string): void {
     try {
       settings = JSON.parse(readFileSync(settingsPath, "utf-8"));
     } catch {
-      // Corrupted settings — start fresh
+      // Corrupted — start fresh
     }
   }
 
-  const omaHooks = {
+  settings.hooks = { ...(settings.hooks || {}), ...hookEntries };
+  writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+}
+
+/** Build bun command for a hook script relative to a project dir env var. */
+function bunHookCmd(envVar: string, vendorDir: string, script: string): string {
+  return `bun "$${envVar}/${vendorDir}/hooks/${script}"`;
+}
+
+/**
+ * Install Claude Code hooks and settings.json.
+ */
+function installClaudeHooks(sourceDir: string, targetDir: string): void {
+  copyHookScripts(sourceDir, join(targetDir, ".claude", "hooks"));
+
+  mergeHooksIntoSettings(join(targetDir, ".claude", "settings.json"), {
     UserPromptSubmit: [
       {
         hooks: [
           {
             type: "command",
-            command:
-              'bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"',
+            command: bunHookCmd(
+              "CLAUDE_PROJECT_DIR",
+              ".claude",
+              "keyword-detector.ts",
+            ),
             timeout: 5,
           },
         ],
@@ -429,17 +452,102 @@ function installClaudeHooks(sourceDir: string, targetDir: string): void {
         hooks: [
           {
             type: "command",
-            command:
-              'bun "$CLAUDE_PROJECT_DIR/.claude/hooks/persistent-mode.ts"',
+            command: bunHookCmd(
+              "CLAUDE_PROJECT_DIR",
+              ".claude",
+              "persistent-mode.ts",
+            ),
             timeout: 5,
           },
         ],
       },
     ],
-  };
+  });
+}
 
-  settings.hooks = { ...(settings.hooks || {}), ...omaHooks };
-  writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+/**
+ * Install Codex CLI hooks and hooks.json.
+ */
+function installCodexHooks(sourceDir: string, targetDir: string): void {
+  const hooksDir = join(targetDir, ".codex", "hooks");
+  copyHookScripts(sourceDir, hooksDir);
+
+  // Codex uses hooks.json (discovered from .codex/ or project root)
+  mergeHooksIntoSettings(join(targetDir, ".codex", "hooks.json"), {
+    UserPromptSubmit: [
+      {
+        hooks: [
+          {
+            type: "command",
+            command: bunHookCmd(
+              "CODEX_PROJECT_DIR",
+              ".codex",
+              "keyword-detector.ts",
+            ),
+            timeout: 5,
+          },
+        ],
+      },
+    ],
+    Stop: [
+      {
+        hooks: [
+          {
+            type: "command",
+            command: bunHookCmd(
+              "CODEX_PROJECT_DIR",
+              ".codex",
+              "persistent-mode.ts",
+            ),
+            timeout: 5,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+/**
+ * Install Gemini CLI hooks and settings.json.
+ */
+function installGeminiHooks(sourceDir: string, targetDir: string): void {
+  const hooksDir = join(targetDir, ".gemini", "hooks");
+  copyHookScripts(sourceDir, hooksDir);
+
+  mergeHooksIntoSettings(join(targetDir, ".gemini", "settings.json"), {
+    BeforeAgent: [
+      {
+        matcher: "*",
+        hooks: [
+          {
+            type: "command",
+            command: bunHookCmd(
+              "GEMINI_PROJECT_DIR",
+              ".gemini",
+              "keyword-detector.ts",
+            ),
+            timeout: 5,
+          },
+        ],
+      },
+    ],
+    AfterAgent: [
+      {
+        matcher: "*",
+        hooks: [
+          {
+            type: "command",
+            command: bunHookCmd(
+              "GEMINI_PROJECT_DIR",
+              ".gemini",
+              "persistent-mode.ts",
+            ),
+            timeout: 5,
+          },
+        ],
+      },
+    ],
+  });
 }
 
 const OMA_START = "<!-- OMA:START";
@@ -497,10 +605,10 @@ export function installVendorAdaptations(
         mergeClaudeMd(sourceDir, targetDir);
         break;
       case "codex":
-        // Phase 3: installCodexAgents(agentsDir, targetDir);
+        installCodexHooks(sourceDir, targetDir);
         break;
       case "gemini":
-        // Phase 3: installGeminiAgents(agentsDir, targetDir);
+        installGeminiHooks(sourceDir, targetDir);
         break;
     }
   }
