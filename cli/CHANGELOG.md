@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.3.1...cli-v4.4.0) (2026-03-23)
+
+
+### Features
+
+* add Claude Code hooks for automatic workflow detection ([5f18af3](https://github.com/first-fluke/oh-my-agent/commit/5f18af38ecfe7bf4228d121cda5d491ce9f58788))
+* add cross-vendor hook support for Codex CLI and Gemini CLI ([9fc8513](https://github.com/first-fluke/oh-my-agent/commit/9fc85130803bc62cef1725b25a39562ad1714419))
+* add Qwen Code hook support ([2670f1d](https://github.com/first-fluke/oh-my-agent/commit/2670f1d67ebab627d779426041ca44781a01a18c))
+
+
+### Bug Fixes
+
+* correct Gemini deny decision and Codex hook paths ([76e1de5](https://github.com/first-fluke/oh-my-agent/commit/76e1de55ce13793fe95b44865018e706041595f3))
+* install hooks for all 3 vendors on oma install/update ([1d8f8d1](https://github.com/first-fluke/oh-my-agent/commit/1d8f8d1cba1ecf9054cc910f11957ec8239c8af4))
+
+
+### Miscellaneous
+
+* **main:** release web 0.3.4 ([2ac2484](https://github.com/first-fluke/oh-my-agent/commit/2ac2484b2be2cedbfc96f45ab4dfc8c940e402e4))
+* **main:** release web 0.3.4 ([fcf98ba](https://github.com/first-fluke/oh-my-agent/commit/fcf98ba8d7246091913c948ec8889b2775b27e50))
+
 ## [4.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.3.0...cli-v4.3.1) (2026-03-22)
 
 
