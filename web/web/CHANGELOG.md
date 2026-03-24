@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.4...web-v0.3.5) (2026-03-24)
+
+
+### Features
+
+* add oma-design skill with DESIGN.md workflow and anti-pattern system ([4f7a897](https://github.com/first-fluke/oh-my-agent/commit/4f7a8971c1ecd59509acbfa117d5f8818a421b3b))
+
 ## [0.3.4](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.3...web-v0.3.4) (2026-03-22)
 
 
