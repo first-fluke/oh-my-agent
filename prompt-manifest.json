@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.6.0",
-  "releaseDate": "2026-03-23T23:10:28.359Z",
+  "releaseDate": "2026-03-24T00:41:52.358Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -101,8 +101,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/context-loading.md",
-      "sha256": "45004183acaa9d0e820ca5b8a2e0dda701ee65077f645066328741bf8cfde3ae",
-      "size": 7284
+      "sha256": "24e0c1845877d2b2aa0e26e7156f36e3dbed911a19f65ef6bfe894fb64630ba7",
+      "size": 8347
     },
     {
       "path": ".agents/skills/_shared/core/difficulty-guide.md",
@@ -136,8 +136,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/skill-routing.md",
-      "sha256": "79effe2fedb1d6cbc7c4103266706d0616cb67a4feeb36812d492d0d87407543",
-      "size": 3935
+      "sha256": "f2980da1246f26d3c38d3f359a12a6678f9f42b2a8b90c06ac91be59e2f163ce",
+      "size": 4291
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
@@ -363,6 +363,101 @@
       "path": ".agents/skills/oma-debug/resources/execution-protocol.md",
       "sha256": "4872c37a05013fb1c55b275f815e53e401a036a0badfb785542f071ce11006af",
       "size": 2376
+    },
+    {
+      "path": ".agents/skills/oma-design/SKILL.md",
+      "sha256": "6d62f42b259d2cd6573988723297d1026533da291bbd298a890f0259e3b02604",
+      "size": 4666
+    },
+    {
+      "path": ".agents/skills/oma-design/examples/design-context-example.md",
+      "sha256": "ae760285df28992599dab624cddff9719f28420670406c2c4f694c5b55dd4cec",
+      "size": 2392
+    },
+    {
+      "path": ".agents/skills/oma-design/examples/landing-page-prompt.md",
+      "sha256": "222cf23aa1f299c1c4ef234e23cb4b102441577bdf3f059bf797eecdebbe6b42",
+      "size": 4864
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/accessibility.md",
+      "sha256": "1484786fcef245db12029e9eb33ea740eeba7599cf0d5366d0b6e949285982f7",
+      "size": 4525
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/color-and-contrast.md",
+      "sha256": "40a58ba0b42d2169e873c5fc35cc81526e59c29839ef0d480ca01511185c23c1",
+      "size": 3826
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/component-patterns.md",
+      "sha256": "be6b063facaea4b83d7655d04e9a4b68b7d19e65a0bbaffbb625bbec1ebc435c",
+      "size": 5854
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/motion-design.md",
+      "sha256": "42a24f1c9c17cc0ff0eeb1146df26c531601cef3ce63ab04b4bdd85989fbdfc6",
+      "size": 3823
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/responsive-design.md",
+      "sha256": "12d2aef6f3aa32c690d7a3c6c292c2ca269448712c779ec88915610862bb38ed",
+      "size": 3707
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/shader-and-3d.md",
+      "sha256": "7e4c242bba645e61831aacf4486f579eb1098666bdd8014a01471f71e96e6939",
+      "size": 5106
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/spatial-design.md",
+      "sha256": "85fed485f09137f24dd79351eb1b4feb910595ec6fde40af5e43e80fff27803b",
+      "size": 2823
+    },
+    {
+      "path": ".agents/skills/oma-design/reference/typography.md",
+      "sha256": "daafc107990adc529597cb6327aaa9d345ac67ff59cd684304f57707696929f4",
+      "size": 2703
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/anti-patterns.md",
+      "sha256": "3b934702967b99d799c5ec2c522d0fb0501a30f673b1506313c29fdce314b5c8",
+      "size": 4156
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/checklist.md",
+      "sha256": "183ff6132aeb081c3c8aedc3b105bdd910b10aabebb096b8f10f1b015216ba65",
+      "size": 3008
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/design-md-spec.md",
+      "sha256": "867159ba156bfc3146635a8129985611e0ca7090bb1c107bd2c1b65571915f8b",
+      "size": 3762
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/design-tokens.md",
+      "sha256": "b70cc99e0e57e93a0629a47b438a70da58bbab4c9e5d1b78e92790b2cd0862e8",
+      "size": 4003
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/error-playbook.md",
+      "sha256": "31f93af41c88efc6a6c13793795b808c324eea606b00c87a094fad183954b696",
+      "size": 4024
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/execution-protocol.md",
+      "sha256": "0eb8cd22c8a0b50b8bf55ffc61e8137240f551f59c881f83432b1a3072289424",
+      "size": 5442
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/prompt-enhancement.md",
+      "sha256": "dc42f159999acd34d33209b2f45df24d7df59c7d988580614ad9d588037e7170",
+      "size": 4548
+    },
+    {
+      "path": ".agents/skills/oma-design/resources/stitch-integration.md",
+      "sha256": "278d13825f0e28706a8de9654140f42bc674a33176e4bcb7b5974c12a4e64aa0",
+      "size": 3889
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
@@ -710,6 +805,11 @@
       "size": 14320
     },
     {
+      "path": ".agents/workflows/design.md",
+      "sha256": "2138df45db2fb0335ad0f955ca3f20e7a9eba38dbc825826680f9d21359dc49f",
+      "size": 4410
+    },
+    {
       "path": ".agents/workflows/exec-plan.md",
       "sha256": "bc6ecc92709ebbd7ea56223d5f2773a581a016d4a10ef61424ee327d272f98a5",
       "size": 4823
@@ -785,6 +885,11 @@
       "size": 231
     },
     {
+      "path": ".claude/skills/design/SKILL.md",
+      "sha256": "e4a6d339240f8efdc8241a335ad16964815c7a8bd912e537363d6bf13651fa2a",
+      "size": 211
+    },
+    {
       "path": ".claude/skills/exec-plan/SKILL.md",
       "sha256": "384c02a1029858226c54c2ba78d3672479ecefbd276d3a3ebc02a9d8d6435dfd",
       "size": 229
@@ -840,6 +945,11 @@
       "size": 1705
     },
     {
+      "path": ".claude/agents/designer.md",
+      "sha256": "d22e7f01c509f86aaf337e24506fe52b56490b1312dd9c01d432fbe8824c30cc",
+      "size": 1934
+    },
+    {
       "path": ".claude/agents/frontend-engineer.md",
       "sha256": "17202457b64e893760f4b62864b2261536321e0dc4cbe11b730807b0f0d4bac8",
       "size": 1587
@@ -864,8 +974,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 27,
-    "workflowCount": 15,
-    "totalFiles": 171
+    "skillCount": 29,
+    "workflowCount": 16,
+    "totalFiles": 193
   }
 }
