@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.7.0...cli-v4.8.0) (2026-03-24)
+
+
+### Features
+
+* add agent scope violation check to verify command ([339e658](https://github.com/first-fluke/oh-my-agent/commit/339e65846bcebfc4d909ffc1d0e21452d88c0c6c))
+
+
+### Bug Fixes
+
+* force-remove .agent/ after merge and add migrateToAgents tests ([9dbd6cc](https://github.com/first-fluke/oh-my-agent/commit/9dbd6cc24cbc3c28c7d463308a7bec5b510e3753))
+
+
+### Refactoring
+
+* remove .agents/brain/ and consolidate output to .agents/results/ ([3760861](https://github.com/first-fluke/oh-my-agent/commit/37608617a133bd688bfb53ed3757634bd01ecad5))
+
+
+### Miscellaneous
+
+* bump typescript from ^5 to ^6 ([c7f9166](https://github.com/first-fluke/oh-my-agent/commit/c7f91668f091e1cfd80a4fda401dfe1842e62f69))
+* sync cli README and add metadata to Manifest type ([fcd00b5](https://github.com/first-fluke/oh-my-agent/commit/fcd00b553493fdabcd22a1eceba8a33e99d59aaf))
+
 ## [4.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.6.0...cli-v4.7.0) (2026-03-24)
 
 
