@@ -368,8 +368,8 @@ export function detectSessions(
   const sorted = [...commits].sort((a, b) => a.timestamp - b.timestamp);
   const sessions: RetroSession[] = [];
 
-  let sessionStart = sorted[0]?.timestamp;
-  let sessionEnd = sorted[0]?.timestamp;
+  let sessionStart = sorted[0]?.timestamp ?? 0;
+  let sessionEnd = sorted[0]?.timestamp ?? 0;
   let sessionCommits = 1;
 
   const pushSession = () => {
@@ -386,14 +386,15 @@ export function detectSessions(
   };
 
   for (let i = 1; i < sorted.length; i++) {
-    const gap = (sorted[i]?.timestamp - sessionEnd) / 60;
+    const ts = sorted[i]?.timestamp ?? 0;
+    const gap = (ts - sessionEnd) / 60;
     if (gap > gapMinutes) {
       pushSession();
-      sessionStart = sorted[i]?.timestamp;
-      sessionEnd = sorted[i]?.timestamp;
+      sessionStart = ts;
+      sessionEnd = ts;
       sessionCommits = 1;
     } else {
-      sessionEnd = sorted[i]?.timestamp;
+      sessionEnd = ts;
       sessionCommits++;
     }
   }

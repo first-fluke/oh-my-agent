@@ -10,6 +10,14 @@ export interface Manifest {
   releaseDate: string;
   repository: string;
   files: ManifestFile[];
+  checksums?: {
+    algorithm: string;
+  };
+  metadata?: {
+    skillCount: number;
+    workflowCount: number;
+    totalFiles: number;
+  };
 }
 
 export interface CLICheck {

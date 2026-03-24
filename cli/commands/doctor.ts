@@ -354,11 +354,11 @@ export async function doctor(jsonMode = false): Promise<void> {
         spinner.start("Installing skills...");
 
         try {
-          await installShared(cwd);
+          installShared(cwd, cwd);
 
           for (const skillName of skillsToInstall) {
             spinner.message(`Installing ${pc.cyan(skillName)}...`);
-            await installSkill(skillName, cwd);
+            installSkill(cwd, skillName, cwd);
           }
 
           spinner.stop(`Installed ${skillsToInstall.length} skill(s)!`);

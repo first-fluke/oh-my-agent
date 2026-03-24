@@ -255,7 +255,7 @@ export async function update(force = false, ci = false): Promise<void> {
       }
 
       ui.outro(
-        `${remoteManifest.metadata.totalFiles} files updated successfully`,
+        `${remoteManifest.metadata?.totalFiles ?? 0} files updated successfully`,
       );
     } finally {
       cleanup();

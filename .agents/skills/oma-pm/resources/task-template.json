@@ -25,7 +25,8 @@
       "dependencies": [],
       "estimated_complexity": "low|medium|high|very-high",
       "acceptance_criteria": [],
-      "artifacts_expected": []
+      "artifacts_expected": [],
+      "scope": []
     }
   ],
   "api_contracts": [

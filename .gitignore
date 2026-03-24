@@ -18,9 +18,7 @@ bin/*.js
 .env.local
 .env.*.local
 
-# Antigravity outputs
-.gemini/antigravity/brain/*
-!.gemini/antigravity/brain/.gitkeep
+# OMA outputs
 .agents/plan.json
 
 # Serena Memory (runtime state)

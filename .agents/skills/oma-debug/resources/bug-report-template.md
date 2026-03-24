@@ -2,7 +2,7 @@
 
 Use this template when documenting bugs in the Knowledge Base.
 
-Save to: `.agents/brain/bugs/bug-YYYYMMDD-[short-description].md`
+Save to: `.agents/results/bugs/bug-YYYYMMDD-[short-description].md`
 
 ---
 

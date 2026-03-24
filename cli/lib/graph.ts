@@ -27,7 +27,10 @@ export interface Graph {
 // ── Constants ───────────────────────────────────────────────────
 
 const SKILL_CATS = Object.fromEntries(
-  Object.entries(SKILLS).map(([cat, items]) => [cat, items.map((s) => s.name)]),
+  Object.entries(SKILLS).map(([cat, items]) => [
+    cat,
+    items.map((s: { name: string }) => s.name),
+  ]),
 );
 
 const AGENT_SKILL_MAP: Record<string, string> = {
@@ -47,7 +50,7 @@ function findSharedRefs(content: string): string[] {
   for (const m of content.matchAll(
     /_shared\/((?:[a-z][a-z0-9_-]*\/)*[a-z][a-z0-9_-]*)(?:\.md)?(?=[`)\s/}]|$)/gi,
   )) {
-    refs.add(m[1]);
+    if (m[1]) refs.add(m[1]);
   }
   return [...refs];
 }
@@ -384,9 +387,9 @@ export function renderAscii(graph: Graph): string {
     const last = gi === subs.length - 1;
     o.push(`${last ? "└─" : "├─"} ${pc.dim(sg)}`);
     const pre = last ? "   " : "│  ";
-    for (let i = 0; i < items.length; i++) {
-      const c = i === items.length - 1 ? "└─" : "├─";
-      o.push(`${pre}${c} ${col(items[i].label, "skill")}${refs(items[i].id)}`);
+    for (const item of items) {
+      const c = item === items.at(-1) ? "└─" : "├─";
+      o.push(`${pre}${c} ${col(item.label, "skill")}${refs(item.id)}`);
     }
   }
   o.push("");
@@ -394,9 +397,9 @@ export function renderAscii(graph: Graph): string {
   // Detail: Workflows
   const wfs = graph.nodes.filter((n) => n.category === "workflow");
   o.push(pc.bold(`Workflows (${wfs.length})`));
-  for (let i = 0; i < wfs.length; i++) {
-    const c = i === wfs.length - 1 ? "└─" : "├─";
-    o.push(`${c} ${col(wfs[i].label, "workflow")}${refs(wfs[i].id)}`);
+  for (const wf of wfs) {
+    const c = wf === wfs.at(-1) ? "└─" : "├─";
+    o.push(`${c} ${col(wf.label, "workflow")}${refs(wf.id)}`);
   }
   o.push("");
 
@@ -405,26 +408,26 @@ export function renderAscii(graph: Graph): string {
     (a, b) => (inCount.get(b.id) ?? 0) - (inCount.get(a.id) ?? 0),
   );
   o.push(pc.bold(`Shared (${sh.length})`));
-  for (let i = 0; i < sh.length; i++) {
-    const c = i === sh.length - 1 ? "└─" : "├─";
-    const cnt = inCount.get(sh[i].id) ?? 0;
+  for (const s of sh) {
+    const c = s === sh.at(-1) ? "└─" : "├─";
+    const cnt = inCount.get(s.id) ?? 0;
     const badge = cnt > 0 ? pc.dim(` (${cnt} refs)`) : "";
-    o.push(`${c} ${col(sh[i].label, "shared")}${badge}${refs(sh[i].id)}`);
+    o.push(`${c} ${col(s.label, "shared")}${badge}${refs(s.id)}`);
   }
   o.push("");
 
   // Detail: Claude Agents
   const ags = graph.nodes.filter((n) => n.category === "agent");
   o.push(pc.bold(`Claude Agents (${ags.length})`));
-  for (let i = 0; i < ags.length; i++) {
-    const c = i === ags.length - 1 ? "└─" : "├─";
+  for (const ag of ags) {
+    const c = ag === ags.at(-1) ? "└─" : "├─";
     const impl = graph.edges.find(
-      (e) => e.from === ags[i].id && e.type === "implements",
+      (e) => e.from === ag.id && e.type === "implements",
     );
     const tag = impl
-      ? ` ${pc.dim("──▸")} ${col(impl.to.split(":")[1], "skill")}`
+      ? ` ${pc.dim("──▸")} ${col(impl.to.split(":")[1] ?? "", "skill")}`
       : "";
-    o.push(`${c} ${col(ags[i].label, "agent")}${tag}`);
+    o.push(`${c} ${col(ag.label, "agent")}${tag}`);
   }
   o.push("");
 
@@ -434,9 +437,9 @@ export function renderAscii(graph: Graph): string {
   if (!mems.length) {
     o.push(`└─ ${pc.dim("(none)")}`);
   } else {
-    for (let i = 0; i < mems.length; i++) {
-      const c = i === mems.length - 1 ? "└─" : "├─";
-      o.push(`${c} ${col(mems[i].label, "memory")}`);
+    for (const mem of mems) {
+      const c = mem === mems.at(-1) ? "└─" : "├─";
+      o.push(`${c} ${col(mem.label, "memory")}`);
     }
   }
 

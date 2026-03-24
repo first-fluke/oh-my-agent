@@ -42,12 +42,9 @@ export function migrateToAgents(targetDir: string): string[] {
           actions.push(`.agent/${item} → .agents/${item} (merged)`);
         }
       }
-      // Remove old dir if empty
-      const remaining = readdirSync(oldDir);
-      if (remaining.length === 0) {
-        rmSync(oldDir, { recursive: true });
-        actions.push(".agent/ (removed empty dir)");
-      }
+      // Force-remove old dir — .agents/ is canonical, remaining items are duplicates
+      rmSync(oldDir, { recursive: true, force: true });
+      actions.push(".agent/ (removed after merge)");
     } catch {
       // Best-effort migration
     }

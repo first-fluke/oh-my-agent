@@ -138,6 +138,13 @@ You'll also need at least one CLI tool:
 → Analyze changes, suggest commit type/scope, create commit with Co-Author
 ```
 
+**Design system** (DESIGN.md + anti-patterns + optional Stitch MCP):
+
+```
+/design
+→ 7-phase workflow: Setup → Extract → Enhance → Propose → Generate → Audit → Handoff
+```
+
 ### 3. Monitor with Dashboards
 
 For dashboard setup and usage details, see [`web/content/en/guide/usage.md`](https://github.com/first-fluke/oh-my-agent/blob/main/web/content/en/guide/usage.md#real-time-dashboards).
@@ -158,6 +165,7 @@ flowchart TD
         W4["/review"]
         W5["/debug"]
         W6["/deepinit"]
+        W7["/design"]
     end
 
     subgraph Orchestration["Orchestration"]
@@ -172,6 +180,7 @@ flowchart TD
         BE[oma-backend]
         DB[oma-db]
         MB[oma-mobile]
+        DES[oma-design]
         TF[oma-tf-infra]
     end
 
