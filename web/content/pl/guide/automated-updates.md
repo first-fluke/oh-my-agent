@@ -1,24 +1,27 @@
 ---
-title: Automatyczne Aktualizacje
-description: Utrzymuj umiejetnosci oh-my-agent aktualne dzieki GitHub Action ktora otwiera PR gdy wychodza nowe wersje.
+title: Automatyczne aktualizacje
+description: Kompletna dokumentacja GitHub Action oh-my-agent — konfiguracja, wszystkie wejścia i wyjścia, szczegółowe przykłady, jak działa pod spodem i porównanie z centralnym rejestrem.
 ---
 
-# Automatyczne Aktualizacje z GitHub Action
+# Automatyczne aktualizacje
 
-Skonfiguruj raz, zapomnij. GitHub Action sprawdza nowe wersje oh-my-agent i otwiera PR gdy aktualizacje sa dostepne.
+## Przegląd
 
-## Szybka Konfiguracja
+GitHub Action oh-my-agent (`first-fluke/oh-my-agent/action@v1`) automatycznie aktualizuje umiejętności agentów w projekcie uruchamiając `oma update` w CI. Obsługuje dwa tryby: tworzenie pull request do przeglądu lub bezpośredni commit na gałąź.
 
-Dodaj to do swojego repozytorium:
+---
+
+## Szybka konfiguracja
+
+Dodaj ten plik do projektu jako `.github/workflows/update-oh-my-agent.yml`:
 
 ```yaml
-# .github/workflows/update-oma.yml
 name: Update oh-my-agent
 
 on:
   schedule:
-    - cron: "0 9 * * 1"   # Kazdy poniedzialek o 09:00 UTC
-  workflow_dispatch:        # Lub uruchom recznie
+    - cron: '0 9 * * 1'  # Każdy poniedziałek o 9:00 UTC
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,78 +31,68 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: first-fluke/oh-my-agent/action@v1
 ```
 
-To wszystko. Dostaniesz PR za kazdym razem gdy umiejetnosci zostana zaktualizowane.
+---
 
-## Wejscia Action
+## Wszystkie wejścia Action
 
-| Wejscie | Co Robi | Domyslne |
-|---------|--------|---------|
-| `mode` | `pr` otwiera PR, `commit` pushuje bezposrednio | `pr` |
-| `base-branch` | Branch docelowy | `main` |
-| `force` | Nadpisz niestandardowe pliki konfiguracji | `false` |
-| `pr-title` | Niestandardowy tytul PR | `chore(deps): update oh-my-agent skills` |
-| `pr-labels` | Etykiety PR oddzielone przecinkiem | `dependencies,automated` |
-| `commit-message` | Niestandardowa wiadomosc commita | `chore(deps): update oh-my-agent skills` |
-| `token` | Token GitHub | `${{ github.token }}` |
+| Wejście | Typ | Domyślne | Opis |
+|:------|:-----|:--------|:-----------|
+| `mode` | string | `"pr"` | `"pr"` tworzy pull request. `"commit"` pushuje bezpośrednio. |
+| `base-branch` | string | `"main"` | Gałąź bazowa dla PR lub docelowa dla commitów. |
+| `force` | string | `"false"` | Gdy `"true"`, nadpisuje pliki konfiguracyjne użytkownika. |
+| `pr-title` | string | `"chore(deps): update oh-my-agent skills"` | Tytuł PR. |
+| `pr-labels` | string | `"dependencies,automated"` | Etykiety PR oddzielone przecinkami. |
+| `commit-message` | string | `"chore(deps): update oh-my-agent skills"` | Wiadomość commita. |
+| `token` | string | `${{ github.token }}` | Token GitHub. Użyj PAT jeśli PR ma wyzwalać inne workflow. |
 
-## Wyjscia Action
+## Wszystkie wyjścia Action
 
-| Wyjscie | Co Zawiera |
-|---------|-----------|
-| `updated` | `true` jesli wykryto zmiany |
-| `version` | Wersja oh-my-agent po aktualizacji |
-| `pr-number` | Numer PR (tylko tryb pr) |
-| `pr-url` | URL PR (tylko tryb pr) |
+| Wyjście | Typ | Opis |
+|:-------|:-----|:-----------|
+| `updated` | string | `"true"` jeśli wykryto zmiany |
+| `version` | string | Wersja po aktualizacji |
+| `pr-number` | string | Numer pull request (tylko tryb pr) |
+| `pr-url` | string | URL pull request (tylko tryb pr) |
 
-## Przyklady
+---
 
-### Pomin PR, Commituj Bezposrednio
+## Szczegółowe przykłady
 
-```yaml
-- uses: first-fluke/oh-my-agent/action@v1
-  with:
-    mode: commit
-    commit-message: "chore: sync oh-my-agent skills"
-```
+### Domyślny tryb PR
+Tworzy PR w każdy poniedziałek jeśli dostępne aktualizacje. Używa `peter-evans/create-pull-request@v8`.
 
-### Z Osobistym Tokenem Dostepu
+### Tryb bezpośredniego commita z PAT
+Dla zespołów chcących natychmiastowych aktualizacji bez przeglądu PR. Użyj PAT aby commit wyzwalał dalsze workflow.
 
-Dla repozytoriow fork gdzie `GITHUB_TOKEN` nie ma dostepu do zapisu:
+### Warunkowe powiadomienie
+Aktualizacja z powiadomieniem Slack gdy dostępna nowa wersja — użyj `steps.update.outputs.updated == 'true'`.
 
-```yaml
-- uses: first-fluke/oh-my-agent/action@v1
-  with:
-    token: ${{ secrets.PAT_TOKEN }}
-```
+### Tryb wymuszenia
+Resetuje wszystkie pliki konfiguracyjne do domyślnych — użyj `force: 'true'`. Tylko ręczne wyzwalanie.
 
-### Powiadomienie przy Aktualizacji
+---
 
-```yaml
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    outputs:
-      updated: ${{ steps.oma.outputs.updated }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: first-fluke/oh-my-agent/action@v1
-        id: oma
+## Jak działa pod spodem
 
-  notify:
-    needs: update
-    if: needs.update.outputs.updated == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Updated to ${{ needs.update.outputs.version }}"
-```
+1. **Setup Bun** — `oven-sh/setup-bun@v2`
+2. **Instalacja oh-my-agent** — `bun install -g oh-my-agent`
+3. **Uruchomienie oma update** — Z flagami `--ci` i opcjonalnie `--force`
+4. **Sprawdzenie zmian** — `git status --porcelain .agents/ .claude/`
+5. **Tryb pr:** Tworzenie PR przez `peter-evans/create-pull-request@v8`
+6. **Tryb commit:** Konfiguracja git jako `github-actions[bot]`, stage, commit, push
 
-## Jak To Dziala Pod Maska
+---
 
-1. Instaluje CLI `oh-my-agent` przez Bun
-2. Uruchamia `oma update --ci` (nieinteraktywnie)
-3. Wykrywa zmiany w `.agents/` i `.claude/`
-4. Tworzy PR lub commit w zaleznosci od `mode`
+## Porównanie z centralnym rejestrem
+
+| Aspekt | GitHub Action | Centralny rejestr |
+|:-------|:-------------|:----------------|
+| **Pliki do dodania** | 1 plik workflow | 3 pliki |
+| **Przypinanie wersji** | Nie — zawsze najnowsza | Tak |
+| **Weryfikacja sum kontrolnych** | Nie | Tak — SHA256 |
+| **Zachowanie konfiguracji** | Automatyczne | Ręczne (wzorce preserve) |
+| **Najlepsze dla** | Proste projekty | Organizacje wieloprojektowe |

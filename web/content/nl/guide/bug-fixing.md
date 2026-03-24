@@ -1,70 +1,109 @@
 ---
-title: "Gebruiksscenario: Bugfixing"
-description: Gestructureerd debuggen — van het reproduceren van het probleem tot het schrijven van regressietests.
+title: "Gids: Bugfixing"
+description: Grondige debugginggids met de gestructureerde 5-stappen debuglus, ernsttriage, escalatiesignalen en post-fix validatie.
 ---
 
-# Gebruiksscenario: Bugfixing
+# Gids: Bugfixing
 
-## Begin Met Een Goed Rapport
+## Wanneer de Debug Workflow Gebruiken
 
-Hoe beter je bugrapport, hoe sneller de fix:
+Gebruik `/debug` (of zeg "fix bug", "fix error", "debug" in natuurlijke taal) wanneer je een specifieke bug hebt om te diagnosticeren en te fixen. De workflow biedt een gestructureerde, reproduceerbare benadering van debugging die de veelvoorkomende valkuil vermijdt van symptomen fixen in plaats van oorzaken.
 
-```text
-Symptom: Login button throws TypeError
-Environment: Chrome 130, macOS, production build
-Steps to reproduce:
-  1. Go to /login
-  2. Enter valid credentials
-  3. Click "Sign In"
-Expected: Redirect to dashboard
-Actual: White screen, console shows "Cannot read property 'map' of undefined"
-Logs: [paste relevant logs]
-```
+---
 
-## Triage Eerst
+## Bugrapportsjabloon
 
-| Ernst | Wat Het Betekent | Reactie |
-|-------|-----------------|---------|
-| **P0** | Dataverlies, auth-bypass, productie-uitval | Laat alles vallen, betrek QA/beveiliging |
-| **P1** | Belangrijke gebruikersstroom kapot | Fix in huidige sprint |
-| **P2** | Verminderd maar heeft workaround | Plan fix |
-| **P3** | Klein, niet-blokkerend | Backlog |
+### Vereiste Velden
 
-## De Debug-Loop
+| Veld | Beschrijving | Voorbeeld |
+|:-----|:-----------|:--------|
+| **Foutmelding** | De exacte fouttekst of stacktrace | `TypeError: Cannot read properties of undefined (reading 'id')` |
+| **Stappen om te reproduceren** | Geordende acties die de bug triggeren | 1. Log in als admin. 2. Navigeer naar /users. 3. Klik "Delete". |
+| **Verwacht gedrag** | Wat er zou moeten gebeuren | Gebruiker wordt verwijderd uit de lijst. |
+| **Werkelijk gedrag** | Wat er daadwerkelijk gebeurt | Pagina crasht met een wit scherm. |
 
-1. **Reproduceren** — exact, in een minimale omgeving
-2. **Isoleren** — vind de root cause (niet alleen het symptoom)
-3. **Fixen** — kleinste veilige wijziging
-4. **Testen** — regressietest voor het falende pad
-5. **Scannen** — controleer aangrenzende code op hetzelfde patroon
+### Optionele Velden (Sterk Aanbevolen)
 
-## Prompt-Sjabloon
+| Veld | Beschrijving |
+|:-----|:-----------|
+| **Omgeving** | Browser, OS, Node-versie, apparaat |
+| **Frequentie** | Altijd, soms, alleen eerste keer |
+| **Recente wijzigingen** | Wat veranderd is voor de bug verscheen |
+| **Gerelateerde code** | Bestanden of functies die je verdenkt |
+| **Logs** | Serverlogs, console-uitvoer |
 
-```text
-Bug: Login throws "Cannot read property 'map' of undefined"
-Repro: Click sign-in with valid credentials
-Scope: src/components/auth/*, src/hooks/useAuth.ts
-Expected: Redirect to dashboard
-Need:
-1) root cause analysis
-2) minimal fix
-3) regression tests
-4) scan for similar patterns
-```
+---
 
-## Wanneer Escaleren
+## Ernsttriage (P0-P3)
 
-Betrek QA of beveiliging wanneer de bug raakt aan:
+### P0 — Kritiek (Onmiddellijke Respons)
+Productie is down, data gaat verloren, beveiligingsinbreuk is actief. Drop alles.
 
-- Authenticatie / sessie / token-verversing
-- Permissiegrenzen
-- Betaling / transactieconsistentie
-- Prestaties onder belasting
+### P1 — Hoog (Dezelfde Sessie)
+Kernfunctie is kapot voor een aanzienlijk aantal gebruikers. Fix binnen de huidige werksessie.
 
-## Na De Fix
+### P2 — Gemiddeld (Deze Sprint)
+Functie werkt maar met verminderd gedrag. Inplannen voor huidige sprint.
 
-Verifieer:
-- Originele reproductie faalt niet meer
-- Geen nieuwe fouten in gerelateerde stromen
-- Tests falen voor fix, slagen erna
-- Rollback-pad is duidelijk indien nodig
+### P3 — Laag (Backlog)
+Cosmetisch probleem, edge case of klein ongemak. Toevoegen aan backlog.
+
+---
+
+## De 5-Stappen Debuglus in Detail
+
+### Stap 1: Foutinformatie Verzamelen
+Foutmelding, stacktrace, reproductiestappen, verwacht vs werkelijk gedrag.
+
+### Stap 2: Bug Reproduceren
+**Tools:** `search_for_pattern`, `find_symbol` om de exacte locatie in de codebase te vinden.
+
+### Stap 3: Oorzaak Diagnosticeren
+**Tools:** `find_referencing_symbols` om het uitvoeringspad terug te traceren. Veelvoorkomende patronen: null/undefined-toegang, race conditions, ontbrekende foutafhandeling, verkeerde datatypes, verouderde state, ontbrekende validatie.
+
+De kernvraag: diagnoseer de **oorzaak**, niet het symptoom.
+
+### Stap 4: Minimale Fix Voorstellen
+Presenteert oorzaak, voorgestelde fix en uitleg. **Blokkeert tot gebruiker bevestigt.** Minimale fix principe: verander de minste regels mogelijk.
+
+### Stap 5: Fix Toepassen en Regressietest Schrijven
+1. Implementeer de goedgekeurde fix
+2. Schrijf een regressietest die faalt zonder de fix en slaagt met de fix
+
+### Stap 6: Scannen op Vergelijkbare Patronen
+Scant de hele codebase op hetzelfde patroon. Spawnt een `debug-investigator` subagent wanneer: scope > 10 bestanden, meerdere domeinen, of diepgaande afhankelijkheidstracing nodig.
+
+### Stap 7: Bug Documenteren
+Schrijft geheugenbestand met symptoom, oorzaak, fix, gewijzigde bestanden, regressietestlocatie.
+
+---
+
+## Escalatiesignalen
+
+1. **Dezelfde fix twee keer geprobeerd** — Activeer Exploratieslus met 2-3 hypotheses
+2. **Multi-domein oorzaak** — Escaleer naar `/coordinate` of `/orchestrate`
+3. **Ontbrekende reproductieomgeving** — Verzamel productielogs, voeg instrumentatie toe
+4. **Testinfrastructuur kapot** — Fix testinfrastructuur eerst
+
+---
+
+## Post-Fix Validatiechecklist
+
+- [ ] Regressietest faalt zonder de fix
+- [ ] Regressietest slaagt met de fix
+- [ ] Bestaande tests slagen nog steeds
+- [ ] Build slaagt
+- [ ] Vergelijkbare patronen gescand
+- [ ] Fix is minimaal
+- [ ] Oorzaak gedocumenteerd
+
+---
+
+## Klaaircriteria
+
+1. Oorzaak geidentificeerd en gedocumenteerd
+2. Minimale fix toegepast met gebruikersgoedkeuring
+3. Regressietest bestaat
+4. Codebase gescand op vergelijkbare patronen
+5. Bugrapport vastgelegd in geheugen
+6. Alle bestaande tests slagen nog

@@ -1,73 +1,222 @@
 ---
-title: Команды CLI
-description: Все команды CLI oh-my-agent — с примерами.
+title: "Команды CLI"
+description: Полный справочник по всем командам CLI oh-my-agent — синтаксис, опции, примеры, организованные по категориям.
 ---
 
 # Команды CLI
 
-После глобальной установки (`bun install --global oh-my-agent`) используйте `oma` или `oh-my-ag`.
+После глобальной установки (`bun install --global oh-my-agent`) используйте `oma` или `oh-my-ag`. Оба — алиасы одного бинарника. Для одноразового использования: `npx oh-my-agent`.
 
-## Установка и Обслуживание
+Переменная окружения `OH_MY_AG_OUTPUT_FORMAT` со значением `json` принудительно включает машиночитаемый вывод для поддерживающих команд. Эквивалентно `--json`.
 
-```bash
-oma                    # Интерактивный установщик — выбор пресета, установка навыков
-oma doctor             # Проверка здоровья: CLI, конфигурации MCP, статус навыков
-oma update             # Обновить навыки до последней версии из реестра
-oma cleanup            # Удалить осиротевшие процессы и временные файлы
-```
+---
 
-## Мониторинг
+## Настройка и установка
 
-```bash
-oma dashboard          # Дашборд в терминале — живой статус агентов
-oma dashboard:web      # Веб-дашборд на http://localhost:9847
-oma stats              # Просмотр метрик продуктивности
-oma retro [days]       # Инженерная ретроспектива с трендами
-```
+### oma (install)
 
-## Управление Агентами
+Команда по умолчанию без аргументов запускает интерактивный установщик.
 
 ```bash
-# Запустить одного агента
-oma agent:spawn <agent-id> <prompt> <session-id>
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-
-# Проверить статус агента
-oma agent:status <session-id> [agent-ids...]
-oma agent:status session-01 backend frontend
-
-# Запустить несколько агентов параллельно
-oma agent:parallel [tasks...]
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
+cd /path/to/my-project
+oma
 ```
 
-## Память и Проверка
+Выполняет: проверку миграции с `.agent/`, обнаружение конкурентов, выбор пресета, загрузку тарбола, установку навыков/рабочих процессов/конфигов, создание символических ссылок, настройку git rerere и MCP.
+
+### doctor
+
+Проверка здоровья: CLI, MCP, навыки.
 
 ```bash
-# Инициализировать схему памяти Serena
-oma memory:init
-
-# Проверить качество выходных данных агента
-oma verify <agent-type>
-oma verify backend
-oma verify frontend
+oma doctor [--json] [--output <format>]
 ```
 
-## Интеграция и Утилиты
+Проверяет: установку CLI (gemini, claude, codex, qwen), аутентификацию, конфигурацию MCP, установленные навыки.
+
+### update
+
+Обновление навыков до последней версии.
 
 ```bash
-oma auth:status        # Проверить статус аутентификации CLI
-oma usage:anti         # Показать квоты использования Antigravity IDE
-oma bridge [url]       # Мост MCP stdio к Streamable HTTP
-oma visualize          # Сгенерировать граф зависимостей проекта
-oma describe [cmd]     # JSON-интроспекция любой команды CLI
-oma star               # Поставить звезду oh-my-agent на GitHub
+oma update [-f | --force] [--ci]
 ```
 
-## Получение Помощи
+`--force` — перезаписать конфиги. `--ci` — неинтерактивный режим для CI.
+
+---
+
+## Мониторинг и метрики
+
+### dashboard
 
 ```bash
-oma help               # Показать все команды
-oma version            # Показать номер версии
-oma <command> --help   # Помощь по конкретной команде
+oma dashboard
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard
 ```
+
+Box-drawing TUI. Наблюдает за `.serena/memories/`. `Ctrl+C` для выхода.
+
+### dashboard:web
+
+```bash
+oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard:web
+```
+
+HTTP + WebSocket на `http://localhost:9847`.
+
+### stats
+
+```bash
+oma stats [--json] [--output <format>] [--reset]
+```
+
+Метрики: сессии, использованные навыки, задачи, время, файлы, строки. Данные в `.serena/metrics.json`.
+
+### retro
+
+```bash
+oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
+```
+
+Ретроспектива: `7d`, `2w`, `1m`. С `--compare` — сравнение с предыдущим периодом. Показывает: коммиты, авторов, типы коммитов, горячие файлы.
+
+---
+
+## Управление агентами
+
+### agent:spawn
+
+```bash
+oma agent:spawn <agent-id> <prompt> <session-id> [-v <vendor>] [-w <workspace>]
+```
+
+`agent-id`: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
+
+Определение вендора: `--vendor` > `agent_cli_mapping` > `default_cli` > `active_vendor` > `gemini`.
+
+Промпт: инлайн-текст или путь к файлу. Вендор-протоколы добавляются автоматически.
+
+### agent:status
+
+```bash
+oma agent:status <session-id> [agent-ids...] [-r <root>]
+```
+
+Вывод: `{agent-id}:{status}` (completed/running/crashed).
+
+### agent:parallel
+
+```bash
+oma agent:parallel [tasks...] [-v <vendor>] [-i | --inline] [--no-wait]
+```
+
+YAML-файл задач или инлайн `agent:task[:workspace]`. Результаты: `.agents/results/parallel-{timestamp}/`.
+
+---
+
+## Управление памятью
+
+### memory:init
+
+```bash
+oma memory:init [--json] [--output <format>] [--force]
+```
+
+Создаёт структуру `.serena/memories/` с начальными файлами схемы.
+
+---
+
+## Интеграция и утилиты
+
+### auth:status
+
+```bash
+oma auth:status [--json]
+```
+
+Проверяет: Gemini (API key), Claude (API key/OAuth), Codex (API key), Qwen (API key).
+
+### usage:anti
+
+```bash
+oma usage:anti [--json] [--raw]
+```
+
+Квоты использования моделей из локального Antigravity IDE.
+
+### bridge
+
+```bash
+oma bridge [url]
+```
+
+Мост: Antigravity IDE (stdio) <-> Serena Server (HTTP).
+
+### verify
+
+```bash
+oma verify <agent-type> [-w <workspace>] [--json]
+```
+
+Верификация вывода агента: сборка, тесты, соответствие объёму.
+
+### cleanup
+
+```bash
+oma cleanup [--dry-run] [-y | --yes] [--json]
+```
+
+Очистка: осиротевшие PID-файлы, логи, директории Gemini Antigravity.
+
+### visualize
+
+```bash
+oma visualize [--json]
+oma viz [--json]   # Алиас
+```
+
+Граф зависимостей: навыки, агенты, рабочие процессы, общие ресурсы.
+
+### star
+
+```bash
+oma star
+```
+
+Поставить звезду `first-fluke/oh-my-agent` на GitHub. Требуется `gh` CLI.
+
+### describe
+
+```bash
+oma describe [command-path]
+```
+
+JSON-описание команд для интроспекции ИИ-агентами.
+
+### help / version
+
+```bash
+oma help
+oma version
+```
+
+---
+
+## Переменные окружения
+
+| Переменная | Описание | Используется |
+|-----------|---------|-------------|
+| `OH_MY_AG_OUTPUT_FORMAT` | `json` — принудительный JSON | Все с `--json` |
+| `DASHBOARD_PORT` | Порт веб-дашборда | `dashboard:web` |
+| `MEMORIES_DIR` | Путь к директории памяти | `dashboard`, `dashboard:web` |
+
+---
+
+## Алиасы
+
+| Алиас | Полная команда |
+|-------|---------------|
+| `oma` | `oh-my-ag` |
+| `viz` | `visualize` |

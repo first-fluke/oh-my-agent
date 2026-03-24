@@ -1,75 +1,101 @@
 ---
-title: セントラルレジストリ
-description: oh-my-agentをバージョン管理されたレジストリとして使い、複数プロジェクトを同期する。
+title: "ガイド：セントラルレジストリ"
+description: セントラルレジストリの詳細ドキュメント — release-pleaseワークフロー、Conventional Commits、コンシューマーテンプレート、.agent-registry.yml形式、GitHub Actionアプローチとの比較。
 ---
 
-# マルチリポ構成のセントラルレジストリ
+# ガイド：セントラルレジストリ
 
-oh-my-agentを使っているプロジェクトが複数ありますか？ このリポジトリを**セントラルレジストリ**として扱えます。スキルをバージョン管理し、すべてのコンシューマープロジェクトを同期させましょう。
+## 概要
 
-## 仕組み
+セントラルレジストリモデルは、oh-my-agent GitHubリポジトリ（`first-fluke/oh-my-agent`）をバージョン管理されたアーティファクトソースとして扱います。コンシューマープロジェクトはレジストリから特定バージョンのスキルとワークフローを取得し、チームとプロジェクト間の一貫性を確保します。
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  セントラルレジストリ（oh-my-agentリポジトリ）              │
-│  • release-pleaseによる自動バージョニング                   │
-│  • CHANGELOG.md自動生成                                    │
-│  • prompt-manifest.json（バージョン + チェックサム）         │
-│  • agent-skills.tar.gz リリースアーティファクト              │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│  あなたのプロジェクト                                      │
-│  • .agent-registry.ymlでバージョンをピン留め                │
-│  • GitHub Actionが新バージョンを検出 → PRを作成             │
-│  • レビューしてマージすれば更新完了                          │
-└─────────────────────────────────────────────────────────┘
-```
+エンタープライズグレードのアプローチ：バージョンピニング、監査可能なPRによる更新履歴、チェックサム検証、週次自動更新チェック、更新適用前の手動レビュー。
 
-## レジストリ管理者向け
+---
 
-リリースは[release-please](https://github.com/googleapis/release-please)で自動化されています：
+## アーキテクチャ
 
-1. Conventional Commitsを使う（`feat:`、`fix:`、`chore:`）
-2. `main` にプッシュ → リリースPRが作成/更新される
-3. リリースPRをマージ → GitHub Releaseが以下と共に公開：
-   - `CHANGELOG.md`
-   - `prompt-manifest.json`（ファイルリスト + SHA256チェックサム）
-   - `agent-skills.tar.gz`（圧縮された `.agents/`）
+セントラルレジストリ（first-fluke/oh-my-agent）がrelease-pleaseでリリースを管理し、tarball + SHA256 + manifestを生成。各コンシューマープロジェクトが`.agent-registry.yml`でバージョンをピン留めし、GitHub Actionsワークフローで更新を検出・同期。
 
-## コンシューマープロジェクト向け
+---
 
-テンプレートをプロジェクトにコピーします：
+## メンテナー向け：新バージョンのリリース
+
+### Release-Pleaseワークフロー
+
+1. Conventional Commitsが`main`にランド
+2. release-pleaseがリリースPRを作成（バージョンバンプ、CHANGELOG更新）
+3. リリースPRマージでGitタグとGitHub Releaseを作成
+4. CIが`agent-skills.tar.gz` + SHA256 + `prompt-manifest.json`を生成しリリースに添付
+
+### Conventional Commit例
 
 ```bash
-cp docs/consumer-templates/.agent-registry.yml your-project/
-cp docs/consumer-templates/check-registry-updates.yml your-project/.github/workflows/
-cp docs/consumer-templates/sync-agent-registry.yml your-project/.github/workflows/
+git commit -m "feat: add Rust backend language variant"        # Minor
+git commit -m "fix: resolve workspace detection for Nx"        # Patch
+git commit -m "feat!: rename .agent/ to .agents/ directory"   # Major
 ```
 
-バージョンをピン留めします：
+---
+
+## コンシューマー向け：プロジェクトセットアップ
+
+### .agent-registry.yml
 
 ```yaml
-# .agent-registry.yml
 registry:
-  repo: first-fluke/oh-my-agent
-  version: "4.7.0"
+  repo: first-fluke/oh-my-ag
+
+version: "4.7.0"
+
+auto_update:
+  enabled: true
+  schedule: "0 9 * * 1"  # 毎週月曜9時UTC
+  pr:
+    auto_merge: false     # 手動レビュー必須
+    labels: ["dependencies", "agent-registry"]
+
+sync:
+  target_dir: "."
+  backup_existing: true
+  preserve:
+    - ".agent/config/user-preferences.yaml"
+    - ".agent/config/local-*"
 ```
 
-ワークフロー：
-- `check-registry-updates.yml` — 新バージョンをチェックしてPRを作成
-- `sync-agent-registry.yml` — ピン留めバージョンの更新時に `.agents/` を同期
+### ワークフローの役割
 
-**自動マージは意図的に無効**にしています。すべての更新は人間がレビューします。
+**check-registry-updates.yml** — 新バージョンを検出し更新PRを作成。cronスケジュールまたは手動実行。
 
-## セントラルレジストリ vs. GitHub Action
+**sync-agent-registry.yml** — バージョン変更時にレジストリファイルをダウンロード・適用。SHA256検証、バックアップ、保護ファイル復元。
 
-| | GitHub Action | セントラルレジストリ |
-|:--|:--:|:--:|
-| セットアップ工数 | ワークフロー1ファイル | 3ファイル |
-| 更新方法 | `oma update` CLI | tarballダウンロード |
-| バージョン管理 | 常に最新 | 明示的ピン留め |
-| 適している用途 | ほとんどのプロジェクト | 厳格なバージョン管理 |
+---
 
-ほとんどのチームは[GitHub Action](./automated-updates)アプローチを使うべきです。厳格なバージョンピン留めが必要な場合や、サードパーティActionが使えない場合にセントラルレジストリを使ってください。
+## セントラルレジストリ vs GitHub Action
+
+| 側面 | セントラルレジストリ | GitHub Action |
+|:-------|:----------------|:-------------|
+| **セットアップ複雑度** | 高 — 3ファイル | 低 — 1ワークフロー |
+| **バージョン管理** | 明示的ピニング | 常に最新に更新 |
+| **チェックサム検証** | あり（SHA256） | なし |
+| **ロールバック** | バージョン番号変更 | コミットリバート |
+| **承認フロー** | PRレビュー必須 | 設定可能 |
+| **オフライン対応** | 可（tarball手動ダウンロード） | npm必要 |
+
+---
+
+## 使い分け
+
+### セントラルレジストリを使うべき場合
+
+- 複数プロジェクトを同じバージョンに統一する必要
+- 監査可能なチェックサム検証付き更新PRが必要
+- セキュリティポリシーで明示的承認が必要
+- エアギャップ環境対応が必要
+
+### GitHub Actionを使うべき場合
+
+- 単一または少数の独立プロジェクト
+- 最もシンプルなセットアップ（1ファイル）
+- 最新バージョンへの自動更新で問題なし
+- 設定ファイル保持が自動で欲しい

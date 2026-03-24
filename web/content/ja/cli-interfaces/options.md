@@ -1,108 +1,207 @@
 ---
-title: CLIオプション
-description: oh-my-agent CLIコマンドのすべてのフラグとオプション。
+title: "CLIオプション"
+description: oh-my-agent CLIの全オプション網羅的リファレンス — グローバルフラグ、出力制御、コマンドごとのオプション、実践的な使用パターン。
 ---
 
 # CLIオプション
 
 ## グローバルオプション
 
-すべてのコマンドで使用できます：
+| フラグ | 説明 |
+|:-----|:-----------|
+| `-V, --version` | バージョン番号を出力して終了 |
+| `-h, --help` | コマンドのヘルプを表示 |
 
-| オプション | 機能 |
-|--------|-------------|
-| `-h, --help` | ヘルプを表示 |
-| `-V, --version` | バージョン番号を表示 |
+すべてのサブコマンドも`-h, --help`で固有のヘルプテキストを表示。
+
+---
 
 ## 出力オプション
 
-多くのコマンドが機械可読な出力をサポートしています：
+### 1. --jsonフラグ
 
-| オプション | 機能 |
-|--------|-------------|
-| `--json` | JSON形式で出力 |
-| `--output <format>` | 出力形式：`text` または `json` |
+```bash
+oma stats --json
+oma doctor --json
+```
 
-環境変数 `OH_MY_AG_OUTPUT_FORMAT=json` でも設定できます。
+対応コマンド：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`usage:anti`、`memory:init`、`verify`、`visualize`。
 
-**対応コマンド：** `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`
+### 2. --outputフラグ
 
-## コマンド別オプション
+```bash
+oma stats --output json
+oma doctor --output text
+```
 
-### `update`
-| オプション | 機能 |
-|--------|-------------|
-| `-f, --force` | カスタマイズされた設定ファイルを上書き |
-| `--ci` | 非対話モード（すべてのプロンプトをスキップ） |
+`text`または`json`を受け付け。無効な値は`Invalid output format`エラー。
 
-### `stats`
-| オプション | 機能 |
-|--------|-------------|
-| `--reset` | すべてのメトリクスデータをリセット |
+### 3. OH_MY_AG_OUTPUT_FORMAT環境変数
 
-### `retro`
-| オプション | 機能 |
-|--------|-------------|
-| `--interactive` | 手動入力モード |
-| `--compare` | 現在の期間と前の同期間を比較 |
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats    # JSON出力
+```
 
-### `cleanup`
-| オプション | 機能 |
-|--------|-------------|
-| `--dry-run` | 実行せずにクリーンアップ対象を表示 |
-| `-y, --yes` | 確認プロンプトをスキップ |
+**解決順序：** `--json` > `--output` > 環境変数 > `text`（デフォルト）。
 
-### `usage:anti`
-| オプション | 機能 |
-|--------|-------------|
-| `--raw` | 生のRPCレスポンスをダンプ |
+---
 
-### `agent:spawn`
-| オプション | 機能 |
-|--------|-------------|
-| `-v, --vendor <vendor>` | CLIベンダーを上書き（`gemini`/`claude`/`codex`/`qwen`） |
-| `-w, --workspace <path>` | エージェントの作業ディレクトリ |
+## コマンドごとのオプション
 
-### `agent:status`
-| オプション | 機能 |
-|--------|-------------|
-| `-r, --root <path>` | メモリチェックのルートパス |
+### update
 
-### `agent:parallel`
-| オプション | 機能 |
-|--------|-------------|
-| `-v, --vendor <vendor>` | CLIベンダーを上書き |
-| `-i, --inline` | タスクを `agent:task` 引数として指定 |
-| `--no-wait` | 完了を待たない（バックグラウンドモード） |
+```
+oma update [-f | --force] [--ci]
+```
 
-### `memory:init`
-| オプション | 機能 |
-|--------|-------------|
-| `--force` | 既存のスキーマファイルを上書き |
+| フラグ | 説明 | デフォルト |
+|:-----|:-----------|:--------|
+| `--force` / `-f` | ユーザーカスタム設定を上書き。`user-preferences.yaml`、`mcp.json`、`stack/`が対象。 | `false` |
+| `--ci` | 非インタラクティブCIモード。確認プロンプトスキップ、プレーンテキスト出力。 | `false` |
 
-### `verify`
-| オプション | 機能 |
-|--------|-------------|
-| `-w, --workspace <path>` | 検証対象のワークスペースパス |
+### stats
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--reset` | メトリクスデータをリセット |
+
+### retro
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--interactive` | 手動データ入力モード |
+| `--compare` | 前期間との比較表示 |
+
+ウィンドウ形式：`7d`（7日）、`2w`（2週間）、`1m`（1ヶ月）。
+
+### cleanup
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--dry-run` | プレビューのみ、変更なし |
+| `--yes` / `-y` | 確認プロンプトをスキップ |
+
+クリーンアップ対象：孤立PIDファイル（`/tmp/subagent-*.pid`）、孤立ログファイル、Gemini Antigravityディレクトリ。
+
+### usage:anti
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--raw` | Antigravity IDEの生RPCレスポンスをダンプ |
+
+### agent:spawn
+
+| フラグ | 説明 | デフォルト |
+|:-----|:-----------|:--------|
+| `--vendor` / `-v` | CLIベンダーオーバーライド。`gemini`、`claude`、`codex`、`qwen`。 | 設定から解決 |
+| `--workspace` / `-w` | エージェントの作業ディレクトリ。省略時はモノレポ設定から自動検出。 | 自動検出または`.` |
+
+**バリデーション：** `agent-id`は`backend`/`frontend`/`mobile`/`qa`/`debug`/`pm`のいずれか。`session-id`に`..`、`?`、`#`、`%`、制御文字は使用不可。
+
+**ベンダー固有の動作：**
+
+| ベンダー | コマンド | 自動承認フラグ | プロンプトフラグ |
+|:-------|:--------|:-----------------|:-----------|
+| gemini | `gemini` | `--approval-mode=yolo` | `-p` |
+| claude | `claude` | （なし） | `-p` |
+| codex | `codex` | `--full-auto` | （位置引数） |
+| qwen | `qwen` | `--yolo` | `-p` |
+
+### agent:status
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--root` / `-r` | メモリファイルとPIDファイルのルートパス |
+
+ステータス判定：`result-{agent}.md`存在→`completed`、PIDファイル存在+プロセス生存→`running`、それ以外→`crashed`。
+
+### agent:parallel
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--vendor` / `-v` | 全エージェントに適用するベンダーオーバーライド |
+| `--inline` / `-i` | `agent:task[:workspace]`形式のインラインタスク指定 |
+| `--no-wait` | バックグラウンドモード |
+
+インラインタスク形式：`backend:Implement auth API:./api`（最後のコロン区切りが`./`、`/`、`.`で始まればワークスペース）。
+
+### memory:init
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--force` | 既存スキーマファイルを上書き |
+
+### verify
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `--workspace` / `-w` | 検証するワークスペースディレクトリ |
+
+エージェントタイプ：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm`。
+
+---
 
 ## 実践例
 
+### CIパイプライン：更新と検証
+
 ```bash
-# CIパイプライン向けJSON出力
-oma doctor --json
+oma update --ci
+oma doctor --json | jq '.healthy'
+```
 
-# 生産性メトリクスのリセット
-oma stats --reset
+### 自動メトリクス収集
 
-# 実行せずにクリーンアップ対象をプレビュー
-oma cleanup --dry-run
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+```
 
-# 特定のCLIとワークスペースで起動
-oma agent:spawn backend "Auth API" session-01 -v codex -w ./apps/api
+### バッチエージェント実行とステータスモニタリング
 
-# CIでの非対話的更新
-oma update --ci --force
+```bash
+oma agent:parallel tasks.yaml --no-wait
+SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
+watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+```
 
-# 直近7日間と前の7日間を比較
-oma retro 7 --compare
+### CI後のクリーンアップ
+
+```bash
+oma cleanup --yes --json
+```
+
+### ワークスペース対応の検証
+
+```bash
+oma verify backend -w ./apps/api
+oma verify frontend -w ./apps/web
+oma verify mobile -w ./apps/mobile
+```
+
+### スプリントレビュー向け比較振り返り
+
+```bash
+oma retro 2w --compare
+oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
+```
+
+### フルヘルスチェックスクリプト
+
+```bash
+#!/bin/bash
+set -e
+echo "=== oh-my-agent Health Check ==="
+oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
+oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+echo "=== Done ==="
+```
+
+### エージェントイントロスペクション
+
+```bash
+oma describe | jq '.command.subcommands[] | {name, description}'
+oma describe agent:spawn | jq '.command.options[] | {flags, description}'
 ```

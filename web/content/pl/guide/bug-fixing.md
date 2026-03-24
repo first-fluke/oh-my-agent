@@ -1,70 +1,87 @@
 ---
-title: "Przypadek Uzycia: Naprawianie Bledow"
-description: Ustrukturyzowane debugowanie -- od odtworzenia problemu do napisania testow regresyjnych.
+title: "Przewodnik: Naprawianie błędów"
+description: Kompleksowy przewodnik debugowania obejmujący ustrukturyzowaną 5-krokową pętlę debugowania, triage ważności, sygnały eskalacji i walidację po naprawie.
 ---
 
-# Przypadek Uzycia: Naprawianie Bledow
+# Przewodnik: Naprawianie błędów
 
-## Zacznij od Dobrego Raportu
+## Kiedy używać workflow debugowania
 
-Im lepszy raport bledu, tym szybsza naprawa:
+Użyj `/debug` (lub powiedz "fix bug", "fix error", "debug" w języku naturalnym) gdy masz konkretny błąd do zdiagnozowania i naprawy. Workflow zapewnia ustrukturyzowane, odtwarzalne podejście do debugowania.
 
-```text
-Symptom: Login button throws TypeError
-Environment: Chrome 130, macOS, production build
-Steps to reproduce:
-  1. Go to /login
-  2. Enter valid credentials
-  3. Click "Sign In"
-Expected: Redirect to dashboard
-Actual: White screen, console shows "Cannot read property 'map' of undefined"
-Logs: [paste relevant logs]
-```
+---
 
-## Najpierw Triaz
+## Szablon zgłoszenia błędu
 
-| Waznosc | Co Oznacza | Reakcja |
-|---------|-----------|--------|
-| **P0** | Utrata danych, obejscie auth, awaria produkcji | Rzuc wszystko, zaangazuj QA/bezpieczenstwo |
-| **P1** | Glowny przeplyw uzytkownika zepsuty | Napraw w biezacym sprincie |
-| **P2** | Pogorszony ale ma obejscie | Zaplanuj naprawe |
-| **P3** | Drobny, nieblokujacy | Backlog |
+### Pola wymagane
 
-## Petla Debugowania
+| Pole | Opis | Przykład |
+|:------|:-----------|:--------|
+| **Komunikat błędu** | Dokładny tekst błędu lub stack trace | `TypeError: Cannot read properties of undefined (reading 'id')` |
+| **Kroki reprodukcji** | Uporządkowane akcje wyzwalające błąd | 1. Zaloguj się jako admin. 2. Przejdź do /users. 3. Kliknij "Delete". |
+| **Oczekiwane zachowanie** | Co powinno się stać | Użytkownik usunięty z listy. |
+| **Rzeczywiste zachowanie** | Co faktycznie się dzieje | Strona zawiesza się z białym ekranem. |
 
-1. **Odtworz** -- dokladnie, w minimalnym srodowisku
-2. **Izoluj** -- znajdz przyczyne zrodlowa (nie tylko symptom)
-3. **Napraw** -- najmniejsza bezpieczna zmiana
-4. **Przetestuj** -- test regresyjny dla zepsutej sciezki
-5. **Przeskanuj** -- sprawdz sasiedni kod pod katem tego samego wzorca
+---
 
-## Szablon Prompta
+## Triage ważności (P0-P3)
 
-```text
-Bug: Login throws "Cannot read property 'map' of undefined"
-Repro: Click sign-in with valid credentials
-Scope: src/components/auth/*, src/hooks/useAuth.ts
-Expected: Redirect to dashboard
-Need:
-1) root cause analysis
-2) minimal fix
-3) regression tests
-4) scan for similar patterns
-```
+### P0 — Krytyczny (natychmiastowa reakcja)
+Produkcja nie działa, utrata/uszkodzenie danych, aktywne naruszenie bezpieczeństwa. Porzuć wszystko inne.
 
-## Kiedy Eskalowac
+### P1 — Wysoki (ta sama sesja)
+Podstawowa funkcjonalność zepsuta dla znacznej liczby użytkowników. Napraw w bieżącej sesji.
 
-Zaangazuj QA lub bezpieczenstwo gdy blad dotyka:
+### P2 — Średni (ten sprint)
+Funkcjonalność działa ale z pogorszoną jakością. Zaplanuj na bieżący sprint.
 
-- Uwierzytelniania / sesji / odswiezania tokenu
-- Granic uprawnien
-- Platnosci / spojnosci transakcji
-- Wydajnosci pod obciazeniem
+### P3 — Niski (backlog)
+Problem kosmetyczny, przypadek brzegowy lub drobna niedogodność.
 
-## Po Naprawie
+---
 
-Zweryfikuj:
-- Oryginalne odtworzenie juz nie zawodzi
-- Zadnych nowych bledow w powiazanych przeplywach
-- Testy zawiodly przed naprawa, przechodza po niej
-- Sciezka wycofania jest jasna w razie potrzeby
+## 5-krokowa pętla debugowania
+
+### Krok 1: Zbieranie informacji o błędzie
+Komunikat błędu, stack trace, kroki reprodukcji, oczekiwane vs rzeczywiste zachowanie.
+
+### Krok 2: Reprodukcja błędu
+**Narzędzia:** `search_for_pattern` z komunikatem błędu, `find_symbol` do lokalizacji funkcji.
+
+### Krok 3: Diagnoza przyczyny źródłowej
+**Narzędzia:** `find_referencing_symbols` do śledzenia ścieżki wykonania wstecz od punktu błędu.
+
+Typowe wzorce przyczyn: dostęp do null/undefined, warunki wyścigu, brak obsługi błędów, złe typy danych, nieaktualny stan, brak walidacji.
+
+### Krok 4: Propozycja minimalnej poprawki
+Prezentacja przyczyny źródłowej z dowodem, proponowana poprawka zmieniająca tylko minimum. **Workflow blokuje tutaj do potwierdzenia użytkownika.**
+
+### Krok 5: Zastosowanie poprawki i napisanie testu regresji
+Test musi: (a) nie przechodzić bez poprawki, (b) przechodzić z poprawką, (c) zapobiegać ponownemu wprowadzeniu błędu.
+
+### Krok 6: Skan podobnych wzorców
+`search_for_pattern` z wzorcem zidentyfikowanym jako przyczyna źródłowa. Subagent `debug-investigator` uruchamiany gdy zakres > 10 plików lub wielodomenowy.
+
+### Krok 7: Dokumentacja błędu
+Plik pamięci z: symptomem, przyczyną źródłową, zastosowaną poprawką, zmienionymi plikami, lokalizacją testu regresji, znalezionymi podobnymi wzorcami.
+
+---
+
+## Sygnały eskalacji
+
+1. **Ta sama poprawka próbowana dwukrotnie** — Problem głębszy niż początkowa diagnoza. Aktywuje Pętlę eksploracji.
+2. **Wielodomenowa przyczyna źródłowa** — Eskaluj do `/coordinate` lub `/orchestrate`.
+3. **Brak środowiska reprodukcji** — Zbierz logi produkcyjne, rozważ dodanie instrumentacji.
+4. **Awaria infrastruktury testowej** — Najpierw napraw infrastrukturę, potem wróć do debugowania.
+
+---
+
+## Lista kontrolna walidacji po naprawie
+
+- [ ] **Test regresji nie przechodzi bez poprawki**
+- [ ] **Test regresji przechodzi z poprawką**
+- [ ] **Istniejące testy nadal przechodzą**
+- [ ] **Build przechodzi**
+- [ ] **Podobne wzorce zeskanowane** i naprawione lub udokumentowane
+- [ ] **Poprawka jest minimalna** — tylko konieczne linie zmienione
+- [ ] **Przyczyna źródłowa udokumentowana**

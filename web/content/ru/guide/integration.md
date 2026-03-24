@@ -1,104 +1,192 @@
 ---
-title: Интеграция в Существующий Проект
-description: Добавьте oh-my-agent в проект, над которым уже работаете — безопасно и без разрушений.
+title: "Руководство: Интеграция в существующий проект"
+description: Полное руководство по добавлению oh-my-agent в существующий проект — CLI-путь, ручной путь, верификация, структура символических ссылок SSOT и что делает установщик.
 ---
 
-# Интеграция в Существующий Проект
+# Руководство: Интеграция в существующий проект
 
-Уже есть проект? Вот как добавить oh-my-agent, ничего не сломав.
+## Два пути интеграции
 
-## Простой Способ (CLI)
+1. **CLI-путь** — Запустите `oma` (или `npx oh-my-agent`) и следуйте интерактивным подсказкам. Рекомендуется для большинства.
+2. **Ручной путь** — Скопируйте файлы и настройте символические ссылки самостоятельно. Для ограниченных окружений.
 
-Выполните это в корне вашего проекта:
+Оба пути дают одинаковый результат: директория `.agents/` (SSOT) с символическими ссылками от IDE-специфичных директорий.
 
-```bash
-bunx oh-my-agent
-```
+---
 
-Что это делает:
-- Устанавливает навыки в `.agents/skills/`
-- Копирует общие ресурсы в `.agents/skills/_shared/`
-- Создаёт симлинки для вашей IDE (`.claude/skills/` и т.д.)
-- Устанавливает workflows в `.agents/workflows/`
-- Создаёт конфигурацию по умолчанию в `.agents/config/user-preferences.yaml`
+## CLI-путь
 
-## Ручной Способ
-
-Когда вам нужен полный контроль над тем, что копируется:
+### 1. Установка CLI
 
 ```bash
-cd /path/to/your-project
-
-mkdir -p .agents/skills .agents/workflows .agents/config .claude/skills
-
-# Скопируйте нужные навыки
-for skill in oma-pm oma-frontend oma-backend oma-qa oma-debug oma-commit; do
-  [ -d ".agents/skills/$skill" ] || cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/
-done
-
-# Скопируйте общие ресурсы
-[ -d .agents/skills/_shared ] || cp -r /path/to/oh-my-agent/.agents/skills/_shared .agents/skills/
-
-# Скопируйте workflows
-for wf in coordinate.md plan.md review.md debug.md commit.md setup.md; do
-  [ -f ".agents/workflows/$wf" ] || cp /path/to/oh-my-agent/.agents/workflows/$wf .agents/workflows/
-done
-
-# Конфигурация по умолчанию (только если отсутствует)
-[ -f .agents/config/user-preferences.yaml ] || cp /path/to/oh-my-agent/.agents/config/user-preferences.yaml .agents/config/
+bun install --global oh-my-agent
+# Или одноразовый запуск
+npx oh-my-agent
 ```
 
-## Проверьте, Что Всё Работает
+После глобальной установки доступны алиасы: `oma` и `oh-my-ag`.
+
+### 2. Перейдите в корень проекта
 
 ```bash
-oma doctor
+cd /path/to/your/project
 ```
 
-Или проверьте вручную:
-```bash
-ls .agents/skills/          # Должны быть директории навыков
-ls .agents/workflows/       # Должны быть .md файлы workflows
-cat .agents/config/user-preferences.yaml  # Должна быть ваша конфигурация
-```
+Установщик ожидает запуск из корня проекта (где находится `.git/`).
 
-## Мульти-IDE Симлинки
-
-Во время `bunx oh-my-agent` вас спросят:
-
-```text
-Also create symlinks for other CLI tools?
-  ○ Cursor (.cursor/skills/)
-  ○ GitHub Copilot (.github/skills/)
-```
-
-Один источник истины (`.agents/skills/`), несколько IDE читают из него:
-
-```text
-.agents/skills/oma-frontend/     ← Источник (SSOT)
-.claude/skills/oma-frontend/     → симлинк
-.cursor/skills/oma-frontend/     → симлинк
-.github/skills/oma-frontend/     → симлинк
-```
-
-## Советы по Безопасности
-
-**Перед интеграцией** создайте контрольную точку:
+### 3. Запуск установщика
 
 ```bash
-git add -A && git commit -m "chore: checkpoint before oh-my-agent"
+oma
 ```
 
-- CLI никогда не перезаписывает существующие папки навыков
-- Ваши специфические конфигурации остаются под вашим контролем
-- `oma doctor` укажет на любые проблемы
+### 4. Выбор типа проекта
 
-## Опционально: Дашборды
+| Пресет | Включённые навыки |
+|--------|-------------------|
+| **All** | Все доступные навыки |
+| **Fullstack** | Frontend + Backend + PM + QA |
+| **Frontend** | React/Next.js навыки |
+| **Backend** | Python/Node.js/Rust бэкенд навыки |
+| **Mobile** | Flutter/Dart мобильные навыки |
+| **DevOps** | Terraform + CI/CD + Workflow навыки |
+| **Custom** | Индивидуальный выбор навыков |
+
+### 5. Выбор языка бэкенда (если применимо)
+
+Python (FastAPI/SQLAlchemy), Node.js (NestJS/Hono + Prisma/Drizzle), Rust (Axum/Actix-web), или автоопределение (`/stack-set`).
+
+### 6. Настройка символических ссылок IDE
+
+Всегда создаются для Claude Code (`.claude/skills/`). Для GitHub Copilot — по запросу.
+
+### 7. Git rerere
+
+Рекомендуется для мультиагентных рабочих процессов — запоминает разрешения конфликтов слияния.
+
+### 8. Конфигурация MCP
+
+Настройка Serena MCP для Antigravity IDE и Gemini CLI при обнаружении.
+
+---
+
+## Ручной путь
+
+Для окружений без интерактивного CLI:
+
+### Шаг 1: Скачивание и распаковка
 
 ```bash
-oma dashboard        # Мониторинг в терминале
-oma dashboard:web    # Веб UI на http://localhost:9847
+VERSION=$(curl -s https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/prompt-manifest.json | jq -r '.version')
+curl -L "https://github.com/first-fluke/oh-my-agent/releases/download/cli-v${VERSION}/agent-skills.tar.gz" -o agent-skills.tar.gz
+sha256sum -c agent-skills.tar.gz.sha256
+tar -xzf agent-skills.tar.gz
 ```
 
-## Что Дальше?
+### Шаг 2: Копирование файлов
 
-Начните общение в вашей IDE с ИИ, или посмотрите [Руководство по Использованию](./usage) для примеров workflows.
+```bash
+cp -r .agents/ /path/to/your/project/.agents/
+mkdir -p /path/to/your/project/.claude/skills
+mkdir -p /path/to/your/project/.claude/agents
+
+# Символические ссылки навыков
+ln -sf ../../.agents/skills/oma-frontend /path/to/your/project/.claude/skills/oma-frontend
+ln -sf ../../.agents/skills/oma-backend /path/to/your/project/.claude/skills/oma-backend
+ln -sf ../../.agents/skills/_shared /path/to/your/project/.claude/skills/_shared
+```
+
+### Шаг 3: Настройка предпочтений
+
+```bash
+mkdir -p /path/to/your/project/.agents/config
+cat > /path/to/your/project/.agents/config/user-preferences.yaml << 'EOF'
+language: en
+date_format: ISO
+timezone: UTC
+default_cli: gemini
+agent_cli_mapping:
+  frontend: gemini
+  backend: gemini
+EOF
+```
+
+### Шаг 4: Инициализация памяти
+
+```bash
+oma memory:init
+# Или вручную: mkdir -p /path/to/your/project/.serena/memories
+```
+
+---
+
+## Чек-лист верификации
+
+```bash
+oma doctor        # Полная проверка
+oma doctor --json # JSON для CI
+```
+
+Проверяет: установку CLI, аутентификацию, конфигурацию MCP, статус навыков.
+
+---
+
+## Архитектура SSOT и символические ссылки
+
+`.agents/` — единственное место хранения навыков, рабочих процессов, конфигов и определений агентов. IDE-директории содержат только символические ссылки.
+
+**Преимущества:**
+- **Одно обновление — все IDE** получают изменения автоматически
+- **Без дублирования** — навыки хранятся один раз
+- **Безопасное удаление** — удаление `.claude/` не уничтожает навыки
+- **Git-дружественность** — символические ссылки маленькие и чисто диффятся
+
+---
+
+## Безопасность и откат
+
+### Перед установкой
+
+1. **Закоммитьте текущую работу** — чистый git позволяет `git checkout .` для отмены
+2. **Проверьте существующую `.agents/`** — при наличии от другого инструмента — сделайте бэкап
+
+### После установки
+
+1. Проверьте `git status` — новые файлы только в `.agents/`, `.claude/` и `.github/`
+2. Добавьте в `.gitignore`:
+```gitignore
+.serena/
+.agents/results/
+.agents/state/
+```
+
+### Полный откат
+
+```bash
+rm -rf .agents/ .claude/skills/ .claude/agents/ .serena/
+# Или через git: git checkout -- .agents/ .claude/ && git clean -fd .agents/ .claude/ .serena/
+```
+
+---
+
+## Настройка дашборда
+
+```bash
+oma dashboard        # Терминальный
+oma dashboard:web    # Веб на http://localhost:9847
+```
+
+---
+
+## Что делает установщик
+
+1. **Миграция** — проверка устаревшей `.agent/` (ед. число) -> `.agents/` (мн. число)
+2. **Обнаружение конкурентов** — предложение удалить конфликтующие инструменты
+3. **Скачивание тарбола** — последний релиз с GitHub
+4. **Установка общих ресурсов** — `_shared/` с core/, runtime/, conditional/
+5. **Установка рабочих процессов** — все 14 определений
+6. **Установка конфигов** — `user-preferences.yaml`, `mcp.json` (без перезаписи существующих)
+7. **Установка навыков** — выбранные навыки + языковые варианты
+8. **Вендорные адаптации** — файлы для Claude, Codex, Gemini, Qwen
+9. **Символические ссылки CLI** — `.claude/skills/`, `.claude/agents/`
+10. **Git rerere + MCP** — опциональная настройка

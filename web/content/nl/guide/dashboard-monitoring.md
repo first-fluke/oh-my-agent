@@ -1,67 +1,108 @@
 ---
-title: Dashboard Monitoring
-description: Bekijk je agents in realtime werken met terminal- en web-dashboards.
+title: "Gids: Dashboard Monitoring"
+description: Uitgebreide dashboardgids met terminal- en webdashboards, databronnen, 3-terminal layout, probleemoplossing en technische implementatiedetails.
 ---
 
-# Dashboard Monitoring
+# Gids: Dashboard Monitoring
 
-Wanneer je meerdere agents parallel draait, wil je zien wat er gebeurt. Daar zijn dashboards voor.
+## Twee Dashboard-Commando's
 
-## Start een Dashboard
+| Commando | Interface | URL | Technologie |
+|:---------|:---------|:----|:-----------|
+| `oma dashboard` | Terminal (TUI) | N/B — rendert in je terminal | chokidar file watcher, picocolors rendering |
+| `oma dashboard:web` | Browser | `http://localhost:9847` | HTTP-server, WebSocket, chokidar file watcher |
+
+Beide dashboards bewaken dezelfde databron: `.serena/memories/`-directory.
+
+### Terminal Dashboard
 
 ```bash
-# Terminal UI
 oma dashboard
-
-# Web UI
-oma dashboard:web
-# → http://localhost:9847
 ```
 
-## Aanbevolen Setup
+Rendert een box-drawing UI direct in de terminal. Wordt automatisch bijgewerkt bij geheugenbestandswijzigingen. Druk `Ctrl+C` om af te sluiten.
 
-Gebruik 3 terminals naast elkaar:
+**Statussymbolen:** `●` (groen) draaiend, `✓` (cyaan) voltooid, `✗` (rood) mislukt, `○` (geel) geblokkeerd, `◌` (gedimd) wachtend.
 
-| Terminal | Doel |
-|---------|-----|
-| 1 | `oma dashboard` — live agent-status |
-| 2 | Agent spawn-commando's |
-| 3 | Test- en build-logs |
+### Webdashboard
 
-Houd het web-dashboard open in een browser voor gedeelde zichtbaarheid tijdens teamsessies.
+```bash
+oma dashboard:web
+```
 
-## Wat Je Ziet
+Opent een webserver op poort 9847 (configureerbaar via `DASHBOARD_PORT`). De browser-UI verbindt via WebSocket en ontvangt live updates.
 
-Dashboards monitoren `.serena/memories/` en tonen:
+```bash
+DASHBOARD_PORT=8080 oma dashboard:web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+```
 
-- **Sessiestatus** — draaiend, voltooid of gefaald
-- **Takenbord** — welke agent welke taak heeft
-- **Agent-voortgang** — beurtentelling, huidige activiteit
-- **Resultaten** — eindresultaten zodra ze binnenkomen
+---
 
-Updates zijn event-driven (bestandswijzigingsdetectie) — geen polling-loops die je CPU opeten.
+## Aanbevolen 3-Terminal Layout
 
-## Probleemoplossingssignalen
+```
+┌────────────────────────────────┬────────────────────────────────┐
+│   Terminal 1: Hoofdagent       │   Terminal 2: Dashboard        │
+│   $ gemini                     │   $ oma dashboard              │
+│   > /orchestrate               │                                │
+├────────────────────────────────┴────────────────────────────────┤
+│   Terminal 3: Ad-hoc commando's                                 │
+│   $ oma agent:status session-id backend frontend                │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-| Je Ziet | Wat Te Doen |
-|---------|-----------|
-| "No agents detected" | Controleer of agents zijn gespawned met hetzelfde `session-id`. Verifieer dat `.serena/memories/` wordt beschreven. |
-| Sessie vast op "running" | Controleer `progress-*` bestandstijdstempels. Herstart geblokkeerde agents met duidelijkere prompts. |
-| Frequente reconnects (web) | Controleer firewall/proxy. Herstart `dashboard:web` en ververs de pagina. |
-| Ontbrekende activiteit | Verifieer dat de orchestrator naar de juiste workspace-map schrijft. |
+---
 
-## Voordat Je Mergt
+## Databronnen in .serena/memories/
 
-Snelle checklist vanuit het dashboard:
+| Bestandspatroon | Aangemaakt Door | Inhoud |
+|:-------------|:----------|:---------|
+| `orchestrator-session.md` | `/orchestrate` Stap 2 | Sessie-ID, starttijd, status, workflowversie |
+| `task-board.md` | Orchestratieworkflows | Markdown-tabel met agenttoewijzingen en statussen |
+| `progress-{agent}.md` | Elke gespawnde agent | Huidig beurtnummer, huidige actie, tussenresultaten |
+| `result-{agent}.md` | Elke voltooide agent | Eindstatus, gewijzigde bestanden, gevonden problemen |
+| `experiment-ledger.md` | Quality Score-systeem | Experimentbijhouding: basislijnscores, delta's, behoud/verwerp beslissingen |
 
-- Alle agents hebben "completed" status bereikt
-- Geen onopgeloste QA-bevindingen met hoge ernst
-- Resultaatbestanden aanwezig voor elke agent
-- Integratietests uitgevoerd na eindresultaten
+---
 
-## Wanneer Je Klaar Bent
+## Probleemoplossing
 
-De monitoringfase is compleet wanneer:
-- Sessie toont eindstatus (completed of stopped)
-- Activiteitengeschiedenis verklaart wat er is gebeurd
-- Je hebt je merge/release-beslissing genomen met volledige zichtbaarheid
+### Signaal 1: Agent Toont "draaiend" maar Geen Beurtvoortgang
+**Acties:** Controleer logbestand: `cat /tmp/subagent-{session-id}-{agent-id}.log`. Controleer of proces draait: `oma agent:status`. Herspawn indien gecrasht.
+
+### Signaal 2: Agent Toont "gecrasht"
+**Acties:** Controleer logbestand, verifieer CLI-installatie met `oma doctor`, controleer authenticatie met `oma auth:status`, herspawn.
+
+### Signaal 3: Dashboard Toont "Geen agenten gedetecteerd"
+**Acties:** Verifieer memories-directory: `ls -la .serena/memories/`, controleer of workflow nog in planningsfase is.
+
+### Signaal 4: Webdashboard Toont "Verbinding verbroken"
+**Acties:** Controleer of dashboardproces draait, probeer andere poort: `DASHBOARD_PORT=8080 oma dashboard:web`. Auto-reconnect met exponential backoff (1s initieel, max 10s).
+
+---
+
+## Pre-Merge Monitoringchecklist
+
+- [ ] Alle agenten tonen "voltooid"
+- [ ] Geen agenten tonen "mislukt"
+- [ ] QA-agent heeft review voltooid
+- [ ] Nul CRITICAL/HIGH bevindingen
+- [ ] Sessiestatus is VOLTOOID
+- [ ] Activiteitenfeed toont eindrapport
+
+---
+
+## Technische Details
+
+### Terminal Dashboard
+- **Bestandsbewaking:** chokidar met `awaitWriteFinish` (200ms stabiliteitsdrempel)
+- **Rendering:** Wist en hertekent hele terminal bij elke wijziging. Gebruikt `picocolors` voor ANSI-kleuren en Unicode box-drawing
+- **Afsluiten:** Vangt `SIGINT` en `SIGTERM`, sluit watcher netjes af
+
+### Webdashboard
+- **HTTP-server:** Node.js `createServer` serveert HTML op `/` en JSON-status op `/api/state`
+- **WebSocket:** `ws`-bibliotheek. Bij verbinding ontvangt client volledige status. Updates als `{ type: "update", event, file, data }`
+- **Debouncing:** 100ms om clients niet te overspoelen bij snelle bestandsschrijfacties
+- **Auto-reconnect:** Exponential backoff (1s initieel, 1.5x vermenigvuldiger, 10s max)
+- **Poort:** Standaard 9847, configureerbaar via `DASHBOARD_PORT`

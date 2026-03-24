@@ -1,73 +1,208 @@
 ---
-title: CLI-Commando's
-description: Elk commando beschikbaar in de oh-my-agent CLI — met voorbeelden.
+title: "CLI-Commando's"
+description: Volledige referentie voor elk oh-my-agent CLI-commando — syntaxis, opties, voorbeelden, georganiseerd per categorie.
 ---
 
 # CLI-Commando's
 
-Na globale installatie (`bun install --global oh-my-agent`), gebruik `oma` of `oh-my-ag`.
+Na globale installatie (`bun install --global oh-my-agent`), gebruik `oma` of `oh-my-ag`. Beide zijn aliassen voor dezelfde binary. Voor eenmalig gebruik zonder installatie: `npx oh-my-agent`.
 
-## Setup & Onderhoud
+De omgevingsvariabele `OH_MY_AG_OUTPUT_FORMAT` kan op `json` worden gezet om machineleesbare uitvoer te forceren op commando's die dit ondersteunen.
 
-```bash
-oma                    # Interactieve installer — kies preset, installeer skills
-oma doctor             # Gezondheidscheck: CLI's, MCP-configs, skill-status
-oma update             # Update skills naar de laatste versie uit het register
-oma cleanup            # Verwijder verweesde processen en tijdelijke bestanden
+---
+
+## Setup & Installatie
+
+### oma (install)
+
+Het standaardcommando zonder argumenten start de interactieve installer.
+
+```
+oma
 ```
 
-## Monitoring
+Migratiecheck, concurrentdetectie, preset-selectie, tarball download, skills installatie, leveranciersaanpassingen, symlinks, git rerere en MCP-configuratie.
 
-```bash
-oma dashboard          # Terminal-dashboard — live agent-status
-oma dashboard:web      # Web-dashboard op http://localhost:9847
-oma stats              # Bekijk productiviteitsmetrieken
-oma retro [days]       # Engineering-retrospective met trends
+### doctor
+
+Gezondheidscontrole voor CLI-installaties, MCP-configs en skill-status.
+
+```
+oma doctor [--json] [--output <format>]
 ```
 
-## Agent-Beheer
+### update
 
-```bash
-# Start een enkele agent
-oma agent:spawn <agent-id> <prompt> <session-id>
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
+Skills bijwerken naar de nieuwste versie.
 
-# Controleer agent-status
-oma agent:status <session-id> [agent-ids...]
-oma agent:status session-01 backend frontend
-
-# Voer meerdere agents parallel uit
-oma agent:parallel [tasks...]
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
+```
+oma update [-f | --force] [--ci]
 ```
 
-## Geheugen & Verificatie
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `-f, --force` | Overschrijf gebruikersaanpassingen (user-preferences.yaml, mcp.json, stack/) |
+| `--ci` | Niet-interactieve CI-modus (geen prompts, platte tekst) |
 
-```bash
-# Initialiseer Serena-geheugen schema
-oma memory:init
+---
 
-# Verifieer agent-output kwaliteit
-oma verify <agent-type>
-oma verify backend
-oma verify frontend
+## Monitoring & Metrieken
+
+### dashboard
+
 ```
+oma dashboard
+```
+
+Terminal-dashboard voor realtime agentmonitoring. Bewaakt `.serena/memories/`. `MEMORIES_DIR` omgevingsvariabele om pad te overschrijven.
+
+### dashboard:web
+
+```
+oma dashboard:web
+```
+
+Webdashboard op `http://localhost:9847`. Omgevingsvariabelen: `DASHBOARD_PORT` (standaard 9847), `MEMORIES_DIR`.
+
+### stats
+
+```
+oma stats [--json] [--output <format>] [--reset]
+```
+
+Productiviteitsmetrieken: sessieaantal, gebruikte skills, voltooide taken, sessietijd, bestandswijzigingen.
+
+### retro
+
+```
+oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
+```
+
+Engineering retrospectief. Vensterformaat: `7d`, `2w`, `1m`. Toont samenvatting, trends, bijdragers, committijdverdeling, hotspots.
+
+---
+
+## Agentbeheer
+
+### agent:spawn
+
+```
+oma agent:spawn <agent-id> <prompt> <session-id> [-v <vendor>] [-w <workspace>]
+```
+
+| Argument | Vereist | Beschrijving |
+|:---------|:--------|:-----------|
+| `agent-id` | Ja | `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `prompt` | Ja | Taakbeschrijving (inline tekst of bestandspad) |
+| `session-id` | Ja | Sessie-identificator |
+
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `-v, --vendor` | CLI-leverancier: `gemini`, `claude`, `codex`, `qwen` |
+| `-w, --workspace` | Werkdirectory (auto-gedetecteerd uit monorepo-config indien weggelaten) |
+
+### agent:status
+
+```
+oma agent:status <session-id> [agent-ids...] [-r <root>]
+```
+
+Uitvoerformaat: een regel per agent: `{agent-id}:{status}` (completed/running/crashed).
+
+### agent:parallel
+
+```
+oma agent:parallel [tasks...] [-v <vendor>] [-i | --inline] [--no-wait]
+```
+
+YAML-takenbestand of inline modus (`agent:task[:workspace]`).
+
+---
+
+## Geheugenbeheer
+
+### memory:init
+
+```
+oma memory:init [--json] [--output <format>] [--force]
+```
+
+Initialiseert de `.serena/memories/`-directorystructuur.
+
+---
 
 ## Integratie & Hulpmiddelen
 
-```bash
-oma auth:status        # Controleer CLI-authenticatiestatus
-oma usage:anti         # Toon Antigravity IDE gebruiksquota
-oma bridge [url]       # Bridge MCP stdio naar Streamable HTTP
-oma visualize          # Genereer project-afhankelijkheidsgrafiek
-oma describe [cmd]     # JSON-introspectie van elk CLI-commando
-oma star               # Geef oh-my-agent een ster op GitHub
+### auth:status
+```
+oma auth:status [--json]
+```
+Authenticatiestatus van alle ondersteunde CLI's.
+
+### usage:anti
+```
+oma usage:anti [--json] [--raw]
+```
+Modelgebruiksquota van Antigravity IDE.
+
+### bridge
+```
+oma bridge [url]
+```
+Protocol-bridge tussen MCP stdio en Streamable HTTP transport.
+
+### verify
+```
+oma verify <agent-type> [-w <workspace>] [--json]
+```
+Verifieer subagentuitvoer. Agent-types: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
+
+### cleanup
+```
+oma cleanup [--dry-run] [-y | --yes] [--json]
+```
+Ruimt op: verweesde PID-bestanden, logbestanden, Gemini Antigravity-directory's.
+
+### visualize
+```
+oma visualize [--json]
+oma viz [--json]
+```
+Afhankelijkheidsgrafiek van projectstructuur.
+
+### star
+```
+oma star
+```
+Geef oh-my-agent een ster op GitHub. Vereist `gh` CLI.
+
+### describe
+```
+oma describe [command-path]
+```
+Beschrijf CLI-commando's als JSON voor runtime-introspectie.
+
+### help / version
+```
+oma help
+oma version
 ```
 
-## Hulp Krijgen
+---
 
-```bash
-oma help               # Toon alle commando's
-oma version            # Toon versienummer
-oma <command> --help   # Hulp voor specifiek commando
-```
+## Omgevingsvariabelen
+
+| Variabele | Beschrijving | Gebruikt Door |
+|:---------|:-----------|:--------|
+| `OH_MY_AG_OUTPUT_FORMAT` | Zet op `json` voor JSON-uitvoer | Alle commando's met `--json` |
+| `DASHBOARD_PORT` | Poort voor webdashboard | `dashboard:web` |
+| `MEMORIES_DIR` | Overschrijf memories-directorypad | `dashboard`, `dashboard:web` |
+
+---
+
+## Aliassen
+
+| Alias | Volledig Commando |
+|:------|:------------|
+| `oma` | `oh-my-ag` |
+| `viz` | `visualize` |

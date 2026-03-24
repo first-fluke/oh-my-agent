@@ -1,104 +1,127 @@
 ---
-title: Integratie in Bestaand Project
-description: Voeg oh-my-agent toe aan een project waar je al aan werkt — veilig en niet-destructief.
+title: "Gids: Integratie in Bestaand Project"
+description: Volledige gids voor het toevoegen van oh-my-agent aan een bestaand project — CLI-pad, handmatig pad, verificatie, SSOT-symlinkstructuur en wat de installer onder de motorkap doet.
 ---
 
-# Integreren in een Bestaand Project
+# Gids: Integratie in Bestaand Project
 
-Al een project? Zo voeg je oh-my-agent toe zonder iets te breken.
+## Twee Integratiepaden
 
-## De Makkelijke Manier (CLI)
+1. **CLI-pad** — Voer `oma` (of `npx oh-my-agent`) uit en volg de interactieve prompts. Aanbevolen voor de meeste gebruikers.
+2. **Handmatig pad** — Kopieer bestanden en configureer symlinks zelf. Nuttig voor beperkte omgevingen of aangepaste opstellingen.
 
-Voer dit uit in je project-root:
+Beide paden produceren hetzelfde resultaat: een `.agents/`-directory (de SSOT) met symlinks vanuit IDE-specifieke directory's.
 
+---
+
+## CLI-Pad: Stap voor Stap
+
+### 1. Installeer de CLI
 ```bash
-bunx oh-my-agent
+bun install --global oh-my-agent
 ```
 
-Wat het doet:
-- Installeert skills in `.agents/skills/`
-- Kopieert gedeelde resources naar `.agents/skills/_shared/`
-- Maakt symlinks voor je IDE (`.claude/skills/`, etc.)
-- Installeert workflows in `.agents/workflows/`
-- Maakt standaardconfiguratie in `.agents/config/user-preferences.yaml`
-
-## De Handmatige Manier
-
-Wanneer je volledige controle wilt over wat gekopieerd wordt:
-
+### 2. Navigeer naar je Projectroot
 ```bash
-cd /path/to/your-project
-
-mkdir -p .agents/skills .agents/workflows .agents/config .claude/skills
-
-# Kopieer gewenste skills
-for skill in oma-pm oma-frontend oma-backend oma-qa oma-debug oma-commit; do
-  [ -d ".agents/skills/$skill" ] || cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/
-done
-
-# Kopieer gedeelde resources
-[ -d .agents/skills/_shared ] || cp -r /path/to/oh-my-agent/.agents/skills/_shared .agents/skills/
-
-# Kopieer workflows
-for wf in coordinate.md plan.md review.md debug.md commit.md setup.md; do
-  [ -f ".agents/workflows/$wf" ] || cp /path/to/oh-my-agent/.agents/workflows/$wf .agents/workflows/
-done
-
-# Standaardconfiguratie (alleen als ontbreekt)
-[ -f .agents/config/user-preferences.yaml ] || cp /path/to/oh-my-agent/.agents/config/user-preferences.yaml .agents/config/
+cd /path/to/your/project
 ```
 
-## Controleer of Het Werkt
+### 3. Voer de Installer uit
+```bash
+oma
+```
+
+### 4. Selecteer Projecttype
+Presets: All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom.
+
+### 5. Kies Backend-Taal (indien van toepassing)
+Python, Node.js, Rust of Auto-detect.
+
+### 6. Configureer IDE Symlinks
+Claude Code symlinks worden altijd aangemaakt. GitHub Copilot symlinks optioneel.
+
+### 7. Git Rerere Setup
+Aanbevolen voor multi-agent merge-conflicthergebruik.
+
+### 8. MCP Configuratie
+Serena MCP bridge configuratie voor Antigravity IDE en Gemini CLI.
+
+---
+
+## Handmatig Pad
+
+```bash
+# Download en extraheer
+VERSION=$(curl -s https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/prompt-manifest.json | jq -r '.version')
+curl -L "https://github.com/first-fluke/oh-my-agent/releases/download/cli-v${VERSION}/agent-skills.tar.gz" -o agent-skills.tar.gz
+sha256sum -c agent-skills.tar.gz.sha256
+tar -xzf agent-skills.tar.gz
+
+# Kopieer naar project
+cp -r .agents/ /path/to/your/project/.agents/
+
+# Maak symlinks
+mkdir -p /path/to/your/project/.claude/skills
+ln -sf ../../.agents/skills/oma-frontend /path/to/your/project/.claude/skills/oma-frontend
+# ... herhaal voor andere skills
+```
+
+---
+
+## Verificatiechecklist
 
 ```bash
 oma doctor
+oma doctor --json
 ```
 
-Of controleer handmatig:
+Controleert: CLI-installaties, authenticatie, MCP-configuratie, skill-status.
+
+---
+
+## Multi-IDE Symlinkstructuur (SSOT-Concept)
+
+oh-my-agent gebruikt een Single Source of Truth (SSOT)-architectuur. `.agents/` is de enige plek waar skills, workflows, configs en agentdefinities leven. Alle IDE-specifieke directory's bevatten alleen symlinks.
+
+**Waarom symlinks?**
+- Een update, alle IDE's profiteren
+- Geen duplicatie
+- Veilig verwijderen — `.claude/` verwijderen vernietigt je skills niet
+- Git-vriendelijk
+
+---
+
+## Veiligheidstips en Terugdraaienstrategie
+
+### Voor Installatie
+1. Commit je huidige werk
+2. Controleer op bestaande `.agents/`-directory
+
+### Na Installatie
+1. Review wat er is aangemaakt met `git status`
+2. Voeg selectief toe aan `.gitignore`:
+```gitignore
+.serena/
+.agents/results/
+.agents/state/
+```
+
+### Terugdraaien
 ```bash
-ls .agents/skills/          # Moet je skill-mappen tonen
-ls .agents/workflows/       # Moet workflow .md bestanden tonen
-cat .agents/config/user-preferences.yaml  # Moet je configuratie tonen
+rm -rf .agents/ .claude/skills/ .claude/agents/ .serena/
 ```
 
-## Multi-IDE Symlinks
+---
 
-Tijdens `bunx oh-my-agent` wordt gevraagd:
+## Wat de Installer Onder de Motorkap Doet
 
-```text
-Also create symlinks for other CLI tools?
-  ○ Cursor (.cursor/skills/)
-  ○ GitHub Copilot (.github/skills/)
-```
-
-Eén bron van waarheid (`.agents/skills/`), meerdere IDE's die eruit lezen:
-
-```text
-.agents/skills/oma-frontend/     ← Bron (SSOT)
-.claude/skills/oma-frontend/     → symlink
-.cursor/skills/oma-frontend/     → symlink
-.github/skills/oma-frontend/     → symlink
-```
-
-## Veiligheidstips
-
-**Voordat je integreert**, maak een checkpoint:
-
-```bash
-git add -A && git commit -m "chore: checkpoint before oh-my-agent"
-```
-
-- De CLI overschrijft nooit bestaande skill-mappen
-- Je projectspecifieke configuraties blijven onder jouw controle
-- `oma doctor` signaleert eventuele problemen
-
-## Optioneel: Dashboards
-
-```bash
-oma dashboard        # Terminal-monitoring
-oma dashboard:web    # Web UI op http://localhost:9847
-```
-
-## Wat Nu?
-
-Begin te chatten in je AI-IDE, of bekijk de [Gebruiksgids](./usage) voor workflow-voorbeelden.
+1. **Legacy migratie** — `.agent/` (enkelvoud) naar `.agents/` (meervoud)
+2. **Concurrentdetectie** — Biedt aan concurrerende tools te verwijderen
+3. **Tarball download** — Laatste release van GitHub
+4. **Gedeelde bronnen installatie** — `_shared/` directory
+5. **Workflow installatie** — Alle 14 workflowbestanden
+6. **Config installatie** — Standaardconfiguratie (bestaande bestanden behouden)
+7. **Skill installatie** — Per geselecteerde skill
+8. **Leveranciersaanpassingen** — IDE-specifieke bestanden voor alle leveranciers
+9. **CLI symlinks** — `.claude/skills/`, `.claude/agents/`
+10. **Git rerere + MCP** — Optionele configuratie

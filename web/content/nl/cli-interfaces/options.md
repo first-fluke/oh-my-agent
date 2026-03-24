@@ -1,108 +1,201 @@
 ---
-title: CLI-Opties
-description: Alle vlaggen en opties voor oh-my-agent CLI-commando's.
+title: "CLI-Opties"
+description: Uitgebreide referentie voor alle CLI-opties — globale vlaggen, uitvoerbeheer, per-commando opties en praktijkgebruikspatronen.
 ---
 
 # CLI-Opties
 
 ## Globale Opties
 
-Beschikbaar bij elk commando:
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `-V, --version` | Toon het versienummer en sluit af |
+| `-h, --help` | Toon help voor het commando |
 
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `-h, --help` | Toon hulp |
-| `-V, --version` | Toon versienummer |
+Alle subcommando's ondersteunen ook `-h, --help` om hun specifieke helptekst te tonen.
 
-## Output-Opties
+---
 
-Veel commando's ondersteunen machine-leesbare output:
+## Uitvoeropties
 
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `--json` | Output als JSON |
-| `--output <format>` | Output-formaat: `text` of `json` |
+Veel commando's ondersteunen machineleesbare uitvoer voor CI/CD-pipelines en automatisering. Er zijn drie manieren om JSON-uitvoer aan te vragen, in prioriteitsvolgorde:
 
-Je kunt ook `OH_MY_AG_OUTPUT_FORMAT=json` instellen als omgevingsvariabele.
+### 1. --json Vlag
 
-**Ondersteund door:** `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`
+```bash
+oma stats --json
+oma doctor --json
+```
+
+Beschikbaar op: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+
+### 2. --output Vlag
+
+```bash
+oma stats --output json
+oma doctor --output text
+```
+
+Accepteert `text` of `json`.
+
+### 3. OH_MY_AG_OUTPUT_FORMAT Omgevingsvariabele
+
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats    # levert JSON
+```
+
+**Resolutievolgorde:** `--json` vlag > `--output` vlag > `OH_MY_AG_OUTPUT_FORMAT` env var > `text` (standaard).
+
+### Commando's met JSON-Ondersteuning
+
+| Commando | `--json` | `--output` | Opmerkingen |
+|:--------|:---------|:----------|:------|
+| `doctor` | Ja | Ja | CLI-checks, MCP-status, skill-status |
+| `stats` | Ja | Ja | Volledig metriekenobject |
+| `retro` | Ja | Ja | Snapshot met metrieken, auteurs, committypes |
+| `cleanup` | Ja | Ja | Lijst van opgeruimde items |
+| `auth:status` | Ja | Ja | Authenticatiestatus per CLI |
+| `usage:anti` | Ja | Ja | Modelgebruiksquota |
+| `memory:init` | Ja | Ja | Initialisatieresultaat |
+| `verify` | Ja | Ja | Verificatieresultaten per controle |
+| `visualize` | Ja | Ja | Afhankelijkheidsgrafiek als JSON |
+| `describe` | Altijd JSON | N/B | Altijd JSON (introspectiecommando) |
+
+---
 
 ## Per-Commando Opties
 
-### `update`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `-f, --force` | Overschrijf door gebruiker aangepaste configuratiebestanden |
-| `--ci` | Niet-interactieve modus (sla alle prompts over) |
+### update
 
-### `stats`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `--reset` | Reset alle metriekgegevens |
+```
+oma update [-f | --force] [--ci]
+```
 
-### `retro`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `--interactive` | Handmatige invoermodus |
-| `--compare` | Vergelijk huidig venster met vorig venster van dezelfde lengte |
+| Vlag | Beschrijving | Standaard |
+|:-----|:-----------|:--------|
+| `--force` / `-f` | Overschrijft user-preferences.yaml, mcp.json, stack/. Zonder deze vlag worden deze bestanden geback-upt en hersteld. | `false` |
+| `--ci` | Niet-interactieve CI-modus. Slaat bevestigingsprompts over, gebruikt platte console-uitvoer. | `false` |
 
-### `cleanup`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `--dry-run` | Toon wat opgeruimd zou worden zonder het te doen |
-| `-y, --yes` | Sla bevestigingsprompts over |
+### stats
 
-### `usage:anti`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `--raw` | Dump ruwe RPC-response |
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `--reset` | Reset alle metriekendata. Verwijdert `.serena/metrics.json` en maakt opnieuw aan. |
 
-### `agent:spawn`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `-v, --vendor <vendor>` | Overschrijf CLI-vendor (`gemini`/`claude`/`codex`/`qwen`) |
-| `-w, --workspace <path>` | Werkmap voor de agent |
+### retro
 
-### `agent:status`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `-r, --root <path>` | Root-pad voor geheugencontroles |
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `--interactive` | Interactieve modus met handmatige gegevensinvoer. |
+| `--compare` | Vergelijk huidig venster met vorige periode van dezelfde lengte. |
 
-### `agent:parallel`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `-v, --vendor <vendor>` | Overschrijf CLI-vendor |
-| `-i, --inline` | Specificeer taken als `agent:task` argumenten |
-| `--no-wait` | Wacht niet op voltooiing (achtergrondmodus) |
+**Vensterargumentformaat:** `7d` (7 dagen), `2w` (2 weken), `1m` (1 maand).
 
-### `memory:init`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `--force` | Overschrijf bestaande schemabestanden |
+### cleanup
 
-### `verify`
-| Optie | Wat Het Doet |
-|-------|-------------|
-| `-w, --workspace <path>` | Workspace-pad om te verifiëren |
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `--dry-run` | Voorbeeldmodus. Lijst items zonder wijzigingen. |
+| `--yes` / `-y` | Sla bevestigingsprompts over. |
 
-## Praktische Voorbeelden
+### agent:spawn
+
+| Vlag | Beschrijving | Standaard |
+|:-----|:-----------|:--------|
+| `--vendor` / `-v` | CLI-leverancier: `gemini`, `claude`, `codex`, `qwen` | Uit config |
+| `--workspace` / `-w` | Werkdirectory. Auto-gedetecteerd uit monorepo-config indien weggelaten. | Auto of `.` |
+
+**Leverancierspecifiek gedrag:**
+
+| Leverancier | Commando | Auto-approve Vlag | Prompt Vlag |
+|:-------|:--------|:-----------------|:-----------|
+| gemini | `gemini` | `--approval-mode=yolo` | `-p` |
+| claude | `claude` | (geen) | `-p` |
+| codex | `codex` | `--full-auto` | (positioneel) |
+| qwen | `qwen` | `--yolo` | `-p` |
+
+### agent:status
+
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `--root` / `-r` | Rootpad voor geheugenbestandlocatie |
+
+**Statuswaarden:** `completed`, `running`, `crashed`.
+
+### agent:parallel
+
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `--vendor` / `-v` | CLI-leverancier voor alle agenten |
+| `--inline` / `-i` | Inline modus: `agent:task[:workspace]` |
+| `--no-wait` | Achtergrondmodus — start en keer onmiddellijk terug |
+
+**Inline taakformaat:** `agent:task` of `agent:task:workspace` (werkruimte moet beginnen met `./`, `/` of gelijk zijn aan `.`).
+
+---
+
+## Praktijkvoorbeelden
+
+### CI Pipeline: Bijwerken en Verifieren
 
 ```bash
-# JSON-output voor CI-pipeline
-oma doctor --json
+oma update --ci
+oma doctor --json | jq '.healthy'
+```
 
-# Reset productiviteitsmetrieken
-oma stats --reset
+### Geautomatiseerde Metriekenverzameling
 
-# Preview opruiming zonder uitvoering
-oma cleanup --dry-run
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+```
 
-# Spawn met specifieke CLI en workspace
-oma agent:spawn backend "Auth API" session-01 -v codex -w ./apps/api
+### Batch Agentuitvoering met Statusmonitoring
 
-# Niet-interactieve update in CI
-oma update --ci --force
+```bash
+oma agent:parallel tasks.yaml --no-wait
+SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
+watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+```
 
-# Vergelijk laatste 7 dagen met vorige 7 dagen
-oma retro 7 --compare
+### Opruimen in CI Na Tests
+
+```bash
+oma cleanup --yes --json
+```
+
+### Werkruimte-Bewuste Verificatie
+
+```bash
+oma verify backend -w ./apps/api
+oma verify frontend -w ./apps/web
+oma verify mobile -w ./apps/mobile
+```
+
+### Retro met Vergelijking voor Sprintreviews
+
+```bash
+oma retro 2w --compare
+oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
+```
+
+### Volledig Gezondheidscontrolescript
+
+```bash
+#!/bin/bash
+set -e
+
+echo "=== oh-my-agent Gezondheidscontrole ==="
+oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "ONTBREEKT" end)"'
+oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma stats --json | jq -r '"Sessies: \(.sessions), Taken: \(.tasksCompleted)"'
+echo "=== Klaar ==="
+```
+
+### Describe voor Agent-Introspectie
+
+```bash
+oma describe | jq '.command.subcommands[] | {name, description}'
+oma describe agent:spawn | jq '.command.options[] | {flags, description}'
 ```

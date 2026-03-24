@@ -1,97 +1,334 @@
 ---
-title: Instalacion
-description: Pon oh-my-agent a funcionar en tu proyecto — tres formas de instalar, todas rapidas.
+title: Instalación
+description: Guía completa de instalación de oh-my-agent — tres métodos de instalación, los seis presets con sus listas de habilidades, requisitos de herramientas CLI para los cuatro proveedores, configuración post-instalación, campos de user-preferences.yaml y verificación con oma doctor.
 ---
 
-# Instalacion
+# Instalación
 
-## Lo Que Necesitas
+## Requisitos Previos
 
-- **Un IDE con IA** — Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, o similar
-- **bun** y **uv** — se instalan automaticamente si faltan
+- **Un IDE o CLI potenciado por IA** — al menos uno de: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor u OpenCode
+- **bun** — Runtime y gestor de paquetes JavaScript (instalado automáticamente por el script si no está presente)
+- **uv** — Gestor de paquetes Python para Serena MCP (instalado automáticamente si no está presente)
 
-## Opcion 1: Una Sola Linea (Recomendado)
+---
+
+## Método 1: Instalación con Un Solo Comando (Recomendado)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-Esto detecta dependencias faltantes (bun, uv), las instala y lanza la configuracion interactiva. Listo en aproximadamente un minuto.
+Este script:
+1. Detecta tu plataforma (macOS, Linux)
+2. Verifica bun y uv, instalándolos si faltan
+3. Ejecuta el instalador interactivo con selección de preset
+4. Crea `.agents/` con las habilidades seleccionadas
+5. Configura la capa de integración `.claude/` (hooks, enlaces simbólicos, configuración)
+6. Configura Serena MCP si se detecta
 
-## Opcion 2: Instalacion Manual
+Tiempo de instalación típico: menos de 60 segundos.
+
+---
+
+## Método 2: Instalación Manual vía bunx
 
 ```bash
 bunx oh-my-agent
 ```
 
-Obtendras un menu para elegir un preset:
+Esto lanza el instalador interactivo sin el bootstrap de dependencias. Necesitas tener bun ya instalado.
 
-| Preset | Lo Que Obtienes |
-|--------|-----------------|
-| All | Todos los agentes y skills |
-| Fullstack | frontend + backend + db + pm + qa + debug + brainstorm + commit |
-| Frontend | frontend + pm + qa + debug + brainstorm + commit |
-| Backend | backend + db + pm + qa + debug + brainstorm + commit |
-| Mobile | mobile + pm + qa + debug + brainstorm + commit |
-| DevOps | tf-infra + dev-workflow + pm + qa + debug + brainstorm + commit |
+El instalador te pide seleccionar un preset, que determina qué habilidades se instalan:
 
-Los skills se instalan en `.agents/skills/` con symlinks creados para tu IDE.
+### Presets
 
-## Opcion 3: Instalacion Global
+| Preset | Habilidades Incluidas |
+|--------|----------------------|
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
 
-Para uso frecuente del CLI (dashboards, spawn de agentes, diagnosticos):
+Cada preset incluye oma-pm (planificación), oma-qa (revisión), oma-debug (corrección de bugs), oma-brainstorm (ideación) y oma-commit (git) como agentes base. Los presets específicos de dominio añaden los agentes de implementación relevantes.
+
+Los recursos compartidos (`_shared/`) se instalan siempre independientemente del preset. Esto incluye enrutamiento central, carga de contexto, estructura de prompts, detección de proveedor, protocolos de ejecución y protocolo de memoria.
+
+### Qué Se Crea
+
+Después de la instalación, tu proyecto contendrá:
+
+```
+.agents/
+├── config/
+│   └── user-preferences.yaml      # Tus preferencias (creado por /setup)
+├── skills/
+│   ├── _shared/                    # Recursos compartidos (siempre instalados)
+│   │   ├── core/                   # skill-routing, context-loading, etc.
+│   │   ├── runtime/                # memory-protocol, execution-protocols/
+│   │   └── conditional/            # quality-score, experiment-ledger, etc.
+│   ├── oma-frontend/               # Según el preset
+│   │   ├── SKILL.md
+│   │   └── resources/
+│   └── ...                         # Otras habilidades seleccionadas
+├── workflows/                      # Las 14 definiciones de flujos de trabajo
+├── agents/                         # Definiciones de subagentes
+├── mcp.json                        # Configuración del servidor MCP
+├── plan.json                       # Vacío (poblado por /plan)
+├── state/                          # Vacío (usado por flujos persistentes)
+└── results/                        # Vacío (poblado por ejecuciones de agentes)
+
+.claude/
+├── settings.json                   # Hooks y permisos
+├── hooks/
+│   ├── triggers.json               # Mapeo palabra clave-flujo (11 idiomas)
+│   ├── keyword-detector.ts         # Lógica de auto-detección
+│   ├── persistent-mode.ts          # Aplicación de flujos persistentes
+│   └── hud.ts                      # Indicador [OMA] en barra de estado
+├── skills/                         # Enlaces simbólicos → .agents/skills/
+└── agents/                         # Definiciones de subagentes para IDE
+
+.serena/
+└── memories/                       # Estado en tiempo de ejecución (poblado durante sesiones)
+```
+
+---
+
+## Método 3: Instalación Global
+
+Para uso a nivel de CLI (dashboards, generación de agentes, diagnósticos), instala oh-my-agent globalmente:
+
+### Homebrew (macOS/Linux)
 
 ```bash
-# Homebrew
 brew install oh-my-agent
-
-# o npm/bun
-bun install --global oh-my-agent
 ```
 
-Ahora puedes usar `oma` en cualquier lugar:
+### npm / bun global
 
 ```bash
-oma doctor          # Verifica que todo este bien
-oma dashboard       # Monitoreo en tiempo real
-oma agent:spawn     # Lanza agentes desde la terminal
+bun install --global oh-my-agent
+# o
+npm install --global oh-my-agent
 ```
 
-## Elige un CLI de IA
+Esto instala el comando `oma` globalmente, dándote acceso a todos los comandos CLI desde cualquier directorio:
 
-Necesitas al menos uno:
+```bash
+oma doctor              # Verificación de salud
+oma dashboard           # Monitoreo en terminal
+oma dashboard:web       # Dashboard web en http://localhost:9847
+oma agent:spawn         # Generar agentes desde terminal
+oma agent:parallel      # Ejecución paralela de agentes
+oma agent:status        # Verificar estado de agentes
+oma stats               # Estadísticas de sesión
+oma retro               # Análisis retrospectivo
+oma cleanup             # Limpiar artefactos de sesión
+oma update              # Actualizar oh-my-agent
+oma verify              # Verificar salida de agentes
+oma visualize           # Visualización de dependencias
+oma describe            # Describir estructura del proyecto
+oma bridge              # Puente SSE-a-stdio para Antigravity
+oma memory:init         # Inicializar proveedor de memoria
+oma auth:status         # Verificar estado de autenticación CLI
+oma usage:anti          # Detección de anti-patrones de uso
+oma star                # Dar estrella al repositorio
+```
 
-| CLI | Instalacion | Como Autenticar |
-|-----|-------------|-----------------|
-| Gemini | `bun install --global @google/gemini-cli` | Automatico en la primera ejecucion |
-| Claude | `curl -fsSL https://claude.ai/install.sh \| bash` | Automatico en la primera ejecucion |
-| Codex | `bun install --global @openai/codex` | `codex login` |
-| Qwen | `bun install --global @qwen-code/qwen-code` | `/auth` dentro del CLI |
+El alias global `oma` es equivalente a `oh-my-ag` (el nombre completo del comando).
 
-## Configuracion Inicial
+---
 
-Despues de la instalacion, ejecuta `/setup` en tu IDE de IA para configurar:
+## Instalación de Herramientas CLI de IA
 
-- Idioma de respuesta
-- CLI vendor por defecto
-- Mapeo de CLI por agente (usa diferentes herramientas de IA para diferentes agentes)
+Necesitas al menos una herramienta CLI de IA instalada. oh-my-agent soporta cuatro proveedores, y puedes combinarlos — usando diferentes CLIs para diferentes agentes mediante el mapeo agente-CLI.
 
-Esto crea `.agents/config/user-preferences.yaml` — el archivo que controla todas tus preferencias.
+### Gemini CLI
 
-## Verificar Que Funciono
+```bash
+bun install --global @google/gemini-cli
+# o
+npm install --global @google/gemini-cli
+```
+
+La autenticación es automática en la primera ejecución. Gemini CLI lee las habilidades desde `.agents/skills/` por defecto.
+
+### Claude Code
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+# o
+npm install --global @anthropic-ai/claude-code
+```
+
+La autenticación es automática en la primera ejecución. Claude Code usa `.claude/` para hooks y configuración, con habilidades enlazadas simbólicamente desde `.agents/skills/`.
+
+### Codex CLI
+
+```bash
+bun install --global @openai/codex
+# o
+npm install --global @openai/codex
+```
+
+Después de instalar, ejecuta `codex login` para autenticarte.
+
+### Qwen CLI
+
+```bash
+bun install --global @qwen-code/qwen-code
+```
+
+Después de instalar, ejecuta `/auth` dentro del CLI para autenticarte.
+
+---
+
+## Configuración Post-Instalación: `/setup`
+
+Después de la instalación, abre tu proyecto en tu IDE de IA y ejecuta el comando `/setup`. Este flujo interactivo (definido en `.agents/workflows/setup.md`) te guía a través de:
+
+### Paso 1: Configuración de Idioma
+
+Establece el idioma de respuesta para todos los agentes y flujos de trabajo. Los valores soportados incluyen: `en`, `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl`.
+
+### Paso 2: Estado de Instalación de CLIs
+
+Escanea los CLIs instalados (`which gemini`, `which claude`, `which codex`) y muestra sus versiones. Proporciona comandos de instalación para cualquier CLI faltante.
+
+### Paso 3: Estado de Conexión MCP
+
+Verifica la configuración del servidor MCP para cada CLI:
+- Gemini CLI: verifica `~/.gemini/settings.json`
+- Claude CLI: verifica `~/.claude.json` o `--mcp-config`
+- Codex CLI: verifica `~/.codex/config.toml`
+- Antigravity IDE: verifica `~/.gemini/antigravity/mcp_config.json`
+
+Ofrece configurar Serena MCP en modo Command (simple, un proceso por sesión) o modo SSE (servidor compartido, menor memoria, requiere el comando `oma bridge` para Antigravity).
+
+### Paso 4: Mapeo Agente-CLI
+
+Configura qué CLI maneja qué agente. Por ejemplo, podrías dirigir `frontend` y `qa` a Claude (mejor en razonamiento) y `backend` y `pm` a Gemini (generación más rápida).
+
+### Paso 5: Resumen
+
+Muestra la configuración completa y sugiere los próximos pasos.
+
+---
+
+## user-preferences.yaml
+
+El flujo `/setup` crea `.agents/config/user-preferences.yaml`. Este es el archivo de configuración central para todo el comportamiento de oh-my-agent:
+
+```yaml
+# Idioma de respuesta para todos los agentes y flujos
+language: en
+
+# Formato de fecha usado en informes y archivos de memoria
+date_format: "YYYY-MM-DD"
+
+# Zona horaria para marcas de tiempo
+timezone: "UTC"
+
+# Herramienta CLI predeterminada para generación de agentes
+# Opciones: gemini, claude, codex, qwen
+default_cli: gemini
+
+# Mapeo CLI por agente (sobrescribe default_cli)
+agent_cli_mapping:
+  frontend: claude       # Razonamiento complejo de UI
+  backend: gemini        # Generación rápida de APIs
+  mobile: gemini
+  db: gemini
+  pm: gemini             # Descomposición rápida
+  qa: claude             # Revisión exhaustiva de seguridad
+  debug: claude          # Análisis profundo de causa raíz
+  design: claude
+  tf-infra: gemini
+  dev-workflow: gemini
+  translator: claude
+  orchestrator: gemini
+  commit: gemini
+```
+
+### Referencia de Campos
+
+| Campo | Tipo | Predeterminado | Descripción |
+|-------|------|----------------|-------------|
+| `language` | string | `en` | Código de idioma de respuesta. Toda la salida de agentes, mensajes de flujos e informes usan este idioma. Soporta 11 idiomas (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
+| `date_format` | string | `YYYY-MM-DD` | Cadena de formato de fecha para marcas de tiempo en planes, archivos de memoria e informes. |
+| `timezone` | string | `UTC` | Zona horaria para todas las marcas de tiempo. Usa identificadores estándar (ej., `Asia/Seoul`, `America/New_York`). |
+| `default_cli` | string | `gemini` | CLI de respaldo cuando no existe mapeo específico por agente. Usado como nivel 3 en la prioridad de resolución de proveedor. |
+| `agent_cli_mapping` | map | (vacío) | Mapea IDs de agente a proveedores CLI específicos. Tiene precedencia sobre `default_cli`. |
+
+### Prioridad de Resolución de Proveedor
+
+Al generar un agente, el proveedor CLI se determina por este orden de prioridad (el más alto primero):
+
+1. Flag `--vendor` pasado a `oma agent:spawn`
+2. Entrada `agent_cli_mapping` para ese agente específico en `user-preferences.yaml`
+3. Configuración `default_cli` en `user-preferences.yaml`
+4. `active_vendor` en `cli-config.yaml` (respaldo legacy)
+5. `gemini` (respaldo fijo final)
+
+---
+
+## Verificación: `oma doctor`
+
+Después de la instalación y configuración, verifica que todo funciona:
 
 ```bash
 oma doctor
 ```
 
-Esto revisa instalaciones de CLI, configuraciones MCP y estado de skills. Si algo anda mal, te dice exactamente que arreglar.
+Este comando verifica:
+- Todas las herramientas CLI requeridas están instaladas y accesibles
+- La configuración del servidor MCP es válida
+- Los archivos de habilidades existen con frontmatter SKILL.md válido
+- Los enlaces simbólicos en `.claude/skills/` apuntan a destinos válidos
+- Los hooks están correctamente configurados en `.claude/settings.json`
+- El proveedor de memoria es alcanzable (Serena MCP)
+- `user-preferences.yaml` es YAML válido con campos requeridos
 
-## Que Sigue?
+Si algo está mal, `oma doctor` te dice exactamente qué corregir, con comandos para copiar y pegar.
 
-Abre tu proyecto en tu IDE de IA y empieza a chatear. Los skills se detectan automaticamente. Prueba algo como:
+---
+
+## Actualización
+
+### Actualización del CLI
+
+```bash
+oma update
+```
+
+Esto actualiza el CLI global de oh-my-agent a la última versión.
+
+### Actualización de Habilidades del Proyecto
+
+Las habilidades y flujos de trabajo dentro de un proyecto pueden actualizarse mediante el GitHub Action (`action/`) para actualizaciones automatizadas, o manualmente re-ejecutando el instalador:
+
+```bash
+bunx oh-my-agent
+```
+
+El instalador detecta instalaciones existentes y ofrece actualizar preservando tu `user-preferences.yaml` y cualquier configuración personalizada.
+
+---
+
+## Próximos Pasos
+
+Abre tu proyecto en tu IDE de IA y comienza a usar oh-my-agent. Las habilidades se auto-detectan. Prueba:
 
 ```
-"Construye un formulario de login con validacion de email usando Tailwind CSS"
+"Construir un formulario de login con validación de email usando Tailwind CSS"
 ```
 
-O ve directamente a la [Guia de Uso](/guide/usage) para mas ejemplos.
+O usa un comando de flujo de trabajo:
+
+```
+/plan funcionalidad de autenticación con JWT y tokens de refresco
+```
+
+Consulta la [Guía de Uso](/guide/usage) para ejemplos detallados, o aprende sobre los [Agentes](/core-concepts/agents) para entender qué hace cada especialista.

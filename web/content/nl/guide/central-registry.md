@@ -1,75 +1,94 @@
 ---
-title: Centraal Register
-description: Gebruik oh-my-agent als een versiebeheerd register om meerdere projecten gesynchroniseerd te houden.
+title: "Gids: Centraal Register"
+description: Gedetailleerde documentatie over het centraal register — release-please workflow, conventionele commits, consumentensjablonen, .agent-registry.yml formaat en vergelijking met de GitHub Action-benadering.
 ---
 
-# Centraal Register voor Multi-Repo Setup
+# Gids: Centraal Register
 
-Meerdere projecten die oh-my-agent gebruiken? Je kunt deze repo behandelen als een **centraal register** — versiebeheer je skills, en alle consumerende projecten blijven gesynchroniseerd.
+## Overzicht
 
-## Hoe Het Werkt
+Het centrale registermodel behandelt de oh-my-agent GitHub-repository (`first-fluke/oh-my-agent`) als een versiebeheerde artefactbron. Consumentenprojecten halen specifieke versies van skills en workflows uit dit register, wat consistentie garandeert over teams en projecten.
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  Centraal Register (oh-my-agent repo)                   │
-│  • release-please voor automatische versiebeheer        │
-│  • CHANGELOG.md auto-generatie                          │
-│  • prompt-manifest.json (versies + checksums)           │
-│  • agent-skills.tar.gz release-artefact                 │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│  Jouw Project                                           │
-│  • .agent-registry.yml pint versie                      │
-│  • GitHub Action detecteert nieuwe versies → opent PR   │
-│  • Review en merge om te updaten                        │
-└─────────────────────────────────────────────────────────┘
-```
+Dit is de enterprise-grade benadering voor organisaties die nodig hebben: versiepinning, auditeerbare updatetrails via pull requests, checksumverificatie, wekelijkse geautomatiseerde updatecontroles en handmatige review voor elke update.
 
-## Voor Register-Beheerders
+---
 
-Releases zijn geautomatiseerd via [release-please](https://github.com/googleapis/release-please):
+## Voor Beheerders: Nieuwe Versies Uitgeven
 
-1. Gebruik Conventional Commits (`feat:`, `fix:`, `chore:`)
-2. Push naar `main` → Release PR wordt aangemaakt/bijgewerkt
-3. Merge de Release PR → GitHub Release gepubliceerd met:
-   - `CHANGELOG.md`
-   - `prompt-manifest.json` (bestandenlijst + SHA256 checksums)
-   - `agent-skills.tar.gz` (gecomprimeerde `.agents/`)
+### Release-Please Workflow
 
-## Voor Consumerende Projecten
+oh-my-agent gebruikt [release-please](https://github.com/googleapis/release-please) om releases te automatiseren. Conventionele commits landen op `main`, release-please maakt een release-PR, en bij merge wordt een Git-tag en GitHub Release aangemaakt.
 
-Kopieer de templates naar je project:
+| Prefix | Betekenis | Versiebump |
+|:-------|:---------|:-----------|
+| `feat:` | Nieuwe functie | Minor (1.x.0) |
+| `fix:` | Bugfix | Patch (1.0.x) |
+| `feat!:` of `BREAKING CHANGE:` | Breaking change | Major (x.0.0) |
+| `chore:` | Onderhoud | Geen bump |
 
-```bash
-cp docs/consumer-templates/.agent-registry.yml your-project/
-cp docs/consumer-templates/check-registry-updates.yml your-project/.github/workflows/
-cp docs/consumer-templates/sync-agent-registry.yml your-project/.github/workflows/
-```
+### Release-artefacten
 
-Pin je versie:
+| Artefact | Beschrijving | Doel |
+|:---------|:-----------|:--------|
+| `agent-skills.tar.gz` | Gecomprimeerde tarball van `.agents/` | Alle skills, workflows, configs, agenten |
+| `agent-skills.tar.gz.sha256` | SHA256 checksum | Integriteitsverificatie |
+| `prompt-manifest.json` | JSON met versie en metadata | Gebruikt door `oma update` |
+
+---
+
+## Voor Consumenten: Project Instellen
+
+### .agent-registry.yml Formaat
 
 ```yaml
-# .agent-registry.yml
 registry:
-  repo: first-fluke/oh-my-agent
-  version: "4.7.0"
+  repo: first-fluke/oh-my-ag
+
+version: "4.7.0"
+
+auto_update:
+  enabled: true
+  schedule: "0 9 * * 1"  # Elke maandag om 9:00 UTC
+  pr:
+    auto_merge: false
+    labels: ["dependencies", "agent-registry"]
+
+sync:
+  target_dir: "."
+  backup_existing: true
+  preserve:
+    - ".agent/config/user-preferences.yaml"
+    - ".agent/config/local-*"
 ```
 
-De workflows:
-- `check-registry-updates.yml` — Controleert op nieuwe versies, opent een PR
-- `sync-agent-registry.yml` — Synchroniseert `.agents/` wanneer je de gepinde versie bijwerkt
+### Workflow Rollen
 
-**Auto-merge is bewust uitgeschakeld.** Alle updates krijgen menselijke review.
+**check-registry-updates.yml** — Controleert op nieuwe versies en maakt een PR aan.
+**sync-agent-registry.yml** — Download en past registerbestanden toe wanneer de versie verandert.
 
-## Centraal Register vs. GitHub Action
+---
 
-| | GitHub Action | Centraal Register |
-|:--|:--:|:--:|
-| Setup-inspanning | 1 workflow-bestand | 3 bestanden |
-| Update-methode | `oma update` CLI | Tarball-download |
-| Versiebeheer | Altijd de nieuwste | Expliciete pin |
-| Het beste voor | De meeste projecten | Strikt versiebeheer |
+## Vergelijking: Centraal Register vs GitHub Action
 
-De meeste teams zouden de [GitHub Action](./automated-updates) benadering moeten gebruiken. Gebruik het Centraal Register als je strikte versie-pinning nodig hebt of geen third-party actions kunt gebruiken.
+| Aspect | Centraal Register | GitHub Action |
+|:-------|:----------------|:-------------|
+| **Setup-complexiteit** | Hoger — 3 bestanden | Lager — 1 workflowbestand |
+| **Versiebeheer** | Expliciete pinning | Altijd laatste versie |
+| **Checksumverificatie** | Ja — SHA256 | Nee |
+| **Terugdraaien** | Versie wijzigen in `.agent-registry.yml` | Updatecommit terugdraaien |
+| **Goedkeuringsstroom** | PR-review vereist (auto-merge uitgeschakeld) | Configureerbaar |
+| **Offline/air-gapped** | Mogelijk — tarball handmatig downloaden | Vereist npm-toegang |
+
+---
+
+## Wanneer Welke Gebruiken
+
+### Gebruik het Centraal Register wanneer:
+- Je meerdere projecten beheert die op dezelfde versie moeten blijven
+- Je auditeerbare, reviewbare update-PR's nodig hebt
+- Je beveiligingsbeleid expliciete goedkeuring vereist voor afhankelijkheidsupdates
+
+### Gebruik de GitHub Action wanneer:
+- Je een enkel project of enkele onafhankelijke projecten hebt
+- Je de eenvoudigste setup wilt
+- Je vertrouwd bent met automatische updates naar de laatste versie

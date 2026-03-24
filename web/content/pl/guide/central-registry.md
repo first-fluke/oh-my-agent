@@ -1,75 +1,87 @@
 ---
-title: Centralny Rejestr
-description: Uzyj oh-my-agent jako wersjonowanego rejestru aby utrzymac wiele projektow zsynchronizowanych.
+title: Centralny rejestr
+description: Szczegółowa dokumentacja centralnego rejestru — workflow release-please, konwencjonalne commity, szablony konsumentów, format .agent-registry.yml i porównanie z podejściem GitHub Action.
 ---
 
-# Centralny Rejestr dla Konfiguracji Multi-Repo
+# Centralny rejestr
 
-Masz wiele projektow uzywajacych oh-my-agent? Mozesz traktowac to repozytorium jako **centralny rejestr** -- wersjonuj swoje umiejetnosci, a wszystkie projekty konsumenckie zostana zsynchronizowane.
+## Przegląd
 
-## Jak To Dziala
+Model centralnego rejestru traktuje repozytorium GitHub oh-my-agent (`first-fluke/oh-my-agent`) jako wersjonowane źródło artefaktów. Projekty konsumenckie pobierają konkretne wersje umiejętności i workflow z tego rejestru, zapewniając spójność między zespołami i projektami.
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  Centralny Rejestr (repozytorium oh-my-agent)           │
-│  • release-please do automatycznego wersjonowania       │
-│  • Automatyczne generowanie CHANGELOG.md                │
-│  • prompt-manifest.json (wersje + sumy kontrolne)       │
-│  • agent-skills.tar.gz artefakt wydania                 │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│  Twoj Projekt                                           │
-│  • .agent-registry.yml przypina wersje                  │
-│  • GitHub Action wykrywa nowe wersje → otwiera PR       │
-│  • Przejrzyj i zmerguj aby zaktualizowac               │
-└─────────────────────────────────────────────────────────┘
-```
+To podejście klasy enterprise dla organizacji potrzebujących: przypinania wersji, audytowalnych śladów aktualizacji, weryfikacji sum kontrolnych, automatycznych cotygodniowych sprawdzeń i ręcznego przeglądu przed każdą aktualizacją.
 
-## Dla Opiekunow Rejestru
+---
 
-Wydania sa zautomatyzowane przez [release-please](https://github.com/googleapis/release-please):
+## Architektura
 
-1. Uzywaj Conventional Commits (`feat:`, `fix:`, `chore:`)
-2. Push do `main` → Release PR jest tworzony/aktualizowany
-3. Merge Release PR → GitHub Release opublikowany z:
-   - `CHANGELOG.md`
-   - `prompt-manifest.json` (lista plikow + sumy kontrolne SHA256)
-   - `agent-skills.tar.gz` (skompresowany `.agents/`)
+Centralny rejestr (first-fluke/oh-my-agent) produkuje wydania z tarballem, sumą SHA256 i manifestem. Każdy projekt konsumencki posiada `.agent-registry.yml` z przypiętą wersją, workflow `check-registry-updates.yml` do sprawdzania nowych wersji i `sync-agent-registry.yml` do stosowania aktualizacji.
 
-## Dla Projektow Konsumenckich
+---
 
-Skopiuj szablony do swojego projektu:
+## Dla maintainerów: Wydawanie nowych wersji
 
-```bash
-cp docs/consumer-templates/.agent-registry.yml your-project/
-cp docs/consumer-templates/check-registry-updates.yml your-project/.github/workflows/
-cp docs/consumer-templates/sync-agent-registry.yml your-project/.github/workflows/
-```
+oh-my-agent używa [release-please](https://github.com/googleapis/release-please) do automatyzacji wydań. Konwencjonalne commity na `main` wyzwalają:
 
-Przypnij wersje:
+| Prefiks | Znaczenie | Podbicie wersji |
+|:-------|:--------|:-------------|
+| `feat:` | Nowa funkcjonalność | Minor (1.x.0) |
+| `fix:` | Naprawa błędu | Patch (1.0.x) |
+| `feat!:` | Zmiana łamiąca | Major (x.0.0) |
+| `chore:`, `docs:`, `refactor:` | Utrzymanie/dokumentacja | Brak podbicia |
+
+Artefakty wydania: `agent-skills.tar.gz`, `agent-skills.tar.gz.sha256`, `prompt-manifest.json`.
+
+---
+
+## Dla konsumentów: Konfiguracja projektu
+
+### Format .agent-registry.yml
 
 ```yaml
-# .agent-registry.yml
 registry:
-  repo: first-fluke/oh-my-agent
-  version: "4.7.0"
+  repo: first-fluke/oh-my-ag
+
+version: "4.7.0"
+
+auto_update:
+  enabled: true
+  schedule: "0 9 * * 1"  # Każdy poniedziałek o 9:00 UTC
+  pr:
+    auto_merge: false     # Z założenia wymagany ręczny przegląd
+    labels: ["dependencies", "agent-registry"]
+
+sync:
+  target_dir: "."
+  backup_existing: true
+  preserve:
+    - ".agent/config/user-preferences.yaml"
+    - ".agent/config/local-*"
 ```
 
-Workflow:
-- `check-registry-updates.yml` -- Sprawdza nowe wersje, otwiera PR
-- `sync-agent-registry.yml` -- Synchronizuje `.agents/` gdy aktualizujesz przypieta wersje
+### Role workflow
 
-**Automatyczny merge jest celowo wylaczony.** Wszystkie aktualizacje przechodzą ludzki przeglad.
+**check-registry-updates.yml** — Sprawdza nowe wersje, tworzy PR z aktualizacją jeśli dostępna.
 
-## Centralny Rejestr vs. GitHub Action
+**sync-agent-registry.yml** — Pobiera i stosuje pliki rejestru po zmianie wersji. Weryfikuje sumę SHA256, tworzy backup, wyodrębnia, przywraca zachowane pliki.
 
-| | GitHub Action | Centralny Rejestr |
-|:--|:--:|:--:|
-| Naklad konfiguracji | 1 plik workflow | 3 pliki |
-| Metoda aktualizacji | `oma update` CLI | Pobieranie tarball |
-| Kontrola wersji | Zawsze najnowsza | Jawne przypinanie |
-| Najlepszy dla | Wiekszosci projektow | Scisla kontrola wersji |
+---
 
-Wiekszosc zespolow powinna uzywac podejscia [GitHub Action](./automated-updates). Uzyj Centralnego Rejestru jesli potrzebujesz scislego przypinania wersji lub nie mozesz uzywac zewnetrznych actions.
+## Porównanie: Centralny rejestr vs GitHub Action
+
+| Aspekt | Centralny rejestr | GitHub Action |
+|:-------|:----------------|:-------------|
+| **Złożoność konfiguracji** | Wyższa — 3 pliki | Niższa — 1 plik workflow |
+| **Kontrola wersji** | Jawne przypinanie | Zawsze najnowsza |
+| **Weryfikacja sum kontrolnych** | Tak — SHA256 | Nie |
+| **Wycofanie** | Zmiana wersji w pliku | Revert commita |
+| **Zatwierdzanie** | Wymagany przegląd PR | Konfigurowalne |
+| **Najlepsze dla** | Wiele projektów, zgodność | Proste projekty |
+
+---
+
+## Kiedy którego używać
+
+**Centralny rejestr** — wiele projektów na tej samej wersji, audytowalne PR z sumami kontrolnymi, polityka bezpieczeństwa wymagająca jawnego zatwierdzenia, środowiska air-gapped.
+
+**GitHub Action** — pojedynczy projekt, najprostsza konfiguracja, automatyczne aktualizacje, wbudowane zachowanie plików konfiguracyjnych.

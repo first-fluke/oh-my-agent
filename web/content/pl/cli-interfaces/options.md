@@ -1,108 +1,189 @@
 ---
 title: Opcje CLI
-description: Wszystkie flagi i opcje komend CLI oh-my-agent.
+description: Wyczerpująca referencja wszystkich opcji CLI — flagi globalne, kontrola wyjścia, opcje per polecenie i wzorce użycia w praktyce.
 ---
 
 # Opcje CLI
 
-## Opcje Globalne
+## Opcje globalne
 
-Dostepne w kazdej komendzie:
+Dostępne na głównym poleceniu `oh-my-ag` / `oma`:
 
-| Opcja | Co Robi |
-|-------|--------|
-| `-h, --help` | Pokaz pomoc |
-| `-V, --version` | Pokaz numer wersji |
+| Flaga | Opis |
+|:-----|:-----------|
+| `-V, --version` | Wyświetl numer wersji i zakończ |
+| `-h, --help` | Wyświetl pomoc dla polecenia |
 
-## Opcje Wyjscia
+Wszystkie podpolecenia obsługują też `-h, --help` aby pokazać swoją specyficzną pomoc.
 
-Wiele komend wspiera wyjscie czytelne maszynowo:
+---
 
-| Opcja | Co Robi |
-|-------|--------|
-| `--json` | Wyjscie jako JSON |
-| `--output <format>` | Format wyjscia: `text` lub `json` |
+## Opcje wyjścia
 
-Mozesz tez ustawic `OH_MY_AG_OUTPUT_FORMAT=json` jako zmienna srodowiskowa.
+Wiele poleceń obsługuje wyjście maszynowe dla pipeline CI/CD i automatyzacji. Trzy sposoby żądania wyjścia JSON, w kolejności priorytetu:
 
-**Wspierane przez:** `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`
-
-## Opcje Per Komenda
-
-### `update`
-| Opcja | Co Robi |
-|-------|--------|
-| `-f, --force` | Nadpisz pliki konfiguracji dostosowane przez uzytkownika |
-| `--ci` | Tryb nieinteraktywny (pomin wszystkie prompty) |
-
-### `stats`
-| Opcja | Co Robi |
-|-------|--------|
-| `--reset` | Resetuj wszystkie dane metryk |
-
-### `retro`
-| Opcja | Co Robi |
-|-------|--------|
-| `--interactive` | Tryb recznego wprowadzania |
-| `--compare` | Porownaj biezace okno z poprzednim oknem tej samej dlugosci |
-
-### `cleanup`
-| Opcja | Co Robi |
-|-------|--------|
-| `--dry-run` | Pokaz co zostaloby wyczyszczone bez wykonywania |
-| `-y, --yes` | Pomin prompty potwierdzenia |
-
-### `usage:anti`
-| Opcja | Co Robi |
-|-------|--------|
-| `--raw` | Zrzuc surowa odpowiedz RPC |
-
-### `agent:spawn`
-| Opcja | Co Robi |
-|-------|--------|
-| `-v, --vendor <vendor>` | Nadpisz CLI vendor (`gemini`/`claude`/`codex`/`qwen`) |
-| `-w, --workspace <path>` | Katalog roboczy dla agenta |
-
-### `agent:status`
-| Opcja | Co Robi |
-|-------|--------|
-| `-r, --root <path>` | Sciezka glowna dla sprawdzen pamieci |
-
-### `agent:parallel`
-| Opcja | Co Robi |
-|-------|--------|
-| `-v, --vendor <vendor>` | Nadpisz CLI vendor |
-| `-i, --inline` | Okresl zadania jako argumenty `agent:task` |
-| `--no-wait` | Nie czekaj na zakonczenie (tryb tla) |
-
-### `memory:init`
-| Opcja | Co Robi |
-|-------|--------|
-| `--force` | Nadpisz istniejace pliki schematu |
-
-### `verify`
-| Opcja | Co Robi |
-|-------|--------|
-| `-w, --workspace <path>` | Sciezka workspace do zweryfikowania |
-
-## Praktyczne Przyklady
+### 1. Flaga --json
 
 ```bash
-# Wyjscie JSON dla pipeline CI
+oma stats --json
 oma doctor --json
+oma cleanup --json
+```
 
-# Resetuj metryki produktywnosci
-oma stats --reset
+Dostępna na: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
 
-# Podglad czyszczenia bez wykonywania
-oma cleanup --dry-run
+### 2. Flaga --output
 
-# Uruchom z konkretnym CLI i workspace
-oma agent:spawn backend "Auth API" session-01 -v codex -w ./apps/api
+```bash
+oma stats --output json
+oma doctor --output text
+```
 
-# Nieinteraktywna aktualizacja w CI
-oma update --ci --force
+Akceptuje `text` lub `json`. Pozwala jawnie zażądać tekstu gdy zmienna środowiskowa jest ustawiona na json.
 
-# Porownaj ostatnie 7 dni z poprzednimi 7 dniami
-oma retro 7 --compare
+### 3. Zmienna środowiskowa OH_MY_AG_OUTPUT_FORMAT
+
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats    # wyjście JSON
+oma doctor   # wyjście JSON
+```
+
+**Kolejność rozwiązywania:** flaga `--json` > flaga `--output` > zmienna `OH_MY_AG_OUTPUT_FORMAT` > `text` (domyślna).
+
+---
+
+## Opcje per polecenie
+
+### update
+
+| Flaga | Skrót | Opis | Domyślna |
+|:-----|:------|:-----------|:--------|
+| `--force` | `-f` | Nadpisz niestandardowe pliki konfiguracyjne. Dotyczy: `user-preferences.yaml`, `mcp.json`, katalogi `stack/`. | `false` |
+| `--ci` | | Tryb nieinteraktywny CI. Pomija podpowiedzi, zwykłe wyjście konsolowe. | `false` |
+
+### stats
+
+| Flaga | Opis |
+|:-----|:-----------|
+| `--reset` | Resetuj wszystkie dane metryk. Usuwa i odtwarza `.serena/metrics.json`. |
+
+### retro
+
+| Flaga | Opis |
+|:-----|:-----------|
+| `--interactive` | Tryb interaktywny z ręcznym wprowadzaniem danych. |
+| `--compare` | Porównaj bieżące okno z poprzednim o tej samej długości. |
+
+Format argumentu window: `7d` (7 dni), `2w` (2 tygodnie), `1m` (1 miesiąc).
+
+### cleanup
+
+| Flaga | Skrót | Opis |
+|:-----|:------|:-----------|
+| `--dry-run` | | Tryb podglądu. Lista bez zmian. |
+| `--yes` | `-y` | Pomiń podpowiedzi. Wyczyść wszystko bez pytania. |
+
+**Co jest czyszczone:** Osierocone pliki PID (`/tmp/subagent-*.pid`), logi (`/tmp/subagent-*.log`), katalogi Gemini Antigravity.
+
+### agent:spawn
+
+| Flaga | Skrót | Opis |
+|:-----|:------|:-----------|
+| `--vendor` | `-v` | Nadpisanie dostawcy CLI. Musi być: `gemini`, `claude`, `codex`, `qwen`. |
+| `--workspace` | `-w` | Katalog roboczy. Auto-wykrywany z konfiguracji monorepo jeśli pominięty. |
+
+**Zachowanie specyficzne dla dostawcy:**
+
+| Dostawca | Polecenie | Flaga auto-approve | Flaga promptu |
+|:-------|:--------|:-----------------|:-----------|
+| gemini | `gemini` | `--approval-mode=yolo` | `-p` |
+| claude | `claude` | (brak) | `-p` |
+| codex | `codex` | `--full-auto` | (brak — prompt pozycyjny) |
+| qwen | `qwen` | `--yolo` | `-p` |
+
+### agent:status
+
+| Flaga | Skrót | Opis |
+|:-----|:------|:-----------|
+| `--root` | `-r` | Ścieżka główna do lokalizacji plików pamięci i PID. |
+
+### agent:parallel
+
+| Flaga | Skrót | Opis |
+|:-----|:------|:-----------|
+| `--vendor` | `-v` | Nadpisanie dostawcy dla wszystkich agentów. |
+| `--inline` | `-i` | Interpretuj argumenty jako ciągi `agent:task[:workspace]`. |
+| `--no-wait` | | Tryb w tle. Uruchom i powróć natychmiast. |
+
+Format inline: `agent:task` lub `agent:task:workspace`. Workspace wykrywany gdy ostatni segment zaczyna się od `./` lub `/`.
+
+### memory:init
+
+| Flaga | Opis |
+|:-----|:-----------|
+| `--force` | Nadpisz puste lub istniejące pliki schematu. |
+
+### verify
+
+| Flaga | Skrót | Opis |
+|:-----|:------|:-----------|
+| `--workspace` | `-w` | Ścieżka katalogu przestrzeni roboczej do weryfikacji. |
+
+---
+
+## Przykłady praktyczne
+
+### Pipeline CI: Aktualizacja i weryfikacja
+```bash
+oma update --ci
+oma doctor --json | jq '.healthy'
+```
+
+### Automatyczne zbieranie metryk
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+```
+
+### Wsadowe wykonanie agentów z monitoringiem statusu
+```bash
+oma agent:parallel tasks.yaml --no-wait
+SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
+watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+```
+
+### Czyszczenie w CI po testach
+```bash
+oma cleanup --yes --json
+```
+
+### Weryfikacja z izolacją przestrzeni roboczej
+```bash
+oma verify backend -w ./apps/api
+oma verify frontend -w ./apps/web
+oma verify mobile -w ./apps/mobile
+```
+
+### Retro z porównaniem do przeglądu sprintu
+```bash
+oma retro 2w --compare
+oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
+```
+
+### Pełny skrypt kontroli zdrowia
+```bash
+#!/bin/bash
+set -e
+echo "=== Kontrola zdrowia oh-my-agent ==="
+oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "BRAK" end)"'
+oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma stats --json | jq -r '"Sesje: \(.sessions), Zadania: \(.tasksCompleted)"'
+echo "=== Gotowe ==="
+```
+
+### Describe do introspekcji agentów
+```bash
+oma describe | jq '.command.subcommands[] | {name, description}'
+oma describe agent:spawn | jq '.command.options[] | {flags, description}'
 ```

@@ -1,104 +1,433 @@
 ---
-title: Integration in Bestehendes Projekt
-description: Fuege oh-my-agent zu einem Projekt hinzu, an dem du bereits arbeitest — sicher und nicht-destruktiv.
+title: "Anleitung: Integration in bestehendes Projekt"
+description: Vollständige Anleitung zum Hinzufügen von oh-my-agent zu einem bestehenden Projekt — CLI-Weg, manueller Weg, Verifizierung, SSOT-Symlink-Struktur und was der Installer im Detail macht.
 ---
 
-# In ein Bestehendes Projekt Integrieren
+# Anleitung: Integration in bestehendes Projekt
 
-Du hast bereits ein Projekt? So fuegst du oh-my-agent hinzu, ohne etwas kaputt zu machen.
+## Two Integration Paths
 
-## Der Einfache Weg (CLI)
+There are two ways to add oh-my-agent to an existing project:
 
-Fuehre dies im Wurzelverzeichnis deines Projekts aus:
+1. **CLI path** — Run `oma` (or `npx oh-my-agent`) and follow the interactive prompts. Recommended for most users.
+2. **Manual path** — Copy files and configure symlinks yourself. Useful for restricted environments or custom setups.
+
+Both paths produce the same result: a `.agents/` directory (the SSOT) with symlinks pointing IDE-specific directories to it.
+
+---
+
+## CLI Path: Step by Step
+
+### 1. Install the CLI
 
 ```bash
-bunx oh-my-agent
+# Global install (recommended)
+bun install --global oh-my-agent
+
+# Or use npx for one-time runs
+npx oh-my-agent
 ```
 
-Was es tut:
-- Installiert Skills in `.agents/skills/`
-- Kopiert gemeinsame Ressourcen nach `.agents/skills/_shared/`
-- Erstellt Symlinks fuer deine IDE (`.claude/skills/`, etc.)
-- Installiert Workflows in `.agents/workflows/`
-- Erstellt Standardkonfiguration in `.agents/config/user-preferences.yaml`
+After global install, two aliases are available: `oma` and `oh-my-ag`.
 
-## Der Manuelle Weg
-
-Wenn du volle Kontrolle haben willst, was kopiert wird:
+### 2. Navigate to Your Project Root
 
 ```bash
-cd /path/to/your-project
-
-mkdir -p .agents/skills .agents/workflows .agents/config .claude/skills
-
-# Kopiere die Skills, die du willst
-for skill in oma-pm oma-frontend oma-backend oma-qa oma-debug oma-commit; do
-  [ -d ".agents/skills/$skill" ] || cp -r /path/to/oh-my-agent/.agents/skills/$skill .agents/skills/
-done
-
-# Kopiere gemeinsame Ressourcen
-[ -d .agents/skills/_shared ] || cp -r /path/to/oh-my-agent/.agents/skills/_shared .agents/skills/
-
-# Kopiere Workflows
-for wf in coordinate.md plan.md review.md debug.md commit.md setup.md; do
-  [ -f ".agents/workflows/$wf" ] || cp /path/to/oh-my-agent/.agents/workflows/$wf .agents/workflows/
-done
-
-# Standardkonfiguration (nur falls fehlend)
-[ -f .agents/config/user-preferences.yaml ] || cp /path/to/oh-my-agent/.agents/config/user-preferences.yaml .agents/config/
+cd /path/to/your/project
 ```
 
-## Ueberpruefen, Ob Es Funktioniert Hat
+The installer expects to run from the project root (where `.git/` lives).
+
+### 3. Run the Installer
 
 ```bash
+oma
+```
+
+The default command (no subcommand) launches the interactive installer.
+
+### 4. Select Project Type
+
+The installer presents these presets:
+
+| Preset | Skills Included |
+|:-------|:---------------|
+| **All** | Every available skill |
+| **Fullstack** | Frontend + Backend + PM + QA |
+| **Frontend** | React/Next.js skills |
+| **Backend** | Python/Node.js/Rust backend skills |
+| **Mobile** | Flutter/Dart mobile skills |
+| **DevOps** | Terraform + CI/CD + Workflow skills |
+| **Custom** | Choose individual skills from the full list |
+
+### 5. Choose Backend Language (if applicable)
+
+If you selected a preset that includes the backend skill, you are asked to choose a language variant:
+
+- **Python** — FastAPI/SQLAlchemy (default)
+- **Node.js** — NestJS/Hono + Prisma/Drizzle
+- **Rust** — Axum/Actix-web
+- **Other / Auto-detect** — Configure later with `/stack-set`
+
+### 6. Configure IDE Symlinks
+
+The installer always creates Claude Code symlinks (`.claude/skills/`). If a `.github/` directory exists, it also creates GitHub Copilot symlinks automatically. Otherwise, it asks:
+
+```
+Also create symlinks for GitHub Copilot? (.github/skills/)
+```
+
+### 7. Git Rerere Setup
+
+The installer checks if `git rerere` (reuse recorded resolution) is enabled. If not, it offers to enable it globally:
+
+```
+Enable git rerere? (Recommended for multi-agent merge conflict reuse)
+```
+
+This is recommended because multi-agent workflows can produce merge conflicts, and rerere remembers how you resolved them so the same resolution is applied automatically next time.
+
+### 8. MCP Configuration
+
+If an Antigravity IDE MCP config exists (`~/.gemini/antigravity/mcp_config.json`), the installer offers to configure the Serena MCP bridge:
+
+```
+Configure Serena MCP with bridge? (Required for full functionality)
+```
+
+If accepted, it sets up:
+
+```json
+{
+  "mcpServers": {
+    "serena": {
+      "command": "npx",
+      "args": ["-y", "oh-my-agent@latest", "bridge", "http://localhost:12341/mcp"],
+      "disabled": false
+    }
+  }
+}
+```
+
+Similarly, if Gemini CLI settings exist (`~/.gemini/settings.json`), it offers to configure Serena for Gemini CLI in HTTP mode:
+
+```json
+{
+  "mcpServers": {
+    "serena": {
+      "url": "http://localhost:12341/mcp"
+    }
+  }
+}
+```
+
+### 9. Completion
+
+The installer displays a summary of everything installed:
+- List of installed skills
+- Location of the skills directory
+- Created symlinks
+- Skipped items (if any)
+
+---
+
+## Manual Path
+
+For environments where the interactive CLI is not available (CI pipelines, restricted shells, corporate machines).
+
+### Step 1: Download and Extract
+
+```bash
+# Download the latest tarball from the registry
+VERSION=$(curl -s https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/prompt-manifest.json | jq -r '.version')
+curl -L "https://github.com/first-fluke/oh-my-agent/releases/download/cli-v${VERSION}/agent-skills.tar.gz" -o agent-skills.tar.gz
+
+# Verify checksum
+curl -L "https://github.com/first-fluke/oh-my-agent/releases/download/cli-v${VERSION}/agent-skills.tar.gz.sha256" -o agent-skills.tar.gz.sha256
+sha256sum -c agent-skills.tar.gz.sha256
+
+# Extract
+tar -xzf agent-skills.tar.gz
+```
+
+### Step 2: Copy Files to Your Project
+
+```bash
+# Copy the core .agents/ directory
+cp -r .agents/ /path/to/your/project/.agents/
+
+# Create Claude Code symlinks
+mkdir -p /path/to/your/project/.claude/skills
+mkdir -p /path/to/your/project/.claude/agents
+
+# Symlink skills (example for a fullstack project)
+ln -sf ../../.agents/skills/oma-frontend /path/to/your/project/.claude/skills/oma-frontend
+ln -sf ../../.agents/skills/oma-backend /path/to/your/project/.claude/skills/oma-backend
+ln -sf ../../.agents/skills/oma-qa /path/to/your/project/.claude/skills/oma-qa
+ln -sf ../../.agents/skills/oma-pm /path/to/your/project/.claude/skills/oma-pm
+
+# Symlink shared resources
+ln -sf ../../.agents/skills/_shared /path/to/your/project/.claude/skills/_shared
+
+# Symlink workflow routers
+for workflow in .agents/workflows/*.md; do
+  name=$(basename "$workflow" .md)
+  ln -sf ../../.agents/workflows/"$name".md /path/to/your/project/.claude/skills/"$name".md
+done
+
+# Symlink agent definitions
+for agent in .agents/agents/*.md; do
+  name=$(basename "$agent")
+  ln -sf ../../.agents/agents/"$name" /path/to/your/project/.claude/agents/"$name"
+done
+```
+
+### Step 3: Configure User Preferences
+
+```bash
+mkdir -p /path/to/your/project/.agents/config
+cat > /path/to/your/project/.agents/config/user-preferences.yaml << 'EOF'
+language: en
+date_format: ISO
+timezone: UTC
+default_cli: gemini
+
+agent_cli_mapping:
+  frontend: gemini
+  backend: gemini
+  mobile: gemini
+  qa: gemini
+  debug: gemini
+  pm: gemini
+EOF
+```
+
+### Step 4: Initialize Memory Directory
+
+```bash
+oma memory:init
+# Or manually:
+mkdir -p /path/to/your/project/.serena/memories
+```
+
+---
+
+## Verification Checklist
+
+After installation (either path), verify everything is set up correctly:
+
+```bash
+# Run the doctor command for a full health check
 oma doctor
+
+# Check output format for CI
+oma doctor --json
 ```
 
-Oder manuell pruefen:
-```bash
-ls .agents/skills/          # Du solltest deine Skill-Verzeichnisse sehen
-ls .agents/workflows/       # Du solltest Workflow-.md-Dateien sehen
-cat .agents/config/user-preferences.yaml  # Du solltest deine Konfiguration sehen
-```
+The doctor command checks:
 
-## Multi-IDE-Symlinks
+| Check | What It Verifies |
+|:------|:----------------|
+| **CLI installations** | gemini, claude, codex, qwen — version and availability |
+| **Authentication** | API key or OAuth status for each CLI |
+| **MCP configuration** | Serena MCP server setup for each CLI environment |
+| **Skill status** | Which skills are installed and whether they are current |
 
-Waehrend `bunx oh-my-agent` wirst du gefragt:
-
-```text
-Also create symlinks for other CLI tools?
-  ○ Cursor (.cursor/skills/)
-  ○ GitHub Copilot (.github/skills/)
-```
-
-Eine Quelle der Wahrheit (`.agents/skills/`), mehrere IDEs lesen davon:
-
-```text
-.agents/skills/oma-frontend/     ← Quelle (SSOT)
-.claude/skills/oma-frontend/     → Symlink
-.cursor/skills/oma-frontend/     → Symlink
-.github/skills/oma-frontend/     → Symlink
-```
-
-## Sicherheitstipps
-
-**Vor der Integration**, erstelle einen Checkpoint:
+Manual verification commands:
 
 ```bash
-git add -A && git commit -m "chore: checkpoint before oh-my-agent"
+# Verify .agents/ directory exists
+ls -la .agents/
+
+# Verify skills are installed
+ls .agents/skills/
+
+# Verify symlinks point to correct targets
+ls -la .claude/skills/
+
+# Verify config exists
+cat .agents/config/user-preferences.yaml
+
+# Verify memory directory
+ls .serena/memories/ 2>/dev/null || echo "Memory not initialized"
+
+# Check version
+cat .agents/skills/_version.json 2>/dev/null
 ```
 
-- Das CLI ueberschreibt nie vorhandene Skill-Ordner
-- Deine projektspezifischen Konfigurationen bleiben unter deiner Kontrolle
-- `oma doctor` wird eventuelle Probleme anzeigen
+---
 
-## Optional: Dashboards
+## Multi-IDE Symlink Structure (SSOT Concept)
+
+oh-my-agent uses a Single Source of Truth (SSOT) architecture. The `.agents/` directory is the only place where skills, workflows, configs, and agent definitions live. All IDE-specific directories contain only symlinks pointing back to `.agents/`.
+
+### Directory Layout
+
+```
+your-project/
+  .agents/                          # SSOT — the real files live here
+    agents/                         # Agent definition files
+      backend-engineer.md
+      frontend-engineer.md
+      qa-reviewer.md
+      ...
+    config/                         # Configuration
+      user-preferences.yaml
+    mcp.json                        # MCP server configuration
+    plan.json                       # Current plan (generated by /plan)
+    skills/                         # Installed skills
+      _shared/                      # Shared resources across all skills
+        core/                       # Core protocols and references
+        runtime/                    # Runtime execution protocols
+        conditional/                # Conditionally-loaded resources
+      oma-frontend/                 # Frontend skill
+      oma-backend/                  # Backend skill
+      oma-qa/                       # QA skill
+      ...
+    workflows/                      # Workflow definitions
+      orchestrate.md
+      coordinate.md
+      ultrawork.md
+      plan.md
+      ...
+    results/                        # Agent execution results
+  .claude/                          # Claude Code — symlinks only
+    skills/                         # -> .agents/skills/* and .agents/workflows/*
+    agents/                         # -> .agents/agents/*
+  .github/                          # GitHub Copilot — symlinks only (optional)
+    skills/                         # -> .agents/skills/*
+  .serena/                          # MCP memory storage
+    memories/                       # Runtime memory files
+    metrics.json                    # Productivity metrics
+```
+
+### Why Symlinks?
+
+- **One update, all IDEs benefit.** When `oma update` refreshes `.agents/`, every IDE picks up the changes automatically.
+- **No duplication.** Skills are stored once, not copied per IDE.
+- **Safe removal.** Deleting `.claude/` does not destroy your skills. The SSOT in `.agents/` remains intact.
+- **Git-friendly.** Symlinks are small and diff cleanly.
+
+---
+
+## Safety Tips and Rollback Strategy
+
+### Before Installation
+
+1. **Commit your current work.** The installer creates new directories and files. Having a clean git state means you can `git checkout .` to undo everything.
+2. **Check for existing `.agents/` directory.** If one exists from a different tool, back it up first. The installer will overwrite it.
+
+### After Installation
+
+1. **Review what was created.** Run `git status` to see all new files. The installer creates files only in `.agents/`, `.claude/`, and optionally `.github/`.
+2. **Add to `.gitignore` selectively.** Most teams commit `.agents/` and `.claude/` to share the setup. But `.serena/` (runtime memory) and `.agents/results/` (execution results) should be gitignored:
+
+```gitignore
+# oh-my-agent runtime files
+.serena/
+.agents/results/
+.agents/state/
+```
+
+### Rollback
+
+To completely remove oh-my-agent from a project:
 
 ```bash
-oma dashboard        # Terminal-Ueberwachung
-oma dashboard:web    # Web-UI unter http://localhost:9847
+# Remove the SSOT directory
+rm -rf .agents/
+
+# Remove IDE symlinks
+rm -rf .claude/skills/ .claude/agents/
+rm -rf .github/skills/  # if created
+
+# Remove runtime files
+rm -rf .serena/
 ```
 
-## Wie Geht Es Weiter?
+Or simply revert with git:
 
-Fang an, in deiner KI-IDE zu chatten, oder sieh dir die [Nutzungsanleitung](./usage) fuer Workflow-Beispiele an.
+```bash
+git checkout -- .agents/ .claude/
+git clean -fd .agents/ .claude/ .serena/
+```
+
+---
+
+## Dashboard Setup
+
+After installation, you can set up real-time monitoring. See the [Dashboard Monitoring guide](/en/guide/dashboard-monitoring) for full details.
+
+Quick setup:
+
+```bash
+# Terminal dashboard (watches .serena/memories/ for changes)
+oma dashboard
+
+# Web dashboard (browser-based, http://localhost:9847)
+oma dashboard:web
+```
+
+---
+
+## What the Installer Does Under the Hood
+
+When you run `oma` (the install command), here is exactly what happens:
+
+### 1. Legacy Migration
+
+The installer checks for the old `.agent/` directory (singular) and migrates it to `.agents/` (plural) if found. This is a one-time migration for users upgrading from earlier versions.
+
+### 2. Competitor Detection
+
+The installer scans for competing tools and offers to remove them to avoid conflicts.
+
+### 3. Tarball Download
+
+The installer downloads the latest release tarball from the oh-my-agent GitHub releases. This tarball contains the complete `.agents/` directory with all skills, shared resources, workflows, configs, and agent definitions.
+
+### 4. Shared Resources Installation
+
+`installShared()` copies the `_shared/` directory to `.agents/skills/_shared/`. This includes:
+
+- `core/` — Skill routing, context loading, prompt structure, quality principles, vendor detection, API contracts.
+- `runtime/` — Memory protocol, execution protocols per vendor.
+- `conditional/` — Resources loaded only when specific conditions are met (quality score, exploration loop).
+
+### 5. Workflow Installation
+
+`installWorkflows()` copies all workflow files to `.agents/workflows/`. These are the definitions for `/orchestrate`, `/coordinate`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/commit`, `/setup`, `/tools`, and `/stack-set`.
+
+### 6. Config Installation
+
+`installConfigs()` copies default configuration files to `.agents/config/`, including `user-preferences.yaml` and `mcp.json`. If these files already exist, they are preserved (not overwritten) unless `--force` is used.
+
+### 7. Skill Installation
+
+For each selected skill, `installSkill()` copies the skill directory to `.agents/skills/{skill-name}/`. If a variant was selected (e.g., Python for backend), it also sets up the `stack/` directory with language-specific resources.
+
+### 8. Vendor Adaptations
+
+`installVendorAdaptations()` installs IDE-specific files for all supported vendors (Claude, Codex, Gemini, Qwen):
+
+- Agent definitions (`.claude/agents/*.md`)
+- Hook configurations (`.claude/hooks/`)
+- Settings files
+- CLAUDE.md project instructions
+
+### 9. CLI Symlinks
+
+`createCliSymlinks()` creates symlinks from IDE-specific directories to the SSOT:
+
+- `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
+- `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
+- `.claude/agents/{agent}.md` -> `../../.agents/agents/{agent}.md`
+- `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (if Copilot enabled)
+
+### 10. Global Workflows
+
+`installGlobalWorkflows()` installs workflow files that may be needed globally (outside the project directory).
+
+### 11. Git Rerere + MCP Configuration
+
+As described in the CLI path above, the installer optionally configures git rerere and MCP settings.

@@ -1,77 +1,79 @@
 ---
-title: "Przypadek Uzycia: Projekt Wieloagentowy"
-description: Jak koordynowac wielu agentow dla funkcjonalnosci obejmujacych frontend, backend, baze danych i QA.
+title: "Przewodnik: Projekty wieloagentowe"
+description: Kompletny przewodnik koordynacji wielu agentów domenowych w zakresie frontend, backend, bazy danych, mobile i QA — od planowania po merge.
 ---
 
-# Przypadek Uzycia: Projekt Wieloagentowy
+# Przewodnik: Projekty wieloagentowe
 
-## Kiedy Tego Uzywac
+## Kiedy używać koordynacji wieloagentowej
 
-Twoja funkcjonalnosc obejmuje wiele domen -- backend API + frontend UI + schemat bazy danych + przeglad QA. Jeden agent nie poradzi sobie ze wszystkim, a chcesz zeby pracowali rownolegle.
+Funkcjonalność obejmuje wiele domen — API backend + UI frontend + schemat bazy danych + klient mobilny + przegląd QA. Jeden agent nie jest w stanie obsłużyć pełnego zakresu, a domeny muszą postępować równolegle bez wzajemnego nadpisywania plików.
 
-## Sekwencja Koordynacji
+Koordynacja wieloagentowa jest właściwym wyborem gdy:
+- Zadanie obejmuje 2 lub więcej domen
+- Istnieją kontrakty API między domenami
+- Chcesz równoległego wykonania aby skrócić czas
+- Potrzebujesz przeglądu QA po implementacji we wszystkich domenach
 
-```text
-/plan → /coordinate → agent:spawn (parallel) → /review → merge
-```
+---
 
-1. **`/plan`** -- Agent PM rozklada funkcjonalnosc na zadania per domena
-2. **`/coordinate`** -- Ustala kolejnosc wykonywania i wlasnosc
-3. **`agent:spawn`** -- Agenci wykonuja rownolegle
-4. **`/review`** -- QA przegąda spojnosc miedzydomenowa
+## Pełna sekwencja: /plan do /review
 
-## Strategia Sesji
+### Krok 1: /plan — Wymagania i dekompozycja zadań
+Workflow `/plan` działa inline i produkuje ustrukturyzowany plan zapisywany do `.agents/plan.json`.
 
-Uzywaj jednego session ID na funkcjonalnosc:
+### Krok 2: /coordinate lub /orchestrate — Wykonanie
 
-```text
-session-auth-v2
-```
+| Aspekt | /coordinate | /orchestrate |
+|:-------|:-----------|:-------------|
+| **Interakcja** | Interaktywne — użytkownik potwierdza na każdym etapie | Automatyczne — działa do zakończenia |
+| **Planowanie PM** | Wbudowane | Wymaga plan.json z /plan |
+| **Tryb trwały** | Tak | Tak |
+| **Najlepsze dla** | Pierwsze użycie, złożone projekty | Powtarzane uruchomienia, dobrze zdefiniowane zadania |
 
-Przydzielaj workspace per domena:
+### Krok 3: agent:spawn — Zarządzanie agentami na poziomie CLI
+Niskopoziomowy mechanizm wywoływany wewnętrznie przez workflow, dostępny też bezpośrednio.
 
-| Agent | Workspace |
-|-------|-----------|
-| backend | `./apps/api` |
-| frontend | `./apps/web` |
-| mobile | `./apps/mobile` |
+### Krok 4: /review — Weryfikacja QA
+Pipeline QA: bezpieczeństwo OWASP Top 10, wydajność, dostępność WCAG 2.1 AA, jakość kodu.
 
-## Przyklad Uruchomienia
+---
 
-```bash
-oma agent:spawn backend "Implement JWT auth API + refresh flow" session-auth-v2 -w ./apps/api &
-oma agent:spawn frontend "Build login + refresh UX with error states" session-auth-v2 -w ./apps/web &
-oma agent:spawn qa "Review auth risks, test matrix, and regression scope" session-auth-v2 &
-wait
-```
+## Reguła kontraktu-first
 
-## Zasada Kontrakt Najpierw
+Kontrakty API są mechanizmem synchronizacji między agentami. Definiowane przed implementacją, zawierają: metodę HTTP, ścieżkę, schematy żądania/odpowiedzi, wymagania auth i formaty błędów.
 
-Zanim agenci zaczna kodowac rownolegle, **zablokuj kontrakty API**:
+Bez kontraktów, agent backend może zwrócić `{ "user_id": 1 }` podczas gdy agent frontend konsumuje `{ "userId": 1 }`. Reguła kontraktu-first eliminuje tę klasę błędów integracji.
 
-- Schematy request/response
-- Kody i komunikaty bledow
-- Zalozenia cyklu zycia auth/sesji
+---
 
-Jesli kontrakty zmienia sie w trakcie, wstrzymaj agentow downstream i ponownie wydaj ich prompty z aktualnymi kontraktami.
+## Bramki merge: 4 warunki
 
-## Bramki Merge
+1. **Build przechodzi** — Cały kod kompiluje się bez błędów
+2. **Testy przechodzą** — Istniejące testy nadal przechodzą, nowe testy pokrywają implementację
+3. **Zmodyfikowane tylko zaplanowane pliki** — Agenci nie modyfikują plików poza przydzielonym zakresem
+4. **Przegląd QA czysty** — Brak CRITICAL lub HIGH, MEDIUM/LOW dokumentowane na przyszłe sprinty
 
-Nie merguj dopoki:
+---
 
-1. Testy na poziomie domeny przejda
-2. Punkty integracji odpowiadaja uzgodnionym kontraktom
-3. Problemy QA high/critical sa rozwiazane (lub wyraznie odrzucone)
-4. Changelog zaktualizowany jesli zmienilo sie zewnetrznie widoczne zachowanie
+## Anty-wzorce do unikania
 
-## Czego NIE Robic
+1. **Pomijanie planu** — `/orchestrate` bez plan.json odmówi kontynuacji
+2. **Nakładające się przestrzenie robocze** — Dwóch agentów w tym samym katalogu tworzy konflikty plików
+3. **Brak kontraktów API** — Agenci będą czynić niekompatybilne założenia
+4. **Ignorowanie znalezisk QA** — CRITICAL i HIGH to prawdziwe błędy które pojawią się w produkcji
+5. **Ręczna koordynacja plików** — Automatyczny pipeline wychwytuje problemy które ręczny przegląd pomija
+6. **Nadmierna równoległość** — Uruchamianie P1 przed zakończeniem P0 narusza zależności
+7. **Pomijanie weryfikacji** — Krok weryfikacji wychwytuje awarie buildu i regresje testów
 
-- Wspoldzielenie jednego workspace miedzy wszystkimi agentami (koszmar konfliktow merge)
-- Zmiana kontraktow bez informowania innych agentow
-- Mergowanie backendu i frontendu niezaleznie przed sprawdzeniem kompatybilnosci
+---
 
-## Kiedy Jest Gotowe
+## Kiedy jest gotowe
 
-- Wszystkie zaplanowane zadania ukonczone we wszystkich domenach
-- Integracja miedzydomenowa zwalidowana
-- Zatwierdzenie QA zarejestrowane
+Projekt wieloagentowy jest zakończony gdy:
+- Wszystkie agenci we wszystkich poziomach priorytetów zakończyli pomyślnie
+- Skrypty weryfikacyjne przechodzą dla każdego agenta
+- Przegląd QA raportuje zero CRITICAL i zero HIGH
+- Zgodność kontraktów API między domenami potwierdzona
+- Build przechodzi i wszystkie testy przechodzą
+- Użytkownik daje końcowe zatwierdzenie

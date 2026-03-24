@@ -1,91 +1,344 @@
 ---
-title: Parallele Ausfuehrung
-description: Fuehre mehrere Agenten gleichzeitig aus — weil es langsam ist, auf einen zu warten, bevor der naechste startet.
+title: Parallele Ausführung
+description: Vollständige Anleitung zum gleichzeitigen Ausführen mehrerer oh-my-agent-Agenten — agent:spawn-Syntax mit allen Optionen, Inline-Modus agent:parallel, Workspace-Muster, Multi-CLI-Konfiguration, Anbieter-Auflösungspriorität, Dashboard-Überwachung, Session-ID-Strategie und zu vermeidende Anti-Patterns.
 ---
 
-# Parallele Ausfuehrung
+# Parallele Ausführung
 
-Die wahre Staerke von oh-my-agent ist es, mehrere Agenten gleichzeitig laufen zu lassen. Waehrend der Backend-Agent deine API baut, erstellt der Frontend-Agent bereits die UI.
+The core advantage of oh-my-agent is running multiple specialized agents simultaneously. While the backend agent implements your API, the frontend agent creates the UI, and the mobile agent builds the app screens — all coordinated through shared memory.
 
-## Grundmuster
+---
+
+## agent:spawn — Single Agent Spawning
+
+### Basic Syntax
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 &
-oma agent:spawn frontend "Create login form" session-01 &
+oma agent:spawn <agent-id> <prompt> <session-id> [options]
+```
+
+### Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `agent-id` | Yes | Agent identifier: `backend`, `frontend`, `mobile`, `db`, `pm`, `qa`, `debug`, `design`, `tf-infra`, `dev-workflow`, `translator`, `orchestrator`, `commit` |
+| `prompt` | Yes | Task description (quoted string or path to a prompt file) |
+| `session-id` | Yes | Groups agents working on the same feature. Format: `session-YYYYMMDD-HHMMSS` or any unique string. |
+| `options` | No | See options table below |
+
+### Options
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--workspace <path>` | `-w` | Working directory for the agent. Agents only modify files within this directory. |
+| `--vendor <name>` | `-v` | Override CLI vendor for this specific spawn. Options: `gemini`, `claude`, `codex`, `qwen`. |
+| `--max-turns <n>` | `-t` | Override default turn limit for this agent. |
+| `--json` | | Output result as JSON (useful for scripting). |
+| `--no-wait` | | Fire and forget — return immediately without waiting for completion. |
+
+### Examples
+
+```bash
+# Spawn a backend agent with default vendor
+oma agent:spawn backend "Implement JWT authentication API with refresh tokens" session-01
+
+# Spawn with workspace isolation
+oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api
+
+# Override vendor for this specific agent
+oma agent:spawn frontend "Build login form" session-01 -v claude -w ./apps/web
+
+# Set a higher turn limit for a complex task
+oma agent:spawn backend "Implement payment gateway integration" session-01 -t 30
+
+# Use a prompt file instead of inline text
+oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
+```
+
+---
+
+## Parallel Spawning with Background Processes
+
+To run multiple agents simultaneously, use shell background processes:
+
+```bash
+# Spawn 3 agents in parallel
+oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api &
+oma agent:spawn frontend "Build login form" session-01 -w ./apps/web &
+oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
+wait  # Block until all agents complete
+```
+
+The `&` runs each agent in the background. `wait` blocks until all background processes finish.
+
+### Workspace-Aware Pattern
+
+Always assign separate workspaces when running agents in parallel to prevent file conflicts:
+
+```bash
+# Full-stack parallel execution
+oma agent:spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
+oma agent:spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
+oma agent:spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
+
+# After implementation, run QA (sequential — depends on implementation)
+oma agent:spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
-Das `&` fuehrt jeden Agenten im Hintergrund aus. `wait` blockiert, bis beide fertig sind.
+---
 
-## Workspace-bewusstes Muster
+## agent:parallel — Inline Parallel Mode
 
-Gib jedem Agenten sein eigenes Verzeichnis, um Merge-Konflikte zu vermeiden:
+For a cleaner syntax that handles background process management automatically:
+
+### Syntax
 
 ```bash
-oma agent:spawn backend "Auth + DB migration" session-02 -w ./apps/api
-oma agent:spawn frontend "Login + token refresh" session-02 -w ./apps/web
-oma agent:spawn mobile "Auth screens" session-02 -w ./apps/mobile
+oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
-## `agent:parallel` Verwenden
-
-Fuer eine sauberere Syntax:
+### Examples
 
 ```bash
+# Basic parallel execution
 oma agent:parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
+
+# With no-wait (fire and forget)
+oma agent:parallel -i backend:"Auth API" frontend:"Login form" --no-wait
+
+# All agents share the same session automatically
+oma agent:parallel -i \
+  backend:"JWT auth with refresh tokens" \
+  frontend:"Login form with email validation" \
+  db:"User schema with soft delete and audit trail"
 ```
 
-Fuege `--no-wait` hinzu zum Starten und Vergessen:
+The `-i` (inline) flag allows specifying agent-prompt pairs directly in the command.
 
-```bash
-oma agent:parallel -i backend:"task" frontend:"task" --no-wait
-```
+---
 
-## Ueberwachen Waehrend Sie Arbeiten
+## Multi-CLI Configuration
 
-Oeffne ein separates Terminal:
+Not all AI CLIs perform equally across domains. oh-my-agent lets you route agents to the CLI that handles their domain best.
 
-```bash
-# Terminal-Dashboard
-oma dashboard
-
-# Oder Web-Dashboard
-oma dashboard:web
-# → http://localhost:9847
-```
-
-Das Dashboard zeigt den Live-Status fuer jeden Agenten — Zuege, aktuelle Aufgabe, Abschlussstatus.
-
-## Multi-CLI-Konfiguration
-
-Nicht alle KI-Tools sind gleich. Leite Agenten an das CLI weiter, das ihre Domain am besten handhabt:
+### Full Configuration Example
 
 ```yaml
 # .agents/config/user-preferences.yaml
+
+# Response language
+language: en
+
+# Date format for reports
+date_format: "YYYY-MM-DD"
+
+# Timezone for timestamps
+timezone: "Asia/Seoul"
+
+# Default CLI (used when no agent-specific mapping exists)
 default_cli: gemini
 
+# Per-agent CLI routing
 agent_cli_mapping:
-  frontend: claude      # Komplexes UI-Reasoning
-  backend: gemini       # Schnelle API-Generierung
-  mobile: gemini
-  qa: claude            # Gruendliches Sicherheits-Review
-  debug: claude         # Tiefe Grundursachen-Analyse
-  pm: gemini            # Schnelle Zerlegung
+  frontend: claude       # Complex UI reasoning, component composition
+  backend: gemini        # Fast API scaffolding, CRUD generation
+  mobile: gemini         # Fast Flutter code generation
+  db: gemini             # Quick schema design
+  pm: gemini             # Rapid task decomposition
+  qa: claude             # Thorough security and accessibility review
+  debug: claude          # Deep root-cause analysis, symbol tracing
+  design: claude         # Nuanced design decisions, anti-pattern detection
+  tf-infra: gemini       # HCL generation
+  dev-workflow: gemini   # Task runner configuration
+  translator: claude     # Nuanced translation with cultural sensitivity
+  orchestrator: gemini   # Fast coordination
+  commit: gemini         # Simple commit message generation
 ```
 
-## CLI-Vendor-Aufloesung
+### Vendor Resolution Priority
 
-Beim Starten eines Agenten wird das CLI in dieser Reihenfolge gewaehlt:
+When `oma agent:spawn` determines which CLI to use, it follows this priority (highest wins):
 
-1. `--vendor` Flag (hoechste Prioritaet)
-2. `agent_cli_mapping` fuer diesen spezifischen Agenten
-3. `default_cli` Einstellung
-4. `active_vendor` aus `cli-config.yaml`
-5. `gemini` (Fallback)
+| Priority | Source | Example |
+|----------|--------|---------|
+| 1 (highest) | `--vendor` flag | `oma agent:spawn backend "task" session-01 -v claude` |
+| 2 | `agent_cli_mapping` | `agent_cli_mapping.backend: gemini` in user-preferences.yaml |
+| 3 | `default_cli` | `default_cli: gemini` in user-preferences.yaml |
+| 4 | `active_vendor` | Legacy `cli-config.yaml` setting |
+| 5 (lowest) | Hardcoded fallback | `gemini` |
 
-## Tipps fuer Parallele Ausfuehrungen
+This means a `--vendor` flag always wins. If no flag is provided, the system checks agent-specific mapping, then the default, then legacy config, and finally falls back to Gemini.
 
-- **Verwende eine Session-ID pro Feature** — haelt die Agenten-Ausgaben gruppiert
-- **Sperre API-Vertraege zuerst** — fuehre `/plan` aus, bevor du Implementierungs-Agenten startest
-- **Separate Workspaces** — verhindere, dass Agenten sich gegenseitig in die Dateien pfuschen
-- **Ueberwache aktiv** — erkenne Probleme frueh via Dashboard, statt sie beim Merge zu finden
+---
+
+## Vendor-Specific Spawn Methods
+
+The spawn mechanism varies by IDE/CLI:
+
+| Vendor | How Agents Are Spawned | Result Handling |
+|--------|----------------------|-----------------|
+| **Claude Code** | `Agent` tool with `.claude/agents/{name}.md` definitions. Multiple Agent calls in the same message = true parallel. | Synchronous return |
+| **Codex CLI** | Model-mediated parallel subagent request | JSON output |
+| **Gemini CLI** | `oh-my-ag agent:spawn` CLI command | MCP memory poll |
+| **Antigravity IDE** | `oh-my-ag agent:spawn` only (custom subagents not available) | MCP memory poll |
+| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
+
+When running inside Claude Code, the workflow uses the `Agent` tool directly:
+```
+Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
+Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
+```
+
+Multiple Agent tool calls in the same message execute as true parallel — no sequential waiting.
+
+---
+
+## Monitoring Agents
+
+### Terminal Dashboard
+
+```bash
+oma dashboard
+```
+
+Displays a live table with:
+- Session ID and overall status
+- Per-agent status (running, completed, failed)
+- Turn counts
+- Latest activity from progress files
+- Elapsed time
+
+The dashboard watches `.serena/memories/` for real-time updates. It refreshes as agents write progress.
+
+### Web Dashboard
+
+```bash
+oma dashboard:web
+# Opens http://localhost:9847
+```
+
+Features:
+- Real-time updates via WebSocket
+- Auto-reconnect on connection drops
+- Colored agent status indicators
+- Activity log streaming from progress and result files
+- Session history
+
+### Recommended Terminal Layout
+
+Use 3 terminals for optimal visibility:
+
+```
+┌─────────────────────────┬──────────────────────┐
+│                         │                      │
+│   Terminal 1:           │   Terminal 2:        │
+│   oma dashboard         │   Agent spawn        │
+│   (live monitoring)     │   commands           │
+│                         │                      │
+├─────────────────────────┴──────────────────────┤
+│                                                │
+│   Terminal 3:                                  │
+│   Test/build logs, git operations              │
+│                                                │
+└────────────────────────────────────────────────┘
+```
+
+### Checking Individual Agent Status
+
+```bash
+oma agent:status <session-id> <agent-id>
+```
+
+Returns the current status of a specific agent: running, completed, or failed, along with turn count and last activity.
+
+---
+
+## Session ID Strategy
+
+Session IDs group agents working on the same feature. Best practices:
+
+- **One session per feature:** All agents working on "user authentication" share `session-auth-01`
+- **Format:** Use descriptive IDs: `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
+- **Auto-generated:** The orchestrator generates IDs in `session-YYYYMMDD-HHMMSS` format
+- **Reusable for iteration:** Use the same session ID when re-spawning agents with refinements
+
+Session IDs determine:
+- Which memory files agents read and write (`progress-{agent}.md`, `result-{agent}.md`)
+- What the dashboard monitors
+- How results are grouped in the final report
+
+---
+
+## Tips for Parallel Execution
+
+### Do
+
+1. **Lock API contracts first.** Run `/plan` before spawning implementation agents so frontend and backend agents agree on endpoints, request/response schemas, and error formats.
+
+2. **Use one session ID per feature.** This keeps agent outputs grouped and dashboard monitoring coherent.
+
+3. **Assign separate workspaces.** Always use `-w` to isolate agents:
+   ```bash
+   oma agent:spawn backend "task" session-01 -w ./apps/api &
+   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   ```
+
+4. **Monitor actively.** Open a dashboard terminal to catch issues early — a failing agent wastes turns if not caught quickly.
+
+5. **Run QA after implementation.** Spawn the QA agent sequentially after all implementation agents complete:
+   ```bash
+   oma agent:spawn backend "task" session-01 -w ./apps/api &
+   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   wait
+   oma agent:spawn qa "Review all changes" session-01
+   ```
+
+6. **Iterate with re-spawns.** If an agent's output needs refinement, re-spawn it with the original task plus correction context. Do not start a new session.
+
+7. **Start with `/coordinate` if unsure.** The coordinate workflow guides you through the process step by step with user confirmation at each gate.
+
+### Do Not
+
+1. **Do not spawn agents in the same workspace.** Two agents writing to the same directory will create merge conflicts and overwrite each other's work.
+
+2. **Do not exceed MAX_PARALLEL (default 3).** More concurrent agents does not always mean faster results. Each agent needs memory and CPU resources. The default of 3 is tuned for most systems.
+
+3. **Do not skip the plan step.** Spawning agents without a plan leads to misaligned implementations — the frontend builds against one API shape while the backend builds another.
+
+4. **Do not ignore failed agents.** A failed agent's work is incomplete. Check `result-{agent}.md` for the failure reason, fix the prompt, and re-spawn.
+
+5. **Do not mix session IDs for related work.** If backend and frontend agents are working on the same feature, they must share a session ID so the orchestrator can coordinate them.
+
+---
+
+## End-to-End Example
+
+A complete parallel execution workflow for building a user authentication feature:
+
+```bash
+# Step 1: Plan the feature
+# (In your AI IDE, run /plan or describe the feature)
+# This creates .agents/plan.json with task breakdown
+
+# Step 2: Spawn implementation agents in parallel
+oma agent:spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use bcrypt for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
+oma agent:spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
+oma agent:spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
+
+# Step 3: Monitor in a separate terminal
+# Terminal 2:
+oma dashboard
+
+# Step 4: Wait for all implementation agents
+wait
+
+# Step 5: Run QA review
+oma agent:spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
+
+# Step 6: If QA finds issues, re-spawn specific agents with fixes
+oma agent:spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
+
+# Step 7: Re-run QA to verify fixes
+oma agent:spawn qa "Re-review backend auth after fixes." session-auth-01
+```

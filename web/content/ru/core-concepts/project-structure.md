@@ -1,90 +1,202 @@
 ---
-title: Структура Проекта
-description: Где что находится и почему организовано именно так.
+title: Структура проекта
+description: Исчерпывающее дерево директорий установки oh-my-agent с описанием каждого файла — .agents/ (config, skills, workflows, agents, state, results, mcp.json), .claude/ (settings, hooks, symlinks навыков, agents), .serena/memories/ и структура исходного репозитория.
 ---
 
-# Структура Проекта
+# Структура проекта
 
-oh-my-agent организует всё в нескольких ключевых директориях. Вот что вы увидите после установки.
+После установки oh-my-agent ваш проект получает три дерева директорий: `.agents/` (единый источник истины), `.claude/` (слой интеграции с IDE) и `.serena/` (оперативное состояние). На этой странице описывается каждый файл и его назначение.
 
-## Общая Картина
+---
 
-```text
+## Полное дерево директорий
+
+```
 your-project/
-├── .agents/              ← Единый Источник Истины
-│   ├── config/           ← Ваши настройки
-│   ├── skills/           ← Возможности агентов
-│   ├── workflows/        ← Определения слэш-команд
-│   ├── agents/           ← Определения подагентов
-│   ├── plan.json         ← Сгенерированный план
-│   ├── state/            ← Состояние активного workflow
-│   ├── results/          ← Файлы результатов агентов
-│   └── mcp.json          ← Конфигурация сервера MCP
+├── .agents/                          <- Единый источник истины (SSOT)
+│   ├── config/
+│   │   └── user-preferences.yaml    <- Язык, часовой пояс, маппинг CLI
+│   ├── skills/
+│   │   ├── _shared/                  <- Ресурсы для ВСЕХ агентов
+│   │   │   ├── core/                 <- skill-routing, context-loading, prompt-structure,
+│   │   │   │                            clarification-protocol, context-budget,
+│   │   │   │                            difficulty-guide, reasoning-templates,
+│   │   │   │                            quality-principles, vendor-detection,
+│   │   │   │                            session-metrics, common-checklist,
+│   │   │   │                            lessons-learned, api-contracts/
+│   │   │   ├── runtime/              <- memory-protocol, execution-protocols/
+│   │   │   │                            (claude, gemini, codex, qwen)
+│   │   │   └── conditional/          <- quality-score, experiment-ledger, exploration-loop
+│   │   ├── oma-frontend/             <- SKILL.md + resources/ (execution-protocol,
+│   │   │                                tech-stack, tailwind-rules, component-template,
+│   │   │                                snippets, error-playbook, checklist, examples)
+│   │   ├── oma-backend/              <- SKILL.md + resources/ + stack/ (от /stack-set)
+│   │   ├── oma-mobile/               <- SKILL.md + resources/
+│   │   ├── oma-db/                   <- SKILL.md + resources/
+│   │   ├── oma-design/               <- SKILL.md + resources/ + reference/ + examples/
+│   │   ├── oma-pm/                   <- SKILL.md + resources/
+│   │   ├── oma-qa/                   <- SKILL.md + resources/
+│   │   ├── oma-debug/                <- SKILL.md + resources/
+│   │   ├── oma-tf-infra/             <- SKILL.md + resources/
+│   │   ├── oma-dev-workflow/         <- SKILL.md + resources/
+│   │   ├── oma-translator/           <- SKILL.md + resources/
+│   │   ├── oma-orchestrator/         <- SKILL.md + resources/ + scripts/ + config/
+│   │   ├── oma-brainstorm/           <- SKILL.md
+│   │   ├── oma-coordination/         <- SKILL.md + resources/
+│   │   └── oma-commit/               <- SKILL.md + config/ + resources/
+│   ├── workflows/                    <- 14 определений (orchestrate, coordinate,
+│   │                                    ultrawork, plan, exec-plan, brainstorm,
+│   │                                    deepinit, review, debug, design, commit,
+│   │                                    setup, tools, stack-set)
+│   ├── agents/                       <- 7 определений субагентов (backend-engineer,
+│   │                                    frontend-engineer, mobile-engineer, db-engineer,
+│   │                                    qa-reviewer, debug-investigator, pm-planner)
+│   ├── plan.json                     <- Сгенерированный план (от /plan)
+│   ├── state/                        <- Файлы состояния постоянных рабочих процессов
+│   ├── results/                      <- Файлы результатов агентов
+│   └── mcp.json                      <- Конфигурация MCP-сервера
 │
-├── .claude/              ← Слой интеграции с IDE
-│   ├── settings.json     ← Хуки и разрешения
-│   ├── hooks/            ← Определение ключевых слов, HUD
-│   ├── skills/           ← Симлинки на .agents/skills/
-│   └── agents/           ← Определения подагентов для IDE
+├── .claude/                          <- Слой интеграции с IDE
+│   ├── settings.json                 <- Регистрация хуков и разрешения
+│   ├── hooks/
+│   │   ├── triggers.json             <- Маппинг ключевых слов (11 языков)
+│   │   ├── keyword-detector.ts       <- Логика автодетекции
+│   │   ├── persistent-mode.ts        <- Постоянный режим
+│   │   └── hud.ts                    <- Индикатор [OMA]
+│   ├── skills/                       <- Символические ссылки -> .agents/skills/
+│   └── agents/                       <- Определения субагентов для Claude Code
 │
-└── .serena/              ← Состояние времени выполнения
-    └── memories/         ← Файлы памяти оркестрации
+└── .serena/                          <- Оперативное состояние (Serena MCP)
+    └── memories/
+        ├── orchestrator-session.md   <- ID сессии, статус, фазы
+        ├── task-board.md             <- Назначения задач и статус
+        ├── progress-{agent}.md       <- Прогресс каждого агента
+        ├── result-{agent}.md         <- Финальные результаты
+        ├── session-metrics.md        <- Clarification Debt и Quality Score
+        ├── experiment-ledger.md      <- Отслеживание экспериментов
+        ├── session-coordinate.md     <- Состояние coordinate
+        ├── session-ultrawork.md      <- Состояние ultrawork
+        ├── tool-overrides.md         <- Временные ограничения инструментов
+        └── archive/
+            └── metrics-{date}.md     <- Архивированные метрики (30 дней)
 ```
 
-## `.agents/` — Источник Истины
+---
 
-Это ядро. Всё, что нужно агентам, живёт здесь.
+## .agents/ — Источник истины
 
-### `config/`
-- **`user-preferences.yaml`** — Ваш язык, часовой пояс, CLI по умолчанию, маппинг CLI по агентам
+Основная директория. Всё для работы агентов — здесь. Единственная директория, определяющая поведение.
 
-### `skills/`
-Здесь живёт экспертиза агентов. Каждый навык имеет `SKILL.md` и директорию `resources/`.
+### config/
 
-- **`_shared/`** — Общие ресурсы для всех агентов (маршрутизация, шаблоны, чек-листы)
-- **`oma-frontend/`**, **`oma-backend/`** и т.д. — Доменные навыки
+**`user-preferences.yaml`** — Центральный файл конфигурации:
+- `language`: Код языка (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
+- `date_format`: Формат временных меток (по умолчанию: `YYYY-MM-DD`)
+- `timezone`: Часовой пояс (по умолчанию: `UTC`)
+- `default_cli`: Резервный CLI-вендор
+- `agent_cli_mapping`: Переопределения CLI по агентам
 
-### `workflows/`
-Markdown-файлы, определяющие поведение слэш-команд. Это скрипты, которым следуют агенты, когда вы вводите `/plan`, `/coordinate`, `/review` и т.д.
+### skills/
 
-### `agents/`
-Определения подагентов — спецификации для запуска агентов через CLI или Task tool.
+15 директорий: 14 навыков агентов + 1 общая (`_shared/`).
 
-## `.claude/` — Интеграция с IDE
+**`_shared/`** содержит:
+- `core/` — Маршрутизация, загрузка контекста, структура промптов, качество, вендоры, метрики, API-контракты
+- `runtime/` — Протокол памяти, вендор-специфичные протоколы выполнения
+- `conditional/` — Quality score, experiment ledger, exploration loop
 
-Это связывает oh-my-agent с Claude Code (и другими IDE через симлинки).
+**`oma-{agent}/`** содержит:
+- `SKILL.md` (~800 байт) — Уровень 1: всегда загружен
+- `resources/` — Уровень 2: по требованию
+- Дополнительно: `stack/` (oma-backend), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-commit)
 
-### `hooks/`
-- **`triggers.json`** — Маппинг ключевых слов к workflows на 11 языках
-- **`keyword-detector.ts`** — Логика автоопределения workflows из вашего ввода
-- **`persistent-mode.ts`** — Поддерживает персистентные workflows до завершения
-- **`hud.ts`** — Индикатор `[OMA]` в строке состояния
+### workflows/
 
-### `skills/` и `agents/`
-Симлинки, указывающие на `.agents/` — сохраняют единый источник истины, делая навыки видимыми для IDE.
+14 Markdown-файлов. Постоянные: `orchestrate.md`, `coordinate.md`, `ultrawork.md`. Непостоянные: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `setup.md`, `tools.md`, `stack-set.md`.
 
-## `.serena/memories/` — Состояние Времени Выполнения
+### agents/
 
-Где агенты записывают свой прогресс во время выполнения:
+7 файлов определений субагентов с идентичностью, протоколом выполнения, CHARTER_CHECK, архитектурой и правилами.
 
-| Файл | Что Содержит |
-|------|-------------|
-| `orchestrator-session.md` | ID сессии, статус, время начала |
-| `task-board.md` | Какой агент за какую задачу отвечает |
-| `progress-{agent}.md` | Походовые обновления прогресса |
-| `result-{agent}.md` | Финальный результат каждого агента |
+### plan.json
 
-Дашборды отслеживают эту директорию для обновлений в реальном времени.
+Структурированная разбивка задач от `/plan`. Потребляется `/orchestrate`, `/coordinate`, `/exec-plan`.
 
-## Для Исходного Репозитория oh-my-agent
+### state/
 
-Если вы работаете над самим oh-my-agent (а не просто используете его), репозиторий — это монорепозиторий:
+JSON-файлы состояния постоянных рабочих процессов. Существуют только при активном рабочем процессе.
 
-```text
+### results/
+
+Файлы результатов завершённых агентов.
+
+### mcp.json
+
+Конфигурация MCP-сервера и памяти.
+
+---
+
+## .claude/ — Интеграция с IDE
+
+### settings.json
+
+Регистрация хуков и разрешений для Claude Code.
+
+### hooks/
+
+- **`triggers.json`** — Маппинг ключевых слов для 11 языков
+- **`keyword-detector.ts`** — Автодетекция рабочих процессов
+- **`persistent-mode.ts`** — Поддержка постоянного режима
+- **`hud.ts`** — Индикатор `[OMA]`: модель, контекст (зелёный/жёлтый/красный), рабочий процесс
+
+### skills/
+
+Символические ссылки на `.agents/skills/` для видимости в IDE.
+
+### agents/
+
+Определения субагентов для Agent tool Claude Code.
+
+---
+
+## .serena/memories/ — Оперативное состояние
+
+| Файл | Владелец | Назначение |
+|------|---------|-----------|
+| `orchestrator-session.md` | Оркестратор | Метаданные сессии |
+| `task-board.md` | Оркестратор | Назначения задач |
+| `progress-{agent}.md` | Агент | Обновления по ходам |
+| `result-{agent}.md` | Агент | Финальный вывод |
+| `session-metrics.md` | Оркестратор | Clarification Debt, Quality Score |
+| `experiment-ledger.md` | Оркестратор/QA | Эксперименты |
+| `session-coordinate.md` | Coordinate | Состояние coordinate |
+| `session-ultrawork.md` | Ultrawork | Отслеживание фаз |
+| `tool-overrides.md` | /tools | Временные ограничения |
+| `archive/metrics-{date}.md` | Система | Архив (30 дней) |
+
+Пути и инструменты настраиваются в `.agents/mcp.json` через `memoryConfig`.
+
+---
+
+## Структура исходного репозитория
+
+```
 oh-my-agent/
-├── cli/              ← Исходный код CLI (TypeScript)
-├── web/              ← Сайт документации (Next.js)
-├── action/           ← GitHub Action для автообновлений
-├── docs/             ← Переведённые README + спецификации
-└── .agents/          ← Редактируемый (это И ЕСТЬ исходный код)
+├── cli/                  <- Исходный код CLI (TypeScript, bun)
+├── web/                  <- Сайт документации (Next.js)
+├── action/               <- GitHub Action для обновлений
+├── docs/                 <- Переведённые README
+├── .agents/              <- РЕДАКТИРУЕМЫЙ (это исходный репо)
+├── .claude/              <- Интеграция с IDE
+├── .serena/              <- Оперативное состояние разработки
+├── CLAUDE.md             <- Инструкции для Claude Code
+└── package.json          <- Корневая конфигурация
 ```
+
+В исходном репозитории `.agents/` разрешено модифицировать. Это исключение из правил SSOT.
+
+Команды разработки:
+- `bun run test` — Тесты CLI (vitest)
+- `bun run lint` — Линтинг
+- `bun run build` — Сборка CLI
+- Коммиты: conventional commit формат (commitlint)

@@ -1,108 +1,330 @@
 ---
 title: CLI-Optionen
-description: Alle Flags und Optionen fuer oh-my-agent CLI-Befehle.
+description: Erschöpfende Referenz aller CLI-Optionen — globale Flags, Ausgabesteuerung, Optionen pro Befehl und praxisnahe Nutzungsmuster.
 ---
 
 # CLI-Optionen
 
 ## Globale Optionen
 
-Verfuegbar bei jedem Befehl:
+These options are available on the root `oh-my-ag` / `oma` command:
 
-| Option | Was Sie Tut |
-|--------|-----------|
-| `-h, --help` | Hilfe anzeigen |
-| `-V, --version` | Versionsnummer anzeigen |
+| Flag | Description |
+|:-----|:-----------|
+| `-V, --version` | Output the version number and exit |
+| `-h, --help` | Display help for the command |
+
+All subcommands also support `-h, --help` to show their specific help text.
+
+---
 
 ## Ausgabe-Optionen
 
-Viele Befehle unterstuetzen maschinenlesbare Ausgabe:
+Many commands support machine-readable output for CI/CD pipelines and automation. There are three ways to request JSON output, in priority order:
 
-| Option | Was Sie Tut |
-|--------|-----------|
-| `--json` | Ausgabe als JSON |
-| `--output <format>` | Ausgabeformat: `text` oder `json` |
+### 1. --json Flag
 
-Du kannst auch `OH_MY_AG_OUTPUT_FORMAT=json` als Umgebungsvariable setzen.
+```bash
+oma stats --json
+oma doctor --json
+oma cleanup --json
+```
 
-**Unterstuetzt von:** `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`
+The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
 
-## Optionen Pro Befehl
+### 2. --output Flag
 
-### `update`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `-f, --force` | Benutzerdefinierte Config-Dateien ueberschreiben |
-| `--ci` | Nicht-interaktiver Modus (alle Prompts ueberspringen) |
+```bash
+oma stats --output json
+oma doctor --output text
+```
 
-### `stats`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `--reset` | Alle Metrikdaten zuruecksetzen |
+The `--output` flag accepts `text` or `json`. It provides the same functionality as `--json` but also lets you explicitly request text output (useful when the environment variable is set to json but you want text for a specific command).
 
-### `retro`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `--interactive` | Manueller Eingabemodus |
-| `--compare` | Aktuelles Fenster vs. vorheriges gleichlanges Fenster vergleichen |
+**Validation:** If an invalid format is provided, the CLI throws: `Invalid output format: {value}. Expected one of text, json`.
 
-### `cleanup`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `--dry-run` | Zeigen, was bereinigt wuerde, ohne es zu tun |
-| `-y, --yes` | Bestaetigungsabfragen ueberspringen |
+### 3. OH_MY_AG_OUTPUT_FORMAT Environment Variable
 
-### `usage:anti`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `--raw` | Rohe RPC-Antwort ausgeben |
+```bash
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats    # outputs JSON
+oma doctor   # outputs JSON
+oma retro    # outputs JSON
+```
 
-### `agent:spawn`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `-v, --vendor <vendor>` | CLI-Vendor ueberschreiben (`gemini`/`claude`/`codex`/`qwen`) |
-| `-w, --workspace <path>` | Arbeitsverzeichnis fuer den Agenten |
+Set this environment variable to `json` to force JSON output on all commands that support it. Only `json` is recognized; any other value is ignored and defaults to text.
 
-### `agent:status`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `-r, --root <path>` | Wurzelpfad fuer Speicherpruefungen |
+**Resolution order:** `--json` flag > `--output` flag > `OH_MY_AG_OUTPUT_FORMAT` env var > `text` (default).
 
-### `agent:parallel`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `-v, --vendor <vendor>` | CLI-Vendor ueberschreiben |
-| `-i, --inline` | Aufgaben als `agent:task`-Argumente angeben |
-| `--no-wait` | Nicht auf Abschluss warten (Hintergrundmodus) |
+### Commands Supporting JSON Output
 
-### `memory:init`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `--force` | Vorhandene Schema-Dateien ueberschreiben |
+| Command | `--json` | `--output` | Notes |
+|:--------|:---------|:----------|:------|
+| `doctor` | Yes | Yes | Includes CLI checks, MCP status, skill status |
+| `stats` | Yes | Yes | Full metrics object |
+| `retro` | Yes | Yes | Snapshot with metrics, authors, commit types |
+| `cleanup` | Yes | Yes | List of cleaned items |
+| `auth:status` | Yes | Yes | Authentication status per CLI |
+| `usage:anti` | Yes | Yes | Model usage quotas |
+| `memory:init` | Yes | Yes | Initialization result |
+| `verify` | Yes | Yes | Verification results per check |
+| `visualize` | Yes | Yes | Dependency graph as JSON |
+| `describe` | Always JSON | N/A | Always outputs JSON (introspection command) |
 
-### `verify`
-| Option | Was Sie Tut |
-|--------|-----------|
-| `-w, --workspace <path>` | Workspace-Pfad zum Verifizieren |
+---
+
+## Optionen pro Befehl
+
+### update
+
+```
+oma update [-f | --force] [--ci]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--force` | `-f` | Overwrite user-customized config files during update. Affects: `user-preferences.yaml`, `mcp.json`, `stack/` directories. Without this flag, these files are backed up before the update and restored afterward. | `false` |
+| `--ci` | | Run in non-interactive CI mode. Skips all confirmation prompts, uses plain console output instead of spinners and animations. Required for CI/CD pipelines where stdin is not available. | `false` |
+
+**Behavior with --force:**
+- `user-preferences.yaml` is replaced with the registry default.
+- `mcp.json` is replaced with the registry default.
+- Backend `stack/` directory (language-specific resources) is replaced.
+- All other files are always updated regardless of this flag.
+
+**Behavior with --ci:**
+- No `console.clear()` on start.
+- `@clack/prompts` is replaced with plain `console.log`.
+- Competitor detection prompts are skipped.
+- Errors throw instead of calling `process.exit(1)`.
+
+### stats
+
+```
+oma stats [--json] [--output <format>] [--reset]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--reset` | Reset all metrics data. Deletes `.serena/metrics.json` and recreates it with empty values. | `false` |
+
+### retro
+
+```
+oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--interactive` | Interactive mode with manual data entry. Prompts for additional context that cannot be gathered from git (e.g., mood, notable events). | `false` |
+| `--compare` | Compare the current time window against the previous window of the same length. Shows delta metrics (e.g., commits +12, lines added -340). | `false` |
+
+**Window argument format:**
+- `7d` — 7 days
+- `2w` — 2 weeks
+- `1m` — 1 month
+- Omit for default (7 days)
+
+### cleanup
+
+```
+oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--dry-run` | | Preview mode. Lists all items that would be cleaned but makes no changes. Exit code 0 regardless of findings. | `false` |
+| `--yes` | `-y` | Skip all confirmation prompts. Cleans everything without asking. Useful in scripts and CI. | `false` |
+
+**What gets cleaned:**
+1. Orphaned PID files: `/tmp/subagent-*.pid` where the referenced process is no longer running.
+2. Orphaned log files: `/tmp/subagent-*.log` matching dead PIDs.
+3. Gemini Antigravity directories: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — these accumulate state over time and can grow large.
+
+### usage:anti
+
+```
+oma usage:anti [--json] [--output <format>] [--raw]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--raw` | Dump the raw RPC response from Antigravity IDE without parsing. Useful for debugging connection issues. | `false` |
+
+### agent:spawn
+
+```
+oma agent:spawn <agent-id> <prompt> <session-id> [-v <vendor>] [-w <workspace>]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--vendor` | `-v` | CLI vendor override. Must be one of: `gemini`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
+| `--workspace` | `-w` | Working directory for the agent. If omitted or set to `.`, the CLI auto-detects the workspace from monorepo configuration files (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detected or `.` |
+
+**Validation:**
+- `agent-id` must be one of: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
+- `session-id` must not contain `..`, `?`, `#`, `%`, or control characters.
+- `vendor` must be one of: `gemini`, `claude`, `codex`, `qwen`.
+
+**Vendor-specific behavior:**
+
+| Vendor | Command | Auto-approve Flag | Prompt Flag |
+|:-------|:--------|:-----------------|:-----------|
+| gemini | `gemini` | `--approval-mode=yolo` | `-p` |
+| claude | `claude` | (none) | `-p` |
+| codex | `codex` | `--full-auto` | (none — prompt is positional) |
+| qwen | `qwen` | `--yolo` | `-p` |
+
+These defaults can be overridden in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+
+### agent:status
+
+```
+oma agent:status <session-id> [agent-ids...] [-r <root>]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--root` | `-r` | Root path for locating memory files (`.serena/memories/result-{agent}.md`) and PID files. | Current working directory |
+
+**Status determination logic:**
+1. If `.serena/memories/result-{agent}.md` exists: reads `## Status:` header. If no header, reports `completed`.
+2. If PID file exists at `/tmp/subagent-{session-id}-{agent}.pid`: checks if the PID is alive. Reports `running` if alive, `crashed` if dead.
+3. If neither file exists: reports `crashed`.
+
+### agent:parallel
+
+```
+oma agent:parallel [tasks...] [-v <vendor>] [-i | --inline] [--no-wait]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--vendor` | `-v` | CLI vendor override applied to all spawned agents. | Resolved per-agent from config |
+| `--inline` | `-i` | Interpret task arguments as `agent:task[:workspace]` strings instead of a file path. | `false` |
+| `--no-wait` | | Background mode. Starts all agents and returns immediately without waiting for completion. PID list and logs are saved to `.agents/results/parallel-{timestamp}/`. | `false` (waits for completion) |
+
+**Inline task format:** `agent:task` or `agent:task:workspace`
+- Workspace is detected by checking if the last colon-separated segment starts with `./`, `/`, or equals `.`.
+- Example: `backend:Implement auth API:./api` -- agent=backend, task="Implement auth API", workspace=./api.
+- Example: `frontend:Build login page` -- agent=frontend, task="Build login page", workspace=auto-detected.
+
+**YAML tasks file format:**
+```yaml
+tasks:
+  - agent: backend
+    task: "Implement user API"
+    workspace: ./api           # optional
+  - agent: frontend
+    task: "Build user dashboard"
+```
+
+### memory:init
+
+```
+oma memory:init [--json] [--output <format>] [--force]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--force` | Overwrite empty or existing schema files in `.serena/memories/`. Without this flag, existing files are not touched. | `false` |
+
+### verify
+
+```
+oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--workspace` | `-w` | Path to the workspace directory to verify. | Current working directory |
+
+**Agent types:** `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
+
+---
 
 ## Praktische Beispiele
 
+### CI Pipeline: Update and Verify
+
 ```bash
-# JSON-Ausgabe fuer CI-Pipeline
-oma doctor --json
+# Update in CI mode, then run doctor to verify installation
+oma update --ci
+oma doctor --json | jq '.healthy'
+```
 
-# Produktivitaetsmetriken zuruecksetzen
-oma stats --reset
+### Automated Metrics Collection
 
-# Bereinigungsvorschau ohne Ausfuehrung
-oma cleanup --dry-run
+```bash
+# Collect metrics as JSON and pipe to a monitoring system
+export OH_MY_AG_OUTPUT_FORMAT=json
+oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+```
 
-# Mit spezifischem CLI und Workspace starten
-oma agent:spawn backend "Auth API" session-01 -v codex -w ./apps/api
+### Batch Agent Execution with Status Monitoring
 
-# Nicht-interaktives Update in CI
-oma update --ci --force
+```bash
+# Start agents in background
+oma agent:parallel tasks.yaml --no-wait
 
-# Letzte 7 Tage vs. vorherige 7 Tage vergleichen
-oma retro 7 --compare
+# Check status periodically
+SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
+watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+```
+
+### Cleanup in CI After Tests
+
+```bash
+# Clean up all orphaned processes without prompts
+oma cleanup --yes --json
+```
+
+### Workspace-Aware Verification
+
+```bash
+# Verify each domain in its workspace
+oma verify backend -w ./apps/api
+oma verify frontend -w ./apps/web
+oma verify mobile -w ./apps/mobile
+```
+
+### Retro with Comparison for Sprint Reviews
+
+```bash
+# Two-week sprint retro with comparison to previous sprint
+oma retro 2w --compare
+
+# Save as JSON for sprint report
+oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
+```
+
+### Full Health Check Script
+
+```bash
+#!/bin/bash
+set -e
+
+echo "=== oh-my-agent Health Check ==="
+
+# Check CLI installations
+oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
+
+# Check auth status
+oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+
+# Check metrics
+oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+
+echo "=== Done ==="
+```
+
+### Describe for Agent Introspection
+
+```bash
+# An AI agent can discover available commands
+oma describe | jq '.command.subcommands[] | {name, description}'
+
+# Get details about a specific command
+oma describe agent:spawn | jq '.command.options[] | {flags, description}'
 ```
