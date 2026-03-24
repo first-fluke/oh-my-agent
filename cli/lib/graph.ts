@@ -27,7 +27,10 @@ export interface Graph {
 // ── Constants ───────────────────────────────────────────────────
 
 const SKILL_CATS = Object.fromEntries(
-  Object.entries(SKILLS).map(([cat, items]) => [cat, items.map((s: { name: string }) => s.name)]),
+  Object.entries(SKILLS).map(([cat, items]) => [
+    cat,
+    items.map((s: { name: string }) => s.name),
+  ]),
 );
 
 const AGENT_SKILL_MAP: Record<string, string> = {
