@@ -50,7 +50,7 @@ description: Full usage guide including examples, workflows, dashboard operation
    wait
    ```
 4. **Agents work in parallel** — save outputs to Knowledge Base
-5. **You coordinate** — review `.agents/brain/` for consistency
+5. **You coordinate** — review `.agents/results/` for consistency
 6. **QA Agent reviews** — security/performance audit
 7. **Fix & iterate** — re-spawn agents with corrections
 
@@ -168,7 +168,7 @@ Shared resources live in `_shared/` (not a skill) and are referenced by all agen
 Use `oma agent:spawn` to run agents via CLI. Respects `agent_cli_mapping` in `user-preferences.yaml` to select the appropriate CLI (gemini, claude, codex, qwen) per agent type. Workspace is auto-detected from common monorepo conventions, or can be set explicitly with `-w`.
 
 ### Knowledge Base
-Agent outputs stored at `.agents/brain/`. Contains plans, code, reports, and coordination notes.
+Agent outputs stored at `.agents/results/`. Contains plans, code, reports, and coordination notes.
 
 ### Serena Memory
 Structured runtime state at `.serena/memories/`. The orchestrator writes session info, task boards, per-agent progress, and results. Dashboards watch these files for monitoring.
@@ -282,7 +282,7 @@ Browser:    http://localhost:9847 → real-time status
 
 1. **Be specific** — "Build a TODO app with JWT auth, React frontend, Express backend" is better than "make an app"
 2. **Use CLI spawning** for multi-domain projects — don't try to do everything in one chat
-3. **Review Knowledge Base** — check `.agents/brain/` for API consistency
+3. **Review Knowledge Base** — check `.agents/results/` for API consistency
 4. **Iterate with re-spawns** — refine instructions, don't start over
 5. **Use dashboards** — `bunx oh-my-agent dashboard` or `bunx oh-my-agent dashboard:web` to monitor orchestrator sessions
 6. **Separate workspaces** — assign each agent its own directory
@@ -295,7 +295,7 @@ Browser:    http://localhost:9847 → real-time status
 |---------|----------|
 | Skills not loading in IDE | Open the project directory in your AI IDE, verify `.agents/skills/` and `SKILL.md`, then restart the IDE |
 | CLI not found | Check `which gemini` / `which claude`, install missing CLIs |
-| Agents producing incompatible code | Review outputs in `.agents/brain/`, re-spawn one agent referencing the other agent output, then use QA Agent for final consistency check |
+| Agents producing incompatible code | Review outputs in `.agents/results/`, re-spawn one agent referencing the other agent output, then use QA Agent for final consistency check |
 | Dashboard shows "No agents detected" | Memory files have not been created yet. Run the orchestrator or manually create files in `.serena/memories/` |
 | Web dashboard won't start | Run `bun install` to install chokidar and ws |
 | fswatch not found | macOS: `brew install fswatch`, Linux: `apt install inotify-tools` |

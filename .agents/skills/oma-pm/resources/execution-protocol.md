@@ -43,7 +43,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Minimize dependencies for maximum parallel execution
 - Priority tiers: 1 = independent (run first), 2 = depends on tier 1, etc.
 - Complexity: Low / Medium / High / Very High
-- Save to `.agents/plan.json` and `.agents/brain/current-plan.md`
+- Save to `.agents/plan.json` and `.agents/results/current-plan.md`
 
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?

@@ -22,7 +22,7 @@ description: Bug diagnosis and fixing specialist - analyzes errors, identifies r
 3. Minimal fix: change only what's necessary
 4. Every fix gets a regression test
 5. Search for similar patterns elsewhere after fixing
-6. Document in `.agents/brain/bugs/`
+6. Document in `.agents/results/bugs/`
 
 ## How to Execute
 Follow `resources/execution-protocol.md` step by step.

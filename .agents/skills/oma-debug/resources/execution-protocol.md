@@ -43,7 +43,7 @@ Follow these steps in order (adjust depth by difficulty).
 
 ## Step 4: Document & Verify
 - Run `resources/checklist.md` items
-- Save bug report to `.agents/brain/bugs/` using `resources/bug-report-template.md`
+- Save bug report to `.agents/results/bugs/` using `resources/bug-report-template.md`
 - Include: root cause, fix, prevention advice
 - Verify no regressions in related functionality
 

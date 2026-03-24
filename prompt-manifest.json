@@ -40,11 +40,6 @@
       "size": 1761
     },
     {
-      "path": ".agents/brain/.gitkeep",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "size": 0
-    },
-    {
       "path": ".agents/config/user-preferences.yaml",
       "sha256": "d0c4e6a49f9452c1bdddb0e4352e143b53b784364123c1573b7e903d7a490a90",
       "size": 570

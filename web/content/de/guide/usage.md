@@ -50,7 +50,7 @@ description: Vollständige Nutzungsanleitung mit Beispielen, Workflows, Dashboar
    wait
    ```
 4. **Agenten arbeiten parallel** — speichern Outputs in Knowledge Base
-5. **Sie koordinieren** — überprüfen `.agents/brain/` auf Konsistenz
+5. **Sie koordinieren** — überprüfen `.agents/results/` auf Konsistenz
 6. **QA Agent überprüft** — Sicherheits-/Performance-Audit
 7. **Korrigieren & iterieren** — Agenten mit Korrekturen neu spawnen
 
@@ -172,7 +172,7 @@ Verwenden Sie `oma agent:spawn`, um Agenten via CLI auszuführen. Respektiert `a
 
 ### Knowledge Base
 
-Agent-Outputs gespeichert in `.agents/brain/`. Enthält Pläne, Code, Reports und Koordinationsnotizen.
+Agent-Outputs gespeichert in `.agents/results/`. Enthält Pläne, Code, Reports und Koordinationsnotizen.
 
 ### Serena Memory
 
@@ -288,7 +288,7 @@ Browser:    http://localhost:9847 → Echtzeit-Status
 
 1. **Seien Sie spezifisch** — "Baue eine TODO-App mit JWT-Auth, React-Frontend, Express-Backend" ist besser als "mache eine App"
 2. **Verwenden Sie CLI-Spawning** für Multi-Domain-Projekte — versuchen Sie nicht, alles in einem Chat zu machen
-3. **Überprüfen Sie Knowledge Base** — prüfen Sie `.agents/brain/` auf API-Konsistenz
+3. **Überprüfen Sie Knowledge Base** — prüfen Sie `.agents/results/` auf API-Konsistenz
 4. **Iterieren Sie mit Re-Spawns** — verfeinern Sie Anweisungen, starten Sie nicht von vorne
 5. **Verwenden Sie Dashboards** — `bunx oh-my-agent dashboard` oder `bunx oh-my-agent dashboard:web` zur Überwachung von Orchestrator-Sessions
 6. **Separate Workspaces** — weisen Sie jedem Agenten sein eigenes Verzeichnis zu

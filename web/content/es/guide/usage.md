@@ -50,7 +50,7 @@ description: Guía completa de uso incluyendo ejemplos, flujos de trabajo, opera
    wait
    ```
 4. **Los agentes trabajan en paralelo** — guardan outputs en Knowledge Base
-5. **Tú coordinas** — revisas `.agents/brain/` para consistencia
+5. **Tú coordinas** — revisas `.agents/results/` para consistencia
 6. **QA Agent revisa** — auditoría de seguridad/rendimiento
 7. **Corregir e iterar** — re-generar agentes con correcciones
 
@@ -172,7 +172,7 @@ Usa `oma agent:spawn` para ejecutar agentes mediante CLI. Respeta `agent_cli_map
 
 ### Knowledge Base
 
-Outputs de agentes almacenados en `.agents/brain/`. Contiene planes, código, reportes y notas de coordinación.
+Outputs de agentes almacenados en `.agents/results/`. Contiene planes, código, reportes y notas de coordinación.
 
 ### Serena Memory
 
@@ -288,7 +288,7 @@ Browser:    http://localhost:9847 → estado en tiempo real
 
 1. **Sé específico** — "Construir una app TODO con autenticación JWT, frontend React, backend Express" es mejor que "hacer una app"
 2. **Usa generación CLI** para proyectos multi-dominio — no intentes hacer todo en un chat
-3. **Revisa Knowledge Base** — verifica `.agents/brain/` para consistencia de API
+3. **Revisa Knowledge Base** — verifica `.agents/results/` para consistencia de API
 4. **Itera con re-generaciones** — refina instrucciones, no comiences de nuevo
 5. **Usa dashboards** — `bunx oh-my-agent dashboard` o `bunx oh-my-agent dashboard:web` para monitorear sesiones del orchestrator
 6. **Separa workspaces** — asigna a cada agente su propio directorio
