@@ -36,6 +36,74 @@ function runCommand(cmd: string, cwd: string): string | null {
   }
 }
 
+export function checkScopeViolation(
+  workspace: string,
+  agentType: AgentType,
+): VerifyCheck {
+  const planPath = join(workspace, ".agents", "plan.json");
+
+  if (!existsSync(planPath)) {
+    return createCheck("Scope Check", "skip", "No plan.json found");
+  }
+
+  let plan: {
+    tasks?: {
+      agent?: string;
+      scope?: string[];
+    }[];
+  };
+  try {
+    plan = JSON.parse(readFileSync(planPath, "utf-8"));
+  } catch {
+    return createCheck("Scope Check", "skip", "Invalid plan.json");
+  }
+
+  const tasks = plan.tasks?.filter((t) => t.agent?.toLowerCase() === agentType);
+
+  if (!tasks || tasks.length === 0) {
+    return createCheck("Scope Check", "skip", "No tasks for this agent");
+  }
+
+  const scopePatterns = tasks.flatMap((t) => t.scope ?? []);
+
+  if (scopePatterns.length === 0) {
+    return createCheck("Scope Check", "skip", "No scope defined in plan");
+  }
+
+  const diffOutput = runCommand(
+    "git diff --name-only HEAD 2>/dev/null || git diff --name-only --cached 2>/dev/null",
+    workspace,
+  );
+
+  if (!diffOutput) {
+    return createCheck("Scope Check", "pass", "No files changed");
+  }
+
+  const changedFiles = diffOutput.split("\n").filter(Boolean);
+  const violations: string[] = [];
+
+  for (const file of changedFiles) {
+    const inScope = scopePatterns.some((pattern) => file.startsWith(pattern));
+    if (!inScope) {
+      violations.push(file);
+    }
+  }
+
+  if (violations.length > 0) {
+    return createCheck(
+      "Scope Check",
+      "fail",
+      `${violations.length} out-of-scope: ${violations[0]}${violations.length > 1 ? ` +${violations.length - 1}` : ""}`,
+    );
+  }
+
+  return createCheck(
+    "Scope Check",
+    "pass",
+    `All ${changedFiles.length} files in scope`,
+  );
+}
+
 function checkCharterPreflight(
   workspace: string,
   agentType: AgentType,
@@ -383,6 +451,7 @@ export async function verify(
 
   const checks: VerifyCheck[] = [];
 
+  checks.push(checkScopeViolation(resolvedWorkspace, normalizedAgent));
   checks.push(checkCharterPreflight(resolvedWorkspace, normalizedAgent));
   checks.push(checkHardcodedSecrets(resolvedWorkspace));
   checks.push(checkTodoComments(resolvedWorkspace));
