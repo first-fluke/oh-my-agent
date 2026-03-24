@@ -1,6 +1,6 @@
 {
   "name": "oma",
-  "version": "4.6.0",
+  "version": "4.7.0",
   "description": "Portable multi-agent harness for .agents-based skills and workflows across Claude Code, Codex, Gemini, and more",
   "author": {
     "name": "First Fluke",

@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.6.0...cli-v4.7.0) (2026-03-24)
+
+
+### Features
+
+* add oma-design skill with DESIGN.md workflow and anti-pattern system ([4f7a897](https://github.com/first-fluke/oh-my-agent/commit/4f7a8971c1ecd59509acbfa117d5f8818a421b3b))
+* enhance oma-translator with Europeanized patterns and refined mode ([074c63c](https://github.com/first-fluke/oh-my-agent/commit/074c63cbc8ca6baed6f4b7314b2e1cc75240c23b))
+
+
+### Miscellaneous
+
+* **main:** release web 0.3.5 ([0b79ce6](https://github.com/first-fluke/oh-my-agent/commit/0b79ce66133f23cb9bd9a90cd7c8c69584d87967))
+* **main:** release web 0.3.5 ([42b2673](https://github.com/first-fluke/oh-my-agent/commit/42b267389349093b612c76d0738f4372b8722d3b))
+* remove completed design plans ([6d7173f](https://github.com/first-fluke/oh-my-agent/commit/6d7173f66c8b7355f047b448757e70e8f50546c2))
+* update serena project configuration ([84b5591](https://github.com/first-fluke/oh-my-agent/commit/84b5591185ad3db795e1cd0cf793110cc2123b1a))
+
 ## [4.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.5.0...cli-v4.6.0) (2026-03-23)
 
 
