@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.7](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.6...web-v0.3.7) (2026-03-25)
+
+
+### Bug Fixes
+
+* **web:** add CSS side-effect import type declaration for build ([a7870b8](https://github.com/first-fluke/oh-my-agent/commit/a7870b8e579dee6893ae7270d4c8ae7cd575219c))
+
 ## [0.3.6](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.5...web-v0.3.6) (2026-03-24)
 
 
