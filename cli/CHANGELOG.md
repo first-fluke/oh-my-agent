@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.8.1...cli-v4.9.0) (2026-03-25)
+
+
+### Features
+
+* **cli:** prompt star on install and update if not yet starred ([acecd71](https://github.com/first-fluke/oh-my-agent/commit/acecd7174f3c246b021a217d78bee1f4707cccca))
+
 ## [4.8.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.8.0...cli-v4.8.1) (2026-03-25)
 
 
