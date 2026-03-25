@@ -4,7 +4,11 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
-import { checkStarred } from "../lib/github.js";
+import {
+  isAlreadyStarred,
+  isGhAuthenticated,
+  isGhInstalled,
+} from "../lib/github.js";
 import { migrateSharedLayout, migrateToAgents } from "../lib/migrate.js";
 import {
   type CliTool,
@@ -18,6 +22,7 @@ import {
   installVendorAdaptations,
   installWorkflows,
   PRESETS,
+  REPO,
 } from "../lib/skills.js";
 import { downloadAndExtract } from "../lib/tarball.js";
 
@@ -349,16 +354,23 @@ export async function install(): Promise<void> {
 
     p.outro(pc.green("Done! Open your project in your IDE to use the skills."));
 
-    if (checkStarred()) {
-      p.note(
-        `${pc.green("⭐")} Thank you for starring oh-my-agent!\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
-        "Support",
-      );
-    } else {
-      p.note(
-        `${pc.yellow("❤️")} Enjoying oh-my-agent? Give it a star or sponsor!\n${pc.dim("gh api --method PUT /user/starred/first-fluke/oh-my-agent")}\n${pc.dim("https://github.com/sponsors/first-fluke")}`,
-        "Support",
-      );
+    if (isGhInstalled() && isGhAuthenticated() && !isAlreadyStarred()) {
+      const shouldStar = await p.confirm({
+        message: `${pc.yellow("⭐")} Star ${pc.cyan(REPO)} on GitHub? It helps a lot!`,
+      });
+
+      if (!p.isCancel(shouldStar) && shouldStar) {
+        try {
+          execSync(`gh api -X PUT /user/starred/${REPO}`, {
+            stdio: "ignore",
+          });
+          p.log.success(`Starred ${pc.cyan(REPO)}! Thank you! 🌟`);
+        } catch {
+          p.log.warn(
+            `Could not star automatically. Try: ${pc.dim(`gh api --method PUT /user/starred/${REPO}`)}`,
+          );
+        }
+      }
     }
   } catch (error) {
     spinner.stop("Installation failed");

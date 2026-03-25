@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -12,6 +13,11 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
 import {
+  isAlreadyStarred,
+  isGhAuthenticated,
+  isGhInstalled,
+} from "../lib/github.js";
+import {
   fetchRemoteManifest,
   getLocalVersion,
   saveLocalVersion,
@@ -22,6 +28,7 @@ import {
   detectExistingCliSymlinkDirs,
   getInstalledSkillNames,
   installVendorAdaptations,
+  REPO,
 } from "../lib/skills.js";
 import { downloadAndExtract } from "../lib/tarball.js";
 
@@ -257,6 +264,30 @@ export async function update(force = false, ci = false): Promise<void> {
       ui.outro(
         `${remoteManifest.metadata?.totalFiles ?? 0} files updated successfully`,
       );
+
+      if (
+        !ci &&
+        isGhInstalled() &&
+        isGhAuthenticated() &&
+        !isAlreadyStarred()
+      ) {
+        const shouldStar = await p.confirm({
+          message: `${pc.yellow("⭐")} Star ${pc.cyan(REPO)} on GitHub? It helps a lot!`,
+        });
+
+        if (!p.isCancel(shouldStar) && shouldStar) {
+          try {
+            execSync(`gh api -X PUT /user/starred/${REPO}`, {
+              stdio: "ignore",
+            });
+            p.log.success(`Starred ${pc.cyan(REPO)}! Thank you! 🌟`);
+          } catch {
+            p.log.warn(
+              `Could not star automatically. Try: ${pc.dim(`gh api --method PUT /user/starred/${REPO}`)}`,
+            );
+          }
+        }
+      }
     } finally {
       cleanup();
     }
