@@ -20,6 +20,7 @@ bin/*.js
 
 # OMA outputs
 .agents/plan.json
+docs/plans/
 
 # CLI-generated symlinks (created by createCliSymlinks per project)
 .claude/skills/oma-*
