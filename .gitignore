@@ -21,6 +21,9 @@ bin/*.js
 # OMA outputs
 .agents/plan.json
 
+# CLI-generated symlinks (created by createCliSymlinks per project)
+.claude/skills/oma-*
+
 # Serena Memory (runtime state)
 .serena/memories/*
 !.serena/memories/.gitkeep
