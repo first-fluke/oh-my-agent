@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/first-fluke/oh-my-agent/compare/action-v1.1.0...action-v1.1.1) (2026-03-26)
+
+
+### Documentation
+
+* **action:** use marketplace action slug in examples ([33e3399](https://github.com/first-fluke/oh-my-agent/commit/33e3399d63ecebffed93fe554b6711afd2785b41))
+
 ## [1.1.0](https://github.com/first-fluke/oh-my-agent/compare/action-v1.0.0...action-v1.1.0) (2026-03-22)
 
 
