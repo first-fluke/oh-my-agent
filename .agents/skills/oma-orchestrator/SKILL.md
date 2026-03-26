@@ -77,7 +77,7 @@ After each agent completes, enter an iterative review loop — not a single-pass
 ```
 Agent completes work
     ↓
-[1] Self-Review: Agent reviews its own changes
+[1] Mechanical Self-Check: lint, type-check, tests, diff scope
     ↓
 [2] Verify: Run `oh-my-ag verify {agent-type} --workspace {workspace}`
     ↓ FAIL → Agent receives feedback, fixes, back to [1]
@@ -90,10 +90,17 @@ Accept result ✓
 
 ### Step Details
 
-**[1] Self-Review**: Before requesting external review, the implementation agent must:
-- Re-read its own diff and check against the task's acceptance criteria
+**[1] Mechanical Self-Check** (formerly "Self-Review"):
+Before requesting external review, the implementation agent must:
 - Run lint, type-check, and tests in the workspace
-- Fix any issues found before proceeding
+- Verify only planned files were modified (diff scope check)
+- Fix any mechanical failures (compile errors, test failures)
+
+⚠️ **Quality judgment is NOT performed in this step.**
+Design quality, architecture alignment, and acceptance criteria satisfaction
+are evaluated exclusively in [3] Cross-Review by the QA agent.
+Reason: Self-evaluation bias — agents consistently overrate their own output
+(ref: Anthropic harness design research).
 
 **[2] Automated Verify**:
 ```bash
@@ -112,7 +119,7 @@ oh-my-ag verify {agent-type} --workspace {workspace} --json
 
 | Counter | Max | On Exceeded |
 |---------|-----|-------------|
-| Self-review + fix cycles | 3 | Escalate to cross-review regardless |
+| Self-check + fix cycles | 3 | Escalate to cross-review regardless |
 | Cross-review rejections | 2 | Report to user with review history |
 | Total loop iterations | 5 | Force-complete with quality warning |
 

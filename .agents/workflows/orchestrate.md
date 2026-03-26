@@ -119,6 +119,26 @@ Also use memory read tool to poll `progress-{agent}.md` for logic updates.
 - Use memory edit tool to update `task-board.md` with turn counts and status changes.
 - Watch for: completion, failures, crashes.
 
+### Context Anxiety Check (per polling cycle)
+
+At each poll, evaluate for every in-progress agent:
+
+1. **Turn budget ratio**: `turns_used / expected_turns` from difficulty guide
+2. **Progress ratio**: `completed_criteria / total_criteria` from task-board
+
+| Turn Budget | Progress | Action |
+|-------------|----------|--------|
+| < 80% | any | Continue monitoring |
+| >= 80% | >= 50% | Continue — agent is on track to finish |
+| >= 80% | < 50% | **Context Reset**: Checkpoint + re-spawn (see `_shared/core/context-budget.md`) |
+| 100% (max turns) | < 100% | **Context Reset**: Force checkpoint + re-spawn with remaining items |
+
+Record reset events in `task-board.md`:
+```
+| Agent | Status | Note |
+| backend | reset-1 | Turn budget 80%, progress 40%, checkpoint saved |
+```
+
 > **Claude Code note**: Agent tool returns results synchronously — no polling needed. Check status, files changed, and issues directly in each agent's return value.
 
 ---

@@ -38,6 +38,75 @@ When applicable, map findings and gaps to:
 
 Use `resources/checklist.md` (renamed qa-checklist) as the comprehensive review guide.
 
+## Step 2.5: Runtime Verification
+
+Static code review misses entire categories of bugs: display-only features,
+stubbed functionality, broken user flows, and edge cases that only surface
+at runtime. This step requires interacting with the running application.
+
+### When to Execute
+- Web app with UI: ALWAYS for Medium/Complex tasks
+- API-only: ALWAYS (curl/httpie verification)
+- Simple tasks (single file, no UI): SKIP
+
+### Execution by App Type
+
+#### Web Applications
+1. Start the application (`bun run dev`, `uv run manage.py runserver`, etc.)
+2. If Playwright MCP or browser tool is available:
+   - Navigate to affected pages
+   - Interact with modified features (click, input, submit)
+   - Verify visual output matches acceptance criteria
+   - Check error states (invalid input, empty states, loading)
+3. If no browser tool available:
+   - Use curl/httpie to hit rendered endpoints
+   - Verify HTTP status codes and response bodies
+   - Check redirects, auth flows, and error pages
+
+#### API Endpoints
+1. Start the server
+2. Execute acceptance criteria as actual HTTP requests:
+   ```bash
+   # Example: verify auth flow end-to-end
+   curl -s -X POST localhost:8000/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{"email":"test@test.com","password":"secure123"}'
+
+   # Verify rate limiting actually triggers
+   for i in $(seq 1 20); do
+     curl -s -o /dev/null -w "%{http_code}" localhost:8000/api/auth/login
+   done
+   ```
+3. Verify database state after operations (query directly or via API)
+
+#### Mobile Applications
+1. If emulator/simulator available: launch and interact
+2. If not: verify via API layer + widget test execution
+
+### Recording Results
+
+Append to the QA report under a new section:
+
+```markdown
+## Runtime Verification Results
+
+| Feature | Method | Expected | Actual | Status |
+|---------|--------|----------|--------|--------|
+| User registration | curl POST /api/auth/register | 201 + user created | 201 + user in DB | PASS |
+| Rate limiting | 20x rapid POST /api/auth/login | 429 after threshold | 429 after 10 req | PASS |
+| Empty state UI | Browser navigate /dashboard (no data) | Empty state message | Blank white page | FAIL |
+```
+
+### Stubbed Feature Detection
+
+Specifically check for these patterns that static review cannot catch:
+- Buttons/forms that render but have no backend handler
+- Features that display placeholder data instead of real data
+- Interactive elements that don't respond to user input
+- Audio/video/file upload controls with no actual processing
+
+---
+
 ## Step 3: Report
 Generate structured report with:
 - Overall status: PASS / WARNING / FAIL

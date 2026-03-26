@@ -96,6 +96,20 @@ Add in the following format after session completion:
 
 ---
 
+## QA Evaluation Lessons
+
+> Referenced by qa-agent. Tracks patterns where QA judgment failed or succeeded.
+> Unlike other sections (which track implementation mistakes), this section tracks
+> the evaluator's own blind spots and strengths.
+
+### Initial Lessons
+- **Runtime verification is not optional**: Static code review cannot detect stubbed features, display-only implementations, or broken user flows. Always execute Step 2.5 (Runtime Verification) for Medium/Complex tasks.
+- **Self-evaluation bias exists**: Implementation agents overrate their own output. Cross-review by a separate QA agent is the only reliable quality judgment. Mechanical self-checks (lint/test/build) are fine; quality judgment is not.
+- **Severity calibration matters**: Auth/data-loss issues are always CRITICAL regardless of how small the code change appears. Do not downgrade severity based on diff size.
+- **false_negatives are the most costly error**: A bug that ships costs more than a false_positive that wastes 5 minutes of impl agent time. Bias toward caution.
+
+---
+
 ## Cross-Domain Lessons
 
 > Referenced by all agents.

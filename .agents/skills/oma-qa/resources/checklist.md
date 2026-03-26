@@ -318,3 +318,18 @@
 - Document all findings with file:line references
 - Provide remediation code examples
 - Estimate fix time for each issue
+
+---
+
+## Runtime Verification (after static review)
+
+- [ ] Application starts without errors
+- [ ] All modified endpoints return expected status codes
+- [ ] Form submissions produce correct database state
+- [ ] Error states render user-friendly messages (not stack traces)
+- [ ] Empty/loading/error UI states all handled
+- [ ] Interactive elements respond to input (not display-only)
+- [ ] Auth flows work end-to-end (register → login → protected route → logout)
+- [ ] Rate limiting / throttling triggers at configured thresholds
+- [ ] File upload/download actually transfers data (not stubbed)
+- [ ] Pagination returns correct pages (not always page 1)

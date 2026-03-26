@@ -312,13 +312,22 @@ oh-my-ag agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (li
 ### Step 17: Deployment Readiness Review (Final)
 - **Executed by QA Agent**: Secrets, Migrations, checklist.
 
-### Step 17.1: Final Quality Score & Experiment Ledger Summary (Conditional)
+### Step 17.1: Final Quality Score & Session Summary (Conditional)
 
 If Quality Score was measured during this session:
 1. Measure final Quality Score
 2. Generate Experiment Ledger summary (total experiments, keep rate, net delta)
 3. Auto-generate lessons from discarded experiments (delta <= -5) into `lessons-learned.md`
 4. Append Quality Score Progression and Experiment Summary to session metrics
+
+**Always** (regardless of Quality Score availability):
+5. Record Evaluator Accuracy events for this session:
+   - Review all QA findings: any disputed by impl agents? → `false_positive`
+   - Review runtime verification results: any stubs caught that static review missed? → `missed_stub`
+   - Review impl agent self-check results: any bugs caught by QA that self-check missed? → `good_catch`
+6. Append EA events to `session-metrics.md`
+7. If rolling 3-session EA >= 30: Flag in final report
+   → "QA tuning suggested. Run `oh-my-ag retro` to review."
 
 ### SHIP_GATE
 - [ ] Quality checks pass

@@ -176,3 +176,90 @@ This data is sourced from the Experiment Ledger at session end (see `experiment-
 - **Completed sessions**: Archived to `.serena/memories/archive/metrics-{date}.md`
 - **Retention**: 30 days (configurable)
 - **Aggregation**: `oh-my-ag stats` command summarizes trends
+
+---
+
+## Evaluator Accuracy Tracking
+
+QA agents improve only when their judgment errors are tracked.
+Unlike CD (tracked in real-time), Evaluator Accuracy (EA) is a
+**retrospective metric** — most errors are discovered after the session ends.
+
+### Accuracy Events
+
+| Event | Points | When Discovered |
+|-------|--------|-----------------|
+| `false_negative` | +30 | Next session or production — bug that QA missed |
+| `false_positive` | +15 | During session — impl agent disputes QA finding successfully |
+| `severity_mismatch` | +10 | During session or retro — wrong severity assigned |
+| `missed_stub` | +20 | During session — runtime verification catches display-only feature |
+| `good_catch` | -10 | During session — QA caught non-obvious bug (reward signal) |
+
+### Recording
+
+- `false_positive`, `missed_stub`, `good_catch`: Recorded during session by Orchestrator
+- `false_negative`, `severity_mismatch`: Recorded retroactively via `oh-my-ag retro` or next session discovery
+
+### Evaluator Accuracy Score (EA)
+
+Calculated on a **rolling 3-session window**, not per single session:
+
+```
+EA = sum(accuracy_event_points across last 3 sessions)
+```
+
+| Threshold | Action |
+|-----------|--------|
+| EA >= 30 | **TUNING SUGGESTED**: `oh-my-ag retro` flags QA patterns for review |
+| EA >= 50 | **TUNING REQUIRED**: Review and update QA execution-protocol.md |
+| `false_negative` >= 3 across window | **CHECKLIST UPDATE**: Add detection pattern to QA checklist.md |
+| `good_catch` >= 5 across window | **PROPAGATE**: Document successful pattern in evaluator-tuning.md |
+
+### Accuracy Log Format
+
+Separate from CD events. Appended to session log:
+
+```markdown
+### Evaluator Accuracy Events
+
+| Session | Event | Detail | QA Prompt Gap |
+|---------|-------|--------|---------------|
+| current | false_positive | QA flagged unused import that was actually used in test | Over-aggressive dead code rule |
+| current | missed_stub | File upload button rendered but no handler | Runtime verification not performed |
+| prev-session | false_negative | Auth bypass via token reuse not caught | No token lifecycle check in checklist |
+| current | good_catch | Caught N+1 in nested serializer | SQL logging pattern worked |
+```
+
+---
+
+## Cost & Token Tracking
+
+Precise token counts are unavailable on most platforms.
+Use proxy metrics that are always measurable.
+
+### Per-Agent Session Log
+
+```markdown
+### Resource Usage
+
+| Agent | Turns | Wall-Clock (min) | Sprint Resets | Retries |
+|-------|-------|-------------------|---------------|---------|
+| pm | 6 | 2.1 | 0 | 0 |
+| backend | 18 | 8.4 | 1 | 0 |
+| frontend | 15 | 6.7 | 0 | 0 |
+| qa | 10 | 4.2 | 0 | 0 |
+| **Total** | **49** | **21.4** | **1** | **0** |
+```
+
+### How to Record
+
+- **Turn count**: Always available (count progress file updates)
+- **Wall-clock time**: Bash timestamps at spawn and completion
+- **Sprint resets**: Count checkpoint files per agent
+- **Precise tokens**: Available only via `oh-my-ag stats` post-hoc (parses CLI logs when supported)
+
+### Usage
+
+- Compare turns/time across sessions for similar tasks → detect efficiency regression
+- Agents using 2x+ average turns → candidate for prompt or skill refinement
+- Track cost delta when scaffold changes are made (supports future harness audits)

@@ -116,3 +116,57 @@ This approach:
 | Re-reading the same file | Tracking gap | Check "Read Files" list in progress |
 | Output suddenly becomes shorter | Output tokens insufficient | Write only essentials, omit extra explanations |
 | Ignoring instructions | Forgot SKILL.md content | Re-reference only execution-protocol essentials |
+
+---
+
+## Context Anxiety Detection & Reset Protocol
+
+Long-running agents degrade in quality as context fills up. Rather than passively
+responding to symptoms, agents must actively detect and reset.
+Detection is the **Orchestrator's responsibility** via external observation.
+Individual agents do NOT self-monitor for anxiety — they focus on their task.
+
+### Detection (Orchestrator Only)
+
+The Orchestrator monitors agent progress files and triggers reset when needed.
+
+#### Trigger Conditions
+
+| Condition | Detection Method | Action |
+|-----------|-----------------|--------|
+| Turn budget exhaustion | Agent consumed >= 80% of `expected_turns` AND acceptance criteria < 50% complete | **Context Reset** |
+| Progress stall | No progress file update for 3+ consecutive monitoring cycles | **Context Reset** |
+| Shallow output | Result file contains stub markers or TODO placeholders | **Re-spawn with explicit instruction** |
+
+The Orchestrator checks these conditions during PHASE 4 (Monitor) polling.
+
+### Context Reset Procedure
+
+When a trigger fires, the Orchestrator executes:
+
+1. **Checkpoint**: Save agent's current state
+   ```
+   write_memory("checkpoint-{agent-id}", content)
+   ```
+   Content (assembled by Orchestrator from progress file):
+   - Completed items with file paths
+   - Remaining items with acceptance criteria
+   - Key decisions made so far
+
+2. **Terminate**: Stop the current agent run
+
+3. **Re-spawn**: Start a fresh agent with the checkpoint as context
+   - **Claude Code**: New Agent tool call with checkpoint in prompt
+   - **CLI agents**: `oh-my-ag agent:spawn` with `--checkpoint checkpoint-{agent-id}`
+
+4. **Resume**: New agent reads checkpoint, continues from remaining items only
+
+### Standalone Agent Mode (no Orchestrator)
+
+When an agent runs outside orchestration (e.g., direct `/backend` invocation),
+the Sprint Gate in `difficulty-guide.md` serves as the safety net.
+At each Sprint Gate, the agent checks:
+- [ ] Current sprint deliverable complete
+- [ ] lint/test pass
+- If sprint took 2x expected turns → write checkpoint and inform user:
+  "Sprint exceeded turn budget. Checkpoint saved. Re-invoke to continue."
