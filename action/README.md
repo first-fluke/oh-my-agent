@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
 ```
 
 ## Inputs
@@ -55,7 +55,7 @@ jobs:
 ### Direct commit mode
 
 ```yaml
-- uses: first-fluke/oh-my-agent/action@v1
+- uses: first-fluke/oma-update-action@v1
   with:
     mode: commit
     commit-message: "chore: sync oh-my-agent skills"
@@ -64,7 +64,7 @@ jobs:
 ### With a Personal Access Token (for fork repos)
 
 ```yaml
-- uses: first-fluke/oh-my-agent/action@v1
+- uses: first-fluke/oma-update-action@v1
   with:
     token: ${{ secrets.PAT_TOKEN }}
 ```
@@ -79,7 +79,7 @@ jobs:
       updated: ${{ steps.oma.outputs.updated }}
     steps:
       - uses: actions/checkout@v4
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
         id: oma
 
   notify:

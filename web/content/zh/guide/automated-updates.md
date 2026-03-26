@@ -7,7 +7,7 @@ description: oh-my-agent GitHub Action 的完整文档 —— 设置、所有输
 
 ## 概述
 
-oh-my-agent GitHub Action（`first-fluke/oh-my-agent/action@v1`）通过在 CI 中运行 `oma update` 来自动更新项目的智能体技能。它支持两种模式：创建 Pull Request 供审查，或直接提交到分支。
+oh-my-agent GitHub Action（`first-fluke/oma-update-action@v1`）通过在 CI 中运行 `oma update` 来自动更新项目的智能体技能。它支持两种模式：创建 Pull Request 供审查，或直接提交到分支。
 
 ---
 
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
 ```
 
 这是最小配置。有新版本可用时，使用默认设置创建 PR。
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
         id: update
 
       - name: Summary
@@ -130,7 +130,7 @@ jobs:
         with:
           token: ${{ secrets.OH_MY_AGENT_PAT }}
 
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
         with:
           mode: commit
           token: ${{ secrets.OH_MY_AGENT_PAT }}
@@ -168,7 +168,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
         id: update
 
       - name: Notify Slack
@@ -209,7 +209,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
         with:
           force: 'true'
           pr-title: "chore(deps): force-update oh-my-agent skills (reset configs)"

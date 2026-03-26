@@ -7,7 +7,7 @@ description: Полная документация GitHub Action oh-my-agent —
 
 ## Обзор
 
-GitHub Action oh-my-agent (`first-fluke/oh-my-agent/action@v1`) автоматически обновляет навыки агентов в вашем проекте, запуская `oma update` в CI. Поддерживает два режима: создание PR для ревью или прямой коммит в ветку.
+GitHub Action oh-my-agent (`first-fluke/oma-update-action@v1`) автоматически обновляет навыки агентов в вашем проекте, запуская `oma update` в CI. Поддерживает два режима: создание PR для ревью или прямой коммит в ветку.
 
 ---
 
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: first-fluke/oh-my-agent/action@v1
+      - uses: first-fluke/oma-update-action@v1
 ```
 
 Минимальная конфигурация. Создаёт PR при наличии обновлений.
@@ -69,7 +69,7 @@ jobs:
 ### Пример 1: PR по умолчанию
 
 ```yaml
-- uses: first-fluke/oh-my-agent/action@v1
+- uses: first-fluke/oma-update-action@v1
   id: update
 - name: Summary
   if: steps.update.outputs.updated == 'true'
@@ -82,7 +82,7 @@ jobs:
 - uses: actions/checkout@v4
   with:
     token: ${{ secrets.OH_MY_AGENT_PAT }}
-- uses: first-fluke/oh-my-agent/action@v1
+- uses: first-fluke/oma-update-action@v1
   with:
     mode: commit
     token: ${{ secrets.OH_MY_AGENT_PAT }}
@@ -92,7 +92,7 @@ jobs:
 ### Пример 3: Уведомление в Slack
 
 ```yaml
-- uses: first-fluke/oh-my-agent/action@v1
+- uses: first-fluke/oma-update-action@v1
   id: update
 - name: Notify Slack
   if: steps.update.outputs.updated == 'true'
@@ -106,7 +106,7 @@ jobs:
 ### Пример 4: Принудительный режим
 
 ```yaml
-- uses: first-fluke/oh-my-agent/action@v1
+- uses: first-fluke/oma-update-action@v1
   with:
     force: 'true'
     pr-title: "chore(deps): force-update oh-my-agent skills (reset configs)"
