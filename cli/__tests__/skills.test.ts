@@ -1,7 +1,8 @@
 import * as fs from "node:fs";
-import { join } from "node:path";
+import { join, resolve, relative, dirname } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createCliSymlinks,
   installClaudeSkills,
   installConfigs,
   installSkill,
@@ -14,10 +15,13 @@ vi.mock("node:fs", () => ({
   mkdirSync: vi.fn(),
   cpSync: vi.fn(),
   readdirSync: vi.fn(),
+  readFileSync: vi.fn(),
+  readlinkSync: vi.fn(),
   rmSync: vi.fn(),
   writeFileSync: vi.fn(),
   lstatSync: vi.fn(),
   unlinkSync: vi.fn(),
+  symlinkSync: vi.fn(),
 }));
 
 describe("skills.ts - Workflow and Config Installation", () => {
@@ -171,6 +175,149 @@ describe("installClaudeSkills", () => {
 describe("skills.ts - repository metadata", () => {
   it("should use the correct GitHub repository", () => {
     expect(REPO).toBe("first-fluke/oh-my-agent");
+  });
+});
+
+describe("createCliSymlinks", () => {
+  const mockTargetDir = "/tmp/test-project";
+  const ssotSkillsDir = resolve(mockTargetDir, ".agents/skills");
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      () => {
+        throw new Error("ENOENT");
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("should create symlinks for skills that exist", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+
+    const result = createCliSymlinks(mockTargetDir, ["claude"], [
+      "oma-frontend",
+    ]);
+
+    expect(fs.symlinkSync).toHaveBeenCalledWith(
+      relative(
+        join(mockTargetDir, ".claude/skills"),
+        join(ssotSkillsDir, "oma-frontend"),
+      ),
+      join(mockTargetDir, ".claude/skills/oma-frontend"),
+      "dir",
+    );
+    expect(result.created).toContain(".claude/skills/oma-frontend");
+  });
+
+  it("should skip when source skill directory is missing", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (p === join(mockTargetDir, ".claude/skills")) return true;
+        if (p === join(ssotSkillsDir, "oma-missing")) return false;
+        return true;
+      },
+    );
+
+    const result = createCliSymlinks(mockTargetDir, ["claude"], [
+      "oma-missing",
+    ]);
+
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(result.skipped).toContain(
+      ".claude/skills/oma-missing (source missing)",
+    );
+  });
+
+  it("should skip when symlink already points to same target", () => {
+    const linkPath = join(mockTargetDir, ".claude/skills/oma-frontend");
+    const sourcePath = join(ssotSkillsDir, "oma-frontend");
+    const relTarget = relative(
+      join(mockTargetDir, ".claude/skills"),
+      sourcePath,
+    );
+
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+    (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      isSymbolicLink: () => true,
+    });
+    (fs.readlinkSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      relTarget,
+    );
+
+    const result = createCliSymlinks(mockTargetDir, ["claude"], [
+      "oma-frontend",
+    ]);
+
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(fs.unlinkSync).not.toHaveBeenCalled();
+    expect(result.skipped).toContain(
+      ".claude/skills/oma-frontend (already linked)",
+    );
+  });
+
+  it("should replace symlink when pointing to different target", () => {
+    const linkPath = join(mockTargetDir, ".claude/skills/oma-frontend");
+
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+    (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      isSymbolicLink: () => true,
+    });
+    (fs.readlinkSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      "/some/old/path",
+    );
+
+    const result = createCliSymlinks(mockTargetDir, ["claude"], [
+      "oma-frontend",
+    ]);
+
+    expect(fs.unlinkSync).toHaveBeenCalledWith(linkPath);
+    expect(fs.symlinkSync).toHaveBeenCalled();
+    expect(result.created).toContain(".claude/skills/oma-frontend");
+  });
+
+  it("should skip when real directory exists (not a symlink)", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+    (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      isSymbolicLink: () => false,
+    });
+
+    const result = createCliSymlinks(mockTargetDir, ["claude"], [
+      "oma-frontend",
+    ]);
+
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(fs.unlinkSync).not.toHaveBeenCalled();
+    expect(result.skipped).toContain(
+      ".claude/skills/oma-frontend (real dir exists)",
+    );
+  });
+
+  it("should create symlinks for multiple CLI tools", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+
+    const result = createCliSymlinks(
+      mockTargetDir,
+      ["claude", "copilot"],
+      ["oma-frontend"],
+    );
+
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(2);
+    expect(result.created).toContain(".claude/skills/oma-frontend");
+    expect(result.created).toContain(".github/skills/oma-frontend");
   });
 });
 
