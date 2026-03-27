@@ -5,24 +5,24 @@ description: Guide complet de l'architecture de compétences en deux couches d'o
 
 # Compétences
 
-Skills are structured knowledge packages that give each agent its domain expertise. They are not just prompts — they contain execution protocols, tech stack references, code templates, error playbooks, quality checklists, and few-shot examples, organized in a two-layer architecture designed for token efficiency.
+Les compétences sont des paquets de connaissances structurés qui confèrent à chaque agent son expertise de domaine. Ce ne sont pas de simples prompts -- elles contiennent des protocoles d'exécution, des références de stack technique, des modèles de code, des guides de résolution d'erreurs, des checklists de qualité et des exemples few-shot, organisés dans une architecture en deux couches conçue pour l'efficacité en tokens.
 
 ---
 
-## The Two-Layer Design
+## La conception en deux couches
 
-### Layer 1: SKILL.md (~800 bytes, always loaded)
+### Couche 1 : SKILL.md (~800 octets, toujours chargée)
 
-Every skill has a `SKILL.md` file at its root. This is always loaded into the context window when the skill is referenced. It contains:
+Chaque compétence possède un fichier `SKILL.md` à sa racine. Celui-ci est toujours chargé dans la fenêtre de contexte lorsque la compétence est référencée. Il contient :
 
-- **YAML frontmatter** with `name` and `description` (used for routing and display)
-- **When to use / When NOT to use** — explicit activation conditions
-- **Core rules** — the 5-15 most critical constraints for the domain
-- **Architecture overview** — how code should be structured
-- **Library list** — approved dependencies and their purposes
-- **References** — pointers to Layer 2 resources (never loaded automatically)
+- **Frontmatter YAML** avec `name` et `description` (utilisé pour le routage et l'affichage)
+- **Quand utiliser / Quand NE PAS utiliser** -- conditions d'activation explicites
+- **Règles fondamentales** -- les 5 à 15 contraintes les plus critiques du domaine
+- **Aperçu de l'architecture** -- comment le code doit être structuré
+- **Liste des bibliothèques** -- dépendances approuvées et leurs usages
+- **Références** -- pointeurs vers les ressources de la couche 2 (jamais chargées automatiquement)
 
-Example frontmatter:
+Exemple de frontmatter :
 
 ```yaml
 ---
@@ -31,19 +31,19 @@ description: Frontend specialist for React, Next.js, TypeScript with FSD-lite ar
 ---
 ```
 
-The description field is critical — it contains the routing keywords that the skill routing system uses to match tasks to agents.
+Le champ description est essentiel -- il contient les mots-clés de routage que le système de routage des compétences utilise pour faire correspondre les tâches aux agents.
 
-### Layer 2: resources/ (loaded on-demand)
+### Couche 2 : resources/ (chargement à la demande)
 
-The `resources/` directory contains deep execution knowledge. These files are loaded only when:
-1. The agent is explicitly invoked (via `/command` or agent skills field)
-2. The specific resource is needed for the current task type and difficulty
+Le répertoire `resources/` contient les connaissances d'exécution approfondies. Ces fichiers ne sont chargés que lorsque :
+1. L'agent est explicitement invoqué (via `/command` ou le champ skills de l'agent)
+2. La ressource spécifique est nécessaire pour le type de tâche et le niveau de difficulté en cours
 
-This on-demand loading is governed by the context-loading guide (`.agents/skills/_shared/core/context-loading.md`), which maps task types to required resources per agent.
+Ce chargement à la demande est régi par le guide de chargement du contexte (`.agents/skills/_shared/core/context-loading.md`), qui associe les types de tâches aux ressources requises par agent.
 
 ---
 
-## File Structure Example
+## Exemple de structure de fichiers
 
 ```
 .agents/skills/oma-frontend/
@@ -100,7 +100,7 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 ---
 
-## Per-Skill Resource Types
+## Types de ressources par compétence
 
 | Resource Type | Filename Pattern | Purpose | When Loaded |
 |--------------|-----------------|---------|-------------|
@@ -116,11 +116,11 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 ---
 
-## Shared Resources (_shared/)
+## Ressources partagées (_shared/)
 
-All agents share common foundations from `.agents/skills/_shared/`. These are organized into three categories:
+Tous les agents partagent des fondations communes depuis `.agents/skills/_shared/`. Celles-ci sont organisées en trois catégories :
 
-### Core Resources (`.agents/skills/_shared/core/`)
+### Ressources centrales (`.agents/skills/_shared/core/`)
 
 | Resource | Purpose | When Loaded |
 |----------|---------|-------------|
@@ -138,7 +138,7 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 | **`lessons-learned.md`** | Repository of past session learnings, auto-generated from Clarification Debt breaches and discarded experiments. Organized by domain section. | Referenced after errors and at session end |
 | **`api-contracts/`** | Directory containing API contract template and generated contracts. `template.md` defines the per-endpoint format (method, path, request/response schemas, auth, errors). | When cross-boundary work is planned |
 
-### Runtime Resources (`.agents/skills/_shared/runtime/`)
+### Ressources d'exécution (`.agents/skills/_shared/runtime/`)
 
 | Resource | Purpose |
 |----------|---------|
@@ -148,11 +148,11 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 | **`execution-protocols/codex.md`** | Codex CLI-specific execution patterns. |
 | **`execution-protocols/qwen.md`** | Qwen CLI-specific execution patterns. |
 
-Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn` — agents do not need to manually load them.
+Les protocoles d'exécution spécifiques au fournisseur sont injectés automatiquement par `oh-my-ag agent:spawn` -- les agents n'ont pas besoin de les charger manuellement.
 
-### Conditional Resources (`.agents/skills/_shared/conditional/`)
+### Ressources conditionnelles (`.agents/skills/_shared/conditional/`)
 
-These are loaded only when specific conditions are met during execution:
+Celles-ci ne sont chargées que lorsque des conditions spécifiques sont remplies pendant l'exécution :
 
 | Resource | Trigger Condition | Loaded By | Approx. Tokens |
 |----------|-------------------|-----------|----------------|
@@ -160,21 +160,21 @@ These are loaded only when specific conditions are met during execution:
 | **`experiment-ledger.md`** | First experiment is recorded after establishing an IMPL baseline | Orchestrator (inline, after baseline measurement) | ~250 |
 | **`exploration-loop.md`** | Same gate fails twice on the same issue | Orchestrator (inline, before spawning hypothesis agents) | ~250 |
 
-Budget impact: approximately 750 tokens total if all 3 are loaded. Since loading is conditional, typical sessions load 1-2 of these. Flash-tier budget remains within the approximately 3,100 token allocation.
+Impact sur le budget : environ 750 tokens au total si les 3 sont chargées. Comme le chargement est conditionnel, les sessions typiques en chargent 1 à 2. Le budget de niveau flash reste dans l'allocation d'environ 3 100 tokens.
 
 ---
 
-## How Skills Route via skill-routing.md
+## Comment les compétences sont routées via skill-routing.md
 
-The skill routing map defines how tasks are matched to agents:
+La carte de routage des compétences définit comment les tâches sont associées aux agents :
 
-### Simple Routing (Single Domain)
+### Routage simple (domaine unique)
 
-A prompt containing "Build a login form with Tailwind CSS" matches the keywords `UI`, `component`, `form`, `Tailwind`, and routes to **oma-frontend**.
+Un prompt contenant « Build a login form with Tailwind CSS » correspond aux mots-clés `UI`, `component`, `form`, `Tailwind`, et est routé vers **oma-frontend**.
 
-### Complex Request Routing
+### Routage de requêtes complexes
 
-Multi-domain requests follow established execution orders:
+Les requêtes multi-domaines suivent des ordres d'exécution établis :
 
 | Request Pattern | Execution Order |
 |----------------|----------------|
@@ -185,71 +185,71 @@ Multi-domain requests follow established execution orders:
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> relevant agents -> oma-qa |
 | "Do everything automatically" | oma-orchestrator (internally: oma-pm -> agents -> oma-qa) |
 
-### Inter-Agent Dependency Rules
+### Règles de dépendance inter-agents
 
-**Can run in parallel (no dependencies):**
+**Peuvent s'exécuter en parallèle (pas de dépendances) :**
 - oma-backend + oma-frontend (when API contract is pre-defined)
 - oma-backend + oma-mobile (when API contract is pre-defined)
 - oma-frontend + oma-mobile (independent of each other)
 
-**Must run sequentially:**
+**Doivent s'exécuter séquentiellement :**
 - oma-brainstorm -> oma-pm (design comes before planning)
 - oma-pm -> all other agents (planning comes first)
 - implementation agent -> oma-qa (review after implementation)
 - oma-backend -> oma-frontend/oma-mobile (when no pre-defined API contract)
 
-**QA is always last**, except when the user requests review of specific files only.
+**Le QA est toujours en dernier**, sauf lorsque l'utilisateur demande la revue de fichiers spécifiques uniquement.
 
 ---
 
-## Token Savings Math
+## Calcul des économies de tokens
 
-Consider a 5-agent orchestration session (pm, backend, frontend, mobile, qa):
+Considérons une session d'orchestration à 5 agents (pm, backend, frontend, mobile, qa) :
 
-**Without progressive disclosure:**
+**Sans divulgation progressive :**
 - Each agent loads all resources: ~4,000 tokens per agent
 - Total: 5 x 4,000 = 20,000 tokens consumed before any work
 
-**With progressive disclosure:**
+**Avec divulgation progressive :**
 - Layer 1 only for all agents: 5 x 800 = 4,000 tokens
 - Layer 2 loaded only for active agents (typically 1-2 at a time): +1,500 tokens
 - Total: ~5,500 tokens
 
-**Savings: approximately 72-75%**
+**Économies : environ 72-75 %**
 
-On flash-tier models (128K context), this is the difference between having 108K tokens available for work versus 125K tokens — a significant margin for complex tasks.
-
----
-
-## Resource Loading by Task Difficulty
-
-The difficulty guide classifies tasks into three levels, which determine how much of Layer 2 is loaded:
-
-### Simple (3-5 turns expected)
-
-Single file change, clear requirements, repeating existing patterns.
-
-Loads: `execution-protocol.md` only. Skip analysis, proceed directly to implementation with minimal checklist.
-
-### Medium (8-15 turns expected)
-
-2-3 file changes, some design decisions needed, applying patterns to new domains.
-
-Loads: `execution-protocol.md` + `examples.md`. Standard protocol with brief analysis and full verification.
-
-### Complex (15-25 turns expected)
-
-4+ file changes, architecture decisions required, introducing new patterns, dependencies on other agents.
-
-Loads: `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.md`. Extended protocol with checkpoints, mid-execution progress recording, and full verification including `common-checklist.md`.
+Sur les modèles de niveau flash (contexte 128 Ko), c'est la différence entre avoir 108 Ko de tokens disponibles pour le travail contre 125 Ko -- une marge significative pour les tâches complexes.
 
 ---
 
-## Context-Loading Task Maps (Per Agent)
+## Chargement des ressources par difficulté de tâche
 
-The context-loading guide provides detailed task-type-to-resource mappings. Here are the key mappings:
+Le guide de difficulté classe les tâches en trois niveaux, qui déterminent la quantité de couche 2 chargée :
 
-### Backend Agent
+### Simple (3-5 tours attendus)
+
+Modification d'un seul fichier, exigences claires, répétition de patterns existants.
+
+Charge : `execution-protocol.md` uniquement. Passer l'analyse, procéder directement à l'implémentation avec une checklist minimale.
+
+### Moyen (8-15 tours attendus)
+
+2-3 modifications de fichiers, quelques décisions de conception nécessaires, application de patterns à de nouveaux domaines.
+
+Charge : `execution-protocol.md` + `examples.md`. Protocole standard avec analyse brève et vérification complète.
+
+### Complexe (15-25 tours attendus)
+
+4+ modifications de fichiers, décisions d'architecture requises, introduction de nouveaux patterns, dépendances avec d'autres agents.
+
+Charge : `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.md`. Protocole étendu avec points de contrôle, enregistrement de la progression en cours d'exécution, et vérification complète incluant `common-checklist.md`.
+
+---
+
+## Cartes de chargement du contexte par tâche (par agent)
+
+Le guide de chargement du contexte fournit des mappings détaillés type-de-tâche/ressources. Voici les principaux mappings :
+
+### Agent Backend
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -259,7 +259,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | Performance optimization | examples.md (N+1 example) |
 | Existing code modification | examples.md + Serena MCP |
 
-### Frontend Agent
+### Agent Frontend
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -269,7 +269,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | Styling | tailwind-rules.md |
 | Page layout | snippets.md (grid) + examples.md |
 
-### Design Agent
+### Agent Design
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -280,7 +280,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | 3D / shader effects | reference/shader-and-3d.md + reference/motion-design.md |
 | Accessibility review | reference/accessibility.md + checklist.md |
 
-### QA Agent
+### Agent QA
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -292,9 +292,9 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 
 ---
 
-## Orchestrator Prompt Composition
+## Composition des prompts par l'orchestrateur
 
-When the orchestrator composes prompts for subagents, it includes only task-relevant resources:
+Lorsque l'orchestrateur compose les prompts pour les sous-agents, il n'inclut que les ressources pertinentes pour la tâche :
 
 1. Agent SKILL.md's Core Rules section
 2. `execution-protocol.md`
@@ -302,4 +302,4 @@ When the orchestrator composes prompts for subagents, it includes only task-rele
 4. `error-playbook.md` (always included — recovery is essential)
 5. Serena Memory Protocol (CLI mode)
 
-This targeted composition avoids loading unnecessary resources, maximizing the subagent's available context for actual work.
+Cette composition ciblée évite le chargement de ressources inutiles, maximisant le contexte disponible du sous-agent pour le travail effectif.

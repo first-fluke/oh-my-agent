@@ -5,293 +5,293 @@ description: Référence complète des 14 workflows oh-my-agent — commandes sl
 
 # Workflows
 
-Workflows are structured multi-step processes triggered by slash commands or natural language keywords. They define how agents collaborate on tasks — from single-phase utilities to complex 5-phase quality gates.
+Les workflows sont des processus structurés en plusieurs étapes, déclenchés par des commandes slash ou des mots-clés en langage naturel. Ils définissent comment les agents collaborent sur les tâches -- des utilitaires en une seule phase aux portes de qualité complexes en 5 phases.
 
-There are 14 workflows, 3 of which are persistent (they maintain state and cannot be accidentally interrupted).
+Il existe 14 workflows, dont 3 sont persistants (ils maintiennent un état et ne peuvent pas être accidentellement interrompus).
 
 ---
 
-## Persistent Workflows
+## Workflows persistants
 
-Persistent workflows keep running until all tasks are done. They maintain state in `.agents/state/` and reinject `[OMA PERSISTENT MODE: ...]` context on each user message until explicitly deactivated.
+Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les tâches soient terminées. Ils maintiennent leur état dans `.agents/state/` et réinjectent le contexte `[OMA PERSISTENT MODE: ...]` à chaque message utilisateur jusqu'à désactivation explicite.
 
 ### /orchestrate
 
-**Description:** Automated CLI-based parallel agent execution. Spawns subagents via CLI, coordinates through MCP memory, monitors progress, and runs verification loops.
+**Description :** Exécution parallèle automatisée des agents via CLI. Lance des sous-agents via CLI, coordonne via la mémoire MCP, surveille la progression et exécute des boucles de vérification.
 
-**Persistent:** Yes. State file: `.agents/state/orchestrate-state.json`.
+**Persistant :** Oui. Fichier d'état : `.agents/state/orchestrate-state.json`.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "orchestrate" |
-| English | "parallel", "do everything", "run everything" |
-| Korean | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
-| Japanese | "オーケストレート", "並列実行", "自動実行" |
-| Chinese | "编排", "并行执行", "自动执行" |
-| Spanish | "orquestar", "paralelo", "ejecutar todo" |
-| French | "orchestrer", "parallèle", "tout exécuter" |
-| German | "orchestrieren", "parallel", "alles ausführen" |
-| Portuguese | "orquestrar", "paralelo", "executar tudo" |
-| Russian | "оркестровать", "параллельно", "выполнить всё" |
-| Dutch | "orkestreren", "parallel", "alles uitvoeren" |
-| Polish | "orkiestrować", "równolegle", "wykonaj wszystko" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "orchestrate" |
+| Anglais | "parallel", "do everything", "run everything" |
+| Coréen | "자동 실행", "병렬 실행", "전부 실행", "전부 해" |
+| Japonais | "オーケストレート", "並列実行", "自動実行" |
+| Chinois | "编排", "并行执行", "自动执行" |
+| Espagnol | "orquestar", "paralelo", "ejecutar todo" |
+| Français | "orchestrer", "parallèle", "tout exécuter" |
+| Allemand | "orchestrieren", "parallel", "alles ausführen" |
+| Portugais | "orquestrar", "paralelo", "executar tudo" |
+| Russe | "оркестровать", "параллельно", "выполнить всё" |
+| Néerlandais | "orkestreren", "parallel", "alles uitvoeren" |
+| Polonais | "orkiestrować", "równolegle", "wykonaj wszystko" |
 
-**Steps:**
-1. **Step 0 — Preparation:** Read coordination skill, context-loading guide, memory protocol. Detect vendor.
-2. **Step 1 — Load/Create Plan:** Check for `.agents/plan.json`. If missing, prompt user to run `/plan` first.
-3. **Step 2 — Initialize Session:** Load `user-preferences.yaml`, display CLI mapping table, generate session ID (`session-YYYYMMDD-HHMMSS`), create `orchestrator-session.md` and `task-board.md` in memory.
-4. **Step 3 — Spawn Agents:** For each priority tier (P0 first, then P1...), spawn agents using vendor-appropriate method (Agent tool for Claude Code, `oh-my-ag agent:spawn` for Gemini/Antigravity, model-mediated for Codex). Never exceed MAX_PARALLEL.
-5. **Step 4 — Monitor:** Poll `progress-{agent}.md` files, update `task-board.md`. Watch for completions, failures, crashes.
-6. **Step 5 — Verify:** Run `verify.sh {agent-type} {workspace}` per completed agent. On failure, re-spawn with error context (max 2 retries). After 2 retries, activate Exploration Loop: generate 2-3 hypotheses, spawn parallel experiments, score, keep best.
-7. **Step 6 — Collect:** Read all `result-{agent}.md` files, compile summary.
-8. **Step 7 — Final Report:** Present session summary. If Quality Score was measured, include Experiment Ledger summary and auto-generate lessons.
+**Étapes :**
+1. **Étape 0 -- Préparation :** Lire la compétence de coordination, le guide de chargement du contexte, le protocole de mémoire. Détecter le fournisseur.
+2. **Étape 1 -- Charger/Créer le plan :** Vérifier la présence de `.agents/plan.json`. Si absent, inviter l'utilisateur à exécuter `/plan` d'abord.
+3. **Étape 2 -- Initialiser la session :** Charger `user-preferences.yaml`, afficher le tableau de mapping CLI, générer l'identifiant de session (`session-YYYYMMDD-HHMMSS`), créer `orchestrator-session.md` et `task-board.md` en mémoire.
+4. **Étape 3 -- Lancer les agents :** Pour chaque niveau de priorité (P0 d'abord, puis P1...), lancer les agents avec la méthode appropriée au fournisseur (outil Agent pour Claude Code, `oh-my-ag agent:spawn` pour Gemini/Antigravity, médié par le modèle pour Codex). Ne jamais dépasser MAX_PARALLEL.
+5. **Étape 4 -- Surveiller :** Interroger les fichiers `progress-{agent}.md`, mettre à jour `task-board.md`. Surveiller les complétions, échecs, plantages.
+6. **Étape 5 -- Vérifier :** Exécuter `verify.sh {agent-type} {workspace}` pour chaque agent terminé. En cas d'échec, relancer avec le contexte d'erreur (maximum 2 tentatives). Après 2 tentatives, activer la boucle d'exploration : générer 2 à 3 hypothèses, lancer des expériences parallèles, évaluer, garder la meilleure.
+7. **Étape 6 -- Rassembler :** Lire tous les fichiers `result-{agent}.md`, rassembler le résumé.
+8. **Étape 7 -- Rapport final :** Présenter le résumé de session. Si le Quality Score a été mesuré, inclure le résumé du registre d'expériences et auto-générer les enseignements.
 
-**Files read:** `.agents/plan.json`, `.agents/config/user-preferences.yaml`, `progress-{agent}.md`, `result-{agent}.md`.
-**Files written:** `orchestrator-session.md`, `task-board.md` (memory), final report.
+**Fichiers lus :** `.agents/plan.json`, `.agents/config/user-preferences.yaml`, `progress-{agent}.md`, `result-{agent}.md`.
+**Fichiers écrits :** `orchestrator-session.md`, `task-board.md` (mémoire), rapport final.
 
-**When to use:** Large projects requiring maximum parallelism with automated coordination.
+**Quand l'utiliser :** Projets de grande envergure nécessitant un parallélisme maximal avec coordination automatisée.
 
 ---
 
 ### /coordinate
 
-**Description:** Step-by-step multi-domain coordination. PM plans first, then agents execute with user confirmation at each gate, followed by QA review and issue remediation.
+**Description :** Coordination multi-domaines étape par étape. Le PM planifie d'abord, puis les agents exécutent avec confirmation de l'utilisateur à chaque porte, suivie d'une revue QA et de la résolution des problèmes.
 
-**Persistent:** Yes. State file: `.agents/state/coordinate-state.json`.
+**Persistant :** Oui. Fichier d'état : `.agents/state/coordinate-state.json`.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "coordinate", "step by step" |
-| Korean | "코디네이트", "단계별" |
-| Japanese | "コーディネート", "ステップバイステップ" |
-| Chinese | "协调", "逐步" |
-| Spanish | "coordinar", "paso a paso" |
-| French | "coordonner", "étape par étape" |
-| German | "koordinieren", "schritt für schritt" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "coordinate", "step by step" |
+| Coréen | "코디네이트", "단계별" |
+| Japonais | "コーディネート", "ステップバイステップ" |
+| Chinois | "协调", "逐步" |
+| Espagnol | "coordinar", "paso a paso" |
+| Français | "coordonner", "étape par étape" |
+| Allemand | "koordinieren", "schritt für schritt" |
 
-**Steps:**
-1. **Step 0 — Preparation:** Read skills, context-loading, memory protocol. Record session start.
-2. **Step 1 — Analyze Requirements:** Identify involved domains. If single domain, suggest direct agent use.
-3. **Step 2 — PM Agent Planning:** PM decomposes requirements, defines API contracts, creates prioritized task breakdown, saves to `.agents/plan.json`.
-4. **Step 3 — Review Plan:** Present plan to user. **Must get confirmation before proceeding.**
-5. **Step 4 — Spawn Agents:** Spawn by priority tier, parallel within same tier, separate workspaces.
-6. **Step 5 — Monitor:** Poll progress files, verify API contract alignment between agents.
-7. **Step 6 — QA Review:** Spawn QA agent for security (OWASP), performance, accessibility, code quality.
-8. **Step 6.1 — Quality Score** (conditional): Measure and record baseline.
-9. **Step 7 — Iterate:** If CRITICAL/HIGH issues found, re-spawn responsible agents. If same issue persists after 2 attempts, activate Exploration Loop.
+**Étapes :**
+1. **Étape 0 -- Préparation :** Lire les compétences, le chargement du contexte, le protocole de mémoire. Enregistrer le début de session.
+2. **Étape 1 -- Analyser les exigences :** Identifier les domaines impliqués. Si domaine unique, suggérer l'utilisation directe de l'agent.
+3. **Étape 2 -- Planification par l'agent PM :** Le PM décompose les exigences, définit les contrats d'API, crée un découpage des tâches priorisé, enregistre dans `.agents/plan.json`.
+4. **Étape 3 -- Revue du plan :** Présenter le plan à l'utilisateur. **La confirmation est obligatoire avant de poursuivre.**
+5. **Étape 4 -- Lancer les agents :** Lancement par niveau de priorité, en parallèle au sein du même niveau, workspaces séparés.
+6. **Étape 5 -- Surveiller :** Interroger les fichiers de progression, vérifier l'alignement des contrats d'API entre les agents.
+7. **Étape 6 -- Revue QA :** Lancer l'agent QA pour la sécurité (OWASP), la performance, l'accessibilité, la qualité du code.
+8. **Étape 6.1 -- Quality Score** (conditionnel) : Mesurer et enregistrer la ligne de base.
+9. **Étape 7 -- Itérer :** Si des problèmes CRITICAL/HIGH sont trouvés, relancer les agents responsables. Si le même problème persiste après 2 tentatives, activer la boucle d'exploration.
 
-**When to use:** Features spanning multiple domains where you want step-by-step control and user approval at each gate.
+**Quand l'utiliser :** Fonctionnalités couvrant plusieurs domaines où vous souhaitez un contrôle étape par étape et l'approbation de l'utilisateur à chaque porte.
 
 ---
 
 ### /ultrawork
 
-**Description:** The quality-obsessed workflow. 5 phases, 17 total steps, 11 of which are review steps. Every phase has a gate that must pass before proceeding.
+**Description :** Le workflow obsédé par la qualité. 5 phases, 17 étapes au total, dont 11 sont des étapes de revue. Chaque phase possède une porte qui doit passer avant de poursuivre.
 
-**Persistent:** Yes. State file: `.agents/state/ultrawork-state.json`.
+**Persistant :** Oui. Fichier d'état : `.agents/state/ultrawork-state.json`.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "ultrawork", "ulw" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "ultrawork", "ulw" |
 
-**Phases and steps:**
+**Phases et étapes :**
 
-| Phase | Steps | Agent | Review Perspective |
-|-------|-------|-------|-------------------|
-| **PLAN** | 1-4 | PM Agent (inline) | Completeness, Meta-review, Over-engineering/Simplicity |
-| **IMPL** | 5 | Dev Agents (spawned) | Implementation |
-| **VERIFY** | 6-8 | QA Agent (spawned) | Alignment, Safety (OWASP), Regression Prevention |
-| **REFINE** | 9-13 | Debug Agent (spawned) | File splitting, Reusability, Cascade Impact, Consistency, Dead Code |
-| **SHIP** | 14-17 | QA Agent (spawned) | Code Quality (lint/coverage), UX Flow, Related Issues, Deployment Readiness |
+| Phase | Étapes | Agent | Perspective de revue |
+|-------|--------|-------|---------------------|
+| **PLAN** | 1-4 | Agent PM (inline) | Complétude, Méta-revue, Sur-ingénierie/Simplicité |
+| **IMPL** | 5 | Agents Dev (lancés) | Implémentation |
+| **VERIFY** | 6-8 | Agent QA (lancé) | Alignement, Sécurité (OWASP), Prévention des régressions |
+| **REFINE** | 9-13 | Agent Debug (lancé) | Découpage de fichiers, Réutilisabilité, Impact en cascade, Cohérence, Code mort |
+| **SHIP** | 14-17 | Agent QA (lancé) | Qualité du code (lint/couverture), Flux UX, Problèmes connexes, Prêt pour le déploiement |
 
-**Gate definitions:**
-- **PLAN_GATE:** Plan documented, assumptions listed, alternatives considered, over-engineering review done, user confirmation.
-- **IMPL_GATE:** Build succeeds, tests pass, only planned files modified, baseline Quality Score recorded (if measured).
-- **VERIFY_GATE:** Implementation matches requirements, zero CRITICAL, zero HIGH, no regressions, Quality Score >= 75 (if measured).
-- **REFINE_GATE:** No large files/functions (> 500 lines / > 50 lines), integration opportunities captured, side effects verified, code cleaned, Quality Score non-regressed.
-- **SHIP_GATE:** Quality checks pass, UX verified, related issues resolved, deployment checklist complete, final Quality Score >= 75 with non-negative delta, user final approval.
+**Définitions des portes :**
+- **PLAN_GATE :** Plan documenté, hypothèses listées, alternatives considérées, revue de sur-ingénierie effectuée, confirmation utilisateur.
+- **IMPL_GATE :** Build réussi, tests passent, seuls les fichiers planifiés sont modifiés, Quality Score de référence enregistré (si mesuré).
+- **VERIFY_GATE :** L'implémentation correspond aux exigences, zéro CRITICAL, zéro HIGH, pas de régressions, Quality Score >= 75 (si mesuré).
+- **REFINE_GATE :** Pas de gros fichiers/fonctions (> 500 lignes / > 50 lignes), opportunités d'intégration capturées, effets de bord vérifiés, code nettoyé, Quality Score non régressé.
+- **SHIP_GATE :** Vérifications de qualité passent, UX vérifiée, problèmes connexes résolus, checklist de déploiement complète, Quality Score final >= 75 avec delta non négatif, approbation finale de l'utilisateur.
 
-**Gate failure behavior:**
-- First failure: return to the relevant step, fix, and retry.
-- Second failure on the same issue: activate Exploration Loop (generate 2-3 hypotheses, experiment each, score, keep best).
+**Comportement en cas d'échec de porte :**
+- Premier échec : retourner à l'étape concernée, corriger et réessayer.
+- Deuxième échec sur le même problème : activer la boucle d'exploration (générer 2 à 3 hypothèses, expérimenter chacune, évaluer, garder la meilleure).
 
-**Conditional enhancements:** Quality Score measurement, Keep/Discard decisions, Experiment Ledger, Hypothesis Exploration, Auto-learning (lessons from discarded experiments).
+**Améliorations conditionnelles :** Mesure du Quality Score, décisions de conservation/abandon, registre d'expériences, exploration d'hypothèses, auto-apprentissage (enseignements des expériences abandonnées).
 
-**REFINE skip condition:** Simple tasks under 50 lines.
+**Condition de saut de REFINE :** Tâches simples de moins de 50 lignes.
 
-**When to use:** Maximum quality delivery. When code must be production-ready with comprehensive review.
+**Quand l'utiliser :** Livraison de qualité maximale. Lorsque le code doit être prêt pour la production avec une revue exhaustive.
 
 ---
 
-## Non-Persistent Workflows
+## Workflows non persistants
 
 ### /plan
 
-**Description:** PM-driven task breakdown. Analyzes requirements, selects tech stack, decomposes into prioritized tasks with dependencies, defines API contracts.
+**Description :** Découpage des tâches piloté par le PM. Analyse les exigences, sélectionne le stack technique, décompose en tâches priorisées avec dépendances, définit les contrats d'API.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "task breakdown" |
-| English | "plan" |
-| Korean | "계획", "요구사항 분석", "스펙 분석" |
-| Japanese | "計画", "要件分析", "タスク分解" |
-| Chinese | "计划", "需求分析", "任务分解" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "task breakdown" |
+| Anglais | "plan" |
+| Coréen | "계획", "요구사항 분석", "스펙 분석" |
+| Japonais | "計画", "要件分析", "タスク分解" |
+| Chinois | "计划", "需求分析", "任务分解" |
 
-**Steps:** Gather requirements -> Analyze technical feasibility (MCP code analysis) -> Define API contracts -> Decompose into tasks -> Review with user -> Save plan.
+**Étapes :** Recueillir les exigences -> Analyser la faisabilité technique (analyse de code MCP) -> Définir les contrats d'API -> Décomposer en tâches -> Revue avec l'utilisateur -> Enregistrer le plan.
 
-**Output:** `.agents/plan.json`, memory write, optionally `docs/exec-plans/active/` for complex plans.
+**Sortie :** `.agents/plan.json`, écriture en mémoire, éventuellement `docs/exec-plans/active/` pour les plans complexes.
 
-**Execution:** Inline (no subagent spawning). Consumed by `/orchestrate` or `/coordinate`.
+**Exécution :** Inline (pas de lancement de sous-agents). Consommé par `/orchestrate` ou `/coordinate`.
 
 ---
 
 ### /exec-plan
 
-**Description:** Creates, manages, and tracks execution plans as first-class repository artifacts in `docs/exec-plans/`.
+**Description :** Crée, gère et suit les plans d'exécution en tant qu'artefacts de premier ordre dans `docs/exec-plans/`.
 
-**Trigger keywords:** None (excluded from auto-detection, must be invoked explicitly).
+**Mots-clés de déclenchement :** Aucun (exclu de la détection automatique, doit être invoqué explicitement).
 
-**Steps:** Preparation -> Analyze scope (assess complexity: Simple/Medium/Complex) -> Create execution plan (markdown in `docs/exec-plans/active/`) -> Define API contracts (if cross-boundary) -> Review with user -> Execute (hand off to `/orchestrate` or `/coordinate`) -> Complete (move to `completed/`).
+**Étapes :** Préparation -> Analyser le périmètre (évaluer la complexité : Simple/Moyenne/Complexe) -> Créer le plan d'exécution (markdown dans `docs/exec-plans/active/`) -> Définir les contrats d'API (si inter-domaines) -> Revue avec l'utilisateur -> Exécuter (transférer à `/orchestrate` ou `/coordinate`) -> Terminer (déplacer vers `completed/`).
 
-**Output:** `docs/exec-plans/active/{plan-name}.md` with task table, decision log, progress notes.
+**Sortie :** `docs/exec-plans/active/{plan-name}.md` avec tableau de tâches, journal de décisions, notes de progression.
 
-**When to use:** After `/plan` for complex features that need tracked execution with decision logging.
+**Quand l'utiliser :** Après `/plan` pour les fonctionnalités complexes nécessitant une exécution suivie avec journalisation des décisions.
 
 ---
 
 ### /brainstorm
 
-**Description:** Design-first ideation. Explores intent, clarifies constraints, proposes approaches, produces an approved design document before planning.
+**Description :** Idéation axée sur le design. Explore l'intention, clarifie les contraintes, propose des approches, produit un document de conception approuvé avant la planification.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "brainstorm" |
-| English | "ideate", "explore design" |
-| Korean | "브레인스토밍", "아이디어", "설계 탐색" |
-| Japanese | "ブレインストーミング", "アイデア", "設計探索" |
-| Chinese | "头脑风暴", "创意", "设计探索" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "brainstorm" |
+| Anglais | "ideate", "explore design" |
+| Coréen | "브레인스토밍", "아이디어", "설계 탐색" |
+| Japonais | "ブレインストーミング", "アイデア", "設計探索" |
+| Chinois | "头脑风暴", "创意", "设计探索" |
 
-**Steps:** Explore project context (MCP analysis) -> Ask clarifying questions (one at a time) -> Propose 2-3 approaches with trade-offs -> Present design section by section (with user approval each step) -> Save design document to `docs/plans/` -> Transition: suggest `/plan`.
+**Étapes :** Explorer le contexte du projet (analyse MCP) -> Poser des questions de clarification (une à la fois) -> Proposer 2 à 3 approches avec les compromis -> Présenter le design section par section (avec approbation de l'utilisateur à chaque étape) -> Enregistrer le document de conception dans `docs/plans/` -> Transition : suggérer `/plan`.
 
-**Rules:** No implementation or planning before design approval. No code output. YAGNI.
+**Règles :** Aucune implémentation ni planification avant l'approbation du design. Pas de sortie de code. YAGNI.
 
 ---
 
 ### /deepinit
 
-**Description:** Full project initialization. Analyzes an existing codebase, generates AGENTS.md, ARCHITECTURE.md, and a structured `docs/` knowledge base.
+**Description :** Initialisation complète du projet. Analyse un code source existant, génère AGENTS.md, ARCHITECTURE.md et une base de connaissances structurée dans `docs/`.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "deepinit" |
-| Korean | "프로젝트 초기화" |
-| Japanese | "プロジェクト初期化" |
-| Chinese | "项目初始化" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "deepinit" |
+| Coréen | "프로젝트 초기화" |
+| Japonais | "プロジェクト初期化" |
+| Chinois | "项目初始化" |
 
-**Steps:** Preparation -> Analyze codebase (project type, architecture, implicit rules, domains, boundaries) -> Generate ARCHITECTURE.md (domain map, under 200 lines) -> Generate `docs/` knowledge base (design-docs/, exec-plans/, generated/, product-specs/, references/, domain docs) -> Generate root AGENTS.md (~100 lines, table of contents) -> Generate boundary AGENTS.md files (monorepo packages, under 50 lines each) -> Update existing harness (if re-running) -> Validate (no dead links, line limits).
+**Étapes :** Préparation -> Analyser le code source (type de projet, architecture, règles implicites, domaines, limites) -> Générer ARCHITECTURE.md (carte des domaines, moins de 200 lignes) -> Générer la base de connaissances `docs/` (design-docs/, exec-plans/, generated/, product-specs/, references/, docs de domaine) -> Générer le fichier AGENTS.md racine (~100 lignes, table des matières) -> Générer les fichiers AGENTS.md de limites (paquets monorepo, moins de 50 lignes chacun) -> Mettre à jour le harnais existant (si réexécution) -> Valider (pas de liens morts, respect des limites de lignes).
 
-**Output:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md, and domain-specific docs as discovered.
+**Sortie :** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md, et des docs spécifiques au domaine selon les découvertes.
 
 ---
 
 ### /review
 
-**Description:** Full QA review pipeline. Security audit (OWASP Top 10), performance analysis, accessibility check (WCAG 2.1 AA), and code quality review.
+**Description :** Pipeline de revue QA complète. Audit de sécurité (OWASP Top 10), analyse de performance, vérification d'accessibilité (WCAG 2.1 AA) et revue de la qualité du code.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "code review", "security audit", "security review" |
-| English | "review" |
-| Korean | "리뷰", "코드 검토", "보안 검토" |
-| Japanese | "レビュー", "コードレビュー", "セキュリティ監査" |
-| Chinese | "审查", "代码审查", "安全审计" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "code review", "security audit", "security review" |
+| Anglais | "review" |
+| Coréen | "리뷰", "코드 검토", "보안 검토" |
+| Japonais | "レビュー", "コードレビュー", "セキュリティ監査" |
+| Chinois | "审查", "代码审查", "安全审计" |
 
-**Steps:** Identify review scope -> Automated security checks (npm audit, bandit) -> Manual security review (OWASP Top 10) -> Performance analysis -> Accessibility review (WCAG 2.1 AA) -> Code quality review -> Generate QA report.
+**Étapes :** Identifier le périmètre de revue -> Vérifications de sécurité automatisées (npm audit, bandit) -> Revue de sécurité manuelle (OWASP Top 10) -> Analyse de performance -> Revue d'accessibilité (WCAG 2.1 AA) -> Revue de la qualité du code -> Générer le rapport QA.
 
-**Optional fix-verify loop** (with `--fix`): After QA report, spawn domain agents to fix CRITICAL/HIGH issues, re-run QA, repeat up to 3 times.
+**Boucle optionnelle correction-vérification** (avec `--fix`) : Après le rapport QA, lancer les agents de domaine pour corriger les problèmes CRITICAL/HIGH, relancer le QA, répéter jusqu'à 3 fois.
 
-**Delegation:** For large scopes, delegates Steps 2-7 to a spawned QA agent subagent.
+**Délégation :** Pour les périmètres importants, délègue les étapes 2 à 7 à un sous-agent QA lancé.
 
 ---
 
 ### /debug
 
-**Description:** Structured bug diagnosis and fixing with regression test writing and similar pattern scanning.
+**Description :** Diagnostic et correction structurés de bugs avec écriture de tests de régression et scan de motifs similaires.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "debug" |
-| English | "fix bug", "fix error", "fix crash" |
-| Korean | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
-| Japanese | "デバッグ", "バグ修正", "エラー修正" |
-| Chinese | "调试", "修复 bug", "修复错误" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "debug" |
+| Anglais | "fix bug", "fix error", "fix crash" |
+| Coréen | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
+| Japonais | "デバッグ", "バグ修正", "エラー修正" |
+| Chinois | "调试", "修复 bug", "修复错误" |
 
-**Steps:** Collect error info -> Reproduce (MCP `search_for_pattern`, `find_symbol`) -> Diagnose root cause (MCP `find_referencing_symbols` to trace execution path) -> Propose minimal fix (user confirmation required) -> Apply fix + write regression test -> Scan for similar patterns (may spawn debug-investigator subagent if scope > 10 files) -> Document bug in memory.
+**Étapes :** Collecter les informations d'erreur -> Reproduire (MCP `search_for_pattern`, `find_symbol`) -> Diagnostiquer la cause profonde (MCP `find_referencing_symbols` pour tracer le chemin d'exécution) -> Proposer une correction minimale (confirmation utilisateur requise) -> Appliquer la correction + écrire le test de régression -> Scanner les motifs similaires (peut lancer un sous-agent debug-investigator si le périmètre > 10 fichiers) -> Documenter le bug en mémoire.
 
-**Subagent spawn criteria:** Error spans multiple domains, scan scope > 10 files, or deep dependency tracing needed.
+**Critères de lancement de sous-agent :** L'erreur couvre plusieurs domaines, le périmètre de scan > 10 fichiers, ou un traçage approfondi des dépendances est nécessaire.
 
 ---
 
 ### /design
 
-**Description:** 7-phase design workflow producing DESIGN.md with tokens, component patterns, and accessibility rules.
+**Description :** Workflow de design en 7 phases produisant DESIGN.md avec des tokens, des patterns de composants et des règles d'accessibilité.
 
-**Trigger keywords:**
-| Language | Keywords |
-|----------|----------|
-| Universal | "design system", "DESIGN.md", "design token" |
-| English | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
-| Korean | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
-| Japanese | "デザイン", "ランディングページ", "デザインシステム" |
-| Chinese | "设计", "着陆页", "设计系统" |
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "design system", "DESIGN.md", "design token" |
+| Anglais | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
+| Coréen | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
+| Japonais | "デザイン", "ランディングページ", "デザインシステム" |
+| Chinois | "设计", "着陆页", "设计系统" |
 
-**Phases:** SETUP (context gathering, `.design-context.md`) -> EXTRACT (optional, from reference URLs/Stitch) -> ENHANCE (vague prompt augmentation) -> PROPOSE (2-3 design directions with color, typography, layout, motion, components) -> GENERATE (DESIGN.md + CSS/Tailwind/shadcn tokens) -> AUDIT (responsive, WCAG 2.2, Nielsen heuristics, AI slop check) -> HANDOFF (save, inform user).
+**Phases :** SETUP (collecte du contexte, `.design-context.md`) -> EXTRACT (optionnel, depuis des URL de référence/Stitch) -> ENHANCE (enrichissement de prompts vagues) -> PROPOSE (2 à 3 directions de design avec couleur, typographie, mise en page, animation, composants) -> GENERATE (DESIGN.md + tokens CSS/Tailwind/shadcn) -> AUDIT (responsive, WCAG 2.2, heuristiques de Nielsen, vérification anti AI slop) -> HANDOFF (enregistrer, informer l'utilisateur).
 
-**Mandatory:** All output responsive-first (mobile 320-639px, tablet 768px+, desktop 1024px+).
+**Obligatoire :** Toute sortie est responsive-first (mobile 320-639 px, tablette 768 px+, desktop 1024 px+).
 
 ---
 
 ### /commit
 
-**Description:** Generates Conventional Commits with automatic feature-based splitting.
+**Description :** Génère des Conventional Commits avec découpage automatique par fonctionnalité.
 
-**Trigger keywords:** None (excluded from auto-detection).
+**Mots-clés de déclenchement :** Aucun (exclu de la détection automatique).
 
-**Steps:** Analyze changes (git status, git diff) -> Separate features (if > 5 files spanning different scope/type) -> Determine type (feat/fix/refactor/docs/test/chore/style/perf) -> Determine scope (changed module) -> Write description (imperative, < 72 chars) -> Execute commit immediately (no confirmation prompt).
+**Étapes :** Analyser les modifications (git status, git diff) -> Séparer les fonctionnalités (si > 5 fichiers couvrant des périmètres/types différents) -> Déterminer le type (feat/fix/refactor/docs/test/chore/style/perf) -> Déterminer le périmètre (module modifié) -> Rédiger la description (impératif, < 72 caractères) -> Exécuter le commit immédiatement (pas d'invite de confirmation).
 
-**Rules:** Never `git add -A`. Never commit secrets. HEREDOC for multi-line messages. Co-Author: `First Fluke <our.first.fluke@gmail.com>`.
+**Règles :** Jamais `git add -A`. Ne jamais commiter de secrets. HEREDOC pour les messages multi-lignes. Co-Author : `First Fluke <our.first.fluke@gmail.com>`.
 
 ---
 
 ### /setup
 
-**Description:** Interactive project configuration.
+**Description :** Configuration interactive du projet.
 
-**Trigger keywords:** None (excluded from auto-detection).
+**Mots-clés de déclenchement :** Aucun (exclu de la détection automatique).
 
-**Steps:** Language settings -> CLI installation status check -> MCP connection status (Serena in Command or SSE mode) -> Agent-CLI mapping -> Summary -> Ask about starring repository.
+**Étapes :** Paramètres de langue -> Vérification du statut d'installation des CLI -> Statut de connexion MCP (Serena en mode Command ou SSE) -> Mapping agent-CLI -> Résumé -> Demander à propos de l'ajout d'étoile au dépôt.
 
-**Output:** `.agents/config/user-preferences.yaml`.
+**Sortie :** `.agents/config/user-preferences.yaml`.
 
 ---
 
 ### /tools
 
-**Description:** Manage MCP tool visibility and restrictions.
+**Description :** Gérer la visibilité et les restrictions des outils MCP.
 
-**Trigger keywords:** None (excluded from auto-detection).
+**Mots-clés de déclenchement :** Aucun (exclu de la détection automatique).
 
-**Features:** Show current MCP tool status, enable/disable tool groups (memory, code-analysis, code-edit, file-ops), permanent or temporary (`--temp`) changes, natural language parsing ("memory tools only", "disable code edit").
+**Fonctionnalités :** Afficher le statut actuel des outils MCP, activer/désactiver des groupes d'outils (memory, code-analysis, code-edit, file-ops), modifications permanentes ou temporaires (`--temp`), interprétation en langage naturel (« memory tools only », « disable code edit »).
 
-**Tool groups:**
+**Groupes d'outils :**
 - memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
 - code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
 - code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
@@ -301,66 +301,66 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 ### /stack-set
 
-**Description:** Auto-detect project tech stack and generate language-specific references for the backend skill.
+**Description :** Détection automatique du stack technique du projet et génération de références spécifiques au langage pour la compétence backend.
 
-**Trigger keywords:** None (excluded from auto-detection).
+**Mots-clés de déclenchement :** Aucun (exclu de la détection automatique).
 
-**Steps:** Detect (scan manifests: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj) -> Confirm (display detected stack, get user confirmation) -> Generate (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` with 8 mandatory patterns, `stack/api-template.*`) -> Verify.
+**Étapes :** Détecter (scanner les manifestes : pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj) -> Confirmer (afficher le stack détecté, obtenir la confirmation utilisateur) -> Générer (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` avec 8 patterns obligatoires, `stack/api-template.*`) -> Vérifier.
 
-**Output:** Files in `.agents/skills/oma-backend/stack/`. Does not modify SKILL.md or `resources/`.
-
----
-
-## Skills vs. Workflows
-
-| Aspect | Skills | Workflows |
-|--------|--------|-----------|
-| **What they are** | Agent expertise (what an agent knows) | Orchestrated processes (how agents work together) |
-| **Location** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Activation** | Automatic via skill routing keywords | Slash commands or trigger keywords |
-| **Scope** | Single-domain execution | Multi-step, often multi-agent |
-| **Examples** | "Build a React component" | "Plan the feature -> build -> review -> commit" |
+**Sortie :** Fichiers dans `.agents/skills/oma-backend/stack/`. Ne modifie ni SKILL.md ni `resources/`.
 
 ---
 
-## Auto-Detection: How It Works
+## Compétences vs. Workflows
 
-### The Hook System
+| Aspect | Compétences | Workflows |
+|--------|-------------|-----------|
+| **Ce que c'est** | Expertise de l'agent (ce qu'un agent sait) | Processus orchestrés (comment les agents travaillent ensemble) |
+| **Emplacement** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
+| **Activation** | Automatique via les mots-clés de routage des compétences | Commandes slash ou mots-clés de déclenchement |
+| **Périmètre** | Exécution mono-domaine | Multi-étapes, souvent multi-agents |
+| **Exemples** | « Construire un composant React » | « Planifier la fonctionnalité -> construire -> réviser -> commiter » |
 
-oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is processed. The hook system consists of:
+---
 
-1. **`triggers.json`** (`.claude/hooks/triggers.json`): Defines keyword-to-workflow mappings for all 11 supported languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
+## Détection automatique : comment ça fonctionne
 
-2. **`keyword-detector.ts`** (`.claude/hooks/keyword-detector.ts`): TypeScript logic that scans the user's input against the trigger keywords, respects language-specific matching, and injects workflow activation context.
+### Le système de hooks
 
-3. **`persistent-mode.ts`** (`.claude/hooks/persistent-mode.ts`): Enforces persistent workflow execution by checking for active state files and reinjecting workflow context.
+oh-my-agent utilise un hook `UserPromptSubmit` qui s'exécute avant le traitement de chaque message utilisateur. Le système de hooks comprend :
 
-### Detection Flow
+1. **`triggers.json`** (`.claude/hooks/triggers.json`) : Définit les mappings mot-clé/workflow pour les 11 langues supportées (anglais, coréen, japonais, chinois, espagnol, français, allemand, portugais, russe, néerlandais, polonais).
 
-1. User types natural language input
-2. Hook checks if explicit `/command` is present (if so, skip detection to avoid duplication)
-3. Hook scans input against `triggers.json` keyword lists
-4. If a match is found, check if the input matches informational patterns
-5. If informational (e.g., "what is orchestrate?"), filter it out — no workflow triggers
-6. If actionable, inject `[OMA WORKFLOW: {workflow-name}]` into the context
-7. The agent reads the injected tag and loads the corresponding workflow file from `.agents/workflows/`
+2. **`keyword-detector.ts`** (`.claude/hooks/keyword-detector.ts`) : Logique TypeScript qui scanne l'entrée utilisateur par rapport aux mots-clés de déclenchement, respecte la correspondance spécifique à la langue et injecte le contexte d'activation du workflow.
 
-### Informational Pattern Filtering
+3. **`persistent-mode.ts`** (`.claude/hooks/persistent-mode.ts`) : Assure l'exécution persistante des workflows en vérifiant les fichiers d'état actifs et en réinjectant le contexte du workflow.
 
-The `informationalPatterns` section of `triggers.json` defines phrases that indicate questions rather than commands. These are checked before workflow activation:
+### Flux de détection
 
-| Language | Informational Patterns |
-|----------|----------------------|
-| English | "what is", "what are", "how to", "how does", "explain", "describe", "tell me about" |
-| Korean | "뭐야", "무엇", "어떻게", "설명해", "알려줘" |
-| Japanese | "とは", "って何", "どうやって", "説明して" |
-| Chinese | "是什么", "什么是", "怎么", "解释" |
+1. L'utilisateur saisit une entrée en langage naturel
+2. Le hook vérifie si une commande explicite `/command` est présente (si oui, la détection est ignorée pour éviter les doublons)
+3. Le hook scanne l'entrée par rapport aux listes de mots-clés de `triggers.json`
+4. Si une correspondance est trouvée, vérifier si l'entrée correspond à des patterns informationnels
+5. Si informationnelle (ex. : « what is orchestrate? »), la filtrer -- pas de déclenchement de workflow
+6. Si actionnable, injecter `[OMA WORKFLOW: {workflow-name}]` dans le contexte
+7. L'agent lit le tag injecté et charge le fichier de workflow correspondant depuis `.agents/workflows/`
 
-If the input matches both a workflow keyword and an informational pattern, the informational pattern takes priority and no workflow is triggered.
+### Filtrage des patterns informationnels
 
-### Excluded Workflows
+La section `informationalPatterns` de `triggers.json` définit des phrases qui indiquent des questions plutôt que des commandes. Elles sont vérifiées avant l'activation du workflow :
 
-The following workflows are excluded from auto-detection and must be invoked with explicit `/command`:
+| Langue | Patterns informationnels |
+|--------|-------------------------|
+| Anglais | "what is", "what are", "how to", "how does", "explain", "describe", "tell me about" |
+| Coréen | "뭐야", "무엇", "어떻게", "설명해", "알려줘" |
+| Japonais | "とは", "って何", "どうやって", "説明して" |
+| Chinois | "是什么", "什么是", "怎么", "解释" |
+
+Si l'entrée correspond à la fois à un mot-clé de workflow et à un pattern informationnel, le pattern informationnel a priorité et aucun workflow n'est déclenché.
+
+### Workflows exclus
+
+Les workflows suivants sont exclus de la détection automatique et doivent être invoqués avec une commande explicite `/command` :
 - `/commit`
 - `/setup`
 - `/tools`
@@ -369,11 +369,11 @@ The following workflows are excluded from auto-detection and must be invoked wit
 
 ---
 
-## Persistent Mode Mechanics
+## Mécanisme du mode persistant
 
-### State Files
+### Fichiers d'état
 
-Persistent workflows (orchestrate, ultrawork, coordinate) create state files in `.agents/state/`:
+Les workflows persistants (orchestrate, ultrawork, coordinate) créent des fichiers d'état dans `.agents/state/` :
 
 ```
 .agents/state/
@@ -382,51 +382,51 @@ Persistent workflows (orchestrate, ultrawork, coordinate) create state files in 
 └── coordinate-state.json
 ```
 
-These files contain: workflow name, current phase/step, session ID, timestamp, and any pending state.
+Ces fichiers contiennent : le nom du workflow, la phase/étape en cours, l'identifiant de session, l'horodatage et tout état en attente.
 
-### Reinforcement
+### Renforcement
 
-While a persistent workflow is active, the `persistent-mode.ts` hook injects `[OMA PERSISTENT MODE: {workflow-name}]` into every user message. This ensures the workflow continues executing even across conversation turns.
+Tant qu'un workflow persistant est actif, le hook `persistent-mode.ts` injecte `[OMA PERSISTENT MODE: {workflow-name}]` dans chaque message utilisateur. Cela garantit que le workflow continue de s'exécuter même entre les tours de conversation.
 
-### Deactivation
+### Désactivation
 
-To deactivate a persistent workflow, the user says "workflow done" (or equivalent in their configured language). This:
-1. Deletes the state file from `.agents/state/`
-2. Stops injecting the persistent mode context
-3. Returns to normal operation
+Pour désactiver un workflow persistant, l'utilisateur dit « workflow done » (ou l'équivalent dans sa langue configurée). Cela :
+1. Supprime le fichier d'état de `.agents/state/`
+2. Arrête l'injection du contexte de mode persistant
+3. Retourne au fonctionnement normal
 
-The workflow can also end naturally when all steps are completed and the final gate passes.
+Le workflow peut également se terminer naturellement lorsque toutes les étapes sont complétées et que la porte finale est passée.
 
 ---
 
-## Typical Workflow Sequences
+## Séquences de workflows typiques
 
-### Quick Feature
+### Fonctionnalité rapide
 ```
-/plan → review output → /exec-plan
-```
-
-### Complex Multi-Domain Project
-```
-/coordinate → PM plans → user confirms → agents spawn → QA reviews → fix issues → ship
+/plan → revue de la sortie → /exec-plan
 ```
 
-### Maximum Quality Delivery
+### Projet complexe multi-domaines
 ```
-/ultrawork → PLAN (4 review steps) → IMPL → VERIFY (3 review steps) → REFINE (5 review steps) → SHIP (4 review steps)
-```
-
-### Bug Investigation
-```
-/debug → reproduce → root cause → minimal fix → regression test → similar pattern scan
+/coordinate → PM planifie → l'utilisateur confirme → agents lancés → QA révise → correction des problèmes → livraison
 ```
 
-### Design-to-Implementation Pipeline
+### Livraison de qualité maximale
 ```
-/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /commit
+/ultrawork → PLAN (4 étapes de revue) → IMPL → VERIFY (3 étapes de revue) → REFINE (5 étapes de revue) → SHIP (4 étapes de revue)
 ```
 
-### New Codebase Setup
+### Investigation de bug
 ```
-/deepinit → AGENTS.md + ARCHITECTURE.md + docs/ → /setup → CLI and MCP configuration
+/debug → reproduire → cause profonde → correction minimale → test de régression → scan des motifs similaires
+```
+
+### Pipeline du design à l'implémentation
+```
+/brainstorm → document de conception → /plan → découpage des tâches → /orchestrate → implémentation parallèle → /review → /commit
+```
+
+### Mise en place d'un nouveau code source
+```
+/deepinit → AGENTS.md + ARCHITECTURE.md + docs/ → /setup → configuration CLI et MCP
 ```

@@ -7,7 +7,7 @@ description: Kompletna referencja każdego polecenia CLI oh-my-agent — składn
 
 Po globalnej instalacji (`bun install --global oh-my-agent`), używaj `oma` lub `oh-my-ag`. Oba są aliasami tego samego pliku binarnego. Do jednorazowego użycia bez instalacji uruchom `npx oh-my-agent`.
 
-Zmienna środowiskowa `OH_MY_AG_OUTPUT_FORMAT` może być ustawiona na `json` aby wymusić wyjście maszynowe na poleceniach które to obsługują. To odpowiednik przekazania `--json` do każdego polecenia.
+Zmienna środowiskowa `OH_MY_AG_OUTPUT_FORMAT` może być ustawiona na `json` aby wymusić wyjście maszynowe na poleceniach, które to obsługują. To odpowiednik przekazania `--json` do każdego polecenia.
 
 ---
 
@@ -114,6 +114,49 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 Tryb inline: `agent:task[:workspace]`. Tryb YAML: plik z kluczem `tasks`. Tryb `--no-wait`: uruchom i powróć natychmiast.
+
+### agent:review
+
+Uruchamia przegląd kodu przy użyciu zewnętrznego CLI AI (codex, claude, gemini lub qwen).
+
+```
+oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+```
+
+| Flaga | Opis |
+|:-----|:-----------|
+| `-m, --model <vendor>` | Dostawca CLI: `codex`, `claude`, `gemini`, `qwen`. Domyślnie rozwiązany dostawca z konfiguracji. |
+| `-p, --prompt <prompt>` | Niestandardowy prompt przeglądu. Jeśli pominięty, używany jest domyślny prompt przeglądu kodu. |
+| `-w, --workspace <path>` | Ścieżka do przeglądu. Domyślnie bieżący katalog roboczy. |
+| `--no-uncommitted` | Pomiń przegląd niezacommitowanych zmian. Gdy ustawione, przeglądane są tylko zmiany zacommitowane w sesji. |
+
+**Co robi:**
+- Automatycznie wykrywa bieżący ID sesji ze środowiska lub ostatniej aktywności git.
+- Dla `codex`: używa natywnego podpolecenia `codex review`.
+- Dla `claude`, `gemini`, `qwen`: konstruuje żądanie przeglądu oparte na prompcie i wywołuje CLI z promptem przeglądu.
+- Domyślnie przegląda niezacommitowane zmiany w katalogu roboczym.
+- Z `--no-uncommitted` ogranicza przegląd do zmian zacommitowanych w bieżącej sesji.
+
+**Przykłady:**
+```bash
+# Przegląd niezacommitowanych zmian z domyślnym dostawcą
+oma agent:review
+
+# Przegląd z codex (używa natywnego polecenia codex review)
+oma agent:review -m codex
+
+# Przegląd z claude z niestandardowym promptem
+oma agent:review -m claude -p "Skup się na podatnościach bezpieczeństwa i walidacji danych wejściowych"
+
+# Przegląd konkretnej ścieżki
+oma agent:review -w ./apps/api
+
+# Przegląd tylko zacommitowanych zmian (pomiń drzewo robocze)
+oma agent:review --no-uncommitted
+
+# Przegląd zacommitowanych zmian w określonej przestrzeni roboczej z gemini
+oma agent:review -m gemini -w ./apps/web --no-uncommitted
+```
 
 ---
 

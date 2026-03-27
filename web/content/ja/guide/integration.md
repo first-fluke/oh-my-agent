@@ -48,7 +48,7 @@ Python、Node.js、Rust、その他/自動検出。
 
 Claude Codeシンボリックリンクは常に作成。GitHub Copilotは`.github/`があれば自動、なければ確認。
 
-### 7. Git Rereseセットアップ
+### 7. Git Rerereセットアップ
 
 マルチエージェントワークフローのマージコンフリクト解決を記憶するgit rerereの有効化を提案。
 

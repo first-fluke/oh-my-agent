@@ -7,13 +7,13 @@ description: Documentación completa del GitHub Action de oh-my-agent — config
 
 ## Descripción General
 
-The oh-my-agent GitHub Action (`first-fluke/oma-update-action@v1`) automatically updates your project's agent skills by running `oma update` in CI. It supports two modes: creating a pull request for review, or committing directly to a branch.
+El GitHub Action de oh-my-agent (`first-fluke/oma-update-action@v1`) actualiza automaticamente las habilidades de agentes de tu proyecto ejecutando `oma update` en CI. Soporta dos modos: crear un pull request para revision, o confirmar directamente en una rama.
 
 ---
 
 ## Configuración Rápida
 
-Add this file to your project as `.github/workflows/update-oh-my-agent.yml`:
+Agrega este archivo a tu proyecto como `.github/workflows/update-oh-my-agent.yml`:
 
 ```yaml
 name: Update oh-my-agent
@@ -36,7 +36,7 @@ jobs:
       - uses: first-fluke/oma-update-action@v1
 ```
 
-That is the minimal configuration. It creates a PR with default settings when a new version is available.
+Esa es la configuracion minima. Crea un PR con configuracion por defecto cuando hay una nueva version disponible.
 
 ---
 
@@ -302,4 +302,4 @@ After this, depending on the `mode` input:
 | **Downstream triggers** | Need PAT for workflow triggers | Sync workflow is triggered by push to main |
 | **Best for** | Simple projects, single team | Multi-project organizations, compliance needs |
 
-For most teams, the GitHub Action is sufficient. Use the central registry when you need version pinning, checksum verification, or coordinated updates across many projects.
+Para la mayoria de equipos, el GitHub Action es suficiente. Usa el registro central cuando necesites fijacion de versiones, verificacion de checksum o actualizaciones coordinadas en multiples proyectos.

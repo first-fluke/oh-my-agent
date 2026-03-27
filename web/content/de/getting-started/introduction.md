@@ -3,164 +3,164 @@ title: Einführung
 description: Ein umfassender Überblick über oh-my-agent — das Multi-Agenten-Orchestrierungs-Framework, das KI-Coding-Assistenten in spezialisierte Engineering-Teams mit 14 Domain-Agenten, progressivem Skill-Loading und IDE-übergreifender Portabilität verwandelt.
 ---
 
-# Introduction
+# Einführung
 
-oh-my-agent is a multi-agent orchestration framework for AI-powered IDEs and CLI tools. Instead of relying on a single AI assistant for everything, oh-my-agent decomposes work across 14 specialized agents — each modeled after a real engineering team role with its own tech stack knowledge, execution protocols, error playbooks, and quality checklists.
+oh-my-agent ist ein Multi-Agenten-Orchestrierungs-Framework für KI-gestützte IDEs und CLI-Tools. Anstatt sich für alles auf einen einzelnen KI-Assistenten zu verlassen, verteilt oh-my-agent die Arbeit auf 14 spezialisierte Agenten — jeder ist einer realen Engineering-Teamrolle nachempfunden, mit eigenem Tech-Stack-Wissen, Ausführungsprotokollen, Fehler-Playbooks und Qualitätschecklisten.
 
-The entire system lives in a portable `.agents/` directory inside your project. Switch between Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor, or any other supported tool — your agent configuration travels with your code.
-
----
-
-## The Multi-Agent Paradigm
-
-Traditional AI coding assistants operate as generalists. They handle frontend, backend, database, security, and infrastructure with the same prompt context and the same level of expertise. This leads to:
-
-- **Context dilution** — loading knowledge for every domain wastes the context window
-- **Inconsistent quality** — a generalist can not match a specialist in any single domain
-- **No coordination** — complex features spanning multiple domains get handled sequentially
-
-oh-my-agent solves this with specialization:
-
-1. **Each agent knows one domain deeply.** The frontend agent knows React/Next.js, shadcn/ui, TailwindCSS v4, FSD-lite architecture. The backend agent knows the Repository-Service-Router pattern, parameterized queries, JWT authentication. They do not overlap.
-
-2. **Agents run in parallel.** While the backend agent builds your API, the frontend agent is already creating the UI. The orchestrator coordinates via shared memory.
-
-3. **Quality is built in.** Every agent has a domain-specific checklist and error playbook. Charter preflight catches scope creep before code is written. QA review is a first-class step, not an afterthought.
+Das gesamte System befindet sich in einem portablen `.agents/`-Verzeichnis innerhalb Ihres Projekts. Wechseln Sie zwischen Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor oder einem anderen unterstützten Tool — Ihre Agentenkonfiguration reist mit Ihrem Code.
 
 ---
 
-## All 14 Agents
+## Das Multi-Agenten-Paradigma
 
-### Ideation and Planning
+Herkömmliche KI-Coding-Assistenten arbeiten als Generalisten. Sie behandeln Frontend, Backend, Datenbank, Sicherheit und Infrastruktur mit demselben Prompt-Kontext und demselben Expertisegrad. Dies führt zu:
 
-| Agent | Role | Key Capabilities |
+- **Kontextverwässerung** — das Laden von Wissen für jede Domäne verschwendet das Kontextfenster
+- **Inkonsistente Qualität** — ein Generalist kann in keiner einzelnen Domäne mit einem Spezialisten mithalten
+- **Keine Koordination** — komplexe Features, die mehrere Domänen umfassen, werden sequenziell bearbeitet
+
+oh-my-agent löst dies durch Spezialisierung:
+
+1. **Jeder Agent kennt eine Domäne tiefgehend.** Der Frontend-Agent kennt React/Next.js, shadcn/ui, TailwindCSS v4, FSD-lite-Architektur. Der Backend-Agent kennt das Repository-Service-Router-Muster, parametrisierte Abfragen, JWT-Authentifizierung. Sie überschneiden sich nicht.
+
+2. **Agenten laufen parallel.** Während der Backend-Agent Ihre API erstellt, baut der Frontend-Agent bereits die Benutzeroberfläche. Der Orchestrator koordiniert über gemeinsamen Speicher.
+
+3. **Qualität ist eingebaut.** Jeder Agent verfügt über eine domänenspezifische Checkliste und ein Fehler-Playbook. Charter Preflight erkennt Scope-Creep, bevor Code geschrieben wird. QA-Review ist ein erstklassiger Schritt, kein Nachgedanke.
+
+---
+
+## Alle 14 Agenten
+
+### Ideenfindung und Planung
+
+| Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
-| **oma-brainstorm** | Design-first ideation | Explores user intent, proposes 2-3 approaches with trade-off analysis, produces design documents before any code is written. 6-phase workflow: Context, Questions, Approaches, Design, Documentation, Transition to `/plan`. |
-| **oma-pm** | Product manager | Decomposes requirements into prioritized tasks with dependencies. Defines API contracts. Outputs `.agents/plan.json` and `task-board.md`. Supports ISO 21500 concepts, ISO 31000 risk framing, ISO 38500 governance. |
+| **oma-brainstorm** | Design-first-Ideenfindung | Erkundet Benutzerabsichten, schlägt 2-3 Ansätze mit Abwägungsanalyse vor, erstellt Designdokumente, bevor Code geschrieben wird. 6-Phasen-Workflow: Kontext, Fragen, Ansätze, Design, Dokumentation, Überleitung zu `/plan`. |
+| **oma-pm** | Produktmanager | Zerlegt Anforderungen in priorisierte Aufgaben mit Abhängigkeiten. Definiert API-Verträge. Gibt `.agents/plan.json` und `task-board.md` aus. Unterstützt ISO-21500-Konzepte, ISO-31000-Risikorahmen, ISO-38500-Governance. |
 
-### Implementation
+### Implementierung
 
-| Agent | Role | Tech Stack & Resources |
+| Agent | Rolle | Tech-Stack und Ressourcen |
 |-------|------|----------------------|
-| **oma-frontend** | UI/UX specialist | React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui, FSD-lite architecture. Libraries: luxon (dates), ahooks (hooks), es-toolkit (utils), Jotai (client state), TanStack Query (server state), @tanstack/react-form + Zod (forms), better-auth (auth), nuqs (URL state). Resources: `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `component-template.tsx`, `snippets.md`, `error-playbook.md`, `checklist.md`, `examples/`. |
-| **oma-backend** | API & server specialist | Clean architecture (Router-Service-Repository-Models). Stack-agnostic — detects Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET from project manifests. JWT + bcrypt for auth. Resources: `execution-protocol.md`, `orm-reference.md`, `examples.md`, `checklist.md`, `error-playbook.md`. Supports `/stack-set` for generating language-specific `stack/` references. |
-| **oma-mobile** | Cross-platform mobile | Flutter, Dart, Riverpod/Bloc for state management, Dio with interceptors for API calls, GoRouter for navigation. Clean architecture: domain-data-presentation. Material Design 3 (Android) + iOS HIG. 60fps target. Resources: `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `checklist.md`, `error-playbook.md`. |
-| **oma-db** | Database architecture | SQL, NoSQL, and vector database modeling. Schema design (3NF default), normalization, indexing, transactions, capacity planning, backup strategy. Supports ISO 27001/27002/22301-aware design. Resources: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`. |
+| **oma-frontend** | UI/UX-Spezialist | React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui, FSD-lite-Architektur. Bibliotheken: luxon (Datum), ahooks (Hooks), es-toolkit (Hilfsfunktionen), Jotai (Client-Status), TanStack Query (Server-Status), @tanstack/react-form + Zod (Formulare), better-auth (Authentifizierung), nuqs (URL-Status). Ressourcen: `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `component-template.tsx`, `snippets.md`, `error-playbook.md`, `checklist.md`, `examples/`. |
+| **oma-backend** | API- und Server-Spezialist | Clean Architecture (Router-Service-Repository-Modelle). Stack-agnostisch — erkennt Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET aus Projektmanifesten. JWT + bcrypt für Authentifizierung. Ressourcen: `execution-protocol.md`, `orm-reference.md`, `examples.md`, `checklist.md`, `error-playbook.md`. Unterstützt `/stack-set` zur Generierung sprachspezifischer `stack/`-Referenzen. |
+| **oma-mobile** | Plattformübergreifender Mobile-Spezialist | Flutter, Dart, Riverpod/Bloc für Zustandsverwaltung, Dio mit Interceptors für API-Aufrufe, GoRouter für Navigation. Clean Architecture: Domäne-Daten-Präsentation. Material Design 3 (Android) + iOS HIG. 60-fps-Ziel. Ressourcen: `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `checklist.md`, `error-playbook.md`. |
+| **oma-db** | Datenbankarchitekt | SQL-, NoSQL- und Vektordatenbank-Modellierung. Schema-Design (3NF-Standard), Normalisierung, Indizierung, Transaktionen, Kapazitätsplanung, Backup-Strategie. Unterstützt ISO-27001/27002/22301-bewusstes Design. Ressourcen: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`. |
 
 ### Design
 
-| Agent | Role | Key Capabilities |
+| Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
-| **oma-design** | Design system specialist | Creates DESIGN.md with tokens, typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2 compliance. 7-phase workflow: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Enforces anti-patterns (no "AI slop"). Optional Stitch MCP integration. Resources: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/` directory with typography, color, spatial, motion, responsive, component, accessibility, and shader guides. |
+| **oma-design** | Design-System-Spezialist | Erstellt DESIGN.md mit Tokens, Typografie, Farbsystemen, Motion-Design (motion/react, GSAP, Three.js), responsive-first-Layouts, WCAG-2.2-Konformität. 7-Phasen-Workflow: Setup, Extraktion, Anreicherung, Vorschlag, Generierung, Audit, Übergabe. Setzt Anti-Patterns durch (kein "KI-Kitsch"). Optionale Stitch-MCP-Integration. Ressourcen: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/`-Verzeichnis mit Leitfäden für Typografie, Farbe, Raum, Bewegung, Responsivität, Komponenten, Barrierefreiheit und Shader. |
 
-### Infrastructure and DevOps
+### Infrastruktur und DevOps
 
-| Agent | Role | Key Capabilities |
+| Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
-| **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), cost optimization. Supports ISO/IEC 42001 AI controls, ISO 22301 continuity, ISO/IEC/IEEE 42010 architecture documentation. Resources: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
-| **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Resources: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-tf-infra** | Infrastructure-as-Code | Multi-Cloud-Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first-Authentifizierung, minimale IAM-Berechtigungen, Policy-as-Code (OPA/Sentinel), Kostenoptimierung. Unterstützt ISO/IEC-42001-KI-Kontrollen, ISO-22301-Kontinuität, ISO/IEC/IEEE-42010-Architekturdokumentation. Ressourcen: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
+| **oma-dev-workflow** | Monorepo-Aufgabenautomatisierung | mise Task Runner, CI/CD-Pipelines, Datenbankmigrationen, Release-Koordination, Git-Hooks, Pre-Commit-Validierung. Ressourcen: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
 
-### Quality and Debugging
+### Qualität und Debugging
 
-| Agent | Role | Key Capabilities |
+| Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
-| **oma-qa** | Quality assurance | Security audit (OWASP Top 10), performance analysis, accessibility (WCAG 2.1 AA), code quality review. Severity: CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation code. Supports ISO/IEC 25010 quality characteristics and ISO/IEC 29119 test alignment. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
-| **oma-debug** | Bug diagnosis and fixing | Reproduce-first methodology. Root cause analysis, minimal fixes, mandatory regression tests, similar pattern scanning. Uses Serena MCP for symbol tracing. Resources: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
+| **oma-qa** | Qualitätssicherung | Sicherheitsaudit (OWASP Top 10), Performance-Analyse, Barrierefreiheit (WCAG 2.1 AA), Code-Qualitäts-Review. Schweregrade: CRITICAL/HIGH/MEDIUM/LOW mit Datei:Zeile und Behebungscode. Unterstützt ISO/IEC-25010-Qualitätsmerkmale und ISO/IEC-29119-Testausrichtung. Ressourcen: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
+| **oma-debug** | Bug-Diagnose und -Behebung | Reproduktion-zuerst-Methodik. Grundursachenanalyse, minimale Korrekturen, obligatorische Regressionstests, Scan nach ähnlichen Mustern. Verwendet Serena MCP zur Symbolverfolgung. Ressourcen: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Localization, Coordination, and Git
+### Lokalisierung, Koordination und Git
 
-| Agent | Role | Key Capabilities |
+| Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
-| **oma-translator** | Context-aware translation | 4-stage translation method: Analyze Source, Extract Meaning, Reconstruct in Target Language, Verify. Preserves tone, register, and domain terminology. Anti-AI pattern detection. Supports batch translation (i18n files). Optional 7-stage refined mode for publication quality. Resources: `translation-rubric.md`, `anti-ai-patterns.md`. |
-| **oma-orchestrator** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-commit** | Conventional commits | Analyzes changes, determines type/scope, splits by feature when appropriate, generates commit messages in Conventional Commits format. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+| **oma-translator** | Kontextbewusste Übersetzung | 4-Stufen-Übersetzungsmethode: Quelle analysieren, Bedeutung extrahieren, in Zielsprache rekonstruieren, Verifizieren. Bewahrt Ton, Register und Fachterminologie. Anti-KI-Mustererkennung. Unterstützt Stapelübersetzung (i18n-Dateien). Optionaler 7-Stufen-verfeinerter Modus für Publikationsqualität. Ressourcen: `translation-rubric.md`, `anti-ai-patterns.md`. |
+| **oma-orchestrator** | Automatisierter Multi-Agenten-Koordinator | Startet CLI-Subagenten parallel, koordiniert über MCP-Memory, überwacht Fortschritt, führt Verifikationsschleifen durch. Konfigurierbar: MAX_PARALLEL (Standard 3), MAX_RETRIES (Standard 2), POLL_INTERVAL (Standard 30 s). Enthält Agenten-zu-Agenten-Review-Schleife und Clarification-Debt-Überwachung. Ressourcen: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-commit** | Conventional Commits | Analysiert Änderungen, bestimmt Typ/Scope, teilt nach Feature auf wenn angemessen, generiert Commit-Nachrichten im Conventional-Commits-Format. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ---
 
-## Progressive Disclosure Model
+## Progressives Offenlegungsmodell
 
-oh-my-agent uses a two-layer skill architecture to prevent context window exhaustion:
+oh-my-agent verwendet eine Zwei-Schichten-Skill-Architektur, um eine Erschöpfung des Kontextfensters zu verhindern:
 
-**Layer 1 — SKILL.md (~800 bytes, always loaded):**
-Contains the agent's identity, routing conditions, core rules, and "when to use / when NOT to use" guidance. This is all that is loaded when the agent is not actively working.
+**Schicht 1 — SKILL.md (~800 Bytes, immer geladen):**
+Enthält die Identität des Agenten, Routing-Bedingungen, Kernregeln und "Wann verwenden / Wann NICHT verwenden"-Hinweise. Dies ist alles, was geladen wird, wenn der Agent nicht aktiv arbeitet.
 
-**Layer 2 — resources/ (loaded on-demand):**
-Contains execution protocols, tech stack references, code snippets, error playbooks, checklists, and examples. These are loaded only when the agent is invoked for a task, and even then, only the resources relevant to the specific task type are loaded (based on the difficulty assessment and task-resource mapping in `context-loading.md`).
+**Schicht 2 — resources/ (bedarfsgesteuert geladen):**
+Enthält Ausführungsprotokolle, Tech-Stack-Referenzen, Code-Snippets, Fehler-Playbooks, Checklisten und Beispiele. Diese werden nur geladen, wenn der Agent für eine Aufgabe aufgerufen wird, und selbst dann nur die Ressourcen, die für den spezifischen Aufgabentyp relevant sind (basierend auf der Schwierigkeitsbewertung und der Aufgaben-Ressourcen-Zuordnung in `context-loading.md`).
 
-This design saves approximately 75% of tokens compared to loading everything upfront. For flash-tier models (128K context), the total resource budget is approximately 3,100 tokens — just 2.4% of the context window.
+Dieses Design spart etwa 75 % der Tokens im Vergleich zum Laden aller Ressourcen im Voraus. Bei Flash-Tier-Modellen (128K Kontext) beträgt das Gesamtressourcenbudget etwa 3.100 Tokens — nur 2,4 % des Kontextfensters.
 
 ---
 
-## .agents/ — The Single Source of Truth (SSOT)
+## .agents/ — Die einzige Wahrheitsquelle (SSOT)
 
-Everything oh-my-agent needs lives in the `.agents/` directory:
+Alles, was oh-my-agent benötigt, befindet sich im `.agents/`-Verzeichnis:
 
 ```
 .agents/
 ├── config/                 # user-preferences.yaml
-├── skills/                 # 15 skill directories (14 agents + _shared)
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{agent}/        # Per-agent SKILL.md + resources/
-├── workflows/              # 14 workflow definitions
-├── agents/                 # 7 subagent definitions
-├── plan.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── skills/                 # 15 Skill-Verzeichnisse (14 Agenten + _shared)
+│   ├── _shared/            # Kernressourcen für alle Agenten
+│   └── oma-{agent}/        # Pro-Agent SKILL.md + resources/
+├── workflows/              # 14 Workflow-Definitionen
+├── agents/                 # 7 Subagenten-Definitionen
+├── plan.json               # Generierter Plan-Output
+├── state/                  # Aktive Workflow-Zustandsdateien
+├── results/                # Agenten-Ergebnisdateien
+└── mcp.json                # MCP-Server-Konfiguration
 ```
 
-The `.claude/` directory exists only as an IDE integration layer — it contains symlinks pointing back to `.agents/`, plus hooks for keyword detection and the HUD statusline. The `.serena/memories/` directory holds runtime state during orchestration sessions.
+Das `.claude/`-Verzeichnis existiert nur als IDE-Integrationsschicht — es enthält Symlinks, die auf `.agents/` zurückverweisen, sowie Hooks für die Keyword-Erkennung und die HUD-Statuszeile. Das `.serena/memories/`-Verzeichnis hält den Laufzeitzustand während Orchestrierungssitzungen.
 
-This architecture means your agent configuration is:
-- **Portable** — switch IDEs without reconfiguring
-- **Version-controlled** — commit `.agents/` alongside your code
-- **Shareable** — team members get the same agent setup
+Diese Architektur bedeutet, dass Ihre Agentenkonfiguration:
+- **Portabel** ist — IDE-Wechsel ohne Neukonfiguration
+- **Versionskontrolliert** ist — `.agents/` zusammen mit Ihrem Code committen
+- **Teilbar** ist — Teammitglieder erhalten dasselbe Agenten-Setup
 
 ---
 
-## Supported IDEs and CLI Tools
+## Unterstützte IDEs und CLI-Tools
 
-oh-my-agent works with any AI-powered IDE or CLI that supports skill/prompt loading:
+oh-my-agent funktioniert mit jeder KI-gestützten IDE oder CLI, die Skill-/Prompt-Loading unterstützt:
 
-| Tool | Integration Method | Parallel Agents |
+| Tool | Integrationsmethode | Parallele Agenten |
 |------|-------------------|----------------|
-| **Claude Code** | Native skills + Agent tool | Task tool for true parallelism |
-| **Gemini CLI** | Skills auto-loaded from `.agents/skills/` | `oh-my-ag agent:spawn` |
-| **Codex CLI** | Skills auto-loaded | Model-mediated parallel requests |
-| **Antigravity IDE** | Skills auto-loaded | `oh-my-ag agent:spawn` |
-| **Cursor** | Skills via `.cursor/` integration | Manual spawning |
-| **OpenCode** | Skills loading | Manual spawning |
+| **Claude Code** | Native Skills + Agent-Tool | Task-Tool für echte Parallelität |
+| **Gemini CLI** | Skills automatisch geladen aus `.agents/skills/` | `oh-my-ag agent:spawn` |
+| **Codex CLI** | Skills automatisch geladen | Modellvermittelte parallele Anfragen |
+| **Antigravity IDE** | Skills automatisch geladen | `oh-my-ag agent:spawn` |
+| **Cursor** | Skills über `.cursor/`-Integration | Manuelles Starten |
+| **OpenCode** | Skills-Loading | Manuelles Starten |
 
-Agent spawning adapts to each vendor automatically via the vendor detection protocol, which checks for vendor-specific markers (e.g., the `Agent` tool for Claude Code, `apply_patch` for Codex CLI).
+Die Agentenstart-Mechanik passt sich automatisch an jeden Vendor über das Vendor-Erkennungsprotokoll an, das vendor-spezifische Marker prüft (z. B. das `Agent`-Tool für Claude Code, `apply_patch` für Codex CLI).
 
 ---
 
-## Skill Routing System
+## Skill-Routing-System
 
-When you send a prompt, oh-my-agent determines which agent handles it using the skill routing map (`.agents/skills/_shared/core/skill-routing.md`):
+Wenn Sie einen Prompt senden, bestimmt oh-my-agent mithilfe der Skill-Routing-Karte (`.agents/skills/_shared/core/skill-routing.md`), welcher Agent ihn bearbeitet:
 
-| Domain Keywords | Routed To |
+| Domänen-Keywords | Weitergeleitet an |
 |----------------|-----------|
-| API, endpoint, REST, GraphQL, database, migration | oma-backend |
-| auth, JWT, login, register, password | oma-backend |
-| UI, component, page, form, screen (web) | oma-frontend |
-| style, Tailwind, responsive, CSS | oma-frontend |
-| mobile, iOS, Android, Flutter, React Native, app | oma-mobile |
-| bug, error, crash, broken, slow | oma-debug |
-| review, security, performance, accessibility | oma-qa |
-| UI design, design system, landing page, DESIGN.md | oma-design |
-| brainstorm, ideate, explore, idea | oma-brainstorm |
-| plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestrator |
+| API, Endpunkt, REST, GraphQL, Datenbank, Migration | oma-backend |
+| Auth, JWT, Login, Registrierung, Passwort | oma-backend |
+| UI, Komponente, Seite, Formular, Bildschirm (Web) | oma-frontend |
+| Style, Tailwind, Responsive, CSS | oma-frontend |
+| Mobil, iOS, Android, Flutter, React Native, App | oma-mobile |
+| Bug, Fehler, Absturz, defekt, langsam | oma-debug |
+| Review, Sicherheit, Performance, Barrierefreiheit | oma-qa |
+| UI-Design, Design-System, Landingpage, DESIGN.md | oma-design |
+| Brainstorm, Ideenfindung, Erkunden, Idee | oma-brainstorm |
+| Plan, Aufschlüsselung, Aufgabe, Sprint | oma-pm |
+| Automatisch, Parallel, Orchestrieren | oma-orchestrator |
 
-For complex requests that span multiple domains, routing follows established execution orders. For example, "Create a fullstack app" routes to: oma-pm (plan) then oma-backend + oma-frontend (parallel implementation) then oma-qa (review).
+Bei komplexen Anfragen, die mehrere Domänen umfassen, folgt das Routing etablierten Ausführungsreihenfolgen. Zum Beispiel wird "Erstelle eine Fullstack-App" weitergeleitet an: oma-pm (Plan), dann oma-backend + oma-frontend (parallele Implementierung), dann oma-qa (Review).
 
 ---
 
-## What is Next
+## Nächste Schritte
 
-- **[Installation](./installation)** — Three install methods, presets, CLI setup, and verification
-- **[Agents](/core-concepts/agents)** — Deep dive into all 14 agents and charter preflight
-- **[Skills](/core-concepts/skills)** — The two-layer architecture explained
-- **[Workflows](/core-concepts/workflows)** — All 14 workflows with triggers and phases
-- **[Usage Guide](/guide/usage)** — Real examples from single tasks to full orchestration
+- **[Installation](./installation)** — Drei Installationsmethoden, Presets, CLI-Einrichtung und Verifikation
+- **[Agenten](/core-concepts/agents)** — Vertiefung in alle 14 Agenten und Charter Preflight
+- **[Skills](/core-concepts/skills)** — Die Zwei-Schichten-Architektur erklärt
+- **[Workflows](/core-concepts/workflows)** — Alle 14 Workflows mit Triggern und Phasen
+- **[Nutzungsleitfaden](/guide/usage)** — Praxisbeispiele von Einzelaufgaben bis zur vollständigen Orchestrierung

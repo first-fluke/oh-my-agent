@@ -168,6 +168,16 @@ Quando `-w` é omitido (ou definido como `.`), o CLI detecta o melhor workspace:
 4. Correspondência exata de nome de diretório pontua 100, contém-palavra pontua 50, caminho-contém pontua 25.
 5. Diretório com maior pontuação vence.
 
+### Candidatos de Fallback
+
+Se nenhuma config de monorepo existe, o CLI verifica caminhos codificados em ordem:
+
+- **frontend:** `apps/web`, `apps/frontend`, `apps/client`, `packages/web`, `packages/frontend`, `frontend`, `web`, `client`
+- **backend:** `apps/api`, `apps/backend`, `apps/server`, `packages/api`, `packages/backend`, `backend`, `api`, `server`
+- **mobile:** `apps/mobile`, `apps/app`, `packages/mobile`, `mobile`, `app`
+
+Se nada corresponde, o agente executa no diretório atual (`.`).
+
 ### Sobrescrita Explícita
 
 Sempre disponível:
@@ -225,6 +235,67 @@ No workflow ultrawork, esses se traduzem em **portões de fase** explícitos (PL
 
 ---
 
+## Exemplos de Spawn
+
+### Spawn de Agente Único
+
+```bash
+# Spawnar agente backend com Gemini (padrão)
+oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+
+# Spawnar agente frontend com Claude, workspace explícito
+oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+
+# Spawnar de arquivo de prompt
+oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+```
+
+### Execução Paralela via agent:parallel
+
+Usando arquivo YAML de tarefas:
+
+```yaml
+# tasks.yaml
+tasks:
+  - agent: backend
+    task: "Implement user authentication API with JWT tokens"
+    workspace: ./api
+  - agent: frontend
+    task: "Build login page and auth flow UI"
+    workspace: ./web
+  - agent: mobile
+    task: "Implement mobile auth screens with biometric support"
+    workspace: ./mobile
+```
+
+```bash
+oma agent:parallel tasks.yaml
+```
+
+Usando modo inline:
+
+```bash
+oma agent:parallel --inline \
+  "backend:Implement user auth API:./api" \
+  "frontend:Build login page:./web" \
+  "mobile:Implement auth screens:./mobile"
+```
+
+Modo background (sem espera):
+
+```bash
+oma agent:parallel tasks.yaml --no-wait
+# Retorna imediatamente, resultados escritos em .agents/results/parallel-{timestamp}/
+```
+
+Com sobrescrita de vendor:
+
+```bash
+oma agent:parallel tasks.yaml -m claude
+```
+
+---
+
 ## Anti-Padrões a Evitar
 
 ### 1. Pular o Plano
@@ -254,6 +325,24 @@ Executar tarefas P1 antes das tarefas P0 completarem. Tiers de prioridade existe
 ### 7. Pular Verificação
 
 Usar `agent:spawn` diretamente sem executar o script de verificação depois. A etapa de verificação detecta falhas de build, regressões de testes e violações de escopo que de outra forma se propagariam.
+
+---
+
+## Validação de Integração Cross-Domínio
+
+Após todos os agentes completarem suas tarefas individuais, a integração cross-domínio deve ser validada:
+
+1. **Alinhamento de contrato de API** -- Ferramentas MCP (`find_symbol`, `search_for_pattern`) verificam que implementações backend correspondem aos contratos consumidos por frontend e mobile.
+
+2. **Consistência de tipos** -- Tipos TypeScript, dataclasses Python ou modelos Dart compartilhados entre domínios devem usar nomes de campos e tipos consistentes.
+
+3. **Fluxo de autenticação** -- Se o backend implementa auth JWT, o frontend deve enviar tokens corretamente nos headers, e o app mobile deve armazená-los e renová-los adequadamente.
+
+4. **Tratamento de erros** -- Todos os consumidores de uma API devem tratar as respostas de erro documentadas. Se o backend retorna `{ "error": "unauthorized", "code": 401 }`, todos os clientes devem tratar este formato.
+
+5. **Alinhamento de schema de banco de dados** -- Se o agente de banco de dados cria migrações, os modelos ORM do backend devem corresponder exatamente ao schema.
+
+A Revisão de Alinhamento do agente QA (Step 6 no ultrawork, Step 6 no coordinate) realiza esta validação cross-domínio sistematicamente.
 
 ---
 

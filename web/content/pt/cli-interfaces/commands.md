@@ -89,6 +89,16 @@ oma update [-f | --force] [--ci]
 | `-f, --force` | Sobrescrever arquivos de config customizados (`user-preferences.yaml`, `mcp.json`, diretórios `stack/`) |
 | `--ci` | Executar em modo CI não-interativo (pular prompts, saída em texto puro) |
 
+**O que faz:**
+1. Busca `prompt-manifest.json` do registro para verificar a versão mais recente.
+2. Compara com a versão local em `.agents/skills/_version.json`.
+3. Se já estiver atualizado, encerra.
+4. Baixa e extrai o tarball mais recente.
+5. Preserva arquivos customizados pelo usuário (a menos que `--force` seja usado).
+6. Copia novos arquivos sobre `.agents/`.
+7. Restaura arquivos preservados.
+8. Atualiza adaptações de vendor e atualiza symlinks.
+
 **Exemplos:**
 ```bash
 # Atualização padrão (preserva config)
@@ -99,7 +109,14 @@ oma update --force
 
 # Modo CI (sem prompts, sem spinners)
 oma update --ci
+
+# Modo CI com force
+oma update --ci --force
 ```
+
+### setup (workflow)
+
+O workflow `/setup` (invocado dentro de uma sessão de agente) fornece configuração interativa de idioma, instalações CLI, conexões MCP e mapeamento agente-CLI. Isso é diferente do `oma` (o instalador) — `/setup` configura uma instância já instalada.
 
 ---
 
@@ -114,6 +131,8 @@ oma dashboard
 ```
 
 Sem opções. Observa `.serena/memories/` no diretório atual. Renderiza UI com box-drawing com status de sessão, tabela de agentes e feed de atividade. Atualiza em cada mudança de arquivo. Pressione `Ctrl+C` para sair.
+
+O diretório de memories pode ser sobrescrito com a variável de ambiente `MEMORIES_DIR`.
 
 **Exemplo:**
 ```bash
@@ -149,6 +168,14 @@ Visualizar métricas de produtividade.
 oma stats [--json] [--output <format>] [--reset]
 ```
 
+**Opções:**
+
+| Flag | Descrição |
+|:-----|:-----------|
+| `--json` | Saída como JSON |
+| `--output <format>` | Formato de saída (`text` ou `json`) |
+| `--reset` | Resetar todos os dados de métricas |
+
 **Métricas rastreadas:**
 - Contagem de sessões
 - Skills usadas (com frequência)
@@ -156,6 +183,20 @@ oma stats [--json] [--output <format>] [--reset]
 - Tempo total de sessão
 - Arquivos alterados, linhas adicionadas, linhas removidas
 - Timestamp de última atualização
+
+Métricas são armazenadas em `.serena/metrics.json`. Dados são coletados de estatísticas git e arquivos de memória.
+
+**Exemplos:**
+```bash
+# Visualizar métricas atuais
+oma stats
+
+# Saída JSON
+oma stats --json
+
+# Resetar todas as métricas
+oma stats --reset
+```
 
 ### retro
 
@@ -171,6 +212,15 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 |:---------|:----------|:-------|
 | `window` | Janela de tempo para análise (ex: `7d`, `2w`, `1m`) | Últimos 7 dias |
 
+**Opções:**
+
+| Flag | Descrição |
+|:-----|:-----------|
+| `--json` | Saída como JSON |
+| `--output <format>` | Formato de saída (`text` ou `json`) |
+| `--interactive` | Modo interativo com entrada manual |
+| `--compare` | Comparar janela atual vs período anterior de mesmo tamanho |
+
 **O que mostra:**
 - Resumo tweetável (métricas em uma linha)
 - Tabela resumo (commits, arquivos alterados, linhas adicionadas/removidas, contribuidores)
@@ -180,6 +230,27 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 - Sessões de trabalho
 - Breakdown de tipos de commit (feat, fix, chore, etc.)
 - Hotspots (arquivos mais alterados)
+
+**Exemplos:**
+```bash
+# Últimos 7 dias (padrão)
+oma retro
+
+# Últimos 30 dias
+oma retro 30d
+
+# Últimas 2 semanas
+oma retro 2w
+
+# Comparar com período anterior
+oma retro 7d --compare
+
+# Modo interativo
+oma retro --interactive
+
+# JSON para automação
+oma retro 7d --json
+```
 
 ---
 
@@ -208,6 +279,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | Sobrescrita de vendor CLI: `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Diretório de trabalho para o agente. Auto-detectado de config monorepo se omitido. |
 
+**Ordem de resolução de vendor:** flag `--model` > `agent_cli_mapping` em user-preferences.yaml > `default_cli` > `active_vendor` em cli-config.yaml > `gemini`.
+
+**Resolução de prompt:** Se o argumento prompt for um caminho para um arquivo existente, o conteúdo do arquivo é usado como prompt. Caso contrário, o argumento é usado como texto inline. Protocolos de execução específicos do vendor são anexados automaticamente.
+
 **Exemplos:**
 ```bash
 # Prompt inline, auto-detectar workspace
@@ -218,6 +293,9 @@ oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./app
 
 # Sobrescrever vendor para Claude
 oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
+
+# Agente mobile com workspace auto-detectado
+oma agent:spawn mobile "Add biometric login" session-20260324-143000
 ```
 
 ### agent:status
@@ -228,12 +306,38 @@ Verificar status de um ou mais subagentes.
 oma agent:status <session-id> [agent-ids...] [-r <root>]
 ```
 
+**Argumentos:**
+
+| Argumento | Obrigatório | Descrição |
+|:---------|:-----------|:-----------|
+| `session-id` | Sim | O ID da sessão a verificar |
+| `agent-ids` | Não | Lista de IDs de agentes separados por espaço. Se omitido, sem saída. |
+
+**Opções:**
+
+| Flag | Descrição | Padrão |
+|:-----|:-----------|:-------|
+| `-r, --root <path>` | Caminho raiz para verificações de memória | Diretório atual |
+
 **Valores de status:**
-- `completed` — Arquivo de resultado existe.
+- `completed` — Arquivo de resultado existe (com header de status opcional).
 - `running` — Arquivo PID existe e processo está vivo.
 - `crashed` — Arquivo PID existe mas processo está morto, ou nenhum arquivo PID/resultado encontrado.
 
 **Formato de saída:** Uma linha por agente: `{agent-id}:{status}`
+
+**Exemplos:**
+```bash
+# Verificar agentes específicos
+oma agent:status session-20260324-143000 backend frontend
+
+# Saída:
+# backend:running
+# frontend:completed
+
+# Verificar com root customizado
+oma agent:status session-20260324-143000 qa -r /path/to/project
+```
 
 ### agent:parallel
 
@@ -242,6 +346,12 @@ Executar múltiplos subagentes em paralelo.
 ```
 oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
+
+**Argumentos:**
+
+| Argumento | Obrigatório | Descrição |
+|:---------|:-----------|:-----------|
+| `tasks` | Sim | Caminho para um arquivo YAML de tarefas, ou (com `--inline`) especificações inline de tarefas |
 
 **Opções:**
 
@@ -262,6 +372,10 @@ tasks:
     workspace: ./web
 ```
 
+**Formato inline de tarefas:** `agent:task` ou `agent:task:workspace` (workspace deve começar com `./` ou `/`).
+
+**Diretório de resultados:** `.agents/results/parallel-{timestamp}/` contém arquivos de log para cada agente.
+
 **Exemplos:**
 ```bash
 # De arquivo YAML
@@ -275,6 +389,51 @@ oma agent:parallel tasks.yaml --no-wait
 
 # Sobrescrever vendor para todos os agentes
 oma agent:parallel tasks.yaml -m claude
+```
+
+### agent:review
+
+Executar uma revisão de código usando uma CLI de IA externa (codex, claude, gemini ou qwen).
+
+```
+oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+```
+
+**Opções:**
+
+| Flag | Descrição |
+|:-----|:-----------|
+| `-m, --model <vendor>` | Vendor CLI a ser usado: `codex`, `claude`, `gemini`, `qwen`. Padrão é o vendor resolvido a partir da configuração. |
+| `-p, --prompt <prompt>` | Prompt de revisão customizado. Se omitido, um prompt padrão de revisão de código é usado. |
+| `-w, --workspace <path>` | Caminho para revisar. Padrão é o diretório de trabalho atual. |
+| `--no-uncommitted` | Pular revisão de mudanças não commitadas. Quando definido, apenas mudanças commitadas na sessão são revisadas. |
+
+**O que faz:**
+- Detecta automaticamente o ID da sessão atual a partir do ambiente ou atividade git recente.
+- Para `codex`: usa o subcomando nativo `codex review`.
+- Para `claude`, `gemini`, `qwen`: constrói uma solicitação de revisão baseada em prompt e invoca a CLI com o prompt de revisão.
+- Por padrão, revisa mudanças não commitadas no diretório de trabalho.
+- Com `--no-uncommitted`, restringe a revisão a mudanças commitadas dentro da sessão atual.
+
+**Exemplos:**
+```bash
+# Revisar mudanças não commitadas com vendor padrão
+oma agent:review
+
+# Revisar com codex (usa o comando nativo codex review)
+oma agent:review -m codex
+
+# Revisar com claude usando um prompt customizado
+oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+
+# Revisar um caminho específico
+oma agent:review -w ./apps/api
+
+# Revisar apenas mudanças commitadas (pular working tree)
+oma agent:review --no-uncommitted
+
+# Revisar mudanças commitadas em um workspace específico com gemini
+oma agent:review -m gemini -w ./apps/web --no-uncommitted
 ```
 
 ---

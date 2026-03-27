@@ -1,59 +1,59 @@
 ---
 title: "Anwendungsfall: Einzelner Skill"
-description: Wenn du nur einen Agenten für eine fokussierte Aufgabe brauchst — der schnelle Weg.
+description: Detaillierte Anleitung für Einzeldomänen-Aufgaben in oh-my-agent — wann verwenden, Preflight-Checkliste, Prompt-Vorlage mit Erklärung, praxisnahe Beispiele für Frontend, Backend, Mobile und Datenbank, erwarteter Ausführungsablauf, Qualitäts-Gate-Checkliste und Eskalationssignale.
 ---
 
-# Single Skill Execution
+# Einzelne Skill-Ausführung
 
-Single skill execution is the fast path — one agent, one domain, one focused task. No orchestration overhead, no multi-agent coordination. The skill auto-activates from your natural language prompt.
-
----
-
-## When to Use Single Skill
-
-Use this when your task meets ALL of these criteria:
-
-- **Owned by one domain** — the entire task belongs to frontend, backend, mobile, database, design, infrastructure, or another single domain
-- **Self-contained** — no cross-domain API contract changes, no backend changes needed for a frontend task
-- **Clear scope** — you know what the output should be (a component, an endpoint, a schema, a fix)
-- **No coordination** — other agents do not need to run before or after
-
-**Examples of single-skill tasks:**
-- Build one UI component
-- Add one API endpoint
-- Fix one bug in one layer
-- Design one database table
-- Write one Terraform module
-- Translate one set of i18n strings
-- Create one design system section
-
-**Switch to multi-agent** (`/coordinate` or `/orchestrate`) when:
-- UI work needs a new API contract (frontend + backend)
-- One fix cascades across layers (debug + implementation agents)
-- The feature spans frontend, backend, and database
-- Scope grows beyond one domain after the first iteration
+Einzelne Skill-Ausführung ist der schnelle Weg — ein Agent, eine Domäne, eine fokussierte Aufgabe. Kein Orchestrierungsaufwand, keine Multi-Agenten-Koordination. Der Skill aktiviert sich automatisch aus Ihrem natürlichsprachlichen Prompt.
 
 ---
 
-## Preflight Checklist
+## Wann einzelne Skills verwenden
 
-Before prompting, answer these four questions (they map to the [Prompt Structure](/core-concepts/skills) four elements):
+Verwenden Sie dies, wenn Ihre Aufgabe ALLE diese Kriterien erfüllt:
 
-| Element | Question | Why It Matters |
+- **Gehört einer Domäne** — die gesamte Aufgabe gehört zu Frontend, Backend, Mobile, Datenbank, Design, Infrastruktur oder einer anderen einzelnen Domäne
+- **In sich abgeschlossen** — keine domänenübergreifenden API-Vertragsänderungen, keine Backend-Änderungen für eine Frontend-Aufgabe nötig
+- **Klarer Umfang** — Sie wissen, wie das Ergebnis aussehen soll (eine Komponente, ein Endpunkt, ein Schema, eine Korrektur)
+- **Keine Koordination** — andere Agenten müssen nicht vorher oder nachher laufen
+
+**Beispiele für Einzelne-Skill-Aufgaben:**
+- Eine UI-Komponente erstellen
+- Einen API-Endpunkt hinzufügen
+- Einen Bug in einer Schicht beheben
+- Eine Datenbanktabelle entwerfen
+- Ein Terraform-Modul schreiben
+- Einen Satz i18n-Strings übersetzen
+- Einen Design-System-Abschnitt erstellen
+
+**Zu Multi-Agent wechseln** (`/coordinate` oder `/orchestrate`) wenn:
+- UI-Arbeit einen neuen API-Vertrag braucht (Frontend + Backend)
+- Eine Korrektur sich über Schichten hinweg auswirkt (Debug + Implementierungsagenten)
+- Das Feature Frontend, Backend und Datenbank umfasst
+- Der Umfang nach der ersten Iteration über eine Domäne hinauswächst
+
+---
+
+## Preflight-Checkliste
+
+Beantworten Sie vor dem Prompt diese vier Fragen (sie entsprechen den vier Elementen der [Prompt-Struktur](/core-concepts/skills)):
+
+| Element | Frage | Warum es wichtig ist |
 |---------|----------|----------------|
-| **Goal** | What specific artifact should be created or changed? | Prevents ambiguity — "add a button" vs "add a form with validation" |
-| **Context** | What stack, framework, and conventions apply? | Agent detects from project files, but explicit is better |
-| **Constraints** | What rules must be followed? (style, security, performance, compatibility) | Without constraints, agents use defaults that may not match your project |
-| **Done When** | What acceptance criteria will you check? | Gives the agent a target and you a verification checklist |
+| **Ziel** | Welches spezifische Artefakt soll erstellt oder geändert werden? | Verhindert Mehrdeutigkeit — "einen Button hinzufügen" vs. "ein Formular mit Validierung hinzufügen" |
+| **Kontext** | Welcher Stack, welches Framework und welche Konventionen gelten? | Agent erkennt aus Projektdateien, aber explizit ist besser |
+| **Einschränkungen** | Welche Regeln müssen eingehalten werden? (Stil, Sicherheit, Performance, Kompatibilität) | Ohne Einschränkungen verwenden Agenten Standards, die möglicherweise nicht zu Ihrem Projekt passen |
+| **Fertig wenn** | Welche Akzeptanzkriterien werden Sie prüfen? | Gibt dem Agenten ein Ziel und Ihnen eine Verifikationscheckliste |
 
-If any element is missing from your prompt, the agent will either:
-- **LOW uncertainty:** Apply defaults and list assumptions
-- **MEDIUM uncertainty:** Present 2-3 options and proceed with the most likely
-- **HIGH uncertainty:** Block and ask questions (will not write code)
+Fehlt ein Element in Ihrem Prompt, wird der Agent entweder:
+- **LOW-Unsicherheit:** Standards anwenden und Annahmen auflisten
+- **MEDIUM-Unsicherheit:** 2-3 Optionen präsentieren und mit der wahrscheinlichsten fortfahren
+- **HIGH-Unsicherheit:** Blockieren und Fragen stellen (wird keinen Code schreiben)
 
 ---
 
-## Prompt Template
+## Prompt-Vorlage
 
 ```text
 Build <specific artifact> using <stack/framework>.
@@ -65,21 +65,21 @@ Acceptance criteria:
 Add tests for: <critical test cases>.
 ```
 
-### Template Breakdown
+### Vorlagenaufschlüsselung
 
-| Part | Purpose | Example |
+| Teil | Zweck | Beispiel |
 |------|---------|---------|
-| `Build <specific artifact>` | The Goal — what to create | "Build a user registration form component" |
-| `using <stack/framework>` | The Context — tech stack | "using React + TypeScript + Tailwind CSS" |
-| `Constraints:` | Rules the agent must follow | "accessible labels, no external form libraries, client-side validation only" |
-| `Acceptance criteria:` | Done When — verifiable outcomes | "1) email format validation 2) password strength indicator 3) submit disabled while invalid" |
-| `Add tests for:` | Test requirements | "valid/invalid submit paths, edge cases for email validation" |
+| `Build <specific artifact>` | Das Ziel — was erstellt werden soll | "Build a user registration form component" |
+| `using <stack/framework>` | Der Kontext — Tech-Stack | "using React + TypeScript + Tailwind CSS" |
+| `Constraints:` | Regeln, die der Agent einhalten muss | "accessible labels, no external form libraries, client-side validation only" |
+| `Acceptance criteria:` | Fertig wenn — verifizierbare Ergebnisse | "1) email format validation 2) password strength indicator 3) submit disabled while invalid" |
+| `Add tests for:` | Testanforderungen | "valid/invalid submit paths, edge cases for email validation" |
 
 ---
 
-## Real Examples
+## Praxisbeispiele
 
-### Frontend: Login Form
+### Frontend: Login-Formular
 
 ```text
 Create a login form component in React + TypeScript + Tailwind CSS.
@@ -93,15 +93,15 @@ Acceptance criteria:
 Add unit tests for: valid submission path, invalid email, short password, loading state.
 ```
 
-**Expected execution flow:**
+**Erwarteter Ausführungsablauf:**
 
-1. **Skill activation:** `oma-frontend` activates (keywords: "form", "component", "Tailwind CSS", "React")
-2. **Difficulty assessment:** Medium (2-3 files, some design decisions around validation UX)
-3. **Resources loaded:**
-   - `execution-protocol.md` (always)
-   - `snippets.md` (form + Zod patterns)
-   - `component-template.tsx` (React structure)
-4. **CHARTER_CHECK output:**
+1. **Skill-Aktivierung:** `oma-frontend` aktiviert sich (Keywords: "form", "component", "Tailwind CSS", "React")
+2. **Schwierigkeitsbewertung:** Mittel (2-3 Dateien, einige Designentscheidungen zur Validierungs-UX)
+3. **Geladene Ressourcen:**
+   - `execution-protocol.md` (immer)
+   - `snippets.md` (Formular- + Zod-Muster)
+   - `component-template.tsx` (React-Struktur)
+4. **CHARTER_CHECK-Ausgabe:**
    ```
    CHARTER_CHECK:
    - Clarification level: LOW
@@ -110,23 +110,23 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Success criteria: form validation, accessibility, loading state, tests
    - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
    ```
-5. **Implementation:**
-   - Creates `src/features/auth/components/login-form.tsx` (Client Component with `"use client"`)
-   - Creates `src/features/auth/utils/login-schema.ts` (Zod schema)
-   - Creates `src/features/auth/components/skeleton/login-form-skeleton.tsx`
-   - Uses shadcn/ui `<Button>`, `<Input>`, `<Label>` (read-only, no modifications)
-   - Form handled by `@tanstack/react-form` with Zod validation
-   - Absolute imports with `@/`
-   - One component per file
-6. **Verification:**
-   - Checklist: ARIA labels present, semantic headings, keyboard navigation works
-   - Mobile: renders correctly at 320px viewport
-   - Performance: no CLS
-   - Tests: Vitest test file at `src/features/auth/utils/__tests__/login-schema.test.ts`
+5. **Implementierung:**
+   - Erstellt `src/features/auth/components/login-form.tsx` (Client Component mit `"use client"`)
+   - Erstellt `src/features/auth/utils/login-schema.ts` (Zod-Schema)
+   - Erstellt `src/features/auth/components/skeleton/login-form-skeleton.tsx`
+   - Verwendet shadcn/ui `<Button>`, `<Input>`, `<Label>` (schreibgeschützt, keine Modifikationen)
+   - Formular über `@tanstack/react-form` mit Zod-Validierung
+   - Absolute Imports mit `@/`
+   - Eine Komponente pro Datei
+6. **Verifikation:**
+   - Checkliste: ARIA-Labels vorhanden, semantische Überschriften, Tastaturnavigation funktioniert
+   - Mobil: rendert korrekt bei 320px-Viewport
+   - Performance: kein CLS
+   - Tests: Vitest-Testdatei unter `src/features/auth/utils/__tests__/login-schema.test.ts`
 
 ---
 
-### Backend: REST API Endpoint
+### Backend: REST-API-Endpunkt
 
 ```text
 Add a paginated GET /api/tasks endpoint that returns tasks for the authenticated user.
@@ -139,15 +139,15 @@ Acceptance criteria:
 Add tests for: auth required, pagination, status filter, empty results.
 ```
 
-**Expected execution flow:**
+**Erwarteter Ausführungsablauf:**
 
-1. **Skill activation:** `oma-backend` activates (keywords: "API", "endpoint", "REST")
-2. **Stack detection:** Reads `pyproject.toml` or `package.json` to determine language/framework. If `stack/` exists, loads conventions from there.
-3. **Difficulty assessment:** Medium (2-3 files: route, service, repository, plus test)
-4. **Resources loaded:**
-   - `execution-protocol.md` (always)
-   - `stack/snippets.md` if available (route, paginated query patterns)
-   - `stack/tech-stack.md` if available (framework-specific API)
+1. **Skill-Aktivierung:** `oma-backend` aktiviert sich (Keywords: "API", "endpoint", "REST")
+2. **Stack-Erkennung:** Liest `pyproject.toml` oder `package.json`, um Sprache/Framework zu bestimmen. Falls `stack/` existiert, werden Konventionen von dort geladen.
+3. **Schwierigkeitsbewertung:** Mittel (2-3 Dateien: Route, Service, Repository, plus Test)
+4. **Geladene Ressourcen:**
+   - `execution-protocol.md` (immer)
+   - `stack/snippets.md` falls verfügbar (Route, paginierte Abfragemuster)
+   - `stack/tech-stack.md` falls verfügbar (Framework-spezifische API)
 5. **CHARTER_CHECK:**
    ```
    CHARTER_CHECK:
@@ -157,15 +157,15 @@ Add tests for: auth required, pagination, status filter, empty results.
    - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
    - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
    ```
-6. **Implementation:**
-   - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` with parameterized query
-   - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)` — business logic wrapper
-   - Router: `GET /api/tasks` with JWT auth middleware, input validation, response formatting
-   - Tests: auth required returns 401, pagination returns correct cursor, filter works, empty returns 200 with empty array
+6. **Implementierung:**
+   - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` mit parametrisierter Abfrage
+   - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)` — Geschäftslogik-Wrapper
+   - Router: `GET /api/tasks` mit JWT-Auth-Middleware, Eingabevalidierung, Antwortformatierung
+   - Tests: Auth erforderlich gibt 401 zurück, Paginierung gibt korrekten Cursor zurück, Filter funktioniert, leer gibt 200 mit leerem Array zurück
 
 ---
 
-### Mobile: Settings Screen
+### Mobile: Einstellungsbildschirm
 
 ```text
 Build a settings screen in Flutter with profile editing (name, email, avatar), notification preferences (toggle switches), and a logout button.
@@ -179,13 +179,13 @@ Acceptance criteria:
 Add tests for: profile save, logout flow, offline state.
 ```
 
-**Expected execution flow:**
+**Erwarteter Ausführungsablauf:**
 
-1. **Skill activation:** `oma-mobile` activates (keywords: "Flutter", "screen", "mobile")
-2. **Difficulty assessment:** Medium (settings screen + state management + offline handling)
-3. **Resources loaded:**
+1. **Skill-Aktivierung:** `oma-mobile` aktiviert sich (Keywords: "Flutter", "screen", "mobile")
+2. **Schwierigkeitsbewertung:** Mittel (Einstellungsbildschirm + Zustandsverwaltung + Offline-Behandlung)
+3. **Geladene Ressourcen:**
    - `execution-protocol.md`
-   - `snippets.md` (screen template, Riverpod provider pattern)
+   - `snippets.md` (Bildschirmvorlage, Riverpod-Provider-Muster)
    - `screen-template.dart`
 4. **CHARTER_CHECK:**
    ```
@@ -196,16 +196,16 @@ Add tests for: profile save, logout flow, offline state.
    - Success criteria: profile editing, notification toggles, logout, offline
    - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
    ```
-5. **Implementation:**
-   - Screen: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget with Riverpod)
-   - Providers: `lib/features/settings/providers/settings_provider.dart`
+5. **Implementierung:**
+   - Bildschirm: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget mit Riverpod)
+   - Provider: `lib/features/settings/providers/settings_provider.dart`
    - Repository: `lib/features/settings/data/settings_repository.dart`
-   - Offline handling: Dio interceptor catches `SocketException`, falls back to cached data
-   - All controllers disposed in `dispose()` method
+   - Offline-Behandlung: Dio-Interceptor fängt `SocketException`, greift auf gecachte Daten zurück
+   - Alle Controller in der `dispose()`-Methode freigegeben
 
 ---
 
-### Database: Schema Design
+### Datenbank: Schema-Design
 
 ```text
 Design a database schema for a multi-tenant SaaS project management tool. Entities: Organization, Project, Task, User, TeamMembership.
@@ -219,15 +219,15 @@ Acceptance criteria:
 Add deliverables: data standards table, glossary, migration script.
 ```
 
-**Expected execution flow:**
+**Erwarteter Ausführungsablauf:**
 
-1. **Skill activation:** `oma-db` activates (keywords: "database", "schema", "ERD", "migration")
-2. **Difficulty assessment:** Complex (architecture decisions, multiple entities, capacity planning)
-3. **Resources loaded:**
+1. **Skill-Aktivierung:** `oma-db` aktiviert sich (Keywords: "database", "schema", "ERD", "migration")
+2. **Schwierigkeitsbewertung:** Komplex (Architekturentscheidungen, mehrere Entitäten, Kapazitätsplanung)
+3. **Geladene Ressourcen:**
    - `execution-protocol.md`
-   - `document-templates.md` (deliverable structure)
+   - `document-templates.md` (Ergebnisstruktur)
    - `examples.md`
-   - `anti-patterns.md` (review during optimization)
+   - `anti-patterns.md` (Review während der Optimierung)
 4. **CHARTER_CHECK:**
    ```
    CHARTER_CHECK:
@@ -237,79 +237,79 @@ Add deliverables: data standards table, glossary, migration script.
    - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
    - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
    ```
-5. **Workflow:** Explore (entities, relationships, access patterns, volume estimates) -> Design (external/conceptual/internal schemas, constraints, lifecycle fields) -> Optimize (indexes for query patterns, partitioning strategy, backup plan, anti-pattern review)
-6. **Deliverables:**
-   - External schema summary (views per role: admin, project manager, team member)
-   - Conceptual schema with ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership, etc.)
-   - Internal schema with physical DDL, indexes, partitioning
-   - Data standards table (field naming rules, type conventions)
-   - Glossary (tenant, workspace, assignee, etc.)
-   - Capacity estimation sheet
-   - Backup strategy (daily full + hourly incremental, 30-day retention)
-   - Migration script
+5. **Workflow:** Erkunden (Entitäten, Beziehungen, Zugriffsmuster, Volumenschätzungen) -> Entwerfen (externe/konzeptionelle/interne Schemata, Constraints, Lebenszyklus-Felder) -> Optimieren (Indizes für Abfragemuster, Partitionierungsstrategie, Backup-Plan, Anti-Pattern-Review)
+6. **Ergebnisse:**
+   - Zusammenfassung des externen Schemas (Sichten pro Rolle: Admin, Projektmanager, Teammitglied)
+   - Konzeptionelles Schema mit ERD (Organisation 1:N Projekt, Projekt 1:N Aufgabe, Organisation 1:N Teammitgliedschaft usw.)
+   - Internes Schema mit physischem DDL, Indizes, Partitionierung
+   - Datenstandards-Tabelle (Feldbenennungsregeln, Typkonventionen)
+   - Glossar (Mandant, Workspace, Beauftragter usw.)
+   - Kapazitätsschätzungsblatt
+   - Backup-Strategie (täglich voll + stündlich inkrementell, 30-Tage-Aufbewahrung)
+   - Migrationsskript
 
 ---
 
-## Quality Gate Checklist
+## Qualitäts-Gate-Checkliste
 
-After the agent delivers its output, verify these items before accepting:
+Nach der Lieferung durch den Agenten diese Punkte vor der Abnahme verifizieren:
 
-### Universal Checks (All Agents)
+### Universelle Prüfungen (alle Agenten)
 
-- [ ] **Behavior matches acceptance criteria** — every criterion from your prompt is satisfied
-- [ ] **Tests cover happy path and key edge cases** — not just the happy path
-- [ ] **No unrelated file changes** — only files relevant to the task were modified
-- [ ] **Shared modules not broken** — imports, types, and interfaces used by other code still work
-- [ ] **Charter was followed** — the "Must NOT do" constraints were respected
-- [ ] **Lint, typecheck, build pass** — run your project's standard checks
+- [ ] **Verhalten entspricht den Akzeptanzkriterien** — jedes Kriterium aus Ihrem Prompt ist erfüllt
+- [ ] **Tests decken Happy Path und wichtige Grenzfälle ab** — nicht nur den Happy Path
+- [ ] **Keine unverwandten Dateiänderungen** — nur aufgabenrelevante Dateien wurden modifiziert
+- [ ] **Gemeinsame Module nicht beschädigt** — Imports, Typen und Schnittstellen, die von anderem Code verwendet werden, funktionieren noch
+- [ ] **Charter wurde eingehalten** — die "Must NOT do"-Einschränkungen wurden respektiert
+- [ ] **Lint, Typecheck, Build bestehen** — die Standardprüfungen Ihres Projekts ausführen
 
-### Frontend-Specific
+### Frontend-spezifisch
 
-- [ ] Accessibility: interactive elements have `aria-label`, semantic headings, keyboard navigation works
-- [ ] Mobile: renders correctly at 320px, 768px, 1024px, 1440px breakpoints
-- [ ] Performance: no CLS, FCP target met
-- [ ] Error boundaries and loading skeletons implemented
-- [ ] shadcn/ui components not directly modified (wrappers used instead)
-- [ ] Absolute imports with `@/` (no relative `../../`)
+- [ ] Barrierefreiheit: interaktive Elemente haben `aria-label`, semantische Überschriften, Tastaturnavigation funktioniert
+- [ ] Mobil: rendert korrekt bei 320px, 768px, 1024px, 1440px Breakpoints
+- [ ] Performance: kein CLS, FCP-Ziel erreicht
+- [ ] Error Boundaries und Lade-Skelette implementiert
+- [ ] shadcn/ui-Komponenten nicht direkt modifiziert (Wrapper stattdessen verwendet)
+- [ ] Absolute Imports mit `@/` (keine relativen `../../`)
 
-### Backend-Specific
+### Backend-spezifisch
 
-- [ ] Clean architecture maintained: no business logic in route handlers
-- [ ] All inputs validated (no trusting user input)
-- [ ] Parameterized queries only (no string interpolation in SQL)
-- [ ] Custom exceptions via centralized error module (no raw HTTP exceptions)
-- [ ] Auth endpoints rate-limited
+- [ ] Clean Architecture eingehalten: keine Geschäftslogik in Route-Handlern
+- [ ] Alle Eingaben validiert (Benutzereingaben nicht vertrauen)
+- [ ] Nur parametrisierte Abfragen (keine String-Interpolation in SQL)
+- [ ] Benutzerdefinierte Exceptions über zentrales Fehlermodul (keine rohen HTTP-Exceptions)
+- [ ] Auth-Endpunkte mit Rate-Limiting versehen
 
-### Mobile-Specific
+### Mobile-spezifisch
 
-- [ ] All controllers disposed in `dispose()` method
-- [ ] Offline gracefully handled
-- [ ] 60fps target maintained (no jank)
-- [ ] Tested on both iOS and Android
+- [ ] Alle Controller in der `dispose()`-Methode freigegeben
+- [ ] Offline-Zustand elegant behandelt
+- [ ] 60-fps-Ziel eingehalten (keine Ruckler)
+- [ ] Auf iOS und Android getestet
 
-### Database-Specific
+### Datenbank-spezifisch
 
-- [ ] At least 3NF (or documented justification for denormalization)
-- [ ] All three schema layers documented (external, conceptual, internal)
-- [ ] Integrity constraints explicit (entity, domain, referential, business-rule)
-- [ ] Anti-pattern review completed
+- [ ] Mindestens 3NF (oder dokumentierte Begründung für Denormalisierung)
+- [ ] Alle drei Schema-Schichten dokumentiert (extern, konzeptionell, intern)
+- [ ] Integritäts-Constraints explizit (Entitäts-, Domänen-, referentielle und Geschäftsregel-Integrität)
+- [ ] Anti-Pattern-Review abgeschlossen
 
 ---
 
-## Escalation Signals
+## Eskalationssignale
 
-Watch for these signals that indicate you should switch from single-skill to multi-agent execution:
+Auf diese Signale achten, die anzeigen, dass von Einzelner-Skill- zu Multi-Agenten-Ausführung gewechselt werden sollte:
 
-| Signal | What It Means | Action |
+| Signal | Bedeutung | Aktion |
 |--------|--------------|--------|
-| Agent says "this requires a backend change" | Task has cross-domain dependencies | Switch to `/coordinate` — add backend agent |
-| Agent's CHARTER_CHECK shows "Must NOT do" items that are actually needed | Scope exceeds one domain | Plan the full feature with `/plan` first |
-| Fix cascades into 3+ files across different layers | One fix affects multiple domains | Use `/debug` with broader scope, or `/coordinate` |
-| Agent discovers an API contract mismatch | Frontend/backend disagreement | Run `/plan` to define contracts, then re-spawn both agents |
-| Quality gate fails on integration points | Components do not connect properly | Add QA review step: `oma agent:spawn qa "Review integration"` |
-| Task grows from "one component" to "three components + new route + API" | Scope creep during execution | Stop, run `/plan` to decompose, then `/orchestrate` |
-| Agent blocks with HIGH clarification | Requirements fundamentally ambiguous | Answer the agent's questions or run `/brainstorm` to clarify approach |
+| Agent sagt "dies erfordert eine Backend-Änderung" | Aufgabe hat domänenübergreifende Abhängigkeiten | Zu `/coordinate` wechseln — Backend-Agent hinzufügen |
+| CHARTER_CHECK des Agenten zeigt "Must NOT do"-Elemente, die tatsächlich benötigt werden | Umfang überschreitet eine Domäne | Das vollständige Feature zuerst mit `/plan` planen |
+| Korrektur kaskadiert in 3+ Dateien über verschiedene Schichten | Eine Korrektur betrifft mehrere Domänen | `/debug` mit breiterem Umfang verwenden, oder `/coordinate` |
+| Agent entdeckt eine API-Vertrags-Diskrepanz | Frontend-/Backend-Unstimmigkeit | `/plan` zur Vertragsdefinition ausführen, dann beide Agenten erneut starten |
+| Qualitäts-Gate scheitert an Integrationspunkten | Komponenten passen nicht richtig zusammen | QA-Review-Schritt hinzufügen: `oma agent:spawn qa "Review integration"` |
+| Aufgabe wächst von "eine Komponente" zu "drei Komponenten + neue Route + API" | Scope-Creep während der Ausführung | Stoppen, `/plan` zur Zerlegung ausführen, dann `/orchestrate` |
+| Agent blockiert mit HIGH-Klärung | Anforderungen grundlegend mehrdeutig | Die Fragen des Agenten beantworten oder `/brainstorm` zur Klärung des Ansatzes ausführen |
 
-### The General Rule
+### Die allgemeine Regel
 
-If you find yourself re-spawning the same agent more than twice with refinements, the task is probably multi-domain and needs `/coordinate` or at minimum a `/plan` step to decompose it properly.
+Wenn Sie feststellen, dass Sie denselben Agenten mehr als zweimal mit Verfeinerungen erneut starten, ist die Aufgabe wahrscheinlich domänenübergreifend und benötigt `/coordinate` oder zumindest einen `/plan`-Schritt zur ordnungsgemäßen Zerlegung.

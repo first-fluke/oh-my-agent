@@ -274,7 +274,11 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 | "コードレビューして" | `/review` | Japonês |
 | "計画を立てて" | `/plan` | Japonês |
 | "修复这个 bug" | `/debug` | Chinês |
-| "设计一个着陆页" | `/design` | Chinês |
+| "设计一���着陆页" | `/design` | Chinês |
+| "revisar código" | `/review` | Espanhol |
+| "diseña la página" | `/design` | Espanhol |
+| "debuggen" | `/debug` | Alemão |
+| "coordonner étape par étape" | `/coordinate` | Francês |
 
 **Consultas informativas são filtradas:**
 
@@ -283,6 +287,7 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 | "what is orchestrate?" | Nenhum workflow acionado (padrão informativo: "what is") |
 | "explain how /plan works" | Nenhum workflow acionado (padrão informativo: "explain") |
 | "어떻게 사용해?" | Nenhum workflow acionado (padrão informativo: "어떻게") |
+| "レビューとは何ですか" | Nenhum workflow acionado (padrão informativo: "とは") |
 
 ---
 
@@ -348,6 +353,14 @@ Use 3 terminais:
 ### Divulgação Progressiva
 
 Skills carregam em duas camadas para economizar tokens. Camada 1 (SKILL.md, ~800 bytes) está sempre presente. Camada 2 (resources/) carrega apenas quando o agente está trabalhando, e apenas os recursos correspondentes à dificuldade da tarefa. Isso economiza aproximadamente 75% dos tokens comparado a carregar tudo antecipadamente. Em modelos flash-tier (128K de contexto), isso significa aproximadamente 125K tokens disponíveis para trabalho real em vez de 108K.
+
+### Otimização de Tokens
+
+Além da divulgação progressiva, oh-my-agent otimiza tokens através de:
+- **Gerenciamento de orçamento de contexto** -- sem leitura completa de arquivos; use `find_symbol` em vez de `read_file`
+- **Carregamento preguiçoso de recursos** -- carregar playbooks de erro apenas em erros, checklists apenas na verificação
+- **Ramificação baseada em dificuldade** -- Tarefas simples pulam análise e usam checklists mínimos
+- **Rastreamento de progresso** -- agentes registram arquivos lidos para prevenir releituras
 
 ### Spawning via CLI
 

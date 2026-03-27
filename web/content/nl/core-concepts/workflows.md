@@ -44,7 +44,7 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 4. **Stap 3 — Agenten Spawnen:** Voor elke prioriteitstier (P0 eerst, dan P1...), spawn agenten met leverancier-geschikte methode. Overschrijd nooit MAX_PARALLEL.
 5. **Stap 4 — Monitoren:** Poll `progress-{agent}.md`-bestanden, werk `task-board.md` bij. Let op voltooiingen, fouten, crashes.
 6. **Stap 5 — Verifieren:** Draai `verify.sh {agent-type} {workspace}` per voltooide agent. Bij falen, herspawn met foutcontext (max 2 herhaalpogingen). Na 2 herhaalpogingen, activeer Exploratieslus.
-7. **Stap 6 — Verzamelen:** Lees alle `result-{agent}.md`-bestanden, compileer samenvatting.
+7. **Stap 6 — Verzamelen:** Lees alle `result-{agent}.md`-bestanden, stel samenvatting samen.
 8. **Stap 7 — Eindrapport:** Presenteer sessiesamenvatting. Indien Quality Score gemeten, voeg Experiment Ledger-samenvatting toe.
 
 **Gelezen bestanden:** `.agents/plan.json`, `.agents/config/user-preferences.yaml`, `progress-{agent}.md`, `result-{agent}.md`.
@@ -138,6 +138,10 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 **Triggertrefwoorden:** Geen (uitgesloten van auto-detectie).
 
+**Stappen:** Voorbereiding -> Scope analyseren (complexiteit bepalen: Eenvoudig/Gemiddeld/Complex) -> Uitvoeringsplan aanmaken (markdown in `docs/exec-plans/active/`) -> API-contracten definiëren (indien domeinoverstijgend) -> Reviewen met gebruiker -> Uitvoeren (overdragen aan `/orchestrate` of `/coordinate`) -> Afronden (verplaatsen naar `completed/`).
+
+**Uitvoer:** `docs/exec-plans/active/{plan-naam}.md` met takentabel, beslissingslog, voortgangsnotities.
+
 **Wanneer gebruiken:** Na `/plan` voor complexe functies die bijgehouden uitvoering met beslissingslogging nodig hebben.
 
 ---
@@ -147,6 +151,8 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 **Beschrijving:** Design-first ideevorming. Verkent intentie, verduidelijkt beperkingen, stelt benaderingen voor, produceert een goedgekeurd ontwerpdocument voor planning.
 
 **Triggertrefwoorden:** Universeel: "brainstorm"; Engels: "ideate", "explore design"; Koreaans: "브레인스토밍", "아이디어", "설계 탐색"; Japans: "ブレインストーミング", "アイデア", "設計探索"; Chinees: "头脑风暴", "创意", "设计探索".
+
+**Stappen:** Projectcontext verkennen (MCP-analyse) -> Verduidelijkende vragen stellen (een tegelijk) -> 2-3 benaderingen voorstellen met afwegingen -> Ontwerp sectie voor sectie presenteren (met gebruikersgoedkeuring per stap) -> Ontwerpdocument opslaan in `docs/plans/` -> Overgang: suggereer `/plan`.
 
 **Regels:** Geen implementatie of planning voor ontwerpgoedkeuring. Geen code-uitvoer. YAGNI.
 
@@ -158,7 +164,9 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 **Triggertrefwoorden:** Universeel: "deepinit"; Koreaans: "프로젝트 초기화"; Japans: "プロジェクト初期化"; Chinees: "项目初始化".
 
-**Uitvoer:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md.
+**Stappen:** Voorbereiding -> Codebase analyseren (projecttype, architectuur, impliciete regels, domeinen, grenzen) -> ARCHITECTURE.md genereren (domeinkaart, maximaal 200 regels) -> `docs/`-kennisbasis genereren (design-docs/, exec-plans/, generated/, product-specs/, references/, domeindocumenten) -> Root AGENTS.md genereren (~100 regels, inhoudsopgave) -> Grens-AGENTS.md-bestanden genereren (monorepo-pakketten, maximaal 50 regels per stuk) -> Bestaande harnas bijwerken (bij opnieuw uitvoeren) -> Valideren (geen dode links, regellimieten).
+
+**Uitvoer:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md en domeinspecifieke documenten indien ontdekt.
 
 ---
 
@@ -168,7 +176,11 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 **Triggertrefwoorden:** Universeel: "code review", "security audit", "security review"; Engels: "review"; Koreaans: "리뷰", "코드 검토", "보안 검토"; Japans: "レビュー", "コードレビュー", "セキュリティ監査"; Chinees: "审查", "代码审查", "安全审计".
 
+**Stappen:** Reviewscope identificeren -> Geautomatiseerde beveiligingscontroles (npm audit, bandit) -> Handmatige beveiligingsreview (OWASP Top 10) -> Prestatieanalyse -> Toegankelijkheidsreview (WCAG 2.1 AA) -> Codekwaliteitsreview -> QA-rapport genereren.
+
 **Optionele fix-verify lus** (met `--fix`): Na QA-rapport, spawn domeinagenten om CRITICAL/HIGH-problemen te fixen, draai QA opnieuw, herhaal tot 3 keer.
+
+**Delegatie:** Bij grote scopes worden stappen 2-7 gedelegeerd aan een gespawnde QA-agent subagent.
 
 ---
 
@@ -177,6 +189,8 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 **Beschrijving:** Gestructureerde bugdiagnose en -oplossing met regressietestschrijven en vergelijkbare patronenscanning.
 
 **Triggertrefwoorden:** Universeel: "debug"; Engels: "fix bug", "fix error", "fix crash"; Koreaans: "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐"; Japans: "デバッグ", "バグ修正", "エラー修正"; Chinees: "调试", "修复 bug", "修复错误".
+
+**Stappen:** Foutinformatie verzamelen -> Reproduceren (MCP `search_for_pattern`, `find_symbol`) -> Oorzaak diagnosticeren (MCP `find_referencing_symbols` om uitvoeringspad te traceren) -> Minimale fix voorstellen (gebruikersbevestiging vereist) -> Fix toepassen + regressietest schrijven -> Scannen op vergelijkbare patronen (kan debug-investigator subagent spawnen bij scope > 10 bestanden) -> Bug documenteren in geheugen.
 
 **Criteria voor subagent-spawning:** Fout beslaat meerdere domeinen, scanscope > 10 bestanden, of diepgaande afhankelijkheidstracing nodig.
 
@@ -200,6 +214,8 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 **Triggertrefwoorden:** Geen (uitgesloten van auto-detectie).
 
+**Stappen:** Wijzigingen analyseren (git status, git diff) -> Functies scheiden (als > 5 bestanden die verschillende scope/type beslaan) -> Type bepalen (feat/fix/refactor/docs/test/chore/style/perf) -> Scope bepalen (gewijzigde module) -> Beschrijving schrijven (imperatief, < 72 tekens) -> Commit onmiddellijk uitvoeren (geen bevestigingsprompt).
+
 **Regels:** Nooit `git add -A`. Nooit secrets committen. HEREDOC voor meerregelige berichten. Co-Author: `First Fluke <our.first.fluke@gmail.com>`.
 
 ---
@@ -209,6 +225,8 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 **Beschrijving:** Interactieve projectconfiguratie.
 
 **Triggertrefwoorden:** Geen (uitgesloten van auto-detectie).
+
+**Stappen:** Taalinstellingen -> CLI-installatiestatus controleren -> MCP-verbindingsstatus (Serena in Command- of SSE-modus) -> Agent-CLI-mapping -> Samenvatting -> Vragen over repository een ster geven.
 
 **Uitvoer:** `.agents/config/user-preferences.yaml`.
 
@@ -264,6 +282,7 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 4. Indien een match gevonden, controleer of de invoer overeenkomt met informatiepatronen
 5. Indien informationeel (bijv. "wat is orchestrate?"), filter het uit — geen workflow triggers
 6. Indien actiegericht, injecteer `[OMA WORKFLOW: {workflow-naam}]` in de context
+7. De agent leest de geïnjecteerde tag en laadt het bijbehorende workflowbestand uit `.agents/workflows/`
 
 ### Informatiepatroonfiltering
 
@@ -293,13 +312,20 @@ Persistente workflows maken statusbestanden aan in `.agents/state/`:
 └── coordinate-state.json
 ```
 
+Deze bestanden bevatten: workflownaam, huidige fase/stap, sessie-ID, tijdstempel en eventuele lopende status.
+
 ### Versterking
 
-Terwijl een persistente workflow actief is, injecteert de `persistent-mode.ts`-hook `[OMA PERSISTENT MODE: {workflow-naam}]` in elk gebruikersbericht.
+Terwijl een persistente workflow actief is, injecteert de `persistent-mode.ts`-hook `[OMA PERSISTENT MODE: {workflow-naam}]` in elk gebruikersbericht. Dit zorgt ervoor dat de workflow blijft doorlopen, ook over gespreksbeurten heen.
 
 ### Deactivering
 
-Gebruiker zegt "workflow done" (of equivalent). Dit verwijdert het statusbestand en stopt de injectie.
+Om een persistente workflow te deactiveren zegt de gebruiker "workflow done" (of het equivalent in de geconfigureerde taal). Dit:
+1. Verwijdert het statusbestand uit `.agents/state/`
+2. Stopt de injectie van de persistent mode-context
+3. Keert terug naar normale werking
+
+De workflow kan ook op natuurlijke wijze eindigen wanneer alle stappen zijn voltooid en de laatste poort slaagt.
 
 ---
 

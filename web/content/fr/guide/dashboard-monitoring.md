@@ -5,18 +5,18 @@ description: Guide complet des dashboards couvrant les dashboards terminal et we
 
 # Guide : Surveillance par Dashboard
 
-## Deux Commandes de Dashboard
+## Deux commandes de tableau de bord
 
-oh-my-agent provides two real-time dashboards for monitoring agent activity during multi-agent workflows.
+oh-my-agent fournit deux tableaux de bord en temps réel pour surveiller l'activité des agents pendant les workflows multi-agents.
 
 | Command | Interface | URL | Technology |
 |:--------|:---------|:----|:-----------|
 | `oma dashboard` | Terminal (TUI) | N/A — renders in your terminal | chokidar file watcher, picocolors rendering |
 | `oma dashboard:web` | Browser | `http://localhost:9847` | HTTP server, WebSocket, chokidar file watcher |
 
-Both dashboards watch the same data source: `.serena/memories/` directory.
+Les deux tableaux de bord surveillent la même source de données : le répertoire `.serena/memories/`.
 
-### Terminal Dashboard
+### Tableau de bord terminal
 
 ```bash
 oma dashboard

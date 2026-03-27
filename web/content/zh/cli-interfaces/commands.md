@@ -400,6 +400,51 @@ oma agent:parallel tasks.yaml --no-wait
 oma agent:parallel tasks.yaml -m claude
 ```
 
+### agent:review
+
+使用外部 AI CLI（codex、claude、gemini 或 qwen）运行代码审查。
+
+```
+oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+```
+
+**选项：**
+
+| 标志 | 说明 |
+|:-----|:-----|
+| `-m, --model <vendor>` | 使用的 CLI 供应商：`codex`、`claude`、`gemini`、`qwen`。默认为配置中解析的供应商。 |
+| `-p, --prompt <prompt>` | 自定义审查提示词。如省略，使用默认的代码审查提示词。 |
+| `-w, --workspace <path>` | 审查路径。默认为当前工作目录。 |
+| `--no-uncommitted` | 跳过未提交变更的审查。设置后仅审查会话中已提交的变更。 |
+
+**功能：**
+- 从环境或近期 git 活动中自动检测当前会话 ID。
+- 对于 `codex`：使用原生 `codex review` 子命令。
+- 对于 `claude`、`gemini`、`qwen`：构造基于提示词的审查请求并调用 CLI。
+- 默认审查工作目录中的未提交变更。
+- 使用 `--no-uncommitted` 时，仅审查当前会话中已提交的变更。
+
+**示例：**
+```bash
+# 使用默认供应商审查未提交变更
+oma agent:review
+
+# 使用 codex 审查（使用原生 codex review 命令）
+oma agent:review -m codex
+
+# 使用 claude 进行自定义提示词审查
+oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+
+# 审查特定路径
+oma agent:review -w ./apps/api
+
+# 仅审查已提交变更（跳过工作区）
+oma agent:review --no-uncommitted
+
+# 使用 gemini 审查特定工作区中的已提交变更
+oma agent:review -m gemini -w ./apps/web --no-uncommitted
+```
+
 ---
 
 ## 内存管理

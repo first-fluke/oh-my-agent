@@ -5,9 +5,9 @@ description: Referencia completa de cada comando CLI de oh-my-agent — sintaxis
 
 # Comandos CLI
 
-After installing globally (`bun install --global oh-my-agent`), use `oma` or `oh-my-ag`. Both are aliases for the same binary. For one-time use without installing, run `npx oh-my-agent`.
+Después de instalar globalmente (`bun install --global oh-my-agent`), usa `oma` u `oh-my-ag`. Ambos son alias del mismo binario. Para uso puntual sin instalar, ejecuta `npx oh-my-agent`.
 
-The environment variable `OH_MY_AG_OUTPUT_FORMAT` can be set to `json` to force machine-readable output on commands that support it. This is equivalent to passing `--json` to each command.
+La variable de entorno `OH_MY_AG_OUTPUT_FORMAT` se puede establecer como `json` para forzar salida legible por máquina en los comandos que lo soportan. Esto equivale a pasar `--json` a cada comando.
 
 ---
 
@@ -15,108 +15,108 @@ The environment variable `OH_MY_AG_OUTPUT_FORMAT` can be set to `json` to force 
 
 ### oma (install)
 
-The default command with no arguments launches the interactive installer.
+El comando por defecto sin argumentos inicia el instalador interactivo.
 
 ```
 oma
 ```
 
-**What it does:**
-1. Checks for legacy `.agent/` directory and migrates to `.agents/` if found.
-2. Detects and offers to remove competing tools.
-3. Prompts for project type (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
-4. If backend is selected, prompts for language variant (Python, Node.js, Rust, Other).
-5. Asks about GitHub Copilot symlinks.
-6. Downloads the latest tarball from the registry.
-7. Installs shared resources, workflows, configs, and selected skills.
-8. Installs vendor adaptations for all vendors (Claude, Codex, Gemini, Qwen).
-9. Creates CLI symlinks.
-10. Offers to enable `git rerere`.
-11. Offers to configure MCP for Antigravity IDE and Gemini CLI.
+**Qué hace:**
+1. Verifica si existe el directorio legacy `.agent/` y migra a `.agents/` si lo encuentra.
+2. Detecta y ofrece eliminar herramientas competidoras.
+3. Solicita el tipo de proyecto (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+4. Si se selecciona backend, solicita la variante del lenguaje (Python, Node.js, Rust, Other).
+5. Pregunta sobre los symlinks de GitHub Copilot.
+6. Descarga el tarball más reciente del registro.
+7. Instala recursos compartidos, flujos de trabajo, configuraciones y habilidades seleccionadas.
+8. Instala adaptaciones de proveedores para todos (Claude, Codex, Gemini, Qwen).
+9. Crea symlinks del CLI.
+10. Ofrece habilitar `git rerere`.
+11. Ofrece configurar MCP para Antigravity IDE y Gemini CLI.
 
-**Example:**
+**Ejemplo:**
 ```bash
 cd /path/to/my-project
 oma
-# Follow the interactive prompts
+# Seguir los prompts interactivos
 ```
 
 ### doctor
 
-Health check for CLI installations, MCP configs, and skill status.
+Verificación de salud de las instalaciones CLI, configuraciones MCP y estado de habilidades.
 
 ```
 oma doctor [--json] [--output <format>]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
 
-**What it checks:**
-- CLI installations: gemini, claude, codex, qwen (version and path).
-- Authentication status for each CLI.
-- MCP configuration: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
-- Installed skills: which skills are present and their status.
+**Qué verifica:**
+- Instalaciones CLI: gemini, claude, codex, qwen (versión y ruta).
+- Estado de autenticación de cada CLI.
+- Configuración MCP: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
+- Habilidades instaladas: qué habilidades están presentes y su estado.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Interactive text output
+# Salida de texto interactiva
 oma doctor
 
-# JSON output for CI pipelines
+# Salida JSON para pipelines de CI
 oma doctor --json
 
-# Pipe to jq for specific checks
+# Filtrar con jq para verificaciones específicas
 oma doctor --json | jq '.clis[] | select(.installed == false)'
 ```
 
 ### update
 
-Update skills to the latest version from the registry.
+Actualizar habilidades a la última versión del registro.
 
 ```
 oma update [-f | --force] [--ci]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `-f, --force` | Overwrite user-customized config files (`user-preferences.yaml`, `mcp.json`, `stack/` directories) |
-| `--ci` | Run in non-interactive CI mode (skip prompts, plain text output) |
+| `-f, --force` | Sobrescribir archivos de configuración personalizados (`user-preferences.yaml`, `mcp.json`, directorios `stack/`) |
+| `--ci` | Ejecutar en modo CI no interactivo (omitir prompts, salida en texto plano) |
 
-**What it does:**
-1. Fetches `prompt-manifest.json` from the registry to check the latest version.
-2. Compares with the local version in `.agents/skills/_version.json`.
-3. If already up to date, exits.
-4. Downloads and extracts the latest tarball.
-5. Preserves user-customized files (unless `--force`).
-6. Copies new files over `.agents/`.
-7. Restores preserved files.
-8. Updates vendor adaptations and refreshes symlinks.
+**Qué hace:**
+1. Obtiene `prompt-manifest.json` del registro para verificar la última versión.
+2. Compara con la versión local en `.agents/skills/_version.json`.
+3. Si ya está actualizado, termina.
+4. Descarga y extrae el tarball más reciente.
+5. Preserva archivos personalizados por el usuario (a menos que se use `--force`).
+6. Copia los archivos nuevos sobre `.agents/`.
+7. Restaura los archivos preservados.
+8. Actualiza adaptaciones de proveedores y refresca symlinks.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Standard update (preserves config)
+# Actualización estándar (preserva configuración)
 oma update
 
-# Force update (resets all config to defaults)
+# Actualización forzada (restablece toda la configuración a valores por defecto)
 oma update --force
 
-# CI mode (no prompts, no spinners)
+# Modo CI (sin prompts, sin spinners)
 oma update --ci
 
-# CI mode with force
+# Modo CI con fuerza
 oma update --ci --force
 ```
 
 ### setup (workflow)
 
-The `/setup` workflow (invoked inside an agent session) provides interactive configuration of language, CLI installations, MCP connections, and agent-CLI mapping. This is different from `oma` (the installer) — `/setup` configures an already-installed instance.
+El flujo `/setup` (invocado dentro de una sesión de agente) proporciona configuración interactiva de idioma, instalaciones CLI, conexiones MCP y mapeo agente-CLI. Esto es diferente de `oma` (el instalador) — `/setup` configura una instancia ya instalada.
 
 ---
 
@@ -124,140 +124,140 @@ The `/setup` workflow (invoked inside an agent session) provides interactive con
 
 ### dashboard
 
-Start the terminal dashboard for real-time agent monitoring.
+Iniciar el dashboard de terminal para monitoreo de agentes en tiempo real.
 
 ```
 oma dashboard
 ```
 
-No options. Watches `.serena/memories/` in the current directory. Renders a box-drawing UI with session status, agent table, and activity feed. Updates on every file change. Press `Ctrl+C` to exit.
+Sin opciones. Observa `.serena/memories/` en el directorio actual. Renderiza una interfaz con dibujo de cajas mostrando estado de sesión, tabla de agentes y feed de actividad. Se actualiza con cada cambio de archivo. Presiona `Ctrl+C` para salir.
 
-The memories directory can be overridden with the `MEMORIES_DIR` environment variable.
+El directorio de memorias se puede sobreescribir con la variable de entorno `MEMORIES_DIR`.
 
-**Example:**
+**Ejemplo:**
 ```bash
-# Standard usage
+# Uso estándar
 oma dashboard
 
-# Custom memories directory
+# Directorio de memorias personalizado
 MEMORIES_DIR=/path/to/.serena/memories oma dashboard
 ```
 
 ### dashboard:web
 
-Start the web dashboard.
+Iniciar el dashboard web.
 
 ```
 oma dashboard:web
 ```
 
-Starts an HTTP server on `http://localhost:9847` with a WebSocket connection for live updates. Open the URL in a browser to see the dashboard.
+Inicia un servidor HTTP en `http://localhost:9847` con conexión WebSocket para actualizaciones en vivo. Abre la URL en un navegador para ver el dashboard.
 
-**Environment variables:**
+**Variables de entorno:**
 
-| Variable | Default | Description |
-|:---------|:--------|:-----------|
-| `DASHBOARD_PORT` | `9847` | Port for the HTTP/WebSocket server |
-| `MEMORIES_DIR` | `{cwd}/.serena/memories` | Path to the memories directory |
+| Variable | Predeterminado | Descripción |
+|:---------|:---------------|:-----------|
+| `DASHBOARD_PORT` | `9847` | Puerto para el servidor HTTP/WebSocket |
+| `MEMORIES_DIR` | `{cwd}/.serena/memories` | Ruta al directorio de memorias |
 
-**Example:**
+**Ejemplo:**
 ```bash
-# Standard usage
+# Uso estándar
 oma dashboard:web
 
-# Custom port
+# Puerto personalizado
 DASHBOARD_PORT=8080 oma dashboard:web
 ```
 
 ### stats
 
-View productivity metrics.
+Ver métricas de productividad.
 
 ```
 oma stats [--json] [--output <format>] [--reset]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
-| `--reset` | Reset all metrics data |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
+| `--reset` | Restablecer todos los datos de métricas |
 
-**Metrics tracked:**
-- Session count
-- Skills used (with frequency)
-- Tasks completed
-- Total session time
-- Files changed, lines added, lines removed
-- Last updated timestamp
+**Métricas rastreadas:**
+- Conteo de sesiones
+- Habilidades usadas (con frecuencia)
+- Tareas completadas
+- Tiempo total de sesión
+- Archivos modificados, líneas agregadas, líneas eliminadas
+- Marca de tiempo de última actualización
 
-Metrics are stored in `.serena/metrics.json`. Data is collected from git stats and memory files.
+Las métricas se almacenan en `.serena/metrics.json`. Los datos se recopilan de estadísticas de git y archivos de memoria.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# View current metrics
+# Ver métricas actuales
 oma stats
 
-# JSON output
+# Salida JSON
 oma stats --json
 
-# Reset all metrics
+# Restablecer todas las métricas
 oma stats --reset
 ```
 
 ### retro
 
-Engineering retrospective with metrics and trends.
+Retrospectiva de ingeniería con métricas y tendencias.
 
 ```
 oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Description | Default |
-|:---------|:-----------|:--------|
-| `window` | Time window for analysis (e.g., `7d`, `2w`, `1m`) | Last 7 days |
+| Argumento | Descripción | Predeterminado |
+|:----------|:-----------|:---------------|
+| `window` | Ventana de tiempo para análisis (ej., `7d`, `2w`, `1m`) | Últimos 7 días |
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
-| `--interactive` | Interactive mode with manual entry |
-| `--compare` | Compare current window vs prior same-length window |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
+| `--interactive` | Modo interactivo con entrada manual |
+| `--compare` | Comparar ventana actual vs ventana anterior del mismo tamaño |
 
-**What it shows:**
-- Tweetable summary (one-line metrics)
-- Summary table (commits, files changed, lines added/removed, contributors)
-- Trends vs last retro (if previous snapshot exists)
-- Contributor leaderboard
-- Commit time distribution (hourly histogram)
-- Work sessions
-- Commit types breakdown (feat, fix, chore, etc.)
-- Hotspots (most-changed files)
+**Qué muestra:**
+- Resumen tipo tweet (métricas en una línea)
+- Tabla resumen (commits, archivos modificados, líneas agregadas/eliminadas, contribuidores)
+- Tendencias vs última retro (si existe snapshot previo)
+- Tabla de líderes de contribuidores
+- Distribución temporal de commits (histograma por hora)
+- Sesiones de trabajo
+- Desglose de tipos de commit (feat, fix, chore, etc.)
+- Hotspots (archivos más modificados)
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Last 7 days (default)
+# Últimos 7 días (por defecto)
 oma retro
 
-# Last 30 days
+# Últimos 30 días
 oma retro 30d
 
-# Last 2 weeks
+# Últimas 2 semanas
 oma retro 2w
 
-# Compare with previous period
+# Comparar con el período anterior
 oma retro 7d --compare
 
-# Interactive mode
+# Modo interactivo
 oma retro --interactive
 
-# JSON for automation
+# JSON para automatización
 oma retro 7d --json
 ```
 
@@ -267,137 +267,182 @@ oma retro 7d --json
 
 ### agent:spawn
 
-Spawn a subagent process.
+Generar un proceso de subagente.
 
 ```
 oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Required | Description |
-|:---------|:---------|:-----------|
-| `agent-id` | Yes | Agent type. One of: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
-| `prompt` | Yes | Task description. Can be inline text or a path to a file. |
-| `session-id` | Yes | Session identifier (format: `session-YYYYMMDD-HHMMSS`) |
+| Argumento | Requerido | Descripción |
+|:----------|:----------|:-----------|
+| `agent-id` | Sí | Tipo de agente. Uno de: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| `prompt` | Sí | Descripción de la tarea. Puede ser texto inline o una ruta a un archivo. |
+| `session-id` | Sí | Identificador de sesión (formato: `session-YYYYMMDD-HHMMSS`) |
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor override: `gemini`, `claude`, `codex`, `qwen` |
-| `-w, --workspace <path>` | Working directory for the agent. Auto-detected from monorepo config if omitted. |
+| `-m, --model <vendor>` | Proveedor CLI: `gemini`, `claude`, `codex`, `qwen` |
+| `-w, --workspace <path>` | Directorio de trabajo del agente. Se auto-detecta desde la configuración del monorepo si se omite. |
 
-**Vendor resolution order:** `--model` flag > `agent_cli_mapping` in user-preferences.yaml > `default_cli` > `active_vendor` in cli-config.yaml > `gemini`.
+**Orden de resolución del proveedor:** flag `--model` > `agent_cli_mapping` en user-preferences.yaml > `default_cli` > `active_vendor` en cli-config.yaml > `gemini`.
 
-**Prompt resolution:** If the prompt argument is a path to an existing file, the file contents are used as the prompt. Otherwise, the argument is used as inline text. Vendor-specific execution protocols are appended automatically.
+**Resolución del prompt:** Si el argumento prompt es una ruta a un archivo existente, se usa el contenido del archivo como prompt. De lo contrario, el argumento se usa como texto inline. Los protocolos de ejecución específicos del proveedor se agregan automáticamente.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Inline prompt, auto-detect workspace
+# Prompt inline, auto-detectar workspace
 oma agent:spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
 
-# Prompt from file, explicit workspace
+# Prompt desde archivo, workspace explícito
 oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
 
-# Override vendor to Claude
+# Cambiar proveedor a Claude
 oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
 
-# Mobile agent with auto-detected workspace
+# Agente mobile con workspace auto-detectado
 oma agent:spawn mobile "Add biometric login" session-20260324-143000
 ```
 
 ### agent:status
 
-Check the status of one or more subagents.
+Verificar el estado de uno o más subagentes.
 
 ```
 oma agent:status <session-id> [agent-ids...] [-r <root>]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Required | Description |
-|:---------|:---------|:-----------|
-| `session-id` | Yes | The session ID to check |
-| `agent-ids` | No | Space-separated list of agent IDs. If omitted, no output. |
+| Argumento | Requerido | Descripción |
+|:----------|:----------|:-----------|
+| `session-id` | Sí | El ID de sesión a verificar |
+| `agent-ids` | No | Lista de IDs de agentes separada por espacios. Si se omite, no hay salida. |
 
-**Options:**
+**Opciones:**
 
-| Flag | Description | Default |
-|:-----|:-----------|:--------|
-| `-r, --root <path>` | Root path for memory checks | Current directory |
+| Flag | Descripción | Predeterminado |
+|:-----|:-----------|:---------------|
+| `-r, --root <path>` | Ruta raíz para verificaciones de memoria | Directorio actual |
 
-**Status values:**
-- `completed` — Result file exists (with optional status header).
-- `running` — PID file exists and process is alive.
-- `crashed` — PID file exists but process is dead, or no PID/result file found.
+**Valores de estado:**
+- `completed` — El archivo de resultado existe (con encabezado de estado opcional).
+- `running` — El archivo PID existe y el proceso está activo.
+- `crashed` — El archivo PID existe pero el proceso está muerto, o no se encontró archivo PID/resultado.
 
-**Output format:** One line per agent: `{agent-id}:{status}`
+**Formato de salida:** Una línea por agente: `{agent-id}:{status}`
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Check specific agents
+# Verificar agentes específicos
 oma agent:status session-20260324-143000 backend frontend
 
-# Output:
+# Salida:
 # backend:running
 # frontend:completed
 
-# Check with custom root
+# Verificar con ruta raíz personalizada
 oma agent:status session-20260324-143000 qa -r /path/to/project
 ```
 
 ### agent:parallel
 
-Run multiple subagents in parallel.
+Ejecutar múltiples subagentes en paralelo.
 
 ```
 oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Required | Description |
-|:---------|:---------|:-----------|
-| `tasks` | Yes | Either a YAML tasks file path, or (with `--inline`) inline task specs |
+| Argumento | Requerido | Descripción |
+|:----------|:----------|:-----------|
+| `tasks` | Sí | Ruta a un archivo YAML de tareas, o (con `--inline`) especificaciones de tareas inline |
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor override for all agents |
-| `-i, --inline` | Inline mode: specify tasks as `agent:task[:workspace]` arguments |
-| `--no-wait` | Background mode — start agents and return immediately |
+| `-m, --model <vendor>` | Proveedor CLI para todos los agentes |
+| `-i, --inline` | Modo inline: especificar tareas como argumentos `agent:task[:workspace]` |
+| `--no-wait` | Modo en segundo plano — iniciar agentes y retornar inmediatamente |
 
-**YAML tasks file format:**
+**Formato del archivo YAML de tareas:**
 ```yaml
 tasks:
   - agent: backend
     task: "Implement user API"
-    workspace: ./api           # optional, auto-detected if omitted
+    workspace: ./api           # opcional, auto-detectado si se omite
   - agent: frontend
     task: "Build user dashboard"
     workspace: ./web
 ```
 
-**Inline task format:** `agent:task` or `agent:task:workspace` (workspace must start with `./` or `/`).
+**Formato de tarea inline:** `agent:task` o `agent:task:workspace` (el workspace debe comenzar con `./` o `/`).
 
-**Results directory:** `.agents/results/parallel-{timestamp}/` contains log files for each agent.
+**Directorio de resultados:** `.agents/results/parallel-{timestamp}/` contiene archivos de log de cada agente.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# From YAML file
+# Desde archivo YAML
 oma agent:parallel tasks.yaml
 
-# Inline mode
+# Modo inline
 oma agent:parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
 
-# Background mode (no wait)
+# Modo en segundo plano (sin espera)
 oma agent:parallel tasks.yaml --no-wait
 
-# Override vendor for all agents
+# Cambiar proveedor para todos los agentes
 oma agent:parallel tasks.yaml -m claude
+```
+
+### agent:review
+
+Ejecutar una revisión de código usando un CLI externo de IA (codex, claude, gemini o qwen).
+
+```
+oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+```
+
+**Opciones:**
+
+| Flag | Descripción |
+|:-----|:-----------|
+| `-m, --model <vendor>` | Proveedor CLI a usar: `codex`, `claude`, `gemini`, `qwen`. Por defecto usa el proveedor resuelto desde la configuración. |
+| `-p, --prompt <prompt>` | Prompt de revisión personalizado. Si se omite, se usa un prompt de revisión de código predeterminado. |
+| `-w, --workspace <path>` | Ruta a revisar. Por defecto usa el directorio de trabajo actual. |
+| `--no-uncommitted` | Omitir revisión de cambios no confirmados. Cuando se establece, solo se revisan los cambios confirmados en la sesión. |
+
+**Qué hace:**
+- Detecta el ID de sesión actual automáticamente desde el entorno o la actividad reciente de git.
+- Para `codex`: usa el subcomando nativo `codex review`.
+- Para `claude`, `gemini`, `qwen`: construye una solicitud de revisión basada en prompt e invoca el CLI con el prompt de revisión.
+- Por defecto, revisa los cambios no confirmados en el directorio de trabajo.
+- Con `--no-uncommitted`, restringe la revisión a los cambios confirmados dentro de la sesión actual.
+
+**Ejemplos:**
+```bash
+# Revisar cambios no confirmados con el proveedor por defecto
+oma agent:review
+
+# Revisar con codex (usa el comando nativo codex review)
+oma agent:review -m codex
+
+# Revisar con claude usando un prompt personalizado
+oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+
+# Revisar una ruta específica
+oma agent:review -w ./apps/api
+
+# Revisar solo cambios confirmados (omitir árbol de trabajo)
+oma agent:review --no-uncommitted
+
+# Revisar cambios confirmados en un workspace específico con gemini
+oma agent:review -m gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
@@ -406,28 +451,28 @@ oma agent:parallel tasks.yaml -m claude
 
 ### memory:init
 
-Initialize the Serena memory schema.
+Inicializar el esquema de memoria de Serena.
 
 ```
 oma memory:init [--json] [--output <format>] [--force]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
-| `--force` | Overwrite empty or existing schema files |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
+| `--force` | Sobrescribir archivos de esquema vacíos o existentes |
 
-**What it does:** Creates the `.serena/memories/` directory structure with initial schema files that the MCP memory tools use for reading and writing agent state.
+**Qué hace:** Crea la estructura de directorio `.serena/memories/` con archivos de esquema iniciales que las herramientas de memoria MCP usan para leer y escribir el estado del agente.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Initialize memory
+# Inicializar memoria
 oma memory:init
 
-# Force overwrite existing schema
+# Forzar sobrescritura del esquema existente
 oma memory:init --force
 ```
 
@@ -437,22 +482,22 @@ oma memory:init --force
 
 ### auth:status
 
-Check authentication status of all supported CLIs.
+Verificar el estado de autenticación de todos los CLIs soportados.
 
 ```
 oma auth:status [--json] [--output <format>]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
 
-**Checks:** Gemini (API key), Claude (API key or OAuth), Codex (API key), Qwen (API key).
+**Verifica:** Gemini (API key), Claude (API key u OAuth), Codex (API key), Qwen (API key).
 
-**Examples:**
+**Ejemplos:**
 ```bash
 oma auth:status
 oma auth:status --json
@@ -460,23 +505,23 @@ oma auth:status --json
 
 ### usage:anti
 
-Show model usage quotas from the local Antigravity IDE.
+Mostrar cuotas de uso de modelos desde el IDE Antigravity local.
 
 ```
 oma usage:anti [--json] [--output <format>] [--raw]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
-| `--raw` | Dump the raw RPC response from Antigravity |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
+| `--raw` | Volcar la respuesta RPC sin procesar de Antigravity |
 
-**What it does:** Connects to the local Antigravity IDE instance and queries model usage quotas.
+**Qué hace:** Se conecta a la instancia local del IDE Antigravity y consulta las cuotas de uso de modelos.
 
-**Examples:**
+**Ejemplos:**
 ```bash
 oma usage:anti
 oma usage:anti --raw
@@ -485,125 +530,125 @@ oma usage:anti --json
 
 ### bridge
 
-Bridge MCP stdio to Streamable HTTP transport.
+Puente de MCP stdio a transporte Streamable HTTP.
 
 ```
 oma bridge [url]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Required | Description |
-|:---------|:---------|:-----------|
-| `url` | No | The Streamable HTTP endpoint URL (e.g., `http://localhost:12341/mcp`) |
+| Argumento | Requerido | Descripción |
+|:----------|:----------|:-----------|
+| `url` | No | La URL del endpoint Streamable HTTP (ej., `http://localhost:12341/mcp`) |
 
-**What it does:** Acts as a protocol bridge between MCP stdio transport (used by Antigravity IDE) and Streamable HTTP transport (used by Serena MCP server). This is required because Antigravity IDE does not support HTTP/SSE transports directly.
+**Qué hace:** Actúa como puente de protocolo entre el transporte stdio de MCP (usado por Antigravity IDE) y el transporte Streamable HTTP (usado por el servidor Serena MCP). Esto es necesario porque Antigravity IDE no soporta transportes HTTP/SSE directamente.
 
-**Architecture:**
+**Arquitectura:**
 ```
 Antigravity IDE <-- stdio --> oma bridge <-- HTTP --> Serena Server
 ```
 
-**Example:**
+**Ejemplo:**
 ```bash
-# Bridge to local Serena server
+# Puente al servidor Serena local
 oma bridge http://localhost:12341/mcp
 ```
 
 ### verify
 
-Verify subagent output against expected criteria.
+Verificar la salida del subagente contra criterios esperados.
 
 ```
 oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Required | Description |
-|:---------|:---------|:-----------|
-| `agent-type` | Yes | One of: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
+| Argumento | Requerido | Descripción |
+|:----------|:----------|:-----------|
+| `agent-type` | Sí | Uno de: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` |
 
-**Options:**
+**Opciones:**
 
-| Flag | Description | Default |
-|:-----|:-----------|:--------|
-| `-w, --workspace <path>` | Workspace path to verify | Current directory |
-| `--json` | Output as JSON | |
-| `--output <format>` | Output format (`text` or `json`) | |
+| Flag | Descripción | Predeterminado |
+|:-----|:-----------|:---------------|
+| `-w, --workspace <path>` | Ruta del workspace a verificar | Directorio actual |
+| `--json` | Salida como JSON | |
+| `--output <format>` | Formato de salida (`text` o `json`) | |
 
-**What it does:** Runs the verification script for the specified agent type, checking build success, test results, and scope compliance.
+**Qué hace:** Ejecuta el script de verificación para el tipo de agente especificado, comprobando éxito del build, resultados de pruebas y cumplimiento de alcance.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Verify backend output in default workspace
+# Verificar salida del backend en workspace por defecto
 oma verify backend
 
-# Verify frontend in specific workspace
+# Verificar frontend en workspace específico
 oma verify frontend -w ./apps/web
 
-# JSON output for CI
+# Salida JSON para CI
 oma verify backend --json
 ```
 
 ### cleanup
 
-Clean up orphaned subagent processes and temp files.
+Limpiar procesos huérfanos de subagentes y archivos temporales.
 
 ```
 oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 ```
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--dry-run` | Show what would be cleaned without making changes |
-| `-y, --yes` | Skip confirmation prompts and clean everything |
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
+| `--dry-run` | Mostrar qué se limpiaría sin realizar cambios |
+| `-y, --yes` | Omitir prompts de confirmación y limpiar todo |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
 
-**What it cleans:**
-- Orphaned PID files in the system temp directory (`/tmp/subagent-*.pid`).
-- Orphaned log files (`/tmp/subagent-*.log`).
-- Gemini Antigravity directories (brain, implicit, knowledge) under `.gemini/antigravity/`.
+**Qué limpia:**
+- Archivos PID huérfanos en el directorio temporal del sistema (`/tmp/subagent-*.pid`).
+- Archivos de log huérfanos (`/tmp/subagent-*.log`).
+- Directorios de Gemini Antigravity (brain, implicit, knowledge) bajo `.gemini/antigravity/`.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Preview what would be cleaned
+# Vista previa de lo que se limpiaría
 oma cleanup --dry-run
 
-# Clean with confirmation prompts
+# Limpiar con prompts de confirmación
 oma cleanup
 
-# Clean everything without prompts
+# Limpiar todo sin prompts
 oma cleanup --yes
 
-# JSON output for automation
+# Salida JSON para automatización
 oma cleanup --json
 ```
 
 ### visualize
 
-Visualize project structure as a dependency graph.
+Visualizar la estructura del proyecto como un grafo de dependencias.
 
 ```
 oma visualize [--json] [--output <format>]
 oma viz [--json] [--output <format>]
 ```
 
-`viz` is a built-in alias for `visualize`.
+`viz` es un alias integrado de `visualize`.
 
-**Options:**
+**Opciones:**
 
-| Flag | Description |
+| Flag | Descripción |
 |:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
+| `--json` | Salida como JSON |
+| `--output <format>` | Formato de salida (`text` o `json`) |
 
-**What it does:** Analyzes the project structure and generates a dependency graph showing relationships between skills, agents, workflows, and shared resources.
+**Qué hace:** Analiza la estructura del proyecto y genera un grafo de dependencias que muestra las relaciones entre habilidades, agentes, flujos de trabajo y recursos compartidos.
 
-**Examples:**
+**Ejemplos:**
 ```bash
 oma visualize
 oma viz --json
@@ -611,82 +656,82 @@ oma viz --json
 
 ### star
 
-Star oh-my-agent on GitHub.
+Dar estrella a oh-my-agent en GitHub.
 
 ```
 oma star
 ```
 
-No options. Requires `gh` CLI to be installed and authenticated. Stars the `first-fluke/oh-my-agent` repository.
+Sin opciones. Requiere que el CLI `gh` esté instalado y autenticado. Da estrella al repositorio `first-fluke/oh-my-agent`.
 
-**Example:**
+**Ejemplo:**
 ```bash
 oma star
 ```
 
 ### describe
 
-Describe CLI commands as JSON for runtime introspection.
+Describir comandos CLI como JSON para introspección en tiempo de ejecución.
 
 ```
 oma describe [command-path]
 ```
 
-**Arguments:**
+**Argumentos:**
 
-| Argument | Required | Description |
-|:---------|:---------|:-----------|
-| `command-path` | No | The command to describe. If omitted, describes the root program. |
+| Argumento | Requerido | Descripción |
+|:----------|:----------|:-----------|
+| `command-path` | No | El comando a describir. Si se omite, describe el programa raíz. |
 
-**What it does:** Outputs a JSON object with the command's name, description, arguments, options, and subcommands. Used by AI agents to understand available CLI capabilities.
+**Qué hace:** Genera un objeto JSON con el nombre, descripción, argumentos, opciones y subcomandos del comando. Usado por agentes de IA para comprender las capacidades disponibles del CLI.
 
-**Examples:**
+**Ejemplos:**
 ```bash
-# Describe all commands
+# Describir todos los comandos
 oma describe
 
-# Describe a specific command
+# Describir un comando específico
 oma describe agent:spawn
 
-# Describe a subcommand
+# Describir un subcomando
 oma describe "agent:parallel"
 ```
 
 ### help
 
-Show help information.
+Mostrar información de ayuda.
 
 ```
 oma help
 ```
 
-Displays the full help text with all available commands.
+Muestra el texto de ayuda completo con todos los comandos disponibles.
 
 ### version
 
-Show the version number.
+Mostrar el número de versión.
 
 ```
 oma version
 ```
 
-Outputs the current CLI version and exits.
+Muestra la versión actual del CLI y termina.
 
 ---
 
 ## Variables de Entorno
 
-| Variable | Description | Used By |
-|:---------|:-----------|:--------|
-| `OH_MY_AG_OUTPUT_FORMAT` | Set to `json` to force JSON output on all commands that support it | All commands with `--json` flag |
-| `DASHBOARD_PORT` | Port for the web dashboard | `dashboard:web` |
-| `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard:web` |
+| Variable | Descripción | Usado por |
+|:---------|:-----------|:----------|
+| `OH_MY_AG_OUTPUT_FORMAT` | Establecer como `json` para forzar salida JSON en todos los comandos que lo soporten | Todos los comandos con flag `--json` |
+| `DASHBOARD_PORT` | Puerto para el dashboard web | `dashboard:web` |
+| `MEMORIES_DIR` | Sobreescribir la ruta del directorio de memorias | `dashboard`, `dashboard:web` |
 
 ---
 
 ## Alias
 
-| Alias | Full Command |
-|:------|:------------|
+| Alias | Comando completo |
+|:------|:----------------|
 | `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

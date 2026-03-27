@@ -117,6 +117,51 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 YAML-takenbestand of inline modus (`agent:task[:workspace]`).
 
+### agent:review
+
+Voer een codereview uit met een externe AI CLI (codex, claude, gemini of qwen).
+
+```
+oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+```
+
+**Opties:**
+
+| Vlag | Beschrijving |
+|:-----|:-----------|
+| `-m, --model <vendor>` | Te gebruiken CLI-leverancier: `codex`, `claude`, `gemini`, `qwen`. Standaard de geconfigureerde leverancier. |
+| `-p, --prompt <prompt>` | Aangepaste reviewprompt. Indien weggelaten wordt een standaard codereview-prompt gebruikt. |
+| `-w, --workspace <path>` | Pad om te reviewen. Standaard de huidige werkdirectory. |
+| `--no-uncommitted` | Sla review van niet-gecommitte wijzigingen over. Alleen gecommitte wijzigingen in de sessie worden gereviewed. |
+
+**Wat het doet:**
+- Detecteert automatisch de huidige sessie-ID vanuit de omgeving of recente git-activiteit.
+- Voor `codex`: gebruikt het native `codex review`-subcommando.
+- Voor `claude`, `gemini`, `qwen`: stelt een prompt-gebaseerd reviewverzoek samen en roept de CLI aan met de reviewprompt.
+- Standaard worden niet-gecommitte wijzigingen in de werkdirectory gereviewed.
+- Met `--no-uncommitted` wordt de review beperkt tot wijzigingen die binnen de huidige sessie zijn gecommit.
+
+**Voorbeelden:**
+```bash
+# Review niet-gecommitte wijzigingen met standaardleverancier
+oma agent:review
+
+# Review met codex (gebruikt native codex review-commando)
+oma agent:review -m codex
+
+# Review met claude met een aangepaste prompt
+oma agent:review -m claude -p "Focus op beveiligingskwetsbaarheden en invoervalidatie"
+
+# Review een specifiek pad
+oma agent:review -w ./apps/api
+
+# Review alleen gecommitte wijzigingen (sla werkboom over)
+oma agent:review --no-uncommitted
+
+# Review gecommitte wijzigingen in een specifieke werkruimte met gemini
+oma agent:review -m gemini -w ./apps/web --no-uncommitted
+```
+
 ---
 
 ## Geheugenbeheer

@@ -5,9 +5,9 @@ description: Documentation complète du GitHub Action oh-my-agent — configurat
 
 # Guide : Mises à Jour Automatiques
 
-## Vue d'Ensemble
+## Vue d'ensemble
 
-The oh-my-agent GitHub Action (`first-fluke/oma-update-action@v1`) automatically updates your project's agent skills by running `oma update` in CI. It supports two modes: creating a pull request for review, or committing directly to a branch.
+Le GitHub Action oh-my-agent (`first-fluke/oma-update-action@v1`) met automatiquement à jour les compétences d'agents de votre projet en exécutant `oma update` en CI. Il supporte deux modes : créer une pull request pour revue, ou commiter directement sur une branche.
 
 ---
 

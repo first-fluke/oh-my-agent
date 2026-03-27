@@ -5,11 +5,11 @@ description: Arborescence exhaustive d'une installation oh-my-agent avec chaque 
 
 # Structure du Projet
 
-After installing oh-my-agent, your project gains three directory trees: `.agents/` (the single source of truth), `.claude/` (IDE integration layer), and `.serena/` (runtime state). This page documents every file and its purpose.
+Après l'installation d'oh-my-agent, votre projet acquiert trois arborescences de répertoires : `.agents/` (la source unique de vérité), `.claude/` (couche d'intégration IDE) et `.serena/` (état d'exécution). Cette page documente chaque fichier et son rôle.
 
 ---
 
-## Arborescence Complète
+## Arborescence complète
 
 ```
 your-project/
@@ -273,9 +273,9 @@ your-project/
 
 ---
 
-## .agents/ — The Source of Truth
+## .agents/ -- La source de vérité
 
-This is the core directory. Everything agents need lives here. It is the only directory that matters for agent behavior — all other directories are derived from it.
+C'est le répertoire central. Tout ce dont les agents ont besoin s'y trouve. C'est le seul répertoire qui compte pour le comportement des agents -- tous les autres répertoires en sont dérivés.
 
 ### config/
 
@@ -343,9 +343,9 @@ MCP server configuration including:
 
 ---
 
-## .claude/ — IDE Integration
+## .claude/ -- Intégration IDE
 
-This directory connects oh-my-agent to Claude Code and other IDEs.
+Ce répertoire connecte oh-my-agent à Claude Code et aux autres IDE.
 
 ### settings.json
 
@@ -378,9 +378,9 @@ Subagent definitions formatted for Claude Code's Agent tool. These reference the
 
 ---
 
-## .serena/memories/ — Runtime State
+## .serena/memories/ -- État d'exécution
 
-Where agents write their progress during orchestration sessions. This directory is watched by dashboards for real-time updates.
+L'endroit où les agents écrivent leur progression pendant les sessions d'orchestration. Ce répertoire est surveillé par les tableaux de bord pour les mises à jour en temps réel.
 
 | File | Owner | Purpose |
 |------|-------|---------|
@@ -399,9 +399,9 @@ Memory file paths and tool names are configurable in `.agents/mcp.json` via `mem
 
 ---
 
-## oh-my-agent Source Repository Structure
+## Structure du dépôt source oh-my-agent
 
-If you are working on oh-my-agent itself (not just using it), the repository is a monorepo:
+Si vous travaillez sur oh-my-agent lui-même (et pas seulement en tant qu'utilisateur), le dépôt est un monorepo :
 
 ```
 oh-my-agent/
@@ -421,9 +421,9 @@ oh-my-agent/
 └── package.json          ← Root workspace config
 ```
 
-In the source repo, `.agents/` modifications are allowed (this is the SSOT exception for the source repo itself). The `.agents/` rules about not modifying this directory apply to consumer projects, not the oh-my-agent repository.
+Dans le dépôt source, les modifications de `.agents/` sont autorisées (c'est l'exception SSOT pour le dépôt source lui-même). Les règles de `.agents/` interdisant la modification de ce répertoire s'appliquent aux projets consommateurs, pas au dépôt oh-my-agent.
 
-Development commands:
+Commandes de développement :
 - `bun run test` — CLI tests (vitest)
 - `bun run lint` — Lint
 - `bun run build` — CLI build

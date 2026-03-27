@@ -5,19 +5,19 @@ description: Guide complet pour exécuter plusieurs agents oh-my-agent simultan�
 
 # Exécution Parallèle
 
-The core advantage of oh-my-agent is running multiple specialized agents simultaneously. While the backend agent implements your API, the frontend agent creates the UI, and the mobile agent builds the app screens — all coordinated through shared memory.
+L'avantage fondamental d'oh-my-agent est l'exécution simultanée de plusieurs agents spécialisés. Pendant que l'agent backend implémente votre API, l'agent frontend crée l'interface utilisateur et l'agent mobile construit les écrans de l'application -- le tout coordonné via la mémoire partagée.
 
 ---
 
-## agent:spawn — Single Agent Spawning
+## agent:spawn -- Lancement d'un agent unique
 
-### Basic Syntax
+### Syntaxe de base
 
 ```bash
 oma agent:spawn <agent-id> <prompt> <session-id> [options]
 ```
 
-### Parameters
+### Paramètres
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
@@ -36,7 +36,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | `--json` | | Output result as JSON (useful for scripting). |
 | `--no-wait` | | Fire and forget — return immediately without waiting for completion. |
 
-### Examples
+### Exemples
 
 ```bash
 # Spawn a backend agent with default vendor
@@ -57,9 +57,9 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ---
 
-## Parallel Spawning with Background Processes
+## Lancement parallèle avec des processus en arrière-plan
 
-To run multiple agents simultaneously, use shell background processes:
+Pour exécuter plusieurs agents simultanément, utilisez des processus shell en arrière-plan :
 
 ```bash
 # Spawn 3 agents in parallel
@@ -69,11 +69,11 @@ oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobil
 wait  # Block until all agents complete
 ```
 
-The `&` runs each agent in the background. `wait` blocks until all background processes finish.
+Le `&` exécute chaque agent en arrière-plan. `wait` bloque jusqu'à ce que tous les processus en arrière-plan soient terminés.
 
-### Workspace-Aware Pattern
+### Pattern avec gestion des workspaces
 
-Always assign separate workspaces when running agents in parallel to prevent file conflicts:
+Assignez toujours des workspaces séparés lorsque vous exécutez des agents en parallèle pour éviter les conflits de fichiers :
 
 ```bash
 # Full-stack parallel execution
@@ -88,17 +88,17 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel — Inline Parallel Mode
+## agent:parallel -- Mode parallèle en ligne
 
-For a cleaner syntax that handles background process management automatically:
+Pour une syntaxe plus propre qui gère automatiquement les processus en arrière-plan :
 
-### Syntax
+### Syntaxe
 
 ```bash
 oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
-### Examples
+### Exemples
 
 ```bash
 # Basic parallel execution
@@ -114,15 +114,15 @@ oma agent:parallel -i \
   db:"User schema with soft delete and audit trail"
 ```
 
-The `-i` (inline) flag allows specifying agent-prompt pairs directly in the command.
+Le flag `-i` (inline) permet de spécifier les paires agent-prompt directement dans la commande.
 
 ---
 
-## Multi-CLI Configuration
+## Configuration multi-CLI
 
-Not all AI CLIs perform equally across domains. oh-my-agent lets you route agents to the CLI that handles their domain best.
+Tous les CLI IA ne se valent pas selon les domaines. oh-my-agent vous permet de router les agents vers le CLI qui gère le mieux leur domaine.
 
-### Full Configuration Example
+### Exemple de configuration complète
 
 ```yaml
 # .agents/config/user-preferences.yaml
@@ -156,9 +156,9 @@ agent_cli_mapping:
   commit: gemini         # Simple commit message generation
 ```
 
-### Vendor Resolution Priority
+### Priorité de résolution du fournisseur
 
-When `oma agent:spawn` determines which CLI to use, it follows this priority (highest wins):
+Lorsque `oma agent:spawn` détermine quel CLI utiliser, il suit cette priorité (le plus élevé l'emporte) :
 
 | Priority | Source | Example |
 |----------|--------|---------|
@@ -168,13 +168,13 @@ When `oma agent:spawn` determines which CLI to use, it follows this priority (hi
 | 4 | `active_vendor` | Legacy `cli-config.yaml` setting |
 | 5 (lowest) | Hardcoded fallback | `gemini` |
 
-This means a `--model` flag always wins. If no flag is provided, the system checks agent-specific mapping, then the default, then legacy config, and finally falls back to Gemini.
+Cela signifie qu'un flag `--model` l'emporte toujours. Si aucun flag n'est fourni, le système vérifie le mapping spécifique à l'agent, puis la valeur par défaut, puis la configuration héritée, et se rabat enfin sur Gemini.
 
 ---
 
-## Vendor-Specific Spawn Methods
+## Méthodes de lancement spécifiques au fournisseur
 
-The spawn mechanism varies by IDE/CLI:
+Le mécanisme de lancement varie selon l'IDE/CLI :
 
 | Vendor | How Agents Are Spawned | Result Handling |
 |--------|----------------------|-----------------|
@@ -184,50 +184,50 @@ The spawn mechanism varies by IDE/CLI:
 | **Antigravity IDE** | `oh-my-ag agent:spawn` only (custom subagents not available) | MCP memory poll |
 | **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 
-When running inside Claude Code, the workflow uses the `Agent` tool directly:
+Lorsqu'il s'exécute dans Claude Code, le workflow utilise directement l'outil `Agent` :
 ```
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
 
-Multiple Agent tool calls in the same message execute as true parallel — no sequential waiting.
+Plusieurs appels à l'outil Agent dans le même message s'exécutent en vrai parallèle -- pas d'attente séquentielle.
 
 ---
 
-## Monitoring Agents
+## Surveillance des agents
 
-### Terminal Dashboard
+### Tableau de bord terminal
 
 ```bash
 oma dashboard
 ```
 
-Displays a live table with:
+Affiche un tableau en direct avec :
 - Session ID and overall status
 - Per-agent status (running, completed, failed)
 - Turn counts
 - Latest activity from progress files
 - Elapsed time
 
-The dashboard watches `.serena/memories/` for real-time updates. It refreshes as agents write progress.
+Le tableau de bord surveille `.serena/memories/` pour les mises à jour en temps réel. Il se rafraîchit à mesure que les agents écrivent leur progression.
 
-### Web Dashboard
+### Tableau de bord web
 
 ```bash
 oma dashboard:web
 # Opens http://localhost:9847
 ```
 
-Features:
+Fonctionnalités :
 - Real-time updates via WebSocket
 - Auto-reconnect on connection drops
 - Colored agent status indicators
 - Activity log streaming from progress and result files
 - Session history
 
-### Recommended Terminal Layout
+### Disposition de terminaux recommandée
 
-Use 3 terminals for optimal visibility:
+Utilisez 3 terminaux pour une visibilité optimale :
 
 ```
 ┌─────────────────────────┬──────────────────────┐
@@ -244,35 +244,35 @@ Use 3 terminals for optimal visibility:
 └────────────────────────────────────────────────┘
 ```
 
-### Checking Individual Agent Status
+### Vérification du statut d'un agent individuel
 
 ```bash
 oma agent:status <session-id> <agent-id>
 ```
 
-Returns the current status of a specific agent: running, completed, or failed, along with turn count and last activity.
+Retourne le statut actuel d'un agent spécifique : running, completed ou failed, ainsi que le nombre de tours et la dernière activité.
 
 ---
 
-## Stratégie d'ID de Session
+## Stratégie d'identifiants de session
 
-Session IDs group agents working on the same feature. Best practices:
+Les identifiants de session regroupent les agents travaillant sur la même fonctionnalité. Bonnes pratiques :
 
-- **One session per feature:** All agents working on "user authentication" share `session-auth-01`
-- **Format:** Use descriptive IDs: `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
-- **Auto-generated:** The orchestrator generates IDs in `session-YYYYMMDD-HHMMSS` format
-- **Reusable for iteration:** Use the same session ID when re-spawning agents with refinements
+- **Une session par fonctionnalité :** Tous les agents travaillant sur « l'authentification utilisateur » partagent `session-auth-01`
+- **Format :** Utilisez des identifiants descriptifs : `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
+- **Auto-générés :** L'orchestrateur génère les identifiants au format `session-YYYYMMDD-HHMMSS`
+- **Réutilisables pour l'itération :** Utilisez le même identifiant de session lors du relancement d'agents avec des améliorations
 
-Session IDs determine:
-- Which memory files agents read and write (`progress-{agent}.md`, `result-{agent}.md`)
-- What the dashboard monitors
-- How results are grouped in the final report
+Les identifiants de session déterminent :
+- Quels fichiers de mémoire les agents lisent et écrivent (`progress-{agent}.md`, `result-{agent}.md`)
+- Ce que le tableau de bord surveille
+- Comment les résultats sont regroupés dans le rapport final
 
 ---
 
-## Tips for Parallel Execution
+## Conseils pour l'exécution parallèle
 
-### Do
+### À faire
 
 1. **Lock API contracts first.** Run `/plan` before spawning implementation agents so frontend and backend agents agree on endpoints, request/response schemas, and error formats.
 
@@ -298,7 +298,7 @@ Session IDs determine:
 
 7. **Start with `/coordinate` if unsure.** The coordinate workflow guides you through the process step by step with user confirmation at each gate.
 
-### Do Not
+### À éviter
 
 1. **Do not spawn agents in the same workspace.** Two agents writing to the same directory will create merge conflicts and overwrite each other's work.
 
@@ -312,9 +312,9 @@ Session IDs determine:
 
 ---
 
-## End-to-End Example
+## Exemple de bout en bout
 
-A complete parallel execution workflow for building a user authentication feature:
+Un workflow d'exécution parallèle complet pour construire une fonctionnalité d'authentification utilisateur :
 
 ```bash
 # Step 1: Plan the feature

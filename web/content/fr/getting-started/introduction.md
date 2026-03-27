@@ -5,40 +5,40 @@ description: Une vue d'ensemble complète d'oh-my-agent — le framework d'orche
 
 # Introduction
 
-oh-my-agent is a multi-agent orchestration framework for AI-powered IDEs and CLI tools. Instead of relying on a single AI assistant for everything, oh-my-agent decomposes work across 14 specialized agents — each modeled after a real engineering team role with its own tech stack knowledge, execution protocols, error playbooks, and quality checklists.
+oh-my-agent est un framework d'orchestration multi-agents pour les IDE et outils CLI propulsés par l'IA. Au lieu de dépendre d'un seul assistant IA pour tout, oh-my-agent répartit le travail entre 14 agents spécialisés -- chacun modelé d'après un rôle réel d'une équipe d'ingénierie, avec ses propres connaissances de stack technique, protocoles d'exécution, guides de résolution d'erreurs et checklists de qualité.
 
-The entire system lives in a portable `.agents/` directory inside your project. Switch between Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor, or any other supported tool — your agent configuration travels with your code.
-
----
-
-## The Multi-Agent Paradigm
-
-Traditional AI coding assistants operate as generalists. They handle frontend, backend, database, security, and infrastructure with the same prompt context and the same level of expertise. This leads to:
-
-- **Context dilution** — loading knowledge for every domain wastes the context window
-- **Inconsistent quality** — a generalist can not match a specialist in any single domain
-- **No coordination** — complex features spanning multiple domains get handled sequentially
-
-oh-my-agent solves this with specialization:
-
-1. **Each agent knows one domain deeply.** The frontend agent knows React/Next.js, shadcn/ui, TailwindCSS v4, FSD-lite architecture. The backend agent knows the Repository-Service-Router pattern, parameterized queries, JWT authentication. They do not overlap.
-
-2. **Agents run in parallel.** While the backend agent builds your API, the frontend agent is already creating the UI. The orchestrator coordinates via shared memory.
-
-3. **Quality is built in.** Every agent has a domain-specific checklist and error playbook. Charter preflight catches scope creep before code is written. QA review is a first-class step, not an afterthought.
+L'ensemble du système réside dans un répertoire portable `.agents/` à l'intérieur de votre projet. Basculez entre Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor ou tout autre outil supporté -- votre configuration d'agents voyage avec votre code.
 
 ---
 
-## All 14 Agents
+## Le paradigme multi-agents
 
-### Ideation and Planning
+Les assistants de codage IA traditionnels fonctionnent comme des généralistes. Ils gèrent le frontend, le backend, les bases de données, la sécurité et l'infrastructure avec le même contexte de prompt et le même niveau d'expertise. Cela entraîne :
+
+- **Dilution du contexte** -- charger les connaissances de chaque domaine gaspille la fenêtre de contexte
+- **Qualité inconstante** -- un généraliste ne peut pas égaler un spécialiste dans un domaine donné
+- **Pas de coordination** -- les fonctionnalités complexes couvrant plusieurs domaines sont traitées séquentiellement
+
+oh-my-agent résout cela par la spécialisation :
+
+1. **Chaque agent maîtrise un domaine en profondeur.** L'agent frontend connaît React/Next.js, shadcn/ui, TailwindCSS v4, l'architecture FSD-lite. L'agent backend connaît le pattern Repository-Service-Router, les requêtes paramétrées, l'authentification JWT. Ils ne se chevauchent pas.
+
+2. **Les agents s'exécutent en parallèle.** Pendant que l'agent backend construit votre API, l'agent frontend crée déjà l'interface utilisateur. L'orchestrateur coordonne via la mémoire partagée.
+
+3. **La qualité est intégrée.** Chaque agent dispose d'une checklist spécifique au domaine et d'un guide de résolution d'erreurs. La vérification préalable du charter détecte la dérive du périmètre avant l'écriture du code. La revue QA est une étape de premier ordre, pas une réflexion après coup.
+
+---
+
+## Les 14 agents
+
+### Idéation et planification
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-brainstorm** | Design-first ideation | Explores user intent, proposes 2-3 approaches with trade-off analysis, produces design documents before any code is written. 6-phase workflow: Context, Questions, Approaches, Design, Documentation, Transition to `/plan`. |
 | **oma-pm** | Product manager | Decomposes requirements into prioritized tasks with dependencies. Defines API contracts. Outputs `.agents/plan.json` and `task-board.md`. Supports ISO 21500 concepts, ISO 31000 risk framing, ISO 38500 governance. |
 
-### Implementation
+### Implémentation
 
 | Agent | Role | Tech Stack & Resources |
 |-------|------|----------------------|
@@ -53,21 +53,21 @@ oh-my-agent solves this with specialization:
 |-------|------|-----------------|
 | **oma-design** | Design system specialist | Creates DESIGN.md with tokens, typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2 compliance. 7-phase workflow: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Enforces anti-patterns (no "AI slop"). Optional Stitch MCP integration. Resources: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/` directory with typography, color, spatial, motion, responsive, component, accessibility, and shader guides. |
 
-### Infrastructure and DevOps
+### Infrastructure et DevOps
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), cost optimization. Supports ISO/IEC 42001 AI controls, ISO 22301 continuity, ISO/IEC/IEEE 42010 architecture documentation. Resources: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
 | **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Resources: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
 
-### Quality and Debugging
+### Qualité et débogage
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-qa** | Quality assurance | Security audit (OWASP Top 10), performance analysis, accessibility (WCAG 2.1 AA), code quality review. Severity: CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation code. Supports ISO/IEC 25010 quality characteristics and ISO/IEC 29119 test alignment. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
 | **oma-debug** | Bug diagnosis and fixing | Reproduce-first methodology. Root cause analysis, minimal fixes, mandatory regression tests, similar pattern scanning. Uses Serena MCP for symbol tracing. Resources: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Localization, Coordination, and Git
+### Localisation, coordination et Git
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
@@ -77,23 +77,23 @@ oh-my-agent solves this with specialization:
 
 ---
 
-## Progressive Disclosure Model
+## Modèle de divulgation progressive
 
-oh-my-agent uses a two-layer skill architecture to prevent context window exhaustion:
+oh-my-agent utilise une architecture de compétences en deux couches pour éviter l'épuisement de la fenêtre de contexte :
 
-**Layer 1 — SKILL.md (~800 bytes, always loaded):**
-Contains the agent's identity, routing conditions, core rules, and "when to use / when NOT to use" guidance. This is all that is loaded when the agent is not actively working.
+**Couche 1 -- SKILL.md (~800 octets, toujours chargée) :**
+Contient l'identité de l'agent, les conditions de routage, les règles fondamentales et les indications « quand utiliser / quand NE PAS utiliser ». C'est tout ce qui est chargé lorsque l'agent n'est pas activement au travail.
 
-**Layer 2 — resources/ (loaded on-demand):**
-Contains execution protocols, tech stack references, code snippets, error playbooks, checklists, and examples. These are loaded only when the agent is invoked for a task, and even then, only the resources relevant to the specific task type are loaded (based on the difficulty assessment and task-resource mapping in `context-loading.md`).
+**Couche 2 -- resources/ (chargement à la demande) :**
+Contient les protocoles d'exécution, les références de stack technique, les extraits de code, les guides de résolution d'erreurs, les checklists et les exemples. Ceux-ci ne sont chargés que lorsque l'agent est invoqué pour une tâche, et même dans ce cas, seules les ressources pertinentes pour le type de tâche spécifique sont chargées (selon l'évaluation de la difficulté et le mapping tâche-ressource dans `context-loading.md`).
 
-This design saves approximately 75% of tokens compared to loading everything upfront. For flash-tier models (128K context), the total resource budget is approximately 3,100 tokens — just 2.4% of the context window.
+Cette conception économise environ 75 % des tokens par rapport au chargement intégral initial. Pour les modèles de niveau flash (contexte de 128 Ko), le budget total de ressources est d'environ 3 100 tokens -- soit seulement 2,4 % de la fenêtre de contexte.
 
 ---
 
-## .agents/ — The Single Source of Truth (SSOT)
+## .agents/ -- La source unique de vérité (SSOT)
 
-Everything oh-my-agent needs lives in the `.agents/` directory:
+Tout ce dont oh-my-agent a besoin réside dans le répertoire `.agents/` :
 
 ```
 .agents/
@@ -109,18 +109,18 @@ Everything oh-my-agent needs lives in the `.agents/` directory:
 └── mcp.json                # MCP server configuration
 ```
 
-The `.claude/` directory exists only as an IDE integration layer — it contains symlinks pointing back to `.agents/`, plus hooks for keyword detection and the HUD statusline. The `.serena/memories/` directory holds runtime state during orchestration sessions.
+Le répertoire `.claude/` n'existe que comme couche d'intégration IDE -- il contient des symlinks pointant vers `.agents/`, ainsi que des hooks pour la détection de mots-clés et la barre de statut HUD. Le répertoire `.serena/memories/` contient l'état d'exécution pendant les sessions d'orchestration.
 
-This architecture means your agent configuration is:
-- **Portable** — switch IDEs without reconfiguring
-- **Version-controlled** — commit `.agents/` alongside your code
-- **Shareable** — team members get the same agent setup
+Cette architecture signifie que votre configuration d'agents est :
+- **Portable** -- basculez entre IDE sans reconfigurer
+- **Versionnée** -- commitez `.agents/` avec votre code
+- **Partageable** -- les membres de l'équipe obtiennent la même configuration d'agents
 
 ---
 
-## Supported IDEs and CLI Tools
+## IDE et outils CLI supportés
 
-oh-my-agent works with any AI-powered IDE or CLI that supports skill/prompt loading:
+oh-my-agent fonctionne avec tout IDE ou CLI propulsé par l'IA qui supporte le chargement de compétences/prompts :
 
 | Tool | Integration Method | Parallel Agents |
 |------|-------------------|----------------|
@@ -131,13 +131,13 @@ oh-my-agent works with any AI-powered IDE or CLI that supports skill/prompt load
 | **Cursor** | Skills via `.cursor/` integration | Manual spawning |
 | **OpenCode** | Skills loading | Manual spawning |
 
-Agent spawning adapts to each vendor automatically via the vendor detection protocol, which checks for vendor-specific markers (e.g., the `Agent` tool for Claude Code, `apply_patch` for Codex CLI).
+Le lancement d'agents s'adapte automatiquement à chaque fournisseur via le protocole de détection du fournisseur, qui vérifie les marqueurs spécifiques au fournisseur (ex. : l'outil `Agent` pour Claude Code, `apply_patch` pour Codex CLI).
 
 ---
 
-## Skill Routing System
+## Système de routage des compétences
 
-When you send a prompt, oh-my-agent determines which agent handles it using the skill routing map (`.agents/skills/_shared/core/skill-routing.md`):
+Lorsque vous envoyez un prompt, oh-my-agent détermine quel agent le traite grâce à la carte de routage des compétences (`.agents/skills/_shared/core/skill-routing.md`) :
 
 | Domain Keywords | Routed To |
 |----------------|-----------|
@@ -153,14 +153,14 @@ When you send a prompt, oh-my-agent determines which agent handles it using the 
 | plan, breakdown, task, sprint | oma-pm |
 | automatic, parallel, orchestrate | oma-orchestrator |
 
-For complex requests that span multiple domains, routing follows established execution orders. For example, "Create a fullstack app" routes to: oma-pm (plan) then oma-backend + oma-frontend (parallel implementation) then oma-qa (review).
+Pour les requêtes complexes qui couvrent plusieurs domaines, le routage suit des ordres d'exécution établis. Par exemple, « Create a fullstack app » est routé vers : oma-pm (plan) puis oma-backend + oma-frontend (implémentation parallèle) puis oma-qa (revue).
 
 ---
 
-## What is Next
+## Et ensuite
 
-- **[Installation](./installation)** — Three install methods, presets, CLI setup, and verification
-- **[Agents](/core-concepts/agents)** — Deep dive into all 14 agents and charter preflight
-- **[Skills](/core-concepts/skills)** — The two-layer architecture explained
-- **[Workflows](/core-concepts/workflows)** — All 14 workflows with triggers and phases
-- **[Usage Guide](/guide/usage)** — Real examples from single tasks to full orchestration
+- **[Installation](./installation)** -- Trois méthodes d'installation, presets, configuration CLI et vérification
+- **[Agents](/core-concepts/agents)** -- Plongée approfondie dans les 14 agents et la vérification préalable du charter
+- **[Compétences](/core-concepts/skills)** -- L'architecture en deux couches expliquée
+- **[Workflows](/core-concepts/workflows)** -- Les 14 workflows avec déclencheurs et phases
+- **[Guide d'utilisation](/guide/usage)** -- Exemples concrets, de la tâche simple à l'orchestration complète

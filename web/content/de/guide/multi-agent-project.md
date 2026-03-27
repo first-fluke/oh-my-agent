@@ -3,188 +3,188 @@ title: "Anleitung: Multi-Agenten-Projekte"
 description: Vollständige Anleitung zur Koordination mehrerer Domain-Agenten über Frontend, Backend, Datenbank, Mobile und QA — von der Planung bis zum Merge.
 ---
 
-# Guide: Multi-Agent Projects
+# Anleitung: Multi-Agenten-Projekte
 
-## When to Use Multi-Agent Coordination
+## Wann Multi-Agenten-Koordination einsetzen
 
-Your feature spans multiple domains — backend API + frontend UI + database schema + mobile client + QA review. A single agent cannot handle the full scope, and you need the domains to progress in parallel without stepping on each other's files.
+Ihr Feature umfasst mehrere Domänen — Backend-API + Frontend-UI + Datenbankschema + Mobile-Client + QA-Review. Ein einzelner Agent kann den gesamten Umfang nicht bewältigen, und die Domänen müssen parallel vorankommen, ohne gegenseitig in die Dateien des anderen einzugreifen.
 
-Multi-agent coordination is the right choice when:
+Multi-Agenten-Koordination ist die richtige Wahl, wenn:
 
-- The task involves 2 or more domains (frontend, backend, mobile, db, QA, debug, pm).
-- There are API contracts between domains (e.g., a REST endpoint consumed by both web and mobile).
-- You want parallel execution to reduce wall-clock time.
-- You need QA review after implementation across all domains.
+- Die Aufgabe 2 oder mehr Domänen umfasst (Frontend, Backend, Mobile, DB, QA, Debug, PM).
+- API-Verträge zwischen den Domänen bestehen (z. B. ein REST-Endpunkt, der sowohl von Web als auch Mobile konsumiert wird).
+- Sie parallele Ausführung wünschen, um die Gesamtdauer zu verkürzen.
+- Sie nach der Implementierung ein QA-Review über alle Domänen hinweg benötigen.
 
-If your task fits entirely within one domain, use the specific agent directly instead.
+Passt Ihre Aufgabe vollständig in eine Domäne, verwenden Sie stattdessen den spezifischen Agenten direkt.
 
 ---
 
-## The Full Sequence: /plan to /review
+## Die vollständige Abfolge: /plan bis /review
 
-The recommended multi-agent workflow follows a strict four-step pipeline.
+Der empfohlene Multi-Agenten-Workflow folgt einer strikten vierstufigen Pipeline.
 
-### Step 1: /plan — Requirements and Task Decomposition
+### Schritt 1: /plan — Anforderungen und Aufgabenzerlegung
 
-The `/plan` workflow runs inline (no subagent spawning) and produces a structured plan.
+Der `/plan`-Workflow läuft inline (kein Subagenten-Spawning) und erzeugt einen strukturierten Plan.
 
 ```
 /plan
 ```
 
-What happens:
+Was passiert:
 
-1. **Gather requirements** — The PM agent asks about target users, core features, constraints, and deployment targets.
-2. **Analyze technical feasibility** — Uses MCP code analysis tools (`get_symbols_overview`, `find_symbol`, `search_for_pattern`) to scan the existing codebase for reusable code and architecture patterns.
-3. **Define API contracts** — Designs endpoint contracts (method, path, request/response schemas, auth, error responses) and saves them to `.agents/skills/_shared/core/api-contracts/`.
-4. **Decompose into tasks** — Breaks the project into actionable tasks, each with: assigned agent, title, acceptance criteria, priority (P0-P3), and dependencies.
-5. **Review plan with user** — Presents the full plan for confirmation. The workflow will not proceed without explicit user approval.
-6. **Save plan** — Writes the approved plan to `.agents/plan.json` and records a summary in memory.
+1. **Anforderungen erfassen** — Der PM-Agent fragt nach Zielgruppen, Kernfunktionen, Einschränkungen und Deployment-Zielen.
+2. **Technische Machbarkeit analysieren** — Verwendet MCP-Code-Analyse-Tools (`get_symbols_overview`, `find_symbol`, `search_for_pattern`), um die vorhandene Codebasis nach wiederverwendbarem Code und Architekturmustern zu scannen.
+3. **API-Verträge definieren** — Entwirft Endpunkt-Verträge (Methode, Pfad, Anfrage-/Antwort-Schemata, Auth, Fehlerantworten) und speichert sie in `.agents/skills/_shared/core/api-contracts/`.
+4. **In Aufgaben zerlegen** — Zerlegt das Projekt in umsetzbare Aufgaben, jeweils mit: zugewiesenem Agenten, Titel, Akzeptanzkriterien, Priorität (P0-P3) und Abhängigkeiten.
+5. **Plan mit Benutzer prüfen** — Präsentiert den vollständigen Plan zur Bestätigung. Der Workflow fährt ohne explizite Benutzergenehmigung nicht fort.
+6. **Plan speichern** — Schreibt den genehmigten Plan nach `.agents/plan.json` und zeichnet eine Zusammenfassung im Memory auf.
 
-The output `.agents/plan.json` is the input for both `/coordinate` and `/orchestrate`.
+Die Ausgabe `.agents/plan.json` ist die Eingabe für sowohl `/coordinate` als auch `/orchestrate`.
 
-### Step 2: /coordinate or /orchestrate — Execution
+### Schritt 2: /coordinate oder /orchestrate — Ausführung
 
-You have two execution paths:
+Es gibt zwei Ausführungspfade:
 
-| Aspect | /coordinate | /orchestrate |
+| Aspekt | /coordinate | /orchestrate |
 |:-------|:-----------|:-------------|
-| **Interaction** | Interactive — user confirms at each stage | Automated — runs to completion |
-| **PM planning** | Built-in (Step 2 runs PM agent) | Requires plan.json from /plan |
-| **User checkpoint** | After plan review (Step 3) | Before starting (plan must exist) |
-| **Persistent mode** | Yes — cannot be terminated until complete | Yes — cannot be terminated until complete |
-| **Best for** | First-time use, complex projects needing oversight | Repeat runs, well-defined tasks |
+| **Interaktion** | Interaktiv — Benutzer bestätigt bei jeder Stufe | Automatisiert — läuft bis zum Abschluss |
+| **PM-Planung** | Eingebaut (Schritt 2 führt PM-Agent aus) | Benötigt plan.json von /plan |
+| **Benutzer-Checkpoint** | Nach Plan-Review (Schritt 3) | Vor dem Start (Plan muss existieren) |
+| **Persistenter Modus** | Ja — kann bis zum Abschluss nicht beendet werden | Ja — kann bis zum Abschluss nicht beendet werden |
+| **Am besten für** | Erstmalige Nutzung, komplexe Projekte mit Aufsichtsbedarf | Wiederholte Läufe, klar definierte Aufgaben |
 
-#### /coordinate — Interactive Multi-Agent Pipeline
+#### /coordinate — Interaktive Multi-Agenten-Pipeline
 
 ```
 /coordinate
 ```
 
-1. Analyzes the user's request and identifies involved domains.
-2. Runs the PM agent for task decomposition (creates plan.json).
-3. Presents plan for user confirmation — **blocks until confirmed**.
-4. Spawns agents by priority tier (P0 first, then P1, etc.), with each same-priority task running in parallel.
-5. Monitors agent progress via memory files.
-6. Runs QA agent review on all deliverables (OWASP Top 10, performance, accessibility, code quality).
-7. If QA finds CRITICAL or HIGH issues, re-spawns the responsible agent with QA findings. Repeats up to 2 times per issue. If the same issue persists, activates the **Exploration Loop** — generates 2-3 alternative approaches, spawns the same agent type with different hypothesis prompts in separate workspaces, QA scores each, and the best result is adopted.
+1. Analysiert die Benutzeranfrage und identifiziert beteiligte Domänen.
+2. Führt den PM-Agenten zur Aufgabenzerlegung aus (erstellt plan.json).
+3. Präsentiert den Plan zur Benutzerbestätigung — **blockiert bis zur Bestätigung**.
+4. Startet Agenten nach Prioritätsstufe (P0 zuerst, dann P1 usw.), wobei Aufgaben gleicher Priorität parallel laufen.
+5. Überwacht den Agentenfortschritt über Memory-Dateien.
+6. Führt QA-Agent-Review aller Ergebnisse durch (OWASP Top 10, Performance, Barrierefreiheit, Code-Qualität).
+7. Bei CRITICAL- oder HIGH-Problemen wird der zuständige Agent mit QA-Befunden erneut gestartet. Bis zu 2 Wiederholungen pro Problem. Besteht dasselbe Problem weiter, wird die **Explorationsschleife** aktiviert — 2-3 alternative Ansätze werden generiert, derselbe Agententyp wird mit verschiedenen Hypothesen-Prompts in separaten Workspaces gestartet, QA bewertet jeden, und das beste Ergebnis wird übernommen.
 
-#### /orchestrate — Automated Parallel Execution
+#### /orchestrate — Automatisierte parallele Ausführung
 
 ```
 /orchestrate
 ```
 
-1. Loads `.agents/plan.json` (will not proceed without one).
-2. Initializes a session with ID format `session-YYYYMMDD-HHMMSS`.
-3. Creates `orchestrator-session.md` and `task-board.md` in the memory directory.
-4. Spawns agents per priority tier, each getting: task description, API contracts, and context.
-5. Monitors progress by polling `progress-{agent}.md` files.
-6. Verifies each completed agent via `verify.sh` — PASS (exit 0) accepts, FAIL (exit 1) re-spawns with error context (max 2 retries), and persistent failure triggers the Exploration Loop.
-7. Collects all `result-{agent}.md` files and compiles a final report.
+1. Lädt `.agents/plan.json` (fährt ohne diesen nicht fort).
+2. Initialisiert eine Sitzung mit ID-Format `session-YYYYMMDD-HHMMSS`.
+3. Erstellt `orchestrator-session.md` und `task-board.md` im Memory-Verzeichnis.
+4. Startet Agenten pro Prioritätsstufe, jeweils mit: Aufgabenbeschreibung, API-Verträgen und Kontext.
+5. Überwacht den Fortschritt durch Abfrage der `progress-{agent}.md`-Dateien.
+6. Verifiziert jeden abgeschlossenen Agenten über `verify.sh` — PASS (Exit-Code 0) akzeptiert, FAIL (Exit-Code 1) startet mit Fehlerkontext erneut (max. 2 Wiederholungen), dauerhaftes Scheitern löst die Explorationsschleife aus.
+7. Sammelt alle `result-{agent}.md`-Dateien und erstellt einen Abschlussbericht.
 
-### Step 3: agent:spawn — CLI-Level Agent Management
+### Schritt 3: agent:spawn — CLI-Agenten-Verwaltung
 
-The `agent:spawn` command is the low-level mechanism that workflows call internally. You can also use it directly:
+Der `agent:spawn`-Befehl ist der Low-Level-Mechanismus, den Workflows intern aufrufen. Sie können ihn auch direkt verwenden:
 
 ```bash
 oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**All flags:**
+**Alle Flags:**
 
-| Flag | Description |
+| Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor override (gemini/claude/codex/qwen). Overrides all config. |
-| `-w, --workspace <path>` | Working directory for the agent. Auto-detected from monorepo config if omitted. |
+| `-m, --model <vendor>` | CLI-Vendor-Überschreibung (gemini/claude/codex/qwen). Überschreibt alle Konfiguration. |
+| `-w, --workspace <path>` | Arbeitsverzeichnis für den Agenten. Automatisch aus Monorepo-Konfiguration erkannt, wenn nicht angegeben. |
 
-**Vendor resolution order** (first match wins):
+**Vendor-Auflösungsreihenfolge** (erster Treffer gewinnt):
 
-1. `--model` flag on the command line
-2. `agent_cli_mapping` in `user-preferences.yaml` for this specific agent type
+1. `--model`-Flag auf der Kommandozeile
+2. `agent_cli_mapping` in `user-preferences.yaml` für diesen spezifischen Agententyp
 3. `default_cli` in `user-preferences.yaml`
 4. `active_vendor` in `cli-config.yaml`
-5. `gemini` (hardcoded default)
+5. `gemini` (fest codierter Standard)
 
-**Workspace auto-detection** checks monorepo configs in this order: pnpm-workspace.yaml, package.json workspaces, lerna.json, nx.json, turbo.json, mise.toml. Each workspace directory is scored against agent type keywords (e.g., "web", "frontend", "client" for the frontend agent). If no monorepo config is found, it falls back to hardcoded candidates like `apps/web`, `apps/frontend`, `frontend/`, etc.
+**Automatische Workspace-Erkennung** prüft Monorepo-Konfigurationen in dieser Reihenfolge: pnpm-workspace.yaml, package.json Workspaces, lerna.json, nx.json, turbo.json, mise.toml. Jedes Workspace-Verzeichnis wird gegen Agententyp-Keywords bewertet (z. B. "web", "frontend", "client" für den Frontend-Agenten). Ohne Monorepo-Konfiguration werden fest codierte Kandidaten wie `apps/web`, `apps/frontend`, `frontend/` usw. geprüft.
 
-**Prompt resolution:** The `<prompt>` argument can be either inline text or a file path. If the path resolves to an existing file, its contents are read and used as the prompt. The CLI also injects vendor-specific execution protocols from `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
+**Prompt-Auflösung:** Das `<prompt>`-Argument kann entweder Inline-Text oder ein Dateipfad sein. Wird der Pfad als vorhandene Datei aufgelöst, wird deren Inhalt als Prompt verwendet. Die CLI injiziert zudem vendor-spezifische Ausführungsprotokolle aus `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
 
-### Step 4: /review — QA Verification
+### Schritt 4: /review — QA-Verifikation
 
 ```
 /review
 ```
 
-The review workflow runs a full QA pipeline:
+Der Review-Workflow führt eine vollständige QA-Pipeline durch:
 
-1. **Identify scope** — Asks what to review (specific files, feature branch, or entire project).
-2. **Automated security checks** — Runs `npm audit`, `bandit`, or equivalent.
-3. **OWASP Top 10 manual review** — Injection, broken auth, sensitive data, access control, misconfig, insecure deserialization, vulnerable components, insufficient logging.
-4. **Performance analysis** — N+1 queries, missing indexes, unbounded pagination, memory leaks, unnecessary re-renders, bundle sizes.
-5. **Accessibility** — WCAG 2.1 AA: semantic HTML, ARIA, keyboard nav, color contrast, focus management.
-6. **Code quality** — Naming, error handling, test coverage, TypeScript strict mode, unused imports, async/await patterns.
-7. **Report** — Findings categorized as CRITICAL / HIGH / MEDIUM / LOW with `file:line`, description, and remediation code.
+1. **Umfang identifizieren** — Fragt, was geprüft werden soll (bestimmte Dateien, Feature-Branch oder gesamtes Projekt).
+2. **Automatisierte Sicherheitsprüfungen** — Führt `npm audit`, `bandit` oder Äquivalent aus.
+3. **OWASP Top 10 manuelles Review** — Injection, defekte Auth, sensible Daten, Zugriffskontrolle, Fehlkonfiguration, unsichere Deserialisierung, verwundbare Komponenten, unzureichendes Logging.
+4. **Performance-Analyse** — N+1-Abfragen, fehlende Indizes, unbegrenzte Paginierung, Speicherlecks, unnötige Re-Renders, Bundle-Größen.
+5. **Barrierefreiheit** — WCAG 2.1 AA: semantisches HTML, ARIA, Tastaturnavigation, Farbkontrast, Fokusverwaltung.
+6. **Code-Qualität** — Benennung, Fehlerbehandlung, Testabdeckung, TypeScript Strict Mode, unbenutzte Imports, async/await-Muster.
+7. **Bericht** — Befunde kategorisiert als CRITICAL / HIGH / MEDIUM / LOW mit `Datei:Zeile`, Beschreibung und Behebungscode.
 
-For large scopes, the workflow delegates to the QA agent subagent. With the `--fix` option, it enters a Fix-Verify Loop: spawn domain agents to fix CRITICAL/HIGH issues, re-review, repeat up to 3 times.
+Für große Scopes wird an den QA-Agent-Subagenten delegiert. Mit der `--fix`-Option wird eine Fix-Verify-Schleife gestartet: Domänenagenten zur Behebung von CRITICAL-/HIGH-Problemen starten, erneut prüfen, bis zu 3-mal wiederholen.
 
 ---
 
-## Session ID Strategy
+## Sitzungs-ID-Strategie
 
-Every orchestration session gets a unique identifier in the format:
+Jede Orchestrierungssitzung erhält eine eindeutige Kennung im Format:
 
 ```
 session-YYYYMMDD-HHMMSS
 ```
 
-Example: `session-20260324-143052`
+Beispiel: `session-20260324-143052`
 
-The session ID is used to:
+Die Sitzungs-ID wird verwendet, um:
 
-- Name memory files (`orchestrator-session.md`, `task-board.md`)
-- Track agent processes via PID files in the system temp directory (`/tmp/subagent-{session-id}-{agent-id}.pid`)
-- Correlate log files (`/tmp/subagent-{session-id}-{agent-id}.log`)
-- Group results in `.agents/results/parallel-{timestamp}/`
+- Memory-Dateien zu benennen (`orchestrator-session.md`, `task-board.md`)
+- Agentenprozesse über PID-Dateien im System-Temp-Verzeichnis zu verfolgen (`/tmp/subagent-{session-id}-{agent-id}.pid`)
+- Logdateien zuzuordnen (`/tmp/subagent-{session-id}-{agent-id}.log`)
+- Ergebnisse in `.agents/results/parallel-{timestamp}/` zu gruppieren
 
-The session ID is generated at Step 2 of `/orchestrate` and passed to all spawned agents. This ensures all agents, logs, and PID files for a single run can be traced back to one session.
+Die Sitzungs-ID wird in Schritt 2 von `/orchestrate` generiert und an alle gestarteten Agenten übergeben. Dies stellt sicher, dass alle Agenten, Logs und PID-Dateien eines einzelnen Laufs auf eine Sitzung zurückverfolgt werden können.
 
 ---
 
-## Workspace Assignment Per Domain
+## Workspace-Zuweisung pro Domäne
 
-Each agent is spawned in an isolated workspace directory to prevent file conflicts. The assignment follows these rules:
+Jeder Agent wird in einem isolierten Workspace-Verzeichnis gestartet, um Dateikonflikte zu verhindern. Die Zuweisung folgt diesen Regeln:
 
-### Automatic Detection
+### Automatische Erkennung
 
-When `-w` is omitted (or set to `.`), the CLI detects the best workspace by:
+Wenn `-w` nicht angegeben ist (oder auf `.` gesetzt), erkennt die CLI den besten Workspace durch:
 
-1. Scanning monorepo config files (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml).
-2. Expanding glob patterns (e.g., `apps/*`) into actual directories.
-3. Scoring each directory against agent-type keywords:
+1. Scannen von Monorepo-Konfigurationsdateien (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml).
+2. Erweitern von Glob-Mustern (z. B. `apps/*`) in tatsächliche Verzeichnisse.
+3. Bewertung jedes Verzeichnisses gegen Agententyp-Keywords:
 
-| Agent Type | Keywords (in priority order) |
+| Agententyp | Keywords (in Prioritätsreihenfolge) |
 |:-----------|:---------------------------|
 | frontend | web, frontend, client, ui, app, dashboard, admin, portal |
 | backend | api, backend, server, service, gateway, core |
 | mobile | mobile, ios, android, native, rn, expo |
 
-4. Exact directory name match scores 100, contains-keyword scores 50, path-contains scores 25.
-5. Highest-scoring directory wins.
+4. Exakter Verzeichnisname-Treffer bewertet 100, enthält-Keyword bewertet 50, Pfad-enthält bewertet 25.
+5. Das Verzeichnis mit der höchsten Bewertung gewinnt.
 
-### Fallback Candidates
+### Fallback-Kandidaten
 
-If no monorepo config exists, the CLI checks hardcoded paths in order:
+Ohne Monorepo-Konfiguration prüft die CLI fest codierte Pfade der Reihe nach:
 
-- **frontend:** `apps/web`, `apps/frontend`, `apps/client`, `packages/web`, `packages/frontend`, `frontend`, `web`, `client`
-- **backend:** `apps/api`, `apps/backend`, `apps/server`, `packages/api`, `packages/backend`, `backend`, `api`, `server`
-- **mobile:** `apps/mobile`, `apps/app`, `packages/mobile`, `mobile`, `app`
+- **Frontend:** `apps/web`, `apps/frontend`, `apps/client`, `packages/web`, `packages/frontend`, `frontend`, `web`, `client`
+- **Backend:** `apps/api`, `apps/backend`, `apps/server`, `packages/api`, `packages/backend`, `backend`, `api`, `server`
+- **Mobile:** `apps/mobile`, `apps/app`, `packages/mobile`, `mobile`, `app`
 
-If nothing matches, the agent runs in the current directory (`.`).
+Ohne Treffer läuft der Agent im aktuellen Verzeichnis (`.`).
 
-### Explicit Override
+### Explizite Überschreibung
 
-Always available:
+Immer verfügbar:
 
 ```bash
 oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
@@ -192,71 +192,71 @@ oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 ---
 
-## Contract-First Rule
+## Contract-First-Regel
 
-API contracts are the synchronization mechanism between agents. The contract-first rule means:
+API-Verträge sind der Synchronisierungsmechanismus zwischen Agenten. Die Contract-First-Regel bedeutet:
 
-1. **Contracts are defined before implementation begins.** The `/plan` workflow's Step 3 produces API contracts that are saved to `.agents/skills/_shared/core/api-contracts/`.
+1. **Verträge werden definiert, bevor die Implementierung beginnt.** Schritt 3 des `/plan`-Workflows erzeugt API-Verträge, die in `.agents/skills/_shared/core/api-contracts/` gespeichert werden.
 
-2. **Every agent receives its relevant contracts as context.** When `/orchestrate` spawns agents in Step 3, each agent gets "task description, API contracts, relevant context."
+2. **Jeder Agent erhält seine relevanten Verträge als Kontext.** Wenn `/orchestrate` Agenten in Schritt 3 startet, erhält jeder Agent "Aufgabenbeschreibung, API-Verträge, relevanter Kontext."
 
-3. **Contracts define the interface boundary.** A contract specifies:
-   - HTTP method and path
-   - Request body schema (with types)
-   - Response body schema (with types)
-   - Authentication requirements
-   - Error response formats
+3. **Verträge definieren die Schnittstellengrenze.** Ein Vertrag spezifiziert:
+   - HTTP-Methode und Pfad
+   - Request-Body-Schema (mit Typen)
+   - Response-Body-Schema (mit Typen)
+   - Authentifizierungsanforderungen
+   - Fehlerantwortformate
 
-4. **Contract violations are caught during monitoring.** Step 5 of `/coordinate` uses MCP code analysis tools (`find_symbol`, `search_for_pattern`) to verify API contract alignment between agents.
+4. **Vertragsverletzungen werden während der Überwachung erkannt.** Schritt 5 von `/coordinate` verwendet MCP-Code-Analyse-Tools (`find_symbol`, `search_for_pattern`), um die API-Vertrags-Übereinstimmung zwischen Agenten zu verifizieren.
 
-5. **QA review checks contract adherence.** The QA agent's Alignment Review (Step 6 in ultrawork) explicitly compares implementation against the plan, including API contracts.
+5. **QA-Review prüft die Vertragseinhaltung.** Das Alignment-Review des QA-Agenten (Schritt 6 in ultrawork) vergleicht explizit die Implementierung mit dem Plan, einschließlich der API-Verträge.
 
-**Why this matters:** Without contracts, a backend agent might return `{ "user_id": 1 }` while the frontend agent consumes `{ "userId": 1 }`. The contract-first rule eliminates this class of integration bugs entirely.
-
----
-
-## Merge Gates: 4 Conditions
-
-Before any multi-agent work is considered complete, four conditions must be met:
-
-### 1. Build Succeeds
-
-All code compiles and builds without errors. This is checked by the verification script (`verify.sh`), which runs build commands appropriate to the agent type.
-
-### 2. Tests Pass
-
-All existing tests continue to pass, and new tests cover the implemented functionality. The QA agent reviews test coverage as part of its Code Quality Review.
-
-### 3. Only Planned Files Modified
-
-Agents must not modify files outside their assigned scope. The verification step checks that only files related to the agent's task have been changed. This prevents agents from making unintended side effects in shared code.
-
-### 4. QA Review Clear
-
-No CRITICAL or HIGH findings remain from the QA agent's review. MEDIUM and LOW findings can be documented for future sprints, but blockers must be resolved.
-
-In the ultrawork workflow, these translate into explicit **phase gates** (PLAN_GATE, IMPL_GATE, VERIFY_GATE, REFINE_GATE, SHIP_GATE) with checkbox-style criteria that must all pass before proceeding.
+**Warum das wichtig ist:** Ohne Verträge könnte ein Backend-Agent `{ "user_id": 1 }` zurückgeben, während der Frontend-Agent `{ "userId": 1 }` erwartet. Die Contract-First-Regel eliminiert diese Klasse von Integrationsfehlern vollständig.
 
 ---
 
-## Spawn Examples
+## Merge-Gates: 4 Bedingungen
 
-### Single Agent Spawn
+Bevor eine Multi-Agenten-Arbeit als abgeschlossen gilt, müssen vier Bedingungen erfüllt sein:
+
+### 1. Build erfolgreich
+
+Aller Code kompiliert und baut fehlerfrei. Dies wird durch das Verifikationsskript (`verify.sh`) geprüft, das zum Agententyp passende Build-Befehle ausführt.
+
+### 2. Tests bestehen
+
+Alle vorhandenen Tests bestehen weiterhin, und neue Tests decken die implementierte Funktionalität ab. Der QA-Agent prüft die Testabdeckung als Teil seines Code-Qualitäts-Reviews.
+
+### 3. Nur geplante Dateien modifiziert
+
+Agenten dürfen keine Dateien außerhalb ihres zugewiesenen Scopes modifizieren. Der Verifikationsschritt prüft, dass nur aufgabenbezogene Dateien geändert wurden. Dies verhindert unbeabsichtigte Seiteneffekte in gemeinsam genutztem Code.
+
+### 4. QA-Review fehlerfrei
+
+Keine CRITICAL- oder HIGH-Befunde verbleiben aus dem Review des QA-Agenten. MEDIUM- und LOW-Befunde können für zukünftige Sprints dokumentiert werden, aber Blocker müssen behoben werden.
+
+Im ultrawork-Workflow übersetzen sich diese in explizite **Phasen-Gates** (PLAN_GATE, IMPL_GATE, VERIFY_GATE, REFINE_GATE, SHIP_GATE) mit Checklisten-Kriterien, die alle bestanden werden müssen, bevor es weitergeht.
+
+---
+
+## Spawn-Beispiele
+
+### Einzelner Agent-Spawn
 
 ```bash
-# Spawn backend agent with Gemini (default)
+# Backend-Agent mit Gemini (Standard) starten
 oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
-# Spawn frontend agent with Claude, explicit workspace
+# Frontend-Agent mit Claude, expliziter Workspace
 oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
 
-# Spawn from a prompt file
+# Aus einer Prompt-Datei starten
 oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Parallel Execution via agent:parallel
+### Parallele Ausführung über agent:parallel
 
-Using a YAML tasks file:
+Mit einer YAML-Aufgabendatei:
 
 ```yaml
 # tasks.yaml
@@ -276,7 +276,7 @@ tasks:
 oma agent:parallel tasks.yaml
 ```
 
-Using inline mode:
+Im Inline-Modus:
 
 ```bash
 oma agent:parallel --inline \
@@ -285,14 +285,14 @@ oma agent:parallel --inline \
   "mobile:Implement auth screens:./mobile"
 ```
 
-Background mode (no wait):
+Hintergrundmodus (kein Warten):
 
 ```bash
 oma agent:parallel tasks.yaml --no-wait
-# Returns immediately, results written to .agents/results/parallel-{timestamp}/
+# Kehrt sofort zurück, Ergebnisse werden nach .agents/results/parallel-{timestamp}/ geschrieben
 ```
 
-With vendor override:
+Mit Vendor-Überschreibung:
 
 ```bash
 oma agent:parallel tasks.yaml -m claude
@@ -300,64 +300,64 @@ oma agent:parallel tasks.yaml -m claude
 
 ---
 
-## Anti-Patterns to Avoid
+## Zu vermeidende Anti-Patterns
 
-### 1. Skipping the Plan
+### 1. Plan überspringen
 
-Starting `/orchestrate` without a plan.json. The workflow will refuse to proceed. Always run `/plan` first, or use `/coordinate` which has built-in planning.
+`/orchestrate` ohne plan.json starten. Der Workflow wird die Ausführung verweigern. Immer zuerst `/plan` ausführen oder `/coordinate` verwenden, das eingebaute Planung hat.
 
-### 2. Overlapping Workspaces
+### 2. Überlappende Workspaces
 
-Assigning two agents to the same workspace directory. This causes file conflicts — one agent's changes overwrite another's. Always use separate workspace directories.
+Zwei Agenten demselben Workspace-Verzeichnis zuweisen. Dies verursacht Dateikonflikte — die Änderungen eines Agenten überschreiben die des anderen. Immer separate Workspace-Verzeichnisse verwenden.
 
-### 3. Missing API Contracts
+### 3. Fehlende API-Verträge
 
-Spawning backend and frontend agents without defining contracts first. They will make incompatible assumptions about data formats, field names, and error handling.
+Backend- und Frontend-Agenten starten, ohne vorher Verträge zu definieren. Sie werden inkompatible Annahmen über Datenformate, Feldnamen und Fehlerbehandlung machen.
 
-### 4. Ignoring QA Findings
+### 4. QA-Befunde ignorieren
 
-Treating QA review as optional. CRITICAL and HIGH findings represent real bugs that will surface in production. The workflow enforces this by looping until no blockers remain.
+QA-Review als optional behandeln. CRITICAL- und HIGH-Befunde repräsentieren echte Bugs, die in der Produktion auftreten werden. Der Workflow erzwingt dies durch Schleifen, bis keine Blocker mehr vorhanden sind.
 
-### 5. Manual File Coordination
+### 5. Manuelle Datei-Koordination
 
-Trying to manually merge agent outputs instead of letting the verification and QA pipeline handle integration. The automated pipeline catches issues that manual review misses.
+Versuchen, Agentenausgaben manuell zusammenzuführen, statt die Verifikations- und QA-Pipeline die Integration handhaben zu lassen. Die automatisierte Pipeline erkennt Probleme, die manuelle Prüfung übersieht.
 
-### 6. Over-Parallelization
+### 6. Über-Parallelisierung
 
-Running P1 tasks before P0 tasks complete. Priority tiers exist because P1 tasks often depend on P0 outputs. The workflows enforce tier ordering automatically.
+P1-Aufgaben vor Abschluss der P0-Aufgaben ausführen. Prioritätsstufen existieren, weil P1-Aufgaben oft von P0-Ausgaben abhängen. Die Workflows erzwingen die Stufenreihenfolge automatisch.
 
-### 7. Skipping Verification
+### 7. Verifikation überspringen
 
-Using `agent:spawn` directly without running the verification script afterward. The verification step catches build failures, test regressions, and scope violations that would otherwise propagate.
-
----
-
-## Cross-Domain Integration Validation
-
-After all agents complete their individual tasks, cross-domain integration must be validated:
-
-1. **API contract alignment** — MCP tools (`find_symbol`, `search_for_pattern`) verify that backend implementations match the contracts consumed by frontend and mobile.
-
-2. **Type consistency** — TypeScript types, Python dataclasses, or Dart models shared across domains must use consistent field names and types.
-
-3. **Authentication flow** — If the backend implements JWT auth, the frontend must correctly send tokens in headers, and the mobile app must store and refresh them appropriately.
-
-4. **Error handling** — All consumers of an API must handle the documented error responses. If the backend returns `{ "error": "unauthorized", "code": 401 }`, all clients must handle this format.
-
-5. **Database schema alignment** — If the database agent creates migrations, the backend ORM models must match the schema exactly.
-
-The QA agent's Alignment Review (Step 6 in ultrawork, Step 6 in coordinate) performs this cross-domain validation systematically.
+`agent:spawn` direkt verwenden, ohne danach das Verifikationsskript auszuführen. Der Verifikationsschritt erkennt Build-Fehler, Test-Regressionen und Scope-Verletzungen, die sich sonst ausbreiten würden.
 
 ---
 
-## When It's Done
+## Domänenübergreifende Integrationsvalidierung
 
-A multi-agent project is complete when:
+Nachdem alle Agenten ihre individuellen Aufgaben abgeschlossen haben, muss die domänenübergreifende Integration validiert werden:
 
-- All agents in all priority tiers have completed successfully.
-- Verification scripts pass for every agent (exit code 0).
-- QA review reports zero CRITICAL and zero HIGH findings.
-- Cross-domain API contract alignment is confirmed.
-- Build succeeds and all tests pass.
-- The final report is written to memory and presented to the user.
-- User gives final approval (in `/coordinate` and ultrawork's SHIP_GATE).
+1. **API-Vertrags-Übereinstimmung** — MCP-Tools (`find_symbol`, `search_for_pattern`) verifizieren, dass Backend-Implementierungen den Verträgen entsprechen, die von Frontend und Mobile konsumiert werden.
+
+2. **Typkonsistenz** — TypeScript-Typen, Python-Dataclasses oder Dart-Modelle, die domänenübergreifend geteilt werden, müssen konsistente Feldnamen und -typen verwenden.
+
+3. **Authentifizierungsfluss** — Implementiert das Backend JWT-Auth, muss das Frontend Tokens korrekt in Headern senden, und die Mobile-App muss diese angemessen speichern und erneuern.
+
+4. **Fehlerbehandlung** — Alle Konsumenten einer API müssen die dokumentierten Fehlerantworten behandeln. Gibt das Backend `{ "error": "unauthorized", "code": 401 }` zurück, müssen alle Clients dieses Format verarbeiten.
+
+5. **Datenbank-Schema-Übereinstimmung** — Erstellt der Datenbank-Agent Migrationen, müssen die Backend-ORM-Modelle exakt zum Schema passen.
+
+Das Alignment-Review des QA-Agenten (Schritt 6 in ultrawork, Schritt 6 in coordinate) führt diese domänenübergreifende Validierung systematisch durch.
+
+---
+
+## Wann es fertig ist
+
+Ein Multi-Agenten-Projekt ist abgeschlossen, wenn:
+
+- Alle Agenten in allen Prioritätsstufen erfolgreich abgeschlossen haben.
+- Verifikationsskripte für jeden Agenten bestehen (Exit-Code 0).
+- QA-Review null CRITICAL- und null HIGH-Befunde meldet.
+- Domänenübergreifende API-Vertrags-Übereinstimmung bestätigt ist.
+- Build erfolgreich ist und alle Tests bestehen.
+- Der Abschlussbericht im Memory geschrieben und dem Benutzer präsentiert wurde.
+- Der Benutzer die abschließende Genehmigung erteilt hat (in `/coordinate` und im SHIP_GATE von ultrawork).

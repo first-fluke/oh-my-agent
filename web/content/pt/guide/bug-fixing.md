@@ -178,6 +178,15 @@ Por exemplo, se o bug foi causado por acessar `user.organization.id` sem verific
 - O escopo de varredura de padrões similares cobre 10+ arquivos.
 - Rastreamento profundo de dependências é necessário para diagnosticar completamente o problema.
 
+Métodos de spawn específicos por vendor:
+
+| Vendor | Método de Spawn |
+|:-------|:--------------|
+| Claude Code | Agent tool com `.claude/agents/debug-investigator.md` |
+| Codex CLI | Solicitação de subagente mediada por modelo, resultados como JSON |
+| Gemini CLI | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Antigravity / Fallback | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+
 Todas as localizações vulneráveis similares são reportadas. Instâncias confirmadas são corrigidas como parte da mesma sessão.
 
 ### Step 7: Documentar o Bug
@@ -187,6 +196,45 @@ O workflow escreve um arquivo de memória com:
 - Correção aplicada e arquivos alterados
 - Localização do teste de regressão
 - Padrões similares encontrados no codebase
+
+---
+
+## Template de Prompt para /debug
+
+Ao acionar o workflow de debug, você pode fornecer um prompt estruturado:
+
+```
+/debug
+
+Error: TypeError: Cannot read properties of undefined (reading 'id')
+Stack trace:
+  at deleteUser (src/api/users.ts:47:23)
+  at handleDelete (src/routes/users.ts:112:5)
+
+Steps to reproduce:
+1. Log in as admin
+2. Navigate to /users
+3. Click "Delete" on a user whose organization was deleted
+
+Expected: User is deleted
+Actual: 500 Internal Server Error
+
+Environment: Node 22.1, PostgreSQL 16
+```
+
+**Por que essa estrutura funciona:**
+
+- **Erro + stack trace** permite que o Step 2 localize o código imediatamente (`search_for_pattern` com "deleteUser" encontra a função; `find_symbol` identifica a localização exata).
+- **Passos para reproduzir** com a condição de acionamento específica ("user whose organization was deleted") dão uma pista da causa raiz (foreign key nula).
+- **Ambiente** elimina falsos alvos específicos de versão.
+
+Para bugs mais simples, um prompt mais curto funciona:
+
+```
+/debug The login page shows "Invalid credentials" even with correct password
+```
+
+O workflow solicitará detalhes adicionais conforme necessário.
 
 ---
 
@@ -206,11 +254,16 @@ Se o workflow propõe uma correção, aplica-a, e o mesmo erro recorre, o proble
 
 O erro no frontend é causado por uma mudança no backend que é causada por uma migração de schema de banco de dados. Quando a causa raiz cruza fronteiras de domínio, escale para `/coordinate` ou `/orchestrate` para envolver os agentes de domínio relevantes.
 
+**Exemplo:** Frontend exibe "undefined" para nome do usuário. Backend retorna null para `user.display_name`. Migração de banco de dados adicionou a coluna, mas linhas existentes possuem valores NULL. A correção requer: migração de banco de dados (backfill), tratamento de null no backend e exibição de fallback no frontend.
+
 ### Sinal 3: Ambiente de Reprodução Ausente
 
-O bug só ocorre em produção, e você não consegue reproduzi-lo localmente.
+O bug só ocorre em produção, e você não consegue reproduzi-lo localmente. Os sinais incluem:
+- Diferenças de configuração específicas do ambiente.
+- Race conditions que só se manifestam sob carga de produção.
+- Diferenças de comportamento de serviços de terceiros entre staging e produção.
 
-**Ação:** Coletar logs de produção, solicitar acesso a monitoramento de produção, e considerar adicionar instrumentação/logging antes de tentar uma correção.
+**Ação:** Coletar logs de produção, solicitar acesso a monitoramento de produção e considerar adicionar instrumentação/logging antes de tentar uma correção.
 
 ### Sinal 4: Falha de Infraestrutura de Testes
 
@@ -227,7 +280,7 @@ Após aplicar a correção e teste de regressão, verifique:
 - [ ] **Teste de regressão falha sem a correção** — Reverta a correção temporariamente e confirme que o teste detecta o bug.
 - [ ] **Teste de regressão passa com a correção** — Aplique a correção e confirme que o teste passa.
 - [ ] **Testes existentes ainda passam** — Execute a suite completa de testes para verificar sem regressões.
-- [ ] **Build tem sucesso** — Compile/builde o projeto para detectar erros de tipo ou problemas de import.
+- [ ] **Build tem sucesso** — Compile o projeto para detectar erros de tipo ou problemas de importação.
 - [ ] **Padrões similares escaneados** — Step 6 foi completado e todas as instâncias encontradas estão corrigidas ou documentadas.
 - [ ] **Correção é mínima** — Apenas as linhas necessárias foram alteradas. Nenhuma refatoração não relacionada foi incluída.
 - [ ] **Causa raiz documentada** — O arquivo de memória registra: sintoma, causa raiz, correção aplicada, arquivos alterados, localização do teste de regressão e padrões similares encontrados.

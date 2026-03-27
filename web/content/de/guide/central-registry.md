@@ -7,14 +7,14 @@ description: Detaillierte Dokumentation des zentralen Registers — Release-Plea
 
 ## Überblick
 
-The central registry model treats the oh-my-agent GitHub repository (`first-fluke/oh-my-agent`) as a versioned artifact source. Consumer projects pull specific versions of skills and workflows from this registry, ensuring consistency across teams and projects.
+Das zentrale Register-Modell behandelt das oh-my-agent GitHub-Repository (`first-fluke/oh-my-agent`) als versionierte Artefaktquelle. Consumer-Projekte beziehen bestimmte Versionen von Skills und Workflows aus diesem Register, um Konsistenz über Teams und Projekte hinweg sicherzustellen.
 
-This is the enterprise-grade approach for organizations that need:
-- Version pinning across multiple projects.
-- Auditable update trails via pull requests.
-- Checksum verification for downloaded artifacts.
-- Automated weekly update checks.
-- Manual review before any update is applied.
+Dies ist der Enterprise-Ansatz für Organisationen, die Folgendes benötigen:
+- Versions-Pinning über mehrere Projekte hinweg.
+- Prüfbare Update-Nachweise über Pull Requests.
+- Prüfsummenverifikation für heruntergeladene Artefakte.
+- Automatisierte wöchentliche Update-Prüfungen.
+- Manuelle Überprüfung, bevor ein Update angewendet wird.
 
 ---
 
@@ -22,7 +22,7 @@ This is the enterprise-grade approach for organizations that need:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                  Central Registry                         │
+│                  Zentrales Register                        │
 │              (first-fluke/oh-my-agent)                    │
 │                                                          │
 │  ┌──────────────┐   ┌────────────────┐   ┌───────────┐  │
@@ -37,90 +37,81 @@ This is the enterprise-grade approach for organizations that need:
                     ┌─────────────────────────────┼──────────────┐
                     │                             │              │
               ┌─────▼─────┐              ┌───────▼──────┐ ┌─────▼──────┐
-              │ Project A  │              │ Project B    │ │ Project C  │
+              │ Projekt A  │              │ Projekt B    │ │ Projekt C  │
               │            │              │              │ │            │
               │ .agent-    │              │ .agent-      │ │ .agent-    │
               │ registry   │              │ registry     │ │ registry   │
-              │ .yml       │              │ .yml         │ │ .yml       │
-              │            │              │              │ │            │
-              │ check-     │              │ check-       │ │ check-     │
-              │ registry   │              │ registry     │ │ registry   │
-              │ -updates   │              │ -updates     │ │ -updates   │
-              │ .yml       │              │ .yml         │ │ .yml       │
-              │            │              │              │ │            │
-              │ sync-agent │              │ sync-agent   │ │ sync-agent │
-              │ -registry  │              │ -registry    │ │ -registry  │
               │ .yml       │              │ .yml         │ │ .yml       │
               └────────────┘              └──────────────┘ └────────────┘
 ```
 
 ---
 
-## For Maintainers: Releasing New Versions
+## Für Maintainer: Neue Versionen veröffentlichen
 
-### Release-Please Workflow
+### Release-Please-Workflow
 
-oh-my-agent uses [release-please](https://github.com/googleapis/release-please) to automate releases. The flow is:
+oh-my-agent verwendet [release-please](https://github.com/googleapis/release-please) zur Automatisierung von Releases. Der Ablauf ist:
 
-1. **Conventional commits** land on `main`. Each commit must follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+1. **Konventionelle Commits** landen auf `main`. Jeder Commit muss dem [Conventional Commits](https://www.conventionalcommits.org/)-Format folgen:
 
-   | Prefix | Meaning | Version Bump |
+   | Präfix | Bedeutung | Versionsbump |
    |:-------|:--------|:-------------|
-   | `feat:` | New feature | Minor (1.x.0) |
-   | `fix:` | Bug fix | Patch (1.0.x) |
-   | `feat!:` or `BREAKING CHANGE:` | Breaking change | Major (x.0.0) |
-   | `chore:` | Maintenance | No bump (unless configured) |
-   | `docs:` | Documentation | No bump |
-   | `refactor:` | Code restructuring | No bump |
-   | `perf:` | Performance improvement | Patch |
-   | `test:` | Test changes | No bump |
-   | `build:` | Build system | No bump |
-   | `ci:` | CI configuration | No bump |
-   | `style:` | Code style | No bump |
-   | `revert:` | Revert previous commit | Depends on reverted commit |
+   | `feat:` | Neues Feature | Minor (1.x.0) |
+   | `fix:` | Fehlerbehebung | Patch (1.0.x) |
+   | `feat!:` oder `BREAKING CHANGE:` | Breaking Change | Major (x.0.0) |
+   | `chore:` | Wartung | Kein Bump (sofern nicht konfiguriert) |
+   | `docs:` | Dokumentation | Kein Bump |
+   | `refactor:` | Code-Umstrukturierung | Kein Bump |
+   | `perf:` | Performance-Verbesserung | Patch |
+   | `test:` | Teständerungen | Kein Bump |
+   | `build:` | Build-System | Kein Bump |
+   | `ci:` | CI-Konfiguration | Kein Bump |
+   | `style:` | Code-Stil | Kein Bump |
+   | `revert:` | Vorherigen Commit rückgängig machen | Hängt vom rückgängig gemachten Commit ab |
 
-2. **Release-please creates a release PR** that:
-   - Bumps the version in `package.json` and related files.
-   - Updates `CHANGELOG.md` with all commits since the last release.
-   - Updates `.release-please-manifest.json` with the new version.
+2. **Release-please erstellt einen Release-PR**, der:
+   - Die Version in `package.json` und verwandten Dateien aktualisiert.
+   - `CHANGELOG.md` mit allen Commits seit dem letzten Release aktualisiert.
+   - `.release-please-manifest.json` mit der neuen Version aktualisiert.
 
-3. **When the release PR is merged**, release-please:
-   - Creates a Git tag (e.g., `cli-v4.7.0`).
-   - Creates a GitHub Release with the changelog.
+3. **Wenn der Release-PR gemergt wird**, erstellt release-please:
+   - Einen Git-Tag (z. B. `cli-v4.7.0`).
+   - Ein GitHub Release mit dem Changelog.
 
-4. **A CI workflow** then:
-   - Builds the `agent-skills.tar.gz` tarball containing the `.agents/` directory.
-   - Generates a SHA256 checksum file (`agent-skills.tar.gz.sha256`).
-   - Generates `prompt-manifest.json` with version and file metadata.
-   - Attaches all three artifacts to the GitHub Release.
-   - Syncs `prompt-manifest.json` to the `main` branch for the CLI update mechanism.
+4. **Ein CI-Workflow** erstellt dann:
+   - Das `agent-skills.tar.gz`-Tarball mit dem `.agents/`-Verzeichnis.
+   - Eine SHA256-Prüfsummendatei (`agent-skills.tar.gz.sha256`).
+   - `prompt-manifest.json` mit Version und Dateimetadaten.
+   - Hängt alle drei Artefakte an das GitHub Release an.
+   - Synchronisiert `prompt-manifest.json` zum `main`-Branch für den CLI-Update-Mechanismus.
 
-### Release Artifacts
+### Release-Artefakte
 
-Each release produces three artifacts attached to the GitHub Release:
+Jedes Release erzeugt drei Artefakte am GitHub Release:
 
-| Artifact | Description | Purpose |
+| Artefakt | Beschreibung | Zweck |
 |:---------|:-----------|:--------|
-| `agent-skills.tar.gz` | Compressed tarball of the `.agents/` directory | Contains all skills, workflows, configs, agents |
-| `agent-skills.tar.gz.sha256` | SHA256 checksum of the tarball | Integrity verification before extraction |
-| `prompt-manifest.json` | JSON with version, file count, and metadata | Used by `oma update` to check for new versions |
+| `agent-skills.tar.gz` | Komprimiertes Tarball des `.agents/`-Verzeichnisses | Enthält alle Skills, Workflows, Konfigurationen, Agenten |
+| `agent-skills.tar.gz.sha256` | SHA256-Prüfsumme des Tarballs | Integritätsverifikation vor dem Entpacken |
+| `prompt-manifest.json` | JSON mit Version, Dateianzahl und Metadaten | Wird von `oma update` zur Prüfung neuer Versionen verwendet |
 
-### Conventional Commit Examples
+### Beispiele für konventionelle Commits
 
 ```bash
-# Feature addition (minor bump)
+# Feature-Ergänzung (Minor-Bump)
 git commit -m "feat: add Rust backend language variant"
 
-# Bug fix (patch bump)
+# Fehlerbehebung (Patch-Bump)
 git commit -m "fix: resolve workspace detection for Nx monorepos"
 
-# Breaking change (major bump)
+# Breaking Change (Major-Bump)
 git commit -m "feat!: rename .agent/ to .agents/ directory"
 
-# Scoped commit
+# Scope-bezogener Commit
 git commit -m "feat(backend): add SQLAlchemy async session support"
 
-# No version bump
+# Kein Versionsbump
 git commit -m "chore: update test fixtures"
 git commit -m "docs: add central registry guide"
 git commit -m "ci: sync prompt-manifest.json [skip ci]"
@@ -128,159 +119,153 @@ git commit -m "ci: sync prompt-manifest.json [skip ci]"
 
 ---
 
-## For Consumers: Setting Up Your Project
+## Für Consumer: Projekt einrichten
 
-### Template Files
+### Template-Dateien
 
-oh-my-agent provides two template files in `docs/consumer-templates/` that you copy into your project:
+oh-my-agent stellt zwei Template-Dateien in `docs/consumer-templates/` bereit, die Sie in Ihr Projekt kopieren:
 
-1. **`.agent-registry.yml`** — Configuration file placed at your project root.
-2. **`check-registry-updates.yml`** — GitHub Actions workflow placed at `.github/workflows/`.
-3. **`sync-agent-registry.yml`** — GitHub Actions workflow placed at `.github/workflows/`.
+1. **`.agent-registry.yml`** — Konfigurationsdatei im Projektstamm.
+2. **`check-registry-updates.yml`** — GitHub-Actions-Workflow unter `.github/workflows/`.
+3. **`sync-agent-registry.yml`** — GitHub-Actions-Workflow unter `.github/workflows/`.
 
-### .agent-registry.yml Format
+### .agent-registry.yml-Format
 
-This file lives at your project root and controls how your project interacts with the central registry.
+Diese Datei befindet sich in Ihrem Projektstamm und steuert die Interaktion Ihres Projekts mit dem zentralen Register.
 
 ```yaml
-# Central registry repository
+# Zentrales Register-Repository
 registry:
   repo: first-fluke/oh-my-ag
 
-# Version pinning
-# Options:
-#   - Specific version: "1.2.0"
-#   - Latest: "latest" (not recommended for production)
+# Versions-Pinning
+# Optionen:
+#   - Bestimmte Version: "1.2.0"
+#   - Neueste: "latest" (nicht empfohlen für Produktion)
 version: "4.7.0"
 
-# Auto-update settings
+# Auto-Update-Einstellungen
 auto_update:
-  # Enable weekly update check PRs
+  # Wöchentliche Update-Prüf-PRs aktivieren
   enabled: true
 
-  # Schedule (cron format) - default: every Monday at 9am UTC
+  # Zeitplan (Cron-Format) - Standard: jeden Montag um 9 Uhr UTC
   schedule: "0 9 * * 1"
 
-  # PR settings
+  # PR-Einstellungen
   pr:
-    # Auto-merge is disabled by design (manual review required)
+    # Auto-Merge ist bewusst deaktiviert (manuelle Überprüfung erforderlich)
     auto_merge: false
 
-    # PR labels
+    # PR-Labels
     labels:
       - "dependencies"
       - "agent-registry"
 
-    # Reviewers (optional)
-    # reviewers:
-    #   - "username1"
-    #   - "username2"
-
-# Sync settings
+# Synchronisierungseinstellungen
 sync:
-  # Target directory for .agents/ files
+  # Zielverzeichnis für .agents/-Dateien
   target_dir: "."
 
-  # Backup existing .agents/ before sync
+  # Vorhandenes .agents/ vor Synchronisierung sichern
   backup_existing: true
 
-  # Files/directories to preserve during sync (glob patterns)
-  # These won't be overwritten from the registry
+  # Dateien/Verzeichnisse, die bei Synchronisierung beibehalten werden (Glob-Muster)
   preserve:
     - ".agent/config/user-preferences.yaml"
     - ".agent/config/local-*"
 ```
 
-**Key fields explained:**
+**Wichtige Felder erklärt:**
 
-- **`version`** — Pin to a specific version for reproducibility. Use `"latest"` only for experimental projects.
-- **`auto_update.enabled`** — When true, the check workflow runs on schedule.
-- **`auto_update.schedule`** — Cron expression for how often to check. Default is weekly on Monday at 9am UTC.
-- **`auto_update.pr.auto_merge`** — Always `false` by design. Updates require manual review.
-- **`sync.preserve`** — Glob patterns for files that should not be overwritten during sync. Typically includes your project's `user-preferences.yaml` and any local configuration overrides.
+- **`version`** — Für Reproduzierbarkeit auf eine bestimmte Version pinnen. `"latest"` nur für experimentelle Projekte verwenden.
+- **`auto_update.enabled`** — Bei true läuft der Prüf-Workflow nach Zeitplan.
+- **`auto_update.schedule`** — Cron-Ausdruck für die Prüfhäufigkeit. Standard ist wöchentlich Montag um 9 Uhr UTC.
+- **`auto_update.pr.auto_merge`** — Bewusst immer `false`. Updates erfordern manuelle Überprüfung.
+- **`sync.preserve`** — Glob-Muster für Dateien, die bei Synchronisierung nicht überschrieben werden sollen. Typischerweise die `user-preferences.yaml` und lokale Konfigurationsüberschreibungen.
 
-### Workflow Roles
+### Workflow-Rollen
 
 #### check-registry-updates.yml
 
-**Purpose:** Checks for new versions and creates a PR if an update is available.
+**Zweck:** Prüft auf neue Versionen und erstellt einen PR, wenn ein Update verfügbar ist.
 
-**Trigger:** Cron schedule (default: weekly) or manual dispatch.
+**Trigger:** Cron-Zeitplan (Standard: wöchentlich) oder manueller Auslöser.
 
-**Flow:**
-1. Reads the current version from `.agent-registry.yml`.
-2. Fetches the latest release tag from the registry repo via GitHub API.
-3. Compares versions — exits if already up to date.
-4. If an update is available:
-   - Checks if a PR for this version already exists (prevents duplicates).
-   - Creates a new branch (`agent-registry-update-{version}`).
-   - Updates the version in `.agent-registry.yml`.
-   - Commits and pushes.
-   - Creates a PR with changelog information and review instructions.
+**Ablauf:**
+1. Liest die aktuelle Version aus `.agent-registry.yml`.
+2. Ruft den neuesten Release-Tag aus dem Register-Repository über die GitHub-API ab.
+3. Vergleicht Versionen — beendet sich, wenn bereits aktuell.
+4. Bei verfügbarem Update:
+   - Prüft, ob ein PR für diese Version bereits existiert (verhindert Duplikate).
+   - Erstellt einen neuen Branch (`agent-registry-update-{version}`).
+   - Aktualisiert die Version in `.agent-registry.yml`.
+   - Committet und pusht.
+   - Erstellt einen PR mit Changelog-Informationen und Review-Anweisungen.
 
-**Labels applied:** `dependencies`, `agent-registry`.
+**Angewendete Labels:** `dependencies`, `agent-registry`.
 
-**Permissions required:** `contents: write`, `pull-requests: write`.
+**Erforderliche Berechtigungen:** `contents: write`, `pull-requests: write`.
 
 #### sync-agent-registry.yml
 
-**Purpose:** Downloads and applies the registry files when the version changes.
+**Zweck:** Lädt die Register-Dateien herunter und wendet sie an, wenn sich die Version ändert.
 
-**Trigger:** Push to `main` that modifies `.agent-registry.yml`, or manual dispatch.
+**Trigger:** Push nach `main`, der `.agent-registry.yml` modifiziert, oder manueller Auslöser.
 
-**Flow:**
-1. Reads the version from `.agent-registry.yml` (or from manual input).
-2. Downloads release artifacts: `agent-skills.tar.gz`, checksum, and manifest.
-3. Verifies the SHA256 checksum.
-4. Backs up the existing `.agents/` directory (with timestamp).
-5. Extracts the tarball.
-6. Restores preserved files from the backup (per `sync.preserve` patterns).
-7. Commits the synced files.
-8. Cleans up backup directories older than 7 days.
+**Ablauf:**
+1. Liest die Version aus `.agent-registry.yml` (oder aus manueller Eingabe).
+2. Lädt Release-Artefakte herunter: `agent-skills.tar.gz`, Prüfsumme und Manifest.
+3. Verifiziert die SHA256-Prüfsumme.
+4. Sichert das vorhandene `.agents/`-Verzeichnis (mit Zeitstempel).
+5. Entpackt das Tarball.
+6. Stellt bewahrte Dateien aus der Sicherung wieder her (nach `sync.preserve`-Mustern).
+7. Committet die synchronisierten Dateien.
+8. Bereinigt Sicherungsverzeichnisse, die älter als 7 Tage sind.
 
-**Permissions required:** `contents: write`.
+**Erforderliche Berechtigungen:** `contents: write`.
 
 ---
 
-## Comparison: Central Registry vs GitHub Action
+## Vergleich: Zentrales Register vs. GitHub Action
 
-| Aspect | Central Registry | GitHub Action |
+| Aspekt | Zentrales Register | GitHub Action |
 |:-------|:----------------|:-------------|
-| **Setup complexity** | Higher — 3 files to configure | Lower — 1 workflow file |
-| **Version control** | Explicit pinning in `.agent-registry.yml` | Always updates to latest |
-| **Update mechanism** | Two-step: check PR then sync workflow | Single step: oma update in CI |
-| **Checksum verification** | Yes — SHA256 verified before extraction | No — relies on npm registry |
-| **Rollback** | Change version in `.agent-registry.yml` | Revert the update commit |
-| **Audit trail** | Version-pinned PRs with labels | Commit history |
-| **Preserved files** | Configurable glob patterns in `.agent-registry.yml` | Built-in: `user-preferences.yaml`, `mcp.json`, `stack/` |
-| **Update source** | GitHub Release artifacts (tarball) | npm registry (oh-my-agent package) |
-| **Approval flow** | PR review required (auto-merge disabled) | Configurable (PR mode or direct commit) |
-| **Multiple projects** | Each project has its own pinned version | Each project runs independently |
-| **Offline/air-gapped** | Possible — download tarball manually | Requires npm access |
+| **Einrichtungsaufwand** | Höher — 3 Dateien zu konfigurieren | Geringer — 1 Workflow-Datei |
+| **Versionskontrolle** | Explizites Pinning in `.agent-registry.yml` | Aktualisiert immer auf neueste |
+| **Update-Mechanismus** | Zweistufig: Prüf-PR dann Sync-Workflow | Einstufig: oma update in CI |
+| **Prüfsummenverifikation** | Ja — SHA256 vor dem Entpacken verifiziert | Nein — verlässt sich auf npm-Registry |
+| **Rollback** | Version in `.agent-registry.yml` ändern | Update-Commit rückgängig machen |
+| **Audit-Trail** | Versionsgepinnte PRs mit Labels | Commit-Verlauf |
+| **Bewahrte Dateien** | Konfigurierbare Glob-Muster in `.agent-registry.yml` | Eingebaut: `user-preferences.yaml`, `mcp.json`, `stack/` |
+| **Update-Quelle** | GitHub-Release-Artefakte (Tarball) | npm-Registry (oh-my-agent-Paket) |
+| **Genehmigungsfluss** | PR-Review erforderlich (Auto-Merge deaktiviert) | Konfigurierbar (PR-Modus oder direkter Commit) |
+| **Mehrere Projekte** | Jedes Projekt hat seine eigene gepinnte Version | Jedes Projekt läuft unabhängig |
+| **Offline/Air-Gapped** | Möglich — Tarball manuell herunterladen | Erfordert npm-Zugang |
 
 ---
 
-## When to Use Which
+## Wann welchen Ansatz verwenden
 
-### Use the Central Registry When:
+### Zentrales Register verwenden, wenn:
 
-- You manage multiple projects that need to stay on the same version.
-- You need auditable, reviewable update PRs with checksum verification.
-- Your security policy requires explicit approval for dependency updates.
-- You want to pin specific versions and upgrade projects on different schedules.
-- You need the ability to download artifacts for air-gapped environments.
+- Sie mehrere Projekte verwalten, die auf derselben Version bleiben müssen.
+- Sie prüfbare, reviewbare Update-PRs mit Prüfsummenverifikation benötigen.
+- Ihre Sicherheitsrichtlinie eine explizite Genehmigung für Abhängigkeitsaktualisierungen erfordert.
+- Sie bestimmte Versionen pinnen und Projekte nach unterschiedlichen Zeitplänen aktualisieren möchten.
+- Sie die Möglichkeit benötigen, Artefakte für Air-Gapped-Umgebungen herunterzuladen.
 
-### Use the GitHub Action When:
+### GitHub Action verwenden, wenn:
 
-- You have a single project or a few independent projects.
-- You want the simplest possible setup (one workflow file).
-- You are comfortable with automatic updates to the latest version.
-- You want built-in config file preservation without manual configuration.
-- You prefer the direct `oma update` mechanism over tarball extraction.
+- Sie ein einzelnes Projekt oder wenige unabhängige Projekte haben.
+- Sie die einfachstmögliche Einrichtung wünschen (eine Workflow-Datei).
+- Sie mit automatischen Aktualisierungen auf die neueste Version einverstanden sind.
+- Sie eingebaute Konfigurationsdateibewahrung ohne manuelle Konfiguration möchten.
+- Sie den direkten `oma update`-Mechanismus dem Tarball-Entpacken vorziehen.
 
-### Use Both When:
+### Beide verwenden, wenn:
 
-- The central registry manages version pinning and scheduled checks.
-- The GitHub Action handles the actual `oma update` call when a version bump is approved.
+- Das zentrale Register Versions-Pinning und geplante Prüfungen verwaltet.
+- Die GitHub Action den eigentlichen `oma update`-Aufruf übernimmt, wenn ein Versionssprung genehmigt wird.
 
-This is valid but adds complexity. Most teams choose one approach.
+Dies ist gültig, erhöht aber die Komplexität. Die meisten Teams wählen einen Ansatz.

@@ -3,20 +3,20 @@ title: "Cas d'Usage : Compétence Unique"
 description: Quand vous avez juste besoin d'un agent pour une tâche ciblée — la voie rapide.
 ---
 
-# Single Skill Execution
+# Exécution d'une compétence unique
 
-Single skill execution is the fast path — one agent, one domain, one focused task. No orchestration overhead, no multi-agent coordination. The skill auto-activates from your natural language prompt.
+L'exécution d'une compétence unique est la voie rapide -- un agent, un domaine, une tâche ciblée. Pas de surcoût d'orchestration, pas de coordination multi-agents. La compétence s'active automatiquement depuis votre prompt en langage naturel.
 
 ---
 
-## When to Use Single Skill
+## Quand utiliser une compétence unique
 
-Use this when your task meets ALL of these criteria:
+Utilisez cela lorsque votre tâche remplit TOUS ces critères :
 
-- **Owned by one domain** — the entire task belongs to frontend, backend, mobile, database, design, infrastructure, or another single domain
-- **Self-contained** — no cross-domain API contract changes, no backend changes needed for a frontend task
-- **Clear scope** — you know what the output should be (a component, an endpoint, a schema, a fix)
-- **No coordination** — other agents do not need to run before or after
+- **Appartient à un seul domaine** -- la tâche entière relève du frontend, backend, mobile, base de données, design, infrastructure ou d'un autre domaine unique
+- **Autonome** -- pas de changements de contrats d'API inter-domaines, pas de modifications backend nécessaires pour une tâche frontend
+- **Périmètre clair** -- vous savez ce que le résultat devrait être (un composant, un endpoint, un schéma, une correction)
+- **Pas de coordination** -- aucun autre agent n'a besoin de s'exécuter avant ou après
 
 **Examples of single-skill tasks:**
 - Build one UI component

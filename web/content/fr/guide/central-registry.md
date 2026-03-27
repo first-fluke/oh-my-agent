@@ -5,16 +5,16 @@ description: Documentation détaillée du registre central — workflow release-
 
 # Guide : Registre Central
 
-## Vue d'Ensemble
+## Vue d'ensemble
 
-The central registry model treats the oh-my-agent GitHub repository (`first-fluke/oh-my-agent`) as a versioned artifact source. Consumer projects pull specific versions of skills and workflows from this registry, ensuring consistency across teams and projects.
+Le modèle de registre central traite le dépôt GitHub oh-my-agent (`first-fluke/oh-my-agent`) comme une source d'artefacts versionnée. Les projets consommateurs récupèrent des versions spécifiques de compétences et de workflows depuis ce registre, garantissant la cohérence entre les équipes et les projets.
 
-This is the enterprise-grade approach for organizations that need:
-- Version pinning across multiple projects.
-- Auditable update trails via pull requests.
-- Checksum verification for downloaded artifacts.
-- Automated weekly update checks.
-- Manual review before any update is applied.
+C'est l'approche de qualité entreprise pour les organisations qui ont besoin de :
+- Épinglage de versions sur plusieurs projets.
+- Traces de mises à jour auditables via des pull requests.
+- Vérification de checksums pour les artefacts téléchargés.
+- Vérifications automatiques hebdomadaires des mises à jour.
+- Revue manuelle avant l'application de toute mise à jour.
 
 ---
 

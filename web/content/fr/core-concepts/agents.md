@@ -5,384 +5,384 @@ description: Référence complète des 14 agents oh-my-agent — leurs domaines,
 
 # Agents
 
-Agents in oh-my-agent are specialized engineering roles. Each agent has a defined domain, tech stack knowledge, resource files, quality gates, and execution constraints. Agents are not generic chatbots — they are scoped workers that stay in their lane and follow structured protocols.
+Les agents dans oh-my-agent sont des rôles d'ingénierie spécialisés. Chaque agent possède un domaine défini, des connaissances de stack technique, des fichiers de ressources, des portes de qualité et des contraintes d'exécution. Les agents ne sont pas des chatbots génériques -- ce sont des travailleurs au périmètre délimité qui restent dans leur voie et suivent des protocoles structurés.
 
 ---
 
-## Agent Categories
+## Catégories d'agents
 
-| Category | Agents | Responsibility |
-|----------|--------|---------------|
-| **Ideation** | oma-brainstorm | Exploring ideas, proposing approaches, producing design documents |
-| **Planning** | oma-pm | Requirements decomposition, task breakdown, API contracts, priority assignment |
-| **Implementation** | oma-frontend, oma-backend, oma-mobile, oma-db | Writing production code in their respective domains |
-| **Design** | oma-design | Design systems, DESIGN.md, tokens, typography, color, motion, accessibility |
-| **Infrastructure** | oma-tf-infra | Multi-cloud Terraform provisioning, IAM, cost optimization, policy-as-code |
-| **DevOps** | oma-dev-workflow | mise task runner, CI/CD, migrations, release coordination, monorepo automation |
-| **Quality** | oma-qa | Security audit (OWASP), performance, accessibility (WCAG), code quality review |
-| **Debugging** | oma-debug | Bug reproduction, root cause analysis, minimal fixes, regression tests |
-| **Localization** | oma-translator | Context-aware translation preserving tone, register, and domain terms |
-| **Coordination** | oma-orchestrator, oma-coordination | Automated and manual multi-agent orchestration |
-| **Git** | oma-commit | Conventional Commits generation, feature-based commit splitting |
+| Catégorie | Agents | Responsabilité |
+|-----------|--------|----------------|
+| **Idéation** | oma-brainstorm | Explorer des idées, proposer des approches, produire des documents de conception |
+| **Planification** | oma-pm | Décomposition des exigences, découpage des tâches, contrats d'API, attribution des priorités |
+| **Implémentation** | oma-frontend, oma-backend, oma-mobile, oma-db | Écrire du code de production dans leurs domaines respectifs |
+| **Design** | oma-design | Systèmes de design, DESIGN.md, tokens, typographie, couleur, animation, accessibilité |
+| **Infrastructure** | oma-tf-infra | Provisionnement Terraform multi-cloud, IAM, optimisation des coûts, policy-as-code |
+| **DevOps** | oma-dev-workflow | Task runner mise, CI/CD, migrations, coordination des releases, automatisation monorepo |
+| **Qualité** | oma-qa | Audit de sécurité (OWASP), performance, accessibilité (WCAG), revue de qualité du code |
+| **Débogage** | oma-debug | Reproduction de bugs, analyse de cause profonde, corrections minimales, tests de régression |
+| **Localisation** | oma-translator | Traduction contextuelle préservant le ton, le registre et les termes du domaine |
+| **Coordination** | oma-orchestrator, oma-coordination | Orchestration multi-agents automatisée et manuelle |
+| **Git** | oma-commit | Génération de Conventional Commits, découpage de commits par fonctionnalité |
 
 ---
 
-## Detailed Agent Reference
+## Référence détaillée des agents
 
 ### oma-brainstorm
 
-**Domain:** Design-first ideation before planning or implementation.
+**Domaine :** Idéation axée sur le design, avant la planification ou l'implémentation.
 
-**When to use:** Exploring a new feature idea, understanding user intent, comparing approaches. Use before `/plan` for complex or ambiguous requests.
+**Quand l'utiliser :** Explorer une nouvelle idée de fonctionnalité, comprendre l'intention de l'utilisateur, comparer les approches. À utiliser avant `/plan` pour les demandes complexes ou ambiguës.
 
-**When NOT to use:** Clear requirements (go to oma-pm), implementation (go to domain agents), code review (go to oma-qa).
+**Quand NE PAS l'utiliser :** Exigences claires (utiliser oma-pm), implémentation (utiliser les agents de domaine), revue de code (utiliser oma-qa).
 
-**Core rules:**
-- No implementation or planning before design approval
-- One clarifying question at a time (not batches)
-- Always propose 2-3 approaches with a recommended option
-- Section-by-section design with user confirmation at each step
-- YAGNI — design only what is needed
+**Règles fondamentales :**
+- Aucune implémentation ni planification avant l'approbation du design
+- Une question de clarification à la fois (pas par lots)
+- Toujours proposer 2 à 3 approches avec une option recommandée
+- Conception section par section avec confirmation de l'utilisateur à chaque étape
+- YAGNI -- ne concevoir que le nécessaire
 
-**Workflow:** 6 phases: Context exploration, Questions, Approaches, Design, Documentation (saves to `docs/plans/`), Transition to `/plan`.
+**Workflow :** 6 phases : Exploration du contexte, Questions, Approches, Design, Documentation (enregistre dans `docs/plans/`), Transition vers `/plan`.
 
-**Resources:** Uses shared resources only (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+**Ressources :** Utilise uniquement les ressources partagées (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
 
 ---
 
 ### oma-pm
 
-**Domain:** Product management — requirements analysis, task decomposition, API contracts.
+**Domaine :** Gestion de produit -- analyse des exigences, décomposition des tâches, contrats d'API.
 
-**When to use:** Breaking down complex features, determining feasibility, prioritizing work, defining API contracts.
+**Quand l'utiliser :** Décomposer des fonctionnalités complexes, déterminer la faisabilité, prioriser le travail, définir des contrats d'API.
 
-**Core rules:**
-- API-first design: define contracts before implementation tasks
-- Every task has: agent, title, acceptance criteria, priority, dependencies
-- Minimize dependencies for maximum parallel execution
-- Security and testing are part of every task (not separate phases)
-- Tasks must be completable by a single agent
-- Output JSON plan + task-board.md for orchestrator compatibility
+**Règles fondamentales :**
+- Conception API-first : définir les contrats avant les tâches d'implémentation
+- Chaque tâche comporte : agent, titre, critères d'acceptation, priorité, dépendances
+- Minimiser les dépendances pour une exécution parallèle maximale
+- La sécurité et les tests font partie intégrante de chaque tâche (pas de phases séparées)
+- Les tâches doivent être réalisables par un seul agent
+- Sortie : plan JSON + task-board.md pour la compatibilité avec l'orchestrateur
 
-**Output:** `.agents/plan.json`, `.agents/brain/current-plan.md`, memory write for orchestrator.
+**Sortie :** `.agents/plan.json`, `.agents/brain/current-plan.md`, écriture en mémoire pour l'orchestrateur.
 
-**Resources:** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/`.
+**Ressources :** `execution-protocol.md`, `examples.md`, `iso-planning.md`, `task-template.json`, `../_shared/core/api-contracts/`.
 
-**Turn limits:** Default 10, max 15.
+**Limites de tours :** Par défaut 10, maximum 15.
 
 ---
 
 ### oma-frontend
 
-**Domain:** Web UI — React, Next.js, TypeScript with FSD-lite architecture.
+**Domaine :** UI Web -- React, Next.js, TypeScript avec architecture FSD-lite.
 
-**When to use:** Building user interfaces, components, client-side logic, styling, form validation, API integration.
+**Quand l'utiliser :** Construire des interfaces utilisateur, des composants, de la logique côté client, du styling, de la validation de formulaires, de l'intégration API.
 
-**Tech stack:**
-- React + Next.js (Server Components default, Client Components for interactivity)
+**Stack technique :**
+- React + Next.js (Server Components par défaut, Client Components pour l'interactivité)
 - TypeScript (strict)
-- TailwindCSS v4 + shadcn/ui (read-only primitives, extend via cva/wrappers)
-- FSD-lite: root `src/` + feature `src/features/*/` (no cross-feature imports)
+- TailwindCSS v4 + shadcn/ui (primitives en lecture seule, extension via cva/wrappers)
+- FSD-lite : racine `src/` + fonctionnalités `src/features/*/` (pas d'imports inter-fonctionnalités)
 
-**Libraries:**
-| Purpose | Library |
-|---------|---------|
+**Bibliothèques :**
+| Usage | Bibliothèque |
+|-------|-------------|
 | Dates | luxon |
 | Styling | TailwindCSS v4 + shadcn/ui |
 | Hooks | ahooks |
-| Utils | es-toolkit |
-| URL State | nuqs |
-| Server State | TanStack Query |
-| Client State | Jotai (minimize use) |
-| Forms | @tanstack/react-form + Zod |
-| Auth | better-auth |
+| Utilitaires | es-toolkit |
+| État URL | nuqs |
+| État serveur | TanStack Query |
+| État client | Jotai (minimiser l'usage) |
+| Formulaires | @tanstack/react-form + Zod |
+| Authentification | better-auth |
 
-**Core rules:**
-- shadcn/ui first, extend via cva, never modify `components/ui/*` directly
-- Design tokens 1:1 mapping (never hardcode colors)
-- Proxy over middleware (Next.js 16+ uses `proxy.ts`, not `middleware.ts` for proxy logic)
-- No prop drilling beyond 3 levels — use Jotai atoms
-- Absolute imports with `@/` mandatory
-- FCP target < 1s
-- Responsive breakpoints: 320px, 768px, 1024px, 1440px
+**Règles fondamentales :**
+- shadcn/ui en priorité, extension via cva, ne jamais modifier `components/ui/*` directement
+- Mapping 1:1 des tokens de design (ne jamais coder les couleurs en dur)
+- Proxy plutôt que middleware (Next.js 16+ utilise `proxy.ts`, pas `middleware.ts` pour la logique proxy)
+- Pas de prop drilling au-delà de 3 niveaux -- utiliser les atoms Jotai
+- Imports absolus avec `@/` obligatoires
+- Objectif FCP < 1 s
+- Breakpoints responsifs : 320 px, 768 px, 1024 px, 1440 px
 
-**Resources:** `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `component-template.tsx`, `snippets.md`, `error-playbook.md`, `checklist.md`, `examples/`.
+**Ressources :** `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `component-template.tsx`, `snippets.md`, `error-playbook.md`, `checklist.md`, `examples/`.
 
-**Quality gate checklist:**
-- Accessibility: ARIA labels, semantic headings, keyboard navigation
-- Mobile: verified on mobile viewports
-- Performance: no CLS, fast load
-- Resilience: Error Boundaries and Loading Skeletons
-- Tests: logic covered by Vitest
-- Quality: typecheck and lint pass
+**Checklist des portes de qualité :**
+- Accessibilité : labels ARIA, titres sémantiques, navigation au clavier
+- Mobile : vérifié sur les viewports mobiles
+- Performance : pas de CLS, chargement rapide
+- Résilience : Error Boundaries et Loading Skeletons
+- Tests : logique couverte par Vitest
+- Qualité : typecheck et lint passent
 
-**Turn limits:** Default 20, max 30.
+**Limites de tours :** Par défaut 20, maximum 30.
 
 ---
 
 ### oma-backend
 
-**Domain:** APIs, server-side logic, authentication, database operations.
+**Domaine :** API, logique côté serveur, authentification, opérations de base de données.
 
-**When to use:** REST/GraphQL APIs, database migrations, auth, server business logic, background jobs.
+**Quand l'utiliser :** API REST/GraphQL, migrations de base de données, authentification, logique métier serveur, tâches de fond.
 
-**Architecture:** Router (HTTP) -> Service (Business Logic) -> Repository (Data Access) -> Models.
+**Architecture :** Router (HTTP) -> Service (logique métier) -> Repository (accès aux données) -> Models.
 
-**Stack detection:** Reads project manifests (pyproject.toml, package.json, Cargo.toml, go.mod, etc.) to determine language and framework. Falls back to `stack/` directory if present, or asks user to run `/stack-set`.
+**Détection de stack :** Lit les manifestes du projet (pyproject.toml, package.json, Cargo.toml, go.mod, etc.) pour déterminer le langage et le framework. Se rabat sur le répertoire `stack/` si présent, ou demande à l'utilisateur d'exécuter `/stack-set`.
 
-**Core rules:**
-- Clean architecture: no business logic in route handlers
-- All inputs validated with the project's validation library
-- Parameterized queries only (never string interpolation in SQL)
-- JWT + bcrypt for auth; rate limit auth endpoints
-- Async where supported; type annotations on all signatures
-- Custom exceptions via centralized error module
-- Explicit ORM loading strategy, transaction boundaries, safe lifecycle
+**Règles fondamentales :**
+- Architecture propre : pas de logique métier dans les handlers de routes
+- Toutes les entrées validées avec la bibliothèque de validation du projet
+- Requêtes paramétrées uniquement (jamais d'interpolation de chaînes dans le SQL)
+- JWT + bcrypt pour l'authentification ; limiter le débit des endpoints d'auth
+- Asynchrone quand c'est supporté ; annotations de type sur toutes les signatures
+- Exceptions personnalisées via un module d'erreur centralisé
+- Stratégie de chargement ORM explicite, limites de transactions, cycle de vie sécurisé
 
-**Resources:** `execution-protocol.md`, `examples.md`, `orm-reference.md`, `checklist.md`, `error-playbook.md`. Stack-specific resources in `stack/` (generated by `/stack-set`): `tech-stack.md`, `snippets.md`, `api-template.*`, `stack.yaml`.
+**Ressources :** `execution-protocol.md`, `examples.md`, `orm-reference.md`, `checklist.md`, `error-playbook.md`. Ressources spécifiques au stack dans `stack/` (générées par `/stack-set`) : `tech-stack.md`, `snippets.md`, `api-template.*`, `stack.yaml`.
 
-**Turn limits:** Default 20, max 30.
+**Limites de tours :** Par défaut 20, maximum 30.
 
 ---
 
 ### oma-mobile
 
-**Domain:** Cross-platform mobile apps — Flutter, React Native.
+**Domaine :** Applications mobiles multiplateformes -- Flutter, React Native.
 
-**When to use:** Native mobile apps (iOS + Android), mobile-specific UI patterns, platform features (camera, GPS, push notifications), offline-first architecture.
+**Quand l'utiliser :** Applications mobiles natives (iOS + Android), patterns UI spécifiques au mobile, fonctionnalités de plateforme (caméra, GPS, notifications push), architecture offline-first.
 
-**Architecture:** Clean Architecture: domain -> data -> presentation.
+**Architecture :** Clean Architecture : domain -> data -> presentation.
 
-**Tech stack:** Flutter/Dart, Riverpod/Bloc (state management), Dio with interceptors (API), GoRouter (navigation), Material Design 3 (Android) + iOS HIG.
+**Stack technique :** Flutter/Dart, Riverpod/Bloc (gestion d'état), Dio avec intercepteurs (API), GoRouter (navigation), Material Design 3 (Android) + iOS HIG.
 
-**Core rules:**
-- Riverpod/Bloc for state management (no raw setState for complex logic)
-- All controllers disposed in `dispose()` method
-- Dio with interceptors for API calls; handle offline gracefully
-- 60fps target; test on both platforms
+**Règles fondamentales :**
+- Riverpod/Bloc pour la gestion d'état (pas de setState brut pour la logique complexe)
+- Tous les contrôleurs libérés dans la méthode `dispose()`
+- Dio avec intercepteurs pour les appels API ; gérer le mode hors ligne avec élégance
+- Objectif 60 fps ; tester sur les deux plateformes
 
-**Resources:** `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `checklist.md`, `error-playbook.md`, `examples.md`.
+**Ressources :** `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `checklist.md`, `error-playbook.md`, `examples.md`.
 
-**Turn limits:** Default 20, max 30.
+**Limites de tours :** Par défaut 20, maximum 30.
 
 ---
 
 ### oma-db
 
-**Domain:** Database architecture — SQL, NoSQL, vector databases.
+**Domaine :** Architecture de bases de données -- SQL, NoSQL, bases de données vectorielles.
 
-**When to use:** Schema design, ERD, normalization, indexing, transactions, capacity planning, backup strategy, migration design, vector DB/RAG architecture, anti-pattern review, compliance-aware design (ISO 27001/27002/22301).
+**Quand l'utiliser :** Conception de schéma, ERD, normalisation, indexation, transactions, planification de capacité, stratégie de sauvegarde, conception de migrations, architecture de bases vectorielles/RAG, revue d'anti-patterns, conception conforme aux normes (ISO 27001/27002/22301).
 
-**Default workflow:** Explore (identify entities, access patterns, volume) -> Design (schema, constraints, transactions) -> Optimize (indexes, partitioning, archival, anti-patterns).
+**Workflow par défaut :** Explorer (identifier les entités, les patterns d'accès, le volume) -> Concevoir (schéma, contraintes, transactions) -> Optimiser (index, partitionnement, archivage, anti-patterns).
 
-**Core rules:**
-- Choose model first, engine second
-- 3NF default for relational; document BASE tradeoffs for distributed
-- Document all three schema layers: external, conceptual, internal
-- Integrity is first-class: entity, domain, referential, business-rule
-- Concurrency is never implicit: define transaction boundaries and isolation levels
-- Vector DBs are retrieval infrastructure, not source-of-truth
-- Never treat vector search as a drop-in replacement for lexical search
+**Règles fondamentales :**
+- Choisir le modèle d'abord, le moteur ensuite
+- 3NF par défaut pour le relationnel ; documenter les compromis BASE pour le distribué
+- Documenter les trois couches de schéma : externe, conceptuelle, interne
+- L'intégrité est de première classe : entité, domaine, référentielle, règle métier
+- La concurrence n'est jamais implicite : définir les limites de transactions et les niveaux d'isolation
+- Les bases vectorielles sont une infrastructure de recherche, pas une source de vérité
+- Ne jamais traiter la recherche vectorielle comme un remplacement direct de la recherche lexicale
 
-**Required deliverables:** External schema summary, conceptual schema, internal schema, data standards table, glossary, capacity estimation, backup/recovery strategy. For vector/RAG: embedding version policy, chunking policy, hybrid retrieval strategy.
+**Livrables requis :** Résumé du schéma externe, schéma conceptuel, schéma interne, tableau de normes de données, glossaire, estimation de capacité, stratégie de sauvegarde/récupération. Pour les bases vectorielles/RAG : politique de version des embeddings, politique de découpage, stratégie de recherche hybride.
 
-**Resources:** `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`, `examples.md`.
+**Ressources :** `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`, `examples.md`.
 
 ---
 
 ### oma-design
 
-**Domain:** Design systems, UI/UX, DESIGN.md management.
+**Domaine :** Systèmes de design, UI/UX, gestion de DESIGN.md.
 
-**When to use:** Creating design systems, landing pages, design tokens, color palettes, typography, responsive layouts, accessibility review.
+**Quand l'utiliser :** Créer des systèmes de design, des pages d'atterrissage, des tokens de design, des palettes de couleurs, de la typographie, des mises en page responsives, des revues d'accessibilité.
 
-**Workflow:** 7 phases: Setup (context gathering) -> Extract (optional, from reference URLs) -> Enhance (vague prompt augmentation) -> Propose (2-3 design directions) -> Generate (DESIGN.md + tokens) -> Audit (responsive, WCAG, Nielsen, AI slop check) -> Handoff.
+**Workflow :** 7 phases : Setup (collecte du contexte) -> Extract (optionnel, depuis des URL de référence) -> Enhance (enrichissement de prompts vagues) -> Propose (2 à 3 directions de design) -> Generate (DESIGN.md + tokens) -> Audit (responsive, WCAG, Nielsen, vérification anti AI slop) -> Handoff.
 
-**Anti-pattern enforcement ("no AI slop"):**
-- Typography: system font stack default; no default Google Fonts without justification
-- Color: no purple-to-blue gradients, no gradient orbs/blobs, no pure white on pure black
-- Layout: no nested cards, no desktop-only layouts, no cookie-cutter 3-metric stat layouts
-- Motion: no bounce easing everywhere, no animations > 800ms, must respect prefers-reduced-motion
-- Components: no glassmorphism everywhere, all interactive elements need keyboard/touch alternatives
+**Application des anti-patterns (« no AI slop ») :**
+- Typographie : stack de polices système par défaut ; pas de Google Fonts par défaut sans justification
+- Couleur : pas de dégradés violet-bleu, pas d'orbes/blobs en dégradé, pas de blanc pur sur noir pur
+- Mise en page : pas de cartes imbriquées, pas de mises en page uniquement desktop, pas de layouts génériques à 3 métriques
+- Animation : pas de rebond partout, pas d'animations > 800 ms, respecter prefers-reduced-motion
+- Composants : pas de glassmorphisme partout, tous les éléments interactifs nécessitent des alternatives clavier/tactile
 
-**Core rules:**
-- Check `.design-context.md` first; create if missing
-- System font stack default (CJK-ready fonts for ko/ja/zh)
-- WCAG AA minimum for all designs
-- Responsive-first (mobile as default)
-- Present 2-3 directions, get confirmation
+**Règles fondamentales :**
+- Vérifier `.design-context.md` d'abord ; le créer si manquant
+- Stack de polices système par défaut (polices CJK-ready pour ko/ja/zh)
+- WCAG AA minimum pour tous les designs
+- Responsive-first (mobile par défaut)
+- Présenter 2 à 3 directions, obtenir confirmation
 
-**Resources:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, plus `reference/` directory (typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d) and `examples/` (design-context-example, landing-page-prompt).
+**Ressources :** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, plus le répertoire `reference/` (typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d) et `examples/` (design-context-example, landing-page-prompt).
 
 ---
 
 ### oma-tf-infra
 
-**Domain:** Infrastructure-as-code with Terraform, multi-cloud.
+**Domaine :** Infrastructure-as-code avec Terraform, multi-cloud.
 
-**When to use:** Provisioning on AWS/GCP/Azure/Oracle Cloud, Terraform configuration, CI/CD authentication (OIDC), CDN/load balancers/storage/networking, state management, ISO compliance infrastructure.
+**Quand l'utiliser :** Provisionnement sur AWS/GCP/Azure/Oracle Cloud, configuration Terraform, authentification CI/CD (OIDC), CDN/load balancers/stockage/réseau, gestion d'état, infrastructure conforme ISO.
 
-**Cloud detection:** Reads Terraform providers and resource prefixes (`google_*` = GCP, `aws_*` = AWS, `azurerm_*` = Azure, `oci_*` = Oracle Cloud). Includes a full multi-cloud resource mapping table.
+**Détection cloud :** Lit les fournisseurs Terraform et les préfixes de ressources (`google_*` = GCP, `aws_*` = AWS, `azurerm_*` = Azure, `oci_*` = Oracle Cloud). Inclut un tableau complet de mapping de ressources multi-cloud.
 
-**Core rules:**
-- Provider-agnostic: detect cloud from project context
-- Remote state with versioning and locking
-- OIDC-first for CI/CD auth
-- Plan before apply always
-- Least privilege IAM
-- Tag everything (Environment, Project, Owner, CostCenter)
-- No secrets in code
-- Version pin all providers and modules
-- No auto-approve in production
+**Règles fondamentales :**
+- Agnostique au fournisseur : détecter le cloud depuis le contexte du projet
+- État distant avec versionnement et verrouillage
+- OIDC en priorité pour l'authentification CI/CD
+- Toujours planifier avant d'appliquer
+- IAM au moindre privilège
+- Tout taguer (Environment, Project, Owner, CostCenter)
+- Pas de secrets dans le code
+- Épingler les versions de tous les fournisseurs et modules
+- Pas d'auto-approve en production
 
-**Resources:** `execution-protocol.md`, `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`, `error-playbook.md`, `examples.md`.
+**Ressources :** `execution-protocol.md`, `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`, `error-playbook.md`, `examples.md`.
 
 ---
 
 ### oma-dev-workflow
 
-**Domain:** Monorepo task automation and CI/CD.
+**Domaine :** Automatisation de tâches monorepo et CI/CD.
 
-**When to use:** Running dev servers, executing lint/format/typecheck across apps, database migrations, API generation, i18n builds, production builds, CI/CD optimization, pre-commit validation.
+**Quand l'utiliser :** Lancer des serveurs de développement, exécuter lint/format/typecheck sur les applications, migrations de base de données, génération d'API, builds i18n, builds de production, optimisation CI/CD, validation pre-commit.
 
-**Core rules:**
-- Always use `mise run` tasks instead of direct package manager commands
-- Run lint/test only on changed apps
-- Validate commit messages with commitlint
-- CI should skip unchanged apps
-- Never use direct package manager commands when mise tasks exist
+**Règles fondamentales :**
+- Toujours utiliser les tâches `mise run` au lieu de commandes directes du gestionnaire de paquets
+- Exécuter lint/test uniquement sur les applications modifiées
+- Valider les messages de commit avec commitlint
+- La CI doit ignorer les applications non modifiées
+- Ne jamais utiliser de commandes directes du gestionnaire de paquets lorsque des tâches mise existent
 
-**Resources:** `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`.
+**Ressources :** `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`.
 
 ---
 
 ### oma-qa
 
-**Domain:** Quality assurance — security, performance, accessibility, code quality.
+**Domaine :** Assurance qualité -- sécurité, performance, accessibilité, qualité du code.
 
-**When to use:** Final review before deployment, security audits, performance analysis, accessibility compliance, test coverage analysis.
+**Quand l'utiliser :** Revue finale avant déploiement, audits de sécurité, analyse de performance, conformité accessibilité, analyse de la couverture de tests.
 
-**Review priority order:** Security > Performance > Accessibility > Code Quality.
+**Ordre de priorité de revue :** Sécurité > Performance > Accessibilité > Qualité du code.
 
-**Severity levels:**
-- **CRITICAL**: Security breach, data loss risk
-- **HIGH**: Blocks launch
-- **MEDIUM**: Fix this sprint
-- **LOW**: Backlog
+**Niveaux de sévérité :**
+- **CRITICAL** : Faille de sécurité, risque de perte de données
+- **HIGH** : Bloque le lancement
+- **MEDIUM** : À corriger ce sprint
+- **LOW** : Backlog
 
-**Core rules:**
-- Every finding must include file:line, description, and fix
-- Run automated tools first (npm audit, bandit, lighthouse)
-- No false positives — every finding must be reproducible
-- Provide remediation code, not just descriptions
+**Règles fondamentales :**
+- Chaque constat doit inclure fichier:ligne, description et correction
+- Exécuter d'abord les outils automatisés (npm audit, bandit, lighthouse)
+- Pas de faux positifs -- chaque constat doit être reproductible
+- Fournir du code de remédiation, pas seulement des descriptions
 
-**Resources:** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
+**Ressources :** `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`, `examples.md`.
 
-**Turn limits:** Default 15, max 20.
+**Limites de tours :** Par défaut 15, maximum 20.
 
 ---
 
 ### oma-debug
 
-**Domain:** Bug diagnosis and fixing.
+**Domaine :** Diagnostic et correction de bugs.
 
-**When to use:** User-reported bugs, crashes, performance issues, intermittent failures, race conditions, regression bugs.
+**Quand l'utiliser :** Bugs signalés par les utilisateurs, plantages, problèmes de performance, défaillances intermittentes, conditions de concurrence, bugs de régression.
 
-**Methodology:** Reproduce first, then diagnose. Never guess at fixes.
+**Méthodologie :** Reproduire d'abord, diagnostiquer ensuite. Ne jamais deviner les corrections.
 
-**Core rules:**
-- Identify root cause, not just symptoms
-- Minimal fix: change only what is necessary
-- Every fix gets a regression test
-- Search for similar patterns elsewhere
-- Document in `.agents/brain/bugs/`
+**Règles fondamentales :**
+- Identifier la cause profonde, pas seulement les symptômes
+- Correction minimale : ne modifier que le nécessaire
+- Chaque correction est accompagnée d'un test de régression
+- Rechercher des motifs similaires ailleurs
+- Documenter dans `.agents/brain/bugs/`
 
-**Serena MCP tools used:**
-- `find_symbol("functionName")` — locate the function
-- `find_referencing_symbols("Component")` — find all usages
-- `search_for_pattern("error pattern")` — find similar issues
+**Outils MCP Serena utilisés :**
+- `find_symbol("functionName")` -- localiser la fonction
+- `find_referencing_symbols("Component")` -- trouver toutes les utilisations
+- `search_for_pattern("error pattern")` -- trouver des problèmes similaires
 
-**Resources:** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
+**Ressources :** `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`, `examples.md`.
 
-**Turn limits:** Default 15, max 25.
+**Limites de tours :** Par défaut 15, maximum 25.
 
 ---
 
 ### oma-translator
 
-**Domain:** Context-aware multilingual translation.
+**Domaine :** Traduction multilingue contextuelle.
 
-**When to use:** Translating UI strings, documentation, marketing copy, reviewing existing translations, creating glossaries.
+**Quand l'utiliser :** Traduire des chaînes d'interface, de la documentation, du contenu marketing, réviser des traductions existantes, créer des glossaires.
 
-**4-stage method:** Analyze Source (register, intent, domain terms, cultural references, emotional connotations, figurative language mapping) -> Extract Meaning (strip source structure) -> Reconstruct in Target Language (natural word order, register matching, sentence splitting/merging) -> Verify (naturalness rubric + anti-AI pattern check).
+**Méthode en 4 étapes :** Analyser la source (registre, intention, termes de domaine, références culturelles, connotations émotionnelles, mapping du langage figuré) -> Extraire le sens (éliminer la structure de la source) -> Reconstruire dans la langue cible (ordre naturel des mots, correspondance de registre, découpage/fusion de phrases) -> Vérifier (grille de naturalité + vérification anti-patterns IA).
 
-**Optional 7-stage refined mode** for publication quality: extends with Critical Review, Revision, and Polish stages.
+**Mode affiné optionnel en 7 étapes** pour la qualité de publication : étend avec les phases de Revue critique, Révision et Peaufinage.
 
-**Core rules:**
-- Scan existing locale files first to match conventions
-- Translate meaning, not words
-- Preserve emotional connotations
-- Never produce word-for-word translations
-- Never mix registers within a piece
-- Preserve domain-specific terminology as-is
+**Règles fondamentales :**
+- Scanner d'abord les fichiers de locale existants pour correspondre aux conventions
+- Traduire le sens, pas les mots
+- Préserver les connotations émotionnelles
+- Ne jamais produire de traductions mot à mot
+- Ne jamais mélanger les registres au sein d'un même texte
+- Préserver la terminologie spécifique au domaine telle quelle
 
-**Resources:** `translation-rubric.md`, `anti-ai-patterns.md`.
+**Ressources :** `translation-rubric.md`, `anti-ai-patterns.md`.
 
 ---
 
 ### oma-orchestrator
 
-**Domain:** Automated multi-agent coordination via CLI spawning.
+**Domaine :** Coordination multi-agents automatisée via lancement CLI.
 
-**When to use:** Complex features requiring multiple agents in parallel, automated execution, full-stack implementation.
+**Quand l'utiliser :** Fonctionnalités complexes nécessitant plusieurs agents en parallèle, exécution automatisée, implémentation full-stack.
 
-**Configuration defaults:**
+**Configuration par défaut :**
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| MAX_PARALLEL | 3 | Maximum concurrent subagents |
-| MAX_RETRIES | 2 | Retry attempts per failed task |
-| POLL_INTERVAL | 30s | Status check interval |
-| MAX_TURNS (impl) | 20 | Turn limit for backend/frontend/mobile |
-| MAX_TURNS (review) | 15 | Turn limit for qa/debug |
-| MAX_TURNS (plan) | 10 | Turn limit for pm |
+| Paramètre | Défaut | Description |
+|-----------|--------|-------------|
+| MAX_PARALLEL | 3 | Sous-agents simultanés maximum |
+| MAX_RETRIES | 2 | Tentatives de reprise par tâche échouée |
+| POLL_INTERVAL | 30 s | Intervalle de vérification du statut |
+| MAX_TURNS (impl) | 20 | Limite de tours pour backend/frontend/mobile |
+| MAX_TURNS (review) | 15 | Limite de tours pour qa/debug |
+| MAX_TURNS (plan) | 10 | Limite de tours pour pm |
 
-**Workflow phases:** Plan -> Setup (session ID, memory initialization) -> Execute (spawn by priority tier) -> Monitor (poll progress) -> Verify (automated + cross-review loop) -> Collect (compile results).
+**Phases du workflow :** Plan -> Setup (identifiant de session, initialisation de la mémoire) -> Execute (lancement par niveau de priorité) -> Monitor (interrogation de la progression) -> Verify (boucle automatisée + revue croisée) -> Collect (rassemblement des résultats).
 
-**Agent-to-agent review loop:**
-1. Self-review: agent checks own diff against acceptance criteria
-2. Automated verify: `oh-my-ag verify {agent-type} --workspace {workspace}`
-3. Cross-review: QA agent reviews changes
-4. On failure: issues fed back for fixing (max 5 total loop iterations)
+**Boucle de revue inter-agents :**
+1. Auto-revue : l'agent vérifie son propre diff par rapport aux critères d'acceptation
+2. Vérification automatisée : `oh-my-ag verify {agent-type} --workspace {workspace}`
+3. Revue croisée : l'agent QA examine les modifications
+4. En cas d'échec : les problèmes sont renvoyés pour correction (maximum 5 itérations de boucle au total)
 
-**Clarification Debt monitoring:** Tracks user corrections during sessions. Events scored as clarify (+10), correct (+25), redo (+40). CD >= 50 triggers mandatory RCA. CD >= 80 pauses session.
+**Suivi de la dette de clarification :** Trace les corrections utilisateur pendant les sessions. Les événements sont notés : clarifier (+10), corriger (+25), refaire (+40). DC >= 50 déclenche une RCA obligatoire. DC >= 80 met la session en pause.
 
-**Resources:** `subagent-prompt-template.md`, `memory-schema.md`.
+**Ressources :** `subagent-prompt-template.md`, `memory-schema.md`.
 
 ---
 
 ### oma-commit
 
-**Domain:** Git commit generation following Conventional Commits.
+**Domaine :** Génération de commits Git suivant les Conventional Commits.
 
-**When to use:** After completing code changes, when running `/commit`.
+**Quand l'utiliser :** Après avoir terminé des modifications de code, lors de l'exécution de `/commit`.
 
-**Commit types:** feat, fix, refactor, docs, test, chore, style, perf.
+**Types de commit :** feat, fix, refactor, docs, test, chore, style, perf.
 
-**Workflow:** Analyze changes -> Split by feature (if > 5 files spanning different scopes) -> Determine type -> Determine scope -> Write description (imperative, < 72 chars, lowercase, no trailing period) -> Execute commit immediately.
+**Workflow :** Analyser les modifications -> Découper par fonctionnalité (si > 5 fichiers couvrant des périmètres différents) -> Déterminer le type -> Déterminer le périmètre -> Rédiger la description (impératif, < 72 caractères, minuscules, pas de point final) -> Exécuter le commit immédiatement.
 
-**Rules:**
-- Never use `git add -A` or `git add .`
-- Never commit secrets files
-- Always specify files when staging
-- Use HEREDOC for multi-line commit messages
-- Co-Author: `First Fluke <our.first.fluke@gmail.com>`
+**Règles :**
+- Ne jamais utiliser `git add -A` ou `git add .`
+- Ne jamais commiter de fichiers contenant des secrets
+- Toujours spécifier les fichiers lors du staging
+- Utiliser HEREDOC pour les messages de commit multi-lignes
+- Co-Author : `First Fluke <our.first.fluke@gmail.com>`
 
 ---
 
-## Charter Preflight (CHARTER_CHECK)
+## Vérification préalable du charter (CHARTER_CHECK)
 
-Before writing any code, every implementation agent must output a CHARTER_CHECK block:
+Avant d'écrire le moindre code, chaque agent d'implémentation doit produire un bloc CHARTER_CHECK :
 
 ```
 CHARTER_CHECK:
@@ -393,60 +393,60 @@ CHARTER_CHECK:
 - Assumptions: {defaults applied}
 ```
 
-**Purpose:**
-- Declares what the agent will and will not do
-- Catches scope creep before code is written
-- Makes assumptions explicit for user review
-- Provides testable success criteria
+**Objectif :**
+- Déclare ce que l'agent fera et ne fera pas
+- Détecte la dérive du périmètre avant l'écriture du code
+- Rend les hypothèses explicites pour la revue utilisateur
+- Fournit des critères de succès testables
 
-**Clarification levels:**
-- **LOW**: Clear requirements. Proceed with stated assumptions.
-- **MEDIUM**: Partially ambiguous. List options, proceed with most likely.
-- **HIGH**: Very ambiguous. Set status to blocked, list questions, DO NOT write code.
+**Niveaux de clarification :**
+- **LOW** : Exigences claires. Procéder avec les hypothèses énoncées.
+- **MEDIUM** : Partiellement ambigu. Lister les options, procéder avec la plus probable.
+- **HIGH** : Très ambigu. Mettre le statut à bloqué, lister les questions, NE PAS écrire de code.
 
-In subagent mode (CLI-spawned), agents cannot ask users directly. LOW proceeds, MEDIUM narrows and interprets, HIGH blocks and returns questions for the orchestrator to relay.
-
----
-
-## Two-Layer Skill Loading
-
-Each agent's knowledge is split across two layers:
-
-**Layer 1 — SKILL.md (~800 bytes):**
-Always loaded. Contains frontmatter (name, description), when to use / not use, core rules, architecture overview, library list, and references to Layer 2 resources.
-
-**Layer 2 — resources/ (loaded on-demand):**
-Loaded only when the agent is actively working, and only the resources matching the task type and difficulty:
-
-| Difficulty | Resources Loaded |
-|-----------|-----------------|
-| **Simple** | execution-protocol.md only |
-| **Medium** | execution-protocol.md + examples.md |
-| **Complex** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
-
-Additional resources are loaded during execution as needed:
-- `checklist.md` — at the Verify step
-- `error-playbook.md` — only when errors occur
-- `common-checklist.md` — for final verification of Complex tasks
+En mode sous-agent (lancé via CLI), les agents ne peuvent pas interroger directement les utilisateurs. LOW procède, MEDIUM restreint et interprète, HIGH bloque et retourne les questions pour que l'orchestrateur les relaye.
 
 ---
 
-## Scoped Execution
+## Chargement des compétences en deux couches
 
-Agents operate under strict domain boundaries:
+Les connaissances de chaque agent sont réparties sur deux couches :
 
-- A frontend agent will not modify backend code
-- A backend agent will not touch UI components
-- A DB agent will not implement API endpoints
-- Agents document out-of-scope dependencies for other agents
+**Couche 1 -- SKILL.md (~800 octets) :**
+Toujours chargée. Contient le frontmatter (nom, description), quand utiliser / ne pas utiliser, les règles fondamentales, l'aperçu de l'architecture, la liste des bibliothèques et les références aux ressources de la couche 2.
 
-When a task is discovered that belongs to a different domain during execution, the agent documents it in its result file as an escalation item, rather than attempting to handle it.
+**Couche 2 -- resources/ (chargement à la demande) :**
+Chargée uniquement lorsque l'agent travaille activement, et uniquement les ressources correspondant au type et à la difficulté de la tâche :
+
+| Difficulté | Ressources chargées |
+|------------|---------------------|
+| **Simple** | execution-protocol.md uniquement |
+| **Moyenne** | execution-protocol.md + examples.md |
+| **Complexe** | execution-protocol.md + examples.md + tech-stack.md + snippets.md |
+
+Des ressources supplémentaires sont chargées pendant l'exécution selon les besoins :
+- `checklist.md` -- à l'étape de vérification
+- `error-playbook.md` -- uniquement en cas d'erreurs
+- `common-checklist.md` -- pour la vérification finale des tâches complexes
 
 ---
 
-## Workspace Strategy
+## Exécution au périmètre délimité
 
-For multi-agent projects, separate workspaces prevent file conflicts:
+Les agents opèrent dans des limites de domaine strictes :
+
+- Un agent frontend ne modifiera pas le code backend
+- Un agent backend ne touchera pas aux composants UI
+- Un agent DB n'implémentera pas d'endpoints API
+- Les agents documentent les dépendances hors périmètre pour les autres agents
+
+Lorsqu'une tâche appartenant à un autre domaine est découverte pendant l'exécution, l'agent la documente dans son fichier de résultat comme élément d'escalade, plutôt que de tenter de la traiter.
+
+---
+
+## Stratégie de workspaces
+
+Pour les projets multi-agents, des workspaces séparés évitent les conflits de fichiers :
 
 ```
 ./apps/api      → backend agent workspace
@@ -454,7 +454,7 @@ For multi-agent projects, separate workspaces prevent file conflicts:
 ./apps/mobile   → mobile agent workspace
 ```
 
-Workspaces are specified with the `-w` flag when spawning agents:
+Les workspaces sont spécifiés avec le flag `-w` lors du lancement des agents :
 
 ```bash
 oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
@@ -463,26 +463,26 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ---
 
-## Orchestration Flow
+## Flux d'orchestration
 
-When running a multi-agent workflow (`/orchestrate` or `/coordinate`):
+Lors de l'exécution d'un workflow multi-agents (`/orchestrate` ou `/coordinate`) :
 
-1. **PM Agent** decomposes the request into domain-specific tasks with priorities (P0, P1, P2) and dependencies
-2. **Session initialized** — session ID generated, `orchestrator-session.md` and `task-board.md` created in memory
-3. **P0 tasks** spawned in parallel (up to MAX_PARALLEL concurrent agents)
-4. **Progress monitored** — orchestrator polls `progress-{agent}.md` files every POLL_INTERVAL
-5. **P1 tasks** spawned after P0 completes, and so on
-6. **Verification loop** runs for each completed agent (self-review -> automated verify -> cross-review by QA)
-7. **Results collected** from all `result-{agent}.md` files
-8. **Final report** with session summary, files changed, remaining issues
+1. **L'agent PM** décompose la demande en tâches spécifiques au domaine avec des priorités (P0, P1, P2) et des dépendances
+2. **Session initialisée** -- identifiant de session généré, `orchestrator-session.md` et `task-board.md` créés en mémoire
+3. **Les tâches P0** sont lancées en parallèle (jusqu'à MAX_PARALLEL agents simultanés)
+4. **La progression est surveillée** -- l'orchestrateur interroge les fichiers `progress-{agent}.md` à chaque POLL_INTERVAL
+5. **Les tâches P1** sont lancées après la fin des P0, et ainsi de suite
+6. **La boucle de vérification** s'exécute pour chaque agent terminé (auto-revue -> vérification automatisée -> revue croisée par QA)
+7. **Les résultats sont collectés** depuis tous les fichiers `result-{agent}.md`
+8. **Rapport final** avec le résumé de session, les fichiers modifiés et les problèmes restants
 
 ---
 
-## Agent Definitions
+## Définitions des agents
 
-Agents are defined in two locations:
+Les agents sont définis à deux emplacements :
 
-**`.agents/agents/`** — Contains 7 subagent definition files:
+**`.agents/agents/`** -- Contient 7 fichiers de définition de sous-agents :
 - `backend-engineer.md`
 - `frontend-engineer.md`
 - `mobile-engineer.md`
@@ -491,15 +491,15 @@ Agents are defined in two locations:
 - `debug-investigator.md`
 - `pm-planner.md`
 
-These files define the agent's identity, execution protocol reference, CHARTER_CHECK template, architecture summary, and rules. They are used when spawning subagents via the Task/Agent tool (Claude Code) or CLI.
+Ces fichiers définissent l'identité de l'agent, la référence au protocole d'exécution, le modèle CHARTER_CHECK, le résumé de l'architecture et les règles. Ils sont utilisés lors du lancement de sous-agents via l'outil Task/Agent (Claude Code) ou le CLI.
 
-**`.claude/agents/`** — IDE-specific subagent definitions that reference the `.agents/agents/` files via symlinks or direct copies for Claude Code compatibility.
+**`.claude/agents/`** -- Définitions de sous-agents spécifiques à l'IDE qui référencent les fichiers `.agents/agents/` via des symlinks ou des copies directes pour la compatibilité Claude Code.
 
 ---
 
-## Runtime State (Serena Memory)
+## État d'exécution (Serena Memory)
 
-During orchestration sessions, agents coordinate through shared memory files in `.serena/memories/` (configurable via `mcp.json`):
+Pendant les sessions d'orchestration, les agents se coordonnent via des fichiers de mémoire partagés dans `.serena/memories/` (configurable via `mcp.json`) :
 
 | File | Owner | Purpose | Others |
 |------|-------|---------|--------|
@@ -510,7 +510,7 @@ During orchestration sessions, agents coordinate through shared memory files in 
 | `session-metrics.md` | Orchestrator | Clarification Debt tracking, Quality Score progression | QA reads |
 | `experiment-ledger.md` | Orchestrator/QA | Experiment tracking when Quality Score is active | All read |
 
-Memory tools are configurable. Default uses Serena MCP (`read_memory`, `write_memory`, `edit_memory`), but custom tools can be configured in `mcp.json`:
+Les outils de mémoire sont configurables. Par défaut, Serena MCP est utilisé (`read_memory`, `write_memory`, `edit_memory`), mais des outils personnalisés peuvent être configurés dans `mcp.json` :
 
 ```json
 {
@@ -526,4 +526,4 @@ Memory tools are configurable. Default uses Serena MCP (`read_memory`, `write_me
 }
 ```
 
-Dashboards (`oma dashboard` and `oma dashboard:web`) watch these memory files for real-time monitoring.
+Les tableaux de bord (`oma dashboard` et `oma dashboard:web`) surveillent ces fichiers de mémoire pour le suivi en temps réel.

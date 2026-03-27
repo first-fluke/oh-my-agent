@@ -44,7 +44,7 @@ description: oh-my-agent 14개 워크플로우 완전 레퍼런스 — 슬래시
 4. **Step 3 — 에이전트 스폰:** 각 우선순위 티어(P0 먼저, 그 다음 P1...)에 대해 벤더에 맞는 방식으로 에이전트 스폰. MAX_PARALLEL을 초과하지 않음.
 5. **Step 4 — 모니터링:** `progress-{agent}.md` 파일 폴링, `task-board.md` 업데이트. 완료, 실패, 크래시 감시.
 6. **Step 5 — 검증:** 완료된 에이전트별로 `verify.sh {agent-type} {workspace}` 실행. 실패 시 에러 컨텍스트와 함께 재스폰 (최대 2회 재시도). 2회 재시도 후에도 실패하면 Exploration Loop 활성화: 2-3개 가설 생성, 병렬 실험 스폰, 점수 매기기, 최적 선택.
-7. **Step 6 — 수집:** 모든 `result-{agent}.md` 파일 읽기, 요약 편집.
+7. **Step 6 — 수집:** 모든 `result-{agent}.md` 파일 읽기, 요약 정리.
 8. **Step 7 — 최종 보고서:** 세션 요약 제시. Quality Score가 측정된 경우 Experiment Ledger 요약 포함 및 교훈 자동 생성.
 
 **읽는 파일:** `.agents/plan.json`, `.agents/config/user-preferences.yaml`, `progress-{agent}.md`, `result-{agent}.md`.
@@ -88,7 +88,7 @@ description: oh-my-agent 14개 워크플로우 완전 레퍼런스 — 슬래시
 
 ### /ultrawork
 
-**설명:** 품질에 집중하는 워크플로우. 5단계, 17개 스텝, 그 중 11개가 리뷰 스텝. 모든 단계에는 진행 전 통과해야 하는 게이트가 있습니다.
+**설명:** 품질에 집착하는 워크플로우. 5단계, 17개 스텝, 그 중 11개가 리뷰 스텝. 모든 단계에는 진행 전 통과해야 하는 게이트가 있습니다.
 
 **영구:** 예. 상태 파일: `.agents/state/ultrawork-state.json`.
 
@@ -118,7 +118,7 @@ description: oh-my-agent 14개 워크플로우 완전 레퍼런스 — 슬래시
 - 첫 번째 실패: 관련 스텝으로 돌아가 수정 후 재시도.
 - 같은 이슈에서 두 번째 실패: Exploration Loop 활성화.
 
-**조건부 강화:** Quality Score 측정, Keep/Discard 결정, Experiment Ledger, Hypothesis Exploration, Auto-learning.
+**조건부 기능 확장:** Quality Score 측정, Keep/Discard 결정, Experiment Ledger, 가설 탐색, 자동 학습(폐기된 실험에서 얻은 교훈).
 
 **REFINE 건너뛰기 조건:** 50줄 미만의 Simple 태스크.
 
@@ -155,7 +155,7 @@ description: oh-my-agent 14개 워크플로우 완전 레퍼런스 — 슬래시
 
 **트리거 키워드:** 없음 (자동 감지에서 제외, 명시적 호출 필수).
 
-**단계:** 준비 -> 범위 분석 -> 실행 계획 생성 -> API 컨트랙트 정의(필요시) -> 사용자 리뷰 -> 실행 전달 -> 완료(`completed/`로 이동).
+**단계:** 준비 -> 범위 분석(복잡도 평가: Simple/Medium/Complex) -> 실행 계획 생성(`docs/exec-plans/active/`에 마크다운) -> API 컨트랙트 정의(크로스 바운더리 시) -> 사용자 리뷰 -> 실행 전달(`/orchestrate` 또는 `/coordinate`로) -> 완료(`completed/`로 이동).
 
 **출력:** `docs/exec-plans/active/{plan-name}.md`.
 
@@ -275,7 +275,7 @@ description: oh-my-agent 14개 워크플로우 완전 레퍼런스 — 슬래시
 
 **트리거 키워드:** 없음 (자동 감지에서 제외).
 
-**단계:** 언어 설정 -> CLI 설치 상태 확인 -> MCP 연결 상태 -> 에이전트-CLI 매핑 -> 요약.
+**단계:** 언어 설정 -> CLI 설치 상태 확인 -> MCP 연결 상태(Serena Command 또는 SSE 모드) -> 에이전트-CLI 매핑 -> 요약 -> 리포지토리 스타 안내.
 
 **출력:** `.agents/config/user-preferences.yaml`.
 
@@ -373,7 +373,7 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 └── coordinate-state.json
 ```
 
-이 파일에는 워크플로우 이름, 현재 단계/스텝, 세션 ID, 타임스탬프가 포함됩니다.
+이 파일에는 워크플로우 이름, 현재 단계/스텝, 세션 ID, 타임스탬프, 대기 중인 상태가 포함됩니다.
 
 ### 강화
 
@@ -386,7 +386,7 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 2. 영구 모드 컨텍스트 주입 중지
 3. 정상 동작으로 복귀
 
-모든 스텝 완료 시 자연스럽게 종료될 수도 있습니다.
+모든 스텝이 완료되고 마지막 게이트를 통과하면 자연스럽게 종료될 수도 있습니다.
 
 ---
 

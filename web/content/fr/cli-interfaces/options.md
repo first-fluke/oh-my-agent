@@ -5,22 +5,22 @@ description: Référence exhaustive de toutes les options CLI — flags globaux,
 
 # Options CLI
 
-## Options Globales
+## Options globales
 
-These options are available on the root `oh-my-ag` / `oma` command:
+Ces options sont disponibles sur la commande racine `oh-my-ag` / `oma` :
 
 | Flag | Description |
 |:-----|:-----------|
 | `-V, --version` | Output the version number and exit |
 | `-h, --help` | Display help for the command |
 
-All subcommands also support `-h, --help` to show their specific help text.
+Toutes les sous-commandes supportent également `-h, --help` pour afficher leur aide spécifique.
 
 ---
 
-## Options de Sortie
+## Options de sortie
 
-Many commands support machine-readable output for CI/CD pipelines and automation. There are three ways to request JSON output, in priority order:
+De nombreuses commandes supportent une sortie lisible par machine pour les pipelines CI/CD et l'automatisation. Il existe trois manières de demander une sortie JSON, par ordre de priorité :
 
 ### 1. --json Flag
 
@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+Le flag `--json` est la manière la plus simple d'obtenir une sortie JSON. Disponible sur : `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
 
 ### 2. --output Flag
 
@@ -39,9 +39,9 @@ oma stats --output json
 oma doctor --output text
 ```
 
-The `--output` flag accepts `text` or `json`. It provides the same functionality as `--json` but also lets you explicitly request text output (useful when the environment variable is set to json but you want text for a specific command).
+Le flag `--output` accepte `text` ou `json`. Il offre la même fonctionnalité que `--json` mais vous permet aussi de demander explicitement une sortie texte (utile lorsque la variable d'environnement est définie à json mais que vous souhaitez du texte pour une commande spécifique).
 
-**Validation:** If an invalid format is provided, the CLI throws: `Invalid output format: {value}. Expected one of text, json`.
+**Validation :** Si un format invalide est fourni, le CLI lève : `Invalid output format: {value}. Expected one of text, json`.
 
 ### 3. OH_MY_AG_OUTPUT_FORMAT Environment Variable
 
@@ -52,11 +52,11 @@ oma doctor   # outputs JSON
 oma retro    # outputs JSON
 ```
 
-Set this environment variable to `json` to force JSON output on all commands that support it. Only `json` is recognized; any other value is ignored and defaults to text.
+Définissez cette variable d'environnement à `json` pour forcer la sortie JSON sur toutes les commandes qui le supportent. Seul `json` est reconnu ; toute autre valeur est ignorée et le défaut est texte.
 
-**Resolution order:** `--json` flag > `--output` flag > `OH_MY_AG_OUTPUT_FORMAT` env var > `text` (default).
+**Ordre de résolution :** flag `--json` > flag `--output` > variable d'environnement `OH_MY_AG_OUTPUT_FORMAT` > `text` (par défaut).
 
-### Commands Supporting JSON Output
+### Commandes supportant la sortie JSON
 
 | Command | `--json` | `--output` | Notes |
 |:--------|:---------|:----------|:------|
@@ -73,7 +73,7 @@ Set this environment variable to `json` to force JSON output on all commands tha
 
 ---
 
-## Options par Commande
+## Options par commande
 
 ### update
 
@@ -244,7 +244,7 @@ oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 
 ---
 
-## Exemples Pratiques
+## Exemples pratiques
 
 ### CI Pipeline: Update and Verify
 

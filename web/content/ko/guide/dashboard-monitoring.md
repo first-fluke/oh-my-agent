@@ -68,7 +68,7 @@ DASHBOARD_PORT=8080 oma dashboard:web
 MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 ```
 
-웹 대시보드는 터미널 대시보드와 동일한 정보를 표시하지만 다음과 같은 기능이 있는 스타일링된 다크 테마 UI를 제공합니다:
+웹 대시보드는 터미널 대시보드와 동일한 정보를 보여주지만, 스타일링된 다크 테마 UI로 다음 기능을 추가로 제공합니다:
 - 연결 상태 뱃지 (Connected / Disconnected / Connecting과 자동 재연결)
 - 세션 ID 및 상태 바
 - 애니메이션 상태 점이 있는 에이전트 상태 테이블
@@ -106,7 +106,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 **터미널 1**은 `/orchestrate` 또는 `/coordinate`와 같은 워크플로우와 상호작용하는 주 에이전트 세션(Gemini CLI, Claude Code, Codex 등)을 실행합니다.
 
-**터미널 2**는 수동적 모니터링을 위한 대시보드를 실행합니다. 자동으로 업데이트되며 — 상호작용이 필요하지 않습니다.
+**터미널 2**는 모니터링용 대시보드를 실행합니다. 자동으로 갱신되므로 별도 조작이 필요 없습니다.
 
 **터미널 3**은 임시 명령용입니다: 에이전트 상태 확인, 검증 실행, 통계 확인, 문제 디버깅.
 
@@ -159,7 +159,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 - **에이전트 이름** — 도메인 식별자 (backend, frontend, mobile, qa, debug, pm).
 - **상태** — 시각적 인디케이터와 함께 현재 상태 (running/completed/failed/blocked/pending).
 - **턴** — 에이전트의 현재 턴 번호 (완료한 반복 횟수). 진행 파일에서 추출.
-- **태스크** — 에이전트가 작업 중인 내용의 간략한 설명 (맞추기 위해 잘림).
+- **태스크** — 에이전트가 작업 중인 내용의 간략한 설명 (화면에 맞게 잘림).
 
 ### 에이전트 진행
 
@@ -194,7 +194,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 **조치:**
 1. 에이전트의 로그 파일 확인: `cat /tmp/subagent-{session-id}-{agent-id}.log`
 2. 프로세스가 실제로 실행 중인지 확인: `oma agent:status {session-id} {agent-id}`
-3. 프로세스가 실행 중이 아닌데 상태가 "running"이면 에이전트가 크래시한 것. 오류 컨텍스트와 함께 재생성.
+3. 프로세스가 실행 중이 아닌데 상태가 "running"이면 에이전트가 비정상 종료된 것입니다. 오류 정보와 함께 다시 생성하세요.
 
 ### 신호 2: 에이전트가 "crashed"로 표시
 
@@ -270,10 +270,10 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 ### 터미널 대시보드 (oma dashboard)
 
-- **파일 감시:** [chokidar](https://github.com/paulmillr/chokidar)를 `awaitWriteFinish` (200ms 안정성 임계값, 50ms 폴 간격)와 함께 사용하여 부분적인 파일 쓰기 렌더링을 방지합니다.
+- **파일 감시:** [chokidar](https://github.com/paulmillr/chokidar)를 `awaitWriteFinish` (200ms 안정성 임계값, 50ms 폴링 간격)와 함께 사용하여 파일이 다 쓰이기 전에 렌더링되는 것을 방지합니다.
 - **렌더링:** 모든 파일 변경 이벤트에서 전체 터미널을 지우고 다시 그립니다. ANSI 색상 출력에 `picocolors`를 사용하고 테두리에 유니코드 박스 그리기 문자를 사용합니다.
 - **메모리 디렉토리:** `MEMORIES_DIR` 환경 변수, CLI 인자, 또는 `{cwd}/.serena/memories`에서 해석됩니다.
-- **우아한 종료:** `SIGINT`와 `SIGTERM`을 캐치하고, chokidar 감시자를 닫고, 깨끗하게 종료합니다.
+- **안전 종료:** `SIGINT`와 `SIGTERM` 시그널을 수신하면 chokidar 감시자를 닫고 깔끔하게 종료합니다.
 
 ### 웹 대시보드 (oma dashboard:web)
 

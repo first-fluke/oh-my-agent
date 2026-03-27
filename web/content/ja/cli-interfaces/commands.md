@@ -124,6 +124,46 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 YAML形式またはインライン（`agent:task[:workspace]`）でタスク指定。`--no-wait`でバックグラウンド実行。
 
+### agent:review
+
+外部AI CLI（codex、claude、gemini、またはqwen）を使用してコードレビューを実行。
+
+```
+oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+```
+
+| フラグ | 説明 |
+|:-----|:-----------|
+| `-m, --model <vendor>` | 使用するCLIベンダー：`codex`、`claude`、`gemini`、`qwen`。デフォルトは設定から解決されたベンダー。 |
+| `-p, --prompt <prompt>` | カスタムレビュープロンプト。省略時はデフォルトのコードレビュープロンプトを使用。 |
+| `-w, --workspace <path>` | レビュー対象パス。デフォルトはカレントディレクトリ。 |
+| `--no-uncommitted` | 未コミット変更のレビューをスキップ。セッション内のコミット済み変更のみをレビュー。 |
+
+**動作：**
+- 環境または最近のgitアクティビティからセッションIDを自動検出。
+- `codex`の場合：ネイティブの`codex review`サブコマンドを使用。
+- `claude`、`gemini`、`qwen`の場合：レビュープロンプトを構成してCLIを呼び出し。
+- デフォルトでは作業ディレクトリの未コミット変更をレビュー。
+- `--no-uncommitted`指定時は、現在のセッション内でコミットされた変更のみをレビュー。
+
+**例：**
+```bash
+# デフォルトベンダーで未コミット変更をレビュー
+oma agent:review
+
+# codexでレビュー（ネイティブcodex reviewコマンドを使用）
+oma agent:review -m codex
+
+# claudeでカスタムプロンプトを使用してレビュー
+oma agent:review -m claude -p "セキュリティ脆弱性と入力バリデーションに焦点を当てて"
+
+# 特定パスをレビュー
+oma agent:review -w ./apps/api
+
+# コミット済み変更のみをレビュー（作業ツリーをスキップ）
+oma agent:review --no-uncommitted
+```
+
 ---
 
 ## メモリ管理

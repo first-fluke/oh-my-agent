@@ -1,49 +1,49 @@
 ---
 title: Installation
-description: Vollständige Installationsanleitung für oh-my-agent — drei Installationsmethoden, alle sechs Presets mit ihren Skill-Listen, CLI-Tool-Anforderungen für alle vier Anbieter, Post-Install-Konfiguration, user-preferences.yaml-Felder und Verifizierung mit oma doctor.
+description: Vollständige Installationsanleitung für oh-my-agent — drei Installationsmethoden, alle sechs Presets mit ihren Skill-Listen, CLI-Tool-Anforderungen für alle vier Anbieter, Konfiguration nach der Installation, Felder der user-preferences.yaml und Verifikation mit oma doctor.
 ---
 
 # Installation
 
 ## Voraussetzungen
 
-- **An AI-powered IDE or CLI** — at least one of: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor, or OpenCode
-- **bun** — JavaScript runtime and package manager (auto-installed by the install script if missing)
-- **uv** — Python package manager for Serena MCP (auto-installed if missing)
+- **Eine KI-gestützte IDE oder CLI** — mindestens eines der folgenden: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor oder OpenCode
+- **bun** — JavaScript-Laufzeitumgebung und Paketmanager (wird bei Bedarf vom Installationsskript automatisch installiert)
+- **uv** — Python-Paketmanager für Serena MCP (wird bei Bedarf automatisch installiert)
 
 ---
 
-## Method 1: One-Liner Install (Recommended)
+## Methode 1: Einzeiler-Installation (empfohlen)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-This script:
-1. Detects your platform (macOS, Linux)
-2. Checks for bun and uv, installing them if missing
-3. Runs the interactive installer with preset selection
-4. Creates `.agents/` with your selected skills
-5. Sets up `.claude/` integration layer (hooks, symlinks, settings)
-6. Configures Serena MCP if detected
+Dieses Skript:
+1. Erkennt Ihre Plattform (macOS, Linux)
+2. Prüft auf bun und uv und installiert diese bei Bedarf
+3. Führt den interaktiven Installer mit Preset-Auswahl aus
+4. Erstellt `.agents/` mit Ihren ausgewählten Skills
+5. Richtet die `.claude/`-Integrationsschicht ein (Hooks, Symlinks, Einstellungen)
+6. Konfiguriert Serena MCP, falls erkannt
 
-Typical install time: under 60 seconds.
+Typische Installationszeit: unter 60 Sekunden.
 
 ---
 
-## Method 2: Manual Install via bunx
+## Methode 2: Manuelle Installation via bunx
 
 ```bash
 bunx oh-my-agent
 ```
 
-This launches the interactive installer without the dependency bootstrap. You need bun already installed.
+Dies startet den interaktiven Installer ohne den Abhängigkeits-Bootstrap. bun muss bereits installiert sein.
 
-The installer prompts you to select a preset, which determines which skills are installed:
+Der Installer fordert Sie auf, ein Preset auszuwählen, das bestimmt, welche Skills installiert werden:
 
 ### Presets
 
-| Preset | Skills Included |
+| Preset | Enthaltene Skills |
 |--------|----------------|
 | **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
 | **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
@@ -52,53 +52,53 @@ The installer prompts you to select a preset, which determines which skills are 
 | **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
 | **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
 
-Every preset includes oma-pm (planning), oma-qa (review), oma-debug (bug fixing), oma-brainstorm (ideation), and oma-commit (git) as baseline agents. Domain-specific presets add the relevant implementation agents on top.
+Jedes Preset enthält oma-pm (Planung), oma-qa (Review), oma-debug (Bugfixing), oma-brainstorm (Ideenfindung) und oma-commit (Git) als Basisagenten. Domänenspezifische Presets fügen die relevanten Implementierungsagenten hinzu.
 
-The shared resources (`_shared/`) are always installed regardless of preset. This includes core routing, context loading, prompt structure, vendor detection, execution protocols, and memory protocol.
+Die gemeinsamen Ressourcen (`_shared/`) werden unabhängig vom Preset immer installiert. Dies umfasst Kern-Routing, Context-Loading, Prompt-Struktur, Vendor-Erkennung, Ausführungsprotokolle und Memory-Protokoll.
 
-### What Gets Created
+### Was erstellt wird
 
-After installation, your project will contain:
+Nach der Installation enthält Ihr Projekt:
 
 ```
 .agents/
 ├── config/
-│   └── user-preferences.yaml      # Your preferences (created by /setup)
+│   └── user-preferences.yaml      # Ihre Einstellungen (erstellt durch /setup)
 ├── skills/
-│   ├── _shared/                    # Shared resources (always installed)
-│   │   ├── core/                   # skill-routing, context-loading, etc.
+│   ├── _shared/                    # Gemeinsame Ressourcen (immer installiert)
+│   │   ├── core/                   # skill-routing, context-loading usw.
 │   │   ├── runtime/                # memory-protocol, execution-protocols/
-│   │   └── conditional/            # quality-score, experiment-ledger, etc.
-│   ├── oma-frontend/               # Per preset
+│   │   └── conditional/            # quality-score, experiment-ledger usw.
+│   ├── oma-frontend/               # Je nach Preset
 │   │   ├── SKILL.md
 │   │   └── resources/
-│   └── ...                         # Other selected skills
-├── workflows/                      # All 14 workflow definitions
-├── agents/                         # Subagent definitions
-├── mcp.json                        # MCP server configuration
-├── plan.json                       # Empty (populated by /plan)
-├── state/                          # Empty (used by persistent workflows)
-└── results/                        # Empty (populated by agent runs)
+│   └── ...                         # Weitere ausgewählte Skills
+├── workflows/                      # Alle 14 Workflow-Definitionen
+├── agents/                         # Subagenten-Definitionen
+├── mcp.json                        # MCP-Server-Konfiguration
+├── plan.json                       # Leer (befüllt durch /plan)
+├── state/                          # Leer (verwendet von persistenten Workflows)
+└── results/                        # Leer (befüllt durch Agentenläufe)
 
 .claude/
-├── settings.json                   # Hooks and permissions
+├── settings.json                   # Hooks und Berechtigungen
 ├── hooks/
-│   ├── triggers.json               # Keyword-to-workflow mapping (11 languages)
-│   ├── keyword-detector.ts         # Auto-detection logic
-│   ├── persistent-mode.ts          # Persistent workflow enforcement
-│   └── hud.ts                      # [OMA] statusline indicator
-├── skills/                         # Symlinks → .agents/skills/
-└── agents/                         # Subagent definitions for IDE
+│   ├── triggers.json               # Keyword-zu-Workflow-Zuordnung (11 Sprachen)
+│   ├── keyword-detector.ts         # Auto-Erkennungslogik
+│   ├── persistent-mode.ts          # Persistenter-Workflow-Durchsetzung
+│   └── hud.ts                      # [OMA]-Statuszeilen-Indikator
+├── skills/                         # Symlinks -> .agents/skills/
+└── agents/                         # Subagenten-Definitionen für IDE
 
 .serena/
-└── memories/                       # Runtime state (populated during sessions)
+└── memories/                       # Laufzeitzustand (befüllt während Sitzungen)
 ```
 
 ---
 
-## Method 3: Global Install
+## Methode 3: Globale Installation
 
-For CLI-level usage (dashboards, agent spawning, diagnostics), install oh-my-agent globally:
+Für CLI-Nutzung (Dashboards, Agenten-Spawning, Diagnose) oh-my-agent global installieren:
 
 ### Homebrew (macOS/Linux)
 
@@ -110,70 +110,70 @@ brew install oh-my-agent
 
 ```bash
 bun install --global oh-my-agent
-# or
+# oder
 npm install --global oh-my-agent
 ```
 
-This installs the `oma` command globally, giving you access to all CLI commands from any directory:
+Dies installiert den Befehl `oma` global und gibt Ihnen Zugang zu allen CLI-Befehlen aus jedem Verzeichnis:
 
 ```bash
-oma doctor              # Health check
-oma dashboard           # Terminal monitoring
-oma dashboard:web       # Web dashboard at http://localhost:9847
-oma agent:spawn         # Spawn agents from terminal
-oma agent:parallel      # Parallel agent execution
-oma agent:status        # Check agent status
-oma stats               # Session statistics
-oma retro               # Retrospective analysis
-oma cleanup             # Clean up session artifacts
-oma update              # Update oh-my-agent
-oma verify              # Verify agent output
-oma visualize           # Dependency visualization
-oma describe            # Describe project structure
-oma bridge              # SSE-to-stdio bridge for Antigravity
-oma memory:init         # Initialize memory provider
-oma auth:status         # Check CLI auth status
-oma usage:anti          # Usage anti-pattern detection
-oma star                # Star the repository
+oma doctor              # Gesundheitscheck
+oma dashboard           # Terminal-Überwachung
+oma dashboard:web       # Web-Dashboard unter http://localhost:9847
+oma agent:spawn         # Agenten vom Terminal starten
+oma agent:parallel      # Parallele Agentenausführung
+oma agent:status        # Agentenstatus prüfen
+oma stats               # Sitzungsstatistiken
+oma retro               # Retrospektiven-Analyse
+oma cleanup             # Sitzungsartefakte bereinigen
+oma update              # oh-my-agent aktualisieren
+oma verify              # Agentenausgabe verifizieren
+oma visualize           # Abh��ngigkeitsvisualisierung
+oma describe            # Projektstruktur beschreiben
+oma bridge              # SSE-zu-stdio-Brücke für Antigravity
+oma memory:init         # Memory-Provider initialisieren
+oma auth:status         # CLI-Authentifizierungsstatus prüfen
+oma usage:anti          # Nutzungskontingente anzeigen
+oma star                # Repository mit Stern markieren
 ```
 
-The global `oma` alias is equivalent to `oh-my-ag` (the full command name).
+Der globale `oma`-Alias entspricht `oh-my-ag` (dem vollständigen Befehlsnamen).
 
 ---
 
-## AI CLI Tool Installation
+## Installation der KI-CLI-Tools
 
-You need at least one AI CLI tool installed. oh-my-agent supports four vendors, and you can mix them — using different CLIs for different agents via the agent-CLI mapping.
+Sie benötigen mindestens ein installiertes KI-CLI-Tool. oh-my-agent unterstützt vier Anbieter, und Sie können diese mischen — verschiedene CLIs für verschiedene Agenten über die Agenten-CLI-Zuordnung.
 
 ### Gemini CLI
 
 ```bash
 bun install --global @google/gemini-cli
-# or
+# oder
 npm install --global @google/gemini-cli
 ```
 
-Authentication is automatic on first run. Gemini CLI reads skills from `.agents/skills/` by default.
+Die Authentifizierung erfolgt automatisch beim ersten Start. Gemini CLI liest Skills standardmäßig aus `.agents/skills/`.
 
 ### Claude Code
 
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
-# or
+# oder
 npm install --global @anthropic-ai/claude-code
 ```
 
-Authentication is automatic on first run. Claude Code uses `.claude/` for hooks and settings, with skills symlinked from `.agents/skills/`.
+Die Authentifizierung erfolgt automatisch beim ersten Start. Claude Code verwendet `.claude/` für Hooks und Einstellungen, wobei Skills per Symlink aus `.agents/skills/` verknüpft werden.
 
 ### Codex CLI
 
 ```bash
 bun install --global @openai/codex
-# or
+# oder
 npm install --global @openai/codex
 ```
 
-After install, run `codex login` to authenticate.
+Nach der Installation `codex login` zur Authentifizierung ausführen.
 
 ### Qwen CLI
 
@@ -181,69 +181,69 @@ After install, run `codex login` to authenticate.
 bun install --global @qwen-code/qwen-code
 ```
 
-After install, run `/auth` inside the CLI to authenticate.
+Nach der Installation `/auth` innerhalb der CLI zur Authentifizierung ausführen.
 
 ---
 
-## Post-Install Setup: `/setup`
+## Einrichtung nach der Installation: `/setup`
 
-After installation, open your project in your AI IDE and run the `/setup` command. This interactive workflow (defined in `.agents/workflows/setup.md`) walks you through:
+Nach der Installation Ihr Projekt in Ihrer KI-IDE öffnen und den Befehl `/setup` ausführen. Dieser interaktive Workflow (definiert in `.agents/workflows/setup.md`) führt Sie durch:
 
-### Step 1: Language Settings
+### Schritt 1: Spracheinstellungen
 
-Sets the response language for all agents and workflows. Supported values include: `en`, `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl`.
+Legt die Antwortsprache für alle Agenten und Workflows fest. Unterstützte Werte sind unter anderem: `en`, `ko`, `ja`, `zh`, `es`, `fr`, `de`, `pt`, `ru`, `nl`, `pl`.
 
-### Step 2: CLI Installation Status
+### Schritt 2: CLI-Installationsstatus
 
-Scans for installed CLIs (`which gemini`, `which claude`, `which codex`) and displays their versions. Provides install commands for any missing CLIs.
+Scannt nach installierten CLIs (`which gemini`, `which claude`, `which codex`) und zeigt deren Versionen an. Liefert Installationsbefehle für fehlende CLIs.
 
-### Step 3: MCP Connection Status
+### Schritt 3: MCP-Verbindungsstatus
 
-Verifies MCP server configuration for each CLI:
-- Gemini CLI: checks `~/.gemini/settings.json`
-- Claude CLI: checks `~/.claude.json` or `--mcp-config`
-- Codex CLI: checks `~/.codex/config.toml`
-- Antigravity IDE: checks `~/.gemini/antigravity/mcp_config.json`
+Verifiziert die MCP-Server-Konfiguration für jede CLI:
+- Gemini CLI: prüft `~/.gemini/settings.json`
+- Claude CLI: prüft `~/.claude.json` oder `--mcp-config`
+- Codex CLI: prüft `~/.codex/config.toml`
+- Antigravity IDE: prüft `~/.gemini/antigravity/mcp_config.json`
 
-Offers to configure Serena MCP in either Command mode (simple, one process per session) or SSE mode (shared server, lower memory, requires the `oma bridge` command for Antigravity).
+Bietet die Konfiguration von Serena MCP im Command-Modus (einfach, ein Prozess pro Sitzung) oder SSE-Modus (gemeinsamer Server, weniger Speicherverbrauch, erfordert den Befehl `oma bridge` für Antigravity).
 
-### Step 4: Agent-CLI Mapping
+### Schritt 4: Agenten-CLI-Zuordnung
 
-Configures which CLI handles which agent. For example, you might route `frontend` and `qa` to Claude (better at reasoning) and `backend` and `pm` to Gemini (faster generation).
+Konfiguriert, welche CLI welchen Agenten bedient. Beispielsweise könnten Sie `frontend` und `qa` an Claude weiterleiten (besseres Reasoning) und `backend` und `pm` an Gemini (schnellere Generierung).
 
-### Step 5: Summary
+### Schritt 5: Zusammenfassung
 
-Displays the complete configuration and suggests next steps.
+Zeigt die vollständige Konfiguration an und schlägt nächste Schritte vor.
 
 ---
 
 ## user-preferences.yaml
 
-The `/setup` workflow creates `.agents/config/user-preferences.yaml`. This is the central configuration file for all oh-my-agent behavior:
+Der `/setup`-Workflow erstellt `.agents/config/user-preferences.yaml`. Dies ist die zentrale Konfigurationsdatei für das gesamte Verhalten von oh-my-agent:
 
 ```yaml
-# Response language for all agents and workflows
+# Antwortsprache für alle Agenten und Workflows
 language: en
 
-# Date format used in reports and memory files
+# Datumsformat für Berichte und Memory-Dateien
 date_format: "YYYY-MM-DD"
 
-# Timezone for timestamps
+# Zeitzone für Zeitstempel
 timezone: "UTC"
 
-# Default CLI tool for agent spawning
-# Options: gemini, claude, codex, qwen
+# Standard-CLI-Tool für das Starten von Agenten
+# Optionen: gemini, claude, codex, qwen
 default_cli: gemini
 
-# Per-agent CLI mapping (overrides default_cli)
+# Pro-Agent-CLI-Zuordnung (überschreibt default_cli)
 agent_cli_mapping:
-  frontend: claude       # Complex UI reasoning
-  backend: gemini        # Fast API generation
+  frontend: claude       # Komplexes UI-Reasoning
+  backend: gemini        # Schnelle API-Generierung
   mobile: gemini
   db: gemini
-  pm: gemini             # Quick decomposition
-  qa: claude             # Thorough security review
-  debug: claude          # Deep root-cause analysis
+  pm: gemini             # Schnelle Zerlegung
+  qa: claude             # Gründliches Sicherheits-Review
+  debug: claude          # Tiefe Grundursachenanalyse
   design: claude
   tf-infra: gemini
   dev-workflow: gemini
@@ -252,83 +252,83 @@ agent_cli_mapping:
   commit: gemini
 ```
 
-### Field Reference
+### Feldreferenz
 
-| Field | Type | Default | Description |
+| Feld | Typ | Standard | Beschreibung |
 |-------|------|---------|-------------|
-| `language` | string | `en` | Response language code. All agent output, workflow messages, and reports use this language. Supports 11 languages (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
-| `date_format` | string | `YYYY-MM-DD` | Date format string for timestamps in plans, memory files, and reports. |
-| `timezone` | string | `UTC` | Timezone for all timestamps. Uses standard timezone identifiers (e.g., `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | Fallback CLI when no agent-specific mapping exists. Used as level 3 in vendor resolution priority. |
-| `agent_cli_mapping` | map | (empty) | Maps agent IDs to specific CLI vendors. Takes precedence over `default_cli`. |
+| `language` | String | `en` | Antwortsprachcode. Alle Agentenausgaben, Workflow-Nachrichten und Berichte verwenden diese Sprache. Unterstützt 11 Sprachen (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
+| `date_format` | String | `YYYY-MM-DD` | Datumsformat für Zeitstempel in Plänen, Memory-Dateien und Berichten. |
+| `timezone` | String | `UTC` | Zeitzone für alle Zeitstempel. Verwendet Standard-Zeitzonen-Bezeichner (z. B. `Asia/Seoul`, `America/New_York`). |
+| `default_cli` | String | `gemini` | Fallback-CLI, wenn keine agentenspezifische Zuordnung existiert. Wird als Ebene 3 in der Vendor-Auflösungspriorität verwendet. |
+| `agent_cli_mapping` | Map | (leer) | Ordnet Agenten-IDs bestimmten CLI-Anbietern zu. Hat Vorrang vor `default_cli`. |
 
-### Vendor Resolution Priority
+### Vendor-Auflösungspriorität
 
-When spawning an agent, the CLI vendor is determined by this priority order (highest first):
+Beim Starten eines Agenten wird der CLI-Anbieter durch diese Prioritätsreihenfolge bestimmt (höchste zuerst):
 
-1. `--model` flag passed to `oma agent:spawn`
-2. `agent_cli_mapping` entry for that specific agent in `user-preferences.yaml`
-3. `default_cli` setting in `user-preferences.yaml`
-4. `active_vendor` in `cli-config.yaml` (legacy fallback)
-5. `gemini` (hardcoded final fallback)
+1. `--model`-Flag an `oma agent:spawn` übergeben
+2. `agent_cli_mapping`-Eintrag für den spezifischen Agenten in `user-preferences.yaml`
+3. `default_cli`-Einstellung in `user-preferences.yaml`
+4. `active_vendor` in `cli-config.yaml` (Legacy-Fallback)
+5. `gemini` (fest codierter endgültiger Fallback)
 
 ---
 
-## Verification: `oma doctor`
+## Verifikation: `oma doctor`
 
-After installation and setup, verify everything is working:
+Nach Installation und Einrichtung prüfen, ob alles funktioniert:
 
 ```bash
 oma doctor
 ```
 
-This command checks:
-- All required CLI tools are installed and accessible
-- MCP server configuration is valid
-- Skill files exist with valid SKILL.md frontmatter
-- Symlinks in `.claude/skills/` point to valid targets
-- Hooks are properly configured in `.claude/settings.json`
-- Memory provider is reachable (Serena MCP)
-- `user-preferences.yaml` is valid YAML with required fields
+Dieser Befehl prüft:
+- Alle erforderlichen CLI-Tools sind installiert und erreichbar
+- MCP-Server-Konfiguration ist gültig
+- Skill-Dateien existieren mit gültigem SKILL.md-Frontmatter
+- Symlinks in `.claude/skills/` zeigen auf gültige Ziele
+- Hooks sind korrekt in `.claude/settings.json` konfiguriert
+- Memory-Provider ist erreichbar (Serena MCP)
+- `user-preferences.yaml` ist gültiges YAML mit erforderlichen Feldern
 
-If anything is wrong, `oma doctor` tells you exactly what to fix, with copy-paste commands.
+Falls etwas nicht stimmt, sagt `oma doctor` genau, was zu reparieren ist, mit kopierbereiten Befehlen.
 
 ---
 
-## Updating
+## Aktualisierung
 
-### CLI Update
+### CLI-Aktualisierung
 
 ```bash
 oma update
 ```
 
-This updates the global oh-my-agent CLI to the latest version.
+Dies aktualisiert die globale oh-my-agent-CLI auf die neueste Version.
 
-### Project Skills Update
+### Projekt-Skills-Aktualisierung
 
-Skills and workflows within a project can be updated via the GitHub Action (`action/`) for automated updates, or manually by re-running the installer:
+Skills und Workflows innerhalb eines Projekts können über die GitHub Action (`action/`) für automatisierte Aktualisierungen oder manuell durch erneutes Ausführen des Installers aktualisiert werden:
 
 ```bash
 bunx oh-my-agent
 ```
 
-The installer detects existing installations and offers to update while preserving your `user-preferences.yaml` and any custom configuration.
+Der Installer erkennt vorhandene Installationen und bietet eine Aktualisierung an, wobei Ihre `user-preferences.yaml` und benutzerdefinierte Konfigurationen erhalten bleiben.
 
 ---
 
 ## Nächste Schritte
 
-Open your project in your AI IDE and start using oh-my-agent. Skills are auto-detected. Try:
+Öffnen Sie Ihr Projekt in Ihrer KI-IDE und beginnen Sie mit der Nutzung von oh-my-agent. Skills werden automatisch erkannt. Probieren Sie:
 
 ```
 "Build a login form with email validation using Tailwind CSS"
 ```
 
-Or use a workflow command:
+Oder verwenden Sie einen Workflow-Befehl:
 
 ```
 /plan authentication feature with JWT and refresh tokens
 ```
 
-See the [Usage Guide](/guide/usage) for detailed examples, or learn about [Agents](/core-concepts/agents) to understand what each specialist does.
+Weitere Informationen finden Sie im [Nutzungsleitfaden](/guide/usage) für detaillierte Beispiele oder unter [Agenten](/core-concepts/agents), um zu verstehen, was jeder Spezialist tut.

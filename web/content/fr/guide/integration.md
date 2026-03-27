@@ -5,14 +5,14 @@ description: Guide complet pour ajouter oh-my-agent à un projet existant — vo
 
 # Guide : Intégration dans un Projet Existant
 
-## Deux Voies d'Intégration
+## Deux voies d'intégration
 
-There are two ways to add oh-my-agent to an existing project:
+Il existe deux manières d'ajouter oh-my-agent à un projet existant :
 
-1. **CLI path** — Run `oma` (or `npx oh-my-agent`) and follow the interactive prompts. Recommended for most users.
-2. **Manual path** — Copy files and configure symlinks yourself. Useful for restricted environments or custom setups.
+1. **Voie CLI** -- Exécutez `oma` (ou `npx oh-my-agent`) et suivez les invites interactives. Recommandé pour la plupart des utilisateurs.
+2. **Voie manuelle** -- Copiez les fichiers et configurez les symlinks vous-même. Utile pour les environnements restreints ou les configurations personnalisées.
 
-Both paths produce the same result: a `.agents/` directory (the SSOT) with symlinks pointing IDE-specific directories to it.
+Les deux voies produisent le même résultat : un répertoire `.agents/` (le SSOT) avec des symlinks pointant les répertoires spécifiques aux IDE vers celui-ci.
 
 ---
 

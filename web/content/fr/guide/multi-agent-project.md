@@ -3,20 +3,20 @@ title: "Guide : Projets Multi-Agents"
 description: Guide complet pour coordonner plusieurs agents de domaine en frontend, backend, base de données, mobile et QA — de la planification au merge.
 ---
 
-# Guide: Multi-Agent Projects
+# Guide : Projets multi-agents
 
-## When to Use Multi-Agent Coordination
+## Quand utiliser la coordination multi-agents
 
-Your feature spans multiple domains — backend API + frontend UI + database schema + mobile client + QA review. A single agent cannot handle the full scope, and you need the domains to progress in parallel without stepping on each other's files.
+Votre fonctionnalité couvre plusieurs domaines -- API backend + UI frontend + schéma de base de données + client mobile + revue QA. Un seul agent ne peut pas gérer l'ensemble du périmètre, et vous avez besoin que les domaines progressent en parallèle sans écraser mutuellement leurs fichiers.
 
-Multi-agent coordination is the right choice when:
+La coordination multi-agents est le bon choix lorsque :
 
-- The task involves 2 or more domains (frontend, backend, mobile, db, QA, debug, pm).
-- There are API contracts between domains (e.g., a REST endpoint consumed by both web and mobile).
-- You want parallel execution to reduce wall-clock time.
-- You need QA review after implementation across all domains.
+- La tâche implique 2 domaines ou plus (frontend, backend, mobile, db, QA, debug, pm).
+- Il y a des contrats d'API entre les domaines (ex. : un endpoint REST consommé à la fois par le web et le mobile).
+- Vous souhaitez une exécution parallèle pour réduire le temps réel d'exécution.
+- Vous avez besoin d'une revue QA après l'implémentation sur tous les domaines.
 
-If your task fits entirely within one domain, use the specific agent directly instead.
+Si votre tâche s'inscrit entièrement dans un seul domaine, utilisez directement l'agent spécifique à la place.
 
 ---
 

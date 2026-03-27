@@ -1,6 +1,6 @@
 ---
 title: 설치
-description: oh-my-agent 완전 설치 가이드 — 세 가지 설치 방법, 6개 프리셋과 포함 스킬 목록, 4개 벤더의 CLI 도구 요구사항, 설치 후 설정, user-preferences.yaml 필드, oma doctor 검증.
+description: oh-my-agent 설치 가이드 — 세 가지 설치 방법, 6개 프리셋과 포함 스킬 목록, 4개 벤더별 CLI 도구 요구사항, 설치 후 설정, user-preferences.yaml 필드, oma doctor를 통한 검증.
 ---
 
 # 설치
@@ -13,7 +13,7 @@ description: oh-my-agent 완전 설치 가이드 — 세 가지 설치 방법, 6
 
 ---
 
-## 방법 1: 원라이너 설치 (권장)
+## 방법 1: 한 줄 설치 (권장)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
@@ -37,9 +37,9 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 bunx oh-my-agent
 ```
 
-이 명령은 의존성 부트스트랩 없이 대화형 설치 프로그램을 시작합니다. bun이 이미 설치되어 있어야 합니다.
+의존성 자동 설치 과정 없이 대화형 설치 프로그램을 바로 실행합니다. bun이 미리 설치되어 있어야 합니다.
 
-설치 프로그램은 프리셋을 선택하도록 안내하며, 이 프리셋이 설치되는 스킬을 결정합니다:
+설치 프로그램이 프리셋 선택을 안내하며, 선택한 프리셋에 따라 설치되는 스킬이 결정됩니다:
 
 ### 프리셋
 
@@ -98,7 +98,7 @@ bunx oh-my-agent
 
 ## 방법 3: 전역 설치
 
-CLI 수준 사용(대시보드, 에이전트 스폰, 진단)을 위해 oh-my-agent를 전역으로 설치합니다:
+CLI에서 직접 사용하려면(대시보드, 에이전트 스폰, 진단 등) oh-my-agent를 전역으로 설치하세요:
 
 ### Homebrew (macOS/Linux)
 
@@ -114,7 +114,7 @@ bun install --global oh-my-agent
 npm install --global oh-my-agent
 ```
 
-이렇게 하면 `oma` 명령이 전역으로 설치되어 어떤 디렉토리에서든 모든 CLI 명령에 접근할 수 있습니다:
+이렇게 하면 `oma` 명령이 전역으로 설치되어 어디서든 모든 CLI 명령을 사용할 수 있습니다:
 
 ```bash
 oma doctor              # 상태 확인
@@ -133,17 +133,17 @@ oma describe            # 프로젝트 구조 설명
 oma bridge              # Antigravity용 SSE-to-stdio 브릿지
 oma memory:init         # 메모리 프로바이더 초기화
 oma auth:status         # CLI 인증 상태 확인
-oma usage:anti          # 사용량 안티 패턴 감지
+oma usage:anti          # 사용 안티패턴 감지
 oma star                # 리포지토리 스타
 ```
 
-전역 `oma` 별칭은 `oh-my-ag` (전체 명령명)과 동일합니다.
+전역 `oma`는 `oh-my-ag`(전체 명령어 이름)의 별칭입니다.
 
 ---
 
 ## AI CLI 도구 설치
 
-하나 이상의 AI CLI 도구가 설치되어 있어야 합니다. oh-my-agent는 네 가지 벤더를 지원하며, 에이전트-CLI 매핑을 통해 다른 에이전트에 다른 CLI를 사용하도록 혼합할 수 있습니다.
+AI CLI 도구가 하나 이상 설치되어 있어야 합니다. oh-my-agent는 네 가지 벤더를 지원하며, 에이전트-CLI 매핑을 통해 에이전트마다 다른 CLI를 지정할 수 있습니다.
 
 ### Gemini CLI
 
@@ -187,7 +187,7 @@ bun install --global @qwen-code/qwen-code
 
 ## 설치 후 설정: `/setup`
 
-설치 후 AI IDE에서 프로젝트를 열고 `/setup` 명령을 실행합니다. 이 대화형 워크플로우(`.agents/workflows/setup.md`에 정의됨)는 다음을 안내합니다:
+설치 후 AI IDE에서 프로젝트를 열고 `/setup` 명령을 실행하세요. 이 대화형 워크플로우(`.agents/workflows/setup.md`에 정의됨)가 다음 과정을 안내합니다:
 
 ### 단계 1: 언어 설정
 
@@ -205,7 +205,7 @@ bun install --global @qwen-code/qwen-code
 - Codex CLI: `~/.codex/config.toml` 확인
 - Antigravity IDE: `~/.gemini/antigravity/mcp_config.json` 확인
 
-Command 모드(단순, 세션당 하나의 프로세스) 또는 SSE 모드(공유 서버, 낮은 메모리, Antigravity에 `oma bridge` 명령 필요)로 Serena MCP를 설정할 수 있습니다.
+Serena MCP를 Command 모드(단순, 세션당 프로세스 하나) 또는 SSE 모드(서버 공유, 메모리 사용량 적음, Antigravity에서는 `oma bridge` 명령 필요)로 설정할 수 있습니다.
 
 ### 단계 4: 에이전트-CLI 매핑
 
@@ -259,7 +259,7 @@ agent_cli_mapping:
 | `language` | string | `en` | 응답 언어 코드. 모든 에이전트 출력, 워크플로우 메시지, 리포트가 이 언어를 사용합니다. 11개 언어 지원 (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
 | `date_format` | string | `YYYY-MM-DD` | 계획, 메모리 파일, 리포트의 타임스탬프에 사용되는 날짜 형식 문자열. |
 | `timezone` | string | `UTC` | 모든 타임스탬프에 사용되는 시간대. 표준 시간대 식별자 사용 (예: `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | 에이전트별 매핑이 없을 때 사용하는 기본 CLI. 벤더 해석 우선순위에서 3번째. |
+| `default_cli` | string | `gemini` | 에이전트별 매핑이 없을 때 사용하는 기본 CLI. 벤더 결정 우선순위에서 3순위. |
 | `agent_cli_mapping` | map | (비어 있음) | 에이전트 ID를 특정 CLI 벤더에 매핑합니다. `default_cli`보다 우선합니다. |
 
 ### 벤더 해석 우선순위
@@ -291,7 +291,7 @@ oma doctor
 - 메모리 프로바이더에 연결 가능한지 (Serena MCP)
 - `user-preferences.yaml`이 필수 필드를 갖춘 유효한 YAML인지
 
-문제가 있으면 `oma doctor`가 정확히 무엇을 수정해야 하는지 복사-붙여넣기 가능한 명령과 함께 알려줍니다.
+문제가 발견되면 `oma doctor`가 수정 방법을 복사해서 바로 쓸 수 있는 명령어와 함께 알려줍니다.
 
 ---
 

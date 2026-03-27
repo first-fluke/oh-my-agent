@@ -5,203 +5,203 @@ description: Guide complet de débogage couvrant la boucle structurée en 5 éta
 
 # Guide : Correction de Bugs
 
-## When to Use the Debug Workflow
+## Quand utiliser le workflow de débogage
 
-Use `/debug` (or say "fix bug", "fix error", "debug" in natural language) when you have a specific bug to diagnose and fix. The workflow provides a structured, reproducible approach to debugging that avoids the common trap of fixing symptoms instead of root causes.
+Utilisez `/debug` (ou dites « fix bug », « fix error », « debug » en langage naturel) lorsque vous avez un bug spécifique à diagnostiquer et corriger. Le workflow fournit une approche structurée et reproductible du débogage qui évite le piège classique de corriger les symptômes plutôt que les causes profondes.
 
-The debug workflow supports all vendors (Gemini, Claude, Codex, Qwen). Steps 1-5 run inline. Step 6 (similar pattern scanning) may delegate to a `debug-investigator` subagent when the scan scope is broad (10+ files or multi-domain errors).
+Le workflow de débogage supporte tous les fournisseurs (Gemini, Claude, Codex, Qwen). Les étapes 1 à 5 s'exécutent en ligne. L'étape 6 (scan de motifs similaires) peut être déléguée à un sous-agent `debug-investigator` lorsque le périmètre de scan est large (10+ fichiers ou erreurs multi-domaines).
 
 ---
 
-## Bug Report Template
+## Modèle de rapport de bug
 
-When reporting a bug, provide as much of the following as possible. Each field helps the debug workflow narrow the search faster.
+Lorsque vous signalez un bug, fournissez autant d'informations que possible parmi les suivantes. Chaque champ aide le workflow de débogage à cibler la recherche plus rapidement.
 
-### Required Fields
+### Champs obligatoires
 
-| Field | Description | Example |
+| Champ | Description | Exemple |
 |:------|:-----------|:--------|
-| **Error message** | The exact error text or stack trace | `TypeError: Cannot read properties of undefined (reading 'id')` |
-| **Steps to reproduce** | Ordered actions that trigger the bug | 1. Log in as admin. 2. Navigate to /users. 3. Click "Delete" on any user. |
-| **Expected behavior** | What should happen | User is deleted and removed from the list. |
-| **Actual behavior** | What actually happens | Page crashes with a white screen. |
+| **Message d'erreur** | Le texte exact de l'erreur ou la stack trace | `TypeError: Cannot read properties of undefined (reading 'id')` |
+| **Étapes de reproduction** | Actions ordonnées qui déclenchent le bug | 1. Se connecter en tant qu'admin. 2. Naviguer vers /users. 3. Cliquer sur « Supprimer » sur n'importe quel utilisateur. |
+| **Comportement attendu** | Ce qui devrait se passer | L'utilisateur est supprimé et retiré de la liste. |
+| **Comportement réel** | Ce qui se passe réellement | La page plante avec un écran blanc. |
 
-### Optional Fields (Highly Recommended)
+### Champs optionnels (fortement recommandés)
 
-| Field | Description | Example |
+| Champ | Description | Exemple |
 |:------|:-----------|:--------|
-| **Environment** | Browser, OS, Node version, device | Chrome 124, macOS 15.3, Node 22.1 |
-| **Frequency** | Always, sometimes, first-time only | Always reproducible |
-| **Recent changes** | What changed before the bug appeared | Merged PR #142 (user deletion feature) |
-| **Related code** | Files or functions you suspect | `src/api/users.ts`, `deleteUser()` |
-| **Logs** | Server logs, console output | `[ERROR] UserService.delete: user.organizationId is undefined` |
-| **Screenshots/recordings** | Visual evidence | Screenshot of the error screen |
+| **Environnement** | Navigateur, OS, version de Node, appareil | Chrome 124, macOS 15.3, Node 22.1 |
+| **Fréquence** | Toujours, parfois, première fois uniquement | Toujours reproductible |
+| **Changements récents** | Ce qui a changé avant l'apparition du bug | Fusion de la PR #142 (fonctionnalité de suppression d'utilisateur) |
+| **Code lié** | Fichiers ou fonctions suspectés | `src/api/users.ts`, `deleteUser()` |
+| **Logs** | Logs serveur, sortie console | `[ERROR] UserService.delete: user.organizationId is undefined` |
+| **Captures d'écran/enregistrements** | Preuves visuelles | Capture d'écran de l'écran d'erreur |
 
-The more context you provide upfront, the fewer back-and-forth questions the debug workflow needs.
-
----
-
-## Severity Triage (P0-P3)
-
-Severity determines how the bug is handled and how quickly it should be fixed.
-
-### P0 — Critical (Immediate Response)
-
-**Definition:** Production is down, data is being lost or corrupted, security breach is active.
-
-**Response expectation:** Drop everything. This is the only task until resolved.
-
-**Examples:**
-- Authentication system is bypassed — all users can access admin endpoints.
-- Database migration corrupted the users table — accounts are inaccessible.
-- Payment processing is double-charging customers.
-- API endpoint returns other users' personal data.
-
-**Debug approach:** Skip the full template. Provide the error message and any stack trace. The workflow starts immediately at Step 2 (Reproduce).
-
-### P1 — High (Same Session)
-
-**Definition:** A core feature is broken for a significant number of users. Workaround may exist but is not acceptable long-term.
-
-**Response expectation:** Fix within the current work session. Do not start new features until resolved.
-
-**Examples:**
-- Search returns no results for queries containing special characters.
-- File upload fails for files larger than 5MB (limit should be 50MB).
-- Mobile app crashes on launch for Android 14 devices.
-- Password reset emails are not sent (email service integration broken).
-
-**Debug approach:** Full 5-step loop. QA review recommended after fix.
-
-### P2 — Medium (This Sprint)
-
-**Definition:** A feature works but with degraded behavior. Affects usability but not functionality.
-
-**Response expectation:** Schedule for the current sprint. Fix before the next release.
-
-**Examples:**
-- Table sorting is case-sensitive ("apple" sorts after "Zebra").
-- Dark mode has unreadable text in the settings panel.
-- API response time for /users endpoint is 8 seconds (should be under 1s).
-- Pagination shows "Page 1 of 0" when the list is empty.
-
-**Debug approach:** Full 5-step loop. Include in QA regression suite.
-
-### P3 — Low (Backlog)
-
-**Definition:** Cosmetic issue, edge case, or minor inconvenience.
-
-**Response expectation:** Add to backlog. Fix when convenient, or batch with related changes.
-
-**Examples:**
-- Tooltip text has a typo: "Delet" instead of "Delete".
-- Console warning about deprecated React lifecycle method.
-- Footer alignment is off by 2 pixels on viewport widths between 768-800px.
-- Loading spinner continues for 200ms after content is visible.
-
-**Debug approach:** May not need the full debug loop. Direct fix with regression test is sufficient.
+Plus vous fournissez de contexte en amont, moins le workflow de débogage nécessitera d'échanges.
 
 ---
 
-## The 5-Step Debug Loop in Detail
+## Triage de sévérité (P0-P3)
 
-The `/debug` workflow executes these steps in strict order. It uses MCP code analysis tools throughout — never raw file reads or grep.
+La sévérité détermine comment le bug est traité et à quelle vitesse il doit être corrigé.
 
-### Step 1: Collect Error Information
+### P0 -- Critique (réponse immédiate)
 
-The workflow asks for (or receives from the user):
-- Error message and stack trace
-- Steps to reproduce
-- Expected vs actual behavior
-- Environment details
+**Définition :** La production est en panne, des données sont perdues ou corrompues, une faille de sécurité est active.
 
-If an error message is already provided in the prompt, the workflow proceeds immediately to Step 2.
+**Attente de réponse :** Tout arrêter. C'est la seule tâche jusqu'à résolution.
 
-### Step 2: Reproduce the Bug
+**Exemples :**
+- Le système d'authentification est contourné -- tous les utilisateurs peuvent accéder aux endpoints admin.
+- Une migration de base de données a corrompu la table des utilisateurs -- les comptes sont inaccessibles.
+- Le traitement des paiements facture les clients en double.
+- Un endpoint API retourne les données personnelles d'autres utilisateurs.
 
-**Tools used:** `search_for_pattern` with the error message or stack trace keywords, `find_symbol` to locate the exact function and file.
+**Approche de débogage :** Ignorer le modèle complet. Fournir le message d'erreur et toute stack trace. Le workflow démarre immédiatement à l'étape 2 (Reproduire).
 
-The goal is to locate the error in the codebase — find the exact line where the exception is thrown, the exact function that produces wrong output, or the exact condition that causes the unexpected behavior.
+### P1 -- Élevé (même session)
 
-This step transforms a user-reported symptom ("the page crashes") into a codebase-level location (`src/api/users.ts:47, deleteUser() throws TypeError`).
+**Définition :** Une fonctionnalité essentielle est cassée pour un nombre significatif d'utilisateurs. Un contournement peut exister mais n'est pas acceptable à long terme.
 
-### Step 3: Diagnose Root Cause
+**Attente de réponse :** Corriger dans la session de travail en cours. Ne pas commencer de nouvelles fonctionnalités tant que le bug n'est pas résolu.
 
-**Tools used:** `find_referencing_symbols` to trace the execution path backward from the error point.
+**Exemples :**
+- La recherche ne retourne aucun résultat pour les requêtes contenant des caractères spéciaux.
+- L'upload de fichiers échoue pour les fichiers de plus de 5 Mo (la limite devrait être de 50 Mo).
+- L'application mobile plante au lancement sur les appareils Android 14.
+- Les emails de réinitialisation de mot de passe ne sont pas envoyés (intégration du service email cassée).
 
-The workflow traces backward from the error location to find the actual cause. It checks for these common root cause patterns:
+**Approche de débogage :** Boucle complète en 5 étapes. Revue QA recommandée après correction.
 
-| Pattern | What to Look For |
-|:--------|:----------------|
-| **Null/undefined access** | Missing null checks, optional chaining needed, uninitialized variables |
-| **Race conditions** | Async operations completing out of order, missing await, shared mutable state |
-| **Missing error handling** | try/catch absent, promise rejection unhandled, error boundary missing |
-| **Wrong data types** | String where number expected, missing type coercion, incorrect schema |
-| **Stale state** | React state not updating, cached values not invalidated, closure capturing old value |
-| **Missing validation** | User input not sanitized, API request body not validated, boundary conditions unchecked |
+### P2 -- Moyen (ce sprint)
 
-The key discipline: diagnose the **root cause**, not the symptom. If `user.id` is undefined, the question is not "how do I check for undefined?" but "why is user undefined at this point in the execution path?"
+**Définition :** Une fonctionnalité marche mais avec un comportement dégradé. Affecte l'ergonomie mais pas la fonctionnalité.
 
-### Step 4: Propose Minimal Fix
+**Attente de réponse :** Planifier pour le sprint en cours. Corriger avant la prochaine release.
 
-The workflow presents:
-1. The identified root cause (with evidence from the code trace).
-2. The proposed fix (changing only what is necessary).
-3. An explanation of why this fixes the root cause, not just the symptom.
+**Exemples :**
+- Le tri du tableau est sensible à la casse (« apple » se trie après « Zebra »).
+- Le mode sombre a du texte illisible dans le panneau de paramètres.
+- Le temps de réponse de l'API pour l'endpoint /users est de 8 secondes (devrait être inférieur à 1 s).
+- La pagination affiche « Page 1 sur 0 » lorsque la liste est vide.
 
-**The workflow blocks here until the user confirms.** This prevents the debug agent from making changes without approval.
+**Approche de débogage :** Boucle complète en 5 étapes. Inclure dans la suite de régression QA.
 
-**Minimal fix principle:** Change the fewest lines possible. Do not refactor, do not improve code style, do not add unrelated features. The fix should be reviewable in under 2 minutes.
+### P3 -- Faible (backlog)
 
-### Step 5: Apply Fix and Write Regression Test
+**Définition :** Problème cosmétique, cas limite ou inconvénient mineur.
 
-Two actions happen in this step:
+**Attente de réponse :** Ajouter au backlog. Corriger quand c'est opportun, ou regrouper avec des changements connexes.
 
-1. **Implement the fix** — The approved minimal change is applied.
-2. **Write a regression test** — A test that:
-   - Reproduces the original bug (the test must fail without the fix)
-   - Verifies the fix works (the test must pass with the fix)
-   - Prevents the same bug from recurring in future changes
+**Exemples :**
+- Le texte de l'infobulle contient une faute de frappe : « Delet » au lieu de « Delete ».
+- Avertissement console à propos d'une méthode de cycle de vie React dépréciée.
+- L'alignement du pied de page est décalé de 2 pixels sur les largeurs de viewport entre 768 et 800 px.
+- Le spinner de chargement continue pendant 200 ms après que le contenu est visible.
 
-The regression test is the most important output of the debug workflow. Without it, the same bug can be reintroduced by any future change.
+**Approche de débogage :** Peut ne pas nécessiter la boucle de débogage complète. Une correction directe avec un test de régression suffit.
 
-### Step 6: Scan for Similar Patterns
+---
 
-After the fix is applied, the workflow scans the entire codebase for the same pattern that caused the bug.
+## La boucle de débogage en 5 étapes en détail
 
-**Tools used:** `search_for_pattern` with the pattern that was identified as the root cause.
+Le workflow `/debug` exécute ces étapes dans un ordre strict. Il utilise les outils d'analyse de code MCP tout au long du processus -- jamais de lecture brute de fichiers ni de grep.
 
-For example, if the bug was caused by accessing `user.organization.id` without checking if `organization` is null, the scan looks for all other instances of `organization.id` access without null checks.
+### Étape 1 : Collecter les informations d'erreur
 
-**Subagent delegation criteria** — The workflow spawns a `debug-investigator` subagent when:
-- The error spans multiple domains (e.g., both frontend and backend affected).
-- The similar pattern scan scope covers 10+ files.
-- Deep dependency tracing is needed to fully diagnose the issue.
+Le workflow demande (ou reçoit de l'utilisateur) :
+- Message d'erreur et stack trace
+- Étapes de reproduction
+- Comportement attendu vs réel
+- Détails de l'environnement
 
-Vendor-specific spawn methods:
+Si un message d'erreur est déjà fourni dans le prompt, le workflow passe immédiatement à l'étape 2.
 
-| Vendor | Spawn Method |
-|:-------|:------------|
-| Claude Code | Agent tool with `.claude/agents/debug-investigator.md` |
-| Codex CLI | Model-mediated subagent request, results as JSON |
+### Étape 2 : Reproduire le bug
+
+**Outils utilisés :** `search_for_pattern` avec le message d'erreur ou les mots-clés de la stack trace, `find_symbol` pour localiser la fonction et le fichier exact.
+
+L'objectif est de localiser l'erreur dans le code source -- trouver la ligne exacte où l'exception est levée, la fonction exacte qui produit un résultat erroné, ou la condition exacte qui cause le comportement inattendu.
+
+Cette étape transforme un symptôme signalé par l'utilisateur (« la page plante ») en un emplacement dans le code (`src/api/users.ts:47, deleteUser() throws TypeError`).
+
+### Étape 3 : Diagnostiquer la cause profonde
+
+**Outils utilisés :** `find_referencing_symbols` pour remonter le chemin d'exécution depuis le point d'erreur.
+
+Le workflow remonte depuis l'emplacement de l'erreur pour trouver la cause réelle. Il vérifie ces schémas de causes profondes courants :
+
+| Schéma | Ce qu'il faut chercher |
+|:-------|:----------------------|
+| **Accès null/undefined** | Vérifications null manquantes, chaînage optionnel nécessaire, variables non initialisées |
+| **Conditions de concurrence** | Opérations asynchrones se terminant dans le désordre, await manquant, état mutable partagé |
+| **Gestion d'erreur manquante** | try/catch absent, rejet de promesse non géré, error boundary manquant |
+| **Types de données incorrects** | Chaîne au lieu d'un nombre attendu, coercition de type manquante, schéma incorrect |
+| **État obsolète** | État React qui ne se met pas à jour, valeurs en cache non invalidées, closure capturant une ancienne valeur |
+| **Validation manquante** | Entrée utilisateur non assainie, corps de requête API non validé, conditions limites non vérifiées |
+
+La discipline clé : diagnostiquer la **cause profonde**, pas le symptôme. Si `user.id` est undefined, la question n'est pas « comment vérifier si c'est undefined ? » mais « pourquoi user est-il undefined à ce point du chemin d'exécution ? ».
+
+### Étape 4 : Proposer une correction minimale
+
+Le workflow présente :
+1. La cause profonde identifiée (avec les preuves de la trace du code).
+2. La correction proposée (ne modifiant que le strict nécessaire).
+3. Une explication de pourquoi cela corrige la cause profonde, pas juste le symptôme.
+
+**Le workflow se bloque ici jusqu'à la confirmation de l'utilisateur.** Cela empêche l'agent de débogage d'effectuer des modifications sans approbation.
+
+**Principe de correction minimale :** Modifier le moins de lignes possible. Ne pas refactoriser, ne pas améliorer le style du code, ne pas ajouter de fonctionnalités sans rapport. La correction doit être vérifiable en moins de 2 minutes.
+
+### Étape 5 : Appliquer la correction et écrire le test de régression
+
+Deux actions se produisent à cette étape :
+
+1. **Implémenter la correction** -- La modification minimale approuvée est appliquée.
+2. **Écrire un test de régression** -- Un test qui :
+   - Reproduit le bug original (le test doit échouer sans la correction)
+   - Vérifie que la correction fonctionne (le test doit passer avec la correction)
+   - Empêche le même bug de se reproduire lors de futurs changements
+
+Le test de régression est le livrable le plus important du workflow de débogage. Sans lui, le même bug peut être réintroduit par n'importe quel changement futur.
+
+### Étape 6 : Scanner les motifs similaires
+
+Après application de la correction, le workflow scanne l'ensemble du code source à la recherche du même motif qui a causé le bug.
+
+**Outils utilisés :** `search_for_pattern` avec le motif identifié comme cause profonde.
+
+Par exemple, si le bug était causé par l'accès à `user.organization.id` sans vérifier si `organization` est null, le scan recherche toutes les autres instances d'accès à `organization.id` sans vérification null.
+
+**Critères de délégation au sous-agent** -- Le workflow lance un sous-agent `debug-investigator` lorsque :
+- L'erreur couvre plusieurs domaines (ex. : frontend et backend affectés).
+- Le périmètre de scan des motifs similaires couvre 10+ fichiers.
+- Un traçage approfondi des dépendances est nécessaire pour diagnostiquer complètement le problème.
+
+Méthodes de lancement spécifiques au fournisseur :
+
+| Fournisseur | Méthode de lancement |
+|:------------|:--------------------|
+| Claude Code | Outil Agent avec `.claude/agents/debug-investigator.md` |
+| Codex CLI | Requête de sous-agent médié par le modèle, résultats en JSON |
 | Gemini CLI | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
 
-All similar vulnerable locations are reported. Confirmed instances are fixed as part of the same session.
+Tous les emplacements vulnérables similaires sont signalés. Les instances confirmées sont corrigées dans la même session.
 
-### Step 7: Document the Bug
+### Étape 7 : Documenter le bug
 
-The workflow writes a memory file with:
-- Symptom and root cause
-- Fix applied and files changed
-- Regression test location
-- Similar patterns found across the codebase
+Le workflow écrit un fichier de mémoire contenant :
+- Symptôme et cause profonde
+- Correction appliquée et fichiers modifiés
+- Emplacement du test de régression
+- Motifs similaires trouvés dans le code source
 
 ---
 
-## Prompt Template for /debug
+## Modèle de prompt pour /debug
 
-When triggering the debug workflow, you can provide a structured prompt:
+Lorsque vous déclenchez le workflow de débogage, vous pouvez fournir un prompt structuré :
 
 ```
 /debug
@@ -222,78 +222,78 @@ Actual: 500 Internal Server Error
 Environment: Node 22.1, PostgreSQL 16
 ```
 
-**Why this structure works:**
+**Pourquoi cette structure fonctionne :**
 
-- **Error + stack trace** allows Step 2 to immediately locate the code (`search_for_pattern` with "deleteUser" finds the function; `find_symbol` pinpoints the exact location).
-- **Steps to reproduce** with the specific trigger condition ("user whose organization was deleted") hints at the root cause (null foreign key).
-- **Environment** eliminates version-specific red herrings.
+- **Erreur + stack trace** permet à l'étape 2 de localiser immédiatement le code (`search_for_pattern` avec « deleteUser » trouve la fonction ; `find_symbol` identifie l'emplacement exact).
+- **Étapes de reproduction** avec la condition de déclenchement spécifique (« un utilisateur dont l'organisation a été supprimée ») oriente vers la cause profonde (clé étrangère null).
+- **Environnement** élimine les fausses pistes liées aux versions.
 
-For simpler bugs, a shorter prompt works:
+Pour des bugs plus simples, un prompt plus court suffit :
 
 ```
 /debug The login page shows "Invalid credentials" even with correct password
 ```
 
-The workflow will ask for additional details as needed.
+Le workflow demandera des détails supplémentaires si nécessaire.
 
 ---
 
-## Escalation Signals
+## Signaux d'escalade
 
-These signals indicate the bug requires escalation beyond the standard debug loop:
+Ces signaux indiquent que le bug nécessite une escalade au-delà de la boucle de débogage standard :
 
-### Signal 1: Same Fix Attempted Twice
+### Signal 1 : Même correction tentée deux fois
 
-If the workflow proposes a fix, applies it, and the same error recurs, the problem is deeper than the initial diagnosis. This triggers the **Exploration Loop** in workflows that support it (ultrawork, orchestrate, coordinate):
+Si le workflow propose une correction, l'applique, et la même erreur réapparaît, le problème est plus profond que le diagnostic initial. Cela déclenche la **boucle d'exploration** dans les workflows qui la supportent (ultrawork, orchestrate, coordinate) :
 
-- Generate 2-3 alternative hypotheses for the root cause.
-- Test each hypothesis in a separate workspace (git stash per attempt).
-- Score results and adopt the best approach.
+- Générer 2 à 3 hypothèses alternatives pour la cause profonde.
+- Tester chaque hypothèse dans un workspace séparé (git stash par tentative).
+- Évaluer les résultats et adopter la meilleure approche.
 
-### Signal 2: Multi-Domain Root Cause
+### Signal 2 : Cause profonde multi-domaines
 
-The error in the frontend is caused by a backend change that is caused by a database schema migration. When the root cause crosses domain boundaries, escalate to `/coordinate` or `/orchestrate` to involve the relevant domain agents.
+L'erreur dans le frontend est causée par un changement backend qui est lui-même causé par une migration de schéma de base de données. Lorsque la cause profonde traverse les limites de domaines, escaladez vers `/coordinate` ou `/orchestrate` pour impliquer les agents des domaines concernés.
 
-**Example:** Frontend displays "undefined" for user name. Backend returns null for `user.display_name`. Database migration added the column but existing rows have NULL values. Fix requires: database migration (backfill), backend null handling, and frontend fallback display.
+**Exemple :** Le frontend affiche « undefined » pour le nom de l'utilisateur. Le backend retourne null pour `user.display_name`. La migration de base de données a ajouté la colonne mais les lignes existantes ont des valeurs NULL. La correction nécessite : une migration de base de données (remplissage rétroactif), la gestion null côté backend, et un affichage de repli côté frontend.
 
-### Signal 3: Missing Reproduction Environment
+### Signal 3 : Environnement de reproduction manquant
 
-The bug only occurs in production, and you cannot reproduce it locally. Signals include:
-- Environment-specific configuration differences.
-- Race conditions that only manifest under production load.
-- Third-party service behavior differences between staging and production.
+Le bug ne se produit qu'en production et vous ne pouvez pas le reproduire localement. Les signaux incluent :
+- Différences de configuration spécifiques à l'environnement.
+- Conditions de concurrence qui ne se manifestent que sous la charge de production.
+- Différences de comportement des services tiers entre le staging et la production.
 
-**Action:** Gather production logs, request access to production monitoring, and consider adding instrumentation/logging before attempting a fix.
+**Action :** Collecter les logs de production, demander l'accès à la surveillance de production, et envisager d'ajouter de l'instrumentation/logging avant de tenter une correction.
 
-### Signal 4: Test Infrastructure Failure
+### Signal 4 : Défaillance de l'infrastructure de test
 
-The regression test cannot be written because the test infrastructure is broken, missing, or inadequate.
+Le test de régression ne peut pas être écrit car l'infrastructure de test est cassée, manquante ou inadéquate.
 
-**Action:** Fix the test infrastructure first (or use `/setup` to configure it), then return to the debug workflow.
-
----
-
-## Post-Fix Validation Checklist
-
-After applying the fix and regression test, verify:
-
-- [ ] **Regression test fails without the fix** — Revert the fix temporarily and confirm the test catches the bug.
-- [ ] **Regression test passes with the fix** — Apply the fix and confirm the test passes.
-- [ ] **Existing tests still pass** — Run the full test suite to verify no regressions.
-- [ ] **Build succeeds** — Compile/build the project to catch type errors or import issues.
-- [ ] **Similar patterns scanned** — Step 6 has been completed and all found instances are either fixed or documented.
-- [ ] **Fix is minimal** — Only the necessary lines were changed. No unrelated refactoring was included.
-- [ ] **Root cause documented** — The memory file records: symptom, root cause, fix applied, files changed, regression test location, and similar patterns found.
+**Action :** Corriger l'infrastructure de test d'abord (ou utiliser `/setup` pour la configurer), puis revenir au workflow de débogage.
 
 ---
 
-## Critères de Complétion
+## Liste de vérification post-correction
 
-The debug workflow is complete when:
+Après application de la correction et du test de régression, vérifiez :
 
-1. The root cause is identified and documented (not just the symptom).
-2. A minimal fix is applied with user approval.
-3. A regression test exists that fails without the fix and passes with it.
-4. The codebase has been scanned for similar patterns, and all confirmed instances are addressed.
-5. A bug report is recorded in memory with: symptom, root cause, fix applied, files changed, regression test location, and similar patterns found.
-6. All existing tests continue to pass after the fix.
+- [ ] **Le test de régression échoue sans la correction** -- Annuler temporairement la correction et confirmer que le test détecte le bug.
+- [ ] **Le test de régression passe avec la correction** -- Appliquer la correction et confirmer que le test passe.
+- [ ] **Les tests existants passent toujours** -- Exécuter la suite de tests complète pour vérifier l'absence de régressions.
+- [ ] **Le build réussit** -- Compiler/builder le projet pour détecter les erreurs de type ou d'import.
+- [ ] **Les motifs similaires ont été scannés** -- L'étape 6 a été complétée et toutes les instances trouvées sont soit corrigées, soit documentées.
+- [ ] **La correction est minimale** -- Seules les lignes nécessaires ont été modifiées. Aucun refactoring sans rapport n'a été inclus.
+- [ ] **La cause profonde est documentée** -- Le fichier de mémoire enregistre : symptôme, cause profonde, correction appliquée, fichiers modifiés, emplacement du test de régression et motifs similaires trouvés.
+
+---
+
+## Critères de complétion
+
+Le workflow de débogage est terminé lorsque :
+
+1. La cause profonde est identifiée et documentée (pas seulement le symptôme).
+2. Une correction minimale est appliquée avec l'approbation de l'utilisateur.
+3. Un test de régression existe, qui échoue sans la correction et passe avec.
+4. Le code source a été scanné à la recherche de motifs similaires, et toutes les instances confirmées ont été traitées.
+5. Un rapport de bug est enregistré en mémoire avec : symptôme, cause profonde, correction appliquée, fichiers modifiés, emplacement du test de régression et motifs similaires trouvés.
+6. Tous les tests existants continuent de passer après la correction.

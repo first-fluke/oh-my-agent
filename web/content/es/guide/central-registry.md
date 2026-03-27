@@ -7,12 +7,12 @@ description: Documentación detallada del registro central — flujo release-ple
 
 ## Descripción General
 
-The central registry model treats the oh-my-agent GitHub repository (`first-fluke/oh-my-agent`) as a versioned artifact source. Consumer projects pull specific versions of skills and workflows from this registry, ensuring consistency across teams and projects.
+El modelo de registro central trata el repositorio GitHub de oh-my-agent (`first-fluke/oh-my-agent`) como una fuente de artefactos versionada. Los proyectos consumidores obtienen versiones especificas de habilidades y flujos de trabajo desde este registro, asegurando consistencia entre equipos y proyectos.
 
-This is the enterprise-grade approach for organizations that need:
-- Version pinning across multiple projects.
-- Auditable update trails via pull requests.
-- Checksum verification for downloaded artifacts.
+Este es el enfoque de nivel empresarial para organizaciones que necesitan:
+- Fijacion de versiones en multiples proyectos.
+- Trazabilidad auditable de actualizaciones via pull requests.
+- Verificacion de checksum para artefactos descargados.
 - Automated weekly update checks.
 - Manual review before any update is applied.
 

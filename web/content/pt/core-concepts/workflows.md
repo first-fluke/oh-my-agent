@@ -118,6 +118,10 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 - Primeira falha: retornar à etapa relevante, corrigir e tentar novamente.
 - Segunda falha no mesmo problema: ativar Exploration Loop (gerar 2-3 hipóteses, experimentar cada uma, pontuar, manter a melhor).
 
+**Aprimoramentos condicionais:** Medição de Quality Score, decisões Keep/Discard, Experiment Ledger, Exploração de Hipóteses, Auto-aprendizado (lições de experimentos descartados).
+
+**Condição de pular REFINE:** Tarefas simples com menos de 50 linhas.
+
 **Quando usar:** Entrega de qualidade máxima. Quando o código deve estar pronto para produção com revisão abrangente.
 
 ---
@@ -182,7 +186,17 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 **Descrição:** Inicialização completa do projeto. Analisa um codebase existente, gera AGENTS.md, ARCHITECTURE.md e uma base de conhecimento estruturada em `docs/`.
 
-**Quando usar:** Configurar oh-my-agent em um codebase existente.
+**Palavras-chave gatilho:**
+| Idioma | Palavras-chave |
+|--------|---------------|
+| Universal | "deepinit" |
+| Coreano | "프로젝트 초기화" |
+| Japonês | "プロジェクト初期化" |
+| Chinês | "项目初始化" |
+
+**Etapas:** Preparação -> Analisar codebase (tipo de projeto, arquitetura, regras implícitas, domínios, fronteiras) -> Gerar ARCHITECTURE.md (mapa de domínio, menos de 200 linhas) -> Gerar base de conhecimento `docs/` (design-docs/, exec-plans/, generated/, product-specs/, references/, docs de domínio) -> Gerar AGENTS.md raiz (~100 linhas, índice) -> Gerar arquivos AGENTS.md de fronteira (pacotes monorepo, menos de 50 linhas cada) -> Atualizar harness existente (se re-executando) -> Validar (sem links mortos, limites de linhas).
+
+**Saída:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md e docs específicos de domínio conforme descobertos.
 
 ---
 
@@ -190,9 +204,20 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 **Descrição:** Pipeline completo de revisão QA. Auditoria de segurança (OWASP Top 10), análise de performance, verificação de acessibilidade (WCAG 2.1 AA) e revisão de qualidade de código.
 
-**Quando usar:** Antes de merge de código, revisão pré-deploy.
+**Palavras-chave gatilho:**
+| Idioma | Palavras-chave |
+|--------|---------------|
+| Universal | "code review", "security audit", "security review" |
+| Inglês | "review" |
+| Coreano | "리뷰", "코드 검토", "보안 검토" |
+| Japonês | "レビュー", "コードレビュー", "セキュリティ監査" |
+| Chinês | "审查", "代码审查", "安全审计" |
+
+**Etapas:** Identificar escopo da revisão -> Verificações automatizadas de segurança (npm audit, bandit) -> Revisão manual de segurança (OWASP Top 10) -> Análise de performance -> Revisão de acessibilidade (WCAG 2.1 AA) -> Revisão de qualidade de código -> Gerar relatório QA.
 
 **Loop opcional de fix-verify** (com `--fix`): Após relatório QA, spawnar agentes de domínio para corrigir problemas CRITICAL/HIGH, re-executar QA, repetir até 3 vezes.
+
+**Delegação:** Para escopos grandes, delega Steps 2-7 a um subagente QA.
 
 ---
 
@@ -200,7 +225,18 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 **Descrição:** Diagnóstico e correção estruturada de bugs com escrita de testes de regressão e varredura de padrões similares.
 
-**Quando usar:** Investigar bugs e erros.
+**Palavras-chave gatilho:**
+| Idioma | Palavras-chave |
+|--------|---------------|
+| Universal | "debug" |
+| Inglês | "fix bug", "fix error", "fix crash" |
+| Coreano | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
+| Japonês | "デバッグ", "バグ修正", "エラー修正" |
+| Chinês | "调试", "修复 bug", "修复错误" |
+
+**Etapas:** Coletar informações do erro -> Reproduzir (MCP `search_for_pattern`, `find_symbol`) -> Diagnosticar causa raiz (MCP `find_referencing_symbols` para rastrear caminho de execução) -> Propor correção mínima (confirmação do usuário obrigatória) -> Aplicar correção + escrever teste de regressão -> Varrer padrões similares (pode spawnar subagente debug-investigator se escopo > 10 arquivos) -> Documentar bug na memória.
+
+**Critérios de spawn de subagente:** Erro abrange múltiplos domínios, escopo de varredura > 10 arquivos ou rastreamento profundo de dependências necessário.
 
 ---
 
@@ -208,13 +244,28 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 **Descrição:** Workflow de design de 7 fases produzindo DESIGN.md com tokens, padrões de componentes e regras de acessibilidade.
 
+**Palavras-chave gatilho:**
+| Idioma | Palavras-chave |
+|--------|---------------|
+| Universal | "design system", "DESIGN.md", "design token" |
+| Inglês | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
+| Coreano | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
+| Japonês | "デザイン", "ランディングページ", "デザインシステム" |
+| Chinês | "设计", "着陆页", "设计系统" |
+
 **Fases:** SETUP (coleta de contexto, `.design-context.md`) -> EXTRACT (opcional, de URLs de referência/Stitch) -> ENHANCE (aprimoramento de prompt vago) -> PROPOSE (2-3 direções de design com cor, tipografia, layout, movimento, componentes) -> GENERATE (DESIGN.md + tokens CSS/Tailwind/shadcn) -> AUDIT (responsivo, WCAG 2.2, heurísticas de Nielsen, verificação de AI slop) -> HANDOFF (salvar, informar usuário).
+
+**Obrigatório:** Toda saída responsive-first (mobile 320-639px, tablet 768px+, desktop 1024px+).
 
 ---
 
 ### /commit
 
 **Descrição:** Gera Conventional Commits com divisão automática por funcionalidade.
+
+**Palavras-chave gatilho:** Nenhuma (excluído da auto-detecção).
+
+**Etapas:** Analisar mudanças (git status, git diff) -> Separar funcionalidades (se > 5 arquivos abrangendo escopo/tipo diferente) -> Determinar tipo (feat/fix/refactor/docs/test/chore/style/perf) -> Determinar escopo (módulo alterado) -> Escrever descrição (imperativo, < 72 chars) -> Executar commit imediatamente (sem prompt de confirmação).
 
 **Regras:** Nunca `git add -A`. Nunca commitar secrets. HEREDOC para mensagens multi-linha. Co-Author: `First Fluke <our.first.fluke@gmail.com>`.
 
@@ -224,6 +275,10 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 **Descrição:** Configuração interativa do projeto.
 
+**Palavras-chave gatilho:** Nenhuma (excluído da auto-detecção).
+
+**Etapas:** Configurações de idioma -> Verificação de status de instalação CLI -> Status de conexão MCP (Serena em modo Command ou SSE) -> Mapeamento agente-CLI -> Resumo -> Perguntar sobre dar estrela no repositório.
+
 **Saída:** `.agents/config/user-preferences.yaml`.
 
 ---
@@ -232,11 +287,25 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 **Descrição:** Gerenciar visibilidade e restrições de ferramentas MCP.
 
+**Palavras-chave gatilho:** Nenhuma (excluído da auto-detecção).
+
+**Funcionalidades:** Mostrar status atual das ferramentas MCP, habilitar/desabilitar grupos de ferramentas (memory, code-analysis, code-edit, file-ops), alterações permanentes ou temporárias (`--temp`), parsing de linguagem natural ("memory tools only", "disable code edit").
+
+**Grupos de ferramentas:**
+- memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
+- code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
+- code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
+- file-ops: list_dir, find_file
+
 ---
 
 ### /stack-set
 
 **Descrição:** Auto-detectar stack tecnológico do projeto e gerar referências específicas de linguagem para a skill backend.
+
+**Palavras-chave gatilho:** Nenhuma (excluído da auto-detecção).
+
+**Etapas:** Detectar (escanear manifestos: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj) -> Confirmar (exibir stack detectada, obter confirmação do usuário) -> Gerar (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` com 8 padrões obrigatórios, `stack/api-template.*`) -> Verificar.
 
 **Saída:** Arquivos em `.agents/skills/oma-backend/stack/`. Não modifica SKILL.md ou `resources/`.
 
