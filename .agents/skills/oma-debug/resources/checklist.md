@@ -9,8 +9,9 @@ Run through every item before submitting your fix.
 - [ ] No new bugs introduced
 
 ## Regression Test
-- [ ] Test written that fails without the fix
-- [ ] Test passes with the fix
+- [ ] Test written that reproduces the bug
+- [ ] Fix reverted → test fails (confirms test actually catches the bug)
+- [ ] Fix restored → test passes
 - [ ] Test covers the specific triggering condition
 - [ ] All existing tests still pass
 

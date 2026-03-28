@@ -29,8 +29,12 @@ All agents assess task difficulty at the start and apply the appropriate protoco
 
 ### Simple → Fast Track
 1. ~~Step 1 (Analyze)~~: Skip — proceed directly to implementation
-2. Step 3 (Implement): Implementation
-3. Step 4 (Verify): Minimal checklist items only
+2. **Pre-check**: Confirm whether test files exist for the target module (e.g., `__tests__/`, `*.test.*`)
+3. Step 3 (Implement): Implementation
+4. Step 4 (Verify): Minimal checklist items:
+   - All `Code Quality` items from `common-checklist.md`
+   - `Tests actually assert meaningful behavior` (if tests exist or were added)
+   - Run existing tests to verify no regressions
 
 ### Medium → Standard Protocol
 1. Step 1 (Analyze): Brief
