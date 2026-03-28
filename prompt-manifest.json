@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.12.0",
-  "releaseDate": "2026-03-27T00:47:15.865Z",
+  "releaseDate": "2026-03-28T00:01:14.765Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -101,8 +101,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/difficulty-guide.md",
-      "sha256": "5857e2a8742047bd50b5f00e26b048184d76c6a68a30d08b0d95488526119276",
-      "size": 2217
+      "sha256": "f5215003757f778908f60f3fd673a83cb24e0fdfeb5ac2aeb099cb8df23f06dd",
+      "size": 2505
     },
     {
       "path": ".agents/skills/_shared/core/evaluator-tuning.md",
@@ -336,8 +336,8 @@
     },
     {
       "path": ".agents/skills/oma-debug/resources/checklist.md",
-      "sha256": "b9d96216f567397406a23a15c028c618156e5ddd20d9c0bdbf522f784ea24109",
-      "size": 987
+      "sha256": "5b27eb5fda9c244a578dfd165d54b046d402ea63d09be3204e67f7c04bb8d88b",
+      "size": 1063
     },
     {
       "path": ".agents/skills/oma-debug/resources/common-patterns.md",
