@@ -90,13 +90,24 @@ export async function update(force = false, ci = false): Promise<void> {
     await promptUninstallCompetitors(cwd);
   }
 
+  // If not initialized, redirect to install
+  const localVersion = await getLocalVersion(cwd);
+  if (localVersion === null) {
+    ui.note(
+      "oh-my-agent is not installed in this project. Running install...",
+      "Not initialized",
+    );
+    const { install } = await import("./install.js");
+    await install();
+    return;
+  }
+
   let spinner: ReturnType<typeof ui.spinnerStart> | undefined;
 
   try {
     spinner = ui.spinnerStart("Checking for updates...");
 
     const remoteManifest = await fetchRemoteManifest();
-    const localVersion = await getLocalVersion(cwd);
 
     if (localVersion === remoteManifest.version) {
       const sharedLayoutMigrations = migrateSharedLayout(cwd);

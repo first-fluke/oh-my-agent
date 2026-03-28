@@ -399,6 +399,15 @@ program
   );
 
 program
+  .command("install")
+  .description("Install oh-my-agent skills and configurations")
+  .action(
+    runAction(async () => {
+      await install();
+    }),
+  );
+
+program
   .command("describe [command-path]")
   .description("Describe CLI commands as JSON for runtime introspection")
   .action(
