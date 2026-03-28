@@ -93,12 +93,12 @@ function readModeState(
   }
 }
 
-function isStale(state: ModeState): boolean {
+export function isStale(state: ModeState): boolean {
   const elapsed = Date.now() - new Date(state.activatedAt).getTime();
   return elapsed > STALE_HOURS * 60 * 60 * 1000;
 }
 
-function deactivate(projectDir: string, workflow: string): void {
+export function deactivate(projectDir: string, workflow: string): void {
   const path = join(getStateDir(projectDir), `${workflow}-state.json`);
   if (existsSync(path)) unlinkSync(path);
 }
@@ -163,4 +163,6 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(() => process.exit(0));
+if (import.meta.main) {
+  main().catch(() => process.exit(0));
+}

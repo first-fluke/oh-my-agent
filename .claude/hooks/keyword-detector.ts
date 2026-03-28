@@ -12,7 +12,7 @@
  * exit 0 = always (allow)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { type Vendor, type ModeState, makePromptOutput } from "./types.ts";
 
@@ -93,11 +93,11 @@ function detectLanguage(projectDir: string): string {
 
 // ── Pattern Builder ───────────────────────────────────────────
 
-function escapeRegex(s: string): string {
+export function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function buildPatterns(
+export function buildPatterns(
   keywords: Record<string, string[]>,
   lang: string,
   cjkScripts: string[],
@@ -136,7 +136,7 @@ function buildInformationalPatterns(
 
 // ── Filters ───────────────────────────────────────────────────
 
-function isInformationalContext(
+export function isInformationalContext(
   prompt: string,
   matchIndex: number,
   infoPatterns: RegExp[],
@@ -146,11 +146,11 @@ function isInformationalContext(
   return infoPatterns.some((p) => p.test(window));
 }
 
-function stripCodeBlocks(text: string): string {
+export function stripCodeBlocks(text: string): string {
   return text.replace(/```[\s\S]*?```/g, "").replace(/`[^`]+`/g, "");
 }
 
-function startsWithSlashCommand(prompt: string): boolean {
+export function startsWithSlashCommand(prompt: string): boolean {
   return /^\/[a-zA-Z][\w-]*/.test(prompt.trim());
 }
 
@@ -179,6 +179,46 @@ function activateMode(
   );
 }
 
+// ── Deactivation Detection ───────────────────────────────────
+
+export const DEACTIVATION_PHRASES: Record<string, string[]> = {
+  en: ["workflow done", "workflow complete", "workflow finished"],
+  ko: ["워크플로우 완료", "워크플로우 종료", "워크플로우 끝"],
+  ja: ["ワークフロー完了", "ワークフロー終了"],
+  zh: ["工作流完成", "工作流结束"],
+  es: ["flujo completado", "flujo terminado"],
+  fr: ["flux terminé", "flux complété"],
+  de: ["workflow abgeschlossen", "workflow fertig"],
+  pt: ["fluxo concluído", "fluxo terminado"],
+  ru: ["воркфлоу завершён", "рабочий процесс завершён"],
+  nl: ["workflow voltooid", "workflow klaar"],
+  pl: ["workflow zakończony", "workflow ukończony"],
+};
+
+export function isDeactivationRequest(prompt: string, lang: string): boolean {
+  const phrases = [
+    ...(DEACTIVATION_PHRASES["en"] ?? []),
+    ...(lang !== "en" ? (DEACTIVATION_PHRASES[lang] ?? []) : []),
+  ];
+  const lower = prompt.toLowerCase();
+  return phrases.some((phrase) => lower.includes(phrase.toLowerCase()));
+}
+
+export function deactivateAllPersistentModes(projectDir: string): void {
+  const stateDir = join(projectDir, ".agents", "state");
+  if (!existsSync(stateDir)) return;
+  try {
+    const files = readdirSync(stateDir);
+    for (const file of files) {
+      if (file.endsWith("-state.json")) {
+        unlinkSync(join(stateDir, file));
+      }
+    }
+  } catch {
+    // ignore cleanup errors
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────────
 
 async function main() {
@@ -200,6 +240,12 @@ async function main() {
 
   const config = loadConfig();
   const lang = detectLanguage(projectDir);
+
+  // Check for deactivation request before workflow detection
+  if (isDeactivationRequest(prompt, lang)) {
+    deactivateAllPersistentModes(projectDir);
+    process.exit(0);
+  }
   const infoPatterns = buildInformationalPatterns(config, lang);
   const cleaned = stripCodeBlocks(prompt);
   const excluded = new Set(config.excludedWorkflows);
@@ -234,4 +280,6 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(() => process.exit(0));
+if (import.meta.main) {
+  main().catch(() => process.exit(0));
+}

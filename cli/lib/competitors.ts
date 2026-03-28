@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -77,6 +77,21 @@ function detectCompetitors(cwd: string): Competitor[] {
     } catch {
       // ignore
     }
+  }
+
+  // --- superpowers ---
+  const spSkillDir = join(homeDir, ".agents", "skills", "superpowers");
+  const spCloneDir = join(homeDir, ".codex", "superpowers");
+  if (existsSync(spSkillDir) || existsSync(spCloneDir)) {
+    competitors.push({
+      name: "superpowers",
+      displayName: "superpowers",
+      uninstall: () => {
+        for (const dir of [spSkillDir, spCloneDir]) {
+          if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
+        }
+      },
+    });
   }
 
   // --- omx (oh-my-codex) ---
