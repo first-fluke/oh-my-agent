@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.13.0",
-  "releaseDate": "2026-03-28T00:27:39.655Z",
+  "releaseDate": "2026-03-28T01:39:01.319Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,13 +176,13 @@
     },
     {
       "path": ".agents/skills/oma-backend/SKILL.md",
-      "sha256": "dab7de0462a6140f3ff6144678dd325b637dd66a05b8619fab04a381a9777ffc",
-      "size": 3845
+      "sha256": "5d64112b98b12dea6a3644679e9b51f93ea66c8ef600a0ed40f4cc4a43489789",
+      "size": 4304
     },
     {
       "path": ".agents/skills/oma-backend/resources/checklist.md",
-      "sha256": "3a6522510b646f1d58b392698a8b996ece50639c1525d0d7dd8beaa6f5d64461",
-      "size": 1687
+      "sha256": "6f1aff6e87c8343826549ca2e39ee00a07a1adf318a7e6d4439c63ddc73bcd5f",
+      "size": 2019
     },
     {
       "path": ".agents/skills/oma-backend/resources/error-playbook.md",
