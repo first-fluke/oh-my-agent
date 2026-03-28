@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.14.0...cli-v4.15.0) (2026-03-28)
+
+
+### Features
+
+* **cli:** add explicit install command and auto-redirect from update ([477eeb3](https://github.com/first-fluke/oh-my-agent/commit/477eeb384af94900decb10cf4453340d5449c666))
+
 ## [4.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.13.0...cli-v4.14.0) (2026-03-28)
 
 
