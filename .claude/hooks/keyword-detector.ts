@@ -14,7 +14,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { type Vendor, type ModeState, makePromptOutput } from "./types.ts";
+import { type Vendor, type ModeState, makePromptOutput, resolveGitRoot } from "./types.ts";
 
 // ── Vendor Detection ──────────────────────────────────────────
 
@@ -34,16 +34,22 @@ function getProjectDir(
   vendor: Vendor,
   input: Record<string, unknown>,
 ): string {
+  let dir: string;
   switch (vendor) {
     case "codex":
-      return (input.cwd as string) || process.cwd();
+      dir = (input.cwd as string) || process.cwd();
+      break;
     case "gemini":
-      return process.env.GEMINI_PROJECT_DIR || process.cwd();
+      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
+      break;
     case "qwen":
-      return process.env.QWEN_PROJECT_DIR || process.cwd();
+      dir = process.env.QWEN_PROJECT_DIR || process.cwd();
+      break;
     default:
-      return process.env.CLAUDE_PROJECT_DIR || process.cwd();
+      dir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+      break;
   }
+  return resolveGitRoot(dir);
 }
 
 function getSessionId(input: Record<string, unknown>): string {

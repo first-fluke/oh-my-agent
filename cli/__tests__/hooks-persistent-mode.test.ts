@@ -13,6 +13,7 @@ vi.mock("node:fs", () => ({
 const { isStale, deactivate } = await import(
   "../../.claude/hooks/persistent-mode.ts"
 );
+const { resolveGitRoot } = await import("../../.claude/hooks/types.ts");
 
 describe("persistent-mode", () => {
   beforeEach(() => {
@@ -67,6 +68,40 @@ describe("persistent-mode", () => {
         reinforcementCount: 0,
       };
       expect(isStale(state)).toBe(true);
+    });
+  });
+
+  describe("resolveGitRoot", () => {
+    it("should return startDir when .git is found immediately", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        (p: string) => p === join("/project", ".git"),
+      );
+      expect(resolveGitRoot("/project")).toBe("/project");
+    });
+
+    it("should walk up to find .git in parent directory", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        (p: string) => p === join("/project", ".git"),
+      );
+      expect(resolveGitRoot("/project/packages/i18n")).toBe("/project");
+    });
+
+    it("should return startDir when no .git found (filesystem root)", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        false,
+      );
+      expect(resolveGitRoot("/project/packages/i18n")).toBe(
+        "/project/packages/i18n",
+      );
+    });
+
+    it("should respect max depth and not loop infinitely", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        false,
+      );
+      const deepPath = Array.from({ length: 30 }, (_, i) => `d${i}`).join("/");
+      const startDir = `/${deepPath}`;
+      expect(resolveGitRoot(startDir)).toBe(startDir);
     });
   });
 
