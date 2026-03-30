@@ -20,6 +20,8 @@ const {
   isDeactivationRequest,
   deactivateAllPersistentModes,
   DEACTIVATION_PHRASES,
+  detectExtensions,
+  resolveAgentFromExtensions,
 } = await import("../../.claude/hooks/keyword-detector.ts");
 
 describe("keyword-detector", () => {
@@ -77,16 +79,21 @@ describe("keyword-detector", () => {
   });
 
   describe("isInformationalContext", () => {
-    const infoPatterns = [/\bwhat is\b/i, /\?$/];
+    const infoPatterns = [/\bwhat is\b/i, /\bexplain\b/i];
 
     it("should detect informational patterns near match", () => {
-      const prompt = "what is orchestrate?";
+      const prompt = "what is orchestrate";
       expect(isInformationalContext(prompt, 8, infoPatterns)).toBe(true);
     });
 
     it("should not flag action prompts", () => {
       const prompt = "orchestrate the deployment";
       expect(isInformationalContext(prompt, 0, infoPatterns)).toBe(false);
+    });
+
+    it("should not flag requests ending with question mark", () => {
+      const prompt = "can you orchestrate the deployment?";
+      expect(isInformationalContext(prompt, 12, infoPatterns)).toBe(false);
     });
   });
 
@@ -236,6 +243,90 @@ describe("keyword-detector", () => {
       });
 
       expect(() => deactivateAllPersistentModes("/tmp/project")).not.toThrow();
+    });
+  });
+
+  describe("detectExtensions", () => {
+    it("should detect standalone extensions", () => {
+      expect(detectExtensions("fix the .tsx file")).toEqual(["tsx"]);
+    });
+
+    it("should detect extensions in filenames", () => {
+      expect(detectExtensions("fix Button.tsx")).toEqual(["tsx"]);
+    });
+
+    it("should detect extensions in full paths", () => {
+      expect(detectExtensions("fix src/components/Button.tsx")).toEqual(["tsx"]);
+    });
+
+    it("should detect multiple extensions", () => {
+      const result = detectExtensions("fix Button.tsx and styles.css");
+      expect(result).toContain("tsx");
+      expect(result).toContain("css");
+    });
+
+    it("should deduplicate extensions", () => {
+      expect(detectExtensions("fix A.tsx and B.tsx")).toEqual(["tsx"]);
+    });
+
+    it("should exclude common non-code extensions", () => {
+      expect(detectExtensions("see README.md and config.json")).toEqual([]);
+    });
+
+    it("should be case-insensitive", () => {
+      expect(detectExtensions("fix Component.TSX")).toEqual(["tsx"]);
+    });
+
+    it("should return empty for no extensions", () => {
+      expect(detectExtensions("fix the bug in the login page")).toEqual([]);
+    });
+
+    it("should detect compound extensions like .controller.ts", () => {
+      const result = detectExtensions("fix user.controller.ts");
+      expect(result).toContain("controller");
+      expect(result).toContain("ts");
+    });
+  });
+
+  describe("resolveAgentFromExtensions", () => {
+    const routing = {
+      "frontend-engineer": ["tsx", "jsx", "css", "scss"],
+      "backend-engineer": ["go", "py", "java", "rs", "controller", "service"],
+      "db-engineer": ["sql", "prisma", "graphql"],
+      "mobile-engineer": ["dart", "swift", "kt"],
+      "designer": ["figma", "sketch", "svg"],
+    };
+
+    it("should resolve single frontend extension", () => {
+      expect(resolveAgentFromExtensions(["tsx"], routing)).toBe("frontend-engineer");
+    });
+
+    it("should resolve single backend extension", () => {
+      expect(resolveAgentFromExtensions(["go"], routing)).toBe("backend-engineer");
+    });
+
+    it("should resolve by highest score when mixed", () => {
+      expect(resolveAgentFromExtensions(["tsx", "css", "go"], routing)).toBe("frontend-engineer");
+    });
+
+    it("should return null for empty extensions", () => {
+      expect(resolveAgentFromExtensions([], routing)).toBeNull();
+    });
+
+    it("should return null for unrecognized extensions", () => {
+      expect(resolveAgentFromExtensions(["xyz", "abc"], routing)).toBeNull();
+    });
+
+    it("should resolve db extensions correctly", () => {
+      expect(resolveAgentFromExtensions(["sql"], routing)).toBe("db-engineer");
+    });
+
+    it("should resolve mobile extensions correctly", () => {
+      expect(resolveAgentFromExtensions(["dart", "swift"], routing)).toBe("mobile-engineer");
+    });
+
+    it("should resolve compound extension to backend", () => {
+      expect(resolveAgentFromExtensions(["controller", "ts"], routing)).toBe("backend-engineer");
     });
   });
 

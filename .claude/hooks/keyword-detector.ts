@@ -67,6 +67,7 @@ interface TriggerConfig {
   informationalPatterns: Record<string, string[]>;
   excludedWorkflows: string[];
   cjkScripts: string[];
+  extensionRouting?: Record<string, string[]>;
 }
 
 function loadConfig(): TriggerConfig {
@@ -125,13 +126,10 @@ function buildInformationalPatterns(
   if (lang !== "en") {
     patterns.push(...(config.informationalPatterns[lang] ?? []));
   }
-  return [
-    ...patterns.map((p) => {
-      if (/[^\x00-\x7F]/.test(p)) return new RegExp(escapeRegex(p), "i");
-      return new RegExp(`\\b${escapeRegex(p)}\\b`, "i");
-    }),
-    /\?$/,
-  ];
+  return patterns.map((p) => {
+    if (/[^\x00-\x7F]/.test(p)) return new RegExp(escapeRegex(p), "i");
+    return new RegExp(`\\b${escapeRegex(p)}\\b`, "i");
+  });
 }
 
 // ── Filters ───────────────────────────────────────────────────
@@ -152,6 +150,56 @@ export function stripCodeBlocks(text: string): string {
 
 export function startsWithSlashCommand(prompt: string): boolean {
   return /^\/[a-zA-Z][\w-]*/.test(prompt.trim());
+}
+
+// ── Extension Detection ──────────────────────────────────────
+
+const EXCLUDE_EXTS = new Set([
+  "md", "json", "yaml", "yml", "txt", "env", "git",
+  "lock", "log", "toml", "cfg", "ini", "conf",
+  "png", "jpg", "jpeg", "gif", "ico", "webp",
+  "woff", "woff2", "ttf", "eot",
+  "map", "d",
+]);
+
+export function detectExtensions(prompt: string): string[] {
+  const extPattern = /\.([a-zA-Z]{1,12})\b/g;
+  const extensions = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = extPattern.exec(prompt)) !== null) {
+    const ext = match[1].toLowerCase();
+    if (!EXCLUDE_EXTS.has(ext)) {
+      extensions.add(ext);
+    }
+  }
+  return [...extensions];
+}
+
+export function resolveAgentFromExtensions(
+  extensions: string[],
+  routing: Record<string, string[]>,
+): string | null {
+  if (extensions.length === 0) return null;
+
+  const scores = new Map<string, number>();
+  for (const ext of extensions) {
+    for (const [agent, agentExts] of Object.entries(routing)) {
+      if (agentExts.includes(ext)) {
+        scores.set(agent, (scores.get(agent) ?? 0) + 1);
+      }
+    }
+  }
+  if (scores.size === 0) return null;
+
+  let best: string | null = null;
+  let bestScore = 0;
+  for (const [agent, score] of scores) {
+    if (score > bestScore) {
+      bestScore = score;
+      best = agent;
+    }
+  }
+  return best;
 }
 
 // ── State Management ──────────────────────────────────────────
@@ -264,13 +312,23 @@ async function main() {
         activateMode(projectDir, workflow, sessionId);
       }
 
-      const context = [
+      const contextLines = [
         `[OMA WORKFLOW: ${workflow.toUpperCase()}]`,
         `User intent matches the /${workflow} workflow.`,
         `Read and follow \`.agents/workflows/${workflow}.md\` step by step.`,
         `User request: ${prompt}`,
         `IMPORTANT: Start the workflow IMMEDIATELY. Do not ask for confirmation.`,
-      ].join("\n");
+      ];
+
+      if (config.extensionRouting) {
+        const extensions = detectExtensions(prompt);
+        const agent = resolveAgentFromExtensions(extensions, config.extensionRouting);
+        if (agent) {
+          contextLines.push(`[OMA AGENT HINT: ${agent}]`);
+        }
+      }
+
+      const context = contextLines.join("\n");
 
       process.stdout.write(makePromptOutput(vendor, context));
       process.exit(0);
