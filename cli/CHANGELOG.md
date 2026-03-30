@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.17.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.17.1...cli-v4.17.2) (2026-03-30)
+
+
+### Bug Fixes
+
+* rename oh-my-ag display name to oh-my-agent and use oma alias in demos ([bd96bcb](https://github.com/first-fluke/oh-my-agent/commit/bd96bcb71669b29a5bd9722819887eb237fd7992))
+
 ## [4.17.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.17.0...cli-v4.17.1) (2026-03-30)
 
 
