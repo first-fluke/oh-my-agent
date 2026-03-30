@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "4.16.0",
-  "releaseDate": "2026-03-30T09:22:56.046Z",
+  "version": "4.17.0",
+  "releaseDate": "2026-03-30T03:34:48.911Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -36,8 +36,8 @@
     },
     {
       "path": ".agents/agents/qa-reviewer.md",
-      "sha256": "8d359925995121ba0d2fc3c1f9d53c4d383f08ba99e7367114dc8de9ebf1da57",
-      "size": 1844
+      "sha256": "f5da8255db7191a1ce015d6dd5aaf224f82442fd579a3ca683fcefe13dd18b2d",
+      "size": 1761
     },
     {
       "path": ".agents/config/user-preferences.yaml",
@@ -686,8 +686,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/checklist.md",
-      "sha256": "05a6a9e0cc6320b0fab8bc94d63f8f06f8414487d72dc73959c0724f094a38dc",
-      "size": 10704
+      "sha256": "673e95a86155d3f762ccb3f089d50db9b68238943064c1f25a16c3f4514b3aa5",
+      "size": 9965
     },
     {
       "path": ".agents/skills/oma-qa/resources/error-playbook.md",
@@ -701,8 +701,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/execution-protocol.md",
-      "sha256": "0a14f60ac3d7e432e674cd2e68ab0eb35490a2f8ff025982df7dff99d7778c1c",
-      "size": 8435
+      "sha256": "3243e3d130fafb0ffc093b49c8c68a3dd9d13477a9082e15d6cd9508386c341e",
+      "size": 5309
     },
     {
       "path": ".agents/skills/oma-qa/resources/iso-quality.md",
@@ -981,8 +981,8 @@
     },
     {
       "path": ".claude/agents/qa-reviewer.md",
-      "sha256": "1395cdb3f096ec0ad7a102da751f258cbdc29d40ab4d62115b29b0f4275d0aa1",
-      "size": 2054
+      "sha256": "fe9d836018c7356a8a0de7c053d3ec50bb2b749385a073e96a7cac1b9ce80f21",
+      "size": 1971
     }
   ],
   "checksums": {

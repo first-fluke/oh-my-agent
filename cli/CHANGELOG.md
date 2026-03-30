@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.16.0...cli-v4.17.0) (2026-03-30)
+
+
+### Features
+
+* **qa:** add Chrome DevTools MCP isolated runtime verification and skeptical evaluator posture ([10c4dba](https://github.com/first-fluke/oh-my-agent/commit/10c4dba079da80898b6af179e05c6c561fb712a9))
+
 ## [4.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.15.2...cli-v4.16.0) (2026-03-30)
 
 
