@@ -314,7 +314,7 @@
 
 - Run automated tools FIRST: `npm audit`, `bandit`, `lighthouse`
 - Use Serena MCP for code analysis patterns
-- Use Antigravity Browser for E2E testing
+- Use Chrome DevTools MCP (`new_page` with `isolatedContext: "qa-test"`) for runtime verification and E2E testing
 - Document all findings with file:line references
 - Provide remediation code examples
 - Estimate fix time for each issue
@@ -323,13 +323,16 @@
 
 ## Runtime Verification (after static review)
 
+Record results in the structured table format defined in `execution-protocol.md` Step 2.5 (Recording Results).
+
 - [ ] Application starts without errors
-- [ ] All modified endpoints return expected status codes
-- [ ] Form submissions produce correct database state
-- [ ] Error states render user-friendly messages (not stack traces)
-- [ ] Empty/loading/error UI states all handled
-- [ ] Interactive elements respond to input (not display-only)
-- [ ] Auth flows work end-to-end (register → login → protected route → logout)
-- [ ] Rate limiting / throttling triggers at configured thresholds
-- [ ] File upload/download actually transfers data (not stubbed)
-- [ ] Pagination returns correct pages (not always page 1)
+- [ ] All modified endpoints return expected status codes — `list_network_requests()` to verify
+- [ ] Form submissions produce correct database state — `fill_form()` + `list_network_requests()`
+- [ ] Error states render user-friendly messages (not stack traces) — `take_snapshot()` on error paths
+- [ ] Empty/loading/error UI states all handled — `navigate_page()` to empty state routes + `take_snapshot()`
+- [ ] Interactive elements respond to input (not display-only) — `click(uid)` + `take_snapshot()` before/after
+- [ ] Auth flows work end-to-end (register → login → protected route → logout) — sequential `fill()` + `click()` + `list_network_requests()`
+- [ ] Rate limiting / throttling triggers at configured thresholds — rapid `evaluate_script(fetch)` calls
+- [ ] File upload/download actually transfers data (not stubbed) — `upload_file(uid, filePath)` + verify response
+- [ ] Pagination returns correct pages (not always page 1) — `click()` page 2 + `take_snapshot()` to verify different content
+- [ ] Zero JS console errors on critical paths — `list_console_messages(types: ["error"])`
