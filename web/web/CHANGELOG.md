@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.12](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.11...web-v0.3.12) (2026-03-31)
+
+
+### Refactoring
+
+* remove deprecated /setup workflow replaced by oma install/update ([faf9bae](https://github.com/first-fluke/oh-my-agent/commit/faf9baeac1b922977be547b4825f762e97e312e9))
+
 ## [0.3.11](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.10...web-v0.3.11) (2026-03-28)
 
 
