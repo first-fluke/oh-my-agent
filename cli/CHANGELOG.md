@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.0...cli-v4.18.1) (2026-03-31)
+
+
+### Refactoring
+
+* remove deprecated /setup workflow replaced by oma install/update ([faf9bae](https://github.com/first-fluke/oh-my-agent/commit/faf9baeac1b922977be547b4825f762e97e312e9))
+
 ## [4.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.17.2...cli-v4.18.0) (2026-03-31)
 
 
