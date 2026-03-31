@@ -325,7 +325,7 @@ export async function update(force = false, ci = false): Promise<void> {
       if (hasClaude) {
         let hasCodex = false;
         try {
-          execSync("which codex", { stdio: "ignore" });
+          execSync("codex --version", { stdio: "ignore" });
           hasCodex = true;
         } catch {}
 
@@ -336,7 +336,7 @@ export async function update(force = false, ci = false): Promise<void> {
               encoding: "utf-8",
               stdio: ["pipe", "pipe", "ignore"],
             });
-            codexPluginInstalled = pluginList.includes("codex");
+            codexPluginInstalled = pluginList.includes("codex@openai-codex");
           } catch {}
 
           if (codexPluginInstalled) {
