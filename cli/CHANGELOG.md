@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.17.2...cli-v4.18.0) (2026-03-31)
+
+
+### Features
+
+* **cli:** auto-install codex-plugin-cc when both Claude and Codex are detected ([71ef5a0](https://github.com/first-fluke/oh-my-agent/commit/71ef5a0ff42184b038eac861fa073cb432981a2d))
+
+
+### Bug Fixes
+
+* **cli:** ensure ~/.claude directory exists before writing CLAUDE.md in CI ([0f1b5b8](https://github.com/first-fluke/oh-my-agent/commit/0f1b5b83cc69f1287f0785ebab749206d8aa64c7))
+* **cli:** use codex --version instead of which for cross-platform detection ([a637add](https://github.com/first-fluke/oh-my-agent/commit/a637add7ae61f8dd32fccfaed4b6c54bd5a6b983))
+
 ## [4.17.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.17.1...cli-v4.17.2) (2026-03-30)
 
 
