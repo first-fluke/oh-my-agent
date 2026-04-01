@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.18.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.2...cli-v4.18.3) (2026-04-01)
+
+
+### Bug Fixes
+
+* strengthen oma-translator skill wording and coverage ([aa2a527](https://github.com/first-fluke/oh-my-agent/commit/aa2a527e390b7eb0bf16d492aefe862f6715ac4f))
+
+
+### Documentation
+
+* add design rationale link to Why section across all READMEs ([4ff61d1](https://github.com/first-fluke/oh-my-agent/commit/4ff61d19e937dd083fc599a96a6e123436bed983))
+
 ## [4.18.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.1...cli-v4.18.2) (2026-04-01)
 
 
