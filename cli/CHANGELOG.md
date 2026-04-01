@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.3...cli-v4.18.4) (2026-04-01)
+
+
+### Bug Fixes
+
+* enforce auth boundary in frontend agent to prevent direct DB access ([c0c83dd](https://github.com/first-fluke/oh-my-agent/commit/c0c83dd51305cc1af48fa296011a07fcfc2c81fd))
+
 ## [4.18.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.2...cli-v4.18.3) (2026-04-01)
 
 
