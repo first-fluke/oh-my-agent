@@ -191,6 +191,16 @@ export function installWorkflows(sourceDir: string, targetDir: string): void {
   cpSync(src, dest, { recursive: true, force: true });
 }
 
+export function installRules(sourceDir: string, targetDir: string): void {
+  const src = join(sourceDir, ".agents", "rules");
+  if (!existsSync(src)) return;
+
+  const dest = join(targetDir, ".agents", "rules");
+  clearNonDirectory(dest);
+  mkdirSync(dest, { recursive: true });
+  cpSync(src, dest, { recursive: true, force: true });
+}
+
 export function installConfigs(
   sourceDir: string,
   targetDir: string,
@@ -311,6 +321,18 @@ const CLAUDE_AGENT_DEFAULTS: Record<string, ClaudeAgentDefaults> = {
     effort: "low",
   },
 };
+
+/**
+ * Copy Claude Code rules from source .claude/rules/ to target .claude/rules/.
+ */
+function installClaudeRules(sourceDir: string, targetDir: string): void {
+  const src = join(sourceDir, ".claude", "rules");
+  if (!existsSync(src)) return;
+
+  const dest = join(targetDir, ".claude", "rules");
+  mkdirSync(dest, { recursive: true });
+  cpSync(src, dest, { recursive: true, force: true });
+}
 
 /**
  * Generate Claude-specific agent files from abstract agent definitions.
@@ -714,6 +736,7 @@ export function installVendorAdaptations(
       case "claude":
         installClaudeAgents(agentsDir, targetDir);
         installClaudeWorkflowRouters(workflowsDir, targetDir);
+        installClaudeRules(sourceDir, targetDir);
         installClaudeHooks(sourceDir, targetDir);
         mergeClaudeMd(sourceDir);
         break;

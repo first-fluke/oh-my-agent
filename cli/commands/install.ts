@@ -17,6 +17,7 @@ import {
   INSTALLED_SKILLS_DIR,
   installConfigs,
   installGlobalWorkflows,
+  installRules,
   installShared,
   installSkill,
   installVendorAdaptations,
@@ -157,6 +158,7 @@ export async function install(): Promise<void> {
 
       installShared(repoDir, cwd);
       installWorkflows(repoDir, cwd);
+      installRules(repoDir, cwd);
       installConfigs(repoDir, cwd);
       installGlobalWorkflows(repoDir);
 
