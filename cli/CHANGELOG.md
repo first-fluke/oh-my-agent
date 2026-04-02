@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.20.2...cli-v4.21.0) (2026-04-02)
+
+
+### Features
+
+* dynamically scan available languages from docs/README.*.md ([f4d419c](https://github.com/first-fluke/oh-my-agent/commit/f4d419c017428e592087b3ce0f7de4b912a26bfb))
+* prompt language selection during oma install ([b706646](https://github.com/first-fluke/oh-my-agent/commit/b706646022f11a21c1567a1079dc7f107c1c8a41))
+
 ## [4.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.20.1...cli-v4.20.2) (2026-04-02)
 
 
