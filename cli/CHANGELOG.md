@@ -12,6 +12,35 @@
 ### Bug Fixes
 
 * redirect stdin from /dev/tty for interactive CLI in pipe install ([4019f59](https://github.com/first-fluke/oh-my-agent/commit/4019f5973a046957c7b835820a47350e4327f7fd))
+* replace dead oh-my-agent.dev URL with GitHub Pages link ([bdcaf6e](https://github.com/first-fluke/oh-my-agent/commit/bdcaf6efa25483ed4cfe291745d2351aa7987dec))
+
+
+### Documentation
+
+* add Vietnamese web content and register vi locale ([53e7fd1](https://github.com/first-fluke/oh-my-agent/commit/53e7fd12e9426963f7b6ec2cee375347bf9e711d))
+
+
+### Miscellaneous
+
+* **main:** release cli 4.20.0 ([5e3dbb4](https://github.com/first-fluke/oh-my-agent/commit/5e3dbb464f48687c074886e0e3b5ee3cc1018cee))
+* **main:** release cli 4.20.0 ([068d3b8](https://github.com/first-fluke/oh-my-agent/commit/068d3b836d5553ef7e1b32682209a5d7b5433d46))
+* **main:** release cli 4.20.0 ([104bfd2](https://github.com/first-fluke/oh-my-agent/commit/104bfd23cbc0251ac7c94fc4666dd98a00cf5530))
+* **main:** release cli 4.20.0 ([f71efc1](https://github.com/first-fluke/oh-my-agent/commit/f71efc10a8e28d456718c318f3ee08132d2a9db8))
+* **main:** release web 0.3.13 ([ed97d0a](https://github.com/first-fluke/oh-my-agent/commit/ed97d0a8c8d8a599a18703c81ad276f55b594fc3))
+* **main:** release web 0.3.13 ([b32295e](https://github.com/first-fluke/oh-my-agent/commit/b32295e5ff7755c3d75077e4b23127a2eccafc6f))
+
+## [4.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.19.0...cli-v4.20.0) (2026-04-02)
+
+
+### Features
+
+* add chrome-devtools MCP server with isolated mode ([bbc162e](https://github.com/first-fluke/oh-my-agent/commit/bbc162e8a4d3b0858c58813b646ba12308fcaeba))
+* add rules installation to CLI install/update pipeline ([c9ae3fc](https://github.com/first-fluke/oh-my-agent/commit/c9ae3fcde48eabb9f43c31890dd0e817e4b78b5f))
+
+
+### Bug Fixes
+
+* redirect stdin from /dev/tty for interactive CLI in pipe install ([4019f59](https://github.com/first-fluke/oh-my-agent/commit/4019f5973a046957c7b835820a47350e4327f7fd))
 
 
 ### Documentation
