@@ -5,7 +5,7 @@
 # CLI priority: --vendor arg > agent_cli_mapping > default_cli > cli-config.yaml's active_vendor > gemini
 
 # Response language setting (ko, en, ja, zh, ...)
-language: ko
+language: en
 
 # Date/time format
 date_format: ISO

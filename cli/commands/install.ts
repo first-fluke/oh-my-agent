@@ -43,6 +43,23 @@ export async function install(): Promise<void> {
   // Detect and offer to remove competing tools
   await promptUninstallCompetitors(process.cwd());
 
+  const language = await p.select({
+    message: "Response language?",
+    options: [
+      { value: "en", label: "English" },
+      { value: "ko", label: "한국어" },
+      { value: "ja", label: "日本語" },
+      { value: "zh", label: "中文" },
+      { value: "vi", label: "Tiếng Việt" },
+    ],
+    initialValue: "en",
+  });
+
+  if (p.isCancel(language)) {
+    p.cancel("Cancelled.");
+    process.exit(0);
+  }
+
   const projectType = await p.select({
     message: "What type of project?",
     options: [
@@ -178,6 +195,16 @@ export async function install(): Promise<void> {
         "qwen",
       ]);
       spinner.stop("Vendor adaptations installed!");
+
+      // Patch user-preferences.yaml with selected language
+      const userPrefsPath = join(cwd, ".agents", "config", "user-preferences.yaml");
+      if (existsSync(userPrefsPath)) {
+        const prefs = readFileSync(userPrefsPath, "utf-8");
+        writeFileSync(
+          userPrefsPath,
+          prefs.replace(/^language:\s*.+$/m, `language: ${language as string}`),
+        );
+      }
 
       const sharedLayoutMigrations = migrateSharedLayout(cwd);
       if (sharedLayoutMigrations.length > 0) {
