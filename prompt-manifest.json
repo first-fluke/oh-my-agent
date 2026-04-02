@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.20.2",
-  "releaseDate": "2026-04-02T14:36:43.955Z",
+  "releaseDate": "2026-04-02T14:38:40.042Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -41,7 +41,7 @@
     },
     {
       "path": ".agents/config/user-preferences.yaml",
-      "sha256": "d0c4e6a49f9452c1bdddb0e4352e143b53b784364123c1573b7e903d7a490a90",
+      "sha256": "65659e9ed1c114aec5e60f8fd4e35d21127d8b33a7cb02a8bcdf3a7d0d3fbb7b",
       "size": 570
     },
     {
