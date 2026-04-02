@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.18.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.4...cli-v4.18.5) (2026-04-02)
+
+
+### Bug Fixes
+
+* reduce false positives in keyword-detector and improve persistent mode deactivation ([8f1cd67](https://github.com/first-fluke/oh-my-agent/commit/8f1cd679d770b1be46e5ec2b56633b43477f0657))
+
 ## [4.18.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.3...cli-v4.18.4) (2026-04-01)
 
 
