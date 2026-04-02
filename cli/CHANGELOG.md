@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.20.1...cli-v4.20.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* detect active competitor installs instead of leftover directories ([a437845](https://github.com/first-fluke/oh-my-agent/commit/a43784573c1b8e4e8ab05a051a07813177601122))
+* remove chore type from changelog sections ([7098d92](https://github.com/first-fluke/oh-my-agent/commit/7098d92d3d472c4abfb7320c7d998895e0e5bd33))
+* rewrite i18n guide in English and align frontmatter format ([fbe5a8f](https://github.com/first-fluke/oh-my-agent/commit/fbe5a8f661abf12ea7aad4d3bac565a062ae9730))
+
 ## [4.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.20.0...cli-v4.20.1) (2026-04-02)
 
 
