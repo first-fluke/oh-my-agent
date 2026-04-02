@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.19.0...cli-v4.20.0) (2026-04-02)
+
+
+### Features
+
+* add chrome-devtools MCP server with isolated mode ([bbc162e](https://github.com/first-fluke/oh-my-agent/commit/bbc162e8a4d3b0858c58813b646ba12308fcaeba))
+* add rules installation to CLI install/update pipeline ([c9ae3fc](https://github.com/first-fluke/oh-my-agent/commit/c9ae3fcde48eabb9f43c31890dd0e817e4b78b5f))
+
+
+### Documentation
+
+* add Vietnamese web content and register vi locale ([53e7fd1](https://github.com/first-fluke/oh-my-agent/commit/53e7fd12e9426963f7b6ec2cee375347bf9e711d))
+
 ## [4.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.18.5...cli-v4.19.0) (2026-04-02)
 
 
