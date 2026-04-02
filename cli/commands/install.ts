@@ -47,7 +47,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   ru: "Русский",
 };
 
-function scanLanguages(
+export function scanLanguages(
   repoDir: string,
 ): { value: string; label: string }[] {
   const docsDir = join(repoDir, "docs");

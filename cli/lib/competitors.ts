@@ -10,7 +10,7 @@ interface Competitor {
   uninstall: () => void;
 }
 
-function cleanLeftoverDirs(cwd: string): void {
+export function cleanLeftoverDirs(cwd: string): void {
   for (const dir of [".omc", ".omx"]) {
     const target = join(cwd, dir);
     if (existsSync(target)) rmSync(target, { recursive: true, force: true });
