@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.22.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.0...cli-v4.22.1) (2026-04-03)
+
+
+### Documentation
+
+* add /oma-translator skill reference to i18n guide ([75db46c](https://github.com/first-fluke/oh-my-agent/commit/75db46cc53abef019ec4455a5fb7501d3a9631fb))
+
 ## [4.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.21.0...cli-v4.22.0) (2026-04-02)
 
 
