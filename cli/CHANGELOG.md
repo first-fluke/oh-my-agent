@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.22.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.2...cli-v4.22.3) (2026-04-04)
+
+
+### Bug Fixes
+
+* harden installer bootstrap ([3c214f3](https://github.com/first-fluke/oh-my-agent/commit/3c214f3644f236ccbd3d982dd9ca3899853e1d97))
+
 ## [4.22.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.1...cli-v4.22.2) (2026-04-03)
 
 
