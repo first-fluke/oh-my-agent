@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.22.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.1...cli-v4.22.2) (2026-04-03)
+
+
+### Bug Fixes
+
+* **cli:** separate update flow from install ([7bf8bf9](https://github.com/first-fluke/oh-my-agent/commit/7bf8bf9f30959e32166edeba51ac9adf8139c3e8))
+
+
+### Documentation
+
+* add benchmark prompt ([fce19ec](https://github.com/first-fluke/oh-my-agent/commit/fce19ec28e681e5bf7cccf2eaf7460bb91e817d1))
+
 ## [4.22.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.0...cli-v4.22.1) (2026-04-03)
 
 
