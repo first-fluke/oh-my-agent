@@ -17,7 +17,7 @@ AIアシスタントに同僚がいたらいいのに、って思ったことあ
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # または手動で
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 プリセットを選べばすぐ使えます:

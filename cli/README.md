@@ -17,8 +17,10 @@ Works with all major AI IDEs: Antigravity, Claude Code, Cursor, Gemini CLI, Code
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # Or manual
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
+
+`install.sh` supports macOS/Linux only. On Windows, install `bun` and `uv` manually, then run `bunx oh-my-agent@latest`.
 
 Pick a preset and you're ready:
 

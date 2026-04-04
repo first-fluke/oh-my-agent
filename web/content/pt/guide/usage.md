@@ -409,7 +409,7 @@ A flag `-w` em `agent:spawn` isola um agente em um diretório específico. Isso 
 
 | Problema | Causa | Solução |
 |----------|-------|--------|
-| Skills não detectadas na IDE | `.agents/skills/` ausente ou sem arquivos `SKILL.md` | Execute o instalador (`bunx oh-my-agent`), verifique symlinks em `.claude/skills/`, reinicie a IDE |
+| Skills não detectadas na IDE | `.agents/skills/` ausente ou sem arquivos `SKILL.md` | Execute o instalador (`bunx oh-my-agent@latest`), verifique symlinks em `.claude/skills/`, reinicie a IDE |
 | CLI não encontrada ao spawnar | CLI de IA não instalada globalmente | `which gemini` / `which claude` — instale CLIs ausentes conforme o guia de instalação |
 | Agentes produzindo código conflitante | Sem isolamento de workspace | Use workspaces separados: `-w ./apps/api`, `-w ./apps/web` |
 | Dashboard mostra "No agents detected" | Agentes ainda não escreveram na memória | Espere agentes iniciarem (primeira escrita no turno 1), ou verifique se session ID corresponde |

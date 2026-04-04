@@ -409,7 +409,7 @@ oma dashboard:web
 
 | 问题 | 原因 | 解决方案 |
 |------|------|---------|
-| IDE 中未检测到技能 | `.agents/skills/` 缺失或没有 `SKILL.md` 文件 | 运行安装器（`bunx oh-my-agent`），验证 `.claude/skills/` 中的符号链接，重启 IDE |
+| IDE 中未检测到技能 | `.agents/skills/` 缺失或没有 `SKILL.md` 文件 | 运行安装器（`bunx oh-my-agent@latest`），验证 `.claude/skills/` 中的符号链接，重启 IDE |
 | 启动时找不到 CLI | AI CLI 未全局安装 | `which gemini` / `which claude` —— 按安装指南安装缺失的 CLI |
 | 智能体产生冲突的代码 | 无工作区隔离 | 使用独立工作区：`-w ./apps/api`、`-w ./apps/web` |
 | 仪表盘显示"未检测到智能体" | 智能体尚未写入内存 | 等待智能体开始（第 1 轮时首次写入），或验证会话 ID 匹配 |

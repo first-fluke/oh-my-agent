@@ -19,6 +19,8 @@ description: oh-my-agent 설치 가이드 — 세 가지 설치 방법, 6개 프
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
+이 부트스트랩 스크립트는 macOS와 Linux만 지원합니다. Windows에서는 `bun`과 `uv`를 먼저 설치한 뒤 `bunx oh-my-agent@latest`를 실행하세요.
+
 이 스크립트는:
 1. 플랫폼을 감지합니다 (macOS, Linux)
 2. bun과 uv를 확인하고, 없으면 설치합니다
@@ -34,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 ## 방법 2: bunx를 통한 수동 설치
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 의존성 자동 설치 과정 없이 대화형 설치 프로그램을 바로 실행합니다. bun이 미리 설치되어 있어야 합니다.
@@ -278,7 +280,7 @@ oma update
 프로젝트 내의 스킬과 워크플로우는 자동 업데이트용 GitHub Action(`action/`)을 통해 또는 설치 프로그램을 다시 실행하여 수동으로 업데이트할 수 있습니다:
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 설치 프로그램은 기존 설치를 감지하고 `user-preferences.yaml` 및 사용자 지정 설정을 유지하면서 업데이트를 제안합니다.

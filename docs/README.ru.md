@@ -17,7 +17,7 @@
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # Или вручную
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Выберите пресет — и готово:

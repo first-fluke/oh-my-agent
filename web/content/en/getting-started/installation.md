@@ -19,6 +19,8 @@ description: Complete installation guide for oh-my-agent — three install metho
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
+This bootstrap script supports macOS and Linux only. On Windows, install `bun` and `uv` manually, then run `bunx oh-my-agent@latest`.
+
 This script:
 1. Detects your platform (macOS, Linux)
 2. Checks for bun and uv, installing them if missing
@@ -34,7 +36,7 @@ Typical install time: under 60 seconds.
 ## Method 2: Manual Install via bunx
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 This launches the interactive installer without the dependency bootstrap. You need bun already installed.
@@ -278,7 +280,7 @@ This updates the global oh-my-agent CLI to the latest version.
 Skills and workflows within a project can be updated via the GitHub Action (`action/`) for automated updates, or manually by re-running the installer:
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 The installer detects existing installations and offers to update while preserving your `user-preferences.yaml` and any custom configuration.

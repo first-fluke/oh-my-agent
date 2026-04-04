@@ -17,7 +17,7 @@ Funktioniert mit allen großen KI-IDEs: Antigravity, Claude Code, Cursor, Gemini
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # Oder manuell
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Wähl ein Preset und los geht's:

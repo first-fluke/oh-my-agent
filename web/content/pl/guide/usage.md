@@ -199,7 +199,7 @@ oh-my-agent wykrywa słowa kluczowe workflow w 11 językach:
 
 | Problem | Przyczyna | Rozwiązanie |
 |---------|-------|-----|
-| Umiejętności nie wykryte w IDE | Brak `.agents/skills/` lub plików `SKILL.md` | Uruchom instalator (`bunx oh-my-agent`), zweryfikuj symlinki, uruchom ponownie IDE |
+| Umiejętności nie wykryte w IDE | Brak `.agents/skills/` lub plików `SKILL.md` | Uruchom instalator (`bunx oh-my-agent@latest`), zweryfikuj symlinki, uruchom ponownie IDE |
 | CLI nie znalezione przy uruchamianiu | AI CLI nie zainstalowane globalnie | `which gemini` / `which claude` — zainstaluj brakujące CLI |
 | Agenci produkują konfliktujący kod | Brak izolacji przestrzeni roboczej | Użyj oddzielnych przestrzeni roboczych: `-w ./apps/api`, `-w ./apps/web` |
 | Panel pokazuje "No agents detected" | Agenci jeszcze nie zapisali do pamięci | Poczekaj na start agentów lub zweryfikuj ID sesji |

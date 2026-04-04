@@ -17,8 +17,10 @@ AI 하나가 전부 다 하다가 중간에 길을 잃는 대신, oh-my-agent는
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # 또는 직접 실행
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
+
+`install.sh`는 macOS/Linux만 지원합니다. Windows에서는 `bun`과 `uv`를 먼저 설치한 뒤 `bunx oh-my-agent@latest`를 실행하세요.
 
 프리셋 하나 고르면 바로 시작:
 

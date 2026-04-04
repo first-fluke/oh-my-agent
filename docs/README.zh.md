@@ -17,7 +17,7 @@
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # 或者手动运行
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 选个预设就能开始：

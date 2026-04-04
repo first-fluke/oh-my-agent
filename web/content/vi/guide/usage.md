@@ -204,7 +204,7 @@ Cập nhật thời gian thực qua WebSocket, tự kết nối lại, chỉ bá
 
 | Vấn đề | Nguyên nhân | Giải pháp |
 |---------|-------|-----|
-| IDE không phát hiện skill | `.agents/skills/` thiếu hoặc không có file `SKILL.md` | Chạy trình cài đặt (`bunx oh-my-agent`), kiểm tra symlink trong `.claude/skills/`, khởi động lại IDE |
+| IDE không phát hiện skill | `.agents/skills/` thiếu hoặc không có file `SKILL.md` | Chạy trình cài đặt (`bunx oh-my-agent@latest`), kiểm tra symlink trong `.claude/skills/`, khởi động lại IDE |
 | Không tìm thấy CLI khi spawn | AI CLI chưa cài toàn cục | `which gemini` / `which claude` — cài CLI thiếu theo hướng dẫn cài đặt |
 | Agent tạo mã xung đột | Không cô lập workspace | Dùng workspace riêng: `-w ./apps/api`, `-w ./apps/web` |
 | Dashboard hiện "No agents detected" | Agent chưa ghi vào bộ nhớ | Đợi agent khởi động (ghi đầu tiên ở lượt 1), hoặc xác minh session ID khớp |

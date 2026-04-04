@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 ## 方式二：通过 bunx 手动安装
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 这会启动交互式安装程序，无需依赖引导。你需要已经安装了 bun。
@@ -278,7 +278,7 @@ oma update
 项目中的技能和工作流可以通过 GitHub Action（`action/`）进行自动更新，或通过重新运行安装程序手动更新：
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 安装程序会检测现有安装并提供更新选项，同时保留你的 `user-preferences.yaml` 和任何自定义配置。

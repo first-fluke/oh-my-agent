@@ -17,7 +17,7 @@ Funciona con todos los IDEs de IA principales: Antigravity, Claude Code, Cursor,
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # O manualmente
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Elige un preset y listo:

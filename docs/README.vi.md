@@ -17,7 +17,7 @@ Hỗ trợ tất cả các AI IDE chính: Antigravity, Claude Code, Cursor, Gemi
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # Hoặc chạy trực tiếp
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Chọn một preset và bạn đã sẵn sàng:

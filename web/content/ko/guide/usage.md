@@ -413,7 +413,7 @@ oma dashboard:web
 
 | 문제 | 원인 | 해결 방법 |
 |---------|-------|-----|
-| IDE에서 스킬이 감지되지 않음 | `.agents/skills/`가 누락되었거나 `SKILL.md` 파일이 없음 | 설치 프로그램 실행(`bunx oh-my-agent`), `.claude/skills/`의 심볼릭 링크 확인, IDE 재시작 |
+| IDE에서 스킬이 감지되지 않음 | `.agents/skills/`가 누락되었거나 `SKILL.md` 파일이 없음 | 설치 프로그램 실행(`bunx oh-my-agent@latest`), `.claude/skills/`의 심볼릭 링크 확인, IDE 재시작 |
 | 스폰 시 CLI를 찾을 수 없음 | AI CLI가 전역으로 설치되지 않음 | `which gemini` / `which claude` — 설치 가이드에 따라 누락된 CLI 설치 |
 | 에이전트가 충돌하는 코드 생성 | 워크스페이스 격리 없음 | 별도 워크스페이스 사용: `-w ./apps/api`, `-w ./apps/web` |
 | 대시보드에 "No agents detected" 표시 | 에이전트가 아직 메모리에 쓰지 않음 | 에이전트 시작 대기(첫 번째 쓰기는 턴 1), 또는 세션 ID가 일치하는지 확인 |

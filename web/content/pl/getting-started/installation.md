@@ -34,7 +34,7 @@ Typowy czas instalacji: poniżej 60 sekund.
 ## Metoda 2: Ręczna instalacja przez bunx
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Uruchamia interaktywny instalator bez bootstrapu zależności. Wymaga wcześniej zainstalowanego bun.
@@ -278,7 +278,7 @@ Aktualizuje globalne CLI oh-my-agent do najnowszej wersji.
 Umiejętności i workflow w projekcie mogą być aktualizowane przez GitHub Action (`action/`) do automatycznych aktualizacji, lub ręcznie przez ponowne uruchomienie instalatora:
 
 ```bash
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Instalator wykrywa istniejące instalacje i oferuje aktualizację z zachowaniem `user-preferences.yaml` i dowolnej niestandardowej konfiguracji.

@@ -17,7 +17,7 @@ Werkt met alle grote AI IDE's: Antigravity, Claude Code, Cursor, Gemini CLI, Cod
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 
 # Of handmatig
-bunx oh-my-agent
+bunx oh-my-agent@latest
 ```
 
 Kies een preset en je bent klaar:

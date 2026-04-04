@@ -413,7 +413,7 @@ The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This i
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
-| Skills not detected in IDE | `.agents/skills/` missing or no `SKILL.md` files | Run the installer (`bunx oh-my-agent`), verify symlinks in `.claude/skills/`, restart IDE |
+| Skills not detected in IDE | `.agents/skills/` missing or no `SKILL.md` files | Run the installer (`bunx oh-my-agent@latest`), verify symlinks in `.claude/skills/`, restart IDE |
 | CLI not found when spawning | AI CLI not installed globally | `which gemini` / `which claude` — install missing CLIs per the installation guide |
 | Agents producing conflicting code | No workspace isolation | Use separate workspaces: `-w ./apps/api`, `-w ./apps/web` |
 | Dashboard shows "No agents detected" | Agents have not written to memory yet | Wait for agents to start (first write at turn 1), or verify session ID matches |
