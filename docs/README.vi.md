@@ -49,6 +49,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-translator** | Dịch thuật đa ngôn ngữ tự nhiên |
 | **oma-orchestrator** | Thực thi agent song song qua CLI |
 | **oma-commit** | Conventional commit gọn gàng |
+| **oma-pdf** | Chuyển đổi PDF sang Markdown |
 
 ## Cách hoạt động
 

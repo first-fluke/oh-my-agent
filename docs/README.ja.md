@@ -49,6 +49,7 @@ bunx oh-my-agent@latest
 | **oma-translator** | 自然な多言語翻訳 |
 | **oma-orchestrator** | CLI経由の並列エージェント実行 |
 | **oma-commit** | きれいなconventional commit |
+| **oma-pdf** | PDFからMarkdownへの変換 |
 
 ## 仕組み
 

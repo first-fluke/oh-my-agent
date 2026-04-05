@@ -49,6 +49,7 @@ bunx oh-my-agent@latest
 | **oma-translator** | Естественный мультиязычный перевод |
 | **oma-orchestrator** | Параллельный запуск агентов через CLI |
 | **oma-commit** | Чистые conventional commits |
+| **oma-pdf** | Конвертация PDF в Markdown |
 
 ## Как это работает
 

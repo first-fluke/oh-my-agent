@@ -51,6 +51,7 @@ Pick a preset and you're ready:
 | **oma-translator** | Natural multilingual translation |
 | **oma-orchestrator** | Parallel agent execution via CLI |
 | **oma-commit** | Clean conventional commits |
+| **oma-pdf** | PDF to Markdown conversion |
 
 ## How It Works
 

@@ -49,6 +49,7 @@ Kies een preset en je bent klaar:
 | **oma-translator** | Natuurlijke meertalige vertaling |
 | **oma-orchestrator** | Parallelle agent-uitvoering via CLI |
 | **oma-commit** | Nette conventional commits |
+| **oma-pdf** | PDF naar Markdown conversie |
 
 ## Hoe het werkt
 

@@ -49,6 +49,7 @@ Escolha um preset e pronto:
 | **oma-translator** | Traducao multilingual natural |
 | **oma-orchestrator** | Execucao paralela de agentes via CLI |
 | **oma-commit** | Commits convencionais limpos |
+| **oma-pdf** | Conversão de PDF para Markdown |
 
 ## Como Funciona
 

@@ -49,6 +49,7 @@ bunx oh-my-agent@latest
 | **oma-translator** | 自然的多语言翻译 |
 | **oma-orchestrator** | 通过 CLI 并行执行 agent |
 | **oma-commit** | 干净的 conventional commit |
+| **oma-pdf** | PDF 转 Markdown |
 
 ## 工作原理
 

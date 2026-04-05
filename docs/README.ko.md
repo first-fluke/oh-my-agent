@@ -51,6 +51,7 @@ bunx oh-my-agent@latest
 | **oma-translator** | 자연스러운 다국어 번역 |
 | **oma-orchestrator** | CLI를 통한 병렬 에이전트 실행 |
 | **oma-commit** | 깔끔한 conventional commit |
+| **oma-pdf** | PDF를 Markdown으로 변환 |
 
 ## 작동 방식
 
