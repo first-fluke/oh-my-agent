@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.4...cli-v4.23.0) (2026-04-05)
+
+
+### Features
+
+* **cli:** register oma-pdf in skills registry and antigravity config ([86609e4](https://github.com/first-fluke/oh-my-agent/commit/86609e4b01851e0dbe702a75f09414d0ed1fa3c2))
+* **skills:** add oma-pdf skill for PDF to Markdown conversion ([8cce569](https://github.com/first-fluke/oh-my-agent/commit/8cce569fd5a2048c8f0479f50d7fbec31e66f309))
+
 ## [4.22.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.3...cli-v4.22.4) (2026-04-05)
 
 
