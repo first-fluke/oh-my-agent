@@ -1,43 +1,43 @@
 {
   "name": "oh-my-agent",
   "version": "4.22.4",
-  "releaseDate": "2026-04-04T08:26:18.873Z",
+  "releaseDate": "2026-04-05T01:46:58.753Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
       "path": ".agents/agents/backend-engineer.md",
-      "sha256": "0d252c5cff56d7e28b83c6919b0477e7426ea9736f0d7c77adfe4fd9f90e6a7e",
-      "size": 1625
+      "sha256": "cba0d029800197ac2f3cff846e502fe37d0bf46222b2535ee0f25946d2d1f260",
+      "size": 1686
     },
     {
       "path": ".agents/agents/db-engineer.md",
-      "sha256": "3927ebc7e4b4f0236a4b787477682001ae6f9e48c4358f17f47c6efd926efe80",
-      "size": 1333
+      "sha256": "e14ecaaf69fefb21cc01bec04069b2ffa129daa1fb648e13df40928c779d1de6",
+      "size": 1389
     },
     {
       "path": ".agents/agents/debug-investigator.md",
-      "sha256": "c5ec7e4afcedb652732a94b89491b2737681432d8d9ac652e1f19d59094d896d",
-      "size": 1475
+      "sha256": "186105db9c39cff043800c3c94b1ae3a7bdd2aff47c09fe8ab401fb7335484a6",
+      "size": 1534
     },
     {
       "path": ".agents/agents/frontend-engineer.md",
-      "sha256": "916c5a602468edb5fa781f91b879f01223bd57a0e333cbe88873c1693e5c134c",
-      "size": 1358
+      "sha256": "75328a01f5c103ed96358574b718c5d1621d2a68456c7de1ab0a53173567b2cb",
+      "size": 1420
     },
     {
       "path": ".agents/agents/mobile-engineer.md",
-      "sha256": "8062994911f321a33192f4d547df15a8f11c9256918d9ff943cf9df383ba8a97",
-      "size": 1156
+      "sha256": "0bceca4dbff294f473a708a65f2e468adcd6d69ac6c7d611e12c7352aefd7934",
+      "size": 1216
     },
     {
       "path": ".agents/agents/pm-planner.md",
-      "sha256": "222dd6ca99e25f230620b6f2cecddf2fa333fda8e0c30997d57b9a5ff3455100",
-      "size": 1711
+      "sha256": "40eda97909427e0e29c8cd393f9888cd34c22b1886de877760aaff34ab14afa3",
+      "size": 1767
     },
     {
       "path": ".agents/agents/qa-reviewer.md",
-      "sha256": "8d359925995121ba0d2fc3c1f9d53c4d383f08ba99e7367114dc8de9ebf1da57",
-      "size": 1844
+      "sha256": "0482d670ddcee366b073e65cd6b2c26ec16e76bf428af45ecdcbbbdff5a81183",
+      "size": 1900
     },
     {
       "path": ".agents/config/user-preferences.yaml",
@@ -151,32 +151,32 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/claude.md",
-      "sha256": "002243f4e2c8571cf4b78279367e535ea963c810f68ebe14c873d5f00afe5e58",
-      "size": 1008
+      "sha256": "70e885bfa4f169654e18727060a31a62032fdbe0841dd59f0a460982e6bcf703",
+      "size": 1617
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/codex.md",
-      "sha256": "29ab1dbc09d7aa4d21ed12277dd020db4def8d75abfbb612f265d2c340a78afc",
-      "size": 876
+      "sha256": "4515aac95097086e3c1fc05c58b39e0c40404616c9f1027aa00d92a5d234710a",
+      "size": 1485
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
-      "sha256": "d21e8289d79809c7cfe4ff44904c110897c3d7e8677853e2bb9bfe0c2c03fdb8",
-      "size": 1164
+      "sha256": "e756cb73205b3ac3d67e8da63e104c853b2b8798b042dfc38a5daa39bc71ba99",
+      "size": 1698
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/qwen.md",
-      "sha256": "95d1e4e6942611c65874e7689ad125c2e573c73fd077146b5e0a470ea0177e73",
-      "size": 1080
+      "sha256": "336543b53282b280ae7e79e45d33db30a34ae24b261182ea7c55dfe8d672675c",
+      "size": 1614
     },
     {
       "path": ".agents/skills/_shared/runtime/memory-protocol.md",
-      "sha256": "64f85827f3c1e87b23e2383e2a08e3938d3e36b0d430ede23481d61e1a5ccdf0",
-      "size": 3143
+      "sha256": "f874f485643562109ddf9c4b6ff00956035f1e30f076d0589e270c7c50c5a991",
+      "size": 3741
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "4244f3b7ee5d27c989e997de5051b05108289d2c6860c585775679b9c69d8912",
+      "sha256": "5df1d3fb2b7470b792108623285bfe8a6037382f75df6534768e2d1f3e70cddb",
       "size": 25
     },
     {
@@ -191,8 +191,8 @@
     },
     {
       "path": ".agents/skills/oma-backend/resources/error-playbook.md",
-      "sha256": "242435cb4dad42205b1aafc2a8bda88f74b144183200dd66c3d1dd4dfb282c36",
-      "size": 3598
+      "sha256": "c757ed0456e71c0aede4f8cabed54cd3ee37fbce55b884407776d05725088eae",
+      "size": 3654
     },
     {
       "path": ".agents/skills/oma-backend/resources/examples.md",
@@ -516,8 +516,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/error-playbook.md",
-      "sha256": "f86a2d4e2aae6192c6dfe6919a6043240ba868a946b1248af6173d162e094d4e",
-      "size": 3901
+      "sha256": "b52350e8f53cecf2becffe25e31196b2124ff7db41115ae1bbf2e0606ab4559c",
+      "size": 3943
     },
     {
       "path": ".agents/skills/oma-frontend/resources/examples.md",
@@ -586,8 +586,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestrator/SKILL.md",
-      "sha256": "60ef82eee5751f94b9f6d7511663eb2d29a6875f688d3ffba39229605387b2f2",
-      "size": 7381
+      "sha256": "5b78be89bfc836abcbbb6240fcb3211870ebb26eab8b6845dfd914dfa0901d9f",
+      "size": 7421
     },
     {
       "path": ".agents/skills/oma-orchestrator/config/cli-config.yaml",
@@ -596,8 +596,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestrator/resources/memory-schema.md",
-      "sha256": "94f4640a48c9632497c13173c3523d85ef5b4138eb3a2ad5f9b595be7c528705",
-      "size": 5865
+      "sha256": "ac270fd907ccd72e4dd219c700ff8de66d9b9741ca2bc4f273dc5e56117282db",
+      "size": 6127
     },
     {
       "path": ".agents/skills/oma-orchestrator/resources/subagent-prompt-template.md",
@@ -696,8 +696,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/error-playbook.md",
-      "sha256": "8320c3d2e983749e727bc5f9c811367f60f541dcd7c0c2f5d20f4c34d969cefe",
-      "size": 3280
+      "sha256": "238e69e5fd671fbc83429969d912988fe806d3a57d036d61d5ddca76b847c823",
+      "size": 3322
     },
     {
       "path": ".agents/skills/oma-qa/resources/examples.md",
@@ -821,8 +821,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "5ce4a06b5d9ce913421650c7799fe43cfb3cf09423e2b3908468eb22ea2b8e19",
-      "size": 6914
+      "sha256": "c4bb40e26438d55125efc7ece9b1ce61fe80e2477ea0973ddf79e1add7bc3435",
+      "size": 6926
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -866,8 +866,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "ddd9e6ab89865787afd6389ae350d2b08e959ae4f52e534728f4ac90060714b0",
-      "size": 15681
+      "sha256": "add1f726e35660cef4bfe5b4c68def8679ba6fab6ffa01acfbacd1e00434fdb7",
+      "size": 15793
     },
     {
       "path": ".claude/skills/brainstorm/SKILL.md",
@@ -941,43 +941,43 @@
     },
     {
       "path": ".claude/agents/backend-engineer.md",
-      "sha256": "1e0d35ad44290a4f8cd291890e23cef5bc52244a8301117aece4f1791de909ea",
-      "size": 1802
+      "sha256": "455d13f2f87c35864dbc45f4687a4ca9bd8f090faa55c2b35e233a00f8fae124",
+      "size": 1863
     },
     {
       "path": ".claude/agents/db-engineer.md",
-      "sha256": "d252f613384ee6ea36a5c767480044f24fbe62bc40699f920d93639b3a6aee06",
-      "size": 1556
+      "sha256": "79f8f956ad7d43347f32bc2c8770e6243ed7f70d6e24bb5b70dc047c618154c6",
+      "size": 1612
     },
     {
       "path": ".claude/agents/debug-investigator.md",
-      "sha256": "96df894f19b4f5517db4d404c696794dcd922566cde2e32ea8fb8aa5f644f246",
-      "size": 1705
+      "sha256": "df98326fd1af8ca9508263efd58b7fce216c789789fae190cd3d6c55110ba596",
+      "size": 1764
     },
     {
       "path": ".claude/agents/designer.md",
-      "sha256": "d22e7f01c509f86aaf337e24506fe52b56490b1312dd9c01d432fbe8824c30cc",
-      "size": 1934
+      "sha256": "319376161447626cd3d6aa7a57e50db0bb797b068802d88c3182a8336d44e2fa",
+      "size": 1996
     },
     {
       "path": ".claude/agents/frontend-engineer.md",
-      "sha256": "17202457b64e893760f4b62864b2261536321e0dc4cbe11b730807b0f0d4bac8",
-      "size": 1587
+      "sha256": "a082f64872eee6d68a7d7c7ab09d1cde2497cb53f29d5c9f900152d4bf4fca2b",
+      "size": 1649
     },
     {
       "path": ".claude/agents/mobile-engineer.md",
-      "sha256": "2ca3736318fd1362b35260690b222085d073a372ddb0acc769e0364d7b96dce2",
-      "size": 1383
+      "sha256": "5a0cb34396964b1f291a5acb87beca5b77b431765a924b4b6f404001f8fedc98",
+      "size": 1443
     },
     {
       "path": ".claude/agents/pm-planner.md",
-      "sha256": "db32144163acfc856c82295597c9be095b3fb7bfa3d16ee100d43450a5d3c9bd",
-      "size": 1912
+      "sha256": "1237fb766879a24f2186cfefc8c4deb28cd48d394ef77ce479c231fe544f8ce7",
+      "size": 1968
     },
     {
       "path": ".claude/agents/qa-reviewer.md",
-      "sha256": "1395cdb3f096ec0ad7a102da751f258cbdc29d40ab4d62115b29b0f4275d0aa1",
-      "size": 2054
+      "sha256": "868b7a488c315dbf2ac421dbfdf8deed405da0e77c26823aaa0cecf215565036",
+      "size": 2110
     }
   ],
   "checksums": {
