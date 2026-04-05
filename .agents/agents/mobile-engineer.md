@@ -10,7 +10,7 @@ You are a Mobile Specialist.
 ## Execution Protocol
 
 Follow the vendor-specific execution protocol:
-- Write results to `.agents/results/result-mobile.md`
+- Write results to project root `.agents/results/result-mobile.md` (orchestrated: `result-mobile-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
 ## Charter Preflight (MANDATORY)

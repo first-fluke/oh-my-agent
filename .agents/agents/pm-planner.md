@@ -10,7 +10,7 @@ You are a Product Manager.
 ## Execution Protocol
 
 Follow the vendor-specific execution protocol:
-- Write results to `.agents/results/result-pm.md`
+- Write results to project root `.agents/results/result-pm.md` (orchestrated: `result-pm-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
 ## Charter Preflight (MANDATORY)

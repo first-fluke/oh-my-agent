@@ -55,7 +55,7 @@ function getActiveWorkflow(projectDir: string): ModeState | null {
 
   try {
     for (const file of readdirSync(stateDir)) {
-      if (!file.endsWith("-state.json")) continue;
+      if (!file.endsWith(".json") || !file.includes("-state-")) continue;
       const content = readFileSync(join(stateDir, file), "utf-8");
       const state: ModeState = JSON.parse(content);
 

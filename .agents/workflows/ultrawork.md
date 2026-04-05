@@ -104,9 +104,9 @@ wait
 
 **Wait for all implementation agents to complete before proceeding.**
 
-1. Use memory read tool to poll `progress-{agent}.md` files
+1. Use memory read tool to poll `progress-{agent}[-{sessionId}].md` files
 2. Use MCP code analysis tools to verify implementation alignment
-3. Check for `result-{agent}.md` files to confirm completion
+3. Check for `result-{agent}[-{sessionId}].md` files to confirm completion
 4. Use memory edit tool to record monitoring results in `session-ultrawork.md`
 
 **Continue polling until all agents report completion or failure.**
@@ -158,8 +158,8 @@ oh-my-ag agent:spawn qa-agent "Execute Phase 3 Verification. Step 6: Alignment R
 
 **Wait for QA Agent to complete verification before proceeding.**
 
-1. Use memory read tool to poll `progress-qa-agent.md`
-2. Check for `result-qa-agent.md` to confirm completion
+1. Use memory read tool to poll `progress-qa-agent[-{sessionId}].md`
+2. Check for `result-qa-agent[-{sessionId}].md` to confirm completion
 3. Use memory edit tool to record QA results in `session-ultrawork.md`
 
 **Continue polling until QA Agent reports completion.**
@@ -226,8 +226,8 @@ oh-my-ag agent:spawn debug-agent "Execute Phase 4 Refine. Step 9: Split large fi
 
 **Wait for Debug Agent to complete refinement before proceeding.**
 
-1. Use memory read tool to poll `progress-debug-agent.md`
-2. Check for `result-debug-agent.md` to confirm completion
+1. Use memory read tool to poll `progress-debug-agent[-{sessionId}].md`
+2. Check for `result-debug-agent[-{sessionId}].md` to confirm completion
 3. Use memory edit tool to record refinement results in `session-ultrawork.md`
 
 **Continue polling until Debug Agent reports completion.**
@@ -294,8 +294,8 @@ oh-my-ag agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (li
 
 **Wait for QA Agent to complete final review before proceeding.**
 
-1. Use memory read tool to poll `progress-qa-agent.md`
-2. Check for `result-qa-agent.md` to confirm completion
+1. Use memory read tool to poll `progress-qa-agent[-{sessionId}].md`
+2. Check for `result-qa-agent[-{sessionId}].md` to confirm completion
 3. Use memory edit tool to record final QA results in `session-ultrawork.md`
 
 **Continue polling until QA Agent reports completion.**

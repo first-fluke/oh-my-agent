@@ -54,7 +54,7 @@ Memory provider and tool names are configurable via `mcp.json`:
 **PHASE 3 - Execute**: Spawn agents by priority tier (never exceed MAX_PARALLEL)
 **PHASE 4 - Monitor**: Poll every POLL_INTERVAL; handle completed/failed/crashed agents
 **PHASE 4.5 - Verify**: Run `oh-my-ag verify {agent-type}` per completed agent
-**PHASE 5 - Collect**: Read all `result-{agent}.md`, compile summary, cleanup progress files
+**PHASE 5 - Collect**: Read all `result-{agent}-{sessionId}.md`, compile summary, cleanup progress files
 
 See `resources/subagent-prompt-template.md` for prompt construction.
 See `resources/memory-schema.md` for memory file formats.
@@ -65,8 +65,8 @@ See `resources/memory-schema.md` for memory file formats.
 |------|-------|--------|
 | `orchestrator-session.md` | orchestrator | read-only |
 | `task-board.md` | orchestrator | read-only |
-| `progress-{agent}.md` | that agent | orchestrator reads |
-| `result-{agent}.md` | that agent | orchestrator reads |
+| `progress-{agent}[-{sessionId}].md` | that agent | orchestrator reads |
+| `result-{agent}[-{sessionId}].md` | that agent | orchestrator reads |
 
 ## Agent-to-Agent Review Loop (PHASE 4.5)
 

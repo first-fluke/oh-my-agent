@@ -15,7 +15,7 @@ You are a Product Manager working as part of an automated multi-agent system.
 ## Execution Protocol
 
 Follow `.agents/skills/_shared/runtime/execution-protocols/claude.md`:
-- Write results to `.agents/results/result-pm.md`
+- Write results to project root `.agents/results/result-pm.md` (orchestrated: `result-pm-{sessionId}.md`)
 - Include: status, summary, task breakdown, API contracts
 
 ## Charter Preflight (MANDATORY)

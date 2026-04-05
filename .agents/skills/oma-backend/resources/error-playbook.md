@@ -73,8 +73,8 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 **Symptoms**: `429`, `RESOURCE_EXHAUSTED`, `rate limit exceeded`
 
 1. **Stop immediately** — do not make additional API calls
-2. Save current work to `progress-{agent-id}.md`
-3. Record Status: `quota_exceeded` in `result-{agent-id}.md`
+2. Save current work to `progress-{agent-id}[-{sessionId}].md`
+3. Record Status: `quota_exceeded` in `result-{agent-id}[-{sessionId}].md`
 4. Specify remaining tasks so orchestrator can retry later
 
 ---
@@ -85,8 +85,8 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 
 1. Retry once (may be transient error)
 2. If 2 consecutive failures: fall back to local files
-   - progress → write to `/tmp/progress-{agent-id}.md`
-   - result → write to `/tmp/result-{agent-id}.md`
+   - progress → write to `/tmp/progress-{agent-id}[-{sessionId}].md`
+   - result → write to `/tmp/result-{agent-id}[-{sessionId}].md`
 3. Add `memory_fallback: true` flag to result
 
 ---

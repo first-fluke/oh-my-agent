@@ -7,6 +7,24 @@ import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 import { formatSessionId, getSessionMeta } from "../lib/memory.js";
 
+/**
+ * Find the result file for an agent, checking session-scoped name first, then legacy name.
+ */
+function findAgentResultFile(
+  rootPath: string,
+  agent: string,
+  sessionId: string,
+): string | null {
+  const memoriesDir = path.join(rootPath, ".serena", "memories");
+  // Try session-scoped name first
+  const sessionFile = path.join(memoriesDir, `result-${agent}-${sessionId}.md`);
+  if (fs.existsSync(sessionFile)) return sessionFile;
+  // Fall back to legacy name
+  const legacyFile = path.join(memoriesDir, `result-${agent}.md`);
+  if (fs.existsSync(legacyFile)) return legacyFile;
+  return null;
+}
+
 // Helper to check if process with PID is running
 function isProcessRunning(pid: number): boolean {
   try {
@@ -732,15 +750,10 @@ export async function checkStatus(
   const results: Record<string, string> = {};
 
   for (const agent of agentIds) {
-    const resultFile = path.join(
-      rootPath,
-      ".serena",
-      "memories",
-      `result-${agent}.md`,
-    );
+    const resultFile = findAgentResultFile(rootPath, agent, sessionId);
     const pidFile = path.join(tmpdir(), `subagent-${sessionId}-${agent}.pid`);
 
-    if (fs.existsSync(resultFile)) {
+    if (resultFile && fs.existsSync(resultFile)) {
       const content = fs.readFileSync(resultFile, "utf-8");
       const match = content.match(/^## Status:\s*(\S+)/m);
       if (match?.[1]) {

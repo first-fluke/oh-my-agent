@@ -214,27 +214,45 @@ describe("keyword-detector", () => {
   });
 
   describe("deactivateAllPersistentModes", () => {
-    it("should delete all state files", () => {
+    it("should delete session-scoped state files matching sessionId", () => {
       (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
         true,
       );
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-        "orchestrate-state.json",
-        "ralph-state.json",
-        "coordinate-state.json",
+        "orchestrate-state-sess1.json",
+        "ralph-state-sess1.json",
+        "coordinate-state-sess2.json",
+      ]);
+
+      deactivateAllPersistentModes("/tmp/project", "sess1");
+
+      expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
+      expect(fs.unlinkSync).toHaveBeenCalledWith(
+        join("/tmp/project", ".agents", "state", "orchestrate-state-sess1.json"),
+      );
+      expect(fs.unlinkSync).toHaveBeenCalledWith(
+        join("/tmp/project", ".agents", "state", "ralph-state-sess1.json"),
+      );
+    });
+
+    it("should delete all state files when no sessionId provided", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+        "orchestrate-state-sess1.json",
+        "ralph-state-sess2.json",
+        "other-file.txt",
       ]);
 
       deactivateAllPersistentModes("/tmp/project");
 
-      expect(fs.unlinkSync).toHaveBeenCalledTimes(3);
+      expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state.json"),
+        join("/tmp/project", ".agents", "state", "orchestrate-state-sess1.json"),
       );
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "ralph-state.json"),
-      );
-      expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "coordinate-state.json"),
+        join("/tmp/project", ".agents", "state", "ralph-state-sess2.json"),
       );
     });
 
@@ -243,16 +261,16 @@ describe("keyword-detector", () => {
         true,
       );
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-        "orchestrate-state.json",
+        "orchestrate-state-sess1.json",
         "other-file.txt",
         ".gitkeep",
       ]);
 
-      deactivateAllPersistentModes("/tmp/project");
+      deactivateAllPersistentModes("/tmp/project", "sess1");
 
       expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state.json"),
+        join("/tmp/project", ".agents", "state", "orchestrate-state-sess1.json"),
       );
     });
 
@@ -261,7 +279,7 @@ describe("keyword-detector", () => {
         false,
       );
 
-      deactivateAllPersistentModes("/tmp/project");
+      deactivateAllPersistentModes("/tmp/project", "sess1");
 
       expect(fs.readdirSync).not.toHaveBeenCalled();
       expect(fs.unlinkSync).not.toHaveBeenCalled();

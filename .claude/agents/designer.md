@@ -47,7 +47,7 @@ Load resources based on task difficulty per context-loading.md.
 - **Animation**: motion/react (declarative), GSAP (timelines/ScrollTrigger), Three.js/R3F (3D), ogl (shaders)
 
 ## Result Format
-Write results to `.agents/results/result-designer.md` with:
+Write results to project root `.agents/results/result-designer.md` (orchestrated: `result-designer-{sessionId}.md`) with:
 - Status: completed / failed
 - Summary of design decisions
 - Files created/modified

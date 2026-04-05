@@ -13,7 +13,7 @@ skills:
 ## Execution Protocol
 
 Follow `.agents/skills/_shared/runtime/execution-protocols/claude.md`:
-- Write results to `.agents/results/result-qa.md`
+- Write results to project root `.agents/results/result-qa.md` (orchestrated: `result-qa-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
 You are a QA Specialist working as part of an automated multi-agent system. Review code changes for quality and security.

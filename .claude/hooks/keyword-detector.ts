@@ -281,7 +281,7 @@ function activateMode(
     reinforcementCount: 0,
   };
   writeFileSync(
-    join(getStateDir(projectDir), `${workflow}-state.json`),
+    join(getStateDir(projectDir), `${workflow}-state-${sessionId}.json`),
     JSON.stringify(state, null, 2),
   );
 }
@@ -311,13 +311,18 @@ export function isDeactivationRequest(prompt: string, lang: string): boolean {
   return phrases.some((phrase) => lower.includes(phrase.toLowerCase()));
 }
 
-export function deactivateAllPersistentModes(projectDir: string): void {
+export function deactivateAllPersistentModes(projectDir: string, sessionId?: string): void {
   const stateDir = join(projectDir, ".agents", "state");
   if (!existsSync(stateDir)) return;
   try {
     const files = readdirSync(stateDir);
     for (const file of files) {
-      if (file.endsWith("-state.json")) {
+      // Match session-scoped state files: {workflow}-state-{sessionId}.json
+      if (sessionId) {
+        if (file.endsWith(`-state-${sessionId}.json`)) {
+          unlinkSync(join(stateDir, file));
+        }
+      } else if (/-state-/.test(file) && file.endsWith(".json")) {
         unlinkSync(join(stateDir, file));
       }
     }
@@ -350,7 +355,7 @@ async function main() {
 
   // Check for deactivation request before workflow detection
   if (isDeactivationRequest(prompt, lang)) {
-    deactivateAllPersistentModes(projectDir);
+    deactivateAllPersistentModes(projectDir, sessionId);
     process.exit(0);
   }
   const infoPatterns = buildInformationalPatterns(config, lang);

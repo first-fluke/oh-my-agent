@@ -102,8 +102,9 @@ function getStateDir(projectDir: string): string {
 function readModeState(
   projectDir: string,
   workflow: string,
+  sessionId: string,
 ): ModeState | null {
-  const path = join(getStateDir(projectDir), `${workflow}-state.json`);
+  const path = join(getStateDir(projectDir), `${workflow}-state-${sessionId}.json`);
   if (!existsSync(path)) return null;
   try {
     return JSON.parse(readFileSync(path, "utf-8")) as ModeState;
@@ -117,19 +118,20 @@ export function isStale(state: ModeState): boolean {
   return elapsed > STALE_HOURS * 60 * 60 * 1000;
 }
 
-export function deactivate(projectDir: string, workflow: string): void {
-  const path = join(getStateDir(projectDir), `${workflow}-state.json`);
+export function deactivate(projectDir: string, workflow: string, sessionId: string): void {
+  const path = join(getStateDir(projectDir), `${workflow}-state-${sessionId}.json`);
   if (existsSync(path)) unlinkSync(path);
 }
 
 function incrementReinforcement(
   projectDir: string,
   workflow: string,
+  sessionId: string,
   state: ModeState,
 ): void {
   state.reinforcementCount += 1;
   writeFileSync(
-    join(getStateDir(projectDir), `${workflow}-state.json`),
+    join(getStateDir(projectDir), `${workflow}-state-${sessionId}.json`),
     JSON.stringify(state, null, 2),
   );
 }
@@ -164,12 +166,13 @@ async function main() {
     .join(" ");
 
   if (textToCheck && isDeactivationRequest(textToCheck, lang)) {
-    // Deactivate all persistent workflows
+    // Deactivate all persistent workflows for this session
     const stateDir = join(projectDir, ".agents", "state");
     if (existsSync(stateDir)) {
       try {
+        const suffix = `-state-${sessionId}.json`;
         for (const file of readdirSync(stateDir)) {
-          if (file.endsWith("-state.json")) {
+          if (file.endsWith(suffix)) {
             unlinkSync(join(stateDir, file));
           }
         }
@@ -181,22 +184,17 @@ async function main() {
   const persistentWorkflows = loadPersistentWorkflows();
 
   for (const workflow of persistentWorkflows) {
-    const state = readModeState(projectDir, workflow);
+    const state = readModeState(projectDir, workflow, sessionId);
     if (!state) continue;
 
     if (isStale(state) || state.reinforcementCount >= MAX_REINFORCEMENTS) {
-      deactivate(projectDir, workflow);
+      deactivate(projectDir, workflow, sessionId);
       continue;
     }
 
-    if (state.sessionId !== sessionId) {
-      deactivate(projectDir, workflow);
-      continue;
-    }
+    incrementReinforcement(projectDir, workflow, sessionId, state);
 
-    incrementReinforcement(projectDir, workflow, state);
-
-    const stateFile = `.agents/state/${workflow}-state.json`;
+    const stateFile = `.agents/state/${workflow}-state-${sessionId}.json`;
     const reason = [
       `[OMA PERSISTENT MODE: ${workflow.toUpperCase()}]`,
       `The /${workflow} workflow is still active (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,

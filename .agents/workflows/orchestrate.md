@@ -166,7 +166,7 @@ bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
 ## Step 6: Collect Results
 
 // turbo
-After all agents complete, use memory read tool to read all `result-{agent}.md` files.
+After all agents complete, use memory read tool to read all `result-{agent}-{sessionId}.md` files.
 Compile summary: completed tasks, failed tasks, files changed, remaining issues.
 
 ---

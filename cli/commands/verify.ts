@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -15,6 +15,27 @@ const VALID_AGENTS: AgentType[] = [
   "debug",
   "pm",
 ];
+
+/**
+ * Find the most recent result file for an agent type.
+ * Supports both legacy (`result-{agent}.md`) and session-scoped (`result-{agent}-{sessionId}.md`) naming.
+ */
+function findResultFile(
+  workspace: string,
+  agentType: string,
+): string | null {
+  const memoriesDir = join(workspace, ".serena", "memories");
+  if (!existsSync(memoriesDir)) return null;
+
+  const pattern = new RegExp(`^result-${agentType}(?:-[\\w-]+)?\\.md$`);
+  const matches = readdirSync(memoriesDir)
+    .filter((f) => pattern.test(f))
+    .sort()
+    .reverse();
+
+  if (matches.length === 0) return null;
+  return join(memoriesDir, matches[0]);
+}
 
 function createCheck(
   name: string,
@@ -108,14 +129,9 @@ function checkCharterPreflight(
   workspace: string,
   agentType: AgentType,
 ): VerifyCheck {
-  const resultFile = join(
-    workspace,
-    ".serena",
-    "memories",
-    `result-${agentType}.md`,
-  );
+  const resultFile = findResultFile(workspace, agentType);
 
-  if (!existsSync(resultFile)) {
+  if (!resultFile) {
     return createCheck("Charter Preflight", "skip", "Result file not found");
   }
 

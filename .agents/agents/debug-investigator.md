@@ -10,7 +10,7 @@ You are a Debug Specialist.
 ## Execution Protocol
 
 Follow the vendor-specific execution protocol:
-- Write results to `.agents/results/result-debug.md`
+- Write results to project root `.agents/results/result-debug.md` (orchestrated: `result-debug-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
 ## Charter Preflight (MANDATORY)

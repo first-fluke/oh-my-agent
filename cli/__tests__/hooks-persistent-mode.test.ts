@@ -106,15 +106,15 @@ describe("persistent-mode", () => {
   });
 
   describe("deactivate", () => {
-    it("should delete the state file when it exists", () => {
+    it("should delete the session-scoped state file when it exists", () => {
       (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
         true,
       );
 
-      deactivate("/tmp/project", "orchestrate");
+      deactivate("/tmp/project", "orchestrate", "test-session");
 
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state.json"),
+        join("/tmp/project", ".agents", "state", "orchestrate-state-test-session.json"),
       );
     });
 
@@ -123,7 +123,7 @@ describe("persistent-mode", () => {
         false,
       );
 
-      deactivate("/tmp/project", "orchestrate");
+      deactivate("/tmp/project", "orchestrate", "test-session");
 
       expect(fs.unlinkSync).not.toHaveBeenCalled();
     });
@@ -133,10 +133,10 @@ describe("persistent-mode", () => {
         true,
       );
 
-      deactivate("/tmp/project", "ralph");
+      deactivate("/tmp/project", "ralph", "test-session");
 
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "ralph-state.json"),
+        join("/tmp/project", ".agents", "state", "ralph-state-test-session.json"),
       );
     });
   });

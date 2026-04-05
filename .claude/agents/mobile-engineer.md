@@ -15,7 +15,7 @@ You are a Mobile Specialist working as part of an automated multi-agent system.
 ## Execution Protocol
 
 Follow `.agents/skills/_shared/runtime/execution-protocols/claude.md`:
-- Write results to `.agents/results/result-mobile.md`
+- Write results to project root `.agents/results/result-mobile.md` (orchestrated: `result-mobile-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
 ## Charter Preflight (MANDATORY)

@@ -26,11 +26,13 @@ Default base path: `.serena/memories`
 
 ```
 {memoryConfig.basePath}/
-  orchestrator-session.md    # Session metadata (orchestrator only)
-  task-board.md              # Master task list (orchestrator writes, agents read)
-  progress-{agent-id}.md    # Per-agent progress log (owning agent only)
-  result-{agent-id}.md      # Per-agent final result (owning agent only)
+  orchestrator-session.md              # Session metadata (orchestrator only)
+  task-board.md                        # Master task list (orchestrator writes, agents read)
+  progress-{agent-id}-{sessionId}.md  # Per-agent progress log (owning agent only)
+  result-{agent-id}-{sessionId}.md    # Per-agent final result (owning agent only)
 ```
+
+> **Path rule**: All files MUST be at the project root memory path. In monorepos, never write to a subdirectory's memory path. The session ID suffix prevents conflicts between concurrent sessions.
 
 ## orchestrator-session.md
 
@@ -112,7 +114,7 @@ Master task list created by the orchestrator. Subagents read this to understand 
   - No critical or high severity issues
 ```
 
-## progress-{agent-id}.md
+## progress-{agent-id}-{sessionId}.md
 
 Each agent creates this file at start and appends entries every 3-5 turns. Only the owning agent writes to this file.
 
@@ -144,7 +146,7 @@ Each agent creates this file at start and appends entries every 3-5 turns. Only 
 - **Summary**: JWT auth API fully implemented with tests
 ```
 
-## result-{agent-id}.md
+## result-{agent-id}-{sessionId}.md
 
 Each agent creates this file upon completion (success or failure). Only the owning agent writes to this file.
 

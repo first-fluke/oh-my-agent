@@ -124,8 +124,8 @@ export function parseAgentActivity(
   filename: string,
   content: string,
 ): AgentActivity | null {
-  const progressMatch = filename.match(/^progress-(\w+)\.md$/);
-  const resultMatch = filename.match(/^result-(\w+)\.md$/);
+  const progressMatch = filename.match(/^progress-(\w+)(?:-[\w-]+)?\.md$/);
+  const resultMatch = filename.match(/^result-(\w+)(?:-[\w-]+)?\.md$/);
 
   if (progressMatch?.[1]) {
     return {

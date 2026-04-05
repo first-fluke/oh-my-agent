@@ -87,8 +87,8 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 **Symptoms**: `429`, `RESOURCE_EXHAUSTED`, `rate limit exceeded`
 
 1. **Stop immediately** — do not make additional API calls
-2. Save current work to `progress-{agent-id}.md`
-3. Record Status: `quota_exceeded` in `result-{agent-id}.md`
+2. Save current work to `progress-{agent-id}[-{sessionId}].md`
+3. Record Status: `quota_exceeded` in `result-{agent-id}[-{sessionId}].md`
 4. Specify remaining tasks
 
 ---
@@ -96,7 +96,7 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 ## Serena Memory Unavailable
 
 1. Retry once
-2. If 2 consecutive failures: use local file `/tmp/progress-{agent-id}.md`
+2. If 2 consecutive failures: use local file `/tmp/progress-{agent-id}[-{sessionId}].md`
 3. Add `memory_fallback: true` flag to result
 
 ---

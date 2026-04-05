@@ -38,7 +38,7 @@ Trigger keywords are defined in `.claude/hooks/triggers.json` (multi-language su
 - Informational context ("what is X?") is filtered out — no false triggers
 - Explicit `/command` input skips the hook (no duplication)
 - Persistent-mode workflows (`ultrawork`, `orchestrate`, `coordinate`) block termination until complete
-- Deactivate persistent mode: say "workflow done" → deletes `.agents/state/{workflow}-state.json`
+- Deactivate persistent mode: say "workflow done" → deletes `.agents/state/{workflow}-state-{sessionId}.json`
 
 ## Required References (before any skill execution)
 1. `.agents/skills/_shared/core/skill-routing.md` — Agent routing
@@ -48,7 +48,7 @@ Trigger keywords are defined in `.claude/hooks/triggers.json` (multi-language su
 ## Subagent Rules
 - Definitions: `.claude/agents/*.md` → spawn via Task tool
 - Parallel: multiple Task tool calls in a single message
-- Results: synchronous return, written to `.agents/results/result-{agent}.md`
+- Results: synchronous return, written to `.agents/results/result-{agent}[-{sessionId}].md`
 - Subagents require Charter Preflight (`CHARTER_CHECK`)
 
 ## HUD Statusline
