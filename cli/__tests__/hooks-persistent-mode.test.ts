@@ -114,7 +114,12 @@ describe("persistent-mode", () => {
       deactivate("/tmp/project", "orchestrate", "test-session");
 
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state-test-session.json"),
+        join(
+          "/tmp/project",
+          ".agents",
+          "state",
+          "orchestrate-state-test-session.json",
+        ),
       );
     });
 
@@ -136,7 +141,12 @@ describe("persistent-mode", () => {
       deactivate("/tmp/project", "ralph", "test-session");
 
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "ralph-state-test-session.json"),
+        join(
+          "/tmp/project",
+          ".agents",
+          "state",
+          "ralph-state-test-session.json",
+        ),
       );
     });
   });

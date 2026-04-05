@@ -228,7 +228,12 @@ describe("keyword-detector", () => {
 
       expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state-sess1.json"),
+        join(
+          "/tmp/project",
+          ".agents",
+          "state",
+          "orchestrate-state-sess1.json",
+        ),
       );
       expect(fs.unlinkSync).toHaveBeenCalledWith(
         join("/tmp/project", ".agents", "state", "ralph-state-sess1.json"),
@@ -249,7 +254,12 @@ describe("keyword-detector", () => {
 
       expect(fs.unlinkSync).toHaveBeenCalledTimes(2);
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state-sess1.json"),
+        join(
+          "/tmp/project",
+          ".agents",
+          "state",
+          "orchestrate-state-sess1.json",
+        ),
       );
       expect(fs.unlinkSync).toHaveBeenCalledWith(
         join("/tmp/project", ".agents", "state", "ralph-state-sess2.json"),
@@ -270,7 +280,12 @@ describe("keyword-detector", () => {
 
       expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
       expect(fs.unlinkSync).toHaveBeenCalledWith(
-        join("/tmp/project", ".agents", "state", "orchestrate-state-sess1.json"),
+        join(
+          "/tmp/project",
+          ".agents",
+          "state",
+          "orchestrate-state-sess1.json",
+        ),
       );
     });
 

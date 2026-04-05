@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { classifyUpdateTarget } from "../commands/update.js";
-import * as skills from "../lib/skills.js";
 import { hasInstalledProject } from "../lib/manifest.js";
+import * as skills from "../lib/skills.js";
 
 describe("whitelist-based skill filtering", () => {
   it("getAllSkills should return only registered skills", () => {

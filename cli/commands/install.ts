@@ -4,12 +4,12 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
-import { getLocalVersion, saveLocalVersion } from "../lib/manifest.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
 } from "../lib/github.js";
+import { getLocalVersion, saveLocalVersion } from "../lib/manifest.js";
 import { migrateSharedLayout, migrateToAgents } from "../lib/migrate.js";
 import { ensureSerenaProject, resolveSerenaLanguages } from "../lib/serena.js";
 import {

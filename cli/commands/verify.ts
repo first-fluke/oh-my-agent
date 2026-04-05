@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
@@ -20,10 +20,7 @@ const VALID_AGENTS: AgentType[] = [
  * Find the most recent result file for an agent type.
  * Supports both legacy (`result-{agent}.md`) and session-scoped (`result-{agent}-{sessionId}.md`) naming.
  */
-function findResultFile(
-  workspace: string,
-  agentType: string,
-): string | null {
+function findResultFile(workspace: string, agentType: string): string | null {
   const memoriesDir = join(workspace, ".serena", "memories");
   if (!existsSync(memoriesDir)) return null;
 
