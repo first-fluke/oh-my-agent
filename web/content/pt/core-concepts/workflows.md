@@ -41,7 +41,7 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 1. **Step 0 — Preparação:** Ler skill de coordenação, guia de context-loading, protocolo de memória. Detectar vendor.
 2. **Step 1 — Carregar/Criar Plano:** Verificar `.agents/plan.json`. Se ausente, solicitar ao usuário executar `/plan` primeiro.
 3. **Step 2 — Inicializar Sessão:** Carregar `oma-config.yaml`, exibir tabela de mapeamento CLI, gerar ID de sessão (`session-YYYYMMDD-HHMMSS`), criar `orchestrator-session.md` e `task-board.md` na memória.
-4. **Step 3 — Spawnar Agentes:** Para cada tier de prioridade (P0 primeiro, depois P1...), spawnar agentes usando método apropriado ao vendor (Agent tool para Claude Code, `oh-my-ag agent:spawn` para Gemini/Antigravity, mediado por modelo para Codex). Nunca exceder MAX_PARALLEL.
+4. **Step 3 — Spawnar Agentes:** Para cada tier de prioridade (P0 primeiro, depois P1...), spawnar agentes usando método apropriado ao vendor (Agent tool para Claude Code, `oma agent:spawn` para Gemini/Antigravity, mediado por modelo para Codex). Nunca exceder MAX_PARALLEL.
 5. **Step 4 — Monitorar:** Poll dos arquivos `progress-{agent}.md`, atualizar `task-board.md`. Observar completações, falhas, crashes.
 6. **Step 5 — Verificar:** Executar `verify.sh {agent-type} {workspace}` por agente completado. Em caso de falha, re-spawnar com contexto do erro (máximo 2 retries). Após 2 retries, ativar Exploration Loop: gerar 2-3 hipóteses, spawnar experimentos paralelos, pontuar, manter o melhor.
 7. **Step 6 — Coletar:** Ler todos os arquivos `result-{agent}.md`, compilar resumo.

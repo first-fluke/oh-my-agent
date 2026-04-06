@@ -43,13 +43,13 @@ Include diagnosis results and scan scope. Results returned as JSON output.
 #### If Gemini CLI
 
 ```bash
-oh-my-ag agent:spawn debug "scan prompt with diagnosis context" {session_id} -w {workspace}
+oma agent:spawn debug "scan prompt with diagnosis context" {session_id} -w {workspace}
 ```
 
 #### If Antigravity or CLI Fallback
 
 ```bash
-oh-my-ag agent:spawn debug "scan prompt with diagnosis context" {session_id} -w {workspace}
+oma agent:spawn debug "scan prompt with diagnosis context" {session_id} -w {workspace}
 ```
 
 ---

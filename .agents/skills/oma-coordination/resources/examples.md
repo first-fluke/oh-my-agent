@@ -12,8 +12,8 @@ Step 1: PM Agent plans the project
 
 Step 2: Spawn Priority 1 agents via CLI
   # Run in parallel using background processes
-  oh-my-ag agent:spawn backend "JWT authentication API + TODO CRUD" session-id -w ./backend &
-  oh-my-ag agent:spawn frontend "Login/Register UI" session-id -w ./frontend &
+  oma agent:spawn backend "JWT authentication API + TODO CRUD" session-id -w ./backend &
+  oma agent:spawn frontend "Login/Register UI" session-id -w ./frontend &
   wait
 
 Step 3: Monitor progress
@@ -42,14 +42,14 @@ Step 1: PM Agent analyzes existing codebase and plans
   -> 2 tasks: Comments API, Comment Section UI
 
 Step 2: Spawn Backend Agent first (API-first)
-  oh-my-ag agent:spawn backend "Comments API with nested replies, pagination" session-id -w ./backend
+  oma agent:spawn backend "Comments API with nested replies, pagination" session-id -w ./backend
 
 Step 3: After backend completes, spawn Frontend Agent
-  oh-my-ag agent:spawn frontend "Comment section UI using the new API endpoints" session-id -w ./frontend
+  oma agent:spawn frontend "Comment section UI using the new API endpoints" session-id -w ./frontend
   (Sequential because frontend depends on API contracts)
 
 Step 4: QA review
-  oh-my-ag agent:spawn qa "Security: XSS in comments, rate limiting; Performance: Pagination, N+1 queries" session-id -w .
+  oma agent:spawn qa "Security: XSS in comments, rate limiting; Performance: Pagination, N+1 queries" session-id -w .
 ```
 
 ## Example 3: When to Use Orchestrator Instead

@@ -180,9 +180,9 @@ Mechanizm uruchamiania różni się w zależności od IDE/CLI:
 |--------|----------------------|-----------------|
 | **Claude Code** | Narzędzie `Agent` z definicjami `.claude/agents/{nazwa}.md`. Wiele wywołań Agent w jednej wiadomości = prawdziwa równoległość. | Synchroniczny zwrot |
 | **Codex CLI** | Równoległy subagent mediowany przez model | Wyjście JSON |
-| **Gemini CLI** | Polecenie CLI `oh-my-ag agent:spawn` | Odpytywanie pamięci MCP |
-| **Antigravity IDE** | Tylko `oh-my-ag agent:spawn` (niestandardowe subagenty niedostępne) | Odpytywanie pamięci MCP |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Odpytywanie pliku wyników |
+| **Gemini CLI** | Polecenie CLI `oma agent:spawn` | Odpytywanie pamięci MCP |
+| **Antigravity IDE** | Tylko `oma agent:spawn` (niestandardowe subagenty niedostępne) | Odpytywanie pamięci MCP |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Odpytywanie pliku wyników |
 
 Przy działaniu wewnątrz Claude Code, workflow używa bezpośrednio narzędzia `Agent`:
 ```

@@ -427,7 +427,7 @@ export async function doctor(jsonMode = false): Promise<void> {
       );
     } else {
       p.note(
-        `${pc.red("❌")} Global workflows missing\n${pc.dim("Run 'oh-my-ag' to install or reinstall global workflows")}`,
+        `${pc.red("❌")} Global workflows missing\n${pc.dim("Run 'oma' to install or reinstall global workflows")}`,
         "Global Workflows",
       );
     }

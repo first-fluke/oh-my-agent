@@ -351,7 +351,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 
 **Agenten-zu-Agenten-Review-Schleife:**
 1. Selbst-Review: Agent prüft eigenen Diff gegen Akzeptanzkriterien
-2. Automatische Verifikation: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Automatische Verifikation: `oma verify {agent-type} --workspace {workspace}`
 3. Gegen-Review: QA-Agent prüft Änderungen
 4. Bei Fehlschlag: Probleme werden zur Behebung zurückgemeldet (maximal 5 Schleifendurchläufe)
 

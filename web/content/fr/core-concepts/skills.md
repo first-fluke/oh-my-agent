@@ -143,12 +143,12 @@ Tous les agents partagent des fondations communes depuis `.agents/skills/_shared
 | Resource | Purpose |
 |----------|---------|
 | **`memory-protocol.md`** | Memory file format and operations for CLI subagents. Defines On Start, During Execution, and On Completion protocols using configurable memory tools (read/write/edit). Includes experiment tracking extension. |
-| **`execution-protocols/claude.md`** | Claude Code-specific execution patterns. Injected by `oh-my-ag agent:spawn` when vendor is claude. |
+| **`execution-protocols/claude.md`** | Claude Code-specific execution patterns. Injected by `oma agent:spawn` when vendor is claude. |
 | **`execution-protocols/gemini.md`** | Gemini CLI-specific execution patterns. |
 | **`execution-protocols/codex.md`** | Codex CLI-specific execution patterns. |
 | **`execution-protocols/qwen.md`** | Qwen CLI-specific execution patterns. |
 
-Les protocoles d'exécution spécifiques au fournisseur sont injectés automatiquement par `oh-my-ag agent:spawn` -- les agents n'ont pas besoin de les charger manuellement.
+Les protocoles d'exécution spécifiques au fournisseur sont injectés automatiquement par `oma agent:spawn` -- les agents n'ont pas besoin de les charger manuellement.
 
 ### Ressources conditionnelles (`.agents/skills/_shared/conditional/`)
 

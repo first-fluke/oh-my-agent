@@ -180,9 +180,9 @@ agent_cli_mapping:
 |--------|----------------------|-----------------|
 | **Claude Code** | `.claude/agents/{name}.md` 정의를 사용하는 `Agent` 도구. 같은 메시지에서 여러 Agent 호출 = 진정한 병렬. | 동기 반환 |
 | **Codex CLI** | 모델 중재 병렬 서브에이전트 요청 | JSON 출력 |
-| **Gemini CLI** | `oh-my-ag agent:spawn` CLI 명령 | MCP 메모리 폴링 |
-| **Antigravity IDE** | `oh-my-ag agent:spawn`만 (커스텀 서브에이전트 사용 불가) | MCP 메모리 폴링 |
-| **CLI 폴백** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | 결과 파일 폴링 |
+| **Gemini CLI** | `oma agent:spawn` CLI 명령 | MCP 메모리 폴링 |
+| **Antigravity IDE** | `oma agent:spawn`만 (커스텀 서브에이전트 사용 불가) | MCP 메모리 폴링 |
+| **CLI 폴백** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | 결과 파일 폴링 |
 
 Claude Code 내에서 실행 시 워크플로우는 `Agent` 도구를 직접 사용합니다:
 ```

@@ -5,7 +5,7 @@ iterative refinement based on observed judgment errors.
 (ref: Anthropic harness design — "several rounds of development loop necessary")
 
 This protocol is **semi-automated**: collection is automatic, analysis and patching
-require human review via `oh-my-ag retro`.
+require human review via `oma retro`.
 
 ---
 
@@ -16,7 +16,7 @@ Sessions accumulate EA events in session-metrics.md
     ↓
 [1] Trigger: EA >= 30 on rolling 3-session window
     ↓
-[2] `oh-my-ag retro` aggregates EA events and generates tuning report
+[2] `oma retro` aggregates EA events and generates tuning report
     ↓
 [3] Report categorizes errors by type and suggests specific patches
     ↓
@@ -75,7 +75,7 @@ This prevents tuning drift toward pure skepticism — QA must also know what it 
 | System | Role |
 |--------|------|
 | `session-metrics.md` | EA event source (automatic collection) |
-| `oh-my-ag retro` | Aggregation + tuning report generation (semi-automated) |
+| `oma retro` | Aggregation + tuning report generation (semi-automated) |
 | `lessons-learned.md` | QA Evaluation Lessons for persistent patterns |
 | QA `checklist.md` | Primary patch target for missed checks |
 | QA `execution-protocol.md` | Patch target for process/severity issues |

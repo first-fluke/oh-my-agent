@@ -41,7 +41,7 @@ Los flujos persistentes continúan ejecutándose hasta que todas las tareas est�
 1. **Paso 0 — Preparación:** Leer habilidad de coordinación, guía de carga de contexto, protocolo de memoria. Detectar proveedor.
 2. **Paso 1 — Cargar/Crear Plan:** Verificar `.agents/plan.json`. Si falta, pedir al usuario ejecutar `/plan` primero.
 3. **Paso 2 — Inicializar Sesión:** Cargar `oma-config.yaml`, mostrar tabla de mapeo CLI, generar ID de sesión (`session-YYYYMMDD-HHMMSS`), crear `orchestrator-session.md` y `task-board.md` en memoria.
-4. **Paso 3 — Generar Agentes:** Para cada nivel de prioridad (P0 primero, luego P1...), generar agentes usando método apropiado del proveedor (herramienta Agent para Claude Code, `oh-my-ag agent:spawn` para Gemini/Antigravity, mediado por modelo para Codex). Nunca exceder MAX_PARALLEL.
+4. **Paso 3 — Generar Agentes:** Para cada nivel de prioridad (P0 primero, luego P1...), generar agentes usando método apropiado del proveedor (herramienta Agent para Claude Code, `oma agent:spawn` para Gemini/Antigravity, mediado por modelo para Codex). Nunca exceder MAX_PARALLEL.
 5. **Paso 4 — Monitorear:** Sondear archivos `progress-{agent}.md`, actualizar `task-board.md`. Vigilar completaciones, fallos, crashes.
 6. **Paso 5 — Verificar:** Ejecutar `verify.sh {agent-type} {workspace}` por cada agente completado. En caso de fallo, regenerar con contexto de error (máximo 2 reintentos). Después de 2 reintentos, activar Bucle de Exploración: generar 2-3 hipótesis, generar experimentos paralelos, puntuar, conservar el mejor.
 7. **Paso 6 — Recopilar:** Leer todos los archivos `result-{agent}.md`, compilar resumen.

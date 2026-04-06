@@ -143,12 +143,12 @@ Alle agenten delen gemeenschappelijke fundamenten vanuit `.agents/skills/_shared
 | Resource | Doel |
 |----------|------|
 | **`memory-protocol.md`** | Geheugenbestandsformaat en -bewerkingen voor CLI-subagenten. Definieert Bij Start, Tijdens Uitvoering en Bij Voltooiing protocollen met configureerbare geheugentools (lezen/schrijven/bewerken). Bevat experimentbijhouding-extensie. |
-| **`execution-protocols/claude.md`** | Claude Code-specifieke uitvoeringspatronen. Geinjecteerd door `oh-my-ag agent:spawn` wanneer leverancier claude is. |
+| **`execution-protocols/claude.md`** | Claude Code-specifieke uitvoeringspatronen. Geinjecteerd door `oma agent:spawn` wanneer leverancier claude is. |
 | **`execution-protocols/gemini.md`** | Gemini CLI-specifieke uitvoeringspatronen. |
 | **`execution-protocols/codex.md`** | Codex CLI-specifieke uitvoeringspatronen. |
 | **`execution-protocols/qwen.md`** | Qwen CLI-specifieke uitvoeringspatronen. |
 
-Leverancierspecifieke uitvoeringsprotocollen worden automatisch geinjecteerd door `oh-my-ag agent:spawn` — agenten hoeven ze niet handmatig te laden.
+Leverancierspecifieke uitvoeringsprotocollen worden automatisch geinjecteerd door `oma agent:spawn` — agenten hoeven ze niet handmatig te laden.
 
 ### Conditionele Bronnen (`.agents/skills/_shared/conditional/`)
 

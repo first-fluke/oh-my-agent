@@ -180,9 +180,9 @@ Le mécanisme de lancement varie selon l'IDE/CLI :
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent` tool with `.claude/agents/{name}.md` definitions. Multiple Agent calls in the same message = true parallel. | Synchronous return |
 | **Codex CLI** | Model-mediated parallel subagent request | JSON output |
-| **Gemini CLI** | `oh-my-ag agent:spawn` CLI command | MCP memory poll |
-| **Antigravity IDE** | `oh-my-ag agent:spawn` only (custom subagents not available) | MCP memory poll |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
+| **Gemini CLI** | `oma agent:spawn` CLI command | MCP memory poll |
+| **Antigravity IDE** | `oma agent:spawn` only (custom subagents not available) | MCP memory poll |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 
 Lorsqu'il s'exécute dans Claude Code, le workflow utilise directement l'outil `Agent` :
 ```

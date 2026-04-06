@@ -125,9 +125,9 @@ oh-my-agent funktioniert mit jeder KI-gestützten IDE oder CLI, die Skill-/Promp
 | Tool | Integrationsmethode | Parallele Agenten |
 |------|-------------------|----------------|
 | **Claude Code** | Native Skills + Agent-Tool | Task-Tool für echte Parallelität |
-| **Gemini CLI** | Skills automatisch geladen aus `.agents/skills/` | `oh-my-ag agent:spawn` |
+| **Gemini CLI** | Skills automatisch geladen aus `.agents/skills/` | `oma agent:spawn` |
 | **Codex CLI** | Skills automatisch geladen | Modellvermittelte parallele Anfragen |
-| **Antigravity IDE** | Skills automatisch geladen | `oh-my-ag agent:spawn` |
+| **Antigravity IDE** | Skills automatisch geladen | `oma agent:spawn` |
 | **Cursor** | Skills über `.cursor/`-Integration | Manuelles Starten |
 | **OpenCode** | Skills-Loading | Manuelles Starten |
 

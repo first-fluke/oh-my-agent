@@ -148,7 +148,7 @@ description: Frontend specialist for React, Next.js, TypeScript with FSD-lite ar
 | **`execution-protocols/codex.md`** | Паттерны выполнения для Codex CLI. |
 | **`execution-protocols/qwen.md`** | Паттерны выполнения для Qwen CLI. |
 
-Вендор-специфичные протоколы внедряются автоматически через `oh-my-ag agent:spawn`.
+Вендор-специфичные протоколы внедряются автоматически через `oma agent:spawn`.
 
 ### Условные ресурсы (`.agents/skills/_shared/conditional/`)
 

@@ -17,7 +17,7 @@ description: Automated multi-agent orchestrator that spawns CLI subagents in par
 - Quick bug fixes or minor changes
 
 ## Important
-This skill orchestrates CLI subagents via `oh-my-ag agent:spawn`. The CLI vendor (gemini, claude, codex, qwen) is resolved from configuration. Vendor-specific execution protocols are injected automatically. Each subagent runs as an independent process.
+This skill orchestrates CLI subagents via `oma agent:spawn`. The CLI vendor (gemini, claude, codex, qwen) is resolved from configuration. Vendor-specific execution protocols are injected automatically. Each subagent runs as an independent process.
 
 ## Configuration
 
@@ -53,7 +53,7 @@ Memory provider and tool names are configurable via `mcp.json`:
 **PHASE 2 - Setup**: Use memory write tool to create `orchestrator-session.md` + `task-board.md`
 **PHASE 3 - Execute**: Spawn agents by priority tier (never exceed MAX_PARALLEL)
 **PHASE 4 - Monitor**: Poll every POLL_INTERVAL; handle completed/failed/crashed agents
-**PHASE 4.5 - Verify**: Run `oh-my-ag verify {agent-type}` per completed agent
+**PHASE 4.5 - Verify**: Run `oma verify {agent-type}` per completed agent
 **PHASE 5 - Collect**: Read all `result-{agent}-{sessionId}.md`, compile summary, cleanup progress files
 
 See `resources/subagent-prompt-template.md` for prompt construction.
@@ -79,7 +79,7 @@ Agent completes work
     ↓
 [1] Mechanical Self-Check: lint, type-check, tests, diff scope
     ↓
-[2] Verify: Run `oh-my-ag verify {agent-type} --workspace {workspace}`
+[2] Verify: Run `oma verify {agent-type} --workspace {workspace}`
     ↓ FAIL → Agent receives feedback, fixes, back to [1]
     ↓ PASS
 [3] Cross-Review: QA agent reviews the changes
@@ -104,7 +104,7 @@ Reason: Self-evaluation bias — agents consistently overrate their own output
 
 **[2] Automated Verify**:
 ```bash
-oh-my-ag verify {agent-type} --workspace {workspace} --json
+oma verify {agent-type} --workspace {workspace} --json
 ```
 - **PASS (exit 0)**: Proceed to cross-review
 - **FAIL (exit 1)**: Feed verify output back to the agent as correction context

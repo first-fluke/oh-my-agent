@@ -175,7 +175,7 @@ This data is sourced from the Experiment Ledger at session end (see `experiment-
 - **Active session**: `.serena/memories/session-metrics.md`
 - **Completed sessions**: Archived to `.serena/memories/archive/metrics-{date}.md`
 - **Retention**: 30 days (configurable)
-- **Aggregation**: `oh-my-ag stats` command summarizes trends
+- **Aggregation**: `oma stats` command summarizes trends
 
 ---
 
@@ -198,7 +198,7 @@ Unlike CD (tracked in real-time), Evaluator Accuracy (EA) is a
 ### Recording
 
 - `false_positive`, `missed_stub`, `good_catch`: Recorded during session by Orchestrator
-- `false_negative`, `severity_mismatch`: Recorded retroactively via `oh-my-ag retro` or next session discovery
+- `false_negative`, `severity_mismatch`: Recorded retroactively via `oma retro` or next session discovery
 
 ### Evaluator Accuracy Score (EA)
 
@@ -210,7 +210,7 @@ EA = sum(accuracy_event_points across last 3 sessions)
 
 | Threshold | Action |
 |-----------|--------|
-| EA >= 30 | **TUNING SUGGESTED**: `oh-my-ag retro` flags QA patterns for review |
+| EA >= 30 | **TUNING SUGGESTED**: `oma retro` flags QA patterns for review |
 | EA >= 50 | **TUNING REQUIRED**: Review and update QA execution-protocol.md |
 | `false_negative` >= 3 across window | **CHECKLIST UPDATE**: Add detection pattern to QA checklist.md |
 | `good_catch` >= 5 across window | **PROPAGATE**: Document successful pattern in evaluator-tuning.md |
@@ -256,7 +256,7 @@ Use proxy metrics that are always measurable.
 - **Turn count**: Always available (count progress file updates)
 - **Wall-clock time**: Bash timestamps at spawn and completion
 - **Sprint resets**: Count checkpoint files per agent
-- **Precise tokens**: Available only via `oh-my-ag stats` post-hoc (parses CLI logs when supported)
+- **Precise tokens**: Available only via `oma stats` post-hoc (parses CLI logs when supported)
 
 ### Usage
 

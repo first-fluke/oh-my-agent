@@ -182,8 +182,8 @@ Metody uruchamiania specyficzne dla dostawcy:
 |:-------|:------------|
 | Claude Code | Narzędzie Agent z `.claude/agents/debug-investigator.md` |
 | Codex CLI | Żądanie subagenta mediowane przez model, wyniki jako JSON |
-| Gemini CLI | `oh-my-ag agent:spawn debug "prompt skanu" {session_id} -w {workspace}` |
-| Antigravity / Fallback | `oh-my-ag agent:spawn debug "prompt skanu" {session_id} -w {workspace}` |
+| Gemini CLI | `oma agent:spawn debug "prompt skanu" {session_id} -w {workspace}` |
+| Antigravity / Fallback | `oma agent:spawn debug "prompt skanu" {session_id} -w {workspace}` |
 
 Wszystkie znalezione podatne lokalizacje są raportowane. Potwierdzone instancje są naprawiane w ramach tej samej sesji.
 

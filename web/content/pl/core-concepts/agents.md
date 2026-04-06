@@ -351,7 +351,7 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 
 **Pętla przeglądu agent-do-agenta:**
 1. Samoprzegląd: agent sprawdza własny diff względem kryteriów akceptacji
-2. Automatyczna weryfikacja: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Automatyczna weryfikacja: `oma verify {agent-type} --workspace {workspace}`
 3. Przegląd krzyżowy: agent QA przegląda zmiany
 4. W przypadku niepowodzenia: problemy zwracane do naprawy (maks. 5 iteracji pętli łącznie)
 

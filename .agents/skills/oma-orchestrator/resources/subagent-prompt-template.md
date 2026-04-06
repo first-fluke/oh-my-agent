@@ -1,10 +1,10 @@
 # Subagent Prompt Template
 
-This template is used by the orchestrator to construct self-contained prompts for CLI subagents. The vendor-specific CLI flags and execution protocol are injected automatically by `oh-my-ag agent:spawn`.
+This template is used by the orchestrator to construct self-contained prompts for CLI subagents. The vendor-specific CLI flags and execution protocol are injected automatically by `oma agent:spawn`.
 
 ## Template
 
-The orchestrator fills in the `{placeholders}` and passes the assembled prompt to `oh-my-ag agent:spawn`.
+The orchestrator fills in the `{placeholders}` and passes the assembled prompt to `oma agent:spawn`.
 
 ---
 
@@ -40,7 +40,7 @@ If you are running low on turns, prioritize:
 
 ## Execution Protocol
 
-The execution protocol (state management, progress reporting, result format) is automatically injected by `oh-my-ag agent:spawn` based on the configured CLI vendor. Source files live under `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
+The execution protocol (state management, progress reporting, result format) is automatically injected by `oma agent:spawn` based on the configured CLI vendor. Source files live under `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
 
 Follow the injected execution protocol for:
 - Reading your task assignment on start

@@ -351,7 +351,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 **Agent-naar-agent reviewlus:**
 1. Zelf-review: agent controleert eigen diff tegen acceptatiecriteria
-2. Geautomatiseerd verifieren: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Geautomatiseerd verifieren: `oma verify {agent-type} --workspace {workspace}`
 3. Cross-review: QA-agent reviewt wijzigingen
 4. Bij falen: problemen worden teruggekoppeld voor reparatie (maximaal 5 totale lusiteraties)
 

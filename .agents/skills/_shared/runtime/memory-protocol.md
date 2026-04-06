@@ -1,6 +1,6 @@
 # Memory Protocol (CLI Mode)
 
-> **Note**: This file documents the default (Serena/MCP) memory protocol. Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn` from `execution-protocols/{vendor}.md`.
+> **Note**: This file documents the default (Serena/MCP) memory protocol. Vendor-specific execution protocols are injected automatically by `oma agent:spawn` from `execution-protocols/{vendor}.md`.
 
 When running as a CLI subagent, follow this protocol.
 

@@ -153,9 +153,9 @@ agent_cli_mapping:
 |-------------|---------------------------|---------------------|
 | **Claude Code** | `Agent` tool met `.claude/agents/{naam}.md` definities. Meerdere Agent-aanroepen in hetzelfde bericht = echt parallel. | Synchrone return |
 | **Codex CLI** | Model-gemedieerde parallelle subagentverzoek | JSON-uitvoer |
-| **Gemini CLI** | `oh-my-ag agent:spawn` CLI-commando | MCP geheugen-poll |
-| **Antigravity IDE** | `oh-my-ag agent:spawn` alleen | MCP geheugen-poll |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Resultaatbestand-poll |
+| **Gemini CLI** | `oma agent:spawn` CLI-commando | MCP geheugen-poll |
+| **Antigravity IDE** | `oma agent:spawn` alleen | MCP geheugen-poll |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Resultaatbestand-poll |
 
 ---
 

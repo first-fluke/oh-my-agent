@@ -152,9 +152,9 @@ agent_cli_mapping:
 |--------|----------------|----------------------|
 | **Claude Code** | `Agent` tool с `.claude/agents/{name}.md`. Несколько вызовов = истинный параллелизм | Синхронный возврат |
 | **Codex CLI** | Параллельный субагентный запрос через модель | Вывод JSON |
-| **Gemini CLI** | `oh-my-ag agent:spawn` | Опрос MCP-памяти |
-| **Antigravity IDE** | Только `oh-my-ag agent:spawn` | Опрос MCP-памяти |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Опрос файла результатов |
+| **Gemini CLI** | `oma agent:spawn` | Опрос MCP-памяти |
+| **Antigravity IDE** | Только `oma agent:spawn` | Опрос MCP-памяти |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Опрос файла результатов |
 
 В Claude Code рабочий процесс использует `Agent` tool:
 ```

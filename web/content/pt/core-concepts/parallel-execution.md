@@ -180,9 +180,9 @@ O mecanismo de spawn varia por IDE/CLI:
 |--------|---------------------------|------------------------|
 | **Claude Code** | `Agent` tool com definições `.claude/agents/{name}.md`. Múltiplas chamadas Agent na mesma mensagem = paralelismo real. | Retorno síncrono |
 | **Codex CLI** | Requisição de subagente paralelo mediada por modelo | Saída JSON |
-| **Gemini CLI** | Comando CLI `oh-my-ag agent:spawn` | Poll de memória MCP |
-| **Antigravity IDE** | Apenas `oh-my-ag agent:spawn` (subagentes customizados não disponíveis) | Poll de memória MCP |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Poll de arquivo de resultado |
+| **Gemini CLI** | Comando CLI `oma agent:spawn` | Poll de memória MCP |
+| **Antigravity IDE** | Apenas `oma agent:spawn` (subagentes customizados não disponíveis) | Poll de memória MCP |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Poll de arquivo de resultado |
 
 Ao executar dentro do Claude Code, o workflow usa a ferramenta `Agent` diretamente:
 ```

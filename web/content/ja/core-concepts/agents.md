@@ -351,7 +351,7 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 
 **エージェント間レビューループ：**
 1. セルフレビュー：エージェントが受入基準に対して自身のdiffをチェック
-2. 自動検証：`oh-my-ag verify {agent-type} --workspace {workspace}`
+2. 自動検証：`oma verify {agent-type} --workspace {workspace}`
 3. クロスレビュー：QAエージェントが変更をレビュー
 4. 失敗時：修正のためにフィードバック（最大5回の合計ループ反復）
 

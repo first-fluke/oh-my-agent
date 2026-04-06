@@ -125,9 +125,9 @@ oh-my-agent works with any AI-powered IDE or CLI that supports skill/prompt load
 | Tool | Integration Method | Parallel Agents |
 |------|-------------------|----------------|
 | **Claude Code** | Native skills + Agent tool | Task tool for true parallelism |
-| **Gemini CLI** | Skills auto-loaded from `.agents/skills/` | `oh-my-ag agent:spawn` |
+| **Gemini CLI** | Skills auto-loaded from `.agents/skills/` | `oma agent:spawn` |
 | **Codex CLI** | Skills auto-loaded | Model-mediated parallel requests |
-| **Antigravity IDE** | Skills auto-loaded | `oh-my-ag agent:spawn` |
+| **Antigravity IDE** | Skills auto-loaded | `oma agent:spawn` |
 | **Cursor** | Skills via `.cursor/` integration | Manual spawning |
 | **OpenCode** | Skills loading | Manual spawning |
 
@@ -186,7 +186,7 @@ oh-my-agent is not limited to Claude Code. The hook system supports:
 | Vendor | Integration |
 |--------|------------|
 | **Claude Code** | Native hooks (`UserPromptSubmit`, `Notification`, statusLine) |
-| **Gemini CLI** | Skills auto-loaded from `.agents/skills/`, agent spawning via `oh-my-ag agent:spawn` |
+| **Gemini CLI** | Skills auto-loaded from `.agents/skills/`, agent spawning via `oma agent:spawn` |
 | **Codex CLI** | Skills auto-loaded, model-mediated parallel requests |
 | **Qwen Code** | Hook support for workflow detection |
 

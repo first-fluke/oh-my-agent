@@ -38,7 +38,7 @@ Save plan to `.agents/plan.json` and `.agents/results/current-plan.md`.
 
 ## Execution Protocol (CLI Mode)
 
-Vendor-specific execution protocols are injected automatically by `oh-my-ag agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ## References

@@ -351,7 +351,7 @@ Agentes no oh-my-agent são papéis especializados de engenharia. Cada agente po
 
 **Loop de revisão agente-para-agente:**
 1. Auto-revisão: agente verifica próprio diff contra critérios de aceitação
-2. Verificação automatizada: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Verificação automatizada: `oma verify {agent-type} --workspace {workspace}`
 3. Revisão cruzada: Agente QA revisa mudanças
 4. Em caso de falha: problemas alimentados de volta para correção (máximo 5 iterações totais do loop)
 

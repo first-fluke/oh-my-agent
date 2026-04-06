@@ -143,12 +143,12 @@ Wszyscy agenci dzielą wspólne fundamenty z `.agents/skills/_shared/`. Są zorg
 | Zasób | Cel |
 |----------|---------|
 | **`memory-protocol.md`** | Format pliku pamięci i operacje dla subagentów CLI. Definiuje protokoły Na Starcie, Podczas Wykonania i Po Zakończeniu używając konfigurowalnych narzędzi pamięci (read/write/edit). Zawiera rozszerzenie śledzenia eksperymentów. |
-| **`execution-protocols/claude.md`** | Wzorce wykonawcze specyficzne dla Claude Code. Wstrzykiwane przez `oh-my-ag agent:spawn` gdy dostawcą jest claude. |
+| **`execution-protocols/claude.md`** | Wzorce wykonawcze specyficzne dla Claude Code. Wstrzykiwane przez `oma agent:spawn` gdy dostawcą jest claude. |
 | **`execution-protocols/gemini.md`** | Wzorce wykonawcze specyficzne dla Gemini CLI. |
 | **`execution-protocols/codex.md`** | Wzorce wykonawcze specyficzne dla Codex CLI. |
 | **`execution-protocols/qwen.md`** | Wzorce wykonawcze specyficzne dla Qwen CLI. |
 
-Protokoły wykonawcze specyficzne dla dostawcy są wstrzykiwane automatycznie przez `oh-my-ag agent:spawn` — agenci nie muszą ładować ich ręcznie.
+Protokoły wykonawcze specyficzne dla dostawcy są wstrzykiwane automatycznie przez `oma agent:spawn` — agenci nie muszą ładować ich ręcznie.
 
 ### Zasoby warunkowe (`.agents/skills/_shared/conditional/`)
 

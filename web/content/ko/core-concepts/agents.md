@@ -351,7 +351,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **에이전트 간 리뷰 루프:**
 1. 자체 리뷰: 에이전트가 인수 기준에 대해 자신의 diff를 확인
-2. 자동화 검증: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. 자동화 검증: `oma verify {agent-type} --workspace {workspace}`
 3. 크로스 리뷰: QA 에이전트가 변경사항 리뷰
 4. 실패 시: 수정을 위해 이슈 피드백 (총 최대 5회 루프 반복)
 

@@ -180,9 +180,9 @@ Cơ chế spawn thay đổi theo IDE/CLI:
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent` tool với định nghĩa `.claude/agents/{name}.md`. Nhiều lệnh Agent trong cùng message = song song thực sự. | Trả về đồng bộ |
 | **Codex CLI** | Yêu cầu subagent song song qua mô hình trung gian | Đầu ra JSON |
-| **Gemini CLI** | Lệnh CLI `oh-my-ag agent:spawn` | Poll MCP memory |
-| **Antigravity IDE** | Chỉ `oh-my-ag agent:spawn` (subagent tùy chỉnh không có sẵn) | Poll MCP memory |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Poll file kết quả |
+| **Gemini CLI** | Lệnh CLI `oma agent:spawn` | Poll MCP memory |
+| **Antigravity IDE** | Chỉ `oma agent:spawn` (subagent tùy chỉnh không có sẵn) | Poll MCP memory |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Poll file kết quả |
 
 Khi chạy trong Claude Code, workflow dùng `Agent` tool trực tiếp:
 ```

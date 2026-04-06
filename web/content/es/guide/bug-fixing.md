@@ -182,8 +182,8 @@ Métodos de generación específicos del proveedor:
 |:----------|:--------------------|
 | Claude Code | Herramienta Agent con `.claude/agents/debug-investigator.md` |
 | Codex CLI | Solicitud de subagente mediada por modelo, resultados como JSON |
-| Gemini CLI | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
-| Antigravity / Fallback | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Gemini CLI | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Antigravity / Fallback | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Todas las ubicaciones vulnerables similares se reportan. Las instancias confirmadas se corrigen como parte de la misma sesión.
 

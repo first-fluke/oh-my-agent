@@ -107,7 +107,7 @@ Request parallel subagent execution with the review scope and standards.
 
 ### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oh-my-ag agent:spawn qa-agent "Review files for security, performance, accessibility, and code quality. Follow .agents/skills/oma-qa/SKILL.md standards. Report as CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation." session-id
+oma agent:spawn qa-agent "Review files for security, performance, accessibility, and code quality. Follow .agents/skills/oma-qa/SKILL.md standards. Report as CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation." session-id
 ```
 
 ---
@@ -129,8 +129,8 @@ When user wants fixes too, execute review then fix then re-review loop:
 
 ### If Gemini CLI or Antigravity or CLI Fallback
      ```bash
-     oh-my-ag agent:spawn backend "Fix issues: [issues]" session-id -w ./backend &
-     oh-my-ag agent:spawn frontend "Fix issues: [issues]" session-id -w ./frontend &
+     oma agent:spawn backend "Fix issues: [issues]" session-id -w ./backend &
+     oma agent:spawn frontend "Fix issues: [issues]" session-id -w ./frontend &
      wait
      ```
 

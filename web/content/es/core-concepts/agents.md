@@ -351,7 +351,7 @@ Los agentes en oh-my-agent son roles de ingeniería especializados. Cada agente 
 
 **Bucle de revisión agente-a-agente:**
 1. Auto-revisión: el agente verifica su propio diff contra criterios de aceptación
-2. Verificación automatizada: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Verificación automatizada: `oma verify {agent-type} --workspace {workspace}`
 3. Revisión cruzada: el agente QA revisa los cambios
 4. En caso de fallo: los problemas se devuelven para corrección (máximo 5 iteraciones totales)
 

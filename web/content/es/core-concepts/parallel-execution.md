@@ -180,9 +180,9 @@ El mecanismo de generación varía por IDE/CLI:
 |-----------|----------------------------|---------------------|
 | **Claude Code** | Herramienta `Agent` con definiciones `.claude/agents/{name}.md`. Múltiples llamadas Agent en el mismo mensaje = paralelo real. | Retorno sincrónico |
 | **Codex CLI** | Solicitud de subagente paralelo mediada por modelo | Salida JSON |
-| **Gemini CLI** | Comando CLI `oh-my-ag agent:spawn` | Sondeo de memoria MCP |
-| **Antigravity IDE** | Solo `oh-my-ag agent:spawn` (subagentes personalizados no disponibles) | Sondeo de memoria MCP |
-| **CLI Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Sondeo de archivo de resultados |
+| **Gemini CLI** | Comando CLI `oma agent:spawn` | Sondeo de memoria MCP |
+| **Antigravity IDE** | Solo `oma agent:spawn` (subagentes personalizados no disponibles) | Sondeo de memoria MCP |
+| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Sondeo de archivo de resultados |
 
 Cuando se ejecuta dentro de Claude Code, el flujo usa la herramienta `Agent` directamente:
 ```

@@ -148,7 +148,7 @@ descriptionフィールドは非常に重要です。スキルルーティング
 | **`execution-protocols/codex.md`** | Codex CLI固有の実行パターン。 |
 | **`execution-protocols/qwen.md`** | Qwen CLI固有の実行パターン。 |
 
-ベンダー固有の実行プロトコルは`oh-my-ag agent:spawn`により自動的にインジェクトされます。
+ベンダー固有の実行プロトコルは`oma agent:spawn`により自動的にインジェクトされます。
 
 ### 条件付きリソース（`.agents/skills/_shared/conditional/`）
 

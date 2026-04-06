@@ -351,7 +351,7 @@ Agents in oh-my-agent are specialized engineering roles. Each agent has a define
 
 **Agent-to-agent review loop:**
 1. Self-review: agent checks own diff against acceptance criteria
-2. Automated verify: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Automated verify: `oma verify {agent-type} --workspace {workspace}`
 3. Cross-review: QA agent reviews changes
 4. On failure: issues fed back for fixing (max 5 total loop iterations)
 

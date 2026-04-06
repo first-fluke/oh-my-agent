@@ -41,7 +41,7 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 1. **步骤 0 —— 准备：** 读取协调技能、上下文加载指南、内存协议。检测供应商。
 2. **步骤 1 —— 加载/创建计划：** 检查 `.agents/plan.json`。如果缺失，提示用户先运行 `/plan`。
 3. **步骤 2 —— 初始化会话：** 加载 `oma-config.yaml`，显示 CLI 映射表，生成会话 ID（`session-YYYYMMDD-HHMMSS`），在内存中创建 `orchestrator-session.md` 和 `task-board.md`。
-4. **步骤 3 —— 启动智能体：** 对每个优先级层（先 P0，然后 P1...），使用供应商适配的方式启动智能体（Claude Code 用 Agent 工具，Gemini/Antigravity 用 `oh-my-ag agent:spawn`，Codex 用模型协调）。不超过 MAX_PARALLEL。
+4. **步骤 3 —— 启动智能体：** 对每个优先级层（先 P0，然后 P1...），使用供应商适配的方式启动智能体（Claude Code 用 Agent 工具，Gemini/Antigravity 用 `oma agent:spawn`，Codex 用模型协调）。不超过 MAX_PARALLEL。
 5. **步骤 4 —— 监控：** 轮询 `progress-{agent}.md` 文件，更新 `task-board.md`。监视完成、失败、崩溃。
 6. **步骤 5 —— 验证：** 对每个完成的智能体运行 `verify.sh {agent-type} {workspace}`。失败时带错误上下文重新启动（最多 2 次重试）。2 次重试后，激活探索循环：生成 2-3 个假设，启动并行实验，评分，保留最佳。
 7. **步骤 6 —— 收集：** 读取所有 `result-{agent}.md` 文件，汇总摘要。

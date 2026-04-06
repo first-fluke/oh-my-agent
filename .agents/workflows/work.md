@@ -89,8 +89,8 @@ Pass each agent its task description, API contracts, and relevant context.
 
 ### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oh-my-ag agent:spawn backend "task description" session-id -w ./backend &
-oh-my-ag agent:spawn frontend "task description" session-id -w ./frontend &
+oma agent:spawn backend "task description" session-id -w ./backend &
+oma agent:spawn frontend "task description" session-id -w ./frontend &
 wait
 ```
 

@@ -184,8 +184,8 @@ Vendor-specific spawn methods:
 |:-------|:------------|
 | Claude Code | Agent tool with `.claude/agents/debug-investigator.md` |
 | Codex CLI | Model-mediated subagent request, results as JSON |
-| Gemini CLI | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
-| Antigravity / Fallback | `oh-my-ag agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Gemini CLI | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Antigravity / Fallback | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 All similar vulnerable locations are reported. Confirmed instances are fixed as part of the same session.
 

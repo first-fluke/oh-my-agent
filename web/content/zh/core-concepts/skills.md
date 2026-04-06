@@ -143,12 +143,12 @@ description 字段至关重要 —— 它包含技能路由系统用于将任务
 | 资源 | 目的 |
 |------|------|
 | **`memory-protocol.md`** | CLI 子智能体的内存文件格式和操作。定义启动时、执行期间和完成时的协议，使用可配置的内存工具（read/write/edit）。包含实验追踪扩展。 |
-| **`execution-protocols/claude.md`** | Claude Code 特定的执行模式。供应商为 claude 时由 `oh-my-ag agent:spawn` 注入。 |
+| **`execution-protocols/claude.md`** | Claude Code 特定的执行模式。供应商为 claude 时由 `oma agent:spawn` 注入。 |
 | **`execution-protocols/gemini.md`** | Gemini CLI 特定的执行模式。 |
 | **`execution-protocols/codex.md`** | Codex CLI 特定的执行模式。 |
 | **`execution-protocols/qwen.md`** | Qwen CLI 特定的执行模式。 |
 
-供应商特定的执行协议由 `oh-my-ag agent:spawn` 自动注入 —— 智能体无需手动加载。
+供应商特定的执行协议由 `oma agent:spawn` 自动注入 —— 智能体无需手动加载。
 
 ### 条件资源（`.agents/skills/_shared/conditional/`）
 

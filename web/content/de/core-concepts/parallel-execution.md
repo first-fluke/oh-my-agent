@@ -180,9 +180,9 @@ Der Startmechanismus variiert je nach IDE/CLI:
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent`-Tool mit `.claude/agents/{name}.md`-Definitionen. Mehrere Agent-Aufrufe in derselben Nachricht = echte Parallelität. | Synchrone Rückgabe |
 | **Codex CLI** | Modellvermittelte parallele Subagenten-Anfrage | JSON-Ausgabe |
-| **Gemini CLI** | `oh-my-ag agent:spawn`-CLI-Befehl | MCP-Memory-Abfrage |
-| **Antigravity IDE** | Nur `oh-my-ag agent:spawn` (benutzerdefinierte Subagenten nicht verfügbar) | MCP-Memory-Abfrage |
-| **CLI-Fallback** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Ergebnisdatei-Abfrage |
+| **Gemini CLI** | `oma agent:spawn`-CLI-Befehl | MCP-Memory-Abfrage |
+| **Antigravity IDE** | Nur `oma agent:spawn` (benutzerdefinierte Subagenten nicht verfügbar) | MCP-Memory-Abfrage |
+| **CLI-Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Ergebnisdatei-Abfrage |
 
 Innerhalb von Claude Code verwendet der Workflow das `Agent`-Tool direkt:
 ```

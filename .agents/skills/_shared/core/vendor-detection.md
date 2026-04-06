@@ -8,7 +8,7 @@ When executing a workflow, determine your runtime environment using this priorit
 2. **Codex CLI**: Your system prompt contains "Codex CLI" OR the `apply_patch` tool is available
 3. **Gemini CLI**: This file was auto-loaded from `.agents/skills/` AND `@` subagent syntax is available
 4. **Antigravity IDE**: This file was auto-loaded from `.agents/skills/` AND no `@` subagent syntax
-5. **CLI Fallback**: None of the above matched → use `oh-my-ag agent:spawn`
+5. **CLI Fallback**: None of the above matched → use `oma agent:spawn`
 
 ## Vendor-Specific Spawn Methods
 
@@ -16,6 +16,6 @@ When executing a workflow, determine your runtime environment using this priorit
 |:---|:---|:---|
 | Claude Code | `Agent` tool with `.claude/agents/{name}.md` | Synchronous return |
 | Codex CLI | Model-mediated parallel subagent request | JSON output |
-| Gemini CLI | `@{agent-name}` delegation or `oh-my-ag agent:spawn` | MCP memory poll |
-| Antigravity | `oh-my-ag agent:spawn` only (custom subagents not available) | MCP memory poll |
-| CLI Fallback | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
+| Gemini CLI | `@{agent-name}` delegation or `oma agent:spawn` | MCP memory poll |
+| Antigravity | `oma agent:spawn` only (custom subagents not available) | MCP memory poll |
+| CLI Fallback | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |

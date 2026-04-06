@@ -125,9 +125,9 @@ oh-my-agent współpracuje z każdym IDE lub CLI zasilanym AI, które obsługuje
 | Narzędzie | Metoda integracji | Agenci równolegli |
 |------|-------------------|----------------|
 | **Claude Code** | Natywne umiejętności + narzędzie Agent | Narzędzie Task do prawdziwego równoległego wykonania |
-| **Gemini CLI** | Umiejętności automatycznie ładowane z `.agents/skills/` | `oh-my-ag agent:spawn` |
+| **Gemini CLI** | Umiejętności automatycznie ładowane z `.agents/skills/` | `oma agent:spawn` |
 | **Codex CLI** | Umiejętności automatycznie ładowane | Równoległe żądania mediowane przez model |
-| **Antigravity IDE** | Umiejętności automatycznie ładowane | `oh-my-ag agent:spawn` |
+| **Antigravity IDE** | Umiejętności automatycznie ładowane | `oma agent:spawn` |
 | **Cursor** | Umiejętności przez integrację `.cursor/` | Ręczne uruchamianie |
 | **OpenCode** | Ładowanie umiejętności | Ręczne uruchamianie |
 

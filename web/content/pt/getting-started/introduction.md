@@ -125,9 +125,9 @@ oh-my-agent funciona com qualquer IDE ou CLI com IA que suporte carregamento de 
 | Ferramenta | Método de Integração | Agentes Paralelos |
 |------------|-------------------------|-------------------|
 | **Claude Code** | Habilidades nativas + Agent tool | Task tool para paralelismo real |
-| **Gemini CLI** | Habilidades auto-carregadas de `.agents/skills/` | `oh-my-ag agent:spawn` |
+| **Gemini CLI** | Habilidades auto-carregadas de `.agents/skills/` | `oma agent:spawn` |
 | **Codex CLI** | Habilidades auto-carregadas | Requisições paralelas mediadas por modelo |
-| **Antigravity IDE** | Habilidades auto-carregadas | `oh-my-ag agent:spawn` |
+| **Antigravity IDE** | Habilidades auto-carregadas | `oma agent:spawn` |
 | **Cursor** | Habilidades via integração `.cursor/` | Execução manual |
 | **OpenCode** | Carregamento de habilidades | Execução manual |
 

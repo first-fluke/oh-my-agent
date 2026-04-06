@@ -180,9 +180,9 @@ agent_cli_mapping:
 |--------|-------------|---------|
 | **Claude Code** | 使用 `.claude/agents/{name}.md` 定义的 `Agent` 工具。同一消息中多个 Agent 调用 = 真正并行。 | 同步返回 |
 | **Codex CLI** | 模型协调的并行子智能体请求 | JSON 输出 |
-| **Gemini CLI** | `oh-my-ag agent:spawn` CLI 命令 | MCP 内存轮询 |
-| **Antigravity IDE** | 仅 `oh-my-ag agent:spawn`（自定义子智能体不可用） | MCP 内存轮询 |
-| **CLI 回退** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | 结果文件轮询 |
+| **Gemini CLI** | `oma agent:spawn` CLI 命令 | MCP 内存轮询 |
+| **Antigravity IDE** | 仅 `oma agent:spawn`（自定义子智能体不可用） | MCP 内存轮询 |
+| **CLI 回退** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | 结果文件轮询 |
 
 在 Claude Code 中运行时，工作流直接使用 `Agent` 工具：
 ```

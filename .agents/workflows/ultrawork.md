@@ -93,8 +93,8 @@ Request parallel subagent execution with the specific implementation tasks per p
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oh-my-ag agent:spawn backend "Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./backend &
-oh-my-ag agent:spawn frontend "Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./frontend &
+oma agent:spawn backend "Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./backend &
+oma agent:spawn frontend "Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./frontend &
 wait
 ```
 
@@ -149,7 +149,7 @@ Request parallel subagent execution with the QA verification tasks.
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oh-my-ag agent:spawn qa-agent "Execute Phase 3 Verification. Step 6: Alignment Review. Step 7: Security/Bug Review (npm audit, OWASP). Step 8: Improvement/Regression Review. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
+oma agent:spawn qa-agent "Execute Phase 3 Verification. Step 6: Alignment Review. Step 7: Security/Bug Review (npm audit, OWASP). Step 8: Improvement/Regression Review. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
 ```
 
 ---
@@ -217,7 +217,7 @@ Request parallel subagent execution with the refinement tasks.
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oh-my-ag agent:spawn debug-agent "Execute Phase 4 Refine. Step 9: Split large files. Step 10: Integration check. Step 11: Side Effect analysis (find_referencing_symbols). Step 12: Consistency review. Step 13: Cleanup dead code. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
+oma agent:spawn debug-agent "Execute Phase 4 Refine. Step 9: Split large files. Step 10: Integration check. Step 11: Side Effect analysis (find_referencing_symbols). Step 12: Consistency review. Step 13: Cleanup dead code. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
 ```
 
 ---
@@ -285,7 +285,7 @@ Request parallel subagent execution with the final QA and deployment readiness t
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oh-my-ag agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (lint/coverage). Step 15: UX Flow Verification. Step 16: Related Issues Review. Step 17: Deployment Readiness. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
+oma agent:spawn qa-agent "Execute Phase 5 Ship. Step 14: Quality Review (lint/coverage). Step 15: UX Flow Verification. Step 16: Related Issues Review. Step 17: Deployment Readiness. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
 ```
 
 ---
@@ -327,7 +327,7 @@ If Quality Score was measured during this session:
    - Review impl agent self-check results: any bugs caught by QA that self-check missed? → `good_catch`
 6. Append EA events to `session-metrics.md`
 7. If rolling 3-session EA >= 30: Flag in final report
-   → "QA tuning suggested. Run `oh-my-ag retro` to review."
+   → "QA tuning suggested. Run `oma retro` to review."
 
 ### SHIP_GATE
 - [ ] Quality checks pass

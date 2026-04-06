@@ -342,7 +342,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 **Vòng lặp review giữa agent:**
 1. Tự review: agent kiểm tra diff của mình so với tiêu chí chấp nhận
-2. Xác minh tự động: `oh-my-ag verify {agent-type} --workspace {workspace}`
+2. Xác minh tự động: `oma verify {agent-type} --workspace {workspace}`
 3. Review chéo: agent QA đánh giá thay đổi
 4. Khi thất bại: vấn đề được phản hồi để sửa (tối đa 5 vòng lặp tổng)
 

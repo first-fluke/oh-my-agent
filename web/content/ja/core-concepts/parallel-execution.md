@@ -147,9 +147,9 @@ agent_cli_mapping:
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent` tool。同一メッセージ内の複数呼び出し = 真の並列。 | 同期リターン |
 | **Codex CLI** | モデル仲介並列サブエージェントリクエスト | JSON出力 |
-| **Gemini CLI** | `oh-my-ag agent:spawn` CLIコマンド | MCPメモリポーリング |
-| **Antigravity IDE** | `oh-my-ag agent:spawn`のみ | MCPメモリポーリング |
-| **CLIフォールバック** | `oh-my-ag agent:spawn {agent} {prompt} {session} -w {workspace}` | 結果ファイルポーリング |
+| **Gemini CLI** | `oma agent:spawn` CLIコマンド | MCPメモリポーリング |
+| **Antigravity IDE** | `oma agent:spawn`のみ | MCPメモリポーリング |
+| **CLIフォールバック** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | 結果ファイルポーリング |
 
 ---
 

@@ -103,17 +103,17 @@ Results are returned as JSON output.
 
 ### If Gemini CLI
 
-Spawn agents using `oh-my-ag agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
+Spawn agents using `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
 
 ### If Antigravity or CLI Fallback
 
-Spawn agents using `oh-my-ag agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}` only (custom subagents not available).
+Spawn agents using `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}` only (custom subagents not available).
 
 ---
 
 ## Step 4: Monitor Progress
 
-Use `oh-my-ag agent:status {session_id} {agent_id}` to check process health.
+Use `oma agent:status {session_id} {agent_id}` to check process health.
 Also use memory read tool to poll `progress-{agent}.md` for logic updates.
 
 - Use memory edit tool to update `task-board.md` with turn counts and status changes.
