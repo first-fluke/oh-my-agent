@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.23.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.23.0...cli-v4.23.1) (2026-04-06)
+
+
+### Refactoring
+
+* **cli:** consolidate all migrations into commands/migrations/ ([4bd8720](https://github.com/first-fluke/oh-my-agent/commit/4bd8720a3a21eab6ce3c655b4aa98e64f597574b))
+* move .agents/config/user-preferences.yaml to .agents/oma-config.yaml ([c702a4b](https://github.com/first-fluke/oh-my-agent/commit/c702a4bc41f14b9ed6b6797d13ed970357c5d354))
+
+
+### Documentation
+
+* add migrations README with conventions and registry ([c5dcdb5](https://github.com/first-fluke/oh-my-agent/commit/c5dcdb5246244bef3e5e97a1b4d5b552bedee85d))
+* add oma-pdf to agent table in all README files ([5ab63bf](https://github.com/first-fluke/oh-my-agent/commit/5ab63bf6ea0a8c650eea0bb7f1315cc8a47480ca))
+
 ## [4.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.22.4...cli-v4.23.0) (2026-04-05)
 
 
