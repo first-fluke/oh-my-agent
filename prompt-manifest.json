@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.23.1",
-  "releaseDate": "2026-04-06T03:47:49.346Z",
+  "releaseDate": "2026-04-06T11:25:40.909Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -66,8 +66,8 @@
     },
     {
       "path": ".agents/skills/_shared/conditional/exploration-loop.md",
-      "sha256": "6d9c7640103f25716df7e852a1f1c7d6443d2e1ab7a566e158997ae1b593bc2d",
-      "size": 5474
+      "sha256": "bec72eb2159cc1d39866e2cf6d8f764f577b4a8bcd88c396b5425111c66f9619",
+      "size": 5462
     },
     {
       "path": ".agents/skills/_shared/conditional/quality-score.md",
@@ -176,7 +176,7 @@
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "a60d3bc102ea6035a4081fa4257a92897c5faffe7898a27bf199655d0d517f16",
+      "sha256": "6252ef1663415cbf8c9d2778ad0a7e0c9bb82dbd2cab299cee20c8b5b38d1af2",
       "size": 25
     },
     {
@@ -810,11 +810,6 @@
       "size": 1928
     },
     {
-      "path": ".agents/workflows/work.md",
-      "sha256": "bffeee6891c2793e5f49bc13de4d03de2ab024f2faeb09e67e3378568fda88b3",
-      "size": 5528
-    },
-    {
       "path": ".agents/workflows/debug.md",
       "sha256": "e368e294d2d5de764c0cd2a7e18ccfea3c6c153d7ed297a4005016e93ecb0cb0",
       "size": 3636
@@ -831,8 +826,8 @@
     },
     {
       "path": ".agents/workflows/exec-plan.md",
-      "sha256": "ddb7c2dbc5a9a5fed4d59d59b7049d3a864b4719283d32b0c4579f7f158aa6e2",
-      "size": 4810
+      "sha256": "0bd211ec89a23cbff3fb800c80079bfd3ee6d5baa65a0a97b1137d3cba96c483",
+      "size": 4792
     },
     {
       "path": ".agents/workflows/orchestrate.md",
@@ -846,8 +841,8 @@
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "a763b471438281d0a4d4d70553519efb4acdfab6db10d7a25f37d56b631ac61f",
-      "size": 2688
+      "sha256": "83029b4eedf79407f937da079ac8daa18fce88aa983f2b788543bde33e6a1aca",
+      "size": 2676
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
@@ -890,6 +885,11 @@
       "size": 15780
     },
     {
+      "path": ".agents/workflows/work.md",
+      "sha256": "64ecbf69af42ca01fb41ba90da704fa14d8371f221ce66577f9ea18c1642d248",
+      "size": 5522
+    },
+    {
       "path": ".claude/skills/brainstorm/SKILL.md",
       "sha256": "ad0e0a4824a84f5a98ccbbb9edb864176a78e5582bfbe66651f8171d7335e49b",
       "size": 251
@@ -898,11 +898,6 @@
       "path": ".claude/skills/commit/SKILL.md",
       "sha256": "67af5303838517f16a89d31b518345ed53cf694aff9797be0bc6ae3c4e200a0a",
       "size": 211
-    },
-    {
-      "path": ".claude/skills/work/SKILL.md",
-      "sha256": "1561c1e9e455ac7d3b826c7e1643404950aad2cdcb086f92fc7732a0868a8549",
-      "size": 219
     },
     {
       "path": ".claude/skills/debug/SKILL.md",
@@ -963,6 +958,11 @@
       "path": ".claude/skills/ultrawork/SKILL.md",
       "sha256": "ffda2a5acc16cb5784c818e254b95eb2a258a3b5319461541325f59451be9e62",
       "size": 187
+    },
+    {
+      "path": ".claude/skills/work/SKILL.md",
+      "sha256": "f3b622ed9718df5e9b8243841572de73081e04945e7cfeda662c068791b9efd2",
+      "size": 201
     },
     {
       "path": ".claude/agents/backend-engineer.md",
