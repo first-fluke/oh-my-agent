@@ -70,7 +70,7 @@ You: "ユーザー認証付きのTODOアプリを作って"
 | コマンド | 説明 |
 |---------|------|
 | `/plan` | PMが機能をタスクに分解 |
-| `/coordinate` | ステップごとのマルチエージェント実行 |
+| `/work` | ステップごとのマルチエージェント実行 |
 | `/orchestrate` | 自動並列エージェントスポーン |
 | `/ultrawork` | 11のレビューゲート付き5フェーズ品質ワークフロー |
 | `/review` | セキュリティ + パフォーマンス + アクセシビリティ監査 |
@@ -112,7 +112,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

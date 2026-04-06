@@ -486,7 +486,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## 오케스트레이션 흐름
 
-멀티 에이전트 워크플로우(`/orchestrate` 또는 `/coordinate`) 실행 시:
+멀티 에이전트 워크플로우(`/orchestrate` 또는 `/work`) 실행 시:
 
 1. **PM 에이전트**가 요청을 우선순위(P0, P1, P2)와 의존성이 있는 도메인별 태스크로 분해
 2. **세션 초기화** — 세션 ID 생성, 메모리에 `orchestrator-session.md`와 `task-board.md` 생성

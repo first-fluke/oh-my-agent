@@ -244,7 +244,7 @@ Diese Signale zeigen an, dass der Bug eine Eskalation über die Standard-Debug-S
 
 ### Signal 1: Gleiche Korrektur zweimal versucht
 
-Wenn der Workflow eine Korrektur vorschlägt, anwendet und derselbe Fehler erneut auftritt, liegt das Problem tiefer als die ursprüngliche Diagnose. Dies löst die **Explorationsschleife** in Workflows aus, die diese unterstützen (ultrawork, orchestrate, coordinate):
+Wenn der Workflow eine Korrektur vorschlägt, anwendet und derselbe Fehler erneut auftritt, liegt das Problem tiefer als die ursprüngliche Diagnose. Dies löst die **Explorationsschleife** in Workflows aus, die diese unterstützen (ultrawork, orchestrate, work):
 
 - 2-3 alternative Hypothesen zur Grundursache generieren.
 - Jede Hypothese in einem separaten Workspace testen (git stash pro Versuch).
@@ -252,7 +252,7 @@ Wenn der Workflow eine Korrektur vorschlägt, anwendet und derselbe Fehler erneu
 
 ### Signal 2: Domänenübergreifende Grundursache
 
-Der Fehler im Frontend wird durch eine Backend-Änderung verursacht, die wiederum durch eine Datenbank-Schema-Migration verursacht wird. Wenn die Grundursache Domänengrenzen überschreitet, eskalieren Sie an `/coordinate` oder `/orchestrate`, um die zuständigen Domänen-Agenten einzubeziehen.
+Der Fehler im Frontend wird durch eine Backend-Änderung verursacht, die wiederum durch eine Datenbank-Schema-Migration verursacht wird. Wenn die Grundursache Domänengrenzen überschreitet, eskalieren Sie an `/work` oder `/orchestrate`, um die zuständigen Domänen-Agenten einzubeziehen.
 
 **Beispiel:** Frontend zeigt "undefined" für den Benutzernamen an. Backend gibt null für `user.display_name` zurück. Die Datenbankmigration hat die Spalte hinzugefügt, aber vorhandene Zeilen enthalten NULL-Werte. Korrektur erfordert: Datenbankmigration (Nachbefüllung), Backend-Null-Behandlung und Frontend-Fallback-Anzeige.
 

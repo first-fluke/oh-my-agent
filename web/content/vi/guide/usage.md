@@ -10,7 +10,7 @@ description: Hướng dẫn sử dụng toàn diện oh-my-agent — bắt đầ
 1. Mở dự án trong IDE hỗ trợ AI (Claude Code, Gemini CLI, Cursor, Antigravity, v.v.)
 2. Skill được tự động phát hiện từ `.agents/skills/`
 3. Mô tả bạn muốn gì bằng ngôn ngữ tự nhiên — oh-my-agent định tuyến đến agent phù hợp
-4. Cho công việc đa agent, dùng `/coordinate` hoặc `/orchestrate`
+4. Cho công việc đa agent, dùng `/work` hoặc `/orchestrate`
 
 Đó là toàn bộ quy trình. Không cần cú pháp đặc biệt cho task đơn lĩnh vực.
 
@@ -39,7 +39,7 @@ Create a login form component with email and password fields, client-side valida
 Build a TODO app with user authentication, task CRUD, and a mobile companion app
 ```
 
-**Sử dụng `/coordinate`:**
+**Sử dụng `/work`:**
 
 1. Agent PM lập kế hoạch và phân tách task
 2. Bạn xem xét và xác nhận kế hoạch
@@ -111,7 +111,7 @@ oma stats
 | Lệnh | Loại | Chức năng | Khi nào dùng |
 |---------|------|-------------|-------------|
 | `/orchestrate` | Liên tục | Thực thi agent song song tự động với giám sát và vòng lặp xác minh | Dự án lớn cần song song tối đa |
-| `/coordinate` | Liên tục | Điều phối đa lĩnh vực từng bước với duyệt người dùng ở mỗi cổng | Tính năng trải nhiều agent muốn kiểm soát |
+| `/work` | Liên tục | Điều phối đa lĩnh vực từng bước với duyệt người dùng ở mỗi cổng | Tính năng trải nhiều agent muốn kiểm soát |
 | `/ultrawork` | Liên tục | Workflow chất lượng 5 giai đoạn, 17 bước, 11 checkpoint đánh giá | Phân phối chất lượng tối đa, mã production-critical |
 | `/plan` | Không liên tục | Phân tách task do PM dẫn dắt và định nghĩa API contract | Trước công việc đa agent phức tạp |
 | `/exec-plan` | Không liên tục | Tạo và theo dõi kế hoạch thực thi dưới dạng artifact repository | Tính năng phức tạp cần theo dõi tiến trình |
@@ -188,7 +188,7 @@ Cập nhật thời gian thực qua WebSocket, tự kết nối lại, chỉ bá
 
 5. **Lặp lại bằng re-spawn.** Re-spawn agent với ngữ cảnh sửa thay vì bắt đầu lại.
 
-6. **Bắt đầu với `/coordinate` khi không chắc chắn.** Hướng dẫn từng bước với xác nhận ở mỗi cổng.
+6. **Bắt đầu với `/work` khi không chắc chắn.** Hướng dẫn từng bước với xác nhận ở mỗi cổng.
 
 7. **Dùng `/brainstorm` trước `/plan` cho ý tưởng mơ hồ.**
 

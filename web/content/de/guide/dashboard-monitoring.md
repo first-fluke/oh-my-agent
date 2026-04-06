@@ -105,7 +105,7 @@ Für Multi-Agenten-Workflows wird folgendes Setup mit drei Terminal-Fenstern emp
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Terminal 1** führt Ihre primäre Agentensitzung aus (Gemini CLI, Claude Code, Codex usw.), in der Sie mit Workflows wie `/orchestrate` oder `/coordinate` interagieren.
+**Terminal 1** führt Ihre primäre Agentensitzung aus (Gemini CLI, Claude Code, Codex usw.), in der Sie mit Workflows wie `/orchestrate` oder `/work` interagieren.
 
 **Terminal 2** führt das Dashboard zur passiven Überwachung aus. Es aktualisiert sich automatisch — keine Interaktion nötig.
 
@@ -122,7 +122,7 @@ Die Dashboards lesen aus dem `.serena/memories/`-Verzeichnis. Dieses Verzeichnis
 | Dateimuster | Erstellt von | Inhalte |
 |:-------------|:----------|:---------|
 | `orchestrator-session.md` | `/orchestrate` Schritt 2 | Sitzungs-ID, Startzeit, Status (RUNNING/COMPLETED/FAILED), Workflow-Version |
-| `session-{workflow}.md` | `/coordinate`, `/ultrawork` | Sitzungsmetadaten, Phasenfortschritt, Zusammenfassung der Benutzeranfrage |
+| `session-{workflow}.md` | `/work`, `/ultrawork` | Sitzungsmetadaten, Phasenfortschritt, Zusammenfassung der Benutzeranfrage |
 | `task-board.md` | Orchestrierungs-Workflows | Markdown-Tabelle mit Agentenzuweisungen, Status und Aufgaben |
 | `progress-{agent}.md` | Jeder gestartete Agent | Aktuelle Zugnummer, woran der Agent arbeitet, Zwischenergebnisse |
 | `result-{agent}.md` | Jeder abgeschlossene Agent | Endstatus (COMPLETED/FAILED), geänderte Dateien, gefundene Probleme, Ergebnisse |

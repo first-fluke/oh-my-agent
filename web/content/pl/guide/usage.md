@@ -10,7 +10,7 @@ description: Kompleksowy przewodnik użytkowania oh-my-agent — szybki start, s
 1. Otwórz projekt w IDE zasilanym AI (Claude Code, Gemini CLI, Cursor, Antigravity, itp.)
 2. Umiejętności są automatycznie wykrywane z `.agents/skills/`
 3. Opisz czego potrzebujesz w języku naturalnym — oh-my-agent kieruje do właściwego agenta
-4. Do pracy wieloagentowej użyj `/coordinate` lub `/orchestrate`
+4. Do pracy wieloagentowej użyj `/work` lub `/orchestrate`
 
 To cały workflow. Nie potrzeba specjalnej składni do zadań jednodomenowych.
 
@@ -61,9 +61,9 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **Co się dzieje:**
 
 1. Wykrywanie słów kluczowych identyfikuje to jako wielodomenowe (frontend + backend + mobile)
-2. Jeśli nie użyłeś polecenia workflow, oh-my-agent sugeruje `/coordinate` lub `/orchestrate`
+2. Jeśli nie użyłeś polecenia workflow, oh-my-agent sugeruje `/work` lub `/orchestrate`
 
-**Używając `/coordinate` (krok po kroku z kontrolą użytkownika):**
+**Używając `/work` (krok po kroku z kontrolą użytkownika):**
 
 3. **Krok 1 — Agent PM planuje:** Identyfikuje domeny, definiuje kontrakty API, tworzy priorytetyzowany rozkład zadań, zapisuje do `.agents/plan.json`
 4. **Krok 2 — Przeglądasz i potwierdzasz plan**
@@ -146,7 +146,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | Polecenie | Typ | Co robi | Kiedy używać |
 |---------|------|-------------|-------------|
 | `/orchestrate` | Trwały | Automatyczne równoległe wykonanie agentów z monitoringiem i pętlami weryfikacji | Duże projekty wymagające maksymalnej równoległości |
-| `/coordinate` | Trwały | Krokowa koordynacja wielodomenowa z zatwierdzeniem użytkownika | Funkcjonalności obejmujące wielu agentów z kontrolą |
+| `/work` | Trwały | Krokowa koordynacja wielodomenowa z zatwierdzeniem użytkownika | Funkcjonalności obejmujące wielu agentów z kontrolą |
 | `/ultrawork` | Trwały | 5-fazowy, 17-krokowy workflow jakości z 11 punktami kontrolnymi | Maksymalna jakość dostarczenia, kod krytyczny dla produkcji |
 | `/plan` | Nietrwały | Rozkład zadań sterowany przez PM i definicja kontraktów API | Przed złożoną pracą wieloagentową |
 | `/exec-plan` | Nietrwały | Tworzenie i śledzenie planów wykonawczych jako artefaktów repozytorium | Złożone funkcjonalności wymagające śledzonego postępu |
@@ -174,7 +174,7 @@ oh-my-agent wykrywa słowa kluczowe workflow w 11 językach:
 | "버그 수정해줘" | `/debug` | Koreański |
 | "コードレビューして" | `/review` | Japoński |
 | "修复这个 bug" | `/debug` | Chiński |
-| "coordonner étape par étape" | `/coordinate` | Francuski |
+| "coordonner étape par étape" | `/work` | Francuski |
 
 **Zapytania informacyjne są odfiltrowywane:** "what is orchestrate?" nie wyzwala żadnego workflow.
 
@@ -187,7 +187,7 @@ oh-my-agent wykrywa słowa kluczowe workflow w 11 językach:
 3. **Zablokuj kontrakty API przed uruchomieniem agentów implementacyjnych.** Uruchom `/plan` najpierw.
 4. **Aktywnie monitoruj.** Otwórz terminal z panelem aby wcześnie wychwycić nieudanych agentów.
 5. **Iteruj przez ponowne uruchomienia.** Nie zaczynaj od nowa — uruchom ponownie z kontekstem korekty.
-6. **Zacznij od `/coordinate` gdy nie masz pewności.** Prowadzi krok po kroku.
+6. **Zacznij od `/work` gdy nie masz pewności.** Prowadzi krok po kroku.
 7. **Używaj `/brainstorm` przed `/plan` dla niejasnych pomysłów.**
 8. **Uruchom `/deepinit` na nowych bazach kodu.** Tworzy AGENTS.md i ARCHITECTURE.md.
 9. **Skonfiguruj mapowanie agent-CLI.** Kieruj złożone rozumowanie do Claude, szybkie generowanie do Gemini.

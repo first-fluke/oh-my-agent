@@ -78,7 +78,7 @@ your-project/
 │   │
 │   ├── workflows/
 │   │   ├── orchestrate.md             ← Persistente: execução paralela automatizada
-│   │   ├── coordinate.md             ← Persistente: coordenação passo a passo
+│   │   ├── work.md             ← Persistente: coordenação passo a passo
 │   │   ├── ultrawork.md              ← Persistente: workflow de qualidade em 5 fases
 │   │   ├── plan.md                   ← Breakdown de tarefas PM
 │   │   ├── exec-plan.md              ← Gerenciamento de plano de execução
@@ -183,7 +183,7 @@ Onde a expertise dos agentes reside. 15 diretórios no total: 14 skills de agent
 
 ### plan.json
 
-Gerado pelo workflow `/plan`. Contém o breakdown estruturado de tarefas com atribuições de agentes, prioridades, dependências e critérios de aceitação. Consumido por `/orchestrate`, `/coordinate` e `/exec-plan`.
+Gerado pelo workflow `/plan`. Contém o breakdown estruturado de tarefas com atribuições de agentes, prioridades, dependências e critérios de aceitação. Consumido por `/orchestrate`, `/work` e `/exec-plan`.
 
 ### state/
 

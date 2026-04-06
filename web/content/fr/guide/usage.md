@@ -5,7 +5,7 @@ description: Exemples concrets montrant comment utiliser oh-my-agent — de tach
 
 # Comment Utiliser oh-my-agent
 
-> Vous ne savez pas par ou commencer ? Tapez `/coordinate` suivi de ce que vous voulez construire.
+> Vous ne savez pas par ou commencer ? Tapez `/work` suivi de ce que vous voulez construire.
 
 ## Demarrage Rapide
 
@@ -40,7 +40,7 @@ Pas besoin de commandes slash. Decrivez juste ce que vous voulez.
 
 **Ce qui se passe :**
 
-1. La detection de mots-cles voit que c'est multi-domaine → suggere `/coordinate`
+1. La detection de mots-cles voit que c'est multi-domaine → suggere `/work`
 2. **Agent PM** planifie le travail : API d'auth, schema de base de donnees, UI frontend, perimetre QA
 3. **Vous lancez les agents :**
    ```bash
@@ -111,7 +111,7 @@ Tapez-les dans votre IDE IA pour declencher des processus structures :
 | `/brainstorm` | Ideation libre et exploration | Avant de s'engager dans une approche |
 | `/plan` | Decomposition PM → `.agents/plan.json` | Avant de demarrer toute fonctionnalite complexe |
 | `/exec-plan` | Executer un plan existant etape par etape | Apres `/plan` |
-| `/coordinate` | Coordination multi-domaine etape par etape | Fonctionnalites couvrant plusieurs agents |
+| `/work` | Coordination multi-domaine etape par etape | Fonctionnalites couvrant plusieurs agents |
 | `/orchestrate` | Execution automatisee d'agents en parallele | Grands projets, parallelisme maximum |
 | `/ultrawork` | Workflow qualite 5 phases (11 portes de revue) | Livraison qualite maximum |
 | `/review` | Audit securite + performance + accessibilite | Avant de merger |
@@ -201,7 +201,7 @@ Utilisez 3 terminaux :
 3. **Verrouillez les contrats d'abord** — lancez `/plan` avant de spawn des agents en parallele
 4. **Surveillez activement** — les dashboards detectent les problemes avant le merge
 5. **Iterez avec des re-spawns** — affinez les prompts d'agents au lieu de repartir de zero
-6. **Commencez avec `/coordinate`** — quand vous ne savez pas quel workflow utiliser
+6. **Commencez avec `/work`** — quand vous ne savez pas quel workflow utiliser
 
 ---
 

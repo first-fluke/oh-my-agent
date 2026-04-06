@@ -48,7 +48,7 @@ echo ""
 sleep 0.2
 
 echo -e "  ${CYAN}◇${RESET} Installing workflows..."
-workflows=("coordinate" "orchestrate" "plan" "review" "debug" "setup" "tools")
+workflows=("work" "orchestrate" "plan" "review" "debug" "setup" "tools")
 for wf in "${workflows[@]}"; do
   printf "  "
   echo -e "  ${GREEN}✓${RESET} ${wf}"

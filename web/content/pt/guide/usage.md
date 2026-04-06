@@ -10,7 +10,7 @@ description: "Guia de uso abrangente do oh-my-agent — início rápido, exemplo
 1. Abra seu projeto em uma IDE com IA (Claude Code, Gemini CLI, Cursor, Antigravity, etc.)
 2. As skills são auto-detectadas de `.agents/skills/`
 3. Descreva o que você quer em linguagem natural — oh-my-agent roteia para o agente correto
-4. Para trabalho multi-agente, use `/coordinate` ou `/orchestrate`
+4. Para trabalho multi-agente, use `/work` ou `/orchestrate`
 
 Esse é todo o workflow. Nenhuma sintaxe especial é necessária para tarefas de domínio único.
 
@@ -61,12 +61,12 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **O que acontece:**
 
 1. A detecção de palavras-chave identifica isso como multi-domínio (frontend + backend + mobile)
-2. Se você não usou um comando de workflow, oh-my-agent sugere `/coordinate` ou `/orchestrate`
+2. Se você não usou um comando de workflow, oh-my-agent sugere `/work` ou `/orchestrate`
 
-**Usando `/coordinate` (passo a passo com controle do usuário):**
+**Usando `/work` (passo a passo com controle do usuário):**
 
 ```
-/coordinate Build a TODO app with user authentication, task CRUD, and a mobile app
+/work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Step 1 — Agente PM planeja:**
@@ -239,7 +239,7 @@ oma stats
 | Comando | Tipo | O Que Faz | Quando Usar |
 |---------|------|----------|-------------|
 | `/orchestrate` | Persistente | Execução automatizada de agentes em paralelo com monitoramento e loops de verificação | Grandes projetos precisando de máximo paralelismo |
-| `/coordinate` | Persistente | Coordenação multi-domínio passo a passo com aprovação do usuário em cada portão | Funcionalidades abrangendo múltiplos agentes onde você quer controle |
+| `/work` | Persistente | Coordenação multi-domínio passo a passo com aprovação do usuário em cada portão | Funcionalidades abrangendo múltiplos agentes onde você quer controle |
 | `/ultrawork` | Persistente | Workflow de qualidade de 5 fases, 17 etapas com 11 checkpoints de revisão | Entrega de qualidade máxima, código crítico para produção |
 | `/plan` | Não-persistente | Breakdown de tarefas dirigido pelo PM e definição de contrato de API | Antes de qualquer trabalho multi-agente complexo |
 | `/exec-plan` | Não-persistente | Criar e rastrear planos de execução como artefatos do repositório | Funcionalidades complexas precisando de progresso rastreado e logs de decisão |
@@ -277,7 +277,7 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 | "revisar código" | `/review` | Espanhol |
 | "diseña la página" | `/design` | Espanhol |
 | "debuggen" | `/debug` | Alemão |
-| "coordonner étape par étape" | `/coordinate` | Francês |
+| "coordonner étape par étape" | `/work` | Francês |
 
 **Consultas informativas são filtradas:**
 
@@ -393,7 +393,7 @@ A flag `-w` em `agent:spawn` isola um agente em um diretório específico. Isso 
 
 5. **Itere com re-spawns.** Se a saída de um agente não está correta, re-spawne com a tarefa original mais contexto de correção. Não recomece.
 
-6. **Comece com `/coordinate` quando inseguro.** Fornece orientação passo a passo com confirmação do usuário em cada portão.
+6. **Comece com `/work` quando inseguro.** Fornece orientação passo a passo com confirmação do usuário em cada portão.
 
 7. **Use `/brainstorm` antes de `/plan` para ideias ambíguas.** Brainstorm clarifica intenção e abordagem antes do agente PM decompor em tarefas.
 

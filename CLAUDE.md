@@ -13,7 +13,7 @@
 | Command | Workflow | Execution |
 |:--|:--|:--|
 | `/orchestrate` | `orchestrate.md` | Parallel subagents + Review Loop |
-| `/coordinate` | `coordinate.md` | TaskCreate + Issue Remediation Loop |
+| `/work` | `work.md` | TaskCreate + Issue Remediation Loop |
 | `/ultrawork` | `ultrawork.md` | 5-Phase Gate Loop |
 | `/plan` | `plan.md` | Inline PM analysis |
 | `/exec-plan` | `exec-plan.md` | Inline plan management |
@@ -37,7 +37,7 @@ Trigger keywords are defined in `.claude/hooks/triggers.json` (multi-language su
 - `[OMA PERSISTENT MODE: ...]` → workflow still in progress, continue execution
 - Informational context ("what is X?") is filtered out — no false triggers
 - Explicit `/command` input skips the hook (no duplication)
-- Persistent-mode workflows (`ultrawork`, `orchestrate`, `coordinate`) block termination until complete
+- Persistent-mode workflows (`ultrawork`, `orchestrate`, `work`) block termination until complete
 - Deactivate persistent mode: say "workflow done" → deletes `.agents/state/{workflow}-state-{sessionId}.json`
 
 ## Required References (before any skill execution)

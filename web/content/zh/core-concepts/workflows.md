@@ -54,16 +54,16 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 
 ---
 
-### /coordinate
+### /work
 
 **说明：** 逐步多领域协调。PM 先规划，然后智能体在每个关卡经用户确认后执行，接着进行 QA 审查和问题修复。
 
-**持久化：** 是。状态文件：`.agents/state/coordinate-state.json`。
+**持久化：** 是。状态文件：`.agents/state/work-state.json`。
 
 **触发关键词：**
 | 语言 | 关键词 |
 |------|-------|
-| 通用 | "coordinate"、"step by step" |
+| 通用 | "work"、"step by step" |
 | 韩语 | "코디네이트"、"단계별" |
 | 日语 | "コーディネート"、"ステップバイステップ" |
 | 中文 | "协调"、"逐步" |
@@ -145,7 +145,7 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 
 **输出：** `.agents/plan.json`、内存写入，复杂计划可选输出到 `docs/exec-plans/active/`。
 
-**执行方式：** 内联（不启动子智能体）。由 `/orchestrate` 或 `/coordinate` 消费。
+**执行方式：** 内联（不启动子智能体）。由 `/orchestrate` 或 `/work` 消费。
 
 ---
 
@@ -155,7 +155,7 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 
 **触发关键词：** 无（排除在自动检测之外，必须显式调用）。
 
-**步骤：** 准备 -> 分析范围（评估复杂度：简单/中等/复杂）-> 创建执行计划（Markdown 存储在 `docs/exec-plans/active/` 中）-> 定义 API 契约（如果跨边界）-> 与用户审查 -> 执行（交给 `/orchestrate` 或 `/coordinate`）-> 完成（移至 `completed/`）。
+**步骤：** 准备 -> 分析范围（评估复杂度：简单/中等/复杂）-> 创建执行计划（Markdown 存储在 `docs/exec-plans/active/` 中）-> 定义 API 契约（如果跨边界）-> 与用户审查 -> 执行（交给 `/orchestrate` 或 `/work`）-> 完成（移至 `completed/`）。
 
 **输出：** `docs/exec-plans/active/{plan-name}.md`，包含任务表、决策日志、进度备注。
 
@@ -360,13 +360,13 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息之前
 
 ### 状态文件
 
-持久化工作流（orchestrate、ultrawork、coordinate）在 `.agents/state/` 中创建状态文件：
+持久化工作流（orchestrate、ultrawork、work）在 `.agents/state/` 中创建状态文件：
 
 ```
 .agents/state/
 ├── orchestrate-state.json
 ├── ultrawork-state.json
-└── coordinate-state.json
+└── work-state.json
 ```
 
 这些文件包含：工作流名称、当前阶段/步骤、会话 ID、时间戳以及任何待处理状态。
@@ -395,7 +395,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息之前
 
 ### 复杂多领域项目
 ```
-/coordinate → PM 规划 → 用户确认 → 智能体启动 → QA 审查 → 修复问题 → 发布
+/work → PM 规划 → 用户确认 → 智能体启动 → QA 审查 → 修复问题 → 发布
 ```
 
 ### 最高质量交付

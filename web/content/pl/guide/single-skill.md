@@ -18,7 +18,7 @@ Używaj gdy zadanie spełnia WSZYSTKIE te kryteria:
 - **Ma jasny zakres** — wiesz jakie powinno być wyjście (komponent, endpoint, schemat, poprawka)
 - **Nie wymaga koordynacji** — inni agenci nie muszą działać przed ani po
 
-**Przełącz na wieloagentowe** (`/coordinate` lub `/orchestrate`) gdy:
+**Przełącz na wieloagentowe** (`/work` lub `/orchestrate`) gdy:
 - Praca UI wymaga nowego kontraktu API (frontend + backend)
 - Jedna poprawka kaskaduje przez warstwy (debug + agenci implementacyjni)
 - Funkcjonalność obejmuje frontend, backend i bazę danych
@@ -145,11 +145,11 @@ Add deliverables: data standards table, glossary, migration script.
 
 | Sygnał | Co oznacza | Działanie |
 |--------|--------------|--------|
-| Agent mówi "this requires a backend change" | Zadanie ma zależności międzydomenowe | Przełącz na `/coordinate` |
+| Agent mówi "this requires a backend change" | Zadanie ma zależności międzydomenowe | Przełącz na `/work` |
 | CHARTER_CHECK pokazuje elementy "Must NOT do" które są potrzebne | Zakres przekracza jedną domenę | Zaplanuj pełną funkcjonalność z `/plan` |
 | Poprawka kaskaduje do 3+ plików w różnych warstwach | Jedna poprawka dotyczy wielu domen | Użyj `/debug` z szerszym zakresem |
 | Agent blokuje się na HIGH clarification | Wymagania fundamentalnie niejednoznaczne | Odpowiedz na pytania lub uruchom `/brainstorm` |
 
 ### Ogólna reguła
 
-Jeśli okaże się, że uruchamiasz tego samego agenta ponownie więcej niż dwukrotnie z udoskonaleniami, zadanie jest prawdopodobnie wielodomenowe i wymaga `/coordinate` lub co najmniej kroku `/plan` do właściwej dekompozycji.
+Jeśli okaże się, że uruchamiasz tego samego agenta ponownie więcej niż dwukrotnie z udoskonaleniami, zadanie jest prawdopodobnie wielodomenowe i wymaga `/work` lub co najmniej kroku `/plan` do właściwej dekompozycji.

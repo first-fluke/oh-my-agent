@@ -118,7 +118,7 @@ Gdzie rezydują kompetencje agentów. 15 katalogów łącznie: 14 umiejętności
 - Protokół wykonawczy krok po kroku
 - Definicje bramek (dla trwałych workflow)
 
-Trwałe workflow: `orchestrate.md`, `coordinate.md`, `ultrawork.md`.
+Trwałe workflow: `orchestrate.md`, `work.md`, `ultrawork.md`.
 Nietrwałe: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
 
 ### agents/

@@ -70,7 +70,7 @@ You: "做一个带用户认证的 TODO 应用"
 | 命令 | 说明 |
 |------|------|
 | `/plan` | PM 把功能拆解成任务 |
-| `/coordinate` | 逐步执行多 agent 协作 |
+| `/work` | 逐步执行多 agent 协作 |
 | `/orchestrate` | 自动并行 agent 调度 |
 | `/ultrawork` | 含 11 个审查门禁的 5 阶段质量工作流 |
 | `/review` | 安全 + 性能 + 无障碍审计 |
@@ -112,7 +112,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

@@ -54,16 +54,16 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 ---
 
-### /coordinate
+### /work
 
 **Description:** Step-by-step multi-domain coordination. PM plans first, then agents execute with user confirmation at each gate, followed by QA review and issue remediation.
 
-**Persistent:** Yes. State file: `.agents/state/coordinate-state.json`.
+**Persistent:** Yes. State file: `.agents/state/work-state.json`.
 
 **Trigger keywords:**
 | Language | Keywords |
 |----------|----------|
-| Universal | "coordinate", "step by step" |
+| Universal | "work", "step by step" |
 | Korean | "코디네이트", "단계별" |
 | Japanese | "コーディネート", "ステップバイステップ" |
 | Chinese | "协调", "逐步" |
@@ -179,7 +179,7 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 **Output:** `.agents/plan.json`, memory write, optionally `docs/exec-plans/active/` for complex plans.
 
-**Execution:** Inline (no subagent spawning). Consumed by `/orchestrate` or `/coordinate`.
+**Execution:** Inline (no subagent spawning). Consumed by `/orchestrate` or `/work`.
 
 ---
 
@@ -189,7 +189,7 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 **Trigger keywords:** None (excluded from auto-detection, must be invoked explicitly).
 
-**Steps:** Preparation -> Analyze scope (assess complexity: Simple/Medium/Complex) -> Create execution plan (markdown in `docs/exec-plans/active/`) -> Define API contracts (if cross-boundary) -> Review with user -> Execute (hand off to `/orchestrate` or `/coordinate`) -> Complete (move to `completed/`).
+**Steps:** Preparation -> Analyze scope (assess complexity: Simple/Medium/Complex) -> Create execution plan (markdown in `docs/exec-plans/active/`) -> Define API contracts (if cross-boundary) -> Review with user -> Execute (hand off to `/orchestrate` or `/work`) -> Complete (move to `completed/`).
 
 **Output:** `docs/exec-plans/active/{plan-name}.md` with task table, decision log, progress notes.
 
@@ -394,13 +394,13 @@ The following workflows are excluded from auto-detection and must be invoked wit
 
 ### State Files
 
-Persistent workflows (orchestrate, ultrawork, coordinate, ralph) create state files in `.agents/state/`:
+Persistent workflows (orchestrate, ultrawork, work, ralph) create state files in `.agents/state/`:
 
 ```
 .agents/state/
 ├── orchestrate-state.json
 ├── ultrawork-state.json
-├── coordinate-state.json
+├── work-state.json
 └── ralph-state.json
 ```
 
@@ -430,7 +430,7 @@ The workflow can also end naturally when all steps are completed and the final g
 
 ### Complex Multi-Domain Project
 ```
-/coordinate → PM plans → user confirms → agents spawn → QA reviews → fix issues → ship
+/work → PM plans → user confirms → agents spawn → QA reviews → fix issues → ship
 ```
 
 ### Maximum Quality Delivery

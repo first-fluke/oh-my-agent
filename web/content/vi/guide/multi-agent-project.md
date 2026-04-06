@@ -23,9 +23,9 @@ Tính năng của bạn trải nhiều lĩnh vực — backend API + frontend UI
 
 Workflow `/plan` chạy inline và tạo kế hoạch có cấu trúc: thu thập yêu cầu, phân tích tính khả thi, định nghĩa API contract, phân tách task, xem xét với người dùng, lưu kế hoạch.
 
-### Bước 2: /coordinate hoặc /orchestrate — Thực thi
+### Bước 2: /work hoặc /orchestrate — Thực thi
 
-| Khía cạnh | /coordinate | /orchestrate |
+| Khía cạnh | /work | /orchestrate |
 |:-------|:-----------|:-------------|
 | **Tương tác** | Tương tác — người dùng xác nhận ở mỗi giai đoạn | Tự động — chạy đến hoàn thành |
 | **Lập kế hoạch PM** | Tích hợp sẵn | Cần plan.json từ /plan |

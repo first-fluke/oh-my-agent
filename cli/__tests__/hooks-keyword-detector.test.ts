@@ -221,7 +221,7 @@ describe("keyword-detector", () => {
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
         "orchestrate-state-sess1.json",
         "ralph-state-sess1.json",
-        "coordinate-state-sess2.json",
+        "work-state-sess2.json",
       ]);
 
       deactivateAllPersistentModes("/tmp/project", "sess1");

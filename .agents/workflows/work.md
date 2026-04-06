@@ -30,7 +30,7 @@ The detected vendor determines how agents are spawned (Step 4) and monitored (St
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Record session start using memory write tool:
-   - Create `session-coordinate.md` in the memory base path
+   - Create `session-work.md` in the memory base path
    - Include: session start time, user request summary.
 
 ---

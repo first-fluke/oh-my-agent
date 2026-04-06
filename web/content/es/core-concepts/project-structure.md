@@ -208,7 +208,7 @@ your-project/
 │   │
 │   ├── workflows/
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
-│   │   ├── coordinate.md             ← Persistent: step-by-step coordination
+│   │   ├── work.md             ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md              ← Persistent: 5-phase quality workflow
 │   │   ├── plan.md                   ← PM task breakdown
 │   │   ├── exec-plan.md              ← Execution plan management
@@ -234,7 +234,7 @@ your-project/
 │   ├── state/                         ← Active workflow state files
 │   │   ├── orchestrate-state.json     ← (exists only when workflow is active)
 │   │   ├── ultrawork-state.json
-│   │   └── coordinate-state.json
+│   │   └── work-state.json
 │   ├── results/                       ← Agent result files
 │   │   └── result-{agent}.md          ← (created by completed agents)
 │   └── mcp.json                       ← MCP server configuration
@@ -263,7 +263,7 @@ your-project/
         ├── result-{agent}.md          ← Per-agent final outputs
         ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
         ├── experiment-ledger.md       ← Experiment tracking (conditional)
-        ├── session-coordinate.md      ← Coordinate workflow session state
+        ├── session-work.md      ← Work workflow session state
         ├── session-ultrawork.md       ← Ultrawork workflow session state
         ├── tool-overrides.md          ← Temporary tool restrictions (/tools --temp)
         └── archive/
@@ -308,7 +308,7 @@ Donde reside la experiencia de los agentes. 15 directorios en total: 14 habilida
 - Protocolo de ejecucion paso a paso
 - Definiciones de puertas (para flujos persistentes)
 
-Flujos persistentes: `orchestrate.md`, `coordinate.md`, `ultrawork.md`.
+Flujos persistentes: `orchestrate.md`, `work.md`, `ultrawork.md`.
 No persistentes: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
@@ -323,7 +323,7 @@ No persistentes: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `rev
 
 ### plan.json
 
-Generado por el flujo `/plan`. Contiene el desglose estructurado de tareas con asignaciones de agentes, prioridades, dependencias y criterios de aceptacion. Consumido por `/orchestrate`, `/coordinate` y `/exec-plan`.
+Generado por el flujo `/plan`. Contiene el desglose estructurado de tareas con asignaciones de agentes, prioridades, dependencias y criterios de aceptacion. Consumido por `/orchestrate`, `/work` y `/exec-plan`.
 
 ### state/
 
@@ -389,7 +389,7 @@ Donde los agentes escriben su progreso durante las sesiones de orquestacion. Est
 | `result-{agent}.md` | Ese agente | Salida final: estado de completacion, resumen, archivos modificados, criterios de aceptacion |
 | `session-metrics.md` | Orquestador | Eventos de Deuda de Clarificacion, progresion de Quality Score |
 | `experiment-ledger.md` | Orquestador/QA | Filas de experimentos cuando Quality Score esta activo |
-| `session-coordinate.md` | Flujo coordinate | Estado de sesion especifico de coordinate |
+| `session-work.md` | Flujo work | Estado de sesion especifico de work |
 | `session-ultrawork.md` | Flujo ultrawork | Seguimiento de fases especifico de ultrawork |
 | `tool-overrides.md` | Flujo /tools | Restricciones temporales de herramientas (alcance de sesion) |
 | `archive/metrics-{date}.md` | Sistema | Metricas de sesion archivadas (retencion de 30 dias) |

@@ -296,7 +296,7 @@ Session ID quyết định:
 
 6. **Lặp lại bằng re-spawn.** Nếu đầu ra agent cần tinh chỉnh, re-spawn với task gốc cộng ngữ cảnh sửa. Không bắt đầu session mới.
 
-7. **Bắt đầu với `/coordinate` nếu không chắc chắn.** Workflow coordinate hướng dẫn bạn qua quy trình từng bước với xác nhận người dùng ở mỗi cổng.
+7. **Bắt đầu với `/work` nếu không chắc chắn.** Workflow work hướng dẫn bạn qua quy trình từng bước với xác nhận người dùng ở mỗi cổng.
 
 ### Không nên
 

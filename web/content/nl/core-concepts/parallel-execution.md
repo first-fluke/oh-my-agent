@@ -212,7 +212,7 @@ Functies: realtime updates via WebSocket, auto-reconnect, gekleurde statusindica
 4. **Monitor actief.** Open een dashboardterminal om problemen vroeg te signaleren.
 5. **Draai QA na implementatie.** Spawn de QA-agent sequentieel na voltooiing.
 6. **Itereer met herspawns.** Herspawn met originele taak plus correctiecontext.
-7. **Begin met `/coordinate` als je twijfelt.**
+7. **Begin met `/work` als je twijfelt.**
 
 ### Niet Doen
 

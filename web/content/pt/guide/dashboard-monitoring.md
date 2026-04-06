@@ -104,7 +104,7 @@ Para workflows multi-agente, o setup recomendado usa três painéis de terminal:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Terminal 1** executa sua sessão primária de agente (Gemini CLI, Claude Code, Codex, etc.) onde você interage com workflows como `/orchestrate` ou `/coordinate`.
+**Terminal 1** executa sua sessão primária de agente (Gemini CLI, Claude Code, Codex, etc.) onde você interage com workflows como `/orchestrate` ou `/work`.
 
 **Terminal 2** executa o dashboard para monitoramento passivo. Atualiza automaticamente — sem interação necessária.
 
@@ -121,7 +121,7 @@ Os dashboards leem do diretório `.serena/memories/`. Este diretório é populad
 | Padrão de Arquivo | Criado Por | Conteúdos |
 |:-----------------|:----------|:---------|
 | `orchestrator-session.md` | `/orchestrate` Step 2 | ID da sessão, hora de início, status (RUNNING/COMPLETED/FAILED), versão do workflow |
-| `session-{workflow}.md` | `/coordinate`, `/ultrawork` | Metadados de sessão, progresso de fases, resumo da requisição do usuário |
+| `session-{workflow}.md` | `/work`, `/ultrawork` | Metadados de sessão, progresso de fases, resumo da requisição do usuário |
 | `task-board.md` | Workflows de orquestração | Tabela markdown com atribuições de agentes, status e tarefas |
 | `progress-{agent}.md` | Cada agente spawnado | Número do turno atual, no que o agente está trabalhando, resultados intermediários |
 | `result-{agent}.md` | Cada agente completado | Status final (COMPLETED/FAILED), arquivos alterados, problemas encontrados, entregáveis |

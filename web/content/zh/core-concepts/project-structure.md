@@ -208,7 +208,7 @@ your-project/
 │   │
 │   ├── workflows/
 │   │   ├── orchestrate.md             ← 持久化：自动并行执行
-│   │   ├── coordinate.md             ← 持久化：逐步协调
+│   │   ├── work.md             ← 持久化：逐步协调
 │   │   ├── ultrawork.md              ← 持久化：5 阶段质量工作流
 │   │   ├── plan.md                   ← PM 任务分解
 │   │   ├── exec-plan.md              ← 执行计划管理
@@ -234,7 +234,7 @@ your-project/
 │   ├── state/                         ← 活跃工作流状态文件
 │   │   ├── orchestrate-state.json     ← （仅在工作流活跃时存在）
 │   │   ├── ultrawork-state.json
-│   │   └── coordinate-state.json
+│   │   └── work-state.json
 │   ├── results/                       ← 智能体结果文件
 │   │   └── result-{agent}.md          ← （由完成的智能体创建）
 │   └── mcp.json                       ← MCP 服务器配置
@@ -263,7 +263,7 @@ your-project/
         ├── result-{agent}.md          ← 每个智能体的最终输出
         ├── session-metrics.md         ← 澄清债务和质量评分跟踪
         ├── experiment-ledger.md       ← 实验跟踪（条件性）
-        ├── session-coordinate.md      ← coordinate 工作流会话状态
+        ├── session-work.md      ← work 工作流会话状态
         ├── session-ultrawork.md       ← ultrawork 工作流会话状态
         ├── tool-overrides.md          ← 临时工具限制（/tools --temp）
         └── archive/
@@ -308,7 +308,7 @@ your-project/
 - 逐步执行协议
 - 关卡定义（持久化工作流）
 
-持久化工作流：`orchestrate.md`、`coordinate.md`、`ultrawork.md`。
+持久化工作流：`orchestrate.md`、`work.md`、`ultrawork.md`。
 非持久化：`plan.md`、`exec-plan.md`、`brainstorm.md`、`deepinit.md`、`review.md`、`debug.md`、`design.md`、`commit.md`、`tools.md`、`stack-set.md`。
 
 ### agents/
@@ -323,7 +323,7 @@ your-project/
 
 ### plan.json
 
-由 `/plan` 工作流生成。包含结构化任务分解，含智能体分配、优先级、依赖关系和验收标准。由 `/orchestrate`、`/coordinate` 和 `/exec-plan` 消费。
+由 `/plan` 工作流生成。包含结构化任务分解，含智能体分配、优先级、依赖关系和验收标准。由 `/orchestrate`、`/work` 和 `/exec-plan` 消费。
 
 ### state/
 
@@ -389,7 +389,7 @@ MCP 服务器配置，包括：
 | `result-{agent}.md` | 该智能体 | 最终输出：完成状态、摘要、变更的文件、验收标准 |
 | `session-metrics.md` | 编排器 | 澄清债务事件、质量评分进展 |
 | `experiment-ledger.md` | 编排器/QA | 质量评分活跃时的实验行 |
-| `session-coordinate.md` | coordinate 工作流 | coordinate 特定的会话状态 |
+| `session-work.md` | work 工作流 | work 特定的会话状态 |
 | `session-ultrawork.md` | ultrawork 工作流 | ultrawork 特定的阶段跟踪 |
 | `tool-overrides.md` | /tools 工作流 | 临时工具限制（会话范围） |
 | `archive/metrics-{date}.md` | 系统 | 归档的会话指标（30 天保留） |

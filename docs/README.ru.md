@@ -70,7 +70,7 @@ bunx oh-my-agent@latest
 | Команда | Что делает |
 |---------|-------------|
 | `/plan` | PM разбивает фичу на задачи |
-| `/coordinate` | Пошаговое мульти-агентное выполнение |
+| `/work` | Пошаговое мульти-агентное выполнение |
 | `/orchestrate` | Автоматический параллельный запуск агентов |
 | `/ultrawork` | 5-фазный воркфлоу качества с 11 ревью-гейтами |
 | `/review` | Аудит безопасности + производительности + доступности |
@@ -112,7 +112,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

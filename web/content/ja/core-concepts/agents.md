@@ -465,7 +465,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## オーケストレーションフロー
 
-マルチエージェントワークフロー（`/orchestrate`または`/coordinate`）の実行時：
+マルチエージェントワークフロー（`/orchestrate`または`/work`）の実行時：
 
 1. **PMエージェント**がリクエストを優先度（P0、P1、P2）と依存関係付きのドメイン固有タスクに分解
 2. **セッション初期化** — セッションIDを生成、メモリに`orchestrator-session.md`と`task-board.md`を作成

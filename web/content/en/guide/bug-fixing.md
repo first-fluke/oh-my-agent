@@ -244,7 +244,7 @@ These signals indicate the bug requires escalation beyond the standard debug loo
 
 ### Signal 1: Same Fix Attempted Twice
 
-If the workflow proposes a fix, applies it, and the same error recurs, the problem is deeper than the initial diagnosis. This triggers the **Exploration Loop** in workflows that support it (ultrawork, orchestrate, coordinate):
+If the workflow proposes a fix, applies it, and the same error recurs, the problem is deeper than the initial diagnosis. This triggers the **Exploration Loop** in workflows that support it (ultrawork, orchestrate, work):
 
 - Generate 2-3 alternative hypotheses for the root cause.
 - Test each hypothesis in a separate workspace (git stash per attempt).
@@ -252,7 +252,7 @@ If the workflow proposes a fix, applies it, and the same error recurs, the probl
 
 ### Signal 2: Multi-Domain Root Cause
 
-The error in the frontend is caused by a backend change that is caused by a database schema migration. When the root cause crosses domain boundaries, escalate to `/coordinate` or `/orchestrate` to involve the relevant domain agents.
+The error in the frontend is caused by a backend change that is caused by a database schema migration. When the root cause crosses domain boundaries, escalate to `/work` or `/orchestrate` to involve the relevant domain agents.
 
 **Example:** Frontend displays "undefined" for user name. Backend returns null for `user.display_name`. Database migration added the column but existing rows have NULL values. Fix requires: database migration (backfill), backend null handling, and frontend fallback display.
 

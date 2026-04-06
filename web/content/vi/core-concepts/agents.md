@@ -477,7 +477,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## Luồng điều phối
 
-Khi chạy workflow đa agent (`/orchestrate` hoặc `/coordinate`):
+Khi chạy workflow đa agent (`/orchestrate` hoặc `/work`):
 
 1. **Agent PM** phân tách yêu cầu thành task theo lĩnh vực với ưu tiên (P0, P1, P2) và phụ thuộc
 2. **Phiên được khởi tạo** — session ID được tạo, `orchestrator-session.md` và `task-board.md` được tạo trong bộ nhớ

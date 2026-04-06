@@ -5,7 +5,7 @@ description: Ejemplos del mundo real mostrando como usar oh-my-agent — desde t
 
 # Como Usar oh-my-agent
 
-> No sabes por donde empezar? Escribe `/coordinate` seguido de lo que quieres construir.
+> No sabes por donde empezar? Escribe `/work` seguido de lo que quieres construir.
 
 ## Inicio Rapido
 
@@ -40,7 +40,7 @@ Sin comandos slash necesarios. Solo describe lo que quieres.
 
 **Lo que pasa:**
 
-1. La deteccion de keywords ve que es multi-dominio → sugiere `/coordinate`
+1. La deteccion de keywords ve que es multi-dominio → sugiere `/work`
 2. **Agente PM** planifica el trabajo: API de auth, esquema de base de datos, UI frontend, alcance de QA
 3. **Lanzas agentes:**
    ```bash
@@ -111,7 +111,7 @@ Escribe estos en tu IDE de IA para activar procesos estructurados:
 | `/brainstorm` | Ideacion libre y exploracion | Antes de comprometerte con un enfoque |
 | `/plan` | Descomposicion PM → `.agents/plan.json` | Antes de iniciar cualquier funcionalidad compleja |
 | `/exec-plan` | Ejecutar un plan existente paso a paso | Despues de `/plan` |
-| `/coordinate` | Coordinacion multi-dominio paso a paso | Funcionalidades que abarcan multiples agentes |
+| `/work` | Coordinacion multi-dominio paso a paso | Funcionalidades que abarcan multiples agentes |
 | `/orchestrate` | Ejecucion automatizada de agentes en paralelo | Proyectos grandes, maximo paralelismo |
 | `/ultrawork` | Workflow de calidad de 5 fases (11 puertas de revision) | Entrega de maxima calidad |
 | `/review` | Auditoria de seguridad + rendimiento + accesibilidad | Antes de hacer merge |
@@ -201,7 +201,7 @@ Usa 3 terminales:
 3. **Bloquea contratos primero** — ejecuta `/plan` antes de lanzar agentes en paralelo
 4. **Monitorea activamente** — los dashboards detectan problemas antes del merge
 5. **Itera con re-spawns** — refina prompts de agentes en lugar de empezar de cero
-6. **Empieza con `/coordinate`** — cuando no sepas que workflow usar
+6. **Empieza con `/work`** — cuando no sepas que workflow usar
 
 ---
 

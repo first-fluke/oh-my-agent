@@ -151,7 +151,7 @@ De workflow vraagt indien nodig om aanvullende details.
 
 ### Signaal 1: Dezelfde Fix Twee Keer Geprobeerd
 
-Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, is het probleem dieper dan de eerste diagnose. Dit activeert de **Exploratieslus** in workflows die dit ondersteunen (ultrawork, orchestrate, coordinate):
+Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, is het probleem dieper dan de eerste diagnose. Dit activeert de **Exploratieslus** in workflows die dit ondersteunen (ultrawork, orchestrate, work):
 
 - Genereer 2-3 alternatieve hypothesen voor de oorzaak.
 - Test elke hypothese in een aparte werkruimte (git stash per poging).
@@ -159,7 +159,7 @@ Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, is
 
 ### Signaal 2: Multi-Domein Oorzaak
 
-De fout in de frontend wordt veroorzaakt door een backend-wijziging die wordt veroorzaakt door een databaseschemamigratie. Wanneer de oorzaak domeingrenzen overschrijdt, escaleer naar `/coordinate` of `/orchestrate` om de relevante domeinagenten te betrekken.
+De fout in de frontend wordt veroorzaakt door een backend-wijziging die wordt veroorzaakt door een databaseschemamigratie. Wanneer de oorzaak domeingrenzen overschrijdt, escaleer naar `/work` of `/orchestrate` om de relevante domeinagenten te betrekken.
 
 **Voorbeeld:** Frontend toont "undefined" voor gebruikersnaam. Backend retourneert null voor `user.display_name`. Databasemigratie heeft de kolom toegevoegd, maar bestaande rijen hebben NULL-waarden. Fix vereist: databasemigratie (backfill), backend null-afhandeling en frontend fallback-weergave.
 

@@ -18,7 +18,7 @@ Gebruik dit wanneer je taak aan ALLE criteria voldoet:
 - **Duidelijke scope** — je weet wat de uitvoer moet zijn
 - **Geen coordinatie** — andere agenten hoeven niet voor of na te draaien
 
-**Schakel over naar multi-agent** (`/coordinate` of `/orchestrate`) wanneer:
+**Schakel over naar multi-agent** (`/work` of `/orchestrate`) wanneer:
 - UI-werk een nieuw API-contract nodig heeft (frontend + backend)
 - Een fix cascade veroorzaakt over lagen heen
 - De functie frontend, backend en database beslaat
@@ -160,12 +160,12 @@ Add deliverables: data standards table, glossary, migration script.
 
 | Signaal | Wat Het Betekent | Actie |
 |---------|-----------------|-------|
-| Agent zegt "dit vereist een backend-wijziging" | Taak heeft cross-domein afhankelijkheden | Schakel over naar `/coordinate` |
+| Agent zegt "dit vereist een backend-wijziging" | Taak heeft cross-domein afhankelijkheden | Schakel over naar `/work` |
 | Agent's CHARTER_CHECK toont "Must NOT do"-items die wel nodig zijn | Scope overschrijdt een domein | Plan de volledige functie met `/plan` |
-| Fix cascade naar 3+ bestanden over lagen | Een fix raakt meerdere domeinen | Gebruik `/debug` met bredere scope, of `/coordinate` |
+| Fix cascade naar 3+ bestanden over lagen | Een fix raakt meerdere domeinen | Gebruik `/debug` met bredere scope, of `/work` |
 | Agent ontdekt API-contract mismatch | Frontend/backend onenigheid | Draai `/plan` om contracten te definieren |
 | Agent blokkeert met HIGH verduidelijking | Requirements fundamenteel dubbelzinnig | Beantwoord vragen of draai `/brainstorm` |
 
 ### De Algemene Regel
 
-Als je dezelfde agent meer dan twee keer herspawnt met verfijningen, is de taak waarschijnlijk multi-domein en heeft deze `/coordinate` nodig of minimaal een `/plan`-stap.
+Als je dezelfde agent meer dan twee keer herspawnt met verfijningen, is de taak waarschijnlijk multi-domein en heeft deze `/work` nodig of minimaal een `/plan`-stap.

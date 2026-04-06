@@ -296,7 +296,7 @@ Los IDs de sesión determinan:
 
 6. **Iterar con regeneraciones.** Si la salida de un agente necesita refinamiento, regenerarlo con la tarea original más contexto de corrección. No iniciar una nueva sesión.
 
-7. **Empezar con `/coordinate` si no estás seguro.** El flujo de coordinación te guía paso a paso con confirmación del usuario en cada puerta.
+7. **Empezar con `/work` si no estás seguro.** El flujo de coordinación te guía paso a paso con confirmación del usuario en cada puerta.
 
 ### No Hacer
 

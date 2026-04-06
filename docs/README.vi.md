@@ -70,7 +70,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | Lệnh | Chức năng |
 |------|----------|
 | `/plan` | PM phân tách tính năng thành các task |
-| `/coordinate` | Thực thi multi-agent từng bước |
+| `/work` | Thực thi multi-agent từng bước |
 | `/orchestrate` | Tự động spawn agent song song |
 | `/ultrawork` | Workflow chất lượng 5 giai đoạn với 11 cổng đánh giá |
 | `/review` | Kiểm tra bảo mật + hiệu suất + accessibility |
@@ -112,7 +112,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

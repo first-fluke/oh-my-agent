@@ -70,7 +70,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | Commando | Wat het doet |
 |---------|-------------|
 | `/plan` | PM splitst je feature op in taken |
-| `/coordinate` | Stapsgewijze multi-agent uitvoering |
+| `/work` | Stapsgewijze multi-agent uitvoering |
 | `/orchestrate` | Automatische parallelle agent-spawning |
 | `/ultrawork` | 5-fasen kwaliteitsworkflow met 11 review gates |
 | `/review` | Beveiligings- + performance- + toegankelijkheidsaudit |
@@ -112,7 +112,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

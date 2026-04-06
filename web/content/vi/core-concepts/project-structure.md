@@ -64,7 +64,7 @@ your-project/
 │   │
 │   ├── workflows/
 │   │   ├── orchestrate.md             ← Liên tục: thực thi song song tự động
-│   │   ├── coordinate.md             ← Liên tục: điều phối từng bước
+│   │   ├── work.md             ← Liên tục: điều phối từng bước
 │   │   ├── ultrawork.md              ← Liên tục: workflow chất lượng 5 giai đoạn
 │   │   ├── plan.md                   ← Phân tách task PM
 │   │   ├── exec-plan.md              ← Quản lý kế hoạch thực thi
@@ -142,7 +142,7 @@ Nơi chứa chuyên môn agent. Tổng cộng 15 thư mục: 14 agent skill + 1 
 
 14 file Markdown định nghĩa hành vi lệnh slash.
 
-Workflow liên tục: `orchestrate.md`, `coordinate.md`, `ultrawork.md`.
+Workflow liên tục: `orchestrate.md`, `work.md`, `ultrawork.md`.
 Không liên tục: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
@@ -151,7 +151,7 @@ Không liên tục: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `
 
 ### plan.json
 
-Được tạo bởi workflow `/plan`. Chứa phân tách task có cấu trúc với phân công agent, ưu tiên, phụ thuộc và tiêu chí chấp nhận. Được dùng bởi `/orchestrate`, `/coordinate` và `/exec-plan`.
+Được tạo bởi workflow `/plan`. Chứa phân tách task có cấu trúc với phân công agent, ưu tiên, phụ thuộc và tiêu chí chấp nhận. Được dùng bởi `/orchestrate`, `/work` và `/exec-plan`.
 
 ### mcp.json
 

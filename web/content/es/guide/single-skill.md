@@ -27,7 +27,7 @@ Usa esto cuando tu tarea cumpla TODOS estos criterios:
 - Traducir un conjunto de cadenas i18n
 - Crear una seccion del sistema de diseno
 
-**Cambiar a multiagente** (`/coordinate` u `/orchestrate`) cuando:
+**Cambiar a multiagente** (`/work` u `/orchestrate`) cuando:
 - El trabajo de UI necesita un nuevo contrato API (frontend + backend)
 - Una correccion se propaga entre capas (agentes de debug + implementacion)
 - La funcionalidad abarca frontend, backend y base de datos
@@ -302,9 +302,9 @@ Observa estas senales que indican que deberias cambiar de skill individual a eje
 
 | Senal | Que Significa | Accion |
 |-------|--------------|--------|
-| El agente dice "esto requiere un cambio de backend" | La tarea tiene dependencias entre dominios | Cambiar a `/coordinate` — agregar agente backend |
+| El agente dice "esto requiere un cambio de backend" | La tarea tiene dependencias entre dominios | Cambiar a `/work` — agregar agente backend |
 | El CHARTER_CHECK del agente muestra elementos "Must NOT do" que realmente se necesitan | El alcance excede un dominio | Planificar la funcionalidad completa con `/plan` primero |
-| La correccion se propaga a 3+ archivos en diferentes capas | Una correccion afecta multiples dominios | Usar `/debug` con alcance mas amplio, o `/coordinate` |
+| La correccion se propaga a 3+ archivos en diferentes capas | Una correccion afecta multiples dominios | Usar `/debug` con alcance mas amplio, o `/work` |
 | El agente descubre un desajuste en el contrato API | Desacuerdo frontend/backend | Ejecutar `/plan` para definir contratos, luego regenerar ambos agentes |
 | La puerta de calidad falla en puntos de integracion | Los componentes no se conectan correctamente | Agregar paso de revision QA: `oma agent:spawn qa "Review integration"` |
 | La tarea crece de "un componente" a "tres componentes + nueva ruta + API" | Ampliacion del alcance durante la ejecucion | Detener, ejecutar `/plan` para descomponer, luego `/orchestrate` |
@@ -312,4 +312,4 @@ Observa estas senales que indican que deberias cambiar de skill individual a eje
 
 ### La Regla General
 
-Si te encuentras regenerando el mismo agente mas de dos veces con refinamientos, la tarea probablemente es multidominio y necesita `/coordinate` o como minimo un paso `/plan` para descomponerla correctamente.
+Si te encuentras regenerando el mismo agente mas de dos veces con refinamientos, la tarea probablemente es multidominio y necesita `/work` o como minimo un paso `/plan` para descomponerla correctamente.

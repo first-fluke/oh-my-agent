@@ -15,7 +15,7 @@ description: PM planning workflow — analyze requirements, select tech stack, d
 
 ---
 
-> **Vendor note:** This workflow executes inline (no subagent spawning). All vendors use their native code analysis tools. The saved plan (`.agents/plan.json`) is consumed by `/orchestrate` or `/coordinate`, which handle their own vendor detection.
+> **Vendor note:** This workflow executes inline (no subagent spawning). All vendors use their native code analysis tools. The saved plan (`.agents/plan.json`) is consumed by `/orchestrate` or `/work`, which handle their own vendor detection.
 
 ---
 
@@ -73,4 +73,4 @@ Save the approved plan:
 2. Use memory write tool to record plan summary.
 3. For complex plans (Medium/Complex per `_shared/core/difficulty-guide.md`), also create an execution plan artifact in `docs/exec-plans/active/` — see `/exec-plan` workflow for the template and lifecycle.
 
-The plan is now ready for `/coordinate` or `/orchestrate` to execute.
+The plan is now ready for `/work` or `/orchestrate` to execute.

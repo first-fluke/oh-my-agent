@@ -297,7 +297,7 @@ Session IDs determinam:
 
 6. **Itere com re-spawns.** Se a saída de um agente precisa de refinamento, re-spawne com a tarefa original mais contexto de correção. Não inicie uma nova sessão.
 
-7. **Comece com `/coordinate` se inseguro.** O workflow coordinate guia você pelo processo passo a passo com confirmação do usuário em cada portão.
+7. **Comece com `/work` se inseguro.** O workflow work guia você pelo processo passo a passo com confirmação do usuário em cada portão.
 
 ### Não Faça
 

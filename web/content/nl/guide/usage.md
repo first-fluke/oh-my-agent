@@ -10,7 +10,7 @@ description: Uitgebreide gebruiksgids voor oh-my-agent — snelstart, gedetaille
 1. Open je project in een AI-aangedreven IDE (Claude Code, Gemini CLI, Cursor, Antigravity, etc.)
 2. Skills worden automatisch gedetecteerd vanuit `.agents/skills/`
 3. Beschrijf wat je wilt in natuurlijke taal — oh-my-agent routeert naar de juiste agent
-4. Voor multi-agent werk, gebruik `/coordinate` of `/orchestrate`
+4. Voor multi-agent werk, gebruik `/work` of `/orchestrate`
 
 Dat is de volledige workflow. Geen speciale syntaxis nodig voor enkel-domein taken.
 
@@ -46,9 +46,9 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **Wat er gebeurt:**
 
 1. Trefwoorddetectie identificeert dit als multi-domein (frontend + backend + mobile)
-2. oh-my-agent stelt `/coordinate` of `/orchestrate` voor
+2. oh-my-agent stelt `/work` of `/orchestrate` voor
 
-**Met `/coordinate` (stap-voor-stap met gebruikerscontrole):**
+**Met `/work` (stap-voor-stap met gebruikerscontrole):**
 
 3. **Stap 1 — PM Agent plant:** Identificeert domeinen, definieert API-contracten, maakt geprioriteerde taakopsplitsing
 4. **Stap 2 — Je reviewt en bevestigt het plan**
@@ -138,7 +138,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | Commando | Type | Wat Het Doet | Wanneer Gebruiken |
 |----------|------|-------------|-------------------|
 | `/orchestrate` | Persistent | Geautomatiseerde parallelle agentuitvoering met monitoring | Grote projecten met maximale parallelisme |
-| `/coordinate` | Persistent | Stap-voor-stap multi-domeincoordinatie met gebruikersgoedkeuring | Functies die meerdere agenten beslaan |
+| `/work` | Persistent | Stap-voor-stap multi-domeincoordinatie met gebruikersgoedkeuring | Functies die meerdere agenten beslaan |
 | `/ultrawork` | Persistent | 5-fasen, 17-stappen kwaliteitsworkflow met 11 reviewcheckpoints | Maximale kwaliteitslevering |
 | `/plan` | Niet-persistent | PM-gedreven taakopsplitsing en API-contractdefinitie | Voor complex multi-agent werk |
 | `/exec-plan` | Niet-persistent | Uitvoeringsplannen als repository-artefacten | Complexe functies met bijgehouden voortgang |
@@ -165,7 +165,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | "버그 수정해줘" | `/debug` | Koreaans |
 | "コードレビューして" | `/review` | Japans |
 | "修复这个 bug" | `/debug` | Chinees |
-| "coordonner étape par étape" | `/coordinate` | Frans |
+| "coordonner étape par étape" | `/work` | Frans |
 
 **Informatieve vragen worden uitgefilterd:** "what is orchestrate?" triggert geen workflow.
 
@@ -199,7 +199,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 3. **Vergrendel API-contracten voor implementatie.** Draai eerst `/plan`.
 4. **Monitor actief.** Open een dashboardterminal.
 5. **Itereer met herspawns.** Herspawn met correctiecontext.
-6. **Begin met `/coordinate` bij twijfel.**
+6. **Begin met `/work` bij twijfel.**
 7. **Gebruik `/brainstorm` voor `/plan` bij dubbelzinnige ideeen.**
 8. **Draai `/deepinit` op nieuwe codebases.**
 9. **Configureer agent-CLI mapping.** Routeer complexe taken naar Claude, snelle naar Gemini.

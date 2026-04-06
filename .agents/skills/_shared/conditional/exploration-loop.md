@@ -42,7 +42,7 @@ Hypothesis B: ...
 
 Execute each hypothesis **in isolation**.
 
-**In multi-agent mode** (`/orchestrate`, `/coordinate`):
+**In multi-agent mode** (`/orchestrate`, `/work`):
 - Spawn the **same agent type** (e.g., `backend-engineer`) multiple times with different prompts
 - Each spawn includes the hypothesis context in the task description:
   ```
@@ -139,7 +139,7 @@ Agent FAIL after 2 retries
   → Keep winner workspace, discard others
 ```
 
-### In `/coordinate`
+### In `/work`
 
 Triggered when Issue Remediation Loop stalls (same issue persists after fix):
 

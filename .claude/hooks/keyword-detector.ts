@@ -146,7 +146,7 @@ export function isInformationalContext(
 }
 
 /**
- * For persistent workflows (orchestrate, ultrawork, coordinate, ralph),
+ * For persistent workflows (orchestrate, ultrawork, work, ralph),
  * only match keywords in the first N chars of the user's prompt.
  * Keywords deep in the prompt are likely from pasted content, not user intent.
  */

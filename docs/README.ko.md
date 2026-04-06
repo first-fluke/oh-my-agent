@@ -72,7 +72,7 @@ You: "유저 인증이 있는 TODO 앱 만들어줘"
 | 커맨드 | 하는 일 |
 |--------|------|
 | `/plan` | PM이 기능을 태스크로 분해 |
-| `/coordinate` | 단계별 멀티 에이전트 실행 |
+| `/work` | 단계별 멀티 에이전트 실행 |
 | `/orchestrate` | 자동 병렬 에이전트 스폰 |
 | `/ultrawork` | 11개 리뷰 게이트가 포함된 5단계 품질 워크플로우 |
 | `/review` | 보안 + 성능 + 접근성 감사 |
@@ -114,7 +114,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

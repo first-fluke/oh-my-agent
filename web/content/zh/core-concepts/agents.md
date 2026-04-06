@@ -465,7 +465,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## 编排流程
 
-运行多智能体工作流（`/orchestrate` 或 `/coordinate`）时：
+运行多智能体工作流（`/orchestrate` 或 `/work`）时：
 
 1. **PM 智能体**将请求分解为带优先级（P0、P1、P2）和依赖关系的领域特定任务
 2. **初始化会话** —— 生成会话 ID，在内存中创建 `orchestrator-session.md` 和 `task-board.md`

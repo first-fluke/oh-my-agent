@@ -296,7 +296,7 @@ Les identifiants de session déterminent :
 
 6. **Iterate with re-spawns.** If an agent's output needs refinement, re-spawn it with the original task plus correction context. Do not start a new session.
 
-7. **Start with `/coordinate` if unsure.** The coordinate workflow guides you through the process step by step with user confirmation at each gate.
+7. **Start with `/work` if unsure.** The work workflow guides you through the process step by step with user confirmation at each gate.
 
 ### À éviter
 

@@ -27,7 +27,7 @@ Use quando sua tarefa atende a TODOS estes critérios:
 - Traduzir um conjunto de strings i18n
 - Criar uma seção do design system
 
-**Mude para multi-agente** (`/coordinate` ou `/orchestrate`) quando:
+**Mude para multi-agente** (`/work` ou `/orchestrate`) quando:
 - Trabalho de UI precisa de um novo contrato de API (frontend + backend)
 - Uma correção se propaga entre camadas (debug + agentes de implementação)
 - A funcionalidade abrange frontend, backend e banco de dados
@@ -302,9 +302,9 @@ Observe estes sinais que indicam que você deve mudar de skill única para execu
 
 | Sinal | O Que Significa | Ação |
 |-------|----------------|------|
-| Agente diz "this requires a backend change" | Tarefa tem dependências cross-domínio | Mude para `/coordinate` — adicione agente backend |
+| Agente diz "this requires a backend change" | Tarefa tem dependências cross-domínio | Mude para `/work` — adicione agente backend |
 | CHARTER_CHECK do agente mostra itens "Must NOT do" que são realmente necessários | Escopo excede um domínio | Planeje a funcionalidade completa com `/plan` primeiro |
-| Correção se propaga em 3+ arquivos em diferentes camadas | Uma correção afeta múltiplos domínios | Use `/debug` com escopo mais amplo, ou `/coordinate` |
+| Correção se propaga em 3+ arquivos em diferentes camadas | Uma correção afeta múltiplos domínios | Use `/debug` com escopo mais amplo, ou `/work` |
 | Agente descobre incompatibilidade de contrato de API | Desacordo frontend/backend | Execute `/plan` para definir contratos, depois re-spawne ambos os agentes |
 | Portão de qualidade falha em pontos de integração | Componentes não conectam corretamente | Adicione etapa de revisão QA: `oma agent:spawn qa "Review integration"` |
 | Tarefa cresce de "um componente" para "três componentes + nova rota + API" | Desvio de escopo durante execução | Pare, execute `/plan` para decompor, depois `/orchestrate` |
@@ -312,4 +312,4 @@ Observe estes sinais que indicam que você deve mudar de skill única para execu
 
 ### A Regra Geral
 
-Se você se encontrar re-spawnando o mesmo agente mais de duas vezes com refinamentos, a tarefa é provavelmente multi-domínio e precisa de `/coordinate` ou no mínimo uma etapa de `/plan` para decompô-la adequadamente.
+Se você se encontrar re-spawnando o mesmo agente mais de duas vezes com refinamentos, a tarefa é provavelmente multi-domínio e precisa de `/work` ou no mínimo uma etapa de `/plan` para decompô-la adequadamente.

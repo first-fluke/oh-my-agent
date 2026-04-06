@@ -10,7 +10,7 @@ description: Comprehensive usage guide for oh-my-agent — quick start, detailed
 1. Open your project in an AI-powered IDE (Claude Code, Gemini CLI, Cursor, Antigravity, etc.)
 2. Skills are auto-detected from `.agents/skills/`
 3. Describe what you want in natural language — oh-my-agent routes to the right agent
-4. For multi-agent work, use `/coordinate` or `/orchestrate`
+4. For multi-agent work, use `/work` or `/orchestrate`
 
 That is the entire workflow. No special syntax required for single-domain tasks.
 
@@ -61,12 +61,12 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **What happens:**
 
 1. Keyword detection identifies this as multi-domain (frontend + backend + mobile)
-2. If you have not used a workflow command, oh-my-agent suggests `/coordinate` or `/orchestrate`
+2. If you have not used a workflow command, oh-my-agent suggests `/work` or `/orchestrate`
 
-**Using `/coordinate` (step-by-step with user control):**
+**Using `/work` (step-by-step with user control):**
 
 ```
-/coordinate Build a TODO app with user authentication, task CRUD, and a mobile app
+/work Build a TODO app with user authentication, task CRUD, and a mobile app
 ```
 
 3. **Step 1 — PM Agent plans:**
@@ -239,7 +239,7 @@ oma stats
 | Command | Type | What It Does | When to Use |
 |---------|------|-------------|-------------|
 | `/orchestrate` | Persistent | Automated parallel agent execution with monitoring and verification loops | Large projects needing maximum parallelism |
-| `/coordinate` | Persistent | Step-by-step multi-domain coordination with user approval at each gate | Features spanning multiple agents where you want control |
+| `/work` | Persistent | Step-by-step multi-domain coordination with user approval at each gate | Features spanning multiple agents where you want control |
 | `/ultrawork` | Persistent | 5-phase, 17-step quality workflow with 11 review checkpoints | Maximum quality delivery, production-critical code |
 | `/plan` | Non-persistent | PM-driven task breakdown and API contract definition | Before any complex multi-agent work |
 | `/exec-plan` | Non-persistent | Create and track execution plans as repository artifacts | Complex features needing tracked progress and decision logs |
@@ -278,7 +278,7 @@ oh-my-agent detects workflow keywords in 11 languages. Here are examples showing
 | "revisar código" | `/review` | Spanish |
 | "diseña la página" | `/design` | Spanish |
 | "debuggen" | `/debug` | German |
-| "coordonner étape par étape" | `/coordinate` | French |
+| "coordonner étape par étape" | `/work` | French |
 | "don't stop until it's done" | `/ralph` | English |
 | "끝까지 해" | `/ralph` | Korean |
 | "最後までやって" | `/ralph` | Japanese |
@@ -397,7 +397,7 @@ The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This i
 
 5. **Iterate with re-spawns.** If an agent's output is not right, re-spawn it with the original task plus correction context. Do not start over.
 
-6. **Start with `/coordinate` when unsure.** It provides step-by-step guidance with user confirmation at each gate.
+6. **Start with `/work` when unsure.** It provides step-by-step guidance with user confirmation at each gate.
 
 7. **Use `/brainstorm` before `/plan` for ambiguous ideas.** Brainstorm clarifies intent and approach before the PM agent decomposes into tasks.
 

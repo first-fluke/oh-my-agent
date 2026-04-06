@@ -1,9 +1,9 @@
 ---
-name: coordinate
+name: work
 description: Task-based multi-agent coordination (includes Issue Remediation Loop)
 disable-model-invocation: true
 ---
 
-# /coordinate
+# /work
 
-Read and follow `.agents/workflows/coordinate.md` step by step.
+Read and follow `.agents/workflows/work.md` step by step.

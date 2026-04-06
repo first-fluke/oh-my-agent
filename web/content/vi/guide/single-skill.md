@@ -18,7 +18,7 @@ Dùng khi task đáp ứng TẤT CẢ tiêu chí:
 - **Phạm vi rõ ràng** — bạn biết đầu ra nên là gì
 - **Không cần phối hợp** — agent khác không cần chạy trước hoặc sau
 
-**Chuyển sang đa agent** (`/coordinate` hoặc `/orchestrate`) khi:
+**Chuyển sang đa agent** (`/work` hoặc `/orchestrate`) khi:
 - Công việc UI cần API contract mới
 - Một bản sửa lan truyền xuyên tầng
 - Tính năng trải frontend, backend và database
@@ -143,13 +143,13 @@ Add deliverables: data standards table, glossary, migration script.
 
 | Tín hiệu | Ý nghĩa | Hành động |
 |--------|------------|--------|
-| Agent nói "cần thay đổi backend" | Task có phụ thuộc đa lĩnh vực | Chuyển sang `/coordinate` |
+| Agent nói "cần thay đổi backend" | Task có phụ thuộc đa lĩnh vực | Chuyển sang `/work` |
 | CHARTER_CHECK hiện "Must NOT do" cần thiết | Phạm vi vượt một lĩnh vực | Lập kế hoạch tính năng đầy đủ bằng `/plan` |
-| Sửa lan truyền 3+ file xuyên tầng | Một sửa ảnh hưởng nhiều lĩnh vực | Dùng `/debug` phạm vi rộng hơn, hoặc `/coordinate` |
+| Sửa lan truyền 3+ file xuyên tầng | Một sửa ảnh hưởng nhiều lĩnh vực | Dùng `/debug` phạm vi rộng hơn, hoặc `/work` |
 | Agent phát hiện API contract không khớp | Frontend/backend bất đồng | Chạy `/plan` định nghĩa contract |
 | Cổng chất lượng thất bại ở điểm tích hợp | Component không kết nối đúng | Thêm bước QA review |
 | Task mở rộng từ "một component" thành "ba component + route + API" | Phạm vi phình to | Dừng, chạy `/plan` phân tách, rồi `/orchestrate` |
 
 ### Quy tắc chung
 
-Nếu bạn thấy mình re-spawn cùng agent hơn hai lần với tinh chỉnh, task có lẽ đa lĩnh vực và cần `/coordinate` hoặc ít nhất bước `/plan` để phân tách đúng.
+Nếu bạn thấy mình re-spawn cùng agent hơn hai lần với tinh chỉnh, task có lẽ đa lĩnh vực và cần `/work` hoặc ít nhất bước `/plan` để phân tách đúng.

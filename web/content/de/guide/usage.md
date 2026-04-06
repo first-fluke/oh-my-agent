@@ -5,7 +5,7 @@ description: Praxisbeispiele, die zeigen, wie man oh-my-agent nutzt — von einf
 
 # Wie Man oh-my-agent Benutzt
 
-> Nicht sicher, wo du anfangen sollst? Tippe `/coordinate` gefolgt von dem, was du bauen willst.
+> Nicht sicher, wo du anfangen sollst? Tippe `/work` gefolgt von dem, was du bauen willst.
 
 ## Schnellstart
 
@@ -40,7 +40,7 @@ Keine Slash-Befehle noetig. Beschreib einfach, was du willst.
 
 **Was passiert:**
 
-1. Keyword-Erkennung sieht, dass es multi-domain ist → schlaegt `/coordinate` vor
+1. Keyword-Erkennung sieht, dass es multi-domain ist → schlaegt `/work` vor
 2. **PM-Agent** plant die Arbeit: Auth-API, Datenbankschema, Frontend-UI, QA-Umfang
 3. **Du startest Agenten:**
    ```bash
@@ -111,7 +111,7 @@ Tippe diese in deiner KI-IDE, um strukturierte Prozesse auszuloesen:
 | `/brainstorm` | Freie Ideenfindung und Erkundung | Bevor du dich auf einen Ansatz festlegst |
 | `/plan` | PM-Aufgabenzerlegung → `.agents/plan.json` | Vor dem Start jedes komplexen Features |
 | `/exec-plan` | Bestehenden Plan Schritt fuer Schritt ausfuehren | Nach `/plan` |
-| `/coordinate` | Schrittweise Multi-Domain-Koordination | Features, die mehrere Agenten umfassen |
+| `/work` | Schrittweise Multi-Domain-Koordination | Features, die mehrere Agenten umfassen |
 | `/orchestrate` | Automatisierte parallele Agenten-Ausfuehrung | Grosse Projekte, maximale Parallelitaet |
 | `/ultrawork` | 5-Phasen-Qualitaets-Workflow (11 Review-Gates) | Maximale Qualitaetsauslieferung |
 | `/review` | Sicherheits- + Performance- + Barrierefreiheits-Audit | Vor dem Merge |
@@ -201,7 +201,7 @@ Verwende 3 Terminals:
 3. **Sperre Vertraege zuerst** — fuehre `/plan` aus, bevor du parallele Agenten startest
 4. **Ueberwache aktiv** — Dashboards erkennen Probleme vor dem Merge
 5. **Iteriere mit Re-Spawns** — verfeinere Agenten-Prompts, statt von vorne zu beginnen
-6. **Starte mit `/coordinate`** — wenn du nicht weisst, welchen Workflow du nutzen sollst
+6. **Starte mit `/work`** — wenn du nicht weisst, welchen Workflow du nutzen sollst
 
 ---
 

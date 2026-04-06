@@ -22,9 +22,9 @@ Koordynacja wieloagentowa jest właściwym wyborem gdy:
 ### Krok 1: /plan — Wymagania i dekompozycja zadań
 Workflow `/plan` działa inline i produkuje ustrukturyzowany plan zapisywany do `.agents/plan.json`.
 
-### Krok 2: /coordinate lub /orchestrate — Wykonanie
+### Krok 2: /work lub /orchestrate — Wykonanie
 
-| Aspekt | /coordinate | /orchestrate |
+| Aspekt | /work | /orchestrate |
 |:-------|:-----------|:-------------|
 | **Interakcja** | Interaktywne — użytkownik potwierdza na każdym etapie | Automatyczne — działa do zakończenia |
 | **Planowanie PM** | Wbudowane | Wymaga plan.json z /plan |

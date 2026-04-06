@@ -242,7 +242,7 @@ Te sygnały wskazują, że błąd wymaga eskalacji poza standardową pętlę deb
 
 ### Sygnał 1: Ta sama poprawka próbowana dwukrotnie
 
-Jeśli workflow proponuje poprawkę, zastosuje ją, a ten sam błąd powraca, problem jest głębszy niż początkowa diagnoza. Aktywuje to **Pętlę eksploracji** w workflow, które ją obsługują (ultrawork, orchestrate, coordinate):
+Jeśli workflow proponuje poprawkę, zastosuje ją, a ten sam błąd powraca, problem jest głębszy niż początkowa diagnoza. Aktywuje to **Pętlę eksploracji** w workflow, które ją obsługują (ultrawork, orchestrate, work):
 
 - Wygeneruj 2-3 alternatywne hipotezy dotyczące przyczyny źródłowej.
 - Przetestuj każdą hipotezę w oddzielnej przestrzeni roboczej (git stash na próbę).
@@ -250,7 +250,7 @@ Jeśli workflow proponuje poprawkę, zastosuje ją, a ten sam błąd powraca, pr
 
 ### Sygnał 2: Wielodomenowa przyczyna źródłowa
 
-Błąd na frontendzie jest spowodowany zmianą w backendzie, która jest spowodowana migracją schematu bazy danych. Gdy przyczyna źródłowa przekracza granice domen, eskaluj do `/coordinate` lub `/orchestrate` aby zaangażować odpowiednich agentów domenowych.
+Błąd na frontendzie jest spowodowany zmianą w backendzie, która jest spowodowana migracją schematu bazy danych. Gdy przyczyna źródłowa przekracza granice domen, eskaluj do `/work` lub `/orchestrate` aby zaangażować odpowiednich agentów domenowych.
 
 **Przykład:** Frontend wyświetla "undefined" jako nazwę użytkownika. Backend zwraca null dla `user.display_name`. Migracja bazy danych dodała kolumnę, ale istniejące wiersze mają wartości NULL. Naprawa wymaga: migracji bazy danych (uzupełnienie danych), obsługi null w backendzie i fallback wyświetlania na frontendzie.
 

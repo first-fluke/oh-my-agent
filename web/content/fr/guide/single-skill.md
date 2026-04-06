@@ -27,7 +27,7 @@ Utilisez cela lorsque votre tâche remplit TOUS ces critères :
 - Translate one set of i18n strings
 - Create one design system section
 
-**Switch to multi-agent** (`/coordinate` or `/orchestrate`) when:
+**Switch to multi-agent** (`/work` or `/orchestrate`) when:
 - UI work needs a new API contract (frontend + backend)
 - One fix cascades across layers (debug + implementation agents)
 - The feature spans frontend, backend, and database
@@ -302,9 +302,9 @@ Watch for these signals that indicate you should switch from single-skill to mul
 
 | Signal | What It Means | Action |
 |--------|--------------|--------|
-| Agent says "this requires a backend change" | Task has cross-domain dependencies | Switch to `/coordinate` — add backend agent |
+| Agent says "this requires a backend change" | Task has cross-domain dependencies | Switch to `/work` — add backend agent |
 | Agent's CHARTER_CHECK shows "Must NOT do" items that are actually needed | Scope exceeds one domain | Plan the full feature with `/plan` first |
-| Fix cascades into 3+ files across different layers | One fix affects multiple domains | Use `/debug` with broader scope, or `/coordinate` |
+| Fix cascades into 3+ files across different layers | One fix affects multiple domains | Use `/debug` with broader scope, or `/work` |
 | Agent discovers an API contract mismatch | Frontend/backend disagreement | Run `/plan` to define contracts, then re-spawn both agents |
 | Quality gate fails on integration points | Components do not connect properly | Add QA review step: `oma agent:spawn qa "Review integration"` |
 | Task grows from "one component" to "three components + new route + API" | Scope creep during execution | Stop, run `/plan` to decompose, then `/orchestrate` |
@@ -312,4 +312,4 @@ Watch for these signals that indicate you should switch from single-skill to mul
 
 ### The General Rule
 
-If you find yourself re-spawning the same agent more than twice with refinements, the task is probably multi-domain and needs `/coordinate` or at minimum a `/plan` step to decompose it properly.
+If you find yourself re-spawning the same agent more than twice with refinements, the task is probably multi-domain and needs `/work` or at minimum a `/plan` step to decompose it properly.

@@ -465,7 +465,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## Przepływ orkiestracji
 
-Przy uruchamianiu workflow wieloagentowego (`/orchestrate` lub `/coordinate`):
+Przy uruchamianiu workflow wieloagentowego (`/orchestrate` lub `/work`):
 
 1. **Agent PM** rozkłada żądanie na zadania domenowe z priorytetami (P0, P1, P2) i zależnościami
 2. **Inicjalizacja sesji** — generowany ID sesji, tworzony `orchestrator-session.md` i `task-board.md` w pamięci

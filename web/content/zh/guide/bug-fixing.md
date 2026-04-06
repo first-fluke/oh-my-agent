@@ -244,7 +244,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 ### 信号 1：同一修复尝试了两次
 
-如果工作流提出修复、应用后同一错误再次出现，问题比初始诊断更深。在支持探索循环的工作流（ultrawork、orchestrate、coordinate）中会触发：
+如果工作流提出修复、应用后同一错误再次出现，问题比初始诊断更深。在支持探索循环的工作流（ultrawork、orchestrate、work）中会触发：
 
 - 为根因生成 2-3 个替代假设。
 - 在独立工作区测试每个假设（每次尝试使用 git stash）。
@@ -252,7 +252,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 ### 信号 2：多领域根因
 
-frontend 的错误由 backend 的变更引起，而 backend 的变更又由数据库 schema 迁移引起。当根因跨越领域边界时，升级到 `/coordinate` 或 `/orchestrate` 以引入相关领域智能体。
+frontend 的错误由 backend 的变更引起，而 backend 的变更又由数据库 schema 迁移引起。当根因跨越领域边界时，升级到 `/work` 或 `/orchestrate` 以引入相关领域智能体。
 
 **示例：** Frontend 显示用户名为 "undefined"。Backend 对 `user.display_name` 返回 null。数据库迁移添加了该列但现有行有 NULL 值。修复需要：数据库迁移（回填）、backend 空值处理和 frontend 回退显示。
 

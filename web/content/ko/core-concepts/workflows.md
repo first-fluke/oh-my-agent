@@ -54,16 +54,16 @@ description: oh-my-agent 15개 워크플로우 완전 레퍼런스 — 슬래시
 
 ---
 
-### /coordinate
+### /work
 
 **설명:** 단계별 멀티 도메인 조율. PM이 먼저 계획하고, 각 게이트에서 사용자 확인과 함께 에이전트가 실행한 후, QA 리뷰와 이슈 수정이 이어집니다.
 
-**영구:** 예. 상태 파일: `.agents/state/coordinate-state.json`.
+**영구:** 예. 상태 파일: `.agents/state/work-state.json`.
 
 **트리거 키워드:**
 | 언어 | 키워드 |
 |----------|----------|
-| 공통 | "coordinate", "step by step" |
+| 공통 | "work", "step by step" |
 | 한국어 | "코디네이트", "단계별" |
 | 일본어 | "コーディネート", "ステップバイステップ" |
 | 중국어 | "协调", "逐步" |
@@ -173,7 +173,7 @@ description: oh-my-agent 15개 워크플로우 완전 레퍼런스 — 슬래시
 
 **출력:** `.agents/plan.json`, 메모리 기록, 복잡한 계획은 선택적으로 `docs/exec-plans/active/`.
 
-**실행:** 인라인 (서브에이전트 스폰 없음). `/orchestrate` 또는 `/coordinate`에서 소비.
+**실행:** 인라인 (서브에이전트 스폰 없음). `/orchestrate` 또는 `/work`에서 소비.
 
 ---
 
@@ -183,7 +183,7 @@ description: oh-my-agent 15개 워크플로우 완전 레퍼런스 — 슬래시
 
 **트리거 키워드:** 없음 (자동 감지에서 제외, 명시적 호출 필수).
 
-**단계:** 준비 -> 범위 분석(복잡도 평가: Simple/Medium/Complex) -> 실행 계획 생성(`docs/exec-plans/active/`에 마크다운) -> API 컨트랙트 정의(크로스 바운더리 시) -> 사용자 리뷰 -> 실행 전달(`/orchestrate` 또는 `/coordinate`로) -> 완료(`completed/`로 이동).
+**단계:** 준비 -> 범위 분석(복잡도 평가: Simple/Medium/Complex) -> 실행 계획 생성(`docs/exec-plans/active/`에 마크다운) -> API 컨트랙트 정의(크로스 바운더리 시) -> 사용자 리뷰 -> 실행 전달(`/orchestrate` 또는 `/work`로) -> 완료(`completed/`로 이동).
 
 **출력:** `docs/exec-plans/active/{plan-name}.md`.
 
@@ -380,13 +380,13 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 상태 파일
 
-영구 워크플로우(orchestrate, ultrawork, coordinate, ralph)는 `.agents/state/`에 상태 파일을 생성합니다:
+영구 워크플로우(orchestrate, ultrawork, work, ralph)는 `.agents/state/`에 상태 파일을 생성합니다:
 
 ```
 .agents/state/
 ├── orchestrate-state.json
 ├── ultrawork-state.json
-├── coordinate-state.json
+├── work-state.json
 └── ralph-state.json
 ```
 
@@ -416,7 +416,7 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 복잡한 멀티 도메인 프로젝트
 ```
-/coordinate → PM 기획 → 사용자 확인 → 에이전트 스폰 → QA 리뷰 → 이슈 수정 → 배포
+/work → PM 기획 → 사용자 확인 → 에이전트 스폰 → QA 리뷰 → 이슈 수정 → 배포
 ```
 
 ### 최대 품질 제공

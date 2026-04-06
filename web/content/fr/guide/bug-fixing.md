@@ -244,7 +244,7 @@ Ces signaux indiquent que le bug nécessite une escalade au-delà de la boucle d
 
 ### Signal 1 : Même correction tentée deux fois
 
-Si le workflow propose une correction, l'applique, et la même erreur réapparaît, le problème est plus profond que le diagnostic initial. Cela déclenche la **boucle d'exploration** dans les workflows qui la supportent (ultrawork, orchestrate, coordinate) :
+Si le workflow propose une correction, l'applique, et la même erreur réapparaît, le problème est plus profond que le diagnostic initial. Cela déclenche la **boucle d'exploration** dans les workflows qui la supportent (ultrawork, orchestrate, work) :
 
 - Générer 2 à 3 hypothèses alternatives pour la cause profonde.
 - Tester chaque hypothèse dans un workspace séparé (git stash par tentative).
@@ -252,7 +252,7 @@ Si le workflow propose une correction, l'applique, et la même erreur réappara�
 
 ### Signal 2 : Cause profonde multi-domaines
 
-L'erreur dans le frontend est causée par un changement backend qui est lui-même causé par une migration de schéma de base de données. Lorsque la cause profonde traverse les limites de domaines, escaladez vers `/coordinate` ou `/orchestrate` pour impliquer les agents des domaines concernés.
+L'erreur dans le frontend est causée par un changement backend qui est lui-même causé par une migration de schéma de base de données. Lorsque la cause profonde traverse les limites de domaines, escaladez vers `/work` ou `/orchestrate` pour impliquer les agents des domaines concernés.
 
 **Exemple :** Le frontend affiche « undefined » pour le nom de l'utilisateur. Le backend retourne null pour `user.display_name`. La migration de base de données a ajouté la colonne mais les lignes existantes ont des valeurs NULL. La correction nécessite : une migration de base de données (remplissage rétroactif), la gestion null côté backend, et un affichage de repli côté frontend.
 

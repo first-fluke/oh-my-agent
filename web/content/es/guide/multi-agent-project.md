@@ -41,13 +41,13 @@ Qué sucede:
 5. **Revisar plan con usuario** — Presenta el plan completo para confirmación. El flujo no procederá sin aprobación explícita del usuario.
 6. **Guardar plan** — Escribe el plan aprobado en `.agents/plan.json` y registra un resumen en memoria.
 
-El output `.agents/plan.json` es la entrada tanto para `/coordinate` como para `/orchestrate`.
+El output `.agents/plan.json` es la entrada tanto para `/work` como para `/orchestrate`.
 
-### Paso 2: /coordinate o /orchestrate — Ejecución
+### Paso 2: /work o /orchestrate — Ejecución
 
 Tienes dos caminos de ejecución:
 
-| Aspecto | /coordinate | /orchestrate |
+| Aspecto | /work | /orchestrate |
 |:--------|:-----------|:-------------|
 | **Interacción** | Interactivo — el usuario confirma en cada etapa | Automatizado — ejecuta hasta completar |
 | **Planificación PM** | Integrada (Paso 2 ejecuta agente PM) | Requiere plan.json de /plan |
@@ -55,10 +55,10 @@ Tienes dos caminos de ejecución:
 | **Modo persistente** | Sí — no puede terminarse hasta completar | Sí — no puede terminarse hasta completar |
 | **Mejor para** | Primer uso, proyectos complejos que necesitan supervisión | Ejecuciones repetidas, tareas bien definidas |
 
-#### /coordinate — Pipeline Multi-Agente Interactiva
+#### /work — Pipeline Multi-Agente Interactiva
 
 ```
-/coordinate
+/work
 ```
 
 1. Analiza la solicitud del usuario e identifica dominios involucrados.
@@ -181,4 +181,4 @@ Un proyecto multi-agente está completo cuando:
 - La alineación de contratos API cross-dominio está confirmada.
 - El build tiene éxito y todas las pruebas pasan.
 - El informe final está escrito en memoria y presentado al usuario.
-- El usuario da aprobación final (en `/coordinate` y SHIP_GATE de ultrawork).
+- El usuario da aprobación final (en `/work` y SHIP_GATE de ultrawork).

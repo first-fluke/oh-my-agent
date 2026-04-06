@@ -23,9 +23,9 @@ Multi-agent coordinatie is de juiste keuze wanneer:
 
 De `/plan`-workflow draait inline en produceert een gestructureerd plan: requirements verzamelen, technische haalbaarheid analyseren, API-contracten definieren, ontleden in taken, reviewen met gebruiker, plan opslaan in `.agents/plan.json`.
 
-### Stap 2: /coordinate of /orchestrate — Uitvoering
+### Stap 2: /work of /orchestrate — Uitvoering
 
-| Aspect | /coordinate | /orchestrate |
+| Aspect | /work | /orchestrate |
 |:-------|:-----------|:-------------|
 | **Interactie** | Interactief — gebruiker bevestigt bij elke fase | Geautomatiseerd — draait tot voltooiing |
 | **PM planning** | Ingebouwd | Vereist plan.json van /plan |

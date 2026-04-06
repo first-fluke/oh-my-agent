@@ -286,7 +286,7 @@ your-project/
       ...
     workflows/                      # 工作流定义
       orchestrate.md
-      coordinate.md
+      work.md
       ultrawork.md
       plan.md
       ...
@@ -396,7 +396,7 @@ oma dashboard:web
 
 ### 5. 工作流安装
 
-`installWorkflows()` 将所有工作流文件复制到 `.agents/workflows/`。这些是 `/orchestrate`、`/coordinate`、`/ultrawork`、`/plan`、`/exec-plan`、`/brainstorm`、`/deepinit`、`/review`、`/debug`、`/design`、`/commit`、`/tools` 和 `/stack-set` 的定义。
+`installWorkflows()` 将所有工作流文件复制到 `.agents/workflows/`。这些是 `/orchestrate`、`/work`、`/ultrawork`、`/plan`、`/exec-plan`、`/brainstorm`、`/deepinit`、`/review`、`/debug`、`/design`、`/commit`、`/tools` 和 `/stack-set` 的定义。
 
 ### 6. 配置安装
 

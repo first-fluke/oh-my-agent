@@ -41,13 +41,13 @@ Was passiert:
 5. **Plan mit Benutzer prüfen** — Präsentiert den vollständigen Plan zur Bestätigung. Der Workflow fährt ohne explizite Benutzergenehmigung nicht fort.
 6. **Plan speichern** — Schreibt den genehmigten Plan nach `.agents/plan.json` und zeichnet eine Zusammenfassung im Memory auf.
 
-Die Ausgabe `.agents/plan.json` ist die Eingabe für sowohl `/coordinate` als auch `/orchestrate`.
+Die Ausgabe `.agents/plan.json` ist die Eingabe für sowohl `/work` als auch `/orchestrate`.
 
-### Schritt 2: /coordinate oder /orchestrate — Ausführung
+### Schritt 2: /work oder /orchestrate — Ausführung
 
 Es gibt zwei Ausführungspfade:
 
-| Aspekt | /coordinate | /orchestrate |
+| Aspekt | /work | /orchestrate |
 |:-------|:-----------|:-------------|
 | **Interaktion** | Interaktiv — Benutzer bestätigt bei jeder Stufe | Automatisiert — läuft bis zum Abschluss |
 | **PM-Planung** | Eingebaut (Schritt 2 führt PM-Agent aus) | Benötigt plan.json von /plan |
@@ -55,10 +55,10 @@ Es gibt zwei Ausführungspfade:
 | **Persistenter Modus** | Ja — kann bis zum Abschluss nicht beendet werden | Ja — kann bis zum Abschluss nicht beendet werden |
 | **Am besten für** | Erstmalige Nutzung, komplexe Projekte mit Aufsichtsbedarf | Wiederholte Läufe, klar definierte Aufgaben |
 
-#### /coordinate — Interaktive Multi-Agenten-Pipeline
+#### /work — Interaktive Multi-Agenten-Pipeline
 
 ```
-/coordinate
+/work
 ```
 
 1. Analysiert die Benutzeranfrage und identifiziert beteiligte Domänen.
@@ -207,7 +207,7 @@ API-Verträge sind der Synchronisierungsmechanismus zwischen Agenten. Die Contra
    - Authentifizierungsanforderungen
    - Fehlerantwortformate
 
-4. **Vertragsverletzungen werden während der Überwachung erkannt.** Schritt 5 von `/coordinate` verwendet MCP-Code-Analyse-Tools (`find_symbol`, `search_for_pattern`), um die API-Vertrags-Übereinstimmung zwischen Agenten zu verifizieren.
+4. **Vertragsverletzungen werden während der Überwachung erkannt.** Schritt 5 von `/work` verwendet MCP-Code-Analyse-Tools (`find_symbol`, `search_for_pattern`), um die API-Vertrags-Übereinstimmung zwischen Agenten zu verifizieren.
 
 5. **QA-Review prüft die Vertragseinhaltung.** Das Alignment-Review des QA-Agenten (Schritt 6 in ultrawork) vergleicht explizit die Implementierung mit dem Plan, einschließlich der API-Verträge.
 
@@ -304,7 +304,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### 1. Plan überspringen
 
-`/orchestrate` ohne plan.json starten. Der Workflow wird die Ausführung verweigern. Immer zuerst `/plan` ausführen oder `/coordinate` verwenden, das eingebaute Planung hat.
+`/orchestrate` ohne plan.json starten. Der Workflow wird die Ausführung verweigern. Immer zuerst `/plan` ausführen oder `/work` verwenden, das eingebaute Planung hat.
 
 ### 2. Überlappende Workspaces
 
@@ -346,7 +346,7 @@ Nachdem alle Agenten ihre individuellen Aufgaben abgeschlossen haben, muss die d
 
 5. **Datenbank-Schema-Übereinstimmung** — Erstellt der Datenbank-Agent Migrationen, müssen die Backend-ORM-Modelle exakt zum Schema passen.
 
-Das Alignment-Review des QA-Agenten (Schritt 6 in ultrawork, Schritt 6 in coordinate) führt diese domänenübergreifende Validierung systematisch durch.
+Das Alignment-Review des QA-Agenten (Schritt 6 in ultrawork, Schritt 6 in work) führt diese domänenübergreifende Validierung systematisch durch.
 
 ---
 
@@ -360,4 +360,4 @@ Ein Multi-Agenten-Projekt ist abgeschlossen, wenn:
 - Domänenübergreifende API-Vertrags-Übereinstimmung bestätigt ist.
 - Build erfolgreich ist und alle Tests bestehen.
 - Der Abschlussbericht im Memory geschrieben und dem Benutzer präsentiert wurde.
-- Der Benutzer die abschließende Genehmigung erteilt hat (in `/coordinate` und im SHIP_GATE von ultrawork).
+- Der Benutzer die abschließende Genehmigung erteilt hat (in `/work` und im SHIP_GATE von ultrawork).

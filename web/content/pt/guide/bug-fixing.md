@@ -244,7 +244,7 @@ Estes sinais indicam que o bug requer escalação além do loop padrão de debug
 
 ### Sinal 1: Mesma Correção Tentada Duas Vezes
 
-Se o workflow propõe uma correção, aplica-a, e o mesmo erro recorre, o problema é mais profundo que o diagnóstico inicial. Isso aciona o **Exploration Loop** em workflows que o suportam (ultrawork, orchestrate, coordinate):
+Se o workflow propõe uma correção, aplica-a, e o mesmo erro recorre, o problema é mais profundo que o diagnóstico inicial. Isso aciona o **Exploration Loop** em workflows que o suportam (ultrawork, orchestrate, work):
 
 - Gerar 2-3 hipóteses alternativas para a causa raiz.
 - Testar cada hipótese em workspace separado (git stash por tentativa).
@@ -252,7 +252,7 @@ Se o workflow propõe uma correção, aplica-a, e o mesmo erro recorre, o proble
 
 ### Sinal 2: Causa Raiz Multi-Domínio
 
-O erro no frontend é causado por uma mudança no backend que é causada por uma migração de schema de banco de dados. Quando a causa raiz cruza fronteiras de domínio, escale para `/coordinate` ou `/orchestrate` para envolver os agentes de domínio relevantes.
+O erro no frontend é causado por uma mudança no backend que é causada por uma migração de schema de banco de dados. Quando a causa raiz cruza fronteiras de domínio, escale para `/work` ou `/orchestrate` para envolver os agentes de domínio relevantes.
 
 **Exemplo:** Frontend exibe "undefined" para nome do usuário. Backend retorna null para `user.display_name`. Migração de banco de dados adicionou a coluna, mas linhas existentes possuem valores NULL. A correção requer: migração de banco de dados (backfill), tratamento de null no backend e exibição de fallback no frontend.
 

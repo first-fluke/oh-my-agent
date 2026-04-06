@@ -91,21 +91,21 @@
         "pl": ["burza mózgów", "pomysły", "eksploracja projektu", "pomyśl", "co jeśli", "pomysły na", "zaproponuj", "zastanówmy się"]
       }
     },
-    "coordinate": {
+    "work": {
       "persistent": true,
       "keywords": {
-        "*": ["coordinate", "step by step"],
+        "*": ["work", "step by step"],
         "en": ["one by one", "guide me", "walk me through", "manual mode", "one step at a time"],
-        "ko": ["코디네이트", "단계별", "단계별로", "단계별로 해줘", "단계별로 진행해줘", "하나씩 해줘", "순서대로 해줘", "차근차근", "차근차근 해줘", "수동으로 해줘"],
-        "ja": ["コーディネート", "ステップバイステップ", "一歩ずつ", "ガイドして", "手動で", "一つずつ", "順番にやって", "手順を教えて"],
-        "zh": ["协调", "逐步", "一步一步", "指导我", "手动", "一个一个", "按顺序", "带我做"],
-        "es": ["coordinar", "paso a paso", "guíame", "uno por uno", "modo manual", "de a uno", "llévame paso a paso"],
-        "fr": ["coordonner", "étape par étape", "guide-moi", "un par un", "mode manuel", "accompagne-moi", "montre-moi étape par étape"],
-        "de": ["koordinieren", "schritt für schritt", "führe mich", "eins nach dem anderen", "manueller modus", "zeig mir wie", "der reihe nach"],
-        "pt": ["coordenar", "passo a passo", "me guie", "um por um", "modo manual", "me acompanhe", "me mostre passo a passo"],
-        "ru": ["координировать", "шаг за шагом", "направь меня", "по одному", "ручной режим", "покажи по шагам", "веди меня"],
-        "nl": ["coördineren", "stap voor stap", "begeleid me", "een voor een", "handmatige modus", "leid me erdoor", "stap voor stap uitleg"],
-        "pl": ["koordynować", "krok po kroku", "poprowadź mnie", "jeden po drugim", "tryb ręczny", "przeprowadź mnie", "pokaż krok po kroku"]
+        "ko": ["단계별", "단계별로", "단계별로 해줘", "단계별로 진행해줘", "하나씩 해줘", "순서대로 해줘", "차근차근", "차근차근 해줘", "수동으로 해줘"],
+        "ja": ["ステップバイステップ", "一歩ずつ", "ガイドして", "手動で", "一つずつ", "順番にやって", "手順を教えて"],
+        "zh": ["逐步", "一步一步", "指导我", "手动", "一个一个", "按顺序", "带我做"],
+        "es": ["paso a paso", "guíame", "uno por uno", "modo manual", "de a uno", "llévame paso a paso"],
+        "fr": ["étape par étape", "guide-moi", "un par un", "mode manuel", "accompagne-moi", "montre-moi étape par étape"],
+        "de": ["schritt für schritt", "führe mich", "eins nach dem anderen", "manueller modus", "zeig mir wie", "der reihe nach"],
+        "pt": ["passo a passo", "me guie", "um por um", "modo manual", "me acompanhe", "me mostre passo a passo"],
+        "ru": ["шаг за шагом", "направь меня", "по одному", "ручной режим", "покажи по шагам", "веди меня"],
+        "nl": ["stap voor stap", "begeleid me", "een voor een", "handmatige modus", "leid me erdoor", "stap voor stap uitleg"],
+        "pl": ["krok po kroku", "poprowadź mnie", "jeden po drugim", "tryb ręczny", "przeprowadź mnie", "pokaż krok po kroku"]
       }
     },
     "deepinit": {

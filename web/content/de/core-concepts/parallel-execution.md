@@ -296,7 +296,7 @@ Sitzungs-IDs bestimmen:
 
 6. **Mit Re-Spawns iterieren.** Wenn die Ausgabe eines Agenten Verfeinerung braucht, den Agenten mit der ursprünglichen Aufgabe plus Korrekturkontext erneut starten. Keine neue Sitzung beginnen.
 
-7. **Mit `/coordinate` beginnen, wenn unsicher.** Der Coordinate-Workflow führt Sie schrittweise durch den Prozess mit Benutzerbestätigung an jedem Gate.
+7. **Mit `/work` beginnen, wenn unsicher.** Der Work-Workflow führt Sie schrittweise durch den Prozess mit Benutzerbestätigung an jedem Gate.
 
 ### Nicht empfohlen
 

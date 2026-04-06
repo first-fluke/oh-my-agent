@@ -54,16 +54,16 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 ---
 
-### /coordinate
+### /work
 
 **Beschrijving:** Stap-voor-stap multi-domeincoordinatie. PM plant eerst, dan voeren agenten uit met gebruikersbevestiging bij elke poort, gevolgd door QA-review en probleemoplossing.
 
-**Persistent:** Ja. Statusbestand: `.agents/state/coordinate-state.json`.
+**Persistent:** Ja. Statusbestand: `.agents/state/work-state.json`.
 
 **Triggertrefwoorden:**
 | Taal | Trefwoorden |
 |------|-------------|
-| Universeel | "coordinate", "step by step" |
+| Universeel | "work", "step by step" |
 | Koreaans | "코디네이트", "단계별" |
 | Japans | "コーディネート", "ステップバイステップ" |
 | Chinees | "协调", "逐步" |
@@ -138,7 +138,7 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 **Triggertrefwoorden:** Geen (uitgesloten van auto-detectie).
 
-**Stappen:** Voorbereiding -> Scope analyseren (complexiteit bepalen: Eenvoudig/Gemiddeld/Complex) -> Uitvoeringsplan aanmaken (markdown in `docs/exec-plans/active/`) -> API-contracten definiëren (indien domeinoverstijgend) -> Reviewen met gebruiker -> Uitvoeren (overdragen aan `/orchestrate` of `/coordinate`) -> Afronden (verplaatsen naar `completed/`).
+**Stappen:** Voorbereiding -> Scope analyseren (complexiteit bepalen: Eenvoudig/Gemiddeld/Complex) -> Uitvoeringsplan aanmaken (markdown in `docs/exec-plans/active/`) -> API-contracten definiëren (indien domeinoverstijgend) -> Reviewen met gebruiker -> Uitvoeren (overdragen aan `/orchestrate` of `/work`) -> Afronden (verplaatsen naar `completed/`).
 
 **Uitvoer:** `docs/exec-plans/active/{plan-naam}.md` met takentabel, beslissingslog, voortgangsnotities.
 
@@ -297,7 +297,7 @@ Persistente workflows maken statusbestanden aan in `.agents/state/`:
 .agents/state/
 ├── orchestrate-state.json
 ├── ultrawork-state.json
-└── coordinate-state.json
+└── work-state.json
 ```
 
 Deze bestanden bevatten: workflownaam, huidige fase/stap, sessie-ID, tijdstempel en eventuele lopende status.
@@ -326,7 +326,7 @@ De workflow kan ook op natuurlijke wijze eindigen wanneer alle stappen zijn volt
 
 ### Complex Multi-Domein Project
 ```
-/coordinate → PM plant → gebruiker bevestigt → agenten spawnen → QA reviewt → problemen fixen → leveren
+/work → PM plant → gebruiker bevestigt → agenten spawnen → QA reviewt → problemen fixen → leveren
 ```
 
 ### Maximale Kwaliteitslevering

@@ -53,7 +53,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 | ファイルパターン | 作成元 | 内容 |
 |:-------------|:----------|:---------|
 | `orchestrator-session.md` | `/orchestrate` Step 2 | セッションID、開始時刻、ステータス |
-| `session-{workflow}.md` | `/coordinate`、`/ultrawork` | セッションメタデータ、フェーズ進捗 |
+| `session-{workflow}.md` | `/work`、`/ultrawork` | セッションメタデータ、フェーズ進捗 |
 | `task-board.md` | オーケストレーションワークフロー | エージェント割り当て、ステータス、タスク |
 | `progress-{agent}.md` | スポーンされた各エージェント | ターン番号、作業中の内容、中間結果 |
 | `result-{agent}.md` | 完了した各エージェント | 最終ステータス、変更ファイル、成果物 |

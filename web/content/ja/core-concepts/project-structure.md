@@ -79,7 +79,7 @@ your-project/
 │   │
 │   ├── workflows/                     ← 14のワークフロー定義
 │   │   ├── orchestrate.md             ← 永続：自動並列実行
-│   │   ├── coordinate.md             ← 永続：ステップバイステップ協調
+│   │   ├── work.md             ← 永続：ステップバイステップ協調
 │   │   ├── ultrawork.md              ← 永続：5フェーズ品質ワークフロー
 │   │   ├── plan.md
 │   │   ├── exec-plan.md

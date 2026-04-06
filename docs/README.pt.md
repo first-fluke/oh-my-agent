@@ -70,7 +70,7 @@ Ou use slash commands para workflows estruturados:
 | Comando | O Que Faz |
 |---------|-------------|
 | `/plan` | PM detalha sua feature em tarefas |
-| `/coordinate` | Execucao multi-agente passo a passo |
+| `/work` | Execucao multi-agente passo a passo |
 | `/orchestrate` | Spawn automatico e paralelo de agentes |
 | `/ultrawork` | Workflow de qualidade em 5 fases com 11 gates de revisao |
 | `/review` | Auditoria de seguranca + performance + acessibilidade |
@@ -112,7 +112,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

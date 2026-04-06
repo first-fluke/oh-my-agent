@@ -83,7 +83,7 @@ Ghi file bộ nhớ với triệu chứng, nguyên nhân gốc, bản sửa, fil
 | Tín hiệu | Ý nghĩa | Hành động |
 |--------|------------|--------|
 | Cùng bản sửa thử hai lần | Vấn đề sâu hơn chẩn đoán ban đầu | Kích hoạt Exploration Loop |
-| Nguyên nhân gốc đa lĩnh vực | Lỗi xuyên ranh giới domain | Escalation lên `/coordinate` |
+| Nguyên nhân gốc đa lĩnh vực | Lỗi xuyên ranh giới domain | Escalation lên `/work` |
 | Thiếu môi trường tái hiện | Lỗi chỉ xảy ra production | Thu thập log production, thêm instrumentation |
 | Hạ tầng test hỏng | Không viết được test hồi quy | Sửa hạ tầng test trước |
 

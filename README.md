@@ -72,7 +72,7 @@ Or use slash commands for structured workflows:
 | Command | What It Does |
 |---------|-------------|
 | `/plan` | PM breaks down your feature into tasks |
-| `/coordinate` | Step-by-step multi-agent execution |
+| `/work` | Step-by-step multi-agent execution |
 | `/orchestrate` | Automated parallel agent spawning |
 | `/ultrawork` | 5-phase quality workflow with 11 review gates |
 | `/review` | Security + performance + accessibility audit |
@@ -114,7 +114,7 @@ flowchart TD
     subgraph Workflows["Workflows"]
         direction TB
         W0["/brainstorm"]
-        W1["/coordinate"]
+        W1["/work"]
         W1b["/ultrawork"]
         W2["/orchestrate"]
         W3["/plan"]

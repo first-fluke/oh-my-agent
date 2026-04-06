@@ -78,7 +78,7 @@ your-project/
 │   │
 │   ├── workflows/
 │   │   ├── orchestrate.md             <- Persistent: automatisierte parallele Ausführung
-│   │   ├── coordinate.md             <- Persistent: schrittweise Koordination
+│   │   ├── work.md             <- Persistent: schrittweise Koordination
 │   │   ├── ultrawork.md              <- Persistent: 5-Phasen-Qualitätsworkflow
 │   │   ├── plan.md                   <- PM-Aufgabenzerlegung
 │   │   ├── exec-plan.md              <- Ausführungsplanverwaltung
@@ -165,7 +165,7 @@ Hier lebt die Agentenexpertise. 15 Verzeichnisse insgesamt: 14 Agenten-Skills + 
 - Schritt-für-Schritt-Ausführungsprotokoll
 - Gate-Definitionen (für persistente Workflows)
 
-Persistente Workflows: `orchestrate.md`, `coordinate.md`, `ultrawork.md`.
+Persistente Workflows: `orchestrate.md`, `work.md`, `ultrawork.md`.
 Nicht-persistente: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
@@ -180,7 +180,7 @@ Nicht-persistente: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `r
 
 ### plan.json
 
-Generiert durch den `/plan`-Workflow. Enthält die strukturierte Aufgabenzerlegung mit Agentenzuweisungen, Prioritäten, Abhängigkeiten und Akzeptanzkriterien. Wird von `/orchestrate`, `/coordinate` und `/exec-plan` konsumiert.
+Generiert durch den `/plan`-Workflow. Enthält die strukturierte Aufgabenzerlegung mit Agentenzuweisungen, Prioritäten, Abhängigkeiten und Akzeptanzkriterien. Wird von `/orchestrate`, `/work` und `/exec-plan` konsumiert.
 
 ### state/
 
@@ -246,7 +246,7 @@ Hier schreiben Agenten ihren Fortschritt während Orchestrierungssitzungen. Dies
 | `result-{agent}.md` | Jeweiliger Agent | Endergebnis: Abschlussstatus, Zusammenfassung, geänderte Dateien, Akzeptanzkriterien |
 | `session-metrics.md` | Orchestrator | Clarification-Debt-Ereignisse, Qualitätsbewertungsentwicklung |
 | `experiment-ledger.md` | Orchestrator/QA | Experimentzeilen bei aktiver Qualitätsbewertung |
-| `session-coordinate.md` | Coordinate-Workflow | Coordinate-spezifischer Sitzungszustand |
+| `session-work.md` | Work-Workflow | Work-spezifischer Sitzungszustand |
 | `session-ultrawork.md` | Ultrawork-Workflow | Ultrawork-spezifische Phasenverfolgung |
 | `tool-overrides.md` | /tools-Workflow | Temporäre Tool-Einschränkungen (sitzungsbezogen) |
 | `archive/metrics-{date}.md` | System | Archivierte Sitzungsmetriken (30-Tage-Aufbewahrung) |

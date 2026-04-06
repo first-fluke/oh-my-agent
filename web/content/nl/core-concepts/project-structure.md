@@ -80,7 +80,7 @@ your-project/
 │   │
 │   ├── workflows/                    ← 14 workflowdefinities
 │   │   ├── orchestrate.md             ← Persistent: geautomatiseerde parallelle uitvoering
-│   │   ├── coordinate.md             ← Persistent: stap-voor-stap coordinatie
+│   │   ├── work.md             ← Persistent: stap-voor-stap coordinatie
 │   │   ├── ultrawork.md              ← Persistent: 5-fasen kwaliteitsworkflow
 │   │   ├── plan.md                   ← PM taakopsplitsing
 │   │   ├── exec-plan.md              ← Uitvoeringsplanbeheer
@@ -125,7 +125,7 @@ your-project/
         ├── result-{agent}.md          ← Per-agent einduitvoer
         ├── session-metrics.md         ← Clarification Debt en Quality Score bijhouding
         ├── experiment-ledger.md       ← Experimentbijhouding (conditioneel)
-        ├── session-coordinate.md      ← Coordinate workflow sessiestatus
+        ├── session-work.md      ← Work workflow sessiestatus
         ├── session-ultrawork.md       ← Ultrawork workflow sessiestatus
         ├── tool-overrides.md          ← Tijdelijke toolbeperkingen (/tools --temp)
         └── archive/
@@ -155,7 +155,7 @@ Waar agentexpertise leeft. 15 directory's totaal: 14 agent-skills + 1 gedeelde b
 
 ### workflows/
 
-14 Markdown-bestanden die slash-commandogedrag definieren. Persistente workflows: `orchestrate.md`, `coordinate.md`, `ultrawork.md`. Niet-persistent: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+14 Markdown-bestanden die slash-commandogedrag definieren. Persistente workflows: `orchestrate.md`, `work.md`, `ultrawork.md`. Niet-persistent: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 
@@ -163,7 +163,7 @@ Waar agentexpertise leeft. 15 directory's totaal: 14 agent-skills + 1 gedeelde b
 
 ### plan.json
 
-Gegenereerd door `/plan`. Bevat de gestructureerde taakopsplitsing. Geconsumeerd door `/orchestrate`, `/coordinate` en `/exec-plan`.
+Gegenereerd door `/plan`. Bevat de gestructureerde taakopsplitsing. Geconsumeerd door `/orchestrate`, `/work` en `/exec-plan`.
 
 ### state/
 

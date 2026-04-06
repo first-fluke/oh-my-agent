@@ -104,7 +104,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**터미널 1**은 `/orchestrate` 또는 `/coordinate`와 같은 워크플로우와 상호작용하는 주 에이전트 세션(Gemini CLI, Claude Code, Codex 등)을 실행합니다.
+**터미널 1**은 `/orchestrate` 또는 `/work`와 같은 워크플로우와 상호작용하는 주 에이전트 세션(Gemini CLI, Claude Code, Codex 등)을 실행합니다.
 
 **터미널 2**는 모니터링용 대시보드를 실행합니다. 자동으로 갱신되므로 별도 조작이 필요 없습니다.
 
@@ -121,7 +121,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 | 파일 패턴 | 생성자 | 내용 |
 |:---------|:------|:-----|
 | `orchestrator-session.md` | `/orchestrate` 2단계 | 세션 ID, 시작 시간, 상태 (RUNNING/COMPLETED/FAILED), 워크플로우 버전 |
-| `session-{workflow}.md` | `/coordinate`, `/ultrawork` | 세션 메타데이터, 단계 진행, 사용자 요청 요약 |
+| `session-{workflow}.md` | `/work`, `/ultrawork` | 세션 메타데이터, 단계 진행, 사용자 요청 요약 |
 | `task-board.md` | 오케스트레이션 워크플로우 | 에이전트 할당, 상태, 태스크가 포함된 Markdown 테이블 |
 | `progress-{agent}.md` | 각 생성된 에이전트 | 현재 턴 번호, 에이전트가 작업 중인 내용, 중간 결과 |
 | `result-{agent}.md` | 각 완료된 에이전트 | 최종 상태 (COMPLETED/FAILED), 변경된 파일, 발견된 이슈, 산출물 |

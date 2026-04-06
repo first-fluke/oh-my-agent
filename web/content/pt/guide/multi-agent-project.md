@@ -41,13 +41,13 @@ O que acontece:
 5. **Revisar plano com usuário** — Apresenta o plano completo para confirmação. O workflow não prosseguirá sem aprovação explícita do usuário.
 6. **Salvar plano** — Escreve o plano aprovado em `.agents/plan.json` e registra um resumo na memória.
 
-A saída `.agents/plan.json` é a entrada para ambos `/coordinate` e `/orchestrate`.
+A saída `.agents/plan.json` é a entrada para ambos `/work` e `/orchestrate`.
 
-### Step 2: /coordinate ou /orchestrate — Execução
+### Step 2: /work ou /orchestrate — Execução
 
 Você tem dois caminhos de execução:
 
-| Aspecto | /coordinate | /orchestrate |
+| Aspecto | /work | /orchestrate |
 |:--------|:-----------|:-------------|
 | **Interação** | Interativo — usuário confirma em cada etapa | Automatizado — executa até conclusão |
 | **Planejamento PM** | Integrado (Step 2 executa agente PM) | Requer plan.json do /plan |
@@ -55,10 +55,10 @@ Você tem dois caminhos de execução:
 | **Modo persistente** | Sim — não pode ser terminado até completar | Sim — não pode ser terminado até completar |
 | **Melhor para** | Primeiro uso, projetos complexos precisando de supervisão | Execuções repetidas, tarefas bem definidas |
 
-#### /coordinate — Pipeline Multi-Agente Interativo
+#### /work — Pipeline Multi-Agente Interativo
 
 ```
-/coordinate
+/work
 ```
 
 1. Analisa a requisição do usuário e identifica domínios envolvidos.
@@ -203,7 +203,7 @@ Contratos de API são o mecanismo de sincronização entre agentes. A regra de c
    - Requisitos de autenticação
    - Formatos de resposta de erro
 
-4. **Violações de contrato são detectadas durante monitoramento.** Step 5 do `/coordinate` usa ferramentas de análise de código MCP (`find_symbol`, `search_for_pattern`) para verificar alinhamento de contrato de API entre agentes.
+4. **Violações de contrato são detectadas durante monitoramento.** Step 5 do `/work` usa ferramentas de análise de código MCP (`find_symbol`, `search_for_pattern`) para verificar alinhamento de contrato de API entre agentes.
 
 5. **Revisão QA verifica aderência ao contrato.** A Revisão de Alinhamento do agente QA (Step 6 no ultrawork) compara explicitamente implementação contra o plano, incluindo contratos de API.
 
@@ -300,7 +300,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### 1. Pular o Plano
 
-Iniciar `/orchestrate` sem um plan.json. O workflow recusará prosseguir. Sempre execute `/plan` primeiro, ou use `/coordinate` que tem planejamento integrado.
+Iniciar `/orchestrate` sem um plan.json. O workflow recusará prosseguir. Sempre execute `/plan` primeiro, ou use `/work` que tem planejamento integrado.
 
 ### 2. Workspaces Sobrepostos
 
@@ -342,7 +342,7 @@ Após todos os agentes completarem suas tarefas individuais, a integração cros
 
 5. **Alinhamento de schema de banco de dados** -- Se o agente de banco de dados cria migrações, os modelos ORM do backend devem corresponder exatamente ao schema.
 
-A Revisão de Alinhamento do agente QA (Step 6 no ultrawork, Step 6 no coordinate) realiza esta validação cross-domínio sistematicamente.
+A Revisão de Alinhamento do agente QA (Step 6 no ultrawork, Step 6 no work) realiza esta validação cross-domínio sistematicamente.
 
 ---
 
@@ -356,4 +356,4 @@ Um projeto multi-agente está completo quando:
 - Alinhamento de contrato de API cross-domínio está confirmado.
 - Build tem sucesso e todos os testes passam.
 - O relatório final está escrito na memória e apresentado ao usuário.
-- Usuário dá aprovação final (no `/coordinate` e SHIP_GATE do ultrawork).
+- Usuário dá aprovação final (no `/work` e SHIP_GATE do ultrawork).

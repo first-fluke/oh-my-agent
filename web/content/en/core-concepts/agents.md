@@ -486,7 +486,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## Orchestration Flow
 
-When running a multi-agent workflow (`/orchestrate` or `/coordinate`):
+When running a multi-agent workflow (`/orchestrate` or `/work`):
 
 1. **PM Agent** decomposes the request into domain-specific tasks with priorities (P0, P1, P2) and dependencies
 2. **Session initialized** — session ID generated, `orchestrator-session.md` and `task-board.md` created in memory

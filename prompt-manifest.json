@@ -810,7 +810,7 @@
       "size": 1928
     },
     {
-      "path": ".agents/workflows/coordinate.md",
+      "path": ".agents/workflows/work.md",
       "sha256": "bffeee6891c2793e5f49bc13de4d03de2ab024f2faeb09e67e3378568fda88b3",
       "size": 5528
     },
@@ -900,7 +900,7 @@
       "size": 211
     },
     {
-      "path": ".claude/skills/coordinate/SKILL.md",
+      "path": ".claude/skills/work/SKILL.md",
       "sha256": "1561c1e9e455ac7d3b826c7e1643404950aad2cdcb086f92fc7732a0868a8549",
       "size": 219
     },

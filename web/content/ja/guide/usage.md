@@ -10,7 +10,7 @@ description: oh-my-agentの包括的な使い方ガイド — クイックスタ
 1. AI搭載IDE（Claude Code、Gemini CLI、Cursor、Antigravityなど）でプロジェクトを開く
 2. スキルは`.agents/skills/`から自動検出される
 3. 自然言語でやりたいことを記述 — oh-my-agentが適切なエージェントにルーティング
-4. マルチエージェント作業には`/coordinate`または`/orchestrate`を使用
+4. マルチエージェント作業には`/work`または`/orchestrate`を使用
 
 これがワークフロー全体です。単一ドメインのタスクには特別な構文は不要です。
 
@@ -43,7 +43,7 @@ description: oh-my-agentの包括的な使い方ガイド — クイックスタ
 ユーザー認証、タスクCRUD、モバイルコンパニオンアプリ付きのTODOアプリを作成
 ```
 
-**`/coordinate`を使用（ステップバイステップ）：**
+**`/work`を使用（ステップバイステップ）：**
 
 1. **PMエージェントが計画：** ドメイン特定、APIコントラクト定義、優先タスク分解
 2. **プランを確認**
@@ -119,7 +119,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | コマンド | 種別 | 内容 | 使用場面 |
 |---------|------|-------------|-------------|
 | `/orchestrate` | 永続 | 自動並列エージェント実行 | 最大並列処理の大規模プロジェクト |
-| `/coordinate` | 永続 | ステップバイステップ協調 | ユーザー制御が必要なマルチエージェント機能 |
+| `/work` | 永続 | ステップバイステップ協調 | ユーザー制御が必要なマルチエージェント機能 |
 | `/ultrawork` | 永続 | 5フェーズ・17ステップ品質ワークフロー | 最高品質デリバリー |
 | `/plan` | 非永続 | PMタスク分解 | 複雑なマルチエージェント作業の前 |
 | `/exec-plan` | 非永続 | 実行プランの作成・追跡 | 追跡が必要な複雑機能 |
@@ -177,7 +177,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 3. **実装前にAPIコントラクトを確定。** `/plan`を先に実行。
 4. **積極的にモニタリング。** ダッシュボードで失敗を早期発見。
 5. **再スポーンで反復。** 最初からやり直さず、修正コンテキストを追加して再スポーン。
-6. **不安な場合は`/coordinate`から。**
+6. **不安な場合は`/work`から。**
 7. **曖昧なアイデアには`/brainstorm`を`/plan`の前に。**
 8. **新コードベースには`/deepinit`を実行。**
 9. **エージェント-CLIマッピングを設定。** 複雑な推論をClaudeに、高速生成をGeminiに。

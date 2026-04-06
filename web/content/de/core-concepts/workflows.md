@@ -54,16 +54,16 @@ Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten
 
 ---
 
-### /coordinate
+### /work
 
 **Beschreibung:** Schrittweise domänenübergreifende Koordination. PM plant zuerst, dann führen Agenten mit Benutzerbestätigung an jedem Gate aus, gefolgt von QA-Review und Problembehebung.
 
-**Persistent:** Ja. Zustandsdatei: `.agents/state/coordinate-state.json`.
+**Persistent:** Ja. Zustandsdatei: `.agents/state/work-state.json`.
 
 **Trigger-Keywords:**
 | Sprache | Keywords |
 |----------|----------|
-| Universal | "coordinate", "step by step" |
+| Universal | "work", "step by step" |
 | Koreanisch | "코디네이트", "단계별" |
 | Japanisch | "コーディネート", "ステップバイステップ" |
 | Chinesisch | "协调", "逐步" |
@@ -145,7 +145,7 @@ Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten
 
 **Ausgabe:** `.agents/plan.json`, Memory-Eintrag, optional `docs/exec-plans/active/` für komplexe Pläne.
 
-**Ausführung:** Inline (kein Subagenten-Spawning). Wird von `/orchestrate` oder `/coordinate` konsumiert.
+**Ausführung:** Inline (kein Subagenten-Spawning). Wird von `/orchestrate` oder `/work` konsumiert.
 
 ---
 
@@ -155,7 +155,7 @@ Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten
 
 **Trigger-Keywords:** Keine (von der Auto-Erkennung ausgeschlossen, muss explizit aufgerufen werden).
 
-**Schritte:** Vorbereitung -> Umfang analysieren (Komplexität bewerten: Einfach/Mittel/Komplex) -> Ausführungsplan erstellen (Markdown in `docs/exec-plans/active/`) -> API-Verträge definieren (bei domänenübergreifenden Schnittstellen) -> Mit Benutzer prüfen -> Ausführen (an `/orchestrate` oder `/coordinate` übergeben) -> Abschließen (nach `completed/` verschieben).
+**Schritte:** Vorbereitung -> Umfang analysieren (Komplexität bewerten: Einfach/Mittel/Komplex) -> Ausführungsplan erstellen (Markdown in `docs/exec-plans/active/`) -> API-Verträge definieren (bei domänenübergreifenden Schnittstellen) -> Mit Benutzer prüfen -> Ausführen (an `/orchestrate` oder `/work` übergeben) -> Abschließen (nach `completed/` verschieben).
 
 **Ausgabe:** `docs/exec-plans/active/{plan-name}.md` mit Aufgabentabelle, Entscheidungsprotokoll, Fortschrittsnotizen.
 
@@ -360,13 +360,13 @@ Die folgenden Workflows sind von der Auto-Erkennung ausgeschlossen und müssen m
 
 ### Zustandsdateien
 
-Persistente Workflows (orchestrate, ultrawork, coordinate) erstellen Zustandsdateien in `.agents/state/`:
+Persistente Workflows (orchestrate, ultrawork, work) erstellen Zustandsdateien in `.agents/state/`:
 
 ```
 .agents/state/
 ├── orchestrate-state.json
 ├── ultrawork-state.json
-└── coordinate-state.json
+└── work-state.json
 ```
 
 Diese Dateien enthalten: Workflow-Name, aktuelle Phase/aktueller Schritt, Sitzungs-ID, Zeitstempel und etwaigen ausstehenden Zustand.
@@ -395,7 +395,7 @@ Der Workflow kann auch natürlich enden, wenn alle Schritte abgeschlossen sind u
 
 ### Komplexes domänenübergreifendes Projekt
 ```
-/coordinate → PM plant → Benutzer bestätigt → Agenten starten → QA prüft → Probleme beheben → ausliefern
+/work → PM plant → Benutzer bestätigt → Agenten starten → QA prüft → Probleme beheben → ausliefern
 ```
 
 ### Maximale Lieferqualität

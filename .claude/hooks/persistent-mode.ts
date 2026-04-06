@@ -5,7 +5,7 @@
  * Works with: Claude Code (Stop), Codex CLI (Stop), Gemini CLI (AfterAgent)
  *
  * Prevents the agent from stopping while a long-running workflow
- * (ultrawork, orchestrate, coordinate) is active.
+ * (ultrawork, orchestrate, work) is active.
  *
  * stdin : JSON  — { sessionId|session_id, hook_event_name?, ... }
  * stdout: JSON  — { decision: "block", reason } | {}
@@ -47,7 +47,7 @@ function loadPersistentWorkflows(): string[] {
       .filter(([, def]) => def.persistent)
       .map(([name]) => name);
   } catch {
-    return ["ultrawork", "orchestrate", "coordinate"];
+    return ["ultrawork", "orchestrate", "work"];
   }
 }
 

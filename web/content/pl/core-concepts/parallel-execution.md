@@ -296,7 +296,7 @@ ID sesji określają:
 
 6. **Iteruj przez ponowne uruchomienia.** Jeśli wyjście agenta wymaga udoskonalenia, uruchom go ponownie z oryginalnym zadaniem plus kontekstem korekty. Nie rozpoczynaj nowej sesji.
 
-7. **Zacznij od `/coordinate` jeśli nie masz pewności.** Workflow coordinate prowadzi Cię krok po kroku z potwierdzeniem użytkownika przy każdej bramce.
+7. **Zacznij od `/work` jeśli nie masz pewności.** Workflow work prowadzi Cię krok po kroku z potwierdzeniem użytkownika przy każdej bramce.
 
 ### Nie rób
 

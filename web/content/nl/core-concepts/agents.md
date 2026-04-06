@@ -465,7 +465,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ## Orchestratiestroom
 
-Bij het uitvoeren van een multi-agent workflow (`/orchestrate` of `/coordinate`):
+Bij het uitvoeren van een multi-agent workflow (`/orchestrate` of `/work`):
 
 1. **PM Agent** ontleedt het verzoek in domeinspecifieke taken met prioriteiten (P0, P1, P2) en afhankelijkheden
 2. **Sessie geinitialiseerd** — sessie-ID gegenereerd, `orchestrator-session.md` en `task-board.md` aangemaakt in geheugen

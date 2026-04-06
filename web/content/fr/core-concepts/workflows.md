@@ -54,16 +54,16 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 
 ---
 
-### /coordinate
+### /work
 
 **Description :** Coordination multi-domaines étape par étape. Le PM planifie d'abord, puis les agents exécutent avec confirmation de l'utilisateur à chaque porte, suivie d'une revue QA et de la résolution des problèmes.
 
-**Persistant :** Oui. Fichier d'état : `.agents/state/coordinate-state.json`.
+**Persistant :** Oui. Fichier d'état : `.agents/state/work-state.json`.
 
 **Mots-clés de déclenchement :**
 | Langue | Mots-clés |
 |--------|-----------|
-| Universel | "coordinate", "step by step" |
+| Universel | "work", "step by step" |
 | Coréen | "코디네이트", "단계별" |
 | Japonais | "コーディネート", "ステップバイステップ" |
 | Chinois | "协调", "逐步" |
@@ -145,7 +145,7 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 
 **Sortie :** `.agents/plan.json`, écriture en mémoire, éventuellement `docs/exec-plans/active/` pour les plans complexes.
 
-**Exécution :** Inline (pas de lancement de sous-agents). Consommé par `/orchestrate` ou `/coordinate`.
+**Exécution :** Inline (pas de lancement de sous-agents). Consommé par `/orchestrate` ou `/work`.
 
 ---
 
@@ -155,7 +155,7 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 
 **Mots-clés de déclenchement :** Aucun (exclu de la détection automatique, doit être invoqué explicitement).
 
-**Étapes :** Préparation -> Analyser le périmètre (évaluer la complexité : Simple/Moyenne/Complexe) -> Créer le plan d'exécution (markdown dans `docs/exec-plans/active/`) -> Définir les contrats d'API (si inter-domaines) -> Revue avec l'utilisateur -> Exécuter (transférer à `/orchestrate` ou `/coordinate`) -> Terminer (déplacer vers `completed/`).
+**Étapes :** Préparation -> Analyser le périmètre (évaluer la complexité : Simple/Moyenne/Complexe) -> Créer le plan d'exécution (markdown dans `docs/exec-plans/active/`) -> Définir les contrats d'API (si inter-domaines) -> Revue avec l'utilisateur -> Exécuter (transférer à `/orchestrate` ou `/work`) -> Terminer (déplacer vers `completed/`).
 
 **Sortie :** `docs/exec-plans/active/{plan-name}.md` avec tableau de tâches, journal de décisions, notes de progression.
 
@@ -360,13 +360,13 @@ Les workflows suivants sont exclus de la détection automatique et doivent être
 
 ### Fichiers d'état
 
-Les workflows persistants (orchestrate, ultrawork, coordinate) créent des fichiers d'état dans `.agents/state/` :
+Les workflows persistants (orchestrate, ultrawork, work) créent des fichiers d'état dans `.agents/state/` :
 
 ```
 .agents/state/
 ├── orchestrate-state.json
 ├── ultrawork-state.json
-└── coordinate-state.json
+└── work-state.json
 ```
 
 Ces fichiers contiennent : le nom du workflow, la phase/étape en cours, l'identifiant de session, l'horodatage et tout état en attente.
@@ -395,7 +395,7 @@ Le workflow peut également se terminer naturellement lorsque toutes les étapes
 
 ### Projet complexe multi-domaines
 ```
-/coordinate → PM planifie → l'utilisateur confirme → agents lancés → QA révise → correction des problèmes → livraison
+/work → PM planifie → l'utilisateur confirme → agents lancés → QA révise → correction des problèmes → livraison
 ```
 
 ### Livraison de qualité maximale

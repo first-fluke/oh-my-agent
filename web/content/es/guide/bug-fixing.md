@@ -242,7 +242,7 @@ Estas señales indican que el bug requiere escalamiento más allá del bucle est
 
 ### Señal 1: Misma Corrección Intentada Dos Veces
 
-Si el flujo propone una corrección, la aplica y el mismo error reaparece, el problema es más profundo que el diagnóstico inicial. Esto activa el **Bucle de Exploración** en flujos que lo soportan (ultrawork, orchestrate, coordinate):
+Si el flujo propone una corrección, la aplica y el mismo error reaparece, el problema es más profundo que el diagnóstico inicial. Esto activa el **Bucle de Exploración** en flujos que lo soportan (ultrawork, orchestrate, work):
 
 - Generar 2-3 hipótesis alternativas para la causa raíz.
 - Probar cada hipótesis en un workspace separado (git stash por intento).
@@ -250,7 +250,7 @@ Si el flujo propone una corrección, la aplica y el mismo error reaparece, el pr
 
 ### Señal 2: Causa Raíz Multi-Dominio
 
-El error en el frontend es causado por un cambio en el backend que es causado por una migración de esquema de base de datos. Cuando la causa raíz cruza límites de dominio, escalar a `/coordinate` o `/orchestrate` para involucrar a los agentes de dominio relevantes.
+El error en el frontend es causado por un cambio en el backend que es causado por una migración de esquema de base de datos. Cuando la causa raíz cruza límites de dominio, escalar a `/work` o `/orchestrate` para involucrar a los agentes de dominio relevantes.
 
 **Ejemplo:** El frontend muestra "undefined" para el nombre de usuario. El backend devuelve null para `user.display_name`. La migración de base de datos agregó la columna pero las filas existentes tienen valores NULL. La corrección requiere: migración de base de datos (backfill), manejo de null en backend y visualización de respaldo en frontend.
 

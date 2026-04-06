@@ -41,13 +41,13 @@ What happens:
 5. **Review plan with user** — Presents the full plan for confirmation. The workflow will not proceed without explicit user approval.
 6. **Save plan** — Writes the approved plan to `.agents/plan.json` and records a summary in memory.
 
-The output `.agents/plan.json` is the input for both `/coordinate` and `/orchestrate`.
+The output `.agents/plan.json` is the input for both `/work` and `/orchestrate`.
 
-### Step 2: /coordinate or /orchestrate — Execution
+### Step 2: /work or /orchestrate — Execution
 
 You have two execution paths:
 
-| Aspect | /coordinate | /orchestrate |
+| Aspect | /work | /orchestrate |
 |:-------|:-----------|:-------------|
 | **Interaction** | Interactive — user confirms at each stage | Automated — runs to completion |
 | **PM planning** | Built-in (Step 2 runs PM agent) | Requires plan.json from /plan |
@@ -55,10 +55,10 @@ You have two execution paths:
 | **Persistent mode** | Yes — cannot be terminated until complete | Yes — cannot be terminated until complete |
 | **Best for** | First-time use, complex projects needing oversight | Repeat runs, well-defined tasks |
 
-#### /coordinate — Interactive Multi-Agent Pipeline
+#### /work — Interactive Multi-Agent Pipeline
 
 ```
-/coordinate
+/work
 ```
 
 1. Analyzes the user's request and identifies involved domains.
@@ -207,7 +207,7 @@ API contracts are the synchronization mechanism between agents. The contract-fir
    - Authentication requirements
    - Error response formats
 
-4. **Contract violations are caught during monitoring.** Step 5 of `/coordinate` uses MCP code analysis tools (`find_symbol`, `search_for_pattern`) to verify API contract alignment between agents.
+4. **Contract violations are caught during monitoring.** Step 5 of `/work` uses MCP code analysis tools (`find_symbol`, `search_for_pattern`) to verify API contract alignment between agents.
 
 5. **QA review checks contract adherence.** The QA agent's Alignment Review (Step 6 in ultrawork) explicitly compares implementation against the plan, including API contracts.
 
@@ -304,7 +304,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### 1. Skipping the Plan
 
-Starting `/orchestrate` without a plan.json. The workflow will refuse to proceed. Always run `/plan` first, or use `/coordinate` which has built-in planning.
+Starting `/orchestrate` without a plan.json. The workflow will refuse to proceed. Always run `/plan` first, or use `/work` which has built-in planning.
 
 ### 2. Overlapping Workspaces
 
@@ -346,7 +346,7 @@ After all agents complete their individual tasks, cross-domain integration must 
 
 5. **Database schema alignment** — If the database agent creates migrations, the backend ORM models must match the schema exactly.
 
-The QA agent's Alignment Review (Step 6 in ultrawork, Step 6 in coordinate) performs this cross-domain validation systematically.
+The QA agent's Alignment Review (Step 6 in ultrawork, Step 6 in work) performs this cross-domain validation systematically.
 
 ---
 
@@ -360,4 +360,4 @@ A multi-agent project is complete when:
 - Cross-domain API contract alignment is confirmed.
 - Build succeeds and all tests pass.
 - The final report is written to memory and presented to the user.
-- User gives final approval (in `/coordinate` and ultrawork's SHIP_GATE).
+- User gives final approval (in `/work` and ultrawork's SHIP_GATE).

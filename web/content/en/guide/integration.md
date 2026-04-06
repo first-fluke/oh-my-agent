@@ -286,7 +286,7 @@ your-project/
       ...
     workflows/                      # Workflow definitions
       orchestrate.md
-      coordinate.md
+      work.md
       ultrawork.md
       plan.md
       ...
@@ -396,7 +396,7 @@ The installer downloads the latest release tarball from the oh-my-agent GitHub r
 
 ### 5. Workflow Installation
 
-`installWorkflows()` copies all workflow files to `.agents/workflows/`. These are the definitions for `/orchestrate`, `/coordinate`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/commit`, `/tools`, and `/stack-set`.
+`installWorkflows()` copies all workflow files to `.agents/workflows/`. These are the definitions for `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/commit`, `/tools`, and `/stack-set`.
 
 ### 6. Config Installation
 
