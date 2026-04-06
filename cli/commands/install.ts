@@ -10,7 +10,7 @@ import {
   isGhInstalled,
 } from "../lib/github.js";
 import { getLocalVersion, saveLocalVersion } from "../lib/manifest.js";
-import { migrateSharedLayout, migrateToAgents } from "../lib/migrate.js";
+import { runMigrations } from "./migrations/index.js";
 import { ensureSerenaProject, resolveSerenaLanguages } from "../lib/serena.js";
 import {
   type CliTool,
@@ -80,11 +80,11 @@ export async function install(): Promise<void> {
   console.clear();
   p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent ")));
 
-  // Auto-migrate from legacy .agent/ to .agents/
-  const migrations = migrateToAgents(process.cwd());
-  if (migrations.length > 0) {
+  // Run all migrations (legacy dirs, shared layout, config rename)
+  const migrationActions = runMigrations(process.cwd());
+  if (migrationActions.length > 0) {
     p.note(
-      migrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+      migrationActions.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
       "Migration",
     );
   }
@@ -274,11 +274,11 @@ export async function install(): Promise<void> {
         await saveLocalVersion(cwd, bundledVersion);
       }
 
-      const sharedLayoutMigrations = migrateSharedLayout(cwd);
-      if (sharedLayoutMigrations.length > 0) {
+      const postInstallMigrations = runMigrations(cwd);
+      if (postInstallMigrations.length > 0) {
         p.note(
-          sharedLayoutMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
-          "Shared layout migration",
+          postInstallMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+          "Migration",
         );
       }
     } finally {

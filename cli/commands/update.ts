@@ -23,7 +23,6 @@ import {
   hasInstalledProject,
   saveLocalVersion,
 } from "../lib/manifest.js";
-import { migrateSharedLayout, migrateToAgents } from "../lib/migrate.js";
 import { runMigrations } from "./migrations/index.js";
 import { ensureSerenaProject, inferSerenaLanguages } from "../lib/serena.js";
 import {
@@ -87,11 +86,11 @@ export async function update(force = false, ci = false): Promise<void> {
 
   const cwd = process.cwd();
 
-  // Auto-migrate from legacy .agent/ to .agents/
-  const migrations = migrateToAgents(cwd);
-  if (migrations.length > 0) {
+  // Run all migrations
+  const migrationActions = runMigrations(cwd);
+  if (migrationActions.length > 0) {
     ui.note(
-      migrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+      migrationActions.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
       "Migration",
     );
   }
@@ -130,13 +129,6 @@ export async function update(force = false, ci = false): Promise<void> {
     const remoteManifest = await fetchRemoteManifest();
 
     if (localVersion === remoteManifest.version) {
-      const sharedLayoutMigrations = migrateSharedLayout(cwd);
-      if (sharedLayoutMigrations.length > 0) {
-        ui.note(
-          sharedLayoutMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
-          "Shared layout migration",
-        );
-      }
       spinner.stop(pc.green("Already up to date!"));
       ui.outro(`Current version: ${pc.cyan(localVersion)}`);
       return;
@@ -254,12 +246,12 @@ export async function update(force = false, ci = false): Promise<void> {
         rmSync(backendVariantsDir, { recursive: true, force: true });
       }
 
-      // Shared layout migration (core/, conditional/, runtime/)
-      const sharedLayoutMigrations = migrateSharedLayout(cwd);
-      if (sharedLayoutMigrations.length > 0) {
+      // Post-copy migrations
+      const postCopyMigrations = runMigrations(cwd);
+      if (postCopyMigrations.length > 0) {
         ui.note(
-          sharedLayoutMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
-          "Shared layout migration",
+          postCopyMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
+          "Migration",
         );
       }
 
