@@ -136,7 +136,7 @@ Diese Datei befindet sich in Ihrem Projektstamm und steuert die Interaktion Ihre
 ```yaml
 # Zentrales Register-Repository
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 # Versions-Pinning
 # Optionen:

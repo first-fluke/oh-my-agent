@@ -43,7 +43,7 @@ oh-my-agent использует [release-please](https://github.com/googleapis/
 
 ```yaml
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 version: "4.7.0"
 
 auto_update:

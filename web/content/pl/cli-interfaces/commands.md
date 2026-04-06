@@ -5,7 +5,7 @@ description: Kompletna referencja każdego polecenia CLI oh-my-agent — składn
 
 # Polecenia CLI
 
-Po globalnej instalacji (`bun install --global oh-my-agent`), używaj `oma` lub `oh-my-ag`. Oba są aliasami tego samego pliku binarnego. Do jednorazowego użycia bez instalacji uruchom `npx oh-my-agent`.
+Po globalnej instalacji (`bun install --global oh-my-agent`), używaj `oma` lub `oh-my-agent`. Do jednorazowego użycia bez instalacji uruchom `npx oh-my-agent`.
 
 Zmienna środowiskowa `OH_MY_AG_OUTPUT_FORMAT` może być ustawiona na `json` aby wymusić wyjście maszynowe na poleceniach, które to obsługują. To odpowiednik przekazania `--json` do każdego polecenia.
 
@@ -254,5 +254,4 @@ oma version
 
 | Alias | Pełne polecenie |
 |:------|:------------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

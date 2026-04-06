@@ -5,7 +5,7 @@ description: Vollständige Referenz jedes oh-my-agent-CLI-Befehls — Syntax, Op
 
 # CLI-Befehle
 
-Nach der globalen Installation (`bun install --global oh-my-agent`) stehen die Befehle `oma` oder `oh-my-ag` zur Verfügung. Beide sind Aliase für dieselbe Binärdatei. Für einmalige Nutzung ohne Installation kann `npx oh-my-agent` verwendet werden.
+Nach der globalen Installation (`bun install --global oh-my-agent`) stehen die Befehle `oma` oder `oh-my-agent` zur Verfügung. Für einmalige Nutzung ohne Installation kann `npx oh-my-agent` verwendet werden.
 
 Die Umgebungsvariable `OH_MY_AG_OUTPUT_FORMAT` kann auf `json` gesetzt werden, um bei allen Befehlen, die dies unterstützen, maschinenlesbare Ausgabe zu erzwingen. Dies entspricht der Übergabe von `--json` an jeden einzelnen Befehl.
 
@@ -729,5 +729,4 @@ Gibt die aktuelle CLI-Version aus und beendet sich.
 
 | Alias | Vollständiger Befehl |
 |:------|:------------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

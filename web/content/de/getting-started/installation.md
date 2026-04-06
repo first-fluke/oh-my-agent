@@ -137,7 +137,7 @@ oma usage:anti          # Nutzungskontingente anzeigen
 oma star                # Repository mit Stern markieren
 ```
 
-Der globale `oma`-Alias entspricht `oh-my-ag` (dem vollständigen Befehlsnamen).
+`oma` ist die Kurzform von `oh-my-agent`. Beide funktionieren als CLI-Befehle.
 
 ---
 

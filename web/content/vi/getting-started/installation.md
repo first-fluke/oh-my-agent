@@ -137,7 +137,7 @@ oma usage:anti          # Phát hiện anti-pattern sử dụng
 oma star                # Star repository
 ```
 
-Alias toàn cục `oma` tương đương với `oh-my-ag` (tên lệnh đầy đủ).
+`oma` là viết tắt của `oh-my-agent`. Cả hai đều hoạt động như lệnh CLI.
 
 ---
 

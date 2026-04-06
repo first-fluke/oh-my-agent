@@ -28,7 +28,7 @@ bun install --global oh-my-agent
 npx oh-my-agent
 ```
 
-전역 설치 후 두 가지 별칭을 사용할 수 있습니다: `oma`와 `oh-my-ag`.
+전역 설치 후 `oma` (또는 `oh-my-agent`) 명령을 사용할 수 있습니다.
 
 ### 2. 프로젝트 루트로 이동
 

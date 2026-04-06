@@ -5,7 +5,7 @@ description: Tham chiếu đầy đủ cho mọi lệnh CLI oh-my-agent — cú 
 
 # Lệnh CLI
 
-Sau khi cài đặt toàn cục (`bun install --global oh-my-agent`), sử dụng `oma` hoặc `oh-my-ag`. Cả hai đều là alias cho cùng một binary. Để sử dụng một lần mà không cần cài đặt, chạy `npx oh-my-agent`.
+Sau khi cài đặt toàn cục (`bun install --global oh-my-agent`), sử dụng `oma` hoặc `oh-my-agent`. Để sử dụng một lần mà không cần cài đặt, chạy `npx oh-my-agent`.
 
 Biến môi trường `OH_MY_AG_OUTPUT_FORMAT` có thể được đặt thành `json` để buộc đầu ra machine-readable trên các lệnh hỗ trợ. Tương đương với việc truyền `--json` cho mỗi lệnh.
 
@@ -763,5 +763,4 @@ Xuất phiên bản CLI hiện tại và thoát.
 
 | Alias | Lệnh đầy đủ |
 |:------|:------------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

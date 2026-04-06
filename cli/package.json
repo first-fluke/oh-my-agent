@@ -4,7 +4,7 @@
   "description": "Portable multi-agent harness for .agents-based skills and workflows across Antigravity, Claude Code, Codex, OpenCode, and more",
   "type": "module",
   "bin": {
-    "oh-my-ag": "./bin/cli.js",
+    "oh-my-agent": "./bin/cli.js",
     "oma": "./bin/cli.js"
   },
   "files": [

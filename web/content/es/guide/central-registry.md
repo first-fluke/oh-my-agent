@@ -145,7 +145,7 @@ This file lives at your project root and controls how your project interacts wit
 ```yaml
 # Central registry repository
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 # Version pinning
 # Options:

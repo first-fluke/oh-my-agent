@@ -137,7 +137,7 @@ oma usage:anti          # Wykrywanie anty-wzorców użycia
 oma star                # Dodanie gwiazdki do repozytorium
 ```
 
-Globalny alias `oma` jest równoważny z `oh-my-ag` (pełna nazwa polecenia).
+`oma` to skrót od `oh-my-agent`. Oba polecenia działają jako komendy CLI.
 
 ---
 

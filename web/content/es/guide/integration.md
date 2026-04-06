@@ -28,7 +28,7 @@ bun install --global oh-my-agent
 npx oh-my-agent
 ```
 
-Despues de la instalacion global, dos alias estan disponibles: `oma` y `oh-my-ag`.
+Después de la instalación global, el comando `oma` (o `oh-my-agent`) está disponible.
 
 ### 2. Navegar a la Raiz del Proyecto
 

@@ -139,7 +139,7 @@ oma usage:anti          # Usage anti-pattern detection
 oma star                # Star the repository
 ```
 
-The global `oma` alias is equivalent to `oh-my-ag` (the full command name).
+`oma` is short for `oh-my-agent`. Both work as CLI commands.
 
 ---
 

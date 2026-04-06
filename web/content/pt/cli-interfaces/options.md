@@ -7,7 +7,7 @@ description: "Referência exaustiva para todas as opções CLI — flags globais
 
 ## Opções Globais
 
-Estas opções estão disponíveis no comando raiz `oh-my-ag` / `oma`:
+Estas opções estão disponíveis no comando raiz `oma` / `oh-my-agent`:
 
 | Flag | Descrição |
 |:-----|:-----------|

@@ -7,7 +7,7 @@ description: Wyczerpująca referencja wszystkich opcji CLI — flagi globalne, k
 
 ## Opcje globalne
 
-Dostępne na głównym poleceniu `oh-my-ag` / `oma`:
+Dostępne na głównym poleceniu `oma` / `oh-my-agent`:
 
 | Flaga | Opis |
 |:-----|:-----------|

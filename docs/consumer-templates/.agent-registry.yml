@@ -3,7 +3,7 @@
 
 # Central registry repository
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 # Version pinning
 # Options:

@@ -5,7 +5,7 @@ description: "Referência completa para cada comando CLI do oh-my-agent — sint
 
 # Comandos CLI
 
-Após instalar globalmente (`bun install --global oh-my-agent`), use `oma` ou `oh-my-ag`. Ambos são aliases para o mesmo binário. Para uso único sem instalar, execute `npx oh-my-agent`.
+Após instalar globalmente (`bun install --global oh-my-agent`), use `oma` ou `oh-my-agent`. Para uso único sem instalar, execute `npx oh-my-agent`.
 
 A variável de ambiente `OH_MY_AG_OUTPUT_FORMAT` pode ser definida como `json` para forçar saída legível por máquina em comandos que a suportam. Isso é equivalente a passar `--json` para cada comando.
 
@@ -569,5 +569,4 @@ oma version
 
 | Alias | Comando Completo |
 |:------|:--------------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

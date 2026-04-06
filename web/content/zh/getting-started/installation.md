@@ -137,7 +137,7 @@ oma usage:anti          # 使用量反模式检测
 oma star                # 为仓库加星
 ```
 
-全局 `oma` 别名等同于 `oh-my-ag`（完整命令名）。
+`oma` 是 `oh-my-agent` 的缩写。两者均可作为 CLI 命令使用。
 
 ---
 

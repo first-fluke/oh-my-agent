@@ -28,7 +28,7 @@ bun install --global oh-my-agent
 npx oh-my-agent
 ```
 
-Nach der globalen Installation stehen zwei Aliase zur Verfügung: `oma` und `oh-my-ag`.
+Nach der globalen Installation stehen die Befehle `oma` (oder `oh-my-agent`) zur Verfügung.
 
 ### 2. Zum Projektstamm navigieren
 

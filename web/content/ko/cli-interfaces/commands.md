@@ -5,7 +5,7 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스 — 구문,
 
 # CLI 명령어
 
-전역 설치 후(`bun install --global oh-my-agent`), `oma` 또는 `oh-my-ag`를 사용합니다. 둘 다 같은 바이너리의 별칭입니다. 설치 없이 일회성으로 사용하려면 `npx oh-my-agent`를 실행합니다.
+전역 설치 후(`bun install --global oh-my-agent`), `oma` 또는 `oh-my-agent`를 사용합니다. 설치 없이 일회성으로 사용하려면 `npx oh-my-agent`를 실행합니다.
 
 환경 변수 `OH_MY_AG_OUTPUT_FORMAT`을 `json`으로 설정하면 이를 지원하는 명령에서 기계 판독 가능한 출력을 강제합니다. 각 명령에 `--json`을 전달하는 것과 동일합니다.
 
@@ -761,5 +761,4 @@ oma version
 
 | 별칭 | 전체 명령 |
 |:-----|:---------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

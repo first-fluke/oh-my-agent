@@ -5,7 +5,7 @@ description: Volledige referentie voor elk oh-my-agent CLI-commando — syntaxis
 
 # CLI-Commando's
 
-Na globale installatie (`bun install --global oh-my-agent`), gebruik `oma` of `oh-my-ag`. Beide zijn aliassen voor dezelfde binary. Voor eenmalig gebruik zonder installatie: `npx oh-my-agent`.
+Na globale installatie (`bun install --global oh-my-agent`), gebruik `oma` of `oh-my-agent`. Voor eenmalig gebruik zonder installatie: `npx oh-my-agent`.
 
 De omgevingsvariabele `OH_MY_AG_OUTPUT_FORMAT` kan op `json` worden gezet om machineleesbare uitvoer te forceren op commando's die dit ondersteunen.
 
@@ -249,5 +249,4 @@ oma version
 
 | Alias | Volledig Commando |
 |:------|:------------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

@@ -5,7 +5,7 @@ description: Référence complète de chaque commande CLI oh-my-agent — syntax
 
 # Commandes CLI
 
-Après installation globale (`bun install --global oh-my-agent`), utilisez `oma` ou `oh-my-ag`. Les deux sont des alias du même binaire. Pour une utilisation ponctuelle sans installation, exécutez `npx oh-my-agent`.
+Après installation globale (`bun install --global oh-my-agent`), utilisez `oma` ou `oh-my-agent`. Pour une utilisation ponctuelle sans installation, exécutez `npx oh-my-agent`.
 
 La variable d'environnement `OH_MY_AG_OUTPUT_FORMAT` peut être définie à `json` pour forcer une sortie lisible par machine sur les commandes qui le supportent. Cela équivaut à passer `--json` à chaque commande.
 
@@ -729,5 +729,4 @@ Affiche la version actuelle du CLI et termine.
 
 | Alias | Commande complète |
 |:------|:-----------------|
-| `oma` | `oh-my-ag` |
 | `viz` | `visualize` |

@@ -28,7 +28,7 @@ bun install --global oh-my-agent
 npx oh-my-agent
 ```
 
-全局安装后，有两个别名可用：`oma` 和 `oh-my-ag`。
+全局安装后，`oma`（或 `oh-my-agent`）命令可用。
 
 ### 2. 导航到项目根目录
 

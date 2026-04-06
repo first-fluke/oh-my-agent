@@ -57,7 +57,7 @@ oh-my-agent dùng [release-please](https://github.com/googleapis/release-please)
 
 ```yaml
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 version: "4.7.0"
 

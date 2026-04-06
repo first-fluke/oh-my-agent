@@ -137,7 +137,7 @@ oma usage:anti          # Gebruiks-anti-patroondetectie
 oma star                # Repository een ster geven
 ```
 
-De globale `oma`-alias is equivalent aan `oh-my-ag` (de volledige commandonaam).
+`oma` is de afkorting van `oh-my-agent`. Beide werken als CLI-opdrachten.
 
 ---
 

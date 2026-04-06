@@ -99,7 +99,7 @@ Este arquivo reside na raiz do seu projeto e controla como ele interage com o re
 ```yaml
 # Repositório do registro central
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 # Fixação de versão
 version: "4.7.0"

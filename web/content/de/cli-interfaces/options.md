@@ -7,7 +7,7 @@ description: Erschöpfende Referenz aller CLI-Optionen — globale Flags, Ausgab
 
 ## Globale Optionen
 
-Diese Optionen stehen beim Root-Befehl `oh-my-ag` / `oma` zur Verfügung:
+Diese Optionen stehen beim Root-Befehl `oma` / `oh-my-agent` zur Verfügung:
 
 | Flag | Beschreibung |
 |:-----|:-----------|

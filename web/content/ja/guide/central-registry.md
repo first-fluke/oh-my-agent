@@ -44,7 +44,7 @@ git commit -m "feat!: rename .agent/ to .agents/ directory"   # Major
 
 ```yaml
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 version: "4.7.0"
 

@@ -7,7 +7,7 @@ description: Tham chiếu đầy đủ cho tất cả tùy chọn CLI — flag t
 
 ## Tùy chọn toàn cục
 
-Các tùy chọn này có sẵn trên lệnh gốc `oh-my-ag` / `oma`:
+Các tùy chọn này có sẵn trên lệnh gốc `oma` / `oh-my-agent`:
 
 | Flag | Mô tả |
 |:-----|:-----------|

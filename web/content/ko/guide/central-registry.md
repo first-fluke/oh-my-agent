@@ -145,7 +145,7 @@ oh-my-agent는 프로젝트에 복사할 두 가지 템플릿 파일을 `docs/co
 ```yaml
 # 중앙 레지스트리 리포지토리
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 # 버전 고정
 # 옵션:

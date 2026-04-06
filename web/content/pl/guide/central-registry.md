@@ -40,7 +40,7 @@ Artefakty wydania: `agent-skills.tar.gz`, `agent-skills.tar.gz.sha256`, `prompt-
 
 ```yaml
 registry:
-  repo: first-fluke/oh-my-ag
+  repo: first-fluke/oh-my-agent
 
 version: "4.7.0"
 
