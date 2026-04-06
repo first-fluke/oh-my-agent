@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.15](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.14...web-v0.3.15) (2026-04-06)
+
+
+### Refactoring
+
+* move .agents/config/user-preferences.yaml to .agents/oma-config.yaml ([c702a4b](https://github.com/first-fluke/oh-my-agent/commit/c702a4bc41f14b9ed6b6797d13ed970357c5d354))
+
 ## [0.3.14](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.13...web-v0.3.14) (2026-04-04)
 
 
