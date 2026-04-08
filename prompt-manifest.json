@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "4.24.0",
-  "releaseDate": "2026-04-08T05:48:41.996Z",
+  "version": "4.24.1",
+  "releaseDate": "2026-04-08T05:35:53.393Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -31,8 +31,8 @@
     },
     {
       "path": ".agents/agents/pm-planner.md",
-      "sha256": "218ea59ce31cf0beba2e02849f1649a36d6b19cd8ac5302b9d80284405d6515d",
-      "size": 1787
+      "sha256": "40eda97909427e0e29c8cd393f9888cd34c22b1886de877760aaff34ab14afa3",
+      "size": 1767
     },
     {
       "path": ".agents/agents/qa-reviewer.md",
@@ -726,8 +726,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/SKILL.md",
-      "sha256": "a08f245e2c95019dfe2ddcc709ec261fdcd91878bac351b838e619f40aa2f9e3",
-      "size": 2653
+      "sha256": "bc4329931951099a33d00fc6cc9e34ab1fb9e53185c8f22989be7ef06234a08f",
+      "size": 2633
     },
     {
       "path": ".agents/skills/oma-pm/resources/error-playbook.md",
@@ -741,8 +741,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/execution-protocol.md",
-      "sha256": "9148e99314de203907342f1458d5063bc22223450d861712820f4a35dfc547ea",
-      "size": 3085
+      "sha256": "42d11d47b04a07536695e4378d0f866c9c2754a1eba203b901781646353c20e2",
+      "size": 3065
     },
     {
       "path": ".agents/skills/oma-pm/resources/iso-planning.md",
@@ -891,8 +891,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "686f86200f942512bb65461ba05317379f36f5d8080f8f9b0ef9f06eecea3eaa",
-      "size": 6987
+      "sha256": "7c3f5725c653aa17e0b9d7d9009e1467de6a298914a2fd602f7e4916a4bd3959",
+      "size": 6885
     },
     {
       "path": ".agents/workflows/pdf.md",
@@ -901,8 +901,8 @@
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "75f58c084bb22c02aa2852ead518e5eb40bf57911c710d184f3af4795598b2e9",
-      "size": 2716
+      "sha256": "83029b4eedf79407f937da079ac8daa18fce88aa983f2b788543bde33e6a1aca",
+      "size": 2676
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
@@ -941,13 +941,13 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "f7293cb50ca5ad4b3177af090bd5b2a0af56173729bd149b9fd59caf017efc41",
-      "size": 15770
+      "sha256": "ebd1a2094761fc619493f76ce3f1462ee696d1c7f9170098afa15b9e8ab3529e",
+      "size": 15750
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "5be1c8b2d9153c717540a843afedb928b09d7407539d98185cfc7db7ca2255c0",
-      "size": 5532
+      "sha256": "8c9da8d0cad9692fc6773b1e76d472c82ff501ba87320ec967cbf7161d949ec6",
+      "size": 5512
     },
     {
       "path": ".claude/skills/brainstorm/SKILL.md",
@@ -1056,8 +1056,8 @@
     },
     {
       "path": ".claude/agents/pm-planner.md",
-      "sha256": "5f74b083a97e761f9e6345ad13d06909b24bf410c9adaa45a2b4029ae622379f",
-      "size": 1988
+      "sha256": "1237fb766879a24f2186cfefc8c4deb28cd48d394ef77ce479c231fe544f8ce7",
+      "size": 1968
     },
     {
       "path": ".claude/agents/qa-reviewer.md",
