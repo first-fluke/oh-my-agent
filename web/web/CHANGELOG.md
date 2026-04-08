@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.19](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.18...web-v0.3.19) (2026-04-08)
+
+
+### Features
+
+* support all 12 languages in web docs ([3882707](https://github.com/first-fluke/oh-my-agent/commit/3882707289116c774ac96b3e57c671aa46dc19a5))
+
 ## [0.3.18](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.17...web-v0.3.18) (2026-04-08)
 
 
