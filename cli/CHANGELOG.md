@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.24.1...cli-v4.25.0) (2026-04-08)
+
+
+### Features
+
+* add session cost, rate limits, and lines changed to HUD statusline ([8f116a6](https://github.com/first-fluke/oh-my-agent/commit/8f116a6befe5527d0e6257123e127fd336f8736e))
+
 ## [4.24.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.24.0...cli-v4.24.1) (2026-04-08)
 
 
