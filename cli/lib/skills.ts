@@ -12,11 +12,62 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import type { SkillInfo, SkillsRegistry, VendorType } from "../types/index.js";
+import type {
+  CliVendor,
+  SkillInfo,
+  SkillsRegistry,
+  VendorType,
+} from "../types/index.js";
 import { parseFrontmatter, serializeFrontmatter } from "./frontmatter.js";
 
 export const REPO = "first-fluke/oh-my-agent";
 export const INSTALLED_SKILLS_DIR = ".agents/skills";
+
+const ALL_CLI_VENDORS: CliVendor[] = [
+  "claude",
+  "codex",
+  "copilot",
+  "gemini",
+  "qwen",
+];
+
+/** Read selected vendors from oma-config.yaml. Falls back to all vendors. */
+export function readVendorsFromConfig(targetDir: string): CliVendor[] {
+  const configPath = join(targetDir, ".agents", "oma-config.yaml");
+  if (!existsSync(configPath)) return [...ALL_CLI_VENDORS];
+
+  const content = readFileSync(configPath, "utf-8");
+  const match = content.match(/^vendors:\s*\n((?:\s+-\s+\S+\n?)*)/m);
+  if (!match) return [...ALL_CLI_VENDORS];
+
+  const vendors = [...match[1].matchAll(/-\s+(\S+)/g)].map(
+    (m) => m[1] as CliVendor,
+  );
+  return vendors.length > 0 ? vendors : [...ALL_CLI_VENDORS];
+}
+
+/** Write selected vendors to oma-config.yaml. */
+export function writeVendorsToConfig(
+  targetDir: string,
+  vendors: CliVendor[],
+): void {
+  const configPath = join(targetDir, ".agents", "oma-config.yaml");
+  if (!existsSync(configPath)) return;
+
+  let content = readFileSync(configPath, "utf-8");
+  const vendorsBlock = `vendors:\n${vendors.map((v) => `  - ${v}`).join("\n")}`;
+
+  if (/^vendors:/m.test(content)) {
+    content = content.replace(
+      /^vendors:\s*\n(?:\s+-\s+\S+\n?)*/m,
+      `${vendorsBlock}\n`,
+    );
+  } else {
+    content = `${content.trimEnd()}\n${vendorsBlock}\n`;
+  }
+
+  writeFileSync(configPath, content);
+}
 
 export const SKILLS: SkillsRegistry = {
   domain: [
@@ -429,11 +480,10 @@ function installClaudeWorkflowRouters(
 }
 
 /**
- * Copy shared hook scripts to a vendor's hooks directory.
- * The same TypeScript hooks work across all vendors via auto-detection.
+ * Copy core hook scripts from .agents/hooks/core/ to a vendor's hooks directory.
  */
 function copyHookScripts(sourceDir: string, hooksDest: string): void {
-  const hooksSrc = join(sourceDir, ".claude", "hooks");
+  const hooksSrc = join(sourceDir, ".agents", "hooks", "core");
   if (!existsSync(hooksSrc)) return;
 
   mkdirSync(hooksDest, { recursive: true });
@@ -467,111 +517,106 @@ function mergeIntoSettings(
   writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
 }
 
-/** Build bun command for a hook script relative to a project dir env var. */
-function bunHookCmd(envVar: string, vendorDir: string, script: string): string {
-  return `bun "$${envVar}/${vendorDir}/hooks/${script}"`;
+// --- Variant-driven hook installation ---
+
+interface HookEvent {
+  hook: string;
+  matcher?: string;
+  timeout: number;
+}
+
+interface HookVariant {
+  vendor: string;
+  hookDir: string;
+  settingsFile: string;
+  projectDirEnv: string | null;
+  runtime: string;
+  events: Record<string, HookEvent>;
+  statusLine?: { hook: string };
+  // biome-ignore lint/suspicious/noExplicitAny: extra settings vary by vendor
+  extra?: Record<string, any>;
+  featureFlags?: {
+    file: string;
+    section: string;
+    flags: Record<string, boolean>;
+  };
+}
+
+/** Build hook command string from variant config. */
+function buildHookCmd(variant: HookVariant, script: string): string {
+  if (variant.projectDirEnv) {
+    return `${variant.runtime} "$${variant.projectDirEnv}/${variant.hookDir}/${script}"`;
+  }
+  return `${variant.runtime} ${variant.hookDir}/${script}`;
 }
 
 /**
- * Install Claude Code hooks, HUD statusline, and settings.json.
+ * Install hooks for any vendor using its variant config from .agents/hooks/variants/.
+ * Reads the variant JSON, copies core hooks, generates settings entries.
  */
-function installClaudeHooks(sourceDir: string, targetDir: string): void {
-  copyHookScripts(sourceDir, join(targetDir, ".claude", "hooks"));
+function installHooksFromVariant(
+  sourceDir: string,
+  targetDir: string,
+  variant: HookVariant,
+): void {
+  // 1. Copy core hook files to vendor hooks directory
+  copyHookScripts(sourceDir, join(targetDir, variant.hookDir));
 
+  // 2. Build hook entries from events
+  // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor
+  const hookEntries: Record<string, any> = {};
+  for (const [eventName, config] of Object.entries(variant.events)) {
+    // biome-ignore lint/suspicious/noExplicitAny: hook entry shape varies
+    const entry: any = {
+      hooks: [
+        {
+          type: "command",
+          command: buildHookCmd(variant, config.hook),
+          timeout: config.timeout,
+        },
+      ],
+    };
+    if (config.matcher) entry.matcher = config.matcher;
+    hookEntries[eventName] = [entry];
+  }
+
+  // 3. Build extra settings (statusLine, permissions, etc.)
+  // biome-ignore lint/suspicious/noExplicitAny: extra settings are dynamic
+  const extra: Record<string, any> = {};
+  if (variant.statusLine) {
+    extra.statusLine = {
+      type: "command",
+      command: buildHookCmd(variant, variant.statusLine.hook),
+    };
+  }
+  if (variant.extra) Object.assign(extra, variant.extra);
+
+  // 4. Merge into settings file
   mergeIntoSettings(
-    join(targetDir, ".claude", "settings.json"),
-    {
-      UserPromptSubmit: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: bunHookCmd(
-                "CLAUDE_PROJECT_DIR",
-                ".claude",
-                "keyword-detector.ts",
-              ),
-              timeout: 5,
-            },
-          ],
-        },
-      ],
-      Stop: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: bunHookCmd(
-                "CLAUDE_PROJECT_DIR",
-                ".claude",
-                "persistent-mode.ts",
-              ),
-              timeout: 5,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      statusLine: {
-        type: "command",
-        command: bunHookCmd("CLAUDE_PROJECT_DIR", ".claude", "hud.ts"),
-      },
-      permissions: {
-        allow: [
-          "Bash(bun run:*)",
-          "Bash(bunx tsx:*)",
-          "Bash(git add:*)",
-          "mcp__serena__*",
-        ],
-      },
-    },
+    join(targetDir, variant.settingsFile),
+    hookEntries,
+    Object.keys(extra).length > 0 ? extra : undefined,
   );
+
+  // 5. Vendor-specific feature flags (e.g., Codex config.toml)
+  if (variant.featureFlags) {
+    ensureFeatureFlags(
+      join(targetDir, variant.featureFlags.file),
+      variant.featureFlags.section,
+      variant.featureFlags.flags,
+    );
+  }
 }
 
 /**
- * Install Codex CLI hooks, hooks.json, and enable codex_hooks feature.
- * Codex hooks.json requires the codex_hooks feature flag in config.toml.
- */
-function installCodexHooks(sourceDir: string, targetDir: string): void {
-  const hooksDir = join(targetDir, ".codex", "hooks");
-  copyHookScripts(sourceDir, hooksDir);
-
-  // hooks.json — discovered from .codex/
-  mergeIntoSettings(join(targetDir, ".codex", "hooks.json"), {
-    UserPromptSubmit: [
-      {
-        hooks: [
-          {
-            type: "command",
-            command: "bun .codex/hooks/keyword-detector.ts",
-            timeout: 5,
-          },
-        ],
-      },
-    ],
-    Stop: [
-      {
-        hooks: [
-          {
-            type: "command",
-            command: "bun .codex/hooks/persistent-mode.ts",
-            timeout: 5,
-          },
-        ],
-      },
-    ],
-  });
-
-  // Enable codex_hooks feature in config.toml (required for hooks.json to load)
-  ensureCodexFeatureFlag(join(targetDir, ".codex", "config.toml"));
-}
-
-/**
- * Ensure codex_hooks = true in [features] section of config.toml.
+ * Ensure feature flags are enabled in a TOML config file.
  * Creates file if missing, appends section if not present.
  */
-function ensureCodexFeatureFlag(configPath: string): void {
+function ensureFeatureFlags(
+  configPath: string,
+  section: string,
+  flags: Record<string, boolean>,
+): void {
   mkdirSync(dirname(configPath), { recursive: true });
 
   let content = "";
@@ -579,111 +624,29 @@ function ensureCodexFeatureFlag(configPath: string): void {
     content = readFileSync(configPath, "utf-8");
   }
 
-  // Already enabled
-  if (/codex_hooks\s*=\s*true/i.test(content)) return;
+  for (const [key, value] of Object.entries(flags)) {
+    const enabledRe = new RegExp(`${key}\\s*=\\s*${value}`, "i");
+    if (enabledRe.test(content)) continue;
 
-  // Replace false with true
-  if (/codex_hooks\s*=\s*false/i.test(content)) {
-    content = content.replace(/codex_hooks\s*=\s*false/i, "codex_hooks = true");
-    writeFileSync(configPath, content);
-    return;
+    const disabledRe = new RegExp(`${key}\\s*=\\s*${!value}`, "i");
+    if (disabledRe.test(content)) {
+      content = content.replace(disabledRe, `${key} = ${value}`);
+      writeFileSync(configPath, content);
+      continue;
+    }
+
+    const sectionRe = new RegExp(`\\[${section}\\]`, "i");
+    if (sectionRe.test(content)) {
+      content = content.replace(
+        new RegExp(`(\\[${section}\\][^[]*)`, "i"),
+        `$1${key} = ${value}\n`,
+      );
+      writeFileSync(configPath, content);
+    } else {
+      content = `${content.trimEnd()}\n\n[${section}]\n${key} = ${value}\n`;
+      writeFileSync(configPath, content);
+    }
   }
-
-  // Append to existing [features] section
-  if (/\[features\]/i.test(content)) {
-    content = content.replace(/(\[features\][^[]*)/i, `$1codex_hooks = true\n`);
-    writeFileSync(configPath, content);
-    return;
-  }
-
-  // Add new [features] section
-  const section = `\n[features]\ncodex_hooks = true\n`;
-  writeFileSync(configPath, content.trimEnd() + section);
-}
-
-/**
- * Install Gemini CLI hooks and settings.json.
- */
-function installGeminiHooks(sourceDir: string, targetDir: string): void {
-  const hooksDir = join(targetDir, ".gemini", "hooks");
-  copyHookScripts(sourceDir, hooksDir);
-
-  mergeIntoSettings(join(targetDir, ".gemini", "settings.json"), {
-    BeforeAgent: [
-      {
-        matcher: "*",
-        hooks: [
-          {
-            type: "command",
-            command: bunHookCmd(
-              "GEMINI_PROJECT_DIR",
-              ".gemini",
-              "keyword-detector.ts",
-            ),
-            timeout: 5,
-          },
-        ],
-      },
-    ],
-    AfterAgent: [
-      {
-        matcher: "*",
-        hooks: [
-          {
-            type: "command",
-            command: bunHookCmd(
-              "GEMINI_PROJECT_DIR",
-              ".gemini",
-              "persistent-mode.ts",
-            ),
-            timeout: 5,
-          },
-        ],
-      },
-    ],
-  });
-}
-
-/**
- * Install Qwen Code hooks and settings.json.
- * Qwen Code is a Claude Code fork — uses same event names, hookSpecificOutput format.
- */
-function installQwenHooks(sourceDir: string, targetDir: string): void {
-  const hooksDir = join(targetDir, ".qwen", "hooks");
-  copyHookScripts(sourceDir, hooksDir);
-
-  mergeIntoSettings(join(targetDir, ".qwen", "settings.json"), {
-    UserPromptSubmit: [
-      {
-        hooks: [
-          {
-            type: "command",
-            command: bunHookCmd(
-              "QWEN_PROJECT_DIR",
-              ".qwen",
-              "keyword-detector.ts",
-            ),
-            timeout: 5,
-          },
-        ],
-      },
-    ],
-    Stop: [
-      {
-        hooks: [
-          {
-            type: "command",
-            command: bunHookCmd(
-              "QWEN_PROJECT_DIR",
-              ".qwen",
-              "persistent-mode.ts",
-            ),
-            timeout: 5,
-          },
-        ],
-      },
-    ],
-  });
 }
 
 const OMA_START = "<!-- OMA:START";
@@ -725,7 +688,7 @@ function mergeClaudeMd(sourceDir: string): void {
 
 /**
  * Install vendor-specific agent and workflow adaptations.
- * Replaces installClaudeSkills() for agent/workflow generation.
+ * Hooks are installed from variant configs in .agents/hooks/variants/.
  */
 export function installVendorAdaptations(
   sourceDir: string,
@@ -734,25 +697,24 @@ export function installVendorAdaptations(
 ): void {
   const agentsDir = join(sourceDir, ".agents", "agents");
   const workflowsDir = join(sourceDir, ".agents", "workflows");
+  const variantsDir = join(sourceDir, ".agents", "hooks", "variants");
 
   for (const vendor of vendors) {
-    switch (vendor) {
-      case "claude":
-        installClaudeAgents(agentsDir, targetDir);
-        installClaudeWorkflowRouters(workflowsDir, targetDir);
-        installClaudeRules(sourceDir, targetDir);
-        installClaudeHooks(sourceDir, targetDir);
-        mergeClaudeMd(sourceDir);
-        break;
-      case "codex":
-        installCodexHooks(sourceDir, targetDir);
-        break;
-      case "gemini":
-        installGeminiHooks(sourceDir, targetDir);
-        break;
-      case "qwen":
-        installQwenHooks(sourceDir, targetDir);
-        break;
+    // Install hooks from variant config (all vendors)
+    const variantPath = join(variantsDir, `${vendor}.json`);
+    if (existsSync(variantPath)) {
+      const variant: HookVariant = JSON.parse(
+        readFileSync(variantPath, "utf-8"),
+      );
+      installHooksFromVariant(sourceDir, targetDir, variant);
+    }
+
+    // Claude-specific non-hook adaptations
+    if (vendor === "claude") {
+      installClaudeAgents(agentsDir, targetDir);
+      installClaudeWorkflowRouters(workflowsDir, targetDir);
+      installClaudeRules(sourceDir, targetDir);
+      mergeClaudeMd(sourceDir);
     }
   }
 }

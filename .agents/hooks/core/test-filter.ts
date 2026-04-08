@@ -1,0 +1,132 @@
+// PreToolUse hook — Filter test output to show only failures
+// Works with: Claude Code, Codex CLI, Gemini CLI, Qwen Code
+
+import { resolveGitRoot, makePreToolOutput, type Vendor } from "./types.ts";
+import { join } from "node:path";
+
+// --- Vendor detection (same logic as keyword-detector.ts) ---
+
+function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  if (event === "BeforeTool") return "gemini";
+  if (event === "PreToolUse") {
+    if ("session_id" in input && !("sessionId" in input)) return "codex";
+  }
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}
+
+function getProjectDir(
+  vendor: Vendor,
+  input: Record<string, unknown>,
+): string {
+  let dir: string;
+  switch (vendor) {
+    case "codex":
+      dir = (input.cwd as string) || process.cwd();
+      break;
+    case "gemini":
+      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
+      break;
+    case "qwen":
+      dir = process.env.QWEN_PROJECT_DIR || process.cwd();
+      break;
+    default:
+      dir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+      break;
+  }
+  return resolveGitRoot(dir);
+}
+
+// --- Test runner patterns ---
+
+const TEST_PATTERNS = [
+  // JS/TS
+  /\bvitest\b/,
+  /\bjest\b/,
+  /\bmocha\b/,
+  /\bnpm\s+(run\s+)?test\b/,
+  /\bbun\s+(run\s+)?test\b/,
+  /\byarn\s+test\b/,
+  /\bpnpm\s+(run\s+)?test\b/,
+  // Python
+  /\bpytest\b/,
+  /\bpython\s+-m\s+unittest\b/,
+  // Go / Rust
+  /\bgo\s+test\b/,
+  /\bcargo\s+test\b/,
+  // Flutter / Dart
+  /\bflutter\s+test\b/,
+  /\bdart\s+test\b/,
+  // Swift / .NET / JVM
+  /\bswift\s+test\b/,
+  /\bdotnet\s+test\b/,
+  /\b(gradle|gradlew|\.\/gradlew)\s+test\b/,
+  /\bmvn\s+test\b/,
+  // Ruby / Elixir / PHP
+  /\brspec\b/,
+  /\bmix\s+test\b/,
+  /\bphpunit\b/,
+];
+
+// Commands that mention test runners but aren't running tests
+const EXCLUDE_PATTERNS = [
+  /\b(install|add|remove|uninstall|init)\b/,
+  /\b(cat|head|tail|less|more|wc)\b.*\.(test|spec)\./,
+];
+
+// --- Hook input ---
+
+interface PreToolUseInput {
+  tool_name: string;
+  tool_input: {
+    command?: string;
+    [key: string]: unknown;
+  };
+  hook_event_name?: string;
+  session_id?: string;
+  sessionId?: string;
+  cwd?: string;
+}
+
+// --- Main ---
+
+const raw = await Bun.stdin.text();
+if (!raw.trim()) process.exit(0);
+
+const input: PreToolUseInput = JSON.parse(raw);
+
+// Only intercept Bash tool calls
+if (input.tool_name !== "Bash") process.exit(0);
+
+const command = input.tool_input?.command;
+if (!command) process.exit(0);
+
+// Check if this is a test command
+const isTestCommand = TEST_PATTERNS.some((p) => p.test(command));
+if (!isTestCommand) process.exit(0);
+
+// Skip if it's a non-test use of test tool names (install, cat, etc.)
+const isExcluded = EXCLUDE_PATTERNS.some((p) => p.test(command));
+if (isExcluded) process.exit(0);
+
+// Detect vendor and resolve project dir
+const vendor = detectVendor(input);
+const projectDir = getProjectDir(vendor, input);
+const filterScript = join(
+  projectDir,
+  ".claude",
+  "hooks",
+  "filter-test-output.sh",
+);
+
+// Rewrite command to pipe through filter
+const filteredCmd = `set -o pipefail; (${command}) 2>&1 | bash "${filterScript}"`;
+
+// Return updated input with all original fields preserved
+const updatedInput: Record<string, unknown> = {
+  ...input.tool_input,
+  command: filteredCmd,
+};
+
+console.log(makePreToolOutput(vendor, updatedInput));

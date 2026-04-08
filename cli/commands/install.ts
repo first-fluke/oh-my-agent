@@ -29,7 +29,9 @@ import {
   installWorkflows,
   PRESETS,
   REPO,
+  writeVendorsToConfig,
 } from "../lib/skills.js";
+import type { CliVendor, VendorType } from "../types/index.js";
 import { downloadAndExtract } from "../lib/tarball.js";
 import { runMigrations } from "./migrations/index.js";
 
@@ -222,20 +224,39 @@ export async function install(): Promise<void> {
     }
   }
 
-  const selectedClis: CliTool[] = ["claude"];
-  const hasGithubDir = existsSync(join(cwd, ".github"));
-  if (hasGithubDir) {
-    selectedClis.push("copilot");
-  } else {
-    const copilotSelection = await p.confirm({
-      message: "Also create symlinks for GitHub Copilot? (.github/skills/)",
-      initialValue: false,
-    });
+  // CLI tools selection — default All, opt-out pattern
+  const vendorOptions: { value: CliVendor; label: string; hint: string }[] = [
+    {
+      value: "claude",
+      label: "Claude Code",
+      hint: "hooks + settings + CLAUDE.md",
+    },
+    { value: "codex", label: "Codex CLI", hint: "hooks + plugin" },
+    { value: "copilot", label: "GitHub Copilot", hint: "skill symlinks" },
+    { value: "gemini", label: "Gemini CLI", hint: "hooks + Serena MCP" },
+    { value: "qwen", label: "Qwen Code", hint: "hooks + settings" },
+  ];
 
-    if (!p.isCancel(copilotSelection) && copilotSelection) {
-      selectedClis.push("copilot");
-    }
+  const selectedVendors = await p.multiselect({
+    message: "CLI tools to configure:",
+    options: vendorOptions,
+    initialValues: vendorOptions.map((v) => v.value),
+    required: true,
+  });
+
+  if (p.isCancel(selectedVendors)) {
+    p.cancel("Cancelled.");
+    process.exit(0);
   }
+
+  const vendors = selectedVendors as CliVendor[];
+  const hookVendors = vendors.filter(
+    (v): v is VendorType => v !== "copilot",
+  );
+  const selectedClis: CliTool[] = [];
+  if (vendors.includes("claude")) selectedClis.push("claude");
+  if (vendors.includes("copilot")) selectedClis.push("copilot");
+
   spinner.start("Installing skills...");
 
   try {
@@ -255,15 +276,10 @@ export async function install(): Promise<void> {
 
       // Install vendor-specific adaptations (agents, routers, hooks, CLAUDE.md)
       spinner.start("Installing vendor adaptations...");
-      installVendorAdaptations(repoDir, cwd, [
-        "claude",
-        "codex",
-        "gemini",
-        "qwen",
-      ]);
+      installVendorAdaptations(repoDir, cwd, hookVendors);
       spinner.stop("Vendor adaptations installed!");
 
-      // Patch oma-config.yaml with selected language
+      // Patch oma-config.yaml with selected language and vendors
       const userPrefsPath = join(cwd, ".agents", "oma-config.yaml");
       if (existsSync(userPrefsPath)) {
         const prefs = readFileSync(userPrefsPath, "utf-8");
@@ -271,6 +287,7 @@ export async function install(): Promise<void> {
           userPrefsPath,
           prefs.replace(/^language:\s*.+$/m, `language: ${language as string}`),
         );
+        writeVendorsToConfig(cwd, vendors);
       }
 
       const bundledVersion = await getLocalVersion(repoDir);
@@ -331,46 +348,28 @@ export async function install(): Promise<void> {
       }
     }
 
-    // --- Git rerere Setup ---
+    // --- Git rerere Setup (auto-enable if not set) ---
     try {
-      const rerereEnabled = execSync("git config --get rerere.enabled", {
-        encoding: "utf-8",
+      execSync("git config --get rerere.enabled", {
         stdio: ["pipe", "pipe", "ignore"],
-      }).trim();
-
-      if (rerereEnabled === "true") {
-        p.log.success(pc.green("git rerere is already enabled."));
-      }
-    } catch {
-      const shouldEnable = await p.confirm({
-        message:
-          "Enable git rerere? (Recommended for multi-agent merge conflict reuse)",
-        initialValue: true,
       });
-
-      if (!p.isCancel(shouldEnable) && shouldEnable) {
-        try {
-          execSync("git config --global rerere.enabled true");
-          p.log.success(pc.green("git rerere enabled globally!"));
-        } catch (err) {
-          p.log.error(`Failed to enable git rerere: ${err}`);
-        }
+    } catch {
+      try {
+        execSync("git config --global rerere.enabled true");
+        p.log.success(pc.green("git rerere enabled globally!"));
+      } catch {
+        // Not a git repo or git not available — skip
       }
     }
 
-    // --- MCP Configuration Setup ---
+    // --- Auto-configure selected vendors (no individual prompts) ---
     const homeDir = process.env.HOME || process.env.USERPROFILE || "";
 
-    // --- Claude Code recommended settings ---
-    let hasClaude = false;
-    try {
-      execSync("claude --version", { stdio: "ignore" });
-      hasClaude = true;
-    } catch {}
-
-    const claudeSettingsPath = join(homeDir, ".claude", "settings.json");
-    if (hasClaude)
+    // Claude Code: apply recommended settings
+    if (vendors.includes("claude")) {
       try {
+        execSync("claude --version", { stdio: "ignore" });
+        const claudeSettingsPath = join(homeDir, ".claude", "settings.json");
         // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
         let claudeSettings: any = {};
         if (existsSync(claudeSettingsPath)) {
@@ -378,169 +377,108 @@ export async function install(): Promise<void> {
             readFileSync(claudeSettingsPath, "utf-8"),
           );
         }
-
         if (needsSettingsUpdate(claudeSettings)) {
-          const shouldApply = await p.confirm({
-            message: "Apply recommended Claude Code settings?",
-            initialValue: true,
-          });
-
-          if (!p.isCancel(shouldApply) && shouldApply) {
-            applyRecommendedSettings(claudeSettings);
-            writeFileSync(
-              claudeSettingsPath,
-              `${JSON.stringify(claudeSettings, null, 2)}\n`,
-            );
-            p.log.success(
-              pc.green("Claude Code recommended settings applied!"),
-            );
-          }
+          applyRecommendedSettings(claudeSettings);
+          writeFileSync(
+            claudeSettingsPath,
+            `${JSON.stringify(claudeSettings, null, 2)}\n`,
+          );
+          p.log.success(pc.green("Claude Code recommended settings applied!"));
         }
-      } catch (err) {
-        p.log.warn(`Could not configure Claude Code settings: ${err}`);
+      } catch {
+        // Claude Code not installed — skip
       }
+    }
 
-    // --- Codex Plugin for Claude Code ---
-    if (hasClaude) {
-      let hasCodex = false;
+    // Codex: install plugin for Claude Code
+    if (vendors.includes("codex")) {
       try {
+        execSync("claude --version", { stdio: "ignore" });
         execSync("codex --version", { stdio: "ignore" });
-        hasCodex = true;
-      } catch {}
-
-      if (hasCodex) {
-        let codexPluginInstalled = false;
-        try {
-          const pluginList = execSync("claude plugin list", {
-            encoding: "utf-8",
-            stdio: ["pipe", "pipe", "ignore"],
+        const pluginList = execSync("claude plugin list", {
+          encoding: "utf-8",
+          stdio: ["pipe", "pipe", "ignore"],
+        });
+        if (!pluginList.includes("codex@openai-codex")) {
+          execSync("claude plugin marketplace add openai/codex-plugin-cc", {
+            stdio: "ignore",
           });
-          codexPluginInstalled = pluginList.includes("codex@openai-codex");
-        } catch {}
+          execSync("claude plugin install codex@openai-codex", {
+            stdio: "ignore",
+          });
+          p.log.success(pc.green("Codex plugin installed for Claude Code!"));
+        }
+      } catch {
+        // CLI not available — skip
+      }
+    }
 
-        if (!codexPluginInstalled) {
-          try {
-            execSync("claude plugin marketplace add openai/codex-plugin-cc", {
-              stdio: "ignore",
-            });
-            execSync("claude plugin install codex@openai-codex", {
-              stdio: "ignore",
-            });
-            p.log.success(pc.green("Codex plugin installed for Claude Code!"));
-          } catch (err) {
-            p.log.warn(`Could not install Codex plugin: ${err}`);
+    // Gemini: configure Serena MCP bridge
+    if (vendors.includes("gemini")) {
+      // Antigravity bridge
+      const mcpConfigPath = join(
+        homeDir,
+        ".gemini",
+        "antigravity",
+        "mcp_config.json",
+      );
+      try {
+        if (existsSync(mcpConfigPath)) {
+          // biome-ignore lint/suspicious/noExplicitAny: Config file is unstructured
+          const mcpConfig: any = JSON.parse(
+            readFileSync(mcpConfigPath, "utf-8"),
+          );
+          if (mcpConfig?.mcpServers) {
+            const serena = mcpConfig.mcpServers.serena;
+            const bridgeCmd = "oh-my-agent@latest";
+            const configured =
+              serena?.command === "npx" &&
+              Array.isArray(serena?.args) &&
+              serena.args.includes(bridgeCmd);
+            if (!configured) {
+              mcpConfig.mcpServers.serena = {
+                command: "npx",
+                args: [
+                  "-y",
+                  "oh-my-agent@latest",
+                  "bridge",
+                  "http://localhost:12341/mcp",
+                ],
+                disabled: false,
+              };
+              writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+              p.log.success(pc.green("Serena MCP bridge configured!"));
+            }
           }
         }
+      } catch {
+        // Config not available — skip
       }
-    }
 
-    const mcpConfigPath = join(
-      homeDir,
-      ".gemini",
-      "antigravity",
-      "mcp_config.json",
-    );
-
-    // biome-ignore lint/suspicious/noExplicitAny: Config file is unstructured
-    let mcpConfig: any = null;
-    let configExists = false;
-
-    try {
-      if (existsSync(mcpConfigPath)) {
-        const content = readFileSync(mcpConfigPath, "utf-8");
-        mcpConfig = JSON.parse(content);
-        configExists = true;
-      }
-    } catch (_e) {
-      // Ignore errors, just assume config doesn't exist or is invalid
-    }
-
-    if (configExists && mcpConfig && mcpConfig.mcpServers) {
-      const serenaConfig = mcpConfig.mcpServers.serena;
-      const bridgeCommand = "oh-my-agent@latest";
-
-      const isBridgeConfigured =
-        serenaConfig &&
-        serenaConfig.command === "npx" &&
-        Array.isArray(serenaConfig.args) &&
-        serenaConfig.args.includes(bridgeCommand) &&
-        serenaConfig.args.includes("bridge");
-
-      if (!isBridgeConfigured) {
-        const shouldConfigure = await p.confirm({
-          message:
-            "Configure Serena MCP with bridge? (Required for full functionality)",
-          initialValue: true,
-        });
-
-        if (p.isCancel(shouldConfigure)) {
-          // User cancelled, do nothing
-        } else if (shouldConfigure) {
-          mcpConfig.mcpServers.serena = {
-            command: "npx",
-            args: [
-              "-y",
-              "oh-my-agent@latest",
-              "bridge",
-              "http://localhost:12341/mcp",
-            ],
-            disabled: false,
-          };
-
-          try {
-            writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
-            p.log.success(pc.green("Serena MCP configured successfully!"));
-          } catch (err) {
-            p.log.error(`Failed to update MCP config: ${err}`);
-          }
-        }
-      }
-    }
-
-    // --- Gemini CLI Configuration Setup ---
-    const geminiConfigPath = join(homeDir, ".gemini", "settings.json");
-    // biome-ignore lint/suspicious/noExplicitAny: Config file is unstructured
-    let geminiConfig: any = null;
-    let geminiConfigExists = false;
-
-    try {
-      if (existsSync(geminiConfigPath)) {
-        const content = readFileSync(geminiConfigPath, "utf-8");
-        geminiConfig = JSON.parse(content);
-        geminiConfigExists = true;
-      }
-    } catch (_e) {
-      // Ignore
-    }
-
-    if (geminiConfigExists && geminiConfig && geminiConfig.mcpServers) {
-      const serenaConfig = geminiConfig.mcpServers.serena;
-      const isSerenaConfigured =
-        serenaConfig && serenaConfig.url === "http://localhost:12341/mcp";
-
-      if (!isSerenaConfigured) {
-        const shouldConfigureGemini = await p.confirm({
-          message: "Configure Serena for Gemini CLI? (HTTP Mode)",
-          initialValue: true,
-        });
-
-        if (p.isCancel(shouldConfigureGemini)) {
-          // User cancelled
-        } else if (shouldConfigureGemini) {
-          geminiConfig.mcpServers.serena = {
-            url: "http://localhost:12341/mcp",
-          };
-
-          try {
+      // Gemini CLI Serena (HTTP mode)
+      const geminiConfigPath = join(homeDir, ".gemini", "settings.json");
+      try {
+        if (existsSync(geminiConfigPath)) {
+          // biome-ignore lint/suspicious/noExplicitAny: Config file is unstructured
+          const geminiConfig: any = JSON.parse(
+            readFileSync(geminiConfigPath, "utf-8"),
+          );
+          if (
+            geminiConfig?.mcpServers &&
+            geminiConfig.mcpServers.serena?.url !== "http://localhost:12341/mcp"
+          ) {
+            geminiConfig.mcpServers.serena = {
+              url: "http://localhost:12341/mcp",
+            };
             writeFileSync(
               geminiConfigPath,
               JSON.stringify(geminiConfig, null, 2),
             );
-            p.log.success(pc.green("Gemini CLI configured successfully!"));
-          } catch (err) {
-            p.log.error(`Failed to update Gemini config: ${err}`);
+            p.log.success(pc.green("Gemini CLI Serena configured!"));
           }
         }
+      } catch {
+        // Config not available — skip
       }
     }
 

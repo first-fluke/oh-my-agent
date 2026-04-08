@@ -1,0 +1,36 @@
+{
+  "$schema": "./hook-variant.schema.json",
+  "vendor": "claude",
+  "hookDir": ".claude/hooks",
+  "settingsFile": ".claude/settings.json",
+  "projectDirEnv": "CLAUDE_PROJECT_DIR",
+  "runtime": "bun",
+  "events": {
+    "UserPromptSubmit": {
+      "hook": "keyword-detector.ts",
+      "timeout": 5
+    },
+    "PreToolUse": {
+      "hook": "test-filter.ts",
+      "matcher": "Bash",
+      "timeout": 5
+    },
+    "Stop": {
+      "hook": "persistent-mode.ts",
+      "timeout": 5
+    }
+  },
+  "statusLine": {
+    "hook": "hud.ts"
+  },
+  "extra": {
+    "permissions": {
+      "allow": [
+        "Bash(bun run:*)",
+        "Bash(bunx tsx:*)",
+        "Bash(git add:*)",
+        "mcp__serena__*"
+      ]
+    }
+  }
+}

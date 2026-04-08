@@ -1,0 +1,30 @@
+{
+  "$schema": "./hook-variant.schema.json",
+  "vendor": "codex",
+  "hookDir": ".codex/hooks",
+  "settingsFile": ".codex/hooks.json",
+  "projectDirEnv": null,
+  "runtime": "bun",
+  "events": {
+    "UserPromptSubmit": {
+      "hook": "keyword-detector.ts",
+      "timeout": 5
+    },
+    "PreToolUse": {
+      "hook": "test-filter.ts",
+      "matcher": "Bash",
+      "timeout": 5
+    },
+    "Stop": {
+      "hook": "persistent-mode.ts",
+      "timeout": 5
+    }
+  },
+  "featureFlags": {
+    "file": ".codex/config.toml",
+    "section": "features",
+    "flags": {
+      "codex_hooks": true
+    }
+  }
+}

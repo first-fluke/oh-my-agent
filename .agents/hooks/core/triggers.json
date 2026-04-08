@@ -1,0 +1,237 @@
+{
+  "workflows": {
+    "orchestrate": {
+      "persistent": true,
+      "keywords": {
+        "*": ["orchestrate"],
+        "en": ["parallel", "do everything", "run everything", "do it all", "run all tasks", "automate", "execute everything", "handle everything"],
+        "ko": ["자동 실행", "자동으로 실행", "자동으로 해", "병렬 실행", "전부 실행", "전부 해", "전부 돌려", "자동으로 해줘", "병렬로 해줘", "전부 해줘", "전부 돌려줘", "한번에 다 해줘", "한번에 해줘", "한꺼번에 해", "알아서 해줘", "자동으로 처리해"],
+        "ja": ["オーケストレート", "並列実行", "自動実行", "全部実行", "全部やって", "自動でやって", "並列でやって", "全部お願い", "まとめてやって"],
+        "zh": ["编排", "并行执行", "自动执行", "全部执行", "全部做", "自动处理", "一起做", "全做了", "帮我全做"],
+        "es": ["orquestar", "paralelo", "ejecutar todo", "hazlo todo", "ejecuta todo", "automatiza", "haz todo"],
+        "fr": ["orchestrer", "parallèle", "tout exécuter", "fais tout", "exécute tout", "automatise", "gère tout"],
+        "de": ["orchestrieren", "parallel", "alles ausführen", "mach alles", "alles erledigen", "automatisieren", "alles auf einmal"],
+        "pt": ["orquestrar", "paralelo", "executar tudo", "faça tudo", "execute tudo", "automatize", "resolva tudo"],
+        "ru": ["оркестровать", "параллельно", "выполнить всё", "сделай всё", "запусти всё", "автоматизируй", "всё сразу"],
+        "nl": ["orkestreren", "parallel", "alles uitvoeren", "doe alles", "voer alles uit", "automatiseer", "alles tegelijk"],
+        "pl": ["orkiestrować", "równolegle", "wykonaj wszystko", "zrób wszystko", "uruchom wszystko", "zautomatyzuj", "wszystko naraz"]
+      }
+    },
+    "ultrawork": {
+      "persistent": true,
+      "keywords": {
+        "*": ["ultrawork", "ulw"]
+      }
+    },
+    "plan": {
+      "persistent": false,
+      "keywords": {
+        "*": ["task breakdown"],
+        "en": ["plan", "make a plan", "create a plan", "break down", "analyze requirements", "plan this", "decompose"],
+        "ko": ["계획", "요구사항 분석", "스펙 분석", "스펙 정리", "계획 세워줘", "계획 짜줘", "분석해줘", "분석해", "태스크 분해", "작업 분해", "기획", "기획해줘", "설계해줘", "스펙 정리해줘", "요구사항 정리해줘", "플랜 짜줘"],
+        "ja": ["計画", "要件分析", "タスク分解", "計画を立てて", "計画して", "分析して", "分解して", "設計して", "プランを作って"],
+        "zh": ["计划", "需求分析", "任务分解", "制定计划", "做个计划", "分析一下", "拆分任务", "规划一下"],
+        "es": ["plan", "planificar", "análisis de requisitos", "haz un plan", "crea un plan", "analiza", "descomponer", "planifica esto"],
+        "fr": ["plan", "planifier", "analyse des exigences", "fais un plan", "crée un plan", "analyse", "décompose", "planifie"],
+        "de": ["plan", "planen", "anforderungsanalyse", "mach einen plan", "erstelle einen plan", "analysiere", "zerlege", "plane das"],
+        "pt": ["plano", "planejar", "análise de requisitos", "faça um plano", "crie um plano", "analise", "decomponha", "planeje isso"],
+        "ru": ["план", "планировать", "анализ требований", "составь план", "создай план", "проанализируй", "разбей на задачи", "спланируй"],
+        "nl": ["plan", "plannen", "vereistenanalyse", "maak een plan", "analyseer", "splits op", "plan dit"],
+        "pl": ["plan", "planować", "analiza wymagań", "zrób plan", "stwórz plan", "przeanalizuj", "rozłóż na zadania", "zaplanuj to"]
+      }
+    },
+    "review": {
+      "persistent": false,
+      "keywords": {
+        "*": ["code review", "security audit", "security review"],
+        "en": ["review", "review this", "review my code", "check my code", "audit", "inspect", "code check"],
+        "ko": ["리뷰", "코드 검토", "보안 검토", "성능 검토", "리뷰해줘", "검토해줘", "코드 검토해줘", "한번 봐줘", "코드 봐줘", "점검해줘", "코드 점검", "보안 감사", "성능 분석"],
+        "ja": ["レビュー", "コードレビュー", "セキュリティ監査", "レビューして", "確認して", "コードを見て", "チェックして", "点検して", "コード確認"],
+        "zh": ["审查", "代码审查", "安全审计", "审查一下", "检查一下", "看看代码", "检查代码", "代码检查", "安全检查"],
+        "es": ["revisión", "revisar código", "auditoría de seguridad", "revisa", "revisa esto", "revisa mi código", "verifica", "inspecciona", "chequea el código"],
+        "fr": ["revue", "revue de code", "audit de sécurité", "révise", "vérifie", "regarde mon code", "inspecte", "vérifie le code"],
+        "de": ["review", "code-review", "sicherheitsaudit", "überprüfe", "prüfe", "schau dir den code an", "kontrolliere", "code prüfen"],
+        "pt": ["revisão", "revisar código", "auditoria de segurança", "revise", "verifique", "confira", "olhe o código", "cheque o código"],
+        "ru": ["ревью", "обзор кода", "аудит безопасности", "проверь", "посмотри код", "проведи ревью", "проверь код", "осмотри код"],
+        "nl": ["review", "code review", "beveiligingsaudit", "bekijk", "controleer", "check de code", "inspecteer", "beoordeel"],
+        "pl": ["przegląd", "przegląd kodu", "audyt bezpieczeństwa", "sprawdź", "sprawdź to", "przejrzyj kod", "skontroluj", "zweryfikuj kod"]
+      }
+    },
+    "debug": {
+      "persistent": false,
+      "keywords": {
+        "*": ["debug"],
+        "en": ["fix bug", "fix error", "fix crash", "fix the bug", "fix the error", "fix the crash", "fix", "fix it", "fix this", "troubleshoot", "broken", "not working", "doesn't work", "debug this", "find the bug"],
+        "ko": ["디버그", "버그 수정", "에러 수정", "오류 수정", "버그 찾아", "버그 고쳐", "버그 잡아", "고쳐줘", "고쳐", "수정해줘", "수정해", "에러 고쳐줘", "에러 고쳐", "에러 잡아줘", "오류 고쳐줘", "오류 고쳐", "오류 잡아줘", "버그 고쳐줘", "버그 수정해줘", "버그 잡아줘", "에러 수정해줘", "에러 찾아줘", "오류 수정해줘", "오류 찾아줘", "왜 안돼", "안 돼", "동작 안해", "작동 안해", "깨졌어", "터졌어", "에러남", "에러나"],
+        "ja": ["デバッグ", "バグ修正", "エラー修正", "直して", "修正して", "壊れた", "動かない", "エラーが出る", "バグを直して", "エラーを直して", "動作しない", "クラッシュ"],
+        "zh": ["调试", "修复 bug", "修复错误", "修复崩溃", "修一下", "修复", "坏了", "不工作", "不能用", "出错了", "报错", "有 bug", "崩溃了"],
+        "es": ["depurar", "corregir bug", "corregir error", "arregla", "arréglalo", "está roto", "no funciona", "no va", "tiene un bug", "corrige esto", "repara"],
+        "fr": ["déboguer", "corriger bug", "corriger erreur", "répare", "corrige", "c'est cassé", "ça ne marche pas", "ne fonctionne pas", "a un bug", "corrige ça"],
+        "de": ["debuggen", "bug beheben", "fehler beheben", "repariere", "ist kaputt", "funktioniert nicht", "geht nicht", "hat einen bug", "behebe das", "fixen"],
+        "pt": ["depurar", "corrigir bug", "corrigir erro", "conserte", "arrume", "está quebrado", "não funciona", "tem um bug", "corrija isso", "repare"],
+        "ru": ["отладка", "исправить баг", "исправить ошибку", "почини", "исправь", "сломалось", "не работает", "ошибка", "есть баг", "исправь это", "починить"],
+        "nl": ["debuggen", "bug oplossen", "fout oplossen", "repareer", "is kapot", "werkt niet", "doet het niet", "heeft een bug", "los dit op", "fixen"],
+        "pl": ["debugować", "naprawić bug", "naprawić błąd", "napraw", "napraw to", "jest zepsuty", "nie działa", "ma buga", "popraw to", "napraw błąd"]
+      }
+    },
+    "brainstorm": {
+      "persistent": false,
+      "keywords": {
+        "*": ["brainstorm"],
+        "en": ["ideate", "explore design", "ideas", "come up with", "what if", "how about", "explore options", "explore ideas"],
+        "ko": ["브레인스토밍", "아이디어", "설계 탐색", "디자인 탐색", "아이디어 좀", "아이디어 내줘", "같이 생각해보자", "뭐가 좋을까", "어떻게 하면 좋을까", "생각해봐", "구상", "구상해줘"],
+        "ja": ["ブレインストーミング", "アイデア", "設計探索", "アイデアを出して", "考えてみて", "どうかな", "アイデアちょうだい", "一緒に考えよう"],
+        "zh": ["头脑风暴", "创意", "设计探索", "想想", "出主意", "有什么想法", "想个办法", "出点子", "集思广益"],
+        "es": ["lluvia de ideas", "idear", "explorar diseño", "piensa en", "qué tal si", "ideas para", "sugiere", "se te ocurre"],
+        "fr": ["brainstorming", "idéer", "explorer le design", "réfléchis", "et si", "des idées pour", "propose", "imagine"],
+        "de": ["brainstorming", "ideenfindung", "design erkunden", "denk nach", "was wäre wenn", "ideen für", "vorschläge", "lass uns überlegen"],
+        "pt": ["brainstorming", "idear", "explorar design", "pense em", "e se", "ideias para", "sugira", "imagine"],
+        "ru": ["мозговой штурм", "идеи", "исследовать дизайн", "подумай", "а что если", "идеи для", "предложи", "давай придумаем"],
+        "nl": ["brainstormen", "ideeën", "ontwerp verkennen", "bedenk", "wat als", "ideeën voor", "stel voor", "laten we nadenken"],
+        "pl": ["burza mózgów", "pomysły", "eksploracja projektu", "pomyśl", "co jeśli", "pomysły na", "zaproponuj", "zastanówmy się"]
+      }
+    },
+    "work": {
+      "persistent": true,
+      "keywords": {
+        "*": ["work", "step by step"],
+        "en": ["one by one", "guide me", "walk me through", "manual mode", "one step at a time"],
+        "ko": ["단계별", "단계별로", "단계별로 해줘", "단계별로 진행해줘", "하나씩 해줘", "순서대로 해줘", "차근차근", "차근차근 해줘", "수동으로 해줘"],
+        "ja": ["ステップバイステップ", "一歩ずつ", "ガイドして", "手動で", "一つずつ", "順番にやって", "手順を教えて"],
+        "zh": ["逐步", "一步一步", "指导我", "手动", "一个一个", "按顺序", "带我做"],
+        "es": ["paso a paso", "guíame", "uno por uno", "modo manual", "de a uno", "llévame paso a paso"],
+        "fr": ["étape par étape", "guide-moi", "un par un", "mode manuel", "accompagne-moi", "montre-moi étape par étape"],
+        "de": ["schritt für schritt", "führe mich", "eins nach dem anderen", "manueller modus", "zeig mir wie", "der reihe nach"],
+        "pt": ["passo a passo", "me guie", "um por um", "modo manual", "me acompanhe", "me mostre passo a passo"],
+        "ru": ["шаг за шагом", "направь меня", "по одному", "ручной режим", "покажи по шагам", "веди меня"],
+        "nl": ["stap voor stap", "begeleid me", "een voor een", "handmatige modus", "leid me erdoor", "stap voor stap uitleg"],
+        "pl": ["krok po kroku", "poprowadź mnie", "jeden po drugim", "tryb ręczny", "przeprowadź mnie", "pokaż krok po kroku"]
+      }
+    },
+    "deepinit": {
+      "persistent": false,
+      "keywords": {
+        "*": ["deepinit"],
+        "en": ["init project", "initialize", "setup project", "new project", "scaffold", "bootstrap"],
+        "ko": ["프로젝트 초기화", "코드베이스 초기화", "프로젝트 시작", "프로젝트 설정", "초기화해줘", "새 프로젝트", "프로젝트 만들어줘", "셋업", "셋업해줘"],
+        "ja": ["プロジェクト初期化", "プロジェクト開始", "新しいプロジェクト", "セットアップ", "初期化して", "プロジェクトを作って", "プロジェクト設定"],
+        "zh": ["项目初始化", "新项目", "设置项目", "搭建项目", "初始化", "创建项目", "项目配置"],
+        "es": ["inicializar proyecto", "nuevo proyecto", "configurar proyecto", "inicializa", "crea un proyecto", "monta el proyecto"],
+        "fr": ["initialiser projet", "nouveau projet", "configurer projet", "initialise", "crée un projet", "monte le projet"],
+        "de": ["projekt initialisieren", "neues projekt", "projekt einrichten", "initialisiere", "erstelle ein projekt", "projekt aufsetzen"],
+        "pt": ["inicializar projeto", "novo projeto", "configurar projeto", "inicialize", "crie um projeto", "monte o projeto"],
+        "ru": ["инициализация проекта", "новый проект", "настроить проект", "инициализируй", "создай проект", "настрой проект"],
+        "nl": ["project initialiseren", "nieuw project", "project opzetten", "initialiseer", "maak een project", "project configureren"],
+        "pl": ["inicjalizacja projektu", "nowy projekt", "skonfiguruj projekt", "zainicjalizuj", "stwórz projekt", "przygotuj projekt"]
+      }
+    },
+    "ralph": {
+      "persistent": true,
+      "keywords": {
+        "*": ["ralph"],
+        "en": [
+          "don't stop", "do not stop", "must complete",
+          "until done", "keep going", "finish everything",
+          "complete everything", "run to completion",
+          "no stopping", "see it through",
+          "don't give up", "never stop", "carry on",
+          "push through", "finish it all", "complete all"
+        ],
+        "ko": [
+          "랄프", "멈추지마", "멈추지 말고", "끝까지",
+          "완료될때까지", "될때까지 해", "끝날때까지",
+          "다 끝내", "다 해", "전부 완료", "끝까지 해",
+          "중단하지마", "끝장내",
+          "끝까지 해줘", "다 끝내줘", "계속해", "계속 해줘",
+          "그만두지마", "포기하지마", "멈추지 말아줘"
+        ],
+        "ja": [
+          "止まるな", "完了まで", "最後まで",
+          "全部終わらせて", "止めないで", "完了するまで",
+          "最後までやって", "諦めないで", "続けて",
+          "中断しないで", "全部やりきって"
+        ],
+        "zh": [
+          "不要停", "直到完成", "做到完成",
+          "全部完成", "别停", "做完为止",
+          "一直做到完", "别放弃", "继续做",
+          "不要中断", "全部做完"
+        ],
+        "es": [
+          "no pares", "hasta completar", "hasta terminar",
+          "termina todo", "no te detengas", "completa todo",
+          "no abandones", "sigue adelante", "acaba todo"
+        ],
+        "fr": [
+          "n'arrête pas", "jusqu'à complétion", "jusqu'au bout",
+          "termine tout", "ne t'arrête pas", "complète tout",
+          "n'abandonne pas", "continue", "finis tout"
+        ],
+        "de": [
+          "hör nicht auf", "bis zur fertigstellung", "bis es fertig ist",
+          "alles fertigstellen", "nicht aufhören", "mach alles fertig",
+          "gib nicht auf", "mach weiter", "alles abschließen"
+        ],
+        "pt": [
+          "não pare", "até completar", "até terminar",
+          "termine tudo", "complete tudo", "não pare até terminar",
+          "não desista", "continue", "finalize tudo"
+        ],
+        "ru": [
+          "не останавливайся", "до завершения", "пока не закончишь",
+          "заверши всё", "не прекращай", "доделай всё",
+          "не сдавайся", "продолжай", "закончи всё"
+        ],
+        "nl": [
+          "stop niet", "tot voltooiing", "tot het klaar is",
+          "maak alles af", "niet stoppen", "alles afronden",
+          "geef niet op", "ga door", "maak alles klaar"
+        ],
+        "pl": [
+          "nie zatrzymuj się", "do ukończenia", "aż skończysz",
+          "dokończ wszystko", "nie przerywaj", "skończ wszystko",
+          "nie poddawaj się", "kontynuuj", "zakończ wszystko"
+        ]
+      }
+    },
+    "design": {
+      "persistent": false,
+      "keywords": {
+        "*": ["design system", "DESIGN.md", "design token"],
+        "en": ["design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism", "style guide", "theme", "color scheme", "visual design", "layout", "wireframe", "mockup"],
+        "ko": ["디자인", "랜딩페이지", "디자인 시스템", "UI 디자인", "색상 팔레트", "타이포그래피", "다크 테마", "반응형", "디자인해줘", "디자인 만들어줘", "UI 만들어줘", "화면 디자인", "페이지 디자인", "색상 정해줘", "테마 만들어줘"],
+        "ja": ["デザイン", "ランディングページ", "デザインシステム", "UIデザイン", "カラーパレット", "タイポグラフィ", "ダークテーマ", "レスポンシブ", "デザインして", "デザインを作って", "UIを作って", "画面デザイン", "レイアウト", "ワイヤーフレーム", "モックアップ"],
+        "zh": ["设计", "着陆页", "设计系统", "UI设计", "配色方案", "字体排版", "暗色主题", "响应式", "设计一下", "做个设计", "做UI", "页面设计", "布局", "线框图", "原型"],
+        "es": ["diseño", "página de aterrizaje", "sistema de diseño", "diseño UI", "paleta de colores", "tipografía", "tema oscuro", "diseño responsivo", "diseña", "crea un diseño", "haz el diseño", "maqueta"],
+        "fr": ["design", "page d'atterrissage", "système de design", "design UI", "palette de couleurs", "typographie", "thème sombre", "design responsif", "fais le design", "crée un design", "maquette"],
+        "de": ["Design", "Landingpage", "Designsystem", "UI-Design", "Farbpalette", "Typografie", "dunkles Theme", "responsives Design", "gestalte", "erstelle ein Design", "mach das Design", "Wireframe", "Mockup"],
+        "pt": ["design", "página de destino", "sistema de design", "design UI", "paleta de cores", "tipografia", "tema escuro", "design responsivo", "faça o design", "crie um design", "monte o design", "wireframe"],
+        "ru": ["дизайн", "лендинг", "дизайн-система", "UI дизайн", "цветовая палитра", "типографика", "тёмная тема", "адаптивный дизайн", "сделай дизайн", "создай дизайн", "оформи", "макет", "wireframe"],
+        "nl": ["ontwerp", "landingspagina", "ontwerpsysteem", "UI-ontwerp", "kleurenpalet", "typografie", "donker thema", "responsief ontwerp", "ontwerp dit", "maak een ontwerp", "wireframe", "mockup"],
+        "pl": ["projekt", "strona docelowa", "system projektowy", "projekt UI", "paleta kolorów", "typografia", "ciemny motyw", "responsywny projekt", "zaprojektuj", "stwórz projekt", "zrób design", "wireframe", "makieta"]
+      }
+    }
+  },
+  "informationalPatterns": {
+    "en": ["what is", "what are", "how to", "how does", "explain", "describe", "tell me about", "keyword", "false positive", "detected", "detector"],
+    "ko": ["뭐야", "뭐임", "무엇", "어떻게", "설명해", "알려줘", "키워드", "감지", "오탐"],
+    "ja": ["とは", "って何", "どうやって", "説明して", "キーワード", "検出", "誤検出"],
+    "zh": ["是什么", "什么是", "怎么", "解释", "关键词", "检测", "误报"],
+    "es": ["qué es", "cómo", "explica", "palabra clave", "falso positivo", "detectado"],
+    "fr": ["c'est quoi", "comment", "explique", "mot-clé", "faux positif", "détecté"],
+    "de": ["was ist", "wie", "erkläre", "schlüsselwort", "falsch positiv", "erkannt"],
+    "pt": ["o que é", "como", "explique", "palavra-chave", "falso positivo", "detectado"],
+    "ru": ["что такое", "как", "объясни", "ключевое слово", "ложное срабатывание", "обнаружено"],
+    "nl": ["wat is", "hoe", "leg uit", "sleutelwoord", "vals positief", "gedetecteerd"],
+    "pl": ["co to", "jak", "wyjaśnij", "słowo kluczowe", "fałszywy alarm", "wykryto"]
+  },
+  "excludedWorkflows": ["commit", "tools", "stack-set", "exec-plan"],
+  "cjkScripts": ["ko", "ja", "zh"],
+  "extensionRouting": {
+    "frontend-engineer": ["tsx", "jsx", "css", "scss", "less", "vue", "svelte", "html"],
+    "backend-engineer": ["go", "py", "java", "rs", "rb", "php", "controller", "service", "resolver"],
+    "db-engineer": ["sql", "prisma", "graphql", "migration"],
+    "mobile-engineer": ["dart", "swift", "kt", "xib", "storyboard"],
+    "designer": ["figma", "sketch", "svg"]
+  }
+}

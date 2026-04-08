@@ -79,6 +79,9 @@ export interface SkillsRegistry {
 
 export type VendorType = "claude" | "codex" | "gemini" | "qwen";
 
+/** All CLI tools including non-hook vendors. */
+export type CliVendor = VendorType | "copilot";
+
 export interface AgentAbstract {
   name: string;
   description: string;

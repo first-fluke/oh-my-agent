@@ -10,12 +10,7 @@ export const migrateOmaConfig: Migration = {
   name: "003-oma-config",
   up(cwd: string): string[] {
     const actions: string[] = [];
-    const legacyPath = join(
-      cwd,
-      ".agents",
-      "config",
-      "user-preferences.yaml",
-    );
+    const legacyPath = join(cwd, ".agents", "config", "user-preferences.yaml");
     const newPath = join(cwd, ".agents", "oma-config.yaml");
 
     if (!existsSync(newPath) && existsSync(legacyPath)) {

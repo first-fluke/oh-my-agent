@@ -1,0 +1,23 @@
+{
+  "$schema": "./hook-variant.schema.json",
+  "vendor": "qwen",
+  "hookDir": ".qwen/hooks",
+  "settingsFile": ".qwen/settings.json",
+  "projectDirEnv": "QWEN_PROJECT_DIR",
+  "runtime": "bun",
+  "events": {
+    "UserPromptSubmit": {
+      "hook": "keyword-detector.ts",
+      "timeout": 5
+    },
+    "PreToolUse": {
+      "hook": "test-filter.ts",
+      "matcher": "Bash",
+      "timeout": 5
+    },
+    "Stop": {
+      "hook": "persistent-mode.ts",
+      "timeout": 5
+    }
+  }
+}

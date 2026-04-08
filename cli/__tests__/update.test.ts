@@ -124,11 +124,10 @@ describe("hasInstalledProject", () => {
       recursive: true,
     });
     mkdirSync(join(root, ".agents", "workflows"), { recursive: true });
-    writeFileSync(
-      join(root, ".agents", "oma-config.yaml"),
-      "language: ko\n",
-      { encoding: "utf-8", flag: "w" },
-    );
+    writeFileSync(join(root, ".agents", "oma-config.yaml"), "language: ko\n", {
+      encoding: "utf-8",
+      flag: "w",
+    });
 
     expect(hasInstalledProject(root)).toBe(true);
   });

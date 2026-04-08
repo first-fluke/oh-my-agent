@@ -37,21 +37,21 @@ Pick a preset and you're ready:
 
 | Agent | What They Do |
 |-------|-------------|
-| **oma-brainstorm** | Explores ideas before you commit to building |
-| **oma-pm** | Plans tasks, breaks down requirements, defines API contracts |
-| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-backend** | APIs in Python, Node.js, or Rust |
-| **oma-db** | Schema design, migrations, indexing, vector DB |
-| **oma-mobile** | Flutter cross-platform apps |
-| **oma-design** | Design systems, tokens, accessibility, responsive |
-| **oma-qa** | OWASP security, performance, accessibility review |
-| **oma-debug** | Root cause analysis, fixes, regression tests |
-| **oma-tf-infra** | Multi-cloud Terraform IaC |
-| **oma-dev-workflow** | CI/CD, releases, monorepo automation |
-| **oma-translator** | Natural multilingual translation |
-| **oma-orchestrator** | Parallel agent execution via CLI |
+| **oma-brainstorm** | Explores ideas before you commit to building |
 | **oma-commit** | Clean conventional commits |
+| **oma-db** | Schema design, migrations, indexing, vector DB |
+| **oma-debug** | Root cause analysis, fixes, regression tests |
+| **oma-design** | Design systems, tokens, accessibility, responsive |
+| **oma-dev-workflow** | CI/CD, releases, monorepo automation |
+| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
+| **oma-mobile** | Flutter cross-platform apps |
+| **oma-orchestrator** | Parallel agent execution via CLI |
 | **oma-pdf** | PDF to Markdown conversion |
+| **oma-pm** | Plans tasks, breaks down requirements, defines API contracts |
+| **oma-qa** | OWASP security, performance, accessibility review |
+| **oma-tf-infra** | Multi-cloud Terraform IaC |
+| **oma-translator** | Natural multilingual translation |
 
 ## How It Works
 

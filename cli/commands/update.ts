@@ -33,8 +33,10 @@ import {
   detectExistingCliSymlinkDirs,
   getInstalledSkillNames,
   installVendorAdaptations,
+  readVendorsFromConfig,
   REPO,
 } from "../lib/skills.js";
+import type { VendorType } from "../types/index.js";
 import { downloadAndExtract } from "../lib/tarball.js";
 import { runMigrations } from "./migrations/index.js";
 
@@ -261,13 +263,12 @@ export async function update(force = false, ci = false): Promise<void> {
 
       await saveLocalVersion(cwd, remoteManifest.version);
 
-      // Always update all vendor adaptations (hooks, settings, CLAUDE.md)
-      installVendorAdaptations(repoDir, cwd, [
-        "claude",
-        "codex",
-        "gemini",
-        "qwen",
-      ]);
+      // Update vendor adaptations for configured vendors (from oma-config.yaml)
+      const configuredVendors = readVendorsFromConfig(cwd);
+      const hookVendors = configuredVendors.filter(
+        (v): v is VendorType => v !== "copilot",
+      );
+      installVendorAdaptations(repoDir, cwd, hookVendors);
 
       // --- Serena Project Setup ---
       {
@@ -275,17 +276,14 @@ export async function update(force = false, ci = false): Promise<void> {
         ensureSerenaProject(cwd, serenaLangs);
       }
 
-      // --- Claude Code recommended settings (user-level) ---
+      // --- Auto-configure vendors (no prompts, based on saved config) ---
       const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-      let hasClaude = false;
-      try {
-        execSync("claude --version", { stdio: "ignore" });
-        hasClaude = true;
-      } catch {}
 
-      const claudeSettingsPath = join(homeDir, ".claude", "settings.json");
-      if (hasClaude)
+      // Claude Code: apply recommended settings
+      if (configuredVendors.includes("claude")) {
         try {
+          execSync("claude --version", { stdio: "ignore" });
+          const claudeSettingsPath = join(homeDir, ".claude", "settings.json");
           // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
           let claudeSettings: any = {};
           if (existsSync(claudeSettingsPath)) {
@@ -293,64 +291,42 @@ export async function update(force = false, ci = false): Promise<void> {
               readFileSync(claudeSettingsPath, "utf-8"),
             );
           }
-
           if (needsSettingsUpdate(claudeSettings)) {
-            let shouldApply = ci;
-            if (!ci) {
-              const answer = await p.confirm({
-                message: "Apply recommended Claude Code settings?",
-                initialValue: true,
-              });
-              shouldApply = !p.isCancel(answer) && answer;
-            }
-
-            if (shouldApply) {
-              mkdirSync(join(homeDir, ".claude"), { recursive: true });
-              applyRecommendedSettings(claudeSettings);
-              writeFileSync(
-                claudeSettingsPath,
-                `${JSON.stringify(claudeSettings, null, 2)}\n`,
-              );
-            }
+            mkdirSync(join(homeDir, ".claude"), { recursive: true });
+            applyRecommendedSettings(claudeSettings);
+            writeFileSync(
+              claudeSettingsPath,
+              `${JSON.stringify(claudeSettings, null, 2)}\n`,
+            );
           }
         } catch {
-          // Best-effort — don't fail update for settings
+          // Claude Code not installed — skip
         }
+      }
 
-      // --- Codex Plugin for Claude Code ---
-      if (hasClaude) {
-        let hasCodex = false;
+      // Codex: install/update plugin
+      if (configuredVendors.includes("codex")) {
         try {
+          execSync("claude --version", { stdio: "ignore" });
           execSync("codex --version", { stdio: "ignore" });
-          hasCodex = true;
-        } catch {}
-
-        if (hasCodex) {
-          let codexPluginInstalled = false;
-          try {
-            const pluginList = execSync("claude plugin list", {
-              encoding: "utf-8",
-              stdio: ["pipe", "pipe", "ignore"],
+          const pluginList = execSync("claude plugin list", {
+            encoding: "utf-8",
+            stdio: ["pipe", "pipe", "ignore"],
+          });
+          if (pluginList.includes("codex@openai-codex")) {
+            execSync("claude plugin update codex@openai-codex", {
+              stdio: "ignore",
             });
-            codexPluginInstalled = pluginList.includes("codex@openai-codex");
-          } catch {}
-
-          if (codexPluginInstalled) {
-            try {
-              execSync("claude plugin update codex@openai-codex", {
-                stdio: "ignore",
-              });
-            } catch {}
           } else {
-            try {
-              execSync("claude plugin marketplace add openai/codex-plugin-cc", {
-                stdio: "ignore",
-              });
-              execSync("claude plugin install codex@openai-codex", {
-                stdio: "ignore",
-              });
-            } catch {}
+            execSync("claude plugin marketplace add openai/codex-plugin-cc", {
+              stdio: "ignore",
+            });
+            execSync("claude plugin install codex@openai-codex", {
+              stdio: "ignore",
+            });
           }
+        } catch {
+          // CLI not available — skip
         }
       }
 

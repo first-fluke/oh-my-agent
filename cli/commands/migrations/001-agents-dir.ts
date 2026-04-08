@@ -117,9 +117,7 @@ export const migrateToAgents: Migration = {
           actions.push(`skills/${oldName} → skills/${newName}`);
         } else if (existsSync(oldPath) && existsSync(newPath)) {
           rmSync(oldPath, { recursive: true });
-          actions.push(
-            `skills/${oldName} (removed, replaced by ${newName})`,
-          );
+          actions.push(`skills/${oldName} (removed, replaced by ${newName})`);
         }
       }
     }
@@ -135,9 +133,7 @@ export const migrateToAgents: Migration = {
           actions.push(`agents/${oldName} → agents/${newName}`);
         } else if (existsSync(oldPath) && existsSync(newPath)) {
           rmSync(oldPath);
-          actions.push(
-            `agents/${oldName} (removed, replaced by ${newName})`,
-          );
+          actions.push(`agents/${oldName} (removed, replaced by ${newName})`);
         }
       }
     }

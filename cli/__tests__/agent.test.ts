@@ -240,8 +240,7 @@ describe("agent command", () => {
 
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
-        if (target === "/project/.agents/oma-config.yaml")
-          return true;
+        if (target === "/project/.agents/oma-config.yaml") return true;
         if (target.includes("oma-config.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
         if (target === "/project/apps/api") return true;

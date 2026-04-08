@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hook-variant.schema.json",
+  "title": "OMA Hook Variant",
+  "description": "Vendor-specific hook registration config. SSOT: .agents/hooks/variants/",
+  "type": "object",
+  "required": ["vendor", "hookDir", "settingsFile", "runtime", "events"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for IDE support."
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Vendor identifier matching VendorType in cli/types.",
+      "enum": ["claude", "codex", "gemini", "qwen"]
+    },
+    "hookDir": {
+      "type": "string",
+      "description": "Relative path to the vendor's hooks directory (e.g., .claude/hooks)."
+    },
+    "settingsFile": {
+      "type": "string",
+      "description": "Relative path to the vendor's settings file where hook entries are registered."
+    },
+    "projectDirEnv": {
+      "type": ["string", "null"],
+      "description": "Environment variable for the project root (e.g., CLAUDE_PROJECT_DIR). null = use relative paths."
+    },
+    "runtime": {
+      "type": "string",
+      "description": "Runtime to execute hook scripts.",
+      "default": "bun"
+    },
+    "events": {
+      "type": "object",
+      "description": "Map of vendor event names to hook configs. Keys are vendor-specific event names (e.g., PreToolUse, BeforeTool).",
+      "additionalProperties": {
+        "$ref": "#/$defs/hookEvent"
+      },
+      "minProperties": 1
+    },
+    "statusLine": {
+      "$ref": "#/$defs/hookRef",
+      "description": "Hook script for the status line display (Claude Code only)."
+    },
+    "extra": {
+      "type": "object",
+      "description": "Additional top-level settings to merge (e.g., permissions)."
+    },
+    "featureFlags": {
+      "$ref": "#/$defs/featureFlags",
+      "description": "Vendor-specific feature flags to enable (e.g., Codex config.toml)."
+    }
+  },
+  "$defs": {
+    "hookEvent": {
+      "type": "object",
+      "description": "A hook event registration entry.",
+      "required": ["hook", "timeout"],
+      "additionalProperties": false,
+      "properties": {
+        "hook": {
+          "type": "string",
+          "description": "Filename of the hook script in .agents/hooks/core/."
+        },
+        "matcher": {
+          "type": "string",
+          "description": "Tool or agent matcher pattern (e.g., Bash, *). Omit if not applicable."
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Max execution time in seconds.",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 5
+        }
+      }
+    },
+    "hookRef": {
+      "type": "object",
+      "description": "Reference to a hook script in core/.",
+      "required": ["hook"],
+      "additionalProperties": false,
+      "properties": {
+        "hook": {
+          "type": "string",
+          "description": "Filename of the hook script in .agents/hooks/core/."
+        }
+      }
+    },
+    "featureFlags": {
+      "type": "object",
+      "description": "Feature flags to enable in a vendor config file.",
+      "required": ["file", "section", "flags"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Relative path to the config file (e.g., .codex/config.toml)."
+        },
+        "section": {
+          "type": "string",
+          "description": "TOML section name (e.g., features)."
+        },
+        "flags": {
+          "type": "object",
+          "description": "Key-value pairs of flags to set.",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

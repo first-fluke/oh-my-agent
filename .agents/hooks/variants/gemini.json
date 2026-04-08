@@ -1,0 +1,25 @@
+{
+  "$schema": "./hook-variant.schema.json",
+  "vendor": "gemini",
+  "hookDir": ".gemini/hooks",
+  "settingsFile": ".gemini/settings.json",
+  "projectDirEnv": "GEMINI_PROJECT_DIR",
+  "runtime": "bun",
+  "events": {
+    "BeforeAgent": {
+      "hook": "keyword-detector.ts",
+      "matcher": "*",
+      "timeout": 5
+    },
+    "BeforeTool": {
+      "hook": "test-filter.ts",
+      "matcher": "Bash",
+      "timeout": 5
+    },
+    "AfterAgent": {
+      "hook": "persistent-mode.ts",
+      "matcher": "*",
+      "timeout": 5
+    }
+  }
+}
