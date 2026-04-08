@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.23.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.23.3...cli-v4.23.4) (2026-04-08)
+
+
+### Refactoring
+
+* extract shared Claude Code recommended settings ([d31c740](https://github.com/first-fluke/oh-my-agent/commit/d31c74041d156c6c05b9e76a21de9f5be92eca0c))
+
 ## [4.23.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.23.2...cli-v4.23.3) (2026-04-06)
 
 
