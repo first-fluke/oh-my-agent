@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.24.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.24.0...cli-v4.24.1) (2026-04-08)
+
+
+### Refactoring
+
+* move plan.json to session-scoped results/plan-{sessionId}.json ([9f019f5](https://github.com/first-fluke/oh-my-agent/commit/9f019f564f91910447b8ceba16470c795d9dc8c7))
+
 ## [4.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.23.4...cli-v4.24.0) (2026-04-08)
 
 
