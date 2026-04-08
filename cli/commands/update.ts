@@ -11,6 +11,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import {
+  applyRecommendedSettings,
+  needsSettingsUpdate,
+} from "../lib/claude-settings.js";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
 import {
   isAlreadyStarred,
@@ -23,7 +27,6 @@ import {
   hasInstalledProject,
   saveLocalVersion,
 } from "../lib/manifest.js";
-import { runMigrations } from "./migrations/index.js";
 import { ensureSerenaProject, inferSerenaLanguages } from "../lib/serena.js";
 import {
   createCliSymlinks,
@@ -33,6 +36,7 @@ import {
   REPO,
 } from "../lib/skills.js";
 import { downloadAndExtract } from "../lib/tarball.js";
+import { runMigrations } from "./migrations/index.js";
 
 /** Thin UI abstraction: interactive (@clack/prompts) vs CI (plain console) */
 function createUI(ci: boolean) {
@@ -290,18 +294,7 @@ export async function update(force = false, ci = false): Promise<void> {
             );
           }
 
-          const needsClaudeSettings =
-            (claudeSettings.env?.cleanupPeriodDays ?? 0) < 180 ||
-            (claudeSettings.env?.CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS ?? 0) <
-              100000 ||
-            (claudeSettings.env?.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE ?? 0) < 80 ||
-            !claudeSettings.attribution?.commit ||
-            !claudeSettings.attribution?.pr ||
-            claudeSettings.env?.DISABLE_TELEMETRY !== "1" ||
-            claudeSettings.env?.DISABLE_ERROR_REPORTING !== "1" ||
-            claudeSettings.env?.CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY !== "1";
-
-          if (needsClaudeSettings) {
+          if (needsSettingsUpdate(claudeSettings)) {
             let shouldApply = ci;
             if (!ci) {
               const answer = await p.confirm({
@@ -313,20 +306,7 @@ export async function update(force = false, ci = false): Promise<void> {
 
             if (shouldApply) {
               mkdirSync(join(homeDir, ".claude"), { recursive: true });
-              claudeSettings.env = {
-                ...(claudeSettings.env || {}),
-                cleanupPeriodDays: 180,
-                CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-                CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
-                DISABLE_TELEMETRY: "1",
-                DISABLE_ERROR_REPORTING: "1",
-                CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
-              };
-              claudeSettings.attribution = {
-                commit:
-                  "Generated with oh-my-agent\n\nCo-Authored-By: First Fluke <our.first.fluke@gmail.com>",
-                pr: "Generated with [oh-my-agent](https://github.com/first-fluke/oh-my-agent)",
-              };
+              applyRecommendedSettings(claudeSettings);
               writeFileSync(
                 claudeSettingsPath,
                 `${JSON.stringify(claudeSettings, null, 2)}\n`,

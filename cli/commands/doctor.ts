@@ -3,6 +3,10 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import {
+  applyRecommendedSettings,
+  needsSettingsUpdate,
+} from "../lib/claude-settings.js";
 import { checkStarred } from "../lib/github.js";
 import {
   getAllSkills,
@@ -166,16 +170,7 @@ export async function doctor(jsonMode = false): Promise<void> {
         const claudeSettings = JSON.parse(
           readFileSync(claudeSettingsPath, "utf-8"),
         );
-        recommendedSettingsOk =
-          (claudeSettings.env?.cleanupPeriodDays ?? 0) >= 180 &&
-          (claudeSettings.env?.CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS ?? 0) >=
-            100000 &&
-          (claudeSettings.env?.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE ?? 0) >= 80 &&
-          !!claudeSettings.attribution?.commit &&
-          !!claudeSettings.attribution?.pr &&
-          claudeSettings.env?.DISABLE_TELEMETRY === "1" &&
-          claudeSettings.env?.DISABLE_ERROR_REPORTING === "1" &&
-          claudeSettings.env?.CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY === "1";
+        recommendedSettingsOk = !needsSettingsUpdate(claudeSettings);
       }
     } catch {}
   try {
@@ -477,20 +472,7 @@ export async function doctor(jsonMode = false): Promise<void> {
                 readFileSync(claudeSettingsPath, "utf-8"),
               );
             }
-            claudeSettings.env = {
-              ...(claudeSettings.env || {}),
-              cleanupPeriodDays: 180,
-              CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-              CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
-              DISABLE_TELEMETRY: "1",
-              DISABLE_ERROR_REPORTING: "1",
-              CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
-            };
-            claudeSettings.attribution = {
-              commit:
-                "Generated with oh-my-agent\n\nCo-Authored-By: First Fluke <our.first.fluke@gmail.com>",
-              pr: "Generated with [oh-my-agent](https://github.com/first-fluke/oh-my-agent)",
-            };
+            applyRecommendedSettings(claudeSettings);
             writeFileSync(
               claudeSettingsPath,
               `${JSON.stringify(claudeSettings, null, 2)}\n`,
