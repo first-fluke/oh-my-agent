@@ -8,6 +8,7 @@ import {
   getDefaultDocPath,
   isDocGroupId,
   isLang,
+  LANGUAGES,
 } from "@/lib/docs";
 import { getDocPage, getNavigation } from "@/lib/docs-content";
 
@@ -21,7 +22,7 @@ interface DocPageProps {
 export function generateStaticParams() {
   return [
     ...getAllDocParams(),
-    ...["en", "ko", "vi"].map((lang) => ({ lang, slug: [] as string[] })),
+    ...LANGUAGES.map((lang) => ({ lang, slug: [] as string[] })),
   ];
 }
 

@@ -1,6 +1,31 @@
-export type Lang = "en" | "ko" | "vi";
+export type Lang =
+  | "en"
+  | "ko"
+  | "vi"
+  | "ja"
+  | "zh"
+  | "es"
+  | "fr"
+  | "de"
+  | "pt"
+  | "ru"
+  | "nl"
+  | "pl";
 
-export const LANGUAGES: Lang[] = ["en", "ko", "vi"];
+export const LANGUAGES: Lang[] = [
+  "en",
+  "ko",
+  "vi",
+  "ja",
+  "zh",
+  "es",
+  "fr",
+  "de",
+  "pt",
+  "ru",
+  "nl",
+  "pl",
+];
 export const DEFAULT_LANG: Lang = "en";
 
 export type DocGroupId =
@@ -31,10 +56,62 @@ export interface HeadingItem {
 }
 
 export const GROUP_TITLES: Record<DocGroupId, Record<Lang, string>> = {
-  "getting-started": { en: "Getting Started", ko: "Getting Started", vi: "Getting Started" },
-  "core-concepts": { en: "Core Concepts", ko: "Core Concepts", vi: "Core Concepts" },
-  guide: { en: "Guide", ko: "Guide", vi: "Guide" },
-  "cli-interfaces": { en: "CLI Interfaces", ko: "CLI Interfaces", vi: "CLI Interfaces" },
+  "getting-started": {
+    en: "Getting Started",
+    ko: "시작하기",
+    vi: "Bắt đầu",
+    ja: "はじめに",
+    zh: "快速开始",
+    es: "Primeros pasos",
+    fr: "Démarrage",
+    de: "Erste Schritte",
+    pt: "Introdução",
+    ru: "Начало работы",
+    nl: "Aan de slag",
+    pl: "Pierwsze kroki",
+  },
+  "core-concepts": {
+    en: "Core Concepts",
+    ko: "핵심 개념",
+    vi: "Khái niệm cốt lõi",
+    ja: "コアコンセプト",
+    zh: "核心概念",
+    es: "Conceptos clave",
+    fr: "Concepts clés",
+    de: "Kernkonzepte",
+    pt: "Conceitos principais",
+    ru: "Основные концепции",
+    nl: "Kernconcepten",
+    pl: "Kluczowe koncepcje",
+  },
+  guide: {
+    en: "Guide",
+    ko: "가이드",
+    vi: "Hướng dẫn",
+    ja: "ガイド",
+    zh: "指南",
+    es: "Guía",
+    fr: "Guide",
+    de: "Anleitung",
+    pt: "Guia",
+    ru: "Руководство",
+    nl: "Gids",
+    pl: "Przewodnik",
+  },
+  "cli-interfaces": {
+    en: "CLI Interfaces",
+    ko: "CLI 인터페이스",
+    vi: "Giao diện CLI",
+    ja: "CLIインターフェース",
+    zh: "CLI 接口",
+    es: "Interfaces CLI",
+    fr: "Interfaces CLI",
+    de: "CLI-Schnittstellen",
+    pt: "Interfaces CLI",
+    ru: "Интерфейсы CLI",
+    nl: "CLI-interfaces",
+    pl: "Interfejsy CLI",
+  },
 };
 
 export const DOC_ORDER: Record<DocGroupId, string[]> = {
