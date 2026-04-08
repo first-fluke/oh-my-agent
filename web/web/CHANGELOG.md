@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.18](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.17...web-v0.3.18) (2026-04-08)
+
+
+### Refactoring
+
+* move plan.json to session-scoped results/plan-{sessionId}.json ([9f019f5](https://github.com/first-fluke/oh-my-agent/commit/9f019f564f91910447b8ceba16470c795d9dc8c7))
+
 ## [0.3.17](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.16...web-v0.3.17) (2026-04-06)
 
 
