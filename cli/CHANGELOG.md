@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.26.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.25.0...cli-v4.26.0) (2026-04-09)
+
+
+### Features
+
+* add cross-vendor rules system with .agents/rules/ as SSOT ([9c2d56e](https://github.com/first-fluke/oh-my-agent/commit/9c2d56e34e26f15f91b6e89a1faa4ef688609830))
+
 ## [4.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.24.1...cli-v4.25.0) (2026-04-08)
 
 
