@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.26.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.0...cli-v4.26.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* handle unbound BASH_SOURCE when install.sh is piped to bash ([2fbc432](https://github.com/first-fluke/oh-my-agent/commit/2fbc432a5b8dae4ccea0361ab2db760d9e0dedd9))
+
 ## [4.26.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.25.0...cli-v4.26.0) (2026-04-09)
 
 
