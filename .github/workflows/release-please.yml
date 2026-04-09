@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths-ignore:
       - "prompt-manifest.json"
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       force_cli_publish:
