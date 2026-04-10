@@ -5,6 +5,7 @@
 
 ### Bug Fixes
 
+* clean up .migration-backup/ after successful update ([4038b82](https://github.com/first-fluke/oh-my-agent/commit/4038b82dceac639c02bbd7c6afb44ea5bb6cc8e7))
 * reconcile vendor outputs after migrations when version is already current ([c4b54fb](https://github.com/first-fluke/oh-my-agent/commit/c4b54fbfa4736a50ca68715d643fca602bbd4d7b))
 
 ## [4.26.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.0...cli-v4.26.1) (2026-04-09)
