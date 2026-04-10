@@ -479,23 +479,26 @@ function installClaudeWorkflowRouters(
 
 /**
  * Copy core hook scripts from .agents/hooks/core/ to a vendor's hooks directory.
- * Clears conflicting entries first to prevent EEXIST when overwriting.
+ * Clears stale symlinks/files first, then copies with dereference to ensure
+ * real file copies (never symlinks that break when the temp dir is deleted).
  */
 function copyHookScripts(sourceDir: string, hooksDest: string): void {
   const hooksSrc = join(sourceDir, ".agents", "hooks", "core");
   if (!existsSync(hooksSrc)) return;
 
   mkdirSync(hooksDest, { recursive: true });
-  clearConflictingEntries(hooksSrc, hooksDest);
 
-  // Remove existing files that conflict with source files
-  for (const entry of readdirSync(hooksSrc, { withFileTypes: true })) {
-    if (entry.isFile()) {
-      clearNonDirectory(join(hooksDest, entry.name));
-    }
+  // Remove ALL existing non-directory entries (files, symlinks, broken symlinks)
+  // before cpSync — Bun's cpSync fails with ENOENT on broken symlinks even with force.
+  for (const entry of readdirSync(hooksDest, { withFileTypes: true })) {
+    clearNonDirectory(join(hooksDest, entry.name));
   }
 
-  cpSync(hooksSrc, hooksDest, { recursive: true, force: true });
+  cpSync(hooksSrc, hooksDest, {
+    recursive: true,
+    force: true,
+    dereference: true,
+  });
 }
 
 /**

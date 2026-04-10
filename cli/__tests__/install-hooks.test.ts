@@ -72,7 +72,7 @@ describe("installHooksFromVariant", () => {
     expect(fs.cpSync).toHaveBeenCalledWith(
       join(mockSourceDir, ".agents", "hooks", "core"),
       join(mockTargetDir, ".claude", "hooks"),
-      { recursive: true, force: true },
+      { recursive: true, force: true, dereference: true },
     );
   });
 
@@ -215,12 +215,12 @@ describe("installHooksFromVariant", () => {
       }),
     );
 
-    // Simulate existing files in hooks directory (previous install)
+    // Simulate existing files/symlinks in destination hooks directory
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string, opts?: { withFileTypes?: boolean }) => {
         if (
           typeof p === "string" &&
-          p.includes("hooks/core") &&
+          p.includes(".claude/hooks") &&
           opts?.withFileTypes
         ) {
           return [
@@ -236,7 +236,7 @@ describe("installHooksFromVariant", () => {
       },
     );
 
-    // Simulate existing file at destination (triggers EEXIST without fix)
+    // Simulate existing file/symlink at destination (triggers ENOENT without fix)
     (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
         if (
@@ -276,5 +276,72 @@ describe("installHooksFromVariant", () => {
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
 
     expect(fs.cpSync).not.toHaveBeenCalled();
+  });
+
+  it("should clear broken symlinks in destination before cpSync", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({
+        vendor: "claude",
+        hookDir: ".claude/hooks",
+        settingsFile: ".claude/settings.json",
+        projectDirEnv: "CLAUDE_PROJECT_DIR",
+        runtime: "bun",
+        events: {
+          Stop: { hook: "persistent-mode.ts", timeout: 5 },
+        },
+      }),
+    );
+
+    // Simulate broken symlinks in destination (from deleted temp dir)
+    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string, opts?: { withFileTypes?: boolean }) => {
+        if (
+          typeof p === "string" &&
+          p.includes(".claude/hooks") &&
+          opts?.withFileTypes
+        ) {
+          return [
+            {
+              name: "persistent-mode.ts",
+              isFile: () => false,
+              isDirectory: () => false,
+              isSymbolicLink: () => true,
+            },
+          ];
+        }
+        return [];
+      },
+    );
+
+    // lstatSync sees broken symlink as non-directory
+    (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (
+          typeof p === "string" &&
+          p.endsWith("persistent-mode.ts") &&
+          p.includes(".claude/hooks")
+        ) {
+          return { isDirectory: () => false, isSymbolicLink: () => true };
+        }
+        throw new Error("ENOENT");
+      },
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
+
+    // Broken symlink should be unlinked before cpSync
+    const unlinkCalls = (
+      fs.unlinkSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.map((c: string[]) => c[0]);
+    expect(unlinkCalls).toContainEqual(
+      join(mockTargetDir, ".claude", "hooks", "persistent-mode.ts"),
+    );
+
+    // cpSync should use dereference: true to always copy real files
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      join(mockSourceDir, ".agents", "hooks", "core"),
+      join(mockTargetDir, ".claude", "hooks"),
+      { recursive: true, force: true, dereference: true },
+    );
   });
 });
