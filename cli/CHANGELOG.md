@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.26.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.2...cli-v4.26.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* **hooks:** resolve broken symlinks in consumer project hooks directory ([cb70727](https://github.com/first-fluke/oh-my-agent/commit/cb70727ab8257a282f227d0b41d629fce49db52f))
+
 ## [4.26.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.1...cli-v4.26.2) (2026-04-10)
 
 
