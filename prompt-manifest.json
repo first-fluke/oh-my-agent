@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "4.26.3",
-  "releaseDate": "2026-04-10T07:06:58.845Z",
+  "version": "4.27.0",
+  "releaseDate": "2026-04-10T03:40:03.967Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -481,13 +481,13 @@
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
-      "sha256": "86532390aa9b6c6c46012f71c3a5d97f55e2df0773ab2478b24978ceae0a831c",
-      "size": 6569
+      "sha256": "6d62f42b259d2cd6573988723297d1026533da291bbd298a890f0259e3b02604",
+      "size": 4666
     },
     {
       "path": ".agents/skills/oma-design/examples/design-context-example.md",
-      "sha256": "e12c42d6b2680bb4a0fc10740c60caa03cc54c21718003963c1230c58b66486a",
-      "size": 3060
+      "sha256": "ae760285df28992599dab624cddff9719f28420670406c2c4f694c5b55dd4cec",
+      "size": 2392
     },
     {
       "path": ".agents/skills/oma-design/examples/landing-page-prompt.md",
@@ -511,8 +511,8 @@
     },
     {
       "path": ".agents/skills/oma-design/reference/motion-design.md",
-      "sha256": "c4fd33dbdd8a5dd4dc0013eda2bceabb0b65b25dee8277fbbccec1a13ab25b5c",
-      "size": 7942
+      "sha256": "42a24f1c9c17cc0ff0eeb1146df26c531601cef3ce63ab04b4bdd85989fbdfc6",
+      "size": 3823
     },
     {
       "path": ".agents/skills/oma-design/reference/responsive-design.md",
@@ -535,11 +535,6 @@
       "size": 2703
     },
     {
-      "path": ".agents/skills/oma-design/reference/visual-hierarchy.md",
-      "sha256": "01d93ef8593ef2097f979626dbbdf1c8486fc615cf34fe542b163aae87386932",
-      "size": 9919
-    },
-    {
       "path": ".agents/skills/oma-design/resources/anti-patterns.md",
       "sha256": "3b934702967b99d799c5ec2c522d0fb0501a30f673b1506313c29fdce314b5c8",
       "size": 4156
@@ -551,8 +546,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/design-md-spec.md",
-      "sha256": "6489ebcf482964975a07ad1e254900b22f795b99eade3231b6d4ed4fadbeacc9",
-      "size": 8590
+      "sha256": "867159ba156bfc3146635a8129985611e0ca7090bb1c107bd2c1b65571915f8b",
+      "size": 3762
     },
     {
       "path": ".agents/skills/oma-design/resources/design-tokens.md",
@@ -566,13 +561,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/execution-protocol.md",
-      "sha256": "ce6b28e63d69e78151d7a6431efeae13915bdf36d66a07297b01ce5073f5ab70",
-      "size": 9510
-    },
-    {
-      "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
-      "sha256": "662258bede9b2f3b92c671928464430cdf21d1639c3b3fa6250dcfc0d166897f",
-      "size": 13568
+      "sha256": "0eb8cd22c8a0b50b8bf55ffc61e8137240f551f59c881f83432b1a3072289424",
+      "size": 5442
     },
     {
       "path": ".agents/skills/oma-design/resources/prompt-enhancement.md",
@@ -941,8 +931,8 @@
     },
     {
       "path": ".agents/workflows/design.md",
-      "sha256": "b4fe8003d96387fd84cb11c09d1d6046efc2b98d7820ad7fd0fa8bf1a5b97079",
-      "size": 6047
+      "sha256": "3d09aeed742e1cb20949bd1842ccae8622d7503345ebdb3a840fd19ec58cd9c9",
+      "size": 4397
     },
     {
       "path": ".agents/workflows/exec-plan.md",
@@ -1131,6 +1121,6 @@
   "metadata": {
     "skillCount": 31,
     "workflowCount": 18,
-    "totalFiles": 224
+    "totalFiles": 222
   }
 }

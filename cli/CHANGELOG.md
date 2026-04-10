@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.27.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.3...cli-v4.27.0) (2026-04-10)
+
+
+### Features
+
+* **oma-design:** add vendor inspiration via getdesign for Phase 2 seeding ([c1b60a5](https://github.com/first-fluke/oh-my-agent/commit/c1b60a5a13909bb944d87ea8f43174b988388a31))
+
 ## [4.26.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.2...cli-v4.26.3) (2026-04-10)
 
 
