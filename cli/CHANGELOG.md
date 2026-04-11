@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.27.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.27.0...cli-v4.27.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **hooks:** resolve codex filter path and bun runtime ([bfd98ca](https://github.com/first-fluke/oh-my-agent/commit/bfd98ca4f073ac43a2c7169b5c18f89d93292cbd))
+
+
+### Documentation
+
+* **benchmark:** add harness benchmark design ([71b219f](https://github.com/first-fluke/oh-my-agent/commit/71b219fb12b710b902cc567ea7ea2e5f55c510bb))
+
 ## [4.27.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.26.3...cli-v4.27.0) (2026-04-10)
 
 
