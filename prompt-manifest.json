@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.28.0",
-  "releaseDate": "2026-04-11T05:38:51.711Z",
+  "releaseDate": "2026-04-11T06:07:21.793Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -311,7 +311,7 @@
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "6487692c0fd4d4fe5bd77ae4d3c2e11f8d4b3f7ac4b84ee61901f365d87c0848",
+      "sha256": "e5b4457547eb0bf0024d2f52bea229e971ba9975e453efc02d0e2c2a23a59d23",
       "size": 25
     },
     {
@@ -1073,129 +1073,14 @@
       "path": ".agents/workflows/work.md",
       "sha256": "5be1c8b2d9153c717540a843afedb928b09d7407539d98185cfc7db7ca2255c0",
       "size": 5532
-    },
-    {
-      "path": ".claude/skills/brainstorm/SKILL.md",
-      "sha256": "ad0e0a4824a84f5a98ccbbb9edb864176a78e5582bfbe66651f8171d7335e49b",
-      "size": 251
-    },
-    {
-      "path": ".claude/skills/commit/SKILL.md",
-      "sha256": "67af5303838517f16a89d31b518345ed53cf694aff9797be0bc6ae3c4e200a0a",
-      "size": 211
-    },
-    {
-      "path": ".claude/skills/debug/SKILL.md",
-      "sha256": "05775a59cf6bb358dbfc9d0ecdf52256c0cd5b0787b2d5bff88848394a88b1e0",
-      "size": 227
-    },
-    {
-      "path": ".claude/skills/deepinit/SKILL.md",
-      "sha256": "931cfe5ad13b677a6b291f436ae926132eef35b5a7800e6c78e47abceb4f3c5c",
-      "size": 231
-    },
-    {
-      "path": ".claude/skills/design/SKILL.md",
-      "sha256": "e4a6d339240f8efdc8241a335ad16964815c7a8bd912e537363d6bf13651fa2a",
-      "size": 211
-    },
-    {
-      "path": ".claude/skills/exec-plan/SKILL.md",
-      "sha256": "384c02a1029858226c54c2ba78d3672479ecefbd276d3a3ebc02a9d8d6435dfd",
-      "size": 229
-    },
-    {
-      "path": ".claude/skills/orchestrate/SKILL.md",
-      "sha256": "814dd25e914dbf7e96be7d066ad40d0530606e7ef5757f3613a67dac4b4fbc84",
-      "size": 303
-    },
-    {
-      "path": ".claude/skills/pdf/SKILL.md",
-      "sha256": "ec7569ce104f5e40aae167ea28f1ebc1d447116d1bd1d3d5d2bf68a3aed34cfc",
-      "size": 189
-    },
-    {
-      "path": ".claude/skills/plan/SKILL.md",
-      "sha256": "b541c45bdfcf0de8ceb506395d45673ca516982ac191856d1aa2e816dbe45156",
-      "size": 207
-    },
-    {
-      "path": ".claude/skills/ralph/SKILL.md",
-      "sha256": "1efd64b0de802317af18dad9b4a2ff5ddc93504352c64a4fd5ad566729164db3",
-      "size": 216
-    },
-    {
-      "path": ".claude/skills/review/SKILL.md",
-      "sha256": "b6019ea6fb17efc24afb51fc58ae966c36e427e842bf77d18c2864d09d422fb0",
-      "size": 228
-    },
-    {
-      "path": ".claude/skills/stack-set/SKILL.md",
-      "sha256": "d07b93540ab5d9ea3bd7d3881dfb21f13e589cf38e45eabdd627306126cfff30",
-      "size": 220
-    },
-    {
-      "path": ".claude/skills/tools/SKILL.md",
-      "sha256": "618494a689ade1b0725c5e7ba3ba43eaf52490f2f82e60b079e612d7d137f57e",
-      "size": 182
-    },
-    {
-      "path": ".claude/skills/ultrawork/SKILL.md",
-      "sha256": "ffda2a5acc16cb5784c818e254b95eb2a258a3b5319461541325f59451be9e62",
-      "size": 187
-    },
-    {
-      "path": ".claude/skills/work/SKILL.md",
-      "sha256": "f3b622ed9718df5e9b8243841572de73081e04945e7cfeda662c068791b9efd2",
-      "size": 201
-    },
-    {
-      "path": ".claude/agents/backend-engineer.md",
-      "sha256": "455d13f2f87c35864dbc45f4687a4ca9bd8f090faa55c2b35e233a00f8fae124",
-      "size": 1863
-    },
-    {
-      "path": ".claude/agents/db-engineer.md",
-      "sha256": "79f8f956ad7d43347f32bc2c8770e6243ed7f70d6e24bb5b70dc047c618154c6",
-      "size": 1612
-    },
-    {
-      "path": ".claude/agents/debug-investigator.md",
-      "sha256": "df98326fd1af8ca9508263efd58b7fce216c789789fae190cd3d6c55110ba596",
-      "size": 1764
-    },
-    {
-      "path": ".claude/agents/designer.md",
-      "sha256": "319376161447626cd3d6aa7a57e50db0bb797b068802d88c3182a8336d44e2fa",
-      "size": 1996
-    },
-    {
-      "path": ".claude/agents/frontend-engineer.md",
-      "sha256": "a082f64872eee6d68a7d7c7ab09d1cde2497cb53f29d5c9f900152d4bf4fca2b",
-      "size": 1649
-    },
-    {
-      "path": ".claude/agents/mobile-engineer.md",
-      "sha256": "5a0cb34396964b1f291a5acb87beca5b77b431765a924b4b6f404001f8fedc98",
-      "size": 1443
-    },
-    {
-      "path": ".claude/agents/pm-planner.md",
-      "sha256": "5f74b083a97e761f9e6345ad13d06909b24bf410c9adaa45a2b4029ae622379f",
-      "size": 1988
-    },
-    {
-      "path": ".claude/agents/qa-reviewer.md",
-      "sha256": "868b7a488c315dbf2ac421dbfdf8deed405da0e77c26823aaa0cecf215565036",
-      "size": 2110
     }
   ],
   "checksums": {
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 32,
+    "skillCount": 17,
     "workflowCount": 19,
-    "totalFiles": 237
+    "totalFiles": 214
   }
 }
