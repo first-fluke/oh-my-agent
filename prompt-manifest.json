@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.27.1",
-  "releaseDate": "2026-04-11T02:04:11.293Z",
+  "releaseDate": "2026-04-11T05:38:51.711Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -40,6 +40,26 @@
       "size": 1900
     },
     {
+      "path": ".agents/agents/variants/agent-variant.schema.json",
+      "sha256": "86e4791c2a61912aa84e36aae90010bd1a1f55245c29e8f561af41173145f8d6",
+      "size": 2187
+    },
+    {
+      "path": ".agents/agents/variants/claude.json",
+      "sha256": "1d1d52118cb948f10710d03a968c8456f306b5264058758fca3ed3926a6728a8",
+      "size": 708
+    },
+    {
+      "path": ".agents/agents/variants/cursor.json",
+      "sha256": "68bd9a4af99fc52e81df729bc90471c9dc447d8b7a0e391045348e07b3f39d9b",
+      "size": 798
+    },
+    {
+      "path": ".agents/agents/variants/gemini.json",
+      "sha256": "35c4e95a1ff518cd7a9201d8d645224eca0de4c81066a3eb9b6fc125db418a04",
+      "size": 750
+    },
+    {
       "path": ".agents/hooks/core/filter-test-output.sh",
       "sha256": "b03fd019a4ab095f2eaf717d368be00825ce43be39942c5620a7cdf9192355e7",
       "size": 1564
@@ -51,8 +71,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "c512baf4a036c77efa68fc18597a82bc9f1578bb385fd0c201b37d872736146b",
-      "size": 13440
+      "sha256": "6872aa8f729e19505d8cc2496a197551e6278a6e463ef7176892a471a5b62150",
+      "size": 14051
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
@@ -66,13 +86,13 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "4236f8b728497279029cc70769e7d1c8521db6a949679f51269c31791e6c7451",
-      "size": 21133
+      "sha256": "bcdbf50db168b2ad780ae11e0554b2fa152fc743e588e9f7754d3988847a5ec2",
+      "size": 23432
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "d662b76fa69ada11f38a148f4b6767f44cc6877a57a328cebe3556cea3914280",
-      "size": 2977
+      "sha256": "f7a4e53fcdbc391e75d6040ad0ffe063693d47083b2f802a6464c605b3c2b2d2",
+      "size": 3493
     },
     {
       "path": ".agents/hooks/variants/claude.json",
@@ -85,14 +105,19 @@
       "size": 599
     },
     {
+      "path": ".agents/hooks/variants/cursor.json",
+      "sha256": "712972555a32133754e251a9a42622c6f2bf0f6908903e54013eb763b087f6b9",
+      "size": 416
+    },
+    {
       "path": ".agents/hooks/variants/gemini.json",
       "sha256": "25f58b21f6aa3c12f35308636354dd3e36f00253cd20f97a9d65447593eac9e4",
       "size": 533
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "37db0f528cfd101bf28b5d960c27757fbde308983d6ce30a949ea6bc42c962dd",
-      "size": 3738
+      "sha256": "300bfe85afab41fbaa97fce22eaacb6ae55fcb4f1bff3e6a79f48878aa76bd98",
+      "size": 3748
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
@@ -211,8 +236,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/context-loading.md",
-      "sha256": "24e0c1845877d2b2aa0e26e7156f36e3dbed911a19f65ef6bfe894fb64630ba7",
-      "size": 8347
+      "sha256": "e2a80add77bfc99356d3d2222f3dc3e6e29ecf186799146494df368abca3bae9",
+      "size": 9252
     },
     {
       "path": ".agents/skills/_shared/core/difficulty-guide.md",
@@ -251,8 +276,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/skill-routing.md",
-      "sha256": "f2980da1246f26d3c38d3f359a12a6678f9f42b2a8b90c06ac91be59e2f163ce",
-      "size": 4291
+      "sha256": "c8690e94b51dac290900e63dc6f79750b797c086d0f1d745a45364defdc18e5e",
+      "size": 4785
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
@@ -288,6 +313,41 @@
       "path": ".agents/skills/_version.json",
       "sha256": "6487692c0fd4d4fe5bd77ae4d3c2e11f8d4b3f7ac4b84ee61901f365d87c0848",
       "size": 25
+    },
+    {
+      "path": ".agents/skills/oma-architecture/SKILL.md",
+      "sha256": "74439e64652f11371b72eda7856e1c19776bc13813772bb4534e9ead9d334b89",
+      "size": 3396
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/checklist.md",
+      "sha256": "7d92ba3aadd0a4903320ebcb2204d67c16720738a6a2c4c2f0246789a3c135e7",
+      "size": 1219
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/examples.md",
+      "sha256": "6c7b5121f5a56d1ecec29d975486449c1f77650798603c3df8e1bd1794fa6f9f",
+      "size": 1468
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/execution-protocol.md",
+      "sha256": "9f5d10358b99d246e07b4eb87ff527d9454aa3814f3edc72e3ebd58869c7b68c",
+      "size": 3171
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/methodology-selection.md",
+      "sha256": "15ab64fccf7ff540d82d48045c6079a5b099e00ccfad786f9b78e195906c06ea",
+      "size": 2113
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/output-templates.md",
+      "sha256": "f5456b9701e8123c807d578dd52cc591c25e2ff18d10c090645c586860cfa69c",
+      "size": 830
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/stakeholder-synthesis.md",
+      "sha256": "ff8b0eb833718c9028ebc548f5d8f6c125fb861cadb225eb61322741007354dd",
+      "size": 1496
     },
     {
       "path": ".agents/skills/oma-backend/SKILL.md",
@@ -920,6 +980,11 @@
       "size": 4086
     },
     {
+      "path": ".agents/workflows/architecture.md",
+      "sha256": "942b7fbd9a78cfd3fc0d615d27e542c4a9bbbdf833c533a825969b034e12740f",
+      "size": 4338
+    },
+    {
       "path": ".agents/workflows/brainstorm.md",
       "sha256": "df8b2af0cb76c8dc79dfe218f909520fa58ce25f3f3739939817686ced103504",
       "size": 3046
@@ -1129,8 +1194,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 31,
-    "workflowCount": 18,
-    "totalFiles": 224
+    "skillCount": 32,
+    "workflowCount": 19,
+    "totalFiles": 237
   }
 }
