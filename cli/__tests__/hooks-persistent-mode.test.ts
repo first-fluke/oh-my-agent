@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ModeState } from "../../.claude/hooks/types.ts";
+import type { ModeState } from "../../.agents/hooks/core/types.ts";
 
 vi.mock("node:fs", () => ({
   readFileSync: vi.fn(),
@@ -11,9 +11,9 @@ vi.mock("node:fs", () => ({
 }));
 
 const { isStale, deactivate } = await import(
-  "../../.claude/hooks/persistent-mode.ts"
+  "../../.agents/hooks/core/persistent-mode.ts"
 );
-const { resolveGitRoot } = await import("../../.claude/hooks/types.ts");
+const { resolveGitRoot } = await import("../../.agents/hooks/core/types.ts");
 
 describe("persistent-mode", () => {
   beforeEach(() => {

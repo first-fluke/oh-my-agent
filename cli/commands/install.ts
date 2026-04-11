@@ -351,7 +351,11 @@ export async function install(): Promise<void> {
     for (const v of ["claude", "gemini", "codex", "cursor", "qwen"] as const) {
       if (!vendors.includes(v)) continue;
       const target =
-        v === "claude" ? "CLAUDE.md" : v === "gemini" ? "GEMINI.md" : "AGENTS.md";
+        v === "claude"
+          ? "CLAUDE.md"
+          : v === "gemini"
+            ? "GEMINI.md"
+            : "AGENTS.md";
       if (mergedFiles.has(target)) continue;
       if (mergeRulesIndexForVendor(cwd, v)) {
         mergedFiles.add(target);

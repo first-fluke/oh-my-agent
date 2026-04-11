@@ -9,10 +9,10 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { migrateOmaConfig } from "../commands/migrations/003-oma-config.js";
-import { migrateClaudeMdLocal } from "../commands/migrations/004-claude-md-local.js";
 import { migrateToAgents as _migrateToAgents } from "../commands/migrations/001-agents-dir.js";
 import { migrateSharedLayout as _migrateSharedLayout } from "../commands/migrations/002-shared-layout.js";
+import { migrateOmaConfig } from "../commands/migrations/003-oma-config.js";
+import { migrateClaudeMdLocal } from "../commands/migrations/004-claude-md-local.js";
 
 const migrateToAgents = (cwd: string) => _migrateToAgents.up(cwd);
 const migrateSharedLayout = (cwd: string) => _migrateSharedLayout.up(cwd);

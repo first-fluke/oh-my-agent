@@ -288,7 +288,13 @@ export async function update(force = false, ci = false): Promise<void> {
         generateCursorRules(cwd);
       }
       const mergedFiles = new Set<string>();
-      for (const v of ["claude", "gemini", "codex", "cursor", "qwen"] as const) {
+      for (const v of [
+        "claude",
+        "gemini",
+        "codex",
+        "cursor",
+        "qwen",
+      ] as const) {
         if (!configuredVendors.includes(v)) continue;
         const target =
           v === "claude"

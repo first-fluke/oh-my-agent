@@ -22,7 +22,7 @@ const {
   DEACTIVATION_PHRASES,
   detectExtensions,
   resolveAgentFromExtensions,
-} = await import("../../.claude/hooks/keyword-detector.ts");
+} = await import("../../.agents/hooks/core/keyword-detector.ts");
 
 describe("keyword-detector", () => {
   beforeEach(() => {

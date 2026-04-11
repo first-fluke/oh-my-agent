@@ -7,7 +7,13 @@ const VARIANTS_DIR = join(__dirname, "../../.agents/hooks/variants");
 const SCHEMA_PATH = join(VARIANTS_DIR, "hook-variant.schema.json");
 
 /** All known vendors from CLI VendorType. */
-const KNOWN_VENDORS: VendorType[] = ["claude", "codex", "cursor", "gemini", "qwen"];
+const KNOWN_VENDORS: VendorType[] = [
+  "claude",
+  "codex",
+  "cursor",
+  "gemini",
+  "qwen",
+];
 
 function loadVariant(vendor: string) {
   return JSON.parse(

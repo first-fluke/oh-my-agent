@@ -1,1 +1,0 @@
-../../.agents/hooks/core/filter-test-output.sh

@@ -3,7 +3,6 @@ import { join, relative, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createCliSymlinks,
-  installClaudeSkills,
   installConfigs,
   installSkill,
   installVendorAgents,
@@ -346,48 +345,6 @@ Body: Follow the vendor-specific execution protocol:`;
     expect(content.includes("readonly: true")).toBe(true);
     expect(content.includes("is_background: true")).toBe(true);
     expect(content.includes("model: inherit")).toBe(true);
-  });
-});
-
-describe("installClaudeSkills", () => {
-  const mockSourceDir = "/tmp/extracted-repo";
-  const mockTargetDir = "/tmp/test-project";
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("should copy .claude/skills and .claude/agents directories", () => {
-    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-      true,
-    );
-
-    installClaudeSkills(mockSourceDir, mockTargetDir);
-
-    expect(fs.cpSync).toHaveBeenCalledWith(
-      join(mockSourceDir, ".claude", "skills"),
-      join(mockTargetDir, ".claude", "skills"),
-      { recursive: true, force: true },
-    );
-    expect(fs.cpSync).toHaveBeenCalledWith(
-      join(mockSourceDir, ".claude", "agents"),
-      join(mockTargetDir, ".claude", "agents"),
-      { recursive: true, force: true },
-    );
-  });
-
-  it("should skip if source directories do not exist", () => {
-    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-      false,
-    );
-
-    installClaudeSkills(mockSourceDir, mockTargetDir);
-
-    expect(fs.cpSync).not.toHaveBeenCalled();
   });
 });
 

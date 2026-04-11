@@ -201,7 +201,9 @@ describe("mergeRulesIndexForVendor", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("should return false for unsupported vendor", () => {
-    expect(mergeRulesIndexForVendor(mockTargetDir, "unknown-vendor")).toBe(false);
+    expect(mergeRulesIndexForVendor(mockTargetDir, "unknown-vendor")).toBe(
+      false,
+    );
   });
 
   it("should still generate usage guide even without rules", () => {

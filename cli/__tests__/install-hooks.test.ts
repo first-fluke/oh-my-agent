@@ -145,6 +145,65 @@ describe("installHooksFromVariant", () => {
     expect(settings.statusLine.command).toContain("hud.ts");
   });
 
+  it("should not include statusLine for Gemini variant", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({
+        vendor: "gemini",
+        hookDir: ".gemini/hooks",
+        settingsFile: ".gemini/settings.json",
+        projectDirEnv: "GEMINI_PROJECT_DIR",
+        runtime: "bun",
+        events: {
+          BeforeAgent: {
+            hook: "keyword-detector.ts",
+            matcher: "*",
+            timeout: 5,
+          },
+        },
+      }),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["gemini"]);
+
+    const writeCall = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(
+      (call: string[]) =>
+        typeof call[0] === "string" && call[0].includes(".gemini/settings.json"),
+    );
+    const settings = JSON.parse(writeCall?.[1] as string);
+    expect(settings.statusLine).toBeUndefined();
+  });
+
+  it("should not include statusLine for Codex variant", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({
+        vendor: "codex",
+        hookDir: ".codex/hooks",
+        settingsFile: ".codex/hooks.json",
+        projectDirEnv: null,
+        runtime: "bun",
+        events: {
+          UserPromptSubmit: {
+            hook: "keyword-detector.ts",
+            timeout: 5,
+          },
+        },
+      }),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
+
+    const writeCall = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(
+      (call: string[]) =>
+        typeof call[0] === "string" && call[0].includes(".codex/hooks.json"),
+    );
+    const settings = JSON.parse(writeCall?.[1] as string);
+    expect(settings.statusLine).toBeUndefined();
+  });
+
   it("should handle featureFlags for Codex variant", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({

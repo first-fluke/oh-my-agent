@@ -1,1 +1,0 @@
-../../.agents/hooks/core/persistent-mode.ts

@@ -1,1 +1,0 @@
-../../.agents/hooks/core/keyword-detector.ts

@@ -7,14 +7,11 @@ import {
   SKILLS,
 } from "../constants/index.js";
 import type { CliTool, CliVendor, SkillInfo } from "../types/index.js";
-import {
-  clearConflictingEntries,
-  clearNonDirectory,
-} from "../utils/fs-utils.js";
+import { clearNonDirectory } from "../utils/fs-utils.js";
 
+export * from "../constants/index.js";
 // Re-exports for backward compatibility
 export type { CliTool, CliVendor, SkillInfo } from "../types/index.js";
-export * from "../constants/index.js";
 export * from "../utils/fs-utils.js";
 export * from "./agent-composer.js";
 export * from "./hooks-composer.js";
@@ -173,32 +170,6 @@ export function installGlobalWorkflows(sourceDir: string): void {
 
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(src, dest, { recursive: true, force: true });
-}
-
-/** @deprecated Use installVendorAdaptations() instead for agent/workflow generation. */
-export function installClaudeSkills(
-  sourceDir: string,
-  targetDir: string,
-): void {
-  const srcSkills = join(sourceDir, ".claude", "skills");
-  const srcAgents = join(sourceDir, ".claude", "agents");
-  const destSkills = join(targetDir, ".claude", "skills");
-  const destAgents = join(targetDir, ".claude", "agents");
-
-  if (fs.existsSync(srcSkills)) {
-    clearNonDirectory(destSkills);
-    // Clear symlinks inside destination that conflict with source directories
-    clearConflictingEntries(srcSkills, destSkills);
-    fs.mkdirSync(destSkills, { recursive: true });
-    fs.cpSync(srcSkills, destSkills, { recursive: true, force: true });
-  }
-
-  if (fs.existsSync(srcAgents)) {
-    clearNonDirectory(destAgents);
-    clearConflictingEntries(srcAgents, destAgents);
-    fs.mkdirSync(destAgents, { recursive: true });
-    fs.cpSync(srcAgents, destAgents, { recursive: true, force: true });
-  }
 }
 
 export function getAllSkills(): SkillInfo[] {

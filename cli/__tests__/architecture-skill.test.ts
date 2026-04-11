@@ -83,7 +83,10 @@ describe("oma-architecture skill", () => {
 
   it("wires architecture workflow auto-detection and workflow guidance", () => {
     const triggers = JSON.parse(
-      readFileSync(join(PROJECT_ROOT, ".agents/hooks/core/triggers.json"), "utf-8"),
+      readFileSync(
+        join(PROJECT_ROOT, ".agents/hooks/core/triggers.json"),
+        "utf-8",
+      ),
     ) as {
       workflows: Record<
         string,
@@ -97,7 +100,10 @@ describe("oma-architecture skill", () => {
     expect(architectureTrigger?.keywords["*"]).toContain("architecture");
     expect(architectureTrigger?.keywords.en).toContain("system design");
 
-    const workflow = readFileSync(join(PROJECT_ROOT, ".agents/workflows/architecture.md"), "utf-8");
+    const workflow = readFileSync(
+      join(PROJECT_ROOT, ".agents/workflows/architecture.md"),
+      "utf-8",
+    );
     expect(workflow).toContain("Software architecture workflow");
     expect(workflow).toContain(".agents/skills/oma-architecture/SKILL.md");
     expect(workflow).toContain("suggest `/plan`");
