@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.28.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.27.1...cli-v4.28.0) (2026-04-11)
+
+
+### Features
+
+* **cli:** add cursor hooks and unify vendor guide generation ([aa21004](https://github.com/first-fluke/oh-my-agent/commit/aa210040ffa4dc6cac949986c4a563f98157ac94))
+* **cli:** align vendor artifacts with .agents SSOT ([988afbd](https://github.com/first-fluke/oh-my-agent/commit/988afbd739eec8ea2a782c17b39502c95578d459))
+
 ## [4.27.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.27.0...cli-v4.27.1) (2026-04-11)
 
 
