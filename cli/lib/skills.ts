@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -553,12 +554,32 @@ interface HookVariant {
   };
 }
 
+function quoteShellWord(value: string): string {
+  return `"${value.replaceAll('"', '\\"')}"`;
+}
+
+function resolveRuntimeCmd(runtime: string): string {
+  if (runtime === "bun") {
+    try {
+      const runtimePath = execFileSync("which", [runtime], {
+        encoding: "utf-8",
+      }).trim();
+      if (runtimePath) return quoteShellWord(runtimePath);
+    } catch {
+      // Fall back to the bare runtime name when shell lookup is unavailable.
+    }
+  }
+
+  return runtime;
+}
+
 /** Build hook command string from variant config. */
 function buildHookCmd(variant: HookVariant, script: string): string {
+  const runtimeCmd = resolveRuntimeCmd(variant.runtime);
   if (variant.projectDirEnv) {
-    return `${variant.runtime} "$${variant.projectDirEnv}/${variant.hookDir}/${script}"`;
+    return `${runtimeCmd} "$${variant.projectDirEnv}/${variant.hookDir}/${script}"`;
   }
-  return `${variant.runtime} ${variant.hookDir}/${script}`;
+  return `${runtimeCmd} ${variant.hookDir}/${script}`;
 }
 
 /**

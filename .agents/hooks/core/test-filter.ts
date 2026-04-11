@@ -38,6 +38,19 @@ function getProjectDir(
   return resolveGitRoot(dir);
 }
 
+function getHookDir(vendor: Vendor): string {
+  switch (vendor) {
+    case "codex":
+      return ".codex/hooks";
+    case "gemini":
+      return ".gemini/hooks";
+    case "qwen":
+      return ".qwen/hooks";
+    default:
+      return ".claude/hooks";
+  }
+}
+
 // --- Test runner patterns ---
 
 const TEST_PATTERNS = [
@@ -113,12 +126,7 @@ if (isExcluded) process.exit(0);
 // Detect vendor and resolve project dir
 const vendor = detectVendor(input);
 const projectDir = getProjectDir(vendor, input);
-const filterScript = join(
-  projectDir,
-  ".claude",
-  "hooks",
-  "filter-test-output.sh",
-);
+const filterScript = join(projectDir, getHookDir(vendor), "filter-test-output.sh");
 
 // Rewrite command to pipe through filter
 const filteredCmd = `set -o pipefail; (${command}) 2>&1 | bash "${filterScript}"`;

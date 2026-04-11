@@ -1,7 +1,12 @@
+import * as childProcess from "node:child_process";
 import * as fs from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installVendorAdaptations } from "../lib/skills.js";
+
+vi.mock("node:child_process", () => ({
+  execFileSync: vi.fn(),
+}));
 
 vi.mock("node:fs", () => ({
   existsSync: vi.fn(),
@@ -37,6 +42,9 @@ describe("installHooksFromVariant", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       "{}",
     );
+    (
+      childProcess.execFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mockReturnValue("/opt/homebrew/bin/bun\n");
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([]);
     (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       () => {
@@ -167,7 +175,44 @@ describe("installHooksFromVariant", () => {
     expect(tomlWrite?.[1]).toContain("codex_hooks = true");
   });
 
-  it("should use relative paths when projectDirEnv is null", () => {
+  it("should pin bun to an absolute path when it is resolvable", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({
+        vendor: "codex",
+        hookDir: ".codex/hooks",
+        settingsFile: ".codex/hooks.json",
+        projectDirEnv: null,
+        runtime: "bun",
+        events: {
+          UserPromptSubmit: {
+            hook: "keyword-detector.ts",
+            timeout: 5,
+          },
+        },
+      }),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
+
+    const writeCall = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(
+      (call: string[]) =>
+        typeof call[0] === "string" && call[0].includes("hooks.json"),
+    );
+    const settings = JSON.parse(writeCall?.[1] as string);
+    const cmd = settings.hooks.UserPromptSubmit[0].hooks[0].command;
+    expect(cmd).toBe('"/opt/homebrew/bin/bun" .codex/hooks/keyword-detector.ts');
+    expect(cmd).not.toContain("$");
+  });
+
+  it("should fall back to bare bun when runtime lookup fails", () => {
+    (
+      childProcess.execFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mockImplementation(() => {
+      throw new Error("bun not found");
+    });
+
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({
         vendor: "codex",
@@ -195,7 +240,6 @@ describe("installHooksFromVariant", () => {
     const settings = JSON.parse(writeCall?.[1] as string);
     const cmd = settings.hooks.UserPromptSubmit[0].hooks[0].command;
     expect(cmd).toBe("bun .codex/hooks/keyword-detector.ts");
-    expect(cmd).not.toContain("$");
   });
 
   it("should clear existing files before copying hooks to prevent EEXIST", () => {

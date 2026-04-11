@@ -3,13 +3,17 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const HOOK_PATH = join(__dirname, "../../.agents/hooks/core/test-filter.ts");
+const PROJECT_DIR = join(__dirname, "../..");
 
-function runHook(input: Record<string, unknown>): string {
+function runHook(
+  input: Record<string, unknown>,
+  env: NodeJS.ProcessEnv = {},
+): string {
   try {
     return execSync(`echo '${JSON.stringify(input)}' | bun "${HOOK_PATH}"`, {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, CLAUDE_PROJECT_DIR: join(__dirname, "../..") },
+      env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
     }).trim();
   } catch {
     return "";
@@ -131,6 +135,50 @@ describe("test-filter hook", () => {
       const updated = parsed.hookSpecificOutput.updatedInput;
       expect(updated.timeout).toBe(60000);
       expect(updated.description).toBe("tests");
+    });
+  });
+
+  describe("vendor hook paths", () => {
+    it("should use the Codex hook directory for Codex sessions", () => {
+      const result = runHook({
+        tool_name: "Bash",
+        tool_input: { command: "vitest --run" },
+        hook_event_name: "PreToolUse",
+        session_id: "s1",
+        cwd: PROJECT_DIR,
+      });
+
+      expect(result).toContain(".codex/hooks/filter-test-output.sh");
+      expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
+    });
+
+    it("should use the Gemini hook directory for Gemini sessions", () => {
+      const result = runHook(
+        {
+          tool_name: "Bash",
+          tool_input: { command: "vitest --run" },
+          hook_event_name: "BeforeTool",
+        },
+        { GEMINI_PROJECT_DIR: PROJECT_DIR },
+      );
+
+      expect(result).toContain(".gemini/hooks/filter-test-output.sh");
+      expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
+    });
+
+    it("should use the Qwen hook directory for Qwen sessions", () => {
+      const result = runHook(
+        {
+          tool_name: "Bash",
+          tool_input: { command: "vitest --run" },
+          hook_event_name: "PreToolUse",
+          sessionId: "s1",
+        },
+        { QWEN_PROJECT_DIR: PROJECT_DIR },
+      );
+
+      expect(result).toContain(".qwen/hooks/filter-test-output.sh");
+      expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
     });
   });
 });
