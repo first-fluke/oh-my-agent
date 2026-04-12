@@ -81,7 +81,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | 7 | `/debug` | Debug có cấu trúc tìm nguyên nhân gốc |
 | 8 | `/scm` | Quy trình SCM và Git, hỗ trợ Conventional Commits |
 
-**Tự động phát hiện**: Bạn thậm chí không cần slash command — các từ khóa như "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp.
+**Tự động phát hiện**: Bạn không nhất thiết cần slash command — các từ khóa như "kiến trúc", "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp.
 
 ## CLI
 

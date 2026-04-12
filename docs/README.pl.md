@@ -81,7 +81,7 @@ Lub uzyj slash commands do ustrukturyzowanych workflow:
 | 7 | `/debug` | Ustrukturyzowane debugowanie z analiza przyczyn |
 | 8 | `/scm` | Workflow SCM i Git oraz wsparcie Conventional Commits |
 
-**Autodetekcja**: Nie musisz nawet uzywac slash commands — slowa takie jak "plan", "review", "debug" w Twojej wiadomosci (w 11 jezykach!) automatycznie uruchamiaja odpowiedni workflow.
+**Autodetekcja**: Nie musisz nawet uzywac slash commands — slowa takie jak "architektura", "plan", "review" i "debug" w Twojej wiadomosci (w 11 jezykach!) automatycznie uruchamiaja odpowiedni workflow.
 
 ## CLI
 

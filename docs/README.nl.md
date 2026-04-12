@@ -81,7 +81,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | 7 | `/debug` | Gestructureerde root cause-debugging |
 | 8 | `/scm` | SCM- en Git-workflow met ondersteuning voor Conventional Commits |
 
-**Autodetectie**: Je hebt de slash commands niet eens nodig — woorden als "plan", "review", "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow.
+**Autodetectie**: Je hebt de slash commands niet eens nodig — woorden als "architectuur", "plan", "review" en "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow.
 
 ## CLI
 

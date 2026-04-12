@@ -81,7 +81,7 @@ O usa slash commands para flujos estructurados:
 | 7 | `/debug` | Debugging estructurado de causa raíz |
 | 8 | `/scm` | Flujo SCM y Git con soporte de Conventional Commits |
 
-**Auto-detección**: Ni siquiera necesitas slash commands — palabras clave como "plan", "review", "debug" en tu mensaje (¡en 11 idiomas!) activan automáticamente el flujo correcto.
+**Auto-detección**: Ni siquiera necesitas slash commands — palabras clave como "arquitectura", "plan", "review" y "debug" en tu mensaje (¡en 11 idiomas!) activan automáticamente el flujo correcto.
 
 ## CLI
 
