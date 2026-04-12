@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.31.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.30.2...cli-v4.31.0) (2026-04-12)
+
+
+### Features
+
+* **cli:** enhance Gemini CLI compatibility and hooks normalization ([059873e](https://github.com/first-fluke/oh-my-agent/commit/059873e820a5a4cbbf84e8a482a003db6d7db4bf))
+* **cli:** symlink Cursor MCP config to .agents/mcp.json on install/update ([c88d855](https://github.com/first-fluke/oh-my-agent/commit/c88d855f25d701c41d2fc4313ed8e9347744400a))
+
+
+### Documentation
+
+* align Thai README workflow step numbers with English ([59c8eb4](https://github.com/first-fluke/oh-my-agent/commit/59c8eb410c66e227299844ace4bfbb26fc96800c))
+* align workflow step numbers in How It Works section ([43a27d1](https://github.com/first-fluke/oh-my-agent/commit/43a27d11e7fc058da75ab4ff6a4b212fe94b66cc))
+* **i18n:** add Thai README and update localized links ([55b52f4](https://github.com/first-fluke/oh-my-agent/commit/55b52f42ffca9dc4a2e7751359c96c2126a9d926))
+* **i18n:** add Thai README and update localized links ([4b830e6](https://github.com/first-fluke/oh-my-agent/commit/4b830e6579aca4a0c0be483f8aeb95f01ab8519c))
+
 ## [4.30.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.30.1...cli-v4.30.2) (2026-04-12)
 
 
