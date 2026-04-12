@@ -38,7 +38,6 @@ bunx oh-my-agent@latest
 | **oma-architecture** | アーキテクチャのトレードオフと境界、ADR/ATAM/CBAMを踏まえた分析 |
 | **oma-backend** | Python、Node.js、RustでAPI開発 |
 | **oma-brainstorm** | 実装前にアイデアを探索 |
-| **oma-scm** | きれいなconventional commit |
 | **oma-db** | スキーマ設計、マイグレーション、インデックス、vector DB |
 | **oma-debug** | 根本原因分析、修正、リグレッションテスト |
 | **oma-design** | デザインシステム、トークン、アクセシビリティ、レスポンシブ |
@@ -49,6 +48,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | PDFからMarkdownへの変換 |
 | **oma-pm** | タスク計画、要件分解、APIコントラクト定義 |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティレビュー |
+| **oma-scm** | きれいなconventional commit |
 | **oma-tf-infra** | マルチクラウドTerraform IaC |
 | **oma-translator** | 自然な多言語翻訳 |
 

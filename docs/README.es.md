@@ -38,7 +38,6 @@ Elige un preset y listo:
 | **oma-architecture** | Trade-offs arquitectónicos, límites, análisis con mirada ADR/ATAM/CBAM |
 | **oma-backend** | APIs en Python, Node.js o Rust |
 | **oma-brainstorm** | Explora ideas antes de que te lances a construir |
-| **oma-scm** | Commits convencionales limpios |
 | **oma-db** | Diseño de esquemas, migraciones, indexación, vector DB |
 | **oma-debug** | Análisis de causa raíz, correcciones, tests de regresión |
 | **oma-design** | Sistemas de diseño, tokens, accesibilidad, responsive |
@@ -49,6 +48,7 @@ Elige un preset y listo:
 | **oma-pdf** | Conversión de PDF a Markdown |
 | **oma-pm** | Planifica tareas, desglosa requisitos, define contratos de API |
 | **oma-qa** | Seguridad OWASP, rendimiento, revisión de accesibilidad |
+| **oma-scm** | Commits convencionales limpios |
 | **oma-tf-infra** | IaC multi-cloud con Terraform |
 | **oma-translator** | Traducción multilingüe natural |
 

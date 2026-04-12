@@ -40,7 +40,6 @@ Pick a preset and you're ready:
 | **oma-architecture** | Architectural tradeoffs, boundaries, ADR/ATAM/CBAM-aware analysis |
 | **oma-backend** | APIs in Python, Node.js, or Rust |
 | **oma-brainstorm** | Explores ideas before you commit to building |
-| **oma-scm** | SCM (software configuration management) — branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-db** | Schema design, migrations, indexing, vector DB |
 | **oma-debug** | Root cause analysis, fixes, regression tests |
 | **oma-design** | Design systems, tokens, accessibility, responsive |
@@ -51,6 +50,7 @@ Pick a preset and you're ready:
 | **oma-pdf** | PDF to Markdown conversion |
 | **oma-pm** | Plans tasks, breaks down requirements, defines API contracts |
 | **oma-qa** | OWASP security, performance, accessibility review |
+| **oma-scm** | SCM (software configuration management) — branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-tf-infra** | Multi-cloud Terraform IaC |
 | **oma-translator** | Natural multilingual translation |
 

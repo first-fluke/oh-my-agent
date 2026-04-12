@@ -38,7 +38,6 @@ Kies een preset en je bent klaar:
 | **oma-architecture** | Architectuur-trade-offs, grenzen, ADR/ATAM/CBAM-bewuste analyse |
 | **oma-backend** | API's in Python, Node.js of Rust |
 | **oma-brainstorm** | Verkent ideeen voordat je begint met bouwen |
-| **oma-scm** | Nette conventional commits |
 | **oma-db** | Schema-ontwerp, migraties, indexering, vector DB |
 | **oma-debug** | Root cause-analyse, fixes, regressietests |
 | **oma-design** | Design systems, tokens, toegankelijkheid, responsive |
@@ -49,6 +48,7 @@ Kies een preset en je bent klaar:
 | **oma-pdf** | PDF naar Markdown conversie |
 | **oma-pm** | Plant taken, splitst requirements op, definieert API-contracten |
 | **oma-qa** | OWASP-beveiliging, performance, toegankelijkheidsreview |
+| **oma-scm** | Nette conventional commits |
 | **oma-tf-infra** | Multi-cloud Terraform IaC |
 | **oma-translator** | Natuurlijke meertalige vertaling |
 

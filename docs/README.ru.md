@@ -38,7 +38,6 @@ bunx oh-my-agent@latest
 | **oma-architecture** | Архитектурные компромиссы, границы модулей, анализ с опорой на ADR/ATAM/CBAM |
 | **oma-backend** | API на Python, Node.js или Rust |
 | **oma-brainstorm** | Исследует идеи, прежде чем вы начнете строить |
-| **oma-scm** | Чистые conventional commits |
 | **oma-db** | Проектирование схем, миграции, индексация, vector DB |
 | **oma-debug** | Анализ корневых причин, исправления, регрессионные тесты |
 | **oma-design** | Дизайн-системы, токены, доступность, адаптивность |
@@ -49,6 +48,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | Конвертация PDF в Markdown |
 | **oma-pm** | Планирует задачи, декомпозирует требования, определяет API-контракты |
 | **oma-qa** | Безопасность OWASP, производительность, ревью доступности |
+| **oma-scm** | Чистые conventional commits |
 | **oma-tf-infra** | Мультиоблачный IaC на Terraform |
 | **oma-translator** | Естественный мультиязычный перевод |
 

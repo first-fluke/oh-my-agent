@@ -38,7 +38,6 @@ bunx oh-my-agent@latest
 | **oma-architecture** | 架构权衡、边界划分，以及 ADR/ATAM/CBAM 视角下的分析 |
 | **oma-backend** | 用 Python、Node.js 或 Rust 开发 API |
 | **oma-brainstorm** | 动手之前先探索想法 |
-| **oma-scm** | 干净的 conventional commit |
 | **oma-db** | Schema 设计、迁移、索引、vector DB |
 | **oma-debug** | 根因分析、修复、回归测试 |
 | **oma-design** | 设计系统、token、无障碍、响应式 |
@@ -49,6 +48,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | PDF 转 Markdown |
 | **oma-pm** | 任务规划、需求拆解、API 契约定义 |
 | **oma-qa** | OWASP 安全、性能、无障碍审查 |
+| **oma-scm** | 干净的 conventional commit |
 | **oma-tf-infra** | 多云 Terraform IaC |
 | **oma-translator** | 自然的多语言翻译 |
 

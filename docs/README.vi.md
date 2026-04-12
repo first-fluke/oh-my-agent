@@ -38,7 +38,6 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-architecture** | Đánh đổi kiến trúc, ranh giới, phân tích theo hướng ADR/ATAM/CBAM |
 | **oma-backend** | Xây dựng API bằng Python, Node.js hoặc Rust |
 | **oma-brainstorm** | Khám phá ý tưởng trước khi bắt tay vào xây dựng |
-| **oma-scm** | Conventional commit gọn gàng |
 | **oma-db** | Thiết kế schema, migration, indexing, vector DB |
 | **oma-debug** | Phân tích nguyên nhân gốc, sửa lỗi, regression test |
 | **oma-design** | Hệ thống thiết kế, token, accessibility, responsive |
@@ -49,6 +48,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-pdf** | Chuyển đổi PDF sang Markdown |
 | **oma-pm** | Lập kế hoạch, phân tích yêu cầu, định nghĩa API contract |
 | **oma-qa** | Đánh giá bảo mật OWASP, hiệu suất, accessibility |
+| **oma-scm** | Conventional commit gọn gàng |
 | **oma-tf-infra** | Terraform IaC đa đám mây |
 | **oma-translator** | Dịch thuật đa ngôn ngữ tự nhiên |
 
