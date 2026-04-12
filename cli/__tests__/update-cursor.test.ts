@@ -136,8 +136,8 @@ describe("update cursor vendor adaptations", () => {
     expect(secondCursorRulesCall?.[0]).toContain(projectDir);
 
     expect(
-      (skills.ensureCursorMcpSymlink as unknown as ReturnType<typeof vi.fn>).mock
-        .calls.length,
+      (skills.ensureCursorMcpSymlink as unknown as ReturnType<typeof vi.fn>)
+        .mock.calls.length,
     ).toBeGreaterThan(0);
 
     const codexMergeCall = (

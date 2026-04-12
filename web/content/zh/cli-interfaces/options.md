@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-`--json` 标志是获取 JSON 输出最简单的方式。可用于：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`usage:anti`、`memory:init`、`verify`、`visualize`。
+`--json` 标志是获取 JSON 输出最简单的方式。可用于：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`memory:init`、`verify`、`visualize`。
 
 ### 2. --output 标志
 
@@ -65,7 +65,6 @@ oma retro    # 输出 JSON
 | `retro` | 是 | 是 | 包含指标、作者、提交类型的快照 |
 | `cleanup` | 是 | 是 | 已清理项目列表 |
 | `auth:status` | 是 | 是 | 每个 CLI 的认证状态 |
-| `usage:anti` | 是 | 是 | 模型使用配额 |
 | `memory:init` | 是 | 是 | 初始化结果 |
 | `verify` | 是 | 是 | 每项检查的验证结果 |
 | `visualize` | 是 | 是 | 依赖图的 JSON 表示 |
@@ -141,15 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. 孤立日志文件：`/tmp/subagent-*.log`，匹配已死亡 PID。
 3. Gemini Antigravity 目录：`.gemini/antigravity/brain/`、`.gemini/antigravity/implicit/`、`.gemini/antigravity/knowledge/` —— 这些会随时间积累状态并变得很大。
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-| 标志 | 说明 | 默认值 |
-|:-----|:-----|:-------|
-| `--raw` | 不解析直接转储来自 Antigravity IDE 的原始 RPC 响应。用于调试连接问题。 | `false` |
 
 ### agent:spawn
 

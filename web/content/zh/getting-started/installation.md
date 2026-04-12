@@ -133,7 +133,6 @@ oma describe            # 描述项目结构
 oma bridge              # Antigravity 的 SSE-to-stdio 桥接
 oma memory:init         # 初始化内存提供者
 oma auth:status         # 检查 CLI 认证状态
-oma usage:anti          # 使用量反模式检测
 oma star                # 为仓库加星
 ```
 

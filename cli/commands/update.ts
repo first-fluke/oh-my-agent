@@ -13,14 +13,14 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
 import {
+  applyRecommendedGeminiSettings,
+  needsGeminiSettingsUpdate,
+} from "../lib/gemini/settings.js";
+import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
 } from "../lib/github.js";
-import {
-  applyRecommendedGeminiSettings,
-  needsGeminiSettingsUpdate,
-} from "../lib/gemini/settings.js";
 import {
   fetchRemoteManifest,
   getLocalVersion,
@@ -288,7 +288,9 @@ export async function update(force = false, ci = false): Promise<void> {
         let geminiSettings: unknown = {};
         if (existsSync(geminiSettingsPath)) {
           try {
-            geminiSettings = JSON.parse(readFileSync(geminiSettingsPath, "utf-8"));
+            geminiSettings = JSON.parse(
+              readFileSync(geminiSettingsPath, "utf-8"),
+            );
           } catch {
             geminiSettings = {};
           }

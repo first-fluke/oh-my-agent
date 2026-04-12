@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-Flag `--json` là cách đơn giản nhất để lấy đầu ra JSON. Có sẵn trên: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+Flag `--json` là cách đơn giản nhất để lấy đầu ra JSON. Có sẵn trên: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. Flag --output
 
@@ -65,7 +65,6 @@ oma retro    # xuất JSON
 | `retro` | Có | Có | Snapshot với số liệu, tác giả, loại commit |
 | `cleanup` | Có | Có | Danh sách item đã dọn |
 | `auth:status` | Có | Có | Trạng thái xác thực theo CLI |
-| `usage:anti` | Có | Có | Quota sử dụng mô hình |
 | `memory:init` | Có | Có | Kết quả khởi tạo |
 | `verify` | Có | Có | Kết quả xác minh theo từng kiểm tra |
 | `visualize` | Có | Có | Đồ thị phụ thuộc dạng JSON |
@@ -141,15 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. File log mồ côi: `/tmp/subagent-*.log` khớp PID chết.
 3. Thư mục Gemini Antigravity: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — tích lũy trạng thái theo thời gian và có thể phình to.
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-| Flag | Mô tả | Mặc định |
-|:-----|:-----------|:--------|
-| `--raw` | Xuất phản hồi RPC thô từ Antigravity IDE mà không phân tích. Hữu ích cho gỡ lỗi vấn đề kết nối. | `false` |
 
 ### agent:spawn
 

@@ -184,13 +184,6 @@ oma auth:status [--json] [--output <format>]
 
 全CLI（Gemini、Claude、Codex、Qwen）の認証状態を確認。
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-Antigravity IDEのモデル使用クォータを表示。
 
 ### bridge
 

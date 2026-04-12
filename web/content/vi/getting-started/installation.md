@@ -133,7 +133,6 @@ oma describe            # Mô tả cấu trúc dự án
 oma bridge              # Bridge SSE-to-stdio cho Antigravity
 oma memory:init         # Khởi tạo nhà cung cấp bộ nhớ
 oma auth:status         # Kiểm tra trạng thái xác thực CLI
-oma usage:anti          # Phát hiện anti-pattern sử dụng
 oma star                # Star repository
 ```
 

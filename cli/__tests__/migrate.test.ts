@@ -510,7 +510,9 @@ describe("migrateRenameOmaScm (005)", () => {
     const actions = migrateRenameOmaScm.up(root);
 
     expect(actions).toContain("skills/oma-commit → skills/oma-scm");
-    expect(existsSync(join(root, ".agents", "skills", "oma-commit"))).toBe(false);
+    expect(existsSync(join(root, ".agents", "skills", "oma-commit"))).toBe(
+      false,
+    );
     expect(existsSync(join(root, ".agents", "skills", "oma-scm"))).toBe(true);
   });
 
@@ -520,7 +522,11 @@ describe("migrateRenameOmaScm (005)", () => {
 
     const workflowDir = join(root, ".agents", "workflows");
     mkdirSync(workflowDir, { recursive: true });
-    writeFileSync(join(workflowDir, "commit.md"), "# legacy workflow\n", "utf-8");
+    writeFileSync(
+      join(workflowDir, "commit.md"),
+      "# legacy workflow\n",
+      "utf-8",
+    );
 
     const actions = migrateRenameOmaScm.up(root);
 
@@ -539,7 +545,9 @@ describe("migrateRenameOmaScm (005)", () => {
 
     const actions = migrateRenameOmaScm.up(root);
 
-    expect(actions).toContain("skills/oma-commit (removed, replaced by oma-scm)");
+    expect(actions).toContain(
+      "skills/oma-commit (removed, replaced by oma-scm)",
+    );
     expect(existsSync(oldSkillDir)).toBe(false);
     expect(existsSync(newSkillDir)).toBe(true);
   });
@@ -578,7 +586,8 @@ describe("migrateGeminiCliCompat (006)", () => {
               {
                 hooks: [
                   {
-                    command: 'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/keyword-detector.ts"',
+                    command:
+                      'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/keyword-detector.ts"',
                     timeout: 5,
                   },
                 ],
@@ -589,7 +598,8 @@ describe("migrateGeminiCliCompat (006)", () => {
                 matcher: "Bash",
                 hooks: [
                   {
-                    command: 'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/test-filter.ts"',
+                    command:
+                      'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/test-filter.ts"',
                     timeout: 5,
                   },
                 ],
@@ -651,7 +661,8 @@ describe("migrateGeminiCliCompat (006)", () => {
                 hooks: [
                   {
                     name: "keyword-detector",
-                    command: 'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/keyword-detector.ts"',
+                    command:
+                      'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/keyword-detector.ts"',
                     timeout: 5000,
                   },
                 ],
@@ -663,7 +674,8 @@ describe("migrateGeminiCliCompat (006)", () => {
                 hooks: [
                   {
                     name: "test-filter",
-                    command: 'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/test-filter.ts"',
+                    command:
+                      'bun "$GEMINI_PROJECT_DIR/.gemini/hooks/test-filter.ts"',
                     timeout: 5000,
                   },
                 ],

@@ -4,7 +4,6 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { fetchQuota } from "../lib/antigravity-bridge.js";
 import { isGhAuthenticated } from "../lib/github.js";
 
 export function isClaudeAuthenticated(): boolean {
@@ -54,10 +53,7 @@ export function isQwenAuthenticated(): boolean {
 }
 
 export async function checkAuthStatus(jsonMode = false): Promise<void> {
-  const [github, antigravity] = await Promise.all([
-    isGhAuthenticated(),
-    fetchQuota().then((q) => !!q),
-  ]);
+  const github = isGhAuthenticated();
 
   const gemini = isGeminiAuthenticated();
   const claude = isClaudeAuthenticated();
@@ -70,7 +66,6 @@ export async function checkAuthStatus(jsonMode = false): Promise<void> {
     claude,
     codex,
     qwen,
-    antigravity,
   };
 
   if (jsonMode) {
@@ -90,7 +85,6 @@ export async function checkAuthStatus(jsonMode = false): Promise<void> {
     ["Claude CLI", claude],
     ["Codex CLI", codex],
     ["Qwen CLI", qwen],
-    ["Antigravity", antigravity],
   ] as const;
 
   p.note(

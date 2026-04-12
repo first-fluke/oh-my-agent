@@ -133,7 +133,6 @@ oma describe            # Projectstructuur beschrijven
 oma bridge              # SSE-naar-stdio bridge voor Antigravity
 oma memory:init         # Geheugenprovider initialiseren
 oma auth:status         # CLI-authenticatiestatus controleren
-oma usage:anti          # Gebruiks-anti-patroondetectie
 oma star                # Repository een ster geven
 ```
 

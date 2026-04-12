@@ -133,7 +133,6 @@ oma describe            # プロジェクト構造の説明
 oma bridge              # Antigravity用SSE-to-stdioブリッジ
 oma memory:init         # メモリプロバイダーの初期化
 oma auth:status         # CLI認証状態の確認
-oma usage:anti          # 使用アンチパターン検出
 oma star                # リポジトリにスターを付ける
 ```
 

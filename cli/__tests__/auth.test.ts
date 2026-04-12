@@ -20,11 +20,6 @@ vi.mock("../lib/github.js", () => ({
   isGhAuthenticated: () => isGhAuthenticatedMock(),
 }));
 
-const fetchQuotaMock = vi.fn();
-vi.mock("../lib/antigravity-bridge.js", () => ({
-  fetchQuota: () => fetchQuotaMock(),
-}));
-
 vi.mock("@clack/prompts", () => ({
   intro: vi.fn(),
   outro: vi.fn(),
@@ -45,7 +40,6 @@ describe("auth:status command", () => {
   describe("all authenticated", () => {
     it("should report all as authenticated in JSON mode", async () => {
       isGhAuthenticatedMock.mockReturnValue(true);
-      fetchQuotaMock.mockResolvedValue({ userName: "test-user" });
       execSyncMock.mockReturnValue(JSON.stringify({ loggedIn: true }));
       mockFsFunctions.existsSync.mockReturnValue(true);
       mockFsFunctions.readFileSync.mockImplementation((path: string) => {
@@ -78,7 +72,6 @@ describe("auth:status command", () => {
         claude: true,
         codex: true,
         qwen: true,
-        antigravity: true,
       });
     });
   });
@@ -86,7 +79,6 @@ describe("auth:status command", () => {
   describe("none authenticated", () => {
     it("should report all as not authenticated in JSON mode", async () => {
       isGhAuthenticatedMock.mockReturnValue(false);
-      fetchQuotaMock.mockResolvedValue(null);
       execSyncMock.mockImplementation(() => {
         throw new Error("not authenticated");
       });
@@ -102,7 +94,6 @@ describe("auth:status command", () => {
         claude: false,
         codex: false,
         qwen: false,
-        antigravity: false,
       });
     });
   });
@@ -110,7 +101,6 @@ describe("auth:status command", () => {
   describe("claude auth", () => {
     beforeEach(() => {
       isGhAuthenticatedMock.mockReturnValue(false);
-      fetchQuotaMock.mockResolvedValue(null);
       mockFsFunctions.existsSync.mockReturnValue(false);
     });
 
@@ -148,7 +138,6 @@ describe("auth:status command", () => {
   describe("gemini auth", () => {
     beforeEach(() => {
       isGhAuthenticatedMock.mockReturnValue(false);
-      fetchQuotaMock.mockResolvedValue(null);
       execSyncMock.mockImplementation(() => {
         throw new Error("fail");
       });
@@ -199,7 +188,6 @@ describe("auth:status command", () => {
   describe("codex auth", () => {
     beforeEach(() => {
       isGhAuthenticatedMock.mockReturnValue(false);
-      fetchQuotaMock.mockResolvedValue(null);
       execSyncMock.mockImplementation(() => {
         throw new Error("fail");
       });
@@ -237,7 +225,6 @@ describe("auth:status command", () => {
   describe("qwen auth", () => {
     beforeEach(() => {
       isGhAuthenticatedMock.mockReturnValue(false);
-      fetchQuotaMock.mockResolvedValue(null);
       execSyncMock.mockImplementation(() => {
         throw new Error("fail");
       });
@@ -289,7 +276,6 @@ describe("auth:status command", () => {
   describe("interactive mode", () => {
     it("should render table via p.note when not in JSON mode", async () => {
       isGhAuthenticatedMock.mockReturnValue(true);
-      fetchQuotaMock.mockResolvedValue({ userName: "test-user" });
       execSyncMock.mockReturnValue(JSON.stringify({ loggedIn: true }));
       mockFsFunctions.existsSync.mockReturnValue(true);
       mockFsFunctions.readFileSync.mockImplementation((path: string) => {
@@ -327,7 +313,6 @@ describe("auth:status command", () => {
   describe("corrupted files", () => {
     beforeEach(() => {
       isGhAuthenticatedMock.mockReturnValue(false);
-      fetchQuotaMock.mockResolvedValue(null);
       execSyncMock.mockImplementation(() => {
         throw new Error("fail");
       });

@@ -27,7 +27,7 @@ oma stats --json
 oma doctor --json
 ```
 
-Beschikbaar op: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+Beschikbaar op: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. --output Vlag
 
@@ -56,7 +56,6 @@ oma stats    # levert JSON
 | `retro` | Ja | Ja | Snapshot met metrieken, auteurs, committypes |
 | `cleanup` | Ja | Ja | Lijst van opgeruimde items |
 | `auth:status` | Ja | Ja | Authenticatiestatus per CLI |
-| `usage:anti` | Ja | Ja | Modelgebruiksquota |
 | `memory:init` | Ja | Ja | Initialisatieresultaat |
 | `verify` | Ja | Ja | Verificatieresultaten per controle |
 | `visualize` | Ja | Ja | Afhankelijkheidsgrafiek als JSON |

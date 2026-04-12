@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   applyRecommendedGeminiSettings,
-  RECOMMENDED_GEMINI_EXPERIMENTAL,
   needsGeminiSettingsUpdate,
+  RECOMMENDED_GEMINI_EXPERIMENTAL,
   RECOMMENDED_GEMINI_GENERAL,
   RECOMMENDED_GEMINI_MCP,
   sanitizeGeminiSettings,

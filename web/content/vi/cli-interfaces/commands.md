@@ -513,30 +513,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-### usage:anti
-
-Hiển thị quota sử dụng mô hình từ Antigravity IDE cục bộ.
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-**Tùy chọn:**
-
-| Flag | Mô tả |
-|:-----|:-----------|
-| `--json` | Xuất dạng JSON |
-| `--output <format>` | Định dạng đầu ra (`text` hoặc `json`) |
-| `--raw` | Xuất phản hồi RPC thô từ Antigravity |
-
-**Hoạt động:** Kết nối đến instance Antigravity IDE cục bộ và truy vấn quota sử dụng mô hình.
-
-**Ví dụ:**
-```bash
-oma usage:anti
-oma usage:anti --raw
-oma usage:anti --json
-```
 
 ### bridge
 

@@ -499,30 +499,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-### usage:anti
-
-Modell-Nutzungskontingente der lokalen Antigravity IDE anzeigen.
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-**Optionen:**
-
-| Flag | Beschreibung |
-|:-----|:-----------|
-| `--json` | Ausgabe als JSON |
-| `--output <format>` | Ausgabeformat (`text` oder `json`) |
-| `--raw` | Rohe RPC-Antwort von Antigravity ausgeben |
-
-**Funktionsweise:** Verbindet sich mit der lokalen Antigravity-IDE-Instanz und ruft Modell-Nutzungskontingente ab.
-
-**Beispiele:**
-```bash
-oma usage:anti
-oma usage:anti --raw
-oma usage:anti --json
-```
 
 ### bridge
 

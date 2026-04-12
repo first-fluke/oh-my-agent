@@ -75,9 +75,7 @@ const GEMINI_ALLOWED_MCP_SERVER_KEYS = new Set([
   "targetServiceAccount",
 ]);
 
-function sanitizeGeminiMcpServer(
-  server: GeminiMcpServer,
-): GeminiMcpServer {
+function sanitizeGeminiMcpServer(server: GeminiMcpServer): GeminiMcpServer {
   const nextServer: GeminiMcpServer = {};
 
   for (const [key, value] of Object.entries(server)) {

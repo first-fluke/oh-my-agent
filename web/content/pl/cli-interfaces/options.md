@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-Dostępna na: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+Dostępna na: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. Flaga --output
 

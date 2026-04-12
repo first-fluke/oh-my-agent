@@ -133,7 +133,6 @@ oma describe            # Descrever estrutura do projeto
 oma bridge              # Bridge SSE-para-stdio para Antigravity
 oma memory:init         # Inicializar provedor de memória
 oma auth:status         # Verificar status de autenticação CLI
-oma usage:anti          # Detecção de anti-padrões de uso
 oma star                # Dar estrela no repositório
 ```
 

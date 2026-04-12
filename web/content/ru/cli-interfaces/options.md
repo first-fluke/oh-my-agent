@@ -27,7 +27,7 @@ oma stats --json
 oma doctor --json
 ```
 
-Доступен для: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+Доступен для: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. Флаг --output
 
@@ -57,7 +57,6 @@ oma doctor   # выдаёт JSON
 | `retro` | Да | Да | Снапшот с метриками, авторами |
 | `cleanup` | Да | Да | Список очищенного |
 | `auth:status` | Да | Да | Статус аутентификации |
-| `usage:anti` | Да | Да | Квоты моделей |
 | `memory:init` | Да | Да | Результат инициализации |
 | `verify` | Да | Да | Результаты проверок |
 | `visualize` | Да | Да | Граф зависимостей |
@@ -112,9 +111,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json]
 
 Очищает: осиротевшие PID-файлы (`/tmp/subagent-*.pid`), логи (`/tmp/subagent-*.log`), директории Gemini Antigravity.
 
-### usage:anti
-
-`--raw` — дамп сырого RPC-ответа от Antigravity IDE.
 
 ### agent:spawn
 

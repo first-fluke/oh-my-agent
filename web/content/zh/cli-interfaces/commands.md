@@ -499,30 +499,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-### usage:anti
-
-显示本地 Antigravity IDE 的模型使用配额。
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-**选项：**
-
-| 标志 | 说明 |
-|:-----|:-----|
-| `--json` | 以 JSON 输出 |
-| `--output <format>` | 输出格式（`text` 或 `json`） |
-| `--raw` | 转储来自 Antigravity 的原始 RPC 响应 |
-
-**功能：** 连接本地 Antigravity IDE 实例并查询模型使用配额。
-
-**示例：**
-```bash
-oma usage:anti
-oma usage:anti --raw
-oma usage:anti --json
-```
 
 ### bridge
 

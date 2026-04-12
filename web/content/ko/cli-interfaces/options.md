@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-`--json` 플래그는 JSON 출력을 얻는 가장 간단한 방법입니다. 사용 가능한 명령: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+`--json` 플래그는 JSON 출력을 얻는 가장 간단한 방법입니다. 사용 가능한 명령: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. --output 플래그
 
@@ -65,7 +65,6 @@ oma retro    # JSON 출력
 | `retro` | 예 | 예 | 메트릭, 작성자, 커밋 타입이 포함된 스냅샷 |
 | `cleanup` | 예 | 예 | 정리된 항목 목록 |
 | `auth:status` | 예 | 예 | CLI별 인증 상태 |
-| `usage:anti` | 예 | 예 | 모델 사용량 할당 |
 | `memory:init` | 예 | 예 | 초기화 결과 |
 | `verify` | 예 | 예 | 검사별 검증 결과 |
 | `visualize` | 예 | 예 | JSON 형태의 의존성 그래프 |
@@ -141,15 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. 고아 로그 파일: 죽은 PID에 매칭되는 `/tmp/subagent-*.log`.
 3. Gemini Antigravity 디렉토리: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — 시간이 지남에 따라 상태가 누적되어 커질 수 있습니다.
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-| 플래그 | 설명 | 기본값 |
-|:-------|:-----|:-------|
-| `--raw` | 파싱 없이 Antigravity IDE의 원시 RPC 응답을 덤프합니다. 연결 문제 디버깅에 유용합니다. | `false` |
 
 ### agent:spawn
 

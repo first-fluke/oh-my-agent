@@ -181,12 +181,6 @@ oma auth:status [--json] [--output <format>]
 ```
 Sprawdza uwierzytelnianie: Gemini (klucz API), Claude (klucz API lub OAuth), Codex, Qwen.
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-Kwoty użycia modeli z lokalnego Antigravity IDE.
 
 ### bridge
 

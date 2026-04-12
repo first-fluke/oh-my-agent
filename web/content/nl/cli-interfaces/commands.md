@@ -184,11 +184,6 @@ oma auth:status [--json]
 ```
 Authenticatiestatus van alle ondersteunde CLI's.
 
-### usage:anti
-```
-oma usage:anti [--json] [--raw]
-```
-Modelgebruiksquota van Antigravity IDE.
 
 ### bridge
 ```

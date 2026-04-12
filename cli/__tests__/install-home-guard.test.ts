@@ -87,7 +87,9 @@ vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
 vi.mock("../lib/github.js", () => githubState);
 vi.mock("../lib/skills.js", () => skillsState);
-vi.mock("./migrations/index.js", () => ({ runMigrations: miscState.runMigrations }));
+vi.mock("./migrations/index.js", () => ({
+  runMigrations: miscState.runMigrations,
+}));
 vi.mock("../lib/competitors.js", () => ({
   promptUninstallCompetitors: miscState.promptUninstallCompetitors,
 }));
@@ -117,7 +119,9 @@ describe("install home safety", () => {
 
     process.env.HOME = "/tmp/test-home";
 
-    promptState.select.mockResolvedValueOnce("en").mockResolvedValueOnce("custom");
+    promptState.select
+      .mockResolvedValueOnce("en")
+      .mockResolvedValueOnce("custom");
     promptState.multiselect
       .mockResolvedValueOnce(["oma-frontend"])
       .mockResolvedValueOnce(["gemini"]);
@@ -138,9 +142,9 @@ describe("install home safety", () => {
   it("does not write to HOME-level vendor settings", async () => {
     await install();
 
-    const writes = (fs.writeFileSync as ReturnType<typeof vi.fn>).mock.calls.map(
-      (call: unknown[]) => String(call[0]),
-    );
+    const writes = (
+      fs.writeFileSync as ReturnType<typeof vi.fn>
+    ).mock.calls.map((call: unknown[]) => String(call[0]));
     expect(writes.length).toBeGreaterThan(0);
     expect(
       writes.some(

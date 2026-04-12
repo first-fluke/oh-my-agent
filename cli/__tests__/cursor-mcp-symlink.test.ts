@@ -56,7 +56,11 @@ describe("ensureCursorMcpSymlink", () => {
     mkdirSync(join(root, ".agents"), { recursive: true });
     writeFileSync(join(root, ".agents", "mcp.json"), "{}\n", "utf-8");
     mkdirSync(join(root, ".cursor"), { recursive: true });
-    writeFileSync(join(root, ".cursor", "mcp.json"), '{"local":true}\n', "utf-8");
+    writeFileSync(
+      join(root, ".cursor", "mcp.json"),
+      '{"local":true}\n',
+      "utf-8",
+    );
 
     ensureCursorMcpSymlink(root);
 

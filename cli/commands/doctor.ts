@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";

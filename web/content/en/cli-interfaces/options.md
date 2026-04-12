@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. --output Flag
 
@@ -65,7 +65,6 @@ Set this environment variable to `json` to force JSON output on all commands tha
 | `retro` | Yes | Yes | Snapshot with metrics, authors, commit types |
 | `cleanup` | Yes | Yes | List of cleaned items |
 | `auth:status` | Yes | Yes | Authentication status per CLI |
-| `usage:anti` | Yes | Yes | Model usage quotas |
 | `memory:init` | Yes | Yes | Initialization result |
 | `verify` | Yes | Yes | Verification results per check |
 | `visualize` | Yes | Yes | Dependency graph as JSON |
@@ -141,15 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Orphaned log files: `/tmp/subagent-*.log` matching dead PIDs.
 3. Gemini Antigravity directories: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — these accumulate state over time and can grow large.
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-| Flag | Description | Default |
-|:-----|:-----------|:--------|
-| `--raw` | Dump the raw RPC response from Antigravity IDE without parsing. Useful for debugging connection issues. | `false` |
 
 ### agent:spawn
 

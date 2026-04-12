@@ -2,8 +2,8 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   applyRecommendedGeminiSettings,
-  sanitizeGeminiSettings,
   type GeminiSettings,
+  sanitizeGeminiSettings,
 } from "../../lib/gemini/settings.js";
 import type { Migration } from "./index.js";
 
@@ -39,7 +39,11 @@ function normalizeGeminiProjectHooks(settings: GeminiSettings): boolean {
         }
       }
 
-      if (typeof hook.timeout === "number" && hook.timeout > 0 && hook.timeout < 1000) {
+      if (
+        typeof hook.timeout === "number" &&
+        hook.timeout > 0 &&
+        hook.timeout < 1000
+      ) {
         hook.timeout = hook.timeout * 1000;
         changed = true;
       }
@@ -69,7 +73,11 @@ function normalizeGeminiProjectHooks(settings: GeminiSettings): boolean {
           }
         }
 
-        if (typeof hook.timeout === "number" && hook.timeout > 0 && hook.timeout < 1000) {
+        if (
+          typeof hook.timeout === "number" &&
+          hook.timeout > 0 &&
+          hook.timeout < 1000
+        ) {
           hook.timeout = hook.timeout * 1000;
           changed = true;
         }
@@ -89,7 +97,9 @@ export const migrateGeminiCliCompat: Migration = {
 
     let parsed: GeminiSettings;
     try {
-      parsed = JSON.parse(readFileSync(settingsPath, "utf-8")) as GeminiSettings;
+      parsed = JSON.parse(
+        readFileSync(settingsPath, "utf-8"),
+      ) as GeminiSettings;
     } catch {
       return actions;
     }
@@ -98,7 +108,8 @@ export const migrateGeminiCliCompat: Migration = {
     const normalizedHooksChanged = normalizeGeminiProjectHooks(sanitized);
     const beforeRecommended = JSON.stringify(sanitized);
     const nextSettings = applyRecommendedGeminiSettings(sanitized);
-    const compatibilityChanged = beforeRecommended !== JSON.stringify(nextSettings);
+    const compatibilityChanged =
+      beforeRecommended !== JSON.stringify(nextSettings);
 
     if (!compatibilityChanged && !normalizedHooksChanged) {
       return actions;
@@ -110,7 +121,9 @@ export const migrateGeminiCliCompat: Migration = {
       actions.push(".gemini/settings.json (Gemini CLI compatibility updated)");
     }
     if (normalizedHooksChanged) {
-      actions.push(".gemini/settings.json hooks (Gemini matcher/timeout normalized)");
+      actions.push(
+        ".gemini/settings.json hooks (Gemini matcher/timeout normalized)",
+      );
     }
 
     return actions;

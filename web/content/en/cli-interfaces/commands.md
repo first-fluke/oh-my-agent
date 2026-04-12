@@ -505,7 +505,7 @@ oma auth:status [--json] [--output <format>]
 | `--json` | Output as JSON |
 | `--output <format>` | Output format (`text` or `json`) |
 
-**Checks:** Gemini (API key), Claude (API key or OAuth), Codex (API key), Qwen (API key).
+**Checks:** GitHub CLI (`gh`), Gemini CLI, Claude CLI, Codex CLI, Qwen CLI.
 
 **Examples:**
 ```bash
@@ -513,30 +513,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-### usage:anti
-
-Show model usage quotas from the local Antigravity IDE.
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-**Options:**
-
-| Flag | Description |
-|:-----|:-----------|
-| `--json` | Output as JSON |
-| `--output <format>` | Output format (`text` or `json`) |
-| `--raw` | Dump the raw RPC response from Antigravity |
-
-**What it does:** Connects to the local Antigravity IDE instance and queries model usage quotas.
-
-**Examples:**
-```bash
-oma usage:anti
-oma usage:anti --raw
-oma usage:anti --json
-```
 
 ### bridge
 

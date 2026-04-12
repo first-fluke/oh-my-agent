@@ -169,7 +169,8 @@ describe("installHooksFromVariant", () => {
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && call[0].includes(".gemini/settings.json"),
+        typeof call[0] === "string" &&
+        call[0].includes(".gemini/settings.json"),
     );
     const settings = JSON.parse(writeCall?.[1] as string);
     expect(settings.statusLine).toBeUndefined();

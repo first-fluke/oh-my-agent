@@ -183,13 +183,6 @@ oma auth:status [--json]
 
 Проверяет: Gemini (API key), Claude (API key/OAuth), Codex (API key), Qwen (API key).
 
-### usage:anti
-
-```bash
-oma usage:anti [--json] [--raw]
-```
-
-Квоты использования моделей из локального Antigravity IDE.
 
 ### bridge
 

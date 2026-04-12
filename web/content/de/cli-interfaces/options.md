@@ -30,7 +30,7 @@ oma doctor --json
 oma cleanup --json
 ```
 
-Das `--json`-Flag ist der einfachste Weg zur JSON-Ausgabe. Verfügbar bei: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `usage:anti`, `memory:init`, `verify`, `visualize`.
+Das `--json`-Flag ist der einfachste Weg zur JSON-Ausgabe. Verfügbar bei: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
 ### 2. --output-Flag
 
@@ -65,7 +65,6 @@ Setzen Sie diese Umgebungsvariable auf `json`, um JSON-Ausgabe bei allen Befehle
 | `retro` | Ja | Ja | Snapshot mit Metriken, Autoren, Commit-Typen |
 | `cleanup` | Ja | Ja | Liste der bereinigten Elemente |
 | `auth:status` | Ja | Ja | Authentifizierungsstatus pro CLI |
-| `usage:anti` | Ja | Ja | Modell-Nutzungskontingente |
 | `memory:init` | Ja | Ja | Initialisierungsergebnis |
 | `verify` | Ja | Ja | Verifikationsergebnisse pro Prüfung |
 | `visualize` | Ja | Ja | Abhängigkeitsgraph als JSON |
@@ -141,15 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Verwaiste Logdateien: `/tmp/subagent-*.log`, die zu beendeten PIDs gehören.
 3. Gemini-Antigravity-Verzeichnisse: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — diese sammeln über die Zeit Zustand an und können groß werden.
 
-### usage:anti
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-| Flag | Beschreibung | Standard |
-|:-----|:-----------|:--------|
-| `--raw` | Rohe RPC-Antwort von Antigravity IDE ohne Verarbeitung ausgeben. Nützlich zum Debuggen von Verbindungsproblemen. | `false` |
 
 ### agent:spawn
 

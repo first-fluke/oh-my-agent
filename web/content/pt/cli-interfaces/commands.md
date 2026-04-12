@@ -460,13 +460,6 @@ oma auth:status [--json] [--output <format>]
 
 **Verifica:** Gemini (API key), Claude (API key ou OAuth), Codex (API key), Qwen (API key).
 
-### usage:anti
-
-Mostrar cotas de uso de modelo do Antigravity IDE local.
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
 
 ### bridge
 

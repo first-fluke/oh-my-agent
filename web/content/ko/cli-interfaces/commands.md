@@ -511,30 +511,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-### usage:anti
-
-로컬 Antigravity IDE의 모델 사용량 할당을 표시합니다.
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-**옵션:**
-
-| 플래그 | 설명 |
-|:-------|:-----|
-| `--json` | JSON으로 출력 |
-| `--output <format>` | 출력 형식 (`text` 또는 `json`) |
-| `--raw` | Antigravity의 원시 RPC 응답을 덤프 |
-
-**수행 내용:** 로컬 Antigravity IDE 인스턴스에 연결하여 모델 사용량 할당을 조회합니다.
-
-**예시:**
-```bash
-oma usage:anti
-oma usage:anti --raw
-oma usage:anti --json
-```
 
 ### bridge
 

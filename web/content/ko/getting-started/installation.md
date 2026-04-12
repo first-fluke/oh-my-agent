@@ -135,7 +135,6 @@ oma describe            # 프로젝트 구조 설명
 oma bridge              # Antigravity용 SSE-to-stdio 브릿지
 oma memory:init         # 메모리 프로바이더 초기화
 oma auth:status         # CLI 인증 상태 확인
-oma usage:anti          # 사용 안티패턴 감지
 oma star                # 리포지토리 스타
 ```
 

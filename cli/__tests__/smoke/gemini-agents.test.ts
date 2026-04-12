@@ -1,9 +1,4 @@
-import {
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-} from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -60,9 +55,10 @@ describe("gemini agent generation smoke test", () => {
         ).toBe(true);
       }
 
-      expect(generated.frontmatter.skills, `${file} should not emit skills`).toBe(
-        undefined,
-      );
+      expect(
+        generated.frontmatter.skills,
+        `${file} should not emit skills`,
+      ).toBe(undefined);
 
       if (Array.isArray(source.frontmatter.skills)) {
         expect(generated.body).toContain("## Skill References");

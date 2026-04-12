@@ -499,30 +499,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-### usage:anti
-
-Affiche les quotas d'utilisation des modèles depuis l'IDE Antigravity local.
-
-```
-oma usage:anti [--json] [--output <format>] [--raw]
-```
-
-**Options :**
-
-| Flag | Description |
-|:-----|:-----------|
-| `--json` | Sortie au format JSON |
-| `--output <format>` | Format de sortie (`text` ou `json`) |
-| `--raw` | Afficher la réponse RPC brute d'Antigravity |
-
-**Ce qu'elle fait :** Se connecte à l'instance locale de l'IDE Antigravity et interroge les quotas d'utilisation des modèles.
-
-**Exemples :**
-```bash
-oma usage:anti
-oma usage:anti --raw
-oma usage:anti --json
-```
 
 ### bridge
 

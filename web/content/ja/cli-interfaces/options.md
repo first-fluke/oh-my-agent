@@ -25,7 +25,7 @@ oma stats --json
 oma doctor --json
 ```
 
-対応コマンド：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`usage:anti`、`memory:init`、`verify`、`visualize`。
+対応コマンド：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`memory:init`、`verify`、`visualize`。
 
 ### 2. --outputフラグ
 
@@ -84,11 +84,6 @@ oma update [-f | --force] [--ci]
 
 クリーンアップ対象：孤立PIDファイル（`/tmp/subagent-*.pid`）、孤立ログファイル、Gemini Antigravityディレクトリ。
 
-### usage:anti
-
-| フラグ | 説明 |
-|:-----|:-----------|
-| `--raw` | Antigravity IDEの生RPCレスポンスをダンプ |
 
 ### agent:spawn
 

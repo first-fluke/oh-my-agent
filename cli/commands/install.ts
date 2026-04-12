@@ -5,14 +5,14 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
 import {
+  applyRecommendedGeminiSettings,
+  needsGeminiSettingsUpdate,
+} from "../lib/gemini/settings.js";
+import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
 } from "../lib/github.js";
-import {
-  applyRecommendedGeminiSettings,
-  needsGeminiSettingsUpdate,
-} from "../lib/gemini/settings.js";
 import { getLocalVersion, saveLocalVersion } from "../lib/manifest.js";
 import { generateCursorRules, mergeRulesIndexForVendor } from "../lib/rules.js";
 import { ensureSerenaProject, resolveSerenaLanguages } from "../lib/serena.js";
@@ -284,7 +284,9 @@ export async function install(): Promise<void> {
         let geminiSettings: unknown = {};
         if (existsSync(geminiSettingsPath)) {
           try {
-            geminiSettings = JSON.parse(readFileSync(geminiSettingsPath, "utf-8"));
+            geminiSettings = JSON.parse(
+              readFileSync(geminiSettingsPath, "utf-8"),
+            );
           } catch {
             geminiSettings = {};
           }

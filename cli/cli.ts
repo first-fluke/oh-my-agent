@@ -17,7 +17,6 @@ import { retro } from "./commands/retro.js";
 import { star } from "./commands/star.js";
 import { stats } from "./commands/stats.js";
 import { update } from "./commands/update.js";
-import { usage } from "./commands/usage.js";
 import { verify } from "./commands/verify.js";
 import { visualize } from "./commands/visualize.js";
 import { startDashboard } from "./dashboard.js";
@@ -446,20 +445,6 @@ addOutputOptions(
   runAction(
     async (options) => {
       await checkAuthStatus(resolveJsonMode(options));
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
-addOutputOptions(
-  program
-    .command("usage:anti")
-    .description("Show model usage quotas (connects to local Antigravity IDE)")
-    .option("--raw", "Dump raw RPC response"),
-).action(
-  runAction(
-    async (options) => {
-      await usage(resolveJsonMode(options), options.raw);
     },
     { supportsJsonOutput: true },
   ),
