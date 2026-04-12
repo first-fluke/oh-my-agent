@@ -224,7 +224,8 @@ describe("bridge command", () => {
       expect(child_process.spawn).toHaveBeenCalledWith(
         "uvx",
         expect.arrayContaining([
-          "serena-mcp-server",
+          "serena",
+          "start-mcp-server",
           "--transport",
           "streamable-http",
         ]),

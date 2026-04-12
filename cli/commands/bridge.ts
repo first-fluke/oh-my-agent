@@ -145,7 +145,8 @@ export async function bridge(mcpUrlArg?: string) {
     const args = [
       "--from",
       "git+https://github.com/oraios/serena",
-      "serena-mcp-server",
+      "serena",
+      "start-mcp-server",
       "--transport",
       "streamable-http",
       "--host",
