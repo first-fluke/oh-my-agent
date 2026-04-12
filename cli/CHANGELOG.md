@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.30.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.30.1...cli-v4.30.2) (2026-04-12)
+
+
+### Bug Fixes
+
+* **bridge:** use `serena start-mcp-server` subcommand format ([2ba4db8](https://github.com/first-fluke/oh-my-agent/commit/2ba4db8e3012ed1732664027252d9585ddd65d02))
+
 ## [4.30.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.30.0...cli-v4.30.1) (2026-04-12)
 
 
