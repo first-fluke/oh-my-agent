@@ -70,14 +70,14 @@ Of gebruik slash commands voor gestructureerde workflows:
 
 | Commando | Wat het doet |
 |---------|-------------|
+| `/brainstorm` | Vrije brainstorm |
+| `/design` | 7-fasen design system workflow |
 | `/plan` | PM splitst je feature op in taken |
 | `/work` | Stapsgewijze multi-agent uitvoering |
 | `/orchestrate` | Automatische parallelle agent-spawning |
 | `/ultrawork` | 5-fasen kwaliteitsworkflow met 11 review gates |
 | `/review` | Beveiligings- + performance- + toegankelijkheidsaudit |
 | `/debug` | Gestructureerde root cause-debugging |
-| `/design` | 7-fasen design system workflow |
-| `/brainstorm` | Vrije brainstorm |
 | `/scm` | Conventional commit met type/scope-analyse |
 
 **Autodetectie**: Je hebt de slash commands niet eens nodig — woorden als "plan", "review", "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow.

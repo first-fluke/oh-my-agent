@@ -70,14 +70,14 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 
 | Lệnh | Chức năng |
 |------|----------|
+| `/brainstorm` | Phát triển ý tưởng tự do |
+| `/design` | Workflow hệ thống thiết kế 7 giai đoạn |
 | `/plan` | PM phân tách tính năng thành các task |
 | `/work` | Thực thi multi-agent từng bước |
 | `/orchestrate` | Tự động spawn agent song song |
 | `/ultrawork` | Workflow chất lượng 5 giai đoạn với 11 cổng đánh giá |
 | `/review` | Kiểm tra bảo mật + hiệu suất + accessibility |
 | `/debug` | Debug có cấu trúc tìm nguyên nhân gốc |
-| `/design` | Workflow hệ thống thiết kế 7 giai đoạn |
-| `/brainstorm` | Phát triển ý tưởng tự do |
 | `/scm` | Conventional commit với phân tích type/scope |
 
 **Tự động phát hiện**: Bạn thậm chí không cần slash command — các từ khóa như "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp.

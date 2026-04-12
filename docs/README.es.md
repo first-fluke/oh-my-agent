@@ -70,14 +70,14 @@ O usa slash commands para flujos estructurados:
 
 | Comando | Qué Hace |
 |---------|-------------|
+| `/brainstorm` | Ideación libre |
+| `/design` | Flujo de sistema de diseño en 7 fases |
 | `/plan` | PM desglosa tu feature en tareas |
 | `/work` | Ejecución multi-agente paso a paso |
 | `/orchestrate` | Lanzamiento automatizado de agentes en paralelo |
 | `/ultrawork` | Flujo de calidad en 5 fases con 11 puertas de revisión |
 | `/review` | Auditoría de seguridad + rendimiento + accesibilidad |
 | `/debug` | Debugging estructurado de causa raíz |
-| `/design` | Flujo de sistema de diseño en 7 fases |
-| `/brainstorm` | Ideación libre |
 | `/scm` | Commit convencional con análisis de type/scope |
 
 **Auto-detección**: Ni siquiera necesitas slash commands — palabras clave como "plan", "review", "debug" en tu mensaje (¡en 11 idiomas!) activan automáticamente el flujo correcto.

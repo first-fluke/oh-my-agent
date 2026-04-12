@@ -70,14 +70,14 @@ Ou use slash commands para workflows estruturados:
 
 | Comando | O Que Faz |
 |---------|-------------|
+| `/brainstorm` | Ideacao livre |
+| `/design` | Workflow de design system em 7 fases |
 | `/plan` | PM detalha sua feature em tarefas |
 | `/work` | Execucao multi-agente passo a passo |
 | `/orchestrate` | Spawn automatico e paralelo de agentes |
 | `/ultrawork` | Workflow de qualidade em 5 fases com 11 gates de revisao |
 | `/review` | Auditoria de seguranca + performance + acessibilidade |
 | `/debug` | Debugging estruturado de causa raiz |
-| `/design` | Workflow de design system em 7 fases |
-| `/brainstorm` | Ideacao livre |
 | `/scm` | Commit convencional com analise de type/scope |
 
 **Auto-deteccao**: Voce nem precisa dos slash commands — palavras como "plan", "review", "debug" na sua mensagem (em 11 idiomas!) ativam automaticamente o workflow certo.

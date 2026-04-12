@@ -70,14 +70,14 @@ Lub uzyj slash commands do ustrukturyzowanych workflow:
 
 | Komenda | Co robi |
 |---------|-------------|
+| `/brainstorm` | Swobodna burza mozgow |
+| `/design` | 7-fazowy workflow design systemu |
 | `/plan` | PM rozbija Twoja funkcjonalnosc na zadania |
 | `/work` | Krokowe wykonanie wieloagentowe |
 | `/orchestrate` | Automatyczne rownolegle uruchamianie agentow |
 | `/ultrawork` | 5-fazowy workflow jakosci z 11 bramkami rewizji |
 | `/review` | Audyt bezpieczenstwa + wydajnosci + dostepnosci |
 | `/debug` | Ustrukturyzowane debugowanie z analiza przyczyn |
-| `/design` | 7-fazowy workflow design systemu |
-| `/brainstorm` | Swobodna burza mozgow |
 | `/scm` | Conventional commit z analiza type/scope |
 
 **Autodetekcja**: Nie musisz nawet uzywac slash commands — slowa takie jak "plan", "review", "debug" w Twojej wiadomosci (w 11 jezykach!) automatycznie uruchamiaja odpowiedni workflow.

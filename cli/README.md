@@ -72,15 +72,15 @@ Or use slash commands for structured workflows:
 
 | Command | What It Does |
 |---------|-------------|
+| `/brainstorm` | Free-form ideation |
 | `/architecture` | Software architecture review, tradeoffs, ADR/ATAM/CBAM-style analysis |
+| `/design` | 7-phase design system workflow |
 | `/plan` | PM breaks down your feature into tasks |
 | `/work` | Step-by-step multi-agent execution |
 | `/orchestrate` | Automated parallel agent spawning |
 | `/ultrawork` | 5-phase quality workflow with 11 review gates |
 | `/review` | Security + performance + accessibility audit |
 | `/debug` | Structured root-cause debugging |
-| `/design` | 7-phase design system workflow |
-| `/brainstorm` | Free-form ideation |
 | `/scm` | SCM + Git workflow and Conventional Commit support |
 
 **Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow.
