@@ -63,6 +63,10 @@ function buildHookCmd(variant: HookVariant, script: string): string {
   return `${runtimeCmd} ${variant.hookDir}/${script}`;
 }
 
+function deriveHookName(script: string): string {
+  return script.replace(/\.[^.]+$/, "");
+}
+
 /**
  * Copy core hook scripts from .agents/hooks/core/ to a vendor's hooks directory.
  * Clears stale symlinks/files first, then copies with dereference to ensure
@@ -175,6 +179,7 @@ export function installHooksFromVariant(
     const entry: any = {
       hooks: [
         {
+          name: deriveHookName(config.hook),
           type: "command",
           command: buildHookCmd(variant, config.hook),
           timeout: config.timeout,

@@ -109,8 +109,10 @@ if (!raw.trim()) process.exit(0);
 
 const input: PreToolUseInput = JSON.parse(raw);
 
-// Only intercept Bash tool calls
-if (input.tool_name !== "Bash") process.exit(0);
+// Gemini uses run_shell_command; Claude-family uses Bash.
+if (input.tool_name !== "Bash" && input.tool_name !== "run_shell_command") {
+  process.exit(0);
+}
 
 const command = input.tool_input?.command;
 if (!command) process.exit(0);

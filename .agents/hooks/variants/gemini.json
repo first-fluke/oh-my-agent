@@ -9,17 +9,17 @@
     "BeforeAgent": {
       "hook": "keyword-detector.ts",
       "matcher": "*",
-      "timeout": 5
+      "timeout": 5000
     },
     "BeforeTool": {
       "hook": "test-filter.ts",
-      "matcher": "Bash",
-      "timeout": 5
+      "matcher": "run_shell_command",
+      "timeout": 5000
     },
     "AfterAgent": {
       "hook": "persistent-mode.ts",
       "matcher": "*",
-      "timeout": 5
+      "timeout": 5000
     }
   }
 }

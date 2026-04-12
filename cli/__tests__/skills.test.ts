@@ -212,7 +212,7 @@ Body: Follow the vendor-specific execution protocol:`;
     // Check composed frontmatter
     expect(content).toContain("name: backend-engineer");
     expect(content).toContain("model: gemini-2.0-flash-exp");
-    expect(content).toContain("custom-field: value");
+    expect(content).not.toContain("custom-field: value");
     expect(content).toContain("- run_shell_command"); // mapped from bash
     expect(content).toContain("- read_file"); // mapped from read
 
@@ -277,8 +277,8 @@ Body: Follow the vendor-specific execution protocol:`;
     );
 
     const content = writeCall?.[1] as string;
-    // Verify tools are mapped and kept as string (YAML serializes comma-string with quotes)
-    expect(content).toContain('tools: "Read, Write, Bash, Grep"');
+    // Verify tools are mapped and kept as a single string field.
+    expect(content).toContain("tools: Read, Write, Bash, Grep");
     expect(content).toContain("model: sonnet");
   });
 

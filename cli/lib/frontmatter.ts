@@ -1,8 +1,32 @@
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 export interface ParsedFrontmatter {
   frontmatter: Record<string, unknown>;
   body: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function sanitizeFrontmatterValue(value: unknown): unknown {
+  if (value === undefined || value === null) return undefined;
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => sanitizeFrontmatterValue(item))
+      .filter((item) => item !== undefined);
+  }
+
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([key, item]) => [key, sanitizeFrontmatterValue(item)])
+        .filter(([, item]) => item !== undefined),
+    );
+  }
+
+  return value;
 }
 
 /**
@@ -44,21 +68,16 @@ export function serializeFrontmatter(
   frontmatter: Record<string, unknown>,
   body: string,
 ): string {
-  const lines: string[] = ["---"];
-  for (const [key, value] of Object.entries(frontmatter)) {
-    if (value === undefined || value === null) continue;
-    if (Array.isArray(value)) {
-      lines.push(`${key}:`);
-      for (const item of value) {
-        lines.push(`  - ${item}`);
-      }
-    } else {
-      const str = String(value);
-      const needsQuote = /[:#[\]{}|>&*!,'"%@`]/.test(str) || str.includes("\n");
-      lines.push(`${key}: ${needsQuote ? JSON.stringify(str) : str}`);
-    }
+  const sanitizedFrontmatter = Object.fromEntries(
+    Object.entries(frontmatter)
+      .map(([key, value]) => [key, sanitizeFrontmatterValue(value)])
+      .filter(([, value]) => value !== undefined),
+  );
+
+  if (Object.keys(sanitizedFrontmatter).length === 0) {
+    return `---\n---\n\n${body}`;
   }
-  lines.push("---");
-  lines.push("");
-  return lines.join("\n") + body;
+
+  const yamlBlock = stringifyYaml(sanitizedFrontmatter).trimEnd();
+  return `---\n${yamlBlock}\n---\n\n${body}`;
 }
