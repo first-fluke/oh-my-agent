@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "4.29.0",
-  "releaseDate": "2026-04-12T01:12:12.425Z",
+  "version": "4.30.0",
+  "releaseDate": "2026-04-12T01:11:54.953Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -995,6 +995,16 @@
       "size": 4086
     },
     {
+      "path": ".agents/state/orchestrate-state-s1.json",
+      "sha256": "fc018b2529c3fd2408d5757be5e4ea8d667dc95c48162cf64ad1cefab6dc6ae7",
+      "size": 124
+    },
+    {
+      "path": ".agents/state/orchestrate-state-ses_289c2fdb2ffeKwo3XnHiwGql9n.json",
+      "sha256": "1f2aae9686b77aae1666812db924c761bbba807dde4dd05ae6b6c5885e569b07",
+      "size": 152
+    },
+    {
       "path": ".agents/workflows/architecture.md",
       "sha256": "942b7fbd9a78cfd3fc0d615d27e542c4a9bbbdf833c533a825969b034e12740f",
       "size": 4338
@@ -1096,6 +1106,6 @@
   "metadata": {
     "skillCount": 17,
     "workflowCount": 19,
-    "totalFiles": 217
+    "totalFiles": 219
   }
 }

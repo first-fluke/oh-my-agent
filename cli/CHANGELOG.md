@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.30.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.29.0...cli-v4.30.0) (2026-04-12)
+
+
+### Features
+
+* **scm:** consolidate commit workflow into oma-scm ([db7c982](https://github.com/first-fluke/oh-my-agent/commit/db7c9825260a7417205634189bf2f8e5419eb66d))
+
 ## [4.29.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v4.28.0...cli-v4.29.0) (2026-04-11)
 
 
