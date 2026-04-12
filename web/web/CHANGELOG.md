@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.20](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.19...web-v0.3.20) (2026-04-12)
+
+
+### Features
+
+* **scm:** consolidate commit workflow into oma-scm ([db7c982](https://github.com/first-fluke/oh-my-agent/commit/db7c9825260a7417205634189bf2f8e5419eb66d))
+
 ## [0.3.19](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.18...web-v0.3.19) (2026-04-08)
 
 
