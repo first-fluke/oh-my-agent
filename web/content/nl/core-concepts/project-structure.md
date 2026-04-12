@@ -76,7 +76,7 @@ your-project/
 │   │   │   └── config/
 │   │   ├── oma-brainstorm/
 │   │   ├── oma-coordination/
-│   │   └── oma-commit/
+│   │   └── oma-scm/
 │   │
 │   ├── workflows/                    ← 14 workflowdefinities
 │   │   ├── orchestrate.md             ← Persistent: geautomatiseerde parallelle uitvoering
@@ -89,7 +89,7 @@ your-project/
 │   │   ├── review.md                 ← QA-reviewpipeline
 │   │   ├── debug.md                  ← Gestructureerd debuggen
 │   │   ├── design.md                 ← 7-fasen designworkflow
-│   │   ├── commit.md                 ← Conventionele commits
+│   │   ├── scm.md                 ← Conventionele commits
 │   │   ├── tools.md                  ← MCP-toolbeheer
 │   │   └── stack-set.md              ← Tech-stackconfiguratie
 │   │
@@ -155,7 +155,7 @@ Waar agentexpertise leeft. 15 directory's totaal: 14 agent-skills + 1 gedeelde b
 
 ### workflows/
 
-14 Markdown-bestanden die slash-commandogedrag definieren. Persistente workflows: `orchestrate.md`, `work.md`, `ultrawork.md`. Niet-persistent: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+14 Markdown-bestanden die slash-commandogedrag definieren. Persistente workflows: `orchestrate.md`, `work.md`, `ultrawork.md`. Niet-persistent: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

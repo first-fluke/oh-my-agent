@@ -45,14 +45,14 @@ bunx oh-my-agent@latest
 
 | プリセット | 含まれるスキル |
 |--------|----------------|
-| **all** | oma-brainstorm、oma-pm、oma-frontend、oma-backend、oma-db、oma-mobile、oma-design、oma-qa、oma-debug、oma-tf-infra、oma-dev-workflow、oma-translator、oma-orchestrator、oma-commit、oma-coordination |
-| **fullstack** | oma-frontend、oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **frontend** | oma-frontend、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **backend** | oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **mobile** | oma-mobile、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **devops** | oma-tf-infra、oma-dev-workflow、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
+| **all** | oma-brainstorm、oma-pm、oma-frontend、oma-backend、oma-db、oma-mobile、oma-design、oma-qa、oma-debug、oma-tf-infra、oma-dev-workflow、oma-translator、oma-orchestrator、oma-scm、oma-coordination |
+| **fullstack** | oma-frontend、oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **frontend** | oma-frontend、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **backend** | oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **mobile** | oma-mobile、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **devops** | oma-tf-infra、oma-dev-workflow、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
 
-すべてのプリセットにはベースラインエージェントとしてoma-pm（計画）、oma-qa（レビュー）、oma-debug（バグ修正）、oma-brainstorm（アイデア出し）、oma-commit（Git）が含まれます。ドメイン固有のプリセットはその上に関連する実装エージェントを追加します。
+すべてのプリセットにはベースラインエージェントとしてoma-pm（計画）、oma-qa（レビュー）、oma-debug（バグ修正）、oma-brainstorm（アイデア出し）、oma-scm（Git）が含まれます。ドメイン固有のプリセットはその上に関連する実装エージェントを追加します。
 
 共有リソース（`_shared/`）はプリセットに関係なく常にインストールされます。コアルーティング、コンテキストローディング、プロンプト構造、ベンダー検出、実行プロトコル、メモリプロトコルが含まれます。
 

@@ -128,7 +128,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | `/review` | 非永続 | QAパイプライン | マージ前、デプロイ前レビュー |
 | `/debug` | 非永続 | 構造化デバッグ | バグやエラーの調査 |
 | `/design` | 非永続 | 7フェーズデザインワークフロー | デザインシステム構築 |
-| `/commit` | 非永続 | Conventional Commit | コード変更完了後 |
+| `/scm` | 非永続 | Conventional Commit | コード変更完了後 |
 | `/tools` | 非永続 | MCPツール管理 | ツール可視性制御 |
 | `/stack-set` | 非永続 | 技術スタック検出 | 言語固有コーディング規約のセットアップ |
 
@@ -166,7 +166,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | **oma-dev-workflow** | CI/CD、モノレポタスク | mise.toml設定、パイプライン定義 |
 | **oma-translator** | 多言語コンテンツ | トーン・レジスター保持の翻訳テキスト |
 | **oma-orchestrator** | 自動並列エージェント実行 | 複数エージェントのオーケストレーション結果 |
-| **oma-commit** | Gitコミット | 適切なtype/scopeのConventional Commits |
+| **oma-scm** | Gitコミット | 適切なtype/scopeのConventional Commits |
 
 ---
 

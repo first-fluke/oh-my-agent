@@ -147,7 +147,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | `/review` | Niet-persistent | QA-pipeline: OWASP, prestaties, toegankelijkheid, codekwaliteit | Voor het mergen van code |
 | `/debug` | Niet-persistent | Gestructureerd debuggen | Onderzoek van bugs en fouten |
 | `/design` | Niet-persistent | 7-fasen designworkflow met DESIGN.md | Designsystemen, landingspagina's |
-| `/commit` | Niet-persistent | Conventionele commit met auto type/scope-detectie | Na het voltooien van codewijzigingen |
+| `/scm` | Niet-persistent | Conventionele commit met auto type/scope-detectie | Na het voltooien van codewijzigingen |
 | `/tools` | Niet-persistent | MCP-toolzichtbaarheidsbeheer | MCP-tools beheren |
 | `/stack-set` | Niet-persistent | Auto-detectie tech stack en backend-referenties genereren | Taalspecifieke conventies instellen |
 
@@ -188,7 +188,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | **oma-dev-workflow** | CI/CD, monorepo-taken | mise.toml configs, pipelinedefinities |
 | **oma-translator** | Meertalige content, i18n-bestanden | Vertaalde tekst met behoud van toon |
 | **oma-orchestrator** | Geautomatiseerde parallelle agentuitvoering | Georkestreerde resultaten |
-| **oma-commit** | Git-commits | Conventional Commits met type/scope |
+| **oma-scm** | Git-commits | Conventional Commits met type/scope |
 
 ---
 

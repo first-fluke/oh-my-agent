@@ -78,7 +78,7 @@
       "persistent": false,
       "keywords": {
         "*": ["debug"],
-        "en": ["fix bug", "fix error", "fix crash", "fix the bug", "fix the error", "fix the crash", "fix", "fix it", "fix this", "troubleshoot", "broken", "not working", "doesn't work", "debug this", "find the bug"],
+        "en": ["fix bug", "fix error", "fix crash", "fix the bug", "fix the error", "fix the crash", "fix it", "fix this", "troubleshoot", "broken", "not working", "doesn't work", "debug this", "find the bug"],
         "ko": ["디버그", "버그 수정", "에러 수정", "오류 수정", "버그 찾아", "버그 고쳐", "버그 잡아", "고쳐줘", "고쳐", "수정해줘", "수정해", "에러 고쳐줘", "에러 고쳐", "에러 잡아줘", "오류 고쳐줘", "오류 고쳐", "오류 잡아줘", "버그 고쳐줘", "버그 수정해줘", "버그 잡아줘", "에러 수정해줘", "에러 찾아줘", "오류 수정해줘", "오류 찾아줘", "왜 안돼", "안 돼", "동작 안해", "작동 안해", "깨졌어", "터졌어", "에러남", "에러나"],
         "ja": ["デバッグ", "バグ修正", "エラー修正", "直して", "修正して", "壊れた", "動かない", "エラーが出る", "バグを直して", "エラーを直して", "動作しない", "クラッシュ"],
         "zh": ["调试", "修复 bug", "修复错误", "修复崩溃", "修一下", "修复", "坏了", "不工作", "不能用", "出错了", "报错", "有 bug", "崩溃了"],
@@ -140,6 +140,47 @@
         "ru": ["инициализация проекта", "новый проект", "настроить проект", "инициализируй", "создай проект", "настрой проект"],
         "nl": ["project initialiseren", "nieuw project", "project opzetten", "initialiseer", "maak een project", "project configureren"],
         "pl": ["inicjalizacja projektu", "nowy projekt", "skonfiguruj projekt", "zainicjalizuj", "stwórz projekt", "przygotuj projekt"]
+      }
+    },
+    "scm": {
+      "persistent": false,
+      "keywords": {
+        "*": [
+          "scm",
+          "configuration management",
+          "gitflow",
+          "github flow",
+          "gitlab flow",
+          "trunk-based",
+          "merge conflict",
+          "rebase",
+          "worktree",
+          "cherry-pick",
+          "submodule",
+          "subtree",
+          "codeowners",
+          "branch protection",
+          "protected branch",
+          "release tag",
+          "tagging",
+          "version baseline",
+          "squash merge",
+          "rebase merge",
+          "fast-forward",
+          "fast forward",
+          "merge strategy"
+        ],
+        "en": ["commit", "git commit", "branch strategy", "gitflow", "github flow", "gitlab flow", "trunk-based", "merge conflict", "resolve conflict", "rebase", "worktree", "release branch", "baseline", "conventional commits"],
+        "ko": ["커밋", "커밋해줘", "깃 커밋", "형상관리", "브랜치 전략", "gitflow", "github flow", "gitlab flow", "트렁크 기반", "머지 충돌", "충돌 해결", "리베이스", "워크트리", "릴리즈 브랜치", "베이스라인", "컨벤셔널 커밋", "체리픽", "서브모듈", "서브트리", "코드오너", "브랜치 보호", "보호 브랜치", "릴리즈 태그", "태깅", "버전 베이스라인", "스쿼시 머지", "리베이스 머지", "패스트포워드", "머지 전략"],
+        "ja": ["コミット", "gitコミット", "構成管理", "ブランチ戦略", "gitflow", "github flow", "gitlab flow", "トランクベース", "マージコンフリクト", "コンフリクト解決", "リベース", "ワークツリー", "リリースブランチ", "ベースライン", "conventional commits"],
+        "zh": ["提交", "git 提交", "配置管理", "分支策略", "gitflow", "github flow", "gitlab flow", "主干开发", "合并冲突", "冲突解决", "rebase", "worktree", "发布分支", "基线", "conventional commits"],
+        "es": ["commit", "git commit", "gestión de configuración", "estrategia de ramas", "gitflow", "github flow", "gitlab flow", "trunk-based", "conflicto de merge", "resolver conflicto", "rebase", "worktree", "rama de release", "línea base", "conventional commits"],
+        "fr": ["commit", "git commit", "gestion de configuration", "stratégie de branche", "gitflow", "github flow", "gitlab flow", "trunk-based", "conflit de merge", "résoudre conflit", "rebase", "worktree", "branche de release", "baseline", "conventional commits"],
+        "de": ["commit", "git commit", "konfigurationsmanagement", "branch-strategie", "gitflow", "github flow", "gitlab flow", "trunk-based", "merge-konflikt", "konflikt lösen", "rebase", "worktree", "release-branch", "baseline", "conventional commits"],
+        "pt": ["commit", "git commit", "gestão de configuração", "estratégia de branch", "gitflow", "github flow", "gitlab flow", "trunk-based", "conflito de merge", "resolver conflito", "rebase", "worktree", "branch de release", "linha de base", "conventional commits"],
+        "ru": ["коммит", "git commit", "управление конфигурацией", "стратегия ветвления", "gitflow", "github flow", "gitlab flow", "trunk-based", "конфликт слияния", "разрешить конфликт", "rebase", "worktree", "релизная ветка", "базовая линия", "conventional commits"],
+        "nl": ["commit", "git commit", "configuratiemanagement", "branchstrategie", "gitflow", "github flow", "gitlab flow", "trunk-based", "mergeconflict", "conflict oplossen", "rebase", "worktree", "release branch", "baseline", "conventional commits"],
+        "pl": ["commit", "git commit", "zarządzanie konfiguracją", "strategia gałęzi", "gitflow", "github flow", "gitlab flow", "trunk-based", "konflikt scalania", "rozwiąż konflikt", "rebase", "worktree", "gałąź wydania", "linia bazowa", "conventional commits"]
       }
     },
     "ralph": {
@@ -230,7 +271,7 @@
     }
   },
   "informationalPatterns": {
-    "en": ["what is", "what are", "how to", "how does", "explain", "describe", "tell me about", "keyword", "false positive", "detected", "detector"],
+    "en": ["what is", "what are", "how to", "how does", "explain", "describe", "tell me about", "keyword", "false positive", "detected", "detector", "뭐야", "무엇", "是什么", "とは"],
     "ko": ["뭐야", "뭐임", "무엇", "어떻게", "설명해", "알려줘", "키워드", "감지", "오탐"],
     "ja": ["とは", "って何", "どうやって", "説明して", "キーワード", "検出", "誤検出"],
     "zh": ["是什么", "什么是", "怎么", "解释", "关键词", "检测", "误报"],
@@ -242,7 +283,7 @@
     "nl": ["wat is", "hoe", "leg uit", "sleutelwoord", "vals positief", "gedetecteerd"],
     "pl": ["co to", "jak", "wyjaśnij", "słowo kluczowe", "fałszywy alarm", "wykryto"]
   },
-  "excludedWorkflows": ["commit", "tools", "stack-set", "exec-plan"],
+  "excludedWorkflows": ["tools", "stack-set", "exec-plan"],
   "cjkScripts": ["ko", "ja", "zh"],
   "extensionRouting": {
     "frontend-engineer": ["tsx", "jsx", "css", "scss", "less", "vue", "svelte", "html"],

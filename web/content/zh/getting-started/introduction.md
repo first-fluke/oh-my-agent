@@ -73,7 +73,7 @@ oh-my-agent 通过专业化解决这些问题：
 |-------|------|---------|
 | **oma-translator** | 上下文感知翻译 | 4 阶段翻译方法：分析原文、提取含义、在目标语言中重构、验证。保留语气、语域和领域术语。反 AI 模式检测。支持批量翻译（i18n 文件）。可选的 7 阶段精炼模式适用于出版级品质。资源：`translation-rubric.md`、`anti-ai-patterns.md`。 |
 | **oma-orchestrator** | 自动化多智能体协调器 | 通过 CLI 并行启动子智能体，通过 MCP 内存协调，监控进度，运行验证循环。可配置：MAX_PARALLEL（默认 3）、MAX_RETRIES（默认 2）、POLL_INTERVAL（默认 30 秒）。包含智能体间审查循环和澄清债务监控。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
-| **oma-commit** | 约定式提交 | 分析变更，确定类型/范围，在适当时按功能拆分，生成约定式提交格式的提交消息。Co-Author：`First Fluke <our.first.fluke@gmail.com>`。 |
+| **oma-scm** | 约定式提交 | 分析变更，确定类型/范围，在适当时按功能拆分，生成约定式提交格式的提交消息。Co-Author：`First Fluke <our.first.fluke@gmail.com>`。 |
 
 ---
 

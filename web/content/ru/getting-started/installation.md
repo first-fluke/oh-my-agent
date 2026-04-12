@@ -45,14 +45,14 @@ bunx oh-my-agent@latest
 
 | Пресет | Включённые навыки |
 |--------|-------------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Каждый пресет включает oma-pm (планирование), oma-qa (ревью), oma-debug (исправление ошибок), oma-brainstorm (идеация) и oma-commit (git) как базовые агенты. Доменные пресеты добавляют соответствующих агентов реализации поверх них.
+Каждый пресет включает oma-pm (планирование), oma-qa (ревью), oma-debug (исправление ошибок), oma-brainstorm (идеация) и oma-scm (git) как базовые агенты. Доменные пресеты добавляют соответствующих агентов реализации поверх них.
 
 Общие ресурсы (`_shared/`) устанавливаются всегда, вне зависимости от пресета. Это включает основную маршрутизацию, загрузку контекста, структуру промптов, определение вендора, протоколы выполнения и протокол памяти.
 

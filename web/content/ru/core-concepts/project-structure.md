@@ -43,7 +43,7 @@ your-project/
 │   │   ├── oma-orchestrator/         <- SKILL.md + resources/ + scripts/ + config/
 │   │   ├── oma-brainstorm/           <- SKILL.md
 │   │   ├── oma-coordination/         <- SKILL.md + resources/
-│   │   └── oma-commit/               <- SKILL.md + config/ + resources/
+│   │   └── oma-scm/               <- SKILL.md + config/ + resources/
 │   ├── workflows/                    <- 14 определений (orchestrate, work,
 │   │                                    ultrawork, plan, exec-plan, brainstorm,
 │   │                                    deepinit, review, debug, design, commit,
@@ -108,11 +108,11 @@ your-project/
 **`oma-{agent}/`** содержит:
 - `SKILL.md` (~800 байт) — Уровень 1: всегда загружен
 - `resources/` — Уровень 2: по требованию
-- Дополнительно: `stack/` (oma-backend), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-commit)
+- Дополнительно: `stack/` (oma-backend), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm)
 
 ### workflows/
 
-14 Markdown-файлов. Постоянные: `orchestrate.md`, `work.md`, `ultrawork.md`. Непостоянные: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+14 Markdown-файлов. Постоянные: `orchestrate.md`, `work.md`, `ultrawork.md`. Непостоянные: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

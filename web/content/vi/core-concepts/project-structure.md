@@ -73,7 +73,7 @@ your-project/
 │   │   ├── review.md                 ← Pipeline đánh giá QA
 │   │   ├── debug.md                  ← Gỡ lỗi có cấu trúc
 │   │   ├── design.md                 ← Workflow thiết kế 7 giai đoạn
-│   │   ├── commit.md                 ← Conventional commits
+│   │   ├── scm.md                 ← Conventional commits
 │   │   ├── tools.md                  ← Quản lý công cụ MCP
 │   │   └── stack-set.md              ← Cấu hình tech stack
 │   │
@@ -143,7 +143,7 @@ Nơi chứa chuyên môn agent. Tổng cộng 15 thư mục: 14 agent skill + 1 
 14 file Markdown định nghĩa hành vi lệnh slash.
 
 Workflow liên tục: `orchestrate.md`, `work.md`, `ultrawork.md`.
-Không liên tục: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+Không liên tục: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

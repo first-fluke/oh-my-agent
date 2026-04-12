@@ -38,7 +38,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-architecture** | Đánh đổi kiến trúc, ranh giới, phân tích theo hướng ADR/ATAM/CBAM |
 | **oma-backend** | Xây dựng API bằng Python, Node.js hoặc Rust |
 | **oma-brainstorm** | Khám phá ý tưởng trước khi bắt tay vào xây dựng |
-| **oma-commit** | Conventional commit gọn gàng |
+| **oma-scm** | Conventional commit gọn gàng |
 | **oma-db** | Thiết kế schema, migration, indexing, vector DB |
 | **oma-debug** | Phân tích nguyên nhân gốc, sửa lỗi, regression test |
 | **oma-design** | Hệ thống thiết kế, token, accessibility, responsive |
@@ -78,7 +78,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | `/debug` | Debug có cấu trúc tìm nguyên nhân gốc |
 | `/design` | Workflow hệ thống thiết kế 7 giai đoạn |
 | `/brainstorm` | Phát triển ý tưởng tự do |
-| `/commit` | Conventional commit với phân tích type/scope |
+| `/scm` | Conventional commit với phân tích type/scope |
 
 **Tự động phát hiện**: Bạn thậm chí không cần slash command — các từ khóa như "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp.
 
@@ -150,7 +150,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## Tìm hiểu thêm

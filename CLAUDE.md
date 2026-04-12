@@ -20,7 +20,7 @@
 | `/brainstorm` | `brainstorm.md` | Inline design exploration |
 | `/review` | `review.md` | qa-reviewer subagent delegation |
 | `/debug` | `debug.md` | Inline + subagent |
-| `/commit` | `commit.md` | Inline git commit |
+| `/scm` | `scm.md` | Inline SCM + git operations |
 | `/tools` | `tools.md` | Inline MCP management |
 | `/stack-set` | `stack-set.md` | Inline stack configuration |
 | `/design` | `design.md` | Inline 7-phase design workflow |

@@ -38,7 +38,7 @@ bunx oh-my-agent@latest
 | **oma-architecture** | アーキテクチャのトレードオフと境界、ADR/ATAM/CBAMを踏まえた分析 |
 | **oma-backend** | Python、Node.js、RustでAPI開発 |
 | **oma-brainstorm** | 実装前にアイデアを探索 |
-| **oma-commit** | きれいなconventional commit |
+| **oma-scm** | きれいなconventional commit |
 | **oma-db** | スキーマ設計、マイグレーション、インデックス、vector DB |
 | **oma-debug** | 根本原因分析、修正、リグレッションテスト |
 | **oma-design** | デザインシステム、トークン、アクセシビリティ、レスポンシブ |
@@ -78,7 +78,7 @@ You: "ユーザー認証付きのTODOアプリを作って"
 | `/debug` | 構造化された根本原因デバッグ |
 | `/design` | 7フェーズのデザインシステムワークフロー |
 | `/brainstorm` | 自由なアイデア発散 |
-| `/commit` | type/scope分析付きconventional commit |
+| `/scm` | type/scope分析付きconventional commit |
 
 **自動検出**: スラッシュコマンドなしでも、メッセージに「計画」「レビュー」「デバッグ」などのキーワードを入れるだけで（11言語対応！）適切なワークフローが自動で起動します。
 
@@ -150,7 +150,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## もっと詳しく

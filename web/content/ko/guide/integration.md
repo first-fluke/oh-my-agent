@@ -396,7 +396,7 @@ oma dashboard:web
 
 ### 5. 워크플로우 설치
 
-`installWorkflows()`가 모든 워크플로우 파일을 `.agents/workflows/`에 복사합니다. `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/commit`, `/tools`, `/stack-set`의 정의입니다.
+`installWorkflows()`가 모든 워크플로우 파일을 `.agents/workflows/`에 복사합니다. `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools`, `/stack-set`의 정의입니다.
 
 ### 6. 설정 설치
 

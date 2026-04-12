@@ -45,14 +45,14 @@ Instalator prosi o wybranie presetu, który określa, jakie umiejętności zosta
 
 | Preset | Zawarte umiejętności |
 |--------|----------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Każdy preset zawiera oma-pm (planowanie), oma-qa (przegląd), oma-debug (naprawa błędów), oma-brainstorm (ideacja) i oma-commit (git) jako bazowych agentów. Presety domenowe dodają odpowiednich agentów implementacyjnych.
+Każdy preset zawiera oma-pm (planowanie), oma-qa (przegląd), oma-debug (naprawa błędów), oma-brainstorm (ideacja) i oma-scm (git) jako bazowych agentów. Presety domenowe dodają odpowiednich agentów implementacyjnych.
 
 Zasoby współdzielone (`_shared/`) są zawsze instalowane niezależnie od presetu. Obejmują one podstawowy routing, ładowanie kontekstu, strukturę promptów, wykrywanie dostawcy, protokoły wykonawcze i protokół pamięci.
 

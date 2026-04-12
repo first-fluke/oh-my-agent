@@ -45,14 +45,14 @@ De installer vraagt je een preset te selecteren, die bepaalt welke skills worden
 
 | Preset | Inbegrepen Skills |
 |--------|------------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Elke preset bevat oma-pm (planning), oma-qa (review), oma-debug (bugfixing), oma-brainstorm (ideevorming) en oma-commit (git) als basisagenten. Domeinspecifieke presets voegen de relevante implementatieagenten toe.
+Elke preset bevat oma-pm (planning), oma-qa (review), oma-debug (bugfixing), oma-brainstorm (ideevorming) en oma-scm (git) als basisagenten. Domeinspecifieke presets voegen de relevante implementatieagenten toe.
 
 De gedeelde bronnen (`_shared/`) worden altijd geinstalleerd ongeacht de preset. Dit omvat kernroutering, contextlading, promptstructuur, leveranciersdetectie, uitvoeringsprotocollen en geheugenprotocol.
 

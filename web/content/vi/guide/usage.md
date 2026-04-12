@@ -120,7 +120,7 @@ oma stats
 | `/review` | Không liên tục | Pipeline QA: bảo mật OWASP, hiệu suất, accessibility, chất lượng mã | Trước merge mã, đánh giá trước triển khai |
 | `/debug` | Không liên tục | Gỡ lỗi có cấu trúc: tái hiện, chẩn đoán, sửa, test hồi quy, quét | Điều tra lỗi |
 | `/design` | Không liên tục | Workflow thiết kế 7 giai đoạn tạo DESIGN.md với token | Xây dựng design system, landing page, tái thiết kế UI |
-| `/commit` | Không liên tục | Conventional commit với tự động phát hiện type/scope và tách tính năng | Sau hoàn thành thay đổi mã |
+| `/scm` | Không liên tục | Conventional commit với tự động phát hiện type/scope và tách tính năng | Sau hoàn thành thay đổi mã |
 | `/tools` | Không liên tục | Quản lý khả năng hiển thị công cụ MCP (bật/tắt nhóm) | Kiểm soát công cụ MCP agent có thể dùng |
 | `/stack-set` | Không liên tục | Tự phát hiện tech stack dự án và tạo tham chiếu backend | Thiết lập quy ước mã theo ngôn ngữ |
 | `/ralph` | Liên tục | Vòng lặp hoàn thành tự tham chiếu bọc ultrawork với judge độc lập | Khi agent phải tiếp tục làm việc cho đến khi tiêu chí xác minh pass |
@@ -144,7 +144,7 @@ oma stats
 | **oma-dev-workflow** | CI/CD, task monorepo, tự động hóa release | Config mise.toml, định nghĩa pipeline |
 | **oma-translator** | Nội dung đa ngôn ngữ, file i18n | Văn bản dịch bảo toàn giọng điệu và phong cách |
 | **oma-orchestrator** | Thực thi agent song song tự động | Kết quả điều phối từ nhiều agent |
-| **oma-commit** | Commit Git | Conventional Commits với type/scope phù hợp |
+| **oma-scm** | Commit Git | Conventional Commits với type/scope phù hợp |
 
 ---
 

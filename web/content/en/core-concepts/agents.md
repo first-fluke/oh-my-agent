@@ -23,7 +23,7 @@ Agents in oh-my-agent are specialized engineering roles. Each agent has a define
 | **Debugging** | oma-debug | Bug reproduction, root cause analysis, minimal fixes, regression tests |
 | **Localization** | oma-translator | Context-aware translation preserving tone, register, and domain terms |
 | **Coordination** | oma-orchestrator, oma-coordination | Automated and manual multi-agent orchestration |
-| **Git** | oma-commit | Conventional Commits generation, feature-based commit splitting |
+| **Git** | oma-scm | Conventional Commits generation, feature-based commit splitting |
 
 ---
 
@@ -361,15 +361,15 @@ Agents in oh-my-agent are specialized engineering roles. Each agent has a define
 
 ---
 
-### oma-commit
+### oma-scm
 
-**Domain:** Git commit generation following Conventional Commits.
+**Domain:** Software configuration management (SCM) and Git — branching, merges, worktrees, baselines, audit readiness, plus Conventional Commits.
 
-**When to use:** After completing code changes, when running `/commit`.
+**When to use:** After code changes (`/scm`), merge conflicts, branch strategy, releases/tags, or any repo CM question.
 
 **Commit types:** feat, fix, refactor, docs, test, chore, style, perf.
 
-**Workflow:** Analyze changes -> Split by feature (if > 5 files spanning different scopes) -> Determine type -> Determine scope -> Write description (imperative, < 72 chars, lowercase, no trailing period) -> Execute commit immediately.
+**Workflow (commits):** Analyze changes → Split by feature when needed → type → scope → description (imperative, under 72 chars, lowercase, no trailing period) → commit with explicit paths.
 
 **Rules:**
 - Never use `git add -A` or `git add .`

@@ -85,7 +85,7 @@ describe("resolveSerenaLanguages", () => {
   });
 
   it("should fallback to typescript when no language-mapped skills", () => {
-    const result = resolveSerenaLanguages(["oma-commit", "oma-qa"]);
+    const result = resolveSerenaLanguages(["oma-scm", "oma-qa"]);
     expect(result).toEqual(["typescript"]);
   });
 

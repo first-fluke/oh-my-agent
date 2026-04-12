@@ -38,7 +38,7 @@ bunx oh-my-agent@latest
 | **oma-architecture** | 架构权衡、边界划分，以及 ADR/ATAM/CBAM 视角下的分析 |
 | **oma-backend** | 用 Python、Node.js 或 Rust 开发 API |
 | **oma-brainstorm** | 动手之前先探索想法 |
-| **oma-commit** | 干净的 conventional commit |
+| **oma-scm** | 干净的 conventional commit |
 | **oma-db** | Schema 设计、迁移、索引、vector DB |
 | **oma-debug** | 根因分析、修复、回归测试 |
 | **oma-design** | 设计系统、token、无障碍、响应式 |
@@ -78,7 +78,7 @@ You: "做一个带用户认证的 TODO 应用"
 | `/debug` | 结构化根因调试 |
 | `/design` | 7 阶段设计系统工作流 |
 | `/brainstorm` | 自由发散想法 |
-| `/commit` | 带 type/scope 分析的 conventional commit |
+| `/scm` | 带 type/scope 分析的 conventional commit |
 
 **自动检测**：不用斜杠命令也行 — 在消息里写"计划"、"审查"、"调试"之类的关键词（支持 11 种语言！），就会自动激活对应的工作流。
 
@@ -150,7 +150,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## 了解更多

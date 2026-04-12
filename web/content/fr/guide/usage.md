@@ -117,7 +117,7 @@ Tapez-les dans votre IDE IA pour declencher des processus structures :
 | `/review` | Audit securite + performance + accessibilite | Avant de merger |
 | `/debug` | Debogage structure de cause racine | Enquete sur des bugs |
 | `/design` | Workflow design 7 phases → `DESIGN.md` | Construction de systemes de design |
-| `/commit` | Commit conventionnel avec analyse type/scope | Commit de changements |
+| `/scm` | Commit conventionnel avec analyse type/scope | Commit de changements |
 | `/tools` | Gestion des serveurs MCP | Ajout d'outils externes |
 | `/stack-set` | Configuration du stack technique | Definition des preferences langage/framework |
 | `/deepinit` | Initialisation complete du projet | Configuration dans un codebase existant |
@@ -158,7 +158,7 @@ Les questions comme "qu'est-ce qu'orchestrate ?" sont filtrees — elles ne decl
 | oma-dev-workflow | CI/CD, automatisation | Configs de pipeline |
 | oma-translator | Traduction | Contenu multilingue naturel |
 | oma-orchestrator | Execution parallele | Resultats d'agents |
-| oma-commit | Commits Git | Commits conventionnels |
+| oma-scm | Commits Git | Commits conventionnels |
 
 ---
 

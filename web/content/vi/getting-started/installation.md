@@ -45,14 +45,14 @@ Trình cài đặt yêu cầu bạn chọn preset, quyết định skill nào đ
 
 | Preset | Skill bao gồm |
 |--------|----------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Mọi preset đều bao gồm oma-pm (lập kế hoạch), oma-qa (đánh giá), oma-debug (sửa lỗi), oma-brainstorm (khám phá ý tưởng) và oma-commit (git) làm agent cơ bản. Preset theo lĩnh vực bổ sung thêm các agent triển khai liên quan.
+Mọi preset đều bao gồm oma-pm (lập kế hoạch), oma-qa (đánh giá), oma-debug (sửa lỗi), oma-brainstorm (khám phá ý tưởng) và oma-scm (git) làm agent cơ bản. Preset theo lĩnh vực bổ sung thêm các agent triển khai liên quan.
 
 Tài nguyên dùng chung (`_shared/`) luôn được cài đặt bất kể preset. Bao gồm định tuyến cốt lõi, tải ngữ cảnh, cấu trúc prompt, phát hiện vendor, quy trình thực thi và giao thức bộ nhớ.
 

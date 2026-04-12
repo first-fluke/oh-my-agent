@@ -23,7 +23,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 | **Debugging** | oma-debug | Bugreproductie, oorzaakanalyse, minimale fixes, regressietests |
 | **Lokalisatie** | oma-translator | Contextbewuste vertaling met behoud van toon, register en domein-termen |
 | **Coordinatie** | oma-orchestrator, oma-coordination | Geautomatiseerde en handmatige multi-agent orchestratie |
-| **Git** | oma-commit | Conventional Commits-generatie, functie-gebaseerde commitsplitsing |
+| **Git** | oma-scm | Conventional Commits-generatie, functie-gebaseerde commitsplitsing |
 
 ---
 
@@ -361,11 +361,11 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ---
 
-### oma-commit
+### oma-scm
 
 **Domein:** Git-commitgeneratie volgens Conventional Commits.
 
-**Wanneer gebruiken:** Na het voltooien van codewijzigingen, bij het uitvoeren van `/commit`.
+**Wanneer gebruiken:** Na het voltooien van codewijzigingen, bij het uitvoeren van `/scm`.
 
 **Committypen:** feat, fix, refactor, docs, test, chore, style, perf.
 

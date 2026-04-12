@@ -45,14 +45,14 @@ bunx oh-my-agent@latest
 
 | 预设 | 包含的技能 |
 |------|----------|
-| **all** | oma-brainstorm、oma-pm、oma-frontend、oma-backend、oma-db、oma-mobile、oma-design、oma-qa、oma-debug、oma-tf-infra、oma-dev-workflow、oma-translator、oma-orchestrator、oma-commit、oma-coordination |
-| **fullstack** | oma-frontend、oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **frontend** | oma-frontend、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **backend** | oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **mobile** | oma-mobile、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
-| **devops** | oma-tf-infra、oma-dev-workflow、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-commit |
+| **all** | oma-brainstorm、oma-pm、oma-frontend、oma-backend、oma-db、oma-mobile、oma-design、oma-qa、oma-debug、oma-tf-infra、oma-dev-workflow、oma-translator、oma-orchestrator、oma-scm、oma-coordination |
+| **fullstack** | oma-frontend、oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **frontend** | oma-frontend、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **backend** | oma-backend、oma-db、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **mobile** | oma-mobile、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
+| **devops** | oma-tf-infra、oma-dev-workflow、oma-pm、oma-qa、oma-debug、oma-brainstorm、oma-scm |
 
-每个预设都包含 oma-pm（规划）、oma-qa（审查）、oma-debug（Bug 修复）、oma-brainstorm（构思）和 oma-commit（git）作为基础智能体。领域特定的预设在此基础上添加相关的实现智能体。
+每个预设都包含 oma-pm（规划）、oma-qa（审查）、oma-debug（Bug 修复）、oma-brainstorm（构思）和 oma-scm（git）作为基础智能体。领域特定的预设在此基础上添加相关的实现智能体。
 
 共享资源（`_shared/`）无论选择哪个预设都会安装。包括核心路由、上下文加载、提示结构、供应商检测、执行协议和内存协议。
 

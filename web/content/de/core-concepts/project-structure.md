@@ -87,7 +87,7 @@ your-project/
 │   │   ├── review.md                 <- QA-Review-Pipeline
 │   │   ├── debug.md                  <- Strukturiertes Debugging
 │   │   ├── design.md                 <- 7-Phasen-Design-Workflow
-│   │   ├── commit.md                 <- Conventional Commits
+│   │   ├── scm.md                 <- Conventional Commits
 │   │   ├── tools.md                  <- MCP-Tool-Verwaltung
 │   │   └── stack-set.md              <- Tech-Stack-Konfiguration
 │   │
@@ -154,7 +154,7 @@ Hier lebt die Agentenexpertise. 15 Verzeichnisse insgesamt: 14 Agenten-Skills + 
 **`oma-{agent}/`** — Pro-Agent-Skill-Verzeichnisse. Jedes enthält:
 - `SKILL.md` (~800 Bytes) — Schicht 1: immer geladen. Identität, Routing, Kernregeln.
 - `resources/` — Schicht 2: bedarfsgesteuert. Ausführungsprotokolle, Beispiele, Checklisten, Fehler-Playbooks, Tech-Stacks, Snippets, Vorlagen.
-- Manche Agenten haben zusätzliche Unterverzeichnisse: `stack/` (oma-backend, generiert durch /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-commit).
+- Manche Agenten haben zusätzliche Unterverzeichnisse: `stack/` (oma-backend, generiert durch /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 
@@ -166,7 +166,7 @@ Hier lebt die Agentenexpertise. 15 Verzeichnisse insgesamt: 14 Agenten-Skills + 
 - Gate-Definitionen (für persistente Workflows)
 
 Persistente Workflows: `orchestrate.md`, `work.md`, `ultrawork.md`.
-Nicht-persistente: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+Nicht-persistente: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

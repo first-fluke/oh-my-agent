@@ -45,14 +45,14 @@ L'installateur vous invite à sélectionner un preset, qui détermine quelles co
 
 | Preset | Skills Included |
 |--------|----------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Chaque preset inclut oma-pm (planification), oma-qa (revue), oma-debug (correction de bugs), oma-brainstorm (idéation) et oma-commit (git) comme agents de base. Les presets spécifiques au domaine ajoutent les agents d'implémentation concernés.
+Chaque preset inclut oma-pm (planification), oma-qa (revue), oma-debug (correction de bugs), oma-brainstorm (idéation) et oma-scm (git) comme agents de base. Les presets spécifiques au domaine ajoutent les agents d'implémentation concernés.
 
 Les ressources partagées (`_shared/`) sont toujours installées quel que soit le preset. Cela inclut le routage central, le chargement du contexte, la structure des prompts, la détection du fournisseur, les protocoles d'exécution et le protocole de mémoire.
 

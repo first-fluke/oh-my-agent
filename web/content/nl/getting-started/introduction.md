@@ -73,7 +73,7 @@ oh-my-agent lost dit op met specialisatie:
 |-------|-----|---------------------------|
 | **oma-translator** | Contextbewuste vertaling | 4-stappen vertaalmethode: Bron Analyseren, Betekenis Extraheren, Reconstrueren in Doeltaal, Verifieren. Behoudt toon, register en domein-terminologie. Anti-AI-patroondetectie. Ondersteunt batchvertaling (i18n-bestanden). Optionele 7-stappen verfijnde modus voor publicatiekwaliteit. Bronnen: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | Geautomatiseerde multi-agent coordinator | Spawnt CLI-subagenten parallel, coordineert via MCP-geheugen, bewaakt voortgang, voert verificatielussen uit. Configureerbaar: MAX_PARALLEL (standaard 3), MAX_RETRIES (standaard 2), POLL_INTERVAL (standaard 30s). Bevat agent-naar-agent reviewlus en Clarification Debt-monitoring. Bronnen: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-commit** | Conventionele commits | Analyseert wijzigingen, bepaalt type/scope, splitst per functie indien nodig, genereert commitberichten in Conventional Commits-formaat. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+| **oma-scm** | Conventionele commits | Analyseert wijzigingen, bepaalt type/scope, splitst per functie indien nodig, genereert commitberichten in Conventional Commits-formaat. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ---
 

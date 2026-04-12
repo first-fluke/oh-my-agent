@@ -87,7 +87,7 @@ your-project/
 │   │   ├── review.md                 ← Pipeline de revisão QA
 │   │   ├── debug.md                  ← Debugging estruturado
 │   │   ├── design.md                 ← Workflow de design em 7 fases
-│   │   ├── commit.md                 ← Commits convencionais
+│   │   ├── scm.md                 ← Commits convencionais
 │   │   ├── tools.md                  ← Gerenciamento de ferramentas MCP
 │   │   └── stack-set.md              ← Configuração de stack tecnológico
 │   │
@@ -160,7 +160,7 @@ Onde a expertise dos agentes reside. 15 diretórios no total: 14 skills de agent
 **`oma-{agent}/`** — Diretórios de skill por agente. Cada um contém:
 - `SKILL.md` (~800 bytes) — Camada 1: sempre carregado. Identidade, roteamento, regras principais.
 - `resources/` — Camada 2: sob demanda. Protocolos de execução, exemplos, checklists, playbooks de erros, stacks tecnológicos, snippets, templates.
-- Alguns agentes têm subdiretórios adicionais: `stack/` (oma-backend), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-commit).
+- Alguns agentes têm subdiretórios adicionais: `stack/` (oma-backend), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 

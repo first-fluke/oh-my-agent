@@ -38,7 +38,7 @@ bunx oh-my-agent@latest
 | **oma-architecture** | Архитектурные компромиссы, границы модулей, анализ с опорой на ADR/ATAM/CBAM |
 | **oma-backend** | API на Python, Node.js или Rust |
 | **oma-brainstorm** | Исследует идеи, прежде чем вы начнете строить |
-| **oma-commit** | Чистые conventional commits |
+| **oma-scm** | Чистые conventional commits |
 | **oma-db** | Проектирование схем, миграции, индексация, vector DB |
 | **oma-debug** | Анализ корневых причин, исправления, регрессионные тесты |
 | **oma-design** | Дизайн-системы, токены, доступность, адаптивность |
@@ -78,7 +78,7 @@ bunx oh-my-agent@latest
 | `/debug` | Структурированная отладка с поиском корневой причины |
 | `/design` | 7-фазный воркфлоу дизайн-системы |
 | `/brainstorm` | Свободная генерация идей |
-| `/commit` | Conventional commit с анализом type/scope |
+| `/scm` | Conventional commit с анализом type/scope |
 
 **Автодетекция**: Slash-команды даже не нужны — слова вроде "plan", "review", "debug" в вашем сообщении (на 11 языках!) автоматически активируют нужный воркфлоу.
 
@@ -150,7 +150,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## Узнать больше

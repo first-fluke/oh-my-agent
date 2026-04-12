@@ -13,6 +13,7 @@ import { migrateToAgents as _migrateToAgents } from "../commands/migrations/001-
 import { migrateSharedLayout as _migrateSharedLayout } from "../commands/migrations/002-shared-layout.js";
 import { migrateOmaConfig } from "../commands/migrations/003-oma-config.js";
 import { migrateClaudeMdLocal } from "../commands/migrations/004-claude-md-local.js";
+import { migrateRenameOmaScm } from "../commands/migrations/005-rename-oma-scm.js";
 
 const migrateToAgents = (cwd: string) => _migrateToAgents.up(cwd);
 const migrateSharedLayout = (cwd: string) => _migrateSharedLayout.up(cwd);
@@ -484,5 +485,61 @@ describe("migrateClaudeMdLocal (004)", () => {
     const content = readFileSync(join(claudeDir, "CLAUDE.md"), "utf-8");
     expect(content).toContain("# Notes");
     expect(content).not.toContain("OMA:START");
+  });
+});
+
+describe("migrateRenameOmaScm (005)", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+  });
+
+  it("renames oma-commit skill directory to oma-scm", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-migrate-005-"));
+    tempRoots.push(root);
+
+    const oldSkillDir = join(root, ".agents", "skills", "oma-commit");
+    mkdirSync(oldSkillDir, { recursive: true });
+    writeFileSync(join(oldSkillDir, "SKILL.md"), "name: oma-commit\n", "utf-8");
+
+    const actions = migrateRenameOmaScm.up(root);
+
+    expect(actions).toContain("skills/oma-commit → skills/oma-scm");
+    expect(existsSync(join(root, ".agents", "skills", "oma-commit"))).toBe(false);
+    expect(existsSync(join(root, ".agents", "skills", "oma-scm"))).toBe(true);
+  });
+
+  it("removes legacy commit workflow even when skill rename is not needed", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-migrate-005-"));
+    tempRoots.push(root);
+
+    const workflowDir = join(root, ".agents", "workflows");
+    mkdirSync(workflowDir, { recursive: true });
+    writeFileSync(join(workflowDir, "commit.md"), "# legacy workflow\n", "utf-8");
+
+    const actions = migrateRenameOmaScm.up(root);
+
+    expect(actions).toContain("workflows/commit.md (removed legacy workflow)");
+    expect(existsSync(join(workflowDir, "commit.md"))).toBe(false);
+  });
+
+  it("removes oma-commit when oma-scm already exists", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-migrate-005-"));
+    tempRoots.push(root);
+
+    const oldSkillDir = join(root, ".agents", "skills", "oma-commit");
+    const newSkillDir = join(root, ".agents", "skills", "oma-scm");
+    mkdirSync(oldSkillDir, { recursive: true });
+    mkdirSync(newSkillDir, { recursive: true });
+
+    const actions = migrateRenameOmaScm.up(root);
+
+    expect(actions).toContain("skills/oma-commit (removed, replaced by oma-scm)");
+    expect(existsSync(oldSkillDir)).toBe(false);
+    expect(existsSync(newSkillDir)).toBe(true);
   });
 });

@@ -73,7 +73,7 @@ oh-my-agent는 전문화를 통해 이를 해결합니다:
 |-------|------|-----------------|
 | **oma-translator** | 컨텍스트 인식 번역 | 4단계 번역 방법: 원문 분석, 의미 추출, 대상 언어로 재구성, 검증. 톤, 레지스터, 도메인 용어를 유지합니다. 안티 AI 패턴 감지. 배치 번역(i18n 파일) 지원. 출판 품질을 위한 선택적 7단계 정제 모드. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, MCP 메모리를 통해 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 Clarification Debt 모니터링 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-commit** | Conventional Commits | 변경사항을 분석하고, type/scope를 결정하며, 적절한 경우 기능별로 분할하고, Conventional Commits 형식의 커밋 메시지를 생성합니다. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+| **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 또한 안전한 스테이징과 Conventional Commit 메시지 생성도 지원합니다. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ---
 

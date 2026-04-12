@@ -199,7 +199,7 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── examples.md
 │   │   │
-│   │   └── oma-commit/
+│   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       ├── config/
 │   │       │   └── commit-config.yaml
@@ -217,7 +217,7 @@ your-project/
 │   │   ├── review.md                 ← QA 审查流水线
 │   │   ├── debug.md                  ← 结构化调试
 │   │   ├── design.md                 ← 7 阶段设计工作流
-│   │   ├── commit.md                 ← Conventional Commits
+│   │   ├── scm.md                 ← Conventional Commits
 │   │   ├── tools.md                  ← MCP 工具管理
 │   │   └── stack-set.md              ← 技术栈配置
 │   │
@@ -297,7 +297,7 @@ your-project/
 **`oma-{agent}/`** —— 每智能体技能目录。每个包含：
 - `SKILL.md`（约 800 字节）—— 第一层：始终加载。身份、路由、核心规则。
 - `resources/` —— 第二层：按需加载。执行协议、示例、检查清单、错误手册、技术栈、代码片段、模板。
-- 某些智能体有额外子目录：`stack/`（oma-backend，由 /stack-set 生成）、`reference/`（oma-design）、`examples/`（oma-design）、`scripts/`（oma-orchestrator）、`config/`（oma-orchestrator、oma-commit）。
+- 某些智能体有额外子目录：`stack/`（oma-backend，由 /stack-set 生成）、`reference/`（oma-design）、`examples/`（oma-design）、`scripts/`（oma-orchestrator）、`config/`（oma-orchestrator、oma-scm）。
 
 ### workflows/
 
@@ -309,7 +309,7 @@ your-project/
 - 关卡定义（持久化工作流）
 
 持久化工作流：`orchestrate.md`、`work.md`、`ultrawork.md`。
-非持久化：`plan.md`、`exec-plan.md`、`brainstorm.md`、`deepinit.md`、`review.md`、`debug.md`、`design.md`、`commit.md`、`tools.md`、`stack-set.md`。
+非持久化：`plan.md`、`exec-plan.md`、`brainstorm.md`、`deepinit.md`、`review.md`、`debug.md`、`design.md`、`scm.md`、`tools.md`、`stack-set.md`。
 
 ### agents/
 

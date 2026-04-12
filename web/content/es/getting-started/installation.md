@@ -45,14 +45,14 @@ El instalador te pide seleccionar un preset, que determina qué habilidades se i
 
 | Preset | Habilidades Incluidas |
 |--------|----------------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Cada preset incluye oma-pm (planificación), oma-qa (revisión), oma-debug (corrección de bugs), oma-brainstorm (ideación) y oma-commit (git) como agentes base. Los presets específicos de dominio añaden los agentes de implementación relevantes.
+Cada preset incluye oma-pm (planificación), oma-qa (revisión), oma-debug (corrección de bugs), oma-brainstorm (ideación) y oma-scm (git) como agentes base. Los presets específicos de dominio añaden los agentes de implementación relevantes.
 
 Los recursos compartidos (`_shared/`) se instalan siempre independientemente del preset. Esto incluye enrutamiento central, carga de contexto, estructura de prompts, detección de proveedor, protocolos de ejecución y protocolo de memoria.
 

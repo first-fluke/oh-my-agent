@@ -73,7 +73,7 @@ oh-my-agent resolve isso com especialização:
 |--------|--------|----------------------|
 | **oma-translator** | Tradução com consciência de contexto | Método de tradução em 4 estágios: Analisar Fonte, Extrair Significado, Reconstruir no Idioma Alvo, Verificar. Preserva tom, registro e terminologia de domínio. Detecção de padrões anti-IA. Suporta tradução em lote (arquivos i18n). Modo refinado opcional de 7 estágios para qualidade de publicação. Recursos: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | Coordenador multi-agente automatizado | Inicia subagentes CLI em paralelo, coordena via memória MCP, monitora progresso, executa loops de verificação. Configurável: MAX_PARALLEL (padrão 3), MAX_RETRIES (padrão 2), POLL_INTERVAL (padrão 30s). Inclui loop de revisão agente-para-agente e monitoramento de Dívida de Clarificação. Recursos: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-commit** | Commits convencionais | Analisa mudanças, determina tipo/escopo, divide por funcionalidade quando apropriado, gera mensagens de commit no formato Conventional Commits. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+| **oma-scm** | Commits convencionais | Analisa mudanças, determina tipo/escopo, divide por funcionalidade quando apropriado, gera mensagens de commit no formato Conventional Commits. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ---
 

@@ -38,7 +38,7 @@ Kies een preset en je bent klaar:
 | **oma-architecture** | Architectuur-trade-offs, grenzen, ADR/ATAM/CBAM-bewuste analyse |
 | **oma-backend** | API's in Python, Node.js of Rust |
 | **oma-brainstorm** | Verkent ideeen voordat je begint met bouwen |
-| **oma-commit** | Nette conventional commits |
+| **oma-scm** | Nette conventional commits |
 | **oma-db** | Schema-ontwerp, migraties, indexering, vector DB |
 | **oma-debug** | Root cause-analyse, fixes, regressietests |
 | **oma-design** | Design systems, tokens, toegankelijkheid, responsive |
@@ -78,7 +78,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | `/debug` | Gestructureerde root cause-debugging |
 | `/design` | 7-fasen design system workflow |
 | `/brainstorm` | Vrije brainstorm |
-| `/commit` | Conventional commit met type/scope-analyse |
+| `/scm` | Conventional commit met type/scope-analyse |
 
 **Autodetectie**: Je hebt de slash commands niet eens nodig — woorden als "plan", "review", "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow.
 
@@ -150,7 +150,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## Meer informatie

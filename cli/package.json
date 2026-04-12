@@ -101,7 +101,7 @@
       "oma-orchestrator",
       "oma-dev-workflow",
       "oma-tf-infra",
-      "oma-commit",
+      "oma-scm",
       "oma-pdf"
     ]
   }

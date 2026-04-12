@@ -208,7 +208,7 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 ---
 
-### /commit
+### /scm
 
 **Beschrijving:** Genereert Conventional Commits met automatische functie-gebaseerde splitsing.
 
@@ -283,7 +283,7 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 
 ### Uitgesloten Workflows
 
-Vereisen expliciet `/command`: `/commit`, `/tools`, `/stack-set`, `/exec-plan`.
+Vereisen expliciet `/command`: `/scm`, `/tools`, `/stack-set`, `/exec-plan`.
 
 ---
 
@@ -341,7 +341,7 @@ De workflow kan ook op natuurlijke wijze eindigen wanneer alle stappen zijn volt
 
 ### Design-naar-Implementatie Pipeline
 ```
-/brainstorm → ontwerpdocument → /plan → taakopsplitsing → /orchestrate → parallelle implementatie → /review → /commit
+/brainstorm → ontwerpdocument → /plan → taakopsplitsing → /orchestrate → parallelle implementatie → /review → /scm
 ```
 
 ### Nieuwe Codebase Setup

@@ -293,7 +293,7 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 ---
 
-### /commit
+### /scm
 
 **Description:** Generates Conventional Commits with automatic feature-based splitting.
 
@@ -383,7 +383,7 @@ If the input matches both a workflow keyword and an informational pattern, the i
 ### Excluded Workflows
 
 The following workflows are excluded from auto-detection and must be invoked with explicit `/command`:
-- `/commit`
+- `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
@@ -445,7 +445,7 @@ The workflow can also end naturally when all steps are completed and the final g
 
 ### Design-to-Implementation Pipeline
 ```
-/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /commit
+/brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /scm
 ```
 
 ### New Codebase Setup

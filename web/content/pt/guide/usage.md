@@ -248,7 +248,7 @@ oma stats
 | `/review` | Não-persistente | Pipeline QA: segurança OWASP, performance, acessibilidade, qualidade de código | Antes de merge de código, revisão pré-deploy |
 | `/debug` | Não-persistente | Debugging estruturado: reproduzir, diagnosticar, corrigir, teste de regressão, varredura | Investigando bugs e erros |
 | `/design` | Não-persistente | Workflow de design em 7 fases produzindo DESIGN.md com tokens | Construir sistemas de design, landing pages, redesigns de UI |
-| `/commit` | Não-persistente | Commit convencional com auto-detecção de tipo/escopo e divisão por funcionalidade | Após completar mudanças de código |
+| `/scm` | Não-persistente | Commit convencional com auto-detecção de tipo/escopo e divisão por funcionalidade | Após completar mudanças de código |
 | `/tools` | Não-persistente | Gerenciamento de visibilidade de ferramentas MCP (enable/disable grupos) | Controlar quais ferramentas MCP agentes podem usar |
 | `/stack-set` | Não-persistente | Auto-detectar stack tecnológico do projeto e gerar referências backend | Configurar convenções de codificação específicas de linguagem |
 
@@ -307,7 +307,7 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 | **oma-dev-workflow** | CI/CD, tarefas monorepo, automação de releases | Configs mise.toml, definições de pipeline |
 | **oma-translator** | Conteúdo multilingual, arquivos i18n | Texto traduzido preservando tom e registro |
 | **oma-orchestrator** | Execução paralela automatizada de agentes | Resultados orquestrados de múltiplos agentes |
-| **oma-commit** | Commits Git | Conventional Commits com tipo/escopo adequado |
+| **oma-scm** | Commits Git | Conventional Commits com tipo/escopo adequado |
 
 ---
 

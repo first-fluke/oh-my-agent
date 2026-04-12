@@ -199,7 +199,7 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── examples.md
 │   │   │
-│   │   └── oma-commit/
+│   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       ├── config/
 │   │       │   └── commit-config.yaml
@@ -217,7 +217,7 @@ your-project/
 │   │   ├── review.md                 ← QA review pipeline
 │   │   ├── debug.md                  ← Structured debugging
 │   │   ├── design.md                 ← 7-phase design workflow
-│   │   ├── commit.md                 ← Conventional commits
+│   │   ├── scm.md                 ← Conventional commits
 │   │   ├── tools.md                  ← MCP tool management
 │   │   └── stack-set.md              ← Tech stack configuration
 │   │
@@ -297,7 +297,7 @@ Donde reside la experiencia de los agentes. 15 directorios en total: 14 habilida
 **`oma-{agent}/`** — Directorios de habilidades por agente. Cada uno contiene:
 - `SKILL.md` (~800 bytes) — Capa 1: siempre cargada. Identidad, enrutamiento, reglas principales.
 - `resources/` — Capa 2: bajo demanda. Protocolos de ejecucion, ejemplos, listas de verificacion, guias de errores, stacks tecnologicos, snippets, plantillas.
-- Algunos agentes tienen subdirectorios adicionales: `stack/` (oma-backend, generado por /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-commit).
+- Algunos agentes tienen subdirectorios adicionales: `stack/` (oma-backend, generado por /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 
@@ -309,7 +309,7 @@ Donde reside la experiencia de los agentes. 15 directorios en total: 14 habilida
 - Definiciones de puertas (para flujos persistentes)
 
 Flujos persistentes: `orchestrate.md`, `work.md`, `ultrawork.md`.
-No persistentes: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+No persistentes: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

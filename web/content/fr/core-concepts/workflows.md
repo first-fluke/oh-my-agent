@@ -259,7 +259,7 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 
 ---
 
-### /commit
+### /scm
 
 **Description :** Génère des Conventional Commits avec découpage automatique par fonctionnalité.
 
@@ -349,7 +349,7 @@ Si l'entrée correspond à la fois à un mot-clé de workflow et à un pattern i
 ### Workflows exclus
 
 Les workflows suivants sont exclus de la détection automatique et doivent être invoqués avec une commande explicite `/command` :
-- `/commit`
+- `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
@@ -410,7 +410,7 @@ Le workflow peut également se terminer naturellement lorsque toutes les étapes
 
 ### Pipeline du design à l'implémentation
 ```
-/brainstorm → document de conception → /plan → découpage des tâches → /orchestrate → implémentation parallèle → /review → /commit
+/brainstorm → document de conception → /plan → découpage des tâches → /orchestrate → implémentation parallèle → /review → /scm
 ```
 
 ### Mise en place d'un nouveau code source

@@ -155,7 +155,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | `/review` | Nietrwały | Pipeline QA: bezpieczeństwo OWASP, wydajność, dostępność, jakość kodu | Przed mergowaniem kodu, przegląd przedwdrożeniowy |
 | `/debug` | Nietrwały | Ustrukturyzowane debugowanie: reprodukcja, diagnoza, poprawka, test regresji, skan | Śledztwo w sprawie błędów |
 | `/design` | Nietrwały | 7-fazowy workflow projektowy produkujący DESIGN.md z tokenami | Budowa systemów projektowych, stron landing page |
-| `/commit` | Nietrwały | Konwencjonalny commit z automatycznym wykryciem typu/zakresu | Po zakończeniu zmian w kodzie |
+| `/scm` | Nietrwały | Konwencjonalny commit z automatycznym wykryciem typu/zakresu | Po zakończeniu zmian w kodzie |
 | `/tools` | Nietrwały | Zarządzanie widocznością narzędzi MCP (włączanie/wyłączanie grup) | Kontrola dostępnych narzędzi MCP |
 | `/stack-set` | Nietrwały | Automatyczne wykrywanie stosu technologicznego i generowanie referencji backend | Konfiguracja konwencji kodowania per język |
 

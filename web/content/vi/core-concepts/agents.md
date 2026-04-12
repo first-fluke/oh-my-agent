@@ -23,7 +23,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 | **Gỡ lỗi** | oma-debug | Tái hiện lỗi, phân tích nguyên nhân gốc, sửa tối thiểu, test hồi quy |
 | **Bản địa hóa** | oma-translator | Dịch thuật nhận biết ngữ cảnh bảo toàn giọng điệu, phong cách và thuật ngữ lĩnh vực |
 | **Điều phối** | oma-orchestrator, oma-coordination | Điều phối đa agent tự động và thủ công |
-| **Git** | oma-commit | Tạo Conventional Commits, tách commit theo tính năng |
+| **Git** | oma-scm | Tạo Conventional Commits, tách commit theo tính năng |
 
 ---
 
@@ -352,11 +352,11 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 ---
 
-### oma-commit
+### oma-scm
 
 **Lĩnh vực:** Tạo commit Git theo Conventional Commits.
 
-**Khi nào sử dụng:** Sau khi hoàn thành thay đổi mã, khi chạy `/commit`.
+**Khi nào sử dụng:** Sau khi hoàn thành thay đổi mã, khi chạy `/scm`.
 
 **Loại commit:** feat, fix, refactor, docs, test, chore, style, perf.
 

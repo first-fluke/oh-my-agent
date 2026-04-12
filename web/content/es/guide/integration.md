@@ -396,7 +396,7 @@ El instalador descarga el tarball de la ultima version desde los releases de Git
 
 ### 5. Instalacion de Flujos de Trabajo
 
-`installWorkflows()` copia todos los archivos de flujo a `.agents/workflows/`. Estas son las definiciones para `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/commit`, `/tools` y `/stack-set`.
+`installWorkflows()` copia todos los archivos de flujo a `.agents/workflows/`. Estas son las definiciones para `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` y `/stack-set`.
 
 ### 6. Instalacion de Configuracion
 

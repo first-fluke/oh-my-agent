@@ -259,7 +259,7 @@ Los flujos persistentes continúan ejecutándose hasta que todas las tareas est�
 
 ---
 
-### /commit
+### /scm
 
 **Descripción:** Genera Conventional Commits con división automática basada en funcionalidades.
 
@@ -349,7 +349,7 @@ Si la entrada coincide tanto con una palabra clave de flujo como con un patrón 
 ### Flujos Excluidos
 
 Los siguientes flujos están excluidos de la auto-detección y deben invocarse con `/command` explícito:
-- `/commit`
+- `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
@@ -410,7 +410,7 @@ El flujo también puede terminar naturalmente cuando todos los pasos están comp
 
 ### Pipeline de Diseño a Implementación
 ```
-/brainstorm → documento de diseño → /plan → desglose de tareas → /orchestrate → implementación paralela → /review → /commit
+/brainstorm → documento de diseño → /plan → desglose de tareas → /orchestrate → implementación paralela → /review → /scm
 ```
 
 ### Configuración de Nuevo Codebase

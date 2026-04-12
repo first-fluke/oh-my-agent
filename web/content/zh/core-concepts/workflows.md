@@ -259,7 +259,7 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 
 ---
 
-### /commit
+### /scm
 
 **说明：** 生成符合 Conventional Commits 规范的提交，支持自动按功能拆分。
 
@@ -349,7 +349,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息之前
 ### 排除的工作流
 
 以下工作流排除在自动检测之外，必须使用显式 `/command` 调用：
-- `/commit`
+- `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
@@ -410,7 +410,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息之前
 
 ### 设计到实现的流水线
 ```
-/brainstorm → 设计文档 → /plan → 任务分解 → /orchestrate → 并行实现 → /review → /commit
+/brainstorm → 设计文档 → /plan → 任务分解 → /orchestrate → 并行实现 → /review → /scm
 ```
 
 ### 新代码库设置

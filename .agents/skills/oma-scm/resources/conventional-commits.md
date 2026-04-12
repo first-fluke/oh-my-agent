@@ -149,7 +149,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
    Closes #234
 
-   Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+   Co-Authored-By: First Fluke <our.first.fluke@gmail.com>
    EOF
    )"
    ```
@@ -163,4 +163,3 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 - [Conventional Commits Specification](https://www.conventionalcommits.org/)
 - [Semantic Versioning](https://semver.org/)
-- [Angular Commit Guidelines](https://github.com/angular/angular/blob/main/CONTRIBUTING.md#commit)

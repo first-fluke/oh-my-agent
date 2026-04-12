@@ -29,7 +29,10 @@ export const SKILLS: SkillsRegistry = {
   ],
   utility: [
     { name: "oma-debug", desc: "Bug fixing specialist" },
-    { name: "oma-commit", desc: "Conventional Commits helper" },
+    {
+      name: "oma-scm",
+      desc: "SCM — branching, merges, worktrees, baselines, audit; Conventional Commits",
+    },
     { name: "oma-translator", desc: "Context-aware multilingual translation" },
     {
       name: "oma-pdf",
@@ -59,7 +62,7 @@ export const PRESETS: Record<string, string[]> = {
     "oma-pm",
     "oma-qa",
     "oma-debug",
-    "oma-commit",
+    "oma-scm",
     "oma-tf-infra",
     "oma-dev-workflow",
   ],
@@ -71,7 +74,7 @@ export const PRESETS: Record<string, string[]> = {
     "oma-pm",
     "oma-qa",
     "oma-debug",
-    "oma-commit",
+    "oma-scm",
   ],
   backend: [
     "oma-architecture",
@@ -81,7 +84,7 @@ export const PRESETS: Record<string, string[]> = {
     "oma-pm",
     "oma-qa",
     "oma-debug",
-    "oma-commit",
+    "oma-scm",
     "oma-dev-workflow",
   ],
   mobile: [
@@ -91,7 +94,7 @@ export const PRESETS: Record<string, string[]> = {
     "oma-pm",
     "oma-qa",
     "oma-debug",
-    "oma-commit",
+    "oma-scm",
   ],
   devops: [
     "oma-architecture",
@@ -101,7 +104,7 @@ export const PRESETS: Record<string, string[]> = {
     "oma-pm",
     "oma-qa",
     "oma-debug",
-    "oma-commit",
+    "oma-scm",
   ],
   all: [
     ...SKILLS.domain,

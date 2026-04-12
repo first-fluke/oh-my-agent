@@ -285,7 +285,7 @@ description: oh-my-agent 15개 워크플로우 완전 레퍼런스 — 슬래시
 
 ---
 
-### /commit
+### /scm
 
 **설명:** 자동 기능별 분할이 포함된 Conventional Commits 생성.
 
@@ -372,7 +372,7 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 제외된 워크플로우
 
-자동 감지에서 제외되며 명시적 `/command`로만 호출: `/commit`, `/tools`, `/stack-set`, `/exec-plan`.
+자동 감지에서 제외되며 명시적 `/command`로만 호출: `/scm`, `/tools`, `/stack-set`, `/exec-plan`.
 
 ---
 
@@ -431,7 +431,7 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 디자인에서 구현까지
 ```
-/brainstorm → 설계 문서 → /plan → 태스크 분해 → /orchestrate → 병렬 구현 → /review → /commit
+/brainstorm → 설계 문서 → /plan → 태스크 분해 → /orchestrate → 병렬 구현 → /review → /scm
 ```
 
 ### 보장된 완료

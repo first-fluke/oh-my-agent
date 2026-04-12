@@ -152,7 +152,7 @@ describe("keyword-detector", () => {
   describe("startsWithSlashCommand", () => {
     it("should detect slash commands", () => {
       expect(startsWithSlashCommand("/orchestrate")).toBe(true);
-      expect(startsWithSlashCommand("/commit")).toBe(true);
+      expect(startsWithSlashCommand("/scm")).toBe(true);
       expect(startsWithSlashCommand("  /debug something")).toBe(true);
     });
 

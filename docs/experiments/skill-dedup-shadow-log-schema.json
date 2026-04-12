@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill Dedup Shadow AB Turn Log",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "timestamp",
+    "session_id",
+    "turn_id",
+    "variant",
+    "prompt_hash",
+    "prompt_hash_version",
+    "task_success",
+    "wrong_routing",
+    "correction_event",
+    "redo_event",
+    "cd_score",
+    "latency_ms",
+    "satisfaction",
+    "safety_incident"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "turn_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "variant": {
+      "type": "string",
+      "enum": ["A", "B"]
+    },
+    "prompt_hash": {
+      "type": "string",
+      "description": "Hash of normalized prompt text for matching A/B pairs"
+    },
+    "prompt_hash_version": {
+      "type": "string",
+      "enum": ["v1"],
+      "description": "Hash contract version (v1 = NFC + LF + UTF-8 + SHA-256)"
+    },
+    "user_segment": {
+      "type": "string"
+    },
+    "route_skill": {
+      "type": "string"
+    },
+    "task_success": {
+      "type": "boolean"
+    },
+    "wrong_routing": {
+      "type": "boolean"
+    },
+    "correction_event": {
+      "type": "boolean"
+    },
+    "redo_event": {
+      "type": "boolean"
+    },
+    "cd_score": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "satisfaction": {
+      "type": "string",
+      "enum": ["up", "down", "none"]
+    },
+    "safety_incident": {
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional reviewer note. Do not include PII or secrets."
+    }
+  }
+}

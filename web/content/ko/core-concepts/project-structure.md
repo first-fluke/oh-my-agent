@@ -199,7 +199,7 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── examples.md
 │   │   │
-│   │   └── oma-commit/
+│   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       ├── config/
 │   │       │   └── commit-config.yaml
@@ -217,7 +217,7 @@ your-project/
 │   │   ├── review.md                 ← QA 리뷰 파이프라인
 │   │   ├── debug.md                  ← 구조화된 디버깅
 │   │   ├── design.md                 ← 7단계 디자인 워크플로우
-│   │   ├── commit.md                 ← Conventional commits
+│   │   ├── scm.md                 ← Conventional commits
 │   │   ├── tools.md                  ← MCP 도구 관리
 │   │   └── stack-set.md              ← 기술 스택 설정
 │   │
@@ -297,7 +297,7 @@ your-project/
 **`oma-{agent}/`** — 에이전트별 스킬 디렉토리. 각각 다음을 포함합니다:
 - `SKILL.md` (~800바이트) — 레이어 1: 항상 로드됨. 아이덴티티, 라우팅, 핵심 규칙.
 - `resources/` — 레이어 2: 온디맨드. 실행 프로토콜, 예제, 체크리스트, 오류 플레이북, 기술 스택, 스니펫, 템플릿.
-- 일부 에이전트는 추가 하위 디렉토리를 가집니다: `stack/` (oma-backend, /stack-set으로 생성), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-commit).
+- 일부 에이전트는 추가 하위 디렉토리를 가집니다: `stack/` (oma-backend, /stack-set으로 생성), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 
@@ -309,7 +309,7 @@ your-project/
 - 게이트 정의 (영구 워크플로우용)
 
 영구 워크플로우: `orchestrate.md`, `work.md`, `ultrawork.md`.
-비영구: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `commit.md`, `tools.md`, `stack-set.md`.
+비영구: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

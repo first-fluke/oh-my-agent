@@ -117,7 +117,7 @@ Tippe diese in deiner KI-IDE, um strukturierte Prozesse auszuloesen:
 | `/review` | Sicherheits- + Performance- + Barrierefreiheits-Audit | Vor dem Merge |
 | `/debug` | Strukturiertes Grundursachen-Debugging | Bugs untersuchen |
 | `/design` | 7-Phasen-Design-Workflow → `DESIGN.md` | Design-Systeme aufbauen |
-| `/commit` | Konventioneller Commit mit Typ/Scope-Analyse | Aenderungen committen |
+| `/scm` | Konventioneller Commit mit Typ/Scope-Analyse | Aenderungen committen |
 | `/tools` | MCP-Server-Verwaltung | Externe Tools hinzufuegen |
 | `/stack-set` | Tech-Stack-Konfiguration | Sprach-/Framework-Praeferenzen festlegen |
 | `/deepinit` | Vollstaendige Projektinitialisierung | Setup in einer bestehenden Codebase |
@@ -158,7 +158,7 @@ Fragen wie "was ist orchestrate?" werden herausgefiltert — sie loesen keine Wo
 | oma-dev-workflow | CI/CD, Automatisierung | Pipeline-Konfigurationen |
 | oma-translator | Uebersetzung | Natuerlicher mehrsprachiger Inhalt |
 | oma-orchestrator | Parallele Ausfuehrung | Agenten-Ergebnisse |
-| oma-commit | Git-Commits | Konventionelle Commits |
+| oma-scm | Git-Commits | Konventionelle Commits |
 
 ---
 

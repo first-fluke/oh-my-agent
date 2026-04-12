@@ -27,7 +27,7 @@ describe("whitelist-based skill filtering", () => {
     expect(skillNames).toContain("oma-backend");
     expect(skillNames).toContain("oma-architecture");
     expect(skillNames).toContain("oma-pm");
-    expect(skillNames).toContain("oma-commit");
+    expect(skillNames).toContain("oma-scm");
 
     expect(skillNames).not.toContain(".DS_Store");
     expect(skillNames).not.toContain("_version.json");
@@ -59,7 +59,7 @@ describe("whitelist-based skill filtering", () => {
       "oma-coordination",
       "oma-orchestrator",
       "oma-debug",
-      "oma-commit",
+      "oma-scm",
     ];
 
     for (const expected of expectedSkills) {

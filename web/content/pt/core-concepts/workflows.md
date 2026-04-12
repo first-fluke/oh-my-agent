@@ -259,7 +259,7 @@ Workflows persistentes continuam executando até que todas as tarefas sejam conc
 
 ---
 
-### /commit
+### /scm
 
 **Descrição:** Gera Conventional Commits com divisão automática por funcionalidade.
 
@@ -349,7 +349,7 @@ Se a entrada corresponde tanto a uma palavra-chave de workflow quanto a um padr�
 ### Workflows Excluídos
 
 Os seguintes workflows são excluídos da auto-detecção e devem ser invocados com `/command` explícito:
-- `/commit`
+- `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
@@ -410,7 +410,7 @@ O workflow também pode terminar naturalmente quando todas as etapas são comple
 
 ### Pipeline Design-para-Implementação
 ```
-/brainstorm → documento de design → /plan → breakdown de tarefas → /orchestrate → implementação paralela → /review → /commit
+/brainstorm → documento de design → /plan → breakdown de tarefas → /orchestrate → implementação paralela → /review → /scm
 ```
 
 ### Setup de Novo Codebase

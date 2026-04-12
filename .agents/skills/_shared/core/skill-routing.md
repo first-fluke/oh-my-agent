@@ -32,6 +32,7 @@ Skills are explicitly loaded via /command invocation or agent skills field. Load
 | plan, breakdown, task, sprint | **oma-pm** | |
 | automatic, parallel, orchestrate | **oma-orchestrator** | |
 | workflow, guide, manual, step-by-step | **oma-coordination** | |
+| configuration management, SCM, CM, git, commit, gitflow, GitHub Flow, GitLab Flow, trunk-based branching, merge conflict, rebase, worktree, baseline, tag, release branch, signed commits, merge queue, conventional commits | **oma-scm** | SCM + Conventional Commits in one skill |
 
 ---
 

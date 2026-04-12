@@ -23,7 +23,7 @@ Agentes no oh-my-agent são papéis especializados de engenharia. Cada agente po
 | **Depuração** | oma-debug | Reprodução de bugs, análise de causa raiz, correções mínimas, testes de regressão |
 | **Localização** | oma-translator | Tradução com consciência de contexto preservando tom, registro e termos de domínio |
 | **Coordenação** | oma-orchestrator, oma-coordination | Orquestração multi-agente automatizada e manual |
-| **Git** | oma-commit | Geração de Conventional Commits, divisão de commits por funcionalidade |
+| **Git** | oma-scm | Geração de Conventional Commits, divisão de commits por funcionalidade |
 
 ---
 
@@ -361,11 +361,11 @@ Agentes no oh-my-agent são papéis especializados de engenharia. Cada agente po
 
 ---
 
-### oma-commit
+### oma-scm
 
 **Domínio:** Geração de commits Git seguindo Conventional Commits.
 
-**Quando usar:** Após completar mudanças de código, ao executar `/commit`.
+**Quando usar:** Após completar mudanças de código, ao executar `/scm`.
 
 **Tipos de commit:** feat, fix, refactor, docs, test, chore, style, perf.
 

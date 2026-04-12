@@ -259,7 +259,7 @@ Persistente Workflows laufen weiter, bis alle Aufgaben erledigt sind. Sie halten
 
 ---
 
-### /commit
+### /scm
 
 **Beschreibung:** Generiert Conventional Commits mit automatischer Feature-basierter Aufteilung.
 
@@ -349,7 +349,7 @@ Wenn die Eingabe sowohl einem Workflow-Keyword als auch einem informationellen M
 ### Ausgeschlossene Workflows
 
 Die folgenden Workflows sind von der Auto-Erkennung ausgeschlossen und müssen mit einem expliziten `/command` aufgerufen werden:
-- `/commit`
+- `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
@@ -410,7 +410,7 @@ Der Workflow kann auch natürlich enden, wenn alle Schritte abgeschlossen sind u
 
 ### Design-zu-Implementierung-Pipeline
 ```
-/brainstorm → Designdokument → /plan → Aufgabenzerlegung → /orchestrate → parallele Implementierung → /review → /commit
+/brainstorm → Designdokument → /plan → Aufgabenzerlegung → /orchestrate → parallele Implementierung → /review → /scm
 ```
 
 ### Neue-Codebasis-Einrichtung

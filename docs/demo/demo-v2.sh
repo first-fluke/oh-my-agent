@@ -27,11 +27,11 @@ sleep 0.8
 echo -e "  ${BOLD}Select a preset:${RESET}"
 echo ""
 echo -e "    ${INVERSE} ✨ All         ${RESET}  Everything (13 skills, 11 workflows)"
-echo -e "    ${DIM} 🌐 Fullstack   ${RESET}  frontend, backend, db, pm, qa, debug, oma-commit"
-echo -e "    ${DIM} 🎨 Frontend    ${RESET}  frontend, pm, qa, debug, oma-commit"
-echo -e "    ${DIM} ⚙️  Backend     ${RESET}  backend, db, pm, qa, debug, oma-commit"
-echo -e "    ${DIM} 📱 Mobile      ${RESET}  mobile, pm, qa, debug, oma-commit"
-echo -e "    ${DIM} 🏗️  Infra       ${RESET}  tf-infra, db, qa, debug, oma-commit"
+echo -e "    ${DIM} 🌐 Fullstack   ${RESET}  frontend, backend, db, pm, qa, debug, oma-scm"
+echo -e "    ${DIM} 🎨 Frontend    ${RESET}  frontend, pm, qa, debug, oma-scm"
+echo -e "    ${DIM} ⚙️  Backend     ${RESET}  backend, db, pm, qa, debug, oma-scm"
+echo -e "    ${DIM} 📱 Mobile      ${RESET}  mobile, pm, qa, debug, oma-scm"
+echo -e "    ${DIM} 🏗️  Infra       ${RESET}  tf-infra, db, qa, debug, oma-scm"
 echo ""
 sleep 1.2
 
@@ -41,7 +41,7 @@ sleep 0.3
 
 echo -e "  ${CYAN}◇${RESET} Installing skills..."
 echo ""
-skills=("oma-brainstorm" "oma-coordination" "oma-pm" "oma-frontend" "oma-backend" "oma-db" "oma-mobile" "oma-qa" "oma-debug" "oma-orchestrator" "oma-dev-workflow" "oma-tf-infra" "oma-commit")
+skills=("oma-brainstorm" "oma-coordination" "oma-pm" "oma-frontend" "oma-backend" "oma-db" "oma-mobile" "oma-qa" "oma-debug" "oma-orchestrator" "oma-dev-workflow" "oma-tf-infra" "oma-scm")
 for skill in "${skills[@]}"; do
   echo -e "    ${GREEN}✓${RESET} ${skill}"
   sleep 0.07

@@ -23,7 +23,7 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 | **デバッグ** | oma-debug | バグ再現、根本原因分析、最小限の修正、回帰テスト |
 | **ローカライゼーション** | oma-translator | トーン、レジスター、ドメイン用語を保持するコンテキスト対応翻訳 |
 | **協調** | oma-orchestrator、oma-coordination | 自動および手動マルチエージェントオーケストレーション |
-| **Git** | oma-commit | Conventional Commits生成、機能ベースのコミット分割 |
+| **Git** | oma-scm | Conventional Commits生成、機能ベースのコミット分割 |
 
 ---
 
@@ -361,11 +361,11 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 
 ---
 
-### oma-commit
+### oma-scm
 
 **ドメイン：** Conventional Commitsに従ったGitコミット生成。
 
-**使用すべき場合：** コード変更完了後、`/commit`実行時。
+**使用すべき場合：** コード変更完了後、`/scm`実行時。
 
 **コミットタイプ：** feat、fix、refactor、docs、test、chore、style、perf。
 

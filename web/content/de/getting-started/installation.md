@@ -45,14 +45,14 @@ Der Installer fordert Sie auf, ein Preset auszuwählen, das bestimmt, welche Ski
 
 | Preset | Enthaltene Skills |
 |--------|----------------|
-| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-commit, oma-coordination |
-| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
-| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-commit |
+| **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
+| **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **frontend** | oma-frontend, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **backend** | oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **mobile** | oma-mobile, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
+| **devops** | oma-tf-infra, oma-dev-workflow, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
 
-Jedes Preset enthält oma-pm (Planung), oma-qa (Review), oma-debug (Bugfixing), oma-brainstorm (Ideenfindung) und oma-commit (Git) als Basisagenten. Domänenspezifische Presets fügen die relevanten Implementierungsagenten hinzu.
+Jedes Preset enthält oma-pm (Planung), oma-qa (Review), oma-debug (Bugfixing), oma-brainstorm (Ideenfindung) und oma-scm (Git) als Basisagenten. Domänenspezifische Presets fügen die relevanten Implementierungsagenten hinzu.
 
 Die gemeinsamen Ressourcen (`_shared/`) werden unabhängig vom Preset immer installiert. Dies umfasst Kern-Routing, Context-Loading, Prompt-Struktur, Vendor-Erkennung, Ausführungsprotokolle und Memory-Protokoll.
 

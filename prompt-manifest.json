@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "4.29.0",
-  "releaseDate": "2026-04-11T07:57:26.997Z",
+  "releaseDate": "2026-04-12T01:11:54.953Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -86,8 +86,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "bcdbf50db168b2ad780ae11e0554b2fa152fc743e588e9f7754d3988847a5ec2",
-      "size": 23432
+      "sha256": "57f6c583e1e4c23f56a7ce1df28ad715d866f394e2e56c6bd95ba6e79c2d4dfb",
+      "size": 27429
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -276,8 +276,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/skill-routing.md",
-      "sha256": "c8690e94b51dac290900e63dc6f79750b797c086d0f1d745a45364defdc18e5e",
-      "size": 4785
+      "sha256": "5a75fe52b5d2665b01d578f9b9b61c79e0c1d237e5eff41ec5e848ebf8243de0",
+      "size": 5066
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
@@ -428,21 +428,6 @@
       "path": ".agents/skills/oma-brainstorm/SKILL.md",
       "sha256": "e404e5114e7bc9c0cc191fd023d996ca936ee711641eab49aedd13d799a30b37",
       "size": 3059
-    },
-    {
-      "path": ".agents/skills/oma-commit/SKILL.md",
-      "sha256": "aa9436c26a2954babce5514273371f34b9db5139c7abfd3928c410f4d1a12742",
-      "size": 3192
-    },
-    {
-      "path": ".agents/skills/oma-commit/config/commit-config.yaml",
-      "sha256": "a6443cb90e82b3beffe316c2331643a526bbc2a59f330e3f90added684a27e94",
-      "size": 880
-    },
-    {
-      "path": ".agents/skills/oma-commit/resources/conventional-commits.md",
-      "sha256": "da9c24e92065d7b1bfe30b7a50cc888d33cb79487e95f300d651fd5b5302d1ad",
-      "size": 4037
     },
     {
       "path": ".agents/skills/oma-coordination/SKILL.md",
@@ -920,6 +905,36 @@
       "size": 2346
     },
     {
+      "path": ".agents/skills/oma-scm/SKILL.md",
+      "sha256": "12190a980be88e96e0ffd131f75edca5aa39db2f3a5511c68ec217e7d1982e4c",
+      "size": 7676
+    },
+    {
+      "path": ".agents/skills/oma-scm/config/cm-config.yaml",
+      "sha256": "dda19b806672f5ec0991b531aeef2cbec4062cdc7f5e9b67497369ab43b42637",
+      "size": 1139
+    },
+    {
+      "path": ".agents/skills/oma-scm/config/commit-config.yaml",
+      "sha256": "a6443cb90e82b3beffe316c2331643a526bbc2a59f330e3f90added684a27e94",
+      "size": 880
+    },
+    {
+      "path": ".agents/skills/oma-scm/resources/codeowners-playbook.md",
+      "sha256": "91df3aec5f2a51289e8cb9121587e47ef57b1d1a58529a71850d0647c99db6ee",
+      "size": 1230
+    },
+    {
+      "path": ".agents/skills/oma-scm/resources/conventional-commits.md",
+      "sha256": "e10fc2f690d5c05bbe2c52b4d9fa5552e37727191e12a706ee9abd72088b9134",
+      "size": 3938
+    },
+    {
+      "path": ".agents/skills/oma-scm/resources/onboarding-risk-signals.md",
+      "sha256": "7391085e68f9fe46e7ca8cf1ab4fa68afbff6675ca9d50b292f97151c66fabac",
+      "size": 2067
+    },
+    {
       "path": ".agents/skills/oma-tf-infra/SKILL.md",
       "sha256": "97bc06627b649a83f2e1ad8ee2b21113cbd9dbde2997cc2a1a2e32ecace514cf",
       "size": 6589
@@ -980,6 +995,16 @@
       "size": 4086
     },
     {
+      "path": ".agents/state/orchestrate-state-s1.json",
+      "sha256": "fc018b2529c3fd2408d5757be5e4ea8d667dc95c48162cf64ad1cefab6dc6ae7",
+      "size": 124
+    },
+    {
+      "path": ".agents/state/orchestrate-state-ses_289c2fdb2ffeKwo3XnHiwGql9n.json",
+      "sha256": "1f2aae9686b77aae1666812db924c761bbba807dde4dd05ae6b6c5885e569b07",
+      "size": 152
+    },
+    {
       "path": ".agents/workflows/architecture.md",
       "sha256": "942b7fbd9a78cfd3fc0d615d27e542c4a9bbbdf833c533a825969b034e12740f",
       "size": 4338
@@ -988,11 +1013,6 @@
       "path": ".agents/workflows/brainstorm.md",
       "sha256": "df8b2af0cb76c8dc79dfe218f909520fa58ce25f3f3739939817686ced103504",
       "size": 3046
-    },
-    {
-      "path": ".agents/workflows/commit.md",
-      "sha256": "8675e4c5bd43adc5a56b83eb7271c1a15eecb7b6cd0dfbc084eba1f7693f443b",
-      "size": 1928
     },
     {
       "path": ".agents/workflows/debug.md",
@@ -1045,6 +1065,11 @@
       "size": 4799
     },
     {
+      "path": ".agents/workflows/scm.md",
+      "sha256": "86c4f42e201d86931ca7fc6f16b1c7c202520c8a6b9f5c6b4f626705dd7f9d24",
+      "size": 6082
+    },
+    {
       "path": ".agents/workflows/stack-set.md",
       "sha256": "b5e33d0c7084e65f16c2fe4a5e9d00a1275eb8cb2720039c43aa91f7494adfda",
       "size": 2832
@@ -1081,6 +1106,6 @@
   "metadata": {
     "skillCount": 17,
     "workflowCount": 19,
-    "totalFiles": 214
+    "totalFiles": 219
   }
 }

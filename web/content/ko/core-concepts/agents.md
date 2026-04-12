@@ -23,7 +23,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 | **디버깅** | oma-debug | 버그 재현, 근본 원인 분석, 최소 수정, 회귀 테스트 |
 | **현지화** | oma-translator | 톤, 레지스터, 도메인 용어를 유지하는 컨텍스트 인식 번역 |
 | **조율** | oma-orchestrator, oma-coordination | 자동화 및 수동 멀티 에이전트 오케스트레이션 |
-| **Git** | oma-commit | Conventional Commits 생성, 기능별 커밋 분할 |
+| **Git** | oma-scm | Conventional Commits 생성, 기능별 커밋 분할 |
 
 ---
 
@@ -361,11 +361,11 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 ---
 
-### oma-commit
+### oma-scm
 
 **도메인:** Conventional Commits를 따르는 Git 커밋 생성.
 
-**사용 시기:** 코드 변경 완료 후, `/commit` 실행 시.
+**사용 시기:** 코드 변경 완료 후, `/scm` 실행 시.
 
 **커밋 유형:** feat, fix, refactor, docs, test, chore, style, perf.
 

@@ -248,7 +248,7 @@ oma stats
 | `/review` | 비영구 | QA 파이프라인: OWASP 보안, 성능, 접근성, 코드 품질 | 코드 머지 전, 배포 전 리뷰 |
 | `/debug` | 비영구 | 구조화된 디버깅: 재현, 진단, 수정, 회귀 테스트, 스캔 | 버그와 에러 조사 |
 | `/design` | 비영구 | 토큰이 포함된 DESIGN.md를 생성하는 7단계 디자인 워크플로우 | 디자인 시스템, 랜딩 페이지, UI 재설계 |
-| `/commit` | 비영구 | 자동 type/scope 감지와 기능 분할이 포함된 Conventional Commit | 코드 변경 완료 후 |
+| `/scm` | 비영구 | 브랜치/머지/충돌/워크트리/베이스라인을 다루는 SCM Git 워크플로 + 자동 type/scope 감지와 기능 분할이 포함된 Conventional Commit | 코드 변경 완료 후 또는 저장소 형상관리 작업 시 |
 | `/tools` | 비영구 | MCP 도구 가시성 관리 (그룹 활성화/비활성화) | 에이전트가 사용할 수 있는 MCP 도구 제어 |
 | `/stack-set` | 비영구 | 프로젝트 기술 스택 자동 감지 및 백엔드 레퍼런스 생성 | 언어별 코딩 규칙 설정 |
 | `/ralph` | 영구 | ultrawork를 감싸는 자기 참조 완료 루프와 독립 심판 | 검증 가능한 기준이 통과할 때까지 에이전트가 계속 작업해야 할 때 |
@@ -311,7 +311,7 @@ oh-my-agent는 11개 언어에서 워크플로우 키워드를 감지합니다. 
 | **oma-dev-workflow** | CI/CD, 모노레포 태스크, 릴리스 자동화 | mise.toml 설정, 파이프라인 정의 |
 | **oma-translator** | 다국어 콘텐츠, i18n 파일 | 톤과 레지스터를 유지하는 번역 텍스트 |
 | **oma-orchestrator** | 자동화된 병렬 에이전트 실행 | 여러 에이전트의 오케스트레이션 결과 |
-| **oma-commit** | Git 커밋 | 적절한 type/scope의 Conventional Commits |
+| **oma-scm** | Git 커밋 | 적절한 type/scope의 Conventional Commits |
 
 ---
 

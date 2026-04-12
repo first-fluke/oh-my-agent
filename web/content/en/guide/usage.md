@@ -248,7 +248,7 @@ oma stats
 | `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Before merging code, pre-deployment review |
 | `/debug` | Non-persistent | Structured debugging: reproduce, diagnose, fix, regression test, scan | Investigating bugs and errors |
 | `/design` | Non-persistent | 7-phase design workflow producing DESIGN.md with tokens | Building design systems, landing pages, UI redesigns |
-| `/commit` | Non-persistent | Conventional commit with auto type/scope detection and feature splitting | After completing code changes |
+| `/scm` | Non-persistent | SCM workflow for Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit generation with auto type/scope detection and feature splitting | After completing code changes or when handling repository configuration management tasks |
 | `/tools` | Non-persistent | MCP tool visibility management (enable/disable groups) | Controlling which MCP tools agents can use |
 | `/stack-set` | Non-persistent | Auto-detect project tech stack and generate backend references | Setting up language-specific coding conventions |
 | `/ralph` | Persistent | Self-referential completion loop wrapping ultrawork with independent judge | When agents must keep working until verifiable criteria pass |
@@ -311,7 +311,7 @@ oh-my-agent detects workflow keywords in 11 languages. Here are examples showing
 | **oma-dev-workflow** | CI/CD, monorepo tasks, release automation | mise.toml configs, pipeline definitions |
 | **oma-translator** | Multilingual content, i18n files | Translated text preserving tone and register |
 | **oma-orchestrator** | Automated parallel agent execution | Orchestrated results from multiple agents |
-| **oma-commit** | Git commits | Conventional Commits with proper type/scope |
+| **oma-scm** | Git commits | Conventional Commits with proper type/scope |
 
 ---
 

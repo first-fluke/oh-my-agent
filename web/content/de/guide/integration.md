@@ -396,7 +396,7 @@ Der Installer lädt das neueste Release-Tarball aus den oh-my-agent GitHub-Relea
 
 ### 5. Workflow-Installation
 
-`installWorkflows()` kopiert alle Workflow-Dateien nach `.agents/workflows/`. Dies sind die Definitionen für `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/commit`, `/tools` und `/stack-set`.
+`installWorkflows()` kopiert alle Workflow-Dateien nach `.agents/workflows/`. Dies sind die Definitionen für `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/exec-plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` und `/stack-set`.
 
 ### 6. Konfigurationsinstallation
 

@@ -38,7 +38,7 @@ Escolha um preset e pronto:
 | **oma-architecture** | Trade-offs de arquitetura, limites, analise com foco em ADR/ATAM/CBAM |
 | **oma-backend** | APIs em Python, Node.js ou Rust |
 | **oma-brainstorm** | Explora ideias antes de voce comecar a construir |
-| **oma-commit** | Commits convencionais limpos |
+| **oma-scm** | Commits convencionais limpos |
 | **oma-db** | Design de schema, migrations, indexacao, vector DB |
 | **oma-debug** | Analise de causa raiz, correcoes, testes de regressao |
 | **oma-design** | Design systems, tokens, acessibilidade, responsividade |
@@ -78,7 +78,7 @@ Ou use slash commands para workflows estruturados:
 | `/debug` | Debugging estruturado de causa raiz |
 | `/design` | Workflow de design system em 7 fases |
 | `/brainstorm` | Ideacao livre |
-| `/commit` | Commit convencional com analise de type/scope |
+| `/scm` | Commit convencional com analise de type/scope |
 
 **Auto-deteccao**: Voce nem precisa dos slash commands — palavras como "plan", "review", "debug" na sua mensagem (em 11 idiomas!) ativam automaticamente o workflow certo.
 
@@ -150,7 +150,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## Saiba Mais

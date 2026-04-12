@@ -117,7 +117,7 @@ Escribe estos en tu IDE de IA para activar procesos estructurados:
 | `/review` | Auditoria de seguridad + rendimiento + accesibilidad | Antes de hacer merge |
 | `/debug` | Depuracion estructurada de causa raiz | Investigando bugs |
 | `/design` | Workflow de diseno de 7 fases → `DESIGN.md` | Construyendo sistemas de diseno |
-| `/commit` | Commit convencional con analisis de tipo/scope | Haciendo commit de cambios |
+| `/scm` | Commit convencional con analisis de tipo/scope | Haciendo commit de cambios |
 | `/tools` | Gestion de servidores MCP | Agregando herramientas externas |
 | `/stack-set` | Configuracion de stack tecnologico | Estableciendo preferencias de lenguaje/framework |
 | `/deepinit` | Inicializacion completa del proyecto | Configurando en un codebase existente |
@@ -158,7 +158,7 @@ Preguntas como "que es orchestrate?" se filtran — no activaran workflows accid
 | oma-dev-workflow | CI/CD, automatizacion | Configs de pipeline |
 | oma-translator | Traduccion | Contenido multilingue natural |
 | oma-orchestrator | Ejecucion paralela | Resultados de agentes |
-| oma-commit | Commits Git | Commits convencionales |
+| oma-scm | Commits Git | Commits convencionales |
 
 ---
 

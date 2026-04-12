@@ -1,0 +1,2 @@
+date,phase,sessions_A,sessions_B,task_success_A,task_success_B,delta_task_success_pp,wrong_routing_A,wrong_routing_B,delta_wrong_routing_pp,correction_rate_A,correction_rate_B,delta_correction_pp,redo_rate_A,redo_rate_B,delta_redo_pp,avg_cd_A,avg_cd_B,delta_cd_pct,satisfaction_up_A,satisfaction_up_B,delta_satisfaction_pct,latency_p50_A_ms,latency_p50_B_ms,delta_latency_p50_pct,latency_p95_A_ms,latency_p95_B_ms,delta_latency_p95_pct,safety_incidents_A,safety_incidents_B,decision
+YYYY-MM-DD,shadow,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,hold

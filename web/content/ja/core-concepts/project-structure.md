@@ -75,7 +75,7 @@ your-project/
 │   │   │   └── config/
 │   │   ├── oma-brainstorm/
 │   │   ├── oma-coordination/
-│   │   └── oma-commit/
+│   │   └── oma-scm/
 │   │
 │   ├── workflows/                     ← 14のワークフロー定義
 │   │   ├── orchestrate.md             ← 永続：自動並列実行
@@ -88,7 +88,7 @@ your-project/
 │   │   ├── review.md
 │   │   ├── debug.md
 │   │   ├── design.md
-│   │   ├── commit.md
+│   │   ├── scm.md
 │   │   ├── tools.md
 │   │   └── stack-set.md
 │   │

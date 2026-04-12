@@ -40,7 +40,7 @@ bunx oh-my-agent@latest
 | **oma-architecture** | 아키텍처 트레이드오프, 모듈 경계, ADR/ATAM/CBAM 관점의 분석 |
 | **oma-backend** | Python, Node.js, Rust로 API 개발 |
 | **oma-brainstorm** | 구현 전에 아이디어를 탐색 |
-| **oma-commit** | 깔끔한 conventional commit |
+| **oma-scm** | 형상관리(SCM) 및 Git — 브랜치·머지·워크트리·베이스라인; Conventional Commits |
 | **oma-db** | 스키마 설계, 마이그레이션, 인덱싱, vector DB |
 | **oma-debug** | 근본 원인 분석, 수정, 회귀 테스트 |
 | **oma-design** | 디자인 시스템, 토큰, 접근성, 반응형 |
@@ -80,7 +80,7 @@ You: "유저 인증이 있는 TODO 앱 만들어줘"
 | `/debug` | 구조화된 근본 원인 디버깅 |
 | `/design` | 7단계 디자인 시스템 워크플로우 |
 | `/brainstorm` | 자유로운 아이디어 발산 |
-| `/commit` | type/scope 분석 포함 conventional commit |
+| `/scm` | SCM + Git 워크플로 및 Conventional Commit 지원 |
 
 **자동 감지**: 슬래시 커맨드 없이도 메시지에 "계획", "리뷰", "디버그" 같은 키워드를 쓰면 (11개 언어 지원!) 알맞은 워크플로우가 자동으로 활성화됩니다.
 
@@ -152,7 +152,7 @@ flowchart TD
     Workflows --> Orchestration
     Orchestration --> Domain
     Domain --> Quality
-    Quality --> CMT([oma-commit])
+    Quality --> SCM([oma-scm])
 ```
 
 ## 더 알아보기
