@@ -49,7 +49,7 @@ Kies een preset en je bent klaar:
 | **oma-pm** | Plant taken, splitst requirements op, definieert API-contracten |
 | **oma-qa** | OWASP-beveiliging, performance, toegankelijkheidsreview |
 | **oma-scm** | Nette conventional commits |
-| **oma-tf-infra** | Multi-cloud Terraform IaC |
+| **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natuurlijke meertalige vertaling |
 
 ## Hoe het werkt

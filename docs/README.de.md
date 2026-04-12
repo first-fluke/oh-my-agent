@@ -49,7 +49,7 @@ Wähl ein Preset und los geht's:
 | **oma-pm** | Plant Aufgaben, zerlegt Anforderungen, definiert API-Verträge |
 | **oma-qa** | OWASP-Sicherheit, Performance, Barrierefreiheits-Review |
 | **oma-scm** | Saubere konventionelle Commits |
-| **oma-tf-infra** | Multi-Cloud IaC mit Terraform |
+| **oma-tf-infra** | Multi-Cloud IaC mit Terraform (Infrastructure as Code) |
 | **oma-translator** | Natürliche mehrsprachige Übersetzung |
 
 ## So Funktioniert's

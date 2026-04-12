@@ -49,7 +49,7 @@ bunx oh-my-agent@latest
 | **oma-pm** | タスク計画、要件分解、APIコントラクト定義 |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティレビュー |
 | **oma-scm** | きれいなconventional commit |
-| **oma-tf-infra** | マルチクラウドTerraform IaC |
+| **oma-tf-infra** | マルチクラウド Terraform IaC（Infrastructure as Code） |
 | **oma-translator** | 自然な多言語翻訳 |
 
 ## 仕組み

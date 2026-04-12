@@ -49,7 +49,7 @@ Choisis un preset et c'est parti :
 | **oma-pm** | Planifie les tâches, découpe les specs, définit les contrats d'API |
 | **oma-qa** | Sécurité OWASP, performance, revue d'accessibilité |
 | **oma-scm** | Commits conventionnels propres |
-| **oma-tf-infra** | IaC multi-cloud avec Terraform |
+| **oma-tf-infra** | IaC multi-cloud avec Terraform (Infrastructure as Code) |
 | **oma-translator** | Traduction multilingue naturelle |
 
 ## Comment Ça Marche

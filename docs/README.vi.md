@@ -49,7 +49,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-pm** | Lập kế hoạch, phân tích yêu cầu, định nghĩa API contract |
 | **oma-qa** | Đánh giá bảo mật OWASP, hiệu suất, accessibility |
 | **oma-scm** | Conventional commit gọn gàng |
-| **oma-tf-infra** | Terraform IaC đa đám mây |
+| **oma-tf-infra** | Terraform IaC đa đám mây (Infrastructure as Code) |
 | **oma-translator** | Dịch thuật đa ngôn ngữ tự nhiên |
 
 ## Cách hoạt động

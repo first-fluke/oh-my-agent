@@ -49,7 +49,7 @@ bunx oh-my-agent@latest
 | **oma-pm** | 任务规划、需求拆解、API 契约定义 |
 | **oma-qa** | OWASP 安全、性能、无障碍审查 |
 | **oma-scm** | 干净的 conventional commit |
-| **oma-tf-infra** | 多云 Terraform IaC |
+| **oma-tf-infra** | 多云 Terraform IaC（Infrastructure as Code，基础设施即代码） |
 | **oma-translator** | 自然的多语言翻译 |
 
 ## 工作原理

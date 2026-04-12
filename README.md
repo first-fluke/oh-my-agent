@@ -51,7 +51,7 @@ Pick a preset and you're ready:
 | **oma-pm** | Plans tasks, breaks down requirements, defines API contracts |
 | **oma-qa** | OWASP security, performance, accessibility review |
 | **oma-scm** | SCM (software configuration management) — branching, merges, worktrees, baselines; Conventional Commits |
-| **oma-tf-infra** | Multi-cloud Terraform IaC |
+| **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natural multilingual translation |
 
 ## How It Works

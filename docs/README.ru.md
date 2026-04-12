@@ -49,7 +49,7 @@ bunx oh-my-agent@latest
 | **oma-pm** | Планирует задачи, декомпозирует требования, определяет API-контракты |
 | **oma-qa** | Безопасность OWASP, производительность, ревью доступности |
 | **oma-scm** | Чистые conventional commits |
-| **oma-tf-infra** | Мультиоблачный IaC на Terraform |
+| **oma-tf-infra** | Мультиоблачный IaC на Terraform (Infrastructure as Code) |
 | **oma-translator** | Естественный мультиязычный перевод |
 
 ## Как это работает
