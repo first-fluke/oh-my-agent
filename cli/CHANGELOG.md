@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.2.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.2.1...cli-v5.2.2) (2026-04-13)
+
+
+### Bug Fixes
+
+* **hooks:** skip missing test filter script ([90f52ba](https://github.com/first-fluke/oh-my-agent/commit/90f52ba39fdd70e1b1b4155765f85565ec741869))
+* **update:** harden codex hook reconciliation ([71e7793](https://github.com/first-fluke/oh-my-agent/commit/71e77934bae241db8e97811073b19556b9cf79b3))
+
 ## [5.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.2.0...cli-v5.2.1) (2026-04-13)
 
 
