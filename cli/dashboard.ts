@@ -10,8 +10,8 @@ import { basename, join } from "node:path";
 import { watch } from "chokidar";
 import * as pc from "picocolors";
 import { WebSocket, WebSocketServer } from "ws";
-import { buildGraphData } from "./lib/summary/graph.js";
-import { collectSummary } from "./lib/summary/index.js";
+import { buildGraphData } from "./lib/recap/graph.js";
+import { collectRecap } from "./lib/recap/index.js";
 
 const PORT = process.env.DASHBOARD_PORT
   ? parseInt(process.env.DASHBOARD_PORT || "9847", 10)
@@ -303,11 +303,11 @@ const HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const SUMMARY_HTML = `<!DOCTYPE html>
+const RECAP_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 ${TW_HEAD}
-<title>oh-my-agent — Summary Graph</title>
+<title>oh-my-agent — Recap Graph</title>
 <style>
 .filter-btn{transition:opacity .2s}.filter-btn.off{opacity:.3}
 #panel{right:-380px;transition:right .3s}.panel-open{right:0!important}
@@ -414,7 +414,7 @@ async function load(){
   const t=document.getElementById('topK').value;
   const params=new URLSearchParams({window:w});
   if(t)params.set('top',t);
-  const res=await fetch('/api/summary?'+params);
+  const res=await fetch('/api/recap?'+params);
   rawData=await res.json();
   renderAll(rawData);
 }
@@ -535,14 +535,14 @@ export function startDashboard() {
     if (url.pathname === "/api/state") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(buildFullState(memoriesDir)));
-    } else if (url.pathname === "/api/summary") {
+    } else if (url.pathname === "/api/recap") {
       try {
         const window = url.searchParams.get("window") || "7d";
         const tool = url.searchParams.get("tool") || undefined;
         const top = url.searchParams.get("top")
           ? Number.parseInt(url.searchParams.get("top") as string, 10)
           : undefined;
-        const output = await collectSummary({ window, tool, top });
+        const output = await collectRecap({ window, tool, top });
         const graph = buildGraphData(output.entries, top);
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ ...output, graph }));
@@ -550,9 +550,9 @@ export function startDashboard() {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err) }));
       }
-    } else if (url.pathname === "/summary") {
+    } else if (url.pathname === "/recap") {
       res.writeHead(200, { "Content-Type": "text/html" });
-      res.end(SUMMARY_HTML);
+      res.end(RECAP_HTML);
     } else {
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(HTML);

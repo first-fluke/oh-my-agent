@@ -2,7 +2,7 @@ import * as p from "@clack/prompts";
 import { TZDate } from "@date-fns/tz";
 import { format, intervalToDuration } from "date-fns";
 import pc from "picocolors";
-import type { SummaryOutput, ToolName } from "../schema.js";
+import type { RecapOutput, ToolName } from "../schema.js";
 
 const TOOL_COLORS: Record<ToolName, (s: string) => string> = {
   claude: pc.yellow,
@@ -39,15 +39,15 @@ function bar(value: number, max: number, width = 20): string {
   return `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
 }
 
-export function formatTerminal(output: SummaryOutput): void {
+export function formatTerminal(output: RecapOutput): void {
   _tz = output.timezone;
   const { stats, entries, window: win } = output;
   const startDate = fmtDate(win.start);
   const endDate = fmtDate(win.end);
   const title =
     startDate === endDate
-      ? `Summary for ${startDate}`
-      : `Summary for ${startDate} ~ ${endDate}`;
+      ? `Recap for ${startDate}`
+      : `Recap for ${startDate} ~ ${endDate}`;
 
   p.intro(pc.bgMagenta(pc.white(` ${title} `)));
 

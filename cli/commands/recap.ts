@@ -1,17 +1,17 @@
 import { exec } from "node:child_process";
 import { startDashboard } from "../dashboard.js";
-import { formatJson } from "../lib/summary/formatters/json.js";
-import { formatMermaid } from "../lib/summary/formatters/mermaid.js";
-import { formatTerminal } from "../lib/summary/formatters/terminal.js";
-import { collectSummary, type SummaryOptions } from "../lib/summary/index.js";
+import { formatJson } from "../lib/recap/formatters/json.js";
+import { formatMermaid } from "../lib/recap/formatters/mermaid.js";
+import { formatTerminal } from "../lib/recap/formatters/terminal.js";
+import { collectRecap, type RecapOptions } from "../lib/recap/index.js";
 
-export async function summary(
+export async function recap(
   jsonMode = false,
-  options: SummaryOptions & { mermaid?: boolean; graph?: boolean } = {},
+  options: RecapOptions & { mermaid?: boolean; graph?: boolean } = {},
 ): Promise<void> {
   if (options.graph) {
     const port = process.env.DASHBOARD_PORT || "9847";
-    const url = `http://localhost:${port}/summary`;
+    const url = `http://localhost:${port}/recap`;
     startDashboard();
     // Open browser after a short delay to let server start
     setTimeout(() => {
@@ -26,7 +26,7 @@ export async function summary(
     return;
   }
 
-  const output = await collectSummary(options);
+  const output = await collectRecap(options);
 
   if (jsonMode) {
     console.log(formatJson(output));

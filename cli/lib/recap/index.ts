@@ -1,6 +1,6 @@
 import { resolveWindowBounds } from "../time-window.js";
 import { filterParsers, getAvailableParsers } from "./registry.js";
-import type { SummaryOutput, ToolName } from "./schema.js";
+import type { RecapOutput, ToolName } from "./schema.js";
 
 // Side-effect imports: register all parsers
 import "./parsers/claude.js";
@@ -9,7 +9,7 @@ import "./parsers/gemini.js";
 import "./parsers/qwen.js";
 import "./parsers/cursor.js";
 
-export interface SummaryOptions {
+export interface RecapOptions {
   window?: string;
   date?: string;
   tool?: string;
@@ -17,9 +17,9 @@ export interface SummaryOptions {
   sort?: "count" | "duration";
 }
 
-export async function collectSummary(
-  options: SummaryOptions,
-): Promise<SummaryOutput> {
+export async function collectRecap(
+  options: RecapOptions,
+): Promise<RecapOutput> {
   const { start, end, timezone } = resolveWindowBounds(
     options.window,
     options.date,

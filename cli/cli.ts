@@ -14,10 +14,10 @@ import { exportRules } from "./commands/export.js";
 import { install } from "./commands/install.js";
 import { link } from "./commands/link.js";
 import { initMemory } from "./commands/memory.js";
+import { recap } from "./commands/recap.js";
 import { retro } from "./commands/retro.js";
 import { star } from "./commands/star.js";
 import { stats } from "./commands/stats.js";
-import { summary } from "./commands/summary.js";
 import { update } from "./commands/update.js";
 import { verify } from "./commands/verify.js";
 import { visualize } from "./commands/visualize.js";
@@ -523,8 +523,8 @@ addOutputOptions(
 
 addOutputOptions(
   program
-    .command("summary")
-    .description("Summarize AI tool conversation history")
+    .command("recap")
+    .description("Recap AI tool conversation history")
     .option("--window <period>", "Time window: 1d, 3d, 7d, 2w, 30d", "1d")
     .option("--date <date>", "Specific date (YYYY-MM-DD)")
     .option(
@@ -538,7 +538,7 @@ addOutputOptions(
 ).action(
   runAction(
     async (options) => {
-      await summary(resolveJsonMode(options), {
+      await recap(resolveJsonMode(options), {
         window: options.window,
         date: options.date,
         tool: options.tool,

@@ -27,7 +27,7 @@ export const NormalizedEntrySchema = z.object({
 
 export type NormalizedEntry = z.infer<typeof NormalizedEntrySchema>;
 
-export const SummaryOutputSchema = z.object({
+export const RecapOutputSchema = z.object({
   window: z.object({
     start: z.number(),
     end: z.number(),
@@ -47,4 +47,4 @@ export const SummaryOutputSchema = z.object({
   }),
 });
 
-export type SummaryOutput = z.infer<typeof SummaryOutputSchema>;
+export type RecapOutput = z.infer<typeof RecapOutputSchema>;

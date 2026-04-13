@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { formatMermaid } from "../lib/summary/formatters/mermaid.js";
-import type { SummaryOutput } from "../lib/summary/schema.js";
+import { formatMermaid } from "../lib/recap/formatters/mermaid.js";
+import type { RecapOutput } from "../lib/recap/schema.js";
 
-function makeSummary(overrides: Partial<SummaryOutput> = {}): SummaryOutput {
+function makeRecap(overrides: Partial<RecapOutput> = {}): RecapOutput {
   return {
     window: { start: 1776000000000, end: 1776086400000 },
     timezone: "UTC",
@@ -18,14 +18,14 @@ function makeSummary(overrides: Partial<SummaryOutput> = {}): SummaryOutput {
 
 describe("formatMermaid", () => {
   it("returns message when no entries", () => {
-    const result = formatMermaid(makeSummary());
+    const result = formatMermaid(makeRecap());
     expect(result).toContain("No data");
   });
 
   it("generates gantt chart with sections per tool", () => {
     const base = 1776000000000;
     const result = formatMermaid(
-      makeSummary({
+      makeRecap({
         entries: [
           {
             tool: "claude",
@@ -59,7 +59,7 @@ describe("formatMermaid", () => {
   it("escapes special characters in labels", () => {
     const base = 1776000000000;
     const result = formatMermaid(
-      makeSummary({
+      makeRecap({
         entries: [
           {
             tool: "gemini",
@@ -79,7 +79,7 @@ describe("formatMermaid", () => {
     const base = 1776000000000;
     // 3 entries within 10 min = 1 session
     const result = formatMermaid(
-      makeSummary({
+      makeRecap({
         entries: [
           {
             tool: "claude",
@@ -114,11 +114,9 @@ describe("formatMermaid", () => {
     // 1776000000000 = 2026-04-12T13:20:00Z
     const ts = 1776000000000;
     const result = formatMermaid(
-      makeSummary({
+      makeRecap({
         timezone: "UTC",
-        entries: [
-          { tool: "claude", timestamp: ts, prompt: "x", project: "p" },
-        ],
+        entries: [{ tool: "claude", timestamp: ts, prompt: "x", project: "p" }],
       }),
     );
     expect(result).toContain("13:20");
@@ -128,11 +126,9 @@ describe("formatMermaid", () => {
     // 1776000000000 = 2026-04-12T13:20:00Z = 2026-04-12T22:20:00 KST
     const ts = 1776000000000;
     const result = formatMermaid(
-      makeSummary({
+      makeRecap({
         timezone: "Asia/Seoul",
-        entries: [
-          { tool: "claude", timestamp: ts, prompt: "x", project: "p" },
-        ],
+        entries: [{ tool: "claude", timestamp: ts, prompt: "x", project: "p" }],
       }),
     );
     expect(result).toContain("22:20");
@@ -142,11 +138,9 @@ describe("formatMermaid", () => {
     // 1776000000000 = 2026-04-12T13:20:00Z = 2026-04-12T09:20:00 EDT
     const ts = 1776000000000;
     const result = formatMermaid(
-      makeSummary({
+      makeRecap({
         timezone: "America/New_York",
-        entries: [
-          { tool: "claude", timestamp: ts, prompt: "x", project: "p" },
-        ],
+        entries: [{ tool: "claude", timestamp: ts, prompt: "x", project: "p" }],
       }),
     );
     expect(result).toContain("09:20");
@@ -159,21 +153,17 @@ describe("formatMermaid", () => {
     // In Asia/Seoul (UTC+9): April 13 08:30
 
     const utcResult = formatMermaid(
-      makeSummary({
+      makeRecap({
         timezone: "UTC",
-        entries: [
-          { tool: "claude", timestamp: ts, prompt: "x", project: "p" },
-        ],
+        entries: [{ tool: "claude", timestamp: ts, prompt: "x", project: "p" }],
       }),
     );
     expect(utcResult).toContain("2026-04-12");
 
     const kstResult = formatMermaid(
-      makeSummary({
+      makeRecap({
         timezone: "Asia/Seoul",
-        entries: [
-          { tool: "claude", timestamp: ts, prompt: "x", project: "p" },
-        ],
+        entries: [{ tool: "claude", timestamp: ts, prompt: "x", project: "p" }],
       }),
     );
     expect(kstResult).toContain("2026-04-13");

@@ -35,9 +35,9 @@ vi.mock("better-sqlite3", () => {
   return { default: null };
 });
 
-import { collectSummary } from "../lib/summary/index.js";
+import { collectRecap } from "../lib/recap/index.js";
 
-describe("collectSummary", () => {
+describe("collectRecap", () => {
   const NOW = 1776000000000; // fixed timestamp
 
   beforeEach(() => {
@@ -53,7 +53,7 @@ describe("collectSummary", () => {
   it("returns empty result when no history files exist", async () => {
     mockExistsSync.mockReturnValue(false);
 
-    const result = await collectSummary({ window: "1d" });
+    const result = await collectRecap({ window: "1d" });
 
     expect(result.stats.totalPrompts).toBe(0);
     expect(result.entries).toHaveLength(0);
@@ -94,7 +94,7 @@ describe("collectSummary", () => {
       ],
     });
 
-    const result = await collectSummary({ window: "1d" });
+    const result = await collectRecap({ window: "1d" });
 
     expect(result.stats.totalPrompts).toBe(2);
     expect(result.entries[0].tool).toBe("claude");
@@ -121,7 +121,7 @@ describe("collectSummary", () => {
       ],
     });
 
-    const result = await collectSummary({ window: "1d", tool: "codex" });
+    const result = await collectRecap({ window: "1d", tool: "codex" });
 
     expect(result.stats.totalPrompts).toBe(1);
     expect(result.entries[0].tool).toBe("codex");
@@ -132,7 +132,7 @@ describe("collectSummary", () => {
   it("filters by tool", async () => {
     mockExistsSync.mockReturnValue(false);
 
-    const result = await collectSummary({
+    const result = await collectRecap({
       window: "1d",
       tool: "gemini,qwen",
     });
@@ -162,7 +162,7 @@ describe("collectSummary", () => {
       ],
     });
 
-    const result = await collectSummary({ window: "1d", tool: "claude" });
+    const result = await collectRecap({ window: "1d", tool: "claude" });
 
     expect(result.entries[0].prompt).toBe("first");
     expect(result.entries[1].prompt).toBe("second");
@@ -197,7 +197,7 @@ describe("collectSummary", () => {
 
     mockCreateReadStream.mockReturnValue({ lines });
 
-    const result = await collectSummary({
+    const result = await collectRecap({
       window: "1d",
       tool: "claude",
       top: 1,
@@ -242,7 +242,7 @@ describe("collectSummary", () => {
       ],
     });
 
-    const result = await collectSummary({
+    const result = await collectRecap({
       window: "1d",
       tool: "claude",
       sort: "duration",
@@ -254,7 +254,7 @@ describe("collectSummary", () => {
   it("includes window bounds and timezone", async () => {
     mockExistsSync.mockReturnValue(false);
 
-    const result = await collectSummary({ window: "1d" });
+    const result = await collectRecap({ window: "1d" });
 
     expect(result.window.end).toBe(NOW);
     expect(result.window.end - result.window.start).toBe(86_400_000);

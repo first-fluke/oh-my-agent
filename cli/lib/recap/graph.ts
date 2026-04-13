@@ -21,7 +21,7 @@ export interface GraphData {
 }
 
 /**
- * Build a graph from summary entries.
+ * Build a graph from recap entries.
  * Nodes = projects, edges = tool transitions within 30min.
  */
 export function buildGraphData(

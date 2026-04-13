@@ -1,6 +1,6 @@
 import { TZDate } from "@date-fns/tz";
 import { format } from "date-fns";
-import type { NormalizedEntry, SummaryOutput, ToolName } from "../schema.js";
+import type { NormalizedEntry, RecapOutput, ToolName } from "../schema.js";
 
 let _tz: string;
 
@@ -69,7 +69,7 @@ function escapeLabel(s: string): string {
   return s.replace(/[;#:]/g, " ");
 }
 
-export function formatMermaid(output: SummaryOutput): string {
+export function formatMermaid(output: RecapOutput): string {
   _tz = output.timezone;
   const { entries, window: win } = output;
 

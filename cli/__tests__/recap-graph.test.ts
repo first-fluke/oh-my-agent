@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildGraphData } from "../lib/summary/graph.js";
-import type { NormalizedEntry } from "../lib/summary/schema.js";
+import { buildGraphData } from "../lib/recap/graph.js";
+import type { NormalizedEntry } from "../lib/recap/schema.js";
 
 function entry(
   overrides: Partial<NormalizedEntry> & { timestamp: number },
