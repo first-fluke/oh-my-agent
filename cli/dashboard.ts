@@ -321,7 +321,7 @@ const SUMMARY_HTML = `<!DOCTYPE html>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
-#controls{position:fixed;top:16px;left:16px;z-index:10;display:flex;gap:8px;align-items:center}
+#controls{position:fixed;top:16px;left:16px;z-index:10;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:480px}
 #controls select,#controls input,#controls button{
   background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:13px}
 #controls button{cursor:pointer;background:#238636;border-color:#238636}
@@ -329,11 +329,27 @@ body{background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,sans-s
 #tooltip{position:fixed;display:none;background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:12px;
   font-size:13px;pointer-events:none;z-index:20;max-width:280px;box-shadow:0 4px 12px rgba(0,0,0,.5)}
 #tooltip .tool-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px}
-#legend{position:fixed;bottom:16px;left:16px;display:flex;gap:12px;font-size:12px;opacity:.7}
-#legend span{display:flex;align-items:center;gap:4px}
-#legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+#filters{position:fixed;top:52px;left:16px;z-index:10;display:flex;gap:6px}
+.filter-btn{padding:4px 10px;border-radius:12px;font-size:11px;border:2px solid;cursor:pointer;
+  transition:opacity .2s;font-weight:600;background:transparent}
+.filter-btn.off{opacity:.3}
 #stats{position:fixed;top:16px;right:16px;font-size:13px;opacity:.7;text-align:right}
-svg{width:100vw;height:100vh}
+#panel{position:fixed;top:0;right:-380px;width:380px;height:100vh;background:#161b22;border-left:1px solid #30363d;
+  z-index:15;transition:right .3s;display:flex;flex-direction:column;box-shadow:-4px 0 12px rgba(0,0,0,.4)}
+#panel.open{right:0}
+#panel-header{padding:14px 16px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center}
+#panel-header h3{font-size:14px;margin:0}
+#panel-close{background:none;border:none;color:#768390;font-size:18px;cursor:pointer}
+#panel-body{flex:1;overflow-y:auto;padding:0}
+.prompt-item{padding:10px 16px;border-bottom:1px solid #21262d;font-size:12px;line-height:1.5}
+.prompt-item .meta{color:#768390;font-size:11px;margin-bottom:4px}
+.prompt-item .meta .tool-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
+#heatmap{position:fixed;bottom:0;left:0;right:0;height:60px;background:#0d1117;border-top:1px solid #21262d;
+  z-index:10;display:flex;align-items:flex-end;padding:4px 16px;gap:1px}
+#heatmap .bar{flex:1;background:#238636;border-radius:2px 2px 0 0;min-width:2px;position:relative}
+#heatmap .bar:hover{opacity:.8}
+#heatmap-label{position:fixed;bottom:62px;left:16px;font-size:11px;color:#768390;z-index:10}
+svg{width:100vw;height:calc(100vh - 60px)}
 </style>
 </head>
 <body>
@@ -348,128 +364,170 @@ svg{width:100vw;height:100vh}
   <input id="topK" type="number" min="0" max="50" value="" placeholder="Top K">
   <button id="refresh">Refresh</button>
 </div>
+<div id="filters"></div>
 <div id="tooltip"></div>
-<div id="legend">
-  <span><i class="dot" style="background:#f0a030"></i> Claude</span>
-  <span><i class="dot" style="background:#4a90d9"></i> Gemini</span>
-  <span><i class="dot" style="background:#3fb950"></i> Codex</span>
-  <span><i class="dot" style="background:#a371f7"></i> Qwen</span>
-  <span><i class="dot" style="background:#768390"></i> Cursor</span>
-</div>
 <div id="stats"></div>
+<div id="panel"><div id="panel-header"><h3 id="panel-title">Prompts</h3><button id="panel-close">&times;</button></div><div id="panel-body"></div></div>
+<div id="heatmap-label">Activity by hour</div>
+<div id="heatmap"></div>
 <svg></svg>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script>
-const TOOL_COLORS={claude:'#f0a030',gemini:'#4a90d9',codex:'#3fb950',qwen:'#a371f7',cursor:'#768390'};
-const svg=d3.select('svg'),width=window.innerWidth,height=window.innerHeight;
-svg.attr('viewBox',[0,0,width,height]);
+const TC={claude:'#f0a030',gemini:'#4a90d9',codex:'#3fb950',qwen:'#a371f7',cursor:'#768390'};
+const TOOLS=['claude','gemini','codex','qwen','cursor'];
+const activeTools=new Set(TOOLS);
+let rawData=null;
 
+// --- Filter buttons ---
+const filtersEl=document.getElementById('filters');
+TOOLS.forEach(t=>{
+  const btn=document.createElement('button');
+  btn.className='filter-btn';btn.textContent=t;
+  btn.style.color=TC[t];btn.style.borderColor=TC[t];
+  btn.onclick=()=>{
+    if(activeTools.has(t)){activeTools.delete(t);btn.classList.add('off')}
+    else{activeTools.add(t);btn.classList.remove('off')}
+    if(rawData)renderAll(rawData);
+  };
+  filtersEl.appendChild(btn);
+});
+
+// --- SVG setup ---
+const svg=d3.select('svg'),width=window.innerWidth,height=window.innerHeight-60;
+svg.attr('viewBox',[0,0,width,height]);
 const g=svg.append('g');
 svg.call(d3.zoom().scaleExtent([.1,8]).on('zoom',e=>g.attr('transform',e.transform)));
+let simulation;
+const linkG=g.append('g'),nodeG=g.append('g'),labelG=g.append('g');
 
-let simulation,linkG,nodeG,labelG;
+// --- Panel ---
+document.getElementById('panel-close').onclick=()=>document.getElementById('panel').classList.remove('open');
 
-function init(){
-  linkG=g.append('g').attr('class','links');
-  nodeG=g.append('g').attr('class','nodes');
-  labelG=g.append('g').attr('class','labels');
+function showPanel(project,entries){
+  const panel=document.getElementById('panel');
+  document.getElementById('panel-title').textContent=project;
+  const body=document.getElementById('panel-body');
+  const items=entries.filter(e=>activeTools.has(e.tool)&&(e.project||'(unknown)')===project)
+    .sort((a,b)=>b.timestamp-a.timestamp);
+  body.innerHTML=items.slice(0,100).map(e=>{
+    const d=new Date(e.timestamp);
+    const time=d.toLocaleString('en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
+    return '<div class="prompt-item"><div class="meta"><span class="tool-dot" style="background:'+TC[e.tool]+'"></span>'
+      +e.tool+' &middot; '+time+'</div>'+escHtml(e.prompt.slice(0,300))+'</div>';
+  }).join('');
+  if(items.length>100)body.innerHTML+='<div class="prompt-item" style="color:#768390">+'+(items.length-100)+' more...</div>';
+  panel.classList.add('open');
 }
-init();
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
+// --- Heatmap ---
+function renderHeatmap(entries){
+  const hm=document.getElementById('heatmap');
+  const hours=new Array(24).fill(0);
+  entries.filter(e=>activeTools.has(e.tool)).forEach(e=>{hours[new Date(e.timestamp).getHours()]++});
+  const max=Math.max(...hours,1);
+  hm.innerHTML=hours.map((c,i)=>{
+    const h=Math.max(2,Math.round(c/max*48));
+    const label=String(i).padStart(2,'0')+':00';
+    return '<div class="bar" style="height:'+h+'px;background:'+
+      (c>max*.7?'#238636':c>max*.3?'#1a7f37':'#21262d')+
+      '" title="'+label+': '+c+' prompts"></div>';
+  }).join('');
+}
+
+// --- Graph ---
 async function load(){
   const w=document.getElementById('window').value;
   const t=document.getElementById('topK').value;
   const params=new URLSearchParams({window:w});
   if(t)params.set('top',t);
   const res=await fetch('/api/summary?'+params);
-  const data=await res.json();
-  render(data);
+  rawData=await res.json();
+  renderAll(rawData);
 }
 
-function render(data){
-  const{graph,stats}=data;
+function renderAll(data){
+  const filtered={...data,entries:data.entries.filter(e=>activeTools.has(e.tool))};
+  renderGraph(filtered);
+  renderHeatmap(data.entries);
+}
+
+function renderGraph(data){
+  const{graph,stats,entries}=data;
   if(!graph||!graph.nodes.length){
-    document.getElementById('stats').textContent='No data for this window.';
-    linkG.selectAll('*').remove();nodeG.selectAll('*').remove();labelG.selectAll('*').remove();
-    return;
+    document.getElementById('stats').textContent='No data';
+    linkG.selectAll('*').remove();nodeG.selectAll('*').remove();labelG.selectAll('*').remove();return;
   }
+  // Recount with active tools
+  const projCount={};
+  entries.forEach(e=>{const p=e.project||'(unknown)';projCount[p]=(projCount[p]||0)+1});
+  const nodes=graph.nodes.map(n=>({...n,count:projCount[n.id]||0,
+    tools:Object.fromEntries(Object.entries(n.tools).filter(([t])=>activeTools.has(t)))}))
+    .filter(n=>n.count>0);
+  const nodeIds=new Set(nodes.map(n=>n.id));
+  const edges=graph.edges.filter(e=>nodeIds.has(e.source?.id||e.source)&&nodeIds.has(e.target?.id||e.target));
 
-  document.getElementById('stats').innerHTML=
-    'Prompts: <b>'+stats.totalPrompts+'</b> &middot; Projects: <b>'+graph.nodes.length+'</b>';
+  document.getElementById('stats').innerHTML='Prompts: <b>'+entries.length+'</b> &middot; Projects: <b>'+nodes.length+'</b>';
 
-  const maxCount=d3.max(graph.nodes,d=>d.count)||1;
+  const maxCount=d3.max(nodes,d=>d.count)||1;
   const r=d3.scaleSqrt().domain([1,maxCount]).range([8,40]);
 
-  // Restart simulation
   if(simulation)simulation.stop();
-  simulation=d3.forceSimulation(graph.nodes)
-    .force('link',d3.forceLink(graph.edges).id(d=>d.id).distance(120).strength(d=>Math.min(d.weight/5,.8)))
+  simulation=d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(edges).id(d=>d.id).distance(120).strength(d=>Math.min(d.weight/5,.8)))
     .force('charge',d3.forceManyBody().strength(-200))
     .force('center',d3.forceCenter(width/2,height/2))
     .force('collision',d3.forceCollide().radius(d=>r(d.count)+4));
 
-  // Links
   linkG.selectAll('*').remove();
-  const link=linkG.selectAll('line').data(graph.edges).join('line')
+  const link=linkG.selectAll('line').data(edges).join('line')
     .attr('stroke','#30363d').attr('stroke-width',d=>Math.min(d.weight,6)).attr('stroke-opacity',.6);
 
-  // Pie chart nodes
   const pie=d3.pie().sort(null).value(d=>d.value);
   nodeG.selectAll('*').remove();
-  const node=nodeG.selectAll('g').data(graph.nodes).join('g')
-    .style('cursor','pointer')
-    .call(d3.drag().on('start',dragStart).on('drag',dragging).on('end',dragEnd));
+  const node=nodeG.selectAll('g').data(nodes).join('g').style('cursor','pointer')
+    .call(d3.drag().on('start',(e,d)=>{if(!e.active)simulation.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y})
+    .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y})
+    .on('end',(e,d)=>{if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null}));
 
   node.each(function(d){
-    const radius=r(d.count);
-    const arc=d3.arc().innerRadius(0).outerRadius(radius);
-    const slices=Object.entries(d.tools).map(([tool,value])=>({tool,value}));
-    const pieData=pie(slices);
-
-    d3.select(this).selectAll('path').data(pieData).join('path')
-      .attr('d',arc)
-      .attr('fill',s=>TOOL_COLORS[s.data.tool]||'#768390')
-      .attr('stroke','#0d1117').attr('stroke-width',1.5);
-
-    // Outer ring for hover highlight
-    d3.select(this).append('circle')
-      .attr('r',radius).attr('fill','none')
-      .attr('stroke','#0d1117').attr('stroke-width',2);
+    const radius=r(d.count);const arc=d3.arc().innerRadius(0).outerRadius(radius);
+    const slices=Object.entries(d.tools).filter(([,v])=>v>0).map(([tool,value])=>({tool,value}));
+    if(!slices.length)slices.push({tool:'cursor',value:1});
+    d3.select(this).selectAll('path').data(pie(slices)).join('path')
+      .attr('d',arc).attr('fill',s=>TC[s.data.tool]||'#768390').attr('stroke','#0d1117').attr('stroke-width',1.5);
+    d3.select(this).append('circle').attr('r',radius).attr('fill','none').attr('stroke','#0d1117').attr('stroke-width',2);
   });
 
   node.on('mouseover',(e,d)=>{
     const tip=document.getElementById('tooltip');
-    const tools=Object.entries(d.tools).sort((a,b)=>b[1]-a[1])
-      .map(([t,c])=>{
-        const pct=Math.round(100*c/d.count);
-        return '<span class="tool-badge" style="background:'+TOOL_COLORS[t]+'">'+t+': '+c+' ('+pct+'%)</span>';
-      }).join(' ');
-    const dur=d.duration>0?Math.round(d.duration/60000)+'min':'<1min';
-    tip.innerHTML='<b>'+d.label+'</b><br>Prompts: '+d.count+' &middot; Duration: '+dur+'<br>'+tools;
-    tip.style.display='block';
-    tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
+    const tools=Object.entries(d.tools).sort(([,a],[,b])=>b-a).filter(([,v])=>v>0)
+      .map(([t,c])=>'<span class="tool-badge" style="background:'+TC[t]+'">'+t+': '+c+' ('+Math.round(100*c/d.count)+'%)</span>').join(' ');
+    const dm=Math.round(d.duration/60000);
+    const dur=d.duration<=0?'<1min':dm>=60?Math.floor(dm/60)+'h '+dm%60+'m':dm+'min';
+    tip.innerHTML='<b>'+d.label+'</b><br>Prompts: '+d.count+' &middot; '+dur+'<br>'+tools;
+    tip.style.display='block';tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
   }).on('mousemove',e=>{
-    const tip=document.getElementById('tooltip');
-    tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
+    const tip=document.getElementById('tooltip');tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
   }).on('mouseout',()=>{document.getElementById('tooltip').style.display='none'});
 
-  // Labels
+  // Click → prompt panel
+  node.on('click',(e,d)=>{e.stopPropagation();showPanel(d.id,rawData.entries)});
+
   labelG.selectAll('*').remove();
-  const label=labelG.selectAll('text').data(graph.nodes).join('text')
+  labelG.selectAll('text').data(nodes).join('text')
     .text(d=>d.label).attr('font-size',11).attr('fill','#e6edf3')
     .attr('text-anchor','middle').attr('dy',d=>r(d.count)+14).style('pointer-events','none');
 
   simulation.on('tick',()=>{
-    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-        .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
     node.attr('transform',d=>'translate('+d.x+','+d.y+')');
-    label.attr('x',d=>d.x).attr('y',d=>d.y);
+    labelG.selectAll('text').attr('x',(_,i)=>nodes[i].x).attr('y',(_,i)=>nodes[i].y);
   });
 }
 
-function dragStart(e,d){if(!e.active)simulation.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y}
-function dragging(e,d){d.fx=e.x;d.fy=e.y}
-function dragEnd(e,d){if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null}
+// Close panel on background click
+svg.on('click',()=>document.getElementById('panel').classList.remove('open'));
 
 document.getElementById('refresh').onclick=load;
 document.getElementById('window').onchange=load;

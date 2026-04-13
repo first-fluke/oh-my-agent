@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import { TZDate } from "@date-fns/tz";
-import { format } from "date-fns";
+import { format, intervalToDuration } from "date-fns";
 import pc from "picocolors";
 import type { SummaryOutput, ToolName } from "../schema.js";
 
@@ -25,6 +25,13 @@ function fmtTime(ts: number): string {
 
 function fmtDate(ts: number): string {
   return format(new TZDate(ts, _tz), "yyyy-MM-dd");
+}
+
+function fmtDuration(ms: number): string {
+  if (ms < 60_000) return "<1min";
+  const { hours = 0, minutes = 0 } = intervalToDuration({ start: 0, end: ms });
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}min`;
 }
 
 function bar(value: number, max: number, width = 20): string {
@@ -71,7 +78,7 @@ export function formatTerminal(output: SummaryOutput): void {
     const projLines = stats.topProjects
       .map((proj) => {
         const dur = proj.duration
-          ? pc.dim(` (${Math.round(proj.duration / 60_000)}min)`)
+          ? pc.dim(` (${fmtDuration(proj.duration)})`)
           : "";
         return `${pc.bold(proj.name)} ${bar(proj.count, maxCount, 15)} ${proj.count}${dur}`;
       })
