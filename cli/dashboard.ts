@@ -413,19 +413,37 @@ function render(data){
   const link=linkG.selectAll('line').data(graph.edges).join('line')
     .attr('stroke','#30363d').attr('stroke-width',d=>Math.min(d.weight,6)).attr('stroke-opacity',.6);
 
-  // Nodes
+  // Pie chart nodes
+  const pie=d3.pie().sort(null).value(d=>d.value);
   nodeG.selectAll('*').remove();
-  const node=nodeG.selectAll('circle').data(graph.nodes).join('circle')
-    .attr('r',d=>r(d.count))
-    .attr('fill',d=>TOOL_COLORS[d.primaryTool]||'#768390')
-    .attr('stroke','#0d1117').attr('stroke-width',2)
+  const node=nodeG.selectAll('g').data(graph.nodes).join('g')
     .style('cursor','pointer')
     .call(d3.drag().on('start',dragStart).on('drag',dragging).on('end',dragEnd));
+
+  node.each(function(d){
+    const radius=r(d.count);
+    const arc=d3.arc().innerRadius(0).outerRadius(radius);
+    const slices=Object.entries(d.tools).map(([tool,value])=>({tool,value}));
+    const pieData=pie(slices);
+
+    d3.select(this).selectAll('path').data(pieData).join('path')
+      .attr('d',arc)
+      .attr('fill',s=>TOOL_COLORS[s.data.tool]||'#768390')
+      .attr('stroke','#0d1117').attr('stroke-width',1.5);
+
+    // Outer ring for hover highlight
+    d3.select(this).append('circle')
+      .attr('r',radius).attr('fill','none')
+      .attr('stroke','#0d1117').attr('stroke-width',2);
+  });
 
   node.on('mouseover',(e,d)=>{
     const tip=document.getElementById('tooltip');
     const tools=Object.entries(d.tools).sort((a,b)=>b[1]-a[1])
-      .map(([t,c])=>'<span class="tool-badge" style="background:'+TOOL_COLORS[t]+'">'+t+': '+c+'</span>').join(' ');
+      .map(([t,c])=>{
+        const pct=Math.round(100*c/d.count);
+        return '<span class="tool-badge" style="background:'+TOOL_COLORS[t]+'">'+t+': '+c+' ('+pct+'%)</span>';
+      }).join(' ');
     const dur=d.duration>0?Math.round(d.duration/60000)+'min':'<1min';
     tip.innerHTML='<b>'+d.label+'</b><br>Prompts: '+d.count+' &middot; Duration: '+dur+'<br>'+tools;
     tip.style.display='block';
@@ -444,7 +462,7 @@ function render(data){
   simulation.on('tick',()=>{
     link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
         .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-    node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+    node.attr('transform',d=>'translate('+d.x+','+d.y+')');
     label.attr('x',d=>d.x).attr('y',d=>d.y);
   });
 }
