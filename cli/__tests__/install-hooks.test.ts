@@ -235,6 +235,47 @@ describe("installHooksFromVariant", () => {
     expect(tomlWrite?.[1]).toContain("codex_hooks = true");
   });
 
+  it("should create settings parent directory before writing hooks.json", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (p.includes("variants/") && p.endsWith(".json")) return true;
+        if (p.includes(".agents/agents")) return true;
+        if (p.includes(".agents/workflows")) return true;
+        return false;
+      },
+    );
+
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({
+        vendor: "codex",
+        hookDir: ".codex/hooks",
+        settingsFile: ".codex/hooks.json",
+        projectDirEnv: null,
+        runtime: "bun",
+        events: {
+          UserPromptSubmit: {
+            hook: "keyword-detector.ts",
+            timeout: 5,
+          },
+        },
+      }),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
+
+    expect(fs.mkdirSync).toHaveBeenCalledWith(join(mockTargetDir, ".codex"), {
+      recursive: true,
+    });
+
+    const writeCall = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(
+      (call: string[]) =>
+        typeof call[0] === "string" && call[0].includes(".codex/hooks.json"),
+    );
+    expect(writeCall).toBeTruthy();
+  });
+
   it("should pin bun to an absolute path when it is resolvable", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({

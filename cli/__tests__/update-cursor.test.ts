@@ -46,6 +46,7 @@ vi.mock("../lib/skills.js", () => ({
 }));
 
 import { update } from "../commands/update.js";
+import * as manifest from "../lib/manifest.js";
 import * as rules from "../lib/rules.js";
 import * as skills from "../lib/skills.js";
 
@@ -150,5 +151,25 @@ describe("update cursor vendor adaptations", () => {
       rules.mergeRulesIndexForVendor as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find((call: unknown[]) => call[1] === "cursor");
     expect(cursorMergeCall).toBeUndefined();
+  });
+
+  it("does not save version when vendor adaptations fail", async () => {
+    const projectDir = makeTempRoot("oma-update-fail-project-");
+    const repoDir = makeTempRoot("oma-update-fail-repo-");
+    extractedRepoDir = repoDir;
+    writeRepoConfig(repoDir, ["codex"]);
+
+    (
+      skills.installVendorAdaptations as unknown as ReturnType<typeof vi.fn>
+    ).mockImplementation(() => {
+      throw new Error(
+        "ENOENT: no such file or directory, open '/tmp/project/.codex/hooks.json'",
+      );
+    });
+
+    process.chdir(projectDir);
+
+    await expect(update(false, true)).rejects.toThrow("ENOENT");
+    expect(manifest.saveLocalVersion).not.toHaveBeenCalled();
   });
 });

@@ -279,8 +279,6 @@ export async function update(force = false, ci = false): Promise<void> {
         );
       }
 
-      await saveLocalVersion(cwd, remoteManifest.version);
-
       // Update vendor adaptations for configured vendors (from oma-config.yaml)
       const configuredVendors = readVendorsFromConfig(cwd);
       const hookVendors = configuredVendors.filter(
@@ -370,6 +368,8 @@ export async function update(force = false, ci = false): Promise<void> {
         const serenaLangs = inferSerenaLanguages(cwd);
         ensureSerenaProject(cwd, serenaLangs);
       }
+
+      await saveLocalVersion(cwd, remoteManifest.version);
 
       ui.note(
         "Skipped global HOME-level configuration updates during project update.",

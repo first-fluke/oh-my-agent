@@ -102,6 +102,8 @@ export function mergeIntoSettings(
   // biome-ignore lint/suspicious/noExplicitAny: extra fields like statusLine
   extra?: Record<string, any>,
 ): void {
+  mkdirSync(dirname(settingsPath), { recursive: true });
+
   // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
   let settings: any = {};
 
