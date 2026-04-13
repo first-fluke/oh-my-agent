@@ -1,12 +1,12 @@
 class OhMyAgent < Formula
   desc "Portable multi-agent harness for .agents-based skills and workflows"
-  homepage "https://github.com/first-fluke/omaent"
-  url "https://registry.npmjs.org/omaent/-/omaent-4.23.1.tgz"
-  sha256 "43c5d042605484a205c730ae9dc4f506d07cf1ec0e696aaea7ffa8f5d800f5f8"
+  homepage "https://github.com/first-fluke/oh-my-agent"
+  url "https://registry.npmjs.org/oh-my-agent/-/oh-my-agent-5.0.0.tgz"
+  sha256 "94939e6e27f6463f9863e00ae63ba3acc1b4789573ff793216ac0058eafe6902"
   license "MIT"
 
   bottle do
-    sha256 cellar: :any_skip_relocation, all: "3e36bb965824adc2ce9c4025dbb625b1f88bb693abe5406f1b42c41e053bc67d"
+    sha256 cellar: :any_skip_relocation, all: "4a9aa54a5c343eb058ee555e9508523a5d52d2df100a4c105891d485e1c43af5"
   end
 
   depends_on "node"
@@ -17,9 +17,9 @@ class OhMyAgent < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/oma --version")
+    assert_match version.to_s, shell_output("#{bin}/oh-my-agent --version")
 
-    output = JSON.parse(shell_output("#{bin}/oma memory:init --json"))
+    output = JSON.parse(shell_output("#{bin}/oh-my-agent memory:init --json"))
     assert_empty output["updated"]
     assert_path_exists testpath/".serena/memories/orchestrator-session.md"
     assert_path_exists testpath/".serena/memories/task-board.md"
