@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.2.0...cli-v5.2.1) (2026-04-13)
+
+
+### Bug Fixes
+
+* **cli:** register oma-recap in package.json skills list ([d2c804a](https://github.com/first-fluke/oh-my-agent/commit/d2c804ab41bd5da9d8fc531502b30feec913ecd1))
+
 ## [5.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.1.0...cli-v5.2.0) (2026-04-13)
 
 
