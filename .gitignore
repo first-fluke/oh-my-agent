@@ -22,8 +22,10 @@ bin/*.js
 .agents/plan.json
 docs/plans/
 
-# Claude integration layer (generated)
+# Claude/Codex/Qwen integration layer (generated)
 .claude/
+.codex/
+.qwen/
 
 # Cursor/Gemini integration layer (generated)
 .cursor/*
