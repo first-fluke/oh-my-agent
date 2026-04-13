@@ -22,7 +22,7 @@ Analyze AI tool conversation histories for a given period and generate themed wo
 
 ### 1. Resolve Date
 
-Determine the target date or window from the user's natural language input (in any language). Default is today.
+Determine the target date or window from the user's natural language input. Default is today.
 
 **Resolution rules:**
 - Relative day references (today, yesterday, day before yesterday, etc.) → calculate `--date YYYY-MM-DD`
