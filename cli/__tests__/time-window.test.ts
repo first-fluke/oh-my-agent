@@ -209,11 +209,7 @@ describe("resolveWindowBounds", () => {
       "Pacific/Auckland",
     ];
     for (const tz of timezones) {
-      const { start, end } = resolveWindowBounds(
-        undefined,
-        "2026-06-15",
-        tz,
-      );
+      const { start, end } = resolveWindowBounds(undefined, "2026-06-15", tz);
       expect(end - start).toBe(86_400_000);
     }
   });

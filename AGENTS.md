@@ -8,7 +8,7 @@
 - **Response language**: Follows `language` in `.agents/oma-config.yaml`
 - **Skills**: `.agents/skills/` (domain specialists)
 - **Workflows**: `.agents/workflows/` (multi-step orchestration)
-- **Subagents**: `@agent-name` (defined in `.claude/agents/`)
+- **Subagents**: `oma agent:spawn {agent} {prompt} {sessionId}`
 
 ## Workflows
 
@@ -59,14 +59,3 @@ Read the relevant file from `.agents/rules/` when working on matching code.
 | database | `.agents/rules/database.md` | **/*.{sql,prisma} |
 
 <!-- OMA:END -->
-
-## Source Repo — Additional Rules
-
-> This section applies only to the oh-my-agent source repository itself.
-
-- `.agents/` modifications are allowed (this IS the source repo)
-- `bun run test` — CLI tests (vitest)
-- `bun run lint` — Lint
-- `bun run build` — CLI build
-- commitlint: conventional commits required (build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test)
-- Commit Co-Author: `First Fluke <our.first.fluke@gmail.com>`

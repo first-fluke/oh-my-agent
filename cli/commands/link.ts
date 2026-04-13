@@ -63,9 +63,7 @@ export function link(vendorFilter?: string[]): void {
     let geminiSettings: unknown = {};
     if (existsSync(geminiSettingsPath)) {
       try {
-        geminiSettings = JSON.parse(
-          readFileSync(geminiSettingsPath, "utf-8"),
-        );
+        geminiSettings = JSON.parse(readFileSync(geminiSettingsPath, "utf-8"));
       } catch {
         geminiSettings = {};
       }
@@ -90,11 +88,7 @@ export function link(vendorFilter?: string[]): void {
   for (const v of ["claude", "gemini", "codex", "cursor", "qwen"] as const) {
     if (!configuredVendors.includes(v)) continue;
     const target =
-      v === "claude"
-        ? "CLAUDE.md"
-        : v === "gemini"
-          ? "GEMINI.md"
-          : "AGENTS.md";
+      v === "claude" ? "CLAUDE.md" : v === "gemini" ? "GEMINI.md" : "AGENTS.md";
     if (mergedFiles.has(target)) continue;
     if (mergeRulesIndexForVendor(cwd, v)) {
       mergedFiles.add(target);
@@ -114,9 +108,7 @@ export function link(vendorFilter?: string[]): void {
     parts.push(`${pc.green("✓")} ${v}`);
   }
   if (mergedFiles.size > 0) {
-    parts.push(
-      `${pc.green("✓")} docs: ${[...mergedFiles].join(", ")}`,
-    );
+    parts.push(`${pc.green("✓")} docs: ${[...mergedFiles].join(", ")}`);
   }
 
   console.log(parts.join("\n"));
