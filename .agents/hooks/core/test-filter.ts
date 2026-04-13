@@ -2,6 +2,7 @@
 // Works with: Claude Code, Codex CLI, Gemini CLI, Qwen Code
 
 import { resolveGitRoot, makePreToolOutput, type Vendor } from "./types.ts";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 // --- Vendor detection (same logic as keyword-detector.ts) ---
@@ -129,6 +130,9 @@ if (isExcluded) process.exit(0);
 const vendor = detectVendor(input);
 const projectDir = getProjectDir(vendor, input);
 const filterScript = join(projectDir, getHookDir(vendor), "filter-test-output.sh");
+
+// Skip filtering if the script doesn't exist (hooks not fully installed)
+if (!existsSync(filterScript)) process.exit(0);
 
 // Rewrite command to pipe through filter
 const filteredCmd = `set -o pipefail; (${command}) 2>&1 | bash "${filterScript}"`;
