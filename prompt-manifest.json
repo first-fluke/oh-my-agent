@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.1.0",
-  "releaseDate": "2026-04-13T08:12:13.296Z",
+  "releaseDate": "2026-04-13T08:21:16.157Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -905,6 +905,11 @@
       "size": 2346
     },
     {
+      "path": ".agents/skills/oma-recap/SKILL.md",
+      "sha256": "521e80dbe02672ae927b00fc93f3c6042ce07a2a8ae0c1d1cfb0a8d988fb91b3",
+      "size": 4925
+    },
+    {
       "path": ".agents/skills/oma-scm/SKILL.md",
       "sha256": "12190a980be88e96e0ffd131f75edca5aa39db2f3a5511c68ec217e7d1982e4c",
       "size": 7676
@@ -933,11 +938,6 @@
       "path": ".agents/skills/oma-scm/resources/onboarding-risk-signals.md",
       "sha256": "7391085e68f9fe46e7ca8cf1ab4fa68afbff6675ca9d50b292f97151c66fabac",
       "size": 2067
-    },
-    {
-      "path": ".agents/skills/oma-summary/SKILL.md",
-      "sha256": "62a0749f4f92f940ff7f59b041da5424437c6c39aacada6a9d9f7850a048545c",
-      "size": 5082
     },
     {
       "path": ".agents/skills/oma-tf-infra/SKILL.md",
