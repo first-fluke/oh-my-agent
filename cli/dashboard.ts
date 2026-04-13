@@ -254,60 +254,50 @@ function buildFullState(memoriesDir: string) {
   };
 }
 
+const TW_HEAD = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwindcss.config={theme:{extend:{colors:{bg:'#0f0b1a',surface:'#1a1428','surface-2':'#241e33',bd:'#3d2e5c',purple:{DEFAULT:'#9b59b6',light:'#c39bd3',dark:'#6c3483'},dim:'#8a7da0',ok:'#2ecc71',err:'#e74c3c',warn:'#f1c40f',cyan:'#1abc9c'}}}}</script>`;
+
 const HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${TW_HEAD}
   <title>Serena Memory Dashboard</title>
-  <style>
-    :root { --bg:#0f0b1a;--surface:#1a1428;--surface-2:#241e33;--border:#3d2e5c;--purple:#9b59b6;--purple-light:#c39bd3;--purple-dark:#6c3483;--text:#e8e0f0;--text-dim:#8a7da0;--green:#2ecc71;--red:#e74c3c;--yellow:#f1c40f;--cyan:#1abc9c; }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{background:var(--bg);color:var(--text);font-family:'SF Mono','Fira Code',monospace;min-height:100vh;padding:24px}
-    .header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--border)}
-    .logo{width:48px;height:48px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:white}
-    .header-text h1{font-size:20px;color:var(--purple-light)} .header-text .subtitle{font-size:12px;color:var(--text-dim)}
-    .connection-badge{margin-left:auto;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600}
-    .connection-badge.connected{background:rgba(46,204,113,0.15);color:var(--green);border:1px solid rgba(46,204,113,0.3)}
-    .connection-badge.disconnected{background:rgba(231,76,60,0.15);color:var(--red);border:1px solid rgba(231,76,60,0.3)}
-    .connection-badge.connecting{background:rgba(241,196,15,0.15);color:var(--yellow);border:1px solid rgba(241,196,15,0.3)}
-    .session-bar{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:20px}
-    .session-id{font-size:14px;font-weight:600}
-    .session-status{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-    .session-status.running{background:rgba(46,204,113,0.15);color:var(--green)}
-    .session-status.completed{background:rgba(26,188,156,0.15);color:var(--cyan)}
-    .session-status.failed{background:rgba(231,76,60,0.15);color:var(--red)}
-    .session-status.unknown{background:rgba(138,125,160,0.15);color:var(--text-dim)}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px} @media(max-width:900px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-    .card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--purple-light);background:var(--surface-2)}
-    .card-body{padding:16px}
-    .agent-table{width:100%;border-collapse:collapse;font-size:13px}
-    .agent-table th{text-align:left;padding:8px 12px;color:var(--text-dim);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
-    .agent-table td{padding:10px 12px;border-bottom:1px solid rgba(61,46,92,0.4)} .agent-table tr:last-child td{border-bottom:none}
-    .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-    .status-dot.running{background:var(--green);box-shadow:0 0 6px var(--green)} .status-dot.completed{background:var(--cyan)} .status-dot.failed{background:var(--red)} .status-dot.blocked{background:var(--yellow)} .status-dot.pending{background:var(--text-dim)}
-    .activity-list{list-style:none;font-size:12px} .activity-list li{padding:8px 0;border-bottom:1px solid rgba(61,46,92,0.3);display:flex;gap:8px} .activity-list li:last-child{border-bottom:none}
-    .activity-agent{color:var(--purple-light);font-weight:600;white-space:nowrap} .activity-msg{color:var(--text-dim)}
-    .empty{color:var(--text-dim);font-size:12px;font-style:italic;padding:12px 0}
-    .footer{margin-top:20px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}} .pulse{animation:pulse 2s ease-in-out infinite}
-  </style>
+  <style>@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}.pulse-dot{animation:pulse-dot 2s ease-in-out infinite}</style>
 </head>
-<body>
-  <div class="header"><div class="logo">S</div><div class="header-text"><h1>Serena Memory Dashboard</h1><div class="subtitle">Real-time agent orchestration monitor</div></div><div class="connection-badge connecting" id="connBadge">Connecting...</div></div>
-  <div class="session-bar"><span>Session:</span><span class="session-id" id="sessionId">N/A</span><span class="session-status unknown" id="sessionStatus">UNKNOWN</span><span style="margin-left:auto;font-size:11px;color:var(--text-dim)" id="updatedAt">--</span></div>
-  <div class="grid"><div class="card"><div class="card-header">Agent Status</div><div class="card-body"><table class="agent-table"><thead><tr><th>Agent</th><th>Status</th><th>Turn</th><th>Task</th></tr></thead><tbody id="agentBody"><tr><td colspan="4" class="empty">No agents detected yet</td></tr></tbody></table></div></div><div class="card"><div class="card-header">Latest Activity</div><div class="card-body"><ul class="activity-list" id="activityList"><li class="empty">No activity yet</li></ul></div></div></div>
-  <div class="footer"><span>Serena Memory Dashboard</span><span id="footerTime">--</span></div>
+<body class="bg-bg text-[#e8e0f0] font-mono min-h-screen p-6">
+  <div class="flex items-center gap-4 mb-6 pb-4 border-b-2 border-bd">
+    <div class="w-12 h-12 bg-gradient-to-br from-purple to-purple-dark rounded-xl flex items-center justify-center text-2xl font-bold text-white">S</div>
+    <div><h1 class="text-xl text-purple-light">Serena Memory Dashboard</h1><div class="text-xs text-dim">Real-time agent orchestration monitor</div></div>
+    <div class="ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-warn/30 bg-warn/15 text-warn" id="connBadge">Connecting...</div>
+  </div>
+  <div class="bg-surface border border-bd rounded-lg px-5 py-4 mb-5 flex items-center gap-5">
+    <span>Session:</span><span class="text-sm font-semibold" id="sessionId">N/A</span>
+    <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wide bg-dim/15 text-dim" id="sessionStatus">UNKNOWN</span>
+    <span class="ml-auto text-[11px] text-dim" id="updatedAt">--</span>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="bg-surface border border-bd rounded-lg overflow-hidden">
+      <div class="px-4 py-3 border-b border-bd text-[13px] font-semibold text-purple-light bg-surface-2">Agent Status</div>
+      <div class="p-4"><table class="w-full text-[13px]"><thead><tr class="text-dim text-[11px] uppercase tracking-wide border-b border-bd"><th class="text-left px-3 py-2 font-medium">Agent</th><th class="text-left px-3 py-2 font-medium">Status</th><th class="text-left px-3 py-2 font-medium">Turn</th><th class="text-left px-3 py-2 font-medium">Task</th></tr></thead><tbody id="agentBody"><tr><td colspan="4" class="text-dim text-xs italic py-3">No agents detected yet</td></tr></tbody></table></div>
+    </div>
+    <div class="bg-surface border border-bd rounded-lg overflow-hidden">
+      <div class="px-4 py-3 border-b border-bd text-[13px] font-semibold text-purple-light bg-surface-2">Latest Activity</div>
+      <div class="p-4"><ul class="text-xs" id="activityList"><li class="text-dim italic">No activity yet</li></ul></div>
+    </div>
+  </div>
+  <div class="mt-5 pt-3 border-t border-bd flex justify-between text-[11px] text-dim"><span>Serena Memory Dashboard</span><span id="footerTime">--</span></div>
   <script>
     const $=s=>document.querySelector(s);
     function normalizeStatus(s){const l=(s||'').toLowerCase();if(['running','active','in_progress','in-progress'].includes(l))return'running';if(['completed','done','finished'].includes(l))return'completed';if(['failed','error'].includes(l))return'failed';if(['blocked','waiting'].includes(l))return'blocked';return'pending'}
+    const statusCls={running:'bg-ok/15 text-ok border-ok/30',completed:'bg-cyan/15 text-cyan border-cyan/30',failed:'bg-err/15 text-err border-err/30',blocked:'bg-warn/15 text-warn border-warn/30',pending:'bg-dim/15 text-dim border-dim/30'};
+    const dotCls={running:'bg-ok shadow-[0_0_6px] shadow-ok',completed:'bg-cyan',failed:'bg-err',blocked:'bg-warn',pending:'bg-dim'};
     function clearChildren(el){while(el.firstChild)el.removeChild(el.firstChild)}
     function createTextEl(tag,text,cls){const el=document.createElement(tag);el.textContent=text;if(cls)el.className=cls;return el}
-    function renderAgents(agents){const tbody=$('#agentBody');clearChildren(tbody);if(!agents||!agents.length){const tr=document.createElement('tr'),td=createTextEl('td','No agents detected yet','empty');td.setAttribute('colspan','4');tr.appendChild(td);tbody.appendChild(tr);return}agents.forEach(a=>{const ns=normalizeStatus(a.status),tr=document.createElement('tr');tr.appendChild(createTextEl('td',a.agent));const std=document.createElement('td'),dot=document.createElement('span');dot.className='status-dot '+ns+(ns==='running'?' pulse':'');std.appendChild(dot);std.appendChild(createTextEl('span',ns,'status-text'));tr.appendChild(std);tr.appendChild(createTextEl('td',a.turn!=null?String(a.turn):'-'));tr.appendChild(createTextEl('td',a.task||''));tbody.appendChild(tr)})}
-    function renderActivity(activity){const list=$('#activityList');clearChildren(list);if(!activity||!activity.length){list.appendChild(createTextEl('li','No activity yet','empty'));return}activity.forEach(a=>{const li=document.createElement('li');li.appendChild(createTextEl('span','['+a.agent+']','activity-agent'));li.appendChild(createTextEl('span',a.message,'activity-msg'));list.appendChild(li)})}
-    function renderState(state){$('#sessionId').textContent=state.session?.id||'N/A';const st=(state.session?.status||'UNKNOWN').toUpperCase(),sel=$('#sessionStatus');sel.textContent=st;sel.className='session-status '+st.toLowerCase();if(state.updatedAt){const ts=new Date(state.updatedAt).toLocaleString();$('#updatedAt').textContent='Updated: '+ts;$('#footerTime').textContent=ts}renderAgents(state.agents);renderActivity(state.activity)}
-    let ws,rd=1000;function connect(){const b=$('#connBadge');b.textContent='Connecting...';b.className='connection-badge connecting';const p=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(p+'//'+location.host);ws.onopen=()=>{b.textContent='Connected';b.className='connection-badge connected';rd=1000};ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.data)renderState(m.data)}catch{}};ws.onclose=()=>{b.textContent='Disconnected';b.className='connection-badge disconnected';setTimeout(()=>{rd=Math.min(rd*1.5,10000);connect()},rd)};ws.onerror=()=>ws.close()}
+    function renderAgents(agents){const tbody=$('#agentBody');clearChildren(tbody);if(!agents||!agents.length){const tr=document.createElement('tr'),td=createTextEl('td','No agents detected yet','text-dim text-xs italic py-3');td.setAttribute('colspan','4');tr.appendChild(td);tbody.appendChild(tr);return}agents.forEach(a=>{const ns=normalizeStatus(a.status),tr=document.createElement('tr');tr.className='border-b border-bd/40 last:border-b-0';const td1=createTextEl('td',a.agent,'px-3 py-2.5');tr.appendChild(td1);const std=document.createElement('td');std.className='px-3 py-2.5';const dot=document.createElement('span');dot.className='inline-block w-2 h-2 rounded-full mr-1.5 '+(dotCls[ns]||'bg-dim')+(ns==='running'?' pulse-dot':'');std.appendChild(dot);std.appendChild(createTextEl('span',ns));tr.appendChild(std);tr.appendChild(createTextEl('td',a.turn!=null?String(a.turn):'-','px-3 py-2.5'));tr.appendChild(createTextEl('td',a.task||'','px-3 py-2.5'));tbody.appendChild(tr)})}
+    function renderActivity(activity){const list=$('#activityList');clearChildren(list);if(!activity||!activity.length){list.appendChild(createTextEl('li','No activity yet','text-dim italic'));return}activity.forEach(a=>{const li=document.createElement('li');li.className='py-2 border-b border-bd/30 last:border-b-0 flex gap-2';li.appendChild(createTextEl('span','['+a.agent+']','text-purple-light font-semibold whitespace-nowrap'));li.appendChild(createTextEl('span',a.message,'text-dim'));list.appendChild(li)})}
+    function renderState(state){$('#sessionId').textContent=state.session?.id||'N/A';const st=(state.session?.status||'UNKNOWN').toUpperCase(),ns=normalizeStatus(st),sel=$('#sessionStatus');sel.textContent=st;sel.className='px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wide border '+(statusCls[ns]||statusCls.pending);if(state.updatedAt){const ts=new Date(state.updatedAt).toLocaleString();$('#updatedAt').textContent='Updated: '+ts;$('#footerTime').textContent=ts}renderAgents(state.agents);renderActivity(state.activity)}
+    let ws,rd=1000;function connect(){const b=$('#connBadge');b.textContent='Connecting...';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-warn/30 bg-warn/15 text-warn';const p=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(p+'//'+location.host);ws.onopen=()=>{b.textContent='Connected';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-ok/30 bg-ok/15 text-ok';rd=1000};ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.data)renderState(m.data)}catch{}};ws.onclose=()=>{b.textContent='Disconnected';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-err/30 bg-err/15 text-err';setTimeout(()=>{rd=Math.min(rd*1.5,10000);connect()},rd)};ws.onerror=()=>ws.close()}
     fetch('/api/state').then(r=>r.json()).then(renderState).catch(()=>{});connect();
   </script>
 </body>
@@ -316,61 +306,38 @@ const HTML = `<!DOCTYPE html>
 const SUMMARY_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+${TW_HEAD}
 <title>oh-my-agent — Summary Graph</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d1117;color:#e6edf3;font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
-#controls{position:fixed;top:16px;left:16px;z-index:10;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:480px}
-#controls select,#controls input,#controls button{
-  background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:13px}
-#controls button{cursor:pointer;background:#238636;border-color:#238636}
-#controls button:hover{background:#2ea043}
-#tooltip{position:fixed;display:none;background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:12px;
-  font-size:13px;pointer-events:none;z-index:20;max-width:280px;box-shadow:0 4px 12px rgba(0,0,0,.5)}
-#tooltip .tool-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px}
-#filters{position:fixed;top:52px;left:16px;z-index:10;display:flex;gap:6px}
-.filter-btn{padding:4px 10px;border-radius:12px;font-size:11px;border:2px solid;cursor:pointer;
-  transition:opacity .2s;font-weight:600;background:transparent}
-.filter-btn.off{opacity:.3}
-#stats{position:fixed;top:16px;right:16px;font-size:13px;opacity:.7;text-align:right}
-#panel{position:fixed;top:0;right:-380px;width:380px;height:100vh;background:#161b22;border-left:1px solid #30363d;
-  z-index:15;transition:right .3s;display:flex;flex-direction:column;box-shadow:-4px 0 12px rgba(0,0,0,.4)}
-#panel.open{right:0}
-#panel-header{padding:14px 16px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center}
-#panel-header h3{font-size:14px;margin:0}
-#panel-close{background:none;border:none;color:#768390;font-size:18px;cursor:pointer}
-#panel-body{flex:1;overflow-y:auto;padding:0}
-.prompt-item{padding:10px 16px;border-bottom:1px solid #21262d;font-size:12px;line-height:1.5}
-.prompt-item .meta{color:#768390;font-size:11px;margin-bottom:4px}
-.prompt-item .meta .tool-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px}
-#heatmap{position:fixed;bottom:0;left:0;right:0;height:60px;background:#0d1117;border-top:1px solid #21262d;
-  z-index:10;display:flex;align-items:flex-end;padding:4px 16px;gap:1px}
-#heatmap .bar{flex:1;background:#238636;border-radius:2px 2px 0 0;min-width:2px;position:relative}
-#heatmap .bar:hover{opacity:.8}
-#heatmap-label{position:fixed;bottom:62px;left:16px;font-size:11px;color:#768390;z-index:10}
-svg{width:100vw;height:calc(100vh - 60px)}
+.filter-btn{transition:opacity .2s}.filter-btn.off{opacity:.3}
+#panel{right:-380px;transition:right .3s}.panel-open{right:0!important}
+.hm-bar{border-radius:2px 2px 0 0;min-width:2px}
+.hm-bar:hover{opacity:.8}
+.tool-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px}
 </style>
 </head>
-<body>
-<div id="controls">
-  <select id="window">
-    <option value="1d">Today</option>
-    <option value="3d">3 Days</option>
-    <option value="7d" selected>7 Days</option>
-    <option value="2w">2 Weeks</option>
-    <option value="30d">30 Days</option>
+<body class="bg-[#0d1117] text-gray-200 font-sans overflow-hidden">
+<div class="fixed top-4 left-4 z-10 flex gap-2 items-center flex-wrap max-w-md" id="controls">
+  <select id="window" class="bg-[#161b22] text-gray-200 border border-gray-700 rounded-md px-2.5 py-1.5 text-[13px]">
+    <option value="1d">Today</option><option value="3d">3 Days</option>
+    <option value="7d" selected>7 Days</option><option value="2w">2 Weeks</option><option value="30d">30 Days</option>
   </select>
-  <input id="topK" type="number" min="0" max="50" value="" placeholder="Top K">
-  <button id="refresh">Refresh</button>
+  <input id="topK" type="number" min="0" max="50" value="" placeholder="Top K" class="bg-[#161b22] text-gray-200 border border-gray-700 rounded-md px-2.5 py-1.5 text-[13px] w-20">
+  <button id="refresh" class="bg-green-700 hover:bg-green-600 text-white border-none rounded-md px-3 py-1.5 text-[13px] cursor-pointer">Refresh</button>
 </div>
-<div id="filters"></div>
-<div id="tooltip"></div>
-<div id="stats"></div>
-<div id="panel"><div id="panel-header"><h3 id="panel-title">Prompts</h3><button id="panel-close">&times;</button></div><div id="panel-body"></div></div>
-<div id="heatmap-label">Activity by hour</div>
-<div id="heatmap"></div>
-<svg></svg>
+<div class="fixed top-[52px] left-4 z-10 flex gap-1.5" id="filters"></div>
+<div class="fixed hidden bg-[#1c2128] border border-gray-700 rounded-lg p-3 text-[13px] pointer-events-none z-20 max-w-[280px] shadow-lg" id="tooltip"></div>
+<div class="fixed top-4 right-4 text-[13px] opacity-70 text-right" id="stats"></div>
+<div id="panel" class="fixed top-0 w-[380px] h-screen bg-[#161b22] border-l border-gray-700 z-[15] flex flex-col shadow-[-4px_0_12px_rgba(0,0,0,.4)]">
+  <div class="px-4 py-3.5 border-b border-gray-700 flex justify-between items-center">
+    <h3 class="text-sm font-semibold" id="panel-title">Prompts</h3>
+    <button id="panel-close" class="bg-transparent border-none text-gray-500 text-lg cursor-pointer">&times;</button>
+  </div>
+  <div class="flex-1 overflow-y-auto" id="panel-body"></div>
+</div>
+<div class="fixed bottom-[62px] left-4 text-[11px] text-gray-500 z-10">Activity by hour</div>
+<div class="fixed bottom-0 inset-x-0 h-[60px] bg-[#0d1117] border-t border-[#21262d] z-10 flex items-end px-4 gap-px" id="heatmap"></div>
+<svg class="w-screen h-[calc(100vh-60px)]"></svg>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script>
 const TC={claude:'#f0a030',gemini:'#4a90d9',codex:'#3fb950',qwen:'#a371f7',cursor:'#768390'};
@@ -401,7 +368,7 @@ let simulation;
 const linkG=g.append('g'),nodeG=g.append('g'),labelG=g.append('g');
 
 // --- Panel ---
-document.getElementById('panel-close').onclick=()=>document.getElementById('panel').classList.remove('open');
+document.getElementById('panel-close').onclick=()=>document.getElementById('panel').classList.remove('panel-open');
 
 function showPanel(project,entries){
   const panel=document.getElementById('panel');
@@ -412,11 +379,11 @@ function showPanel(project,entries){
   body.innerHTML=items.slice(0,100).map(e=>{
     const d=new Date(e.timestamp);
     const time=d.toLocaleString('en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
-    return '<div class="prompt-item"><div class="meta"><span class="tool-dot" style="background:'+TC[e.tool]+'"></span>'
+    return '<div class="px-4 py-2.5 border-b border-[#21262d] text-xs leading-relaxed"><div class="text-gray-500 text-[11px] mb-1"><span class="inline-block w-2 h-2 rounded-full mr-1" style="background:'+TC[e.tool]+'"></span>'
       +e.tool+' &middot; '+time+'</div>'+escHtml(e.prompt.slice(0,300))+'</div>';
   }).join('');
-  if(items.length>100)body.innerHTML+='<div class="prompt-item" style="color:#768390">+'+(items.length-100)+' more...</div>';
-  panel.classList.add('open');
+  if(items.length>100)body.innerHTML+='<div class="px-4 py-2.5 text-gray-500 text-xs">+'+(items.length-100)+' more...</div>';
+  panel.classList.add('panel-open');
 }
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
@@ -429,7 +396,7 @@ function renderHeatmap(entries){
   hm.innerHTML=hours.map((c,i)=>{
     const h=Math.max(2,Math.round(c/max*48));
     const label=String(i).padStart(2,'0')+':00';
-    return '<div class="bar" style="height:'+h+'px;background:'+
+    return '<div class="flex-1 hm-bar" style="height:'+h+'px;background:'+
       (c>max*.7?'#238636':c>max*.3?'#1a7f37':'#21262d')+
       '" title="'+label+': '+c+' prompts"></div>';
   }).join('');
@@ -446,28 +413,44 @@ async function load(){
   renderAll(rawData);
 }
 
+function buildClientGraph(entries){
+  const projMap={};
+  entries.forEach(e=>{
+    const p=e.project||'(unknown)';
+    if(!projMap[p])projMap[p]={count:0,first:Infinity,last:0,tools:{}};
+    const pm=projMap[p];pm.count++;pm.first=Math.min(pm.first,e.timestamp);pm.last=Math.max(pm.last,e.timestamp);
+    pm.tools[e.tool]=(pm.tools[e.tool]||0)+1;
+  });
+  const nodes=Object.entries(projMap).map(([id,d])=>{
+    const primary=Object.entries(d.tools).sort(([,a],[,b])=>b-a)[0][0];
+    return{id,label:id,count:d.count,duration:d.last-d.first,tools:d.tools,primaryTool:primary};
+  }).sort((a,b)=>b.count-a.count);
+  const nodeIds=new Set(nodes.map(n=>n.id));
+  const edgeMap={};
+  const sorted=[...entries].sort((a,b)=>a.timestamp-b.timestamp);
+  for(let i=0;i<sorted.length;i++){const a=sorted[i];const pA=a.project||'(unknown)';if(!nodeIds.has(pA))continue;
+    for(let j=i+1;j<sorted.length;j++){const b=sorted[j];if(b.timestamp-a.timestamp>1800000)break;
+      const pB=b.project||'(unknown)';if(pB===pA||!nodeIds.has(pB))continue;
+      const k=[pA,pB].sort().join('|||');edgeMap[k]=(edgeMap[k]||0)+1}}
+  const edges=Object.entries(edgeMap).map(([k,w])=>{const[s,t]=k.split('|||');return{source:s,target:t,weight:w}});
+  return{nodes,edges};
+}
+
 function renderAll(data){
-  const filtered={...data,entries:data.entries.filter(e=>activeTools.has(e.tool))};
+  const filtered=data.entries.filter(e=>activeTools.has(e.tool));
   renderGraph(filtered);
   renderHeatmap(data.entries);
 }
 
-function renderGraph(data){
-  const{graph,stats,entries}=data;
-  if(!graph||!graph.nodes.length){
+function renderGraph(entries){
+  const{nodes,edges}=buildClientGraph(entries);
+  if(!nodes.length){
     document.getElementById('stats').textContent='No data';
     linkG.selectAll('*').remove();nodeG.selectAll('*').remove();labelG.selectAll('*').remove();return;
   }
-  // Recount with active tools
-  const projCount={};
-  entries.forEach(e=>{const p=e.project||'(unknown)';projCount[p]=(projCount[p]||0)+1});
-  const nodes=graph.nodes.map(n=>({...n,count:projCount[n.id]||0,
-    tools:Object.fromEntries(Object.entries(n.tools).filter(([t])=>activeTools.has(t)))}))
-    .filter(n=>n.count>0);
-  const nodeIds=new Set(nodes.map(n=>n.id));
-  const edges=graph.edges.filter(e=>nodeIds.has(e.source?.id||e.source)&&nodeIds.has(e.target?.id||e.target));
 
-  document.getElementById('stats').innerHTML='Prompts: <b>'+entries.length+'</b> &middot; Projects: <b>'+nodes.length+'</b>';
+  const totalPrompts=nodes.reduce((s,n)=>s+n.count,0);
+  document.getElementById('stats').innerHTML='Prompts: <b>'+totalPrompts+'</b> &middot; Projects: <b>'+nodes.length+'</b>';
 
   const maxCount=d3.max(nodes,d=>d.count)||1;
   const r=d3.scaleSqrt().domain([1,maxCount]).range([8,40]);
@@ -506,10 +489,10 @@ function renderGraph(data){
     const dm=Math.round(d.duration/60000);
     const dur=d.duration<=0?'<1min':dm>=60?Math.floor(dm/60)+'h '+dm%60+'m':dm+'min';
     tip.innerHTML='<b>'+d.label+'</b><br>Prompts: '+d.count+' &middot; '+dur+'<br>'+tools;
-    tip.style.display='block';tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
+    tip.classList.remove('hidden');tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
   }).on('mousemove',e=>{
     const tip=document.getElementById('tooltip');tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
-  }).on('mouseout',()=>{document.getElementById('tooltip').style.display='none'});
+  }).on('mouseout',()=>{document.getElementById('tooltip').classList.add('hidden')});
 
   // Click → prompt panel
   node.on('click',(e,d)=>{e.stopPropagation();showPanel(d.id,rawData.entries)});
@@ -527,7 +510,7 @@ function renderGraph(data){
 }
 
 // Close panel on background click
-svg.on('click',()=>document.getElementById('panel').classList.remove('open'));
+svg.on('click',()=>document.getElementById('panel').classList.remove('panel-open'));
 
 document.getElementById('refresh').onclick=load;
 document.getElementById('window').onchange=load;
