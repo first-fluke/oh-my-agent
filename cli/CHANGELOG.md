@@ -1,5 +1,35 @@
 # Changelog
 
+## [5.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.1.0...cli-v5.2.0) (2026-04-13)
+
+
+### Features
+
+* **cli:** add AI response context to recap parsers ([c249871](https://github.com/first-fluke/oh-my-agent/commit/c24987181652fb8548c0cf764551279232c9a5ba))
+* **cli:** add interactive D3.js graph visualization for summary ([0d883fb](https://github.com/first-fluke/oh-my-agent/commit/0d883fb3f94226280f255f20a10ad89301b61233))
+* **cli:** add summary command for multi-tool conversation history analysis ([26fd8d7](https://github.com/first-fluke/oh-my-agent/commit/26fd8d7640ebf0d8be0a724ff377c98a62dbed27))
+* **cli:** add tool filter, prompt panel, and activity heatmap to summary graph ([9b2131f](https://github.com/first-fluke/oh-my-agent/commit/9b2131fee50d80ab142ca92cdc4d243778f35c44))
+* **cli:** render summary graph nodes as pie charts showing tool distribution ([0c7cd84](https://github.com/first-fluke/oh-my-agent/commit/0c7cd84f0c2421065ac1bc6921202d9ca84b7897))
+* **skill:** add multi-day date-driven format to oma-recap ([783e974](https://github.com/first-fluke/oh-my-agent/commit/783e974fd739cf28790098bb56a27b422216d555))
+
+
+### Bug Fixes
+
+* **cli:** improve Claude and Codex response matching in recap parsers ([cbd4b88](https://github.com/first-fluke/oh-my-agent/commit/cbd4b88b3a200b4d818245305e05f63d32c85436))
+* **cli:** replace hardcoded green heatmap with tool-colored stacked bars ([bcca81f](https://github.com/first-fluke/oh-my-agent/commit/bcca81fbfb5ff335f5701985351bac0380a08fbd))
+* **cli:** resolve (unknown) project names in codex and gemini parsers ([3c5b190](https://github.com/first-fluke/oh-my-agent/commit/3c5b19004190c6512f3e768df3c80e2c936707eb))
+* **skill:** add natural language date resolution step to oma-summary ([5bcb621](https://github.com/first-fluke/oh-my-agent/commit/5bcb62161de5099a1257fdc2d91cc823f10d0311))
+* **skill:** make date resolution language-agnostic in oma-summary ([2e23875](https://github.com/first-fluke/oh-my-agent/commit/2e238756b29d11e15fe272dc53e302087475934d))
+* **skill:** remove internal metrics from recap project headers ([3e80b59](https://github.com/first-fluke/oh-my-agent/commit/3e80b597dc24f64fcff6b794574587bc8c5d5e69))
+
+
+### Refactoring
+
+* **cli:** migrate dashboard pages to Tailwind CSS and fix filter toggle bug ([77dfe0e](https://github.com/first-fluke/oh-my-agent/commit/77dfe0e7ace2538b0a20e225fc601318030e4678))
+* **cli:** rename summary to recap across entire feature ([ad7d6ef](https://github.com/first-fluke/oh-my-agent/commit/ad7d6ef14258ed8e477294bb6ee89c35ee6254bf))
+* **skill:** rewrite oma-summary SKILL.md in English with TL;DR and result saving ([f0a3b73](https://github.com/first-fluke/oh-my-agent/commit/f0a3b732e2e1f32c36045f3e2f960283ea95cda1))
+* **skill:** unify multi-day recap to project-driven format ([f5e9ca7](https://github.com/first-fluke/oh-my-agent/commit/f5e9ca7742baaf5d2a35802b076af51f4185b948))
+
 ## [5.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.0.0...cli-v5.1.0) (2026-04-13)
 
 
