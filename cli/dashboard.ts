@@ -390,15 +390,21 @@ function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
 // --- Heatmap ---
 function renderHeatmap(entries){
   const hm=document.getElementById('heatmap');
-  const hours=new Array(24).fill(0);
-  entries.filter(e=>activeTools.has(e.tool)).forEach(e=>{hours[new Date(e.timestamp).getHours()]++});
-  const max=Math.max(...hours,1);
-  hm.innerHTML=hours.map((c,i)=>{
-    const h=Math.max(2,Math.round(c/max*48));
+  const hours=Array.from({length:24},()=>({}));
+  entries.filter(e=>activeTools.has(e.tool)).forEach(e=>{
+    const h=new Date(e.timestamp).getHours();
+    hours[h][e.tool]=(hours[h][e.tool]||0)+1;
+  });
+  const totals=hours.map(h=>Object.values(h).reduce((s,v)=>s+v,0));
+  const max=Math.max(...totals,1);
+  hm.innerHTML=hours.map((toolCounts,i)=>{
+    const total=totals[i];
+    const barH=Math.max(2,Math.round(total/max*48));
     const label=String(i).padStart(2,'0')+':00';
-    return '<div class="flex-1 hm-bar" style="height:'+h+'px;background:'+
-      (c>max*.7?'#238636':c>max*.3?'#1a7f37':'#21262d')+
-      '" title="'+label+': '+c+' prompts"></div>';
+    if(!total)return '<div class="flex-1 hm-bar" style="height:2px;background:#21262d" title="'+label+': 0"></div>';
+    const stacks=Object.entries(toolCounts).sort(([,a],[,b])=>b-a)
+      .map(([t,c])=>{const sh=Math.max(1,Math.round(c/total*barH));return '<div style="height:'+sh+'px;background:'+TC[t]+'"></div>'}).join('');
+    return '<div class="flex-1 hm-bar flex flex-col-reverse" style="height:'+barH+'px" title="'+label+': '+total+' prompts">'+stacks+'</div>';
   }).join('');
 }
 
