@@ -106,7 +106,8 @@
       "oma-dev-workflow",
       "oma-tf-infra",
       "oma-scm",
-      "oma-pdf"
+      "oma-pdf",
+      "oma-recap"
     ]
   }
 }
