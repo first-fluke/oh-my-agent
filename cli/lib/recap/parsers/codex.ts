@@ -13,12 +13,17 @@ import type { NormalizedEntry } from "../schema.js";
 const CODEX_DIR = join(homedir(), ".codex");
 const HISTORY_PATH = join(CODEX_DIR, "history.jsonl");
 
+interface SessionData {
+  project: string;
+  responses: Map<string, string>; // promptText → responseSnippet
+}
+
 /**
- * Build session_id → project map from session files (sessions/ + archived_sessions/).
- * Reads the first line (session_meta) of each .jsonl to extract cwd.
+ * Build session_id → { project, responses } from session files.
+ * Reads session_meta for cwd and event_msg/response_item for responses.
  */
-function loadSessionProjectMap(): Map<string, string> {
-  const map = new Map<string, string>();
+function loadSessionData(): Map<string, SessionData> {
+  const map = new Map<string, SessionData>();
 
   for (const dir of ["sessions", "archived_sessions"]) {
     const base = join(CODEX_DIR, dir);
@@ -33,22 +38,60 @@ function loadSessionProjectMap(): Map<string, string> {
   return map;
 }
 
-function scanDir(dir: string, map: Map<string, string>): void {
+function scanDir(dir: string, map: Map<string, SessionData>): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       scanDir(full, map);
     } else if (entry.name.endsWith(".jsonl")) {
       try {
-        const firstLine = readFileSync(full, "utf-8").split("\n")[0];
-        const d = JSON.parse(firstLine);
-        if (d?.type === "session_meta") {
-          const sid = d.payload?.id;
-          const cwd = d.payload?.cwd;
-          if (sid && cwd) {
-            map.set(sid, cwd.split("/").pop() || cwd);
+        const lines = readFileSync(full, "utf-8").split("\n").filter(Boolean);
+        if (lines.length === 0) continue;
+
+        const first = JSON.parse(lines[0]);
+        if (first?.type !== "session_meta") continue;
+
+        const sid = first.payload?.id;
+        const cwd = first.payload?.cwd;
+        if (!sid || !cwd) continue;
+
+        const responses = new Map<string, string>();
+
+        // Scan for user event_msg → next response_item(assistant)
+        for (let i = 0; i < lines.length; i++) {
+          const d = JSON.parse(lines[i]);
+          if (d.type === "event_msg" && d.payload?.role === "user") {
+            const userText = (d.payload.content || [])
+              .filter((c: { type?: string }) => c.type === "input_text")
+              .map((c: { text?: string }) => c.text || "")
+              .join(" ")
+              .trim();
+
+            // Find next assistant response
+            for (let j = i + 1; j < lines.length; j++) {
+              const r = JSON.parse(lines[j]);
+              if (
+                r.type === "response_item" &&
+                r.payload?.role === "assistant"
+              ) {
+                const rText = (r.payload.content || [])
+                  .filter((c: { type?: string }) => c.type === "output_text")
+                  .map((c: { text?: string }) => c.text || "")
+                  .join(" ")
+                  .trim();
+                if (userText && rText) {
+                  responses.set(userText.slice(0, 100), rText.slice(0, 200));
+                }
+                break;
+              }
+            }
           }
         }
+
+        map.set(sid, {
+          project: cwd.split("/").pop() || cwd,
+          responses,
+        });
       } catch {
         // skip unreadable
       }
@@ -66,7 +109,7 @@ registerParser({
   async parse(start, end) {
     if (!existsSync(HISTORY_PATH)) return [];
 
-    const sessionIndex = loadSessionProjectMap();
+    const sessionData = loadSessionData();
     const entries: NormalizedEntry[] = [];
     const rl = createInterface({
       input: createReadStream(HISTORY_PATH),
@@ -85,13 +128,21 @@ registerParser({
         if (!prompt) continue;
 
         const sessionId = row.session_id || undefined;
-        const project = sessionId ? sessionIndex.get(sessionId) : undefined;
+        const data = sessionId ? sessionData.get(sessionId) : undefined;
+
+        // Match response by prompt text prefix
+        let response: string | undefined;
+        if (data?.responses) {
+          const key = prompt.slice(0, 100);
+          response = data.responses.get(key);
+        }
 
         entries.push({
           tool: "codex",
           timestamp: ts,
-          project,
+          project: data?.project,
           prompt,
+          response,
           sessionId,
         });
       } catch {

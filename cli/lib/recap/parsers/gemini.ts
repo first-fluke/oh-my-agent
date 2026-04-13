@@ -45,7 +45,8 @@ registerParser({
         const sessionId = data.sessionId || undefined;
         const messages = data.messages || [];
 
-        for (const msg of messages) {
+        for (let i = 0; i < messages.length; i++) {
+          const msg = messages[i];
           if (msg.type !== "user") continue;
 
           const ts = msg.timestamp ? new Date(msg.timestamp).getTime() : 0;
@@ -58,11 +59,24 @@ registerParser({
             .join(" ");
           if (!text) continue;
 
+          // Grab next gemini response
+          let response: string | undefined;
+          const next = messages[i + 1];
+          if (next?.type === "gemini") {
+            const rParts = next.content || [];
+            const rText = rParts
+              .map((p: { text?: string }) => p.text || "")
+              .filter(Boolean)
+              .join(" ");
+            if (rText) response = rText.slice(0, 200);
+          }
+
           entries.push({
             tool: "gemini",
             timestamp: ts,
             project,
             prompt: text,
+            response,
             sessionId,
             metadata: msg.model ? { model: msg.model } : undefined,
           });

@@ -41,6 +41,8 @@ registerParser({
     const entries: NormalizedEntry[] = [];
 
     for (const file of files) {
+      // Collect all messages first for user→assistant pairing
+      const allMsgs: Array<{ type: string; row: Record<string, unknown> }> = [];
       const rl = createInterface({
         input: createReadStream(file),
         crlfDelay: Number.POSITIVE_INFINITY,
@@ -50,34 +52,63 @@ registerParser({
         if (!line.trim()) continue;
         try {
           const row = JSON.parse(line);
-          if (row.type !== "user") continue;
+          if (row.type === "user" || row.type === "assistant") {
+            allMsgs.push({ type: row.type, row });
+          }
+        } catch {
+          // skip
+        }
+      }
 
-          const ts = row.timestamp ? new Date(row.timestamp).getTime() : 0;
-          if (Number.isNaN(ts) || ts < start || ts >= end) continue;
+      for (let i = 0; i < allMsgs.length; i++) {
+        const { type, row } = allMsgs[i];
+        if (type !== "user") continue;
 
-          const parts = row.message?.parts || [];
-          const text = parts
-            .map((p: { text?: string }) => p.text || "")
+        const ts = (row as { timestamp?: string }).timestamp
+          ? new Date((row as { timestamp: string }).timestamp).getTime()
+          : 0;
+        if (Number.isNaN(ts) || ts < start || ts >= end) continue;
+
+        const parts =
+          (row as { message?: { parts?: Array<{ text?: string }> } }).message
+            ?.parts || [];
+        const text = parts
+          .map((p) => p.text || "")
+          .filter(Boolean)
+          .join(" ");
+        if (!text) continue;
+
+        const project =
+          (row as { cwd?: string }).cwd?.split("/").pop() || undefined;
+
+        // Grab next assistant response
+        let response: string | undefined;
+        const next = allMsgs[i + 1];
+        if (next?.type === "assistant") {
+          const rParts =
+            (
+              next.row as {
+                message?: { parts?: Array<{ text?: string }> };
+              }
+            ).message?.parts || [];
+          const rText = rParts
+            .map((p) => p.text || "")
             .filter(Boolean)
             .join(" ");
-          if (!text) continue;
-
-          const project = row.cwd?.split("/").pop() || undefined;
-
-          entries.push({
-            tool: "qwen",
-            timestamp: ts,
-            project,
-            prompt: text,
-            sessionId: row.sessionId || undefined,
-            metadata: {
-              gitBranch: row.gitBranch || undefined,
-              model: row.message?.model || undefined,
-            },
-          });
-        } catch {
-          // skip malformed lines
+          if (rText) response = rText.slice(0, 200);
         }
+
+        entries.push({
+          tool: "qwen",
+          timestamp: ts,
+          project,
+          prompt: text,
+          response,
+          sessionId: (row as { sessionId?: string }).sessionId || undefined,
+          metadata: {
+            gitBranch: (row as { gitBranch?: string }).gitBranch || undefined,
+          },
+        });
       }
     }
 

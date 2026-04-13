@@ -15,6 +15,7 @@ export const NormalizedEntrySchema = z.object({
   timestamp: z.number(),
   project: z.string().optional(),
   prompt: z.string(),
+  response: z.string().optional(),
   sessionId: z.string().optional(),
   metadata: z
     .object({

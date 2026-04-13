@@ -89,12 +89,13 @@ registerParser({
           continue;
         }
 
-        // Extract user messages from blobs
+        // Extract all messages from blobs, preserving order
         const blobs = db.prepare("SELECT id, data FROM blobs").all() as Array<{
           id: string;
           data: Buffer;
         }>;
 
+        const messages: Array<{ role: string; content: string }> = [];
         for (const blob of blobs) {
           try {
             const text =
@@ -102,27 +103,42 @@ registerParser({
                 ? blob.data
                 : Buffer.from(blob.data).toString("utf-8");
             const msg = JSON.parse(text);
-            if (msg.role !== "user") continue;
-
-            const content = msg.content;
-            if (!content || typeof content !== "string") continue;
-
-            // Skip system-injected content
-            if (content.startsWith("<user_info>")) continue;
-
-            entries.push({
-              tool: "cursor",
-              timestamp: createdAt,
-              project: meta.name || undefined,
-              prompt:
-                content.length > 500 ? `${content.slice(0, 500)}...` : content,
-              metadata: meta.lastUsedModel
-                ? { model: meta.lastUsedModel }
-                : undefined,
-            });
+            if (msg.role && typeof msg.content === "string") {
+              messages.push({ role: msg.role, content: msg.content });
+            }
           } catch {
-            // skip non-JSON blobs
+            // skip
           }
+        }
+
+        for (let i = 0; i < messages.length; i++) {
+          const msg = messages[i];
+          if (msg.role !== "user") continue;
+
+          const content = msg.content;
+          if (!content) continue;
+
+          // Skip system-injected content
+          if (content.startsWith("<user_info>")) continue;
+
+          // Grab next assistant response
+          let response: string | undefined;
+          const next = messages[i + 1];
+          if (next?.role === "assistant" && next.content) {
+            response = next.content.slice(0, 200);
+          }
+
+          entries.push({
+            tool: "cursor",
+            timestamp: createdAt,
+            project: meta.name || undefined,
+            prompt:
+              content.length > 500 ? `${content.slice(0, 500)}...` : content,
+            response,
+            metadata: meta.lastUsedModel
+              ? { model: meta.lastUsedModel }
+              : undefined,
+          });
         }
 
         db.close();
