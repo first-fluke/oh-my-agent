@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.0...cli-v5.4.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* **cli:** use axios with IPv4-only https agent to fix fetch timeout on Node.js v24 ([c710bbe](https://github.com/first-fluke/oh-my-agent/commit/c710bbe146f3d369b8f2eac7cd18987f6f0be639))
+
 ## [5.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.3.0...cli-v5.4.0) (2026-04-14)
 
 
