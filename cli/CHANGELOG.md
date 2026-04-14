@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.3...cli-v5.4.4) (2026-04-14)
+
+
+### Bug Fixes
+
+* **hooks:** write Stop hook reason to stderr before exit 2 ([6b67490](https://github.com/first-fluke/oh-my-agent/commit/6b674903ba290eb1b5f2168952b0f32b62d5cb00))
+
 ## [5.4.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.2...cli-v5.4.3) (2026-04-14)
 
 
