@@ -10,7 +10,7 @@ vi.mock("node:fs", () => ({
   existsSync: vi.fn(),
 }));
 
-const { isStale, deactivate } = await import(
+const { isStale, deactivate, writeBlockAndExit } = await import(
   "../../.agents/hooks/core/persistent-mode.ts"
 );
 const { resolveGitRoot } = await import("../../.agents/hooks/core/types.ts");
@@ -102,6 +102,41 @@ describe("persistent-mode", () => {
       const deepPath = Array.from({ length: 30 }, (_, i) => `d${i}`).join("/");
       const startDir = `/${deepPath}`;
       expect(resolveGitRoot(startDir)).toBe(startDir);
+    });
+  });
+
+  describe("writeBlockAndExit", () => {
+    it("writes reason to stderr so Stop hook exit-2 reports a continuation prompt", () => {
+      const stderrSpy = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+      const exitSpy = vi
+        .spyOn(process, "exit")
+        .mockImplementation((code?: number | string | null) => {
+          throw new Error(`exit:${code}`);
+        });
+
+      const reason = "[OMA PERSISTENT MODE: WORK]\nreinforcement 1/5";
+
+      expect(() => writeBlockAndExit("claude", reason)).toThrow("exit:2");
+      expect(stderrSpy).toHaveBeenCalledWith(reason);
+      expect(stdoutSpy).toHaveBeenCalledWith(
+        JSON.stringify({ decision: "block", reason }),
+      );
+      expect(exitSpy).toHaveBeenCalledWith(2);
+    });
+
+    it("emits gemini deny payload on stdout while still populating stderr", () => {
+      const stderrSpy = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+      vi.spyOn(process, "exit").mockImplementation(() => {
+        throw new Error("exit");
+      });
+
+      expect(() => writeBlockAndExit("gemini", "keep going")).toThrow();
+      expect(stderrSpy).toHaveBeenCalledWith("keep going");
+      expect(stdoutSpy).toHaveBeenCalledWith(
+        JSON.stringify({ decision: "deny", reason: "keep going" }),
+      );
     });
   });
 

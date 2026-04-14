@@ -203,11 +203,16 @@ async function main() {
       `  2. Or ask the user to say "워크플로우 완료" / "workflow done"`,
     ].join("\n");
 
-    process.stdout.write(makeBlockOutput(vendor, reason));
-    process.exit(2);
+    writeBlockAndExit(vendor, reason);
   }
 
   process.exit(0);
+}
+
+export function writeBlockAndExit(vendor: Vendor, reason: string): never {
+  process.stderr.write(reason);
+  process.stdout.write(makeBlockOutput(vendor, reason));
+  process.exit(2);
 }
 
 if (import.meta.main) {
