@@ -48,6 +48,7 @@ Kies een preset en je bent klaar:
 | **oma-pdf** | PDF naar Markdown conversie |
 | **oma-pm** | Plant taken, splitst requirements op, definieert API-contracten |
 | **oma-qa** | OWASP-beveiliging, performance, toegankelijkheidsreview |
+| **oma-recap** | Analyse van gespreksgeschiedenis en thematische werksamenvattingen |
 | **oma-scm** | SCM (softwareconfiguratiebeheer): branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natuurlijke meertalige vertaling |

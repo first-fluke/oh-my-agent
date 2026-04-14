@@ -50,6 +50,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | แปลงไฟล์ PDF เป็น Markdown |
 | **oma-pm** | วางแผนงาน, ย่อย requirements, กำหนด API contracts |
 | **oma-qa** | ตรวจสอบความปลอดภัยตามมาตรฐาน OWASP, ประสิทธิภาพ, accessibility |
+| **oma-recap** | วิเคราะห์ประวัติการสนทนาและสรุปงานตามธีม |
 | **oma-scm** | การจัดการโครงสร้างซอฟต์แวร์ (SCM): แตกกิ่ง (branching), รวมโค้ด (merges), worktrees; รองรับ Conventional Commits |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | การแปลภาษาหลากหลายภาษาอย่างเป็นธรรมชาติ |

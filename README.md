@@ -50,6 +50,7 @@ Pick a preset and you're ready:
 | **oma-pdf** | PDF to Markdown conversion |
 | **oma-pm** | Plans tasks, breaks down requirements, defines API contracts |
 | **oma-qa** | OWASP security, performance, accessibility review |
+| **oma-recap** | Conversation history recap and themed work summaries |
 | **oma-scm** | SCM (software configuration management) — branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natural multilingual translation |

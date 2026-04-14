@@ -48,6 +48,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | PDFからMarkdownへの変換 |
 | **oma-pm** | タスク計画、要件分解、APIコントラクト定義 |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティレビュー |
+| **oma-recap** | 会話履歴の分析とテーマ別作業サマリー |
 | **oma-scm** | SCM（ソフトウェア構成管理）— ブランチ、マージ、ワークツリー、ベースライン；Conventional Commits |
 | **oma-tf-infra** | マルチクラウド Terraform IaC（Infrastructure as Code） |
 | **oma-translator** | 自然な多言語翻訳 |

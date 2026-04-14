@@ -50,6 +50,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | PDF를 Markdown으로 변환 |
 | **oma-pm** | 작업 계획, 요구사항 분석, API 계약 정의 |
 | **oma-qa** | OWASP 보안, 성능, 접근성 리뷰 |
+| **oma-recap** | 대화 이력 분석 및 테마별 작업 요약 |
 | **oma-scm** | 형상관리(SCM) 및 Git — 브랜치·머지·워크트리·베이스라인; Conventional Commits |
 | **oma-tf-infra** | 멀티 클라우드 Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | 자연스러운 다국어 번역 |

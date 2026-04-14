@@ -48,6 +48,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | Конвертация PDF в Markdown |
 | **oma-pm** | Планирует задачи, декомпозирует требования, определяет API-контракты |
 | **oma-qa** | Безопасность OWASP, производительность, ревью доступности |
+| **oma-recap** | Analiz istorii razgovorov i tematicheskie svodki raboty |
 | **oma-scm** | SCM (управление конфигурацией ПО): ветки, слияния, worktree, базовые линии; Conventional Commits |
 | **oma-tf-infra** | Мультиоблачный IaC на Terraform (Infrastructure as Code) |
 | **oma-translator** | Естественный мультиязычный перевод |

@@ -48,6 +48,7 @@ Wähl ein Preset und los geht's:
 | **oma-pdf** | PDF-zu-Markdown-Konvertierung |
 | **oma-pm** | Plant Aufgaben, zerlegt Anforderungen, definiert API-Verträge |
 | **oma-qa** | OWASP-Sicherheit, Performance, Barrierefreiheits-Review |
+| **oma-recap** | Analyse des Gespraechsverlaufs und thematischer Arbeitszusammenfassungen |
 | **oma-scm** | SCM (Software-Konfigurationsmanagement): Branching, Merges, Worktrees, Baselines; Conventional Commits |
 | **oma-tf-infra** | Multi-Cloud IaC mit Terraform (Infrastructure as Code) |
 | **oma-translator** | Natürliche mehrsprachige Übersetzung |

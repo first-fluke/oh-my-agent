@@ -48,6 +48,7 @@ Wybierz preset i gotowe:
 | **oma-pdf** | Konwersja PDF do Markdown |
 | **oma-pm** | Planuje zadania, rozbija wymagania, definiuje kontrakty API |
 | **oma-qa** | Bezpieczenstwo OWASP, wydajnosc, przeglad dostepnosci |
+| **oma-recap** | Analiza historii rozmow i tematyczne podsumowania pracy |
 | **oma-scm** | SCM (zarządzanie konfiguracją oprogramowania): branchowanie, merge, worktree, baseline; Conventional Commits |
 | **oma-tf-infra** | Wielochmurowy IaC z Terraform (Infrastructure as Code) |
 | **oma-translator** | Naturalne tlumaczenie wielojezyczne |

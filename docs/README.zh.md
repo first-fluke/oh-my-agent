@@ -48,6 +48,7 @@ bunx oh-my-agent@latest
 | **oma-pdf** | PDF 转 Markdown |
 | **oma-pm** | 任务规划、需求拆解、API 契约定义 |
 | **oma-qa** | OWASP 安全、性能、无障碍审查 |
+| **oma-recap** | 会话历史分析与主题化工作摘要 |
 | **oma-scm** | SCM（软件配置管理）— 分支、合并、worktree、基线；Conventional Commits |
 | **oma-tf-infra** | 多云 Terraform IaC（Infrastructure as Code，基础设施即代码） |
 | **oma-translator** | 自然的多语言翻译 |
