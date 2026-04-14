@@ -67,6 +67,141 @@ function deriveHookName(script: string): string {
   return script.replace(/\.[^.]+$/, "");
 }
 
+function patchVendorHookTypes(hooksDest: string, vendor: string): void {
+  if (vendor !== "codex" && vendor !== "qwen") {
+    return;
+  }
+
+  const typesPath = join(hooksDest, "types.ts");
+  if (!existsSync(typesPath)) {
+    return;
+  }
+
+  const content = readFileSync(typesPath, "utf-8");
+  const legacyPreToolBranch = `    case "claude":
+    case "codex":
+    case "qwen":
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          updatedInput,
+        },
+      });`;
+  const patchedPreToolBranch = `    case "claude":
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          updatedInput,
+        },
+      });
+    case "codex":
+    case "qwen":
+      return JSON.stringify({
+        updated_input: updatedInput,
+      });`;
+
+  if (!content.includes(legacyPreToolBranch)) {
+    return;
+  }
+
+  writeFileSync(
+    typesPath,
+    content.replace(legacyPreToolBranch, patchedPreToolBranch),
+    "utf-8",
+  );
+}
+
+function patchCopiedHookFile(
+  hooksDest: string,
+  filename: string,
+  needle: string,
+  replacement: string,
+): void {
+  const filePath = join(hooksDest, filename);
+  if (!existsSync(filePath)) {
+    return;
+  }
+
+  const content = readFileSync(filePath, "utf-8");
+  if (!content.includes(needle)) {
+    return;
+  }
+
+  writeFileSync(filePath, content.replace(needle, replacement), "utf-8");
+}
+
+function patchVendorDetection(hooksDest: string): void {
+  const legacyTestFilterDetectVendor = `function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  if (event === "BeforeTool") return "gemini";
+  if (event === "PreToolUse") {
+    if ("session_id" in input && !("sessionId" in input)) return "codex";
+  }
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}`;
+  const patchedTestFilterDetectVendor = `function inferVendorFromScriptPath(): Vendor | null {
+  const path = import.meta.path;
+  if (path.includes(\`\${join(".cursor", "hooks")}\`)) return "cursor";
+  if (path.includes(\`\${join(".qwen", "hooks")}\`)) return "qwen";
+  if (path.includes(\`\${join(".claude", "hooks")}\`)) return "claude";
+  if (path.includes(\`\${join(".gemini", "hooks")}\`)) return "gemini";
+  if (path.includes(\`\${join(".codex", "hooks")}\`)) return "codex";
+  return null;
+}
+
+function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  const byScriptPath = inferVendorFromScriptPath();
+  if (byScriptPath) return byScriptPath;
+  if (event === "BeforeTool") return "gemini";
+  if (event === "PreToolUse" && "session_id" in input) return "codex";
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}`;
+  patchCopiedHookFile(
+    hooksDest,
+    "test-filter.ts",
+    legacyTestFilterDetectVendor,
+    patchedTestFilterDetectVendor,
+  );
+
+  const legacyPersistentModeDetectVendor = `function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  if (event === "AfterAgent") return "gemini";
+  if (event === "Stop") {
+    if ("session_id" in input && !("sessionId" in input)) return "codex";
+  }
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}`;
+  const patchedPersistentModeDetectVendor = `function inferVendorFromScriptPath(): Vendor | null {
+  const path = import.meta.path;
+  if (path.includes(\`\${join(".cursor", "hooks")}\`)) return "cursor";
+  if (path.includes(\`\${join(".qwen", "hooks")}\`)) return "qwen";
+  if (path.includes(\`\${join(".claude", "hooks")}\`)) return "claude";
+  if (path.includes(\`\${join(".gemini", "hooks")}\`)) return "gemini";
+  if (path.includes(\`\${join(".codex", "hooks")}\`)) return "codex";
+  return null;
+}
+
+function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  const byScriptPath = inferVendorFromScriptPath();
+  if (byScriptPath) return byScriptPath;
+  if (event === "AfterAgent") return "gemini";
+  if (event === "Stop" && "session_id" in input) return "codex";
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}`;
+  patchCopiedHookFile(
+    hooksDest,
+    "persistent-mode.ts",
+    legacyPersistentModeDetectVendor,
+    patchedPersistentModeDetectVendor,
+  );
+}
+
 /**
  * Copy core hook scripts from .agents/hooks/core/ to a vendor's hooks directory.
  * Clears stale symlinks/files first, then copies with dereference to ensure
@@ -171,7 +306,10 @@ export function installHooksFromVariant(
   variant: HookVariant,
 ): void {
   // 1. Copy core hook files to vendor hooks directory
-  copyHookScripts(sourceDir, join(targetDir, variant.hookDir));
+  const hooksDest = join(targetDir, variant.hookDir);
+  copyHookScripts(sourceDir, hooksDest);
+  patchVendorHookTypes(hooksDest, variant.vendor);
+  patchVendorDetection(hooksDest);
 
   // 2. Build hook entries from events
   // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor

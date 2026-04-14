@@ -345,6 +345,138 @@ describe("installHooksFromVariant", () => {
     expect(cmd).toBe("bun .codex/hooks/keyword-detector.ts");
   });
 
+  it("should patch copied Codex hook types to use updated_input", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (pathArg: string) => {
+        if (pathArg.includes("variants/") && pathArg.endsWith(".json")) {
+          return JSON.stringify({
+            vendor: "codex",
+            hookDir: ".codex/hooks",
+            settingsFile: ".codex/hooks.json",
+            projectDirEnv: null,
+            runtime: "bun",
+            events: {
+              PreToolUse: {
+                hook: "test-filter.ts",
+                matcher: "Bash",
+                timeout: 5,
+              },
+            },
+          });
+        }
+
+        if (pathArg.endsWith(".codex/hooks/types.ts")) {
+          return `    case "claude":
+    case "codex":
+    case "qwen":
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          updatedInput,
+        },
+      });`;
+        }
+
+        return "{}";
+      },
+    );
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (pathArg: string) =>
+        pathArg.includes("variants/") ||
+        pathArg.includes("hooks/core") ||
+        pathArg.includes(".codex/hooks/types.ts") ||
+        pathArg.includes(".agents/agents") ||
+        pathArg.includes(".agents/workflows"),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
+
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "hooks", "types.ts"),
+      expect.stringContaining("updated_input: updatedInput"),
+      "utf-8",
+    );
+  });
+
+  it("should patch copied hook scripts to infer vendor from script path", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (pathArg: string) => {
+        if (pathArg.includes("variants/") && pathArg.endsWith(".json")) {
+          return JSON.stringify({
+            vendor: "codex",
+            hookDir: ".codex/hooks",
+            settingsFile: ".codex/hooks.json",
+            projectDirEnv: null,
+            runtime: "bun",
+            events: {
+              PreToolUse: {
+                hook: "test-filter.ts",
+                matcher: "Bash",
+                timeout: 5,
+              },
+              Stop: {
+                hook: "persistent-mode.ts",
+                timeout: 5,
+              },
+            },
+          });
+        }
+
+        if (pathArg.endsWith(".codex/hooks/test-filter.ts")) {
+          return `function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  if (event === "BeforeTool") return "gemini";
+  if (event === "PreToolUse") {
+    if ("session_id" in input && !("sessionId" in input)) return "codex";
+  }
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}`;
+        }
+
+        if (pathArg.endsWith(".codex/hooks/persistent-mode.ts")) {
+          return `function detectVendor(input: Record<string, unknown>): Vendor {
+  const event = input.hook_event_name as string | undefined;
+  if (event === "AfterAgent") return "gemini";
+  if (event === "Stop") {
+    if ("session_id" in input && !("sessionId" in input)) return "codex";
+  }
+  if (process.env.QWEN_PROJECT_DIR) return "qwen";
+  return "claude";
+}`;
+        }
+
+        return "{}";
+      },
+    );
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (pathArg: string) =>
+        pathArg.includes("variants/") ||
+        pathArg.includes("hooks/core") ||
+        pathArg.includes(".codex/hooks/test-filter.ts") ||
+        pathArg.includes(".codex/hooks/persistent-mode.ts") ||
+        pathArg.includes(".agents/agents") ||
+        pathArg.includes(".agents/workflows"),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
+
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "hooks", "test-filter.ts"),
+      expect.stringContaining(
+        "const byScriptPath = inferVendorFromScriptPath();",
+      ),
+      "utf-8",
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "hooks", "persistent-mode.ts"),
+      expect.stringContaining(
+        'if (event === "Stop" && "session_id" in input) return "codex";',
+      ),
+      "utf-8",
+    );
+  });
+
   it("should generate Cursor hooks.json with version 1 and prompt hooks", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({
