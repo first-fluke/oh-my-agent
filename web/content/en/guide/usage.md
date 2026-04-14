@@ -176,6 +176,9 @@ oma agent:spawn frontend "Build notification center with real-time updates" sess
 oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
+# After editing .agents/agents/ or workflows, regenerate vendor-native files
+oma link claude codex gemini
+
 # Monitor while agents work (separate terminal)
 oma dashboard        # Terminal UI with live table
 oma dashboard:web    # Web UI at http://localhost:9847
@@ -186,6 +189,14 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 # Check session statistics after completion
 oma stats
 ```
+
+If your current runtime matches the target vendor in `.agents/oma-config.yaml`, workflows should prefer native subagents:
+
+- Claude Code -> `.claude/agents/*.md`
+- Codex CLI -> `.codex/agents/*.toml`
+- Gemini CLI -> `.gemini/agents/*.md`
+
+Cross-vendor tasks still use `oma agent:spawn`.
 
 ---
 

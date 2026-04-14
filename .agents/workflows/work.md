@@ -89,8 +89,9 @@ Use the Agent tool to spawn subagents:
 - Agent definitions: `.claude/agents/{agent}.md`
 
 ### If Codex CLI and target vendor is Codex
-Request parallel subagent execution with the specific tasks.
+Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
 Pass each agent its task description, API contracts, and relevant context.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 ### If Gemini CLI and target vendor is Gemini
 Use native Gemini subagents when available, otherwise fall back to `oma agent:spawn`.

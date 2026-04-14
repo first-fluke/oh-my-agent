@@ -1,0 +1,61 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "codex",
+  "destDir": ".codex/agents",
+  "modelDefault": "gpt-5.4",
+  "toolsDefault": [],
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/codex.md",
+  "agents": {
+    "backend-engineer": {
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
+    },
+    "frontend-engineer": {
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
+    },
+    "db-engineer": {
+      "effort": "medium",
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
+    },
+    "debug-investigator": {
+      "effort": "high",
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
+    },
+    "architecture-reviewer": {
+      "effort": "high",
+      "extra": {
+        "sandbox_mode": "read-only"
+      }
+    },
+    "tf-infra-engineer": {
+      "effort": "medium",
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
+    },
+    "mobile-engineer": {
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
+    },
+    "pm-planner": {
+      "effort": "medium",
+      "extra": {
+        "sandbox_mode": "read-only"
+      }
+    },
+    "qa-reviewer": {
+      "effort": "high",
+      "extra": {
+        "sandbox_mode": "read-only"
+      }
+    }
+  }
+}

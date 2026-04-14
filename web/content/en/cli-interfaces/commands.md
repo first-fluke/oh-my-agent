@@ -128,6 +128,32 @@ oma update --ci
 oma update --ci --force
 ```
 
+### link
+
+Regenerate vendor-native files from the `.agents/` source of truth without reinstalling.
+
+```
+oma link [vendors...]
+```
+
+**Examples:**
+
+```bash
+# Regenerate all configured vendors
+oma link
+
+# Regenerate only Claude and Codex files
+oma link claude codex
+```
+
+**What it does:**
+1. Rebuilds vendor-native agent files from `.agents/agents/`
+2. Refreshes hooks and local settings for the selected vendors
+3. Regenerates `CLAUDE.md`, `GEMINI.md`, or `AGENTS.md` integration blocks
+4. Refreshes Cursor MCP linkage and CLI skill symlinks when relevant
+
+Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`, or hook definitions.
+
 ---
 
 ## Monitoring & Metrics

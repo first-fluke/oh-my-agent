@@ -7,6 +7,14 @@ description: Complete reference for all 14 oh-my-agent agents — their domains,
 
 Agents in oh-my-agent are specialized engineering roles. Each agent has a defined domain, tech stack knowledge, resource files, quality gates, and execution constraints. Agents are not generic chatbots — they are scoped workers that stay in their lane and follow structured protocols.
 
+The agent definitions under `.agents/agents/` are the source of truth. OMA projects them into vendor-native files for runtimes that support custom subagents:
+
+- `.claude/agents/*.md`
+- `.codex/agents/*.toml`
+- `.gemini/agents/*.md`
+
+When a workflow maps an agent to the same vendor as the current runtime, it should use that runtime's native agent file first. Cross-vendor tasks fall back to `oma agent:spawn`.
+
 ---
 
 ## Agent Categories
@@ -503,7 +511,7 @@ When running a multi-agent workflow (`/orchestrate` or `/work`):
 
 Agents are defined in two locations:
 
-**`.agents/agents/`** — Contains 7 subagent definition files:
+**`.agents/agents/`** — Contains the abstract source-of-truth agent definitions, including:
 - `backend-engineer.md`
 - `frontend-engineer.md`
 - `mobile-engineer.md`
@@ -511,10 +519,17 @@ Agents are defined in two locations:
 - `qa-reviewer.md`
 - `debug-investigator.md`
 - `pm-planner.md`
+- `architecture-reviewer.md`
+- `tf-infra-engineer.md`
 
 These files define the agent's identity, execution protocol reference, CHARTER_CHECK template, architecture summary, and rules. They are used when spawning subagents via the Task/Agent tool (Claude Code) or CLI.
 
-**`.claude/agents/`** — IDE-specific subagent definitions that reference the `.agents/agents/` files via symlinks or direct copies for Claude Code compatibility.
+**Vendor-native projections** — OMA materializes the source definitions into runtime-specific agent files:
+- `.claude/agents/*.md`
+- `.codex/agents/*.toml`
+- `.gemini/agents/*.md`
+
+These generated files are refreshed by `oma link`, `oma install`, and `oma update`.
 
 ---
 

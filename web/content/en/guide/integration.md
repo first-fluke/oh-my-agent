@@ -12,7 +12,7 @@ There are two ways to add oh-my-agent to an existing project:
 1. **CLI path** — Run `oma` (or `npx oh-my-agent`) and follow the interactive prompts. Recommended for most users.
 2. **Manual path** — Copy files and configure symlinks yourself. Useful for restricted environments or custom setups.
 
-Both paths produce the same result: a `.agents/` directory (the SSOT) with symlinks pointing IDE-specific directories to it.
+Both paths produce the same result: a `.agents/` directory (the SSOT) plus vendor-native generated files such as `.claude/agents/`, `.codex/agents/`, and `.gemini/agents/`.
 
 ---
 
@@ -71,7 +71,7 @@ If you selected a preset that includes the backend skill, you are asked to choos
 
 ### 6. Configure IDE Symlinks
 
-The installer always creates Claude Code symlinks (`.claude/skills/`). If a `.github/` directory exists, it also creates GitHub Copilot symlinks automatically. Otherwise, it asks:
+The installer always creates Claude Code symlinks (`.claude/skills/`). It also generates vendor-native agent files and hooks for Claude, Codex, Gemini, and Qwen, and if a `.github/` directory exists, it creates GitHub Copilot symlinks automatically. Otherwise, it asks:
 
 ```
 Also create symlinks for GitHub Copilot? (.github/skills/)
@@ -156,30 +156,8 @@ tar -xzf agent-skills.tar.gz
 # Copy the core .agents/ directory
 cp -r .agents/ /path/to/your/project/.agents/
 
-# Create Claude Code symlinks
-mkdir -p /path/to/your/project/.claude/skills
-mkdir -p /path/to/your/project/.claude/agents
-
-# Symlink skills (example for a fullstack project)
-ln -sf ../../.agents/skills/oma-frontend /path/to/your/project/.claude/skills/oma-frontend
-ln -sf ../../.agents/skills/oma-backend /path/to/your/project/.claude/skills/oma-backend
-ln -sf ../../.agents/skills/oma-qa /path/to/your/project/.claude/skills/oma-qa
-ln -sf ../../.agents/skills/oma-pm /path/to/your/project/.claude/skills/oma-pm
-
-# Symlink shared resources
-ln -sf ../../.agents/skills/_shared /path/to/your/project/.claude/skills/_shared
-
-# Symlink workflow routers
-for workflow in .agents/workflows/*.md; do
-  name=$(basename "$workflow" .md)
-  ln -sf ../../.agents/workflows/"$name".md /path/to/your/project/.claude/skills/"$name".md
-done
-
-# Symlink agent definitions
-for agent in .agents/agents/*.md; do
-  name=$(basename "$agent")
-  ln -sf ../../.agents/agents/"$name" /path/to/your/project/.claude/agents/"$name"
-done
+# Regenerate vendor-native files from the SSOT
+oma link
 ```
 
 ### Step 3: Configure User Preferences
@@ -410,10 +388,9 @@ For each selected skill, `installSkill()` copies the skill directory to `.agents
 
 `installVendorAdaptations()` installs IDE-specific files for all supported vendors (Claude, Codex, Gemini, Qwen):
 
-- Agent definitions (`.claude/agents/*.md`)
+- Agent definitions (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - Hook configurations (`.claude/hooks/`)
-- Settings files
-- CLAUDE.md project instructions
+- Settings files and vendor integration docs (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
 
 ### 9. CLI Symlinks
 
@@ -421,8 +398,9 @@ For each selected skill, `installSkill()` copies the skill directory to `.agents
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
 - `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
-- `.claude/agents/{agent}.md` -> `../../.agents/agents/{agent}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (if Copilot enabled)
+
+Vendor-native agent files are generated from `.agents/agents/` by `oma link`, `oma install`, or `oma update` rather than symlinked directly.
 
 ### 10. Global Workflows
 

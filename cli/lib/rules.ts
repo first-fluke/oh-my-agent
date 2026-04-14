@@ -157,11 +157,13 @@ const VENDOR_FILES: Record<string, string> = {
 
 /** Vendor-specific subagent spawn instructions. */
 const VENDOR_SPAWN: Record<string, string> = {
-  claude: "`@agent-name` (defined in `.claude/agents/`)",
+  claude:
+    "Same-vendor native dispatch via Claude Code Agent tool with `.claude/agents/{name}.md`; cross-vendor fallback via `oma agent:spawn`",
   gemini:
-    "`@agent-name` (defined in `.gemini/agents/`) or `oma agent:spawn {agent} {prompt} {sessionId}`",
+    "Same-vendor native dispatch via `.gemini/agents/{name}.md`; cross-vendor or unsupported cases fall back to `oma agent:spawn {agent} {prompt} {sessionId}`",
   cursor: "`@agent-name` (defined in `.cursor/agents/`)",
-  codex: "`oma agent:spawn {agent} {prompt} {sessionId}`",
+  codex:
+    "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent:spawn`",
   qwen: "`oma agent:spawn {agent} {prompt} {sessionId}`",
 };
 
@@ -194,6 +196,12 @@ function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
     "- **Skills**: `.agents/skills/` (domain specialists)",
     "- **Workflows**: `.agents/workflows/` (multi-step orchestration)",
     `- **Subagents**: ${VENDOR_SPAWN[vendor] || "`oma agent:spawn`"}`,
+    "",
+    "## Per-Agent Dispatch",
+    "",
+    "1. Resolve `target_vendor_for_agent` from `.agents/oma-config.yaml`.",
+    "2. If `target_vendor_for_agent === current_runtime_vendor`, use the runtime's native subagent path.",
+    "3. If vendors differ, or native subagents are unavailable, use `oma agent:spawn` for that agent only.",
     "",
     "## Workflows",
     "",

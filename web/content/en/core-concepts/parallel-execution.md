@@ -178,9 +178,9 @@ The spawn mechanism varies by IDE/CLI:
 
 | Vendor | How Agents Are Spawned | Result Handling |
 |--------|----------------------|-----------------|
-| **Claude Code** | `Agent` tool with `.claude/agents/{name}.md` definitions. Multiple Agent calls in the same message = true parallel. | Synchronous return |
-| **Codex CLI** | Model-mediated parallel subagent request | JSON output |
-| **Gemini CLI** | `oma agent:spawn` CLI command | MCP memory poll |
+| **Claude Code** | Same-vendor tasks use the Agent tool with `.claude/agents/{name}.md`; cross-vendor tasks fall back to `oma agent:spawn`. | Synchronous return |
+| **Codex CLI** | Same-vendor tasks use native custom agents from `.codex/agents/{name}.toml`; cross-vendor tasks fall back to `oma agent:spawn`. | JSON output |
+| **Gemini CLI** | Same-vendor tasks use `.gemini/agents/{name}.md` when available; cross-vendor tasks fall back to `oma agent:spawn`. | MCP memory poll |
 | **Antigravity IDE** | `oma agent:spawn` only (custom subagents not available) | MCP memory poll |
 | **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 
@@ -191,6 +191,12 @@ Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
 
 Multiple Agent tool calls in the same message execute as true parallel — no sequential waiting.
+
+The same dispatch rule applies across vendors:
+
+1. Resolve `target_vendor_for_agent` from `.agents/oma-config.yaml`
+2. If it matches the current runtime vendor, use that vendor's native agent file
+3. If it does not match, use `oma agent:spawn` only for that agent
 
 ---
 
