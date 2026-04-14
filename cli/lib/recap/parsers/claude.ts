@@ -75,16 +75,20 @@ function loadSessionResponses(
           }
 
           for (let i = 0; i < msgs.length; i++) {
-            if (msgs[i].type !== "user") continue;
+            const msg = msgs[i];
+            if (!msg) continue;
+            if (msg.type !== "user") continue;
             let resp = "";
             for (let j = i + 1; j < msgs.length; j++) {
-              if (msgs[j].type === "assistant" && msgs[j].text) {
-                resp = msgs[j].text.slice(0, 200);
+              const next = msgs[j];
+              if (!next) continue;
+              if (next.type === "assistant" && next.text) {
+                resp = next.text.slice(0, 200);
                 break;
               }
             }
             pairs.push({
-              prefix: msgs[i].text.slice(0, 80),
+              prefix: msg.text.slice(0, 80),
               response: resp,
             });
           }
@@ -170,8 +174,9 @@ registerParser({
           } else {
             // Fallback: match by sequential index within the session
             const idx = sessionIndexCounters.get(raw.sessionId) ?? 0;
-            if (idx < pairs.length) {
-              response = pairs[idx].response || undefined;
+            const pair = pairs[idx];
+            if (pair) {
+              response = pair.response || undefined;
             }
           }
           sessionIndexCounters.set(

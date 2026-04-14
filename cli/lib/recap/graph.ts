@@ -62,9 +62,8 @@ export function buildGraphData(
   // Build nodes sorted by count
   let nodes: GraphNode[] = [...projectMap.entries()]
     .map(([name, data]) => {
-      const primaryTool = Object.entries(data.tools).sort(
-        ([, a], [, b]) => b - a,
-      )[0][0] as ToolName;
+      const sorted = Object.entries(data.tools).sort(([, a], [, b]) => b - a);
+      const primaryTool = (sorted[0]?.[0] ?? "claude") as ToolName;
       return {
         id: name,
         label: name,
@@ -87,11 +86,13 @@ export function buildGraphData(
 
   for (let i = 0; i < sorted.length; i++) {
     const a = sorted[i];
+    if (!a) continue;
     const projA = a.project || "(unknown)";
     if (!nodeIds.has(projA)) continue;
 
     for (let j = i + 1; j < sorted.length; j++) {
       const b = sorted[j];
+      if (!b) break;
       if (b.timestamp - a.timestamp > 30 * 60 * 1000) break;
 
       const projB = b.project || "(unknown)";
@@ -103,8 +104,8 @@ export function buildGraphData(
   }
 
   const edges: GraphEdge[] = [...edgeMap.entries()].map(([key, weight]) => {
-    const [source, target] = key.split("|||");
-    return { source, target, weight };
+    const parts = key.split("|||");
+    return { source: parts[0] ?? "", target: parts[1] ?? "", weight };
   });
 
   return { nodes, edges };

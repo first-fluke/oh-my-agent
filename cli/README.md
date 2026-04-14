@@ -10,6 +10,13 @@ Instead of one AI doing everything (and getting confused halfway through), oh-my
 
 Works with all major AI IDEs: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode, and more.
 
+Vendor-native subagents are generated from `.agents/agents/`:
+- Claude Code uses `.claude/agents/*.md`
+- Codex CLI uses `.codex/agents/*.toml`
+- Gemini CLI uses `.gemini/agents/*.md`
+
+When a workflow resolves an agent to the same vendor as the current runtime, it should use that vendor's native subagent path first. Cross-vendor tasks fall back to `oma agent:spawn`.
+
 ## Quick Start
 
 ```bash
@@ -50,6 +57,7 @@ Pick a preset and you're ready:
 | **oma-pdf** | PDF to Markdown conversion |
 | **oma-pm** | Plans tasks, breaks down requirements, defines API contracts |
 | **oma-qa** | OWASP security, performance, accessibility review |
+| **oma-recap** | Conversation history recap and themed work summaries |
 | **oma-scm** | SCM (software configuration management) — branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natural multilingual translation |
@@ -94,9 +102,14 @@ bun install --global oh-my-agent   # or: brew install oh-my-agent
 # Use anywhere
 oma doctor                  # Health check
 oma dashboard               # Real-time agent monitoring
+oma link                    # Regenerate .claude/.codex/.gemini/etc. from .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+Model selection follows two layers:
+- Same-vendor native dispatch uses the generated vendor agent definition in `.claude/agents/`, `.codex/agents/`, or `.gemini/agents/`.
+- Cross-vendor or fallback CLI dispatch uses the vendor defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
 ## Why oh-my-agent?
 

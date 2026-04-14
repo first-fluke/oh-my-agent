@@ -97,7 +97,9 @@ function sanitizeGeminiMcpServer(server: GeminiMcpServer): GeminiMcpServer {
   return nextServer;
 }
 
-function hasGeminiMcpTransport(server: GeminiMcpServer | undefined): boolean {
+function hasGeminiMcpTransport(
+  server: GeminiMcpServer | undefined,
+): server is GeminiMcpServer {
   if (!server) return false;
 
   return (

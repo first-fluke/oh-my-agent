@@ -61,7 +61,9 @@ registerParser({
       }
 
       for (let i = 0; i < allMsgs.length; i++) {
-        const { type, row } = allMsgs[i];
+        const entry = allMsgs[i];
+        if (!entry) continue;
+        const { type, row } = entry;
         if (type !== "user") continue;
 
         const ts = (row as { timestamp?: string }).timestamp

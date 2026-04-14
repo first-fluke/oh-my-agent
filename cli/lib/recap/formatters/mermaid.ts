@@ -28,15 +28,18 @@ function groupSessions(
     end: number;
   }> = [];
 
+  const first = sorted[0];
+  if (!first) return [];
   let current = {
-    tool: sorted[0].tool,
-    project: sorted[0].project || "(unknown)",
-    start: sorted[0].timestamp,
-    end: sorted[0].timestamp,
+    tool: first.tool,
+    project: first.project || "(unknown)",
+    start: first.timestamp,
+    end: first.timestamp,
   };
 
   for (let i = 1; i < sorted.length; i++) {
     const entry = sorted[i];
+    if (!entry) continue;
     const gap = entry.timestamp - current.end;
     const sameContext =
       entry.tool === current.tool &&

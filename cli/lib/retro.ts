@@ -8,11 +8,10 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-export {
-  getCompareWindows,
-  parseTimeWindow,
-  type TimeWindow,
-} from "./time-window.js";
+import type { TimeWindow } from "./time-window.js";
+
+export { getCompareWindows, parseTimeWindow } from "./time-window.js";
+export type { TimeWindow };
 
 // --- Types ---
 

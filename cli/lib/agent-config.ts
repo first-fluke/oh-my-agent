@@ -246,9 +246,8 @@ export function resolvePromptFlag(
     codex: null,
   };
 
-  return Object.prototype.hasOwnProperty.call(defaults, vendor)
-    ? defaults[vendor]!
-    : "-p";
+  if (Object.hasOwn(defaults, vendor)) return defaults[vendor] as string | null;
+  return "-p";
 }
 
 export function resolvePromptContent(prompt: string): string {

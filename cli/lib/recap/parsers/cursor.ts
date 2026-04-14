@@ -113,6 +113,7 @@ registerParser({
 
         for (let i = 0; i < messages.length; i++) {
           const msg = messages[i];
+          if (!msg) continue;
           if (msg.role !== "user") continue;
 
           const content = msg.content;

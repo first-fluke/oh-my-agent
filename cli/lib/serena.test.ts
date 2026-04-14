@@ -164,7 +164,7 @@ describe("ensureSerenaRegistered", () => {
       "projects:\n- /other/project\nlanguage_backend: LSP\n",
     );
     ensureSerenaRegistered("/my/project");
-    const written = mockFs.writeFileSync.mock.calls[0][1] as string;
+    const written = mockFs.writeFileSync.mock.calls.at(0)?.[1] as string;
     expect(written).toContain("- /other/project");
     expect(written).toContain("- /my/project");
     expect(written).toContain("language_backend: LSP");

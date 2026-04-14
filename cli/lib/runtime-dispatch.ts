@@ -226,7 +226,11 @@ export function planDispatch(
       runtimeVendor,
       targetVendor,
       reason: "same-vendor Claude runtime detected",
-      invocation: buildClaudeNativeInvocation(agentId, promptContent, vendorConfig),
+      invocation: buildClaudeNativeInvocation(
+        agentId,
+        promptContent,
+        vendorConfig,
+      ),
     };
   }
 
@@ -236,7 +240,11 @@ export function planDispatch(
       runtimeVendor,
       targetVendor,
       reason: "same-vendor Codex runtime detected",
-      invocation: buildCodexNativeInvocation(agentId, promptContent, vendorConfig),
+      invocation: buildCodexNativeInvocation(
+        agentId,
+        promptContent,
+        vendorConfig,
+      ),
     };
   }
 
@@ -246,7 +254,11 @@ export function planDispatch(
       runtimeVendor,
       targetVendor,
       reason: "same-vendor Gemini runtime detected",
-      invocation: buildGeminiNativeInvocation(agentId, promptContent, vendorConfig),
+      invocation: buildGeminiNativeInvocation(
+        agentId,
+        promptContent,
+        vendorConfig,
+      ),
     };
   }
 

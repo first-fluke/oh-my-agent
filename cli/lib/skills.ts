@@ -4,7 +4,6 @@ import {
   ALL_CLI_VENDORS,
   CLI_SKILLS_DIR,
   INSTALLED_SKILLS_DIR,
-  REPO,
   SKILLS,
 } from "../constants/index.js";
 import type { CliTool, CliVendor, SkillInfo } from "../types/index.js";

@@ -93,7 +93,7 @@ function serializeTomlMultiline(value: string): string {
   return `"""\n${escaped.trim()}\n"""`;
 }
 
-function serializeTomlArray(values: string[]): string {
+function _serializeTomlArray(values: string[]): string {
   return `[${values.map((value) => serializeTomlString(value)).join(", ")}]`;
 }
 
@@ -104,7 +104,9 @@ function formatAgentBody(body: string, protocolPath: string): string {
   );
 }
 
-function readAbstractAgentDefinitions(sourceDir: string): AbstractAgentDefinition[] {
+function readAbstractAgentDefinitions(
+  sourceDir: string,
+): AbstractAgentDefinition[] {
   const agentsSrcDir = join(sourceDir, ".agents", "agents");
   if (!existsSync(agentsSrcDir)) return [];
 
@@ -191,7 +193,9 @@ function buildCodexAgentFile(
   const description = String(
     config.description || frontmatter.description || name,
   );
-  const model = String(config.model || frontmatter.model || variant.modelDefault);
+  const model = String(
+    config.model || frontmatter.model || variant.modelDefault,
+  );
   const reasoningEffort = config.effort || "medium";
   const sandboxMode =
     typeof config.extra?.sandbox_mode === "string"
@@ -215,7 +219,9 @@ function buildCodexAgentFile(
   for (const skill of skills) {
     lines.push("");
     lines.push("[[skills.config]]");
-    lines.push(`path = ${serializeTomlString(`.agents/skills/${skill}/SKILL.md`)}`);
+    lines.push(
+      `path = ${serializeTomlString(`.agents/skills/${skill}/SKILL.md`)}`,
+    );
     lines.push("enabled = true");
   }
 

@@ -475,12 +475,14 @@ describe("agent command", () => {
         if (target === "/workspace") return true;
         return false;
       });
-      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
-        const target = pathArg.toString();
-        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-        if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
-        return "";
-      });
+      mockFsFunctions.readFileSync.mockImplementation(
+        (pathArg: fs.PathLike) => {
+          const target = pathArg.toString();
+          if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+          if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+          return "";
+        },
+      );
       mockFsFunctions.openSync.mockReturnValue(123);
 
       const mockChild = { pid: 66666, on: vi.fn(), unref: vi.fn() };
@@ -535,12 +537,14 @@ describe("agent command", () => {
         if (target === "/workspace") return true;
         return false;
       });
-      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
-        const target = pathArg.toString();
-        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-        if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
-        return "";
-      });
+      mockFsFunctions.readFileSync.mockImplementation(
+        (pathArg: fs.PathLike) => {
+          const target = pathArg.toString();
+          if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+          if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+          return "";
+        },
+      );
       mockFsFunctions.openSync.mockReturnValue(123);
 
       const mockChild = { pid: 66667, on: vi.fn(), unref: vi.fn() };
@@ -597,12 +601,14 @@ describe("agent command", () => {
         if (target === "/workspace") return true;
         return false;
       });
-      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
-        const target = pathArg.toString();
-        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-        if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
-        return "";
-      });
+      mockFsFunctions.readFileSync.mockImplementation(
+        (pathArg: fs.PathLike) => {
+          const target = pathArg.toString();
+          if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+          if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+          return "";
+        },
+      );
       mockFsFunctions.openSync.mockReturnValue(123);
 
       const mockChild = { pid: 66668, on: vi.fn(), unref: vi.fn() };

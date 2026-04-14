@@ -48,7 +48,9 @@ function scanDir(dir: string, map: Map<string, SessionData>): void {
         const lines = readFileSync(full, "utf-8").split("\n").filter(Boolean);
         if (lines.length === 0) continue;
 
-        const first = JSON.parse(lines[0]);
+        const firstLine = lines[0];
+        if (!firstLine) continue;
+        const first = JSON.parse(firstLine);
         if (first?.type !== "session_meta") continue;
 
         const sid = first.payload?.id;
@@ -84,13 +86,14 @@ function scanDir(dir: string, map: Map<string, SessionData>): void {
           }
         }
         for (let i = 0; i < items.length; i++) {
-          if (items[i].role !== "user") continue;
+          const item = items[i];
+          if (!item) continue;
+          if (item.role !== "user") continue;
           for (let j = i + 1; j < items.length; j++) {
-            if (items[j].role === "assistant") {
-              responses.set(
-                items[i].text.slice(0, 100),
-                items[j].text.slice(0, 200),
-              );
+            const next = items[j];
+            if (!next) continue;
+            if (next.role === "assistant") {
+              responses.set(item.text.slice(0, 100), next.text.slice(0, 200));
               break;
             }
           }

@@ -616,7 +616,7 @@ export async function reviewAgent(options: {
     uncommitted,
     resolvedWorkspace,
   );
-  const command = reviewArgs[0]!;
+  const command = reviewArgs[0] ?? vendor;
   const args = reviewArgs.slice(1);
 
   const logFile = path.join(tmpdir(), `review-${sessionId}.log`);
