@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.4.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.2...cli-v5.4.3) (2026-04-14)
+
+
+### Bug Fixes
+
+* **cli:** add tarball download fallbacks ([9f2c930](https://github.com/first-fluke/oh-my-agent/commit/9f2c930d0dbfc2dbe6ce3c0aa210ade43863b57a))
+
+
+### Refactoring
+
+* **cli:** split large modules and harden hooks ([fe930f1](https://github.com/first-fluke/oh-my-agent/commit/fe930f1a9a01dda53a022dd642480b19f726ef1e))
+
 ## [5.4.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.1...cli-v5.4.2) (2026-04-14)
 
 
