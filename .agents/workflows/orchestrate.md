@@ -19,7 +19,7 @@ description: Automated CLI-based parallel agent execution — spawn subagents vi
 ## Vendor Detection
 
 Before starting, determine your runtime environment by following `.agents/skills/_shared/core/vendor-detection.md`.
-The detected vendor determines how agents are spawned (Step 3) and monitored (Step 4).
+The detected runtime vendor and each agent's target vendor determine how agents are spawned (Step 3) and monitored (Step 4).
 
 ---
 
@@ -76,7 +76,14 @@ For each priority tier (P0 first, then P1, etc.):
 - Each agent gets: task description, API contracts, relevant context from `_shared/core/context-loading.md`.
 - Use memory edit tool to update `task-board.md` with agent status.
 
-### If Claude Code
+### Per-Agent Dispatch
+
+For each planned agent, first resolve the target vendor from `.agents/oma-config.yaml`.
+
+- If `target_vendor === current_runtime_vendor` and that runtime has a verified native role-subagent path, use the native vendor variant agent definition.
+- Otherwise, use `oma agent:spawn` for that agent only.
+
+### If Claude Code and target vendor is Claude
 
 Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
 
@@ -92,21 +99,24 @@ Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
 | qa | `.claude/agents/qa-reviewer.md` |
 | debug | `.claude/agents/debug-investigator.md` |
 | pm | `.claude/agents/pm-planner.md` |
+| architecture | `.claude/agents/architecture-reviewer.md` |
+| tf-infra | `.claude/agents/tf-infra-engineer.md` |
 
 - Include API contracts from `.agents/skills/_shared/api-contracts/` if they exist
 - Load only task-relevant context (check codebase structure around affected domains)
 
-### If Codex CLI
+### If Codex CLI and target vendor is Codex
 
 Request parallel subagent execution via model-mediated parallel subagent request.
 Each subagent receives task description, API contracts, and relevant context.
 Results are returned as JSON output.
 
-### If Gemini CLI
+### If Gemini CLI and target vendor is Gemini
 
-Spawn agents using `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
+Spawn native Gemini subagents using `.gemini/agents/{agent}.md` when available.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
 
-### If Antigravity or CLI Fallback
+### If target vendor differs from current runtime, or native dispatch is unavailable
 
 Spawn agents using `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}` only (custom subagents not available).
 

@@ -21,6 +21,11 @@
         "readonly": true
       }
     },
+    "architecture-reviewer": {
+      "extra": {
+        "readonly": true
+      }
+    },
     "debug-investigator": {},
     "mobile-engineer": {
       "extra": {
@@ -35,6 +40,11 @@
     "qa-reviewer": {
       "extra": {
         "readonly": true,
+        "is_background": true
+      }
+    },
+    "tf-infra-engineer": {
+      "extra": {
         "is_background": true
       }
     }

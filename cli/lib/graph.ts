@@ -41,6 +41,8 @@ const AGENT_SKILL_MAP: Record<string, string> = {
   "pm-planner": "oma-pm",
   "qa-reviewer": "oma-qa",
   "debug-investigator": "oma-debug",
+  "architecture-reviewer": "oma-architecture",
+  "tf-infra-engineer": "oma-tf-infra",
 };
 
 // ── Helpers ─────────────────────────────────────────────────────

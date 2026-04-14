@@ -103,7 +103,7 @@ describe("agent command", () => {
     it("should spawn process and write PID", async () => {
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
-        if (target.includes("oma-config.yaml")) return false;
+        if (target.includes("user-preferences.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
         if (
           target.includes(
@@ -163,7 +163,7 @@ describe("agent command", () => {
     });
 
     it("should resolve vendor from oma-config.yaml found in parent directory", async () => {
-      const USER_PREFS_YAML = [
+      const OMA_CONFIG_YAML = [
         "default_cli: codex",
         "agent_cli_mapping:",
         "  frontend: codex",
@@ -179,13 +179,11 @@ describe("agent command", () => {
 
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
-        // oma-config.yaml only exists at project root, not in apps/api
-        if (target === "/project/.agents/oma-config.yaml") return true;
-        if (
-          target.includes("apps/api/.agents") &&
-          target.includes("oma-config.yaml")
-        )
+        if (target === "/project/.agents/oma-config.yaml")
+          return true;
+        if (target.includes("apps/api/.agents") && target.includes("oma-config"))
           return false;
+        if (target.includes("user-preferences.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
         if (target === "/project/apps/api") return true;
         return false;
@@ -193,7 +191,7 @@ describe("agent command", () => {
       mockFsFunctions.readFileSync.mockImplementation(
         (pathArg: fs.PathLike) => {
           const target = pathArg.toString();
-          if (target.includes("oma-config.yaml")) return USER_PREFS_YAML;
+          if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
           return "";
         },
       );
@@ -228,7 +226,7 @@ describe("agent command", () => {
     });
 
     it("should use default_cli when agent has no specific mapping", async () => {
-      const USER_PREFS_YAML = [
+      const OMA_CONFIG_YAML = [
         "default_cli: codex",
         "agent_cli_mapping:",
         "  frontend: codex",
@@ -242,6 +240,7 @@ describe("agent command", () => {
         const target = pathArg.toString();
         if (target === "/project/.agents/oma-config.yaml") return true;
         if (target.includes("oma-config.yaml")) return false;
+        if (target.includes("user-preferences.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
         if (target === "/project/apps/api") return true;
         return false;
@@ -249,7 +248,7 @@ describe("agent command", () => {
       mockFsFunctions.readFileSync.mockImplementation(
         (pathArg: fs.PathLike) => {
           const target = pathArg.toString();
-          if (target.includes("oma-config.yaml")) return USER_PREFS_YAML;
+          if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
           return "";
         },
       );
@@ -278,6 +277,64 @@ describe("agent command", () => {
         expect.objectContaining({
           cwd: expect.stringContaining("/project/apps/api"),
         }),
+      );
+
+      cwdSpy.mockRestore();
+    });
+
+    it("should resolve vendor using semantic agent aliases from oma-config.yaml", async () => {
+      const OMA_CONFIG_YAML = [
+        "default_cli: gemini",
+        "agent_cli_mapping:",
+        "  architecture: claude",
+        "  tf-infra: codex",
+      ].join("\n");
+
+      const cwdSpy = vi
+        .spyOn(process, "cwd")
+        .mockReturnValue("/project");
+
+      mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target === "/project/.agents/oma-config.yaml") return true;
+        if (target.includes("cli-config.yaml")) return false;
+        if (target === "/project") return true;
+        return false;
+      });
+      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+        return "";
+      });
+      mockFsFunctions.openSync.mockReturnValue(123);
+
+      const mockChild = { pid: 77777, on: vi.fn(), unref: vi.fn() };
+      vi.mocked(child_process.spawn).mockReturnValue(
+        mockChild as unknown as child_process.ChildProcess,
+      );
+
+      await spawnAgent(
+        "architecture-reviewer",
+        "review architecture",
+        "session1",
+        "/project",
+      );
+      expect(child_process.spawn).toHaveBeenLastCalledWith(
+        "claude",
+        expect.any(Array),
+        expect.objectContaining({ cwd: expect.stringContaining("/project") }),
+      );
+
+      await spawnAgent(
+        "tf-infra-engineer",
+        "review terraform",
+        "session2",
+        "/project",
+      );
+      expect(child_process.spawn).toHaveBeenLastCalledWith(
+        "codex",
+        expect.any(Array),
+        expect.objectContaining({ cwd: expect.stringContaining("/project") }),
       );
 
       cwdSpy.mockRestore();
@@ -347,7 +404,7 @@ describe("agent command", () => {
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
         if (target.includes("cli-config.yaml")) return true;
-        if (target.includes("oma-config.yaml")) return false;
+        if (target.includes("user-preferences.yaml")) return false;
         if (target.startsWith("/tmp/codex-subagent-")) return false;
         if (target === "/workspace") return true;
         return false;

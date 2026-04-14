@@ -3,17 +3,13 @@ import { join, relative, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createCliSymlinks,
+  installClaudeSkills,
   installConfigs,
   installSkill,
-  installVendorAgents,
+  installVendorAdaptations,
   installWorkflows,
   REPO,
 } from "../lib/skills.js";
-
-vi.mock("../utils/fs-utils.js", () => ({
-  clearNonDirectory: vi.fn(),
-  clearConflictingEntries: vi.fn(),
-}));
 
 vi.mock("node:fs", () => ({
   existsSync: vi.fn(),
@@ -75,7 +71,7 @@ describe("skills.ts - Workflow and Config Installation", () => {
         true,
       );
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-        { name: "oma-config.yaml", isDirectory: () => false },
+        { name: "user-preferences.yaml", isDirectory: () => false },
       ]);
 
       installConfigs(mockSourceDir, mockTargetDir);
@@ -135,216 +131,151 @@ describe("skills.ts - Workflow and Config Installation", () => {
   });
 });
 
-describe("installVendorAgents (Composer Design)", () => {
-  const mockSourceDir = "/tmp/source";
-  const mockTargetDir = "/tmp/target";
+describe("installClaudeSkills", () => {
+  const mockSourceDir = "/tmp/extracted-repo";
+  const mockTargetDir = "/tmp/test-project";
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
 
-    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.includes(".agents/agents") && !p.includes("variants"))
-          return true;
-        if (p.includes(".agents/agents/variants/gemini.json")) return true;
-        return false;
-      },
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("should copy .claude/skills and .claude/agents directories", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
     );
 
-    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.endsWith(".agents/agents")) {
-          return [
-            {
-              name: "backend-engineer.md",
-              isFile: () => true,
-              isDirectory: () => false,
-            },
-          ] as unknown as fs.Dirent[];
-        }
-        return [];
-      },
-    );
+    installClaudeSkills(mockSourceDir, mockTargetDir);
 
-    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.includes("gemini.json")) {
-          return JSON.stringify({
-            vendor: "gemini",
-            destDir: ".gemini/agents",
-            modelDefault: "gemini-2.0-flash-exp",
-            toolsDefault: ["bash", "read"],
-            protocolPath:
-              ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
-            agents: {
-              "backend-engineer": {
-                extra: { "custom-field": "value" },
-              },
-            },
-          });
-        }
-        if (p.includes("backend-engineer.md")) {
-          return `---
-name: backend-engineer
-description: Core backend.
----
-Body: Follow the vendor-specific execution protocol:`;
-        }
-        return "";
-      },
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      join(mockSourceDir, ".claude", "skills"),
+      join(mockTargetDir, ".claude", "skills"),
+      { recursive: true, force: true },
+    );
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      join(mockSourceDir, ".claude", "agents"),
+      join(mockTargetDir, ".claude", "agents"),
+      { recursive: true, force: true },
     );
   });
 
-  it("should compose Gemini agents using core prompt and variant config", () => {
-    installVendorAgents(mockSourceDir, mockTargetDir, "gemini");
-
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" &&
-        call[0].includes(".gemini/agents/backend-engineer.md"),
-    );
-
-    expect(writeCall).toBeTruthy();
-    const content = writeCall?.[1] as string;
-
-    // Check composed frontmatter
-    expect(content).toContain("name: backend-engineer");
-    expect(content).toContain("model: gemini-2.0-flash-exp");
-    expect(content).not.toContain("custom-field: value");
-    expect(content).toContain("- run_shell_command"); // mapped from bash
-    expect(content).toContain("- read_file"); // mapped from read
-
-    // Check body replacement
-    expect(content).toContain(
-      "Follow `.agents/skills/_shared/runtime/execution-protocols/gemini.md`:",
-    );
-  });
-
-  it("should handle missing variant config by skipping", () => {
+  it("should skip if source directories do not exist", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       false,
     );
 
-    installVendorAgents(mockSourceDir, mockTargetDir, "unknown");
+    installClaudeSkills(mockSourceDir, mockTargetDir);
 
-    expect(fs.writeFileSync).not.toHaveBeenCalled();
+    expect(fs.cpSync).not.toHaveBeenCalled();
+  });
+});
+
+describe("installVendorAdaptations", () => {
+  const mockSourceDir = "/tmp/extracted-repo";
+  const mockTargetDir = "/tmp/test-project";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it("should handle Claude-style string tools and mapping", () => {
+  it("should generate Claude and Gemini agent variants from .agents/agents", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.includes(".agents/agents") && !p.includes("variants"))
-          return true;
-        if (p.includes(".agents/agents/variants/claude.json")) return true;
+      (target: fs.PathLike) => {
+        const path = target.toString();
+        if (path.endsWith(".agents/agents")) return true;
+        if (path.endsWith(".agents/workflows")) return false;
+        if (path.endsWith(".agents/agents/variants/claude.json")) return true;
+        if (path.endsWith(".agents/agents/variants/gemini.json")) return true;
         return false;
-      },
-    );
-
-    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.includes("claude.json")) {
-          return JSON.stringify({
-            vendor: "claude",
-            destDir: ".claude/agents",
-            modelDefault: "sonnet",
-            toolsDefault: "Read, Write, Bash",
-            protocolPath:
-              ".agents/skills/_shared/runtime/execution-protocols/claude.md",
-            agents: {
-              "backend-engineer": {
-                tools: "read, write, bash, grep", // abstract tools in string
-              },
-            },
-          });
-        }
-        if (p.includes("backend-engineer.md")) {
-          return "---\nname: backend-engineer\n---\nBody";
-        }
-        return "";
-      },
-    );
-
-    installVendorAgents(mockSourceDir, mockTargetDir, "claude");
-
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" &&
-        call[0].includes(".claude/agents/backend-engineer.md"),
-    );
-
-    const content = writeCall?.[1] as string;
-    // Verify tools are mapped and kept as a single string field.
-    expect(content).toContain("tools: Read, Write, Bash, Grep");
-    expect(content).toContain("model: sonnet");
-  });
-
-  it("should handle Cursor-style mapping and extra fields", () => {
-    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.includes(".agents/agents") && !p.includes("variants"))
-          return true;
-        if (p.includes(".agents/agents/variants/cursor.json")) return true;
-        return false;
-      },
-    );
-
-    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.includes("cursor.json")) {
-          return JSON.stringify({
-            vendor: "cursor",
-            destDir: ".cursor/agents",
-            modelDefault: "inherit",
-            toolsDefault: [],
-            protocolPath: ".agents/skills/_shared/core/quality-principles.md",
-            agents: {
-              "qa-reviewer": {
-                extra: { readonly: true, is_background: true },
-              },
-            },
-          });
-        }
-        if (p.includes("qa-reviewer.md")) {
-          return "---\nname: qa-reviewer\n---\nBody";
-        }
-        return "";
       },
     );
 
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-      (p: string) => {
-        if (p.endsWith(".agents/agents")) {
+      (target: fs.PathLike) => {
+        const path = target.toString();
+        if (path.endsWith(".agents/agents")) {
           return [
-            {
-              name: "qa-reviewer.md",
-              isFile: () => true,
-              isDirectory: () => false,
-            },
-          ] as unknown as fs.Dirent[];
+            { name: "architecture-reviewer.md", isFile: () => true },
+            { name: "tf-infra-engineer.md", isFile: () => true },
+          ];
         }
         return [];
       },
     );
 
-    installVendorAgents(mockSourceDir, mockTargetDir, "cursor");
-
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" &&
-        call[0].includes(".cursor/agents/qa-reviewer.md"),
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (target: fs.PathLike) => {
+        const path = target.toString();
+        if (path.endsWith("claude.json")) {
+          return JSON.stringify({
+            vendor: "claude",
+            destDir: ".claude/agents",
+            modelDefault: "sonnet",
+            maxTurnsDefault: 20,
+            toolsDefault: "Read, Write",
+            protocolPath:
+              ".agents/skills/_shared/runtime/execution-protocols/claude.md",
+            agents: {
+              "architecture-reviewer": { maxTurns: 15 },
+              "tf-infra-engineer": {},
+            },
+          });
+        }
+        if (path.endsWith("gemini.json")) {
+          return JSON.stringify({
+            vendor: "gemini",
+            destDir: ".gemini/agents",
+            modelDefault: "gemini-3-flash-preview",
+            toolsDefault: ["read", "write"],
+            protocolPath:
+              ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
+            agents: {
+              "architecture-reviewer": {},
+              "tf-infra-engineer": {},
+            },
+          });
+        }
+        if (path.endsWith("architecture-reviewer.md")) {
+          return [
+            "---",
+            "name: architecture-reviewer",
+            "description: Architecture review",
+            "skills:",
+            "  - oma-architecture",
+            "---",
+            "",
+            "Follow the vendor-specific execution protocol:",
+          ].join("\n");
+        }
+        if (path.endsWith("tf-infra-engineer.md")) {
+          return [
+            "---",
+            "name: tf-infra-engineer",
+            "description: Terraform review",
+            "skills:",
+            "  - oma-tf-infra",
+            "---",
+            "",
+            "Follow the vendor-specific execution protocol:",
+          ].join("\n");
+        }
+        return "";
+      },
     );
 
-    const content = writeCall?.[1] as string;
-    expect(typeof content).toBe("string");
-    expect(content.includes("readonly: true")).toBe(true);
-    expect(content.includes("is_background: true")).toBe(true);
-    expect(content.includes("model: inherit")).toBe(true);
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude", "gemini"]);
+
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".claude", "agents", "architecture-reviewer.md"),
+      expect.stringContaining("execution-protocols/claude.md"),
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".gemini", "agents", "tf-infra-engineer.md"),
+      expect.stringContaining("execution-protocols/gemini.md"),
+    );
   });
 });
 

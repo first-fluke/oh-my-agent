@@ -20,7 +20,7 @@ description: Ultrawork - high-quality 5-phase development workflow with 11 revie
 ## Vendor Detection
 
 Before starting, determine your runtime environment by following `.agents/skills/_shared/core/vendor-detection.md`.
-The detected vendor determines how agents are spawned in Phase 2 (IMPL), Phase 3 (VERIFY), Phase 4 (REFINE), and Phase 5 (SHIP).
+The detected runtime vendor and each agent's target vendor determine how agents are spawned in Phase 2 (IMPL), Phase 3 (VERIFY), Phase 4 (REFINE), and Phase 5 (SHIP).
 
 ---
 
@@ -82,16 +82,24 @@ Activate PM Agent to execute Steps 1-4:
 // turbo
 Spawn Implementation Agents (Backend/Frontend/Mobile) in parallel.
 
-#### If Claude Code
+#### Per-Agent Dispatch
+Resolve the target vendor for each agent from `.agents/oma-config.yaml`.
+Use native subagents only when `target_vendor === current_runtime_vendor` and that runtime supports the vendor's role-subagent path.
+Otherwise use `oma agent:spawn` for that agent.
+
+#### If Claude Code and target vendor is Claude
 Use the Agent tool to spawn subagents:
 - `Agent(subagent_type="backend-engineer", prompt="Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
 - `Agent(subagent_type="frontend-engineer", prompt="Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
 - Multiple Agent tool calls in the same message = true parallel execution
 
-#### If Codex CLI
+#### If Codex CLI and target vendor is Codex
 Request parallel subagent execution with the specific implementation tasks per plan.
 
-#### If Gemini CLI or Antigravity or CLI Fallback
+#### If Gemini CLI and target vendor is Gemini
+Use native Gemini subagents when available, otherwise fall back to `oma agent:spawn`.
+
+#### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash
 oma agent:spawn backend "Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./backend &
 oma agent:spawn frontend "Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id -w ./frontend &

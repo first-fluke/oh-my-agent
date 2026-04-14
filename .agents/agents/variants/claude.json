@@ -15,6 +15,14 @@
     "debug-investigator": {
       "maxTurns": 15
     },
+    "architecture-reviewer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob",
+      "maxTurns": 15
+    },
+    "tf-infra-engineer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob",
+      "maxTurns": 20
+    },
     "mobile-engineer": {},
     "pm-planner": {
       "tools": "Read, Write, Grep, Glob, Bash",
