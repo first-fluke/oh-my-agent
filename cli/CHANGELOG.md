@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.1...cli-v5.4.2) (2026-04-14)
+
+
+### Bug Fixes
+
+* **cli:** resolve all type errors and lint warnings ([7a0339b](https://github.com/first-fluke/oh-my-agent/commit/7a0339b2c7c5acec3160f4f726b024a182969b77))
+
 ## [5.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.0...cli-v5.4.1) (2026-04-14)
 
 
