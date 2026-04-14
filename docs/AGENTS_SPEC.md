@@ -16,8 +16,8 @@ It is not a formal external standard. It is the interoperability contract used b
 ```text
 .agents/
 ├── agents/                 (abstract agent definitions — vendor-neutral SSOT)
-│   ├── backend-engineer.yaml
-│   ├── frontend-engineer.yaml
+│   ├── backend-engineer.md
+│   ├── frontend-engineer.md
 │   └── ...
 ├── skills/
 │   ├── _shared/
@@ -82,7 +82,7 @@ This includes:
 Vendor-neutral agent definitions live under:
 
 ```text
-.agents/agents/<agent-name>.yaml
+.agents/agents/<agent-name>.md
 ```
 
 Each definition contains only portable fields:
@@ -94,8 +94,8 @@ Each definition contains only portable fields:
 These definitions contain no vendor-specific fields (no Claude `allowed_tools`, no Codex `model`, etc.). The CLI generates vendor-adapted files from these abstractions:
 
 - `.claude/agents/*.md` (Claude Code — Markdown with frontmatter)
-- `.codex/agents/*.toml` (Codex CLI — TOML format) (planned)
-- `.gemini/agents/*.md` (Gemini CLI — Markdown format) (planned)
+- `.codex/agents/*.toml` (Codex CLI — TOML format)
+- `.gemini/agents/*.md` (Gemini CLI — Markdown format)
 
 Antigravity IDE reads `.agents/agents/` directly but does not support custom subagent spawning.
 
@@ -133,8 +133,8 @@ Typical examples:
 Compatibility directories are projections, not separate sources of truth:
 
 - `.claude/skills/` (thin routers that delegate to `.agents/workflows/`)
-- `.codex/agents/` (generated from `.agents/agents/`) (planned)
-- `.gemini/agents/` (generated from `.agents/agents/`) (planned)
+- `.codex/agents/` (generated from `.agents/agents/`)
+- `.gemini/agents/` (generated from `.agents/agents/`)
 - `.cursor/skills/`
 - `.github/skills/`
 
@@ -151,18 +151,28 @@ Claude Code uses a hybrid model beyond simple symlinks:
 │   ├── orchestrate/SKILL.md                                   (thin router → .agents/workflows/orchestrate.md)
 │   └── ...
 ├── agents/
-│   ├── backend-engineer.md         (generated from .agents/agents/backend-engineer.yaml)
-│   ├── qa-reviewer.md          (generated from .agents/agents/qa-reviewer.yaml)
+│   ├── backend-engineer.md         (generated from .agents/agents/backend-engineer.md)
+│   ├── qa-reviewer.md              (generated from .agents/agents/qa-reviewer.md)
 │   └── ...
 └── settings.local.json         (hooks for SSOT protection)
 ```
 
 - **Domain skills**: symlinked from `.agents/skills/` (unchanged)
 - **Workflow skills**: thin router SKILL.md files that delegate to `.agents/workflows/*.md` as the source of truth (they contain routing logic only, not workflow content)
-- **Subagents**: `.claude/agents/*.md` definitions generated from `.agents/agents/*.yaml` abstractions, spawned via Task tool
+- **Subagents**: `.claude/agents/*.md` definitions generated from `.agents/agents/*.md` abstractions, spawned via Agent tool
 - **CLAUDE.md**: project-level integration file auto-loaded by Claude Code
 
 All native files reference `.agents/` — they never replace or duplicate it.
+
+## Same-Vendor Native Dispatch
+
+Workflows resolve a target vendor per agent from `.agents/oma-config.yaml`.
+
+- If `target_vendor === current_runtime_vendor`, OMA should use the runtime's native agent file first:
+  - Claude Code -> `.claude/agents/*.md`
+  - Codex CLI -> `.codex/agents/*.toml`
+  - Gemini CLI -> `.gemini/agents/*.md`
+- If the task targets a different vendor, or the native path is unavailable, OMA falls back to `oma agent:spawn`.
 
 ## Packaging Rules
 

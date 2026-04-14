@@ -181,13 +181,14 @@ describe("installVendorAdaptations", () => {
     vi.clearAllMocks();
   });
 
-  it("should generate Claude and Gemini agent variants from .agents/agents", () => {
+  it("should generate Claude, Codex, and Gemini agent variants from .agents/agents", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (target: fs.PathLike) => {
         const path = target.toString();
         if (path.endsWith(".agents/agents")) return true;
         if (path.endsWith(".agents/workflows")) return false;
         if (path.endsWith(".agents/agents/variants/claude.json")) return true;
+        if (path.endsWith(".agents/agents/variants/codex.json")) return true;
         if (path.endsWith(".agents/agents/variants/gemini.json")) return true;
         return false;
       },
@@ -221,6 +222,25 @@ describe("installVendorAdaptations", () => {
             agents: {
               "architecture-reviewer": { maxTurns: 15 },
               "tf-infra-engineer": {},
+            },
+          });
+        }
+        if (path.endsWith("codex.json")) {
+          return JSON.stringify({
+            vendor: "codex",
+            destDir: ".codex/agents",
+            modelDefault: "gpt-5.4",
+            toolsDefault: [],
+            protocolPath:
+              ".agents/skills/_shared/runtime/execution-protocols/codex.md",
+            agents: {
+              "architecture-reviewer": {
+                effort: "high",
+                extra: { sandbox_mode: "read-only" },
+              },
+              "tf-infra-engineer": {
+                extra: { sandbox_mode: "workspace-write" },
+              },
             },
           });
         }
@@ -266,11 +286,27 @@ describe("installVendorAdaptations", () => {
       },
     );
 
-    installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude", "gemini"]);
+    installVendorAdaptations(mockSourceDir, mockTargetDir, [
+      "claude",
+      "codex",
+      "gemini",
+    ]);
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       join(mockTargetDir, ".claude", "agents", "architecture-reviewer.md"),
       expect.stringContaining("execution-protocols/claude.md"),
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
+      expect.stringContaining('sandbox_mode = "read-only"'),
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
+      expect.stringContaining("[[skills.config]]"),
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
+      expect.stringContaining("execution-protocols/codex.md"),
     );
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       join(mockTargetDir, ".gemini", "agents", "tf-infra-engineer.md"),

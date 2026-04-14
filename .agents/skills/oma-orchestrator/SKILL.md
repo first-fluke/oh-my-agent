@@ -17,7 +17,17 @@ description: Automated multi-agent orchestrator that spawns CLI subagents in par
 - Quick bug fixes or minor changes
 
 ## Important
-This skill orchestrates CLI subagents via `oma agent:spawn`. The CLI vendor (gemini, claude, codex, qwen) is resolved from configuration. Vendor-specific execution protocols are injected automatically. Each subagent runs as an independent process.
+This skill orchestrates per-agent dispatch.
+
+- If `target_vendor === current_runtime_vendor` and the runtime has a verified native path, use native dispatch.
+- Otherwise fall back to `oh-my-ag agent:spawn`.
+
+Current native executor paths:
+- Claude Code: `claude --agent <agent>`
+- Codex CLI: `codex exec "@agent ..."` using `.codex/agents/*.toml`
+- Gemini CLI: `gemini -p "@agent ..."` using `.gemini/agents/*.md`
+
+Vendor-specific execution protocols are injected automatically for fallback CLI runs.
 
 ## Configuration
 

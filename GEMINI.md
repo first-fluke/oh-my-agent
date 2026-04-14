@@ -8,7 +8,13 @@
 - **Response language**: Follows `language` in `.agents/oma-config.yaml`
 - **Skills**: `.agents/skills/` (domain specialists)
 - **Workflows**: `.agents/workflows/` (multi-step orchestration)
-- **Subagents**: `@agent-name` (defined in `.gemini/agents/`) or `oma agent:spawn {agent} {prompt} {sessionId}`
+- **Subagents**: Same-vendor native dispatch via `.gemini/agents/{name}.md`; cross-vendor or unsupported cases fall back to `oma agent:spawn {agent} {prompt} {sessionId}`
+
+## Per-Agent Dispatch
+
+1. Resolve `target_vendor_for_agent` from `.agents/oma-config.yaml`.
+2. If `target_vendor_for_agent === current_runtime_vendor`, use the runtime's native subagent path.
+3. If vendors differ, or native subagents are unavailable, use `oma agent:spawn` for that agent only.
 
 ## Workflows
 

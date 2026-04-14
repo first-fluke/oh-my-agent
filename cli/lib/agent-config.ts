@@ -119,7 +119,10 @@ function parseCliConfig(content: string): CliConfig {
   };
 }
 
-function findConfigFileUp(startDir: string, relativePath: string): string | null {
+function findConfigFileUp(
+  startDir: string,
+  relativePath: string,
+): string | null {
   let current = path.resolve(startDir);
   const root = path.parse(current).root;
 
@@ -133,7 +136,10 @@ function findConfigFileUp(startDir: string, relativePath: string): string | null
 
 function readUserPreferences(cwd: string): UserPreferences | null {
   const configPaths = [
-    findConfigFileUp(cwd, path.join(".agents", "config", "user-preferences.yaml")),
+    findConfigFileUp(
+      cwd,
+      path.join(".agents", "config", "user-preferences.yaml"),
+    ),
     findConfigFileUp(cwd, path.join(".agents", "oma-config.yaml")),
   ].filter((configPath): configPath is string => Boolean(configPath));
 
@@ -240,7 +246,9 @@ export function resolvePromptFlag(
     codex: null,
   };
 
-  return defaults[vendor] ?? "-p";
+  return Object.prototype.hasOwnProperty.call(defaults, vendor)
+    ? defaults[vendor]!
+    : "-p";
 }
 
 export function resolvePromptContent(prompt: string): string {
