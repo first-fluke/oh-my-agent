@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.2.2...cli-v5.3.0) (2026-04-14)
+
+
+### Features
+
+* **cli:** support role-based agent dispatch ([d575d08](https://github.com/first-fluke/oh-my-agent/commit/d575d08718b6c02a18c635104c2222d96e504723))
+* **docs:** add oma-recap entry to multilingual README files ([404cfb4](https://github.com/first-fluke/oh-my-agent/commit/404cfb4afd85cd4e93f203c37ae72c2b332b840a))
+
+
+### Bug Fixes
+
+* **cli:** restore skills facade exports ([a9fc4bc](https://github.com/first-fluke/oh-my-agent/commit/a9fc4bc7556e8f10499a817fd8f8e4b32d3fa62f))
+
 ## [5.2.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.2.1...cli-v5.2.2) (2026-04-13)
 
 
