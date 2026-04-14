@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.3.0",
-  "releaseDate": "2026-04-14T04:22:45.664Z",
+  "releaseDate": "2026-04-14T08:06:15.014Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -51,13 +51,18 @@
     },
     {
       "path": ".agents/agents/variants/agent-variant.schema.json",
-      "sha256": "86e4791c2a61912aa84e36aae90010bd1a1f55245c29e8f561af41173145f8d6",
-      "size": 2187
+      "sha256": "f26a59c7b621556478de9126d96c67e3a001d2512e0635e776d05f10dfe2ae86",
+      "size": 2243
     },
     {
       "path": ".agents/agents/variants/claude.json",
       "sha256": "dc7cfdc504e15fab461c7c3a849e0d00c86a985a500ebfea12883f91ec3378ad",
       "size": 930
+    },
+    {
+      "path": ".agents/agents/variants/codex.json",
+      "sha256": "6177009e570608a93fb512ea992bbaae53f40ffecbd1b444e5b2bec0b6f9b1b5",
+      "size": 1272
     },
     {
       "path": ".agents/agents/variants/cursor.json",
@@ -291,8 +296,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
-      "sha256": "a130171c0736cff7418b745eb1849690120d9cdcf25e63b12deaa52598414237",
-      "size": 2230
+      "sha256": "fa9a844aefaff4cf2dcf0456f6344907e84d83103607fb5c0d66ed2776f8951a",
+      "size": 2359
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/claude.md",
@@ -761,13 +766,13 @@
     },
     {
       "path": ".agents/skills/oma-orchestrator/SKILL.md",
-      "sha256": "0960134f918529d2cc13fc204a15a807b913a579007fad65e6f198a81b807c7d",
-      "size": 7401
+      "sha256": "b232d42dfcc1dfb05e4e92c0645733d8604278cfafdb08ced071eb03d064ebbd",
+      "size": 7654
     },
     {
       "path": ".agents/skills/oma-orchestrator/config/cli-config.yaml",
-      "sha256": "41e69a95d5131a7784c54b7cfdbd3250c277e0ab2b1e456ce32fd0dd979dd1f5",
-      "size": 1916
+      "sha256": "c83fdc47b5a779defb15f162674d327bbcf3ba6c565c0525e2dc6458fdd5560b",
+      "size": 1826
     },
     {
       "path": ".agents/skills/oma-orchestrator/resources/memory-schema.md",
@@ -1041,8 +1046,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "06921e117ef3e5a7ec79c7893130bafc5c48f21ad6c2896222888a1ddd01cb54",
-      "size": 7730
+      "sha256": "3d8d8ac8cc18a57739e2a727c28e822c03a2ebf8f18c76d97b906bdd30b1dbc5",
+      "size": 7836
     },
     {
       "path": ".agents/workflows/pdf.md",
@@ -1096,13 +1101,13 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "2eb8080a9276648a9f883ae12600ad47f746fb9f1f5f5170ed1e7c034a0e8b03",
-      "size": 16312
+      "sha256": "d130da720d79df79f3c7cb236ff7a763984f2f1fe412387df7dcb16397a3c74b",
+      "size": 16870
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "c165622dab8d7e06cb730d8b156c41bb7457a9a0123d080752ae694f3455b238",
-      "size": 6072
+      "sha256": "6c4637b977e23e93dbbdf0b66608a10a908bf287d2f74d32255a56fbde360620",
+      "size": 6360
     }
   ],
   "checksums": {
@@ -1111,6 +1116,6 @@
   "metadata": {
     "skillCount": 18,
     "workflowCount": 19,
-    "totalFiles": 220
+    "totalFiles": 221
   }
 }
