@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Agent Variant Configuration",
-  "description": "Configuration for vendor-specific agent generation from core prompts",
+  "description": "Configuration for vendor-specific agent generation from vendor-neutral .agents/agents definitions",
   "type": "object",
   "required": ["vendor", "destDir", "modelDefault", "toolsDefault", "protocolPath", "agents"],
   "properties": {
@@ -10,11 +10,11 @@
     },
     "vendor": {
       "type": "string",
-      "description": "The target CLI vendor name (e.g., gemini, claude)"
+      "description": "The target CLI vendor name (e.g., claude, gemini, codex)"
     },
     "destDir": {
       "type": "string",
-      "description": "The relative path to the directory where generated agent files will be saved"
+      "description": "The relative path to the directory where generated agent files will be saved (Markdown for Claude/Gemini, TOML for Codex)"
     },
     "modelDefault": {
       "type": "string",

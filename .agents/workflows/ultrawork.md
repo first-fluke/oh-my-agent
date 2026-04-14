@@ -94,7 +94,9 @@ Use the Agent tool to spawn subagents:
 - Multiple Agent tool calls in the same message = true parallel execution
 
 #### If Codex CLI and target vendor is Codex
-Request parallel subagent execution with the specific implementation tasks per plan.
+Use native Codex custom agents from `.codex/agents/{agent}.toml` when available.
+Pass each agent the implementation tasks, API contracts, and only the relevant context.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 #### If Gemini CLI and target vendor is Gemini
 Use native Gemini subagents when available, otherwise fall back to `oma agent:spawn`.
@@ -153,7 +155,9 @@ Use the Agent tool to spawn subagent:
 - `Agent(subagent_type="qa-reviewer", prompt="Execute Phase 3 Verification. Step 6: Alignment Review. Step 7: Security/Bug Review (npm audit, OWASP). Step 8: Improvement/Regression Review. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
 
 #### If Codex CLI
-Request parallel subagent execution with the QA verification tasks.
+Use native Codex custom agent `.codex/agents/qa-reviewer.toml` when available.
+Include the QA verification tasks and changed files in the task prompt.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
@@ -221,7 +225,9 @@ Use the Agent tool to spawn subagent:
 - `Agent(subagent_type="debug-investigator", prompt="Execute Phase 4 Refine. Step 9: Split large files. Step 10: Integration check. Step 11: Side Effect analysis (find_referencing_symbols). Step 12: Consistency review. Step 13: Cleanup dead code. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
 
 #### If Codex CLI
-Request parallel subagent execution with the refinement tasks.
+Use native Codex custom agent `.codex/agents/debug-investigator.toml` or the responsible role agent when available.
+Include the refinement tasks and affected files in the task prompt.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
@@ -289,7 +295,9 @@ Use the Agent tool to spawn subagent:
 - `Agent(subagent_type="qa-reviewer", prompt="Execute Phase 5 Ship. Step 14: Quality Review (lint/coverage). Step 15: UX Flow Verification. Step 16: Related Issues Review. Step 17: Deployment Readiness. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
 
 #### If Codex CLI
-Request parallel subagent execution with the final QA and deployment readiness tasks.
+Use native Codex custom QA/PM agents when available.
+Include the final QA and deployment readiness tasks in the task prompt.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash

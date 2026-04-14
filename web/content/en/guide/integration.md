@@ -156,18 +156,9 @@ tar -xzf agent-skills.tar.gz
 # Copy the core .agents/ directory
 cp -r .agents/ /path/to/your/project/.agents/
 
-# Create Claude Code symlinks
-mkdir -p /path/to/your/project/.claude/skills
-mkdir -p /path/to/your/project/.claude/agents
-
-# Symlink skills (example for a fullstack project)
-ln -sf ../../.agents/skills/oma-frontend /path/to/your/project/.claude/skills/oma-frontend
-ln -sf ../../.agents/skills/oma-backend /path/to/your/project/.claude/skills/oma-backend
-ln -sf ../../.agents/skills/oma-qa /path/to/your/project/.claude/skills/oma-qa
-ln -sf ../../.agents/skills/oma-pm /path/to/your/project/.claude/skills/oma-pm
-
-# Symlink shared resources
-ln -sf ../../.agents/skills/_shared /path/to/your/project/.claude/skills/_shared
+# Generate vendor-native files from `.agents/`
+cd /path/to/your/project
+oma link claude codex gemini cursor
 
 # Symlink workflow routers
 for workflow in .agents/workflows/*.md; do

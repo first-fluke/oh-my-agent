@@ -179,8 +179,8 @@ The spawn mechanism varies by IDE/CLI:
 | Vendor | How Agents Are Spawned | Result Handling |
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent` tool with `.claude/agents/{name}.md` definitions. Multiple Agent calls in the same message = true parallel. | Synchronous return |
-| **Codex CLI** | Model-mediated parallel subagent request | JSON output |
-| **Gemini CLI** | `oma agent:spawn` CLI command | MCP memory poll |
+| **Codex CLI** | `.codex/agents/{name}.toml` native custom agents for same-vendor dispatch; `oma agent:spawn` for cross-vendor fallback | Native return or JSON output |
+| **Gemini CLI** | `.gemini/agents/{name}.md` native subagents when the runtime supports them; otherwise `oma agent:spawn` | Native return or MCP memory poll |
 | **Antigravity IDE** | `oma agent:spawn` only (custom subagents not available) | MCP memory poll |
 | **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 

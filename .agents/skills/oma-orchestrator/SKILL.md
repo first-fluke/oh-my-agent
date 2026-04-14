@@ -17,7 +17,11 @@ description: Automated multi-agent orchestrator that spawns CLI subagents in par
 - Quick bug fixes or minor changes
 
 ## Important
-This skill orchestrates CLI subagents via `oma agent:spawn`. The CLI vendor (gemini, claude, codex, qwen) is resolved from configuration. Vendor-specific execution protocols are injected automatically. Each subagent runs as an independent process.
+This skill orchestrates agents per target vendor. Resolve each agent's target vendor from `.agents/oma-config.yaml`, then:
+- use the runtime's native role-subagent path when `target_vendor === current_runtime_vendor` and that runtime supports it
+- otherwise fall back to `oma agent:spawn`
+
+Vendor-specific execution protocols are injected automatically for external CLI spawn paths. Generated native agent files come from `.agents/agents/` plus vendor variants.
 
 ## Configuration
 

@@ -10,8 +10,8 @@ The installer can then project compatibility to other tool-specific directories 
 |------------|--------------------|--------|--------------|-------|
 | Antigravity | `.agents/skills/` | First-class | Native | Primary source-of-truth layout; reads `.agents/agents/` directly but no custom subagent spawning |
 | Claude Code | `.claude/skills/` + `.claude/agents/` | First-class | Native + Adapter | Domain skill symlinks + thin router workflow skills, subagents generated from `.agents/agents/`, and CLAUDE.md |
-| Codex CLI | `.codex/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as TOML from `.agents/agents/` (planned); skills read from `.agents/skills/` |
-| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as MD from `.agents/agents/` (planned); skills read from `.agents/skills/` |
+| Codex CLI | `.codex/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as TOML from `.agents/agents/`; same-vendor native dispatch uses `.codex/agents/*.toml` |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as MD from `.agents/agents/`; same-vendor native dispatch uses `.gemini/agents/*.md` when supported |
 | OpenCode | `.agents/skills/` | First-class | Native-compatible | Shares the same project-level source |
 | Amp | `.agents/skills/` | First-class | Native-compatible | Shares the same project-level source |
 | Cursor | `.agents/skills/` | First-class | Native-compatible | Can consume the same project-level skill source |
@@ -24,8 +24,8 @@ Abstract agent definitions in `.agents/agents/` are vendor-neutral (name, descri
 | Vendor | Generated Path | Format | Subagent Spawning |
 |--------|---------------|--------|-------------------|
 | Claude Code | `.claude/agents/*.md` | Markdown with frontmatter | Task tool |
-| Codex CLI | `.codex/agents/*.toml` (planned) | TOML | Native |
-| Gemini CLI | `.gemini/agents/*.md` (planned) | Markdown | Native |
+| Codex CLI | `.codex/agents/*.toml` | TOML | Native when the current runtime is Codex; otherwise external fallback |
+| Gemini CLI | `.gemini/agents/*.md` | Markdown | Native when the current runtime is Gemini; otherwise external fallback |
 | Antigravity | (reads `.agents/agents/` directly) | YAML | Not supported (no custom subagents) |
 
 ## What “First-class” Means
@@ -41,7 +41,7 @@ Claude Code extends beyond symlinks with a full native adapter layer:
 
 - **`CLAUDE.md`** at project root (auto-loaded by Claude Code)
 - **`.claude/skills/`** — 12 thin router SKILL.md files that delegate to `.agents/workflows/` (they contain routing logic only, not workflow content). Skills are explicitly invoked via slash commands, not keyword-auto-activated.
-- **`.claude/agents/`** — 7 subagent definitions generated from `.agents/agents/*.yaml` (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner)
+- **`.claude/agents/`** — subagent definitions generated from `.agents/agents/*.md` (backend-engineer, frontend-engineer, mobile-engineer, db-engineer, qa-reviewer, debug-investigator, pm-planner, architecture-reviewer, tf-infra-engineer)
 - **`stack/`** — generated backend stack artifacts (SSOT exception, created by `/stack-set` or `oma install` variant)
 - **Native loop patterns** — Review Loop, Issue Remediation Loop, Phase Gate Loop via Task tool
 - Domain skills remain as symlinks from `.agents/skills/` (coexist with thin router workflow skills)

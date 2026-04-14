@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { parse as parseYaml } from "yaml";
 import {
   ALL_CLI_VENDORS,
   CLI_SKILLS_DIR,
@@ -23,13 +24,44 @@ export function readVendorsFromConfig(targetDir: string): CliVendor[] {
   if (!fs.existsSync(configPath)) return [...ALL_CLI_VENDORS];
 
   const content = fs.readFileSync(configPath, "utf-8");
-  const match = content.match(/^vendors:\s*\n((?:\s+-\s+\S+\n?)*)/m);
-  if (!match || !match[1]) return [...ALL_CLI_VENDORS];
 
-  const vendors = [...match[1].matchAll(/-\s+(\S+)/g)].map(
-    (m) => m[1] as CliVendor,
-  );
-  return vendors.length > 0 ? vendors : [...ALL_CLI_VENDORS];
+  try {
+    const parsed = parseYaml(content) as {
+      vendors?: string[];
+      default_cli?: string;
+      agent_cli_mapping?: Record<string, string>;
+    } | null;
+
+    const configured = new Set<CliVendor>();
+
+    if (Array.isArray(parsed?.vendors)) {
+      for (const vendor of parsed.vendors) {
+        if (ALL_CLI_VENDORS.includes(vendor as CliVendor)) {
+          configured.add(vendor as CliVendor);
+        }
+      }
+    }
+
+    if (typeof parsed?.default_cli === "string") {
+      const vendor = parsed.default_cli.toLowerCase() as CliVendor;
+      if (ALL_CLI_VENDORS.includes(vendor)) {
+        configured.add(vendor);
+      }
+    }
+
+    if (parsed?.agent_cli_mapping && typeof parsed.agent_cli_mapping === "object") {
+      for (const value of Object.values(parsed.agent_cli_mapping)) {
+        const vendor = String(value).toLowerCase() as CliVendor;
+        if (ALL_CLI_VENDORS.includes(vendor)) {
+          configured.add(vendor);
+        }
+      }
+    }
+
+    return configured.size > 0 ? [...configured] : [...ALL_CLI_VENDORS];
+  } catch {
+    return [...ALL_CLI_VENDORS];
+  }
 }
 
 /** Write selected vendors to oma-config.yaml. */

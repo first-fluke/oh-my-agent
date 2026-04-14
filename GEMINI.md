@@ -8,7 +8,7 @@
 - **Response language**: Follows `language` in `.agents/oma-config.yaml`
 - **Skills**: `.agents/skills/` (domain specialists)
 - **Workflows**: `.agents/workflows/` (multi-step orchestration)
-- **Subagents**: `@agent-name` (defined in `.gemini/agents/`) or `oma agent:spawn {agent} {prompt} {sessionId}`
+- **Subagents**: Same-vendor native: `@agent-name` (defined in `.gemini/agents/`) when the runtime verifies Gemini subagents. Otherwise `oma agent:spawn {agent} {prompt} {sessionId}`
 
 ## Workflows
 
@@ -26,6 +26,12 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 | scm | `scm.md` | SCM + Git operations + Conventional Commits |
 
 To execute: read and follow `.agents/workflows/{name}.md` step by step.
+
+## Per-Agent Dispatch
+
+1. Resolve the target vendor for each agent from `.agents/oma-config.yaml` (`agent_cli_mapping`, then `default_cli`).
+2. If `target_vendor === current_runtime_vendor` and that runtime supports the vendor's native role-subagent path, use the generated native agent definition for that vendor.
+3. Otherwise use `oma agent:spawn {agent} {prompt} {sessionId}` for that agent only.
 
 ## Auto-Detection
 

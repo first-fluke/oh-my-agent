@@ -94,6 +94,7 @@ bun install --global oh-my-agent   # or: brew install oh-my-agent
 
 # Use anywhere
 oma doctor                  # Health check
+oma link                    # Regenerate vendor-native files from `.agents/`
 oma dashboard               # Real-time agent monitoring
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"

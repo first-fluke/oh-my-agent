@@ -41,7 +41,7 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 1. **Step 0 — Preparation:** Read coordination skill, context-loading guide, memory protocol. Detect vendor.
 2. **Step 1 — Load/Create Plan:** Check for `.agents/results/plan-{sessionId}.json`. If missing, prompt user to run `/plan` first.
 3. **Step 2 — Initialize Session:** Load `oma-config.yaml`, display CLI mapping table, generate session ID (`session-YYYYMMDD-HHMMSS`), create `orchestrator-session.md` and `task-board.md` in memory.
-4. **Step 3 — Spawn Agents:** For each priority tier (P0 first, then P1...), spawn agents using vendor-appropriate method (Agent tool for Claude Code, `oma agent:spawn` for Gemini/Antigravity, model-mediated for Codex). Never exceed MAX_PARALLEL.
+4. **Step 3 — Spawn Agents:** For each priority tier (P0 first, then P1...), resolve each agent's target vendor from `.agents/oma-config.yaml`. Use same-vendor native subagents when the current runtime supports that vendor path (`.claude/agents/*.md`, `.gemini/agents/*.md`, `.codex/agents/*.toml`), otherwise fall back to `oma agent:spawn`. Never exceed MAX_PARALLEL.
 5. **Step 4 — Monitor:** Poll `progress-{agent}.md` files, update `task-board.md`. Watch for completions, failures, crashes.
 6. **Step 5 — Verify:** Run `verify.sh {agent-type} {workspace}` per completed agent. On failure, re-spawn with error context (max 2 retries). After 2 retries, activate Exploration Loop: generate 2-3 hypotheses, spawn parallel experiments, score, keep best.
 7. **Step 6 — Collect:** Read all `result-{agent}.md` files, compile summary.

@@ -221,6 +221,9 @@ describe("agent command", () => {
           cwd: expect.stringContaining("/project/apps/api"),
         }),
       );
+      expect(
+        vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1],
+      ).not.toContain("-p");
 
       cwdSpy.mockRestore();
     });
@@ -278,6 +281,9 @@ describe("agent command", () => {
           cwd: expect.stringContaining("/project/apps/api"),
         }),
       );
+      expect(
+        vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1],
+      ).not.toContain("-p");
 
       cwdSpy.mockRestore();
     });
@@ -389,7 +395,7 @@ describe("agent command", () => {
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
 
-    it("should create isolation_env directory if it does not exist", async () => {
+    it("should spawn codex without injecting CODEX_HOME isolation env", async () => {
       const CLI_CONFIG_YAML = [
         "active_vendor: codex",
         "vendors:",
@@ -398,14 +404,12 @@ describe("agent command", () => {
         "    subcommand: exec",
         "    prompt_flag: none",
         "    auto_approve_flag: --full-auto",
-        '    isolation_env: "CODEX_HOME=/tmp/codex-subagent-$$"',
       ].join("\n");
 
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
         if (target.includes("cli-config.yaml")) return true;
         if (target.includes("user-preferences.yaml")) return false;
-        if (target.startsWith("/tmp/codex-subagent-")) return false;
         if (target === "/workspace") return true;
         return false;
       });
@@ -425,7 +429,17 @@ describe("agent command", () => {
 
       await spawnAgent("qa-agent", "review code", "session1", "/workspace");
 
-      expect(mockFsFunctions.mkdirSync).toHaveBeenCalledWith(
+      expect(child_process.spawn).toHaveBeenCalledWith(
+        "codex",
+        expect.any(Array),
+        expect.objectContaining({
+          cwd: expect.stringContaining("/workspace"),
+          env: expect.not.objectContaining({
+            CODEX_HOME: expect.any(String),
+          }),
+        }),
+      );
+      expect(mockFsFunctions.mkdirSync).not.toHaveBeenCalledWith(
         expect.stringMatching(/^\/tmp\/codex-subagent-\d+$/),
         { recursive: true },
       );

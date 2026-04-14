@@ -8,6 +8,7 @@ import {
   installSkill,
   installVendorAdaptations,
   installWorkflows,
+  readVendorsFromConfig,
   REPO,
 } from "../lib/skills.js";
 
@@ -181,7 +182,7 @@ describe("installVendorAdaptations", () => {
     vi.clearAllMocks();
   });
 
-  it("should generate Claude and Gemini agent variants from .agents/agents", () => {
+  it("should generate Claude, Gemini, and Codex agent variants from .agents/agents", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (target: fs.PathLike) => {
         const path = target.toString();
@@ -189,6 +190,7 @@ describe("installVendorAdaptations", () => {
         if (path.endsWith(".agents/workflows")) return false;
         if (path.endsWith(".agents/agents/variants/claude.json")) return true;
         if (path.endsWith(".agents/agents/variants/gemini.json")) return true;
+        if (path.endsWith(".agents/agents/variants/codex.json")) return true;
         return false;
       },
     );
@@ -238,6 +240,23 @@ describe("installVendorAdaptations", () => {
             },
           });
         }
+        if (path.endsWith("codex.json")) {
+          return JSON.stringify({
+            vendor: "codex",
+            destDir: ".codex/agents",
+            modelDefault: "gpt-5.3-codex",
+            toolsDefault: [],
+            protocolPath:
+              ".agents/skills/_shared/runtime/execution-protocols/codex.md",
+            agents: {
+              "architecture-reviewer": {
+                effort: "high",
+                extra: { sandbox_mode: "read-only" },
+              },
+              "tf-infra-engineer": {},
+            },
+          });
+        }
         if (path.endsWith("architecture-reviewer.md")) {
           return [
             "---",
@@ -266,7 +285,11 @@ describe("installVendorAdaptations", () => {
       },
     );
 
-    installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude", "gemini"]);
+    installVendorAdaptations(mockSourceDir, mockTargetDir, [
+      "claude",
+      "gemini",
+      "codex",
+    ]);
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       join(mockTargetDir, ".claude", "agents", "architecture-reviewer.md"),
@@ -276,6 +299,45 @@ describe("installVendorAdaptations", () => {
       join(mockTargetDir, ".gemini", "agents", "tf-infra-engineer.md"),
       expect.stringContaining("execution-protocols/gemini.md"),
     );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
+      expect.stringContaining('sandbox_mode = "read-only"'),
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
+      expect.stringContaining("[[skills.config]]"),
+    );
+    expect(fs.writeFileSync).toHaveBeenCalledWith(
+      join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
+      expect.stringContaining("execution-protocols/codex.md"),
+    );
+  });
+});
+
+describe("readVendorsFromConfig", () => {
+  const mockTargetDir = "/tmp/test-project";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should infer vendors from default_cli and agent_cli_mapping", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (target: fs.PathLike) =>
+        target.toString() === join(mockTargetDir, ".agents", "oma-config.yaml"),
+    );
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+      "default_cli: gemini",
+      "agent_cli_mapping:",
+      "  backend: codex",
+      "  pm: claude",
+    ].join("\n"));
+
+    expect(readVendorsFromConfig(mockTargetDir)).toEqual([
+      "gemini",
+      "codex",
+      "claude",
+    ]);
   });
 });
 

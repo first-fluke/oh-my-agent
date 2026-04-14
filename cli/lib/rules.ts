@@ -157,11 +157,13 @@ const VENDOR_FILES: Record<string, string> = {
 
 /** Vendor-specific subagent spawn instructions. */
 const VENDOR_SPAWN: Record<string, string> = {
-  claude: "`@agent-name` (defined in `.claude/agents/`)",
+  claude:
+    "Same-vendor native: `@agent-name` (defined in `.claude/agents/`). Cross-vendor fallback: `oma agent:spawn {agent} {prompt} {sessionId}`",
   gemini:
-    "`@agent-name` (defined in `.gemini/agents/`) or `oma agent:spawn {agent} {prompt} {sessionId}`",
+    "Same-vendor native: `@agent-name` (defined in `.gemini/agents/`) when the runtime verifies Gemini subagents. Otherwise `oma agent:spawn {agent} {prompt} {sessionId}`",
   cursor: "`@agent-name` (defined in `.cursor/agents/`)",
-  codex: "`oma agent:spawn {agent} {prompt} {sessionId}`",
+  codex:
+    "Same-vendor native: `.codex/agents/{agent}.toml` custom agents. Cross-vendor fallback: `oma agent:spawn {agent} {prompt} {sessionId}`",
   qwen: "`oma agent:spawn {agent} {prompt} {sessionId}`",
 };
 
@@ -211,6 +213,12 @@ function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
     "| scm | `scm.md` | SCM + Git operations + Conventional Commits |",
     "",
     `To execute: read and follow \`.agents/workflows/{name}.md\` step by step.`,
+    "",
+    "## Per-Agent Dispatch",
+    "",
+    "1. Resolve the target vendor for each agent from `.agents/oma-config.yaml` (`agent_cli_mapping`, then `default_cli`).",
+    "2. If `target_vendor === current_runtime_vendor` and that runtime supports the vendor's native role-subagent path, use the generated native agent definition for that vendor.",
+    "3. Otherwise use `oma agent:spawn {agent} {prompt} {sessionId}` for that agent only.",
     "",
     "## Auto-Detection",
     "",

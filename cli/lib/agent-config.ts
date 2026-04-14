@@ -240,7 +240,9 @@ export function resolvePromptFlag(
     codex: null,
   };
 
-  return defaults[vendor] ?? "-p";
+  return Object.prototype.hasOwnProperty.call(defaults, vendor)
+    ? defaults[vendor]!
+    : "-p";
 }
 
 export function resolvePromptContent(prompt: string): string {

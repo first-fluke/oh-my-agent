@@ -103,7 +103,9 @@ Use the Agent tool to spawn subagent:
 - `Agent(subagent_type="qa-reviewer", prompt="Review the following files for security, performance, accessibility, and code quality issues: [file list]. Follow .agents/skills/oma-qa/SKILL.md for review standards. Report findings as: CRITICAL / HIGH / MEDIUM / LOW with file:line, description, and remediation code.", run_in_background=true)`
 
 ### If Codex CLI
-Request parallel subagent execution with the review scope and standards.
+Use native Codex custom agent `.codex/agents/qa-reviewer.toml` when available.
+Include the review scope and standards in the task prompt.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn qa-agent ...`.
 
 ### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
@@ -125,7 +127,9 @@ When user wants fixes too, execute review then fix then re-review loop:
      - `Agent(subagent_type="frontend-engineer", prompt="Fix these issues: [issues + fix instructions]", run_in_background=true)`
 
 ### If Codex CLI
-     Request parallel subagent execution with the issues and fix instructions.
+     Use native Codex custom agents for the responsible role when available.
+     Include the issues and fix instructions in the task prompt.
+     If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 ### If Gemini CLI or Antigravity or CLI Fallback
      ```bash

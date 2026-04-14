@@ -187,6 +187,13 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 oma stats
 ```
 
+When workflows resolve per-agent routing from `.agents/oma-config.yaml`, same-vendor tasks use native agent definitions where available:
+
+- Claude runtime + `pm: claude` -> `.claude/agents/pm-planner.md`
+- Gemini runtime + `frontend: gemini` -> `.gemini/agents/frontend-engineer.md`
+- Codex runtime + `backend: codex` -> `.codex/agents/backend-engineer.toml`
+- Mixed-vendor tasks fall back to `oma agent:spawn` for that agent only
+
 ---
 
 ## Example 6: Ultrawork — Maximum Quality

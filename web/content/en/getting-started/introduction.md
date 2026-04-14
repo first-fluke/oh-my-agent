@@ -187,7 +187,7 @@ oh-my-agent is not limited to Claude Code. The hook system supports:
 |--------|------------|
 | **Claude Code** | Native hooks (`UserPromptSubmit`, `Notification`, statusLine) |
 | **Gemini CLI** | Skills auto-loaded from `.agents/skills/`, agent spawning via `oma agent:spawn` |
-| **Codex CLI** | Skills auto-loaded, model-mediated parallel requests |
+| **Codex CLI** | Skills auto-loaded, native custom agents from `.codex/agents/*.toml` for same-vendor dispatch |
 | **Qwen Code** | Hook support for workflow detection |
 
 Vendor detection happens automatically — agents adapt their spawning method based on the detected runtime environment.

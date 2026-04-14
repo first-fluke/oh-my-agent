@@ -183,7 +183,7 @@ Vendor-specific spawn methods:
 | Vendor | Spawn Method |
 |:-------|:------------|
 | Claude Code | Agent tool with `.claude/agents/debug-investigator.md` |
-| Codex CLI | Model-mediated subagent request, results as JSON |
+| Codex CLI | `.codex/agents/debug-investigator.toml` for same-vendor native dispatch; otherwise `oma agent:spawn` |
 | Gemini CLI | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
 | Antigravity / Fallback | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
 

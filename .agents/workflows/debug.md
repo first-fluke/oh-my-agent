@@ -37,8 +37,9 @@ Include diagnosis results so far + scan scope in prompt.
 
 #### If Codex CLI
 
-Request subagent execution via model-mediated subagent request.
-Include diagnosis results and scan scope. Results returned as JSON output.
+Use native Codex custom agent `.codex/agents/debug-investigator.toml` when available.
+Include diagnosis results and scan scope in the task prompt.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 #### If Gemini CLI
 
