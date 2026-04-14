@@ -53,6 +53,10 @@ describe("agent command", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("OMA_RUNTIME_VENDOR", "");
+    vi.stubEnv("CODEX_CI", "");
+    vi.stubEnv("CODEX_THREAD_ID", "");
+    vi.stubEnv("CLAUDECODE", "");
     // Mock process.kill globally
     processKillSpy = vi.spyOn(process, "kill").mockImplementation(() => true);
     // Default memory mock
@@ -63,6 +67,7 @@ describe("agent command", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -179,9 +184,11 @@ describe("agent command", () => {
 
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
-        if (target === "/project/.agents/oma-config.yaml")
-          return true;
-        if (target.includes("apps/api/.agents") && target.includes("oma-config"))
+        if (target === "/project/.agents/oma-config.yaml") return true;
+        if (
+          target.includes("apps/api/.agents") &&
+          target.includes("oma-config")
+        )
           return false;
         if (target.includes("user-preferences.yaml")) return false;
         if (target.includes("cli-config.yaml")) return false;
@@ -221,6 +228,9 @@ describe("agent command", () => {
           cwd: expect.stringContaining("/project/apps/api"),
         }),
       );
+      expect(
+        vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1],
+      ).not.toContain("-p");
 
       cwdSpy.mockRestore();
     });
@@ -278,6 +288,9 @@ describe("agent command", () => {
           cwd: expect.stringContaining("/project/apps/api"),
         }),
       );
+      expect(
+        vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1],
+      ).not.toContain("-p");
 
       cwdSpy.mockRestore();
     });
@@ -290,9 +303,7 @@ describe("agent command", () => {
         "  tf-infra: codex",
       ].join("\n");
 
-      const cwdSpy = vi
-        .spyOn(process, "cwd")
-        .mockReturnValue("/project");
+      const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue("/project");
 
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
@@ -301,11 +312,13 @@ describe("agent command", () => {
         if (target === "/project") return true;
         return false;
       });
-      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
-        const target = pathArg.toString();
-        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-        return "";
-      });
+      mockFsFunctions.readFileSync.mockImplementation(
+        (pathArg: fs.PathLike) => {
+          const target = pathArg.toString();
+          if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+          return "";
+        },
+      );
       mockFsFunctions.openSync.mockReturnValue(123);
 
       const mockChild = { pid: 77777, on: vi.fn(), unref: vi.fn() };
@@ -389,7 +402,7 @@ describe("agent command", () => {
       expect(exitSpy).toHaveBeenCalledWith(1);
     });
 
-    it("should create isolation_env directory if it does not exist", async () => {
+    it("should not inject CODEX_HOME isolation env for codex fallback", async () => {
       const CLI_CONFIG_YAML = [
         "active_vendor: codex",
         "vendors:",
@@ -398,14 +411,12 @@ describe("agent command", () => {
         "    subcommand: exec",
         "    prompt_flag: none",
         "    auto_approve_flag: --full-auto",
-        '    isolation_env: "CODEX_HOME=/tmp/codex-subagent-$$"',
       ].join("\n");
 
       mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
         const target = pathArg.toString();
         if (target.includes("cli-config.yaml")) return true;
         if (target.includes("user-preferences.yaml")) return false;
-        if (target.startsWith("/tmp/codex-subagent-")) return false;
         if (target === "/workspace") return true;
         return false;
       });
@@ -425,9 +436,199 @@ describe("agent command", () => {
 
       await spawnAgent("qa-agent", "review code", "session1", "/workspace");
 
-      expect(mockFsFunctions.mkdirSync).toHaveBeenCalledWith(
-        expect.stringMatching(/^\/tmp\/codex-subagent-\d+$/),
-        { recursive: true },
+      expect(child_process.spawn).toHaveBeenCalledWith(
+        "codex",
+        expect.any(Array),
+        expect.objectContaining({
+          cwd: expect.stringContaining("/workspace"),
+          env: expect.not.objectContaining({
+            CODEX_HOME: expect.any(String),
+          }),
+        }),
+      );
+    });
+
+    it("should use Claude native agent dispatch when runtime and target are both claude", async () => {
+      vi.stubEnv("OMA_RUNTIME_VENDOR", "claude");
+
+      const OMA_CONFIG_YAML = [
+        "default_cli: claude",
+        "agent_cli_mapping:",
+        "  pm: claude",
+      ].join("\n");
+      const CLI_CONFIG_YAML = [
+        "active_vendor: gemini",
+        "vendors:",
+        "  claude:",
+        "    command: claude",
+        "    output_format_flag: --output-format",
+        "    output_format: json",
+        "    auto_approve_flag: --dangerously-skip-permissions",
+        "    model_flag: --model",
+        "    default_model: sonnet",
+      ].join("\n");
+
+      mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return true;
+        if (target.includes("cli-config.yaml")) return true;
+        if (target === "/workspace") return true;
+        return false;
+      });
+      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+        if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+        return "";
+      });
+      mockFsFunctions.openSync.mockReturnValue(123);
+
+      const mockChild = { pid: 66666, on: vi.fn(), unref: vi.fn() };
+      vi.mocked(child_process.spawn).mockReturnValue(
+        mockChild as unknown as child_process.ChildProcess,
+      );
+
+      await spawnAgent("pm-planner", "plan the work", "session1", "/workspace");
+
+      expect(child_process.spawn).toHaveBeenCalledWith(
+        "claude",
+        expect.arrayContaining([
+          "--agent",
+          "pm-planner",
+          "--output-format",
+          "json",
+          "--model",
+          "sonnet",
+          "--dangerously-skip-permissions",
+          "-p",
+          "plan the work",
+        ]),
+        expect.objectContaining({ cwd: expect.stringContaining("/workspace") }),
+      );
+    });
+
+    it("should use Codex native agent dispatch when runtime and target are both codex", async () => {
+      vi.stubEnv("OMA_RUNTIME_VENDOR", "codex");
+
+      const OMA_CONFIG_YAML = [
+        "default_cli: codex",
+        "agent_cli_mapping:",
+        "  backend: codex",
+      ].join("\n");
+      const CLI_CONFIG_YAML = [
+        "active_vendor: gemini",
+        "vendors:",
+        "  codex:",
+        "    command: codex",
+        "    subcommand: exec",
+        "    prompt_flag: none",
+        "    output_format_flag: --json",
+        "    auto_approve_flag: --full-auto",
+        "    model_flag: -m",
+        "    default_model: gpt-5.3-codex",
+      ].join("\n");
+
+      mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return true;
+        if (target.includes("cli-config.yaml")) return true;
+        if (target === "/workspace") return true;
+        return false;
+      });
+      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+        if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+        return "";
+      });
+      mockFsFunctions.openSync.mockReturnValue(123);
+
+      const mockChild = { pid: 66667, on: vi.fn(), unref: vi.fn() };
+      vi.mocked(child_process.spawn).mockReturnValue(
+        mockChild as unknown as child_process.ChildProcess,
+      );
+
+      await spawnAgent(
+        "backend-engineer",
+        "implement auth",
+        "session1",
+        "/workspace",
+      );
+
+      expect(child_process.spawn).toHaveBeenCalledWith(
+        "codex",
+        expect.arrayContaining([
+          "exec",
+          "--json",
+          "-m",
+          "gpt-5.3-codex",
+          "--full-auto",
+          "@backend-engineer\n\nimplement auth",
+        ]),
+        expect.objectContaining({ cwd: expect.stringContaining("/workspace") }),
+      );
+    });
+
+    it("should use Gemini native agent dispatch when runtime and target are both gemini", async () => {
+      vi.stubEnv("OMA_RUNTIME_VENDOR", "gemini");
+
+      const OMA_CONFIG_YAML = [
+        "default_cli: gemini",
+        "agent_cli_mapping:",
+        "  frontend: gemini",
+      ].join("\n");
+      const CLI_CONFIG_YAML = [
+        "active_vendor: gemini",
+        "vendors:",
+        "  gemini:",
+        "    command: gemini",
+        "    prompt_flag: -p",
+        "    output_format_flag: --output-format",
+        "    output_format: json",
+        "    auto_approve_flag: --approval-mode=yolo",
+        "    model_flag: -m",
+        "    default_model: auto",
+      ].join("\n");
+
+      mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return true;
+        if (target.includes("cli-config.yaml")) return true;
+        if (target === "/workspace") return true;
+        return false;
+      });
+      mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+        const target = pathArg.toString();
+        if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+        if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+        return "";
+      });
+      mockFsFunctions.openSync.mockReturnValue(123);
+
+      const mockChild = { pid: 66668, on: vi.fn(), unref: vi.fn() };
+      vi.mocked(child_process.spawn).mockReturnValue(
+        mockChild as unknown as child_process.ChildProcess,
+      );
+
+      await spawnAgent(
+        "frontend-engineer",
+        "build dashboard",
+        "session1",
+        "/workspace",
+      );
+
+      expect(child_process.spawn).toHaveBeenCalledWith(
+        "gemini",
+        expect.arrayContaining([
+          "--output-format",
+          "json",
+          "-m",
+          "auto",
+          "--approval-mode=yolo",
+          "-p",
+          "@frontend-engineer\n\nbuild dashboard",
+        ]),
+        expect.objectContaining({ cwd: expect.stringContaining("/workspace") }),
       );
     });
   });

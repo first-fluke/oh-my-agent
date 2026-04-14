@@ -24,8 +24,8 @@ Important:
 | Vendor | Spawn Method | Result Handling |
 |:---|:---|:---|
 | Claude Code | `Agent` tool with `.claude/agents/{name}.md` | Synchronous return |
-| Codex CLI | Native custom agents in `.codex/agents/{name}.toml` when available, otherwise `oma agent:spawn` | JSON output |
-| Gemini CLI | `.gemini/agents/{name}.md` native subagents when available, otherwise `oma agent:spawn` | MCP memory poll |
+| Codex CLI | Native custom agents in `.codex/agents/{name}.toml` via `codex exec "@agent ..."` when available, otherwise `oma agent:spawn` | JSON output |
+| Gemini CLI | `.gemini/agents/{name}.md` native subagents via `gemini -p "@agent ..."` when available, otherwise `oma agent:spawn` | JSON output or MCP memory poll |
 | Antigravity | Prefer `oma agent:spawn` unless a native role-subagent path is explicitly verified for the target vendor | MCP memory poll |
 | CLI Fallback | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 

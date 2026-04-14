@@ -41,10 +41,8 @@ vendors:
     auto_approve_flag: "--full-auto"
     model_flag: "-m"
     default_model: "gpt-5.3-codex"
-    # Environment variable for isolation
-    isolation_env: "CODEX_HOME=/tmp/codex-subagent-$$"
     response_jq: ".response"
-    isolation_method: "env"
+    isolation_method: "directory"
 
   qwen:
     command: qwen

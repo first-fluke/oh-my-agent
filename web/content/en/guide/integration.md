@@ -160,6 +160,8 @@ cp -r .agents/ /path/to/your/project/.agents/
 oma link
 ```
 
+`oma link` rebuilds `.claude/`, `.codex/`, `.gemini/`, and related vendor-native files from `.agents/agents/`. At runtime, OMA uses native dispatch only when the current runtime vendor matches the target vendor for that agent. Mixed-vendor setups still work, but non-matching agents fall back to external `oma agent:spawn`.
+
 ### Step 3: Configure User Preferences
 
 ```bash

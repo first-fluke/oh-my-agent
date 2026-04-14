@@ -90,11 +90,13 @@ Use the Agent tool to spawn subagents:
 
 ### If Codex CLI and target vendor is Codex
 Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
+Native CLI executor path: `codex exec "@{agent} ..."` using the generated agent file.
 Pass each agent its task description, API contracts, and relevant context.
 If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 ### If Gemini CLI and target vendor is Gemini
 Use native Gemini subagents when available, otherwise fall back to `oma agent:spawn`.
+Native CLI executor path: `gemini -p "@{agent} ..."` using `.gemini/agents/{agent}.md`.
 
 ### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash

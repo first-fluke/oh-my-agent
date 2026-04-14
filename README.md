@@ -107,6 +107,10 @@ oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
 
+Model selection follows two layers:
+- Same-vendor native dispatch uses the generated vendor agent definition in `.claude/agents/`, `.codex/agents/`, or `.gemini/agents/`.
+- Cross-vendor or fallback CLI dispatch uses the vendor defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+
 ## Why oh-my-agent?
 
 > [Read why →](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)

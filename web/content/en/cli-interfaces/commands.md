@@ -154,6 +154,17 @@ oma link claude codex
 
 Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`, or hook definitions.
 
+**Model behavior:**
+- Same-vendor native dispatch uses the model defined in the generated vendor agent file.
+- External fallback dispatch uses each vendor's `default_model` from `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+
+**Dispatch behavior:**
+- If the target vendor matches the current runtime and that runtime supports native role agents, OMA uses native dispatch.
+- Otherwise OMA falls back to `oma agent:spawn`.
+
+### setup (workflow)
+
+The `/setup` workflow (invoked inside an agent session) provides interactive configuration of language, CLI installations, MCP connections, and agent-CLI mapping. This is different from `oma` (the installer) — `/setup` configures an already-installed instance.
 ---
 
 ## Monitoring & Metrics

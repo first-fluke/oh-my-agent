@@ -10,12 +10,11 @@ import {
   resolvePromptContent,
   resolvePromptFlag,
   resolveVendor,
-  splitArgs,
-  type CliConfig,
   type VendorConfig,
 } from "../lib/agent-config.js";
 import { formatSessionId, getSessionMeta } from "../lib/memory.js";
 import { registerSignalCleanup } from "../lib/process-signals.js";
+import { planDispatch } from "../lib/runtime-dispatch.js";
 import { detectWorkspace } from "../lib/workspaces.js";
 
 // Helper to check if process with PID is running
@@ -64,8 +63,6 @@ export async function spawnAgent(
     : rawPromptContent;
 
   const vendorConfig = config?.vendors?.[vendor] || {};
-  const command = vendorConfig.command || vendor;
-  const subcommand = vendorConfig.subcommand;
 
   // Prepare log stream
   const logStream = fs.openSync(logFile, "w");
@@ -74,64 +71,20 @@ export async function spawnAgent(
   console.log(color.dim(`  Vendor: ${vendor}`));
   console.log(color.dim(`  Workspace: ${resolvedWorkspace}`));
   console.log(color.dim(`  Log: ${logFile}`));
-
-  const optionArgs: string[] = [];
   const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
-
-  if (vendorConfig.output_format_flag && vendorConfig.output_format) {
-    optionArgs.push(
-      vendorConfig.output_format_flag,
-      vendorConfig.output_format,
-    );
-  } else if (vendorConfig.output_format_flag) {
-    optionArgs.push(vendorConfig.output_format_flag);
-  }
-
-  if (vendorConfig.model_flag && vendorConfig.default_model) {
-    optionArgs.push(vendorConfig.model_flag, vendorConfig.default_model);
-  }
-
-  if (vendorConfig.isolation_flags) {
-    optionArgs.push(...splitArgs(vendorConfig.isolation_flags));
-  }
-
-  if (vendorConfig.auto_approve_flag) {
-    optionArgs.push(vendorConfig.auto_approve_flag);
-  } else {
-    const defaultAutoApprove: Record<string, string> = {
-      gemini: "--approval-mode=yolo",
-      codex: "--full-auto",
-      qwen: "--yolo",
-    };
-    const fallbackFlag = defaultAutoApprove[vendor];
-    if (fallbackFlag) {
-      optionArgs.push(fallbackFlag);
-    }
-  }
-
-  if (promptFlag) {
-    optionArgs.push(promptFlag, promptContent);
-  }
-
-  const args: string[] = [];
-  if (subcommand) args.push(subcommand);
-  args.push(...optionArgs);
-  if (!promptFlag) {
-    args.push(promptContent);
-  }
-
-  const env = { ...process.env };
-  if (vendorConfig.isolation_env) {
-    const [key, ...rest] = vendorConfig.isolation_env.split("=");
-    const rawValue = rest.join("=");
-    if (key && rawValue) {
-      const value = rawValue.replace("$$", String(process.pid));
-      env[key] = value;
-      if (value.startsWith("/") && !fs.existsSync(value)) {
-        fs.mkdirSync(value, { recursive: true });
-      }
-    }
-  }
+  const dispatch = planDispatch(
+    agentId,
+    vendor,
+    vendorConfig,
+    promptFlag,
+    promptContent,
+  );
+  const { command, args, env } = dispatch.invocation;
+  console.log(
+    color.dim(
+      `  Dispatch: ${dispatch.mode} (${dispatch.runtimeVendor} -> ${dispatch.targetVendor}, ${dispatch.reason})`,
+    ),
+  );
 
   // Spawn selected CLI
   const child = spawnProcess(command, args, {
@@ -390,10 +343,6 @@ export async function parallelRun(
 
     const { vendor, config } = resolveVendor(agent, options.vendor);
     const vendorConfig = config?.vendors?.[vendor] || {};
-    const command = vendorConfig.command || vendor;
-    const subcommand = vendorConfig.subcommand;
-
-    const optionArgs: string[] = [];
     const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
     const rawPromptContent = resolvePromptContent(task);
 
@@ -403,60 +352,17 @@ export async function parallelRun(
       ? `${rawPromptContent}\n\n${executionProtocol}`
       : rawPromptContent;
 
-    if (vendorConfig.output_format_flag && vendorConfig.output_format) {
-      optionArgs.push(
-        vendorConfig.output_format_flag,
-        vendorConfig.output_format,
-      );
-    } else if (vendorConfig.output_format_flag) {
-      optionArgs.push(vendorConfig.output_format_flag);
-    }
-
-    if (vendorConfig.model_flag && vendorConfig.default_model) {
-      optionArgs.push(vendorConfig.model_flag, vendorConfig.default_model);
-    }
-
-    if (vendorConfig.isolation_flags) {
-      optionArgs.push(...splitArgs(vendorConfig.isolation_flags));
-    }
-
-    if (vendorConfig.auto_approve_flag) {
-      optionArgs.push(vendorConfig.auto_approve_flag);
-    } else {
-      const defaultAutoApprove: Record<string, string> = {
-        gemini: "--approval-mode=yolo",
-        codex: "--full-auto",
-        qwen: "--yolo",
-      };
-      const fallbackFlag = defaultAutoApprove[vendor];
-      if (fallbackFlag) {
-        optionArgs.push(fallbackFlag);
-      }
-    }
-
-    if (promptFlag) {
-      optionArgs.push(promptFlag, promptContent);
-    }
-
-    const args: string[] = [];
-    if (subcommand) args.push(subcommand);
-    args.push(...optionArgs);
-    if (!promptFlag) {
-      args.push(promptContent);
-    }
-
-    const env = { ...process.env };
-    if (vendorConfig.isolation_env) {
-      const [key, ...rest] = vendorConfig.isolation_env.split("=");
-      const rawValue = rest.join("=");
-      if (key && rawValue) {
-        const value = rawValue.replace("$$", String(process.pid));
-        env[key] = value;
-        if (value.startsWith("/") && !fs.existsSync(value)) {
-          fs.mkdirSync(value, { recursive: true });
-        }
-      }
-    }
+    const dispatch = planDispatch(
+      agent,
+      vendor,
+      vendorConfig,
+      promptFlag,
+      promptContent,
+    );
+    const { command, args, env } = dispatch.invocation;
+    console.log(
+      `    Dispatch: ${dispatch.mode} (${dispatch.runtimeVendor} -> ${dispatch.targetVendor})`,
+    );
 
     const logStream = fs.openSync(logFile, "w");
 
