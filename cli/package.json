@@ -79,12 +79,9 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.5",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/bun": "^1.3.10",
     "@types/ws": "^8.18.1",
+    "typescript": "^6",
     "vitest": "^4.0.18"
-  },
-  "peerDependencies": {
-    "typescript": "^6"
   },
   "repository": {
     "type": "git",
