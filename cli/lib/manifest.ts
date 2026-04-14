@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Manifest, ManifestFile } from "../types/index.js";
+import { http, isAxiosError } from "./http.js";
 import { INSTALLED_SKILLS_DIR, REPO } from "./skills.js";
 
 export function calculateSHA256(content: string): string {
@@ -92,27 +93,29 @@ export async function saveLocalVersion(
 
 export async function fetchRemoteManifest(): Promise<Manifest> {
   const url = `https://raw.githubusercontent.com/${REPO}/main/prompt-manifest.json`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch remote manifest");
-
-  return (await res.json()) as Manifest;
+  const res = await http.get<Manifest>(url);
+  return res.data;
 }
 
 export async function downloadFile(
   manifestFile: ManifestFile,
 ): Promise<{ path: string; success: boolean; error?: string }> {
   const url = `https://raw.githubusercontent.com/${REPO}/main/${manifestFile.path}`;
-  const res = await fetch(url);
+  let content: string;
 
-  if (!res.ok) {
+  try {
+    const res = await http.get<string>(url, { responseType: "text" });
+    content = res.data;
+  } catch (error) {
     return {
       path: manifestFile.path,
       success: false,
-      error: `HTTP ${res.status}`,
+      error: isAxiosError(error)
+        ? `HTTP ${error.response?.status ?? error.code}`
+        : String(error),
     };
   }
 
-  const content = await res.text();
   const actualSHA256 = calculateSHA256(content);
 
   if (actualSHA256 !== manifestFile.sha256) {
