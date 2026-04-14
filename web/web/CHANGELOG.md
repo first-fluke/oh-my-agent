@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.1](https://github.com/first-fluke/oh-my-agent/compare/web-v0.4.0...web-v0.4.1) (2026-04-14)
+
+
+### Features
+
+* **cli:** add Codex native agent generation and same-vendor dispatch ([8e97673](https://github.com/first-fluke/oh-my-agent/commit/8e97673fc739153f8f6eb6e50f25825b1d2cd0d6))
+* **cli:** add native runtime dispatch ([e1b0efd](https://github.com/first-fluke/oh-my-agent/commit/e1b0efd0bc933dce524e45b9e03f99ca246c8c50))
+* **cli:** add native runtime dispatch ([e758aa9](https://github.com/first-fluke/oh-my-agent/commit/e758aa9d5068250b1a662b3ccfd194e7ad842778))
+
 ## [0.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v0.3.20...web-v0.4.0) (2026-04-12)
 
 
