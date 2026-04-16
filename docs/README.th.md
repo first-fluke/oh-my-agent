@@ -52,6 +52,7 @@ bunx oh-my-agent@latest
 | **oma-qa** | ตรวจสอบความปลอดภัยตามมาตรฐาน OWASP, ประสิทธิภาพ, accessibility |
 | **oma-recap** | วิเคราะห์ประวัติการสนทนาและสรุปงานตามธีม |
 | **oma-scm** | การจัดการโครงสร้างซอฟต์แวร์ (SCM): แตกกิ่ง (branching), รวมโค้ด (merges), worktrees; รองรับ Conventional Commits |
+| **oma-search** | เราเตอร์ค้นหาตามเจตนา + คะแนนความน่าเชื่อถือ — เอกสาร, เว็บ, โค้ด, โลคัล |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | การแปลภาษาหลากหลายภาษาอย่างเป็นธรรมชาติ |
 

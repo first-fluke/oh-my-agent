@@ -50,6 +50,7 @@ bunx oh-my-agent@latest
 | **oma-qa** | Безопасность OWASP, производительность, ревью доступности |
 | **oma-recap** | Analiz istorii razgovorov i tematicheskie svodki raboty |
 | **oma-scm** | SCM (управление конфигурацией ПО): ветки, слияния, worktree, базовые линии; Conventional Commits |
+| **oma-search** | Интент-маршрутизатор поиска + оценка доверия — документация, веб, код, локальный |
 | **oma-tf-infra** | Мультиоблачный IaC на Terraform (Infrastructure as Code) |
 | **oma-translator** | Естественный мультиязычный перевод |
 

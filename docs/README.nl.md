@@ -50,6 +50,7 @@ Kies een preset en je bent klaar:
 | **oma-qa** | OWASP-beveiliging, performance, toegankelijkheidsreview |
 | **oma-recap** | Analyse van gespreksgeschiedenis en thematische werksamenvattingen |
 | **oma-scm** | SCM (softwareconfiguratiebeheer): branching, merges, worktrees, baselines; Conventional Commits |
+| **oma-search** | Intentiegebaseerde zoekrouter + vertrouwensscore — docs, web, code, lokaal |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natuurlijke meertalige vertaling |
 

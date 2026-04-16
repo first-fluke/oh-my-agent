@@ -50,6 +50,7 @@ bunx oh-my-agent@latest
 | **oma-qa** | OWASP 安全、性能、无障碍审查 |
 | **oma-recap** | 会话历史分析与主题化工作摘要 |
 | **oma-scm** | SCM（软件配置管理）— 分支、合并、worktree、基线；Conventional Commits |
+| **oma-search** | 基于意图的搜索路由器 + 信任评分 — 文档、网页、代码、本地 |
 | **oma-tf-infra** | 多云 Terraform IaC（Infrastructure as Code，基础设施即代码） |
 | **oma-translator** | 自然的多语言翻译 |
 

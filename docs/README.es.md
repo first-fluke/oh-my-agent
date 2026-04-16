@@ -50,6 +50,7 @@ Elige un preset y listo:
 | **oma-qa** | Seguridad OWASP, rendimiento, revisión de accesibilidad |
 | **oma-recap** | Analisis del historial de conversaciones y resumenes tematicos de trabajo |
 | **oma-scm** | SCM (gestión de configuración del software): ramas, fusiones, worktrees, líneas base; Conventional Commits |
+| **oma-search** | Router de búsqueda basado en intención + puntuación de confianza — docs, web, código, local |
 | **oma-tf-infra** | IaC multi-cloud con Terraform (Infrastructure as Code) |
 | **oma-translator** | Traducción multilingüe natural |
 
