@@ -17,9 +17,11 @@ describe("Claude settings", () => {
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
           CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
+          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
           DISABLE_PROMPT_CACHING: "1",
         },
         skipDangerousModePermissionPrompt: true,
+        effortLevel: "high",
         attribution: {
           commit: "commit",
           pr: "pr",

@@ -12,12 +12,14 @@ export const RECOMMENDED_ENV = {
   CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
   CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
   CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
+  CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
 } as const;
 
 const DEPRECATED_ENV_KEYS = ["DISABLE_PROMPT_CACHING"] as const;
 
 export const RECOMMENDED_TOP_LEVEL = {
   skipDangerousModePermissionPrompt: true,
+  effortLevel: "high",
 } as const;
 
 export const RECOMMENDED_ATTRIBUTION = {
