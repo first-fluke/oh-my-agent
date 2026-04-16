@@ -9,6 +9,10 @@
         "--isolated"
       ]
     },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
     "serena": {
       "command": "uvx",
       "args": [
@@ -72,6 +76,7 @@
       "performance_stop_trace",
       "performance_analyze_insight"
     ],
+    "docs-search": ["resolve-library-id", "query-docs"],
     "file-ops": ["list_dir", "find_file"],
     "project": [
       "activate_project",
