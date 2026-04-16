@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.6.1...cli-v6.0.0) (2026-04-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **web:** complete framework replacement from Next.js 16 to Docusaurus 3.10.0. URL structure changed from /{lang}/{group}/{slug} to /docs/{group}/{slug} with locale prefix. All custom React components removed in favor of Docusaurus built-in theme.
+
+### Bug Fixes
+
+* **ci:** add meta-files to cli exclude-paths in release-please config ([30a8e30](https://github.com/first-fluke/oh-my-agent/commit/30a8e30ac17d27a1536de37dfe4a644dc1c5ffae))
+
+
+### Refactoring
+
+* **web:** migrate docs site from Next.js to Docusaurus 3 ([1e6c324](https://github.com/first-fluke/oh-my-agent/commit/1e6c32449969480bc10ef19857de8c4bccb3afa9))
+
 ## [5.6.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.6.0...cli-v5.6.1) (2026-04-16)
 
 
