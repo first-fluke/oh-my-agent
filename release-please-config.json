@@ -12,7 +12,7 @@
       "changelog-path": "cli/CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
-      "exclude-paths": ["web", "action", "prompt-manifest.json"],
+      "exclude-paths": ["web", "action", "prompt-manifest.json", "release-please-config.json", ".release-please-manifest.json"],
       "extra-files": [
         {
           "type": "json",
