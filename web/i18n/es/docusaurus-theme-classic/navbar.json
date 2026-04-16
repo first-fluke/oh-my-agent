@@ -1,0 +1,14 @@
+{
+  "item.label.Docs": {
+    "message": "Documentación",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Sponsor": {
+    "message": "Sponsor",
+    "description": "Navbar item with label Sponsor"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}

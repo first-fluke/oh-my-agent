@@ -30,12 +30,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build static docs
-        env:
-          GITHUB_ACTIONS: "true"
         run: cd web && bun run build
-
-      - name: Add .nojekyll
-        run: touch web/out/.nojekyll
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -43,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: web/out
+          path: web/build
 
   deploy:
     needs: build

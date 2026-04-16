@@ -1,0 +1,18 @@
+{
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Bắt đầu",
+    "description": "The label for category Getting Started in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Core Concepts": {
+    "message": "Khái niệm cốt lõi",
+    "description": "The label for category Core Concepts in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Guide": {
+    "message": "Hướng dẫn",
+    "description": "The label for category Guide in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.CLI Interfaces": {
+    "message": "Giao diện CLI",
+    "description": "The label for category CLI Interfaces in sidebar docsSidebar"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "시작하기",
+    "description": "The label for category Getting Started in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Core Concepts": {
+    "message": "핵심 개념",
+    "description": "The label for category Core Concepts in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Guide": {
+    "message": "가이드",
+    "description": "The label for category Guide in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.CLI Interfaces": {
+    "message": "CLI 인터페이스",
+    "description": "The label for category CLI Interfaces in sidebar docsSidebar"
+  }
+}

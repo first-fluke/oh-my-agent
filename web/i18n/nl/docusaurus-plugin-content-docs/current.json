@@ -1,0 +1,18 @@
+{
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Aan de slag",
+    "description": "The label for category Getting Started in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Core Concepts": {
+    "message": "Kernconcepten",
+    "description": "The label for category Core Concepts in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Guide": {
+    "message": "Gids",
+    "description": "The label for category Guide in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.CLI Interfaces": {
+    "message": "CLI-interfaces",
+    "description": "The label for category CLI Interfaces in sidebar docsSidebar"
+  }
+}

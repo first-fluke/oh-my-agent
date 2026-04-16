@@ -1,0 +1,18 @@
+{
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Introdução",
+    "description": "The label for category Getting Started in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Core Concepts": {
+    "message": "Conceitos principais",
+    "description": "The label for category Core Concepts in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Guide": {
+    "message": "Guia",
+    "description": "The label for category Guide in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.CLI Interfaces": {
+    "message": "Interfaces CLI",
+    "description": "The label for category CLI Interfaces in sidebar docsSidebar"
+  }
+}

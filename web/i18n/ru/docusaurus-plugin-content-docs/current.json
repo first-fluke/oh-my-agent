@@ -1,0 +1,18 @@
+{
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Начало работы",
+    "description": "The label for category Getting Started in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Core Concepts": {
+    "message": "Основные концепции",
+    "description": "The label for category Core Concepts in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.Guide": {
+    "message": "Руководство",
+    "description": "The label for category Guide in sidebar docsSidebar"
+  },
+  "sidebar.docsSidebar.category.CLI Interfaces": {
+    "message": "Интерфейсы CLI",
+    "description": "The label for category CLI Interfaces in sidebar docsSidebar"
+  }
+}

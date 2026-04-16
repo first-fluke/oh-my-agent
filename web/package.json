@@ -3,53 +3,37 @@
   "version": "0.4.1",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "tsx scripts/generate-search-index.ts && next build",
-    "start": "next start",
-    "lint": "biome check .",
-    "search-index": "tsx scripts/generate-search-index.ts"
+    "docusaurus": "docusaurus",
+    "dev": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "clear": "docusaurus clear",
+    "write-translations": "docusaurus write-translations"
   },
   "dependencies": {
-    "@fontsource/ibm-plex-mono": "^5.2.7",
-    "@fontsource/space-grotesk": "^5.2.10",
-    "@radix-ui/react-navigation-menu": "^1.2.14",
-    "@radix-ui/react-scroll-area": "^1.2.10",
-    "@radix-ui/react-separator": "^1.1.8",
-    "@radix-ui/react-slot": "^1.2.4",
-    "aceternity-ui": "^0.2.2",
-    "class-variance-authority": "^0.7.1",
+    "@docusaurus/core": "3.10.0",
+    "@docusaurus/preset-classic": "3.10.0",
+    "@easyops-cn/docusaurus-search-local": "0.55.1",
+    "@mdx-js/react": "^3.0.0",
     "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "gray-matter": "^4.0.3",
-    "lucide-react": "^0.563.0",
-    "mdast-util-to-string": "^4.0.0",
-    "motion": "^12.34.0",
-    "next": "16.1.6",
-    "radix-ui": "^1.4.3",
-    "react": "19.2.3",
-    "react-bits": "^1.0.5",
-    "react-dom": "19.2.3",
-    "react-markdown": "^10.1.0",
-    "react-native-web": "^0.21.2",
-    "rehype-slug": "^6.0.0",
-    "remark-gfm": "^4.0.1",
-    "remark-parse": "^11.0.0",
-    "tailwind-merge": "^3.4.0",
-    "unified": "^11.0.5",
-    "unist-util-visit": "^5.1.0"
+    "prism-react-renderer": "^2.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.13",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    "flexsearch": "^0.7.43",
-    "shadcn": "^3.8.4",
-    "tailwindcss": "^4",
-    "tsx": "^4.21.0",
-    "tw-animate-css": "^1.4.0",
-    "typescript": "^6"
+    "@docusaurus/module-type-aliases": "3.10.0",
+    "@docusaurus/tsconfig": "3.10.0",
+    "@docusaurus/types": "3.10.0",
+    "typescript": "~5.7.0"
+  },
+  "browserslist": {
+    "production": [">0.5%", "not dead", "not op_mini all"],
+    "development": ["last 3 chrome version", "last 3 firefox version", "last 5 safari version"]
+  },
+  "engines": {
+    "node": ">=18.0"
+  },
+  "overrides": {
+    "webpack": "~5.97.0"
   }
 }
