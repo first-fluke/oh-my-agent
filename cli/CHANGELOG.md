@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.5.0...cli-v5.6.0) (2026-04-16)
+
+
+### Features
+
+* **cli:** add ENABLE_PROMPT_CACHING_1H to recommended settings ([89eab33](https://github.com/first-fluke/oh-my-agent/commit/89eab33e3a56708ba588440038069f0f149163b5))
+
 ## [5.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.4...cli-v5.5.0) (2026-04-16)
 
 
