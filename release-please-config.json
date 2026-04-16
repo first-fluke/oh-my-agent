@@ -48,9 +48,7 @@
       "component": "web",
       "package-name": "oh-my-agent-web",
       "release-type": "node",
-      "changelog-path": "web/CHANGELOG.md",
-      "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": true
+      "changelog-path": "web/CHANGELOG.md"
     }
   },
   "changelog-sections": [
