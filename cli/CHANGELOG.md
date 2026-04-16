@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.6.0...cli-v5.6.1) (2026-04-16)
+
+
+### Refactoring
+
+* **web:** migrate from Next.js to Docusaurus 3 ([cbabcbe](https://github.com/first-fluke/oh-my-agent/commit/cbabcbe71af1e136ec90f2032ed932d96ead7b03))
+
 ## [5.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.5.0...cli-v5.6.0) (2026-04-16)
 
 
