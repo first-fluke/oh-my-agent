@@ -7,6 +7,11 @@
 
 * **mobile:** add Maestro as E2E testing tool ([e58dfa4](https://github.com/first-fluke/oh-my-agent/commit/e58dfa4c1a058d250901f4d02fd95faf0b7b95b8))
 
+
+### Documentation
+
+* add oma-search to agent team table in all READMEs ([bff7458](https://github.com/first-fluke/oh-my-agent/commit/bff745829c667da88d7d2d4b870581fce362412f))
+
 ## [5.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.6.1...cli-v5.7.0) (2026-04-16)
 
 
