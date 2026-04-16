@@ -11,9 +11,14 @@ export const RECOMMENDED_ENV = {
   DISABLE_ERROR_REPORTING: "1",
   CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
   CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
+  CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
 } as const;
 
 const DEPRECATED_ENV_KEYS = ["DISABLE_PROMPT_CACHING"] as const;
+
+export const RECOMMENDED_TOP_LEVEL = {
+  skipDangerousModePermissionPrompt: true,
+} as const;
 
 export const RECOMMENDED_ATTRIBUTION = {
   commit:
@@ -42,6 +47,10 @@ export function needsSettingsUpdate(claudeSettings: any): boolean {
     }
   }
 
+  for (const [key, expected] of Object.entries(RECOMMENDED_TOP_LEVEL)) {
+    if (claudeSettings[key] !== expected) return true;
+  }
+
   if (!claudeSettings.attribution?.commit || !claudeSettings.attribution?.pr) {
     return true;
   }
@@ -63,6 +72,7 @@ export function applyRecommendedSettings(claudeSettings: any): any {
   }
 
   claudeSettings.env = env;
+  Object.assign(claudeSettings, RECOMMENDED_TOP_LEVEL);
   claudeSettings.attribution = { ...RECOMMENDED_ATTRIBUTION };
   return claudeSettings;
 }

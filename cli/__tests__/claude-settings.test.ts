@@ -16,8 +16,10 @@ describe("Claude settings", () => {
           DISABLE_ERROR_REPORTING: "1",
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
+          CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
           DISABLE_PROMPT_CACHING: "1",
         },
+        skipDangerousModePermissionPrompt: true,
         attribution: {
           commit: "commit",
           pr: "pr",
@@ -38,6 +40,7 @@ describe("Claude settings", () => {
     expect(settings.env.DISABLE_PROMPT_CACHING).toBeUndefined();
     expect(settings.env.SOME_USER_FLAG).toBe("keep-me");
     expect(settings.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY).toBe("1");
+    expect(settings.skipDangerousModePermissionPrompt).toBe(true);
     expect(settings.attribution.commit).toContain("Generated with oh-my-agent");
   });
 });
