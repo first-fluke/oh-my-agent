@@ -8,6 +8,7 @@
 - **API Client**: Dio
 - **Local Storage**: Drift, Hive
 - **Testing**: flutter_test, mockito
+- **E2E Testing**: Maestro
 
 ## React Native (Alternative)
 - **Framework**: React Native 0.73+
@@ -15,6 +16,7 @@
 - **State**: Redux Toolkit, Zustand
 - **Navigation**: React Navigation 6+
 - **Testing**: Jest, React Native Testing Library
+- **E2E Testing**: Maestro
 
 ## Project Structure (Flutter)
 

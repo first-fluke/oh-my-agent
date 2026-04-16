@@ -14,3 +14,4 @@ alwaysApply: false
 4. **Resource Cleanup**: All controllers disposed in `dispose()` method
 5. **Networking**: Dio with interceptors for API calls; handle offline gracefully
 6. **Performance**: 60fps target; test on both platforms
+7. **E2E Testing**: Use Maestro for end-to-end UI testing

@@ -31,5 +31,6 @@ Run through every item before submitting your work.
 ## Testing
 - [ ] Unit tests for domain logic and providers
 - [ ] Widget tests for key screens
+- [ ] E2E tests with Maestro for critical user flows
 - [ ] Edge cases: empty lists, error states, offline mode
 - [ ] Tests pass on both platforms

@@ -22,6 +22,7 @@ description: Mobile specialist for Flutter, React Native, and cross-platform mob
 4. All controllers disposed in `dispose()` method
 5. Dio with interceptors for API calls; handle offline gracefully
 6. 60fps target; test on both platforms
+7. Use Maestro for E2E testing of critical user flows
 
 ## How to Execute
 Follow `resources/execution-protocol.md` step by step.
