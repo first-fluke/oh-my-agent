@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.4...cli-v5.5.0) (2026-04-16)
+
+
+### Features
+
+* **cli:** add effortLevel and CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING settings ([b1ecccf](https://github.com/first-fluke/oh-my-agent/commit/b1ecccf1be80a5ceb816de280bfbb348a353558a))
+* **cli:** add git instructions disable and skip dangerous mode prompt settings ([c508e16](https://github.com/first-fluke/oh-my-agent/commit/c508e16fa326981551560f2d0d2c7338050fd36e))
+
 ## [5.4.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.4.3...cli-v5.4.4) (2026-04-14)
 
 
