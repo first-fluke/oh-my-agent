@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "5.7.0",
-  "releaseDate": "2026-04-16T22:20:27.118Z",
+  "version": "5.8.0",
+  "releaseDate": "2026-04-16T22:17:57.069Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -196,8 +196,8 @@
     },
     {
       "path": ".agents/rules/mobile.md",
-      "sha256": "a7b6053bc1fbadeb326c090c960359cef476ed65eaaec07dd2624aada8edd93e",
-      "size": 672
+      "sha256": "416457068783b2c50ba905e257da714c5c09511211e8735f3deb4851bb2159c7",
+      "size": 614
     },
     {
       "path": ".agents/rules/quality.md",
@@ -726,13 +726,13 @@
     },
     {
       "path": ".agents/skills/oma-mobile/SKILL.md",
-      "sha256": "3b7201834eaea14f27d4adae1ac34f5b0cf67d53cda0e6791ed516c1827a48b6",
-      "size": 1920
+      "sha256": "3278a5f13efaf6cfd520bcaf4d908c1f45be4eff37a20b454932163a65b3efb7",
+      "size": 1866
     },
     {
       "path": ".agents/skills/oma-mobile/resources/checklist.md",
-      "sha256": "03502a4f284bd1f11ae5ca6ca40a411880fe2fc9d7780f2f8e190740f9b0d126",
-      "size": 1305
+      "sha256": "75f6eedcd8790e0329cdb0d92ecd372563edeef43ccd1a04993f46fda5bac4db",
+      "size": 1252
     },
     {
       "path": ".agents/skills/oma-mobile/resources/error-playbook.md",
@@ -761,8 +761,8 @@
     },
     {
       "path": ".agents/skills/oma-mobile/resources/tech-stack.md",
-      "sha256": "177c5e3fd7a2545b04dc58b96b6144a6217aeb1bf22fa21c6433761a72b648ae",
-      "size": 1308
+      "sha256": "d231794b948fa43af350e6b61521e3eb2dd3e4628ba5b97cb614a4ca342f8337",
+      "size": 1254
     },
     {
       "path": ".agents/skills/oma-orchestrator/SKILL.md",
