@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.6.1...cli-v5.7.0) (2026-04-16)
+
+
+### Features
+
+* **mcp:** add Context7 MCP server and docs-search tool group ([5ab861b](https://github.com/first-fluke/oh-my-agent/commit/5ab861bc73996708fafdb117c54fa6ee5703f067))
+* **skills:** add oma-search skill — intent-based search router with trust scoring ([17a7aa6](https://github.com/first-fluke/oh-my-agent/commit/17a7aa6bdc4e9497fa975cba3d7944476ab7c32d))
+
 ## [5.6.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.6.0...cli-v5.6.1) (2026-04-16)
 
 
