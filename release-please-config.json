@@ -12,7 +12,8 @@
       "changelog-path": "cli/CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
-      "exclude-paths": ["web", "action", "prompt-manifest.json", "release-please-config.json", ".release-please-manifest.json"],
+      "release-as": "5.6.2",
+      "exclude-paths": ["web", "action", "prompt-manifest.json"],
       "extra-files": [
         {
           "type": "json",
