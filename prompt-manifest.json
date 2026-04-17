@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.9.0",
-  "releaseDate": "2026-04-16T22:24:21.375Z",
+  "releaseDate": "2026-04-17T12:35:26.250Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -95,14 +95,19 @@
       "size": 7013
     },
     {
+      "path": ".agents/hooks/core/skill-injector.ts",
+      "sha256": "11a8d6bdd3456d0a9413d929e8b0ce1768c3cb428ab9021582f84db5d9e243b5",
+      "size": 12069
+    },
+    {
       "path": ".agents/hooks/core/test-filter.ts",
       "sha256": "71a6888a66638593dbb1435baa1f587bd970d6edb2e7f2446289ca636165dc51",
       "size": 3868
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "57f6c583e1e4c23f56a7ce1df28ad715d866f394e2e56c6bd95ba6e79c2d4dfb",
-      "size": 27429
+      "sha256": "7f3ed18864c0cc51d4b903b633aeb6d38367f14c28d79c69d8090af9cfd4f48f",
+      "size": 39194
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -111,33 +116,33 @@
     },
     {
       "path": ".agents/hooks/variants/claude.json",
-      "sha256": "bcabe3c1c438fbaabadfd59efd17437b9839f226c52a32365dd4f25a05d5da4e",
-      "size": 709
+      "sha256": "ae395bf3f110b056d5089e8edc8cfa71a5e5dd66eb0d12cc313b6a371982655a",
+      "size": 804
     },
     {
       "path": ".agents/hooks/variants/codex.json",
-      "sha256": "e09aebdf6980ad22a9f32cbf3b2d87b1854f1f2be6d110ca6f2abac47d0bed73",
-      "size": 599
+      "sha256": "03bb412da322e1a73a2489917d55ec6421491eb645e049140e072b2b557582b8",
+      "size": 694
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "712972555a32133754e251a9a42622c6f2bf0f6908903e54013eb763b087f6b9",
-      "size": 416
+      "sha256": "0247a53820201dc03f4df0e1010dd53396bb17c1ea33d6b7f450128c249bd26f",
+      "size": 606
     },
     {
       "path": ".agents/hooks/variants/gemini.json",
-      "sha256": "3936bd26efcd33315eeec87fe6bdedef7e1c7f625bd8509efe937462a9fe5cef",
-      "size": 555
+      "sha256": "483a516ac2a4df24ce56468cfbc745b62e6aea4a460cf1afbe385310f54c774d",
+      "size": 679
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "300bfe85afab41fbaa97fce22eaacb6ae55fcb4f1bff3e6a79f48878aa76bd98",
-      "size": 3748
+      "sha256": "656a1ecc05671677441590c37ec2530784e39c12e203d170cca2c25713b34b51",
+      "size": 3992
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "818eebeeb200b9897d4acd599c73840783a4b895cd651bf0a37a0e37f36e90b5",
-      "size": 480
+      "sha256": "bb1adcd864c1bc80ac3b3eb49931751a56d1246f2c1e3d2ee6e3105c73a1ec72",
+      "size": 575
     },
     {
       "path": ".agents/mcp.json",
@@ -326,7 +331,7 @@
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "5a0b1b499ebdf6518e9e795dffe8d8b268bced45c9b1bf043a5b924a4b565866",
+      "sha256": "b6b7726c0816606976dd82a41300fbe03d6e0fa580469aedd1c256d79a0e88cf",
       "size": 24
     },
     {
@@ -1151,6 +1156,6 @@
   "metadata": {
     "skillCount": 19,
     "workflowCount": 19,
-    "totalFiles": 228
+    "totalFiles": 229
   }
 }
