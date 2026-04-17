@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.8.0...cli-v5.9.0) (2026-04-17)
+
+
+### Features
+
+* **hooks:** auto-inject skills via trigger matching ([1dd9cd0](https://github.com/first-fluke/oh-my-agent/commit/1dd9cd08eabceb2f41a5091a1c56cc2d73195654))
+
 ## [5.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.7.0...cli-v5.8.0) (2026-04-16)
 
 
