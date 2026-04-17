@@ -6,14 +6,26 @@
   "projectDirEnv": null,
   "runtime": "bun",
   "events": {
-    "UserPromptSubmit": {
-      "hook": "keyword-detector.ts",
-      "timeout": 5
-    },
-    "beforeSubmitPrompt": {
-      "hook": "keyword-detector.ts",
-      "timeout": 5
-    }
+    "UserPromptSubmit": [
+      {
+        "hook": "keyword-detector.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "skill-injector.ts",
+        "timeout": 3
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "hook": "keyword-detector.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "skill-injector.ts",
+        "timeout": 3
+      }
+    ]
   },
   "extra": {
     "version": 1

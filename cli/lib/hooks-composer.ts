@@ -24,7 +24,7 @@ export interface HookVariant {
   settingsFile: string;
   projectDirEnv: string | null;
   runtime: string;
-  events: Record<string, HookEvent>;
+  events: Record<string, HookEvent | HookEvent[]>;
   statusLine?: { hook: string };
   // biome-ignore lint/suspicious/noExplicitAny: extra settings vary by vendor
   extra?: Record<string, any>;
@@ -311,22 +311,24 @@ export function installHooksFromVariant(
   patchVendorHookTypes(hooksDest, variant.vendor);
   patchVendorDetection(hooksDest);
 
-  // 2. Build hook entries from events
+  // 2. Build hook entries from events (single or chained)
   // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor
   const hookEntries: Record<string, any> = {};
-  for (const [eventName, config] of Object.entries(variant.events)) {
+  for (const [eventName, rawConfig] of Object.entries(variant.events)) {
+    const configs = Array.isArray(rawConfig) ? rawConfig : [rawConfig];
+    if (configs.length === 0) continue;
+
+    const hooks = configs.map((c) => ({
+      name: deriveHookName(c.hook),
+      type: "command",
+      command: buildHookCmd(variant, c.hook),
+      timeout: c.timeout,
+    }));
+
     // biome-ignore lint/suspicious/noExplicitAny: hook entry shape varies
-    const entry: any = {
-      hooks: [
-        {
-          name: deriveHookName(config.hook),
-          type: "command",
-          command: buildHookCmd(variant, config.hook),
-          timeout: config.timeout,
-        },
-      ],
-    };
-    if (config.matcher) entry.matcher = config.matcher;
+    const entry: any = { hooks };
+    const matcher = configs.find((c) => c.matcher)?.matcher;
+    if (matcher) entry.matcher = matcher;
     hookEntries[eventName] = [entry];
   }
 

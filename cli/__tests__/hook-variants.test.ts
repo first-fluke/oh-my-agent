@@ -61,14 +61,17 @@ describe("hook variant files", () => {
 
     for (const vendor of KNOWN_VENDORS) {
       const v = loadVariant(vendor);
-      for (const [event, config] of Object.entries(v.events) as [
+      for (const [event, rawConfig] of Object.entries(v.events) as [
         string,
-        { hook: string },
+        { hook: string } | { hook: string }[],
       ][]) {
-        expect(
-          coreFiles,
-          `${vendor}.${event} references missing core file: ${config.hook}`,
-        ).toContain(config.hook);
+        const configs = Array.isArray(rawConfig) ? rawConfig : [rawConfig];
+        for (const config of configs) {
+          expect(
+            coreFiles,
+            `${vendor}.${event} references missing core file: ${config.hook}`,
+          ).toContain(config.hook);
+        }
       }
       if (v.statusLine) {
         expect(

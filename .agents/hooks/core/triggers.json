@@ -270,6 +270,179 @@
       }
     }
   },
+  "skills": {
+    "oma-architecture": {
+      "keywords": {
+        "*": [],
+        "en": ["design the system", "architecture doc", "high level design", "define boundaries", "architecture tradeoffs"],
+        "ko": ["아키텍처 짜줘", "시스템 구조 설계", "경계 정의해줘", "구조 검토해줘", "아키텍처 문서"],
+        "ja": ["アーキテクチャを設計", "システム構成を考えて", "境界を定義", "構成レビュー", "アーキ文書"],
+        "zh": ["设计架构", "系统架构方案", "定义边界", "架构文档", "架构权衡"]
+      }
+    },
+    "oma-backend": {
+      "keywords": {
+        "*": ["CRUD", "JWT auth"],
+        "en": ["build an api", "add endpoint", "server side logic", "write a migration", "repository pattern", "rest api", "api endpoint", "backend service", "database migration", "auth flow", "server implementation", "clean architecture"],
+        "ko": ["api 만들어줘", "엔드포인트 추가", "백엔드 구현", "마이그레이션 작성", "인증 붙여줘"],
+        "ja": ["apiを作って", "エンドポイント追加", "バックエンド実装", "マイグレーション書いて", "認証を実装"],
+        "zh": ["写个接口", "加接口", "后端实现", "写迁移", "加认证"]
+      }
+    },
+    "oma-brainstorm": {
+      "keywords": {
+        "*": [],
+        "en": ["toss around ideas", "kick around options", "spitball", "some ideas please", "ideation session"],
+        "ko": ["아이디어 좀 뽑아줘", "같이 고민해줘", "아이디어 내보자", "방향성 고민"],
+        "ja": ["アイデア出して", "一緒に考えて", "方向性を探りたい", "案を出して"],
+        "zh": ["帮我想想", "一起想想办法", "给点灵感"]
+      }
+    },
+    "oma-coordination": {
+      "keywords": {
+        "*": [],
+        "en": ["coordinate the agents", "hand off to agent", "multi agent workflow", "run agents manually", "multi agent coordination", "coordinate agents", "cli handoff", "manual orchestration"],
+        "ko": ["에이전트 조율", "에이전트끼리 협업", "수동으로 에이전트 돌려", "에이전트 순서 잡아줘"],
+        "ja": ["エージェントを調整", "エージェント連携", "手動でエージェント", "エージェントの順序"],
+        "zh": ["协调代理", "代理之间协作", "手动跑代理", "代理之间衔接"]
+      }
+    },
+    "oma-db": {
+      "keywords": {
+        "*": ["ERD", "vector db"],
+        "en": ["design a schema", "normalize tables", "tune the index", "slow query", "plan capacity", "schema design", "ERD", "normalization", "index tuning", "query tuning", "vector index", "RAG retrieval", "data migration", "capacity planning"],
+        "ko": ["스키마 설계", "테이블 설계", "인덱스 튜닝", "쿼리 느려", "용량 산정"],
+        "ja": ["スキーマ設計", "テーブル設計", "インデックス調整", "クエリが遅い", "容量見積"],
+        "zh": ["设计表结构", "表设计", "索引优化", "查询很慢", "容量评估"]
+      }
+    },
+    "oma-debug": {
+      "keywords": {
+        "*": [],
+        "en": ["find the root cause", "why does it crash", "write a regression test", "analyze this stack trace", "bug diagnosis", "root cause", "regression test", "stack trace", "crash fix", "error investigation"],
+        "ko": ["버그 찾아줘", "에러 원인", "크래시 분석", "스택트레이스 봐줘", "원인 파악해줘"],
+        "ja": ["バグを探して", "エラー原因", "クラッシュを分析", "スタックトレースを見て", "原因を特定"],
+        "zh": ["找出 bug", "错误原因", "分析崩溃", "看堆栈", "定位原因"]
+      }
+    },
+    "oma-design": {
+      "keywords": {
+        "*": ["WCAG"],
+        "en": ["design tokens", "build a landing page", "pick a color palette", "typography scale", "motion spec", "typography system", "landing page design", "responsive layout", "motion design"],
+        "ko": ["디자인 토큰", "랜딩 만들어줘", "컬러 팔레트 잡아줘", "타이포 스케일", "모션 가이드"],
+        "ja": ["デザイントークン", "ランディング作成", "カラーパレット決めて", "モーション設計"],
+        "zh": ["设计令牌", "做个落地页", "定配色", "字体层级", "动效规范"]
+      }
+    },
+    "oma-dev-workflow": {
+      "keywords": {
+        "*": ["mise.toml", "CI/CD"],
+        "en": ["setup mise task", "configure ci pipeline", "automate release", "add git hook", "monorepo tasks", "mise task", "monorepo workflow", "ci/cd pipeline", "git hook", "release automation", "build automation"],
+        "ko": ["mise 태스크", "ci 파이프라인", "릴리즈 자동화", "깃 훅 설정", "모노레포 워크플로우"],
+        "ja": ["miseタスク", "ciパイプライン", "リリース自動化", "gitフック", "モノレポ作業"],
+        "zh": ["mise 任务", "ci 流水线", "发布自动化", "git 钩子", "monorepo 工作流"]
+      }
+    },
+    "oma-frontend": {
+      "keywords": {
+        "*": ["shadcn", "FSD"],
+        "en": ["make a react component", "build a next page", "style with tailwind", "hook up shadcn", "react component", "next.js page", "tailwind styling", "shadcn component", "frontend ui", "FSD architecture"],
+        "ko": ["리액트 컴포넌트", "넥스트 페이지", "tailwind로 스타일", "shadcn 붙여줘", "프론트 구현"],
+        "ja": ["reactコンポーネント", "nextページ", "tailwindで装飾", "shadcn導入", "フロント実装"],
+        "zh": ["写个 react 组件", "next 页面", "用 tailwind", "接入 shadcn", "前端实现"]
+      }
+    },
+    "oma-mobile": {
+      "keywords": {
+        "*": ["riverpod", "cupertino"],
+        "en": ["flutter screen", "react native view", "dart widget", "ios android build", "flutter widget", "react native screen", "dart code", "riverpod state", "mobile app", "android ios"],
+        "ko": ["플러터 화면", "리액트 네이티브 화면", "다트 위젯", "안드로이드 아이폰 앱", "모바일 앱"],
+        "ja": ["flutter画面", "react native画面", "dartウィジェット", "iosアンドロイド", "モバイルアプリ"],
+        "zh": ["flutter 页面", "react native 页面", "dart 组件", "安卓 ios", "移动端应用"]
+      }
+    },
+    "oma-orchestrator": {
+      "keywords": {
+        "*": ["MCP Memory"],
+        "en": ["spawn parallel agents", "run agents in parallel", "fan out work", "review loop pipeline", "parallel subagents", "multi agent orchestration", "spawn agents", "review loop", "mcp memory coordination"],
+        "ko": ["에이전트 병렬 실행", "동시에 에이전트 돌려", "fan-out", "리뷰 루프 돌려"],
+        "ja": ["エージェント並列実行", "同時にエージェント", "fan-out", "レビューループ"],
+        "zh": ["并行跑代理", "同时派发代理", "fan-out 任务", "评审循环"]
+      }
+    },
+    "oma-pdf": {
+      "keywords": {
+        "*": ["opendataloader-pdf"],
+        "en": ["convert this pdf", "pdf to markdown", "extract pdf content", "parse pdf document", "parse pdf", "extract pdf", "convert pdf", "pdf ingestion"],
+        "ko": ["pdf 변환", "pdf 파싱", "pdf 마크다운", "pdf 내용 추출"],
+        "ja": ["pdf変換", "pdfをマークダウン", "pdfを解析", "pdfの内容を抽出"],
+        "zh": ["pdf 转换", "pdf 解析", "pdf 转 markdown", "提取 pdf 内容"]
+      }
+    },
+    "oma-pm": {
+      "keywords": {
+        "*": ["PRD", "WBS"],
+        "en": ["break down requirements", "write a spec", "prioritize features", "define scope", "product roadmap", "requirements breakdown", "task decomposition", "product spec", "scope definition", "prioritization matrix"],
+        "ko": ["요구사항 정리", "스펙 문서", "우선순위 매겨줘", "스코프 정의", "제품 로드맵"],
+        "ja": ["要件を整理", "スペック作成", "優先度付け", "スコープ定義", "プロダクトロードマップ"],
+        "zh": ["梳理需求", "写规格书", "排优先级", "界定范围", "产品路线图"]
+      }
+    },
+    "oma-qa": {
+      "keywords": {
+        "*": ["OWASP", "WCAG", "lighthouse"],
+        "en": ["run a security audit", "accessibility check", "performance review", "coverage report", "quality gate", "owasp review", "accessibility audit", "test coverage"],
+        "ko": ["접근성 점검", "성능 점검", "커버리지 확인", "품질 게이트"],
+        "ja": ["アクセシビリティ確認", "パフォーマンス点検", "カバレッジ確認", "品質ゲート"],
+        "zh": ["无障碍检查", "性能检查", "覆盖率报告", "质量门禁"]
+      }
+    },
+    "oma-recap": {
+      "keywords": {
+        "*": ["recap"],
+        "en": ["summarize my day", "daily recap", "weekly summary", "what did i work on", "transcript summary", "conversation recap", "daily summary", "work summary", "transcript analysis", "multi tool recap"],
+        "ko": ["오늘 한 일 정리", "하루 요약", "주간 요약", "작업 내용 정리", "대화 요약"],
+        "ja": ["今日の作業まとめ", "日次サマリ", "週次サマリ", "作業振り返り", "会話まとめ"],
+        "zh": ["今天做了什么", "日报总结", "周报总结", "工作回顾", "对话总结"]
+      }
+    },
+    "oma-scm": {
+      "keywords": {
+        "*": [],
+        "en": ["set up branching", "resolve merge conflict", "rebase my branch", "tag a release", "use git worktree", "branching strategy", "rebase workflow", "git worktree"],
+        "ko": ["머지 충돌 해결", "리베이스해줘", "워크트리 써줘"],
+        "ja": ["マージ衝突解決", "リベースして", "リリースタグ", "worktree使って"],
+        "zh": ["解决合并冲突", "帮我 rebase", "打发布标签", "用 worktree"]
+      }
+    },
+    "oma-search": {
+      "keywords": {
+        "*": ["context7"],
+        "en": ["look up docs", "find the library", "search the web", "reference docs", "library api", "search docs", "find library", "code search", "web research", "library reference", "context7 docs"],
+        "ko": ["검색해줘", "찾아줘", "레퍼런스 찾아", "문서 찾아줘", "라이브러리 찾아줘"],
+        "ja": ["検索して", "調べて", "ドキュメント探して", "ライブラリ調べて", "リファレンス探して"],
+        "zh": ["帮我查", "搜一下", "找找文档", "找个库", "查参考资料"]
+      }
+    },
+    "oma-tf-infra": {
+      "keywords": {
+        "*": ["terraform", "OIDC", "IAM"],
+        "en": ["terraform plan", "provision infrastructure", "iac module", "cloud resources", "optimize cost", "iac provisioning", "cloud infrastructure", "iam policy", "oidc setup", "cost optimization"],
+        "ko": ["테라폼 플랜", "인프라 프로비저닝", "iac 모듈", "클라우드 리소스", "비용 최적화"],
+        "ja": ["terraformプラン", "インフラ構築", "iacモジュール", "クラウドリソース", "コスト最適化"],
+        "zh": ["terraform plan", "搭建基础设施", "iac 模块", "云资源", "成本优化"]
+      }
+    },
+    "oma-translator": {
+      "keywords": {
+        "*": ["arb", "i18n"],
+        "en": ["translate this", "localize the strings", "ui translation", "multilingual copy", "translate to english", "translate strings", "localization copy", "multilingual content", "arb translation"],
+        "ko": ["번역해줘", "번역 부탁", "다국어로", "영어로 바꿔줘", "현지화해줘"],
+        "ja": ["翻訳して", "英訳", "多言語化", "ローカライズして", "訳して"],
+        "zh": ["翻译一下", "帮我翻译", "多语言", "本地化", "翻成英文"]
+      }
+    }
+  },
   "informationalPatterns": {
     "en": ["what is", "what are", "how to", "how does", "explain", "describe", "tell me about", "keyword", "false positive", "detected", "detector", "뭐야", "무엇", "是什么", "とは"],
     "ko": ["뭐야", "뭐임", "무엇", "어떻게", "설명해", "알려줘", "키워드", "감지", "오탐"],

@@ -6,10 +6,16 @@
   "projectDirEnv": null,
   "runtime": "bun",
   "events": {
-    "UserPromptSubmit": {
-      "hook": "keyword-detector.ts",
-      "timeout": 5
-    },
+    "UserPromptSubmit": [
+      {
+        "hook": "keyword-detector.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "skill-injector.ts",
+        "timeout": 3
+      }
+    ],
     "PreToolUse": {
       "hook": "test-filter.ts",
       "matcher": "Bash",

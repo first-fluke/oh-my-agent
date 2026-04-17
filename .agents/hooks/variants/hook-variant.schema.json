@@ -35,9 +35,16 @@
     },
     "events": {
       "type": "object",
-      "description": "Map of vendor event names to hook configs. Keys are vendor-specific event names (e.g., PreToolUse, BeforeTool).",
+      "description": "Map of vendor event names to hook configs. Keys are vendor-specific event names (e.g., PreToolUse, BeforeTool). Value may be a single hook entry or an ordered array of entries (chained).",
       "additionalProperties": {
-        "$ref": "#/$defs/hookEvent"
+        "oneOf": [
+          { "$ref": "#/$defs/hookEvent" },
+          {
+            "type": "array",
+            "items": { "$ref": "#/$defs/hookEvent" },
+            "minItems": 1
+          }
+        ]
       },
       "minProperties": 1
     },

@@ -6,11 +6,18 @@
   "projectDirEnv": "GEMINI_PROJECT_DIR",
   "runtime": "bun",
   "events": {
-    "BeforeAgent": {
-      "hook": "keyword-detector.ts",
-      "matcher": "*",
-      "timeout": 5000
-    },
+    "BeforeAgent": [
+      {
+        "hook": "keyword-detector.ts",
+        "matcher": "*",
+        "timeout": 5000
+      },
+      {
+        "hook": "skill-injector.ts",
+        "matcher": "*",
+        "timeout": 3000
+      }
+    ],
     "BeforeTool": {
       "hook": "test-filter.ts",
       "matcher": "run_shell_command",
