@@ -37,6 +37,7 @@ description: Context-aware translation that preserves tone, style, and natural w
 13. Never change the meaning to "sound better"
 14. Never skip verification stage for batches > 10 strings
 15. Never modify source file structure (keys, nesting, comments)
+16. Never preserve source-language formatting artifacts that are unnatural in the target language. For CJK targets (Korean, Japanese, Chinese), em dashes (—), title case in headings, and trailing "-ing" participle clauses must be restructured — even when the source uses them. See `resources/anti-ai-patterns.md` rules 13–16.
 
 ## Context Inference
 
@@ -96,9 +97,20 @@ Rebuild from meaning, following target language norms:
 - Many languages (Korean, Japanese, Chinese, etc.) allow subject or pronoun omission when contextually clear
 - Don't force subjects or pronouns that feel unnatural in the target language
 
-### Stage 4: Verify
+### Stage 4: Verification Gate (blocking — do not emit output until every item is confirmed)
 
-Check against rubric (see `resources/translation-rubric.md`):
+This stage is mandatory. Skipping any item is a bug, not a shortcut. Before producing the final translation, run the mechanical checks first, then the rubric.
+
+**A. Mechanical checks (run before rubric, must all pass):**
+
+- **CJK em dash scan**: For Korean, Japanese, or Chinese targets, search the draft output for `—`. Every occurrence must be replaced with a comma, colon, parenthesis, or restructured sentence. Zero em dashes in the emitted output.
+- **Placeholder integrity**: Every `{name}`, `{{count}}`, `%s`, `<tag>`, and `` `code` `` from the source appears unchanged in the target.
+- **Structure parity**: Headings, list bullets, table rows, code blocks, and links match the source count and nesting.
+- **Register consistency**: One sentence-ending style throughout (don't mix `-ㅂ니다` with `-다`, formal with casual).
+
+If any mechanical check fails, revise and re-run. Do not proceed to the rubric until all pass.
+
+**B. Translation rubric (see `resources/translation-rubric.md`):**
 1. Does it read like it was originally written in the target language?
 2. Are domain terms consistent with existing translations in the project?
 3. Is the register consistent throughout?
@@ -106,15 +118,15 @@ Check against rubric (see `resources/translation-rubric.md`):
 5. Are cultural references adapted appropriately?
 6. Are emotional connotations preserved (not flattened into neutral descriptions)?
 
-Check against anti-AI patterns (see `resources/anti-ai-patterns.md`):
+**C. Anti-AI patterns (see `resources/anti-ai-patterns.md`):**
 7. No AI vocabulary clustering or inflated significance
 8. No promotional tone upgrade beyond the source
 9. No synonym cycling — consistent terminology
 10. No source-language word order leaking through
-11. No unnecessary bold, em dashes, or formatting artifacts
+11. No unnecessary bold or formatting artifacts (em dashes already covered in mechanical check A)
 12. No Europeanized patterns (unnecessary connectives, passive voice, noun pile-up, over-nominalization, forced pronouns, cleft calques)
 
-Check figurative language handling:
+**D. Figurative language handling:**
 13. Were all metaphors/idioms handled per the classify decision (interpret/substitute/retain)?
 14. Do figurative expressions read naturally in the target language, not as literal calques?
 
