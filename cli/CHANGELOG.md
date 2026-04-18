@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.9.0...cli-v5.10.0) (2026-04-18)
+
+
+### Features
+
+* **cli:** auto-update CLI when outdated, opt-out via config ([a8ae5c9](https://github.com/first-fluke/oh-my-agent/commit/a8ae5c9e71ffd8411f0bf8637f3d4fa52a29367d))
+
 ## [5.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.8.0...cli-v5.9.0) (2026-04-17)
 
 
