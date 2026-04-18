@@ -352,6 +352,15 @@
         "zh": ["写个 react 组件", "next 页面", "用 tailwind", "接入 shadcn", "前端实现"]
       }
     },
+    "oma-hwp": {
+      "keywords": {
+        "*": ["kordoc", "hwp", "hwpx", "hwpml"],
+        "en": ["convert this hwp", "hwp to markdown", "parse hwp", "parse hwpx", "extract hwp content", "hangul word processor", "hwp ingestion"],
+        "ko": ["한글 파일", "한글 변환", "한글 파싱", "hwp 변환", "hwp 파싱", "hwp 마크다운", "hwpx 변환", "hwpx 파싱"],
+        "ja": ["hwp変換", "hwpをマークダウン", "hwpを解析", "韓国語ワープロ"],
+        "zh": ["hwp 转换", "hwp 解析", "hwp 转 markdown", "韩文文档"]
+      }
+    },
     "oma-mobile": {
       "keywords": {
         "*": ["riverpod", "cupertino"],
