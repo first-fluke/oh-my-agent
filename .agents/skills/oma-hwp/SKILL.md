@@ -27,8 +27,9 @@ description: >
 4. kordoc handles structure preservation (headings, tables, nested tables, footnotes, hyperlinks, images)
 5. Security defenses (ZIP bomb, XXE, SSRF, XSS) are provided by kordoc — do not add our own
 6. For encrypted or DRM-locked HWP, report the limitation to the user clearly
-7. Validate the output Markdown is readable and well-structured before reporting success
-8. Report any conversion issues (missing tables, garbled text, empty output) to the user
+7. After kordoc runs, post-process with `resources/flatten-tables.ts` to convert HTML `<table>` blocks (kordoc's fallback for merged cells) into GFM pipe tables. Merged-cell fidelity is traded for pure-Markdown output — this is the accepted default
+8. Validate the output Markdown is readable and well-structured before reporting success
+9. Report any conversion issues (missing tables, garbled text, empty output) to the user
 
 ## How to Execute
 Follow `resources/execution-protocol.md` step by step.

@@ -55,6 +55,19 @@ Notes:
 - Default format is `markdown`. Pass `--format json` only when you need the structured AST.
 - `--silent` suppresses progress output — useful in automation / piping contexts.
 
+## Step 2.5: Flatten HTML tables (default)
+
+kordoc emits HTML `<table>` blocks for tables with `colspan` / `rowspan` because GFM cannot represent merged cells. Most consumers (LLMs, plain-MD viewers) prefer pure GFM, so this skill post-processes the output:
+
+```bash
+bun run "{skill_resources}/flatten-tables.ts" "{output_path}"
+```
+
+- `{skill_resources}` = `.agents/skills/oma-hwp/resources`
+- Ensure `bun install` has been run once inside that directory (it installs `turndown` + `turndown-plugin-gfm` locally)
+- Merged cells get flattened during the conversion — this is the accepted trade-off
+- Skip this step only if the caller explicitly needs HTML tables preserved
+
 ## Step 3: Verify
 
 1. Read the generated Markdown file
