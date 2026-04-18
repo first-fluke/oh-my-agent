@@ -10,6 +10,13 @@
 
 ตอนนี้ใช้งานได้กับ AI IDE ชั้นนำทั้งหมดได้แก่: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode และอื่นๆ
 
+Sub-agent แบบ vendor-native ถูกสร้างขึ้นจาก `.agents/agents/`:
+- Claude Code ใช้ `.claude/agents/*.md`
+- Codex CLI ใช้ `.codex/agents/*.toml`
+- Gemini CLI ใช้ `.gemini/agents/*.md`
+
+เมื่อ workflow แก้ไข agent ไปยัง vendor เดียวกับ runtime ปัจจุบัน ระบบจะใช้ path ของ native sub-agent ของ vendor นั้นก่อน งานข้าม vendor จะถอยไปใช้ `oma agent:spawn`
+
 ## Quick Start
 
 ```bash
@@ -96,9 +103,14 @@ bun install --global oh-my-agent   # หรือ: brew install oh-my-agent
 # ใช้งานได้ทุกที่
 oma doctor                  # ตรวจสอบความพร้อมของระบบ
 oma dashboard               # ตรวจสอบการทำงานของเอเจนต์แบบเรียลไทม์
+oma link                    # สร้าง .claude/.codex/.gemini/ฯลฯ ใหม่จาก .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+การเลือกโมเดลทำงานเป็นสองชั้น:
+- Dispatch แบบ same-vendor native ใช้คำนิยาม vendor agent ที่สร้างไว้ใน `.claude/agents/`, `.codex/agents/` หรือ `.gemini/agents/`
+- Dispatch แบบ cross-vendor หรือ fallback CLI ใช้ค่าเริ่มต้นของ vendor ใน `.agents/skills/oma-orchestrator/config/cli-config.yaml`
 
 ## ทำไมต้อง oh-my-agent?
 

@@ -10,6 +10,13 @@ Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa 
 
 Hỗ trợ tất cả các AI IDE chính: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode và nhiều hơn nữa.
 
+Sub-agent bản địa của nhà cung cấp được sinh ra từ `.agents/agents/`:
+- Claude Code dùng `.claude/agents/*.md`
+- Codex CLI dùng `.codex/agents/*.toml`
+- Gemini CLI dùng `.gemini/agents/*.md`
+
+Khi workflow phân giải một agent về cùng nhà cung cấp với runtime hiện tại, nó sẽ ưu tiên dùng đường dẫn sub-agent bản địa của nhà cung cấp đó trước. Các tác vụ chéo nhà cung cấp sẽ quay về `oma agent:spawn`.
+
 ## Bắt đầu nhanh
 
 ```bash
@@ -94,9 +101,14 @@ bun install --global oh-my-agent   # hoặc: brew install oh-my-agent
 # Sử dụng ở bất kỳ đâu
 oma doctor                  # Kiểm tra sức khỏe hệ thống
 oma dashboard               # Giám sát agent thời gian thực
+oma link                    # Tạo lại .claude/.codex/.gemini/v.v. từ .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+Việc chọn model đi theo hai lớp:
+- Dispatch bản địa cùng nhà cung cấp dùng định nghĩa agent được sinh ra trong `.claude/agents/`, `.codex/agents/` hoặc `.gemini/agents/`.
+- Dispatch chéo nhà cung cấp hoặc fallback CLI dùng giá trị mặc định của nhà cung cấp trong `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
 ## Tại sao chọn oh-my-agent?
 

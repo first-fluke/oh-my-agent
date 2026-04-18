@@ -10,6 +10,13 @@
 
 Работает со всеми основными AI IDE: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode и другими.
 
+Вендорные нативные субагенты генерируются из `.agents/agents/`:
+- Claude Code использует `.claude/agents/*.md`
+- Codex CLI использует `.codex/agents/*.toml`
+- Gemini CLI использует `.gemini/agents/*.md`
+
+Когда workflow резолвит агента к тому же вендору, что и текущий рантайм, он должен сначала использовать нативный путь субагента этого вендора. Кросс-вендорные задачи откатываются к `oma agent:spawn`.
+
 ## Быстрый старт
 
 ```bash
@@ -94,9 +101,14 @@ bun install --global oh-my-agent   # или: brew install oh-my-agent
 # Использовать где угодно
 oma doctor                  # Проверка здоровья
 oma dashboard               # Мониторинг в реальном времени
+oma link                    # Регенерирует .claude/.codex/.gemini/и т.д. из .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+Выбор модели работает в два слоя:
+- Нативный диспатч того же вендора использует сгенерированное определение агента в `.claude/agents/`, `.codex/agents/` или `.gemini/agents/`.
+- Кросс-вендорный или fallback CLI диспатч использует дефолты вендора из `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
 ## Почему oh-my-agent?
 

@@ -10,6 +10,13 @@ Statt dass eine einzige KI alles erledigt (und sich auf halbem Weg verheddert), 
 
 Funktioniert mit allen großen KI-IDEs: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode und weiteren.
 
+Vendor-native Subagenten werden aus `.agents/agents/` generiert:
+- Claude Code verwendet `.claude/agents/*.md`
+- Codex CLI verwendet `.codex/agents/*.toml`
+- Gemini CLI verwendet `.gemini/agents/*.md`
+
+Wenn ein Workflow einen Agenten zum gleichen Vendor wie die aktuelle Runtime auflöst, sollte er zuerst den nativen Subagent-Pfad dieses Vendors verwenden. Vendor-übergreifende Aufgaben fallen auf `oma agent:spawn` zurück.
+
 ## Schnellstart
 
 ```bash
@@ -94,9 +101,14 @@ bun install --global oh-my-agent   # oder: brew install oh-my-agent
 # Überall nutzen
 oma doctor                  # Gesundheitscheck
 oma dashboard               # Echtzeit-Agenten-Monitoring
+oma link                    # Regeneriert .claude/.codex/.gemini/etc. aus .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+Die Modellauswahl folgt zwei Schichten:
+- Same-Vendor-Native-Dispatch verwendet die generierte Vendor-Agent-Definition in `.claude/agents/`, `.codex/agents/` oder `.gemini/agents/`.
+- Cross-Vendor- oder Fallback-CLI-Dispatch verwendet die Vendor-Defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
 ## Warum oh-my-agent?
 

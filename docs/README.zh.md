@@ -6,9 +6,16 @@
 
 有没有想过，要是你的 AI 助手有同事就好了？oh-my-agent 就是干这个的。
 
-与其让一个 AI 包揽一切（然后做到一半就迷路），oh-my-agent 把工作分配给**专业 agent** — frontend、backend、architecture、QA、PM、DB、mobile、infra、debug、design 等等。每个 agent 深耕自己的领域，拥有专属工具和检查清单，各司其职。
+与其让一个 AI 包揽一切（然后做到一半就迷路），oh-my-agent 把工作分配给**专业 agent**：frontend、backend、architecture、QA、PM、DB、mobile、infra、debug、design 等等。每个 agent 深耕自己的领域，拥有专属工具和检查清单，各司其职。
 
 支持所有主流 AI IDE：Antigravity、Claude Code、Cursor、Gemini CLI、Codex CLI、OpenCode 等。
+
+厂商原生子 agent 由 `.agents/agents/` 生成：
+- Claude Code 使用 `.claude/agents/*.md`
+- Codex CLI 使用 `.codex/agents/*.toml`
+- Gemini CLI 使用 `.gemini/agents/*.md`
+
+当工作流解析到的 agent 与当前运行时属于同一厂商时，优先走该厂商的原生子 agent 路径。跨厂商任务回退到 `oma agent:spawn`。
 
 ## 快速开始
 
@@ -49,8 +56,8 @@ bunx oh-my-agent@latest
 | **oma-pm** | 任务规划、需求拆解、API 契约定义 |
 | **oma-qa** | OWASP 安全、性能、无障碍审查 |
 | **oma-recap** | 会话历史分析与主题化工作摘要 |
-| **oma-scm** | SCM（软件配置管理）— 分支、合并、worktree、基线；Conventional Commits |
-| **oma-search** | 基于意图的搜索路由器 + 信任评分 — 文档、网页、代码、本地 |
+| **oma-scm** | SCM（软件配置管理）：分支、合并、worktree、基线、Conventional Commits |
+| **oma-search** | 基于意图的搜索路由器 + 信任评分（文档、网页、代码、本地） |
 | **oma-tf-infra** | 多云 Terraform IaC（Infrastructure as Code，基础设施即代码） |
 | **oma-translator** | 自然的多语言翻译 |
 
@@ -83,7 +90,7 @@ You: "做一个带用户认证的 TODO 应用"
 | 5 | `/debug` | 结构化根因调试 |
 | 6 | `/scm` | SCM 与 Git 工作流，Conventional Commits 支持 |
 
-**自动检测**：甚至不需要斜杠命令 — 消息里出现“架构”“计划”“审查”“调试”等关键词（支持 11 种语言！）即可自动激活对应工作流。
+**自动检测**：不用斜杠命令也行，消息里出现“架构”“计划”“审查”“调试”等关键词（支持 11 种语言！）就会自动激活对应工作流。
 
 ## CLI
 
@@ -94,20 +101,25 @@ bun install --global oh-my-agent   # 或者: brew install oh-my-agent
 # 随处使用
 oma doctor                  # 健康检查
 oma dashboard               # 实时 agent 监控
+oma link                    # 从 .agents/ 重新生成 .claude/.codex/.gemini 等
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+模型选择分两层：
+- 同厂商原生调度使用生成在 `.claude/agents/`、`.codex/agents/`、`.gemini/agents/` 里的厂商 agent 定义。
+- 跨厂商或 CLI 回退调度使用 `.agents/skills/oma-orchestrator/config/cli-config.yaml` 里的厂商默认值。
 
 ## 为什么选 oh-my-agent？
 
 > [深入了解 →](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)
 
-- **可移植** — `.agents/` 跟着项目走，不被任何 IDE 绑定
-- **角色化** — 像真正的工程团队一样建模，而不是一堆 prompt 的堆砌
-- **省 token** — 双层 skill 设计节省约 75% 的 token
-- **质量优先** — 内置 Charter preflight、quality gate 和审查工作流
-- **多厂商** — 按 agent 类型混用 Gemini、Claude、Codex、Qwen
-- **可观测** — 终端和 Web 仪表盘实时监控
+- **可移植**：`.agents/` 跟着项目走，不被任何 IDE 绑定
+- **角色化**：像真正的工程团队一样建模，而不是一堆 prompt 的堆砌
+- **省 token**：双层 skill 设计节省约 75% 的 token
+- **质量优先**：内置 Charter preflight、quality gate 和审查工作流
+- **多厂商**：按 agent 类型混用 Gemini、Claude、Codex、Qwen
+- **可观测**：终端和 Web 仪表盘实时监控
 
 ## 架构
 
@@ -158,9 +170,9 @@ flowchart TD
 
 ## 了解更多
 
-- **[详细文档](./AGENTS_SPEC.md)** — 完整技术规格和架构
-- **[支持的 Agent](./SUPPORTED_AGENTS.md)** — 各 IDE 的 agent 支持情况
-- **[Web 文档](https://first-fluke.github.io/oh-my-agent/)** — 指南、教程和 CLI 参考
+- **[详细文档](./AGENTS_SPEC.md)**：完整技术规格和架构
+- **[支持的 Agent](./SUPPORTED_AGENTS.md)**：各 IDE 的 agent 支持情况
+- **[Web 文档](https://first-fluke.github.io/oh-my-agent/)**：指南、教程和 CLI 参考
 
 ## 赞助
 

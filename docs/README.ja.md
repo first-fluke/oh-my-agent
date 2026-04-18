@@ -6,9 +6,16 @@
 
 AIアシスタントに同僚がいたらいいのに、って思ったことありませんか？ oh-my-agentはまさにそれです。
 
-1つのAIに全部やらせて途中で混乱する代わりに、oh-my-agentは作業を**専門エージェント**に分担します — frontend、backend、architecture、QA、PM、DB、mobile、infra、debug、designなど。各エージェントは自分の領域を深く理解し、専用ツールとチェックリストを持ち、担当範囲に集中します。
+1つのAIに全部やらせて途中で混乱する代わりに、oh-my-agentは作業を**専門エージェント**に分担します。担当するのはfrontend、backend、architecture、QA、PM、DB、mobile、infra、debug、designなどの領域です。各エージェントは自分の領域を深く理解し、専用ツールとチェックリストを持ち、担当範囲に集中します。
 
 主要なAI IDEすべてに対応: Antigravity、Claude Code、Cursor、Gemini CLI、Codex CLI、OpenCodeなど。
+
+ベンダーネイティブのサブエージェントは `.agents/agents/` から生成されます。
+- Claude Code は `.claude/agents/*.md` を使用
+- Codex CLI は `.codex/agents/*.toml` を使用
+- Gemini CLI は `.gemini/agents/*.md` を使用
+
+ワークフローが現在のランタイムと同じベンダーのエージェントを解決するときは、そのベンダーのネイティブサブエージェントパスを優先します。ベンダーが異なる場合は `oma agent:spawn` にフォールバックします。
 
 ## クイックスタート
 
@@ -49,8 +56,8 @@ bunx oh-my-agent@latest
 | **oma-pm** | タスク計画、要件分解、APIコントラクト定義 |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティレビュー |
 | **oma-recap** | 会話履歴の分析とテーマ別作業サマリー |
-| **oma-scm** | SCM（ソフトウェア構成管理）— ブランチ、マージ、ワークツリー、ベースライン；Conventional Commits |
-| **oma-search** | インテント型検索ルーター＋信頼スコア — ドキュメント、ウェブ、コード、ローカル |
+| **oma-scm** | SCM（ソフトウェア構成管理）: ブランチ、マージ、ワークツリー、ベースライン、Conventional Commits |
+| **oma-search** | インテント型検索ルーター＋信頼スコア（ドキュメント、ウェブ、コード、ローカル） |
 | **oma-tf-infra** | マルチクラウド Terraform IaC（Infrastructure as Code） |
 | **oma-translator** | 自然な多言語翻訳 |
 
@@ -94,20 +101,25 @@ bun install --global oh-my-agent   # または: brew install oh-my-agent
 # どこでも使える
 oma doctor                  # ヘルスチェック
 oma dashboard               # リアルタイムエージェントモニタリング
+oma link                    # .agents/ から .claude/.codex/.gemini などを再生成
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+モデル選択は2層で行われます。
+- 同一ベンダーのネイティブディスパッチは、`.claude/agents/`、`.codex/agents/`、`.gemini/agents/` に生成されたベンダーエージェント定義を使用します。
+- クロスベンダーや CLI フォールバックのディスパッチでは、`.agents/skills/oma-orchestrator/config/cli-config.yaml` のベンダーデフォルトを使用します。
 
 ## なぜ oh-my-agent？
 
 > [詳しくはこちら →](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)
 
-- **ポータブル** — `.agents/`がプロジェクトと一緒に移動、特定のIDEに縛られない
-- **ロールベース** — プロンプトの寄せ集めではなく、実際のエンジニアリングチームのようにモデル化
-- **トークン効率的** — 2レイヤースキル設計でトークンを約75%節約
-- **品質重視** — Charter preflight、quality gate、レビューワークフロー内蔵
-- **マルチベンダー** — エージェントタイプごとにGemini、Claude、Codex、Qwenを混在可能
-- **可観測性** — ターミナルとWebダッシュボードでリアルタイムモニタリング
+- **ポータブル**: `.agents/` はプロジェクトと一緒に移動し、特定のIDEに縛られません
+- **ロールベース**: プロンプトの寄せ集めではなく、実際のエンジニアリングチームのように設計
+- **トークン効率**: 2レイヤースキル設計でトークンを約75%節約
+- **品質重視**: Charter preflight、quality gate、レビューワークフローを内蔵
+- **マルチベンダー**: エージェントタイプごとにGemini、Claude、Codex、Qwenを混在可能
+- **可観測性**: ターミナルとWebダッシュボードでリアルタイムにモニタリング
 
 ## アーキテクチャ
 
@@ -158,9 +170,9 @@ flowchart TD
 
 ## もっと詳しく
 
-- **[詳細ドキュメント](./AGENTS_SPEC.md)** — 完全な技術仕様とアーキテクチャ
-- **[対応エージェント](./SUPPORTED_AGENTS.md)** — IDE別エージェント対応状況
-- **[Webドキュメント](https://first-fluke.github.io/oh-my-agent/)** — ガイド、チュートリアル、CLIリファレンス
+- **[詳細ドキュメント](./AGENTS_SPEC.md)**: 完全な技術仕様とアーキテクチャ
+- **[対応エージェント](./SUPPORTED_AGENTS.md)**: IDE別エージェント対応状況
+- **[Webドキュメント](https://first-fluke.github.io/oh-my-agent/)**: ガイド、チュートリアル、CLIリファレンス
 
 ## スポンサー
 

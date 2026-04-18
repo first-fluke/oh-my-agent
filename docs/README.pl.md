@@ -10,6 +10,13 @@ Zamiast jednego AI, ktory robi wszystko (i gubi sie w polowie), oh-my-agent rozd
 
 Dziala ze wszystkimi glownymi AI IDE: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode i innymi.
 
+Natywne subagenty dostawcy sa generowane z `.agents/agents/`:
+- Claude Code uzywa `.claude/agents/*.md`
+- Codex CLI uzywa `.codex/agents/*.toml`
+- Gemini CLI uzywa `.gemini/agents/*.md`
+
+Gdy workflow rozwiazuje agenta do tego samego dostawcy co biezacy runtime, powinien najpierw uzyc natywnej sciezki subagenta tego dostawcy. Zadania miedzy dostawcami wracaja do `oma agent:spawn`.
+
 ## Szybki start
 
 ```bash
@@ -94,9 +101,14 @@ bun install --global oh-my-agent   # lub: brew install oh-my-agent
 # Uzywaj gdziekolwiek
 oma doctor                  # Sprawdzenie stanu
 oma dashboard               # Monitoring w czasie rzeczywistym
+oma link                    # Regeneruj .claude/.codex/.gemini/itd. z .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 ```
+
+Wybor modelu przebiega w dwoch warstwach:
+- Natywny dispatch tego samego dostawcy uzywa wygenerowanej definicji agenta dostawcy w `.claude/agents/`, `.codex/agents/` lub `.gemini/agents/`.
+- Dispatch miedzy dostawcami lub awaryjny CLI uzywa domyslnych wartosci dostawcy w `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
 ## Dlaczego oh-my-agent?
 
