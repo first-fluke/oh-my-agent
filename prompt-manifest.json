@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.10.0",
-  "releaseDate": "2026-04-18T00:53:47.007Z",
+  "releaseDate": "2026-04-18T13:16:35.215Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -686,8 +686,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "741955d078d1fb584187d408ee5b964ed9cb2eaa6fe0d6d9834e59f424f99e44",
-      "size": 6950
+      "sha256": "45683fafae5ba5703b646aaf4f5fb3ad13eab9426b3a7f05c7ab93300474490f",
+      "size": 3585
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
@@ -721,13 +721,13 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tailwind-rules.md",
-      "sha256": "99b9f27def43872358d52ce33fdd8ae191d6a3e1b423f1abef352603a6f8c82a",
-      "size": 6522
+      "sha256": "334faafdea6dcbc85b42a58dfb2076015d4a1a7dabfb4b64853696961ab9c09f",
+      "size": 2746
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "9e41d88f070a583db91f26a6b645bc356787b01416e4f9cc080f8cd480c2b98c",
-      "size": 909
+      "sha256": "2b7b32749fbb98b0b8b0c6bb3e6adbe2c8cde6935b57e1c31698ac5a321bfbc4",
+      "size": 435
     },
     {
       "path": ".agents/skills/oma-mobile/SKILL.md",
