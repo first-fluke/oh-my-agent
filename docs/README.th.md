@@ -52,6 +52,7 @@ bunx oh-my-agent@latest
 | **oma-design** | ระบบการออกแบบ (Design systems), tokens, accessibility, responsive |
 | **oma-dev-workflow** | CI/CD, releases, ระบบอัตโนมัติสำหรับ monorepo |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
+| **oma-hwp** | แปลงไฟล์ HWP/HWPX/HWPML เป็น Markdown |
 | **oma-mobile** | จัดการ cross platform application ด้วย Flutter |
 | **oma-orchestrator** | รันเอเจนต์แบบ parallel ผ่าน CLI |
 | **oma-pdf** | แปลงไฟล์ PDF เป็น Markdown |

@@ -50,6 +50,7 @@ Wähl ein Preset und los geht's:
 | **oma-design** | Design-Systeme, Tokens, Barrierefreiheit, Responsive |
 | **oma-dev-workflow** | CI/CD, Releases, Monorepo-Automatisierung |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
+| **oma-hwp** | HWP/HWPX/HWPML-zu-Markdown-Konvertierung |
 | **oma-mobile** | Plattformübergreifende Apps mit Flutter |
 | **oma-orchestrator** | Parallele Agentenausführung über CLI |
 | **oma-pdf** | PDF-zu-Markdown-Konvertierung |

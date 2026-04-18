@@ -52,6 +52,7 @@ bunx oh-my-agent@latest
 | **oma-design** | 디자인 시스템, 토큰, 접근성, 반응형 |
 | **oma-dev-workflow** | CI/CD, 릴리스, 모노레포 자동화 |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
+| **oma-hwp** | HWP/HWPX/HWPML을 Markdown으로 변환 |
 | **oma-mobile** | Flutter 크로스플랫폼 앱 |
 | **oma-orchestrator** | CLI 기반 병렬 에이전트 실행 |
 | **oma-pdf** | PDF를 Markdown으로 변환 |

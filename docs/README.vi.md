@@ -50,6 +50,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-design** | Hệ thống thiết kế, token, accessibility, responsive |
 | **oma-dev-workflow** | CI/CD, release, tự động hóa monorepo |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
+| **oma-hwp** | Chuyển đổi HWP/HWPX/HWPML sang Markdown |
 | **oma-mobile** | Ứng dụng đa nền tảng với Flutter |
 | **oma-orchestrator** | Thực thi agent song song qua CLI |
 | **oma-pdf** | Chuyển đổi PDF sang Markdown |

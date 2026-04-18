@@ -50,6 +50,7 @@ bunx oh-my-agent@latest
 | **oma-design** | Дизайн-системы, токены, доступность, адаптивность |
 | **oma-dev-workflow** | CI/CD, релизы, автоматизация монорепо |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
+| **oma-hwp** | Конвертация HWP/HWPX/HWPML в Markdown |
 | **oma-mobile** | Кроссплатформенные приложения на Flutter |
 | **oma-orchestrator** | Параллельный запуск агентов через CLI |
 | **oma-pdf** | Конвертация PDF в Markdown |
