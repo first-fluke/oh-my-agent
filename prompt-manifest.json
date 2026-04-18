@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.11.0",
-  "releaseDate": "2026-04-18T15:00:22.301Z",
+  "releaseDate": "2026-04-18T15:06:18.512Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -731,8 +731,8 @@
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
-      "sha256": "5c1fcc046770e48df7ff37306d4893505d28c7230e6b02f03c41f25bc8178131",
-      "size": 3902
+      "sha256": "e4e2dd8ffa920cc971cb83c1ff494b29ea7e4dcdcd7dba2ea5e68580eedbed46",
+      "size": 4153
     },
     {
       "path": ".agents/skills/oma-hwp/config/hwp-config.yaml",
@@ -740,9 +740,24 @@
       "size": 865
     },
     {
+      "path": ".agents/skills/oma-hwp/resources/bun.lock",
+      "sha256": "a2ac38e072aa2e0001635b68175b54b85f993d962e32be963754ba79bd22c684",
+      "size": 776
+    },
+    {
       "path": ".agents/skills/oma-hwp/resources/execution-protocol.md",
-      "sha256": "73a7b20a68b3092c069ce642739bfc522692acaab0c83da014bef5308b500fc1",
-      "size": 4211
+      "sha256": "be3c2a8be6c0b9df789c903319745e0b3744debee15ceaa07c3fb2beb0041b13",
+      "size": 4886
+    },
+    {
+      "path": ".agents/skills/oma-hwp/resources/flatten-tables.ts",
+      "sha256": "354bc1c036c7c862f72dafa02cda1c037063b14afec2b0875e72b3aa7f113ce8",
+      "size": 1521
+    },
+    {
+      "path": ".agents/skills/oma-hwp/resources/package.json",
+      "sha256": "95b318aba3eba3dbfcb4768e52d6b73ea247421005fba27cb4ae1dce28a116b6",
+      "size": 162
     },
     {
       "path": ".agents/skills/oma-hwp/resources/troubleshooting.md",
@@ -1176,6 +1191,6 @@
   "metadata": {
     "skillCount": 20,
     "workflowCount": 19,
-    "totalFiles": 233
+    "totalFiles": 236
   }
 }
