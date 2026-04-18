@@ -431,7 +431,11 @@ export async function update(force = false, ci = false): Promise<void> {
     }
   } catch (error) {
     spinner?.stop("Update failed");
-    ui.logError(error instanceof Error ? error.message : String(error));
+    ui.logError(
+      error instanceof Error
+        ? (error.stack ?? error.message)
+        : String(error),
+    );
     if (ci) {
       throw error;
     }
