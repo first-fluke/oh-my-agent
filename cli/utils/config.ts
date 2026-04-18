@@ -8,6 +8,7 @@ interface OmaConfig {
   date_format?: string;
   default_cli?: string;
   agent_cli_mapping?: Record<string, string>;
+  auto_update_cli?: boolean;
 }
 
 /**
@@ -31,6 +32,14 @@ export function loadOmaConfig(cwd?: string): OmaConfig | null {
     dir = parent;
   }
   return null;
+}
+
+/**
+ * Read auto_update_cli from oma-config.yaml. Defaults to true (opt-out).
+ */
+export function isAutoUpdateCliEnabled(cwd?: string): boolean {
+  const config = loadOmaConfig(cwd);
+  return config?.auto_update_cli !== false;
 }
 
 /**

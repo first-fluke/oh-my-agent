@@ -34,6 +34,7 @@ import {
   setNeedsReconcile,
 } from "../lib/manifest.js";
 import { generateCursorRules, mergeRulesIndexForVendor } from "../lib/rules.js";
+import { maybeSelfUpdate } from "../lib/self-update.js";
 import { ensureSerenaProject, inferSerenaLanguages } from "../lib/serena.js";
 import {
   createCliSymlinks,
@@ -45,7 +46,9 @@ import {
   readVendorsFromConfig,
 } from "../lib/skills.js";
 import { downloadAndExtract } from "../lib/tarball.js";
+import pkg from "../package.json";
 import type { VendorType } from "../types/index.js";
+import { isAutoUpdateCliEnabled } from "../utils/config.js";
 import { runMigrations } from "./migrations/index.js";
 
 /** Thin UI abstraction: interactive (@clack/prompts) vs CI (plain console) */
@@ -99,6 +102,13 @@ export async function update(force = false, ci = false): Promise<void> {
   ui.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent update ")));
 
   const cwd = process.cwd();
+
+  await maybeSelfUpdate({
+    currentVersion: pkg.version,
+    enabled: isAutoUpdateCliEnabled(cwd),
+    onSpawnStart: (msg) => ui.note(msg, "CLI auto-update"),
+    onNotice: (msg) => ui.note(msg, "CLI update available"),
+  });
 
   const localVersion = await getLocalVersion(cwd);
   const hasExistingInstall = hasInstalledProject(cwd);
@@ -432,9 +442,7 @@ export async function update(force = false, ci = false): Promise<void> {
   } catch (error) {
     spinner?.stop("Update failed");
     ui.logError(
-      error instanceof Error
-        ? (error.stack ?? error.message)
-        : String(error),
+      error instanceof Error ? (error.stack ?? error.message) : String(error),
     );
     if (ci) {
       throw error;
