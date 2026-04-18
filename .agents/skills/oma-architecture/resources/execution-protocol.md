@@ -1,7 +1,7 @@
 # Architecture Agent - Execution Protocol
 
 ## Step 0: Prepare
-1. Assess difficulty using `../_shared/core/difficulty-guide.md`
+1. Assess difficulty using `../../_shared/core/difficulty-guide.md`
 2. Clarify the decision:
    - What is being decided?
    - What constraints already exist?

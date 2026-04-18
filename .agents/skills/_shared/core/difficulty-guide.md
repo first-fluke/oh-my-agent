@@ -57,7 +57,7 @@ All agents assess task difficulty at the start and apply the appropriate protoco
      - If sprint took 2x expected turns → write checkpoint and inform user
        (see `context-budget.md` Standalone Agent Mode)
    - On gate pass → next sprint
-4. Step 4 (Verify): Full + `../_shared/core/common-checklist.md`
+4. Step 4 (Verify): Full + `common-checklist.md`
 
 #### Sprint Decomposition Example
 
