@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.11.0...cli-v5.12.0) (2026-04-18)
+
+
+### Features
+
+* **skills:** add oma-hwp skill for HWP/HWPX to Markdown ([e9cabd3](https://github.com/first-fluke/oh-my-agent/commit/e9cabd3fbb9e609836113403c918471781ed3185))
+* **skills:** flatten kordoc HTML tables to GFM in oma-hwp ([48fa0d3](https://github.com/first-fluke/oh-my-agent/commit/48fa0d3001e47afc6d536173edbc6f9e89e936c2))
+* **skills:** strip Private Use Area glyphs in oma-hwp post-process ([507df19](https://github.com/first-fluke/oh-my-agent/commit/507df19e82fbf90990d0e7bfca4745e61e90f4b2))
+
 ## [5.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.10.0...cli-v5.11.0) (2026-04-18)
 
 
