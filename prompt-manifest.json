@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.12.0",
-  "releaseDate": "2026-04-18T15:18:45.368Z",
+  "releaseDate": "2026-04-18T15:35:07.706Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -106,8 +106,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "7f3ed18864c0cc51d4b903b633aeb6d38367f14c28d79c69d8090af9cfd4f48f",
-      "size": 39194
+      "sha256": "c0ff61ba3ff6f5e9dc3226ccf0f8a64969fe362034e02b09fb170cc227044ee9",
+      "size": 39764
     },
     {
       "path": ".agents/hooks/core/types.ts",
