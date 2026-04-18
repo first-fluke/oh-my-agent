@@ -55,9 +55,12 @@ Notes:
 - Default format is `markdown`. Pass `--format json` only when you need the structured AST.
 - `--silent` suppresses progress output — useful in automation / piping contexts.
 
-## Step 2.5: Flatten HTML tables (default)
+## Step 2.5: Post-process kordoc output (default)
 
-kordoc emits HTML `<table>` blocks for tables with `colspan` / `rowspan` because GFM cannot represent merged cells. Most consumers (LLMs, plain-MD viewers) prefer pure GFM, so this skill post-processes the output:
+`resources/flatten-tables.ts` cleans up two kordoc artifacts that hurt downstream use:
+
+1. **HTML `<table>` blocks** — kordoc emits these when a table has `colspan` / `rowspan` because GFM cannot represent merged cells. Converted to GFM pipe tables via `turndown-plugin-gfm`.
+2. **Private Use Area characters** — HWP references Hancom-font-specific glyphs via U+E000-U+F8FF / U+F0000-U+FFFFD / U+100000-U+10FFFD code points. Without the Hancom font these render as blanks or tofu squares. Silently stripped.
 
 ```bash
 bun run "{skill_resources}/flatten-tables.ts" "{output_path}"
@@ -65,8 +68,8 @@ bun run "{skill_resources}/flatten-tables.ts" "{output_path}"
 
 - `{skill_resources}` = `.agents/skills/oma-hwp/resources`
 - Ensure `bun install` has been run once inside that directory (it installs `turndown` + `turndown-plugin-gfm` locally)
-- Merged cells get flattened during the conversion — this is the accepted trade-off
-- Skip this step only if the caller explicitly needs HTML tables preserved
+- Merged cells get flattened during the conversion — accepted trade-off
+- Skip this step only if the caller explicitly needs HTML tables or PUA characters preserved (rare)
 
 ## Step 3: Verify
 
