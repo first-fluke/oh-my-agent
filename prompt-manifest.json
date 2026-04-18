@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "5.10.0",
-  "releaseDate": "2026-04-18T13:44:24.455Z",
+  "version": "5.11.0",
+  "releaseDate": "2026-04-18T13:33:59.571Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -256,13 +256,13 @@
     },
     {
       "path": ".agents/skills/_shared/core/context-loading.md",
-      "sha256": "67e69b7605c814f0bd3cd78a6b0d5c0bd1ac72e35f3ac3e90c56c98862f63b75",
-      "size": 9188
+      "sha256": "e2a80add77bfc99356d3d2222f3dc3e6e29ecf186799146494df368abca3bae9",
+      "size": 9252
     },
     {
       "path": ".agents/skills/_shared/core/difficulty-guide.md",
-      "sha256": "fa71453172a6004a005cd7ff5a04905157a8da549de9d9ec3816e1034c21d567",
-      "size": 2489
+      "sha256": "f5215003757f778908f60f3fd673a83cb24e0fdfeb5ac2aeb099cb8df23f06dd",
+      "size": 2505
     },
     {
       "path": ".agents/skills/_shared/core/evaluator-tuning.md",
@@ -351,8 +351,8 @@
     },
     {
       "path": ".agents/skills/oma-architecture/resources/execution-protocol.md",
-      "sha256": "e5e15445d9cb0b8d3932ca75e1c177dc8c397dca0cd858d6e84005725a1f48e5",
-      "size": 3174
+      "sha256": "9f5d10358b99d246e07b4eb87ff527d9454aa3814f3edc72e3ebd58869c7b68c",
+      "size": 3171
     },
     {
       "path": ".agents/skills/oma-architecture/resources/methodology-selection.md",
@@ -391,8 +391,8 @@
     },
     {
       "path": ".agents/skills/oma-backend/resources/execution-protocol.md",
-      "sha256": "ad16e27ecd22b46b5ae0c6147140e6551c5f654862ea2d6fbc9073e248d01407",
-      "size": 2226
+      "sha256": "d40f9e26be1684895047b16c26f0b3a118e4d88f57f1c2c3b56f20b521c25af3",
+      "size": 2211
     },
     {
       "path": ".agents/skills/oma-backend/resources/orm-reference.md",
@@ -491,8 +491,8 @@
     },
     {
       "path": ".agents/skills/oma-db/resources/execution-protocol.md",
-      "sha256": "a211be865e7b3181e9e5144e95ec803d110f1f9405887308f4a332f32325bd62",
-      "size": 5099
+      "sha256": "807974ed18d29471bf8e6cd72ac138b3debde8797550121d35cc51fb114e7ef1",
+      "size": 5093
     },
     {
       "path": ".agents/skills/oma-db/resources/iso-controls.md",
@@ -541,8 +541,8 @@
     },
     {
       "path": ".agents/skills/oma-debug/resources/execution-protocol.md",
-      "sha256": "f9ef6d47d595bd93beb18f83e65e85112fd4dd268bd7488df32a859c4a1e4055",
-      "size": 2393
+      "sha256": "91fd71202a246096039ac9dd255d5aa58510b927891ca0b85bd3aba45c2205a6",
+      "size": 2378
     },
     {
       "path": ".agents/skills/oma-design/SKILL.md",
@@ -711,8 +711,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/execution-protocol.md",
-      "sha256": "0eae5e31cbbfa89036c7556b01f9485cdc754057ea6e75b8114a6c434ec6d871",
-      "size": 2276
+      "sha256": "295f13321d265a37de322a7f9f20f751d5c093eeff88be6f95afc316a3ef1164",
+      "size": 2261
     },
     {
       "path": ".agents/skills/oma-frontend/resources/snippets.md",
@@ -751,8 +751,8 @@
     },
     {
       "path": ".agents/skills/oma-mobile/resources/execution-protocol.md",
-      "sha256": "fa163da4f23b7712d3d5cba236fcd0db3b5b92ab26ee3c391245c470cdd72c8a",
-      "size": 2151
+      "sha256": "72aeff9ec4f67c8d3002ba3384b7dd92b413a46ad8c4e2687bd883b77991f499",
+      "size": 2136
     },
     {
       "path": ".agents/skills/oma-mobile/resources/screen-template.dart",
@@ -866,8 +866,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/execution-protocol.md",
-      "sha256": "d0f678ea3a57016858aa51a4ae88fa133b36055df4b87f35a561823a8e825ef0",
-      "size": 3097
+      "sha256": "9148e99314de203907342f1458d5063bc22223450d861712820f4a35dfc547ea",
+      "size": 3085
     },
     {
       "path": ".agents/skills/oma-pm/resources/iso-planning.md",
@@ -906,8 +906,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/execution-protocol.md",
-      "sha256": "2f63b4fd6ec2c6e269d14c7c8c36b7e9866bf672d9aa2a57961a77dd0c030049",
-      "size": 8453
+      "sha256": "0a14f60ac3d7e432e674cd2e68ab0eb35490a2f8ff025982df7dff99d7778c1c",
+      "size": 8435
     },
     {
       "path": ".agents/skills/oma-qa/resources/iso-quality.md",

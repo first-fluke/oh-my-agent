@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.10.0...cli-v5.11.0) (2026-04-18)
+
+
+### Features
+
+* **translator:** enforce em dash and formatting rules via blocking verification gate ([4690dad](https://github.com/first-fluke/oh-my-agent/commit/4690dadd8a1d2c9e7c7718f73c1ce0f16452b72b))
+
+
+### Bug Fixes
+
+* **skills:** correct shared-core relative paths ([24a21ce](https://github.com/first-fluke/oh-my-agent/commit/24a21ce432e5b89128ab4e9336bc24e4a509591d))
+
+
+### Refactoring
+
+* **skills:** expand tf-infra Step 0 with decision cues ([6fc161d](https://github.com/first-fluke/oh-my-agent/commit/6fc161d8fe910a1c2ecb13282a4b3f30c4dcbc33))
+* **skills:** slim oma-frontend and drop vendor-specific refs ([4cdcca1](https://github.com/first-fluke/oh-my-agent/commit/4cdcca14db735828a52d3efece7eb1d989117e09))
+
+
+### Documentation
+
+* **readme:** sync locales with English source and polish CJK translations ([427d6ab](https://github.com/first-fluke/oh-my-agent/commit/427d6ab4d29af6aeddf5bdafc31787831cb3414d))
+
 ## [5.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.9.0...cli-v5.10.0) (2026-04-18)
 
 
