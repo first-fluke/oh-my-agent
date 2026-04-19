@@ -221,7 +221,7 @@ export async function maybeSelfUpdate(
   if (!info.updateCommand) {
     opts.onNotice?.(
       pc.yellow(
-        `oh-my-agent ${opts.currentVersion} → ${latest} available. ${info.updateMessage ?? "Update manually."}`,
+        `global oh-my-agent ${opts.currentVersion} → ${latest} available. ${info.updateMessage ?? "Update manually."}`,
       ),
     );
     return { triggered: false, reason: "non-upgradable", latest };
@@ -236,14 +236,14 @@ export async function maybeSelfUpdate(
     child.unref();
     opts.onSpawnStart?.(
       pc.cyan(
-        `oh-my-agent ${opts.currentVersion} → ${latest} updating in background. New version applies on next run.`,
+        `global oh-my-agent ${opts.currentVersion} → ${latest} updating in background. New version applies on next run.`,
       ),
     );
     return { triggered: true, latest };
   } catch {
     opts.onNotice?.(
       pc.yellow(
-        `oh-my-agent ${opts.currentVersion} → ${latest} available. Run: ${info.updateCommand}`,
+        `global oh-my-agent ${opts.currentVersion} → ${latest} available. Run: ${info.updateCommand}`,
       ),
     );
     return { triggered: false, reason: "spawn-failed", latest };
