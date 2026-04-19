@@ -276,45 +276,13 @@ describe("installHooksFromVariant", () => {
     expect(writeCall).toBeTruthy();
   });
 
-  it("should pin bun to an absolute path when it is resolvable", () => {
-    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
-      JSON.stringify({
-        vendor: "codex",
-        hookDir: ".codex/hooks",
-        settingsFile: ".codex/hooks.json",
-        projectDirEnv: null,
-        runtime: "bun",
-        events: {
-          UserPromptSubmit: {
-            hook: "keyword-detector.ts",
-            timeout: 5,
-          },
-        },
-      }),
-    );
-
-    installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
-
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].includes("hooks.json"),
-    );
-    const settings = JSON.parse(writeCall?.[1] as string);
-    const cmd = settings.hooks.UserPromptSubmit[0].hooks[0].command;
-    expect(cmd).toBe(
-      '"/opt/homebrew/bin/bun" .codex/hooks/keyword-detector.ts',
-    );
-    expect(cmd).not.toContain("$");
-  });
-
-  it("should fall back to bare bun when runtime lookup fails", () => {
+  it("should write bare bun without absolute paths (machine-independent)", () => {
+    // Regression: resolveRuntimeCmd used to embed `which bun` into settings,
+    // which caused per-machine churn — every user's `oma update` rewrote
+    // vendor settings with their own bun path.
     (
       childProcess.execFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mockImplementation(() => {
-      throw new Error("bun not found");
-    });
+    ).mockReturnValue("/opt/homebrew/bin/bun\n");
 
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({
@@ -343,6 +311,40 @@ describe("installHooksFromVariant", () => {
     const settings = JSON.parse(writeCall?.[1] as string);
     const cmd = settings.hooks.UserPromptSubmit[0].hooks[0].command;
     expect(cmd).toBe("bun .codex/hooks/keyword-detector.ts");
+    expect(cmd).not.toMatch(/\/opt\/homebrew|\/Users\/|\.local\/share\/mise/);
+  });
+
+  it("should write bare bun with projectDirEnv expansion for Claude variant", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      JSON.stringify({
+        vendor: "claude",
+        hookDir: ".claude/hooks",
+        settingsFile: ".claude/settings.json",
+        projectDirEnv: "CLAUDE_PROJECT_DIR",
+        runtime: "bun",
+        events: {
+          UserPromptSubmit: {
+            hook: "keyword-detector.ts",
+            timeout: 5,
+          },
+        },
+      }),
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
+
+    const writeCall = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(
+      (call: string[]) =>
+        typeof call[0] === "string" && call[0].includes("settings.json"),
+    );
+    const settings = JSON.parse(writeCall?.[1] as string);
+    const cmd = settings.hooks.UserPromptSubmit[0].hooks[0].command;
+    expect(cmd).toBe(
+      'bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"',
+    );
+    expect(cmd).not.toMatch(/\/opt\/homebrew|\/Users\/|\.local\/share\/mise/);
   });
 
   it("should patch copied Codex hook types to use updated_input", () => {

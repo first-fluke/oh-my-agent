@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -35,32 +34,18 @@ export interface HookVariant {
   };
 }
 
-function quoteShellWord(value: string): string {
-  return `"${value.replaceAll('"', '\\"')}"`;
-}
-
-function resolveRuntimeCmd(runtime: string): string {
-  if (runtime === "bun") {
-    try {
-      const runtimePath = execFileSync("which", [runtime], {
-        encoding: "utf-8",
-      }).trim();
-      if (runtimePath) return quoteShellWord(runtimePath);
-    } catch {
-      // Fall back to the bare runtime name when shell lookup is unavailable.
-    }
-  }
-
-  return runtime;
-}
-
-/** Build hook command string from variant config. */
+/** Build hook command string from variant config.
+ *
+ * Uses the bare runtime name (e.g. `bun`) so the written settings are
+ * machine-independent. Resolving to an absolute path at install time caused
+ * churn: every machine's `oma update` rewrote vendor settings with its own
+ * `which bun` result.
+ */
 function buildHookCmd(variant: HookVariant, script: string): string {
-  const runtimeCmd = resolveRuntimeCmd(variant.runtime);
   if (variant.projectDirEnv) {
-    return `${runtimeCmd} "$${variant.projectDirEnv}/${variant.hookDir}/${script}"`;
+    return `${variant.runtime} "$${variant.projectDirEnv}/${variant.hookDir}/${script}"`;
   }
-  return `${runtimeCmd} ${variant.hookDir}/${script}`;
+  return `${variant.runtime} ${variant.hookDir}/${script}`;
 }
 
 function deriveHookName(script: string): string {
