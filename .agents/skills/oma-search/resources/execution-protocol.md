@@ -23,26 +23,30 @@
 ### web route
 1. Use runtime native search tool (WebSearch, Google Search, Bing, etc.)
 2. If native search fails or returns blocked/empty:
-   - Enter insane-search fallback (see below)
+   - Enter the bypass fallback (see below)
 3. Collect top results with URLs
 
-#### insane-search Fallback (on native search failure)
-Reference: https://github.com/fivetaku/insane-search/blob/main/skills/insane-search/SKILL.md
+#### Bypass Fallback (on native search failure)
+Delegate to the native CLI: `oma search fetch <url>`. The pipeline
+auto-escalates through four strategies and stops on the first success:
 
-- **Phase 0**: Try platform-specific APIs if URL matches known platforms
-  - Reddit: append `.json` to URL
-  - arXiv: use arXiv API
-  - Stack Exchange: use SE API v2.3
-  - HN: use Firebase API
-- **Phase 1**: Parallel lightweight probes
-  - Jina Reader: `r.jina.ai/{URL}`
-  - WebFetch with varied user-agents
-- **Phase 2**: TLS impersonation via curl_cffi (if available)
-  - Rotate browser signatures (chrome, firefox, safari)
-- **Phase 3**: Playwright MCP (last resort)
-  - Full browser rendering for JS-heavy or heavily protected sites
+- **api** — platform-specific handlers (Twitter syndication, Reddit JSON,
+  HN Firebase, arXiv Atom, SE v2.3, Bluesky AT Protocol, Mastodon, Wikipedia,
+  CrossRef, OpenLibrary, Lobste.rs, dev.to, V2EX, npm, PyPI, Naver blog/finance).
+- **probe** — parallel Jina Reader + WebFetch + curl UA variants (first-wins).
+- **impersonate** — Python `curl_cffi` subprocess (safari→chrome→firefox;
+  Korean hosts prefer safari). Auto-skips remaining TLS targets on
+  JS-essential markers.
+- **browser** — `puppeteer-core` + system Chrome via CDP. No MCP runtime
+  dependency. Install Chrome or set `OMA_CHROME_PATH`.
 
-At each phase, if content is successfully retrieved, stop and return.
+Sidecar: add `--include-archive` to try AMP → archive.today → Wayback
+Machine when all primary strategies fail. Archive hits tag `provenance`
+so consumers can deprioritize cached content.
+
+Flags: `--only <list>`, `--skip <list>`, `--timeout <sec>`, `--locale <v>`,
+`--pretty`. Exit codes: 0=ok, 2=blocked, 3=not-found, 4=invalid-input,
+5=auth-required, 6=timeout, 1=error.
 
 ### code route
 1. Detect platform from user-provided URL or context:

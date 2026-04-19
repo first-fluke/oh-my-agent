@@ -16,6 +16,7 @@ import { link } from "./commands/link.js";
 import { initMemory } from "./commands/memory.js";
 import { recap } from "./commands/recap.js";
 import { retro } from "./commands/retro.js";
+import { registerSearchCommand } from "./commands/search/index.js";
 import { star } from "./commands/star.js";
 import { stats } from "./commands/stats.js";
 import { update } from "./commands/update.js";
@@ -381,5 +382,7 @@ program
       console.log(VERSION);
     }),
   );
+
+registerSearchCommand(program);
 
 program.parse();

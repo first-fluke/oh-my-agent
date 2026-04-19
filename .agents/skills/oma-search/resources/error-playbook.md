@@ -23,23 +23,37 @@
 **Recovery**:
 1. Simplify query (remove qualifiers, keep core terms)
 2. Retry with simplified query
-3. If still empty: enter insane-search fallback
+3. If still empty: run `oma search fetch <url>` on candidate URLs
 
 ### Native search blocked (402/403)
 **Symptom**: Target site returns access denied
 **Recovery**:
-1. Enter insane-search Phase 0-3 fallback sequence
-2. Each phase tries progressively more aggressive access methods
-3. If all 4 phases fail: report "Unable to access this source" + suggest user provide content directly
+1. Run `oma search fetch <url>` — auto-escalates api → probe → impersonate → browser
+2. Each strategy tries progressively more aggressive access methods
+3. If all strategies fail: report "Unable to access this source"; rerun
+   with `--include-archive` to try caches (AMP / archive.today / Wayback)
 
-### insane-search all phases fail
-**Symptom**: Phases 0-3 all return errors or empty content
+### `oma search fetch` all strategies fail
+**Symptom**: Non-zero exit code after api/probe/impersonate/browser exhausted.
 **Recovery**:
-1. Report failure transparently to user
-2. Suggest alternatives:
-   - Provide the URL directly for manual access
-   - Try a different search query
-   - Use `--code` to find similar implementations instead
+1. Read the `attempts` array in JSON output — strategies, `elapsedMs`,
+   HTTP status, detected `signals`.
+2. Rerun with `--include-archive` for cached fallbacks.
+3. `paywall` signal → content gated; report auth requirement.
+4. `js-essential` + browser failed → site blocks headless Chrome;
+   suggest manual fetch or alternative source.
+5. Exit code 6 (timeout) → rerun with `--timeout 30` or larger.
+
+### Browser strategy cannot find Chrome
+**Symptom**: `"Chrome/Chromium not found ... or set OMA_CHROME_PATH."`
+**Recovery**:
+1. `oma search doctor` to see detection state.
+2. Install Chrome / Edge / Brave / Chromium, or set `OMA_CHROME_PATH`.
+3. Or `--skip browser` to rely on api/probe/impersonate only.
+
+### curl_cffi not installed (impersonate strategy)
+**Symptom**: `"curl_cffi is not installed. Run: pip install curl_cffi"`.
+**Recovery**: `pip install curl_cffi`, or `--skip impersonate`.
 
 ## code Route Errors
 
@@ -97,8 +111,8 @@
 ### Runtime has no web search tool
 **Symptom**: Current vendor doesn't expose a search tool
 **Recovery**:
-1. Skip native search, go directly to insane-search fallback
-2. Phase 1 (Jina Reader) works without vendor-specific tools
+1. Skip native search, go directly to `oma search fetch <url>`
+2. The probe strategy (Jina Reader + curl variants) works without vendor-specific tools
 
 ### Tool name mismatch across vendors
 **Symptom**: Expected tool name doesn't exist in current runtime

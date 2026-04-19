@@ -13,7 +13,7 @@
 |------|-------------|-------------|
 | `--docs` | `docs` | Official documentation only via Context7 |
 | `--code` | `code` | GitHub/GitLab code search only |
-| `--web` | `web` | Web search only (native + insane-search fallback) |
+| `--web` | `web` | Web search only (native + `oma search fetch` fallback) |
 | `--strict` | (modifier) | Filter results to verified+ sources (score >= 0.85) |
 | `--wide` | (modifier) | Show all sources with trust labels (no filtering) |
 | `--gitlab` | (modifier) | Force `glab api` instead of `gh` for code route |

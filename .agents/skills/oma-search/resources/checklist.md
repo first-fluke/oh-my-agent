@@ -10,7 +10,7 @@ Run this checklist before presenting results to the user.
 ## Route Execution
 - [ ] Correct route(s) dispatched based on classified intent
 - [ ] docs route: Context7 library resolved, or fallback triggered with notice
-- [ ] web route: native search attempted first, insane-search only on failure
+- [ ] web route: native search attempted first, `oma search fetch` only on failure
 - [ ] code route: platform detected from URL or default to gh
 - [ ] local route: delegated to Serena without duplication
 
@@ -28,7 +28,7 @@ Run this checklist before presenting results to the user.
 
 ## Error Handling
 - [ ] Failures reported transparently (no silent drops)
-- [ ] Fallback chain followed (docs->web, web->insane-search)
+- [ ] Fallback chain followed (docs->web, web->`oma search fetch`)
 - [ ] Rate limits reported without retry loops
 
 ## Output Format

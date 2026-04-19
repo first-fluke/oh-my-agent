@@ -22,7 +22,7 @@ description: Intent-based search router with trust scoring. Routes queries to op
 2. **One query, one best route**: avoid redundant multi-route unless intent is ambiguous
 3. **Trust score every result**: all non-local results get domain trust labels from the registry
 4. **Flags override classifier**: user-provided flags (`--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`) always take precedence
-5. **Fail forward**: if primary route fails, fall back gracefully (docs->web, web->insane-search phases)
+5. **Fail forward**: if primary route fails, fall back gracefully (docs->web, web->`oma search fetch` strategies)
 6. **No additional MCP required**: Context7 for docs, runtime native for web, CLI for code, Serena for local
 7. **Vendor-agnostic web search**: use whatever the current runtime provides (WebSearch, Google, Bing)
 8. **Domain-level trust only**: do not attempt sub-path or page-level scoring
@@ -32,7 +32,7 @@ description: Intent-based search router with trust scoring. Routes queries to op
 | Route | Primary Tool | Fallback | Trigger |
 |-------|-------------|----------|---------|
 | `docs` | Context7 MCP (`resolve-library-id` → `query-docs`) | `web` route | Official docs, API reference |
-| `web` | Runtime native search | insane-search 4-Phase | Tutorials, examples, solutions |
+| `web` | Runtime native search | `oma search fetch` (api/probe/impersonate/browser) | Tutorials, examples, solutions |
 | `code` | `gh search code` / `glab api` | — | Implementation patterns, repos |
 | `local` | Serena MCP (delegate) | — | Current project files, symbols |
 

@@ -70,8 +70,10 @@
     "chokidar": "^5.0.0",
     "commander": "^14.0.3",
     "date-fns": "^4.1.0",
+    "fast-xml-parser": "^4",
     "p-map": "^7.0.4",
     "picocolors": "^1.1.1",
+    "puppeteer-core": "^24",
     "ws": "^8.18.0",
     "yaml": "^2.8.2",
     "zod": "^4.3.6"
