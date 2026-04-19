@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.12.0...cli-v5.13.0) (2026-04-19)
+
+
+### Features
+
+* **cli:** add oma search with auto-escalating fetch pipeline ([a84b24f](https://github.com/first-fluke/oh-my-agent/commit/a84b24fb8f86b57dcb50dfb2c31a952036a79dad))
+* **hooks:** add oma-hwp triggers to skill injector ([1b2939e](https://github.com/first-fluke/oh-my-agent/commit/1b2939ed1980a46ba2f0f3c6d12624e874730ed6))
+
+
+### Bug Fixes
+
+* **cli:** write bare bun in hook commands to prevent per-machine churn ([d22aafc](https://github.com/first-fluke/oh-my-agent/commit/d22aafcdb92935308bef34ed2da5e86f6479f6b5))
+
+
+### Refactoring
+
+* **cli:** clarify self-update notices as "global oh-my-agent" ([624ae95](https://github.com/first-fluke/oh-my-agent/commit/624ae95ff75dbfd5cc98ca37f65a9925216cb6e4))
+
+
+### Documentation
+
+* add oma-hwp entry to agent tables in all READMEs ([2938942](https://github.com/first-fluke/oh-my-agent/commit/2938942437bfb75c776b7ca4c8330523e1c5f9d3))
+
 ## [5.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.11.0...cli-v5.12.0) (2026-04-18)
 
 
