@@ -1,5 +1,23 @@
 # Changelog
 
+## [5.13.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.13.0...cli-v5.13.1) (2026-04-20)
+
+
+### Refactoring
+
+* **cli:** add @cli/* path alias and slice boundary tooling ([9c796bc](https://github.com/first-fluke/oh-my-agent/commit/9c796bc48b4136e0cbc4609b15d72a5a4a77ebb8))
+* **cli:** colocate slice tests with implementation ([10b7a10](https://github.com/first-fluke/oh-my-agent/commit/10b7a109767e7fcebd796ffc7cc99adc95de019c))
+* **cli:** extract per-vendor adapters into cli/vendors/ ([c14d0cb](https://github.com/first-fluke/oh-my-agent/commit/c14d0cbf262ea12519f35e366e7b0dbe4e12ba57))
+* **cli:** move SSOT installer into cli/platform/ ([2869a26](https://github.com/first-fluke/oh-my-agent/commit/2869a264116a39421d79c9253856c4d58367e1b7))
+* **cli:** slice all remaining commands + remove lib/ ([52b0ac5](https://github.com/first-fluke/oh-my-agent/commit/52b0ac5895aaa287f74fcfef9bdfc484b298da7c))
+* **cli:** slice commands/bridge into {command,bridge} ([045dac7](https://github.com/first-fluke/oh-my-agent/commit/045dac749e6a89c2d9377ff432e93170e84c678b))
+* **cli:** slice commands/doctor into {command,doctor,ui} ([59f7f1c](https://github.com/first-fluke/oh-my-agent/commit/59f7f1c7e68dab51f72e3fd4e6c50f85c715914e))
+* **cli:** slice commands/install into {command,install} ([b26e6cf](https://github.com/first-fluke/oh-my-agent/commit/b26e6cfdc21d36760b30063b40f6b552091be256))
+* **cli:** slice commands/update into {command,update} ([db513e4](https://github.com/first-fluke/oh-my-agent/commit/db513e4daf98c1aee16d4031167aaffffd329b5b))
+* **cli:** slice commands/verify into {command,verify,ui} ([764bf16](https://github.com/first-fluke/oh-my-agent/commit/764bf1661d3fccc115790b6d8f7f5ce3c96349dd))
+* **cli:** split external I/O and presentation into io/ + cli-kit/ ([84a96fb](https://github.com/first-fluke/oh-my-agent/commit/84a96fb9eeb10fcc1984f5f2771848da590caef9))
+* **cli:** update ARCHITECTURE.md with final layout ([654e7ed](https://github.com/first-fluke/oh-my-agent/commit/654e7ed8f22113c22d7d22f54a86c044318b9991))
+
 ## [5.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.12.0...cli-v5.13.0) (2026-04-19)
 
 

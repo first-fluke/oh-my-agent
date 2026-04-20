@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent",
-  "version": "5.13.0",
+  "version": "5.13.1",
   "description": "Portable multi-agent harness for .agents-based skills and workflows across Antigravity, Claude Code, Codex, OpenCode, and more",
   "type": "module",
   "bin": {
@@ -61,7 +61,6 @@
     "lint": "biome check --write --unsafe .",
     "check:boundaries": "node ./scripts/check-boundaries.mjs",
     "test": "vitest run",
-    "coverage": "vitest run --coverage",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
@@ -84,7 +83,6 @@
     "@biomejs/biome": "2.4.5",
     "@types/better-sqlite3": "^7.6.13",
     "@types/ws": "^8.18.1",
-    "@vitest/coverage-v8": "^4.1.4",
     "typescript": "^6",
     "vitest": "^4.0.18"
   },
