@@ -11,7 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureCursorMcpSymlink } from "../platform/skills-installer.js";
+import { ensureCursorMcpSymlink } from "./skills-installer.js";
 
 describe("ensureCursorMcpSymlink", () => {
   const roots: string[] = [];

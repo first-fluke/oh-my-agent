@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isOutdated, maybeSelfUpdate } from "../io/self-update.js";
+import { isOutdated, maybeSelfUpdate } from "./self-update.js";
 
 describe("isOutdated", () => {
   it("returns true when latest patch is newer", () => {

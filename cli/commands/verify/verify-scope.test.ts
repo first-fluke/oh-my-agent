@@ -42,7 +42,7 @@ vi.mock("picocolors", () => ({
   },
 }));
 
-import { checkScopeViolation } from "../commands/verify/verify.js";
+import { checkScopeViolation } from "../verify/verify.js";
 
 const mockExecSync = child_process.execSync as ReturnType<typeof vi.fn>;
 

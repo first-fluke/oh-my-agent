@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   readVendorsFromConfig,
   writeVendorsToConfig,
-} from "../platform/skills-installer.js";
+} from "./skills-installer.js";
 
 describe("readVendorsFromConfig", () => {
   const tempDirs: string[] = [];

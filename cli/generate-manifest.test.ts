@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createManifest, REPOSITORY_URL } from "../generate-manifest.js";
+import { createManifest, REPOSITORY_URL } from "./generate-manifest.js";
 
 function readJson(path: URL) {
   return JSON.parse(readFileSync(path, "utf-8")) as Record<string, unknown>;
@@ -8,7 +8,7 @@ function readJson(path: URL) {
 
 describe("package metadata", () => {
   it("should publish the renamed CLI package metadata", () => {
-    const cliPackage = readJson(new URL("../package.json", import.meta.url));
+    const cliPackage = readJson(new URL("./package.json", import.meta.url));
 
     expect(cliPackage.name).toBe("oh-my-agent");
     expect(cliPackage.repository).toEqual({
@@ -29,11 +29,11 @@ describe("package metadata", () => {
 
   it("should keep the workspace package aligned with the renamed project", () => {
     const workspacePackage = readJson(
-      new URL("../../package.json", import.meta.url),
+      new URL("../package.json", import.meta.url),
     );
 
     expect(workspacePackage.name).toBe("oh-my-agent-workspace");
-    const cliPackage = readJson(new URL("../package.json", import.meta.url));
+    const cliPackage = readJson(new URL("./package.json", import.meta.url));
     expect(workspacePackage.version).toBe(cliPackage.version);
   });
 });

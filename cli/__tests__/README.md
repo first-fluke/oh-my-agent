@@ -1,11 +1,18 @@
 # Test Layout
 
-Use this directory for tests that span multiple modules, commands, or generated artifacts.
+Use this directory for **cross-cutting / infrastructure tests** that do not belong to a single slice.
 
-Preferred placement:
-- Put pure module tests next to the implementation file in `cli/lib/**` or `cli/utils/**`.
-- Keep command-focused tests here because they usually mock several modules and exercise CLI-facing behavior.
-- Keep smoke tests here when they validate generated output or end-to-end compatibility across modules.
+Default: **colocate tests with the unit under test** (see `cli/ARCHITECTURE.md`).
 
-Current subfolders:
-- `smoke/` — generated artifact and compatibility checks
+- Command tests → `cli/commands/<slice>/<name>.test.ts`
+- Platform / IO / cli-kit / vendors tests → next to the implementation (e.g. `cli/platform/skills-installer.test.ts`, `cli/io/serena.test.ts`, `cli/cli-kit/frontmatter.test.ts`, `cli/vendors/gemini/settings.test.ts`)
+
+Keep here:
+
+- Hook variant / dispatcher tests — they span `.agents/hooks/` + vendor adaptations.
+- `install-sh.test.ts` — shell installer smoke.
+- `readme.test.ts` — docs-in-sync check.
+- `hud.test.ts` — terminal dashboard integration.
+- `filter-test-output.test.ts`, `test-filter.test.ts` — test-harness plumbing.
+- `types.ts` — shared test types.
+- `smoke/` — generated artifact and cross-module compatibility checks.

@@ -16,7 +16,7 @@ import {
   installShared,
   installSkill,
   PRESETS,
-} from "../platform/skills-installer.js";
+} from "./skills-installer.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../../");

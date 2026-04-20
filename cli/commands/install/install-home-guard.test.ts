@@ -85,31 +85,31 @@ vi.mock("picocolors", () => ({
 vi.mock("node:fs", () => fsState);
 vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
-vi.mock("../io/github.js", () => githubState);
-vi.mock("../platform/skills-installer.js", () => skillsState);
+vi.mock("../../io/github.js", () => githubState);
+vi.mock("../../platform/skills-installer.js", () => skillsState);
 vi.mock("./migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
-vi.mock("../cli-kit/competitors.js", () => ({
+vi.mock("../../cli-kit/competitors.js", () => ({
   promptUninstallCompetitors: miscState.promptUninstallCompetitors,
 }));
-vi.mock("../io/tarball.js", () => ({
+vi.mock("../../io/tarball.js", () => ({
   downloadAndExtract: miscState.downloadAndExtract,
 }));
-vi.mock("../platform/manifest.js", () => ({
+vi.mock("../../platform/manifest.js", () => ({
   getLocalVersion: miscState.getLocalVersion,
   saveLocalVersion: miscState.saveLocalVersion,
 }));
-vi.mock("../platform/rules.js", () => ({
+vi.mock("../../platform/rules.js", () => ({
   generateCursorRules: miscState.generateCursorRules,
   mergeRulesIndexForVendor: miscState.mergeRulesIndexForVendor,
 }));
-vi.mock("../io/serena.js", () => ({
+vi.mock("../../io/serena.js", () => ({
   ensureSerenaProject: miscState.ensureSerenaProject,
   resolveSerenaLanguages: miscState.resolveSerenaLanguages,
 }));
 
-import { install } from "../commands/install/install.js";
+import { install } from "../install/install.js";
 
 describe("install home safety", () => {
   const originalHome = process.env.HOME;

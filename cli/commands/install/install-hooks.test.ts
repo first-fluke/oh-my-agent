@@ -2,7 +2,7 @@ import * as childProcess from "node:child_process";
 import * as fs from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { installVendorAdaptations } from "../platform/skills-installer.js";
+import { installVendorAdaptations } from "../../platform/skills-installer.js";
 
 vi.mock("node:child_process", () => ({
   execFileSync: vi.fn(),

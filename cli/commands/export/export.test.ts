@@ -1,12 +1,12 @@
 import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { exportRules } from "../commands/export/export.js";
 import {
   generateClaudeRules,
   generateCursorRules,
   mergeRulesIndexForVendor,
   readRules,
-} from "../platform/rules.js";
+} from "../../platform/rules.js";
+import { exportRules } from "../export/export.js";
 
 vi.mock("node:fs", () => ({
   existsSync: vi.fn(),

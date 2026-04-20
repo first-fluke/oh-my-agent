@@ -9,7 +9,7 @@ import {
   installVendorAdaptations,
   installWorkflows,
   REPO,
-} from "../platform/skills-installer.js";
+} from "./skills-installer.js";
 
 vi.mock("node:fs", () => ({
   existsSync: vi.fn(),

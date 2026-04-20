@@ -9,12 +9,12 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { migrateToAgents as _migrateToAgents } from "../commands/migrations/001-agents-dir.js";
-import { migrateSharedLayout as _migrateSharedLayout } from "../commands/migrations/002-shared-layout.js";
-import { migrateOmaConfig } from "../commands/migrations/003-oma-config.js";
-import { migrateClaudeMdLocal } from "../commands/migrations/004-claude-md-local.js";
-import { migrateRenameOmaScm } from "../commands/migrations/005-rename-oma-scm.js";
-import { migrateGeminiCliCompat } from "../commands/migrations/006-gemini-cli-compat.js";
+import { migrateToAgents as _migrateToAgents } from "../migrations/001-agents-dir.js";
+import { migrateSharedLayout as _migrateSharedLayout } from "../migrations/002-shared-layout.js";
+import { migrateOmaConfig } from "../migrations/003-oma-config.js";
+import { migrateClaudeMdLocal } from "../migrations/004-claude-md-local.js";
+import { migrateRenameOmaScm } from "../migrations/005-rename-oma-scm.js";
+import { migrateGeminiCliCompat } from "../migrations/006-gemini-cli-compat.js";
 
 const migrateToAgents = (cwd: string) => _migrateToAgents.up(cwd);
 const migrateSharedLayout = (cwd: string) => _migrateSharedLayout.up(cwd);

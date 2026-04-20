@@ -9,14 +9,14 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { runMigrations } from "../commands/migrations/index.js";
-import { classifyUpdateTarget } from "../commands/update/update.js";
 import {
   getNeedsReconcile,
   hasInstalledProject,
   setNeedsReconcile,
-} from "../platform/manifest.js";
-import * as skills from "../platform/skills-installer.js";
+} from "../../platform/manifest.js";
+import * as skills from "../../platform/skills-installer.js";
+import { runMigrations } from "../migrations/index.js";
+import { classifyUpdateTarget } from "../update/update.js";
 
 describe("whitelist-based skill filtering", () => {
   it("getAllSkills should return only registered skills", () => {

@@ -16,7 +16,7 @@ vi.mock("node:child_process", () => ({
 }));
 
 const isGhAuthenticatedMock = vi.fn();
-vi.mock("../io/github.js", () => ({
+vi.mock("../../io/github.js", () => ({
   isGhAuthenticated: () => isGhAuthenticatedMock(),
 }));
 
@@ -26,7 +26,7 @@ vi.mock("@clack/prompts", () => ({
   note: vi.fn(),
 }));
 
-import { checkAuthStatus } from "../commands/auth-status/auth-status.js";
+import { checkAuthStatus } from "../auth-status/auth-status.js";
 
 describe("auth:status command", () => {
   beforeEach(() => {
