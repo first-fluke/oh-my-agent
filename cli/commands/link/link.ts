@@ -4,7 +4,7 @@ import pc from "picocolors";
 import {
   generateCursorRules,
   mergeRulesIndexForVendor,
-} from "../platform/rules.js";
+} from "../../platform/rules.js";
 import {
   createCliSymlinks,
   detectExistingCliSymlinkDirs,
@@ -12,12 +12,12 @@ import {
   getInstalledSkillNames,
   installVendorAdaptations,
   readVendorsFromConfig,
-} from "../platform/skills-installer.js";
-import type { CliVendor, VendorType } from "../types/index.js";
+} from "../../platform/skills-installer.js";
+import type { CliVendor, VendorType } from "../../types/index.js";
 import {
   applyRecommendedGeminiSettings,
   needsGeminiSettingsUpdate,
-} from "../vendors/gemini/settings.js";
+} from "../../vendors/gemini/settings.js";
 
 /**
  * Regenerate all vendor-specific files (.claude/, .cursor/, .gemini/, etc.)

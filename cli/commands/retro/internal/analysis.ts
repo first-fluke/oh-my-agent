@@ -1,4 +1,4 @@
-import type { TimeWindow } from "../../cli-kit/time-window.js";
+import type { TimeWindow } from "../../../cli-kit/time-window.js";
 import {
   countAIAssistedCommits,
   getCommitsWithStats,

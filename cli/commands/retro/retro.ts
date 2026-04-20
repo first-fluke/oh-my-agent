@@ -19,7 +19,7 @@ import {
   type RetroSnapshot,
   saveSnapshot,
   type TimeWindow,
-} from "../lib/retro.js";
+} from "./types.js";
 
 function renderRetro(
   snapshot: RetroSnapshot,
@@ -118,7 +118,7 @@ export async function retro(
 
   // Interactive mode (legacy)
   if (options.interactive) {
-    const { retro: legacyRetro } = await import("./retro-interactive.js");
+    const { retro: legacyRetro } = await import("./interactive.js");
     await legacyRetro();
     return;
   }

@@ -35,7 +35,7 @@ vi.mock("better-sqlite3", () => {
   return { default: null };
 });
 
-import { collectRecap } from "../lib/recap/index.js";
+import { collectRecap } from "../commands/recap/internal/index.js";
 
 describe("collectRecap", () => {
   const NOW = 1776000000000; // fixed timestamp

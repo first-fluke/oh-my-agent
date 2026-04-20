@@ -28,7 +28,7 @@ vi.mock("@clack/prompts", () => ({
   }),
 }));
 
-import { star } from "../commands/star.js";
+import { star } from "../commands/star/star.js";
 
 describe("star command", () => {
   beforeEach(() => {

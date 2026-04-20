@@ -4,10 +4,10 @@ import { basename } from "node:path";
 import { watch } from "chokidar";
 import * as pc from "picocolors";
 import { WebSocket, WebSocketServer } from "ws";
+import { buildGraphData } from "./commands/recap/internal/graph.js";
+import { collectRecap } from "./commands/recap/internal/index.js";
 import { buildFullState, resolveMemoriesDir } from "./dashboard/state.js";
 import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
-import { buildGraphData } from "./lib/recap/graph.js";
-import { collectRecap } from "./lib/recap/index.js";
 
 const PORT = process.env.DASHBOARD_PORT
   ? parseInt(process.env.DASHBOARD_PORT || "9847", 10)

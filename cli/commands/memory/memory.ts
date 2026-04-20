@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { ensureMemorySchema } from "../io/memory.js";
+import { ensureMemorySchema } from "../../io/memory.js";
 
 export async function initMemory(
   jsonMode = false,

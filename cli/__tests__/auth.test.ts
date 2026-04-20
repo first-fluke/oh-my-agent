@@ -26,7 +26,7 @@ vi.mock("@clack/prompts", () => ({
   note: vi.fn(),
 }));
 
-import { checkAuthStatus } from "../commands/auth.js";
+import { checkAuthStatus } from "../commands/auth-status/auth-status.js";
 
 describe("auth:status command", () => {
   beforeEach(() => {

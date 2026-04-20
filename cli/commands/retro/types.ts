@@ -1,6 +1,9 @@
-export type { TimeWindow } from "../cli-kit/time-window.js";
-export { getCompareWindows, parseTimeWindow } from "../cli-kit/time-window.js";
-export { analyze, getDisplayData } from "./retro/analysis.js";
+export type { TimeWindow } from "../../cli-kit/time-window.js";
+export {
+  getCompareWindows,
+  parseTimeWindow,
+} from "../../cli-kit/time-window.js";
+export { analyze, getDisplayData } from "./internal/analysis.js";
 export {
   bar,
   fmtCommitTypes,
@@ -12,7 +15,7 @@ export {
   fmtPctBar,
   fmtSessions,
   fmtTweetable,
-} from "./retro/formatters.js";
+} from "./internal/formatters.js";
 export {
   countAIAssistedCommits,
   fetchOrigin,
@@ -22,7 +25,7 @@ export {
   getFileHotspots,
   getGitUserName,
   getShippingStreak,
-} from "./retro/git.js";
+} from "./internal/git.js";
 export {
   computeAuthorStats,
   computeCommitTypes,
@@ -30,8 +33,8 @@ export {
   computeHourlyDistribution,
   detectSessions,
   isTestFile,
-} from "./retro/metrics.js";
-export { loadPreviousSnapshot, saveSnapshot } from "./retro/persistence.js";
+} from "./internal/metrics.js";
+export { loadPreviousSnapshot, saveSnapshot } from "./internal/persistence.js";
 export type {
   RetroAuthorDetail,
   RetroCommit,
@@ -40,4 +43,4 @@ export type {
   RetroSession,
   RetroSnapshot,
   RetroSnapshotAuthor,
-} from "./retro/types.js";
+} from "./internal/types.js";

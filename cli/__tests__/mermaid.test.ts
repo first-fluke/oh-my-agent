@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatMermaid } from "../lib/recap/formatters/mermaid.js";
-import type { RecapOutput } from "../lib/recap/schema.js";
+import { formatMermaid } from "../commands/recap/internal/formatters/mermaid.js";
+import type { RecapOutput } from "../commands/recap/internal/schema.js";
 
 function makeRecap(overrides: Partial<RecapOutput> = {}): RecapOutput {
   return {

@@ -1,36 +1,26 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import {
-  addOutputOptions,
-  printDescribe,
-  resolveJsonMode,
-  runAction,
-} from "./cli-kit/cli-framework.js";
-import {
-  checkStatus,
-  parallelRun,
-  reviewAgent,
-  spawnAgent,
-} from "./commands/agent.js";
-import { checkAuthStatus } from "./commands/auth.js";
+import { printDescribe, runAction } from "./cli-kit/cli-framework.js";
+import { registerAgentCommands } from "./commands/agent/command.js";
+import { registerAuthStatus } from "./commands/auth-status/command.js";
 import { registerBridge } from "./commands/bridge/command.js";
-import { cleanup } from "./commands/cleanup.js";
+import { registerCleanup } from "./commands/cleanup/command.js";
 import { registerDoctor } from "./commands/doctor/command.js";
-import { exportRules } from "./commands/export.js";
+import { registerExport } from "./commands/export/command.js";
 import {
   registerDefaultInstallAction,
   registerInstall,
 } from "./commands/install/command.js";
-import { link } from "./commands/link.js";
-import { initMemory } from "./commands/memory.js";
-import { recap } from "./commands/recap.js";
-import { retro } from "./commands/retro.js";
+import { registerLink } from "./commands/link/command.js";
+import { registerMemory } from "./commands/memory/command.js";
+import { registerRecap } from "./commands/recap/command.js";
+import { registerRetro } from "./commands/retro/command.js";
 import { registerSearchCommand } from "./commands/search/index.js";
-import { star } from "./commands/star.js";
-import { stats } from "./commands/stats.js";
+import { registerStar } from "./commands/star/command.js";
+import { registerStats } from "./commands/stats/command.js";
 import { registerUpdate } from "./commands/update/command.js";
 import { registerVerify } from "./commands/verify/command.js";
-import { visualize } from "./commands/visualize.js";
+import { registerVisualize } from "./commands/visualize/command.js";
 import { startDashboard } from "./dashboard.js";
 import pkg from "./package.json";
 import { startTerminalDashboard } from "./terminal-dashboard.js";
@@ -83,239 +73,22 @@ program
     }),
   );
 
-addOutputOptions(
-  program
-    .command("auth:status")
-    .description("Check authentication status of all supported CLIs"),
-).action(
-  runAction(
-    async (options) => {
-      await checkAuthStatus(resolveJsonMode(options));
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
+registerAuthStatus(program);
 registerUpdate(program);
-
-program
-  .command("link [vendors...]")
-  .description(
-    "Regenerate vendor files (.claude/, .cursor/, etc.) from .agents/ SSOT",
-  )
-  .action(
-    runAction((vendors: string[]) => {
-      link(vendors.length > 0 ? vendors : undefined);
-    }),
-  );
-
+registerLink(program);
 registerDoctor(program);
-
-addOutputOptions(
-  program
-    .command("stats")
-    .description("View productivity metrics")
-    .option("--reset", "Reset metrics data"),
-).action(
-  runAction(
-    async (options) => {
-      await stats(resolveJsonMode(options), options.reset);
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
-addOutputOptions(
-  program
-    .command("retro [window]")
-    .description("Engineering retrospective with metrics & trends")
-    .option("--interactive", "Interactive mode (manual entry)")
-    .option("--compare", "Compare current window vs prior same-length window"),
-).action(
-  runAction(
-    async (window, options) => {
-      await retro(window, {
-        json: resolveJsonMode(options),
-        compare: options.compare,
-        interactive: options.interactive,
-      });
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
-addOutputOptions(
-  program
-    .command("recap")
-    .description("Recap AI tool conversation history")
-    .option("--window <period>", "Time window: 1d, 3d, 7d, 2w, 30d", "1d")
-    .option("--date <date>", "Specific date (YYYY-MM-DD)")
-    .option(
-      "--tool <tools>",
-      "Filter by tools (comma-separated: claude,codex,gemini,qwen,cursor)",
-    )
-    .option("--top <n>", "Show top N projects/topics", Number.parseInt)
-    .option("--sort <metric>", "Sort by: count, duration", "count")
-    .option("--mermaid", "Output Mermaid gantt chart")
-    .option("--graph", "Open interactive graph in browser"),
-).action(
-  runAction(
-    async (options) => {
-      await recap(resolveJsonMode(options), {
-        window: options.window,
-        date: options.date,
-        tool: options.tool,
-        top: options.top,
-        sort: options.sort,
-        mermaid: options.mermaid,
-        graph: options.graph,
-      });
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
-addOutputOptions(
-  program
-    .command("cleanup")
-    .description("Clean up orphaned subagent processes and temp files")
-    .option("--dry-run", "Show what would be cleaned without making changes")
-    .option("-y, --yes", "Skip confirmation prompts and clean everything"),
-).action(
-  runAction(
-    async (options) => {
-      await cleanup(options.dryRun, resolveJsonMode(options), options.yes);
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
+registerStats(program);
+registerRetro(program);
+registerRecap(program);
+registerCleanup(program);
 registerBridge(program);
-
-program
-  .command("agent:spawn <agent-id> <prompt> <session-id>")
-  .description("Spawn a subagent (prompt can be inline text or a file path)")
-  .option(
-    "-m, --model <vendor>",
-    "CLI vendor override (gemini/claude/codex/qwen)",
-  )
-  .option(
-    "-w, --workspace <path>",
-    "Working directory for the agent (auto-detected if omitted)",
-  )
-  .action(
-    runAction(async (agentId, prompt, sessionId, options) => {
-      await spawnAgent(
-        agentId,
-        prompt,
-        sessionId,
-        options.workspace || ".",
-        options.model,
-      );
-    }),
-  );
-
-program
-  .command("agent:status <session-id> [agent-ids...]")
-  .description("Check status of subagents")
-  .option("-r, --root <path>", "Root path for memory checks", process.cwd())
-  .action(
-    runAction(async (sessionId, agentIds, options) => {
-      await checkStatus(sessionId, agentIds, options.root);
-    }),
-  );
-
-program
-  .command("agent:parallel [tasks...]")
-  .description("Run multiple sub-agents in parallel")
-  .option(
-    "-m, --model <vendor>",
-    "CLI vendor override (gemini/claude/codex/qwen)",
-  )
-  .option("-i, --inline", "Inline mode: specify tasks as agent:task arguments")
-  .option("--no-wait", "Don't wait for completion (background mode)")
-  .action(
-    runAction(async (tasks, options) => {
-      await parallelRun(tasks, {
-        vendor: options.model,
-        inline: options.inline,
-        noWait: !options.wait,
-      });
-    }),
-  );
-
-program
-  .command("agent:review")
-  .description("Run code review using external CLI (codex/claude/gemini)")
-  .option("-m, --model <vendor>", "CLI vendor (codex/claude/gemini)")
-  .option("-p, --prompt <prompt>", "Custom review prompt")
-  .option("-w, --workspace <path>", "Working directory (default: current)")
-  .option("--no-uncommitted", "Review committed changes only")
-  .action(
-    runAction(async (options) => {
-      await reviewAgent({
-        prompt: options.prompt,
-        model: options.model,
-        workspace: options.workspace,
-        uncommitted: options.uncommitted,
-      });
-    }),
-  );
-
-addOutputOptions(
-  program
-    .command("memory:init")
-    .description("Initialize Serena memory schema in .serena/memories")
-    .option("--force", "Overwrite empty or existing schema files"),
-).action(
-  runAction(
-    async (options) => {
-      await initMemory(resolveJsonMode(options), options.force);
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
+registerAgentCommands(program);
+registerMemory(program);
 registerVerify(program);
-
-program
-  .command("star")
-  .description("Star oh-my-agent on GitHub")
-  .action(
-    runAction(async () => {
-      await star();
-    }),
-  );
-
-addOutputOptions(
-  program
-    .command("export <format>")
-    .description("Export skills for external IDEs (cursor)")
-    .option("-d, --dir <path>", "Target directory", process.cwd()),
-).action(
-  runAction(
-    async (format, options) => {
-      await exportRules(format, options.dir, resolveJsonMode(options));
-    },
-    { supportsJsonOutput: true },
-  ),
-);
-
-addOutputOptions(
-  program
-    .command("visualize")
-    .alias("viz")
-    .description("Visualize project structure as a dependency graph"),
-).action(
-  runAction(
-    async (options) => {
-      await visualize({
-        json: resolveJsonMode(options),
-      });
-    },
-    { supportsJsonOutput: true },
-  ),
-);
+registerStar(program);
+registerExport(program);
+registerVisualize(program);
+registerSearchCommand(program);
 
 program
   .command("help")
@@ -334,7 +107,5 @@ program
       console.log(VERSION);
     }),
   );
-
-registerSearchCommand(program);
 
 program.parse();

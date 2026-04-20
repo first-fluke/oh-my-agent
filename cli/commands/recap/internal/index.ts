@@ -1,4 +1,4 @@
-import { resolveWindowBounds } from "../../cli-kit/time-window.js";
+import { resolveWindowBounds } from "../../../cli-kit/time-window.js";
 import { filterParsers, getAvailableParsers } from "./registry.js";
 import type { RecapOutput, ToolName } from "./schema.js";
 

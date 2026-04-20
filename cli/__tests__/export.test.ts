@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { exportRules } from "../commands/export.js";
+import { exportRules } from "../commands/export/export.js";
 import {
   generateClaudeRules,
   generateCursorRules,

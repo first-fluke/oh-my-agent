@@ -15,13 +15,13 @@ import {
   getLastRetroDate,
   getRecentChangedFiles,
   getRecentGitCommits,
-} from "../io/git.js";
+} from "../../io/git.js";
 import {
   extractKeyLearningsFromActivities,
   getRecentAgentActivities,
   getSessionSummary,
-} from "../io/memory.js";
-import type { Retrospective } from "../types/index.js";
+} from "../../io/memory.js";
+import type { Retrospective } from "../../types/index.js";
 
 function getRetroPath(cwd: string): string {
   return join(cwd, ".serena", "retrospectives");

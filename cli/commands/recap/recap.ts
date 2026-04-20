@@ -1,9 +1,9 @@
 import { exec } from "node:child_process";
-import { startDashboard } from "../dashboard.js";
-import { formatJson } from "../lib/recap/formatters/json.js";
-import { formatMermaid } from "../lib/recap/formatters/mermaid.js";
-import { formatTerminal } from "../lib/recap/formatters/terminal.js";
-import { collectRecap, type RecapOptions } from "../lib/recap/index.js";
+import { startDashboard } from "../../dashboard.js";
+import { formatJson } from "./internal/formatters/json.js";
+import { formatMermaid } from "./internal/formatters/mermaid.js";
+import { formatTerminal } from "./internal/formatters/terminal.js";
+import { collectRecap, type RecapOptions } from "./internal/index.js";
 
 export async function recap(
   jsonMode = false,

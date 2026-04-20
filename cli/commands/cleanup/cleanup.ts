@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { CleanupResult } from "../types/index.js";
+import type { CleanupResult } from "../../types/index.js";
 
 interface GeminiCleanupConfig {
   shouldCleanupBrain: boolean;

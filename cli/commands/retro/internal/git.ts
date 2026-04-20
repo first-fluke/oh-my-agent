@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import type { TimeWindow } from "../../cli-kit/time-window.js";
+import type { TimeWindow } from "../../../cli-kit/time-window.js";
 import type { RetroCommit, RetroFileChange } from "./types.js";
 
 function execGit(cwd: string, cmd: string): string {

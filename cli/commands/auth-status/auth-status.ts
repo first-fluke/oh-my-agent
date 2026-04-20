@@ -1,14 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { isGhAuthenticated } from "../io/github.js";
-import { VENDORS } from "../vendors/index.js";
-
-export {
-  isClaudeAuthenticated,
-  isCodexAuthenticated,
-  isGeminiAuthenticated,
-  isQwenAuthenticated,
-} from "../vendors/index.js";
+import { isGhAuthenticated } from "../../io/github.js";
+import { VENDORS } from "../../vendors/index.js";
 
 export async function checkAuthStatus(jsonMode = false): Promise<void> {
   const github = isGhAuthenticated();

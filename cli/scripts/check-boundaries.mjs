@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 const CLI_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const COMMANDS_DIR = join(CLI_DIR, "commands");
 
+// Non-slice directories under commands/ — allowed as shared targets.
+const ALLOWED_SHARED = new Set(["migrations"]);
+
 function walk(dir) {
   const entries = [];
   for (const name of readdirSync(dir)) {
@@ -39,7 +42,7 @@ for (const file of files) {
     const crossSliceRel = imp.match(/^\.\.\/([^./][^/]*)\//);
     const crossSliceAlias = imp.match(/^@cli\/commands\/([^/]+)\//);
     const other = crossSliceRel?.[1] ?? crossSliceAlias?.[1];
-    if (other && other !== slice) {
+    if (other && other !== slice && !ALLOWED_SHARED.has(other)) {
       violations.push(`${relative(CLI_DIR, file)} -> commands/${other}`);
     }
   }
