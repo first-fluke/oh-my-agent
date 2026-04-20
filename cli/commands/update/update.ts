@@ -11,16 +11,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { promptUninstallCompetitors } from "../cli-kit/competitors.js";
+import { promptUninstallCompetitors } from "../../cli-kit/competitors.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
-} from "../io/github.js";
-import { maybeSelfUpdate } from "../io/self-update.js";
-import { ensureSerenaProject, inferSerenaLanguages } from "../io/serena.js";
-import { downloadAndExtract } from "../io/tarball.js";
-import pkg from "../package.json";
+} from "../../io/github.js";
+import { maybeSelfUpdate } from "../../io/self-update.js";
+import { ensureSerenaProject, inferSerenaLanguages } from "../../io/serena.js";
+import { downloadAndExtract } from "../../io/tarball.js";
+import pkg from "../../package.json";
 import {
   fetchRemoteManifest,
   getLocalVersion,
@@ -28,11 +28,11 @@ import {
   hasInstalledProject,
   saveLocalVersion,
   setNeedsReconcile,
-} from "../platform/manifest.js";
+} from "../../platform/manifest.js";
 import {
   generateCursorRules,
   mergeRulesIndexForVendor,
-} from "../platform/rules.js";
+} from "../../platform/rules.js";
 import {
   createCliSymlinks,
   detectExistingCliSymlinkDirs,
@@ -41,18 +41,18 @@ import {
   installVendorAdaptations,
   REPO,
   readVendorsFromConfig,
-} from "../platform/skills-installer.js";
-import type { VendorType } from "../types/index.js";
-import { isAutoUpdateCliEnabled } from "../utils/config.js";
+} from "../../platform/skills-installer.js";
+import type { VendorType } from "../../types/index.js";
+import { isAutoUpdateCliEnabled } from "../../utils/config.js";
 import {
   applyRecommendedSettings,
   needsSettingsUpdate,
-} from "../vendors/claude/settings.js";
+} from "../../vendors/claude/settings.js";
 import {
   applyRecommendedGeminiSettings,
   needsGeminiSettingsUpdate,
-} from "../vendors/gemini/settings.js";
-import { runMigrations } from "./migrations/index.js";
+} from "../../vendors/gemini/settings.js";
+import { runMigrations } from "../migrations/index.js";
 
 /** Thin UI abstraction: interactive (@clack/prompts) vs CI (plain console) */
 function createUI(ci: boolean) {

@@ -45,7 +45,7 @@ vi.mock("../platform/skills-installer.js", () => ({
   readVendorsFromConfig: vi.fn(() => configuredVendorsForTest),
 }));
 
-import { update } from "../commands/update.js";
+import { update } from "../commands/update/update.js";
 import * as manifest from "../platform/manifest.js";
 import * as rules from "../platform/rules.js";
 import * as skills from "../platform/skills-installer.js";

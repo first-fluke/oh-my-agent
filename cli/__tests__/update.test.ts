@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { runMigrations } from "../commands/migrations/index.js";
-import { classifyUpdateTarget } from "../commands/update.js";
+import { classifyUpdateTarget } from "../commands/update/update.js";
 import {
   getNeedsReconcile,
   hasInstalledProject,

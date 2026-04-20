@@ -28,7 +28,7 @@ import { retro } from "./commands/retro.js";
 import { registerSearchCommand } from "./commands/search/index.js";
 import { star } from "./commands/star.js";
 import { stats } from "./commands/stats.js";
-import { update } from "./commands/update.js";
+import { registerUpdate } from "./commands/update/command.js";
 import { registerVerify } from "./commands/verify/command.js";
 import { visualize } from "./commands/visualize.js";
 import { startDashboard } from "./dashboard.js";
@@ -96,16 +96,7 @@ addOutputOptions(
   ),
 );
 
-program
-  .command("update")
-  .description("Update skills to latest version from registry")
-  .option("-f, --force", "Overwrite user-customized config files")
-  .option("--ci", "Run in non-interactive CI mode (skip prompts)")
-  .action(
-    runAction(async (options: { force?: boolean; ci?: boolean }) => {
-      await update(options.force ?? false, options.ci ?? false);
-    }),
-  );
+registerUpdate(program);
 
 program
   .command("link [vendors...]")
