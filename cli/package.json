@@ -61,7 +61,7 @@
     "lint": "biome check --write --unsafe .",
     "check:boundaries": "node ./scripts/check-boundaries.mjs",
     "test": "vitest run",
-    "coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
