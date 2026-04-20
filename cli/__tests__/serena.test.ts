@@ -5,7 +5,7 @@ import {
   ensureSerenaRegistered,
   inferSerenaLanguages,
   resolveSerenaLanguages,
-} from "../lib/serena.js";
+} from "../io/serena.js";
 
 // Mock fs
 const mockFs = vi.hoisted(() => ({

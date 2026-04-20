@@ -19,7 +19,7 @@ vi.mock("../platform/manifest.js", () => ({
   setNeedsReconcile: vi.fn(() => {}),
 }));
 
-vi.mock("../lib/tarball.js", () => ({
+vi.mock("../io/tarball.js", () => ({
   downloadAndExtract: vi.fn(async () => ({
     dir: extractedRepoDir,
     cleanup: cleanupMock,

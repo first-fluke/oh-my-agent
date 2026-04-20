@@ -6,7 +6,7 @@ const mockMemoryFunctions = vi.hoisted(() => ({
   formatSessionId: vi.fn(),
 }));
 
-vi.mock("../../lib/memory.js", () => mockMemoryFunctions);
+vi.mock("../../io/memory.js", () => mockMemoryFunctions);
 
 describe("agent/common.ts", () => {
   beforeEach(() => {

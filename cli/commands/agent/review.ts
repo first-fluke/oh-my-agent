@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
-import { registerSignalCleanup } from "../../lib/process-signals.js";
+import { registerSignalCleanup } from "../../cli-kit/process-signals.js";
 import {
   resolveVendor,
   type VendorConfig,

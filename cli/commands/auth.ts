@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { isGhAuthenticated } from "../lib/github.js";
+import { isGhAuthenticated } from "../io/github.js";
 import { VENDORS } from "../vendors/index.js";
 
 export {

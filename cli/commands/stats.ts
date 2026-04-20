@@ -8,8 +8,8 @@ import {
 import { dirname, join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { getGitStats } from "../lib/git.js";
-import { getCompletedTasksCount, getSessionMeta } from "../lib/memory.js";
+import { getGitStats } from "../io/git.js";
+import { getCompletedTasksCount, getSessionMeta } from "../io/memory.js";
 import type { Metrics } from "../types/index.js";
 
 function getMetricsPath(cwd: string): string {

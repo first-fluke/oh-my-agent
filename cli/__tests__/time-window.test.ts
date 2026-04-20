@@ -3,7 +3,7 @@ import {
   getCompareWindows,
   parseTimeWindow,
   resolveWindowBounds,
-} from "../lib/time-window.js";
+} from "../cli-kit/time-window.js";
 
 describe("parseTimeWindow", () => {
   it("returns 7d default when no arg", () => {

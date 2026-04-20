@@ -28,7 +28,7 @@ import {
   printDescribe,
   resolveJsonMode,
   runAction,
-} from "./lib/cli-framework.js";
+} from "./cli-kit/cli-framework.js";
 import pkg from "./package.json";
 import { startTerminalDashboard } from "./terminal-dashboard.js";
 

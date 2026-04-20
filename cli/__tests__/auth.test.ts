@@ -16,7 +16,7 @@ vi.mock("node:child_process", () => ({
 }));
 
 const isGhAuthenticatedMock = vi.fn();
-vi.mock("../lib/github.js", () => ({
+vi.mock("../io/github.js", () => ({
   isGhAuthenticated: () => isGhAuthenticatedMock(),
 }));
 

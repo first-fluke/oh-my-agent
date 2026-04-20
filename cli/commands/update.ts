@@ -11,15 +11,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { promptUninstallCompetitors } from "../lib/competitors.js";
+import { promptUninstallCompetitors } from "../cli-kit/competitors.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
-} from "../lib/github.js";
-import { maybeSelfUpdate } from "../lib/self-update.js";
-import { ensureSerenaProject, inferSerenaLanguages } from "../lib/serena.js";
-import { downloadAndExtract } from "../lib/tarball.js";
+} from "../io/github.js";
+import { maybeSelfUpdate } from "../io/self-update.js";
+import { ensureSerenaProject, inferSerenaLanguages } from "../io/serena.js";
+import { downloadAndExtract } from "../io/tarball.js";
 import pkg from "../package.json";
 import {
   fetchRemoteManifest,

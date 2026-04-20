@@ -8,7 +8,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanLeftoverDirs } from "../lib/competitors.js";
+import { cleanLeftoverDirs } from "../cli-kit/competitors.js";
 
 describe("cleanLeftoverDirs", () => {
   const tempRoots: string[] = [];

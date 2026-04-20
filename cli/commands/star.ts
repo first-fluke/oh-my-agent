@@ -6,7 +6,7 @@ import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
-} from "../lib/github.js";
+} from "../io/github.js";
 import { REPO } from "../platform/skills-installer.js";
 
 function getInstallCommand(): string {

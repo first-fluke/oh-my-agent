@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseFrontmatter, serializeFrontmatter } from "../lib/frontmatter.js";
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from "../cli-kit/frontmatter.js";
 
 describe("parseFrontmatter", () => {
   it("should parse basic YAML frontmatter", () => {

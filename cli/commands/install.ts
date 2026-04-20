@@ -3,14 +3,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { promptUninstallCompetitors } from "../lib/competitors.js";
+import { promptUninstallCompetitors } from "../cli-kit/competitors.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
-} from "../lib/github.js";
-import { ensureSerenaProject, resolveSerenaLanguages } from "../lib/serena.js";
-import { downloadAndExtract } from "../lib/tarball.js";
+} from "../io/github.js";
+import { ensureSerenaProject, resolveSerenaLanguages } from "../io/serena.js";
+import { downloadAndExtract } from "../io/tarball.js";
 import { getLocalVersion, saveLocalVersion } from "../platform/manifest.js";
 import {
   generateCursorRules,

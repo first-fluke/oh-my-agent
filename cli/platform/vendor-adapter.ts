@@ -6,7 +6,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { parseFrontmatter, serializeFrontmatter } from "../lib/frontmatter.js";
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from "../cli-kit/frontmatter.js";
 import type { VendorType } from "../types/index.js";
 import { clearNonDirectory } from "../utils/fs-utils.js";
 import { installVendorAgents } from "./agent-composer.js";

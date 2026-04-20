@@ -2,9 +2,9 @@ import { spawn as spawnProcess } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import color from "picocolors";
-import { registerSignalCleanup } from "../../lib/process-signals.js";
-import { planDispatch } from "../../lib/runtime-dispatch.js";
-import { detectWorkspace } from "../../lib/workspaces.js";
+import { registerSignalCleanup } from "../../cli-kit/process-signals.js";
+import { planDispatch } from "../../io/runtime-dispatch.js";
+import { detectWorkspace } from "../../io/workspaces.js";
 import {
   loadExecutionProtocol,
   resolvePromptContent,

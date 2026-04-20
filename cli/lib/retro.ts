@@ -1,3 +1,5 @@
+export type { TimeWindow } from "../cli-kit/time-window.js";
+export { getCompareWindows, parseTimeWindow } from "../cli-kit/time-window.js";
 export { analyze, getDisplayData } from "./retro/analysis.js";
 export {
   bar,
@@ -39,5 +41,3 @@ export type {
   RetroSnapshot,
   RetroSnapshotAuthor,
 } from "./retro/types.js";
-export type { TimeWindow } from "./time-window.js";
-export { getCompareWindows, parseTimeWindow } from "./time-window.js";

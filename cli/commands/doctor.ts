@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { checkStarred } from "../lib/github.js";
+import { checkStarred } from "../io/github.js";
 import {
   getAllSkills,
   INSTALLED_SKILLS_DIR,

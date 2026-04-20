@@ -85,15 +85,15 @@ vi.mock("picocolors", () => ({
 vi.mock("node:fs", () => fsState);
 vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
-vi.mock("../lib/github.js", () => githubState);
+vi.mock("../io/github.js", () => githubState);
 vi.mock("../platform/skills-installer.js", () => skillsState);
 vi.mock("./migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
-vi.mock("../lib/competitors.js", () => ({
+vi.mock("../cli-kit/competitors.js", () => ({
   promptUninstallCompetitors: miscState.promptUninstallCompetitors,
 }));
-vi.mock("../lib/tarball.js", () => ({
+vi.mock("../io/tarball.js", () => ({
   downloadAndExtract: miscState.downloadAndExtract,
 }));
 vi.mock("../platform/manifest.js", () => ({
@@ -104,7 +104,7 @@ vi.mock("../platform/rules.js", () => ({
   generateCursorRules: miscState.generateCursorRules,
   mergeRulesIndexForVendor: miscState.mergeRulesIndexForVendor,
 }));
-vi.mock("../lib/serena.js", () => ({
+vi.mock("../io/serena.js", () => ({
   ensureSerenaProject: miscState.ensureSerenaProject,
   resolveSerenaLanguages: miscState.resolveSerenaLanguages,
 }));

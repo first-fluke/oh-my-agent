@@ -7,7 +7,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { parseFrontmatter, serializeFrontmatter } from "../lib/frontmatter.js";
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from "../cli-kit/frontmatter.js";
 
 /** SSOT for all rules. */
 export const RULES_DIR = ".agents/rules";

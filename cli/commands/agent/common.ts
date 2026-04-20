@@ -1,6 +1,6 @@
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { formatSessionId, getSessionMeta } from "../../lib/memory.js";
+import { formatSessionId, getSessionMeta } from "../../io/memory.js";
 
 export function isProcessRunning(pid: number): boolean {
   try {

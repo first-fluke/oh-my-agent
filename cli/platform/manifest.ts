@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { http, isAxiosError } from "../lib/http.js";
+import { http, isAxiosError } from "../io/http.js";
 import type { Manifest, ManifestFile } from "../types/index.js";
 import { INSTALLED_SKILLS_DIR, REPO } from "./skills-installer.js";
 
