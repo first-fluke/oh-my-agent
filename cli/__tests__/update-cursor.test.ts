@@ -7,7 +7,7 @@ let extractedRepoDir = "";
 let cleanupMock: ReturnType<typeof vi.fn>;
 let configuredVendorsForTest: string[] = [];
 
-vi.mock("../lib/manifest.js", () => ({
+vi.mock("../platform/manifest.js", () => ({
   fetchRemoteManifest: vi.fn(async () => ({
     version: "9.9.9",
     metadata: { totalFiles: 1 },
@@ -30,12 +30,12 @@ vi.mock("../commands/migrations/index.js", () => ({
   runMigrations: vi.fn(() => []),
 }));
 
-vi.mock("../lib/rules.js", () => ({
+vi.mock("../platform/rules.js", () => ({
   generateCursorRules: vi.fn(() => []),
   mergeRulesIndexForVendor: vi.fn(() => true),
 }));
 
-vi.mock("../lib/skills.js", () => ({
+vi.mock("../platform/skills-installer.js", () => ({
   REPO: "first-fluke/oh-my-agent",
   installVendorAdaptations: vi.fn(),
   detectExistingCliSymlinkDirs: vi.fn(() => []),
@@ -46,9 +46,9 @@ vi.mock("../lib/skills.js", () => ({
 }));
 
 import { update } from "../commands/update.js";
-import * as manifest from "../lib/manifest.js";
-import * as rules from "../lib/rules.js";
-import * as skills from "../lib/skills.js";
+import * as manifest from "../platform/manifest.js";
+import * as rules from "../platform/rules.js";
+import * as skills from "../platform/skills-installer.js";
 
 describe("update cursor vendor adaptations", () => {
   const tempRoots: string[] = [];

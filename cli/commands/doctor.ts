@@ -9,7 +9,7 @@ import {
   INSTALLED_SKILLS_DIR,
   installShared,
   installSkill,
-} from "../lib/skills.js";
+} from "../platform/skills-installer.js";
 import type { CLICheck, SkillCheck } from "../types/index.js";
 import {
   isClaudeAuthenticated,

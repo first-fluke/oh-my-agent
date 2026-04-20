@@ -1,7 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import pc from "picocolors";
-import { generateCursorRules, mergeRulesIndexForVendor } from "../lib/rules.js";
+import {
+  generateCursorRules,
+  mergeRulesIndexForVendor,
+} from "../platform/rules.js";
 import {
   createCliSymlinks,
   detectExistingCliSymlinkDirs,
@@ -9,7 +12,7 @@ import {
   getInstalledSkillNames,
   installVendorAdaptations,
   readVendorsFromConfig,
-} from "../lib/skills.js";
+} from "../platform/skills-installer.js";
 import type { CliVendor, VendorType } from "../types/index.js";
 import {
   applyRecommendedGeminiSettings,

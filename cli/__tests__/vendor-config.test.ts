@@ -9,7 +9,10 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { readVendorsFromConfig, writeVendorsToConfig } from "../lib/skills.js";
+import {
+  readVendorsFromConfig,
+  writeVendorsToConfig,
+} from "../platform/skills-installer.js";
 
 describe("readVendorsFromConfig", () => {
   const tempDirs: string[] = [];

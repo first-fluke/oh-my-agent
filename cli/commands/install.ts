@@ -9,9 +9,13 @@ import {
   isGhAuthenticated,
   isGhInstalled,
 } from "../lib/github.js";
-import { getLocalVersion, saveLocalVersion } from "../lib/manifest.js";
-import { generateCursorRules, mergeRulesIndexForVendor } from "../lib/rules.js";
 import { ensureSerenaProject, resolveSerenaLanguages } from "../lib/serena.js";
+import { downloadAndExtract } from "../lib/tarball.js";
+import { getLocalVersion, saveLocalVersion } from "../platform/manifest.js";
+import {
+  generateCursorRules,
+  mergeRulesIndexForVendor,
+} from "../platform/rules.js";
 import {
   createCliSymlinks,
   ensureCursorMcpSymlink,
@@ -26,8 +30,7 @@ import {
   PRESETS,
   REPO,
   writeVendorsToConfig,
-} from "../lib/skills.js";
-import { downloadAndExtract } from "../lib/tarball.js";
+} from "../platform/skills-installer.js";
 import type { CliTool, CliVendor, VendorType } from "../types/index.js";
 import {
   applyRecommendedSettings,

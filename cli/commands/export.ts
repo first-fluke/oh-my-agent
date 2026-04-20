@@ -1,5 +1,5 @@
 import pc from "picocolors";
-import { generateCursorRules } from "../lib/rules.js";
+import { generateCursorRules } from "../platform/rules.js";
 
 export type ExportFormat = "cursor";
 

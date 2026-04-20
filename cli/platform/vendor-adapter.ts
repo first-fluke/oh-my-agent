@@ -6,10 +6,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { parseFrontmatter, serializeFrontmatter } from "../lib/frontmatter.js";
 import type { VendorType } from "../types/index.js";
 import { clearNonDirectory } from "../utils/fs-utils.js";
 import { installVendorAgents } from "./agent-composer.js";
-import { parseFrontmatter, serializeFrontmatter } from "./frontmatter.js";
 import { type HookVariant, installHooksFromVariant } from "./hooks-composer.js";
 import { generateClaudeRules } from "./rules.js";
 

@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { http, isAxiosError } from "../lib/http.js";
 import type { Manifest, ManifestFile } from "../types/index.js";
-import { http, isAxiosError } from "./http.js";
-import { INSTALLED_SKILLS_DIR, REPO } from "./skills.js";
+import { INSTALLED_SKILLS_DIR, REPO } from "./skills-installer.js";
 
 export function calculateSHA256(content: string): string {
   return createHash("sha256").update(content, "utf-8").digest("hex");

@@ -3,15 +3,15 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
+import { registerSignalCleanup } from "../../lib/process-signals.js";
+import { planDispatch } from "../../lib/runtime-dispatch.js";
+import { detectWorkspace } from "../../lib/workspaces.js";
 import {
   loadExecutionProtocol,
   resolvePromptContent,
   resolvePromptFlag,
   resolveVendor,
-} from "../../lib/agent-config.js";
-import { registerSignalCleanup } from "../../lib/process-signals.js";
-import { planDispatch } from "../../lib/runtime-dispatch.js";
-import { detectWorkspace } from "../../lib/workspaces.js";
+} from "../../platform/agent-config.js";
 import { isProcessRunning } from "./common.js";
 
 export async function spawnAgent(

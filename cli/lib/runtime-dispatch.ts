@@ -1,4 +1,4 @@
-import { splitArgs, type VendorConfig } from "./agent-config.js";
+import { splitArgs, type VendorConfig } from "../platform/agent-config.js";
 
 export type RuntimeVendor =
   | "claude"

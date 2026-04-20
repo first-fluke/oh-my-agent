@@ -86,7 +86,7 @@ vi.mock("node:fs", () => fsState);
 vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
 vi.mock("../lib/github.js", () => githubState);
-vi.mock("../lib/skills.js", () => skillsState);
+vi.mock("../platform/skills-installer.js", () => skillsState);
 vi.mock("./migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
@@ -96,11 +96,11 @@ vi.mock("../lib/competitors.js", () => ({
 vi.mock("../lib/tarball.js", () => ({
   downloadAndExtract: miscState.downloadAndExtract,
 }));
-vi.mock("../lib/manifest.js", () => ({
+vi.mock("../platform/manifest.js", () => ({
   getLocalVersion: miscState.getLocalVersion,
   saveLocalVersion: miscState.saveLocalVersion,
 }));
-vi.mock("../lib/rules.js", () => ({
+vi.mock("../platform/rules.js", () => ({
   generateCursorRules: miscState.generateCursorRules,
   mergeRulesIndexForVendor: miscState.mergeRulesIndexForVendor,
 }));

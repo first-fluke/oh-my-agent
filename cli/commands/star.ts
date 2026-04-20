@@ -7,7 +7,7 @@ import {
   isGhAuthenticated,
   isGhInstalled,
 } from "../lib/github.js";
-import { REPO } from "../lib/skills.js";
+import { REPO } from "../platform/skills-installer.js";
 
 function getInstallCommand(): string {
   const os = platform();

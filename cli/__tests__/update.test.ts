@@ -15,8 +15,8 @@ import {
   getNeedsReconcile,
   hasInstalledProject,
   setNeedsReconcile,
-} from "../lib/manifest.js";
-import * as skills from "../lib/skills.js";
+} from "../platform/manifest.js";
+import * as skills from "../platform/skills-installer.js";
 
 describe("whitelist-based skill filtering", () => {
   it("getAllSkills should return only registered skills", () => {

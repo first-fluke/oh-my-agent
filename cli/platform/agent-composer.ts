@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { parseFrontmatter, serializeFrontmatter } from "./frontmatter.js";
+import { parseFrontmatter, serializeFrontmatter } from "../lib/frontmatter.js";
 
 // =============================================================================
 // Agent Tool Mapping (Abstract -> Vendor-specific)

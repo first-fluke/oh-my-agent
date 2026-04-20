@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { REPO } from "./skills.js";
+import { REPO } from "../platform/skills-installer.js";
 
 export function isGhInstalled(): boolean {
   try {

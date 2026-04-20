@@ -6,7 +6,7 @@ import {
   generateCursorRules,
   mergeRulesIndexForVendor,
   readRules,
-} from "../lib/rules.js";
+} from "../platform/rules.js";
 
 vi.mock("node:fs", () => ({
   existsSync: vi.fn(),

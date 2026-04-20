@@ -2,8 +2,8 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { installVendorAgents } from "../../lib/agent-composer.js";
 import { parseFrontmatter } from "../../lib/frontmatter.js";
+import { installVendorAgents } from "../../platform/agent-composer.js";
 
 const GEMINI_ALLOWED_FRONTMATTER_KEYS = new Set([
   "name",

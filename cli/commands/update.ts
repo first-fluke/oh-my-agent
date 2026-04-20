@@ -17,6 +17,10 @@ import {
   isGhAuthenticated,
   isGhInstalled,
 } from "../lib/github.js";
+import { maybeSelfUpdate } from "../lib/self-update.js";
+import { ensureSerenaProject, inferSerenaLanguages } from "../lib/serena.js";
+import { downloadAndExtract } from "../lib/tarball.js";
+import pkg from "../package.json";
 import {
   fetchRemoteManifest,
   getLocalVersion,
@@ -24,10 +28,11 @@ import {
   hasInstalledProject,
   saveLocalVersion,
   setNeedsReconcile,
-} from "../lib/manifest.js";
-import { generateCursorRules, mergeRulesIndexForVendor } from "../lib/rules.js";
-import { maybeSelfUpdate } from "../lib/self-update.js";
-import { ensureSerenaProject, inferSerenaLanguages } from "../lib/serena.js";
+} from "../platform/manifest.js";
+import {
+  generateCursorRules,
+  mergeRulesIndexForVendor,
+} from "../platform/rules.js";
 import {
   createCliSymlinks,
   detectExistingCliSymlinkDirs,
@@ -36,9 +41,7 @@ import {
   installVendorAdaptations,
   REPO,
   readVendorsFromConfig,
-} from "../lib/skills.js";
-import { downloadAndExtract } from "../lib/tarball.js";
-import pkg from "../package.json";
+} from "../platform/skills-installer.js";
 import type { VendorType } from "../types/index.js";
 import { isAutoUpdateCliEnabled } from "../utils/config.js";
 import {

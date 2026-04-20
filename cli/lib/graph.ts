@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import pc from "picocolors";
-import { SKILLS } from "./skills.js";
+import { SKILLS } from "../platform/skills-installer.js";
 
 // ── Types ───────────────────────────────────────────────────────
 

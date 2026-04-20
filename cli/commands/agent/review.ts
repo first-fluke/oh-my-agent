@@ -3,8 +3,11 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
-import { resolveVendor, type VendorConfig } from "../../lib/agent-config.js";
 import { registerSignalCleanup } from "../../lib/process-signals.js";
+import {
+  resolveVendor,
+  type VendorConfig,
+} from "../../platform/agent-config.js";
 import { isProcessRunning, resolveSessionId } from "./common.js";
 
 const REVIEW_FALLBACK_VENDOR = "codex";

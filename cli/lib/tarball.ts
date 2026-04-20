@@ -3,8 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import https from "node:https";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { REPO } from "../platform/skills-installer.js";
 import { http, isAxiosError } from "./http.js";
-import { REPO } from "./skills.js";
 
 export interface ExtractedRepo {
   dir: string;
