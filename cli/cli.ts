@@ -13,7 +13,7 @@ import {
   spawnAgent,
 } from "./commands/agent.js";
 import { checkAuthStatus } from "./commands/auth.js";
-import { bridge } from "./commands/bridge.js";
+import { registerBridge } from "./commands/bridge/command.js";
 import { cleanup } from "./commands/cleanup.js";
 import { registerDoctor } from "./commands/doctor/command.js";
 import { exportRules } from "./commands/export.js";
@@ -207,14 +207,7 @@ addOutputOptions(
   ),
 );
 
-program
-  .command("bridge [url]")
-  .description("Bridge MCP stdio to Streamable HTTP (for Serena)")
-  .action(
-    runAction(async (url) => {
-      await bridge(url);
-    }),
-  );
+registerBridge(program);
 
 program
   .command("agent:spawn <agent-id> <prompt> <session-id>")

@@ -10,7 +10,7 @@ import {
   type MockInstance,
   vi,
 } from "vitest";
-import { bridge, validateSerenaConfigs } from "../commands/bridge.js";
+import { bridge, validateSerenaConfigs } from "../commands/bridge/bridge.js";
 
 // Mock fs module
 const mockFs = vi.hoisted(() => ({
