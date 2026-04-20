@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyRecommendedSettings,
   needsSettingsUpdate,
-} from "../lib/claude/settings.js";
+} from "../vendors/claude/settings.js";
 
 describe("Claude settings", () => {
   it("treats DISABLE_PROMPT_CACHING as deprecated and requiring cleanup", () => {

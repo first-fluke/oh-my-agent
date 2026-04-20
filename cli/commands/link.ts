@@ -1,10 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import pc from "picocolors";
-import {
-  applyRecommendedGeminiSettings,
-  needsGeminiSettingsUpdate,
-} from "../lib/gemini/settings.js";
 import { generateCursorRules, mergeRulesIndexForVendor } from "../lib/rules.js";
 import {
   createCliSymlinks,
@@ -15,6 +11,10 @@ import {
   readVendorsFromConfig,
 } from "../lib/skills.js";
 import type { CliVendor, VendorType } from "../types/index.js";
+import {
+  applyRecommendedGeminiSettings,
+  needsGeminiSettingsUpdate,
+} from "../vendors/gemini/settings.js";
 
 /**
  * Regenerate all vendor-specific files (.claude/, .cursor/, .gemini/, etc.)

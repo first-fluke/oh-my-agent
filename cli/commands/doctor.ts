@@ -16,7 +16,7 @@ import {
   isCodexAuthenticated,
   isGeminiAuthenticated,
   isQwenAuthenticated,
-} from "./auth.js";
+} from "../vendors/index.js";
 
 async function checkCLI(
   name: string,

@@ -11,15 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import {
-  applyRecommendedSettings,
-  needsSettingsUpdate,
-} from "../lib/claude/settings.js";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
-import {
-  applyRecommendedGeminiSettings,
-  needsGeminiSettingsUpdate,
-} from "../lib/gemini/settings.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
@@ -49,6 +41,14 @@ import { downloadAndExtract } from "../lib/tarball.js";
 import pkg from "../package.json";
 import type { VendorType } from "../types/index.js";
 import { isAutoUpdateCliEnabled } from "../utils/config.js";
+import {
+  applyRecommendedSettings,
+  needsSettingsUpdate,
+} from "../vendors/claude/settings.js";
+import {
+  applyRecommendedGeminiSettings,
+  needsGeminiSettingsUpdate,
+} from "../vendors/gemini/settings.js";
 import { runMigrations } from "./migrations/index.js";
 
 /** Thin UI abstraction: interactive (@clack/prompts) vs CI (plain console) */

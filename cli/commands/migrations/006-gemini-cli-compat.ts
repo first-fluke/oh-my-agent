@@ -4,7 +4,7 @@ import {
   applyRecommendedGeminiSettings,
   type GeminiSettings,
   sanitizeGeminiSettings,
-} from "../../lib/gemini/settings.js";
+} from "../../vendors/gemini/settings.js";
 import type { Migration } from "./index.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {

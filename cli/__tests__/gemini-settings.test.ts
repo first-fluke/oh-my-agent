@@ -4,7 +4,7 @@ import {
   needsGeminiSettingsUpdate,
   RECOMMENDED_GEMINI_GENERAL,
   RECOMMENDED_GEMINI_MCP,
-} from "../lib/gemini/settings.js";
+} from "../vendors/gemini/settings.js";
 
 describe("gemini settings", () => {
   it("requires update when general is missing", () => {

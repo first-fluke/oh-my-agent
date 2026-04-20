@@ -3,15 +3,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import {
-  applyRecommendedSettings,
-  needsSettingsUpdate,
-} from "../lib/claude/settings.js";
 import { promptUninstallCompetitors } from "../lib/competitors.js";
-import {
-  applyRecommendedGeminiSettings,
-  needsGeminiSettingsUpdate,
-} from "../lib/gemini/settings.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
@@ -37,6 +29,14 @@ import {
 } from "../lib/skills.js";
 import { downloadAndExtract } from "../lib/tarball.js";
 import type { CliTool, CliVendor, VendorType } from "../types/index.js";
+import {
+  applyRecommendedSettings,
+  needsSettingsUpdate,
+} from "../vendors/claude/settings.js";
+import {
+  applyRecommendedGeminiSettings,
+  needsGeminiSettingsUpdate,
+} from "../vendors/gemini/settings.js";
 import { runMigrations } from "./migrations/index.js";
 
 const LANGUAGE_NAMES: Record<string, string> = {
