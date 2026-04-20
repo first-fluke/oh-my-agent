@@ -59,6 +59,7 @@
     "build": "bun run sync:readme && bun build cli.ts --outfile bin/cli.js --target node --minify",
     "dev": "bun run cli.ts",
     "lint": "biome check --write --unsafe .",
+    "check:boundaries": "node ./scripts/check-boundaries.mjs",
     "test": "vitest run",
     "prepublishOnly": "bun run build"
   },
