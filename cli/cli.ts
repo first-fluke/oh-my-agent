@@ -26,7 +26,7 @@ import { registerSearchCommand } from "./commands/search/index.js";
 import { star } from "./commands/star.js";
 import { stats } from "./commands/stats.js";
 import { update } from "./commands/update.js";
-import { verify } from "./commands/verify.js";
+import { registerVerify } from "./commands/verify/command.js";
 import { visualize } from "./commands/visualize.js";
 import { startDashboard } from "./dashboard.js";
 import pkg from "./package.json";
@@ -300,19 +300,7 @@ addOutputOptions(
   ),
 );
 
-addOutputOptions(
-  program
-    .command("verify <agent-type>")
-    .description("Verify subagent output (backend/frontend/mobile/qa/debug/pm)")
-    .option("-w, --workspace <path>", "Workspace path", process.cwd()),
-).action(
-  runAction(
-    async (agentType, options) => {
-      await verify(agentType, options.workspace, resolveJsonMode(options));
-    },
-    { supportsJsonOutput: true },
-  ),
-);
+registerVerify(program);
 
 program
   .command("star")
