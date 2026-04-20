@@ -3,19 +3,22 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { promptUninstallCompetitors } from "../cli-kit/competitors.js";
+import { promptUninstallCompetitors } from "../../cli-kit/competitors.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
   isGhInstalled,
-} from "../io/github.js";
-import { ensureSerenaProject, resolveSerenaLanguages } from "../io/serena.js";
-import { downloadAndExtract } from "../io/tarball.js";
-import { getLocalVersion, saveLocalVersion } from "../platform/manifest.js";
+} from "../../io/github.js";
+import {
+  ensureSerenaProject,
+  resolveSerenaLanguages,
+} from "../../io/serena.js";
+import { downloadAndExtract } from "../../io/tarball.js";
+import { getLocalVersion, saveLocalVersion } from "../../platform/manifest.js";
 import {
   generateCursorRules,
   mergeRulesIndexForVendor,
-} from "../platform/rules.js";
+} from "../../platform/rules.js";
 import {
   createCliSymlinks,
   ensureCursorMcpSymlink,
@@ -30,17 +33,17 @@ import {
   PRESETS,
   REPO,
   writeVendorsToConfig,
-} from "../platform/skills-installer.js";
-import type { CliTool, CliVendor, VendorType } from "../types/index.js";
+} from "../../platform/skills-installer.js";
+import type { CliTool, CliVendor, VendorType } from "../../types/index.js";
 import {
   applyRecommendedSettings,
   needsSettingsUpdate,
-} from "../vendors/claude/settings.js";
+} from "../../vendors/claude/settings.js";
 import {
   applyRecommendedGeminiSettings,
   needsGeminiSettingsUpdate,
-} from "../vendors/gemini/settings.js";
-import { runMigrations } from "./migrations/index.js";
+} from "../../vendors/gemini/settings.js";
+import { runMigrations } from "../migrations/index.js";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   en: "English",

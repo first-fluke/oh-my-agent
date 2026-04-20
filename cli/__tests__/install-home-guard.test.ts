@@ -109,7 +109,7 @@ vi.mock("../io/serena.js", () => ({
   resolveSerenaLanguages: miscState.resolveSerenaLanguages,
 }));
 
-import { install } from "../commands/install.js";
+import { install } from "../commands/install/install.js";
 
 describe("install home safety", () => {
   const originalHome = process.env.HOME;

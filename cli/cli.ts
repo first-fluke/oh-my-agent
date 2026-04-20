@@ -17,7 +17,10 @@ import { registerBridge } from "./commands/bridge/command.js";
 import { cleanup } from "./commands/cleanup.js";
 import { registerDoctor } from "./commands/doctor/command.js";
 import { exportRules } from "./commands/export.js";
-import { install } from "./commands/install.js";
+import {
+  registerDefaultInstallAction,
+  registerInstall,
+} from "./commands/install/command.js";
 import { link } from "./commands/link.js";
 import { initMemory } from "./commands/memory.js";
 import { recap } from "./commands/recap.js";
@@ -45,21 +48,10 @@ program
   .addHelpText(
     "after",
     "\nAliases:\n  oma  Alias for oh-my-agent after global installation.\n",
-  )
-  .action(
-    runAction(async () => {
-      await install();
-    }),
   );
 
-program
-  .command("install")
-  .description("Install oh-my-agent skills and configurations")
-  .action(
-    runAction(async () => {
-      await install();
-    }),
-  );
+registerDefaultInstallAction(program);
+registerInstall(program);
 
 program
   .command("describe [command-path]")
