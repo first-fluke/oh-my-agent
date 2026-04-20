@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import {
+  addOutputOptions,
+  printDescribe,
+  resolveJsonMode,
+  runAction,
+} from "./cli-kit/cli-framework.js";
+import {
   checkStatus,
   parallelRun,
   reviewAgent,
@@ -9,7 +15,7 @@ import {
 import { checkAuthStatus } from "./commands/auth.js";
 import { bridge } from "./commands/bridge.js";
 import { cleanup } from "./commands/cleanup.js";
-import { doctor } from "./commands/doctor.js";
+import { registerDoctor } from "./commands/doctor/command.js";
 import { exportRules } from "./commands/export.js";
 import { install } from "./commands/install.js";
 import { link } from "./commands/link.js";
@@ -23,12 +29,6 @@ import { update } from "./commands/update.js";
 import { verify } from "./commands/verify.js";
 import { visualize } from "./commands/visualize.js";
 import { startDashboard } from "./dashboard.js";
-import {
-  addOutputOptions,
-  printDescribe,
-  resolveJsonMode,
-  runAction,
-} from "./cli-kit/cli-framework.js";
 import pkg from "./package.json";
 import { startTerminalDashboard } from "./terminal-dashboard.js";
 
@@ -126,19 +126,7 @@ program
     }),
   );
 
-addOutputOptions(
-  program
-    .command("doctor")
-    .description("Check CLI installations, MCP configs, and skill status"),
-  "Output as JSON for CI/CD",
-).action(
-  runAction(
-    async (options) => {
-      await doctor(resolveJsonMode(options));
-    },
-    { supportsJsonOutput: true },
-  ),
-);
+registerDoctor(program);
 
 addOutputOptions(
   program
