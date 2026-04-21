@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.13.0",
-  "releaseDate": "2026-04-19T01:36:15.728Z",
+  "releaseDate": "2026-04-21T05:54:23.109Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -51,8 +51,8 @@
     },
     {
       "path": ".agents/agents/variants/agent-variant.schema.json",
-      "sha256": "f26a59c7b621556478de9126d96c67e3a001d2512e0635e776d05f10dfe2ae86",
-      "size": 2243
+      "sha256": "0d0f400db864493ea61cdf616cf781e4343210ecc466675da479e9d2a98778f2",
+      "size": 2271
     },
     {
       "path": ".agents/agents/variants/claude.json",
@@ -71,8 +71,8 @@
     },
     {
       "path": ".agents/agents/variants/gemini.json",
-      "sha256": "f546b5f64ed1e4f90ce80d62d6120e01fe3d57aa1fdfb6fab247814dddb39b7f",
-      "size": 812
+      "sha256": "d769fe1813836ad3139882625ba86194d8f90f7b0b1b87e15e21875e9675eafc",
+      "size": 684
     },
     {
       "path": ".agents/hooks/core/filter-test-output.sh",
@@ -81,33 +81,33 @@
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "3869d7dbb71f7bf9f0b1c367bebaf34f168dc1908c91a31a29d25ade2691a36c",
-      "size": 5714
+      "sha256": "22a6dc853b3b0f1fb547ee56b4e585cf33998c424c483056f1191ded6a9fa90c",
+      "size": 5726
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "6872aa8f729e19505d8cc2496a197551e6278a6e463ef7176892a471a5b62150",
-      "size": 14051
+      "sha256": "0b3113310fc47f3490ab027f077263a7e16f63f18d9c7bd8c9f303e4a01f1b61",
+      "size": 14042
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "4f2d0534e5fe81453dc31e68d08bd3dd36f30812f9b1582e870544882e200054",
-      "size": 7013
+      "sha256": "75d95cafa03d5b813e5e87469eb6f8401f8d4d15cdea59fd1fe5c7f6b2ebd172",
+      "size": 7044
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "11a8d6bdd3456d0a9413d929e8b0ce1768c3cb428ab9021582f84db5d9e243b5",
-      "size": 12069
+      "sha256": "51efa7e4aa85bb1b16d2045166732da74ba828387a0c29b1e78e4914b7b2b941",
+      "size": 12073
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "71a6888a66638593dbb1435baa1f587bd970d6edb2e7f2446289ca636165dc51",
-      "size": 3868
+      "sha256": "8be3e3f4e2281374da0b025c8f2ca65905ba158939c1a84002a5ea03fdcfca54",
+      "size": 3870
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "c0ff61ba3ff6f5e9dc3226ccf0f8a64969fe362034e02b09fb170cc227044ee9",
-      "size": 39764
+      "sha256": "4e85121bdda4073487148ab6d451355ab2ca4d057c911e98d736eb947f226754",
+      "size": 57266
     },
     {
       "path": ".agents/hooks/core/types.ts",
