@@ -129,45 +129,16 @@ L7 is the application layer: HTTP/gRPC, RUM (web + mobile), crash analytics, and
 
 ## 5. Caveats
 
-This section documents the rarest or most complex cells.
+Rationale for the rarer ❌ / ⚠️ cells. Each entry justifies the marker and points to the authoritative file.
 
-### C1. L3 × SLO and L3 × release (all signals)
-
-All SLO and release cells at L3 are N/A. SLO error budgets, burn-rate alerts, and release markers are application-layer constructs defined in OpenSLO YAML and computed from L7 metrics. L3 IP flow data feeds infrastructure health dashboards but not application SLO windows. If an L3 event (e.g., BGP route leak, PMTUD black hole) causes an SLO burn, it surfaces as a spike in L7 error rate first; the root cause is investigated via `resources/incident-forensics.md` 6-dimension localization, not via SLO policies at L3.
-
-Reference: `boundaries/slo.md`, `resources/incident-forensics.md`, `layers/L3-network.md`.
-
-### C2. L4 × SLO and L4 × release (all signals)
-
-Same rationale as C1. L4 transport health (TCP retransmit rate, RTT) is an infra signal, not an application SLO boundary. TCP connection success rate can feed a synthetic SLI if there is no L7 instrumentation, but this is a fallback, not a recommended practice. Reference: `boundaries/slo.md §fallback SLI sources`.
-
-### C3. L3/L4 × profiles
-
-CPU and memory profiling (Parca, Pyroscope, OTEP 0239) operate at the process level. They measure application-code CPU time, heap allocations, goroutine stacks, and off-CPU wait time. IP routing (L3) and TCP framing (L4) have no equivalent profiling artifact. The eBPF profiles at L4 measure kernel socket overhead and off-CPU network-wait time — this is the closest meaningful artifact, and it is attributed to `layers/L4-transport.md §eBPF`, not to L3.
-
-### C4. Trace context at L3 and L4
-
-W3C Trace Context (`traceparent`, `tracestate`) is an HTTP/gRPC application header. IP packets (L3) and TCP segments (L4) carry no trace context field. The ⚠️ cells in the traces column for L3 and L4 reflect a legitimate engineering technique (logging the socket 5-tuple alongside a trace ID for post-hoc correlation) but not native trace propagation. Native trace propagation begins at the mesh or L7 layer.
-
-Reference: `resources/standards.md §W3C Trace Context`, `layers/L3-network.md §BGP advanced`, `boundaries/cross-application.md`.
-
-### C5. Profiles at mesh layer
-
-Service mesh proxies (Envoy, Linkerd-proxy) are separate processes. Their CPU overhead is visible via eBPF off-CPU profiling on the sidecar process, but this is an L4-level eBPF artifact, not a mesh-native profiling signal. Mesh itself does not expose a profiling API. Cells marked ⚠️ at mesh × profiles reflect this indirect relationship.
-
-Reference: `signals/profiles.md`, `layers/L4-transport.md §eBPF`, `layers/mesh.md`.
-
-### C6. Cost at L3 and L4
-
-Cloud egress cost is attributable to L3/L4 byte volume but only approximately. Accurate unit economics require L7 request-level attribution (per endpoint, per tenant, per feature). L3/L4 cost cells are marked ⚠️ because they produce a cost proxy (bytes out) that is necessary for FinOps egress billing but insufficient for full unit-economics modeling. Reference: `signals/cost.md §egress attribution`.
-
-### C7. Privacy at L3 and L4
-
-IP addresses at L3 and L4 are personal data under GDPR Article 4(1) (and PIPA equivalent). The ⚠️ marker in privacy cells at these layers reflects that IP address logging is operationally necessary (VPC flow logs, TCP connection logs) but requires masking or hashing before long-term retention. The specific masking technique (prefix truncation, SHA-256 with rotating salt, or pseudonymization) is documented in `signals/privacy.md §IP addresses`.
-
-### C8. Audit at L3/L4 SLO and release boundaries
-
-Audit events require a subject (who did what) and a time-bound action. SLO and release boundaries at L3/L4 have no actionable audit subject — there is no identity-bearing event at the IP or TCP layer tied to an SLO policy or a deployment action. These cells are N/A. Audit events at SLO and release boundaries are always generated at L7 (e.g., burn-rate threshold crossed, deployment completed) and recorded by `signals/audit.md`.
+- **C1. L3 × {SLO, release}** — N/A. SLO and release are L7 constructs (OpenSLO YAML, canary markers); L3 IP flow feeds infra health, not application error budgets. An L3 event (BGP leak, PMTUD black hole) that causes an SLO burn surfaces as an L7 error spike first — investigate via `resources/incident-forensics.md` 6-dim localization, not via L3 SLO policy. See `boundaries/slo.md`, `layers/L3-network.md`.
+- **C2. L4 × {SLO, release}** — same rationale as C1. TCP connection success rate can serve as a fallback SLI when L7 instrumentation is absent, but it is not recommended. See `boundaries/slo.md §fallback SLI sources`.
+- **C3. {L3, L4} × profiles** — profiling (Parca, Pyroscope, OTEP 0239) is process-level; L3 has no equivalent artifact. L4 × profiles ✅ reflects eBPF kernel-socket and off-CPU wait measurements — the closest meaningful artifact — attributed to `layers/L4-transport.md §eBPF`.
+- **C4. {L3, L4} × traces (⚠️)** — W3C Trace Context lives in HTTP/gRPC headers, not IP/TCP. The ⚠️ reflects a correlation technique (log socket 5-tuple alongside trace ID) rather than native propagation. Native propagation begins at mesh or L7. See `resources/standards.md §W3C Trace Context`.
+- **C5. mesh × profiles (⚠️)** — sidecar proxies (Envoy, Linkerd-proxy) are separate processes; their CPU overhead is visible via eBPF on the sidecar, but that is an L4 artifact, not a mesh-native profiling signal. Mesh exposes no profiling API. See `signals/profiles.md`, `layers/L4-transport.md §eBPF`.
+- **C6. {L3, L4} × cost (⚠️)** — byte volume is a cost proxy sufficient for cloud egress billing but insufficient for unit economics, which requires L7 per-request attribution. See `signals/cost.md §egress attribution`.
+- **C7. {L3, L4} × privacy (⚠️)** — IP addresses are personal data (GDPR Art. 4(1), PIPA equivalent). VPC flow and TCP connection logs are operationally required but must be masked, hashed, or pseudonymized before long-term retention. Masking technique (prefix truncation, HMAC+salt, pseudonymization) is in `signals/privacy.md §IP addresses`.
+- **C8. {L3, L4} × {SLO, release} × audit** — audit requires an identity-bearing, time-bound subject; IP/TCP-layer events carry no such subject tied to an SLO policy or deployment action. Audit at SLO/release boundaries is always L7-originated. See `signals/audit.md`.
 
 ---
 
