@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.0...cli-v5.14.1) (2026-04-21)
+
+
+### Refactoring
+
+* **oma-observability:** remove process-theater metadata ([d37891a](https://github.com/first-fluke/oh-my-agent/commit/d37891ab11ed7eba2cec1aac7f3f6b992adfc2ae))
+
 ## [5.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.13.0...cli-v5.14.0) (2026-04-21)
 
 
