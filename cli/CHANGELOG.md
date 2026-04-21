@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.1...cli-v5.14.2) (2026-04-21)
+
+
+### Documentation
+
+* **readme:** add oma-observability to agent team table ([64e478d](https://github.com/first-fluke/oh-my-agent/commit/64e478dfc6a71b1f3abc034342c370458e2ea0ea))
+
 ## [5.14.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.0...cli-v5.14.1) (2026-04-21)
 
 
