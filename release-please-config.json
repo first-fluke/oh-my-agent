@@ -21,11 +21,6 @@
         },
         {
           "type": "json",
-          "path": "prompt-manifest.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
           "path": ".agents/skills/_version.json",
           "jsonpath": "$.version"
         },

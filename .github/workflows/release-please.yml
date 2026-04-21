@@ -50,6 +50,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Resolve release tag
         id: release_tag
         env:
@@ -60,6 +64,11 @@ jobs:
           else
             echo "value=cli-v$(node -p "require('./cli/package.json').version")" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Regenerate prompt-manifest.json
+        run: |
+          VERSION=$(jq -r '.["."]' .release-please-manifest.json)
+          bunx tsx cli/generate-manifest.ts "$VERSION"
 
       - name: Create tarball
         run: |
