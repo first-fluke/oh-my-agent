@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.14.0",
-  "releaseDate": "2026-04-21T13:06:18.114Z",
+  "releaseDate": "2026-04-21T13:42:52.796Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -891,8 +891,8 @@
     },
     {
       "path": ".agents/skills/oma-observability/resources/matrix.md",
-      "sha256": "4935b81cc7e582f75f603153c81fcca04a8187cfd66c8250212315eb79e467f5",
-      "size": 23202
+      "sha256": "91d5bf03fc347a23712ed0c6025816abb843c7287f063c9d8ebe06673576f6ef",
+      "size": 21690
     },
     {
       "path": ".agents/skills/oma-observability/resources/meta-observability.md",
