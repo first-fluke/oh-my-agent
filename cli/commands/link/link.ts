@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import pc from "picocolors";
 import {
   generateCursorRules,
@@ -15,9 +15,19 @@ import {
 } from "../../platform/skills-installer.js";
 import type { CliVendor, VendorType } from "../../types/index.js";
 import {
+  applyRecommendedCodexSettings,
+  needsCodexSettingsUpdate,
+  parseCodexConfig,
+  serializeCodexConfig,
+} from "../../vendors/codex/settings.js";
+import {
   applyRecommendedGeminiSettings,
   needsGeminiSettingsUpdate,
 } from "../../vendors/gemini/settings.js";
+import {
+  applyRecommendedQwenSettings,
+  needsQwenSettingsUpdate,
+} from "../../vendors/qwen/settings.js";
 
 /**
  * Regenerate all vendor-specific files (.claude/, .cursor/, .gemini/, etc.)
@@ -77,6 +87,38 @@ export function link(vendorFilter?: string[]): void {
         geminiSettingsPath,
         `${JSON.stringify(geminiSettings, null, 2)}\n`,
       );
+    }
+  }
+
+  // 2b. Qwen-specific settings
+  if (configuredVendors.includes("qwen")) {
+    const qwenSettingsPath = join(cwd, ".qwen", "settings.json");
+    let qwenSettings: unknown = {};
+    if (existsSync(qwenSettingsPath)) {
+      try {
+        qwenSettings = JSON.parse(readFileSync(qwenSettingsPath, "utf-8"));
+      } catch {
+        qwenSettings = {};
+      }
+    }
+    if (needsQwenSettingsUpdate(qwenSettings)) {
+      const next = applyRecommendedQwenSettings(qwenSettings);
+      mkdirSync(dirname(qwenSettingsPath), { recursive: true });
+      writeFileSync(qwenSettingsPath, `${JSON.stringify(next, null, 2)}\n`);
+    }
+  }
+
+  // 2c. Codex-specific settings
+  if (configuredVendors.includes("codex")) {
+    const codexConfigPath = join(cwd, ".codex", "config.toml");
+    const rawToml = existsSync(codexConfigPath)
+      ? readFileSync(codexConfigPath, "utf-8")
+      : "";
+    const codexSettings = parseCodexConfig(rawToml);
+    if (needsCodexSettingsUpdate(codexSettings)) {
+      const next = applyRecommendedCodexSettings(codexSettings);
+      mkdirSync(dirname(codexConfigPath), { recursive: true });
+      writeFileSync(codexConfigPath, `${serializeCodexConfig(next)}\n`);
     }
   }
 

@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../../cli-kit/competitors.js";
@@ -49,9 +49,19 @@ import {
   needsSettingsUpdate,
 } from "../../vendors/claude/settings.js";
 import {
+  applyRecommendedCodexSettings,
+  needsCodexSettingsUpdate,
+  parseCodexConfig,
+  serializeCodexConfig,
+} from "../../vendors/codex/settings.js";
+import {
   applyRecommendedGeminiSettings,
   needsGeminiSettingsUpdate,
 } from "../../vendors/gemini/settings.js";
+import {
+  applyRecommendedQwenSettings,
+  needsQwenSettingsUpdate,
+} from "../../vendors/qwen/settings.js";
 import { runMigrations } from "../migrations/index.js";
 
 /** Thin UI abstraction: interactive (@clack/prompts) vs CI (plain console) */
@@ -336,6 +346,34 @@ export async function update(force = false, ci = false): Promise<void> {
             geminiSettingsPath,
             `${JSON.stringify(geminiSettings, null, 2)}\n`,
           );
+        }
+      }
+      if (configuredVendors.includes("qwen")) {
+        const qwenSettingsPath = join(cwd, ".qwen", "settings.json");
+        let qwenSettings: unknown = {};
+        if (existsSync(qwenSettingsPath)) {
+          try {
+            qwenSettings = JSON.parse(readFileSync(qwenSettingsPath, "utf-8"));
+          } catch {
+            qwenSettings = {};
+          }
+        }
+        if (needsQwenSettingsUpdate(qwenSettings)) {
+          const next = applyRecommendedQwenSettings(qwenSettings);
+          mkdirSync(dirname(qwenSettingsPath), { recursive: true });
+          writeFileSync(qwenSettingsPath, `${JSON.stringify(next, null, 2)}\n`);
+        }
+      }
+      if (configuredVendors.includes("codex")) {
+        const codexConfigPath = join(cwd, ".codex", "config.toml");
+        const rawToml = existsSync(codexConfigPath)
+          ? readFileSync(codexConfigPath, "utf-8")
+          : "";
+        const codexSettings = parseCodexConfig(rawToml);
+        if (needsCodexSettingsUpdate(codexSettings)) {
+          const next = applyRecommendedCodexSettings(codexSettings);
+          mkdirSync(dirname(codexConfigPath), { recursive: true });
+          writeFileSync(codexConfigPath, `${serializeCodexConfig(next)}\n`);
         }
       }
 
