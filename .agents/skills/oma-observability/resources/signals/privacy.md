@@ -1,8 +1,5 @@
 ---
-pinned_ref: "standards.md"
 otel_semconv: "1.27.0 (2024-11); GDPR: 2016/679; PIPA: 2023 amendment"
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
 ---
 
 # Privacy in Telemetry

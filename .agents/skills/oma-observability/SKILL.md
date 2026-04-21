@@ -172,12 +172,13 @@ Before submitting, run `resources/checklist.md`.
 
 ## Versioning & Deprecation
 
-- **Spec version pinning**: OTel spec version, semconv version, and W3C Trace Context maturity level are pinned in `resources/standards.md` header and reviewed quarterly.
-- **Review cadence**: quarterly, aligned with OTel spec releases and CNCF landscape updates (https://landscape.cncf.io).
-- **On semconv promotion** (Development → RC or RC → Stable): update `resources/standards.md` + all affected signal/layer files that reference the changed attribute group; bump skill minor version.
-- **On attribute deprecation**: update all files citing the deprecated attribute with the replacement; add a migration note in `resources/standards.md`.
-- **Vendor list review**: example vendor lists in `resources/vendor-categories.md` reviewed quarterly; `as of YYYY-QX` timestamps updated on each change.
-- **Next review due**: 2026-Q3.
+- **Spec version pinning**: `otel_spec` / `otel_semconv` keys in each file's frontmatter document the assumed version. If content depends on a specific attribute stability tier, the tier is stated inline.
+- **Update triggers** (not scheduled):
+  - OTel semconv promotion (Development → RC → Stable) affecting attributes cited in this skill → update `resources/standards.md` and the affected file, bump minor version.
+  - Attribute deprecation → replace across all citing files; migration note in `resources/standards.md`.
+  - CNCF status change for a vendor/project named in `vendor-categories.md` (Graduated / Archived / acquired) → update the vendor table.
+- **Authoritative live state**: `https://landscape.cncf.io` for CNCF project status. This skill does not promise to track it on any schedule — verify at use time if the information is load-bearing.
+- **No per-file review stamps**: earlier drafts carried `last_reviewed` / `next_review` frontmatter. Those were removed because no automated enforcement exists; relying on voluntary manual review produces stale stamps that misrepresent currency. Git history (`git log path/to/file`) is the source of truth for when a file was last changed.
 
 ## Contribution Protocol
 

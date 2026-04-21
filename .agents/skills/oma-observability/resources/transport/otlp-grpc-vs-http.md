@@ -1,8 +1,5 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
-pinned_ref: "standards.md"
 ---
 
 # OTLP Transport: gRPC vs HTTP Decision Guide

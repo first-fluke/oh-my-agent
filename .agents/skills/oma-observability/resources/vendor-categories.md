@@ -1,7 +1,4 @@
 ---
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
-pinned_ref: "standards.md"
 notes:
   - "Example vendor lists are snapshots — verify via landscape.cncf.io before production selection"
 ---

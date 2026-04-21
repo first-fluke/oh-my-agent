@@ -1,9 +1,6 @@
 ---
-pinned_ref: "standards.md"
 otel_spec: "1.x (stable API/SDK)"
 otel_semconv: "1.27.0 (2024-11)"
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
 specs:
   - "W3C Baggage: Recommendation 2022-12-22"
   - "GDPR: Regulation (EU) 2016/679; KR PIPA: amended 2023"

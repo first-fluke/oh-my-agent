@@ -1,8 +1,5 @@
 ---
-pinned_ref: "standards.md"
 otel_semconv: "1.27.0 (2024-11); security.* namespace: Development/proposed"
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
 tools:
   - "Falco: v0.38+ (CNCF Graduated); rekor: v1.x (sigstore)"
 ---

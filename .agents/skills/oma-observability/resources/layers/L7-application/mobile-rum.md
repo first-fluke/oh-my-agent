@@ -1,16 +1,11 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
 otel_semconv: "1.27.0 (2024-11)"
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
-pinned_ref: "standards.md"
 notes:
   - "OTel mobile semconv still experimental; vendor-native SDKs dominate in 2026"
 ---
 
 # Mobile RUM — L7 Application Layer
-
-> as of 2026-Q2 — review quarterly. Verify SDK versions at opentelemetry.io/docs/languages/ and vendor changelogs.
 
 ---
 

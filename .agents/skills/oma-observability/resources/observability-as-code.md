@@ -1,6 +1,4 @@
 ---
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
 cross_ref: "meta-observability.md §Section F for pipeline alerts; boundaries/slo.md §5,7 for SLO math"
 notes:
   - "Versions: Grafonnet 11.x; OTel Operator v1beta1; Terraform Grafana provider ~> 3.0"

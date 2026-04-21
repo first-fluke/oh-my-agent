@@ -1,8 +1,5 @@
 ---
-pinned_ref: "standards.md"
 otel_semconv: "1.27.0 (2024-11)"
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
 ---
 
 # L4 Transport Layer Observability

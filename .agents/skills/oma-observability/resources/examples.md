@@ -1,9 +1,3 @@
----
-last_reviewed: "2026-Q2"
-next_review: "2026-Q3"
-pinned_ref: "standards.md"
----
-
 # oma-observability Examples
 
 > End-to-end walkthroughs demonstrating the skill's value.
