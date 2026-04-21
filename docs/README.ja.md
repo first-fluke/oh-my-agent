@@ -52,6 +52,7 @@ bunx oh-my-agent@latest
 | **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/ui |
 | **oma-hwp** | HWP/HWPX/HWPMLからMarkdownへの変換 |
 | **oma-mobile** | Flutterクロスプラットフォームアプリ |
+| **oma-observability** | OTelパイプライン、メトリクス/ログ/トレース、SLO、インシデントフォレンジック |
 | **oma-orchestrator** | CLI経由の並列エージェント実行 |
 | **oma-pdf** | PDFからMarkdownへの変換 |
 | **oma-pm** | タスク計画、要件分解、APIコントラクト定義 |

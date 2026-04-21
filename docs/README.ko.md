@@ -54,6 +54,7 @@ bunx oh-my-agent@latest
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | HWP/HWPX/HWPML을 Markdown으로 변환 |
 | **oma-mobile** | Flutter 크로스플랫폼 앱 |
+| **oma-observability** | OTel 파이프라인, 메트릭/로그/트레이스, SLO, 장애 포렌식 |
 | **oma-orchestrator** | CLI 기반 병렬 에이전트 실행 |
 | **oma-pdf** | PDF를 Markdown으로 변환 |
 | **oma-pm** | 작업 계획, 요구사항 분석, API 계약 정의 |
