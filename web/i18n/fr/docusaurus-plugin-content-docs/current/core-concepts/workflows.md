@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Référence complète des 14 workflows oh-my-agent — commandes slash, modes persistant vs non persistant, mots-clés de déclenchement en 11 langues, phases et étapes, fichiers lus et écrits, mécanique de détection automatique et gestion d'état du mode persistant.
+description: Référence complète des 16 workflows oh-my-agent — commandes slash, modes persistant vs non persistant, mots-clés de déclenchement en 11 langues, phases et étapes, fichiers lus et écrits, mécanique de détection automatique et gestion d'état du mode persistant.
 ---
 
 # Workflows
 
 Les workflows sont des processus structurés en plusieurs étapes, déclenchés par des commandes slash ou des mots-clés en langage naturel. Ils définissent comment les agents collaborent sur les tâches -- des utilitaires en une seule phase aux portes de qualité complexes en 5 phases.
 
-Il existe 14 workflows, dont 3 sont persistants (ils maintiennent un état et ne peuvent pas être accidentellement interrompus).
+Il existe 16 workflows, dont 4 sont persistants (ils maintiennent un état et ne peuvent pas être accidentellement interrompus).
 
 ---
 
@@ -126,6 +126,40 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 
 ---
 
+### /ralph
+
+**Description :** Boucle d'exécution persistante et auto-référentielle. Enveloppe ultrawork avec un vérificateur indépendant qui contrôle les critères d'achèvement après chaque itération. Continue de boucler jusqu'à ce que tous les critères passent ou que les garde-fous se déclenchent.
+
+**Persistant :** Oui. Fichier d'état : `.agents/state/ralph-state.json`.
+
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "ralph" |
+| Anglais | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
+| Coréen | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Japonais | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
+| Chinois | "不要停", "直到完成", "全部完成", "做完为止" |
+| Espagnol | "no pares", "hasta completar", "termina todo" |
+| Français | "n'arrête pas", "jusqu'à complétion", "termine tout" |
+| Allemand | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+**Phases :**
+1. **Phase 0 — INIT :** Charger les prérequis (context-loading, protocole de mémoire, protocole de juge). Définir des critères d'achèvement vérifiables (chacun doit être mécaniquement vérifiable — test qui passe, build qui réussit, fichier présent). Présenter les critères pour confirmation de l'utilisateur. Initialiser la session avec `max_iterations: 5`.
+2. **Phase 1 — WORK :** Exécuter ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) comme une seule itération.
+3. **Phase 2 — JUDGE :** Un vérificateur indépendant contrôle chaque critère d'achèvement par rapport à l'état réel du projet (exécuter les tests, vérifier les builds, vérifier l'existence des fichiers). Évaluer chaque critère comme PASS/FAIL avec preuves.
+4. **Phase 3 — DECIDE :** Si tous les critères PASS → terminer la boucle, générer le rapport final. Si l'un est FAIL → incrémenter le compteur d'itérations, réinjecter le contexte d'échec, retourner à la Phase 1.
+5. **Garde-fous :** La boucle s'arrête si `current_iteration >= max_iterations` (5 par défaut), ou si le même critère échoue 3 fois consécutives pour la même cause racine (détection de blocage).
+
+**Différence clé avec /ultrawork :** Ultrawork est un workflow à 5 phases en passe unique. Ralph enveloppe ultrawork dans une boucle de réessai avec un juge indépendant qui vérifie objectivement l'achèvement — il continue jusqu'à ce que le travail soit réellement terminé, et pas simplement « revu ».
+
+**Fichiers lus :** `.agents/workflows/ralph/resources/judge-protocol.md`, tous les fichiers ultrawork.
+**Fichiers écrits :** `session-ralph.md` (mémoire), journaux d'itération, rapport final.
+
+**Quand l'utiliser :** Lorsqu'un achèvement garanti est nécessaire — l'agent doit continuer à travailler jusqu'à ce que des critères vérifiables passent, et pas seulement faire un passage et rapporter.
+
+---
+
 ## Workflows non persistants
 
 ### /plan
@@ -179,6 +213,27 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 **Étapes :** Explorer le contexte du projet (analyse MCP) -> Poser des questions de clarification (une à la fois) -> Proposer 2 à 3 approches avec les compromis -> Présenter le design section par section (avec approbation de l'utilisateur à chaque étape) -> Enregistrer le document de conception dans `docs/plans/` -> Transition : suggérer `/plan`.
 
 **Règles :** Aucune implémentation ni planification avant l'approbation du design. Pas de sortie de code. YAGNI.
+
+---
+
+### /architecture
+
+**Description :** Workflow d'architecture logicielle — diagnostiquer les problèmes d'architecture, sélectionner la bonne méthode d'analyse (routage diagnostique / design-twice / ATAM / CBAM / ADR), comparer les options, synthétiser les apports des parties prenantes et produire une recommandation, une revue ou un ADR.
+
+**Mots-clés de déclenchement :**
+| Langue | Mots-clés |
+|--------|-----------|
+| Universel | "architecture", "ADR", "ATAM", "CBAM" |
+| Anglais | "architecture review", "architectural tradeoff" |
+| Coréen | "아키텍처", "설계 검토" |
+| Japonais | "アーキテクチャ" |
+| Chinois | "架构" |
+
+**Étapes :** Cadrer la décision (nouvelle architecture / revue / analyse de compromis / priorisation des investissements / rédaction d'ADR) -> Sélectionner la méthodologie via le routage diagnostique -> Analyser l'architecture actuelle via l'analyse de code MCP (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> Synthétiser les apports des parties prenantes (uniquement lorsque la décision est suffisamment transversale pour justifier le coût) -> Produire une recommandation avec des hypothèses, compromis, risques et étapes de validation explicites -> Transférer à `/plan` lorsque l'implémentation est requise.
+
+**Règles :** Ne PAS écrire de code d'implémentation ni de plans de tâches dans ce workflow. Transférer à `/plan` après la décision d'architecture. Utiliser les outils MCP en permanence ; ne pas substituer par des lectures de fichiers brutes ou grep.
+
+**Quand l'utiliser :** Choix d'architecture système, décisions de limites de module/service/propriété, priorisation de refactoring, rédaction d'ADR, investigation de douleurs architecturales (amplification de changement, dépendances cachées, APIs maladroites).
 
 ---
 
@@ -287,6 +342,20 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 
 ---
 
+### /pdf
+
+**Description :** Convertir un PDF en Markdown en utilisant `opendataloader-pdf` — extrait le texte, les tables, les titres et les images avec un ordre de lecture correct.
+
+**Mots-clés de déclenchement :** Aucun (invoqué explicitement avec un chemin de fichier d'entrée).
+
+**Étapes :** Valider l'entrée (confirmer l'existence du fichier) -> Déterminer l'emplacement de sortie (spécifié par l'utilisateur ou même répertoire que l'entrée) -> Exécuter `uvx opendataloader-pdf` (aucune installation requise) -> Pour les PDF scannés, utiliser le mode hybride avec OCR -> Normaliser la sortie avec `uvx mdformat` -> Valider la lisibilité et la structure -> Signaler tout problème de conversion (tables manquantes, texte illisible).
+
+**Règles :** L'emplacement de sortie par défaut est le même répertoire que le PDF d'entrée. Ne jamais sauter d'étapes. La langue de réponse suit `.agents/oma-config.yaml`.
+
+**Quand l'utiliser :** Conversion de documents PDF en Markdown pour le contexte LLM ou l'ingestion RAG, extraction de contenu structuré (tables, titres, listes) depuis des PDF.
+
+---
+
 ### /stack-set
 
 **Description :** Détection automatique du stack technique du projet et génération de références spécifiques au langage pour la compétence backend.
@@ -353,6 +422,7 @@ Les workflows suivants sont exclus de la détection automatique et doivent être
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
+- `/pdf`
 
 ---
 

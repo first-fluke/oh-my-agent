@@ -1,11 +1,11 @@
 ---
 title: Giới thiệu
-description: Tổng quan toàn diện về oh-my-agent — framework điều phối đa agent biến trợ lý lập trình AI thành đội ngũ kỹ sư chuyên biệt với 14 agent theo lĩnh vực, tải skill lũy tiến, và khả năng tương thích đa IDE.
+description: Tổng quan toàn diện về oh-my-agent — framework điều phối đa agent biến trợ lý lập trình AI thành đội ngũ kỹ sư chuyên biệt với 21 agent theo lĩnh vực, tải skill lũy tiến, và khả năng tương thích đa IDE.
 ---
 
 # Giới thiệu
 
-oh-my-agent là một framework điều phối đa agent dành cho các IDE và công cụ CLI hỗ trợ AI. Thay vì dựa vào một trợ lý AI duy nhất cho mọi thứ, oh-my-agent phân phối công việc cho 14 agent chuyên biệt — mỗi agent được mô phỏng theo một vai trò thực tế trong đội ngũ kỹ sư, có kiến thức tech stack riêng, quy trình thực thi, playbook xử lý lỗi và checklist chất lượng.
+oh-my-agent là một framework điều phối đa agent dành cho các IDE và công cụ CLI hỗ trợ AI. Thay vì dựa vào một trợ lý AI duy nhất cho mọi thứ, oh-my-agent phân phối công việc cho 21 agent chuyên biệt — mỗi agent được mô phỏng theo một vai trò thực tế trong đội ngũ kỹ sư, có kiến thức tech stack riêng, quy trình thực thi, playbook xử lý lỗi và checklist chất lượng.
 
 Toàn bộ hệ thống nằm trong thư mục `.agents/` di động bên trong dự án của bạn. Chuyển đổi giữa Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor hoặc bất kỳ công cụ được hỗ trợ nào — cấu hình agent di chuyển cùng mã nguồn.
 
@@ -29,13 +29,14 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 
 ---
 
-## Toàn bộ 14 agent
+## Toàn bộ 21 agent
 
-### Ý tưởng và lập kế hoạch
+### Ý tưởng, kiến trúc và lập kế hoạch
 
 | Agent | Vai trò | Khả năng chính |
 |-------|------|-----------------|
 | **oma-brainstorm** | Khám phá ý tưởng ưu tiên thiết kế | Khám phá ý định người dùng, đề xuất 2-3 hướng tiếp cận với phân tích đánh đổi, tạo tài liệu thiết kế trước khi viết mã. Quy trình 6 giai đoạn: Context, Questions, Approaches, Design, Documentation, Chuyển sang `/plan`. |
+| **oma-architecture** | Chuyên gia kiến trúc hệ thống | Ranh giới module/dịch vụ/sở hữu, phân tích đánh đổi, tổng hợp bên liên quan. Phương pháp luận: định tuyến chẩn đoán, so sánh design-twice, phân tích rủi ro kiểu ATAM, ưu tiên kiểu CBAM, ghi chép quyết định kiểu ADR. Mặc định ý thức chi phí. |
 | **oma-pm** | Quản lý sản phẩm | Phân tách yêu cầu thành các task được ưu tiên với phụ thuộc. Định nghĩa API contract. Xuất `.agents/results/plan-{sessionId}.json` và `task-board.md`. Hỗ trợ khái niệm ISO 21500, khung rủi ro ISO 31000, quản trị ISO 38500. |
 
 ### Triển khai
@@ -53,12 +54,13 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 |-------|------|-----------------|
 | **oma-design** | Chuyên gia design system | Tạo DESIGN.md với token, typography, hệ thống màu sắc, thiết kế chuyển động (motion/react, GSAP, Three.js), bố cục ưu tiên responsive, tuân thủ WCAG 2.2. Quy trình 7 giai đoạn: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Áp dụng chống anti-pattern ("AI slop"). Tích hợp tùy chọn Stitch MCP. Tài nguyên: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, cùng thư mục `reference/` (hướng dẫn typography, màu sắc, không gian, chuyển động, responsive, component, accessibility và shader). |
 
-### Hạ tầng và DevOps
+### Hạ tầng, DevOps và Observability
 
 | Agent | Vai trò | Khả năng chính |
 |-------|------|-----------------|
 | **oma-tf-infra** | Infrastructure-as-code | Terraform đa cloud (AWS, GCP, Azure, Oracle Cloud). Xác thực OIDC-first, IAM quyền tối thiểu, policy-as-code (OPA/Sentinel), tối ưu chi phí. Hỗ trợ điều khiển AI ISO/IEC 42001, liên tục ISO 22301, tài liệu kiến trúc ISO/IEC/IEEE 42010. Tài nguyên: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
 | **oma-dev-workflow** | Tự động hóa task monorepo | mise task runner, pipeline CI/CD, database migration, phối hợp release, git hooks, xác nhận pre-commit. Tài nguyên: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | Bộ định tuyến observability dựa trên ý định | Bao phủ tín hiệu MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), tinh chỉnh transport (UDP/MTU, OTLP gRPC vs HTTP, topology Collector, sampling), lan truyền W3C Trace Context, quản lý SLO và cảnh báo burn-rate, điều tra pháp y sự cố (định vị 6 chiều), meta-observability (tự chẩn đoán, đồng bộ đồng hồ, cardinality, retention). Ưu tiên CNCF; Fluentd đã ngừng phát triển (dùng Fluent Bit hoặc OTel Collector). |
 
 ### Chất lượng và gỡ lỗi
 
@@ -74,6 +76,15 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 | **oma-translator** | Dịch thuật nhận biết ngữ cảnh | Phương pháp dịch 4 bước: Phân tích nguồn, Trích xuất ý nghĩa, Tái tạo bằng ngôn ngữ đích, Xác minh. Bảo toàn giọng điệu, phong cách và thuật ngữ chuyên ngành. Phát hiện anti-pattern AI. Hỗ trợ dịch hàng loạt (file i18n). Chế độ tinh chỉnh 7 bước tùy chọn cho chất lượng xuất bản. Tài nguyên: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | Điều phối đa agent tự động | Spawn subagent CLI song song, điều phối qua MCP memory, theo dõi tiến trình, chạy vòng lặp xác minh. Cấu hình: MAX_PARALLEL (mặc định 3), MAX_RETRIES (mặc định 2), POLL_INTERVAL (mặc định 30s). Bao gồm vòng lặp review giữa các agent và giám sát Clarification Debt. Tài nguyên: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventional Commits | Phân tích thay đổi, xác định type/scope, tách theo tính năng khi phù hợp, tạo commit message theo định dạng Conventional Commits. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+
+### Tìm kiếm, hồi tưởng và xử lý tài liệu
+
+| Agent | Vai trò | Khả năng chính |
+|-------|------|-----------------|
+| **oma-search** | Bộ định tuyến tìm kiếm dựa trên ý định | Chuyển truy vấn đến Context7 (tài liệu), tìm kiếm web native, `gh`/`glab` (mã), Serena (cục bộ). Chấm điểm độ tin cậy miền trên mọi kết quả không cục bộ. Định tuyến fail-forward (docs→web→fetch). Flag: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
+| **oma-recap** | Hồi tưởng công việc đa công cụ | Phân tích lịch sử hội thoại từ Claude, Codex, Gemini, Qwen và Cursor. Giải quyết đầu vào ngày/cửa sổ ngôn ngữ tự nhiên, nhóm theo công cụ+phiên, trích xuất chủ đề, render tóm tắt hàng ngày/theo kỳ cho standup, retro hàng tuần và nhật ký công việc. |
+| **oma-hwp** | HWP/HWPX/HWPML → Markdown | Chuyển đổi tài liệu trình xử lý văn bản Hàn Quốc qua `bunx kordoc@latest`. Bảo toàn tiêu đề, bảng (kể cả bảng lồng), chú thích, hyperlink, hình ảnh. Loại bỏ ký tự Private Use Area của Hancom qua hậu xử lý `flatten-tables.ts`. |
+| **oma-pdf** | PDF → Markdown | Chuyển đổi tài liệu PDF qua `uvx opendataloader-pdf`. Bảo toàn tiêu đề, bảng, danh sách, hình ảnh; chế độ lai OCR cho PDF quét; đầu ra chuẩn hóa bằng `uvx mdformat`. |
 
 ---
 
@@ -98,11 +109,11 @@ Mọi thứ oh-my-agent cần đều nằm trong thư mục `.agents/`:
 ```
 .agents/
 ├── config/                 # oma-config.yaml
-├── skills/                 # 15 thư mục skill (14 agent + _shared)
+├── skills/                 # 22 thư mục skill (21 agent + _shared)
 │   ├── _shared/            # Tài nguyên cốt lõi dùng chung cho tất cả agent
 │   └── oma-{agent}/        # SKILL.md + resources/ theo từng agent
-├── workflows/              # 14 định nghĩa workflow
-├── agents/                 # 7 định nghĩa subagent
+├── workflows/              # 16 định nghĩa workflow
+├── agents/                 # 9 định nghĩa subagent
 ├── results/plan-{sessionId}.json               # Kết quả kế hoạch đã tạo
 ├── state/                  # File trạng thái workflow đang hoạt động
 ├── results/                # File kết quả agent
@@ -197,7 +208,7 @@ Phát hiện vendor diễn ra tự động — agent thích ứng phương thứ
 ## Tiếp theo
 
 - **[Cài đặt](./installation.md)** — Ba phương pháp cài đặt, preset, thiết lập CLI và xác minh
-- **[Agent](/docs/core-concepts/agents)** — Tìm hiểu sâu về 14 agent và Charter Preflight
+- **[Agent](/docs/core-concepts/agents)** — Tìm hiểu sâu về 21 agent và Charter Preflight
 - **[Skill](/docs/core-concepts/skills)** — Giải thích kiến trúc 2 tầng
-- **[Workflow](/docs/core-concepts/workflows)** — 14 workflow với trigger và các giai đoạn
+- **[Workflow](/docs/core-concepts/workflows)** — 16 workflow với trigger và các giai đoạn
 - **[Hướng dẫn sử dụng](/docs/guide/usage)** — Ví dụ thực tế từ task đơn đến điều phối toàn diện

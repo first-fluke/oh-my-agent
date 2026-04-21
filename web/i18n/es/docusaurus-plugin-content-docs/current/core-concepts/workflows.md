@@ -1,13 +1,13 @@
 ---
 title: Flujos de Trabajo
-description: Referencia completa de los 14 flujos de trabajo de oh-my-agent — comandos slash, modos persistente vs no persistente, palabras clave de activación en 11 idiomas, fases y pasos, archivos leídos y escritos, mecánica de auto-detección vía triggers.json y keyword-detector.ts, filtrado de patrones informativos y gestión de estado del modo persistente.
+description: Referencia completa de los 16 flujos de trabajo de oh-my-agent — comandos slash, modos persistente vs no persistente, palabras clave de activación en 11 idiomas, fases y pasos, archivos leídos y escritos, mecánica de auto-detección vía triggers.json y keyword-detector.ts, filtrado de patrones informativos y gestión de estado del modo persistente.
 ---
 
 # Flujos de Trabajo
 
 Los flujos de trabajo son procesos estructurados de múltiples pasos activados por comandos slash o palabras clave en lenguaje natural. Definen cómo los agentes colaboran en tareas — desde utilidades de una sola fase hasta puertas de calidad complejas de 5 fases.
 
-Hay 14 flujos de trabajo, 3 de los cuales son persistentes (mantienen estado y no pueden ser interrumpidos accidentalmente).
+Hay 16 flujos de trabajo, 4 de los cuales son persistentes (mantienen estado y no pueden ser interrumpidos accidentalmente).
 
 ---
 
@@ -126,6 +126,40 @@ Los flujos persistentes continúan ejecutándose hasta que todas las tareas est�
 
 ---
 
+### /ralph
+
+**Descripción:** Bucle de ejecución persistente y autorreferencial. Envuelve ultrawork con un verificador independiente que comprueba los criterios de finalización tras cada iteración. Sigue iterando hasta que todos los criterios pasen o se activen las salvaguardas.
+
+**Persistente:** Sí. Archivo de estado: `.agents/state/ralph-state.json`.
+
+**Palabras clave de activación:**
+| Idioma | Palabras clave |
+|--------|----------------|
+| Universal | "ralph" |
+| Inglés | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
+| Coreano | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Japonés | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
+| Chino | "不要停", "直到完成", "全部完成", "做完为止" |
+| Español | "no pares", "hasta completar", "termina todo" |
+| Francés | "n'arrête pas", "jusqu'à complétion", "termine tout" |
+| Alemán | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+**Fases:**
+1. **Fase 0 — INIT:** Cargar prerrequisitos (context-loading, protocolo de memoria, protocolo de juez). Definir criterios de finalización verificables (cada uno debe ser verificable mecánicamente — tests que pasan, build exitoso, existencia de archivo). Presentar los criterios para confirmación del usuario. Inicializar la sesión con `max_iterations: 5`.
+2. **Fase 1 — WORK:** Ejecutar ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) como una única iteración.
+3. **Fase 2 — JUDGE:** Un verificador independiente comprueba cada criterio de finalización contra el estado real del proyecto (ejecutar tests, verificar builds, comprobar existencia de archivos). Puntuar cada criterio como PASS/FAIL con evidencia.
+4. **Fase 3 — DECIDE:** Si todos los criterios PASS → terminar el bucle, generar el informe final. Si alguno FAIL → incrementar el contador de iteraciones, retroalimentar el contexto del fallo, volver a la Fase 1.
+5. **Salvaguardas:** El bucle se detiene si `current_iteration >= max_iterations` (por defecto 5), o si el mismo criterio falla 3 veces consecutivas por la misma causa raíz (detección de atasco).
+
+**Diferencia clave con /ultrawork:** Ultrawork es un workflow de una sola pasada en 5 fases. Ralph envuelve ultrawork en un bucle de reintento con un juez independiente que verifica objetivamente la finalización — sigue trabajando hasta que el trabajo esté realmente hecho, no solo "revisado".
+
+**Archivos leídos:** `.agents/workflows/ralph/resources/judge-protocol.md`, todos los archivos de ultrawork.
+**Archivos escritos:** `session-ralph.md` (memoria), registros de iteración, informe final.
+
+**Cuándo usar:** Cuando se necesita finalización garantizada — el agente debe seguir trabajando hasta que los criterios verificables pasen, no solo hacer una pasada y reportar.
+
+---
+
 ## Flujos de Trabajo No Persistentes
 
 ### /plan
@@ -179,6 +213,27 @@ Los flujos persistentes continúan ejecutándose hasta que todas las tareas est�
 **Pasos:** Explorar contexto del proyecto (análisis MCP) -> Hacer preguntas clarificadoras (una a la vez) -> Proponer 2-3 enfoques con compromisos -> Presentar diseño sección por sección (con aprobación del usuario en cada paso) -> Guardar documento de diseño en `docs/plans/` -> Transición: sugerir `/plan`.
 
 **Reglas:** No implementar ni planificar antes de la aprobación del diseño. Sin salida de código. YAGNI.
+
+---
+
+### /architecture
+
+**Descripción:** Flujo de arquitectura de software — diagnosticar problemas de arquitectura, seleccionar el método de análisis correcto (enrutamiento diagnóstico / design-twice / ATAM / CBAM / ADR), comparar opciones, sintetizar la entrada de stakeholders y producir una recomendación, revisión o ADR.
+
+**Palabras clave de activación:**
+| Idioma | Palabras clave |
+|--------|----------------|
+| Universal | "architecture", "ADR", "ATAM", "CBAM" |
+| Inglés | "architecture review", "architectural tradeoff" |
+| Coreano | "아키텍처", "설계 검토" |
+| Japonés | "アーキテクチャ" |
+| Chino | "架构" |
+
+**Pasos:** Enmarcar la decisión (nueva arquitectura / revisión / análisis de tradeoff / priorización de inversiones / autoría de ADR) -> Seleccionar metodología por enrutamiento diagnóstico -> Analizar la arquitectura actual mediante análisis de código MCP (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> Sintetizar la entrada de stakeholders (solo cuando la decisión sea lo suficientemente transversal como para justificar el coste) -> Producir recomendación con supuestos, tradeoffs, riesgos y pasos de validación explícitos -> Entregar a `/plan` cuando se requiera implementación.
+
+**Reglas:** NO escribir código de implementación ni planes de tareas en este flujo. Entregar a `/plan` tras la decisión de arquitectura. Usar herramientas MCP en todo momento; no sustituir por lecturas de archivo crudas o grep.
+
+**Cuándo usar:** Elecciones de arquitectura del sistema, decisiones de límites de módulo/servicio/propiedad, priorización de refactorizaciones, autoría de ADR, investigación de dolor arquitectónico (amplificación de cambios, dependencias ocultas, APIs incómodas).
 
 ---
 
@@ -287,6 +342,20 @@ Los flujos persistentes continúan ejecutándose hasta que todas las tareas est�
 
 ---
 
+### /pdf
+
+**Descripción:** Convertir PDF a Markdown usando `opendataloader-pdf` — extrae texto, tablas, encabezados e imágenes con el orden de lectura correcto.
+
+**Palabras clave de activación:** Ninguna (se invoca explícitamente con una ruta de archivo de entrada).
+
+**Pasos:** Validar entrada (confirmar que el archivo existe) -> Determinar ubicación de salida (especificada por el usuario o el mismo directorio que la entrada) -> Ejecutar `uvx opendataloader-pdf` (sin instalación requerida) -> Para PDFs escaneados, usar modo híbrido con OCR -> Normalizar la salida con `uvx mdformat` -> Validar legibilidad y estructura -> Reportar cualquier problema de conversión (tablas faltantes, texto confuso).
+
+**Reglas:** La ubicación de salida predeterminada es el mismo directorio que el PDF de entrada. Nunca saltar pasos. El idioma de respuesta sigue `.agents/oma-config.yaml`.
+
+**Cuándo usar:** Convertir documentos PDF a Markdown para contexto de LLM o ingestión de RAG, extraer contenido estructurado (tablas, encabezados, listas) de PDFs.
+
+---
+
 ### /stack-set
 
 **Descripción:** Auto-detectar stack tecnológico del proyecto y generar referencias específicas del lenguaje para la habilidad backend.
@@ -353,6 +422,7 @@ Los siguientes flujos están excluidos de la auto-detección y deben invocarse c
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
+- `/pdf`
 
 ---
 

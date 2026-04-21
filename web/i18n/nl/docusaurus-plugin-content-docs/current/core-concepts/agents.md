@@ -1,6 +1,6 @@
 ---
 title: Agenten
-description: Volledige referentie voor alle 14 oh-my-agent agenten — hun domeinen, tech stacks, bronbestanden, mogelijkheden, charter preflight protocol, tweelaagse skill-loading, scoped uitvoeringsregels, kwaliteitspoorten, werkruimtestrategie, orchestratiestroom en runtimegeheugen.
+description: Volledige referentie voor alle 21 oh-my-agent agenten — hun domeinen, tech stacks, bronbestanden, mogelijkheden, charter preflight protocol, tweelaagse skill-loading, scoped uitvoeringsregels, kwaliteitspoorten, werkruimtestrategie, orchestratiestroom en runtimegeheugen.
 ---
 
 # Agenten
@@ -14,16 +14,21 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 | Categorie | Agenten | Verantwoordelijkheid |
 |-----------|---------|---------------------|
 | **Ideevorming** | oma-brainstorm | Ideeen verkennen, benaderingen voorstellen, ontwerpdocumenten produceren |
+| **Architectuur** | oma-architecture | Systeem-/module-/service-grenzen, analyse in ADR/ATAM/CBAM-stijl, afwegingsrecords |
 | **Planning** | oma-pm | Requirementsdecompositie, taakopsplitsing, API-contracten, prioriteitstoewijzing |
 | **Implementatie** | oma-frontend, oma-backend, oma-mobile, oma-db | Productiecode schrijven in hun respectievelijke domeinen |
 | **Design** | oma-design | Designsystemen, DESIGN.md, tokens, typografie, kleur, beweging, toegankelijkheid |
 | **Infrastructuur** | oma-tf-infra | Multi-cloud Terraform-provisioning, IAM, kostenoptimalisatie, policy-as-code |
 | **DevOps** | oma-dev-workflow | mise task runner, CI/CD, migraties, releasecoordinatie, monorepo-automatisering |
+| **Observability** | oma-observability | Observability-pipelines, traceerbaarheidsroutering, MELT+P-signalen (metrics/logs/traces/profiles/cost/audit/privacy), SLO-beheer, incident-forensisch onderzoek, transport-tuning |
 | **Kwaliteit** | oma-qa | Beveiligingsaudit (OWASP), prestaties, toegankelijkheid (WCAG), codekwaliteitsreview |
 | **Debugging** | oma-debug | Bugreproductie, oorzaakanalyse, minimale fixes, regressietests |
 | **Lokalisatie** | oma-translator | Contextbewuste vertaling met behoud van toon, register en domein-termen |
 | **Coordinatie** | oma-orchestrator, oma-coordination | Geautomatiseerde en handmatige multi-agent orchestratie |
 | **Git** | oma-scm | Conventional Commits-generatie, functie-gebaseerde commitsplitsing |
+| **Zoeken & Ophalen** | oma-search | Intent-gebaseerde zoekrouter met trust scoring (Context7-documentatie, web, `gh`/`glab`-code, Serena lokaal) |
+| **Retrospectief** | oma-recap | Tool-overkoepelende conversatiegeschiedenisanalyse en thematische werk-samenvattingen |
+| **Documentverwerking** | oma-hwp, oma-pdf | HWP/HWPX/HWPML- en PDF-naar-Markdown-conversie voor LLM/RAG-ingestie |
 
 ---
 
@@ -47,6 +52,29 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 **Workflow:** 6 fasen: Contextverkenning, Vragen, Benaderingen, Ontwerp, Documentatie (opslaan in `docs/plans/`), Overgang naar `/plan`.
 
 **Bronnen:** Gebruikt alleen gedeelde bronnen (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+
+---
+
+### oma-architecture
+
+**Domein:** Software-/systeemarchitectuur — module- en servicegrenzen, afwegingsanalyse, synthese van stakeholders, beslissingsrecords.
+
+**Wanneer gebruiken:** Kiezen of beoordelen van systeemarchitectuur, definieren van module-/service-/eigendomsgrenzen, vergelijken van architectuuropties met expliciete afwegingen, onderzoeken van architectuurpijn (change amplification, verborgen afhankelijkheden, onhandige APIs), prioriteren van architectuurinvesteringen of refactorings, schrijven van architectuuraanbevelingen of ADRs.
+
+**Wanneer NIET gebruiken:** Visuele/designsystemen (gebruik oma-design), feature-planning en taakdecompositie (gebruik oma-pm), Terraform-implementatie (gebruik oma-tf-infra), bugdiagnose (gebruik oma-debug), beveiligings-/prestatie-/toegankelijkheidsreview (gebruik oma-qa).
+
+**Methodologieen:** Diagnostische routing, design-twice-vergelijking, risicoanalyse in ATAM-stijl, prioritering in CBAM-stijl, beslissingsrecords in ADR-stijl.
+
+**Kernregels:**
+- Diagnosticeer het architectuurprobleem voordat een methode wordt gekozen
+- Gebruik de lichtste voldoende methodologie voor de huidige beslissing
+- Onderscheid architectuurontwerp van UI/visueel ontwerp en van Terraform-delivery
+- Raadpleeg stakeholder-agents alleen wanneer de beslissing voldoende transversaal is om de kosten te rechtvaardigen
+- De kwaliteit van de aanbeveling is belangrijker dan consensus-theater: raadpleeg breed, beslis expliciet
+- Elke aanbeveling moet aannames, afwegingen, risico's en validatiestappen vermelden
+- Wees standaard kostenbewust: implementatiekosten, operationele kosten, teamcomplexiteit, toekomstige wijzigingskosten
+
+**Bronnen:** `SKILL.md`, `resources/`-map met methodologiegidsen (diagnostic-routing, design-twice, ATAM, CBAM, ADR-sjablonen).
 
 ---
 
@@ -256,6 +284,28 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ---
 
+### oma-observability
+
+**Domein:** Intent-gebaseerde observability- en traceerbaarheidsrouter over lagen, grenzen en signalen.
+
+**Wanneer gebruiken:** Opzetten van observability-pipelines (OTel SDK + Collector + vendor-backend), traceerbaarheid over service- en domeingrenzen heen (W3C-propagators, baggage, multi-tenant, multi-cloud), transport-tuning (UDP/MTU-drempels, OTLP gRPC vs HTTP, Collector DaemonSet vs sidecar-topologie, sampling-recepten), incident-forensisch onderzoek (6-dimensionale lokalisatie: code / service / layer / host / region / infra), keuze van vendor-categorie (OSS full-stack vs commerciele SaaS vs high-cardinality specialist vs profiling specialist), observability-as-code (Grafana Jsonnet-dashboards, PrometheusRule CRD, OpenSLO YAML, SLO burn-rate alerts), meta-observability (pipeline-zelfgezondheid, clock skew, cardinality-guardrails, retentiematrix), MELT+P-signaaldekking (metrics, logs, traces, profiles, cost, audit, privacy), migratie van afgeschafte tools (Fluentd -> Fluent Bit of OTel Collector).
+
+**Wanneer NIET gebruiken:** LLM ops / gen_ai-observability (gebruik Langfuse, Arize Phoenix, LangSmith, Braintrust), data-pipeline lineage (OpenLineage + Marquez, dbt test, Airflow lineage), IoT / datacenter physical-layer telemetrie (Nlyte, Sunbird, Device42), chaos engineering-orchestratie (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU- / TPU-infrastructuur (NVIDIA DCGM Exporter), software supply chain (sigstore, in-toto, SLSA), incident response-workflow / paging (PagerDuty, OpsGenie, Grafana OnCall), single-vendor setup die al wordt gedekt door de eigen skill van die vendor.
+
+**Kernregels:**
+- Classificeer intent voor het routeren: setup | migrate | investigate | alert | trace | tune | route
+- Categorie-eerst, geen vendor-registry: delegeer naar vendor-eigen skills via `resources/vendor-categories.md`; dupliceer geen vendor-documentatie
+- Transport-tuning is de slotgracht: UDP/MTU-drempels, OTLP-protocolkeuze, Collector-topologie en sampling-recepten zijn diepte die andere skills niet dekken
+- Meta-observability is niet onderhandelbaar: valideer pipeline-zelfgezondheid, clock-synchronisatie (< 100 ms drift), cardinality en retentie voordat de setup als voltooid wordt verklaard
+- CNCF-first voorkeur: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
+- Fluentd is afgeschaft (CNCF 2025-10): beveel Fluent Bit of OTel Collector aan voor nieuw werk en migratie
+- W3C Trace Context als standaardpropagator; vertaal per cloud (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
+- Privacy voor features: PII-redactie, sampling-bewuste baggage-regels, SOC2/ISO onveranderlijke audit + GDPR/PIPA-wissing toegepast bij verzameling, niet alleen bij opslag
+
+**Bronnen:** `SKILL.md`, `resources/execution-protocol.md`, `resources/intent-rules.md`, `resources/vendor-categories.md`, `resources/matrix.md`, `resources/checklist.md`, `resources/anti-patterns.md`, `resources/examples.md`, `resources/meta-observability.md`, `resources/observability-as-code.md`, `resources/incident-forensics.md`, `resources/standards.md`, plus diepgaande bronnen onder `resources/layers/` (L3-network, L4-transport, L7-application, mesh), `resources/signals/` (metrics, logs, traces, profiles, cost, audit, privacy), `resources/transport/` (collector-topology, otlp-grpc-vs-http, sampling-recipes, udp-statsd-mtu) en `resources/boundaries/` (cross-application, multi-tenant, release, slo).
+
+---
+
 ### oma-qa
 
 **Domein:** Kwaliteitsborging — beveiliging, prestaties, toegankelijkheid, codekwaliteit.
@@ -377,6 +427,111 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 - Altijd bestanden specificeren bij staging
 - Gebruik HEREDOC voor meerregelige commitberichten
 - Co-Author: `First Fluke <our.first.fluke@gmail.com>`
+
+---
+
+### oma-coordination
+
+**Domein:** Gids voor handmatige stapsgewijze multi-agent coordinatie.
+
+**Wanneer gebruiken:** Complexe projecten waar je human-in-the-loop-controle wilt bij elke poort, handmatige begeleiding voor het spawnen van agenten, stapsgewijze coordinatierecepten.
+
+**Wanneer NIET gebruiken:** Volledig geautomatiseerde parallelle uitvoering (gebruik oma-orchestrator), taken binnen een enkel domein (gebruik de domeinagent direct).
+
+**Kernregels:**
+- Presenteer altijd het plan ter bevestiging door de gebruiker voordat agenten worden gespawnd
+- Een prioriteitstier tegelijk -- wacht op voltooiing voor de volgende tier
+- De gebruiker keurt elke poortovergang goed
+- QA-review is verplicht voor samenvoeging
+- Remediatielus voor CRITICAL/HIGH-bevindingen
+
+**Workflow:** PM plant → Gebruiker bevestigt → Spawn per prioriteitstier → Monitoren → QA-review → Problemen oplossen → Uitleveren.
+
+**Verschil met oma-orchestrator:** Coordination is handmatig en begeleid (de gebruiker bepaalt het tempo), orchestrator is geautomatiseerd (agenten worden gespawnd en uitgevoerd met minimale gebruikersinterventie).
+
+---
+
+### oma-search
+
+**Domein:** Intent-gebaseerde zoekrouter met domein-trust-scoring — routeert queries naar Context7 (documenten), native websearch, `gh`/`glab` (code) en Serena (lokaal).
+
+**Wanneer gebruiken:** Vinden van officiele bibliotheek-/framework-documentatie, webonderzoek voor tutorials/voorbeelden/vergelijkingen/oplossingen, GitHub/GitLab-codezoekopdrachten voor implementatiepatronen, elke query waarvan het zoekkanaal onduidelijk is (auto-routing), andere skills die zoekinfrastructuur nodig hebben (gedeelde invocatie).
+
+**Wanneer NIET gebruiken:** Alleen-lokaal codebase-onderzoek (gebruik Serena MCP direct), Git-historie- of blame-analyse (gebruik oma-scm), volledig architectuuronderzoek (gebruik oma-architecture, die deze skill intern kan aanroepen).
+
+**Kernregels:**
+- Classificeer de intent voor het zoeken — elke query gaat eerst door de IntentClassifier
+- Een query, een beste route — vermijd redundante multi-route tenzij de intent dubbelzinnig is
+- Geef elk resultaat een trust-score — alle niet-lokale resultaten krijgen domein-trust-labels uit de registry
+- Flags overschrijven de classifier: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`
+- Fail forward: als de primaire route faalt, val sierlijk terug (docs→web, web→`oma search fetch`-strategieen)
+- Geen extra MCP vereist: Context7 voor documenten, runtime-native voor web, CLI voor code, Serena voor lokaal
+- Vendor-agnostische websearch: gebruik wat de huidige runtime biedt (WebSearch, Google, Bing)
+- Alleen trust op domeinniveau — geen sub-pad- of paginascores
+
+**Bronnen:** `SKILL.md`, `resources/`-map met intent-classifier, route-definities en trust-registry.
+
+---
+
+### oma-recap
+
+**Domein:** Analyse van conversatiegeschiedenissen over meerdere AI-tools (Claude, Codex, Gemini, Qwen, Cursor) met thematische dagelijkse/periodieke werk-samenvattingen.
+
+**Wanneer gebruiken:** Samenvatten van een dag of periode van werkactiviteit, begrijpen van de werkstroom over meerdere AI-tools, analyseren van tool-switching-patronen tussen sessies, voorbereiden van dagelijkse standups / wekelijkse retro's / werklogboeken.
+
+**Wanneer NIET gebruiken:** Git-commit-gebaseerde code-wijzigingsretrospective (gebruik `oma retro`), realtime agentmonitoring (gebruik `oma dashboard`), productiviteitsmetrieken (gebruik `oma stats`).
+
+**Proces:**
+1. Datum of tijdvenster oplossen uit natuurlijke-taalinvoer (today, yesterday, last Monday, expliciete datum)
+2. Conversatiegegevens ophalen via `oma recap --date YYYY-MM-DD` of `--since` / `--until`
+3. Groeperen per tool en sessie
+4. Thema's extraheren (gewerkte features, opgeloste bugs, verkende tools)
+5. Thematische dagelijkse/periodieke samenvatting renderen
+
+**Bronnen:** `SKILL.md` — delegeert zwaar werk aan de `oma recap`-CLI.
+
+---
+
+### oma-hwp
+
+**Domein:** HWP / HWPX / HWPML (Koreaanse tekstverwerker) → Markdown-conversie met `kordoc`.
+
+**Wanneer gebruiken:** Koreaanse HWP-documenten (`.hwp`, `.hwpx`, `.hwpml`) converteren naar Markdown, Koreaanse overheids-/bedrijfsdocumenten voorbereiden voor LLM-context of RAG, gestructureerde inhoud (tabellen, koppen, lijsten, afbeeldingen, voetnoten, hyperlinks) uit HWP extraheren.
+
+**Wanneer NIET gebruiken:** PDF-bestanden (gebruik oma-pdf), XLSX/DOCX (buiten scope), genereren/bewerken van HWP (buiten scope), reeds tekstuele bestanden (gebruik de Read-tool direct).
+
+**Kernregels:**
+- Gebruik `bunx kordoc@latest` voor uitvoering — geen installatie nodig; geef altijd `@latest` of een vastgezette versie door
+- Standaard uitvoerformaat is Markdown
+- Als er geen uitvoermap is opgegeven, wordt uitgevoerd naar dezelfde map als de invoer
+- kordoc zorgt voor structuurbehoud (koppen, tabellen, geneste tabellen, voetnoten, hyperlinks, afbeeldingen)
+- Beveiligingsafweer (ZIP bomb, XXE, SSRF, XSS) wordt door kordoc geleverd — voeg geen eigen toe
+- Voor versleutelde of DRM-vergrendelde HWP meld de beperking duidelijk aan de gebruiker
+- Nabewerken met `resources/flatten-tables.ts` om HTML `<table>`-blokken om te zetten naar GFM-pipe-tabellen en Hancom Private Use Area-tekens te verwijderen
+
+**Bronnen:** `SKILL.md`, `config/`, `resources/flatten-tables.ts`.
+
+---
+
+### oma-pdf
+
+**Domein:** PDF-naar-Markdown-conversie met `opendataloader-pdf`.
+
+**Wanneer gebruiken:** PDF-documenten converteren naar Markdown voor LLM-context of RAG, gestructureerde inhoud (tabellen, koppen, lijsten) uit PDFs extraheren, PDF-gegevens voorbereiden voor AI-consumptie.
+
+**Wanneer NIET gebruiken:** PDFs genereren/maken (gebruik geschikte documenttools), bestaande PDFs bewerken (buiten scope), eenvoudig lezen van reeds tekstuele bestanden (gebruik de Read-tool direct).
+
+**Kernregels:**
+- Gebruik `uvx opendataloader-pdf` voor uitvoering — geen installatie nodig
+- Standaard uitvoerformaat is Markdown
+- Als er geen uitvoermap is opgegeven, wordt uitgevoerd naar dezelfde map als de invoer-PDF
+- Behoud de documentstructuur (koppen, tabellen, lijsten, afbeeldingen)
+- Gebruik voor gescande PDFs de hybride modus met OCR
+- Voer altijd `uvx mdformat` uit op de uitvoer om de Markdown-opmaak te normaliseren
+- Valideer dat de uitvoer-Markdown leesbaar en goed gestructureerd is
+- Meld eventuele conversieproblemen (ontbrekende tabellen, verminkte tekst) aan de gebruiker
+
+**Bronnen:** `SKILL.md`, `config/`, `resources/`.
 
 ---
 

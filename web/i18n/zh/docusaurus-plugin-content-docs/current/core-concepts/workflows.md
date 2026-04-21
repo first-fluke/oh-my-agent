@@ -1,13 +1,13 @@
 ---
 title: 工作流
-description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命令、持久化与非持久化模式、11 种语言的触发关键词、阶段和步骤、读写文件、通过 triggers.json 和 keyword-detector.ts 的自动检测机制、信息性模式过滤和持久化模式状态管理。
+description: 全部 16 个 oh-my-agent 工作流的完整参考 —— 斜杠命令、持久化与非持久化模式、11 种语言的触发关键词、阶段和步骤、读写文件、通过 triggers.json 和 keyword-detector.ts 的自动检测机制、信息性模式过滤和持久化模式状态管理。
 ---
 
 # 工作流
 
 工作流是由斜杠命令或自然语言关键词触发的结构化多步骤流程。它们定义了智能体如何在任务上协作 —— 从单阶段工具到复杂的 5 阶段质量关卡。
 
-共有 14 个工作流，其中 3 个是持久化的（它们维护状态且不能被意外中断）。
+共有 16 个工作流，其中 4 个是持久化的（它们维护状态且不能被意外中断）。
 
 ---
 
@@ -126,6 +126,40 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 
 ---
 
+### /ralph
+
+**说明：** 持久化的自引用执行循环。用独立验证器包装 ultrawork，在每次迭代后检查完成标准。一直循环直到所有标准通过或安全措施触发。
+
+**持久化：** 是。状态文件：`.agents/state/ralph-state.json`。
+
+**触发关键词：**
+| 语言 | 关键词 |
+|------|-------|
+| 通用 | "ralph" |
+| 英语 | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
+| 韩语 | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| 日语 | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
+| 中文 | "不要停", "直到完成", "全部完成", "做完为止" |
+| 西班牙语 | "no pares", "hasta completar", "termina todo" |
+| 法语 | "n'arrête pas", "jusqu'à complétion", "termine tout" |
+| 德语 | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+**阶段：**
+1. **Phase 0 — INIT：** 加载前置条件（context-loading、内存协议、judge 协议）。定义可验证的完成标准（每项必须可机械验证 —— 测试通过、构建成功、文件存在）。向用户展示标准以供确认。以 `max_iterations: 5` 初始化会话。
+2. **Phase 1 — WORK：** 将 ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）作为一次迭代执行。
+3. **Phase 2 — JUDGE：** 独立验证器将每个完成标准与项目实际状态核对（运行测试、检查构建、验证文件存在）。将每个标准评为 PASS/FAIL 并附上证据。
+4. **Phase 3 — DECIDE：** 若所有标准 PASS → 结束循环，生成最终报告。若有 FAIL → 递增迭代计数器，回传失败上下文，返回 Phase 1。
+5. **安全措施：** 当 `current_iteration >= max_iterations`（默认 5）达到时，或同一标准因相同根本原因连续失败 3 次时（卡住检测），循环停止。
+
+**与 /ultrawork 的主要区别：** Ultrawork 是一次性的 5 阶段工作流。Ralph 将 ultrawork 包装在重试循环中，由独立的 judge 客观验证完成情况 —— 它会一直运行直到工作真正完成，而不仅仅是"已审查"。
+
+**读取文件：** `.agents/workflows/ralph/resources/judge-protocol.md`，以及所有 ultrawork 文件。
+**写入文件：** `session-ralph.md`（内存）、迭代日志、最终报告。
+
+**何时使用：** 当需要有保障的完成时 —— 智能体必须持续工作直到可验证的标准通过，而不是只做一次就报告。
+
+---
+
 ## 非持久化工作流
 
 ### /plan
@@ -179,6 +213,27 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 **步骤：** 探索项目上下文（MCP 分析）-> 逐一提出澄清问题 -> 提出 2-3 个方案并分析权衡 -> 逐节展示设计（每步需用户批准）-> 保存设计文档到 `docs/plans/` -> 过渡：建议运行 `/plan`。
 
 **规则：** 设计批准前不进行实现或规划。不输出代码。遵循 YAGNI 原则。
+
+---
+
+### /architecture
+
+**说明：** 软件架构工作流 —— 诊断架构问题，选择合适的分析方法（诊断路由 / design-twice / ATAM / CBAM / ADR），对比选项，综合利益相关者的意见，并产出建议、评审或 ADR。
+
+**触发关键词：**
+| 语言 | 关键词 |
+|------|-------|
+| 通用 | "architecture"、"ADR"、"ATAM"、"CBAM" |
+| 英语 | "architecture review"、"architectural tradeoff" |
+| 韩语 | "아키텍처"、"설계 검토" |
+| 日语 | "アーキテクチャ" |
+| 中文 | "架构" |
+
+**步骤：** 界定决策（新架构 / 评审 / 权衡分析 / 投资优先级 / 撰写 ADR）-> 通过诊断路由选择方法论 -> 通过 MCP 代码分析（`get_symbols_overview`、`find_symbol`、`find_referencing_symbols`）分析当前架构 -> 综合利益相关者意见（仅当决策足够横切以证明成本合理时）-> 产出带有明确假设、权衡、风险、验证步骤的建议 -> 需要实现时交接给 `/plan`。
+
+**规则：** 不要在此工作流中编写实现代码或任务计划。架构决策后交接给 `/plan`。始终使用 MCP 工具；不要用原始文件读取或 grep 代替。
+
+**何时使用：** 系统架构选择、模块/服务/所有权边界决策、重构优先级、撰写 ADR、调查架构痛点（变更放大、隐藏依赖、笨拙的 API）。
 
 ---
 
@@ -287,6 +342,20 @@ description: 全部 14 个 oh-my-agent 工作流的完整参考 —— 斜杠命
 
 ---
 
+### /pdf
+
+**说明：** 使用 `opendataloader-pdf` 将 PDF 转换为 Markdown —— 以正确的阅读顺序提取文本、表格、标题和图像。
+
+**触发关键词：** 无（必须使用输入文件路径显式调用）。
+
+**步骤：** 验证输入（确认文件存在）-> 确定输出位置（用户指定或与输入相同的目录）-> 运行 `uvx opendataloader-pdf`（无需安装）-> 对于扫描 PDF 使用带 OCR 的混合模式 -> 使用 `uvx mdformat` 规范化输出 -> 验证可读性和结构 -> 报告任何转换问题（缺失表格、乱码文本）。
+
+**规则：** 默认输出位置是与输入 PDF 相同的目录。永远不要跳过步骤。响应语言遵循 `.agents/oma-config.yaml`。
+
+**何时使用：** 将 PDF 文档转换为 Markdown 以用于 LLM 上下文或 RAG 摄取、从 PDF 中提取结构化内容（表格、标题、列表）。
+
+---
+
 ### /stack-set
 
 **说明：** 自动检测项目技术栈并为 backend 技能生成语言特定的参考资料。
@@ -353,6 +422,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息之前
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
+- `/pdf`
 
 ---
 

@@ -73,7 +73,7 @@ Después de la instalación, tu proyecto contendrá:
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # Otras habilidades seleccionadas
-├── workflows/                      # Las 14 definiciones de flujos de trabajo
+├── workflows/                      # Las 16 definiciones de flujos de trabajo
 ├── agents/                         # Definiciones de subagentes
 ├── mcp.json                        # Configuración del servidor MCP
 ├── results/plan-{sessionId}.json                       # Vacío (poblado por /plan)

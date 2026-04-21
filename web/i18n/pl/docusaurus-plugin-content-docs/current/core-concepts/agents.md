@@ -1,6 +1,6 @@
 ---
 title: Agenci
-description: Kompletna referencja wszystkich 14 agentów oh-my-agent — ich domeny, stosy technologiczne, pliki zasobów, możliwości, protokół kontroli wstępnej karty, dwuwarstwowe ładowanie umiejętności, ograniczenia wykonania, bramki jakości, strategia przestrzeni roboczej, przepływ orkiestracji i pamięć runtime.
+description: Kompletna referencja wszystkich 21 agentów oh-my-agent — ich domeny, stosy technologiczne, pliki zasobów, możliwości, protokół kontroli wstępnej karty, dwuwarstwowe ładowanie umiejętności, ograniczenia wykonania, bramki jakości, strategia przestrzeni roboczej, przepływ orkiestracji i pamięć runtime.
 ---
 
 # Agenci
@@ -14,16 +14,21 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 | Kategoria | Agenci | Odpowiedzialność |
 |----------|--------|---------------|
 | **Ideacja** | oma-brainstorm | Eksplorowanie pomysłów, proponowanie podejść, tworzenie dokumentów projektowych |
+| **Architektura** | oma-architecture | Granice systemu/modułu/usługi, analiza w stylu ADR/ATAM/CBAM, zapisy kompromisów |
 | **Planowanie** | oma-pm | Dekompozycja wymagań, rozkład zadań, kontrakty API, przypisywanie priorytetów |
 | **Implementacja** | oma-frontend, oma-backend, oma-mobile, oma-db | Pisanie kodu produkcyjnego w swoich domenach |
 | **Projektowanie** | oma-design | Systemy projektowe, DESIGN.md, tokeny, typografia, kolor, ruch, dostępność |
 | **Infrastruktura** | oma-tf-infra | Wielochmurowe provisionowanie Terraform, IAM, optymalizacja kosztów, polityka jako kod |
 | **DevOps** | oma-dev-workflow | Menedżer zadań mise, CI/CD, migracje, koordynacja wydań, automatyzacja monorepo |
+| **Obserwowalność** | oma-observability | Potoki obserwowalności, routing śledzenia, sygnały MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), zarządzanie SLO, analiza śledcza incydentów, strojenie transportu |
 | **Jakość** | oma-qa | Audyt bezpieczeństwa (OWASP), wydajność, dostępność (WCAG), przegląd jakości kodu |
 | **Debugowanie** | oma-debug | Reprodukcja błędów, analiza przyczyn źródłowych, minimalne poprawki, testy regresji |
 | **Lokalizacja** | oma-translator | Tłumaczenie uwzględniające kontekst z zachowaniem tonu, rejestru i terminów domenowych |
 | **Koordynacja** | oma-orchestrator, oma-coordination | Automatyczna i ręczna orkiestracja wieloagentowa |
 | **Git** | oma-scm | Generowanie Conventional Commits, dzielenie commitów według funkcjonalności |
+| **Wyszukiwanie i Pobieranie** | oma-search | Router wyszukiwania oparty na intencji z oceną zaufania (dokumenty Context7, web, kod `gh`/`glab`, Serena lokalnie) |
+| **Retrospektywa** | oma-recap | Analiza historii konwersacji między narzędziami i tematyczne podsumowania pracy |
+| **Przetwarzanie dokumentów** | oma-hwp, oma-pdf | Konwersja HWP/HWPX/HWPML oraz PDF do Markdown dla ingestii LLM/RAG |
 
 ---
 
@@ -47,6 +52,29 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 **Workflow:** 6 faz: Eksploracja kontekstu, Pytania, Podejścia, Projekt, Dokumentacja (zapis do `docs/plans/`), Przejście do `/plan`.
 
 **Zasoby:** Używa tylko zasobów współdzielonych (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+
+---
+
+### oma-architecture
+
+**Domena:** Architektura oprogramowania/systemu — granice modułów i usług, analiza kompromisów, synteza interesariuszy, zapisy decyzji.
+
+**Kiedy używać:** Wybór lub przegląd architektury systemu, definiowanie granic moduł/usługa/własność, porównywanie opcji architektonicznych z jawnymi kompromisami, badanie bolączek architektonicznych (amplifikacja zmian, ukryte zależności, niewygodne API), priorytetyzacja inwestycji lub refaktoryzacji architektonicznych, pisanie rekomendacji architektonicznych lub ADR.
+
+**Kiedy NIE używać:** Systemy wizualne/projektowe (użyj oma-design), planowanie funkcjonalności i dekompozycja zadań (użyj oma-pm), implementacja Terraform (użyj oma-tf-infra), diagnoza błędów (użyj oma-debug), przegląd bezpieczeństwa/wydajności/dostępności (użyj oma-qa).
+
+**Metodologie:** Routing diagnostyczny, porównanie design-twice, analiza ryzyka w stylu ATAM, priorytetyzacja w stylu CBAM, zapisy decyzji w stylu ADR.
+
+**Reguły podstawowe:**
+- Zdiagnozuj problem architektoniczny przed wyborem metody
+- Użyj najlżejszej wystarczającej metodologii dla bieżącej decyzji
+- Odróżnij projekt architektoniczny od projektu UI/wizualnego oraz od dostarczenia Terraform
+- Konsultuj agentów interesariuszy tylko wtedy, gdy decyzja jest na tyle przekrojowa, by uzasadnić koszt
+- Jakość rekomendacji jest ważniejsza niż teatr konsensusu: konsultuj szeroko, decyduj jawnie
+- Każda rekomendacja musi wskazywać założenia, kompromisy, ryzyka i kroki walidacji
+- Domyślnie świadomy kosztów: koszt implementacji, koszt operacyjny, złożoność zespołu, koszt przyszłych zmian
+
+**Zasoby:** `SKILL.md`, katalog `resources/` z przewodnikami metodologii (diagnostic-routing, design-twice, ATAM, CBAM, szablony ADR).
 
 ---
 
@@ -256,6 +284,28 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 
 ---
 
+### oma-observability
+
+**Domena:** Router obserwowalności i śledzenia oparty na intencji, obejmujący warstwy, granice i sygnały.
+
+**Kiedy używać:** Konfiguracja potoku obserwowalności (OTel SDK + Collector + backend dostawcy), śledzenie przez granice usług i domen (propagatory W3C, baggage, wielodostępność, wielochmurowość), strojenie transportu (progi UDP/MTU, OTLP gRPC vs HTTP, topologia Collector DaemonSet vs sidecar, przepisy samplingu), analiza śledcza incydentów (lokalizacja 6-wymiarowa: code / service / layer / host / region / infra), wybór kategorii dostawcy (OSS full-stack vs komercyjne SaaS vs specjalista wysokiej kardynalności vs specjalista profilowania), observability-as-code (dashboardy Grafana Jsonnet, PrometheusRule CRD, OpenSLO YAML, alerty SLO burn-rate), meta-obserwowalność (kondycja samego potoku, dryft zegara, bariery kardynalności, macierz retencji), pokrycie sygnałów MELT+P (metrics, logs, traces, profiles, cost, audit, privacy), migracja z przestarzałych narzędzi (Fluentd -> Fluent Bit lub OTel Collector).
+
+**Kiedy NIE używać:** Obserwowalność LLM ops / gen_ai (użyj Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage potoków danych (OpenLineage + Marquez, dbt test, Airflow lineage), telemetria warstwy fizycznej IoT / centrum danych (Nlyte, Sunbird, Device42), orkiestracja chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), infrastruktura GPU / TPU (NVIDIA DCGM Exporter), łańcuch dostaw oprogramowania (sigstore, in-toto, SLSA), workflow reagowania na incydenty / paging (PagerDuty, OpsGenie, Grafana OnCall), konfiguracja jednego dostawcy już pokryta przez jego własny skill.
+
+**Podstawowe reguły:**
+- Klasyfikuj intencję przed routingiem: setup | migrate | investigate | alert | trace | tune | route
+- Kategoria-najpierw, a nie rejestr dostawców: deleguj do skilli dostawców przez `resources/vendor-categories.md`; nie duplikuj dokumentacji dostawcy
+- Strojenie transportu to fosa: progi UDP/MTU, wybór protokołu OTLP, topologia Collectora i przepisy samplingu to głębia, której inne skille nie obejmują
+- Meta-obserwowalność nie podlega negocjacjom: zwaliduj kondycję samego potoku, synchronizację zegara (< 100 ms dryftu), kardynalność i retencję przed ogłoszeniem ukończenia konfiguracji
+- Preferencja CNCF-first: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
+- Fluentd jest przestarzały (CNCF 2025-10): dla nowych prac i migracji rekomenduj Fluent Bit lub OTel Collector
+- W3C Trace Context jako domyślny propagator; tłumacz zależnie od chmury (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
+- Prywatność przed funkcjonalnościami: redakcja PII, reguły baggage świadome samplingu, niezmienialny audyt SOC2/ISO + usuwanie GDPR/PIPA stosowane przy zbieraniu, nie tylko przy przechowywaniu
+
+**Zasoby:** `SKILL.md`, `resources/execution-protocol.md`, `resources/intent-rules.md`, `resources/vendor-categories.md`, `resources/matrix.md`, `resources/checklist.md`, `resources/anti-patterns.md`, `resources/examples.md`, `resources/meta-observability.md`, `resources/observability-as-code.md`, `resources/incident-forensics.md`, `resources/standards.md`, oraz zasoby szczegółowe w `resources/layers/` (L3-network, L4-transport, L7-application, mesh), `resources/signals/` (metrics, logs, traces, profiles, cost, audit, privacy), `resources/transport/` (collector-topology, otlp-grpc-vs-http, sampling-recipes, udp-statsd-mtu) i `resources/boundaries/` (cross-application, multi-tenant, release, slo).
+
+---
+
 ### oma-qa
 
 **Domena:** Zapewnienie jakości — bezpieczeństwo, wydajność, dostępność, jakość kodu.
@@ -377,6 +427,111 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 - Zawsze określaj pliki przy staging
 - Używaj HEREDOC dla wieloliniowych wiadomości commitów
 - Co-Author: `First Fluke <our.first.fluke@gmail.com>`
+
+---
+
+### oma-coordination
+
+**Domena:** Przewodnik po ręcznej, krokowej koordynacji wieloagentowej.
+
+**Kiedy używać:** Złożone projekty, w których chcesz mieć kontrolę człowieka w pętli przy każdej bramce, ręczne wskazówki dotyczące uruchamiania agentów, krokowe przepisy koordynacji.
+
+**Kiedy NIE używać:** W pełni zautomatyzowane wykonanie równoległe (użyj oma-orchestrator), zadania jednodomenowe (użyj agenta domenowego bezpośrednio).
+
+**Zasady główne:**
+- Zawsze prezentuj plan do potwierdzenia przez użytkownika przed uruchomieniem agentów
+- Jeden poziom priorytetu na raz -- czekaj na zakończenie przed następnym poziomem
+- Użytkownik zatwierdza każde przejście przez bramkę
+- Przegląd QA jest obowiązkowy przed scaleniem
+- Pętla naprawcza problemów dla ustaleń CRITICAL/HIGH
+
+**Workflow:** PM planuje → Użytkownik potwierdza → Uruchomienie według poziomu priorytetu → Monitorowanie → Przegląd QA → Naprawa problemów → Dostarczenie.
+
+**Różnica względem oma-orchestrator:** Coordination jest ręczna i prowadzona (użytkownik kontroluje tempo), orchestrator jest zautomatyzowany (agenci uruchamiają się i działają przy minimalnej interwencji użytkownika).
+
+---
+
+### oma-search
+
+**Domena:** Router wyszukiwania oparty na intencji z oceną zaufania domeny — kieruje zapytania do Context7 (dokumenty), natywnego wyszukiwania webowego, `gh`/`glab` (kod), Serena (lokalnie).
+
+**Kiedy używać:** Znajdowanie oficjalnej dokumentacji bibliotek/frameworków, badania webowe w poszukiwaniu tutoriali/przykładów/porównań/rozwiązań, wyszukiwanie kodu w GitHub/GitLab dla wzorców implementacji, dowolne zapytanie, w którym kanał wyszukiwania jest niejasny (auto-routing), inne umiejętności wymagające infrastruktury wyszukiwania (wspólne wywołanie).
+
+**Kiedy NIE używać:** Eksploracja wyłącznie lokalnej bazy kodu (użyj Serena MCP bezpośrednio), analiza historii Git lub blame (użyj oma-scm), pełne badanie architektury (użyj oma-architecture, która może wewnętrznie wywołać tę umiejętność).
+
+**Reguły podstawowe:**
+- Sklasyfikuj intencję przed wyszukiwaniem — każde zapytanie najpierw przechodzi przez IntentClassifier
+- Jedno zapytanie, jedna najlepsza trasa — unikaj nadmiarowego multi-routingu, chyba że intencja jest niejednoznaczna
+- Ocena zaufania dla każdego wyniku — wszystkie wyniki nielokalne otrzymują etykiety zaufania domeny z rejestru
+- Flagi nadpisują klasyfikator: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`
+- Fail forward: jeśli trasa główna zawiedzie, elegancko wróć (docs→web, web→strategie `oma search fetch`)
+- Żaden dodatkowy MCP nie jest wymagany: Context7 dla dokumentów, natywne runtime dla web, CLI dla kodu, Serena dla lokalnego
+- Wyszukiwanie webowe neutralne wobec dostawcy: użyj tego, co zapewnia bieżący runtime (WebSearch, Google, Bing)
+- Zaufanie tylko na poziomie domeny — bez ocen na poziomie ścieżki podrzędnej lub strony
+
+**Zasoby:** `SKILL.md`, katalog `resources/` z klasyfikatorem intencji, definicjami tras i rejestrem zaufania.
+
+---
+
+### oma-recap
+
+**Domena:** Analiza historii konwersacji z wielu narzędzi AI (Claude, Codex, Gemini, Qwen, Cursor) z tematycznymi podsumowaniami pracy dziennymi/okresowymi.
+
+**Kiedy używać:** Podsumowanie dnia lub okresu aktywności zawodowej, zrozumienie przebiegu pracy między wieloma narzędziami AI, analiza wzorców przełączania narzędzi między sesjami, przygotowywanie codziennych standupów / cotygodniowych retro / dzienników pracy.
+
+**Kiedy NIE używać:** Retrospektywa zmian kodu oparta na commitach Git (użyj `oma retro`), monitoring agentów w czasie rzeczywistym (użyj `oma dashboard`), metryki produktywności (użyj `oma stats`).
+
+**Proces:**
+1. Rozwiąż datę lub okno czasowe z wejścia w języku naturalnym (today, yesterday, last Monday, jawna data)
+2. Pobierz dane konwersacji przez `oma recap --date YYYY-MM-DD` lub `--since` / `--until`
+3. Grupuj według narzędzia i sesji
+4. Wyodrębnij tematy (funkcje, nad którymi pracowano, naprawione błędy, eksplorowane narzędzia)
+5. Wyrenderuj tematyczne podsumowanie dzienne/okresowe
+
+**Zasoby:** `SKILL.md` — deleguje ciężką pracę do CLI `oma recap`.
+
+---
+
+### oma-hwp
+
+**Domena:** Konwersja HWP / HWPX / HWPML (koreański procesor tekstu) → Markdown przy użyciu `kordoc`.
+
+**Kiedy używać:** Konwersja koreańskich dokumentów HWP (`.hwp`, `.hwpx`, `.hwpml`) do Markdown, przygotowanie koreańskich dokumentów rządowych/korporacyjnych dla kontekstu LLM lub RAG, wyodrębnianie ustrukturyzowanej treści (tabele, nagłówki, listy, obrazy, przypisy, hiperłącza) z HWP.
+
+**Kiedy NIE używać:** Pliki PDF (użyj oma-pdf), XLSX/DOCX (poza zakresem), generowanie/edycja HWP (poza zakresem), pliki już w formie tekstowej (użyj narzędzia Read bezpośrednio).
+
+**Reguły podstawowe:**
+- Użyj `bunx kordoc@latest` do uruchomienia — instalacja nie jest wymagana; zawsze przekazuj `@latest` lub ustaloną wersję
+- Domyślny format wyjściowy to Markdown
+- Jeśli nie podano katalogu wyjściowego, wyjście zapisywane jest do tego samego katalogu co wejście
+- kordoc zajmuje się zachowaniem struktury (nagłówki, tabele, tabele zagnieżdżone, przypisy, hiperłącza, obrazy)
+- Zabezpieczenia (ZIP bomb, XXE, SSRF, XSS) zapewnia kordoc — nie dodawaj własnych
+- Dla zaszyfrowanych lub zablokowanych DRM plików HWP jasno zgłoś ograniczenie użytkownikowi
+- Przetwórz końcowo z `resources/flatten-tables.ts`, aby przekonwertować bloki HTML `<table>` na tabele GFM oraz usunąć znaki Hancom Private Use Area
+
+**Zasoby:** `SKILL.md`, `config/`, `resources/flatten-tables.ts`.
+
+---
+
+### oma-pdf
+
+**Domena:** Konwersja PDF do Markdown przy użyciu `opendataloader-pdf`.
+
+**Kiedy używać:** Konwersja dokumentów PDF do Markdown dla kontekstu LLM lub RAG, wyodrębnianie ustrukturyzowanej treści (tabele, nagłówki, listy) z PDF, przygotowywanie danych PDF dla konsumpcji AI.
+
+**Kiedy NIE używać:** Generowanie/tworzenie PDF (użyj odpowiednich narzędzi dokumentowych), edycja istniejących PDF (poza zakresem), proste czytanie plików już tekstowych (użyj narzędzia Read bezpośrednio).
+
+**Reguły podstawowe:**
+- Użyj `uvx opendataloader-pdf` do uruchomienia — instalacja nie jest wymagana
+- Domyślny format wyjściowy to Markdown
+- Jeśli nie podano katalogu wyjściowego, wyjście zapisywane jest do tego samego katalogu co wejściowy PDF
+- Zachowaj strukturę dokumentu (nagłówki, tabele, listy, obrazy)
+- Dla zeskanowanych PDF użyj trybu hybrydowego z OCR
+- Zawsze uruchamiaj `uvx mdformat` na wyjściu, aby znormalizować formatowanie Markdown
+- Zwaliduj, czy wyjściowy Markdown jest czytelny i dobrze ustrukturyzowany
+- Zgłaszaj użytkownikowi wszelkie problemy konwersji (brakujące tabele, zniekształcony tekst)
+
+**Zasoby:** `SKILL.md`, `config/`, `resources/`.
 
 ---
 

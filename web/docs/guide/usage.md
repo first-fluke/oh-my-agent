@@ -1,6 +1,6 @@
 ---
 title: Usage Guide
-description: Comprehensive usage guide for oh-my-agent — quick start, detailed real-world examples covering single tasks, multi-domain projects, bug fixes, design systems, CLI parallel execution, and ultrawork. All workflow commands, auto-detection examples in multiple languages, all 14 skills with use cases, dashboard setup, key concepts, tips, and troubleshooting.
+description: Comprehensive usage guide for oh-my-agent — quick start, detailed real-world examples covering single tasks, multi-domain projects, bug fixes, design systems, CLI parallel execution, and ultrawork. All workflow commands, auto-detection examples in multiple languages, all 21 skills with use cases, dashboard setup, key concepts, tips, and troubleshooting.
 ---
 
 # How to Use oh-my-agent

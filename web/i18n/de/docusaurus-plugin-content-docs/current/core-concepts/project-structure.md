@@ -144,7 +144,7 @@ Dies ist das Kernverzeichnis. Alles, was Agenten benötigen, lebt hier. Es ist d
 
 ### skills/
 
-Hier lebt die Agentenexpertise. 15 Verzeichnisse insgesamt: 14 Agenten-Skills + 1 gemeinsames Ressourcenverzeichnis.
+Hier lebt die Agentenexpertise. 22 Verzeichnisse insgesamt: 21 Agenten-Skills + 1 gemeinsames Ressourcenverzeichnis.
 
 **`_shared/`** — Ressourcen, die von allen Agenten verwendet werden:
 - `core/` — Routing, Context-Loading, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Reasoning-Vorlagen, Qualitätsprinzipien, Vendor-Erkennung, Sitzungsmetriken, gemeinsame Checkliste, gewonnene Erkenntnisse, API-Vertragsvorlagen
@@ -158,7 +158,7 @@ Hier lebt die Agentenexpertise. 15 Verzeichnisse insgesamt: 14 Agenten-Skills + 
 
 ### workflows/
 
-14 Markdown-Dateien, die das Verhalten von Slash-Befehlen definieren. Jede Datei enthält:
+16 Markdown-Dateien, die das Verhalten von Slash-Befehlen definieren. Jede Datei enthält:
 - YAML-Frontmatter mit `description`
 - Pflichtregeln-Abschnitt (Antwortsprache, Schrittreihenfolge, MCP-Tool-Anforderungen)
 - Vendor-Erkennungsanweisungen

@@ -287,7 +287,7 @@ C'est le répertoire central. Tout ce dont les agents ont besoin s'y trouve. C'e
 
 ### skills/
 
-Where agent expertise lives. 15 directories total: 14 agent skills + 1 shared resource directory.
+Where agent expertise lives. 22 directories total: 21 agent skills + 1 shared resource directory.
 
 **`_shared/`** — Resources used by all agents:
 - `core/` — Routing, context loading, prompt structure, clarification protocol, context budget, difficulty assessment, reasoning templates, quality principles, vendor detection, session metrics, common checklist, lessons learned, API contract templates
@@ -301,7 +301,7 @@ Where agent expertise lives. 15 directories total: 14 agent skills + 1 shared re
 
 ### workflows/
 
-14 Markdown files defining slash command behavior. Each file contains:
+16 Markdown files defining slash command behavior. Each file contains:
 - YAML frontmatter with `description`
 - Mandatory rules section (response language, step ordering, MCP tool requirements)
 - Vendor detection instructions

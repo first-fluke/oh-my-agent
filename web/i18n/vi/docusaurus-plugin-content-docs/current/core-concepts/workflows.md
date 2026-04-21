@@ -1,13 +1,13 @@
 ---
 title: Workflow
-description: Tham chiếu đầy đủ cho tất cả 15 workflow oh-my-agent — lệnh slash, chế độ liên tục và không liên tục, từ khóa trigger bằng 11 ngôn ngữ, các giai đoạn và bước, file đọc và ghi, cơ chế phát hiện tự động, lọc mẫu thông tin và quản lý trạng thái chế độ liên tục.
+description: Tham chiếu đầy đủ cho tất cả 16 workflow oh-my-agent — lệnh slash, chế độ liên tục và không liên tục, từ khóa trigger bằng 11 ngôn ngữ, các giai đoạn và bước, file đọc và ghi, cơ chế phát hiện tự động, lọc mẫu thông tin và quản lý trạng thái chế độ liên tục.
 ---
 
 # Workflow
 
 Workflow là quy trình có cấu trúc nhiều bước được kích hoạt bởi lệnh slash hoặc từ khóa ngôn ngữ tự nhiên. Chúng định nghĩa cách agent cộng tác trong task — từ tiện ích đơn giai đoạn đến cổng chất lượng phức tạp 5 giai đoạn.
 
-Có 15 workflow, trong đó 4 là liên tục (duy trì trạng thái và không thể bị gián đoạn ngẫu nhiên).
+Có 16 workflow, trong đó 4 là liên tục (duy trì trạng thái và không thể bị gián đoạn ngẫu nhiên).
 
 ---
 
@@ -67,6 +67,27 @@ Workflow liên tục tiếp tục chạy cho đến khi tất cả task hoàn th
 
 **Mô tả:** Khám phá ý tưởng ưu tiên thiết kế. Khám phá ý định, làm rõ ràng buộc, đề xuất hướng tiếp cận, tạo tài liệu thiết kế được duyệt trước khi lập kế hoạch.
 
+### /architecture
+
+**Mô tả:** Workflow kiến trúc phần mềm — chẩn đoán vấn đề kiến trúc, chọn phương pháp phân tích phù hợp (định tuyến chẩn đoán / design-twice / ATAM / CBAM / ADR), so sánh tùy chọn, tổng hợp ý kiến bên liên quan, và tạo khuyến nghị, đánh giá hoặc ADR.
+
+**Từ khóa trigger:**
+| Ngôn ngữ | Từ khóa |
+|----------|----------|
+| Chung | "architecture", "ADR", "ATAM", "CBAM" |
+| Tiếng Anh | "architecture review", "architectural tradeoff" |
+| Tiếng Hàn | "아키텍처", "설계 검토" |
+| Tiếng Nhật | "アーキテクチャ" |
+| Tiếng Trung | "架构" |
+
+**Các bước:** Định khung quyết định (kiến trúc mới / đánh giá / phân tích đánh đổi / ưu tiên đầu tư / viết ADR) -> Chọn phương pháp qua định tuyến chẩn đoán -> Phân tích kiến trúc hiện tại qua MCP code analysis (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> Tổng hợp ý kiến bên liên quan (chỉ khi quyết định đủ cross-cutting để biện minh chi phí) -> Tạo khuyến nghị với giả định, đánh đổi, rủi ro, bước xác minh rõ ràng -> Bàn giao cho `/plan` khi cần triển khai.
+
+**Quy tắc:** KHÔNG viết code triển khai hoặc kế hoạch task trong workflow này. Bàn giao cho `/plan` sau quyết định kiến trúc. Luôn dùng MCP tools; không thay thế bằng đọc file thô hoặc grep.
+
+**Khi dùng:** Lựa chọn kiến trúc hệ thống, quyết định ranh giới module/service/ownership, ưu tiên refactor, viết ADR, điều tra khó khăn kiến trúc (khuếch đại thay đổi, phụ thuộc ẩn, API vụng).
+
+---
+
 ### /deepinit
 
 **Mô tả:** Khởi tạo dự án đầy đủ. Phân tích codebase hiện có, tạo AGENTS.md, ARCHITECTURE.md và cơ sở kiến thức `docs/` có cấu trúc.
@@ -90,6 +111,20 @@ Workflow liên tục tiếp tục chạy cho đến khi tất cả task hoàn th
 ### /tools
 
 **Mô tả:** Quản lý khả năng hiển thị và hạn chế công cụ MCP.
+
+### /pdf
+
+**Mô tả:** Chuyển đổi PDF sang Markdown bằng `opendataloader-pdf` — trích xuất văn bản, bảng, tiêu đề và hình ảnh theo thứ tự đọc chính xác.
+
+**Từ khóa trigger:** Không (gọi tường minh với đường dẫn file đầu vào).
+
+**Các bước:** Xác minh đầu vào (kiểm tra file tồn tại) -> Xác định vị trí đầu ra (người dùng chỉ định hoặc cùng thư mục với đầu vào) -> Chạy `uvx opendataloader-pdf` (không cần cài đặt) -> Với PDF quét, dùng chế độ hybrid với OCR -> Chuẩn hóa đầu ra bằng `uvx mdformat` -> Xác minh khả năng đọc và cấu trúc -> Báo cáo bất kỳ vấn đề chuyển đổi nào (bảng thiếu, văn bản lộn xộn).
+
+**Quy tắc:** Vị trí đầu ra mặc định là cùng thư mục với PDF đầu vào. Không bao giờ bỏ qua bước. Ngôn ngữ phản hồi theo `.agents/oma-config.yaml`.
+
+**Khi dùng:** Chuyển đổi tài liệu PDF sang Markdown cho ngữ cảnh LLM hoặc thu thập RAG, trích xuất nội dung có cấu trúc (bảng, tiêu đề, danh sách) từ PDF.
+
+---
 
 ### /stack-set
 
@@ -130,6 +165,7 @@ Các workflow sau bị loại trừ khỏi phát hiện tự động và phải 
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
+- `/pdf`
 
 ---
 

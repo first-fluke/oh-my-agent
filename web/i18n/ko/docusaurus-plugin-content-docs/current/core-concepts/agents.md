@@ -1,6 +1,6 @@
 ---
 title: 에이전트
-description: oh-my-agent 14개 에이전트의 완전한 레퍼런스 — 도메인, 기술 스택, 리소스 파일, 기능, Charter Preflight 프로토콜, 2계층 스킬 로딩, 범위 제한 실행 규칙, 품질 게이트, 워크스페이스 전략, 오케스트레이션 흐름, 런타임 메모리.
+description: oh-my-agent 21개 에이전트의 완전한 레퍼런스 — 도메인, 기술 스택, 리소스 파일, 기능, Charter Preflight 프로토콜, 2계층 스킬 로딩, 범위 제한 실행 규칙, 품질 게이트, 워크스페이스 전략, 오케스트레이션 흐름, 런타임 메모리.
 ---
 
 # 에이전트
@@ -14,16 +14,21 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 | 카테고리 | 에이전트 | 책임 |
 |----------|--------|---------------|
 | **아이디에이션** | oma-brainstorm | 아이디어 탐색, 접근 방식 제안, 설계 문서 작성 |
+| **아키텍처** | oma-architecture | 시스템/모듈/서비스 경계, ADR/ATAM/CBAM 방식의 분석, 트레이드오프 기록 |
 | **기획** | oma-pm | 요구사항 분해, 태스크 분해, API 컨트랙트, 우선순위 할당 |
 | **구현** | oma-frontend, oma-backend, oma-mobile, oma-db | 각 도메인에서 프로덕션 코드 작성 |
 | **디자인** | oma-design | 디자인 시스템, DESIGN.md, 토큰, 타이포그래피, 컬러, 모션, 접근성 |
 | **인프라** | oma-tf-infra | 멀티 클라우드 Terraform 프로비저닝, IAM, 비용 최적화, Policy-as-code |
 | **DevOps** | oma-dev-workflow | mise task runner, CI/CD, 마이그레이션, 릴리스 조율, 모노레포 자동화 |
+| **관측성** | oma-observability | 관측성 파이프라인, 추적 라우팅, MELT+P 시그널(metrics/logs/traces/profiles/cost/audit/privacy), SLO 관리, 인시던트 포렌식, 전송 계층 튜닝 |
 | **품질** | oma-qa | 보안 감사 (OWASP), 성능, 접근성 (WCAG), 코드 품질 리뷰 |
 | **디버깅** | oma-debug | 버그 재현, 근본 원인 분석, 최소 수정, 회귀 테스트 |
 | **현지화** | oma-translator | 톤, 레지스터, 도메인 용어를 유지하는 컨텍스트 인식 번역 |
 | **조율** | oma-orchestrator, oma-coordination | 자동화 및 수동 멀티 에이전트 오케스트레이션 |
 | **Git** | oma-scm | Conventional Commits 생성, 기능별 커밋 분할 |
+| **검색 및 탐색** | oma-search | 신뢰도 점수가 있는 의도 기반 검색 라우터 (Context7 문서, 웹, `gh`/`glab` 코드, Serena 로컬) |
+| **회고** | oma-recap | 크로스 도구 대화 이력 분석 및 주제별 작업 요약 |
+| **문서 처리** | oma-hwp, oma-pdf | LLM/RAG 인제스션을 위한 HWP/HWPX/HWPML 및 PDF → Markdown 변환 |
 
 ---
 
@@ -47,6 +52,29 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 **워크플로우:** 6단계: 컨텍스트 탐색, 질문, 접근 방식, 설계, 문서화(`docs/plans/`에 저장), `/plan`으로 전환.
 
 **리소스:** 공유 리소스만 사용 (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+
+---
+
+### oma-architecture
+
+**도메인:** 소프트웨어/시스템 아키텍처 — 모듈·서비스 경계, 트레이드오프 분석, 이해관계자 종합, 의사결정 기록.
+
+**사용 시기:** 시스템 아키텍처 선택 또는 검토, 모듈/서비스/오너십 경계 정의, 명시적 트레이드오프와 함께 아키텍처 대안 비교, 아키텍처적 문제(변경 증폭, 숨은 의존성, 어색한 API) 진단, 아키텍처 투자 또는 리팩토링 우선순위 결정, 아키텍처 권고안 또는 ADR 작성.
+
+**사용하지 말아야 할 때:** 시각/디자인 시스템(oma-design 사용), 기능 계획 및 태스크 분해(oma-pm 사용), Terraform 구현(oma-tf-infra 사용), 버그 진단(oma-debug 사용), 보안/성능/접근성 리뷰(oma-qa 사용).
+
+**방법론:** 진단 라우팅, design-twice 비교, ATAM 방식 리스크 분석, CBAM 방식 우선순위화, ADR 방식 의사결정 기록.
+
+**핵심 규칙:**
+- 방법을 선택하기 전에 아키텍처 문제를 진단
+- 현재 의사결정에 가장 가볍고 충분한 방법론을 사용
+- 아키텍처 설계를 UI/시각 디자인 및 Terraform 전달과 구분
+- 의사결정이 비용을 정당화할 만큼 교차적일 때만 이해관계자 에이전트에 자문
+- 권고의 품질이 합의 연극보다 중요: 폭넓게 자문하되 명시적으로 결정
+- 모든 권고는 가정, 트레이드오프, 리스크, 검증 단계를 명시
+- 기본적으로 비용을 의식: 구현 비용, 운영 비용, 팀 복잡도, 향후 변경 비용
+
+**리소스:** `SKILL.md`, 방법론 가이드가 포함된 `resources/` 디렉토리(diagnostic-routing, design-twice, ATAM, CBAM, ADR 템플릿).
 
 ---
 
@@ -256,6 +284,28 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 ---
 
+### oma-observability
+
+**도메인:** 계층, 경계, 시그널을 아우르는 의도 기반 관측성 및 추적 라우터.
+
+**사용 시기:** 관측성 파이프라인 구축(OTel SDK + Collector + 벤더 백엔드), 서비스 및 도메인 경계를 아우르는 추적성(W3C propagator, baggage, 멀티테넌트, 멀티 클라우드), 전송 계층 튜닝(UDP/MTU 임계값, OTLP gRPC vs HTTP, Collector DaemonSet vs 사이드카 토폴로지, 샘플링 레시피), 인시던트 포렌식(6차원 국소화: code / service / layer / host / region / infra), 벤더 카테고리 선택(OSS 풀스택 vs 상용 SaaS vs 고 카디널리티 전문 vs 프로파일링 전문), observability-as-code(Grafana Jsonnet 대시보드, PrometheusRule CRD, OpenSLO YAML, SLO burn-rate 알람), 메타 관측성(파이프라인 자체 건강성, 클록 스큐, 카디널리티 가드레일, 보관 매트릭스), MELT+P 시그널 커버리지(metrics, logs, traces, profiles, cost, audit, privacy), 사용 중단 도구로부터의 마이그레이션(Fluentd -> Fluent Bit 또는 OTel Collector).
+
+**사용하지 말아야 할 때:** LLM ops / gen_ai 관측성(Langfuse, Arize Phoenix, LangSmith, Braintrust 사용), 데이터 파이프라인 lineage(OpenLineage + Marquez, dbt test, Airflow lineage), IoT / 데이터센터 물리 계층 텔레메트리(Nlyte, Sunbird, Device42), 카오스 엔지니어링 오케스트레이션(Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU / TPU 인프라(NVIDIA DCGM Exporter), 소프트웨어 공급망(sigstore, in-toto, SLSA), 인시던트 대응 워크플로우 / 페이징(PagerDuty, OpsGenie, Grafana OnCall), 해당 벤더의 고유 스킬로 이미 다루는 단일 벤더 셋업.
+
+**핵심 규칙:**
+- 라우팅 전에 의도 분류: setup | migrate | investigate | alert | trace | tune | route
+- 벤더 레지스트리가 아닌 카테고리 우선: `resources/vendor-categories.md`를 통해 벤더 소유 스킬에 위임하고 벤더 문서를 중복 작성하지 않음
+- 전송 계층 튜닝이 해자(moat): UDP/MTU 임계값, OTLP 프로토콜 선택, Collector 토폴로지, 샘플링 레시피는 다른 스킬이 다루지 않는 깊이
+- 메타 관측성은 타협 불가: 셋업 완료를 선언하기 전에 파이프라인 자체 건강성, 클록 동기화(< 100 ms 드리프트), 카디널리티, 보관을 검증
+- CNCF 우선 선호: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
+- Fluentd는 사용 중단(CNCF 2025-10): 신규 및 마이그레이션 작업에는 Fluent Bit 또는 OTel Collector 권장
+- W3C Trace Context가 기본 propagator; 클라우드별 변환(AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
+- 기능보다 프라이버시 우선: PII 마스킹, 샘플링 인식 baggage 규칙, SOC2/ISO 불변 감사 + GDPR/PIPA 삭제권은 저장이 아닌 수집 시점에 적용
+
+**리소스:** `SKILL.md`, `resources/execution-protocol.md`, `resources/intent-rules.md`, `resources/vendor-categories.md`, `resources/matrix.md`, `resources/checklist.md`, `resources/anti-patterns.md`, `resources/examples.md`, `resources/meta-observability.md`, `resources/observability-as-code.md`, `resources/incident-forensics.md`, `resources/standards.md`, 그리고 `resources/layers/` 하위 심화 리소스(L3-network, L4-transport, L7-application, mesh), `resources/signals/`(metrics, logs, traces, profiles, cost, audit, privacy), `resources/transport/`(collector-topology, otlp-grpc-vs-http, sampling-recipes, udp-statsd-mtu), `resources/boundaries/`(cross-application, multi-tenant, release, slo).
+
+---
+
 ### oma-qa
 
 **도메인:** 품질 보증 — 보안, 성능, 접근성, 코드 품질.
@@ -398,6 +448,90 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 **워크플로우:** PM 계획 → 사용자 확인 → 우선순위별 스폰 → 모니터링 → QA 리뷰 → 이슈 수정 → 배포.
 
 **oma-orchestrator와 차이:** coordination은 수동 가이드(사용자가 속도 제어), orchestrator는 자동(최소 사용자 개입으로 에이전트가 스폰·실행).
+
+---
+
+### oma-search
+
+**도메인:** 도메인 신뢰도 점수를 사용하는 의도 기반 검색 라우터 — 쿼리를 Context7(문서), 네이티브 웹 검색, `gh`/`glab`(코드), Serena(로컬)로 라우팅.
+
+**사용 시기:** 공식 라이브러리/프레임워크 문서 찾기, 튜토리얼/예제/비교/솔루션을 위한 웹 리서치, 구현 패턴을 위한 GitHub/GitLab 코드 검색, 검색 채널이 불명확한 쿼리(자동 라우팅), 검색 인프라가 필요한 다른 스킬(공유 호출).
+
+**사용하지 말아야 할 때:** 로컬 전용 코드베이스 탐색(Serena MCP를 직접 사용), Git 이력 또는 blame 분석(oma-scm 사용), 전체 아키텍처 리서치(이 스킬을 내부적으로 호출할 수 있는 oma-architecture 사용).
+
+**핵심 규칙:**
+- 검색 전에 의도 분류 — 모든 쿼리는 먼저 IntentClassifier를 통과
+- 하나의 쿼리, 하나의 최적 경로 — 의도가 모호하지 않은 한 중복 멀티 라우팅을 피함
+- 모든 결과에 신뢰도 점수 — 모든 비로컬 결과는 레지스트리의 도메인 신뢰도 레이블을 받음
+- 플래그가 분류기를 우선: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`
+- Fail forward: 주 경로가 실패하면 우아하게 폴백(docs→web, web→`oma search fetch` 전략)
+- 추가 MCP 불필요: 문서는 Context7, 웹은 런타임 네이티브, 코드는 CLI, 로컬은 Serena
+- 벤더 중립 웹 검색: 현재 런타임이 제공하는 무엇이든 사용(WebSearch, Google, Bing)
+- 도메인 수준 신뢰도만 — 하위 경로 또는 페이지 수준 점수 없음
+
+**리소스:** `SKILL.md`, 의도 분류기·경로 정의·신뢰 레지스트리가 담긴 `resources/` 디렉토리.
+
+---
+
+### oma-recap
+
+**도메인:** 여러 AI 도구(Claude, Codex, Gemini, Qwen, Cursor)의 대화 이력 분석 및 주제별 일/기간 작업 요약.
+
+**사용 시기:** 하루 또는 기간의 작업 활동 요약, 여러 AI 도구에 걸친 작업 흐름 파악, 세션 간 도구 전환 패턴 분석, 데일리 스탠드업/주간 회고/작업 로그 준비.
+
+**사용하지 말아야 할 때:** Git 커밋 기반의 코드 변경 회고(`oma retro` 사용), 실시간 에이전트 모니터링(`oma dashboard` 사용), 생산성 지표(`oma stats` 사용).
+
+**프로세스:**
+1. 자연어 입력(today, yesterday, last Monday, 명시적 날짜)에서 날짜 또는 시간 범위 해석
+2. `oma recap --date YYYY-MM-DD` 또는 `--since` / `--until`로 대화 데이터 수집
+3. 도구 및 세션별 그룹핑
+4. 테마 추출(작업한 기능, 수정한 버그, 탐색한 도구)
+5. 주제별 일/기간 요약 렌더링
+
+**리소스:** `SKILL.md` — 무거운 작업은 `oma recap` CLI에 위임.
+
+---
+
+### oma-hwp
+
+**도메인:** `kordoc`을 사용한 HWP / HWPX / HWPML(한글 워드프로세서) → Markdown 변환.
+
+**사용 시기:** 한국어 HWP 문서(`.hwp`, `.hwpx`, `.hwpml`)를 Markdown으로 변환, LLM 컨텍스트 또는 RAG용 한국 정부/기업 문서 준비, HWP에서 구조화된 콘텐츠(표, 헤딩, 목록, 이미지, 각주, 하이퍼링크) 추출.
+
+**사용하지 말아야 할 때:** PDF 파일(oma-pdf 사용), XLSX/DOCX(범위 외), HWP 생성/편집(범위 외), 이미 텍스트 파일(Read 도구 직접 사용).
+
+**핵심 규칙:**
+- 실행에 `bunx kordoc@latest` 사용 — 설치 불필요; 항상 `@latest` 또는 고정 버전 전달
+- 기본 출력 형식은 Markdown
+- 출력 디렉토리가 지정되지 않으면 입력과 동일한 디렉토리에 출력
+- kordoc이 구조 보존 처리(헤딩, 표, 중첩 표, 각주, 하이퍼링크, 이미지)
+- 보안 방어(ZIP bomb, XXE, SSRF, XSS)는 kordoc이 제공 — 커스텀 방어 추가 금지
+- 암호화된 또는 DRM 잠금 HWP의 경우 제한 사항을 사용자에게 명확히 보고
+- HTML `<table>` 블록을 GFM 파이프 테이블로 변환하고 Hancom 폰트 Private Use Area 문자를 제거하기 위해 `resources/flatten-tables.ts`로 후처리
+
+**리소스:** `SKILL.md`, `config/`, `resources/flatten-tables.ts`.
+
+---
+
+### oma-pdf
+
+**도메인:** `opendataloader-pdf`를 사용한 PDF → Markdown 변환.
+
+**사용 시기:** LLM 컨텍스트 또는 RAG용 PDF 문서를 Markdown으로 변환, PDF에서 구조화된 콘텐츠(표, 헤딩, 목록) 추출, AI 소비용 PDF 데이터 준비.
+
+**사용하지 말아야 할 때:** PDF 생성/작성(적절한 문서 도구 사용), 기존 PDF 편집(범위 외), 이미 텍스트인 파일의 단순 읽기(Read 도구 직접 사용).
+
+**핵심 규칙:**
+- 실행에 `uvx opendataloader-pdf` 사용 — 설치 불필요
+- 기본 출력 형식은 Markdown
+- 출력 디렉토리가 지정되지 않으면 입력 PDF와 동일한 디렉토리에 출력
+- 문서 구조 보존(헤딩, 표, 목록, 이미지)
+- 스캔된 PDF의 경우 OCR을 포함한 하이브리드 모드 사용
+- Markdown 포매팅 정규화를 위해 항상 출력에 `uvx mdformat` 실행
+- 출력 Markdown이 읽을 수 있고 구조적으로 양호한지 검증
+- 변환 문제(누락된 표, 깨진 텍스트)를 사용자에게 보고
+
+**리소스:** `SKILL.md`, `config/`, `resources/`.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Agents
-description: Complete reference for all 14 oh-my-agent agents — their domains, tech stacks, resource files, capabilities, charter preflight protocol, two-layer skill loading, scoped execution rules, quality gates, workspace strategy, orchestration flow, and runtime memory.
+description: Complete reference for all 21 oh-my-agent agents — their domains, tech stacks, resource files, capabilities, charter preflight protocol, two-layer skill loading, scoped execution rules, quality gates, workspace strategy, orchestration flow, and runtime memory.
 ---
 
 # Agents
@@ -22,16 +22,21 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 | Category | Agents | Responsibility |
 |----------|--------|---------------|
 | **Ideation** | oma-brainstorm | Exploring ideas, proposing approaches, producing design documents |
+| **Architecture** | oma-architecture | System/module/service boundaries, ADR/ATAM/CBAM-style analysis, tradeoff records |
 | **Planning** | oma-pm | Requirements decomposition, task breakdown, API contracts, priority assignment |
 | **Implementation** | oma-frontend, oma-backend, oma-mobile, oma-db | Writing production code in their respective domains |
 | **Design** | oma-design | Design systems, DESIGN.md, tokens, typography, color, motion, accessibility |
 | **Infrastructure** | oma-tf-infra | Multi-cloud Terraform provisioning, IAM, cost optimization, policy-as-code |
 | **DevOps** | oma-dev-workflow | mise task runner, CI/CD, migrations, release coordination, monorepo automation |
+| **Observability** | oma-observability | Observability pipelines, traceability routing, MELT+P signals (metrics/logs/traces/profiles/cost/audit/privacy), SLO management, incident forensics, transport tuning |
 | **Quality** | oma-qa | Security audit (OWASP), performance, accessibility (WCAG), code quality review |
 | **Debugging** | oma-debug | Bug reproduction, root cause analysis, minimal fixes, regression tests |
 | **Localization** | oma-translator | Context-aware translation preserving tone, register, and domain terms |
 | **Coordination** | oma-orchestrator, oma-coordination | Automated and manual multi-agent orchestration |
 | **Git** | oma-scm | Conventional Commits generation, feature-based commit splitting |
+| **Search & Retrieval** | oma-search | Intent-based search router with trust scoring (Context7 docs, web, `gh`/`glab` code, Serena local) |
+| **Retrospective** | oma-recap | Cross-tool conversation history analysis and themed work summaries |
+| **Document Processing** | oma-hwp, oma-pdf | HWP/HWPX/HWPML and PDF to Markdown conversion for LLM/RAG ingestion |
 
 ---
 
@@ -55,6 +60,29 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 **Workflow:** 6 phases: Context exploration, Questions, Approaches, Design, Documentation (saves to `docs/plans/`), Transition to `/plan`.
 
 **Resources:** Uses shared resources only (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+
+---
+
+### oma-architecture
+
+**Domain:** Software/system architecture — module and service boundaries, tradeoff analysis, stakeholder synthesis, decision records.
+
+**When to use:** Choosing or reviewing system architecture, defining module/service/ownership boundaries, comparing architectural options with explicit tradeoffs, investigating architectural pain (change amplification, hidden dependencies, awkward APIs), prioritizing architecture investments or refactors, writing architecture recommendations or ADRs.
+
+**When NOT to use:** Visual/design systems (use oma-design), feature planning and task decomposition (use oma-pm), Terraform implementation (use oma-tf-infra), bug diagnosis (use oma-debug), security/performance/accessibility review (use oma-qa).
+
+**Methodologies:** Diagnostic routing, design-twice comparison, ATAM-style risk analysis, CBAM-style prioritization, ADR-style decision records.
+
+**Core rules:**
+- Diagnose the architecture problem before selecting a method
+- Use the lightest sufficient methodology for the current decision
+- Distinguish architectural design from UI/visual design and from Terraform delivery
+- Consult stakeholder agents only when the decision is cross-cutting enough to justify the cost
+- Recommendation quality matters more than consensus theater: consult broadly, decide explicitly
+- Every recommendation must state assumptions, tradeoffs, risks, and validation steps
+- Be cost-aware by default: implementation cost, operational cost, team complexity, future change cost
+
+**Resources:** `SKILL.md`, `resources/` directory with methodology guides (diagnostic-routing, design-twice, ATAM, CBAM, ADR templates).
 
 ---
 
@@ -264,6 +292,28 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
+### oma-observability
+
+**Domain:** Intent-based observability and traceability router across layers, boundaries, and signals.
+
+**When to use:** Observability pipeline setup (OTel SDK + Collector + vendor backend), traceability across service and domain boundaries (W3C propagators, baggage, multi-tenant, multi-cloud), transport tuning (UDP/MTU thresholds, OTLP gRPC vs HTTP, Collector DaemonSet vs sidecar topology, sampling recipes), incident forensics (6-dimension localization: code / service / layer / host / region / infra), vendor category selection (OSS full-stack vs commercial SaaS vs high-cardinality specialist vs profiling specialist), observability-as-code (Grafana Jsonnet dashboards, PrometheusRule CRD, OpenSLO YAML, SLO burn-rate alerts), meta-observability (pipeline self-health, clock skew, cardinality guardrails, retention matrix), MELT+P signal coverage (metrics, logs, traces, profiles, cost, audit, privacy), migration off deprecated tools (Fluentd -> Fluent Bit or OTel Collector).
+
+**When NOT to use:** LLM ops / gen_ai observability (use Langfuse, Arize Phoenix, LangSmith, Braintrust), data pipeline lineage (OpenLineage + Marquez, dbt test, Airflow lineage), IoT / datacenter physical-layer telemetry (Nlyte, Sunbird, Device42), chaos engineering orchestration (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU / TPU infrastructure (NVIDIA DCGM Exporter), software supply chain (sigstore, in-toto, SLSA), incident response workflow / paging (PagerDuty, OpsGenie, Grafana OnCall), single-vendor setup already covered by that vendor's own skill.
+
+**Core rules:**
+- Classify intent before routing: setup | migrate | investigate | alert | trace | tune | route
+- Category-first, not vendor-registry: delegate to vendor-owned skills via `resources/vendor-categories.md`; do not duplicate vendor documentation
+- Transport tuning is the moat: UDP/MTU thresholds, OTLP protocol selection, Collector topology, and sampling recipes are depth that other skills do not cover
+- Meta-observability is non-negotiable: validate pipeline self-health, clock sync (< 100 ms drift), cardinality, and retention before declaring setup complete
+- CNCF-first preference: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
+- Fluentd is deprecated (CNCF 2025-10): recommend Fluent Bit or OTel Collector for new and migration work
+- W3C Trace Context as default propagator; translate per cloud (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
+- Privacy before features: PII redaction, sampling-aware baggage rules, SOC2/ISO immutable audit + GDPR/PIPA erasure applied at collection, not only at storage
+
+**Resources:** `SKILL.md`, `resources/execution-protocol.md`, `resources/intent-rules.md`, `resources/vendor-categories.md`, `resources/matrix.md`, `resources/checklist.md`, `resources/anti-patterns.md`, `resources/examples.md`, `resources/meta-observability.md`, `resources/observability-as-code.md`, `resources/incident-forensics.md`, `resources/standards.md`, plus deep resources under `resources/layers/` (L3-network, L4-transport, L7-application, mesh), `resources/signals/` (metrics, logs, traces, profiles, cost, audit, privacy), `resources/transport/` (collector-topology, otlp-grpc-vs-http, sampling-recipes, udp-statsd-mtu), and `resources/boundaries/` (cross-application, multi-tenant, release, slo).
+
+---
+
 ### oma-qa
 
 **Domain:** Quality assurance — security, performance, accessibility, code quality.
@@ -406,6 +456,90 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 **Workflow:** PM plans → User confirms → Spawn by priority tier → Monitor → QA review → Fix issues → Ship.
 
 **Difference from oma-orchestrator:** Coordination is manual and guided (user controls pace), orchestrator is automated (agents spawn and run with minimal user intervention).
+
+---
+
+### oma-search
+
+**Domain:** Intent-based search router with domain trust scoring — routes queries to Context7 (docs), native web search, `gh`/`glab` (code), Serena (local).
+
+**When to use:** Finding official library/framework documentation, web research for tutorials/examples/comparisons/solutions, GitHub/GitLab code search for implementation patterns, any query where the search channel is unclear (auto-routing), other skills that need search infrastructure (shared invocation).
+
+**When NOT to use:** Local-only codebase exploration (use Serena MCP directly), Git history or blame analysis (use oma-scm), full architecture research (use oma-architecture, which may invoke this skill internally).
+
+**Core rules:**
+- Classify intent before searching — every query goes through IntentClassifier first
+- One query, one best route — avoid redundant multi-route unless intent is ambiguous
+- Trust score every result — all non-local results get domain trust labels from the registry
+- Flags override classifier: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`
+- Fail forward: if the primary route fails, fall back gracefully (docs→web, web→`oma search fetch` strategies)
+- No additional MCP required: Context7 for docs, runtime-native for web, CLI for code, Serena for local
+- Vendor-agnostic web search: use whatever the current runtime provides (WebSearch, Google, Bing)
+- Domain-level trust only — no sub-path or page-level scoring
+
+**Resources:** `SKILL.md`, `resources/` directory with intent classifier, route definitions, and trust registry.
+
+---
+
+### oma-recap
+
+**Domain:** Conversation history analysis across multiple AI tools (Claude, Codex, Gemini, Qwen, Cursor) with themed daily/period work summaries.
+
+**When to use:** Summarizing a day or period of work activity, understanding the flow of work across multiple AI tools, analyzing tool-switching patterns between sessions, preparing daily standups / weekly retros / work logs.
+
+**When NOT to use:** Git commit-based code change retrospective (use `oma retro`), real-time agent monitoring (use `oma dashboard`), productivity metrics (use `oma stats`).
+
+**Process:**
+1. Resolve date or time window from natural-language input (today, yesterday, last Monday, explicit date)
+2. Fetch conversation data via `oma recap --date YYYY-MM-DD` or `--since` / `--until`
+3. Group by tool and session
+4. Extract themes (features worked on, bugs fixed, tools explored)
+5. Render themed daily/period summary
+
+**Resources:** `SKILL.md` — defers heavy work to the `oma recap` CLI.
+
+---
+
+### oma-hwp
+
+**Domain:** HWP / HWPX / HWPML (Korean word processor) to Markdown conversion using `kordoc`.
+
+**When to use:** Converting Korean HWP documents (`.hwp`, `.hwpx`, `.hwpml`) to Markdown, preparing Korean government/enterprise documents for LLM context or RAG, extracting structured content (tables, headings, lists, images, footnotes, hyperlinks) from HWP.
+
+**When NOT to use:** PDF files (use oma-pdf), XLSX/DOCX (out of scope), generating/editing HWP (out of scope), already-text files (use Read tool directly).
+
+**Core rules:**
+- Use `bunx kordoc@latest` to run — no installation required; always pass `@latest` or a pinned version
+- Default output format is Markdown
+- If no output directory is specified, output to the same directory as the input
+- kordoc handles structure preservation (headings, tables, nested tables, footnotes, hyperlinks, images)
+- Security defenses (ZIP bomb, XXE, SSRF, XSS) are provided by kordoc — do not add custom ones
+- For encrypted or DRM-locked HWP, report the limitation to the user clearly
+- Post-process with `resources/flatten-tables.ts` to convert HTML `<table>` blocks to GFM pipe tables and strip Hancom font Private Use Area characters
+
+**Resources:** `SKILL.md`, `config/`, `resources/flatten-tables.ts`.
+
+---
+
+### oma-pdf
+
+**Domain:** PDF to Markdown conversion using `opendataloader-pdf`.
+
+**When to use:** Converting PDF documents to Markdown for LLM context or RAG, extracting structured content (tables, headings, lists) from PDFs, preparing PDF data for AI consumption.
+
+**When NOT to use:** Generating/creating PDFs (use appropriate document tools), editing existing PDFs (out of scope), simple reading of already-text files (use Read tool directly).
+
+**Core rules:**
+- Use `uvx opendataloader-pdf` to run — no installation required
+- Default output format is Markdown
+- If no output directory is specified, output to the same directory as the input PDF
+- Preserve document structure (headings, tables, lists, images)
+- For scanned PDFs, use hybrid mode with OCR
+- Always run `uvx mdformat` on the output to normalize Markdown formatting
+- Validate the output Markdown is readable and well-structured
+- Report any conversion issues (missing tables, garbled text) to the user
+
+**Resources:** `SKILL.md`, `config/`, `resources/`.
 
 ---
 

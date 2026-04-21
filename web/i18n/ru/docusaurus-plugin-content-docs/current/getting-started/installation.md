@@ -73,7 +73,7 @@ bunx oh-my-agent@latest
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # Другие выбранные навыки
-├── workflows/                      # Все 14 определений рабочих процессов
+├── workflows/                      # Все 16 определений рабочих процессов
 ├── agents/                         # Определения субагентов
 ├── mcp.json                        # Конфигурация MCP-сервера
 ├── results/plan-{sessionId}.json                       # Пустой (заполняется через /plan)

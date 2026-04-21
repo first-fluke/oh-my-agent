@@ -1,6 +1,6 @@
 ---
 title: Przewodnik użytkowania
-description: Kompleksowy przewodnik użytkowania oh-my-agent — szybki start, szczegółowe przykłady z życia wzięte obejmujące pojedyncze zadania, projekty wielodomenowe, naprawy błędów, systemy projektowe, równoległe wykonanie CLI i ultrawork. Wszystkie polecenia workflow, przykłady automatycznego wykrywania w wielu językach, wszystkie 14 umiejętności z przypadkami użycia, konfiguracja panelu kontrolnego, kluczowe koncepcje, wskazówki i rozwiązywanie problemów.
+description: Kompleksowy przewodnik użytkowania oh-my-agent — szybki start, szczegółowe przykłady z życia wzięte obejmujące pojedyncze zadania, projekty wielodomenowe, naprawy błędów, systemy projektowe, równoległe wykonanie CLI i ultrawork. Wszystkie polecenia workflow, przykłady automatycznego wykrywania w wielu językach, wszystkie 21 umiejętności z przypadkami użycia, konfiguracja panelu kontrolnego, kluczowe koncepcje, wskazówki i rozwiązywanie problemów.
 ---
 
 # Jak używać oh-my-agent

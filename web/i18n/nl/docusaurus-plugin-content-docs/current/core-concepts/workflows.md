@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Volledige referentie voor alle 14 oh-my-agent workflows — slash-commando's, persistente vs niet-persistente modi, triggertrefwoorden in 11 talen, fasen en stappen, gelezen en geschreven bestanden, auto-detectiemechanismen via triggers.json en keyword-detector.ts, informatiepatroonfiltering en persistent mode-statusbeheer.
+description: Volledige referentie voor alle 16 oh-my-agent workflows — slash-commando's, persistente vs niet-persistente modi, triggertrefwoorden in 11 talen, fasen en stappen, gelezen en geschreven bestanden, auto-detectiemechanismen via triggers.json en keyword-detector.ts, informatiepatroonfiltering en persistent mode-statusbeheer.
 ---
 
 # Workflows
 
 Workflows zijn gestructureerde meerstapsprocessen die worden getriggerd door slash-commando's of natuurlijke taaltrefwoorden. Ze definieren hoe agenten samenwerken aan taken — van enkelfasige hulpmiddelen tot complexe 5-fasen kwaliteitspoorten.
 
-Er zijn 14 workflows, waarvan 3 persistent zijn (ze behouden status en kunnen niet per ongeluk worden onderbroken).
+Er zijn 16 workflows, waarvan 4 persistent zijn (ze behouden status en kunnen niet per ongeluk worden onderbroken).
 
 ---
 
@@ -118,6 +118,40 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 ---
 
+### /ralph
+
+**Beschrijving:** Persistente, zelfreferentiële uitvoeringslus. Verpakt ultrawork met een onafhankelijke verifier die na elke iteratie de voltooiingscriteria controleert. Blijft doorlopen totdat alle criteria slagen of de beveiligingen ingrijpen.
+
+**Persistent:** Ja. Statusbestand: `.agents/state/ralph-state.json`.
+
+**Triggertrefwoorden:**
+| Taal | Trefwoorden |
+|------|-------------|
+| Universeel | "ralph" |
+| Engels | "don't stop", "until done", "keep going", "finish everything", "run to completion" |
+| Koreaans | "랄프", "멈추지마", "끝까지", "완료될때까지", "끝장내" |
+| Japans | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
+| Chinees | "不要停", "直到完成", "全部完成", "做完为止" |
+| Spaans | "no pares", "hasta completar", "termina todo" |
+| Frans | "n'arrête pas", "jusqu'à complétion", "termine tout" |
+| Duits | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
+
+**Fasen:**
+1. **Fase 0 — INIT:** Vereisten laden (context-loading, geheugenprotocol, judge-protocol). Verifieerbare voltooiingscriteria definiëren (elk moet mechanisch te verifiëren zijn — test slaagt, build slaagt, bestand bestaat). Criteria ter bevestiging aan de gebruiker presenteren. Sessie initialiseren met `max_iterations: 5`.
+2. **Fase 1 — WORK:** Ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) uitvoeren als één iteratie.
+3. **Fase 2 — JUDGE:** Onafhankelijke verifier controleert elk voltooiingscriterium tegenover de werkelijke projectstatus (tests uitvoeren, builds controleren, bestaan van bestanden verifiëren). Elk criterium scoren als PASS/FAIL met bewijs.
+4. **Fase 3 — DECIDE:** Als alle criteria PASS → lus beëindigen, eindrapport genereren. Bij FAIL → iteratieteller verhogen, foutcontext terugvoeren, terug naar Fase 1.
+5. **Beveiligingen:** De lus stopt als `current_iteration >= max_iterations` (standaard 5), of als hetzelfde criterium 3 keer achter elkaar faalt met dezelfde grondoorzaak (stuck-detectie).
+
+**Belangrijkste verschil met /ultrawork:** Ultrawork is een 5-fase workflow in één doorgang. Ralph verpakt ultrawork in een retry-lus met een onafhankelijke judge die voltooiing objectief verifieert — hij blijft doorgaan totdat het werk daadwerkelijk klaar is, niet alleen "beoordeeld".
+
+**Gelezen bestanden:** `.agents/workflows/ralph/resources/judge-protocol.md`, alle ultrawork-bestanden.
+**Geschreven bestanden:** `session-ralph.md` (geheugen), iteratielogs, eindrapport.
+
+**Wanneer gebruiken:** Wanneer gegarandeerde voltooiing nodig is — de agent moet blijven werken totdat verifieerbare criteria slagen, niet slechts één doorgang doen en rapporteren.
+
+---
+
 ## Niet-Persistente Workflows
 
 ### /plan
@@ -155,6 +189,20 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 **Stappen:** Projectcontext verkennen (MCP-analyse) -> Verduidelijkende vragen stellen (een tegelijk) -> 2-3 benaderingen voorstellen met afwegingen -> Ontwerp sectie voor sectie presenteren (met gebruikersgoedkeuring per stap) -> Ontwerpdocument opslaan in `docs/plans/` -> Overgang: suggereer `/plan`.
 
 **Regels:** Geen implementatie of planning voor ontwerpgoedkeuring. Geen code-uitvoer. YAGNI.
+
+---
+
+### /architecture
+
+**Beschrijving:** Software-architectuurworkflow — architectuurproblemen diagnosticeren, de juiste analysemethode selecteren (diagnostische routering / design-twice / ATAM / CBAM / ADR), opties vergelijken, input van stakeholders synthetiseren en een aanbeveling, review of ADR produceren.
+
+**Triggertrefwoorden:** Universeel: "architecture", "ADR", "ATAM", "CBAM"; Engels: "architecture review", "architectural tradeoff"; Koreaans: "아키텍처", "설계 검토"; Japans: "アーキテクチャ"; Chinees: "架构".
+
+**Stappen:** Beslissing kaderen (nieuwe architectuur / review / tradeoff-analyse / investeringsprioritering / ADR-schrijven) -> Methodologie selecteren via diagnostische routering -> Huidige architectuur analyseren via MCP-code-analyse (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> Input van stakeholders synthetiseren (alleen wanneer de beslissing zo overkoepelend is dat de kosten gerechtvaardigd zijn) -> Aanbeveling produceren met expliciete aannames, tradeoffs, risico's en validatiestappen -> Overdragen aan `/plan` wanneer implementatie nodig is.
+
+**Regels:** Schrijf in deze workflow GEEN implementatiecode of taakplannen. Overdragen aan `/plan` na de architectuurbeslissing. Gebruik MCP-tools voortdurend; niet vervangen door onbewerkte file-reads of grep.
+
+**Wanneer gebruiken:** Systeemarchitectuurkeuzes, beslissingen over module/service/ownership-grenzen, prioriteren van refactorings, ADR-schrijven, onderzoeken van architectuurpijn (wijzigingsversterking, verborgen afhankelijkheden, ongemakkelijke API's).
 
 ---
 
@@ -230,6 +278,20 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 
 ---
 
+### /pdf
+
+**Beschrijving:** PDF naar Markdown converteren met `opendataloader-pdf` — extraheert tekst, tabellen, koppen en afbeeldingen in de juiste leesvolgorde.
+
+**Triggertrefwoorden:** Geen (wordt expliciet aangeroepen met een pad naar een invoerbestand).
+
+**Stappen:** Invoer valideren (bestaan van bestand bevestigen) -> Uitvoerlocatie bepalen (door gebruiker opgegeven of zelfde directory als invoer) -> `uvx opendataloader-pdf` uitvoeren (geen installatie vereist) -> Voor gescande PDF's hybride modus met OCR gebruiken -> Uitvoer normaliseren met `uvx mdformat` -> Leesbaarheid en structuur valideren -> Conversieproblemen (ontbrekende tabellen, vervormde tekst) rapporteren.
+
+**Regels:** Standaard uitvoerlocatie is dezelfde directory als de invoer-PDF. Sla nooit stappen over. De antwoordtaal volgt `.agents/oma-config.yaml`.
+
+**Wanneer gebruiken:** PDF-documenten converteren naar Markdown voor LLM-context of RAG-ingestion, gestructureerde inhoud (tabellen, koppen, lijsten) uit PDF's extraheren.
+
+---
+
 ### /stack-set
 
 **Beschrijving:** Automatische detectie van project tech stack en generatie van taalspecifieke referenties voor de backend-skill.
@@ -283,7 +345,7 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 
 ### Uitgesloten Workflows
 
-Vereisen expliciet `/command`: `/scm`, `/tools`, `/stack-set`, `/exec-plan`.
+Vereisen expliciet `/command`: `/scm`, `/tools`, `/stack-set`, `/exec-plan`, `/pdf`.
 
 ---
 

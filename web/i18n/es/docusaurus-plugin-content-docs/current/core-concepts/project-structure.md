@@ -287,7 +287,7 @@ Este es el directorio principal. Todo lo que los agentes necesitan reside aqui. 
 
 ### skills/
 
-Donde reside la experiencia de los agentes. 15 directorios en total: 14 habilidades de agente + 1 directorio de recursos compartidos.
+Donde reside la experiencia de los agentes. 22 directorios en total: 21 habilidades de agente + 1 directorio de recursos compartidos.
 
 **`_shared/`** — Recursos usados por todos los agentes:
 - `core/` — Enrutamiento, carga de contexto, estructura de prompt, protocolo de clarificacion, presupuesto de contexto, evaluacion de dificultad, plantillas de razonamiento, principios de calidad, deteccion de proveedor, metricas de sesion, lista de verificacion comun, lecciones aprendidas, plantillas de contratos API
@@ -301,7 +301,7 @@ Donde reside la experiencia de los agentes. 15 directorios en total: 14 habilida
 
 ### workflows/
 
-14 archivos Markdown que definen el comportamiento de los comandos slash. Cada archivo contiene:
+16 archivos Markdown que definen el comportamiento de los comandos slash. Cada archivo contiene:
 - Frontmatter YAML con `description`
 - Seccion de reglas obligatorias (idioma de respuesta, orden de pasos, requisitos de herramientas MCP)
 - Instrucciones de deteccion de proveedor

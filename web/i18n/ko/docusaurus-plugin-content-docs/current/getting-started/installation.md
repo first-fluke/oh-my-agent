@@ -75,7 +75,7 @@ bunx oh-my-agent@latest
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # 기타 선택된 스킬
-├── workflows/                      # 14개 워크플로우 정의
+├── workflows/                      # 16개 워크플로우 정의
 ├── agents/                         # 서브에이전트 정의
 ├── mcp.json                        # MCP 서버 설정
 ├── results/plan-{sessionId}.json                       # 빈 파일 (/plan으로 채워짐)

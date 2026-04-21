@@ -54,7 +54,7 @@ bunx oh-my-agent@latest
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | แปลงไฟล์ HWP/HWPX/HWPML เป็น Markdown |
 | **oma-mobile** | จัดการ cross platform application ด้วย Flutter |
-| **oma-observability** | OTel pipeline, metrics/logs/traces, SLO, การวิเคราะห์ incident |
+| **oma-observability** | เราเตอร์ด้านการสังเกตระบบ (observability) — APM/RUM, metrics/logs/traces/profiles, SLO, วิเคราะห์สาเหตุเหตุการณ์, ปรับจูน transport |
 | **oma-orchestrator** | รันเอเจนต์แบบ parallel ผ่าน CLI |
 | **oma-pdf** | แปลงไฟล์ PDF เป็น Markdown |
 | **oma-pm** | วางแผนงาน, ย่อย requirements, กำหนด API contracts |

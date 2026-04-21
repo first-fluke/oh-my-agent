@@ -1,6 +1,6 @@
 ---
 title: Gebruiksgids
-description: Uitgebreide gebruiksgids voor oh-my-agent — snelstart, gedetailleerde praktijkvoorbeelden voor enkele taken, multi-domein projecten, bugfixes, designsystemen, CLI parallelle uitvoering en ultrawork. Alle workflowcommando's, auto-detectievoorbeelden in meerdere talen, alle 14 skills met toepassingen, dashboardsetup, kernconcepten, tips en probleemoplossing.
+description: Uitgebreide gebruiksgids voor oh-my-agent — snelstart, gedetailleerde praktijkvoorbeelden voor enkele taken, multi-domein projecten, bugfixes, designsystemen, CLI parallelle uitvoering en ultrawork. Alle workflowcommando's, auto-detectievoorbeelden in meerdere talen, alle 21 skills met toepassingen, dashboardsetup, kernconcepten, tips en probleemoplossing.
 ---
 
 # Hoe oh-my-agent te Gebruiken

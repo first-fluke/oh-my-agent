@@ -73,7 +73,7 @@ Nach der Installation enthält Ihr Projekt:
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # Weitere ausgewählte Skills
-├── workflows/                      # Alle 14 Workflow-Definitionen
+├── workflows/                      # Alle 16 Workflow-Definitionen
 ├── agents/                         # Subagenten-Definitionen
 ├── mcp.json                        # MCP-Server-Konfiguration
 ├── results/plan-{sessionId}.json                       # Leer (befüllt durch /plan)

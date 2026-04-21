@@ -78,7 +78,7 @@ your-project/
 │   │   ├── oma-coordination/
 │   │   └── oma-scm/
 │   │
-│   ├── workflows/                    ← 14 workflowdefinities
+│   ├── workflows/                    ← 16 workflowdefinities
 │   │   ├── orchestrate.md             ← Persistent: geautomatiseerde parallelle uitvoering
 │   │   ├── work.md             ← Persistent: stap-voor-stap coordinatie
 │   │   ├── ultrawork.md              ← Persistent: 5-fasen kwaliteitsworkflow
@@ -144,7 +144,7 @@ Dit is de kerndirectory. Alles wat agenten nodig hebben bevindt zich hier. Het i
 
 ### skills/
 
-Waar agentexpertise leeft. 15 directory's totaal: 14 agent-skills + 1 gedeelde bronnendirectory.
+Waar agentexpertise leeft. 22 directory's totaal: 21 agent-skills + 1 gedeelde bronnendirectory.
 
 **`_shared/`** — Bronnen gebruikt door alle agenten:
 - `core/` — Routering, contextlading, promptstructuur, verduidelijkingsprotocol, contextbudget, moeilijkheidsbeoordeling, redeneersjablonen, kwaliteitsprincipes, leveranciersdetectie, sessiemetrieken, algemene checklist, leerpunten, API-contractsjablonen
@@ -155,7 +155,7 @@ Waar agentexpertise leeft. 15 directory's totaal: 14 agent-skills + 1 gedeelde b
 
 ### workflows/
 
-14 Markdown-bestanden die slash-commandogedrag definieren. Persistente workflows: `orchestrate.md`, `work.md`, `ultrawork.md`. Niet-persistent: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
+16 Markdown-bestanden die slash-commandogedrag definieren. Persistente workflows: `orchestrate.md`, `work.md`, `ultrawork.md`. Niet-persistent: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 

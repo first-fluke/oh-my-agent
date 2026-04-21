@@ -52,7 +52,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | Chuyển đổi HWP/HWPX/HWPML sang Markdown |
 | **oma-mobile** | Ứng dụng đa nền tảng với Flutter |
-| **oma-observability** | Pipeline OTel, metrics/logs/traces, SLO, phân tích sự cố |
+| **oma-observability** | Bộ định tuyến observability — APM/RUM, metrics/logs/traces/profiles, SLO, điều tra sự cố, tinh chỉnh transport |
 | **oma-orchestrator** | Thực thi agent song song qua CLI |
 | **oma-pdf** | Chuyển đổi PDF sang Markdown |
 | **oma-pm** | Lập kế hoạch, phân tích yêu cầu, định nghĩa API contract |

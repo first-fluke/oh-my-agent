@@ -1,6 +1,6 @@
 ---
 title: Agent
-description: Tham chiếu đầy đủ cho tất cả 14 agent oh-my-agent — lĩnh vực, tech stack, file tài nguyên, khả năng, giao thức Charter Preflight, tải skill 2 tầng, quy tắc thực thi theo phạm vi, cổng chất lượng, chiến lược workspace, luồng điều phối và bộ nhớ runtime.
+description: Tham chiếu đầy đủ cho tất cả 21 agent oh-my-agent — lĩnh vực, tech stack, file tài nguyên, khả năng, giao thức Charter Preflight, tải skill 2 tầng, quy tắc thực thi theo phạm vi, cổng chất lượng, chiến lược workspace, luồng điều phối và bộ nhớ runtime.
 ---
 
 # Agent
@@ -14,16 +14,21 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 | Phân loại | Agent | Trách nhiệm |
 |----------|--------|---------------|
 | **Ý tưởng** | oma-brainstorm | Khám phá ý tưởng, đề xuất hướng tiếp cận, tạo tài liệu thiết kế |
+| **Kiến trúc** | oma-architecture | Ranh giới hệ thống/module/dịch vụ, phân tích kiểu ADR/ATAM/CBAM, ghi chép đánh đổi |
 | **Lập kế hoạch** | oma-pm | Phân tách yêu cầu, chia task, API contract, gán ưu tiên |
 | **Triển khai** | oma-frontend, oma-backend, oma-mobile, oma-db | Viết mã production trong lĩnh vực tương ứng |
 | **Thiết kế** | oma-design | Design system, DESIGN.md, token, typography, màu sắc, chuyển động, accessibility |
 | **Hạ tầng** | oma-tf-infra | Cung cấp Terraform đa cloud, IAM, tối ưu chi phí, policy-as-code |
 | **DevOps** | oma-dev-workflow | mise task runner, CI/CD, migration, phối hợp release, tự động hóa monorepo |
+| **Observability** | oma-observability | Pipeline observability, định tuyến truy vết, tín hiệu MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), quản lý SLO, điều tra pháp y sự cố, tinh chỉnh transport |
 | **Chất lượng** | oma-qa | Kiểm tra bảo mật (OWASP), hiệu suất, accessibility (WCAG), đánh giá chất lượng mã |
 | **Gỡ lỗi** | oma-debug | Tái hiện lỗi, phân tích nguyên nhân gốc, sửa tối thiểu, test hồi quy |
 | **Bản địa hóa** | oma-translator | Dịch thuật nhận biết ngữ cảnh bảo toàn giọng điệu, phong cách và thuật ngữ lĩnh vực |
 | **Điều phối** | oma-orchestrator, oma-coordination | Điều phối đa agent tự động và thủ công |
 | **Git** | oma-scm | Tạo Conventional Commits, tách commit theo tính năng |
+| **Tìm kiếm & Truy xuất** | oma-search | Bộ định tuyến tìm kiếm dựa trên ý định với chấm điểm độ tin cậy (tài liệu Context7, web, mã `gh`/`glab`, Serena cục bộ) |
+| **Hồi tưởng** | oma-recap | Phân tích lịch sử hội thoại đa công cụ và tóm tắt công việc theo chủ đề |
+| **Xử lý tài liệu** | oma-hwp, oma-pdf | Chuyển đổi HWP/HWPX/HWPML và PDF sang Markdown để nạp vào LLM/RAG |
 
 ---
 
@@ -47,6 +52,29 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 **Quy trình:** 6 giai đoạn: Khám phá ngữ cảnh, Câu hỏi, Hướng tiếp cận, Thiết kế, Tài liệu (lưu vào `docs/plans/`), Chuyển sang `/plan`.
 
 **Tài nguyên:** Chỉ dùng tài nguyên dùng chung (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+
+---
+
+### oma-architecture
+
+**Lĩnh vực:** Kiến trúc phần mềm/hệ thống — ranh giới module và dịch vụ, phân tích đánh đổi, tổng hợp các bên liên quan, ghi chép quyết định.
+
+**Khi nào sử dụng:** Lựa chọn hoặc đánh giá kiến trúc hệ thống, xác định ranh giới module/dịch vụ/sở hữu, so sánh các phương án kiến trúc với đánh đổi rõ ràng, điều tra các vấn đề kiến trúc (khuếch đại thay đổi, phụ thuộc ẩn, API vụng về), ưu tiên các khoản đầu tư kiến trúc hoặc tái cấu trúc, viết khuyến nghị kiến trúc hoặc ADR.
+
+**Khi nào KHÔNG sử dụng:** Hệ thống trực quan/thiết kế (dùng oma-design), lập kế hoạch tính năng và phân tách task (dùng oma-pm), triển khai Terraform (dùng oma-tf-infra), chẩn đoán lỗi (dùng oma-debug), đánh giá bảo mật/hiệu suất/accessibility (dùng oma-qa).
+
+**Phương pháp luận:** Định tuyến chẩn đoán, so sánh design-twice, phân tích rủi ro kiểu ATAM, ưu tiên kiểu CBAM, ghi chép quyết định kiểu ADR.
+
+**Quy tắc cốt lõi:**
+- Chẩn đoán vấn đề kiến trúc trước khi chọn phương pháp
+- Sử dụng phương pháp nhẹ nhất đủ cho quyết định hiện tại
+- Phân biệt thiết kế kiến trúc với thiết kế UI/trực quan và với triển khai Terraform
+- Chỉ tham vấn các agent bên liên quan khi quyết định đủ xuyên suốt để biện minh chi phí
+- Chất lượng khuyến nghị quan trọng hơn vở kịch đồng thuận: tham vấn rộng, quyết định rõ ràng
+- Mỗi khuyến nghị phải nêu giả định, đánh đổi, rủi ro và các bước xác thực
+- Luôn ý thức chi phí mặc định: chi phí triển khai, chi phí vận hành, độ phức tạp nhóm, chi phí thay đổi trong tương lai
+
+**Tài nguyên:** `SKILL.md`, thư mục `resources/` với hướng dẫn phương pháp luận (diagnostic-routing, design-twice, ATAM, CBAM, mẫu ADR).
 
 ---
 
@@ -247,6 +275,28 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 ---
 
+### oma-observability
+
+**Lĩnh vực:** Router observability và truy vết dựa trên ý định, xuyên suốt các tầng, ranh giới và tín hiệu.
+
+**Khi nào sử dụng:** Thiết lập pipeline observability (OTel SDK + Collector + backend của nhà cung cấp), truy vết xuyên ranh giới service và domain (W3C propagator, baggage, đa tenant, đa cloud), tinh chỉnh transport (ngưỡng UDP/MTU, OTLP gRPC vs HTTP, topology Collector DaemonSet vs sidecar, công thức sampling), điều tra pháp y sự cố (định vị 6 chiều: code / service / layer / host / region / infra), lựa chọn danh mục nhà cung cấp (OSS full-stack vs SaaS thương mại vs chuyên gia cardinality cao vs chuyên gia profiling), observability-as-code (dashboard Grafana Jsonnet, PrometheusRule CRD, OpenSLO YAML, alert SLO burn-rate), meta-observability (sức khỏe tự thân pipeline, lệch đồng hồ, guardrail cardinality, ma trận lưu giữ), bao phủ tín hiệu MELT+P (metrics, logs, traces, profiles, cost, audit, privacy), di chuyển khỏi công cụ đã ngừng hỗ trợ (Fluentd -> Fluent Bit hoặc OTel Collector).
+
+**Khi nào KHÔNG sử dụng:** Observability LLM ops / gen_ai (dùng Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage pipeline dữ liệu (OpenLineage + Marquez, dbt test, Airflow lineage), telemetry tầng vật lý IoT / datacenter (Nlyte, Sunbird, Device42), điều phối chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), hạ tầng GPU / TPU (NVIDIA DCGM Exporter), chuỗi cung ứng phần mềm (sigstore, in-toto, SLSA), quy trình phản ứng sự cố / paging (PagerDuty, OpsGenie, Grafana OnCall), thiết lập một nhà cung cấp duy nhất đã được skill riêng của họ bao phủ.
+
+**Quy tắc cốt lõi:**
+- Phân loại ý định trước khi định tuyến: setup | migrate | investigate | alert | trace | tune | route
+- Ưu tiên danh mục, không phải registry nhà cung cấp: ủy quyền cho skill thuộc sở hữu nhà cung cấp qua `resources/vendor-categories.md`; không trùng lặp tài liệu nhà cung cấp
+- Tinh chỉnh transport là hào bảo vệ: ngưỡng UDP/MTU, chọn giao thức OTLP, topology Collector và công thức sampling là chiều sâu mà các skill khác không bao phủ
+- Meta-observability không thể thương lượng: xác minh sức khỏe tự thân pipeline, đồng bộ đồng hồ (< 100 ms lệch), cardinality và lưu giữ trước khi tuyên bố thiết lập hoàn tất
+- Ưu tiên CNCF-first: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
+- Fluentd đã ngừng hỗ trợ (CNCF 2025-10): khuyến nghị Fluent Bit hoặc OTel Collector cho công việc mới và di chuyển
+- W3C Trace Context làm propagator mặc định; chuyển đổi theo cloud (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
+- Quyền riêng tư trước tính năng: che PII, quy tắc baggage nhận biết sampling, audit bất biến SOC2/ISO + xóa theo GDPR/PIPA áp dụng tại điểm thu thập, không chỉ tại lưu trữ
+
+**Tài nguyên:** `SKILL.md`, `resources/execution-protocol.md`, `resources/intent-rules.md`, `resources/vendor-categories.md`, `resources/matrix.md`, `resources/checklist.md`, `resources/anti-patterns.md`, `resources/examples.md`, `resources/meta-observability.md`, `resources/observability-as-code.md`, `resources/incident-forensics.md`, `resources/standards.md`, cùng tài nguyên chuyên sâu trong `resources/layers/` (L3-network, L4-transport, L7-application, mesh), `resources/signals/` (metrics, logs, traces, profiles, cost, audit, privacy), `resources/transport/` (collector-topology, otlp-grpc-vs-http, sampling-recipes, udp-statsd-mtu) và `resources/boundaries/` (cross-application, multi-tenant, release, slo).
+
+---
+
 ### oma-qa
 
 **Lĩnh vực:** Đảm bảo chất lượng — bảo mật, hiệu suất, accessibility, chất lượng mã.
@@ -389,6 +439,90 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 **Quy trình:** PM lập kế hoạch -> Người dùng xác nhận -> Spawn theo tier ưu tiên -> Giám sát -> QA review -> Sửa vấn đề -> Phát hành.
 
 **Khác biệt với oma-orchestrator:** Coordination là thủ công và có hướng dẫn (người dùng kiểm soát nhịp độ), orchestrator là tự động (agent spawn và chạy với can thiệp tối thiểu từ người dùng).
+
+---
+
+### oma-search
+
+**Lĩnh vực:** Bộ định tuyến tìm kiếm dựa trên ý định với chấm điểm độ tin cậy miền — chuyển truy vấn đến Context7 (tài liệu), tìm kiếm web native, `gh`/`glab` (mã), Serena (cục bộ).
+
+**Khi nào sử dụng:** Tìm tài liệu chính thức của thư viện/framework, nghiên cứu web cho tutorial/ví dụ/so sánh/giải pháp, tìm kiếm mã GitHub/GitLab cho các mẫu triển khai, mọi truy vấn mà kênh tìm kiếm không rõ ràng (tự định tuyến), các skill khác cần hạ tầng tìm kiếm (gọi dùng chung).
+
+**Khi nào KHÔNG sử dụng:** Khám phá mã chỉ cục bộ (dùng Serena MCP trực tiếp), phân tích lịch sử Git hoặc blame (dùng oma-scm), nghiên cứu kiến trúc đầy đủ (dùng oma-architecture, có thể gọi skill này nội bộ).
+
+**Quy tắc cốt lõi:**
+- Phân loại ý định trước khi tìm — mọi truy vấn đều đi qua IntentClassifier trước
+- Một truy vấn, một tuyến tốt nhất — tránh đa tuyến dư thừa trừ khi ý định mơ hồ
+- Chấm điểm độ tin cậy cho mỗi kết quả — mọi kết quả không cục bộ đều nhận nhãn độ tin cậy miền từ registry
+- Flag ghi đè classifier: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`
+- Fail forward: nếu tuyến chính thất bại, rút lui nhẹ nhàng (docs→web, web→chiến lược `oma search fetch`)
+- Không cần MCP bổ sung: Context7 cho tài liệu, runtime-native cho web, CLI cho mã, Serena cho cục bộ
+- Tìm kiếm web trung lập với nhà cung cấp: dùng bất kỳ runtime hiện tại cung cấp (WebSearch, Google, Bing)
+- Chỉ độ tin cậy ở cấp miền — không chấm điểm ở cấp sub-path hoặc trang
+
+**Tài nguyên:** `SKILL.md`, thư mục `resources/` với classifier ý định, định nghĩa tuyến và registry độ tin cậy.
+
+---
+
+### oma-recap
+
+**Lĩnh vực:** Phân tích lịch sử hội thoại qua nhiều công cụ AI (Claude, Codex, Gemini, Qwen, Cursor) với tóm tắt công việc theo chủ đề hàng ngày/theo kỳ.
+
+**Khi nào sử dụng:** Tóm tắt một ngày hoặc kỳ hoạt động làm việc, hiểu luồng công việc qua nhiều công cụ AI, phân tích mẫu chuyển đổi công cụ giữa các phiên, chuẩn bị standup hàng ngày / retro hàng tuần / nhật ký công việc.
+
+**Khi nào KHÔNG sử dụng:** Hồi tưởng thay đổi mã dựa trên commit Git (dùng `oma retro`), giám sát agent theo thời gian thực (dùng `oma dashboard`), chỉ số năng suất (dùng `oma stats`).
+
+**Quy trình:**
+1. Giải quyết ngày hoặc cửa sổ thời gian từ đầu vào ngôn ngữ tự nhiên (today, yesterday, last Monday, ngày rõ ràng)
+2. Lấy dữ liệu hội thoại qua `oma recap --date YYYY-MM-DD` hoặc `--since` / `--until`
+3. Nhóm theo công cụ và phiên
+4. Trích xuất chủ đề (tính năng đã làm, lỗi đã sửa, công cụ đã khám phá)
+5. Render tóm tắt theo chủ đề hàng ngày/theo kỳ
+
+**Tài nguyên:** `SKILL.md` — giao công việc nặng cho CLI `oma recap`.
+
+---
+
+### oma-hwp
+
+**Lĩnh vực:** Chuyển đổi HWP / HWPX / HWPML (trình xử lý văn bản Hàn Quốc) → Markdown bằng `kordoc`.
+
+**Khi nào sử dụng:** Chuyển đổi tài liệu HWP Hàn Quốc (`.hwp`, `.hwpx`, `.hwpml`) sang Markdown, chuẩn bị tài liệu chính phủ/doanh nghiệp Hàn Quốc cho ngữ cảnh LLM hoặc RAG, trích xuất nội dung có cấu trúc (bảng, tiêu đề, danh sách, hình ảnh, chú thích, hyperlink) từ HWP.
+
+**Khi nào KHÔNG sử dụng:** File PDF (dùng oma-pdf), XLSX/DOCX (ngoài phạm vi), tạo/chỉnh sửa HWP (ngoài phạm vi), file đã là văn bản (dùng công cụ Read trực tiếp).
+
+**Quy tắc cốt lõi:**
+- Sử dụng `bunx kordoc@latest` để chạy — không cần cài đặt; luôn truyền `@latest` hoặc phiên bản cố định
+- Định dạng đầu ra mặc định là Markdown
+- Nếu không chỉ định thư mục đầu ra, kết quả xuất ra cùng thư mục với đầu vào
+- kordoc xử lý bảo toàn cấu trúc (tiêu đề, bảng, bảng lồng nhau, chú thích, hyperlink, hình ảnh)
+- Phòng vệ bảo mật (ZIP bomb, XXE, SSRF, XSS) do kordoc cung cấp — đừng thêm tự chế
+- Với HWP được mã hóa hoặc khóa DRM, báo cáo rõ hạn chế cho người dùng
+- Hậu xử lý với `resources/flatten-tables.ts` để chuyển khối HTML `<table>` thành bảng pipe GFM và loại bỏ ký tự Private Use Area của font Hancom
+
+**Tài nguyên:** `SKILL.md`, `config/`, `resources/flatten-tables.ts`.
+
+---
+
+### oma-pdf
+
+**Lĩnh vực:** Chuyển đổi PDF sang Markdown bằng `opendataloader-pdf`.
+
+**Khi nào sử dụng:** Chuyển đổi tài liệu PDF sang Markdown cho ngữ cảnh LLM hoặc RAG, trích xuất nội dung có cấu trúc (bảng, tiêu đề, danh sách) từ PDF, chuẩn bị dữ liệu PDF để AI tiêu thụ.
+
+**Khi nào KHÔNG sử dụng:** Tạo/sinh PDF (dùng công cụ tài liệu phù hợp), chỉnh sửa PDF đã có (ngoài phạm vi), đọc đơn giản file đã là văn bản (dùng công cụ Read trực tiếp).
+
+**Quy tắc cốt lõi:**
+- Sử dụng `uvx opendataloader-pdf` để chạy — không cần cài đặt
+- Định dạng đầu ra mặc định là Markdown
+- Nếu không chỉ định thư mục đầu ra, kết quả xuất ra cùng thư mục với PDF đầu vào
+- Bảo toàn cấu trúc tài liệu (tiêu đề, bảng, danh sách, hình ảnh)
+- Với PDF quét, dùng chế độ lai có OCR
+- Luôn chạy `uvx mdformat` trên đầu ra để chuẩn hóa định dạng Markdown
+- Xác thực Markdown đầu ra có thể đọc và có cấu trúc tốt
+- Báo cáo mọi vấn đề chuyển đổi (bảng thiếu, văn bản lỗi) cho người dùng
+
+**Tài nguyên:** `SKILL.md`, `config/`, `resources/`.
 
 ---
 

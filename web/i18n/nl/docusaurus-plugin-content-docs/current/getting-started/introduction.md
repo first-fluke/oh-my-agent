@@ -1,11 +1,11 @@
 ---
 title: Introductie
-description: Een uitgebreid overzicht van oh-my-agent — het multi-agent orchestratieframework dat AI-coderingsassistenten transformeert in gespecialiseerde engineeringteams met 14 domeinagenten, progressieve skill-loading en cross-IDE portabiliteit.
+description: Een uitgebreid overzicht van oh-my-agent — het multi-agent orchestratieframework dat AI-coderingsassistenten transformeert in gespecialiseerde engineeringteams met 21 domeinagenten, progressieve skill-loading en cross-IDE portabiliteit.
 ---
 
 # Introductie
 
-oh-my-agent is een multi-agent orchestratieframework voor AI-aangedreven IDE's en CLI-tools. In plaats van te vertrouwen op een enkele AI-assistent voor alles, verdeelt oh-my-agent werk over 14 gespecialiseerde agenten — elk gemodelleerd naar een echte engineeringteamrol met eigen tech-stackkennis, uitvoeringsprotocollen, foutoplossingshandleidingen en kwaliteitschecklists.
+oh-my-agent is een multi-agent orchestratieframework voor AI-aangedreven IDE's en CLI-tools. In plaats van te vertrouwen op een enkele AI-assistent voor alles, verdeelt oh-my-agent werk over 21 gespecialiseerde agenten — elk gemodelleerd naar een echte engineeringteamrol met eigen tech-stackkennis, uitvoeringsprotocollen, foutoplossingshandleidingen en kwaliteitschecklists.
 
 Het volledige systeem bevindt zich in een draagbare `.agents/`-directory binnen je project. Schakel tussen Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor of een ander ondersteund hulpmiddel — je agentconfiguratie reist mee met je code.
 
@@ -29,13 +29,14 @@ oh-my-agent lost dit op met specialisatie:
 
 ---
 
-## Alle 14 Agenten
+## Alle 21 Agenten
 
-### Ideevorming en Planning
+### Ideevorming, Architectuur en Planning
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
 | **oma-brainstorm** | Design-first ideevorming | Verkent gebruikersintentie, stelt 2-3 benaderingen voor met afwegingsanalyse, produceert ontwerpdocumenten voordat er code wordt geschreven. 6-fasen workflow: Context, Vragen, Benaderingen, Ontwerp, Documentatie, Overgang naar `/plan`. |
+| **oma-architecture** | Systeemarchitectuur-specialist | Module-/service-/eigendomsgrenzen, afwegingsanalyse, synthese van stakeholders. Methodologieen: diagnostische routing, design-twice-vergelijking, risicoanalyse in ATAM-stijl, prioritering in CBAM-stijl, beslissingsrecords in ADR-stijl. Standaard kostenbewust. |
 | **oma-pm** | Productmanager | Ontleedt requirements in geprioriteerde taken met afhankelijkheden. Definieert API-contracten. Levert `.agents/results/plan-{sessionId}.json` en `task-board.md`. Ondersteunt ISO 21500-concepten, ISO 31000-risicokader, ISO 38500-governance. |
 
 ### Implementatie
@@ -53,12 +54,13 @@ oh-my-agent lost dit op met specialisatie:
 |-------|-----|---------------------------|
 | **oma-design** | Designsysteem-specialist | Maakt DESIGN.md met tokens, typografie, kleursystemen, bewegingsontwerp (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2-compliance. 7-fasen workflow: Setup, Extractie, Verbetering, Voorstel, Generatie, Audit, Overdracht. Handhaaft anti-patronen (geen "AI slop"). Optionele Stitch MCP-integratie. Bronnen: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/`-directory met typografie, kleur, spatieel, beweging, responsief, component, toegankelijkheid en shader-gidsen. |
 
-### Infrastructuur en DevOps
+### Infrastructuur, DevOps en Observability
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
 | **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), kostenoptimalisatie. Ondersteunt ISO/IEC 42001 AI-controls, ISO 22301-continuiteit, ISO/IEC/IEEE 42010-architectuurdocumentatie. Bronnen: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
 | **oma-dev-workflow** | Monorepo-taakautomatisering | mise task runner, CI/CD-pipelines, databasemigraties, releasecoordinatie, git hooks, pre-commit validatie. Bronnen: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | Intent-gebaseerde observability-router | MELT+P-signaaldekking (metrics/logs/traces/profiles/cost/audit/privacy), transport-tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector-topologie, sampling), W3C Trace Context-propagatie, SLO-beheer en burn-rate alerts, incident-forensisch onderzoek (6-dimensionale lokalisatie), meta-observability (self-health, kloksync, kardinaliteit, retentie). CNCF-first; Fluentd verouderd (gebruik Fluent Bit of OTel Collector). |
 
 ### Kwaliteit en Debugging
 
@@ -74,6 +76,15 @@ oh-my-agent lost dit op met specialisatie:
 | **oma-translator** | Contextbewuste vertaling | 4-stappen vertaalmethode: Bron Analyseren, Betekenis Extraheren, Reconstrueren in Doeltaal, Verifieren. Behoudt toon, register en domein-terminologie. Anti-AI-patroondetectie. Ondersteunt batchvertaling (i18n-bestanden). Optionele 7-stappen verfijnde modus voor publicatiekwaliteit. Bronnen: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | Geautomatiseerde multi-agent coordinator | Spawnt CLI-subagenten parallel, coordineert via MCP-geheugen, bewaakt voortgang, voert verificatielussen uit. Configureerbaar: MAX_PARALLEL (standaard 3), MAX_RETRIES (standaard 2), POLL_INTERVAL (standaard 30s). Bevat agent-naar-agent reviewlus en Clarification Debt-monitoring. Bronnen: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventionele commits | Analyseert wijzigingen, bepaalt type/scope, splitst per functie indien nodig, genereert commitberichten in Conventional Commits-formaat. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+
+### Zoeken, Retrospectief en Documentverwerking
+
+| Agent | Rol | Belangrijkste Mogelijkheden |
+|-------|-----|---------------------------|
+| **oma-search** | Intent-gebaseerde zoekrouter | Routeert queries naar Context7 (documenten), native websearch, `gh`/`glab` (code), Serena (lokaal). Domein-trust-scoring op alle niet-lokale resultaten. Fail-forward routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
+| **oma-recap** | Tool-overkoepelend werkretrospectief | Analyseert conversatiegeschiedenissen van Claude, Codex, Gemini, Qwen en Cursor. Lost natuurlijke-taal datum-/venster-invoer op, groepeert per tool+sessie, extraheert thema's, rendert dagelijkse/periodieke samenvattingen voor standups, wekelijkse retro's en werklogs. |
+| **oma-hwp** | HWP/HWPX/HWPML → Markdown | Koreaanse tekstverwerker-documentconversie via `bunx kordoc@latest`. Behoudt koppen, tabellen (incl. geneste), voetnoten, hyperlinks, afbeeldingen. Verwijdert Hancom Private Use Area-tekens via `flatten-tables.ts`-nabewerker. |
+| **oma-pdf** | PDF → Markdown | PDF-documentconversie via `uvx opendataloader-pdf`. Behoudt koppen, tabellen, lijsten, afbeeldingen; OCR-hybride modus voor gescande PDFs; uitvoer genormaliseerd met `uvx mdformat`. |
 
 ---
 
@@ -98,11 +109,11 @@ Alles wat oh-my-agent nodig heeft bevindt zich in de `.agents/`-directory:
 ```
 .agents/
 ├── config/                 # oma-config.yaml
-├── skills/                 # 15 skill-directory's (14 agenten + _shared)
+├── skills/                 # 22 skill-directory's (21 agenten + _shared)
 │   ├── _shared/            # Kernbronnen gebruikt door alle agenten
 │   └── oma-{agent}/        # Per-agent SKILL.md + resources/
-├── workflows/              # 14 workflowdefinities
-├── agents/                 # 7 subagentdefinities
+├── workflows/              # 16 workflowdefinities
+├── agents/                 # 9 subagentdefinities
 ├── results/plan-{sessionId}.json               # Gegenereerde planuitvoer
 ├── state/                  # Actieve workflowstatusbestanden
 ├── results/                # Agentresultaatbestanden
@@ -160,7 +171,7 @@ Voor complexe verzoeken die meerdere domeinen beslaan, volgt de routering vastge
 ## Wat Volgt
 
 - **[Installatie](./installation.md)** — Drie installatiemethoden, presets, CLI-setup en verificatie
-- **[Agenten](/docs/core-concepts/agents)** — Diepgaand overzicht van alle 14 agenten en charter preflight
+- **[Agenten](/docs/core-concepts/agents)** — Diepgaand overzicht van alle 21 agenten en charter preflight
 - **[Skills](/docs/core-concepts/skills)** — De tweelaagse architectuur uitgelegd
-- **[Workflows](/docs/core-concepts/workflows)** — Alle 14 workflows met triggers en fasen
+- **[Workflows](/docs/core-concepts/workflows)** — Alle 16 workflows met triggers en fasen
 - **[Gebruiksgids](/docs/guide/usage)** — Praktijkvoorbeelden van enkele taken tot volledige orchestratie

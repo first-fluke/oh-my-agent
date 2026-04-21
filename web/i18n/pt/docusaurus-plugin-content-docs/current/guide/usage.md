@@ -1,6 +1,6 @@
 ---
 title: Guia de Uso
-description: "Guia de uso abrangente do oh-my-agent — início rápido, exemplos detalhados do mundo real cobrindo tarefas únicas, projetos multi-domínio, correção de bugs, sistemas de design, execução paralela via CLI e ultrawork. Todos os comandos de workflow, exemplos de auto-detecção em múltiplos idiomas, todas as 14 skills com casos de uso, configuração de dashboard, conceitos-chave, dicas e solução de problemas."
+description: "Guia de uso abrangente do oh-my-agent — início rápido, exemplos detalhados do mundo real cobrindo tarefas únicas, projetos multi-domínio, correção de bugs, sistemas de design, execução paralela via CLI e ultrawork. Todos os comandos de workflow, exemplos de auto-detecção em múltiplos idiomas, todas as 21 skills com casos de uso, configuração de dashboard, conceitos-chave, dicas e solução de problemas."
 ---
 
 # Como Usar o oh-my-agent

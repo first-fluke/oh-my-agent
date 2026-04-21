@@ -1,6 +1,6 @@
 ---
 title: Hướng dẫn sử dụng
-description: Hướng dẫn sử dụng toàn diện oh-my-agent — bắt đầu nhanh, ví dụ thực tế chi tiết bao gồm task đơn, dự án đa lĩnh vực, sửa lỗi, design system, thực thi song song CLI và ultrawork. Tất cả lệnh workflow, ví dụ phát hiện tự động đa ngôn ngữ, 14 skill với trường hợp sử dụng, thiết lập dashboard, khái niệm chính, mẹo và khắc phục sự cố.
+description: Hướng dẫn sử dụng toàn diện oh-my-agent — bắt đầu nhanh, ví dụ thực tế chi tiết bao gồm task đơn, dự án đa lĩnh vực, sửa lỗi, design system, thực thi song song CLI và ultrawork. Tất cả lệnh workflow, ví dụ phát hiện tự động đa ngôn ngữ, 21 skill với trường hợp sử dụng, thiết lập dashboard, khái niệm chính, mẹo và khắc phục sự cố.
 ---
 
 # Cách sử dụng oh-my-agent

@@ -150,7 +150,7 @@ Este é o diretório central. Tudo que os agentes precisam reside aqui. É o ún
 
 ### skills/
 
-Onde a expertise dos agentes reside. 15 diretórios no total: 14 skills de agente + 1 diretório de recursos compartilhados.
+Onde a expertise dos agentes reside. 22 diretórios no total: 21 skills de agente + 1 diretório de recursos compartilhados.
 
 **`_shared/`** — Recursos usados por todos os agentes:
 - `core/` — Roteamento, carregamento de contexto, estrutura de prompt, protocolo de clarificação, orçamento de contexto, avaliação de dificuldade, templates de raciocínio, princípios de qualidade, detecção de vendor, métricas de sessão, checklist comum, lições aprendidas, templates de contrato de API
@@ -164,7 +164,7 @@ Onde a expertise dos agentes reside. 15 diretórios no total: 14 skills de agent
 
 ### workflows/
 
-14 arquivos Markdown definindo comportamento de comandos slash. Cada arquivo contém:
+16 arquivos Markdown definindo comportamento de comandos slash. Cada arquivo contém:
 - Frontmatter YAML com `description`
 - Seção de regras obrigatórias (idioma de resposta, ordenação de etapas, requisitos de ferramentas MCP)
 - Instruções de detecção de vendor

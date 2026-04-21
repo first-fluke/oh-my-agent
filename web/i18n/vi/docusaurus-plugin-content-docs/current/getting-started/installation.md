@@ -73,7 +73,7 @@ Sau khi cài đặt, dự án của bạn sẽ chứa:
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # Các skill đã chọn khác
-├── workflows/                      # Tất cả 14 định nghĩa workflow
+├── workflows/                      # Tất cả 16 định nghĩa workflow
 ├── agents/                         # Định nghĩa subagent
 ├── mcp.json                        # Cấu hình MCP server
 ├── results/plan-{sessionId}.json                       # Trống (được điền bởi /plan)

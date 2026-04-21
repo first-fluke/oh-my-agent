@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: Une vue d'ensemble complète d'oh-my-agent — le framework d'orchestration multi-agents qui transforme les assistants de codage IA en équipes d'ingénierie spécialisées avec 14 agents de domaine, chargement progressif des compétences et portabilité entre IDE.
+description: Une vue d'ensemble complète d'oh-my-agent — le framework d'orchestration multi-agents qui transforme les assistants de codage IA en équipes d'ingénierie spécialisées avec 21 agents de domaine, chargement progressif des compétences et portabilité entre IDE.
 ---
 
 # Introduction
 
-oh-my-agent est un framework d'orchestration multi-agents pour les IDE et outils CLI propulsés par l'IA. Au lieu de dépendre d'un seul assistant IA pour tout, oh-my-agent répartit le travail entre 14 agents spécialisés -- chacun modelé d'après un rôle réel d'une équipe d'ingénierie, avec ses propres connaissances de stack technique, protocoles d'exécution, guides de résolution d'erreurs et checklists de qualité.
+oh-my-agent est un framework d'orchestration multi-agents pour les IDE et outils CLI propulsés par l'IA. Au lieu de dépendre d'un seul assistant IA pour tout, oh-my-agent répartit le travail entre 21 agents spécialisés -- chacun modelé d'après un rôle réel d'une équipe d'ingénierie, avec ses propres connaissances de stack technique, protocoles d'exécution, guides de résolution d'erreurs et checklists de qualité.
 
 L'ensemble du système réside dans un répertoire portable `.agents/` à l'intérieur de votre projet. Basculez entre Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor ou tout autre outil supporté -- votre configuration d'agents voyage avec votre code.
 
@@ -29,13 +29,14 @@ oh-my-agent résout cela par la spécialisation :
 
 ---
 
-## Les 14 agents
+## Les 21 agents
 
-### Idéation et planification
+### Idéation, architecture et planification
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-brainstorm** | Design-first ideation | Explores user intent, proposes 2-3 approaches with trade-off analysis, produces design documents before any code is written. 6-phase workflow: Context, Questions, Approaches, Design, Documentation, Transition to `/plan`. |
+| **oma-architecture** | System architecture specialist | Module/service/ownership boundaries, tradeoff analysis, stakeholder synthesis. Methodologies: diagnostic routing, design-twice comparison, ATAM-style risk analysis, CBAM-style prioritization, ADR-style decision records. Cost-aware by default. |
 | **oma-pm** | Product manager | Decomposes requirements into prioritized tasks with dependencies. Defines API contracts. Outputs `.agents/results/plan-{sessionId}.json` and `task-board.md`. Supports ISO 21500 concepts, ISO 31000 risk framing, ISO 38500 governance. |
 
 ### Implémentation
@@ -53,12 +54,13 @@ oh-my-agent résout cela par la spécialisation :
 |-------|------|-----------------|
 | **oma-design** | Design system specialist | Creates DESIGN.md with tokens, typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2 compliance. 7-phase workflow: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Enforces anti-patterns (no "AI slop"). Optional Stitch MCP integration. Resources: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/` directory with typography, color, spatial, motion, responsive, component, accessibility, and shader guides. |
 
-### Infrastructure et DevOps
+### Infrastructure, DevOps et observabilité
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), cost optimization. Supports ISO/IEC 42001 AI controls, ISO 22301 continuity, ISO/IEC/IEEE 42010 architecture documentation. Resources: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
 | **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Resources: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | Intent-based observability router | MELT+P signal coverage (metrics/logs/traces/profiles/cost/audit/privacy), transport tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector topology, sampling), W3C Trace Context propagation, SLO management and burn-rate alerts, incident forensics (6-dimension localization), meta-observability (self-health, clock sync, cardinality, retention). CNCF-first; Fluentd deprecated (use Fluent Bit or OTel Collector). |
 
 ### Qualité et débogage
 
@@ -74,6 +76,15 @@ oh-my-agent résout cela par la spécialisation :
 | **oma-translator** | Context-aware translation | 4-stage translation method: Analyze Source, Extract Meaning, Reconstruct in Target Language, Verify. Preserves tone, register, and domain terminology. Anti-AI pattern detection. Supports batch translation (i18n files). Optional 7-stage refined mode for publication quality. Resources: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventional commits | Analyzes changes, determines type/scope, splits by feature when appropriate, generates commit messages in Conventional Commits format. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+
+### Recherche, rétrospective et traitement de documents
+
+| Agent | Role | Key Capabilities |
+|-------|------|-----------------|
+| **oma-search** | Intent-based search router | Routes queries to Context7 (docs), native web search, `gh`/`glab` (code), Serena (local). Domain trust scoring on all non-local results. Fail-forward routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
+| **oma-recap** | Cross-tool work retrospective | Analyzes conversation histories from Claude, Codex, Gemini, Qwen, and Cursor. Resolves natural-language date/window input, groups by tool+session, extracts themes, renders daily/period summaries for standups, weekly retros, and work logs. |
+| **oma-hwp** | HWP/HWPX/HWPML → Markdown | Korean word-processor document conversion via `bunx kordoc@latest`. Preserves headings, tables (incl. nested), footnotes, hyperlinks, images. Strips Hancom Private Use Area characters via `flatten-tables.ts` post-processor. |
+| **oma-pdf** | PDF → Markdown | PDF document conversion via `uvx opendataloader-pdf`. Preserves headings, tables, lists, images; OCR hybrid mode for scanned PDFs; output normalized with `uvx mdformat`. |
 
 ---
 
@@ -98,11 +109,11 @@ Tout ce dont oh-my-agent a besoin réside dans le répertoire `.agents/` :
 ```
 .agents/
 ├── config/                 # oma-config.yaml
-├── skills/                 # 15 skill directories (14 agents + _shared)
+├── skills/                 # 22 skill directories (21 agents + _shared)
 │   ├── _shared/            # Core resources used by all agents
 │   └── oma-{agent}/        # Per-agent SKILL.md + resources/
-├── workflows/              # 14 workflow definitions
-├── agents/                 # 7 subagent definitions
+├── workflows/              # 16 workflow definitions
+├── agents/                 # 9 subagent definitions
 ├── results/plan-{sessionId}.json               # Generated plan output
 ├── state/                  # Active workflow state files
 ├── results/                # Agent result files
@@ -160,7 +171,7 @@ Pour les requêtes complexes qui couvrent plusieurs domaines, le routage suit de
 ## Et ensuite
 
 - **[Installation](./installation.md)** -- Trois méthodes d'installation, presets, configuration CLI et vérification
-- **[Agents](/docs/core-concepts/agents)** -- Plongée approfondie dans les 14 agents et la vérification préalable du charter
+- **[Agents](/docs/core-concepts/agents)** -- Plongée approfondie dans les 21 agents et la vérification préalable du charter
 - **[Compétences](/docs/core-concepts/skills)** -- L'architecture en deux couches expliquée
-- **[Workflows](/docs/core-concepts/workflows)** -- Les 14 workflows avec déclencheurs et phases
+- **[Workflows](/docs/core-concepts/workflows)** -- Les 16 workflows avec déclencheurs et phases
 - **[Guide d'utilisation](/docs/guide/usage)** -- Exemples concrets, de la tâche simple à l'orchestration complète

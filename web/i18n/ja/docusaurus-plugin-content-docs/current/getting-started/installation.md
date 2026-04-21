@@ -73,7 +73,7 @@ bunx oh-my-agent@latest
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # 選択された他のスキル
-├── workflows/                      # 全14ワークフロー定義
+├── workflows/                      # 全16ワークフロー定義
 ├── agents/                         # サブエージェント定義
 ├── mcp.json                        # MCPサーバー設定
 ├── results/plan-{sessionId}.json                       # 空（/planで作成）

@@ -73,7 +73,7 @@ bunx oh-my-agent@latest
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # 其他选定的技能
-├── workflows/                      # 全部 14 个工作流定义
+├── workflows/                      # 全部 16 个工作流定义
 ├── agents/                         # 子智能体定义
 ├── mcp.json                        # MCP 服务器配置
 ├── results/plan-{sessionId}.json                       # 空（由 /plan 填充）

@@ -52,7 +52,7 @@ bunx oh-my-agent@latest
 | **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/ui |
 | **oma-hwp** | HWP/HWPX/HWPML 转 Markdown |
 | **oma-mobile** | Flutter 跨平台应用 |
-| **oma-observability** | OTel 管道、指标/日志/链路追踪、SLO、故障取证 |
+| **oma-observability** | 可观测性路由器 —— APM/RUM、指标/日志/追踪/Profile、SLO、事故取证、传输层调优 |
 | **oma-orchestrator** | 通过 CLI 并行执行 agent |
 | **oma-pdf** | PDF 转 Markdown |
 | **oma-pm** | 任务规划、需求拆解、API 契约定义 |

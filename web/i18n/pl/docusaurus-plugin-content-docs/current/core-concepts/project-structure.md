@@ -53,7 +53,7 @@ your-project/
 │   │   │   └── resources/
 │   │   └── ...
 │   │
-│   ├── workflows/                    ← 14 definicji workflow
+│   ├── workflows/                    ← 16 definicji workflow
 │   ├── agents/                       ← 7 definicji subagentów
 │   ├── results/plan-{sessionId}.json                     ← Wygenerowany plan (wypełniany przez /plan)
 │   ├── state/                        ← Pliki stanu aktywnych workflow
@@ -98,7 +98,7 @@ To katalog główny. Wszystko czego agenci potrzebują, znajduje się tutaj. To 
 
 ### skills/
 
-Gdzie rezydują kompetencje agentów. 15 katalogów łącznie: 14 umiejętności agentów + 1 katalog zasobów współdzielonych.
+Gdzie rezydują kompetencje agentów. 22 katalogów łącznie: 21 umiejętności agentów + 1 katalog zasobów współdzielonych.
 
 **`_shared/`** — Zasoby używane przez wszystkich agentów:
 - `core/` — Routing, ładowanie kontekstu, struktura promptów, protokół wyjaśniania, budżet kontekstu, ocena trudności, szablony wnioskowania, zasady jakości, wykrywanie dostawcy, metryki sesji, wspólna lista kontrolna, zdobyte doświadczenia, szablony kontraktów API
@@ -111,7 +111,7 @@ Gdzie rezydują kompetencje agentów. 15 katalogów łącznie: 14 umiejętności
 
 ### workflows/
 
-14 plików Markdown definiujących zachowanie komend slash. Każdy plik zawiera:
+16 plików Markdown definiujących zachowanie komend slash. Każdy plik zawiera:
 - Frontmatter YAML z `description`
 - Sekcję obowiązkowych reguł (język odpowiedzi, kolejność kroków, wymagania narzędzi MCP)
 - Instrukcje wykrywania dostawcy

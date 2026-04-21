@@ -1,11 +1,11 @@
 ---
 title: 소개
-description: oh-my-agent 종합 개요 — AI 코딩 어시스턴트를 14개 도메인 에이전트, 점진적 스킬 로딩, 크로스 IDE 호환성을 갖춘 전문 엔지니어링 팀으로 만들어 주는 멀티 에이전트 오케스트레이션 프레임워크.
+description: oh-my-agent 종합 개요 — AI 코딩 어시스턴트를 21개 도메인 에이전트, 점진적 스킬 로딩, 크로스 IDE 호환성을 갖춘 전문 엔지니어링 팀으로 만들어 주는 멀티 에이전트 오케스트레이션 프레임워크.
 ---
 
 # 소개
 
-oh-my-agent는 AI 기반 IDE 및 CLI 도구를 위한 멀티 에이전트 오케스트레이션 프레임워크입니다. 하나의 AI 어시스턴트에 모든 것을 맡기는 대신, 작업을 14개 전문 에이전트에 분배합니다. 각 에이전트는 실제 엔지니어링 팀의 역할을 본떠 만들어졌으며, 고유한 기술 스택 지식, 실행 프로토콜, 에러 플레이북, 품질 체크리스트를 갖추고 있습니다.
+oh-my-agent는 AI 기반 IDE 및 CLI 도구를 위한 멀티 에이전트 오케스트레이션 프레임워크입니다. 하나의 AI 어시스턴트에 모든 것을 맡기는 대신, 작업을 21개 전문 에이전트에 분배합니다. 각 에이전트는 실제 엔지니어링 팀의 역할을 본떠 만들어졌으며, 고유한 기술 스택 지식, 실행 프로토콜, 에러 플레이북, 품질 체크리스트를 갖추고 있습니다.
 
 전체 시스템은 프로젝트 내부의 이식 가능한 `.agents/` 디렉토리에 존재합니다. Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor 또는 기타 지원 도구 간에 자유롭게 전환할 수 있으며, 에이전트 설정은 코드와 함께 이동합니다.
 
@@ -29,13 +29,14 @@ oh-my-agent는 전문화를 통해 이를 해결합니다:
 
 ---
 
-## 전체 14개 에이전트
+## 전체 21개 에이전트
 
-### 아이디어 및 기획
+### 아이디어, 아키텍처 및 기획
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-brainstorm** | 디자인 우선 아이디어 탐색 | 사용자 의도를 탐색하고, 트레이드오프 분석과 함께 2-3가지 접근 방식을 제안하며, 코드 작성 전에 설계 문서를 생성합니다. 6단계 워크플로우: Context, Questions, Approaches, Design, Documentation, `/plan` 전환. |
+| **oma-architecture** | 시스템 아키텍처 전문가 | 모듈/서비스/오너십 경계, 트레이드오프 분석, 이해관계자 종합. 방법론: 진단 라우팅, design-twice 비교, ATAM 방식 리스크 분석, CBAM 방식 우선순위화, ADR 방식 의사결정 기록. 기본적으로 비용을 의식합니다. |
 | **oma-pm** | 프로덕트 매니저 | 요구사항을 의존성이 있는 우선순위 태스크로 분해합니다. API 컨트랙트를 정의합니다. `.agents/results/plan-{sessionId}.json`과 `task-board.md`를 출력합니다. ISO 21500 개념, ISO 31000 리스크 프레이밍, ISO 38500 거버넌스를 지원합니다. |
 
 ### 구현
@@ -53,12 +54,13 @@ oh-my-agent는 전문화를 통해 이를 해결합니다:
 |-------|------|-----------------|
 | **oma-design** | 디자인 시스템 전문가 | 토큰, 타이포그래피, 컬러 시스템, 모션 디자인 (motion/react, GSAP, Three.js), 반응형 우선 레이아웃, WCAG 2.2 준수가 포함된 DESIGN.md를 생성합니다. 7단계 워크플로우: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. 안티 패턴("AI slop") 방지 적용. 선택적 Stitch MCP 통합. 리소스: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, 그리고 `reference/` 디렉토리(타이포그래피, 컬러, 공간, 모션, 반응형, 컴포넌트, 접근성, 셰이더 가이드). |
 
-### 인프라 및 DevOps
+### 인프라, DevOps 및 관측성
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-tf-infra** | Infrastructure-as-code | 멀티 클라우드 Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC 우선 인증, 최소 권한 IAM, Policy-as-code (OPA/Sentinel), 비용 최적화. ISO/IEC 42001 AI 제어, ISO 22301 연속성, ISO/IEC/IEEE 42010 아키텍처 문서화 지원. 리소스: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
 | **oma-dev-workflow** | 모노레포 태스크 자동화 | mise task runner, CI/CD 파이프라인, 데이터베이스 마이그레이션, 릴리스 조율, git hooks, pre-commit 검증. 리소스: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | 의도 기반 관측성 라우터 | MELT+P 시그널 커버리지(metrics/logs/traces/profiles/cost/audit/privacy), 전송 계층 튜닝(UDP/MTU, OTLP gRPC vs HTTP, Collector 토폴로지, 샘플링), W3C Trace Context 전파, SLO 관리와 burn-rate 알람, 인시던트 포렌식(6차원 국소화), 메타 관측성(자체 건강성, 클록 동기화, 카디널리티, 보관). CNCF 우선; Fluentd 사용 중단(Fluent Bit 또는 OTel Collector 사용). |
 
 ### 품질 및 디버깅
 
@@ -74,6 +76,15 @@ oh-my-agent는 전문화를 통해 이를 해결합니다:
 | **oma-translator** | 컨텍스트 인식 번역 | 4단계 번역 방법: 원문 분석, 의미 추출, 대상 언어로 재구성, 검증. 톤, 레지스터, 도메인 용어를 유지합니다. 안티 AI 패턴 감지. 배치 번역(i18n 파일) 지원. 출판 품질을 위한 선택적 7단계 정제 모드. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`. |
 | **oma-orchestrator** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, MCP 메모리를 통해 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 Clarification Debt 모니터링 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 또한 안전한 스테이징과 Conventional Commit 메시지 생성도 지원합니다. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+
+### 검색, 회고 및 문서 처리
+
+| 에이전트 | 역할 | 핵심 기능 |
+|-------|------|-----------------|
+| **oma-search** | 의도 기반 검색 라우터 | 쿼리를 Context7(문서), 네이티브 웹 검색, `gh`/`glab`(코드), Serena(로컬)로 라우팅. 모든 비로컬 결과에 도메인 신뢰도 점수. Fail-forward 라우팅(docs→web→fetch). 플래그: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
+| **oma-recap** | 크로스 도구 작업 회고 | Claude, Codex, Gemini, Qwen, Cursor의 대화 이력을 분석합니다. 자연어 날짜/범위 입력을 해석하고, 도구+세션별로 그룹화하며, 테마를 추출하고, 스탠드업, 주간 회고, 작업 로그를 위한 일/기간 요약을 렌더링합니다. |
+| **oma-hwp** | HWP/HWPX/HWPML → Markdown | `bunx kordoc@latest`를 통한 한글 워드프로세서 문서 변환. 헤딩, 표(중첩 포함), 각주, 하이퍼링크, 이미지 보존. `flatten-tables.ts` 후처리기로 Hancom Private Use Area 문자 제거. |
+| **oma-pdf** | PDF → Markdown | `uvx opendataloader-pdf`를 통한 PDF 문서 변환. 헤딩, 표, 목록, 이미지 보존; 스캔된 PDF용 OCR 하이브리드 모드; `uvx mdformat`으로 출력 정규화. |
 
 ---
 
@@ -98,11 +109,11 @@ oh-my-agent에 필요한 모든 것은 `.agents/` 디렉토리에 있습니다:
 ```
 .agents/
 ├── config/                 # oma-config.yaml
-├── skills/                 # 15개 스킬 디렉토리 (14개 에이전트 + _shared)
+├── skills/                 # 22개 스킬 디렉토리 (21개 에이전트 + _shared)
 │   ├── _shared/            # 모든 에이전트가 사용하는 핵심 리소스
 │   └── oma-{agent}/        # 에이전트별 SKILL.md + resources/
-├── workflows/              # 14개 워크플로우 정의
-├── agents/                 # 7개 서브에이전트 정의
+├── workflows/              # 16개 워크플로우 정의
+├── agents/                 # 9개 서브에이전트 정의
 ├── results/plan-{sessionId}.json               # 생성된 계획 출력
 ├── state/                  # 활성 워크플로우 상태 파일
 ├── results/                # 에이전트 결과 파일
@@ -197,7 +208,7 @@ oh-my-agent는 Claude Code에 한정되지 않습니다. 훅 시스템이 지원
 ## 다음 단계
 
 - **[설치](./installation.md)** — 세 가지 설치 방법, 프리셋, CLI 설정, 검증
-- **[에이전트](/docs/core-concepts/agents)** — 14개 에이전트와 Charter Preflight 심층 분석
+- **[에이전트](/docs/core-concepts/agents)** — 21개 에이전트와 Charter Preflight 심층 분석
 - **[스킬](/docs/core-concepts/skills)** — 2계층 아키텍처 설명
-- **[워크플로우](/docs/core-concepts/workflows)** — 트리거와 단계가 포함된 14개 워크플로우
+- **[워크플로우](/docs/core-concepts/workflows)** — 트리거와 단계가 포함된 16개 워크플로우
 - **[사용 가이드](/docs/guide/usage)** — 단일 태스크부터 전체 오케스트레이션까지 실제 예제

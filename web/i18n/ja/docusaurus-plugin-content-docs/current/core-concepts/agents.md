@@ -1,6 +1,6 @@
 ---
 title: エージェント
-description: oh-my-agentの全14エージェント完全リファレンス — ドメイン、技術スタック、リソースファイル、機能、チャータープリフライトプロトコル、2層スキルローディング、スコープ付き実行ルール、品質ゲート、ワークスペース戦略、オーケストレーションフロー、ランタイムメモリ。
+description: oh-my-agentの全21エージェント完全リファレンス — ドメイン、技術スタック、リソースファイル、機能、チャータープリフライトプロトコル、2層スキルローディング、スコープ付き実行ルール、品質ゲート、ワークスペース戦略、オーケストレーションフロー、ランタイムメモリ。
 ---
 
 # エージェント
@@ -14,16 +14,21 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 | カテゴリ | エージェント | 責務 |
 |----------|--------|---------------|
 | **アイデア出し** | oma-brainstorm | アイデアの探索、アプローチの提案、設計ドキュメントの作成 |
+| **アーキテクチャ** | oma-architecture | システム／モジュール／サービス境界、ADR/ATAM/CBAM方式の分析、トレードオフ記録 |
 | **計画** | oma-pm | 要件分解、タスク分割、APIコントラクト、優先度割り当て |
 | **実装** | oma-frontend、oma-backend、oma-mobile、oma-db | 各ドメインでのプロダクションコード作成 |
 | **デザイン** | oma-design | デザインシステム、DESIGN.md、トークン、タイポグラフィ、カラー、モーション、アクセシビリティ |
 | **インフラ** | oma-tf-infra | マルチクラウドTerraformプロビジョニング、IAM、コスト最適化、Policy-as-Code |
 | **DevOps** | oma-dev-workflow | miseタスクランナー、CI/CD、マイグレーション、リリース調整、モノレポ自動化 |
+| **オブザーバビリティ** | oma-observability | オブザーバビリティパイプライン、トレーサビリティルーティング、MELT+Pシグナル（metrics/logs/traces/profiles/cost/audit/privacy）、SLO管理、インシデントフォレンジック、トランスポートチューニング |
 | **品質** | oma-qa | セキュリティ監査（OWASP）、パフォーマンス、アクセシビリティ（WCAG）、コード品質レビュー |
 | **デバッグ** | oma-debug | バグ再現、根本原因分析、最小限の修正、回帰テスト |
 | **ローカライゼーション** | oma-translator | トーン、レジスター、ドメイン用語を保持するコンテキスト対応翻訳 |
 | **協調** | oma-orchestrator、oma-coordination | 自動および手動マルチエージェントオーケストレーション |
 | **Git** | oma-scm | Conventional Commits生成、機能ベースのコミット分割 |
+| **検索・取得** | oma-search | 信頼度スコアリング付きのインテントベース検索ルーター（Context7ドキュメント、ウェブ、`gh`/`glab`コード、Serenaローカル） |
+| **レトロスペクティブ** | oma-recap | ツール横断の会話履歴分析とテーマ別作業サマリー |
+| **ドキュメント処理** | oma-hwp、oma-pdf | LLM/RAG取り込みのためのHWP/HWPX/HWPMLおよびPDF → Markdown変換 |
 
 ---
 
@@ -47,6 +52,29 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 **ワークフロー：** 6フェーズ：コンテキスト探索、質問、アプローチ、設計、ドキュメント（`docs/plans/`に保存）、`/plan`への遷移。
 
 **リソース：** 共有リソースのみ使用（clarification-protocol、reasoning-templates、quality-principles、skill-routing）。
+
+---
+
+### oma-architecture
+
+**ドメイン：** ソフトウェア／システムアーキテクチャ — モジュール・サービス境界、トレードオフ分析、ステークホルダー統合、意思決定記録。
+
+**使用すべき場合：** システムアーキテクチャの選定またはレビュー、モジュール／サービス／オーナーシップ境界の定義、明示的なトレードオフを伴うアーキテクチャ選択肢の比較、アーキテクチャ上の痛み（変更増幅、隠れた依存関係、不自然なAPI）の調査、アーキテクチャ投資またはリファクタリングの優先順位付け、アーキテクチャ推奨事項またはADRの作成。
+
+**使用すべきでない場合：** ビジュアル／デザインシステム（oma-designを使用）、機能計画とタスク分解（oma-pmを使用）、Terraform実装（oma-tf-infraを使用）、バグ診断（oma-debugを使用）、セキュリティ／パフォーマンス／アクセシビリティレビュー（oma-qaを使用）。
+
+**方法論：** 診断ルーティング、design-twice比較、ATAM方式のリスク分析、CBAM方式の優先順位付け、ADR方式の意思決定記録。
+
+**コアルール：**
+- メソッドを選択する前にアーキテクチャ問題を診断
+- 現在の意思決定に最も軽量で十分な方法論を使用
+- アーキテクチャ設計をUI／ビジュアルデザインおよびTerraform実装と区別
+- 意思決定が横断的でコストを正当化できる場合のみステークホルダーエージェントに相談
+- 推奨事項の質が合意の演出より重要：広く相談し、明示的に決定
+- すべての推奨事項は前提、トレードオフ、リスク、検証ステップを明記
+- デフォルトでコストを意識：実装コスト、運用コスト、チーム複雑度、将来の変更コスト
+
+**リソース：** `SKILL.md`、方法論ガイドが含まれる`resources/`ディレクトリ（diagnostic-routing、design-twice、ATAM、CBAM、ADRテンプレート）。
 
 ---
 
@@ -256,6 +284,28 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 
 ---
 
+### oma-observability
+
+**ドメイン：** レイヤー、境界、シグナルにまたがるインテントベースのオブザーバビリティおよびトレーサビリティルーター。
+
+**使用すべき場合：** オブザーバビリティパイプラインのセットアップ（OTel SDK + Collector + ベンダーバックエンド）、サービスおよびドメイン境界にまたがるトレーサビリティ（W3C propagator、baggage、マルチテナント、マルチクラウド）、トランスポートチューニング（UDP/MTU閾値、OTLP gRPC vs HTTP、Collector DaemonSet vs サイドカートポロジー、サンプリングレシピ）、インシデントフォレンジック（6次元ローカライゼーション：code / service / layer / host / region / infra）、ベンダーカテゴリ選定（OSSフルスタック vs 商用SaaS vs 高カーディナリティ特化 vs プロファイリング特化）、observability-as-code（Grafana Jsonnetダッシュボード、PrometheusRule CRD、OpenSLO YAML、SLO burn-rateアラート）、メタオブザーバビリティ（パイプラインの自己ヘルス、クロックスキュー、カーディナリティガードレール、保持マトリクス）、MELT+Pシグナルカバレッジ（metrics、logs、traces、profiles、cost、audit、privacy）、非推奨ツールからの移行（Fluentd -> Fluent BitまたはOTel Collector）。
+
+**使用すべきでない場合：** LLM ops / gen_aiオブザーバビリティ（Langfuse、Arize Phoenix、LangSmith、Braintrustを使用）、データパイプラインlineage（OpenLineage + Marquez、dbt test、Airflow lineage）、IoT / データセンターの物理層テレメトリ（Nlyte、Sunbird、Device42）、カオスエンジニアリングオーケストレーション（Chaos Mesh、Litmus、Gremlin、ChaosToolkit）、GPU / TPUインフラ（NVIDIA DCGM Exporter）、ソフトウェアサプライチェーン（sigstore、in-toto、SLSA）、インシデントレスポンスワークフロー / ページング（PagerDuty、OpsGenie、Grafana OnCall）、該当ベンダーの固有スキルで既にカバーされている単一ベンダーセットアップ。
+
+**コアルール：**
+- ルーティング前にインテントを分類：setup | migrate | investigate | alert | trace | tune | route
+- ベンダーレジストリではなくカテゴリファースト：`resources/vendor-categories.md`を介してベンダー所有スキルに委譲し、ベンダードキュメントを複製しない
+- トランスポートチューニングが堀（moat）：UDP/MTU閾値、OTLPプロトコル選択、Collectorトポロジー、サンプリングレシピは他のスキルがカバーしない深さ
+- メタオブザーバビリティは妥協不可：セットアップ完了を宣言する前にパイプラインの自己ヘルス、クロック同期（< 100 msドリフト）、カーディナリティ、保持を検証
+- CNCFファースト優先：Prometheus、Jaeger、Thanos、Fluent Bit、OpenTelemetry、Cortex、OpenCost、OpenFeature、Flagger、Falco
+- Fluentdは非推奨（CNCF 2025-10）：新規および移行作業にはFluent BitまたはOTel Collectorを推奨
+- W3C Trace Contextをデフォルトpropagatorに；クラウドごとに変換（AWS X-Ray `X-Amzn-Trace-Id`、GCP Cloud Trace、Datadog、Cloudflare、Linkerd）
+- 機能よりプライバシー優先：PIIのredaction、サンプリング対応baggageルール、SOC2/ISO不変監査 + GDPR/PIPA消去はストレージではなく収集時点で適用
+
+**リソース：** `SKILL.md`、`resources/execution-protocol.md`、`resources/intent-rules.md`、`resources/vendor-categories.md`、`resources/matrix.md`、`resources/checklist.md`、`resources/anti-patterns.md`、`resources/examples.md`、`resources/meta-observability.md`、`resources/observability-as-code.md`、`resources/incident-forensics.md`、`resources/standards.md`、および`resources/layers/`配下の詳細リソース（L3-network、L4-transport、L7-application、mesh）、`resources/signals/`（metrics、logs、traces、profiles、cost、audit、privacy）、`resources/transport/`（collector-topology、otlp-grpc-vs-http、sampling-recipes、udp-statsd-mtu）、`resources/boundaries/`（cross-application、multi-tenant、release、slo）。
+
+---
+
 ### oma-qa
 
 **ドメイン：** 品質保証 — セキュリティ、パフォーマンス、アクセシビリティ、コード品質。
@@ -377,6 +427,111 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 - ステージング時は常にファイルを指定
 - 複数行コミットメッセージにHEREDOCを使用
 - Co-Author：`First Fluke <our.first.fluke@gmail.com>`
+
+---
+
+### oma-coordination
+
+**ドメイン：** 手動ステップバイステップのマルチエージェント協調ガイド。
+
+**使用すべき場合：** 各ゲートで人間がループ制御したい複雑なプロジェクト、手動エージェントスポーンのガイダンス、ステップバイステップの協調レシピ。
+
+**使用すべきでない場合：** 完全自動の並列実行（oma-orchestratorを使用）、単一ドメインのタスク（ドメインエージェントを直接使用）。
+
+**コアルール：**
+- エージェントをスポーンする前に必ず計画をユーザー確認のために提示
+- 一度に一つの優先度ティア — 次のティアの前に完了を待つ
+- ユーザーが各ゲート遷移を承認
+- マージ前のQAレビューは必須
+- CRITICAL/HIGHの指摘に対する修正反復ループ
+
+**ワークフロー：** PM計画 → ユーザー確認 → 優先度ティアごとにスポーン → モニタリング → QAレビュー → 問題修正 → 出荷。
+
+**oma-orchestratorとの違い：** coordinationは手動ガイド型（ユーザーがペースを制御）、orchestratorは自動化（最小限のユーザー介入でエージェントがスポーン・実行）。
+
+---
+
+### oma-search
+
+**ドメイン：** ドメイン信頼度スコアリングを使用するインテントベース検索ルーター — クエリをContext7（ドキュメント）、ネイティブウェブ検索、`gh`/`glab`（コード）、Serena（ローカル）にルーティング。
+
+**使用すべき場合：** 公式ライブラリ／フレームワークのドキュメント検索、チュートリアル／例／比較／解決策のためのウェブ調査、実装パターンのためのGitHub/GitLabコード検索、検索チャネルが不明なクエリ（自動ルーティング）、検索インフラが必要な他のスキル（共有呼び出し）。
+
+**使用すべきでない場合：** ローカル専用のコードベース探索（Serena MCPを直接使用）、Git履歴またはblame分析（oma-scmを使用）、完全なアーキテクチャ調査（このスキルを内部的に呼び出す可能性のあるoma-architectureを使用）。
+
+**コアルール：**
+- 検索前にインテントを分類 — すべてのクエリはまずIntentClassifierを通過
+- 1つのクエリ、1つの最適ルート — インテントが曖昧でない限り冗長なマルチルートを避ける
+- すべての結果に信頼度スコア — すべての非ローカル結果はレジストリからドメイン信頼度ラベルを取得
+- フラグが分類器より優先：`--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab`
+- Fail forward：主要ルートが失敗した場合、優雅にフォールバック（docs→web、web→`oma search fetch`戦略）
+- 追加MCPは不要：ドキュメントはContext7、ウェブはランタイムネイティブ、コードはCLI、ローカルはSerena
+- ベンダー中立のウェブ検索：現在のランタイムが提供するものを使用（WebSearch、Google、Bing）
+- ドメインレベルの信頼度のみ — サブパスまたはページレベルのスコアリングなし
+
+**リソース：** `SKILL.md`、インテント分類器・ルート定義・信頼レジストリを含む`resources/`ディレクトリ。
+
+---
+
+### oma-recap
+
+**ドメイン：** 複数のAIツール（Claude、Codex、Gemini、Qwen、Cursor）の会話履歴分析とテーマ別日次／期間作業サマリー。
+
+**使用すべき場合：** 1日または期間の作業活動の要約、複数のAIツールにまたがる作業の流れの把握、セッション間のツール切り替えパターンの分析、デイリースタンドアップ／週次レトロ／作業ログの準備。
+
+**使用すべきでない場合：** Gitコミットベースのコード変更レトロスペクティブ（`oma retro`を使用）、リアルタイムエージェントモニタリング（`oma dashboard`を使用）、生産性メトリクス（`oma stats`を使用）。
+
+**プロセス：**
+1. 自然言語入力（today、yesterday、last Monday、明示的な日付）から日付または時間範囲を解決
+2. `oma recap --date YYYY-MM-DD`または`--since` / `--until`で会話データを取得
+3. ツールおよびセッションごとにグループ化
+4. テーマの抽出（取り組んだ機能、修正したバグ、探索したツール）
+5. テーマ別の日次／期間サマリーをレンダリング
+
+**リソース：** `SKILL.md` — 重い作業は`oma recap` CLIに委任。
+
+---
+
+### oma-hwp
+
+**ドメイン：** `kordoc`を使用したHWP / HWPX / HWPML（韓国語ワードプロセッサ）→ Markdown変換。
+
+**使用すべき場合：** 韓国語HWP文書（`.hwp`、`.hwpx`、`.hwpml`）のMarkdown変換、LLMコンテキストまたはRAGのための韓国の政府／企業文書の準備、HWPからの構造化コンテンツ（表、見出し、リスト、画像、脚注、ハイパーリンク）の抽出。
+
+**使用すべきでない場合：** PDFファイル（oma-pdfを使用）、XLSX/DOCX（スコープ外）、HWP生成／編集（スコープ外）、既にテキストファイル（Readツールを直接使用）。
+
+**コアルール：**
+- 実行に`bunx kordoc@latest`を使用 — インストール不要；常に`@latest`または固定バージョンを渡す
+- デフォルト出力形式はMarkdown
+- 出力ディレクトリが指定されない場合、入力と同じディレクトリに出力
+- kordocが構造保持を処理（見出し、表、ネストされた表、脚注、ハイパーリンク、画像）
+- セキュリティ防御（ZIP bomb、XXE、SSRF、XSS）はkordocが提供 — カスタム防御の追加禁止
+- 暗号化またはDRMロックされたHWPの場合、制限をユーザーに明確に報告
+- HTMLの`<table>`ブロックをGFMパイプテーブルに変換し、Hancomフォントの私用領域文字を削除するために、`resources/flatten-tables.ts`で後処理
+
+**リソース：** `SKILL.md`、`config/`、`resources/flatten-tables.ts`。
+
+---
+
+### oma-pdf
+
+**ドメイン：** `opendataloader-pdf`を使用したPDF → Markdown変換。
+
+**使用すべき場合：** LLMコンテキストまたはRAGのためのPDF文書のMarkdown変換、PDFからの構造化コンテンツ（表、見出し、リスト）の抽出、AI消費のためのPDFデータの準備。
+
+**使用すべきでない場合：** PDF生成／作成（適切な文書ツールを使用）、既存PDF編集（スコープ外）、既にテキストのファイルの単純な読み取り（Readツールを直接使用）。
+
+**コアルール：**
+- 実行に`uvx opendataloader-pdf`を使用 — インストール不要
+- デフォルト出力形式はMarkdown
+- 出力ディレクトリが指定されない場合、入力PDFと同じディレクトリに出力
+- 文書構造を保持（見出し、表、リスト、画像）
+- スキャンされたPDFの場合、OCR付きハイブリッドモードを使用
+- Markdownフォーマット正規化のために、常に出力に`uvx mdformat`を実行
+- 出力Markdownが読みやすく構造化されているか検証
+- 変換の問題（欠落した表、文字化けしたテキスト）をユーザーに報告
+
+**リソース：** `SKILL.md`、`config/`、`resources/`。
 
 ---
 

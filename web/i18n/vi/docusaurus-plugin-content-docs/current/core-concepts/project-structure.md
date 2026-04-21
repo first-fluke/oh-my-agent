@@ -127,7 +127,7 @@ your-project/
 
 ### skills/
 
-Nơi chứa chuyên môn agent. Tổng cộng 15 thư mục: 14 agent skill + 1 thư mục tài nguyên dùng chung.
+Nơi chứa chuyên môn agent. Tổng cộng 22 thư mục: 21 agent skill + 1 thư mục tài nguyên dùng chung.
 
 **`_shared/`** — Tài nguyên dùng bởi tất cả agent:
 - `core/` — Định tuyến, tải ngữ cảnh, cấu trúc prompt, giao thức làm rõ, ngân sách ngữ cảnh, đánh giá độ khó, template suy luận, nguyên tắc chất lượng, phát hiện vendor, số liệu phiên, checklist chung, bài học kinh nghiệm, template API contract
@@ -140,7 +140,7 @@ Nơi chứa chuyên môn agent. Tổng cộng 15 thư mục: 14 agent skill + 1 
 
 ### workflows/
 
-14 file Markdown định nghĩa hành vi lệnh slash.
+16 file Markdown định nghĩa hành vi lệnh slash.
 
 Workflow liên tục: `orchestrate.md`, `work.md`, `ultrawork.md`.
 Không liên tục: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.

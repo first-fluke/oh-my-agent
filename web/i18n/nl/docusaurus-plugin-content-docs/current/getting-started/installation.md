@@ -73,7 +73,7 @@ Na de installatie bevat je project:
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                         # Andere geselecteerde skills
-├── workflows/                      # Alle 14 workflowdefinities
+├── workflows/                      # Alle 16 workflowdefinities
 ├── agents/                         # Subagentdefinities
 ├── mcp.json                        # MCP-serverconfiguratie
 ├── results/plan-{sessionId}.json                       # Leeg (gevuld door /plan)

@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Complete reference for all 15 oh-my-agent workflows — slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
+description: Complete reference for all 16 oh-my-agent workflows — slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
 ---
 
 # Workflows
 
 Workflows are structured multi-step processes triggered by slash commands or natural language keywords. They define how agents collaborate on tasks — from single-phase utilities to complex 5-phase quality gates.
 
-There are 15 workflows, 4 of which are persistent (they maintain state and cannot be accidentally interrupted).
+There are 16 workflows, 4 of which are persistent (they maintain state and cannot be accidentally interrupted).
 
 ---
 
@@ -216,6 +216,27 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 ---
 
+### /architecture
+
+**Description:** Software architecture workflow — diagnose architecture problems, select the right analysis method (diagnostic routing / design-twice / ATAM / CBAM / ADR), compare options, synthesize stakeholder input, and produce a recommendation, review, or ADR.
+
+**Trigger keywords:**
+| Language | Keywords |
+|----------|----------|
+| Universal | "architecture", "ADR", "ATAM", "CBAM" |
+| English | "architecture review", "architectural tradeoff" |
+| Korean | "아키텍처", "설계 검토" |
+| Japanese | "アーキテクチャ" |
+| Chinese | "架构" |
+
+**Steps:** Frame the decision (new architecture / review / tradeoff analysis / investment prioritization / ADR authoring) -> Select methodology via diagnostic routing -> Analyze current architecture via MCP code analysis (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> Synthesize stakeholder input (only when cross-cutting enough to justify the cost) -> Produce recommendation with explicit assumptions, tradeoffs, risks, validation steps -> Hand off to `/plan` when implementation is required.
+
+**Rules:** Do NOT write implementation code or task plans in this workflow. Hand off to `/plan` after the architecture decision. Use MCP tools throughout; do not substitute with raw file reads or grep.
+
+**When to use:** System architecture choices, module/service/ownership boundary decisions, refactor prioritization, ADR authoring, investigating architectural pain (change amplification, hidden dependencies, awkward APIs).
+
+---
+
 ### /deepinit
 
 **Description:** Full project initialization. Analyzes an existing codebase, generates AGENTS.md, ARCHITECTURE.md, and a structured `docs/` knowledge base.
@@ -321,6 +342,20 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 
 ---
 
+### /pdf
+
+**Description:** Convert PDF to Markdown using `opendataloader-pdf` — extracts text, tables, headings, and images with correct reading order.
+
+**Trigger keywords:** None (invoked explicitly with an input file path).
+
+**Steps:** Validate input (confirm file exists) -> Determine output location (user-specified or same directory as input) -> Run `uvx opendataloader-pdf` (no install required) -> For scanned PDFs use hybrid mode with OCR -> Normalize output with `uvx mdformat` -> Validate readability and structure -> Report any conversion issues (missing tables, garbled text).
+
+**Rules:** Default output location is the same directory as the input PDF. Never skip steps. Response language follows `.agents/oma-config.yaml`.
+
+**When to use:** Converting PDF documents to Markdown for LLM context or RAG ingestion, extracting structured content (tables, headings, lists) from PDFs.
+
+---
+
 ### /stack-set
 
 **Description:** Auto-detect project tech stack and generate language-specific references for the backend skill.
@@ -387,6 +422,7 @@ The following workflows are excluded from auto-detection and must be invoked wit
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
+- `/pdf`
 
 ---
 

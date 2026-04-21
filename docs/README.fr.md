@@ -52,7 +52,7 @@ Choisis un preset et c'est parti :
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | Conversion HWP/HWPX/HWPML vers Markdown |
 | **oma-mobile** | Apps multiplateformes avec Flutter |
-| **oma-observability** | Pipelines OTel, métriques/logs/traces, SLO, analyse post-incident |
+| **oma-observability** | Routeur d'observabilité — APM/RUM, métriques/logs/traces/profils, SLO, forensique d'incidents, tuning du transport |
 | **oma-orchestrator** | Exécution parallèle d'agents via CLI |
 | **oma-pdf** | Conversion PDF vers Markdown |
 | **oma-pm** | Planifie les tâches, découpe les specs, définit les contrats d'API |

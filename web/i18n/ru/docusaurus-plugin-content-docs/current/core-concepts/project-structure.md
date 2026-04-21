@@ -44,7 +44,7 @@ your-project/
 │   │   ├── oma-brainstorm/           <- SKILL.md
 │   │   ├── oma-coordination/         <- SKILL.md + resources/
 │   │   └── oma-scm/               <- SKILL.md + config/ + resources/
-│   ├── workflows/                    <- 14 определений (orchestrate, work,
+│   ├── workflows/                    <- 16 определений (orchestrate, work,
 │   │                                    ultrawork, plan, exec-plan, brainstorm,
 │   │                                    deepinit, review, debug, design, commit,
 │   │                                    setup, tools, stack-set)
@@ -98,7 +98,7 @@ your-project/
 
 ### skills/
 
-15 директорий: 14 навыков агентов + 1 общая (`_shared/`).
+22 директории: 21 навык агентов + 1 общая (`_shared/`).
 
 **`_shared/`** содержит:
 - `core/` — Маршрутизация, загрузка контекста, структура промптов, качество, вендоры, метрики, API-контракты
@@ -112,7 +112,7 @@ your-project/
 
 ### workflows/
 
-14 Markdown-файлов. Постоянные: `orchestrate.md`, `work.md`, `ultrawork.md`. Непостоянные: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
+16 Markdown-файлов. Постоянные: `orchestrate.md`, `work.md`, `ultrawork.md`. Непостоянные: `plan.md`, `exec-plan.md`, `brainstorm.md`, `deepinit.md`, `review.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`.
 
 ### agents/
 
