@@ -9,7 +9,7 @@
  * stdout: ANSI-colored status text
  */
 
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ModeState } from "./types.ts";
 
@@ -111,7 +111,9 @@ function formatRateLimit(label: string, rl?: RateLimit): string | null {
   if (!rl || rl.used_percentage == null) return null;
   const pct = Math.round(rl.used_percentage);
   const countdown = rl.resets_at ? formatCountdown(rl.resets_at) : "";
-  const text = countdown ? `${label}:${pct}%(${countdown})` : `${label}:${pct}%`;
+  const text = countdown
+    ? `${label}:${pct}%(${countdown})`
+    : `${label}:${pct}%`;
   return colorByThreshold(pct, text);
 }
 
@@ -119,7 +121,8 @@ function formatRateLimit(label: string, rl?: RateLimit): string | null {
 
 function main() {
   const input = readStdin();
-  const projectDir = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+  const projectDir =
+    process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
   const parts: string[] = [];
 
   // 1. OMA label

@@ -3,7 +3,14 @@
   "title": "Agent Variant Configuration",
   "description": "Configuration for vendor-specific agent generation from core agent prompts",
   "type": "object",
-  "required": ["vendor", "destDir", "modelDefault", "toolsDefault", "protocolPath", "agents"],
+  "required": [
+    "vendor",
+    "destDir",
+    "modelDefault",
+    "toolsDefault",
+    "protocolPath",
+    "agents"
+  ],
   "properties": {
     "$schema": {
       "type": "string"

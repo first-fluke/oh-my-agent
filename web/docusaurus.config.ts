@@ -1,5 +1,5 @@
-import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import type { Config } from "@docusaurus/types";
 
 const config: Config = {
   title: "oh-my-agent",
@@ -72,8 +72,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: "./sidebars.ts",
-          editUrl:
-            "https://github.com/first-fluke/oh-my-agent/tree/main/web/",
+          editUrl: "https://github.com/first-fluke/oh-my-agent/tree/main/web/",
         },
         blog: false,
         theme: {

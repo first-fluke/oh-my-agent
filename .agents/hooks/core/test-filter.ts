@@ -1,9 +1,9 @@
 // PreToolUse hook — Filter test output to show only failures
 // Works with: Claude Code, Codex CLI, Gemini CLI, Qwen Code
 
-import { resolveGitRoot, makePreToolOutput, type Vendor } from "./types.ts";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { makePreToolOutput, resolveGitRoot, type Vendor } from "./types.ts";
 
 // --- Vendor detection (same logic as keyword-detector.ts) ---
 
@@ -17,10 +17,7 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   return "claude";
 }
 
-function getProjectDir(
-  vendor: Vendor,
-  input: Record<string, unknown>,
-): string {
+function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
   let dir: string;
   switch (vendor) {
     case "codex":
@@ -129,7 +126,11 @@ if (isExcluded) process.exit(0);
 // Detect vendor and resolve project dir
 const vendor = detectVendor(input);
 const projectDir = getProjectDir(vendor, input);
-const filterScript = join(projectDir, getHookDir(vendor), "filter-test-output.sh");
+const filterScript = join(
+  projectDir,
+  getHookDir(vendor),
+  "filter-test-output.sh",
+);
 
 // Skip filtering if the script doesn't exist (hooks not fully installed)
 if (!existsSync(filterScript)) process.exit(0);

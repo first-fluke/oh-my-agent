@@ -59,7 +59,7 @@ export const crossref: PlatformHandler = {
   },
   async fetch(url, ctx) {
     const doi = url.pathname.replace(/^\/+/, "").replace(/\/+$/, "");
-    if (!doi || !doi.includes("/")) {
+    if (!doi?.includes("/")) {
       return invalidInputResult({
         url: url.toString(),
         platform: "crossref",

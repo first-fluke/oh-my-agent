@@ -12,9 +12,21 @@
  * exit 0 = always (allow)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync, readdirSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { type Vendor, type ModeState, makePromptOutput, resolveGitRoot } from "./types.ts";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join } from "node:path";
+import {
+  type ModeState,
+  makePromptOutput,
+  resolveGitRoot,
+  type Vendor,
+} from "./types.ts";
 
 // ── Vendor Detection ──────────────────────────────────────────
 
@@ -43,10 +55,7 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   return "claude";
 }
 
-function getProjectDir(
-  vendor: Vendor,
-  input: Record<string, unknown>,
-): string {
+function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
   let dir: string;
   switch (vendor) {
     case "codex":
@@ -68,9 +77,7 @@ function getProjectDir(
 
 function getSessionId(input: Record<string, unknown>): string {
   return (
-    (input.sessionId as string) ||
-    (input.session_id as string) ||
-    "unknown"
+    (input.sessionId as string) || (input.session_id as string) || "unknown"
   );
 }
 
@@ -120,13 +127,13 @@ export function buildPatterns(
 ): RegExp[] {
   const allKeywords = [
     ...(keywords["*"] ?? []),
-    ...(keywords["en"] ?? []),
+    ...(keywords.en ?? []),
     ...(lang !== "en" ? (keywords[lang] ?? []) : []),
   ];
 
   return allKeywords.map((kw) => {
     const escaped = escapeRegex(kw).replace(/\s+/g, "\\s+");
-    if (cjkScripts.includes(lang) || /[^\x00-\x7F]/.test(kw)) {
+    if (cjkScripts.includes(lang) || /[^\p{ASCII}]/u.test(kw)) {
       return new RegExp(escaped, "i");
     }
     return new RegExp(`\\b${escaped}\\b`, "i");
@@ -137,12 +144,12 @@ function buildInformationalPatterns(
   config: TriggerConfig,
   lang: string,
 ): RegExp[] {
-  const patterns = [...(config.informationalPatterns["en"] ?? [])];
+  const patterns = [...(config.informationalPatterns.en ?? [])];
   if (lang !== "en") {
     patterns.push(...(config.informationalPatterns[lang] ?? []));
   }
   return patterns.map((p) => {
-    if (/[^\x00-\x7F]/.test(p)) return new RegExp(escapeRegex(p), "i");
+    if (/[^\p{ASCII}]/u.test(p)) return new RegExp(escapeRegex(p), "i");
     return new RegExp(`\\b${escapeRegex(p)}\\b`, "i");
   });
 }
@@ -209,11 +216,11 @@ export function isAnalyticalQuestion(prompt: string): boolean {
 
 export function stripCodeBlocks(text: string): string {
   return text
-    .replace(/(`{3,})[^\n]*\n[\s\S]*?\1/g, "")  // multiline fenced blocks (3+ backticks, matched closing)
-    .replace(/(`{3,})[^\n]*\n[\s\S]*/g, "")      // unclosed fenced blocks (strip to end)
-    .replace(/`{3,}[^`]*`{3,}/g, "")             // single-line fenced blocks (```...```)
-    .replace(/`[^`\n]+`/g, "")                    // inline code (no newlines allowed)
-    .replace(/"[^"\n]*"/g, "");                    // quoted strings
+    .replace(/(`{3,})[^\n]*\n[\s\S]*?\1/g, "") // multiline fenced blocks (3+ backticks, matched closing)
+    .replace(/(`{3,})[^\n]*\n[\s\S]*/g, "") // unclosed fenced blocks (strip to end)
+    .replace(/`{3,}[^`]*`{3,}/g, "") // single-line fenced blocks (```...```)
+    .replace(/`[^`\n]+`/g, "") // inline code (no newlines allowed)
+    .replace(/"[^"\n]*"/g, ""); // quoted strings
 }
 
 export function startsWithSlashCommand(prompt: string): boolean {
@@ -223,18 +230,37 @@ export function startsWithSlashCommand(prompt: string): boolean {
 // ── Extension Detection ──────────────────────────────────────
 
 const EXCLUDE_EXTS = new Set([
-  "md", "json", "yaml", "yml", "txt", "env", "git",
-  "lock", "log", "toml", "cfg", "ini", "conf",
-  "png", "jpg", "jpeg", "gif", "ico", "webp",
-  "woff", "woff2", "ttf", "eot",
-  "map", "d",
+  "md",
+  "json",
+  "yaml",
+  "yml",
+  "txt",
+  "env",
+  "git",
+  "lock",
+  "log",
+  "toml",
+  "cfg",
+  "ini",
+  "conf",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "ico",
+  "webp",
+  "woff",
+  "woff2",
+  "ttf",
+  "eot",
+  "map",
+  "d",
 ]);
 
 export function detectExtensions(prompt: string): string[] {
   const extPattern = /\.([a-zA-Z]{1,12})\b/g;
   const extensions = new Set<string>();
-  let match: RegExpExecArray | null;
-  while ((match = extPattern.exec(prompt)) !== null) {
+  for (const match of prompt.matchAll(extPattern)) {
     const ext = match[1].toLowerCase();
     if (!EXCLUDE_EXTS.has(ext)) {
       extensions.add(ext);
@@ -313,14 +339,17 @@ export const DEACTIVATION_PHRASES: Record<string, string[]> = {
 
 export function isDeactivationRequest(prompt: string, lang: string): boolean {
   const phrases = [
-    ...(DEACTIVATION_PHRASES["en"] ?? []),
+    ...(DEACTIVATION_PHRASES.en ?? []),
     ...(lang !== "en" ? (DEACTIVATION_PHRASES[lang] ?? []) : []),
   ];
   const lower = prompt.toLowerCase();
   return phrases.some((phrase) => lower.includes(phrase.toLowerCase()));
 }
 
-export function deactivateAllPersistentModes(projectDir: string, sessionId?: string): void {
+export function deactivateAllPersistentModes(
+  projectDir: string,
+  sessionId?: string,
+): void {
   const stateDir = join(projectDir, ".agents", "state");
   if (!existsSync(stateDir)) return;
   try {
@@ -387,7 +416,8 @@ async function main() {
       if (!match) continue;
       if (isInformationalContext(cleaned, match.index, infoPatterns)) continue;
       // Keywords deep in long prompts are likely pasted content, not user intent
-      if (isPastedContent(match.index, def.persistent, cleaned.length)) continue;
+      if (isPastedContent(match.index, def.persistent, cleaned.length))
+        continue;
 
       if (def.persistent) {
         activateMode(projectDir, workflow, sessionId);
@@ -403,7 +433,10 @@ async function main() {
 
       if (config.extensionRouting) {
         const extensions = detectExtensions(prompt);
-        const agent = resolveAgentFromExtensions(extensions, config.extensionRouting);
+        const agent = resolveAgentFromExtensions(
+          extensions,
+          config.extensionRouting,
+        );
         if (agent) {
           contextLines.push(`[OMA AGENT HINT: ${agent}]`);
         }

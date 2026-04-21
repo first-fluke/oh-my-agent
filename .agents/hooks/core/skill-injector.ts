@@ -51,10 +51,7 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   return "claude";
 }
 
-function getProjectDir(
-  vendor: Vendor,
-  input: Record<string, unknown>,
-): string {
+function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
   let dir: string;
   switch (vendor) {
     case "codex":
@@ -122,7 +119,7 @@ export function buildTriggerPatterns(
 ): RegExp[] {
   return triggers.map((kw) => {
     const escaped = escapeRegex(kw).replace(/\s+/g, "\\s+");
-    if (cjkScripts.includes(lang) || /[^\x00-\x7F]/.test(kw)) {
+    if (cjkScripts.includes(lang) || /[^\p{ASCII}]/u.test(kw)) {
       return new RegExp(escaped, "i");
     }
     return new RegExp(`\\b${escaped}\\b`, "i");
@@ -189,7 +186,7 @@ export function matchSkills(
 
     const jsonTriggers = [
       ...(jsonEntry.keywords["*"] ?? []),
-      ...(jsonEntry.keywords["en"] ?? []),
+      ...(jsonEntry.keywords.en ?? []),
       ...(lang !== "en" ? (jsonEntry.keywords[lang] ?? []) : []),
     ];
 
@@ -225,9 +222,7 @@ export function matchSkills(
   }
 
   matches.sort((a, b) =>
-    b.score !== a.score
-      ? b.score - a.score
-      : a.name.localeCompare(b.name),
+    b.score !== a.score ? b.score - a.score : a.name.localeCompare(b.name),
   );
   return matches.slice(0, MAX_SKILLS);
 }
@@ -235,10 +230,7 @@ export function matchSkills(
 // ── Session Dedup State ───────────────────────────────────────
 
 interface SessionState {
-  sessions: Record<
-    string,
-    { injected: string[]; timestamp: number }
-  >;
+  sessions: Record<string, { injected: string[]; timestamp: number }>;
 }
 
 function getStatePath(projectDir: string): string {
@@ -285,7 +277,9 @@ export function filterFreshMatches(
 
   const current = state.sessions[sessionId];
   const alreadyInjected = new Set(
-    current && now - current.timestamp <= SESSION_TTL_MS ? current.injected : [],
+    current && now - current.timestamp <= SESSION_TTL_MS
+      ? current.injected
+      : [],
   );
 
   const fresh = matches.filter((m) => !alreadyInjected.has(m.relPath));
@@ -312,7 +306,8 @@ export function isPersistentWorkflowActive(
   try {
     const files = readdirSync(stateDir);
     return files.some(
-      (f) => f.endsWith(`-state-${sessionId}.json`) && f !== "skill-sessions.json",
+      (f) =>
+        f.endsWith(`-state-${sessionId}.json`) && f !== "skill-sessions.json",
     );
   } catch {
     return false;
@@ -381,7 +376,11 @@ async function main() {
   const matches = matchSkills(cleaned, lang, skills, config);
   if (matches.length === 0) process.exit(0);
 
-  const { fresh, nextState } = filterFreshMatches(matches, projectDir, sessionId);
+  const { fresh, nextState } = filterFreshMatches(
+    matches,
+    projectDir,
+    sessionId,
+  );
   if (fresh.length === 0) process.exit(0);
 
   writeState(projectDir, nextState);

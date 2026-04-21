@@ -3,15 +3,7 @@
   "vendor": "gemini",
   "destDir": ".gemini/agents",
   "modelDefault": "gemini-3-flash-preview",
-  "toolsDefault": [
-    "bash",
-    "glob",
-    "grep",
-    "read",
-    "edit",
-    "write",
-    "ask"
-  ],
+  "toolsDefault": ["bash", "glob", "grep", "read", "edit", "write", "ask"],
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
   "agents": {
     "backend-engineer": {},
@@ -22,22 +14,10 @@
     "tf-infra-engineer": {},
     "mobile-engineer": {},
     "pm-planner": {
-      "tools": [
-        "bash",
-        "glob",
-        "grep",
-        "read",
-        "ask"
-      ]
+      "tools": ["bash", "glob", "grep", "read", "ask"]
     },
     "qa-reviewer": {
-      "tools": [
-        "bash",
-        "glob",
-        "grep",
-        "read",
-        "ask"
-      ]
+      "tools": ["bash", "glob", "grep", "read", "ask"]
     }
   }
 }

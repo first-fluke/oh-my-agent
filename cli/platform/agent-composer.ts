@@ -299,7 +299,7 @@ export function installVendorAgents(
   if (!existsSync(agentsSrcDir) || !existsSync(variantPath)) return;
 
   const variant: AgentVariant = JSON.parse(readFileSync(variantPath, "utf-8"));
-  if (!variant || !variant.destDir) return;
+  if (!variant?.destDir) return;
 
   const destDir = join(targetDir, variant.destDir);
   mkdirSync(destDir, { recursive: true });

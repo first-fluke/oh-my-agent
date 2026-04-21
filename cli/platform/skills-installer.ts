@@ -23,7 +23,7 @@ export function readVendorsFromConfig(targetDir: string): CliVendor[] {
 
   const content = fs.readFileSync(configPath, "utf-8");
   const match = content.match(/^vendors:\s*\n((?:\s+-\s+\S+\n?)*)/m);
-  if (!match || !match[1]) return [...ALL_CLI_VENDORS];
+  if (!match?.[1]) return [...ALL_CLI_VENDORS];
 
   const vendors = [...match[1].matchAll(/-\s+(\S+)/g)].map(
     (m) => m[1] as CliVendor,

@@ -5,10 +5,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Getting Started",
-      items: [
-        "getting-started/introduction",
-        "getting-started/installation",
-      ],
+      items: ["getting-started/introduction", "getting-started/installation"],
     },
     {
       type: "category",
@@ -38,10 +35,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "CLI Interfaces",
-      items: [
-        "cli-interfaces/commands",
-        "cli-interfaces/options",
-      ],
+      items: ["cli-interfaces/commands", "cli-interfaces/options"],
     },
   ],
 };
