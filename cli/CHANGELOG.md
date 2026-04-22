@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.2...cli-v5.14.3) (2026-04-22)
+
+
+### Documentation
+
+* reflect oma-observability + 5 missing agents and fix counts ([67e9da0](https://github.com/first-fluke/oh-my-agent/commit/67e9da03000a84636872a88c5315e33361941442))
+
 ## [5.14.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.1...cli-v5.14.2) (2026-04-21)
 
 
