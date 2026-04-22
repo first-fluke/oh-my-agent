@@ -99,7 +99,7 @@ jobs:
 
           ### What's included
           - Updated agent skills and workflows from central registry
-          - See [CHANGELOG](https://github.com/first-fluke/oh-my-agent/blob/main/CHANGELOG.md) for details
+          - See [CHANGELOG](https://github.com/first-fluke/oh-my-agent/blob/main/cli/CHANGELOG.md) for details
 
           ### Before merging
           1. Review the changes in the registry CHANGELOG
