@@ -93,3 +93,24 @@ export function applyRecommendedCodexSettings(
 
   return base;
 }
+
+/**
+ * Set or clear `model_reasoning_effort` in a CodexSettings object.
+ * Idempotent: calling with the same effort value produces the same result.
+ * Pass undefined to remove the field.
+ *
+ * Codex effort levels: none | low | medium | high | xhigh
+ * Maps to: model_reasoning_effort = "{effort}" in project-local .codex/config.toml
+ */
+export function setCodexReasoningEffort(
+  settings: CodexSettings,
+  effort: string | undefined,
+): CodexSettings {
+  const next = { ...settings };
+  if (effort === undefined) {
+    delete next.model_reasoning_effort;
+  } else {
+    next.model_reasoning_effort = effort;
+  }
+  return next;
+}
