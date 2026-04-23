@@ -3,9 +3,47 @@ import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
+// ---------------------------------------------------------------------------
+// AgentSpec — dual-format agent_cli_mapping schemas (RARDO v2.1 T2)
+// ---------------------------------------------------------------------------
+
+const ModelSlugSchema = z
+  .string()
+  .regex(
+    /^[a-z][a-z0-9-]*\/[a-z0-9][a-z0-9.-]+$/,
+    "Model slug must be in owner/model format (e.g. openai/gpt-5.4)",
+  );
+
+const EffortLevelSchema = z.enum(["none", "low", "medium", "high", "xhigh"]);
+
+const MemoryTierSchema = z.enum(["user", "project", "local"]);
+
+const AgentSpecSchema = z.object({
+  model: ModelSlugSchema,
+  effort: EffortLevelSchema.optional(),
+  thinking: z.boolean().optional(),
+  memory: MemoryTierSchema.optional(),
+});
+
+export type AgentSpec = z.infer<typeof AgentSpecSchema>;
+
+export const AgentMappingValueSchema = z.union([
+  z.string().min(1),
+  AgentSpecSchema,
+]);
+
+export const AgentCliMappingSchema = z.record(
+  z.string().min(1),
+  AgentMappingValueSchema,
+);
+
+export type AgentCliMapping = z.infer<typeof AgentCliMappingSchema>;
+
+// ---------------------------------------------------------------------------
+
 export type UserPreferences = {
   default_cli?: string;
-  agent_cli_mapping?: Record<string, string>;
+  agent_cli_mapping?: Record<string, string | AgentSpec>;
 };
 
 export type VendorConfig = {
@@ -41,7 +79,7 @@ const AGENT_CONFIG_ALIASES: Record<string, string[]> = {
 const UserPreferencesSchema = z
   .object({
     default_cli: z.string().optional(),
-    agent_cli_mapping: z.record(z.string(), z.string()).optional(),
+    agent_cli_mapping: AgentCliMappingSchema.optional(),
   })
   .passthrough()
   .transform((value) => ({
@@ -187,6 +225,22 @@ function readCliConfig(cwd: string): CliConfig | null {
   }
 }
 
+/**
+ * Maps an OpenRouter-style model slug owner to a CLI vendor name.
+ * Used to derive vendor when agent_cli_mapping value is an AgentSpec object.
+ * Falls back to the raw owner prefix if no mapping exists.
+ */
+function resolveVendorFromModelSlug(modelSlug: string): string {
+  const owner = modelSlug.split("/")[0] ?? modelSlug;
+  const OWNER_TO_VENDOR: Record<string, string> = {
+    anthropic: "claude",
+    openai: "codex",
+    google: "gemini",
+    qwen: "qwen",
+  };
+  return OWNER_TO_VENDOR[owner] ?? owner;
+}
+
 export function splitArgs(value: string): string[] {
   const args: string[] = [];
   const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
@@ -218,9 +272,19 @@ export function resolveVendor(
   const matchedConfigKey = configKeys.find(
     (key) => key && userPrefs?.agent_cli_mapping?.[key],
   );
-  const mappedVendor = matchedConfigKey
+  const rawMappedValue = matchedConfigKey
     ? userPrefs?.agent_cli_mapping?.[matchedConfigKey]
     : undefined;
+
+  // Discriminate between legacy string and AgentSpec object.
+  // AgentSpec carries a model slug; derive the vendor from its owner prefix.
+  const mappedVendor =
+    rawMappedValue === undefined
+      ? undefined
+      : typeof rawMappedValue === "string"
+        ? rawMappedValue
+        : resolveVendorFromModelSlug(rawMappedValue.model);
+
   const vendor =
     vendorOverride ||
     mappedVendor ||
