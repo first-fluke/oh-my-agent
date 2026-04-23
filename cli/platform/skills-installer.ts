@@ -121,12 +121,30 @@ export function installRules(sourceDir: string, targetDir: string): void {
   fs.cpSync(src, dest, { recursive: true, force: true });
 }
 
+/**
+ * Extract the top-level `version:` field from a defaults.yaml.
+ * Returns null if the file is missing, unreadable, or has no version field.
+ * Uses a plain regex so we don't pull a full YAML parser in here.
+ */
+export function readDefaultsVersion(filePath: string): string | null {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    const content = fs.readFileSync(filePath, "utf-8");
+    const match = content.match(/^version:\s*["']?([^"'\s]+)["']?\s*$/m);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 export function installConfigs(
   sourceDir: string,
   targetDir: string,
   force = false,
+  options: { updateDefaults?: boolean } = {},
 ): void {
   const configSrc = join(sourceDir, ".agents", "config");
+  const defaultsFile = "defaults.yaml";
   if (fs.existsSync(configSrc)) {
     const configDest = join(targetDir, ".agents", "config");
     fs.mkdirSync(configDest, { recursive: true });
@@ -136,9 +154,34 @@ export function installConfigs(
     } else {
       for (const entry of fs.readdirSync(configSrc, { withFileTypes: true })) {
         const destPath = join(configDest, entry.name);
+        const srcPath = join(configSrc, entry.name);
+
+        // defaults.yaml has special handling — it's an SSOT that ships with OMA.
+        // User-editable files (user-preferences.yaml, models.yaml) are never
+        // overwritten; the user owns them.
+        if (entry.name === defaultsFile && fs.existsSync(destPath)) {
+          const installedVersion = readDefaultsVersion(destPath);
+          const bundledVersion = readDefaultsVersion(srcPath);
+          if (options.updateDefaults) {
+            fs.cpSync(srcPath, destPath);
+            console.log(
+              `[install] Updated .agents/config/defaults.yaml (${installedVersion ?? "unknown"} → ${bundledVersion ?? "unknown"})`,
+            );
+          } else if (
+            bundledVersion &&
+            installedVersion &&
+            bundledVersion !== installedVersion
+          ) {
+            console.warn(
+              `[install] .agents/config/defaults.yaml is ${installedVersion}; bundled is ${bundledVersion}. Run 'oma install --update-defaults' to upgrade.`,
+            );
+          }
+          continue;
+        }
+
         if (!fs.existsSync(destPath)) {
           fs.cpSync(
-            join(configSrc, entry.name),
+            srcPath,
             destPath,
             entry.isDirectory() ? { recursive: true } : {},
           );

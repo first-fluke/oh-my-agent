@@ -13,6 +13,8 @@ Follow the vendor-specific execution protocol:
 - Write results to project root `.agents/results/result-pm.md` (orchestrated: `result-pm-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
+<!-- CHARTER_CHECK_BEGIN -->
+
 ## Charter Preflight (MANDATORY)
 
 Before ANY planning work, output this block:
@@ -29,6 +31,7 @@ CHARTER_CHECK:
 - LOW: proceed with assumptions
 - MEDIUM: list options, proceed with most likely
 - HIGH: set status blocked, list questions, DO NOT proceed
+<!-- CHARTER_CHECK_END -->
 
 ## Planning Process
 

@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
         "guide/bug-fixing",
         "guide/dashboard-monitoring",
         "guide/automated-updates",
+        "guide/per-agent-models",
       ],
     },
     {

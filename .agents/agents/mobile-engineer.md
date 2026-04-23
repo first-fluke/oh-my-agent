@@ -13,6 +13,8 @@ Follow the vendor-specific execution protocol:
 - Write results to project root `.agents/results/result-mobile.md` (orchestrated: `result-mobile-{sessionId}.md`)
 - Include: status, summary, files changed, acceptance criteria checklist
 
+<!-- CHARTER_CHECK_BEGIN -->
+
 ## Charter Preflight (MANDATORY)
 
 Before ANY code changes, output this block:
@@ -25,6 +27,7 @@ CHARTER_CHECK:
 - Success criteria: {measurable criteria}
 - Assumptions: {defaults applied}
 ```
+<!-- CHARTER_CHECK_END -->
 
 ## Architecture
 

@@ -112,6 +112,8 @@ Modelselectie volgt twee lagen:
 - Same-vendor native dispatch gebruikt de gegenereerde vendor-agent-definitie in `.claude/agents/`, `.codex/agents/` of `.gemini/agents/`.
 - Cross-vendor of fallback CLI dispatch gebruikt de vendor-defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
+**RARDO v2.1 — modellen per agent**: elke agent kan via `.agents/config/user-preferences.yaml` een eigen model en `effort` kiezen. Er zijn vijf kant-en-klare runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Bekijk de opgeloste auth-matrix met `oma doctor --profile`. Volledige gids: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+
 ## Waarom oh-my-agent?
 
 > [Meer lezen →](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)

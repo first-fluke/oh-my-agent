@@ -112,6 +112,8 @@ oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 - 同一ベンダーのネイティブディスパッチは、`.claude/agents/`、`.codex/agents/`、`.gemini/agents/` に生成されたベンダーエージェント定義を使用します。
 - クロスベンダーや CLI フォールバックのディスパッチでは、`.agents/skills/oma-orchestrator/config/cli-config.yaml` のベンダーデフォルトを使用します。
 
+**RARDO v2.1 — エージェント別モデル**: `.agents/config/user-preferences.yaml` で各エージェントに独自のモデルと `effort` を割り当てられます。プリセットは5種類の runtime profile: `claude-only`、`codex-only`、`gemini-only`、`antigravity`、`qwen-only`。解決後の auth マトリクスは `oma doctor --profile` で確認できます。完全ガイド: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
+
 ## なぜ oh-my-agent？
 
 > [詳しくはこちら →](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)

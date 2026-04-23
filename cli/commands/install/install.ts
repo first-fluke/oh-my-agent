@@ -1,12 +1,15 @@
 import { execSync } from "node:child_process";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
+  readlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { promptUninstallCompetitors } from "../../cli-kit/competitors.js";
@@ -108,7 +111,63 @@ export function getExistingLanguage(targetDir: string): string | null {
   }
 }
 
-export async function install(): Promise<void> {
+/**
+ * Scan a directory for dangling symlinks (symlinks whose target does not
+ * exist) and remove them. Uses lstat so cyclic or broken links are handled
+ * safely without following the symlink. No-ops silently when the directory
+ * does not exist.
+ *
+ * @param dir - Absolute path to the directory to scan.
+ */
+export function cleanDanglingSymlinks(dir: string): void {
+  if (!existsSync(dir)) return;
+
+  let entries: ReturnType<typeof readdirSync>;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    if (!entry.isSymbolicLink()) continue;
+
+    const linkPath = join(dir, entry.name);
+
+    let target: string;
+    try {
+      target = readlinkSync(linkPath);
+    } catch {
+      continue;
+    }
+
+    // Resolve relative targets against the containing directory
+    const resolvedTarget = resolve(dir, target);
+
+    let targetExists: boolean;
+    try {
+      lstatSync(resolvedTarget);
+      targetExists = true;
+    } catch {
+      targetExists = false;
+    }
+
+    if (!targetExists) {
+      try {
+        unlinkSync(linkPath);
+        console.log(`cleaned broken symlink: ${linkPath}`);
+      } catch {
+        // best-effort; skip if we cannot remove
+      }
+    }
+  }
+}
+
+export interface InstallOptions {
+  updateDefaults?: boolean;
+}
+
+export async function install(options: InstallOptions = {}): Promise<void> {
   console.clear();
   p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent ")));
 
@@ -290,10 +349,24 @@ export async function install(): Promise<void> {
 
   try {
     try {
+      // Clean up dangling symlinks in vendor skill directories before
+      // re-creating the skill set (R15: broken symlink pollutes .claude/skills/)
+      const vendorSkillDirs = [
+        ".claude/skills",
+        ".codex/skills",
+        ".gemini/skills",
+        ".github/skills",
+      ];
+      for (const relDir of vendorSkillDirs) {
+        cleanDanglingSymlinks(join(cwd, relDir));
+      }
+
       installShared(repoDir, cwd);
       installWorkflows(repoDir, cwd);
       installRules(repoDir, cwd);
-      installConfigs(repoDir, cwd);
+      installConfigs(repoDir, cwd, false, {
+        updateDefaults: options.updateDefaults,
+      });
 
       for (const skillName of selectedSkills) {
         spinner.message(`Installing ${pc.cyan(skillName)}...`);

@@ -8,17 +8,21 @@ export function registerInstall(program: Command): void {
   program
     .command("install")
     .description("Install oh-my-agent skills and configurations")
+    .option(
+      "--update-defaults",
+      "Overwrite .agents/config/defaults.yaml with the bundled version",
+    )
     .action(
-      runAction(async () => {
-        await install();
+      runAction(async (options: { updateDefaults?: boolean }) => {
+        await install({ updateDefaults: options.updateDefaults });
       }),
     );
 }
 
 export function registerDefaultInstallAction(program: Command): void {
   program.action(
-    runAction(async () => {
-      await install();
+    runAction(async (options: { updateDefaults?: boolean }) => {
+      await install({ updateDefaults: options.updateDefaults });
     }),
   );
 }
