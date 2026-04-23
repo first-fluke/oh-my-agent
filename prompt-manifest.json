@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.14.3",
-  "releaseDate": "2026-04-22T02:07:26.439Z",
+  "releaseDate": "2026-04-23T05:42:07.689Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -371,8 +371,8 @@
     },
     {
       "path": ".agents/skills/oma-backend/SKILL.md",
-      "sha256": "6d56051b1ad22cbf5440345e5f2bb382dcaafbd4e4a72c396824bd92b6a2c118",
-      "size": 4299
+      "sha256": "971185fc1487c545776908824166f612fa379dd4e8404c2f550225bde17696e8",
+      "size": 4531
     },
     {
       "path": ".agents/skills/oma-backend/resources/checklist.md",
@@ -410,6 +410,11 @@
       "size": 12477
     },
     {
+      "path": ".agents/skills/oma-backend/variants/node/stack.yaml",
+      "sha256": "ea2937233426a544ac069955db8eda55373393a28371165596786dc2d83879e5",
+      "size": 456
+    },
+    {
       "path": ".agents/skills/oma-backend/variants/node/tech-stack.md",
       "sha256": "432b7263f2c05f654aba26a830b87f473e4eb1c1e1530d1e044115042dadc500",
       "size": 1006
@@ -423,6 +428,11 @@
       "path": ".agents/skills/oma-backend/variants/python/snippets.md",
       "sha256": "db8d747ec12cb3c3903649d379002b9a872161284781a6ef738fd211ee73153e",
       "size": 4982
+    },
+    {
+      "path": ".agents/skills/oma-backend/variants/python/stack.yaml",
+      "sha256": "94004398bea7fb0fb01a9ce0c759edda7c461739ff8e14217742dcce3665f9c5",
+      "size": 411
     },
     {
       "path": ".agents/skills/oma-backend/variants/python/tech-stack.md",
@@ -440,9 +450,19 @@
       "size": 12198
     },
     {
+      "path": ".agents/skills/oma-backend/variants/rust/stack.yaml",
+      "sha256": "ccb85f93e570fb3d8f08a2d3f74f250bd3e197e710fe97489f79a217a317402d",
+      "size": 473
+    },
+    {
       "path": ".agents/skills/oma-backend/variants/rust/tech-stack.md",
       "sha256": "b8acf3fc59bb0aa4016bf0f7da87fb1c9c5b4f9a7ea50d252c023c72b248fac3",
       "size": 1258
+    },
+    {
+      "path": ".agents/skills/oma-backend/variants/stack.schema.json",
+      "sha256": "aeba8be670a2dafd3e5673df948274da93be6750ff7c1eb8883e68bcb15ab784",
+      "size": 2952
     },
     {
       "path": ".agents/skills/oma-brainstorm/SKILL.md",
@@ -1356,6 +1376,6 @@
   "metadata": {
     "skillCount": 21,
     "workflowCount": 19,
-    "totalFiles": 269
+    "totalFiles": 273
   }
 }
