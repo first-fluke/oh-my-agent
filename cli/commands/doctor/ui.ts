@@ -2,11 +2,13 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { checkStarred } from "../../io/github.js";
 import { getAllSkills } from "../../platform/skills-installer.js";
+import { printMigrationGuide } from "../../vendors/qwen/auth.js";
 import {
   AUTH_CHECKERS,
   type DoctorReport,
   installMissingSkills,
 } from "./doctor.js";
+import type { ProfileReport } from "./profile.js";
 
 function renderCliTable(report: DoctorReport): void {
   const rows = report.clis.map((cli) => {
@@ -194,6 +196,158 @@ function renderFooter(report: DoctorReport): void {
       "Support",
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Profile Health rendering (--profile flag)
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders the auth-status matrix for every role-model pairing in the
+ * active profile, Qwen OAuth migration warning, and Antigravity fallback
+ * warning.
+ */
+export async function renderProfileReport(
+  report: ProfileReport,
+): Promise<void> {
+  console.clear();
+  p.intro(pc.bgMagenta(pc.white(` Profile Health (${report.profileName}) `)));
+
+  if (report.missingDefaultsYaml) {
+    p.log.error(
+      [
+        pc.red("defaults.yaml not found at .agents/config/defaults.yaml"),
+        pc.dim("Run `oma install` to initialise the configuration."),
+      ].join("\n"),
+    );
+    process.exit(1);
+  }
+
+  // ── Auth-status matrix ──────────────────────────────────────────────────
+  const COL_ROLE = 14;
+  const COL_MODEL = 36;
+  const COL_CLI = 14;
+  const COL_AUTH = 16;
+
+  function pad(s: string, n: number): string {
+    return s.slice(0, n).padEnd(n);
+  }
+
+  const borderTop =
+    "┌" +
+    "─".repeat(COL_ROLE) +
+    "┬" +
+    "─".repeat(COL_MODEL) +
+    "┬" +
+    "─".repeat(COL_CLI) +
+    "┬" +
+    "─".repeat(COL_AUTH) +
+    "┐";
+  const borderMid =
+    "├" +
+    "─".repeat(COL_ROLE) +
+    "┼" +
+    "─".repeat(COL_MODEL) +
+    "┼" +
+    "─".repeat(COL_CLI) +
+    "┼" +
+    "─".repeat(COL_AUTH) +
+    "┤";
+  const borderBot =
+    "└" +
+    "─".repeat(COL_ROLE) +
+    "┴" +
+    "─".repeat(COL_MODEL) +
+    "┴" +
+    "─".repeat(COL_CLI) +
+    "┴" +
+    "─".repeat(COL_AUTH) +
+    "┘";
+
+  function headerRow(): string {
+    return (
+      "│" +
+      pad(" Role", COL_ROLE) +
+      "│" +
+      pad(" Model", COL_MODEL) +
+      "│" +
+      pad(" CLI", COL_CLI) +
+      "│" +
+      pad(" Auth Status", COL_AUTH) +
+      "│"
+    );
+  }
+
+  function dataRow(
+    role: string,
+    model: string,
+    cli: string,
+    authStatus: string,
+  ): string {
+    return (
+      "│" +
+      pad(` ${role}`, COL_ROLE) +
+      "│" +
+      pad(` ${model}`, COL_MODEL) +
+      "│" +
+      pad(` ${cli}`, COL_CLI) +
+      "│" +
+      pad(` ${authStatus}`, COL_AUTH) +
+      "│"
+    );
+  }
+
+  const matrixLines: string[] = [borderTop, headerRow(), borderMid];
+
+  for (const row of report.rows) {
+    let authLabel: string;
+    if (row.authStatus === "logged_in") {
+      authLabel = pc.green("✓ logged in");
+    } else if (row.authStatus === "not_logged_in") {
+      const hint = row.authHint ? ` (${row.authHint})` : "";
+      authLabel = pc.red(`✗ not logged in${hint}`);
+    } else {
+      authLabel = pc.yellow("? unknown");
+    }
+    matrixLines.push(dataRow(row.role, row.model, row.cli, authLabel));
+  }
+
+  matrixLines.push(borderBot);
+
+  p.note(matrixLines.join("\n"), "Auth Status Matrix");
+
+  // ── Qwen OAuth migration warning (T9) ──────────────────────────────────
+  if (report.qwenOAuth.migrationNeeded) {
+    p.log.warn(
+      [
+        pc.yellow("Qwen OAuth sessions were deprecated on 2026-04-15."),
+        pc.dim("Run `qwen /auth` to re-authenticate with an API key."),
+        report.qwenOAuth.tokenPath
+          ? pc.dim(`Legacy token: ${report.qwenOAuth.tokenPath}`)
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+    printMigrationGuide(report.qwenOAuth);
+  }
+
+  // ── Antigravity runtime fallback warning ────────────────────────────────
+  if (report.isAntigravity) {
+    const fallbackList = report.antigravityFallbackRoles.join(", ");
+    p.log.warn(
+      [
+        pc.yellow(
+          `${report.profileName} impl agents (${fallbackList}) will fall back to external subprocess.`,
+        ),
+        pc.dim(
+          "Antigravity runtime has no native parallel dispatch for impl agents.",
+        ),
+      ].join("\n"),
+    );
+  }
+
+  p.outro(pc.green(`Profile health check complete (${report.profileName})`));
 }
 
 export async function renderDoctorReport(report: DoctorReport): Promise<void> {
