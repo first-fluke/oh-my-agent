@@ -6,6 +6,12 @@ import color from "picocolors";
 import { registerSignalCleanup } from "../../cli-kit/process-signals.js";
 import { lookupFinding, recordFinding } from "../../io/findings-cache.js";
 import { planDispatch } from "../../io/runtime-dispatch.js";
+import {
+  checkCap,
+  formatPromptMessage,
+  loadQuotaCap,
+  recordUsage,
+} from "../../io/session-cost.js";
 import { detectWorkspace } from "../../io/workspaces.js";
 import {
   loadExecutionProtocol,
