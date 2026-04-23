@@ -12,6 +12,11 @@ import {
   type ModelSpec,
   type RuntimeId,
 } from "../platform/model-registry.js";
+import {
+  parseCodexConfig,
+  serializeCodexConfig,
+  setCodexReasoningEffort,
+} from "../vendors/codex/settings.js";
 
 export type RuntimeVendor =
   | "claude"
@@ -231,96 +236,9 @@ export function buildExternalInvocation(
   return { command, args, env };
 }
 
-export function planDispatch(
-  agentId: string,
-  targetVendor: string,
-  vendorConfig: VendorConfig,
-  promptFlag: string | null,
-  promptContent: string,
-  env: NodeJS.ProcessEnv = process.env,
-): DispatchPlan {
-  const runtimeVendor = detectRuntimeVendor(env);
-
-  // Runtimes without parallel native subagent support → force external
-  if (runtimeVendor === "antigravity" || runtimeVendor === "qwen") {
-    console.warn(
-      `[runtime-dispatch] ${runtimeVendor} runtime: all agents dispatched as external subprocess`,
-    );
-    return {
-      mode: "external",
-      runtimeVendor,
-      targetVendor,
-      reason: `${runtimeVendor} runtime has no native parallel dispatch`,
-      invocation: buildExternalInvocation(
-        targetVendor,
-        vendorConfig,
-        promptFlag,
-        promptContent,
-      ),
-    };
-  }
-
-  if (runtimeVendor === "claude" && targetVendor === "claude") {
-    return {
-      mode: "native",
-      runtimeVendor,
-      targetVendor,
-      reason: "same-vendor Claude runtime detected",
-      invocation: buildClaudeNativeInvocation(
-        agentId,
-        promptContent,
-        vendorConfig,
-      ),
-    };
-  }
-
-  if (runtimeVendor === "codex" && targetVendor === "codex") {
-    return {
-      mode: "native",
-      runtimeVendor,
-      targetVendor,
-      reason: "same-vendor Codex runtime detected",
-      invocation: buildCodexNativeInvocation(
-        agentId,
-        promptContent,
-        vendorConfig,
-      ),
-    };
-  }
-
-  if (runtimeVendor === "gemini" && targetVendor === "gemini") {
-    return {
-      mode: "native",
-      runtimeVendor,
-      targetVendor,
-      reason: "same-vendor Gemini runtime detected",
-      invocation: buildGeminiNativeInvocation(
-        agentId,
-        promptContent,
-        vendorConfig,
-      ),
-    };
-  }
-
-  return {
-    mode: "external",
-    runtimeVendor,
-    targetVendor,
-    reason:
-      runtimeVendor === "unknown"
-        ? "runtime vendor not detected"
-        : "cross-vendor or unsupported native path",
-    invocation: buildExternalInvocation(
-      targetVendor,
-      vendorConfig,
-      promptFlag,
-      promptContent,
-    ),
-  };
-}
-
 // =============================================================================
 // ConfigError — thrown by resolveAgentPlan for actionable user-facing errors
+// Must be declared before planDispatch (class is not hoisted).
 // =============================================================================
 
 export class ConfigError extends Error {
@@ -331,7 +249,8 @@ export class ConfigError extends Error {
 }
 
 // =============================================================================
-// AgentPlan — per-agent dispatch wiring (T10)
+// AgentPlan — per-agent dispatch shape (T10)
+// Declared here so planDispatch can reference the type.
 // =============================================================================
 
 export type AgentPlan = {
@@ -342,6 +261,189 @@ export type AgentPlan = {
   memory?: "user" | "project" | "local";
   spec: ModelSpec;
 };
+
+// =============================================================================
+// Codex TOML effort persistence — called by planDispatch before subprocess
+// =============================================================================
+
+/**
+ * Write plan.effort to the project-local .codex/config.toml.
+ * Idempotent: no-op when effort already matches or no effort is set.
+ * Silently skips on I/O errors (non-fatal).
+ */
+function persistCodexEffortToToml(cwd: string, effort: string): void {
+  const codexConfigPath = path.join(cwd, ".codex", "config.toml");
+  try {
+    const rawToml = fs.existsSync(codexConfigPath)
+      ? fs.readFileSync(codexConfigPath, "utf-8")
+      : "";
+    const current = parseCodexConfig(rawToml);
+    // Idempotent: skip write if effort already matches
+    if (current.model_reasoning_effort === effort) return;
+    const next = setCodexReasoningEffort(current, effort);
+    fs.mkdirSync(path.dirname(codexConfigPath), { recursive: true });
+    fs.writeFileSync(codexConfigPath, `${serializeCodexConfig(next)}\n`);
+  } catch {
+    // Non-fatal: log and continue
+    console.warn(
+      `[runtime-dispatch] Failed to write .codex/config.toml — effort '${effort}' not persisted`,
+    );
+  }
+}
+
+// =============================================================================
+// Plan-aware invocation arg injection
+// =============================================================================
+
+/**
+ * Build a version of vendorConfig with default_model cleared.
+ * Used when plan.cliModel overrides the vendor default — the model flag is
+ * then provided by buildAgentPlanArgs(plan) instead, avoiding duplication.
+ */
+function vendorConfigWithoutModel(vendorConfig: VendorConfig): VendorConfig {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { default_model: _dropped, ...rest } = vendorConfig;
+  return rest as VendorConfig;
+}
+
+/**
+ * Append plan-derived args (model + effort/thinking flags) to an invocation.
+ * Mutates and returns the invocation for convenience.
+ */
+function applyPlanArgs(invocation: Invocation, plan: AgentPlan): Invocation {
+  const planArgs = buildAgentPlanArgs(plan);
+  invocation.args.push(...planArgs);
+  return invocation;
+}
+
+export function planDispatch(
+  agentId: string,
+  targetVendor: string,
+  vendorConfig: VendorConfig,
+  promptFlag: string | null,
+  promptContent: string,
+  env: NodeJS.ProcessEnv = process.env,
+): DispatchPlan {
+  const runtimeVendor = detectRuntimeVendor(env);
+
+  // ---------------------------------------------------------------------------
+  // Resolve per-agent plan from user-preferences + defaults (T10 integration).
+  // Falls back to legacy VendorConfig path on ConfigError (missing config) so
+  // existing installs without user-preferences.yaml continue to work unchanged.
+  // ---------------------------------------------------------------------------
+  let plan: AgentPlan | null = null;
+  try {
+    plan = resolveAgentPlan(agentId);
+  } catch (err) {
+    if (err instanceof ConfigError) {
+      console.warn(
+        `[runtime-dispatch] ${agentId}: ${err.message} — falling back to vendor config defaults`,
+      );
+    } else {
+      // Unexpected error: re-throw to avoid silent failure
+      throw err;
+    }
+  }
+
+  // When a plan is resolved, strip default_model from vendorConfig so the
+  // existing native/external builders do not emit a duplicate model flag.
+  // buildAgentPlanArgs(plan) appended below provides the correct model flag.
+  const effectiveVendorConfig = plan
+    ? vendorConfigWithoutModel(vendorConfig)
+    : vendorConfig;
+
+  // Codex TOML: persist plan.effort before the subprocess starts (idempotent).
+  if (plan?.cli === "codex" && plan.effort !== undefined) {
+    persistCodexEffortToToml(process.cwd(), plan.effort);
+  }
+
+  // Runtimes without parallel native subagent support → force external
+  if (runtimeVendor === "antigravity" || runtimeVendor === "qwen") {
+    console.warn(
+      `[runtime-dispatch] ${runtimeVendor} runtime: all agents dispatched as external subprocess`,
+    );
+    const inv = buildExternalInvocation(
+      targetVendor,
+      effectiveVendorConfig,
+      promptFlag,
+      promptContent,
+    );
+    if (plan) applyPlanArgs(inv, plan);
+    return {
+      mode: "external",
+      runtimeVendor,
+      targetVendor,
+      reason: `${runtimeVendor} runtime has no native parallel dispatch`,
+      invocation: inv,
+    };
+  }
+
+  if (runtimeVendor === "claude" && targetVendor === "claude") {
+    const inv = buildClaudeNativeInvocation(
+      agentId,
+      promptContent,
+      effectiveVendorConfig,
+    );
+    if (plan) applyPlanArgs(inv, plan);
+    return {
+      mode: "native",
+      runtimeVendor,
+      targetVendor,
+      reason: "same-vendor Claude runtime detected",
+      invocation: inv,
+    };
+  }
+
+  if (runtimeVendor === "codex" && targetVendor === "codex") {
+    const inv = buildCodexNativeInvocation(
+      agentId,
+      promptContent,
+      effectiveVendorConfig,
+    );
+    if (plan) applyPlanArgs(inv, plan);
+    return {
+      mode: "native",
+      runtimeVendor,
+      targetVendor,
+      reason: "same-vendor Codex runtime detected",
+      invocation: inv,
+    };
+  }
+
+  if (runtimeVendor === "gemini" && targetVendor === "gemini") {
+    const inv = buildGeminiNativeInvocation(
+      agentId,
+      promptContent,
+      effectiveVendorConfig,
+    );
+    if (plan) applyPlanArgs(inv, plan);
+    return {
+      mode: "native",
+      runtimeVendor,
+      targetVendor,
+      reason: "same-vendor Gemini runtime detected",
+      invocation: inv,
+    };
+  }
+
+  const inv = buildExternalInvocation(
+    targetVendor,
+    effectiveVendorConfig,
+    promptFlag,
+    promptContent,
+  );
+  if (plan) applyPlanArgs(inv, plan);
+  return {
+    mode: "external",
+    runtimeVendor,
+    targetVendor,
+    reason:
+      runtimeVendor === "unknown"
+        ? "runtime vendor not detected"
+        : "cross-vendor or unsupported native path",
+    invocation: inv,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Internal config loaders — file I/O isolated here so resolveAgentPlan is pure

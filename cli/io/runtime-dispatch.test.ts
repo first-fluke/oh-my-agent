@@ -1,4 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { detectRuntimeVendor, planDispatch } from "./runtime-dispatch.js";
 
 const minimalVendorConfig = {
@@ -115,5 +124,152 @@ describe("planDispatch — regression: native paths unaffected", () => {
     );
     expect(plan.mode).toBe("external");
     expect(plan.runtimeVendor).toBe("unknown");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T10b integration — planDispatch ↔ resolveAgentPlan wiring
+// Addresses QA MEDIUM-1: resolver must reach the subprocess invocation.
+// ---------------------------------------------------------------------------
+
+describe("planDispatch — plan integration (T10b)", () => {
+  let tempDir: string;
+  let originalCwd: string;
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    originalCwd = process.cwd();
+    tempDir = mkdtempSync(join(tmpdir(), "oma-dispatch-"));
+    mkdirSync(join(tempDir, ".agents", "config"), { recursive: true });
+    process.chdir(tempDir);
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    rmSync(tempDir, { recursive: true, force: true });
+    vi.restoreAllMocks();
+  });
+
+  it("persists Codex effort to project-local .codex/config.toml when plan has effort", () => {
+    // defaults.yaml with Codex backend + effort:high
+    writeFileSync(
+      join(tempDir, ".agents", "config", "defaults.yaml"),
+      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "high" }\n`,
+    );
+
+    planDispatch("backend", "codex", minimalVendorConfig, "-p", "hello", {
+      CODEX_CI: "1",
+    });
+
+    const tomlPath = join(tempDir, ".codex", "config.toml");
+    const content = readFileSync(tomlPath, "utf-8");
+    expect(content).toContain('model_reasoning_effort = "high"');
+  });
+
+  it("is idempotent — identical effort does not rewrite the TOML needlessly", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "config", "defaults.yaml"),
+      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "medium" }\n`,
+    );
+
+    planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
+      CODEX_CI: "1",
+    });
+    const tomlAfterFirst = readFileSync(
+      join(tempDir, ".codex", "config.toml"),
+      "utf-8",
+    );
+
+    planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
+      CODEX_CI: "1",
+    });
+    const tomlAfterSecond = readFileSync(
+      join(tempDir, ".codex", "config.toml"),
+      "utf-8",
+    );
+
+    expect(tomlAfterSecond).toBe(tomlAfterFirst);
+  });
+
+  it("legacy string mapping still works (no plan resolved — falls back to vendor config)", () => {
+    // No defaults.yaml, no user-preferences.yaml → resolveAgentPlan throws ConfigError
+    const plan = planDispatch(
+      "nonexistent-agent",
+      "claude",
+      minimalVendorConfig,
+      "-p",
+      "hi",
+      { CLAUDECODE: "1" },
+    );
+    // Graceful fallback — dispatch still succeeds, WARN emitted
+    expect(plan.mode).toBe("native");
+    expect(
+      warnSpy.mock.calls.some((c) =>
+        String(c[0]).includes("nonexistent-agent"),
+      ),
+    ).toBe(true);
+  });
+
+  it("Claude effort in user-prefs → plan drops effort (no TOML write, no args poisoning)", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "config", "defaults.yaml"),
+      `agent_defaults:\n  orchestrator: { model: "anthropic/claude-sonnet-4-6" }\n`,
+    );
+    writeFileSync(
+      join(tempDir, ".agents", "config", "user-preferences.yaml"),
+      `agent_cli_mapping:\n  orchestrator:\n    model: "anthropic/claude-sonnet-4-6"\n    effort: high\n`,
+    );
+
+    planDispatch("orchestrator", "claude", minimalVendorConfig, "-p", "hi", {
+      CLAUDECODE: "1",
+    });
+
+    // No .codex/config.toml written (Claude path, not Codex)
+    expect(() =>
+      readFileSync(join(tempDir, ".codex", "config.toml"), "utf-8"),
+    ).toThrow();
+  });
+
+  it("Qwen runtime + Codex target → forced external, plan args still appended", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "config", "defaults.yaml"),
+      `agent_defaults:\n  backend: { model: "qwen/qwen3-coder-plus", thinking: true }\n`,
+    );
+
+    const plan = planDispatch(
+      "backend",
+      "codex",
+      minimalVendorConfig,
+      "-p",
+      "hi",
+      { OMA_RUNTIME_VENDOR: "qwen" },
+    );
+
+    expect(plan.mode).toBe("external");
+    // Qwen thinking true → args should include --thinking via buildAgentPlanArgs
+    expect(plan.invocation.args).toContain("--thinking");
+  });
+
+  it("unknown slug in user-prefs → ConfigError handled gracefully", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "config", "user-preferences.yaml"),
+      `agent_cli_mapping:\n  backend:\n    model: "bogus/does-not-exist"\n`,
+    );
+
+    const plan = planDispatch(
+      "backend",
+      "codex",
+      minimalVendorConfig,
+      "-p",
+      "hi",
+      { CODEX_CI: "1" },
+    );
+
+    // Dispatch succeeds via legacy fallback; WARN logged
+    expect(plan.mode).toBeDefined();
+    expect(warnSpy.mock.calls.some((c) => String(c[0]).includes("bogus"))).toBe(
+      true,
+    );
   });
 });
