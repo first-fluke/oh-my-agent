@@ -87,3 +87,18 @@ runtime_profiles:
       debug:         { model: "openai/gpt-5.3-codex", effort: "high" }
       tf-infra:      { model: "openai/gpt-5.4", effort: "high" }
       retrieval:     { model: "google/gemini-3.1-flash-lite" }
+
+  qwen-only:
+    description: "Qwen Code — all agents routed external (no native parallel); Qwen has no --effort, only binary --thinking"
+    agent_defaults:
+      orchestrator:  { model: "qwen/qwen3-coder-next", thinking: false }
+      architecture:  { model: "qwen/qwen3-coder-plus", thinking: true }
+      qa:            { model: "qwen/qwen3-coder-plus", thinking: true }
+      pm:            { model: "qwen/qwen3-coder-next", thinking: false }
+      backend:       { model: "qwen/qwen3-coder-plus", thinking: true }
+      frontend:      { model: "qwen/qwen3-coder-plus", thinking: true }
+      mobile:        { model: "qwen/qwen3-coder-plus", thinking: true }
+      db:            { model: "qwen/qwen3-coder-plus", thinking: true }
+      debug:         { model: "qwen/qwen3-coder-plus", thinking: true }
+      tf-infra:      { model: "qwen/qwen3-coder-plus", thinking: true }
+      retrieval:     { model: "qwen/qwen3-coder-next", thinking: false }
