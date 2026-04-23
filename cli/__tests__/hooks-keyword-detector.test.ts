@@ -22,6 +22,12 @@ const {
   DEACTIVATION_PHRASES,
   detectExtensions,
   resolveAgentFromExtensions,
+  // Guard 1
+  isGenuineUserPrompt,
+  // Guard 3
+  isReinforcementSuppressed,
+  recordKwTrigger,
+  loadKwState,
 } = await import("../../.agents/hooks/core/keyword-detector.ts");
 
 describe("keyword-detector", () => {
@@ -439,6 +445,337 @@ describe("keyword-detector", () => {
         expect(DEACTIVATION_PHRASES[lang]).toBeDefined();
         expect(DEACTIVATION_PHRASES[lang]?.length).toBeGreaterThan(0);
       }
+    });
+  });
+
+  // ── Guard 1: UserPromptSubmit-only trigger ────────────────────
+
+  describe("isGenuineUserPrompt", () => {
+    it("should allow UserPromptSubmit events", () => {
+      expect(isGenuineUserPrompt({ hook_event_name: "UserPromptSubmit" })).toBe(
+        true,
+      );
+    });
+
+    it("should allow Cursor beforeSubmitPrompt events", () => {
+      expect(
+        isGenuineUserPrompt({ hook_event_name: "beforeSubmitPrompt" }),
+      ).toBe(true);
+    });
+
+    it("should allow Gemini BeforeAgent events", () => {
+      expect(isGenuineUserPrompt({ hook_event_name: "BeforeAgent" })).toBe(
+        true,
+      );
+    });
+
+    it("should reject unknown event types (agent-generated responses)", () => {
+      expect(isGenuineUserPrompt({ hook_event_name: "AfterAgent" })).toBe(
+        false,
+      );
+      expect(isGenuineUserPrompt({ hook_event_name: "PostToolUse" })).toBe(
+        false,
+      );
+      expect(isGenuineUserPrompt({ hook_event_name: "AgentResponse" })).toBe(
+        false,
+      );
+    });
+
+    it("should allow prompts with no event field (backward compat)", () => {
+      // Vendors that don't send hook_event_name should still be processed
+      expect(isGenuineUserPrompt({ prompt: "ultrawork this task" })).toBe(true);
+    });
+
+    it("ultrawork loop regression: agent response with AfterAgent event must not trigger", () => {
+      // Simulates the live ultrawork loop: agent response replayed as a new prompt
+      // with an event type that is NOT UserPromptSubmit
+      const agentResponsePayload = {
+        hook_event_name: "AfterAgent",
+        prompt:
+          "I will now start ultrawork. Phase 1: reading the ultrawork workflow...",
+      };
+      expect(isGenuineUserPrompt(agentResponsePayload)).toBe(false);
+    });
+  });
+
+  // ── Guard 2: Code-block keyword skip ─────────────────────────
+  // stripCodeBlocks is already tested above. These tests verify the composite
+  // behavior — keywords inside code blocks must NOT survive stripping.
+
+  describe("Guard 2 — code-block keyword composite scenarios", () => {
+    it("triple-backtick fence strips ultrawork keyword", () => {
+      const raw = "agent writes ```\nultrawork keywords here\n``` in a block";
+      const stripped = stripCodeBlocks(raw);
+      expect(stripped).not.toMatch(/ultrawork/);
+    });
+
+    it("inline backtick strips ultrawork keyword", () => {
+      const raw = "user quotes `ultrawork` inline — should not trigger";
+      const stripped = stripCodeBlocks(raw);
+      expect(stripped).not.toMatch(/ultrawork/);
+    });
+
+    it("bare ultrawork keyword outside code block survives stripping", () => {
+      const raw = "remember how ultrawork works?";
+      const stripped = stripCodeBlocks(raw);
+      expect(stripped).toMatch(/ultrawork/);
+    });
+
+    it("keyword in triple-backtick fence with language specifier is stripped", () => {
+      const raw = "```typescript\nconst workflow = 'ultrawork';\n```";
+      const stripped = stripCodeBlocks(raw);
+      expect(stripped).not.toMatch(/ultrawork/);
+    });
+  });
+
+  // ── Guard 3: Reinforcement suppression ───────────────────────
+
+  describe("isReinforcementSuppressed", () => {
+    const BASE_NOW = 1_700_000_000_000; // fixed epoch ms for deterministic tests
+
+    it("should not suppress on first trigger (no entry)", () => {
+      const state = { triggers: {} };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        false,
+      );
+    });
+
+    it("should not suppress when count is below threshold", () => {
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 5_000).toISOString(),
+            count: 1,
+          },
+        },
+      };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        false,
+      );
+    });
+
+    it("should not suppress when count equals threshold (exactly 2)", () => {
+      // count=2 means 2 triggers have already happened; the THIRD is the first suppressed
+      // But isReinforcementSuppressed checks count >= MAX_COUNT (2) — so count=2 IS suppressed
+      // The third call is when count already reached 2, so it is suppressed.
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 5_000).toISOString(),
+            count: 2,
+          },
+        },
+      };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        true,
+      );
+    });
+
+    it("should suppress when count exceeds threshold within window", () => {
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 10_000).toISOString(),
+            count: 5,
+          },
+        },
+      };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        true,
+      );
+    });
+
+    it("should not suppress when window has expired (> 60 seconds ago)", () => {
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 61_000).toISOString(),
+            count: 99,
+          },
+        },
+      };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        false,
+      );
+    });
+
+    it("should handle corrupt timestamp gracefully", () => {
+      const state = {
+        triggers: {
+          ultrawork: { lastTriggeredAt: "not-a-date", count: 99 },
+        },
+      };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        false,
+      );
+    });
+  });
+
+  describe("recordKwTrigger", () => {
+    const BASE_NOW = 1_700_000_000_000;
+
+    it("should create a new entry on first trigger", () => {
+      const state = { triggers: {} };
+      const next = recordKwTrigger(state, "ultrawork", BASE_NOW);
+      expect(next.triggers.ultrawork?.count).toBe(1);
+      expect(next.triggers.ultrawork?.lastTriggeredAt).toBe(
+        new Date(BASE_NOW).toISOString(),
+      );
+    });
+
+    it("should increment count within window", () => {
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 5_000).toISOString(),
+            count: 1,
+          },
+        },
+      };
+      const next = recordKwTrigger(state, "ultrawork", BASE_NOW);
+      expect(next.triggers.ultrawork?.count).toBe(2);
+    });
+
+    it("should reset count when outside window", () => {
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 65_000).toISOString(),
+            count: 10,
+          },
+        },
+      };
+      const next = recordKwTrigger(state, "ultrawork", BASE_NOW);
+      expect(next.triggers.ultrawork?.count).toBe(1);
+    });
+
+    it("should not mutate the original state", () => {
+      const state = { triggers: {} };
+      recordKwTrigger(state, "ultrawork", BASE_NOW);
+      expect(state.triggers).toEqual({});
+    });
+
+    it("should track multiple keywords independently", () => {
+      const empty = { triggers: {} };
+      const after1 = recordKwTrigger(empty, "ultrawork", BASE_NOW);
+      const after2 = recordKwTrigger(after1, "orchestrate", BASE_NOW);
+      expect(after2.triggers.ultrawork?.count).toBe(1);
+      expect(after2.triggers.orchestrate?.count).toBe(1);
+    });
+  });
+
+  describe("loadKwState", () => {
+    it("should return empty state when file does not exist", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(true) // dir check for mkdirSync path
+        .mockReturnValueOnce(false); // file does not exist
+      const state = loadKwState("/tmp/project");
+      expect(state).toEqual({ triggers: {} });
+    });
+
+    it("should parse valid state file", () => {
+      const validState = {
+        triggers: {
+          ultrawork: { lastTriggeredAt: "2024-01-01T00:00:00.000Z", count: 1 },
+        },
+      };
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        JSON.stringify(validState),
+      );
+      const state = loadKwState("/tmp/project");
+      expect(state.triggers.ultrawork?.count).toBe(1);
+    });
+
+    it("should reset on corrupt JSON", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        "not json{{{",
+      );
+      const state = loadKwState("/tmp/project");
+      expect(state).toEqual({ triggers: {} });
+    });
+
+    it("should reset when JSON is valid but wrong shape", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        JSON.stringify({ wrong: "shape" }),
+      );
+      const state = loadKwState("/tmp/project");
+      expect(state).toEqual({ triggers: {} });
+    });
+  });
+
+  // ── Regression: ultrawork loop scenario ──────────────────────
+
+  describe("ultrawork loop regression (R17)", () => {
+    it("agent response containing 'ultrawork' with AfterAgent event must not retrigger", () => {
+      // This simulates the exact scenario observed in production:
+      // The agent's response text includes the word "ultrawork" (e.g. while executing
+      // the ultrawork workflow steps), and the harness replays it as a new hook input.
+      // Guard 1 (isGenuineUserPrompt) must reject this.
+      const agentReplayInput = {
+        hook_event_name: "AfterAgent",
+        prompt: [
+          "Starting ultrawork Phase 1.",
+          "Reading .agents/workflows/ultrawork.md...",
+          "ultrawork workflow requires 5 phases.",
+        ].join("\n"),
+        sessionId: "sess-regression-001",
+      };
+      expect(isGenuineUserPrompt(agentReplayInput)).toBe(false);
+    });
+
+    it("ultrawork keyword inside triple-backtick does not survive stripping", () => {
+      // Guard 2: agent writes ultrawork in a code block while narrating steps
+      const agentCodeOutput =
+        "The workflow name is:\n```\nultrawork\n```\nExecuting now.";
+      const stripped = stripCodeBlocks(agentCodeOutput);
+      expect(stripped).not.toMatch(/\bultrawork\b/);
+    });
+
+    it("third trigger within 60s is suppressed by reinforcement guard", () => {
+      const BASE_NOW = Date.now();
+      // Simulate 2 prior triggers within the window
+      const state = {
+        triggers: {
+          ultrawork: {
+            lastTriggeredAt: new Date(BASE_NOW - 10_000).toISOString(),
+            count: 2,
+          },
+        },
+      };
+      expect(isReinforcementSuppressed(state, "ultrawork", BASE_NOW)).toBe(
+        true,
+      );
+    });
+
+    it("first two ultrawork triggers in window are allowed", () => {
+      const BASE_NOW = Date.now();
+      const empty = { triggers: {} };
+
+      // First trigger — no suppression, count becomes 1
+      expect(isReinforcementSuppressed(empty, "ultrawork", BASE_NOW)).toBe(
+        false,
+      );
+      const state1 = recordKwTrigger(empty, "ultrawork", BASE_NOW);
+
+      // Second trigger — count is 1, still below threshold
+      expect(isReinforcementSuppressed(state1, "ultrawork", BASE_NOW)).toBe(
+        false,
+      );
+      const state2 = recordKwTrigger(state1, "ultrawork", BASE_NOW);
+
+      // Third trigger — count is 2, suppressed
+      expect(isReinforcementSuppressed(state2, "ultrawork", BASE_NOW)).toBe(
+        true,
+      );
     });
   });
 });

@@ -28,6 +28,137 @@ import {
   type Vendor,
 } from "./types.ts";
 
+// ── Guard 1: UserPromptSubmit-only trigger ────────────────────
+// Hook event names that represent genuine user input (not agent responses)
+const VALID_USER_EVENTS = new Set([
+  "UserPromptSubmit",
+  "beforeSubmitPrompt", // Cursor
+  "BeforeAgent",        // Gemini (fires before agent processes user prompt)
+]);
+
+/**
+ * Returns true if the hook input indicates this is a genuine user prompt,
+ * not an agent-generated response. Prevents re-trigger loops.
+ */
+export function isGenuineUserPrompt(input: Record<string, unknown>): boolean {
+  const event = input.hook_event_name as string | undefined;
+  // If event is explicitly provided, validate it
+  if (event !== undefined) {
+    return VALID_USER_EVENTS.has(event);
+  }
+  // No event field — assume genuine (backward compat with vendors that omit it)
+  return true;
+}
+
+// ── Guard 3: Reinforcement suppression ───────────────────────
+
+const REINFORCEMENT_WINDOW_MS = 60_000; // 60 seconds
+const REINFORCEMENT_MAX_COUNT = 2; // allow up to 2, suppress 3rd+
+
+export interface KeywordDetectorState {
+  triggers: Record<
+    string,
+    {
+      lastTriggeredAt: string; // ISO timestamp
+      count: number;
+    }
+  >;
+}
+
+function getKwStateFilePath(projectDir: string): string {
+  const dir = join(projectDir, ".agents", "state");
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  return join(dir, "keyword-detector-state.json");
+}
+
+/**
+ * Load the keyword-detector reinforcement state from disk.
+ * Resets gracefully if the file is missing or corrupt.
+ */
+export function loadKwState(projectDir: string): KeywordDetectorState {
+  const filePath = getKwStateFilePath(projectDir);
+  if (!existsSync(filePath)) return { triggers: {} };
+  try {
+    const raw = readFileSync(filePath, "utf-8");
+    const parsed = JSON.parse(raw) as unknown;
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "triggers" in parsed &&
+      typeof (parsed as Record<string, unknown>).triggers === "object"
+    ) {
+      return parsed as KeywordDetectorState;
+    }
+    return { triggers: {} };
+  } catch {
+    // Corrupt file — reset
+    return { triggers: {} };
+  }
+}
+
+/**
+ * Save reinforcement state to disk.
+ */
+export function saveKwState(
+  projectDir: string,
+  state: KeywordDetectorState,
+): void {
+  try {
+    const filePath = getKwStateFilePath(projectDir);
+    writeFileSync(filePath, JSON.stringify(state, null, 2));
+  } catch {
+    // Non-fatal — reinforcement suppression is best-effort
+  }
+}
+
+/**
+ * Returns true if the keyword should be suppressed due to reinforcement loop.
+ * A keyword is suppressed if it was triggered >= REINFORCEMENT_MAX_COUNT times
+ * within the last REINFORCEMENT_WINDOW_MS milliseconds.
+ */
+export function isReinforcementSuppressed(
+  state: KeywordDetectorState,
+  keyword: string,
+  nowMs?: number,
+): boolean {
+  const now = nowMs ?? Date.now();
+  const entry = state.triggers[keyword];
+  if (!entry) return false;
+  const lastMs = new Date(entry.lastTriggeredAt).getTime();
+  if (Number.isNaN(lastMs)) return false;
+  const withinWindow = now - lastMs < REINFORCEMENT_WINDOW_MS;
+  return withinWindow && entry.count >= REINFORCEMENT_MAX_COUNT;
+}
+
+/**
+ * Record a keyword trigger in the reinforcement state.
+ * Resets count if the previous trigger was outside the window.
+ */
+export function recordKwTrigger(
+  state: KeywordDetectorState,
+  keyword: string,
+  nowMs?: number,
+): KeywordDetectorState {
+  const now = nowMs ?? Date.now();
+  const entry = state.triggers[keyword];
+  let count = 1;
+  if (entry) {
+    const lastMs = new Date(entry.lastTriggeredAt).getTime();
+    const withinWindow = !Number.isNaN(lastMs) && now - lastMs < REINFORCEMENT_WINDOW_MS;
+    count = withinWindow ? entry.count + 1 : 1;
+  }
+  return {
+    ...state,
+    triggers: {
+      ...state.triggers,
+      [keyword]: {
+        lastTriggeredAt: new Date(now).toISOString(),
+        count,
+      },
+    },
+  };
+}
+
 // ── Vendor Detection ──────────────────────────────────────────
 
 function inferVendorFromScriptPath(): Vendor | null {
@@ -380,6 +511,9 @@ async function main() {
     process.exit(0);
   }
 
+  // Guard 1: Only process genuine user prompts — skip agent-generated content
+  if (!isGenuineUserPrompt(input)) process.exit(0);
+
   const vendor = detectVendor(input);
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
@@ -397,8 +531,12 @@ async function main() {
     process.exit(0);
   }
   const infoPatterns = buildInformationalPatterns(config, lang);
+  // Guard 2: Strip code blocks and inline code before scanning for keywords
   const cleaned = stripCodeBlocks(prompt);
   const excluded = new Set(config.excludedWorkflows);
+
+  // Guard 3: Load reinforcement suppression state
+  const kwState = loadKwState(projectDir);
 
   // Skip persistent workflows entirely if the prompt is an analytical question
   const analytical = isAnalyticalQuestion(cleaned);
@@ -419,9 +557,15 @@ async function main() {
       if (isPastedContent(match.index, def.persistent, cleaned.length))
         continue;
 
+      // Guard 3: Suppress if same workflow triggered too many times in 60s
+      if (isReinforcementSuppressed(kwState, workflow)) continue;
+
       if (def.persistent) {
         activateMode(projectDir, workflow, sessionId);
       }
+      // Record this trigger for reinforcement tracking
+      const updatedState = recordKwTrigger(kwState, workflow);
+      saveKwState(projectDir, updatedState);
 
       const contextLines = [
         `[OMA WORKFLOW: ${workflow.toUpperCase()}]`,
