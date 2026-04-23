@@ -210,7 +210,7 @@ function checkPythonSyntax(workspace: string): VerifyCheck {
 
 function checkSqlInjection(workspace: string): VerifyCheck {
   const result = runCommand(
-    `grep -rn --include="*.py" -E "f['"].*SELECT|f['"].*INSERT|f['"].*UPDATE|f['"].*DELETE" . 2>/dev/null | grep -v test | grep -v node_modules | head -1`,
+    `grep -rn --include="*.py" -E "f[\\"'].*(SELECT|INSERT|UPDATE|DELETE)" . 2>/dev/null | grep -v test | grep -v node_modules | head -1`,
     workspace,
   );
   if (result) {
