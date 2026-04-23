@@ -126,6 +126,22 @@ Typical examples:
 - CLI mappings
 - MCP bridge settings
 
+### `agent_cli_mapping` — dual format (RARDO v2.1)
+
+`agent_cli_mapping` in `.agents/config/user-preferences.yaml` accepts two value shapes so legacy configs keep working:
+
+```yaml
+agent_cli_mapping:
+  pm: "claude"                         # legacy string — vendor only
+  backend:                             # AgentSpec object
+    model: "openai/gpt-5.3-codex"
+    effort: high
+    thinking: false
+    memory: default
+```
+
+Unspecified agents fall back to the active `runtime_profile` defined in `defaults.yaml` (`claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`). See [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md) for the full resolution order.
+
 ## Interoperability Model
 
 `oh-my-agent` authors skills once under `.agents/skills/`.

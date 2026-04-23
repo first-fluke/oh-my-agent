@@ -114,6 +114,21 @@ Model selection follows two layers:
 - Same-vendor native dispatch uses the generated vendor agent definition in `.claude/agents/`, `.codex/agents/`, or `.gemini/agents/`.
 - Cross-vendor or fallback CLI dispatch uses the vendor defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
+### Per-Agent Models (RARDO v2.1)
+
+Pin a specific model and effort per role in `.agents/config/user-preferences.yaml`:
+
+```yaml
+agent_cli_mapping:
+  backend:
+    model: "openai/gpt-5.3-codex"
+    effort: "high"
+```
+
+- `oma doctor --profile` — prints the per-role CLI auth matrix
+- Runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`
+- Full guide: [`web/docs/guide/per-agent-models.md`](./web/docs/guide/per-agent-models.md)
+
 ## Why oh-my-agent?
 
 > [Read why →](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589)
