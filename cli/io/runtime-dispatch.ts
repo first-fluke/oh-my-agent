@@ -5,6 +5,7 @@ export type RuntimeVendor =
   | "codex"
   | "gemini"
   | "antigravity"
+  | "qwen"
   | "unknown";
 
 export type DispatchMode = "native" | "external";
@@ -28,6 +29,7 @@ const SUPPORTED_RUNTIME_VENDORS = new Set<RuntimeVendor>([
   "codex",
   "gemini",
   "antigravity",
+  "qwen",
 ]);
 
 export function detectRuntimeVendor(
@@ -58,6 +60,12 @@ export function detectRuntimeVendor(
     env.ANTIGRAVITY_IDE === "1"
   ) {
     return "antigravity";
+  }
+  if (
+    Object.keys(env).some((key) => key.startsWith("QWEN_CODE_")) ||
+    env.QWEN_CODE === "1"
+  ) {
+    return "qwen";
   }
 
   return "unknown";
@@ -219,6 +227,25 @@ export function planDispatch(
   env: NodeJS.ProcessEnv = process.env,
 ): DispatchPlan {
   const runtimeVendor = detectRuntimeVendor(env);
+
+  // Runtimes without parallel native subagent support → force external
+  if (runtimeVendor === "antigravity" || runtimeVendor === "qwen") {
+    console.warn(
+      `[runtime-dispatch] ${runtimeVendor} runtime: all agents dispatched as external subprocess`,
+    );
+    return {
+      mode: "external",
+      runtimeVendor,
+      targetVendor,
+      reason: `${runtimeVendor} runtime has no native parallel dispatch`,
+      invocation: buildExternalInvocation(
+        targetVendor,
+        vendorConfig,
+        promptFlag,
+        promptContent,
+      ),
+    };
+  }
 
   if (runtimeVendor === "claude" && targetVendor === "claude") {
     return {
