@@ -163,7 +163,11 @@ export function cleanDanglingSymlinks(dir: string): void {
   }
 }
 
-export async function install(): Promise<void> {
+export interface InstallOptions {
+  updateDefaults?: boolean;
+}
+
+export async function install(options: InstallOptions = {}): Promise<void> {
   console.clear();
   p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent ")));
 
@@ -360,7 +364,9 @@ export async function install(): Promise<void> {
       installShared(repoDir, cwd);
       installWorkflows(repoDir, cwd);
       installRules(repoDir, cwd);
-      installConfigs(repoDir, cwd);
+      installConfigs(repoDir, cwd, false, {
+        updateDefaults: options.updateDefaults,
+      });
 
       for (const skillName of selectedSkills) {
         spinner.message(`Installing ${pc.cyan(skillName)}...`);

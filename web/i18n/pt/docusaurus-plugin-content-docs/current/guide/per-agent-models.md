@@ -192,3 +192,49 @@ session:
 ```
 
 Corra `oma doctor --profile` para confirmar a resolução e inicie o workflow como de costume.
+
+
+## Config file ownership
+
+| File | Owner | Safe to edit? |
+|------|-------|---------------|
+| `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
+| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/config/models.yaml` | You | ✅ Add new slugs here |
+
+`defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.
+
+## Upgrading defaults.yaml
+
+When you pull a newer oh-my-agent release, run `oma install` — the installer compares your local `defaults.yaml` version against the bundled one:
+
+- **Match** → no change, silent.
+- **Mismatch** → warning:
+  ```
+  [install] .agents/config/defaults.yaml is 2.1.0; bundled is 2.2.0.
+            Run 'oma install --update-defaults' to upgrade.
+  ```
+- **Mismatch + `--update-defaults`** → the bundled version overwrites yours:
+  ```
+  oma install --update-defaults
+  # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
+  ```
+
+Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
+
+## Upgrading from a pre-RARDO-v2.1 install
+
+If your project predates the per-agent model/effort feature:
+
+1. Run `oma install` from your project root. The installer drops a fresh `defaults.yaml` into `.agents/config/` and preserves your existing `oma-config.yaml`.
+2. Run `oma doctor --profile`. Your legacy `agent_cli_mapping: { backend: "gemini" }` values are now resolved through `runtime_profiles.gemini-only.agent_defaults.backend`, so the matrix shows the correct slug and CLI automatically.
+3. (Optional) Move custom agent settings from `oma-config.yaml` into the new `user-preferences.yaml` using the AgentSpec form if you want per-agent `model`, `effort`, `thinking`, or `memory` overrides:
+   ```yaml
+   agent_cli_mapping:
+     backend:
+       model: "openai/gpt-5.3-codex"
+       effort: "high"
+   ```
+4. If you ever customized `defaults.yaml`, `oma install` will warn about the version mismatch instead of overwriting. Move your customizations into `user-preferences.yaml` / `models.yaml`, then run `oma install --update-defaults` to accept the new SSOT.
+
+No breaking changes to `agent:spawn` — legacy configs keep working through graceful fallback while you migrate at your own pace.
