@@ -1,8 +1,18 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { getExistingLanguage, scanLanguages } from "../install/install.js";
+import {
+  cleanDanglingSymlinks,
+  getExistingLanguage,
+  scanLanguages,
+} from "../install/install.js";
 
 describe("scanLanguages", () => {
   const tempRoots: string[] = [];
@@ -130,5 +140,77 @@ describe("getExistingLanguage", () => {
     tempRoots.push(root);
 
     expect(getExistingLanguage(root)).toBeNull();
+  });
+});
+
+describe("cleanDanglingSymlinks", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+  });
+
+  it("removes a broken symlink whose target does not exist", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-symlink-"));
+    tempRoots.push(root);
+    const skillsDir = join(root, ".claude", "skills");
+    mkdirSync(skillsDir, { recursive: true });
+
+    const broken = join(skillsDir, "oma-commit");
+    symlinkSync("/nonexistent/path/oma-commit", broken);
+
+    cleanDanglingSymlinks(skillsDir);
+
+    // The broken symlink must be gone
+    expect(() => {
+      const { lstatSync } = require("node:fs");
+      lstatSync(broken);
+    }).toThrow();
+  });
+
+  it("preserves a valid symlink whose target exists", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-symlink-"));
+    tempRoots.push(root);
+    const skillsDir = join(root, ".claude", "skills");
+    const targetDir = join(root, ".agents", "skills", "oma-frontend");
+    mkdirSync(skillsDir, { recursive: true });
+    mkdirSync(targetDir, { recursive: true });
+
+    const link = join(skillsDir, "oma-frontend");
+    symlinkSync(targetDir, link);
+
+    cleanDanglingSymlinks(skillsDir);
+
+    // Valid symlink must still exist
+    const { lstatSync } = require("node:fs");
+    const stat = lstatSync(link);
+    expect(stat.isSymbolicLink()).toBe(true);
+  });
+
+  it("does not remove regular files or directories", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-symlink-"));
+    tempRoots.push(root);
+    const skillsDir = join(root, ".claude", "skills");
+    mkdirSync(skillsDir, { recursive: true });
+
+    const regularFile = join(skillsDir, "some-file.txt");
+    const regularDir = join(skillsDir, "some-dir");
+    writeFileSync(regularFile, "data");
+    mkdirSync(regularDir);
+
+    cleanDanglingSymlinks(skillsDir);
+
+    const { lstatSync } = require("node:fs");
+    expect(lstatSync(regularFile).isFile()).toBe(true);
+    expect(lstatSync(regularDir).isDirectory()).toBe(true);
+  });
+
+  it("no-ops silently when the directory does not exist", () => {
+    expect(() =>
+      cleanDanglingSymlinks("/nonexistent/path/to/skills"),
+    ).not.toThrow();
   });
 });
