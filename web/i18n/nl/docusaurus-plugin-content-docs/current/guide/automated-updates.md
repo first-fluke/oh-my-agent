@@ -1,6 +1,6 @@
 ---
 title: "Gids: Automatische Updates"
-description: Volledige GitHub Action-documentatie voor oh-my-agent — setup, alle invoer en uitvoer, gedetailleerde voorbeelden, hoe het onder de motorkap werkt en vergelijking met het centraal register.
+description: Volledige GitHub Action-documentatie voor oh-my-agent — setup, alle invoer en uitvoer, gedetailleerde voorbeelden en hoe het onder de motorkap werkt.
 ---
 
 # Gids: Automatische Updates
@@ -118,15 +118,3 @@ jobs:
 
 Wat `oma update --ci` intern doet: versie controleren, tarball downloaden, gebruikersbestanden behouden (tenzij `--force`), bestanden kopieren, symlinks vernieuwen.
 
----
-
-## Vergelijking met Centraal Register
-
-| Aspect | GitHub Action | Centraal Register |
-|:-------|:-------------|:----------------|
-| **Bestanden toevoegen** | 1 workflowbestand | 3 bestanden |
-| **Updatebron** | npm-register | GitHub Release-artefacten |
-| **Versiepinning** | Nee — altijd laatste | Ja — expliciet in .agent-registry.yml |
-| **Checksumverificatie** | Nee | Ja — SHA256 |
-| **Configbehoud** | Automatisch | Handmatig configureerbaar |
-| **Geschikt voor** | Eenvoudige projecten | Multi-projectorganisaties, compliance |

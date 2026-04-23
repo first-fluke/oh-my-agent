@@ -1,6 +1,6 @@
 ---
 title: Automatyczne aktualizacje
-description: Kompletna dokumentacja GitHub Action oh-my-agent — konfiguracja, wszystkie wejścia i wyjścia, szczegółowe przykłady, jak działa pod spodem i porównanie z centralnym rejestrem.
+description: Kompletna dokumentacja GitHub Action oh-my-agent — konfiguracja, wszystkie wejścia i wyjścia, szczegółowe przykłady i jak działa pod spodem.
 ---
 
 # Automatyczne aktualizacje
@@ -85,14 +85,3 @@ Resetuje wszystkie pliki konfiguracyjne do domyślnych — użyj `force: 'true'`
 5. **Tryb pr:** Tworzenie PR przez `peter-evans/create-pull-request@v8`
 6. **Tryb commit:** Konfiguracja git jako `github-actions[bot]`, stage, commit, push
 
----
-
-## Porównanie z centralnym rejestrem
-
-| Aspekt | GitHub Action | Centralny rejestr |
-|:-------|:-------------|:----------------|
-| **Pliki do dodania** | 1 plik workflow | 3 pliki |
-| **Przypinanie wersji** | Nie — zawsze najnowsza | Tak |
-| **Weryfikacja sum kontrolnych** | Nie | Tak — SHA256 |
-| **Zachowanie konfiguracji** | Automatyczne | Ręczne (wzorce preserve) |
-| **Najlepsze dla** | Proste projekty | Organizacje wieloprojektowe |

@@ -24,7 +24,6 @@ const sidebars: SidebarsConfig = {
       items: [
         "guide/usage",
         "guide/integration",
-        "guide/central-registry",
         "guide/single-skill",
         "guide/multi-agent-project",
         "guide/bug-fixing",

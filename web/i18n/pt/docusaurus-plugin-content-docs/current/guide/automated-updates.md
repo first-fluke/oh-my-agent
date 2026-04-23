@@ -1,6 +1,6 @@
 ---
 title: "Guia: Atualizações Automatizadas"
-description: "Documentação completa da GitHub Action do oh-my-agent — setup, todos os inputs e outputs, exemplos detalhados, como funciona por baixo dos panos e comparação com o registro central."
+description: "Documentação completa da GitHub Action do oh-my-agent — setup, todos os inputs e outputs, exemplos detalhados e como funciona por baixo dos panos."
 ---
 
 # Guia: Atualizações Automatizadas
@@ -237,18 +237,3 @@ Após isso, dependendo do input `mode`:
 - **Modo `pr`:** Usa `peter-evans/create-pull-request@v8` para criar um PR.
 - **Modo `commit`:** Configura git como `github-actions[bot]`, faz staging, commit e push.
 
----
-
-## Comparação com Registro Central
-
-| Aspecto | GitHub Action | Registro Central |
-|:--------|:-------------|:----------------|
-| **Arquivos para adicionar** | 1 arquivo de workflow | 3 arquivos |
-| **Fonte de atualização** | Registro npm | Artefatos de GitHub Release |
-| **Fixação de versão** | Não — sempre a mais recente | Sim — explícita em .agent-registry.yml |
-| **Verificação de checksum** | Não | Sim — SHA256 |
-| **Preservação de config** | Automática | Manual (configurar padrões de preservação) |
-| **Opção de commit direto** | Sim (mode: commit) | Não integrada |
-| **Melhor para** | Projetos simples, equipe única | Organizações multi-projeto, necessidades de conformidade |
-
-Para a maioria das equipes, a GitHub Action é suficiente. Use o registro central quando precisar de fixação de versão, verificação de checksum ou atualizações coordenadas entre muitos projetos.

@@ -1,6 +1,6 @@
 ---
 title: "指南：自动更新"
-description: oh-my-agent GitHub Action 的完整文档 —— 设置、所有输入和输出、详细示例、底层工作原理以及与中央注册表的比较。
+description: oh-my-agent GitHub Action 的完整文档 —— 设置、所有输入和输出、详细示例以及底层工作原理。
 ---
 
 # 指南：自动更新
@@ -285,21 +285,3 @@ fi
 
 - **`commit` 模式：** 配置 git 为 `github-actions[bot]`，暂存 `.agents/` 和 `.claude/`，用配置的消息提交，并推送到基础分支。
 
----
-
-## 与中央注册表的比较
-
-| 方面 | GitHub Action | 中央注册表 |
-|:-----|:-------------|:----------|
-| **需要添加的文件** | 1 个工作流文件 | 3 个文件（.agent-registry.yml + 2 个工作流） |
-| **更新来源** | npm 注册表 | GitHub Release 产物 |
-| **版本锁定** | 否 —— 始终最新 | 是 —— 在 .agent-registry.yml 中显式 |
-| **校验和验证** | 否 | 是 —— SHA256 |
-| **配置保留** | 自动（oma-config.yaml、mcp.json、stack/） | 手动（配置 preserve 模式） |
-| **PR 创建** | 内置（peter-evans/create-pull-request） | 内置（gh pr create） |
-| **直接提交选项** | 是（mode: commit） | 非内置（sync 始终提交） |
-| **强制更新** | 是（force: true） | 始终覆盖除保留模式外的内容 |
-| **下游触发** | 需要 PAT 触发工作流 | Sync 工作流由推送到 main 触发 |
-| **最适用于** | 简单项目、单团队 | 多项目组织、合规需求 |
-
-对大多数团队而言，GitHub Action 就足够了。当你需要版本锁定、校验和验证或跨多个项目协调更新时，使用中央注册表。

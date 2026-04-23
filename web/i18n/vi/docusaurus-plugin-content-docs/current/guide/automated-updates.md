@@ -1,6 +1,6 @@
 ---
 title: "Hướng dẫn: Cập nhật tự động"
-description: Tài liệu đầy đủ về GitHub Action cho oh-my-agent — thiết lập, tất cả input và output, ví dụ chi tiết, hoạt động bên trong và so sánh với central registry.
+description: Tài liệu đầy đủ về GitHub Action cho oh-my-agent — thiết lập, tất cả input và output, ví dụ chi tiết và hoạt động bên trong.
 ---
 
 # Hướng dẫn: Cập nhật tự động
@@ -63,18 +63,3 @@ jobs:
 | `pr-number` | string | Số pull request. | Chỉ chế độ `pr` khi PR được tạo |
 | `pr-url` | string | URL đầy đủ của PR đã tạo. | Chỉ chế độ `pr` khi PR được tạo |
 
----
-
-## So sánh với Central Registry
-
-| Khía cạnh | GitHub Action | Central Registry |
-|:-------|:-------------|:----------------|
-| **File cần thêm** | 1 file workflow | 3 file (.agent-registry.yml + 2 workflow) |
-| **Nguồn cập nhật** | npm registry | GitHub Release artifact |
-| **Pin phiên bản** | Không — luôn mới nhất | Có — tường minh trong .agent-registry.yml |
-| **Xác minh checksum** | Không | Có — SHA256 |
-| **Bảo toàn config** | Tự động (oma-config.yaml, mcp.json, stack/) | Thủ công (cấu hình mẫu preserve) |
-| **Tạo PR** | Tích hợp sẵn | Tích hợp sẵn |
-| **Phù hợp nhất** | Dự án đơn giản, đội đơn | Tổ chức nhiều dự án, nhu cầu compliance |
-
-Với hầu hết đội ngũ, GitHub Action là đủ. Dùng central registry khi cần pin phiên bản, xác minh checksum, hoặc cập nhật phối hợp xuyên nhiều dự án.

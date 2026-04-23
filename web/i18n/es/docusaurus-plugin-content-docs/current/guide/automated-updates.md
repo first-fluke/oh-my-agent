@@ -1,6 +1,6 @@
 ---
 title: "Guía: Actualizaciones Automatizadas"
-description: Documentación completa del GitHub Action de oh-my-agent — configuración, todas las entradas y salidas, ejemplos detallados, cómo funciona internamente y comparación con el registro central.
+description: Documentación completa del GitHub Action de oh-my-agent — configuración, todas las entradas y salidas, ejemplos detallados y cómo funciona internamente.
 ---
 
 # Guía: Actualizaciones Automatizadas
@@ -285,21 +285,3 @@ After this, depending on the `mode` input:
 
 - **`commit` mode:** Configures git as `github-actions[bot]`, stages `.agents/` and `.claude/`, commits with the configured message, and pushes to the base branch.
 
----
-
-## Comparación con el Registro Central
-
-| Aspect | GitHub Action | Central Registry |
-|:-------|:-------------|:----------------|
-| **Files to add** | 1 workflow file | 3 files (.agent-registry.yml + 2 workflows) |
-| **Update source** | npm registry | GitHub Release artifacts |
-| **Version pinning** | No — always latest | Yes — explicit in .agent-registry.yml |
-| **Checksum verification** | No | Yes — SHA256 |
-| **Config preservation** | Automatic (oma-config.yaml, mcp.json, stack/) | Manual (configure preserve patterns) |
-| **PR creation** | Built-in (peter-evans/create-pull-request) | Built-in (gh pr create) |
-| **Direct commit option** | Yes (mode: commit) | Not built-in (sync always commits) |
-| **Force update** | Yes (force: true) | Always overwrites except preserved patterns |
-| **Downstream triggers** | Need PAT for workflow triggers | Sync workflow is triggered by push to main |
-| **Best for** | Simple projects, single team | Multi-project organizations, compliance needs |
-
-Para la mayoria de equipos, el GitHub Action es suficiente. Usa el registro central cuando necesites fijacion de versiones, verificacion de checksum o actualizaciones coordinadas en multiples proyectos.

@@ -10,7 +10,6 @@ All links point to the published documentation on GitHub Pages.
 
 - [Usage Guide](https://first-fluke.github.io/oh-my-agent/en/guide/usage/): Full usage guide including workflows, dashboard operations, and troubleshooting.
 - [Existing Project Integration](https://first-fluke.github.io/oh-my-agent/en/guide/integration/): Non-destructive integration flow for adding oh-my-agent to an existing Antigravity project.
-- [Central Registry for Multi-Repo Setup](https://first-fluke.github.io/oh-my-agent/en/guide/central-registry/): Versioned central registry operations and safe PR-based consumer sync.
 - [Use Case: Single Skill](https://first-fluke.github.io/oh-my-agent/en/guide/single-skill/): Fast path for focused single-domain work with clear acceptance criteria.
 - [Use Case: Multi-Agent Project](https://first-fluke.github.io/oh-my-agent/en/guide/multi-agent-project/): Coordination model for cross-domain parallel delivery.
 - [Use Case: Bug Fixing](https://first-fluke.github.io/oh-my-agent/en/guide/bug-fixing/): Reproduce-diagnose-fix-regress loop with severity-based escalation.
@@ -20,7 +19,6 @@ All links point to the published documentation on GitHub Pages.
 
 - [사용 가이드](https://first-fluke.github.io/oh-my-agent/ko/guide/usage/): 예시, 워크플로우, 대시보드 운영, 문제 해결을 포함한 전체 사용 가이드.
 - [기존 프로젝트 통합](https://first-fluke.github.io/oh-my-agent/ko/guide/integration/): 기존 Antigravity 프로젝트에 안전하고 비파괴적으로 통합하는 절차.
-- [중앙 레지스트리 멀티 레포 설정](https://first-fluke.github.io/oh-my-agent/ko/guide/central-registry/): 멀티 레포 환경에서 중앙 레지스트리를 버전 기반으로 운영하는 방법.
 - [유즈케이스: 단일 스킬](https://first-fluke.github.io/oh-my-agent/ko/guide/single-skill/): 단일 도메인 작업을 빠르게 처리하는 실전 흐름.
 - [유즈케이스: 멀티 에이전트 프로젝트](https://first-fluke.github.io/oh-my-agent/ko/guide/multi-agent-project/): 복합 도메인 기능을 병렬로 전달하기 위한 조율 흐름.
 - [유즈케이스: 버그 수정](https://first-fluke.github.io/oh-my-agent/ko/guide/bug-fixing/): 심각도 기반 버그 대응과 회귀 방지 루프.

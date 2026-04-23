@@ -1,6 +1,6 @@
 ---
 title: "Anleitung: Automatische Updates"
-description: Vollständige GitHub-Action-Dokumentation für oh-my-agent — Setup, alle Ein- und Ausgaben, detaillierte Beispiele, Funktionsweise im Detail und Vergleich mit dem zentralen Register.
+description: Vollständige GitHub-Action-Dokumentation für oh-my-agent — Setup, alle Ein- und Ausgaben, detaillierte Beispiele und Funktionsweise im Detail.
 ---
 
 # Anleitung: Automatische Updates
@@ -285,21 +285,3 @@ Danach, abhängig von der `mode`-Eingabe:
 
 - **`commit`-Modus:** Konfiguriert Git als `github-actions[bot]`, stagt `.agents/` und `.claude/`, committet mit der konfigurierten Nachricht und pusht in den Basis-Branch.
 
----
-
-## Vergleich mit dem zentralen Register
-
-| Aspekt | GitHub Action | Zentrales Register |
-|:-------|:-------------|:----------------|
-| **Hinzuzufügende Dateien** | 1 Workflow-Datei | 3 Dateien (.agent-registry.yml + 2 Workflows) |
-| **Update-Quelle** | npm-Registry | GitHub-Release-Artefakte |
-| **Versions-Pinning** | Nein — immer neueste | Ja — explizit in .agent-registry.yml |
-| **Prüfsummenverifikation** | Nein | Ja — SHA256 |
-| **Konfigurationsbewahrung** | Automatisch (oma-config.yaml, mcp.json, stack/) | Manuell (Bewahrungsmuster konfigurieren) |
-| **PR-Erstellung** | Eingebaut (peter-evans/create-pull-request) | Eingebaut (gh pr create) |
-| **Direkt-Commit-Option** | Ja (mode: commit) | Nicht eingebaut (Sync committet immer) |
-| **Force-Update** | Ja (force: true) | Überschreibt immer außer bewahrte Muster |
-| **Nachgelagerte Trigger** | Benötigt PAT für Workflow-Trigger | Sync-Workflow wird durch Push nach Main ausgelöst |
-| **Am besten für** | Einfache Projekte, einzelne Teams | Multi-Projekt-Organisationen, Compliance-Anforderungen |
-
-Für die meisten Teams reicht die GitHub Action aus. Verwenden Sie das zentrale Register, wenn Sie Versions-Pinning, Prüfsummenverifikation oder koordinierte Updates über viele Projekte hinweg benötigen.
