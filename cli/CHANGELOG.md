@@ -1,5 +1,48 @@
 # Changelog
 
+## [5.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.15.0...cli-v5.16.0) (2026-04-23)
+
+
+### Features
+
+* **agent:** wire T11 findings, T12 difficulty, T15 quota into spawn path ([aff6788](https://github.com/first-fluke/oh-my-agent/commit/aff678839b09cb349b713f1eeac6c11d9d78b3b3))
+* **composer:** skip CHARTER_CHECK for Simple tasks ([4798b5e](https://github.com/first-fluke/oh-my-agent/commit/4798b5e168c7747b3c084241176f05d9a01dafda))
+* **config:** support dual-format agent_cli_mapping ([6c51ea5](https://github.com/first-fluke/oh-my-agent/commit/6c51ea5f6a3675a726f2c39b29f92fb95f099fd8))
+* **defaults:** add Profile B baked-in agent defaults ([fb3da52](https://github.com/first-fluke/oh-my-agent/commit/fb3da52d37731b2dfdd64145442f7917b4b3fdc4))
+* **defaults:** add qwen-only runtime profile ([44d3034](https://github.com/first-fluke/oh-my-agent/commit/44d3034214747a5a22de72f0d9fd632b88ce8000))
+* **dispatch:** add qwen runtime with forced external fallback ([8782b02](https://github.com/first-fluke/oh-my-agent/commit/8782b02dbbd0fa934202d3eb13d115c91ddcd742))
+* **dispatch:** add resolveAgentPlan for per-agent model and effort ([f0b4549](https://github.com/first-fluke/oh-my-agent/commit/f0b454942f3680429dfb3daeb4bbf2ca2174471d))
+* **dispatch:** wire resolveAgentPlan into planDispatch spawn path ([c92fd99](https://github.com/first-fluke/oh-my-agent/commit/c92fd991bba5ac9d147e22683e1037fede865793))
+* **doctor:** add --profile flag with auth matrix ([031e234](https://github.com/first-fluke/oh-my-agent/commit/031e234839ecfd4c026e46a0039dbfb361bf0915))
+* **install:** version-gated defaults.yaml upgrades ([94299e6](https://github.com/first-fluke/oh-my-agent/commit/94299e62055d61aff33fda4e5a8e0de8883af4bf))
+* **io:** add session quota cap accounting ([efa7aaf](https://github.com/first-fluke/oh-my-agent/commit/efa7aaf4e8d03ce124c9d665c102c0baa0245709))
+* **io:** add shared findings cache (L3) ([ade8dac](https://github.com/first-fluke/oh-my-agent/commit/ade8dac91e17f7e9de45b56bef630fcd746d9dd2))
+* **platform:** add difficulty-adaptive context loader ([efe2bf8](https://github.com/first-fluke/oh-my-agent/commit/efe2bf8838d9554fcc22a30f87cb7cbc87f196d8))
+* RARDO v2.1 P0 — Registry + Config + Dispatch + Doctor ([4f89b8a](https://github.com/first-fluke/oh-my-agent/commit/4f89b8a90b8a338f6972e8c3416f0a6820498e19))
+* **registry:** add model registry with 12 verified slugs ([16840c2](https://github.com/first-fluke/oh-my-agent/commit/16840c2de8e6fcee41975070bd5ed70358dbbb53))
+* **registry:** support user models.yaml override ([b751955](https://github.com/first-fluke/oh-my-agent/commit/b7519551695fd0f5814aca2c0f817365478fac7e))
+* **resolve:** honor legacy vendor override via runtime_profiles ([ea14658](https://github.com/first-fluke/oh-my-agent/commit/ea14658ba02a39827a7d8f55e753a5f3e7896fae))
+* **workflows:** add cost-cap termination to Review Loop ([82d5f8b](https://github.com/first-fluke/oh-my-agent/commit/82d5f8bfb84353265a05d1e92bb46abfdee9b264))
+
+
+### Bug Fixes
+
+* **agent:** import session-cost helpers into spawn-status ([c54d087](https://github.com/first-fluke/oh-my-agent/commit/c54d08748383780244b657e12acb8d0bdbd5abec))
+* **composer:** sanitize frontmatter per-vendor to stop R14 effort leak ([cb1d729](https://github.com/first-fluke/oh-my-agent/commit/cb1d7299879cca5b24434dcd9ffdf444a7401872))
+* **doctor:** resolve model slug from defaults when user-pref is legacy ([08454ae](https://github.com/first-fluke/oh-my-agent/commit/08454ae72b6935555e0934c1100dd480b84f03bb))
+* **hooks:** guard keyword-detector against retrigger loops (R17) ([ad01209](https://github.com/first-fluke/oh-my-agent/commit/ad012090029684c5a1a9a69142798ff88e15e3a4))
+* **install:** remove dangling symlinks during oma install ([31f1525](https://github.com/first-fluke/oh-my-agent/commit/31f1525f4b11aa2b6e52035500577a376bf46054))
+* **io:** validate sessionId to prevent path traversal ([6f5369e](https://github.com/first-fluke/oh-my-agent/commit/6f5369eda2b1a05619a59d117f5bcac855474283))
+* **qwen:** detect deprecated OAuth sessions and print migration guide ([fe399f7](https://github.com/first-fluke/oh-my-agent/commit/fe399f7442b10d7d55ee91538f54c7050d0430c8))
+* **variants:** correct gemini modelDefault to gemini-3-flash ([b1f276f](https://github.com/first-fluke/oh-my-agent/commit/b1f276f1d9230f2fa14dc337ebf2d90cb2d9b627))
+* **vendors:** harden qwen OAuth detection and codex effort typing ([5f81a98](https://github.com/first-fluke/oh-my-agent/commit/5f81a9822d7a07ad0f4543b3a5fdbc95e7dcf9bf))
+
+
+### Documentation
+
+* **cli:** sync README Per-Agent Models section ([be3c51b](https://github.com/first-fluke/oh-my-agent/commit/be3c51bdea4756fc0a80418c5715922990d348f5))
+* reference per-agent models from root README and docs/* ([7760f59](https://github.com/first-fluke/oh-my-agent/commit/7760f592b079207c79459958fb1d9359bcbcb6ab))
+
 ## [5.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.3...cli-v5.15.0) (2026-04-23)
 
 
