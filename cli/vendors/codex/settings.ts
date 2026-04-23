@@ -7,6 +7,7 @@
  */
 
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import type { EffortLevel } from "../../platform/model-registry.js";
 
 export const RECOMMENDED_CODEX_MCP = {
   serena: {
@@ -104,7 +105,7 @@ export function applyRecommendedCodexSettings(
  */
 export function setCodexReasoningEffort(
   settings: CodexSettings,
-  effort: string | undefined,
+  effort: EffortLevel | undefined,
 ): CodexSettings {
   const next = { ...settings };
   if (effort === undefined) {

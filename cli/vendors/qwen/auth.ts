@@ -28,7 +28,7 @@ const LEGACY_TOKEN_PATHS: string[] = [
   join(homedir(), ".config", "qwen", "credentials.json"),
 ];
 
-/** Fields whose presence indicates an OAuth-style credential file. */
+/** Fields whose presence indicates an OAuth-style credential file (exact match). */
 const OAUTH_FIELD_INDICATORS = new Set([
   "refresh_token",
   "oauth_token",
@@ -37,12 +37,23 @@ const OAUTH_FIELD_INDICATORS = new Set([
   "oauth_callback_confirmed",
 ]);
 
+/**
+ * Key prefixes that indicate an OAuth-style credential field.
+ * Handles Qwen-prefixed variants like `oidc_token`, `oauth2_access_token`,
+ * or `refresh_oauth_*` that would be missed by exact-string membership.
+ */
+const OAUTH_FIELD_PREFIXES: readonly string[] = ["oauth_", "oauth2_", "oidc_"];
+
 /** Fields that indicate a modern API-key-style credential file (not OAuth). */
 const API_KEY_FIELDS = new Set(["api_key", "bearer"]);
 
 function hasOAuthFields(content: Record<string, unknown>): boolean {
   const keys = Object.keys(content);
-  const hasOAuth = keys.some((k) => OAUTH_FIELD_INDICATORS.has(k));
+  const hasOAuth = keys.some(
+    (k) =>
+      OAUTH_FIELD_INDICATORS.has(k) ||
+      OAUTH_FIELD_PREFIXES.some((prefix) => k.startsWith(prefix)),
+  );
   const hasApiKey = keys.some((k) => API_KEY_FIELDS.has(k));
   // If it only has api_key / bearer and no OAuth-specific fields, treat as modern.
   return hasOAuth && !hasApiKey;

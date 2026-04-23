@@ -171,6 +171,78 @@ describe("detectDeprecatedOAuthSession", () => {
 
     expect(result.hasLegacySession).toBe(false);
   });
+
+  // ---------------------------------------------------------------------------
+  // L-1: prefix-matched OAuth field detection
+  // ---------------------------------------------------------------------------
+
+  it("detects legacy session when file has oauth_token (oauth_ prefix)", () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) =>
+      String(p).endsWith("oauth.json"),
+    );
+    vi.mocked(fs.statSync).mockReturnValue({
+      mtime: BEFORE_DEPRECATION,
+    } as ReturnType<typeof fs.statSync>);
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      JSON.stringify({ oauth_token: "tok_abc", token_type: "Bearer" }),
+    );
+
+    const result = detectDeprecatedOAuthSession();
+
+    expect(result.hasLegacySession).toBe(true);
+    expect(result.migrationNeeded).toBe(true);
+  });
+
+  it("detects legacy session when file has oidc_access_token (oidc_ prefix)", () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) =>
+      String(p).endsWith("oauth.json"),
+    );
+    vi.mocked(fs.statSync).mockReturnValue({
+      mtime: BEFORE_DEPRECATION,
+    } as ReturnType<typeof fs.statSync>);
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      JSON.stringify({ oidc_access_token: "oidc_xyz", expires_in: 3600 }),
+    );
+
+    const result = detectDeprecatedOAuthSession();
+
+    expect(result.hasLegacySession).toBe(true);
+    expect(result.migrationNeeded).toBe(true);
+  });
+
+  it("detects legacy session when file has oauth2_refresh (oauth_ prefix)", () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) =>
+      String(p).endsWith("oauth.json"),
+    );
+    vi.mocked(fs.statSync).mockReturnValue({
+      mtime: BEFORE_DEPRECATION,
+    } as ReturnType<typeof fs.statSync>);
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      JSON.stringify({ oauth2_refresh: "ref_token_abc" }),
+    );
+
+    const result = detectDeprecatedOAuthSession();
+
+    expect(result.hasLegacySession).toBe(true);
+    expect(result.migrationNeeded).toBe(true);
+  });
+
+  it("returns hasLegacySession=false when prefix-matched OAuth field co-exists with api_key (hybrid guard)", () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) =>
+      String(p).endsWith("oauth.json"),
+    );
+    vi.mocked(fs.statSync).mockReturnValue({
+      mtime: BEFORE_DEPRECATION,
+    } as ReturnType<typeof fs.statSync>);
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      JSON.stringify({ oauth_token: "tok_abc", api_key: "sk-modern" }),
+    );
+
+    const result = detectDeprecatedOAuthSession();
+
+    expect(result.hasLegacySession).toBe(false);
+    expect(result.migrationNeeded).toBe(false);
+  });
 });
 
 describe("printMigrationGuide", () => {

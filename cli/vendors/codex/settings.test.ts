@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import type { EffortLevel } from "../../platform/model-registry.js";
 import {
   applyRecommendedCodexSettings,
   needsCodexSettingsUpdate,
   parseCodexConfig,
   RECOMMENDED_CODEX_MCP,
   serializeCodexConfig,
+  setCodexReasoningEffort,
 } from "./settings.js";
 
 describe("codex settings", () => {
@@ -89,5 +91,41 @@ args = ["--from", "serena", "start"]
   it("parseCodexConfig returns empty on malformed TOML", () => {
     expect(parseCodexConfig("this is not toml =")).toEqual({});
     expect(parseCodexConfig("")).toEqual({});
+  });
+});
+
+// ---------------------------------------------------------------------------
+// L-2: setCodexReasoningEffort — EffortLevel type safety
+// ---------------------------------------------------------------------------
+
+describe("setCodexReasoningEffort", () => {
+  it("sets model_reasoning_effort for each valid EffortLevel", () => {
+    const levels: EffortLevel[] = ["none", "low", "medium", "high", "xhigh"];
+    for (const level of levels) {
+      const result = setCodexReasoningEffort({}, level);
+      expect(result.model_reasoning_effort).toBe(level);
+    }
+  });
+
+  it("removes model_reasoning_effort when effort is undefined", () => {
+    const settings = { model_reasoning_effort: "high" };
+    const result = setCodexReasoningEffort(settings, undefined);
+    expect(result.model_reasoning_effort).toBeUndefined();
+    expect("model_reasoning_effort" in result).toBe(false);
+  });
+
+  it("is idempotent — calling with the same effort returns the same value", () => {
+    const effort: EffortLevel = "medium";
+    const first = setCodexReasoningEffort({}, effort);
+    const second = setCodexReasoningEffort(first, effort);
+    expect(second.model_reasoning_effort).toBe("medium");
+    expect(first).not.toBe(second); // new object each call
+  });
+
+  it("does not mutate the input settings object", () => {
+    const original = { model_reasoning_effort: "low", other: "value" };
+    const result = setCodexReasoningEffort(original, "high");
+    expect(original.model_reasoning_effort).toBe("low");
+    expect(result.model_reasoning_effort).toBe("high");
   });
 });
