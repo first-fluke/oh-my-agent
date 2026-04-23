@@ -334,3 +334,37 @@ describe("formatPromptMessage", () => {
     expect(result).toContain("Usage limit exceeded");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Security — sessionId validation blocks path traversal
+// ---------------------------------------------------------------------------
+
+describe("sessionId validation — security hardening", () => {
+  for (const bad of [
+    "../../../evil",
+    "abc/../../tmp",
+    "sess\\..\\win",
+    "has space",
+    "has;semi",
+    "",
+    "x".repeat(65),
+  ]) {
+    it(`rejects unsafe sessionId ${JSON.stringify(bad)}`, () => {
+      expect(() =>
+        recordUsage(bad, { vendor: "claude", agentId: "x", tokens: 1 }),
+      ).toThrow(/Invalid sessionId/);
+      expect(() => loadSessionUsage(bad)).toThrow(/Invalid sessionId/);
+      expect(() => checkCap(bad, { tokens: 100 })).toThrow(/Invalid sessionId/);
+    });
+  }
+
+  for (const good of [
+    "session-20260423-141500",
+    "abc_123.4",
+    "Session-ABC-01",
+  ]) {
+    it(`accepts safe sessionId ${JSON.stringify(good)}`, () => {
+      expect(() => loadSessionUsage(good)).not.toThrow();
+    });
+  }
+});

@@ -247,3 +247,16 @@ describe("file format", () => {
     expect(content).toContain("# Findings");
   });
 });
+
+describe("sessionId validation — security hardening", () => {
+  for (const bad of ["../../../evil", "abc/../../tmp", "has space", ""]) {
+    it(`rejects unsafe sessionId ${JSON.stringify(bad)}`, () => {
+      expect(() => recordFinding(bad, makeRecord())).toThrow(
+        /Invalid sessionId/,
+      );
+      expect(() => lookupFinding(bad, "x")).toThrow(/Invalid sessionId/);
+      expect(() => listFindings(bad)).toThrow(/Invalid sessionId/);
+      expect(() => clearSession(bad)).toThrow(/Invalid sessionId/);
+    });
+  }
+});

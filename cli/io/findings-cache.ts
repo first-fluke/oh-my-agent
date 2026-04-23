@@ -39,7 +39,20 @@ export interface FindingRecord {
 
 const MEMORIES_BASE = ".serena/memories";
 
+// See cli/io/session-cost.ts for the same pattern. sessionId must be a safe
+// filename component so it cannot traverse out of MEMORIES_BASE.
+const SESSION_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+
+function assertSafeSessionId(sessionId: string): void {
+  if (!SESSION_ID_PATTERN.test(sessionId)) {
+    throw new Error(
+      `Invalid sessionId ${JSON.stringify(sessionId)}. Must match ${SESSION_ID_PATTERN} (alphanumeric, dot, underscore, hyphen, up to 64 chars).`,
+    );
+  }
+}
+
 function findingsFilePath(sessionId: string): string {
+  assertSafeSessionId(sessionId);
   return join(MEMORIES_BASE, `findings-${sessionId}.md`);
 }
 

@@ -77,7 +77,22 @@ export interface CheckCapResult {
 
 const MEMORIES_BASE = ".serena/memories";
 
+// Session IDs are safe filename components. Reject anything that could
+// traverse out of MEMORIES_BASE or embed shell/path metacharacters. The
+// orchestrator generates IDs like "session-20260423-141500"; 64-char
+// alphanumeric + `_-.` is more than enough. Reject everything else.
+const SESSION_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+
+function assertSafeSessionId(sessionId: string): void {
+  if (!SESSION_ID_PATTERN.test(sessionId)) {
+    throw new Error(
+      `Invalid sessionId ${JSON.stringify(sessionId)}. Must match ${SESSION_ID_PATTERN} (alphanumeric, dot, underscore, hyphen, up to 64 chars).`,
+    );
+  }
+}
+
 function sessionCostFilePath(sessionId: string): string {
+  assertSafeSessionId(sessionId);
   return join(MEMORIES_BASE, `session-cost-${sessionId}.md`);
 }
 
