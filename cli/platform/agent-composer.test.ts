@@ -358,3 +358,45 @@ describe("sanitizeFrontmatterForVendor — immutability", () => {
     expect(result).not.toBe(input); // different reference
   });
 });
+
+// ---------------------------------------------------------------------------
+// Edge cases — defensive inputs (QA MEDIUM-3)
+// ---------------------------------------------------------------------------
+
+describe("sanitizeFrontmatterForVendor — edge cases", () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("handles empty frontmatter object without throwing", () => {
+    const result = sanitizeFrontmatterForVendor({}, "claude");
+    expect(result).toEqual({});
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it("preserves null values on allowed fields (per-vendor contract)", () => {
+    const input = { name: "x", description: null, model: null };
+    const result = sanitizeFrontmatterForVendor(input, "claude");
+    // Allowed fields stay; nulls are the caller's concern, not the sanitizer's.
+    expect(result).toEqual({ name: "x", description: null, model: null });
+  });
+
+  it("drops null values on disallowed fields with WARN", () => {
+    const input = { name: "x", effort: null };
+    const result = sanitizeFrontmatterForVendor(input, "claude");
+    expect(result).toEqual({ name: "x" });
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("R14"));
+  });
+
+  it("handles array values on allowed fields", () => {
+    const input = { name: "x", tools: ["Read", "Write"] };
+    const result = sanitizeFrontmatterForVendor(input, "claude");
+    expect(result).toEqual({ name: "x", tools: ["Read", "Write"] });
+  });
+});
