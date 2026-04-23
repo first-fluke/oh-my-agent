@@ -10,7 +10,7 @@ import {
 } from "./context-loader.js";
 
 // ---------------------------------------------------------------------------
-// context-loader.test.ts  (RARDO v2.1 T12)
+// context-loader.test.ts
 //
 // Covers:
 //   1. classifyDifficulty — boundary cases (Simple/Medium/Complex thresholds)

@@ -112,7 +112,7 @@ Wybor modelu przebiega w dwoch warstwach:
 - Natywny dispatch tego samego dostawcy uzywa wygenerowanej definicji agenta dostawcy w `.claude/agents/`, `.codex/agents/` lub `.gemini/agents/`.
 - Dispatch miedzy dostawcami lub awaryjny CLI uzywa domyslnych wartosci dostawcy w `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**RARDO v2.1 — modele per agent**: kazdy agent moze miec wlasny model i `effort` zdefiniowany w `.agents/oma-config.yaml`. Dostepnych jest piec gotowych runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Sprawdz rozwiazana macierz auth komenda `oma doctor --profile`. Pelny przewodnik: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**modele per agent**: kazdy agent moze miec wlasny model i `effort` zdefiniowany w `.agents/oma-config.yaml`. Dostepnych jest piec gotowych runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Sprawdz rozwiazana macierz auth komenda `oma doctor --profile`. Pelny przewodnik: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Dlaczego oh-my-agent?
 

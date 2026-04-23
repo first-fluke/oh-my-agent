@@ -1,5 +1,5 @@
 // cli/commands/doctor/profile.ts
-// oma doctor --profile — Profile Health check (RARDO v2.1 T4)
+// oma doctor --profile — Profile Health check
 //
 // Loads .agents/config/defaults.yaml (T3) + user overrides, builds an
 // auth-status matrix for every role-model pairing, calls T9's
@@ -318,7 +318,7 @@ function resolveProfileName(cwd: string): string {
     }
   }
 
-  // Default to "Profile B" (the RARDO v2.1 default profile)
+  // Default to "Profile B" (the default profile)
   return "Profile B";
 }
 

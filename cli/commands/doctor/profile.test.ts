@@ -1,5 +1,5 @@
 // cli/commands/doctor/profile.test.ts
-// Unit tests for oma doctor --profile (RARDO v2.1 T4)
+// Unit tests for oma doctor --profile
 //
 // Covers:
 //   1. Auth matrix — all 4 CLI states (logged in / not logged in)

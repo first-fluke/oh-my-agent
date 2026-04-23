@@ -460,7 +460,6 @@ oma auth:status [--json] [--output <format>]
 
 **Verifica:** Gemini (API key), Claude (API key ou OAuth), Codex (API key), Qwen (API key).
 
-
 ### bridge
 
 Bridge MCP stdio para transporte Streamable HTTP.

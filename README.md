@@ -114,7 +114,7 @@ Model selection follows two layers:
 - Same-vendor native dispatch uses the generated vendor agent definition in `.claude/agents/`, `.codex/agents/`, or `.gemini/agents/`.
 - Cross-vendor or fallback CLI dispatch uses the vendor defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-### Per-Agent Models (RARDO v2.1)
+### Per-Agent Models
 
 Pin a specific model and effort per role in `.agents/oma-config.yaml`:
 

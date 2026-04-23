@@ -499,7 +499,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-
 ### bridge
 
 MCP-Stdio zu Streamable-HTTP-Transport überbrücken.

@@ -18,7 +18,7 @@
 * **io:** add session quota cap accounting ([efa7aaf](https://github.com/first-fluke/oh-my-agent/commit/efa7aaf4e8d03ce124c9d665c102c0baa0245709))
 * **io:** add shared findings cache (L3) ([ade8dac](https://github.com/first-fluke/oh-my-agent/commit/ade8dac91e17f7e9de45b56bef630fcd746d9dd2))
 * **platform:** add difficulty-adaptive context loader ([efe2bf8](https://github.com/first-fluke/oh-my-agent/commit/efe2bf8838d9554fcc22a30f87cb7cbc87f196d8))
-* RARDO v2.1 P0 — Registry + Config + Dispatch + Doctor ([4f89b8a](https://github.com/first-fluke/oh-my-agent/commit/4f89b8a90b8a338f6972e8c3416f0a6820498e19))
+* P0 — Registry + Config + Dispatch + Doctor ([4f89b8a](https://github.com/first-fluke/oh-my-agent/commit/4f89b8a90b8a338f6972e8c3416f0a6820498e19))
 * **registry:** add model registry with 12 verified slugs ([16840c2](https://github.com/first-fluke/oh-my-agent/commit/16840c2de8e6fcee41975070bd5ed70358dbbb53))
 * **registry:** support user models.yaml override ([b751955](https://github.com/first-fluke/oh-my-agent/commit/b7519551695fd0f5814aca2c0f817365478fac7e))
 * **resolve:** honor legacy vendor override via runtime_profiles ([ea14658](https://github.com/first-fluke/oh-my-agent/commit/ea14658ba02a39827a7d8f55e753a5f3e7896fae))

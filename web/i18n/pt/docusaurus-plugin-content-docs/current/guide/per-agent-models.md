@@ -1,13 +1,13 @@
 ---
 title: "Guia: configuração de modelo por agente"
-description: Configure diferentes fornecedores de CLI, modelos e níveis de raciocínio por agente com RARDO v2.1. Cobre agent_cli_mapping, perfis de runtime, oma doctor --profile, models.yaml e o limite de quota de sessão.
+description: Configure diferentes fornecedores de CLI, modelos e níveis de raciocínio por agente com . Cobre agent_cli_mapping, perfis de runtime, oma doctor --profile, models.yaml e o limite de quota de sessão.
 ---
 
 # Guia: configuração de modelo por agente
 
 ## Visão geral
 
-O RARDO v2.1 introduz a **seleção de modelo por agente** através de `agent_cli_mapping`. Cada agente (pm, backend, frontend, qa…) pode agora apontar para o seu próprio fornecedor, modelo e nível de raciocínio — em vez de partilharem um único fornecedor global.
+O  introduz a **seleção de modelo por agente** através de `agent_cli_mapping`. Cada agente (pm, backend, frontend, qa…) pode agora apontar para o seu próprio fornecedor, modelo e nível de raciocínio — em vez de partilharem um único fornecedor global.
 
 Esta página cobre:
 
@@ -22,7 +22,7 @@ Esta página cobre:
 
 ## Hierarquia dos ficheiros de configuração
 
-O RARDO v2.1 lê três ficheiros por ordem de precedência (do mais alto para o mais baixo):
+O  lê três ficheiros por ordem de precedência (do mais alto para o mais baixo):
 
 | Ficheiro | Objetivo | Editável? |
 |:---------|:---------|:----------|
@@ -46,10 +46,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 ```
 
@@ -93,16 +93,16 @@ oma doctor --profile
 **Exemplo de saída:**
 
 ```
-RARDO v2.1 — Active Profile: antigravity
+ — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4.7           medium   user-preferences
+pm            claude    claude-sonnet-4-6           medium   user-preferences
 backend       openai    gpt-5.3-codex               high     user-preferences
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3-pro                low      profile:antigravity
-architecture  claude    claude-opus-4.7             high     defaults
-docs          claude    claude-sonnet-4.7           low      defaults
+qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+architecture  claude    claude-opus-4-7             high     defaults
+docs          claude    claude-sonnet-4-6           low      defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -175,10 +175,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 
 session:
@@ -222,7 +222,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
 
 Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
 
-## Upgrading from a pre-RARDO-v2.1 install
+## Upgrading from a pre-5.16.0 install
 
 If your project predates the per-agent model/effort feature:
 

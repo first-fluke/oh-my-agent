@@ -111,7 +111,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json]
 
 Очищает: осиротевшие PID-файлы (`/tmp/subagent-*.pid`), логи (`/tmp/subagent-*.log`), директории Gemini Antigravity.
 
-
 ### agent:spawn
 
 ```

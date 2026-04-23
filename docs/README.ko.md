@@ -114,7 +114,7 @@ oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 - 같은 벤더 네이티브 디스패치는 `.claude/agents/`, `.codex/agents/`, `.gemini/agents/`에 생성된 벤더 에이전트 정의를 사용합니다.
 - 벤더가 다르거나 CLI 폴백으로 디스패치할 때는 `.agents/skills/oma-orchestrator/config/cli-config.yaml`의 벤더 기본값을 사용합니다.
 
-**RARDO v2.1 — 에이전트별 모델**: `.agents/oma-config.yaml`에서 각 에이전트마다 모델과 `effort`를 따로 지정할 수 있습니다. 5종의 runtime profile이 기본 제공됩니다: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. `oma doctor --profile`로 해석된 auth 매트릭스를 확인하세요. 전체 가이드: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**에이전트별 모델**: `.agents/oma-config.yaml`에서 각 에이전트마다 모델과 `effort`를 따로 지정할 수 있습니다. 5종의 runtime profile이 기본 제공됩니다: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. `oma doctor --profile`로 해석된 auth 매트릭스를 확인하세요. 전체 가이드: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## 왜 oh-my-agent인가?
 

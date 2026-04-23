@@ -1,13 +1,13 @@
 ---
 title: "ガイド：エージェントごとのモデル設定"
-description: RARDO v2.1により、エージェントごとにCLIベンダー・モデル・推論強度を個別指定。agent_cli_mapping、ランタイムプロファイル、oma doctor --profile、models.yaml、セッションクォータ上限を解説。
+description: により、エージェントごとにCLIベンダー・モデル・推論強度を個別指定。agent_cli_mapping、ランタイムプロファイル、oma doctor --profile、models.yaml、セッションクォータ上限を解説。
 ---
 
 # ガイド：エージェントごとのモデル設定
 
 ## 概要
 
-RARDO v2.1 は `agent_cli_mapping` により **エージェントごとのモデル選択** を導入します。各エージェント（pm、backend、frontend、qa …）が単一のグローバルベンダーを共有するのではなく、個別にベンダー・モデル・推論強度を指定できます。
+ は `agent_cli_mapping` により **エージェントごとのモデル選択** を導入します。各エージェント（pm、backend、frontend、qa …）が単一のグローバルベンダーを共有するのではなく、個別にベンダー・モデル・推論強度を指定できます。
 
 このページで扱う内容：
 
@@ -22,7 +22,7 @@ RARDO v2.1 は `agent_cli_mapping` により **エージェントごとのモデ
 
 ## 設定ファイルの階層
 
-RARDO v2.1 は次の 3 ファイルを優先度順（高いものが上）に読み込みます。
+ は次の 3 ファイルを優先度順（高いものが上）に読み込みます。
 
 | ファイル | 役割 | 編集可否 |
 |:--------|:-----|:--------|
@@ -46,10 +46,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 ```
 
@@ -93,16 +93,16 @@ oma doctor --profile
 **サンプル出力:**
 
 ```
-RARDO v2.1 — Active Profile: antigravity
+ — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4.7           medium   user-preferences
+pm            claude    claude-sonnet-4-6           medium   user-preferences
 backend       openai    gpt-5.3-codex               high     user-preferences
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3-pro                low      profile:antigravity
-architecture  claude    claude-opus-4.7             high     defaults
-docs          claude    claude-sonnet-4.7           low      defaults
+qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+architecture  claude    claude-opus-4-7             high     defaults
+docs          claude    claude-sonnet-4-6           low      defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -175,10 +175,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 
 session:
@@ -222,7 +222,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
 
 Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
 
-## Upgrading from a pre-RARDO-v2.1 install
+## Upgrading from a pre-5.16.0 install
 
 If your project predates the per-agent model/effort feature:
 

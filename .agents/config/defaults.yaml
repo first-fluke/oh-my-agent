@@ -1,4 +1,4 @@
-# RARDO v2.1 — Profile B defaults (benchmark-leader assignments)
+# Profile B defaults (benchmark-leader assignments)
 # Generated: 2026-04-23 | Session: session-20260423-141500
 # Claude roles omit effort (cli-session managed). xhigh reserved for Complex auto-escalation only.
 #
@@ -6,7 +6,7 @@
 # Do NOT edit it directly. To customize behavior, use one of:
 #   - .agents/oma-config.yaml                (agent_cli_mapping, session.quota_cap)
 #   - .agents/config/models.yaml             (add or override model slugs)
-# Legacy: .agents/config/user-preferences.yaml is still read for backward
+# Legacy: .agents/oma-config.yaml is still read for backward
 # compatibility but oma-config.yaml takes precedence when both exist.
 # To receive newer Profile B defaults in future releases, run:
 #   oma install --update-defaults

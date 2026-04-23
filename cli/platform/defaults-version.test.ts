@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installConfigs, readDefaultsVersion } from "./skills-installer.js";
 
 // ---------------------------------------------------------------------------
-// defaults.yaml version handling (RARDO v2.1 follow-up)
+// defaults.yaml version handling
 // ---------------------------------------------------------------------------
 
 describe("readDefaultsVersion", () => {

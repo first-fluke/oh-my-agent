@@ -1,13 +1,13 @@
 ---
 title: "Guide: Per-Agent Model Configuration"
-description: Configure different CLI vendors, models, and reasoning effort levels per agent using RARDO v2.1. Covers agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml, and session quota caps.
+description: Configure different CLI vendors, models, and reasoning effort levels per agent using . Covers agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml, and session quota caps.
 ---
 
 # Guide: Per-Agent Model Configuration
 
 ## Overview
 
-RARDO v2.1 introduces **per-agent model selection** through `agent_cli_mapping`. Each agent (pm, backend, frontend, qa, …) can now target a specific vendor, model, and reasoning effort independently, instead of sharing one global vendor.
+ introduces **per-agent model selection** through `agent_cli_mapping`. Each agent (pm, backend, frontend, qa, …) can now target a specific vendor, model, and reasoning effort independently, instead of sharing one global vendor.
 
 This page covers:
 
@@ -22,7 +22,7 @@ This page covers:
 
 ## Config File Hierarchy
 
-RARDO v2.1 reads configuration from three files, in order of precedence (highest first):
+ reads configuration from three files, in order of precedence (highest first):
 
 | File | Purpose | Edit? |
 |:-----|:--------|:------|
@@ -46,10 +46,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 ```
 
@@ -75,7 +75,7 @@ active_profile: claude-only   # see options below
 | `claude-only` | Claude Code (Sonnet/Opus) | Consistent Anthropic stack |
 | `codex-only` | OpenAI Codex (GPT-5.x) | Pure OpenAI stack |
 | `gemini-only` | Gemini CLI | Google-first workflows |
-| `antigravity` | Mixed: pm→claude, backend→codex, qa→gemini | Cross-vendor strengths |
+| `antigravity` | Mixed: impl→codex, architecture/qa/pm→claude, retrieval→gemini | Cross-vendor strengths |
 | `qwen-only` | Qwen CLI | Local / self-hosted inference |
 
 Profiles are a fast way to reshape the whole fleet without editing every agent line.
@@ -93,16 +93,16 @@ oma doctor --profile
 **Sample output:**
 
 ```
-RARDO v2.1 — Active Profile: antigravity
+ — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4.7           medium   user-preferences
+pm            claude    claude-sonnet-4-6           medium   user-preferences
 backend       openai    gpt-5.3-codex               high     user-preferences
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3-pro                low      profile:antigravity
-architecture  claude    claude-opus-4.7             high     defaults
-docs          claude    claude-sonnet-4.7           low      defaults
+qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+architecture  claude    claude-opus-4-7             high     defaults
+docs          claude    claude-sonnet-4-6           low      defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -175,10 +175,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 
 session:
@@ -222,7 +222,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
 
 Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
 
-## Upgrading from a pre-RARDO-v2.1 install
+## Upgrading from a pre-5.16.0 install
 
 If your project predates the per-agent model/effort feature:
 

@@ -184,7 +184,6 @@ oma auth:status [--json]
 ```
 Authenticatiestatus van alle ondersteunde CLI's.
 
-
 ### bridge
 ```
 oma bridge [url]

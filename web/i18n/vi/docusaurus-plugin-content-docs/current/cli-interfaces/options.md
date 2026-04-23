@@ -140,7 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. File log mồ côi: `/tmp/subagent-*.log` khớp PID chết.
 3. Thư mục Gemini Antigravity: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — tích lũy trạng thái theo thời gian và có thể phình to.
 
-
 ### agent:spawn
 
 ```

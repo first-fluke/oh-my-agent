@@ -513,7 +513,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-
 ### bridge
 
 Bridge MCP stdio sang Streamable HTTP transport.

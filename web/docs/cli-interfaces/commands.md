@@ -18,8 +18,14 @@ The environment variable `OH_MY_AG_OUTPUT_FORMAT` can be set to `json` to force 
 The default command with no arguments launches the interactive installer.
 
 ```
-oma
+oma [--update-defaults]
 ```
+
+**Options:**
+
+| Flag | Description |
+|:-----|:-----------|
+| `--update-defaults` | Overwrite `.agents/config/defaults.yaml` with the bundled version when a version mismatch is detected. User files (`oma-config.yaml`, `.agents/config/models.yaml`) are never touched. Introduced in cli@5.16.0. |
 
 **What it does:**
 1. Checks for legacy `.agent/` directory and migrates to `.agents/` if found.
@@ -48,7 +54,7 @@ oma
 Health check for CLI installations, MCP configs, and skill status.
 
 ```
-oma doctor [--json] [--output <format>]
+oma doctor [--json] [--output <format>] [--profile]
 ```
 
 **Options:**
@@ -57,6 +63,7 @@ oma doctor [--json] [--output <format>]
 |:-----|:-----------|
 | `--json` | Output as JSON |
 | `--output <format>` | Output format (`text` or `json`) |
+| `--profile` | Show profile health matrix — resolves `agent_cli_mapping` through `runtime_profiles`, displays the active slug, CLI, and auth status per agent. Introduced in cli@5.16.0. See [Per-Agent Models](../guide/per-agent-models.md). |
 
 **What it checks:**
 - CLI installations: gemini, claude, codex, qwen (version and path).
@@ -67,11 +74,11 @@ oma doctor [--json] [--output <format>]
 - Global workflows: checks `~/.gemini/antigravity/global_workflows/` installation status.
 - Git rerere: whether `rerere.enabled` is configured globally.
 - Claude Code recommended settings: checks `~/.claude/settings.json` for optimal configuration:
-  - `cleanupPeriodDays >= 180` (preserve conversation history)
-  - `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS >= 100000`
-  - `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE >= 80`
-  - `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING`, `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY` set to `"1"`
-  - Attribution strings for commits and PRs
+- `cleanupPeriodDays >= 180` (preserve conversation history)
+- `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS >= 100000`
+- `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE >= 80`
+- `DISABLE_TELEMETRY`, `DISABLE_ERROR_REPORTING`, `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY` set to `"1"`
+- Attribution strings for commits and PRs
 - User-level CLAUDE.md: checks `~/.claude/CLAUDE.md` contains the OMA integration block (`<!-- OMA:START`).
 
 **Auto-repair:** If missing skills or settings are detected, `doctor` offers to install them interactively. For Claude Code settings, it can apply recommended values automatically.
@@ -86,6 +93,9 @@ oma doctor --json
 
 # Pipe to jq for specific checks
 oma doctor --json | jq '.clis[] | select(.installed == false)'
+
+# Inspect the profile resolution matrix
+oma doctor --profile
 ```
 
 ### update
@@ -420,12 +430,12 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 **YAML tasks file format:**
 ```yaml
 tasks:
-  - agent: backend
-    task: "Implement user API"
-    workspace: ./api           # optional, auto-detected if omitted
-  - agent: frontend
-    task: "Build user dashboard"
-    workspace: ./web
+- agent: backend
+task: "Implement user API"
+workspace: ./api # optional, auto-detected if omitted
+- agent: frontend
+task: "Build user dashboard"
+workspace: ./web
 ```
 
 **Inline task format:** `agent:task` or `agent:task:workspace` (workspace must start with `./` or `/`).
@@ -549,7 +559,6 @@ oma auth:status [--json] [--output <format>]
 oma auth:status
 oma auth:status --json
 ```
-
 
 ### bridge
 

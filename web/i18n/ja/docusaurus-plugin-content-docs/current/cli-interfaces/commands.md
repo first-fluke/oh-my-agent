@@ -184,7 +184,6 @@ oma auth:status [--json] [--output <format>]
 
 全CLI（Gemini、Claude、Codex、Qwen）の認証状態を確認。
 
-
 ### bridge
 
 ```

@@ -140,7 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. 孤立日志文件：`/tmp/subagent-*.log`，匹配已死亡 PID。
 3. Gemini Antigravity 目录：`.gemini/antigravity/brain/`、`.gemini/antigravity/implicit/`、`.gemini/antigravity/knowledge/` —— 这些会随时间积累状态并变得很大。
 
-
 ### agent:spawn
 
 ```
