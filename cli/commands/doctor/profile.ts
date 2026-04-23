@@ -226,12 +226,12 @@ export async function collectProfileReport(
     const userEntry = userMapping[role];
     let model: string;
 
-    if (userEntry) {
-      model =
-        typeof userEntry === "string"
-          ? userEntry // legacy: raw vendor string — not a slug
-          : userEntry.model;
+    if (userEntry && typeof userEntry !== "string") {
+      // User AgentSpec object — use its model slug directly.
+      model = userEntry.model;
     } else {
+      // Either no user entry, or legacy string (vendor-only override).
+      // In both cases the model slug comes from defaults.yaml.
       const entry = normalizeEntry(
         agentDefaults[role] as AgentDefaultEntry | string | undefined,
       );
