@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { parse as parseYaml } from "yaml";
 import type { VerifyCheck, VerifyResult } from "../../types/index.js";
 
 export type AgentType =
@@ -194,33 +195,142 @@ function checkTodoComments(workspace: string): VerifyCheck {
   return createCheck("TODO/FIXME Comments", "pass", "None found");
 }
 
-function checkPythonSyntax(workspace: string): VerifyCheck {
-  const hasUv = runCommand("which uv", workspace);
-  if (!hasUv) return createCheck("Python Syntax", "skip", "uv not available");
+type CommandCheck = {
+  cmd: string;
+  pass_signal?: string;
+  skip_if_missing?: string;
+};
 
-  const result = runCommand(
-    `find . -name "*.py" -not -path "*/node_modules/*" -not -path "*/.venv/*" -exec uv run python -m py_compile {} \\; 2>&1 | head -5`,
+type BackendStackManifest = {
+  language: string;
+  framework?: string;
+  orm?: string;
+  source?: string;
+  verify?: {
+    detect?: string;
+    syntax?: CommandCheck;
+    tests?: CommandCheck;
+    raw_sql?: {
+      patterns: string[];
+      include_glob?: string;
+      exclude_dirs?: string[];
+    };
+  };
+};
+
+function loadBackendStackManifest(
+  workspace: string,
+): BackendStackManifest | null {
+  const path = join(
     workspace,
+    ".agents",
+    "skills",
+    "oma-backend",
+    "stack",
+    "stack.yaml",
   );
-  if (result && result.length > 0) {
-    return createCheck("Python Syntax", "fail", "Syntax errors found");
+  if (!existsSync(path)) return null;
+  try {
+    const parsed = parseYaml(readFileSync(path, "utf-8")) as unknown;
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      typeof (parsed as { language?: unknown }).language === "string"
+    ) {
+      return parsed as BackendStackManifest;
+    }
+    return null;
+  } catch {
+    return null;
   }
-  return createCheck("Python Syntax", "pass", "Valid");
 }
 
-function checkSqlInjection(workspace: string): VerifyCheck {
-  const result = runCommand(
-    `grep -rn --include="*.py" -E "f[\\"'].*(SELECT|INSERT|UPDATE|DELETE)" . 2>/dev/null | grep -v test | grep -v node_modules | head -1`,
-    workspace,
-  );
-  if (result) {
-    return createCheck(
-      "SQL Injection",
-      "fail",
-      "f-string with SQL keywords detected",
-    );
+// Wraps an arbitrary string so it survives as a single shell argument inside `sh -c`.
+// Uses POSIX single-quote escaping, which is the only way to safely pass patterns
+// containing `"`, `$`, backticks, or backslashes without interpretation.
+function shellSingleQuote(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+function hasBinary(bin: string, workspace: string): boolean {
+  return runCommand(`which ${bin}`, workspace) !== null;
+}
+
+function checkBackendSyntax(
+  manifest: BackendStackManifest,
+  workspace: string,
+): VerifyCheck {
+  const name = `${titleCase(manifest.language)} Syntax`;
+  const cfg = manifest.verify?.syntax;
+  if (!cfg) return createCheck(name, "skip", "No syntax check configured");
+  if (cfg.skip_if_missing && !hasBinary(cfg.skip_if_missing, workspace)) {
+    return createCheck(name, "skip", `${cfg.skip_if_missing} not available`);
   }
-  return createCheck("SQL Injection", "pass", "None detected");
+  const output = runCommand(`${cfg.cmd} 2>&1`, workspace);
+  if (output === null || output === "") {
+    return createCheck(name, "pass", "Valid");
+  }
+  if (/error/i.test(output)) {
+    return createCheck(name, "fail", "Syntax errors found");
+  }
+  return createCheck(name, "pass", "Valid");
+}
+
+function checkBackendTests(
+  manifest: BackendStackManifest,
+  workspace: string,
+): VerifyCheck {
+  const name = `${titleCase(manifest.language)} Tests`;
+  const cfg = manifest.verify?.tests;
+  if (!cfg) return createCheck(name, "skip", "No tests check configured");
+  if (cfg.skip_if_missing && !hasBinary(cfg.skip_if_missing, workspace)) {
+    return createCheck(name, "skip", `${cfg.skip_if_missing} not available`);
+  }
+  const output = runCommand(`${cfg.cmd} 2>&1`, workspace);
+  if (output === null) {
+    return createCheck(name, "fail", "Tests failing");
+  }
+  const signal = cfg.pass_signal;
+  if (signal && output.includes(signal)) {
+    return createCheck(name, "pass", "Tests pass");
+  }
+  if (!signal && (output.includes("passed") || output.includes("ok"))) {
+    return createCheck(name, "pass", "Tests pass");
+  }
+  if (output.includes("no tests ran") || output.includes("0 tests")) {
+    return createCheck(name, "pass", "No tests to run");
+  }
+  return createCheck(name, "fail", "Tests failing");
+}
+
+function checkBackendRawSql(
+  manifest: BackendStackManifest,
+  workspace: string,
+): VerifyCheck {
+  const name = "SQL Injection";
+  const cfg = manifest.verify?.raw_sql;
+  if (!cfg || cfg.patterns.length === 0) {
+    return createCheck(name, "skip", "No raw_sql check configured");
+  }
+  const includeFlag = cfg.include_glob
+    ? `--include=${shellSingleQuote(cfg.include_glob)}`
+    : "";
+  const excludes = (cfg.exclude_dirs ?? [])
+    .map((dir) => `| grep -v ${shellSingleQuote(dir)}`)
+    .join(" ");
+  const patternArg = shellSingleQuote(cfg.patterns.join("|"));
+  const cmd = `grep -rn ${includeFlag} -E ${patternArg} . 2>/dev/null ${excludes} | head -1`;
+  const result = runCommand(cmd, workspace);
+  if (result) {
+    const file = result.split(":")[0] ?? "unknown";
+    return createCheck(name, "fail", `Raw SQL pattern in ${file}`);
+  }
+  return createCheck(name, "pass", "None detected");
+}
+
+function titleCase(value: string): string {
+  if (value.length === 0) return value;
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function checkPythonTests(workspace: string): VerifyCheck {
@@ -348,11 +458,23 @@ function runAgentChecks(
 ): VerifyCheck[] {
   const checks: VerifyCheck[] = [];
   switch (agentType) {
-    case "backend":
-      checks.push(checkPythonSyntax(workspace));
-      checks.push(checkSqlInjection(workspace));
-      checks.push(checkPythonTests(workspace));
+    case "backend": {
+      const manifest = loadBackendStackManifest(workspace);
+      if (!manifest) {
+        checks.push(
+          createCheck(
+            "Backend Stack",
+            "skip",
+            "stack/stack.yaml not found — run /stack-set",
+          ),
+        );
+        break;
+      }
+      checks.push(checkBackendSyntax(manifest, workspace));
+      checks.push(checkBackendRawSql(manifest, workspace));
+      checks.push(checkBackendTests(manifest, workspace));
       break;
+    }
     case "frontend":
       checks.push(checkTypeScript(workspace));
       checks.push(checkInlineStyles(workspace));

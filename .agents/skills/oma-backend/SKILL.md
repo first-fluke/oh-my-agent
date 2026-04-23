@@ -66,10 +66,10 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 
 ## Stack-Specific Reference
 
-- Tech stack & libraries: `stack/tech-stack.md`
+- **Stack manifest (SSOT)**: `stack/stack.yaml` — structured declaration (`language`, `framework`, `orm`) and `verify:` contract consumed by `oma verify backend`. Schema: `variants/stack.schema.json`.
+- Tech stack narrative: `stack/tech-stack.md` — human-readable reference only; `stack.yaml` wins on conflict.
 - Code snippets (copy-paste ready): `stack/snippets.md`
 - API template: `stack/api-template.*`
-- Stack config: `stack/stack.yaml`
 
 ## How to Execute
 
