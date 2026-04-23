@@ -2,7 +2,7 @@
   "$schema": "./agent-variant.schema.json",
   "vendor": "gemini",
   "destDir": ".gemini/agents",
-  "modelDefault": "gemini-3-flash-preview",
+  "modelDefault": "gemini-3-flash",
   "toolsDefault": ["bash", "glob", "grep", "read", "edit", "write", "ask"],
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
   "agents": {
