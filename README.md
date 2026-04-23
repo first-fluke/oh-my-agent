@@ -116,7 +116,7 @@ Model selection follows two layers:
 
 ### Per-Agent Models (RARDO v2.1)
 
-Pin a specific model and effort per role in `.agents/config/user-preferences.yaml`:
+Pin a specific model and effort per role in `.agents/oma-config.yaml`:
 
 ```yaml
 agent_cli_mapping:

@@ -26,7 +26,7 @@ RARDO v2.1 liest drei Dateien in absteigender Priorität:
 
 | Datei | Zweck | Bearbeiten? |
 |:------|:------|:-----------|
-| `.agents/config/user-preferences.yaml` | Benutzer-Overrides — Agent-zu-CLI-Mapping, aktives Profil, Session-Quota | Ja |
+| `.agents/oma-config.yaml` | Benutzer-Overrides — Agent-zu-CLI-Mapping, aktives Profil, Session-Quota | Ja |
 | `.agents/config/models.yaml` | Benutzerdefinierte Modell-Slugs (Ergänzung zur eingebauten Registry) | Ja |
 | `.agents/config/defaults.yaml` | Eingebaute Profile-B-Baseline (4 `runtime_profiles`, sichere Fallbacks) | Nein — SSOT |
 
@@ -39,7 +39,7 @@ RARDO v2.1 liest drei Dateien in absteigender Priorität:
 `agent_cli_mapping` akzeptiert zwei Wertformen, damit eine schrittweise Migration möglich ist:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 agent_cli_mapping:
   pm: "claude"                        # Legacy — nur Anbieter (nutzt Default-Modell)
   backend:                            # neues AgentSpec-Objekt
@@ -66,7 +66,7 @@ Beide Formen lassen sich frei mischen. Nicht aufgeführte Agenten greifen auf da
 `defaults.yaml` liefert Profile B mit vier fertigen `runtime_profiles`. Wähle eines in `user-preferences.yaml`:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 active_profile: claude-only   # siehe Optionen unten
 ```
 
@@ -147,7 +147,7 @@ Slugs sind Bezeichner — behalte die englische Schreibweise des Anbieters exakt
 Füge `session.quota_cap` in `user-preferences.yaml` ein, um ausufernde Subagent-Spawns zu begrenzen:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # Gesamt-Token-Obergrenze der Session
@@ -199,7 +199,7 @@ session:
 | File | Owner | Safe to edit? |
 |------|-------|---------------|
 | `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/oma-config.yaml` | You | ✅ Customize here |
 | `.agents/config/models.yaml` | You | ✅ Add new slugs here |
 
 `defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.

@@ -9,25 +9,11 @@
  * Format: Markdown with YAML frontmatter + one JSON code block per record
  * Concurrency: append-only via appendFileSync (atomic on POSIX for small writes)
  *
- * Cap source: .agents/config/user-preferences.yaml (wins) OR
- *             .agents/config/defaults.yaml
- *             under top-level `session.quota_cap` key.
- */
-
-/**
- * session-cost.ts
- *
- * Session-scoped token/spawn accounting for orchestrate runs.
- * Tracks usage per agent/vendor and checks against configured quota caps
- * so users can be warned before the next agent spawn when a threshold is crossed.
- *
- * Storage: .serena/memories/session-cost-{sessionId}.md
- * Format: Markdown with YAML frontmatter + one JSON code block per record
- * Concurrency: append-only via appendFileSync (atomic on POSIX for small writes)
- *
- * Cap source: .agents/config/user-preferences.yaml (wins) OR
- *             .agents/config/defaults.yaml
- *             under top-level `session.quota_cap` key.
+ * Cap source precedence:
+ *   1. .agents/oma-config.yaml               — canonical user config (wins)
+ *   2. .agents/config/user-preferences.yaml  — legacy path (pre-c702a4b)
+ *   3. .agents/config/defaults.yaml          — OMA-shipped SSOT fallback
+ * under top-level `session.quota_cap` key.
  */
 
 import fs, {
@@ -198,29 +184,24 @@ function normalizeQuotaCap(raw: RawQuotaCap): QuotaCap {
 
 /**
  * Load quota cap from config files.
- * user-preferences.yaml wins over defaults.yaml.
+ *
+ * Precedence (first match wins):
+ *   1. .agents/oma-config.yaml                — canonical user config
+ *   2. .agents/config/user-preferences.yaml   — legacy path (pre-c702a4b)
+ *   3. .agents/config/defaults.yaml           — OMA-shipped SSOT fallback
+ *
  * Returns null if no cap is configured.
  */
 export function loadQuotaCap(cwd: string = process.cwd()): QuotaCap | null {
-  // user-preferences wins
-  const userPrefsPath = findFileUp(
-    cwd,
-    path.join(".agents", "config", "user-preferences.yaml"),
-  );
-  if (userPrefsPath) {
-    const config = loadRawConfig(userPrefsPath);
-    if (config.session?.quota_cap) {
-      return normalizeQuotaCap(config.session.quota_cap);
-    }
-  }
+  const candidates = [
+    findFileUp(cwd, path.join(".agents", "oma-config.yaml")),
+    findFileUp(cwd, path.join(".agents", "config", "user-preferences.yaml")),
+    findFileUp(cwd, path.join(".agents", "config", "defaults.yaml")),
+  ];
 
-  // fall back to defaults.yaml
-  const defaultsPath = findFileUp(
-    cwd,
-    path.join(".agents", "config", "defaults.yaml"),
-  );
-  if (defaultsPath) {
-    const config = loadRawConfig(defaultsPath);
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const config = loadRawConfig(candidate);
     if (config.session?.quota_cap) {
       return normalizeQuotaCap(config.session.quota_cap);
     }
@@ -352,27 +333,27 @@ export function formatPromptMessage(result: CheckCapResult): string {
       return (
         `[Session quota] Spawn limit reached: ${result.current} of ${result.limit} spawns used. ` +
         `The orchestrator will not start the next agent until you confirm or increase the limit ` +
-        `(session.quota_cap.spawn_count in user-preferences.yaml).`
+        `(session.quota_cap.spawn_count in oma-config.yaml).`
       );
     case "tokens":
       return (
         `[Session quota] Token limit reached: ${result.current.toLocaleString()} of ` +
         `${result.limit.toLocaleString()} tokens consumed. ` +
         `The orchestrator will not start the next agent until you confirm or increase the limit ` +
-        `(session.quota_cap.tokens in user-preferences.yaml).`
+        `(session.quota_cap.tokens in oma-config.yaml).`
       );
     case "perVendor":
       return (
         `[Session quota] Per-vendor token limit reached: ${result.current.toLocaleString()} of ` +
         `${result.limit.toLocaleString()} tokens consumed for this vendor. ` +
         `The orchestrator will not start the next agent until you confirm or increase the limit ` +
-        `(session.quota_cap.per_vendor in user-preferences.yaml).`
+        `(session.quota_cap.per_vendor in oma-config.yaml).`
       );
     default:
       return (
         `[Session quota] Usage limit exceeded (current: ${result.current}, limit: ${result.limit}). ` +
         `The orchestrator will not start the next agent until you confirm or adjust your quota cap ` +
-        `(session.quota_cap in user-preferences.yaml).`
+        `(session.quota_cap in oma-config.yaml).`
       );
   }
 }

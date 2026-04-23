@@ -112,7 +112,7 @@ La selección de modelo sigue dos capas:
 - El despacho nativo del mismo proveedor usa la definición de agente generada en `.claude/agents/`, `.codex/agents/` o `.gemini/agents/`.
 - El despacho entre proveedores o el fallback por CLI usa los valores por defecto del proveedor en `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**RARDO v2.1 — modelos por agente**: cada agente puede apuntar a un modelo y `effort` propios desde `.agents/config/user-preferences.yaml`. Vienen cinco runtime profiles listos: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Revisa la matriz de auth resuelta con `oma doctor --profile`. Guía completa: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**RARDO v2.1 — modelos por agente**: cada agente puede apuntar a un modelo y `effort` propios desde `.agents/oma-config.yaml`. Vienen cinco runtime profiles listos: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Revisa la matriz de auth resuelta con `oma doctor --profile`. Guía completa: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## ¿Por Qué oh-my-agent?
 

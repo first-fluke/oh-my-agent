@@ -26,7 +26,7 @@ RARDO v2.1 按以下优先级（由高到低）读取三份文件：
 
 | 文件 | 用途 | 可编辑 |
 |:-----|:-----|:------|
-| `.agents/config/user-preferences.yaml` | 用户覆盖 — 代理到 CLI 的映射、激活配置档、会话配额 | 是 |
+| `.agents/oma-config.yaml` | 用户覆盖 — 代理到 CLI 的映射、激活配置档、会话配额 | 是 |
 | `.agents/config/models.yaml` | 用户自定义模型 slug（内置注册表的补充） | 是 |
 | `.agents/config/defaults.yaml` | 内置 Profile B 基线（4 个 `runtime_profiles`，安全回退） | 否 — SSOT |
 
@@ -39,7 +39,7 @@ RARDO v2.1 按以下优先级（由高到低）读取三份文件：
 `agent_cli_mapping` 接受两种取值形式，方便渐进式迁移：
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 agent_cli_mapping:
   pm: "claude"                        # 旧格式 — 仅指定厂商（使用默认模型）
   backend:                            # 新的 AgentSpec 对象
@@ -66,7 +66,7 @@ agent_cli_mapping:
 `defaults.yaml` 预置了 Profile B 以及 4 个 `runtime_profiles`。在 `user-preferences.yaml` 中选一个：
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 active_profile: claude-only   # 见下方选项
 ```
 
@@ -147,7 +147,7 @@ slug 是标识符,请保留厂商发布的英文原样。
 在 `user-preferences.yaml` 中加入 `session.quota_cap`,约束失控的子代理生成：
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # 整个会话的 token 上限
@@ -199,7 +199,7 @@ session:
 | File | Owner | Safe to edit? |
 |------|-------|---------------|
 | `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/oma-config.yaml` | You | ✅ Customize here |
 | `.agents/config/models.yaml` | You | ✅ Add new slugs here |
 
 `defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.

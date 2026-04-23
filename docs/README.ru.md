@@ -112,7 +112,7 @@ oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 - Нативный диспатч того же вендора использует сгенерированное определение агента в `.claude/agents/`, `.codex/agents/` или `.gemini/agents/`.
 - Кросс-вендорный или fallback CLI диспатч использует дефолты вендора из `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**RARDO v2.1 — модели по агенту**: каждый агент может указывать собственную модель и `effort` через `.agents/config/user-preferences.yaml`. Из коробки доступны пять runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Проверьте итоговую auth-матрицу командой `oma doctor --profile`. Полное руководство: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**RARDO v2.1 — модели по агенту**: каждый агент может указывать собственную модель и `effort` через `.agents/oma-config.yaml`. Из коробки доступны пять runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Проверьте итоговую auth-матрицу командой `oma doctor --profile`. Полное руководство: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Почему oh-my-agent?
 

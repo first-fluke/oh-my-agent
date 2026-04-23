@@ -112,7 +112,7 @@ Die Modellauswahl folgt zwei Schichten:
 - Same-Vendor-Native-Dispatch verwendet die generierte Vendor-Agent-Definition in `.claude/agents/`, `.codex/agents/` oder `.gemini/agents/`.
 - Cross-Vendor- oder Fallback-CLI-Dispatch verwendet die Vendor-Defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**RARDO v2.1 — Per-Agent-Modelle**: Jeder Agent kann ein eigenes Modell und `effort` über `.agents/config/user-preferences.yaml` beziehen. Fünf Runtime-Profile sind vorkonfiguriert: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Prüfe die aufgelöste Auth-Matrix mit `oma doctor --profile`. Vollständige Anleitung: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**RARDO v2.1 — Per-Agent-Modelle**: Jeder Agent kann ein eigenes Modell und `effort` über `.agents/oma-config.yaml` beziehen. Fünf Runtime-Profile sind vorkonfiguriert: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Prüfe die aufgelöste Auth-Matrix mit `oma doctor --profile`. Vollständige Anleitung: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Warum oh-my-agent?
 

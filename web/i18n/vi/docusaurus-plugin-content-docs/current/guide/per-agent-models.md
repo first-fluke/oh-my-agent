@@ -26,7 +26,7 @@ RARDO v2.1 đọc ba file theo thứ tự ưu tiên (cao xuống thấp):
 
 | File | Mục đích | Chỉnh sửa? |
 |:-----|:---------|:-----------|
-| `.agents/config/user-preferences.yaml` | Override của người dùng — mapping agent↔CLI, profile đang bật, quota phiên | Có |
+| `.agents/oma-config.yaml` | Override của người dùng — mapping agent↔CLI, profile đang bật, quota phiên | Có |
 | `.agents/config/models.yaml` | Slug model do người dùng cung cấp (bổ sung cho registry mặc định) | Có |
 | `.agents/config/defaults.yaml` | Baseline Profile B gắn sẵn (4 `runtime_profiles`, fallback an toàn) | Không — SSOT |
 
@@ -39,7 +39,7 @@ RARDO v2.1 đọc ba file theo thứ tự ưu tiên (cao xuống thấp):
 `agent_cli_mapping` chấp nhận hai dạng giá trị để migrate dần:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 agent_cli_mapping:
   pm: "claude"                        # legacy — chỉ ghi nhà cung cấp (dùng model mặc định)
   backend:                            # object AgentSpec mới
@@ -66,7 +66,7 @@ Có thể trộn thoải mái. Agent không khai báo sẽ rơi về `runtime_pr
 `defaults.yaml` đi kèm Profile B cùng bốn `runtime_profiles` sẵn sàng. Chọn một trong `user-preferences.yaml`:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 active_profile: claude-only   # xem bảng dưới
 ```
 
@@ -147,7 +147,7 @@ Slug là định danh — giữ nguyên chữ tiếng Anh do nhà cung cấp cô
 Thêm `session.quota_cap` vào `user-preferences.yaml` để giới hạn việc spawn subagent mất kiểm soát:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # trần token cho toàn phiên
@@ -199,7 +199,7 @@ Chạy `oma doctor --profile` để xác nhận kết quả resolve rồi khởi
 | File | Owner | Safe to edit? |
 |------|-------|---------------|
 | `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/oma-config.yaml` | You | ✅ Customize here |
 | `.agents/config/models.yaml` | You | ✅ Add new slugs here |
 
 `defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.

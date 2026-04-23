@@ -128,7 +128,7 @@ Typical examples:
 
 ### `agent_cli_mapping` — dual format (RARDO v2.1)
 
-`agent_cli_mapping` in `.agents/config/user-preferences.yaml` accepts two value shapes so legacy configs keep working:
+`agent_cli_mapping` in `.agents/oma-config.yaml` accepts two value shapes so legacy configs keep working:
 
 ```yaml
 agent_cli_mapping:

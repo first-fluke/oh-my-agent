@@ -112,7 +112,7 @@ oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 - 同厂商原生调度使用生成在 `.claude/agents/`、`.codex/agents/`、`.gemini/agents/` 里的厂商 agent 定义。
 - 跨厂商或 CLI 回退调度使用 `.agents/skills/oma-orchestrator/config/cli-config.yaml` 里的厂商默认值。
 
-**RARDO v2.1 — 按 agent 配置模型**：可在 `.agents/config/user-preferences.yaml` 里为每个 agent 单独指定模型和 `effort`。内置五个 runtime profiles：`claude-only`、`codex-only`、`gemini-only`、`antigravity`、`qwen-only`。用 `oma doctor --profile` 查看解析后的 auth 矩阵。完整指南：[web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
+**RARDO v2.1 — 按 agent 配置模型**：可在 `.agents/oma-config.yaml` 里为每个 agent 单独指定模型和 `effort`。内置五个 runtime profiles：`claude-only`、`codex-only`、`gemini-only`、`antigravity`、`qwen-only`。用 `oma doctor --profile` 查看解析后的 auth 矩阵。完整指南：[web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
 
 ## 为什么选 oh-my-agent？
 
