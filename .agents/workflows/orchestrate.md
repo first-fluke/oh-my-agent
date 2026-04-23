@@ -164,8 +164,15 @@ bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
 ```
 
 - PASS (exit 0): accept result. If Quality Score is active, measure and record in Experiment Ledger.
-- FAIL (exit 1): re-spawn with error context (max 2 retries).
-- FAIL (after 2 retries): Activate **Exploration Loop** (load `exploration-loop.md` per `context-loading.md`):
+- FAIL (exit 1): Before re-spawning, apply the Review Loop termination check:
+
+  > **Review Loop termination conditions (OR — whichever fires first wins)**
+  > 1. Retry count for this agent has reached the configured maximum (default: 2 retries). Do not start another retry cycle.
+  > 2. Session cost cap exceeded: call `checkCap(sessionId, loadQuotaCap())` from `cli/io/session-cost.ts`. If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately — save the current agent's partial results before stopping, then report early termination due to quota. Do not spawn the next retry or any remaining agents in the tier.
+  >
+  > If neither condition is met, re-spawn the agent with error context and increment the retry counter.
+
+- FAIL (after 2 retries, and cost cap not yet exceeded): Activate **Exploration Loop** (load `exploration-loop.md` per `context-loading.md`):
   1. Generate 2-3 alternative hypotheses for the failing task
   2. Spawn the **same agent type** with different hypothesis prompts (parallel, separate workspaces)
   3. Score each result with Quality Score (if available)

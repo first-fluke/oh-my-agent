@@ -200,9 +200,15 @@ If baseline was measured at Step 5.2:
 
 **On gate pass**: Use memory edit tool to record phase completion in `session-ultrawork.md`
 
-**Gate failure (1st time)** → Return to Step 5, fix implementation issues, and repeat VERIFY phase.
+**Gate failure (1st time)** → Before re-spawning for the next VERIFY cycle, check the session cost cap:
 
-**Gate failure (2nd time on same issue)** → Activate **Exploration Loop**:
+> **Review Loop termination conditions (OR — whichever fires first wins)**
+> 1. Gate failure count has reached the configured maximum iterations (default: 5 total VERIFY + REFINE cycles). Do not start another cycle.
+> 2. Session cost cap exceeded: call `checkCap(sessionId, loadQuotaCap())` from `cli/io/session-cost.ts`. If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately — save all current step results before stopping, then report to the user that the loop was terminated early due to quota.
+>
+> If neither condition is met, return to Step 5 and continue.
+
+**Gate failure (2nd time on same issue, and termination conditions not yet met)** → Activate **Exploration Loop**:
 1. Load `exploration-loop.md` (conditional, per `context-loading.md`)
 2. Generate 2-3 alternative hypotheses using Exploration Decision template (`reasoning-templates.md` #6)
 3. Experiment each approach sequentially (git stash per attempt)
@@ -276,7 +282,13 @@ If baseline was measured at Step 5.2:
 
 **On gate pass**: Use memory edit tool to record phase completion in `session-ultrawork.md`
 
-**Gate failure → Re-spawn Debug Agent with specific issues and repeat until GATE passes.**
+**Gate failure → Before re-spawning the Debug Agent, apply the same termination check:**
+
+> **Review Loop termination conditions (OR — whichever fires first wins)**
+> 1. Total REFINE failure count has reached the configured maximum iterations (default: 5 cycles across all phases). Do not start another cycle.
+> 2. Session cost cap exceeded: call `checkCap(sessionId, loadQuotaCap())` from `cli/io/session-cost.ts`. If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop — save current step results before stopping, then report early termination due to quota.
+>
+> If neither condition is met, re-spawn the Debug Agent with specific issues and repeat until GATE passes.
 
 **Skip conditions**: Simple tasks < 50 lines
 
