@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { sanitizeFrontmatterForVendor } from "./agent-composer.js";
+import {
+  sanitizeFrontmatterForVendor,
+  stripCharterCheck,
+} from "./agent-composer.js";
 
 // ---------------------------------------------------------------------------
 // agent-composer.test.ts
@@ -398,5 +401,44 @@ describe("sanitizeFrontmatterForVendor — edge cases", () => {
     const input = { name: "x", tools: ["Read", "Write"] };
     const result = sanitizeFrontmatterForVendor(input, "claude");
     expect(result).toEqual({ name: "x", tools: ["Read", "Write"] });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T16 — CHARTER_CHECK stripping
+// ---------------------------------------------------------------------------
+
+describe("stripCharterCheck (T16)", () => {
+  it("removes the block between BEGIN and END markers", () => {
+    const body = `before\n<!-- CHARTER_CHECK_BEGIN -->\ncharter preflight scaffold\n<!-- CHARTER_CHECK_END -->\nafter`;
+    const result = stripCharterCheck(body);
+    expect(result).not.toContain("charter preflight scaffold");
+    expect(result).not.toContain("CHARTER_CHECK_BEGIN");
+    expect(result).not.toContain("CHARTER_CHECK_END");
+    expect(result).toContain("before");
+    expect(result).toContain("after");
+  });
+
+  it("returns body unchanged when markers are absent (no regression)", () => {
+    const body = "no markers here\njust text";
+    expect(stripCharterCheck(body)).toBe(body);
+  });
+
+  it("returns body unchanged when only BEGIN marker is present", () => {
+    const body = "start\n<!-- CHARTER_CHECK_BEGIN -->\norphan begin\nno end";
+    expect(stripCharterCheck(body)).toBe(body);
+  });
+
+  it("saves at least 200 bytes on a realistic Charter Preflight block", () => {
+    // Simulated real-world block (~250 bytes content between markers)
+    const scaffold = [
+      "## Charter Preflight",
+      "Before starting, confirm: scope, constraints, success criteria,",
+      "owner, rollback plan, observability. Ack items 1-6 in first reply.",
+      "If any item is unclear, request clarification before proceeding.",
+    ].join("\n");
+    const body = `task intro\n<!-- CHARTER_CHECK_BEGIN -->\n${scaffold}\n<!-- CHARTER_CHECK_END -->\ntask body`;
+    const stripped = stripCharterCheck(body);
+    expect(body.length - stripped.length).toBeGreaterThanOrEqual(200);
   });
 });
