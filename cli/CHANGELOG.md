@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.3...cli-v5.15.0) (2026-04-23)
+
+
+### Features
+
+* **backend:** route oma verify backend through stack.yaml manifest ([453873a](https://github.com/first-fluke/oh-my-agent/commit/453873a8451fb33450259178c8826ef467c960a9))
+
+
+### Bug Fixes
+
+* **cli:** escape inner quote in checkSqlInjection grep pattern ([#265](https://github.com/first-fluke/oh-my-agent/issues/265)) ([20938c6](https://github.com/first-fluke/oh-my-agent/commit/20938c64915ac533440cc6f8393e392f332abc97))
+
+
+### Documentation
+
+* **cli:** sync README skill table (auto) ([7507489](https://github.com/first-fluke/oh-my-agent/commit/75074899ae21b228bc13cf08f5f00b8b0271eb96))
+
 ## [5.14.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.14.2...cli-v5.14.3) (2026-04-22)
 
 
