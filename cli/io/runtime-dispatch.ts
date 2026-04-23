@@ -271,7 +271,7 @@ export type AgentPlan = {
  * Idempotent: no-op when effort already matches or no effort is set.
  * Silently skips on I/O errors (non-fatal).
  */
-function persistCodexEffortToToml(cwd: string, effort: string): void {
+function persistCodexEffortToToml(cwd: string, effort: EffortLevel): void {
   const codexConfigPath = path.join(cwd, ".codex", "config.toml");
   try {
     const rawToml = fs.existsSync(codexConfigPath)
