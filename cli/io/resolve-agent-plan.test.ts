@@ -640,3 +640,88 @@ describe("ConfigError", () => {
     expect(err.message).toBe("test message");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Legacy vendor string override → runtime_profiles lookup
+// ---------------------------------------------------------------------------
+
+const DEFAULTS_WITH_PROFILES = {
+  agent_defaults: {
+    orchestrator: { model: "anthropic/claude-sonnet-4-6" },
+    frontend: { model: "openai/gpt-5.4", effort: "high" },
+    backend: { model: "openai/gpt-5.3-codex", effort: "high" },
+  },
+  runtime_profiles: {
+    "claude-only": {
+      agent_defaults: {
+        frontend: { model: "anthropic/claude-sonnet-4-6" },
+        backend: { model: "anthropic/claude-sonnet-4-6" },
+      },
+    },
+    "gemini-only": {
+      agent_defaults: {
+        frontend: { model: "google/gemini-3-flash", thinking: true },
+        backend: { model: "google/gemini-3-flash", thinking: true },
+      },
+    },
+  },
+};
+
+describe("resolveAgentPlanFromConfig — legacy vendor string override", () => {
+  it("legacy 'claude' string looks up claude-only profile for the role", () => {
+    const plan = resolveAgentPlanFromConfig("frontend", {
+      userPrefs: { agent_cli_mapping: { frontend: "claude" } },
+      defaults: DEFAULTS_WITH_PROFILES,
+    });
+    expect(plan.cli).toBe("claude");
+    expect(plan.cliModel).toBe("claude-sonnet-4-6");
+  });
+
+  it("legacy 'gemini' string resolves through gemini-only profile (thinking flag preserved)", () => {
+    const plan = resolveAgentPlanFromConfig("backend", {
+      userPrefs: { agent_cli_mapping: { backend: "gemini" } },
+      defaults: DEFAULTS_WITH_PROFILES,
+    });
+    expect(plan.cli).toBe("gemini");
+    expect(plan.cliModel).toBe("gemini-3-flash");
+    expect(plan.thinking).toBe(true);
+  });
+
+  it("legacy string for vendor without profile entry falls through to top-level defaults with WARN", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const defaultsMinus = {
+      agent_defaults: {
+        frontend: { model: "openai/gpt-5.4", effort: "high" },
+      },
+      runtime_profiles: {
+        "claude-only": { agent_defaults: {} }, // role missing
+      },
+    };
+    const plan = resolveAgentPlanFromConfig("frontend", {
+      userPrefs: { agent_cli_mapping: { frontend: "claude" } },
+      defaults: defaultsMinus,
+    });
+    expect(plan.cliModel).toBe("gpt-5.4"); // fell through to top-level
+    expect(
+      warnSpy.mock.calls.some((c) =>
+        String(c[0]).includes("runtime_profiles.claude-only"),
+      ),
+    ).toBe(true);
+    warnSpy.mockRestore();
+  });
+
+  it("unknown legacy vendor name ('martian') falls through with WARN", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const plan = resolveAgentPlanFromConfig("frontend", {
+      userPrefs: { agent_cli_mapping: { frontend: "martian" } },
+      defaults: DEFAULTS_WITH_PROFILES,
+    });
+    expect(plan.cliModel).toBe("gpt-5.4"); // top-level default
+    expect(
+      warnSpy.mock.calls.some((c) =>
+        String(c[0]).includes("legacy vendor 'martian'"),
+      ),
+    ).toBe(true);
+    warnSpy.mockRestore();
+  });
+});

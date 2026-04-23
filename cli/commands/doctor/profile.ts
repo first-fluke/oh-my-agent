@@ -120,6 +120,29 @@ function normalizeEntry(
   return entry;
 }
 
+/**
+ * Map a legacy vendor name to the corresponding runtime_profiles key.
+ * Mirrors the helper in cli/io/runtime-dispatch.ts so the doctor matrix
+ * and resolveAgentPlan agree on how to interpret a legacy vendor override.
+ */
+function legacyVendorToProfileKey(vendor: string): string | null {
+  const normalized = vendor.trim().toLowerCase();
+  switch (normalized) {
+    case "claude":
+      return "claude-only";
+    case "codex":
+      return "codex-only";
+    case "gemini":
+      return "gemini-only";
+    case "qwen":
+      return "qwen-only";
+    case "antigravity":
+      return "antigravity";
+    default:
+      return null;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // User-override loader
 // ---------------------------------------------------------------------------
@@ -199,11 +222,12 @@ export async function collectProfileReport(
 
   // Load defaults.yaml
   let agentDefaults: Record<string, AgentDefaultEntry | string> = {};
+  let defaultsYaml: DefaultsYaml = {};
   if (!missingDefaultsYaml) {
     try {
       const raw = readFileSync(defaultsPath, "utf-8");
-      const parsed = parseDefaultsYaml(raw);
-      agentDefaults = parsed.agent_defaults ?? {};
+      defaultsYaml = parseDefaultsYaml(raw);
+      agentDefaults = defaultsYaml.agent_defaults ?? {};
     } catch {
       // defensive — treat as missing
     }
@@ -229,9 +253,20 @@ export async function collectProfileReport(
     if (userEntry && typeof userEntry !== "string") {
       // User AgentSpec object — use its model slug directly.
       model = userEntry.model;
+    } else if (typeof userEntry === "string") {
+      // Legacy string vendor override — resolve via runtime_profiles first.
+      const profileKey = legacyVendorToProfileKey(userEntry);
+      const vendorProfileEntry = profileKey
+        ? defaultsYaml.runtime_profiles?.[profileKey]?.agent_defaults?.[role]
+        : undefined;
+      const entry =
+        normalizeEntry(vendorProfileEntry) ??
+        normalizeEntry(
+          agentDefaults[role] as AgentDefaultEntry | string | undefined,
+        );
+      model = entry?.model ?? "unknown";
     } else {
-      // Either no user entry, or legacy string (vendor-only override).
-      // In both cases the model slug comes from defaults.yaml.
+      // No user entry — top-level defaults.
       const entry = normalizeEntry(
         agentDefaults[role] as AgentDefaultEntry | string | undefined,
       );

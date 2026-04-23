@@ -456,9 +456,38 @@ type RawAgentDefault = {
   memory?: string;
 };
 
-type DefaultsConfig = {
+type RuntimeProfile = {
+  description?: string;
   agent_defaults?: Record<string, RawAgentDefault>;
 };
+
+type DefaultsConfig = {
+  agent_defaults?: Record<string, RawAgentDefault>;
+  runtime_profiles?: Record<string, RuntimeProfile>;
+};
+
+/**
+ * Map a legacy vendor name ("claude", "codex", "gemini", "qwen", "antigravity")
+ * to the corresponding runtime_profiles key in defaults.yaml.
+ * Returns null if the vendor name is not recognized.
+ */
+function legacyVendorToProfileKey(vendor: string): string | null {
+  const normalized = vendor.trim().toLowerCase();
+  switch (normalized) {
+    case "claude":
+      return "claude-only";
+    case "codex":
+      return "codex-only";
+    case "gemini":
+      return "gemini-only";
+    case "qwen":
+      return "qwen-only";
+    case "antigravity":
+      return "antigravity";
+    default:
+      return null;
+  }
+}
 
 type UserPreferencesRaw = {
   agent_cli_mapping?: Record<string, string | RawAgentDefault>;
@@ -545,8 +574,25 @@ export function resolveAgentPlanFromConfig(
 
   if (rawUserEntry !== undefined) {
     if (typeof rawUserEntry === "string") {
-      // Legacy string format: vendor name only — use defaults for model/effort
+      // Legacy string format: vendor name = "use this vendor for this agent".
+      // Resolve via defaults.runtime_profiles.{vendor}-only.agent_defaults[agentId]
+      // so the user's vendor intent is honored. Falls through to top-level
+      // agent_defaults only when the vendor profile doesn't define the role.
+      const profileKey = legacyVendorToProfileKey(rawUserEntry);
+      const vendorProfileDefault = profileKey
+        ? defaults.runtime_profiles?.[profileKey]?.agent_defaults?.[agentId]
+        : undefined;
+      if (profileKey && !vendorProfileDefault) {
+        console.warn(
+          `[resolve-agent-plan] ${agentId} agent: legacy override '${rawUserEntry}' but runtime_profiles.${profileKey}.agent_defaults.${agentId} is missing — falling back to top-level agent_defaults.`,
+        );
+      } else if (!profileKey) {
+        console.warn(
+          `[resolve-agent-plan] ${agentId} agent: legacy vendor '${rawUserEntry}' is not a known runtime — falling back to top-level agent_defaults.`,
+        );
+      }
       const agentDefault =
+        vendorProfileDefault ??
         defaults.agent_defaults?.[agentId] ??
         defaults.agent_defaults?.orchestrator;
       modelSlug = agentDefault?.model;
