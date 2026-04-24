@@ -1,6 +1,8 @@
 name: oma
-version: 5.17.0
-description: Portable multi-agent harness — 24 domain skills for Claude, Codex, Cursor, OpenCode, Gemini
+version: 5.18.0
+description: >-
+  Portable multi-agent harness — 24 domain skills for Claude, Codex, Cursor,
+  OpenCode, Gemini
 author: First Fluke <our.first.fluke@gmail.com>
 license: MIT
 target: all

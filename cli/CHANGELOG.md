@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.17.0...cli-v5.18.0) (2026-04-24)
+
+
+### Features
+
+* **apm:** add Microsoft APM package distribution ([672717c](https://github.com/first-fluke/oh-my-agent/commit/672717cc1233e318a2069627fa385e5a3efd022a))
+
+
+### Refactoring
+
+* **config:** drop legacy user-preferences.yaml read paths ([305fc4e](https://github.com/first-fluke/oh-my-agent/commit/305fc4e6e5c7719291989a67b84e89b4a68ee432))
+* **config:** remove unused effort_matrix block from defaults.yaml ([76f0ef4](https://github.com/first-fluke/oh-my-agent/commit/76f0ef40ccb2e8b9aa592e352171289e0c8cef41))
+
 ## [5.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.16.0...cli-v5.17.0) (2026-04-24)
 
 
