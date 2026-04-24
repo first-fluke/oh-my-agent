@@ -6,7 +6,7 @@
 - [ ] `--out` is inside the project, or you've set `--allow-external-out`.
 - [ ] Estimated cost is acceptable. Run `--dry-run` first for unfamiliar combinations.
 - [ ] Secrets are not in the prompt, or `--no-prompt-in-manifest` is set.
-- [ ] For `--vendor all`, both codex and gemini are healthy (strict mode exits 5 otherwise).
+- [ ] For `--vendor all`, every enabled vendor is healthy (strict mode exits 5 otherwise).
 
 # Checklist — after the run
 

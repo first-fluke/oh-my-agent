@@ -51,6 +51,8 @@ Before invoking `oma image generate`, the calling agent runs this checklist agai
 
 Skip both clarification and amplification when the user has clearly authored a full creative brief (≥ 2 of: subject + style + lighting + composition). Respect their prompt verbatim.
 
+**Category-specific briefs** (app mockup, poster, thumbnail, infographic, comic panel, avatar): consult `resources/prompt-tips.md` → *External Prompt Libraries*.
+
 **Output language.** Generation prompts are sent to the provider in English (image models are trained predominantly on English captions). Translate the user's request if they wrote in another language, and show them the translated version during amplification so they can correct misreadings.
 
 ## Vendors
@@ -74,16 +76,17 @@ Skip both clarification and amplification when the user has clearly authored a f
 ### Shell CLI
 
 ```
-oma image generate "<prompt>" [--vendor auto|codex|gemini|all] [-n 1..5] \
+oma image generate "<prompt>" [--vendor auto|codex|pollinations|gemini|all] [-n 1..5] \
                              [--size 1024x1024|1024x1536|1536x1024|auto] \
                              [--quality low|medium|high|auto] \
                              [--out <dir>] [--allow-external-out] \
-                             [--strategy mcp,stream,api] [--timeout 180] \
-                             [-y] [--no-prompt-in-manifest] [--dry-run] \
-                             [--format text|json]
+                             [--timeout 180] [-y] [--no-prompt-in-manifest] \
+                             [--dry-run] [--format text|json]
 oma image doctor
 oma image list-vendors
 ```
+
+Gemini-only escalation flag: `--strategy mcp,stream,api` (overrides `vendors.gemini.strategies`).
 
 ### Shared Infrastructure (from other skills)
 
@@ -94,11 +97,12 @@ Other skills call `oma image generate --format json` and parse the JSON manifest
 ```
 .agents/results/images/
 ├── 20260424-143052-ab12cd/                    # single-vendor run
-│   ├── codex-gpt-image-2.png
-│   └── manifest.json
+│   └── pollinations-flux.jpg
+│       (or codex-gpt-image-2.png)
+│       manifest.json
 └── 20260424-143122-7z9kqw-compare/            # --vendor all run
     ├── codex-gpt-image-2.png
-    ├── gemini-gemini-2.5-flash-image.png
+    ├── pollinations-flux.jpg
     └── manifest.json
 ```
 
@@ -112,7 +116,7 @@ Before submitting, run `resources/checklist.md`.
 ## Configuration
 
 Project-specific settings: `config/image-config.yaml`.
-Env vars: `OMA_IMAGE_DEFAULT_VENDOR`, `OMA_IMAGE_DEFAULT_OUT`, `OMA_IMAGE_GEMINI_STRATEGIES`, `OMA_IMAGE_YES`, `GEMINI_API_KEY`.
+Env vars: `OMA_IMAGE_DEFAULT_VENDOR`, `OMA_IMAGE_DEFAULT_OUT`, `OMA_IMAGE_YES`, `POLLINATIONS_API_KEY`, `GEMINI_API_KEY`, `OMA_IMAGE_GEMINI_STRATEGIES`.
 
 ## References
 

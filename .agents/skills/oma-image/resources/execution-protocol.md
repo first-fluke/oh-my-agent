@@ -2,13 +2,7 @@
 
 ## Step -1: Clarify / Amplify Prompt (agent-side, before `oma image generate`)
 
-Run the `Clarification Protocol` checklist in `SKILL.md` before shelling out:
-
-1. **Ambiguous → ask.** If subject, setting, style, mood/lighting, usage context, or aspect ratio are unknown and not inferable, ask the user one targeted question each (use `AskUserQuestion` when available).
-2. **Brief but clear → amplify inline.** Expand the prompt with concrete details (lighting, composition, style) and present the expansion to the user for confirmation *before* invoking the CLI. Do not silently rewrite.
-3. **Full creative brief → pass through.** If the user already supplied ≥ 2 of {subject, style, lighting, composition}, respect their wording.
-4. **Language.** Translate non-English prompts to English for the generation call; show the translated text during amplification for verification.
-5. **Aspect ratio.** Map the user's usage context to `--size` (`1024x1024` default, `1024x1536` portrait, `1536x1024` landscape). If config's `default_size` already matches intent, no override is needed.
+Run the **Clarification Protocol** in `SKILL.md` before shelling out.
 
 ## Step 0: Parse Request
 
@@ -18,7 +12,7 @@ Run the `Clarification Protocol` checklist in `SKILL.md` before shelling out:
    - `count` ∈ [1, 5]
    - `size` ∈ {`1024x1024`, `1024x1536`, `1536x1024`, `auto`}
    - `quality` ∈ {`low`, `medium`, `high`, `auto`}
-   - `vendor` ∈ {`auto`, `codex`, `gemini`, `all`} or a concrete registered name.
+   - `vendor` ∈ {`auto`, `codex`, `pollinations`, `gemini`, `all`} or a concrete registered name.
 4. If invalid: exit code 4 and a message identifying the offending field.
 
 ## Step 1: Vendor Selection
@@ -50,7 +44,7 @@ Run the `Clarification Protocol` checklist in `SKILL.md` before shelling out:
 
 - **Single vendor** — run `provider.generate(input)` sequentially.
 - **Multi-vendor (`all` or `auto` with 2+ healthy)** — `Promise.allSettled` across providers.
-- Each provider internally escalates through its strategies (Gemini: `mcp → stream → api`). Record every strategy attempt (ok/skipped/failed with reason).
+- Providers with sub-strategies escalate internally (e.g. Gemini: `mcp → stream → api`). Record every strategy attempt (ok/skipped/failed with reason).
 - Non-retryable errors (safety-refused, invalid-input) short-circuit the escalation chain.
 
 ## Step 5: Write Artifacts
@@ -82,7 +76,7 @@ Run the `Clarification Protocol` checklist in `SKILL.md` before shelling out:
 | Situation | Action |
 |-----------|--------|
 | No vendors authenticated | Exit 5, print `Run: oma image doctor` |
-| Specific vendor unhealthy | Exit 5 with vendor-specific hint (`codex login`, `gemini auth`, `GEMINI_API_KEY`) |
-| Gemini all strategies failed | Exit 1 with last classified error; include `strategy_attempts` in manifest |
+| Specific vendor unhealthy | Exit 5 with the vendor's setup guide (URL + env var + steps, rendered by `oma image doctor`) |
+| All sub-strategies failed for a provider | Exit 1 with last classified error; include `strategy_attempts` in manifest |
 | Timeout | Exit 6, manifest records `after_ms` |
 | Cancelled (Ctrl+C) | Exit 130 (signal); no manifest if abort was pre-write |
