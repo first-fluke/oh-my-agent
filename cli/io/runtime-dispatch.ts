@@ -327,9 +327,9 @@ export function planDispatch(
   const runtimeVendor = detectRuntimeVendor(env);
 
   // ---------------------------------------------------------------------------
-  // Resolve per-agent plan from user-preferences + defaults (T10 integration).
+  // Resolve per-agent plan from oma-config.yaml + defaults.yaml (T10 integration).
   // Falls back to legacy VendorConfig path on ConfigError (missing config) so
-  // existing installs without user-preferences.yaml continue to work unchanged.
+  // existing installs without oma-config.yaml continue to work unchanged.
   // ---------------------------------------------------------------------------
   let plan: AgentPlan | null = null;
   try {
@@ -541,43 +541,19 @@ function readYamlObject(filePath: string): UserPreferencesRaw | null {
 }
 
 /**
- * Load and merge user preferences from both canonical and legacy locations.
+ * Load user preferences from the canonical .agents/oma-config.yaml.
  *
- * Precedence (later wins on conflict, matching cli/platform/agent-config.ts
- * readUserPreferences semantics):
- *   1. .agents/config/user-preferences.yaml   — legacy path, loaded first
- *   2. .agents/oma-config.yaml                — canonical path, overrides
- *
- * Historical note: user-preferences.yaml was moved to oma-config.yaml in
- * commit c702a4b. Both are still read for backward compatibility with
- * installs that have not yet migrated. New users should put their
- * agent_cli_mapping / session.quota_cap etc. in oma-config.yaml.
+ * Legacy .agents/config/user-preferences.yaml is migrated to oma-config.yaml
+ * by migration 003 (cli/commands/migrations/003-oma-config.ts), which runs on
+ * every `oma install` and `oma update`.
  */
 function loadUserPreferencesRaw(cwd: string): UserPreferencesRaw {
-  const legacyPath = findFileUp(
-    cwd,
-    path.join(".agents", "config", "user-preferences.yaml"),
-  );
   const canonicalPath = findFileUp(
     cwd,
     path.join(".agents", "oma-config.yaml"),
   );
-
-  let merged: UserPreferencesRaw = {};
-  for (const filePath of [legacyPath, canonicalPath]) {
-    if (!filePath) continue;
-    const parsed = readYamlObject(filePath);
-    if (!parsed) continue;
-    merged = {
-      ...merged,
-      ...parsed,
-      agent_cli_mapping: {
-        ...(merged.agent_cli_mapping ?? {}),
-        ...(parsed.agent_cli_mapping ?? {}),
-      },
-    };
-  }
-  return merged;
+  if (!canonicalPath) return {};
+  return readYamlObject(canonicalPath) ?? {};
 }
 
 // ---------------------------------------------------------------------------
@@ -601,7 +577,7 @@ export function resolveAgentPlanFromConfig(
   const mapping = userPrefs.agent_cli_mapping ?? {};
   const rawUserEntry = mapping[agentId];
 
-  // Step 1: Resolve AgentSpec from user-preferences or defaults.
+  // Step 1: Resolve AgentSpec from oma-config.yaml or defaults.yaml.
   let modelSlug: string | undefined;
   let effort: EffortLevel | undefined;
   let thinking: boolean | undefined;
@@ -720,8 +696,7 @@ export function resolveAgentPlanFromConfig(
  * Resolve the per-agent dispatch plan from user config, defaulting to cwd.
  *
  * Flow:
- * 1. Check agent_cli_mapping[agentId] from merged user config
- *    (oma-config.yaml canonical, user-preferences.yaml legacy fallback).
+ * 1. Check agent_cli_mapping[agentId] from .agents/oma-config.yaml.
  *    - string (legacy) → vendor name only; model/effort from defaults.yaml,
  *      or from runtime_profiles.{vendor}-only.agent_defaults[agentId] when set
  *    - AgentSpec object → use its fields directly

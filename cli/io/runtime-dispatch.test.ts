@@ -193,7 +193,7 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("legacy string mapping still works (no plan resolved — falls back to vendor config)", () => {
-    // No defaults.yaml, no user-preferences.yaml → resolveAgentPlan throws ConfigError
+    // No defaults.yaml, no oma-config.yaml → resolveAgentPlan throws ConfigError
     const plan = planDispatch(
       "nonexistent-agent",
       "claude",
@@ -211,13 +211,13 @@ describe("planDispatch — plan integration (T10b)", () => {
     ).toBe(true);
   });
 
-  it("Claude effort in user-prefs → plan drops effort (no TOML write, no args poisoning)", () => {
+  it("Claude effort in user config → plan drops effort (no TOML write, no args poisoning)", () => {
     writeFileSync(
       join(tempDir, ".agents", "config", "defaults.yaml"),
       `agent_defaults:\n  orchestrator: { model: "anthropic/claude-sonnet-4-6" }\n`,
     );
     writeFileSync(
-      join(tempDir, ".agents", "config", "user-preferences.yaml"),
+      join(tempDir, ".agents", "oma-config.yaml"),
       `agent_cli_mapping:\n  orchestrator:\n    model: "anthropic/claude-sonnet-4-6"\n    effort: high\n`,
     );
 
@@ -251,9 +251,9 @@ describe("planDispatch — plan integration (T10b)", () => {
     expect(plan.invocation.args).toContain("--thinking");
   });
 
-  it("unknown slug in user-prefs → ConfigError handled gracefully", () => {
+  it("unknown slug in user config → ConfigError handled gracefully", () => {
     writeFileSync(
-      join(tempDir, ".agents", "config", "user-preferences.yaml"),
+      join(tempDir, ".agents", "oma-config.yaml"),
       `agent_cli_mapping:\n  backend:\n    model: "bogus/does-not-exist"\n`,
     );
 
@@ -266,7 +266,7 @@ describe("planDispatch — plan integration (T10b)", () => {
       { CODEX_CI: "1" },
     );
 
-    // Dispatch succeeds via legacy fallback; WARN logged
+    // Dispatch succeeds via graceful fallback; WARN logged
     expect(plan.mode).toBeDefined();
     expect(warnSpy.mock.calls.some((c) => String(c[0]).includes("bogus"))).toBe(
       true,
@@ -274,10 +274,9 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("reads agent_cli_mapping from .agents/oma-config.yaml (canonical path)", () => {
-    // Simulates an existing user whose config lives in oma-config.yaml —
-    // no separate user-preferences.yaml. Before the fragmentation fix,
-    // resolveAgentPlan ignored oma-config.yaml and fell through to
-    // defaults.yaml. Post-fix, oma-config.yaml values reach the subprocess.
+    // Before the fragmentation fix, resolveAgentPlan ignored oma-config.yaml
+    // and fell through to defaults.yaml. Post-fix, oma-config.yaml values
+    // reach the subprocess.
     writeFileSync(
       join(tempDir, ".agents", "config", "defaults.yaml"),
       `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "high" }\n`,
@@ -294,29 +293,6 @@ describe("planDispatch — plan integration (T10b)", () => {
     const toml = readFileSync(join(tempDir, ".codex", "config.toml"), "utf-8");
     // Must reflect oma-config.yaml's "low", not defaults.yaml's "high".
     expect(toml).toContain('model_reasoning_effort = "low"');
-  });
-
-  it("oma-config.yaml overrides legacy user-preferences.yaml when both exist", () => {
-    writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "high" }\n`,
-    );
-    writeFileSync(
-      join(tempDir, ".agents", "config", "user-preferences.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "openai/gpt-5.4"\n    effort: "medium"\n`,
-    );
-    writeFileSync(
-      join(tempDir, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "openai/gpt-5.4"\n    effort: "xhigh"\n`,
-    );
-
-    planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
-      CODEX_CI: "1",
-    });
-
-    const toml = readFileSync(join(tempDir, ".codex", "config.toml"), "utf-8");
-    // oma-config.yaml (canonical) wins over user-preferences.yaml (legacy).
-    expect(toml).toContain('model_reasoning_effort = "xhigh"');
   });
 
   it("session.quota_cap is honored when placed in oma-config.yaml", () => {

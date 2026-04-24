@@ -168,43 +168,23 @@ interface UserOverrideMapping {
 }
 
 /**
- * Merge user override entries from both legacy and canonical paths so the
+ * Load user override entries from .agents/oma-config.yaml so the
  * `oma doctor --profile` matrix matches the spawn path resolution rules
  * (cli/io/runtime-dispatch.ts#loadUserPreferencesRaw).
- *
- * Precedence (later wins on conflict):
- *   1. .agents/config/user-preferences.yaml   — legacy, loaded first
- *   2. .agents/oma-config.yaml                — canonical, overrides
  */
 function loadUserOverride(cwd: string): UserOverrideMapping {
-  const candidates = [
-    findFileUp(cwd, join(".agents", "config", "user-preferences.yaml")),
-    findFileUp(cwd, join(".agents", "oma-config.yaml")),
-  ];
-
-  let merged: UserOverrideMapping = {};
-  for (const p of candidates) {
-    if (!p) continue;
-    try {
-      const content = readFileSync(p, "utf-8");
-      const parsed = parseYaml(content) as unknown;
-      if (typeof parsed === "object" && parsed !== null) {
-        const pref = parsed as UserOverrideMapping;
-        merged = {
-          ...merged,
-          ...pref,
-          agent_cli_mapping: {
-            ...(merged.agent_cli_mapping ?? {}),
-            ...(pref.agent_cli_mapping ?? {}),
-          },
-        };
-      }
-    } catch {
-      // ignore malformed YAML
+  const configPath = findFileUp(cwd, join(".agents", "oma-config.yaml"));
+  if (!configPath) return {};
+  try {
+    const content = readFileSync(configPath, "utf-8");
+    const parsed = parseYaml(content) as unknown;
+    if (typeof parsed === "object" && parsed !== null) {
+      return parsed as UserOverrideMapping;
     }
+  } catch {
+    // ignore malformed YAML
   }
-
-  return merged;
+  return {};
 }
 
 // ---------------------------------------------------------------------------

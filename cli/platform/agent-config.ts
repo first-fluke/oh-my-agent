@@ -173,36 +173,19 @@ function findConfigFileUp(
 }
 
 function readUserPreferences(cwd: string): UserPreferences | null {
-  const configPaths = [
-    findConfigFileUp(
-      cwd,
-      path.join(".agents", "config", "user-preferences.yaml"),
-    ),
-    findConfigFileUp(cwd, path.join(".agents", "oma-config.yaml")),
-  ].filter((configPath): configPath is string => Boolean(configPath));
+  const configPath = findConfigFileUp(
+    cwd,
+    path.join(".agents", "oma-config.yaml"),
+  );
+  if (!configPath) return null;
 
-  if (configPaths.length === 0) return null;
-
-  let merged: UserPreferences = {};
-
-  for (const configPath of configPaths) {
-    try {
-      const content = fs.readFileSync(configPath, "utf-8");
-      const parsed = parseUserPreferences(content);
-      merged = {
-        ...merged,
-        ...parsed,
-        agent_cli_mapping: {
-          ...(merged.agent_cli_mapping ?? {}),
-          ...(parsed.agent_cli_mapping ?? {}),
-        },
-      };
-    } catch {
-      // Ignore malformed config and keep best-effort merge.
-    }
+  try {
+    const content = fs.readFileSync(configPath, "utf-8");
+    const parsed = parseUserPreferences(content);
+    return Object.keys(parsed).length > 0 ? parsed : null;
+  } catch {
+    return null;
   }
-
-  return Object.keys(merged).length > 0 ? merged : null;
 }
 
 function readCliConfig(cwd: string): CliConfig | null {

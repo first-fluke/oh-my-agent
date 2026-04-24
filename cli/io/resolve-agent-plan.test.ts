@@ -2,8 +2,8 @@
  * T10 Integration tests: resolveAgentPlan + per-vendor invocation builders
  *
  * Test cases (12 minimum):
- *  1. User-preferences AgentSpec takes precedence over defaults
- *  2. Legacy string in user-preferences falls back to defaults for model/effort
+ *  1. User config AgentSpec takes precedence over defaults
+ *  2. Legacy string value in user config falls back to defaults for model/effort
  *  3. Missing agentId → falls through to orchestrator default
  *  4. Claude cli-session model → effort dropped + WARN emitted
  *  5. api_only slug → throws ConfigError
@@ -14,7 +14,7 @@
  * 10. Qwen effort="high" → invocation args include --thinking
  * 11. Qwen effort="none" → invocation args include --no-thinking
  * 12. Gemini effort translation to thinking-budget
- * 13. User-preferences missing entirely → falls back to defaults
+ * 13. User config missing entirely → falls back to defaults
  * 14. Empty AgentSpec {} (model only, no effort) → no effort in plan
  * 15. OMA_RUNTIME_VENDOR env var used when vendorOverride not passed
  */
@@ -56,7 +56,7 @@ const EMPTY_USER_PREFS = { agent_cli_mapping: {} };
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 1: AgentSpec from user-prefs overrides defaults", () => {
-  it("uses model from user-preferences AgentSpec, not defaults", () => {
+  it("uses model from user config AgentSpec, not defaults", () => {
     const userPrefs = {
       agent_cli_mapping: {
         backend: { model: "openai/gpt-5.4", effort: "medium" },
@@ -92,7 +92,7 @@ describe("resolveAgentPlanFromConfig — Case 1: AgentSpec from user-prefs overr
 });
 
 // ---------------------------------------------------------------------------
-// Case 2: Legacy string in user-preferences → vendor only; model/effort from defaults
+// Case 2: Legacy string in user config → vendor only; model/effort from defaults
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 2: legacy string falls back to defaults", () => {
@@ -534,8 +534,8 @@ describe("geminiThinkingBudgetFlag — Case 12: Gemini effort translation", () =
 // Case 13: User-preferences missing entirely → falls back to defaults
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 13: missing user-preferences", () => {
-  it("resolves from defaults when user-preferences has no agent_cli_mapping", () => {
+describe("resolveAgentPlanFromConfig — Case 13: missing user config", () => {
+  it("resolves from defaults when user config has no agent_cli_mapping", () => {
     const plan = resolveAgentPlanFromConfig("backend", {
       userPrefs: {},
       defaults: DEFAULTS_PROFILE_B,

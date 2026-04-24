@@ -11,8 +11,7 @@
  *
  * Cap source precedence:
  *   1. .agents/oma-config.yaml               — canonical user config (wins)
- *   2. .agents/config/user-preferences.yaml  — legacy path (pre-c702a4b)
- *   3. .agents/config/defaults.yaml          — OMA-shipped SSOT fallback
+ *   2. .agents/config/defaults.yaml          — OMA-shipped SSOT fallback
  * under top-level `session.quota_cap` key.
  */
 
@@ -187,15 +186,13 @@ function normalizeQuotaCap(raw: RawQuotaCap): QuotaCap {
  *
  * Precedence (first match wins):
  *   1. .agents/oma-config.yaml                — canonical user config
- *   2. .agents/config/user-preferences.yaml   — legacy path (pre-c702a4b)
- *   3. .agents/config/defaults.yaml           — OMA-shipped SSOT fallback
+ *   2. .agents/config/defaults.yaml           — OMA-shipped SSOT fallback
  *
  * Returns null if no cap is configured.
  */
 export function loadQuotaCap(cwd: string = process.cwd()): QuotaCap | null {
   const candidates = [
     findFileUp(cwd, path.join(".agents", "oma-config.yaml")),
-    findFileUp(cwd, path.join(".agents", "config", "user-preferences.yaml")),
     findFileUp(cwd, path.join(".agents", "config", "defaults.yaml")),
   ];
 

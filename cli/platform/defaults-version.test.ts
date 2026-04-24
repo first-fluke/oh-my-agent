@@ -138,24 +138,24 @@ describe("installConfigs — defaults.yaml upgrade semantics", () => {
     ).toBe(false);
   });
 
-  it("user-editable files (user-preferences.yaml) are never overwritten", () => {
-    // Add a user-preferences.yaml in source (shouldn't happen in real world,
+  it("user-editable files (models.yaml) are never overwritten", () => {
+    // Add a models.yaml in source (shouldn't happen in real world,
     // but verifies the non-defaults path still preserves user files)
     writeFileSync(
-      join(sourceDir, ".agents", "config", "user-preferences.yaml"),
-      `agent_cli_mapping:\n  backend: "claude"\n`,
+      join(sourceDir, ".agents", "config", "models.yaml"),
+      `models:\n  foo/bar: {}\n`,
     );
     mkdirSync(join(targetDir, ".agents", "config"), { recursive: true });
-    const userContent = `agent_cli_mapping:\n  backend: "gemini"\n`;
+    const userContent = `models:\n  custom/model: {}\n`;
     writeFileSync(
-      join(targetDir, ".agents", "config", "user-preferences.yaml"),
+      join(targetDir, ".agents", "config", "models.yaml"),
       userContent,
     );
 
     installConfigs(sourceDir, targetDir);
 
     const kept = readFileSync(
-      join(targetDir, ".agents", "config", "user-preferences.yaml"),
+      join(targetDir, ".agents", "config", "models.yaml"),
       "utf-8",
     );
     expect(kept).toBe(userContent);
