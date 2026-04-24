@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.18.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.18.0...cli-v5.18.1) (2026-04-24)
+
+
+### Refactoring
+
+* **apm:** use plugin.json custom paths, remove .apm mirror ([e943ed4](https://github.com/first-fluke/oh-my-agent/commit/e943ed49579a3be3dc6c36838d9999abbb01237d))
+
+
+### Documentation
+
+* **readme:** correct APM install scope (hook ships, rules/workflows don't) ([15d30cb](https://github.com/first-fluke/oh-my-agent/commit/15d30cb2248a9f2eb9dd3ebe954d5d4bdec9b344))
+
 ## [5.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.17.0...cli-v5.18.0) (2026-04-24)
 
 
