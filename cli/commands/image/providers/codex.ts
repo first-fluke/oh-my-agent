@@ -68,14 +68,10 @@ export class CodexProvider implements VendorProvider {
     const existingBefore = await listGenerated(GENERATED_DIR);
     const instruction = buildInstruction({ ...input, model });
 
-    const imageArgs = (input.referenceImages ?? []).flatMap((r) => [
-      "-i",
-      r.path,
-    ]);
     const start = Date.now();
     const res = await runCapture(
       "codex",
-      ["exec", "--skip-git-repo-check", ...imageArgs, instruction],
+      buildCodexExecArgs(input, instruction),
       input.signal,
       (input.timeoutSec ?? 180) * 1000,
     );
@@ -132,6 +128,22 @@ export class CodexProvider implements VendorProvider {
     }
     return results;
   }
+}
+
+// Assemble the full `codex exec` argv. `codex exec` declares `-i/--image
+// <FILE>...` as variadic, so its parser would greedily consume the
+// following positional [PROMPT] as an additional image path. We always
+// emit `--` before the instruction so the prompt is delimited
+// unambiguously, even when no references are attached.
+export function buildCodexExecArgs(
+  input: GenerateInput,
+  instruction: string,
+): string[] {
+  const imageArgs = (input.referenceImages ?? []).flatMap((r) => [
+    "-i",
+    r.path,
+  ]);
+  return ["exec", "--skip-git-repo-check", ...imageArgs, "--", instruction];
 }
 
 export function buildInstruction(
