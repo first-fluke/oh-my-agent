@@ -24,7 +24,7 @@ export const RECOMMENDED_QWEN_MCP = {
       SERENA_LOG_LEVEL: "info",
     },
   },
-} as const;
+};
 
 type JsonRecord = Record<string, unknown>;
 

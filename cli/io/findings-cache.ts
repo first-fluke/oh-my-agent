@@ -78,8 +78,10 @@ function parseRecords(content: string): FindingRecord[] {
   const pattern = /```json\n([\s\S]*?)\n```/g;
 
   for (const match of content.matchAll(pattern)) {
+    const raw = match[1];
+    if (!raw) continue;
     try {
-      const record = JSON.parse(match[1]) as FindingRecord;
+      const record = JSON.parse(raw) as FindingRecord;
       if (record && typeof record.symbol === "string" && record.kind) {
         records.push(record);
       }

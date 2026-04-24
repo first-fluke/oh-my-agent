@@ -33,7 +33,7 @@ import {
 const VALID_USER_EVENTS = new Set([
   "UserPromptSubmit",
   "beforeSubmitPrompt", // Cursor
-  "BeforeAgent",        // Gemini (fires before agent processes user prompt)
+  "BeforeAgent", // Gemini (fires before agent processes user prompt)
 ]);
 
 /**
@@ -144,7 +144,8 @@ export function recordKwTrigger(
   let count = 1;
   if (entry) {
     const lastMs = new Date(entry.lastTriggeredAt).getTime();
-    const withinWindow = !Number.isNaN(lastMs) && now - lastMs < REINFORCEMENT_WINDOW_MS;
+    const withinWindow =
+      !Number.isNaN(lastMs) && now - lastMs < REINFORCEMENT_WINDOW_MS;
     count = withinWindow ? entry.count + 1 : 1;
   }
   return {

@@ -26,7 +26,7 @@ export const RECOMMENDED_CODEX_MCP = {
       SERENA_LOG_LEVEL: "info",
     },
   },
-} as const;
+};
 
 type JsonRecord = Record<string, unknown>;
 

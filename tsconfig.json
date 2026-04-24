@@ -8,10 +8,9 @@
     "jsx": "react-jsx",
     "allowJs": true,
 
-    // Path aliases
-    "baseUrl": ".",
+    // Path aliases (TS 5+ resolves paths relative to tsconfig.json without baseUrl)
     "paths": {
-      "@cli/*": ["cli/*"]
+      "@cli/*": ["./cli/*"]
     },
 
     // Bundler mode
@@ -33,5 +32,11 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "include": ["cli/**/*.ts"],
-  "exclude": ["cli/__tests__/**", "web/**", "node_modules"]
+  "exclude": [
+    "cli/__tests__/**",
+    "cli/**/*.test.ts",
+    "cli/**/*.test.tsx",
+    "web/**",
+    "node_modules"
+  ]
 }

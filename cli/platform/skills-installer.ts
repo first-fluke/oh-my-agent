@@ -131,7 +131,7 @@ export function readDefaultsVersion(filePath: string): string | null {
     if (!fs.existsSync(filePath)) return null;
     const content = fs.readFileSync(filePath, "utf-8");
     const match = content.match(/^version:\s*["']?([^"'\s]+)["']?\s*$/m);
-    return match ? match[1] : null;
+    return match?.[1] ?? null;
   } catch {
     return null;
   }

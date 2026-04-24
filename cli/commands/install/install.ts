@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import {
+  type Dirent,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -122,9 +123,9 @@ export function getExistingLanguage(targetDir: string): string | null {
 export function cleanDanglingSymlinks(dir: string): void {
   if (!existsSync(dir)) return;
 
-  let entries: ReturnType<typeof readdirSync>;
+  let entries: Dirent[];
   try {
-    entries = readdirSync(dir, { withFileTypes: true });
+    entries = readdirSync(dir, { withFileTypes: true, encoding: "utf-8" });
   } catch {
     return;
   }

@@ -325,7 +325,7 @@ function resolveProfileName(cwd: string): string {
         "profile" in parsed &&
         typeof (parsed as Record<string, unknown>).profile === "string"
       ) {
-        return (parsed as Record<string, string>).profile;
+        return (parsed as { profile: string }).profile;
       }
     } catch {
       // ignore

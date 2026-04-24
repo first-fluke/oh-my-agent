@@ -3,9 +3,7 @@
     "orchestrate": {
       "persistent": true,
       "keywords": {
-        "*": [
-          "orchestrate"
-        ],
+        "*": ["orchestrate"],
         "en": [
           "parallel",
           "do everything",
@@ -124,21 +122,13 @@
     "ultrawork": {
       "persistent": true,
       "keywords": {
-        "*": [
-          "ultrawork",
-          "ulw"
-        ]
+        "*": ["ultrawork", "ulw"]
       }
     },
     "architecture": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "architecture",
-          "ADR",
-          "ATAM",
-          "CBAM"
-        ],
+        "*": ["architecture", "ADR", "ATAM", "CBAM"],
         "en": [
           "system design",
           "software design",
@@ -257,9 +247,7 @@
     "plan": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "task breakdown"
-        ],
+        "*": ["task breakdown"],
         "en": [
           "plan",
           "make a plan",
@@ -382,11 +370,7 @@
     "review": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "code review",
-          "security audit",
-          "security review"
-        ],
+        "*": ["code review", "security audit", "security review"],
         "en": [
           "review",
           "review this",
@@ -509,9 +493,7 @@
     "debug": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "debug"
-        ],
+        "*": ["debug"],
         "en": [
           "fix bug",
           "fix error",
@@ -682,9 +664,7 @@
     "brainstorm": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "brainstorm"
-        ],
+        "*": ["brainstorm"],
         "en": [
           "ideate",
           "explore design",
@@ -805,10 +785,7 @@
     "work": {
       "persistent": true,
       "keywords": {
-        "*": [
-          "work",
-          "step by step"
-        ],
+        "*": ["work", "step by step"],
         "en": [
           "one by one",
           "guide me",
@@ -906,9 +883,7 @@
     "deepinit": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "deepinit"
-        ],
+        "*": ["deepinit"],
         "en": [
           "init project",
           "initialize",
@@ -1237,9 +1212,7 @@
     "ralph": {
       "persistent": true,
       "keywords": {
-        "*": [
-          "ralph"
-        ],
+        "*": ["ralph"],
         "en": [
           "don't stop",
           "do not stop",
@@ -1388,11 +1361,7 @@
     "design": {
       "persistent": false,
       "keywords": {
-        "*": [
-          "design system",
-          "DESIGN.md",
-          "design token"
-        ],
+        "*": ["design system", "DESIGN.md", "design token"],
         "en": [
           "design",
           "landing page",
@@ -1589,21 +1558,12 @@
           "構成レビュー",
           "アーキ文書"
         ],
-        "zh": [
-          "设计架构",
-          "系统架构方案",
-          "定义边界",
-          "架构文档",
-          "架构权衡"
-        ]
+        "zh": ["设计架构", "系统架构方案", "定义边界", "架构文档", "架构权衡"]
       }
     },
     "oma-backend": {
       "keywords": {
-        "*": [
-          "CRUD",
-          "JWT auth"
-        ],
+        "*": ["CRUD", "JWT auth"],
         "en": [
           "build an api",
           "add endpoint",
@@ -1632,13 +1592,7 @@
           "マイグレーション書いて",
           "認証を実装"
         ],
-        "zh": [
-          "写个接口",
-          "加接口",
-          "后端实现",
-          "写迁移",
-          "加认证"
-        ]
+        "zh": ["写个接口", "加接口", "后端实现", "写迁移", "加认证"]
       }
     },
     "oma-brainstorm": {
@@ -1663,11 +1617,7 @@
           "方向性を探りたい",
           "案を出して"
         ],
-        "zh": [
-          "帮我想想",
-          "一起想想办法",
-          "给点灵感"
-        ]
+        "zh": ["帮我想想", "一起想想办法", "给点灵感"]
       }
     },
     "oma-coordination": {
@@ -1695,20 +1645,12 @@
           "手動でエージェント",
           "エージェントの順序"
         ],
-        "zh": [
-          "协调代理",
-          "代理之间协作",
-          "手动跑代理",
-          "代理之间衔接"
-        ]
+        "zh": ["协调代理", "代理之间协作", "手动跑代理", "代理之间衔接"]
       }
     },
     "oma-db": {
       "keywords": {
-        "*": [
-          "ERD",
-          "vector db"
-        ],
+        "*": ["ERD", "vector db"],
         "en": [
           "design a schema",
           "normalize tables",
@@ -1739,13 +1681,7 @@
           "クエリが遅い",
           "容量見積"
         ],
-        "zh": [
-          "设计表结构",
-          "表设计",
-          "索引优化",
-          "查询很慢",
-          "容量评估"
-        ]
+        "zh": ["设计表结构", "表设计", "索引优化", "查询很慢", "容量评估"]
       }
     },
     "oma-debug": {
@@ -1777,20 +1713,12 @@
           "スタックトレースを見て",
           "原因を特定"
         ],
-        "zh": [
-          "找出 bug",
-          "错误原因",
-          "分析崩溃",
-          "看堆栈",
-          "定位原因"
-        ]
+        "zh": ["找出 bug", "错误原因", "分析崩溃", "看堆栈", "定位原因"]
       }
     },
     "oma-design": {
       "keywords": {
-        "*": [
-          "WCAG"
-        ],
+        "*": ["WCAG"],
         "en": [
           "design tokens",
           "build a landing page",
@@ -1815,21 +1743,12 @@
           "カラーパレット決めて",
           "モーション設計"
         ],
-        "zh": [
-          "设计令牌",
-          "做个落地页",
-          "定配色",
-          "字体层级",
-          "动效规范"
-        ]
+        "zh": ["设计令牌", "做个落地页", "定配色", "字体层级", "动效规范"]
       }
     },
     "oma-dev-workflow": {
       "keywords": {
-        "*": [
-          "mise.toml",
-          "CI/CD"
-        ],
+        "*": ["mise.toml", "CI/CD"],
         "en": [
           "setup mise task",
           "configure ci pipeline",
@@ -1868,10 +1787,7 @@
     },
     "oma-frontend": {
       "keywords": {
-        "*": [
-          "shadcn",
-          "FSD"
-        ],
+        "*": ["shadcn", "FSD"],
         "en": [
           "make a react component",
           "build a next page",
@@ -1909,12 +1825,7 @@
     },
     "oma-hwp": {
       "keywords": {
-        "*": [
-          "kordoc",
-          "hwp",
-          "hwpx",
-          "hwpml"
-        ],
+        "*": ["kordoc", "hwp", "hwpx", "hwpml"],
         "en": [
           "convert this hwp",
           "hwp to markdown",
@@ -1934,26 +1845,13 @@
           "hwpx 변환",
           "hwpx 파싱"
         ],
-        "ja": [
-          "hwp変換",
-          "hwpをマークダウン",
-          "hwpを解析",
-          "韓国語ワープロ"
-        ],
-        "zh": [
-          "hwp 转换",
-          "hwp 解析",
-          "hwp 转 markdown",
-          "韩文文档"
-        ]
+        "ja": ["hwp変換", "hwpをマークダウン", "hwpを解析", "韓国語ワープロ"],
+        "zh": ["hwp 转换", "hwp 解析", "hwp 转 markdown", "韩文文档"]
       }
     },
     "oma-mobile": {
       "keywords": {
-        "*": [
-          "riverpod",
-          "cupertino"
-        ],
+        "*": ["riverpod", "cupertino"],
         "en": [
           "flutter screen",
           "react native view",
@@ -2197,9 +2095,7 @@
     },
     "oma-orchestrator": {
       "keywords": {
-        "*": [
-          "MCP Memory"
-        ],
+        "*": ["MCP Memory"],
         "en": [
           "spawn parallel agents",
           "run agents in parallel",
@@ -2223,19 +2119,12 @@
           "fan-out",
           "レビューループ"
         ],
-        "zh": [
-          "并行跑代理",
-          "同时派发代理",
-          "fan-out 任务",
-          "评审循环"
-        ]
+        "zh": ["并行跑代理", "同时派发代理", "fan-out 任务", "评审循环"]
       }
     },
     "oma-pdf": {
       "keywords": {
-        "*": [
-          "opendataloader-pdf"
-        ],
+        "*": ["opendataloader-pdf"],
         "en": [
           "convert this pdf",
           "pdf to markdown",
@@ -2246,32 +2135,14 @@
           "convert pdf",
           "pdf ingestion"
         ],
-        "ko": [
-          "pdf 변환",
-          "pdf 파싱",
-          "pdf 마크다운",
-          "pdf 내용 추출"
-        ],
-        "ja": [
-          "pdf変換",
-          "pdfをマークダウン",
-          "pdfを解析",
-          "pdfの内容を抽出"
-        ],
-        "zh": [
-          "pdf 转换",
-          "pdf 解析",
-          "pdf 转 markdown",
-          "提取 pdf 内容"
-        ]
+        "ko": ["pdf 변환", "pdf 파싱", "pdf 마크다운", "pdf 내용 추출"],
+        "ja": ["pdf変換", "pdfをマークダウン", "pdfを解析", "pdfの内容を抽出"],
+        "zh": ["pdf 转换", "pdf 解析", "pdf 转 markdown", "提取 pdf 内容"]
       }
     },
     "oma-pm": {
       "keywords": {
-        "*": [
-          "PRD",
-          "WBS"
-        ],
+        "*": ["PRD", "WBS"],
         "en": [
           "break down requirements",
           "write a spec",
@@ -2298,22 +2169,12 @@
           "スコープ定義",
           "プロダクトロードマップ"
         ],
-        "zh": [
-          "梳理需求",
-          "写规格书",
-          "排优先级",
-          "界定范围",
-          "产品路线图"
-        ]
+        "zh": ["梳理需求", "写规格书", "排优先级", "界定范围", "产品路线图"]
       }
     },
     "oma-qa": {
       "keywords": {
-        "*": [
-          "OWASP",
-          "WCAG",
-          "lighthouse"
-        ],
+        "*": ["OWASP", "WCAG", "lighthouse"],
         "en": [
           "run a security audit",
           "accessibility check",
@@ -2324,31 +2185,19 @@
           "accessibility audit",
           "test coverage"
         ],
-        "ko": [
-          "접근성 점검",
-          "성능 점검",
-          "커버리지 확인",
-          "품질 게이트"
-        ],
+        "ko": ["접근성 점검", "성능 점검", "커버리지 확인", "품질 게이트"],
         "ja": [
           "アクセシビリティ確認",
           "パフォーマンス点検",
           "カバレッジ確認",
           "品質ゲート"
         ],
-        "zh": [
-          "无障碍检查",
-          "性能检查",
-          "覆盖率报告",
-          "质量门禁"
-        ]
+        "zh": ["无障碍检查", "性能检查", "覆盖率报告", "质量门禁"]
       }
     },
     "oma-recap": {
       "keywords": {
-        "*": [
-          "recap"
-        ],
+        "*": ["recap"],
         "en": [
           "summarize my day",
           "daily recap",
@@ -2375,13 +2224,7 @@
           "作業振り返り",
           "会話まとめ"
         ],
-        "zh": [
-          "今天做了什么",
-          "日报总结",
-          "周报总结",
-          "工作回顾",
-          "对话总结"
-        ]
+        "zh": ["今天做了什么", "日报总结", "周报总结", "工作回顾", "对话总结"]
       }
     },
     "oma-scm": {
@@ -2397,30 +2240,19 @@
           "rebase workflow",
           "git worktree"
         ],
-        "ko": [
-          "머지 충돌 해결",
-          "리베이스해줘",
-          "워크트리 써줘"
-        ],
+        "ko": ["머지 충돌 해결", "리베이스해줘", "워크트리 써줘"],
         "ja": [
           "マージ衝突解決",
           "リベースして",
           "リリースタグ",
           "worktree使って"
         ],
-        "zh": [
-          "解决合并冲突",
-          "帮我 rebase",
-          "打发布标签",
-          "用 worktree"
-        ]
+        "zh": ["解决合并冲突", "帮我 rebase", "打发布标签", "用 worktree"]
       }
     },
     "oma-search": {
       "keywords": {
-        "*": [
-          "context7"
-        ],
+        "*": ["context7"],
         "en": [
           "look up docs",
           "find the library",
@@ -2448,22 +2280,12 @@
           "ライブラリ調べて",
           "リファレンス探して"
         ],
-        "zh": [
-          "帮我查",
-          "搜一下",
-          "找找文档",
-          "找个库",
-          "查参考资料"
-        ]
+        "zh": ["帮我查", "搜一下", "找找文档", "找个库", "查参考资料"]
       }
     },
     "oma-tf-infra": {
       "keywords": {
-        "*": [
-          "terraform",
-          "OIDC",
-          "IAM"
-        ],
+        "*": ["terraform", "OIDC", "IAM"],
         "en": [
           "terraform plan",
           "provision infrastructure",
@@ -2501,10 +2323,7 @@
     },
     "oma-translator": {
       "keywords": {
-        "*": [
-          "arb",
-          "i18n"
-        ],
+        "*": ["arb", "i18n"],
         "en": [
           "translate this",
           "localize the strings",
@@ -2523,20 +2342,8 @@
           "영어로 바꿔줘",
           "현지화해줘"
         ],
-        "ja": [
-          "翻訳して",
-          "英訳",
-          "多言語化",
-          "ローカライズして",
-          "訳して"
-        ],
-        "zh": [
-          "翻译一下",
-          "帮我翻译",
-          "多语言",
-          "本地化",
-          "翻成英文"
-        ]
+        "ja": ["翻訳して", "英訳", "多言語化", "ローカライズして", "訳して"],
+        "zh": ["翻译一下", "帮我翻译", "多语言", "本地化", "翻成英文"]
       }
     },
     "oma-image": {
@@ -2666,15 +2473,7 @@
       "検出",
       "誤検出"
     ],
-    "zh": [
-      "是什么",
-      "什么是",
-      "怎么",
-      "解释",
-      "关键词",
-      "检测",
-      "误报"
-    ],
+    "zh": ["是什么", "什么是", "怎么", "解释", "关键词", "检测", "误报"],
     "es": [
       "qué es",
       "cómo",
@@ -2732,16 +2531,8 @@
       "wykryto"
     ]
   },
-  "excludedWorkflows": [
-    "tools",
-    "stack-set",
-    "exec-plan"
-  ],
-  "cjkScripts": [
-    "ko",
-    "ja",
-    "zh"
-  ],
+  "excludedWorkflows": ["tools", "stack-set", "exec-plan"],
+  "cjkScripts": ["ko", "ja", "zh"],
   "extensionRouting": {
     "frontend-engineer": [
       "tsx",
@@ -2764,23 +2555,8 @@
       "service",
       "resolver"
     ],
-    "db-engineer": [
-      "sql",
-      "prisma",
-      "graphql",
-      "migration"
-    ],
-    "mobile-engineer": [
-      "dart",
-      "swift",
-      "kt",
-      "xib",
-      "storyboard"
-    ],
-    "designer": [
-      "figma",
-      "sketch",
-      "svg"
-    ]
+    "db-engineer": ["sql", "prisma", "graphql", "migration"],
+    "mobile-engineer": ["dart", "swift", "kt", "xib", "storyboard"],
+    "designer": ["figma", "sketch", "svg"]
   }
 }
