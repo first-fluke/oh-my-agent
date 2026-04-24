@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.1...web-v1.1.2) (2026-04-24)
+
+
+### Documentation
+
+* **per-agent-models:** fix installer claim and doctor sample output ([c92a1f4](https://github.com/first-fluke/oh-my-agent/commit/c92a1f43946fc82179ab54f5f3c55330121d4cfc))
+* **per-agent-models:** sync EN source + 11 locales to oma-config.yaml ([6adada3](https://github.com/first-fluke/oh-my-agent/commit/6adada36f5eec1c6c55cad885c6feb7c16831fb5))
+* **per-agent-models:** sync EN source + 11 locales to oma-config.yaml ([680968f](https://github.com/first-fluke/oh-my-agent/commit/680968f01fa0ce240d0eef533c2ac0f7aeff63de))
+
 ## [1.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.0...web-v1.1.1) (2026-04-24)
 
 
