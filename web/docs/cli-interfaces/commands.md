@@ -880,6 +880,7 @@ oma img <subcommand> ...
 | `--model <name>` | Vendor-specific model override | |
 | `--strategy <list>` | Gemini fallback order, comma-separated (`mcp,stream,api`) | |
 | `--timeout <seconds>` | Per-image timeout | vendor default |
+| `-r, --reference <path>` | Reference image(s); repeatable (`-r a.png -r b.png`) or comma-separated. Supported on `codex` and `gemini`; rejected on `pollinations`. Each ≤5MB PNG/JPEG/GIF/WebP (magic-byte validated), max 10. | |
 | `-y, --yes` | Skip cost confirmation | `false` |
 | `--no-prompt-in-manifest` | Store SHA256 of prompt instead of raw text | `false` |
 | `--dry-run` | Print plan and cost estimate; do not execute | `false` |
@@ -901,6 +902,13 @@ oma image generate "cat astronaut" --vendor all
 
 # Cost estimate without spending
 oma image generate "test prompt" --dry-run
+
+# Use a reference image to guide style / subject (codex or gemini)
+oma image generate "same otter in dramatic lighting" --vendor codex -r ~/Downloads/otter.jpeg
+
+# Multiple references (repeatable or comma-separated)
+oma image generate "blend these styles" --vendor gemini -r a.png -r b.png
+oma image generate "blend these styles" --vendor gemini -r a.png,b.png
 
 # Per-vendor doctor check
 oma image doctor --format json

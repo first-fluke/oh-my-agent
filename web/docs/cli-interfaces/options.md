@@ -305,6 +305,7 @@ Output format is controlled per subcommand via `--format <text|json>` (not the s
 | `--model <name>` | | Vendor-specific model override (e.g. `gpt-image-2`, `flux`, `imagen-4`). | vendor default |
 | `--strategy <list>` | | Gemini fallback order, comma-separated of `mcp`, `stream`, `api`. | vendor default |
 | `--timeout <seconds>` | | Per-image timeout. | vendor default |
+| `--reference <path>` | `-r` | Reference image for style/subject transfer. Repeatable (`-r a.png -r b.png`) or comma-separated. Validated for size (≤5MB), format (PNG/JPEG/GIF/WebP via magic bytes), and count (≤10). Supported on `codex` (passes `-i` to `codex exec`) and `gemini` (inlines base64 `inlineData`). Rejected with exit 4 on `pollinations`. | |
 | `--yes` | `-y` | Skip the cost confirmation prompt. | `false` |
 | `--no-prompt-in-manifest` | | Store SHA256 of the prompt instead of the raw text in `manifest.json`. | `false` |
 | `--dry-run` | | Print plan and cost estimate; do not execute. | `false` |
