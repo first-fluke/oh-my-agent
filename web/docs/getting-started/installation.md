@@ -125,16 +125,22 @@ oma dashboard:web # Web dashboard at http://localhost:9847
 oma agent:spawn # Spawn agents from terminal
 oma agent:parallel # Parallel agent execution
 oma agent:status # Check agent status
+oma agent:review # Code review via external CLI (codex/claude/gemini/qwen)
 oma stats # Session statistics
-oma retro # Retrospective analysis
+oma retro # Engineering retrospective (commits, hotspots, trends)
+oma recap # Conversation history recap across AI tools
 oma cleanup # Clean up session artifacts
+oma link # Regenerate vendor-native files from `.agents/` SSOT
 oma update # Update oh-my-agent
-oma verify # Verify agent output
-oma visualize # Dependency visualization
-oma describe # Describe project structure
-oma bridge # SSE-to-stdio bridge for Antigravity
-oma memory:init # Initialize memory provider
-oma auth:status # Check CLI auth status
+oma verify # Verify agent output (build/test/scope/secrets)
+oma visualize # Dependency visualization (alias: `oma viz`)
+oma describe # Introspect CLI commands as JSON
+oma bridge # MCP stdio ↔ Streamable HTTP bridge
+oma memory:init # Initialize Serena memory schema
+oma auth:status # Check CLI auth status (gh/gemini/claude/codex/qwen)
+oma search # Mechanical search primitives (alias: `oma s`)
+oma image # Multi-vendor AI image generation (alias: `oma img`)
+oma export # Export skills for external IDEs (e.g. cursor)
 oma star # Star the repository
 ```
 

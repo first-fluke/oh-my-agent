@@ -64,6 +64,7 @@ Pick a preset and you're ready:
 | **oma-architecture** | Architectural tradeoffs, boundaries, ADR/ATAM/CBAM-aware analysis |
 | **oma-backend** | APIs in Python, Node.js, or Rust |
 | **oma-brainstorm** | Explores ideas before you commit to building |
+| **oma-coordination** | Manual step-by-step multi-agent coordination guide |
 | **oma-db** | Schema design, migrations, indexing, vector DB |
 | **oma-debug** | Root cause analysis, fixes, regression tests |
 | **oma-design** | Design systems, tokens, accessibility, responsive |
@@ -101,16 +102,22 @@ Or use slash commands for structured workflows:
 
 | Step | Command | What It Does |
 |------|---------|-------------|
+| 0 | `/deepinit` | Bootstrap an existing codebase (AGENTS.md, ARCHITECTURE.md, `docs/`) |
 | 1 | `/brainstorm` | Free-form ideation |
 | 2 | `/architecture` | Software architecture review, tradeoffs, ADR/ATAM/CBAM-style analysis |
 | 2 | `/design` | 7-phase design system workflow |
 | 2 | `/plan` | PM breaks down your feature into tasks |
+| 2 | `/exec-plan` | Track plans as first-class artifacts in `docs/exec-plans/` |
+| 2 | `/stack-set` | Auto-detect tech stack, generate language-specific backend resources |
 | 3 | `/work` | Step-by-step multi-agent execution |
 | 3 | `/orchestrate` | Automated parallel agent spawning |
 | 3 | `/ultrawork` | 5-phase quality workflow with 11 review gates |
+| 3 | `/ralph` | Wraps `/ultrawork` in an independent verifier loop until criteria pass |
 | 4 | `/review` | Security + performance + accessibility audit |
 | 5 | `/debug` | Structured root-cause debugging |
 | 6 | `/scm` | SCM + Git workflow and Conventional Commit support |
+| ⚙ | `/tools` | Toggle MCP tool groups (memory / code-analysis / code-edit / file-ops) |
+| 📄 | `/pdf` | PDF → Markdown via `opendataloader-pdf` |
 
 **Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow.
 
@@ -126,6 +133,11 @@ oma dashboard               # Real-time agent monitoring
 oma link                    # Regenerate .claude/.codex/.gemini/etc. from .agents/
 oma agent:spawn backend "Build auth API" session-01
 oma agent:parallel -i backend:"Auth API" frontend:"Login form"
+oma retro 7d --compare      # Engineering retrospective with metrics + trends
+oma recap --window 1d       # Cross-tool conversation history recap
+oma search fetch <url>      # Mechanical search with auto-escalating strategies
+oma image generate "cat"    # Multi-vendor AI image generation
+oma export cursor           # Project skills as `.cursor/rules` for external IDEs
 ```
 
 Model selection follows two layers:

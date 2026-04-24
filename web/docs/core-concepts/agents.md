@@ -1,6 +1,6 @@
 ---
 title: Agents
-description: Complete reference for all 21 oh-my-agent agents — their domains, tech stacks, resource files, capabilities, charter preflight protocol, two-layer skill loading, scoped execution rules, quality gates, workspace strategy, orchestration flow, and runtime memory.
+description: Complete reference for all 22 oh-my-agent agents — their domains, tech stacks, resource files, capabilities, charter preflight protocol, two-layer skill loading, scoped execution rules, quality gates, workspace strategy, orchestration flow, and runtime memory.
 ---
 
 # Agents
