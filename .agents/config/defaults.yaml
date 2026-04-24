@@ -1,13 +1,11 @@
 # Profile B defaults (benchmark-leader assignments)
 # Generated: 2026-04-23 | Session: session-20260423-141500
-# Claude roles omit effort (cli-session managed). xhigh reserved for Complex auto-escalation only.
+# Claude roles omit effort (cli-session managed).
 #
 # ⚠ This file is a single source of truth (SSOT) shipped with oh-my-agent.
 # Do NOT edit it directly. To customize behavior, use one of:
 #   - .agents/oma-config.yaml                (agent_cli_mapping, session.quota_cap)
 #   - .agents/config/models.yaml             (add or override model slugs)
-# Legacy: .agents/config/user-preferences.yaml is still read for backward
-# compatibility, but oma-config.yaml takes precedence when both exist.
 # To receive newer Profile B defaults in future releases, run:
 #   oma install --update-defaults
 
@@ -25,18 +23,6 @@ agent_defaults:
   debug:         { model: "openai/gpt-5.3-codex", effort: "high" }
   tf-infra:      { model: "openai/gpt-5.4", effort: "high" }
   retrieval:     { model: "google/gemini-3.1-flash-lite" }
-
-effort_matrix:
-  Simple:
-    default: medium
-  Medium:
-    default: high
-  Complex:
-    default: high
-    overrides:
-      db: xhigh
-      debug: xhigh
-      backend: xhigh
 
 runtime_profiles:
   claude-only:
