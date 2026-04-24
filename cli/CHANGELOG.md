@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.20.0...cli-v5.20.1) (2026-04-24)
+
+
+### Documentation
+
+* **image:** mandate auto-forward of attached references ([072c555](https://github.com/first-fluke/oh-my-agent/commit/072c5550271acad040ada71b6845d432a278dd39))
+* **image:** require agents to auto-forward attached references ([a9ee1fc](https://github.com/first-fluke/oh-my-agent/commit/a9ee1fce3d210ff63fe1ad6516f80829dde1df65))
+
 ## [5.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.19.0...cli-v5.20.0) (2026-04-24)
 
 
