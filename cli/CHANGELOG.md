@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.18.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.18.1...cli-v5.18.2) (2026-04-24)
+
+
+### Bug Fixes
+
+* **typecheck,biome:** resolve pre-existing errors ([9948947](https://github.com/first-fluke/oh-my-agent/commit/99489478debdc274decf04102fddea0b5ee0d24e))
+
 ## [5.18.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.18.0...cli-v5.18.1) (2026-04-24)
 
 
