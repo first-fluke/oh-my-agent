@@ -6,6 +6,10 @@ import { writeManifest } from "./manifest.js";
 import { getMessages } from "./messages.js";
 import { makeRunId } from "./naming.js";
 import { resolveOutDir } from "./path-guard.js";
+import {
+  type ValidatedReference,
+  validateReferenceImages,
+} from "./reference-guard.js";
 import { defaultRegistry } from "./registry.js";
 import {
   exitForError,
@@ -52,11 +56,48 @@ export async function runGenerate({
     return 4;
   }
 
+  const referenceInput = normalizeReferenceOption(opts.reference);
+  let references: ValidatedReference[] = [];
+  if (referenceInput.length > 0) {
+    try {
+      references = await validateReferenceImages(referenceInput);
+    } catch (err) {
+      if (err && typeof err === "object" && (err as VendorError).kind) {
+        const ve = err as VendorError;
+        console.error(
+          color.red(
+            `invalid --reference: ${ve.kind === "invalid-input" ? ve.reason : String(ve.kind)}`,
+          ),
+        );
+      } else {
+        console.error(color.red((err as Error).message));
+      }
+      return 4;
+    }
+  }
+
   const providers = defaultRegistry().list();
   const requested = resolveRequestedProviders(vendorFlag, providers);
   if (requested.length === 0) {
     console.error(color.red(msgs.unknownVendor(vendorFlag)));
     return 4;
+  }
+
+  // For explicit vendor modes (all / <name>), reject early if any requested
+  // vendor lacks reference support. `auto` defers to the health filter below
+  // and silently drops unsupported vendors from the run set.
+  if (references.length > 0 && vendorFlag !== "auto") {
+    const unsupported = requested.filter((p) => !supportsReference(p.name));
+    if (unsupported.length > 0) {
+      console.error(
+        color.red(
+          `--reference is not supported by vendor(s): ${unsupported
+            .map((p) => p.name)
+            .join(", ")}. Use --vendor codex or --vendor gemini.`,
+        ),
+      );
+      return 4;
+    }
   }
 
   const healthResults = await Promise.all(
@@ -90,7 +131,49 @@ export async function runGenerate({
     }
   }
 
-  const runProviders = healthy.map((h) => h.provider);
+  let runProviders = healthy.map((h) => h.provider);
+
+  // `auto` mode: drop reference-unsupported vendors from the healthy set so
+  // a pollinations-only-healthy environment doesn't block codex/gemini refs.
+  // Two distinct failure modes to distinguish here:
+  //   (a) reference-supporting vendors (codex, gemini) are not even
+  //       registered in defaultRegistry — user's --reference choice is
+  //       invalid given the available vendors (exit 4, invalid-input,
+  //       matching the explicit --vendor pollinations -r X path).
+  //   (b) reference-supporting vendors are registered but none are
+  //       currently healthy — surface each vendor's own health hint via
+  //       printAuthFailure so the user sees exactly what setup is missing
+  //       (exit 5, auth-required).
+  if (references.length > 0 && vendorFlag === "auto") {
+    const droppable = runProviders.filter((p) => !supportsReference(p.name));
+    runProviders = runProviders.filter((p) => supportsReference(p.name));
+    if (runProviders.length === 0) {
+      const refSupportingHealthResults = healthResults.filter((r) =>
+        supportsReference(r.provider.name),
+      );
+      if (refSupportingHealthResults.length === 0) {
+        // (a) no reference-supporting vendor registered at all
+        console.error(
+          color.red(
+            `--reference is not supported by any registered vendor (${droppable
+              .map((p) => p.name)
+              .join(
+                ", ",
+              )}). Install/enable codex or gemini, or drop --reference.`,
+          ),
+        );
+        return 4;
+      }
+      // (b) ref-supporting vendors exist but none healthy — show their hints
+      printAuthFailure(refSupportingHealthResults, msgs);
+      console.error(
+        color.yellow(
+          `(${droppable.map((p) => p.name).join(", ")} is healthy but does not support --reference.)`,
+        ),
+      );
+      return 5;
+    }
+  }
   const runId = makeRunId();
   const compare = runProviders.length > 1;
   const outDir = resolveOutDir({
@@ -116,6 +199,7 @@ export async function runGenerate({
     modelByVendor,
     quality,
     count,
+    referenceCount: references.length,
   });
 
   const plan = {
@@ -128,6 +212,7 @@ export async function runGenerate({
     outDir,
     costEstimate,
     timeoutSec,
+    referenceImages: references.map((r) => r.absolutePath),
   };
 
   if (dryRun) {
@@ -164,6 +249,12 @@ export async function runGenerate({
       msgs.heartbeat(runProviders.map((p) => p.name).join("+"), elapsed),
   });
 
+  const referenceImages =
+    references.length > 0
+      ? references.map((r) => ({ path: r.absolutePath, mime: r.mime }))
+      : undefined;
+  const referenceImagePaths = referenceImages?.map((r) => r.path);
+
   const outcomes = await Promise.allSettled(
     runProviders.map((p) =>
       runSingleProvider({
@@ -177,6 +268,8 @@ export async function runGenerate({
           outDir,
           signal: controller.signal,
           timeoutSec,
+          referenceImages,
+          runShortid: runId.shortid,
         },
       }),
     ),
@@ -209,6 +302,7 @@ export async function runGenerate({
     costEstimate,
     runs,
     startedAt,
+    referenceImages: referenceImagePaths,
   });
 
   const successes = runs.filter((r) => r.status === "ok");
@@ -345,6 +439,26 @@ function resolveRequestedProviders(
 ): VendorProvider[] {
   if (vendorFlag === "auto" || vendorFlag === "all") return providers;
   return providers.filter((p) => p.name === vendorFlag);
+}
+
+function normalizeReferenceOption(raw: unknown): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw
+      .flatMap((r) => String(r).split(","))
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return String(raw)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+const REFERENCE_SUPPORTED_VENDORS = new Set(["codex", "gemini"]);
+
+function supportsReference(vendor: string): boolean {
+  return REFERENCE_SUPPORTED_VENDORS.has(vendor);
 }
 
 function printAuthFailure(

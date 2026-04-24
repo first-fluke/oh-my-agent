@@ -12,6 +12,7 @@ export interface WriteManifestArgs {
   costEstimate: number;
   runs: ManifestRun[];
   startedAt: number;
+  referenceImages?: string[];
 }
 
 export async function writeManifest(args: WriteManifestArgs): Promise<string> {
@@ -28,6 +29,9 @@ export async function writeManifest(args: WriteManifestArgs): Promise<string> {
     manifest.prompt_sha256 = createHash("sha256")
       .update(args.prompt)
       .digest("hex");
+  }
+  if (args.referenceImages && args.referenceImages.length > 0) {
+    manifest.reference_images = [...args.referenceImages];
   }
 
   const manifestPath = path.join(args.outDir, "manifest.json");

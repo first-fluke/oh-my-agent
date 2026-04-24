@@ -69,6 +69,10 @@ Set this environment variable to `json` to force JSON output on all commands tha
 | `verify` | Yes | Yes | Verification results per check |
 | `visualize` | Yes | Yes | Dependency graph as JSON |
 | `describe` | Always JSON | N/A | Always outputs JSON (introspection command) |
+| `recap` | Yes | Yes | Conversation history per tool/session |
+| `export` | Yes | Yes | Export status and target paths |
+| `image generate` / `image doctor` / `image list-vendors` | `--format json` | N/A | Use `--format json` instead of `--json` |
+| `search ...` | Always JSON | N/A | All `search` subcommands stream JSON; use `--pretty` for human reading |
 
 ---
 
@@ -230,6 +234,84 @@ workspace: ./api # optional
 - agent: frontend
 task: "Build user dashboard"
 ```
+
+### recap
+
+```
+oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--window <period>` | Time window: `1d`, `3d`, `7d`, `2w`, `30d`. Ignored when `--date` is set. | `1d` |
+| `--date <date>` | Specific date (`YYYY-MM-DD`). Takes precedence over `--window`. | |
+| `--tool <tools>` | Filter sessions by tool. Comma-separated: `claude`, `codex`, `gemini`, `qwen`, `cursor`. | all tools |
+| `--top <n>` | Show only top N projects/topics in the summary. | unlimited |
+| `--sort <metric>` | Sort sessions by `count` or `duration`. | `count` |
+| `--mermaid` | Output a Mermaid Gantt chart instead of the default summary. | `false` |
+| `--graph` | Open an interactive graph in the browser. Mutually exclusive with `--mermaid`. | `false` |
+
+### export
+
+```
+oma export <format> [-d <path>] [--json] [--output <format>]
+```
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--dir <path>` | `-d` | Target directory to write the exported rules into. | `process.cwd()` |
+
+**Supported formats:** `cursor` (writes `.cursor/rules` files derived from the installed skills).
+
+### search
+
+```
+oma search <subcommand> [...]
+```
+
+The `search` group ships its own JSON output (no `--json` / `--output` flags). Use `--pretty` on URL/query subcommands to pretty-print results, and rely on subcommand-specific options below:
+
+| Subcommand | Notable Options |
+|:-----------|:---------------|
+| `fetch <url>` | `--only`, `--skip`, `--include-archive`, `--timeout`, `--locale`, `--pretty` |
+| `api <url>` / `meta <url>` / `rss <url>` / `archive <url>` | `--timeout`, `--locale`, `--pretty` |
+| `api:search <query>` | `--platforms <list>`, `--timeout`, `--locale`, `--pretty` |
+| `rss:google <query>` | `--locale` (default `en-US`) |
+| `media <url>` | `--subs`, `--sub-lang <list>` (default `en`), `--format <spec>`, `--timeout` (default `30`), `--pretty` |
+| `code <query>` | `--host <github\|gitlab>` (default `github`), `--language`, `--repo`, `--limit` (default `20`), `--pretty` |
+| `trust <domain>` | `--pretty` |
+| `doctor` | none — runs binary checks for Chrome / `python3 curl_cffi` / `yt-dlp` / `gh` |
+
+**Exit codes:** `0` ok, `1` error, `2` blocked, `3` not-found, `4` invalid-input, `5` auth-required, `6` timeout. Use these in scripts to differentiate transient blockers from invalid inputs.
+
+### image
+
+```
+oma image <subcommand> [...]
+```
+
+Output format is controlled per subcommand via `--format <text|json>` (not the shared `--json` flag).
+
+`image generate` accepts:
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--vendor <name>` | | `auto` \| `pollinations` \| `codex` \| `gemini` \| `all`. `auto` resolves from `image-config.yaml` and available auth. | `auto` |
+| `--size <size>` | | `1024x1024` \| `1024x1536` \| `1536x1024` \| `auto`. | vendor default |
+| `--quality <level>` | | `low` \| `medium` \| `high` \| `auto`. | vendor default |
+| `--count <n>` | `-n` | Number of images, 1..5. | `1` |
+| `--out <dir>` | | Output directory. Must be inside `$PWD` unless `--allow-external-out` is set. | `.agents/results/images/{timestamp}/` |
+| `--allow-external-out` | | Allow `--out` paths outside `$PWD`. | `false` |
+| `--model <name>` | | Vendor-specific model override (e.g. `gpt-image-2`, `flux`, `imagen-4`). | vendor default |
+| `--strategy <list>` | | Gemini fallback order, comma-separated of `mcp`, `stream`, `api`. | vendor default |
+| `--timeout <seconds>` | | Per-image timeout. | vendor default |
+| `--reference <path>` | `-r` | Reference image for style/subject transfer. Repeatable (`-r a.png -r b.png`) or comma-separated. Validated for size (≤5MB), format (PNG/JPEG/GIF/WebP via magic bytes), and count (≤10). Supported on `codex` (passes `-i` to `codex exec`) and `gemini` (inlines base64 `inlineData`). Rejected with exit 4 on `pollinations`. | |
+| `--yes` | `-y` | Skip the cost confirmation prompt. | `false` |
+| `--no-prompt-in-manifest` | | Store SHA256 of the prompt instead of the raw text in `manifest.json`. | `false` |
+| `--dry-run` | | Print plan and cost estimate; do not execute. | `false` |
+| `--format <format>` | | `text` \| `json`. | `text` |
+
+`image doctor` and `image list-vendors` only accept `--format <text|json>`.
 
 ### memory:init
 

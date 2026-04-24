@@ -4,6 +4,7 @@ import { copyFile, readdir, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { ImageConfig } from "../config.js";
+import { buildOutputFilename, shortId } from "../naming.js";
 import type {
   GenerateInput,
   GenerateResult,
@@ -67,10 +68,14 @@ export class CodexProvider implements VendorProvider {
     const existingBefore = await listGenerated(GENERATED_DIR);
     const instruction = buildInstruction({ ...input, model });
 
+    const imageArgs = (input.referenceImages ?? []).flatMap((r) => [
+      "-i",
+      r.path,
+    ]);
     const start = Date.now();
     const res = await runCapture(
       "codex",
-      ["exec", "--skip-git-repo-check", instruction],
+      ["exec", "--skip-git-repo-check", ...imageArgs, instruction],
       input.signal,
       (input.timeoutSec ?? 180) * 1000,
     );
@@ -91,13 +96,18 @@ export class CodexProvider implements VendorProvider {
     }
     const files = newFiles.slice(0, input.n);
     const results: GenerateResult[] = [];
+    const runShortid = input.runShortid ?? shortId();
     for (let i = 0; i < files.length; i += 1) {
       const src = files[i];
       if (!src) continue;
-      const dstName =
-        input.n === 1
-          ? `${this.name}-${model}.png`
-          : `${this.name}-${model}-${i + 1}.png`;
+      const dstName = buildOutputFilename({
+        vendor: this.name,
+        model,
+        runShortid,
+        index: i,
+        total: files.length,
+        ext: "png",
+      });
       const dst = path.join(input.outDir, dstName);
       await copyFile(src, dst);
       results.push({
@@ -124,13 +134,20 @@ export class CodexProvider implements VendorProvider {
   }
 }
 
-function buildInstruction(input: GenerateInput & { model: string }): string {
+export function buildInstruction(
+  input: GenerateInput & { model: string },
+): string {
   const sizeHint = input.size === "auto" ? "" : ` Size: ${input.size}.`;
   const qualityHint =
     input.quality === "auto" ? "" : ` Quality: ${input.quality}.`;
   const n = input.n === 1 ? "one image" : `${input.n} images`;
+  const refs = input.referenceImages ?? [];
+  const refHint =
+    refs.length > 0
+      ? `\nReference images are attached (${refs.length}). Use them as visual references — match their style, subject identity, or composition as described in the prompt.`
+      : "";
   return (
-    `Generate ${n} with the image_gen tool using model ${input.model}.${sizeHint}${qualityHint}\n` +
+    `Generate ${n} with the image_gen tool using model ${input.model}.${sizeHint}${qualityHint}${refHint}\n` +
     `Prompt: ${input.prompt}\n` +
     "Do not create, modify, or save any files in the working directory. Do not attempt to write text files, scripts, or notes. Only invoke the image_gen tool and return."
   );

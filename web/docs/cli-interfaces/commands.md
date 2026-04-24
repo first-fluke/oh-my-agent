@@ -264,6 +264,37 @@ oma stats --json
 oma stats --reset
 ```
 
+### recap
+
+Recap AI tool conversation history across Claude, Codex, Gemini, Qwen, and Cursor sessions.
+
+```
+oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
+```
+
+**Options:**
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--window <period>` | Time window: `1d`, `3d`, `7d`, `2w`, `30d` | `1d` |
+| `--date <date>` | Specific date (`YYYY-MM-DD`); takes precedence over `--window` | |
+| `--tool <tools>` | Comma-separated filter: `claude,codex,gemini,qwen,cursor` | all |
+| `--top <n>` | Show top N projects/topics | |
+| `--sort <metric>` | Sort by `count` or `duration` | `count` |
+| `--mermaid` | Output as Mermaid Gantt chart | |
+| `--graph` | Open interactive graph in the browser | |
+| `--json` / `--output <format>` | Machine-readable output | `text` |
+
+**Examples:**
+
+```bash
+oma recap                                     # Today (1d)
+oma recap --window 7d                         # Last week
+oma recap --date 2026-04-20 --tool claude,codex
+oma recap --window 7d --mermaid > week.mmd
+oma recap --window 30d --graph                # Interactive browser graph
+```
+
 ### retro
 
 Engineering retrospective with metrics and trends.
@@ -704,6 +735,183 @@ oma viz [--json] [--output <format>]
 ```bash
 oma visualize
 oma viz --json
+```
+
+### export
+
+Export skills for external IDEs that consume their own rules format (e.g. Cursor).
+
+```
+oma export <format> [-d <path>] [--json] [--output <format>]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|:---------|:---------|:-----------|
+| `format` | Yes | Target format. Currently supports: `cursor` |
+
+**Options:**
+
+| Flag | Short | Description | Default |
+|:-----|:------|:-----------|:--------|
+| `--dir <path>` | `-d` | Target directory to write the exported rules into. | Current working directory |
+| `--json` / `--output <format>` | | Machine-readable output | `text` |
+
+**Examples:**
+
+```bash
+# Export to ./.cursor/rules in the current project
+oma export cursor
+
+# Export to a sibling project's directory
+oma export cursor -d ../another-project
+```
+
+### search
+
+Mechanical search primitives — fetch, metadata, RSS, media, code, and trust scoring. Aliased as `oma s`. All subcommands output JSON to stdout (one object per line, or pretty-printed with `--pretty`).
+
+```
+oma search <subcommand> ...
+oma s <subcommand> ...
+```
+
+**Subcommands:**
+
+| Subcommand | Purpose |
+|:-----------|:--------|
+| `fetch <url>` | Fetch URL via auto-escalating strategy pipeline (api → probe → impersonate → browser → archive) |
+| `api <url>` | Fetch via matched platform API handler (Phase 0) |
+| `api:search <query>` | Fan-out keyword search across platforms that support it (`--platforms <list>`) |
+| `meta <url>` | Extract OGP / JSON-LD / Schema.org metadata |
+| `rss <url>` | Discover and parse RSS / Atom feed |
+| `rss:google <query>` | Build a Google News RSS URL for a query |
+| `media <url>` | Extract media metadata via `yt-dlp` (1858 sites) |
+| `archive <url>` | Fetch via AMP / archive.today / Wayback fallback |
+| `trust <domain>` | Resolve trust level / score for a domain |
+| `code <query>` | Search code via `gh` (GitHub) or `glab` (GitLab) |
+| `doctor` | Check dependencies (Chrome, `python3` + `curl_cffi`, `yt-dlp`, `gh`) |
+
+**Common options on URL/query subcommands:**
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--timeout <seconds>` | Per-strategy timeout | `15` (`30` for `media`) |
+| `--locale <value>` | `Accept-Language` header | `en-US,en;q=0.9` |
+| `--pretty` | Pretty-print JSON output | `false` |
+
+**`fetch` extras:**
+
+| Flag | Description |
+|:-----|:-----------|
+| `--only <strategies>` | Comma-separated strategies to run (`api,probe,impersonate,browser,archive`) |
+| `--skip <strategies>` | Comma-separated strategies to skip |
+| `--include-archive` | Append archive strategy as a last fallback |
+
+**`media` extras:**
+
+| Flag | Description |
+|:-----|:-----------|
+| `--subs` | Write subtitles |
+| `--sub-lang <list>` | Subtitle languages, comma-separated (default: `en`) |
+| `--format <spec>` | yt-dlp format spec |
+
+**`code` extras:**
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--host <github\|gitlab>` | Host | `github` |
+| `--language <lang>` | Language filter | |
+| `--repo <owner/repo>` | Scope to a repo | |
+| `--limit <n>` | Max results | `20` |
+
+**Exit codes:** `0` ok, `1` error, `2` blocked, `3` not-found, `4` invalid-input, `5` auth-required, `6` timeout.
+
+**Examples:**
+
+```bash
+# Auto-escalating fetch
+oma search fetch https://example.com/article --pretty
+
+# Force a single strategy
+oma search fetch https://example.com --only browser
+
+# Cross-platform keyword search via API handlers
+oma search api:search "RAG patterns" --platforms hackernews,reddit
+
+# Find a repo's trust score
+oma search trust github.com
+
+# Code search (defaults to GitHub)
+oma search code "useEffect cleanup" --language ts --limit 10
+
+# Verify your local dependencies
+oma search doctor
+```
+
+### image
+
+Multi-vendor AI image generation with authentication-aware parallel dispatch. Aliased as `oma img`.
+
+```
+oma image <subcommand> ...
+oma img <subcommand> ...
+```
+
+**Subcommands:**
+
+| Subcommand | Purpose |
+|:-----------|:--------|
+| `generate <prompt...>` | Generate images via `pollinations` (flux/zimage, free), `codex` (gpt-image-2 via ChatGPT OAuth), or `gemini` (needs API key + billing, disabled by default) |
+| `doctor` | Check authentication and install status per vendor |
+| `list-vendors` | List registered vendors and supported models |
+
+**`image generate` options:**
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--vendor <name>` | `auto` \| `pollinations` \| `codex` \| `gemini` \| `all` | `auto` |
+| `--size <size>` | `1024x1024` \| `1024x1536` \| `1536x1024` \| `auto` | vendor default |
+| `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | vendor default |
+| `-n, --count <n>` | Number of images (1..5) | `1` |
+| `--out <dir>` | Output directory | `.agents/results/images/{timestamp}/` |
+| `--allow-external-out` | Allow `--out` paths outside `$PWD` | `false` |
+| `--model <name>` | Vendor-specific model override | |
+| `--strategy <list>` | Gemini fallback order, comma-separated (`mcp,stream,api`) | |
+| `--timeout <seconds>` | Per-image timeout | vendor default |
+| `-r, --reference <path>` | Reference image(s); repeatable (`-r a.png -r b.png`) or comma-separated. Supported on `codex` and `gemini`; rejected on `pollinations`. Each ≤5MB PNG/JPEG/GIF/WebP (magic-byte validated), max 10. | |
+| `-y, --yes` | Skip cost confirmation | `false` |
+| `--no-prompt-in-manifest` | Store SHA256 of prompt instead of raw text | `false` |
+| `--dry-run` | Print plan and cost estimate; do not execute | `false` |
+| `--format <format>` | CLI output format: `text` \| `json` | `text` |
+
+Each run writes a `manifest.json` next to the generated images recording vendor, model, prompt (or hash), size, quality, and cost.
+
+**Examples:**
+
+```bash
+# Free, no-config generation
+oma image generate "minimalist sunrise over mountains"
+
+# Specific vendor + size + count, skip cost prompt
+oma image generate "logo concept" --vendor codex --size 1024x1024 -n 3 -y
+
+# All vendors in parallel for comparison
+oma image generate "cat astronaut" --vendor all
+
+# Cost estimate without spending
+oma image generate "test prompt" --dry-run
+
+# Use a reference image to guide style / subject (codex or gemini)
+oma image generate "same otter in dramatic lighting" --vendor codex -r ~/Downloads/otter.jpeg
+
+# Multiple references (repeatable or comma-separated)
+oma image generate "blend these styles" --vendor gemini -r a.png -r b.png
+oma image generate "blend these styles" --vendor gemini -r a.png,b.png
+
+# Per-vendor doctor check
+oma image doctor --format json
 ```
 
 ### star

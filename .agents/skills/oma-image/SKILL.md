@@ -57,11 +57,13 @@ Skip both clarification and amplification when the user has clearly authored a f
 
 ## Vendors
 
-| Vendor | Primary Strategy | Models | Trigger |
-|--------|-----------------|--------|---------|
-| `codex` | `codex exec` (OAuth via ChatGPT subscription) → built-in `image_gen` | `gpt-image-2` | Logged into Codex CLI |
-| `pollinations` | `gen.pollinations.ai/v1/images/generations` (OpenAI-compatible) | Free: `flux`, `zimage`. Credit-gated (requires pollen balance): `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` is set (free key at https://enter.pollinations.ai) |
-| `gemini` | `@google/genai` SDK (direct API) | `gemini-2.5-flash-image`, `gemini-3.1-flash-image-preview` | `GEMINI_API_KEY` set + billing activated on AI Studio account |
+This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native CLI can drive generation (and return raw bytes), the subprocess path is preferred over direct API keys. Direct API is only used as a fallback for vendors whose CLI can't yet emit raw image bytes.
+
+| Vendor | Strategy | Models | Trigger |
+|--------|----------|--------|---------|
+| `codex` | CLI-first — `codex exec` via ChatGPT OAuth (`codex login`), built-in `image_gen` | `gpt-image-2` | Logged in via Codex CLI (no API key) |
+| `pollinations` | Direct HTTP — `gen.pollinations.ai/v1/images/generations` (free signup for key) | Free: `flux`, `zimage`. Credit-gated: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` set (free at https://enter.pollinations.ai). No native CLI exists. |
+| `gemini` | CLI-first fallback → direct API. `gemini -p` (stream) is the preferred path but currently disabled at precheck (CLI's agentic loop does not return raw `inlineData` bytes on stdout as of Gemini CLI 0.38). Until the CLI exposes a non-agentic image surface, the provider falls back to the direct `generativelanguage.googleapis.com` API. | `gemini-2.5-flash-image`, `gemini-3.1-flash-image-preview` | Preferred: `gemini auth login`. Fallback: `GEMINI_API_KEY` + billing. |
 
 ## Invocation
 
@@ -80,6 +82,7 @@ oma image generate "<prompt>" [--vendor auto|codex|pollinations|gemini|all] [-n 
                              [--size 1024x1024|1024x1536|1536x1024|auto] \
                              [--quality low|medium|high|auto] \
                              [--out <dir>] [--allow-external-out] \
+                             [-r <path>]... \
                              [--timeout 180] [-y] [--no-prompt-in-manifest] \
                              [--dry-run] [--format text|json]
 oma image doctor
@@ -87,6 +90,28 @@ oma image list-vendors
 ```
 
 Gemini-only escalation flag: `--strategy mcp,stream,api` (overrides `vendors.gemini.strategies`).
+
+### Reference Images (`-r`, `--reference`)
+
+Attach up to 10 reference images (PNG/JPEG/GIF/WebP, ≤ 5MB each) to guide style, subject identity, or composition. Repeatable or comma-separated.
+
+```
+oma image generate -r ~/Downloads/otter.jpeg "same otter in dramatic lighting"
+oma image generate -r a.png -r b.png "blend these two styles"
+```
+
+Supported vendors:
+
+| Vendor | Support | How |
+|--------|---------|-----|
+| `codex` (gpt-image-2) | ✅ | Passes `-i <path>` to `codex exec` |
+| `gemini` (2.5-flash-image) | ✅ | Inlines base64 `inlineData` parts in request |
+| `pollinations` | ❌ | Rejected with exit code 4 (requires URL hosting; see PR #2 roadmap) |
+
+**Paths**: absolute or relative to `$CWD`. Host CLIs usually expose attached images via:
+- **Claude Code**: `~/.claude/image-cache/<session>/N.png` (surfaced in system messages as `[Image: source: <path>]`)
+- **Antigravity**: workspace upload directory (exact path shown in IDE)
+- **Codex CLI as host**: user must pass the filesystem path explicitly; in-conversation attachments are not forwarded
 
 ### Shared Infrastructure (from other skills)
 

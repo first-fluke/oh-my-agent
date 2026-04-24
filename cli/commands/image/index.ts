@@ -4,6 +4,19 @@ import { runDoctor } from "./doctor.js";
 import { runGenerate } from "./generate.js";
 import { runListVendors } from "./list-vendors.js";
 
+// Collector for the -r/--reference option. Commander invokes this once per
+// -r occurrence; by returning a new array each time we accumulate values
+// without the greedy variadic syntax (which would consume the positional
+// <prompt...>). The collector also splits comma-separated values, matching
+// the normalizer in generate.ts.
+function collectReference(value: string, previous: string[] = []): string[] {
+  const parts = value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return [...previous, ...parts];
+}
+
 export function registerImageCommand(program: Command): void {
   const image = program
     .command("image")
@@ -36,6 +49,12 @@ export function registerImageCommand(program: Command): void {
       "Gemini fallback order, comma-separated (mcp,stream,api)",
     )
     .option("--timeout <seconds>", "Per-image timeout")
+    .option(
+      "-r, --reference <path>",
+      "Reference image path; repeatable (-r a.png -r b.png) or comma-separated. Supported on codex and gemini vendors.",
+      collectReference,
+      [] as string[],
+    )
     .option("-y, --yes", "Skip cost confirmation")
     .option(
       "--no-prompt-in-manifest",

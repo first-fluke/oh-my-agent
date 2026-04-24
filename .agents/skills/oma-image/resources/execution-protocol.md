@@ -13,7 +13,32 @@ Run the **Clarification Protocol** in `SKILL.md` before shelling out.
    - `size` ∈ {`1024x1024`, `1024x1536`, `1536x1024`, `auto`}
    - `quality` ∈ {`low`, `medium`, `high`, `auto`}
    - `vendor` ∈ {`auto`, `codex`, `pollinations`, `gemini`, `all`} or a concrete registered name.
+   - `reference` (if any): each path exists, is a regular file ≤ 5MB, magic-byte-matches PNG/JPEG/GIF/WebP, ≤ 10 total, and duplicate paths are rejected with exit 4.
 4. If invalid: exit code 4 and a message identifying the offending field.
+
+## Step 0.5: Reference Image Handling
+
+When `--reference <path...>` is supplied:
+
+1. Validate every path via `reference-guard.ts`. On failure → exit 4.
+2. Reject the request if the selected vendor(s) do not support references (currently only `codex` and `gemini`). Pollinations returns exit 4 with a hint to switch vendor.
+3. Pass validated absolute paths through `GenerateInput.referenceImages`:
+   - `codex` provider appends `-i <path>` per reference to `codex exec` and adds a guidance sentence to the instruction text.
+   - `gemini` api strategy reads each file, base64-encodes it, and prepends `{ inlineData: { mimeType, data } }` parts before the text prompt.
+4. Record reference paths in `manifest.json` under `reference_images` (top-level array of absolute paths).
+
+### Host-Specific Reference Paths
+
+Agents invoking `oma image generate --reference` should surface the following host-specific locations to the user:
+
+| Host CLI | Attachment Surface | Path pattern |
+|----------|--------------------|--------------|
+| **Claude Code** | `[Image: source: ...]` in system messages | `~/.claude/image-cache/<session-uuid>/<N>.png` (undocumented, verified empirically; cache is cleared on session end) |
+| **Antigravity IDE** | Workspace upload via "Upload to Agent" | Project workspace upload dir; exact path shown in IDE file tree |
+| **Codex CLI as host** | `-i` flag attaches to LLM context only | No filesystem path exposed. User must provide an explicit path (e.g., `~/Downloads/foo.png`). In-conversation pastes cannot be forwarded. |
+| **Gemini CLI as host** | Varies by version | Prefer explicit paths over paste |
+
+Agents should prefer user-supplied explicit paths (e.g., `~/Downloads/otter.jpeg`) over host-cache paths when durability across sessions matters.
 
 ## Step 1: Vendor Selection
 
