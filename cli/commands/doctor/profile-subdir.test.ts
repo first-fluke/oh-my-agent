@@ -1,12 +1,11 @@
 /**
  * Filesystem-based regression tests for collectProfileReport.
  *
- * Verifies that the doctor matrix discovers .agents/config/defaults.yaml,
- * .agents/oma-config.yaml, and .agents/config/user-preferences.yaml by
- * walking parent directories — matching findFileUp semantics in
- * cli/io/runtime-dispatch.ts. Without this the matrix would show defaults
- * while the actual spawn path reads the parent's config, which is the exact
- * fragmentation PR #270 set out to eliminate.
+ * Verifies that the doctor matrix discovers .agents/config/defaults.yaml
+ * and .agents/oma-config.yaml by walking parent directories — matching
+ * findFileUp semantics in cli/io/runtime-dispatch.ts. Without this the
+ * matrix would show defaults while the actual spawn path reads the parent's
+ * config, which is the exact fragmentation PR #270 set out to eliminate.
  */
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -87,9 +86,9 @@ describe("collectProfileReport — subdirectory invocation", () => {
     expect(backend?.cli).toBe("claude");
   });
 
-  it("honors legacy user-preferences.yaml from a nested subdirectory", async () => {
+  it("honors legacy vendor-string mapping in oma-config.yaml from a nested subdirectory", async () => {
     writeFileSync(
-      join(projectRoot, ".agents", "config", "user-preferences.yaml"),
+      join(projectRoot, ".agents", "oma-config.yaml"),
       `agent_cli_mapping:\n  backend: "gemini"\n`,
     );
     const report = await collectProfileReport(subDir);
@@ -98,20 +97,6 @@ describe("collectProfileReport — subdirectory invocation", () => {
     // in the real defaults.yaml; with our minimal fixture no such profile
     // exists, so it falls back to the top-level default.
     expect(backend?.model).toBe("openai/gpt-5.3-codex");
-  });
-
-  it("prefers oma-config.yaml over user-preferences.yaml", async () => {
-    writeFileSync(
-      join(projectRoot, ".agents", "config", "user-preferences.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "google/gemini-3.1-flash-lite"\n`,
-    );
-    writeFileSync(
-      join(projectRoot, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "anthropic/claude-sonnet-4-6"\n`,
-    );
-    const report = await collectProfileReport(subDir);
-    const backend = report.rows.find((r) => r.role === "backend");
-    expect(backend?.model).toBe("anthropic/claude-sonnet-4-6");
   });
 
   it("resolves profile name from oma-config.yaml in parent dir", async () => {

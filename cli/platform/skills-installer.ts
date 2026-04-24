@@ -157,8 +157,7 @@ export function installConfigs(
         const srcPath = join(configSrc, entry.name);
 
         // defaults.yaml has special handling — it's an SSOT that ships with OMA.
-        // User-editable files (user-preferences.yaml, models.yaml) are never
-        // overwritten; the user owns them.
+        // User-editable files (models.yaml) are never overwritten; the user owns them.
         if (entry.name === defaultsFile && fs.existsSync(destPath)) {
           const installedVersion = readDefaultsVersion(destPath);
           const bundledVersion = readDefaultsVersion(srcPath);

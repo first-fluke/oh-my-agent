@@ -1,11 +1,10 @@
 /**
  * Filesystem-based integration tests for loadQuotaCap.
  *
- * Verifies that the cap resolver honors all three candidate paths with the
+ * Verifies that the cap resolver honors both candidate paths with the
  * correct precedence:
  *   1. .agents/oma-config.yaml                (canonical, wins)
- *   2. .agents/config/user-preferences.yaml   (legacy)
- *   3. .agents/config/defaults.yaml           (shipped SSOT fallback)
+ *   2. .agents/config/defaults.yaml           (shipped SSOT fallback)
  *
  * Uses real tmpdir + process.chdir rather than the mocked fs in
  * session-cost.test.ts so the true findFileUp / readFileSync path is exercised.
@@ -42,33 +41,7 @@ describe("loadQuotaCap — config precedence", () => {
     expect(cap).toEqual({ tokens: 500000, spawnCount: 25 });
   });
 
-  it("prefers oma-config.yaml over legacy user-preferences.yaml", () => {
-    writeFileSync(
-      join(tempDir, ".agents", "config", "user-preferences.yaml"),
-      `session:\n  quota_cap:\n    tokens: 100\n`,
-    );
-    writeFileSync(
-      join(tempDir, ".agents", "oma-config.yaml"),
-      `session:\n  quota_cap:\n    tokens: 999\n`,
-    );
-    const cap = loadQuotaCap(tempDir);
-    expect(cap?.tokens).toBe(999);
-  });
-
-  it("falls back to legacy user-preferences.yaml when oma-config lacks cap", () => {
-    writeFileSync(
-      join(tempDir, ".agents", "oma-config.yaml"),
-      `language: en\n`,
-    );
-    writeFileSync(
-      join(tempDir, ".agents", "config", "user-preferences.yaml"),
-      `session:\n  quota_cap:\n    spawn_count: 42\n`,
-    );
-    const cap = loadQuotaCap(tempDir);
-    expect(cap).toEqual({ spawnCount: 42 });
-  });
-
-  it("falls back to defaults.yaml when neither user file has a cap", () => {
+  it("falls back to defaults.yaml when oma-config lacks cap", () => {
     writeFileSync(
       join(tempDir, ".agents", "config", "defaults.yaml"),
       `session:\n  quota_cap:\n    tokens: 77\n`,

@@ -71,7 +71,7 @@ describe("skills.ts - Workflow and Config Installation", () => {
         true,
       );
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-        { name: "user-preferences.yaml", isDirectory: () => false },
+        { name: "models.yaml", isDirectory: () => false },
       ]);
 
       installConfigs(mockSourceDir, mockTargetDir);
