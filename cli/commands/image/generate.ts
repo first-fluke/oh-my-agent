@@ -83,7 +83,10 @@ export async function runGenerate({
     return 4;
   }
 
-  if (references.length > 0) {
+  // For explicit vendor modes (all / <name>), reject early if any requested
+  // vendor lacks reference support. `auto` defers to the health filter below
+  // and silently drops unsupported vendors from the run set.
+  if (references.length > 0 && vendorFlag !== "auto") {
     const unsupported = requested.filter((p) => !supportsReference(p.name));
     if (unsupported.length > 0) {
       console.error(
@@ -128,7 +131,24 @@ export async function runGenerate({
     }
   }
 
-  const runProviders = healthy.map((h) => h.provider);
+  let runProviders = healthy.map((h) => h.provider);
+
+  // `auto` mode: drop reference-unsupported vendors from the healthy set so
+  // a pollinations-only-healthy environment doesn't block codex/gemini refs.
+  if (references.length > 0 && vendorFlag === "auto") {
+    const droppable = runProviders.filter((p) => !supportsReference(p.name));
+    runProviders = runProviders.filter((p) => supportsReference(p.name));
+    if (runProviders.length === 0) {
+      console.error(
+        color.red(
+          `--reference is not supported by any available vendor (${droppable
+            .map((p) => p.name)
+            .join(", ")}). Authenticate codex or gemini, or drop --reference.`,
+        ),
+      );
+      return 5;
+    }
+  }
   const runId = makeRunId();
   const compare = runProviders.length > 1;
   const outDir = resolveOutDir({

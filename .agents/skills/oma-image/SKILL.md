@@ -80,7 +80,7 @@ oma image generate "<prompt>" [--vendor auto|codex|pollinations|gemini|all] [-n 
                              [--size 1024x1024|1024x1536|1536x1024|auto] \
                              [--quality low|medium|high|auto] \
                              [--out <dir>] [--allow-external-out] \
-                             [-r <path>...] \
+                             [-r <path>]... \
                              [--timeout 180] [-y] [--no-prompt-in-manifest] \
                              [--dry-run] [--format text|json]
 oma image doctor
