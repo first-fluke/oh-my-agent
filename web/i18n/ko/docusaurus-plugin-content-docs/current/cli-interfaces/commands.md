@@ -511,7 +511,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-
 ### bridge
 
 MCP stdio를 Streamable HTTP 전송으로 브릿지합니다.

@@ -1,12 +1,12 @@
 // cli/commands/doctor/profile.ts
-// oma doctor --profile — Profile Health check (RARDO v2.1 T4)
+// oma doctor --profile — Profile Health check
 //
 // Loads .agents/config/defaults.yaml (T3) + user overrides, builds an
 // auth-status matrix for every role-model pairing, calls T9's
 // detectDeprecatedOAuthSession() for Qwen, and emits Antigravity warning.
 
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, parse as parsePath, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch.js";
 import { getModelSpec } from "../../platform/model-registry.js";
@@ -96,8 +96,24 @@ interface DefaultsYaml {
   >;
 }
 
-function resolveDefaultsYamlPath(cwd: string): string {
-  return join(cwd, ".agents", "config", "defaults.yaml");
+/**
+ * Walk from `startDir` up to the filesystem root looking for `relativePath`.
+ * Mirrors findFileUp in cli/io/runtime-dispatch.ts so the doctor matrix finds
+ * the same config files the spawn path would when invoked from a subdirectory.
+ */
+function findFileUp(startDir: string, relativePath: string): string | null {
+  let current = resolve(startDir);
+  const root = parsePath(current).root;
+  while (current !== root) {
+    const candidate = join(current, relativePath);
+    if (existsSync(candidate)) return candidate;
+    current = dirname(current);
+  }
+  return null;
+}
+
+function resolveDefaultsYamlPath(cwd: string): string | null {
+  return findFileUp(cwd, join(".agents", "config", "defaults.yaml"));
 }
 
 function parseDefaultsYaml(content: string): DefaultsYaml {
@@ -151,26 +167,44 @@ interface UserOverrideMapping {
   agent_cli_mapping?: Record<string, string | { model: string }>;
 }
 
+/**
+ * Merge user override entries from both legacy and canonical paths so the
+ * `oma doctor --profile` matrix matches the spawn path resolution rules
+ * (cli/io/runtime-dispatch.ts#loadUserPreferencesRaw).
+ *
+ * Precedence (later wins on conflict):
+ *   1. .agents/config/user-preferences.yaml   — legacy, loaded first
+ *   2. .agents/oma-config.yaml                — canonical, overrides
+ */
 function loadUserOverride(cwd: string): UserOverrideMapping {
   const candidates = [
-    join(cwd, ".agents", "config", "user-preferences.yaml"),
-    join(cwd, ".agents", "oma-config.yaml"),
+    findFileUp(cwd, join(".agents", "config", "user-preferences.yaml")),
+    findFileUp(cwd, join(".agents", "oma-config.yaml")),
   ];
 
+  let merged: UserOverrideMapping = {};
   for (const p of candidates) {
-    if (!existsSync(p)) continue;
+    if (!p) continue;
     try {
       const content = readFileSync(p, "utf-8");
       const parsed = parseYaml(content) as unknown;
       if (typeof parsed === "object" && parsed !== null) {
-        return parsed as UserOverrideMapping;
+        const pref = parsed as UserOverrideMapping;
+        merged = {
+          ...merged,
+          ...pref,
+          agent_cli_mapping: {
+            ...(merged.agent_cli_mapping ?? {}),
+            ...(pref.agent_cli_mapping ?? {}),
+          },
+        };
       }
     } catch {
       // ignore malformed YAML
     }
   }
 
-  return {};
+  return merged;
 }
 
 // ---------------------------------------------------------------------------
@@ -218,12 +252,12 @@ export async function collectProfileReport(
   cwd: string,
 ): Promise<ProfileReport> {
   const defaultsPath = resolveDefaultsYamlPath(cwd);
-  const missingDefaultsYaml = !existsSync(defaultsPath);
+  const missingDefaultsYaml = defaultsPath === null;
 
   // Load defaults.yaml
   let agentDefaults: Record<string, AgentDefaultEntry | string> = {};
   let defaultsYaml: DefaultsYaml = {};
-  if (!missingDefaultsYaml) {
+  if (defaultsPath !== null) {
     try {
       const raw = readFileSync(defaultsPath, "utf-8");
       defaultsYaml = parseDefaultsYaml(raw);
@@ -300,8 +334,8 @@ export async function collectProfileReport(
 
 function resolveProfileName(cwd: string): string {
   // Check oma-config.yaml for an explicit profile name
-  const configPath = join(cwd, ".agents", "oma-config.yaml");
-  if (existsSync(configPath)) {
+  const configPath = findFileUp(cwd, join(".agents", "oma-config.yaml"));
+  if (configPath) {
     try {
       const content = readFileSync(configPath, "utf-8");
       const parsed = parseYaml(content) as unknown;
@@ -318,7 +352,7 @@ function resolveProfileName(cwd: string): string {
     }
   }
 
-  // Default to "Profile B" (the RARDO v2.1 default profile)
+  // Default to "Profile B" (the default profile)
   return "Profile B";
 }
 

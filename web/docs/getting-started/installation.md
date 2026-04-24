@@ -65,35 +65,35 @@ After installation, your project will contain:
 ```
 .agents/
 ├── config/
-│   └── oma-config.yaml      # Your preferences
+│ └── oma-config.yaml # Your preferences
 ├── skills/
-│   ├── _shared/                    # Shared resources (always installed)
-│   │   ├── core/                   # skill-routing, context-loading, etc.
-│   │   ├── runtime/                # memory-protocol, execution-protocols/
-│   │   └── conditional/            # quality-score, experiment-ledger, etc.
-│   ├── oma-frontend/               # Per preset
-│   │   ├── SKILL.md
-│   │   └── resources/
-│   └── ...                         # Other selected skills
-├── workflows/                      # All 16 workflow definitions
-├── agents/                         # Subagent definitions
-├── mcp.json                        # MCP server configuration
-├── results/plan-{sessionId}.json                       # Empty (populated by /plan)
-├── state/                          # Empty (used by persistent workflows)
-└── results/                        # Empty (populated by agent runs)
+│ ├── _shared/ # Shared resources (always installed)
+│ │ ├── core/ # skill-routing, context-loading, etc.
+│ │ ├── runtime/ # memory-protocol, execution-protocols/
+│ │ └── conditional/ # quality-score, experiment-ledger, etc.
+│ ├── oma-frontend/ # Per preset
+│ │ ├── SKILL.md
+│ │ └── resources/
+│ └── ... # Other selected skills
+├── workflows/ # All 16 workflow definitions
+├── agents/ # Subagent definitions
+├── mcp.json # MCP server configuration
+├── results/plan-{sessionId}.json # Empty (populated by /plan)
+├── state/ # Empty (used by persistent workflows)
+└── results/ # Empty (populated by agent runs)
 
 .claude/
-├── settings.json                   # Hooks and permissions
+├── settings.json # Hooks and permissions
 ├── hooks/
-│   ├── triggers.json               # Keyword-to-workflow mapping (11 languages)
-│   ├── keyword-detector.ts         # Auto-detection logic
-│   ├── persistent-mode.ts          # Persistent workflow enforcement
-│   └── hud.ts                      # [OMA] statusline indicator
-├── skills/                         # Symlinks → .agents/skills/
-└── agents/                         # Subagent definitions for IDE
+│ ├── triggers.json # Keyword-to-workflow mapping (11 languages)
+│ ├── keyword-detector.ts # Auto-detection logic
+│ ├── persistent-mode.ts # Persistent workflow enforcement
+│ └── hud.ts # [OMA] statusline indicator
+├── skills/ # Symlinks → .agents/skills/
+└── agents/ # Subagent definitions for IDE
 
 .serena/
-└── memories/                       # Runtime state (populated during sessions)
+└── memories/ # Runtime state (populated during sessions)
 ```
 
 ---
@@ -119,23 +119,23 @@ npm install --global oh-my-agent
 This installs the `oma` command globally, giving you access to all CLI commands from any directory:
 
 ```bash
-oma doctor              # Health check
-oma dashboard           # Terminal monitoring
-oma dashboard:web       # Web dashboard at http://localhost:9847
-oma agent:spawn         # Spawn agents from terminal
-oma agent:parallel      # Parallel agent execution
-oma agent:status        # Check agent status
-oma stats               # Session statistics
-oma retro               # Retrospective analysis
-oma cleanup             # Clean up session artifacts
-oma update              # Update oh-my-agent
-oma verify              # Verify agent output
-oma visualize           # Dependency visualization
-oma describe            # Describe project structure
-oma bridge              # SSE-to-stdio bridge for Antigravity
-oma memory:init         # Initialize memory provider
-oma auth:status         # Check CLI auth status
-oma star                # Star the repository
+oma doctor # Health check
+oma dashboard # Terminal monitoring
+oma dashboard:web # Web dashboard at http://localhost:9847
+oma agent:spawn # Spawn agents from terminal
+oma agent:parallel # Parallel agent execution
+oma agent:status # Check agent status
+oma stats # Session statistics
+oma retro # Retrospective analysis
+oma cleanup # Clean up session artifacts
+oma update # Update oh-my-agent
+oma verify # Verify agent output
+oma visualize # Dependency visualization
+oma describe # Describe project structure
+oma bridge # SSE-to-stdio bridge for Antigravity
+oma memory:init # Initialize memory provider
+oma auth:status # Check CLI auth status
+oma star # Star the repository
 ```
 
 `oma` is short for `oh-my-agent`. Both work as CLI commands.
@@ -206,19 +206,19 @@ default_cli: gemini
 
 # Per-agent CLI mapping (overrides default_cli)
 agent_cli_mapping:
-  frontend: claude       # Complex UI reasoning
-  backend: gemini        # Fast API generation
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Quick decomposition
-  qa: claude             # Thorough security review
-  debug: claude          # Deep root-cause analysis
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+frontend: claude # Complex UI reasoning
+backend: gemini # Fast API generation
+mobile: gemini
+db: gemini
+pm: gemini # Quick decomposition
+qa: claude # Thorough security review
+debug: claude # Deep root-cause analysis
+design: claude
+tf-infra: gemini
+dev-workflow: gemini
+translator: claude
+orchestrator: gemini
+commit: gemini
 ```
 
 ### Field Reference
@@ -241,6 +241,8 @@ When spawning an agent, the CLI vendor is determined by this priority order (hig
 4. `active_vendor` in `cli-config.yaml` (legacy fallback)
 5. `gemini` (hardcoded final fallback)
 
+> Legacy string values (e.g. `agent_cli_mapping: { backend: "gemini" }`) keep working — they are resolved through `runtime_profiles.gemini-only.agent_defaults.backend` from `.agents/config/defaults.yaml`. For per-agent model, effort, and thinking overrides, see [Per-Agent Models](../guide/per-agent-models.md).
+
 ---
 
 ## Verification: `oma doctor`
@@ -261,6 +263,20 @@ This command checks:
 - `oma-config.yaml` is valid YAML with required fields
 
 If anything is wrong, `oma doctor` tells you exactly what to fix, with copy-paste commands.
+
+To inspect how each agent's `agent_cli_mapping` resolves under (active profile, effective model slug, CLI, auth status per agent), run:
+
+```bash
+oma doctor --profile
+```
+
+If a future `oma install` reports a `defaults.yaml` version mismatch, accept the new SSOT with:
+
+```bash
+oma install --update-defaults
+```
+
+User files (`oma-config.yaml`, `.agents/config/models.yaml`) are preserved. See [Per-Agent Models](../guide/per-agent-models.md) for full details.
 
 ---
 

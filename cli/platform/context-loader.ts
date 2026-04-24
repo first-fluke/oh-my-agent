@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 // =============================================================================
-// context-loader.ts  (RARDO v2.1 T12)
+// context-loader.ts
 //
 // Programmatic enforcement of the difficulty-adaptive context loading policy
 // defined in .agents/skills/_shared/core/context-loading.md and difficulty-guide.md.

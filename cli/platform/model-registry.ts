@@ -1,5 +1,5 @@
 // cli/platform/model-registry.ts
-// Layer-1 Model Registry — RARDO v2.1
+// Layer-1 Model Registry
 // CLI-only: api_only:true entries are rejected at initialization.
 
 import fs from "node:fs";

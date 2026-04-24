@@ -4,7 +4,7 @@ import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
-// AgentSpec — dual-format agent_cli_mapping schemas (RARDO v2.1 T2)
+// AgentSpec — dual-format agent_cli_mapping schemas
 // ---------------------------------------------------------------------------
 
 const ModelSlugSchema = z

@@ -47,9 +47,9 @@ The `--output` flag accepts `text` or `json`. It provides the same functionality
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # outputs JSON
-oma doctor   # outputs JSON
-oma retro    # outputs JSON
+oma stats # outputs JSON
+oma doctor # outputs JSON
+oma retro # outputs JSON
 ```
 
 Set this environment variable to `json` to force JSON output on all commands that support it. Only `json` is recognized; any other value is ignored and defaults to text.
@@ -73,6 +73,28 @@ Set this environment variable to `json` to force JSON output on all commands tha
 ---
 
 ## Per-Command Options
+
+### oma (install)
+
+```
+oma [--update-defaults]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--update-defaults` | Overwrite `.agents/config/defaults.yaml` with the bundled version when a version mismatch is detected. User files (`oma-config.yaml`, `.agents/config/models.yaml`) are preserved. Introduced in cli@5.16.0. | `false` |
+
+### doctor
+
+```
+oma doctor [--json] [--output <format>] [--profile]
+```
+
+| Flag | Description | Default |
+|:-----|:-----------|:--------|
+| `--json` | Emit JSON instead of formatted text. | `false` |
+| `--output <format>` | Explicit output format (`text` or `json`). See [Output Options](#output-options). | `text` |
+| `--profile` | Show the profile health matrix — resolved model slug, CLI, and auth status per agent through `runtime_profiles`. Introduced in cli@5.16.0. See [Per-Agent Models](../guide/per-agent-models.md). | `false` |
 
 ### update
 
@@ -140,7 +162,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Orphaned log files: `/tmp/subagent-*.log` matching dead PIDs.
 3. Gemini Antigravity directories: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — these accumulate state over time and can grow large.
 
-
 ### agent:spawn
 
 ```
@@ -203,11 +224,11 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 **YAML tasks file format:**
 ```yaml
 tasks:
-  - agent: backend
-    task: "Implement user API"
-    workspace: ./api           # optional
-  - agent: frontend
-    task: "Build user dashboard"
+- agent: backend
+task: "Implement user API"
+workspace: ./api # optional
+- agent: frontend
+task: "Build user dashboard"
 ```
 
 ### memory:init

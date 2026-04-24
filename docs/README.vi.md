@@ -113,7 +113,7 @@ Việc chọn model đi theo hai lớp:
 - Dispatch bản địa cùng nhà cung cấp dùng định nghĩa agent được sinh ra trong `.claude/agents/`, `.codex/agents/` hoặc `.gemini/agents/`.
 - Dispatch chéo nhà cung cấp hoặc fallback CLI dùng giá trị mặc định của nhà cung cấp trong `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**RARDO v2.1 — model theo từng agent**: mỗi agent có thể trỏ tới model và `effort` riêng thông qua `.agents/config/user-preferences.yaml`. Có sẵn năm runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Kiểm tra ma trận auth đã resolve bằng `oma doctor --profile`. Hướng dẫn đầy đủ: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**model theo từng agent**: mỗi agent có thể trỏ tới model và `effort` riêng thông qua `.agents/oma-config.yaml`. Có sẵn năm runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`. Kiểm tra ma trận auth đã resolve bằng `oma doctor --profile`. Hướng dẫn đầy đủ: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Tại sao chọn oh-my-agent?
 

@@ -15,6 +15,8 @@ The agent definitions under `.agents/agents/` are the source of truth. OMA proje
 
 When a workflow maps an agent to the same vendor as the current runtime, it should use that runtime's native agent file first. Cross-vendor tasks fall back to `oma agent:spawn`.
 
+> **Per-agent model dispatch** (cli@5.16.0+) — each agent resolves to a specific model slug, CLI vendor, and reasoning effort through `agent_cli_mapping` and `runtime_profiles` in `.agents/oma-config.yaml` / `.agents/config/defaults.yaml`. See [Per-Agent Models](../guide/per-agent-models.md) for configuration details and [`oma doctor --profile`](../cli-interfaces/commands.md#doctor) to inspect the live matrix.
+
 ---
 
 ## Agent Categories
@@ -612,9 +614,9 @@ When a task is discovered that belongs to a different domain during execution, t
 For multi-agent projects, separate workspaces prevent file conflicts:
 
 ```
-./apps/api      → backend agent workspace
-./apps/web      → frontend agent workspace
-./apps/mobile   → mobile agent workspace
+./apps/api → backend agent workspace
+./apps/web → frontend agent workspace
+./apps/mobile → mobile agent workspace
 ```
 
 Workspaces are specified with the `-w` flag when spawning agents:
@@ -684,15 +686,15 @@ Memory tools are configurable. Default uses Serena MCP (`read_memory`, `write_me
 
 ```json
 {
-  "memoryConfig": {
-    "provider": "serena",
-    "basePath": ".serena/memories",
-    "tools": {
-      "read": "read_memory",
-      "write": "write_memory",
-      "edit": "edit_memory"
-    }
-  }
+"memoryConfig": {
+"provider": "serena",
+"basePath": ".serena/memories",
+"tools": {
+"read": "read_memory",
+"write": "write_memory",
+"edit": "edit_memory"
+}
+}
 }
 ```
 

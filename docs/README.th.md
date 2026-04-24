@@ -115,7 +115,7 @@ oma agent:parallel -i backend:"Auth API" frontend:"Login form"
 - Dispatch แบบ same-vendor native ใช้คำนิยาม vendor agent ที่สร้างไว้ใน `.claude/agents/`, `.codex/agents/` หรือ `.gemini/agents/`
 - Dispatch แบบ cross-vendor หรือ fallback CLI ใช้ค่าเริ่มต้นของ vendor ใน `.agents/skills/oma-orchestrator/config/cli-config.yaml`
 
-**RARDO v2.1 — โมเดลต่อเอเจนต์**: แต่ละเอเจนต์สามารถกำหนดโมเดลและ `effort` ของตัวเองผ่าน `.agents/config/user-preferences.yaml` ได้ มี runtime profiles พร้อมใช้งาน 5 แบบ: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only` ตรวจสอบ auth matrix ที่ resolve แล้วด้วย `oma doctor --profile` คู่มือฉบับเต็ม: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)
+**โมเดลต่อเอเจนต์**: แต่ละเอเจนต์สามารถกำหนดโมเดลและ `effort` ของตัวเองผ่าน `.agents/oma-config.yaml` ได้ มี runtime profiles พร้อมใช้งาน 5 แบบ: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only` ตรวจสอบ auth matrix ที่ resolve แล้วด้วย `oma doctor --profile` คู่มือฉบับเต็ม: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)
 
 ## ทำไมต้อง oh-my-agent?
 

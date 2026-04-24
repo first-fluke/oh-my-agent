@@ -1,13 +1,13 @@
 ---
 title: "ガイド：エージェントごとのモデル設定"
-description: RARDO v2.1により、エージェントごとにCLIベンダー・モデル・推論強度を個別指定。agent_cli_mapping、ランタイムプロファイル、oma doctor --profile、models.yaml、セッションクォータ上限を解説。
+description: oma-config.yaml と models.yaml で、エージェントごとに CLI ベンダー・モデル・推論強度を個別指定。agent_cli_mapping、ランタイムプロファイル、oma doctor --profile、models.yaml、セッションクォータ上限を解説。
 ---
 
 # ガイド：エージェントごとのモデル設定
 
 ## 概要
 
-RARDO v2.1 は `agent_cli_mapping` により **エージェントごとのモデル選択** を導入します。各エージェント（pm、backend、frontend、qa …）が単一のグローバルベンダーを共有するのではなく、個別にベンダー・モデル・推論強度を指定できます。
+ は `agent_cli_mapping` により **エージェントごとのモデル選択** を導入します。各エージェント（pm、backend、frontend、qa …）が単一のグローバルベンダーを共有するのではなく、個別にベンダー・モデル・推論強度を指定できます。
 
 このページで扱う内容：
 
@@ -22,11 +22,11 @@ RARDO v2.1 は `agent_cli_mapping` により **エージェントごとのモデ
 
 ## 設定ファイルの階層
 
-RARDO v2.1 は次の 3 ファイルを優先度順（高いものが上）に読み込みます。
+ は次の 3 ファイルを優先度順（高いものが上）に読み込みます。
 
 | ファイル | 役割 | 編集可否 |
 |:--------|:-----|:--------|
-| `.agents/config/user-preferences.yaml` | ユーザーオーバーライド — エージェント–CLI マッピング、アクティブプロファイル、セッションクォータ | 可 |
+| `.agents/oma-config.yaml` | ユーザーオーバーライド — エージェント–CLI マッピング、アクティブプロファイル、セッションクォータ | 可 |
 | `.agents/config/models.yaml` | ユーザー提供のモデルスラグ（組み込みレジストリへの追加） | 可 |
 | `.agents/config/defaults.yaml` | 組み込み Profile B ベースライン（4 つの `runtime_profiles`、安全なフォールバック） | 不可 — SSOT |
 
@@ -39,17 +39,17 @@ RARDO v2.1 は次の 3 ファイルを優先度順（高いものが上）に読
 `agent_cli_mapping` は 2 種類の値形式を受け付け、段階的な移行を可能にします。
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 agent_cli_mapping:
   pm: "claude"                        # レガシー — ベンダーのみ（既定モデル使用）
   backend:                            # 新しい AgentSpec オブジェクト
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 ```
 
@@ -66,7 +66,7 @@ agent_cli_mapping:
 `defaults.yaml` は Profile B と 4 つの `runtime_profiles` を同梱しています。`user-preferences.yaml` で選択してください。
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 active_profile: claude-only   # 下記オプション参照
 ```
 
@@ -93,16 +93,16 @@ oma doctor --profile
 **サンプル出力:**
 
 ```
-RARDO v2.1 — Active Profile: antigravity
+ — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4.7           medium   user-preferences
+pm            claude    claude-sonnet-4-6           medium   user-preferences
 backend       openai    gpt-5.3-codex               high     user-preferences
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3-pro                low      profile:antigravity
-architecture  claude    claude-opus-4.7             high     defaults
-docs          claude    claude-sonnet-4.7           low      defaults
+qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+architecture  claude    claude-opus-4-7             high     defaults
+docs          claude    claude-sonnet-4-6           low      defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -147,7 +147,7 @@ agent_cli_mapping:
 `user-preferences.yaml` に `session.quota_cap` を加えると、サブエージェントの暴走を制限できます。
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # セッション全体のトークン上限
@@ -175,10 +175,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 
 session:
@@ -199,7 +199,7 @@ session:
 | File | Owner | Safe to edit? |
 |------|-------|---------------|
 | `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/oma-config.yaml` | You | ✅ Customize here |
 | `.agents/config/models.yaml` | You | ✅ Add new slugs here |
 
 `defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.
@@ -222,7 +222,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
 
 Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
 
-## Upgrading from a pre-RARDO-v2.1 install
+## Upgrading from a pre-5.16.0 install
 
 If your project predates the per-agent model/effort feature:
 

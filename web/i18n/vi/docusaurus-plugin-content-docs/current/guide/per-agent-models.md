@@ -1,13 +1,13 @@
 ---
 title: "Hướng dẫn: cấu hình model theo từng agent"
-description: Với RARDO v2.1, cấu hình nhà cung cấp CLI, model và mức độ lập luận riêng cho từng agent. Bao gồm agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml và mức trần quota phiên.
+description: Với oma-config.yaml và models.yaml, cấu hình nhà cung cấp CLI, model và mức độ lập luận riêng cho từng agent. Bao gồm agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml và mức trần quota phiên.
 ---
 
 # Hướng dẫn: cấu hình model theo từng agent
 
 ## Tổng quan
 
-RARDO v2.1 giới thiệu khả năng **chọn model theo từng agent** thông qua `agent_cli_mapping`. Mỗi agent (pm, backend, frontend, qa…) giờ có thể nhắm tới nhà cung cấp, model và mức độ lập luận riêng — thay vì cùng dùng một nhà cung cấp toàn cục.
+ giới thiệu khả năng **chọn model theo từng agent** thông qua `agent_cli_mapping`. Mỗi agent (pm, backend, frontend, qa…) giờ có thể nhắm tới nhà cung cấp, model và mức độ lập luận riêng — thay vì cùng dùng một nhà cung cấp toàn cục.
 
 Trang này đề cập:
 
@@ -22,11 +22,11 @@ Trang này đề cập:
 
 ## Phân cấp file cấu hình
 
-RARDO v2.1 đọc ba file theo thứ tự ưu tiên (cao xuống thấp):
+ đọc ba file theo thứ tự ưu tiên (cao xuống thấp):
 
 | File | Mục đích | Chỉnh sửa? |
 |:-----|:---------|:-----------|
-| `.agents/config/user-preferences.yaml` | Override của người dùng — mapping agent↔CLI, profile đang bật, quota phiên | Có |
+| `.agents/oma-config.yaml` | Override của người dùng — mapping agent↔CLI, profile đang bật, quota phiên | Có |
 | `.agents/config/models.yaml` | Slug model do người dùng cung cấp (bổ sung cho registry mặc định) | Có |
 | `.agents/config/defaults.yaml` | Baseline Profile B gắn sẵn (4 `runtime_profiles`, fallback an toàn) | Không — SSOT |
 
@@ -39,17 +39,17 @@ RARDO v2.1 đọc ba file theo thứ tự ưu tiên (cao xuống thấp):
 `agent_cli_mapping` chấp nhận hai dạng giá trị để migrate dần:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 agent_cli_mapping:
   pm: "claude"                        # legacy — chỉ ghi nhà cung cấp (dùng model mặc định)
   backend:                            # object AgentSpec mới
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 ```
 
@@ -66,7 +66,7 @@ Có thể trộn thoải mái. Agent không khai báo sẽ rơi về `runtime_pr
 `defaults.yaml` đi kèm Profile B cùng bốn `runtime_profiles` sẵn sàng. Chọn một trong `user-preferences.yaml`:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 active_profile: claude-only   # xem bảng dưới
 ```
 
@@ -93,16 +93,16 @@ oma doctor --profile
 **Ví dụ output:**
 
 ```
-RARDO v2.1 — Active Profile: antigravity
+ — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4.7           medium   user-preferences
+pm            claude    claude-sonnet-4-6           medium   user-preferences
 backend       openai    gpt-5.3-codex               high     user-preferences
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3-pro                low      profile:antigravity
-architecture  claude    claude-opus-4.7             high     defaults
-docs          claude    claude-sonnet-4.7           low      defaults
+qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+architecture  claude    claude-opus-4-7             high     defaults
+docs          claude    claude-sonnet-4-6           low      defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -147,7 +147,7 @@ Slug là định danh — giữ nguyên chữ tiếng Anh do nhà cung cấp cô
 Thêm `session.quota_cap` vào `user-preferences.yaml` để giới hạn việc spawn subagent mất kiểm soát:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # trần token cho toàn phiên
@@ -175,10 +175,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 
 session:
@@ -199,7 +199,7 @@ Chạy `oma doctor --profile` để xác nhận kết quả resolve rồi khởi
 | File | Owner | Safe to edit? |
 |------|-------|---------------|
 | `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/oma-config.yaml` | You | ✅ Customize here |
 | `.agents/config/models.yaml` | You | ✅ Add new slugs here |
 
 `defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.
@@ -222,7 +222,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
 
 Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
 
-## Upgrading from a pre-RARDO-v2.1 install
+## Upgrading from a pre-5.16.0 install
 
 If your project predates the per-agent model/effort feature:
 

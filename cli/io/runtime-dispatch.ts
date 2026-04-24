@@ -527,22 +527,57 @@ function loadDefaultsConfig(cwd: string): DefaultsConfig {
   }
 }
 
-function loadUserPreferencesRaw(cwd: string): UserPreferencesRaw {
-  const filePath = findFileUp(
-    cwd,
-    path.join(".agents", "config", "user-preferences.yaml"),
-  );
-  if (!filePath) return {};
+function readYamlObject(filePath: string): UserPreferencesRaw | null {
   try {
     const content = fs.readFileSync(filePath, "utf-8");
     const parsed = parseYaml(content);
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       return parsed as UserPreferencesRaw;
     }
-    return {};
+    return null;
   } catch {
-    return {};
+    return null;
   }
+}
+
+/**
+ * Load and merge user preferences from both canonical and legacy locations.
+ *
+ * Precedence (later wins on conflict, matching cli/platform/agent-config.ts
+ * readUserPreferences semantics):
+ *   1. .agents/config/user-preferences.yaml   — legacy path, loaded first
+ *   2. .agents/oma-config.yaml                — canonical path, overrides
+ *
+ * Historical note: user-preferences.yaml was moved to oma-config.yaml in
+ * commit c702a4b. Both are still read for backward compatibility with
+ * installs that have not yet migrated. New users should put their
+ * agent_cli_mapping / session.quota_cap etc. in oma-config.yaml.
+ */
+function loadUserPreferencesRaw(cwd: string): UserPreferencesRaw {
+  const legacyPath = findFileUp(
+    cwd,
+    path.join(".agents", "config", "user-preferences.yaml"),
+  );
+  const canonicalPath = findFileUp(
+    cwd,
+    path.join(".agents", "oma-config.yaml"),
+  );
+
+  let merged: UserPreferencesRaw = {};
+  for (const filePath of [legacyPath, canonicalPath]) {
+    if (!filePath) continue;
+    const parsed = readYamlObject(filePath);
+    if (!parsed) continue;
+    merged = {
+      ...merged,
+      ...parsed,
+      agent_cli_mapping: {
+        ...(merged.agent_cli_mapping ?? {}),
+        ...(parsed.agent_cli_mapping ?? {}),
+      },
+    };
+  }
+  return merged;
 }
 
 // ---------------------------------------------------------------------------
@@ -662,7 +697,7 @@ export function resolveAgentPlanFromConfig(
   let finalEffort: EffortLevel | undefined = effort;
   if (spec.supports.effort?.type === "cli-session" && effort !== undefined) {
     console.warn(
-      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from user-preferences.yaml for '${agentId}'.`,
+      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from .agents/oma-config.yaml for '${agentId}'.`,
     );
     finalEffort = undefined;
   }
@@ -685,8 +720,10 @@ export function resolveAgentPlanFromConfig(
  * Resolve the per-agent dispatch plan from user config, defaulting to cwd.
  *
  * Flow:
- * 1. Check user-preferences.yaml agent_cli_mapping[agentId]
- *    - string (legacy) → vendor name only; model/effort from defaults.yaml
+ * 1. Check agent_cli_mapping[agentId] from merged user config
+ *    (oma-config.yaml canonical, user-preferences.yaml legacy fallback).
+ *    - string (legacy) → vendor name only; model/effort from defaults.yaml,
+ *      or from runtime_profiles.{vendor}-only.agent_defaults[agentId] when set
  *    - AgentSpec object → use its fields directly
  * 2. Fall back to defaults.yaml agent_defaults[agentId], then agent_defaults.orchestrator
  * 3. Registry lookup via getModelSpec — throws ConfigError if unknown slug (R13)

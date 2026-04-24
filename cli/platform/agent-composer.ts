@@ -102,7 +102,7 @@ function _serializeTomlArray(values: string[]): string {
 }
 
 // =============================================================================
-// CHARTER_CHECK stripping (RARDO v2.1 T16)
+// CHARTER_CHECK stripping
 // =============================================================================
 
 const CHARTER_CHECK_BEGIN = "<!-- CHARTER_CHECK_BEGIN -->";

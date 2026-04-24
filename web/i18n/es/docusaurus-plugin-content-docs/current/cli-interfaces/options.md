@@ -140,7 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Archivos de log huérfanos: `/tmp/subagent-*.log` que coinciden con PIDs muertos.
 3. Directorios de Gemini Antigravity: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — estos acumulan estado con el tiempo y pueden crecer mucho.
 
-
 ### agent:spawn
 
 ```

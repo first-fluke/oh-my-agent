@@ -1,13 +1,13 @@
 ---
 title: "Przewodnik: konfiguracja modelu per agent"
-description: Dzięki RARDO v2.1 skonfigurujesz różne dostawców CLI, modele i poziomy rozumowania dla każdego agenta. Obejmuje agent_cli_mapping, profile runtime, oma doctor --profile, models.yaml oraz limit quoty sesji.
+description: Dzięki oma-config.yaml i models.yaml skonfigurujesz różne dostawców CLI, modele i poziomy rozumowania dla każdego agenta. Obejmuje agent_cli_mapping, profile runtime, oma doctor --profile, models.yaml oraz limit quoty sesji.
 ---
 
 # Przewodnik: konfiguracja modelu per agent
 
 ## Wprowadzenie
 
-RARDO v2.1 wprowadza **wybór modelu per agent** przez `agent_cli_mapping`. Każdy agent (pm, backend, frontend, qa…) może teraz niezależnie wskazywać swojego dostawcę, model i poziom rozumowania — zamiast dzielić jednego globalnego dostawcę.
+ wprowadza **wybór modelu per agent** przez `agent_cli_mapping`. Każdy agent (pm, backend, frontend, qa…) może teraz niezależnie wskazywać swojego dostawcę, model i poziom rozumowania — zamiast dzielić jednego globalnego dostawcę.
 
 Na tej stronie:
 
@@ -22,11 +22,11 @@ Na tej stronie:
 
 ## Hierarchia plików konfiguracyjnych
 
-RARDO v2.1 czyta trzy pliki w kolejności priorytetu (od najwyższego):
+ czyta trzy pliki w kolejności priorytetu (od najwyższego):
 
 | Plik | Rola | Edytowalny? |
 |:-----|:-----|:------------|
-| `.agents/config/user-preferences.yaml` | Nadpisania użytkownika — mapowanie agent→CLI, aktywny profil, quota sesji | Tak |
+| `.agents/oma-config.yaml` | Nadpisania użytkownika — mapowanie agent→CLI, aktywny profil, quota sesji | Tak |
 | `.agents/config/models.yaml` | Slugi modeli dostarczone przez użytkownika (uzupełnienie wbudowanego rejestru) | Tak |
 | `.agents/config/defaults.yaml` | Wbudowana linia bazowa Profile B (4 `runtime_profiles`, bezpieczne fallbacki) | Nie — SSOT |
 
@@ -39,17 +39,17 @@ RARDO v2.1 czyta trzy pliki w kolejności priorytetu (od najwyższego):
 `agent_cli_mapping` przyjmuje dwie formy wartości — to pozwala migrować stopniowo:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 agent_cli_mapping:
   pm: "claude"                        # legacy — sam dostawca (model domyślny)
   backend:                            # nowy obiekt AgentSpec
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 ```
 
@@ -66,7 +66,7 @@ Obie formy można swobodnie mieszać. Agenty niezadeklarowane spadają na aktywn
 `defaults.yaml` dostarcza Profile B wraz z czterema gotowymi `runtime_profiles`. Wybierz jeden w `user-preferences.yaml`:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 active_profile: claude-only   # opcje poniżej
 ```
 
@@ -93,16 +93,16 @@ oma doctor --profile
 **Przykładowe wyjście:**
 
 ```
-RARDO v2.1 — Active Profile: antigravity
+ — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4.7           medium   user-preferences
+pm            claude    claude-sonnet-4-6           medium   user-preferences
 backend       openai    gpt-5.3-codex               high     user-preferences
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3-pro                low      profile:antigravity
-architecture  claude    claude-opus-4.7             high     defaults
-docs          claude    claude-sonnet-4.7           low      defaults
+qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+architecture  claude    claude-opus-4-7             high     defaults
+docs          claude    claude-sonnet-4-6           low      defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -147,7 +147,7 @@ Slugi to identyfikatory — zachowaj dokładny angielski zapis opublikowany prze
 Dodaj `session.quota_cap` w `user-preferences.yaml`, żeby ograniczyć niekontrolowane spawny subagentów:
 
 ```yaml
-# .agents/config/user-preferences.yaml
+# .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # sufit tokenów na całą sesję
@@ -175,10 +175,10 @@ agent_cli_mapping:
     model: "openai/gpt-5.3-codex"
     effort: high
   frontend:
-    model: "anthropic/claude-sonnet-4.7"
+    model: "anthropic/claude-sonnet-4-6"
     effort: medium
   qa:
-    model: "google/gemini-3-pro"
+    model: "google/gemini-3.1-pro-preview"
     effort: low
 
 session:
@@ -199,7 +199,7 @@ Uruchom `oma doctor --profile`, żeby potwierdzić rozwiązanie konfiguracji, i 
 | File | Owner | Safe to edit? |
 |------|-------|---------------|
 | `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/config/user-preferences.yaml` | You | ✅ Customize here |
+| `.agents/oma-config.yaml` | You | ✅ Customize here |
 | `.agents/config/models.yaml` | You | ✅ Add new slugs here |
 
 `defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.
@@ -222,7 +222,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
 
 Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
 
-## Upgrading from a pre-RARDO-v2.1 install
+## Upgrading from a pre-5.16.0 install
 
 If your project predates the per-agent model/effort feature:
 

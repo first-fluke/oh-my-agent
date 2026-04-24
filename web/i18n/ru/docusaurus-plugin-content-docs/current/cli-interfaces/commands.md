@@ -183,7 +183,6 @@ oma auth:status [--json]
 
 Проверяет: Gemini (API key), Claude (API key/OAuth), Codex (API key), Qwen (API key).
 
-
 ### bridge
 
 ```bash

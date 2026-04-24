@@ -140,7 +140,6 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. 고아 로그 파일: 죽은 PID에 매칭되는 `/tmp/subagent-*.log`.
 3. Gemini Antigravity 디렉토리: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — 시간이 지남에 따라 상태가 누적되어 커질 수 있습니다.
 
-
 ### agent:spawn
 
 ```

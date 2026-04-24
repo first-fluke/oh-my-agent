@@ -499,7 +499,6 @@ oma auth:status
 oma auth:status --json
 ```
 
-
 ### bridge
 
 将 MCP stdio 桥接到 Streamable HTTP 传输。

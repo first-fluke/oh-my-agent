@@ -84,7 +84,6 @@ oma update [-f | --force] [--ci]
 
 クリーンアップ対象：孤立PIDファイル（`/tmp/subagent-*.pid`）、孤立ログファイル、Gemini Antigravityディレクトリ。
 
-
 ### agent:spawn
 
 | フラグ | 説明 | デフォルト |

@@ -6,7 +6,7 @@ import {
 
 // ---------------------------------------------------------------------------
 // agent-composer.test.ts
-// Tests for sanitizeFrontmatterForVendor (RARDO v2.1 T6 — R14)
+// Tests for sanitizeFrontmatterForVendor
 //
 // Covers:
 //   1. claude allow-list: only permitted fields pass through

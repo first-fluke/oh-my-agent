@@ -181,7 +181,6 @@ oma auth:status [--json] [--output <format>]
 ```
 Sprawdza uwierzytelnianie: Gemini (klucz API), Claude (klucz API lub OAuth), Codex, Qwen.
 
-
 ### bridge
 
 ```

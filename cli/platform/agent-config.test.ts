@@ -9,7 +9,7 @@ import {
 
 // ---------------------------------------------------------------------------
 // agent-config.test.ts
-// Tests for dual-format AgentCliMappingSchema (RARDO v2.1 T2)
+// Tests for dual-format AgentCliMappingSchema
 //
 // Covers:
 //   1. Legacy string format  — {pm: 'claude'}
