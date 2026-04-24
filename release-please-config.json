@@ -28,6 +28,11 @@
           "type": "json",
           "path": ".claude-plugin/plugin.json",
           "jsonpath": "$.version"
+        },
+        {
+          "type": "yaml",
+          "path": "apm.yml",
+          "jsonpath": "$.version"
         }
       ]
     },

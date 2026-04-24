@@ -32,6 +32,10 @@ docs/exec-plans/
 .cursor/*
 .gemini/*
 
+# NOTE: .apm/ is a generated MIRROR of .agents/skills/ for APM distribution.
+# It MUST be committed (consumers install via git clone). Do NOT add .apm/ here.
+# Regenerate with: bun run build:apm
+
 # Serena Memory (runtime state)
 .serena/memories/*
 !.serena/memories/.gitkeep

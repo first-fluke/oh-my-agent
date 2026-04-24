@@ -6,6 +6,8 @@ on:
     paths:
       - ".agents/**"
       - "cli/generate-manifest.ts"
+      - "scripts/build-apm.mjs"
+      - "apm.yml"
       - ".release-please-manifest.json"
 
 jobs:
@@ -29,17 +31,24 @@ jobs:
       - name: Generate prompt-manifest.json
         run: bunx tsx cli/generate-manifest.ts "${{ steps.version.outputs.version }}"
 
+      - name: Build APM skills mirror
+        run: node scripts/build-apm.mjs
+
       - name: Check for changes
         id: diff
         run: |
-          git diff --quiet prompt-manifest.json && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+          if git diff --quiet prompt-manifest.json .apm apm.yml; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Commit prompt-manifest.json
+      - name: Commit synced artifacts
         if: steps.diff.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add prompt-manifest.json
-          git commit -m "ci: sync prompt-manifest.json [skip ci]"
+          git add prompt-manifest.json .apm apm.yml
+          git commit -m "ci: sync prompt-manifest.json and .apm mirror [skip ci]"
           git pull --rebase
           git push

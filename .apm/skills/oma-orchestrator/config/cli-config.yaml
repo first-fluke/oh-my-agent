@@ -1,0 +1,67 @@
+# SubAgent CLI Configuration
+# Select your preferred CLI vendor for sub-agent execution
+
+# Default CLI vendor (used as fallback when oma-config.yaml is not configured)
+# For per-agent CLI mapping, see: .agents/oma-config.yaml
+active_vendor: gemini
+
+# Vendor configurations
+vendors:
+  gemini:
+    command: gemini
+    prompt_flag: "-p"
+    output_format_flag: "--output-format"
+    output_format: "json"
+    auto_approve_flag: "--approval-mode=yolo"
+    model_flag: "-m"
+    default_model: "auto"
+    include_dirs_flag: "--include-directories"
+    # JSON output parsing
+    response_jq: ".response"
+    # Isolation: gemini uses current directory context
+    isolation_method: "directory"
+
+  claude:
+    command: claude
+    prompt_flag: "-p"
+    output_format_flag: "--output-format"
+    output_format: "json"
+    auto_approve_flag: "--dangerously-skip-permissions"
+    model_flag: "--model"
+    default_model: "sonnet"
+    # JSON output parsing
+    response_jq: ".result"
+    isolation_method: "flags"
+
+  codex:
+    command: codex
+    subcommand: "exec"
+    prompt_flag: "none"
+    output_format_flag: "--json"
+    auto_approve_flag: "--full-auto"
+    model_flag: "-m"
+    default_model: "gpt-5.3-codex"
+    response_jq: ".response"
+    isolation_method: "directory"
+
+  qwen:
+    command: qwen
+    prompt_flag: "-p"
+    output_format_flag: "--output-format"
+    output_format: "json"
+    auto_approve_flag: "--yolo"
+    model_flag: "-m"
+    default_model: "qwen3.5-coder-plus"
+    response_jq: ".output"
+    isolation_method: "directory"
+
+# SubAgent execution settings
+execution:
+  # Directory for subagent results
+  results_dir: ".agents/results"
+  # Timeout in seconds (0 = no timeout)
+  timeout: 600
+  # Log level: debug, info, warn, error
+  log_level: info
+  # Keep intermediate files for debugging
+  keep_temp_files: false
