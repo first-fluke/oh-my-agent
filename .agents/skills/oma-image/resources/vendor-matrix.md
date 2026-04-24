@@ -1,5 +1,15 @@
 # Vendor Matrix
 
+## Reference Image Support (`--reference` / `-r`)
+
+| Vendor | Reference input | Transport | Notes |
+|--------|-----------------|-----------|-------|
+| `codex` | ✅ | `codex exec -i <path>` (repeatable) | Local file path; 5MB-per-file cap enforced by Codex CLI |
+| `gemini` | ✅ | `inlineData` parts (base64) prepended to text prompt | Up to 14 refs supported by `gemini-2.5-flash-image`; OMA caps at 10 |
+| `pollinations` | ❌ | — | Requires URL hosting; rejected with exit 4. Planned for PR #2. |
+
+All paths are validated in `reference-guard.ts` (magic-byte MIME check + size + count + duplicate rejection) before dispatch. The magic-byte-detected MIME is threaded through `GenerateInput.referenceImages` and used verbatim at the vendor API boundary — file extension is never trusted for MIME type.
+
 ## Codex
 
 | Field | Value |

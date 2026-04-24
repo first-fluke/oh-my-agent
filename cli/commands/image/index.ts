@@ -36,6 +36,10 @@ export function registerImageCommand(program: Command): void {
       "Gemini fallback order, comma-separated (mcp,stream,api)",
     )
     .option("--timeout <seconds>", "Per-image timeout")
+    .option(
+      "-r, --reference <path...>",
+      "Reference image path(s); repeatable. Supported on codex and gemini vendors.",
+    )
     .option("-y, --yes", "Skip cost confirmation")
     .option(
       "--no-prompt-in-manifest",

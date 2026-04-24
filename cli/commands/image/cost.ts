@@ -8,7 +8,13 @@ export interface EstimateArgs {
   modelByVendor: Record<string, string | undefined>;
   quality: string;
   count: number;
+  referenceCount?: number;
 }
+
+// Gemini 2.5 Flash Image charges ~1,290 input tokens per reference image.
+// At $30/1M output tokens (1,290 tokens ≈ $0.04), we approximate the input
+// surcharge conservatively as $0.01 per reference per generated image.
+const GEMINI_REFERENCE_SURCHARGE_USD = 0.01;
 
 export function estimateCost({
   config,
@@ -16,6 +22,7 @@ export function estimateCost({
   modelByVendor,
   quality,
   count,
+  referenceCount = 0,
 }: EstimateArgs): number {
   let total = 0;
   for (const p of providers) {
@@ -26,6 +33,9 @@ export function estimateCost({
       config.costGuardrail.perImageUsd[p.name]?.[model]?.auto ??
       0;
     total += perImage * count;
+    if (referenceCount > 0 && p.name === "gemini") {
+      total += GEMINI_REFERENCE_SURCHARGE_USD * referenceCount * count;
+    }
   }
   return total;
 }

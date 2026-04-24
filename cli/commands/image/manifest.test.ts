@@ -48,6 +48,40 @@ describe("writeManifest", () => {
     expect(parsed.runs[0].strategy_attempts[0].status).toBe("ok");
   });
 
+  it("records reference_images when provided", async () => {
+    const p = await writeManifest({
+      outDir: tmp,
+      runId: { timestamp: "20260424-143052", shortid: "ab12cd" },
+      prompt: "a red apple",
+      includePrompt: true,
+      options: { size: "1024x1024", quality: "auto", count: 1 },
+      costEstimate: 0.04,
+      runs,
+      startedAt: Date.now(),
+      referenceImages: ["/abs/path/one.png", "/abs/path/two.jpg"],
+    });
+    const parsed = JSON.parse(readFileSync(p, "utf8"));
+    expect(parsed.reference_images).toEqual([
+      "/abs/path/one.png",
+      "/abs/path/two.jpg",
+    ]);
+  });
+
+  it("omits reference_images field when none provided", async () => {
+    const p = await writeManifest({
+      outDir: tmp,
+      runId: { timestamp: "20260424-143052", shortid: "ab12cd" },
+      prompt: "no refs",
+      includePrompt: true,
+      options: { size: "1024x1024", quality: "auto", count: 1 },
+      costEstimate: 0,
+      runs,
+      startedAt: Date.now(),
+    });
+    const parsed = JSON.parse(readFileSync(p, "utf8"));
+    expect(parsed.reference_images).toBeUndefined();
+  });
+
   it("replaces prompt with prompt_sha256 when opted out", async () => {
     const p = await writeManifest({
       outDir: tmp,

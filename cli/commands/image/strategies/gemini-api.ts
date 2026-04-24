@@ -1,8 +1,10 @@
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { buildOutputFilename, shortId } from "../naming.js";
 import type {
   GenerateInput,
   GenerateResult,
+  ReferenceImage,
   StrategyAttempt,
   VendorError,
 } from "../types.js";
@@ -11,6 +13,24 @@ import type { GeminiStrategy, StrategyContext } from "./gemini-stream.js";
 interface InlinePart {
   inlineData?: { mimeType?: string; data?: string };
   inline_data?: { mime_type?: string; data?: string };
+}
+
+interface RequestPart {
+  text?: string;
+  inlineData?: { mimeType: string; data: string };
+}
+
+export async function buildReferenceParts(
+  refs: readonly ReferenceImage[],
+): Promise<RequestPart[]> {
+  const parts: RequestPart[] = [];
+  for (const r of refs) {
+    const buf = await readFile(r.path);
+    parts.push({
+      inlineData: { mimeType: r.mime, data: buf.toString("base64") },
+    });
+  }
+  return parts;
 }
 
 export const geminiApiStrategy: GeminiStrategy = {
@@ -33,12 +53,21 @@ export const geminiApiStrategy: GeminiStrategy = {
       } as VendorError;
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(ctx.model)}:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(ctx.model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const results: GenerateResult[] = [];
     const attempts: StrategyAttempt[] = [{ strategy: "api", status: "ok" }];
 
+    const refs = input.referenceImages ?? [];
+    const referenceParts =
+      refs.length > 0 ? await buildReferenceParts(refs) : [];
+    const runShortid = input.runShortid ?? shortId();
+
     for (let i = 0; i < input.n; i += 1) {
       const started = Date.now();
+      const textPart: RequestPart = {
+        text: `${input.prompt}\n(image generation, size=${input.size}, quality=${input.quality})`,
+      };
+      const parts: RequestPart[] = [...referenceParts, textPart];
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,11 +75,7 @@ export const geminiApiStrategy: GeminiStrategy = {
           contents: [
             {
               role: "user",
-              parts: [
-                {
-                  text: `${input.prompt}\n(image generation, size=${input.size}, quality=${input.quality})`,
-                },
-              ],
+              parts,
             },
           ],
         }),
@@ -81,10 +106,14 @@ export const geminiApiStrategy: GeminiStrategy = {
           cause: new Error("No inlineData image in response"),
         } as VendorError;
       }
-      const name =
-        input.n === 1
-          ? `${ctx.vendorName}-${ctx.model}.png`
-          : `${ctx.vendorName}-${ctx.model}-${i + 1}.png`;
+      const name = buildOutputFilename({
+        vendor: ctx.vendorName,
+        model: ctx.model,
+        runShortid,
+        index: i,
+        total: input.n,
+        ext: "png",
+      });
       const filePath = path.join(input.outDir, name);
       await writeFile(filePath, Buffer.from(raw, "base64"));
       results.push({

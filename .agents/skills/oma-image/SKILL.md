@@ -80,6 +80,7 @@ oma image generate "<prompt>" [--vendor auto|codex|pollinations|gemini|all] [-n 
                              [--size 1024x1024|1024x1536|1536x1024|auto] \
                              [--quality low|medium|high|auto] \
                              [--out <dir>] [--allow-external-out] \
+                             [-r <path>...] \
                              [--timeout 180] [-y] [--no-prompt-in-manifest] \
                              [--dry-run] [--format text|json]
 oma image doctor
@@ -87,6 +88,28 @@ oma image list-vendors
 ```
 
 Gemini-only escalation flag: `--strategy mcp,stream,api` (overrides `vendors.gemini.strategies`).
+
+### Reference Images (`-r`, `--reference`)
+
+Attach up to 10 reference images (PNG/JPEG/GIF/WebP, ≤ 5MB each) to guide style, subject identity, or composition. Repeatable or comma-separated.
+
+```
+oma image generate -r ~/Downloads/otter.jpeg "same otter in dramatic lighting"
+oma image generate -r a.png -r b.png "blend these two styles"
+```
+
+Supported vendors:
+
+| Vendor | Support | How |
+|--------|---------|-----|
+| `codex` (gpt-image-2) | ✅ | Passes `-i <path>` to `codex exec` |
+| `gemini` (2.5-flash-image) | ✅ | Inlines base64 `inlineData` parts in request |
+| `pollinations` | ❌ | Rejected with exit code 4 (requires URL hosting; see PR #2 roadmap) |
+
+**Paths**: absolute or relative to `$CWD`. Host CLIs usually expose attached images via:
+- **Claude Code**: `~/.claude/image-cache/<session>/N.png` (surfaced in system messages as `[Image: source: <path>]`)
+- **Antigravity**: workspace upload directory (exact path shown in IDE)
+- **Codex CLI as host**: user must pass the filesystem path explicitly; in-conversation attachments are not forwarded
 
 ### Shared Infrastructure (from other skills)
 

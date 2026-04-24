@@ -10,6 +10,13 @@ export interface GenerateInput {
   outDir: string;
   signal: AbortSignal;
   timeoutSec?: number;
+  referenceImages?: ReferenceImage[];
+  runShortid?: string;
+}
+
+export interface ReferenceImage {
+  path: string;
+  mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp";
 }
 
 export interface StrategyAttempt {
@@ -84,6 +91,7 @@ export interface Manifest {
   options: { size: string; quality: string; count: number };
   cost_estimate_usd: number;
   runs: ManifestRun[];
+  reference_images?: string[];
 }
 
 export function exitForError(kind: VendorError["kind"] | undefined): number {

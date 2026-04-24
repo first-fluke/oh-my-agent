@@ -68,6 +68,33 @@ describe("estimateCost", () => {
     expect(total).toBeCloseTo(0.24, 5);
   });
 
+  it("applies per-reference surcharge for gemini only", () => {
+    const providers = [new StubProvider("codex"), new StubProvider("gemini")];
+    const modelByVendor = {
+      codex: "gpt-image-2",
+      gemini: "gemini-2.5-flash-image",
+    };
+    const totalNoRef = estimateCost({
+      config: stubConfig,
+      providers,
+      modelByVendor,
+      quality: "high",
+      count: 1,
+      referenceCount: 0,
+    });
+    const totalWithRef = estimateCost({
+      config: stubConfig,
+      providers,
+      modelByVendor,
+      quality: "high",
+      count: 1,
+      referenceCount: 2,
+    });
+    // codex $0.04 + gemini $0.04 = $0.08 base; gemini surcharge $0.01 * 2 = $0.02
+    expect(totalNoRef).toBeCloseTo(0.08, 5);
+    expect(totalWithRef).toBeCloseTo(0.1, 5);
+  });
+
   it("falls back to auto when quality key missing", () => {
     const providers = [new StubProvider("codex")];
     const total = estimateCost({

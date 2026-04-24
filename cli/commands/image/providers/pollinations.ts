@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ImageConfig } from "../config.js";
+import { buildOutputFilename, shortId } from "../naming.js";
 import type {
   GenerateInput,
   GenerateResult,
@@ -73,6 +74,7 @@ export class PollinationsProvider implements VendorProvider {
     const timeoutMs = (input.timeoutSec ?? 180) * 1000;
 
     const results: GenerateResult[] = [];
+    const runShortid = input.runShortid ?? shortId();
     for (let i = 0; i < input.n; i += 1) {
       const started = Date.now();
       const bytes = await generateOne({
@@ -84,10 +86,14 @@ export class PollinationsProvider implements VendorProvider {
         timeoutMs,
       });
       const ext = bytes[0] === 0x89 ? "png" : "jpg";
-      const name =
-        input.n === 1
-          ? `${this.name}-${model}.${ext}`
-          : `${this.name}-${model}-${i + 1}.${ext}`;
+      const name = buildOutputFilename({
+        vendor: this.name,
+        model,
+        runShortid,
+        index: i,
+        total: input.n,
+        ext,
+      });
       const filePath = path.join(input.outDir, name);
       await writeFile(filePath, bytes);
       results.push({
