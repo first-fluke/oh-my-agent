@@ -7,6 +7,7 @@ import { registerBridge } from "./commands/bridge/command.js";
 import { registerCleanup } from "./commands/cleanup/command.js";
 import { registerDoctor } from "./commands/doctor/command.js";
 import { registerExport } from "./commands/export/command.js";
+import { registerImageCommand } from "./commands/image/index.js";
 import {
   registerDefaultInstallAction,
   registerInstall,
@@ -89,6 +90,7 @@ registerStar(program);
 registerExport(program);
 registerVisualize(program);
 registerSearchCommand(program);
+registerImageCommand(program);
 
 program
   .command("help")
