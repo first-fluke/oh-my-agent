@@ -697,7 +697,7 @@ export function resolveAgentPlanFromConfig(
   let finalEffort: EffortLevel | undefined = effort;
   if (spec.supports.effort?.type === "cli-session" && effort !== undefined) {
     console.warn(
-      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from user-preferences.yaml for '${agentId}'.`,
+      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from .agents/oma-config.yaml for '${agentId}'.`,
     );
     finalEffort = undefined;
   }
@@ -720,8 +720,10 @@ export function resolveAgentPlanFromConfig(
  * Resolve the per-agent dispatch plan from user config, defaulting to cwd.
  *
  * Flow:
- * 1. Check user-preferences.yaml agent_cli_mapping[agentId]
- *    - string (legacy) → vendor name only; model/effort from defaults.yaml
+ * 1. Check agent_cli_mapping[agentId] from merged user config
+ *    (oma-config.yaml canonical, user-preferences.yaml legacy fallback).
+ *    - string (legacy) → vendor name only; model/effort from defaults.yaml,
+ *      or from runtime_profiles.{vendor}-only.agent_defaults[agentId] when set
  *    - AgentSpec object → use its fields directly
  * 2. Fall back to defaults.yaml agent_defaults[agentId], then agent_defaults.orchestrator
  * 3. Registry lookup via getModelSpec — throws ConfigError if unknown slug (R13)

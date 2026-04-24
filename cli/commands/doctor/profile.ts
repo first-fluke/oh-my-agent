@@ -151,26 +151,44 @@ interface UserOverrideMapping {
   agent_cli_mapping?: Record<string, string | { model: string }>;
 }
 
+/**
+ * Merge user override entries from both legacy and canonical paths so the
+ * `oma doctor --profile` matrix matches the spawn path resolution rules
+ * (cli/io/runtime-dispatch.ts#loadUserPreferencesRaw).
+ *
+ * Precedence (later wins on conflict):
+ *   1. .agents/config/user-preferences.yaml   — legacy, loaded first
+ *   2. .agents/oma-config.yaml                — canonical, overrides
+ */
 function loadUserOverride(cwd: string): UserOverrideMapping {
   const candidates = [
     join(cwd, ".agents", "config", "user-preferences.yaml"),
     join(cwd, ".agents", "oma-config.yaml"),
   ];
 
+  let merged: UserOverrideMapping = {};
   for (const p of candidates) {
     if (!existsSync(p)) continue;
     try {
       const content = readFileSync(p, "utf-8");
       const parsed = parseYaml(content) as unknown;
       if (typeof parsed === "object" && parsed !== null) {
-        return parsed as UserOverrideMapping;
+        const pref = parsed as UserOverrideMapping;
+        merged = {
+          ...merged,
+          ...pref,
+          agent_cli_mapping: {
+            ...(merged.agent_cli_mapping ?? {}),
+            ...(pref.agent_cli_mapping ?? {}),
+          },
+        };
       }
     } catch {
       // ignore malformed YAML
     }
   }
 
-  return {};
+  return merged;
 }
 
 // ---------------------------------------------------------------------------

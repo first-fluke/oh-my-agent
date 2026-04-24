@@ -1,6 +1,6 @@
 ---
 title: "Anleitung: Modellkonfiguration pro Agent"
-description: Mit  CLI-Anbieter, Modelle und Reasoning-Stufen pro Agent festlegen. Behandelt agent_cli_mapping, Runtime-Profile, oma doctor --profile, models.yaml und Session-Quota-Obergrenzen.
+description: CLI-Anbieter, Modelle und Reasoning-Stufen pro Agent über oma-config.yaml und models.yaml festlegen. Behandelt agent_cli_mapping, Runtime-Profile, oma doctor --profile, models.yaml und Session-Quota-Obergrenzen.
 ---
 
 # Anleitung: Modellkonfiguration pro Agent

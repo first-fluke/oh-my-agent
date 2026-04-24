@@ -1,6 +1,6 @@
 ---
 title: "Guide : configuration de modèle par agent"
-description: Configurer différents fournisseurs de CLI, modèles et niveaux de raisonnement par agent avec . Couvre agent_cli_mapping, les profils runtime, oma doctor --profile, models.yaml et le plafond de quota de session.
+description: Configurer différents fournisseurs de CLI, modèles et niveaux de raisonnement par agent via oma-config.yaml et models.yaml. Couvre agent_cli_mapping, les profils runtime, oma doctor --profile, models.yaml et le plafond de quota de session.
 ---
 
 # Guide : configuration de modèle par agent

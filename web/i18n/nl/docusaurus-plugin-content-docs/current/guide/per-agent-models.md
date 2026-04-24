@@ -1,6 +1,6 @@
 ---
 title: "Gids: modelconfiguratie per agent"
-description: Stel met  per agent een andere CLI-provider, model en redeneerniveau in. Behandelt agent_cli_mapping, runtime-profielen, oma doctor --profile, models.yaml en sessiequota-limieten.
+description: Stel via oma-config.yaml en models.yaml per agent een andere CLI-provider, model en redeneerniveau in. Behandelt agent_cli_mapping, runtime-profielen, oma doctor --profile, models.yaml en sessiequota-limieten.
 ---
 
 # Gids: modelconfiguratie per agent

@@ -1,6 +1,6 @@
 ---
 title: "Hướng dẫn: cấu hình model theo từng agent"
-description: Với , cấu hình nhà cung cấp CLI, model và mức độ lập luận riêng cho từng agent. Bao gồm agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml và mức trần quota phiên.
+description: Với oma-config.yaml và models.yaml, cấu hình nhà cung cấp CLI, model và mức độ lập luận riêng cho từng agent. Bao gồm agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml và mức trần quota phiên.
 ---
 
 # Hướng dẫn: cấu hình model theo từng agent

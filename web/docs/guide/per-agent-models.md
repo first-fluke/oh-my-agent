@@ -1,6 +1,6 @@
 ---
 title: "Guide: Per-Agent Model Configuration"
-description: Configure different CLI vendors, models, and reasoning effort levels per agent using . Covers agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml, and session quota caps.
+description: Configure different CLI vendors, models, and reasoning effort levels per agent via oma-config.yaml and models.yaml. Covers agent_cli_mapping, runtime profiles, oma doctor --profile, models.yaml, and session quota caps.
 ---
 
 # Guide: Per-Agent Model Configuration

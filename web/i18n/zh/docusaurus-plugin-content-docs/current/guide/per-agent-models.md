@@ -1,6 +1,6 @@
 ---
 title: "指南：按代理配置模型"
-description:  支持为每个代理单独指定 CLI 厂商、模型与推理强度。涵盖 agent_cli_mapping、运行时配置档、oma doctor --profile、models.yaml 以及会话配额上限。
+description: 通过 oma-config.yaml 与 models.yaml 为每个代理单独指定 CLI 厂商、模型与推理强度。涵盖 agent_cli_mapping、运行时配置档、oma doctor --profile、models.yaml 以及会话配额上限。
 ---
 
 # 指南：按代理配置模型

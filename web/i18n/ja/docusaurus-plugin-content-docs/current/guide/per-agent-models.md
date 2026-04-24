@@ -1,6 +1,6 @@
 ---
 title: "ガイド：エージェントごとのモデル設定"
-description: により、エージェントごとにCLIベンダー・モデル・推論強度を個別指定。agent_cli_mapping、ランタイムプロファイル、oma doctor --profile、models.yaml、セッションクォータ上限を解説。
+description: oma-config.yaml と models.yaml で、エージェントごとに CLI ベンダー・モデル・推論強度を個別指定。agent_cli_mapping、ランタイムプロファイル、oma doctor --profile、models.yaml、セッションクォータ上限を解説。
 ---
 
 # ガイド：エージェントごとのモデル設定

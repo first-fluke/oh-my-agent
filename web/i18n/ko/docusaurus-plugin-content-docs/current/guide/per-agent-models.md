@@ -1,6 +1,6 @@
 ---
 title: "가이드: 에이전트별 모델 설정"
-description: 로 에이전트마다 CLI 벤더, 모델, 추론 수준을 따로 지정합니다. agent_cli_mapping, 런타임 프로파일, oma doctor --profile, models.yaml, 세션 쿼터 상한까지 다룹니다.
+description: oma-config.yaml과 models.yaml로 에이전트마다 CLI 벤더, 모델, 추론 수준을 따로 지정합니다. agent_cli_mapping, 런타임 프로파일, oma doctor --profile, models.yaml, 세션 쿼터 상한까지 다룹니다.
 ---
 
 # 가이드: 에이전트별 모델 설정
