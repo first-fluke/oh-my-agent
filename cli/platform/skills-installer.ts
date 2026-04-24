@@ -111,6 +111,78 @@ export function installWorkflows(sourceDir: string, targetDir: string): void {
   fs.cpSync(src, dest, { recursive: true, force: true });
 }
 
+const CODEX_WRAPPER_MARKER = "<!-- oma:generated -->";
+
+function extractWorkflowDescription(filePath: string): string | null {
+  let content: string;
+  try {
+    content = fs.readFileSync(filePath, "utf-8");
+  } catch {
+    return null;
+  }
+  const match = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!match?.[1]) return null;
+  const descMatch = match[1].match(/^description:\s*(.+?)\s*$/m);
+  return descMatch?.[1]?.trim() ?? null;
+}
+
+function listWorkflowNames(workflowsDir: string): string[] {
+  if (!fs.existsSync(workflowsDir)) return [];
+  return fs
+    .readdirSync(workflowsDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+    .map((entry) => entry.name.slice(0, -".md".length));
+}
+
+/**
+ * Mirror `.agents/workflows/*.md` into `.codex/skills/<name>/SKILL.md` wrappers so
+ * Codex CLI can invoke workflows via `$<name>`. Prunes stale oma-generated
+ * wrappers whose workflow no longer exists in SSOT; never touches
+ * user-authored skills (those lack the oma:generated marker).
+ */
+export function installCodexWorkflowSkills(
+  sourceDir: string,
+  targetDir: string,
+): void {
+  const workflowsDir = join(sourceDir, ".agents", "workflows");
+  const skillsRoot = join(targetDir, ".codex", "skills");
+  const names = listWorkflowNames(workflowsDir);
+
+  if (fs.existsSync(skillsRoot)) {
+    for (const entry of fs.readdirSync(skillsRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const skillDir = join(skillsRoot, entry.name);
+      const skillFile = join(skillDir, "SKILL.md");
+      if (!fs.existsSync(skillFile)) continue;
+      let existing: string;
+      try {
+        existing = fs.readFileSync(skillFile, "utf-8");
+      } catch {
+        continue;
+      }
+      if (!existing.includes(CODEX_WRAPPER_MARKER)) continue;
+      if (!names.includes(entry.name)) {
+        fs.rmSync(skillDir, { recursive: true, force: true });
+      }
+    }
+  }
+
+  if (names.length === 0) return;
+
+  fs.mkdirSync(skillsRoot, { recursive: true });
+  for (const name of names) {
+    const description =
+      extractWorkflowDescription(join(workflowsDir, `${name}.md`)) ??
+      `Workflow: ${name}`;
+    const skillDir = join(skillsRoot, name);
+    const skillFile = join(skillDir, "SKILL.md");
+    clearNonDirectory(skillDir);
+    fs.mkdirSync(skillDir, { recursive: true });
+    const body = `---\nname: ${name}\ndescription: ${description}\n---\n${CODEX_WRAPPER_MARKER}\n\nRead and follow \`.agents/workflows/${name}.md\` step by step.\n`;
+    fs.writeFileSync(skillFile, body);
+  }
+}
+
 export function installRules(sourceDir: string, targetDir: string): void {
   const src = join(sourceDir, ".agents", "rules");
   if (!fs.existsSync(src)) return;

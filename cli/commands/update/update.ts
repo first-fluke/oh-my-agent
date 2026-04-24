@@ -38,6 +38,7 @@ import {
   detectExistingCliSymlinkDirs,
   ensureCursorMcpSymlink,
   getInstalledSkillNames,
+  installCodexWorkflowSkills,
   installVendorAdaptations,
   REPO,
   readVendorsFromConfig,
@@ -307,6 +308,9 @@ export async function update(force = false, ci = false): Promise<void> {
       const hookVendors = configuredVendors.filter(
         (v): v is VendorType => v !== "copilot",
       );
+      if (configuredVendors.includes("codex")) {
+        installCodexWorkflowSkills(repoDir, cwd);
+      }
       installVendorAdaptations(repoDir, cwd, hookVendors);
       if (configuredVendors.includes("claude")) {
         const claudeSettingsPath = join(cwd, ".claude", "settings.json");

@@ -10,6 +10,7 @@ import {
   detectExistingCliSymlinkDirs,
   ensureCursorMcpSymlink,
   getInstalledSkillNames,
+  installCodexWorkflowSkills,
   installVendorAdaptations,
   readVendorsFromConfig,
 } from "../../platform/skills-installer.js";
@@ -110,6 +111,7 @@ export function link(vendorFilter?: string[]): void {
 
   // 2c. Codex-specific settings
   if (configuredVendors.includes("codex")) {
+    installCodexWorkflowSkills(cwd, cwd);
     const codexConfigPath = join(cwd, ".codex", "config.toml");
     const rawToml = existsSync(codexConfigPath)
       ? readFileSync(codexConfigPath, "utf-8")

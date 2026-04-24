@@ -47,6 +47,7 @@ const skillsState = vi.hoisted(() => ({
   ]),
   installShared: vi.fn(),
   installWorkflows: vi.fn(),
+  installCodexWorkflowSkills: vi.fn(),
   installRules: vi.fn(),
   installConfigs: vi.fn(),
   installSkill: vi.fn(),

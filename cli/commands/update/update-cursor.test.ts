@@ -37,6 +37,7 @@ vi.mock("../../platform/rules.js", () => ({
 
 vi.mock("../../platform/skills-installer.js", () => ({
   REPO: "first-fluke/oh-my-agent",
+  installCodexWorkflowSkills: vi.fn(),
   installVendorAdaptations: vi.fn(),
   detectExistingCliSymlinkDirs: vi.fn(() => []),
   getInstalledSkillNames: vi.fn(() => []),

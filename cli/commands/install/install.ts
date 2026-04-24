@@ -34,6 +34,7 @@ import {
   ensureCursorMcpSymlink,
   getAllSkills,
   INSTALLED_SKILLS_DIR,
+  installCodexWorkflowSkills,
   installConfigs,
   installRules,
   installShared,
@@ -364,6 +365,9 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
       installShared(repoDir, cwd);
       installWorkflows(repoDir, cwd);
+      if (vendors.includes("codex")) {
+        installCodexWorkflowSkills(repoDir, cwd);
+      }
       installRules(repoDir, cwd);
       installConfigs(repoDir, cwd, false, {
         updateDefaults: options.updateDefaults,
