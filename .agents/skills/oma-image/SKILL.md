@@ -113,6 +113,24 @@ Supported vendors:
 - **Antigravity**: workspace upload directory (exact path shown in IDE)
 - **Codex CLI as host**: user must pass the filesystem path explicitly; in-conversation attachments are not forwarded
 
+### Agent Behavior: Auto-forward Attached References (MANDATORY)
+
+When ALL of the following are true, the calling agent MUST pass the attached image via `--reference <path>` automatically. Never describe the image in prose as a workaround.
+
+1. The user asks to generate or edit an image (referencing the attached one by phrases like "이거", "this image", "same style as this", "이 수달", etc.).
+2. A host-surfaced attached image is visible to the agent — e.g. a Claude Code system message with `[Image: source: <path>]`, or an Antigravity workspace upload path, or an explicit filesystem path in the user's message.
+3. The selected vendor supports references (`codex` or `gemini`).
+
+**Required action**: invoke `oma image generate --reference <absolute-path> --vendor <codex|gemini> "<prompt>"`. If the user didn't specify a vendor, default to `codex` (CLI-first, widest availability). Do NOT:
+
+- Fall back to prose description ("I'll describe the otter's appearance...").
+- Ask the user to re-type or re-attach the path.
+- Claim the CLI doesn't support references without first running `oma image generate --help` to verify.
+
+**If the local CLI is outdated** (`--reference` is missing from `--help`): tell the user to run `oma update` once, then retry. Do not silently degrade to prose.
+
+**If the reference path is from Claude Code's `image-cache`**: note to the user that the path is session-scoped and suggest copying the file to a durable location if they want to reuse it later. Still proceed with the generation.
+
 ### Shared Infrastructure (from other skills)
 
 Other skills call `oma image generate --format json` and parse the JSON manifest from stdout.

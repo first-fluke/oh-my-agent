@@ -27,6 +27,10 @@ When `--reference <path...>` is supplied:
    - `gemini` api strategy reads each file, base64-encodes it, and prepends `{ inlineData: { mimeType, data } }` parts before the text prompt.
 4. Record reference paths in `manifest.json` under `reference_images` (top-level array of absolute paths).
 
+### Auto-forward attached images (MANDATORY)
+
+If the user asks to generate/edit an image AND a host-attached image is visible to the agent (e.g. `[Image: source: <path>]` in a Claude Code system message, Antigravity workspace upload, or explicit user-provided path), the agent MUST pass it via `--reference <path>`. Do not fall back to describing the image in prose. Do not ask the user to re-type the path. If `oma image generate --help` shows no `--reference` flag, instruct the user to run `oma update` and retry — do not silently degrade.
+
 ### Host-Specific Reference Paths
 
 Agents invoking `oma image generate --reference` should surface the following host-specific locations to the user:
