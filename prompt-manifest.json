@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.16.0",
-  "releaseDate": "2026-04-24T01:52:29.263Z",
+  "releaseDate": "2026-04-24T02:09:35.527Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -791,8 +791,8 @@
     },
     {
       "path": ".agents/skills/oma-image/SKILL.md",
-      "sha256": "2a8518970910a9ccff99f89b225327474b10e6735f81b572e34b6efdeac388d5",
-      "size": 6800
+      "sha256": "9d29a38e24873bdb4e56eda1687f3d3b86fbffddde088cd4c385fa4b4b7294e9",
+      "size": 7061
     },
     {
       "path": ".agents/skills/oma-image/config/image-config.yaml",
@@ -801,18 +801,18 @@
     },
     {
       "path": ".agents/skills/oma-image/resources/checklist.md",
-      "sha256": "297b03adc5dc0bb07261790f22dd03513effcd6856cfc1ebce3c3107a00e0bcd",
-      "size": 981
+      "sha256": "cc8cb9c76657a047e6baf246fc7fb57c130b61f93c44defcb2212ca279a271ee",
+      "size": 979
     },
     {
       "path": ".agents/skills/oma-image/resources/execution-protocol.md",
-      "sha256": "222fd25f1a2f76aa5b16f2cfd10d63bd1f2ead441604a34e4c2d352312a3237f",
-      "size": 4479
+      "sha256": "fd38c46e4f992ba58a4351b46911b780e24fa2175b0f24f7a6f8c90ed9f4fb46",
+      "size": 3576
     },
     {
       "path": ".agents/skills/oma-image/resources/prompt-tips.md",
-      "sha256": "be01da88d0228ed8a7c73ea6458c7a0f55893e9c4c81c7a3980c21f2d63993d3",
-      "size": 2510
+      "sha256": "a4102b22e7b2f98286e1e6bf3543801fd355c44a03b01f9eb8fba3acc5921e0d",
+      "size": 4408
     },
     {
       "path": ".agents/skills/oma-image/resources/vendor-matrix.md",
