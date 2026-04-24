@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "5.16.0",
-  "releaseDate": "2026-04-23T13:48:30.465Z",
+  "releaseDate": "2026-04-24T01:52:29.263Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -111,8 +111,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "9b4a6f29a74ba2b15cb3713366009ba116ea920fd3ec30fc5da90896471f2731",
-      "size": 63280
+      "sha256": "58024f41abe989e74e32fc6a913f9f0580f23d825bdb023201014ad9ab0a01de",
+      "size": 67539
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -790,6 +790,36 @@
       "size": 3713
     },
     {
+      "path": ".agents/skills/oma-image/SKILL.md",
+      "sha256": "2a8518970910a9ccff99f89b225327474b10e6735f81b572e34b6efdeac388d5",
+      "size": 6800
+    },
+    {
+      "path": ".agents/skills/oma-image/config/image-config.yaml",
+      "sha256": "dcf0ed82cbfa2c4b1f23e84cf6be6540608b00ef549070f6f74e1c4ce911e747",
+      "size": 986
+    },
+    {
+      "path": ".agents/skills/oma-image/resources/checklist.md",
+      "sha256": "297b03adc5dc0bb07261790f22dd03513effcd6856cfc1ebce3c3107a00e0bcd",
+      "size": 981
+    },
+    {
+      "path": ".agents/skills/oma-image/resources/execution-protocol.md",
+      "sha256": "222fd25f1a2f76aa5b16f2cfd10d63bd1f2ead441604a34e4c2d352312a3237f",
+      "size": 4479
+    },
+    {
+      "path": ".agents/skills/oma-image/resources/prompt-tips.md",
+      "sha256": "be01da88d0228ed8a7c73ea6458c7a0f55893e9c4c81c7a3980c21f2d63993d3",
+      "size": 2510
+    },
+    {
+      "path": ".agents/skills/oma-image/resources/vendor-matrix.md",
+      "sha256": "af0f0c50275c94dca1fc412c4485677c05b80eb4a5322bd61118c2c2e1c4bee7",
+      "size": 3502
+    },
+    {
       "path": ".agents/skills/oma-mobile/SKILL.md",
       "sha256": "3b7201834eaea14f27d4adae1ac34f5b0cf67d53cda0e6791ed516c1827a48b6",
       "size": 1920
@@ -1379,8 +1409,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 21,
+    "skillCount": 22,
     "workflowCount": 19,
-    "totalFiles": 274
+    "totalFiles": 280
   }
 }
