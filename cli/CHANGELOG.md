@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.18.2...cli-v5.19.0) (2026-04-24)
+
+
+### Features
+
+* **cli:** mirror workflows into .codex/skills for Codex $ invocation ([03cf790](https://github.com/first-fluke/oh-my-agent/commit/03cf7900276539368771282ba12f8afa2b9e15f2))
+
 ## [5.18.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.18.1...cli-v5.18.2) (2026-04-24)
 
 
