@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.0...web-v1.1.1) (2026-04-24)
+
+
+### Bug Fixes
+
+* address code review on PR [#270](https://github.com/first-fluke/oh-my-agent/issues/270) ([a9d22d5](https://github.com/first-fluke/oh-my-agent/commit/a9d22d5d265027ddc5c879f4cd823bee7c1a130a))
+* **io:** honor oma-config.yaml for per-agent dispatch and quota cap ([bbe96b3](https://github.com/first-fluke/oh-my-agent/commit/bbe96b3dd5afdcc16f6f69055874aa54f97afd98))
+* **io:** honor oma-config.yaml in resolveAgentPlan and loadQuotaCap ([15ea4d9](https://github.com/first-fluke/oh-my-agent/commit/15ea4d9305f8b6c7b386c291d17ab6fa327326c4))
+
+
+### Documentation
+
+* drop RARDO codename, fix slug bugs, consolidate oma-config.yaml references ([ef6630e](https://github.com/first-fluke/oh-my-agent/commit/ef6630ef13f4ce470e3db41cd6f0085ab881f02e))
+
 ## [1.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v1.0.1...web-v1.1.0) (2026-04-23)
 
 
