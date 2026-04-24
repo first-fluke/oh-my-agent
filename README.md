@@ -34,14 +34,27 @@ bunx oh-my-agent@latest
 > Microsoft's [Agent Package Manager](https://github.com/microsoft/apm) (APM) — not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
 
 ```bash
-# All 22 oma skills across every detected runtime (.claude, .cursor, .codex, .opencode, .github)
+# 22 skills + keyword-detection hook, deployed to every detected runtime
+# (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
 # A single skill
 apm install first-fluke/oh-my-agent/.apm/skills/oma-frontend
 ```
 
-Installs the skills only. For hooks, workflows, and `oma-config.yaml`, use the `oh-my-agent` CLI above. Pick one distribution per project to avoid drift.
+What ships via APM:
+
+- **22 skills** → `{target}/skills/`
+- **Keyword-detection hook** → `.claude/settings.json`, `.cursor/hooks.json`, `.codex/hooks.json` (wires `UserPromptSubmit` / `PreToolUse` / `Stop` handlers)
+
+What does **not** ship via APM:
+
+- `.agents/workflows/*.md` (orchestrate, ultrawork, debug, ...) — run `bunx oh-my-agent@latest` for the full workflow runtime
+- `.agents/rules/*.md` — ditto
+- `.agents/oma-config.yaml` — ditto
+- oma CLI commands (`oma agent:spawn`, `oma install`, `oma update`)
+
+Pick one distribution per project to avoid drift between the APM mirror and the oma CLI runtime.
 
 Pick a preset and you're ready:
 
