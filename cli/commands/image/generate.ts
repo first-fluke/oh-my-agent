@@ -136,13 +136,14 @@ export async function runGenerate({
   // `auto` mode: drop reference-unsupported vendors from the healthy set so
   // a pollinations-only-healthy environment doesn't block codex/gemini refs.
   // Two distinct failure modes to distinguish here:
-  //   (a) no reference-supporting vendor is even installed/authenticated at
-  //       all — surface the per-vendor health hints via printAuthFailure so
-  //       the user sees which ones need setup (exit 5, auth-required).
-  //   (b) reference-supporting vendors exist but only non-supporting ones
-  //       (pollinations) are currently healthy — user's --reference choice
-  //       is invalid given the available vendors (exit 4, invalid-input,
+  //   (a) reference-supporting vendors (codex, gemini) are not even
+  //       registered in defaultRegistry — user's --reference choice is
+  //       invalid given the available vendors (exit 4, invalid-input,
   //       matching the explicit --vendor pollinations -r X path).
+  //   (b) reference-supporting vendors are registered but none are
+  //       currently healthy — surface each vendor's own health hint via
+  //       printAuthFailure so the user sees exactly what setup is missing
+  //       (exit 5, auth-required).
   if (references.length > 0 && vendorFlag === "auto") {
     const droppable = runProviders.filter((p) => !supportsReference(p.name));
     runProviders = runProviders.filter((p) => supportsReference(p.name));
