@@ -57,11 +57,13 @@ Skip both clarification and amplification when the user has clearly authored a f
 
 ## Vendors
 
-| Vendor | Primary Strategy | Models | Trigger |
-|--------|-----------------|--------|---------|
-| `codex` | `codex exec` (OAuth via ChatGPT subscription) → built-in `image_gen` | `gpt-image-2` | Logged into Codex CLI |
-| `pollinations` | `gen.pollinations.ai/v1/images/generations` (OpenAI-compatible) | Free: `flux`, `zimage`. Credit-gated (requires pollen balance): `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` is set (free key at https://enter.pollinations.ai) |
-| `gemini` | `@google/genai` SDK (direct API) | `gemini-2.5-flash-image`, `gemini-3.1-flash-image-preview` | `GEMINI_API_KEY` set + billing activated on AI Studio account |
+This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native CLI can drive generation (and return raw bytes), the subprocess path is preferred over direct API keys. Direct API is only used as a fallback for vendors whose CLI can't yet emit raw image bytes.
+
+| Vendor | Strategy | Models | Trigger |
+|--------|----------|--------|---------|
+| `codex` | CLI-first — `codex exec` via ChatGPT OAuth (`codex login`), built-in `image_gen` | `gpt-image-2` | Logged in via Codex CLI (no API key) |
+| `pollinations` | Direct HTTP — `gen.pollinations.ai/v1/images/generations` (free signup for key) | Free: `flux`, `zimage`. Credit-gated: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` set (free at https://enter.pollinations.ai). No native CLI exists. |
+| `gemini` | CLI-first fallback → direct API. `gemini -p` (stream) is the preferred path but currently disabled at precheck (CLI's agentic loop does not return raw `inlineData` bytes on stdout as of Gemini CLI 0.38). Until the CLI exposes a non-agentic image surface, the provider falls back to the direct `generativelanguage.googleapis.com` API. | `gemini-2.5-flash-image`, `gemini-3.1-flash-image-preview` | Preferred: `gemini auth login`. Fallback: `GEMINI_API_KEY` + billing. |
 
 ## Invocation
 

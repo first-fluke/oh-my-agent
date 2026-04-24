@@ -135,15 +135,39 @@ export async function runGenerate({
 
   // `auto` mode: drop reference-unsupported vendors from the healthy set so
   // a pollinations-only-healthy environment doesn't block codex/gemini refs.
+  // Two distinct failure modes to distinguish here:
+  //   (a) no reference-supporting vendor is even installed/authenticated at
+  //       all — surface the per-vendor health hints via printAuthFailure so
+  //       the user sees which ones need setup (exit 5, auth-required).
+  //   (b) reference-supporting vendors exist but only non-supporting ones
+  //       (pollinations) are currently healthy — user's --reference choice
+  //       is invalid given the available vendors (exit 4, invalid-input,
+  //       matching the explicit --vendor pollinations -r X path).
   if (references.length > 0 && vendorFlag === "auto") {
     const droppable = runProviders.filter((p) => !supportsReference(p.name));
     runProviders = runProviders.filter((p) => supportsReference(p.name));
     if (runProviders.length === 0) {
+      const refSupportingHealthResults = healthResults.filter((r) =>
+        supportsReference(r.provider.name),
+      );
+      if (refSupportingHealthResults.length === 0) {
+        // (a) no reference-supporting vendor registered at all
+        console.error(
+          color.red(
+            `--reference is not supported by any registered vendor (${droppable
+              .map((p) => p.name)
+              .join(
+                ", ",
+              )}). Install/enable codex or gemini, or drop --reference.`,
+          ),
+        );
+        return 4;
+      }
+      // (b) ref-supporting vendors exist but none healthy — show their hints
+      printAuthFailure(refSupportingHealthResults, msgs);
       console.error(
-        color.red(
-          `--reference is not supported by any available vendor (${droppable
-            .map((p) => p.name)
-            .join(", ")}). Authenticate codex or gemini, or drop --reference.`,
+        color.yellow(
+          `(${droppable.map((p) => p.name).join(", ")} is healthy but does not support --reference.)`,
         ),
       );
       return 5;
