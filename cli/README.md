@@ -29,6 +29,23 @@ bunx oh-my-agent@latest
 
 `install.sh` supports macOS/Linux only. On Windows, install `bun` and `uv` manually, then run `bunx oh-my-agent@latest`.
 
+### Install via Agent Package Manager
+
+> Microsoft's [Agent Package Manager](https://github.com/microsoft/apm) (APM) — not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
+
+```bash
+# 22 skills, deployed to every detected runtime
+# (.claude, .cursor, .codex, .opencode, .github, .agents)
+apm install first-fluke/oh-my-agent
+
+# A single skill
+apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
+```
+
+APM reads `.claude-plugin/plugin.json`'s `skills: .agents/skills/` pointer, so the `.agents/` SSOT is the only source — no build step or mirror.
+
+APM ships the 22 skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+
 Pick a preset and you're ready:
 
 | Preset | What You Get |
