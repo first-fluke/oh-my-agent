@@ -71,10 +71,8 @@ Read the relevant file from `.agents/rules/` when working on matching code.
 > This section applies only to the oh-my-agent source repository itself.
 
 - `.agents/` modifications are allowed (this IS the source repo)
-- `.apm/` is a committed build artifact (mirror of `.agents/skills/` for APM distribution). **Never edit `.apm/` directly** — changes are overwritten on next `bun run build:apm`. **Skip `.apm/` when searching** — duplicates `.agents/skills/`, creates false hits. Edit `.agents/skills/` then run `bun run build:apm` to regenerate.
 - `bun run test` — CLI tests (vitest)
 - `bun run lint` — Lint
 - `bun run build` — CLI build
-- `bun run build:apm` — Regenerate `.apm/skills/` mirror from `.agents/skills/` after edits
 - commitlint: conventional commits required (build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test)
 - Commit Co-Author: `First Fluke <our.first.fluke@gmail.com>`

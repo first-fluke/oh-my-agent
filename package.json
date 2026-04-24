@@ -8,7 +8,6 @@
   ],
   "scripts": {
     "build": "bun run --cwd cli build",
-    "build:apm": "node scripts/build-apm.mjs",
     "dev": "bun run --cwd cli dev",
     "lint": "bun run --cwd cli lint && bun run --cwd web lint",
     "prepare": "husky",

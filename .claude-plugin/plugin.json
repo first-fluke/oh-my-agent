@@ -19,6 +19,6 @@
     "codex",
     "gemini"
   ],
-  "skills": "./.claude/skills/",
-  "agents": "./.claude/agents/"
+  "skills": ".agents/skills/",
+  "agents": ".agents/agents/"
 }

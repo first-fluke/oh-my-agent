@@ -65,10 +65,3 @@ Read the relevant file from `.agents/rules/` when working on matching code.
 | quality | `.agents/rules/quality.md` | on request |
 
 <!-- OMA:END -->
-
-## Source Repo — Additional Rules
-
-> This section applies only to the oh-my-agent source repository itself.
-
-- `.agents/` modifications are allowed (this IS the source repo)
-- `.apm/` is a committed build artifact (mirror of `.agents/skills/` for APM distribution). **Never edit `.apm/` directly** — changes are overwritten on next `bun run build:apm`. **Skip `.apm/` when searching** — duplicates `.agents/skills/`, creates false hits. Edit `.agents/skills/` then run `bun run build:apm` to regenerate.
