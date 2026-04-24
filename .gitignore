@@ -21,6 +21,7 @@ bin/*.js
 # OMA outputs
 .agents/plan.json
 docs/plans/
+docs/exec-plans/
 
 # Claude/Codex/Qwen integration layer (generated)
 .claude/
@@ -34,6 +35,10 @@ docs/plans/
 # Serena Memory (runtime state)
 .serena/memories/*
 !.serena/memories/.gitkeep
+
+# Serena runtime (nested workspaces)
+cli/.serena/
+web/.serena/
 
 # OMA runtime state (hook persistent mode)
 .agents/state/
