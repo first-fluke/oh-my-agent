@@ -93,24 +93,22 @@ oma doctor --profile
 **Ví dụ output:**
 
 ```
-oh-my-agent — Active Profile: antigravity
+oh-my-agent — Profile Health (runtime=claude)
 
-Agent         Vendor    Model                       Effort   Source
-------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   oma-config
-backend       openai    gpt-5.3-codex               high     oma-config
-frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview      low      profile:antigravity
-architecture  claude    claude-opus-4-7             high     defaults
-retrieval     google    gemini-3.1-flash-lite       —        defaults
-
-Session quota cap:
-  tokens:       2,000,000
-  spawn_count:  40
-  per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
+│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
 ```
 
-Dùng lệnh này bất cứ khi nào subagent chọn nhà cung cấp ngoài dự kiến — cột `Source` cho biết lớp cấu hình nào đã thắng.
+Mỗi hàng hiển thị slug model đã resolve (sau khi hợp nhất `oma-config.yaml` + active profile + `defaults.yaml`) và cho biết bạn đã đăng nhập vào CLI sẽ thực thi role đó hay chưa. Dùng lệnh này bất cứ khi nào subagent chọn nhà cung cấp ngoài dự kiến.
 
 ---
 
@@ -220,7 +218,7 @@ Khi bạn kéo bản phát hành oh-my-agent mới hơn, hãy chạy `oma instal
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-`oma-config.yaml` và `models.yaml` của bạn không bao giờ bị trình cài đặt chạm vào.
+`models.yaml` không bao giờ bị trình cài đặt chạm vào. `oma-config.yaml` cũng được giữ nguyên, với một ngoại lệ: `oma install` ghi lại dòng `language:` và làm mới khối `vendors:` dựa trên các câu trả lời của bạn trong quá trình cài đặt. Mọi trường khác bạn thêm vào (ví dụ: `agent_cli_mapping`, `active_profile`, `session.quota_cap`) đều được giữ nguyên qua các lần chạy.
 
 ## Nâng cấp từ bản cài đặt trước 5.16.0
 

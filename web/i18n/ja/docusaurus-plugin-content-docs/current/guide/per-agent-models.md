@@ -93,24 +93,22 @@ oma doctor --profile
 **サンプル出力:**
 
 ```
-oh-my-agent — Active Profile: antigravity
+oh-my-agent — Profile Health (runtime=claude)
 
-Agent         Vendor    Model                       Effort   Source
-------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   oma-config
-backend       openai    gpt-5.3-codex               high     oma-config
-frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview      low      profile:antigravity
-architecture  claude    claude-opus-4-7             high     defaults
-retrieval     google    gemini-3.1-flash-lite       —        defaults
-
-Session quota cap:
-  tokens:       2,000,000
-  spawn_count:  40
-  per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
+│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
 ```
 
-サブエージェントが予期せぬベンダーを選んだときは、まずこのコマンドを実行してください。`Source` 列でどの設定レイヤが勝ったかがわかります。
+各行には、解決済みのモデルスラグ（`oma-config.yaml` + アクティブプロファイル + `defaults.yaml` のマージ後）と、そのロールを実行する CLI にサインインしているかどうかが表示されます。サブエージェントが予期せぬベンダーを選んだときは、まずこのコマンドを実行してください。
 
 ---
 
@@ -220,7 +218,7 @@ session:
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-`oma-config.yaml` と `models.yaml` はインストーラーによって変更されることはありません。
+`models.yaml` はインストーラーによって変更されることはありません。`oma-config.yaml` も同様に保持されますが、一つ例外があります。`oma install` は、インストール時に回答したプロンプトに基づいて `language:` 行を書き換え、`vendors:` ブロックを更新します。それ以外に追加したフィールド（例：`agent_cli_mapping`、`active_profile`、`session.quota_cap`）は実行をまたいで保持されます。
 
 ## 5.16.0 以前のインストールからのアップグレード
 

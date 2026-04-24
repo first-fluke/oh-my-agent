@@ -93,24 +93,22 @@ oma doctor --profile
 **출력 예시:**
 
 ```
-oh-my-agent — Active Profile: antigravity
+oh-my-agent — Profile Health (runtime=claude)
 
-Agent         Vendor    Model                       Effort   Source
-------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   oma-config
-backend       openai    gpt-5.3-codex               high     oma-config
-frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview      low      profile:antigravity
-architecture  claude    claude-opus-4-7             high     defaults
-retrieval     google    gemini-3.1-flash-lite       —        defaults
-
-Session quota cap:
-  tokens:       2,000,000
-  spawn_count:  40
-  per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
+│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
 ```
 
-서브에이전트가 예상 밖의 벤더를 선택할 때 이 명령을 사용하세요. `Source` 열이 어떤 설정 계층이 적용됐는지 알려줍니다.
+각 행은 `oma-config.yaml` + 활성 프로파일 + `defaults.yaml` 병합 후 최종 결정된 모델 슬러그와, 해당 역할을 실행할 CLI에 로그인되어 있는지 여부를 보여줍니다. 서브에이전트가 예상 밖의 벤더를 선택할 때마다 이 명령을 활용하세요.
 
 ---
 
@@ -220,7 +218,7 @@ session:
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-`oma-config.yaml`과 `models.yaml`은 인스톨러가 절대 건드리지 않습니다.
+`models.yaml`은 인스톨러가 절대 수정하지 않습니다. `oma-config.yaml` 역시 보존되지만, 한 가지 예외가 있습니다. `oma install`은 설치 중 답변한 내용을 바탕으로 `language:` 줄을 재작성하고 `vendors:` 블록을 갱신합니다. 그 외에 추가한 필드(예: `agent_cli_mapping`, `active_profile`, `session.quota_cap`)는 실행 간에 그대로 유지됩니다.
 
 ## 5.16.0 이전 설치에서 업그레이드
 

@@ -93,24 +93,22 @@ oma doctor --profile
 **Salida de ejemplo:**
 
 ```
-oh-my-agent — Active Profile: antigravity
+oh-my-agent — Profile Health (runtime=claude)
 
-Agent         Vendor    Model                       Effort   Source
-------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   oma-config
-backend       openai    gpt-5.3-codex               high     oma-config
-frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview      low      profile:antigravity
-architecture  claude    claude-opus-4-7             high     defaults
-retrieval     google    gemini-3.1-flash-lite       —        defaults
-
-Session quota cap:
-  tokens:       2,000,000
-  spawn_count:  40
-  per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
+│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
 ```
 
-Úsalo siempre que un subagente elija un proveedor inesperado: la columna `Source` indica qué capa de configuración ganó.
+Cada fila muestra el slug de modelo resuelto (tras combinar `oma-config.yaml`, el perfil activo y `defaults.yaml`) e indica si tienes sesión iniciada en la CLI que ejecutará ese rol. Úsalo siempre que un subagente elija un proveedor inesperado.
 
 ---
 
@@ -220,7 +218,7 @@ Cuando tires de una versión más reciente de oh-my-agent, ejecuta `oma install`
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-El instalador nunca toca tu `oma-config.yaml` ni tu `models.yaml`.
+El instalador nunca toca `models.yaml`. `oma-config.yaml` también se conserva, con una excepción: `oma install` reescribe la línea `language:` y actualiza el bloque `vendors:` según las respuestas que proporcionas durante la instalación. Cualquier otro campo que añadas (p. ej., `agent_cli_mapping`, `active_profile`, `session.quota_cap`) se conserva entre ejecuciones.
 
 ## Actualización desde una instalación anterior a la 5.16.0
 

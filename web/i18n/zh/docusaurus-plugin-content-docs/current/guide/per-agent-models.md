@@ -93,24 +93,22 @@ oma doctor --profile
 **示例输出：**
 
 ```
-oh-my-agent — Active Profile: antigravity
+oh-my-agent — Profile Health (runtime=claude)
 
-Agent         Vendor    Model                       Effort   Source
-------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   oma-config
-backend       openai    gpt-5.3-codex               high     oma-config
-frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview      low      profile:antigravity
-architecture  claude    claude-opus-4-7             high     defaults
-retrieval     google    gemini-3.1-flash-lite       —        defaults
-
-Session quota cap:
-  tokens:       2,000,000
-  spawn_count:  40
-  per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
+│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
 ```
 
-当 subagent 选了意料之外的厂商时先运行此命令。`Source` 列会告诉你到底是哪一层配置获胜。
+每一行显示解析后的模型 slug（经 `oma-config.yaml` + 激活配置档 + `defaults.yaml` 三层合并）以及你是否已登录将执行该角色的 CLI。当 subagent 选了意料之外的厂商时，请先运行此命令。
 
 ---
 
@@ -220,7 +218,7 @@ session:
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-你的 `oma-config.yaml` 与 `models.yaml` 不会被安装程序修改。
+`models.yaml` 不会被安装程序修改。`oma-config.yaml` 同样会被保留，但有一个例外：`oma install` 会根据安装过程中你回答的提示，重写 `language:` 行并刷新 `vendors:` 块。你添加的其他任何字段（例如 `agent_cli_mapping`、`active_profile`、`session.quota_cap`）均会在多次运行间保留。
 
 ## 从 5.16.0 以前的版本升级
 

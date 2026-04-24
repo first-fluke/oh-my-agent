@@ -93,24 +93,22 @@ oma doctor --profile
 **Sample output:**
 
 ```
-oh-my-agent — Active Profile: antigravity
+oh-my-agent — Profile Health (runtime=claude)
 
-Agent         Vendor    Model                       Effort   Source
-------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   oma-config
-backend       openai    gpt-5.3-codex               high     oma-config
-frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview      low      profile:antigravity
-architecture  claude    claude-opus-4-7             high     defaults
-retrieval     google    gemini-3.1-flash-lite       —        defaults
-
-Session quota cap:
-  tokens:       2,000,000
-  spawn_count:  40
-  per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
+│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
 ```
 
-Use this whenever a subagent picks an unexpected vendor — the `Source` column tells you which config layer won.
+Each row shows the resolved model slug (after `oma-config.yaml` + active profile + `defaults.yaml` merge) and whether you are signed in to the CLI that will execute that role. Use this whenever a subagent picks an unexpected vendor.
 
 ---
 
@@ -220,7 +218,7 @@ When you pull a newer oh-my-agent release, run `oma install` — the installer c
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-Your `oma-config.yaml` and `models.yaml` are never touched by the installer.
+`models.yaml` is never touched by the installer. `oma-config.yaml` is also preserved, with one exception: `oma install` rewrites the `language:` line and refreshes the `vendors:` block based on the prompts you answer during install. Any other field you add (e.g., `agent_cli_mapping`, `active_profile`, `session.quota_cap`) is preserved across runs.
 
 ## Upgrading from a pre-5.16.0 install
 
