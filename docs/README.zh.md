@@ -51,6 +51,7 @@ bunx oh-my-agent@latest
 | **oma-dev-workflow** | CI/CD、发布、monorepo 自动化 |
 | **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/ui |
 | **oma-hwp** | HWP/HWPX/HWPML 转 Markdown |
+| **oma-image** | 多供应商 AI 图像生成 |
 | **oma-mobile** | Flutter 跨平台应用 |
 | **oma-observability** | 可观测性路由器 —— APM/RUM、指标/日志/追踪/Profile、SLO、事故取证、传输层调优 |
 | **oma-orchestrator** | 通过 CLI 并行执行 agent |

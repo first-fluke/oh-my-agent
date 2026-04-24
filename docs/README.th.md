@@ -53,6 +53,7 @@ bunx oh-my-agent@latest
 | **oma-dev-workflow** | CI/CD, releases, ระบบอัตโนมัติสำหรับ monorepo |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | แปลงไฟล์ HWP/HWPX/HWPML เป็น Markdown |
+| **oma-image** | สร้างภาพ AI แบบหลายผู้ให้บริการ |
 | **oma-mobile** | จัดการ cross platform application ด้วย Flutter |
 | **oma-observability** | เราเตอร์ด้านการสังเกตระบบ (observability) — APM/RUM, metrics/logs/traces/profiles, SLO, วิเคราะห์สาเหตุเหตุการณ์, ปรับจูน transport |
 | **oma-orchestrator** | รันเอเจนต์แบบ parallel ผ่าน CLI |

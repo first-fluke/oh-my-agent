@@ -51,6 +51,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-dev-workflow** | CI/CD, release, tự động hóa monorepo |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | Chuyển đổi HWP/HWPX/HWPML sang Markdown |
+| **oma-image** | Tạo ảnh AI đa nhà cung cấp |
 | **oma-mobile** | Ứng dụng đa nền tảng với Flutter |
 | **oma-observability** | Bộ định tuyến observability — APM/RUM, metrics/logs/traces/profiles, SLO, điều tra sự cố, tinh chỉnh transport |
 | **oma-orchestrator** | Thực thi agent song song qua CLI |

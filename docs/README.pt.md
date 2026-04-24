@@ -51,6 +51,7 @@ Escolha um preset e pronto:
 | **oma-dev-workflow** | CI/CD, releases, automacao de monorepo |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | Conversão de HWP/HWPX/HWPML para Markdown |
+| **oma-image** | Geração de imagens IA multi-fornecedor |
 | **oma-mobile** | Apps cross-platform com Flutter |
 | **oma-observability** | Roteador de observabilidade — APM/RUM, métricas/logs/traces/profiles, SLO, forense de incidentes, ajuste de transporte |
 | **oma-orchestrator** | Execucao paralela de agentes via CLI |

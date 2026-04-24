@@ -51,6 +51,7 @@ bunx oh-my-agent@latest
 | **oma-dev-workflow** | CI/CD、リリース、モノレポ自動化 |
 | **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/ui |
 | **oma-hwp** | HWP/HWPX/HWPMLからMarkdownへの変換 |
+| **oma-image** | マルチベンダーAI画像生成 |
 | **oma-mobile** | Flutterクロスプラットフォームアプリ |
 | **oma-observability** | オブザーバビリティルーター — APM/RUM、メトリクス/ログ/トレース/プロファイル、SLO、インシデント調査、トランスポート層チューニング |
 | **oma-orchestrator** | CLI経由の並列エージェント実行 |
