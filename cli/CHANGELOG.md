@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.20.1...cli-v5.20.2) (2026-04-24)
+
+
+### Bug Fixes
+
+* **image:** terminate codex exec args with -- before instruction ([#293](https://github.com/first-fluke/oh-my-agent/issues/293)) ([85252cf](https://github.com/first-fluke/oh-my-agent/commit/85252cfd094ba5a90045392a6b2341a2813857e8))
+
 ## [5.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.20.0...cli-v5.20.1) (2026-04-24)
 
 
