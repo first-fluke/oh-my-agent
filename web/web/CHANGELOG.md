@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.3...web-v1.2.0) (2026-04-24)
+
+
+### Features
+
+* **image:** add --reference flag with sanitized unique filenames ([0f0031b](https://github.com/first-fluke/oh-my-agent/commit/0f0031b4ed69e4fce9e972895f2b9359f5a7d4e6))
+
+
+### Documentation
+
+* **image:** document -r/--reference flag in web CLI reference ([d3c1878](https://github.com/first-fluke/oh-my-agent/commit/d3c1878cc7bbd5d33ae4893952b2a47c9276f56a))
+* sync README and web docs with current CLI surface ([34c9f52](https://github.com/first-fluke/oh-my-agent/commit/34c9f521de0ba96770434456d0c332993aebcaa8))
+
 ## [1.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.2...web-v1.1.3) (2026-04-24)
 
 
