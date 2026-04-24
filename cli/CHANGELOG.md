@@ -1,5 +1,29 @@
 # Changelog
 
+## [5.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.16.0...cli-v5.17.0) (2026-04-24)
+
+
+### Features
+
+* **cli:** add oma image command with codex and pollinations providers ([a05cb19](https://github.com/first-fluke/oh-my-agent/commit/a05cb1969f38c6db67f90fb4717ee891a0115386))
+* **hooks:** register oma-image keyword triggers ([312cb9c](https://github.com/first-fluke/oh-my-agent/commit/312cb9c9ef99240b8c74689c83e803efbb61e296))
+* **skill:** add oma-image skill with clarification protocol ([7616bc6](https://github.com/first-fluke/oh-my-agent/commit/7616bc61e548007b4b3f32aa49fe47097ca5469d))
+
+
+### Bug Fixes
+
+* address code review on PR [#270](https://github.com/first-fluke/oh-my-agent/issues/270) ([a9d22d5](https://github.com/first-fluke/oh-my-agent/commit/a9d22d5d265027ddc5c879f4cd823bee7c1a130a))
+* **doctor:** walk parent dirs when discovering .agents config ([6aae72f](https://github.com/first-fluke/oh-my-agent/commit/6aae72f5d910b1ee91115813537c8bb7cb805b37))
+* **io:** honor oma-config.yaml for per-agent dispatch and quota cap ([bbe96b3](https://github.com/first-fluke/oh-my-agent/commit/bbe96b3dd5afdcc16f6f69055874aa54f97afd98))
+* **io:** honor oma-config.yaml in resolveAgentPlan and loadQuotaCap ([15ea4d9](https://github.com/first-fluke/oh-my-agent/commit/15ea4d9305f8b6c7b386c291d17ab6fa327326c4))
+
+
+### Documentation
+
+* drop RARDO codename, fix slug bugs, consolidate oma-config.yaml references ([ef6630e](https://github.com/first-fluke/oh-my-agent/commit/ef6630ef13f4ce470e3db41cd6f0085ab881f02e))
+* **readme:** add oma-image row to skill table in all locales ([90de0f4](https://github.com/first-fluke/oh-my-agent/commit/90de0f4deaee4cd51a440d6ad1877d016c950761))
+* **skill/oma-image:** link prompt galleries and clean stale docs ([0f0ad16](https://github.com/first-fluke/oh-my-agent/commit/0f0ad16451edc42dca408cadb7f3625c17e7ebc2))
+
 ## [5.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.15.0...cli-v5.16.0) (2026-04-23)
 
 
