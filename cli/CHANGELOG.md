@@ -1,5 +1,22 @@
 # Changelog
 
+## [5.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.19.0...cli-v5.20.0) (2026-04-24)
+
+
+### Features
+
+* **image:** add --reference flag with sanitized unique filenames ([0f0031b](https://github.com/first-fluke/oh-my-agent/commit/0f0031b4ed69e4fce9e972895f2b9359f5a7d4e6))
+
+
+### Bug Fixes
+
+* **image:** align reference-error UX and Gemini doc with CLI-first concept ([2fe8cb5](https://github.com/first-fluke/oh-my-agent/commit/2fe8cb56fcd043625bec48f86b41bf177e36e42c))
+
+
+### Documentation
+
+* **image:** fix swapped exit-code labels in auto-mode reference comment ([4f2b5a2](https://github.com/first-fluke/oh-my-agent/commit/4f2b5a2ae886262b31a0a424ace5e51219c8c8e2))
+
 ## [5.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.18.2...cli-v5.19.0) (2026-04-24)
 
 
