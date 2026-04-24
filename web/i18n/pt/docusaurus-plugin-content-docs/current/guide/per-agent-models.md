@@ -1,47 +1,47 @@
 ---
-title: "Guia: configuração de modelo por agente"
-description: Configure diferentes fornecedores de CLI, modelos e níveis de raciocínio por agente com oma-config.yaml e models.yaml. Cobre agent_cli_mapping, perfis de runtime, oma doctor --profile, models.yaml e o limite de quota de sessão.
+title: "Guia: Configuração de Modelo por Agente"
+description: Configure diferentes fornecedores de CLI, modelos e níveis de raciocínio por agente usando oma-config.yaml e models.yaml. Cobre agent_cli_mapping, perfis de runtime, oma doctor --profile, models.yaml e limites de cota de sessão.
 ---
 
-# Guia: configuração de modelo por agente
+# Guia: Configuração de Modelo por Agente
 
-## Visão geral
+## Visão Geral
 
-O  introduz a **seleção de modelo por agente** através de `agent_cli_mapping`. Cada agente (pm, backend, frontend, qa…) pode agora apontar para o seu próprio fornecedor, modelo e nível de raciocínio — em vez de partilharem um único fornecedor global.
+O oh-my-agent oferece suporte à **seleção de modelo por agente** por meio de `agent_cli_mapping`. Cada agente (pm, backend, frontend, qa, …) pode apontar para um fornecedor, modelo e nível de raciocínio específicos de forma independente, em vez de compartilhar um único fornecedor global.
 
 Esta página cobre:
 
-1. A hierarquia de três ficheiros de configuração
-2. O formato dual de `agent_cli_mapping`
+1. A hierarquia de três arquivos de configuração
+2. O formato duplo de `agent_cli_mapping`
 3. Os presets de perfis de runtime
 4. O comando `oma doctor --profile`
-5. Slugs de modelo definidos pelo utilizador em `models.yaml`
-6. O limite de quota de sessão
+5. Slugs de modelo definidos pelo usuário em `models.yaml`
+6. Limites de cota de sessão
 
 ---
 
-## Hierarquia dos ficheiros de configuração
+## Hierarquia de Arquivos de Configuração
 
-O  lê três ficheiros por ordem de precedência (do mais alto para o mais baixo):
+O oh-my-agent lê a configuração de três arquivos, em ordem de precedência (mais alta primeiro):
 
-| Ficheiro | Objetivo | Editável? |
-|:---------|:---------|:----------|
-| `.agents/oma-config.yaml` | Overrides do utilizador — mapping agente-CLI, perfil ativo, quota de sessão | Sim |
-| `.agents/config/models.yaml` | Slugs de modelo fornecidos pelo utilizador (adições ao registry embutido) | Sim |
-| `.agents/config/defaults.yaml` | Baseline Profile B embutido (4 `runtime_profiles`, fallbacks seguros) | Não — SSOT |
+| Arquivo | Finalidade | Editável? |
+|:--------|:-----------|:----------|
+| `.agents/oma-config.yaml` | Sobrescritas do usuário — mapeamento agente-CLI, perfil ativo, cota de sessão | Sim |
+| `.agents/config/models.yaml` | Slugs de modelo fornecidos pelo usuário (adições ao registro embutido) | Sim |
+| `.agents/config/defaults.yaml` | Baseline embutido do Profile B (5 `runtime_profiles`, fallbacks seguros) | Não — SSOT |
 
-> `defaults.yaml` faz parte do SSOT e não deve ser modificado diretamente. Toda a personalização ocorre em `user-preferences.yaml` e `models.yaml`.
+> `defaults.yaml` faz parte do SSOT e não deve ser modificado diretamente. Toda a personalização acontece em `oma-config.yaml` e `models.yaml`.
 
 ---
 
-## Formato dual de `agent_cli_mapping`
+## Formato Duplo de `agent_cli_mapping`
 
-`agent_cli_mapping` aceita duas formas de valor para permitir migração gradual:
+`agent_cli_mapping` aceita duas formas de valor para que você possa migrar gradualmente:
 
 ```yaml
 # .agents/oma-config.yaml
 agent_cli_mapping:
-  pm: "claude"                        # legado — só fornecedor (usa modelo padrão)
+  pm: "claude"                        # legado — somente fornecedor (usa modelo padrão)
   backend:                            # novo objeto AgentSpec
     model: "openai/gpt-5.3-codex"
     effort: high
@@ -53,38 +53,38 @@ agent_cli_mapping:
     effort: low
 ```
 
-**Forma string legada**: `agent: "vendor"` — continua a funcionar; usa o modelo e o effort padrão do fornecedor.
+**Forma string legada**: `agent: "vendor"` — continua funcionando, usa o modelo padrão do fornecedor com o effort padrão via o perfil de runtime correspondente.
 
 **Forma objeto AgentSpec**: `agent: { model, effort }` — fixa um slug de modelo exato e um nível de raciocínio (`low`, `medium`, `high`).
 
-As duas formas podem ser misturadas livremente. Agentes não declarados recorrem ao `runtime_profile` ativo.
+Misture e combine livremente. Agentes não especificados recorrem ao `runtime_profile` ativo e, em seguida, ao `agent_defaults` de nível superior em `defaults.yaml`.
 
 ---
 
-## Perfis de runtime
+## Perfis de Runtime
 
-O `defaults.yaml` traz o Profile B com quatro `runtime_profiles` prontos a usar. Escolha um em `user-preferences.yaml`:
+`defaults.yaml` traz o Profile B com cinco `runtime_profiles` prontos para uso. Selecione um em `oma-config.yaml`:
 
 ```yaml
 # .agents/oma-config.yaml
-active_profile: claude-only   # ver opções abaixo
+active_profile: claude-only   # veja as opções abaixo
 ```
 
 | Perfil | Todos os agentes roteados para | Quando usar |
-|:-------|:--------------------------------|:------------|
+|:-------|:-------------------------------|:------------|
 | `claude-only` | Claude Code (Sonnet/Opus) | Stack Anthropic uniforme |
 | `codex-only` | OpenAI Codex (GPT-5.x) | Stack puramente OpenAI |
 | `gemini-only` | Gemini CLI | Workflows centrados no Google |
-| `antigravity` | Misto: pm→claude, backend→codex, qa→gemini | Combinar forças entre fornecedores |
-| `qwen-only` | Qwen CLI | Inferência local / auto-hospedada |
+| `antigravity` | Misto: impl→codex, architecture/qa/pm→claude, retrieval→gemini | Forças de múltiplos fornecedores |
+| `qwen-only` | Qwen Code | Inferência local / auto-hospedada |
 
-Os perfis são a forma rápida de reconfigurar toda a frota sem editar linha a linha.
+Os perfis são uma forma rápida de reconfigurar toda a frota sem editar cada linha de agente individualmente.
 
 ---
 
 ## `oma doctor --profile`
 
-A nova flag `--profile` imprime uma matriz com o fornecedor, modelo e effort resolvidos para cada agente **depois** de fundidos os três ficheiros de configuração.
+A flag `--profile` imprime uma visão em matriz mostrando o fornecedor, modelo e effort resolvidos para cada agente — após a mesclagem de `oma-config.yaml`, `models.yaml` e `defaults.yaml`.
 
 ```bash
 oma doctor --profile
@@ -93,16 +93,16 @@ oma doctor --profile
 **Exemplo de saída:**
 
 ```
- — Active Profile: antigravity
+oh-my-agent — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   user-preferences
-backend       openai    gpt-5.3-codex               high     user-preferences
+pm            claude    claude-sonnet-4-6           medium   oma-config
+backend       openai    gpt-5.3-codex               high     oma-config
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+qa            google    gemini-3.1-pro-preview      low      profile:antigravity
 architecture  claude    claude-opus-4-7             high     defaults
-docs          claude    claude-sonnet-4-6           low      defaults
+retrieval     google    gemini-3.1-flash-lite       —        defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -110,13 +110,13 @@ Session quota cap:
   per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
 ```
 
-Se um subagente escolher um fornecedor inesperado, corra este comando primeiro: a coluna `Source` indica qual camada de configuração venceu.
+Use esse comando sempre que um subagent escolher um fornecedor inesperado — a coluna `Source` indica qual camada de configuração prevaleceu.
 
 ---
 
-## Adicionar slugs em `models.yaml`
+## Adicionando Slugs em `models.yaml`
 
-`models.yaml` é opcional e serve para registar slugs de modelo que ainda não estão no registry embutido — útil para modelos recém-lançados.
+`models.yaml` é opcional e permite registrar slugs de modelo que ainda não estão no registro embutido — útil para modelos recém-lançados.
 
 ```yaml
 # .agents/config/models.yaml
@@ -126,10 +126,10 @@ models:
     context_window: 1_000_000
     supports_effort: true
     default_effort: medium
-    notes: "Preview — release candidate GPT-5.5 Spud"
+    notes: "Preview — GPT-5.5 Spud release candidate"
 ```
 
-Uma vez registado, o slug pode ser usado em `agent_cli_mapping`:
+Uma vez registrado, o slug fica disponível para uso em `agent_cli_mapping`:
 
 ```yaml
 agent_cli_mapping:
@@ -138,33 +138,33 @@ agent_cli_mapping:
     effort: high
 ```
 
-Os slugs são identificadores — mantenha exatamente a grafia em inglês publicada pelo fornecedor.
+Slugs são identificadores — mantenha-os exatamente em inglês, conforme publicado pelo fornecedor.
 
 ---
 
-## Limite de quota de sessão
+## Limite de Cota de Sessão
 
-Adicione `session.quota_cap` em `user-preferences.yaml` para limitar spawns descontrolados de subagentes:
+Adicione `session.quota_cap` em `oma-config.yaml` para limitar spawns descontrolados de subagents:
 
 ```yaml
 # .agents/oma-config.yaml
 session:
   quota_cap:
     tokens: 2_000_000        # teto total de tokens por sessão
-    spawn_count: 40          # máx. subagentes paralelos + sequenciais
+    spawn_count: 40          # máx. subagents paralelos + sequenciais
     per_vendor:              # sub-limites de tokens por fornecedor
       claude: 1_200_000
       openai: 600_000
       google: 200_000
 ```
 
-Quando um limite é atingido, o orquestrador recusa novos spawns e emite o estado `QUOTA_EXCEEDED`. Deixar um campo por definir (ou omitir `quota_cap` por inteiro) desativa essa dimensão.
+Quando um limite é atingido, o orchestrator recusa novos spawns e emite o status `QUOTA_EXCEEDED`. Deixar um campo sem definição (ou omitir `quota_cap` inteiramente) desativa aquela dimensão.
 
 ---
 
-## Juntando tudo
+## Juntando Tudo
 
-Um `user-preferences.yaml` realista:
+Um `oma-config.yaml` realista:
 
 ```yaml
 active_profile: antigravity
@@ -191,50 +191,50 @@ session:
       google: 200_000
 ```
 
-Corra `oma doctor --profile` para confirmar a resolução e inicie o workflow como de costume.
+Execute `oma doctor --profile` para confirmar a resolução e inicie um workflow normalmente.
 
 
-## Config file ownership
+## Propriedade dos Arquivos de Configuração
 
-| File | Owner | Safe to edit? |
-|------|-------|---------------|
-| `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/oma-config.yaml` | You | ✅ Customize here |
-| `.agents/config/models.yaml` | You | ✅ Add new slugs here |
+| Arquivo | Responsável | Seguro para editar? |
+|---------|-------------|---------------------|
+| `.agents/config/defaults.yaml` | SSOT distribuído com oh-my-agent | Não — trate como somente leitura |
+| `.agents/oma-config.yaml` | Você | Sim — personalize aqui |
+| `.agents/config/models.yaml` | Você | Sim — adicione novos slugs aqui |
 
-`defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.
+`defaults.yaml` contém um campo `version:` para que novas versões do oh-my-agent possam adicionar runtime_profiles, novos slugs do Profile B ou ajustar a matriz de effort. Editá-lo diretamente significa que você não receberá essas atualizações automaticamente.
 
-## Upgrading defaults.yaml
+## Atualizando o defaults.yaml
 
-When you pull a newer oh-my-agent release, run `oma install` — the installer compares your local `defaults.yaml` version against the bundled one:
+Ao baixar uma nova versão do oh-my-agent, execute `oma install` — o instalador compara a versão local do seu `defaults.yaml` com a versão embutida:
 
-- **Match** → no change, silent.
-- **Mismatch** → warning:
+- **Compatível** → nenhuma alteração, silencioso.
+- **Incompatível** → aviso:
   ```
   [install] .agents/config/defaults.yaml is 2.1.0; bundled is 2.2.0.
             Run 'oma install --update-defaults' to upgrade.
   ```
-- **Mismatch + `--update-defaults`** → the bundled version overwrites yours:
+- **Incompatível + `--update-defaults`** → a versão embutida sobrescreve a sua:
   ```
   oma install --update-defaults
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
+Seu `oma-config.yaml` e `models.yaml` nunca são tocados pelo instalador.
 
-## Upgrading from a pre-5.16.0 install
+## Atualizando a partir de uma instalação anterior à versão 5.16.0
 
-If your project predates the per-agent model/effort feature:
+Se o seu projeto é anterior ao recurso de modelo/effort por agente:
 
-1. Run `oma install` from your project root. The installer drops a fresh `defaults.yaml` into `.agents/config/` and preserves your existing `oma-config.yaml`.
-2. Run `oma doctor --profile`. Your legacy `agent_cli_mapping: { backend: "gemini" }` values are now resolved through `runtime_profiles.gemini-only.agent_defaults.backend`, so the matrix shows the correct slug and CLI automatically.
-3. (Optional) Move custom agent settings from `oma-config.yaml` into the new `user-preferences.yaml` using the AgentSpec form if you want per-agent `model`, `effort`, `thinking`, or `memory` overrides:
+1. Execute `oma install` (ou `oma update`) na raiz do seu projeto. O instalador deposita um `defaults.yaml` atualizado em `.agents/config/` e executa a migração `003-oma-config`, que move qualquer `.agents/config/user-preferences.yaml` legado para `.agents/oma-config.yaml` automaticamente.
+2. Execute `oma doctor --profile`. Seus valores existentes de `agent_cli_mapping: { backend: "gemini" }` são resolvidos por meio de `runtime_profiles.gemini-only.agent_defaults.backend`, de modo que a matriz exibe o slug e o CLI corretos automaticamente.
+3. (Opcional) Atualize as entradas string legadas para o novo formato AgentSpec em `oma-config.yaml` quando quiser sobrescritas de `model`, `effort`, `thinking` ou `memory` por agente:
    ```yaml
    agent_cli_mapping:
      backend:
        model: "openai/gpt-5.3-codex"
        effort: "high"
    ```
-4. If you ever customized `defaults.yaml`, `oma install` will warn about the version mismatch instead of overwriting. Move your customizations into `user-preferences.yaml` / `models.yaml`, then run `oma install --update-defaults` to accept the new SSOT.
+4. Se você já personalizou o `defaults.yaml`, `oma install` irá alertar sobre a incompatibilidade de versão em vez de sobrescrever. Mova suas personalizações para `oma-config.yaml` / `models.yaml` e então execute `oma install --update-defaults` para aceitar o novo SSOT.
 
-No breaking changes to `agent:spawn` — legacy configs keep working through graceful fallback while you migrate at your own pace.
+Nenhuma mudança incompatível em `agent:spawn` — configurações legadas continuam funcionando por meio de fallback gracioso enquanto você migra no seu próprio ritmo.

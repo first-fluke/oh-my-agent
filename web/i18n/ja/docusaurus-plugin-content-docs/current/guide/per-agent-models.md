@@ -7,7 +7,7 @@ description: oma-config.yaml と models.yaml で、エージェントごとに C
 
 ## 概要
 
- は `agent_cli_mapping` により **エージェントごとのモデル選択** を導入します。各エージェント（pm、backend、frontend、qa …）が単一のグローバルベンダーを共有するのではなく、個別にベンダー・モデル・推論強度を指定できます。
+oh-my-agent は `agent_cli_mapping` により **エージェントごとのモデル選択** を導入します。各エージェント（pm、backend、frontend、qa …）が単一のグローバルベンダーを共有するのではなく、個別にベンダー・モデル・推論強度を指定できます。
 
 このページで扱う内容：
 
@@ -22,15 +22,15 @@ description: oma-config.yaml と models.yaml で、エージェントごとに C
 
 ## 設定ファイルの階層
 
- は次の 3 ファイルを優先度順（高いものが上）に読み込みます。
+oh-my-agent は次の 3 ファイルを優先度順（高いものが上）に読み込みます。
 
 | ファイル | 役割 | 編集可否 |
 |:--------|:-----|:--------|
 | `.agents/oma-config.yaml` | ユーザーオーバーライド — エージェント–CLI マッピング、アクティブプロファイル、セッションクォータ | 可 |
 | `.agents/config/models.yaml` | ユーザー提供のモデルスラグ（組み込みレジストリへの追加） | 可 |
-| `.agents/config/defaults.yaml` | 組み込み Profile B ベースライン（4 つの `runtime_profiles`、安全なフォールバック） | 不可 — SSOT |
+| `.agents/config/defaults.yaml` | 組み込み Profile B ベースライン（5 つの `runtime_profiles`、安全なフォールバック） | 不可 — SSOT |
 
-> `defaults.yaml` は SSOT の一部なので直接編集しないでください。カスタマイズはすべて `user-preferences.yaml` と `models.yaml` で行います。
+> `defaults.yaml` は SSOT の一部なので直接編集しないでください。カスタマイズはすべて `oma-config.yaml` と `models.yaml` で行います。
 
 ---
 
@@ -53,17 +53,17 @@ agent_cli_mapping:
     effort: low
 ```
 
-**レガシー文字列形式**: `agent: "vendor"` — そのまま動作し、ベンダーの既定モデル・既定 effort を使用。
+**レガシー文字列形式**: `agent: "vendor"` — そのまま動作し、ランタイムプロファイル経由でベンダーの既定モデル・既定 effort を使用します。
 
-**AgentSpec オブジェクト形式**: `agent: { model, effort }` — 特定のモデルスラグと推論強度（`low`、`medium`、`high`）を固定。
+**AgentSpec オブジェクト形式**: `agent: { model, effort }` — 特定のモデルスラグと推論強度（`low`、`medium`、`high`）を固定します。
 
-自由に混在できます。指定のないエージェントはアクティブな `runtime_profile` にフォールバック。
+自由に混在できます。指定のないエージェントはアクティブな `runtime_profile` にフォールバックし、さらに `defaults.yaml` のトップレベル `agent_defaults` にフォールバックします。
 
 ---
 
 ## ランタイムプロファイル
 
-`defaults.yaml` は Profile B と 4 つの `runtime_profiles` を同梱しています。`user-preferences.yaml` で選択してください。
+`defaults.yaml` は Profile B と 5 つの `runtime_profiles` を同梱しています。`oma-config.yaml` で選択してください。
 
 ```yaml
 # .agents/oma-config.yaml
@@ -75,16 +75,16 @@ active_profile: claude-only   # 下記オプション参照
 | `claude-only` | Claude Code（Sonnet / Opus） | Anthropic スタックで統一 |
 | `codex-only` | OpenAI Codex（GPT-5.x） | ピュア OpenAI スタック |
 | `gemini-only` | Gemini CLI | Google 中心のワークフロー |
-| `antigravity` | 混合：pm→claude、backend→codex、qa→gemini | ベンダー横断の強み活用 |
-| `qwen-only` | Qwen CLI | ローカル / セルフホスト推論 |
+| `antigravity` | 混合：impl→codex、architecture / qa / pm→claude、retrieval→gemini | ベンダー横断の強み活用 |
+| `qwen-only` | Qwen Code | ローカル / セルフホスト推論 |
 
-プロファイルは全エージェントを一行書き換えずに再構成するショートカットです。
+プロファイルは、エージェント行を個別に編集することなく全体の構成を素早く切り替えるための手段です。
 
 ---
 
 ## `oma doctor --profile`
 
-新しい `--profile` フラグは、3 ファイルをマージした **後** の各エージェントのベンダー・モデル・effort をマトリクス表示します。
+`--profile` フラグは、`oma-config.yaml`・`models.yaml`・`defaults.yaml` をマージした **後** の各エージェントのベンダー・モデル・effort をマトリクス表示します。
 
 ```bash
 oma doctor --profile
@@ -93,16 +93,16 @@ oma doctor --profile
 **サンプル出力:**
 
 ```
- — Active Profile: antigravity
+oh-my-agent — Active Profile: antigravity
 
 Agent         Vendor    Model                       Effort   Source
 ------------  --------  --------------------------  -------  ------------------
-pm            claude    claude-sonnet-4-6           medium   user-preferences
-backend       openai    gpt-5.3-codex               high     user-preferences
+pm            claude    claude-sonnet-4-6           medium   oma-config
+backend       openai    gpt-5.3-codex               high     oma-config
 frontend      openai    gpt-5.3-codex               medium   profile:antigravity
-qa            google    gemini-3.1-pro-preview              low      profile:antigravity
+qa            google    gemini-3.1-pro-preview      low      profile:antigravity
 architecture  claude    claude-opus-4-7             high     defaults
-docs          claude    claude-sonnet-4-6           low      defaults
+retrieval     google    gemini-3.1-flash-lite       —        defaults
 
 Session quota cap:
   tokens:       2,000,000
@@ -110,13 +110,13 @@ Session quota cap:
   per_vendor:   { claude: 1.2M, openai: 600K, google: 200K }
 ```
 
-サブエージェントが予期せぬベンダーを選んだときは、まずこのコマンドを実行します。`Source` 列でどの設定レイヤが勝ったかがわかります。
+サブエージェントが予期せぬベンダーを選んだときは、まずこのコマンドを実行してください。`Source` 列でどの設定レイヤが勝ったかがわかります。
 
 ---
 
 ## `models.yaml` へのスラグ追加
 
-`models.yaml` はオプションで、組み込みレジストリにまだ無いモデルスラグを登録するために使います（新リリースのモデルに便利）。
+`models.yaml` はオプションで、組み込みレジストリにまだ存在しないモデルスラグを登録するために使います（新リリースのモデルに便利です）。
 
 ```yaml
 # .agents/config/models.yaml
@@ -126,10 +126,10 @@ models:
     context_window: 1_000_000
     supports_effort: true
     default_effort: medium
-    notes: "プレビュー — GPT-5.5 Spud リリース候補"
+    notes: "Preview — GPT-5.5 Spud release candidate"
 ```
 
-登録後は `agent_cli_mapping` で使えます。
+登録後は `agent_cli_mapping` でそのスラグを使えます。
 
 ```yaml
 agent_cli_mapping:
@@ -144,7 +144,7 @@ agent_cli_mapping:
 
 ## セッションクォータ上限
 
-`user-preferences.yaml` に `session.quota_cap` を加えると、サブエージェントの暴走を制限できます。
+`oma-config.yaml` に `session.quota_cap` を追加すると、サブエージェントの暴走を制限できます。
 
 ```yaml
 # .agents/oma-config.yaml
@@ -158,13 +158,13 @@ session:
       google: 200_000
 ```
 
-上限到達時、オーケストレータは以降のスポーンを拒否し `QUOTA_EXCEEDED` ステータスを返します。項目を未設定にする、あるいは `quota_cap` 自体を省略するとその次元は無効になります。
+上限に達した場合、オーケストレータはそれ以降のスポーンを拒否し `QUOTA_EXCEEDED` ステータスを返します。項目を未設定にする、あるいは `quota_cap` 自体を省略するとその次元は無効になります。
 
 ---
 
 ## 組み合わせ例
 
-実戦的な `user-preferences.yaml`：
+実戦的な `oma-config.yaml`：
 
 ```yaml
 active_profile: antigravity
@@ -194,47 +194,47 @@ session:
 `oma doctor --profile` で解決結果を確認したら、通常どおりワークフローを開始します。
 
 
-## Config file ownership
+## 設定ファイルのオーナーシップ
 
-| File | Owner | Safe to edit? |
+| ファイル | オーナー | 編集可否 |
 |------|-------|---------------|
-| `.agents/config/defaults.yaml` | **SSOT shipped with oh-my-agent** | ❌ Treat as read-only |
-| `.agents/oma-config.yaml` | You | ✅ Customize here |
-| `.agents/config/models.yaml` | You | ✅ Add new slugs here |
+| `.agents/config/defaults.yaml` | oh-my-agent に同梱された SSOT | 不可 — 読み取り専用として扱う |
+| `.agents/oma-config.yaml` | 利用者 | 可 — ここでカスタマイズ |
+| `.agents/config/models.yaml` | 利用者 | 可 — 新しいスラグをここに追加 |
 
-`defaults.yaml` carries a `version:` field so new OMA releases can add runtime_profiles, new Profile B slugs, or adjust the effort matrix. Editing it directly means you will not receive those upgrades automatically.
+`defaults.yaml` には `version:` フィールドが含まれているため、oh-my-agent の新しいリリースは runtime_profiles、新しい Profile B スラグ、または effort マトリクスの調整をここに追加できます。直接編集してしまうと、それらのアップグレードが自動的に反映されなくなります。
 
-## Upgrading defaults.yaml
+## defaults.yaml のアップグレード
 
-When you pull a newer oh-my-agent release, run `oma install` — the installer compares your local `defaults.yaml` version against the bundled one:
+新しい oh-my-agent リリースを取得したら `oma install` を実行してください。インストーラーはローカルの `defaults.yaml` のバージョンとバンドルされたものを比較します。
 
-- **Match** → no change, silent.
-- **Mismatch** → warning:
+- **一致** → 変更なし、サイレント。
+- **不一致** → 警告：
   ```
   [install] .agents/config/defaults.yaml is 2.1.0; bundled is 2.2.0.
             Run 'oma install --update-defaults' to upgrade.
   ```
-- **Mismatch + `--update-defaults`** → the bundled version overwrites yours:
+- **不一致 + `--update-defaults`** → バンドルされたバージョンで上書きします：
   ```
   oma install --update-defaults
   # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
   ```
 
-Your `user-preferences.yaml` and `models.yaml` are never touched by the installer.
+`oma-config.yaml` と `models.yaml` はインストーラーによって変更されることはありません。
 
-## Upgrading from a pre-5.16.0 install
+## 5.16.0 以前のインストールからのアップグレード
 
-If your project predates the per-agent model/effort feature:
+エージェントごとのモデル/effort 機能が導入される前のプロジェクトの場合：
 
-1. Run `oma install` from your project root. The installer drops a fresh `defaults.yaml` into `.agents/config/` and preserves your existing `oma-config.yaml`.
-2. Run `oma doctor --profile`. Your legacy `agent_cli_mapping: { backend: "gemini" }` values are now resolved through `runtime_profiles.gemini-only.agent_defaults.backend`, so the matrix shows the correct slug and CLI automatically.
-3. (Optional) Move custom agent settings from `oma-config.yaml` into the new `user-preferences.yaml` using the AgentSpec form if you want per-agent `model`, `effort`, `thinking`, or `memory` overrides:
+1. プロジェクトルートで `oma install`（または `oma update`）を実行します。インストーラーは新しい `defaults.yaml` を `.agents/config/` に配置し、マイグレーション `003-oma-config` を実行します。このマイグレーションは、既存のレガシー `.agents/config/user-preferences.yaml` を `.agents/oma-config.yaml` へ自動的に移行します。
+2. `oma doctor --profile` を実行します。既存の `agent_cli_mapping: { backend: "gemini" }` の値は `runtime_profiles.gemini-only.agent_defaults.backend` を通じて解決されるため、マトリクスには正しいスラグと CLI が自動的に表示されます。
+3. （任意）エージェントごとの `model`、`effort`、`thinking`、`memory` のオーバーライドが必要な場合は、`oma-config.yaml` のレガシー文字列エントリを新しい AgentSpec 形式にアップグレードします：
    ```yaml
    agent_cli_mapping:
      backend:
        model: "openai/gpt-5.3-codex"
        effort: "high"
    ```
-4. If you ever customized `defaults.yaml`, `oma install` will warn about the version mismatch instead of overwriting. Move your customizations into `user-preferences.yaml` / `models.yaml`, then run `oma install --update-defaults` to accept the new SSOT.
+4. `defaults.yaml` をカスタマイズしたことがある場合、`oma install` はバージョンの不一致を上書きするのではなく警告します。カスタマイズ内容を `oma-config.yaml` / `models.yaml` に移してから、`oma install --update-defaults` を実行して新しい SSOT を適用してください。
 
-No breaking changes to `agent:spawn` — legacy configs keep working through graceful fallback while you migrate at your own pace.
+`agent:spawn` に破壊的変更はありません — レガシー設定はグレースフルフォールバックによって動作し続けるため、自分のペースで移行できます。
