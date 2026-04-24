@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.2...web-v1.1.3) (2026-04-24)
+
+
+### Bug Fixes
+
+* **typecheck,biome:** resolve pre-existing errors ([9948947](https://github.com/first-fluke/oh-my-agent/commit/99489478debdc274decf04102fddea0b5ee0d24e))
+
 ## [1.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v1.1.1...web-v1.1.2) (2026-04-24)
 
 
