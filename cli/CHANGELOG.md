@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.0.0...cli-v6.0.1) (2026-04-25)
+
+
+### Bug Fixes
+
+* **config:** migrate source repo oma-config.yaml to model_preset schema ([babec96](https://github.com/first-fluke/oh-my-agent/commit/babec968a2ef81cfbed52244fa954e7df35fab09))
+
+
+### Documentation
+
+* **config:** cite OpenRouter slug format and CLI-only filter ([049577f](https://github.com/first-fluke/oh-my-agent/commit/049577f08db20586eab2ac34be4dcdcd48266af5))
+* **config:** move resolution-order comment below the keys it describes ([c90a33a](https://github.com/first-fluke/oh-my-agent/commit/c90a33a0bfb302842acf9d3f42f7000d541bf8d6))
+
 ## [6.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v5.20.2...cli-v6.0.0) (2026-04-25)
 
 
