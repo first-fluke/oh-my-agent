@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "6.1.0",
-  "releaseDate": "2026-04-25T08:44:15.805Z",
+  "releaseDate": "2026-04-25T10:28:45.942Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1185,6 +1185,51 @@
       "size": 6562
     },
     {
+      "path": ".agents/skills/oma-scholar/SKILL.md",
+      "sha256": "5a6c3d70c64bd75bc0ad2e5c1fa59fe90481dd124757fc0884e4f858d0a96221",
+      "size": 9282
+    },
+    {
+      "path": ".agents/skills/oma-scholar/config/scholar-config.yaml",
+      "sha256": "748c6ccdec11bf39e262ce8f98d133e11cb7b9054dccb45cb181b80e70f70fc4",
+      "size": 1902
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/api-endpoints.md",
+      "sha256": "6c4a0fe41b6618bba3717418cdb444042989c013e7d3efc447fe97127d470e5d",
+      "size": 4790
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/checklist.md",
+      "sha256": "af9a9a2574f33478a1a3ea5f54953a5392c62c73161c270084aa6449ecb69239",
+      "size": 3649
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/execution-protocol.md",
+      "sha256": "60343a104ffccf7e019627225fa986f9d487d1f5cdf1b23b0fe98cc0a6686a0a",
+      "size": 8009
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/fallback-providers.md",
+      "sha256": "4c00f18fed5e7658f6abbbf5f927a09a3417bb631deb45d1bd39ab2395db2cbc",
+      "size": 4881
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/setup-openalex.md",
+      "sha256": "0cd3a3eec255df7eefd087f9b011f68a93c848d875dc849d05ca1c94bfe72742",
+      "size": 2566
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/sidecar-spec.md",
+      "sha256": "a2b59c30b52c162b7df4e6da2548399d76b83c812c7906df770b7b6dc8b0fcde",
+      "size": 10039
+    },
+    {
+      "path": ".agents/skills/oma-scholar/resources/upstream-spec-cache.md",
+      "sha256": "241453d72419de4613e72449407a2255411e64531bd2a564114bf3afe28ed295",
+      "size": 8444
+    },
+    {
       "path": ".agents/skills/oma-scm/SKILL.md",
       "sha256": "12190a980be88e96e0ffd131f75edca5aa39db2f3a5511c68ec217e7d1982e4c",
       "size": 7676
@@ -1409,8 +1454,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 22,
+    "skillCount": 23,
     "workflowCount": 19,
-    "totalFiles": 280
+    "totalFiles": 289
   }
 }
