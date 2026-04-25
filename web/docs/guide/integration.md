@@ -165,20 +165,12 @@ oma link
 ### Step 3: Configure User Preferences
 
 ```bash
-mkdir -p /path/to/your/project/.agents/config
+mkdir -p /path/to/your/project/.agents
 cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-default_cli: gemini
-
-agent_cli_mapping:
-  frontend: gemini
-  backend: gemini
-  mobile: gemini
-  qa: gemini
-  debug: gemini
-  pm: gemini
+model_preset: gemini-only
 EOF
 ```
 

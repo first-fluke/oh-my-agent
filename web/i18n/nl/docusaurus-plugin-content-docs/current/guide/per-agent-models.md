@@ -1,184 +1,171 @@
 ---
-title: "Gids: modelconfiguratie per agent"
-description: Stel via oma-config.yaml en models.yaml per agent een andere CLI-provider, model en redeneerniveau in. Behandelt agent_cli_mapping, runtime-profielen, oma doctor --profile, models.yaml en sessiequota-limieten.
+title: "Guide: Per-Agent Model Configuration"
+description: Configure which AI model each agent uses via model_preset in oma-config.yaml. Covers built-in presets, per-agent overrides, inline model definitions, custom presets with extends, oma doctor --profile, and migration from legacy model_preset (per-agent overrides via `agents:`).
 ---
 
-# Gids: modelconfiguratie per agent
+# Guide: Per-Agent Model Configuration
 
-## Overzicht
+## Overview
 
-oh-my-agent ondersteunt **modelselectie per agent** via `agent_cli_mapping`. Elke agent (pm, backend, frontend, qa, …) kan onafhankelijk een eigen provider, model en redeneerniveau krijgen — in plaats van één globale provider te delen.
+`model_preset` is the single concept that controls which model every agent uses. Pick one of the five built-in presets and every agent (pm, backend, frontend, qa, …) is wired to an appropriate model for that vendor stack. Override individual agents as needed. Define additional presets when your team has a non-standard mix.
 
-Deze pagina behandelt:
+All configuration lives in one file: `.agents/oma-config.yaml`.
 
-1. De drieledige configuratiehiërarchie
-2. Het duale formaat van `agent_cli_mapping`
-3. Runtime-profiel-presets
-4. Het commando `oma doctor --profile`
-5. Zelf toegevoegde model-slugs in `models.yaml`
-6. Sessiequota-limieten
+This page covers:
 
----
-
-## Hiërarchie van configuratiebestanden
-
-oh-my-agent leest drie bestanden in volgorde van prioriteit (hoog naar laag):
-
-| Bestand | Doel | Bewerkbaar? |
-|:--------|:-----|:------------|
-| `.agents/oma-config.yaml` | Gebruikersoverrides — agent→CLI-mapping, actief profiel, sessiequota | Ja |
-| `.agents/config/models.yaml` | Door de gebruiker aangeleverde model-slugs (aanvulling op de ingebouwde registry) | Ja |
-| `.agents/config/defaults.yaml` | Ingebouwde Profile B-baseline (5 `runtime_profiles`, veilige fallbacks) | Nee — SSOT |
-
-> `defaults.yaml` maakt deel uit van de SSOT en mag niet direct worden aangepast. Alle aanpassing gebeurt in `oma-config.yaml` en `models.yaml`.
+1. The five built-in presets
+2. Overriding individual agents with the `agents:` map
+3. Inlining custom model slugs with `models:`
+4. Defining custom presets with `custom_presets:` and `extends:`
+5. Inspecting resolved configuration with `oma doctor --profile`
+6. Migration from legacy `model_preset (per-agent overrides via `agents:`)`
 
 ---
 
-## Duaal formaat van `agent_cli_mapping`
+## Built-In Presets
 
-`agent_cli_mapping` accepteert twee waardevormen zodat je geleidelijk kunt migreren:
+Set `model_preset` to one of the five built-in keys:
 
 ```yaml
 # .agents/oma-config.yaml
-agent_cli_mapping:
-  pm: "claude"                        # legacy — vendor only (uses default model)
-  backend:                            # new AgentSpec object
-    model: "openai/gpt-5.3-codex"
-    effort: high
-  frontend:
-    model: "anthropic/claude-sonnet-4-6"
-    effort: medium
-  qa:
-    model: "google/gemini-3.1-pro-preview"
-    effort: low
+language: en
+model_preset: gemini-only
 ```
 
-**Legacy string-vorm**: `agent: "vendor"` — blijft werken en gebruikt het standaardmodel van de provider met de standaard effort via het bijbehorende runtime-profiel.
+| Key | Description | Best for |
+|:----|:-----------|:---------|
+| `claude-only` | All agents use Claude (Sonnet/Opus) | Claude Max subscription holders |
+| `codex-only` | All agents use OpenAI Codex (GPT-5.x) with effort levels | ChatGPT Plus/Pro users |
+| `gemini-only` | All agents use Gemini CLI, thinking enabled for implementation roles | Google AI Pro users |
+| `qwen-only` | All agents routed external via Qwen Code; binary thinking (no effort levels) | Local / self-hosted inference |
+| `antigravity` | Mixed: impl roles use Codex, architecture/qa/pm use Claude, retrieval uses Gemini | Cross-vendor strengths without managing per-agent config |
 
-**AgentSpec-objectvorm**: `agent: { model, effort }` — legt een exacte model-slug en redeneerniveau (`low`, `medium`, `high`) vast.
-
-Combineer de vormen naar wens. Niet-vermelde agents vallen terug op het actieve `runtime_profile`, en daarna op de `agent_defaults` op het hoogste niveau in `defaults.yaml`.
+Built-in presets ship inside the CLI package and update automatically when you upgrade `oh-my-agent`. No local file to maintain.
 
 ---
 
-## Runtime-profielen
+## Overriding Individual Agents
 
-`defaults.yaml` levert Profile B met vijf kant-en-klare `runtime_profiles`. Kies er één in `oma-config.yaml`:
+Use the `agents:` map to override specific agents on top of the active preset. Only agents you list are affected; the rest stay on the preset defaults.
 
 ```yaml
 # .agents/oma-config.yaml
-active_profile: claude-only   # see options below
+language: en
+model_preset: gemini-only
+
+agents:
+  backend: { model: openai/gpt-5.3-codex, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 ```
 
-| Profiel | Alle agents routen naar | Wanneer gebruiken |
-|:--------|:------------------------|:------------------|
-| `claude-only` | Claude Code (Sonnet/Opus) | Uniforme Anthropic-stack |
-| `codex-only` | OpenAI Codex (GPT-5.x) | Pure OpenAI-stack |
-| `gemini-only` | Gemini CLI | Google-gerichte workflows |
-| `antigravity` | Gemengd: impl→codex, architecture/qa/pm→claude, retrieval→gemini | Sterke punten per provider combineren |
-| `qwen-only` | Qwen Code | Lokale / self-hosted inferentie |
+Each entry is an `AgentSpec` object:
 
-Profielen zijn de snelle manier om de hele vloot te herconfigureren zonder elke agentinstelling afzonderlijk te bewerken.
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:-----------|
+| `model` | string | Yes | Model slug (built-in or user-defined) |
+| `effort` | `low` \| `medium` \| `high` | No | Reasoning effort (ignored on models that do not support it) |
+| `thinking` | boolean | No | Enable extended thinking (model-specific) |
+| `memory` | `user` \| `project` \| `local` | No | Memory scope for the agent |
+
+Valid agent IDs: `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `tf-infra`, `retrieval`.
+
+The merge is shallow: each field in your override replaces the preset value for that field. Fields you omit keep their preset value.
+
+---
+
+## Inlining Model Slugs
+
+Register model slugs that are not yet in the built-in registry under `models:`. Once registered, use the slug anywhere in `agents:` or `custom_presets:`.
+
+```yaml
+# .agents/oma-config.yaml
+models:
+  my-fast-model:
+    cli: gemini
+    cli_model: gemini-3-flash
+    supports:
+      native_dispatch_from: [gemini]
+      thinking: true
+```
+
+> If a user-defined slug collides with a built-in slug, the user definition wins and a warning is emitted.
+
+---
+
+## Custom Presets
+
+Define additional presets in `custom_presets:`. Use `extends:` to inherit all agent defaults from a built-in preset and override only the agents you care about.
+
+```yaml
+# .agents/oma-config.yaml
+language: en
+model_preset: my-team
+
+custom_presets:
+  my-team:
+    extends: claude-only              # base preset — partial merge
+    description: "Team A — sonnet base, codex for implementation"
+    agent_defaults:
+      backend: { model: openai/gpt-5.3-codex, effort: high }
+      db:      { model: openai/gpt-5.3-codex, effort: high }
+      # all other agents inherited from claude-only
+```
+
+Without `extends:`, you must provide `agent_defaults` for all 11 agent roles. With `extends:`, only the entries you list are overridden; the rest are inherited from the base preset.
 
 ---
 
 ## `oma doctor --profile`
 
-De vlag `--profile` toont een matrixweergave met de opgeloste provider, model en effort per agent — nadat `oma-config.yaml`, `models.yaml` en `defaults.yaml` zijn samengevoegd.
+Run `oma doctor --profile` to inspect the fully resolved model matrix — after preset defaults, `custom_presets`, and `agents:` overrides are merged.
 
 ```bash
 oma doctor --profile
 ```
 
-**Voorbeelduitvoer:**
+**Sample output:**
 
 ```
-oh-my-agent — Profile Health (runtime=claude)
+oh-my-agent — Profile Health (preset=antigravity)
 
-┌──────────────┬──────────────────────────────┬──────────┬──────────────────┐
-│ Role         │ Model                        │ CLI      │ Auth Status      │
-├──────────────┼──────────────────────────────┼──────────┼──────────────────┤
-│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
-│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │
-│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
-│ pm           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │
-│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │
-│ frontend     │ openai/gpt-5.4               │ codex    │ ✗ not logged in  │
-│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │
-└──────────────┴──────────────────────────────┴──────────┴──────────────────┘
+┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
+│ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
+├──────────────┼──────────────────────────────┼──────────┼──────────────────┼──────────┤
+│ orchestrator │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
+│ architecture │ anthropic/claude-opus-4-7    │ claude   │ ✓ logged in      │ (preset) │
+│ qa           │ anthropic/claude-sonnet-4-6  │ claude   │ ✓ logged in      │ (preset) │
+│ backend      │ openai/gpt-5.3-codex         │ codex    │ ✗ not logged in  │ (override)│
+│ retrieval    │ google/gemini-3.1-flash-lite │ gemini   │ ✗ not logged in  │ (preset) │
+└──────────────┴──────────────────────────────┴──────────┴──────────────────┴──────────┘
 ```
 
-Elke rij toont de opgeloste model-slug (na samenvoeging van `oma-config.yaml`, het actieve profiel en `defaults.yaml`) en of je bent ingelogd bij de CLI die die rol uitvoert. Gebruik dit commando wanneer een subagent een onverwachte provider kiest.
+Each row shows the resolved model slug and which source applied it (`(preset)` or `(override)`). Use this whenever a subagent picks an unexpected vendor.
 
 ---
 
-## Slugs toevoegen in `models.yaml`
+## Migration from Legacy `model_preset (per-agent overrides via `agents:`)`
 
-`models.yaml` is optioneel en dient om model-slugs te registreren die nog niet in de ingebouwde registry staan — handig voor pas uitgebrachte modellen.
+Migration 008 runs automatically on `oma install` and `oma update`. It converts legacy projects in place:
 
-```yaml
-# .agents/config/models.yaml
-models:
-  - slug: "openai/gpt-5.5-spud"
-    vendor: openai
-    context_window: 1_000_000
-    supports_effort: true
-    default_effort: medium
-    notes: "Preview — GPT-5.5 Spud release candidate"
-```
+| Legacy config | Result after migration 008 |
+|:-------------|:--------------------------|
+| All entries same vendor (e.g. all `gemini`) | `model_preset: gemini-only`, no `agents:` |
+| Mixed vendors | Most-frequent vendor → `model_preset`; others → `agents:` overrides |
+| `AgentSpec` object values | Moved to `agents:` as-is |
+| `models.yaml` content | Inlined into `oma-config.yaml.models` |
+| Customized `defaults.yaml` | Preserved as `custom_presets.user-customized` with a warning |
 
-Eenmaal geregistreerd is de slug bruikbaar in `agent_cli_mapping`:
+Originals are backed up to `.agents/.backup-pre-008-{timestamp}/` before any changes. The migration is idempotent — if `model_preset` is already present, it skips.
 
-```yaml
-agent_cli_mapping:
-  backend:
-    model: "openai/gpt-5.5-spud"
-    effort: high
-```
-
-Slugs zijn identifiers — behoud exact de Engelse schrijfwijze zoals de provider die publiceert.
+After migration, `cli built-in presets (no user file)`, ``oma-config.yaml` `models:` block`, and the `.agents/config/` directory are removed.
 
 ---
 
-## Sessiequota-limiet
+## Session Quota Cap
 
-Voeg `session.quota_cap` toe in `oma-config.yaml` om ongebreideld spawnen van subagents te begrenzen:
-
-```yaml
-# .agents/oma-config.yaml
-session:
-  quota_cap:
-    tokens: 2_000_000        # total session token ceiling
-    spawn_count: 40          # max parallel + sequential subagents
-    per_vendor:              # per-vendor token sub-caps
-      claude: 1_200_000
-      openai: 600_000
-      google: 200_000
-```
-
-Wanneer een limiet wordt bereikt, weigert de orchestrator nieuwe spawns en geeft de status `QUOTA_EXCEEDED` terug. Laat een veld leeg (of verwijder `quota_cap` helemaal) om die dimensie uit te schakelen.
-
----
-
-## Alles samen
-
-Een realistische `oma-config.yaml`:
+`session.quota_cap` is unchanged. Add it to `oma-config.yaml` to bound runaway subagent spawning:
 
 ```yaml
-active_profile: antigravity
-
-agent_cli_mapping:
-  pm: "claude"
-  backend:
-    model: "openai/gpt-5.3-codex"
-    effort: high
-  frontend:
-    model: "anthropic/claude-sonnet-4-6"
-    effort: medium
-  qa:
-    model: "google/gemini-3.1-pro-preview"
-    effort: low
-
 session:
   quota_cap:
     tokens: 2_000_000
@@ -189,50 +176,38 @@ session:
       google: 200_000
 ```
 
-Run `oma doctor --profile` om de resolutie te controleren en start daarna de workflow zoals gewoonlijk.
+When a cap is reached, the orchestrator refuses further spawns and surfaces a `QUOTA_EXCEEDED` status.
 
+---
 
-## Eigenaarschap van configuratiebestanden
+## Full Example
 
-| Bestand | Eigenaar | Veilig te bewerken? |
-|---------|----------|---------------------|
-| `.agents/config/defaults.yaml` | SSOT meegeleverd met oh-my-agent | Nee — behandel als alleen-lezen |
-| `.agents/oma-config.yaml` | Jij | Ja — pas hier aan |
-| `.agents/config/models.yaml` | Jij | Ja — voeg hier nieuwe slugs toe |
+```yaml
+# .agents/oma-config.yaml
+language: en
+model_preset: my-team
 
-`defaults.yaml` bevat een `version:`-veld zodat nieuwe oh-my-agent-releases runtime_profiles, nieuwe Profile B-slugs of de effort-matrix kunnen uitbreiden. Wie het bestand direct aanpast, ontvangt die updates niet automatisch meer.
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
 
-## Upgrading defaults.yaml
+models:
+  my-fast-model:
+    cli: gemini
+    cli_model: gemini-3-flash
+    supports: { native_dispatch_from: [gemini], thinking: true }
 
-Wanneer je een nieuwere oh-my-agent-release binnentrekkt, run je `oma install` — het installatieprogramma vergelijkt de versie van je lokale `defaults.yaml` met de meegeleverde versie:
+custom_presets:
+  my-team:
+    extends: claude-only
+    description: "Sonnet base, Codex for backend/db"
+    agent_defaults:
+      backend: { model: openai/gpt-5.3-codex, effort: high }
+      db:      { model: openai/gpt-5.3-codex, effort: high }
 
-- **Overeenkomst** → geen wijziging, stil.
-- **Verschil** → waarschuwing:
-  ```
-  [install] .agents/config/defaults.yaml is 2.1.0; bundled is 2.2.0.
-            Run 'oma install --update-defaults' to upgrade.
-  ```
-- **Verschil + `--update-defaults`** → de meegeleverde versie overschrijft de jouwe:
-  ```
-  oma install --update-defaults
-  # [install] Updated .agents/config/defaults.yaml (2.1.0 → 2.2.0)
-  ```
+session:
+  quota_cap:
+    tokens: 2_000_000
+    spawn_count: 40
+```
 
-`models.yaml` wordt nooit door de installer aangepast. `oma-config.yaml` blijft ook behouden, met één uitzondering: `oma install` herschrijft de regel `language:` en vernieuwt het `vendors:`-blok op basis van de antwoorden die u tijdens de installatie geeft. Elk ander veld dat u toevoegt (bijvoorbeeld `agent_cli_mapping`, `active_profile`, `session.quota_cap`) blijft tussen runs ongewijzigd.
-
-## Upgrading from a pre-5.16.0 install
-
-Als je project dateert van vóór de per-agent model/effort-functie:
-
-1. Run `oma install` (of `oma update`) vanuit de projectroot. Het installatieprogramma plaatst een nieuw `defaults.yaml` in `.agents/config/` en voert migratie `003-oma-config` uit, die een eventueel bestaand `.agents/config/user-preferences.yaml` automatisch verplaatst naar `.agents/oma-config.yaml`.
-2. Run `oma doctor --profile`. Je bestaande `agent_cli_mapping: { backend: "gemini" }`-waarden worden opgelost via `runtime_profiles.gemini-only.agent_defaults.backend`, zodat de matrix automatisch de juiste slug en CLI toont.
-3. (Optioneel) Upgrade legacy string-vermeldingen naar de nieuwe AgentSpec-vorm in `oma-config.yaml` wanneer je per-agent `model`-, `effort`-, `thinking`- of `memory`-overrides wilt:
-   ```yaml
-   agent_cli_mapping:
-     backend:
-       model: "openai/gpt-5.3-codex"
-       effort: "high"
-   ```
-4. Als je `defaults.yaml` ooit zelf hebt aangepast, geeft `oma install` een waarschuwing over de versieverschil in plaats van te overschrijven. Verplaats je aanpassingen naar `oma-config.yaml` / `models.yaml` en run daarna `oma install --update-defaults` om de nieuwe SSOT te accepteren.
-
-Er zijn geen breaking changes voor `agent:spawn` — legacy-configuraties blijven werken via graceful fallback terwijl je in eigen tempo migreert.
+Run `oma doctor --profile` to confirm resolution, then start a workflow as usual.

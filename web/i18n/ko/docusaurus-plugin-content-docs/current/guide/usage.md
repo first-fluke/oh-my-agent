@@ -424,7 +424,7 @@ oma dashboard:web
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 너무 모호 | 에이전트가 요청한 구체적인 답변 제공 후 재실행 |
 | MCP 도구가 작동하지 않음 | Serena가 설정되지 않았거나 실행 중이지 않음 | `oma doctor`로 MCP 설정 확인 |
 | 에이전트가 턴 제한 초과 | 태스크가 기본 턴에 비해 너무 복잡 | `-t 30` 플래그로 턴 증가, 또는 더 작은 태스크로 분해 |
-| 에이전트에 잘못된 CLI 사용 | agent_cli_mapping 미설정 | `oma install`로 설정, 또는 `oma-config.yaml` 직접 편집 |
+| 에이전트에 잘못된 CLI 사용 | model_preset (per-agent overrides via `agents:`) 미설정 | `oma install`로 설정, 또는 `oma-config.yaml` 직접 편집 |
 
 ---
 

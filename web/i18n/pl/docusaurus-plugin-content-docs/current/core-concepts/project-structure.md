@@ -94,7 +94,7 @@ To katalog główny. Wszystko czego agenci potrzebują, znajduje się tutaj. To 
 - `date_format`: Format znacznika czasu (domyślnie: `YYYY-MM-DD`)
 - `timezone`: Identyfikator strefy czasowej (domyślnie: `UTC`)
 - `default_cli`: Awaryjny dostawca CLI (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: Nadpisania routingu CLI per agent
+- `model_preset (per-agent overrides via `agents:`)`: Nadpisania routingu CLI per agent
 
 ### skills/
 

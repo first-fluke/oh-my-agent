@@ -203,7 +203,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # Ánh xạ CLI theo từng agent (ghi đè default_cli)
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Suy luận UI phức tạp
   backend: gemini        # Tạo API nhanh
   mobile: gemini
@@ -227,14 +227,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | Chuỗi định dạng ngày cho timestamp trong kế hoạch, file bộ nhớ và báo cáo. |
 | `timezone` | string | `UTC` | Múi giờ cho tất cả timestamp. Sử dụng định danh múi giờ chuẩn (ví dụ: `Asia/Seoul`, `America/New_York`). |
 | `default_cli` | string | `gemini` | CLI dự phòng khi không có ánh xạ agent cụ thể. Được dùng làm cấp 3 trong ưu tiên phân giải vendor. |
-| `agent_cli_mapping` | map | (trống) | Ánh xạ ID agent đến vendor CLI cụ thể. Ưu tiên hơn `default_cli`. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (trống) | Ánh xạ ID agent đến vendor CLI cụ thể. Ưu tiên hơn `default_cli`. |
 
 ### Ưu tiên phân giải vendor
 
 Khi spawn agent, vendor CLI được xác định theo thứ tự ưu tiên (cao nhất trước):
 
 1. Flag `--model` truyền vào `oma agent:spawn`
-2. Mục `agent_cli_mapping` cho agent cụ thể đó trong `oma-config.yaml`
+2. Mục `model_preset (per-agent overrides via `agents:`)` cho agent cụ thể đó trong `oma-config.yaml`
 3. Cài đặt `default_cli` trong `oma-config.yaml`
 4. `active_vendor` trong `cli-config.yaml` (dự phòng cũ)
 5. `gemini` (dự phòng cứng)

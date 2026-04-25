@@ -213,14 +213,23 @@ export async function renderProfileReport(
   console.clear();
   p.intro(pc.bgMagenta(pc.white(` Profile Health (${report.profileName}) `)));
 
-  if (report.missingDefaultsYaml) {
+  if (report.missingPreset) {
     p.log.error(
       [
-        pc.red("defaults.yaml not found at .agents/config/defaults.yaml"),
-        pc.dim("Run `oma install` to initialise the configuration."),
+        pc.red("model_preset not found or unknown in .agents/oma-config.yaml"),
+        pc.dim("Run `oma install` to set a model preset."),
+        pc.dim("Example: model_preset: claude-only"),
       ].join("\n"),
     );
-    process.exit(1);
+    // NOTE: Do not exit — matrix still renders with ❌ NO PRESET rows for guidance.
+  }
+
+  // ── Summary line when all rows from preset (no overrides) ───────────────
+  if (report.allFromPreset && !report.missingPreset) {
+    p.note(
+      pc.dim(`All agents configured from preset (${report.profileName})`),
+      "Preset",
+    );
   }
 
   // ── Auth-status matrix ──────────────────────────────────────────────────
@@ -309,7 +318,14 @@ export async function renderProfileReport(
     } else {
       authLabel = pc.yellow("? unknown");
     }
-    matrixLines.push(dataRow(row.role, row.model, row.cli, authLabel));
+    // Append source annotation to role label
+    const sourceTag =
+      "source" in row && row.source === "override"
+        ? pc.cyan(" (override)")
+        : pc.dim(" (preset)");
+    matrixLines.push(
+      dataRow(`${row.role}${sourceTag}`, row.model, row.cli, authLabel),
+    );
   }
 
   matrixLines.push(borderBot);

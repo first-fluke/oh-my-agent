@@ -203,7 +203,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # Маппинг CLI по агентам (переопределяет default_cli)
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Сложные UI-рассуждения
   backend: gemini        # Быстрая генерация API
   mobile: gemini
@@ -227,14 +227,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | Строка формата даты для временных меток в планах, файлах памяти и отчётах. |
 | `timezone` | string | `UTC` | Часовой пояс для всех временных меток. Используются стандартные идентификаторы (например, `Asia/Seoul`, `America/New_York`). |
 | `default_cli` | string | `gemini` | Резервный CLI, когда нет агенто-специфичного маппинга. Используется как уровень 3 в приоритете определения вендора. |
-| `agent_cli_mapping` | map | (пустой) | Сопоставляет ID агентов с конкретными CLI-вендорами. Имеет приоритет над `default_cli`. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (пустой) | Сопоставляет ID агентов с конкретными CLI-вендорами. Имеет приоритет над `default_cli`. |
 
 ### Приоритет определения вендора
 
 При запуске агента CLI-вендор определяется по следующему приоритету (от высшего):
 
 1. Флаг `--model`, переданный в `oma agent:spawn`
-2. Запись `agent_cli_mapping` для конкретного агента в `oma-config.yaml`
+2. Запись `model_preset (per-agent overrides via `agents:`)` для конкретного агента в `oma-config.yaml`
 3. Настройка `default_cli` в `oma-config.yaml`
 4. `active_vendor` в `cli-config.yaml` (устаревший запасной вариант)
 5. `gemini` (жёстко закодированный финальный запасной вариант)

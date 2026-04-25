@@ -140,7 +140,7 @@ describe("planDispatch — plan integration (T10b)", () => {
   beforeEach(() => {
     originalCwd = process.cwd();
     tempDir = mkdtempSync(join(tmpdir(), "oma-dispatch-"));
-    mkdirSync(join(tempDir, ".agents", "config"), { recursive: true });
+    mkdirSync(join(tempDir, ".agents"), { recursive: true });
     process.chdir(tempDir);
     warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
   });
@@ -152,10 +152,10 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("persists Codex effort to project-local .codex/config.toml when plan has effort", () => {
-    // defaults.yaml with Codex backend + effort:high
+    // codex-only preset: backend = { model: openai/gpt-5.3-codex, effort: high }
     writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "high" }\n`,
+      join(tempDir, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: codex-only\n",
     );
 
     planDispatch("backend", "codex", minimalVendorConfig, "-p", "hello", {
@@ -169,8 +169,8 @@ describe("planDispatch — plan integration (T10b)", () => {
 
   it("is idempotent — identical effort does not rewrite the TOML needlessly", () => {
     writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "medium" }\n`,
+      join(tempDir, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: codex-only\nagents:\n  backend:\n    model: openai/gpt-5.3-codex\n    effort: medium\n",
     );
 
     planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
@@ -192,8 +192,8 @@ describe("planDispatch — plan integration (T10b)", () => {
     expect(tomlAfterSecond).toBe(tomlAfterFirst);
   });
 
-  it("legacy string mapping still works (no plan resolved — falls back to vendor config)", () => {
-    // No defaults.yaml, no oma-config.yaml → resolveAgentPlan throws ConfigError
+  it("missing oma-config.yaml → ConfigError handled gracefully, dispatch succeeds", () => {
+    // No oma-config.yaml → resolveAgentPlan throws ConfigError → fallback to vendor config
     const plan = planDispatch(
       "nonexistent-agent",
       "claude",
@@ -211,14 +211,11 @@ describe("planDispatch — plan integration (T10b)", () => {
     ).toBe(true);
   });
 
-  it("Claude effort in user config → plan drops effort (no TOML write, no args poisoning)", () => {
-    writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  orchestrator: { model: "anthropic/claude-sonnet-4-6" }\n`,
-    );
+  it("Claude effort override → plan drops effort (no TOML write)", () => {
+    // claude-only preset + override with effort — effort should be dropped for Claude
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  orchestrator:\n    model: "anthropic/claude-sonnet-4-6"\n    effort: high\n`,
+      "language: en\nmodel_preset: claude-only\nagents:\n  orchestrator:\n    model: anthropic/claude-sonnet-4-6\n    effort: high\n",
     );
 
     planDispatch("orchestrator", "claude", minimalVendorConfig, "-p", "hi", {
@@ -232,9 +229,10 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("Qwen runtime + Codex target → forced external, plan args still appended", () => {
+    // qwen-only preset; backend has thinking:true by default
     writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  backend: { model: "qwen/qwen3-coder-plus", thinking: true }\n`,
+      join(tempDir, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: qwen-only\n",
     );
 
     const plan = planDispatch(
@@ -247,14 +245,14 @@ describe("planDispatch — plan integration (T10b)", () => {
     );
 
     expect(plan.mode).toBe("external");
-    // Qwen thinking true → args should include --thinking via buildAgentPlanArgs
+    // qwen-only backend has thinking:true → args include --thinking
     expect(plan.invocation.args).toContain("--thinking");
   });
 
-  it("unknown slug in user config → ConfigError handled gracefully", () => {
+  it("unknown slug in agents override → ConfigError handled gracefully", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "bogus/does-not-exist"\n`,
+      "language: en\nmodel_preset: codex-only\nagents:\n  backend:\n    model: bogus/does-not-exist\n",
     );
 
     const plan = planDispatch(
@@ -273,17 +271,11 @@ describe("planDispatch — plan integration (T10b)", () => {
     );
   });
 
-  it("reads agent_cli_mapping from .agents/oma-config.yaml (canonical path)", () => {
-    // Before the fragmentation fix, resolveAgentPlan ignored oma-config.yaml
-    // and fell through to defaults.yaml. Post-fix, oma-config.yaml values
-    // reach the subprocess.
-    writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex", effort: "high" }\n`,
-    );
+  it("agents override in oma-config.yaml reaches the subprocess (effort propagates)", () => {
+    // Verify that agents override in oma-config.yaml is honoured over preset defaults
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "openai/gpt-5.4"\n    effort: "low"\n`,
+      "language: en\nmodel_preset: codex-only\nagents:\n  backend:\n    model: openai/gpt-5.4\n    effort: low\n",
     );
 
     planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
@@ -291,25 +283,17 @@ describe("planDispatch — plan integration (T10b)", () => {
     });
 
     const toml = readFileSync(join(tempDir, ".codex", "config.toml"), "utf-8");
-    // Must reflect oma-config.yaml's "low", not defaults.yaml's "high".
+    // Must reflect oma-config.yaml agents override effort "low", not preset default "high".
     expect(toml).toContain('model_reasoning_effort = "low"');
   });
 
-  it("session.quota_cap is honored when placed in oma-config.yaml", () => {
-    writeFileSync(
-      join(tempDir, ".agents", "config", "defaults.yaml"),
-      `agent_defaults:\n  backend: { model: "openai/gpt-5.3-codex" }\n`,
-    );
+  it("session.quota_cap in oma-config.yaml does not block planDispatch itself", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      `session:\n  quota_cap:\n    spawn_count: 0\n`,
+      "language: en\nmodel_preset: codex-only\nsession:\n  quota_cap:\n    spawn_count: 0\n",
     );
 
-    // With spawn_count: 0, every spawn attempt should be blocked. But
     // planDispatch itself doesn't check the cap — spawn-status.ts does.
-    // Here we just confirm loadQuotaCap reads the oma-config.yaml value.
-    // (A unit test below loadQuotaCap in session-cost.test.ts covers the
-    //  actual gating path.)
     expect(() =>
       planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
         CODEX_CI: "1",

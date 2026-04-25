@@ -283,7 +283,7 @@ Este es el directorio principal. Todo lo que los agentes necesitan reside aqui. 
 - `date_format`: Cadena de formato de marca de tiempo (predeterminado: `YYYY-MM-DD`)
 - `timezone`: Identificador de zona horaria (predeterminado: `UTC`)
 - `default_cli`: Proveedor CLI de respaldo (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: Sobrescrituras de enrutamiento CLI por agente
+- `model_preset (per-agent overrides via `agents:`)`: Sobrescrituras de enrutamiento CLI por agente
 
 ### skills/
 

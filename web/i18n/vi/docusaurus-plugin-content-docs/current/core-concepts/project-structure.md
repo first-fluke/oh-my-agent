@@ -123,7 +123,7 @@ your-project/
 - `date_format`: Chuỗi định dạng timestamp (mặc định: `YYYY-MM-DD`)
 - `timezone`: Định danh múi giờ (mặc định: `UTC`)
 - `default_cli`: Vendor CLI dự phòng (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: Ghi đè định tuyến CLI theo agent
+- `model_preset (per-agent overrides via `agents:`)`: Ghi đè định tuyến CLI theo agent
 
 ### skills/
 

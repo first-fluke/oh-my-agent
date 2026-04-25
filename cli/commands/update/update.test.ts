@@ -189,7 +189,7 @@ describe("reconcile: migrations trigger full update even when version matches", 
     mkdirSync(join(root, ".agents"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\n",
+      "language: en\nmodel_preset: claude-only\n",
       "utf-8",
     );
 
@@ -225,7 +225,7 @@ describe("reconcile: migrations trigger full update even when version matches", 
     mkdirSync(join(root, ".agents"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\n",
+      "language: en\nmodel_preset: claude-only\n",
       "utf-8",
     );
 
@@ -300,10 +300,13 @@ describe("reconcile: migrations trigger full update even when version matches", 
     );
     expect(actions.some((a) => a.includes("CLAUDE.md"))).toBe(true);
 
-    // User config preserved
-    expect(
-      readFileSync(join(root, ".agents", "oma-config.yaml"), "utf-8"),
-    ).toBe("language: ko\n");
+    // User config preserved through 003 (rename) → 008 (model_preset added)
+    const finalConfig = readFileSync(
+      join(root, ".agents", "oma-config.yaml"),
+      "utf-8",
+    );
+    expect(finalConfig).toContain("language: ko");
+    expect(finalConfig).toMatch(/model_preset:\s*\S+/);
 
     // Global CLAUDE.md cleaned (user content preserved)
     const globalMd = readFileSync(join(root, ".claude", "CLAUDE.md"), "utf-8");
@@ -463,7 +466,7 @@ describe("persisted needsReconcile flag", () => {
     mkdirSync(join(root, ".agents", "skills"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\n",
+      "language: en\nmodel_preset: claude-only\n",
       "utf-8",
     );
     // Simulates: previous reconcile attempt failed mid-download
@@ -494,7 +497,7 @@ describe("persisted needsReconcile flag", () => {
     mkdirSync(join(root, ".agents", "skills"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\n",
+      "language: en\nmodel_preset: claude-only\n",
       "utf-8",
     );
     writeFileSync(

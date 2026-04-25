@@ -197,57 +197,49 @@ After install, run `/auth` inside the CLI to authenticate.
 The `oma install` command creates `.agents/oma-config.yaml`. This is the central configuration file for all oh-my-agent behavior:
 
 ```yaml
-# Response language for all agents and workflows
+# Required
 language: en
+model_preset: gemini-only   # built-in: claude-only, codex-only, gemini-only, qwen-only, antigravity
 
-# Date format used in reports and memory files
-date_format: "YYYY-MM-DD"
+# Optional — date/time preferences
+date_format: ISO
+timezone: UTC
 
-# Timezone for timestamps
-timezone: "UTC"
+# Optional — auto-update the CLI in background
+auto_update_cli: true
 
-# Default CLI tool for agent spawning
-# Options: gemini, claude, codex, qwen
-default_cli: gemini
+# Optional — partial override per agent (object-only, shallow merge)
+agents:
+  backend: { model: openai/gpt-5.3-codex, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# Per-agent CLI mapping (overrides default_cli)
-agent_cli_mapping:
-frontend: claude # Complex UI reasoning
-backend: gemini # Fast API generation
-mobile: gemini
-db: gemini
-pm: gemini # Quick decomposition
-qa: claude # Thorough security review
-debug: claude # Deep root-cause analysis
-design: claude
-tf-infra: gemini
-dev-workflow: gemini
-translator: claude
-orchestrator: gemini
-commit: gemini
+# Optional — user-defined model slugs
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# Optional — user-defined presets
+# custom_presets:
+#   my-team:
+#     extends: claude-only
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.3-codex, effort: high }
 ```
 
 ### Field Reference
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `language` | string | `en` | Response language code. All agent output, workflow messages, and reports use this language. Supports 11 languages (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
-| `date_format` | string | `YYYY-MM-DD` | Date format string for timestamps in plans, memory files, and reports. |
-| `timezone` | string | `UTC` | Timezone for all timestamps. Uses standard timezone identifiers (e.g., `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | Fallback CLI when no agent-specific mapping exists. Used as level 3 in vendor resolution priority. |
-| `agent_cli_mapping` | map | (empty) | Maps agent IDs to specific CLI vendors. Takes precedence over `default_cli`. |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `language` | string | Yes | Response language code. Supports en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
+| `model_preset` | string | Yes | Active preset key. One of the five built-in keys or a `custom_presets` key. See [Per-Agent Models](../guide/per-agent-models.md). |
+| `date_format` | string | No | Timestamp format (`ISO`, `US`, `EU`). Default: `ISO`. |
+| `timezone` | string | No | Timezone identifier (e.g., `Asia/Seoul`). Default: `UTC`. |
+| `agents` | map | No | Partial per-agent overrides (object-only `AgentSpec`). Shallow-merged over preset defaults. |
+| `models` | map | No | User-defined model slugs, formerly in `models.yaml`. |
+| `custom_presets` | map | No | User-defined presets. Supports `extends:` for partial inheritance from a built-in preset. |
 
-### Vendor Resolution Priority
+### Vendor Resolution
 
-When spawning an agent, the CLI vendor is determined by this priority order (highest first):
-
-1. `--model` flag passed to `oma agent:spawn`
-2. `agent_cli_mapping` entry for that specific agent in `oma-config.yaml`
-3. `default_cli` setting in `oma-config.yaml`
-4. `active_vendor` in `cli-config.yaml` (legacy fallback)
-5. `gemini` (hardcoded final fallback)
-
-> Legacy string values (e.g. `agent_cli_mapping: { backend: "gemini" }`) keep working — they are resolved through `runtime_profiles.gemini-only.agent_defaults.backend` from `.agents/config/defaults.yaml`. For per-agent model, effort, and thinking overrides, see [Per-Agent Models](../guide/per-agent-models.md).
+When spawning an agent, the CLI vendor is resolved from the active `model_preset` (and any `agents:` overrides). See [Per-Agent Models](../guide/per-agent-models.md) for full details.
 
 ---
 
@@ -270,19 +262,13 @@ This command checks:
 
 If anything is wrong, `oma doctor` tells you exactly what to fix, with copy-paste commands.
 
-To inspect how each agent's `agent_cli_mapping` resolves under (active profile, effective model slug, CLI, auth status per agent), run:
+To inspect the resolved model and CLI for every agent, run:
 
 ```bash
 oma doctor --profile
 ```
 
-If a future `oma install` reports a `defaults.yaml` version mismatch, accept the new SSOT with:
-
-```bash
-oma install --update-defaults
-```
-
-User files (`oma-config.yaml`, `.agents/config/models.yaml`) are preserved. See [Per-Agent Models](../guide/per-agent-models.md) for full details.
+See [Per-Agent Models](../guide/per-agent-models.md) for the full matrix and migration details.
 
 ---
 

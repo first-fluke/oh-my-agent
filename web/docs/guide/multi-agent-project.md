@@ -101,10 +101,10 @@ oma agent:spawn backend "Implement user auth API with JWT" session-20260324-1430
 **Vendor resolution order** (first match wins):
 
 1. `--model` flag on the command line
-2. `agent_cli_mapping` in `oma-config.yaml` for this specific agent type
-3. `default_cli` in `oma-config.yaml`
-4. `active_vendor` in `cli-config.yaml`
-5. `gemini` (hardcoded default)
+2. `agents:` override in `oma-config.yaml` for this agent
+3. Active `model_preset` agent defaults
+
+See [Per-Agent Models](./per-agent-models.md) for configuration details.
 
 **Workspace auto-detection** checks monorepo configs in this order: pnpm-workspace.yaml, package.json workspaces, lerna.json, nx.json, turbo.json, mise.toml. Each workspace directory is scored against agent type keywords (e.g., "web", "frontend", "client" for the frontend agent). If no monorepo config is found, it falls back to hardcoded candidates like `apps/web`, `apps/frontend`, `frontend/`, etc.
 

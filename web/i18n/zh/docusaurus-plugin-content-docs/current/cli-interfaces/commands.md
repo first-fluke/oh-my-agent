@@ -284,7 +284,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | CLI 供应商覆盖：`gemini`、`claude`、`codex`、`qwen` |
 | `-w, --workspace <path>` | 智能体的工作目录。如省略，从 monorepo 配置自动检测。 |
 
-**供应商解析顺序：** `--model` 标志 > oma-config.yaml 中的 `agent_cli_mapping` > `default_cli` > cli-config.yaml 中的 `active_vendor` > `gemini`。
+**供应商解析顺序：** `--model` 标志 > oma-config.yaml 中的 `model_preset (per-agent overrides via `agents:`)` > `default_cli` > cli-config.yaml 中的 `active_vendor` > `gemini`。
 
 **提示词解析：** 如果提示词参数是现有文件的路径，则使用文件内容作为提示词。否则，参数作为内联文本使用。供应商特定的执行协议会自动追加。
 

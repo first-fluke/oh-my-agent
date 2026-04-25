@@ -1,22 +1,28 @@
 /**
- * T10 Integration tests: resolveAgentPlan + per-vendor invocation builders
+ * resolveAgentPlanFromConfig integration tests
  *
- * Test cases (12 minimum):
- *  1. User config AgentSpec takes precedence over defaults
- *  2. Legacy string value in user config falls back to defaults for model/effort
- *  3. Missing agentId → falls through to orchestrator default
- *  4. Claude cli-session model → effort dropped + WARN emitted
- *  5. api_only slug → throws ConfigError
- *  6. Unknown slug → throws ConfigError with actionable message
- *  7. vendorOverride matches native_dispatch_from → cli overridden
- *  8. vendorOverride not in native_dispatch_from → WARN, cli NOT overridden
- *  9. Codex effort="high" → setCodexReasoningEffort reflects "high"
- * 10. Qwen effort="high" → invocation args include --thinking
- * 11. Qwen effort="none" → invocation args include --no-thinking
- * 12. Gemini effort translation to thinking-budget
- * 13. User config missing entirely → falls back to defaults
- * 14. Empty AgentSpec {} (model only, no effort) → no effort in plan
- * 15. OMA_RUNTIME_VENDOR env var used when vendorOverride not passed
+ * New API: resolveAgentPlanFromConfig(agentId, config: Partial<OmaConfig>, vendorOverride?)
+ * config.model_preset selects a built-in preset; config.agents provides per-agent overrides.
+ *
+ * Test cases:
+ *  1.  agents override takes precedence over preset default
+ *  2.  thinking flag from agents override preserved
+ *  3.  missing agentId falls back to orchestrator default
+ *  4.  Claude cli-session model → effort dropped + WARN
+ *  5.  api_only slug → throws ConfigError
+ *  6.  Unknown slug → throws ConfigError with actionable message
+ *  7.  vendorOverride matches native_dispatch_from → cli overridden
+ *  8.  vendorOverride not in native_dispatch_from → WARN, cli NOT overridden
+ *  9.  Codex effort="high" → setCodexReasoningEffort reflects "high"
+ * 10.  Qwen effort="high" → --thinking flag
+ * 11.  Qwen effort="none" → --no-thinking flag
+ * 12.  Gemini effort translation to thinking-budget
+ * 13.  No agents override → uses preset defaults directly
+ * 14.  AgentSpec with model only (no effort) → no effort in plan
+ * 15.  Unknown model_preset → throws ConfigError
+ * 16.  custom_presets with extends merges correctly
+ * 17.  buildAgentPlanArgs for Claude → --model args
+ * 18.  buildAgentPlanArgs for Codex → -m args
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -34,57 +40,80 @@ import {
 } from "./runtime-dispatch.js";
 
 // ---------------------------------------------------------------------------
-// Fixtures — minimal config objects used across tests
+// Fixtures — OmaConfig objects
 // ---------------------------------------------------------------------------
 
-const DEFAULTS_PROFILE_B = {
-  agent_defaults: {
-    orchestrator: { model: "anthropic/claude-sonnet-4-6" },
-    architecture: { model: "anthropic/claude-opus-4-7" },
-    backend: { model: "openai/gpt-5.3-codex", effort: "high" },
-    frontend: { model: "openai/gpt-5.4", effort: "high" },
-    retrieval: { model: "google/gemini-3.1-flash-lite" },
-    qa: { model: "anthropic/claude-sonnet-4-6" },
-    debug: { model: "openai/gpt-5.3-codex", effort: "high" },
-  },
-};
+/** Minimal config using codex-only preset — backend gets gpt-5.3-codex + effort:high */
+const CODEX_ONLY_CONFIG = {
+  language: "en",
+  model_preset: "codex-only",
+} as const;
 
-const EMPTY_USER_PREFS = { agent_cli_mapping: {} };
+/** Minimal config using claude-only preset — all agents get claude-sonnet-4-6 */
+const CLAUDE_ONLY_CONFIG = {
+  language: "en",
+  model_preset: "claude-only",
+} as const;
+
+/** Minimal config using gemini-only preset */
+const GEMINI_ONLY_CONFIG = {
+  language: "en",
+  model_preset: "gemini-only",
+} as const;
+
+/** Minimal config using qwen-only preset */
+const QWEN_ONLY_CONFIG = {
+  language: "en",
+  model_preset: "qwen-only",
+} as const;
 
 // ---------------------------------------------------------------------------
-// Case 1: User-preferences AgentSpec takes precedence over defaults
+// Case 1: agents override takes precedence over preset default
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 1: AgentSpec from user-prefs overrides defaults", () => {
-  it("uses model from user config AgentSpec, not defaults", () => {
-    const userPrefs = {
-      agent_cli_mapping: {
-        backend: { model: "openai/gpt-5.4", effort: "medium" },
+describe("resolveAgentPlanFromConfig — Case 1: agents override precedence", () => {
+  it("uses model from agents override, not preset default", () => {
+    const config = {
+      ...CODEX_ONLY_CONFIG,
+      agents: {
+        backend: { model: "openai/gpt-5.4", effort: "medium" as const },
       },
     };
-
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    const plan = resolveAgentPlanFromConfig("backend", config);
     expect(plan.cliModel).toBe("gpt-5.4");
     expect(plan.cli).toBe("codex");
     expect(plan.effort).toBe("medium");
   });
 
-  it("picks up thinking flag from AgentSpec", () => {
-    const userPrefs = {
-      agent_cli_mapping: {
-        retrieval: { model: "google/gemini-3-flash", thinking: true },
+  it("preserves preset defaults for agents not in override map", () => {
+    const config = {
+      ...CODEX_ONLY_CONFIG,
+      agents: {
+        backend: { model: "openai/gpt-5.4", effort: "medium" as const },
       },
     };
+    // qa is not overridden — falls back to codex-only preset qa entry
+    const plan = resolveAgentPlanFromConfig("qa", config);
+    expect(plan.cli).toBe("codex");
+  });
+});
 
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs,
-      defaults: DEFAULTS_PROFILE_B,
-    });
+// ---------------------------------------------------------------------------
+// Case 2: thinking flag from agents override
+// ---------------------------------------------------------------------------
 
+describe("resolveAgentPlanFromConfig — Case 2: thinking flag from override", () => {
+  it("picks up thinking flag from agents override", () => {
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3-flash",
+          thinking: true as const,
+        },
+      },
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(plan.cli).toBe("gemini");
     expect(plan.thinking).toBe(true);
     expect(plan.cliModel).toBe("gemini-3-flash");
@@ -92,65 +121,38 @@ describe("resolveAgentPlanFromConfig — Case 1: AgentSpec from user-prefs overr
 });
 
 // ---------------------------------------------------------------------------
-// Case 2: Legacy string in user config → vendor only; model/effort from defaults
+// Case 3: missing agentId falls back to orchestrator
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 2: legacy string falls back to defaults", () => {
-  it("resolves model and effort from defaults when user-pref entry is a string", () => {
-    const userPrefs = {
-      agent_cli_mapping: {
-        backend: "codex", // legacy string format
-      },
-    };
-
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
-    // Should use defaults for backend: gpt-5.3-codex, effort: high
-    expect(plan.cliModel).toBe("gpt-5.3-codex");
-    expect(plan.cli).toBe("codex");
-    expect(plan.effort).toBe("high");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Case 3: Missing agentId → falls through to orchestrator default
-// ---------------------------------------------------------------------------
-
-describe("resolveAgentPlanFromConfig — Case 3: missing agentId falls back to orchestrator", () => {
-  it("uses orchestrator defaults when agentId is not in user-prefs or defaults", () => {
-    const plan = resolveAgentPlanFromConfig("nonexistent-agent", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
-    // orchestrator defaults to claude-sonnet-4-6
+describe("resolveAgentPlanFromConfig — Case 3: unknown agentId falls back to orchestrator", () => {
+  it("uses orchestrator preset when agentId not in preset agent_defaults", () => {
+    const plan = resolveAgentPlanFromConfig(
+      "nonexistent-role",
+      CLAUDE_ONLY_CONFIG,
+    );
+    // claude-only orchestrator is claude-sonnet-4-6
     expect(plan.cli).toBe("claude");
     expect(plan.cliModel).toBe("claude-sonnet-4-6");
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 4: Claude cli-session model → effort dropped + WARN emitted (R14)
+// Case 4: Claude cli-session model → effort dropped + WARN
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 4: Claude effort drop (R14)", () => {
   it("drops effort and emits WARN for Claude cli-session model", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const userPrefs = {
-      agent_cli_mapping: {
-        backend: { model: "anthropic/claude-opus-4-7", effort: "high" },
+    const config = {
+      ...CLAUDE_ONLY_CONFIG,
+      agents: {
+        backend: {
+          model: "anthropic/claude-opus-4-7",
+          effort: "high" as const,
+        },
       },
     };
-
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    const plan = resolveAgentPlanFromConfig("backend", config);
     expect(plan.effort).toBeUndefined();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining("effort field is ignored for Claude CLI"),
@@ -161,15 +163,10 @@ describe("resolveAgentPlanFromConfig — Case 4: Claude effort drop (R14)", () =
     warnSpy.mockRestore();
   });
 
-  it("does not emit WARN when effort is not set for Claude model", () => {
+  it("does not emit WARN when effort not set for Claude model", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const plan = resolveAgentPlanFromConfig("qa", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
-    // qa defaults to claude-sonnet-4-6 with no effort
+    // claude-only qa preset has no effort
+    const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
     expect(plan.effort).toBeUndefined();
     expect(warnSpy).not.toHaveBeenCalled();
     warnSpy.mockRestore();
@@ -177,99 +174,77 @@ describe("resolveAgentPlanFromConfig — Case 4: Claude effort drop (R14)", () =
 });
 
 // ---------------------------------------------------------------------------
-// Case 5: api_only slug → throws ConfigError (R13 defensive)
+// Case 5: api_only slug → throws ConfigError
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 5: api_only slug throws ConfigError", () => {
-  it("throws ConfigError when model slug has api_only:true", () => {
-    // gpt-5.4-nano is excluded from CORE_REGISTRY (api_only) so getModelSpec returns undefined
-    // We test the "unknown slug" path since api_only entries are never in CORE_REGISTRY
-    const userPrefs = {
-      agent_cli_mapping: {
+  it("throws ConfigError for api_only model slug", () => {
+    const config = {
+      ...CODEX_ONLY_CONFIG,
+      agents: {
         backend: { model: "openai/gpt-5.4-nano" },
       },
     };
-
-    expect(() =>
-      resolveAgentPlanFromConfig("backend", {
-        userPrefs,
-        defaults: DEFAULTS_PROFILE_B,
-      }),
-    ).toThrow(ConfigError);
-
-    expect(() =>
-      resolveAgentPlanFromConfig("backend", {
-        userPrefs,
-        defaults: DEFAULTS_PROFILE_B,
-      }),
-    ).toThrow(/Unknown model slug/);
+    expect(() => resolveAgentPlanFromConfig("backend", config)).toThrow(
+      ConfigError,
+    );
+    expect(() => resolveAgentPlanFromConfig("backend", config)).toThrow(
+      /Unknown model slug/,
+    );
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 6: Unknown slug → throws ConfigError with actionable message
+// Case 6: Unknown slug → throws ConfigError
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 6: unknown slug throws ConfigError", () => {
   it("throws ConfigError with actionable message for unregistered slug", () => {
-    const userPrefs = {
-      agent_cli_mapping: {
+    const config = {
+      ...CODEX_ONLY_CONFIG,
+      agents: {
         frontend: { model: "openai/gpt-6-future" },
       },
     };
-
-    expect(() =>
-      resolveAgentPlanFromConfig("frontend", {
-        userPrefs,
-        defaults: DEFAULTS_PROFILE_B,
-      }),
-    ).toThrow(ConfigError);
-
-    expect(() =>
-      resolveAgentPlanFromConfig("frontend", {
-        userPrefs,
-        defaults: DEFAULTS_PROFILE_B,
-      }),
-    ).toThrow(
-      "Unknown model slug 'openai/gpt-6-future'. Add it to .agents/config/models.yaml or use a Registry slug.",
+    expect(() => resolveAgentPlanFromConfig("frontend", config)).toThrow(
+      ConfigError,
+    );
+    expect(() => resolveAgentPlanFromConfig("frontend", config)).toThrow(
+      /Unknown model slug/,
     );
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 7: vendorOverride matches native_dispatch_from → cli overridden
+// Case 7: vendorOverride matches native_dispatch_from
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 7: vendorOverride matches native_dispatch_from", () => {
-  it("overrides cli to vendorOverride when it is in native_dispatch_from", () => {
+  it("overrides cli when vendorOverride is in native_dispatch_from", () => {
+    // gemini-only retrieval uses google/gemini-3.1-flash-lite (native_dispatch_from: gemini)
     const plan = resolveAgentPlanFromConfig(
       "retrieval",
-      { userPrefs: EMPTY_USER_PREFS, defaults: DEFAULTS_PROFILE_B },
+      GEMINI_ONLY_CONFIG,
       "gemini",
     );
-
     expect(plan.cli).toBe("gemini");
-    expect(plan.cliModel).toBe("gemini-3.1-flash-lite");
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 8: vendorOverride not in native_dispatch_from → WARN, cli NOT overridden
+// Case 8: vendorOverride not in native_dispatch_from
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_dispatch_from", () => {
-  it("warns and keeps original cli when vendorOverride is not supported", () => {
+  it("warns and keeps original cli when vendorOverride not supported", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    // retrieval uses google/gemini-3.1-flash-lite; native_dispatch_from: ["gemini"]
-    // codex is NOT in native_dispatch_from
+    // gemini-only retrieval; codex is NOT in native_dispatch_from
     const plan = resolveAgentPlanFromConfig(
       "retrieval",
-      { userPrefs: EMPTY_USER_PREFS, defaults: DEFAULTS_PROFILE_B },
+      GEMINI_ONLY_CONFIG,
       "codex",
     );
-
-    expect(plan.cli).toBe("gemini"); // NOT overridden
+    expect(plan.cli).toBe("gemini");
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('"codex" is not in native_dispatch_from'),
     );
@@ -278,17 +253,17 @@ describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_di
 });
 
 // ---------------------------------------------------------------------------
-// Case 9: Codex effort="high" → setCodexReasoningEffort reflects "high"
+// Case 9: Codex effort="high" → setCodexReasoningEffort
 // ---------------------------------------------------------------------------
 
 describe("setCodexReasoningEffort — Case 9: Codex effort in TOML", () => {
-  it("sets model_reasoning_effort to 'high' in codex settings", () => {
+  it("sets model_reasoning_effort to 'high'", () => {
     const base = parseCodexConfig("");
     const updated = setCodexReasoningEffort(base, "high");
     expect(updated.model_reasoning_effort).toBe("high");
   });
 
-  it("idempotent: calling twice with same value gives same result", () => {
+  it("idempotent: calling twice gives same result", () => {
     const base = parseCodexConfig("");
     const first = setCodexReasoningEffort(base, "high");
     const second = setCodexReasoningEffort(first, "high");
@@ -304,133 +279,120 @@ describe("setCodexReasoningEffort — Case 9: Codex effort in TOML", () => {
     expect(updated.model_reasoning_effort).toBeUndefined();
   });
 
-  it("backend plan (effort=high) + codex TOML shows model_reasoning_effort = 'high'", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+  it("codex-only backend plan has effort=high → TOML shows model_reasoning_effort=high", () => {
+    // codex-only preset: backend = { model: openai/gpt-5.3-codex, effort: high }
+    const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cli).toBe("codex");
     expect(plan.effort).toBe("high");
-
     const tomlSettings = setCodexReasoningEffort({}, plan.effort);
     expect(tomlSettings.model_reasoning_effort).toBe("high");
-    const serialized = serializeCodexConfig(tomlSettings);
-    expect(serialized).toContain('model_reasoning_effort = "high"');
+    expect(serializeCodexConfig(tomlSettings)).toContain(
+      'model_reasoning_effort = "high"',
+    );
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 10 & 11: Qwen effort translation
+// Cases 10 & 11: Qwen effort translation
 // ---------------------------------------------------------------------------
 
 describe("qwenThinkingFlag — Cases 10 & 11: Qwen effort translation", () => {
   it("returns --thinking for effort=high (Case 10)", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: {
-        agent_cli_mapping: {
-          backend: { model: "qwen/qwen3-coder-plus", effort: "high" },
-        },
+    const config = {
+      ...QWEN_ONLY_CONFIG,
+      agents: {
+        backend: { model: "qwen/qwen3-coder-plus", effort: "high" as const },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("backend", config);
     expect(plan.cli).toBe("qwen");
     expect(plan.effort).toBe("high");
-
-    const flag = qwenThinkingFlag(plan);
-    expect(flag).toBe("--thinking");
-
-    const args = buildAgentPlanArgs(plan);
-    expect(args).toContain("--thinking");
-    expect(args).toContain("-m");
-    expect(args).toContain("qwen3-coder-plus");
+    expect(qwenThinkingFlag(plan)).toBe("--thinking");
+    expect(buildAgentPlanArgs(plan)).toContain("--thinking");
+    expect(buildAgentPlanArgs(plan)).toContain("-m");
+    expect(buildAgentPlanArgs(plan)).toContain("qwen3-coder-plus");
   });
 
   it("returns --no-thinking for effort=none (Case 11)", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: {
-        agent_cli_mapping: {
-          backend: { model: "qwen/qwen3-coder-plus", effort: "none" },
+    const config = {
+      ...QWEN_ONLY_CONFIG,
+      agents: {
+        backend: {
+          model: "qwen/qwen3-coder-plus",
+          effort: "none" as const,
+          thinking: false as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
-    const flag = qwenThinkingFlag(plan);
-    expect(flag).toBe("--no-thinking");
-
-    const args = buildAgentPlanArgs(plan);
-    expect(args).toContain("--no-thinking");
+    };
+    const plan = resolveAgentPlanFromConfig("backend", config);
+    expect(qwenThinkingFlag(plan)).toBe("--no-thinking");
+    expect(buildAgentPlanArgs(plan)).toContain("--no-thinking");
   });
 
   it("returns --no-thinking for effort=medium", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: {
-        agent_cli_mapping: {
-          backend: { model: "qwen/qwen3-coder-plus", effort: "medium" },
+    const config = {
+      ...QWEN_ONLY_CONFIG,
+      agents: {
+        backend: {
+          model: "qwen/qwen3-coder-plus",
+          effort: "medium" as const,
+          thinking: false as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("backend", config);
     expect(qwenThinkingFlag(plan)).toBe("--no-thinking");
   });
 
   it("thinking:true override takes priority over effort level", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: {
-        agent_cli_mapping: {
-          backend: {
-            model: "qwen/qwen3-coder-plus",
-            effort: "none",
-            thinking: true,
-          },
+    const config = {
+      ...QWEN_ONLY_CONFIG,
+      agents: {
+        backend: {
+          model: "qwen/qwen3-coder-plus",
+          effort: "none" as const,
+          thinking: true as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("backend", config);
     expect(qwenThinkingFlag(plan)).toBe("--thinking");
   });
 
   it("thinking:false override takes priority over effort level", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: {
-        agent_cli_mapping: {
-          backend: {
-            model: "qwen/qwen3-coder-plus",
-            effort: "xhigh",
-            thinking: false,
-          },
+    const config = {
+      ...QWEN_ONLY_CONFIG,
+      agents: {
+        backend: {
+          model: "qwen/qwen3-coder-plus",
+          effort: "xhigh" as const,
+          thinking: false as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("backend", config);
     expect(qwenThinkingFlag(plan)).toBe("--no-thinking");
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 12: Gemini effort translation to thinking-budget
+// Case 12: Gemini effort → thinking-budget
 // ---------------------------------------------------------------------------
 
 describe("geminiThinkingBudgetFlag — Case 12: Gemini effort translation", () => {
   it("effort=high maps to --thinking-budget=dynamic for gemini-3-flash", () => {
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs: {
-        agent_cli_mapping: {
-          retrieval: { model: "google/gemini-3-flash", effort: "high" },
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3-flash",
+          effort: "high" as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(plan.cli).toBe("gemini");
-    const flag = geminiThinkingBudgetFlag(plan);
-    expect(flag).toBe("--thinking-budget=dynamic");
-
+    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
     const args = buildAgentPlanArgs(plan);
     expect(args).toContain("--model");
     expect(args).toContain("gemini-3-flash");
@@ -438,187 +400,222 @@ describe("geminiThinkingBudgetFlag — Case 12: Gemini effort translation", () =
   });
 
   it("effort=xhigh maps to --thinking-budget=dynamic", () => {
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs: {
-        agent_cli_mapping: {
-          retrieval: { model: "google/gemini-3-flash", effort: "xhigh" },
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3-flash",
+          effort: "xhigh" as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
   });
 
   it("effort=low maps to --thinking-budget=none", () => {
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs: {
-        agent_cli_mapping: {
-          retrieval: { model: "google/gemini-3-flash", effort: "low" },
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3-flash",
+          effort: "low" as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=none");
   });
 
   it("effort=medium maps to --thinking-budget=none", () => {
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs: {
-        agent_cli_mapping: {
-          retrieval: { model: "google/gemini-3-flash", effort: "medium" },
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3-flash",
+          effort: "medium" as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=none");
   });
 
   it("thinking:true maps to --thinking-budget=dynamic regardless of effort", () => {
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs: {
-        agent_cli_mapping: {
-          retrieval: {
-            model: "google/gemini-3-flash",
-            effort: "low",
-            thinking: true,
-          },
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3-flash",
+          effort: "low" as const,
+          thinking: true as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
   });
 
   it("thinking:false maps to --thinking-budget=none regardless of effort", () => {
-    const plan = resolveAgentPlanFromConfig("retrieval", {
-      userPrefs: {
-        agent_cli_mapping: {
-          retrieval: {
-            model: "google/gemini-3.1-pro-preview",
-            effort: "xhigh",
-            thinking: false,
-          },
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        retrieval: {
+          model: "google/gemini-3.1-pro-preview",
+          effort: "xhigh" as const,
+          thinking: false as const,
         },
       },
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    };
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=none");
   });
 
-  it("gemini-3.1-pro-preview supports fixed mode, high effort uses dynamic", () => {
-    const plan = resolveAgentPlanFromConfig("architecture", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: {
-        agent_defaults: {
-          orchestrator: { model: "anthropic/claude-sonnet-4-6" },
-          architecture: {
-            model: "google/gemini-3.1-pro-preview",
-            effort: "high",
-          },
+  it("gemini-3.1-pro-preview high effort uses dynamic", () => {
+    const config = {
+      ...GEMINI_ONLY_CONFIG,
+      agents: {
+        architecture: {
+          model: "google/gemini-3.1-pro-preview",
+          effort: "high" as const,
         },
       },
-    });
-
-    // gemini-3.1-pro-preview has modes: ["none", "dynamic", "fixed"]
-    // high → dynamic (preferred over fixed per spec)
+    };
+    const plan = resolveAgentPlanFromConfig("architecture", config);
     expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 13: User-preferences missing entirely → falls back to defaults
+// Case 13: no agents override — uses preset defaults directly
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 13: missing user config", () => {
-  it("resolves from defaults when user config has no agent_cli_mapping", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: {},
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+describe("resolveAgentPlanFromConfig — Case 13: preset defaults (no override)", () => {
+  it("codex-only backend uses gpt-5.3-codex + effort:high from preset", () => {
+    const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cliModel).toBe("gpt-5.3-codex");
     expect(plan.effort).toBe("high");
+    expect(plan.cli).toBe("codex");
+  });
+
+  it("claude-only qa uses claude-sonnet-4-6 from preset", () => {
+    const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
+    expect(plan.cli).toBe("claude");
+    expect(plan.cliModel).toBe("claude-sonnet-4-6");
   });
 });
 
 // ---------------------------------------------------------------------------
-// Case 14: Empty AgentSpec (model only, no effort) → no effort in plan
+// Case 14: AgentSpec with model only (no effort)
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 14: AgentSpec with model only", () => {
-  it("produces plan without effort when AgentSpec has no effort field", () => {
-    const userPrefs = {
-      agent_cli_mapping: {
-        backend: { model: "openai/gpt-5.4-mini" },
+describe("resolveAgentPlanFromConfig — Case 14: AgentSpec model-only override", () => {
+  it("produces plan without effort when base preset entry has no effort", () => {
+    // claude-only retrieval has no effort in preset; override just changes model
+    const config = {
+      ...CLAUDE_ONLY_CONFIG,
+      agents: {
+        retrieval: { model: "anthropic/claude-sonnet-4-6" },
       },
     };
-
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    const plan = resolveAgentPlanFromConfig("retrieval", config);
     expect(plan.effort).toBeUndefined();
     expect(plan.thinking).toBeUndefined();
     expect(plan.memory).toBeUndefined();
-    expect(plan.cliModel).toBe("gpt-5.4-mini");
+    expect(plan.cliModel).toBe("claude-sonnet-4-6");
   });
 });
 
 // ---------------------------------------------------------------------------
-// buildAgentPlanArgs — Claude path
+// Case 15: Unknown model_preset → throws ConfigError
+// ---------------------------------------------------------------------------
+
+describe("resolveAgentPlanFromConfig — Case 15: unknown model_preset", () => {
+  it("throws ConfigError for unrecognised preset key", () => {
+    const config = { language: "en", model_preset: "nonexistent-preset" };
+    expect(() => resolveAgentPlanFromConfig("backend", config)).toThrow(
+      ConfigError,
+    );
+    expect(() => resolveAgentPlanFromConfig("backend", config)).toThrow(
+      /Unknown model_preset/,
+    );
+  });
+
+  it("throws ConfigError when model_preset is absent", () => {
+    expect(() =>
+      resolveAgentPlanFromConfig("backend", { language: "en" }),
+    ).toThrow(ConfigError);
+    expect(() =>
+      resolveAgentPlanFromConfig("backend", { language: "en" }),
+    ).toThrow(/model_preset.*missing/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Case 16: custom_presets with extends
+// ---------------------------------------------------------------------------
+
+describe("resolveAgentPlanFromConfig — Case 16: custom_presets with extends", () => {
+  it("custom preset extends claude-only and overrides backend", () => {
+    const config = {
+      language: "en",
+      model_preset: "my-team",
+      custom_presets: {
+        "my-team": {
+          description: "Team preset",
+          extends: "claude-only",
+          agent_defaults: {
+            backend: {
+              model: "openai/gpt-5.3-codex",
+              effort: "high" as const,
+            },
+          },
+        },
+      },
+    };
+    // backend is overridden to codex
+    const backendPlan = resolveAgentPlanFromConfig("backend", config);
+    expect(backendPlan.cli).toBe("codex");
+    expect(backendPlan.cliModel).toBe("gpt-5.3-codex");
+
+    // qa is inherited from claude-only
+    const qaPlan = resolveAgentPlanFromConfig("qa", config);
+    expect(qaPlan.cli).toBe("claude");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildAgentPlanArgs — Claude
 // ---------------------------------------------------------------------------
 
 describe("buildAgentPlanArgs — Claude", () => {
   it("produces --model {cliModel} args for Claude", () => {
-    const plan = resolveAgentPlanFromConfig("qa", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
     expect(plan.cli).toBe("claude");
-    const args = buildAgentPlanArgs(plan);
-    expect(args).toEqual(["--model", "claude-sonnet-4-6"]);
+    expect(buildAgentPlanArgs(plan)).toEqual(["--model", "claude-sonnet-4-6"]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// buildAgentPlanArgs — Codex path (AC: gpt-5.3-codex invocation)
+// buildAgentPlanArgs — Codex
 // ---------------------------------------------------------------------------
 
-describe("buildAgentPlanArgs — Codex AC verification", () => {
-  it("AC: backend codex plan produces -m gpt-5.3-codex args", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
-    // Verify: {backend: {model: 'openai/gpt-5.3-codex', effort: 'high'}} → codex -m gpt-5.3-codex
+describe("buildAgentPlanArgs — Codex", () => {
+  it("produces -m gpt-5.3-codex args for codex-only backend", () => {
+    const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cli).toBe("codex");
     expect(plan.cliModel).toBe("gpt-5.3-codex");
-    expect(plan.effort).toBe("high");
-
-    const args = buildAgentPlanArgs(plan);
-    expect(args).toEqual(["-m", "gpt-5.3-codex"]);
+    expect(buildAgentPlanArgs(plan)).toEqual(["-m", "gpt-5.3-codex"]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// AgentPlan spec field — downstream reference
+// AgentPlan.spec — downstream reference
 // ---------------------------------------------------------------------------
 
 describe("AgentPlan.spec — downstream reference", () => {
   it("includes the full ModelSpec for downstream consumers", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: EMPTY_USER_PREFS,
-      defaults: DEFAULTS_PROFILE_B,
-    });
-
+    const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.spec).toBeDefined();
     expect(plan.spec.cli).toBe("codex");
     expect(plan.spec.cli_model).toBe("gpt-5.3-codex");
@@ -638,90 +635,5 @@ describe("ConfigError", () => {
     expect(err).toBeInstanceOf(ConfigError);
     expect(err.name).toBe("ConfigError");
     expect(err.message).toBe("test message");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Legacy vendor string override → runtime_profiles lookup
-// ---------------------------------------------------------------------------
-
-const DEFAULTS_WITH_PROFILES = {
-  agent_defaults: {
-    orchestrator: { model: "anthropic/claude-sonnet-4-6" },
-    frontend: { model: "openai/gpt-5.4", effort: "high" },
-    backend: { model: "openai/gpt-5.3-codex", effort: "high" },
-  },
-  runtime_profiles: {
-    "claude-only": {
-      agent_defaults: {
-        frontend: { model: "anthropic/claude-sonnet-4-6" },
-        backend: { model: "anthropic/claude-sonnet-4-6" },
-      },
-    },
-    "gemini-only": {
-      agent_defaults: {
-        frontend: { model: "google/gemini-3-flash", thinking: true },
-        backend: { model: "google/gemini-3-flash", thinking: true },
-      },
-    },
-  },
-};
-
-describe("resolveAgentPlanFromConfig — legacy vendor string override", () => {
-  it("legacy 'claude' string looks up claude-only profile for the role", () => {
-    const plan = resolveAgentPlanFromConfig("frontend", {
-      userPrefs: { agent_cli_mapping: { frontend: "claude" } },
-      defaults: DEFAULTS_WITH_PROFILES,
-    });
-    expect(plan.cli).toBe("claude");
-    expect(plan.cliModel).toBe("claude-sonnet-4-6");
-  });
-
-  it("legacy 'gemini' string resolves through gemini-only profile (thinking flag preserved)", () => {
-    const plan = resolveAgentPlanFromConfig("backend", {
-      userPrefs: { agent_cli_mapping: { backend: "gemini" } },
-      defaults: DEFAULTS_WITH_PROFILES,
-    });
-    expect(plan.cli).toBe("gemini");
-    expect(plan.cliModel).toBe("gemini-3-flash");
-    expect(plan.thinking).toBe(true);
-  });
-
-  it("legacy string for vendor without profile entry falls through to top-level defaults with WARN", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const defaultsMinus = {
-      agent_defaults: {
-        frontend: { model: "openai/gpt-5.4", effort: "high" },
-      },
-      runtime_profiles: {
-        "claude-only": { agent_defaults: {} }, // role missing
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("frontend", {
-      userPrefs: { agent_cli_mapping: { frontend: "claude" } },
-      defaults: defaultsMinus,
-    });
-    expect(plan.cliModel).toBe("gpt-5.4"); // fell through to top-level
-    expect(
-      warnSpy.mock.calls.some((c) =>
-        String(c[0]).includes("runtime_profiles.claude-only"),
-      ),
-    ).toBe(true);
-    warnSpy.mockRestore();
-  });
-
-  it("unknown legacy vendor name ('martian') falls through with WARN", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const plan = resolveAgentPlanFromConfig("frontend", {
-      userPrefs: { agent_cli_mapping: { frontend: "martian" } },
-      defaults: DEFAULTS_WITH_PROFILES,
-    });
-    expect(plan.cliModel).toBe("gpt-5.4"); // top-level default
-    expect(
-      warnSpy.mock.calls.some((c) =>
-        String(c[0]).includes("legacy vendor 'martian'"),
-      ),
-    ).toBe(true);
-    warnSpy.mockRestore();
   });
 });

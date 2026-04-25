@@ -557,10 +557,46 @@ export const CORE_REGISTRY: ReadonlyMap<string, ModelSpec> = new Proxy(
 
 /**
  * Returns the ModelSpec for a slug, or undefined if unknown.
- * Searches both core and user-defined entries.
+ *
+ * @param slug - The model slug to look up (e.g. "anthropic/claude-sonnet-4-6").
+ * @param userModels - Optional map of inline user-defined model specs from
+ *   oma-config.yaml's `models` key. When provided, user slugs are checked
+ *   first. A user slug that collides with a core registry slug wins (user
+ *   override) and emits a console.warn.
+ *
+ * Searches: userModels → merged registry (core + models.yaml on disk).
  * Never throws — callers are responsible for handling undefined.
+ *
+ * NOTE: T18 (debug agent, Phase 3) will audit all call sites to pass
+ * userModels from the in-scope OmaConfig.
  */
-export function getModelSpec(slug: string): ModelSpec | undefined {
+export function getModelSpec(
+  slug: string,
+  userModels?: Record<string, unknown>,
+): ModelSpec | undefined {
+  if (userModels && Object.hasOwn(userModels, slug)) {
+    const raw = userModels[slug];
+    const parsed = ModelSpecSchema.safeParse(raw);
+    if (parsed.success) {
+      const spec = parsed.data as ModelSpec;
+      if (spec.supports.api_only) {
+        console.warn(
+          `[model-registry] User inline model "${slug}": api_only=true is not supported in CLI-only mode — falling back to core registry.`,
+        );
+      } else {
+        if (getMergedRegistry().has(slug)) {
+          console.warn(
+            `[model-registry] User inline model "${slug}" overrides a core registry entry.`,
+          );
+        }
+        return spec;
+      }
+    } else {
+      console.warn(
+        `[model-registry] User inline model "${slug}" failed validation — falling back to core registry. Errors: ${parsed.error.issues.map((i) => i.message).join("; ")}`,
+      );
+    }
+  }
   return getMergedRegistry().get(slug);
 }
 

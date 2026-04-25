@@ -284,7 +284,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | Fournisseur CLI à utiliser : `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Répertoire de travail de l'agent. Détecté automatiquement depuis la config monorepo si omis. |
 
-**Ordre de résolution du fournisseur :** flag `--model` > `agent_cli_mapping` dans oma-config.yaml > `default_cli` > `active_vendor` dans cli-config.yaml > `gemini`.
+**Ordre de résolution du fournisseur :** flag `--model` > `model_preset (per-agent overrides via `agents:`)` dans oma-config.yaml > `default_cli` > `active_vendor` dans cli-config.yaml > `gemini`.
 
 **Résolution du prompt :** Si l'argument prompt est un chemin vers un fichier existant, le contenu du fichier est utilisé comme prompt. Sinon, l'argument est utilisé comme texte en ligne. Les protocoles d'exécution spécifiques au fournisseur sont ajoutés automatiquement.
 

@@ -164,7 +164,7 @@ date_format: ISO
 timezone: UTC
 default_cli: gemini
 
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: gemini
   backend: gemini
   mobile: gemini

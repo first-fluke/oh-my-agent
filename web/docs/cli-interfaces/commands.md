@@ -18,14 +18,8 @@ The environment variable `OH_MY_AG_OUTPUT_FORMAT` can be set to `json` to force 
 The default command with no arguments launches the interactive installer.
 
 ```
-oma [--update-defaults]
+oma
 ```
-
-**Options:**
-
-| Flag | Description |
-|:-----|:-----------|
-| `--update-defaults` | Overwrite `.agents/config/defaults.yaml` with the bundled version when a version mismatch is detected. User files (`oma-config.yaml`, `.agents/config/models.yaml`) are never touched. Introduced in cli@5.16.0. |
 
 **What it does:**
 1. Checks for legacy `.agent/` directory and migrates to `.agents/` if found.
@@ -63,7 +57,7 @@ oma doctor [--json] [--output <format>] [--profile]
 |:-----|:-----------|
 | `--json` | Output as JSON |
 | `--output <format>` | Output format (`text` or `json`) |
-| `--profile` | Show profile health matrix — resolves `agent_cli_mapping` through `runtime_profiles`, displays the active slug, CLI, and auth status per agent. Introduced in cli@5.16.0. See [Per-Agent Models](../guide/per-agent-models.md). |
+| `--profile` | Show profile health matrix — displays the resolved model slug, CLI, and auth status per agent from the active `model_preset` and `agents:` overrides. See [Per-Agent Models](../guide/per-agent-models.md). |
 
 **What it checks:**
 - CLI installations: gemini, claude, codex, qwen (version and path).
@@ -376,7 +370,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | CLI vendor override: `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Working directory for the agent. Auto-detected from monorepo config if omitted. |
 
-**Vendor resolution order:** `--model` flag > `agent_cli_mapping` in oma-config.yaml > `default_cli` > `active_vendor` in cli-config.yaml > `gemini`.
+**Vendor resolution order:** `--model` flag > `agents:` override in `oma-config.yaml` > active `model_preset` agent defaults.
 
 **Prompt resolution:** If the prompt argument is a path to an existing file, the file contents are used as the prompt. Otherwise, the argument is used as inline text. Vendor-specific execution protocols are appended automatically.
 

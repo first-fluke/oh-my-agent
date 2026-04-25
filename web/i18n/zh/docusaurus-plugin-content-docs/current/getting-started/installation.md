@@ -203,7 +203,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # 每个智能体的 CLI 映射（覆盖 default_cli）
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # 复杂 UI 推理
   backend: gemini        # 快速 API 生成
   mobile: gemini
@@ -227,14 +227,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | 计划、内存文件和报告中时间戳的日期格式字符串。 |
 | `timezone` | string | `UTC` | 所有时间戳的时区。使用标准时区标识符（例如 `Asia/Seoul`、`America/New_York`）。 |
 | `default_cli` | string | `gemini` | 无智能体特定映射时的回退 CLI。在供应商解析优先级中为第 3 级。 |
-| `agent_cli_mapping` | map | （空） | 将智能体 ID 映射到特定 CLI 供应商。优先级高于 `default_cli`。 |
+| `model_preset (per-agent overrides via `agents:`)` | map | （空） | 将智能体 ID 映射到特定 CLI 供应商。优先级高于 `default_cli`。 |
 
 ### 供应商解析优先级
 
 启动智能体时，CLI 供应商按以下优先级顺序确定（从高到低）：
 
 1. 传递给 `oma agent:spawn` 的 `--model` 参数
-2. `oma-config.yaml` 中该特定智能体的 `agent_cli_mapping` 条目
+2. `oma-config.yaml` 中该特定智能体的 `model_preset (per-agent overrides via `agents:`)` 条目
 3. `oma-config.yaml` 中的 `default_cli` 设置
 4. `cli-config.yaml` 中的 `active_vendor`（旧版回退）
 5. `gemini`（硬编码的最终回退）

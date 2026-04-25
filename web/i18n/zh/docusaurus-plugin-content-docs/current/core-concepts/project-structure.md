@@ -283,7 +283,7 @@ your-project/
 - `date_format`：时间戳格式字符串（默认：`YYYY-MM-DD`）
 - `timezone`：时区标识符（默认：`UTC`）
 - `default_cli`：回退 CLI 供应商（gemini、claude、codex、qwen）
-- `agent_cli_mapping`：每智能体 CLI 路由覆盖
+- `model_preset (per-agent overrides via `agents:`)`：每智能体 CLI 路由覆盖
 
 ### skills/
 

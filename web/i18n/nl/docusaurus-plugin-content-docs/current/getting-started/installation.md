@@ -203,7 +203,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # Per-agent CLI-mapping (overschrijft default_cli)
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Complexe UI-redenering
   backend: gemini        # Snelle API-generatie
   mobile: gemini
@@ -227,14 +227,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | Datumnotatiestring voor tijdstempels in plannen, geheugenbestanden en rapporten. |
 | `timezone` | string | `UTC` | Tijdzone voor alle tijdstempels. Gebruikt standaard tijdzone-identificatoren (bijv. `Asia/Seoul`, `America/New_York`). |
 | `default_cli` | string | `gemini` | Fallback-CLI wanneer er geen agentspecifieke mapping bestaat. Gebruikt als niveau 3 in leveranciersresolutieprioriteit. |
-| `agent_cli_mapping` | map | (leeg) | Mapt agent-ID's naar specifieke CLI-leveranciers. Heeft voorrang op `default_cli`. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (leeg) | Mapt agent-ID's naar specifieke CLI-leveranciers. Heeft voorrang op `default_cli`. |
 
 ### Leveranciersresolutieprioriteit
 
 Bij het spawnen van een agent wordt de CLI-leverancier bepaald door deze prioriteitsvolgorde (hoogste eerst):
 
 1. `--model`-vlag meegegeven aan `oma agent:spawn`
-2. `agent_cli_mapping`-vermelding voor die specifieke agent in `oma-config.yaml`
+2. `model_preset (per-agent overrides via `agents:`)`-vermelding voor die specifieke agent in `oma-config.yaml`
 3. `default_cli`-instelling in `oma-config.yaml`
 4. `active_vendor` in `cli-config.yaml` (legacy fallback)
 5. `gemini` (hardgecodeerde laatste fallback)

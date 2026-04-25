@@ -203,7 +203,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # エージェントごとのCLIマッピング（default_cliをオーバーライド）
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # 複雑なUI推論
   backend: gemini        # 高速API生成
   mobile: gemini
@@ -227,14 +227,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | プラン、メモリファイル、レポートのタイムスタンプに使用する日付形式文字列。 |
 | `timezone` | string | `UTC` | すべてのタイムスタンプのタイムゾーン。標準タイムゾーン識別子を使用（例：`Asia/Seoul`、`America/New_York`）。 |
 | `default_cli` | string | `gemini` | エージェント固有のマッピングが存在しない場合のフォールバックCLI。ベンダー解決優先度のレベル3で使用。 |
-| `agent_cli_mapping` | map | （空） | エージェントIDを特定のCLIベンダーにマッピング。`default_cli`より優先。 |
+| `model_preset (per-agent overrides via `agents:`)` | map | （空） | エージェントIDを特定のCLIベンダーにマッピング。`default_cli`より優先。 |
 
 ### ベンダー解決の優先順位
 
 エージェントをスポーンする際、CLIベンダーは以下の優先順位で決定されます（高い順）：
 
 1. `oma agent:spawn`に渡された`--model`フラグ
-2. `oma-config.yaml`のそのエージェント固有の`agent_cli_mapping`エントリ
+2. `oma-config.yaml`のそのエージェント固有の`model_preset (per-agent overrides via `agents:`)`エントリ
 3. `oma-config.yaml`の`default_cli`設定
 4. `cli-config.yaml`の`active_vendor`（レガシーフォールバック）
 5. `gemini`（ハードコードされた最終フォールバック）

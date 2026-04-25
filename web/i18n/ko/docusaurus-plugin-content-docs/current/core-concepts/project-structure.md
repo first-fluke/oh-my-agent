@@ -283,7 +283,7 @@ your-project/
 - `date_format`: 타임스탬프 형식 문자열 (기본값: `YYYY-MM-DD`)
 - `timezone`: 시간대 식별자 (기본값: `UTC`)
 - `default_cli`: 기본 CLI 벤더 (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: 에이전트별 CLI 라우팅 오버라이드
+- `model_preset (per-agent overrides via `agents:`)`: 에이전트별 CLI 라우팅 오버라이드
 
 ### skills/
 

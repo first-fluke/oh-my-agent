@@ -134,17 +134,18 @@ Model selection follows two layers:
 
 ### Per-Agent Models
 
-Pin a specific model and effort per role in `.agents/oma-config.yaml`:
+Set `model_preset` in `.agents/oma-config.yaml` to choose which AI models each agent uses:
 
 ```yaml
-agent_cli_mapping:
-  backend:
-    model: "openai/gpt-5.3-codex"
-    effort: "high"
+language: en
+model_preset: antigravity   # claude-only | codex-only | gemini-only | qwen-only | antigravity
+
+# Optional per-agent overrides
+agents:
+  backend: { model: openai/gpt-5.3-codex, effort: high }
 ```
 
-- `oma doctor --profile` — prints the per-role CLI auth matrix
-- Runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `antigravity`, `qwen-only`
+- `oma doctor --profile` — prints the per-role resolved model matrix
 - Full guide: [`web/docs/guide/per-agent-models.md`](https://github.com/first-fluke/oh-my-agent/blob/main/web/docs/guide/per-agent-models.md)
 
 ## Why oh-my-agent?

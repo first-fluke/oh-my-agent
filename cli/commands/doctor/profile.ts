@@ -1,14 +1,24 @@
 // cli/commands/doctor/profile.ts
 // oma doctor --profile — Profile Health check
 //
-// Loads .agents/config/defaults.yaml (T3) + user overrides, builds an
-// auth-status matrix for every role-model pairing, calls T9's
+// Loads .agents/oma-config.yaml, resolves the model_preset (built-in or custom),
+// builds an auth-status matrix for every role-model pairing, calls
 // detectDeprecatedOAuthSession() for Qwen, and emits Antigravity warning.
 
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, parse as parsePath, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch.js";
+import type {
+  AgentId,
+  AgentSpec,
+  ModelPreset,
+  OmaConfig,
+} from "../../platform/agent-config.js";
+import {
+  BUILT_IN_PRESET_ALIASES,
+  BUILT_IN_PRESETS,
+} from "../../platform/built-in-presets.js";
 import { getModelSpec } from "../../platform/model-registry.js";
 import {
   isClaudeAuthenticated,
@@ -76,25 +86,8 @@ function checkAuthStatus(cli: string): AuthStatus {
 }
 
 // ---------------------------------------------------------------------------
-// defaults.yaml loader
+// oma-config.yaml loader
 // ---------------------------------------------------------------------------
-
-interface AgentDefaultEntry {
-  model: string;
-  effort?: string;
-  thinking?: boolean;
-}
-
-interface DefaultsYaml {
-  agent_defaults?: Record<string, AgentDefaultEntry | string>;
-  runtime_profiles?: Record<
-    string,
-    {
-      description?: string;
-      agent_defaults?: Record<string, AgentDefaultEntry | string>;
-    }
-  >;
-}
 
 /**
  * Walk from `startDir` up to the filesystem root looking for `relativePath`.
@@ -112,79 +105,62 @@ function findFileUp(startDir: string, relativePath: string): string | null {
   return null;
 }
 
-function resolveDefaultsYamlPath(cwd: string): string | null {
-  return findFileUp(cwd, join(".agents", "config", "defaults.yaml"));
-}
-
-function parseDefaultsYaml(content: string): DefaultsYaml {
-  try {
-    const parsed = parseYaml(content) as unknown;
-    if (typeof parsed === "object" && parsed !== null) {
-      return parsed as DefaultsYaml;
-    }
-    return {};
-  } catch {
-    return {};
-  }
-}
-
-function normalizeEntry(
-  entry: AgentDefaultEntry | string | undefined,
-): AgentDefaultEntry | undefined {
-  if (!entry) return undefined;
-  if (typeof entry === "string") return { model: entry };
-  return entry;
-}
-
-/**
- * Map a legacy vendor name to the corresponding runtime_profiles key.
- * Mirrors the helper in cli/io/runtime-dispatch.ts so the doctor matrix
- * and resolveAgentPlan agree on how to interpret a legacy vendor override.
- */
-function legacyVendorToProfileKey(vendor: string): string | null {
-  const normalized = vendor.trim().toLowerCase();
-  switch (normalized) {
-    case "claude":
-      return "claude-only";
-    case "codex":
-      return "codex-only";
-    case "gemini":
-      return "gemini-only";
-    case "qwen":
-      return "qwen-only";
-    case "antigravity":
-      return "antigravity";
-    default:
-      return null;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// User-override loader
-// ---------------------------------------------------------------------------
-
-interface UserOverrideMapping {
-  agent_cli_mapping?: Record<string, string | { model: string }>;
-}
-
-/**
- * Load user override entries from .agents/oma-config.yaml so the
- * `oma doctor --profile` matrix matches the spawn path resolution rules
- * (cli/io/runtime-dispatch.ts#loadUserPreferencesRaw).
- */
-function loadUserOverride(cwd: string): UserOverrideMapping {
+function loadOmaConfig(cwd: string): Partial<OmaConfig> | null {
   const configPath = findFileUp(cwd, join(".agents", "oma-config.yaml"));
-  if (!configPath) return {};
+  if (!configPath) return null;
   try {
     const content = readFileSync(configPath, "utf-8");
     const parsed = parseYaml(content) as unknown;
-    if (typeof parsed === "object" && parsed !== null) {
-      return parsed as UserOverrideMapping;
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      !Array.isArray(parsed)
+    ) {
+      return parsed as Partial<OmaConfig>;
     }
   } catch {
     // ignore malformed YAML
   }
-  return {};
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Preset resolution (mirrors resolveAgentPlanFromConfig step 1, read-only)
+// ---------------------------------------------------------------------------
+
+function resolvePreset(
+  config: Partial<OmaConfig>,
+): { preset: ModelPreset; resolvedKey: string } | null {
+  const modelPreset = config.model_preset;
+  if (!modelPreset) return null;
+
+  const resolvedKey = BUILT_IN_PRESET_ALIASES[modelPreset] ?? modelPreset;
+  const builtIn =
+    BUILT_IN_PRESETS[resolvedKey as keyof typeof BUILT_IN_PRESETS];
+  if (builtIn) return { preset: builtIn, resolvedKey };
+
+  const custom = config.custom_presets?.[resolvedKey];
+  if (custom) {
+    if (custom.extends) {
+      const baseKey = BUILT_IN_PRESET_ALIASES[custom.extends] ?? custom.extends;
+      const base = BUILT_IN_PRESETS[baseKey as keyof typeof BUILT_IN_PRESETS];
+      if (base) {
+        return {
+          preset: {
+            description: custom.description,
+            agent_defaults: {
+              ...base.agent_defaults,
+              ...custom.agent_defaults,
+            } as Record<AgentId, AgentSpec>,
+          },
+          resolvedKey,
+        };
+      }
+    }
+    return { preset: custom as ModelPreset, resolvedKey };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,21 +183,29 @@ function cliFromModelSlug(slug: string): string {
 // Public types
 // ---------------------------------------------------------------------------
 
+export type RowSource = "preset" | "override";
+
 export interface ProfileRow {
   role: string;
   model: string;
   cli: string;
   authStatus: AuthStatus;
   authHint?: string;
+  /** Whether this row uses a per-agent override or comes from the preset. */
+  source: RowSource;
 }
 
 export interface ProfileReport {
+  /** Resolved preset key (e.g. "claude-only") or the raw model_preset value. */
   profileName: string;
   rows: ProfileRow[];
   qwenOAuth: DeprecatedOAuthSessionResult;
   isAntigravity: boolean;
   antigravityFallbackRoles: readonly string[];
-  missingDefaultsYaml: boolean;
+  /** True when model_preset is absent or unknown — no valid preset could be resolved. */
+  missingPreset: boolean;
+  /** True when all rows come from the preset with no per-agent overrides. */
+  allFromPreset: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -231,68 +215,63 @@ export interface ProfileReport {
 export async function collectProfileReport(
   cwd: string,
 ): Promise<ProfileReport> {
-  const defaultsPath = resolveDefaultsYamlPath(cwd);
-  const missingDefaultsYaml = defaultsPath === null;
+  const config = loadOmaConfig(cwd);
+  const resolved = config ? resolvePreset(config) : null;
 
-  // Load defaults.yaml
-  let agentDefaults: Record<string, AgentDefaultEntry | string> = {};
-  let defaultsYaml: DefaultsYaml = {};
-  if (defaultsPath !== null) {
-    try {
-      const raw = readFileSync(defaultsPath, "utf-8");
-      defaultsYaml = parseDefaultsYaml(raw);
-      agentDefaults = defaultsYaml.agent_defaults ?? {};
-    } catch {
-      // defensive — treat as missing
-    }
-  }
+  const missingPreset = resolved === null;
+  const profileName =
+    resolved?.resolvedKey ?? config?.model_preset ?? "(unknown)";
 
-  // Load user overrides
-  const userOverride = loadUserOverride(cwd);
-  const userMapping = userOverride.agent_cli_mapping ?? {};
-
-  // Resolve active profile name — simple heuristic from config
-  const profileName = resolveProfileName(cwd);
-
-  // Detect runtime
   const runtimeVendor = detectRuntimeVendor(process.env);
   const isAntigravity = runtimeVendor === "antigravity";
 
+  const agentsOverride = config?.agents ?? {};
+  let hasAnyOverride = false;
+
   // Build rows in canonical order
   const rows: ProfileRow[] = ROLE_ORDER.map((role) => {
-    // Check user override first
-    const userEntry = userMapping[role];
-    let model: string;
-
-    if (userEntry && typeof userEntry !== "string") {
-      // User AgentSpec object — use its model slug directly.
-      model = userEntry.model;
-    } else if (typeof userEntry === "string") {
-      // Legacy string vendor override — resolve via runtime_profiles first.
-      const profileKey = legacyVendorToProfileKey(userEntry);
-      const vendorProfileEntry = profileKey
-        ? defaultsYaml.runtime_profiles?.[profileKey]?.agent_defaults?.[role]
-        : undefined;
-      const entry =
-        normalizeEntry(vendorProfileEntry) ??
-        normalizeEntry(
-          agentDefaults[role] as AgentDefaultEntry | string | undefined,
-        );
-      model = entry?.model ?? "unknown";
-    } else {
-      // No user entry — top-level defaults.
-      const entry = normalizeEntry(
-        agentDefaults[role] as AgentDefaultEntry | string | undefined,
-      );
-      model = entry?.model ?? "unknown";
+    if (missingPreset) {
+      // No valid preset — emit placeholder row
+      return {
+        role,
+        model: "❌ NO PRESET",
+        cli: "unknown",
+        authStatus: "unknown" as AuthStatus,
+        source: "preset" as RowSource,
+      };
     }
 
+    const typedRole = role as AgentId;
+    const override = agentsOverride[typedRole];
+    const presetSpec = resolved.preset.agent_defaults[typedRole] as
+      | AgentSpec
+      | undefined;
+
+    let spec: AgentSpec | undefined;
+    let source: RowSource;
+
+    if (override) {
+      // Shallow merge: override fields win, preset fills remainder
+      spec = presetSpec ? { ...presetSpec, ...override } : override;
+      source = "override";
+      hasAnyOverride = true;
+    } else {
+      spec =
+        presetSpec ??
+        (resolved.preset.agent_defaults.orchestrator as AgentSpec | undefined);
+      source = "preset";
+    }
+
+    const model = spec?.model ?? "unknown";
     const cli = cliFromModelSlug(model);
     const authStatus = cli !== "unknown" ? checkAuthStatus(cli) : "unknown";
-    const spec = getModelSpec(model);
-    const authHint = spec?.auth_hint;
+    const registrySpec = getModelSpec(
+      model,
+      config?.models as Record<string, unknown> | undefined,
+    );
+    const authHint = registrySpec?.auth_hint;
 
-    return { role, model, cli, authStatus, authHint };
+    return { role, model, cli, authStatus, authHint, source };
   });
 
   // T9: Qwen OAuth detection
@@ -304,36 +283,9 @@ export async function collectProfileReport(
     qwenOAuth,
     isAntigravity,
     antigravityFallbackRoles: ANTIGRAVITY_FALLBACK_ROLES,
-    missingDefaultsYaml,
+    missingPreset,
+    allFromPreset: !missingPreset && !hasAnyOverride,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Profile name resolution
-// ---------------------------------------------------------------------------
-
-function resolveProfileName(cwd: string): string {
-  // Check oma-config.yaml for an explicit profile name
-  const configPath = findFileUp(cwd, join(".agents", "oma-config.yaml"));
-  if (configPath) {
-    try {
-      const content = readFileSync(configPath, "utf-8");
-      const parsed = parseYaml(content) as unknown;
-      if (
-        typeof parsed === "object" &&
-        parsed !== null &&
-        "profile" in parsed &&
-        typeof (parsed as Record<string, unknown>).profile === "string"
-      ) {
-        return (parsed as { profile: string }).profile;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // Default to "Profile B" (the default profile)
-  return "Profile B";
 }
 
 // ---------------------------------------------------------------------------
@@ -344,7 +296,8 @@ export function serializeProfileReportAsJson(report: ProfileReport): string {
   return JSON.stringify(
     {
       profileName: report.profileName,
-      missingDefaultsYaml: report.missingDefaultsYaml,
+      missingPreset: report.missingPreset,
+      allFromPreset: report.allFromPreset,
       isAntigravity: report.isAntigravity,
       rows: report.rows,
       qwenOAuth: {

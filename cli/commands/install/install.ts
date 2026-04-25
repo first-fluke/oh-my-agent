@@ -165,11 +165,22 @@ export function cleanDanglingSymlinks(dir: string): void {
   }
 }
 
-export interface InstallOptions {
-  updateDefaults?: boolean;
+export type InstallOptions = Record<string, never>;
+
+export function getExistingPreset(targetDir: string): string | null {
+  const prefsPath = join(targetDir, ".agents", "oma-config.yaml");
+  if (!existsSync(prefsPath)) return null;
+
+  try {
+    const prefs = readFileSync(prefsPath, "utf-8");
+    const match = prefs.match(/^model_preset:\s*([A-Za-z0-9_-]+)/m);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
 }
 
-export async function install(options: InstallOptions = {}): Promise<void> {
+export async function install(_options: InstallOptions = {}): Promise<void> {
   console.clear();
   p.intro(pc.bgMagenta(pc.white(" 🛸 oh-my-agent ")));
 
@@ -216,6 +227,57 @@ export async function install(options: InstallOptions = {}): Promise<void> {
   });
 
   if (p.isCancel(language)) {
+    cleanup();
+    p.cancel("Cancelled.");
+    process.exit(0);
+  }
+
+  const BUILT_IN_PRESET_OPTIONS: {
+    value: string;
+    label: string;
+    hint: string;
+  }[] = [
+    {
+      value: "claude-only",
+      label: "Claude Code only",
+      hint: "Claude Max subscription holders",
+    },
+    {
+      value: "codex-only",
+      label: "Codex CLI only",
+      hint: "ChatGPT Plus/Pro subscription holders",
+    },
+    {
+      value: "gemini-only",
+      label: "Gemini CLI only",
+      hint: "Google AI Pro subscription holders",
+    },
+    {
+      value: "qwen-only",
+      label: "Qwen Code only",
+      hint: "Qwen Code subscription holders",
+    },
+    {
+      value: "antigravity",
+      label: "Antigravity IDE",
+      hint: "Claude orchestrator + cross-vendor subagents",
+    },
+  ];
+
+  const existingPreset = getExistingPreset(process.cwd());
+  const initialPreset = BUILT_IN_PRESET_OPTIONS.some(
+    (o) => o.value === existingPreset,
+  )
+    ? (existingPreset as string)
+    : "claude-only";
+
+  const modelPreset = await p.select({
+    message: "Model preset?",
+    options: BUILT_IN_PRESET_OPTIONS,
+    initialValue: initialPreset,
+  });
+
+  if (p.isCancel(modelPreset)) {
     cleanup();
     p.cancel("Cancelled.");
     process.exit(0);
@@ -369,9 +431,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         installCodexWorkflowSkills(repoDir, cwd);
       }
       installRules(repoDir, cwd);
-      installConfigs(repoDir, cwd, false, {
-        updateDefaults: options.updateDefaults,
-      });
+      installConfigs(repoDir, cwd, false);
 
       for (const skillName of selectedSkills) {
         spinner.message(`Installing ${pc.cyan(skillName)}...`);
@@ -453,14 +513,33 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       }
       spinner.stop("Vendor adaptations installed!");
 
-      // Patch oma-config.yaml with selected language and vendors
+      // Patch oma-config.yaml with selected language, model_preset, and vendors.
+      // Uses regex-level replacement to preserve user-edited fields (timezone, etc.).
       const userPrefsPath = join(cwd, ".agents", "oma-config.yaml");
       if (existsSync(userPrefsPath)) {
-        const prefs = readFileSync(userPrefsPath, "utf-8");
-        writeFileSync(
-          userPrefsPath,
-          prefs.replace(/^language:\s*.+$/m, `language: ${language as string}`),
+        let prefs = readFileSync(userPrefsPath, "utf-8");
+
+        // Update language field
+        prefs = prefs.replace(
+          /^language:\s*.+$/m,
+          `language: ${language as string}`,
         );
+
+        // Update or insert model_preset field
+        if (/^model_preset:/m.test(prefs)) {
+          prefs = prefs.replace(
+            /^model_preset:\s*.+$/m,
+            `model_preset: ${modelPreset as string}`,
+          );
+        } else {
+          // Insert model_preset after language line (preserve user fields)
+          prefs = prefs.replace(
+            /^(language:\s*.+)$/m,
+            `$1\nmodel_preset: ${modelPreset as string}`,
+          );
+        }
+
+        writeFileSync(userPrefsPath, prefs);
         writeVendorsToConfig(cwd, vendors);
       }
 

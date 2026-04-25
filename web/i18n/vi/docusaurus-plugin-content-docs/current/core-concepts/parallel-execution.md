@@ -140,7 +140,7 @@ timezone: "Asia/Seoul"
 default_cli: gemini
 
 # Định tuyến CLI theo agent
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Suy luận UI phức tạp, tổ hợp component
   backend: gemini        # Scaffold API nhanh, tạo CRUD
   mobile: gemini         # Tạo mã Flutter nhanh
@@ -163,7 +163,7 @@ Khi `oma agent:spawn` xác định CLI nào sử dụng, nó theo ưu tiên sau 
 | Ưu tiên | Nguồn | Ví dụ |
 |----------|--------|---------|
 | 1 (cao nhất) | Flag `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | `agent_cli_mapping.backend: gemini` trong oma-config.yaml |
+| 2 | `model_preset (per-agent overrides via `agents:`)` | `model_preset (per-agent overrides via `agents:`).backend: gemini` trong oma-config.yaml |
 | 3 | `default_cli` | `default_cli: gemini` trong oma-config.yaml |
 | 4 | `active_vendor` | Cài đặt cũ `cli-config.yaml` |
 | 5 (thấp nhất) | Dự phòng cứng | `gemini` |

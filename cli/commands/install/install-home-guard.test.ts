@@ -29,6 +29,13 @@ const fsState = vi.hoisted(() => ({
   readdirSync: vi.fn(),
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
+  mkdirSync: vi.fn(),
+  rmdirSync: vi.fn(),
+  unlinkSync: vi.fn(),
+  renameSync: vi.fn(),
+  statSync: vi.fn(),
+  lstatSync: vi.fn(),
+  copyFileSync: vi.fn(),
 }));
 
 const githubState = vi.hoisted(() => ({

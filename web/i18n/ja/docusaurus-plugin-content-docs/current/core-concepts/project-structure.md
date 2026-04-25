@@ -136,7 +136,7 @@ your-project/
 
 ### config/
 
-**`oma-config.yaml`** — 中央設定ファイル：`language`（応答言語）、`date_format`、`timezone`、`default_cli`、`agent_cli_mapping`。
+**`oma-config.yaml`** — 中央設定ファイル：`language`（応答言語）、`date_format`、`timezone`、`default_cli`、`model_preset (per-agent overrides via `agents:`)`。
 
 ### skills/
 

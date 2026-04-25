@@ -2,10 +2,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
+  type AgentId,
   type AgentSpec,
+  type BuiltInPresetKey,
+  type ModelPreset,
+  normalizeAgentId,
+  type OmaConfig,
   splitArgs,
   type VendorConfig,
 } from "../platform/agent-config.js";
+import {
+  BUILT_IN_PRESET_ALIASES,
+  BUILT_IN_PRESETS,
+} from "../platform/built-in-presets.js";
 import {
   type EffortLevel,
   getModelSpec,
@@ -446,52 +455,8 @@ export function planDispatch(
 }
 
 // ---------------------------------------------------------------------------
-// Internal config loaders — file I/O isolated here so resolveAgentPlan is pure
+// Internal config loaders — single file I/O (oma-config.yaml only)
 // ---------------------------------------------------------------------------
-
-type RawAgentDefault = {
-  model?: string;
-  effort?: string;
-  thinking?: boolean;
-  memory?: string;
-};
-
-type RuntimeProfile = {
-  description?: string;
-  agent_defaults?: Record<string, RawAgentDefault>;
-};
-
-type DefaultsConfig = {
-  agent_defaults?: Record<string, RawAgentDefault>;
-  runtime_profiles?: Record<string, RuntimeProfile>;
-};
-
-/**
- * Map a legacy vendor name ("claude", "codex", "gemini", "qwen", "antigravity")
- * to the corresponding runtime_profiles key in defaults.yaml.
- * Returns null if the vendor name is not recognized.
- */
-function legacyVendorToProfileKey(vendor: string): string | null {
-  const normalized = vendor.trim().toLowerCase();
-  switch (normalized) {
-    case "claude":
-      return "claude-only";
-    case "codex":
-      return "codex-only";
-    case "gemini":
-      return "gemini-only";
-    case "qwen":
-      return "qwen-only";
-    case "antigravity":
-      return "antigravity";
-    default:
-      return null;
-  }
-}
-
-type UserPreferencesRaw = {
-  agent_cli_mapping?: Record<string, string | RawAgentDefault>;
-};
 
 function findFileUp(startDir: string, relativePath: string): string | null {
   let current = path.resolve(startDir);
@@ -504,220 +469,278 @@ function findFileUp(startDir: string, relativePath: string): string | null {
   return null;
 }
 
-function loadDefaultsConfig(cwd: string): DefaultsConfig {
-  const filePath = findFileUp(
-    cwd,
-    path.join(".agents", "config", "defaults.yaml"),
-  );
-  if (!filePath) return {};
-  try {
-    const content = fs.readFileSync(filePath, "utf-8");
-    const parsed = parseYaml(content);
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      !Array.isArray(parsed) &&
-      "agent_defaults" in parsed
-    ) {
-      return parsed as DefaultsConfig;
-    }
-    return {};
-  } catch {
-    return {};
-  }
-}
-
-function readYamlObject(filePath: string): UserPreferencesRaw | null {
-  try {
-    const content = fs.readFileSync(filePath, "utf-8");
-    const parsed = parseYaml(content);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as UserPreferencesRaw;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 /**
- * Load user preferences from the canonical .agents/oma-config.yaml.
+ * Load user config from the canonical .agents/oma-config.yaml.
+ * Returns partial OmaConfig shape — only fields present in the file are set.
+ * Migration 003 ensures oma-config.yaml is the only user config file.
  *
- * Legacy .agents/config/user-preferences.yaml is migrated to oma-config.yaml
- * by migration 003 (cli/commands/migrations/003-oma-config.ts), which runs on
- * every `oma install` and `oma update`.
+ * Throws ConfigError with file:line:col when the file exists but contains
+ * invalid YAML, so the user gets an actionable error message.
  */
-function loadUserPreferencesRaw(cwd: string): UserPreferencesRaw {
+function loadUserConfig(cwd: string): Partial<OmaConfig> {
   const canonicalPath = findFileUp(
     cwd,
     path.join(".agents", "oma-config.yaml"),
   );
   if (!canonicalPath) return {};
-  return readYamlObject(canonicalPath) ?? {};
+  let content: string;
+  try {
+    content = fs.readFileSync(canonicalPath, "utf-8");
+  } catch {
+    return {};
+  }
+  try {
+    const parsed = parseYaml(content);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Partial<OmaConfig>;
+    }
+    return {};
+  } catch (err) {
+    const pos =
+      err &&
+      typeof err === "object" &&
+      "linePos" in err &&
+      Array.isArray((err as { linePos: unknown[] }).linePos) &&
+      (err as { linePos: Array<{ line: number; col: number }> }).linePos
+        .length > 0
+        ? (err as { linePos: Array<{ line: number; col: number }> }).linePos[0]
+        : null;
+    const location = pos
+      ? `${canonicalPath}:${pos.line}:${pos.col}`
+      : canonicalPath;
+    throw new ConfigError(
+      `Failed to parse YAML at ${location}: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
-// resolveAgentPlan — pure after config injection; exported overloads handle cwd
+// Preset resolution helpers
 // ---------------------------------------------------------------------------
 
-type ResolvedConfig = {
-  userPrefs: UserPreferencesRaw;
-  defaults: DefaultsConfig;
-};
+/**
+ * Merge a custom preset with its base, respecting the extends chain.
+ * Cycle detection: tracks visited preset keys and throws ConfigError on cycle.
+ *
+ * The merge is shallow per-agent: custom preset's agent_defaults entries fully
+ * override the corresponding base entries (no field-level merge within an agent).
+ * Missing agents in the custom preset are inherited from the base.
+ */
+function mergeWithBase(
+  custom: ModelPreset,
+  baseKey: string,
+  config: Partial<OmaConfig>,
+  visited: Set<string>,
+): ModelPreset {
+  if (visited.has(baseKey)) {
+    throw new ConfigError(
+      `Circular extends chain detected at preset "${baseKey}". Chain: ${[...visited].join(" → ")} → ${baseKey}`,
+    );
+  }
+  visited.add(baseKey);
+
+  const builtInBase = BUILT_IN_PRESETS[baseKey as BuiltInPresetKey];
+  if (builtInBase) {
+    return {
+      description: custom.description,
+      agent_defaults: {
+        ...builtInBase.agent_defaults,
+        ...custom.agent_defaults,
+      } as Record<AgentId, AgentSpec>,
+    };
+  }
+
+  const customBase = config.custom_presets?.[baseKey];
+  if (customBase) {
+    // Recursively resolve the base's extends chain first
+    let resolvedBase: ModelPreset = customBase;
+    if (customBase.extends) {
+      resolvedBase = mergeWithBase(
+        customBase,
+        customBase.extends,
+        config,
+        visited,
+      );
+    }
+    return {
+      description: custom.description,
+      agent_defaults: {
+        ...resolvedBase.agent_defaults,
+        ...custom.agent_defaults,
+      } as Record<AgentId, AgentSpec>,
+    };
+  }
+
+  throw new ConfigError(
+    `Preset "${baseKey}" referenced in 'extends' is not a built-in preset and not found in custom_presets.`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// resolveAgentPlan — 4-step resolver per design doc
+// ---------------------------------------------------------------------------
 
 /**
  * Pure implementation — separated from file I/O so tests can inject config.
- * Not exported; public surface is resolveAgentPlan.
+ *
+ * 4-step resolver:
+ * 1. Resolve preset (built-in, alias, or custom with optional extends merge)
+ * 2. Spec selection — override (agents map) shallow-merged over preset entry
+ * 3. Registry lookup — built-in models + user inline models
+ * 4. Feature filter — drop effort for cli-session, apply vendorOverride
  */
 export function resolveAgentPlanFromConfig(
   agentId: string,
-  { userPrefs, defaults }: ResolvedConfig,
+  config: Partial<OmaConfig>,
   vendorOverride?: string,
 ): AgentPlan {
-  const mapping = userPrefs.agent_cli_mapping ?? {};
-  const rawUserEntry = mapping[agentId];
+  const modelPreset = config.model_preset;
+  if (!modelPreset) {
+    throw new ConfigError(
+      `'model_preset' is missing from .agents/oma-config.yaml. Run 'oma install --preset <name>' to set one.`,
+    );
+  }
 
-  // Step 1: Resolve AgentSpec from oma-config.yaml or defaults.yaml.
-  let modelSlug: string | undefined;
-  let effort: EffortLevel | undefined;
-  let thinking: boolean | undefined;
-  let memory: "user" | "project" | "local" | undefined;
+  // Step 1: Resolve preset (built-in → alias → custom with extends chain)
+  const resolvedKey = BUILT_IN_PRESET_ALIASES[modelPreset] ?? modelPreset;
+  const builtIn = BUILT_IN_PRESETS[resolvedKey as BuiltInPresetKey];
+  const customPreset = config.custom_presets?.[resolvedKey];
 
-  if (rawUserEntry !== undefined) {
-    if (typeof rawUserEntry === "string") {
-      // Legacy string format: vendor name = "use this vendor for this agent".
-      // Resolve via defaults.runtime_profiles.{vendor}-only.agent_defaults[agentId]
-      // so the user's vendor intent is honored. Falls through to top-level
-      // agent_defaults only when the vendor profile doesn't define the role.
-      const profileKey = legacyVendorToProfileKey(rawUserEntry);
-      const vendorProfileDefault = profileKey
-        ? defaults.runtime_profiles?.[profileKey]?.agent_defaults?.[agentId]
-        : undefined;
-      if (profileKey && !vendorProfileDefault) {
-        console.warn(
-          `[resolve-agent-plan] ${agentId} agent: legacy override '${rawUserEntry}' but runtime_profiles.${profileKey}.agent_defaults.${agentId} is missing — falling back to top-level agent_defaults.`,
-        );
-      } else if (!profileKey) {
-        console.warn(
-          `[resolve-agent-plan] ${agentId} agent: legacy vendor '${rawUserEntry}' is not a known runtime — falling back to top-level agent_defaults.`,
-        );
-      }
-      const agentDefault =
-        vendorProfileDefault ??
-        defaults.agent_defaults?.[agentId] ??
-        defaults.agent_defaults?.orchestrator;
-      modelSlug = agentDefault?.model;
-      effort = agentDefault?.effort as EffortLevel | undefined;
-      thinking = agentDefault?.thinking;
-      memory = agentDefault?.memory as "user" | "project" | "local" | undefined;
-    } else {
-      // AgentSpec object format
-      const spec = rawUserEntry as AgentSpec;
-      modelSlug = spec.model;
-      effort = spec.effort as EffortLevel | undefined;
-      thinking = spec.thinking;
-      memory = spec.memory as "user" | "project" | "local" | undefined;
+  let preset: ModelPreset;
+  if (builtIn) {
+    if (resolvedKey !== modelPreset) {
+      console.warn(
+        `[resolve-agent-plan] Preset alias "${modelPreset}" redirected to "${resolvedKey}". Update your config to use the canonical key.`,
+      );
     }
+    preset = builtIn;
+  } else if (customPreset) {
+    if (customPreset.extends) {
+      preset = mergeWithBase(
+        customPreset,
+        customPreset.extends,
+        config,
+        new Set([resolvedKey]),
+      );
+    } else {
+      preset = customPreset;
+    }
+    // Custom preset collision with built-in name was already resolved above (builtIn wins)
   } else {
-    // Step 2: Fall back to defaults.yaml for this agentId, then orchestrator
-    const agentDefault =
-      defaults.agent_defaults?.[agentId] ??
-      defaults.agent_defaults?.orchestrator;
-    modelSlug = agentDefault?.model;
-    effort = agentDefault?.effort as EffortLevel | undefined;
-    thinking = agentDefault?.thinking;
-    memory = agentDefault?.memory as "user" | "project" | "local" | undefined;
-  }
-
-  if (!modelSlug) {
+    const validBuiltIns = Object.keys(BUILT_IN_PRESETS).join(", ");
     throw new ConfigError(
-      `No model configured for agent '${agentId}' and no orchestrator fallback found in defaults.yaml.`,
+      `Unknown model_preset "${modelPreset}". Built-in presets: ${validBuiltIns}. ` +
+        `Custom presets defined: ${Object.keys(config.custom_presets ?? {}).join(", ") || "(none)"}.`,
     );
   }
 
-  // Step 3: Registry lookup
-  const spec = getModelSpec(modelSlug);
-  if (!spec) {
+  // Step 2: Spec selection with shallow merge (override over preset).
+  // Normalize semantic aliases ("backend-engineer" → "backend") so callers
+  // using subagent file names still resolve to the correct preset entry.
+  const typedAgentId = (normalizeAgentId(agentId) ?? agentId) as AgentId;
+  const presetSpec =
+    preset.agent_defaults[typedAgentId] ?? preset.agent_defaults.orchestrator;
+
+  if (!presetSpec) {
     throw new ConfigError(
-      `Unknown model slug '${modelSlug}'. Add it to .agents/config/models.yaml or use a Registry slug.`,
+      `Preset "${resolvedKey}" has no agent_defaults for "${agentId}" and no orchestrator fallback. ` +
+        `Custom presets without 'extends' must define all 11 agent roles.`,
     );
   }
 
-  // Defensive: api_only should be filtered by T1, but guard here as well (R13)
-  if (spec.supports.api_only) {
-    throw new ConfigError(
-      `Model '${modelSlug}' has api_only: true. CLI dispatch is not supported. Use a supported model.`,
+  const override = config.agents?.[typedAgentId];
+  const spec: AgentSpec = override
+    ? { ...presetSpec, ...override }
+    : presetSpec;
+
+  if (override && JSON.stringify(override) === JSON.stringify(presetSpec)) {
+    console.debug(
+      `[resolve-agent-plan] ${agentId}: override is identical to preset entry (no-op).`,
     );
   }
 
-  // Step 4: vendorOverride — fall back to env var if not provided
+  // Step 3: Registry lookup (built-in models + user inline models)
+  const modelSpec = getModelSpec(
+    spec.model,
+    config.models as Record<string, unknown> | undefined,
+  );
+  if (!modelSpec) {
+    throw new ConfigError(
+      `Unknown model slug "${spec.model}" for agent "${agentId}". ` +
+        `Add it to the 'models' key in .agents/oma-config.yaml or use a built-in slug.`,
+    );
+  }
+
+  // Defensive: api_only guard
+  if (modelSpec.supports.api_only) {
+    throw new ConfigError(
+      `Model "${spec.model}" has api_only: true. CLI dispatch is not supported. Use a supported model.`,
+    );
+  }
+
+  // Step 4: Feature filter + vendorOverride
   const effectiveOverride =
     vendorOverride ?? process.env.OMA_RUNTIME_VENDOR?.trim().toLowerCase();
 
-  let cli: RuntimeId = spec.cli;
+  let cli: RuntimeId = modelSpec.cli;
   if (effectiveOverride) {
     if (
-      spec.supports.native_dispatch_from.includes(
+      modelSpec.supports.native_dispatch_from.includes(
         effectiveOverride as RuntimeId,
       )
     ) {
       cli = effectiveOverride as RuntimeId;
     } else {
       console.warn(
-        `[resolve-agent-plan] ${agentId} agent: "${effectiveOverride}" is not in native_dispatch_from [${spec.supports.native_dispatch_from.join(", ")}]. Falling back to external subprocess.`,
+        `[resolve-agent-plan] ${agentId} agent: "${effectiveOverride}" is not in native_dispatch_from [${modelSpec.supports.native_dispatch_from.join(", ")}]. Falling back to external subprocess.`,
       );
     }
   }
 
-  // Step 5: Feature filter — drop effort for cli-session (Claude) models (R14)
-  let finalEffort: EffortLevel | undefined = effort;
-  if (spec.supports.effort?.type === "cli-session" && effort !== undefined) {
+  let finalEffort: EffortLevel | undefined = spec.effort as
+    | EffortLevel
+    | undefined;
+  if (
+    modelSpec.supports.effort?.type === "cli-session" &&
+    finalEffort !== undefined
+  ) {
     console.warn(
-      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from .agents/oma-config.yaml for '${agentId}'.`,
+      `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from agents.${agentId} in .agents/oma-config.yaml.`,
     );
     finalEffort = undefined;
   }
 
-  // Step 6: Build and return AgentPlan
   const plan: AgentPlan = {
     cli,
-    cliModel: spec.cli_model,
-    spec,
+    cliModel: modelSpec.cli_model,
+    spec: modelSpec,
   };
 
   if (finalEffort !== undefined) plan.effort = finalEffort;
-  if (thinking !== undefined) plan.thinking = thinking;
-  if (memory !== undefined) plan.memory = memory;
+  if (spec.thinking !== undefined) plan.thinking = spec.thinking;
+  if (spec.memory !== undefined) plan.memory = spec.memory;
 
   return plan;
 }
 
 /**
- * Resolve the per-agent dispatch plan from user config, defaulting to cwd.
+ * Resolve the per-agent dispatch plan from oma-config.yaml.
  *
- * Flow:
- * 1. Check agent_cli_mapping[agentId] from .agents/oma-config.yaml.
- *    - string (legacy) → vendor name only; model/effort from defaults.yaml,
- *      or from runtime_profiles.{vendor}-only.agent_defaults[agentId] when set
- *    - AgentSpec object → use its fields directly
- * 2. Fall back to defaults.yaml agent_defaults[agentId], then agent_defaults.orchestrator
- * 3. Registry lookup via getModelSpec — throws ConfigError if unknown slug (R13)
- * 4. Throws ConfigError if api_only:true (R13 defensive)
- * 5. Apply vendorOverride: check native_dispatch_from; WARN + fallback if not supported
- * 6. Drop effort for cli-session (Claude) models + WARN (R14)
+ * 4-step resolver flow:
+ * 1. Load oma-config.yaml (single file I/O)
+ * 2. Resolve model_preset → built-in, alias, or custom with extends merge
+ * 3. Shallow merge agents[agentId] override over preset.agent_defaults[agentId]
+ * 4. Registry lookup + feature filter (effort, vendorOverride)
+ *
+ * Throws ConfigError on missing preset, unknown slug, or cycle in extends chain.
  */
 export function resolveAgentPlan(
   agentId: string,
   vendorOverride?: string,
 ): AgentPlan {
   const cwd = process.cwd();
-  const userPrefs = loadUserPreferencesRaw(cwd);
-  const defaults = loadDefaultsConfig(cwd);
-  return resolveAgentPlanFromConfig(
-    agentId,
-    { userPrefs, defaults },
-    vendorOverride,
-  );
+  const config = loadUserConfig(cwd);
+  return resolveAgentPlanFromConfig(agentId, config, vendorOverride);
 }
 
 // =============================================================================

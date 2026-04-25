@@ -120,55 +120,34 @@ The `-i` (inline) flag allows specifying agent-prompt pairs directly in the comm
 
 ## Multi-CLI Configuration
 
-Not all AI CLIs perform equally across domains. oh-my-agent lets you route agents to the CLI that handles their domain best.
+oh-my-agent routes each agent to the appropriate CLI via `model_preset` in `.agents/oma-config.yaml`. Choose a built-in preset for the vendor you use, and optionally override individual agents.
 
-### Full Configuration Example
+### Configuration Example
 
 ```yaml
 # .agents/oma-config.yaml
-
-# Response language
 language: en
+model_preset: antigravity   # mixed: Claude for QA/PM, Codex for impl, Gemini for retrieval
 
-# Date format for reports
-date_format: "YYYY-MM-DD"
-
-# Timezone for timestamps
-timezone: "Asia/Seoul"
-
-# Default CLI (used when no agent-specific mapping exists)
-default_cli: gemini
-
-# Per-agent CLI routing
-agent_cli_mapping:
-  frontend: claude       # Complex UI reasoning, component composition
-  backend: gemini        # Fast API scaffolding, CRUD generation
-  mobile: gemini         # Fast Flutter code generation
-  db: gemini             # Quick schema design
-  pm: gemini             # Rapid task decomposition
-  qa: claude             # Thorough security and accessibility review
-  debug: claude          # Deep root-cause analysis, symbol tracing
-  design: claude         # Nuanced design decisions, anti-pattern detection
-  tf-infra: gemini       # HCL generation
-  dev-workflow: gemini   # Task runner configuration
-  translator: claude     # Nuanced translation with cultural sensitivity
-  orchestrator: gemini   # Fast coordination
-  commit: gemini         # Simple commit message generation
+# Override specific agents on top of the preset
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
+  backend:  { model: openai/gpt-5.3-codex, effort: high }
 ```
 
-### Vendor Resolution Priority
+Built-in presets: `claude-only`, `codex-only`, `gemini-only`, `qwen-only`, `antigravity`. See [Per-Agent Models](../guide/per-agent-models.md) for details.
 
-When `oma agent:spawn` determines which CLI to use, it follows this priority (highest wins):
+### Vendor Resolution
+
+When `oma agent:spawn` determines which CLI to use:
 
 | Priority | Source | Example |
 |----------|--------|---------|
 | 1 (highest) | `--model` flag | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | `agent_cli_mapping.backend: gemini` in oma-config.yaml |
-| 3 | `default_cli` | `default_cli: gemini` in oma-config.yaml |
-| 4 | `active_vendor` | Legacy `cli-config.yaml` setting |
-| 5 (lowest) | Hardcoded fallback | `gemini` |
+| 2 | `agents:` override in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.3-codex } }` |
+| 3 | Active `model_preset` agent defaults | preset lookup for the agent role |
 
-This means a `--model` flag always wins. If no flag is provided, the system checks agent-specific mapping, then the default, then legacy config, and finally falls back to Gemini.
+The `--model` flag always wins. If no flag is provided, the system checks `agents:` overrides, then the preset defaults.
 
 ---
 

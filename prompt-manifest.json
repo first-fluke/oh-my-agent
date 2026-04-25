@@ -75,11 +75,6 @@
       "size": 676
     },
     {
-      "path": ".agents/config/defaults.yaml",
-      "sha256": "9251b793c31bec34542c715c641d89e9609d83365c0498256812e058287dd96c",
-      "size": 5558
-    },
-    {
       "path": ".agents/hooks/core/filter-test-output.sh",
       "sha256": "b03fd019a4ab095f2eaf717d368be00825ce43be39942c5620a7cdf9192355e7",
       "size": 1564

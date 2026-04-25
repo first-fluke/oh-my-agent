@@ -15,7 +15,7 @@ The agent definitions under `.agents/agents/` are the source of truth. OMA proje
 
 When a workflow maps an agent to the same vendor as the current runtime, it should use that runtime's native agent file first. Cross-vendor tasks fall back to `oma agent:spawn`.
 
-> **Per-agent model dispatch** (cli@5.16.0+) — each agent resolves to a specific model slug, CLI vendor, and reasoning effort through `agent_cli_mapping` and `runtime_profiles` in `.agents/oma-config.yaml` / `.agents/config/defaults.yaml`. See [Per-Agent Models](../guide/per-agent-models.md) for configuration details and [`oma doctor --profile`](../cli-interfaces/commands.md#doctor) to inspect the live matrix.
+> **Per-agent model dispatch** — each agent resolves to a specific model slug, CLI vendor, and reasoning effort through `model_preset` (and optional `agents:` overrides) in `.agents/oma-config.yaml`. See [Per-Agent Models](../guide/per-agent-models.md) for configuration details and [`oma doctor --profile`](../cli-interfaces/commands.md#doctor) to inspect the live matrix.
 
 ---
 

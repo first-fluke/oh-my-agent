@@ -140,7 +140,7 @@ timezone: "Asia/Seoul"
 default_cli: gemini
 
 # 에이전트별 CLI 라우팅
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # 복잡한 UI 추론, 컴포넌트 구성
   backend: gemini        # 빠른 API 스캐폴딩, CRUD 생성
   mobile: gemini         # 빠른 Flutter 코드 생성
@@ -163,7 +163,7 @@ agent_cli_mapping:
 | 우선순위 | 소스 | 예시 |
 |----------|--------|---------|
 | 1 (최고) | `--model` 플래그 | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | oma-config.yaml의 `agent_cli_mapping.backend: gemini` |
+| 2 | `model_preset (per-agent overrides via `agents:`)` | oma-config.yaml의 `model_preset (per-agent overrides via `agents:`).backend: gemini` |
 | 3 | `default_cli` | oma-config.yaml의 `default_cli: gemini` |
 | 4 | `active_vendor` | 레거시 `cli-config.yaml` 설정 |
 | 5 (최저) | 하드코딩된 폴백 | `gemini` |

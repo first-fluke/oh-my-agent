@@ -205,7 +205,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # 에이전트별 CLI 매핑 (default_cli 오버라이드)
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # 복잡한 UI 추론
   backend: gemini        # 빠른 API 생성
   mobile: gemini
@@ -229,14 +229,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | 계획, 메모리 파일, 리포트의 타임스탬프에 사용되는 날짜 형식 문자열. |
 | `timezone` | string | `UTC` | 모든 타임스탬프에 사용되는 시간대. 표준 시간대 식별자 사용 (예: `Asia/Seoul`, `America/New_York`). |
 | `default_cli` | string | `gemini` | 에이전트별 매핑이 없을 때 사용하는 기본 CLI. 벤더 결정 우선순위에서 3순위. |
-| `agent_cli_mapping` | map | (비어 있음) | 에이전트 ID를 특정 CLI 벤더에 매핑합니다. `default_cli`보다 우선합니다. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (비어 있음) | 에이전트 ID를 특정 CLI 벤더에 매핑합니다. `default_cli`보다 우선합니다. |
 
 ### 벤더 해석 우선순위
 
 에이전트를 스폰할 때 CLI 벤더는 다음 우선순위 순서로 결정됩니다(높은 것이 우선):
 
 1. `oma agent:spawn`에 전달된 `--model` 플래그
-2. `oma-config.yaml`의 해당 에이전트에 대한 `agent_cli_mapping` 항목
+2. `oma-config.yaml`의 해당 에이전트에 대한 `model_preset (per-agent overrides via `agents:`)` 항목
 3. `oma-config.yaml`의 `default_cli` 설정
 4. `cli-config.yaml`의 `active_vendor` (레거시 폴백)
 5. `gemini` (하드코딩된 최종 폴백)

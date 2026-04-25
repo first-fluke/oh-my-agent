@@ -16,6 +16,7 @@ import { migrateClaudeMdLocal } from "./004-claude-md-local.js";
 import { migrateRenameOmaScm } from "./005-rename-oma-scm.js";
 import { migrateGeminiCliCompat } from "./006-gemini-cli-compat.js";
 import { migrateCodexQwenSerena } from "./007-codex-qwen-serena.js";
+import { migrateModelPreset } from "./008-model-preset.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -25,6 +26,7 @@ const migrations: Migration[] = [
   migrateRenameOmaScm,
   migrateGeminiCliCompat,
   migrateCodexQwenSerena,
+  migrateModelPreset,
 ];
 
 export function runMigrations(cwd: string): string[] {

@@ -140,7 +140,7 @@ Dit is de kerndirectory. Alles wat agenten nodig hebben bevindt zich hier. Het i
 
 ### config/
 
-**`oma-config.yaml`** — Centraal configuratiebestand met: `language` (antwoordtaalcode), `date_format` (tijdstempelnotatie), `timezone` (tijdzone-identificator), `default_cli` (fallback CLI-leverancier), `agent_cli_mapping` (per-agent CLI-routering).
+**`oma-config.yaml`** — Centraal configuratiebestand met: `language` (antwoordtaalcode), `date_format` (tijdstempelnotatie), `timezone` (tijdzone-identificator), `default_cli` (fallback CLI-leverancier), `model_preset (per-agent overrides via `agents:`)` (per-agent CLI-routering).
 
 ### skills/
 

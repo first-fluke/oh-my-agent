@@ -203,7 +203,7 @@ timezone: "UTC"
 default_cli: gemini
 
 # Mapeo CLI por agente (sobrescribe default_cli)
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Razonamiento complejo de UI
   backend: gemini        # Generación rápida de APIs
   mobile: gemini
@@ -227,14 +227,14 @@ agent_cli_mapping:
 | `date_format` | string | `YYYY-MM-DD` | Cadena de formato de fecha para marcas de tiempo en planes, archivos de memoria e informes. |
 | `timezone` | string | `UTC` | Zona horaria para todas las marcas de tiempo. Usa identificadores estándar (ej., `Asia/Seoul`, `America/New_York`). |
 | `default_cli` | string | `gemini` | CLI de respaldo cuando no existe mapeo específico por agente. Usado como nivel 3 en la prioridad de resolución de proveedor. |
-| `agent_cli_mapping` | map | (vacío) | Mapea IDs de agente a proveedores CLI específicos. Tiene precedencia sobre `default_cli`. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (vacío) | Mapea IDs de agente a proveedores CLI específicos. Tiene precedencia sobre `default_cli`. |
 
 ### Prioridad de Resolución de Proveedor
 
 Al generar un agente, el proveedor CLI se determina por este orden de prioridad (el más alto primero):
 
 1. Flag `--model` pasado a `oma agent:spawn`
-2. Entrada `agent_cli_mapping` para ese agente específico en `oma-config.yaml`
+2. Entrada `model_preset (per-agent overrides via `agents:`)` para ese agente específico en `oma-config.yaml`
 3. Configuración `default_cli` en `oma-config.yaml`
 4. `active_vendor` en `cli-config.yaml` (respaldo legacy)
 5. `gemini` (respaldo fijo final)

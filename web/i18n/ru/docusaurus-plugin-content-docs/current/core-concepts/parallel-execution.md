@@ -118,7 +118,7 @@ date_format: "YYYY-MM-DD"
 timezone: "Asia/Seoul"
 default_cli: gemini
 
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Сложные UI-рассуждения
   backend: gemini        # Быстрая генерация API
   mobile: gemini         # Быстрая генерация Flutter
@@ -139,7 +139,7 @@ agent_cli_mapping:
 | Приоритет | Источник | Пример |
 |-----------|---------|--------|
 | 1 (высший) | Флаг `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | `agent_cli_mapping.backend: gemini` |
+| 2 | `model_preset (per-agent overrides via `agents:`)` | `model_preset (per-agent overrides via `agents:`).backend: gemini` |
 | 3 | `default_cli` | `default_cli: gemini` |
 | 4 | `active_vendor` | Устаревшая `cli-config.yaml` |
 | 5 (низший) | Жёстко закодированный | `gemini` |

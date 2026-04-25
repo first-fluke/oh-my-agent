@@ -81,12 +81,10 @@ Set this environment variable to `json` to force JSON output on all commands tha
 ### oma (install)
 
 ```
-oma [--update-defaults]
+oma
 ```
 
-| Flag | Description | Default |
-|:-----|:-----------|:--------|
-| `--update-defaults` | Overwrite `.agents/config/defaults.yaml` with the bundled version when a version mismatch is detected. User files (`oma-config.yaml`, `.agents/config/models.yaml`) are preserved. Introduced in cli@5.16.0. | `false` |
+No flags. The interactive installer prompts for preset selection and writes `model_preset` to `.agents/oma-config.yaml`.
 
 ### doctor
 
@@ -98,7 +96,7 @@ oma doctor [--json] [--output <format>] [--profile]
 |:-----|:-----------|:--------|
 | `--json` | Emit JSON instead of formatted text. | `false` |
 | `--output <format>` | Explicit output format (`text` or `json`). See [Output Options](#output-options). | `text` |
-| `--profile` | Show the profile health matrix — resolved model slug, CLI, and auth status per agent through `runtime_profiles`. Introduced in cli@5.16.0. See [Per-Agent Models](../guide/per-agent-models.md). | `false` |
+| `--profile` | Show the profile health matrix — resolved model slug, CLI, and auth status per agent from the active `model_preset` and `agents:` overrides. See [Per-Agent Models](../guide/per-agent-models.md). | `false` |
 
 ### update
 

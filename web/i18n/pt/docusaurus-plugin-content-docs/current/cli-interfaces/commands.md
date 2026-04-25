@@ -275,7 +275,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | Sobrescrita de vendor CLI: `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Diretório de trabalho para o agente. Auto-detectado de config monorepo se omitido. |
 
-**Ordem de resolução de vendor:** flag `--model` > `agent_cli_mapping` em oma-config.yaml > `default_cli` > `active_vendor` em cli-config.yaml > `gemini`.
+**Ordem de resolução de vendor:** flag `--model` > `model_preset (per-agent overrides via `agents:`)` em oma-config.yaml > `default_cli` > `active_vendor` em cli-config.yaml > `gemini`.
 
 **Resolução de prompt:** Se o argumento prompt for um caminho para um arquivo existente, o conteúdo do arquivo é usado como prompt. Caso contrário, o argumento é usado como texto inline. Protocolos de execução específicos do vendor são anexados automaticamente.
 

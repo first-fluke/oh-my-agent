@@ -215,7 +215,7 @@ Cập nhật thời gian thực qua WebSocket, tự kết nối lại, chỉ bá
 | Agent bị chặn ở HIGH clarification | Yêu cầu quá mơ hồ | Cung cấp câu trả lời cụ thể agent yêu cầu, rồi chạy lại |
 | Công cụ MCP không hoạt động | Serena chưa cấu hình hoặc không chạy | Chạy `oma doctor` để xác minh cấu hình MCP |
 | Agent vượt giới hạn lượt | Task quá phức tạp cho lượt mặc định | Tăng lượt bằng flag `-t 30`, hoặc phân tách thành task nhỏ hơn |
-| Agent dùng sai CLI | agent_cli_mapping chưa cấu hình | Chạy `oma install` để cấu hình, hoặc chỉnh trực tiếp `oma-config.yaml` |
+| Agent dùng sai CLI | model_preset (per-agent overrides via `agents:`) chưa cấu hình | Chạy `oma install` để cấu hình, hoặc chỉnh trực tiếp `oma-config.yaml` |
 
 ---
 

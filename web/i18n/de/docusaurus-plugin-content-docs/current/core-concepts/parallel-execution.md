@@ -140,7 +140,7 @@ timezone: "Asia/Seoul"
 default_cli: gemini
 
 # Pro-Agent-CLI-Routing
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # Komplexes UI-Reasoning, Komponentenkomposition
   backend: gemini        # Schnelle API-Gerüsterstellung, CRUD-Generierung
   mobile: gemini         # Schnelle Flutter-Code-Generierung
@@ -163,7 +163,7 @@ Wenn `oma agent:spawn` bestimmt, welche CLI verwendet wird, folgt es dieser Prio
 | Priorität | Quelle | Beispiel |
 |----------|--------|---------|
 | 1 (höchste) | `--model`-Flag | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | `agent_cli_mapping.backend: gemini` in oma-config.yaml |
+| 2 | `model_preset (per-agent overrides via `agents:`)` | `model_preset (per-agent overrides via `agents:`).backend: gemini` in oma-config.yaml |
 | 3 | `default_cli` | `default_cli: gemini` in oma-config.yaml |
 | 4 | `active_vendor` | Legacy-Einstellung in `cli-config.yaml` |
 | 5 (niedrigste) | Fest codierter Fallback | `gemini` |

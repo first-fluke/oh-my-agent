@@ -414,7 +414,7 @@ The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This i
 
 8. **Run `/deepinit` on new codebases.** It creates AGENTS.md and ARCHITECTURE.md that help all agents understand the project structure.
 
-9. **Configure agent-CLI mapping.** Route complex reasoning tasks (qa, debug, frontend) to Claude and fast generation tasks (backend, pm) to Gemini.
+9. **Configure `model_preset`.** Use `claude-only`, `gemini-only`, or `antigravity` to route agents to the right CLI. Add `agents:` overrides for fine-grained control. See [Per-Agent Models](./per-agent-models.md).
 
 10. **Use `/ultrawork` for production-critical code.** The 5-phase, 11-review-step workflow catches issues that simpler workflows miss.
 
@@ -435,7 +435,7 @@ The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This i
 | Agent blocked on HIGH clarification | Requirements too ambiguous | Provide the specific answers the agent requested, then re-run |
 | MCP tools not working | Serena not configured or not running | Run `oma doctor` to verify MCP config |
 | Agent exceeds turn limit | Task too complex for default turns | Increase turns with `-t 30` flag, or decompose into smaller tasks |
-| Wrong CLI used for agent | agent_cli_mapping not configured | Run `oma install` to configure, or edit `oma-config.yaml` directly |
+| Wrong CLI used for agent | `model_preset` not configured or agent override missing | Run `oma install` to configure, or set `model_preset` in `oma-config.yaml`. See [Per-Agent Models](./per-agent-models.md). |
 
 ---
 

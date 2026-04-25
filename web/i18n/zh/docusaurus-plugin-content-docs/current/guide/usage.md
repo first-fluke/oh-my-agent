@@ -420,7 +420,7 @@ oma dashboard:web
 | 智能体因 HIGH 澄清被阻塞 | 需求太模糊 | 提供智能体请求的具体答案，然后重新运行 |
 | MCP 工具不工作 | Serena 未配置或未运行 | 使用 `oma doctor` 验证 MCP 配置 |
 | 智能体超出轮次限制 | 任务对默认轮次来说太复杂 | 使用 `-t 30` 标志增加轮次，或分解为更小的任务 |
-| 智能体使用了错误的 CLI | agent_cli_mapping 未配置 | 运行 `oma install` 进行配置，或直接编辑 `oma-config.yaml` |
+| 智能体使用了错误的 CLI | model_preset (per-agent overrides via `agents:`) 未配置 | 运行 `oma install` 进行配置，或直接编辑 `oma-config.yaml` |
 
 ---
 

@@ -113,7 +113,7 @@ date_format: "YYYY-MM-DD"
 timezone: "Asia/Seoul"
 default_cli: gemini
 
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # 複雑なUI推論
   backend: gemini        # 高速APIスキャフォールディング
   mobile: gemini         # 高速Flutterコード生成
@@ -134,7 +134,7 @@ agent_cli_mapping:
 | 優先度 | ソース | 例 |
 |----------|--------|---------|
 | 1（最高） | `--model`フラグ | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | oma-config.yamlの設定 |
+| 2 | `model_preset (per-agent overrides via `agents:`)` | oma-config.yamlの設定 |
 | 3 | `default_cli` | oma-config.yamlの設定 |
 | 4 | `active_vendor` | レガシー`cli-config.yaml` |
 | 5（最低） | ハードコード | `gemini` |

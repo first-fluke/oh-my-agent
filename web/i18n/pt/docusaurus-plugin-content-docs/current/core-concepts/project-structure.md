@@ -146,7 +146,7 @@ Este é o diretório central. Tudo que os agentes precisam reside aqui. É o ún
 - `date_format`: Formato de timestamp (padrão: `YYYY-MM-DD`)
 - `timezone`: Identificador de fuso horário (padrão: `UTC`)
 - `default_cli`: Vendor CLI de fallback (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: Sobrescritas de roteamento CLI por agente
+- `model_preset (per-agent overrides via `agents:`)`: Sobrescritas de roteamento CLI por agente
 
 ### skills/
 

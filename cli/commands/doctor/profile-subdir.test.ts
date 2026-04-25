@@ -1,11 +1,13 @@
 /**
  * Filesystem-based regression tests for collectProfileReport.
  *
- * Verifies that the doctor matrix discovers .agents/config/defaults.yaml
- * and .agents/oma-config.yaml by walking parent directories — matching
- * findFileUp semantics in cli/io/runtime-dispatch.ts. Without this the
- * matrix would show defaults while the actual spawn path reads the parent's
- * config, which is the exact fragmentation PR #270 set out to eliminate.
+ * TODO Phase 3 qa: Rewrite all fixtures to use model_preset-based oma-config.yaml
+ * instead of the legacy defaults.yaml + agent_cli_mapping format removed in 008.
+ *
+ * Verifies that the doctor matrix discovers .agents/oma-config.yaml by walking
+ * parent directories — matching findFileUp semantics in runtime-dispatch.ts.
+ * Without this the matrix would show defaults while the actual spawn path reads
+ * the parent's config, which is the exact fragmentation PR #270 set out to eliminate.
  */
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -34,19 +36,12 @@ vi.mock("../../io/runtime-dispatch.js", () => ({
 
 import { collectProfileReport } from "./profile.js";
 
+// TODO Phase 3 qa: replace DEFAULTS_YAML fixture with model_preset-based oma-config.yaml
+// (e.g. "language: en\nmodel_preset: antigravity") and update all test assertions below
+// to match the new preset-based resolution (no agent_cli_mapping, no defaults.yaml).
 const DEFAULTS_YAML = `
-agent_defaults:
-  orchestrator: { model: "anthropic/claude-sonnet-4-6" }
-  architecture: { model: "anthropic/claude-opus-4-7" }
-  qa:           { model: "anthropic/claude-sonnet-4-6" }
-  pm:           { model: "anthropic/claude-sonnet-4-6" }
-  backend:      { model: "openai/gpt-5.3-codex", effort: "high" }
-  frontend:     { model: "openai/gpt-5.4", effort: "high" }
-  mobile:       { model: "openai/gpt-5.4", effort: "high" }
-  db:           { model: "openai/gpt-5.3-codex", effort: "high" }
-  debug:        { model: "openai/gpt-5.3-codex", effort: "high" }
-  tf-infra:     { model: "openai/gpt-5.4", effort: "high" }
-  retrieval:    { model: "google/gemini-3.1-flash-lite" }
+language: en
+model_preset: antigravity
 `.trim();
 
 describe("collectProfileReport — subdirectory invocation", () => {
@@ -55,11 +50,13 @@ describe("collectProfileReport — subdirectory invocation", () => {
 
   beforeEach(() => {
     projectRoot = mkdtempSync(join(tmpdir(), "oma-doctor-subdir-"));
-    mkdirSync(join(projectRoot, ".agents", "config"), { recursive: true });
+    mkdirSync(join(projectRoot, ".agents"), { recursive: true });
     subDir = join(projectRoot, "packages", "web", "src");
     mkdirSync(subDir, { recursive: true });
+    // TODO Phase 3 qa: previously wrote .agents/config/defaults.yaml —
+    // now writes .agents/oma-config.yaml with model_preset (migration 008).
     writeFileSync(
-      join(projectRoot, ".agents", "config", "defaults.yaml"),
+      join(projectRoot, ".agents", "oma-config.yaml"),
       DEFAULTS_YAML,
     );
   });
@@ -68,41 +65,44 @@ describe("collectProfileReport — subdirectory invocation", () => {
     rmSync(projectRoot, { recursive: true, force: true });
   });
 
-  it("finds defaults.yaml from a nested subdirectory", async () => {
+  it("finds oma-config.yaml from a nested subdirectory", async () => {
+    // antigravity preset: backend = openai/gpt-5.3-codex
     const report = await collectProfileReport(subDir);
-    expect(report.missingDefaultsYaml).toBe(false);
+    // TODO Phase 3 qa: replace missingDefaultsYaml with missingPreset assertion
+    expect(report.missingPreset).toBe(false);
     const backend = report.rows.find((r) => r.role === "backend");
     expect(backend?.model).toBe("openai/gpt-5.3-codex");
   });
 
-  it("honors oma-config.yaml override from a nested subdirectory", async () => {
+  it("honors agents override in oma-config.yaml from a nested subdirectory", async () => {
+    // TODO Phase 3 qa: update fixture — previously tested agent_cli_mapping (removed in 008).
+    // Now tests the new agents override format (object-only AgentSpec).
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  backend:\n    model: "anthropic/claude-sonnet-4-6"\n`,
+      `language: en\nmodel_preset: antigravity\nagents:\n  backend:\n    model: "anthropic/claude-sonnet-4-6"\n`,
     );
     const report = await collectProfileReport(subDir);
     const backend = report.rows.find((r) => r.role === "backend");
     expect(backend?.model).toBe("anthropic/claude-sonnet-4-6");
     expect(backend?.cli).toBe("claude");
+    expect(backend?.source).toBe("override");
   });
 
-  it("honors legacy vendor-string mapping in oma-config.yaml from a nested subdirectory", async () => {
+  it("shows missingPreset for oma-config.yaml without model_preset in parent dir", async () => {
+    // TODO Phase 3 qa: previously tested legacy vendor-string mapping (removed in 008).
+    // Now tests missing model_preset scenario — replaced the agent_cli_mapping test.
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
-      `agent_cli_mapping:\n  backend: "gemini"\n`,
+      `language: en\n`,
     );
     const report = await collectProfileReport(subDir);
-    const backend = report.rows.find((r) => r.role === "backend");
-    // Legacy string vendor "gemini" resolves via runtime_profiles.gemini-only
-    // in the real defaults.yaml; with our minimal fixture no such profile
-    // exists, so it falls back to the top-level default.
-    expect(backend?.model).toBe("openai/gpt-5.3-codex");
+    expect(report.missingPreset).toBe(true);
   });
 
-  it("resolves profile name from oma-config.yaml in parent dir", async () => {
+  it("resolves profile name from model_preset in oma-config.yaml in parent dir", async () => {
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
-      `profile: "codex-only"\n`,
+      `language: en\nmodel_preset: codex-only\n`,
     );
     const report = await collectProfileReport(subDir);
     expect(report.profileName).toBe("codex-only");

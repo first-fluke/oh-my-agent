@@ -140,7 +140,7 @@ timezone: "Asia/Seoul"
 default_cli: gemini
 
 # 每智能体 CLI 路由
-agent_cli_mapping:
+model_preset (per-agent overrides via `agents:`):
   frontend: claude       # 复杂 UI 推理、组件组合
   backend: gemini        # 快速 API 脚手架、CRUD 生成
   mobile: gemini         # 快速 Flutter 代码生成
@@ -163,7 +163,7 @@ agent_cli_mapping:
 | 优先级 | 来源 | 示例 |
 |--------|------|------|
 | 1（最高） | `--model` 标志 | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `agent_cli_mapping` | oma-config.yaml 中的 `agent_cli_mapping.backend: gemini` |
+| 2 | `model_preset (per-agent overrides via `agents:`)` | oma-config.yaml 中的 `model_preset (per-agent overrides via `agents:`).backend: gemini` |
 | 3 | `default_cli` | oma-config.yaml 中的 `default_cli: gemini` |
 | 4 | `active_vendor` | 旧版 `cli-config.yaml` 设置 |
 | 5（最低） | 硬编码回退 | `gemini` |

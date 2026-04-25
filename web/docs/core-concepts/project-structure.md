@@ -14,8 +14,7 @@ After installing oh-my-agent, your project gains three directory trees: `.agents
 ```
 your-project/
 ├── .agents/                          ← Single Source of Truth (SSOT)
-│   ├── config/
-│   │   └── oma-config.yaml    ← Language, timezone, CLI mapping
+│   ├── oma-config.yaml           ← Language, model_preset, agent overrides
 │   │
 │   ├── skills/
 │   │   ├── _shared/                  ← Resources used by ALL agents
@@ -282,8 +281,10 @@ This is the core directory. Everything agents need lives here. It is the only di
 - `language`: Response language code (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: Timestamp format string (default: `YYYY-MM-DD`)
 - `timezone`: Timezone identifier (default: `UTC`)
-- `default_cli`: Fallback CLI vendor (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: Per-agent CLI routing overrides
+- `model_preset`: Active model preset key (built-in or custom)
+- `agents`: Optional per-agent overrides (object-only `AgentSpec`)
+- `models`: Optional user-defined model slugs
+- `custom_presets`: Optional user-defined presets with optional `extends:`
 
 ### skills/
 

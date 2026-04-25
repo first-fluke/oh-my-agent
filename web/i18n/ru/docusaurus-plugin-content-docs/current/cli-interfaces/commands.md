@@ -94,7 +94,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 `agent-id`: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
-Определение вендора: `--model` > `agent_cli_mapping` > `default_cli` > `active_vendor` > `gemini`.
+Определение вендора: `--model` > `model_preset (per-agent overrides via `agents:`)` > `default_cli` > `active_vendor` > `gemini`.
 
 Промпт: инлайн-текст или путь к файлу. Вендор-протоколы добавляются автоматически.
 

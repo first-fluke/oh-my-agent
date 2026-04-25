@@ -101,7 +101,7 @@ oma agent:spawn backend "Implement user auth API with JWT" session-20260324-1430
 **벤더 해석 순서** (첫 번째 매치 사용):
 
 1. 커맨드 라인의 `--model` 플래그
-2. `oma-config.yaml`의 해당 에이전트 타입에 대한 `agent_cli_mapping`
+2. `oma-config.yaml`의 해당 에이전트 타입에 대한 `model_preset (per-agent overrides via `agents:`)`
 3. `oma-config.yaml`의 `default_cli`
 4. `cli-config.yaml`의 `active_vendor`
 5. `gemini` (하드코딩된 기본값)

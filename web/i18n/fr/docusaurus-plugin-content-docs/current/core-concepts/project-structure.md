@@ -283,7 +283,7 @@ C'est le répertoire central. Tout ce dont les agents ont besoin s'y trouve. C'e
 - `date_format`: Timestamp format string (default: `YYYY-MM-DD`)
 - `timezone`: Timezone identifier (default: `UTC`)
 - `default_cli`: Fallback CLI vendor (gemini, claude, codex, qwen)
-- `agent_cli_mapping`: Per-agent CLI routing overrides
+- `model_preset (per-agent overrides via `agents:`)`: Per-agent CLI routing overrides
 
 ### skills/
 
