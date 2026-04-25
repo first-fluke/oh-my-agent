@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v2.0.0...web-v2.0.1) (2026-04-25)
+
+
+### Documentation
+
+* **web:** add oma-image generation guide in 12 languages ([e8d51c0](https://github.com/first-fluke/oh-my-agent/commit/e8d51c0420422bc573a2ea1d6d89f6982c524387))
+
 ## [2.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v1.2.1...web-v2.0.0) (2026-04-25)
 
 
