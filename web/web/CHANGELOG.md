@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v1.2.1...web-v2.0.0) (2026-04-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** agent_cli_mapping removed, replaced by model_preset + agents in .agents/oma-config.yaml. .agents/config/defaults.yaml and .agents/config/models.yaml no longer exist (built-in presets ship in the CLI package; user models inline in oma-config.yaml). The --update-defaults flag is removed. Migration 008 auto-converts legacy projects on oma install / oma update.
+
+### Features
+
+* **config:** consolidate to model_preset single-file config ([294b8df](https://github.com/first-fluke/oh-my-agent/commit/294b8df23b1dc3b9407f64041d0d421aa1caec5a))
+
 ## [1.2.1](https://github.com/first-fluke/oh-my-agent/compare/web-v1.2.0...web-v1.2.1) (2026-04-24)
 
 
