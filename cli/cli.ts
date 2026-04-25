@@ -16,6 +16,7 @@ import { registerLink } from "./commands/link/command.js";
 import { registerMemory } from "./commands/memory/command.js";
 import { registerRecap } from "./commands/recap/command.js";
 import { registerRetro } from "./commands/retro/command.js";
+import { registerScholarCommand } from "./commands/scholar/index.js";
 import { registerSearchCommand } from "./commands/search/index.js";
 import { registerStar } from "./commands/star/command.js";
 import { registerStats } from "./commands/stats/command.js";
@@ -90,6 +91,7 @@ registerStar(program);
 registerExport(program);
 registerVisualize(program);
 registerSearchCommand(program);
+registerScholarCommand(program);
 registerImageCommand(program);
 
 program
