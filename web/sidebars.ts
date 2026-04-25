@@ -30,6 +30,7 @@ const sidebars: SidebarsConfig = {
         "guide/dashboard-monitoring",
         "guide/automated-updates",
         "guide/per-agent-models",
+        "guide/image-generation",
       ],
     },
     {
