@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.0.1...cli-v6.1.0) (2026-04-25)
+
+
+### Features
+
+* **registry:** actionable error for unknown model slugs ([6467f0e](https://github.com/first-fluke/oh-my-agent/commit/6467f0eeac150b6e1e53deb6517ffff372e17e54))
+
 ## [6.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.0.0...cli-v6.0.1) (2026-04-25)
 
 
