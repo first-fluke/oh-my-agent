@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.1.0...cli-v6.2.0) (2026-04-25)
+
+
+### Features
+
+* **scholar:** add oma scholar command and skill for paper sidecars ([6149a5a](https://github.com/first-fluke/oh-my-agent/commit/6149a5aa9768713c82ec071c738ea2581ec766a4))
+
 ## [6.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.0.1...cli-v6.1.0) (2026-04-25)
 
 
