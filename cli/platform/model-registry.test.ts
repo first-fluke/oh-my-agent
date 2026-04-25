@@ -507,3 +507,79 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     }
   });
 });
+
+describe("buildUnknownSlugError", () => {
+  it("scaffolds a models: block for a known-vendor OpenRouter slug", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("anthropic/claude-3-7-sonnet", "backend");
+    expect(msg).toContain('Unknown model slug "anthropic/claude-3-7-sonnet"');
+    expect(msg).toContain('for agent "backend"');
+    expect(msg).toContain("anthropic (CLI: claude)");
+    expect(msg).toMatch(/models:\n\s+anthropic\/claude-3-7-sonnet:/);
+    expect(msg).toContain("cli: claude");
+    expect(msg).toContain("cli_model: claude-3-7-sonnet");
+    expect(msg).toContain("native_dispatch_from: [claude]");
+    expect(msg).toContain("Built-in anthropic slugs");
+    expect(msg).toContain("https://openrouter.ai/models");
+  });
+
+  it("scaffolds for openai/codex pairing", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("openai/gpt-99-future");
+    expect(msg).toContain("openai (CLI: codex)");
+    expect(msg).toContain("cli_model: gpt-99-future");
+  });
+
+  it("scaffolds for google/gemini pairing", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("google/gemini-99-flash");
+    expect(msg).toContain("google (CLI: gemini)");
+  });
+
+  it("scaffolds for qwen pairing", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("qwen/qwen99-plus");
+    expect(msg).toContain("qwen (CLI: qwen)");
+  });
+
+  it("falls back to manual-cli guidance for unknown owner", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("mistral/large-99");
+    expect(msg).toContain('Owner "mistral" is not bundled');
+    expect(msg).toContain("anthropic (claude)");
+    expect(msg).toContain("openai (codex)");
+    expect(msg).toContain("cli: <your-cli-binary>");
+    expect(msg).toContain("cli_model: large-99");
+    expect(msg).not.toContain("openrouter.ai/models"); // no scaffold for unsupported owner
+  });
+
+  it("omits the agent context when agentId is not provided", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("anthropic/claude-3-7-sonnet");
+    expect(msg).not.toContain("for agent");
+  });
+
+  it("handles malformed slug (no slash) gracefully", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("just-a-name");
+    expect(msg).toContain('Unknown model slug "just-a-name"');
+    // No vendor → falls into the "manual" branch
+    expect(msg).toContain("not bundled with a forkable CLI");
+  });
+});
+
+describe("listBuiltInSlugsByOwner", () => {
+  it("returns sorted slugs for anthropic", async () => {
+    const { listBuiltInSlugsByOwner } = await import("./model-registry.js");
+    const slugs = listBuiltInSlugsByOwner("anthropic");
+    expect(slugs.length).toBeGreaterThan(0);
+    expect(slugs.every((s) => s.startsWith("anthropic/"))).toBe(true);
+    const sorted = [...slugs].sort();
+    expect(slugs).toEqual(sorted);
+  });
+
+  it("returns empty array for unknown owner", async () => {
+    const { listBuiltInSlugsByOwner } = await import("./model-registry.js");
+    expect(listBuiltInSlugsByOwner("nonexistent")).toEqual([]);
+  });
+});

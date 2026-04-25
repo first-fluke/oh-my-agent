@@ -16,6 +16,7 @@ import {
   BUILT_IN_PRESETS,
 } from "../platform/built-in-presets.js";
 import {
+  buildUnknownSlugError,
   type EffortLevel,
   getModelSpec,
   type ModelSpec,
@@ -665,10 +666,7 @@ export function resolveAgentPlanFromConfig(
     config.models as Record<string, unknown> | undefined,
   );
   if (!modelSpec) {
-    throw new ConfigError(
-      `Unknown model slug "${spec.model}" for agent "${agentId}". ` +
-        `Add it to the 'models' key in .agents/oma-config.yaml or use a built-in slug.`,
-    );
+    throw new ConfigError(buildUnknownSlugError(spec.model, agentId));
   }
 
   // Defensive: api_only guard

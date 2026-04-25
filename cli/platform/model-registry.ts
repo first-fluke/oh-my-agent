@@ -606,3 +606,81 @@ export function getModelSpec(
 export function hasModelSpec(slug: string): boolean {
   return getMergedRegistry().has(slug);
 }
+
+const OWNER_TO_CLI: Record<string, RuntimeId> = {
+  anthropic: "claude",
+  openai: "codex",
+  google: "gemini",
+  qwen: "qwen",
+};
+
+/**
+ * List built-in slugs grouped by owner. Used by buildUnknownSlugError to show
+ * the user the catalog they can pick from without adding a `models:` block.
+ */
+export function listBuiltInSlugsByOwner(owner: string): string[] {
+  const prefix = `${owner}/`;
+  return Array.from(RAW_REGISTRY.keys())
+    .filter((slug) => slug.startsWith(prefix))
+    .sort();
+}
+
+/**
+ * Build an actionable error message for an unknown model slug. Detects whether
+ * the slug looks like an OpenRouter entry for a vendor whose CLI we support,
+ * and scaffolds the `models:` block the user can paste into oma-config.yaml.
+ */
+export function buildUnknownSlugError(slug: string, agentId?: string): string {
+  const subject = agentId ? `for agent "${agentId}"` : "";
+  const parts = slug.split("/");
+  const owner = parts[0] ?? "";
+  const cliModel = parts.slice(1).join("/");
+  const cli = owner ? OWNER_TO_CLI[owner] : undefined;
+
+  const lines: string[] = [
+    `Unknown model slug "${slug}"${subject ? ` ${subject}` : ""}.`,
+    "",
+  ];
+
+  if (cli && cliModel) {
+    const builtIn = listBuiltInSlugsByOwner(owner);
+    lines.push(
+      `This looks like an OpenRouter slug for ${owner} (CLI: ${cli}).`,
+      `If your ${cli} CLI accepts this model, register it in .agents/oma-config.yaml:`,
+      "",
+      "models:",
+      `  ${slug}:`,
+      `    cli: ${cli}`,
+      `    cli_model: ${cliModel}            # confirm via \`${cli} --help\``,
+      "    supports:",
+      `      native_dispatch_from: [${cli}]`,
+      "",
+    );
+    if (builtIn.length > 0) {
+      lines.push(
+        `Built-in ${owner} slugs you can use without a models: block:`,
+        ...builtIn.map((s) => `  - ${s}`),
+        "",
+      );
+    }
+    lines.push("Browse all OpenRouter models: https://openrouter.ai/models");
+  } else {
+    const supportedOwners = Object.entries(OWNER_TO_CLI)
+      .map(([o, c]) => `${o} (${c})`)
+      .join(", ");
+    lines.push(
+      `Owner "${owner ?? "<missing>"}" is not bundled with a forkable CLI.`,
+      `Supported owners: ${supportedOwners}.`,
+      "",
+      `If "${owner ?? "<missing>"}" has a CLI you can shell out to, register it manually:`,
+      "models:",
+      `  ${slug}:`,
+      "    cli: <your-cli-binary>",
+      `    cli_model: ${cliModel || "<model-name>"}`,
+      "    supports:",
+      "      native_dispatch_from: [<your-cli-binary>]",
+    );
+  }
+
+  return lines.join("\n");
+}
