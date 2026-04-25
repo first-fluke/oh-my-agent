@@ -1,28 +1,60 @@
-# User Preferences (Optional)
-# Project-specific user configuration
-#
-# This file is optional. Works with defaults if not present.
-# CLI priority: --vendor arg > agent_cli_mapping > default_cli > cli-config.yaml's active_vendor > gemini
+# oh-my-agent — project config
+# Full schema: web/docs/guide/per-agent-models.md
 
-# Response language setting (ko, en, ja, zh, ...)
+# ─────────────────────────────────────────────────────────────────────────────
+# Global preferences
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Response language (ko, en, ja, zh, ...)
 language: en
 
-# Date/time format
+# Date / time
 date_format: ISO
 timezone: Asia/Seoul
 
-# Default CLI (for single tasks)
-default_cli: gemini
-
-# Auto-update the oh-my-agent CLI itself in the background when outdated.
-# Set to false to disable. Can also be disabled per-shell via OMA_SKIP_VERSION_CHECK=1.
+# Auto-update the oh-my-agent CLI in the background when outdated.
+# Disable per-shell with OMA_SKIP_VERSION_CHECK=1.
 auto_update_cli: true
 
-# Per-agent CLI mapping (multi-CLI mode)
-agent_cli_mapping:
-  frontend: gemini
-  backend: gemini
-  mobile: gemini
-  qa: gemini
-  debug: gemini
-  pm: gemini
+# ─────────────────────────────────────────────────────────────────────────────
+# Model selection
+# Resolution order:  agents.<id> override  →  model_preset entry  →  orchestrator fallback
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Built-in: claude-only | codex-only | gemini-only | qwen-only | antigravity
+# (custom_presets entries are also valid)
+model_preset: gemini-only
+
+# Per-agent override (optional) — shallow-merged on top of the preset entry.
+# Agent ids: orchestrator, architecture, qa, pm, backend, frontend, mobile,
+#            db, debug, tf-infra, retrieval
+# Each AgentSpec accepts:
+#   model:    "<owner>/<slug>"  required
+#   effort:   none | low | medium | high | xhigh   (ignored for cli-session models like Claude)
+#   thinking: true | false                          (vendor-dependent)
+#   memory:   user | project | local                (per-agent memory tier)
+# Example:
+# agents:
+#   backend:
+#     model: openai/gpt-5.3-codex
+#     effort: high
+#   qa:
+#     model: anthropic/claude-sonnet-4-6
+
+# Inline custom model slugs (optional; replaces the legacy models.yaml file).
+# Example:
+# models:
+#   my-fast:
+#     cli: gemini
+#     cli_model: gemini-3-flash
+#     supports:
+#       native_dispatch_from: [gemini]
+
+# User-defined presets (optional). Use `extends:` to partially inherit a built-in.
+# Example:
+# custom_presets:
+#   my-team:
+#     extends: claude-only
+#     description: "Team A — sonnet base, codex backend"
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.3-codex, effort: high }
