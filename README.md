@@ -116,8 +116,6 @@ Or use slash commands for structured workflows:
 | 4 | `/review` | Security + performance + accessibility audit |
 | 5 | `/debug` | Structured root-cause debugging |
 | 6 | `/scm` | SCM + Git workflow and Conventional Commit support |
-| ⚙ | `/tools` | Toggle MCP tool groups (memory / code-analysis / code-edit / file-ops) |
-| 📄 | `/pdf` | PDF → Markdown via `opendataloader-pdf` |
 
 **Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow.
 
