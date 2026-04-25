@@ -28,7 +28,11 @@ model_preset: gemini-only
 # Agent ids: orchestrator, architecture, qa, pm, backend, frontend, mobile,
 #            db, debug, tf-infra, retrieval
 # Each AgentSpec accepts:
-#   model:    "<owner>/<slug>"  required
+#   model:    "<owner>/<slug>"  required.  Slugs follow OpenRouter convention
+#             (https://openrouter.ai/models). Only models whose owning vendor
+#             ships a forkable CLI (claude, codex, gemini, qwen) are usable —
+#             API-only entries (api_only: true) are skipped. Custom slugs go
+#             in `models:` below.
 #   effort:   none | low | medium | high | xhigh   (ignored for cli-session models like Claude)
 #   thinking: true | false                          (vendor-dependent)
 #   memory:   user | project | local                (per-agent memory tier)
