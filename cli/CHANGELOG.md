@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.2.0...cli-v6.2.1) (2026-04-26)
+
+
+### Documentation
+
+* remove /tools and /pdf entries from README ([228fea9](https://github.com/first-fluke/oh-my-agent/commit/228fea900a44402c78468562c5c2743dfff1911c))
+
 ## [6.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.1.0...cli-v6.2.0) (2026-04-25)
 
 
