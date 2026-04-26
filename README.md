@@ -107,8 +107,6 @@ Or use slash commands for structured workflows:
 | 2 | `/architecture` | Software architecture review, tradeoffs, ADR/ATAM/CBAM-style analysis |
 | 2 | `/design` | 7-phase design system workflow |
 | 2 | `/plan` | PM breaks down your feature into tasks |
-| 2 | `/exec-plan` | Track plans as first-class artifacts in `docs/exec-plans/` |
-| 2 | `/stack-set` | Auto-detect tech stack, generate language-specific backend resources |
 | 3 | `/work` | Step-by-step multi-agent execution |
 | 3 | `/orchestrate` | Automated parallel agent spawning |
 | 3 | `/ultrawork` | 5-phase quality workflow with 11 review gates |
