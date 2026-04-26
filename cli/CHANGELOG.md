@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.2.1...cli-v6.2.2) (2026-04-26)
+
+
+### Documentation
+
+* remove exec-plan and stack-set from slash command table ([85cf5f5](https://github.com/first-fluke/oh-my-agent/commit/85cf5f578455dcdc9dfb6b5e96ba48626167e501))
+
 ## [6.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.2.0...cli-v6.2.1) (2026-04-26)
 
 
