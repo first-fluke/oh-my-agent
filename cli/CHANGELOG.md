@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.2.2...cli-v6.3.0) (2026-04-27)
+
+
+### Features
+
+* **install:** add Hermes Agent skill export with HOME consent gate ([#305](https://github.com/first-fluke/oh-my-agent/issues/305)) ([6159cc6](https://github.com/first-fluke/oh-my-agent/commit/6159cc600d6ec3413766576f5c02ddec814b149b))
+
 ## [6.2.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.2.1...cli-v6.2.2) (2026-04-26)
 
 
