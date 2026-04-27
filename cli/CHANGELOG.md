@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.3.0...cli-v6.3.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* **install,doctor:** bootstrap oma-config.yaml + fix doctor missing-skill repair ([#307](https://github.com/first-fluke/oh-my-agent/issues/307)) ([f916ec6](https://github.com/first-fluke/oh-my-agent/commit/f916ec6f7aca82e1e9a1fba0f5731ea80bd3b6c5))
+
 ## [6.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.2.2...cli-v6.3.0) (2026-04-27)
 
 
