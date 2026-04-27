@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { downloadAndExtract } from "../../io/tarball.js";
 import {
   getAllSkills,
   INSTALLED_SKILLS_DIR,
@@ -196,14 +197,28 @@ export function serializeReportAsJson(report: DoctorReport): string {
   return JSON.stringify(payload, null, 2);
 }
 
-export function installMissingSkills(
-  cwd: string,
+/**
+ * Download a fresh source tarball and install the named skills into
+ * `targetDir`. Doctor uses this to repair missing/incomplete skills
+ * detected during diagnosis. Network is required only on this path —
+ * the diagnosis-only flow stays offline.
+ *
+ * Replaces the prior `installShared(cwd, cwd)` anti-pattern that always
+ * threw `src and dest cannot be the same`.
+ */
+export async function installSkillsFromRemote(
+  targetDir: string,
   skillNames: string[],
   onProgress?: (name: string) => void,
-): void {
-  installShared(cwd, cwd);
-  for (const name of skillNames) {
-    onProgress?.(name);
-    installSkill(cwd, name, cwd);
+): Promise<void> {
+  const { dir: repoDir, cleanup } = await downloadAndExtract();
+  try {
+    installShared(repoDir, targetDir);
+    for (const name of skillNames) {
+      onProgress?.(name);
+      installSkill(repoDir, name, targetDir);
+    }
+  } finally {
+    cleanup();
   }
 }

@@ -237,6 +237,19 @@ export function installConfigs(
       fs.cpSync(mcpSrc, mcpDest);
     }
   }
+
+  // Bootstrap oma-config.yaml on fresh installs so language/model_preset/
+  // vendors patches downstream have a file to operate on. User edits are
+  // preserved unless `force` is true.
+  const omaConfigSrc = join(sourceDir, ".agents", "oma-config.yaml");
+  if (fs.existsSync(omaConfigSrc)) {
+    const agentDir = join(targetDir, ".agents");
+    fs.mkdirSync(agentDir, { recursive: true });
+    const omaConfigDest = join(agentDir, "oma-config.yaml");
+    if (force || !fs.existsSync(omaConfigDest)) {
+      fs.cpSync(omaConfigSrc, omaConfigDest);
+    }
+  }
 }
 
 export function installGlobalWorkflows(sourceDir: string): void {

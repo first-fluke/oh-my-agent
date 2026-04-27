@@ -133,6 +133,54 @@ describe("skills.ts - Workflow and Config Installation", () => {
       const mcpDest = join(mockTargetDir, ".agents", "mcp.json");
       expect(fs.cpSync).toHaveBeenCalledWith(mcpSrc, mcpDest);
     });
+
+    it("creates oma-config.yaml on fresh install when missing", () => {
+      const omaConfigSrc = join(mockSourceDir, ".agents", "oma-config.yaml");
+      const omaConfigDest = join(mockTargetDir, ".agents", "oma-config.yaml");
+
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        (p: string) => {
+          if (p === omaConfigSrc) return true;
+          if (p === omaConfigDest) return false; // missing on target
+          return true;
+        },
+      );
+      (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        [],
+      );
+
+      installConfigs(mockSourceDir, mockTargetDir, false);
+
+      expect(fs.cpSync).toHaveBeenCalledWith(omaConfigSrc, omaConfigDest);
+    });
+
+    it("preserves existing oma-config.yaml without force", () => {
+      // existsSync returns true for everything → dest exists → no copy
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+      (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        [],
+      );
+
+      installConfigs(mockSourceDir, mockTargetDir, false);
+
+      const omaConfigSrc = join(mockSourceDir, ".agents", "oma-config.yaml");
+      const omaConfigDest = join(mockTargetDir, ".agents", "oma-config.yaml");
+      expect(fs.cpSync).not.toHaveBeenCalledWith(omaConfigSrc, omaConfigDest);
+    });
+
+    it("overwrites oma-config.yaml with force flag", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        true,
+      );
+
+      installConfigs(mockSourceDir, mockTargetDir, true);
+
+      const omaConfigSrc = join(mockSourceDir, ".agents", "oma-config.yaml");
+      const omaConfigDest = join(mockTargetDir, ".agents", "oma-config.yaml");
+      expect(fs.cpSync).toHaveBeenCalledWith(omaConfigSrc, omaConfigDest);
+    });
   });
 });
 
