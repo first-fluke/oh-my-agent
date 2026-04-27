@@ -9,10 +9,19 @@ export const ALL_CLI_VENDORS: CliVendor[] = [
   "copilot",
   "cursor",
   "gemini",
+  "hermes",
   "qwen",
 ];
 
-export const CLI_SKILLS_DIR: Record<CliTool, string> = {
-  claude: ".claude/skills",
-  copilot: ".github/skills",
+export type SkillTargetBase = "project" | "home";
+
+export interface SkillTargetSpec {
+  base: SkillTargetBase;
+  path: string;
+}
+
+export const CLI_SKILLS_DIR: Record<CliTool, SkillTargetSpec> = {
+  claude: { base: "project", path: ".claude/skills" },
+  copilot: { base: "project", path: ".github/skills" },
+  hermes: { base: "home", path: ".hermes/skills/oma" },
 };

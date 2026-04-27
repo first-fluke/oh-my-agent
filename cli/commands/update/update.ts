@@ -40,10 +40,11 @@ import {
   getInstalledSkillNames,
   installCodexWorkflowSkills,
   installVendorAdaptations,
+  isHookVendor,
   REPO,
   readVendorsFromConfig,
+  vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
-import type { VendorType } from "../../types/index.js";
 import { isAutoUpdateCliEnabled } from "../../utils/config.js";
 import {
   applyRecommendedSettings,
@@ -305,9 +306,7 @@ export async function update(force = false, ci = false): Promise<void> {
 
       // Update vendor adaptations for configured vendors (from oma-config.yaml)
       const configuredVendors = readVendorsFromConfig(cwd);
-      const hookVendors = configuredVendors.filter(
-        (v): v is VendorType => v !== "copilot",
-      );
+      const hookVendors = configuredVendors.filter(isHookVendor);
       if (configuredVendors.includes("codex")) {
         installCodexWorkflowSkills(repoDir, cwd);
       }
@@ -442,7 +441,15 @@ export async function update(force = false, ci = false): Promise<void> {
       if (cliTools.length > 0) {
         const skillNames = getInstalledSkillNames(cwd);
         if (skillNames.length > 0) {
-          const { created } = createCliSymlinks(cwd, cliTools, skillNames);
+          // Gate HOME-write vendors on the recorded consent (oma-config
+          // vendors list). update never re-prompts; missing record means
+          // the user never consented, so we silently skip.
+          const recordedVendors = readVendorsFromConfig(cwd);
+          const safeCliTools = cliTools.filter(
+            (cli) =>
+              !vendorRequiresHomeConsent(cli) || recordedVendors.includes(cli),
+          );
+          const { created } = createCliSymlinks(cwd, safeCliTools, skillNames);
           if (created.length > 0) {
             ui.note(
               created.map((s) => `${pc.green("→")} ${s}`).join("\n"),

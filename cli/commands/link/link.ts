@@ -12,9 +12,11 @@ import {
   getInstalledSkillNames,
   installCodexWorkflowSkills,
   installVendorAdaptations,
+  isHookVendor,
   readVendorsFromConfig,
+  vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
-import type { CliVendor, VendorType } from "../../types/index.js";
+import type { CliVendor } from "../../types/index.js";
 import {
   applyRecommendedCodexSettings,
   needsCodexSettingsUpdate,
@@ -55,9 +57,7 @@ export function link(vendorFilter?: string[]): void {
     configuredVendors = readVendorsFromConfig(cwd);
   }
 
-  const hookVendors = configuredVendors.filter(
-    (v): v is VendorType => v !== "copilot",
-  );
+  const hookVendors = configuredVendors.filter(isHookVendor);
 
   if (hookVendors.length === 0) {
     console.log(`${pc.yellow("⚠")} No vendors to link.`);
@@ -142,11 +142,16 @@ export function link(vendorFilter?: string[]): void {
     }
   }
 
-  // 5. Refresh CLI skill symlinks
+  // 5. Refresh CLI skill symlinks. HOME-write vendors only proceed if
+  // already in oma-config (consent recorded by `oma install`).
   const cliTools = detectExistingCliSymlinkDirs(cwd);
   if (cliTools.length > 0) {
     const skillNames = getInstalledSkillNames(cwd);
-    createCliSymlinks(cwd, cliTools, skillNames);
+    const recordedVendors = readVendorsFromConfig(cwd);
+    const safeCliTools = cliTools.filter(
+      (cli) => !vendorRequiresHomeConsent(cli) || recordedVendors.includes(cli),
+    );
+    createCliSymlinks(cwd, safeCliTools, skillNames);
   }
 
   // Summary

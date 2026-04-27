@@ -18,11 +18,16 @@ vi.mock("node:fs", () => ({
   readdirSync: vi.fn(),
   readFileSync: vi.fn(),
   readlinkSync: vi.fn(),
+  realpathSync: vi.fn(),
   rmSync: vi.fn(),
   writeFileSync: vi.fn(),
   lstatSync: vi.fn(),
   unlinkSync: vi.fn(),
   symlinkSync: vi.fn(),
+}));
+
+vi.mock("node:os", () => ({
+  homedir: vi.fn(() => "/tmp/test-home"),
 }));
 
 describe("skills.ts - Workflow and Config Installation", () => {
@@ -332,6 +337,11 @@ describe("createCliSymlinks", () => {
         throw new Error("ENOENT");
       },
     );
+    // Default: realpath is identity (no symlink shenanigans). Tests that
+    // exercise path-traversal defenses override this per-test.
+    (fs.realpathSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => p,
+    );
   });
 
   afterEach(() => {
@@ -471,6 +481,100 @@ describe("createCliSymlinks", () => {
     expect(fs.symlinkSync).toHaveBeenCalledTimes(2);
     expect(result.created).toContain(".claude/skills/oma-frontend");
     expect(result.created).toContain(".github/skills/oma-frontend");
+  });
+
+  // --- Hermes (HOME-base) and path-traversal defense ---
+
+  it("should create symlinks under ~/.hermes/skills/oma/ for hermes", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+
+    const result = createCliSymlinks(
+      mockTargetDir,
+      ["hermes"],
+      ["oma-frontend"],
+    );
+
+    expect(fs.symlinkSync).toHaveBeenCalledWith(
+      expect.any(String),
+      "/tmp/test-home/.hermes/skills/oma/oma-frontend",
+      "dir",
+    );
+    expect(result.created).toContain(".hermes/skills/oma/oma-frontend");
+  });
+
+  it("should reject sources whose realpath escapes the SSOT base", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+    (fs.realpathSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        // Simulate a malicious symlink in the SSOT directory pointing
+        // outside the project (e.g., to /etc).
+        if (p.endsWith("/oma-frontend")) return "/etc/passwd";
+        return p;
+      },
+    );
+
+    const result = createCliSymlinks(
+      mockTargetDir,
+      ["claude"],
+      ["oma-frontend"],
+    );
+
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(result.skipped).toContain(
+      ".claude/skills/oma-frontend (source escapes SSOT base)",
+    );
+  });
+
+  it("should isolate hermes and project-base vendors when both selected", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+
+    const result = createCliSymlinks(
+      mockTargetDir,
+      ["claude", "hermes"],
+      ["oma-frontend"],
+    );
+
+    expect(fs.symlinkSync).toHaveBeenCalledTimes(2);
+
+    const symlinkCalls = (
+      fs.symlinkSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.map((c: unknown[]) => String(c[1]));
+
+    expect(symlinkCalls).toContain(
+      join(mockTargetDir, ".claude/skills/oma-frontend"),
+    );
+    expect(symlinkCalls).toContain(
+      "/tmp/test-home/.hermes/skills/oma/oma-frontend",
+    );
+
+    expect(result.created).toContain(".claude/skills/oma-frontend");
+    expect(result.created).toContain(".hermes/skills/oma/oma-frontend");
+  });
+
+  it("should skip hermes when target real directory exists", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      true,
+    );
+    (fs.lstatSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      isSymbolicLink: () => false,
+    });
+
+    const result = createCliSymlinks(
+      mockTargetDir,
+      ["hermes"],
+      ["oma-frontend"],
+    );
+
+    expect(fs.symlinkSync).not.toHaveBeenCalled();
+    expect(result.skipped).toContain(
+      ".hermes/skills/oma/oma-frontend (real dir exists)",
+    );
   });
 });
 
