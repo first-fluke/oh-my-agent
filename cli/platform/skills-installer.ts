@@ -1,12 +1,18 @@
 import * as fs from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { homedir } from "node:os";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import {
   ALL_CLI_VENDORS,
   CLI_SKILLS_DIR,
   INSTALLED_SKILLS_DIR,
   SKILLS,
 } from "../constants/index.js";
-import type { CliTool, CliVendor, SkillInfo } from "../types/index.js";
+import type {
+  CliTool,
+  CliVendor,
+  SkillInfo,
+  VendorType,
+} from "../types/index.js";
 import { clearNonDirectory } from "../utils/fs-utils.js";
 
 export * from "../constants/index.js";
@@ -307,6 +313,60 @@ export function installClaudeSkills(
   }
 }
 
+/**
+ * Vendors with a hook bridge (settings, prompt hooks, agent variants).
+ * Vendors NOT in this set (e.g., copilot, hermes) are skill-symlink-only
+ * and must NOT be passed to `installVendorAdaptations`.
+ */
+const HOOK_VENDORS: ReadonlySet<VendorType> = new Set([
+  "claude",
+  "codex",
+  "cursor",
+  "gemini",
+  "qwen",
+]);
+
+/**
+ * Type guard: narrows a `CliVendor` to `VendorType` if it supports
+ * hook-based vendor adaptation. Use as a `.filter()` predicate to safely
+ * derive `hookVendors` from a free-form vendor list.
+ */
+export function isHookVendor(v: CliVendor): v is VendorType {
+  return HOOK_VENDORS.has(v as VendorType);
+}
+
+/**
+ * Resolve the absolute directory where vendor skill symlinks should live.
+ *
+ * Project-base vendors live under `targetDir`; home-base vendors live under
+ * the user's HOME directory. This is the only path that produces HOME paths
+ * and is the trust boundary for HOME writes.
+ */
+function resolveCliSkillsDir(targetDir: string, cli: CliTool): string {
+  const spec = CLI_SKILLS_DIR[cli];
+  const root = spec.base === "home" ? homedir() : targetDir;
+  return join(root, spec.path);
+}
+
+/**
+ * Whether installing this vendor's skills writes outside the project
+ * directory (i.e., into the user's HOME). Callers MUST obtain explicit
+ * user consent before proceeding when this returns true.
+ */
+export function vendorRequiresHomeConsent(cli: CliTool): boolean {
+  return CLI_SKILLS_DIR[cli].base === "home";
+}
+
+/**
+ * User-facing display path for a vendor's skill directory.
+ * Home-base vendors get a `~/...` prefix; project-base vendors return
+ * the project-relative path verbatim.
+ */
+export function getVendorDisplayPath(cli: CliTool): string {
+  const spec = CLI_SKILLS_DIR[cli];
+  return spec.base === "home" ? `~/${spec.path}` : spec.path;
+}
+
 export function createCliSymlinks(
   targetDir: string,
   cliTools: CliTool[],
@@ -316,9 +376,16 @@ export function createCliSymlinks(
   const skipped: string[] = [];
   const ssotSkillsDir = resolve(targetDir, INSTALLED_SKILLS_DIR);
 
+  let realSsotBase: string;
+  try {
+    realSsotBase = fs.realpathSync(ssotSkillsDir);
+  } catch {
+    return { created, skipped };
+  }
+
   for (const cli of cliTools) {
-    const skillsDir = CLI_SKILLS_DIR[cli];
-    const linkRootDir = join(targetDir, skillsDir);
+    const skillsDir = CLI_SKILLS_DIR[cli].path;
+    const linkRootDir = resolveCliSkillsDir(targetDir, cli);
 
     if (!fs.existsSync(linkRootDir)) {
       fs.mkdirSync(linkRootDir, { recursive: true });
@@ -330,6 +397,24 @@ export function createCliSymlinks(
 
       if (!fs.existsSync(source)) {
         skipped.push(`${skillsDir}/${skillName} (source missing)`);
+        continue;
+      }
+
+      // Defense-in-depth: reject sources whose realpath escapes the SSOT
+      // base. Prevents path traversal via malicious symlinks in
+      // `.agents/skills/`.
+      let realSource: string;
+      try {
+        realSource = fs.realpathSync(source);
+      } catch {
+        skipped.push(`${skillsDir}/${skillName} (source unreadable)`);
+        continue;
+      }
+      if (
+        realSource !== realSsotBase &&
+        !realSource.startsWith(realSsotBase + sep)
+      ) {
+        skipped.push(`${skillsDir}/${skillName} (source escapes SSOT base)`);
         continue;
       }
 
@@ -371,9 +456,9 @@ export function getInstalledSkillNames(targetDir: string): string[] {
 
 export function detectExistingCliSymlinkDirs(targetDir: string): CliTool[] {
   const tools: CliTool[] = [];
-  for (const [cli, dir] of Object.entries(CLI_SKILLS_DIR)) {
-    if (fs.existsSync(join(targetDir, dir))) {
-      tools.push(cli as CliTool);
+  for (const cli of Object.keys(CLI_SKILLS_DIR) as CliTool[]) {
+    if (fs.existsSync(resolveCliSkillsDir(targetDir, cli))) {
+      tools.push(cli);
     }
   }
   return tools;

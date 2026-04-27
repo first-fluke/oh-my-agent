@@ -48,6 +48,11 @@ const skillsState = vi.hoisted(() => ({
   PRESETS: { custom: [] },
   INSTALLED_SKILLS_DIR: ".agents/skills",
   REPO: "first-fluke/oh-my-agent",
+  CLI_SKILLS_DIR: {
+    claude: { base: "project", path: ".claude/skills" },
+    copilot: { base: "project", path: ".github/skills" },
+    hermes: { base: "home", path: ".hermes/skills/oma" },
+  },
   getAllSkills: vi.fn(() => [
     { name: "oma-frontend", desc: "Frontend skill" },
     { name: "oma-pm", desc: "PM skill" },
@@ -61,6 +66,13 @@ const skillsState = vi.hoisted(() => ({
   installVendorAdaptations: vi.fn(),
   createCliSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   ensureCursorMcpSymlink: vi.fn(),
+  vendorRequiresHomeConsent: vi.fn((cli: string) => cli === "hermes"),
+  getVendorDisplayPath: vi.fn((cli: string) =>
+    cli === "hermes" ? "~/.hermes/skills/oma" : `.${cli}/skills`,
+  ),
+  isHookVendor: vi.fn((v: string) =>
+    ["claude", "codex", "cursor", "gemini", "qwen"].includes(v),
+  ),
   writeVendorsToConfig: vi.fn(),
 }));
 
@@ -119,7 +131,7 @@ vi.mock("../../io/serena.js", () => ({
 
 import { install } from "../install/install.js";
 
-describe("install home safety", () => {
+describe("install home policy", () => {
   const originalHome = process.env.HOME;
 
   beforeEach(() => {
@@ -127,12 +139,16 @@ describe("install home safety", () => {
 
     process.env.HOME = "/tmp/test-home";
 
+    // 3 select prompts: language, modelPreset, projectType
     promptState.select
       .mockResolvedValueOnce("en")
+      .mockResolvedValueOnce("claude-only")
       .mockResolvedValueOnce("custom");
+    // 2 multiselect prompts: skills, vendors
     promptState.multiselect
       .mockResolvedValueOnce(["oma-frontend"])
       .mockResolvedValueOnce(["gemini"]);
+    // Default: any consent prompt receives "false"
     promptState.confirm.mockResolvedValue(false);
 
     fsState.existsSync.mockImplementation((path: string) =>
@@ -147,7 +163,9 @@ describe("install home safety", () => {
     vi.restoreAllMocks();
   });
 
-  it("does not write to HOME-level vendor settings", async () => {
+  // --- Baseline invariant: non-hermes vendors never write HOME ---
+
+  it("does not write to HOME-level vendor settings (non-hermes)", async () => {
     await install();
 
     const writes = (
@@ -168,5 +186,74 @@ describe("install home safety", () => {
     expect(execCalls.some((cmd) => cmd.includes("git config --global"))).toBe(
       false,
     );
+  });
+
+  // --- Hermes consent gate: explicit opt-in required ---
+
+  it("does NOT add hermes to selectedClis when consent declined", async () => {
+    promptState.multiselect.mockReset();
+    promptState.multiselect
+      .mockResolvedValueOnce(["oma-frontend"])
+      .mockResolvedValueOnce(["hermes"]);
+    promptState.confirm.mockResolvedValue(false); // consent denied
+
+    await install();
+
+    const symlinkCalls = skillsState.createCliSymlinks.mock.calls;
+    expect(symlinkCalls.length).toBeGreaterThan(0);
+    // hermes must not be in the cliTools array passed to createCliSymlinks
+    for (const call of symlinkCalls) {
+      const cliTools = call[1] as string[];
+      expect(cliTools).not.toContain("hermes");
+    }
+  });
+
+  it("adds hermes to selectedClis when consent granted", async () => {
+    promptState.multiselect.mockReset();
+    promptState.multiselect
+      .mockResolvedValueOnce(["oma-frontend"])
+      .mockResolvedValueOnce(["hermes"]);
+    promptState.confirm.mockResolvedValue(true); // consent granted
+
+    await install();
+
+    const symlinkCalls = skillsState.createCliSymlinks.mock.calls;
+    const allCliTools = symlinkCalls.flatMap((c) => c[1] as string[]);
+    expect(allCliTools).toContain("hermes");
+  });
+
+  it("never passes hermes to installVendorAdaptations (no hook bridge)", async () => {
+    promptState.multiselect.mockReset();
+    promptState.multiselect
+      .mockResolvedValueOnce(["oma-frontend"])
+      .mockResolvedValueOnce(["claude", "hermes"]);
+    promptState.confirm.mockResolvedValue(true); // hermes consent granted
+
+    await install();
+
+    const adaptCalls = skillsState.installVendorAdaptations.mock.calls;
+    for (const call of adaptCalls) {
+      const hookVendors = call[2] as string[];
+      expect(hookVendors).not.toContain("hermes");
+      expect(hookVendors).not.toContain("copilot");
+    }
+  });
+
+  it("isolates HOME write — gemini selected does NOT trigger gemini HOME write", async () => {
+    promptState.multiselect.mockReset();
+    promptState.multiselect
+      .mockResolvedValueOnce(["oma-frontend"])
+      .mockResolvedValueOnce(["gemini", "hermes"]);
+    promptState.confirm.mockResolvedValue(true); // hermes consent granted
+
+    await install();
+
+    const writes = (
+      fs.writeFileSync as ReturnType<typeof vi.fn>
+    ).mock.calls.map((call: unknown[]) => String(call[0]));
+    // Gemini settings remain project-local — never HOME
+    expect(
+      writes.some((path) => path.startsWith("/tmp/test-home/.gemini/")),
+    ).toBe(false);
   });
 });

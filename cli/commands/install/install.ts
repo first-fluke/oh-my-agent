@@ -30,9 +30,11 @@ import {
   mergeRulesIndexForVendor,
 } from "../../platform/rules.js";
 import {
+  CLI_SKILLS_DIR,
   createCliSymlinks,
   ensureCursorMcpSymlink,
   getAllSkills,
+  getVendorDisplayPath,
   INSTALLED_SKILLS_DIR,
   installCodexWorkflowSkills,
   installConfigs,
@@ -41,11 +43,14 @@ import {
   installSkill,
   installVendorAdaptations,
   installWorkflows,
+  isHookVendor,
   PRESETS,
   REPO,
+  type SkillTargetSpec,
+  vendorRequiresHomeConsent,
   writeVendorsToConfig,
 } from "../../platform/skills-installer.js";
-import type { CliTool, CliVendor, VendorType } from "../../types/index.js";
+import type { CliTool, CliVendor } from "../../types/index.js";
 import {
   applyRecommendedSettings,
   needsSettingsUpdate,
@@ -373,7 +378,12 @@ export async function install(_options: InstallOptions = {}): Promise<void> {
     }
   }
 
-  // CLI tools selection — default All, opt-out pattern
+  // CLI tools selection — default All for project-base vendors,
+  // opt-in only for HOME-base vendors (e.g., hermes).
+  // Auto-exclude HOME-write vendors on Windows / CI where symlink and
+  // HOME semantics are unreliable.
+  const allowHomeWriteVendors = process.platform !== "win32" && !process.env.CI;
+
   const vendorOptions: { value: CliVendor; label: string; hint: string }[] = [
     {
       value: "claude",
@@ -388,13 +398,30 @@ export async function install(_options: InstallOptions = {}): Promise<void> {
       hint: ".cursor/rules/ export + prompt hooks",
     },
     { value: "gemini", label: "Gemini CLI", hint: "hooks + Serena MCP" },
+    ...(allowHomeWriteVendors
+      ? [
+          {
+            value: "hermes" as const,
+            label: "Hermes Agent",
+            hint: "skills only — workflows N/A, HOME-shared (no per-project isolation)",
+          },
+        ]
+      : []),
     { value: "qwen", label: "Qwen Code", hint: "hooks + settings" },
   ];
 
   const selectedVendors = await p.multiselect({
     message: "CLI tools to configure:",
     options: vendorOptions,
-    initialValues: vendorOptions.map((v) => v.value),
+    // HOME-write vendors (hermes) are opt-in only — default off.
+    initialValues: vendorOptions
+      .filter((opt) => {
+        const spec = (CLI_SKILLS_DIR as Record<string, SkillTargetSpec>)[
+          opt.value
+        ];
+        return !spec || spec.base !== "home";
+      })
+      .map((v) => v.value),
     required: true,
   });
 
@@ -404,10 +431,34 @@ export async function install(_options: InstallOptions = {}): Promise<void> {
   }
 
   const vendors = selectedVendors as CliVendor[];
-  const hookVendors = vendors.filter((v): v is VendorType => v !== "copilot");
+  const hookVendors = vendors.filter(isHookVendor);
+
+  // Build selectedClis from CLI_SKILLS_DIR (data-driven). Vendors with
+  // base: "home" require explicit consent; other vendors are added directly.
+  const cliToolKeys = Object.keys(CLI_SKILLS_DIR) as CliTool[];
+  const requestedClis = vendors.filter((v): v is CliTool =>
+    (cliToolKeys as string[]).includes(v),
+  );
+
   const selectedClis: CliTool[] = [];
-  if (vendors.includes("claude")) selectedClis.push("claude");
-  if (vendors.includes("copilot")) selectedClis.push("copilot");
+  for (const cli of requestedClis) {
+    if (vendorRequiresHomeConsent(cli)) {
+      const consent = await p.confirm({
+        message: `${cli} export writes to HOME (${pc.cyan(getVendorDisplayPath(cli))}). Proceed?`,
+        initialValue: false,
+      });
+      if (p.isCancel(consent)) {
+        cleanup();
+        p.cancel("Cancelled.");
+        process.exit(0);
+      }
+      if (!consent) {
+        p.log.info(pc.dim(`Skipped ${cli} export.`));
+        continue;
+      }
+    }
+    selectedClis.push(cli);
+  }
 
   spinner.start("Installing skills...");
 

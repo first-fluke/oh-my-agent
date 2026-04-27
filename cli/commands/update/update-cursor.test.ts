@@ -44,6 +44,10 @@ vi.mock("../../platform/skills-installer.js", () => ({
   createCliSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   ensureCursorMcpSymlink: vi.fn(),
   readVendorsFromConfig: vi.fn(() => configuredVendorsForTest),
+  isHookVendor: vi.fn((v: string) =>
+    ["claude", "codex", "cursor", "gemini", "qwen"].includes(v),
+  ),
+  vendorRequiresHomeConsent: vi.fn((cli: string) => cli === "hermes"),
 }));
 
 import * as manifest from "../../platform/manifest.js";
