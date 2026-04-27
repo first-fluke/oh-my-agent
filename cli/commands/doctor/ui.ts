@@ -6,7 +6,7 @@ import { printMigrationGuide } from "../../vendors/qwen/auth.js";
 import {
   AUTH_CHECKERS,
   type DoctorReport,
-  installMissingSkills,
+  installSkillsFromRemote,
 } from "./doctor.js";
 import type { ProfileReport } from "./profile.js";
 
@@ -137,9 +137,9 @@ async function promptRepair(report: DoctorReport): Promise<void> {
   }
 
   const spinner = p.spinner();
-  spinner.start("Installing skills...");
+  spinner.start("Downloading source...");
   try {
-    installMissingSkills(report.cwd, skillsToInstall, (name) => {
+    await installSkillsFromRemote(report.cwd, skillsToInstall, (name) => {
       spinner.message(`Installing ${pc.cyan(name)}...`);
     });
     spinner.stop(`Installed ${skillsToInstall.length} skill(s)!`);
