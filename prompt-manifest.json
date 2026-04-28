@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "6.3.1",
-  "releaseDate": "2026-04-27T06:42:57.966Z",
+  "releaseDate": "2026-04-28T06:45:21.657Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -86,28 +86,28 @@
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "22a6dc853b3b0f1fb547ee56b4e585cf33998c424c483056f1191ded6a9fa90c",
-      "size": 5726
+      "sha256": "6dece44c94d0d50dfe5e7184375b5cc9eb3d404ec9ebb3eed0e3891d6e20b94d",
+      "size": 5715
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "0ec4f283a38f0f8147e3ccd97429ad5947ada12087a3ceef3d8b36b7daf3c3ff",
-      "size": 18661
+      "sha256": "3084d4a4b3158b77027ede9183c566e3542187894e3fea1217d61d9cf006d2a6",
+      "size": 18650
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "75d95cafa03d5b813e5e87469eb6f8401f8d4d15cdea59fd1fe5c7f6b2ebd172",
-      "size": 7044
+      "sha256": "d2d6d3a1220e0cb9d6fda0ba7fd2bacab55342ea95eb6f44cf68995ba1bcd702",
+      "size": 7033
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "51efa7e4aa85bb1b16d2045166732da74ba828387a0c29b1e78e4914b7b2b941",
-      "size": 12073
+      "sha256": "32218a22c0559875edfd9713c547e09e426c863b282147eef2fdf31a88c818b4",
+      "size": 12062
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "8be3e3f4e2281374da0b025c8f2ca65905ba158939c1a84002a5ea03fdcfca54",
-      "size": 3870
+      "sha256": "8d5b0b7d54f507809700a2e1e05f6e2fd0d564f9baeb80e9dfc2d86629aee535",
+      "size": 4339
     },
     {
       "path": ".agents/hooks/core/triggers.json",
