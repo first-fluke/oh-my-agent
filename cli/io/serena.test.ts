@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ensureSerenaProject,
@@ -6,6 +7,10 @@ import {
   inferSerenaLanguages,
   resolveSerenaLanguages,
 } from "./serena.js";
+
+// Use platform-resolved paths so assertions match what production resolve() returns.
+const MY_PROJECT = resolve("/my/project");
+const OTHER_PROJECT = resolve("/other/project");
 
 // Mock fs
 const mockFs = vi.hoisted(() => ({
@@ -133,47 +138,47 @@ describe("ensureSerenaRegistered", () => {
 
   it("should return false when config file does not exist", () => {
     mockFs.existsSync.mockReturnValue(false);
-    expect(ensureSerenaRegistered("/my/project")).toBe(false);
+    expect(ensureSerenaRegistered(MY_PROJECT)).toBe(false);
     expect(mockFs.writeFileSync).not.toHaveBeenCalled();
   });
 
   it("should return false when project is already registered", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(
-      "projects:\n- /my/project\n- /other/project\n",
+      `projects:\n- ${MY_PROJECT}\n- ${OTHER_PROJECT}\n`,
     );
-    expect(ensureSerenaRegistered("/my/project")).toBe(false);
+    expect(ensureSerenaRegistered(MY_PROJECT)).toBe(false);
     expect(mockFs.writeFileSync).not.toHaveBeenCalled();
   });
 
   it("should add project to config when not registered", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(
-      "projects:\n- /other/project\nlanguage_backend: LSP\n",
+      `projects:\n- ${OTHER_PROJECT}\nlanguage_backend: LSP\n`,
     );
-    expect(ensureSerenaRegistered("/my/project")).toBe(true);
+    expect(ensureSerenaRegistered(MY_PROJECT)).toBe(true);
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
       configPath,
-      expect.stringContaining("- /my/project"),
+      expect.stringContaining(`- ${MY_PROJECT}`),
     );
   });
 
   it("should preserve existing entries when adding", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(
-      "projects:\n- /other/project\nlanguage_backend: LSP\n",
+      `projects:\n- ${OTHER_PROJECT}\nlanguage_backend: LSP\n`,
     );
-    ensureSerenaRegistered("/my/project");
+    ensureSerenaRegistered(MY_PROJECT);
     const written = mockFs.writeFileSync.mock.calls.at(0)?.[1] as string;
-    expect(written).toContain("- /other/project");
-    expect(written).toContain("- /my/project");
+    expect(written).toContain(`- ${OTHER_PROJECT}`);
+    expect(written).toContain(`- ${MY_PROJECT}`);
     expect(written).toContain("language_backend: LSP");
   });
 
   it("should return false when projects section is missing", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue("gui_log_window: false\n");
-    expect(ensureSerenaRegistered("/my/project")).toBe(false);
+    expect(ensureSerenaRegistered(MY_PROJECT)).toBe(false);
   });
 });
 

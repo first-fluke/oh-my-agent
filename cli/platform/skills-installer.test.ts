@@ -11,6 +11,9 @@ import {
   REPO,
 } from "./skills-installer.js";
 
+// Normalize Windows backslashes for cross-platform path string checks.
+const n = (s: string) => s.replace(/\\/g, "/");
+
 vi.mock("node:fs", () => ({
   existsSync: vi.fn(),
   mkdirSync: vi.fn(),
@@ -238,11 +241,11 @@ describe("installVendorAdaptations", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (target: fs.PathLike) => {
         const path = target.toString();
-        if (path.endsWith(".agents/agents")) return true;
-        if (path.endsWith(".agents/workflows")) return false;
-        if (path.endsWith(".agents/agents/variants/claude.json")) return true;
-        if (path.endsWith(".agents/agents/variants/codex.json")) return true;
-        if (path.endsWith(".agents/agents/variants/gemini.json")) return true;
+        if (n(path).endsWith(".agents/agents")) return true;
+        if (n(path).endsWith(".agents/workflows")) return false;
+        if (n(path).endsWith(".agents/agents/variants/claude.json")) return true;
+        if (n(path).endsWith(".agents/agents/variants/codex.json")) return true;
+        if (n(path).endsWith(".agents/agents/variants/gemini.json")) return true;
         return false;
       },
     );
@@ -250,7 +253,7 @@ describe("installVendorAdaptations", () => {
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (target: fs.PathLike) => {
         const path = target.toString();
-        if (path.endsWith(".agents/agents")) {
+        if (n(path).endsWith(".agents/agents")) {
           return [
             { name: "architecture-reviewer.md", isFile: () => true },
             { name: "tf-infra-engineer.md", isFile: () => true },
@@ -263,7 +266,7 @@ describe("installVendorAdaptations", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (target: fs.PathLike) => {
         const path = target.toString();
-        if (path.endsWith("claude.json")) {
+        if (n(path).endsWith("claude.json")) {
           return JSON.stringify({
             vendor: "claude",
             destDir: ".claude/agents",
@@ -278,7 +281,7 @@ describe("installVendorAdaptations", () => {
             },
           });
         }
-        if (path.endsWith("codex.json")) {
+        if (n(path).endsWith("codex.json")) {
           return JSON.stringify({
             vendor: "codex",
             destDir: ".codex/agents",
@@ -297,7 +300,7 @@ describe("installVendorAdaptations", () => {
             },
           });
         }
-        if (path.endsWith("gemini.json")) {
+        if (n(path).endsWith("gemini.json")) {
           return JSON.stringify({
             vendor: "gemini",
             destDir: ".gemini/agents",
@@ -311,7 +314,7 @@ describe("installVendorAdaptations", () => {
             },
           });
         }
-        if (path.endsWith("architecture-reviewer.md")) {
+        if (n(path).endsWith("architecture-reviewer.md")) {
           return [
             "---",
             "name: architecture-reviewer",
@@ -323,7 +326,7 @@ describe("installVendorAdaptations", () => {
             "Follow the vendor-specific execution protocol:",
           ].join("\n");
         }
-        if (path.endsWith("tf-infra-engineer.md")) {
+        if (n(path).endsWith("tf-infra-engineer.md")) {
           return [
             "---",
             "name: tf-infra-engineer",
@@ -546,7 +549,7 @@ describe("createCliSymlinks", () => {
 
     expect(fs.symlinkSync).toHaveBeenCalledWith(
       expect.any(String),
-      "/tmp/test-home/.hermes/skills/oma/oma-frontend",
+      join("/tmp/test-home", ".hermes/skills/oma/oma-frontend"),
       "dir",
     );
     expect(result.created).toContain(".hermes/skills/oma/oma-frontend");
@@ -560,7 +563,7 @@ describe("createCliSymlinks", () => {
       (p: string) => {
         // Simulate a malicious symlink in the SSOT directory pointing
         // outside the project (e.g., to /etc).
-        if (p.endsWith("/oma-frontend")) return "/etc/passwd";
+        if (n(p).endsWith("/oma-frontend")) return "/etc/passwd";
         return p;
       },
     );
@@ -598,7 +601,7 @@ describe("createCliSymlinks", () => {
       join(mockTargetDir, ".claude/skills/oma-frontend"),
     );
     expect(symlinkCalls).toContain(
-      "/tmp/test-home/.hermes/skills/oma/oma-frontend",
+      join("/tmp/test-home", ".hermes/skills/oma/oma-frontend"),
     );
 
     expect(result.created).toContain(".claude/skills/oma-frontend");

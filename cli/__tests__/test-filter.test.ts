@@ -10,7 +10,8 @@ function runHook(
   env: NodeJS.ProcessEnv = {},
 ): string {
   try {
-    return execSync(`echo '${JSON.stringify(input)}' | bun "${HOOK_PATH}"`, {
+    return execSync(`bun "${HOOK_PATH}"`, {
+      input: JSON.stringify(input),
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },

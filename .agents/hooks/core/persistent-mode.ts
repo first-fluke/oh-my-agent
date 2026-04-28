@@ -155,7 +155,7 @@ function incrementReinforcement(
 // ── Main ──────────────────────────────────────────────────────
 
 async function main() {
-  const raw = readFileSync("/dev/stdin", "utf-8");
+  const raw = readFileSync(0, "utf-8");
   let input: Record<string, unknown>;
   try {
     input = JSON.parse(raw);

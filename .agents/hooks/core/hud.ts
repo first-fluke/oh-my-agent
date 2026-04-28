@@ -56,7 +56,7 @@ interface StatuslineStdin {
 
 function readStdin(): StatuslineStdin {
   try {
-    return JSON.parse(readFileSync("/dev/stdin", "utf-8"));
+    return JSON.parse(readFileSync(0, "utf-8"));
   } catch {
     return {};
   }
