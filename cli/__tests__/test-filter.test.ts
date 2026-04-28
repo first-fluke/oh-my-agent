@@ -1,4 +1,6 @@
-import { spawnSync } from "node:child_process";
+import { execSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -9,21 +11,28 @@ function runHook(
   input: Record<string, unknown>,
   env: NodeJS.ProcessEnv = {},
 ): string {
-  // Use spawnSync (not execSync) so the input bytes are piped to the child's
-  // stdin without going through a shell layer — CI bun versions occasionally
-  // fail to forward the execSync `input` option to a child bun process.
-  const result = spawnSync("bun", [HOOK_PATH], {
-    input: JSON.stringify(input),
-    encoding: "utf-8",
-    env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
-  });
-  if (result.status !== 0) {
+  // Stdin via spawnSync.input is unreliable when this process itself runs
+  // under bun (observed under vitest worker pools): the child sees an empty
+  // stdin and exits 0 with no output. Materialize input to a temp file and
+  // redirect via shell so the child reliably reads it.
+  const tmp = mkdtempSync(join(tmpdir(), "oma-test-filter-"));
+  const inputFile = join(tmp, "input.json");
+  writeFileSync(inputFile, JSON.stringify(input), "utf-8");
+  try {
+    return execSync(`bun "${HOOK_PATH}" < "${inputFile}"`, {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
+    }).trim();
+  } catch (err) {
+    const e = err as { stderr?: string; stdout?: string; status?: number };
     process.stderr.write(
-      `runHook failed (status=${result.status}): ${result.stderr ?? ""}\nstdout: ${result.stdout ?? ""}\n`,
+      `runHook failed (status=${e.status}): ${e.stderr ?? ""}\nstdout: ${e.stdout ?? ""}\n`,
     );
     return "";
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
-  return (result.stdout ?? "").trim();
 }
 
 describe("test-filter hook", () => {
