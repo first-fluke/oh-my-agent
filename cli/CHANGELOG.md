@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.3.1...cli-v6.4.0) (2026-04-28)
+
+
+### Features
+
+* add Windows support with PowerShell installer and link fallbacks ([#309](https://github.com/first-fluke/oh-my-agent/issues/309)) ([31a72b6](https://github.com/first-fluke/oh-my-agent/commit/31a72b63417efed508d98a64792856b174874f41))
+
 ## [6.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.3.0...cli-v6.3.1) (2026-04-27)
 
 
