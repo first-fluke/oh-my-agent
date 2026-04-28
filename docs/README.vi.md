@@ -20,10 +20,17 @@ Khi workflow phân giải một agent về cùng nhà cung cấp với runtime h
 ## Bắt đầu nhanh
 
 ```bash
-# Cài đặt một dòng (tự động cài bun & uv nếu chưa có)
+# macOS / Linux — tự động cài bun & uv nếu chưa có
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
 
-# Hoặc chạy trực tiếp
+```powershell
+# Windows (PowerShell) — tự động cài bun & uv nếu chưa có
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# Hoặc chạy trực tiếp (mọi OS, cần bun + uv)
 bunx oh-my-agent@latest
 ```
 

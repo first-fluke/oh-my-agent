@@ -354,10 +354,14 @@ describe("skill-injector", () => {
   describe("discoverSkills", () => {
     it("derives names from directory names and skips underscore dirs", () => {
       (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-        (p: string) =>
-          p.endsWith("/skills") ||
-          p.endsWith("/oma-search/SKILL.md") ||
-          p.endsWith("/oma-translator/SKILL.md"),
+        (p: string) => {
+          const norm = p.replace(/\\/g, "/");
+          return (
+            norm.endsWith("/skills") ||
+            norm.endsWith("/oma-search/SKILL.md") ||
+            norm.endsWith("/oma-translator/SKILL.md")
+          );
+        },
       );
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
         { name: "_shared", isDirectory: () => true },

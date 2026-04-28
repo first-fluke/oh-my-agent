@@ -20,14 +20,19 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 ## 빠른 시작
 
 ```bash
-# 한 줄 설치 (bun & uv가 없으면 자동으로 설치됩니다)
+# macOS / Linux — bun & uv가 없으면 자동으로 설치됩니다
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
-
-# 또는 직접 실행
-bunx oh-my-agent@latest
 ```
 
-`install.sh`는 macOS/Linux만 지원합니다. Windows에서는 `bun`과 `uv`를 먼저 설치한 뒤 `bunx oh-my-agent@latest`를 실행하세요.
+```powershell
+# Windows (PowerShell) — bun & uv가 없으면 자동으로 설치됩니다
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# 또는 직접 실행 (모든 OS, bun + uv 필요)
+bunx oh-my-agent@latest
+```
 
 프리셋만 고르면 바로 시작할 수 있습니다:
 

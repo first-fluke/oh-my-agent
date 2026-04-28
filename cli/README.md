@@ -20,14 +20,19 @@ When a workflow resolves an agent to the same vendor as the current runtime, it 
 ## Quick Start
 
 ```bash
-# One-liner (auto-installs bun & uv if missing)
+# macOS / Linux — auto-installs bun & uv if missing
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
-
-# Or manual
-bunx oh-my-agent@latest
 ```
 
-`install.sh` supports macOS/Linux only. On Windows, install `bun` and `uv` manually, then run `bunx oh-my-agent@latest`.
+```powershell
+# Windows (PowerShell) — auto-installs bun & uv if missing
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# Or manual (any OS, requires bun + uv)
+bunx oh-my-agent@latest
+```
 
 ### Install via Agent Package Manager
 
@@ -107,8 +112,6 @@ Or use slash commands for structured workflows:
 | 2 | `/architecture` | Software architecture review, tradeoffs, ADR/ATAM/CBAM-style analysis |
 | 2 | `/design` | 7-phase design system workflow |
 | 2 | `/plan` | PM breaks down your feature into tasks |
-| 2 | `/exec-plan` | Track plans as first-class artifacts in `docs/exec-plans/` |
-| 2 | `/stack-set` | Auto-detect tech stack, generate language-specific backend resources |
 | 3 | `/work` | Step-by-step multi-agent execution |
 | 3 | `/orchestrate` | Automated parallel agent spawning |
 | 3 | `/ultrawork` | 5-phase quality workflow with 11 review gates |
@@ -116,8 +119,6 @@ Or use slash commands for structured workflows:
 | 4 | `/review` | Security + performance + accessibility audit |
 | 5 | `/debug` | Structured root-cause debugging |
 | 6 | `/scm` | SCM + Git workflow and Conventional Commit support |
-| ⚙ | `/tools` | Toggle MCP tool groups (memory / code-analysis / code-edit / file-ops) |
-| 📄 | `/pdf` | PDF → Markdown via `opendataloader-pdf` |
 
 **Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow.
 

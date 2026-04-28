@@ -20,10 +20,17 @@ AIアシスタントに同僚がいたらいいのに、って思ったことあ
 ## クイックスタート
 
 ```bash
-# ワンライナー（bun & uvがなければ自動インストール）
+# macOS / Linux — bun & uv がなければ自動インストール
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
 
-# または手動で
+```powershell
+# Windows (PowerShell) — bun & uv がなければ自動インストール
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# または手動で（任意の OS、bun + uv が必要）
 bunx oh-my-agent@latest
 ```
 

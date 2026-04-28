@@ -65,7 +65,7 @@ function expandGlobPattern(pattern: string, cwd: string): string[] {
     const entries = fs.readdirSync(parentDir, { withFileTypes: true });
     return entries
       .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
-      .map((entry) => path.join(cleanPattern, entry.name));
+      .map((entry) => `${cleanPattern}/${entry.name}`);
   } catch {
     return [];
   }

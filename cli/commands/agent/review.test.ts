@@ -55,7 +55,7 @@ describe("agent/review.ts", () => {
     expect(child_process.spawn).toHaveBeenCalledWith(
       "codex",
       ["review", "--uncommitted"],
-      expect.objectContaining({ cwd: expect.stringContaining("/tmp") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]tmp(?:[\\/]|$)/) }),
     );
   });
 
@@ -78,7 +78,7 @@ describe("agent/review.ts", () => {
     expect(child_process.spawn).toHaveBeenCalledWith(
       "codex",
       ["review"],
-      expect.objectContaining({ cwd: expect.stringContaining("/tmp") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]tmp(?:[\\/]|$)/) }),
     );
   });
 
@@ -102,7 +102,7 @@ describe("agent/review.ts", () => {
         "--output-format",
         "text",
       ]),
-      expect.objectContaining({ cwd: expect.stringContaining("/tmp") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]tmp(?:[\\/]|$)/) }),
     );
   });
 

@@ -20,10 +20,17 @@
 ## 快速开始
 
 ```bash
-# 一行搞定（自动安装 bun & uv）
+# macOS / Linux — 自动安装 bun & uv
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
 
-# 或者手动运行
+```powershell
+# Windows (PowerShell) — 自动安装 bun & uv
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# 或者手动运行（任意系统，需要 bun + uv）
 bunx oh-my-agent@latest
 ```
 

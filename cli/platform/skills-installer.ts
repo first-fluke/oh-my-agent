@@ -14,11 +14,13 @@ import type {
   VendorType,
 } from "../types/index.js";
 import { clearNonDirectory } from "../utils/fs-utils.js";
+import { createLink } from "./fs-link.js";
 
 export * from "../constants/index.js";
 export type { CliTool, CliVendor, SkillInfo } from "../types/index.js";
 export * from "../utils/fs-utils.js";
 export * from "./agent-composer.js";
+export * from "./fs-link.js";
 export * from "./hooks-composer.js";
 export * from "./vendor-adapter.js";
 
@@ -291,6 +293,14 @@ export function ensureCursorMcpSymlink(targetDir: string): void {
       if (existing === resolve(agentsMcp)) return;
       fs.unlinkSync(linkPath);
     } else {
+      // Regular file. On Windows this may be a hardlink (createLink fallback);
+      // hardlinks share an inode with the SSOT so content stays in sync — no-op.
+      // For genuine copies (cross-volume fallback) or user-owned files we leave
+      // the file alone, but warn loudly if its content has drifted from SSOT
+      // so the user can refresh by deleting and re-running install.
+      if (process.platform === "win32" && stat.isFile()) {
+        warnIfWindowsCopyDrift(linkPath, agentsMcp, stat);
+      }
       return;
     }
   } catch {
@@ -298,7 +308,33 @@ export function ensureCursorMcpSymlink(targetDir: string): void {
   }
 
   fs.mkdirSync(cursorDir, { recursive: true });
-  fs.symlinkSync(relTarget, linkPath, "file");
+  createLink(relTarget, linkPath, "file");
+}
+
+function warnIfWindowsCopyDrift(
+  linkPath: string,
+  ssotPath: string,
+  linkStat: fs.Stats,
+): void {
+  try {
+    const ssotStat = fs.statSync(ssotPath);
+    if (
+      linkStat.ino !== 0 &&
+      linkStat.ino === ssotStat.ino &&
+      linkStat.dev === ssotStat.dev
+    ) {
+      return; // hardlink: content auto-syncs
+    }
+    const linkContent = fs.readFileSync(linkPath);
+    const ssotContent = fs.readFileSync(ssotPath);
+    if (!linkContent.equals(ssotContent)) {
+      console.warn(
+        `note: ${linkPath} differs from ${ssotPath}. If oh-my-agent created it via copy fallback, delete it and re-run install to refresh.`,
+      );
+    }
+  } catch {
+    // best-effort warning only
+  }
 }
 
 /**
@@ -449,7 +485,7 @@ export function createCliSymlinks(
       }
 
       const relativePath = relative(linkRootDir, source);
-      fs.symlinkSync(relativePath, link, "dir");
+      createLink(relativePath, link, "dir");
       created.push(`${skillsDir}/${skillName}`);
     }
   }

@@ -130,12 +130,10 @@ function toBackupPath(cwd: string, legacyPath: string): string {
 }
 
 function toBackupLabel(legacyPath: string): string {
-  return join(
-    ".agents",
-    ".migration-backup",
-    "shared-layout-v2",
-    legacyPath.replace(/^\.agents\//, ""),
-  );
+  // Always emit POSIX-style separators: this string is a user-facing action
+  // log entry, not a filesystem path, and must not vary by OS.
+  const tail = legacyPath.replace(/^\.agents\//, "");
+  return `.agents/.migration-backup/shared-layout-v2/${tail}`;
 }
 
 export const migrateSharedLayout: Migration = {

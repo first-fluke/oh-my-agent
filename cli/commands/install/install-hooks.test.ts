@@ -4,6 +4,9 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installVendorAdaptations } from "../../platform/skills-installer.js";
 
+// Cross-platform path comparison: normalize backslashes so includes() works on Windows.
+const n = (s: string) => s.replace(/\\/g, "/");
+
 vi.mock("node:child_process", () => ({
   execFileSync: vi.fn(),
 }));
@@ -31,10 +34,11 @@ describe("installHooksFromVariant", () => {
 
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
-        if (p.includes("variants/") && p.endsWith(".json")) return true;
-        if (p.includes("hooks/core")) return true;
-        if (p.includes(".agents/agents")) return true;
-        if (p.includes(".agents/workflows")) return true;
+        const norm = p.replace(/\\/g, "/");
+        if (norm.includes("variants/") && norm.endsWith(".json")) return true;
+        if (norm.includes("hooks/core")) return true;
+        if (norm.includes(".agents/agents")) return true;
+        if (norm.includes(".agents/workflows")) return true;
         return false;
       },
     );
@@ -170,7 +174,7 @@ describe("installHooksFromVariant", () => {
     ).mock.calls.find(
       (call: string[]) =>
         typeof call[0] === "string" &&
-        call[0].includes(".gemini/settings.json"),
+        n(call[0]).includes(".gemini/settings.json"),
     );
     const settings = JSON.parse(writeCall?.[1] as string);
     expect(settings.statusLine).toBeUndefined();
@@ -199,7 +203,7 @@ describe("installHooksFromVariant", () => {
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && call[0].includes(".codex/hooks.json"),
+        typeof call[0] === "string" && n(call[0]).includes(".codex/hooks.json"),
     );
     const settings = JSON.parse(writeCall?.[1] as string);
     expect(settings.statusLine).toBeUndefined();
@@ -238,9 +242,9 @@ describe("installHooksFromVariant", () => {
   it("should create settings parent directory before writing hooks.json", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
-        if (p.includes("variants/") && p.endsWith(".json")) return true;
-        if (p.includes(".agents/agents")) return true;
-        if (p.includes(".agents/workflows")) return true;
+        if (n(p).includes("variants/") && n(p).endsWith(".json")) return true;
+        if (n(p).includes(".agents/agents")) return true;
+        if (n(p).includes(".agents/workflows")) return true;
         return false;
       },
     );
@@ -271,7 +275,7 @@ describe("installHooksFromVariant", () => {
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && call[0].includes(".codex/hooks.json"),
+        typeof call[0] === "string" && n(call[0]).includes(".codex/hooks.json"),
     );
     expect(writeCall).toBeTruthy();
   });
@@ -350,7 +354,7 @@ describe("installHooksFromVariant", () => {
   it("should patch copied Codex hook types to use updated_input", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (pathArg: string) => {
-        if (pathArg.includes("variants/") && pathArg.endsWith(".json")) {
+        if (n(pathArg).includes("variants/") && n(pathArg).endsWith(".json")) {
           return JSON.stringify({
             vendor: "codex",
             hookDir: ".codex/hooks",
@@ -367,7 +371,7 @@ describe("installHooksFromVariant", () => {
           });
         }
 
-        if (pathArg.endsWith(".codex/hooks/types.ts")) {
+        if (n(pathArg).endsWith(".codex/hooks/types.ts")) {
           return `    case "claude":
     case "codex":
     case "qwen":
@@ -384,11 +388,11 @@ describe("installHooksFromVariant", () => {
     );
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (pathArg: string) =>
-        pathArg.includes("variants/") ||
-        pathArg.includes("hooks/core") ||
-        pathArg.includes(".codex/hooks/types.ts") ||
-        pathArg.includes(".agents/agents") ||
-        pathArg.includes(".agents/workflows"),
+        n(pathArg).includes("variants/") ||
+        n(pathArg).includes("hooks/core") ||
+        n(pathArg).includes(".codex/hooks/types.ts") ||
+        n(pathArg).includes(".agents/agents") ||
+        n(pathArg).includes(".agents/workflows"),
     );
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
@@ -403,7 +407,7 @@ describe("installHooksFromVariant", () => {
   it("should patch copied hook scripts to infer vendor from script path", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (pathArg: string) => {
-        if (pathArg.includes("variants/") && pathArg.endsWith(".json")) {
+        if (n(pathArg).includes("variants/") && n(pathArg).endsWith(".json")) {
           return JSON.stringify({
             vendor: "codex",
             hookDir: ".codex/hooks",
@@ -424,7 +428,7 @@ describe("installHooksFromVariant", () => {
           });
         }
 
-        if (pathArg.endsWith(".codex/hooks/test-filter.ts")) {
+        if (n(pathArg).endsWith(".codex/hooks/test-filter.ts")) {
           return `function detectVendor(input: Record<string, unknown>): Vendor {
   const event = input.hook_event_name as string | undefined;
   if (event === "BeforeTool") return "gemini";
@@ -436,7 +440,7 @@ describe("installHooksFromVariant", () => {
 }`;
         }
 
-        if (pathArg.endsWith(".codex/hooks/persistent-mode.ts")) {
+        if (n(pathArg).endsWith(".codex/hooks/persistent-mode.ts")) {
           return `function detectVendor(input: Record<string, unknown>): Vendor {
   const event = input.hook_event_name as string | undefined;
   if (event === "AfterAgent") return "gemini";
@@ -453,12 +457,12 @@ describe("installHooksFromVariant", () => {
     );
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (pathArg: string) =>
-        pathArg.includes("variants/") ||
-        pathArg.includes("hooks/core") ||
-        pathArg.includes(".codex/hooks/test-filter.ts") ||
-        pathArg.includes(".codex/hooks/persistent-mode.ts") ||
-        pathArg.includes(".agents/agents") ||
-        pathArg.includes(".agents/workflows"),
+        n(pathArg).includes("variants/") ||
+        n(pathArg).includes("hooks/core") ||
+        n(pathArg).includes(".codex/hooks/test-filter.ts") ||
+        n(pathArg).includes(".codex/hooks/persistent-mode.ts") ||
+        n(pathArg).includes(".agents/agents") ||
+        n(pathArg).includes(".agents/workflows"),
     );
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["codex"]);
@@ -509,7 +513,8 @@ describe("installHooksFromVariant", () => {
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && call[0].includes(".cursor/hooks.json"),
+        typeof call[0] === "string" &&
+        n(call[0]).includes(".cursor/hooks.json"),
     );
     expect(writeCall).toBeTruthy();
 
@@ -545,7 +550,7 @@ describe("installHooksFromVariant", () => {
       (p: string, opts?: { withFileTypes?: boolean }) => {
         if (
           typeof p === "string" &&
-          p.includes(".claude/hooks") &&
+          n(p).includes(".claude/hooks") &&
           opts?.withFileTypes
         ) {
           return [
@@ -566,8 +571,8 @@ describe("installHooksFromVariant", () => {
       (p: string) => {
         if (
           typeof p === "string" &&
-          (p.endsWith("keyword-detector.ts") || p.endsWith("hud.ts")) &&
-          p.includes(".claude/hooks")
+          (n(p).endsWith("keyword-detector.ts") || n(p).endsWith("hud.ts")) &&
+          n(p).includes(".claude/hooks")
         ) {
           return { isDirectory: () => false };
         }
@@ -622,7 +627,7 @@ describe("installHooksFromVariant", () => {
       (p: string, opts?: { withFileTypes?: boolean }) => {
         if (
           typeof p === "string" &&
-          p.includes(".claude/hooks") &&
+          n(p).includes(".claude/hooks") &&
           opts?.withFileTypes
         ) {
           return [
@@ -643,8 +648,8 @@ describe("installHooksFromVariant", () => {
       (p: string) => {
         if (
           typeof p === "string" &&
-          p.endsWith("persistent-mode.ts") &&
-          p.includes(".claude/hooks")
+          n(p).endsWith("persistent-mode.ts") &&
+          n(p).includes(".claude/hooks")
         ) {
           return { isDirectory: () => false, isSymbolicLink: () => true };
         }

@@ -234,8 +234,9 @@ describe("mergeRulesIndexForVendor", () => {
   it("should create GEMINI.md with usage guide and rules index", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
-        if (typeof p === "string" && p.endsWith("GEMINI.md")) return false;
-        return p.includes(".agents/rules");
+        const norm = typeof p === "string" ? p.replace(/\\/g, "/") : "";
+        if (norm.endsWith("GEMINI.md")) return false;
+        return norm.includes(".agents/rules");
       },
     );
     (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
