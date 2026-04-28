@@ -16,7 +16,13 @@ function runHook(
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
     }).trim();
-  } catch {
+  } catch (err) {
+    const e = err as { stderr?: string; stdout?: string; status?: number };
+    // Surface the underlying failure so CI runs are debuggable instead of
+    // silently returning "" and assertion-failing on empty strings.
+    process.stderr.write(
+      `runHook failed (status=${e.status}): ${e.stderr ?? ""}\nstdout: ${e.stdout ?? ""}\n`,
+    );
     return "";
   }
 }
