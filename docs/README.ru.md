@@ -20,10 +20,17 @@
 ## Быстрый старт
 
 ```bash
-# Одна команда (автоматически установит bun & uv, если их нет)
+# macOS / Linux — автоматически установит bun & uv, если их нет
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
 
-# Или вручную
+```powershell
+# Windows (PowerShell) — автоматически установит bun & uv, если их нет
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# Или вручную (любая ОС, требуется bun + uv)
 bunx oh-my-agent@latest
 ```
 

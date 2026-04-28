@@ -20,14 +20,19 @@ Sub-agent แบบ vendor-native ถูกสร้างขึ้นจาก 
 ## Quick Start
 
 ```bash
-# ติดตั้งในคำสั่งเดียว (ติดตั้ง bun และ uv ให้อัตโนมัติหากยังไม่ได้ install ไว้)
+# macOS / Linux — ติดตั้ง bun และ uv ให้อัตโนมัติหากยังไม่ได้ install ไว้
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
-
-# หรือรันด้วยตนเอง
-bunx oh-my-agent@latest
 ```
 
-`install.sh` รองรับเฉพาะ macOS/Linux สำหรับ Windows กรุณาติดตั้ง `bun` และ `uv` ด้วยตนเอง แล้วรัน `bunx oh-my-agent@latest`
+```powershell
+# Windows (PowerShell) — ติดตั้ง bun และ uv ให้อัตโนมัติหากยังไม่ได้ install ไว้
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# หรือรันด้วยตนเอง (ทุก OS, ต้องการ bun + uv)
+bunx oh-my-agent@latest
+```
 
 เลือก Preset ที่ต้องการ แล้วคุณก็พร้อมใช้งาน:
 

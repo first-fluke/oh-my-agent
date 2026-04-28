@@ -20,14 +20,19 @@ When a workflow resolves an agent to the same vendor as the current runtime, it 
 ## Quick Start
 
 ```bash
-# One-liner (auto-installs bun & uv if missing)
+# macOS / Linux — auto-installs bun & uv if missing
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
-
-# Or manual
-bunx oh-my-agent@latest
 ```
 
-`install.sh` supports macOS/Linux only. On Windows, install `bun` and `uv` manually, then run `bunx oh-my-agent@latest`.
+```powershell
+# Windows (PowerShell) — auto-installs bun & uv if missing
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# Or manual (any OS, requires bun + uv)
+bunx oh-my-agent@latest
+```
 
 ### Install via Agent Package Manager
 

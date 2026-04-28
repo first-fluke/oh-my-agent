@@ -20,10 +20,17 @@ Gdy workflow rozwiazuje agenta do tego samego dostawcy co biezacy runtime, powin
 ## Szybki start
 
 ```bash
-# Jedna komenda (automatycznie zainstaluje bun & uv, jesli brakuje)
+# macOS / Linux — automatycznie zainstaluje bun & uv, jesli brakuje
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
 
-# Lub recznie
+```powershell
+# Windows (PowerShell) — automatycznie zainstaluje bun & uv, jesli brakuje
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# Lub recznie (dowolny system, wymaga bun + uv)
 bunx oh-my-agent@latest
 ```
 

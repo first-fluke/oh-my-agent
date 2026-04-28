@@ -59,7 +59,7 @@ detect_platform() {
     Darwin) PLATFORM="macOS" ;;
     Linux)  PLATFORM="Linux" ;;
     MINGW*|MSYS*|CYGWIN*)
-      fail "Windows is not supported by this script. Install bun and uv manually, then run: bunx oh-my-agent@latest"
+      fail "Windows: use the PowerShell installer instead.\n\n  irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex"
       ;;
     *)      fail "Unsupported OS: $OS" ;;
   esac

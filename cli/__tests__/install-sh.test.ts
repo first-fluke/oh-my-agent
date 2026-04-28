@@ -12,7 +12,7 @@ function runBash(script: string) {
   });
 }
 
-describe("install.sh", () => {
+describe.skipIf(process.platform === "win32")("install.sh", () => {
   it("does not execute main when sourced", () => {
     const result = runBash(`
       source "${installScript}"
@@ -101,7 +101,7 @@ describe("install.sh", () => {
     expect(result.stdout).toContain("main-executed");
   });
 
-  it("reports Windows as unsupported", () => {
+  it("redirects Windows users to the PowerShell installer", () => {
     const result = runBash(`
       source "${installScript}"
       uname() {
@@ -115,7 +115,7 @@ describe("install.sh", () => {
     `);
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("Windows is not supported by this script");
-    expect(result.stderr).toContain("bunx oh-my-agent@latest");
+    expect(result.stderr).toContain("PowerShell installer");
+    expect(result.stderr).toContain("install.ps1");
   });
 });

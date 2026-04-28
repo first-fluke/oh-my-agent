@@ -20,10 +20,17 @@ Wanneer een workflow een agent oplost naar dezelfde vendor als de huidige runtim
 ## Snel starten
 
 ```bash
-# Eenregelig (installeert bun & uv automatisch als ze ontbreken)
+# macOS / Linux — installeert bun & uv automatisch als ze ontbreken
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
+```
 
-# Of handmatig
+```powershell
+# Windows (PowerShell) — installeert bun & uv automatisch als ze ontbreken
+irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
+```
+
+```bash
+# Of handmatig (elk OS, vereist bun + uv)
 bunx oh-my-agent@latest
 ```
 
