@@ -1,0 +1,7 @@
+# Enforce LF line endings for shell scripts so Windows checkouts don't
+# break them via autocrlf conversion.
+*.sh text eol=lf
+*.bash text eol=lf
+
+# PowerShell scripts use CRLF natively; preserve as-is.
+*.ps1 text eol=crlf

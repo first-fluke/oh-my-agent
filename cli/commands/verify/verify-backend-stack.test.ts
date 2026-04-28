@@ -27,7 +27,9 @@ function findCheck(
   return result.checks.find((c) => c.name.startsWith(namePrefix));
 }
 
-describe("verify backend — stack.yaml dispatch", () => {
+// verify-backend uses Unix shell tools (grep, head, pipes) that aren't
+// available on Windows. The feature itself is POSIX-only.
+describe.skipIf(process.platform === "win32")("verify backend — stack.yaml dispatch", () => {
   let workspace: string;
 
   beforeEach(() => {

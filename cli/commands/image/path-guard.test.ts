@@ -4,6 +4,9 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveOutDir } from "./path-guard.js";
 
+// Normalize Windows backslashes for cross-platform path string checks.
+const n = (s: string) => s.replace(/\\/g, "/");
+
 describe("resolveOutDir", () => {
   let tmp: string;
   const runId = { timestamp: "20260424-143052", shortid: "ab12cd" };
@@ -25,7 +28,7 @@ describe("resolveOutDir", () => {
       compareFolderPattern: "{timestamp}-{shortid}-compare",
       cwd: tmp,
     });
-    expect(out.endsWith("results/20260424-143052-ab12cd")).toBe(true);
+    expect(n(out).endsWith("results/20260424-143052-ab12cd")).toBe(true);
   });
 
   it("creates a compare folder when compare=true", () => {
@@ -38,7 +41,7 @@ describe("resolveOutDir", () => {
       compareFolderPattern: "{timestamp}-{shortid}-compare",
       cwd: tmp,
     });
-    expect(out.endsWith("20260424-143052-ab12cd-compare")).toBe(true);
+    expect(n(out).endsWith("20260424-143052-ab12cd-compare")).toBe(true);
   });
 
   it("rejects --out paths outside $PWD without --allow-external-out", () => {

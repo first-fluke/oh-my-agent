@@ -3,6 +3,9 @@ import type * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { spawnAgent } from "./spawn-status.js";
 
+// Normalize Windows backslashes for cross-platform path string checks.
+const n = (s: string) => s.replace(/\\/g, "/");
+
 const mockFsFunctions = vi.hoisted(() => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
@@ -43,11 +46,11 @@ describe("agent/spawn-status.ts", () => {
   it("exits if spawn returns no pid", async () => {
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      return target === "/tmp";
+      return n(target).endsWith("/tmp");
     });
     mockFsFunctions.statSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target === "/tmp") {
+      if (n(target).endsWith("/tmp")) {
         return { isDirectory: () => true, isFile: () => false };
       }
       return { isDirectory: () => false, isFile: () => false };
@@ -76,34 +79,34 @@ describe("agent/spawn-status.ts", () => {
   it("spawns process and writes PID", async () => {
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("user-preferences.yaml")) return false;
-      if (target.includes("cli-config.yaml")) return false;
+      if (n(target).includes("user-preferences.yaml")) return false;
+      if (n(target).includes("cli-config.yaml")) return false;
       if (
-        target.includes(
+        n(target).includes(
           ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
         )
       ) {
         return true;
       }
-      if (target.includes("prompt.md")) return true;
-      if (target === "/tmp") return true;
+      if (n(target).includes("prompt.md")) return true;
+      if (n(target).endsWith("/tmp")) return true;
       return false;
     });
     mockFsFunctions.statSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("prompt.md")) {
+      if (n(target).includes("prompt.md")) {
         return { isDirectory: () => false, isFile: () => true };
       }
-      if (target === "/tmp") {
+      if (n(target).endsWith("/tmp")) {
         return { isDirectory: () => true, isFile: () => false };
       }
       return { isDirectory: () => false, isFile: () => false };
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("prompt.md")) return "prompt content";
+      if (n(target).includes("prompt.md")) return "prompt content";
       if (
-        target.includes(
+        n(target).includes(
           ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
         )
       ) {
@@ -123,7 +126,7 @@ describe("agent/spawn-status.ts", () => {
     expect(child_process.spawn).toHaveBeenCalledWith(
       "gemini",
       expect.arrayContaining(["-p", "prompt content\n\nexecution protocol"]),
-      expect.objectContaining({ cwd: expect.stringContaining("/tmp") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]tmp(?:[\\/]|$)/) }),
     );
     expect(mockFsFunctions.writeFileSync).toHaveBeenCalledWith(
       expect.stringContaining(".pid"),
@@ -143,21 +146,21 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target === "/project/.agents/oma-config.yaml") return true;
+      if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
       if (
-        target.includes("apps/api/.agents") &&
-        target.includes("oma-config")
+        n(target).includes("apps/api/.agents") &&
+        n(target).includes("oma-config")
       ) {
         return false;
       }
-      if (target.includes("user-preferences.yaml")) return false;
-      if (target.includes("cli-config.yaml")) return false;
-      if (target === "/project/apps/api") return true;
+      if (n(target).includes("user-preferences.yaml")) return false;
+      if (n(target).includes("cli-config.yaml")) return false;
+      if (n(target).endsWith("/project/apps/api")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -178,7 +181,7 @@ describe("agent/spawn-status.ts", () => {
       "codex",
       expect.arrayContaining(["implement feature"]),
       expect.objectContaining({
-        cwd: expect.stringContaining("/project/apps/api"),
+        cwd: expect.stringMatching(/project[\\/]apps[\\/]api/),
       }),
     );
     expect(vi.mocked(child_process.spawn).mock.calls.at(-1)?.[1]).not.toContain(
@@ -204,16 +207,16 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target === "/project/.agents/oma-config.yaml") return true;
-      if (target.includes("oma-config.yaml")) return false;
-      if (target.includes("user-preferences.yaml")) return false;
-      if (target.includes("cli-config.yaml")) return false;
-      if (target === "/project/apps/api") return true;
+      if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
+      if (n(target).includes("oma-config.yaml")) return false;
+      if (n(target).includes("user-preferences.yaml")) return false;
+      if (n(target).includes("cli-config.yaml")) return false;
+      if (n(target).endsWith("/project/apps/api")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -234,7 +237,7 @@ describe("agent/spawn-status.ts", () => {
       "gemini",
       expect.arrayContaining(["implement feature"]),
       expect.objectContaining({
-        cwd: expect.stringContaining("/project/apps/api"),
+        cwd: expect.stringMatching(/project[\\/]apps[\\/]api/),
       }),
     );
 
@@ -251,14 +254,14 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target === "/project/.agents/oma-config.yaml") return true;
-      if (target.includes("cli-config.yaml")) return false;
-      if (target === "/project") return true;
+      if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
+      if (n(target).includes("cli-config.yaml")) return false;
+      if (n(target).endsWith("/project")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -277,7 +280,7 @@ describe("agent/spawn-status.ts", () => {
     expect(child_process.spawn).toHaveBeenLastCalledWith(
       "claude",
       expect.any(Array),
-      expect.objectContaining({ cwd: expect.stringContaining("/project") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]project(?:[\\/]|$)/) }),
     );
 
     await spawnAgent(
@@ -289,7 +292,7 @@ describe("agent/spawn-status.ts", () => {
     expect(child_process.spawn).toHaveBeenLastCalledWith(
       "codex",
       expect.any(Array),
-      expect.objectContaining({ cwd: expect.stringContaining("/project") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]project(?:[\\/]|$)/) }),
     );
 
     cwdSpy.mockRestore();
@@ -298,8 +301,8 @@ describe("agent/spawn-status.ts", () => {
   it("prints log output on non-zero exit", async () => {
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target === "/tmp") return true;
-      if (target.includes("subagent-") && target.endsWith(".log")) return true;
+      if (n(target).endsWith("/tmp")) return true;
+      if (n(target).includes("subagent-") && n(target).endsWith(".log")) return true;
       return false;
     });
     mockFsFunctions.statSync.mockReturnValue({
@@ -351,14 +354,14 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("cli-config.yaml")) return true;
-      if (target.includes("user-preferences.yaml")) return false;
-      if (target === "/workspace") return true;
+      if (n(target).includes("cli-config.yaml")) return true;
+      if (n(target).includes("user-preferences.yaml")) return false;
+      if (n(target).endsWith("/workspace")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+      if (n(target).includes("cli-config.yaml")) return CLI_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -374,7 +377,7 @@ describe("agent/spawn-status.ts", () => {
       "codex",
       expect.any(Array),
       expect.objectContaining({
-        cwd: expect.stringContaining("/workspace"),
+        cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/),
         env: expect.not.objectContaining({
           CODEX_HOME: expect.any(String),
         }),
@@ -403,15 +406,15 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return true;
-      if (target.includes("cli-config.yaml")) return true;
-      if (target === "/workspace") return true;
+      if (n(target).includes("oma-config.yaml")) return true;
+      if (n(target).includes("cli-config.yaml")) return true;
+      if (n(target).endsWith("/workspace")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-      if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      if (n(target).includes("cli-config.yaml")) return CLI_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -436,7 +439,7 @@ describe("agent/spawn-status.ts", () => {
         "-p",
         "plan the work",
       ]),
-      expect.objectContaining({ cwd: expect.stringContaining("/workspace") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/) }),
     );
   });
 
@@ -462,15 +465,15 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return true;
-      if (target.includes("cli-config.yaml")) return true;
-      if (target === "/workspace") return true;
+      if (n(target).includes("oma-config.yaml")) return true;
+      if (n(target).includes("cli-config.yaml")) return true;
+      if (n(target).endsWith("/workspace")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-      if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      if (n(target).includes("cli-config.yaml")) return CLI_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -497,7 +500,7 @@ describe("agent/spawn-status.ts", () => {
         "--full-auto",
         "@backend-engineer\n\nimplement auth",
       ]),
-      expect.objectContaining({ cwd: expect.stringContaining("/workspace") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/) }),
     );
   });
 
@@ -524,15 +527,15 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return true;
-      if (target.includes("cli-config.yaml")) return true;
-      if (target === "/workspace") return true;
+      if (n(target).includes("oma-config.yaml")) return true;
+      if (n(target).includes("cli-config.yaml")) return true;
+      if (n(target).endsWith("/workspace")) return true;
       return false;
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
-      if (target.includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-      if (target.includes("cli-config.yaml")) return CLI_CONFIG_YAML;
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      if (n(target).includes("cli-config.yaml")) return CLI_CONFIG_YAML;
       return "";
     });
     mockFsFunctions.openSync.mockReturnValue(123);
@@ -560,7 +563,7 @@ describe("agent/spawn-status.ts", () => {
         "-p",
         "@frontend-engineer\n\nbuild dashboard",
       ]),
-      expect.objectContaining({ cwd: expect.stringContaining("/workspace") }),
+      expect.objectContaining({ cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/) }),
     );
   });
 });

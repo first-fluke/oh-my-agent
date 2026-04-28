@@ -513,7 +513,8 @@ describe("installHooksFromVariant", () => {
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && n(call[0]).includes(".cursor/hooks.json"),
+        typeof call[0] === "string" &&
+        n(call[0]).includes(".cursor/hooks.json"),
     );
     expect(writeCall).toBeTruthy();
 

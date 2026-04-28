@@ -243,9 +243,11 @@ describe("installVendorAdaptations", () => {
         const path = target.toString();
         if (n(path).endsWith(".agents/agents")) return true;
         if (n(path).endsWith(".agents/workflows")) return false;
-        if (n(path).endsWith(".agents/agents/variants/claude.json")) return true;
+        if (n(path).endsWith(".agents/agents/variants/claude.json"))
+          return true;
         if (n(path).endsWith(".agents/agents/variants/codex.json")) return true;
-        if (n(path).endsWith(".agents/agents/variants/gemini.json")) return true;
+        if (n(path).endsWith(".agents/agents/variants/gemini.json"))
+          return true;
         return false;
       },
     );
