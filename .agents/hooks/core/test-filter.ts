@@ -102,6 +102,12 @@ interface PreToolUseInput {
 
 // --- Main ---
 
+if (process.env.OMA_HOOK_DEBUG) {
+  process.stderr.write(
+    `[test-filter] entry. OMA_HOOK_INPUT_FILE=${process.env.OMA_HOOK_INPUT_FILE ?? "<unset>"}\n`,
+  );
+}
+
 // Use fd 0 (sync) instead of Bun.stdin.text() — works under both Bun and
 // Node, and avoids stdin-buffering timing differences between hosts.
 // Fallback: when OMA_HOOK_INPUT_FILE is set, read from that file. This
