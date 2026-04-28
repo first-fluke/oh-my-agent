@@ -19,17 +19,16 @@ function runHook(
   const inputFile = join(tmp, "input.json");
   writeFileSync(inputFile, JSON.stringify(input), "utf-8");
   try {
-    const out = execSync(`bun "${HOOK_PATH}" < "${inputFile}"`, {
+    return execSync(`bun "${HOOK_PATH}"`, {
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
-      env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
-    });
-    if (!out || !out.trim()) {
-      process.stderr.write(
-        `runHook produced empty stdout for input=${JSON.stringify(input).slice(0, 80)} (file=${inputFile})\n`,
-      );
-    }
-    return (out ?? "").trim();
+      env: {
+        ...process.env,
+        CLAUDE_PROJECT_DIR: PROJECT_DIR,
+        OMA_HOOK_INPUT_FILE: inputFile,
+        ...env,
+      },
+    }).trim();
   } catch (err) {
     const e = err as { stderr?: string; stdout?: string; status?: number };
     process.stderr.write(

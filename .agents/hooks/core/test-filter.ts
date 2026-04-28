@@ -104,7 +104,11 @@ interface PreToolUseInput {
 
 // Use fd 0 (sync) instead of Bun.stdin.text() — works under both Bun and
 // Node, and avoids stdin-buffering timing differences between hosts.
-const raw = readFileSync(0, "utf-8");
+// Fallback: when OMA_HOOK_INPUT_FILE is set, read from that file. This
+// makes the hook testable from environments (vitest worker pools under
+// bun) where piping stdin to a child process is unreliable.
+const inputFile = process.env.OMA_HOOK_INPUT_FILE;
+const raw = inputFile ? readFileSync(inputFile, "utf-8") : readFileSync(0, "utf-8");
 if (!raw.trim()) process.exit(0);
 
 const input: PreToolUseInput = JSON.parse(raw);
