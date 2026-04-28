@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -9,22 +9,21 @@ function runHook(
   input: Record<string, unknown>,
   env: NodeJS.ProcessEnv = {},
 ): string {
-  try {
-    return execSync(`bun "${HOOK_PATH}"`, {
-      input: JSON.stringify(input),
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
-    }).trim();
-  } catch (err) {
-    const e = err as { stderr?: string; stdout?: string; status?: number };
-    // Surface the underlying failure so CI runs are debuggable instead of
-    // silently returning "" and assertion-failing on empty strings.
+  // Use spawnSync (not execSync) so the input bytes are piped to the child's
+  // stdin without going through a shell layer — CI bun versions occasionally
+  // fail to forward the execSync `input` option to a child bun process.
+  const result = spawnSync("bun", [HOOK_PATH], {
+    input: JSON.stringify(input),
+    encoding: "utf-8",
+    env: { ...process.env, CLAUDE_PROJECT_DIR: PROJECT_DIR, ...env },
+  });
+  if (result.status !== 0) {
     process.stderr.write(
-      `runHook failed (status=${e.status}): ${e.stderr ?? ""}\nstdout: ${e.stdout ?? ""}\n`,
+      `runHook failed (status=${result.status}): ${result.stderr ?? ""}\nstdout: ${result.stdout ?? ""}\n`,
     );
     return "";
   }
+  return (result.stdout ?? "").trim();
 }
 
 describe("test-filter hook", () => {
