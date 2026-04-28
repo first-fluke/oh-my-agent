@@ -108,8 +108,17 @@ interface PreToolUseInput {
 // makes the hook testable from environments (vitest worker pools under
 // bun) where piping stdin to a child process is unreliable.
 const inputFile = process.env.OMA_HOOK_INPUT_FILE;
-const raw = inputFile ? readFileSync(inputFile, "utf-8") : readFileSync(0, "utf-8");
-if (!raw.trim()) process.exit(0);
+const raw = inputFile
+  ? readFileSync(inputFile, "utf-8")
+  : readFileSync(0, "utf-8");
+if (!raw.trim()) {
+  if (process.env.OMA_HOOK_DEBUG) {
+    process.stderr.write(
+      `[test-filter debug] empty input. inputFile=${inputFile ?? "<stdin>"}\n`,
+    );
+  }
+  process.exit(0);
+}
 
 const input: PreToolUseInput = JSON.parse(raw);
 

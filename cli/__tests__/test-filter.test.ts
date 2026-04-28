@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -19,22 +19,24 @@ function runHook(
   const inputFile = join(tmp, "input.json");
   writeFileSync(inputFile, JSON.stringify(input), "utf-8");
   try {
-    return execSync(`bun "${HOOK_PATH}"`, {
+    const result = spawnSync("bun", [HOOK_PATH], {
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
         CLAUDE_PROJECT_DIR: PROJECT_DIR,
         OMA_HOOK_INPUT_FILE: inputFile,
+        OMA_HOOK_DEBUG: "1",
         ...env,
       },
-    }).trim();
-  } catch (err) {
-    const e = err as { stderr?: string; stdout?: string; status?: number };
-    process.stderr.write(
-      `runHook failed (status=${e.status}): ${e.stderr ?? ""}\nstdout: ${e.stdout ?? ""}\n`,
-    );
-    return "";
+    });
+    if (result.status !== 0 || !result.stdout?.trim()) {
+      process.stderr.write(
+        `runHook diag: status=${result.status} stderr=${result.stderr ?? ""} stdout=${result.stdout ?? ""}\n` +
+          `  HOOK_PATH=${HOOK_PATH}\n  inputFile=${inputFile}\n`,
+      );
+    }
+    return (result.stdout ?? "").trim();
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
