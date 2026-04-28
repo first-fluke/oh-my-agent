@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ensureSerenaProject,
@@ -134,7 +134,7 @@ describe("inferSerenaLanguages", () => {
 });
 
 describe("ensureSerenaRegistered", () => {
-  const configPath = "/mock/home/.serena/serena_config.yml";
+  const configPath = join("/mock/home", ".serena", "serena_config.yml");
 
   it("should return false when config file does not exist", () => {
     mockFs.existsSync.mockReturnValue(false);

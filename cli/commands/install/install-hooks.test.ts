@@ -371,7 +371,7 @@ describe("installHooksFromVariant", () => {
           });
         }
 
-        if (pathArg.endsWith(".codex/hooks/types.ts")) {
+        if (n(pathArg).endsWith(".codex/hooks/types.ts")) {
           return `    case "claude":
     case "codex":
     case "qwen":
@@ -428,7 +428,7 @@ describe("installHooksFromVariant", () => {
           });
         }
 
-        if (pathArg.endsWith(".codex/hooks/test-filter.ts")) {
+        if (n(pathArg).endsWith(".codex/hooks/test-filter.ts")) {
           return `function detectVendor(input: Record<string, unknown>): Vendor {
   const event = input.hook_event_name as string | undefined;
   if (event === "BeforeTool") return "gemini";
@@ -440,7 +440,7 @@ describe("installHooksFromVariant", () => {
 }`;
         }
 
-        if (pathArg.endsWith(".codex/hooks/persistent-mode.ts")) {
+        if (n(pathArg).endsWith(".codex/hooks/persistent-mode.ts")) {
           return `function detectVendor(input: Record<string, unknown>): Vendor {
   const event = input.hook_event_name as string | undefined;
   if (event === "AfterAgent") return "gemini";
@@ -571,7 +571,7 @@ describe("installHooksFromVariant", () => {
       (p: string) => {
         if (
           typeof p === "string" &&
-          (p.endsWith("keyword-detector.ts") || p.endsWith("hud.ts")) &&
+          (n(p).endsWith("keyword-detector.ts") || n(p).endsWith("hud.ts")) &&
           n(p).includes(".claude/hooks")
         ) {
           return { isDirectory: () => false };
@@ -648,7 +648,7 @@ describe("installHooksFromVariant", () => {
       (p: string) => {
         if (
           typeof p === "string" &&
-          p.endsWith("persistent-mode.ts") &&
+          n(p).endsWith("persistent-mode.ts") &&
           n(p).includes(".claude/hooks")
         ) {
           return { isDirectory: () => false, isSymbolicLink: () => true };
