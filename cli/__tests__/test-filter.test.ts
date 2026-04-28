@@ -191,9 +191,10 @@ describe("test-filter hook", () => {
         hook_event_name: "PreToolUse",
         session_id: "s1",
       });
+      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
 
-      expect(result).toContain(".codex/hooks/filter-test-output.sh");
-      expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
+      expect(normalized).toContain(".codex/hooks/filter-test-output.sh");
+      expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
     });
 
     it("should use the Gemini hook directory for Gemini sessions", () => {
@@ -202,9 +203,10 @@ describe("test-filter hook", () => {
         tool_input: { command: "vitest --run" },
         hook_event_name: "BeforeTool",
       });
+      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
 
-      expect(result).toContain(".gemini/hooks/filter-test-output.sh");
-      expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
+      expect(normalized).toContain(".gemini/hooks/filter-test-output.sh");
+      expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
     });
 
     it("should use the Qwen hook directory for Qwen sessions", () => {
@@ -217,9 +219,10 @@ describe("test-filter hook", () => {
         },
         { QWEN_PROJECT_DIR: "set" },
       );
+      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
 
-      expect(result).toContain(".qwen/hooks/filter-test-output.sh");
-      expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
+      expect(normalized).toContain(".qwen/hooks/filter-test-output.sh");
+      expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
     });
   });
 });
