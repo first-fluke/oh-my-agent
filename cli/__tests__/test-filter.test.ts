@@ -1,44 +1,67 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const HOOK_PATH = join(__dirname, "../../.agents/hooks/core/test-filter.ts");
-const PROJECT_DIR = join(__dirname, "../..");
+
+// Build an isolated project dir containing the filter scripts the hook
+// expects per vendor. This avoids depending on the developer-only `.claude/`
+// directory (git-ignored) and works on fresh CI checkouts.
+function makeProjectDir(): string {
+  const root = mkdtempSync(join(tmpdir(), "oma-test-filter-proj-"));
+  for (const vendor of [".claude", ".codex", ".gemini", ".qwen"]) {
+    const hooksDir = join(root, vendor, "hooks");
+    mkdirSync(hooksDir, { recursive: true });
+    writeFileSync(join(hooksDir, "filter-test-output.sh"), "#!/bin/sh\ncat\n", {
+      mode: 0o755,
+    });
+  }
+  return root;
+}
 
 function runHook(
   input: Record<string, unknown>,
   env: NodeJS.ProcessEnv = {},
 ): string {
   // Stdin via spawnSync.input is unreliable when this process itself runs
-  // under bun (observed under vitest worker pools): the child sees an empty
-  // stdin and exits 0 with no output. Materialize input to a temp file and
-  // redirect via shell so the child reliably reads it.
+  // under bun (observed under vitest worker pools). Materialize input to a
+  // temp file and pass its path via OMA_HOOK_INPUT_FILE so the hook reads it
+  // synchronously from the file system instead of stdin.
   const tmp = mkdtempSync(join(tmpdir(), "oma-test-filter-"));
   const inputFile = join(tmp, "input.json");
-  writeFileSync(inputFile, JSON.stringify(input), "utf-8");
+  // Inject our scratch projectDir as input.cwd for codex/cursor vendors that
+  // resolve projectDir from the input rather than env vars.
+  const projectDir = makeProjectDir();
+  const inputWithCwd = { cwd: projectDir, ...input };
+  writeFileSync(inputFile, JSON.stringify(inputWithCwd), "utf-8");
   try {
     const result = spawnSync("bun", [HOOK_PATH], {
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
-        CLAUDE_PROJECT_DIR: PROJECT_DIR,
+        // Point every vendor's project-dir env at the same scratch dir so
+        // the hook finds the stub filter-test-output.sh regardless of which
+        // vendor it detects from the input.
+        CLAUDE_PROJECT_DIR: projectDir,
+        GEMINI_PROJECT_DIR: projectDir,
+        QWEN_PROJECT_DIR: env.QWEN_PROJECT_DIR ? projectDir : "",
         OMA_HOOK_INPUT_FILE: inputFile,
-        OMA_HOOK_DEBUG: "1",
         ...env,
+        ...(env.QWEN_PROJECT_DIR ? { QWEN_PROJECT_DIR: projectDir } : {}),
       },
     });
-    if (result.status !== 0 || !result.stdout?.trim()) {
+    if (result.status !== 0) {
       process.stderr.write(
-        `runHook diag: status=${result.status} stderr=${result.stderr ?? ""} stdout=${result.stdout ?? ""}\n` +
-          `  HOOK_PATH=${HOOK_PATH}\n  inputFile=${inputFile}\n`,
+        `runHook failed (status=${result.status}): ${result.stderr ?? ""}\n`,
       );
     }
     return (result.stdout ?? "").trim();
   } finally {
     rmSync(tmp, { recursive: true, force: true });
+    rmSync(projectDir, { recursive: true, force: true });
   }
 }
 
@@ -167,7 +190,6 @@ describe("test-filter hook", () => {
         tool_input: { command: "vitest --run" },
         hook_event_name: "PreToolUse",
         session_id: "s1",
-        cwd: PROJECT_DIR,
       });
 
       expect(result).toContain(".codex/hooks/filter-test-output.sh");
@@ -175,14 +197,11 @@ describe("test-filter hook", () => {
     });
 
     it("should use the Gemini hook directory for Gemini sessions", () => {
-      const result = runHook(
-        {
-          tool_name: "Bash",
-          tool_input: { command: "vitest --run" },
-          hook_event_name: "BeforeTool",
-        },
-        { GEMINI_PROJECT_DIR: PROJECT_DIR },
-      );
+      const result = runHook({
+        tool_name: "Bash",
+        tool_input: { command: "vitest --run" },
+        hook_event_name: "BeforeTool",
+      });
 
       expect(result).toContain(".gemini/hooks/filter-test-output.sh");
       expect(result).not.toContain(".claude/hooks/filter-test-output.sh");
@@ -196,7 +215,7 @@ describe("test-filter hook", () => {
           hook_event_name: "PreToolUse",
           sessionId: "s1",
         },
-        { QWEN_PROJECT_DIR: PROJECT_DIR },
+        { QWEN_PROJECT_DIR: "set" },
       );
 
       expect(result).toContain(".qwen/hooks/filter-test-output.sh");
