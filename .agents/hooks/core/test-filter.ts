@@ -117,6 +117,11 @@ const inputFile = process.env.OMA_HOOK_INPUT_FILE;
 const raw = inputFile
   ? readFileSync(inputFile, "utf-8")
   : readFileSync(0, "utf-8");
+if (process.env.OMA_HOOK_DEBUG) {
+  process.stderr.write(
+    `[test-filter] read raw len=${raw.length}, inputFile=${inputFile ?? "<stdin>"}\n`,
+  );
+}
 if (!raw.trim()) {
   if (process.env.OMA_HOOK_DEBUG) {
     process.stderr.write(
@@ -127,6 +132,11 @@ if (!raw.trim()) {
 }
 
 const input: PreToolUseInput = JSON.parse(raw);
+if (process.env.OMA_HOOK_DEBUG) {
+  process.stderr.write(
+    `[test-filter] parsed. tool_name=${input.tool_name} command=${input.tool_input?.command}\n`,
+  );
+}
 
 // Gemini uses run_shell_command; Claude-family uses Bash.
 if (input.tool_name !== "Bash" && input.tool_name !== "run_shell_command") {
@@ -138,6 +148,11 @@ if (!command) process.exit(0);
 
 // Check if this is a test command
 const isTestCommand = TEST_PATTERNS.some((p) => p.test(command));
+if (process.env.OMA_HOOK_DEBUG) {
+  process.stderr.write(
+    `[test-filter] isTestCommand=${isTestCommand} command=${command}\n`,
+  );
+}
 if (!isTestCommand) process.exit(0);
 
 // Skip if it's a non-test use of test tool names (install, cat, etc.)
@@ -152,6 +167,11 @@ const filterScript = join(
   getHookDir(vendor),
   "filter-test-output.sh",
 );
+if (process.env.OMA_HOOK_DEBUG) {
+  process.stderr.write(
+    `[test-filter] vendor=${vendor} filterScript=${filterScript} exists=${existsSync(filterScript)}\n`,
+  );
+}
 
 // Skip filtering if the script doesn't exist (hooks not fully installed)
 if (!existsSync(filterScript)) process.exit(0);
