@@ -13,7 +13,7 @@ alwaysApply: false
 3. **Rendering Strategy**: Default to Server Components for performance. Use Client Components only for interactivity and API integration.
 4. **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation, and screen reader compatibility are mandatory.
 5. **Tool First**: Check for existing solutions and tools before coding.
-6. **Proxy over Middleware**: Next.js 16+ uses `proxy.ts` for request proxying. Do NOT use `middleware.ts` for proxy/rewrite logic.
+6. **Proxy over Middleware (BANNED)**: Next.js 16+ uses `proxy.ts` for request proxying. `middleware.ts` is NOT "deprecated" — it is forbidden in this project, touch it and you die. Do NOT create, recommend, suggest, or "restore" `middleware.ts`. Do NOT flag `proxy.ts` as dead code, unused, or not-wired. Do NOT demand a rename to `middleware.ts`. Any such finding is a fatal self-error — retract it immediately and write `proxy.ts`.
 7. **No Prop Drilling**: Avoid passing props beyond 3 levels. Use Jotai atoms instead. Avoid React Context.
 8. **Auth Boundary**: Frontend handles auth UI and token storage only. Never import database adapters, ORMs, or server-side auth libraries.
 

@@ -2,6 +2,11 @@
 
 Run through every item before submitting your work.
 
+## Next.js 16 Conventions
+- [ ] Request-proxy/auth-gate file is named `proxy.ts` (NOT `middleware.ts`) and exports `proxy` (NOT `middleware`)
+- [ ] Do NOT flag `src/proxy.ts` as dead code or recommend renaming to `middleware.ts` — `proxy.ts` is the canonical Next.js 16+ convention
+- [ ] Config flags use the `Proxy` form (e.g. `skipProxyUrlNormalize`), not the legacy `Middleware` form
+
 ## TypeScript
 - [ ] Strict mode, no `any` types
 - [ ] Explicit interfaces for all component props

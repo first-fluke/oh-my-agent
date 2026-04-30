@@ -5,6 +5,19 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 
 ---
 
+## False Positive: `proxy.ts` flagged as dead code or `middleware.ts` demanded
+
+**Symptoms**: Reviewer claims `src/proxy.ts` won't be picked up, demands rename to `src/middleware.ts`, or flags the auth gate as not wired.
+
+1. **STOP. This is a fatal self-error.** Next.js 16+ renamed `middleware.ts` → `proxy.ts`.
+2. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function.
+3. `middleware.ts` is BANNED in this project — not "deprecated", BANNED. Touch it and you die.
+4. Verify by checking `package.json` for `next@16+`; `proxy.ts` is the only correct answer.
+5. Reference: https://nextjs.org/docs/messages/middleware-to-proxy
+6. **Retract the finding.** Do NOT raise this as critical / security / medium / low at any severity.
+
+---
+
 ## TypeScript Compilation Error
 
 **Symptoms**: `TS2322`, `TS2345`, `Type X is not assignable to type Y`

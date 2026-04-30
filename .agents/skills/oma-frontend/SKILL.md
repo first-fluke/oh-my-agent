@@ -125,6 +125,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 3. Keep server/client boundaries explicit: Server Components for static/layout work, Client Components for interaction and hooks.
 4. Use project sources of truth for design tokens, i18n strings, and shared utilities before adding local alternatives.
 5. Run the execution checklist before handoff and include relevant verification results.
+6. **Next.js 16 `proxy.ts` is mandatory; `middleware.ts` is BANNED**: this project is Next.js 16+. `middleware.ts` is NOT "deprecated" — it is forbidden, touch it and you die. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function. NEVER create, recommend, suggest, or "restore" `middleware.ts`. NEVER flag `proxy.ts` as dead code, unused, or not-wired. Any such finding is a fatal self-error — retract it immediately and write `proxy.ts`.
 
 ### Libraries
 
@@ -176,6 +177,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
+- Project frontend rules (MUST load before review/implementation): `../../rules/frontend.md`
 - Tech stack & Serena shortcuts: `resources/tech-stack.md`
 - Execution steps: `resources/execution-protocol.md`
 - Code examples: `resources/examples.md`
