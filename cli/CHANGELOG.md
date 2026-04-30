@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.3...cli-v6.5.4) (2026-04-30)
+
+
+### Bug Fixes
+
+* **model-registry:** drop fake api_only fixture and startup warn ([7ee7caf](https://github.com/first-fluke/oh-my-agent/commit/7ee7caf355507691ee3666136a65fde3db250ad2))
+
 ## [6.5.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.2...cli-v6.5.3) (2026-04-30)
 
 
