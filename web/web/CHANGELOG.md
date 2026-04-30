@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v2.0.1...web-v2.0.2) (2026-04-30)
+
+
+### Refactoring
+
+* **workflows:** merge /exec-plan into /plan with structured docs/plans/ layout ([e634da3](https://github.com/first-fluke/oh-my-agent/commit/e634da3b8d55bd7d5f4815b2a4742f9d8561f929))
+
 ## [2.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v2.0.0...web-v2.0.1) (2026-04-25)
 
 
