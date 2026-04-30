@@ -29,7 +29,7 @@ A short AGENTS.md (~100 lines) serves as a map with pointers to deeper sources o
 Three categories of documentation:
 
 1. **Maps** — ARCHITECTURE.md, system topology, domain boundaries
-2. **Execution Plans** — active work, completed work, tech debt tracking
+2. **Plans** — active and completed work plans (status field tracked per file), tech debt tracking
 3. **Design Specifications** — indexed architectural decisions, core beliefs, product specs
 
 Agents can discover file listings and directory structures via tools.
@@ -53,10 +53,12 @@ docs/
 │   ├── index.md
 │   ├── core-beliefs.md             ← agent-first operating principles
 │   └── {decision-name}.md
-├── exec-plans/                     ← execution plans as first-class artifacts
-│   ├── active/                     ← in-progress work
-│   ├── completed/                  ← finished plans (preserved for context)
-│   └── tech-debt-tracker.md        ← known debt with priority and rationale
+├── plans/                          ← plan artifacts (local working notes; gitignored)
+│   ├── designs/                    ← permanent design references (Status: Approved/Draft)
+│   │   └── {NNN}-{name}.md
+│   └── work/                       ← execution plans (Status: Active/Completed)
+│       ├── {NNN}-{name}.md
+│       └── tech-debt-tracker.md    ← known debt with priority and rationale
 ├── generated/                      ← auto-generated docs (DB schema, API specs, etc.)
 │   └── db-schema.md
 ├── product-specs/                  ← product specifications
@@ -158,17 +160,17 @@ Generate only the files that are **relevant and discoverable** from the codebase
   - "Prefer explicit over implicit; no magic"
 - **`{decision-name}.md`** — individual architectural decisions with context, options considered, rationale, and consequences
 
-### `docs/exec-plans/`
+### `docs/plans/`
 
-**Execution plans as first-class artifacts.**
+**Structured plan artifacts (local working notes; `docs/plans/` is gitignored).**
 
-Complex work is captured in execution plans with progress and decision logs, checked into the repository.
+Folder = type. Status field = lifecycle. Filenames use a 3-digit zero-padded sequential prefix per folder.
 
-- **`active/`** — currently in-progress plans
-- **`completed/`** — finished plans preserved for context and reference
-- **`tech-debt-tracker.md`** — known tech debt with priority, rationale, and proposed resolution
+- **`designs/{NNN}-{name}.md`** — permanent design references (architecture, API specs, tradeoffs)
+- **`work/{NNN}-{name}.md`** — execution plans with progress, decision log, and `Status` header (`Active` → `Completed`)
+- **`work/tech-debt-tracker.md`** — known tech debt with priority, rationale, and proposed resolution
 
-Initially: create directory structure + tech-debt-tracker.md with any debt discovered in Step 1.
+Initially: create `designs/` and `work/` subdirectories + `work/tech-debt-tracker.md` with any debt discovered in Step 1.
 
 ### `docs/generated/`
 
@@ -202,7 +204,7 @@ Generate only those relevant to the project:
 |------|-----------------|---------|
 | `DESIGN.md` | Project has UI/design system | Design system principles, component patterns, visual language |
 | `FRONTEND.md` | Project has frontend | Frontend architecture, rendering strategy, state management, routing |
-| `PLANS.md` | Always | Planning process conventions, how to write exec-plans, template |
+| `PLANS.md` | Always | Planning process conventions, how to write plans, template |
 | `PRODUCT-SENSE.md` | User-facing product | Product thinking, user mental models, prioritization framework |
 | `QUALITY-SCORE.md` | Always | Quality grades per domain/layer with gap tracking over time |
 | `RELIABILITY.md` | Has backend/infra | Reliability standards, SLOs, error budgets, incident response |
@@ -249,7 +251,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full domain map.
 
 ## Documentation
 - [Design Docs](docs/design-docs/index.md) — architectural decisions and core beliefs
-- [Execution Plans](docs/exec-plans/) — active and completed work plans
+- [Plans](docs/plans/) — design references (`designs/`) and execution plans (`work/`)
 - [Product Specs](docs/product-specs/index.md) — feature specifications
 - [References](docs/references/) — external library docs for LLMs
 
@@ -264,7 +266,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full domain map.
 - [Quality Score](docs/QUALITY-SCORE.md) — per-domain quality grades
 - [Code Review](docs/CODE-REVIEW.md) — review standards and checklist
 - [Plans](docs/PLANS.md) — planning conventions
-- [Tech Debt](docs/exec-plans/tech-debt-tracker.md) — known debt tracker
+- [Tech Debt](docs/plans/work/tech-debt-tracker.md) — known debt tracker
 - [Product Sense](docs/PRODUCT-SENSE.md) — product thinking framework
 
 ## Project Structure
@@ -339,7 +341,7 @@ If `AGENTS.md`, `ARCHITECTURE.md`, or `docs/` already exists:
 4. **Preserve** all `<!-- TODO: -->` markers that haven't been resolved.
 5. **Update** factual content (structure changes, new boundaries, new domains).
 6. **Flag** potential stale rules: `<!-- REVIEW: this rule may be outdated -->`.
-7. **Move** completed exec-plans from `active/` to `completed/`.
+7. **Mark** completed work plans by updating the `Status` header from `Active` to `Completed` (no file move). Designs use `Approved` / `Superseded` instead.
 8. Report all changes to the user.
 
 ---

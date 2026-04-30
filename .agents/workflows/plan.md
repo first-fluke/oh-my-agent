@@ -1,5 +1,5 @@
 ---
-description: PM planning workflow — analyze requirements, select tech stack, decompose into prioritized tasks with dependencies, and define API contracts
+description: PM planning workflow — gather requirements, decompose into prioritized tasks, define API contracts, and produce both a machine-readable plan and a human-readable tracker in docs/plans/
 ---
 
 # MANDATORY RULES — VIOLATION IS FORBIDDEN
@@ -15,7 +15,34 @@ description: PM planning workflow — analyze requirements, select tech stack, d
 
 ---
 
-> **Vendor note:** This workflow executes inline (no subagent spawning). All vendors use their native code analysis tools. The saved plan (`.agents/results/plan-{sessionId}.json`) is consumed by `/orchestrate` or `/work`, which handle their own vendor detection.
+> **Vendor note:** This workflow executes inline (no subagent spawning). All vendors use their native code analysis tools. Plan artifacts (`.agents/results/plan-{sessionId}.json` and `docs/plans/work/{NNN}-{name}.md`) are consumed by `/orchestrate` or `/work`, which handle their own vendor detection.
+
+---
+
+## Core Philosophy
+
+**Plans are first-class artifacts** — structured, templated, and consumed by other workflows. They are local working artifacts (not committed to the repo; `docs/plans/` is gitignored), but they follow strict conventions so any agent can read and update them.
+
+Two artifacts per plan:
+
+1. **Machine-readable** — `.agents/results/plan-{sessionId}.json` consumed by `/orchestrate` and `/work`.
+2. **Human-readable** — `docs/plans/work/{NNN}-{name}.md` with task table, decision log, and progress notes. Lifecycle is tracked via the `Status` field in the file header (`Active` → `Completed`); no folder moves required.
+
+### Layout
+
+```
+docs/plans/
+├── designs/                       ← permanent design references (Status: Approved/Draft/Superseded)
+│   └── {NNN}-{name}.md
+└── work/                          ← execution plans (Status: Active/Completed)
+    ├── {NNN}-{name}.md
+    └── tech-debt-tracker.md
+```
+
+- Folder = type (designs vs work). Status field = lifecycle.
+- Filename always uses 3-digit zero-padded sequential prefix (`001-`, `002-`, …) per folder.
+- Determine the next number with `ls docs/plans/{designs,work}/ | grep -E '^[0-9]{3}-' | tail -1`.
+- Plan content language follows the top-of-file rule (`oma-config.yaml` `language` setting). Mixed-language guidance lives in `.agents/rules/i18n-guide.md`.
 
 ---
 
@@ -36,41 +63,150 @@ If an existing codebase exists, use MCP code analysis tools to scan:
 - `get_symbols_overview` for project structure and architecture patterns.
 - `find_symbol` and `search_for_pattern` to identify reusable code and what needs to be built.
 
+Also search `docs/plans/work/` for related past or in-progress plans, and `docs/plans/designs/` for prior design references — reuse patterns from similar work.
+
 ---
 
-## Step 3: Define API Contracts
+## Step 3: Assess Complexity
+
+Use `_shared/core/difficulty-guide.md` to classify:
+
+- **Simple** → no plan artifact needed; execute directly via `/work`.
+- **Medium** → produce both JSON and a lightweight markdown tracker (skip Step 4 API contracts if not cross-boundary).
+- **Complex** → produce both artifacts with all sections plus API contracts.
+
+Report scope assessment to the user. Get confirmation before proceeding.
+
+---
+
+## Step 4: Define API Contracts
 
 // turbo
-Design API contracts between frontend/mobile and backend. Per endpoint:
-- Method, path, request/response schemas
-- Auth requirements, error responses
-- Save to `.agents/skills/_shared/core/api-contracts/`.
+If the plan involves cross-boundary work (frontend ↔ backend, service ↔ service):
+
+1. Design API contracts using `_shared/core/api-contracts/template.md`. Per endpoint:
+   - Method, path, request/response schemas
+   - Auth requirements, error responses
+2. Save to `.agents/skills/_shared/core/api-contracts/{contract-name}.md`.
+3. Reference from the markdown tracker generated in Step 6.
 
 ---
 
-## Step 4: Decompose into Tasks
+## Step 5: Decompose into Tasks
 
 // turbo
 Break down the project into actionable tasks. Each task must have:
 - Assigned agent (frontend/backend/mobile/qa/debug)
 - Title, acceptance criteria
-- Priority (P0-P3), dependencies
+- Priority (P0–P3), dependencies
 
 ---
 
-## Step 5: Review Plan with User
+## Step 6: Review Plan with User
 
-Present the full plan: task list, priority tiers, dependency graph, agent assignments.
-**You MUST get user confirmation before proceeding to Step 6.**
+Present the full plan: task list, priority tiers, dependency graph, agent assignments, completion criteria.
+**You MUST get user confirmation before proceeding to Step 7.**
 
 ---
 
-## Step 6: Save Plan
+## Step 7: Save Plan Artifacts
 
 // turbo
-Save the approved plan:
-1. `.agents/results/plan-{sessionId}.json`
-2. Use memory write tool to record plan summary.
-3. For complex plans (Medium/Complex per `_shared/core/difficulty-guide.md`), also create an execution plan artifact in `docs/exec-plans/active/` — see `/exec-plan` workflow for the template and lifecycle.
+Generate both artifacts.
+
+### 7a. Machine-readable plan
+
+Save `.agents/results/plan-{sessionId}.json` and write a memory summary via the configured memory tool.
+
+### 7b. Human-readable tracker (Medium/Complex only)
+
+Generate `docs/plans/work/{NNN}-{name}.md` using this template (replace `{NNN}` with the next zero-padded 3-digit number for the `work/` folder):
+
+```markdown
+# {Plan Title}
+
+> {One-line goal}
+
+**Status**: Active
+**Created**: {date}
+**Owner**: {agent or human}
+
+## Goal
+{What this plan achieves — clear, testable outcome}
+
+## Context
+{Relevant background, related code, prior decisions}
+
+## Constraints
+{Rules, dependencies, compatibility requirements}
+
+## Tasks
+
+| # | Task | Agent | Priority | Status | Dependencies |
+|---|------|-------|----------|--------|--------------|
+| 1 | {task} | {agent} | P0 | TODO | — |
+| 2 | {task} | {agent} | P0 | TODO | 1 |
+| 3 | {task} | {agent} | P1 | TODO | 1, 2 |
+
+## Done When
+{Testable completion criteria}
+- [ ] {criterion 1}
+- [ ] {criterion 2}
+
+## Decision Log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| {date} | {what was decided} | {why} |
+
+## Progress Notes
+{Append-only log of progress updates}
+
+- [{date}] Plan created
+```
+
+### Naming Convention
+
+- Format: `{NNN}-{kebab-name}.md` (e.g., `008-add-user-authentication.md`).
+- `{NNN}` is the next zero-padded 3-digit sequential number for that folder. Determine it from the existing files: `ls docs/plans/work/ | grep -E '^[0-9]{3}-' | tail -1`.
+- `{kebab-name}` describes the feature; do **not** append `-design` or `-plan` (the folder already encodes type).
+- Lifecycle is tracked via the `Status` header in the file, not via folder moves.
 
 The plan is now ready for `/work` or `/orchestrate` to execute.
+
+---
+
+## Lifecycle Updates (during execution)
+
+`/orchestrate` and `/work` update the markdown tracker as work progresses:
+
+- Task status: `TODO` → `WIP` → `DONE` or `BLOCKED`
+- Append timestamped entries to **Progress Notes**
+- Record cross-cutting decisions in the **Decision Log**
+
+When all "Done When" criteria are met:
+
+1. Set the header `Status` field: `Active` → `Completed`.
+2. Append a completion summary to Progress Notes with the date.
+3. The file stays in `docs/plans/work/` — no move required.
+4. If any tech debt was introduced, update `docs/plans/work/tech-debt-tracker.md`.
+
+To list in-progress plans: `grep -l "^\*\*Status\*\*: Active" docs/plans/work/*.md`.
+
+---
+
+## Tech Debt Tracker
+
+`docs/plans/work/tech-debt-tracker.md` tracks known debt across all plans:
+
+```markdown
+# Tech Debt Tracker
+
+| # | Debt | Source Plan | Priority | Proposed Resolution |
+|---|------|-------------|----------|---------------------|
+| 1 | {description} | {plan-name} | P1 | {how to fix} |
+```
+
+- Add entries when shortcuts are taken during plan execution.
+- Remove entries when debt is resolved.
+- Review periodically — debt items can become plans themselves.

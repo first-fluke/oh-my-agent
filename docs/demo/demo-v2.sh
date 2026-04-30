@@ -50,7 +50,7 @@ echo ""
 sleep 0.15
 
 echo -e "  ${CYAN}◇${RESET} Installing workflows..."
-workflows=("orchestrate" "work" "ultrawork" "plan" "exec-plan" "oma-brainstorm" "review" "debug" "setup" "tools" "deepinit")
+workflows=("orchestrate" "work" "ultrawork" "plan" "oma-brainstorm" "review" "debug" "setup" "tools" "deepinit")
 for wf in "${workflows[@]}"; do
   echo -e "    ${GREEN}✓${RESET} ${wf}"
   sleep 0.05

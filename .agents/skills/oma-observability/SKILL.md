@@ -283,7 +283,7 @@ Before submitting, run `resources/checklist.md`.
 ### Contribution Protocol
 
 - Do NOT pre-declare future OMA skill names in user-facing documentation. If OMA-native coverage becomes warranted for an out-of-scope domain, evaluate and name it at that point.
-- File edits follow the ownership matrix in `docs/plans/oma-observability-design.md §Ownership`. CTO co-signs changes to `standards.md`, `matrix.md`, `anti-patterns.md`.
+- File edits follow the ownership matrix in `docs/plans/designs/005-oma-observability.md §Ownership`. CTO co-signs changes to `standards.md`, `matrix.md`, `anti-patterns.md`.
 - Run `resources/checklist.md §1 Setup validation` before merging.
 
 ## References

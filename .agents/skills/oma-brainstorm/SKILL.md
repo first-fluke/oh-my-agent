@@ -85,18 +85,18 @@ Explore user intent, constraints, and alternative approaches before planning or 
 | Compare approaches | `COMPARE` | Tradeoff matrix |
 | Infer recommendation | `INFER` | Recommended option |
 | Validate approval | `VALIDATE` | Section-by-section confirmation |
-| Write design artifact | `WRITE` | `docs/plans/` and memory |
+| Write design artifact | `WRITE` | `docs/plans/designs/` and memory |
 | Transition to plan | `NOTIFY` | Handoff summary |
 
 ### Tools and instruments
 - Context loading, reasoning templates, clarification protocol
-- Project memory and `docs/plans/` for persisted designs
+- Project memory and `docs/plans/designs/` for persisted designs
 
 ### Canonical workflow path
 ```text
 1. Ask one clarifying question at a time.
 2. Present 2-3 approaches with tradeoffs and a recommended option.
-3. Save the approved design to `docs/plans/` before handing off to planning.
+3. Save the approved design to `docs/plans/designs/` before handing off to planning.
 ```
 
 ### Resource scope
@@ -128,7 +128,7 @@ Follow the brainstorm workflow step by step:
 2. **Phase 2 - Questions**: Ask clarifying questions one at a time to understand intent and constraints
 3. **Phase 3 - Approaches**: Propose 2-3 approaches with a recommended option and trade-off matrix
 4. **Phase 4 - Design**: Present the detailed design section by section, getting user approval at each step
-5. **Phase 5 - Documentation**: Save the approved design to `docs/plans/` and project memory
+5. **Phase 5 - Documentation**: Save the approved design to `docs/plans/designs/` and project memory
 6. **Phase 6 - Transition**: Hand off to `/plan` for task decomposition
 
 ### Common Pitfalls

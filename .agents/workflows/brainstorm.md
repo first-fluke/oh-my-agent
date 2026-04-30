@@ -100,7 +100,7 @@ Skip only if the design is trivially small (1-2 files, low stakes). Otherwise ma
 
 // turbo
 Save the approved design:
-1. Write to `docs/plans/<feature-name>-design.md`
+1. Write to `docs/plans/designs/<NNN>-<feature-name>.md` where `<NNN>` is the next zero-padded 3-digit number (`ls docs/plans/designs/ | grep -E '^[0-9]{3}-' | tail -1`). Do not append `-design` to the filename — the folder already encodes type.
 2. Use memory write tool to record design summary for future reference.
 
 ---

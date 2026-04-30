@@ -2531,7 +2531,7 @@
       "wykryto"
     ]
   },
-  "excludedWorkflows": ["tools", "stack-set", "exec-plan"],
+  "excludedWorkflows": ["tools", "stack-set"],
   "cjkScripts": ["ko", "ja", "zh"],
   "extensionRouting": {
     "frontend-engineer": [

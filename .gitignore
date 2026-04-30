@@ -21,7 +21,6 @@ bin/*.js
 # OMA outputs
 .agents/plan.json
 docs/plans/
-docs/exec-plans/
 
 # Claude/Codex/Qwen integration layer (generated)
 .claude/

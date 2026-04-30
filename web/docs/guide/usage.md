@@ -245,15 +245,14 @@ Cross-vendor tasks still use `oma agent:spawn`.
 
 ---
 
-## All 15 Workflow Commands
+## All Workflow Commands
 
 | Command | Type | What It Does | When to Use |
 |---------|------|-------------|-------------|
 | `/orchestrate` | Persistent | Automated parallel agent execution with monitoring and verification loops | Large projects needing maximum parallelism |
 | `/work` | Persistent | Step-by-step multi-domain coordination with user approval at each gate | Features spanning multiple agents where you want control |
 | `/ultrawork` | Persistent | 5-phase, 17-step quality workflow with 11 review checkpoints | Maximum quality delivery, production-critical code |
-| `/plan` | Non-persistent | PM-driven task breakdown and API contract definition | Before any complex multi-agent work |
-| `/exec-plan` | Non-persistent | Create and track execution plans as repository artifacts | Complex features needing tracked progress and decision logs |
+| `/plan` | Non-persistent | PM-driven task breakdown, API contracts, and tracked plan artifacts in `docs/plans/work/` (sequential `NNN-name.md`, Status field for lifecycle) | Before any complex multi-agent work; complex features needing tracked progress and decision logs |
 | `/brainstorm` | Non-persistent | Design-first ideation with 2-3 approach proposals | Before committing to an implementation approach |
 | `/deepinit` | Non-persistent | Full project initialization — AGENTS.md, ARCHITECTURE.md, docs/ | Setting up oh-my-agent in an existing codebase |
 | `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Before merging code, pre-deployment review |
@@ -309,7 +308,7 @@ oh-my-agent detects workflow keywords in 11 languages. Here are examples showing
 
 | Skill | Best For | Primary Output |
 |-------|---------|---------------|
-| **oma-brainstorm** | "I have an idea", exploring approaches | Design document in `docs/plans/` |
+| **oma-brainstorm** | "I have an idea", exploring approaches | Design document in `docs/plans/designs/` |
 | **oma-pm** | "plan this", task breakdown | `.agents/results/plan-{sessionId}.json`, `task-board.md` |
 | **oma-frontend** | UI components, forms, pages, styling | React/TypeScript components, Vitest tests |
 | **oma-backend** | APIs, auth, server logic, migrations | Endpoints, models, services, tests |

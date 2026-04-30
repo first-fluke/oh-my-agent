@@ -175,25 +175,11 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 | Japanese | "計画", "要件分析", "タスク分解" |
 | Chinese | "计划", "需求分析", "任务分解" |
 
-**Steps:** Gather requirements -> Analyze technical feasibility (MCP code analysis) -> Define API contracts -> Decompose into tasks -> Review with user -> Save plan.
+**Steps:** Gather requirements -> Analyze technical feasibility (MCP code analysis) -> Assess complexity (Simple/Medium/Complex) -> Define API contracts (if cross-boundary) -> Decompose into tasks -> Review with user -> Save plan artifacts (machine-readable JSON + human-readable markdown tracker for Medium/Complex).
 
-**Output:** `.agents/results/plan-{sessionId}.json`, memory write, optionally `docs/exec-plans/active/` for complex plans.
+**Output:** `.agents/results/plan-{sessionId}.json`, memory write, and (Medium/Complex) `docs/plans/work/{NNN}-{name}.md` with task table, decision log, progress notes. Lifecycle is tracked via the `Status` field in the markdown header (`Active` -> `Completed`); plans are not moved between folders. Designs created via `/brainstorm` go to `docs/plans/designs/{NNN}-{name}.md`.
 
-**Execution:** Inline (no subagent spawning). Consumed by `/orchestrate` or `/work`.
-
----
-
-### /exec-plan
-
-**Description:** Creates, manages, and tracks execution plans as first-class repository artifacts in `docs/exec-plans/`.
-
-**Trigger keywords:** None (excluded from auto-detection, must be invoked explicitly).
-
-**Steps:** Preparation -> Analyze scope (assess complexity: Simple/Medium/Complex) -> Create execution plan (markdown in `docs/exec-plans/active/`) -> Define API contracts (if cross-boundary) -> Review with user -> Execute (hand off to `/orchestrate` or `/work`) -> Complete (move to `completed/`).
-
-**Output:** `docs/exec-plans/active/{plan-name}.md` with task table, decision log, progress notes.
-
-**When to use:** After `/plan` for complex features that need tracked execution with decision logging.
+**Execution:** Inline (no subagent spawning). Consumed by `/orchestrate` or `/work`, which update task/status fields during execution.
 
 ---
 
@@ -210,7 +196,7 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 | Japanese | "ブレインストーミング", "アイデア", "設計探索" |
 | Chinese | "头脑风暴", "创意", "设计探索" |
 
-**Steps:** Explore project context (MCP analysis) -> Ask clarifying questions (one at a time) -> Propose 2-3 approaches with trade-offs -> Present design section by section (with user approval each step) -> Save design document to `docs/plans/` -> Transition: suggest `/plan`.
+**Steps:** Explore project context (MCP analysis) -> Ask clarifying questions (one at a time) -> Propose 2-3 approaches with trade-offs -> Present design section by section (with user approval each step) -> Save design document to `docs/plans/designs/{NNN}-{name}.md` -> Transition: suggest `/plan`.
 
 **Rules:** No implementation or planning before design approval. No code output. YAGNI.
 
@@ -249,9 +235,9 @@ Persistent workflows keep running until all tasks are done. They maintain state 
 | Japanese | "プロジェクト初期化" |
 | Chinese | "项目初始化" |
 
-**Steps:** Preparation -> Analyze codebase (project type, architecture, implicit rules, domains, boundaries) -> Generate ARCHITECTURE.md (domain map, under 200 lines) -> Generate `docs/` knowledge base (design-docs/, exec-plans/, generated/, product-specs/, references/, domain docs) -> Generate root AGENTS.md (~100 lines, table of contents) -> Generate boundary AGENTS.md files (monorepo packages, under 50 lines each) -> Update existing harness (if re-running) -> Validate (no dead links, line limits).
+**Steps:** Preparation -> Analyze codebase (project type, architecture, implicit rules, domains, boundaries) -> Generate ARCHITECTURE.md (domain map, under 200 lines) -> Generate `docs/` knowledge base (design-docs/, plans/, generated/, product-specs/, references/, domain docs) -> Generate root AGENTS.md (~100 lines, table of contents) -> Generate boundary AGENTS.md files (monorepo packages, under 50 lines each) -> Update existing harness (if re-running) -> Validate (no dead links, line limits).
 
-**Output:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/exec-plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md, and domain-specific docs as discovered.
+**Output:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md, and domain-specific docs as discovered.
 
 ---
 
@@ -421,7 +407,6 @@ The following workflows are excluded from auto-detection and must be invoked wit
 - `/scm`
 - `/tools`
 - `/stack-set`
-- `/exec-plan`
 - `/pdf`
 
 ---
@@ -461,7 +446,7 @@ The workflow can also end naturally when all steps are completed and the final g
 
 ### Quick Feature
 ```
-/plan → review output → /exec-plan
+/plan → review output → /work
 ```
 
 ### Complex Multi-Domain Project
