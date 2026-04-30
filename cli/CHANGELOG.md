@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.1...cli-v6.5.2) (2026-04-30)
+
+
+### Bug Fixes
+
+* **oma-frontend:** enforce Next.js 16 proxy.ts and ban middleware.ts ([39d2a54](https://github.com/first-fluke/oh-my-agent/commit/39d2a54a9f94b23c5aafc335ff4af3327c99e9cb))
+
 ## [6.5.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.0...cli-v6.5.1) (2026-04-30)
 
 
