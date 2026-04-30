@@ -5,7 +5,16 @@ description: Intent-based observability + traceability router across layers, bou
 
 # Observability Agent - Intent-based Router
 
-## When to use
+## Scheduling
+
+### Goal
+Route, design, tune, and review observability work across MELT+P signals, layers, boundaries, vendor categories, transport choices, meta-observability, and incident forensics.
+
+### Intent signature
+- User asks for observability, telemetry, OTel, metrics, logs, traces, profiles, SLOs, RUM, APM, incident forensics, trace propagation, transport tuning, or observability-as-code.
+- User needs vendor/category routing or observability architecture instead of a single vendor's already-covered setup.
+
+### When to use
 - Setting up an observability pipeline (OTel SDK + Collector + vendor backend)
 - Designing traceability across service and domain boundaries (W3C propagators, baggage, multi-tenant, multi-cloud)
 - Tuning transport layer (UDP/MTU, OTLP gRPC vs HTTP, Collector DaemonSet vs sidecar topology)
@@ -16,7 +25,7 @@ description: Intent-based observability + traceability router across layers, bou
 - Covering the MELT+P signal set: metrics, logs, traces, profiles (OTEP 0239), cost (OpenCost), audit (SOC2/ISO), privacy (GDPR/PIPA)
 - Migrating off deprecated tools (Fluentd → Fluent Bit or OTel Collector, per CNCF 2025-10 guide)
 
-## When NOT to use
+### When NOT to use
 - LLM ops (prompt versioning, evals, gen_ai span deep dive) — use Langfuse, Arize Phoenix, LangSmith, or Braintrust directly
 - Data pipeline lineage — use OpenLineage + Marquez, dbt test, or Airflow lineage backends
 - IoT / hardware / datacenter physical-layer telemetry (IPMI, BMC, SNMP) — use vendor DCIM tooling (Nlyte, Sunbird, Device42)
@@ -26,7 +35,98 @@ description: Intent-based observability + traceability router across layers, bou
 - Incident response workflow (on-call rotation, paging, escalation) — use PagerDuty, OpsGenie, or Grafana OnCall
 - Single-vendor setup already fully covered by that vendor's own published skill — invoke the vendor skill directly
 
-## Core Rules
+### Expected inputs
+- Observability intent, target system, architecture boundary, signals, vendor context, and incident symptoms if any
+- Existing OTel/collector/vendor configs, dashboards, SLOs, trace/log/metric examples, or deployment topology
+
+### Expected outputs
+- Routed observability guidance, setup/migration/tuning plan, incident-forensics path, alerting/SLO guidance, or observability-as-code recommendations
+- Transport, meta-observability, privacy, audit, and retention checks
+- Vendor delegation target when appropriate
+
+### Dependencies
+- OTel/W3C/CNCF references and resources under `resources/`
+- Vendor categories, matrix, standards, incident forensics, meta-observability, transport, layers, boundaries, and signal guides
+
+### Control-flow features
+- Branches by intent, vendor category, layer/boundary/signal matrix, transport topology, privacy/audit risk, and incident localization dimension
+- May read/write observability config and docs; generally delegates vendor-specific implementation
+- Requires live status verification for load-bearing CNCF/vendor currency
+
+## Structural Flow
+
+### Entry
+1. Classify the intent: setup, migrate, investigate, alert, trace, tune, or route.
+2. Identify layers, boundaries, signals, and vendor category.
+3. Load only the relevant resource guide(s).
+
+### Scenes
+1. **PREPARE**: Classify intent and matrix coverage.
+2. **ACQUIRE**: Read configs, topology, telemetry examples, or incident signals.
+3. **REASON**: Route vendor/category, tune transport, assess meta-observability, or localize incident.
+4. **ACT**: Produce setup/migration/tuning/alert/trace/forensics guidance or config changes.
+5. **VERIFY**: Check pipeline health, clock skew, cardinality, retention, privacy, and audit concerns.
+6. **FINALIZE**: Report route, evidence, risks, and handoff references.
+
+### Transitions
+- If a vendor-owned skill fully covers setup, delegate instead of duplicating docs.
+- If Fluentd appears, recommend Fluent Bit or OTel Collector migration.
+- If incident investigation is requested, use 6-dimensional localization.
+- If transport tuning appears, load transport-specific resources.
+
+### Failure and recovery
+- If live CNCF/vendor status is load-bearing, verify current status.
+- If telemetry samples are missing, provide instrumentation/collection steps before analysis.
+- If scope belongs to out-of-scope domains, route to external authoritative tools.
+
+### Exit
+- Success: observability path is routed, evidence-backed, and checks are explicit.
+- Partial success: missing telemetry, stale vendor status, or external-domain handoff is explicit.
+
+## Logical Operations
+
+### Actions
+| Action | SSL primitive | Evidence |
+|--------|---------------|----------|
+| Classify observability intent | `SELECT` | Intent rules |
+| Read telemetry/config evidence | `READ` | OTel/vendor configs, dashboards, samples |
+| Route vendor/category | `SELECT` | Vendor categories |
+| Infer coverage gaps | `INFER` | Matrix and signal/boundary mapping |
+| Validate meta-observability | `VALIDATE` | Clock, cardinality, retention, health |
+| Write guidance/config | `WRITE` | OaC/config/docs when requested |
+| Notify result | `NOTIFY` | Routed recommendation |
+
+### Tools and instruments
+- OTel/CNCF/W3C standards references
+- Vendor categories, matrix, incident forensics, meta-observability, transport and signal guides
+- Optional CLI/config tooling from the target stack
+
+### Canonical workflow path
+```text
+1. Classify intent: setup, migrate, investigate, alert, trace, tune, or route.
+2. Select layer/boundary/signal coverage from `resources/matrix.md`.
+3. Load the specific vendor, transport, incident, or signal guide before producing guidance.
+```
+
+When CNCF/vendor status is load-bearing, verify live state at `https://landscape.cncf.io`.
+
+### Resource scope
+| Scope | Resource target |
+|-------|-----------------|
+| `CODEBASE` | Observability config, dashboards, alert rules, instrumentation |
+| `LOCAL_FS` | Resource guides and generated docs |
+| `NETWORK` | Vendor/CNCF status and telemetry backends when checked |
+| `USER_DATA` | Incident symptoms, logs, metrics, traces, profiles |
+
+### Preconditions
+- Observability intent and system boundary are identifiable.
+- Relevant telemetry/config evidence is available or missing evidence is stated.
+
+### Effects and side effects
+- May recommend or modify observability config, dashboards, alerts, and instrumentation docs.
+- May route to vendor-owned skills or external tools.
+
+### Guardrails
 1. **Classify intent before routing**: every query goes through intent classification — setup | migrate | investigate | alert | trace | tune | route
 2. **Category-first, not vendor-registry**: delegate to vendor-owned skills via `resources/vendor-categories.md`; do not duplicate their documentation
 3. **Transport tuning is the moat**: UDP/MTU thresholds, OTLP protocol selection, Collector topology, and sampling recipes are in-skill depth that other skills do not cover
@@ -38,7 +138,7 @@ description: Intent-based observability + traceability router across layers, bou
 9. **Domain-level trust**: all vendor and tool references are timestamped `as of 2026-Q2`; verify live status at https://landscape.cncf.io
 10. **No stub in final deliverable**: scaffolds are editing anchors only during build phase; remove before output
 
-## Out of Scope (use external tools)
+### Out of Scope (use external tools)
 
 The combinations below are outside this skill's boundary. The external tools listed are authoritative for each domain.
 
@@ -54,7 +154,7 @@ The combinations below are outside this skill's boundary. The external tools lis
 | Incident response workflow (paging, rotation) | PagerDuty, OpsGenie, Grafana OnCall |
 | Fluentd (primary tool) | Deprecated CNCF 2025-10 — use Fluent Bit or OTel Collector |
 
-## Architecture (4 x 4 x 7 matrix)
+### Architecture (4 x 4 x 7 matrix)
 
 ```
                   User / Other Skill Query
@@ -117,7 +217,7 @@ The combinations below are outside this skill's boundary. The external tools lis
 
 See `resources/matrix.md` for the full 112-cell coverage map with N/A markers for invalid combinations.
 
-## Routes (Intent)
+### Routes (Intent)
 
 | Intent | Primary target | Fallback |
 |--------|---------------|----------|
@@ -129,7 +229,7 @@ See `resources/matrix.md` for the full 112-cell coverage map with N/A markers fo
 | `tune` | `transport/` (4 files: UDP/MTU, OTLP, topology, sampling) | `resources/meta-observability.md` (cardinality guardrails) |
 | `route` | `boundaries/multi-tenant.md` + `transport/collector-topology.md` | `boundaries/cross-application.md` (data residency) |
 
-## Invocation
+### Invocation
 
 Standalone:
 ```
@@ -147,7 +247,7 @@ Shared invocation (from other skills):
 2. Pass the user query string
 3. Receive routed guidance or a vendor-skill delegation target
 
-## How to Execute
+### How to Execute
 Follow `resources/execution-protocol.md` step by step.
 See `resources/examples.md` for end-to-end walkthroughs.
 Use `resources/intent-rules.md` for intent classification reference.
@@ -155,7 +255,7 @@ Use `resources/matrix.md` for coverage navigation across layers, boundaries, and
 Use `resources/vendor-categories.md` for vendor delegation and category selection.
 Before submitting, run `resources/checklist.md`.
 
-## Integrations with OMA Ecosystem
+### Integrations with OMA Ecosystem
 
 > **Integration status (2026-Q2)**: rows below describe **recommended handoff patterns** from the oma-observability side. As of this version, reciprocal cross-references from the other skills' SKILL.md files are not yet in place — this is a v1.1 follow-up item. Users invoking the other skills directly will need to surface this integration manually until the reciprocal links land.
 
@@ -170,7 +270,7 @@ Before submitting, run `resources/checklist.md`.
 | `oma-mobile` | `layers/L7-application/mobile-rum.md` offline-queuing pattern cross-referenced in `mobile.md` ruleset | ⏳ pending (v1.1) |
 | `oma-db` | `signals/traces.md` DB patterns (N+1, connection pool) cross-referenced in `database.md` ruleset | ⏳ pending (v1.1) |
 
-## Versioning & Deprecation
+### Versioning & Deprecation
 
 - **Spec version pinning**: `otel_spec` / `otel_semconv` keys in each file's frontmatter document the assumed version. If content depends on a specific attribute stability tier, the tier is stated inline.
 - **Update triggers** (not scheduled):
@@ -180,7 +280,7 @@ Before submitting, run `resources/checklist.md`.
 - **Authoritative live state**: `https://landscape.cncf.io` for CNCF project status. This skill does not promise to track it on any schedule — verify at use time if the information is load-bearing.
 - **No per-file review stamps**: earlier drafts carried `last_reviewed` / `next_review` frontmatter. Those were removed because no automated enforcement exists; relying on voluntary manual review produces stale stamps that misrepresent currency. Git history (`git log path/to/file`) is the source of truth for when a file was last changed.
 
-## Contribution Protocol
+### Contribution Protocol
 
 - Do NOT pre-declare future OMA skill names in user-facing documentation. If OMA-native coverage becomes warranted for an out-of-scope domain, evaluate and name it at that point.
 - File edits follow the ownership matrix in `docs/plans/oma-observability-design.md §Ownership`. CTO co-signs changes to `standards.md`, `matrix.md`, `anti-patterns.md`.

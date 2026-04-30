@@ -5,21 +5,129 @@ description: Multi-vendor AI image generation with authentication-aware parallel
 
 # Image Agent - Multi-Vendor Image Router
 
-## When to use
+## Scheduling
+
+### Goal
+Generate images and visual assets through authenticated multi-vendor routing while preserving prompt clarity, reference-image handling, cost controls, and reproducible output manifests.
+
+### Intent signature
+- User asks to generate images, visual assets, illustrations, product photos, concept art, mockups, or AI art.
+- Another skill needs shared image-generation infrastructure.
+- User provides reference images or asks for vendor comparison.
+
+### When to use
 
 - Generating images, visual assets, illustrations, product photos, concept art
 - Comparing output between multiple image models for the same prompt
 - Producing images from prompts within editor workflows (Claude Code, Codex, Gemini CLI)
 - Other skills needing image generation infrastructure (shared invocation)
 
-## When NOT to use
+### When NOT to use
 
 - Editing an existing image or photo manipulation -> out of scope
 - Generating videos or audio -> out of scope
 - Inline vector art / SVG composition from structured data -> use a templating skill
 - Simple asset resizing or format conversion -> use a dedicated image library
 
-## Core Rules
+### Expected inputs
+- Image prompt or creative brief
+- Optional vendor, size, quality, count, output directory, and reference images
+- Authentication/environment state for Codex, Pollinations, or Gemini
+
+### Expected outputs
+- Generated image files under `.agents/results/images/` or requested output directory
+- `manifest.json` with prompt, vendor, model, and reproducibility metadata
+- Vendor comparison outputs when `--vendor all` is used
+
+### Dependencies
+- `oma image generate` CLI and vendor authentication
+- Codex image generation, Pollinations API, or Gemini API/CLI strategy
+- `resources/vendor-matrix.md`, `resources/prompt-tips.md`, and `config/image-config.yaml`
+
+### Control-flow features
+- Branches by prompt ambiguity, vendor auth, cost threshold, reference-image support, path safety, and safety/timeout exit codes
+- Calls external vendor APIs/CLIs
+- Reads reference images and writes generated images plus manifests
+
+## Structural Flow
+
+### Entry
+1. Validate that the request contains enough subject, setting, style, usage, and aspect-ratio signal.
+2. Detect attached/reference images and vendor support.
+3. Check authentication, cost guardrails, output path, and count limits.
+
+### Scenes
+1. **PREPARE**: Clarify or amplify prompt and choose vendor strategy.
+2. **ACQUIRE**: Validate auth, references, output path, and provider availability.
+3. **ACT**: Invoke `oma image generate` with selected vendor(s), prompt, references, and options.
+4. **VERIFY**: Check manifest, output files, exit code, and provider result.
+5. **FINALIZE**: Return output paths and relevant warnings.
+
+### Transitions
+- If prompt lacks required signal, clarify or show amplified prompt before generation.
+- If `--vendor all` is requested, require every requested vendor to be available.
+- If reference path is supported by selected vendor, pass it automatically.
+- If estimated cost exceeds guardrail, require confirmation unless bypassed.
+
+### Failure and recovery
+- If auth is missing, report vendor-specific authentication requirement.
+- If reference support is unavailable for the selected vendor, reject with actionable guidance.
+- If local CLI is outdated, ask user to run `oma update`.
+- If generation times out or is blocked, surface exit code and provider status.
+
+### Exit
+- Success: images and manifest exist in the output directory.
+- Partial success: some vendors fail in comparison mode and failures are reported.
+- Failure: no image is produced and the route/cost/auth/safety blocker is explicit.
+
+## Logical Operations
+
+### Actions
+| Action | SSL primitive | Evidence |
+|--------|---------------|----------|
+| Validate prompt completeness | `VALIDATE` | Clarification protocol |
+| Select vendor strategy | `SELECT` | Vendor matrix and auth state |
+| Read reference images | `READ` | `--reference` paths |
+| Call generation CLI/API | `CALL_TOOL` | `oma image generate` |
+| Write image outputs | `WRITE` | Image files and manifest |
+| Validate result | `VALIDATE` | Exit code, manifest, files |
+| Report output | `NOTIFY` | Final path summary |
+
+### Tools and instruments
+- `oma image generate`, `oma image doctor`, `oma image list-vendors`
+- Codex, Pollinations, and Gemini provider paths
+- Prompt tips, vendor matrix, and image config
+
+### Canonical command path
+```bash
+oma image doctor
+oma image generate "<prompt>" --vendor auto --size auto --quality auto --format json
+```
+
+With reference images:
+```bash
+oma image generate --reference "<absolute-path>" --vendor codex "<prompt>"
+```
+
+### Resource scope
+| Scope | Resource target |
+|-------|-----------------|
+| `LOCAL_FS` | Reference images, generated images, manifests |
+| `PROCESS` | Provider CLIs and image router commands |
+| `NETWORK` | Pollinations/Gemini or provider APIs |
+| `CREDENTIALS` | Provider auth and API keys |
+
+### Preconditions
+- Prompt is sufficiently specified or user approves amplification.
+- Required vendor auth and output permissions exist.
+- Reference paths are accessible when used.
+
+### Effects and side effects
+- Creates image files and manifests.
+- May call paid or rate-limited provider APIs.
+- May read attached/reference images.
+
+### Guardrails
 
 1. **Clarify before invoking** — if the user's request is ambiguous about subject, style, composition, or usage context, **ask the user first** or **amplify the prompt explicitly** (showing the user the expanded version for approval). Do NOT silently generate from a vague prompt. See `Clarification Protocol` below.
 2. **Authentication-aware dispatch** — detect which vendor CLIs are authenticated and run only those; with `--vendor all`, every requested vendor must be available (strict).
@@ -30,7 +138,7 @@ description: Multi-vendor AI image generation with authentication-aware parallel
 7. **Max `n` = 5** — wall-time bound.
 8. **Exit codes align with `oma search fetch`** (0, 1, 2=safety, 3=not-found, 4=invalid-input, 5=auth-required, 6=timeout).
 
-## Clarification Protocol
+### Clarification Protocol
 
 Before invoking `oma image generate`, the calling agent runs this checklist against the user's request. **If any answer is "no / unknown", clarify with the user first.**
 
@@ -55,7 +163,7 @@ Skip both clarification and amplification when the user has clearly authored a f
 
 **Output language.** Generation prompts are sent to the provider in English (image models are trained predominantly on English captions). Translate the user's request if they wrote in another language, and show them the translated version during amplification so they can correct misreadings.
 
-## Vendors
+### Vendors
 
 This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native CLI can drive generation (and return raw bytes), the subprocess path is preferred over direct API keys. Direct API is only used as a fallback for vendors whose CLI can't yet emit raw image bytes.
 
@@ -65,9 +173,9 @@ This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native C
 | `pollinations` | Direct HTTP — `gen.pollinations.ai/v1/images/generations` (free signup for key) | Free: `flux`, `zimage`. Credit-gated: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` set (free at https://enter.pollinations.ai). No native CLI exists. |
 | `gemini` | CLI-first fallback → direct API. `gemini -p` (stream) is the preferred path but currently disabled at precheck (CLI's agentic loop does not return raw `inlineData` bytes on stdout as of Gemini CLI 0.38). Until the CLI exposes a non-agentic image surface, the provider falls back to the direct `generativelanguage.googleapis.com` API. | `gemini-2.5-flash-image`, `gemini-3.1-flash-image-preview` | Preferred: `gemini auth login`. Fallback: `GEMINI_API_KEY` + billing. |
 
-## Invocation
+### Invocation
 
-### Standalone
+#### Standalone
 
 ```
 /oma-image a red apple on white background
@@ -75,7 +183,7 @@ This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native C
 /oma-image -n 3 --quality high --out ./hero "minimalist dashboard hero illustration"
 ```
 
-### Shell CLI
+#### Shell CLI
 
 ```
 oma image generate "<prompt>" [--vendor auto|codex|pollinations|gemini|all] [-n 1..5] \
@@ -91,7 +199,7 @@ oma image list-vendors
 
 Gemini-only escalation flag: `--strategy mcp,stream,api` (overrides `vendors.gemini.strategies`).
 
-### Reference Images (`-r`, `--reference`)
+#### Reference Images (`-r`, `--reference`)
 
 Attach up to 10 reference images (PNG/JPEG/GIF/WebP, ≤ 5MB each) to guide style, subject identity, or composition. Repeatable or comma-separated.
 
@@ -113,7 +221,7 @@ Supported vendors:
 - **Antigravity**: workspace upload directory (exact path shown in IDE)
 - **Codex CLI as host**: user must pass the filesystem path explicitly; in-conversation attachments are not forwarded
 
-### Agent Behavior: Auto-forward Attached References (MANDATORY)
+#### Agent Behavior: Auto-forward Attached References (MANDATORY)
 
 When ALL of the following are true, the calling agent MUST pass the attached image via `--reference <path>` automatically. Never describe the image in prose as a workaround.
 
@@ -131,11 +239,11 @@ When ALL of the following are true, the calling agent MUST pass the attached ima
 
 **If the reference path is from Claude Code's `image-cache`**: note to the user that the path is session-scoped and suggest copying the file to a durable location if they want to reuse it later. Still proceed with the generation.
 
-### Shared Infrastructure (from other skills)
+#### Shared Infrastructure (from other skills)
 
 Other skills call `oma image generate --format json` and parse the JSON manifest from stdout.
 
-## Output Layout
+### Output Layout
 
 ```
 .agents/results/images/
@@ -149,19 +257,17 @@ Other skills call `oma image generate --format json` and parse the JSON manifest
     └── manifest.json
 ```
 
-## How to Execute
+## References
 
 Follow `resources/execution-protocol.md` step by step.
 See `resources/vendor-matrix.md` for strategy precheck rules.
 Use `resources/prompt-tips.md` for writing effective prompts.
 Before submitting, run `resources/checklist.md`.
 
-## Configuration
+### Configuration
 
 Project-specific settings: `config/image-config.yaml`.
 Env vars: `OMA_IMAGE_DEFAULT_VENDOR`, `OMA_IMAGE_DEFAULT_OUT`, `OMA_IMAGE_YES`, `POLLINATIONS_API_KEY`, `GEMINI_API_KEY`, `OMA_IMAGE_GEMINI_STRATEGIES`.
-
-## References
 
 - Execution steps: `resources/execution-protocol.md`
 - Vendor matrix: `resources/vendor-matrix.md`

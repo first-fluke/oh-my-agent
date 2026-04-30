@@ -5,7 +5,16 @@ description: Use when setting up or optimizing developer workflows in a monorepo
 
 # Dev Workflow - Monorepo Task Automation Specialist
 
-## When to use
+## Scheduling
+
+### Goal
+Set up, run, optimize, and troubleshoot reproducible development workflows in monorepos using `mise`, task automation, validation pipelines, CI/CD, migrations, i18n builds, and release coordination.
+
+### Intent signature
+- User asks about dev servers, mise tasks, lint/format/typecheck/test/build, git hooks, CI/CD, migrations, generated clients, i18n builds, or release automation.
+- User needs workflow execution or developer environment setup rather than product feature implementation.
+
+### When to use
 
 - Running development servers for monorepo with multiple applications
 - Executing lint, format, typecheck across multiple apps in parallel
@@ -18,14 +27,108 @@ description: Use when setting up or optimizing developer workflows in a monorepo
 - Troubleshooting mise task failures or configuration issues
 - Optimizing CI/CD pipelines with mise
 
-## When NOT to use
+### When NOT to use
 
 - Database schema design or query tuning -> use DB Agent
 - Backend API implementation -> use Backend Agent
 - Frontend UI implementation -> use Frontend Agent
 - Mobile development -> use Mobile Agent
 
-## Core Rules
+### Expected inputs
+- Requested workflow operation, affected apps/packages, and current monorepo structure
+- `mise.toml`, task definitions, CI files, migration/i18n/build configs, and failure logs when relevant
+- Desired validation, setup, or release outcome
+
+### Expected outputs
+- Executed or documented mise task workflow
+- Updated workflow config, CI/CD pipeline, hooks, env template, or release guidance when requested
+- Status report with commands, outputs, failures, and next actions
+
+### Dependencies
+- `mise`, project task definitions, runtime versions, package managers behind mise tasks
+- Resource guides for validation, database patterns, API workflows, i18n, release coordination, and troubleshooting
+
+### Control-flow features
+- Branches by affected apps, task dependency graph, port availability, task failure, and CI/release context
+- Calls local process commands; may write workflow/config files
+- Must avoid destructive tasks and secrets in workflow configs
+
+## Structural Flow
+
+### Entry
+1. Identify affected apps/packages and requested workflow outcome.
+2. Read `mise.toml` files and available tasks.
+3. Determine whether tasks can run in parallel or must be sequential.
+
+### Scenes
+1. **PREPARE**: Analyze requirements, task graph, runtime prerequisites, and ports.
+2. **ACQUIRE**: Inspect mise config, task definitions, CI hooks, env patterns, and logs.
+3. **ACT**: Run or modify mise tasks, workflow configs, or validation pipelines.
+4. **VERIFY**: Check exit codes, generated artifacts, logs, and CI compatibility.
+5. **FINALIZE**: Report command status, duration, failures, and next steps.
+
+### Transitions
+- If runtime versions changed, run `mise install`.
+- If changed-file tasks exist, prefer changed-scope validation.
+- If port is occupied, resolve or select another port before starting dev server.
+- If a task is unfamiliar, read its definition before running.
+
+### Failure and recovery
+- If task is missing, run `mise tasks --all`.
+- If runtime is missing, run or recommend `mise install`.
+- If task hangs, check for prompts or long-running dev-server behavior.
+- If destructive task is requested, require confirmation.
+
+### Exit
+- Success: workflow runs or config changes are verified.
+- Partial success: task failures, missing runtime, or CI/environment blockers are explicit.
+
+## Logical Operations
+
+### Actions
+| Action | SSL primitive | Evidence |
+|--------|---------------|----------|
+| Read task definitions | `READ` | `mise.toml`, CI config |
+| Select task strategy | `SELECT` | Parallel/sequential/changed-scope |
+| Run workflow commands | `CALL_TOOL` | `mise run`, `mise install`, `mise tasks` |
+| Write workflow config | `WRITE` | Hooks, CI, env templates |
+| Validate outputs | `VALIDATE` | Exit codes, logs, artifacts |
+| Report status | `NOTIFY` | Final workflow summary |
+
+### Tools and instruments
+- `mise`, shell, CI/CD tooling, project package manager tasks behind mise
+- Resource guides for validation, database, API, i18n, release, and troubleshooting
+
+### Canonical command path
+```bash
+mise tasks --all
+mise install
+mise run lint
+mise run test
+```
+
+For app-specific tasks:
+```bash
+mise run //{path}:{task}
+```
+
+### Resource scope
+| Scope | Resource target |
+|-------|-----------------|
+| `CODEBASE` | `mise.toml`, CI configs, scripts, generated clients |
+| `LOCAL_FS` | Env templates, build outputs, logs |
+| `PROCESS` | mise, build, test, lint, dev-server commands |
+| `CREDENTIALS` | Secrets must not be hardcoded in workflow configs |
+
+### Preconditions
+- Target workflow and affected project area are identifiable.
+- Task definitions can be discovered or missing-task state is reported.
+
+### Effects and side effects
+- May start dev servers, run tests/builds, generate clients, run migrations, or edit workflow configs.
+- May consume CPU/time or occupy ports.
+
+### Guardrails
 
 1. Always use `mise run` tasks instead of direct package manager commands
 2. Run `mise install` after pulling changes that might update runtime versions
@@ -52,7 +155,7 @@ description: Use when setting up or optimizing developer workflows in a monorepo
 23. Never run destructive tasks (clean, reset) without confirmation
 24. Never skip reading task definitions before running unfamiliar tasks
 
-## Technical Guidelines
+### Technical Guidelines
 
 ### Prerequisites
 
@@ -182,7 +285,7 @@ API_URL=http://localhost:8000
 PUBLIC_API_URL=http://localhost:8000
 ```
 
-## Output Templates
+### Output Templates
 
 When setting up development environment:
 1. Runtime installation verification (`mise list`)
@@ -203,7 +306,7 @@ When troubleshooting:
 3. Port/process conflict resolution
 4. Cleanup commands if needed
 
-## Troubleshooting Guide
+### Troubleshooting Guide
 
 | Issue | Solution |
 |-------|----------|
@@ -214,7 +317,7 @@ When troubleshooting:
 | Permission denied | Check file permissions, try with proper user |
 | Missing dependencies | Run `mise run install` or app-specific install |
 
-## How to Execute
+### How to Execute
 
 Follow the core workflow step by step:
 1. **Analyze Task Requirements** - Identify which apps are affected and task dependencies
@@ -225,7 +328,7 @@ Follow the core workflow step by step:
 6. **Verify Results** - Check output, logs, and generated artifacts
 7. **Report Status** - Summarize success/failure with actionable next steps
 
-## Execution Protocol (CLI Mode)
+### Execution Protocol (CLI Mode)
 
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
@@ -235,6 +338,6 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Difficulty assessment: `../_shared/core/difficulty-guide.md`
 
-## Knowledge Reference
+### Knowledge Reference
 
 mise, task runner, monorepo, dev server, lint, format, test, typecheck, build, deployment, ci/cd, parallel execution, workflow, automation, tooling

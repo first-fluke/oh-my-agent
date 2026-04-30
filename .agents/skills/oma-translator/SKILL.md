@@ -5,7 +5,16 @@ description: Context-aware translation that preserves tone, style, and natural w
 
 # Translator - Context-Aware Translation
 
-## When to use
+## Scheduling
+
+### Goal
+Translate, review, or adapt multilingual content while preserving meaning, register, placeholders, structure, domain terminology, and natural target-language word order.
+
+### Intent signature
+- User asks to translate, localize, review translation quality, create a glossary, or adapt UI/docs/marketing copy.
+- User needs context-aware translation rather than mechanical word substitution.
+
+### When to use
 
 - Translating UI strings, error messages, or microcopy
 - Translating documentation, README, or guides
@@ -14,32 +23,64 @@ description: Context-aware translation that preserves tone, style, and natural w
 - Creating glossaries or translation style guides
 - Any task involving multilingual content
 
-## When NOT to use
+### When NOT to use
 
 - i18n infrastructure setup (key extraction, routing, build) -> use dev-workflow
 - Adding new locale to framework config -> use dev-workflow
 - Code-level l10n patterns (date formatting, pluralization API) -> use relevant agent
 
-## Core Rules
+### Expected inputs
+- Source text, target language, and optional locale or audience
+- Existing locale files, glossary, code context, or style constraints
+- Placeholder syntax, formatting constraints, and output mode
 
-1. Scan existing locale files before translating to align with project conventions
-2. Preserve placeholders and interpolation syntax
-3. Translate meaning, not words
-4. Preserve emotional connotations — translate the feeling, not just the dictionary meaning (e.g., "alarming" carries urgency/concern, not merely "surprising")
-5. Match register consistently throughout a single piece
-6. Split, merge, or restructure sentences for target language naturalness
-7. Flag ambiguous source text rather than guessing
-8. Preserve domain terminology — if a term has established meaning in the field (e.g., harness, scaffold, shim, polyfill, middleware), keep it even if a "simpler" native word exists
-9. Never produce literal word-for-word translations
-10. Never mix registers within a single piece (formal + casual)
-11. Never replace domain-specific terms with generic equivalents (e.g., "harness" → "framework", "shim" → "wrapper")
-12. Never translate proper nouns unless existing translations do so
-13. Never change the meaning to "sound better"
-14. Never skip verification stage for batches > 10 strings
-15. Never modify source file structure (keys, nesting, comments)
-16. Never preserve source-language formatting artifacts that are unnatural in the target language. For CJK targets (Korean, Japanese, Chinese), em dashes (—), title case in headings, and trailing "-ing" participle clauses must be restructured — even when the source uses them. See `resources/anti-ai-patterns.md` rules 13–16.
+### Expected outputs
+- Natural target-language translation or review findings
+- Preserved placeholders, code spans, links, headings, lists, and file structure
+- Translator notes when source concepts need explanation
+- Batch-safe output for i18n files when requested
 
-## Context Inference
+### Dependencies
+- Existing translations and surrounding code for register and terminology
+- `resources/translation-rubric.md` and `resources/anti-ai-patterns.md`
+- Project locale files when translating UI strings
+
+### Control-flow features
+- Branches by content type, target language, batch size, register uncertainty, and placeholder/structure requirements
+- Reads locale files and source context; may write translated content only when explicitly editing files
+- Blocks output until mechanical verification passes
+
+## Structural Flow
+
+### Entry
+1. Confirm source text, target language, content type, and output mode.
+2. Load existing translations, glossary, file context, or code context when available.
+3. Identify placeholders, formatting constraints, and ambiguity.
+
+### Scenes
+1. **PREPARE**: Determine language, register, domain, and structure constraints.
+2. **ACQUIRE**: Read existing translations and surrounding context.
+3. **REASON**: Analyze source meaning, connotations, figurative language, and terminology.
+4. **ACT**: Reconstruct natural target-language output.
+5. **VERIFY**: Run mechanical checks and translation rubric.
+6. **FINALIZE**: Emit translation, review notes, or file changes.
+
+### Transitions
+- If context is insufficient, ask one targeted question.
+- If batch size is greater than 10 strings, verification is mandatory before output.
+- If CJK output contains em dashes or source-language artifacts, rewrite before final output.
+- If placeholders or structure do not match, revise and rerun verification.
+
+### Failure and recovery
+- If source meaning is ambiguous, flag ambiguity rather than guessing.
+- If project conventions conflict with literal translation, follow project conventions and explain if needed.
+- If file structure is risky to modify, preserve structure and limit edits to values.
+
+### Exit
+- Success: target text is natural, faithful, structurally equivalent, and verified.
+- Partial success: ambiguous source text or missing context is explicit.
+
+### Context Inference
 
 No config file required. Instead, infer translation context from:
 
@@ -50,7 +91,7 @@ No config file required. Instead, infer translation context from:
 
 If context is insufficient to make a confident decision, ask the user. Prefer one targeted question over a batch of questions.
 
-## Translation Method
+### Translation Method
 
 ### Stage 1: Analyze Source
 
@@ -130,7 +171,7 @@ If any mechanical check fails, revise and re-run. Do not proceed to the rubric u
 13. Were all metaphors/idioms handled per the classify decision (interpret/substitute/retain)?
 14. Do figurative expressions read naturally in the target language, not as literal calques?
 
-## Translator's Notes Guidelines
+### Translator's Notes Guidelines
 
 When adding explanatory notes for terms, cultural references, or concepts that target readers may struggle with:
 
@@ -148,7 +189,7 @@ When adding explanatory notes for terms, cultural references, or concepts that t
 - Don't annotate self-explanatory terms or widely recognized loanwords
 - If a comprehension challenge was identified in Stage 1, use the pre-planned explanation
 
-## Refined Mode (Long-form Content)
+### Refined Mode (Long-form Content)
 
 For publication-quality translation of long-form content (articles, documentation, essays), extend the standard 4-stage workflow with three additional passes. Use when explicitly requested or when the content demands high polish.
 
@@ -192,7 +233,7 @@ Final pass for publication quality:
 - Final scan for surviving literal metaphors or translation-ese
 - Verify formatting preservation (headings, bold, links, code blocks)
 
-## Batch Translation Rules
+### Batch Translation Rules
 
 When translating multiple strings (e.g., UI keys):
 
@@ -203,7 +244,7 @@ When translating multiple strings (e.g., UI keys):
 5. **Keep key structure** — only translate values, never keys
 6. **Match length roughly** for UI strings (avoid 3x longer translations that break layout)
 
-## Output Format
+### Output Format
 
 ### Single text
 ```
@@ -232,7 +273,7 @@ Why:
 - [specific issues: unnatural word order, wrong register, inconsistent term, etc.]
 ```
 
-## Troubleshooting
+### Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -245,15 +286,82 @@ Why:
 | Target language requires gendered forms | Follow source text intent; prefer gender-neutral forms when available in target language |
 | Tone shifts across a long document | Re-read end-to-end after translating; normalize register to the dominant tone |
 
-## How to Execute
+### How to Execute
 
 Follow the translation method (Stage 1-4) step by step.
 Before submitting, verify against `resources/translation-rubric.md` and `resources/anti-ai-patterns.md`.
 
-## Execution Protocol (CLI Mode)
+### Execution Protocol (CLI Mode)
 
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
+
+## Logical Operations
+
+### Actions
+| Action | SSL primitive | Evidence |
+|--------|---------------|----------|
+| Read source and context | `READ` | Text, locale files, code context |
+| Select register and terminology | `SELECT` | Existing translations and domain terms |
+| Infer intended meaning | `INFER` | Meaning extraction stage |
+| Write translation | `WRITE` | Target-language reconstruction |
+| Validate placeholders/structure | `VALIDATE` | Verification gate |
+| Compare against rubric | `COMPARE` | Translation rubric |
+| Report translation or notes | `NOTIFY` | Final output |
+
+### Tools and instruments
+- Existing locale files and surrounding code
+- Translation rubric, anti-AI-pattern rules, glossary/style references
+- File editing tools only when the user requests file changes
+
+### Canonical workflow path
+```text
+1. Analyze source register, intent, domain terms, placeholders, and structure.
+2. Reconstruct meaning in the target language, not word-for-word.
+3. Run mechanical checks and `resources/translation-rubric.md` before emitting output.
+```
+
+For UI files, scan sibling locale files first:
+```bash
+rg "<source-key-or-term>" .
+```
+
+### Resource scope
+| Scope | Resource target |
+|-------|-----------------|
+| `LOCAL_FS` | Locale files, docs, README, source text files |
+| `CODEBASE` | Components and code context around UI strings |
+| `MEMORY` | Register, glossary, ambiguity, verification notes |
+| `USER_DATA` | User-provided text and target-language requirements |
+
+### Preconditions
+- Source text and target language are known.
+- Placeholder and structure constraints are identifiable.
+- Ambiguities are resolved or explicitly flagged.
+
+### Effects and side effects
+- Produces translated text or translation review.
+- May modify locale/docs files only when requested.
+- Preserves source structure and placeholders.
+
+### Guardrails
+
+1. Scan existing locale files before translating to align with project conventions
+2. Preserve placeholders and interpolation syntax
+3. Translate meaning, not words
+4. Preserve emotional connotations — translate the feeling, not just the dictionary meaning (e.g., "alarming" carries urgency/concern, not merely "surprising")
+5. Match register consistently throughout a single piece
+6. Split, merge, or restructure sentences for target language naturalness
+7. Flag ambiguous source text rather than guessing
+8. Preserve domain terminology — if a term has established meaning in the field (e.g., harness, scaffold, shim, polyfill, middleware), keep it even if a "simpler" native word exists
+9. Never produce literal word-for-word translations
+10. Never mix registers within a single piece (formal + casual)
+11. Never replace domain-specific terms with generic equivalents (e.g., "harness" → "framework", "shim" → "wrapper")
+12. Never translate proper nouns unless existing translations do so
+13. Never change the meaning to "sound better"
+14. Never skip verification stage for batches > 10 strings
+15. Never modify source file structure (keys, nesting, comments)
+16. Never preserve source-language formatting artifacts that are unnatural in the target language. For CJK targets (Korean, Japanese, Chinese), em dashes (—), title case in headings, and trailing "-ing" participle clauses must be restructured — even when the source uses them. See `resources/anti-ai-patterns.md` rules 13–16.
 
 ## References
 

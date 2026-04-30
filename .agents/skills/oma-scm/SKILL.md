@@ -5,23 +5,148 @@ description: SCM (software configuration management) and Git — branching, merg
 
 # Software configuration management — SCM (`oma-scm`)
 
+## Scheduling
+
+### Goal
+Manage Git and software configuration management safely: commits, branches, merges, worktrees, releases, baselines, audit posture, CODEOWNERS, and Conventional Commits.
+
+### Intent signature
+- User asks to commit, stage, branch, merge, rebase, cherry-pick, tag, release, resolve conflicts, manage worktrees, inspect SCM posture, or apply Conventional Commits.
+- User needs safe Git operations with explicit file staging, secret awareness, and CM governance.
+
 This skill is the **single** place for **configuration management (CM)** on a software repo and for **Conventional Commits** / safe staging.
 
-## When to use
+### When to use
 
 - **Commits:** “commit this”, `/scm`, message type/scope, splitting staged changes into multiple commits.
 - **CM / Git:** branching (gitflow, GitHub Flow, GitLab Flow, trunk-based), protected branches, merge queue, merge conflicts, rebase, cherry-pick, worktrees, submodules/subtrees, tags and releases.
 - **Governance:** issue/ADR links, breaking-change footers, changelog or release-tool alignment.
 - **Audit posture:** signed commits, CI before merge, secret-sensitive paths.
 
-## Configuration
+### When NOT to use
+
+- Implementing product or application code -> use the relevant domain skill
+- Debugging runtime failures without a Git or CM operation -> use `oma-debug`
+- Security, performance, or accessibility review -> use `oma-qa`
+- Planning feature requirements or decomposing work -> use `oma-pm`
+
+### Expected inputs
+- Git task, desired branch/commit/release operation, and affected files
+- Current worktree status, staged diff, branch tracking, config files, and governance constraints
+- Optional issue/ADR/PR/release context
+
+### Expected outputs
+- Safe commit, branch, merge/rebase guidance, conflict plan, status accounting, or CM audit findings
+- Conventional Commit message and explicit staged paths when committing
+- Risk notes for shared history, secrets, CODEOWNERS, CI, and release evidence
+
+### Dependencies
+- Git CLI and repository metadata
+- `config/commit-config.yaml`, `config/cm-config.yaml`, Conventional Commit references, onboarding-risk and CODEOWNERS playbooks
+
+### Control-flow features
+- Branches by quick commit path versus full CM/governance path
+- Reads Git state and diffs; may write commits, branches, tags, or conflict resolutions
+- Requires explicit approval for broad staging, shared-history rewrite, production-destructive operations, or secret-risk paths
+
+## Structural Flow
+
+### Entry
+1. Inspect Git status, branch, staged/unstaged changes, and user intent.
+2. Choose Quick Path for ordinary commits or Full CM Path for governance/risky history work.
+3. Read commit and CM config before enforcing project-specific rules.
+
+### Scenes
+1. **PREPARE**: Determine operation type, risk, and affected files.
+2. **ACQUIRE**: Read status, diff, logs, config, ownership, and release context.
+3. **REASON**: Split changes, choose message/scope, identify CM controls and risks.
+4. **ACT**: Stage explicit paths, commit, branch, resolve, or provide CM action plan.
+5. **VERIFY**: Check status, staged diff, CI expectations, signatures, secrets, and audit evidence.
+6. **FINALIZE**: Report operation result and remaining SCM tasks.
+
+### Transitions
+- If user intent is commit-only, follow Quick Path and stop after safe commit.
+- If branching/history/release/governance is involved, run Full CM Path.
+- If shared history rewrite is requested, require maintainer approval.
+- If changes span independent features, split commits unless user requests one commit.
+
+### Failure and recovery
+- If worktree is dirty in unrelated files, avoid touching unrelated changes.
+- If conflicts exist, resolve markers, test, and preserve target-branch context.
+- If secrets are detected or suspected, stop before staging/committing.
+
+### Exit
+- Success: requested SCM operation is complete or a safe, auditable plan is delivered.
+- Partial success: blockers such as conflicts, missing approval, CI, or secret risk are explicit.
+
+## Logical Operations
+
+### Actions
+| Action | SSL primitive | Evidence |
+|--------|---------------|----------|
+| Read Git state | `READ` | `git status`, diff, log, config |
+| Select SCM path | `SELECT` | Quick Path vs Full CM Path |
+| Compare change scopes | `COMPARE` | Split by type/scope/feature |
+| Validate commit/governance rules | `VALIDATE` | Config and CM controls |
+| Stage explicit files | `CALL_TOOL` | `git add <specific-files>` |
+| Commit or manage refs | `CALL_TOOL` | Git commit/branch/merge/rebase/tag |
+| Write audit notes | `WRITE` | Commit message or CM report |
+| Report result | `NOTIFY` | Final SCM summary |
+
+### Tools and instruments
+- Git CLI and repository metadata
+- Commit/CM config, Conventional Commit guide, CODEOWNERS playbook, onboarding-risk signals
+
+### Canonical command path
+```bash
+git status -sb
+git diff --staged
+git log --oneline -5
+```
+
+Stage and commit only explicit paths:
+```bash
+git add <specific-files>
+git commit -m "$(cat <<'EOF'
+<type>(<scope>): <description>
+
+[optional body]
+EOF
+)"
+```
+
+### Resource scope
+| Scope | Resource target |
+|-------|-----------------|
+| `CODEBASE` | Tracked files, diffs, conflicts, CODEOWNERS |
+| `LOCAL_FS` | Git metadata, config files, commit message temp files |
+| `PROCESS` | Git commands and verification commands |
+| `CREDENTIALS` | Secret-sensitive files must not be staged or committed |
+
+### Preconditions
+- Repository and Git intent are identifiable.
+- User has authorized the requested SCM operation.
+
+### Effects and side effects
+- May stage files, create commits, branches, tags, worktrees, or history operations.
+- Can affect shared repository history if unsafe commands are used, so approvals matter.
+
+### Guardrails
+
+1. Choose Quick Path for ordinary commits and Full CM Path for branching, history, release, or governance work.
+2. Read `config/commit-config.yaml` and `config/cm-config.yaml` before applying project-specific commit or CM rules.
+3. Stage only explicit files; never use broad staging unless the user explicitly approves it.
+4. Do not rewrite shared history without maintainer approval.
+5. Never stage or commit likely-secret material.
+
+### Configuration
 
 | File | Role |
 |------|------|
 | `config/commit-config.yaml` | Conventional Commit types, branch prefixes, message rules |
 | `config/cm-config.yaml` | CM pointers — documented process, branching model, baselines, changelog |
 
-## Operating mode (choose first)
+### Operating mode (choose first)
 
 ### Quick Path (commit-focused, default)
 
@@ -41,7 +166,7 @@ Use this when the user asks about branching strategy, merges, rebase/cherry-pick
 3. Include commit governance from Conventional Commits when creating commits
 4. For large-scope merge operations, use risk scoring and Ask Gate criteria from `../../workflows/scm.md`
 
-## CM process map (software)
+### CM process map (software)
 
 | CM function | Intent | Typical artefacts / actions |
 |-------------|--------|------------------------------|
@@ -51,7 +176,7 @@ Use this when the user asks about branching strategy, merges, rebase/cherry-pick
 | **Status accounting** | As-built truth | `main` / release refs, `CHANGELOG`, tags, CI status |
 | **Verification & audit** | Evidence | CI logs, signed commits, lockfiles / SBOM policy |
 
-## CM workflows (use before risky history operations)
+### CM workflows (use before risky history operations)
 
 ### 1) Planning
 
@@ -110,7 +235,7 @@ Read thresholds from `cm-config.yaml` `onboarding_metrics` when present and cite
 
 ---
 
-## Conventional Commits
+### Conventional Commits
 
 ### Commit types
 
@@ -201,7 +326,7 @@ Use HEREDOC by default, and switch to `-F` for long or flaky terminal sessions.
 - `resources/onboarding-risk-signals.md`
 - `resources/codeowners-playbook.md`
 
-## Important notes
+### Important notes
 
 - **NEVER** `git add -A` or `git add .` without explicit user permission.
 - **NEVER** commit likely-secret material.
