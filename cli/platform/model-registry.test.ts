@@ -32,11 +32,6 @@ describe("CORE_REGISTRY", () => {
     expect(CORE_REGISTRY.has(slug)).toBe(true);
   });
 
-  it("does not contain api_only slug openai/gpt-5.4-nano", async () => {
-    const { CORE_REGISTRY } = await import("./model-registry.js");
-    expect(CORE_REGISTRY.has("openai/gpt-5.4-nano")).toBe(false);
-  });
-
   it("does not contain any moonshotai/* slug", async () => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
     for (const slug of CORE_REGISTRY.keys()) {
@@ -81,12 +76,6 @@ describe("getModelSpec", () => {
     const result = getModelSpec("unknown/does-not-exist");
     expect(result).toBeUndefined();
   });
-
-  it("returns undefined for api_only slug openai/gpt-5.4-nano", async () => {
-    const { getModelSpec } = await import("./model-registry.js");
-    const result = getModelSpec("openai/gpt-5.4-nano");
-    expect(result).toBeUndefined();
-  });
 });
 
 describe("hasModelSpec", () => {
@@ -98,39 +87,6 @@ describe("hasModelSpec", () => {
   it("returns false for an unknown slug", async () => {
     const { hasModelSpec } = await import("./model-registry.js");
     expect(hasModelSpec("unknown/model")).toBe(false);
-  });
-
-  it("returns false for the excluded api_only slug", async () => {
-    const { hasModelSpec } = await import("./model-registry.js");
-    expect(hasModelSpec("openai/gpt-5.4-nano")).toBe(false);
-  });
-});
-
-describe("api_only initialization guard", () => {
-  beforeEach(() => {
-    vi.resetModules();
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("emits a console.warn for each api_only entry during module initialization", async () => {
-    await import("./model-registry.js");
-    expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining("openai/gpt-5.4-nano"),
-    );
-    expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining("api_only=true"),
-    );
-  });
-
-  it("excludes api_only entries from the exported map after initialization", async () => {
-    const { CORE_REGISTRY } = await import("./model-registry.js");
-    for (const [, spec] of CORE_REGISTRY) {
-      expect(spec.supports.api_only).toBe(false);
-    }
   });
 });
 

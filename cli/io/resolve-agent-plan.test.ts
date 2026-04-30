@@ -174,31 +174,10 @@ describe("resolveAgentPlanFromConfig — Case 4: Claude effort drop (R14)", () =
 });
 
 // ---------------------------------------------------------------------------
-// Case 5: api_only slug → throws ConfigError
+// Case 5: Unknown slug → throws ConfigError
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 5: api_only slug throws ConfigError", () => {
-  it("throws ConfigError for api_only model slug", () => {
-    const config = {
-      ...CODEX_ONLY_CONFIG,
-      agents: {
-        backend: { model: "openai/gpt-5.4-nano" },
-      },
-    };
-    expect(() => resolveAgentPlanFromConfig("backend", config)).toThrow(
-      ConfigError,
-    );
-    expect(() => resolveAgentPlanFromConfig("backend", config)).toThrow(
-      /Unknown model slug/,
-    );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Case 6: Unknown slug → throws ConfigError
-// ---------------------------------------------------------------------------
-
-describe("resolveAgentPlanFromConfig — Case 6: unknown slug throws ConfigError", () => {
+describe("resolveAgentPlanFromConfig — Case 5: unknown slug throws ConfigError", () => {
   it("throws ConfigError with actionable message for unregistered slug", () => {
     const config = {
       ...CODEX_ONLY_CONFIG,

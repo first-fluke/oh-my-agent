@@ -50,8 +50,7 @@ export type ModelSpec = {
 };
 
 // ---------------------------------------------------------------------------
-// Raw registry — includes intentionally excluded api_only entries for testing
-// the initialization guard. These are filtered out before export.
+// Raw registry — built-in CLI-compatible model specs.
 // ---------------------------------------------------------------------------
 
 const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
@@ -307,47 +306,16 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         "Qwen Code 구독 필요 (API 키 재인증 필요 — OAuth 2026-04-15 폐지)",
     } satisfies ModelSpec,
   ],
-
-  // -------------------------------------------------------------------------
-  // Intentionally excluded: api_only entries
-  // These are present solely to exercise the initialization guard.
-  // They MUST never appear in the exported CORE_REGISTRY.
-  // -------------------------------------------------------------------------
-  [
-    "openai/gpt-5.4-nano",
-    {
-      cli: "codex",
-      cli_model: "gpt-5.4-nano",
-      supports: {
-        effort: {
-          type: "granular",
-          levels: ["none", "low", "medium", "high", "xhigh"],
-        },
-        apply_patch: false,
-        task_budget: false,
-        prompt_cache: false,
-        computer_use: false,
-        native_dispatch_from: [],
-        api_only: true,
-      },
-      auth_hint: "API 전용 — CLI 미지원",
-    } satisfies ModelSpec,
-  ],
 ]);
 
 // ---------------------------------------------------------------------------
-// Initialization guard: filter api_only:true entries and warn
+// Initialization guard: defensive filter for api_only:true entries
 // ---------------------------------------------------------------------------
 
 function buildCoreRegistry(): ReadonlyMap<string, ModelSpec> {
   const filtered = new Map<string, ModelSpec>();
   for (const [slug, spec] of RAW_REGISTRY) {
-    if (spec.supports.api_only) {
-      console.warn(
-        `[model-registry] Excluding "${slug}": api_only=true is not supported in CLI-only mode.`,
-      );
-      continue;
-    }
+    if (spec.supports.api_only) continue;
     filtered.set(slug, spec);
   }
   return filtered as ReadonlyMap<string, ModelSpec>;
