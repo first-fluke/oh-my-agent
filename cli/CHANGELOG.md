@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.4.0...cli-v6.5.0) (2026-04-30)
+
+
+### Features
+
+* **skills:** apply SSL framework and add oma-skill-creator ([18275f6](https://github.com/first-fluke/oh-my-agent/commit/18275f63f452cd90b2262c6d2614bb40e758a94e))
+
+
+### Documentation
+
+* **readme:** add localized references section with APA 7 citation ([ffb7aed](https://github.com/first-fluke/oh-my-agent/commit/ffb7aed1ed735771debb8a734ebce6693a00e9eb))
+
 ## [6.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.3.1...cli-v6.4.0) (2026-04-28)
 
 
