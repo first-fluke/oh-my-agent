@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.4...cli-v6.5.5) (2026-04-30)
+
+
+### Documentation
+
+* **readme:** add oma-scholar to agent table ([45225f3](https://github.com/first-fluke/oh-my-agent/commit/45225f30cc9cc7e96aa2fd4da7066f39d0c02c5f))
+
 ## [6.5.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.3...cli-v6.5.4) (2026-04-30)
 
 
