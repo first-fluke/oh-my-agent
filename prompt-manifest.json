@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "6.5.1",
-  "releaseDate": "2026-04-30T04:38:53.843Z",
+  "releaseDate": "2026-04-30T06:16:29.956Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -191,8 +191,8 @@
     },
     {
       "path": ".agents/rules/frontend.md",
-      "sha256": "8d00f675688a99701574576cd510fc3e26cdd9d0fdaae21e7fcc5e889a0d24cf",
-      "size": 2124
+      "sha256": "ade8437f734a0f4e44f8d67706e4b5de7fa8a626e4187ab4fe35dd0908a026ec",
+      "size": 2431
     },
     {
       "path": ".agents/rules/i18n-guide.md",
@@ -711,13 +711,13 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "6b376db40e5d676ab2cab00c55ecfbda1d05c1f289660c4807d855470edbc899",
-      "size": 8962
+      "sha256": "8dcf2ee6cf303620af50a1dd03d4e5939e4a785d8600caf9c8ce899303e888ac",
+      "size": 9549
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
-      "sha256": "0ecdbd77bb152badfd00666f46b4d7d749341e888ba59941b075e54d0ebde5cc",
-      "size": 1338
+      "sha256": "e1181b913be21fe117e04c952620dc6ac942cd80466ab828043c454ba1110c40",
+      "size": 1728
     },
     {
       "path": ".agents/skills/oma-frontend/resources/component-template.tsx",
@@ -726,8 +726,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/error-playbook.md",
-      "sha256": "b52350e8f53cecf2becffe25e31196b2124ff7db41115ae1bbf2e0606ab4559c",
-      "size": 3943
+      "sha256": "3d2664eacfe89b0ef6f410ffb8173245deeb3ccd88a789ece1ad63c2488d7263",
+      "size": 4730
     },
     {
       "path": ".agents/skills/oma-frontend/resources/examples.md",
@@ -751,8 +751,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "2b7b32749fbb98b0b8b0c6bb3e6adbe2c8cde6935b57e1c31698ac5a321bfbc4",
-      "size": 435
+      "sha256": "f755f9220b3115533a849940658336a437b06c504ddb2b6ea78732aa125b5ed6",
+      "size": 1158
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
