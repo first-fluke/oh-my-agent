@@ -88,6 +88,7 @@ Wybierz preset i gotowe:
 | **oma-pm** | Planuje zadania, rozbija wymagania, definiuje kontrakty API |
 | **oma-qa** | Bezpieczenstwo OWASP, wydajnosc, przeglad dostepnosci |
 | **oma-recap** | Analiza historii rozmow i tematyczne podsumowania pracy |
+| **oma-scholar** | Towarzysz badań akademickich — sidecar Knows (.knows.yaml), wyszukiwanie literatury, recenzja naukowa |
 | **oma-scm** | SCM (zarządzanie konfiguracją oprogramowania): branchowanie, merge, worktree, baseline; Conventional Commits |
 | **oma-search** | Router wyszukiwania oparty na intencji + ocena zaufania — dokumentacja, web, kod, lokalnie |
 | **oma-tf-infra** | Wielochmurowy IaC z Terraform (Infrastructure as Code) |

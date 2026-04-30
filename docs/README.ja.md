@@ -88,6 +88,7 @@ APM が配るのはスキル 22 個だけです。ワークフロー、ルール
 | **oma-pm** | タスク計画、要件分解、APIコントラクト定義 |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティレビュー |
 | **oma-recap** | 会話履歴の分析とテーマ別作業サマリー |
+| **oma-scholar** | 学術研究のコンパニオン — Knows サイドカー (.knows.yaml)、文献検索、ピアレビュー |
 | **oma-scm** | SCM（ソフトウェア構成管理）: ブランチ、マージ、ワークツリー、ベースライン、Conventional Commits |
 | **oma-search** | インテント型検索ルーター＋信頼スコア（ドキュメント、ウェブ、コード、ローカル） |
 | **oma-tf-infra** | マルチクラウド Terraform IaC（Infrastructure as Code） |

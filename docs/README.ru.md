@@ -88,6 +88,7 @@ APM поставляет только 22 скила. Для workflow, прави
 | **oma-pm** | Планирует задачи, декомпозирует требования, определяет API-контракты |
 | **oma-qa** | Безопасность OWASP, производительность, ревью доступности |
 | **oma-recap** | Analiz istorii razgovorov i tematicheskie svodki raboty |
+| **oma-scholar** | Спутник академических исследований — Knows-sidecar (.knows.yaml), поиск литературы, рецензирование |
 | **oma-scm** | SCM (управление конфигурацией ПО): ветки, слияния, worktree, базовые линии; Conventional Commits |
 | **oma-search** | Интент-маршрутизатор поиска + оценка доверия — документация, веб, код, локальный |
 | **oma-tf-infra** | Мультиоблачный IaC на Terraform (Infrastructure as Code) |

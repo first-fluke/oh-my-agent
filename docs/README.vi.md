@@ -88,6 +88,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-pm** | Lập kế hoạch, phân tích yêu cầu, định nghĩa API contract |
 | **oma-qa** | Đánh giá bảo mật OWASP, hiệu suất, accessibility |
 | **oma-recap** | Phan tich lich su hoi thoai va tong ket cong viec theo chu de |
+| **oma-scholar** | Bạn đồng hành nghiên cứu học thuật — Knows sidecar (.knows.yaml), tìm tài liệu, bình duyệt |
 | **oma-scm** | SCM (quản lý cấu hình phần mềm): nhánh, merge, worktree, baseline; Conventional Commits |
 | **oma-search** | Bộ định tuyến tìm kiếm theo ý định + điểm tin cậy — tài liệu, web, mã, cục bộ |
 | **oma-tf-infra** | Terraform IaC đa đám mây (Infrastructure as Code) |

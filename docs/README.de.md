@@ -88,6 +88,7 @@ Wähl ein Preset und los geht's:
 | **oma-pm** | Plant Aufgaben, zerlegt Anforderungen, definiert API-Verträge |
 | **oma-qa** | OWASP-Sicherheit, Performance, Barrierefreiheits-Review |
 | **oma-recap** | Analyse des Gespraechsverlaufs und thematischer Arbeitszusammenfassungen |
+| **oma-scholar** | Begleiter für akademische Forschung — Knows-Sidecar (.knows.yaml), Literaturrecherche, Peer-Review |
 | **oma-scm** | SCM (Software-Konfigurationsmanagement): Branching, Merges, Worktrees, Baselines; Conventional Commits |
 | **oma-search** | Intent-basierter Such-Router + Vertrauensbewertung — Docs, Web, Code, Lokal |
 | **oma-tf-infra** | Multi-Cloud IaC mit Terraform (Infrastructure as Code) |

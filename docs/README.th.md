@@ -88,6 +88,7 @@ APM แจกแค่ 22 skill เท่านั้น ส่วน workflow, 
 | **oma-pm** | วางแผนงาน, ย่อย requirements, กำหนด API contracts |
 | **oma-qa** | ตรวจสอบความปลอดภัยตามมาตรฐาน OWASP, ประสิทธิภาพ, accessibility |
 | **oma-recap** | วิเคราะห์ประวัติการสนทนาและสรุปงานตามธีม |
+| **oma-scholar** | เพื่อนร่วมวิจัยเชิงวิชาการ — Knows sidecar (.knows.yaml), ค้นหาวรรณกรรม, ทบทวนโดยเพื่อนร่วมงาน |
 | **oma-scm** | การจัดการโครงสร้างซอฟต์แวร์ (SCM): แตกกิ่ง (branching), รวมโค้ด (merges), worktrees; รองรับ Conventional Commits |
 | **oma-search** | เราเตอร์ค้นหาตามเจตนา + คะแนนความน่าเชื่อถือ — เอกสาร, เว็บ, โค้ด, โลคัล |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |

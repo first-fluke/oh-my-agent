@@ -88,6 +88,7 @@ Kies een preset en je bent klaar:
 | **oma-pm** | Plant taken, splitst requirements op, definieert API-contracten |
 | **oma-qa** | OWASP-beveiliging, performance, toegankelijkheidsreview |
 | **oma-recap** | Analyse van gespreksgeschiedenis en thematische werksamenvattingen |
+| **oma-scholar** | Academische onderzoekspartner — Knows sidecar (.knows.yaml), literatuuronderzoek, peer review |
 | **oma-scm** | SCM (softwareconfiguratiebeheer): branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-search** | Intentiegebaseerde zoekrouter + vertrouwensscore — docs, web, code, lokaal |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |

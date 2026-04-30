@@ -88,6 +88,7 @@ APM은 스킬 22개만 제공합니다. 워크플로우, 규칙, `oma-config.yam
 | **oma-pm** | 작업 계획, 요구사항 분석, API 계약 정의 |
 | **oma-qa** | OWASP 보안, 성능, 접근성 리뷰 |
 | **oma-recap** | 대화 이력 분석과 주제별 작업 요약 |
+| **oma-scholar** | 학술 연구 동반자 — Knows 사이드카(.knows.yaml), 문헌 검색, 동료 평가 |
 | **oma-scm** | 형상관리(SCM)와 Git: 브랜치·머지·워크트리·베이스라인, Conventional Commits |
 | **oma-search** | 의도 기반 검색 라우터와 신뢰 점수 (문서, 웹, 코드, 로컬) |
 | **oma-tf-infra** | 멀티 클라우드 Terraform IaC (Infrastructure as Code) |
