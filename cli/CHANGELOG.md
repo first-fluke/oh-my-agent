@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.2...cli-v6.5.3) (2026-04-30)
+
+
+### Documentation
+
+* collapse APM install section into accordion across all locales ([cfb7e1f](https://github.com/first-fluke/oh-my-agent/commit/cfb7e1f833b9c4cc0da603d0383330576ffeca50))
+
 ## [6.5.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.1...cli-v6.5.2) (2026-04-30)
 
 
