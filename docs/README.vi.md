@@ -34,6 +34,28 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 bunx oh-my-agent@latest
 ```
 
+### Cài đặt qua Agent Package Manager
+
+<details>
+<summary><a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) của Microsoft — bản phân phối chỉ có skill. Click để mở rộng.</summary>
+
+> Đừng nhầm với APM (Application Performance Monitoring) của `oma-observability`.
+
+```bash
+# 22 skill, triển khai vào mọi runtime được phát hiện
+# (.claude, .cursor, .codex, .opencode, .github, .agents)
+apm install first-fluke/oh-my-agent
+
+# Một skill duy nhất
+apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
+```
+
+APM đọc pointer `skills: .agents/skills/` trong `.claude-plugin/plugin.json`, nên `.agents/` SSOT là nguồn duy nhất — không cần bước build hay mirror.
+
+APM chỉ phân phối 22 skill. Còn workflow, rule, `oma-config.yaml`, hook phát hiện từ khóa và CLI `oma agent:spawn` thì dùng `bunx oh-my-agent@latest`. Mỗi dự án chỉ chọn một cách phân phối thôi, không thì lệch nhau.
+
+</details>
+
 Chọn một preset và bạn đã sẵn sàng:
 
 | Preset | Bạn nhận được |

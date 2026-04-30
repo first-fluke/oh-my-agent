@@ -34,6 +34,28 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 bunx oh-my-agent@latest
 ```
 
+### Installation via Agent Package Manager
+
+<details>
+<summary>Microsofts <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) — nur Skills. Klick zum Ausklappen.</summary>
+
+> Nicht zu verwechseln mit dem APM (Application Performance Monitoring) von `oma-observability`.
+
+```bash
+# 22 Skills, in jede erkannte Runtime ausgerollt
+# (.claude, .cursor, .codex, .opencode, .github, .agents)
+apm install first-fluke/oh-my-agent
+
+# Ein einzelnes Skill
+apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
+```
+
+APM liest den `skills: .agents/skills/`-Pointer aus `.claude-plugin/plugin.json`, also ist die `.agents/`-SSOT die einzige Quelle — kein Build-Schritt, kein Mirror.
+
+APM liefert nur die 22 Skills. Für Workflows, Regeln, `oma-config.yaml`, Keyword-Detection-Hooks und das `oma agent:spawn`-CLI nimmst du `bunx oh-my-agent@latest`. Pro Projekt eine Distribution wählen, sonst läuft das auseinander.
+
+</details>
+
 Wähl ein Preset und los geht's:
 
 | Preset | Was Du Bekommst |

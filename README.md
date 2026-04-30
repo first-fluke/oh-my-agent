@@ -36,7 +36,10 @@ bunx oh-my-agent@latest
 
 ### Install via Agent Package Manager
 
-> Microsoft's [Agent Package Manager](https://github.com/microsoft/apm) (APM) — not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
+<details>
+<summary>Microsoft's <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) — skills-only distribution. Click to expand.</summary>
+
+> Not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
 
 ```bash
 # 22 skills, deployed to every detected runtime
@@ -50,6 +53,8 @@ apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 APM reads `.claude-plugin/plugin.json`'s `skills: .agents/skills/` pointer, so the `.agents/` SSOT is the only source — no build step or mirror.
 
 APM ships the 22 skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+
+</details>
 
 Pick a preset and you're ready:
 

@@ -34,6 +34,28 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 bunx oh-my-agent@latest
 ```
 
+### 通过 Agent Package Manager 安装
+
+<details>
+<summary>Microsoft 的 <a href="https://github.com/microsoft/apm">Agent Package Manager</a>（APM）—— 只分发 skill。点击展开。</summary>
+
+> 别和 `oma-observability` 的 APM（Application Performance Monitoring）搞混。
+
+```bash
+# 22 个 skill，部署到检测到的每个 runtime
+# (.claude, .cursor, .codex, .opencode, .github, .agents)
+apm install first-fluke/oh-my-agent
+
+# 单个 skill
+apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
+```
+
+APM 读取 `.claude-plugin/plugin.json` 里的 `skills: .agents/skills/` 指针，所以 `.agents/` SSOT 就是唯一来源（不需要构建步骤，也不需要镜像）。
+
+APM 只分发这 22 个 skill。workflow、规则、`oma-config.yaml`、关键词检测 hook 和 `oma agent:spawn` CLI 还是用 `bunx oh-my-agent@latest`。一个项目挑一种分发方式就好，免得跑偏。
+
+</details>
+
 选个预设就能开始：
 
 | 预设 | 包含内容 |
