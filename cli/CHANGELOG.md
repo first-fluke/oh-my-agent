@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.6...cli-v6.5.7) (2026-05-03)
+
+
+### Documentation
+
+* **readme:** drop knows sidecar mention from oma-scholar row ([f287bf0](https://github.com/first-fluke/oh-my-agent/commit/f287bf0561cab12edd7c58da4a675e60f1925daa))
+
 ## [6.5.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.5...cli-v6.5.6) (2026-05-03)
 
 
