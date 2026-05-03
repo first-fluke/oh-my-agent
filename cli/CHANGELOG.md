@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.5...cli-v6.5.6) (2026-05-03)
+
+
+### Documentation
+
+* **oma-frontend:** wire DESIGN.md as visual source of truth ([671dc60](https://github.com/first-fluke/oh-my-agent/commit/671dc6017a97ab74e3ffacc7bcc29ea3c04c6935))
+
 ## [6.5.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.4...cli-v6.5.5) (2026-04-30)
 
 
