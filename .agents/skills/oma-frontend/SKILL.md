@@ -160,6 +160,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 
 ### Sources of Truth
 
+- **DESIGN.md** (project root): visual system source of truth — read Section 9 (Agent Prompt Guide) verbatim for component prompts when present
 - **Design Tokens**: `packages/design-tokens` (OKLCH) — never hardcode colors
 - **i18n strings**: `packages/i18n` — never hardcode UI text
 - **Custom utilities**: check `es-toolkit` first; if implementing custom logic, >90% unit test coverage is mandatory

@@ -9,7 +9,7 @@ alwaysApply: false
 ## Core Rules
 
 1. **Component Reuse**: Use `shadcn/ui` components first. Extend via `cva` variants or composition. Avoid custom CSS.
-2. **Design Fidelity**: Code must map 1:1 to Design Tokens. Resolve discrepancies before implementation.
+2. **Design Fidelity**: Code must map 1:1 to `DESIGN.md` (Section 9 — Agent Prompt Guide) and Design Tokens. Resolve discrepancies before implementation.
 3. **Rendering Strategy**: Default to Server Components for performance. Use Client Components only for interactivity and API integration.
 4. **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation, and screen reader compatibility are mandatory.
 5. **Tool First**: Check for existing solutions and tools before coding.
