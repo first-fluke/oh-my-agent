@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.6.0...cli-v6.7.0) (2026-05-04)
+
+
+### Features
+
+* **codex:** force-enable goals and child_agents_md features ([cee3377](https://github.com/first-fluke/oh-my-agent/commit/cee3377cdaea2d47b161e650e3057a6cd26876ec))
+
 ## [6.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.7...cli-v6.6.0) (2026-05-04)
 
 
