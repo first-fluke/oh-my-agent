@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.8.0...cli-v6.9.0) (2026-05-04)
+
+
+### Features
+
+* **install:** add --yes flag for non-interactive install ([ff7ba68](https://github.com/first-fluke/oh-my-agent/commit/ff7ba683b60edd7b9526a1edaf623e00e7f4072d))
+
 ## [6.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.7.0...cli-v6.8.0) (2026-05-04)
 
 
