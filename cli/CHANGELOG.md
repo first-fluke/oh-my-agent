@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.7.0...cli-v6.8.0) (2026-05-04)
+
+
+### Features
+
+* **models:** upgrade default models to gpt-5.5 and qwen3.6-plus ([bbcd072](https://github.com/first-fluke/oh-my-agent/commit/bbcd07273fd817083d8d86a7021b5efd7ef9c34f))
+
 ## [6.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.6.0...cli-v6.7.0) (2026-05-04)
 
 
