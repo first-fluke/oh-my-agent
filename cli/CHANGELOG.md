@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.9.0...cli-v6.10.0) (2026-05-04)
+
+
+### Features
+
+* **cli:** generate .github/prompts wrappers for copilot vendor ([d9502ee](https://github.com/first-fluke/oh-my-agent/commit/d9502ee1504ca3d3d3a90c27b467e0b4b7ffec83))
+
 ## [6.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.8.0...cli-v6.9.0) (2026-05-04)
 
 
