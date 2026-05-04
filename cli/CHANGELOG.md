@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.7...cli-v6.6.0) (2026-05-04)
+
+
+### Features
+
+* **ralph:** re-verify all criteria each iteration with regression detection ([c6fd680](https://github.com/first-fluke/oh-my-agent/commit/c6fd680667c9fe47bee20b66cafbb93d35644b1a))
+
 ## [6.5.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.5.6...cli-v6.5.7) (2026-05-03)
 
 
