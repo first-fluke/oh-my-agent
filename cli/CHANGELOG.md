@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.12.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.12.1...cli-v6.12.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* **skills:** expand oma-frontend keyword triggers ([2dddddd](https://github.com/first-fluke/oh-my-agent/commit/2dddddd067ee047eebbd0233b805d356ce598eaa))
+
+
+### Documentation
+
+* **benchmarks:** update README to reflect oma rerun (88 -&gt; 75.5) ([11b50f1](https://github.com/first-fluke/oh-my-agent/commit/11b50f1058a42710c18e0b79b6b31bbb11f3f114))
+
 ## [6.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.12.0...cli-v6.12.1) (2026-05-05)
 
 
