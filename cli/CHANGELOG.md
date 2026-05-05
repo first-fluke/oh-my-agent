@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.11.0...cli-v6.12.0) (2026-05-05)
+
+
+### Features
+
+* **frontend:** mandate next@16+ and react@19+, ban next &lt; 16 ([cd96046](https://github.com/first-fluke/oh-my-agent/commit/cd9604644bbd456d37900775099f44df9ded94bc))
+
+
+### Documentation
+
+* **benchmarks:** add Korean translation README.ko.md ([182b69e](https://github.com/first-fluke/oh-my-agent/commit/182b69e3f8ec6c3e0a5824f5bbc3d23cbffabfce))
+
 ## [6.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.10.0...cli-v6.11.0) (2026-05-05)
 
 
