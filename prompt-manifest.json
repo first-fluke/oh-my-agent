@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "6.10.0",
-  "releaseDate": "2026-05-04T14:07:23.649Z",
+  "releaseDate": "2026-05-05T08:19:21.713Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -191,8 +191,8 @@
     },
     {
       "path": ".agents/rules/frontend.md",
-      "sha256": "8c9e409f2e55b6eae39300205c76faffb903444a1cd01c26025e549e40681cfb",
-      "size": 2482
+      "sha256": "127bd3d685e1fb4ede072f59d8697f8abf9471418594f87c626993d1ff82f036",
+      "size": 3080
     },
     {
       "path": ".agents/rules/i18n-guide.md",
@@ -601,8 +601,8 @@
     },
     {
       "path": ".agents/skills/oma-design/reference/motion-design.md",
-      "sha256": "c4fd33dbdd8a5dd4dc0013eda2bceabb0b65b25dee8277fbbccec1a13ab25b5c",
-      "size": 7942
+      "sha256": "54f797b947a03a6178605932f052fd45854801b3dd9e2ebdd1441ceef14416a4",
+      "size": 8142
     },
     {
       "path": ".agents/skills/oma-design/reference/responsive-design.md",
@@ -711,8 +711,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "07866e1f348d64252a2383e544a54382800d2efa0b6574ce642b2e74942f6542",
-      "size": 9695
+      "sha256": "1468f3861d56c480bfb76f0927ab7af950d6206b3a95f5a5c5be10aa30140258",
+      "size": 9801
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
