@@ -1,5 +1,28 @@
 # Changelog
 
+## [6.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.10.0...cli-v6.11.0) (2026-05-05)
+
+
+### Features
+
+* **benchmarks:** add 5-axis multiaxis scoring system ([26b0ad8](https://github.com/first-fluke/oh-my-agent/commit/26b0ad850cf751d439cae0a1273a0b6f0b683f8e))
+* **frontend:** ban framer-motion, enforce motion/react ([2810724](https://github.com/first-fluke/oh-my-agent/commit/28107249f706fad8046de14fa99193d028bf5f6d))
+
+
+### Bug Fixes
+
+* **benchmarks:** macOS reproducibility + auto-score robustness + prompt move ([9439c0e](https://github.com/first-fluke/oh-my-agent/commit/9439c0eddec5ea36823505ce8b3e9e79d4e51b30))
+
+
+### Refactoring
+
+* **benchmarks:** move design.md from docs/ to benchmarks/ ([79c4b36](https://github.com/first-fluke/oh-my-agent/commit/79c4b36afdddab729b9d69234073a7640ccae7d0))
+
+
+### Documentation
+
+* **benchmarks:** add generated report, screenshots, and harness outputs ([3472c54](https://github.com/first-fluke/oh-my-agent/commit/3472c54bbb52bfc844a1df0bfbb9c7e1ebd36e89))
+
 ## [6.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.9.0...cli-v6.10.0) (2026-05-04)
 
 
