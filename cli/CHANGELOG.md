@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.12.0...cli-v6.12.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **install:** isolate test env from CI=true, mock missing copilot installer ([403f100](https://github.com/first-fluke/oh-my-agent/commit/403f100375a5205f38c347317f89b1674e373415))
+
 ## [6.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.11.0...cli-v6.12.0) (2026-05-05)
 
 
