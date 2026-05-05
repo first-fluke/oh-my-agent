@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.12.2...cli-v6.13.0) (2026-05-05)
+
+
+### Features
+
+* **skills:** strengthen oma-frontend + backend rules for benchmark gaps ([c384fd0](https://github.com/first-fluke/oh-my-agent/commit/c384fd0cf8d10af24ebeef49c723a9063bfe0f85))
+
+
+### Bug Fixes
+
+* **benchmarks:** build-report gallery row fuzzy match ([fcd67ed](https://github.com/first-fluke/oh-my-agent/commit/fcd67ed834d85b9bbdbffb2d89fc6e49699cbb8a))
+* **skills/oma-frontend:** correct a11y anti-patterns in Card snippet ([a596060](https://github.com/first-fluke/oh-my-agent/commit/a59606075ef3bbc0dae57dfde196573bbfc3f0fe))
+
+
+### Documentation
+
+* **benchmarks:** frame oma's lint -5 as intentional design principle ([3512aae](https://github.com/first-fluke/oh-my-agent/commit/3512aae154942556b239818e2dfde51d062a36ca))
+* **benchmarks:** re-capture oma + omc screenshots at consistent viewport ([fd0a74d](https://github.com/first-fluke/oh-my-agent/commit/fd0a74d11db604b928abd0f7f22b1c6a7faf0b67))
+
 ## [6.12.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.12.1...cli-v6.12.2) (2026-05-05)
 
 
