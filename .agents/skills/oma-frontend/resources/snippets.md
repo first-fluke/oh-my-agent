@@ -26,10 +26,12 @@ import Image from "next/image";
 
 ---
 
-## Accessible Card (focus ring + contrast + keyboard + ARIA)
+## Accessible Card (focus ring + semantic + keyboard)
 
-Use as the baseline for every interactive surface. Adjust colors but keep the
-focus-ring, contrast, and ARIA structure.
+Baseline for an interactive surface. Adjust colors via theme tokens; verify
+the resulting contrast ratio against the actual `--card` / `--foreground` /
+`--muted-foreground` values (theme tokens alone do NOT guarantee 4.5:1 — the
+designer / token system has to make them so).
 
 ```tsx
 interface CardProps {
@@ -43,30 +45,34 @@ export function Card({ title, description, onClick }: CardProps) {
     <button
       type="button"
       onClick={onClick}
-      aria-label={title}
       className={[
         "rounded-lg border bg-card p-4 text-left shadow-sm transition-colors",
         "hover:bg-accent",
-        // visible focus ring (WCAG 2.4.7)
+        // visible focus indicator (WCAG 2.4.7 Focus Visible, 2.4.11 Focus Not Obscured)
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        // text/background contrast >= 4.5:1 via theme tokens
-        "text-foreground",
       ].join(" ")}
     >
-      <h3 className="text-lg font-semibold">{title}</h3>
+      {/* Visible text inside the button is the accessible name —
+          do NOT add aria-label here, that would override and hide the
+          description from screen readers. */}
+      <span className="block text-lg font-semibold text-foreground">{title}</span>
       {description && (
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <span className="mt-1 block text-sm text-muted-foreground">
+          {description}
+        </span>
       )}
     </button>
   );
 }
 ```
 
-Required for every interactive element:
-- `focus-visible:ring-2 ring-offset-2` (or equivalent visible focus indicator)
-- `aria-label` when content is icon-only or non-obvious
-- text/background contrast >= 4.5:1 (use theme tokens, not raw colors)
-- keyboard reachable (use semantic `<button>`/`<a>`/`<Link>`, not clickable `<div>`)
+Accessibility checklist for interactive surfaces:
+- **Semantic element** — `<button>`, `<a>`, `<Link>`. Never `<div onClick>`.
+- **Keyboard reachable** — implicit when using semantic elements.
+- **Visible focus** — `focus-visible:ring-2 ring-offset-2` (or equivalent). Never strip the outline without replacing it.
+- **Accessible name** — visible text inside the element IS the name. Add `aria-label` ONLY for icon-only buttons (e.g., `<button aria-label="Close">×</button>`); when visible text exists, `aria-label` overrides it and is an anti-pattern.
+- **Contrast** — verify the actual color values against background reach 4.5:1 (normal text) or 3:1 (large text >= 18pt or 14pt bold). Run an axe/Lighthouse pass; theme tokens are not a proof.
+- **Heading semantics** — keep heading tags (`<h1>`-`<h6>`) outside interactive elements. Inside a button, use `<span>` with type-scale classes; promote to a heading at the surrounding section level.
 
 ---
 
