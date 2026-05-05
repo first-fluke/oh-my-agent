@@ -1787,7 +1787,16 @@
     },
     "oma-frontend": {
       "keywords": {
-        "*": ["shadcn", "FSD"],
+        "*": [
+          "shadcn",
+          "FSD",
+          "next.js",
+          "nextjs",
+          "react",
+          "tailwind",
+          "tsx",
+          "frontend"
+        ],
         "en": [
           "make a react component",
           "build a next page",
