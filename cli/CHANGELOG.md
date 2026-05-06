@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.13.0...cli-v6.14.0) (2026-05-06)
+
+
+### Features
+
+* **benchmarks:** add multi-judge averaging for spec and visual axes ([c1c0f74](https://github.com/first-fluke/oh-my-agent/commit/c1c0f7472ec019c6b21510796e8a050f75433635))
+* **skills/oma-frontend, benchmarks:** teach React 19 hook anti-patterns, refresh oma run ([91de585](https://github.com/first-fluke/oh-my-agent/commit/91de585943b96ee708272b93d4e2f8804030b343))
+
 ## [6.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.12.2...cli-v6.13.0) (2026-05-05)
 
 
