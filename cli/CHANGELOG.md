@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.14.0...cli-v6.15.0) (2026-05-06)
+
+
+### Features
+
+* **oma-translator:** add tailing-negation rule and curly-quote check ([0697d6a](https://github.com/first-fluke/oh-my-agent/commit/0697d6a8e82c0aa856f8c17b5a7b97905a365e75))
+
+
+### Refactoring
+
+* **oma-frontend:** drop low-value resources, hoist stack files inline ([6ea9398](https://github.com/first-fluke/oh-my-agent/commit/6ea93988ddfbfb3f70a5d8b621a992b09fe6e88f))
+
+
+### Documentation
+
+* drop hardcoded skill count and stale subagent paragraph ([424824b](https://github.com/first-fluke/oh-my-agent/commit/424824b1502f7183e31b4de6d32ae84111d51726))
+
 ## [6.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.13.0...cli-v6.14.0) (2026-05-06)
 
 
