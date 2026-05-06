@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "6.13.0",
-  "releaseDate": "2026-05-05T12:58:59.858Z",
+  "releaseDate": "2026-05-06T00:41:58.103Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -716,8 +716,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
-      "sha256": "fa192b7f8a7a2c24902a6f35a384cb0c863e18af08aeb82d43104ce6a2b273be",
-      "size": 2284
+      "sha256": "d822afe5bf8b236e2793787cde14b009a4f3b3515692739dd70314e909eaf101",
+      "size": 4348
     },
     {
       "path": ".agents/skills/oma-frontend/resources/component-template.tsx",
@@ -741,8 +741,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/snippets.md",
-      "sha256": "5c50f52b0d83f9837ec61568157d83aea6b50ef0f5cc512edaf603bcab76acf3",
-      "size": 8558
+      "sha256": "42152b67c11bab790a6b7eced6765b86c4d207a41fd0bf3bd1a1cef8b520a2cd",
+      "size": 9521
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tailwind-rules.md",
