@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.16.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.16.0...cli-v6.16.1) (2026-05-07)
+
+
+### Documentation
+
+* **readme:** rewrite oma-docs row with sibling-matched form across locales ([254aa80](https://github.com/first-fluke/oh-my-agent/commit/254aa80f38ff7b1799b3df8c1cbe7c8e9e697217))
+* **skills/oma-translator:** add sibling-pattern check and mechanical-swap guard ([148e50a](https://github.com/first-fluke/oh-my-agent/commit/148e50a609dbadd4e91564cd0d607bd275ae3a07))
+
 ## [6.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.15.0...cli-v6.16.0) (2026-05-07)
 
 
