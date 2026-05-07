@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.15.0...cli-v6.16.0) (2026-05-07)
+
+
+### Features
+
+* **docs:** introduce oma-docs verify and sync skill ([#326](https://github.com/first-fluke/oh-my-agent/issues/326)) ([dc18e83](https://github.com/first-fluke/oh-my-agent/commit/dc18e83f30a010812577bb83ff56b6990fb786b7))
+
+
+### Bug Fixes
+
+* **docs:** normalize path separator on Windows for generated/ exclusion ([b85575e](https://github.com/first-fluke/oh-my-agent/commit/b85575e5b68fe6e8d3665698dc7f62408a2bdbd2))
+
+
+### Documentation
+
+* **readme:** add oma-docs row to skill table in all locales ([7dea938](https://github.com/first-fluke/oh-my-agent/commit/7dea9388d3d1356a44b0cff223744729069a1a3a))
+
 ## [6.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.14.0...cli-v6.15.0) (2026-05-06)
 
 
