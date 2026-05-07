@@ -30,6 +30,10 @@ export const SKILLS: SkillsRegistry = {
   utility: [
     { name: "oma-debug", desc: "Bug fixing specialist" },
     {
+      name: "oma-docs",
+      desc: "Documentation drift detector — verify code-vs-docs refs, sync diff-affected docs (lychee for URLs)",
+    },
+    {
       name: "oma-scm",
       desc: "SCM — branching, merges, worktrees, baselines, audit; Conventional Commits",
     },

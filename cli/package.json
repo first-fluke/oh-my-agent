@@ -73,10 +73,15 @@
     "commander": "^14.0.3",
     "date-fns": "^4.1.0",
     "fast-xml-parser": "^4",
+    "minimatch": "^10.2.5",
     "p-map": "^7.0.4",
     "picocolors": "^1.1.1",
     "puppeteer-core": "^24",
+    "remark": "^15.0.1",
+    "remark-frontmatter": "^5.0.0",
+    "remark-parse": "^11.0.0",
     "smol-toml": "^1.6.1",
+    "unified": "^11.0.5",
     "ws": "^8.18.0",
     "yaml": "^2.8.2",
     "zod": "^4.3.6"
@@ -84,6 +89,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.5",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/mdast": "^4.0.4",
     "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.1.4",
     "typescript": "^6",

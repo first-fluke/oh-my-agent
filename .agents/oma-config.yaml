@@ -26,6 +26,25 @@ timezone: Asia/Seoul
 auto_update_cli: true
 
 # ─────────────────────────────────────────────────────────────────────────────
+# oma-docs documentation drift detection
+# ─────────────────────────────────────────────────────────────────────────────
+
+docs:
+  # When true, runs `oma docs verify --json` at the end of /scm, /work, /ultrawork.
+  # Warn-only — never blocks workflow completion. Default: false (opt-in).
+  # See `.agents/skills/oma-docs/SKILL.md` for full behavior.
+  auto_verify: false
+
+  # When true (default), URL link checking is delegated to `lychee` running
+  # in the background; results land in docs/generated/url-drift.json.
+  # If `lychee` is missing, `oma docs verify` prints an install hint and
+  # skips URL checking. Set to false to silence that hint and disable URL
+  # checks entirely (e.g., when you run lychee separately from CI).
+  # Install: `brew install lychee` (macOS) or see
+  # https://github.com/lycheeverse/lychee#installation for other platforms.
+  check_urls: true
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Model selection
 # ─────────────────────────────────────────────────────────────────────────────
 

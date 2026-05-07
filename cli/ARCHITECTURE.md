@@ -54,6 +54,20 @@ Biome's built-in `noRestrictedImports` uses exact module names and does not supp
 1. Code review (ADR-referenced rules).
 2. `cli/scripts/check-boundaries.mjs` — grep-based CI check that fails when `commands/<x>` files import from `commands/<y>`. `commands/migrations/` is allowlisted as shared infrastructure.
 
+## `commands/docs/` — Documentation Drift Detection
+
+Added in v1 (issue [#326](https://github.com/gracefullight/oh-my-agent/issues/326), design `docs/plans/designs/008-oma-docs.md`). Exposes `oma docs verify` and `oma docs sync`.
+
+| File | Role |
+|------|------|
+| `extract.ts` | Markdown AST (`remark` + `unified`) + L2 ref extractor (file / url / cli / script / env / config). Produces `docs/generated/doc-refs.json`. |
+| `resolve.ts` | Deterministic broken-ref checker — file existence, HTTP HEAD, CLI `which`, script lookup, env grep, config deep-path. No LLM dependency. |
+| `reporter.ts` | Renders `DriftReport` as markdown (human) or JSON (`--json`). Optional LLM natural-language summary via `cli/io/llm.ts`; falls back to raw JSON when LLM is unavailable. |
+| `sync-propose.ts` | Git diff intake, reverse index lookup, secret redaction (file exclusion + content sanitizer), LLM patch proposer with interactive `[y/n/d/s]` prompt. Never auto-applies. |
+| `command.ts` | Commander wiring for `verify` and `sync` subcommands, argument normalization only. |
+
+The shared abstraction `cli/io/llm.ts` is an Anthropic Messages wrapper (real call when `ANTHROPIC_API_KEY` is set, deterministic fallback otherwise) used by both `reporter.ts` and `sync-propose.ts`.
+
 ## Follow-ups (not done in the initial refactor)
 
 - `install` and `update` slices still inline Clack prompts in `install.ts` / `update.ts`. A follow-up can extract `ui.ts` once an `InstallOptions` / `UpdateOptions` type is defined and tests cover the interactive flow.

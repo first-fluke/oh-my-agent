@@ -369,6 +369,20 @@ If Quality Score was measured during this session:
 
 ---
 
+## Step 18: Optional Doc Verify Hook
+
+If `oma-config.yaml` has `docs.auto_verify: true`:
+
+1. Run `oma docs verify --json` from the repo root.
+2. Capture the JSON output.
+3. If `broken.length === 0`: print `✓ docs verified clean (N docs)` summary to stdout and continue with workflow completion.
+4. If `broken.length > 0`: print a 1-3 line summary identifying which docs have drift, and a hint `Run /oma-docs verify for the full report.` Continue with workflow completion (warn-only — never block).
+5. If `oma-docs` is not available (CLI command missing): skip silently.
+
+This hook is opt-in; the default `auto_verify: false` skips this step entirely.
+
+---
+
 ## Review Steps Summary
 
 | Phase  | Steps | Agent       | Execution | Perspective                       |

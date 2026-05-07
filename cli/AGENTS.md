@@ -46,4 +46,21 @@ Deactivate: say "workflow done".
 2. Workflows execute via keyword detection or explicit naming — never self-initiated
 3. Response language follows `.agents/oma-config.yaml`
 
+## CLI Command Domains
+
+| Domain | Directory | Purpose |
+|--------|-----------|---------|
+| agent | `commands/agent/` | Agent spawn, dispatch, and review |
+| bridge | `commands/bridge/` | MCP HTTP-stdio bridge |
+| doctor | `commands/doctor/` | Health checks and repair |
+| docs | `commands/docs/` | Documentation drift detection — verify references and propose updates for diff-affected docs (issue #326, design 008) |
+| image | `commands/image/` | Image generation via Codex and Pollinations |
+| install | `commands/install/` | First-time project installation |
+| link | `commands/link/` | Symlink management for multi-CLI setups |
+| recap | `commands/recap/` | Conversation history analysis and summary |
+| scholar | `commands/scholar/` | Research paper sidecars |
+| search | `commands/search/` | Auto-escalating fetch pipeline |
+| update | `commands/update/` | Harness updates and migrations |
+| verify | `commands/verify/` | Stack, scope, and boundary verification |
+
 <!-- OMA:END -->

@@ -327,22 +327,14 @@ Only at **package/app boundaries** in monorepos.
 
 ---
 
-## Step 6: Update Existing Harness (If Applicable)
+## Step 6: Verify After Updates (Delegated)
 
-If `AGENTS.md`, `ARCHITECTURE.md`, or `docs/` already exists:
+This step is now handled by `oma-docs`. After deepinit completes, the user can run:
 
-1. **Re-analyze** codebase (Step 1) to detect changes since last generation.
-2. **Compare** existing docs against current code reality:
-   - Are documented rules still followed?
-   - Are there new patterns that emerged but aren't documented?
-   - Are there referenced files/dirs that no longer exist?
-   - Has quality improved or degraded? (update QUALITY-SCORE.md)
-3. **Preserve** all `<!-- MANUAL: -->` blocks exactly.
-4. **Preserve** all `<!-- TODO: -->` markers that haven't been resolved.
-5. **Update** factual content (structure changes, new boundaries, new domains).
-6. **Flag** potential stale rules: `<!-- REVIEW: this rule may be outdated -->`.
-7. **Mark** completed work plans by updating the `Status` header from `Active` to `Completed` (no file move). Designs use `Approved` / `Superseded` instead.
-8. Report all changes to the user.
+- `/oma-docs verify` — check generated harness docs against the current codebase.
+- Set `docs.auto_verify: true` in `oma-config.yaml` to run verify automatically at the end of `/scm`, `/work`, and `/ultrawork` workflows.
+
+deepinit no longer detects drift on update runs; it only generates 0→1 bootstrap content. The legacy `<!-- REVIEW: this rule may be outdated -->` marker behavior is replaced by the broken-ref report from `oma-docs verify`.
 
 ---
 

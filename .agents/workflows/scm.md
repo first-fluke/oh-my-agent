@@ -144,6 +144,18 @@ Do not create commits unless explicitly requested.
 4. Write description (imperative, lowercase, <=72 chars, no trailing period).
 5. Execute commit with explicit file paths.
 
+### Step 3.5: Optional Doc Verify Hook
+
+If `oma-config.yaml` has `docs.auto_verify: true`:
+
+1. Run `oma docs verify --json` from the repo root.
+2. Capture the JSON output.
+3. If `broken.length === 0`: print `✓ docs verified clean (N docs)` summary to stdout and continue with workflow completion.
+4. If `broken.length > 0`: print a 1-3 line summary identifying which docs have drift, and a hint `Run /oma-docs verify for the full report.` Continue with workflow completion (warn-only — never block).
+5. If `oma-docs` is not available (CLI command missing): skip silently.
+
+This hook is opt-in; the default `auto_verify: false` skips this step entirely.
+
 ### Step 4: Report result
 
 Return what was done and any remaining risks/checks.

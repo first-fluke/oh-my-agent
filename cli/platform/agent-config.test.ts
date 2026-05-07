@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type AgentSpec,
   type OmaConfig,
+  type OmaDocsConfig,
   parseOmaConfig,
 } from "./agent-config.js";
 
@@ -165,5 +166,58 @@ describe("OmaConfig TypeScript interface", () => {
       thinking: true,
     };
     expect(spec.thinking).toBe(true);
+  });
+});
+
+describe("parseOmaConfig — docs.auto_verify field", () => {
+  it("parses docs.auto_verify: true", () => {
+    const yaml = [
+      "language: en",
+      "model_preset: claude-only",
+      "docs:",
+      "  auto_verify: true",
+    ].join("\n");
+    const result = parseOmaConfig(yaml);
+    expect(result).not.toBeNull();
+    expect(result?.docs?.auto_verify).toBe(true);
+  });
+
+  it("parses docs.auto_verify: false", () => {
+    const yaml = [
+      "language: en",
+      "model_preset: claude-only",
+      "docs:",
+      "  auto_verify: false",
+    ].join("\n");
+    const result = parseOmaConfig(yaml);
+    expect(result).not.toBeNull();
+    expect(result?.docs?.auto_verify).toBe(false);
+  });
+
+  it("docs field is optional — defaults to undefined when absent", () => {
+    const yaml = "language: en\nmodel_preset: claude-only\n";
+    const result = parseOmaConfig(yaml);
+    expect(result).not.toBeNull();
+    expect(result?.docs).toBeUndefined();
+  });
+
+  it("auto_verify is effectively false when docs field is absent", () => {
+    const yaml = "language: en\nmodel_preset: claude-only\n";
+    const result = parseOmaConfig(yaml);
+    expect(result?.docs?.auto_verify ?? false).toBe(false);
+  });
+
+  it("docs field is optional — docs present without auto_verify", () => {
+    const yaml = ["language: en", "model_preset: claude-only", "docs: {}"].join(
+      "\n",
+    );
+    const result = parseOmaConfig(yaml);
+    expect(result).not.toBeNull();
+    expect(result?.docs?.auto_verify).toBeUndefined();
+  });
+
+  it("OmaDocsConfig TypeScript interface accepts auto_verify boolean", () => {
+    const docsConfig: OmaDocsConfig = { auto_verify: true };
+    expect(docsConfig.auto_verify).toBe(true);
   });
 });

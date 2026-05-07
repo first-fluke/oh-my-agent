@@ -10,13 +10,6 @@ Instead of one AI doing everything (and getting confused halfway through), oh-my
 
 Works with all major AI IDEs: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode, and more.
 
-Vendor-native subagents are generated from `.agents/agents/`:
-- Claude Code uses `.claude/agents/*.md`
-- Codex CLI uses `.codex/agents/*.toml`
-- Gemini CLI uses `.gemini/agents/*.md`
-
-When a workflow resolves an agent to the same vendor as the current runtime, it should use that vendor's native subagent path first. Cross-vendor tasks fall back to `oma agent:spawn`.
-
 ## Quick Start
 
 ```bash
@@ -42,7 +35,7 @@ bunx oh-my-agent@latest
 > Not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
 
 ```bash
-# 22 skills, deployed to every detected runtime
+# All skills, deployed to every detected runtime
 # (.claude, .cursor, .codex, .opencode, .github, .agents)
 apm install first-fluke/oh-my-agent
 
@@ -52,7 +45,7 @@ apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 
 APM reads `.claude-plugin/plugin.json`'s `skills: .agents/skills/` pointer, so the `.agents/` SSOT is the only source — no build step or mirror.
 
-APM ships the 22 skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+APM ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
 
 </details>
 
@@ -92,6 +85,7 @@ Pick a preset and you're ready:
 | **oma-scholar** | Academic research companion — literature search, peer review |
 | **oma-scm** | SCM (software configuration management) — branching, merges, worktrees, baselines; Conventional Commits |
 | **oma-search** | Intent-based search router with trust scoring — docs, web, code, local |
+| **oma-skill-creator** | Authors and audits OMA skills in the SSL-lite format |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natural multilingual translation |
 

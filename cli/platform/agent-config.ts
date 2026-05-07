@@ -114,6 +114,23 @@ export type VendorConfig = {
 // OmaConfig — single-file unified configuration schema
 // ---------------------------------------------------------------------------
 
+export interface OmaDocsConfig {
+  /**
+   * When true, runs `oma docs verify --json` at the end of /scm, /work, and
+   * /ultrawork workflows. Warn-only — never blocks workflow completion.
+   * Default: false when absent.
+   */
+  auto_verify?: boolean;
+  /**
+   * When true (default), `oma docs verify` runs URL link checks in the
+   * background — delegating to `lychee` if installed, else falling back to
+   * the built-in HEAD checker. When false, URL refs are not checked at all
+   * (user is expected to run `lychee` or similar tool separately).
+   * Default: true when absent.
+   */
+  check_urls?: boolean;
+}
+
 export interface OmaConfig {
   language: string;
   /** Built-in preset key or custom_presets key */
@@ -129,6 +146,8 @@ export interface OmaConfig {
   custom_presets?: Record<string, ModelPreset>;
   vendors?: Record<string, VendorConfig>;
   session?: { quota_cap?: Record<string, unknown> };
+  /** oma-docs skill configuration */
+  docs?: OmaDocsConfig;
   // Legacy fields for backward-compat during migration grace window
   default_cli?: string;
 }
@@ -171,7 +190,14 @@ const AgentsMapSchema = z
   })
   .strict();
 
-const OmaConfigSchema = z
+const OmaDocsConfigSchema = z
+  .object({
+    auto_verify: z.boolean().optional(),
+    check_urls: z.boolean().optional(),
+  })
+  .strict();
+
+export const OmaConfigSchema = z
   .object({
     language: z.string().default("en"),
     model_preset: z.string().min(1),
@@ -183,6 +209,7 @@ const OmaConfigSchema = z
     custom_presets: z.record(z.string(), z.unknown()).optional(),
     vendors: z.record(z.string(), z.unknown()).optional(),
     session: z.unknown().optional(),
+    docs: OmaDocsConfigSchema.optional(),
     default_cli: z.string().optional(),
   })
   .passthrough();
