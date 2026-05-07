@@ -126,11 +126,12 @@ function walkMarkdownFiles(
       if (isGitIgnored(absPath, ignoredSet)) continue;
 
       if (entry.isDirectory()) {
-        // Exclude docs/generated/** output dir
-        const relDir = path.relative(repoRoot, absPath);
+        // Exclude docs/generated/** output dir. Normalize separators so the
+        // check works on Windows (where path.relative returns backslashes).
+        const relDir = path.relative(repoRoot, absPath).replace(/\\/g, "/");
         if (
           relDir === "docs/generated" ||
-          relDir.startsWith(`docs/generated${path.sep}`)
+          relDir.startsWith("docs/generated/")
         ) {
           continue;
         }
