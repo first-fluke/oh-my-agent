@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.17.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.17.1...cli-v6.17.2) (2026-05-08)
+
+
+### Bug Fixes
+
+* **typecheck:** resolve @types/node v24/v25 conflict and strict test errors ([3ec0255](https://github.com/first-fluke/oh-my-agent/commit/3ec02552a1a588583b1c140e46733dfae16e7d4c))
+
+
+### Refactoring
+
+* **io:** split runtime-dispatch and add cursor vendor support ([5f83f79](https://github.com/first-fluke/oh-my-agent/commit/5f83f79658fbfb37d5ad61fb84d105a140ac07cc))
+
 ## [6.17.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.17.0...cli-v6.17.1) (2026-05-08)
 
 
