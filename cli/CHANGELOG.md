@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.18.0...cli-v6.19.0) (2026-05-08)
+
+
+### Features
+
+* **cursor:** promote cursor to first-class vendor ([12a3c3d](https://github.com/first-fluke/oh-my-agent/commit/12a3c3d823829cbfa901accbb8480864e34e0b58))
+
 ## [6.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.17.2...cli-v6.18.0) (2026-05-08)
 
 
