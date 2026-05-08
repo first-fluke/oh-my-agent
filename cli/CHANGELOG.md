@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.16.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.16.1...cli-v6.16.2) (2026-05-08)
+
+
+### Bug Fixes
+
+* **docs:** reduce extractor false positives and add resolve fallback prefixes ([e863875](https://github.com/first-fluke/oh-my-agent/commit/e86387594a82674dfbd4ff4671ab80a6dcdb8623))
+
 ## [6.16.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.16.0...cli-v6.16.1) (2026-05-07)
 
 
