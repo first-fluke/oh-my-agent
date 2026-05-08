@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v2.1.0...web-v2.1.1) (2026-05-08)
+
+
+### Documentation
+
+* **web:** correct project-structure for Docusaurus and workspace commands ([4823a3b](https://github.com/first-fluke/oh-my-agent/commit/4823a3b6a02278cd240e736b7a0a179edd1440f2))
+
 ## [2.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v2.0.2...web-v2.1.0) (2026-05-04)
 
 
