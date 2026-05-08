@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.17.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.17.0...cli-v6.17.1) (2026-05-08)
+
+
+### Bug Fixes
+
+* **cli:** normalize Windows paths in docs resolver and self-update ([6345f36](https://github.com/first-fluke/oh-my-agent/commit/6345f36b6bc13fc1ba835c8fd159d0e7b9576a53))
+
 ## [6.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.16.2...cli-v6.17.0) (2026-05-08)
 
 
