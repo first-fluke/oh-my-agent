@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.17.2...cli-v6.18.0) (2026-05-08)
+
+
+### Features
+
+* **install:** ensure docs/generated/ is gitignored after install ([37b9b67](https://github.com/first-fluke/oh-my-agent/commit/37b9b678d0f835176d12793705708851ec6e4091))
+* **io:** add gitignore module and auto-ignore docs/generated ([f033332](https://github.com/first-fluke/oh-my-agent/commit/f033332b7c49fedb49189713fea5d1f462ed161f))
+
 ## [6.17.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.17.1...cli-v6.17.2) (2026-05-08)
 
 
