@@ -20,6 +20,7 @@ describe("Claude settings", () => {
         },
         skipDangerousModePermissionPrompt: true,
         effortLevel: "high",
+        skillListingBudgetFraction: 0.02,
         attribution: {
           commit: "commit",
           pr: "pr",

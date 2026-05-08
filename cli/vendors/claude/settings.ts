@@ -21,6 +21,7 @@ const DEPRECATED_ENV_KEYS = ["DISABLE_PROMPT_CACHING"] as const;
 export const RECOMMENDED_TOP_LEVEL = {
   skipDangerousModePermissionPrompt: true,
   effortLevel: "high",
+  skillListingBudgetFraction: 0.02,
 } as const;
 
 export const RECOMMENDED_ATTRIBUTION = {
