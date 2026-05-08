@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.16.2...cli-v6.17.0) (2026-05-08)
+
+
+### Features
+
+* **claude:** add skillListingBudgetFraction to recommended settings ([8fdf933](https://github.com/first-fluke/oh-my-agent/commit/8fdf9336714330d41ce571e91b22df35a8f4bf97))
+
+
+### Bug Fixes
+
+* **docs:** scope script refs to inline code and walk all ancestors ([01bd8ec](https://github.com/first-fluke/oh-my-agent/commit/01bd8ecbaa4d62630513c42b2a5a3e1dbd82d249))
+
 ## [6.16.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.16.1...cli-v6.16.2) (2026-05-08)
 
 
