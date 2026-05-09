@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.3.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.1...cli-v7.3.2) (2026-05-09)
+
+
+### Bug Fixes
+
+* **codex:** rename codex_hooks → hooks and migrate deprecated key ([f3e6474](https://github.com/first-fluke/oh-my-agent/commit/f3e64740724b2a50a4781d09bfec034ee90dbcaf))
+
 ## [7.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.0...cli-v7.3.1) (2026-05-09)
 
 
