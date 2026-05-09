@@ -13,7 +13,9 @@
 
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
+
+const toPosix = (p: string): string => (sep === "/" ? p : p.split(sep).join("/"));
 
 export interface I18nDriftPair {
   source: string;
@@ -86,7 +88,7 @@ function findEnDocs(
     if (entry.isDirectory()) {
       findEnDocs(full, results, base);
     } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      results.push(relative(base, full));
+      results.push(toPosix(relative(base, full)));
     }
   }
   return results;
@@ -138,14 +140,15 @@ export function detectI18nDrift(opts: DetectI18nDriftOptions): I18nDriftPair[] {
     const enText = readFileSync(enAbs, "utf-8");
     const enLines = countLines(enText);
     const enHeadings = countHeadings(enText);
-    const enMtime = gitLastCommitUnix(opts.repoRoot, join(docsDir, rel));
+    const sourceRel = `${docsDir}/${rel}`;
+    const enMtime = gitLastCommitUnix(opts.repoRoot, sourceRel);
 
     for (const lang of locales) {
-      const tgtRel = join(i18nDir, lang, subpath, rel);
+      const tgtRel = `${i18nDir}/${lang}/${subpath}/${rel}`;
       const tgtAbs = join(opts.repoRoot, tgtRel);
       if (!existsSync(tgtAbs)) {
         const missing: I18nDriftPair = {
-          source: join(docsDir, rel),
+          source: sourceRel,
           target: tgtRel,
           lang,
           enLines,
@@ -175,7 +178,7 @@ export function detectI18nDrift(opts: DetectI18nDriftOptions): I18nDriftPair[] {
         enMtime !== null && tgtMtime !== null && enMtime > tgtMtime;
 
       const partial: Omit<I18nDriftPair, "severity"> = {
-        source: join(docsDir, rel),
+        source: sourceRel,
         target: tgtRel,
         lang,
         enLines,
