@@ -1,5 +1,19 @@
 # Changelog
 
+## [7.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.2.0...cli-v7.3.0) (2026-05-09)
+
+
+### Features
+
+* **docs:** add 'oma docs lint' for i18n style anti-patterns ([048804d](https://github.com/first-fluke/oh-my-agent/commit/048804d2210152c46dcf841ef64248f847686e81))
+* **docs:** swap tinyld for eld and add wrong-language rule ([89855df](https://github.com/first-fluke/oh-my-agent/commit/89855dfbcd9ce38fc1008bef4ada45a84bccc632))
+* **skills:** add oma-academic-writer for academic prose ([8369a4c](https://github.com/first-fluke/oh-my-agent/commit/8369a4cc6db6406c4537b8ec6c64b10c216041c8))
+
+
+### Bug Fixes
+
+* **docs:** normalize i18n-drift paths to POSIX on Windows ([5184bda](https://github.com/first-fluke/oh-my-agent/commit/5184bda30111c99566d849f5d79e2604a1f6be05))
+
 ## [7.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.1.1...cli-v7.2.0) (2026-05-09)
 
 
