@@ -1,5 +1,35 @@
 # Changelog
 
+## [7.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.20.0...cli-v7.0.0) (2026-05-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** remove oma export command
+
+### Features
+
+* **agents:** add docs-curator agent for orchestrated docs sync ([e5ffa5b](https://github.com/first-fluke/oh-my-agent/commit/e5ffa5b2d3a2a878a3ddb26c93b5e071e9c66849))
+* **workflows:** add /docs workflow wrapping oma-docs ([5512629](https://github.com/first-fluke/oh-my-agent/commit/5512629ab66edc09dffab80d83fff16ed514e561))
+
+
+### Bug Fixes
+
+* **hooks:** normalize skill paths to POSIX form for Windows CI ([96a0044](https://github.com/first-fluke/oh-my-agent/commit/96a004436e6488b7e85b6af70ca591bf87d187e1))
+* **link:** generate copilot workflow prompts on oma link ([10e3c88](https://github.com/first-fluke/oh-my-agent/commit/10e3c88041d856a9729b4c5f33eda6458184da92))
+
+
+### Refactoring
+
+* **cli:** remove oma export command ([f2cb7a7](https://github.com/first-fluke/oh-my-agent/commit/f2cb7a75d8b06009743b0422685a1e57de8c3b05))
+* **hooks:** split types.ts into types-only + fs-utils + hook-output ([e3f48f1](https://github.com/first-fluke/oh-my-agent/commit/e3f48f1886896907a7d2bd5539d31d07fa9f0a5d))
+
+
+### Documentation
+
+* **claude:** regenerate CLAUDE.md rules table ([a7771db](https://github.com/first-fluke/oh-my-agent/commit/a7771dbe53c6a79316a8e2f7d7a9c465111f38ce))
+* **readme:** sort CLI examples alphabetically and localize ([6a499b3](https://github.com/first-fluke/oh-my-agent/commit/6a499b324132b1e1bd0714fc32be7856d33ee28e))
+
 ## [6.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.19.0...cli-v6.20.0) (2026-05-09)
 
 
