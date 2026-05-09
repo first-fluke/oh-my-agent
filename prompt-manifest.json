@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "6.20.0",
-  "releaseDate": "2026-05-09T02:50:52.052Z",
+  "releaseDate": "2026-05-09T03:01:37.485Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -23,6 +23,11 @@
       "path": ".agents/agents/debug-investigator.md",
       "sha256": "245a7bdf523c2dcd69bee5cb4a61f15d7413768efa11c7200d4c7ef7a0b79ec0",
       "size": 1591
+    },
+    {
+      "path": ".agents/agents/docs-curator.md",
+      "sha256": "d2ca4cbb3b5a96cb6dde993e048c153006d5c7f07d0a96af4cd1a27aeddc9bfd",
+      "size": 3913
     },
     {
       "path": ".agents/agents/frontend-engineer.md",
@@ -56,23 +61,23 @@
     },
     {
       "path": ".agents/agents/variants/claude.json",
-      "sha256": "dc7cfdc504e15fab461c7c3a849e0d00c86a985a500ebfea12883f91ec3378ad",
-      "size": 930
+      "sha256": "f954a584735d4dfdfc50c27316e6f902a0651c145216ba409967127dd93f8a82",
+      "size": 1034
     },
     {
       "path": ".agents/agents/variants/codex.json",
-      "sha256": "6177009e570608a93fb512ea992bbaae53f40ffecbd1b444e5b2bec0b6f9b1b5",
-      "size": 1272
+      "sha256": "fd00a6a6429d9746d33bcc3411942c116ca6601592c153b46d79e64b67c93cb7",
+      "size": 1394
     },
     {
       "path": ".agents/agents/variants/cursor.json",
-      "sha256": "d8f83619f0cfd80a4ac727782cf48e697f6c4bfd115909daefad4f7f3c8b8cb3",
-      "size": 975
+      "sha256": "4bbafc6eac58357a0b3a3f5049362d06c86a9882ff2783cfc901221b7478fd90",
+      "size": 1059
     },
     {
       "path": ".agents/agents/variants/gemini.json",
-      "sha256": "6c17c52769cca852a06438b52e01bc9419ada2269369716263b44af966d38c29",
-      "size": 676
+      "sha256": "7e71983a2171cbf924e97279cb9efa87b47a3690ee783840e6300f09b25f1f49",
+      "size": 700
     },
     {
       "path": ".agents/config/defaults.yaml",
@@ -166,8 +171,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "43ccb28285deb40c7d796244e37077282bcdcc0b233cd7976c23432511a9fd2e",
-      "size": 5513
+      "sha256": "4dd095c7f5b9d6e9aa7129e0ca5bc6e1b44408974649822c3b41a7c499bf866f",
+      "size": 5519
     },
     {
       "path": ".agents/rules/backend.md",
@@ -1406,8 +1411,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "1428dccedec9fb87c674529b72d46050b2c228eba0783d174deb85c87b71fb9e",
-      "size": 8578
+      "sha256": "705c4df58c7b3b480e90b342b25aa99607a6c4c98a6cac325e18cf093ff2b3f1",
+      "size": 8622
     },
     {
       "path": ".agents/workflows/pdf.md",
@@ -1476,6 +1481,6 @@
   "metadata": {
     "skillCount": 25,
     "workflowCount": 19,
-    "totalFiles": 293
+    "totalFiles": 294
   }
 }
