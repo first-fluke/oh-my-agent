@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v2.1.1...web-v3.0.0) (2026-05-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** remove oma export command
+
+### Refactoring
+
+* **cli:** remove oma export command ([f2cb7a7](https://github.com/first-fluke/oh-my-agent/commit/f2cb7a75d8b06009743b0422685a1e57de8c3b05))
+
 ## [2.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v2.1.0...web-v2.1.1) (2026-05-08)
 
 
