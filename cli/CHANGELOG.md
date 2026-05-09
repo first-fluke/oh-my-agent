@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.0.0...cli-v7.1.0) (2026-05-09)
+
+
+### Features
+
+* **hooks:** add intent regex patterns and sanitize hardening ([f5800e1](https://github.com/first-fluke/oh-my-agent/commit/f5800e1e34493ead0b3dfb6aa594e2400623c57b))
+
 ## [7.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.20.0...cli-v7.0.0) (2026-05-09)
 
 
