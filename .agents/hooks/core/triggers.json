@@ -117,6 +117,15 @@
           "zautomatyzuj",
           "wszystko naraz"
         ]
+      },
+      "patterns": {
+        "*": [
+          "\\b(build|create|make|develop|implement|scaffold)\\s+(?:me\\s+)?(?:an?|the)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|feature|backend|frontend|prototype|mvp|bot)\\b",
+          "\\bi\\s+want\\s+(?:a|an)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|feature|backend|frontend|prototype|mvp|bot)\\b"
+        ],
+        "ko": [
+          "(앱|API|서비스|서버|CLI|도구|웹사이트|대시보드|시스템|기능|백엔드|프론트엔드|프로토타입|MVP|봇)\\s*(?:을|를|이|가)?\\s*(?:만들어\\s*(?:주세요|줘|줄래)?|구현해\\s*(?:주세요|줘|줄래)?|개발해\\s*(?:주세요|줘|줄래)?|만들자|구현하자|개발하자)"
+        ]
       }
     },
     "ultrawork": {
@@ -2578,15 +2587,21 @@
   },
   "informationalPatterns": {
     "*": [
-      "트리거",
-      "발동",
-      "감지",
-      "오탐",
-      "키워드",
-      "메타",
-      "트리거하면",
-      "트리거 해주면",
-      "키워드 나오면",
+      "what is",
+      "what are",
+      "how to",
+      "how does",
+      "how do",
+      "how can",
+      "how would",
+      "explain",
+      "describe",
+      "tell me about",
+      "keyword",
+      "false positive",
+      "false-positive",
+      "detected",
+      "detector",
       "fires when",
       "trigger when",
       "auto-trigger",
@@ -2596,29 +2611,16 @@
       "if we trigger",
       "trigger logic",
       "trigger mechanism",
-      "false positive",
-      "false-positive",
-      "トリガー",
-      "誤検出",
-      "触发",
-      "误报"
-    ],
-    "en": [
-      "what is",
-      "what are",
-      "how to",
-      "how does",
-      "explain",
-      "describe",
-      "tell me about",
-      "keyword",
-      "false positive",
-      "detected",
-      "detector",
-      "뭐야",
-      "무엇",
-      "是什么",
-      "とは"
+      "should we",
+      "should i",
+      "should you",
+      "could we",
+      "would you",
+      "what if",
+      "what about",
+      "why build",
+      "why create",
+      "why make"
     ],
     "ko": [
       "뭐야",
@@ -2629,7 +2631,20 @@
       "알려줘",
       "키워드",
       "감지",
-      "오탐"
+      "오탐",
+      "트리거",
+      "발동",
+      "메타",
+      "트리거하면",
+      "트리거 해주면",
+      "트리거해야",
+      "키워드 나오면",
+      "왜 만들",
+      "어떻게 만들",
+      "어떨까",
+      "하면 좋을",
+      "한다면",
+      "할까요"
     ],
     "ja": [
       "とは",

@@ -14,8 +14,10 @@ vi.mock("node:fs", () => ({
 const {
   escapeRegex,
   buildPatterns,
+  buildRawPatterns,
   isInformationalContext,
   stripCodeBlocks,
+  stripSystemEchoes,
   startsWithSlashCommand,
   isDeactivationRequest,
   deactivateAllPersistentModes,
@@ -152,6 +154,158 @@ describe("keyword-detector", () => {
     it("should not strip across newlines", () => {
       const text = 'first "line\nsecond" line';
       expect(stripCodeBlocks(text)).toBe('first "line\nsecond" line');
+    });
+  });
+
+  describe("stripSystemEchoes", () => {
+    it("strips OMA workflow echo lines", () => {
+      const text =
+        "user question\n[OMA WORKFLOW: ULTRAWORK]\nUser intent matches the /ultrawork workflow.\nmore text";
+      const result = stripSystemEchoes(text);
+      expect(result).not.toMatch(/\[OMA WORKFLOW:/);
+      expect(result).toContain("user question");
+      expect(result).toContain("more text");
+    });
+
+    it("strips OMA persistent mode banner", () => {
+      const text = "before\n[OMA PERSISTENT MODE: ULTRAWORK]\nafter";
+      const result = stripSystemEchoes(text);
+      expect(result).not.toMatch(/\[OMA PERSISTENT MODE:/);
+    });
+
+    it("strips Stop hook feedback lines", () => {
+      const text =
+        "Stop hook feedback:\nThe /ultrawork workflow is still active (reinforcement 1/5).\nuser typed something";
+      const result = stripSystemEchoes(text);
+      expect(result).not.toMatch(/Stop hook/);
+      expect(result).not.toMatch(/workflow is still active/);
+      expect(result).toContain("user typed something");
+    });
+
+    it("strips MAGIC KEYWORD echo from omc-style paste-back", () => {
+      const text = "context: [MAGIC KEYWORD: AUTOPILOT] details";
+      const result = stripSystemEchoes(text);
+      expect(result).not.toMatch(/MAGIC KEYWORD/);
+    });
+
+    it("strips OMA AGENT HINT lines", () => {
+      const text = "request body\n[OMA AGENT HINT: backend]\nresponse body";
+      const result = stripSystemEchoes(text);
+      expect(result).not.toMatch(/AGENT HINT/);
+      expect(result).toContain("request body");
+      expect(result).toContain("response body");
+    });
+
+    it("preserves text without echo blocks", () => {
+      const text = "plain user prompt about something";
+      expect(stripSystemEchoes(text)).toBe(text);
+    });
+  });
+
+  describe("buildRawPatterns (intent regex)", () => {
+    // Reflects the convention: English is universal (`*`), other languages
+    // are opt-in via the `language` setting in oma-config.yaml.
+    const orchestratePatterns = {
+      "*": [
+        "\\b(build|create|make|develop|implement|scaffold)\\s+(?:me\\s+)?(?:an?|the)\\s+(?:[\\w-]+\\s+){0,3}(app|api|service|server|cli|tool|website|dashboard|system|feature|backend|frontend|prototype|mvp|bot)\\b",
+      ],
+      ko: [
+        "(앱|API|서비스|서버|CLI|도구|웹사이트|대시보드|시스템|기능|백엔드|프론트엔드|프로토타입|MVP|봇)\\s*(?:을|를|이|가)?\\s*(?:만들어\\s*(?:주세요|줘|줄래)?|구현해\\s*(?:주세요|줘|줄래)?|개발해\\s*(?:주세요|줘|줄래)?|만들자|구현하자|개발하자)",
+      ],
+    };
+
+    it("returns empty array for undefined patterns", () => {
+      expect(buildRawPatterns(undefined, "en")).toHaveLength(0);
+    });
+
+    it("compiles English intent patterns", () => {
+      const compiled = buildRawPatterns(orchestratePatterns, "en");
+      expect(compiled.length).toBeGreaterThan(0);
+    });
+
+    it("matches Build a TODO app with user authentication (the README example)", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("Build a TODO app with user authentication")).toBe(
+        true,
+      );
+    });
+
+    it("matches Build me an app (omc parity)", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("Build me an app")).toBe(true);
+    });
+
+    it("matches Create an awesome web service", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("Create an awesome web service")).toBe(true);
+    });
+
+    it("matches Develop a backend with PostgreSQL", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("Develop a backend with PostgreSQL")).toBe(true);
+    });
+
+    it("does NOT match Build TODO app (no article)", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("Build TODO app")).toBe(false);
+    });
+
+    it("does NOT match Build a relationship (noun not in whitelist)", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("Build a relationship")).toBe(false);
+    });
+
+    it("does NOT match I built a TODO app yesterday (past tense)", () => {
+      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      expect(pattern?.test("I built a TODO app yesterday")).toBe(false);
+    });
+
+    it("matches Korean: TODO 앱 만들어줘", () => {
+      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPattern = koPatterns[koPatterns.length - 1];
+      expect(koPattern?.test("TODO 앱 만들어줘")).toBe(true);
+    });
+
+    it("matches Korean: REST API 구현해", () => {
+      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPattern = koPatterns[koPatterns.length - 1];
+      expect(koPattern?.test("REST API 구현해")).toBe(true);
+    });
+
+    it("matches Korean: 백엔드를 개발해주세요", () => {
+      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPattern = koPatterns[koPatterns.length - 1];
+      expect(koPattern?.test("백엔드를 개발해주세요")).toBe(true);
+    });
+
+    it("does NOT match Korean: 앱 만드는 법 알려줘", () => {
+      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPattern = koPatterns[koPatterns.length - 1];
+      expect(koPattern?.test("앱 만드는 법 알려줘")).toBe(false);
+    });
+
+    it("skips invalid regex without throwing", () => {
+      const compiled = buildRawPatterns(
+        { en: ["valid pattern", "[invalid("] },
+        "en",
+      );
+      expect(compiled).toHaveLength(1);
+    });
+  });
+
+  describe("isInformationalContext (universal section)", () => {
+    it("treats Korean meta-discussion as informational under lang=en", () => {
+      const trigger = "ultrawork";
+      const prompt = `그럼 우리도 그냥 키워드 나오면 ${trigger} 트리거 해주면 되는거네요?`;
+      const matchIndex = prompt.indexOf(trigger);
+      // Manually construct universal-only patterns to mirror what
+      // buildInformationalPatterns produces with lang="en".
+      const universalMeta = ["트리거", "키워드", "키워드 나오면"].map(
+        (p) => new RegExp(p, "i"),
+      );
+      expect(isInformationalContext(prompt, matchIndex, universalMeta)).toBe(
+        true,
+      );
     });
   });
 

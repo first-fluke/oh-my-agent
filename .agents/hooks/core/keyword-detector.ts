@@ -218,6 +218,7 @@ interface TriggerConfig {
     {
       persistent: boolean;
       keywords: Record<string, string[]>;
+      patterns?: Record<string, string[]>;
     }
   >;
   informationalPatterns: Record<string, string[]>;
@@ -269,11 +270,41 @@ export function buildPatterns(
   });
 }
 
+/**
+ * Build raw regex patterns from a workflow's `patterns` field.
+ * Unlike buildPatterns, these strings are compiled directly without
+ * escaping or word-boundary wrapping — pattern authors are responsible
+ * for boundary handling. Invalid patterns are skipped silently.
+ */
+export function buildRawPatterns(
+  patterns: Record<string, string[]> | undefined,
+  lang: string,
+): RegExp[] {
+  if (!patterns) return [];
+  const all = [
+    ...(patterns["*"] ?? []),
+    ...(patterns.en ?? []),
+    ...(lang !== "en" ? (patterns[lang] ?? []) : []),
+  ];
+  const compiled: RegExp[] = [];
+  for (const raw of all) {
+    try {
+      compiled.push(new RegExp(raw, "iu"));
+    } catch {
+      // Skip invalid regex — surfaces during config edit, not at runtime
+    }
+  }
+  return compiled;
+}
+
 function buildInformationalPatterns(
   config: TriggerConfig,
   lang: string,
 ): RegExp[] {
-  const patterns = [...(config.informationalPatterns.en ?? [])];
+  const patterns = [
+    ...(config.informationalPatterns["*"] ?? []),
+    ...(config.informationalPatterns.en ?? []),
+  ];
   if (lang !== "en") {
     patterns.push(...(config.informationalPatterns[lang] ?? []));
   }
@@ -350,6 +381,34 @@ export function stripCodeBlocks(text: string): string {
     .replace(/`{3,}[^`]*`{3,}/g, "") // single-line fenced blocks (```...```)
     .replace(/`[^`\n]+`/g, "") // inline code (no newlines allowed)
     .replace(/"[^"\n]*"/g, ""); // quoted strings
+}
+
+// System echo block patterns — strip pasted hook self-output to prevent
+// re-trigger loops where the user pastes back oma's own context messages.
+const SYSTEM_ECHO_LINE_PATTERNS: RegExp[] = [
+  /^.*\[OMA WORKFLOW:[^\]]*\].*$/gim,
+  /^.*\[OMA PERSISTENT MODE:[^\]]*\].*$/gim,
+  /^.*\[OMA AGENT HINT:[^\]]*\].*$/gim,
+  /^.*\[MAGIC KEYWORD:[^\]]*\].*$/gim,
+  /^.*\[MAGIC KEYWORDS? DETECTED:[^\]]*\].*$/gim,
+  /^.*Stop hook (?:blocking error|feedback|stopped continuation).*$/gim,
+  /^.*PreToolUse:[^\n]*hook additional context:.*$/gim,
+  /^.*PostToolUse:[^\n]*hook additional context:.*$/gim,
+  /^.*hookSpecificOutput.*$/gim,
+  /^.*The \/[a-z-]+ workflow is still active.*$/gim,
+];
+
+/**
+ * Strip pasted system-echo blocks (oma's own hook outputs) so meta-discussion
+ * about workflows doesn't re-trigger via paste-back. Operates line-by-line
+ * to preserve surrounding user text.
+ */
+export function stripSystemEchoes(text: string): string {
+  let cleaned = text;
+  for (const pattern of SYSTEM_ECHO_LINE_PATTERNS) {
+    cleaned = cleaned.replace(pattern, "");
+  }
+  return cleaned;
 }
 
 export function startsWithSlashCommand(prompt: string): boolean {
@@ -529,8 +588,10 @@ async function main() {
     process.exit(0);
   }
   const infoPatterns = buildInformationalPatterns(config, lang);
-  // Guard 2: Strip code blocks and inline code before scanning for keywords
-  const cleaned = stripCodeBlocks(prompt);
+  // Guard 2: Strip code blocks, inline code, and pasted system-echo blocks
+  // before scanning for keywords. System echo stripping prevents oma's own
+  // hook outputs (when pasted back into the prompt) from re-triggering.
+  const cleaned = stripSystemEchoes(stripCodeBlocks(prompt));
   const excluded = new Set(config.excludedWorkflows);
 
   // Guard 3: Load reinforcement suppression state
@@ -545,7 +606,10 @@ async function main() {
     // Analytical questions should never trigger persistent workflows
     if (analytical && def.persistent) continue;
 
-    const patterns = buildPatterns(def.keywords, lang, config.cjkScripts);
+    const patterns = [
+      ...buildPatterns(def.keywords, lang, config.cjkScripts),
+      ...buildRawPatterns(def.patterns, lang),
+    ];
 
     for (const pattern of patterns) {
       const match = pattern.exec(cleaned);
