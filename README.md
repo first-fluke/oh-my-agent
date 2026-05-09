@@ -153,7 +153,7 @@ Set `model_preset` in `.agents/oma-config.yaml` to choose which AI models each a
 
 ```yaml
 language: en
-model_preset: antigravity   # claude-only | codex-only | gemini-only | qwen-only | antigravity
+model_preset: antigravity   # claude-only | codex-only | gemini-only | qwen-only | cursor-only | antigravity
 
 # Optional per-agent overrides
 agents:
