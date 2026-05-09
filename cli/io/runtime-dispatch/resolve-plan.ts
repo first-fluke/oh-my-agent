@@ -142,7 +142,7 @@ export function resolveAgentPlanFromConfig(
   if (!presetSpec) {
     throw new ConfigError(
       `Preset "${resolvedKey}" has no agent_defaults for "${agentId}" and no orchestrator fallback. ` +
-        `Custom presets without 'extends' must define all 11 agent roles.`,
+        `Custom presets without 'extends' must define every canonical agent role.`,
     );
   }
 

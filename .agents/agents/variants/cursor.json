@@ -47,6 +47,11 @@
       "extra": {
         "is_background": true
       }
+    },
+    "docs-curator": {
+      "extra": {
+        "is_background": true
+      }
     }
   }
 }

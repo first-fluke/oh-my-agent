@@ -92,7 +92,7 @@ function modelSlugToPresetKey(slug: string): BuiltInPresetKey | null {
 // Bundled defaults comparison — detect user customizations
 // ---------------------------------------------------------------------------
 
-/** The canonical 11 agent IDs in deterministic order */
+/** Canonical agent IDs in deterministic order */
 const ALL_AGENT_IDS: AgentId[] = [
   "orchestrator",
   "architecture",
@@ -103,6 +103,7 @@ const ALL_AGENT_IDS: AgentId[] = [
   "mobile",
   "db",
   "debug",
+  "docs",
   "tf-infra",
   "retrieval",
 ];

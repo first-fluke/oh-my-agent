@@ -43,6 +43,7 @@ const AGENT_SKILL_MAP: Record<string, string> = {
   "debug-investigator": "oma-debug",
   "architecture-reviewer": "oma-architecture",
   "tf-infra-engineer": "oma-tf-infra",
+  "docs-curator": "oma-docs",
 };
 
 // ── Helpers ─────────────────────────────────────────────────────

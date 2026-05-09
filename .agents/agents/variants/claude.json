@@ -32,6 +32,10 @@
       "tools": "Read, Grep, Glob, Bash",
       "maxTurns": 15,
       "effort": "low"
+    },
+    "docs-curator": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob",
+      "maxTurns": 15
     }
   }
 }

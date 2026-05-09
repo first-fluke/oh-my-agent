@@ -12,7 +12,7 @@ import { getModelSpec } from "./model-registry.js";
 
 // ---------------------------------------------------------------------------
 // Built-in preset definitions
-// Sourced from .agents/config/defaults.yaml (2.1.0) — all 11 agent roles.
+// Sourced from .agents/config/defaults.yaml (2.1.0) — all canonical agent roles.
 // ---------------------------------------------------------------------------
 
 export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
@@ -28,6 +28,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       mobile: { model: "anthropic/claude-sonnet-4-6" },
       db: { model: "anthropic/claude-sonnet-4-6" },
       debug: { model: "anthropic/claude-sonnet-4-6" },
+      docs: { model: "anthropic/claude-sonnet-4-6" },
       "tf-infra": { model: "anthropic/claude-sonnet-4-6" },
       retrieval: { model: "anthropic/claude-haiku-4-5" },
     },
@@ -45,6 +46,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       mobile: { model: "openai/gpt-5.5", effort: "high" },
       db: { model: "openai/gpt-5.5", effort: "high" },
       debug: { model: "openai/gpt-5.5", effort: "high" },
+      docs: { model: "openai/gpt-5.5", effort: "medium" },
       "tf-infra": { model: "openai/gpt-5.5", effort: "high" },
       retrieval: { model: "openai/gpt-5.4-mini", effort: "low" },
     },
@@ -62,6 +64,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       mobile: { model: "google/gemini-3-flash", thinking: true },
       db: { model: "google/gemini-3-flash", thinking: true },
       debug: { model: "google/gemini-3-flash", thinking: true },
+      docs: { model: "google/gemini-3-flash" },
       "tf-infra": { model: "google/gemini-3-flash", thinking: true },
       retrieval: { model: "google/gemini-3.1-flash-lite" },
     },
@@ -80,6 +83,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       mobile: { model: "qwen/qwen3.6-plus", thinking: true },
       db: { model: "qwen/qwen3.6-plus", thinking: true },
       debug: { model: "qwen/qwen3.6-plus", thinking: true },
+      docs: { model: "qwen/qwen3-coder-next", thinking: false },
       "tf-infra": { model: "qwen/qwen3.6-plus", thinking: true },
       retrieval: { model: "qwen/qwen3-coder-next", thinking: false },
     },
@@ -97,6 +101,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       mobile: { model: "cursor/composer-2" },
       db: { model: "cursor/composer-2" },
       debug: { model: "cursor/composer-2" },
+      docs: { model: "cursor/composer-2-fast" },
       "tf-infra": { model: "cursor/composer-2" },
       retrieval: { model: "cursor/composer-2-fast" },
     },
@@ -115,6 +120,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       mobile: { model: "openai/gpt-5.5", effort: "high" },
       db: { model: "openai/gpt-5.5", effort: "high" },
       debug: { model: "openai/gpt-5.5", effort: "high" },
+      docs: { model: "anthropic/claude-sonnet-4-6" },
       "tf-infra": { model: "openai/gpt-5.5", effort: "high" },
       retrieval: { model: "google/gemini-3.1-flash-lite" },
     },
@@ -143,6 +149,7 @@ const ALL_AGENT_IDS: readonly AgentId[] = [
   "mobile",
   "db",
   "debug",
+  "docs",
   "tf-infra",
   "retrieval",
 ] as const;
@@ -161,7 +168,7 @@ export function assertPresetIntegrity(): void {
       if (!spec) {
         throw new Error(
           `[built-in-presets] Preset "${presetKey}" is missing agent_defaults for "${agentId}". ` +
-            `All 11 agent roles are required for built-in presets.`,
+            `All ${ALL_AGENT_IDS.length} canonical agent roles are required for built-in presets.`,
         );
       }
       const modelSpec = getModelSpec(spec.model);

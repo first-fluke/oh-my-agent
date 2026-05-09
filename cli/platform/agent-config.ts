@@ -21,6 +21,7 @@ export type AgentId =
   | "mobile"
   | "db"
   | "debug"
+  | "docs"
   | "tf-infra"
   | "retrieval";
 
@@ -68,7 +69,7 @@ export interface ModelPreset {
   description: string;
   /** Only valid on custom_presets entries. Built-in presets do not extend. */
   extends?: string;
-  /** All 11 agent roles required when no extends. Partial when extends is set. */
+  /** Every canonical agent role required when no extends. Partial when extends is set. */
   agent_defaults: Partial<Record<AgentId, AgentSpec>>;
 }
 
@@ -234,6 +235,7 @@ const AGENT_IDS: ReadonlySet<AgentId> = new Set([
   "mobile",
   "db",
   "debug",
+  "docs",
   "tf-infra",
   "retrieval",
 ]);
@@ -265,6 +267,7 @@ const AGENT_CONFIG_ALIASES: Record<string, string[]> = {
   "debug-investigator": ["debug"],
   "architecture-reviewer": ["architecture", "architect"],
   "tf-infra-engineer": ["tf-infra", "infra", "terraform"],
+  "docs-curator": ["docs", "documentation"],
 };
 
 const VendorConfigSchema = z

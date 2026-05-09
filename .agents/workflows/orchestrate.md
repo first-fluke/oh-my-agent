@@ -101,6 +101,7 @@ Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
 | pm | `.claude/agents/pm-planner.md` |
 | architecture | `.claude/agents/architecture-reviewer.md` |
 | tf-infra | `.claude/agents/tf-infra-engineer.md` |
+| docs | `.claude/agents/docs-curator.md` |
 
 - Include API contracts from `.agents/skills/_shared/api-contracts/` if they exist
 - Load only task-relevant context (check codebase structure around affected domains)

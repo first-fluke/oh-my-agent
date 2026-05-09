@@ -3,7 +3,7 @@
 //
 // T11 — integrity tests for BUILT_IN_PRESETS and BUILT_IN_PRESET_ALIASES.
 // Asserts:
-//   • All 6 built-in presets exist and have all 11 agent_defaults.
+//   • Every built-in preset exists and defines every canonical agent role.
 //   • Every model slug resolves via getModelSpec (boot-time integrity check).
 //   • BUILT_IN_PRESET_ALIASES shape is Record<string, BuiltInPresetKey> and
 //     any defined alias resolves to a real preset key.
@@ -31,14 +31,17 @@ const EXPECTED_AGENT_IDS = [
   "mobile",
   "db",
   "debug",
+  "docs",
   "tf-infra",
   "retrieval",
 ] as const;
 
 describe("BUILT_IN_PRESETS", () => {
-  it("exports exactly 6 built-in presets", async () => {
+  it("exports every expected preset and nothing extra", async () => {
     const { BUILT_IN_PRESETS } = await import("./built-in-presets.js");
-    expect(Object.keys(BUILT_IN_PRESETS)).toHaveLength(6);
+    expect(Object.keys(BUILT_IN_PRESETS).sort()).toEqual(
+      [...EXPECTED_PRESET_KEYS].sort(),
+    );
   });
 
   it.each(EXPECTED_PRESET_KEYS)("preset '%s' exists", async (key) => {
@@ -56,10 +59,12 @@ describe("BUILT_IN_PRESETS", () => {
 
   it.each(
     EXPECTED_PRESET_KEYS,
-  )("preset '%s' has all 11 agent_defaults", async (key) => {
+  )("preset '%s' defines every canonical agent role", async (key) => {
     const { BUILT_IN_PRESETS } = await import("./built-in-presets.js");
     const preset = BUILT_IN_PRESETS[key];
-    expect(Object.keys(preset.agent_defaults)).toHaveLength(11);
+    expect(Object.keys(preset.agent_defaults)).toHaveLength(
+      EXPECTED_AGENT_IDS.length,
+    );
     for (const agentId of EXPECTED_AGENT_IDS) {
       expect(
         preset.agent_defaults[agentId],

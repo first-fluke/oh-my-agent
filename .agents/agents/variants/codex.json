@@ -56,6 +56,12 @@
       "extra": {
         "sandbox_mode": "read-only"
       }
+    },
+    "docs-curator": {
+      "effort": "medium",
+      "extra": {
+        "sandbox_mode": "workspace-write"
+      }
     }
   }
 }

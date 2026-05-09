@@ -18,6 +18,7 @@
     },
     "qa-reviewer": {
       "tools": ["bash", "glob", "grep", "read", "ask"]
-    }
+    },
+    "docs-curator": {}
   }
 }

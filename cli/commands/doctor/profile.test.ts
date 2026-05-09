@@ -99,9 +99,9 @@ describe("collectProfileReport — role ordering", () => {
     expect(roles).toEqual([...profileModule.ROLE_ORDER]);
   });
 
-  it("returns exactly 11 rows for Profile B defaults", async () => {
+  it("returns one row per canonical role", async () => {
     const report = await profileModule.collectProfileReport("/fake/cwd");
-    expect(report.rows).toHaveLength(11);
+    expect(report.rows).toHaveLength(profileModule.ROLE_ORDER.length);
   });
 });
 
