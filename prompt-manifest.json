@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "7.2.0",
-  "releaseDate": "2026-05-09T06:17:13.919Z",
+  "releaseDate": "2026-05-09T06:42:57.712Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -353,6 +353,31 @@
       "path": ".agents/skills/_version.json",
       "sha256": "91ba5081d73fa95ebece3d281d303f2c06f48a8dbaad2c779d1282072c0afe69",
       "size": 24
+    },
+    {
+      "path": ".agents/skills/oma-academic-writer/SKILL.md",
+      "sha256": "9fcc71196a74de7484cc792f43d085a51c3b8becf7d7fe5b45d38e1e6d4d05e7",
+      "size": 13457
+    },
+    {
+      "path": ".agents/skills/oma-academic-writer/resources/academic-verb-tiers.md",
+      "sha256": "3396a4d72d3cd81cc898f9f1a14c8988ba1d858b65d352eef9bd917c7e18751b",
+      "size": 9614
+    },
+    {
+      "path": ".agents/skills/oma-academic-writer/resources/anti-ai-checklist.md",
+      "sha256": "3f3e11b79cb7162ba7d0b0b578e68a1cb3cfb0ee14ceda34af88578718864b41",
+      "size": 9504
+    },
+    {
+      "path": ".agents/skills/oma-academic-writer/resources/hedging-guide.md",
+      "sha256": "356cf5cbd0eb93e2cfb32da46214a39abd7305a6242c45a4c9bcb103e418e213",
+      "size": 5486
+    },
+    {
+      "path": ".agents/skills/oma-academic-writer/resources/sentence-structure-reference.md",
+      "sha256": "2e414d72abd652a356e94a237b5e1fcca0a1594edcbeb5bcbcfc44e256dcacb5",
+      "size": 7739
     },
     {
       "path": ".agents/skills/oma-architecture/SKILL.md",
@@ -1479,8 +1504,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 25,
+    "skillCount": 26,
     "workflowCount": 19,
-    "totalFiles": 294
+    "totalFiles": 299
   }
 }
