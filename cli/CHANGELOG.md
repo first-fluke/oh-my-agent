@@ -1,5 +1,18 @@
 # Changelog
 
+## [7.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.1.1...cli-v7.2.0) (2026-05-09)
+
+
+### Features
+
+* **docs:** add 'oma docs i18n' for translation drift detection ([19c2efb](https://github.com/first-fluke/oh-my-agent/commit/19c2efb719cc38e600241f968490ab2d7c3738cd))
+* **translator:** add Diff-Sync Mode to oma-translator skill ([6647b9a](https://github.com/first-fluke/oh-my-agent/commit/6647b9abcc53ca0492d6fca9cdecaa0f3c52d0bc))
+
+
+### Bug Fixes
+
+* **docs:** clean up unused import and any-typed test fixtures ([05cc267](https://github.com/first-fluke/oh-my-agent/commit/05cc2674fc85dae259fdb896017edbadab80e82b))
+
 ## [7.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.1.0...cli-v7.1.1) (2026-05-09)
 
 
