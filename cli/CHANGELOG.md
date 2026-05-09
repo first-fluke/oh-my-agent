@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.1.0...cli-v7.1.1) (2026-05-09)
+
+
+### Bug Fixes
+
+* **ci:** prevent sync-manifest race conditions with concurrency and retry ([dc03410](https://github.com/first-fluke/oh-my-agent/commit/dc03410e90775ebc23cf73d2dc23158ed3793a36))
+
 ## [7.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.0.0...cli-v7.1.0) (2026-05-09)
 
 
