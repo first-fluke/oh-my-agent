@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.19.0...cli-v6.20.0) (2026-05-09)
+
+
+### Features
+
+* **cli:** add model:check, model:probe, model:propose commands ([abd74fb](https://github.com/first-fluke/oh-my-agent/commit/abd74fbb2dc7974a2818094c522f65ad7e115837))
+* **hooks:** resolve unknown slash commands via hidden skill lookup ([ef15f15](https://github.com/first-fluke/oh-my-agent/commit/ef15f15ab340d4b0909135b3a81048e3b8e447f3))
+
+
+### Bug Fixes
+
+* **cli:** use platform separator in isInIgnoredSet for Windows ([e4945b1](https://github.com/first-fluke/oh-my-agent/commit/e4945b1d22fbc14adcfea3590b6dc3ffef021585))
+* **hooks:** inject SKILL.md for explicit Claude slash skills ([daaa41d](https://github.com/first-fluke/oh-my-agent/commit/daaa41d2b3027fd1cda498cc8a81aa3c90d81ea6))
+
 ## [6.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v6.18.0...cli-v6.19.0) (2026-05-08)
 
 
