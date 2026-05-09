@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.1...web-v3.0.2) (2026-05-09)
+
+
+### Documentation
+
+* **i18n:** catch up 11 locales with current English source ([9b52e69](https://github.com/first-fluke/oh-my-agent/commit/9b52e694a0c6395d7200d58c78d17bf595c6197a))
+
 ## [3.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.0...web-v3.0.1) (2026-05-09)
 
 
