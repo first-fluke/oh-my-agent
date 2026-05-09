@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.0...web-v3.0.1) (2026-05-09)
+
+
+### Documentation
+
+* **i18n:** sync 11 locales with auto-detection updates ([e08b953](https://github.com/first-fluke/oh-my-agent/commit/e08b95316bd8250a350288d860b0156e06d389a2))
+* **workflows:** document patterns field and language convention ([977457f](https://github.com/first-fluke/oh-my-agent/commit/977457f1da99c3e2b5ec5012b9593266435e82b6))
+
 ## [3.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v2.1.1...web-v3.0.0) (2026-05-09)
 
 
