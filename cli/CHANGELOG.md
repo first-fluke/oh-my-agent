@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.0...cli-v7.3.1) (2026-05-09)
+
+
+### Documentation
+
+* **academic-writer:** reframe HD-grade as publication-grade ([27150c0](https://github.com/first-fluke/oh-my-agent/commit/27150c0ba5a2701c4a4dd11378f640efd8b2fb1a))
+* **readme:** drop em dashes from agent team table ([c35a051](https://github.com/first-fluke/oh-my-agent/commit/c35a051ce40b0d845ccc2c5cbc519e073c05b807))
+
 ## [7.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.2.0...cli-v7.3.0) (2026-05-09)
 
 
