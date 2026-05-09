@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.3.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.2...cli-v7.3.3) (2026-05-09)
+
+
+### Documentation
+
+* list cursor-only preset across guides and i18n locales ([afe62b4](https://github.com/first-fluke/oh-my-agent/commit/afe62b481a2b75f0bfe2e4a14aaa6660ab1dbedc))
+* **readme:** list cursor-only preset in per-agent-models section ([230daef](https://github.com/first-fluke/oh-my-agent/commit/230daef0a68294270cd9a7eb210a2d679787511b))
+
 ## [7.3.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.1...cli-v7.3.2) (2026-05-09)
 
 
