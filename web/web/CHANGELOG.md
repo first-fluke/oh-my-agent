@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.2...web-v3.0.3) (2026-05-09)
+
+
+### Documentation
+
+* **i18n:** restructure em-dashes in CJK locales (ko/ja/zh) ([8d426d5](https://github.com/first-fluke/oh-my-agent/commit/8d426d5c3e2f968a97e3034a2f75aa73da29aaa5))
+* **i18n:** translate per-agent-models.md into 11 locales ([d8331b5](https://github.com/first-fluke/oh-my-agent/commit/d8331b5e307e9358fd1adb54c73e7db9cc363ff7))
+* **image-generation:** add 'Use as a Skill' section in 12 languages ([cfbc97f](https://github.com/first-fluke/oh-my-agent/commit/cfbc97f0caa5edc1b20f4b52910d89cb71adfa24))
+
 ## [3.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.1...web-v3.0.2) (2026-05-09)
 
 
