@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.4](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.3...web-v3.0.4) (2026-05-09)
+
+
+### Documentation
+
+* list cursor-only preset across guides and i18n locales ([afe62b4](https://github.com/first-fluke/oh-my-agent/commit/afe62b481a2b75f0bfe2e4a14aaa6660ab1dbedc))
+* **web:** add benchmarks page with 11 locale translations ([ce62a09](https://github.com/first-fluke/oh-my-agent/commit/ce62a09efd7ca3e1e64ddab05f74180b4a8378ff))
+
 ## [3.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.2...web-v3.0.3) (2026-05-09)
 
 
