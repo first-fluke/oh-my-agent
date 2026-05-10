@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.4.0...cli-v7.5.0) (2026-05-10)
+
+
+### Features
+
+* **cli:** show added/removed skills and workflows on update ([c03baf9](https://github.com/first-fluke/oh-my-agent/commit/c03baf9f168037f302b32d70b0924ee59fdad828))
+
+
+### Refactoring
+
+* **cli:** merge cli-kit/ into utils/ ([71bf0b9](https://github.com/first-fluke/oh-my-agent/commit/71bf0b94e603e27837195f312d2566843ec0553a))
+
 ## [7.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.3...cli-v7.4.0) (2026-05-10)
 
 
