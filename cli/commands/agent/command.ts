@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { runAction } from "../../cli-kit/cli-framework.js";
+import { runAction } from "../../utils/cli-framework.js";
 import { parallelRun } from "./parallel.js";
 import { reviewAgent } from "./review.js";
 import { checkStatus, spawnAgent } from "./spawn-status.js";

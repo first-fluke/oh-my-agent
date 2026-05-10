@@ -9,7 +9,7 @@ import { join } from "node:path";
 import {
   parseFrontmatter,
   serializeFrontmatter,
-} from "../cli-kit/frontmatter.js";
+} from "../utils/frontmatter.js";
 import type { Difficulty } from "./context-loader.js";
 
 // =============================================================================

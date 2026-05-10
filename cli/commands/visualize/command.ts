@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { visualize } from "./visualize.js";
 
 export function registerVisualize(program: Command): void {

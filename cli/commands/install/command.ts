@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { runAction } from "../../cli-kit/cli-framework.js";
+import { runAction } from "../../utils/cli-framework.js";
 import { install } from "./install.js";
 
 export { install } from "./install.js";

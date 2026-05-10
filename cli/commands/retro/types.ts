@@ -1,8 +1,8 @@
-export type { TimeWindow } from "../../cli-kit/time-window.js";
+export type { TimeWindow } from "../../utils/time-window.js";
 export {
   getCompareWindows,
   parseTimeWindow,
-} from "../../cli-kit/time-window.js";
+} from "../../utils/time-window.js";
 export { analyze, getDisplayData } from "./internal/analysis.js";
 export {
   bar,

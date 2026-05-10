@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { retro } from "./retro.js";
 
 export function registerRetro(program: Command): void {

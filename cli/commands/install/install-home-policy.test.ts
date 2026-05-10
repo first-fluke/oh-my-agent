@@ -117,7 +117,7 @@ vi.mock("../../platform/skills-installer.js", () => skillsState);
 vi.mock("./migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
-vi.mock("../../cli-kit/competitors.js", () => ({
+vi.mock("../../utils/competitors.js", () => ({
   promptUninstallCompetitors: miscState.promptUninstallCompetitors,
 }));
 vi.mock("../../io/tarball.js", () => ({

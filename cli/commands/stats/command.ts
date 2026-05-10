@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { stats } from "./stats.js";
 
 export function registerStats(program: Command): void {

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import color from "picocolors";
-import { runAction } from "../../cli-kit/cli-framework.js";
+import { runAction } from "../../utils/cli-framework.js";
 import { runGet } from "./get.js";
 import { formatReport, lintFile } from "./lint.js";
 import { runResolve } from "./resolve.js";

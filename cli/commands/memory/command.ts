@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { initMemory } from "./memory.js";
 
 export function registerMemory(program: Command): void {

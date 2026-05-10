@@ -13,7 +13,6 @@ import {
 import { dirname, join, resolve } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { promptUninstallCompetitors } from "../../cli-kit/competitors.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,
@@ -52,6 +51,7 @@ import {
   writeVendorsToConfig,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
+import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   applyRecommendedSettings,
   needsSettingsUpdate,

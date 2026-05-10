@@ -6,11 +6,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import type { VendorType } from "../types/index.js";
 import {
   parseFrontmatter,
   serializeFrontmatter,
-} from "../cli-kit/frontmatter.js";
-import type { VendorType } from "../types/index.js";
+} from "../utils/frontmatter.js";
 import { clearNonDirectory } from "../utils/fs-utils.js";
 import { installVendorAgents } from "./agent-composer.js";
 import { type HookVariant, installHooksFromVariant } from "./hooks-composer.js";

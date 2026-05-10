@@ -20,15 +20,15 @@ cli/
     index.ts                     Vendor registry (cli/vendors/index.ts)
   platform/                      SSOT installer: writes vendor files from .agents/
   io/                            external I/O adapters (github, tarball, serena, mcp-bridge, http, git)
-  cli-kit/                       presentation + framework wrappers (cli-framework, process-signals, frontmatter, time-window, competitors, graph)
-  types/  constants/  utils/     shared primitives
+  utils/                         shared helpers (cli-framework, process-signals, frontmatter, time-window, competitors, graph, config, fs)
+  types/  constants/              shared primitives
   dashboard/                     terminal + web dashboards
   scripts/                       dev/build/release scripts
 ```
 
 ## Rules
 
-1. `commands/<x>` **must not** import from `commands/<y>`. Shared logic belongs in `vendors/`, `platform/`, `io/`, or `cli-kit/`. Exception: `commands/migrations/` (shared install+update infrastructure).
+1. `commands/<x>` **must not** import from `commands/<y>`. Shared logic belongs in `vendors/`, `platform/`, `io/`, or `utils/`. Exception: `commands/migrations/` (shared install+update infrastructure).
 2. `command.ts` contains only Commander wiring and argument normalization. No business logic, no Clack, no direct FS/network access.
 3. `<name>.ts` (the slice's pure flow) must not import `@clack/prompts` or `picocolors`. Interactive prompts live in `ui.ts`.
 4. `vendors/<vendor>/` owns everything vendor-specific. Other packages iterate via the `Vendor` registry in `vendors/index.ts`.

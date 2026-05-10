@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { promptUninstallCompetitors } from "../../cli-kit/competitors.js";
+import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isAlreadyStarred,
   isGhAuthenticated,

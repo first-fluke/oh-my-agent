@@ -3,7 +3,6 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
-import { registerSignalCleanup } from "../../cli-kit/process-signals.js";
 import { lookupFinding, recordFinding } from "../../io/findings-cache.js";
 import { planDispatch } from "../../io/runtime-dispatch.js";
 import {
@@ -23,6 +22,7 @@ import {
   classifyDifficulty,
   type Difficulty,
 } from "../../platform/context-loader.js";
+import { registerSignalCleanup } from "../../utils/process-signals.js";
 import { isProcessRunning } from "./common.js";
 
 // ---------------------------------------------------------------------------

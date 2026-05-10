@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { cleanup } from "./cleanup.js";
 
 export function registerCleanup(program: Command): void {

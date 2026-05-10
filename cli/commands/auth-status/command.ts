@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { checkAuthStatus } from "./auth-status.js";
 
 export { checkAuthStatus } from "./auth-status.js";

@@ -1,8 +1,8 @@
 import type { Command } from "commander";
 import pc from "picocolors";
-import { runAction } from "../../cli-kit/cli-framework.js";
 import type { ModelSpec } from "../../platform/model-registry.js";
 import { CORE_REGISTRY } from "../../platform/model-registry.js";
+import { runAction } from "../../utils/cli-framework.js";
 import { computeDiff, formatHumanReadable, formatJson } from "./check.js";
 import { describeProbeStatus, probeSlug } from "./probe.js";
 import { proposeMissingSlugs, writeProposalToFile } from "./propose.js";

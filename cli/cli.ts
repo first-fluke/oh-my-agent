@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { printDescribe, runAction } from "./cli-kit/cli-framework.js";
 import { registerAgentCommands } from "./commands/agent/command.js";
 import { registerAuthStatus } from "./commands/auth-status/command.js";
 import { registerBridge } from "./commands/bridge/command.js";
@@ -27,6 +26,7 @@ import { registerVisualize } from "./commands/visualize/command.js";
 import { startDashboard } from "./dashboard.js";
 import pkg from "./package.json";
 import { startTerminalDashboard } from "./terminal-dashboard.js";
+import { printDescribe, runAction } from "./utils/cli-framework.js";
 
 const VERSION = pkg.version;
 

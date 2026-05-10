@@ -4,7 +4,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { printVerifyError, renderVerifyReport } from "./ui.js";
 import { collectVerifyReport, isValidAgent, VALID_AGENTS } from "./verify.js";
 

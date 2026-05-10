@@ -3,7 +3,7 @@ import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
-} from "../../cli-kit/cli-framework.js";
+} from "../../utils/cli-framework.js";
 import { collectDoctorReport, serializeReportAsJson } from "./doctor.js";
 import { collectProfileReport } from "./profile.js";
 import { renderDoctorReport, renderProfileReport } from "./ui.js";

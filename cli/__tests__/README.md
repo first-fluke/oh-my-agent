@@ -5,7 +5,7 @@ Use this directory for **cross-cutting / infrastructure tests** that do not belo
 Default: **colocate tests with the unit under test** (see `cli/ARCHITECTURE.md`).
 
 - Command tests → `cli/commands/<slice>/<name>.test.ts`
-- Platform / IO / cli-kit / vendors tests → next to the implementation (e.g. `cli/platform/skills-installer.test.ts`, `cli/io/serena.test.ts`, `cli/cli-kit/frontmatter.test.ts`, `cli/vendors/gemini/settings.test.ts`)
+- Platform / IO / utils / vendors tests → next to the implementation (e.g. `cli/platform/skills-installer.test.ts`, `cli/io/serena.test.ts`, `cli/utils/frontmatter.test.ts`, `cli/vendors/gemini/settings.test.ts`)
 
 Keep here:
 

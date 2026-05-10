@@ -10,7 +10,7 @@ import { join } from "node:path";
 import {
   parseFrontmatter,
   serializeFrontmatter,
-} from "../cli-kit/frontmatter.js";
+} from "../utils/frontmatter.js";
 
 /** SSOT for all rules. */
 export const RULES_DIR = ".agents/rules";
