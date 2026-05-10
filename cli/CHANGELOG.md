@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.3...cli-v7.4.0) (2026-05-10)
+
+
+### Features
+
+* **skills:** add oma-deepsec skill and /deepsec workflow ([56eb571](https://github.com/first-fluke/oh-my-agent/commit/56eb571e92df7b48b27f7fa89678cad169fa4d22))
+
 ## [7.3.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.3.2...cli-v7.3.3) (2026-05-09)
 
 
