@@ -187,6 +187,21 @@ describe("keyword-detector", () => {
       expect(CLI_INVOCATION_AT_START.test("omo run")).toBe(true);
     });
 
+    // Negative cases — oma-family conversational usage must NOT match
+    it("does NOT match: 'oma is cool' (oma-family natural-language usage)", () => {
+      expect(CLI_INVOCATION_AT_START.test("oma is cool")).toBe(false);
+    });
+
+    it("does NOT match: 'omx looks great' (oma-family conversational)", () => {
+      expect(CLI_INVOCATION_AT_START.test("omx looks great")).toBe(false);
+    });
+
+    it("does NOT match: 'oma 프로젝트의 brainstorm 알려줘' (Korean conversational)", () => {
+      expect(
+        CLI_INVOCATION_AT_START.test("oma 프로젝트의 brainstorm 알려줘"),
+      ).toBe(false);
+    });
+
     // Negative cases — these prompts contain brand names mid-sentence and must NOT match
     it("does NOT match: brand appears mid-sentence (compare claude and codex)", () => {
       expect(

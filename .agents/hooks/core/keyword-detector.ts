@@ -45,20 +45,28 @@ export function normalizeForMatching(text: string): string {
 /**
  * Matches CLI invocations at the start of the prompt.
  *
- * Two tiers, because `claude`/`codex`/`opencode` are also natural-language
- * addressees ("claude, review this code") whereas `oma`/`omc`/`omx`/`omo`
- * have no natural English usage:
+ * All brand names (oma family and generic vendor CLIs) require an explicit
+ * CLI signal after the brand. Brand-only prefixes are NOT treated as CLI
+ * invocations because every brand name can appear in natural-language usage:
+ * 'claude, review this code', 'oma 프로젝트의 brainstorm', 'codex output
+ * looks wrong'. Requiring an explicit signal keeps the symmetry across
+ * brands and avoids false-positive skips on conversational prompts that
+ * happen to start with a brand reference.
  *
- *   Tier 1 — Oma family: any prompt starting with `oma|omc|omx|omo` is treated
- *   as a CLI invocation regardless of what follows.
+ * Two accepted invocation shapes:
  *
- *   Tier 2 — Generic vendor CLIs: `claude|codex|opencode` must be followed
- *   by an explicit CLI signal (one of agent/auto/exec/run/spawn, a `--flag`,
- *   or a `verb:noun` colon-namespaced subcommand). Bare natural-language
- *   prompts like `claude review this` remain eligible for workflow triggers.
+ *   1. Slash form: '/oma:brainstorm', '/claude:exec' — the leading slash
+ *      plus brand-colon prefix is a definitive CLI marker. Matches
+ *      '/<brand>:'.
+ *
+ *   2. Bare form: '<brand>\s+<signal>' where <signal> is one of the
+ *      enumerated subcommand verbs (agent / auto / exec / run / spawn),
+ *      a --flag, or a colon-namespaced subcommand ('agent:spawn').
+ *      Examples: 'oma agent:spawn brainstorm', 'omc auto', 'claude
+ *      --help', 'codex exec --workflow ralph'.
  */
 export const CLI_INVOCATION_AT_START =
-  /^\s*\/?(?:(?:oma|omc|omx|omo)\b|(?:claude|codex|opencode)\s+(?:agent|auto|exec|run|spawn|--\S+|\S+:\S+))/i;
+  /^\s*(?:\/(?:oma|omc|omx|omo|claude|codex|opencode):|(?:oma|omc|omx|omo|claude|codex|opencode)\s+(?:agent|auto|exec|run|spawn|--\S+|\S+:\S+))/i;
 
 /**
  * Per-workflow skip predicates. A workflow listed here will be skipped when
