@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.6.0...cli-v7.7.0) (2026-05-11)
+
+
+### Features
+
+* **oma-db:** add verification discrepancy audit guidance ([16a8130](https://github.com/first-fluke/oh-my-agent/commit/16a8130a47406e9817d447d8c8822c989cdeaaf1))
+
+
+### Bug Fixes
+
+* **hooks/keyword-detector:** align CLI-invocation guard with vendor source of truth ([3c469dd](https://github.com/first-fluke/oh-my-agent/commit/3c469dd3687d7aedc16ca86368c24f50a74791e2))
+* **hooks/keyword-detector:** require explicit CLI signal for oma-family brands ([9be137a](https://github.com/first-fluke/oh-my-agent/commit/9be137a2761748d158f5e26fd0fcf0c45d98cf03))
+
+
+### Refactoring
+
+* **cli:** consolidate vendor list to a single source of truth ([ef03ac4](https://github.com/first-fluke/oh-my-agent/commit/ef03ac4f558aad0e7e8b9266fb4624bb22ec7ffe))
+
 ## [7.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.5.0...cli-v7.6.0) (2026-05-11)
 
 
