@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.8.0...cli-v7.9.0) (2026-05-11)
+
+
+### Features
+
+* **cli:** preserve user-upgraded effortLevel in claude settings ([4e0f50f](https://github.com/first-fluke/oh-my-agent/commit/4e0f50f52f47e138587f86dc9063fc88daba8c2a))
+
 ## [7.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.7.2...cli-v7.8.0) (2026-05-11)
 
 
