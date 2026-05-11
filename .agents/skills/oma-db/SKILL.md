@@ -168,6 +168,36 @@ Then run the project's migration, query-plan, or retrieval-quality commands only
 - Backup and recovery strategy including full + incremental backup cadence
 - For vector/RAG systems: embedding version policy, chunking policy, hybrid retrieval strategy, and re-index / re-embedding plan
 
+## Verification Discrepancy Audit
+
+When a data verification step reports "X is empty", "row count differs across N streams", or "values mismatch across entities", treat the discrepancy as a query artifact first and a defect second. Run this audit before declaring a bug.
+
+### Trigger phrases (any of)
+
+- "X is empty but Y is not"
+- "row count differs across N streams"
+- "values mismatch across entities"
+- "two queries or sources that should agree produce different rows or counts"
+
+### Audit dimensions
+
+1. **Keys**: primary and join keys have identical shape across both sides. Case, whitespace, encoding identical. Composite key components in the same order.
+2. **Group-by / partition**: same grouping columns, same null handling, same collation.
+3. **Time window**: same bounds (inclusive vs exclusive), same timezone, no clock skew between sources.
+4. **Joins**: inner vs left/right/full; join key uniqueness on each side (silent fan-out check).
+5. **Filters**: predicates applied to both sides identically; no hidden defaults such as `WHERE deleted_at IS NULL` on only one side.
+6. **Source identity**: both queries actually hit the same table, view, replica, or snapshot.
+
+### Action
+
+Enumerate each dimension. For any dimension that cannot be confirmed identical across the entities being compared, treat the discrepancy as inconclusive evidence. Re-issue the verification with the dimension explicitly equalised before declaring a defect.
+
+Most cross-entity discrepancies in practice trace to dimensional-key reuse or partitioning mistakes in the verification query itself. See `resources/anti-patterns.md` for related dimensional and partitioning failure modes.
+
+### Self-deactivation
+
+The audit applies only when the verification signal spans multiple entities or compares two streams. Single-stream verifications (test failure, single command output, runtime exception, or single-source assertion like "expected 1 result, got 0 from one query") skip this audit.
+
 ## References
 Follow `resources/execution-protocol.md` step by step.
 See `resources/examples.md` for input/output examples.
