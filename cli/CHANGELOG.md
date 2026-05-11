@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.7.1...cli-v7.7.2) (2026-05-11)
+
+
+### Documentation
+
+* **readme:** drop redundant '(Vercel deepsec)' parenthetical ([3901bb5](https://github.com/first-fluke/oh-my-agent/commit/3901bb577e9292020d97f16a925a1b688cf1f465))
+* **readme:** hide oma-coordination from agent team table ([817377e](https://github.com/first-fluke/oh-my-agent/commit/817377eb03eab6a320d448011d93772a8cd49928))
+
 ## [7.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.7.0...cli-v7.7.1) (2026-05-11)
 
 
