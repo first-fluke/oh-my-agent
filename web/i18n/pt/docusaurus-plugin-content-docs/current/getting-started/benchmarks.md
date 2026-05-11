@@ -1,11 +1,11 @@
 ---
 title: Benchmarks
-description: Cinco harnesses do Claude Code construíram o mesmo MVP de plataforma 3D de aprendizagem infantil a partir de um prompt idêntico. oh-my-agent ficou em primeiro lugar com 80/100 nos eixos funcional, spec, visual, engenharia e eficiência.
+description: Cinco harnesses do Claude Code construíram o mesmo MVP de plataforma 3D de aprendizagem infantil a partir de um prompt idêntico. oh-my-agent ficou em primeiro lugar com 80.6/100 nos eixos funcional, spec, visual, engenharia e eficiência.
 ---
 
 # Benchmarks
 
-Cinco harnesses do Claude Code construíram o mesmo MVP de plataforma 3D criativa de aprendizagem infantil a partir de um prompt bruto idêntico. **oh-my-agent ficou em primeiro lugar com 80/100** em uma rubrica de 5 eixos (funcional, spec, visual, engenharia, eficiência).
+Cinco harnesses do Claude Code construíram o mesmo MVP de plataforma 3D criativa de aprendizagem infantil a partir de um prompt bruto idêntico. **oh-my-agent ficou em primeiro lugar com 80.6/100** em uma rubrica de 5 eixos (funcional, spec, visual, engenharia, eficiência).
 
 > Condições de execução: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. OAuth via o CLI `claude` logado pelo usuário (sem `ANTHROPIC_API_KEY`).
 
@@ -27,7 +27,7 @@ Cinco harnesses do Claude Code construíram o mesmo MVP de plataforma 3D criativ
 
 | Rank | Harness | **Total** | Func/35 | Spec/15 | Visual/20 | Eng/20 | Ef/10 |
 |---|---|---|---|---|---|---|---|
-| 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |

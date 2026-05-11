@@ -1,11 +1,11 @@
 ---
 title: Benchmarks
-description: Vijf Claude Code-harnessen bouwden hetzelfde MVP voor een 3D-leerplatform voor kinderen vanuit een identieke prompt. oh-my-agent eindigde als eerste met 80/100 over functionele, spec-, visuele, engineering- en efficientie-assen.
+description: Vijf Claude Code-harnessen bouwden hetzelfde MVP voor een 3D-leerplatform voor kinderen vanuit een identieke prompt. oh-my-agent eindigde als eerste met 80.6/100 over functionele, spec-, visuele, engineering- en efficientie-assen.
 ---
 
 # Benchmarks
 
-Vijf Claude Code-harnessen bouwden hetzelfde MVP voor een creatief 3D-leerplatform voor kinderen vanuit een identieke ruwe prompt. **oh-my-agent eindigde als eerste met 80/100** op een 5-assen rubric (functioneel, spec, visueel, engineering, efficientie).
+Vijf Claude Code-harnessen bouwden hetzelfde MVP voor een creatief 3D-leerplatform voor kinderen vanuit een identieke ruwe prompt. **oh-my-agent eindigde als eerste met 80.6/100** op een 5-assen rubric (functioneel, spec, visueel, engineering, efficientie).
 
 > Uitvoeringscondities: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. OAuth via de ingelogde `claude` CLI van de gebruiker (geen `ANTHROPIC_API_KEY`).
 
@@ -27,7 +27,7 @@ Vijf Claude Code-harnessen bouwden hetzelfde MVP voor een creatief 3D-leerplatfo
 
 | Rang | Harness | **Totaal** | Func/35 | Spec/15 | Visueel/20 | Eng/20 | Eff/10 |
 |---|---|---|---|---|---|---|---|
-| 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |

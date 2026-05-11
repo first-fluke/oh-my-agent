@@ -1,11 +1,11 @@
 ---
 title: 벤치마크
-description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어린이용 3D 학습 플랫폼 MVP를 구축했습니다. oh-my-agent는 functional, spec, visual, engineering, efficiency 5개 축에서 80/100점으로 1위를 기록했습니다.
+description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어린이용 3D 학습 플랫폼 MVP를 구축했습니다. oh-my-agent는 functional, spec, visual, engineering, efficiency 5개 축에서 80.6/100점으로 1위를 기록했습니다.
 ---
 
 # 벤치마크
 
-5개의 Claude Code harness가 동일한 raw 프롬프트로 같은 어린이용 3D 창의 학습 플랫폼 MVP를 구축했습니다. **oh-my-agent는 80/100점으로 1위에 올랐습니다.** 평가 기준은 5축 rubric(functional, spec, visual, engineering, efficiency)입니다.
+5개의 Claude Code harness가 동일한 raw 프롬프트로 같은 어린이용 3D 창의 학습 플랫폼 MVP를 구축했습니다. **oh-my-agent는 80.6/100점으로 1위에 올랐습니다.** 평가 기준은 5축 rubric(functional, spec, visual, engineering, efficiency)입니다.
 
 > 실행 조건: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. 사용자의 로그인된 `claude` CLI를 통한 OAuth 사용(`ANTHROPIC_API_KEY` 미사용).
 
@@ -27,7 +27,7 @@ description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어
 
 | 순위 | Harness | **총점** | Func/35 | Spec/15 | Visual/20 | Eng/20 | Eff/10 |
 |---|---|---|---|---|---|---|---|
-| 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |

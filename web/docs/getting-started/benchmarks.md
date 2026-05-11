@@ -1,11 +1,11 @@
 ---
 title: Benchmarks
-description: Five Claude Code harnesses built the same children's 3D learning platform MVP from an identical prompt. oh-my-agent ranked first at 80/100 across functional, spec, visual, engineering, and efficiency axes.
+description: Five Claude Code harnesses built the same children's 3D learning platform MVP from an identical prompt. oh-my-agent ranked first at 80.6/100 across functional, spec, visual, engineering, and efficiency axes.
 ---
 
 # Benchmarks
 
-Five Claude Code harnesses built the same children's 3D creative learning platform MVP from an identical raw prompt. **oh-my-agent placed first at 80/100** on a 5-axis rubric (functional, spec, visual, engineering, efficiency).
+Five Claude Code harnesses built the same children's 3D creative learning platform MVP from an identical raw prompt. **oh-my-agent placed first at 80.6/100** on a 5-axis rubric (functional, spec, visual, engineering, efficiency).
 
 > Run conditions: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. OAuth via the user's logged-in `claude` CLI (no `ANTHROPIC_API_KEY`).
 
@@ -27,7 +27,7 @@ Five Claude Code harnesses built the same children's 3D creative learning platfo
 
 | Rank | Harness | **Total** | Func/35 | Spec/15 | Visual/20 | Eng/20 | Eff/10 |
 |---|---|---|---|---|---|---|---|
-| 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |

@@ -1,11 +1,11 @@
 ---
 title: Benchmarki
-description: Pięć harnessów Claude Code zbudowało ten sam MVP platformy edukacyjnej 3D dla dzieci na podstawie identycznego promptu. oh-my-agent zajął pierwsze miejsce z wynikiem 80/100 w osiach funkcjonalnej, zgodności ze specyfikacją, wizualnej, inżynierskiej i wydajnościowej.
+description: Pięć harnessów Claude Code zbudowało ten sam MVP platformy edukacyjnej 3D dla dzieci na podstawie identycznego promptu. oh-my-agent zajął pierwsze miejsce z wynikiem 80.6/100 w osiach funkcjonalnej, zgodności ze specyfikacją, wizualnej, inżynierskiej i wydajnościowej.
 ---
 
 # Benchmarki
 
-Pięć harnessów Claude Code zbudowało ten sam MVP kreatywnej platformy edukacyjnej 3D dla dzieci na podstawie identycznego surowego promptu. **oh-my-agent zajął pierwsze miejsce z wynikiem 80/100** w 5-osiowej rubryce (funkcjonalność, zgodność ze specyfikacją, warstwa wizualna, inżynieria, wydajność).
+Pięć harnessów Claude Code zbudowało ten sam MVP kreatywnej platformy edukacyjnej 3D dla dzieci na podstawie identycznego surowego promptu. **oh-my-agent zajął pierwsze miejsce z wynikiem 80.6/100** w 5-osiowej rubryce (funkcjonalność, zgodność ze specyfikacją, warstwa wizualna, inżynieria, wydajność).
 
 > Warunki uruchomienia: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. OAuth przez zalogowane CLI `claude` użytkownika (bez `ANTHROPIC_API_KEY`).
 
@@ -27,7 +27,7 @@ Pięć harnessów Claude Code zbudowało ten sam MVP kreatywnej platformy edukac
 
 | Pozycja | Harness | **Suma** | Func/35 | Spec/15 | Visual/20 | Eng/20 | Eff/10 |
 |---|---|---|---|---|---|---|---|
-| 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |
