@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.7.0...cli-v7.7.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* **benchmarks:** drop gradient hero text in oma landing ([c9f6e13](https://github.com/first-fluke/oh-my-agent/commit/c9f6e136558e8dda3d4d816deb2ad1c0f222ede2))
+
 ## [7.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.6.0...cli-v7.7.0) (2026-05-11)
 
 
