@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.7.2...cli-v7.8.0) (2026-05-11)
+
+
+### Features
+
+* **scripts:** add sns:devto weekly draft generator ([e47f72c](https://github.com/first-fluke/oh-my-agent/commit/e47f72c520b35db2a8670d35414d4e06b31e8590))
+
 ## [7.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.7.1...cli-v7.7.2) (2026-05-11)
 
 
