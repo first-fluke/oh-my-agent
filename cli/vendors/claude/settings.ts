@@ -24,6 +24,23 @@ export const RECOMMENDED_TOP_LEVEL = {
   skillListingBudgetFraction: 0.02,
 } as const;
 
+const EFFORT_LEVEL_RANK: Record<string, number> = {
+  low: 0,
+  medium: 1,
+  high: 2,
+  xhigh: 3,
+};
+
+const RECOMMENDED_EFFORT_LEVEL_RANK =
+  EFFORT_LEVEL_RANK[RECOMMENDED_TOP_LEVEL.effortLevel] ?? 0;
+
+function effortLevelMeetsRecommended(actual: unknown): boolean {
+  if (typeof actual !== "string") return false;
+  const actualRank = EFFORT_LEVEL_RANK[actual];
+  if (actualRank === undefined) return false;
+  return actualRank >= RECOMMENDED_EFFORT_LEVEL_RANK;
+}
+
 export const RECOMMENDED_ATTRIBUTION = {
   commit:
     "Generated with oh-my-agent\n\nCo-Authored-By: First Fluke <our.first.fluke@gmail.com>",
@@ -52,6 +69,10 @@ export function needsSettingsUpdate(claudeSettings: any): boolean {
   }
 
   for (const [key, expected] of Object.entries(RECOMMENDED_TOP_LEVEL)) {
+    if (key === "effortLevel") {
+      if (!effortLevelMeetsRecommended(claudeSettings[key])) return true;
+      continue;
+    }
     if (claudeSettings[key] !== expected) return true;
   }
 
@@ -76,7 +97,15 @@ export function applyRecommendedSettings(claudeSettings: any): any {
   }
 
   claudeSettings.env = env;
+  const preservedEffortLevel = effortLevelMeetsRecommended(
+    claudeSettings.effortLevel,
+  )
+    ? claudeSettings.effortLevel
+    : undefined;
   Object.assign(claudeSettings, RECOMMENDED_TOP_LEVEL);
+  if (preservedEffortLevel) {
+    claudeSettings.effortLevel = preservedEffortLevel;
+  }
   claudeSettings.attribution = { ...RECOMMENDED_ATTRIBUTION };
   return claudeSettings;
 }

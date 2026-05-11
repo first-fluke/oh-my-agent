@@ -29,6 +29,56 @@ describe("Claude settings", () => {
     ).toBe(true);
   });
 
+  it("preserves effortLevel xhigh as above-recommended", () => {
+    const settings = applyRecommendedSettings({
+      env: {},
+      attribution: {},
+      effortLevel: "xhigh",
+    });
+    expect(settings.effortLevel).toBe("xhigh");
+  });
+
+  it("does not flag xhigh effortLevel as needing update", () => {
+    expect(
+      needsSettingsUpdate({
+        env: {
+          cleanupPeriodDays: 180,
+          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
+          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+          DISABLE_TELEMETRY: "1",
+          DISABLE_ERROR_REPORTING: "1",
+          CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
+          CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
+          CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
+          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
+          ENABLE_PROMPT_CACHING_1H: "1",
+        },
+        skipDangerousModePermissionPrompt: true,
+        effortLevel: "xhigh",
+        skillListingBudgetFraction: 0.02,
+        attribution: { commit: "c", pr: "p" },
+      }),
+    ).toBe(false);
+  });
+
+  it("downgrades invalid effortLevel values to the recommended level", () => {
+    const settings = applyRecommendedSettings({
+      env: {},
+      attribution: {},
+      effortLevel: "max",
+    });
+    expect(settings.effortLevel).toBe("high");
+  });
+
+  it("upgrades below-recommended effortLevel to the recommended level", () => {
+    const settings = applyRecommendedSettings({
+      env: {},
+      attribution: {},
+      effortLevel: "medium",
+    });
+    expect(settings.effortLevel).toBe("high");
+  });
+
   it("removes DISABLE_PROMPT_CACHING while preserving recommended settings", () => {
     const settings = applyRecommendedSettings({
       env: {
