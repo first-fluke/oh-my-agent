@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.5...web-v3.0.6) (2026-05-11)
+
+
+### Documentation
+
+* **benchmarks:** sync oma score to 80.6 across all locales ([fd66b76](https://github.com/first-fluke/oh-my-agent/commit/fd66b76b9408df36aebd15898bbdcc644f5f60a1))
+
 ## [3.0.5](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.4...web-v3.0.5) (2026-05-11)
 
 
