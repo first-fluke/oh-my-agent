@@ -157,9 +157,9 @@
       "items": {
         "visual-anti-patterns": {
           "pass": 1,
-          "score": 4.0,
+          "score": 4.3,
           "max": 5,
-          "evidence": "scores=[ 4 4 4 ] mean=4.0 (over 3 rounds)"
+          "evidence": "scores=[ 4 5 4 ] mean=4.3 (over 3 rounds)"
         },
         "visual-child-friendly": {
           "pass": 1,
@@ -169,9 +169,9 @@
         },
         "visual-consistency": {
           "pass": 1,
-          "score": 3.7,
+          "score": 4.0,
           "max": 5,
-          "evidence": "scores=[ 4 4 3 ] mean=3.7 (over 3 rounds)"
+          "evidence": "scores=[ 4 4 4 ] mean=4.0 (over 3 rounds)"
         },
         "visual-accessibility": {
           "pass": 1,
@@ -180,7 +180,7 @@
           "evidence": "scores=[ 3 3 3 ] mean=3.0 (over 3 rounds)"
         }
       },
-      "total": 14.7,
+      "total": 15.3,
       "max": 20
     },
     "engineering": {
@@ -244,6 +244,6 @@
       "max": 10
     }
   },
-  "total": 80.0,
+  "total": 80.6,
   "max": 100.0
 }

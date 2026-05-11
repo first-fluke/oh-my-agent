@@ -1,9 +1,9 @@
 {
   "harness": "oma",
   "items": {
-    "visual-anti-patterns":  { "score": 4, "max": 5, "notes": "One anti-pattern: some body text (card descriptions, sidebar labels, date stamps) appears smaller than 16px; no gradient backgrounds, orbs, nested cards, or cluttered dashboards observed." },
-    "visual-child-friendly": { "score": 4, "max": 5, "notes": "Large tappable object buttons with emoji icons and labels, playful language, friendly AI buddy named Spark, low text density; minor deduction for smaller adult-style text in the right-side theme/color panel." },
-    "visual-consistency":    { "score": 3, "max": 5, "notes": "Purple accent color and clean sans-serif font are consistent, but card styles differ between landing and gallery pages, nav bar layout varies across pages, and button shapes mix pills with outlined rectangles." },
-    "visual-accessibility":  { "score": 3, "max": 5, "notes": "Strong dark-on-light text contrast throughout, most interactive elements have text labels; however the FAB and chat send button are icon-only, no keyboard focus rings visible, and responsiveness cannot be confirmed from desktop-only screenshots." }
+    "visual-anti-patterns":  { "score": 4, "max": 5, "notes": "One anti-pattern: card description text and builder sidebar labels appear below 16px. No purple-to-blue gradient backgrounds, no gradient orbs, no nested cards, no cluttered dashboards." },
+    "visual-child-friendly": { "score": 4, "max": 5, "notes": "Large emoji-labeled object buttons, playful theme names, simple vocabulary, and low text density; some secondary controls (theme chips, nav buttons) are smaller than ideal 44px tap targets." },
+    "visual-consistency":    { "score": 4, "max": 5, "notes": "Consistent purple accent, pill-shaped buttons, rounded card radii, and sans-serif type ramp across all pages; minor drift between plain-white landing cards and gradient-preview gallery cards." },
+    "visual-accessibility":  { "score": 3, "max": 5, "notes": "Good text-on-white contrast throughout and text labels on most buttons; however the sparkle FAB is icon-only with no label, no keyboard focus rings are visible, and responsive narrow-width behavior is not demonstrated." }
   }
 }

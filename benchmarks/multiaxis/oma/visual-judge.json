@@ -1,9 +1,9 @@
 {
   "harness": "oma",
   "items": {
-    "visual-anti-patterns":  { "score": 4, "max": 5, "notes": "One anti-pattern: some auxiliary text (dates, 'Select an object first', '0 objects placed') appears smaller than 16px" },
-    "visual-child-friendly": { "score": 4, "max": 5, "notes": "Big tappable object buttons with emoji+label, playful tone, calm palette, low text density; minor dock for compact theme selector buttons" },
-    "visual-consistency":    { "score": 4, "max": 5, "notes": "Consistent purple accent, rounded corners, and sans-serif type across all pages; slight drift between landing gradient title style and utilitarian builder header" },
-    "visual-accessibility":  { "score": 3, "max": 5, "notes": "Good dark-on-light contrast throughout, visible selection ring on active theme button, text labels on object palette; FAB and chat send button are icon-only, no responsive layout evidence" }
+    "visual-anti-patterns":  { "score": 4, "max": 5, "notes": "One anti-pattern: builder sidebar object labels and status counter text appear below 16px at tablet scale." },
+    "visual-child-friendly": { "score": 4, "max": 5, "notes": "Emoji object palette, playful theme names, and low text density are strong; theme selector pills and AI chat input are slightly adult-style." },
+    "visual-consistency":    { "score": 4, "max": 5, "notes": "Purple accent, button shapes, and typography are consistent across all pages; minor drift between white landing cards and gradient-header gallery cards." },
+    "visual-accessibility":  { "score": 3, "max": 5, "notes": "Good text-on-light contrast and text labels on most controls; FAB sparkle button is icon-only without label, and no focus rings visible beyond the selected theme indicator." }
   }
 }

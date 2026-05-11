@@ -23,7 +23,7 @@
 
 | 순위 | 하네스 | **총점** | Func/35 | Spec/15 | Visual/20 | Eng/20 | Eff/10 |
 |---|---|---|---|---|---|---|---|
-| 🥇 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 🥇 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 🥈 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 🥉 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |
@@ -82,11 +82,11 @@
 ## 하네스별 분석
 
 
-### 🥇 oma (80)
+### 🥇 oma (80.6)
 
 - **Functional 32/35**: build, boot, ts, lint, 5개 user journey 모두 통과. journey-ai 1.5/3 (Spark 패널 동작·입력은 되는데 OpenAI 키 없을 때의 fallback 응답을 의미 있는 답변으로 안 봐서 감점), journey-save 1.5/3 (save 버튼·child profile은 새로고침 이후 유지되는데 월드 객체 자체는 복원 안 됨).
 - **Spec 13.33/15**: 13개 prompt 산출물 대부분 커버, real-api 보너스 2/2.
-- **Visual 14.7/20**: anti-patterns·child-friendly·consistency·accessibility 3 라운드 평균 합산.
+- **Visual 15.3/20**: anti-patterns·child-friendly·consistency·accessibility 3 라운드 평균 합산.
 - **Engineering 15/20**: routes=5, components=11, strict TS에 any 0개, max_depth=9·max_file_lines=164로 modularity 깔끔. transparency 마커 0/4. env 안전.
 - **Efficiency 5/10**: 31턴, 15m 56s, 총 $4.04 (파일당 약 $0.19).
 

@@ -1,9 +1,9 @@
 {
   "harness": "oma",
   "items": {
-    "visual-anti-patterns":  { "score": 4, "max": 5, "notes": "One anti-pattern: feature card descriptions on landing and builder labels appear smaller than 16px" },
-    "visual-child-friendly": { "score": 4, "max": 5, "notes": "Large tappable object buttons with emoji icons, minimal text density, playful tone; slight deduction for text-only theme selector buttons that could be more pictorial for young children" },
-    "visual-consistency":    { "score": 4, "max": 5, "notes": "Consistent purple accent, rounded corners, sans-serif type ramp, and light backgrounds across all pages; minor drift between gallery card gradient previews and landing page flat white cards" },
-    "visual-accessibility":  { "score": 3, "max": 5, "notes": "Good dark-on-light contrast and text labels on most buttons; no visible keyboard focus rings, AI send button is icon-only without label, some placeholder text is low contrast" }
+    "visual-anti-patterns":  { "score": 5, "max": 5, "notes": "No purple-to-blue gradient backgrounds, no floating orbs, no nested cards, no cluttered dashboards; gallery card thumbnails have a subtle pastel gradient but are small contained areas, not large-area backgrounds" },
+    "visual-child-friendly": { "score": 4, "max": 5, "notes": "Large tappable object buttons with emoji icons, minimal text density, playful themed worlds and friendly AI buddy; builder right panel uses slightly adult-style labeling" },
+    "visual-consistency":    { "score": 4, "max": 5, "notes": "Consistent purple accent, rounded corners, sans-serif type ramp, and card styling across all pages; gallery card gradient thumbnails introduce a mildly different visual treatment vs flat landing cards" },
+    "visual-accessibility":  { "score": 3, "max": 5, "notes": "Strong text-on-white contrast throughout; nearly all interactive elements have text labels; however no visible focus rings in any screenshot and FAB/send buttons are icon-only without labels" }
   }
 }

@@ -37,13 +37,7 @@ export default function LandingPage() {
         <h1
           id="hero-heading"
           className="text-4xl md:text-6xl font-bold mb-4"
-          style={{
-            background:
-              "linear-gradient(to right, var(--color-primary), var(--color-secondary))",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
+          style={{ color: "var(--color-primary)" }}
         >
           Imagine Worlds
         </h1>

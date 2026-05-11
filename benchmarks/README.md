@@ -21,7 +21,7 @@ ANTHROPIC_API_KEY not set — OAuth via the user's logged-in `claude` CLI.
 
 | Rank | Harness | **Total** | Func/35 | Spec/15 | Visual/20 | Eng/20 | Eff/10 |
 |---|---|---|---|---|---|---|---|
-| 🥇 1 | **oma** | **80** | 32 | 13.3 | 14.7 | 15 | 5 |
+| 🥇 1 | **oma** | **80.6** | 32 | 13.3 | 15.3 | 15 | 5 |
 | 🥈 2 | omc | 74.1 | 33.5 | 6.7 | 14.4 | 14.5 | 5 |
 | 🥉 3 | superpowers | 72.9 | 30 | 9.3 | 11.6 | 14 | 8 |
 | 4 | vanilla | 70.7 | 28.5 | 11.7 | 12 | 12.5 | 6 |
@@ -80,11 +80,11 @@ ANTHROPIC_API_KEY not set — OAuth via the user's logged-in `claude` CLI.
 ## Per-harness narrative
 
 
-### 🥇 oma (80)
+### 🥇 oma (80.6)
 
 - **Functional 32/35** — save-reload only 1.5/3.
 - **Spec 13.3/15** — passed: `product-concept,personas,journeys,feature-list,ia,ui-direction,tech-arch,db-schema,ai-prompts,safety,starter-code,priority-screens`. failed: `impl-plan`. real-api bonus 2/2.
-- **Visual 14.7/20** — anti-patterns 4/5 (scores=[ 4 4 4 ] mean=4.0 (over 3 rounds)…); accessibility 3/5.
+- **Visual 15.3/20** — anti-patterns 4.3/5 (scores=[ 4 5 4 ] mean=4.3 (over 3 rounds)…); accessibility 3/5.
 - **Engineering 15/20** — breadth: routes=5 components=11. type: strict=true any_count=0. modularity: max_depth=9 max_file_lines=164. transparency markers: 0/4. env: env config present, no hardcoded keys.
 - **Efficiency 5/10** — 31 turns / 15m 56s / $4.04 total ($0.37/file estimated).
 
