@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.5](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.4...web-v3.0.5) (2026-05-11)
+
+
+### Documentation
+
+* **workflows:** document /deepsec across all locales ([41a68df](https://github.com/first-fluke/oh-my-agent/commit/41a68dff35ace3cd6143d6727e507de7498e022f))
+
 ## [3.0.4](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.3...web-v3.0.4) (2026-05-09)
 
 
