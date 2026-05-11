@@ -69,7 +69,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-brainstorm** | สำรวจไอเดียก่อนที่จะเริ่มลงมือสร้างจริง |
 | **oma-db** | ออกแบบ Schema, จัดการ migration, indexing, vector DB |
 | **oma-debug** | วิเคราะห์สาเหตุต้นตอ (root cause), แก้ไขบัค, ทำ regression tests |
-| **oma-deepsec** | สแกนเนอร์ช่องโหว่โดยเอเจนต์ (Vercel deepsec), PR gate, custom matcher |
+| **oma-deepsec** | สแกนเนอร์ช่องโหว่โดยเอเจนต์, PR gate, custom matcher |
 | **oma-design** | ระบบการออกแบบ (Design systems), tokens, accessibility, responsive |
 | **oma-dev-workflow** | CI/CD, releases, ระบบอัตโนมัติสำหรับ monorepo |
 | **oma-docs** | ตรวจสอบความสมบูรณ์ของการอ้างอิง, ระบุ docs ที่ได้รับผลกระทบจาก diff |
@@ -116,7 +116,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | 3 | `/orchestrate` | การรันเอเจนต์แบบขนานโดยอัตโนมัติ |
 | 3 | `/ultrawork` | เวิร์กโฟลว์คุณภาพสูง 5 ระยะ พร้อมจุดตรวจสอบ 11 จุด |
 | 4 | `/review` | ตรวจสอบความปลอดภัย + ประสิทธิภาพ + accessibility |
-| 4 | `/deepsec` | สแกนความปลอดภัยเชิงลึกโดยเอเจนต์ (Vercel deepsec) |
+| 4 | `/deepsec` | สแกนความปลอดภัยเชิงลึกโดยเอเจนต์ |
 | 5 | `/debug` | การแก้บัคแบบมีโครงสร้างเพื่อหาสาเหตุต้นตอ |
 | 5 | `/docs` | ตรวจสอบและซิงก์ความคลาดเคลื่อนของเอกสารผ่าน `oma-docs` |
 | 6 | `/scm` | SCM + กระบวนการ Git และรองรับ Conventional Commit |

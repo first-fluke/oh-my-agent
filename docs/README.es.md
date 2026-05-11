@@ -69,7 +69,7 @@ Elige un preset y listo:
 | **oma-brainstorm** | Explora ideas antes de que te lances a construir |
 | **oma-db** | Diseño de esquemas, migraciones, indexación, vector DB |
 | **oma-debug** | Análisis de causa raíz, correcciones, tests de regresión |
-| **oma-deepsec** | Escáner de vulnerabilidades por agente (Vercel deepsec), gate de PR, matchers personalizados |
+| **oma-deepsec** | Escáner de vulnerabilidades por agente, gate de PR, matchers personalizados |
 | **oma-design** | Sistemas de diseño, tokens, accesibilidad, responsive |
 | **oma-dev-workflow** | CI/CD, releases, automatización de monorepo |
 | **oma-docs** | Verificaciones de integridad de refs, detección de docs afectados por diff |
@@ -116,7 +116,7 @@ O usa slash commands para flujos estructurados:
 | 3 | `/orchestrate` | Lanzamiento automatizado de agentes en paralelo |
 | 3 | `/ultrawork` | Flujo de calidad en 5 fases con 11 puertas de revisión |
 | 4 | `/review` | Auditoría de seguridad + rendimiento + accesibilidad |
-| 4 | `/deepsec` | Escaneo de seguridad profundo por agente (Vercel deepsec) |
+| 4 | `/deepsec` | Escaneo de seguridad profundo por agente |
 | 5 | `/debug` | Debugging estructurado de causa raíz |
 | 5 | `/docs` | Verificación y sincronización de drift de documentación con `oma-docs` |
 | 6 | `/scm` | Flujo SCM y Git con soporte de Conventional Commits |

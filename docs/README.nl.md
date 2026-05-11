@@ -69,7 +69,7 @@ Kies een preset en je bent klaar:
 | **oma-brainstorm** | Verkent ideeen voordat je begint met bouwen |
 | **oma-db** | Schema-ontwerp, migraties, indexering, vector DB |
 | **oma-debug** | Root cause-analyse, fixes, regressietests |
-| **oma-deepsec** | Agent-gedreven vulnerability scanner (Vercel deepsec), PR-gate, eigen matchers |
+| **oma-deepsec** | Agent-gedreven vulnerability scanner, PR-gate, eigen matchers |
 | **oma-design** | Design systems, tokens, toegankelijkheid, responsive |
 | **oma-dev-workflow** | CI/CD, releases, monorepo-automatisering |
 | **oma-docs** | Referentie-integriteitscontroles, detectie van door diff geraakte docs |
@@ -116,7 +116,7 @@ Of gebruik slash commands voor gestructureerde workflows:
 | 3 | `/orchestrate` | Automatische parallelle agent-spawning |
 | 3 | `/ultrawork` | 5-fasen kwaliteitsworkflow met 11 review gates |
 | 4 | `/review` | Beveiligings- + performance- + toegankelijkheidsaudit |
-| 4 | `/deepsec` | Diepe agent-gedreven security scan (Vercel deepsec) |
+| 4 | `/deepsec` | Diepe agent-gedreven security scan |
 | 5 | `/debug` | Gestructureerde root cause-debugging |
 | 5 | `/docs` | Documentatie-drift verifiëren en synchroniseren via `oma-docs` |
 | 6 | `/scm` | SCM- en Git-workflow met ondersteuning voor Conventional Commits |

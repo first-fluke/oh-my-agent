@@ -69,7 +69,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-brainstorm** | 动手之前先探索想法 |
 | **oma-db** | Schema 设计、迁移、索引、vector DB |
 | **oma-debug** | 根因分析、修复、回归测试 |
-| **oma-deepsec** | 智能体驱动的漏洞扫描器 (Vercel deepsec)、PR 门禁、自定义 matcher |
+| **oma-deepsec** | 智能体驱动的漏洞扫描器、PR 门禁、自定义 matcher |
 | **oma-design** | 设计系统、token、无障碍、响应式 |
 | **oma-dev-workflow** | CI/CD、发布、monorepo 自动化 |
 | **oma-docs** | 引用完整性检测、变更影响文档识别 |
@@ -116,7 +116,7 @@ You: "做一个带用户认证的 TODO 应用"
 | 3 | `/orchestrate` | 自动并行 agent 调度 |
 | 3 | `/ultrawork` | 含 11 个审查门禁的 5 阶段质量工作流 |
 | 4 | `/review` | 安全 + 性能 + 无障碍审计 |
-| 4 | `/deepsec` | 智能体驱动的深度安全扫描 (Vercel deepsec) |
+| 4 | `/deepsec` | 智能体驱动的深度安全扫描 |
 | 5 | `/debug` | 结构化根因调试 |
 | 5 | `/docs` | 基于 `oma-docs` 的文档漂移校验与同步 |
 | 6 | `/scm` | SCM 与 Git 工作流，Conventional Commits 支持 |

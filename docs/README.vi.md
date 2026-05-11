@@ -69,7 +69,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-brainstorm** | Khám phá ý tưởng trước khi bắt tay vào xây dựng |
 | **oma-db** | Thiết kế schema, migration, indexing, vector DB |
 | **oma-debug** | Phân tích nguyên nhân gốc, sửa lỗi, regression test |
-| **oma-deepsec** | Trình quét lỗ hổng bằng agent (Vercel deepsec), gate PR, matcher tùy chỉnh |
+| **oma-deepsec** | Trình quét lỗ hổng bằng agent, gate PR, matcher tùy chỉnh |
 | **oma-design** | Hệ thống thiết kế, token, accessibility, responsive |
 | **oma-dev-workflow** | CI/CD, release, tự động hóa monorepo |
 | **oma-docs** | Kiểm tra tính toàn vẹn tham chiếu, phát hiện docs bị ảnh hưởng bởi diff |
@@ -116,7 +116,7 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 | 3 | `/orchestrate` | Tự động spawn agent song song |
 | 3 | `/ultrawork` | Workflow chất lượng 5 giai đoạn với 11 cổng đánh giá |
 | 4 | `/review` | Kiểm tra bảo mật + hiệu suất + accessibility |
-| 4 | `/deepsec` | Quét bảo mật chuyên sâu bằng agent (Vercel deepsec) |
+| 4 | `/deepsec` | Quét bảo mật chuyên sâu bằng agent |
 | 5 | `/debug` | Debug có cấu trúc tìm nguyên nhân gốc |
 | 5 | `/docs` | Xác minh và đồng bộ trôi tài liệu qua `oma-docs` |
 | 6 | `/scm` | Quy trình SCM và Git, hỗ trợ Conventional Commits |
