@@ -1,5 +1,18 @@
 # Changelog
 
+## [7.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.5.0...cli-v7.6.0) (2026-05-11)
+
+
+### Features
+
+* **cli:** auto-register skills from .agents/skills/ frontmatter ([050f16f](https://github.com/first-fluke/oh-my-agent/commit/050f16fd40cda809fa83d19aed6a06edb8b3e45f))
+
+
+### Bug Fixes
+
+* **doctor:** bound CLI version probe with spawn timeout race ([edcf523](https://github.com/first-fluke/oh-my-agent/commit/edcf523f384136d0838a881144428ed41042c5c4))
+* **hooks/keyword-detector:** close fullwidth/hyphen bypasses and add CLI invocation guard ([3dfc2dc](https://github.com/first-fluke/oh-my-agent/commit/3dfc2dc1d3998e29b1dc9223de237a3baf01b78c))
+
 ## [7.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.4.0...cli-v7.5.0) (2026-05-10)
 
 
