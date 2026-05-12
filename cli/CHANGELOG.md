@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.10.0...cli-v7.11.0) (2026-05-12)
+
+
+### Features
+
+* **workflows:** bias brainstorm and work loops toward structural fixes ([50ce165](https://github.com/first-fluke/oh-my-agent/commit/50ce16541b2aa2fba9d6bbe9319a4497d56ca609))
+
 ## [7.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.9.0...cli-v7.10.0) (2026-05-12)
 
 
