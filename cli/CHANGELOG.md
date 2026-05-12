@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.9.0...cli-v7.10.0) (2026-05-12)
+
+
+### Features
+
+* **workflows:** add recap workflow for oma-recap ([1d328ef](https://github.com/first-fluke/oh-my-agent/commit/1d328ef4c539d9cb695a34c84ec37a6f445584ec))
+
 ## [7.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.8.0...cli-v7.9.0) (2026-05-11)
 
 
