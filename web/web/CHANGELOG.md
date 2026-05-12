@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.6...web-v3.1.0) (2026-05-12)
+
+
+### Features
+
+* add telemetry opt-in to oma-config for all vendors ([22265cd](https://github.com/first-fluke/oh-my-agent/commit/22265cd913310693418cfb1d04cdeaf04f00ecd5))
+
 ## [3.0.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.5...web-v3.0.6) (2026-05-11)
 
 
