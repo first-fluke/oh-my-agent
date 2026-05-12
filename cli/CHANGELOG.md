@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.11.0...cli-v7.12.0) (2026-05-12)
+
+
+### Features
+
+* add telemetry opt-in to oma-config for all vendors ([22265cd](https://github.com/first-fluke/oh-my-agent/commit/22265cd913310693418cfb1d04cdeaf04f00ecd5))
+
 ## [7.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.10.0...cli-v7.11.0) (2026-05-12)
 
 
