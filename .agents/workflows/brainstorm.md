@@ -47,8 +47,11 @@ Do NOT proceed to Step 3 until you have a clear understanding of the user's inte
 
 Present **2-3 distinct approaches** to solve the problem:
 - For each approach: summary, pros, cons, effort estimate (S/M/L)
+- **Label each approach as `tactical` (patch/workaround/quick win) or `structural` (root-cause/proper engineering).**
 - Highlight the **recommended approach** with rationale
 - Include a brief trade-off comparison matrix
+
+**Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
 
 **You MUST get user confirmation on the chosen approach before proceeding to Step 4.**
 

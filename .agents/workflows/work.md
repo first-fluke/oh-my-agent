@@ -139,7 +139,7 @@ If automated measurement is available:
 
 If QA finds CRITICAL or HIGH issues:
 
-1. Re-spawn the responsible agent with QA findings.
+1. Re-spawn the responsible agent with QA findings. **The fix prompt MUST instruct root-cause remediation, not symptom suppression.** Forbid tactical patches (try/catch swallowing, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent can explicitly justify why a structural fix is out of scope for this iteration (e.g., upstream library bug, deprecated path, hotfix window). Bias toward the orthodox engineering fix even when it costs more lines or touches more files.
 2. If Quality Score is active: measure after fix, apply Keep/Discard rule, record in Experiment Ledger.
 3. Repeat Steps 5-7.
 4. **If same issue persists after 2 fix attempts**: Activate **Exploration Loop** (load `exploration-loop.md` per `context-loading.md`):

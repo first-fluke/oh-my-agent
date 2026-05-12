@@ -208,6 +208,8 @@ If baseline was measured at Step 5.2:
 >
 > If neither condition is met, return to Step 5 and continue.
 
+**Root-cause-first fix mandate:** when re-spawning implementation agents to address QA findings, the fix prompt MUST require root-cause remediation. Forbid tactical patches (try/catch swallowing the error, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent explicitly justifies why a structural fix is out of scope (upstream library bug, deprecated path, hotfix window).
+
 **Gate failure (2nd time on same issue, and termination conditions not yet met)** → Activate **Exploration Loop**:
 1. Load `exploration-loop.md` (conditional, per `context-loading.md`)
 2. Generate 2-3 alternative hypotheses using Exploration Decision template (`reasoning-templates.md` #6)

@@ -100,6 +100,8 @@ Break down the project into actionable tasks. Each task must have:
 - Title, acceptance criteria
 - Priority (P0–P3), dependencies
 
+**Engineering-first decomposition:** prefer tasks that address root causes over tasks that patch individual symptoms. When a deliberate workaround or hotfix is included, record the reason in the Decision Log.
+
 ---
 
 ## Step 6: Review Plan with User
