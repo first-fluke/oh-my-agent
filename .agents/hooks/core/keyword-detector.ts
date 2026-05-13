@@ -446,6 +446,7 @@ const QUESTION_PATTERNS: RegExp[] = [
   /^.*참고할/,
   /^.*비교해/,
   /^.*분석해/,
+  /^.*분석도/,
   /^.*있냐/,
   /^.*있나\?/,
   /^.*있는지/,
@@ -455,6 +456,9 @@ const QUESTION_PATTERNS: RegExp[] = [
   /^.*뭐가\s*있/,
   /^.*어떤\s*(게|것|거)\s*있/,
   /^.*차이가?\s*뭐/,
+  // Korean meta-continuation patterns (referring to prior discussion)
+  /^.*그것도/,
+  /^.*보강할/,
   // English question patterns
   /^.*\bis there\b/i,
   /^.*\bare there\b/i,

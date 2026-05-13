@@ -16,6 +16,7 @@ const {
   buildPatterns,
   buildRawPatterns,
   isInformationalContext,
+  isAnalyticalQuestion,
   stripCodeBlocks,
   stripSystemEchoes,
   startsWithSlashCommand,
@@ -551,6 +552,153 @@ describe("keyword-detector", () => {
       expect(isInformationalContext(prompt, matchIndex, universalMeta)).toBe(
         true,
       );
+    });
+  });
+
+  describe("ralph false-positive regression (AS-IS vs TO-BE)", () => {
+    // These three prompts arose during a live discussion *about* ralph (not a
+    // request to run it). The original keyword detector would have flagged
+    // them as workflow activations (false positive) — see the AS-IS block.
+    // The TO-BE block proves the patched patterns now suppress them.
+
+    // Frozen snapshot of informationalPatterns.ko BEFORE this fix
+    // (.agents/hooks/core/triggers.json, ko array as of pre-patch).
+    const PRE_FIX_KO_INFORMATIONAL = [
+      "뭐야",
+      "뭐임",
+      "무엇",
+      "어떻게",
+      "설명해",
+      "알려줘",
+      "키워드",
+      "감지",
+      "오탐",
+      "트리거",
+      "발동",
+      "메타",
+      "트리거하면",
+      "트리거 해주면",
+      "트리거해야",
+      "키워드 나오면",
+      "왜 만들",
+      "어떻게 만들",
+      "어떨까",
+      "하면 좋을",
+      "한다면",
+      "할까요",
+    ].map((p) => new RegExp(p, "i"));
+
+    // Frozen snapshot of post-fix informationalPatterns.ko additions
+    // (kept inline so the contract survives later config edits).
+    const POST_FIX_KO_INFORMATIONAL = [
+      ...PRE_FIX_KO_INFORMATIONAL,
+      ...[
+        "보강할",
+        "에 대해",
+        "에 대한",
+        "한번 봐",
+        "깊게 봐",
+        "코드를 한번",
+        "그 워크플로우",
+        "이 워크플로우",
+        "워크플로우 자체",
+      ].map((p) => new RegExp(p, "i")),
+    ];
+
+    // Frozen snapshot of QUESTION_PATTERNS that existed BEFORE this fix
+    // (keyword-detector.ts, evaluated against first line of the prompt).
+    const PRE_FIX_QUESTION_PATTERNS: RegExp[] = [
+      /^.*참고할/,
+      /^.*비교해/,
+      /^.*분석해/,
+      /^.*있냐/,
+      /^.*있나\?/,
+      /^.*있는지/,
+      /^.*있을까/,
+      /^.*볼만한/,
+      /^.*쓸만한/,
+      /^.*뭐가\s*있/,
+      /^.*어떤\s*(게|것|거)\s*있/,
+      /^.*차이가?\s*뭐/,
+      /^.*\bis there\b/i,
+      /^.*\bare there\b/i,
+      /^.*\banything worth\b/i,
+      /^.*\bwhat.*(feature|difference|reference)/i,
+      /^.*\bcompare\b/i,
+    ];
+
+    function preFixAnalytical(prompt: string): boolean {
+      const firstLine = (prompt.split("\n")[0] ?? "").trim();
+      return PRE_FIX_QUESTION_PATTERNS.some((p) => p.test(firstLine));
+    }
+
+    const cases: Array<{ name: string; prompt: string; keyword: string }> = [
+      {
+        name: "discussion via '보강할게 있음?'",
+        prompt: "그럼 oma ralph 에 보강할게 있음?",
+        keyword: "ralph",
+      },
+      {
+        name: "discussion via '코드를 한번 깊게 봐'",
+        prompt: "그 랄프 코드를 한번 깊게 봐볼래?",
+        keyword: "랄프",
+      },
+      {
+        name: "discussion via '그것도 ... 분석도'",
+        prompt: "그것도 막고 랄프 분석도 해야겠네요",
+        keyword: "랄프",
+      },
+    ];
+
+    for (const { name, prompt, keyword } of cases) {
+      it(`[AS-IS] would have triggered: ${name}`, () => {
+        const matchIndex = prompt.indexOf(keyword);
+        // Pre-fix: neither layer suppresses → ralph would activate.
+        expect(
+          isInformationalContext(prompt, matchIndex, PRE_FIX_KO_INFORMATIONAL),
+        ).toBe(false);
+        expect(preFixAnalytical(prompt)).toBe(false);
+      });
+
+      it(`[TO-BE] now suppressed: ${name}`, () => {
+        const matchIndex = prompt.indexOf(keyword);
+        // Post-fix: at least one of the two layers must suppress.
+        const blockedByWindow = isInformationalContext(
+          prompt,
+          matchIndex,
+          POST_FIX_KO_INFORMATIONAL,
+        );
+        const blockedByFirstLine = isAnalyticalQuestion(prompt);
+        expect(blockedByWindow || blockedByFirstLine).toBe(true);
+      });
+    }
+
+    it("[TO-BE] still allows genuine ralph requests to trigger", () => {
+      // Prompts that genuinely request the ralph workflow must NOT be
+      // suppressed. Both layers must let them through.
+      const genuine = [
+        "랄프로 끝까지 해줘",
+        "ralph this task",
+        "멈추지말고 끝까지 해",
+      ];
+      for (const prompt of genuine) {
+        expect(isAnalyticalQuestion(prompt)).toBe(false);
+        const keyword = prompt.includes("랄프")
+          ? "랄프"
+          : prompt.includes("ralph")
+            ? "ralph"
+            : prompt;
+        const matchIndex = prompt.indexOf(keyword);
+        if (matchIndex >= 0) {
+          expect(
+            isInformationalContext(
+              prompt,
+              matchIndex,
+              POST_FIX_KO_INFORMATIONAL,
+            ),
+          ).toBe(false);
+        }
+      }
     });
   });
 
