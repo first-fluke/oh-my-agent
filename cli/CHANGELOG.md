@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.12.0...cli-v7.12.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* **hooks:** suppress ralph false-positive on meta-discussion prompts ([88307cf](https://github.com/first-fluke/oh-my-agent/commit/88307cff4a297e0ae4d850a35489a34fd6b35ff6))
+
 ## [7.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.11.0...cli-v7.12.0) (2026-05-12)
 
 
