@@ -110,6 +110,10 @@ export const SKILLS: SkillsRegistry = {
       name: "oma-translator",
       desc: `Context-aware translation that preserves tone, style, and natural word order. Use when translating UI strings, documentation, marketing copy, or any multilingual content. Infers register, domain, and style from the source text and surrounding codebase context.`,
     },
+    {
+      name: "oma-voice",
+      desc: `Local-first text-to-speech and speech-to-text via the Voicebox MCP server. Generates speech from cloned or preset voice profiles for agent notifications, content voiceovers, and audio asset creation, and transcribes audio files for meeting notes or memos. Runs entirely on-device with no cloud, no API keys, no per-call cost. Use for voice generation, TTS, STT, transcription, voiceover, narration, dictation, audio asset work.`,
+    },
   ],
   infrastructure: [
     {
