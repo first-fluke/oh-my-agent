@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.0...web-v3.1.1) (2026-05-15)
+
+
+### Documentation
+
+* **oma-pm:** unify plan secondary output to result-pm.md ([f797932](https://github.com/first-fluke/oh-my-agent/commit/f797932fcb9ff85bccbd5dfef0489310b1a2fe27))
+
 ## [3.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.0.6...web-v3.1.0) (2026-05-12)
 
 
