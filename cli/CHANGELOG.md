@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.13.0...cli-v7.14.0) (2026-05-15)
+
+
+### Features
+
+* **voice:** add oma-voice skill for local TTS/STT via Voicebox MCP ([3a0a7fb](https://github.com/first-fluke/oh-my-agent/commit/3a0a7fb48c2ecbed80a425d837fa0a93f0e13dc8))
+
 ## [7.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.12.1...cli-v7.13.0) (2026-05-15)
 
 
