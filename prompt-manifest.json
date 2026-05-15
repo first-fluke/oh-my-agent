@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "7.12.1",
-  "releaseDate": "2026-05-15T06:34:17.276Z",
+  "releaseDate": "2026-05-15T08:11:18.426Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -41,8 +41,8 @@
     },
     {
       "path": ".agents/agents/pm-planner.md",
-      "sha256": "376061148071e2188231a1083c82ba86275f8316f6f1ae1f1f488aae53d93660",
-      "size": 1844
+      "sha256": "c2f0dfd1437a1f83415f052bb842fff2a06d820a2b2a301bf69e9eea64aa1744",
+      "size": 1849
     },
     {
       "path": ".agents/agents/qa-reviewer.md",
@@ -796,8 +796,8 @@
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
-      "sha256": "63ec65f071a22693fbe4eaac8f713a826a3fb3e188dce1e2d357b4bf03111ba9",
-      "size": 14650
+      "sha256": "09c1919aef284acb523cf430f4ca1111e3a586ef6ffbe0babdfa53c581efd018",
+      "size": 14654
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
@@ -1256,8 +1256,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/SKILL.md",
-      "sha256": "28bea31804b2412eb59411c1bf6e61b230e87a0f2626e879206fd5bdc56b9060",
-      "size": 6872
+      "sha256": "143e6d35be024fe9d79130388cdc47b1d2758d3404ddcf360822fc06e90c2042",
+      "size": 6863
     },
     {
       "path": ".agents/skills/oma-pm/resources/error-playbook.md",
@@ -1271,8 +1271,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/execution-protocol.md",
-      "sha256": "1775ffec8932e88e777d7658ccbc42c72ebaa800272b8e3f8e2ee3a9b352b8fe",
-      "size": 3075
+      "sha256": "4efc734850ffee3f41741a815593e2170889f7882605796ccd3a6f3948212e2b",
+      "size": 3072
     },
     {
       "path": ".agents/skills/oma-pm/resources/iso-planning.md",
@@ -1556,8 +1556,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "55815b779320bb001904b5eb7a26d2c3e10820ff449bc52eacd9fe65964a378b",
-      "size": 8615
+      "sha256": "6f142d4baeb0e60a280d6ad3944c12fb4efca867c0b78656df3193ac0124b5d5",
+      "size": 8620
     },
     {
       "path": ".agents/workflows/pdf.md",
