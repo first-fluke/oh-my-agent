@@ -10,11 +10,12 @@ on:
 
 concurrency:
   group: sync-manifest-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   sync-manifest:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
