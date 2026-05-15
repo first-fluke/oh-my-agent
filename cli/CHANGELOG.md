@@ -1,5 +1,21 @@
 # Changelog
 
+## [7.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.12.1...cli-v7.13.0) (2026-05-15)
+
+
+### Features
+
+* **market:** add discover-competitors (LLM-first peer-entity candidates) ([e19ee27](https://github.com/first-fluke/oh-my-agent/commit/e19ee27001dd8bafc8b988141a4763868a8fa23f))
+* **market:** add oma-market skill with deterministic CLI pipeline ([3d42406](https://github.com/first-fluke/oh-my-agent/commit/3d4240661aa3b202e660099c44a4d35245455122))
+* **search:** add clien, okky, duckduckgo (ddgs) handlers ([09bfbb4](https://github.com/first-fluke/oh-my-agent/commit/09bfbb434a3be82963c2a73d783b2c5ee389a23c))
+
+
+### Documentation
+
+* **api-contracts:** align _shared/api-contracts path to _shared/core/api-contracts ([1edd5bf](https://github.com/first-fluke/oh-my-agent/commit/1edd5bf96e8ef30e8e6b7b36e6ba8ec407ff40a4))
+* **oma-docs:** sync skill and ARCHITECTURE to no-LLM-call pattern ([e38dc57](https://github.com/first-fluke/oh-my-agent/commit/e38dc57f7269c558c0d12e6a390047c799879e6e))
+* **oma-pm:** unify plan secondary output to result-pm.md ([f797932](https://github.com/first-fluke/oh-my-agent/commit/f797932fcb9ff85bccbd5dfef0489310b1a2fe27))
+
 ## [7.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.12.0...cli-v7.12.1) (2026-05-13)
 
 
