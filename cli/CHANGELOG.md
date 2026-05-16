@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.14.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.14.0...cli-v7.14.1) (2026-05-16)
+
+
+### Documentation
+
+* **readme:** add oma-academic-writer, oma-market, oma-voice rows ([e2598c9](https://github.com/first-fluke/oh-my-agent/commit/e2598c9c2255fa56f6156e9e527df9034371cd7f))
+
 ## [7.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.13.0...cli-v7.14.0) (2026-05-15)
 
 
