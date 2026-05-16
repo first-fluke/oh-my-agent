@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.14.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.14.1...cli-v7.14.2) (2026-05-16)
+
+
+### Performance
+
+* **web:** enable Docusaurus Faster (Rspack/SWC) and drop webpack override ([139378f](https://github.com/first-fluke/oh-my-agent/commit/139378f497531c677a8e62136c445a59bb4e5881))
+
+
+### Documentation
+
+* add CITATION.cff with release-please auto-versioning ([f081b04](https://github.com/first-fluke/oh-my-agent/commit/f081b048efa685ea0acb46032ecf8283cea59909))
+
 ## [7.14.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.14.0...cli-v7.14.1) (2026-05-16)
 
 
