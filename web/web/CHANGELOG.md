@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.1...web-v3.1.2) (2026-05-16)
+
+
+### Performance
+
+* **web:** enable Docusaurus Faster (Rspack/SWC) and drop webpack override ([139378f](https://github.com/first-fluke/oh-my-agent/commit/139378f497531c677a8e62136c445a59bb4e5881))
+
 ## [3.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.0...web-v3.1.1) (2026-05-15)
 
 
