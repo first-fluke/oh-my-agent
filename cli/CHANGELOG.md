@@ -1,5 +1,19 @@
 # Changelog
 
+## [7.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.16.0...cli-v7.17.0) (2026-05-17)
+
+
+### Features
+
+* **serena:** migrate to uv tool install with per-vendor MCP contexts ([d79e51d](https://github.com/first-fluke/oh-my-agent/commit/d79e51dbd44362f18bd7e2978a163e026cfa94b6))
+
+
+### Bug Fixes
+
+* **mcp:** switch serena context from antigravity to ide ([163a6f2](https://github.com/first-fluke/oh-my-agent/commit/163a6f2143883124d02046a83765e2d1552bd08e))
+* **test:** normalize Windows backslashes in session-cost fs mocks ([17ea918](https://github.com/first-fluke/oh-my-agent/commit/17ea9182978acf2606b2347b08eb3de6218d5718))
+* **test:** use POSIX paths for direct mock store access ([0f0994a](https://github.com/first-fluke/oh-my-agent/commit/0f0994a999a51de3a7dd54bc6333bbc21df27918))
+
 ## [7.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.15.0...cli-v7.16.0) (2026-05-17)
 
 
