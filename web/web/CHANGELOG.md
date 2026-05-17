@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.4.0...web-v3.4.1) (2026-05-17)
+
+
+### Documentation
+
+* update preset name references to new vendor scheme ([2f49afb](https://github.com/first-fluke/oh-my-agent/commit/2f49afbab98e733fccef180cd43e1b25d46c4487))
+
 ## [3.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.3.0...web-v3.4.0) (2026-05-17)
 
 
