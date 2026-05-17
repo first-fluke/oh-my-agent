@@ -1,5 +1,27 @@
 # Changelog
 
+## [7.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.19.0...cli-v7.20.0) (2026-05-17)
+
+
+### Features
+
+* **migrations:** add 010-rename-preset-keys auto-migration ([2c6724c](https://github.com/first-fluke/oh-my-agent/commit/2c6724c8c0b41845d63762bf15b864a83a796262))
+
+
+### Bug Fixes
+
+* **migrations:** null-guard regex match result in 010 ([1b3cda3](https://github.com/first-fluke/oh-my-agent/commit/1b3cda3a2f2ea7404f76b16d8d8d48dae482608e))
+
+
+### Refactoring
+
+* **cli:** rename model preset keys (claude-only→claude, antigravity→mixed) ([681042d](https://github.com/first-fluke/oh-my-agent/commit/681042d60a0912a5f7f80ebcbfcb46459e438e0a))
+
+
+### Documentation
+
+* update preset name references to new vendor scheme ([2f49afb](https://github.com/first-fluke/oh-my-agent/commit/2f49afbab98e733fccef180cd43e1b25d46c4487))
+
 ## [7.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.18.0...cli-v7.19.0) (2026-05-17)
 
 
