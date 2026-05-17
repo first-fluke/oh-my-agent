@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.17.0...cli-v7.18.0) (2026-05-17)
+
+
+### Features
+
+* **readme:** add 'Works With Every Agent' vendor logos table ([e8b4211](https://github.com/first-fluke/oh-my-agent/commit/e8b42113493f4e03f65979667dde93a48d0af518))
+* **serena:** opt-in serena-agent auto-upgrade during oma update ([c0e42d6](https://github.com/first-fluke/oh-my-agent/commit/c0e42d6b2bb5c641056aae6d9839e29e4cbd154a))
+
+
+### Refactoring
+
+* **cli:** move stats metrics to .agents/state ([1983d4d](https://github.com/first-fluke/oh-my-agent/commit/1983d4d6dcf7e5e545948efc381b3769bd65df16))
+
+
+### Documentation
+
+* **claude:** reorder rules table by usage frequency ([da8e196](https://github.com/first-fluke/oh-my-agent/commit/da8e196eabc2e6c777d08aff4d3144ba7350f3f5))
+
 ## [7.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.16.0...cli-v7.17.0) (2026-05-17)
 
 
