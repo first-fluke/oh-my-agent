@@ -113,7 +113,7 @@ oh-my-agentは`.agents/oma-config.yaml`の`model_preset`を介して、各エー
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: antigravity   # ミックス: QA/PMはClaude、実装はCodex、検索はGemini
+model_preset: mixed   # ミックス: QA/PMはClaude、実装はCodex、検索はGemini
 
 # プリセットの上に特定のエージェントをオーバーライド
 agents:
@@ -121,7 +121,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-ビルトインプリセット：`claude-only`、`codex-only`、`gemini-only`、`qwen-only`、`cursor-only`、`antigravity`。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照してください。
+ビルトインプリセット：`claude`、`codex`、`gemini`、`qwen`、`cursor`、`mixed`。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照してください。
 
 ### ベンダー解決の優先順位
 

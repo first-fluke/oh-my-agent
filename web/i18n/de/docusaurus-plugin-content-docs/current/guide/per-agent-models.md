@@ -29,17 +29,17 @@ Setzen Sie `model_preset` auf einen der fünf eingebauten Schlüssel:
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 ```
 
 | Schlüssel | Beschreibung | Geeignet für |
 |:----|:-----------|:---------|
-| `claude-only` | Alle Agenten verwenden Claude (Sonnet/Opus) | Inhaber eines Claude-Max-Abonnements |
-| `codex-only` | Alle Agenten verwenden OpenAI Codex (GPT-5.x) mit Effort-Stufen | Nutzer von ChatGPT Plus/Pro |
-| `gemini-only` | Alle Agenten verwenden die Gemini CLI; Thinking ist für Implementierungsrollen aktiviert | Nutzer von Google AI Pro |
-| `qwen-only` | Alle Agenten werden extern über Qwen Code geleitet; binäres Thinking (keine Effort-Stufen) | Lokale bzw. selbst gehostete Inferenz |
-| `cursor-only` | Alle Agenten nutzen Cursor `composer-2` (`composer-2-fast` für orchestrator/qa/pm/docs/retrieval) | Cursor-Pro- / Pro-Student-Abo |
-| `antigravity` | Gemischt: Implementierungsrollen nutzen Codex, Architecture/QA/PM nutzen Claude, Retrieval nutzt Gemini | Anbieterübergreifende Stärken ohne Konfiguration pro Agent |
+| `claude` | Alle Agenten verwenden Claude (Sonnet/Opus) | Inhaber eines Claude-Max-Abonnements |
+| `codex` | Alle Agenten verwenden OpenAI Codex (GPT-5.x) mit Effort-Stufen | Nutzer von ChatGPT Plus/Pro |
+| `gemini` | Alle Agenten verwenden die Gemini CLI; Thinking ist für Implementierungsrollen aktiviert | Nutzer von Google AI Pro |
+| `qwen` | Alle Agenten werden extern über Qwen Code geleitet; binäres Thinking (keine Effort-Stufen) | Lokale bzw. selbst gehostete Inferenz |
+| `cursor` | Alle Agenten nutzen Cursor `composer-2` (`composer-2-fast` für orchestrator/qa/pm/docs/retrieval) | Cursor-Pro- / Pro-Student-Abo |
+| `mixed` | Gemischt: Implementierungsrollen nutzen Codex, Architecture/QA/PM nutzen Claude, Retrieval nutzt Gemini | Anbieterübergreifende Stärken ohne Konfiguration pro Agent |
 
 Eingebaute Presets werden mit dem CLI-Paket ausgeliefert und aktualisieren sich automatisch, wenn Sie `oh-my-agent` aktualisieren. Es ist keine lokale Datei zu pflegen.
 
@@ -52,7 +52,7 @@ Verwenden Sie die `agents:`-Map, um bestimmte Agenten zusätzlich zum aktiven Pr
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }
@@ -104,12 +104,12 @@ model_preset: my-team
 
 custom_presets:
   my-team:
-    extends: claude-only              # base preset — partial merge
+    extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }
       db:      { model: openai/gpt-5.5, effort: high }
-      # all other agents inherited from claude-only
+      # all other agents inherited from claude
 ```
 
 Ohne `extends:` müssen Sie `agent_defaults` für alle 11 Agentenrollen angeben. Mit `extends:` werden nur die von Ihnen aufgeführten Einträge überschrieben; die übrigen werden vom Basis-Preset geerbt.
@@ -127,7 +127,7 @@ oma doctor --profile
 **Beispielausgabe:**
 
 ```
-oh-my-agent — Profile Health (preset=antigravity)
+oh-my-agent — Profile Health (preset=mixed)
 
 ┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
 │ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
@@ -150,7 +150,7 @@ Migration 008 läuft automatisch bei `oma install` und `oma update`. Sie konvert
 
 | Veraltete Konfiguration | Ergebnis nach Migration 008 |
 |:-------------|:--------------------------|
-| Alle Einträge desselben Anbieters (z. B. ausschließlich `gemini`) | `model_preset: gemini-only`, kein `agents:` |
+| Alle Einträge desselben Anbieters (z. B. ausschließlich `gemini`) | `model_preset: gemini`, kein `agents:` |
 | Gemischte Anbieter | Häufigster Anbieter → `model_preset`; übrige → `agents:`-Überschreibungen |
 | `AgentSpec`-Objektwerte | Werden unverändert nach `agents:` übernommen |
 | Inhalt von `models.yaml` | Wird in `oma-config.yaml.models` eingebettet |
@@ -199,7 +199,7 @@ models:
 
 custom_presets:
   my-team:
-    extends: claude-only
+    extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }

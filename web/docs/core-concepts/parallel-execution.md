@@ -131,7 +131,7 @@ oh-my-agent routes each agent to the appropriate CLI via `model_preset` in `.age
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: antigravity   # mixed: Claude for QA/PM, Codex for impl, Gemini for retrieval
+model_preset: mixed   # mixed: Claude for QA/PM, Codex for impl, Gemini for retrieval
 
 # Override specific agents on top of the preset
 agents:
@@ -139,7 +139,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Built-in presets: `claude-only`, `codex-only`, `gemini-only`, `qwen-only`, `cursor-only`, `antigravity`. See [Per-Agent Models](../guide/per-agent-models.md) for details.
+Built-in presets: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. See [Per-Agent Models](../guide/per-agent-models.md) for details.
 
 ### Vendor Resolution
 

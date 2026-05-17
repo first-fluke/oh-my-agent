@@ -149,7 +149,7 @@ Modelselectie volgt twee lagen:
 - Same-vendor native dispatch gebruikt de gegenereerde vendor-agent-definitie in `.claude/agents/`, `.codex/agents/` of `.gemini/agents/`.
 - Cross-vendor of fallback CLI dispatch gebruikt de vendor-defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**modellen per agent**: elke agent kan via `.agents/oma-config.yaml` een eigen model en `effort` kiezen. Er zijn zes kant-en-klare runtime profiles: `claude-only`, `codex-only`, `gemini-only`, `qwen-only`, `cursor-only`, `antigravity`. Bekijk de opgeloste auth-matrix met `oma doctor --profile`. Volledige gids: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**modellen per agent**: elke agent kan via `.agents/oma-config.yaml` een eigen model en `effort` kiezen. Er zijn zes kant-en-klare runtime profiles: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. Bekijk de opgeloste auth-matrix met `oma doctor --profile`. Volledige gids: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Waarom oh-my-agent?
 

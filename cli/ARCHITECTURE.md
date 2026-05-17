@@ -14,7 +14,7 @@ cli/
     ui.ts                        Clack / picocolors prompts (where split has been applied)
     internal/                    slice-private helpers (not exported)
   commands/migrations/           shared install + update migrations (exception: both slices may import)
-  vendors/<vendor>/              per-CLI-vendor adapter (claude, gemini, codex, qwen, antigravity)
+  vendors/<vendor>/              per-CLI-vendor adapter (claude, gemini, codex, qwen, mixed)
     auth.ts
     settings.ts
     index.ts                     Vendor registry (cli/vendors/index.ts)

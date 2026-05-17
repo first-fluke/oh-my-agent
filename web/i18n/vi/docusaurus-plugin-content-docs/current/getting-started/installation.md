@@ -199,7 +199,7 @@ Lệnh `oma install` tạo `.agents/oma-config.yaml`. Đây là file cấu hình
 ```yaml
 # Bắt buộc
 language: en
-model_preset: gemini-only   # built-in: claude-only, codex-only, gemini-only, qwen-only, cursor-only, antigravity
+model_preset: gemini   # built-in: claude, codex, gemini, qwen, cursor, mixed
 
 # Tùy chọn — tùy chọn ngày/giờ
 date_format: ISO
@@ -220,7 +220,7 @@ agents:
 # Tùy chọn — preset do người dùng định nghĩa
 # custom_presets:
 #   my-team:
-#     extends: claude-only
+#     extends: claude
 #     agent_defaults:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```

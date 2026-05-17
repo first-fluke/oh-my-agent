@@ -29,17 +29,17 @@ description: oma-config.yaml의 model_preset으로 각 에이전트가 사용할
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 ```
 
 | 키 | 설명 | 적합한 사용자 |
 |:----|:-----------|:---------|
-| `claude-only` | 모든 에이전트가 Claude (Sonnet/Opus) 사용 | Claude Max 구독자 |
-| `codex-only` | 모든 에이전트가 effort 레벨이 적용된 OpenAI Codex (GPT-5.x) 사용 | ChatGPT Plus/Pro 사용자 |
-| `gemini-only` | 모든 에이전트가 Gemini CLI 사용, 구현 역할에는 thinking 활성화 | Google AI Pro 사용자 |
-| `qwen-only` | 모든 에이전트를 Qwen Code로 외부 라우팅. 이진 thinking 방식(effort 레벨 없음) | 로컬 또는 자체 호스팅 추론 |
-| `cursor-only` | 모든 에이전트가 Cursor `composer-2` 사용 (orchestrator/qa/pm/docs/retrieval은 `composer-2-fast`) | Cursor Pro / Pro Student 사용자 |
-| `antigravity` | 혼합 구성: 구현 역할은 Codex, architecture/qa/pm은 Claude, retrieval은 Gemini | 에이전트별 설정 부담 없이 벤더별 강점을 활용하고 싶을 때 |
+| `claude` | 모든 에이전트가 Claude (Sonnet/Opus) 사용 | Claude Max 구독자 |
+| `codex` | 모든 에이전트가 effort 레벨이 적용된 OpenAI Codex (GPT-5.x) 사용 | ChatGPT Plus/Pro 사용자 |
+| `gemini` | 모든 에이전트가 Gemini CLI 사용, 구현 역할에는 thinking 활성화 | Google AI Pro 사용자 |
+| `qwen` | 모든 에이전트를 Qwen Code로 외부 라우팅. 이진 thinking 방식(effort 레벨 없음) | 로컬 또는 자체 호스팅 추론 |
+| `cursor` | 모든 에이전트가 Cursor `composer-2` 사용 (orchestrator/qa/pm/docs/retrieval은 `composer-2-fast`) | Cursor Pro / Pro Student 사용자 |
+| `mixed` | 혼합 구성: 구현 역할은 Codex, architecture/qa/pm은 Claude, retrieval은 Gemini | 에이전트별 설정 부담 없이 벤더별 강점을 활용하고 싶을 때 |
 
 빌트인 프리셋은 CLI 패키지에 포함되어 제공되며, `oh-my-agent`를 업그레이드하면 자동으로 갱신됩니다. 별도로 관리할 로컬 파일이 없습니다.
 
@@ -52,7 +52,7 @@ model_preset: gemini-only
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }
@@ -104,12 +104,12 @@ model_preset: my-team
 
 custom_presets:
   my-team:
-    extends: claude-only              # base preset — partial merge
+    extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }
       db:      { model: openai/gpt-5.5, effort: high }
-      # all other agents inherited from claude-only
+      # all other agents inherited from claude
 ```
 
 `extends:`가 없으면 11개 에이전트 역할 모두에 대해 `agent_defaults`를 제공해야 합니다. `extends:`를 사용하면 명시한 항목만 오버라이드되고 나머지는 베이스 프리셋에서 상속됩니다.
@@ -127,7 +127,7 @@ oma doctor --profile
 **출력 예시:**
 
 ```
-oh-my-agent — Profile Health (preset=antigravity)
+oh-my-agent — Profile Health (preset=mixed)
 
 ┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
 │ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
@@ -150,7 +150,7 @@ oh-my-agent — Profile Health (preset=antigravity)
 
 | 레거시 설정 | 마이그레이션 008 적용 후 결과 |
 |:-------------|:--------------------------|
-| 모든 항목이 동일한 벤더 (예: 전부 `gemini`) | `model_preset: gemini-only`, `agents:` 없음 |
+| 모든 항목이 동일한 벤더 (예: 전부 `gemini`) | `model_preset: gemini`, `agents:` 없음 |
 | 혼합 벤더 | 가장 빈도 높은 벤더가 `model_preset`으로, 나머지는 `agents:` 오버라이드로 |
 | `AgentSpec` 객체 값 | `agents:`로 그대로 이동 |
 | `models.yaml` 내용 | `oma-config.yaml.models`에 인라인으로 통합 |
@@ -199,7 +199,7 @@ models:
 
 custom_presets:
   my-team:
-    extends: claude-only
+    extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }

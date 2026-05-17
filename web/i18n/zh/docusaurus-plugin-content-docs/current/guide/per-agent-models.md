@@ -29,17 +29,17 @@ description: 通过 oma-config.yaml 中的 model_preset 配置每个智能体使
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 ```
 
 | 键 | 描述 | 适用场景 |
 |:----|:-----------|:---------|
-| `claude-only` | 所有智能体使用 Claude（Sonnet/Opus） | Claude Max 订阅用户 |
-| `codex-only` | 所有智能体使用带 effort 等级的 OpenAI Codex（GPT-5.x） | ChatGPT Plus/Pro 用户 |
-| `gemini-only` | 所有智能体使用 Gemini CLI，实现类角色启用 thinking | Google AI Pro 用户 |
-| `qwen-only` | 所有智能体通过 Qwen Code 进行外部路由；二元 thinking（无 effort 等级） | 本地 / 自托管推理 |
-| `cursor-only` | 所有智能体使用 Cursor `composer-2`（orchestrator/qa/pm/docs/retrieval 使用 `composer-2-fast`） | Cursor Pro / Pro Student 订阅者 |
-| `antigravity` | 混合：实现类角色用 Codex，architecture/qa/pm 用 Claude，retrieval 用 Gemini | 跨厂商发挥各自优势，无需逐个智能体配置 |
+| `claude` | 所有智能体使用 Claude（Sonnet/Opus） | Claude Max 订阅用户 |
+| `codex` | 所有智能体使用带 effort 等级的 OpenAI Codex（GPT-5.x） | ChatGPT Plus/Pro 用户 |
+| `gemini` | 所有智能体使用 Gemini CLI，实现类角色启用 thinking | Google AI Pro 用户 |
+| `qwen` | 所有智能体通过 Qwen Code 进行外部路由；二元 thinking（无 effort 等级） | 本地 / 自托管推理 |
+| `cursor` | 所有智能体使用 Cursor `composer-2`（orchestrator/qa/pm/docs/retrieval 使用 `composer-2-fast`） | Cursor Pro / Pro Student 订阅者 |
+| `mixed` | 混合：实现类角色用 Codex，architecture/qa/pm 用 Claude，retrieval 用 Gemini | 跨厂商发挥各自优势，无需逐个智能体配置 |
 
 内置预设随 CLI 包一起发布，并在升级 `oh-my-agent` 时自动更新。无需维护任何本地文件。
 
@@ -52,7 +52,7 @@ model_preset: gemini-only
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }
@@ -104,12 +104,12 @@ model_preset: my-team
 
 custom_presets:
   my-team:
-    extends: claude-only              # base preset — partial merge
+    extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }
       db:      { model: openai/gpt-5.5, effort: high }
-      # all other agents inherited from claude-only
+      # all other agents inherited from claude
 ```
 
 如果不使用 `extends:`，则必须为全部 11 个智能体角色提供 `agent_defaults`。使用 `extends:` 时，仅覆盖你列出的条目，其余从基础预设继承。
@@ -127,7 +127,7 @@ oma doctor --profile
 **示例输出：**
 
 ```
-oh-my-agent — Profile Health (preset=antigravity)
+oh-my-agent — Profile Health (preset=mixed)
 
 ┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
 │ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
@@ -150,7 +150,7 @@ oh-my-agent — Profile Health (preset=antigravity)
 
 | 旧版配置 | 迁移 008 之后的结果 |
 |:-------------|:--------------------------|
-| 所有条目使用同一厂商（例如全部为 `gemini`） | `model_preset: gemini-only`，无 `agents:` |
+| 所有条目使用同一厂商（例如全部为 `gemini`） | `model_preset: gemini`，无 `agents:` |
 | 多厂商混合 | 出现频率最高的厂商成为 `model_preset`，其余落入 `agents:` 覆盖 |
 | `AgentSpec` 对象值 | 原样移入 `agents:` |
 | `models.yaml` 内容 | 内联到 `oma-config.yaml.models` |
@@ -199,7 +199,7 @@ models:
 
 custom_presets:
   my-team:
-    extends: claude-only
+    extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }

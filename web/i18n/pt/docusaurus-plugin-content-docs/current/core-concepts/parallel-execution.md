@@ -127,7 +127,7 @@ Nem todos os CLIs de IA performam igualmente em todos os domínios. oh-my-agent 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: antigravity   # mixed: Claude para QA/PM, Codex para implementação, Gemini para o resto
+model_preset: mixed   # mixed: Claude para QA/PM, Codex para implementação, Gemini para o resto
 
 # Override de agentes específicos por cima do preset
 agents:
@@ -135,7 +135,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Presets built-in: `claude-only`, `codex-only`, `gemini-only`, `qwen-only`, `cursor-only`, `antigravity`. Veja [Per-Agent Models](../guide/per-agent-models.md) para detalhes.
+Presets built-in: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. Veja [Per-Agent Models](../guide/per-agent-models.md) para detalhes.
 
 ### Prioridade de Resolução de Vendor
 

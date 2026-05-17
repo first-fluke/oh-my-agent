@@ -413,7 +413,7 @@ The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This i
 
 8. **Run `/deepinit` on new codebases.** It creates AGENTS.md and ARCHITECTURE.md that help all agents understand the project structure.
 
-9. **Configure `model_preset`.** Use `claude-only`, `gemini-only`, or `antigravity` to route agents to the right CLI. Add `agents:` overrides for fine-grained control. See [Per-Agent Models](./per-agent-models.md).
+9. **Configure `model_preset`.** Use `claude`, `gemini`, or `mixed` to route agents to the right CLI. Add `agents:` overrides for fine-grained control. See [Per-Agent Models](./per-agent-models.md).
 
 10. **Use `/ultrawork` for production-critical code.** The 5-phase, 11-review-step workflow catches issues that simpler workflows miss.
 

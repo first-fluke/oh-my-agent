@@ -127,7 +127,7 @@ Không phải tất cả AI CLI đều hoạt động tốt như nhau ở mọi 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: antigravity   # mixed: Claude cho QA/PM, Codex cho impl, Gemini cho dev-workflow
+model_preset: mixed   # mixed: Claude cho QA/PM, Codex cho impl, Gemini cho dev-workflow
 
 # Ghi đè các agent cụ thể trên preset
 agents:
@@ -135,7 +135,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Preset built-in: `claude-only`, `codex-only`, `gemini-only`, `qwen-only`, `cursor-only`, `antigravity`. Xem [Per-Agent Models](../guide/per-agent-models.md) để biết chi tiết.
+Preset built-in: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. Xem [Per-Agent Models](../guide/per-agent-models.md) để biết chi tiết.
 
 ### Ưu tiên phân giải vendor
 

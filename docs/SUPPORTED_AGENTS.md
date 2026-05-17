@@ -14,7 +14,7 @@ The installer can then project compatibility to other tool-specific directories 
 | Gemini CLI | `.gemini/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as Markdown from `.agents/agents/`; same-vendor tasks can dispatch natively |
 | OpenCode | `.agents/skills/` | First-class | Native-compatible | Shares the same project-level source |
 | Amp | `.agents/skills/` | First-class | Native-compatible | Shares the same project-level source |
-| Cursor | `.cursor/skills/` + `.cursor/rules/*.mdc` | First-class | Native + Adapter | `oma install` / `oma link cursor` materializes skills, rules, MCP symlink, and AGENTS.md from `.agents/`; `cursor-agent` is dispatched natively via the `cursor-only` preset |
+| Cursor | `.cursor/skills/` + `.cursor/rules/*.mdc` | First-class | Native + Adapter | `oma install` / `oma link cursor` materializes skills, rules, MCP symlink, and AGENTS.md from `.agents/`; `cursor-agent` is dispatched natively via the `cursor` preset |
 | GitHub Copilot | `.github/skills/` | Supported | Optional symlink | Created when selected during install |
 
 ## Vendor Adaptation

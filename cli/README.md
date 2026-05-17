@@ -60,6 +60,67 @@ Pick a preset and you're ready:
 | 📱 Mobile | architecture + mobile + pm + qa + debug + brainstorm + scm |
 | 🚀 DevOps | architecture + tf-infra + dev-workflow + pm + qa + debug + brainstorm + scm |
 
+## Works With Every Agent
+
+`oh-my-agent` keeps `.agents/` as the single source of truth and projects it into each runtime's native layout, so every supported tool shares the same skills, workflows, and rules.
+
+<table>
+<tr>
+<td align="center" width="20%">
+<a href="https://claude.com/product/claude-code"><img src="https://github.com/anthropics.png?size=120" alt="Claude Code" width="48" height="48" /></a><br/>
+<strong>Claude Code</strong><br/>
+<sub>native + adapter</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://github.com/openai/codex"><img src="https://github.com/openai.png?size=120" alt="Codex CLI" width="48" height="48" /></a><br/>
+<strong>Codex CLI</strong><br/>
+<sub>native + adapter</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
+<strong>Gemini CLI</strong><br/>
+<sub>native + adapter</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
+<strong>Cursor</strong><br/>
+<sub>native + adapter</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://github.com/QwenLM/qwen-code"><img src="https://github.com/QwenLM.png?size=120" alt="Qwen Code" width="48" height="48" /></a><br/>
+<strong>Qwen Code</strong><br/>
+<sub>native dispatch</sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="20%">
+<a href="https://antigravity.google"><img src="./docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>native SSOT</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://github.com/anomalyco/opencode"><img src="./docs/assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
+<strong>OpenCode</strong><br/>
+<sub>native-compatible</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://ampcode.com"><img src="./docs/assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
+<strong>Amp</strong><br/>
+<sub>native-compatible</sub>
+</td>
+<td align="center" width="20%">
+<a href="https://github.com/features/copilot"><img src="https://github.com/github.png?size=120" alt="GitHub Copilot" width="48" height="48" /></a><br/>
+<strong>GitHub Copilot</strong><br/>
+<sub>symlinked skills</sub>
+</td>
+<td align="center" width="20%">
+<a href="./docs/SUPPORTED_AGENTS.md"><img src="https://img.shields.io/badge/%E2%80%A6-more-555?style=flat-square" alt="More" height="48" /></a><br/>
+<strong>& more</strong><br/>
+<sub><a href="./docs/SUPPORTED_AGENTS.md">support matrix →</a></sub>
+</td>
+</tr>
+</table>
+
 ## Your Agent Team
 
 | Agent | What They Do |
@@ -157,7 +218,7 @@ Set `model_preset` in `.agents/oma-config.yaml` to choose which AI models each a
 
 ```yaml
 language: en
-model_preset: antigravity   # claude-only | codex-only | gemini-only | qwen-only | cursor-only | antigravity
+model_preset: mixed   # claude | codex | gemini | qwen | cursor | mixed
 
 # Optional per-agent overrides
 agents:

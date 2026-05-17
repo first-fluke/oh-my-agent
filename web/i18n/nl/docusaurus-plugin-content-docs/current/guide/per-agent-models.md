@@ -29,17 +29,17 @@ Stel `model_preset` in op één van de vijf ingebouwde sleutels:
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 ```
 
 | Sleutel | Beschrijving | Geschikt voor |
 |:----|:-----------|:---------|
-| `claude-only` | Alle agents gebruiken Claude (Sonnet/Opus) | Claude Max-abonnees |
-| `codex-only` | Alle agents gebruiken OpenAI Codex (GPT-5.x) met effort levels | ChatGPT Plus/Pro-gebruikers |
-| `gemini-only` | Alle agents gebruiken Gemini CLI, thinking ingeschakeld voor implementatierollen | Google AI Pro-gebruikers |
-| `qwen-only` | Alle agents extern gerouteerd via Qwen Code; binaire thinking (geen effort levels) | Lokale / self-hosted inference |
-| `cursor-only` | Alle agents gebruiken Cursor `composer-2` (`composer-2-fast` voor orchestrator/qa/pm/docs/retrieval) | Cursor Pro / Pro Student-abonnees |
-| `antigravity` | Gemengd: implementatierollen gebruiken Codex, architecture/qa/pm gebruiken Claude, retrieval gebruikt Gemini | Cross-vendor sterke punten zonder per-agent configuratie te beheren |
+| `claude` | Alle agents gebruiken Claude (Sonnet/Opus) | Claude Max-abonnees |
+| `codex` | Alle agents gebruiken OpenAI Codex (GPT-5.x) met effort levels | ChatGPT Plus/Pro-gebruikers |
+| `gemini` | Alle agents gebruiken Gemini CLI, thinking ingeschakeld voor implementatierollen | Google AI Pro-gebruikers |
+| `qwen` | Alle agents extern gerouteerd via Qwen Code; binaire thinking (geen effort levels) | Lokale / self-hosted inference |
+| `cursor` | Alle agents gebruiken Cursor `composer-2` (`composer-2-fast` voor orchestrator/qa/pm/docs/retrieval) | Cursor Pro / Pro Student-abonnees |
+| `mixed` | Gemengd: implementatierollen gebruiken Codex, architecture/qa/pm gebruiken Claude, retrieval gebruikt Gemini | Cross-vendor sterke punten zonder per-agent configuratie te beheren |
 
 Ingebouwde presets worden meegeleverd binnen het CLI-pakket en updaten automatisch wanneer je `oh-my-agent` upgradet. Geen lokaal bestand om te onderhouden.
 
@@ -52,7 +52,7 @@ Gebruik de `agents:`-map om specifieke agents te overschrijven bovenop de actiev
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini-only
+model_preset: gemini
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }
@@ -104,12 +104,12 @@ model_preset: my-team
 
 custom_presets:
   my-team:
-    extends: claude-only              # base preset — partial merge
+    extends: claude              # base preset — partial merge
     description: "Team A — sonnet base, codex for implementation"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }
       db:      { model: openai/gpt-5.5, effort: high }
-      # all other agents inherited from claude-only
+      # all other agents inherited from claude
 ```
 
 Zonder `extends:` moet je `agent_defaults` opgeven voor alle 11 agentrollen. Met `extends:` worden alleen de entries die je opsomt overschreven; de rest wordt geërfd van de base preset.
@@ -127,7 +127,7 @@ oma doctor --profile
 **Voorbeelduitvoer:**
 
 ```
-oh-my-agent — Profile Health (preset=antigravity)
+oh-my-agent — Profile Health (preset=mixed)
 
 ┌──────────────┬──────────────────────────────┬──────────┬──────────────────┬──────────┐
 │ Role         │ Model                        │ CLI      │ Auth Status      │ Source   │
@@ -150,7 +150,7 @@ Migratie 008 draait automatisch bij `oma install` en `oma update`. Deze converte
 
 | Oudere config | Resultaat na migratie 008 |
 |:-------------|:--------------------------|
-| Alle entries dezelfde vendor (bijv. allemaal `gemini`) | `model_preset: gemini-only`, geen `agents:` |
+| Alle entries dezelfde vendor (bijv. allemaal `gemini`) | `model_preset: gemini`, geen `agents:` |
 | Gemengde vendors | Meest voorkomende vendor → `model_preset`; overige → `agents:`-overrides |
 | `AgentSpec`-objectwaarden | Verplaatst naar `agents:` zoals ze zijn |
 | Inhoud van `models.yaml` | Inline opgenomen in `oma-config.yaml.models` |
@@ -199,7 +199,7 @@ models:
 
 custom_presets:
   my-team:
-    extends: claude-only
+    extends: claude
     description: "Sonnet base, Codex for backend/db"
     agent_defaults:
       backend: { model: openai/gpt-5.5, effort: high }

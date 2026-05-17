@@ -170,7 +170,7 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: gemini-only
+model_preset: gemini
 EOF
 ```
 

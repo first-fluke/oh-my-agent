@@ -200,7 +200,7 @@ The `oma install` command creates `.agents/oma-config.yaml`. This is the central
 ```yaml
 # Required
 language: en
-model_preset: gemini-only   # built-in: claude-only, codex-only, gemini-only, qwen-only, cursor-only, antigravity
+model_preset: gemini   # built-in: claude, codex, gemini, qwen, cursor, mixed
 
 # Optional — date/time preferences
 date_format: ISO
@@ -221,7 +221,7 @@ agents:
 # Optional — user-defined presets
 # custom_presets:
 #   my-team:
-#     extends: claude-only
+#     extends: claude
 #     agent_defaults:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```
