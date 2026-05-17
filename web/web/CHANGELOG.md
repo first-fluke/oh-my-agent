@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.3.0...web-v3.4.0) (2026-05-17)
+
+
+### Features
+
+* **serena:** migrate to uv tool install with per-vendor MCP contexts ([d79e51d](https://github.com/first-fluke/oh-my-agent/commit/d79e51dbd44362f18bd7e2978a163e026cfa94b6))
+
+
+### Bug Fixes
+
+* **web:** satisfy PWA install criteria with maskable icons and screenshots ([b154cde](https://github.com/first-fluke/oh-my-agent/commit/b154cdea0a115fea9792f3d7e2bf1b129f6bb52e))
+
 ## [3.3.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.2.0...web-v3.3.0) (2026-05-17)
 
 
