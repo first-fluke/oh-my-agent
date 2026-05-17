@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.15.0...cli-v7.16.0) (2026-05-17)
+
+
+### Features
+
+* **rules:** add serena MCP code-search guidance to vendor docs ([8ae45f9](https://github.com/first-fluke/oh-my-agent/commit/8ae45f995864620269a6d3b41a3ea7a117b1500f))
+* **web:** enable PWA via @docusaurus/plugin-pwa ([da1362e](https://github.com/first-fluke/oh-my-agent/commit/da1362e39423de6998ec85272c5975fcea859762))
+
 ## [7.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.14.2...cli-v7.15.0) (2026-05-17)
 
 
