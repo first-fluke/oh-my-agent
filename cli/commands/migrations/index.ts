@@ -18,6 +18,7 @@ import { migrateGeminiCliCompat } from "./006-gemini-cli-compat.js";
 import { migrateCodexQwenSerena } from "./007-codex-qwen-serena.js";
 import { migrateModelPreset } from "./008-model-preset.js";
 import { migrateSerenaUvTool } from "./009-serena-uv-tool.js";
+import { migrateRenamePresetKeys } from "./010-rename-preset-keys.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -29,6 +30,7 @@ const migrations: Migration[] = [
   migrateCodexQwenSerena,
   migrateModelPreset,
   migrateSerenaUvTool,
+  migrateRenamePresetKeys,
 ];
 
 export function runMigrations(cwd: string): string[] {
