@@ -158,7 +158,12 @@ oma search fetch <url>      # 自动升级策略的机械搜索
 - **可移植**：`.agents/` 跟着项目走，不被任何 IDE 绑定
 - **角色化**：像真正的工程团队一样建模，而不是一堆 prompt 的堆砌
 - **省 token**：双层 skill 设计节省约 75% 的 token
-- **质量优先**：内置 Charter preflight、quality gate 和审查工作流
+- **质量优先**：内置 Charter preflight、quality gate 和审查工作流：
+  - `oma verify <agent>` — 按 agent 类型的 14 项确定性检查（TypeScript strict、tests、raw SQL、硬编码密钥、Flutter analyze、inline styles、scope 越界、charter 对齐 …）
+  - `session.quota_cap` — 在 `oma-config.yaml` 中按会话设定 token / spawn / 单厂商预算上限；`orchestrate` Step 5 在超限时阻断下一次 spawn
+  - `ralph` 工作流 — 独立的 JUDGE 每次迭代都重新校验所有 criterion，捕获静默回归；>30s 的重测有缓存
+  - Exploration Loop — 重试 2 次后，`orchestrate` 并行 spawn 多个 hypothesis 变体并保留得分最高的
+  - 单仓自动路由 — `detectWorkspace` 读取 pnpm / nx / turbo / lerna 并把每个 agent 路由到自己的 workspace
 - **多厂商**：按 agent 类型混用 Gemini、Claude、Codex、Qwen
 - **可观测**：终端和 Web 仪表盘实时监控
 

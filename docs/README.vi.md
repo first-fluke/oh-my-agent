@@ -158,7 +158,12 @@ Việc chọn model đi theo hai lớp:
 - **Di động**: `.agents/` đi cùng dự án, không bị ràng buộc vào một IDE
 - **Dựa trên vai trò**: agent được mô hình hóa như đội kỹ thuật thực, không phải một đống prompt
 - **Tiết kiệm token**: thiết kế skill 2 lớp tiết kiệm ~75% token
-- **Ưu tiên chất lượng**: Charter preflight, quality gate và review workflow được tích hợp sẵn
+- **Ưu tiên chất lượng**: Charter preflight, quality gate và review workflow được tích hợp sẵn:
+  - `oma verify <agent>` — 14 kiểm tra xác định theo từng loại agent (TypeScript strict, tests, raw SQL, secret hardcode, Flutter analyze, inline styles, scope violation, charter alignment …)
+  - `session.quota_cap` — giới hạn token / spawn / theo vendor mỗi session trong `oma-config.yaml`; Step 5 của `orchestrate` chặn spawn tiếp theo khi vượt
+  - workflow `ralph` — JUDGE độc lập tái xác minh mọi criterion mỗi iteration để bắt regression im lặng; cache cho test >30s
+  - Exploration Loop — sau 2 lần retry, `orchestrate` spawn các biến thể hypothesis song song và giữ kết quả điểm cao nhất
+  - Auto-routing monorepo — `detectWorkspace` đọc pnpm / nx / turbo / lerna và route mỗi agent đến workspace của nó
 - **Đa nhà cung cấp**: kết hợp Gemini, Claude, Codex và Qwen theo loại agent
 - **Có thể quan sát**: dashboard terminal và web để giám sát thời gian thực
 

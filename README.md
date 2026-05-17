@@ -174,7 +174,12 @@ agents:
 - **Portable** — `.agents/` travels with your project, not trapped in one IDE
 - **Role-based** — Agents modeled like a real engineering team, not a pile of prompts
 - **Token-efficient** — Two-layer skill design saves ~75% of tokens
-- **Quality-first** — Charter preflight, quality gates, and review workflows built in
+- **Quality-first** — Charter preflight, quality gates, and review workflows built in:
+  - `oma verify <agent>` — 14 deterministic checks per agent type (TypeScript strict, tests, raw SQL, hardcoded secrets, Flutter analyze, inline styles, scope violation, charter alignment, …)
+  - `session.quota_cap` — per-session token / spawn / per-vendor budget caps in `oma-config.yaml`; `orchestrate` Step 5 blocks the next spawn when exceeded
+  - `ralph` workflow — independent JUDGE re-verifies every criterion each iteration to catch silent regressions; heavy-test caching for >30s suites
+  - Exploration Loop — after 2 retries, `orchestrate` spawns hypothesis variants in parallel and keeps the highest-scoring result
+  - Monorepo auto-routing — `detectWorkspace` reads pnpm / nx / turbo / lerna and routes each agent to its workspace
 - **Multi-vendor** — Mix Gemini, Claude, Codex, and Qwen per agent type
 - **Observable** — Terminal and web dashboards for real-time monitoring
 

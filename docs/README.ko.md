@@ -158,7 +158,12 @@ oma search fetch <url>      # 자동 단계 상승 전략으로 메커니컬 검
 - **이식성**: `.agents/`가 프로젝트와 함께 움직이며, 특정 IDE에 묶이지 않습니다
 - **역할 기반**: 프롬프트 뭉치가 아니라 실제 엔지니어링 팀처럼 설계했습니다
 - **토큰 효율**: 2계층 스킬 구조로 토큰을 약 75% 절감합니다
-- **품질 우선**: Charter preflight, quality gate, 리뷰 워크플로우가 내장되어 있습니다
+- **품질 우선**: Charter preflight, quality gate, 리뷰 워크플로우가 내장되어 있습니다:
+  - `oma verify <agent>` — 에이전트 유형별 14개 결정론 체크 (TypeScript strict, 테스트, raw SQL, 하드코딩 시크릿, Flutter analyze, 인라인 스타일, 스코프 위반, charter alignment, …)
+  - `session.quota_cap` — `oma-config.yaml`의 세션별 토큰 / spawn / 벤더별 예산 캡; `orchestrate` Step 5는 캡 초과 시 다음 spawn을 차단합니다
+  - `ralph` 워크플로우 — 독립 JUDGE가 매 iteration마다 모든 criterion을 재검증해 silent regression을 잡습니다; 30초 초과 테스트 캐싱
+  - Exploration Loop — 2회 retry 후 `orchestrate`가 hypothesis 변형을 병렬 spawn하고 최고 점수만 남깁니다
+  - 모노레포 자동 라우팅 — `detectWorkspace`가 pnpm / nx / turbo / lerna를 읽어 각 에이전트를 자기 workspace로 보냅니다
 - **멀티 벤더**: 에이전트 유형별로 Gemini, Claude, Codex, Qwen을 섞어 쓸 수 있습니다
 - **가시성**: 터미널과 웹 대시보드로 실시간 모니터링이 가능합니다
 

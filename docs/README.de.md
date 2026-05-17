@@ -158,7 +158,12 @@ Die Modellauswahl folgt zwei Schichten:
 - **Portabel**: `.agents/` reist mit deinem Projekt, nicht in einer IDE eingesperrt
 - **Rollenbasiert**: Agenten wie ein echtes Engineering-Team modelliert, kein Haufen Prompts
 - **Token-effizient**: Zwei-Schichten-Skill-Design spart ~75% der Tokens
-- **Qualität zuerst**: Charter Preflight, Quality Gates und Review-Workflows eingebaut
+- **Qualität zuerst**: Charter Preflight, Quality Gates und Review-Workflows eingebaut:
+  - `oma verify <agent>` — 14 deterministische Checks pro Agententyp (TypeScript strict, Tests, raw SQL, hartkodierte Secrets, Flutter analyze, Inline-Styles, Scope-Verletzung, Charter Alignment …)
+  - `session.quota_cap` — Token- / Spawn- / Per-Vendor-Budgets pro Session in `oma-config.yaml`; `orchestrate` Step 5 blockiert den nächsten Spawn bei Überschreitung
+  - `ralph` Workflow — unabhängiger JUDGE verifiziert jedes Criterion in jeder Iteration erneut, um stille Regressionen zu erkennen; Caching für Tests >30s
+  - Exploration Loop — nach 2 Retries spawnt `orchestrate` Hypothesen-Varianten parallel und behält das Ergebnis mit der höchsten Punktzahl
+  - Monorepo-Auto-Routing — `detectWorkspace` liest pnpm / nx / turbo / lerna und routet jeden Agenten zu seinem Workspace
 - **Multi-Vendor**: mische Gemini, Claude, Codex und Qwen je nach Agententyp
 - **Beobachtbar**: Terminal- und Web-Dashboards für Echtzeit-Monitoring
 

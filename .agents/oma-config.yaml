@@ -60,6 +60,25 @@ docs:
   check_urls: true
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Session quota caps (orchestrate / agent:spawn token & spawn budget)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# When set, `oma agent:spawn` records token usage per agent and blocks the
+# next spawn once any cap is exceeded. Records persist to
+# .serena/memories/session-cost-{sessionId}.md. Omit to disable.
+#
+# All keys optional. Omitting a key leaves that dimension uncapped.
+# Schema source: cli/io/session-cost.ts (loadQuotaCap / normalizeQuotaCap).
+#
+# session:
+#   quota_cap:
+#     tokens: 2000000          # total token budget across all vendors
+#     spawn_count: 30          # max agent spawns per session
+#     per_vendor:              # per-vendor token budgets
+#       claude: 1500000
+#       codex: 500000
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Model selection
 # ─────────────────────────────────────────────────────────────────────────────
 
