@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.3.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.2.0...web-v3.3.0) (2026-05-17)
+
+
+### Features
+
+* **web:** enable PWA via @docusaurus/plugin-pwa ([da1362e](https://github.com/first-fluke/oh-my-agent/commit/da1362e39423de6998ec85272c5975fcea859762))
+
+
+### Refactoring
+
+* **web:** drop "make engineer great again" motto from landing ([c4d39d5](https://github.com/first-fluke/oh-my-agent/commit/c4d39d57fbd25de713a2663539183bcb7f0b1b4d))
+
 ## [3.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.3...web-v3.2.0) (2026-05-17)
 
 
