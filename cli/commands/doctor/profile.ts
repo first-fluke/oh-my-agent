@@ -197,7 +197,7 @@ export interface ProfileRow {
 }
 
 export interface ProfileReport {
-  /** Resolved preset key (e.g. "claude-only") or the raw model_preset value. */
+  /** Resolved preset key (e.g. "claude") or the raw model_preset value. */
   profileName: string;
   rows: ProfileRow[];
   qwenOAuth: DeprecatedOAuthSessionResult;

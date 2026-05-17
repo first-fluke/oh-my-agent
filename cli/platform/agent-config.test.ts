@@ -18,15 +18,15 @@ import {
 
 describe("parseOmaConfig — minimal valid config", () => {
   it("parses language + model_preset", () => {
-    const yaml = "language: en\nmodel_preset: claude-only\n";
+    const yaml = "language: en\nmodel_preset: claude\n";
     const result = parseOmaConfig(yaml);
     expect(result).not.toBeNull();
     expect(result?.language).toBe("en");
-    expect(result?.model_preset).toBe("claude-only");
+    expect(result?.model_preset).toBe("claude");
   });
 
   it("defaults language to 'en' when absent", () => {
-    const yaml = "model_preset: gemini-only\n";
+    const yaml = "model_preset: gemini\n";
     const result = parseOmaConfig(yaml);
     expect(result).not.toBeNull();
     expect(result?.language).toBe("en");
@@ -35,7 +35,7 @@ describe("parseOmaConfig — minimal valid config", () => {
   it("parses all optional top-level scalar fields", () => {
     const yaml = [
       "language: ko",
-      "model_preset: codex-only",
+      "model_preset: codex",
       "date_format: ISO",
       "timezone: Asia/Seoul",
       "auto_update_cli: true",
@@ -47,14 +47,8 @@ describe("parseOmaConfig — minimal valid config", () => {
     expect(result?.auto_update_cli).toBe(true);
   });
 
-  it("accepts all 5 built-in preset keys", () => {
-    const presets = [
-      "claude-only",
-      "codex-only",
-      "gemini-only",
-      "qwen-only",
-      "antigravity",
-    ];
+  it("accepts all 6 built-in preset keys", () => {
+    const presets = ["claude", "codex", "gemini", "qwen", "cursor", "mixed"];
     for (const preset of presets) {
       const result = parseOmaConfig(`language: en\nmodel_preset: ${preset}\n`);
       expect(result, `preset=${preset} should parse`).not.toBeNull();
@@ -89,7 +83,7 @@ describe("parseOmaConfig — custom_presets passthrough", () => {
       "model_preset: my-team",
       "custom_presets:",
       "  my-team:",
-      "    extends: claude-only",
+      "    extends: claude",
       "    description: Team preset",
     ].join("\n");
     const result = parseOmaConfig(yaml);
@@ -102,7 +96,7 @@ describe("parseOmaConfig — models passthrough", () => {
   it("passes through inline models definition", () => {
     const yaml = [
       "language: en",
-      "model_preset: claude-only",
+      "model_preset: claude",
       "models:",
       "  custom-fast:",
       "    cli: gemini",
@@ -118,9 +112,9 @@ describe("OmaConfig TypeScript interface", () => {
   it("satisfies OmaConfig with required fields only", () => {
     const config: OmaConfig = {
       language: "en",
-      model_preset: "claude-only",
+      model_preset: "claude",
     };
-    expect(config.model_preset).toBe("claude-only");
+    expect(config.model_preset).toBe("claude");
     expect(config.agents).toBeUndefined();
     expect(config.models).toBeUndefined();
     expect(config.custom_presets).toBeUndefined();
@@ -129,7 +123,7 @@ describe("OmaConfig TypeScript interface", () => {
   it("accepts agents override map as partial record (object shape)", () => {
     const config: OmaConfig = {
       language: "en",
-      model_preset: "gemini-only",
+      model_preset: "gemini",
       agents: {
         backend: { model: "openai/gpt-5.4", effort: "high" },
       },
@@ -173,7 +167,7 @@ describe("parseOmaConfig — docs.auto_verify field", () => {
   it("parses docs.auto_verify: true", () => {
     const yaml = [
       "language: en",
-      "model_preset: claude-only",
+      "model_preset: claude",
       "docs:",
       "  auto_verify: true",
     ].join("\n");
@@ -185,7 +179,7 @@ describe("parseOmaConfig — docs.auto_verify field", () => {
   it("parses docs.auto_verify: false", () => {
     const yaml = [
       "language: en",
-      "model_preset: claude-only",
+      "model_preset: claude",
       "docs:",
       "  auto_verify: false",
     ].join("\n");
@@ -195,20 +189,20 @@ describe("parseOmaConfig — docs.auto_verify field", () => {
   });
 
   it("docs field is optional — defaults to undefined when absent", () => {
-    const yaml = "language: en\nmodel_preset: claude-only\n";
+    const yaml = "language: en\nmodel_preset: claude\n";
     const result = parseOmaConfig(yaml);
     expect(result).not.toBeNull();
     expect(result?.docs).toBeUndefined();
   });
 
   it("auto_verify is effectively false when docs field is absent", () => {
-    const yaml = "language: en\nmodel_preset: claude-only\n";
+    const yaml = "language: en\nmodel_preset: claude\n";
     const result = parseOmaConfig(yaml);
     expect(result?.docs?.auto_verify ?? false).toBe(false);
   });
 
   it("docs field is optional — docs present without auto_verify", () => {
-    const yaml = ["language: en", "model_preset: claude-only", "docs: {}"].join(
+    const yaml = ["language: en", "model_preset: claude", "docs: {}"].join(
       "\n",
     );
     const result = parseOmaConfig(yaml);

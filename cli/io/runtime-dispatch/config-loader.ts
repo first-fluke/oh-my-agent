@@ -4,6 +4,46 @@ import { parse as parseYaml } from "yaml";
 import type { OmaConfig } from "../../platform/agent-config.js";
 import { ConfigError } from "./config-error.js";
 
+// ---------------------------------------------------------------------------
+// Legacy preset name guard
+// ---------------------------------------------------------------------------
+
+/** Preset keys that were valid before the 010-rename-preset-keys migration. */
+const LEGACY_PRESET_KEYS = new Set([
+  "claude-only",
+  "codex-only",
+  "gemini-only",
+  "qwen-only",
+  "cursor-only",
+  "antigravity",
+]);
+
+/** Maps legacy key → canonical replacement. */
+const LEGACY_TO_CANONICAL: Record<string, string> = {
+  "claude-only": "claude",
+  "codex-only": "codex",
+  "gemini-only": "gemini",
+  "qwen-only": "qwen",
+  "cursor-only": "cursor",
+  antigravity: "mixed",
+};
+
+/**
+ * Throw a ConfigError with an actionable message when the user's oma-config.yaml
+ * still contains a legacy preset name (claude-only, codex-only, gemini-only,
+ * qwen-only, cursor-only, antigravity). Run `oma update` to auto-migrate.
+ */
+function assertNotLegacyPreset(modelPreset: string, filePath: string): void {
+  if (LEGACY_PRESET_KEYS.has(modelPreset)) {
+    const canonical = LEGACY_TO_CANONICAL[modelPreset] ?? modelPreset;
+    throw new ConfigError(
+      `Legacy preset name "${modelPreset}" is no longer valid in ${filePath}.\n` +
+        `  Rename it to "${canonical}" — or run \`oma update\` for automatic migration.\n` +
+        `  Built-in presets: claude | codex | gemini | qwen | cursor | mixed`,
+    );
+  }
+}
+
 function findFileUp(startDir: string, relativePath: string): string | null {
   let current = path.resolve(startDir);
   const root = path.parse(current).root;
@@ -22,6 +62,8 @@ function findFileUp(startDir: string, relativePath: string): string | null {
  *
  * Throws ConfigError with file:line:col when the file exists but contains
  * invalid YAML, so the user gets an actionable error message.
+ * Throws ConfigError when model_preset is a legacy key (claude-only, antigravity, etc.)
+ * to prompt the user to run `oma update`.
  */
 export function loadUserConfig(cwd: string): Partial<OmaConfig> {
   const canonicalPath = findFileUp(
@@ -38,10 +80,17 @@ export function loadUserConfig(cwd: string): Partial<OmaConfig> {
   try {
     const parsed = parseYaml(content);
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as Partial<OmaConfig>;
+      const config = parsed as Partial<OmaConfig>;
+      // Hard-error on legacy preset names before returning config
+      if (typeof config.model_preset === "string") {
+        assertNotLegacyPreset(config.model_preset, canonicalPath);
+      }
+      return config;
     }
     return {};
   } catch (err) {
+    // Re-throw ConfigError as-is (includes both YAML parse errors and legacy preset errors)
+    if (err instanceof ConfigError) throw err;
     const pos =
       err &&
       typeof err === "object" &&

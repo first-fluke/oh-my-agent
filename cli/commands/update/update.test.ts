@@ -189,7 +189,7 @@ describe("reconcile: migrations trigger full update even when version matches", 
     mkdirSync(join(root, ".agents"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: claude-only\n",
+      "language: en\nmodel_preset: claude\n",
       "utf-8",
     );
 
@@ -225,7 +225,7 @@ describe("reconcile: migrations trigger full update even when version matches", 
     mkdirSync(join(root, ".agents"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: claude-only\n",
+      "language: en\nmodel_preset: claude\n",
       "utf-8",
     );
 
@@ -466,7 +466,7 @@ describe("persisted needsReconcile flag", () => {
     mkdirSync(join(root, ".agents", "skills"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: claude-only\n",
+      "language: en\nmodel_preset: claude\n",
       "utf-8",
     );
     // Simulates: previous reconcile attempt failed mid-download
@@ -497,7 +497,7 @@ describe("persisted needsReconcile flag", () => {
     mkdirSync(join(root, ".agents", "skills"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: claude-only\n",
+      "language: en\nmodel_preset: claude\n",
       "utf-8",
     );
     writeFileSync(

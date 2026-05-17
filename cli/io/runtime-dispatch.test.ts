@@ -197,10 +197,10 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("persists Codex effort to project-local .codex/config.toml when plan has effort", () => {
-    // codex-only preset: backend = { model: openai/gpt-5.3-codex, effort: high }
+    // codex preset: backend = { model: openai/gpt-5.3-codex, effort: high }
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: codex-only\n",
+      "language: en\nmodel_preset: codex\n",
     );
 
     planDispatch("backend", "codex", minimalVendorConfig, "-p", "hello", {
@@ -215,7 +215,7 @@ describe("planDispatch — plan integration (T10b)", () => {
   it("is idempotent — identical effort does not rewrite the TOML needlessly", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: codex-only\nagents:\n  backend:\n    model: openai/gpt-5.3-codex\n    effort: medium\n",
+      "language: en\nmodel_preset: codex\nagents:\n  backend:\n    model: openai/gpt-5.3-codex\n    effort: medium\n",
     );
 
     planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
@@ -257,10 +257,10 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("Claude effort override → plan drops effort (no TOML write)", () => {
-    // claude-only preset + override with effort — effort should be dropped for Claude
+    // claude preset + override with effort — effort should be dropped for Claude
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: claude-only\nagents:\n  orchestrator:\n    model: anthropic/claude-sonnet-4-6\n    effort: high\n",
+      "language: en\nmodel_preset: claude\nagents:\n  orchestrator:\n    model: anthropic/claude-sonnet-4-6\n    effort: high\n",
     );
 
     planDispatch("orchestrator", "claude", minimalVendorConfig, "-p", "hi", {
@@ -274,10 +274,10 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   it("Qwen runtime + Codex target → forced external, plan args still appended", () => {
-    // qwen-only preset; backend has thinking:true by default
+    // qwen preset; backend has thinking:true by default
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: qwen-only\n",
+      "language: en\nmodel_preset: qwen\n",
     );
 
     const plan = planDispatch(
@@ -290,14 +290,14 @@ describe("planDispatch — plan integration (T10b)", () => {
     );
 
     expect(plan.mode).toBe("external");
-    // qwen-only backend has thinking:true → args include --thinking
+    // qwen backend has thinking:true → args include --thinking
     expect(plan.invocation.args).toContain("--thinking");
   });
 
   it("unknown slug in agents override → ConfigError handled gracefully", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: codex-only\nagents:\n  backend:\n    model: bogus/does-not-exist\n",
+      "language: en\nmodel_preset: codex\nagents:\n  backend:\n    model: bogus/does-not-exist\n",
     );
 
     const plan = planDispatch(
@@ -322,7 +322,7 @@ describe("planDispatch — plan integration (T10b)", () => {
     // Verify that agents override in oma-config.yaml is honoured over preset defaults
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: codex-only\nagents:\n  backend:\n    model: openai/gpt-5.4\n    effort: low\n",
+      "language: en\nmodel_preset: codex\nagents:\n  backend:\n    model: openai/gpt-5.4\n    effort: low\n",
     );
 
     planDispatch("backend", "codex", minimalVendorConfig, "-p", "hi", {
@@ -337,7 +337,7 @@ describe("planDispatch — plan integration (T10b)", () => {
   it("session.quota_cap in oma-config.yaml does not block planDispatch itself", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: codex-only\nsession:\n  quota_cap:\n    spawn_count: 0\n",
+      "language: en\nmodel_preset: codex\nsession:\n  quota_cap:\n    spawn_count: 0\n",
     );
 
     // planDispatch itself doesn't check the cap — spawn-status.ts does.
@@ -349,14 +349,14 @@ describe("planDispatch — plan integration (T10b)", () => {
   });
 
   // Regression: issue #336 follow-up. Before cursor was promoted to a
-  // first-class vendor, `model_preset: cursor-only` did not exist and
+  // first-class vendor, `model_preset: cursor` did not exist and
   // resolveAgentPlan would route cursor dispatch through whatever model the
   // active preset declared (e.g. google/gemini-3-flash), producing
   // `cursor agent ... --model gemini-3-flash <prompt>` — wrong model.
-  it("cursor-only preset → cursor dispatch injects preset cliModel before prompt", () => {
+  it("cursor preset → cursor dispatch injects preset cliModel before prompt", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: cursor-only\n",
+      "language: en\nmodel_preset: cursor\n",
     );
 
     const plan = planDispatch(
@@ -380,10 +380,10 @@ describe("planDispatch — plan integration (T10b)", () => {
     expect(args.filter((a) => a === "--model")).toHaveLength(1);
   });
 
-  it("cursor-only preset (architecture role) → cursor dispatch uses composer-2", () => {
+  it("cursor preset (architecture role) → cursor dispatch uses composer-2", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: cursor-only\n",
+      "language: en\nmodel_preset: cursor\n",
     );
 
     const plan = planDispatch(

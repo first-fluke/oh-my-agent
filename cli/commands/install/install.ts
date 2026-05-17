@@ -176,7 +176,7 @@ export function cleanDanglingSymlinks(dir: string): void {
 export type InstallOptions = {
   /**
    * Non-interactive mode. Skips every prompt and falls back to safe
-   * defaults (language=existing|en, model_preset=existing|claude-only,
+   * defaults (language=existing|en, model_preset=existing|claude,
    * project_type=all, vendors=all non-HOME-base). HOME-base vendor consent
    * stays opt-in (skipped), competitor uninstall is skipped, GitHub star
    * prompt is skipped.
@@ -287,28 +287,28 @@ export async function install(options: InstallOptions = {}): Promise<void> {
     hint: string;
   }[] = [
     {
-      value: "claude-only",
+      value: "claude",
       label: "Claude Code only",
       hint: "Claude Max subscription holders",
     },
     {
-      value: "codex-only",
+      value: "codex",
       label: "Codex CLI only",
       hint: "ChatGPT Plus/Pro subscription holders",
     },
     {
-      value: "gemini-only",
+      value: "gemini",
       label: "Gemini CLI only",
       hint: "Google AI Pro subscription holders",
     },
     {
-      value: "qwen-only",
+      value: "qwen",
       label: "Qwen Code only",
       hint: "Qwen Code subscription holders",
     },
     {
-      value: "antigravity",
-      label: "Antigravity IDE",
+      value: "mixed",
+      label: "Mixed (Antigravity IDE)",
       hint: "Claude orchestrator + cross-vendor subagents",
     },
   ];
@@ -318,7 +318,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
     (o) => o.value === existingPreset,
   )
     ? (existingPreset as string)
-    : "claude-only";
+    : "claude";
 
   const modelPreset = nonInteractive
     ? initialPreset

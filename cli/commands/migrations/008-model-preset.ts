@@ -54,10 +54,10 @@ type LegacyDefaultsYaml = {
 // ---------------------------------------------------------------------------
 
 const OWNER_TO_VENDOR: Record<string, BuiltInPresetKey> = {
-  anthropic: "claude-only",
-  openai: "codex-only",
-  google: "gemini-only",
-  qwen: "qwen-only",
+  anthropic: "claude",
+  openai: "codex",
+  google: "gemini",
+  qwen: "qwen",
 };
 
 /** Derive a vendor preset key from a model slug or legacy vendor string. */
@@ -66,18 +66,19 @@ function vendorToPresetKey(vendor: string): BuiltInPresetKey | null {
   switch (normalized) {
     case "claude":
     case "claude-only":
-      return "claude-only";
+      return "claude";
     case "codex":
     case "codex-only":
-      return "codex-only";
+      return "codex";
     case "gemini":
     case "gemini-only":
-      return "gemini-only";
+      return "gemini";
     case "qwen":
     case "qwen-only":
-      return "qwen-only";
+      return "qwen";
+    case "mixed":
     case "antigravity":
-      return "antigravity";
+      return "mixed";
     default:
       return null;
   }
@@ -140,9 +141,9 @@ function isDefaultsCustomized(userDefaults: LegacyDefaultsYaml): boolean {
     }
   }
 
-  // Also check top-level agent_defaults vs antigravity (which is the "default profile")
+  // Also check top-level agent_defaults vs mixed (which is the "default profile")
   const topLevel = userDefaults.agent_defaults ?? {};
-  const antigravity = BUILT_IN_PRESETS.antigravity.agent_defaults;
+  const antigravity = BUILT_IN_PRESETS.mixed.agent_defaults;
   for (const agentId of ALL_AGENT_IDS) {
     const userEntry = topLevel[agentId];
     const builtInEntry = antigravity[agentId];
@@ -179,7 +180,7 @@ function mostFrequentPresetKey(
   counts: Map<BuiltInPresetKey, number>,
 ): BuiltInPresetKey {
   let max = 0;
-  let winner: BuiltInPresetKey = "claude-only";
+  let winner: BuiltInPresetKey = "claude";
   for (const [key, count] of counts) {
     if (count > max) {
       max = count;
@@ -395,7 +396,7 @@ export const migrateModelPreset: Migration = {
           >
         | undefined;
 
-      let modelPreset: BuiltInPresetKey = "gemini-only"; // sensible default
+      let modelPreset: BuiltInPresetKey = "gemini"; // sensible default
       const agentsOverride: Partial<Record<AgentId, AgentSpec>> = {};
 
       if (legacyMapping && Object.keys(legacyMapping).length > 0) {

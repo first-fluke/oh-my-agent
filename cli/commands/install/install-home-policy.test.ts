@@ -158,7 +158,7 @@ describe("install home policy", () => {
     // 3 select prompts: language, modelPreset, projectType
     promptState.select
       .mockResolvedValueOnce("en")
-      .mockResolvedValueOnce("claude-only")
+      .mockResolvedValueOnce("claude")
       .mockResolvedValueOnce("custom");
     // 2 multiselect prompts: skills, vendors
     promptState.multiselect

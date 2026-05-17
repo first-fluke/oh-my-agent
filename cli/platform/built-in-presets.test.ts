@@ -13,12 +13,12 @@ import assert from "node:assert/strict";
 import { describe, expect, it } from "vitest";
 
 const EXPECTED_PRESET_KEYS = [
-  "claude-only",
-  "codex-only",
-  "gemini-only",
-  "qwen-only",
-  "cursor-only",
-  "antigravity",
+  "claude",
+  "codex",
+  "gemini",
+  "qwen",
+  "cursor",
+  "mixed",
 ] as const;
 
 const EXPECTED_AGENT_IDS = [

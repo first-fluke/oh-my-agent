@@ -37,11 +37,11 @@ vi.mock("../../io/runtime-dispatch.js", () => ({
 import { collectProfileReport } from "./profile.js";
 
 // TODO Phase 3 qa: replace DEFAULTS_YAML fixture with model_preset-based oma-config.yaml
-// (e.g. "language: en\nmodel_preset: antigravity") and update all test assertions below
+// (e.g. "language: en\nmodel_preset: mixed") and update all test assertions below
 // to match the new preset-based resolution (no agent_cli_mapping, no defaults.yaml).
 const DEFAULTS_YAML = `
 language: en
-model_preset: antigravity
+model_preset: mixed
 `.trim();
 
 describe("collectProfileReport — subdirectory invocation", () => {
@@ -66,7 +66,7 @@ describe("collectProfileReport — subdirectory invocation", () => {
   });
 
   it("finds oma-config.yaml from a nested subdirectory", async () => {
-    // antigravity preset: backend = openai/gpt-5.5
+    // mixed preset: backend = openai/gpt-5.5
     const report = await collectProfileReport(subDir);
     // TODO Phase 3 qa: replace missingDefaultsYaml with missingPreset assertion
     expect(report.missingPreset).toBe(false);
@@ -79,7 +79,7 @@ describe("collectProfileReport — subdirectory invocation", () => {
     // Now tests the new agents override format (object-only AgentSpec).
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
-      `language: en\nmodel_preset: antigravity\nagents:\n  backend:\n    model: "anthropic/claude-sonnet-4-6"\n`,
+      `language: en\nmodel_preset: mixed\nagents:\n  backend:\n    model: "anthropic/claude-sonnet-4-6"\n`,
     );
     const report = await collectProfileReport(subDir);
     const backend = report.rows.find((r) => r.role === "backend");
@@ -102,9 +102,9 @@ describe("collectProfileReport — subdirectory invocation", () => {
   it("resolves profile name from model_preset in oma-config.yaml in parent dir", async () => {
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
-      `language: en\nmodel_preset: codex-only\n`,
+      `language: en\nmodel_preset: codex\n`,
     );
     const report = await collectProfileReport(subDir);
-    expect(report.profileName).toBe("codex-only");
+    expect(report.profileName).toBe("codex");
   });
 });

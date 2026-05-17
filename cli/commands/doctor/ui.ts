@@ -218,7 +218,7 @@ export async function renderProfileReport(
       [
         pc.red("model_preset not found or unknown in .agents/oma-config.yaml"),
         pc.dim("Run `oma install` to set a model preset."),
-        pc.dim("Example: model_preset: claude-only"),
+        pc.dim("Example: model_preset: claude"),
       ].join("\n"),
     );
     // NOTE: Do not exit — matrix still renders with ❌ NO PRESET rows for guidance.

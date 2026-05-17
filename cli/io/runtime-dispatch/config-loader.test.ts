@@ -24,11 +24,11 @@ describe("loadUserConfig", () => {
   it("parses valid YAML into a partial OmaConfig", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: ko\nmodel_preset: codex-only\n",
+      "language: ko\nmodel_preset: codex\n",
     );
     const config = loadUserConfig(tempDir);
     expect(config.language).toBe("ko");
-    expect(config.model_preset).toBe("codex-only");
+    expect(config.model_preset).toBe("codex");
   });
 
   it("returns {} when YAML root is not an object (e.g. a list)", () => {
@@ -63,9 +63,43 @@ describe("loadUserConfig", () => {
     mkdirSync(nested, { recursive: true });
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
-      "language: en\nmodel_preset: claude-only\n",
+      "language: en\nmodel_preset: claude\n",
     );
     const config = loadUserConfig(nested);
-    expect(config.model_preset).toBe("claude-only");
+    expect(config.model_preset).toBe("claude");
   });
+
+  // -------------------------------------------------------------------------
+  // Hard-error on legacy preset names (added in migration 010)
+  // -------------------------------------------------------------------------
+
+  const legacyCases: Array<[string, string]> = [
+    ["claude-only", "claude"],
+    ["codex-only", "codex"],
+    ["gemini-only", "gemini"],
+    ["qwen-only", "qwen"],
+    ["cursor-only", "cursor"],
+    ["antigravity", "mixed"],
+  ];
+
+  for (const [legacy, canonical] of legacyCases) {
+    it(`throws ConfigError when model_preset is legacy "${legacy}"`, () => {
+      const filePath = join(tempDir, ".agents", "oma-config.yaml");
+      writeFileSync(filePath, `language: en\nmodel_preset: ${legacy}\n`);
+
+      let caught: unknown;
+      try {
+        loadUserConfig(tempDir);
+      } catch (err) {
+        caught = err;
+      }
+
+      expect(caught).toBeInstanceOf(ConfigError);
+      const err = caught as ConfigError;
+      expect(err.message).toContain(`Legacy preset name "${legacy}"`);
+      expect(err.message).toContain(`Rename it to "${canonical}"`);
+      expect(err.message).toContain("oma update");
+      expect(err.message).toContain(filePath);
+    });
+  }
 });

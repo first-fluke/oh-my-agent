@@ -16,8 +16,8 @@ import { getModelSpec } from "./model-registry.js";
 // ---------------------------------------------------------------------------
 
 export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
-  "claude-only": {
-    description: "Claude-only — Max subscription holders",
+  claude: {
+    description: "Claude — Max subscription holders",
     agent_defaults: {
       orchestrator: { model: "anthropic/claude-sonnet-4-6" },
       architecture: { model: "anthropic/claude-opus-4-7" },
@@ -34,8 +34,8 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
     },
   },
 
-  "codex-only": {
-    description: "Codex-only — ChatGPT Plus/Pro",
+  codex: {
+    description: "Codex — ChatGPT Plus/Pro",
     agent_defaults: {
       orchestrator: { model: "openai/gpt-5.5", effort: "medium" },
       architecture: { model: "openai/gpt-5.5", effort: "high" },
@@ -52,8 +52,8 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
     },
   },
 
-  "gemini-only": {
-    description: "Gemini-only — Google AI Pro",
+  gemini: {
+    description: "Gemini — Google AI Pro",
     agent_defaults: {
       orchestrator: { model: "google/gemini-3-flash" },
       architecture: { model: "google/gemini-3.1-pro-preview", thinking: true },
@@ -70,7 +70,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
     },
   },
 
-  "qwen-only": {
+  qwen: {
     description:
       "Qwen Code — all agents routed external (no native parallel); Qwen has no --effort, only binary --thinking",
     agent_defaults: {
@@ -89,8 +89,8 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
     },
   },
 
-  "cursor-only": {
-    description: "Cursor-only — Cursor Pro / Pro Student",
+  cursor: {
+    description: "Cursor — Cursor Pro / Pro Student",
     agent_defaults: {
       orchestrator: { model: "cursor/composer-2-fast" },
       architecture: { model: "cursor/composer-2" },
@@ -107,9 +107,9 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
     },
   },
 
-  antigravity: {
+  mixed: {
     description:
-      "Antigravity IDE — all impl roles fall back to external subprocess (handled at dispatch layer)",
+      "Mixed — role-optimal vendors per agent (Claude for orchestration/QA/PM, Codex for impl, Gemini for retrieval)",
     agent_defaults: {
       orchestrator: { model: "anthropic/claude-sonnet-4-6" },
       architecture: { model: "anthropic/claude-opus-4-7" },
@@ -128,11 +128,18 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
 };
 
 // ---------------------------------------------------------------------------
-// Aliases — redirect old preset keys to canonical names
-// Initially empty; add entries here when renaming a built-in preset.
+// Aliases — redirect old preset keys to canonical names.
+// Maps legacy "-only" names and "antigravity" to the new canonical keys.
 // ---------------------------------------------------------------------------
 
-export const BUILT_IN_PRESET_ALIASES: Record<string, BuiltInPresetKey> = {};
+export const BUILT_IN_PRESET_ALIASES: Record<string, BuiltInPresetKey> = {
+  "claude-only": "claude",
+  "codex-only": "codex",
+  "gemini-only": "gemini",
+  "qwen-only": "qwen",
+  "cursor-only": "cursor",
+  antigravity: "mixed",
+};
 
 // ---------------------------------------------------------------------------
 // Integrity assertion — verifies every preset model slug resolves via registry.

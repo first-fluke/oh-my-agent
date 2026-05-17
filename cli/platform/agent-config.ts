@@ -26,16 +26,16 @@ export type AgentId =
   | "retrieval";
 
 // ---------------------------------------------------------------------------
-// BuiltInPresetKey — the 5 shipped presets
+// BuiltInPresetKey — the 6 shipped presets
 // ---------------------------------------------------------------------------
 
 export type BuiltInPresetKey =
-  | "claude-only"
-  | "codex-only"
-  | "gemini-only"
-  | "cursor-only"
-  | "qwen-only"
-  | "antigravity";
+  | "claude"
+  | "codex"
+  | "gemini"
+  | "cursor"
+  | "qwen"
+  | "mixed";
 
 // ---------------------------------------------------------------------------
 // AgentSpec — object only (no string shorthand)

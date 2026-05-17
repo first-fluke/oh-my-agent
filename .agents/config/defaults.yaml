@@ -25,8 +25,8 @@ agent_defaults:
   retrieval:     { model: "google/gemini-3.1-flash-lite" }
 
 runtime_profiles:
-  claude-only:
-    description: "Claude-only — Max subscription holders"
+  claude:
+    description: "Claude — Max subscription holders"
     agent_defaults:
       orchestrator:  { model: "anthropic/claude-sonnet-4-6" }
       architecture:  { model: "anthropic/claude-opus-4-7" }
@@ -40,8 +40,8 @@ runtime_profiles:
       tf-infra:      { model: "anthropic/claude-sonnet-4-6" }
       retrieval:     { model: "anthropic/claude-haiku-4-5" }
 
-  codex-only:
-    description: "Codex-only — ChatGPT Plus/Pro"
+  codex:
+    description: "Codex — ChatGPT Plus/Pro"
     agent_defaults:
       orchestrator:  { model: "openai/gpt-5.5", effort: "medium" }
       architecture:  { model: "openai/gpt-5.5", effort: "high" }
@@ -55,8 +55,8 @@ runtime_profiles:
       tf-infra:      { model: "openai/gpt-5.5", effort: "high" }
       retrieval:     { model: "openai/gpt-5.4-mini", effort: "low" }
 
-  gemini-only:
-    description: "Gemini-only — Google AI Pro"
+  gemini:
+    description: "Gemini — Google AI Pro"
     agent_defaults:
       orchestrator:  { model: "google/gemini-3-flash" }
       architecture:  { model: "google/gemini-3.1-pro-preview", thinking: true }
@@ -70,8 +70,8 @@ runtime_profiles:
       tf-infra:      { model: "google/gemini-3-flash", thinking: true }
       retrieval:     { model: "google/gemini-3.1-flash-lite" }
 
-  antigravity:
-    description: "Antigravity IDE — all impl roles fall back to external subprocess (handled at dispatch layer)"
+  mixed:
+    description: "Mixed — role-optimal vendors per agent (Claude for orchestration/QA/PM, Codex for impl, Gemini for retrieval)"
     agent_defaults:
       orchestrator:  { model: "anthropic/claude-sonnet-4-6" }
       architecture:  { model: "anthropic/claude-opus-4-7" }
@@ -85,8 +85,8 @@ runtime_profiles:
       tf-infra:      { model: "openai/gpt-5.5", effort: "high" }
       retrieval:     { model: "google/gemini-3.1-flash-lite" }
 
-  cursor-only:
-    description: "Cursor-only — Cursor Pro / Pro Student"
+  cursor:
+    description: "Cursor — Cursor Pro / Pro Student"
     agent_defaults:
       orchestrator:  { model: "cursor/composer-2-fast" }
       architecture:  { model: "cursor/composer-2" }
@@ -100,7 +100,7 @@ runtime_profiles:
       tf-infra:      { model: "cursor/composer-2" }
       retrieval:     { model: "cursor/composer-2-fast" }
 
-  qwen-only:
+  qwen:
     description: "Qwen Code — all agents routed external (no native parallel); Qwen has no --effort, only binary --thinking"
     agent_defaults:
       orchestrator:  { model: "qwen/qwen3-coder-next", thinking: false }

@@ -43,34 +43,34 @@ import {
 // Fixtures — OmaConfig objects
 // ---------------------------------------------------------------------------
 
-/** Minimal config using codex-only preset — backend gets gpt-5.5 + effort:high */
+/** Minimal config using codex preset — backend gets gpt-5.5 + effort:high */
 const CODEX_ONLY_CONFIG = {
   language: "en",
-  model_preset: "codex-only",
+  model_preset: "codex",
 } as const;
 
-/** Minimal config using claude-only preset — all agents get claude-sonnet-4-6 */
+/** Minimal config using claude preset — all agents get claude-sonnet-4-6 */
 const CLAUDE_ONLY_CONFIG = {
   language: "en",
-  model_preset: "claude-only",
+  model_preset: "claude",
 } as const;
 
-/** Minimal config using gemini-only preset */
+/** Minimal config using gemini preset */
 const GEMINI_ONLY_CONFIG = {
   language: "en",
-  model_preset: "gemini-only",
+  model_preset: "gemini",
 } as const;
 
-/** Minimal config using qwen-only preset */
+/** Minimal config using qwen preset */
 const QWEN_ONLY_CONFIG = {
   language: "en",
-  model_preset: "qwen-only",
+  model_preset: "qwen",
 } as const;
 
-/** Minimal config using cursor-only preset */
+/** Minimal config using cursor preset */
 const CURSOR_ONLY_CONFIG = {
   language: "en",
-  model_preset: "cursor-only",
+  model_preset: "cursor",
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -98,7 +98,7 @@ describe("resolveAgentPlanFromConfig — Case 1: agents override precedence", ()
         backend: { model: "openai/gpt-5.4", effort: "medium" as const },
       },
     };
-    // qa is not overridden — falls back to codex-only preset qa entry
+    // qa is not overridden — falls back to codex preset qa entry
     const plan = resolveAgentPlanFromConfig("qa", config);
     expect(plan.cli).toBe("codex");
   });
@@ -136,7 +136,7 @@ describe("resolveAgentPlanFromConfig — Case 3: unknown agentId falls back to o
       "nonexistent-role",
       CLAUDE_ONLY_CONFIG,
     );
-    // claude-only orchestrator is claude-sonnet-4-6
+    // claude orchestrator is claude-sonnet-4-6
     expect(plan.cli).toBe("claude");
     expect(plan.cliModel).toBe("claude-sonnet-4-6");
   });
@@ -171,7 +171,7 @@ describe("resolveAgentPlanFromConfig — Case 4: Claude effort drop (R14)", () =
 
   it("does not emit WARN when effort not set for Claude model", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    // claude-only qa preset has no effort
+    // claude qa preset has no effort
     const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
     expect(plan.effort).toBeUndefined();
     expect(warnSpy).not.toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe("resolveAgentPlanFromConfig — Case 5: unknown slug throws ConfigError
 
 describe("resolveAgentPlanFromConfig — Case 7: vendorOverride matches native_dispatch_from", () => {
   it("overrides cli when vendorOverride is in native_dispatch_from", () => {
-    // gemini-only retrieval uses google/gemini-3.1-flash-lite (native_dispatch_from: gemini)
+    // gemini retrieval uses google/gemini-3.1-flash-lite (native_dispatch_from: gemini)
     const plan = resolveAgentPlanFromConfig(
       "retrieval",
       GEMINI_ONLY_CONFIG,
@@ -223,7 +223,7 @@ describe("resolveAgentPlanFromConfig — Case 7: vendorOverride matches native_d
 describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_dispatch_from", () => {
   it("warns and keeps original cli when vendorOverride not supported", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    // gemini-only retrieval; codex is NOT in native_dispatch_from
+    // gemini retrieval; codex is NOT in native_dispatch_from
     const plan = resolveAgentPlanFromConfig(
       "retrieval",
       GEMINI_ONLY_CONFIG,
@@ -238,13 +238,13 @@ describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_di
 });
 
 // ---------------------------------------------------------------------------
-// Case 8b: cursor-only preset routes to cursor cli + cursor cliModel
+// Case 8b: cursor preset routes to cursor cli + cursor cliModel
 // Regression for issue #336 follow-up — preset must produce cursor-owned
 // model slugs (composer-2/composer-2-fast), not bleed gemini/codex slugs into
 // `cursor agent --model <slug>`.
 // ---------------------------------------------------------------------------
 
-describe("resolveAgentPlanFromConfig — Case 8b: cursor-only preset", () => {
+describe("resolveAgentPlanFromConfig — Case 8b: cursor preset", () => {
   it("pm role → cli=cursor, cliModel=composer-2-fast", () => {
     const plan = resolveAgentPlanFromConfig("pm", CURSOR_ONLY_CONFIG);
     expect(plan.cli).toBe("cursor");
@@ -306,8 +306,8 @@ describe("setCodexReasoningEffort — Case 9: Codex effort in TOML", () => {
     expect(updated.model_reasoning_effort).toBeUndefined();
   });
 
-  it("codex-only backend plan has effort=high → TOML shows model_reasoning_effort=high", () => {
-    // codex-only preset: backend = { model: openai/gpt-5.5, effort: high }
+  it("codex backend plan has effort=high → TOML shows model_reasoning_effort=high", () => {
+    // codex preset: backend = { model: openai/gpt-5.5, effort: high }
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cli).toBe("codex");
     expect(plan.effort).toBe("high");
@@ -518,14 +518,14 @@ describe("geminiThinkingBudgetFlag — Case 12: Gemini effort translation", () =
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 13: preset defaults (no override)", () => {
-  it("codex-only backend uses gpt-5.5 + effort:high from preset", () => {
+  it("codex backend uses gpt-5.5 + effort:high from preset", () => {
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cliModel).toBe("gpt-5.5");
     expect(plan.effort).toBe("high");
     expect(plan.cli).toBe("codex");
   });
 
-  it("claude-only qa uses claude-sonnet-4-6 from preset", () => {
+  it("claude qa uses claude-sonnet-4-6 from preset", () => {
     const plan = resolveAgentPlanFromConfig("qa", CLAUDE_ONLY_CONFIG);
     expect(plan.cli).toBe("claude");
     expect(plan.cliModel).toBe("claude-sonnet-4-6");
@@ -538,7 +538,7 @@ describe("resolveAgentPlanFromConfig — Case 13: preset defaults (no override)"
 
 describe("resolveAgentPlanFromConfig — Case 14: AgentSpec model-only override", () => {
   it("produces plan without effort when base preset entry has no effort", () => {
-    // claude-only retrieval has no effort in preset; override just changes model
+    // claude retrieval has no effort in preset; override just changes model
     const config = {
       ...CLAUDE_ONLY_CONFIG,
       agents: {
@@ -583,14 +583,14 @@ describe("resolveAgentPlanFromConfig — Case 15: unknown model_preset", () => {
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 16: custom_presets with extends", () => {
-  it("custom preset extends claude-only and overrides backend", () => {
+  it("custom preset extends claude and overrides backend", () => {
     const config = {
       language: "en",
       model_preset: "my-team",
       custom_presets: {
         "my-team": {
           description: "Team preset",
-          extends: "claude-only",
+          extends: "claude",
           agent_defaults: {
             backend: {
               model: "openai/gpt-5.3-codex",
@@ -605,7 +605,7 @@ describe("resolveAgentPlanFromConfig — Case 16: custom_presets with extends", 
     expect(backendPlan.cli).toBe("codex");
     expect(backendPlan.cliModel).toBe("gpt-5.3-codex");
 
-    // qa is inherited from claude-only
+    // qa is inherited from claude
     const qaPlan = resolveAgentPlanFromConfig("qa", config);
     expect(qaPlan.cli).toBe("claude");
   });
@@ -676,7 +676,7 @@ describe("buildAgentPlanArgs — Claude", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildAgentPlanArgs — Codex", () => {
-  it("produces -m gpt-5.5 args for codex-only backend", () => {
+  it("produces -m gpt-5.5 args for codex backend", () => {
     const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     expect(plan.cli).toBe("codex");
     expect(plan.cliModel).toBe("gpt-5.5");

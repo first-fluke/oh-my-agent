@@ -137,10 +137,8 @@ describe("agent/spawn-status.ts", () => {
   });
 
   it("resolves vendor from oma-config.yaml found in parent directory", async () => {
-    // codex-only preset: backend uses openai/gpt-5.3-codex → cli=codex
-    const OMA_CONFIG_YAML = ["language: en", "model_preset: codex-only"].join(
-      "\n",
-    );
+    // codex preset: backend uses openai/gpt-5.3-codex → cli=codex
+    const OMA_CONFIG_YAML = ["language: en", "model_preset: codex"].join("\n");
 
     const cwdSpy = vi
       .spyOn(process, "cwd")
@@ -194,12 +192,12 @@ describe("agent/spawn-status.ts", () => {
   });
 
   it("model_preset agent_defaults take precedence over default_cli", async () => {
-    // model_preset=gemini-only; default_cli=codex; backend has no agents override.
+    // model_preset=gemini; default_cli=codex; backend has no agents override.
     // resolveVendor must resolve through the preset (gemini), not fall back to
     // default_cli (codex). default_cli is now a non-agent-context global hint only.
     const OMA_CONFIG_YAML = [
       "language: en",
-      "model_preset: gemini-only",
+      "model_preset: gemini",
       "default_cli: codex",
     ].join("\n");
 
@@ -247,10 +245,8 @@ describe("agent/spawn-status.ts", () => {
   });
 
   it("resolves vendor using semantic agent aliases from oma-config.yaml", async () => {
-    // antigravity preset: architecture → claude-opus (claude), tf-infra → gpt-5.4 (codex)
-    const OMA_CONFIG_YAML = ["language: en", "model_preset: antigravity"].join(
-      "\n",
-    );
+    // mixed preset: architecture → claude-opus (claude), tf-infra → gpt-5.4 (codex)
+    const OMA_CONFIG_YAML = ["language: en", "model_preset: mixed"].join("\n");
 
     const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue("/project");
 
@@ -395,10 +391,8 @@ describe("agent/spawn-status.ts", () => {
   it("uses Claude native agent dispatch when runtime and target are both claude", async () => {
     vi.stubEnv("OMA_RUNTIME_VENDOR", "claude");
 
-    // claude-only preset: pm → claude
-    const OMA_CONFIG_YAML = ["language: en", "model_preset: claude-only"].join(
-      "\n",
-    );
+    // claude preset: pm → claude
+    const OMA_CONFIG_YAML = ["language: en", "model_preset: claude"].join("\n");
     const CLI_CONFIG_YAML = [
       "active_vendor: gemini",
       "vendors:",
@@ -455,10 +449,8 @@ describe("agent/spawn-status.ts", () => {
   it("uses Codex native agent dispatch when runtime and target are both codex", async () => {
     vi.stubEnv("OMA_RUNTIME_VENDOR", "codex");
 
-    // codex-only preset: backend → codex
-    const OMA_CONFIG_YAML = ["language: en", "model_preset: codex-only"].join(
-      "\n",
-    );
+    // codex preset: backend → codex
+    const OMA_CONFIG_YAML = ["language: en", "model_preset: codex"].join("\n");
     const CLI_CONFIG_YAML = [
       "active_vendor: gemini",
       "vendors:",

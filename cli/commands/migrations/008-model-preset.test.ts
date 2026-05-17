@@ -6,12 +6,12 @@
 // migration against it. Assertions verify the output file and side effects.
 //
 // Coverage (≥ 12 fixtures):
-//  1.  Single-vendor claude    → model_preset: claude-only, no agents block
-//  2.  Single-vendor codex     → model_preset: codex-only, no agents block
-//  3.  Single-vendor gemini    → model_preset: gemini-only, no agents block
-//  4.  Single-vendor qwen      → model_preset: qwen-only, no agents block
-//  5.  Single-vendor antigravity → model_preset: antigravity, no agents block
-//  6.  Mixed-vendor (claude dominant) → preset=claude-only, non-dominant → agents
+//  1.  Single-vendor claude    → model_preset: claude, no agents block
+//  2.  Single-vendor codex     → model_preset: codex, no agents block
+//  3.  Single-vendor gemini    → model_preset: gemini, no agents block
+//  4.  Single-vendor qwen      → model_preset: qwen, no agents block
+//  5.  Single-vendor mixed → model_preset: mixed, no agents block
+//  6.  Mixed-vendor (claude dominant) → preset=claude, non-dominant → agents
 //  7.  AgentSpec object values → preserved in agents map
 //  8.  Customized defaults.yaml → custom_presets.user-customized + WARN
 //  9.  Empty oma-config.yaml (only language: en) → model_preset added
@@ -98,7 +98,7 @@ describe("migration 008 — model_preset", () => {
   // -------------------------------------------------------------------------
   // Fixture 1: single-vendor claude
   // -------------------------------------------------------------------------
-  it("(1) single-vendor claude → model_preset: claude-only, no agents block", () => {
+  it("(1) single-vendor claude → model_preset: claude, no agents block", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -117,19 +117,19 @@ describe("migration 008 — model_preset", () => {
     const actions = runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("claude-only");
+    expect(config.model_preset).toBe("claude");
     expect(config.agent_cli_mapping).toBeUndefined();
     // agents block only present if non-empty
     if (config.agents !== undefined) {
       expect(Object.keys(config.agents as object)).toHaveLength(0);
     }
-    expect(actions.some((a) => a.includes("claude-only"))).toBe(true);
+    expect(actions.some((a) => a.includes("claude"))).toBe(true);
   });
 
   // -------------------------------------------------------------------------
   // Fixture 2: single-vendor codex
   // -------------------------------------------------------------------------
-  it("(2) single-vendor codex → model_preset: codex-only", () => {
+  it("(2) single-vendor codex → model_preset: codex", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -147,14 +147,14 @@ describe("migration 008 — model_preset", () => {
     runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("codex-only");
+    expect(config.model_preset).toBe("codex");
     expect(config.agent_cli_mapping).toBeUndefined();
   });
 
   // -------------------------------------------------------------------------
   // Fixture 3: single-vendor gemini
   // -------------------------------------------------------------------------
-  it("(3) single-vendor gemini → model_preset: gemini-only", () => {
+  it("(3) single-vendor gemini → model_preset: gemini", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -173,14 +173,14 @@ describe("migration 008 — model_preset", () => {
     runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("gemini-only");
+    expect(config.model_preset).toBe("gemini");
     expect(config.language).toBe("ko");
   });
 
   // -------------------------------------------------------------------------
   // Fixture 4: single-vendor qwen
   // -------------------------------------------------------------------------
-  it("(4) single-vendor qwen → model_preset: qwen-only", () => {
+  it("(4) single-vendor qwen → model_preset: qwen", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -198,13 +198,13 @@ describe("migration 008 — model_preset", () => {
     runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("qwen-only");
+    expect(config.model_preset).toBe("qwen");
   });
 
   // -------------------------------------------------------------------------
-  // Fixture 5: single-vendor antigravity
+  // Fixture 5: single-vendor mixed
   // -------------------------------------------------------------------------
-  it("(5) single-vendor antigravity → model_preset: antigravity", () => {
+  it("(5) single-vendor mixed → model_preset: mixed", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -214,21 +214,21 @@ describe("migration 008 — model_preset", () => {
       `${[
         "language: en",
         "agent_cli_mapping:",
-        "  orchestrator: antigravity",
-        "  backend: antigravity",
+        "  orchestrator: mixed",
+        "  backend: mixed",
       ].join("\n")}\n`,
     );
 
     runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("antigravity");
+    expect(config.model_preset).toBe("mixed");
   });
 
   // -------------------------------------------------------------------------
   // Fixture 6: mixed-vendor (claude dominant) → agents block for minority
   // -------------------------------------------------------------------------
-  it("(6) mixed-vendor, claude dominant → preset=claude-only, gemini agents go to overrides", () => {
+  it("(6) mixed-vendor, claude dominant → preset=claude, gemini agents go to overrides", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -249,7 +249,7 @@ describe("migration 008 — model_preset", () => {
     runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("claude-only");
+    expect(config.model_preset).toBe("claude");
     expect(config.agents).toBeDefined();
     const agents = config.agents as Record<string, unknown>;
     expect(agents.frontend).toBeDefined();
@@ -316,7 +316,7 @@ describe("migration 008 — model_preset", () => {
       `${[
         "version: 2.1.0",
         "runtime_profiles:",
-        "  gemini-only:",
+        "  gemini:",
         "    agent_defaults:",
         "      orchestrator:",
         "        model: google/gemini-3.1-pro-preview",
@@ -367,7 +367,7 @@ describe("migration 008 — model_preset", () => {
     scaffoldAgentsDir(root);
 
     const original =
-      "language: ko\nmodel_preset: gemini-only\nagents:\n  backend:\n    model: openai/gpt-5.3-codex\n";
+      "language: ko\nmodel_preset: gemini\nagents:\n  backend:\n    model: openai/gpt-5.3-codex\n";
     writeOmaConfig(root, original);
 
     const actions = runMigration(root);

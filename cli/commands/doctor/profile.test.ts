@@ -48,7 +48,7 @@ vi.mock("node:fs", async (importOriginal) => {
 });
 
 // ---------------------------------------------------------------------------
-// Fixture: oma-config.yaml with antigravity preset
+// Fixture: oma-config.yaml with mixed preset
 // TODO Phase 3 qa: expand fixtures to cover all 5 built-in presets, override
 // rows, allFromPreset, missingPreset, and custom_presets.extends scenarios.
 // Replaced the legacy defaults.yaml fixture with a model_preset-based one.
@@ -56,7 +56,7 @@ vi.mock("node:fs", async (importOriginal) => {
 
 const DEFAULT_DEFAULTS_YAML = `
 language: en
-model_preset: antigravity
+model_preset: mixed
 `.trim();
 
 // ---------------------------------------------------------------------------
@@ -186,10 +186,10 @@ describe("collectProfileReport — Qwen logged in", () => {
   it("marks Qwen-based roles as logged_in when isQwenAuthenticated returns true", async () => {
     vi.mocked(vendorsMock.isQwenAuthenticated).mockReturnValue(true);
 
-    // Use qwen-only preset so all agents resolve to Qwen models
+    // Use qwen preset so all agents resolve to Qwen models
     const qwenYaml = `
 language: en
-model_preset: qwen-only
+model_preset: qwen
 `.trim();
 
     vi.mocked(fsMock.readFileSync).mockReturnValue(qwenYaml);
