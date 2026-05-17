@@ -1,6 +1,11 @@
 # Changelog
 
-## [7.18.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.18.0...cli-v7.18.1) (2026-05-17)
+## [7.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.18.0...cli-v7.19.0) (2026-05-17)
+
+
+### Features
+
+* **serena:** apply Claude .mcp.json and Gemini bridge override in oma update ([ad8d7d6](https://github.com/first-fluke/oh-my-agent/commit/ad8d7d6a62fb109de4aa044ffabbc1e88b467b26))
 
 
 ### Bug Fixes
