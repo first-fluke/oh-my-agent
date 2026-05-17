@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.18.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.18.0...cli-v7.18.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **test:** stub install_* functions in install-sh main pipe test ([e7af667](https://github.com/first-fluke/oh-my-agent/commit/e7af6677bcdb54b9cbcb79fab32de737ba1c1eba))
+
 ## [7.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.17.0...cli-v7.18.0) (2026-05-17)
 
 
