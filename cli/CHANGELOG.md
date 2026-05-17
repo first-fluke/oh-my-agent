@@ -1,5 +1,25 @@
 # Changelog
 
+## [7.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.14.2...cli-v7.15.0) (2026-05-17)
+
+
+### Features
+
+* **agent:spawn:** expose --isolation=worktree for per-spawn git worktree ([8e5ebf5](https://github.com/first-fluke/oh-my-agent/commit/8e5ebf5a53aa53c7cdba59351850de41c8db6b38))
+* **image:** allow arbitrary WxH sizes within gpt-image-2 limits ([2acef68](https://github.com/first-fluke/oh-my-agent/commit/2acef685c7715e8f83e638d4f2a1c9e9b79ee3eb))
+* **stats:** surface session-cost telemetry with vendor breakdown and USD estimate ([c31778d](https://github.com/first-fluke/oh-my-agent/commit/c31778d3224efaf5c5933acb6b1e161aa80ad2e8))
+* **vault:** os-keychain credential store via @napi-rs/keyring ([ec33b53](https://github.com/first-fluke/oh-my-agent/commit/ec33b53d5f88059ba7bc8e4ae60962b9f642dd4f))
+
+
+### Bug Fixes
+
+* **stats:** cache byVendor entry to satisfy noUncheckedIndexedAccess ([5abbf22](https://github.com/first-fluke/oh-my-agent/commit/5abbf2282f3862948c6a1759ba2bda1d258f90a7))
+
+
+### Documentation
+
+* **readme:** surface verify, quota_cap, ralph JUDGE, Exploration Loop, monorepo routing ([2558fb1](https://github.com/first-fluke/oh-my-agent/commit/2558fb103cc185bd35d01d567226e3a081ddfc3c))
+
 ## [7.14.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.14.1...cli-v7.14.2) (2026-05-16)
 
 
