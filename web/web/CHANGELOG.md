@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.2...web-v3.1.3) (2026-05-17)
+
+
+### Documentation
+
+* **i18n:** translate Why oh-my-agent to 11 locales ([eef50e2](https://github.com/first-fluke/oh-my-agent/commit/eef50e2ca17fff461aca8537ef6b5311f3eac804))
+* **web:** add Why oh-my-agent positioning page ([d29f9dd](https://github.com/first-fluke/oh-my-agent/commit/d29f9ddfc38120e98dd86cae9b45772d51234120))
+* **web:** document oma vault, --isolation=worktree, and stats cost telemetry ([8f63c07](https://github.com/first-fluke/oh-my-agent/commit/8f63c077d5e8a694a11ae3a9bf9729c3937251c9))
+
 ## [3.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.1...web-v3.1.2) (2026-05-16)
 
 
