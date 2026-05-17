@@ -64,6 +64,7 @@ Pick a preset and you're ready:
 
 | Agent | What They Do |
 |-------|-------------|
+| **oma-academic-writer** | Publication-grade academic prose drafting, revision, and rubric-based audits |
 | **oma-architecture** | Architectural tradeoffs, boundaries, ADR/ATAM/CBAM-aware analysis |
 | **oma-backend** | APIs in Python, Node.js, or Rust |
 | **oma-brainstorm** | Explores ideas before you commit to building |
@@ -76,6 +77,7 @@ Pick a preset and you're ready:
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
 | **oma-hwp** | HWP/HWPX/HWPML to Markdown conversion |
 | **oma-image** | Multi-vendor AI image generation |
+| **oma-market** | Community-signal market research for pain/trend/competitor/discovery with SWOT/5F/PESTEL |
 | **oma-mobile** | Flutter cross-platform apps |
 | **oma-observability** | Observability router for APM/RUM, metrics/logs/traces/profiles, SLO, incident forensics, transport tuning |
 | **oma-orchestrator** | Parallel agent execution via CLI |
@@ -89,6 +91,7 @@ Pick a preset and you're ready:
 | **oma-skill-creator** | Authors and audits OMA skills in the SSL-lite format |
 | **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
 | **oma-translator** | Natural multilingual translation |
+| **oma-voice** | Local-first TTS/STT via Voicebox MCP for voice generation, voiceover, and transcription |
 
 ## How It Works
 
@@ -171,7 +174,12 @@ agents:
 - **Portable** — `.agents/` travels with your project, not trapped in one IDE
 - **Role-based** — Agents modeled like a real engineering team, not a pile of prompts
 - **Token-efficient** — Two-layer skill design saves ~75% of tokens
-- **Quality-first** — Charter preflight, quality gates, and review workflows built in
+- **Quality-first** — Charter preflight, quality gates, and review workflows built in:
+  - `oma verify <agent>` — 14 deterministic checks per agent type (TypeScript strict, tests, raw SQL, hardcoded secrets, Flutter analyze, inline styles, scope violation, charter alignment, …)
+  - `session.quota_cap` — per-session token / spawn / per-vendor budget caps in `oma-config.yaml`; `orchestrate` Step 5 blocks the next spawn when exceeded
+  - `ralph` workflow — independent JUDGE re-verifies every criterion each iteration to catch silent regressions; heavy-test caching for >30s suites
+  - Exploration Loop — after 2 retries, `orchestrate` spawns hypothesis variants in parallel and keeps the highest-scoring result
+  - Monorepo auto-routing — `detectWorkspace` reads pnpm / nx / turbo / lerna and routes each agent to its workspace
 - **Multi-vendor** — Mix Gemini, Claude, Codex, and Qwen per agent type
 - **Observable** — Terminal and web dashboards for real-time monitoring
 

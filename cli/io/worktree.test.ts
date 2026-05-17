@@ -40,10 +40,10 @@ afterEach(() => {
       const match = line.match(/^worktree (.+)$/);
       if (match?.[1] && match[1] !== repoDir) {
         try {
-          execSync(
-            `git worktree remove ${JSON.stringify(match[1])} --force`,
-            { cwd: repoDir, stdio: "pipe" },
-          );
+          execSync(`git worktree remove ${JSON.stringify(match[1])} --force`, {
+            cwd: repoDir,
+            stdio: "pipe",
+          });
         } catch {
           // ignore — best effort
         }
@@ -65,19 +65,15 @@ describe("createWorktree", () => {
     expect(handle.base).toBe("main");
 
     // The branch should be checked out at the new path
-    const headBranch = execSync(
-      "git rev-parse --abbrev-ref HEAD",
-      { cwd: handle.path, encoding: "utf-8" },
-    ).trim();
+    const headBranch = execSync("git rev-parse --abbrev-ref HEAD", {
+      cwd: handle.path,
+      encoding: "utf-8",
+    }).trim();
     expect(headBranch).toBe(handle.branch);
   });
 
   it("sanitizes unsafe characters in sessionId / agentId for the branch", () => {
-    const handle = createWorktree(
-      "sess with space",
-      "agent$weird",
-      repoDir,
-    );
+    const handle = createWorktree("sess with space", "agent$weird", repoDir);
     expect(handle.branch).toMatch(/^oma\/sess-with-space\/agent-weird$/);
   });
 
