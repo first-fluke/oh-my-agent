@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.3...web-v3.2.0) (2026-05-17)
+
+
+### Features
+
+* **web:** replace favicons and icons with oma mascot ([b65d220](https://github.com/first-fluke/oh-my-agent/commit/b65d220c64be5c5658ac0e6ea6998fbd394dc58b))
+
 ## [3.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.1.2...web-v3.1.3) (2026-05-17)
 
 
