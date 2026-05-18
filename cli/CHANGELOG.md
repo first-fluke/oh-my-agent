@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.20.0...cli-v7.20.1) (2026-05-18)
+
+
+### Bug Fixes
+
+* **stats:** pad before color so ANSI codes don't break table width ([e24d833](https://github.com/first-fluke/oh-my-agent/commit/e24d833c84ad7b2b11fe00ee5cbcbd6254d795b2))
+
 ## [7.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.19.0...cli-v7.20.0) (2026-05-17)
 
 
