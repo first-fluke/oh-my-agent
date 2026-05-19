@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.23.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.23.0...cli-v7.23.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* **cli:** retry rmSync in update-cursor test to dodge Windows EBUSY ([8a2a7d7](https://github.com/first-fluke/oh-my-agent/commit/8a2a7d7736bdceb417c4a89489167f5619543801))
+
+
+### Documentation
+
+* **skills:** cross-link observability handoffs across 8 skills ([6d5e99f](https://github.com/first-fluke/oh-my-agent/commit/6d5e99f265e2e3073bf78b54f1f4d161fad69b20))
+
 ## [7.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.22.0...cli-v7.23.0) (2026-05-19)
 
 
