@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.0...web-v3.5.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* **i18n:** use 'AI 네이티브 개발' in Korean docs ([dcf2ca6](https://github.com/first-fluke/oh-my-agent/commit/dcf2ca6ea5e1dc7c3661b7fa0d812655b43d9480))
+* **repo:** force LF line endings to unblock Windows CI lint ([78e83a4](https://github.com/first-fluke/oh-my-agent/commit/78e83a48d6c267a94cec0c673713ceb9ea33f173))
+
 ## [3.5.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.4.1...web-v3.5.0) (2026-05-19)
 
 
