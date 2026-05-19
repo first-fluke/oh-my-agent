@@ -32,10 +32,12 @@ import { checkAuthStatus } from "../auth-status/auth-status.js";
 describe("auth:status command", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("CURSOR_API_KEY", "");
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   describe("all authenticated", () => {
@@ -73,6 +75,7 @@ describe("auth:status command", () => {
         gemini: true,
         claude: true,
         codex: true,
+        cursor: true,
         qwen: true,
       });
     });
@@ -96,6 +99,7 @@ describe("auth:status command", () => {
         gemini: false,
         claude: false,
         codex: false,
+        cursor: false,
         qwen: false,
       });
     });
@@ -233,6 +237,72 @@ describe("auth:status command", () => {
     });
   });
 
+  describe("cursor auth", () => {
+    beforeEach(() => {
+      isGhAuthenticatedMock.mockReturnValue(false);
+      mockFsFunctions.existsSync.mockReturnValue(false);
+    });
+
+    it("should detect authenticated status output", async () => {
+      execSyncMock.mockImplementation((command: string) => {
+        if (command === "cursor-agent status") return "Authenticated";
+        throw new Error("fail");
+      });
+
+      const consoleSpy = vi.spyOn(console, "log");
+      await checkAuthStatus(true);
+
+      const [output] = firstCall(consoleSpy);
+      const result = JSON.parse(output);
+      expect(result.cursor).toBe(true);
+    });
+
+    it("should detect authenticated nested cursor agent status output", async () => {
+      execSyncMock.mockImplementation((command: string) => {
+        if (command === "cursor-agent status") {
+          throw new Error("old command unavailable");
+        }
+        if (command === "cursor agent status") return "✓ Logged in as user";
+        throw new Error("fail");
+      });
+
+      const consoleSpy = vi.spyOn(console, "log");
+      await checkAuthStatus(true);
+
+      const [output] = firstCall(consoleSpy);
+      const result = JSON.parse(output);
+      expect(result.cursor).toBe(true);
+    });
+
+    it("should detect CURSOR_API_KEY", async () => {
+      vi.stubEnv("CURSOR_API_KEY", "cursor-key");
+      execSyncMock.mockImplementation(() => {
+        throw new Error("fail");
+      });
+
+      const consoleSpy = vi.spyOn(console, "log");
+      await checkAuthStatus(true);
+
+      const [output] = firstCall(consoleSpy);
+      const result = JSON.parse(output);
+      expect(result.cursor).toBe(true);
+    });
+
+    it("should return false when cursor-agent is not authenticated", async () => {
+      execSyncMock.mockImplementation((command: string) => {
+        if (command === "cursor-agent status") return "Not authenticated";
+        throw new Error("fail");
+      });
+
+      const consoleSpy = vi.spyOn(console, "log");
+      await checkAuthStatus(true);
+
+      const [output] = firstCall(consoleSpy);
+      const result = JSON.parse(output);
+      expect(result.cursor).toBe(false);
+    });
+  });
+
   describe("qwen auth", () => {
     beforeEach(() => {
       isGhAuthenticatedMock.mockReturnValue(false);
@@ -321,6 +391,27 @@ describe("auth:status command", () => {
         "Authentication Status",
       );
       expect(prompts.outro).toHaveBeenCalled();
+    });
+
+    it("should render login hints for unauthenticated CLIs", async () => {
+      isGhAuthenticatedMock.mockReturnValue(false);
+      execSyncMock.mockImplementation(() => {
+        throw new Error("not authenticated");
+      });
+      mockFsFunctions.existsSync.mockReturnValue(false);
+
+      const prompts = await import("@clack/prompts");
+      await checkAuthStatus(false);
+
+      expect(prompts.outro).toHaveBeenCalledWith(
+        expect.stringContaining("GitHub:"),
+      );
+      expect(prompts.outro).toHaveBeenCalledWith(
+        expect.stringContaining("Cursor CLI:"),
+      );
+      expect(prompts.outro).toHaveBeenCalledWith(
+        expect.stringContaining("cursor agent login"),
+      );
     });
   });
 

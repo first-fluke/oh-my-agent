@@ -240,21 +240,21 @@ describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_di
 // ---------------------------------------------------------------------------
 // Case 8b: cursor preset routes to cursor cli + cursor cliModel
 // Regression for issue #336 follow-up — preset must produce cursor-owned
-// model slugs (composer-2/composer-2-fast), not bleed gemini/codex slugs into
+// model slugs, not bleed gemini/codex slugs into
 // `cursor agent --model <slug>`.
 // ---------------------------------------------------------------------------
 
 describe("resolveAgentPlanFromConfig — Case 8b: cursor preset", () => {
-  it("pm role → cli=cursor, cliModel=composer-2-fast", () => {
+  it("pm role → cli=cursor, cliModel=composer-2.5-fast", () => {
     const plan = resolveAgentPlanFromConfig("pm", CURSOR_ONLY_CONFIG);
     expect(plan.cli).toBe("cursor");
-    expect(plan.cliModel).toBe("composer-2-fast");
+    expect(plan.cliModel).toBe("composer-2.5-fast");
   });
 
-  it("architecture role → cli=cursor, cliModel=composer-2", () => {
+  it("architecture role → cli=cursor, cliModel=composer-2.5", () => {
     const plan = resolveAgentPlanFromConfig("architecture", CURSOR_ONLY_CONFIG);
     expect(plan.cli).toBe("cursor");
-    expect(plan.cliModel).toBe("composer-2");
+    expect(plan.cliModel).toBe("composer-2.5");
   });
 
   it("vendorOverride='cursor' on cursor-owned model is honored", () => {

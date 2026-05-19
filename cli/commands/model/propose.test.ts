@@ -77,6 +77,18 @@ describe("proposeMissingSlugs", () => {
     expect(output).toContain("cli_model: claude-opus-5-0");
   });
 
+  it("generates English auth hints", () => {
+    const output = proposeMissingSlugs(
+      [makeProbed("cursor/composer-3"), makeProbed("qwen/qwen4-coder")],
+      "2026-05-09",
+    );
+    expect(output).toContain("Requires Cursor Pro or Pro Student subscription");
+    expect(output).toContain(
+      "Requires Qwen Code subscription or Bailian Coding Plan API key",
+    );
+    expect(output).not.toMatch(/[가-힣]/);
+  });
+
   it("includes date in header comment", () => {
     const output = proposeMissingSlugs(
       [makeProbed("anthropic/claude-opus-5-0")],

@@ -19,6 +19,8 @@ describe("CORE_REGISTRY", () => {
     "google/gemini-3.1-pro-preview",
     "google/gemini-3-flash",
     "google/gemini-3.1-flash-lite",
+    "cursor/composer-2.5",
+    "cursor/composer-2.5-fast",
     "cursor/composer-2",
     "cursor/composer-2-fast",
     "cursor/auto",
@@ -27,9 +29,9 @@ describe("CORE_REGISTRY", () => {
     "qwen/qwen3-coder-next",
   ] as const;
 
-  it("contains exactly 17 slugs (Anthropic 3, OpenAI 5, Google 3, Cursor 3, Qwen 3)", async () => {
+  it("contains exactly 19 slugs (Anthropic 3, OpenAI 5, Google 3, Cursor 5, Qwen 3)", async () => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
-    expect(CORE_REGISTRY.size).toBe(17);
+    expect(CORE_REGISTRY.size).toBe(19);
   });
 
   it.each(EXPECTED_SLUGS)("includes slug: %s", async (slug) => {
@@ -165,6 +167,19 @@ describe("ModelSpec shape validation", () => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
     for (const [slug, spec] of CORE_REGISTRY) {
       expect(spec.auth_hint, `${slug} must have auth_hint`).toBeTruthy();
+    }
+  });
+
+  it("keeps user-facing registry hints in English", async () => {
+    const { CORE_REGISTRY } = await import("./model-registry.js");
+    for (const [slug, spec] of CORE_REGISTRY) {
+      expect(spec.auth_hint, `${slug} auth_hint must be English`).not.toMatch(
+        /[가-힣]/,
+      );
+      expect(
+        spec.pricing_note ?? "",
+        `${slug} pricing_note must be English`,
+      ).not.toMatch(/[가-힣]/);
     }
   });
 });
@@ -434,7 +449,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     );
     try {
       const merged = reloadRegistry(emptyDir);
-      expect(merged.size).toBe(17);
+      expect(merged.size).toBe(19);
       expect(getModelSpec("anthropic/claude-opus-4-7")).toBeDefined();
       expect(CORE_REGISTRY.has("openai/gpt-5.4")).toBe(true);
     } finally {
@@ -450,7 +465,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     const dir = makeTempProjectDir(MALFORMED_YAML);
     try {
       const merged = reloadRegistry(dir);
-      expect(merged.size).toBe(17);
+      expect(merged.size).toBe(19);
       expect(getModelSpec("openai/gpt-5.4")).toBeDefined();
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });

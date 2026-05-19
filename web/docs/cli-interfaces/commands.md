@@ -591,7 +591,7 @@ oma auth:status [--json] [--output <format>]
 | `--json` | Output as JSON |
 | `--output <format>` | Output format (`text` or `json`) |
 
-**Checks:** GitHub CLI (`gh`), Gemini CLI, Claude CLI, Codex CLI, Qwen CLI.
+**Checks:** GitHub CLI (`gh`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 **Examples:**
 ```bash

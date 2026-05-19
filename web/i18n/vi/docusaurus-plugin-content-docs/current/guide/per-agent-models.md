@@ -38,7 +38,7 @@ model_preset: gemini
 | `codex` | Mọi agent dùng OpenAI Codex (GPT-5.x) với mức effort | Người dùng ChatGPT Plus/Pro |
 | `gemini` | Mọi agent dùng Gemini CLI, bật thinking cho vai trò triển khai | Người dùng Google AI Pro |
 | `qwen` | Mọi agent định tuyến external qua Qwen Code; thinking dạng nhị phân (không có mức effort) | Inference cục bộ / tự host |
-| `cursor` | Mọi agent dùng Cursor `composer-2` (`composer-2-fast` cho orchestrator/qa/pm/docs/retrieval) | Người dùng Cursor Pro / Pro Student |
+| `cursor` | Mọi agent dùng Cursor `composer-2.5` (`composer-2.5-fast` cho orchestrator/qa/pm/docs/retrieval) | Người dùng Cursor Pro / Pro Student |
 | `mixed` | Hỗn hợp: vai trò triển khai dùng Codex, architecture/qa/pm dùng Claude, retrieval dùng Gemini | Tận dụng thế mạnh nhiều vendor mà không phải cấu hình từng agent |
 
 Preset có sẵn được đóng gói trong package CLI và tự cập nhật khi bạn nâng cấp `oh-my-agent`. Bạn không cần duy trì file cục bộ nào.

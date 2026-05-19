@@ -64,7 +64,7 @@ describe("detectRuntimeVendor", () => {
 const minimalVendorConfigCursor = {
   command: "cursor",
   model_flag: "--model",
-  default_model: "composer-2",
+  default_model: "auto",
   output_format_flag: "--output-format",
   output_format: "json",
   auto_approve_flag: "--yolo",
@@ -273,7 +273,7 @@ describe("planDispatch — plan integration (T10b)", () => {
     ).toThrow();
   });
 
-  it("Qwen runtime + Codex target → forced external, plan args still appended", () => {
+  it("Qwen runtime + Codex target → forced external without Qwen-only flags", () => {
     // qwen preset; backend has thinking:true by default
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
@@ -290,8 +290,7 @@ describe("planDispatch — plan integration (T10b)", () => {
     );
 
     expect(plan.mode).toBe("external");
-    // qwen backend has thinking:true → args include --thinking
-    expect(plan.invocation.args).toContain("--thinking");
+    expect(plan.invocation.args).not.toContain("--thinking");
   });
 
   it("unknown slug in agents override → ConfigError handled gracefully", () => {
@@ -353,7 +352,7 @@ describe("planDispatch — plan integration (T10b)", () => {
   // resolveAgentPlan would route cursor dispatch through whatever model the
   // active preset declared (e.g. google/gemini-3-flash), producing
   // `cursor agent ... --model gemini-3-flash <prompt>` — wrong model.
-  it("cursor preset → cursor dispatch injects preset cliModel before prompt", () => {
+  it("cursor preset → cursor dispatch injects Composer 2.5 Fast before prompt", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
       "language: en\nmodel_preset: cursor\n",
@@ -371,7 +370,7 @@ describe("planDispatch — plan integration (T10b)", () => {
     const args = plan.invocation.args;
     const modelIdx = args.indexOf("--model");
     expect(modelIdx).toBeGreaterThan(-1);
-    expect(args[modelIdx + 1]).toBe("composer-2-fast");
+    expect(args[modelIdx + 1]).toBe("composer-2.5-fast");
     expect(args.at(-1)).toContain("do-the-thing");
     // Model flag is the last option before the trailing positional prompt.
     expect(modelIdx + 2).toBe(args.length - 1);
@@ -380,7 +379,7 @@ describe("planDispatch — plan integration (T10b)", () => {
     expect(args.filter((a) => a === "--model")).toHaveLength(1);
   });
 
-  it("cursor preset (architecture role) → cursor dispatch uses composer-2", () => {
+  it("cursor preset (architecture role) → cursor dispatch uses Composer 2.5", () => {
     writeFileSync(
       join(tempDir, ".agents", "oma-config.yaml"),
       "language: en\nmodel_preset: cursor\n",
@@ -397,7 +396,34 @@ describe("planDispatch — plan integration (T10b)", () => {
 
     const args = plan.invocation.args;
     const modelIdx = args.indexOf("--model");
-    expect(args[modelIdx + 1]).toBe("composer-2");
+    expect(args[modelIdx + 1]).toBe("composer-2.5");
+  });
+
+  it("cursor override from non-cursor preset keeps cursor vendor default model", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: gemini\n",
+    );
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const plan = planDispatch(
+      "pm",
+      "cursor",
+      minimalVendorConfigCursor,
+      null,
+      "review",
+      { CURSOR_AGENT: "1" },
+    );
+
+    const args = plan.invocation.args;
+    const modelIdx = args.indexOf("--model");
+    expect(modelIdx).toBeGreaterThan(-1);
+    expect(args[modelIdx + 1]).toBe("auto");
+    expect(args).not.toContain("gemini-3-flash");
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("using cursor vendor defaults"),
+    );
+    warnSpy.mockRestore();
   });
 });
 

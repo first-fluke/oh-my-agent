@@ -38,7 +38,7 @@ model_preset: gemini
 | `codex` | 모든 에이전트가 effort 레벨이 적용된 OpenAI Codex (GPT-5.x) 사용 | ChatGPT Plus/Pro 사용자 |
 | `gemini` | 모든 에이전트가 Gemini CLI 사용, 구현 역할에는 thinking 활성화 | Google AI Pro 사용자 |
 | `qwen` | 모든 에이전트를 Qwen Code로 외부 라우팅. 이진 thinking 방식(effort 레벨 없음) | 로컬 또는 자체 호스팅 추론 |
-| `cursor` | 모든 에이전트가 Cursor `composer-2` 사용 (orchestrator/qa/pm/docs/retrieval은 `composer-2-fast`) | Cursor Pro / Pro Student 사용자 |
+| `cursor` | 모든 에이전트가 Cursor `composer-2.5` 사용 (orchestrator/qa/pm/docs/retrieval은 `composer-2.5-fast`) | Cursor Pro / Pro Student 사용자 |
 | `mixed` | 혼합 구성: 구현 역할은 Codex, architecture/qa/pm은 Claude, retrieval은 Gemini | 에이전트별 설정 부담 없이 벤더별 강점을 활용하고 싶을 때 |
 
 빌트인 프리셋은 CLI 패키지에 포함되어 제공되며, `oh-my-agent`를 업그레이드하면 자동으로 갱신됩니다. 별도로 관리할 로컬 파일이 없습니다.

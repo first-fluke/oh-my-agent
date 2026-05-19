@@ -72,6 +72,13 @@ function injectCursorModelBeforeTrailingPrompt(
   return invocation;
 }
 
+function planMatchesTargetVendor(
+  plan: AgentPlan | null,
+  targetVendor: string,
+): plan is AgentPlan {
+  return plan?.cli === targetVendor;
+}
+
 /** Merge resolved AgentPlan flags into subprocess args (vendor-aware). */
 function applyResolvedPlan(
   invocation: Invocation,
@@ -111,15 +118,22 @@ export function planDispatch(
     }
   }
 
+  const activePlan = planMatchesTargetVendor(plan, targetVendor) ? plan : null;
+  if (plan && !activePlan) {
+    console.warn(
+      `[runtime-dispatch] ${agentId}: resolved model targets ${plan.cli}, but dispatch target is ${targetVendor}; using ${targetVendor} vendor defaults.`,
+    );
+  }
+
   // When a plan is resolved, strip default_model from vendorConfig so the
   // existing native/external builders do not emit a duplicate model flag.
   // buildAgentPlanArgs(plan) appended below provides the correct model flag.
-  const effectiveVendorConfig = plan
+  const effectiveVendorConfig = activePlan
     ? vendorConfigWithoutModel(vendorConfig)
     : vendorConfig;
 
-  if (plan?.cli === "codex" && plan.effort !== undefined) {
-    persistCodexEffortToToml(process.cwd(), plan.effort);
+  if (activePlan?.cli === "codex" && activePlan.effort !== undefined) {
+    persistCodexEffortToToml(process.cwd(), activePlan.effort);
   }
 
   // Runtimes without parallel native subagent support → force external
@@ -133,7 +147,7 @@ export function planDispatch(
       promptFlag,
       promptContent,
     );
-    if (plan) applyResolvedPlan(inv, plan, targetVendor);
+    if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
       mode: "external",
       runtimeVendor,
@@ -149,7 +163,7 @@ export function planDispatch(
       promptContent,
       effectiveVendorConfig,
     );
-    if (plan) applyResolvedPlan(inv, plan, targetVendor);
+    if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
       mode: "native",
       runtimeVendor,
@@ -165,7 +179,7 @@ export function planDispatch(
       promptContent,
       effectiveVendorConfig,
     );
-    if (plan) applyResolvedPlan(inv, plan, targetVendor);
+    if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
       mode: "native",
       runtimeVendor,
@@ -181,7 +195,7 @@ export function planDispatch(
       promptContent,
       effectiveVendorConfig,
     );
-    if (plan) applyResolvedPlan(inv, plan, targetVendor);
+    if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
       mode: "native",
       runtimeVendor,
@@ -197,7 +211,7 @@ export function planDispatch(
       promptContent,
       effectiveVendorConfig,
     );
-    if (plan) applyResolvedPlan(inv, plan, targetVendor);
+    if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
       mode: "native",
       runtimeVendor,
@@ -213,7 +227,7 @@ export function planDispatch(
     promptFlag,
     promptContent,
   );
-  if (plan) applyResolvedPlan(inv, plan, targetVendor);
+  if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
   return {
     mode: "external",
     runtimeVendor,

@@ -78,8 +78,8 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["claude"],
         api_only: false,
       },
-      pricing_note: "$5/$25 per Mtok (참고용 — 구독 기반 비용 아님)",
-      auth_hint: "Claude Max 구독 필요 ($200/mo)",
+      pricing_note: "$5/$25 per Mtok (reference only; not subscription cost)",
+      auth_hint: "Requires Claude Max subscription ($200/mo)",
       subscription_tier: "claude_max",
     } satisfies ModelSpec,
   ],
@@ -97,7 +97,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["claude"],
         api_only: false,
       },
-      auth_hint: "Claude Pro 또는 Max 구독 필요",
+      auth_hint: "Requires Claude Pro or Max subscription",
     } satisfies ModelSpec,
   ],
   [
@@ -114,7 +114,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["claude"],
         api_only: false,
       },
-      auth_hint: "Claude Pro 또는 Max 구독 필요",
+      auth_hint: "Requires Claude Pro or Max subscription",
     } satisfies ModelSpec,
   ],
 
@@ -138,8 +138,10 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["codex"],
         api_only: false,
       },
-      pricing_note: "$5/$30 per Mtok (참고용 — 토큰 효율 5.4 대비 향상)",
-      auth_hint: "ChatGPT Plus 또는 Pro 구독 필요 (Codex CLI 기본 모델)",
+      pricing_note:
+        "$5/$30 per Mtok (reference only; improved token efficiency vs 5.4)",
+      auth_hint:
+        "Requires ChatGPT Plus or Pro subscription (default Codex CLI model)",
     } satisfies ModelSpec,
   ],
   [
@@ -159,7 +161,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["codex"],
         api_only: false,
       },
-      auth_hint: "ChatGPT Plus 또는 Pro 구독 필요",
+      auth_hint: "Requires ChatGPT Plus or Pro subscription",
     } satisfies ModelSpec,
   ],
   [
@@ -179,8 +181,8 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["codex"],
         api_only: false,
       },
-      pricing_note: "$30/$180 per Mtok (참고용 — 특수 케이스만 사용)",
-      auth_hint: "ChatGPT Pro 구독 필요 ($200/mo)",
+      pricing_note: "$30/$180 per Mtok (reference only; use for special cases)",
+      auth_hint: "Requires ChatGPT Pro subscription ($200/mo)",
       subscription_tier: "chatgpt_pro",
     } satisfies ModelSpec,
   ],
@@ -201,8 +203,9 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["codex"],
         api_only: false,
       },
-      pricing_note: "Codex quota 30%만 소비 — 공식 서브에이전트 권장",
-      auth_hint: "ChatGPT Plus 구독 필요",
+      pricing_note:
+        "Uses only 30% Codex quota; recommended for official subagents",
+      auth_hint: "Requires ChatGPT Plus subscription",
     } satisfies ModelSpec,
   ],
   [
@@ -222,7 +225,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["codex"],
         api_only: false,
       },
-      auth_hint: "ChatGPT Plus 또는 Pro 구독 필요",
+      auth_hint: "Requires ChatGPT Plus or Pro subscription",
     } satisfies ModelSpec,
   ],
 
@@ -246,7 +249,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["gemini"],
         api_only: false,
       },
-      auth_hint: "Google AI Pro 구독 필요 ($20/mo)",
+      auth_hint: "Requires Google AI Pro subscription ($20/mo)",
       subscription_tier: "google_ai_pro",
     } satisfies ModelSpec,
   ],
@@ -267,8 +270,8 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["gemini"],
         api_only: false,
       },
-      pricing_note: "$0.50/$3.00 per Mtok (참고용)",
-      auth_hint: "Google AI Pro 구독 필요 ($20/mo)",
+      pricing_note: "$0.50/$3.00 per Mtok (reference only)",
+      auth_hint: "Requires Google AI Pro subscription ($20/mo)",
       subscription_tier: "google_ai_pro",
     } satisfies ModelSpec,
   ],
@@ -289,15 +292,49 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["gemini"],
         api_only: false,
       },
-      pricing_note: "$0.25/$1.50 per Mtok (참고용)",
-      auth_hint: "Google AI Pro 구독 필요 ($20/mo)",
+      pricing_note: "$0.25/$1.50 per Mtok (reference only)",
+      auth_hint: "Requires Google AI Pro subscription ($20/mo)",
       subscription_tier: "google_ai_pro",
     } satisfies ModelSpec,
   ],
 
   // -------------------------------------------------------------------------
-  // Cursor (3)
+  // Cursor (5)
   // -------------------------------------------------------------------------
+  [
+    "cursor/composer-2.5",
+    {
+      cli: "cursor",
+      cli_model: "composer-2.5",
+      supports: {
+        effort: null,
+        apply_patch: false,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: false,
+        native_dispatch_from: ["cursor"],
+        api_only: false,
+      },
+      auth_hint: "Requires Cursor Pro or Pro Student subscription",
+    } satisfies ModelSpec,
+  ],
+  [
+    "cursor/composer-2.5-fast",
+    {
+      cli: "cursor",
+      cli_model: "composer-2.5-fast",
+      supports: {
+        effort: null,
+        apply_patch: false,
+        task_budget: false,
+        prompt_cache: false,
+        computer_use: false,
+        native_dispatch_from: ["cursor"],
+        api_only: false,
+      },
+      auth_hint: "Requires Cursor Pro or Pro Student subscription",
+    } satisfies ModelSpec,
+  ],
   [
     "cursor/composer-2",
     {
@@ -312,7 +349,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["cursor"],
         api_only: false,
       },
-      auth_hint: "Cursor Pro 또는 Pro Student 구독 필요",
+      auth_hint: "Requires Cursor Pro or Pro Student subscription",
     } satisfies ModelSpec,
   ],
   [
@@ -329,7 +366,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: ["cursor"],
         api_only: false,
       },
-      auth_hint: "Cursor Pro 또는 Pro Student 구독 필요",
+      auth_hint: "Requires Cursor Pro or Pro Student subscription",
     } satisfies ModelSpec,
   ],
   [
@@ -347,7 +384,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         api_only: false,
       },
       auth_hint:
-        "Cursor Pro 또는 Pro Student 구독 필요 (자동 라우팅 — 쿼터 친화적)",
+        "Requires Cursor Pro or Pro Student subscription (auto routing; quota-friendly)",
     } satisfies ModelSpec,
   ],
 
@@ -368,8 +405,9 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         native_dispatch_from: [],
         api_only: false,
       },
-      pricing_note: "1M context, agentic coding 강화 (2026-04 출시)",
-      auth_hint: "Qwen Code 구독 또는 Bailian Coding Plan API 키 필요",
+      pricing_note: "1M context, enhanced agentic coding (released 2026-04)",
+      auth_hint:
+        "Requires Qwen Code subscription or Bailian Coding Plan API key",
     } satisfies ModelSpec,
   ],
   [
@@ -387,7 +425,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         api_only: false,
       },
       auth_hint:
-        "Qwen Code 구독 필요 (API 키 재인증 필요 — OAuth 2026-04-15 폐지)",
+        "Requires Qwen Code subscription (API key re-authentication required; OAuth deprecated 2026-04-15)",
     } satisfies ModelSpec,
   ],
   [
@@ -405,7 +443,7 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
         api_only: false,
       },
       auth_hint:
-        "Qwen Code 구독 필요 (API 키 재인증 필요 — OAuth 2026-04-15 폐지)",
+        "Requires Qwen Code subscription (API key re-authentication required; OAuth deprecated 2026-04-15)",
     } satisfies ModelSpec,
   ],
 ]);

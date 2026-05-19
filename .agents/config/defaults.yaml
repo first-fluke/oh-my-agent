@@ -88,17 +88,17 @@ runtime_profiles:
   cursor:
     description: "Cursor — Cursor Pro / Pro Student"
     agent_defaults:
-      orchestrator:  { model: "cursor/composer-2-fast" }
-      architecture:  { model: "cursor/composer-2" }
-      qa:            { model: "cursor/composer-2-fast" }
-      pm:            { model: "cursor/composer-2-fast" }
-      backend:       { model: "cursor/composer-2" }
-      frontend:      { model: "cursor/composer-2" }
-      mobile:        { model: "cursor/composer-2" }
-      db:            { model: "cursor/composer-2" }
-      debug:         { model: "cursor/composer-2" }
-      tf-infra:      { model: "cursor/composer-2" }
-      retrieval:     { model: "cursor/composer-2-fast" }
+      orchestrator:  { model: "cursor/composer-2.5-fast" }
+      architecture:  { model: "cursor/composer-2.5" }
+      qa:            { model: "cursor/composer-2.5-fast" }
+      pm:            { model: "cursor/composer-2.5-fast" }
+      backend:       { model: "cursor/composer-2.5" }
+      frontend:      { model: "cursor/composer-2.5" }
+      mobile:        { model: "cursor/composer-2.5" }
+      db:            { model: "cursor/composer-2.5" }
+      debug:         { model: "cursor/composer-2.5" }
+      tf-infra:      { model: "cursor/composer-2.5" }
+      retrieval:     { model: "cursor/composer-2.5-fast" }
 
   qwen:
     description: "Qwen Code — all agents routed external (no native parallel); Qwen has no --effort, only binary --thinking"

@@ -57,7 +57,7 @@ function buildDefaultTemplate(
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Claude Pro 또는 Max 구독 필요", // TODO verify subscription tier
+        auth_hint: "Requires Claude Pro or Max subscription", // TODO verify subscription tier
       };
 
     case "openai":
@@ -76,7 +76,7 @@ function buildDefaultTemplate(
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "ChatGPT Plus 또는 Pro 구독 필요", // TODO verify subscription tier
+        auth_hint: "Requires ChatGPT Plus or Pro subscription", // TODO verify subscription tier
       };
 
     case "google":
@@ -92,7 +92,7 @@ function buildDefaultTemplate(
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Google AI Pro 구독 필요 ($20/mo)", // TODO verify subscription tier
+        auth_hint: "Requires Google AI Pro subscription ($20/mo)", // TODO verify subscription tier
       };
 
     case "qwen":
@@ -108,7 +108,8 @@ function buildDefaultTemplate(
           native_dispatch_from: [],
           api_only: false,
         },
-        auth_hint: "Qwen Code 구독 또는 Bailian Coding Plan API 키 필요", // TODO verify
+        auth_hint:
+          "Requires Qwen Code subscription or Bailian Coding Plan API key", // TODO verify
       };
 
     case "cursor":
@@ -124,7 +125,7 @@ function buildDefaultTemplate(
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Cursor Pro 또는 Pro Student 구독 필요", // TODO verify subscription tier
+        auth_hint: "Requires Cursor Pro or Pro Student subscription", // TODO verify subscription tier
       };
 
     default:
@@ -140,7 +141,7 @@ function buildDefaultTemplate(
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "구독 또는 API 키 필요", // TODO verify
+        auth_hint: "Requires subscription or API key", // TODO verify
       };
   }
 }

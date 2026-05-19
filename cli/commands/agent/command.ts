@@ -10,7 +10,7 @@ export function registerAgentCommands(program: Command): void {
     .description("Spawn a subagent (prompt can be inline text or a file path)")
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (gemini/claude/codex/qwen)",
+      "CLI vendor override (gemini/claude/codex/cursor/qwen)",
     )
     .option(
       "-w, --workspace <path>",
@@ -49,7 +49,7 @@ export function registerAgentCommands(program: Command): void {
     .description("Run multiple sub-agents in parallel")
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (gemini/claude/codex/qwen)",
+      "CLI vendor override (gemini/claude/codex/cursor/qwen)",
     )
     .option(
       "-i, --inline",

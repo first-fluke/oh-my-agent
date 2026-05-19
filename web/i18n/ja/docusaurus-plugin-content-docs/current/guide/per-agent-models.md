@@ -38,7 +38,7 @@ model_preset: gemini
 | `codex` | すべてのエージェントがOpenAI Codex（GPT-5.x）をeffortレベル付きで使用 | ChatGPT Plus/Proユーザー |
 | `gemini` | すべてのエージェントがGemini CLIを使用し、実装ロールでthinkingを有効化 | Google AI Proユーザー |
 | `qwen` | すべてのエージェントがQwen Code経由で外部ルーティング、バイナリthinking（effortレベルなし） | ローカル/セルフホスト推論 |
-| `cursor` | すべてのエージェントが Cursor `composer-2` を使用（orchestrator/qa/pm/docs/retrieval は `composer-2-fast`） | Cursor Pro / Pro Student ユーザー |
+| `cursor` | すべてのエージェントが Cursor `composer-2.5` を使用（orchestrator/qa/pm/docs/retrieval は `composer-2.5-fast`） | Cursor Pro / Pro Student ユーザー |
 | `mixed` | 混在構成：実装ロールはCodex、architecture/qa/pmはClaude、retrievalはGemini | エージェントごとの設定を管理せずに、各ベンダーの強みを活用 |
 
 組み込みプリセットはCLIパッケージに同梱されており、`oh-my-agent`をアップグレードすると自動的に更新されます。ローカルで保守するファイルはありません。

@@ -56,8 +56,9 @@ vendors:
     isolation_method: "directory"
 
   # Cursor Agent headless CLI: `cursor agent -p …` (--print). Prompt is positional.
-  # Models: run `cursor agent --list-models`. `auto` lets Cursor route to an available model
-  # (quota-friendly); pin to a specific id (e.g. composer-2, composer-2-fast) for reproducibility.
+  # Models: run `cursor agent models` (legacy fallback: `cursor agent --list-models`).
+  # `auto` lets Cursor route to an available model (quota-friendly); pin to a specific
+  # id (e.g. composer-2.5, composer-2.5-fast) for reproducibility.
   cursor:
     command: cursor
     prompt_flag: none

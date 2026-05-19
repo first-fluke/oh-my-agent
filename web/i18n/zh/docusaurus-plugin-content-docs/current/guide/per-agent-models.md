@@ -38,7 +38,7 @@ model_preset: gemini
 | `codex` | 所有智能体使用带 effort 等级的 OpenAI Codex（GPT-5.x） | ChatGPT Plus/Pro 用户 |
 | `gemini` | 所有智能体使用 Gemini CLI，实现类角色启用 thinking | Google AI Pro 用户 |
 | `qwen` | 所有智能体通过 Qwen Code 进行外部路由；二元 thinking（无 effort 等级） | 本地 / 自托管推理 |
-| `cursor` | 所有智能体使用 Cursor `composer-2`（orchestrator/qa/pm/docs/retrieval 使用 `composer-2-fast`） | Cursor Pro / Pro Student 订阅者 |
+| `cursor` | 所有智能体使用 Cursor `composer-2.5`（orchestrator/qa/pm/docs/retrieval 使用 `composer-2.5-fast`） | Cursor Pro / Pro Student 订阅者 |
 | `mixed` | 混合：实现类角色用 Codex，architecture/qa/pm 用 Claude，retrieval 用 Gemini | 跨厂商发挥各自优势，无需逐个智能体配置 |
 
 内置预设随 CLI 包一起发布，并在升级 `oh-my-agent` 时自动更新。无需维护任何本地文件。

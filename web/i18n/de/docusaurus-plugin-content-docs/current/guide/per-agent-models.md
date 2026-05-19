@@ -38,7 +38,7 @@ model_preset: gemini
 | `codex` | Alle Agenten verwenden OpenAI Codex (GPT-5.x) mit Effort-Stufen | Nutzer von ChatGPT Plus/Pro |
 | `gemini` | Alle Agenten verwenden die Gemini CLI; Thinking ist für Implementierungsrollen aktiviert | Nutzer von Google AI Pro |
 | `qwen` | Alle Agenten werden extern über Qwen Code geleitet; binäres Thinking (keine Effort-Stufen) | Lokale bzw. selbst gehostete Inferenz |
-| `cursor` | Alle Agenten nutzen Cursor `composer-2` (`composer-2-fast` für orchestrator/qa/pm/docs/retrieval) | Cursor-Pro- / Pro-Student-Abo |
+| `cursor` | Alle Agenten nutzen Cursor `composer-2.5` (`composer-2.5-fast` für orchestrator/qa/pm/docs/retrieval) | Cursor-Pro- / Pro-Student-Abo |
 | `mixed` | Gemischt: Implementierungsrollen nutzen Codex, Architecture/QA/PM nutzen Claude, Retrieval nutzt Gemini | Anbieterübergreifende Stärken ohne Konfiguration pro Agent |
 
 Eingebaute Presets werden mit dem CLI-Paket ausgeliefert und aktualisieren sich automatisch, wenn Sie `oh-my-agent` aktualisieren. Es ist keine lokale Datei zu pflegen.

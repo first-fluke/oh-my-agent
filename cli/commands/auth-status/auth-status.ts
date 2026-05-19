@@ -3,6 +3,15 @@ import pc from "picocolors";
 import { isGhAuthenticated } from "../../io/github.js";
 import { VENDORS } from "../../vendors/index.js";
 
+const AUTH_HINTS: Record<string, string> = {
+  github: "gh auth login",
+  claude: "claude auth",
+  gemini: "gemini auth",
+  codex: "codex login",
+  cursor: "cursor agent login",
+  qwen: "qwen /auth",
+};
+
 export async function checkAuthStatus(jsonMode = false): Promise<void> {
   const github = isGhAuthenticated();
   const statuses = Object.fromEntries(
@@ -36,7 +45,25 @@ export async function checkAuthStatus(jsonMode = false): Promise<void> {
     "Authentication Status",
   );
 
+  const missing = rows
+    .filter(([, auth]) => !auth)
+    .map(([name]) => {
+      const id =
+        name === "GitHub"
+          ? "github"
+          : VENDORS.find((v) => v.label === name)?.id;
+      return id == null ? undefined : ([name, AUTH_HINTS[id]] as const);
+    })
+    .filter((hint): hint is readonly [string, string] => !!hint?.[1]);
+
+  if (missing.length === 0) {
+    p.outro(pc.green("All configured CLIs are authenticated."));
+    return;
+  }
+
   p.outro(
-    `Use ${pc.cyan("gemini auth")}, ${pc.cyan("claude auth")}, etc. to login.`,
+    `Login hints: ${missing
+      .map(([name, command]) => `${name}: ${pc.cyan(command)}`)
+      .join("; ")}`,
   );
 }
