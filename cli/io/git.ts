@@ -1,4 +1,6 @@
 import { execSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 export function getGitStats(cwd: string): {
   filesChanged: number;
@@ -106,20 +108,25 @@ export function getCommitTypes(commits: string[]): Record<string, number> {
 
 export function getLastRetroDate(cwd: string): string | null {
   try {
-    const retroDir = `${cwd}/.serena/retrospectives`;
-    const files = execSync(`ls -t "${retroDir}"/*.json 2>/dev/null | head -1`, {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    }).trim();
+    const retroDir = join(cwd, ".serena", "retrospectives");
+    if (!existsSync(retroDir)) return null;
 
-    if (!files) return null;
+    let newestPath: string | null = null;
+    let newestMtime = -Infinity;
+    for (const entry of readdirSync(retroDir)) {
+      if (!entry.endsWith(".json")) continue;
+      const full = join(retroDir, entry);
+      const mtime = statSync(full).mtimeMs;
+      if (mtime > newestMtime) {
+        newestMtime = mtime;
+        newestPath = full;
+      }
+    }
+    if (!newestPath) return null;
 
-    const content = execSync(`cat "${files}"`, {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    });
-
-    const retro = JSON.parse(content) as { date?: string };
+    const retro = JSON.parse(readFileSync(newestPath, "utf-8")) as {
+      date?: string;
+    };
     return retro.date || null;
   } catch {
     return null;

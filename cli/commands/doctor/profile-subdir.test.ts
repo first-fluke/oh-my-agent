@@ -1,9 +1,6 @@
 /**
  * Filesystem-based regression tests for collectProfileReport.
  *
- * TODO Phase 3 qa: Rewrite all fixtures to use model_preset-based oma-config.yaml
- * instead of the legacy defaults.yaml + agent_cli_mapping format removed in 008.
- *
  * Verifies that the doctor matrix discovers .agents/oma-config.yaml by walking
  * parent directories — matching findFileUp semantics in runtime-dispatch.ts.
  * Without this the matrix would show defaults while the actual spawn path reads
@@ -36,9 +33,6 @@ vi.mock("../../io/runtime-dispatch.js", () => ({
 
 import { collectProfileReport } from "./profile.js";
 
-// TODO Phase 3 qa: replace DEFAULTS_YAML fixture with model_preset-based oma-config.yaml
-// (e.g. "language: en\nmodel_preset: mixed") and update all test assertions below
-// to match the new preset-based resolution (no agent_cli_mapping, no defaults.yaml).
 const DEFAULTS_YAML = `
 language: en
 model_preset: mixed
@@ -53,8 +47,6 @@ describe("collectProfileReport — subdirectory invocation", () => {
     mkdirSync(join(projectRoot, ".agents"), { recursive: true });
     subDir = join(projectRoot, "packages", "web", "src");
     mkdirSync(subDir, { recursive: true });
-    // TODO Phase 3 qa: previously wrote .agents/config/defaults.yaml —
-    // now writes .agents/oma-config.yaml with model_preset (migration 008).
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
       DEFAULTS_YAML,
@@ -68,15 +60,12 @@ describe("collectProfileReport — subdirectory invocation", () => {
   it("finds oma-config.yaml from a nested subdirectory", async () => {
     // mixed preset: backend = openai/gpt-5.5
     const report = await collectProfileReport(subDir);
-    // TODO Phase 3 qa: replace missingDefaultsYaml with missingPreset assertion
     expect(report.missingPreset).toBe(false);
     const backend = report.rows.find((r) => r.role === "backend");
     expect(backend?.model).toBe("openai/gpt-5.5");
   });
 
   it("honors agents override in oma-config.yaml from a nested subdirectory", async () => {
-    // TODO Phase 3 qa: update fixture — previously tested agent_cli_mapping (removed in 008).
-    // Now tests the new agents override format (object-only AgentSpec).
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
       `language: en\nmodel_preset: mixed\nagents:\n  backend:\n    model: "anthropic/claude-sonnet-4-6"\n`,
@@ -89,8 +78,6 @@ describe("collectProfileReport — subdirectory invocation", () => {
   });
 
   it("shows missingPreset for oma-config.yaml without model_preset in parent dir", async () => {
-    // TODO Phase 3 qa: previously tested legacy vendor-string mapping (removed in 008).
-    // Now tests missing model_preset scenario — replaced the agent_cli_mapping test.
     writeFileSync(
       join(projectRoot, ".agents", "oma-config.yaml"),
       `language: en\n`,

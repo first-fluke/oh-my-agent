@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -186,9 +186,9 @@ function readStoreViaSqlite3Cli(dbPath: string): CursorStoreSnapshot | null {
 }
 
 function canReadCursorStores(): boolean {
-  const dbFiles = findStoreDBs();
-  if (dbFiles.length === 0 || !hasSqlite3Cli()) return false;
-  return readStoreViaSqlite3Cli(dbFiles[0]!) !== null;
+  const [firstDb] = findStoreDBs();
+  if (!firstDb || !hasSqlite3Cli()) return false;
+  return readStoreViaSqlite3Cli(firstDb) !== null;
 }
 
 type AgentTranscriptFile = {
@@ -203,12 +203,20 @@ function findAgentTranscriptFiles(): AgentTranscriptFile[] {
   const files: AgentTranscriptFile[] = [];
   try {
     for (const projectSlug of readdirSync(CURSOR_PROJECTS)) {
-      const transcriptsDir = join(CURSOR_PROJECTS, projectSlug, "agent-transcripts");
+      const transcriptsDir = join(
+        CURSOR_PROJECTS,
+        projectSlug,
+        "agent-transcripts",
+      );
       if (!existsSync(transcriptsDir)) continue;
 
       try {
         for (const sessionId of readdirSync(transcriptsDir)) {
-          const filePath = join(transcriptsDir, sessionId, `${sessionId}.jsonl`);
+          const filePath = join(
+            transcriptsDir,
+            sessionId,
+            `${sessionId}.jsonl`,
+          );
           if (existsSync(filePath)) {
             files.push({ filePath, projectSlug, sessionId });
           }
@@ -313,7 +321,7 @@ function dedupeCursorEntries(entries: NormalizedEntry[]): NormalizedEntry[] {
 
     const preferNew =
       (!existing.sessionId && entry.sessionId) ||
-      ((entry.response?.length ?? 0) > (existing.response?.length ?? 0)) ||
+      (entry.response?.length ?? 0) > (existing.response?.length ?? 0) ||
       entry.timestamp > existing.timestamp;
 
     if (preferNew) {
@@ -369,8 +377,7 @@ function entriesFromAgentTranscript(
     const timestamp =
       userOrdinals.length <= 1
         ? endMs
-        : birthMs +
-          ((endMs - birthMs) * userIndex) / (userOrdinals.length - 1);
+        : birthMs + ((endMs - birthMs) * userIndex) / (userOrdinals.length - 1);
     userIndex++;
 
     if (timestamp < start || timestamp >= end) continue;
@@ -390,8 +397,7 @@ function entriesFromAgentTranscript(
       tool: "cursor",
       timestamp: Math.round(timestamp),
       project,
-      prompt:
-        prompt.length > 500 ? `${prompt.slice(0, 500)}...` : prompt,
+      prompt: prompt.length > 500 ? `${prompt.slice(0, 500)}...` : prompt,
       response,
       sessionId: file.sessionId,
     });
@@ -428,10 +434,7 @@ function entriesFromStore(
       tool: "cursor",
       timestamp: createdAt,
       project,
-      prompt:
-        prompt.length > 500
-          ? `${prompt.slice(0, 500)}...`
-          : prompt,
+      prompt: prompt.length > 500 ? `${prompt.slice(0, 500)}...` : prompt,
       response,
       metadata: store.meta.lastUsedModel
         ? { model: store.meta.lastUsedModel }

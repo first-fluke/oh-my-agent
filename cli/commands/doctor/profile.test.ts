@@ -49,9 +49,6 @@ vi.mock("node:fs", async (importOriginal) => {
 
 // ---------------------------------------------------------------------------
 // Fixture: oma-config.yaml with mixed preset
-// TODO Phase 3 qa: expand fixtures to cover all 5 built-in presets, override
-// rows, allFromPreset, missingPreset, and custom_presets.extends scenarios.
-// Replaced the legacy defaults.yaml fixture with a model_preset-based one.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_DEFAULTS_YAML = `
@@ -290,34 +287,33 @@ describe("collectProfileReport — Antigravity runtime detection", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tests: Missing defaults.yaml
+// Tests: missingPreset (replaces legacy missingDefaultsYaml flag)
 // ---------------------------------------------------------------------------
 
-// TODO Phase 3 qa: update these tests for the new model_preset-based API.
-// missingDefaultsYaml was replaced by missingPreset in migration 008 (T5).
-// The fixture YAML must provide model_preset + agents instead of defaults.yaml.
-describe("collectProfileReport — missing defaults.yaml", () => {
-  it("sets missingDefaultsYaml: true when defaults.yaml does not exist", async () => {
-    vi.mocked(fsMock.existsSync).mockImplementation((p) => {
-      const pathStr = String(p);
-      return !pathStr.endsWith("defaults.yaml");
-    });
+describe("collectProfileReport — missingPreset", () => {
+  it("sets missingPreset: true when oma-config.yaml has no model_preset", async () => {
+    vi.mocked(fsMock.readFileSync).mockReturnValue("language: en\n");
 
     const report = await profileModule.collectProfileReport("/fake/cwd");
 
-    // TODO Phase 3 qa: replace with expect(report.missingPreset).toBe(true)
-    // @ts-expect-error missingDefaultsYaml was removed in model_preset refactor (008)
-    expect(report.missingDefaultsYaml).toBeUndefined();
+    expect(report.missingPreset).toBe(true);
+    expect(report.profileName).toBe("(unknown)");
   });
 
-  it("sets missingDefaultsYaml: false when defaults.yaml exists", async () => {
-    vi.mocked(fsMock.existsSync).mockReturnValue(true);
+  it("sets missingPreset: false when oma-config.yaml declares a built-in preset", async () => {
+    vi.mocked(fsMock.readFileSync).mockReturnValue(DEFAULT_DEFAULTS_YAML);
 
     const report = await profileModule.collectProfileReport("/fake/cwd");
 
-    // TODO Phase 3 qa: replace with expect(report.missingPreset).toBe(false)
-    // @ts-expect-error missingDefaultsYaml was removed in model_preset refactor (008)
-    expect(report.missingDefaultsYaml).toBeUndefined();
+    expect(report.missingPreset).toBe(false);
+  });
+
+  it("sets missingPreset: true when oma-config.yaml is not found", async () => {
+    vi.mocked(fsMock.existsSync).mockReturnValue(false);
+
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+
+    expect(report.missingPreset).toBe(true);
   });
 });
 
@@ -377,7 +373,6 @@ describe("serializeProfileReportAsJson", () => {
     expect(parsed).toHaveProperty("rows");
     expect(parsed).toHaveProperty("qwenOAuth");
     expect(parsed).toHaveProperty("isAntigravity");
-    // TODO Phase 3 qa: replace missingDefaultsYaml with missingPreset
     expect(parsed).toHaveProperty("missingPreset");
   });
 

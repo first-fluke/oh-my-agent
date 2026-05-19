@@ -37,6 +37,11 @@ type ModelYamlEntry = {
 /**
  * Returns a conservative default ModelSpec template for a given owner/CLI.
  * Matches the patterns observed in RAW_REGISTRY in model-registry.ts.
+ *
+ * NOTE: Capability flags (effort, apply_patch, task_budget, prompt_cache,
+ * computer_use) and auth_hint strings are conservative defaults inferred from
+ * vendor norms — they have not been individually verified per model. The
+ * proposed YAML's banner instructs users to verify before committing.
  */
 function buildDefaultTemplate(
   owner: string,
@@ -49,15 +54,15 @@ function buildDefaultTemplate(
         cli,
         cli_model: cliModel,
         supports: {
-          effort: { type: "cli-session", auto_default: "xhigh" }, // TODO verify
-          apply_patch: false, // TODO verify
-          task_budget: true, // TODO verify
+          effort: { type: "cli-session", auto_default: "xhigh" },
+          apply_patch: false,
+          task_budget: true,
           prompt_cache: true,
-          computer_use: false, // TODO verify
+          computer_use: false,
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Requires Claude Pro or Max subscription", // TODO verify subscription tier
+        auth_hint: "Requires Claude Pro or Max subscription",
       };
 
     case "openai":
@@ -68,15 +73,15 @@ function buildDefaultTemplate(
           effort: {
             type: "granular",
             levels: ["none", "low", "medium", "high", "xhigh"],
-          }, // TODO verify
-          apply_patch: true, // TODO verify
-          task_budget: false, // TODO verify
-          prompt_cache: false, // TODO verify
-          computer_use: false, // TODO verify
+          },
+          apply_patch: true,
+          task_budget: false,
+          prompt_cache: false,
+          computer_use: false,
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Requires ChatGPT Plus or Pro subscription", // TODO verify subscription tier
+        auth_hint: "Requires ChatGPT Plus or Pro subscription",
       };
 
     case "google":
@@ -84,15 +89,15 @@ function buildDefaultTemplate(
         cli,
         cli_model: cliModel,
         supports: {
-          effort: { type: "thinking-budget", modes: ["none", "dynamic"] }, // TODO verify
-          apply_patch: false, // TODO verify
-          task_budget: false, // TODO verify
+          effort: { type: "thinking-budget", modes: ["none", "dynamic"] },
+          apply_patch: false,
+          task_budget: false,
           prompt_cache: true,
-          computer_use: false, // TODO verify
+          computer_use: false,
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Requires Google AI Pro subscription ($20/mo)", // TODO verify subscription tier
+        auth_hint: "Requires Google AI Pro subscription ($20/mo)",
       };
 
     case "qwen":
@@ -100,16 +105,16 @@ function buildDefaultTemplate(
         cli,
         cli_model: cliModel,
         supports: {
-          effort: { type: "binary-thinking" }, // TODO verify
-          apply_patch: false, // TODO verify
-          task_budget: false, // TODO verify
-          prompt_cache: false, // TODO verify
-          computer_use: false, // TODO verify
+          effort: { type: "binary-thinking" },
+          apply_patch: false,
+          task_budget: false,
+          prompt_cache: false,
+          computer_use: false,
           native_dispatch_from: [],
           api_only: false,
         },
         auth_hint:
-          "Requires Qwen Code subscription or Bailian Coding Plan API key", // TODO verify
+          "Requires Qwen Code subscription or Bailian Coding Plan API key",
       };
 
     case "cursor":
@@ -118,14 +123,14 @@ function buildDefaultTemplate(
         cli_model: cliModel,
         supports: {
           effort: null,
-          apply_patch: false, // TODO verify
-          task_budget: false, // TODO verify
-          prompt_cache: false, // TODO verify
-          computer_use: false, // TODO verify
+          apply_patch: false,
+          task_budget: false,
+          prompt_cache: false,
+          computer_use: false,
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Requires Cursor Pro or Pro Student subscription", // TODO verify subscription tier
+        auth_hint: "Requires Cursor Pro or Pro Student subscription",
       };
 
     default:
@@ -134,14 +139,14 @@ function buildDefaultTemplate(
         cli_model: cliModel,
         supports: {
           effort: null,
-          apply_patch: false, // TODO verify
-          task_budget: false, // TODO verify
-          prompt_cache: false, // TODO verify
-          computer_use: false, // TODO verify
+          apply_patch: false,
+          task_budget: false,
+          prompt_cache: false,
+          computer_use: false,
           native_dispatch_from: [cli],
           api_only: false,
         },
-        auth_hint: "Requires subscription or API key", // TODO verify
+        auth_hint: "Requires subscription or API key",
       };
   }
 }
@@ -183,7 +188,7 @@ export function proposeMissingSlugs(
     { indent: 2, lineWidth: 0 },
   );
 
-  const header = `# auto-proposed by model:propose on ${dateStr}\n# Review and remove TODO comments before committing.\n`;
+  const header = `# auto-proposed by model:propose on ${dateStr}\n# Capability flags (effort, apply_patch, task_budget, prompt_cache, computer_use)\n# and auth_hint are conservative defaults — verify against vendor docs before committing.\n`;
   return `${header}${yamlBody}`;
 }
 
@@ -289,7 +294,7 @@ export function writeProposalToFile(
   if (newEntries.length > 0) {
     const appendBlock = [
       `\n# auto-proposed by model:propose on ${dateStr}`,
-      "# Review and remove TODO comments before committing.",
+      "# Capability flags and auth_hint are conservative defaults — verify against vendor docs before committing.",
       ...newEntries,
     ].join("\n");
 
