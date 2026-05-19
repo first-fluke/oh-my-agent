@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/first-fluke/oh-my-agent/compare/action-v1.1.2...action-v1.2.0) (2026-05-19)
+
+
+### Features
+
+* **cli:** ingest Cursor transcripts and harden recap dashboard ([bb9b5b4](https://github.com/first-fluke/oh-my-agent/commit/bb9b5b4b39a758a18cd40e96cbaf8a2caa4de0f5))
+
 ## [1.1.2](https://github.com/first-fluke/oh-my-agent/compare/action-v1.1.1...action-v1.1.2) (2026-04-24)
 
 
