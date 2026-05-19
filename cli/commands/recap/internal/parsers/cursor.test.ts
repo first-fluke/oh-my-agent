@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { describe, expect, it, vi } from "vitest";
 import {
   extractMessageContent,
@@ -16,7 +17,20 @@ vi.mock("node:child_process", async (importOriginal) => {
   };
 });
 
-import { spawnSync } from "node:child_process";
+function mockSpawnResult(
+  overrides: Partial<ReturnType<typeof spawnSync>> = {},
+): ReturnType<typeof spawnSync> {
+  return {
+    stdout: "",
+    stderr: "",
+    status: 0,
+    error: undefined,
+    pid: 1234,
+    signal: null,
+    output: [],
+    ...overrides,
+  } as ReturnType<typeof spawnSync>;
+}
 
 describe("projectSlugToName", () => {
   it("derives repo name from Users-* project slugs", () => {
@@ -34,9 +48,9 @@ describe("projectSlugToName", () => {
 
 describe("projectSlugToPath", () => {
   it("reconstructs Documents workspace paths", () => {
-    expect(
-      projectSlugToPath("Users-alice-Documents-oh-my-agent"),
-    ).toBe("/Users/alice/Documents/oh-my-agent");
+    expect(projectSlugToPath("Users-alice-Documents-oh-my-agent")).toBe(
+      "/Users/alice/Documents/oh-my-agent",
+    );
   });
 
   it("reconstructs private tmp workspace paths", () => {
@@ -48,9 +62,9 @@ describe("projectSlugToPath", () => {
 
 describe("workspacePathToProjectName", () => {
   it("uses the final path segment as the project label", () => {
-    expect(
-      workspacePathToProjectName("/private/tmp/oma-cursor-c25-work"),
-    ).toBe("oma-cursor-c25-work");
+    expect(workspacePathToProjectName("/private/tmp/oma-cursor-c25-work")).toBe(
+      "oma-cursor-c25-work",
+    );
   });
 });
 
@@ -64,7 +78,9 @@ describe("extractUserPrompt", () => {
   });
 
   it("returns null for user_info payloads", () => {
-    expect(extractUserPrompt("<user_info>OS Version: darwin</user_info>")).toBeNull();
+    expect(
+      extractUserPrompt("<user_info>OS Version: darwin</user_info>"),
+    ).toBeNull();
   });
 });
 
@@ -101,33 +117,25 @@ describe("readStoreViaSqlite3Cli", () => {
 
     vi.mocked(spawnSync).mockImplementation((command, args) => {
       if (command !== "sqlite3") {
-        return { status: 1, stdout: "", stderr: "", pid: 0, output: [] };
+        return mockSpawnResult({ status: 1, pid: 0 });
       }
 
       const sql = Array.isArray(args) ? String(args.at(-1) ?? "") : "";
       if (sql.includes("FROM meta")) {
-        return {
-          status: 0,
+        return mockSpawnResult({
           stdout: `${Buffer.from(JSON.stringify(meta)).toString("hex")}\n`,
-          stderr: "",
-          pid: 1,
-          output: [],
-        } as ReturnType<typeof spawnSync>;
+        });
       }
 
       if (sql.includes("FROM blobs")) {
-        return {
-          status: 0,
+        return mockSpawnResult({
           stdout: JSON.stringify([
             { data_hex: Buffer.from(userBlob).toString("hex") },
           ]),
-          stderr: "",
-          pid: 1,
-          output: [],
-        } as ReturnType<typeof spawnSync>;
+        });
       }
 
-      return { status: 1, stdout: "", stderr: "", pid: 0, output: [] };
+      return mockSpawnResult({ status: 1, pid: 0 });
     });
 
     const store = readStoreViaSqlite3Cli(
@@ -140,37 +148,30 @@ describe("readStoreViaSqlite3Cli", () => {
   });
 
   it("extracts workspace path from user_info blobs", () => {
-    const userInfo = "<user_info>Workspace Path: /private/tmp/oma-cursor-c25-work</user_info>";
+    const userInfo =
+      "<user_info>Workspace Path: /private/tmp/oma-cursor-c25-work</user_info>";
 
     vi.mocked(spawnSync).mockImplementation((command, args) => {
       if (command !== "sqlite3") {
-        return { status: 1, stdout: "", stderr: "", pid: 0, output: [] };
+        return mockSpawnResult({ status: 1, pid: 0 });
       }
 
       const sql = Array.isArray(args) ? String(args.at(-1) ?? "") : "";
       if (sql.includes("FROM meta")) {
-        return {
-          status: 0,
+        return mockSpawnResult({
           stdout: `${Buffer.from(JSON.stringify({ name: "New Agent", createdAt: 1_700_000_000_000 })).toString("hex")}\n`,
-          stderr: "",
-          pid: 1,
-          output: [],
-        } as ReturnType<typeof spawnSync>;
+        });
       }
 
       if (sql.includes("FROM blobs")) {
-        return {
-          status: 0,
+        return mockSpawnResult({
           stdout: JSON.stringify([
             { data_hex: Buffer.from(userInfo).toString("hex") },
           ]),
-          stderr: "",
-          pid: 1,
-          output: [],
-        } as ReturnType<typeof spawnSync>;
+        });
       }
 
-      return { status: 1, stdout: "", stderr: "", pid: 0, output: [] };
+      return mockSpawnResult({ status: 1, pid: 0 });
     });
 
     const store = readStoreViaSqlite3Cli(
