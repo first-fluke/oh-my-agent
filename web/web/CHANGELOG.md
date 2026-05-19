@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.4.1...web-v3.5.0) (2026-05-19)
+
+
+### Features
+
+* **cli:** align Cursor Agent auth, models, and dispatch ([bb37391](https://github.com/first-fluke/oh-my-agent/commit/bb3739150f8ed1d9f9d42e65090d04a56220a45c))
+
 ## [3.4.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.4.0...web-v3.4.1) (2026-05-17)
 
 
