@@ -1,5 +1,18 @@
 # Changelog
 
+## [7.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.20.1...cli-v7.21.0) (2026-05-19)
+
+
+### Features
+
+* **cli:** align Cursor Agent auth, models, and dispatch ([bb37391](https://github.com/first-fluke/oh-my-agent/commit/bb3739150f8ed1d9f9d42e65090d04a56220a45c))
+* **cli:** ingest Cursor transcripts and harden recap dashboard ([bb9b5b4](https://github.com/first-fluke/oh-my-agent/commit/bb9b5b4b39a758a18cd40e96cbaf8a2caa4de0f5))
+
+
+### Bug Fixes
+
+* **test:** satisfy SpawnSyncReturns typing in cursor recap tests ([44d8dcf](https://github.com/first-fluke/oh-my-agent/commit/44d8dcf0f8ced09c91b09c0b35ead2fbc40cb58c))
+
 ## [7.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.20.0...cli-v7.20.1) (2026-05-18)
 
 
