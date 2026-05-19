@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.22.0...cli-v7.23.0) (2026-05-19)
+
+
+### Features
+
+* **cli:** expand install presets with web/mobile/research/content ([06a8c64](https://github.com/first-fluke/oh-my-agent/commit/06a8c6406f6d5e618bdb071e8f98ca0614fd9af2))
+
 ## [7.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.21.0...cli-v7.22.0) (2026-05-19)
 
 

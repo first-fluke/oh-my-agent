@@ -13,7 +13,7 @@ authors:
     given-names: Eunkwang
   - family-names: Kim
     given-names: Gahyun
-version: 7.22.0 # x-release-please-version
+version: 7.23.0 # x-release-please-version
 date-released: "2026-05-19" # x-release-please-date
 license: MIT
 repository-code: "https://github.com/first-fluke/oh-my-agent"
@@ -35,7 +35,7 @@ preferred-citation:
       given-names: Eunkwang
     - family-names: Kim
       given-names: Gahyun
-  version: 7.22.0 # x-release-please-version
+  version: 7.23.0 # x-release-please-version
   year: 2026
   date-released: "2026-05-19" # x-release-please-date
   license: MIT
