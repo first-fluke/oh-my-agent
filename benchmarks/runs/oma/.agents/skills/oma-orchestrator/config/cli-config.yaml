@@ -56,7 +56,9 @@ vendors:
     isolation_method: "directory"
 
   # Cursor Agent headless CLI: `cursor agent -p …` (--print). Prompt is positional.
-  # Models: run `cursor agent --list-models` — Composer 2 is composer-2 (composer-2-fast is the CLI-marked fast default).
+  # Models: run `cursor agent models` (legacy fallback: `cursor agent --list-models`).
+  # `auto` lets Cursor route to an available model (quota-friendly); pin to a specific
+  # id (e.g. composer-2.5, composer-2.5-fast) for reproducibility.
   cursor:
     command: cursor
     prompt_flag: none
@@ -64,7 +66,7 @@ vendors:
     output_format: "json"
     auto_approve_flag: "--yolo"
     model_flag: "--model"
-    default_model: "composer-2"
+    default_model: "auto"
     isolation_method: "directory"
 
 # SubAgent execution settings

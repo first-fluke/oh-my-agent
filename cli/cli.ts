@@ -71,7 +71,7 @@ program
 
 program
   .command("dashboard:web")
-  .description("Start web dashboard on http://localhost:9847")
+  .description("Start web dashboard on http://127.0.0.1:9847")
   .action(
     runAction(() => {
       startDashboard();

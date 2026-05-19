@@ -1,5 +1,5 @@
 import * as childProcess from "node:child_process";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchCursorModels } from "./cursor.js";
 
 vi.mock("node:child_process", () => ({
@@ -32,6 +32,10 @@ function mockSpawnResult(
 }
 
 describe("fetchCursorModels", () => {
+  beforeEach(() => {
+    vi.mocked(childProcess.spawnSync).mockReset();
+  });
+
   it("parses normal cursor agent models output correctly", () => {
     vi.mocked(childProcess.spawnSync).mockReturnValueOnce(
       mockSpawnResult({ stdout: SAMPLE_STDOUT }),

@@ -1,4 +1,4 @@
-import { exec } from "node:child_process";
+import { spawn } from "node:child_process";
 import { startDashboard } from "../../dashboard.js";
 import { formatJson } from "./internal/formatters/json.js";
 import { formatMermaid } from "./internal/formatters/mermaid.js";
@@ -10,18 +10,21 @@ export async function recap(
   options: RecapOptions & { mermaid?: boolean; graph?: boolean } = {},
 ): Promise<void> {
   if (options.graph) {
-    const port = process.env.DASHBOARD_PORT || "9847";
-    const url = `http://localhost:${port}/recap`;
-    startDashboard();
+    const dashboard = startDashboard({ route: "/recap" });
     // Open browser after a short delay to let server start
     setTimeout(() => {
-      const cmd =
+      const opener =
         process.platform === "darwin"
-          ? "open"
+          ? { command: "open", args: [dashboard.url] }
           : process.platform === "win32"
-            ? "start"
-            : "xdg-open";
-      exec(`${cmd} ${url}`);
+            ? { command: "cmd", args: ["/c", "start", "", dashboard.url] }
+            : { command: "xdg-open", args: [dashboard.url] };
+      const child = spawn(opener.command, opener.args, {
+        detached: true,
+        stdio: "ignore",
+      });
+      child.on("error", () => undefined);
+      child.unref();
     }, 500);
     return;
   }

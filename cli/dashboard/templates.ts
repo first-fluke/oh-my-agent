@@ -1,6 +1,6 @@
-const TW_HEAD = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+const TW_HEAD = `<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwindcss.config={theme:{extend:{colors:{bg:'#0f0b1a',surface:'#1a1428','surface-2':'#241e33',bd:'#3d2e5c',purple:{DEFAULT:'#9b59b6',light:'#c39bd3',dark:'#6c3483'},dim:'#8a7da0',ok:'#2ecc71',err:'#e74c3c',warn:'#f1c40f',cyan:'#1abc9c'}}}}</script>`;
+<script>tailwind.config={theme:{extend:{colors:{bg:'#0f0b1a',surface:'#1a1428','surface-2':'#241e33',bd:'#3d2e5c',purple:{DEFAULT:'#9b59b6',light:'#c39bd3',dark:'#6c3483'},dim:'#8a7da0',ok:'#2ecc71',err:'#e74c3c',warn:'#f1c40f',cyan:'#1abc9c'}}}}</script>`;
 
 export const DASHBOARD_HTML = `<!DOCTYPE html>
 <html lang="en">
@@ -33,6 +33,8 @@ export const DASHBOARD_HTML = `<!DOCTYPE html>
   <div class="mt-5 pt-3 border-t border-bd flex justify-between text-[11px] text-dim"><span>Serena Memory Dashboard</span><span id="footerTime">--</span></div>
   <script>
     const $=s=>document.querySelector(s);
+    const AUTH_TOKEN=window.__OMA_DASHBOARD_TOKEN__||'';
+    const AUTH_HEADERS={'X-OMA-Dashboard-Token':AUTH_TOKEN};
     function normalizeStatus(s){const l=(s||'').toLowerCase();if(['running','active','in_progress','in-progress'].includes(l))return'running';if(['completed','done','finished'].includes(l))return'completed';if(['failed','error'].includes(l))return'failed';if(['blocked','waiting'].includes(l))return'blocked';return'pending'}
     const statusCls={running:'bg-ok/15 text-ok border-ok/30',completed:'bg-cyan/15 text-cyan border-cyan/30',failed:'bg-err/15 text-err border-err/30',blocked:'bg-warn/15 text-warn border-warn/30',pending:'bg-dim/15 text-dim border-dim/30'};
     const dotCls={running:'bg-ok shadow-[0_0_6px] shadow-ok',completed:'bg-cyan',failed:'bg-err',blocked:'bg-warn',pending:'bg-dim'};
@@ -41,8 +43,8 @@ export const DASHBOARD_HTML = `<!DOCTYPE html>
     function renderAgents(agents){const tbody=$('#agentBody');clearChildren(tbody);if(!agents||!agents.length){const tr=document.createElement('tr'),td=createTextEl('td','No agents detected yet','text-dim text-xs italic py-3');td.setAttribute('colspan','4');tr.appendChild(td);tbody.appendChild(tr);return}agents.forEach(a=>{const ns=normalizeStatus(a.status),tr=document.createElement('tr');tr.className='border-b border-bd/40 last:border-b-0';const td1=createTextEl('td',a.agent,'px-3 py-2.5');tr.appendChild(td1);const std=document.createElement('td');std.className='px-3 py-2.5';const dot=document.createElement('span');dot.className='inline-block w-2 h-2 rounded-full mr-1.5 '+(dotCls[ns]||'bg-dim')+(ns==='running'?' pulse-dot':'');std.appendChild(dot);std.appendChild(createTextEl('span',ns));tr.appendChild(std);tr.appendChild(createTextEl('td',a.turn!=null?String(a.turn):'-','px-3 py-2.5'));tr.appendChild(createTextEl('td',a.task||'','px-3 py-2.5'));tbody.appendChild(tr)})}
     function renderActivity(activity){const list=$('#activityList');clearChildren(list);if(!activity||!activity.length){list.appendChild(createTextEl('li','No activity yet','text-dim italic'));return}activity.forEach(a=>{const li=document.createElement('li');li.className='py-2 border-b border-bd/30 last:border-b-0 flex gap-2';li.appendChild(createTextEl('span','['+a.agent+']','text-purple-light font-semibold whitespace-nowrap'));li.appendChild(createTextEl('span',a.message,'text-dim'));list.appendChild(li)})}
     function renderState(state){$('#sessionId').textContent=state.session?.id||'N/A';const st=(state.session?.status||'UNKNOWN').toUpperCase(),ns=normalizeStatus(st),sel=$('#sessionStatus');sel.textContent=st;sel.className='px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wide border '+(statusCls[ns]||statusCls.pending);if(state.updatedAt){const ts=new Date(state.updatedAt).toLocaleString();$('#updatedAt').textContent='Updated: '+ts;$('#footerTime').textContent=ts}renderAgents(state.agents);renderActivity(state.activity)}
-    let ws,rd=1000;function connect(){const b=$('#connBadge');b.textContent='Connecting...';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-warn/30 bg-warn/15 text-warn';const p=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(p+'//'+location.host);ws.onopen=()=>{b.textContent='Connected';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-ok/30 bg-ok/15 text-ok';rd=1000};ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.data)renderState(m.data)}catch{}};ws.onclose=()=>{b.textContent='Disconnected';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-err/30 bg-err/15 text-err';setTimeout(()=>{rd=Math.min(rd*1.5,10000);connect()},rd)};ws.onerror=()=>ws.close()}
-    fetch('/api/state').then(r=>r.json()).then(renderState).catch(()=>{});connect();
+    let ws,rd=1000;function connect(){const b=$('#connBadge');b.textContent='Connecting...';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-warn/30 bg-warn/15 text-warn';const p=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(p+'//'+location.host+'/?token='+encodeURIComponent(AUTH_TOKEN));ws.onopen=()=>{b.textContent='Connected';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-ok/30 bg-ok/15 text-ok';rd=1000};ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.data)renderState(m.data)}catch{}};ws.onclose=()=>{b.textContent='Disconnected';b.className='ml-auto px-3 py-1 rounded-xl text-[11px] font-semibold border border-err/30 bg-err/15 text-err';setTimeout(()=>{rd=Math.min(rd*1.5,10000);connect()},rd)};ws.onerror=()=>ws.close()}
+    fetch('/api/state',{headers:AUTH_HEADERS}).then(r=>{if(!r.ok)throw new Error('unauthorized');return r.json()}).then(renderState).catch(()=>{});connect();
   </script>
 </body>
 </html>`;
@@ -88,6 +90,8 @@ const TC={claude:'#f0a030',gemini:'#4a90d9',codex:'#3fb950',qwen:'#a371f7',curso
 const TOOLS=['claude','gemini','codex','qwen','cursor'];
 const activeTools=new Set(TOOLS);
 let rawData=null;
+const AUTH_TOKEN=window.__OMA_DASHBOARD_TOKEN__||'';
+const AUTH_HEADERS={'X-OMA-Dashboard-Token':AUTH_TOKEN};
 
 const filtersEl=document.getElementById('filters');
 TOOLS.forEach(t=>{
@@ -153,8 +157,16 @@ async function load(){
   const t=document.getElementById('topK').value;
   const params=new URLSearchParams({window:w});
   if(t)params.set('top',t);
-  const res=await fetch('/api/recap?'+params);
+  const res=await fetch('/api/recap?'+params,{headers:AUTH_HEADERS});
+  if(!res.ok){
+    document.getElementById('stats').textContent='Failed to load recap data';
+    return;
+  }
   rawData=await res.json();
+  if(!rawData||!Array.isArray(rawData.entries)){
+    document.getElementById('stats').textContent='Invalid recap data';
+    return;
+  }
   renderAll(rawData);
 }
 
@@ -233,7 +245,7 @@ function renderGraph(entries){
       .map(([t,c])=>'<span class="tool-badge" style="background:'+TC[t]+'">'+t+': '+c+' ('+Math.round(100*c/d.count)+'%)</span>').join(' ');
     const dm=Math.round(d.duration/60000);
     const dur=d.duration<=0?'<1min':dm>=60?Math.floor(dm/60)+'h '+dm%60+'m':dm+'min';
-    tip.innerHTML='<b>'+d.label+'</b><br>Prompts: '+d.count+' &middot; '+dur+'<br>'+tools;
+    tip.innerHTML='<b>'+escHtml(String(d.label))+'</b><br>Prompts: '+d.count+' &middot; '+dur+'<br>'+tools;
     tip.classList.remove('hidden');tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
   }).on('mousemove',e=>{
     const tip=document.getElementById('tooltip');tip.style.left=(e.pageX+12)+'px';tip.style.top=(e.pageY-12)+'px';
