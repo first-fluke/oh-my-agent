@@ -1,5 +1,23 @@
 # Changelog
 
+## [7.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.21.0...cli-v7.22.0) (2026-05-19)
+
+
+### Features
+
+* **observability:** add WAF rule observability page ([07607ed](https://github.com/first-fluke/oh-my-agent/commit/07607ed4a56594d4bc553d90b3e03621e120cb52))
+
+
+### Bug Fixes
+
+* **repo:** force LF line endings to unblock Windows CI lint ([78e83a4](https://github.com/first-fluke/oh-my-agent/commit/78e83a48d6c267a94cec0c673713ceb9ea33f173))
+
+
+### Refactoring
+
+* **cli:** tighten lint hygiene, replace shell pipeline, modernize tests ([07fa9ba](https://github.com/first-fluke/oh-my-agent/commit/07fa9bad519a4d9777fa79ad1d1db4cc6927d0f5))
+* **skills:** make intent-rules and examples english-only ([0f14076](https://github.com/first-fluke/oh-my-agent/commit/0f14076bccaa5802e59d633897bb6bcbfc9be4b1))
+
 ## [7.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.20.1...cli-v7.21.0) (2026-05-19)
 
 
