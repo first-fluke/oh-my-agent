@@ -9,20 +9,20 @@
   "scripts": {
     "build": "bun run --cwd cli build",
     "dev": "bun run --cwd cli dev",
-    "lint": "bun run --cwd cli lint && bun run --cwd web lint",
+    "lint": "bun run --cwd cli lint",
+    "lint:fix": "bun run --cwd cli lint:fix",
     "prepare": "husky",
     "sns:devto": "bun scripts/sns/devto/index.ts",
     "test": "bun run --cwd cli test",
     "typecheck": "bunx tsc --noEmit -p tsconfig.json && bunx tsc --noEmit -p web/tsconfig.json",
     "web:dev": "bun run --cwd web dev",
-    "web:build": "bun run --cwd web build",
-    "web:lint": "bun run --cwd web lint"
+    "web:build": "bun run --cwd web build"
   },
   "overrides": {
     "@types/node": "^24"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.12",
+    "@biomejs/biome": "^2.4.15",
     "@commitlint/cli": "20.4.3",
     "@commitlint/config-conventional": "20.4.3",
     "husky": "9.1.7"

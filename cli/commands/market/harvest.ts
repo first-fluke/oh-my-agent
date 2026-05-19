@@ -1221,7 +1221,7 @@ export async function runHarvest(argv: string[]): Promise<number> {
     i++;
   }
 
-  if (!query || !query.trim()) {
+  if (!query?.trim()) {
     process.stderr.write("[harvest] error: query is required\n");
     return 4;
   }

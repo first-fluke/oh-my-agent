@@ -2,7 +2,7 @@
 // Fetches model list from the Cursor CLI via `cursor agent models`
 // (falls back to legacy `cursor agent --list-models`).
 
-import { spawnSync, type SpawnSyncReturns } from "node:child_process";
+import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 
 export type CursorModel = {
   slug: string;
@@ -14,10 +14,7 @@ export type CursorResult =
 
 const MODEL_LINE_PATTERN = /^([a-z0-9][a-z0-9.-]*) - .+$/;
 
-const CURSOR_MODEL_COMMANDS = [
-  ["models"],
-  ["--list-models"],
-] as const;
+const CURSOR_MODEL_COMMANDS = [["models"], ["--list-models"]] as const;
 
 function parseModelLines(stdout: string): CursorModel[] {
   const models: CursorModel[] = [];

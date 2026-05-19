@@ -51,7 +51,7 @@ export async function runDiscoverCompetitors(argv: string[]): Promise<number> {
     i++;
   }
 
-  if (!topic || !topic.trim()) {
+  if (!topic?.trim()) {
     process.stderr.write("[discover-competitors] error: topic is required\n");
     return 4;
   }

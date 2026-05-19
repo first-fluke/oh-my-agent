@@ -2,12 +2,12 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
 import {
   DEFAULT_DASHBOARD_PORT,
   resolveDashboardPort,
   startDashboard,
 } from "./dashboard.js";
-import { DASHBOARD_HTML, RECAP_HTML } from "./dashboard/templates.js";
 
 async function httpGet(
   url: string,
@@ -41,7 +41,9 @@ describe("dashboard templates", () => {
   });
 
   it("checks API responses before rendering dashboard state", () => {
-    expect(DASHBOARD_HTML).toContain("if(!r.ok)throw new Error('unauthorized')");
+    expect(DASHBOARD_HTML).toContain(
+      "if(!r.ok)throw new Error('unauthorized')",
+    );
   });
 
   it("validates recap payloads before rendering", () => {
@@ -57,7 +59,10 @@ describe("startDashboard", () => {
   beforeEach(() => {
     memoriesDir = mkdtempSync(join(tmpdir(), "oma-dashboard-test-"));
     vi.stubEnv("MEMORIES_DIR", memoriesDir);
-    vi.stubEnv("DASHBOARD_PORT", String(30_000 + Math.floor(Math.random() * 10_000)));
+    vi.stubEnv(
+      "DASHBOARD_PORT",
+      String(30_000 + Math.floor(Math.random() * 10_000)),
+    );
   });
 
   afterEach(async () => {
