@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.23.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.23.1...cli-v7.23.2) (2026-05-19)
+
+
+### Documentation
+
+* **readme:** translate agent compatibility table across locales ([f5716ae](https://github.com/first-fluke/oh-my-agent/commit/f5716aed2ae69cf55bd745447a33bf2ec9613126))
+
 ## [7.23.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.23.0...cli-v7.23.1) (2026-05-19)
 
 
