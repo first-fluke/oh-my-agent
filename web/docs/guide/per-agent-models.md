@@ -7,13 +7,13 @@ description: Configure which AI model each agent uses via model_preset in oma-co
 
 ## Overview
 
-`model_preset` is the single concept that controls which model every agent uses. Pick one of the five built-in presets and every agent (pm, backend, frontend, qa, …) is wired to an appropriate model for that vendor stack. Override individual agents as needed. Define additional presets when your team has a non-standard mix.
+`model_preset` is the single concept that controls which model every agent uses. Pick one of the seven built-in presets and every agent (pm, backend, frontend, qa, …) is wired to an appropriate model for that vendor stack. Override individual agents as needed. Define additional presets when your team has a non-standard mix.
 
 All configuration lives in one file: `.agents/oma-config.yaml`.
 
 This page covers:
 
-1. The five built-in presets
+1. The seven built-in presets
 2. Overriding individual agents with the `agents:` map
 3. Inlining custom model slugs with `models:`
 4. Defining custom presets with `custom_presets:` and `extends:`
@@ -24,7 +24,7 @@ This page covers:
 
 ## Built-In Presets
 
-Set `model_preset` to one of the five built-in keys:
+Set `model_preset` to one of the seven built-in keys:
 
 ```yaml
 # .agents/oma-config.yaml
@@ -34,6 +34,7 @@ model_preset: gemini
 
 | Key | Description | Best for |
 |:----|:-----------|:---------|
+| `antigravity` | All agents use Antigravity CLI (`agy`): Gemini 3.1 Pro for impl/architecture, Gemini 3.5 Flash for orchestration and retrieval. Model selection is config-driven inside `agy` — no `--model` or `--thinking-budget` flags are exposed. | Antigravity CLI users |
 | `claude` | All agents use Claude (Sonnet/Opus) | Claude Max subscription holders |
 | `codex` | All agents use OpenAI Codex (GPT-5.x) with effort levels | ChatGPT Plus/Pro users |
 | `gemini` | All agents use Gemini CLI, thinking enabled for implementation roles | Google AI Pro users |
