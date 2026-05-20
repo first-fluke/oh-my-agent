@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.3.0...cli-v8.4.0) (2026-05-20)
+
+
+### Features
+
+* **installer:** auto-install serena via uv tool on windows ([cff9c21](https://github.com/first-fluke/oh-my-agent/commit/cff9c215c48eadc23aad0cf178e010f4d78851e9))
+
+
+### Documentation
+
+* sync quick start + installation docs for serena bootstrap ([80be2a2](https://github.com/first-fluke/oh-my-agent/commit/80be2a2e7228bfb9008c5237091f88d6c91065b4))
+* trim apm mechanism note and swap gemini for cursor in vendor list ([dd1d77f](https://github.com/first-fluke/oh-my-agent/commit/dd1d77f4e61d767b8f58163df5b36383f2cd87dc))
+
 ## [8.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.2.1...cli-v8.3.0) (2026-05-20)
 
 
