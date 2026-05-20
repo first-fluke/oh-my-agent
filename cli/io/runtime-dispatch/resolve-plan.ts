@@ -16,6 +16,7 @@ import {
   getModelSpec,
   type RuntimeId,
 } from "../../platform/model-registry.js";
+import { warnGeminiDeprecationOnce } from "../../utils/gemini-deprecation.js";
 import { ConfigError } from "./config-error.js";
 import { loadUserConfig } from "./config-loader.js";
 import type { AgentPlan } from "./types.js";
@@ -203,6 +204,10 @@ export function resolveAgentPlanFromConfig(
       `[resolve-agent-plan] effort field is ignored for Claude CLI (cli-session model). Remove 'effort' from agents.${agentId} in .agents/oma-config.yaml.`,
     );
     finalEffort = undefined;
+  }
+
+  if (cli === "gemini") {
+    warnGeminiDeprecationOnce("runtime");
   }
 
   const plan: AgentPlan = {

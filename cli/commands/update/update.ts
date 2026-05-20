@@ -53,8 +53,13 @@ import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isAutoUpdateCliEnabled,
   isTelemetryEnabled,
+  loadOmaConfig,
   loadSerenaConfig,
 } from "../../utils/config.js";
+import {
+  formatGeminiDeprecationWarning,
+  usesGeminiCli,
+} from "../../utils/gemini-deprecation.js";
 import {
   applyRecommendedSettings,
   needsSettingsUpdate,
@@ -534,6 +539,11 @@ export async function update(force = false, ci = false): Promise<void> {
             );
           }
         }
+      }
+
+      const postUpdateOmaConfig = loadOmaConfig(cwd);
+      if (usesGeminiCli(postUpdateOmaConfig)) {
+        ui.note(formatGeminiDeprecationWarning(), "Gemini CLI deprecation");
       }
 
       ui.outro(
