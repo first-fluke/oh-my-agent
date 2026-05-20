@@ -16,6 +16,7 @@ import {
   isGeminiAuthenticated,
   isQwenAuthenticated,
 } from "../../vendors/index.js";
+import { auditSkills, type SkillAuditReport } from "../skills/audit.js";
 
 const OMA_DOCTOR_PROBE_TIMEOUT_MS = Number(
   process.env.OMA_DOCTOR_PROBE_TIMEOUT_MS ?? 1500,
@@ -58,6 +59,7 @@ export interface DoctorReport {
   hasSerena: boolean;
   serenaFileCount: number;
   totalIssues: number;
+  skillAudit: SkillAuditReport;
 }
 
 async function checkCLI(
@@ -208,6 +210,8 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
           hasSkillMd: false,
         }));
 
+  const skillAudit = auditSkills(cwd);
+
   const totalIssues =
     missingCLIs.length +
     missingSkills.length +
@@ -225,6 +229,7 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
     hasSerena,
     serenaFileCount,
     totalIssues,
+    skillAudit,
   };
 }
 
@@ -254,6 +259,16 @@ export function serializeReportAsJson(report: DoctorReport): string {
     missingSkills: report.missingSkills.map((s) => s.name),
     serena: { exists: report.hasSerena, fileCount: report.serenaFileCount },
     claudeMd: { hasOmaBlock: report.claudeMdOk },
+    skillAudit: {
+      skillCount: report.skillAudit.skillCount,
+      worstPair: report.skillAudit.worstPair ?? null,
+      findings: report.skillAudit.findings.map((f) => ({
+        a: f.pair.a,
+        b: f.pair.b,
+        similarity: Number(f.pair.similarity.toFixed(4)),
+        severity: f.severity,
+      })),
+    },
   };
   return JSON.stringify(payload, null, 2);
 }

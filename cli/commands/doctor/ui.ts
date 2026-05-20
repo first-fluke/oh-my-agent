@@ -153,6 +153,38 @@ async function promptRepair(report: DoctorReport): Promise<void> {
   }
 }
 
+function renderSkillBoundaries(report: DoctorReport): void {
+  const audit = report.skillAudit;
+  if (audit.skillCount < 2) return;
+  if (audit.findings.length === 0) {
+    const worst = audit.worstPair;
+    const worstLine = worst
+      ? `\n${pc.dim(`closest pair: ${worst.a} ↔ ${worst.b} (${(worst.similarity * 100).toFixed(1)}%)`)}`
+      : "";
+    p.note(
+      `${pc.green("✅")} No skill description collisions${worstLine}`,
+      "Skill Boundaries",
+    );
+    return;
+  }
+  const lines = audit.findings.map((f) => {
+    const tag = f.severity === "fail" ? pc.red("FAIL") : pc.yellow("WARN");
+    const pct = `${(f.pair.similarity * 100).toFixed(1)}%`;
+    return `${tag} ${f.pair.a} ↔ ${f.pair.b}  ${pc.dim(pct)}`;
+  });
+  p.note(
+    [
+      ...lines,
+      "",
+      pc.dim(
+        "Rewrite frontmatter `description:` to differentiate triggers, domains, or boundaries.",
+      ),
+      pc.dim("Run: oma skills audit --json"),
+    ].join("\n"),
+    "Skill Boundaries",
+  );
+}
+
 function renderFooter(report: DoctorReport): void {
   if (report.hasSerena) {
     p.note(
@@ -374,6 +406,7 @@ export async function renderDoctorReport(report: DoctorReport): Promise<void> {
     renderCliTable(report);
     renderMcpTable(report);
     renderSkillsTable(report);
+    renderSkillBoundaries(report);
     await promptRepair(report);
     renderFooter(report);
   } catch (error) {

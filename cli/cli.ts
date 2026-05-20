@@ -19,6 +19,7 @@ import { registerRecap } from "./commands/recap/command.js";
 import { registerRetro } from "./commands/retro/command.js";
 import { registerScholarCommand } from "./commands/scholar/index.js";
 import { registerSearchCommand } from "./commands/search/index.js";
+import { registerSkillsCommand } from "./commands/skills/command.js";
 import { registerStar } from "./commands/star/command.js";
 import { registerStats } from "./commands/stats/command.js";
 import { registerUpdate } from "./commands/update/command.js";
@@ -97,6 +98,7 @@ registerVault(program);
 registerStar(program);
 registerVisualize(program);
 registerSearchCommand(program);
+registerSkillsCommand(program);
 registerScholarCommand(program);
 registerImageCommand(program);
 
