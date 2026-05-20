@@ -1,5 +1,16 @@
 # Changelog
 
+## [8.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.23.2...cli-v8.0.0) (2026-05-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** `antigravity` preset is no longer an alias for `mixed`. Existing configs with `model_preset: antigravity` will now resolve to the agy-targeted preset on next run; users without `agy` installed should switch their preset or install the binary.
+
+### Features
+
+* **cli:** add antigravity (agy) as first-class vendor ([715e7b1](https://github.com/first-fluke/oh-my-agent/commit/715e7b1c24d5b67376edb4af0b0084544efcaff4))
+
 ## [7.23.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.23.1...cli-v7.23.2) (2026-05-19)
 
 
