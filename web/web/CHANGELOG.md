@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.1...web-v3.5.2) (2026-05-20)
+
+
+### Documentation
+
+* document antigravity (agy) CLI as first-class vendor ([0703e91](https://github.com/first-fluke/oh-my-agent/commit/0703e91988ee008c6c79a54ff67d35b70d956b40))
+* **i18n:** sync antigravity (agy) CLI to 11 locales ([f15ee2d](https://github.com/first-fluke/oh-my-agent/commit/f15ee2d2dfb6b0ec98f741577d573fef60e9b18c))
+
 ## [3.5.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.0...web-v3.5.1) (2026-05-19)
 
 
