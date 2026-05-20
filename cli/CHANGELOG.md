@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.0.0...cli-v8.1.0) (2026-05-20)
+
+
+### Features
+
+* **hud:** wire HUD for Gemini CLI and Antigravity (agy) ([598e20b](https://github.com/first-fluke/oh-my-agent/commit/598e20bbb06134c24c64a80a3695b14b14d69ebd))
+
 ## [8.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v7.23.2...cli-v8.0.0) (2026-05-20)
 
 
