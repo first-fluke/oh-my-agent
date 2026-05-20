@@ -1,5 +1,24 @@
 # Changelog
 
+## [8.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.2.0...cli-v8.2.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* **ci:** also pass NPM_CONFIG_TOKEN to bun publish ([0e51b8e](https://github.com/first-fluke/oh-my-agent/commit/0e51b8e2e5cc09193b064122e2d2e1e4e9c04980))
+* **ci:** use NODE_AUTH_TOKEN for bun publish auth ([44e7824](https://github.com/first-fluke/oh-my-agent/commit/44e7824b08f313065da01e0ba0ba5359cc951e3c))
+
+
+### Refactoring
+
+* **link:** promote link() to vendor reconciliation kernel ([9e8a0b1](https://github.com/first-fluke/oh-my-agent/commit/9e8a0b10a9fb58b75192933ac68f8177c0a4c304))
+* **update,install:** delegate vendor write to link kernel ([30d72af](https://github.com/first-fluke/oh-my-agent/commit/30d72afcef64e7c54a57269f06906a9ac0ab7760))
+
+
+### Documentation
+
+* regenerate vendor guides via oma link ([8e670d4](https://github.com/first-fluke/oh-my-agent/commit/8e670d4497171e51494e76898c721cd6281d7d13))
+
 ## [8.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.1.0...cli-v8.2.0) (2026-05-20)
 
 
