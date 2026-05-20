@@ -30,8 +30,7 @@
     },
     "qa-reviewer": {
       "tools": "Read, Grep, Glob, Bash",
-      "maxTurns": 15,
-      "effort": "low"
+      "maxTurns": 15
     },
     "docs-curator": {
       "tools": "Read, Write, Edit, Bash, Grep, Glob",
