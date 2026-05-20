@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.1.0...cli-v8.2.0) (2026-05-20)
+
+
+### Features
+
+* **cli:** warn when oma-config targets the deprecated Gemini CLI ([11c5e28](https://github.com/first-fluke/oh-my-agent/commit/11c5e2882c741081026ea02b512bbbf848023e72))
+
+
+### Bug Fixes
+
+* **scm:** quote skill description frontmatter ([2a225df](https://github.com/first-fluke/oh-my-agent/commit/2a225df7dd5d39d3df39ff6029bda0c8a1919522))
+
 ## [8.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.0.0...cli-v8.1.0) (2026-05-20)
 
 
