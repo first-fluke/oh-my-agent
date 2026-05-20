@@ -71,7 +71,7 @@ oma
 
 ### 6. IDE 심볼릭 링크 설정
 
-설치 프로그램은 항상 Claude Code 심볼릭 링크(`.claude/skills/`)를 생성합니다. `.github/` 디렉토리가 존재하면 GitHub Copilot 심볼릭 링크도 자동으로 생성합니다. 그렇지 않으면 다음과 같이 질문합니다:
+설치 프로그램은 항상 Claude Code 심볼릭 링크(`.claude/skills/`)를 생성합니다. 또한 Antigravity, Claude, Codex, Gemini, Qwen에 대한 벤더 네이티브 에이전트 파일과 훅을 생성하며, `.github/` 디렉토리가 존재하면 GitHub Copilot 심볼릭 링크도 자동으로 생성합니다. 그렇지 않으면 다음과 같이 질문합니다:
 
 ```
 Also create symlinks for GitHub Copilot? (.github/skills/)
@@ -228,7 +228,7 @@ doctor 명령이 확인하는 항목:
 
 | 검사 | 확인 내용 |
 |:-----|:---------|
-| **CLI 설치** | gemini, claude, codex, qwen의 버전 및 가용성 |
+| **CLI 설치** | agy, gemini, claude, codex, qwen의 버전 및 가용성 |
 | **인증** | 각 CLI의 API 키 또는 OAuth 상태 |
 | **MCP 설정** | 각 CLI 환경의 Serena MCP 서버 설정 |
 | **스킬 상태** | 어떤 스킬이 설치되어 있고 최신 상태인지 |
@@ -408,7 +408,7 @@ oma dashboard:web
 
 ### 8. 벤더 적응
 
-`installVendorAdaptations()`가 지원되는 모든 벤더(Claude, Codex, Gemini, Qwen)에 대한 IDE별 파일을 설치합니다:
+`installVendorAdaptations()`가 지원되는 모든 벤더(Antigravity, Claude, Codex, Gemini, Qwen)에 대한 IDE별 파일을 설치합니다:
 
 - 에이전트 정의 (`.claude/agents/*.md`)
 - 훅 설정 (`.claude/hooks/`)

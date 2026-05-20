@@ -1,13 +1,13 @@
 ---
 title: Установка
-description: Полное руководство по установке oh-my-agent — три метода установки, все шесть пресетов с перечнем навыков, требования к CLI-инструментам для всех четырёх вендоров, пост-установочная настройка, поля oma-config.yaml и верификация с помощью oma doctor.
+description: Полное руководство по установке oh-my-agent — три метода установки, все шесть пресетов с перечнем навыков, требования к CLI-инструментам для всех пяти вендоров, пост-установочная настройка, поля oma-config.yaml и верификация с помощью oma doctor.
 ---
 
 # Установка
 
 ## Предварительные требования
 
-- **ИИ-совместимая IDE или CLI** — как минимум одно из: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor или OpenCode
+- **ИИ-совместимая IDE или CLI** — как минимум одно из: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor или OpenCode
 - **bun** — среда выполнения и пакетный менеджер JavaScript (автоматически устанавливается скриптом установки, если отсутствует)
 - **uv** — пакетный менеджер Python для Serena MCP (автоматически устанавливается при отсутствии)
 
@@ -123,16 +123,22 @@ oma dashboard:web       # Веб-дашборд на http://localhost:9847
 oma agent:spawn         # Запуск агентов из терминала
 oma agent:parallel      # Параллельный запуск агентов
 oma agent:status        # Проверка статуса агентов
+oma agent:review        # Ревью кода через внешний CLI (codex/claude/gemini/qwen)
 oma stats               # Статистика сессий
-oma retro               # Ретроспективный анализ
+oma retro               # Ретроспектива разработки (коммиты, горячие точки, тренды)
+oma recap               # История разговоров с ИИ-инструментами
 oma cleanup             # Очистка артефактов сессий
+oma link                # Перегенерация вендорных файлов из SSOT `.agents/`
 oma update              # Обновление oh-my-agent
 oma verify              # Верификация вывода агентов
-oma visualize           # Визуализация зависимостей
-oma describe            # Описание структуры проекта
-oma bridge              # SSE-to-stdio мост для Antigravity
-oma memory:init         # Инициализация провайдера памяти
-oma auth:status         # Проверка статуса аутентификации CLI
+oma visualize           # Визуализация зависимостей (псевдоним: `oma viz`)
+oma describe            # Просмотр CLI-команд в формате JSON
+oma bridge              # MCP stdio ↔ Streamable HTTP мост
+oma memory:init         # Инициализация схемы памяти Serena
+oma auth:status         # Проверка статуса аутентификации CLI (gh/gemini/claude/codex/cursor/qwen)
+oma search              # Механические примитивы поиска (псевдоним: `oma s`)
+oma image               # Генерация изображений через ИИ (псевдоним: `oma img`)
+oma export              # Экспорт навыков для внешних IDE (например, cursor)
 oma star                # Поставить звезду репозиторию
 ```
 
@@ -142,7 +148,7 @@ oma star                # Поставить звезду репозиторию
 
 ## Установка ИИ CLI-инструментов
 
-Необходим хотя бы один ИИ CLI-инструмент. oh-my-agent поддерживает четырёх вендоров, и вы можете комбинировать их — используя разные CLI для разных агентов через маппинг агент-CLI.
+Необходим хотя бы один ИИ CLI-инструмент. oh-my-agent поддерживает пятерых вендоров, и вы можете комбинировать их — используя разные CLI для разных агентов через маппинг агент-CLI.
 
 ### Gemini CLI
 
@@ -182,6 +188,14 @@ bun install --global @qwen-code/qwen-code
 
 После установки выполните `/auth` внутри CLI для аутентификации.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+Аутентификация выполняется при первом запуске `agy`. Бинарный файл называется `agy`. В безголовых (headless) средах вместо этого задайте переменную окружения `ANTIGRAVITY_API_KEY`. Команда `oma doctor` отображает статус аутентификации через `~/.gemini/antigravity-cli/cache/onboarding.json`.
+
 ---
 
 ## oma-config.yaml
@@ -199,7 +213,7 @@ date_format: "YYYY-MM-DD"
 timezone: "UTC"
 
 # CLI-инструмент по умолчанию для запуска агентов
-# Варианты: gemini, claude, codex, qwen
+# Варианты: antigravity, gemini, claude, codex, qwen
 default_cli: gemini
 
 # Маппинг CLI по агентам (переопределяет default_cli)
@@ -227,7 +241,7 @@ model_preset (per-agent overrides via `agents:`):
 | `date_format` | string | `YYYY-MM-DD` | Строка формата даты для временных меток в планах, файлах памяти и отчётах. |
 | `timezone` | string | `UTC` | Часовой пояс для всех временных меток. Используются стандартные идентификаторы (например, `Asia/Seoul`, `America/New_York`). |
 | `default_cli` | string | `gemini` | Резервный CLI, когда нет агенто-специфичного маппинга. Используется как уровень 3 в приоритете определения вендора. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (пустой) | Сопоставляет ID агентов с конкретными CLI-вендорами. Имеет приоритет над `default_cli`. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (пустой) | Сопоставляет ID агентов с конкретными CLI-вендорами. Имеет приоритет над `default_cli`. Встроенные ключи: `antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. |
 
 ### Приоритет определения вендора
 

@@ -7,13 +7,13 @@ description: Cấu hình model AI cho từng agent thông qua model_preset trong
 
 ## Tổng quan
 
-`model_preset` là khái niệm duy nhất quyết định model nào được dùng cho mỗi agent. Bạn chọn một trong năm preset có sẵn, và mọi agent (pm, backend, frontend, qa, …) đều được gắn với model phù hợp cho nhóm vendor đó. Khi cần, bạn có thể ghi đè từng agent riêng lẻ. Khi nhóm bạn dùng cấu hình không theo chuẩn, hãy định nghĩa thêm preset mới.
+`model_preset` là khái niệm duy nhất quyết định model nào được dùng cho mỗi agent. Bạn chọn một trong bảy preset có sẵn, và mọi agent (pm, backend, frontend, qa, …) đều được gắn với model phù hợp cho nhóm vendor đó. Khi cần, bạn có thể ghi đè từng agent riêng lẻ. Khi nhóm bạn dùng cấu hình không theo chuẩn, hãy định nghĩa thêm preset mới.
 
 Toàn bộ cấu hình nằm trong một file duy nhất: `.agents/oma-config.yaml`.
 
 Trang này trình bày:
 
-1. Năm preset có sẵn
+1. Bảy preset có sẵn
 2. Cách ghi đè từng agent qua map `agents:`
 3. Cách khai báo model slug tùy biến qua `models:`
 4. Cách định nghĩa custom preset với `custom_presets:` và `extends:`
@@ -24,7 +24,7 @@ Trang này trình bày:
 
 ## Preset có sẵn
 
-Đặt `model_preset` thành một trong năm key có sẵn:
+Đặt `model_preset` thành một trong bảy key có sẵn:
 
 ```yaml
 # .agents/oma-config.yaml
@@ -34,6 +34,7 @@ model_preset: gemini
 
 | Key | Mô tả | Phù hợp với |
 |:----|:-----------|:---------|
+| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 3.1 Pro cho triển khai/kiến trúc, Gemini 3.5 Flash cho orchestration và retrieval. Việc chọn model được điều khiển bởi cấu hình bên trong `agy` — không có flag `--model` hay `--thinking-budget`. | Người dùng Antigravity CLI |
 | `claude` | Mọi agent dùng Claude (Sonnet/Opus) | Người đăng ký Claude Max |
 | `codex` | Mọi agent dùng OpenAI Codex (GPT-5.x) với mức effort | Người dùng ChatGPT Plus/Pro |
 | `gemini` | Mọi agent dùng Gemini CLI, bật thinking cho vai trò triển khai | Người dùng Google AI Pro |

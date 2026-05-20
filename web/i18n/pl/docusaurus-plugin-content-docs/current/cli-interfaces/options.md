@@ -90,13 +90,14 @@ Format argumentu window: `7d` (7 dni), `2w` (2 tygodnie), `1m` (1 miesiąc).
 
 | Flaga | Skrót | Opis |
 |:-----|:------|:-----------|
-| `--model` | `-m` | Nadpisanie dostawcy CLI. Musi być: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model` | `-m` | Nadpisanie dostawcy CLI. Musi być: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. |
 | `--workspace` | `-w` | Katalog roboczy. Auto-wykrywany z konfiguracji monorepo jeśli pominięty. |
 
 **Zachowanie specyficzne dla dostawcy:**
 
 | Dostawca | Polecenie | Flaga auto-approve | Flaga promptu |
 |:-------|:--------|:-----------------|:-----------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | (brak) | `-p` |
 | codex | `codex` | `--full-auto` | (brak — prompt pozycyjny) |

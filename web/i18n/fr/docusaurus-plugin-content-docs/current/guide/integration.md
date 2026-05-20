@@ -71,7 +71,7 @@ If you selected a preset that includes the backend skill, you are asked to choos
 
 ### 6. Configure IDE Symlinks
 
-The installer always creates Claude Code symlinks (`.claude/skills/`). If a `.github/` directory exists, it also creates GitHub Copilot symlinks automatically. Otherwise, it asks:
+The installer always creates Claude Code symlinks (`.claude/skills/`). It also generates vendor-native agent files and hooks for Antigravity, Claude, Codex, Gemini, and Qwen, and if a `.github/` directory exists, it creates GitHub Copilot symlinks automatically. Otherwise, it asks:
 
 ```
 Also create symlinks for GitHub Copilot? (.github/skills/)
@@ -228,7 +228,7 @@ The doctor command checks:
 
 | Check | What It Verifies |
 |:------|:----------------|
-| **CLI installations** | gemini, claude, codex, qwen — version and availability |
+| **CLI installations** | agy, gemini, claude, codex, qwen — version and availability |
 | **Authentication** | API key or OAuth status for each CLI |
 | **MCP configuration** | Serena MCP server setup for each CLI environment |
 | **Skill status** | Which skills are installed and whether they are current |
@@ -408,7 +408,7 @@ For each selected skill, `installSkill()` copies the skill directory to `.agents
 
 ### 8. Vendor Adaptations
 
-`installVendorAdaptations()` installs IDE-specific files for all supported vendors (Claude, Codex, Gemini, Qwen):
+`installVendorAdaptations()` installs IDE-specific files for all supported vendors (Antigravity, Claude, Codex, Gemini, Qwen):
 
 - Agent definitions (`.claude/agents/*.md`)
 - Hook configurations (`.claude/hooks/`)

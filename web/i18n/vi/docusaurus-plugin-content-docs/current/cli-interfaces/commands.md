@@ -29,7 +29,7 @@ oma
 5. Hỏi về symlink GitHub Copilot.
 6. Tải tarball mới nhất từ registry.
 7. Cài đặt tài nguyên dùng chung, workflow, config và skill đã chọn.
-8. Cài đặt adaptation vendor cho cả 4 vendor (Claude, Codex, Gemini, Qwen).
+8. Cài đặt adaptation vendor cho cả 5 vendor (Antigravity, Claude, Codex, Gemini, Qwen).
 9. Áp dụng setting Claude Code khuyến nghị (`~/.claude/settings.json`) khi phát hiện Claude Code.
 10. Tạo symlink CLI.
 11. Đề xuất bật `git rerere`.
@@ -59,7 +59,7 @@ oma doctor [--json] [--output <format>]
 | `--output <format>` | Định dạng đầu ra (`text` hoặc `json`) |
 
 **Kiểm tra:**
-- Cài đặt CLI: gemini, claude, codex, qwen (phiên bản và đường dẫn).
+- Cài đặt CLI: agy, gemini, claude, codex, qwen (phiên bản và đường dẫn).
 - Trạng thái xác thực cho mỗi CLI.
 - Cấu hình MCP: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - Skill đã cài: skill nào có mặt và trạng thái.
@@ -295,7 +295,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Mô tả |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Ghi đè vendor CLI: `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | Ghi đè vendor CLI: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Thư mục làm việc cho agent. Tự phát hiện từ config monorepo nếu bỏ qua. |
 
 **Thứ tự phân giải vendor:** Flag `--model` > `model_preset (per-agent overrides via `agents:`)` trong oma-config.yaml > `default_cli` > `active_vendor` trong cli-config.yaml > `gemini`.
@@ -422,7 +422,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Flag | Mô tả |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Vendor CLI sử dụng: `codex`, `claude`, `gemini`, `qwen`. Mặc định là vendor đã phân giải từ config. |
+| `-m, --model <vendor>` | Vendor CLI sử dụng: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Mặc định là vendor đã phân giải từ config. |
 | `-p, --prompt <prompt>` | Prompt đánh giá tùy chỉnh. Nếu bỏ qua, prompt đánh giá mã mặc định được dùng. |
 | `-w, --workspace <path>` | Đường dẫn cần đánh giá. Mặc định là thư mục làm việc hiện tại. |
 | `--no-uncommitted` | Bỏ qua đánh giá thay đổi chưa commit. Khi đặt, chỉ đánh giá thay đổi đã commit trong phiên. |
@@ -505,7 +505,7 @@ oma auth:status [--json] [--output <format>]
 | `--json` | Xuất dạng JSON |
 | `--output <format>` | Định dạng đầu ra (`text` hoặc `json`) |
 
-**Kiểm tra:** Gemini (API key), Claude (API key hoặc OAuth), Codex (API key), Qwen (API key).
+**Kiểm tra:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 **Ví dụ:**
 ```bash

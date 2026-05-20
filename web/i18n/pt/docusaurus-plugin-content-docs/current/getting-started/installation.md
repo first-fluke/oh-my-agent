@@ -1,13 +1,13 @@
 ---
 title: Instalação
-description: "Guia completo de instalação do oh-my-agent — três métodos de instalação, todos os seis presets com suas listas de habilidades, requisitos de ferramentas CLI para os quatro fornecedores, configuração pós-instalação, campos do oma-config.yaml e verificação com oma doctor."
+description: "Guia completo de instalação do oh-my-agent — três métodos de instalação, todos os seis presets com suas listas de habilidades, requisitos de ferramentas CLI para os cinco fornecedores, configuração pós-instalação, campos do oma-config.yaml e verificação com oma doctor."
 ---
 
 # Instalação
 
 ## Pré-requisitos
 
-- **Uma IDE ou CLI com IA** — pelo menos um dos seguintes: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor ou OpenCode
+- **Uma IDE ou CLI com IA** — pelo menos um dos seguintes: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor ou OpenCode
 - **bun** — Runtime JavaScript e gerenciador de pacotes (instalado automaticamente pelo script de instalação se ausente)
 - **uv** — Gerenciador de pacotes Python para Serena MCP (instalado automaticamente se ausente)
 
@@ -142,7 +142,7 @@ oma star                # Dar estrela no repositório
 
 ## Instalação de Ferramentas CLI de IA
 
-Você precisa de pelo menos uma ferramenta CLI de IA instalada. oh-my-agent suporta quatro fornecedores, e você pode misturá-los — usando diferentes CLIs para diferentes agentes via mapeamento agente-CLI.
+Você precisa de pelo menos uma ferramenta CLI de IA instalada. oh-my-agent suporta cinco fornecedores, e você pode misturá-los — usando diferentes CLIs para diferentes agentes via mapeamento agente-CLI.
 
 ### Gemini CLI
 
@@ -182,6 +182,14 @@ bun install --global @qwen-code/qwen-code
 
 Após a instalação, execute `/auth` dentro do CLI para autenticar.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+A autenticação é feita pelo `agy` na primeira execução. O binário é `agy`. Em ambientes headless, defina a variável de ambiente `ANTIGRAVITY_API_KEY` como alternativa. O `oma doctor` reporta o estado de autenticação via `~/.gemini/antigravity-cli/cache/onboarding.json`.
+
 ---
 
 ## oma-config.yaml
@@ -194,7 +202,7 @@ language: en
 
 # Obrigatório
 language: en
-model_preset: gemini   # built-in: claude, codex, gemini, qwen, cursor, mixed
+model_preset: gemini   # built-in: antigravity, claude, codex, gemini, qwen, cursor, mixed
 
 # Opcional — preferências de data/hora
 date_format: ISO
@@ -225,7 +233,7 @@ agents:
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
 | `language` | string | Sim | Código do idioma de resposta. Suporta en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Sim | Chave do preset ativo. Uma das cinco chaves built-in ou uma chave de `custom_presets`. Veja [Per-Agent Models](../guide/per-agent-models.md). |
+| `model_preset` | string | Sim | Chave do preset ativo. Uma das sete chaves built-in (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) ou uma chave de `custom_presets`. Veja [Per-Agent Models](../guide/per-agent-models.md). |
 | `date_format` | string | Não | Formato de timestamp (`ISO`, `US`, `EU`). Padrão: `ISO`. |
 | `timezone` | string | Não | Identificador de fuso horário (ex: `Asia/Seoul`). Padrão: `UTC`. |
 | `agents` | map | Não | Overrides parciais por agente (`AgentSpec` apenas como objeto). Shallow merge sobre os defaults do preset. |

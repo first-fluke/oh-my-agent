@@ -7,13 +7,13 @@ description: oma-config.yaml의 model_preset으로 각 에이전트가 사용할
 
 ## 개요
 
-`model_preset`은 모든 에이전트가 사용할 모델을 결정하는 단일 개념입니다. 다섯 가지 빌트인 프리셋 중 하나를 선택하면 모든 에이전트(pm, backend, frontend, qa 등)가 해당 벤더 스택에 적합한 모델로 자동 연결됩니다. 필요한 경우 개별 에이전트를 오버라이드할 수 있습니다. 팀이 비표준 조합을 사용한다면 추가 프리셋을 정의하면 됩니다.
+`model_preset`은 모든 에이전트가 사용할 모델을 결정하는 단일 개념입니다. 일곱 가지 빌트인 프리셋 중 하나를 선택하면 모든 에이전트(pm, backend, frontend, qa 등)가 해당 벤더 스택에 적합한 모델로 자동 연결됩니다. 필요한 경우 개별 에이전트를 오버라이드할 수 있습니다. 팀이 비표준 조합을 사용한다면 추가 프리셋을 정의하면 됩니다.
 
 모든 설정은 `.agents/oma-config.yaml` 단일 파일에 모여 있습니다.
 
 이 페이지에서 다루는 내용:
 
-1. 다섯 가지 빌트인 프리셋
+1. 일곱 가지 빌트인 프리셋
 2. `agents:` 맵으로 개별 에이전트 오버라이드하기
 3. `models:`로 커스텀 모델 슬러그 인라인 등록하기
 4. `custom_presets:`와 `extends:`로 커스텀 프리셋 정의하기
@@ -24,7 +24,7 @@ description: oma-config.yaml의 model_preset으로 각 에이전트가 사용할
 
 ## 빌트인 프리셋
 
-`model_preset`을 다섯 가지 빌트인 키 중 하나로 설정합니다.
+`model_preset`을 일곱 가지 빌트인 키 중 하나로 설정합니다.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -34,6 +34,7 @@ model_preset: gemini
 
 | 키 | 설명 | 적합한 사용자 |
 |:----|:-----------|:---------|
+| `antigravity` | 모든 에이전트가 Antigravity CLI(`agy`)를 사용합니다. 구현/아키텍처 역할은 Gemini 3.1 Pro, 오케스트레이션 및 검색 역할은 Gemini 3.5 Flash를 사용합니다. 모델 선택은 `agy` 내부 설정으로 처리되며, `--model`이나 `--thinking-budget` 플래그는 노출되지 않습니다. | Antigravity CLI 사용자 |
 | `claude` | 모든 에이전트가 Claude (Sonnet/Opus) 사용 | Claude Max 구독자 |
 | `codex` | 모든 에이전트가 effort 레벨이 적용된 OpenAI Codex (GPT-5.x) 사용 | ChatGPT Plus/Pro 사용자 |
 | `gemini` | 모든 에이전트가 Gemini CLI 사용, 구현 역할에는 thinking 활성화 | Google AI Pro 사용자 |

@@ -7,13 +7,13 @@ description: Skonfiguruj model AI używany przez każdego agenta poprzez model_p
 
 ## Przegląd
 
-`model_preset` to jedyne pojęcie sterujące tym, jaki model wykorzystuje każdy z agentów. Wybierz jeden z pięciu wbudowanych presetów, a każdy agent (pm, backend, frontend, qa, …) zostanie podłączony do modelu odpowiedniego dla danego stosu dostawcy. W razie potrzeby nadpisz pojedynczych agentów. Zdefiniuj dodatkowe presety, gdy zespół używa niestandardowego zestawu modeli.
+`model_preset` to jedyne pojęcie sterujące tym, jaki model wykorzystuje każdy z agentów. Wybierz jeden z siedmiu wbudowanych presetów, a każdy agent (pm, backend, frontend, qa, …) zostanie podłączony do modelu odpowiedniego dla danego stosu dostawcy. W razie potrzeby nadpisz pojedynczych agentów. Zdefiniuj dodatkowe presety, gdy zespół używa niestandardowego zestawu modeli.
 
 Cała konfiguracja znajduje się w jednym pliku: `.agents/oma-config.yaml`.
 
 Ta strona obejmuje:
 
-1. Pięć wbudowanych presetów
+1. Siedem wbudowanych presetów
 2. Nadpisywanie pojedynczych agentów za pomocą mapy `agents:`
 3. Inline'owe deklarowanie niestandardowych slugów modeli za pomocą `models:`
 4. Definiowanie niestandardowych presetów przez `custom_presets:` i `extends:`
@@ -24,7 +24,7 @@ Ta strona obejmuje:
 
 ## Wbudowane presety
 
-Ustaw `model_preset` na jeden z pięciu wbudowanych kluczy:
+Ustaw `model_preset` na jeden z siedmiu wbudowanych kluczy:
 
 ```yaml
 # .agents/oma-config.yaml
@@ -34,6 +34,7 @@ model_preset: gemini
 
 | Klucz | Opis | Najlepszy dla |
 |:------|:-----|:--------------|
+| `antigravity` | Wszyscy agenci korzystają z Antigravity CLI (`agy`): Gemini 3.1 Pro dla ról implementacyjnych/architektonicznych, Gemini 3.5 Flash dla orchestracji i retrieval. Dobór modelu sterowany konfiguracją wewnątrz `agy` — flagi `--model` ani `--thinking-budget` nie są dostępne. | Użytkowników Antigravity CLI |
 | `claude` | Wszyscy agenci korzystają z Claude (Sonnet/Opus) | Posiadaczy subskrypcji Claude Max |
 | `codex` | Wszyscy agenci korzystają z OpenAI Codex (GPT-5.x) z poziomami effort | Użytkowników ChatGPT Plus/Pro |
 | `gemini` | Wszyscy agenci korzystają z Gemini CLI, thinking włączone dla ról implementacyjnych | Użytkowników Google AI Pro |

@@ -29,7 +29,7 @@ oma
 5. Pergunta sobre symlinks para GitHub Copilot.
 6. Baixa o tarball mais recente do registro.
 7. Instala recursos compartilhados, workflows, configs e skills selecionadas.
-8. Instala adaptações de vendor para todos os 4 vendors (Claude, Codex, Gemini, Qwen).
+8. Instala adaptações de vendor para todos os 5 vendors (Antigravity, Claude, Codex, Gemini, Qwen).
 9. Aplica configurações recomendadas do Claude Code (`~/.claude/settings.json`) quando o Claude Code é detectado.
 10. Cria symlinks CLI.
 11. Oferece habilitar `git rerere`.
@@ -60,7 +60,7 @@ oma doctor [--json] [--output <format>] [--profile]
 | `--profile` | Mostra a matriz de saúde do perfil — exibe o slug do modelo resolvido, a CLI e o status de autenticação por agente a partir do `model_preset` ativo e dos overrides em `agents:`. Veja [Per-Agent Models](../guide/per-agent-models.md). |
 
 **O que verifica:**
-- Instalações CLI: gemini, claude, codex, qwen (versão e caminho).
+- Instalações CLI: agy, gemini, claude, codex, qwen (versão e caminho).
 - Status de autenticação para cada CLI.
 - Configuração MCP: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - Skills instaladas: quais skills estão presentes e seu status.
@@ -367,7 +367,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Descrição |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Sobrescrita de vendor CLI: `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | Sobrescrita de vendor CLI: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Diretório de trabalho para o agente. Auto-detectado de config monorepo se omitido. |
 
 **Ordem de resolução de vendor:** flag `--model` > override `agents:` em `oma-config.yaml` > defaults de agente do `model_preset` ativo.
@@ -494,7 +494,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Flag | Descrição |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Vendor CLI a ser usado: `codex`, `claude`, `gemini`, `qwen`. Padrão é o vendor resolvido a partir da configuração. |
+| `-m, --model <vendor>` | Vendor CLI a ser usado: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Padrão é o vendor resolvido a partir da configuração. |
 | `-p, --prompt <prompt>` | Prompt de revisão customizado. Se omitido, um prompt padrão de revisão de código é usado. |
 | `-w, --workspace <path>` | Caminho para revisar. Padrão é o diretório de trabalho atual. |
 | `--no-uncommitted` | Pular revisão de mudanças não commitadas. Quando definido, apenas mudanças commitadas na sessão são revisadas. |
@@ -577,7 +577,7 @@ oma auth:status [--json] [--output <format>]
 | `--json` | Saída como JSON |
 | `--output <format>` | Formato de saída (`text` ou `json`) |
 
-**Verifica:** GitHub CLI (`gh`), Gemini CLI, Claude CLI, Codex CLI, Qwen CLI.
+**Verifica:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 **Exemplos:**
 ```bash

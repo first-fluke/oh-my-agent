@@ -172,18 +172,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Short | Description | Default |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI vendor override. Must be one of: `gemini`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
+| `--model` | `-m` | CLI vendor override. Must be one of: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
 | `--workspace` | `-w` | Working directory for the agent. If omitted or set to `.`, the CLI auto-detects the workspace from monorepo configuration files (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detected or `.` |
 
 **Validation:**
 - `agent-id` must be one of: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` must not contain `..`, `?`, `#`, `%`, or control characters.
-- `vendor` must be one of: `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` must be one of: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
 
 **Vendor-specific behavior:**
 
 | Vendor | Command | Auto-approve Flag | Prompt Flag |
 |:-------|:--------|:-----------------|:-----------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | (none) | `-p` |
 | codex | `codex` | `--full-auto` | (none — prompt is positional) |

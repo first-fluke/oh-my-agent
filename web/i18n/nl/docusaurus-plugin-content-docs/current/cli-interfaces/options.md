@@ -122,17 +122,28 @@ oma update [-f | --force] [--ci]
 | `--dry-run` | Voorbeeldmodus. Lijst items zonder wijzigingen. |
 | `--yes` / `-y` | Sla bevestigingsprompts over. |
 
+**Wat wordt opgeruimd:**
+1. Verlaten PID-bestanden: `/tmp/subagent-*.pid` waarbij het bijbehorende proces niet meer actief is.
+2. Verlaten logbestanden: `/tmp/subagent-*.log` die overeenkomen met dode PID's.
+3. Gemini Antigravity-mappen: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/`. Deze verzamelen in de loop van de tijd state en kunnen groot worden.
+
 ### agent:spawn
 
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
-| `--model` / `-m` | CLI-leverancier: `gemini`, `claude`, `codex`, `qwen` | Uit config |
+| `--model` / `-m` | CLI-leverancier: `antigravity`, `gemini`, `claude`, `codex`, `qwen` | Uit config |
 | `--workspace` / `-w` | Werkdirectory. Auto-gedetecteerd uit monorepo-config indien weggelaten. | Auto of `.` |
+
+**Validatie:**
+- `agent-id` moet één van zijn: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
+- `session-id` mag niet bevatten: `..`, `?`, `#`, `%`, of stuurcodes.
+- `vendor` moet één van zijn: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
 
 **Leverancierspecifiek gedrag:**
 
 | Leverancier | Commando | Auto-approve Vlag | Prompt Vlag |
 |:-------|:--------|:-----------------|:-----------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | (geen) | `-p` |
 | codex | `codex` | `--full-auto` | (positioneel) |

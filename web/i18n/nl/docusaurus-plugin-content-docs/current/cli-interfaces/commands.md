@@ -74,7 +74,7 @@ Productiviteitsmetrieken: sessieaantal, gebruikte skills, voltooide taken, sessi
 
 ### recap
 
-Recap van AI-tool conversatiegeschiedenis over Claude-, Codex-, Gemini-, Qwen- en Cursor-sessies.
+Recap van AI-tool conversatiegeschiedenis over Antigravity-, Claude-, Codex-, Gemini-, Qwen- en Cursor-sessies.
 
 ```
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
@@ -129,7 +129,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `-m, --model` | CLI-leverancier: `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model` | CLI-leverancier: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace` | Werkdirectory (auto-gedetecteerd uit monorepo-config indien weggelaten) |
 
 ### agent:status
@@ -150,7 +150,7 @@ YAML-takenbestand of inline modus (`agent:task[:workspace]`).
 
 ### agent:review
 
-Voer een codereview uit met een externe AI CLI (codex, claude, gemini of qwen).
+Voer een codereview uit met een externe AI CLI (antigravity, codex, claude, gemini of qwen).
 
 ```
 oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
@@ -160,7 +160,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Te gebruiken CLI-leverancier: `codex`, `claude`, `gemini`, `qwen`. Standaard de geconfigureerde leverancier. |
+| `-m, --model <vendor>` | Te gebruiken CLI-leverancier: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Standaard de geconfigureerde leverancier. |
 | `-p, --prompt <prompt>` | Aangepaste reviewprompt. Indien weggelaten wordt een standaard codereview-prompt gebruikt. |
 | `-w, --workspace <path>` | Pad om te reviewen. Standaard de huidige werkdirectory. |
 | `--no-uncommitted` | Sla review van niet-gecommitte wijzigingen over. Alleen gecommitte wijzigingen in de sessie worden gereviewed. |
@@ -214,6 +214,8 @@ Initialiseert de `.serena/memories/`-directorystructuur.
 oma auth:status [--json]
 ```
 Authenticatiestatus van alle ondersteunde CLI's.
+
+**Controles:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 ### bridge
 ```

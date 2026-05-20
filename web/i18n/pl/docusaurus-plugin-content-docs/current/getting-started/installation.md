@@ -1,13 +1,13 @@
 ---
 title: Instalacja
-description: Kompletny przewodnik instalacji oh-my-agent — trzy metody instalacji, wszystkie sześć presetów z listami umiejętności, wymagania narzędzi CLI dla czterech dostawców, konfiguracja po instalacji, pola oma-config.yaml oraz weryfikacja za pomocą oma doctor.
+description: Kompletny przewodnik instalacji oh-my-agent — trzy metody instalacji, wszystkie sześć presetów z listami umiejętności, wymagania narzędzi CLI dla pięciu dostawców, konfiguracja po instalacji, pola oma-config.yaml oraz weryfikacja za pomocą oma doctor.
 ---
 
 # Instalacja
 
 ## Wymagania wstępne
 
-- **IDE lub CLI zasilane AI** — co najmniej jedno z: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor lub OpenCode
+- **IDE lub CLI zasilane AI** — co najmniej jedno z: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor lub OpenCode
 - **bun** — środowisko uruchomieniowe JavaScript i menedżer pakietów (automatycznie instalowany przez skrypt, jeśli brak)
 - **uv** — menedżer pakietów Python dla Serena MCP (automatycznie instalowany, jeśli brak)
 
@@ -142,7 +142,7 @@ oma star                # Dodanie gwiazdki do repozytorium
 
 ## Instalacja narzędzi AI CLI
 
-Potrzebujesz co najmniej jednego zainstalowanego narzędzia AI CLI. oh-my-agent obsługuje czterech dostawców i możesz je mieszać — używając różnych CLI dla różnych agentów poprzez mapowanie agent-CLI.
+Potrzebujesz co najmniej jednego zainstalowanego narzędzia AI CLI. oh-my-agent obsługuje pięciu dostawców i możesz je mieszać — używając różnych CLI dla różnych agentów poprzez mapowanie agent-CLI.
 
 ### Gemini CLI
 
@@ -182,6 +182,14 @@ bun install --global @qwen-code/qwen-code
 
 Po instalacji uruchom `/auth` wewnątrz CLI aby się uwierzytelnić.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+Uwierzytelnianie odbywa się przez `agy` przy pierwszym uruchomieniu. Binarka to `agy`. W środowiskach bezgłowych ustaw zamiast tego zmienną środowiskową `ANTIGRAVITY_API_KEY`. `oma doctor` raportuje stan uwierzytelnienia przez `~/.gemini/antigravity-cli/cache/onboarding.json`.
+
 ---
 
 ## oma-config.yaml
@@ -199,7 +207,7 @@ date_format: "YYYY-MM-DD"
 timezone: "UTC"
 
 # Domyślne narzędzie CLI do uruchamiania agentów
-# Opcje: gemini, claude, codex, qwen
+# Opcje: antigravity, gemini, claude, codex, qwen
 default_cli: gemini
 
 # Mapowanie CLI per agent (nadpisuje default_cli)

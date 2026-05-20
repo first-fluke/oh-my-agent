@@ -126,15 +126,16 @@ oma update [-f | --force] [--ci]
 
 | フラグ | 説明 | デフォルト |
 |:-----|:-----------|:--------|
-| `--model` / `-m` | CLIベンダーオーバーライド。`gemini`、`claude`、`codex`、`qwen`。 | 設定から解決 |
+| `--model` / `-m` | CLIベンダーオーバーライド。`antigravity`、`gemini`、`claude`、`codex`、`qwen`。 | 設定から解決 |
 | `--workspace` / `-w` | エージェントの作業ディレクトリ。省略時はモノレポ設定から自動検出。 | 自動検出または`.` |
 
-**バリデーション：** `agent-id`は`backend`/`frontend`/`mobile`/`qa`/`debug`/`pm`のいずれか。`session-id`に`..`、`?`、`#`、`%`、制御文字は使用不可。
+**バリデーション：** `agent-id`は`backend`/`frontend`/`mobile`/`qa`/`debug`/`pm`のいずれか。`session-id`に`..`、`?`、`#`、`%`、制御文字は使用不可。`vendor`は`antigravity`、`gemini`、`claude`、`codex`、`qwen`のいずれか。
 
 **ベンダー固有の動作：**
 
 | ベンダー | コマンド | 自動承認フラグ | プロンプトフラグ |
 |:-------|:--------|:-----------------|:-----------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | （なし） | `-p` |
 | codex | `codex` | `--full-auto` | （位置引数） |

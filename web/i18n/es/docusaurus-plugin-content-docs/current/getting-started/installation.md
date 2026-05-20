@@ -1,13 +1,13 @@
 ---
 title: Instalación
-description: Guía completa de instalación de oh-my-agent — tres métodos de instalación, los seis presets con sus listas de habilidades, requisitos de herramientas CLI para los cuatro proveedores, configuración post-instalación, campos de oma-config.yaml y verificación con oma doctor.
+description: Guía completa de instalación de oh-my-agent — tres métodos de instalación, los seis presets con sus listas de habilidades, requisitos de herramientas CLI para los cinco proveedores, configuración post-instalación, campos de oma-config.yaml y verificación con oma doctor.
 ---
 
 # Instalación
 
 ## Requisitos Previos
 
-- **Un IDE o CLI potenciado por IA** — al menos uno de: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor u OpenCode
+- **Un IDE o CLI potenciado por IA** — al menos uno de: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor u OpenCode
 - **bun** — Runtime y gestor de paquetes JavaScript (instalado automáticamente por el script si no está presente)
 - **uv** — Gestor de paquetes Python para Serena MCP (instalado automáticamente si no está presente)
 
@@ -182,6 +182,14 @@ bun install --global @qwen-code/qwen-code
 
 Después de instalar, ejecuta `/auth` dentro del CLI para autenticarte.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+La autenticación la gestiona `agy` en la primera ejecución. El binario es `agy`. Para entornos headless, establece la variable de entorno `ANTIGRAVITY_API_KEY`. `oma doctor` informa el estado de autenticación vía `~/.gemini/antigravity-cli/cache/onboarding.json`.
+
 ---
 
 ## oma-config.yaml
@@ -189,55 +197,49 @@ Después de instalar, ejecuta `/auth` dentro del CLI para autenticarte.
 El comando `oma install` crea `.agents/oma-config.yaml`. Este es el archivo de configuración central para todo el comportamiento de oh-my-agent:
 
 ```yaml
-# Idioma de respuesta para todos los agentes y flujos
+# Requerido
 language: en
+model_preset: gemini   # integrados: antigravity, claude, codex, gemini, qwen, cursor, mixed
 
-# Formato de fecha usado en informes y archivos de memoria
-date_format: "YYYY-MM-DD"
+# Opcional — preferencias de fecha/hora
+date_format: ISO
+timezone: UTC
 
-# Zona horaria para marcas de tiempo
-timezone: "UTC"
+# Opcional — actualizar el CLI automáticamente en segundo plano
+auto_update_cli: true
 
-# Herramienta CLI predeterminada para generación de agentes
-# Opciones: gemini, claude, codex, qwen
-default_cli: gemini
+# Opcional — sobrescritura parcial por agente (objeto únicamente, fusión superficial)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# Mapeo CLI por agente (sobrescribe default_cli)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Razonamiento complejo de UI
-  backend: gemini        # Generación rápida de APIs
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Descomposición rápida
-  qa: claude             # Revisión exhaustiva de seguridad
-  debug: claude          # Análisis profundo de causa raíz
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# Opcional — slugs de modelo definidos por el usuario
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# Opcional — presets definidos por el usuario
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### Referencia de Campos
 
-| Campo | Tipo | Predeterminado | Descripción |
-|-------|------|----------------|-------------|
-| `language` | string | `en` | Código de idioma de respuesta. Toda la salida de agentes, mensajes de flujos e informes usan este idioma. Soporta 11 idiomas (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
-| `date_format` | string | `YYYY-MM-DD` | Cadena de formato de fecha para marcas de tiempo en planes, archivos de memoria e informes. |
-| `timezone` | string | `UTC` | Zona horaria para todas las marcas de tiempo. Usa identificadores estándar (ej., `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | CLI de respaldo cuando no existe mapeo específico por agente. Usado como nivel 3 en la prioridad de resolución de proveedor. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (vacío) | Mapea IDs de agente a proveedores CLI específicos. Tiene precedencia sobre `default_cli`. |
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `language` | string | Sí | Código de idioma de respuesta. Soporta en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
+| `model_preset` | string | Sí | Clave de preset activo. Una de las siete claves integradas (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) o una clave de `custom_presets`. Ver [Configuración de Modelo por Agente](../guide/per-agent-models.md). |
+| `date_format` | string | No | Formato de marca de tiempo (`ISO`, `US`, `EU`). Por defecto: `ISO`. |
+| `timezone` | string | No | Identificador de zona horaria (ej., `Asia/Seoul`). Por defecto: `UTC`. |
+| `agents` | map | No | Sobrescrituras parciales por agente (`AgentSpec` solo objeto). Fusión superficial sobre los valores por defecto del preset. |
+| `models` | map | No | Slugs de modelo definidos por el usuario, antes en `models.yaml`. |
+| `custom_presets` | map | No | Presets definidos por el usuario. Soporta `extends:` para herencia parcial de un preset integrado. |
 
-### Prioridad de Resolución de Proveedor
+### Resolución de Proveedor
 
-Al generar un agente, el proveedor CLI se determina por este orden de prioridad (el más alto primero):
-
-1. Flag `--model` pasado a `oma agent:spawn`
-2. Entrada `model_preset (per-agent overrides via `agents:`)` para ese agente específico en `oma-config.yaml`
-3. Configuración `default_cli` en `oma-config.yaml`
-4. `active_vendor` en `cli-config.yaml` (respaldo legacy)
-5. `gemini` (respaldo fijo final)
+Al generar un agente, el proveedor CLI se resuelve desde el `model_preset` activo (y cualquier sobrescritura en `agents:`). Ver [Configuración de Modelo por Agente](../guide/per-agent-models.md) para detalles completos.
 
 ---
 

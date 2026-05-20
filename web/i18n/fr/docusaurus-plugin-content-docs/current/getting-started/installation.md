@@ -1,13 +1,13 @@
 ---
 title: Installation
-description: Guide d'installation complet d'oh-my-agent — trois méthodes d'installation, les six presets avec leurs listes de compétences, prérequis des outils CLI pour les quatre fournisseurs, configuration post-installation, champs de oma-config.yaml et vérification avec oma doctor.
+description: Guide d'installation complet d'oh-my-agent — trois méthodes d'installation, les six presets avec leurs listes de compétences, prérequis des outils CLI pour les cinq fournisseurs, configuration post-installation, champs de oma-config.yaml et vérification avec oma doctor.
 ---
 
 # Installation
 
 ## Prérequis
 
-- **Un IDE ou CLI propulsé par l'IA** -- au moins l'un des suivants : Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor ou OpenCode
+- **Un IDE ou CLI propulsé par l'IA** -- au moins l'un des suivants : Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor ou OpenCode
 - **bun** -- Runtime JavaScript et gestionnaire de paquets (installé automatiquement par le script d'installation s'il est absent)
 - **uv** -- Gestionnaire de paquets Python pour Serena MCP (installé automatiquement s'il est absent)
 
@@ -142,7 +142,7 @@ oma star                # Star the repository
 
 ## Installation des outils CLI IA
 
-Vous avez besoin d'au moins un outil CLI IA installé. oh-my-agent supporte quatre fournisseurs, et vous pouvez les combiner -- en utilisant différents CLI pour différents agents via le mapping agent-CLI.
+Vous avez besoin d'au moins un outil CLI IA installé. oh-my-agent supporte cinq fournisseurs, et vous pouvez les combiner -- en utilisant différents CLI pour différents agents via le mapping agent-CLI.
 
 ### Gemini CLI
 
@@ -181,6 +181,14 @@ bun install --global @qwen-code/qwen-code
 ```
 
 Après l'installation, exécutez `/auth` dans le CLI pour vous authentifier.
+
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+L'authentification est gérée par `agy` au premier lancement. Le binaire est `agy`. Pour les environnements sans interface, définissez la variable d'environnement `ANTIGRAVITY_API_KEY`. `oma doctor` rapporte l'état de l'authentification via `~/.gemini/antigravity-cli/cache/onboarding.json`.
 
 ---
 

@@ -21,7 +21,7 @@ Domyślne polecenie bez argumentów uruchamia interaktywny instalator.
 oma
 ```
 
-**Co robi:** Sprawdza legacy, wykrywa konkurencję, pyta o typ projektu i wariant języka, pobiera tarball, instaluje umiejętności, konfiguruje dowiązania symboliczne i adaptacje dostawców, opcjonalnie git rerere i MCP.
+**Co robi:** Sprawdza legacy, wykrywa konkurencję, pyta o typ projektu i wariant języka, pobiera tarball, instaluje umiejętności, instaluje adaptacje dla wszystkich 5 dostawców (Antigravity, Claude, Codex, Gemini, Qwen), konfiguruje dowiązania symboliczne, opcjonalnie git rerere i MCP dla Antigravity IDE i Gemini CLI.
 
 ### doctor
 
@@ -30,6 +30,13 @@ Kontrola zdrowia instalacji CLI, konfiguracji MCP i stanu umiejętności.
 ```
 oma doctor [--json] [--output <format>]
 ```
+
+**Co sprawdza:**
+- Instalacje CLI: `agy`, `gemini`, `claude`, `codex`, `qwen` (wersja i ścieżka).
+- Status uwierzytelnienia dla każdego CLI.
+- Konfiguracja MCP: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
+- Zainstalowane umiejętności i ich status.
+- Globalne przepływy pracy: `~/.gemini/antigravity/global_workflows/`.
 
 ### update
 
@@ -97,7 +104,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `prompt` | Tak | Opis zadania. Tekst inline lub ścieżka do pliku. |
 | `session-id` | Tak | Identyfikator sesji (format: `session-YYYYMMDD-HHMMSS`) |
 
-Opcje: `-m, --model` (nadpisanie dostawcy), `-w, --workspace` (katalog roboczy, auto-wykrywany z konfiguracji monorepo).
+Opcje: `-m, --model <vendor>` (nadpisanie dostawcy CLI: `antigravity`, `gemini`, `claude`, `codex`, `qwen`), `-w, --workspace` (katalog roboczy, auto-wykrywany z konfiguracji monorepo).
 
 ### agent:status
 
@@ -125,7 +132,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Flaga | Opis |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Dostawca CLI: `codex`, `claude`, `gemini`, `qwen`. Domyślnie rozwiązany dostawca z konfiguracji. |
+| `-m, --model <vendor>` | Dostawca CLI: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Domyślnie rozwiązany dostawca z konfiguracji. |
 | `-p, --prompt <prompt>` | Niestandardowy prompt przeglądu. Jeśli pominięty, używany jest domyślny prompt przeglądu kodu. |
 | `-w, --workspace <path>` | Ścieżka do przeglądu. Domyślnie bieżący katalog roboczy. |
 | `--no-uncommitted` | Pomiń przegląd niezacommitowanych zmian. Gdy ustawione, przeglądane są tylko zmiany zacommitowane w sesji. |
@@ -179,7 +186,7 @@ Tworzy strukturę `.serena/memories/` z początkowymi plikami schematu.
 ```
 oma auth:status [--json] [--output <format>]
 ```
-Sprawdza uwierzytelnianie: Gemini (klucz API), Claude (klucz API lub OAuth), Codex, Qwen.
+**Sprawdza:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 ### bridge
 

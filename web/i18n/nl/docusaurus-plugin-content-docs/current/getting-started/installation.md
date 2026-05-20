@@ -1,13 +1,13 @@
 ---
 title: Installatie
-description: Volledige installatiegids voor oh-my-agent — drie installatiemethoden, alle zes presets met hun skill-lijsten, CLI-toolvereisten voor alle vier leveranciers, post-installatie configuratie, oma-config.yaml velden en verificatie met oma doctor.
+description: Volledige installatiegids voor oh-my-agent — drie installatiemethoden, alle zes presets met hun skill-lijsten, CLI-toolvereisten voor alle vijf leveranciers, post-installatie configuratie, oma-config.yaml velden en verificatie met oma doctor.
 ---
 
 # Installatie
 
 ## Vereisten
 
-- **Een AI-aangedreven IDE of CLI** — minimaal een van: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor of OpenCode
+- **Een AI-aangedreven IDE of CLI** — minimaal een van: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor of OpenCode
 - **bun** — JavaScript-runtime en pakketbeheerder (automatisch geinstalleerd door het installatiescript indien afwezig)
 - **uv** — Python-pakketbeheerder voor Serena MCP (automatisch geinstalleerd indien afwezig)
 
@@ -142,7 +142,7 @@ oma star                # Repository een ster geven
 
 ## AI CLI-Tool Installatie
 
-Je hebt minimaal een AI CLI-tool nodig. oh-my-agent ondersteunt vier leveranciers, en je kunt ze combineren — verschillende CLI's gebruiken voor verschillende agenten via de agent-CLI-mapping.
+Je hebt minimaal een AI CLI-tool nodig. oh-my-agent ondersteunt vijf leveranciers, en je kunt ze combineren — verschillende CLI's gebruiken voor verschillende agenten via de agent-CLI-mapping.
 
 ### Gemini CLI
 
@@ -181,6 +181,14 @@ bun install --global @qwen-code/qwen-code
 ```
 
 Na installatie, voer `/auth` uit binnen de CLI om te authenticeren.
+
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+Authenticatie wordt afgehandeld door `agy` bij de eerste uitvoering. Het binaire bestand is `agy`. Voor omgevingen zonder gebruikersinteractie, stel de omgevingsvariabele `ANTIGRAVITY_API_KEY` in. `oma doctor` rapporteert de authenticatiestatus via `~/.gemini/antigravity-cli/cache/onboarding.json`.
 
 ---
 

@@ -7,13 +7,13 @@ description: Configureer welk AI-model elke agent gebruikt via model_preset in o
 
 ## Overzicht
 
-`model_preset` is het enkele concept dat bepaalt welk model elke agent gebruikt. Kies één van de vijf ingebouwde presets en elke agent (pm, backend, frontend, qa, …) wordt gekoppeld aan een geschikt model voor die vendor stack. Overschrijf individuele agents waar nodig. Definieer extra presets wanneer je team een niet-standaard combinatie gebruikt.
+`model_preset` is het enkele concept dat bepaalt welk model elke agent gebruikt. Kies één van de zeven ingebouwde presets en elke agent (pm, backend, frontend, qa, …) wordt gekoppeld aan een geschikt model voor die vendor stack. Overschrijf individuele agents waar nodig. Definieer extra presets wanneer je team een niet-standaard combinatie gebruikt.
 
 Alle configuratie staat in één bestand: `.agents/oma-config.yaml`.
 
 Deze pagina behandelt:
 
-1. De vijf ingebouwde presets
+1. De zeven ingebouwde presets
 2. Het overschrijven van individuele agents met de `agents:`-map
 3. Inline registratie van custom model slugs met `models:`
 4. Definiëren van custom presets met `custom_presets:` en `extends:`
@@ -24,7 +24,7 @@ Deze pagina behandelt:
 
 ## Ingebouwde presets
 
-Stel `model_preset` in op één van de vijf ingebouwde sleutels:
+Stel `model_preset` in op één van de zeven ingebouwde sleutels:
 
 ```yaml
 # .agents/oma-config.yaml
@@ -34,6 +34,7 @@ model_preset: gemini
 
 | Sleutel | Beschrijving | Geschikt voor |
 |:----|:-----------|:---------|
+| `antigravity` | Alle agents gebruiken de Antigravity CLI (`agy`): Gemini 3.1 Pro voor implementatie/architectuur, Gemini 3.5 Flash voor orchestratie en ophalen. Modelselectie vindt plaats binnen `agy` — er worden geen `--model`- of `--thinking-budget`-vlaggen blootgesteld. | Antigravity CLI-gebruikers |
 | `claude` | Alle agents gebruiken Claude (Sonnet/Opus) | Claude Max-abonnees |
 | `codex` | Alle agents gebruiken OpenAI Codex (GPT-5.x) met effort levels | ChatGPT Plus/Pro-gebruikers |
 | `gemini` | Alle agents gebruiken Gemini CLI, thinking ingeschakeld voor implementatierollen | Google AI Pro-gebruikers |

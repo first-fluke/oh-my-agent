@@ -1,13 +1,13 @@
 ---
 title: Installation
-description: Vollständige Installationsanleitung für oh-my-agent — drei Installationsmethoden, alle sechs Presets mit ihren Skill-Listen, CLI-Tool-Anforderungen für alle vier Anbieter, Konfiguration nach der Installation, Felder der oma-config.yaml und Verifikation mit oma doctor.
+description: Vollständige Installationsanleitung für oh-my-agent — drei Installationsmethoden, alle sechs Presets mit ihren Skill-Listen, CLI-Tool-Anforderungen für alle fünf Anbieter, Konfiguration nach der Installation, Felder der oma-config.yaml und Verifikation mit oma doctor.
 ---
 
 # Installation
 
 ## Voraussetzungen
 
-- **Eine KI-gestützte IDE oder CLI** — mindestens eines der folgenden: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor oder OpenCode
+- **Eine KI-gestützte IDE oder CLI** — mindestens eines der folgenden: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor oder OpenCode
 - **bun** — JavaScript-Laufzeitumgebung und Paketmanager (wird bei Bedarf vom Installationsskript automatisch installiert)
 - **uv** — Python-Paketmanager für Serena MCP (wird bei Bedarf automatisch installiert)
 
@@ -142,7 +142,7 @@ oma star                # Repository mit Stern markieren
 
 ## Installation der KI-CLI-Tools
 
-Sie benötigen mindestens ein installiertes KI-CLI-Tool. oh-my-agent unterstützt vier Anbieter, und Sie können diese mischen — verschiedene CLIs für verschiedene Agenten über die Agenten-CLI-Zuordnung.
+Sie benötigen mindestens ein installiertes KI-CLI-Tool. oh-my-agent unterstützt fünf Anbieter, und Sie können diese mischen — verschiedene CLIs für verschiedene Agenten über die Agenten-CLI-Zuordnung.
 
 ### Gemini CLI
 
@@ -182,6 +182,14 @@ bun install --global @qwen-code/qwen-code
 
 Nach der Installation `/auth` innerhalb der CLI zur Authentifizierung ausführen.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+Die Authentifizierung erfolgt beim ersten Start durch `agy`. Das Binary heißt `agy`. In headless-Umgebungen stattdessen die Umgebungsvariable `ANTIGRAVITY_API_KEY` setzen. `oma doctor` meldet den Auth-Status über `~/.gemini/antigravity-cli/cache/onboarding.json`.
+
 ---
 
 ## oma-config.yaml
@@ -189,55 +197,38 @@ Nach der Installation `/auth` innerhalb der CLI zur Authentifizierung ausführen
 Der Befehl `oma install` erstellt `.agents/oma-config.yaml`. Dies ist die zentrale Konfigurationsdatei für das gesamte Verhalten von oh-my-agent:
 
 ```yaml
-# Antwortsprache für alle Agenten und Workflows
+# Erforderlich
 language: en
+model_preset: gemini   # eingebaut: antigravity, claude, codex, gemini, qwen, cursor, mixed
 
-# Datumsformat für Berichte und Memory-Dateien
-date_format: "YYYY-MM-DD"
+# Optional — Datums-/Uhrzeiteinstellungen
+date_format: ISO
+timezone: UTC
 
-# Zeitzone für Zeitstempel
-timezone: "UTC"
+# Optional — CLI im Hintergrund automatisch aktualisieren
+auto_update_cli: true
 
-# Standard-CLI-Tool für das Starten von Agenten
-# Optionen: gemini, claude, codex, qwen
-default_cli: gemini
-
-# Pro-Agent-CLI-Zuordnung (überschreibt default_cli)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Komplexes UI-Reasoning
-  backend: gemini        # Schnelle API-Generierung
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Schnelle Zerlegung
-  qa: claude             # Gründliches Sicherheits-Review
-  debug: claude          # Tiefe Grundursachenanalyse
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# Optional — partielle Überschreibung pro Agent (nur Objekt, flaches Merging)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 ```
 
 ### Feldreferenz
 
-| Feld | Typ | Standard | Beschreibung |
+| Feld | Typ | Erforderlich | Beschreibung |
 |-------|------|---------|-------------|
-| `language` | String | `en` | Antwortsprachcode. Alle Agentenausgaben, Workflow-Nachrichten und Berichte verwenden diese Sprache. Unterstützt 11 Sprachen (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
-| `date_format` | String | `YYYY-MM-DD` | Datumsformat für Zeitstempel in Plänen, Memory-Dateien und Berichten. |
-| `timezone` | String | `UTC` | Zeitzone für alle Zeitstempel. Verwendet Standard-Zeitzonen-Bezeichner (z. B. `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | String | `gemini` | Fallback-CLI, wenn keine agentenspezifische Zuordnung existiert. Wird als Ebene 3 in der Vendor-Auflösungspriorität verwendet. |
-| `model_preset (per-agent overrides via `agents:`)` | Map | (leer) | Ordnet Agenten-IDs bestimmten CLI-Anbietern zu. Hat Vorrang vor `default_cli`. |
+| `language` | String | Ja | Antwortsprachcode. Unterstützt en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
+| `model_preset` | String | Ja | Aktiver Preset-Schlüssel. Einer der sieben eingebauten Schlüssel (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) oder ein `custom_presets`-Schlüssel. Siehe [Modellkonfiguration pro Agent](../guide/per-agent-models.md). |
+| `date_format` | String | Nein | Zeitstempelformat (`ISO`, `US`, `EU`). Standard: `ISO`. |
+| `timezone` | String | Nein | Zeitzonenbezeichner (z. B. `Asia/Seoul`). Standard: `UTC`. |
+| `agents` | Map | Nein | Partielle Überschreibungen pro Agent (nur `AgentSpec`-Objekt). Wird flach über Preset-Standardwerte gemergt. |
+| `models` | Map | Nein | Benutzerdefinierte Modell-Slugs (ehemals in `models.yaml`). |
+| `custom_presets` | Map | Nein | Benutzerdefinierte Presets. Unterstützt `extends:` für partielle Vererbung von einem eingebauten Preset. |
 
-### Vendor-Auflösungspriorität
+### Vendor-Auflösung
 
-Beim Starten eines Agenten wird der CLI-Anbieter durch diese Prioritätsreihenfolge bestimmt (höchste zuerst):
-
-1. `--model`-Flag an `oma agent:spawn` übergeben
-2. `model_preset (per-agent overrides via `agents:`)`-Eintrag für den spezifischen Agenten in `oma-config.yaml`
-3. `default_cli`-Einstellung in `oma-config.yaml`
-4. `active_vendor` in `cli-config.yaml` (Legacy-Fallback)
-5. `gemini` (fest codierter endgültiger Fallback)
+Beim Starten eines Agenten wird der CLI-Anbieter aus dem aktiven `model_preset` (und etwaigen `agents:`-Überschreibungen) aufgelöst. Weitere Details finden Sie unter [Modellkonfiguration pro Agent](../guide/per-agent-models.md).
 
 ---
 

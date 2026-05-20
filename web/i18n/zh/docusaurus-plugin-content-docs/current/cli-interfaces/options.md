@@ -152,18 +152,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 标志 | 缩写 | 说明 | 默认值 |
 |:-----|:-----|:-----|:-------|
-| `--model` | `-m` | CLI 供应商覆盖。必须是：`gemini`、`claude`、`codex`、`qwen` 之一。覆盖所有基于配置的供应商解析。 | 从配置解析 |
+| `--model` | `-m` | CLI 供应商覆盖。必须是：`antigravity`、`gemini`、`claude`、`codex`、`qwen` 之一。覆盖所有基于配置的供应商解析。 | 从配置解析 |
 | `--workspace` | `-w` | 智能体的工作目录。如果省略或设为 `.`，CLI 从 monorepo 配置文件自动检测工作区（pnpm-workspace.yaml、package.json、lerna.json、nx.json、turbo.json、mise.toml）。 | 自动检测或 `.` |
 
 **验证：**
 - `agent-id` 必须是：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm` 之一。
 - `session-id` 不得包含 `..`、`?`、`#`、`%` 或控制字符。
-- `vendor` 必须是：`gemini`、`claude`、`codex`、`qwen` 之一。
+- `vendor` 必须是：`antigravity`、`gemini`、`claude`、`codex`、`qwen` 之一。
 
 **供应商特定行为：**
 
 | 供应商 | 命令 | 自动批准标志 | 提示词标志 |
 |:-------|:-----|:-----------|:----------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | （无） | `-p` |
 | codex | `codex` | `--full-auto` | （无，提示词是位置参数） |

@@ -29,7 +29,7 @@ oma
 5. Fragt nach GitHub-Copilot-Symlinks.
 6. Lädt das neueste Tarball aus der Registry herunter.
 7. Installiert gemeinsame Ressourcen, Workflows, Konfigurationen und ausgewählte Skills.
-8. Installiert Vendor-Anpassungen für alle Anbieter (Claude, Codex, Gemini, Qwen).
+8. Installiert Vendor-Anpassungen für alle 5 Anbieter (Antigravity, Claude, Codex, Gemini, Qwen).
 9. Erstellt CLI-Symlinks.
 10. Bietet an, `git rerere` zu aktivieren.
 11. Bietet an, MCP für Antigravity IDE und Gemini CLI zu konfigurieren.
@@ -57,7 +57,7 @@ oma doctor [--json] [--output <format>]
 | `--output <format>` | Ausgabeformat (`text` oder `json`) |
 
 **Geprüft wird:**
-- CLI-Installationen: gemini, claude, codex, qwen (Version und Pfad).
+- CLI-Installationen: agy, gemini, claude, codex, qwen (Version und Pfad).
 - Authentifizierungsstatus jeder CLI.
 - MCP-Konfiguration: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - Installierte Skills: welche Skills vorhanden sind und deren Status.
@@ -281,7 +281,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI-Vendor-Überschreibung: `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | CLI-Vendor-Überschreibung: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Arbeitsverzeichnis für den Agenten. Wird automatisch aus der Monorepo-Konfiguration erkannt, wenn nicht angegeben. |
 
 **Reihenfolge der Vendor-Auflösung:** `--model`-Flag > `model_preset (per-agent overrides via `agents:`)` in oma-config.yaml > `default_cli` > `active_vendor` in cli-config.yaml > `gemini`.
@@ -408,7 +408,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Zu verwendende CLI: `codex`, `claude`, `gemini`, `qwen`. Standardmäßig wird der aus der Konfiguration aufgelöste Vendor verwendet. |
+| `-m, --model <vendor>` | Zu verwendende CLI: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Standardmäßig wird der aus der Konfiguration aufgelöste Vendor verwendet. |
 | `-p, --prompt <prompt>` | Benutzerdefinierter Review-Prompt. Wird ein Standard-Code-Review-Prompt verwendet, wenn nicht angegeben. |
 | `-w, --workspace <path>` | Zu prüfender Pfad. Standardmäßig das aktuelle Arbeitsverzeichnis. |
 | `--no-uncommitted` | Review von nicht-committeten Änderungen überspringen. Wenn gesetzt, werden nur committete Änderungen der Sitzung geprüft. |
@@ -491,7 +491,7 @@ oma auth:status [--json] [--output <format>]
 | `--json` | Ausgabe als JSON |
 | `--output <format>` | Ausgabeformat (`text` oder `json`) |
 
-**Prüft:** Gemini (API-Schlüssel), Claude (API-Schlüssel oder OAuth), Codex (API-Schlüssel), Qwen (API-Schlüssel).
+**Prüft:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 **Beispiele:**
 ```bash

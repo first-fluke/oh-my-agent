@@ -29,7 +29,7 @@ oma
 5. GitHub Copilot 심볼릭 링크에 대해 질문합니다.
 6. 레지스트리에서 최신 tarball을 다운로드합니다.
 7. 공유 리소스, 워크플로우, 설정, 선택된 스킬을 설치합니다.
-8. 모든 벤더(Claude, Codex, Gemini, Qwen)에 대한 벤더 적응을 설치합니다.
+8. 모든 벤더(Antigravity, Claude, Codex, Gemini, Qwen)에 대한 벤더 적응을 설치합니다.
 9. CLI 심볼릭 링크를 생성합니다.
 10. `git rerere` 활성화를 제안합니다.
 11. Antigravity IDE 및 Gemini CLI용 MCP 설정을 제안합니다.
@@ -57,7 +57,7 @@ oma doctor [--json] [--output <format>]
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) |
 
 **검사 항목:**
-- CLI 설치: gemini, claude, codex, qwen (버전 및 경로).
+- CLI 설치: agy, gemini, claude, codex, qwen (버전 및 경로).
 - 각 CLI의 인증 상태.
 - MCP 설정: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - 설치된 스킬: 어떤 스킬이 존재하고 그 상태.
@@ -293,7 +293,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | CLI 벤더 오버라이드: `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | CLI 벤더 오버라이드: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략하면 모노레포 설정에서 자동 감지. |
 
 **벤더 해석 순서:** `--model` 플래그 > oma-config.yaml의 `model_preset (per-agent overrides via `agents:`)` > `default_cli` > cli-config.yaml의 `active_vendor` > `gemini`.
@@ -420,7 +420,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | 사용할 CLI 벤더: `codex`, `claude`, `gemini`, `qwen`. 기본값은 설정에서 해석된 벤더. |
+| `-m, --model <vendor>` | 사용할 CLI 벤더: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. 기본값은 설정에서 해석된 벤더. |
 | `-p, --prompt <prompt>` | 사용자 정의 리뷰 프롬프트. 생략하면 기본 코드 리뷰 프롬프트가 사용됩니다. |
 | `-w, --workspace <path>` | 리뷰할 경로. 기본값은 현재 작업 디렉토리. |
 | `--no-uncommitted` | 커밋되지 않은 변경 사항 리뷰를 건너뜁니다. 설정 시 세션 내 커밋된 변경 사항만 리뷰합니다. |
@@ -503,7 +503,7 @@ oma auth:status [--json] [--output <format>]
 | `--json` | JSON으로 출력 |
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) |
 
-**확인 항목:** Gemini (API 키), Claude (API 키 또는 OAuth), Codex (API 키), Qwen (API 키).
+**확인 항목:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini (API 키), Claude (API 키 또는 OAuth), Codex (API 키), Cursor CLI, Qwen (API 키).
 
 **예시:**
 ```bash

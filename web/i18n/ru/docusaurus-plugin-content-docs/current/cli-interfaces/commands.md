@@ -22,7 +22,7 @@ cd /path/to/my-project
 oma
 ```
 
-Выполняет: проверку миграции с `.agent/`, обнаружение конкурентов, выбор пресета, загрузку тарбола, установку навыков/рабочих процессов/конфигов, создание символических ссылок, настройку git rerere и MCP.
+Выполняет: проверку миграции с `.agent/`, обнаружение конкурентов, выбор пресета, загрузку тарбола, установку навыков/рабочих процессов/конфигов, вендорные адаптации для 5 вендоров (Antigravity, Claude, Codex, Gemini, Qwen), создание символических ссылок, настройку git rerere и MCP.
 
 ### doctor
 
@@ -32,7 +32,7 @@ oma
 oma doctor [--json] [--output <format>]
 ```
 
-Проверяет: установку CLI (gemini, claude, codex, qwen), аутентификацию, конфигурацию MCP, установленные навыки.
+Проверяет: установку CLI (agy, gemini, claude, codex, qwen), аутентификацию, конфигурацию MCP, установленные навыки.
 
 ### update
 
@@ -94,7 +94,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 `agent-id`: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
-Определение вендора: `--model` > `model_preset (per-agent overrides via `agents:`)` > `default_cli` > `active_vendor` > `gemini`.
+Флаг `-m, --model <vendor>`: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Определение вендора: `--model` > `model_preset (per-agent overrides via `agents:`)` > `default_cli` > `active_vendor` > `gemini`.
 
 Промпт: инлайн-текст или путь к файлу. Вендор-протоколы добавляются автоматически.
 
@@ -126,7 +126,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Флаг | Описание |
 |:-----|:---------|
-| `-m, --model <vendor>` | CLI-вендор: `codex`, `claude`, `gemini`, `qwen`. По умолчанию — из конфигурации. |
+| `-m, --model <vendor>` | CLI-вендор: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. По умолчанию — из конфигурации. |
 | `-p, --prompt <prompt>` | Пользовательский промпт ревью. Если не указан, используется промпт по умолчанию. |
 | `-w, --workspace <path>` | Путь для ревью. По умолчанию — текущая директория. |
 | `--no-uncommitted` | Пропустить незакоммиченные изменения. Ревью только закоммиченных изменений в рамках сессии. |
@@ -181,7 +181,7 @@ oma memory:init [--json] [--output <format>] [--force]
 oma auth:status [--json]
 ```
 
-Проверяет: Gemini (API key), Claude (API key/OAuth), Codex (API key), Qwen (API key).
+Проверяет: GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
 ### bridge
 

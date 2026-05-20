@@ -1,15 +1,16 @@
 ---
 title: 安装
-description: oh-my-agent 完整安装指南。三种安装方式、全部六个预设及其技能列表、四个供应商的 CLI 工具要求、安装后配置、oma-config.yaml 字段说明以及 oma doctor 验证。
+description: oh-my-agent 完整安装指南。三种安装方式、全部六个预设及其技能列表、五个供应商的 CLI 工具要求、安装后配置、oma-config.yaml 字段说明以及 oma doctor 验证。
 ---
 
 # 安装
 
 ## 前置要求
 
-- **AI 驱动的 IDE 或 CLI**：至少安装以下之一：Claude Code、Gemini CLI、Codex CLI、Qwen CLI、Antigravity IDE、Cursor 或 OpenCode
+- **AI 驱动的 IDE 或 CLI**：至少安装以下之一：Claude Code、Gemini CLI、Codex CLI、Qwen CLI、Antigravity CLI（`agy`）、Antigravity IDE、Cursor 或 OpenCode
 - **bun**：JavaScript 运行时和包管理器（安装脚本会在缺失时自动安装）
-- **uv**：Serena MCP 的 Python 包管理器（缺失时自动安装）
+- **uv**：Python 包管理器（缺失时自动安装）
+- **serena-agent**：Serena MCP 二进制文件，通过 `uv tool install -p 3.13 serena-agent@latest --prerelease=allow` 全局安装（安装脚本会在缺失时自动安装）
 
 ---
 
@@ -142,7 +143,7 @@ oma star                # 为仓库加星
 
 ## AI CLI 工具安装
 
-你至少需要安装一个 AI CLI 工具。oh-my-agent 支持四个供应商，你可以混合使用，通过智能体-CLI 映射为不同智能体使用不同的 CLI。
+你至少需要安装一个 AI CLI 工具。oh-my-agent 支持五个供应商，你可以混合使用，通过智能体-CLI 映射为不同智能体使用不同的 CLI。
 
 ### Gemini CLI
 
@@ -182,6 +183,14 @@ bun install --global @qwen-code/qwen-code
 
 安装后，在 CLI 内运行 `/auth` 进行认证。
 
+### Antigravity CLI（`agy`）
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+首次运行时，`agy` 会自动处理认证。二进制文件名为 `agy`。在无头（headless）环境中，改为设置 `ANTIGRAVITY_API_KEY` 环境变量。`oma doctor` 通过 `~/.gemini/antigravity-cli/cache/onboarding.json` 报告认证状态。
+
 ---
 
 ## oma-config.yaml
@@ -198,9 +207,9 @@ date_format: "YYYY-MM-DD"
 # 时间戳时区
 timezone: "UTC"
 
-# 智能体启动的默认 CLI 工具
-# 选项：gemini、claude、codex、qwen
-default_cli: gemini
+# 必填
+language: en
+model_preset: gemini   # 内置选项：antigravity、claude、codex、gemini、qwen、cursor、mixed
 
 # 每个智能体的 CLI 映射（覆盖 default_cli）
 model_preset (per-agent overrides via `agents:`):

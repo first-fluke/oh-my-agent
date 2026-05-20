@@ -1,13 +1,13 @@
 ---
 title: 설치
-description: oh-my-agent 설치 가이드입니다. 세 가지 설치 방법, 6개 프리셋과 포함 스킬 목록, 4개 벤더별 CLI 도구 요구사항, 설치 후 설정, oma-config.yaml 필드, oma doctor를 통한 검증을 다룹니다.
+description: oh-my-agent 설치 가이드입니다. 세 가지 설치 방법, 6개 프리셋과 포함 스킬 목록, 5개 벤더별 CLI 도구 요구사항, 설치 후 설정, oma-config.yaml 필드, oma doctor를 통한 검증을 다룹니다.
 ---
 
 # 설치
 
 ## 사전 요구사항
 
-- **AI 기반 IDE 또는 CLI**: 다음 중 하나 이상 (Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor, 또는 OpenCode)
+- **AI 기반 IDE 또는 CLI**: 다음 중 하나 이상 (Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor, 또는 OpenCode)
 - **bun**: JavaScript 런타임 및 패키지 매니저 (설치 스크립트에서 없으면 자동 설치)
 - **uv**: Serena MCP용 Python 패키지 매니저 (없으면 자동 설치)
 
@@ -144,7 +144,7 @@ oma star                # 리포지토리 스타
 
 ## AI CLI 도구 설치
 
-AI CLI 도구가 하나 이상 설치되어 있어야 합니다. oh-my-agent는 네 가지 벤더를 지원하며, 에이전트-CLI 매핑을 통해 에이전트마다 다른 CLI를 지정할 수 있습니다.
+AI CLI 도구가 하나 이상 설치되어 있어야 합니다. oh-my-agent는 다섯 가지 벤더를 지원하며, 에이전트-CLI 매핑을 통해 에이전트마다 다른 CLI를 지정할 수 있습니다.
 
 ### Gemini CLI
 
@@ -184,6 +184,14 @@ bun install --global @qwen-code/qwen-code
 
 설치 후 CLI 내에서 `/auth`를 실행하여 인증합니다.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+인증은 첫 실행 시 `agy`가 자동으로 처리합니다. 바이너리 이름은 `agy`입니다. 헤드리스 환경에서는 `ANTIGRAVITY_API_KEY` 환경 변수를 설정하세요. `oma doctor`는 `~/.gemini/antigravity-cli/cache/onboarding.json`을 통해 인증 상태를 확인합니다.
+
 ---
 
 ## oma-config.yaml
@@ -191,45 +199,45 @@ bun install --global @qwen-code/qwen-code
 `oma install` 명령은 `.agents/oma-config.yaml`을 생성합니다. 이 파일은 모든 oh-my-agent 동작의 중앙 설정 파일입니다:
 
 ```yaml
-# 모든 에이전트와 워크플로우의 응답 언어
+# 필수
 language: en
+model_preset: gemini   # 빌트인: antigravity, claude, codex, gemini, qwen, cursor, mixed
 
-# 리포트와 메모리 파일에 사용되는 날짜 형식
-date_format: "YYYY-MM-DD"
+# 선택 — 날짜/시간 기본값
+date_format: ISO
+timezone: UTC
 
-# 타임스탬프 시간대
-timezone: "UTC"
+# 선택 — 백그라운드에서 CLI 자동 업데이트
+auto_update_cli: true
 
-# 에이전트 스폰에 사용할 기본 CLI 도구
-# 옵션: gemini, claude, codex, qwen
-default_cli: gemini
+# 선택 — 에이전트별 부분 오버라이드 (object만 허용, 얕은 병합)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# 에이전트별 CLI 매핑 (default_cli 오버라이드)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # 복잡한 UI 추론
-  backend: gemini        # 빠른 API 생성
-  mobile: gemini
-  db: gemini
-  pm: gemini             # 빠른 태스크 분해
-  qa: claude             # 철저한 보안 리뷰
-  debug: claude          # 깊은 근본 원인 분석
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# 선택 — 사용자 정의 모델 슬러그
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# 선택 — 사용자 정의 프리셋
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### 필드 레퍼런스
 
-| 필드 | 타입 | 기본값 | 설명 |
-|-------|------|---------|-------------|
-| `language` | string | `en` | 응답 언어 코드. 모든 에이전트 출력, 워크플로우 메시지, 리포트가 이 언어를 사용합니다. 11개 언어 지원 (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
-| `date_format` | string | `YYYY-MM-DD` | 계획, 메모리 파일, 리포트의 타임스탬프에 사용되는 날짜 형식 문자열. |
-| `timezone` | string | `UTC` | 모든 타임스탬프에 사용되는 시간대. 표준 시간대 식별자 사용 (예: `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | 에이전트별 매핑이 없을 때 사용하는 기본 CLI. 벤더 결정 우선순위에서 3순위. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (비어 있음) | 에이전트 ID를 특정 CLI 벤더에 매핑합니다. `default_cli`보다 우선합니다. |
+| 필드 | 타입 | 필수 여부 | 설명 |
+|-------|------|----------|-------------|
+| `language` | string | 필수 | 응답 언어 코드. en, ko, ja, zh, es, fr, de, pt, ru, nl, pl 등 11개 언어를 지원합니다. |
+| `model_preset` | string | 필수 | 활성 프리셋 키. 일곱 가지 빌트인 키(`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) 중 하나 또는 `custom_presets` 키. 자세한 내용은 [에이전트별 모델 설정](../guide/per-agent-models.md)을 참조하세요. |
+| `date_format` | string | 선택 | 타임스탬프 형식 (`ISO`, `US`, `EU`). 기본값: `ISO`. |
+| `timezone` | string | 선택 | 시간대 식별자 (예: `Asia/Seoul`). 기본값: `UTC`. |
+| `agents` | map | 선택 | 에이전트별 부분 오버라이드 (object 전용 `AgentSpec`). 프리셋 기본값 위에 얕게 병합됩니다. |
+| `models` | map | 선택 | 사용자 정의 모델 슬러그 (이전의 `models.yaml`에서 이동). |
+| `custom_presets` | map | 선택 | 사용자 정의 프리셋. 빌트인 프리셋을 부분 상속하는 `extends:`를 지원합니다. |
 
 ### 벤더 해석 우선순위
 

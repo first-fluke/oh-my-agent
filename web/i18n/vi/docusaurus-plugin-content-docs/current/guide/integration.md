@@ -44,6 +44,8 @@ Trình cài đặt trình bày preset: All, Fullstack, Frontend, Backend, Mobile
 
 Chọn ngôn ngữ backend (nếu có), symlink IDE, git rerere và cấu hình MCP.
 
+Trình cài đặt luôn tạo symlink Claude Code (`.claude/skills/`). Nó cũng tạo file agent và hook dành riêng cho vendor cho Antigravity, Claude, Codex, Gemini và Qwen, và nếu thư mục `.github/` tồn tại, nó tạo symlink GitHub Copilot tự động.
+
 ---
 
 ## Đường thủ công
@@ -74,7 +76,12 @@ Sau đó sao chép file, tạo symlink và cấu hình oma-config.yaml.
 oma doctor
 ```
 
-Kiểm tra: cài đặt CLI, xác thực, cấu hình MCP, trạng thái skill.
+| Kiểm tra | Nội dung xác minh |
+|:------|:----------------|
+| **Cài đặt CLI** | agy, gemini, claude, codex, qwen (phiên bản và khả dụng) |
+| **Xác thực** | Trạng thái API key hoặc OAuth cho mỗi CLI |
+| **Cấu hình MCP** | Thiết lập Serena MCP server cho mỗi môi trường CLI |
+| **Trạng thái skill** | Skill nào đã cài và có phải phiên bản hiện tại không |
 
 ---
 

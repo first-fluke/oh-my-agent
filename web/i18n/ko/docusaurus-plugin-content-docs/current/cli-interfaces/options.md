@@ -172,18 +172,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 플래그 | 축약 | 설명 | 기본값 |
 |:-------|:-----|:-----|:-------|
-| `--model` | `-m` | CLI 벤더 오버라이드. `gemini`, `claude`, `codex`, `qwen` 중 하나여야 합니다. 모든 설정 기반 벤더 해석을 오버라이드합니다. | 설정에서 해석 |
+| `--model` | `-m` | CLI 벤더 오버라이드. `antigravity`, `gemini`, `claude`, `codex`, `qwen` 중 하나여야 합니다. 모든 설정 기반 벤더 해석을 오버라이드합니다. | 설정에서 해석 |
 | `--workspace` | `-w` | 에이전트의 작업 디렉토리. 생략하거나 `.`로 설정하면 CLI가 모노레포 설정 파일(pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml)에서 워크스페이스를 자동 감지합니다. | 자동 감지 또는 `.` |
 
 **유효성 검사:**
 - `agent-id`는 `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` 중 하나여야 합니다.
 - `session-id`는 `..`, `?`, `#`, `%`, 또는 제어 문자를 포함해서는 안 됩니다.
-- `vendor`는 `gemini`, `claude`, `codex`, `qwen` 중 하나여야 합니다.
+- `vendor`는 `antigravity`, `gemini`, `claude`, `codex`, `qwen` 중 하나여야 합니다.
 
 **벤더별 동작:**
 
 | 벤더 | 명령 | 자동 승인 플래그 | 프롬프트 플래그 |
 |:-----|:-----|:---------------|:-------------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | (없음) | `-p` |
 | codex | `codex` | `--full-auto` | (없음, 프롬프트는 위치 인자) |

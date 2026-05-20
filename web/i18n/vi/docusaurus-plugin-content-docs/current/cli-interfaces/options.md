@@ -172,18 +172,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Viết tắt | Mô tả | Mặc định |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | Ghi đè vendor CLI. Phải là một trong: `gemini`, `claude`, `codex`, `qwen`. Ghi đè tất cả phân giải vendor từ config. | Phân giải từ config |
+| `--model` | `-m` | Ghi đè vendor CLI. Phải là một trong: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Ghi đè tất cả phân giải vendor từ config. | Phân giải từ config |
 | `--workspace` | `-w` | Thư mục làm việc cho agent. Nếu bỏ qua hoặc đặt thành `.`, CLI tự phát hiện workspace từ file cấu hình monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Tự phát hiện hoặc `.` |
 
 **Xác thực:**
 - `agent-id` phải là một trong: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` không được chứa `..`, `?`, `#`, `%` hoặc ký tự điều khiển.
-- `vendor` phải là một trong: `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` phải là một trong: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
 
 **Hành vi đặc thù vendor:**
 
 | Vendor | Lệnh | Flag tự động duyệt | Flag prompt |
 |:-------|:--------|:-----------------|:-----------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | (không) | `-p` |
 | codex | `codex` | `--full-auto` | (không — prompt là positional) |

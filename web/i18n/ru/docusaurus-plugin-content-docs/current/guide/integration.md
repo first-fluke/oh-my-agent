@@ -58,7 +58,7 @@ Python (FastAPI/SQLAlchemy), Node.js (NestJS/Hono + Prisma/Drizzle), Rust (Axum/
 
 ### 6. Настройка символических ссылок IDE
 
-Всегда создаются для Claude Code (`.claude/skills/`). Для GitHub Copilot — по запросу.
+Установщик всегда создаёт символические ссылки Claude Code (`.claude/skills/`). Также генерирует нативные файлы агентов и хуки для Antigravity, Claude, Codex, Gemini и Qwen. Если существует директория `.github/`, автоматически создаются символические ссылки для GitHub Copilot. Иначе — по запросу.
 
 ### 7. Git rerere
 

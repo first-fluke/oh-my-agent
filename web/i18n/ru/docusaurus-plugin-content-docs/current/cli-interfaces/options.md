@@ -119,15 +119,16 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Флаг | Описание |
 |------|---------|
-| `--model` / `-m` | Переопределение вендора: `gemini`, `claude`, `codex`, `qwen` |
+| `--model` / `-m` | Переопределение вендора: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
 | `--workspace` / `-w` | Рабочая директория. Автоопределение из конфигов монорепозитория |
 
-**Валидация:** `agent-id` из списка, `session-id` без `..`, `?`, `#`, `%`, управляющих символов.
+**Валидация:** `agent-id` из списка, `session-id` без `..`, `?`, `#`, `%`, управляющих символов. `vendor` — один из: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
 
 **Вендор-специфичное поведение:**
 
 | Вендор | Команда | Auto-approve | Промпт |
 |--------|---------|-------------|--------|
+| antigravity | `agy` | `--dangerously-skip-permissions` | `-p` |
 | gemini | `gemini` | `--approval-mode=yolo` | `-p` |
 | claude | `claude` | (нет) | `-p` |
 | codex | `codex` | `--full-auto` | позиционный |

@@ -1,13 +1,13 @@
 ---
 title: インストール
-description: oh-my-agentの完全インストールガイド。3つのインストール方法、6つのプリセットとスキルリスト、4つのベンダー向けCLIツール要件、インストール後の設定、oma-config.yamlフィールド、oma doctorによる検証を解説します。
+description: oh-my-agentの完全インストールガイド。3つのインストール方法、6つのプリセットとスキルリスト、5つのベンダー向けCLIツール要件、インストール後の設定、oma-config.yamlフィールド、oma doctorによる検証を解説します。
 ---
 
 # インストール
 
 ## 前提条件
 
-- **AI搭載IDEまたはCLI**: 以下のいずれか。Claude Code、Gemini CLI、Codex CLI、Qwen CLI、Antigravity IDE、Cursor、またはOpenCode
+- **AI搭載IDEまたはCLI**: 以下のいずれか。Claude Code、Gemini CLI、Codex CLI、Qwen CLI、Antigravity CLI（`agy`）、Antigravity IDE、Cursor、またはOpenCode
 - **bun**: JavaScriptランタイムおよびパッケージマネージャー（インストールスクリプトが未インストールの場合自動インストール）
 - **uv**: Serena MCP用Pythonパッケージマネージャー（未インストールの場合自動インストール）
 
@@ -150,7 +150,7 @@ oma star                # リポジトリにスターを付ける
 
 ## AI CLIツールのインストール
 
-少なくとも1つのAI CLIツールがインストールされている必要があります。oh-my-agentは4つのベンダーをサポートしており、エージェント-CLIマッピングにより異なるエージェントに異なるCLIを使い分けることができます。
+少なくとも1つのAI CLIツールがインストールされている必要があります。oh-my-agentは5つのベンダーをサポートしており、エージェント-CLIマッピングにより異なるエージェントに異なるCLIを使い分けることができます。
 
 ### Gemini CLI
 
@@ -190,6 +190,14 @@ bun install --global @qwen-code/qwen-code
 
 インストール後、CLI内で`/auth`を実行して認証します。
 
+### Antigravity CLI（`agy`）
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+初回実行時に`agy`が認証を処理します。バイナリ名は`agy`です。ヘッドレス環境では、代わりに`ANTIGRAVITY_API_KEY`環境変数を設定してください。`oma doctor`は`~/.gemini/antigravity-cli/cache/onboarding.json`を通じて認証状態を報告します。
+
 ---
 
 ## oma-config.yaml
@@ -199,7 +207,7 @@ bun install --global @qwen-code/qwen-code
 ```yaml
 # Required
 language: en
-model_preset: gemini   # ビルトイン: claude, codex, gemini, qwen, cursor, mixed
+model_preset: gemini   # ビルトイン: antigravity, claude, codex, gemini, qwen, cursor, mixed
 
 # Optional — 日時の設定
 date_format: ISO
@@ -230,7 +238,7 @@ agents:
 | フィールド | 型 | 必須 | 説明 |
 |-------|------|------|-------------|
 | `language` | string | はい | 応答言語コード。en、ko、ja、zh、es、fr、de、pt、ru、nl、plをサポート。 |
-| `model_preset` | string | はい | アクティブなプリセットキー。5つのビルトインキーまたは`custom_presets`のキー。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照。 |
+| `model_preset` | string | はい | アクティブなプリセットキー。7つのビルトインキー（`antigravity`、`claude`、`codex`、`gemini`、`qwen`、`cursor`、`mixed`）または`custom_presets`のキー。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照。 |
 | `date_format` | string | いいえ | タイムスタンプ形式（`ISO`、`US`、`EU`）。デフォルト：`ISO`。 |
 | `timezone` | string | いいえ | タイムゾーン識別子（例：`Asia/Seoul`）。デフォルト：`UTC`。 |
 | `agents` | map | いいえ | エージェントごとの部分オーバーライド（オブジェクト型`AgentSpec`のみ）。プリセットのデフォルトにシャローマージされます。 |

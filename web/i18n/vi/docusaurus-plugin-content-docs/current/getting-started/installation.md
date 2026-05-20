@@ -1,13 +1,13 @@
 ---
 title: Cài đặt
-description: Hướng dẫn cài đặt đầy đủ cho oh-my-agent — ba phương pháp cài đặt, tất cả sáu preset với danh sách skill, yêu cầu công cụ CLI cho bốn vendor, cấu hình sau cài đặt, các trường oma-config.yaml, và xác minh với oma doctor.
+description: Hướng dẫn cài đặt đầy đủ cho oh-my-agent — ba phương pháp cài đặt, tất cả sáu preset với danh sách skill, yêu cầu công cụ CLI cho năm vendor, cấu hình sau cài đặt, các trường oma-config.yaml, và xác minh với oma doctor.
 ---
 
 # Cài đặt
 
 ## Yêu cầu trước
 
-- **IDE hoặc CLI hỗ trợ AI** — ít nhất một trong: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity IDE, Cursor, hoặc OpenCode
+- **IDE hoặc CLI hỗ trợ AI** — ít nhất một trong: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor, hoặc OpenCode
 - **bun** — Runtime JavaScript và trình quản lý gói (tự động cài đặt bởi script cài đặt nếu thiếu)
 - **uv** — Trình quản lý gói Python cho Serena MCP (tự động cài đặt nếu thiếu)
 
@@ -150,7 +150,7 @@ oma star                # Star repository
 
 ## Cài đặt công cụ AI CLI
 
-Bạn cần ít nhất một công cụ AI CLI được cài đặt. oh-my-agent hỗ trợ bốn vendor, và bạn có thể kết hợp — sử dụng CLI khác nhau cho các agent khác nhau thông qua ánh xạ agent-CLI.
+Bạn cần ít nhất một công cụ AI CLI được cài đặt. oh-my-agent hỗ trợ năm vendor, và bạn có thể kết hợp — sử dụng CLI khác nhau cho các agent khác nhau thông qua ánh xạ agent-CLI.
 
 ### Gemini CLI
 
@@ -190,6 +190,14 @@ bun install --global @qwen-code/qwen-code
 
 Sau khi cài, chạy `/auth` trong CLI để xác thực.
 
+### Antigravity CLI (`agy`)
+
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+
+Xác thực được xử lý bởi `agy` khi chạy lần đầu. Binary là `agy`. Trong môi trường headless, đặt biến môi trường `ANTIGRAVITY_API_KEY` thay thế. `oma doctor` báo cáo trạng thái xác thực qua `~/.gemini/antigravity-cli/cache/onboarding.json`.
+
 ---
 
 ## oma-config.yaml
@@ -199,7 +207,7 @@ Lệnh `oma install` tạo `.agents/oma-config.yaml`. Đây là file cấu hình
 ```yaml
 # Bắt buộc
 language: en
-model_preset: gemini   # built-in: claude, codex, gemini, qwen, cursor, mixed
+model_preset: gemini   # built-in: antigravity, claude, codex, gemini, qwen, cursor, mixed
 
 # Tùy chọn — tùy chọn ngày/giờ
 date_format: ISO
@@ -230,7 +238,7 @@ agents:
 | Trường | Kiểu | Bắt buộc | Mô tả |
 |-------|------|----------|-------------|
 | `language` | string | Có | Mã ngôn ngữ phản hồi. Hỗ trợ en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Có | Khóa preset đang dùng. Là một trong năm khóa built-in hoặc khóa `custom_presets`. Xem [Per-Agent Models](../guide/per-agent-models.md). |
+| `model_preset` | string | Có | Khóa preset đang dùng. Là một trong bảy khóa built-in (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) hoặc khóa `custom_presets`. Xem [Per-Agent Models](../guide/per-agent-models.md). |
 | `date_format` | string | Không | Định dạng timestamp (`ISO`, `US`, `EU`). Mặc định: `ISO`. |
 | `timezone` | string | Không | Định danh múi giờ (ví dụ: `Asia/Seoul`). Mặc định: `UTC`. |
 | `agents` | map | Không | Ghi đè từng phần theo agent (chỉ object `AgentSpec`). Shallow-merge trên giá trị mặc định của preset. |
