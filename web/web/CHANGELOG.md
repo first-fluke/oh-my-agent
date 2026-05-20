@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.2...web-v3.5.3) (2026-05-20)
+
+
+### Documentation
+
+* sync quick start + installation docs for serena bootstrap ([80be2a2](https://github.com/first-fluke/oh-my-agent/commit/80be2a2e7228bfb9008c5237091f88d6c91065b4))
+
 ## [3.5.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.1...web-v3.5.2) (2026-05-20)
 
 
