@@ -1,5 +1,24 @@
 # Changelog
 
+## [8.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.4.0...cli-v8.5.0) (2026-05-21)
+
+
+### Features
+
+* **cli:** add TF-IDF cross-skill boundary audit ([086bfbe](https://github.com/first-fluke/oh-my-agent/commit/086bfbe1ff35ba97e7288956d5f923c512d4fc52))
+* **skills:** domain-gated exposure + structured outputs schema ([52f0d31](https://github.com/first-fluke/oh-my-agent/commit/52f0d31f3b8b23c831d7f1128ce429fbd5ed29fe))
+* **verify:** add closure check via structured Expected outputs ([7ab4b51](https://github.com/first-fluke/oh-my-agent/commit/7ab4b51f6052b53a527c58359d5a5be5033b2e36))
+
+
+### Bug Fixes
+
+* **image:** drop unused config arg from AntigravityProvider call ([eb350d4](https://github.com/first-fluke/oh-my-agent/commit/eb350d44f5067bb12b04bd8e4927d5dde8156226))
+
+
+### Documentation
+
+* **readme:** cite scaling-laws-of-skills preprint ([1611b52](https://github.com/first-fluke/oh-my-agent/commit/1611b520933bc0e03afb51b85431388bbb3e104e))
+
 ## [8.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.3.0...cli-v8.4.0) (2026-05-20)
 
 
