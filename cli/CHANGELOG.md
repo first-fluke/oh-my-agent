@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.0...cli-v8.5.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **verify:** replace globSync with deterministic matcher for hidden dirs ([b3b6401](https://github.com/first-fluke/oh-my-agent/commit/b3b64014fae90e433d2bbf21c2b92f3acabf98f8))
+
 ## [8.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.4.0...cli-v8.5.0) (2026-05-21)
 
 
