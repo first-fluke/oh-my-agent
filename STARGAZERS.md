@@ -5,10 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
+## 2026-05-21 · 1 unstarred
+
+- **@islee23520** · iz · Linalab.io · 171 repos · 40 followers
+  - kira kira✨ Game Dev 🎮 New Typed · 
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (975)
+## Current (994)
 
 - @05hhh35 — 2026-03-07
 - @0cherry — 2026-04-02
@@ -86,6 +90,7 @@ summaries to spot which persona is churning.
 - @asomegs — 2026-03-17
 - @astheboy — 2026-03-16
 - @asyncFlow-dad — 2026-04-24
+- @Axelvrdn — 2026-05-20
 - @azizsayadi1155 — 2026-05-10
 - @ba-hc — 2026-04-09
 - @BaGyun0107 — 2026-03-12
@@ -171,6 +176,7 @@ summaries to spot which persona is churning.
 - @comicsansbestfont — 2026-04-19
 - @cookie98 — 2026-04-22
 - @coolzero74 — 2026-02-01
+- @copixon — 2026-05-20
 - @covagashi — 2026-04-17
 - @cpm9662 — 2026-04-27
 - @crispebble — 2026-05-05
@@ -181,6 +187,7 @@ summaries to spot which persona is churning.
 - @CustomJH — 2026-02-02
 - @Cybecho — 2026-02-02
 - @cyon13 — 2026-02-04
+- @cys020628 — 2026-05-20
 - @d-s-Choi — 2026-03-17
 - @Daehyeob-Ryu — 2026-02-04
 - @daeryundf2-prog — 2026-05-19
@@ -250,6 +257,7 @@ summaries to spot which persona is churning.
 - @entranoweb — 2026-04-06
 - @eonofpixel — 2026-04-20
 - @epicsagas — 2026-01-31
+- @eraxel-dev — 2026-05-20
 - @ergo9ine — 2026-05-02
 - @ericmil87 — 2026-04-26
 - @EthAnHoangg — 2026-04-10
@@ -415,12 +423,12 @@ summaries to spot which persona is churning.
 - @ImbaPlayer — 2026-04-23
 - @imsungsuk455 — 2026-02-02
 - @imxieke — 2026-02-26
+- @ingemar — 2026-05-20
 - @insung — 2026-02-21
 - @InSuperposition — 2026-03-18
 - @Interstellar-code — 2026-04-08
 - @iops-leo — 2026-03-16
 - @iproxyhub — 2026-03-19
-- @islee23520 — 2026-05-08
 - @isthistechsupport — 2026-04-10
 - @ityc — 2026-04-02
 - @iyuuya — 2026-03-19
@@ -467,6 +475,7 @@ summaries to spot which persona is churning.
 - @jiurang — 2026-04-13
 - @jj1985 — 2026-03-21
 - @jjjh7401 — 2026-04-20
+- @JK-AJAE — 2026-05-20
 - @joaomagdaleno — 2026-02-12
 - @joarechi — 2026-04-23
 - @joeynyc — 2026-03-26
@@ -483,6 +492,7 @@ summaries to spot which persona is churning.
 - @JS190-prog — 2026-04-08
 - @js603 — 2026-03-16
 - @jshim0978 — 2026-03-17
+- @juanchi — 2026-05-21
 - @juanjo-zurich — 2026-05-10
 - @juliomuhlbauer — 2026-02-13
 - @jun-shoplive — 2026-02-02
@@ -513,6 +523,7 @@ summaries to spot which persona is churning.
 - @kenux196 — 2026-05-20
 - @kgkimm — 2026-04-19
 - @khizarulhaq — 2026-04-01
+- @Kigyu829 — 2026-05-20
 - @kim-song-jun — 2026-04-19
 - @kimbiwork — 2026-02-04
 - @kimgywls — 2026-05-06
@@ -640,6 +651,7 @@ summaries to spot which persona is churning.
 - @mschueler — 2026-05-06
 - @MSVICKI8310 — 2026-03-20
 - @Mulraeng — 2026-02-03
+- @munkgorn — 2026-05-20
 - @muratclk — 2026-02-18
 - @mxfli — 2026-03-18
 - @mykim-aus — 2026-02-08
@@ -747,6 +759,7 @@ summaries to spot which persona is churning.
 - @ray-ho33 — 2026-04-21
 - @RayanYousef — 2026-02-28
 - @rbenzing — 2026-03-24
+- @rbq — 2026-05-20
 - @reallyticsai — 2026-04-17
 - @redwit-user1 — 2026-04-21
 - @Regen99 — 2026-04-19
@@ -756,6 +769,7 @@ summaries to spot which persona is churning.
 - @rhdtl78 — 2026-05-04
 - @ricardosantis — 2026-02-17
 - @richardfrk — 2026-02-10
+- @rkafp — 2026-05-20
 - @rkayman — 2026-03-20
 - @roachesyan — 2026-05-11
 - @robertpelloni — 2026-02-07
@@ -764,9 +778,11 @@ summaries to spot which persona is churning.
 - @robjarawan — 2026-03-07
 - @robocode51 — 2026-04-11
 - @rockwork4 — 2026-02-18
+- @rongxu1 — 2026-05-20
 - @rookedsysc — 2026-02-02
 - @route99-roadRunner — 2026-02-02
 - @rpls-byeongwoo — 2026-03-16
+- @rvzaku — 2026-05-20
 - @RxScriptor — 2026-05-17
 - @ryan-haver — 2026-03-10
 - @ryankr — 2026-04-23
@@ -802,6 +818,7 @@ summaries to spot which persona is churning.
 - @shoppai-cyber — 2026-03-13
 - @shshajek-cpu — 2026-02-01
 - @sibbl — 2026-01-31
+- @sigco3111 — 2026-05-20
 - @silobust-hash — 2026-05-17
 - @sioaeko — 2026-05-14
 - @siwilizhao — 2026-04-24
@@ -872,14 +889,17 @@ summaries to spot which persona is churning.
 - @tintinap — 2026-04-10
 - @tinyc0der — 2026-04-06
 - @tjcjc — 2026-03-18
+- @tkdwns159 — 2026-05-20
 - @tkersey — 2026-03-17
 - @tobbawi — 2026-05-01
 - @Tojaman — 2026-04-26
 - @tomkim007 — 2026-05-17
 - @tonglil — 2026-03-19
 - @totoroyyb — 2026-02-19
+- @toughCSB — 2026-05-20
 - @Traianosv — 2026-05-06
 - @Trangle — 2026-02-02
+- @tranngocteam79 — 2026-05-20
 - @tritran-dev — 2026-03-12
 - @truongphamit — 2026-02-07
 - @try2fair-ux — 2026-02-06
@@ -924,6 +944,7 @@ summaries to spot which persona is churning.
 - @whoshe — 2026-02-02
 - @whYBeKim — 2026-04-18
 - @wilbur-yu — 2026-03-24
+- @WilfOo — 2026-05-21
 - @Willhong — 2026-04-22
 - @winterrainlee — 2026-02-02
 - @WithDevelop — 2026-05-17
@@ -953,6 +974,7 @@ summaries to spot which persona is churning.
 - @yakzan — 2026-03-23
 - @yamyay — 2026-05-13
 - @YangOng-md — 2026-05-17
+- @YashDoesCode — 2026-05-20
 - @YBloom — 2026-02-03
 - @yeolwoosung — 2026-04-22
 - @YeongSeokJeong — 2026-04-28
@@ -965,6 +987,7 @@ summaries to spot which persona is churning.
 - @younghyundev — 2026-04-25
 - @youngjin-yun-kurly — 2026-02-03
 - @YounJJ — 2026-02-07
+- @younkeunho — 2026-05-20
 - @youzhiqingw — 2026-04-22
 - @yqecea — 2026-02-17
 - @ysjkof — 2026-02-07
