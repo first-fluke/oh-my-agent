@@ -1,19 +1,19 @@
 ---
 title: "指南：按智能体配置模型"
-description: 通过 oma-config.yaml 中的 model_preset 配置每个智能体使用的 AI 模型。涵盖七个内置预设、按智能体覆盖、内联模型定义、使用 extends 的自定义预设、oma doctor --profile，以及从旧版 agent_cli_mapping 的迁移。
+description: 通过 oma-config.yaml 中的 model_preset 配置每个智能体使用的 AI 模型。涵盖内置预设、按智能体覆盖、内联模型定义、使用 extends 的自定义预设、oma doctor --profile，以及从旧版 agent_cli_mapping 的迁移。
 ---
 
 # 指南：按智能体配置模型
 
 ## 概览
 
-`model_preset` 是控制每个智能体使用哪个模型的唯一概念。从七个内置预设中选一个，所有智能体（pm、backend、frontend、qa 等）都会自动接入对应厂商生态中合适的模型。如有需要，可单独覆盖某些智能体。当团队使用非标准组合时，可定义额外的预设。
+`model_preset` 是控制每个智能体使用哪个模型的唯一概念。从内置预设中选一个，所有智能体（pm、backend、frontend、qa 等）都会自动接入对应厂商生态中合适的模型。如有需要，可单独覆盖某些智能体。当团队使用非标准组合时，可定义额外的预设。
 
 所有配置都集中在一个文件中：`.agents/oma-config.yaml`。
 
 本页涵盖以下内容：
 
-1. 七个内置预设
+1. 内置预设
 2. 通过 `agents:` 映射覆盖单个智能体
 3. 使用 `models:` 内联自定义模型 slug
 4. 使用 `custom_presets:` 和 `extends:` 定义自定义预设
@@ -24,12 +24,12 @@ description: 通过 oma-config.yaml 中的 model_preset 配置每个智能体使
 
 ## 内置预设
 
-将 `model_preset` 设置为以下七个内置键之一：
+将 `model_preset` 设置为以下内置键之一：
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 ```
 
 | 键 | 描述 | 适用场景 |
@@ -53,7 +53,7 @@ model_preset: gemini
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }

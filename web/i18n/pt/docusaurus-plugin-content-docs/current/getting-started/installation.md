@@ -1,6 +1,6 @@
 ---
 title: Instalação
-description: "Guia completo de instalação do oh-my-agent — três métodos de instalação, todos os seis presets com suas listas de habilidades, requisitos de ferramentas CLI para os cinco fornecedores, configuração pós-instalação, campos do oma-config.yaml e verificação com oma doctor."
+description: "Guia completo de instalação do oh-my-agent — três métodos de instalação, todos os presets nativos com suas listas de habilidades, requisitos de ferramentas CLI para os fornecedores, configuração pós-instalação, campos do oma-config.yaml e verificação com oma doctor."
 ---
 
 # Instalação
@@ -148,7 +148,7 @@ oma star                # Dar estrela no repositório
 
 ## Instalação de Ferramentas CLI de IA
 
-Você precisa de pelo menos uma ferramenta CLI de IA instalada. oh-my-agent suporta cinco fornecedores, e você pode misturá-los — usando diferentes CLIs para diferentes agentes via mapeamento agente-CLI.
+Você precisa de pelo menos uma ferramenta CLI de IA instalada. oh-my-agent suporta fornecedores, e você pode misturá-los — usando diferentes CLIs para diferentes agentes via mapeamento agente-CLI.
 
 ### Gemini CLI
 
@@ -208,7 +208,7 @@ language: en
 
 # Obrigatório
 language: en
-model_preset: gemini   # built-in: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # built-in: antigravity, claude, codex, qwen, cursor, mixed
 
 # Opcional — preferências de data/hora
 date_format: ISO
@@ -239,7 +239,7 @@ agents:
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
 | `language` | string | Sim | Código do idioma de resposta. Suporta en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Sim | Chave do preset ativo. Uma das sete chaves built-in (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) ou uma chave de `custom_presets`. Veja [Per-Agent Models](../guide/per-agent-models.md). |
+| `model_preset` | string | Sim | Chave do preset ativo. Uma das chaves built-in (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) ou uma chave de `custom_presets`. Veja [Per-Agent Models](../guide/per-agent-models.md). |
 | `date_format` | string | Não | Formato de timestamp (`ISO`, `US`, `EU`). Padrão: `ISO`. |
 | `timezone` | string | Não | Identificador de fuso horário (ex: `Asia/Seoul`). Padrão: `UTC`. |
 | `agents` | map | Não | Overrides parciais por agente (`AgentSpec` apenas como objeto). Shallow merge sobre os defaults do preset. |

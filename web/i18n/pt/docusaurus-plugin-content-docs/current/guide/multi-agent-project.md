@@ -95,7 +95,7 @@ oma agent:spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 | Flag | Descrição |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Sobrescrita de vendor CLI (gemini/claude/codex/qwen). Sobrescreve toda config. |
+| `-m, --model <vendor>` | Sobrescrita de vendor CLI (antigravity/claude/codex/qwen). Sobrescreve toda config. |
 | `-w, --workspace <path>` | Diretório de trabalho para o agente. Auto-detectado da config monorepo se omitido. |
 
 **Ordem de resolução de vendor** (primeira correspondência vence):

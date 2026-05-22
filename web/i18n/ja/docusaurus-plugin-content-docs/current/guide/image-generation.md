@@ -139,7 +139,7 @@ oma image list-vendors
 
 | フラグ | 用途 |
 |---|---|
-| `--vendor <name>` | `auto`、`pollinations`、`codex`、`gemini`、`all`のいずれか。`all`では要求されたすべてのベンダーが認証済みである必要があります（strict）。 |
+| `--vendor <name>` | `auto`、`pollinations`、`codex`、`antigravity`、`all`のいずれか。`all`では要求されたすべてのベンダーが認証済みである必要があります（strict）。 |
 | `-n, --count <n>` | ベンダーごとの画像枚数、1〜5（実時間制約）。 |
 | `--size <size>` | アスペクト比: `1024x1024`（正方形）、`1024x1536`（縦長）、`1536x1024`（横長）、`auto`。 |
 | `--quality <level>` | `low`、`medium`、`high`、`auto`（ベンダーデフォルト）。 |

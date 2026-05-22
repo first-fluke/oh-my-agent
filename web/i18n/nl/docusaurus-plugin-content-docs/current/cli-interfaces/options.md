@@ -131,13 +131,13 @@ oma update [-f | --force] [--ci]
 
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
-| `--model` / `-m` | CLI-leverancier: `antigravity`, `gemini`, `claude`, `codex`, `qwen` | Uit config |
+| `--model` / `-m` | CLI-leverancier: `antigravity`, `claude`, `codex`, `qwen` | Uit config |
 | `--workspace` / `-w` | Werkdirectory. Auto-gedetecteerd uit monorepo-config indien weggelaten. | Auto of `.` |
 
 **Validatie:**
 - `agent-id` moet één van zijn: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` mag niet bevatten: `..`, `?`, `#`, `%`, of stuurcodes.
-- `vendor` moet één van zijn: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` moet één van zijn: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Leverancierspecifiek gedrag:**
 
@@ -177,7 +177,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Tijdvenster: `1d`, `3d`, `7d`, `2w`, `30d`. Genegeerd wanneer `--date` is gezet. | `1d` |
 | `--date <date>` | Specifieke datum (`YYYY-MM-DD`). Heeft voorrang op `--window`. | |
-| `--tool <tools>` | Filter sessies op tool. Komma-gescheiden: `claude`, `codex`, `gemini`, `qwen`, `cursor`. | alle tools |
+| `--tool <tools>` | Filter sessies op tool. Komma-gescheiden: `claude`, `codex`, `qwen`, `cursor`. | alle tools |
 | `--top <n>` | Toon alleen top N projecten/onderwerpen in de samenvatting. | onbeperkt |
 | `--sort <metric>` | Sorteer sessies op `count` of `duration`. | `count` |
 | `--mermaid` | Geef een Mermaid Gantt-grafiek in plaats van de standaardsamenvatting. | `false` |

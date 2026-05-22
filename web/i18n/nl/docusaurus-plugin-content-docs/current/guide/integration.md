@@ -38,7 +38,7 @@ Presets: All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom.
 Python, Node.js, Rust of Auto-detect.
 
 ### 6. Configureer IDE Symlinks
-De installer maakt altijd Claude Code symlinks (`.claude/skills/`) aan. Hij genereert ook vendor-native agentbestanden en hooks voor Antigravity, Claude, Codex, Gemini en Qwen, en als er een `.github/`-directory bestaat, worden GitHub Copilot symlinks automatisch aangemaakt. Anders vraagt hij:
+De installer maakt altijd Claude Code symlinks (`.claude/skills/`) aan. Hij genereert ook vendor-native agentbestanden en hooks voor Antigravity, Claude, Codex en Qwen, en als er een `.github/`-directory bestaat, worden GitHub Copilot symlinks automatisch aangemaakt. Anders vraagt hij:
 
 ```
 Symlinks ook aanmaken voor GitHub Copilot? (.github/skills/)
@@ -79,7 +79,7 @@ oma doctor
 oma doctor --json
 ```
 
-Controleert: CLI-installaties (`agy`, gemini, claude, codex, qwen), authenticatie, MCP-configuratie, skill-status.
+Controleert: CLI-installaties (`agy`, claude, codex, qwen), authenticatie, MCP-configuratie, skill-status.
 
 ---
 
@@ -126,6 +126,6 @@ rm -rf .agents/ .claude/skills/ .claude/agents/ .serena/
 5. **Workflow installatie** — Alle 14 workflowbestanden
 6. **Config installatie** — Standaardconfiguratie (bestaande bestanden behouden)
 7. **Skill installatie** — Per geselecteerde skill
-8. **Leveranciersaanpassingen** — IDE-specifieke bestanden voor alle ondersteunde leveranciers (Antigravity, Claude, Codex, Gemini, Qwen)
+8. **Leveranciersaanpassingen** — IDE-specifieke bestanden voor alle ondersteunde leveranciers (Antigravity, Claude, Codex, Qwen)
 9. **CLI symlinks** — `.claude/skills/`, `.claude/agents/`
 10. **Git rerere + MCP** — Optionele configuratie

@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Kurz | Beschreibung |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Arbeitsverzeichnis für den Agenten. Agenten modifizieren nur Dateien innerhalb dieses Verzeichnisses. |
-| `--model <name>` | `-m` | CLI-Vendor für diesen speziellen Spawn überschreiben. Optionen: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <name>` | `-m` | CLI-Vendor für diesen speziellen Spawn überschreiben. Optionen: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Standard-Zug-Limit für diesen Agenten überschreiben. |
 | `--json` | | Ergebnis als JSON ausgeben (nützlich für Skripte). |
 | `--no-wait` | | Starten und vergessen — sofort zurückkehren, ohne auf den Abschluss zu warten. |

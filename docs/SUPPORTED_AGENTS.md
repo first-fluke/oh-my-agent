@@ -11,7 +11,7 @@ The installer can then project compatibility to other tool-specific directories 
 | Antigravity | `.agents/skills/` | First-class | Native | Primary source-of-truth layout; reads `.agents/agents/` directly but no custom subagent spawning |
 | Claude Code | `.claude/skills/` + `.claude/agents/` | First-class | Native + Adapter | Domain skill symlinks + thin router workflow skills, subagents generated from `.agents/agents/`, and CLAUDE.md |
 | Codex CLI | `.codex/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as TOML from `.agents/agents/`; same-vendor tasks can dispatch natively |
-| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | First-class | Native + Adapter | Agent definitions generated as Markdown from `.agents/agents/`; same-vendor tasks can dispatch natively |
+| Gemini CLI | `.gemini/agents/` + `.agents/skills/` | Deprecated (2026-06-18) | Native + Adapter | Google is migrating users to Antigravity CLI; existing integrations keep working but new projects should target the `antigravity` preset. See `cli/utils/gemini-deprecation.ts`. |
 | OpenCode | `.agents/skills/` | First-class | Native-compatible | Shares the same project-level source |
 | Amp | `.agents/skills/` | First-class | Native-compatible | Shares the same project-level source |
 | Cursor | `.cursor/skills/` + `.cursor/rules/*.mdc` | First-class | Native + Adapter | `oma install` / `oma link cursor` materializes skills, rules, MCP symlink, and AGENTS.md from `.agents/`; `cursor-agent` is dispatched natively via the `cursor` preset |

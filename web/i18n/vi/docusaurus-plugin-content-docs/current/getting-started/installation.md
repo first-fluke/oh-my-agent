@@ -141,7 +141,7 @@ oma visualize           # Trực quan hóa phụ thuộc (alias: `oma viz`)
 oma describe            # Nội quan các lệnh CLI dưới dạng JSON
 oma bridge              # Bridge MCP stdio ↔ Streamable HTTP
 oma memory:init         # Khởi tạo schema bộ nhớ Serena
-oma auth:status         # Kiểm tra trạng thái xác thực CLI (gh/gemini/claude/codex/qwen)
+oma auth:status         # Kiểm tra trạng thái xác thực CLI (gh/antigravity/claude/codex/qwen)
 oma search              # Primitive tìm kiếm cơ học (alias: `oma s`)
 oma image               # Sinh ảnh AI đa vendor (alias: `oma img`)
 oma export              # Xuất skill cho IDE bên ngoài (ví dụ: cursor)
@@ -211,7 +211,7 @@ Lệnh `oma install` tạo `.agents/oma-config.yaml`. Đây là file cấu hình
 ```yaml
 # Bắt buộc
 language: en
-model_preset: gemini   # built-in: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # built-in: antigravity, claude, codex, qwen, cursor, mixed
 
 # Tùy chọn — tùy chọn ngày/giờ
 date_format: ISO
@@ -242,7 +242,7 @@ agents:
 | Trường | Kiểu | Bắt buộc | Mô tả |
 |-------|------|----------|-------------|
 | `language` | string | Có | Mã ngôn ngữ phản hồi. Hỗ trợ en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Có | Khóa preset đang dùng. Là một trong bảy khóa built-in (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) hoặc khóa `custom_presets`. Xem [Per-Agent Models](../guide/per-agent-models.md). |
+| `model_preset` | string | Có | Khóa preset đang dùng. Là một trong các khóa built-in (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) hoặc khóa `custom_presets`. Xem [Per-Agent Models](../guide/per-agent-models.md). |
 | `date_format` | string | Không | Định dạng timestamp (`ISO`, `US`, `EU`). Mặc định: `ISO`. |
 | `timezone` | string | Không | Định danh múi giờ (ví dụ: `Asia/Seoul`). Mặc định: `UTC`. |
 | `agents` | map | Không | Ghi đè từng phần theo agent (chỉ object `AgentSpec`). Shallow-merge trên giá trị mặc định của preset. |

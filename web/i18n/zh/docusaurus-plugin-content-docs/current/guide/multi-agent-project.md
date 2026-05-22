@@ -95,7 +95,7 @@ oma agent:spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | CLI 供应商覆盖（gemini/claude/codex/qwen）。覆盖所有配置。 |
+| `-m, --model <vendor>` | CLI 供应商覆盖（antigravity/claude/codex/qwen）。覆盖所有配置。 |
 | `-w, --workspace <path>` | 智能体的工作目录。如果省略，从 monorepo 配置自动检测。 |
 
 **供应商解析顺序**（首次匹配优先）：

@@ -172,13 +172,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Curta | Descrição | Padrão |
 |:-----|:------|:----------|:-------|
-| `--model` | `-m` | Sobrescrita de vendor CLI. Deve ser um de: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Sobrescreve toda resolução de vendor baseada em config. | Resolvido da config |
+| `--model` | `-m` | Sobrescrita de vendor CLI. Deve ser um de: `antigravity`, `claude`, `codex`, `qwen`. Sobrescreve toda resolução de vendor baseada em config. | Resolvido da config |
 | `--workspace` | `-w` | Diretório de trabalho para o agente. Se omitido ou definido como `.`, o CLI auto-detecta o workspace a partir de arquivos de configuração de monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detectado ou `.` |
 
 **Validação:**
 - `agent-id` deve ser um de: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` não deve conter `..`, `?`, `#`, `%` ou caracteres de controle.
-- `vendor` deve ser um de: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` deve ser um de: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Comportamento específico de vendor:**
 
@@ -244,7 +244,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:----------|:-------|
 | `--window <period>` | Janela de tempo: `1d`, `3d`, `7d`, `2w`, `30d`. Ignorada quando `--date` está definido. | `1d` |
 | `--date <date>` | Data específica (`YYYY-MM-DD`). Tem precedência sobre `--window`. | |
-| `--tool <tools>` | Filtra sessões por ferramenta. Separado por vírgula: `claude`, `codex`, `gemini`, `qwen`, `cursor`. | todas as ferramentas |
+| `--tool <tools>` | Filtra sessões por ferramenta. Separado por vírgula: `claude`, `codex`, `qwen`, `cursor`. | todas as ferramentas |
 | `--top <n>` | Mostra apenas os top N projetos/tópicos no resumo. | sem limite |
 | `--sort <metric>` | Ordena sessões por `count` ou `duration`. | `count` |
 | `--mermaid` | Gera um gráfico Gantt do Mermaid em vez do resumo padrão. | `false` |

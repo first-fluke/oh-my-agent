@@ -82,7 +82,7 @@ oh-my-agent rozwiązuje to poprzez specjalizację:
 | Agent | Rola | Kluczowe możliwości |
 |-------|------|-----------------|
 | **oma-search** | Router wyszukiwania oparty na intencji | Kieruje zapytania do Context7 (dokumenty), natywnego wyszukiwania webowego, `gh`/`glab` (kod), Serena (lokalnie). Ocena zaufania domeny dla wszystkich wyników nielokalnych. Routing fail-forward (docs→web→fetch). Flagi: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Retrospektywa pracy między narzędziami | Analizuje historie konwersacji z Claude, Codex, Gemini, Qwen i Cursor. Rozwiązuje wejście daty/okna w języku naturalnym, grupuje według narzędzia+sesji, wyodrębnia tematy, renderuje podsumowania dzienne/okresowe dla standupów, cotygodniowych retro i dzienników pracy. |
+| **oma-recap** | Retrospektywa pracy między narzędziami | Analizuje historie konwersacji z Claude, Codex, Qwen i Cursor. Rozwiązuje wejście daty/okna w języku naturalnym, grupuje według narzędzia+sesji, wyodrębnia tematy, renderuje podsumowania dzienne/okresowe dla standupów, cotygodniowych retro i dzienników pracy. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Konwersja dokumentów koreańskiego procesora tekstu przez `bunx kordoc@latest`. Zachowuje nagłówki, tabele (w tym zagnieżdżone), przypisy, hiperłącza, obrazy. Usuwa znaki Hancom Private Use Area przez postprocesor `flatten-tables.ts`. |
 | **oma-pdf** | PDF → Markdown | Konwersja dokumentów PDF przez `uvx opendataloader-pdf`. Zachowuje nagłówki, tabele, listy, obrazy; tryb hybrydowy OCR dla zeskanowanych PDF; wyjście znormalizowane z `uvx mdformat`. |
 

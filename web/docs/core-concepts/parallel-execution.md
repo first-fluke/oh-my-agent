@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Short | Description |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Working directory for the agent. Agents only modify files within this directory. |
-| `--model <name>` | `-m` | Override CLI vendor for this specific spawn. Options: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <name>` | `-m` | Override CLI vendor for this specific spawn. Options: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--isolation <mode>` | | Per-spawn isolation. `worktree` creates a fresh git worktree at `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` on branch `oma/{sessionId}/{agentId}` and runs the agent there. Useful for hypothesis spawns or when parallel agents touch shared files. Worktree is retained after exit; merge / discard commands are printed for manual review. |
 | `--max-turns <n>` | `-t` | Override default turn limit for this agent. |
 | `--json` | | Output result as JSON (useful for scripting). |
@@ -139,7 +139,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Built-in presets: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. See [Per-Agent Models](../guide/per-agent-models.md) for details.
+Built-in presets: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. See [Per-Agent Models](../guide/per-agent-models.md) for details.
 
 ### Vendor Resolution
 

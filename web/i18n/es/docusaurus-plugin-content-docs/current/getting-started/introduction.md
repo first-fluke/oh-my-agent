@@ -82,7 +82,7 @@ oh-my-agent resuelve esto con especialización:
 | Agente | Rol | Capacidades Clave |
 |--------|-----|-------------------|
 | **oma-search** | Enrutador de búsqueda basado en intención | Enruta consultas a Context7 (documentos), búsqueda web nativa, `gh`/`glab` (código), Serena (local). Puntuación de confianza de dominio en todos los resultados no locales. Enrutamiento fail-forward (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Retrospectiva de trabajo entre herramientas | Analiza historiales de conversación de Claude, Codex, Gemini, Qwen y Cursor. Resuelve entrada de fecha/ventana en lenguaje natural, agrupa por herramienta+sesión, extrae temas, renderiza resúmenes diarios/periódicos para standups, retros semanales y registros de trabajo. |
+| **oma-recap** | Retrospectiva de trabajo entre herramientas | Analiza historiales de conversación de Claude, Codex, Qwen y Cursor. Resuelve entrada de fecha/ventana en lenguaje natural, agrupa por herramienta+sesión, extrae temas, renderiza resúmenes diarios/periódicos para standups, retros semanales y registros de trabajo. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Conversión de documentos del procesador de texto coreano vía `bunx kordoc@latest`. Preserva encabezados, tablas (incl. anidadas), notas al pie, hipervínculos, imágenes. Elimina caracteres del Área de Uso Privado de Hancom vía el postprocesador `flatten-tables.ts`. |
 | **oma-pdf** | PDF → Markdown | Conversión de documentos PDF vía `uvx opendataloader-pdf`. Preserva encabezados, tablas, listas, imágenes; modo híbrido OCR para PDFs escaneados; salida normalizada con `uvx mdformat`. |
 

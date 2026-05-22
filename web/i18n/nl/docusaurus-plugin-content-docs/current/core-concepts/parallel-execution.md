@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [opties]
 | Vlag | Kort | Beschrijving |
 |------|------|-------------|
 | `--workspace <pad>` | `-w` | Werkdirectory voor de agent. Agenten wijzigen alleen bestanden binnen deze directory. |
-| `--model <naam>` | `-m` | Overschrijf CLI-leverancier voor deze specifieke spawn. Opties: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <naam>` | `-m` | Overschrijf CLI-leverancier voor deze specifieke spawn. Opties: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Overschrijf standaard beurtlimiet voor deze agent. |
 | `--json` | | Uitvoer als JSON (nuttig voor scripting). |
 | `--no-wait` | | Vuur en vergeet — keer onmiddellijk terug zonder te wachten op voltooiing. |

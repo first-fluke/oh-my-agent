@@ -139,7 +139,7 @@ oma image list-vendors
 
 | 플래그 | 용도 |
 |---|---|
-| `--vendor <name>` | `auto`, `pollinations`, `codex`, `gemini`, 또는 `all`. `all` 사용 시 요청한 모든 벤더가 인증되어 있어야 함 (엄격 모드). |
+| `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity`, 또는 `all`. `all` 사용 시 요청한 모든 벤더가 인증되어 있어야 함 (엄격 모드). |
 | `-n, --count <n>` | 벤더당 이미지 개수, 1–5 (월 타임 제한). |
 | `--size <size>` | 비율: `1024x1024` (정사각형), `1024x1536` (세로형), `1536x1024` (가로형), 또는 `auto`. |
 | `--quality <level>` | `low`, `medium`, `high`, 또는 `auto` (벤더 기본값). |

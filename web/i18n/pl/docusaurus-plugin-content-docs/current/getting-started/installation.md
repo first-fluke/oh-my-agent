@@ -213,7 +213,7 @@ date_format: "YYYY-MM-DD"
 timezone: "UTC"
 
 # Domyślne narzędzie CLI do uruchamiania agentów
-# Opcje: antigravity, gemini, claude, codex, qwen
+# Opcje: antigravity, claude, codex, qwen
 default_cli: gemini
 
 # Mapowanie CLI per agent (nadpisuje default_cli)

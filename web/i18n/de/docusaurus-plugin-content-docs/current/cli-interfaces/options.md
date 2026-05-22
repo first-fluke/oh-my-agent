@@ -152,13 +152,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Kurz | Beschreibung | Standard |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI-Vendor-Überschreibung. Muss einer der folgenden sein: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Überschreibt alle konfigurationsbasierten Vendor-Auflösungen. | Aus Konfiguration aufgelöst |
+| `--model` | `-m` | CLI-Vendor-Überschreibung. Muss einer der folgenden sein: `antigravity`, `claude`, `codex`, `qwen`. Überschreibt alle konfigurationsbasierten Vendor-Auflösungen. | Aus Konfiguration aufgelöst |
 | `--workspace` | `-w` | Arbeitsverzeichnis für den Agenten. Bei Weglassen oder Angabe von `.` erkennt die CLI den Workspace automatisch aus Monorepo-Konfigurationsdateien (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Automatisch erkannt oder `.` |
 
 **Validierung:**
 - `agent-id` muss einer der folgenden sein: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` darf nicht `..`, `?`, `#`, `%` oder Steuerzeichen enthalten.
-- `vendor` muss einer der folgenden sein: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` muss einer der folgenden sein: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Vendor-spezifisches Verhalten:**
 

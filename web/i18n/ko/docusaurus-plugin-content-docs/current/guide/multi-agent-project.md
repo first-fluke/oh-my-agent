@@ -95,7 +95,7 @@ oma agent:spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | CLI 벤더 오버라이드 (gemini/claude/codex/qwen). 모든 설정을 오버라이드. |
+| `-m, --model <vendor>` | CLI 벤더 오버라이드 (antigravity/claude/codex/qwen). 모든 설정을 오버라이드. |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략 시 모노레포 설정에서 자동 감지. |
 
 **벤더 해석 순서** (첫 번째 매치 사용):

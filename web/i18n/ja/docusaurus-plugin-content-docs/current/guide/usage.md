@@ -250,7 +250,7 @@ oma dashboard:web
 6. **不安な場合は`/work`から。**
 7. **曖昧なアイデアには`/brainstorm`を`/plan`の前に。**
 8. **新コードベースには`/deepinit`を実行。**
-9. **`model_preset`を設定。** `claude`、`gemini`、`mixed`を使ってエージェントを適切なCLIにルーティングします。きめ細かい制御には`agents:`オーバーライドを追加してください。詳細は[エージェント別モデル](./per-agent-models.md)を参照。
+9. **`model_preset`を設定。** `claude`、`antigravity`、`mixed`を使ってエージェントを適切なCLIにルーティングします。きめ細かい制御には`agents:`オーバーライドを追加してください。詳細は[エージェント別モデル](./per-agent-models.md)を参照。
 10. **本番クリティカルなコードには`/ultrawork`。**
 
 ---

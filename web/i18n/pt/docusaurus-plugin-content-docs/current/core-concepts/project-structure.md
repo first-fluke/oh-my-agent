@@ -291,7 +291,7 @@ Onde a expertise dos agentes reside. 22 diretórios no total: 21 skills de agent
 
 **`_shared/`** — Recursos usados por todos os agentes:
 - `core/` — Roteamento, carregamento de contexto, estrutura de prompt, protocolo de clarificação, orçamento de contexto, avaliação de dificuldade, templates de raciocínio, princípios de qualidade, detecção de vendor, métricas de sessão, checklist comum, lições aprendidas, templates de contrato de API
-- `runtime/` — Protocolo de memória para subagentes CLI, protocolos de execução específicos de vendor (claude, gemini, codex, qwen)
+- `runtime/` — Protocolo de memória para subagentes CLI, protocolos de execução específicos de vendor (claude, codex, qwen)
 - `conditional/` — Medição de quality score, rastreamento de experiment ledger, protocolo de exploration loop (carregados apenas quando acionados)
 
 **`oma-{agent}/`** — Diretórios de skill por agente. Cada um contém:

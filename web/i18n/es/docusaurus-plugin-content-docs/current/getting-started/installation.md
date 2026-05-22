@@ -1,6 +1,6 @@
 ---
 title: Instalación
-description: Guía completa de instalación de oh-my-agent — tres métodos de instalación, los seis presets con sus listas de habilidades, requisitos de herramientas CLI para los cinco proveedores, configuración post-instalación, campos de oma-config.yaml y verificación con oma doctor.
+description: Guía completa de instalación de oh-my-agent — tres métodos de instalación, los presets integrados con sus listas de habilidades, requisitos de herramientas CLI por proveedor, configuración post-instalación, campos de oma-config.yaml y verificación con oma doctor.
 ---
 
 # Instalación
@@ -205,7 +205,7 @@ El comando `oma install` crea `.agents/oma-config.yaml`. Este es el archivo de c
 ```yaml
 # Requerido
 language: en
-model_preset: gemini   # integrados: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # integrados: antigravity, claude, codex, qwen, cursor, mixed
 
 # Opcional — preferencias de fecha/hora
 date_format: ISO
@@ -236,7 +236,7 @@ agents:
 | Campo | Tipo | Requerido | Descripción |
 |-------|------|-----------|-------------|
 | `language` | string | Sí | Código de idioma de respuesta. Soporta en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Sí | Clave de preset activo. Una de las siete claves integradas (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) o una clave de `custom_presets`. Ver [Configuración de Modelo por Agente](../guide/per-agent-models.md). |
+| `model_preset` | string | Sí | Clave de preset activo. Una de las claves integradas (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) o una clave de `custom_presets`. Ver [Configuración de Modelo por Agente](../guide/per-agent-models.md). |
 | `date_format` | string | No | Formato de marca de tiempo (`ISO`, `US`, `EU`). Por defecto: `ISO`. |
 | `timezone` | string | No | Identificador de zona horaria (ej., `Asia/Seoul`). Por defecto: `UTC`. |
 | `agents` | map | No | Sobrescrituras parciales por agente (`AgentSpec` solo objeto). Fusión superficial sobre los valores por defecto del preset. |

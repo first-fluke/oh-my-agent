@@ -189,7 +189,7 @@ oh-my-agent wykrywa słowa kluczowe workflow w 11 językach:
 6. **Zacznij od `/work` gdy nie masz pewności.** Prowadzi krok po kroku.
 7. **Używaj `/brainstorm` przed `/plan` dla niejasnych pomysłów.**
 8. **Uruchom `/deepinit` na nowych bazach kodu.** Tworzy AGENTS.md i ARCHITECTURE.md.
-9. **Skonfiguruj `model_preset`.** Użyj `claude`, `gemini` lub `mixed`, aby kierować agentów do właściwego CLI. Dodaj nadpisania w sekcji `agents:` dla precyzyjnej kontroli. Zobacz [Modele per agent](./per-agent-models.md).
+9. **Skonfiguruj `model_preset`.** Użyj `claude`, `antigravity` lub `mixed`, aby kierować agentów do właściwego CLI. Dodaj nadpisania w sekcji `agents:` dla precyzyjnej kontroli. Zobacz [Modele per agent](./per-agent-models.md).
 10. **Używaj `/ultrawork` dla kodu krytycznego dla produkcji.**
 
 ---

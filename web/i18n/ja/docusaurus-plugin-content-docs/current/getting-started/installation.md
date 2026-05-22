@@ -1,6 +1,6 @@
 ---
 title: インストール
-description: oh-my-agentの完全インストールガイド。3つのインストール方法、6つのプリセットとスキルリスト、5つのベンダー向けCLIツール要件、インストール後の設定、oma-config.yamlフィールド、oma doctorによる検証を解説します。
+description: oh-my-agentの完全インストールガイド。3つのインストール方法、ビルトインプリセットとスキルリスト、ベンダー別CLIツール要件、インストール後の設定、oma-config.yamlフィールド、oma doctorによる検証を解説します。
 ---
 
 # インストール
@@ -141,7 +141,7 @@ oma visualize           # 依存関係の可視化（エイリアス：`oma viz`
 oma describe            # CLIコマンドをJSONとしてイントロスペクト
 oma bridge              # MCP stdio ↔ Streamable HTTPブリッジ
 oma memory:init         # Serenaメモリスキーマの初期化
-oma auth:status         # CLI認証状態の確認（gh/gemini/claude/codex/qwen）
+oma auth:status         # CLI認証状態の確認（gh/antigravity/claude/codex/qwen）
 oma search              # メカニカル検索プリミティブ（エイリアス：`oma s`）
 oma image               # マルチベンダーAI画像生成（エイリアス：`oma img`）
 oma export              # 外部IDE向けスキルエクスポート（例：cursor）
@@ -154,7 +154,7 @@ oma star                # リポジトリにスターを付ける
 
 ## AI CLIツールのインストール
 
-少なくとも1つのAI CLIツールがインストールされている必要があります。oh-my-agentは5つのベンダーをサポートしており、エージェント-CLIマッピングにより異なるエージェントに異なるCLIを使い分けることができます。
+少なくとも1つのAI CLIツールがインストールされている必要があります。oh-my-agentは複数のベンダーをサポートしており、エージェント-CLIマッピングにより異なるエージェントに異なるCLIを使い分けることができます。
 
 ### Gemini CLI
 
@@ -211,7 +211,7 @@ curl -fsSL https://antigravity.google/cli/install.sh | bash
 ```yaml
 # Required
 language: en
-model_preset: gemini   # ビルトイン: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # ビルトイン: antigravity, claude, codex, qwen, cursor, mixed
 
 # Optional — 日時の設定
 date_format: ISO
@@ -242,7 +242,7 @@ agents:
 | フィールド | 型 | 必須 | 説明 |
 |-------|------|------|-------------|
 | `language` | string | はい | 応答言語コード。en、ko、ja、zh、es、fr、de、pt、ru、nl、plをサポート。 |
-| `model_preset` | string | はい | アクティブなプリセットキー。7つのビルトインキー（`antigravity`、`claude`、`codex`、`gemini`、`qwen`、`cursor`、`mixed`）または`custom_presets`のキー。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照。 |
+| `model_preset` | string | はい | アクティブなプリセットキー。ビルトインキー（`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`mixed`）または`custom_presets`のキー。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照。 |
 | `date_format` | string | いいえ | タイムスタンプ形式（`ISO`、`US`、`EU`）。デフォルト：`ISO`。 |
 | `timezone` | string | いいえ | タイムゾーン識別子（例：`Asia/Seoul`）。デフォルト：`UTC`。 |
 | `agents` | map | いいえ | エージェントごとの部分オーバーライド（オブジェクト型`AgentSpec`のみ）。プリセットのデフォルトにシャローマージされます。 |

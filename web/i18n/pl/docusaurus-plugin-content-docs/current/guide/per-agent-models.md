@@ -7,7 +7,7 @@ description: Skonfiguruj model AI używany przez każdego agenta poprzez model_p
 
 ## Przegląd
 
-`model_preset` to jedyne pojęcie sterujące tym, jaki model wykorzystuje każdy z agentów. Wybierz jeden z siedmiu wbudowanych presetów, a każdy agent (pm, backend, frontend, qa, …) zostanie podłączony do modelu odpowiedniego dla danego stosu dostawcy. W razie potrzeby nadpisz pojedynczych agentów. Zdefiniuj dodatkowe presety, gdy zespół używa niestandardowego zestawu modeli.
+`model_preset` to jedyne pojęcie sterujące tym, jaki model wykorzystuje każdy z agentów. Wybierz jeden z wbudowanych presetów, a każdy agent (pm, backend, frontend, qa, …) zostanie podłączony do modelu odpowiedniego dla danego stosu dostawcy. W razie potrzeby nadpisz pojedynczych agentów. Zdefiniuj dodatkowe presety, gdy zespół używa niestandardowego zestawu modeli.
 
 Cała konfiguracja znajduje się w jednym pliku: `.agents/oma-config.yaml`.
 
@@ -24,12 +24,12 @@ Ta strona obejmuje:
 
 ## Wbudowane presety
 
-Ustaw `model_preset` na jeden z siedmiu wbudowanych kluczy:
+Ustaw `model_preset` na jeden z wbudowanych kluczy:
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 ```
 
 | Klucz | Opis | Najlepszy dla |
@@ -53,7 +53,7 @@ Mapa `agents:` służy do nadpisywania konkretnych agentów na bazie aktywnego p
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }

@@ -1,6 +1,6 @@
 ---
 title: 설치
-description: oh-my-agent 설치 가이드입니다. 세 가지 설치 방법, 6개 프리셋과 포함 스킬 목록, 5개 벤더별 CLI 도구 요구사항, 설치 후 설정, oma-config.yaml 필드, oma doctor를 통한 검증을 다룹니다.
+description: oh-my-agent 설치 가이드입니다. 세 가지 설치 방법, 빌트인 프리셋과 포함 스킬 목록, 벤더별 CLI 도구 요구사항, 설치 후 설정, oma-config.yaml 필드, oma doctor를 통한 검증을 다룹니다.
 ---
 
 # 설치
@@ -205,7 +205,7 @@ curl -fsSL https://antigravity.google/cli/install.sh | bash
 ```yaml
 # 필수
 language: en
-model_preset: gemini   # 빌트인: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # 빌트인: antigravity, claude, codex, qwen, cursor, mixed
 
 # 선택 — 날짜/시간 기본값
 date_format: ISO
@@ -236,7 +236,7 @@ agents:
 | 필드 | 타입 | 필수 여부 | 설명 |
 |-------|------|----------|-------------|
 | `language` | string | 필수 | 응답 언어 코드. en, ko, ja, zh, es, fr, de, pt, ru, nl, pl 등 11개 언어를 지원합니다. |
-| `model_preset` | string | 필수 | 활성 프리셋 키. 일곱 가지 빌트인 키(`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) 중 하나 또는 `custom_presets` 키. 자세한 내용은 [에이전트별 모델 설정](../guide/per-agent-models.md)을 참조하세요. |
+| `model_preset` | string | 필수 | 활성 프리셋 키. 빌트인 키(`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) 중 하나 또는 `custom_presets` 키. 자세한 내용은 [에이전트별 모델 설정](../guide/per-agent-models.md)을 참조하세요. |
 | `date_format` | string | 선택 | 타임스탬프 형식 (`ISO`, `US`, `EU`). 기본값: `ISO`. |
 | `timezone` | string | 선택 | 시간대 식별자 (예: `Asia/Seoul`). 기본값: `UTC`. |
 | `agents` | map | 선택 | 에이전트별 부분 오버라이드 (object 전용 `AgentSpec`). 프리셋 기본값 위에 얕게 병합됩니다. |

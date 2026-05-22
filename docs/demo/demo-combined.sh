@@ -83,7 +83,7 @@ echo -e "  ${CYAN}⟳${RESET} ${BOLD}qa${RESET}        → claude   ${DIM}worksp
 sleep 0.4
 
 echo ""
-echo -e "  ${GREEN}✓${RESET} 3 agents spawned  ${DIM}(2 vendors: gemini, claude)${RESET}"
+echo -e "  ${GREEN}✓${RESET} 3 agents spawned  ${DIM}(2 vendors: antigravity, claude)${RESET}"
 echo ""
 sleep 1.5
 

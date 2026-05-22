@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | 플래그 | 단축 | 설명 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | 에이전트의 작업 디렉토리. 에이전트는 이 디렉토리 내의 파일만 수정합니다. |
-| `--model <name>` | `-m` | 이 스폰에 대한 CLI 벤더 오버라이드. 옵션: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <name>` | `-m` | 이 스폰에 대한 CLI 벤더 오버라이드. 옵션: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | 이 에이전트의 기본 턴 제한 오버라이드. |
 | `--json` | | 결과를 JSON으로 출력 (스크립팅에 유용). |
 | `--no-wait` | | 완료를 기다리지 않고 즉시 반환. |

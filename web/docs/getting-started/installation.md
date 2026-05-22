@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Complete installation guide for oh-my-agent, covering three install methods, all six presets with their skill lists, CLI tool requirements for all five vendors, post-install configuration, oma-config.yaml fields, and verification with oma doctor.
+description: Complete installation guide for oh-my-agent, covering three install methods, all built-in presets with their skill lists, CLI tool requirements per vendor, post-install configuration, oma-config.yaml fields, and verification with oma doctor.
 ---
 
 # Installation
@@ -142,7 +142,7 @@ oma visualize # Dependency visualization (alias: `oma viz`)
 oma describe # Introspect CLI commands as JSON
 oma bridge # MCP stdio ↔ Streamable HTTP bridge
 oma memory:init # Initialize Serena memory schema
-oma auth:status # Check CLI auth status (gh/gemini/claude/codex/cursor/qwen)
+oma auth:status # Check CLI auth status (gh/claude/codex/cursor/qwen)
 oma search # Mechanical search primitives (alias: `oma s`)
 oma image # Multi-vendor AI image generation (alias: `oma img`)
 oma export # Export skills for external IDEs (e.g. cursor)
@@ -155,7 +155,7 @@ oma star # Star the repository
 
 ## AI CLI Tool Installation
 
-You need at least one AI CLI tool installed. oh-my-agent supports five vendors, and you can mix them by using different CLIs for different agents via the agent-CLI mapping.
+You need at least one AI CLI tool installed. oh-my-agent supports multiple vendors, and you can mix them by using different CLIs for different agents via the agent-CLI mapping.
 
 ### Gemini CLI
 
@@ -212,7 +212,7 @@ The `oma install` command creates `.agents/oma-config.yaml`. This is the central
 ```yaml
 # Required
 language: en
-model_preset: gemini   # built-in: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # built-in: antigravity, claude, codex, qwen, cursor, mixed
 
 # Optional — date/time preferences
 date_format: ISO
@@ -243,7 +243,7 @@ agents:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `language` | string | Yes | Response language code. Supports en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Yes | Active preset key. One of the seven built-in keys (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) or a `custom_presets` key. See [Per-Agent Models](../guide/per-agent-models.md). |
+| `model_preset` | string | Yes | Active preset key. One of the built-in keys (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) or a `custom_presets` key. See [Per-Agent Models](../guide/per-agent-models.md). |
 | `date_format` | string | No | Timestamp format (`ISO`, `US`, `EU`). Default: `ISO`. |
 | `timezone` | string | No | Timezone identifier (e.g., `Asia/Seoul`). Default: `UTC`. |
 | `agents` | map | No | Partial per-agent overrides (object-only `AgentSpec`). Shallow-merged over preset defaults. |

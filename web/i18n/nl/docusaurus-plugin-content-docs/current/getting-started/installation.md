@@ -213,7 +213,7 @@ date_format: "YYYY-MM-DD"
 timezone: "UTC"
 
 # Standaard CLI-tool voor agent-spawning
-# Opties: gemini, claude, codex, qwen
+# Opties: antigravity, claude, codex, qwen
 default_cli: gemini
 
 # Per-agent CLI-mapping (overschrijft default_cli)

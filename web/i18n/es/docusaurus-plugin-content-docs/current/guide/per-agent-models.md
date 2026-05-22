@@ -7,13 +7,13 @@ description: Configura qué modelo de IA usa cada agente mediante model_preset e
 
 ## Visión General
 
-`model_preset` es el único concepto que controla qué modelo usa cada agente. Elige uno de los siete presets integrados y cada agente (pm, backend, frontend, qa, …) queda conectado a un modelo apropiado para esa pila de proveedor. Sobrescribe agentes individuales según sea necesario. Define presets adicionales cuando tu equipo tenga una combinación no estándar.
+`model_preset` es el único concepto que controla qué modelo usa cada agente. Elige uno de los presets integrados y cada agente (pm, backend, frontend, qa, …) queda conectado a un modelo apropiado para esa pila de proveedor. Sobrescribe agentes individuales según sea necesario. Define presets adicionales cuando tu equipo tenga una combinación no estándar.
 
 Toda la configuración vive en un único archivo: `.agents/oma-config.yaml`.
 
 Esta página cubre:
 
-1. Los siete presets integrados
+1. Los presets integrados
 2. Cómo sobrescribir agentes individuales con el mapa `agents:`
 3. Cómo declarar slugs de modelo personalizados con `models:`
 4. Cómo definir presets personalizados con `custom_presets:` y `extends:`
@@ -24,12 +24,12 @@ Esta página cubre:
 
 ## Presets Integrados
 
-Asigna a `model_preset` una de las siete claves integradas:
+Asigna a `model_preset` una de las claves integradas:
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 ```
 
 | Clave | Descripción | Ideal para |
@@ -53,7 +53,7 @@ Usa el mapa `agents:` para sobrescribir agentes específicos por encima del pres
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }

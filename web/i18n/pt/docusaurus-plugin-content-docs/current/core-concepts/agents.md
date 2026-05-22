@@ -475,7 +475,7 @@ Agentes no oh-my-agent são papéis especializados de engenharia. Cada agente po
 
 ### oma-recap
 
-**Domínio:** Análise de histórico de conversas em várias ferramentas de IA (Claude, Codex, Gemini, Qwen, Cursor) com resumos de trabalho temáticos diários/periódicos.
+**Domínio:** Análise de histórico de conversas em várias ferramentas de IA (Claude, Codex, Qwen, Cursor) com resumos de trabalho temáticos diários/periódicos.
 
 **Quando usar:** Resumir um dia ou período de atividade de trabalho, compreender o fluxo de trabalho em várias ferramentas de IA, analisar padrões de troca de ferramentas entre sessões, preparar standups diários / retros semanais / registros de trabalho.
 

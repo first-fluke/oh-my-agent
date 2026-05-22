@@ -139,7 +139,7 @@ oma image list-vendors
 
 | Flag | Doel |
 |---|---|
-| `--vendor <name>` | `auto`, `pollinations`, `codex`, `gemini` of `all`. Met `all` moet elke gevraagde vendor geauthenticeerd zijn (strikt). |
+| `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity` of `all`. Met `all` moet elke gevraagde vendor geauthenticeerd zijn (strikt). |
 | `-n, --count <n>` | Aantal beelden per vendor, 1–5 (wall-time gebonden). |
 | `--size <size>` | Verhouding: `1024x1024` (vierkant), `1024x1536` (portret), `1536x1024` (landschap) of `auto`. |
 | `--quality <level>` | `low`, `medium`, `high` of `auto` (vendor-default). |

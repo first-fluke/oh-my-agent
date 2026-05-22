@@ -38,7 +38,7 @@ Presety: All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom.
 Python, Node.js, Rust lub Auto-detect.
 
 ### 6. Skonfiguruj dowiązania symboliczne IDE
-Instalator zawsze tworzy dowiązania Claude Code (`.claude/skills/`). Generuje też natywne pliki agentów i hooki dla Antigravity, Claude, Codex, Gemini i Qwen. Opcjonalnie GitHub Copilot.
+Instalator zawsze tworzy dowiązania Claude Code (`.claude/skills/`). Generuje też natywne pliki agentów i hooki dla Antigravity, Claude, Codex i Qwen. Opcjonalnie GitHub Copilot.
 
 ### 7. Git rerere
 Zalecane dla wieloagentowych workflow z potencjalnymi konfliktami merge.
@@ -77,7 +77,7 @@ oma doctor
 oma doctor --json  # Format wyjściowy dla CI
 ```
 
-Sprawdza: instalacje CLI (agy, gemini, claude, codex, qwen), uwierzytelnianie, konfigurację MCP, stan umiejętności.
+Sprawdza: instalacje CLI (agy, claude, codex, qwen), uwierzytelnianie, konfigurację MCP, stan umiejętności.
 
 ---
 
@@ -129,6 +129,6 @@ rm -rf .agents/ .claude/skills/ .claude/agents/ .serena/
 3. Pobieranie tarballa z wydań GitHub
 4. Instalacja zasobów współdzielonych, workflow, konfiguracji
 5. Instalacja wybranych umiejętności
-6. Adaptacje dostawców (Antigravity, Claude, Codex, Gemini, Qwen)
+6. Adaptacje dostawców (Antigravity, Claude, Codex, Qwen)
 7. Tworzenie dowiązań symbolicznych CLI
 8. Konfiguracja git rerere + MCP

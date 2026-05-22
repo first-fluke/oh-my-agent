@@ -29,7 +29,7 @@ oma
 5. Demande la configuration des symlinks GitHub Copilot.
 6. Télécharge la dernière archive depuis le registre.
 7. Installe les ressources partagées, workflows, configs et compétences sélectionnées.
-8. Installe les adaptations pour tous les fournisseurs (Antigravity, Claude, Codex, Gemini, Qwen).
+8. Installe les adaptations pour tous les fournisseurs (Antigravity, Claude, Codex, Qwen).
 9. Crée les symlinks CLI.
 10. Propose d'activer `git rerere`.
 11. Propose de configurer MCP pour Antigravity IDE et Gemini CLI.
@@ -57,7 +57,7 @@ oma doctor [--json] [--output <format>]
 | `--output <format>` | Format de sortie (`text` ou `json`) |
 
 **Ce qu'elle vérifie :**
-- Installations CLI : agy, gemini, claude, codex, qwen (version et chemin).
+- Installations CLI : agy, claude, codex, qwen (version et chemin).
 - Statut d'authentification de chaque CLI.
 - Configuration MCP : `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - Compétences installées : quelles compétences sont présentes et leur statut.
@@ -281,7 +281,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Description |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Répertoire de travail de l'agent. Détecté automatiquement depuis la config monorepo si omis. |
 
 **Ordre de résolution du fournisseur :** flag `--model` > `model_preset (per-agent overrides via `agents:`)` dans oma-config.yaml > `default_cli` > `active_vendor` dans cli-config.yaml > `gemini`.
@@ -398,7 +398,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### agent:review
 
-Exécute une revue de code en utilisant un CLI IA externe (codex, claude, gemini ou qwen).
+Exécute une revue de code en utilisant un CLI IA externe (codex, claude ou qwen).
 
 ```
 oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
@@ -408,7 +408,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Flag | Description |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Par défaut, le fournisseur résolu depuis la config. |
+| `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `codex`, `claude`, `qwen`. Par défaut, le fournisseur résolu depuis la config. |
 | `-p, --prompt <prompt>` | Prompt de revue personnalisé. Si omis, un prompt de revue de code par défaut est utilisé. |
 | `-w, --workspace <path>` | Chemin à examiner. Par défaut, le répertoire de travail courant. |
 | `--no-uncommitted` | Ignorer les modifications non commitées. Si activé, seules les modifications commitées dans la session sont examinées. |
@@ -416,7 +416,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Ce qu'elle fait :**
 - Détecte automatiquement l'identifiant de session courant depuis l'environnement ou l'activité git récente.
 - Pour `codex` : utilise la sous-commande native `codex review`.
-- Pour `claude`, `gemini`, `qwen` : construit une requête de revue basée sur un prompt et invoque le CLI avec le prompt de revue.
+- Pour `claude`, `qwen` : construit une requête de revue basée sur un prompt et invoque le CLI avec le prompt de revue.
 - Par défaut, examine les modifications non commitées dans le répertoire de travail.
 - Avec `--no-uncommitted`, restreint la revue aux modifications commitées dans la session courante.
 

@@ -139,7 +139,7 @@ oma image list-vendors
 
 | Flag | Propósito |
 |---|---|
-| `--vendor <name>` | `auto`, `pollinations`, `codex`, `gemini` ou `all`. Com `all`, todos os vendors solicitados precisam estar autenticados (modo strict). |
+| `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity` ou `all`. Com `all`, todos os vendors solicitados precisam estar autenticados (modo strict). |
 | `-n, --count <n>` | Número de imagens por vendor, 1–5 (limitado por wall-time). |
 | `--size <size>` | Proporção: `1024x1024` (quadrado), `1024x1536` (retrato), `1536x1024` (paisagem) ou `auto`. |
 | `--quality <level>` | `low`, `medium`, `high` ou `auto` (padrão do vendor). |

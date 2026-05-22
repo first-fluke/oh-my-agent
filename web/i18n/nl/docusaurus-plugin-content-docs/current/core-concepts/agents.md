@@ -475,7 +475,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ### oma-recap
 
-**Domein:** Analyse van conversatiegeschiedenissen over meerdere AI-tools (Claude, Codex, Gemini, Qwen, Cursor) met thematische dagelijkse/periodieke werk-samenvattingen.
+**Domein:** Analyse van conversatiegeschiedenissen over meerdere AI-tools (Claude, Codex, Qwen, Cursor) met thematische dagelijkse/periodieke werk-samenvattingen.
 
 **Wanneer gebruiken:** Samenvatten van een dag of periode van werkactiviteit, begrijpen van de werkstroom over meerdere AI-tools, analyseren van tool-switching-patronen tussen sessies, voorbereiden van dagelijkse standups / wekelijkse retro's / werklogboeken.
 

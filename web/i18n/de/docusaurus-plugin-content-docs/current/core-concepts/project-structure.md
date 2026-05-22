@@ -139,7 +139,7 @@ Dies ist das Kernverzeichnis. Alles, was Agenten benötigen, lebt hier. Es ist d
 - `language`: Antwortsprachcode (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: Zeitstempelformat (Standard: `YYYY-MM-DD`)
 - `timezone`: Zeitzonen-Bezeichner (Standard: `UTC`)
-- `default_cli`: Fallback-CLI-Vendor (gemini, claude, codex, qwen)
+- `default_cli`: Fallback-CLI-Vendor (antigravity, claude, codex, qwen)
 - `model_preset (per-agent overrides via `agents:`)`: Pro-Agent-CLI-Routing-Überschreibungen
 
 ### skills/
@@ -148,7 +148,7 @@ Hier lebt die Agentenexpertise. 22 Verzeichnisse insgesamt: 21 Agenten-Skills + 
 
 **`_shared/`** — Ressourcen, die von allen Agenten verwendet werden:
 - `core/` — Routing, Context-Loading, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Reasoning-Vorlagen, Qualitätsprinzipien, Vendor-Erkennung, Sitzungsmetriken, gemeinsame Checkliste, gewonnene Erkenntnisse, API-Vertragsvorlagen
-- `runtime/` — Memory-Protokoll für CLI-Subagenten, vendor-spezifische Ausführungsprotokolle (claude, gemini, codex, qwen)
+- `runtime/` — Memory-Protokoll für CLI-Subagenten, vendor-spezifische Ausführungsprotokolle (claude, codex, qwen)
 - `conditional/` — Qualitätsbewertungsmessung, Experimentprotokoll-Verfolgung, Explorationsschleifen-Protokoll (wird nur bei Auslösung geladen)
 
 **`oma-{agent}/`** — Pro-Agent-Skill-Verzeichnisse. Jedes enthält:

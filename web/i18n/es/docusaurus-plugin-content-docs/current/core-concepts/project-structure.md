@@ -282,7 +282,7 @@ Este es el directorio principal. Todo lo que los agentes necesitan reside aqui. 
 - `language`: Codigo de idioma de respuesta (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: Cadena de formato de marca de tiempo (predeterminado: `YYYY-MM-DD`)
 - `timezone`: Identificador de zona horaria (predeterminado: `UTC`)
-- `default_cli`: Proveedor CLI de respaldo (gemini, claude, codex, qwen)
+- `default_cli`: Proveedor CLI de respaldo (antigravity, claude, codex, qwen)
 - `model_preset (per-agent overrides via `agents:`)`: Sobrescrituras de enrutamiento CLI por agente
 
 ### skills/
@@ -291,7 +291,7 @@ Donde reside la experiencia de los agentes. 22 directorios en total: 21 habilida
 
 **`_shared/`** — Recursos usados por todos los agentes:
 - `core/` — Enrutamiento, carga de contexto, estructura de prompt, protocolo de clarificacion, presupuesto de contexto, evaluacion de dificultad, plantillas de razonamiento, principios de calidad, deteccion de proveedor, metricas de sesion, lista de verificacion comun, lecciones aprendidas, plantillas de contratos API
-- `runtime/` — Protocolo de memoria para subagentes CLI, protocolos de ejecucion especificos del proveedor (claude, gemini, codex, qwen)
+- `runtime/` — Protocolo de memoria para subagentes CLI, protocolos de ejecucion especificos del proveedor (claude, codex, qwen)
 - `conditional/` — Medicion de quality score, seguimiento de ledger de experimentos, protocolo de bucle de exploracion (cargado solo cuando se activa)
 
 **`oma-{agent}/`** — Directorios de habilidades por agente. Cada uno contiene:

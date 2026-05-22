@@ -291,7 +291,7 @@ Where agent expertise lives. 22 directories total: 21 agent skills + 1 shared re
 
 **`_shared/`**: Resources used by all agents:
 - `core/`: Routing, context loading, prompt structure, clarification protocol, context budget, difficulty assessment, reasoning templates, quality principles, vendor detection, session metrics, common checklist, lessons learned, API contract templates
-- `runtime/`: Memory protocol for CLI subagents, vendor-specific execution protocols (claude, gemini, codex, qwen)
+- `runtime/`: Memory protocol for CLI subagents, vendor-specific execution protocols (claude, codex, qwen)
 - `conditional/`: Quality score measurement, experiment ledger tracking, exploration loop protocol (loaded only when triggered)
 
 **`oma-{agent}/`**: Per-agent skill directories. Each contains:

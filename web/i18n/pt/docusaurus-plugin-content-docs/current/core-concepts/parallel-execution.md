@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Curta | Descrição |
 |------|-------|-----------|
 | `--workspace <path>` | `-w` | Diretório de trabalho para o agente. Agentes modificam apenas arquivos dentro deste diretório. |
-| `--model <name>` | `-m` | Sobrescrever vendor CLI para este spawn específico. Opções: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <name>` | `-m` | Sobrescrever vendor CLI para este spawn específico. Opções: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Sobrescrever limite padrão de turnos para este agente. |
 | `--json` | | Saída do resultado como JSON (útil para scripting). |
 | `--no-wait` | | Disparar e esquecer — retornar imediatamente sem esperar conclusão. |
@@ -135,7 +135,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Presets built-in: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. Veja [Per-Agent Models](../guide/per-agent-models.md) para detalhes.
+Presets built-in: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Veja [Per-Agent Models](../guide/per-agent-models.md) para detalhes.
 
 ### Prioridade de Resolução de Vendor
 

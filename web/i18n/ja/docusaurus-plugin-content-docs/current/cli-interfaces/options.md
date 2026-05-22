@@ -126,10 +126,10 @@ oma update [-f | --force] [--ci]
 
 | フラグ | 説明 | デフォルト |
 |:-----|:-----------|:--------|
-| `--model` / `-m` | CLIベンダーオーバーライド。`antigravity`、`gemini`、`claude`、`codex`、`qwen`。 | 設定から解決 |
+| `--model` / `-m` | CLIベンダーオーバーライド。`antigravity`、`claude`、`codex`、`qwen`。 | 設定から解決 |
 | `--workspace` / `-w` | エージェントの作業ディレクトリ。省略時はモノレポ設定から自動検出。 | 自動検出または`.` |
 
-**バリデーション：** `agent-id`は`backend`/`frontend`/`mobile`/`qa`/`debug`/`pm`のいずれか。`session-id`に`..`、`?`、`#`、`%`、制御文字は使用不可。`vendor`は`antigravity`、`gemini`、`claude`、`codex`、`qwen`のいずれか。
+**バリデーション：** `agent-id`は`backend`/`frontend`/`mobile`/`qa`/`debug`/`pm`のいずれか。`session-id`に`..`、`?`、`#`、`%`、制御文字は使用不可。`vendor`は`antigravity`、`claude`、`codex`、`qwen`のいずれか。
 
 **ベンダー固有の動作：**
 
@@ -169,7 +169,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | 時間ウィンドウ：`1d`、`3d`、`7d`、`2w`、`30d`。`--date`が指定されている場合は無視。 | `1d` |
 | `--date <date>` | 特定の日付（`YYYY-MM-DD`）。`--window`より優先。 | |
-| `--tool <tools>` | ツールでセッションをフィルタ。カンマ区切り：`claude`、`codex`、`gemini`、`qwen`、`cursor`。 | すべてのツール |
+| `--tool <tools>` | ツールでセッションをフィルタ。カンマ区切り：`claude`、`codex`、`qwen`、`cursor`。 | すべてのツール |
 | `--top <n>` | サマリ内の上位N件のプロジェクト/トピックのみ表示。 | 無制限 |
 | `--sort <metric>` | セッションを`count`または`duration`でソート。 | `count` |
 | `--mermaid` | デフォルトサマリの代わりにMermaid Ganttチャートを出力。 | `false` |

@@ -282,7 +282,7 @@ your-project/
 - `language`: 응답 언어 코드 (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: 타임스탬프 형식 문자열 (기본값: `YYYY-MM-DD`)
 - `timezone`: 시간대 식별자 (기본값: `UTC`)
-- `default_cli`: 기본 CLI 벤더 (gemini, claude, codex, qwen)
+- `default_cli`: 기본 CLI 벤더 (antigravity, claude, codex, qwen)
 - `model_preset (per-agent overrides via `agents:`)`: 에이전트별 CLI 라우팅 오버라이드
 
 ### skills/
@@ -291,7 +291,7 @@ your-project/
 
 **`_shared/`**: 모든 에이전트가 사용하는 리소스입니다.
 - `core/`: 라우팅, 컨텍스트 로딩, 프롬프트 구조, 명확화 프로토콜, 컨텍스트 예산, 난이도 평가, 추론 템플릿, 품질 원칙, 벤더 감지, 세션 메트릭, 공통 체크리스트, 학습된 교훈, API 컨트랙트 템플릿
-- `runtime/`: CLI 서브에이전트용 메모리 프로토콜, 벤더별 실행 프로토콜 (claude, gemini, codex, qwen)
+- `runtime/`: CLI 서브에이전트용 메모리 프로토콜, 벤더별 실행 프로토콜 (claude, codex, qwen)
 - `conditional/`: 품질 점수 측정, 실험 원장 추적, 탐색 루프 프로토콜 (트리거 시에만 로드됨)
 
 **`oma-{agent}/`**: 에이전트별 스킬 디렉토리. 각각 다음을 포함합니다.

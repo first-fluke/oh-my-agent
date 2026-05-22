@@ -485,7 +485,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ### oma-recap
 
-**Domain:** Conversation history analysis across multiple AI tools (Claude, Codex, Gemini, Qwen, Cursor) with themed daily/period work summaries.
+**Domain:** Conversation history analysis across multiple AI tools (Claude, Codex, Qwen, Cursor) with themed daily/period work summaries.
 
 **When to use:** Summarizing a day or period of work activity, understanding the flow of work across multiple AI tools, analyzing tool-switching patterns between sessions, preparing daily standups / weekly retros / work logs.
 

@@ -71,7 +71,7 @@ Si seleccionaste un preset que incluye la habilidad backend, se te pide elegir u
 
 ### 6. Configurar Symlinks de IDE
 
-El instalador siempre crea symlinks de Claude Code (`.claude/skills/`). También genera archivos de agente nativos del proveedor y hooks para Antigravity, Claude, Codex, Gemini y Qwen, y si existe un directorio `.github/`, también crea symlinks de GitHub Copilot automaticamente. De lo contrario, pregunta:
+El instalador siempre crea symlinks de Claude Code (`.claude/skills/`). También genera archivos de agente nativos del proveedor y hooks para Antigravity, Claude, Codex y Qwen, y si existe un directorio `.github/`, también crea symlinks de GitHub Copilot automaticamente. De lo contrario, pregunta:
 
 ```
 Also create symlinks for GitHub Copilot? (.github/skills/)
@@ -228,7 +228,7 @@ El comando doctor verifica:
 
 | Verificacion | Que Comprueba |
 |:-------------|:-------------|
-| **Instalaciones CLI** | agy, gemini, claude, codex, qwen — version y disponibilidad |
+| **Instalaciones CLI** | agy, claude, codex, qwen — version y disponibilidad |
 | **Autenticacion** | Estado de API key u OAuth para cada CLI |
 | **Configuracion MCP** | Configuracion del servidor Serena MCP para cada entorno CLI |
 | **Estado de habilidades** | Que habilidades estan instaladas y si estan actualizadas |
@@ -408,7 +408,7 @@ Para cada habilidad seleccionada, `installSkill()` copia el directorio de la hab
 
 ### 8. Adaptaciones de Proveedores
 
-`installVendorAdaptations()` instala archivos especificos del IDE para todos los proveedores soportados (Antigravity, Claude, Codex, Gemini, Qwen):
+`installVendorAdaptations()` instala archivos especificos del IDE para todos los proveedores soportados (Antigravity, Claude, Codex, Qwen):
 
 - Definiciones de agentes (`.claude/agents/*.md`)
 - Configuraciones de hooks (`.claude/hooks/`)

@@ -122,7 +122,7 @@ your-project/
 - `language`: Mã ngôn ngữ phản hồi (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: Chuỗi định dạng timestamp (mặc định: `YYYY-MM-DD`)
 - `timezone`: Định danh múi giờ (mặc định: `UTC`)
-- `default_cli`: Vendor CLI dự phòng (gemini, claude, codex, qwen)
+- `default_cli`: Vendor CLI dự phòng (antigravity, claude, codex, qwen)
 - `model_preset (per-agent overrides via `agents:`)`: Ghi đè định tuyến CLI theo agent
 
 ### skills/
@@ -131,7 +131,7 @@ Nơi chứa chuyên môn agent. Tổng cộng 22 thư mục: 21 agent skill + 1 
 
 **`_shared/`** — Tài nguyên dùng bởi tất cả agent:
 - `core/` — Định tuyến, tải ngữ cảnh, cấu trúc prompt, giao thức làm rõ, ngân sách ngữ cảnh, đánh giá độ khó, template suy luận, nguyên tắc chất lượng, phát hiện vendor, số liệu phiên, checklist chung, bài học kinh nghiệm, template API contract
-- `runtime/` — Giao thức bộ nhớ cho subagent CLI, quy trình thực thi đặc thù vendor (claude, gemini, codex, qwen)
+- `runtime/` — Giao thức bộ nhớ cho subagent CLI, quy trình thực thi đặc thù vendor (claude, codex, qwen)
 - `conditional/` — Đo lường Quality Score, theo dõi Experiment Ledger, giao thức Exploration Loop (chỉ tải khi được kích hoạt)
 
 **`oma-{agent}/`** — Thư mục skill theo agent. Mỗi thư mục chứa:

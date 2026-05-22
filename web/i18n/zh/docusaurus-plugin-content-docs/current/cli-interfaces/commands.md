@@ -29,7 +29,7 @@ oma
 5. 询问 GitHub Copilot 符号链接。
 6. 从注册表下载最新 tarball。
 7. 安装共享资源、工作流、配置和选中的技能。
-8. 安装所有供应商的供应商适配（Antigravity、Claude、Codex、Gemini、Qwen）。
+8. 安装所有供应商的供应商适配（Antigravity、Claude、Codex、Qwen）。
 9. 创建 CLI 符号链接。
 10. 提议启用 `git rerere`。
 11. 提议为 Antigravity IDE 和 Gemini CLI 配置 MCP。
@@ -57,7 +57,7 @@ oma doctor [--json] [--output <format>]
 | `--output <format>` | 输出格式（`text` 或 `json`） |
 
 **检查内容：**
-- CLI 安装：agy、gemini、claude、codex、qwen（版本和路径）。
+- CLI 安装：agy、claude、codex、qwen（版本和路径）。
 - 每个 CLI 的认证状态。
 - MCP 配置：`~/.gemini/settings.json`、`~/.claude.json`、`~/.codex/config.toml`。
 - 已安装技能：哪些技能存在及其状态。
@@ -281,7 +281,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | CLI 供应商覆盖：`antigravity`、`gemini`、`claude`、`codex`、`qwen` |
+| `-m, --model <vendor>` | CLI 供应商覆盖：`antigravity`、`claude`、`codex`、`qwen` |
 | `-w, --workspace <path>` | 智能体的工作目录。如省略，从 monorepo 配置自动检测。 |
 
 **供应商解析顺序：** `--model` 标志 > oma-config.yaml 中的 `model_preset (per-agent overrides via `agents:`)` > `default_cli` > cli-config.yaml 中的 `active_vendor` > `gemini`。
@@ -408,7 +408,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | 使用的 CLI 供应商：`antigravity`、`codex`、`claude`、`gemini`、`qwen`。默认为配置中解析的供应商。 |
+| `-m, --model <vendor>` | 使用的 CLI 供应商：`antigravity`、`codex`、`claude`、`qwen`。默认为配置中解析的供应商。 |
 | `-p, --prompt <prompt>` | 自定义审查提示词。如省略，使用默认的代码审查提示词。 |
 | `-w, --workspace <path>` | 审查路径。默认为当前工作目录。 |
 | `--no-uncommitted` | 跳过未提交变更的审查。设置后仅审查会话中已提交的变更。 |
@@ -416,7 +416,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **功能：**
 - 从环境或近期 git 活动中自动检测当前会话 ID。
 - 对于 `codex`：使用原生 `codex review` 子命令。
-- 对于 `claude`、`gemini`、`qwen`：构造基于提示词的审查请求并调用 CLI。
+- 对于 `claude`、`qwen`：构造基于提示词的审查请求并调用 CLI。
 - 默认审查工作目录中的未提交变更。
 - 使用 `--no-uncommitted` 时，仅审查当前会话中已提交的变更。
 

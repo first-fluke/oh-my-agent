@@ -71,7 +71,7 @@ Se você selecionou um preset que inclui a skill backend, você é questionado s
 
 ### 6. Configurar Symlinks de IDE
 
-O instalador sempre cria symlinks para Claude Code (`.claude/skills/`). Também gera arquivos de agentes e hooks nativos de vendor para Antigravity, Claude, Codex, Gemini e Qwen, e se um diretório `.github/` existe, também cria symlinks para GitHub Copilot automaticamente. Caso contrário, pergunta:
+O instalador sempre cria symlinks para Claude Code (`.claude/skills/`). Também gera arquivos de agentes e hooks nativos de vendor para Antigravity, Claude, Codex e Qwen, e se um diretório `.github/` existe, também cria symlinks para GitHub Copilot automaticamente. Caso contrário, pergunta:
 
 ```
 Also create symlinks for GitHub Copilot? (.github/skills/)
@@ -162,7 +162,7 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   qa:    { model: anthropic/claude-sonnet-4-6 }
@@ -195,7 +195,7 @@ O comando doctor verifica:
 
 | Verificação | O Que Verifica |
 |:-----------|:--------------|
-| **Instalações CLI** | agy, gemini, claude, codex, qwen — versão e disponibilidade |
+| **Instalações CLI** | agy, claude, codex, qwen — versão e disponibilidade |
 | **Autenticação** | Status de API key ou OAuth para cada CLI |
 | **Configuração MCP** | Setup do servidor Serena MCP para cada ambiente CLI |
 | **Status das skills** | Quais skills estão instaladas e se estão atualizadas |
@@ -356,7 +356,7 @@ Para cada skill selecionada, `installSkill()` copia o diretório da skill para `
 
 ### 8. Adaptações de Vendor
 
-`installVendorAdaptations()` instala arquivos específicos de IDE para todos os vendors suportados (Antigravity, Claude, Codex, Gemini, Qwen):
+`installVendorAdaptations()` instala arquivos específicos de IDE para todos os vendors suportados (Antigravity, Claude, Codex, Qwen):
 
 - Definições de agentes (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
 - Configurações de hook (`.claude/hooks/`)

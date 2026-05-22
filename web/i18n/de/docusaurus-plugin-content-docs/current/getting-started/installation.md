@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Vollständige Installationsanleitung für oh-my-agent — drei Installationsmethoden, alle sechs Presets mit ihren Skill-Listen, CLI-Tool-Anforderungen für alle fünf Anbieter, Konfiguration nach der Installation, Felder der oma-config.yaml und Verifikation mit oma doctor.
+description: Vollständige Installationsanleitung für oh-my-agent — drei Installationsmethoden, alle Presets mit ihren Skill-Listen, CLI-Tool-Anforderungen pro Anbieter, Konfiguration nach der Installation, Felder der oma-config.yaml und Verifikation mit oma doctor.
 ---
 
 # Installation
@@ -148,7 +148,7 @@ oma star                # Repository mit Stern markieren
 
 ## Installation der KI-CLI-Tools
 
-Sie benötigen mindestens ein installiertes KI-CLI-Tool. oh-my-agent unterstützt fünf Anbieter, und Sie können diese mischen — verschiedene CLIs für verschiedene Agenten über die Agenten-CLI-Zuordnung.
+Sie benötigen mindestens ein installiertes KI-CLI-Tool. oh-my-agent unterstützt mehrere Anbieter, und Sie können diese mischen — verschiedene CLIs für verschiedene Agenten über die Agenten-CLI-Zuordnung.
 
 ### Gemini CLI
 
@@ -205,7 +205,7 @@ Der Befehl `oma install` erstellt `.agents/oma-config.yaml`. Dies ist die zentra
 ```yaml
 # Erforderlich
 language: en
-model_preset: gemini   # eingebaut: antigravity, claude, codex, gemini, qwen, cursor, mixed
+model_preset: antigravity   # eingebaut: antigravity, claude, codex, qwen, cursor, mixed
 
 # Optional — Datums-/Uhrzeiteinstellungen
 date_format: ISO
@@ -225,7 +225,7 @@ agents:
 | Feld | Typ | Erforderlich | Beschreibung |
 |-------|------|---------|-------------|
 | `language` | String | Ja | Antwortsprachcode. Unterstützt en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | String | Ja | Aktiver Preset-Schlüssel. Einer der sieben eingebauten Schlüssel (`antigravity`, `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`) oder ein `custom_presets`-Schlüssel. Siehe [Modellkonfiguration pro Agent](../guide/per-agent-models.md). |
+| `model_preset` | String | Ja | Aktiver Preset-Schlüssel. Einer der eingebauten Schlüssel (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) oder ein `custom_presets`-Schlüssel. Siehe [Modellkonfiguration pro Agent](../guide/per-agent-models.md). |
 | `date_format` | String | Nein | Zeitstempelformat (`ISO`, `US`, `EU`). Standard: `ISO`. |
 | `timezone` | String | Nein | Zeitzonenbezeichner (z. B. `Asia/Seoul`). Standard: `UTC`. |
 | `agents` | Map | Nein | Partielle Überschreibungen pro Agent (nur `AgentSpec`-Objekt). Wird flach über Preset-Standardwerte gemergt. |

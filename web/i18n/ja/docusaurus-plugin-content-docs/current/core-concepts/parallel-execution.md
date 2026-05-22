@@ -30,7 +30,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | フラグ | 短縮形 | 説明 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | エージェントの作業ディレクトリ。このディレクトリ内のファイルのみ変更。 |
-| `--model <name>` | `-m` | CLIベンダーオーバーライド。選択肢：`gemini`、`claude`、`codex`、`qwen`。 |
+| `--model <name>` | `-m` | CLIベンダーオーバーライド。選択肢：`antigravity`、`claude`、`codex`、`qwen`。 |
 | `--max-turns <n>` | `-t` | デフォルトターン制限をオーバーライド。 |
 | `--json` | | 結果をJSONで出力。 |
 | `--no-wait` | | 完了を待たずに即座にリターン。 |
@@ -121,7 +121,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-ビルトインプリセット：`claude`、`codex`、`gemini`、`qwen`、`cursor`、`mixed`。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照してください。
+ビルトインプリセット：`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`mixed`。詳細は[エージェント別モデル](../guide/per-agent-models.md)を参照してください。
 
 ### ベンダー解決の優先順位
 

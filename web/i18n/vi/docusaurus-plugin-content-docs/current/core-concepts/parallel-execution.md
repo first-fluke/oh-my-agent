@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Viết tắt | Mô tả |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Thư mục làm việc cho agent. Agent chỉ sửa file trong thư mục này. |
-| `--model <name>` | `-m` | Ghi đè vendor CLI cho spawn cụ thể này. Tùy chọn: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <name>` | `-m` | Ghi đè vendor CLI cho spawn cụ thể này. Tùy chọn: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Ghi đè giới hạn lượt mặc định cho agent này. |
 | `--json` | | Xuất kết quả dạng JSON (hữu ích cho scripting). |
 | `--no-wait` | | Fire and forget — trả về ngay không đợi hoàn thành. |
@@ -135,7 +135,7 @@ agents:
   backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-Preset built-in: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. Xem [Per-Agent Models](../guide/per-agent-models.md) để biết chi tiết.
+Preset built-in: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Xem [Per-Agent Models](../guide/per-agent-models.md) để biết chi tiết.
 
 ### Ưu tiên phân giải vendor
 

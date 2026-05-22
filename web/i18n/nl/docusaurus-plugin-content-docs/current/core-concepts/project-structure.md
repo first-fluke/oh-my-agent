@@ -148,7 +148,7 @@ Waar agentexpertise leeft. 22 directory's totaal: 21 agent-skills + 1 gedeelde b
 
 **`_shared/`** — Bronnen gebruikt door alle agenten:
 - `core/` — Routering, contextlading, promptstructuur, verduidelijkingsprotocol, contextbudget, moeilijkheidsbeoordeling, redeneersjablonen, kwaliteitsprincipes, leveranciersdetectie, sessiemetrieken, algemene checklist, leerpunten, API-contractsjablonen
-- `runtime/` — Geheugenprotocol voor CLI-subagenten, leverancierspecifieke uitvoeringsprotocollen (claude, gemini, codex, qwen)
+- `runtime/` — Geheugenprotocol voor CLI-subagenten, leverancierspecifieke uitvoeringsprotocollen (claude, codex, qwen)
 - `conditional/` — Quality score-meting, experiment ledger-bijhouding, exploratieslus-protocol (alleen geladen wanneer getriggerd)
 
 **`oma-{agent}/`** — Per-agent skill-directory's met `SKILL.md` (~800 bytes, Laag 1: altijd geladen) en `resources/` (Laag 2: op aanvraag).

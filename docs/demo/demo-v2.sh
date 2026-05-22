@@ -89,7 +89,7 @@ echo -e "  ${MAGENTA}${BOLD}🛸 oh-my-agent orchestrator${RESET} ${DIM}session-
 echo ""
 sleep 0.3
 
-echo -e "  ${CYAN}⟳${RESET} ${BOLD}backend${RESET}    → gemini   ${DIM}workspace: ./apps/api${RESET}"
+echo -e "  ${CYAN}⟳${RESET} ${BOLD}backend${RESET}    → antigravity ${DIM}workspace: ./apps/api${RESET}"
 sleep 0.2
 echo -e "  ${CYAN}⟳${RESET} ${BOLD}frontend${RESET}   → claude   ${DIM}workspace: ./apps/web${RESET}"
 sleep 0.2
@@ -99,7 +99,7 @@ echo -e "  ${CYAN}⟳${RESET} ${BOLD}db${RESET}         → qwen     ${DIM}works
 sleep 0.3
 
 echo ""
-echo -e "  ${GREEN}✓${RESET} 4 agents spawned  ${DIM}(4 vendors: gemini, claude, codex, qwen)${RESET}"
+echo -e "  ${GREEN}✓${RESET} 4 agents spawned  ${DIM}(4 vendors: antigravity, claude, codex, qwen)${RESET}"
 echo ""
 sleep 1.5
 

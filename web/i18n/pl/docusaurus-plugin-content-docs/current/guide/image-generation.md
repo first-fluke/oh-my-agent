@@ -139,7 +139,7 @@ oma image list-vendors
 
 | Flaga | Cel |
 |---|---|
-| `--vendor <name>` | `auto`, `pollinations`, `codex`, `gemini` lub `all`. Z `all` każdy żądany vendor musi być uwierzytelniony (tryb strict). |
+| `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity` lub `all`. Z `all` każdy żądany vendor musi być uwierzytelniony (tryb strict). |
 | `-n, --count <n>` | Liczba obrazów na vendora, 1–5 (ograniczenie czasu rzeczywistego). |
 | `--size <size>` | Proporcje: `1024x1024` (kwadrat), `1024x1536` (portret), `1536x1024` (krajobraz) lub `auto`. |
 | `--quality <level>` | `low`, `medium`, `high` lub `auto` (domyślne dla vendora). |

@@ -82,7 +82,7 @@ oh-my-agent löst dies durch Spezialisierung:
 | Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
 | **oma-search** | Intent-basierter Such-Router | Leitet Anfragen an Context7 (Dokumente), native Websuche, `gh`/`glab` (Code) und Serena (lokal) weiter. Domain-Trust-Scoring auf allen nicht-lokalen Ergebnissen. Fail-forward-Routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Werkzeug-übergreifende Arbeitsretrospektive | Analysiert Konversationshistorien aus Claude, Codex, Gemini, Qwen und Cursor. Löst natürlichsprachige Datums-/Zeitfenster-Eingaben auf, gruppiert nach Tool+Sitzung, extrahiert Themen, rendert Tages-/Zeitraumzusammenfassungen für Standups, wöchentliche Retros und Arbeitsprotokolle. |
+| **oma-recap** | Werkzeug-übergreifende Arbeitsretrospektive | Analysiert Konversationshistorien aus Claude, Codex, Qwen und Cursor. Löst natürlichsprachige Datums-/Zeitfenster-Eingaben auf, gruppiert nach Tool+Sitzung, extrahiert Themen, rendert Tages-/Zeitraumzusammenfassungen für Standups, wöchentliche Retros und Arbeitsprotokolle. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Konvertierung koreanischer Textverarbeitungsdokumente via `bunx kordoc@latest`. Bewahrt Überschriften, Tabellen (inkl. verschachtelter), Fußnoten, Hyperlinks, Bilder. Entfernt Hancom-Private-Use-Area-Zeichen via `flatten-tables.ts`-Nachbearbeiter. |
 | **oma-pdf** | PDF → Markdown | PDF-Dokumentkonvertierung via `uvx opendataloader-pdf`. Bewahrt Überschriften, Tabellen, Listen, Bilder; OCR-Hybridmodus für gescannte PDFs; Ausgabe normalisiert mit `uvx mdformat`. |
 

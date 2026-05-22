@@ -201,7 +201,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 6. **Begin met `/work` bij twijfel.**
 7. **Gebruik `/brainstorm` voor `/plan` bij dubbelzinnige ideeen.**
 8. **Draai `/deepinit` op nieuwe codebases.**
-9. **Configureer `model_preset`.** Gebruik `claude`, `gemini` of `mixed` om agenten naar de juiste CLI te routeren. Voeg `agents:` overrides toe voor fijnmazige controle. Zie [Per-Agent Models](./per-agent-models.md).
+9. **Configureer `model_preset`.** Gebruik `claude`, `antigravity` of `mixed` om agenten naar de juiste CLI te routeren. Voeg `agents:` overrides toe voor fijnmazige controle. Zie [Per-Agent Models](./per-agent-models.md).
 10. **Gebruik `/ultrawork` voor productiekritieke code.**
 
 ---

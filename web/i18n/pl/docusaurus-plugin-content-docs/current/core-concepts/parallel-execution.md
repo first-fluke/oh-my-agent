@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [opcje]
 | Flaga | Skrót | Opis |
 |------|-------|-------------|
 | `--workspace <ścieżka>` | `-w` | Katalog roboczy dla agenta. Agenci modyfikują pliki tylko w tym katalogu. |
-| `--model <nazwa>` | `-m` | Nadpisanie dostawcy CLI dla tego konkretnego uruchomienia. Opcje: `gemini`, `claude`, `codex`, `qwen`. |
+| `--model <nazwa>` | `-m` | Nadpisanie dostawcy CLI dla tego konkretnego uruchomienia. Opcje: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Nadpisanie domyślnego limitu tur dla tego agenta. |
 | `--json` | | Wyjście jako JSON (przydatne do skryptowania). |
 | `--no-wait` | | Wystrzel i zapomnij — powróć natychmiast bez czekania na zakończenie. |

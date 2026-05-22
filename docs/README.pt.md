@@ -208,7 +208,7 @@ A seleção de modelo segue duas camadas:
 - Dispatch nativo de mesmo vendor usa a definição de agente gerada em `.claude/agents/`, `.codex/agents/` ou `.gemini/agents/`.
 - Dispatch cross-vendor ou fallback via CLI usa os padrões de vendor em `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
 
-**modelos por agente**: cada agente pode apontar para seu próprio modelo e `effort` a partir de `.agents/oma-config.yaml`. Seis runtime profiles já vêm prontos: `claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`. Confira a matriz de auth resolvida com `oma doctor --profile`. Guia completo: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+**modelos por agente**: cada agente pode apontar para seu próprio modelo e `effort` a partir de `.agents/oma-config.yaml`. Os runtime profiles disponíveis: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Confira a matriz de auth resolvida com `oma doctor --profile`. Guia completo: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Por Que oh-my-agent?
 

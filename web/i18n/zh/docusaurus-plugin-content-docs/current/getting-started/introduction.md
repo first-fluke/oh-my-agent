@@ -82,7 +82,7 @@ oh-my-agent 通过专业化解决这些问题：
 | 智能体 | 角色 | 核心能力 |
 |-------|------|---------|
 | **oma-search** | 意图驱动的搜索路由 | 将查询路由到 Context7（文档）、原生网络搜索、`gh`/`glab`（代码）、Serena（本地）。所有非本地结果均带域信任度评分。失败则前进的路由（docs→web→fetch）。标志：`--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab`。 |
-| **oma-recap** | 跨工具工作回顾 | 分析来自 Claude、Codex、Gemini、Qwen 和 Cursor 的对话历史。解析自然语言的日期/窗口输入，按工具+会话分组，提取主题，渲染用于站会、周回顾和工作日志的日/期间摘要。 |
+| **oma-recap** | 跨工具工作回顾 | 分析来自 Claude、Codex、Qwen 和 Cursor 的对话历史。解析自然语言的日期/窗口输入，按工具+会话分组，提取主题，渲染用于站会、周回顾和工作日志的日/期间摘要。 |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | 通过 `bunx kordoc@latest` 进行韩文字处理器文档转换。保留标题、表格（含嵌套）、脚注、超链接、图像。通过 `flatten-tables.ts` 后处理器去除 Hancom 私用区域字符。 |
 | **oma-pdf** | PDF → Markdown | 通过 `uvx opendataloader-pdf` 进行 PDF 文档转换。保留标题、表格、列表、图像；对扫描 PDF 使用 OCR 混合模式；通过 `uvx mdformat` 规范化输出。 |
 

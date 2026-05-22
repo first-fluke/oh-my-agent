@@ -7,13 +7,13 @@ description: Konfigurieren Sie über model_preset in oma-config.yaml, welches KI
 
 ## Überblick
 
-`model_preset` ist das einzige Konzept, das steuert, welches Modell jeder einzelne Agent verwendet. Wählen Sie eines der sieben eingebauten Presets, und jeder Agent (pm, backend, frontend, qa, …) wird mit einem für den jeweiligen Anbieter-Stack passenden Modell verdrahtet. Überschreiben Sie einzelne Agenten nach Bedarf. Definieren Sie zusätzliche Presets, wenn Ihr Team eine Mischung außerhalb der Standardvorgaben benötigt.
+`model_preset` ist das einzige Konzept, das steuert, welches Modell jeder einzelne Agent verwendet. Wählen Sie eines der eingebauten Presets, und jeder Agent (pm, backend, frontend, qa, …) wird mit einem für den jeweiligen Anbieter-Stack passenden Modell verdrahtet. Überschreiben Sie einzelne Agenten nach Bedarf. Definieren Sie zusätzliche Presets, wenn Ihr Team eine Mischung außerhalb der Standardvorgaben benötigt.
 
 Die gesamte Konfiguration befindet sich in einer einzigen Datei: `.agents/oma-config.yaml`.
 
 Diese Seite behandelt:
 
-1. Die sieben eingebauten Presets
+1. Die eingebauten Presets
 2. Das Überschreiben einzelner Agenten über die `agents:`-Map
 3. Das Inlinen benutzerdefinierter Modell-Slugs über `models:`
 4. Das Definieren benutzerdefinierter Presets mit `custom_presets:` und `extends:`
@@ -24,12 +24,12 @@ Diese Seite behandelt:
 
 ## Eingebaute Presets
 
-Setzen Sie `model_preset` auf einen der sieben eingebauten Schlüssel:
+Setzen Sie `model_preset` auf einen der eingebauten Schlüssel:
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 ```
 
 | Schlüssel | Beschreibung | Geeignet für |
@@ -53,7 +53,7 @@ Verwenden Sie die `agents:`-Map, um bestimmte Agenten zusätzlich zum aktiven Pr
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }

@@ -29,7 +29,7 @@ oma
 5. Pergunta sobre symlinks para GitHub Copilot.
 6. Baixa o tarball mais recente do registro.
 7. Instala recursos compartilhados, workflows, configs e skills selecionadas.
-8. Instala adaptações de vendor para todos os 5 vendors (Antigravity, Claude, Codex, Gemini, Qwen).
+8. Instala adaptações de vendor para todos os vendors (Antigravity, Claude, Codex, Qwen).
 9. Aplica configurações recomendadas do Claude Code (`~/.claude/settings.json`) quando o Claude Code é detectado.
 10. Cria symlinks CLI.
 11. Oferece habilitar `git rerere`.
@@ -60,7 +60,7 @@ oma doctor [--json] [--output <format>] [--profile]
 | `--profile` | Mostra a matriz de saúde do perfil — exibe o slug do modelo resolvido, a CLI e o status de autenticação por agente a partir do `model_preset` ativo e dos overrides em `agents:`. Veja [Per-Agent Models](../guide/per-agent-models.md). |
 
 **O que verifica:**
-- Instalações CLI: agy, gemini, claude, codex, qwen (versão e caminho).
+- Instalações CLI: agy, claude, codex, qwen (versão e caminho).
 - Status de autenticação para cada CLI.
 - Configuração MCP: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - Skills instaladas: quais skills estão presentes e seu status.
@@ -260,7 +260,7 @@ oma stats --reset
 
 ### recap
 
-Recapitular o histórico de conversas de ferramentas de IA entre sessões do Claude, Codex, Gemini, Qwen e Cursor.
+Recapitular o histórico de conversas de ferramentas de IA entre sessões do Claude, Codex, Qwen e Cursor.
 
 ```
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
@@ -272,7 +272,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Janela de tempo: `1d`, `3d`, `7d`, `2w`, `30d` | `1d` |
 | `--date <date>` | Data específica (`YYYY-MM-DD`); tem precedência sobre `--window` | |
-| `--tool <tools>` | Filtro separado por vírgula: `claude,codex,gemini,qwen,cursor` | todos |
+| `--tool <tools>` | Filtro separado por vírgula: `claude,codex,qwen,cursor` | todos |
 | `--top <n>` | Mostrar os top N projetos/tópicos | |
 | `--sort <metric>` | Ordenar por `count` ou `duration` | `count` |
 | `--mermaid` | Saída como gráfico Gantt do Mermaid | |
@@ -367,7 +367,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Descrição |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Sobrescrita de vendor CLI: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | Sobrescrita de vendor CLI: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Diretório de trabalho para o agente. Auto-detectado de config monorepo se omitido. |
 
 **Ordem de resolução de vendor:** flag `--model` > override `agents:` em `oma-config.yaml` > defaults de agente do `model_preset` ativo.
@@ -484,7 +484,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### agent:review
 
-Executar uma revisão de código usando uma CLI de IA externa (codex, claude, gemini ou qwen).
+Executar uma revisão de código usando uma CLI de IA externa (codex, claude ou qwen).
 
 ```
 oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
@@ -494,7 +494,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Flag | Descrição |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Vendor CLI a ser usado: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Padrão é o vendor resolvido a partir da configuração. |
+| `-m, --model <vendor>` | Vendor CLI a ser usado: `antigravity`, `codex`, `claude`, `qwen`. Padrão é o vendor resolvido a partir da configuração. |
 | `-p, --prompt <prompt>` | Prompt de revisão customizado. Se omitido, um prompt padrão de revisão de código é usado. |
 | `-w, --workspace <path>` | Caminho para revisar. Padrão é o diretório de trabalho atual. |
 | `--no-uncommitted` | Pular revisão de mudanças não commitadas. Quando definido, apenas mudanças commitadas na sessão são revisadas. |
@@ -502,7 +502,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **O que faz:**
 - Detecta automaticamente o ID da sessão atual a partir do ambiente ou atividade git recente.
 - Para `codex`: usa o subcomando nativo `codex review`.
-- Para `claude`, `gemini`, `qwen`: constrói uma solicitação de revisão baseada em prompt e invoca a CLI com o prompt de revisão.
+- Para `claude`, `qwen`: constrói uma solicitação de revisão baseada em prompt e invoca a CLI com o prompt de revisão.
 - Por padrão, revisa mudanças não commitadas no diretório de trabalho.
 - Com `--no-uncommitted`, restringe a revisão a mudanças commitadas dentro da sessão atual.
 

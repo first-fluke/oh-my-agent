@@ -25,7 +25,7 @@ your-project/
 │   │   │   │                            session-metrics, common-checklist,
 │   │   │   │                            lessons-learned, api-contracts/
 │   │   │   ├── runtime/              <- memory-protocol, execution-protocols/
-│   │   │   │                            (claude, gemini, codex, qwen)
+│   │   │   │                            (claude, codex, qwen)
 │   │   │   └── conditional/          <- quality-score, experiment-ledger, exploration-loop
 │   │   ├── oma-frontend/             <- SKILL.md + resources/ (execution-protocol,
 │   │   │                                tech-stack, tailwind-rules, component-template,

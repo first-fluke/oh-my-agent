@@ -82,7 +82,7 @@ oh-my-agent lost dit op met specialisatie:
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
 | **oma-search** | Intent-gebaseerde zoekrouter | Routeert queries naar Context7 (documenten), native websearch, `gh`/`glab` (code), Serena (lokaal). Domein-trust-scoring op alle niet-lokale resultaten. Fail-forward routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Tool-overkoepelend werkretrospectief | Analyseert conversatiegeschiedenissen van Claude, Codex, Gemini, Qwen en Cursor. Lost natuurlijke-taal datum-/venster-invoer op, groepeert per tool+sessie, extraheert thema's, rendert dagelijkse/periodieke samenvattingen voor standups, wekelijkse retro's en werklogs. |
+| **oma-recap** | Tool-overkoepelend werkretrospectief | Analyseert conversatiegeschiedenissen van Claude, Codex, Qwen en Cursor. Lost natuurlijke-taal datum-/venster-invoer op, groepeert per tool+sessie, extraheert thema's, rendert dagelijkse/periodieke samenvattingen voor standups, wekelijkse retro's en werklogs. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Koreaanse tekstverwerker-documentconversie via `bunx kordoc@latest`. Behoudt koppen, tabellen (incl. geneste), voetnoten, hyperlinks, afbeeldingen. Verwijdert Hancom Private Use Area-tekens via `flatten-tables.ts`-nabewerker. |
 | **oma-pdf** | PDF → Markdown | PDF-documentconversie via `uvx opendataloader-pdf`. Behoudt koppen, tabellen, lijsten, afbeeldingen; OCR-hybride modus voor gescande PDFs; uitvoer genormaliseerd met `uvx mdformat`. |
 

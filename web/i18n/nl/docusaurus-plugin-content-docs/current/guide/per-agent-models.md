@@ -7,13 +7,13 @@ description: Configureer welk AI-model elke agent gebruikt via model_preset in o
 
 ## Overzicht
 
-`model_preset` is het enkele concept dat bepaalt welk model elke agent gebruikt. Kies één van de zeven ingebouwde presets en elke agent (pm, backend, frontend, qa, …) wordt gekoppeld aan een geschikt model voor die vendor stack. Overschrijf individuele agents waar nodig. Definieer extra presets wanneer je team een niet-standaard combinatie gebruikt.
+`model_preset` is het enkele concept dat bepaalt welk model elke agent gebruikt. Kies één van de ingebouwde presets en elke agent (pm, backend, frontend, qa, …) wordt gekoppeld aan een geschikt model voor die vendor stack. Overschrijf individuele agents waar nodig. Definieer extra presets wanneer je team een niet-standaard combinatie gebruikt.
 
 Alle configuratie staat in één bestand: `.agents/oma-config.yaml`.
 
 Deze pagina behandelt:
 
-1. De zeven ingebouwde presets
+1. De ingebouwde presets
 2. Het overschrijven van individuele agents met de `agents:`-map
 3. Inline registratie van custom model slugs met `models:`
 4. Definiëren van custom presets met `custom_presets:` en `extends:`
@@ -24,12 +24,12 @@ Deze pagina behandelt:
 
 ## Ingebouwde presets
 
-Stel `model_preset` in op één van de zeven ingebouwde sleutels:
+Stel `model_preset` in op één van de ingebouwde sleutels:
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 ```
 
 | Sleutel | Beschrijving | Geschikt voor |
@@ -53,7 +53,7 @@ Gebruik de `agents:`-map om specifieke agents te overschrijven bovenop de actiev
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }

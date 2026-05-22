@@ -139,7 +139,7 @@ oma image list-vendors
 
 | Flag | 用途 |
 |---|---|
-| `--vendor <name>` | `auto`、`pollinations`、`codex`、`gemini` 或 `all`。使用 `all` 时，每个所请求的供应商都必须已认证（严格模式）。 |
+| `--vendor <name>` | `auto`、`pollinations`、`codex`、`antigravity` 或 `all`。使用 `all` 时，每个所请求的供应商都必须已认证（严格模式）。 |
 | `-n, --count <n>` | 每个供应商生成的图像数量，1–5（受墙钟时间限制）。 |
 | `--size <size>` | 比例：`1024x1024`（方形）、`1024x1536`（竖版）、`1536x1024`（横版）或 `auto`。 |
 | `--quality <level>` | `low`、`medium`、`high` 或 `auto`（供应商默认值）。 |

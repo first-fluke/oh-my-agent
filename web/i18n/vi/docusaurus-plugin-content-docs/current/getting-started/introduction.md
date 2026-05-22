@@ -82,7 +82,7 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 | Agent | Vai trò | Khả năng chính |
 |-------|------|-----------------|
 | **oma-search** | Bộ định tuyến tìm kiếm dựa trên ý định | Chuyển truy vấn đến Context7 (tài liệu), tìm kiếm web native, `gh`/`glab` (mã), Serena (cục bộ). Chấm điểm độ tin cậy miền trên mọi kết quả không cục bộ. Định tuyến fail-forward (docs→web→fetch). Flag: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Hồi tưởng công việc đa công cụ | Phân tích lịch sử hội thoại từ Claude, Codex, Gemini, Qwen và Cursor. Giải quyết đầu vào ngày/cửa sổ ngôn ngữ tự nhiên, nhóm theo công cụ+phiên, trích xuất chủ đề, render tóm tắt hàng ngày/theo kỳ cho standup, retro hàng tuần và nhật ký công việc. |
+| **oma-recap** | Hồi tưởng công việc đa công cụ | Phân tích lịch sử hội thoại từ Claude, Codex, Qwen và Cursor. Giải quyết đầu vào ngày/cửa sổ ngôn ngữ tự nhiên, nhóm theo công cụ+phiên, trích xuất chủ đề, render tóm tắt hàng ngày/theo kỳ cho standup, retro hàng tuần và nhật ký công việc. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Chuyển đổi tài liệu trình xử lý văn bản Hàn Quốc qua `bunx kordoc@latest`. Bảo toàn tiêu đề, bảng (kể cả bảng lồng), chú thích, hyperlink, hình ảnh. Loại bỏ ký tự Private Use Area của Hancom qua hậu xử lý `flatten-tables.ts`. |
 | **oma-pdf** | PDF → Markdown | Chuyển đổi tài liệu PDF qua `uvx opendataloader-pdf`. Bảo toàn tiêu đề, bảng, danh sách, hình ảnh; chế độ lai OCR cho PDF quét; đầu ra chuẩn hóa bằng `uvx mdformat`. |
 

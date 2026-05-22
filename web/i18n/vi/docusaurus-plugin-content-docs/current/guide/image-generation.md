@@ -139,7 +139,7 @@ oma image list-vendors
 
 | Flag | Mục đích |
 |---|---|
-| `--vendor <name>` | `auto`, `pollinations`, `codex`, `gemini`, hoặc `all`. Với `all`, mọi vendor được yêu cầu đều phải xác thực (strict). |
+| `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity`, hoặc `all`. Với `all`, mọi vendor được yêu cầu đều phải xác thực (strict). |
 | `-n, --count <n>` | Số ảnh mỗi vendor, 1–5 (giới hạn theo wall-time). |
 | `--size <size>` | Tỷ lệ: `1024x1024` (vuông), `1024x1536` (dọc), `1536x1024` (ngang), hoặc `auto`. |
 | `--quality <level>` | `low`, `medium`, `high`, hoặc `auto` (mặc định của vendor). |

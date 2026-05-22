@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | 标志 | 缩写 | 说明 |
 |------|------|------|
 | `--workspace <path>` | `-w` | 智能体的工作目录。智能体只修改此目录内的文件。 |
-| `--model <name>` | `-m` | 覆盖此次启动的 CLI 供应商。选项：`gemini`、`claude`、`codex`、`qwen`。 |
+| `--model <name>` | `-m` | 覆盖此次启动的 CLI 供应商。选项：`antigravity`、`claude`、`codex`、`qwen`。 |
 | `--max-turns <n>` | `-t` | 覆盖此智能体的默认轮次限制。 |
 | `--json` | | 以 JSON 格式输出结果（适用于脚本化场景）。 |
 | `--no-wait` | | 即发即忘：立即返回，不等待完成。 |

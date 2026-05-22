@@ -282,7 +282,7 @@ your-project/
 - `language`：响应语言代码（en、ko、ja、zh、es、fr、de、pt、ru、nl、pl）
 - `date_format`：时间戳格式字符串（默认：`YYYY-MM-DD`）
 - `timezone`：时区标识符（默认：`UTC`）
-- `default_cli`：回退 CLI 供应商（gemini、claude、codex、qwen）
+- `default_cli`：回退 CLI 供应商（antigravity、claude、codex、qwen）
 - `model_preset (per-agent overrides via `agents:`)`：每智能体 CLI 路由覆盖
 
 ### skills/
@@ -291,7 +291,7 @@ your-project/
 
 **`_shared/`**：所有智能体共用的资源：
 - `core/`：路由、上下文加载、提示词结构、澄清协议、上下文预算、难度评估、推理模板、质量原则、供应商检测、会话指标、通用检查清单、经验教训、API 契约模板
-- `runtime/`：CLI 子智能体的内存协议、供应商特定的执行协议（claude、gemini、codex、qwen）
+- `runtime/`：CLI 子智能体的内存协议、供应商特定的执行协议（claude、codex、qwen）
 - `conditional/`：质量评分测量、实验账本跟踪、探索循环协议（仅在触发时加载）
 
 **`oma-{agent}/`**：每智能体技能目录。每个包含：

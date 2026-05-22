@@ -119,10 +119,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Флаг | Описание |
 |------|---------|
-| `--model` / `-m` | Переопределение вендора: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
+| `--model` / `-m` | Переопределение вендора: `antigravity`, `claude`, `codex`, `qwen` |
 | `--workspace` / `-w` | Рабочая директория. Автоопределение из конфигов монорепозитория |
 
-**Валидация:** `agent-id` из списка, `session-id` без `..`, `?`, `#`, `%`, управляющих символов. `vendor` — один из: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+**Валидация:** `agent-id` из списка, `session-id` без `..`, `?`, `#`, `%`, управляющих символов. `vendor` — один из: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Вендор-специфичное поведение:**
 

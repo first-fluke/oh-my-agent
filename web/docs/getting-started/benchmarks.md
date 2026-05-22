@@ -81,7 +81,7 @@ Spec and visual judges run 3 times per harness via `judge-multi.sh` and per-item
 ## Reproduce
 
 ```bash
-# Run all 5 harnesses (sequential, ~45 min, ~$15-20 in API spend)
+# Run all harnesses (sequential, ~45 min, ~$15-20 in API spend)
 ./benchmarks/run.sh
 
 # Multiaxis scoring per harness (5-axis, 100pt) — single judge round

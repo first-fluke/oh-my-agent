@@ -152,13 +152,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 标志 | 缩写 | 说明 | 默认值 |
 |:-----|:-----|:-----|:-------|
-| `--model` | `-m` | CLI 供应商覆盖。必须是：`antigravity`、`gemini`、`claude`、`codex`、`qwen` 之一。覆盖所有基于配置的供应商解析。 | 从配置解析 |
+| `--model` | `-m` | CLI 供应商覆盖。必须是：`antigravity`、`claude`、`codex`、`qwen` 之一。覆盖所有基于配置的供应商解析。 | 从配置解析 |
 | `--workspace` | `-w` | 智能体的工作目录。如果省略或设为 `.`，CLI 从 monorepo 配置文件自动检测工作区（pnpm-workspace.yaml、package.json、lerna.json、nx.json、turbo.json、mise.toml）。 | 自动检测或 `.` |
 
 **验证：**
 - `agent-id` 必须是：`backend`、`frontend`、`mobile`、`qa`、`debug`、`pm` 之一。
 - `session-id` 不得包含 `..`、`?`、`#`、`%` 或控制字符。
-- `vendor` 必须是：`antigravity`、`gemini`、`claude`、`codex`、`qwen` 之一。
+- `vendor` 必须是：`antigravity`、`claude`、`codex`、`qwen` 之一。
 
 **供应商特定行为：**
 
@@ -224,7 +224,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----|:-------|
 | `--window <period>` | 时间窗口：`1d`、`3d`、`7d`、`2w`、`30d`。设置 `--date` 时该参数被忽略。 | `1d` |
 | `--date <date>` | 指定日期（`YYYY-MM-DD`），优先级高于 `--window`。 | |
-| `--tool <tools>` | 按工具过滤会话，逗号分隔：`claude`、`codex`、`gemini`、`qwen`、`cursor`。 | 全部工具 |
+| `--tool <tools>` | 按工具过滤会话，逗号分隔：`claude`、`codex`、`qwen`、`cursor`。 | 全部工具 |
 | `--top <n>` | 仅显示摘要中前 N 个项目/主题。 | 不限 |
 | `--sort <metric>` | 按 `count` 或 `duration` 排序会话。 | `count` |
 | `--mermaid` | 输出 Mermaid 甘特图，而非默认摘要。 | `false` |

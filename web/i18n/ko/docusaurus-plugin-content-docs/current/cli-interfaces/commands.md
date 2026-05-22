@@ -29,7 +29,7 @@ oma
 5. GitHub Copilot 심볼릭 링크에 대해 질문합니다.
 6. 레지스트리에서 최신 tarball을 다운로드합니다.
 7. 공유 리소스, 워크플로우, 설정, 선택된 스킬을 설치합니다.
-8. 모든 벤더(Antigravity, Claude, Codex, Gemini, Qwen)에 대한 벤더 적응을 설치합니다.
+8. 모든 벤더(Antigravity, Claude, Codex, Qwen)에 대한 벤더 적응을 설치합니다.
 9. CLI 심볼릭 링크를 생성합니다.
 10. `git rerere` 활성화를 제안합니다.
 11. Antigravity IDE 및 Gemini CLI용 MCP 설정을 제안합니다.
@@ -57,7 +57,7 @@ oma doctor [--json] [--output <format>]
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) |
 
 **검사 항목:**
-- CLI 설치: agy, gemini, claude, codex, qwen (버전 및 경로).
+- CLI 설치: agy, claude, codex, qwen (버전 및 경로).
 - 각 CLI의 인증 상태.
 - MCP 설정: `~/.gemini/settings.json`, `~/.claude.json`, `~/.codex/config.toml`.
 - 설치된 스킬: 어떤 스킬이 존재하고 그 상태.
@@ -293,7 +293,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | CLI 벤더 오버라이드: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model <vendor>` | CLI 벤더 오버라이드: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략하면 모노레포 설정에서 자동 감지. |
 
 **벤더 해석 순서:** `--model` 플래그 > oma-config.yaml의 `model_preset (per-agent overrides via `agents:`)` > `default_cli` > cli-config.yaml의 `active_vendor` > `gemini`.
@@ -410,7 +410,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### agent:review
 
-외부 AI CLI(codex, claude, gemini 또는 qwen)를 사용하여 코드 리뷰를 실행합니다.
+외부 AI CLI(codex, claude 또는 qwen)를 사용하여 코드 리뷰를 실행합니다.
 
 ```
 oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
@@ -420,7 +420,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | 사용할 CLI 벤더: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. 기본값은 설정에서 해석된 벤더. |
+| `-m, --model <vendor>` | 사용할 CLI 벤더: `antigravity`, `codex`, `claude`, `qwen`. 기본값은 설정에서 해석된 벤더. |
 | `-p, --prompt <prompt>` | 사용자 정의 리뷰 프롬프트. 생략하면 기본 코드 리뷰 프롬프트가 사용됩니다. |
 | `-w, --workspace <path>` | 리뷰할 경로. 기본값은 현재 작업 디렉토리. |
 | `--no-uncommitted` | 커밋되지 않은 변경 사항 리뷰를 건너뜁니다. 설정 시 세션 내 커밋된 변경 사항만 리뷰합니다. |
@@ -428,7 +428,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **수행 내용:**
 - 환경 또는 최근 git 활동에서 현재 세션 ID를 자동 감지합니다.
 - `codex`의 경우: 네이티브 `codex review` 서브커맨드를 사용합니다.
-- `claude`, `gemini`, `qwen`의 경우: 프롬프트 기반 리뷰 요청을 구성하고 리뷰 프롬프트와 함께 CLI를 호출합니다.
+- `claude`, `qwen`의 경우: 프롬프트 기반 리뷰 요청을 구성하고 리뷰 프롬프트와 함께 CLI를 호출합니다.
 - 기본적으로 작업 디렉토리의 커밋되지 않은 변경 사항을 리뷰합니다.
 - `--no-uncommitted` 사용 시 현재 세션 내에서 커밋된 변경 사항만 리뷰합니다.
 

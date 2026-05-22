@@ -172,13 +172,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Short | Description | Default |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI vendor override. Must be one of: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
+| `--model` | `-m` | CLI vendor override. Must be one of: `antigravity`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
 | `--workspace` | `-w` | Working directory for the agent. If omitted or set to `.`, the CLI auto-detects the workspace from monorepo configuration files (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detected or `.` |
 
 **Validation:**
 - `agent-id` must be one of: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` must not contain `..`, `?`, `#`, `%`, or control characters.
-- `vendor` must be one of: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` must be one of: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Vendor-specific behavior:**
 
@@ -244,7 +244,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Time window: `1d`, `3d`, `7d`, `2w`, `30d`. Ignored when `--date` is set. | `1d` |
 | `--date <date>` | Specific date (`YYYY-MM-DD`). Takes precedence over `--window`. | |
-| `--tool <tools>` | Filter sessions by tool. Comma-separated: `claude`, `codex`, `gemini`, `qwen`, `cursor`. | all tools |
+| `--tool <tools>` | Filter sessions by tool. Comma-separated: `claude`, `codex`, `qwen`, `cursor`. | all tools |
 | `--top <n>` | Show only top N projects/topics in the summary. | unlimited |
 | `--sort <metric>` | Sort sessions by `count` or `duration`. | `count` |
 | `--mermaid` | Output a Mermaid Gantt chart instead of the default summary. | `false` |

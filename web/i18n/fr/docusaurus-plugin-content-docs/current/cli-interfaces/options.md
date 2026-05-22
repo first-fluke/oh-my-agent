@@ -172,13 +172,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Short | Description | Default |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI vendor override. Must be one of: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
+| `--model` | `-m` | CLI vendor override. Must be one of: `antigravity`, `claude`, `codex`, `qwen`. Overrides all config-based vendor resolution. | Resolved from config |
 | `--workspace` | `-w` | Working directory for the agent. If omitted or set to `.`, the CLI auto-detects the workspace from monorepo configuration files (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detected or `.` |
 
 **Validation:**
 - `agent-id` must be one of: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` must not contain `..`, `?`, `#`, `%`, or control characters.
-- `vendor` must be one of: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` must be one of: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Vendor-specific behavior:**
 
@@ -244,7 +244,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:------------|:--------|
 | `--window <period>` | Fenêtre temporelle : `1d`, `3d`, `7d`, `2w`, `30d`. Ignoré lorsque `--date` est défini. | `1d` |
 | `--date <date>` | Date spécifique (`YYYY-MM-DD`). Prioritaire sur `--window`. | |
-| `--tool <tools>` | Filtre les sessions par outil. Liste séparée par des virgules : `claude`, `codex`, `gemini`, `qwen`, `cursor`. | tous les outils |
+| `--tool <tools>` | Filtre les sessions par outil. Liste séparée par des virgules : `claude`, `codex`, `qwen`, `cursor`. | tous les outils |
 | `--top <n>` | N'affiche que les N premiers projets/sujets dans le résumé. | illimité |
 | `--sort <metric>` | Trie les sessions par `count` ou `duration`. | `count` |
 | `--mermaid` | Émet un diagramme de Gantt Mermaid au lieu du résumé par défaut. | `false` |

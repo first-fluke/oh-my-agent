@@ -215,7 +215,7 @@ timezone: "UTC"
 
 # 必填
 language: en
-model_preset: gemini   # 内置选项：antigravity、claude、codex、gemini、qwen、cursor、mixed
+model_preset: antigravity   # 内置选项：antigravity、claude、codex、qwen、cursor、mixed
 
 # 每个智能体的 CLI 映射（覆盖 default_cli）
 model_preset (per-agent overrides via `agents:`):

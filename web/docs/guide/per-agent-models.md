@@ -7,13 +7,13 @@ description: Configure which AI model each agent uses via model_preset in oma-co
 
 ## Overview
 
-`model_preset` is the single concept that controls which model every agent uses. Pick one of the seven built-in presets and every agent (pm, backend, frontend, qa, …) is wired to an appropriate model for that vendor stack. Override individual agents as needed. Define additional presets when your team has a non-standard mix.
+`model_preset` is the single concept that controls which model every agent uses. Pick one of the built-in presets and every agent (pm, backend, frontend, qa, …) is wired to an appropriate model for that vendor stack. Override individual agents as needed. Define additional presets when your team has a non-standard mix.
 
 All configuration lives in one file: `.agents/oma-config.yaml`.
 
 This page covers:
 
-1. The seven built-in presets
+1. The built-in presets
 2. Overriding individual agents with the `agents:` map
 3. Inlining custom model slugs with `models:`
 4. Defining custom presets with `custom_presets:` and `extends:`
@@ -24,12 +24,12 @@ This page covers:
 
 ## Built-In Presets
 
-Set `model_preset` to one of the seven built-in keys:
+Set `model_preset` to one of the built-in keys:
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 ```
 
 | Key | Description | Best for |
@@ -53,7 +53,7 @@ Use the `agents:` map to override specific agents on top of the active preset. O
 ```yaml
 # .agents/oma-config.yaml
 language: en
-model_preset: gemini
+model_preset: antigravity
 
 agents:
   backend: { model: openai/gpt-5.5, effort: high }

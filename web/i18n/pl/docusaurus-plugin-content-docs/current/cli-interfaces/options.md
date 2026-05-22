@@ -90,7 +90,7 @@ Format argumentu window: `7d` (7 dni), `2w` (2 tygodnie), `1m` (1 miesiąc).
 
 | Flaga | Skrót | Opis |
 |:-----|:------|:-----------|
-| `--model` | `-m` | Nadpisanie dostawcy CLI. Musi być: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. |
+| `--model` | `-m` | Nadpisanie dostawcy CLI. Musi być: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--workspace` | `-w` | Katalog roboczy. Auto-wykrywany z konfiguracji monorepo jeśli pominięty. |
 
 **Zachowanie specyficzne dla dostawcy:**

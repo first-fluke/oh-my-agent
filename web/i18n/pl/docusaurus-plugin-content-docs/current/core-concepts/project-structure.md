@@ -93,7 +93,7 @@ To katalog główny. Wszystko czego agenci potrzebują, znajduje się tutaj. To 
 - `language`: Kod języka odpowiedzi (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: Format znacznika czasu (domyślnie: `YYYY-MM-DD`)
 - `timezone`: Identyfikator strefy czasowej (domyślnie: `UTC`)
-- `default_cli`: Awaryjny dostawca CLI (gemini, claude, codex, qwen)
+- `default_cli`: Awaryjny dostawca CLI (antigravity, claude, codex, qwen)
 - `model_preset (per-agent overrides via `agents:`)`: Nadpisania routingu CLI per agent
 
 ### skills/
@@ -102,7 +102,7 @@ Gdzie rezydują kompetencje agentów. 22 katalogów łącznie: 21 umiejętności
 
 **`_shared/`** — Zasoby używane przez wszystkich agentów:
 - `core/` — Routing, ładowanie kontekstu, struktura promptów, protokół wyjaśniania, budżet kontekstu, ocena trudności, szablony wnioskowania, zasady jakości, wykrywanie dostawcy, metryki sesji, wspólna lista kontrolna, zdobyte doświadczenia, szablony kontraktów API
-- `runtime/` — Protokół pamięci dla subagentów CLI, protokoły wykonawcze per dostawca (claude, gemini, codex, qwen)
+- `runtime/` — Protokół pamięci dla subagentów CLI, protokoły wykonawcze per dostawca (claude, codex, qwen)
 - `conditional/` — Pomiar quality score, śledzenie experiment ledger, protokół exploration loop (ładowane tylko po spełnieniu warunków)
 
 **`oma-{agent}/`** — Katalogi umiejętności per agent. Każdy zawiera:

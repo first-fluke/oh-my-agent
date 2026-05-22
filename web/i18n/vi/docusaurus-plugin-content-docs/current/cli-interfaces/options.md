@@ -172,13 +172,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Viết tắt | Mô tả | Mặc định |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | Ghi đè vendor CLI. Phải là một trong: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Ghi đè tất cả phân giải vendor từ config. | Phân giải từ config |
+| `--model` | `-m` | Ghi đè vendor CLI. Phải là một trong: `antigravity`, `claude`, `codex`, `qwen`. Ghi đè tất cả phân giải vendor từ config. | Phân giải từ config |
 | `--workspace` | `-w` | Thư mục làm việc cho agent. Nếu bỏ qua hoặc đặt thành `.`, CLI tự phát hiện workspace từ file cấu hình monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Tự phát hiện hoặc `.` |
 
 **Xác thực:**
 - `agent-id` phải là một trong: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` không được chứa `..`, `?`, `#`, `%` hoặc ký tự điều khiển.
-- `vendor` phải là một trong: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` phải là một trong: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Hành vi đặc thù vendor:**
 
@@ -244,7 +244,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Khoảng thời gian: `1d`, `3d`, `7d`, `2w`, `30d`. Bị bỏ qua khi đặt `--date`. | `1d` |
 | `--date <date>` | Ngày cụ thể (`YYYY-MM-DD`). Ưu tiên hơn `--window`. | |
-| `--tool <tools>` | Lọc phiên theo công cụ. Phân tách bằng dấu phẩy: `claude`, `codex`, `gemini`, `qwen`, `cursor`. | tất cả công cụ |
+| `--tool <tools>` | Lọc phiên theo công cụ. Phân tách bằng dấu phẩy: `claude`, `codex`, `qwen`, `cursor`. | tất cả công cụ |
 | `--top <n>` | Chỉ hiển thị N dự án/chủ đề hàng đầu trong tổng kết. | không giới hạn |
 | `--sort <metric>` | Sắp xếp phiên theo `count` hoặc `duration`. | `count` |
 | `--mermaid` | Xuất biểu đồ Gantt Mermaid thay cho tổng kết mặc định. | `false` |

@@ -82,7 +82,7 @@ oh-my-agent는 전문화를 통해 이를 해결합니다:
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-search** | 의도 기반 검색 라우터 | 쿼리를 Context7(문서), 네이티브 웹 검색, `gh`/`glab`(코드), Serena(로컬)로 라우팅. 모든 비로컬 결과에 도메인 신뢰도 점수. Fail-forward 라우팅(docs→web→fetch). 플래그: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | 크로스 도구 작업 회고 | Claude, Codex, Gemini, Qwen, Cursor의 대화 이력을 분석합니다. 자연어 날짜/범위 입력을 해석하고, 도구+세션별로 그룹화하며, 테마를 추출하고, 스탠드업, 주간 회고, 작업 로그를 위한 일/기간 요약을 렌더링합니다. |
+| **oma-recap** | 크로스 도구 작업 회고 | Claude, Codex, Qwen, Cursor의 대화 이력을 분석합니다. 자연어 날짜/범위 입력을 해석하고, 도구+세션별로 그룹화하며, 테마를 추출하고, 스탠드업, 주간 회고, 작업 로그를 위한 일/기간 요약을 렌더링합니다. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | `bunx kordoc@latest`를 통한 한글 워드프로세서 문서 변환. 헤딩, 표(중첩 포함), 각주, 하이퍼링크, 이미지 보존. `flatten-tables.ts` 후처리기로 Hancom Private Use Area 문자 제거. |
 | **oma-pdf** | PDF → Markdown | `uvx opendataloader-pdf`를 통한 PDF 문서 변환. 헤딩, 표, 목록, 이미지 보존; 스캔된 PDF용 OCR 하이브리드 모드; `uvx mdformat`으로 출력 정규화. |
 

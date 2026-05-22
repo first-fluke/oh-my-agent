@@ -152,13 +152,13 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Corto | Descripción | Predeterminado |
 |:-----|:------|:-----------|:---------------|
-| `--model` | `-m` | Proveedor CLI. Debe ser uno de: `antigravity`, `gemini`, `claude`, `codex`, `qwen`. Sobrescribe toda la resolución de proveedor basada en configuración. | Resuelto desde config |
+| `--model` | `-m` | Proveedor CLI. Debe ser uno de: `antigravity`, `claude`, `codex`, `qwen`. Sobrescribe toda la resolución de proveedor basada en configuración. | Resuelto desde config |
 | `--workspace` | `-w` | Directorio de trabajo del agente. Si se omite o se establece como `.`, el CLI auto-detecta el workspace desde archivos de configuración del monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detectado o `.` |
 
 **Validación:**
 - `agent-id` debe ser uno de: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 - `session-id` no debe contener `..`, `?`, `#`, `%`, ni caracteres de control.
-- `vendor` debe ser uno de: `antigravity`, `gemini`, `claude`, `codex`, `qwen`.
+- `vendor` debe ser uno de: `antigravity`, `claude`, `codex`, `qwen`.
 
 **Comportamiento específico por proveedor:**
 
@@ -224,7 +224,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:---------------|
 | `--window <period>` | Ventana de tiempo: `1d`, `3d`, `7d`, `2w`, `30d`. Se ignora cuando se establece `--date`. | `1d` |
 | `--date <date>` | Fecha específica (`YYYY-MM-DD`). Tiene precedencia sobre `--window`. | |
-| `--tool <tools>` | Filtra sesiones por herramienta. Lista separada por comas: `claude`, `codex`, `gemini`, `qwen`, `cursor`. | todas las herramientas |
+| `--tool <tools>` | Filtra sesiones por herramienta. Lista separada por comas: `claude`, `codex`, `qwen`, `cursor`. | todas las herramientas |
 | `--top <n>` | Muestra solo los N principales proyectos/temas en el resumen. | sin límite |
 | `--sort <metric>` | Ordena sesiones por `count` o `duration`. | `count` |
 | `--mermaid` | Genera un diagrama Gantt de Mermaid en lugar del resumen por defecto. | `false` |

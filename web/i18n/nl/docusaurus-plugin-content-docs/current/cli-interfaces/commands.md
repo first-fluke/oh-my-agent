@@ -74,7 +74,7 @@ Productiviteitsmetrieken: sessieaantal, gebruikte skills, voltooide taken, sessi
 
 ### recap
 
-Recap van AI-tool conversatiegeschiedenis over Antigravity-, Claude-, Codex-, Gemini-, Qwen- en Cursor-sessies.
+Recap van AI-tool conversatiegeschiedenis over Antigravity-, Claude-, Codex-, Qwen- en Cursor-sessies.
 
 ```
 oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--sort <metric>] [--mermaid] [--graph] [--json] [--output <format>]
@@ -86,7 +86,7 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 |:-----|:-----------|:--------|
 | `--window <period>` | Tijdvenster: `1d`, `3d`, `7d`, `2w`, `30d` | `1d` |
 | `--date <date>` | Specifieke datum (`YYYY-MM-DD`); heeft voorrang op `--window` | |
-| `--tool <tools>` | Komma-gescheiden filter: `claude,codex,gemini,qwen,cursor` | alle |
+| `--tool <tools>` | Komma-gescheiden filter: `claude,codex,qwen,cursor` | alle |
 | `--top <n>` | Toon top N projecten/onderwerpen | |
 | `--sort <metric>` | Sorteer op `count` of `duration` | `count` |
 | `--mermaid` | Uitvoer als Mermaid Gantt-grafiek | |
@@ -129,7 +129,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `-m, --model` | CLI-leverancier: `antigravity`, `gemini`, `claude`, `codex`, `qwen` |
+| `-m, --model` | CLI-leverancier: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace` | Werkdirectory (auto-gedetecteerd uit monorepo-config indien weggelaten) |
 
 ### agent:status
@@ -150,7 +150,7 @@ YAML-takenbestand of inline modus (`agent:task[:workspace]`).
 
 ### agent:review
 
-Voer een codereview uit met een externe AI CLI (antigravity, codex, claude, gemini of qwen).
+Voer een codereview uit met een externe AI CLI (antigravity, codex, claude of qwen).
 
 ```
 oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
@@ -160,7 +160,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Te gebruiken CLI-leverancier: `antigravity`, `codex`, `claude`, `gemini`, `qwen`. Standaard de geconfigureerde leverancier. |
+| `-m, --model <vendor>` | Te gebruiken CLI-leverancier: `antigravity`, `codex`, `claude`, `qwen`. Standaard de geconfigureerde leverancier. |
 | `-p, --prompt <prompt>` | Aangepaste reviewprompt. Indien weggelaten wordt een standaard codereview-prompt gebruikt. |
 | `-w, --workspace <path>` | Pad om te reviewen. Standaard de huidige werkdirectory. |
 | `--no-uncommitted` | Sla review van niet-gecommitte wijzigingen over. Alleen gecommitte wijzigingen in de sessie worden gereviewed. |
@@ -168,7 +168,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Wat het doet:**
 - Detecteert automatisch de huidige sessie-ID vanuit de omgeving of recente git-activiteit.
 - Voor `codex`: gebruikt het native `codex review`-subcommando.
-- Voor `claude`, `gemini`, `qwen`: stelt een prompt-gebaseerd reviewverzoek samen en roept de CLI aan met de reviewprompt.
+- Voor `claude`, `qwen`: stelt een prompt-gebaseerd reviewverzoek samen en roept de CLI aan met de reviewprompt.
 - Standaard worden niet-gecommitte wijzigingen in de werkdirectory gereviewed.
 - Met `--no-uncommitted` wordt de review beperkt tot wijzigingen die binnen de huidige sessie zijn gecommit.
 

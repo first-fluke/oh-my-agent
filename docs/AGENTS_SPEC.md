@@ -140,7 +140,7 @@ agent_cli_mapping:
     memory: default
 ```
 
-Unspecified agents fall back to the active `runtime_profile` defined in `defaults.yaml` (`claude`, `codex`, `gemini`, `qwen`, `cursor`, `mixed`). See [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md) for the full resolution order.
+Unspecified agents fall back to the active `runtime_profile` defined in `defaults.yaml` (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`). See [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md) for the full resolution order.
 
 ## Interoperability Model
 

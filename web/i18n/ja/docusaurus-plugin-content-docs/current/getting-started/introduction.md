@@ -82,7 +82,7 @@ oh-my-agentは専門化によってこれを解決します：
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
 | **oma-search** | インテントベースの検索ルーター | クエリをContext7（ドキュメント）、ネイティブウェブ検索、`gh`/`glab`（コード）、Serena（ローカル）にルーティング。すべての非ローカル結果にドメイン信頼度スコアリング。Fail-forwardルーティング（docs→web→fetch）。フラグ：`--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab`。 |
-| **oma-recap** | ツール横断の作業レトロスペクティブ | Claude、Codex、Gemini、Qwen、Cursorの会話履歴を分析。自然言語の日付／期間入力を解決し、ツール+セッションごとにグループ化、テーマを抽出、スタンドアップ、週次レトロ、作業ログ用の日次／期間サマリーをレンダリング。 |
+| **oma-recap** | ツール横断の作業レトロスペクティブ | Claude、Codex、Qwen、Cursorの会話履歴を分析。自然言語の日付／期間入力を解決し、ツール+セッションごとにグループ化、テーマを抽出、スタンドアップ、週次レトロ、作業ログ用の日次／期間サマリーをレンダリング。 |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | `bunx kordoc@latest`による韓国語ワードプロセッサ文書の変換。見出し、表（ネスト含む）、脚注、ハイパーリンク、画像を保持。`flatten-tables.ts`後処理でHancomの私用領域文字を除去。 |
 | **oma-pdf** | PDF → Markdown | `uvx opendataloader-pdf`によるPDF文書の変換。見出し、表、リスト、画像を保持；スキャンされたPDF用のOCRハイブリッドモード；`uvx mdformat`で出力を正規化。 |
 
