@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.4](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.3...web-v3.5.4) (2026-05-22)
+
+
+### Documentation
+
+* remove deprecated gemini from vendor and preset listings ([71915ff](https://github.com/first-fluke/oh-my-agent/commit/71915ff65a064730a7cdc753625f6c028ed662e6))
+
 ## [3.5.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.2...web-v3.5.3) (2026-05-20)
 
 
