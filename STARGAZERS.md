@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (994)
+## Current (1003)
 
 - @05hhh35 — 2026-03-07
 - @0cherry — 2026-04-02
@@ -92,6 +92,7 @@ summaries to spot which persona is churning.
 - @asyncFlow-dad — 2026-04-24
 - @Axelvrdn — 2026-05-20
 - @azizsayadi1155 — 2026-05-10
+- @azla-leomin9 — 2026-05-21
 - @ba-hc — 2026-04-09
 - @BaGyun0107 — 2026-03-12
 - @BangKeonwoong — 2026-04-17
@@ -423,6 +424,7 @@ summaries to spot which persona is churning.
 - @ImbaPlayer — 2026-04-23
 - @imsungsuk455 — 2026-02-02
 - @imxieke — 2026-02-26
+- @infokiller — 2026-05-21
 - @ingemar — 2026-05-20
 - @insung — 2026-02-21
 - @InSuperposition — 2026-03-18
@@ -520,6 +522,7 @@ summaries to spot which persona is churning.
 - @keelzhang — 2026-03-22
 - @Keiji-Miyake — 2026-02-10
 - @keithevans786 — 2026-02-02
+- @KenjiYamakawa — 2026-05-21
 - @kenux196 — 2026-05-20
 - @kgkimm — 2026-04-19
 - @khizarulhaq — 2026-04-01
@@ -597,6 +600,7 @@ summaries to spot which persona is churning.
 - @ludongrong — 2026-04-20
 - @luisfernandosoni — 2026-02-10
 - @lujunlujun66 — 2026-04-20
+- @LunaticChanel — 2026-05-21
 - @Luxthelee — 2026-03-17
 - @lvt-yousiang — 2026-05-15
 - @LWH-9393 — 2026-04-19
@@ -611,6 +615,7 @@ summaries to spot which persona is churning.
 - @manipadisetti — 2026-04-09
 - @manolismavrok — 2026-04-23
 - @manuelffernandez — 2026-03-23
+- @marcuscabrera — 2026-05-21
 - @markncx — 2026-04-21
 - @marsnine — 2026-05-05
 - @martinmaricak — 2026-01-31
@@ -664,6 +669,7 @@ summaries to spot which persona is churning.
 - @nanpuhaha — 2026-03-16
 - @naoki-rafael-miura — 2026-02-12
 - @nasong27-oss — 2026-04-14
+- @neuexg — 2026-05-21
 - @NeuroNexa — 2026-04-07
 - @neverparadise — 2026-03-17
 - @newskool4d-sketch — 2026-04-19
@@ -754,6 +760,7 @@ summaries to spot which persona is churning.
 - @rafael-augusto — 2026-02-13
 - @rafaelgeronimo — 2026-02-11
 - @raghavpatnecha — 2026-04-04
+- @rangsso — 2026-05-21
 - @raphaelhuefner — 2026-03-19
 - @Rawmanski — 2026-03-18
 - @ray-ho33 — 2026-04-21
@@ -782,6 +789,7 @@ summaries to spot which persona is churning.
 - @rookedsysc — 2026-02-02
 - @route99-roadRunner — 2026-02-02
 - @rpls-byeongwoo — 2026-03-16
+- @runefor — 2026-05-21
 - @rvzaku — 2026-05-20
 - @RxScriptor — 2026-05-17
 - @ryan-haver — 2026-03-10
@@ -857,6 +865,7 @@ summaries to spot which persona is churning.
 - @stomx — 2026-03-26
 - @strauss-vasconcelos — 2026-03-22
 - @stribus — 2026-02-12
+- @suhyoung89pro — 2026-05-21
 - @sumhwang — 2026-04-22
 - @sungchul-bindo — 2026-04-10
 - @superbjl — 2026-05-07
