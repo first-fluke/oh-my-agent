@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.5.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.1...cli-v8.5.2) (2026-05-22)
+
+
+### Refactoring
+
+* **cli:** drop deprecated gemini from user-facing help text ([e2ea553](https://github.com/first-fluke/oh-my-agent/commit/e2ea553c6b6c2b8a3ee78ac68282b570e3014e04))
+
+
+### Documentation
+
+* remove deprecated gemini from vendor and preset listings ([71915ff](https://github.com/first-fluke/oh-my-agent/commit/71915ff65a064730a7cdc753625f6c028ed662e6))
+
 ## [8.5.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.0...cli-v8.5.1) (2026-05-21)
 
 
