@@ -10,9 +10,9 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureCursorMcpConfig } from "./skills-installer.js";
+import { applyCursorMcpConfig } from "./skills-installer.js";
 
-describe("ensureCursorMcpConfig", () => {
+describe("applyCursorMcpConfig", () => {
   const roots: string[] = [];
 
   afterEach(() => {
@@ -57,7 +57,7 @@ describe("ensureCursorMcpConfig", () => {
       "utf-8",
     );
 
-    ensureCursorMcpConfig(root);
+    applyCursorMcpConfig(root);
 
     const cursorMcp = join(root, ".cursor", "mcp.json");
     expect(lstatSync(cursorMcp).isSymbolicLink()).toBe(false);
@@ -80,7 +80,7 @@ describe("ensureCursorMcpConfig", () => {
     const root = projectRoot();
     mkdirSync(join(root, ".cursor"), { recursive: true });
 
-    ensureCursorMcpConfig(root);
+    applyCursorMcpConfig(root);
 
     expect(() => lstatSync(join(root, ".cursor", "mcp.json"))).toThrow();
   });
@@ -103,7 +103,7 @@ describe("ensureCursorMcpConfig", () => {
       true,
     );
 
-    ensureCursorMcpConfig(root);
+    applyCursorMcpConfig(root);
 
     expect(lstatSync(join(root, ".cursor", "mcp.json")).isSymbolicLink()).toBe(
       false,

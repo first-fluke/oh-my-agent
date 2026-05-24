@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyRecommendedQwenSettings,
+  applyQwenSettings,
   needsQwenSettingsUpdate,
   RECOMMENDED_QWEN_MCP,
   sanitizeQwenSettings,
@@ -54,12 +54,12 @@ describe("qwen settings", () => {
   });
 
   it("applies privacy.usageStatisticsEnabled=false by default", () => {
-    const result = applyRecommendedQwenSettings({});
+    const result = applyQwenSettings({});
     expect(result.privacy).toEqual({ usageStatisticsEnabled: false });
   });
 
   it("strips privacy.usageStatisticsEnabled when telemetry is opted in", () => {
-    const result = applyRecommendedQwenSettings(
+    const result = applyQwenSettings(
       { privacy: { usageStatisticsEnabled: false } },
       { telemetry: true },
     );
@@ -74,7 +74,7 @@ describe("qwen settings", () => {
       },
     };
 
-    const result = applyRecommendedQwenSettings(settings);
+    const result = applyQwenSettings(settings);
     expect(result.mcpServers).toEqual({
       other: { url: "http://localhost:3000/mcp" },
       ...RECOMMENDED_QWEN_MCP,
@@ -93,7 +93,7 @@ describe("qwen settings", () => {
       },
     };
 
-    const result = applyRecommendedQwenSettings(settings);
+    const result = applyQwenSettings(settings);
     expect(result.mcpServers?.serena).toEqual({
       command: "uvx",
       args: ["serena"],
@@ -116,5 +116,41 @@ describe("qwen settings", () => {
       command: "uvx",
       args: ["serena"],
     });
+  });
+});
+
+describe("T2.9 rename regression — applyQwenSettings", () => {
+  it("produces byte-identical output for a minimal empty fixture (applyQwenSettings)", () => {
+    // Locks output for the targetDir → installRoot rename (plan T2.9).
+    const result = applyQwenSettings({});
+
+    const expected = {
+      mcpServers: {
+        serena: {
+          command: "serena",
+          args: ["start-mcp-server", "--context", "ide", "--project", "."],
+          env: { SERENA_LOG_LEVEL: "info" },
+        },
+      },
+      privacy: { usageStatisticsEnabled: false },
+    } as const;
+
+    expect(result).toEqual(expected);
+  });
+
+  it("needsQwenSettingsUpdate returns false for the recommended-state fixture (needsQwenSettingsUpdate)", () => {
+    // Locks output for the targetDir → installRoot rename (plan T2.9).
+    const upToDate = {
+      privacy: { usageStatisticsEnabled: false },
+      mcpServers: {
+        serena: {
+          command: "serena",
+          args: ["start-mcp-server", "--context", "ide", "--project", "."],
+          env: { SERENA_LOG_LEVEL: "info" },
+        },
+      },
+    } as const;
+
+    expect(needsQwenSettingsUpdate(upToDate)).toBe(false);
   });
 });

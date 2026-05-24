@@ -205,7 +205,7 @@ export function needsGeminiSettingsUpdate(
   return false;
 }
 
-export function applyRecommendedGeminiSettings(
+export function applyGeminiSettings(
   rawSettings: unknown,
   options: GeminiSettingsOptions = {},
 ): GeminiSettings {

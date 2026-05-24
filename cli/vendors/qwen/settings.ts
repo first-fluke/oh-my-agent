@@ -137,7 +137,7 @@ export function needsQwenSettingsUpdate(
   return false;
 }
 
-export function applyRecommendedQwenSettings(
+export function applyQwenSettings(
   rawSettings: unknown,
   options: QwenSettingsOptions = {},
 ): QwenSettings {

@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  applyCursorRules,
   generateClaudeRules,
-  generateCursorRules,
   mergeRulesIndexForVendor,
   readRules,
 } from "./rules.js";
@@ -65,7 +65,7 @@ describe("readRules", () => {
   });
 });
 
-describe("generateCursorRules", () => {
+describe("applyCursorRules", () => {
   beforeEach(() => vi.clearAllMocks());
   afterEach(() => vi.restoreAllMocks());
 
@@ -73,7 +73,7 @@ describe("generateCursorRules", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       false,
     );
-    expect(generateCursorRules(mockTargetDir)).toEqual([]);
+    expect(applyCursorRules(mockTargetDir)).toEqual([]);
   });
 
   it("should generate .mdc files with Cursor frontmatter", () => {
@@ -87,7 +87,7 @@ describe("generateCursorRules", () => {
       '---\ndescription: Frontend standards\nglobs: "**/*.{tsx,jsx}"\nalwaysApply: false\n---\n\n# Frontend\n\n1. Use React',
     );
 
-    const result = generateCursorRules(mockTargetDir);
+    const result = applyCursorRules(mockTargetDir);
     expect(result).toEqual(["frontend"]);
 
     const writeCall = (
@@ -117,7 +117,7 @@ describe("generateCursorRules", () => {
       "---\ndescription: i18n\nalwaysApply: true\n---\n\n# i18n",
     );
 
-    generateCursorRules(mockTargetDir);
+    applyCursorRules(mockTargetDir);
 
     const writeCall = (
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>

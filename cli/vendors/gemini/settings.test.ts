@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyRecommendedGeminiSettings,
+  applyGeminiSettings,
   needsGeminiSettingsUpdate,
   RECOMMENDED_GEMINI_EXPERIMENTAL,
   RECOMMENDED_GEMINI_GENERAL,
@@ -84,12 +84,12 @@ describe("gemini settings", () => {
   });
 
   it("applies privacy.usageStatisticsEnabled=false by default", () => {
-    const result = applyRecommendedGeminiSettings({});
+    const result = applyGeminiSettings({});
     expect(result.privacy).toEqual({ usageStatisticsEnabled: false });
   });
 
   it("strips privacy.usageStatisticsEnabled when telemetry is opted in", () => {
-    const result = applyRecommendedGeminiSettings(
+    const result = applyGeminiSettings(
       { privacy: { usageStatisticsEnabled: false } },
       { telemetry: true },
     );
@@ -106,7 +106,7 @@ describe("gemini settings", () => {
       hooks: { BeforeAgent: [] },
     };
 
-    const result = applyRecommendedGeminiSettings(settings);
+    const result = applyGeminiSettings(settings);
     expect(result.general).toEqual({
       theme: "dark",
       ...RECOMMENDED_GEMINI_GENERAL,
@@ -166,12 +166,52 @@ describe("gemini settings", () => {
       },
     };
 
-    const result = applyRecommendedGeminiSettings(settings);
+    const result = applyGeminiSettings(settings);
 
     expect(result.mcpServers?.serena).toEqual({
       command: "uvx",
       args: ["serena"],
       includeTools: ["find_symbol"],
     });
+  });
+});
+
+describe("T2.9 rename regression — applyGeminiSettings", () => {
+  it("produces byte-identical output for a minimal empty fixture (applyGeminiSettings)", () => {
+    // Locks output for the targetDir → installRoot rename (plan T2.9).
+    const result = applyGeminiSettings({});
+
+    const expected = {
+      general: { enableNotifications: true },
+      experimental: { enableAgents: true },
+      mcpServers: {
+        serena: {
+          command: "serena",
+          args: ["start-mcp-server", "--context", "ide", "--project", "."],
+          env: { SERENA_LOG_LEVEL: "info" },
+        },
+      },
+      privacy: { usageStatisticsEnabled: false },
+    } as const;
+
+    expect(result).toEqual(expected);
+  });
+
+  it("needsGeminiSettingsUpdate returns false for the recommended-state fixture (needsGeminiSettingsUpdate)", () => {
+    // Locks output for the targetDir → installRoot rename (plan T2.9).
+    const upToDate = {
+      general: { enableNotifications: true },
+      experimental: { enableAgents: true },
+      privacy: { usageStatisticsEnabled: false },
+      mcpServers: {
+        serena: {
+          command: "serena",
+          args: ["start-mcp-server", "--context", "ide", "--project", "."],
+          env: { SERENA_LOG_LEVEL: "info" },
+        },
+      },
+    } as const;
+
+    expect(needsGeminiSettingsUpdate(upToDate)).toBe(false);
   });
 });

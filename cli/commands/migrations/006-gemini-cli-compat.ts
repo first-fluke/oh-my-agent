@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { isTelemetryEnabled } from "../../utils/config.js";
 import {
-  applyRecommendedGeminiSettings,
+  applyGeminiSettings,
   type GeminiSettings,
   sanitizeGeminiSettings,
 } from "../../vendors/gemini/settings.js";
@@ -109,10 +109,7 @@ export const migrateGeminiCliCompat: Migration = {
     const normalizedHooksChanged = normalizeGeminiProjectHooks(sanitized);
     const beforeRecommended = JSON.stringify(sanitized);
     const telemetryOptions = { telemetry: isTelemetryEnabled(cwd) };
-    const nextSettings = applyRecommendedGeminiSettings(
-      sanitized,
-      telemetryOptions,
-    );
+    const nextSettings = applyGeminiSettings(sanitized, telemetryOptions);
     const compatibilityChanged =
       beforeRecommended !== JSON.stringify(nextSettings);
 

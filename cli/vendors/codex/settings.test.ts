@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EffortLevel } from "../../platform/model-registry.js";
 import {
-  applyRecommendedCodexSettings,
+  applyCodexSettings,
   needsCodexSettingsUpdate,
   parseCodexConfig,
   RECOMMENDED_CODEX_FEATURES,
@@ -101,13 +101,13 @@ describe("codex settings", () => {
   });
 
   it("applies analytics.enabled=false and feedback.enabled=false by default", () => {
-    const result = applyRecommendedCodexSettings({});
+    const result = applyCodexSettings({});
     expect(result.analytics).toEqual({ enabled: false });
     expect(result.feedback).toEqual({ enabled: false });
   });
 
   it("strips analytics/feedback opt-out tables when telemetry is opted in", () => {
-    const result = applyRecommendedCodexSettings(
+    const result = applyCodexSettings(
       {
         analytics: { enabled: false },
         feedback: { enabled: false },
@@ -126,7 +126,7 @@ describe("codex settings", () => {
       },
     };
 
-    const result = applyRecommendedCodexSettings(settings);
+    const result = applyCodexSettings(settings);
     expect(result.mcp_servers?.other).toEqual({
       command: "npx",
       args: ["other-mcp"],
@@ -147,7 +147,7 @@ describe("codex settings", () => {
       },
     };
 
-    const result = applyRecommendedCodexSettings(settings);
+    const result = applyCodexSettings(settings);
     expect(result.features).toEqual({
       custom_flag: true,
       ...RECOMMENDED_CODEX_FEATURES,
@@ -177,7 +177,7 @@ describe("codex settings", () => {
       features: { goals: false, child_agents_md: false, custom_flag: true },
     };
 
-    const result = applyRecommendedCodexSettings(settings);
+    const result = applyCodexSettings(settings);
     expect(result.features).toEqual({
       goals: true,
       child_agents_md: true,
@@ -195,7 +195,7 @@ describe("codex settings", () => {
       },
     };
 
-    const result = applyRecommendedCodexSettings(settings);
+    const result = applyCodexSettings(settings);
     expect(result.mcp_servers?.serena).toEqual({
       command: "uvx",
       args: ["serena"],

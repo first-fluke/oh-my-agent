@@ -55,7 +55,7 @@ export function readRules(baseDir: string): ParsedRule[] {
  * Generate .cursor/rules/*.mdc from SSOT.
  * Cursor uses: description, globs, alwaysApply frontmatter.
  */
-export function generateCursorRules(targetDir: string): string[] {
+export function applyCursorRules(targetDir: string): string[] {
   const rules = readRules(targetDir);
   if (rules.length === 0) return [];
 

@@ -76,7 +76,7 @@ export function needsClaudeMcpUpdate(raw: unknown): boolean {
   return false;
 }
 
-export function applyRecommendedClaudeMcp(raw: unknown): ClaudeMcpConfig {
+export function applyClaudeMcp(raw: unknown): ClaudeMcpConfig {
   const base: ClaudeMcpConfig = isRecord(raw) ? (raw as ClaudeMcpConfig) : {};
   const currentMcp = isRecord(base.mcpServers) ? base.mcpServers : {};
   base.mcpServers = {

@@ -140,7 +140,7 @@ function applyPrivacyTable(
   }
 }
 
-export function applyRecommendedCodexSettings(
+export function applyCodexSettings(
   settings: unknown,
   options: CodexSettingsOptions = {},
 ): CodexSettings {

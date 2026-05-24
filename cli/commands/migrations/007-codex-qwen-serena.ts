@@ -1,13 +1,13 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  applyRecommendedCodexSettings,
+  applyCodexSettings,
   needsCodexSettingsUpdate,
   parseCodexConfig,
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
 import {
-  applyRecommendedQwenSettings,
+  applyQwenSettings,
   needsQwenSettingsUpdate,
 } from "../../vendors/qwen/settings.js";
 import type { Migration } from "./index.js";
@@ -31,7 +31,7 @@ export const migrateCodexQwenSerena: Migration = {
         parsed = {};
       }
       if (needsQwenSettingsUpdate(parsed)) {
-        const next = applyRecommendedQwenSettings(parsed);
+        const next = applyQwenSettings(parsed);
         writeFileSync(qwenSettingsPath, `${JSON.stringify(next, null, 2)}\n`);
         actions.push(".qwen/settings.json (Serena MCP registered)");
       }
@@ -42,7 +42,7 @@ export const migrateCodexQwenSerena: Migration = {
       const rawToml = readFileSync(codexConfigPath, "utf-8");
       const parsed = parseCodexConfig(rawToml);
       if (needsCodexSettingsUpdate(parsed)) {
-        const next = applyRecommendedCodexSettings(parsed);
+        const next = applyCodexSettings(parsed);
         writeFileSync(codexConfigPath, `${serializeCodexConfig(next)}\n`);
         actions.push(".codex/config.toml (Serena MCP registered)");
       }

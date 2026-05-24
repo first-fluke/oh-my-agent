@@ -33,7 +33,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { loadSerenaConfig } from "../../utils/config.js";
 import {
-  applyRecommendedClaudeMcp,
+  applyClaudeMcp,
   needsClaudeMcpUpdate,
 } from "../../vendors/claude/mcp.js";
 import {
@@ -304,7 +304,7 @@ export const migrateSerenaUvTool: Migration = {
     // or wrong --context). We don't auto-create on bare repos — `oma link`
     // owns the creation path so users opt in explicitly via the claude
     // vendor. Existing custom servers are preserved because
-    // applyRecommendedClaudeMcp merges instead of overwriting non-serena
+    // applyClaudeMcp merges instead of overwriting non-serena
     // entries.
     const claudeMcpPath = join(cwd, ".mcp.json");
     if (existsSync(claudeMcpPath)) {
@@ -317,7 +317,7 @@ export const migrateSerenaUvTool: Migration = {
       if (needsClaudeMcpUpdate(claudeMcp)) {
         writeFileSync(
           claudeMcpPath,
-          `${JSON.stringify(applyRecommendedClaudeMcp(claudeMcp), null, 2)}\n`,
+          `${JSON.stringify(applyClaudeMcp(claudeMcp), null, 2)}\n`,
         );
         actions.push(".mcp.json (Claude Code project MCP refreshed)");
       }

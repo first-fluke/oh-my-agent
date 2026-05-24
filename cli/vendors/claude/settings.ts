@@ -58,7 +58,7 @@ export const RECOMMENDED_ATTRIBUTION = {
 /**
  * Check whether existing settings already match the recommended values.
  */
-export function needsSettingsUpdate(
+export function needsClaudeSettingsUpdate(
   // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
   claudeSettings: any,
   options: ClaudeSettingsOptions = {},
@@ -103,7 +103,7 @@ export function needsSettingsUpdate(
 /**
  * Merge recommended settings into existing settings object (mutates).
  */
-export function applyRecommendedSettings(
+export function applyClaudeSettings(
   // biome-ignore lint/suspicious/noExplicitAny: settings.json schema is dynamic
   claudeSettings: any,
   options: ClaudeSettingsOptions = {},
