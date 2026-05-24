@@ -123,34 +123,34 @@ Kies een preset en je bent klaar:
 
 | Agent | Wat ze doen |
 |-------|-------------|
-| **oma-academic-writer** | Academisch proza op publicatieniveau: schrijven, herzien en rubric-audits |
-| **oma-architecture** | Architectuur-trade-offs, grenzen, ADR/ATAM/CBAM-bewuste analyse |
-| **oma-backend** | API's in Python, Node.js of Rust |
-| **oma-brainstorm** | Verkent ideeen voordat je begint met bouwen |
-| **oma-db** | Schema-ontwerp, migraties, indexering, vector DB |
-| **oma-debug** | Root cause-analyse, fixes, regressietests |
-| **oma-deepsec** | Agent-gedreven vulnerability scanner, PR-gate, eigen matchers |
-| **oma-design** | Design systems, tokens, toegankelijkheid, responsive |
-| **oma-dev-workflow** | CI/CD, releases, monorepo-automatisering |
-| **oma-docs** | Referentie-integriteitscontroles, detectie van door diff geraakte docs |
-| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
-| **oma-hwp** | HWP/HWPX/HWPML naar Markdown conversie |
-| **oma-image** | Multi-vendor AI-beeldgeneratie |
-| **oma-market** | Marktonderzoek op basis van community-signalen voor pain/trend/concurrent/discovery met SWOT/5F/PESTEL |
-| **oma-mobile** | Cross-platform apps met Flutter |
-| **oma-observability** | Observability-router voor APM/RUM, metrics/logs/traces/profiles, SLO, incident forensics en transport-tuning |
-| **oma-orchestrator** | Parallelle agent-uitvoering via CLI |
-| **oma-pdf** | PDF naar Markdown conversie |
-| **oma-pm** | Plant taken, splitst requirements op, definieert API-contracten |
-| **oma-qa** | OWASP-beveiliging, performance, toegankelijkheidsreview |
-| **oma-recap** | Analyse van gespreksgeschiedenis en thematische werksamenvattingen |
-| **oma-scholar** | Academische onderzoekspartner voor literatuuronderzoek en peer review |
-| **oma-scm** | Softwareconfiguratiebeheer met branching, merges, worktrees, baselines, Conventional Commits |
-| **oma-search** | Intentiegebaseerde zoekrouter met vertrouwensscore voor docs, web, code en lokaal |
-| **oma-skill-creator** | Schrijft en auditeert OMA-skills in het SSL-lite-formaat |
-| **oma-tf-infra** | Multi-cloud Terraform IaC (Infrastructure as Code) |
-| **oma-translator** | Natuurlijke meertalige vertaling |
-| **oma-voice** | Local-first TTS/STT via Voicebox MCP voor spraakgeneratie, voice-over en transcriptie |
+| **oma-academic-writer** | Schrijft, herziet en auditeert academisch proza tot publicatiekwaliteit |
+| **oma-architecture** | Weegt architectuurafwegingen af en bepaalt modulegrenzen met ADR/ATAM/CBAM-analyse |
+| **oma-backend** | Bouwt en beveiligt je API's in Python, Node.js of Rust |
+| **oma-brainstorm** | Verkent ideeën samen met jou voordat je begint met bouwen |
+| **oma-db** | Ontwerpt je schema, migraties, indexes en vector stores |
+| **oma-debug** | Zoekt de root cause, lost de bug op en schrijft een regressietest |
+| **oma-deepsec** | Scant je code op beveiligingslekken en blokkeert riskante pull requests |
+| **oma-design** | Bouwt design systems met tokens, toegankelijkheid en responsive layouts |
+| **oma-dev-workflow** | Automatiseert je CI/CD, releases en monorepo-taken |
+| **oma-docs** | Controleert je docs op gebroken verwijzingen en markeert wat een codewijziging heeft geraakt |
+| **oma-frontend** | Bouwt je UI met React/Next.js, TypeScript, Tailwind CSS v4 en shadcn/ui |
+| **oma-hwp** | Converteert HWP-, HWPX- en HWPML-bestanden naar Markdown |
+| **oma-image** | Genereert afbeeldingen via meerdere AI-providers tegelijk |
+| **oma-market** | Onderzoekt je markt op basis van community-signalen en structureert dit met SWOT, Porter's 5F en PESTEL |
+| **oma-mobile** | Bouwt cross-platform mobiele apps met Flutter |
+| **oma-observability** | Routeert observability-werk over metrics, logs, traces, SLO's en incident forensics |
+| **oma-orchestrator** | Draait meerdere agents parallel via de CLI |
+| **oma-pdf** | Converteert PDF-bestanden naar Markdown |
+| **oma-pm** | Plant taken, splitst requirements op en definieert API-contracten |
+| **oma-qa** | Reviewt je code op OWASP-beveiliging, performance en toegankelijkheid |
+| **oma-recap** | Vat je gespreksgeschiedenis samen in thematische werkoverviews |
+| **oma-scholar** | Doorzoekt academische literatuur en helpt je bij peer review |
+| **oma-scm** | Beheert je branches, merges, worktrees en Conventional Commits |
+| **oma-search** | Routeert elke zoekopdracht naar de beste bron en geeft een vertrouwensscore |
+| **oma-skill-creator** | Schrijft en auditeert nieuwe OMA-skills in het SSL-lite-formaat |
+| **oma-tf-infra** | Provisioneert multi-cloud infrastructuur met Terraform |
+| **oma-translator** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
+| **oma-voice** | Genereert voice-overs en transcribeert audio lokaal, zonder cloud |
 
 ## Hoe het werkt
 

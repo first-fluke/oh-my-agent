@@ -123,34 +123,34 @@ O `oh-my-agent` mantém `.agents/` como única fonte de verdade (SSOT) e o proje
 
 | Agente | O Que Faz |
 |-------|-------------|
-| **oma-academic-writer** | Redacao, revisao e auditorias por rubrica de prosa academica em nivel de publicacao |
-| **oma-architecture** | Trade-offs de arquitetura, limites, analise com foco em ADR/ATAM/CBAM |
-| **oma-backend** | APIs em Python, Node.js ou Rust |
-| **oma-brainstorm** | Explora ideias antes de voce comecar a construir |
-| **oma-db** | Design de schema, migrations, indexacao, vector DB |
-| **oma-debug** | Analise de causa raiz, correcoes, testes de regressao |
-| **oma-deepsec** | Scanner de vulnerabilidades por agente, gate de PR, matchers personalizados |
-| **oma-design** | Design systems, tokens, acessibilidade, responsividade |
-| **oma-dev-workflow** | CI/CD, releases, automacao de monorepo |
-| **oma-docs** | Verificações de integridade de refs, detecção de docs afetados por diff |
-| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
-| **oma-hwp** | Conversão de HWP/HWPX/HWPML para Markdown |
-| **oma-image** | Geração de imagens IA multi-fornecedor |
-| **oma-market** | Pesquisa de mercado por sinais de comunidade para pain/trend/concorrente/discovery com SWOT/5F/PESTEL |
-| **oma-mobile** | Apps cross-platform com Flutter |
-| **oma-observability** | Roteador de observabilidade para APM/RUM, métricas/logs/traces/profiles, SLO, forense de incidentes e ajuste de transporte |
-| **oma-orchestrator** | Execucao paralela de agentes via CLI |
-| **oma-pdf** | Conversão de PDF para Markdown |
-| **oma-pm** | Planeja tarefas, detalha requisitos, define contratos de API |
-| **oma-qa** | Seguranca OWASP, performance, revisao de acessibilidade |
-| **oma-recap** | Analise de historico de conversas e resumos tematicos de trabalho |
-| **oma-scholar** | Companheiro de pesquisa acadêmica para busca bibliográfica e revisão por pares |
-| **oma-scm** | Gestão de configuração de software com branches, merges, worktrees, baselines, Conventional Commits |
-| **oma-search** | Roteador de busca baseado em intenção com pontuação de confiança para docs, web, código e local |
-| **oma-skill-creator** | Cria e audita skills OMA no formato SSL-lite |
-| **oma-tf-infra** | IaC multi-cloud com Terraform (Infrastructure as Code) |
-| **oma-translator** | Traducao multilingual natural |
-| **oma-voice** | TTS/STT local-first via Voicebox MCP para geracao de voz, voiceover e transcricao |
+| **oma-academic-writer** | Redige, revisa e audita prosa academica ate o nivel de publicacao |
+| **oma-architecture** | Avalia trade-offs de arquitetura e define limites de modulos com analise ADR/ATAM/CBAM |
+| **oma-backend** | Constroi e protege suas APIs em Python, Node.js ou Rust |
+| **oma-brainstorm** | Explora ideias com voce antes de voce se comprometer a construir |
+| **oma-db** | Projeta seu schema, migrations, indexes e vector stores |
+| **oma-debug** | Encontra a causa raiz, corrige o bug e escreve um teste de regressao |
+| **oma-deepsec** | Varre seu codigo em busca de falhas de seguranca e bloqueia pull requests arriscados |
+| **oma-design** | Constroi design systems com tokens, acessibilidade e layouts responsivos |
+| **oma-dev-workflow** | Automatiza seu CI/CD, releases e tarefas de monorepo |
+| **oma-docs** | Verifica referencias quebradas na documentacao e sinaliza o que uma mudanca de codigo afetou |
+| **oma-frontend** | Constroi sua UI com React/Next.js, TypeScript, Tailwind CSS v4 e shadcn/ui |
+| **oma-hwp** | Converte arquivos HWP, HWPX e HWPML para Markdown |
+| **oma-image** | Gera imagens por varios provedores de IA ao mesmo tempo |
+| **oma-market** | Pesquisa seu mercado a partir de sinais de comunidade e estrutura os resultados com SWOT, Porter's 5F e PESTEL |
+| **oma-mobile** | Constroi apps mobile cross-platform com Flutter |
+| **oma-observability** | Roteia trabalho de observabilidade entre metricas, logs, traces, SLOs e forense de incidentes |
+| **oma-orchestrator** | Executa multiplos agentes em paralelo via CLI |
+| **oma-pdf** | Converte arquivos PDF para Markdown |
+| **oma-pm** | Planeja tarefas, detalha requisitos e define contratos de API |
+| **oma-qa** | Revisa seu codigo em busca de problemas de seguranca OWASP, performance e acessibilidade |
+| **oma-recap** | Resume seu historico de conversas em resumos tematicos de trabalho |
+| **oma-scholar** | Busca literatura academica e ajuda voce a conduzir revisoes por pares |
+| **oma-scm** | Gerencia seus branches, merges, worktrees e Conventional Commits |
+| **oma-search** | Roteia cada consulta para a melhor fonte e pontua o nivel de confianca do resultado |
+| **oma-skill-creator** | Escreve e audita novos skills OMA no formato SSL-lite |
+| **oma-tf-infra** | Provisiona infraestrutura multi-cloud com Terraform |
+| **oma-translator** | Traduz entre idiomas de forma que parece escrito por um falante nativo |
+| **oma-voice** | Gera voiceovers e transcreve audio localmente, sem precisar de nuvem |
 
 ## Como Funciona
 

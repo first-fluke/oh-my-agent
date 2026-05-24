@@ -123,34 +123,34 @@ Chọn một preset và bạn đã sẵn sàng:
 
 | Agent | Chức năng |
 |-------|----------|
-| **oma-academic-writer** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật cấp xuất bản theo rubric |
-| **oma-architecture** | Đánh đổi kiến trúc, ranh giới, phân tích theo hướng ADR/ATAM/CBAM |
-| **oma-backend** | Xây dựng API bằng Python, Node.js hoặc Rust |
-| **oma-brainstorm** | Khám phá ý tưởng trước khi bắt tay vào xây dựng |
-| **oma-db** | Thiết kế schema, migration, indexing, vector DB |
-| **oma-debug** | Phân tích nguyên nhân gốc, sửa lỗi, regression test |
-| **oma-deepsec** | Trình quét lỗ hổng bằng agent, gate PR, matcher tùy chỉnh |
-| **oma-design** | Hệ thống thiết kế, token, accessibility, responsive |
-| **oma-dev-workflow** | CI/CD, release, tự động hóa monorepo |
-| **oma-docs** | Kiểm tra tính toàn vẹn tham chiếu, phát hiện docs bị ảnh hưởng bởi diff |
-| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
-| **oma-hwp** | Chuyển đổi HWP/HWPX/HWPML sang Markdown |
-| **oma-image** | Tạo ảnh AI đa nhà cung cấp |
-| **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng cho pain/trend/đối thủ/discovery với SWOT/5F/PESTEL |
-| **oma-mobile** | Ứng dụng đa nền tảng với Flutter |
-| **oma-observability** | Bộ định tuyến observability cho APM/RUM, metrics/logs/traces/profiles, SLO, điều tra sự cố và tinh chỉnh transport |
-| **oma-orchestrator** | Thực thi agent song song qua CLI |
-| **oma-pdf** | Chuyển đổi PDF sang Markdown |
-| **oma-pm** | Lập kế hoạch, phân tích yêu cầu, định nghĩa API contract |
-| **oma-qa** | Đánh giá bảo mật OWASP, hiệu suất, accessibility |
-| **oma-recap** | Phan tich lich su hoi thoai va tong ket cong viec theo chu de |
-| **oma-scholar** | Bạn đồng hành nghiên cứu học thuật cho việc tìm tài liệu và bình duyệt |
-| **oma-scm** | Quản lý cấu hình phần mềm với nhánh, merge, worktree, baseline, Conventional Commits |
-| **oma-search** | Bộ định tuyến tìm kiếm theo ý định kèm điểm tin cậy cho tài liệu, web, mã và cục bộ |
-| **oma-skill-creator** | Soạn và kiểm tra skill OMA theo định dạng SSL-lite |
-| **oma-tf-infra** | Terraform IaC đa đám mây (Infrastructure as Code) |
-| **oma-translator** | Dịch thuật đa ngôn ngữ tự nhiên |
-| **oma-voice** | TTS/STT local-first qua Voicebox MCP cho tạo giọng nói, lồng tiếng và gỡ băng |
+| **oma-academic-writer** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật đạt chuẩn xuất bản |
+| **oma-architecture** | Phân tích đánh đổi kiến trúc và vạch ranh giới module theo hướng ADR/ATAM/CBAM |
+| **oma-backend** | Xây dựng và bảo mật API bằng Python, Node.js hoặc Rust |
+| **oma-brainstorm** | Cùng bạn khám phá ý tưởng trước khi bắt tay vào xây dựng |
+| **oma-db** | Thiết kế schema, migration, index và vector store cho dự án của bạn |
+| **oma-debug** | Tìm nguyên nhân gốc rễ, sửa lỗi và viết regression test |
+| **oma-deepsec** | Quét lỗ hổng bảo mật trong code và chặn pull request rủi ro |
+| **oma-design** | Xây dựng hệ thống thiết kế với token, accessibility và responsive layout |
+| **oma-dev-workflow** | Tự động hóa CI/CD, release và các tác vụ monorepo |
+| **oma-docs** | Kiểm tra tài liệu có tham chiếu bị hỏng và đánh dấu những tài liệu bị ảnh hưởng bởi thay đổi code |
+| **oma-frontend** | Xây dựng giao diện với React/Next.js, TypeScript, Tailwind CSS v4 và shadcn/ui |
+| **oma-hwp** | Chuyển đổi file HWP, HWPX và HWPML sang Markdown |
+| **oma-image** | Tạo ảnh qua nhiều nhà cung cấp AI cùng lúc |
+| **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng và trình bày theo khung SWOT, Porter's 5F và PESTEL |
+| **oma-mobile** | Xây dựng ứng dụng di động đa nền tảng với Flutter |
+| **oma-observability** | Định tuyến công việc observability qua metrics, logs, traces, SLO và điều tra sự cố |
+| **oma-orchestrator** | Chạy nhiều agent song song từ CLI |
+| **oma-pdf** | Chuyển đổi file PDF sang Markdown |
+| **oma-pm** | Lập kế hoạch tác vụ, phân tích yêu cầu và định nghĩa API contract |
+| **oma-qa** | Rà soát code theo tiêu chuẩn bảo mật OWASP, hiệu suất và accessibility |
+| **oma-recap** | Tóm tắt lịch sử hội thoại thành báo cáo công việc theo chủ đề |
+| **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
+| **oma-scm** | Quản lý nhánh, merge, worktree và Conventional Commits |
+| **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm độ tin cậy của kết quả |
+| **oma-skill-creator** | Soạn và kiểm tra skill OMA mới theo định dạng SSL-lite |
+| **oma-tf-infra** | Triển khai hạ tầng đa đám mây bằng Terraform |
+| **oma-translator** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
+| **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
 
 ## Cách hoạt động
 

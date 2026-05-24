@@ -123,34 +123,34 @@ Wähl ein Preset und los geht's:
 
 | Agent | Was Er Macht |
 |-------|-------------|
-| **oma-academic-writer** | Akademische Prosa in Publikationsqualität: Entwurf, Überarbeitung und rubrikbasierte Audits |
-| **oma-architecture** | Architektur-Trade-offs, Grenzen, ADR-/ATAM-/CBAM-bewusste Analyse |
-| **oma-backend** | APIs in Python, Node.js oder Rust |
-| **oma-brainstorm** | Erkundet Ideen, bevor du loslegst |
-| **oma-db** | Schema-Design, Migrationen, Indexierung, Vector DB |
-| **oma-debug** | Ursachenanalyse, Fixes, Regressionstests |
-| **oma-deepsec** | Agent-basierter Vulnerability-Scanner, PR-Gate, eigene Matcher |
-| **oma-design** | Design-Systeme, Tokens, Barrierefreiheit, Responsive |
-| **oma-dev-workflow** | CI/CD, Releases, Monorepo-Automatisierung |
-| **oma-docs** | Referenzintegritätsprüfung, Erkennung Diff-betroffener Docs |
-| **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui |
-| **oma-hwp** | HWP/HWPX/HWPML-zu-Markdown-Konvertierung |
-| **oma-image** | Multi-Vendor KI-Bildgenerierung |
-| **oma-market** | Marktforschung aus Community-Signalen für Pain/Trend/Wettbewerb/Discovery mit SWOT/5F/PESTEL |
-| **oma-mobile** | Plattformübergreifende Apps mit Flutter |
-| **oma-observability** | Observability-Router für APM/RUM, Metriken/Logs/Traces/Profile, SLO, Incident-Forensik und Transport-Tuning |
-| **oma-orchestrator** | Parallele Agentenausführung über CLI |
-| **oma-pdf** | PDF-zu-Markdown-Konvertierung |
-| **oma-pm** | Plant Aufgaben, zerlegt Anforderungen, definiert API-Verträge |
-| **oma-qa** | OWASP-Sicherheit, Performance, Barrierefreiheits-Review |
-| **oma-recap** | Analyse des Gespraechsverlaufs und thematischer Arbeitszusammenfassungen |
-| **oma-scholar** | Begleiter für akademische Forschung mit Literaturrecherche und Peer-Review |
-| **oma-scm** | Software-Konfigurationsmanagement mit Branching, Merges, Worktrees, Baselines, Conventional Commits |
-| **oma-search** | Intent-basierter Such-Router mit Vertrauensbewertung für Docs, Web, Code und Lokal |
-| **oma-skill-creator** | OMA-Skills im SSL-lite-Format erstellen und prüfen |
-| **oma-tf-infra** | Multi-Cloud IaC mit Terraform (Infrastructure as Code) |
-| **oma-translator** | Natürliche mehrsprachige Übersetzung |
-| **oma-voice** | Lokales TTS/STT über Voicebox MCP für Sprachgenerierung, Voiceover und Transkription |
+| **oma-academic-writer** | Entwirft, überarbeitet und prüft akademische Prosa bis zur Publikationsreife |
+| **oma-architecture** | Wägt Architektur-Trade-offs ab und zieht Modulgrenzen — mit ADR/ATAM/CBAM-Analyse |
+| **oma-backend** | Baut und sichert deine APIs in Python, Node.js oder Rust |
+| **oma-brainstorm** | Erkundet Ideen gemeinsam mit dir, bevor du dich für einen Weg entscheidest |
+| **oma-db** | Entwirft dein Schema, Migrationen, Indizes und Vector Stores |
+| **oma-debug** | Findet die Ursache, behebt den Bug und schreibt einen Regressionstest |
+| **oma-deepsec** | Scannt deinen Code auf Sicherheitslücken und blockiert riskante Pull Requests |
+| **oma-design** | Baut Design-Systeme mit Tokens, Barrierefreiheit und Responsive Layouts |
+| **oma-dev-workflow** | Automatisiert deine CI/CD, Releases und Monorepo-Aufgaben |
+| **oma-docs** | Prüft deine Docs auf defekte Referenzen und markiert Stellen, die ein Code-Change berührt hat |
+| **oma-frontend** | Baut deine UI mit React/Next.js, TypeScript, Tailwind CSS v4 und shadcn/ui |
+| **oma-hwp** | Konvertiert HWP-, HWPX- und HWPML-Dateien in Markdown |
+| **oma-image** | Generiert Bilder parallel über mehrere KI-Anbieter |
+| **oma-market** | Recherchiert deinen Markt aus Community-Signalen und rahmt ihn mit SWOT, Porter's 5F und PESTEL |
+| **oma-mobile** | Baut plattformübergreifende Mobile-Apps mit Flutter |
+| **oma-observability** | Routet Observability-Arbeit über Metriken, Logs, Traces, SLOs und Incident-Forensik |
+| **oma-orchestrator** | Führt mehrere Agenten parallel über die CLI aus |
+| **oma-pdf** | Konvertiert PDF-Dateien in Markdown |
+| **oma-pm** | Plant Aufgaben, zerlegt Anforderungen und definiert API-Verträge |
+| **oma-qa** | Überprüft deinen Code auf OWASP-Sicherheitslücken, Performance- und Barrierefreiheitsprobleme |
+| **oma-recap** | Fasst deinen Gesprächsverlauf in thematische Arbeitsberichte zusammen |
+| **oma-scholar** | Durchsucht akademische Literatur und unterstützt dich beim Peer-Review |
+| **oma-scm** | Verwaltet deine Branches, Merges, Worktrees und Conventional Commits |
+| **oma-search** | Leitet jede Suchanfrage an die beste Quelle weiter und bewertet, wie vertrauenswürdig das Ergebnis ist |
+| **oma-skill-creator** | Schreibt und prüft neue OMA-Skills im SSL-lite-Format |
+| **oma-tf-infra** | Provisioniert Multi-Cloud-Infrastruktur mit Terraform |
+| **oma-translator** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
+| **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |
 
 ## So Funktioniert's
 

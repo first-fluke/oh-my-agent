@@ -123,34 +123,34 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 
 | Agent | 职责 |
 |-------|------|
-| **oma-academic-writer** | 出版级学术英语文章的撰写、修订与基于评分量表的审计 |
-| **oma-architecture** | 架构权衡、边界划分，以及 ADR/ATAM/CBAM 视角下的分析 |
-| **oma-backend** | 用 Python、Node.js 或 Rust 开发 API |
-| **oma-brainstorm** | 动手之前先探索想法 |
-| **oma-db** | Schema 设计、迁移、索引、vector DB |
-| **oma-debug** | 根因分析、修复、回归测试 |
-| **oma-deepsec** | 智能体驱动的漏洞扫描器、PR 门禁、自定义 matcher |
-| **oma-design** | 设计系统、token、无障碍、响应式 |
-| **oma-dev-workflow** | CI/CD、发布、monorepo 自动化 |
-| **oma-docs** | 引用完整性检测、变更影响文档识别 |
-| **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/ui |
-| **oma-hwp** | HWP/HWPX/HWPML 转 Markdown |
-| **oma-image** | 多供应商 AI 图像生成 |
-| **oma-market** | 基于社区信号的市场调研，覆盖 pain/trend/竞品/discovery 意图，自动套用 SWOT/5F/PESTEL |
-| **oma-mobile** | Flutter 跨平台应用 |
-| **oma-observability** | 涵盖 APM/RUM、指标/日志/追踪/Profile、SLO、事故取证、传输层调优的可观测性路由器 |
-| **oma-orchestrator** | 通过 CLI 并行执行 agent |
-| **oma-pdf** | PDF 转 Markdown |
-| **oma-pm** | 任务规划、需求拆解、API 契约定义 |
-| **oma-qa** | OWASP 安全、性能、无障碍审查 |
-| **oma-recap** | 会话历史分析与主题化工作摘要 |
-| **oma-scholar** | 涵盖文献检索与同行评审的学术研究伴侣 |
-| **oma-scm** | 软件配置管理（SCM），涵盖分支、合并、worktree、基线、Conventional Commits |
-| **oma-search** | 基于意图的搜索路由器，附带信任评分，覆盖文档、网页、代码、本地 |
+| **oma-academic-writer** | 将学术文章写到发表级别，涵盖起草、修订与审稿 |
+| **oma-architecture** | 权衡架构方案、划定模块边界，提供 ADR/ATAM/CBAM 分析 |
+| **oma-backend** | 用 Python、Node.js 或 Rust 构建并加固你的 API |
+| **oma-brainstorm** | 在动手之前，先和你一起把想法探索清楚 |
+| **oma-db** | 设计 schema、迁移、索引与 vector store |
+| **oma-debug** | 找到根因、修复 bug，并补上回归测试 |
+| **oma-deepsec** | 扫描代码中的安全漏洞，拦截高风险 pull request |
+| **oma-design** | 构建含 token、无障碍支持与响应式布局的设计系统 |
+| **oma-dev-workflow** | 自动化 CI/CD、发布流程与 monorepo 任务 |
+| **oma-docs** | 检查文档中的失效引用，并标出被代码变更波及的内容 |
+| **oma-frontend** | 用 React/Next.js、TypeScript、Tailwind CSS v4 与 shadcn/ui 构建 UI |
+| **oma-hwp** | 将 HWP、HWPX 和 HWPML 文件转换为 Markdown |
+| **oma-image** | 同时调用多家 AI 供应商生成图像 |
+| **oma-market** | 从社区信号中挖掘市场洞察，并套用 SWOT、Porter's 5F 和 PESTEL 框架呈现结论 |
+| **oma-mobile** | 用 Flutter 构建跨平台移动应用 |
+| **oma-observability** | 统一路由可观测性工作，覆盖指标、日志、追踪、SLO 与事故取证 |
+| **oma-orchestrator** | 通过 CLI 并行调度多个 agent |
+| **oma-pdf** | 将 PDF 文件转换为 Markdown |
+| **oma-pm** | 规划任务、拆解需求、定义 API 契约 |
+| **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
+| **oma-recap** | 将会话历史整理成有主题分类的工作摘要 |
+| **oma-scholar** | 检索学术文献，协助开展同行评审 |
+| **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
+| **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
 | **oma-skill-creator** | 以 SSL-lite 格式编写和审计 OMA skill |
-| **oma-tf-infra** | 多云 Terraform IaC（Infrastructure as Code，基础设施即代码） |
-| **oma-translator** | 自然的多语言翻译 |
-| **oma-voice** | 基于 Voicebox MCP 的本地优先 TTS/STT，覆盖语音生成、配音与转写 |
+| **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
+| **oma-translator** | 将内容翻译成目标语言，读来如同母语写就 |
+| **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
 
 ## 工作原理
 
