@@ -1,17 +1,23 @@
 import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createLink, resetLinkWarnings } from "./fs-link.js";
+import {
+  applyWin32LongPathPrefix,
+  createLink,
+  resetLinkWarnings,
+} from "./fs-link.js";
 
 vi.mock("node:fs", () => ({
   symlinkSync: vi.fn(),
   linkSync: vi.fn(),
   copyFileSync: vi.fn(),
+  realpathSync: vi.fn(),
 }));
 
 const symlinkSync = fs.symlinkSync as unknown as ReturnType<typeof vi.fn>;
 const linkSync = fs.linkSync as unknown as ReturnType<typeof vi.fn>;
 const copyFileSync = fs.copyFileSync as unknown as ReturnType<typeof vi.fn>;
+const realpathSync = fs.realpathSync as unknown as ReturnType<typeof vi.fn>;
 
 const originalPlatform = process.platform;
 
@@ -27,6 +33,46 @@ function makeError(code: string): NodeJS.ErrnoException {
   err.code = code;
   return err;
 }
+
+describe("applyWin32LongPathPrefix", () => {
+  const originalPlatform = process.platform;
+
+  function setPlatformLocal(platform: NodeJS.Platform) {
+    Object.defineProperty(process, "platform", {
+      value: platform,
+      configurable: true,
+    });
+  }
+
+  afterEach(() => {
+    setPlatformLocal(originalPlatform);
+  });
+
+  it("is no-op on non-windows even for long paths", () => {
+    setPlatformLocal("linux");
+    const longPath = `/${"a".repeat(300)}`;
+    expect(applyWin32LongPathPrefix(longPath)).toBe(longPath);
+  });
+
+  it("applies prefix on win32 when path exceeds MAX_PATH (260)", () => {
+    setPlatformLocal("win32");
+    const longPath = `C:\\${"a".repeat(300)}`;
+    const result = applyWin32LongPathPrefix(longPath);
+    expect(result).toBe(`\\\\?\\${longPath}`);
+  });
+
+  it("skips prefix when path is short enough on win32", () => {
+    setPlatformLocal("win32");
+    const shortPath = `C:\\${"a".repeat(100)}`;
+    expect(applyWin32LongPathPrefix(shortPath)).toBe(shortPath);
+  });
+
+  it("is idempotent when path already has the prefix on win32", () => {
+    setPlatformLocal("win32");
+    const prefixedPath = `\\\\?\\C:\\${"a".repeat(300)}`;
+    expect(applyWin32LongPathPrefix(prefixedPath)).toBe(prefixedPath);
+  });
+});
 
 describe("createLink", () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
@@ -170,6 +216,78 @@ describe("createLink", () => {
       createLink("..\\c", "C:\\proj\\c", "dir");
 
       expect(warnSpy).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe("ssotBase validation", () => {
+    beforeEach(() => {
+      vi.resetAllMocks();
+      warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      setPlatform("linux");
+    });
+
+    it("allows target whose realpath is inside ssotBase", () => {
+      realpathSync.mockImplementation((p: string) => {
+        if (p === "/proj/.agents/skills/foo") return "/proj/.agents/skills/foo";
+        if (p === "/proj/.agents/skills") return "/proj/.agents/skills";
+        return p;
+      });
+
+      expect(() =>
+        createLink(
+          "/proj/.agents/skills/foo",
+          "/proj/.claude/skills/foo",
+          "dir",
+          "/proj/.agents/skills",
+        ),
+      ).not.toThrow();
+      expect(symlinkSync).toHaveBeenCalledOnce();
+    });
+
+    it("throws when target realpath escapes ssotBase", () => {
+      realpathSync.mockImplementation((p: string) => {
+        if (p === "/tmp/evil") return "/tmp/evil";
+        if (p === "/proj/.agents/skills") return "/proj/.agents/skills";
+        return p;
+      });
+
+      expect(() =>
+        createLink(
+          "/tmp/evil",
+          "/proj/.claude/skills/foo",
+          "dir",
+          "/proj/.agents/skills",
+        ),
+      ).toThrow(
+        "createLink: target /tmp/evil escapes SSOT base /proj/.agents/skills",
+      );
+      expect(symlinkSync).not.toHaveBeenCalled();
+    });
+
+    it("allows target whose realpath equals ssotBase exactly (boundary case)", () => {
+      realpathSync.mockImplementation((p: string) => {
+        if (p === "/proj/.agents/skills") return "/proj/.agents/skills";
+        return p;
+      });
+
+      expect(() =>
+        createLink(
+          "/proj/.agents/skills",
+          "/proj/.claude/skills/root",
+          "dir",
+          "/proj/.agents/skills",
+        ),
+      ).not.toThrow();
+      expect(symlinkSync).toHaveBeenCalledOnce();
+    });
+
+    it("skips validation and succeeds when ssotBase is omitted", () => {
+      // realpathSync should not be called when ssotBase is undefined
+      expect(() =>
+        createLink("../target", "/proj/.claude/skills/foo", "dir"),
+      ).not.toThrow();
+      expect(realpathSync).not.toHaveBeenCalled();
+      expect(symlinkSync).toHaveBeenCalledOnce();
     });
   });
 });
