@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.6.0...cli-v8.7.0) (2026-05-24)
+
+
+### Features
+
+* **translator:** add humanizer-aware voice sample calibration ([6ff9f37](https://github.com/first-fluke/oh-my-agent/commit/6ff9f374b346b45873f4db7971fda9bfd7f6ac46))
+
 ## [8.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.3...cli-v8.6.0) (2026-05-24)
 
 
