@@ -83,6 +83,11 @@ Read the relevant file from `.agents/rules/` when working on matching code.
 
 <!-- OMA:END -->
 
+## Install Mode
+
+oma supports project-mode (`<cwd>/.agents/`) and global-mode (`~/.agents/`).
+When touching install/update/uninstall code, read `web/docs/guide/global-install.md`.
+
 ## Source Repo: Additional Rules
 
 > This section applies only to the oh-my-agent source repository itself.
