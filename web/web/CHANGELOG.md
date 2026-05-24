@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.5](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.4...web-v3.5.5) (2026-05-24)
+
+
+### Documentation
+
+* global-install + oma-config-semantics guides with 10-locale i18n ([b618fc5](https://github.com/first-fluke/oh-my-agent/commit/b618fc52a9d467699f9a7cf052343e4c9a804eb0))
+
 ## [3.5.4](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.3...web-v3.5.4) (2026-05-22)
 
 
