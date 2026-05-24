@@ -17,6 +17,7 @@ import {
   isQwenAuthenticated,
 } from "../../vendors/index.js";
 import { auditSkills, type SkillAuditReport } from "../skills/audit.js";
+import { checkDualInstall, type DualInstallReport } from "./dual-install.js";
 
 const OMA_DOCTOR_PROBE_TIMEOUT_MS = Number(
   process.env.OMA_DOCTOR_PROBE_TIMEOUT_MS ?? 1500,
@@ -60,6 +61,7 @@ export interface DoctorReport {
   serenaFileCount: number;
   totalIssues: number;
   skillAudit: SkillAuditReport;
+  dualInstall: DualInstallReport;
 }
 
 async function checkCLI(
@@ -168,6 +170,8 @@ function checkSkills(): SkillCheck[] {
 
 export async function collectDoctorReport(): Promise<DoctorReport> {
   const cwd = process.cwd();
+  const dualInstall = await checkDualInstall(cwd);
+
   const clis = await Promise.all(
     CLI_DEFINITIONS.map(([name, cmd, installCmd]) =>
       checkCLI(name, cmd, installCmd),
@@ -230,6 +234,7 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
     serenaFileCount,
     totalIssues,
     skillAudit,
+    dualInstall,
   };
 }
 
@@ -268,6 +273,23 @@ export function serializeReportAsJson(report: DoctorReport): string {
         similarity: Number(f.pair.similarity.toFixed(4)),
         severity: f.severity,
       })),
+    },
+    dualInstall: {
+      project: report.dualInstall.project.installed
+        ? {
+            version: report.dualInstall.project.version,
+            mode: report.dualInstall.project.mode,
+            schemaVersion: report.dualInstall.project.schemaVersion,
+          }
+        : null,
+      global: report.dualInstall.global.installed
+        ? {
+            version: report.dualInstall.global.version,
+            mode: report.dualInstall.global.mode,
+            schemaVersion: report.dualInstall.global.schemaVersion,
+          }
+        : null,
+      warnings: report.dualInstall.warnings,
     },
   };
   return JSON.stringify(payload, null, 2);

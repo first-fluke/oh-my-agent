@@ -153,6 +153,32 @@ async function promptRepair(report: DoctorReport): Promise<void> {
   }
 }
 
+function renderDualInstall(report: DoctorReport): void {
+  const { project, global, warnings } = report.dualInstall;
+
+  function formatLine(label: string, probe: typeof project): string {
+    if (!probe.installed) return `${pc.dim("—")} ${label}: not installed`;
+    const mode = probe.mode ?? pc.dim("legacy");
+    const version = probe.version ?? "unknown";
+    return `${pc.green("✅")} ${label}: ${version} (${mode})`;
+  }
+
+  const projectLine = formatLine("Project", project);
+  const globalLine = formatLine("Global ", global);
+
+  const lines: string[] = [projectLine, globalLine];
+
+  if (warnings.length > 0) {
+    lines.push("");
+    lines.push(pc.bold("Warnings:"));
+    for (const w of warnings) {
+      lines.push(`  ${pc.yellow("⚠️")}  ${w}`);
+    }
+  }
+
+  p.note(lines.join("\n"), "Install Presence");
+}
+
 function renderSkillBoundaries(report: DoctorReport): void {
   const audit = report.skillAudit;
   if (audit.skillCount < 2) return;
@@ -403,6 +429,7 @@ export async function renderDoctorReport(report: DoctorReport): Promise<void> {
   p.intro(pc.bgMagenta(pc.white(" 🩺 oh-my-agent doctor ")));
 
   try {
+    renderDualInstall(report);
     renderCliTable(report);
     renderMcpTable(report);
     renderSkillsTable(report);
