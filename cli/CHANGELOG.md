@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.2...cli-v8.5.3) (2026-05-24)
+
+
+### Documentation
+
+* reword agent table descriptions into plain sentences ([34d4e94](https://github.com/first-fluke/oh-my-agent/commit/34d4e940ec71c175738c72c51fabd1132096cd6d))
+
 ## [8.5.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.1...cli-v8.5.2) (2026-05-22)
 
 
