@@ -11,7 +11,7 @@ De omgevingsvariabele `OH_MY_AG_OUTPUT_FORMAT` kan op `json` worden gezet om mac
 
 ---
 
-## Setup & Installatie
+## Setup & installatie
 
 ### oma (install)
 
@@ -46,7 +46,7 @@ oma update [-f | --force] [--ci]
 
 ---
 
-## Monitoring & Metrieken
+## Monitoring & metrieken
 
 ### dashboard
 
@@ -207,7 +207,7 @@ Initialiseert de `.serena/memories/`-directorystructuur.
 
 ---
 
-## Integratie & Hulpmiddelen
+## Integratie & hulpmiddelen
 
 ### auth:status
 ```

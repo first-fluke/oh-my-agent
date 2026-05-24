@@ -11,14 +11,14 @@ The skill auto-activates on keywords like *image*, *illustration*, *visual asset
 
 ---
 
-## When to Use
+## When to use
 
 - Generating images, illustrations, product photos, concept art, hero/landing visuals
 - Comparing the same prompt across multiple models side-by-side (`--vendor all`)
 - Producing assets from inside an editor workflow (Claude Code, Codex, Gemini CLI)
 - Letting another skill (design, marketing, docs) call the image pipeline as shared infrastructure
 
-## When NOT to Use
+## When NOT to use
 
 - Editing or retouching an existing image (out of scope; use a dedicated tool)
 - Generating videos or audio (out of scope)
@@ -27,7 +27,7 @@ The skill auto-activates on keywords like *image*, *illustration*, *visual asset
 
 ---
 
-## Vendors at a Glance
+## Vendors at a glance
 
 The skill is CLI-first: when a vendor's native CLI can return raw image bytes, the subprocess path is preferred over a direct API key.
 
@@ -41,7 +41,7 @@ The skill is CLI-first: when a vendor's native CLI can return raw image bytes, t
 
 ---
 
-## Quick Start
+## Quick start
 
 ```bash
 # Free, zero-config (uses pollinations/flux)
@@ -67,11 +67,11 @@ oma image list-vendors
 
 ---
 
-## Use as a Skill
+## Use as a skill
 
 `oma-image` is a skill that auto-activates from natural language and can also be invoked explicitly. There are three entry points.
 
-### 1. Natural Language (auto-activation)
+### 1. Natural language (auto-activation)
 
 Inside Claude Code, Codex CLI, or Gemini CLI, just describe the image. The skill matches keywords like *image*, *illustration*, *visual asset*, *concept art*, *hero shot*, *thumbnail*, *product photo*.
 
@@ -96,7 +96,7 @@ Examples:
 
 The agent runs the [Clarification Protocol](#clarification-protocol), amplifies the prompt if needed, and calls `oma image generate` with the inferred flags. Use the slash command when you want explicit control over the exact flag values.
 
-### 2. Explicit Slash Command
+### 2. Explicit slash command
 
 ```text
 /oma-image a red apple on white background
@@ -106,7 +106,7 @@ The agent runs the [Clarification Protocol](#clarification-protocol), amplifies 
 
 Every CLI flag (`--vendor`, `-n`, `--size`, `-r`, `--dry-run`, …) works in the slash command and is forwarded to the same `oma image generate` pipeline.
 
-### 3. From Another Skill (shared infrastructure)
+### 3. From another skill (shared infrastructure)
 
 Other skills (design, marketing, docs) call the pipeline as shared infrastructure with JSON output:
 
@@ -118,7 +118,7 @@ The manifest written to stdout includes output paths, vendor, model, and cost, m
 
 ---
 
-## CLI Reference
+## CLI reference
 
 ```bash
 oma image generate "<prompt>"
@@ -135,7 +135,7 @@ oma image doctor
 oma image list-vendors
 ```
 
-### Key Flags
+### Key flags
 
 | Flag | Purpose |
 |---|---|
@@ -153,7 +153,7 @@ oma image list-vendors
 
 ---
 
-## Reference Images
+## Reference images
 
 Attach up to 10 reference images to guide style, subject identity, or composition.
 
@@ -169,7 +169,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 | `gemini` (2.5-flash-image) | Yes | Inlines base64 `inlineData` in the request |
 | `pollinations` | No | Rejected with exit code 4 (requires URL hosting) |
 
-### Where Attached Images Live
+### Where attached images live
 
 - **Claude Code**: `~/.claude/image-cache/<session>/N.png`, surfaced in system messages as `[Image: source: <path>]`. Session-scoped; copy to a durable location if you want to reuse it later.
 - **Antigravity**: workspace upload directory (the IDE shows the exact path)
@@ -179,7 +179,7 @@ When the user attaches an image and asks to generate or edit one based on it, th
 
 ---
 
-## Output Layout
+## Output layout
 
 Every run writes to `.agents/results/images/` with a timestamped, hash-suffixed directory:
 
@@ -198,7 +198,7 @@ Every run writes to `.agents/results/images/` with a timestamped, hash-suffixed 
 
 ---
 
-## Cost, Safety, and Cancellation
+## Cost, safety, and cancellation
 
 1. **Cost guardrail**: runs estimated at ≥ `$0.20` ask for confirmation. Bypass with `-y` or `OMA_IMAGE_YES=1`. Default `pollinations` (flux/zimage) is free, so the prompt is skipped for it automatically.
 2. **Path safety**: output paths outside `$PWD` require `--allow-external-out` to avoid surprising writes.
@@ -209,7 +209,7 @@ Every run writes to `.agents/results/images/` with a timestamped, hash-suffixed 
 
 ---
 
-## Clarification Protocol
+## Clarification protocol
 
 Before invoking `oma image generate`, the calling agent runs this checklist. If anything is missing and not inferable, it asks first or amplifies the prompt and shows the expansion for approval.
 

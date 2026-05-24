@@ -22,7 +22,7 @@ This page covers:
 
 ---
 
-## Built-In Presets
+## Built-in presets
 
 Set `model_preset` to one of the built-in keys:
 
@@ -46,7 +46,7 @@ Built-in presets ship inside the CLI package and update automatically when you u
 
 ---
 
-## Overriding Individual Agents
+## Overriding individual agents
 
 Use the `agents:` map to override specific agents on top of the active preset. Only agents you list are affected; the rest stay on the preset defaults.
 
@@ -75,7 +75,7 @@ The merge is shallow: each field in your override replaces the preset value for 
 
 ---
 
-## Inlining Model Slugs
+## Inlining model slugs
 
 Register model slugs that are not yet in the built-in registry under `models:`. Once registered, use the slug anywhere in `agents:` or `custom_presets:`.
 
@@ -94,7 +94,7 @@ models:
 
 ---
 
-## Custom Presets
+## Custom presets
 
 Define additional presets in `custom_presets:`. Use `extends:` to inherit all agent defaults from a built-in preset and override only the agents you care about.
 
@@ -145,7 +145,7 @@ Each row shows the resolved model slug and which source applied it (`(preset)` o
 
 ---
 
-## Migration from Legacy `agent_cli_mapping`
+## Migration from legacy `agent_cli_mapping`
 
 Migration 008 runs automatically on `oma install` and `oma update`. It converts legacy projects in place:
 
@@ -163,7 +163,7 @@ After migration, `.agents/config/defaults.yaml`, `.agents/config/models.yaml`, a
 
 ---
 
-## Session Quota Cap
+## Session quota cap
 
 `session.quota_cap` is unchanged. Add it to `oma-config.yaml` to bound runaway subagent spawning:
 
@@ -182,7 +182,7 @@ When a cap is reached, the orchestrator refuses further spawns and surfaces a `Q
 
 ---
 
-## Full Example
+## Full example
 
 ```yaml
 # .agents/oma-config.yaml

@@ -5,7 +5,7 @@ description: "Guia completo de debugging cobrindo o loop de debug estruturado em
 
 # Guia: Correção de Bugs
 
-## Quando Usar o Workflow de Debug
+## Quando usar o workflow de debug
 
 Use `/debug` (ou diga "fix bug", "fix error", "debug" em linguagem natural) quando você tem um bug específico para diagnosticar e corrigir. O workflow fornece uma abordagem estruturada e reproduzível para debugging que evita a armadilha comum de corrigir sintomas em vez de causas raiz.
 
@@ -13,11 +13,11 @@ O workflow de debug suporta todos os vendors (Gemini, Claude, Codex, Qwen). Step
 
 ---
 
-## Template de Relatório de Bug
+## Template de relatório de bug
 
 Ao reportar um bug, forneça o máximo possível das informações a seguir. Cada campo ajuda o workflow de debug a restringir a busca mais rapidamente.
 
-### Campos Obrigatórios
+### Campos obrigatórios
 
 | Campo | Descrição | Exemplo |
 |:------|:----------|:--------|
@@ -26,7 +26,7 @@ Ao reportar um bug, forneça o máximo possível das informações a seguir. Cad
 | **Comportamento esperado** | O que deveria acontecer | Usuário é deletado e removido da lista. |
 | **Comportamento atual** | O que realmente acontece | Página crasha com tela branca. |
 
-### Campos Opcionais (Altamente Recomendados)
+### Campos opcionais (altamente recomendados)
 
 | Campo | Descrição | Exemplo |
 |:------|:----------|:--------|
@@ -41,11 +41,11 @@ Quanto mais contexto você fornecer antecipadamente, menos perguntas de ida e vo
 
 ---
 
-## Triagem de Severidade (P0-P3)
+## Triagem de severidade (P0-P3)
 
 A severidade determina como o bug é tratado e quão rapidamente deve ser corrigido.
 
-### P0 — Crítico (Resposta Imediata)
+### P0 — crítico (resposta imediata)
 
 **Definição:** Produção está fora do ar, dados estão sendo perdidos ou corrompidos, brecha de segurança está ativa.
 
@@ -59,7 +59,7 @@ A severidade determina como o bug é tratado e quão rapidamente deve ser corrig
 
 **Abordagem de debug:** Pule o template completo. Forneça a mensagem de erro e qualquer stack trace. O workflow começa imediatamente no Step 2 (Reproduzir).
 
-### P1 — Alto (Mesma Sessão)
+### P1 — alto (mesma sessão)
 
 **Definição:** Uma funcionalidade central está quebrada para um número significativo de usuários. Workaround pode existir mas não é aceitável a longo prazo.
 
@@ -73,7 +73,7 @@ A severidade determina como o bug é tratado e quão rapidamente deve ser corrig
 
 **Abordagem de debug:** Loop completo de 5 etapas. Revisão QA recomendada após correção.
 
-### P2 — Médio (Este Sprint)
+### P2 — médio (este sprint)
 
 **Definição:** Uma funcionalidade funciona mas com comportamento degradado. Afeta usabilidade mas não funcionalidade.
 
@@ -87,7 +87,7 @@ A severidade determina como o bug é tratado e quão rapidamente deve ser corrig
 
 **Abordagem de debug:** Loop completo de 5 etapas. Incluir na suite de regressão QA.
 
-### P3 — Baixo (Backlog)
+### P3 — baixo (backlog)
 
 **Definição:** Problema cosmético, caso de borda ou inconveniência menor.
 
@@ -103,11 +103,11 @@ A severidade determina como o bug é tratado e quão rapidamente deve ser corrig
 
 ---
 
-## O Loop de Debug em 5 Etapas em Detalhe
+## O loop de debug em 5 etapas em detalhe
 
 O workflow `/debug` executa estas etapas em ordem estrita. Usa ferramentas de análise de código MCP ao longo — nunca leituras brutas de arquivo ou grep.
 
-### Step 1: Coletar Informações do Erro
+### Step 1: coletar informações do erro
 
 O workflow pede (ou recebe do usuário):
 - Mensagem de erro e stack trace
@@ -117,7 +117,7 @@ O workflow pede (ou recebe do usuário):
 
 Se uma mensagem de erro já foi fornecida no prompt, o workflow prossegue imediatamente para o Step 2.
 
-### Step 2: Reproduzir o Bug
+### Step 2: reproduzir o bug
 
 **Ferramentas usadas:** `search_for_pattern` com a mensagem de erro ou palavras-chave do stack trace, `find_symbol` para localizar a função e arquivo exatos.
 
@@ -125,7 +125,7 @@ O objetivo é localizar o erro no codebase — encontrar a linha exata onde a ex
 
 Esta etapa transforma um sintoma reportado pelo usuário ("a página crasha") em uma localização no codebase (`src/api/users.ts:47, deleteUser() throws TypeError`).
 
-### Step 3: Diagnosticar Causa Raiz
+### Step 3: diagnosticar causa raiz
 
 **Ferramentas usadas:** `find_referencing_symbols` para rastrear o caminho de execução para trás a partir do ponto de erro.
 
@@ -142,7 +142,7 @@ O workflow rastreia para trás a partir da localização do erro para encontrar 
 
 A disciplina-chave: diagnosticar a **causa raiz**, não o sintoma. Se `user.id` é undefined, a questão não é "como verifico undefined?" mas "por que user é undefined neste ponto do caminho de execução?"
 
-### Step 4: Propor Correção Mínima
+### Step 4: propor correção mínima
 
 O workflow apresenta:
 1. A causa raiz identificada (com evidência do rastreamento de código).
@@ -153,7 +153,7 @@ O workflow apresenta:
 
 **Princípio de correção mínima:** Altere o menor número de linhas possível. Não refatore, não melhore estilo de código, não adicione funcionalidades não relacionadas. A correção deve ser revisável em menos de 2 minutos.
 
-### Step 5: Aplicar Correção e Escrever Teste de Regressão
+### Step 5: aplicar correção e escrever teste de regressão
 
 Duas ações acontecem nesta etapa:
 
@@ -165,7 +165,7 @@ Duas ações acontecem nesta etapa:
 
 O teste de regressão é a saída mais importante do workflow de debug. Sem ele, o mesmo bug pode ser reintroduzido por qualquer mudança futura.
 
-### Step 6: Varredura de Padrões Similares
+### Step 6: varredura de padrões similares
 
 Após a correção ser aplicada, o workflow escaneia todo o codebase pelo mesmo padrão que causou o bug.
 
@@ -189,7 +189,7 @@ Métodos de spawn específicos por vendor:
 
 Todas as localizações vulneráveis similares são reportadas. Instâncias confirmadas são corrigidas como parte da mesma sessão.
 
-### Step 7: Documentar o Bug
+### Step 7: documentar o bug
 
 O workflow escreve um arquivo de memória com:
 - Sintoma e causa raiz
@@ -199,7 +199,7 @@ O workflow escreve um arquivo de memória com:
 
 ---
 
-## Template de Prompt para /debug
+## Template de prompt para /debug
 
 Ao acionar o workflow de debug, você pode fornecer um prompt estruturado:
 
@@ -238,11 +238,11 @@ O workflow solicitará detalhes adicionais conforme necessário.
 
 ---
 
-## Sinais de Escalação
+## Sinais de escalação
 
 Estes sinais indicam que o bug requer escalação além do loop padrão de debug:
 
-### Sinal 1: Mesma Correção Tentada Duas Vezes
+### Sinal 1: mesma correção tentada duas vezes
 
 Se o workflow propõe uma correção, aplica-a, e o mesmo erro recorre, o problema é mais profundo que o diagnóstico inicial. Isso aciona o **Exploration Loop** em workflows que o suportam (ultrawork, orchestrate, work):
 
@@ -250,13 +250,13 @@ Se o workflow propõe uma correção, aplica-a, e o mesmo erro recorre, o proble
 - Testar cada hipótese em workspace separado (git stash por tentativa).
 - Pontuar resultados e adotar a melhor abordagem.
 
-### Sinal 2: Causa Raiz Multi-Domínio
+### Sinal 2: causa raiz multi-domínio
 
 O erro no frontend é causado por uma mudança no backend que é causada por uma migração de schema de banco de dados. Quando a causa raiz cruza fronteiras de domínio, escale para `/work` ou `/orchestrate` para envolver os agentes de domínio relevantes.
 
 **Exemplo:** Frontend exibe "undefined" para nome do usuário. Backend retorna null para `user.display_name`. Migração de banco de dados adicionou a coluna, mas linhas existentes possuem valores NULL. A correção requer: migração de banco de dados (backfill), tratamento de null no backend e exibição de fallback no frontend.
 
-### Sinal 3: Ambiente de Reprodução Ausente
+### Sinal 3: ambiente de reprodução ausente
 
 O bug só ocorre em produção, e você não consegue reproduzi-lo localmente. Os sinais incluem:
 - Diferenças de configuração específicas do ambiente.
@@ -265,7 +265,7 @@ O bug só ocorre em produção, e você não consegue reproduzi-lo localmente. O
 
 **Ação:** Coletar logs de produção, solicitar acesso a monitoramento de produção e considerar adicionar instrumentação/logging antes de tentar uma correção.
 
-### Sinal 4: Falha de Infraestrutura de Testes
+### Sinal 4: falha de infraestrutura de testes
 
 O teste de regressão não pode ser escrito porque a infraestrutura de testes está quebrada, ausente ou inadequada.
 
@@ -273,7 +273,7 @@ O teste de regressão não pode ser escrito porque a infraestrutura de testes es
 
 ---
 
-## Checklist de Validação Pós-Correção
+## Checklist de validação pós-correção
 
 Após aplicar a correção e teste de regressão, verifique:
 
@@ -287,7 +287,7 @@ Após aplicar a correção e teste de regressão, verifique:
 
 ---
 
-## Critérios de Conclusão
+## Critérios de conclusão
 
 O workflow de debug está completo quando:
 

@@ -16,7 +16,7 @@ description: Hướng dẫn sử dụng toàn diện oh-my-agent — bắt đầ
 
 ---
 
-## Ví dụ 1: Task đơn giản
+## Ví dụ 1: task đơn giản
 
 **Bạn nhập:**
 ```
@@ -32,7 +32,7 @@ Create a login form component with email and password fields, client-side valida
 
 ---
 
-## Ví dụ 2: Dự án đa lĩnh vực
+## Ví dụ 2: dự án đa lĩnh vực
 
 **Bạn nhập:**
 ```
@@ -49,7 +49,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 ---
 
-## Ví dụ 3: Sửa lỗi
+## Ví dụ 3: sửa lỗi
 
 **Bạn nhập:**
 ```
@@ -60,7 +60,7 @@ There's a bug — clicking the save button shows "Cannot read property 'map' of 
 
 ---
 
-## Ví dụ 4: Design system
+## Ví dụ 4: design system
 
 **Bạn nhập:**
 ```
@@ -71,7 +71,7 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ---
 
-## Ví dụ 5: Thực thi song song CLI
+## Ví dụ 5: thực thi song song CLI
 
 ```bash
 # Agent đơn — task đơn giản
@@ -96,7 +96,7 @@ oma stats
 
 ---
 
-## Ví dụ 6: Ultrawork — Chất lượng tối đa
+## Ví dụ 6: ultrawork — chất lượng tối đa
 
 ```
 /ultrawork Build a payment processing module with Stripe integration
@@ -126,7 +126,7 @@ oma stats
 
 ---
 
-## 14 skill — Tham chiếu nhanh
+## 14 skill — tham chiếu nhanh
 
 | Skill | Phù hợp nhất cho | Đầu ra chính |
 |-------|---------|---------------|

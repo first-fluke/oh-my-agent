@@ -19,11 +19,11 @@ Tính năng của bạn trải nhiều lĩnh vực — backend API + frontend UI
 
 ## Chuỗi đầy đủ: /plan đến /review
 
-### Bước 1: /plan — Yêu cầu và phân tách task
+### Bước 1: /plan — yêu cầu và phân tách task
 
 Workflow `/plan` chạy inline và tạo kế hoạch có cấu trúc: thu thập yêu cầu, phân tích tính khả thi, định nghĩa API contract, phân tách task, xem xét với người dùng, lưu kế hoạch.
 
-### Bước 2: /work hoặc /orchestrate — Thực thi
+### Bước 2: /work hoặc /orchestrate — thực thi
 
 | Khía cạnh | /work | /orchestrate |
 |:-------|:-----------|:-------------|
@@ -31,11 +31,11 @@ Workflow `/plan` chạy inline và tạo kế hoạch có cấu trúc: thu thậ
 | **Lập kế hoạch PM** | Tích hợp sẵn | Cần plan từ /plan |
 | **Phù hợp nhất** | Lần đầu, dự án phức tạp cần giám sát | Chạy lặp, task rõ ràng |
 
-### Bước 3: agent:spawn — Quản lý agent cấp CLI
+### Bước 3: agent:spawn — quản lý agent cấp CLI
 
 Lệnh `agent:spawn` là cơ chế cấp thấp mà workflow gọi nội bộ. Bạn cũng có thể dùng trực tiếp.
 
-### Bước 4: /review — Xác minh QA
+### Bước 4: /review — xác minh QA
 
 Pipeline QA đầy đủ: kiểm tra bảo mật OWASP, hiệu suất, accessibility WCAG 2.1 AA và chất lượng mã.
 

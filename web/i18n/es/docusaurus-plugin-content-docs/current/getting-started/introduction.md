@@ -11,7 +11,7 @@ Todo el sistema reside en un directorio portable `.agents/` dentro de tu proyect
 
 ---
 
-## El Paradigma Multiagente
+## El paradigma multiagente
 
 Los asistentes de codificación con IA tradicionales operan como generalistas. Manejan frontend, backend, bases de datos, seguridad e infraestructura con el mismo contexto de prompt y el mismo nivel de experiencia. Esto genera:
 
@@ -29,9 +29,9 @@ oh-my-agent resuelve esto con especialización:
 
 ---
 
-## Los 21 Agentes
+## Los 21 agentes
 
-### Ideación, Arquitectura y Planificación
+### Ideación, arquitectura y planificación
 
 | Agente | Rol | Capacidades Clave |
 |--------|-----|-------------------|
@@ -54,7 +54,7 @@ oh-my-agent resuelve esto con especialización:
 |--------|-----|-------------------|
 | **oma-design** | Especialista en sistemas de diseño | Crea DESIGN.md con tokens, tipografía, sistemas de color, diseño de movimiento (motion/react, GSAP, Three.js), layouts responsive-first, conformidad WCAG 2.2. Flujo de 7 fases: Configuración, Extracción, Mejora, Propuesta, Generación, Auditoría, Entrega. Aplica anti-patrones (sin "AI slop"). Integración opcional con Stitch MCP. Recursos: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, más directorio `reference/` con guías de tipografía, color, espaciado, movimiento, diseño responsive, patrones de componentes, accesibilidad y shaders. |
 
-### Infraestructura, DevOps y Observabilidad
+### Infraestructura, DevOps y observabilidad
 
 | Agente | Rol | Capacidades Clave |
 |--------|-----|-------------------|
@@ -62,14 +62,14 @@ oh-my-agent resuelve esto con especialización:
 | **oma-dev-workflow** | Automatización de tareas en monorepos | mise task runner, pipelines CI/CD, migraciones de bases de datos, coordinación de releases, git hooks, validación pre-commit. Recursos: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
 | **oma-observability** | Enrutador de observabilidad basado en intención | Cobertura de señales MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), ajuste de transporte (UDP/MTU, OTLP gRPC vs HTTP, topología de Collector, muestreo), propagación de W3C Trace Context, gestión de SLO y alertas de burn-rate, forense de incidentes (localización en 6 dimensiones), meta-observabilidad (self-health, sincronización de reloj, cardinalidad, retención). CNCF primero; Fluentd obsoleto (usar Fluent Bit u OTel Collector). |
 
-### Calidad y Depuración
+### Calidad y depuración
 
 | Agente | Rol | Capacidades Clave |
 |--------|-----|-------------------|
 | **oma-qa** | Aseguramiento de calidad | Auditoría de seguridad (OWASP Top 10), análisis de rendimiento, accesibilidad (WCAG 2.1 AA), revisión de calidad de código. Severidad: CRITICAL/HIGH/MEDIUM/LOW con archivo:línea y código de remediación. Soporta características de calidad ISO/IEC 25010 y alineación de pruebas ISO/IEC 29119. Recursos: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
 | **oma-debug** | Diagnóstico y corrección de bugs | Metodología de reproducción primero. Análisis de causa raíz, correcciones mínimas, pruebas de regresión obligatorias, escaneo de patrones similares. Usa Serena MCP para rastreo de símbolos. Recursos: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Localización, Coordinación y Git
+### Localización, coordinación y git
 
 | Agente | Rol | Capacidades Clave |
 |--------|-----|-------------------|
@@ -77,7 +77,7 @@ oh-my-agent resuelve esto con especialización:
 | **oma-orchestrator** | Coordinador multiagente automatizado | Genera subagentes CLI en paralelo, coordina mediante memoria MCP, monitorea progreso, ejecuta bucles de verificación. Configurable: MAX_PARALLEL (por defecto 3), MAX_RETRIES (por defecto 2), POLL_INTERVAL (por defecto 30s). Incluye bucle de revisión agente-a-agente y monitoreo de Deuda de Clarificación. Recursos: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Commits convencionales | Analiza cambios, determina tipo/alcance, divide por funcionalidad cuando es apropiado, genera mensajes de commit en formato Conventional Commits. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
-### Búsqueda, Retrospectiva y Procesamiento de Documentos
+### Búsqueda, retrospectiva y procesamiento de documentos
 
 | Agente | Rol | Capacidades Clave |
 |--------|-----|-------------------|
@@ -88,7 +88,7 @@ oh-my-agent resuelve esto con especialización:
 
 ---
 
-## Modelo de Divulgación Progresiva
+## Modelo de divulgación progresiva
 
 oh-my-agent utiliza una arquitectura de habilidades de dos capas para prevenir el agotamiento de la ventana de contexto:
 
@@ -102,7 +102,7 @@ Este diseño ahorra aproximadamente un 75% de tokens en comparación con cargar 
 
 ---
 
-## .agents/ — La Fuente Única de Verdad (SSOT)
+## .agents/ — la fuente única de verdad (SSOT)
 
 Todo lo que oh-my-agent necesita reside en el directorio `.agents/`:
 
@@ -129,7 +129,7 @@ Esta arquitectura significa que la configuración de tus agentes es:
 
 ---
 
-## IDEs y Herramientas CLI Compatibles
+## IDEs y herramientas CLI compatibles
 
 oh-my-agent funciona con cualquier IDE o CLI potenciado por IA que soporte carga de habilidades/prompts:
 
@@ -146,7 +146,7 @@ La generación de agentes se adapta automáticamente a cada proveedor mediante e
 
 ---
 
-## Sistema de Enrutamiento de Habilidades
+## Sistema de enrutamiento de habilidades
 
 Cuando envías un prompt, oh-my-agent determina qué agente lo maneja usando el mapa de enrutamiento de habilidades (`.agents/skills/_shared/core/skill-routing.md`):
 
@@ -168,7 +168,7 @@ Para solicitudes complejas que abarcan múltiples dominios, el enrutamiento sigu
 
 ---
 
-## Próximos Pasos
+## Próximos pasos
 
 - **[Instalación](./installation.md)** — Tres métodos de instalación, presets, configuración del CLI y verificación
 - **[Agentes](/docs/core-concepts/agents)** — Inmersión profunda en los 21 agentes y la verificación previa de charter

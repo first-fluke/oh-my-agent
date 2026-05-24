@@ -5,7 +5,7 @@ description: Complete guide for coordinating multiple domain agents across front
 
 # Guide: Multi-Agent Projects
 
-## When to Use Multi-Agent Coordination
+## When to use multi-agent coordination
 
 Your feature spans multiple domains: backend API + frontend UI + database schema + mobile client + QA review. A single agent cannot handle the full scope, and you need the domains to progress in parallel without stepping on each other's files.
 
@@ -20,11 +20,11 @@ If your task fits entirely within one domain, use the specific agent directly in
 
 ---
 
-## The Full Sequence: /plan to /review
+## The full sequence: /plan to /review
 
 The recommended multi-agent workflow follows a strict four-step pipeline.
 
-### Step 1: /plan for Requirements and Task Decomposition
+### Step 1: /plan for requirements and task decomposition
 
 The `/plan` workflow runs inline (no subagent spawning) and produces a structured plan.
 
@@ -43,7 +43,7 @@ What happens:
 
 The output `.agents/results/plan-{sessionId}.json` is the input for both `/work` and `/orchestrate`.
 
-### Step 2: /work or /orchestrate for Execution
+### Step 2: /work or /orchestrate for execution
 
 You have two execution paths:
 
@@ -55,7 +55,7 @@ You have two execution paths:
 | **Persistent mode** | Yes (cannot be terminated until complete) | Yes (cannot be terminated until complete) |
 | **Best for** | First-time use, complex projects needing oversight | Repeat runs, well-defined tasks |
 
-#### /work: Interactive Multi-Agent Pipeline
+#### /work: interactive multi-agent pipeline
 
 ```
 /work
@@ -69,7 +69,7 @@ You have two execution paths:
 6. Runs QA agent review on all deliverables (OWASP Top 10, performance, accessibility, code quality).
 7. If QA finds CRITICAL or HIGH issues, re-spawns the responsible agent with QA findings. Repeats up to 2 times per issue. If the same issue persists, activates the **Exploration Loop**: generates 2-3 alternative approaches, spawns the same agent type with different hypothesis prompts in separate workspaces, QA scores each, and the best result is adopted.
 
-#### /orchestrate: Automated Parallel Execution
+#### /orchestrate: automated parallel execution
 
 ```
 /orchestrate
@@ -83,7 +83,7 @@ You have two execution paths:
 6. Verifies each completed agent via `verify.sh`. PASS (exit 0) accepts; FAIL (exit 1) re-spawns with error context (max 2 retries); persistent failure triggers the Exploration Loop.
 7. Collects all `result-{agent}.md` files and compiles a final report.
 
-### Step 3: agent:spawn for CLI-Level Agent Management
+### Step 3: agent:spawn for CLI-Level agent management
 
 The `agent:spawn` command is the low-level mechanism that workflows call internally. You can also use it directly:
 
@@ -110,7 +110,7 @@ See [Per-Agent Models](./per-agent-models.md) for configuration details.
 
 **Prompt resolution:** The `<prompt>` argument can be either inline text or a file path. If the path resolves to an existing file, its contents are read and used as the prompt. The CLI also injects vendor-specific execution protocols from `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
 
-### Step 4: /review for QA Verification
+### Step 4: /review for QA verification
 
 ```
 /review
@@ -130,7 +130,7 @@ For large scopes, the workflow delegates to the QA agent subagent. With the `--f
 
 ---
 
-## Session ID Strategy
+## Session ID strategy
 
 Every orchestration session gets a unique identifier in the format:
 
@@ -151,11 +151,11 @@ The session ID is generated at Step 2 of `/orchestrate` and passed to all spawne
 
 ---
 
-## Workspace Assignment Per Domain
+## Workspace assignment per domain
 
 Each agent is spawned in an isolated workspace directory to prevent file conflicts. The assignment follows these rules:
 
-### Automatic Detection
+### Automatic detection
 
 When `-w` is omitted (or set to `.`), the CLI detects the best workspace by:
 
@@ -172,7 +172,7 @@ When `-w` is omitted (or set to `.`), the CLI detects the best workspace by:
 4. Exact directory name match scores 100, contains-keyword scores 50, path-contains scores 25.
 5. Highest-scoring directory wins.
 
-### Fallback Candidates
+### Fallback candidates
 
 If no monorepo config exists, the CLI checks hardcoded paths in order:
 
@@ -182,7 +182,7 @@ If no monorepo config exists, the CLI checks hardcoded paths in order:
 
 If nothing matches, the agent runs in the current directory (`.`).
 
-### Explicit Override
+### Explicit override
 
 Always available:
 
@@ -192,7 +192,7 @@ oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 ---
 
-## Contract-First Rule
+## Contract-first rule
 
 API contracts are the synchronization mechanism between agents. The contract-first rule means:
 
@@ -211,27 +211,27 @@ API contracts are the synchronization mechanism between agents. The contract-fir
 
 5. **QA review checks contract adherence.** The QA agent's Alignment Review (Step 6 in ultrawork) explicitly compares implementation against the plan, including API contracts.
 
-**Why this matters:** Without contracts, a backend agent might return `{ "user_id": 1 }` while the frontend agent consumes `{ "userId": 1 }`. The contract-first rule eliminates this class of integration bugs entirely.
+Without contracts, a backend agent might return `{ "user_id": 1 }` while the frontend agent consumes `{ "userId": 1 }`. The contract-first rule prevents this kind of integration bug.
 
 ---
 
-## Merge Gates: 4 Conditions
+## Merge gates: 4 conditions
 
 Before any multi-agent work is considered complete, four conditions must be met:
 
-### 1. Build Succeeds
+### 1. Build succeeds
 
 All code compiles and builds without errors. This is checked by the verification script (`verify.sh`), which runs build commands appropriate to the agent type.
 
-### 2. Tests Pass
+### 2. Tests pass
 
 All existing tests continue to pass, and new tests cover the implemented functionality. The QA agent reviews test coverage as part of its Code Quality Review.
 
-### 3. Only Planned Files Modified
+### 3. Only planned files modified
 
 Agents must not modify files outside their assigned scope. The verification step checks that only files related to the agent's task have been changed. This prevents agents from making unintended side effects in shared code.
 
-### 4. QA Review Clear
+### 4. QA review clear
 
 No CRITICAL or HIGH findings remain from the QA agent's review. MEDIUM and LOW findings can be documented for future sprints, but blockers must be resolved.
 
@@ -239,9 +239,9 @@ In the ultrawork workflow, these translate into explicit **phase gates** (PLAN_G
 
 ---
 
-## Spawn Examples
+## Spawn examples
 
-### Single Agent Spawn
+### Single agent spawn
 
 ```bash
 # Spawn backend agent with Gemini (default)
@@ -254,7 +254,7 @@ oma agent:spawn frontend "Build user dashboard with React" session-20260324-1430
 oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Parallel Execution via agent:parallel
+### Parallel execution via agent:parallel
 
 Using a YAML tasks file:
 
@@ -300,39 +300,39 @@ oma agent:parallel tasks.yaml -m claude
 
 ---
 
-## Anti-Patterns to Avoid
+## Anti-patterns to avoid
 
-### 1. Skipping the Plan
+### 1. Skipping the plan
 
 Starting `/orchestrate` without a plan file. The workflow will refuse to proceed. Always run `/plan` first, or use `/work` which has built-in planning.
 
-### 2. Overlapping Workspaces
+### 2. Overlapping workspaces
 
 Assigning two agents to the same workspace directory. This causes file conflicts where one agent's changes overwrite another's. Always use separate workspace directories.
 
-### 3. Missing API Contracts
+### 3. Missing API contracts
 
 Spawning backend and frontend agents without defining contracts first. They will make incompatible assumptions about data formats, field names, and error handling.
 
-### 4. Ignoring QA Findings
+### 4. Ignoring QA findings
 
 Treating QA review as optional. CRITICAL and HIGH findings represent real bugs that will surface in production. The workflow enforces this by looping until no blockers remain.
 
-### 5. Manual File Coordination
+### 5. Manual file coordination
 
 Trying to manually merge agent outputs instead of letting the verification and QA pipeline handle integration. The automated pipeline catches issues that manual review misses.
 
-### 6. Over-Parallelization
+### 6. Over-parallelization
 
 Running P1 tasks before P0 tasks complete. Priority tiers exist because P1 tasks often depend on P0 outputs. The workflows enforce tier ordering automatically.
 
-### 7. Skipping Verification
+### 7. Skipping verification
 
 Using `agent:spawn` directly without running the verification script afterward. The verification step catches build failures, test regressions, and scope violations that would otherwise propagate.
 
 ---
 
-## Cross-Domain Integration Validation
+## Cross-domain integration validation
 
 After all agents complete their individual tasks, cross-domain integration must be validated:
 
@@ -350,7 +350,7 @@ The QA agent's Alignment Review (Step 6 in ultrawork, Step 6 in work) performs t
 
 ---
 
-## When It's Done
+## When it's done
 
 A multi-agent project is complete when:
 

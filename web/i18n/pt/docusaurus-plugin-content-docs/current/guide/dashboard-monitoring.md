@@ -5,7 +5,7 @@ description: "Guia abrangente de dashboard cobrindo dashboards de terminal e web
 
 # Guia: Monitoramento com Dashboard
 
-## Dois Comandos de Dashboard
+## Dois comandos de dashboard
 
 oh-my-agent fornece dois dashboards em tempo real para monitorar atividade de agentes durante workflows multi-agente.
 
@@ -16,7 +16,7 @@ oh-my-agent fornece dois dashboards em tempo real para monitorar atividade de ag
 
 Ambos os dashboards observam a mesma fonte de dados: diretório `.serena/memories/`.
 
-### Dashboard no Terminal
+### Dashboard no terminal
 
 ```bash
 oma dashboard
@@ -52,7 +52,7 @@ Renderiza uma UI com box-drawing diretamente no terminal. Atualiza automaticamen
 - `○` (amarelo) — bloqueado
 - `◌` (dim) — pendente
 
-### Dashboard Web
+### Dashboard web
 
 ```bash
 oma dashboard:web
@@ -77,7 +77,7 @@ O dashboard web mostra a mesma informação que o dashboard de terminal mas com 
 
 ---
 
-## Layout Recomendado de 3 Terminais
+## Layout recomendado de 3 terminais
 
 Para workflows multi-agente, o setup recomendado usa três painéis de terminal:
 
@@ -112,11 +112,11 @@ Para workflows multi-agente, o setup recomendado usa três painéis de terminal:
 
 ---
 
-## Fontes de Dados em .serena/memories/
+## Fontes de dados em .serena/memories/
 
 Os dashboards leem do diretório `.serena/memories/`. Este diretório é populado por agentes e workflows usando ferramentas de memória MCP durante execução.
 
-### Tipos de Arquivo e Seus Conteúdos
+### Tipos de arquivo e seus conteúdos
 
 | Padrão de Arquivo | Criado Por | Conteúdos |
 |:-----------------|:----------|:---------|
@@ -129,7 +129,7 @@ Os dashboards leem do diretório `.serena/memories/`. Este diretório é populad
 | `experiment-ledger.md` | Sistema Quality Score | Rastreamento de experimentos: scores baseline, deltas, decisões keep/discard |
 | `lessons-learned.md` | Auto-gerado no fim da sessão | Lições de experimentos descartados (delta <= -5) |
 
-### Como o Dashboard os Lê
+### Como o dashboard os lê
 
 O dashboard usa múltiplas estratégias para extrair informação:
 
@@ -141,15 +141,15 @@ O dashboard usa múltiplas estratégias para extrair informação:
 
 ---
 
-## O Que Cada Dashboard Mostra
+## O que cada dashboard mostra
 
-### Status da Sessão
+### Status da sessão
 
 A seção superior exibe:
 - **ID da sessão** — Extraído de arquivos de sessão (formato: `session-YYYYMMDD-HHMMSS`).
 - **Status** — Codificado por cor: verde para RUNNING, cyan para COMPLETED, vermelho para FAILED, amarelo para UNKNOWN.
 
-### Task Board
+### Task board
 
 A tabela de agentes mostra cada agente detectado com:
 - **Nome do agente** — O identificador de domínio (backend, frontend, mobile, qa, debug, pm).
@@ -157,7 +157,7 @@ A tabela de agentes mostra cada agente detectado com:
 - **Turno** — Número do turno atual do agente (quantas iterações completou).
 - **Tarefa** — Descrição breve do que o agente está trabalhando (truncada para caber).
 
-### Progresso dos Agentes
+### Progresso dos agentes
 
 Progresso é rastreado através de arquivos `progress-{agent}.md`. Cada arquivo é atualizado pelo agente conforme trabalha.
 
@@ -171,9 +171,9 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 
 ---
 
-## Runbook de Solução de Problemas
+## Runbook de solução de problemas
 
-### Sinal 1: Agente Mostra "running" mas Sem Progresso de Turno
+### Sinal 1: agente mostra "running" mas sem progresso de turno
 
 **Sintoma:** O dashboard mostra um agente como running, mas o número do turno não mudou por vários minutos.
 
@@ -187,7 +187,7 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 2. Verificar se o processo está realmente executando: `oma agent:status {session-id} {agent-id}`
 3. Se o processo não está executando mas status mostra "running", o agente crashou. Re-spawne com contexto do erro.
 
-### Sinal 2: Agente Mostra "crashed"
+### Sinal 2: agente mostra "crashed"
 
 **Sintoma:** `oma agent:status` retorna `crashed` para um agente.
 
@@ -197,7 +197,7 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 3. Verificar autenticação: `oma auth:status`
 4. Re-spawnar o agente com a mesma tarefa.
 
-### Sinal 3: Dashboard Mostra "No agents detected yet"
+### Sinal 3: dashboard mostra "no agents detected yet"
 
 **Sintoma:** O dashboard está executando mas não mostra agentes.
 
@@ -206,7 +206,7 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 2. Verificar se o workflow ainda está na fase de planejamento (agentes ainda não foram spawnados).
 3. Garantir que o dashboard está observando o diretório de projeto correto.
 
-### Sinal 4: Dashboard Web Mostra "Disconnected"
+### Sinal 4: dashboard web mostra "disconnected"
 
 **Ações:**
 1. Verificar se o processo do dashboard está executando.
@@ -215,7 +215,7 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 
 ---
 
-## Checklist de Monitoramento Pré-Merge
+## Checklist de monitoramento pré-merge
 
 Antes de considerar uma sessão multi-agente completa, verifique através do dashboard:
 
@@ -228,16 +228,16 @@ Antes de considerar uma sessão multi-agente completa, verifique através do das
 
 ---
 
-## Detalhes Técnicos
+## Detalhes técnicos
 
-### Dashboard de Terminal (oma dashboard)
+### Dashboard de terminal (oma dashboard)
 
 - **Observação de arquivos:** Usa [chokidar](https://github.com/paulmillr/chokidar) com `awaitWriteFinish` (limiar de estabilidade de 200ms, intervalo de poll de 50ms) para evitar renderizar escritas parciais de arquivo.
 - **Renderização:** Limpa e redesenha o terminal inteiro em cada evento de mudança de arquivo. Usa `picocolors` para saída de cor ANSI e caracteres Unicode box-drawing para a borda.
 - **Diretório de memória:** Resolvido de variável env `MEMORIES_DIR`, argumento CLI, ou `{cwd}/.serena/memories`.
 - **Shutdown gracioso:** Captura `SIGINT` e `SIGTERM`, fecha o watcher chokidar e sai limpo.
 
-### Dashboard Web (oma dashboard:web)
+### Dashboard web (oma dashboard:web)
 
 - **Servidor HTTP:** Node.js `createServer` serve a página HTML em `/` e o estado JSON em `/api/state`.
 - **WebSocket:** Usa a biblioteca `ws`. Um `WebSocketServer` é anexado ao servidor HTTP. Na conexão, o cliente recebe o estado completo imediatamente. Atualizações subsequentes são enviadas como mensagens `{ type: "update", event, file, data }`.

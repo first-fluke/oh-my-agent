@@ -5,18 +5,18 @@ description: Comprehensive usage guide for oh-my-agent, covering quick start, de
 
 # How to Use oh-my-agent
 
-## Quick Start
+## Quick start
 
 1. Open your project in an AI-powered IDE (Claude Code, Gemini CLI, Cursor, Antigravity, etc.)
 2. Skills are auto-detected from `.agents/skills/`
 3. Describe what you want in natural language. oh-my-agent routes to the right agent
 4. For multi-agent work, use `/work` or `/orchestrate`
 
-That is the entire workflow. No special syntax required for single-domain tasks.
+Single-domain tasks need no special syntax.
 
 ---
 
-## Example 1: Simple Single Task
+## Example 1: simple single task
 
 **You type:**
 ```
@@ -51,7 +51,7 @@ Create a login form component with email and password fields, client-side valida
 
 ---
 
-## Example 2: Multi-Domain Project
+## Example 2: multi-domain project
 
 **You type:**
 ```
@@ -103,7 +103,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 ---
 
-## Example 3: Bug Fixing
+## Example 3: bug fixing
 
 **You type:**
 ```
@@ -132,7 +132,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 ---
 
-## Example 4: Design System
+## Example 4: design system
 
 **You type:**
 ```
@@ -164,7 +164,7 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ---
 
-## Example 5: CLI Parallel Execution
+## Example 5: CLI parallel execution
 
 ```bash
 # Single agent for a simple task
@@ -200,7 +200,7 @@ Cross-vendor tasks still use `oma agent:spawn`.
 
 ---
 
-## Example 6: Ultrawork for Maximum Quality
+## Example 6: ultrawork for maximum quality
 
 **You type:**
 ```
@@ -245,7 +245,7 @@ Cross-vendor tasks still use `oma agent:spawn`.
 
 ---
 
-## All Workflow Commands
+## All workflow commands
 
 | Command | Type | What It Does | When to Use |
 |---------|------|-------------|-------------|
@@ -265,7 +265,7 @@ Cross-vendor tasks still use `oma agent:spawn`.
 
 ---
 
-## Auto-Detection Examples
+## Auto-detection examples
 
 oh-my-agent detects workflow keywords in 11 languages. Here are examples showing how natural language triggers workflows:
 
@@ -304,7 +304,7 @@ oh-my-agent detects workflow keywords in 11 languages. Here are examples showing
 
 ---
 
-## All 14 Skills: Quick Reference
+## All 14 skills: quick reference
 
 | Skill | Best For | Primary Output |
 |-------|---------|---------------|
@@ -325,9 +325,9 @@ oh-my-agent detects workflow keywords in 11 languages. Here are examples showing
 
 ---
 
-## Dashboard Setup
+## Dashboard setup
 
-### Terminal Dashboard
+### Terminal dashboard
 
 ```bash
 oma dashboard
@@ -338,7 +338,7 @@ Displays a live-updating table in your terminal:
 - Per-agent rows: status, turn count, latest activity, elapsed time
 - Watches `.serena/memories/` for real-time progress updates
 
-### Web Dashboard
+### Web dashboard
 
 ```bash
 oma dashboard:web
@@ -352,7 +352,7 @@ Features:
 - Activity log streaming from progress and result files
 - Historical session data
 
-### Recommended Layout
+### Recommended layout
 
 Use 3 terminals:
 1. **Dashboard terminal:** `oma dashboard` for continuous monitoring
@@ -361,13 +361,13 @@ Use 3 terminals:
 
 ---
 
-## Key Concepts Explained
+## Key concepts explained
 
-### Progressive Disclosure
+### Progressive disclosure
 
 Skills load in two layers to save tokens. Layer 1 (SKILL.md, ~800 bytes) is always present. Layer 2 (resources/) loads only when the agent is working, and only the resources matching the task difficulty. This saves approximately 75% of tokens compared to loading everything upfront. On flash-tier models (128K context), this means approximately 125K tokens available for actual work instead of 108K.
 
-### Token Optimization
+### Token optimization
 
 Beyond progressive disclosure, oh-my-agent optimizes tokens through:
 - **Context budget management**: no full file reads; use `find_symbol` instead of `read_file`
@@ -375,7 +375,7 @@ Beyond progressive disclosure, oh-my-agent optimizes tokens through:
 - **Difficulty-based branching**: Simple tasks skip analysis and use minimal checklists
 - **Progress tracking**: agents record read files to prevent re-reads
 
-### CLI Spawning
+### CLI spawning
 
 When you run `oma agent:spawn`, the CLI:
 1. Resolves the vendor (using the 5-level priority)
@@ -385,7 +385,7 @@ When you run `oma agent:spawn`, the CLI:
 5. The agent writes progress to `.serena/memories/progress-{agent}.md`
 6. On completion, writes final result to `.serena/memories/result-{agent}.md`
 
-### Serena Memory
+### Serena memory
 
 Agents coordinate through shared memory files at `.serena/memories/`. The orchestrator writes `orchestrator-session.md` (session state) and `task-board.md` (task assignments). Each agent writes its own `progress-{agent}.md` (turn-by-turn updates) and `result-{agent}.md` (final output). Memory tools are configurable; defaults are `read_memory`, `write_memory`, `edit_memory` via Serena MCP.
 

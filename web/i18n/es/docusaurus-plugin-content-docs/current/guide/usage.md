@@ -7,7 +7,7 @@ description: Ejemplos del mundo real mostrando como usar oh-my-agent — desde t
 
 > No sabes por donde empezar? Escribe `/work` seguido de lo que quieres construir.
 
-## Inicio Rapido
+## Inicio rapido
 
 1. Abre tu proyecto en un IDE con IA (Claude Code, Gemini, Cursor, etc.)
 2. Los skills se detectan automaticamente desde `.agents/skills/`
@@ -17,7 +17,7 @@ Eso es todo. oh-my-agent se encarga del resto.
 
 ---
 
-## Ejemplo 1: Tarea Simple
+## Ejemplo 1: tarea simple
 
 **Escribes:**
 ```
@@ -31,7 +31,7 @@ Eso es todo. oh-my-agent se encarga del resto.
 
 Sin comandos slash necesarios. Solo describe lo que quieres.
 
-## Ejemplo 2: Proyecto Multi-Dominio
+## Ejemplo 2: proyecto multi-dominio
 
 **Escribes:**
 ```
@@ -52,7 +52,7 @@ Sin comandos slash necesarios. Solo describe lo que quieres.
 5. **Agente QA revisa** — auditoria de seguridad, verificacion de integracion
 6. **Iteras** — re-lanza agentes con refinamientos si es necesario
 
-## Ejemplo 3: Correccion de Bugs
+## Ejemplo 3: correccion de bugs
 
 **Escribes:**
 ```
@@ -67,7 +67,7 @@ Sin comandos slash necesarios. Solo describe lo que quieres.
 4. Test de regresion escrito
 5. Patrones similares encontrados y corregidos proactivamente en 3 otros componentes
 
-## Ejemplo 4: Sistema de Diseno
+## Ejemplo 4: sistema de diseno
 
 **Escribes:**
 ```
@@ -83,7 +83,7 @@ Sin comandos slash necesarios. Solo describe lo que quieres.
 5. Ejecuta auditoria — responsivo, WCAG, heuristicas de Nielsen
 6. Listo para que `oma-frontend` implemente
 
-## Ejemplo 5: Ejecucion Paralela via CLI
+## Ejemplo 5: ejecucion paralela via CLI
 
 ```bash
 # Agente unico
@@ -102,7 +102,7 @@ oma dashboard:web    # UI web en http://localhost:9847
 
 ---
 
-## Comandos de Workflow
+## Comandos de workflow
 
 Escribe estos en tu IDE de IA para activar procesos estructurados:
 
@@ -123,7 +123,7 @@ Escribe estos en tu IDE de IA para activar procesos estructurados:
 
 ---
 
-## Auto-Deteccion (Sin Comandos Slash)
+## Auto-deteccion (sin comandos slash)
 
 oh-my-agent detecta keywords en 11 idiomas y activa workflows automaticamente:
 
@@ -140,7 +140,7 @@ Preguntas como "que es orchestrate?" se filtran — no activaran workflows accid
 
 ---
 
-## Skills Disponibles
+## Skills disponibles
 
 | Skill | Mejor Para | Salida |
 |-------|-----------|--------|
@@ -163,7 +163,7 @@ Preguntas como "que es orchestrate?" se filtran — no activaran workflows accid
 
 ## Dashboards
 
-### Dashboard de Terminal
+### Dashboard de terminal
 
 ```bash
 oma dashboard
@@ -171,7 +171,7 @@ oma dashboard
 
 Tabla en vivo mostrando estado de sesion, estados de agentes, turnos y actividad reciente. Observa `.serena/memories/` para actualizaciones en tiempo real.
 
-### Dashboard Web
+### Dashboard web
 
 ```bash
 oma dashboard:web
@@ -184,7 +184,7 @@ Caracteristicas:
 - Estado de sesion con indicadores de agente coloreados
 - Log de actividad desde archivos de progreso y resultados
 
-### Layout Recomendado
+### Layout recomendado
 
 Usa 3 terminales:
 1. Dashboard (`oma dashboard`)
@@ -204,7 +204,7 @@ Usa 3 terminales:
 
 ---
 
-## Solucion de Problemas
+## Solucion de problemas
 
 | Problema | Solucion |
 |----------|----------|

@@ -11,7 +11,7 @@ A variável de ambiente `OH_MY_AG_OUTPUT_FORMAT` pode ser definida como `json` p
 
 ---
 
-## Setup e Instalação
+## Setup e instalação
 
 ### oma (install)
 
@@ -171,7 +171,7 @@ Use isso após editar `.agents/agents/`, `.agents/workflows/`, `.agents/rules/` 
 O workflow `/setup` (invocado dentro de uma sessão de agente) fornece configuração interativa de linguagem, instalações CLI, conexões MCP e mapeamento agente-CLI. Isso é diferente de `oma` (o instalador) — `/setup` configura uma instância já instalada.
 ---
 
-## Monitoramento e Métricas
+## Monitoramento e métricas
 
 ### dashboard
 
@@ -345,7 +345,7 @@ oma retro 7d --json
 
 ---
 
-## Gerenciamento de Agentes
+## Gerenciamento de agentes
 
 ### agent:spawn
 
@@ -529,7 +529,7 @@ oma agent:review -m gemini -w ./apps/web --no-uncommitted
 
 ---
 
-## Gerenciamento de Memória
+## Gerenciamento de memória
 
 ### memory:init
 
@@ -560,7 +560,7 @@ oma memory:init --force
 
 ---
 
-## Integração e Utilitários
+## Integração e utilitários
 
 ### auth:status
 
@@ -942,7 +942,7 @@ Imprime a versão atual da CLI e sai.
 
 ---
 
-## Variáveis de Ambiente
+## Variáveis de ambiente
 
 | Variável | Descrição | Usado Por |
 |:---------|:----------|:--------|

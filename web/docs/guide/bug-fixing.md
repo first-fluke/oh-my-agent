@@ -5,7 +5,7 @@ description: Thorough debugging guide covering the structured 5-step debug loop,
 
 # Guide: Bug Fixing
 
-## When to Use the Debug Workflow
+## When to use the debug workflow
 
 Use `/debug` (or say "fix bug", "fix error", "debug" in natural language) when you have a specific bug to diagnose and fix. The workflow provides a structured, reproducible approach to debugging that avoids the common trap of fixing symptoms instead of root causes.
 
@@ -13,11 +13,11 @@ The debug workflow supports all vendors (Gemini, Claude, Codex, Qwen). Steps 1-5
 
 ---
 
-## Bug Report Template
+## Bug report template
 
 When reporting a bug, provide as much of the following as possible. Each field helps the debug workflow narrow the search faster.
 
-### Required Fields
+### Required fields
 
 | Field | Description | Example |
 |:------|:-----------|:--------|
@@ -26,7 +26,7 @@ When reporting a bug, provide as much of the following as possible. Each field h
 | **Expected behavior** | What should happen | User is deleted and removed from the list. |
 | **Actual behavior** | What actually happens | Page crashes with a white screen. |
 
-### Optional Fields (Highly Recommended)
+### Optional fields (highly recommended)
 
 | Field | Description | Example |
 |:------|:-----------|:--------|
@@ -41,11 +41,11 @@ The more context you provide upfront, the fewer back-and-forth questions the deb
 
 ---
 
-## Severity Triage (P0-P3)
+## Severity triage (P0-P3)
 
 Severity determines how the bug is handled and how quickly it should be fixed.
 
-### P0: Critical (Immediate Response)
+### P0: critical (immediate response)
 
 **Definition:** Production is down, data is being lost or corrupted, security breach is active.
 
@@ -59,7 +59,7 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 
 **Debug approach:** Skip the full template. Provide the error message and any stack trace. The workflow starts immediately at Step 2 (Reproduce).
 
-### P1: High (Same Session)
+### P1: high (same session)
 
 **Definition:** A core feature is broken for a significant number of users. Workaround may exist but is not acceptable long-term.
 
@@ -73,7 +73,7 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 
 **Debug approach:** Full 5-step loop. QA review recommended after fix.
 
-### P2: Medium (This Sprint)
+### P2: medium (this sprint)
 
 **Definition:** A feature works but with degraded behavior. Affects usability but not functionality.
 
@@ -87,7 +87,7 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 
 **Debug approach:** Full 5-step loop. Include in QA regression suite.
 
-### P3: Low (Backlog)
+### P3: low (backlog)
 
 **Definition:** Cosmetic issue, edge case, or minor inconvenience.
 
@@ -103,11 +103,11 @@ Severity determines how the bug is handled and how quickly it should be fixed.
 
 ---
 
-## The 5-Step Debug Loop in Detail
+## The 5-Step debug loop in detail
 
 The `/debug` workflow executes these steps in strict order. It uses MCP code analysis tools throughout, never raw file reads or grep.
 
-### Step 1: Collect Error Information
+### Step 1: collect error information
 
 The workflow asks for (or receives from the user):
 - Error message and stack trace
@@ -117,7 +117,7 @@ The workflow asks for (or receives from the user):
 
 If an error message is already provided in the prompt, the workflow proceeds immediately to Step 2.
 
-### Step 2: Reproduce the Bug
+### Step 2: reproduce the bug
 
 **Tools used:** `search_for_pattern` with the error message or stack trace keywords, `find_symbol` to locate the exact function and file.
 
@@ -125,7 +125,7 @@ The goal is to locate the error in the codebase: find the exact line where the e
 
 This step transforms a user-reported symptom ("the page crashes") into a codebase-level location (`src/api/users.ts:47, deleteUser() throws TypeError`).
 
-### Step 3: Diagnose Root Cause
+### Step 3: diagnose root cause
 
 **Tools used:** `find_referencing_symbols` to trace the execution path backward from the error point.
 
@@ -140,9 +140,9 @@ The workflow traces backward from the error location to find the actual cause. I
 | **Stale state** | React state not updating, cached values not invalidated, closure capturing old value |
 | **Missing validation** | User input not sanitized, API request body not validated, boundary conditions unchecked |
 
-The key discipline: diagnose the **root cause**, not the symptom. If `user.id` is undefined, the question is not "how do I check for undefined?" but "why is user undefined at this point in the execution path?"
+Diagnose the root cause, not the symptom. If `user.id` is undefined, ask why user is undefined at this point in the execution path, not how to guard against undefined.
 
-### Step 4: Propose Minimal Fix
+### Step 4: propose minimal fix
 
 The workflow presents:
 1. The identified root cause (with evidence from the code trace).
@@ -153,7 +153,7 @@ The workflow presents:
 
 **Minimal fix principle:** Change the fewest lines possible. Do not refactor, do not improve code style, do not add unrelated features. The fix should be reviewable in under 2 minutes.
 
-### Step 5: Apply Fix and Write Regression Test
+### Step 5: apply fix and write regression test
 
 Two actions happen in this step:
 
@@ -165,7 +165,7 @@ Two actions happen in this step:
 
 The regression test is the most important output of the debug workflow. Without it, the same bug can be reintroduced by any future change.
 
-### Step 6: Scan for Similar Patterns
+### Step 6: scan for similar patterns
 
 After the fix is applied, the workflow scans the entire codebase for the same pattern that caused the bug.
 
@@ -189,7 +189,7 @@ Vendor-specific spawn methods:
 
 All similar vulnerable locations are reported. Confirmed instances are fixed as part of the same session.
 
-### Step 7: Document the Bug
+### Step 7: document the bug
 
 The workflow writes a memory file with:
 - Symptom and root cause
@@ -199,7 +199,7 @@ The workflow writes a memory file with:
 
 ---
 
-## Prompt Template for /debug
+## Prompt template for /debug
 
 When triggering the debug workflow, you can provide a structured prompt:
 
@@ -238,11 +238,11 @@ The workflow will ask for additional details as needed.
 
 ---
 
-## Escalation Signals
+## Escalation signals
 
 These signals indicate the bug requires escalation beyond the standard debug loop:
 
-### Signal 1: Same Fix Attempted Twice
+### Signal 1: same fix attempted twice
 
 If the workflow proposes a fix, applies it, and the same error recurs, the problem is deeper than the initial diagnosis. This triggers the **Exploration Loop** in workflows that support it (ultrawork, orchestrate, work):
 
@@ -250,13 +250,13 @@ If the workflow proposes a fix, applies it, and the same error recurs, the probl
 - Test each hypothesis in a separate workspace (git stash per attempt).
 - Score results and adopt the best approach.
 
-### Signal 2: Multi-Domain Root Cause
+### Signal 2: multi-domain root cause
 
 The error in the frontend is caused by a backend change that is caused by a database schema migration. When the root cause crosses domain boundaries, escalate to `/work` or `/orchestrate` to involve the relevant domain agents.
 
 **Example:** Frontend displays "undefined" for user name. Backend returns null for `user.display_name`. Database migration added the column but existing rows have NULL values. Fix requires: database migration (backfill), backend null handling, and frontend fallback display.
 
-### Signal 3: Missing Reproduction Environment
+### Signal 3: missing reproduction environment
 
 The bug only occurs in production, and you cannot reproduce it locally. Signals include:
 - Environment-specific configuration differences.
@@ -265,7 +265,7 @@ The bug only occurs in production, and you cannot reproduce it locally. Signals 
 
 **Action:** Gather production logs, request access to production monitoring, and consider adding instrumentation/logging before attempting a fix.
 
-### Signal 4: Test Infrastructure Failure
+### Signal 4: test infrastructure failure
 
 The regression test cannot be written because the test infrastructure is broken, missing, or inadequate.
 
@@ -273,7 +273,7 @@ The regression test cannot be written because the test infrastructure is broken,
 
 ---
 
-## Post-Fix Validation Checklist
+## Post-fix validation checklist
 
 After applying the fix and regression test, verify:
 
@@ -287,7 +287,7 @@ After applying the fix and regression test, verify:
 
 ---
 
-## Done Criteria
+## Done criteria
 
 The debug workflow is complete when:
 

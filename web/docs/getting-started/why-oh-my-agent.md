@@ -7,13 +7,13 @@ description: Positioning thesis for oh-my-agent in a saturated multi-agent CLI c
 
 The multi-agent CLI category is crowded. In the last quarter alone, more than twenty multi-agent orchestrators have appeared - Metateam, OpenSwarm, DevSquad, Praktor, Salacia, Codelegate, agent-of-empires, TTal, Maggy, and others. Most optimize the same axis: making agents write code faster.
 
-oh-my-agent optimizes a different axis. The starting assumption is that with capable models, the cost of analysis, design, and implementation in the SDLC is approaching zero. The expensive part of software development has always been testing and maintenance - keeping a system working, secure, and understandable after the first commit. That is the axis oh-my-agent is designed around.
+oh-my-agent optimizes a different axis. With capable models, the cost of analysis, design, and implementation in the SDLC approaches zero. Testing and maintenance — keeping a system working, secure, and understandable after the first commit — are where the cost now sits. oh-my-agent is designed around that axis.
 
 This page makes that positioning concrete. For the long-form discussion that originated this framing, see [issue #155](https://github.com/first-fluke/oh-my-agent/issues/155#issuecomment-4142133589).
 
 ---
 
-## The Cost Has Shifted
+## The cost has shifted
 
 When a single capable model can produce a working feature in minutes, the bottleneck is no longer implementation throughput. The bottleneck is verifying that the produced code actually does what was claimed, catching silent regressions across iterations, keeping secrets out of prompts and logs, and surfacing token spend before it surprises the team.
 
@@ -21,7 +21,7 @@ A harness that only spawns agents faster does not address any of these. A harnes
 
 ---
 
-## What oh-my-agent Ships for the Real Cost Center
+## What oh-my-agent ships for the post-implementation phase
 
 Each capability below addresses a specific failure mode reported in the multi-agent CLI category.
 
@@ -41,7 +41,7 @@ Heavy verifications (greater than thirty seconds) are cached against affected fi
 
 Every `oma agent:spawn` call records the spawn's token estimate to `.serena/memories/session-cost-{sessionId}.md`. Before the next spawn, `checkCap` consults the configured quota cap and refuses to launch if any dimension is exceeded. Three dimensions are enforced: total tokens, total spawn count, and per-vendor token budget.
 
-This is the difference between learning you spent forty thousand dollars after the fact and being told at spawn fifteen that you have one spawn left in your budget. See `cli/io/session-cost.ts` and configure under `session.quota_cap` in `.agents/oma-config.yaml`.
+Without the cap you discover at the end of the month that you spent $40,000. With it, the orchestrator tells you at spawn fifteen that one spawn remains. See `cli/io/session-cost.ts` and configure under `session.quota_cap` in `.agents/oma-config.yaml`.
 
 ### Retry then explore, not retry forever
 
@@ -55,7 +55,7 @@ This is a structured response to the case where one approach is fundamentally wr
 
 ---
 
-## Multi-Vendor Is Not Optional
+## Multi-vendor is not optional
 
 The second design assumption is that any team doing real AI-assisted development uses more than one provider. Today that means Claude, Codex, Gemini, Copilot, Qwen, Kimi, and whatever ships next quarter. Vendor switching is a fact, not an edge case - Anthropic moves agent features to a separate paid plan, OpenAI ships Codex CLI the same week Anthropic models degrade, GitHub Copilot moves to consumption-based pricing.
 
@@ -63,7 +63,7 @@ oh-my-agent treats vendor selection as per-agent configuration through `model_pr
 
 ---
 
-## Repo-Native Customization
+## Repo-native customization
 
 The third assumption is that no two teams share the same definition of "done". One team requires OWASP Top 10 scans on every backend change. Another requires a Korean-language QA report. A third requires that every migration is reviewed by a database agent before merge.
 
@@ -71,8 +71,8 @@ Because `.agents/` is just files in your repository, every team can add or modif
 
 ---
 
-## What This Means in Practice
+## What this means in practice
 
-If your priority is "spawn parallel agents fast", many tools cover that surface. If your priority is "ship code that keeps working after the agents leave the room", oh-my-agent is built for that specific goal. The `oma verify`, JUDGE, Exploration Loop, quota cap, and monorepo routing pieces are not optional add-ons - they are the reason the project exists.
+If your priority is spawning parallel agents fast, many tools cover that. If your priority is shipping code that keeps working after the agents leave the room, oh-my-agent is built for that. `oma verify`, JUDGE, the Exploration Loop, the quota cap, and monorepo routing are the reason the project exists, not optional add-ons.
 
 For details on each capability, see the Core Concepts section (Agents, Parallel Execution) in the sidebar.

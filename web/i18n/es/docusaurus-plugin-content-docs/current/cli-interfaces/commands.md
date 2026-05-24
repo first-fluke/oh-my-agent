@@ -11,7 +11,7 @@ La variable de entorno `OH_MY_AG_OUTPUT_FORMAT` se puede establecer como `json` 
 
 ---
 
-## Configuración e Instalación
+## Configuración e instalación
 
 ### oma (install)
 
@@ -116,7 +116,7 @@ oma update --ci --force
 
 ---
 
-## Monitoreo y Métricas
+## Monitoreo y métricas
 
 ### dashboard
 
@@ -259,7 +259,7 @@ oma retro 7d --json
 
 ---
 
-## Gestión de Agentes
+## Gestión de agentes
 
 ### agent:spawn
 
@@ -443,7 +443,7 @@ oma agent:review -m gemini -w ./apps/web --no-uncommitted
 
 ---
 
-## Gestión de Memoria
+## Gestión de memoria
 
 ### memory:init
 
@@ -474,7 +474,7 @@ oma memory:init --force
 
 ---
 
-## Integración y Utilidades
+## Integración y utilidades
 
 ### auth:status
 
@@ -690,7 +690,7 @@ Muestra la versión actual del CLI y termina.
 
 ---
 
-## Variables de Entorno
+## Variables de entorno
 
 | Variable | Descripción | Usado por |
 |:---------|:-----------|:----------|

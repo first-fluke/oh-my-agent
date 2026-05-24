@@ -42,7 +42,7 @@ That is the minimal configuration. It creates a PR with default settings when a 
 
 ## Toutes les Entrées de l'Action
 
-| Input | Type | Required | Default | Description |
+| Entrée | Type | Requis | Par défaut | Description |
 |:------|:-----|:---------|:--------|:-----------|
 | `mode` | string | No | `"pr"` | How to apply changes. `"pr"` creates a pull request. `"commit"` pushes directly to the base branch. |
 | `base-branch` | string | No | `"main"` | Base branch for the PR (in `pr` mode) or the target branch for direct commits (in `commit` mode). |
@@ -56,7 +56,7 @@ That is the minimal configuration. It creates a PR with default settings when a 
 
 ## Toutes les Sorties de l'Action
 
-| Output | Type | Description | Available |
+| Sortie | Type | Description | Disponibilité |
 |:-------|:-----|:-----------|:----------|
 | `updated` | string | `"true"` if changes were detected after running `oma update`. `"false"` if already up to date. | Always |
 | `version` | string | The oh-my-agent version after the update. Read from `.agents/skills/_version.json`. | When `updated` is `"true"` |

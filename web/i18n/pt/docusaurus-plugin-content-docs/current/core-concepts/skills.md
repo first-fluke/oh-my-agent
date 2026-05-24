@@ -9,7 +9,7 @@ Habilidades são pacotes de conhecimento estruturado que dão a cada agente sua 
 
 ---
 
-## O Design em Duas Camadas
+## O design em duas camadas
 
 ### Camada 1: SKILL.md (~800 bytes, sempre carregado)
 
@@ -43,7 +43,7 @@ Este carregamento sob demanda é governado pelo guia de context-loading (`.agent
 
 ---
 
-## Exemplo de Estrutura de Arquivos
+## Exemplo de estrutura de arquivos
 
 ```
 .agents/skills/oma-frontend/
@@ -100,7 +100,7 @@ Este carregamento sob demanda é governado pelo guia de context-loading (`.agent
 
 ---
 
-## Tipos de Recursos por Skill
+## Tipos de recursos por skill
 
 | Tipo de Recurso | Padrão de Nome | Propósito | Quando Carregado |
 |-----------------|---------------|---------|-------------|
@@ -116,11 +116,11 @@ Este carregamento sob demanda é governado pelo guia de context-loading (`.agent
 
 ---
 
-## Recursos Compartilhados (_shared/)
+## Recursos compartilhados (_shared/)
 
 Todos os agentes compartilham fundamentos comuns de `.agents/skills/_shared/`. Estes são organizados em três categorias:
 
-### Recursos Core (`.agents/skills/_shared/core/`)
+### Recursos core (`.agents/skills/_shared/core/`)
 
 | Recurso | Propósito | Quando Carregado |
 |---------|---------|-------------|
@@ -139,7 +139,7 @@ Todos os agentes compartilham fundamentos comuns de `.agents/skills/_shared/`. E
 | **`evaluator-tuning.md`** | Protocolo semi-automatizado de tuning de prompt de QA. Rastreia eventos de Evaluation Accuracy (EA), aciona tuning quando EA >= 30, gera sugestões de patch para checklists e protocolos de execução de QA. Inclui log de tuning e reforço positivo a partir de eventos `good_catch`. | Quando `oma retro` detecta violação do limiar de EA |
 | **`api-contracts/`** | Diretório contendo template de contrato de API e contratos gerados. `template.md` define o formato por endpoint (method, path, schemas de request/response, auth, erros). | Quando trabalho cross-boundary é planejado |
 
-### Recursos de Runtime (`.agents/skills/_shared/runtime/`)
+### Recursos de runtime (`.agents/skills/_shared/runtime/`)
 
 | Recurso | Propósito |
 |---------|---------|
@@ -151,7 +151,7 @@ Todos os agentes compartilham fundamentos comuns de `.agents/skills/_shared/`. E
 
 Protocolos de execução específicos de vendor são injetados automaticamente por `oma agent:spawn` — agentes não precisam carregá-los manualmente.
 
-### Recursos Condicionais (`.agents/skills/_shared/conditional/`)
+### Recursos condicionais (`.agents/skills/_shared/conditional/`)
 
 Estes são carregados apenas quando condições específicas são atendidas durante a execução:
 
@@ -165,15 +165,15 @@ Impacto no orçamento: aproximadamente 750 tokens no total se todos os 3 forem c
 
 ---
 
-## Como Habilidades Roteiam via skill-routing.md
+## Como habilidades roteiam via skill-routing.md
 
 O mapa de roteamento de habilidades define como tarefas são correspondidas a agentes:
 
-### Roteamento Simples (Domínio Único)
+### Roteamento simples (domínio único)
 
 Um prompt contendo "Build a login form with Tailwind CSS" corresponde às palavras-chave `UI`, `component`, `form`, `Tailwind` e roteia para **oma-frontend**.
 
-### Roteamento de Requisições Complexas
+### Roteamento de requisições complexas
 
 Requisições multi-domínio seguem ordens de execução estabelecidas:
 
@@ -186,7 +186,7 @@ Requisições multi-domínio seguem ordens de execução estabelecidas:
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> agentes relevantes -> oma-qa |
 | "Do everything automatically" | oma-orchestrator (internamente: oma-pm -> agentes -> oma-qa) |
 
-### Regras de Dependência Inter-Agente
+### Regras de dependência inter-agente
 
 **Podem executar em paralelo (sem dependências):**
 - oma-backend + oma-frontend (quando contrato de API é pré-definido)
@@ -203,7 +203,7 @@ Requisições multi-domínio seguem ordens de execução estabelecidas:
 
 ---
 
-## Matemática de Economia de Tokens
+## Matemática de economia de tokens
 
 Considere uma sessão de orquestração com 5 agentes (pm, backend, frontend, mobile, qa):
 
@@ -222,7 +222,7 @@ Em modelos flash-tier (128K de contexto), esta é a diferença entre ter 108K to
 
 ---
 
-## Carregamento de Recursos por Dificuldade da Tarefa
+## Carregamento de recursos por dificuldade da tarefa
 
 O guia de dificuldade classifica tarefas em três níveis, que determinam quanto da Camada 2 é carregado:
 
@@ -246,11 +246,11 @@ Carrega: `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.m
 
 ---
 
-## Mapas de Tarefas do Context-Loading (Por Agente)
+## Mapas de tarefas do context-loading (por agente)
 
 O guia de context-loading fornece mapeamentos detalhados tipo-tarefa-para-recurso. Aqui estão os mapeamentos principais:
 
-### Agente Backend
+### Agente backend
 
 | Tipo de Tarefa | Recursos Necessários |
 |---------------|---------------------|
@@ -260,7 +260,7 @@ O guia de context-loading fornece mapeamentos detalhados tipo-tarefa-para-recurs
 | Otimização de performance | examples.md (exemplo N+1) |
 | Modificação de código existente | examples.md + Serena MCP |
 
-### Agente Frontend
+### Agente frontend
 
 | Tipo de Tarefa | Recursos Necessários |
 |---------------|---------------------|
@@ -270,7 +270,7 @@ O guia de context-loading fornece mapeamentos detalhados tipo-tarefa-para-recurs
 | Estilização | tailwind-rules.md |
 | Layout de página | snippets.md (grid) + examples.md |
 
-### Agente Design
+### Agente design
 
 | Tipo de Tarefa | Recursos Necessários |
 |---------------|---------------------|
@@ -293,7 +293,7 @@ O guia de context-loading fornece mapeamentos detalhados tipo-tarefa-para-recurs
 
 ---
 
-## Composição de Prompt do Orquestrador
+## Composição de prompt do orquestrador
 
 Quando o orquestrador compõe prompts para subagentes, inclui apenas recursos relevantes à tarefa:
 
@@ -307,7 +307,7 @@ Esta composição direcionada evita carregar recursos desnecessários, maximizan
 
 ---
 
-## Dívida de Clarificação e Métricas de Sessão (Aprofundado)
+## Dívida de clarificação e métricas de sessão (aprofundado)
 
 A Dívida de Clarificação (CD) mede o custo de requisitos pouco claros durante uma sessão. O orquestrador rastreia cada correção do usuário e a pontua:
 
@@ -330,7 +330,7 @@ O log de sessão é mantido em `.serena/memories/session-metrics.md` com linhas 
 
 ---
 
-## Evaluator Accuracy e Tuning de QA
+## Evaluator accuracy e tuning de QA
 
 Agentes de QA melhoram através de erros de julgamento rastreados. Diferente de CD (em tempo real), Evaluator Accuracy (EA) é retrospectivo — a maioria dos erros é descoberta após o fim da sessão.
 
@@ -354,7 +354,7 @@ O loop completo de tuning é definido em `evaluator-tuning.md`: sessões acumula
 
 ---
 
-## Decomposição em Sprints para Tarefas Complexas
+## Decomposição em sprints para tarefas complexas
 
 Tarefas complexas (4+ arquivos, decisões de arquitetura) usam execução baseada em sprints em vez de uma única execução longa:
 
@@ -375,7 +375,7 @@ Tarefas complexas (4+ arquivos, decisões de arquitetura) usam execução basead
 
 ---
 
-## Protocolo de Reset de Contexto
+## Protocolo de reset de contexto
 
 Agentes de longa duração degradam em qualidade conforme o contexto enche. O Orquestrador (não o próprio agente) monitora isso e aciona resets.
 

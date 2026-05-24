@@ -11,7 +11,7 @@ The oh-my-agent GitHub Action (`first-fluke/oma-update-action@v1`) automatically
 
 ---
 
-## Quick Setup
+## Quick setup
 
 Add this file to your project as `.github/workflows/update-oh-my-agent.yml`:
 
@@ -40,7 +40,7 @@ That is the minimal configuration. It creates a PR with default settings when a 
 
 ---
 
-## All Action Inputs
+## All action inputs
 
 | Input | Type | Required | Default | Description |
 |:------|:-----|:---------|:--------|:-----------|
@@ -54,7 +54,7 @@ That is the minimal configuration. It creates a PR with default settings when a 
 
 ---
 
-## All Action Outputs
+## All action outputs
 
 | Output | Type | Description | Available |
 |:-------|:-----|:-----------|:----------|
@@ -65,9 +65,9 @@ That is the minimal configuration. It creates a PR with default settings when a 
 
 ---
 
-## Detailed Examples
+## Detailed examples
 
-### Example 1: Default PR Mode
+### Example 1: default PR mode
 
 The most common setup. Creates a PR every Monday if updates are available.
 
@@ -107,7 +107,7 @@ jobs:
 - If changes exist, uses `peter-evans/create-pull-request@v8` to create a PR on branch `chore/update-oh-my-agent`.
 - The PR is labeled `dependencies,automated` and includes the new version number in the body.
 
-### Example 2: Direct Commit Mode with PAT
+### Example 2: direct commit mode with PAT
 
 For teams that want updates applied immediately without a PR review step. Uses a PAT so the commit can trigger downstream workflows.
 
@@ -146,7 +146,7 @@ jobs:
 
 **Important:** Use `secrets.OH_MY_AGENT_PAT` (a Fine-Grained PAT with Contents: Write permission) instead of `github.token`. The default `GITHUB_TOKEN` creates commits that do not trigger other workflows, which can break CI pipelines that expect push events.
 
-### Example 3: Conditional Notification
+### Example 3: conditional notification
 
 Update with Slack notification when a new version is available.
 
@@ -189,7 +189,7 @@ jobs:
 
 **Key pattern:** Use `steps.update.outputs.updated == 'true'` to conditionally run downstream steps only when an actual update occurred. This prevents noise from "no changes" runs.
 
-### Example 4: Force Mode with Custom Labels
+### Example 4: force mode with custom labels
 
 For projects that want to reset all config files to defaults on update.
 
@@ -221,11 +221,11 @@ jobs:
 
 ---
 
-## How It Works Under the Hood
+## How it works under the hood
 
 The action is a [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) defined in `action/action.yml`. It executes 4 steps:
 
-### Step 1: Setup Bun
+### Step 1: setup Bun
 
 ```yaml
 - uses: oven-sh/setup-bun@v2
@@ -233,7 +233,7 @@ The action is a [composite action](https://docs.github.com/en/actions/creating-a
 
 Installs the Bun runtime, which is required to run the oh-my-agent CLI.
 
-### Step 2: Install oh-my-agent
+### Step 2: install oh-my-agent
 
 ```bash
 bun install -g oh-my-agent
@@ -241,7 +241,7 @@ bun install -g oh-my-agent
 
 Installs the CLI globally from the npm registry. This gives access to the `oma` command.
 
-### Step 3: Run oma update
+### Step 3: run oma update
 
 ```bash
 FLAGS="--ci"
@@ -265,7 +265,7 @@ What `oma update --ci` does internally:
 8. Updates vendor adaptations (hooks, settings, agent definitions) for all vendors.
 9. Refreshes CLI symlinks.
 
-### Step 4: Check for Changes
+### Step 4: check for changes
 
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then

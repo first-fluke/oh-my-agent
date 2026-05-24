@@ -9,7 +9,7 @@ Despues de instalar oh-my-agent, tu proyecto obtiene tres arboles de directorios
 
 ---
 
-## Árbol de Directorios Completo
+## Árbol de directorios completo
 
 ```
 your-project/
@@ -272,7 +272,7 @@ your-project/
 
 ---
 
-## .agents/ — La Fuente de Verdad
+## .agents/ — la fuente de verdad
 
 Este es el directorio principal. Todo lo que los agentes necesitan reside aqui. Es el unico directorio que importa para el comportamiento de los agentes — todos los demas directorios se derivan de el.
 
@@ -342,7 +342,7 @@ Configuracion del servidor MCP incluyendo:
 
 ---
 
-## .claude/ — Integracion con IDE
+## .claude/ — integracion con IDE
 
 Este directorio conecta oh-my-agent con Claude Code y otros IDEs.
 
@@ -384,7 +384,7 @@ Definiciones de subagentes formateadas para la herramienta Agent de Claude Code.
 
 ---
 
-## .serena/memories/ — Estado en Tiempo de Ejecucion
+## .serena/memories/ — estado en tiempo de ejecucion
 
 Donde los agentes escriben su progreso durante las sesiones de orquestacion. Este directorio es observado por los dashboards para actualizaciones en tiempo real.
 
@@ -405,7 +405,7 @@ Las rutas de archivos de memoria y nombres de herramientas son configurables en 
 
 ---
 
-## Estructura del Repositorio Fuente de oh-my-agent
+## Estructura del repositorio fuente de oh-my-agent
 
 Si estas trabajando en oh-my-agent mismo (no solo usandolo), el repositorio es un monorepo:
 

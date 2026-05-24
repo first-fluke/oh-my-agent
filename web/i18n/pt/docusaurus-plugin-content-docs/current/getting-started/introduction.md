@@ -11,7 +11,7 @@ Todo o sistema reside em um diretório portátil `.agents/` dentro do seu projet
 
 ---
 
-## O Paradigma Multi-Agente
+## O paradigma multi-agente
 
 Assistentes tradicionais de programação com IA operam como generalistas. Eles lidam com frontend, backend, banco de dados, segurança e infraestrutura com o mesmo contexto de prompt e o mesmo nível de expertise. Isso leva a:
 
@@ -29,9 +29,9 @@ oh-my-agent resolve isso com especialização:
 
 ---
 
-## Todos os 21 Agentes
+## Todos os 21 agentes
 
-### Ideação, Arquitetura e Planejamento
+### Ideação, arquitetura e planejamento
 
 | Agente | Função | Capacidades Principais |
 |--------|--------|----------------------|
@@ -54,7 +54,7 @@ oh-my-agent resolve isso com especialização:
 |--------|--------|----------------------|
 | **oma-design** | Especialista em sistema de design | Cria DESIGN.md com tokens, tipografia, sistemas de cor, design de movimento (motion/react, GSAP, Three.js), layouts responsivos, conformidade WCAG 2.2. Fluxo de 7 fases: Setup, Extração, Aprimoramento, Proposta, Geração, Auditoria, Entrega. Aplica anti-padrões (sem "AI slop"). Integração opcional com Stitch MCP. Recursos: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, mais diretório `reference/` com guias de tipografia, cor, espaçamento, movimento, responsividade, componentes, acessibilidade e shaders. |
 
-### Infraestrutura, DevOps e Observabilidade
+### Infraestrutura, DevOps e observabilidade
 
 | Agente | Função | Capacidades Principais |
 |--------|--------|----------------------|
@@ -62,14 +62,14 @@ oh-my-agent resolve isso com especialização:
 | **oma-dev-workflow** | Automação de tarefas monorepo | mise task runner, pipelines CI/CD, migrações de banco de dados, coordenação de releases, git hooks, validação pre-commit. Recursos: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
 | **oma-observability** | Roteador de observabilidade baseado em intenção | Cobertura de sinais MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), ajuste de transporte (UDP/MTU, OTLP gRPC vs HTTP, topologia de Collector, amostragem), propagação de W3C Trace Context, gestão de SLO e alertas de burn-rate, forense de incidentes (localização em 6 dimensões), meta-observabilidade (self-health, sincronização de relógio, cardinalidade, retenção). CNCF-first; Fluentd depreciado (use Fluent Bit ou OTel Collector). |
 
-### Qualidade e Depuração
+### Qualidade e depuração
 
 | Agente | Função | Capacidades Principais |
 |--------|--------|----------------------|
 | **oma-qa** | Garantia de qualidade | Auditoria de segurança (OWASP Top 10), análise de performance, acessibilidade (WCAG 2.1 AA), revisão de qualidade de código. Severidade: CRITICAL/HIGH/MEDIUM/LOW com arquivo:linha e código de correção. Suporta características de qualidade ISO/IEC 25010 e alinhamento de testes ISO/IEC 29119. Recursos: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
 | **oma-debug** | Diagnóstico e correção de bugs | Metodologia reproduce-first. Análise de causa raiz, correções mínimas, testes de regressão obrigatórios, varredura de padrões similares. Usa Serena MCP para rastreamento de símbolos. Recursos: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Localização, Coordenação e Git
+### Localização, coordenação e git
 
 | Agente | Função | Capacidades Principais |
 |--------|--------|----------------------|
@@ -77,7 +77,7 @@ oh-my-agent resolve isso com especialização:
 | **oma-orchestrator** | Coordenador multi-agente automatizado | Inicia subagentes CLI em paralelo, coordena via memória MCP, monitora progresso, executa loops de verificação. Configurável: MAX_PARALLEL (padrão 3), MAX_RETRIES (padrão 2), POLL_INTERVAL (padrão 30s). Inclui loop de revisão agente-para-agente e monitoramento de Dívida de Clarificação. Recursos: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Lida com estratégias de branching, fluxos de merge/rebase/conflito, worktrees, baselines e rastreamento de estado de release. Também gera mensagens de Conventional Commit com staging seguro. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
-### Busca, Retrospectiva e Processamento de Documentos
+### Busca, retrospectiva e processamento de documentos
 
 | Agente | Função | Capacidades Principais |
 |--------|--------|----------------------|
@@ -88,7 +88,7 @@ oh-my-agent resolve isso com especialização:
 
 ---
 
-## Modelo de Divulgação Progressiva
+## Modelo de divulgação progressiva
 
 oh-my-agent usa uma arquitetura de habilidades em duas camadas para evitar o esgotamento da janela de contexto:
 
@@ -102,7 +102,7 @@ Este design economiza aproximadamente 75% dos tokens em comparação com o carre
 
 ---
 
-## .agents/ — A Única Fonte de Verdade (SSOT)
+## .agents/ — a única fonte de verdade (SSOT)
 
 Tudo que oh-my-agent precisa reside no diretório `.agents/`:
 
@@ -129,7 +129,7 @@ Esta arquitetura significa que sua configuração de agentes é:
 
 ---
 
-## IDEs e Ferramentas CLI Suportadas
+## IDEs e ferramentas CLI suportadas
 
 oh-my-agent funciona com qualquer IDE ou CLI com IA que suporte carregamento de habilidades/prompts:
 
@@ -146,7 +146,7 @@ A execução de agentes se adapta automaticamente a cada fornecedor via protocol
 
 ---
 
-## Sistema de Roteamento de Habilidades
+## Sistema de roteamento de habilidades
 
 Quando você envia um prompt, oh-my-agent determina qual agente o trata usando o mapa de roteamento de habilidades (`.agents/skills/_shared/core/skill-routing.md`):
 
@@ -168,7 +168,7 @@ Para requisições complexas que abrangem múltiplos domínios, o roteamento seg
 
 ---
 
-## HUD Statusline
+## HUD statusline
 
 Quando executando no Claude Code, o oh-my-agent exibe um indicador de status persistente `[OMA]` na barra de status mostrando:
 - Nome do modelo (ex: Opus, Sonnet)
@@ -179,7 +179,7 @@ O HUD é alimentado por `.claude/hooks/hud.ts` usando o recurso de hook `statusL
 
 ---
 
-## Detecção Automática de Workflow
+## Detecção automática de workflow
 
 Você não precisa digitar `/command` para acionar workflows. O hook `UserPromptSubmit` do oh-my-agent escaneia sua entrada em linguagem natural contra gatilhos de palavras-chave definidos em `.claude/hooks/triggers.json` — suportando 11 idiomas (Inglês, Coreano, Japonês, Chinês, Espanhol, Francês, Alemão, Português, Russo, Holandês, Polonês).
 
@@ -190,7 +190,7 @@ Você não precisa digitar `/command` para acionar workflows. O hook `UserPrompt
 
 ---
 
-## Suporte Cross-Vendor
+## Suporte cross-vendor
 
 oh-my-agent não está limitado ao Claude Code. O sistema de hooks suporta:
 
@@ -205,7 +205,7 @@ A detecção de vendor acontece automaticamente — agentes adaptam seu método 
 
 ---
 
-## Próximos Passos
+## Próximos passos
 
 - **[Instalação](./installation.md)** — Três métodos de instalação, presets, configuração do CLI e verificação
 - **[Agentes](/docs/core-concepts/agents)** — Mergulho profundo em todos os 21 agentes e preflight de charter

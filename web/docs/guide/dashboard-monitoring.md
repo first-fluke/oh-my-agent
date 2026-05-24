@@ -5,7 +5,7 @@ description: Comprehensive dashboard guide covering terminal and web dashboards,
 
 # Guide: Dashboard Monitoring
 
-## Two Dashboard Commands
+## Two dashboard commands
 
 oh-my-agent provides two real-time dashboards for monitoring agent activity during multi-agent workflows.
 
@@ -16,7 +16,7 @@ oh-my-agent provides two real-time dashboards for monitoring agent activity duri
 
 Both dashboards watch the same data source: `.serena/memories/` directory.
 
-### Terminal Dashboard
+### Terminal dashboard
 
 ```bash
 oma dashboard
@@ -52,7 +52,7 @@ Renders a box-drawing UI directly in the terminal. Updates automatically when me
 - `○` (yellow): blocked
 - `◌` (dim): pending
 
-### Web Dashboard
+### Web dashboard
 
 ```bash
 oma dashboard:web
@@ -77,7 +77,7 @@ The web dashboard shows the same information as the terminal dashboard but with 
 
 ---
 
-## Recommended 3-Terminal Layout
+## Recommended 3-Terminal layout
 
 For multi-agent workflows, the recommended setup uses three terminal panes:
 
@@ -112,11 +112,11 @@ For multi-agent workflows, the recommended setup uses three terminal panes:
 
 ---
 
-## Data Sources in .serena/memories/
+## Data sources in .serena/memories/
 
 The dashboards read from the `.serena/memories/` directory. This directory is populated by agents and workflows using MCP memory tools during execution.
 
-### File Types and Their Contents
+### File types and their contents
 
 | File Pattern | Created By | Contents |
 |:-------------|:----------|:---------|
@@ -129,7 +129,7 @@ The dashboards read from the `.serena/memories/` directory. This directory is po
 | `experiment-ledger.md` | Quality Score system | Experiment tracking: baseline scores, deltas, keep/discard decisions |
 | `lessons-learned.md` | Auto-generated at session end | Lessons from discarded experiments (delta <= -5) |
 
-### How the Dashboard Reads Them
+### How the dashboard reads them
 
 The dashboard uses multiple strategies to extract information:
 
@@ -145,15 +145,15 @@ The dashboard uses multiple strategies to extract information:
 
 ---
 
-## What Each Dashboard Shows
+## What each dashboard shows
 
-### Session Status
+### Session status
 
 The top section displays:
 - **Session ID**: Extracted from session files (format: `session-YYYYMMDD-HHMMSS`).
 - **Status**: Color-coded: green for RUNNING, cyan for COMPLETED, red for FAILED, yellow for UNKNOWN.
 
-### Task Board
+### Task board
 
 The agent table shows every detected agent with:
 - **Agent name**: The domain identifier (backend, frontend, mobile, qa, debug, pm).
@@ -161,7 +161,7 @@ The agent table shows every detected agent with:
 - **Turn**: The agent's current turn number (how many iterations it has completed). Extracted from progress files.
 - **Task**: Brief description of what the agent is working on (truncated to fit).
 
-### Agent Progress
+### Agent progress
 
 Progress is tracked through `progress-{agent}.md` files. Each file is updated by the agent as it works. The dashboard polls these files for:
 - Turn number (increments as the agent progresses).
@@ -180,9 +180,9 @@ The dashboard detects completion by the presence of this file and updates the ag
 
 ---
 
-## Troubleshooting Runbook
+## Troubleshooting runbook
 
-### Signal 1: Agent Shows "running" but No Turn Progress
+### Signal 1: agent shows "running" but no turn progress
 
 **Symptom:** The dashboard shows an agent as running, but the turn number has not changed for several minutes.
 
@@ -196,7 +196,7 @@ The dashboard detects completion by the presence of this file and updates the ag
 2. Check if the process is actually running: `oma agent:status {session-id} {agent-id}`
 3. If the process is not running but status shows "running", the agent crashed. Re-spawn with error context.
 
-### Signal 2: Agent Shows "crashed"
+### Signal 2: agent shows "crashed"
 
 **Symptom:** `oma agent:status` returns `crashed` for an agent.
 
@@ -211,7 +211,7 @@ The dashboard detects completion by the presence of this file and updates the ag
 3. Check authentication: `oma auth:status`
 4. Re-spawn the agent with the same task: `oma agent:spawn {agent-id} "{task}" {session-id} -w {workspace}`
 
-### Signal 3: Dashboard Shows "No agents detected yet"
+### Signal 3: dashboard shows "no agents detected yet"
 
 **Symptom:** The dashboard is running but shows no agents.
 
@@ -226,7 +226,7 @@ The dashboard detects completion by the presence of this file and updates the ag
 3. Ensure the dashboard is watching the correct project directory: the dashboard resolves the memories path from the current working directory.
 4. If using a custom path: `MEMORIES_DIR=/path/to/.serena/memories oma dashboard`
 
-### Signal 4: Web Dashboard Shows "Disconnected"
+### Signal 4: web dashboard shows "disconnected"
 
 **Symptom:** The web dashboard's connection badge shows "Disconnected" in red.
 
@@ -243,7 +243,7 @@ The dashboard detects completion by the presence of this file and updates the ag
 
 ---
 
-## Pre-Merge Monitoring Checklist
+## Pre-merge monitoring checklist
 
 Before considering a multi-agent session complete, verify through the dashboard:
 
@@ -256,7 +256,7 @@ Before considering a multi-agent session complete, verify through the dashboard:
 
 ---
 
-## Done Criteria
+## Done criteria
 
 Dashboard monitoring is done when:
 1. All spawned agents have reached a terminal state (completed or failed-and-handled).
@@ -266,16 +266,16 @@ Dashboard monitoring is done when:
 
 ---
 
-## Technical Details
+## Technical details
 
-### Terminal Dashboard (oma dashboard)
+### Terminal dashboard (oma dashboard)
 
 - **File watching:** Uses [chokidar](https://github.com/paulmillr/chokidar) with `awaitWriteFinish` (200ms stability threshold, 50ms poll interval) to avoid rendering partial file writes.
 - **Rendering:** Clears and redraws the entire terminal on every file change event. Uses `picocolors` for ANSI color output and Unicode box-drawing characters for the border.
 - **Memory directory:** Resolved from `MEMORIES_DIR` env var, CLI argument, or `{cwd}/.serena/memories`.
 - **Graceful shutdown:** Catches `SIGINT` and `SIGTERM`, closes the chokidar watcher, and exits cleanly.
 
-### Web Dashboard (oma dashboard:web)
+### Web dashboard (oma dashboard:web)
 
 - **HTTP server:** Node.js `createServer` serves the HTML page at `/` and the JSON state at `/api/state`.
 - **WebSocket:** Uses the `ws` library. A `WebSocketServer` is attached to the HTTP server. On connection, the client receives the full state immediately. Subsequent updates are pushed as `{ type: "update", event, file, data }` messages.

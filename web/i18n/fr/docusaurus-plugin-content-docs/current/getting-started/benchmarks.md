@@ -81,10 +81,10 @@ Les juges spec et visuel s'exécutent 3 fois par harnais via `judge-multi.sh` et
 ## Reproduire
 
 ```bash
-# Run all 5 harnesses (sequential, ~45 min, ~$15-20 in API spend)
+# Exécute les 5 harnais (séquentiel, ~45 min, ~15-20 $ de dépense API)
 ./benchmarks/run.sh
 
-# Multiaxis scoring per harness (5-axis, 100pt) — single judge round
+# Scoring multiaxes par harnais (5 axes, 100 pts), un seul tour de juge
 for h in vanilla oma omc ecc superpowers; do
   ./benchmarks/scoring/multiaxis/score.sh \
     /tmp/oma-benchmark-<timestamp>/projects/$h \
@@ -93,7 +93,7 @@ for h in vanilla oma omc ecc superpowers; do
     /tmp/oma-benchmark-<timestamp>/multiaxis/$h
 done
 
-# Generate the report
+# Génère le rapport
 ./benchmarks/scoring/multiaxis/build-report.sh \
   /tmp/oma-benchmark-<timestamp> \
   $(pwd)

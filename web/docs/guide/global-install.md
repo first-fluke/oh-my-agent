@@ -7,7 +7,7 @@ description: Install oh-my-agent into your user HOME (~/.agents/) instead of per
 
 By default, `oma install` scopes everything to the current project directory: the SSOT lives at `<cwd>/.agents/` and vendor configs are written into `<cwd>/.claude/`, `<cwd>/.codex/`, etc. A **global install** (`oma install --global`) installs oh-my-agent into your user HOME instead, so the same skills, workflows, and rules are available in every project you open without repeating the install step. The SSOT lives at `~/.agents/` and vendor configs at `~/.claude/`, `~/.codex/`, etc.
 
-## Project vs Global Comparison
+## Project vs global comparison
 
 | Aspect | Project (`oma install`) | Global (`oma install --global`) |
 |--------|------------------------|--------------------------------|
@@ -20,7 +20,7 @@ By default, `oma install` scopes everything to the current project directory: th
 
 Both modes can coexist. `oma doctor` reports both installs if present and flags drift between them.
 
-## First-Run Setup
+## First-run setup
 
 The first time you run `oma install --global` on a machine, the install shows an explanatory note before proceeding:
 
@@ -108,7 +108,7 @@ To uninstall a project install, omit `--global`:
 oma uninstall [--dry-run]
 ```
 
-## OMA_HOME Override
+## OMA_HOME override
 
 For testing or staging purposes you can redirect all oma operations to an arbitrary directory:
 

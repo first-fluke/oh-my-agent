@@ -11,7 +11,7 @@ There are 16 workflows, 4 of which are persistent (they maintain state and canno
 
 ---
 
-## Persistent Workflows
+## Persistent workflows
 
 Persistent workflows keep running until all tasks are done. They maintain state in `.agents/state/` and reinject `[OMA PERSISTENT MODE: ...]` context on each user message until explicitly deactivated.
 
@@ -169,7 +169,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ---
 
-## Non-Persistent Workflows
+## Non-persistent workflows
 
 ### /plan
 
@@ -399,7 +399,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ---
 
-## Skills vs. Workflows
+## Skills vs. workflows
 
 | Aspect | Skills | Workflows |
 |--------|--------|-----------|
@@ -411,9 +411,9 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ---
 
-## Auto-Detection: How It Works
+## Auto-detection: how it works
 
-### The Hook System
+### The hook system
 
 oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is processed. The hook system consists of:
 
@@ -423,7 +423,7 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 
 3. **`persistent-mode.ts`** (`.claude/hooks/persistent-mode.ts`): Enforces persistent workflow execution by checking for active state files and reinjecting workflow context.
 
-### Detection Flow
+### Detection flow
 
 1. User types natural language input
 2. Hook checks if explicit `/command` is present (if so, skip detection to avoid duplication)
@@ -433,7 +433,7 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 6. If actionable, inject `[OMA WORKFLOW: {workflow-name}]` into the context
 7. The agent reads the injected tag and loads the corresponding workflow file from `.agents/workflows/`
 
-### Language Section Convention
+### Language section convention
 
 `.agents/hooks/core/triggers.json` uses a per-language section structure for `keywords`, `patterns`, and `informationalPatterns`:
 
@@ -445,7 +445,7 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 
 **Implication**: If you set `language: en` in `.agents/oma-config.yaml`, only `*` and `en` patterns load. Korean/Japanese/etc. natural-language triggers will not fire even if the user types in those languages. To enable a non-English language, set `language: <code>` accordingly. The English fallback in `*` always remains active.
 
-### Pattern Field (Raw Regex)
+### Pattern field (raw regex)
 
 In addition to literal `keywords`, each workflow can declare `patterns`, raw regex strings compiled with `iu` flags. Patterns enable multi-token intent matching that would otherwise require combinatorial keyword lists.
 
@@ -469,7 +469,7 @@ Authoring rules:
 - No automatic word-boundary wrapping; pattern authors handle `\b` themselves
 - Invalid regex is silently skipped at runtime (visible at config edit time via test failures)
 
-### Informational Pattern Filtering
+### Informational pattern filtering
 
 The `informationalPatterns` section of `.agents/hooks/core/triggers.json` defines phrases that indicate questions rather than commands. Checked in a 60-character window around each potential workflow match:
 
@@ -484,7 +484,7 @@ If the input matches both a workflow trigger and an informational pattern, the i
 - `"How do you build a TODO app?"`: `how do` in `*` blocks the orchestrate intent regex
 - `"orchestrate 트리거 해주면 되나요?"` (under `language: ko`): `트리거` in `ko` blocks the orchestrate keyword
 
-### Excluded Workflows
+### Excluded workflows
 
 The following workflows are excluded from auto-detection and must be invoked with explicit `/command`:
 - `/scm`
@@ -494,9 +494,9 @@ The following workflows are excluded from auto-detection and must be invoked wit
 
 ---
 
-## Persistent Mode Mechanics
+## Persistent mode mechanics
 
-### State Files
+### State files
 
 Persistent workflows (orchestrate, ultrawork, work, ralph) create state files in `.agents/state/`:
 
@@ -525,39 +525,39 @@ The workflow can also end naturally when all steps are completed and the final g
 
 ---
 
-## Typical Workflow Sequences
+## Typical workflow sequences
 
-### Quick Feature
+### Quick feature
 ```
 /plan → review output → /work
 ```
 
-### Complex Multi-Domain Project
+### Complex multi-domain project
 ```
 /work → PM plans → user confirms → agents spawn → QA reviews → fix issues → ship
 ```
 
-### Maximum Quality Delivery
+### Maximum quality delivery
 ```
 /ultrawork → PLAN (4 review steps) → IMPL → VERIFY (3 review steps) → REFINE (5 review steps) → SHIP (4 review steps)
 ```
 
-### Bug Investigation
+### Bug investigation
 ```
 /debug → reproduce → root cause → minimal fix → regression test → similar pattern scan
 ```
 
-### Design-to-Implementation Pipeline
+### Design-to-implementation pipeline
 ```
 /brainstorm → design document → /plan → task breakdown → /orchestrate → parallel implementation → /review → /scm
 ```
 
-### New Codebase Setup
+### New codebase setup
 ```
 /deepinit → AGENTS.md + ARCHITECTURE.md + docs/
 ```
 
-### Guaranteed Completion
+### Guaranteed completion
 ```
 /ralph → define criteria → ultrawork loop → judge verifies → re-iterate if needed → all criteria pass → done
 ```

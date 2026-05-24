@@ -159,7 +159,7 @@ Tải: `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.md`
 
 ---
 
-## Clarification Debt và số liệu phiên
+## Clarification debt và số liệu phiên
 
 Clarification Debt (CD) đo chi phí yêu cầu không rõ ràng trong phiên. Orchestrator theo dõi mọi sửa chữa của người dùng và tính điểm:
 

@@ -26,19 +26,19 @@ Dùng `/debug` (hoặc nói "fix bug", "fix error", "debug" bằng ngôn ngữ t
 
 ## Phân loại mức độ nghiêm trọng (P0-P3)
 
-### P0 — Critical (Phản hồi ngay)
+### P0 — critical (phản hồi ngay)
 
 **Định nghĩa:** Production down, dữ liệu bị mất hoặc hỏng, vi phạm bảo mật đang diễn ra.
 
-### P1 — High (Cùng phiên)
+### P1 — high (cùng phiên)
 
 **Định nghĩa:** Tính năng cốt lõi bị hỏng cho số lượng đáng kể người dùng.
 
-### P2 — Medium (Sprint này)
+### P2 — medium (sprint này)
 
 **Định nghĩa:** Tính năng hoạt động nhưng hành vi bị suy giảm. Ảnh hưởng khả năng sử dụng nhưng không chức năng.
 
-### P3 — Low (Backlog)
+### P3 — low (backlog)
 
 **Định nghĩa:** Vấn đề thẩm mỹ, trường hợp biên hoặc bất tiện nhỏ.
 
@@ -46,33 +46,33 @@ Dùng `/debug` (hoặc nói "fix bug", "fix error", "debug" bằng ngôn ngữ t
 
 ## Vòng lặp debug 5 bước chi tiết
 
-### Bước 1: Thu thập thông tin lỗi
+### Bước 1: thu thập thông tin lỗi
 
 Workflow hỏi (hoặc nhận từ người dùng): thông báo lỗi, bước tái hiện, hành vi mong đợi vs thực tế, chi tiết môi trường.
 
-### Bước 2: Tái hiện lỗi
+### Bước 2: tái hiện lỗi
 
 **Công cụ dùng:** `search_for_pattern`, `find_symbol` để định vị dòng chính xác nơi exception xảy ra.
 
-### Bước 3: Chẩn đoán nguyên nhân gốc
+### Bước 3: chẩn đoán nguyên nhân gốc
 
 **Công cụ dùng:** `find_referencing_symbols` để truy vết đường thực thi ngược từ điểm lỗi.
 
 Nguyên tắc chính: chẩn đoán **nguyên nhân gốc**, không phải triệu chứng.
 
-### Bước 4: Đề xuất sửa tối thiểu
+### Bước 4: đề xuất sửa tối thiểu
 
 Workflow trình bày nguyên nhân gốc đã xác định, bản sửa đề xuất (chỉ thay đổi cần thiết) và giải thích. **Workflow chặn ở đây cho đến khi người dùng xác nhận.**
 
-### Bước 5: Áp dụng sửa và viết test hồi quy
+### Bước 5: áp dụng sửa và viết test hồi quy
 
 Triển khai bản sửa đã duyệt và viết test hồi quy phải thất bại khi không có bản sửa và pass khi có bản sửa.
 
-### Bước 6: Quét mẫu tương tự
+### Bước 6: quét mẫu tương tự
 
 Sau khi sửa, quét toàn bộ codebase tìm cùng mẫu gây lỗi.
 
-### Bước 7: Tài liệu lỗi
+### Bước 7: tài liệu lỗi
 
 Ghi file bộ nhớ với triệu chứng, nguyên nhân gốc, bản sửa, file thay đổi, test hồi quy và mẫu tương tự.
 

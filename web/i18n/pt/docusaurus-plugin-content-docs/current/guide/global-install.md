@@ -7,7 +7,7 @@ description: Instale o oh-my-agent no HOME do seu usuário (~/.agents/) em vez d
 
 Por padrão, `oma install` limita tudo ao diretório do projeto atual: o SSOT fica em `<cwd>/.agents/` e as configurações de fornecedor são gravadas em `<cwd>/.claude/`, `<cwd>/.codex/`, etc. Uma **instalação global** (`oma install --global`) instala o oh-my-agent no HOME do seu usuário, de modo que as mesmas skills, workflows e regras fiquem disponíveis em todo projeto que você abrir sem repetir o passo de instalação. O SSOT fica em `~/.agents/` e as configurações de fornecedor em `~/.claude/`, `~/.codex/`, etc.
 
-## Comparação entre Projeto e Global
+## Comparação entre projeto e global
 
 | Aspecto | Projeto (`oma install`) | Global (`oma install --global`) |
 |--------|------------------------|--------------------------------|
@@ -20,7 +20,7 @@ Por padrão, `oma install` limita tudo ao diretório do projeto atual: o SSOT fi
 
 Ambos os modos podem coexistir. `oma doctor` reporta as duas instalações quando presentes e sinaliza divergências entre elas.
 
-## Configuração na Primeira Execução
+## Configuração na primeira execução
 
 Na primeira vez que você roda `oma install --global` em uma máquina, a instalação mostra uma nota explicativa antes de prosseguir:
 

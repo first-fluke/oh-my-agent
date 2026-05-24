@@ -54,7 +54,7 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 |-------|------|-----------------|
 | **oma-design** | Chuyên gia design system | Tạo DESIGN.md với token, typography, hệ thống màu sắc, thiết kế chuyển động (motion/react, GSAP, Three.js), bố cục ưu tiên responsive, tuân thủ WCAG 2.2. Quy trình 7 giai đoạn: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Áp dụng chống anti-pattern ("AI slop"). Tích hợp tùy chọn Stitch MCP. Tài nguyên: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, cùng thư mục `reference/` (hướng dẫn typography, màu sắc, không gian, chuyển động, responsive, component, accessibility và shader). |
 
-### Hạ tầng, DevOps và Observability
+### Hạ tầng, DevOps và observability
 
 | Agent | Vai trò | Khả năng chính |
 |-------|------|-----------------|
@@ -69,7 +69,7 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 | **oma-qa** | Đảm bảo chất lượng | Kiểm tra bảo mật (OWASP Top 10), phân tích hiệu suất, accessibility (WCAG 2.1 AA), đánh giá chất lượng mã. Mức độ: CRITICAL/HIGH/MEDIUM/LOW với file:line và mã khắc phục. Hỗ trợ đặc tính chất lượng ISO/IEC 25010 và tương thích kiểm thử ISO/IEC 29119. Tài nguyên: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
 | **oma-debug** | Chẩn đoán và sửa lỗi | Phương pháp tái hiện trước. Phân tích nguyên nhân gốc, sửa tối thiểu, bắt buộc kiểm thử hồi quy, quét mẫu tương tự. Sử dụng Serena MCP để truy vết symbol. Tài nguyên: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Bản địa hóa, điều phối và Git
+### Bản địa hóa, điều phối và git
 
 | Agent | Vai trò | Khả năng chính |
 |-------|------|-----------------|
@@ -102,7 +102,7 @@ Thiết kế này tiết kiệm khoảng 75% token so với việc tải mọi t
 
 ---
 
-## .agents/ — Nguồn dữ liệu duy nhất (SSOT)
+## .agents/ — nguồn dữ liệu duy nhất (SSOT)
 
 Mọi thứ oh-my-agent cần đều nằm trong thư mục `.agents/`:
 

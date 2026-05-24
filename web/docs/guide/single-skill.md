@@ -9,7 +9,7 @@ Single skill execution is the fast path: one agent, one domain, one focused task
 
 ---
 
-## When to Use Single Skill
+## When to use single skill
 
 Use this when your task meets ALL of these criteria:
 
@@ -35,7 +35,7 @@ Use this when your task meets ALL of these criteria:
 
 ---
 
-## Preflight Checklist
+## Preflight checklist
 
 Before prompting, answer these four questions (they map to the [Prompt Structure](/docs/core-concepts/skills) four elements):
 
@@ -53,7 +53,7 @@ If any element is missing from your prompt, the agent will either:
 
 ---
 
-## Prompt Template
+## Prompt template
 
 ```text
 Build <specific artifact> using <stack/framework>.
@@ -65,7 +65,7 @@ Acceptance criteria:
 Add tests for: <critical test cases>.
 ```
 
-### Template Breakdown
+### Template breakdown
 
 | Part | Purpose | Example |
 |------|---------|---------|
@@ -77,9 +77,9 @@ Add tests for: <critical test cases>.
 
 ---
 
-## Real Examples
+## Real examples
 
-### Frontend: Login Form
+### Frontend: login form
 
 ```text
 Create a login form component in React + TypeScript + Tailwind CSS.
@@ -126,7 +126,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 ---
 
-### Backend: REST API Endpoint
+### Backend: REST API endpoint
 
 ```text
 Add a paginated GET /api/tasks endpoint that returns tasks for the authenticated user.
@@ -165,7 +165,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 ---
 
-### Mobile: Settings Screen
+### Mobile: settings screen
 
 ```text
 Build a settings screen in Flutter with profile editing (name, email, avatar), notification preferences (toggle switches), and a logout button.
@@ -205,7 +205,7 @@ Add tests for: profile save, logout flow, offline state.
 
 ---
 
-### Database: Schema Design
+### Database: schema design
 
 ```text
 Design a database schema for a multi-tenant SaaS project management tool. Entities: Organization, Project, Task, User, TeamMembership.
@@ -250,11 +250,11 @@ Add deliverables: data standards table, glossary, migration script.
 
 ---
 
-## Quality Gate Checklist
+## Quality gate checklist
 
 After the agent delivers its output, verify these items before accepting:
 
-### Universal Checks (All Agents)
+### Universal checks (all agents)
 
 - [ ] **Behavior matches acceptance criteria**: every criterion from your prompt is satisfied
 - [ ] **Tests cover happy path and key edge cases**: not just the happy path
@@ -263,7 +263,7 @@ After the agent delivers its output, verify these items before accepting:
 - [ ] **Charter was followed**: the "Must NOT do" constraints were respected
 - [ ] **Lint, typecheck, build pass**: run your project's standard checks
 
-### Frontend-Specific
+### Frontend-specific
 
 - [ ] Accessibility: interactive elements have `aria-label`, semantic headings, keyboard navigation works
 - [ ] Mobile: renders correctly at 320px, 768px, 1024px, 1440px breakpoints
@@ -272,7 +272,7 @@ After the agent delivers its output, verify these items before accepting:
 - [ ] shadcn/ui components not directly modified (wrappers used instead)
 - [ ] Absolute imports with `@/` (no relative `../../`)
 
-### Backend-Specific
+### Backend-specific
 
 - [ ] Clean architecture maintained: no business logic in route handlers
 - [ ] All inputs validated (no trusting user input)
@@ -280,14 +280,14 @@ After the agent delivers its output, verify these items before accepting:
 - [ ] Custom exceptions via centralized error module (no raw HTTP exceptions)
 - [ ] Auth endpoints rate-limited
 
-### Mobile-Specific
+### Mobile-specific
 
 - [ ] All controllers disposed in `dispose()` method
 - [ ] Offline gracefully handled
 - [ ] 60fps target maintained (no jank)
 - [ ] Tested on both iOS and Android
 
-### Database-Specific
+### Database-specific
 
 - [ ] At least 3NF (or documented justification for denormalization)
 - [ ] All three schema layers documented (external, conceptual, internal)
@@ -296,7 +296,7 @@ After the agent delivers its output, verify these items before accepting:
 
 ---
 
-## Escalation Signals
+## Escalation signals
 
 Watch for these signals that indicate you should switch from single-skill to multi-agent execution:
 
@@ -310,6 +310,6 @@ Watch for these signals that indicate you should switch from single-skill to mul
 | Task grows from "one component" to "three components + new route + API" | Scope creep during execution | Stop, run `/plan` to decompose, then `/orchestrate` |
 | Agent blocks with HIGH clarification | Requirements fundamentally ambiguous | Answer the agent's questions or run `/brainstorm` to clarify approach |
 
-### The General Rule
+### Rule of thumb
 
-If you find yourself re-spawning the same agent more than twice with refinements, the task is probably multi-domain and needs `/work` or at minimum a `/plan` step to decompose it properly.
+If you re-spawn the same agent more than twice with refinements, the task is probably multi-domain. Run `/work`, or at least `/plan`, to decompose it.

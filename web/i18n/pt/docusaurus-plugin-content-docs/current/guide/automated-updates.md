@@ -5,13 +5,13 @@ description: "Documentação completa da GitHub Action do oh-my-agent — setup,
 
 # Guia: Atualizações Automatizadas
 
-## Visão Geral
+## Visão geral
 
 A GitHub Action do oh-my-agent (`first-fluke/oma-update-action@v1`) atualiza automaticamente as skills de agentes do seu projeto executando `oma update` no CI. Suporta dois modos: criar um pull request para revisão, ou commitar diretamente em uma branch.
 
 ---
 
-## Setup Rápido
+## Setup rápido
 
 Adicione este arquivo ao seu projeto como `.github/workflows/update-oh-my-agent.yml`:
 
@@ -40,7 +40,7 @@ Essa é a configuração mínima. Cria um PR com configurações padrão quando 
 
 ---
 
-## Todos os Inputs da Action
+## Todos os inputs da action
 
 | Input | Tipo | Obrigatório | Padrão | Descrição |
 |:------|:-----|:-----------|:-------|:-----------|
@@ -54,7 +54,7 @@ Essa é a configuração mínima. Cria um PR com configurações padrão quando 
 
 ---
 
-## Todos os Outputs da Action
+## Todos os outputs da action
 
 | Output | Tipo | Descrição | Disponível |
 |:-------|:-----|:----------|:---------|
@@ -65,9 +65,9 @@ Essa é a configuração mínima. Cria um PR com configurações padrão quando 
 
 ---
 
-## Exemplos Detalhados
+## Exemplos detalhados
 
-### Exemplo 1: Modo PR Padrão
+### Exemplo 1: modo PR padrão
 
 O setup mais comum. Cria um PR toda segunda se atualizações estão disponíveis.
 
@@ -107,7 +107,7 @@ jobs:
 - Se houver mudanças, usa `peter-evans/create-pull-request@v8` para criar um PR na branch `chore/update-oh-my-agent`.
 - O PR recebe as labels `dependencies,automated` e inclui o novo número de versão no corpo.
 
-### Exemplo 2: Modo Commit Direto com PAT
+### Exemplo 2: modo commit direto com PAT
 
 Para equipes que querem atualizações aplicadas imediatamente sem etapa de revisão via PR.
 
@@ -146,7 +146,7 @@ jobs:
 
 **Importante:** Use `secrets.OH_MY_AGENT_PAT` (um Fine-Grained PAT com permissão Contents: Write) em vez de `github.token`. O `GITHUB_TOKEN` padrão cria commits que não acionam outros workflows, o que pode quebrar pipelines de CI que esperam eventos de push.
 
-### Exemplo 3: Notificação Condicional
+### Exemplo 3: notificação condicional
 
 Atualizar com notificação Slack quando nova versão está disponível.
 
@@ -189,7 +189,7 @@ jobs:
 
 **Padrão-chave:** Use `steps.update.outputs.updated == 'true'` para executar condicionalmente etapas downstream apenas quando uma atualização real ocorreu. Isso evita ruído de execuções "sem mudanças".
 
-### Exemplo 4: Modo Force com Labels Customizadas
+### Exemplo 4: modo force com labels customizadas
 
 Para projetos que querem resetar todos os arquivos de config para padrões na atualização.
 
@@ -221,11 +221,11 @@ jobs:
 
 ---
 
-## Como Funciona por Baixo dos Panos
+## Como funciona por baixo dos panos
 
 A action é uma [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) definida em `action/action.yml`. Executa 4 etapas:
 
-### Step 1: Setup Bun
+### Step 1: setup Bun
 
 ```yaml
 - uses: oven-sh/setup-bun@v2
@@ -233,7 +233,7 @@ A action é uma [composite action](https://docs.github.com/en/actions/creating-a
 
 Instala o runtime Bun, necessário para executar o CLI oh-my-agent.
 
-### Step 2: Instalar oh-my-agent
+### Step 2: instalar oh-my-agent
 
 ```bash
 bun install -g oh-my-agent
@@ -241,7 +241,7 @@ bun install -g oh-my-agent
 
 Instala a CLI globalmente do registry npm. Isso disponibiliza o comando `oma`.
 
-### Step 3: Executar oma update
+### Step 3: executar oma update
 
 ```bash
 FLAGS="--ci"
@@ -265,7 +265,7 @@ O que `oma update --ci` faz internamente:
 8. Atualiza adaptações de vendor (hooks, settings, definições de agente) para todos os vendors.
 9. Atualiza symlinks da CLI.
 
-### Step 4: Verificar Mudanças
+### Step 4: verificar mudanças
 
 ```bash
 if [ -n "$(git status --porcelain .agents/ .claude/ 2>/dev/null)" ]; then

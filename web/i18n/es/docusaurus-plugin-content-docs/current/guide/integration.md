@@ -5,7 +5,7 @@ description: Guía completa para agregar oh-my-agent a un proyecto existente —
 
 # Guía: Integración en Proyecto Existente
 
-## Dos Vías de Integración
+## Dos vías de integración
 
 Hay dos formas de agregar oh-my-agent a un proyecto existente:
 
@@ -16,7 +16,7 @@ Ambas vias producen el mismo resultado: un directorio `.agents/` (el SSOT) con s
 
 ---
 
-## Vía CLI: Paso a Paso
+## Vía CLI: paso a paso
 
 ### 1. Instalar el CLI
 
@@ -30,7 +30,7 @@ npx oh-my-agent
 
 Después de la instalación global, el comando `oma` (o `oh-my-agent`) está disponible.
 
-### 2. Navegar a la Raiz del Proyecto
+### 2. Navegar a la raiz del proyecto
 
 ```bash
 cd /path/to/your/project
@@ -38,7 +38,7 @@ cd /path/to/your/project
 
 El instalador espera ejecutarse desde la raiz del proyecto (donde reside `.git/`).
 
-### 3. Ejecutar el Instalador
+### 3. Ejecutar el instalador
 
 ```bash
 oma
@@ -46,7 +46,7 @@ oma
 
 El comando por defecto (sin subcomando) inicia el instalador interactivo.
 
-### 4. Seleccionar Tipo de Proyecto
+### 4. Seleccionar tipo de proyecto
 
 El instalador presenta estos presets:
 
@@ -60,7 +60,7 @@ El instalador presenta estos presets:
 | **DevOps** | Habilidades Terraform + CI/CD + Workflow |
 | **Custom** | Elegir habilidades individuales de la lista completa |
 
-### 5. Elegir Lenguaje Backend (si aplica)
+### 5. Elegir lenguaje backend (si aplica)
 
 Si seleccionaste un preset que incluye la habilidad backend, se te pide elegir una variante de lenguaje:
 
@@ -69,7 +69,7 @@ Si seleccionaste un preset que incluye la habilidad backend, se te pide elegir u
 - **Rust** — Axum/Actix-web
 - **Other / Auto-detect** — Configurar despues con `/stack-set`
 
-### 6. Configurar Symlinks de IDE
+### 6. Configurar symlinks de IDE
 
 El instalador siempre crea symlinks de Claude Code (`.claude/skills/`). También genera archivos de agente nativos del proveedor y hooks para Antigravity, Claude, Codex y Qwen, y si existe un directorio `.github/`, también crea symlinks de GitHub Copilot automaticamente. De lo contrario, pregunta:
 
@@ -77,7 +77,7 @@ El instalador siempre crea symlinks de Claude Code (`.claude/skills/`). También
 Also create symlinks for GitHub Copilot? (.github/skills/)
 ```
 
-### 7. Configuracion de Git Rerere
+### 7. Configuracion de git rerere
 
 El instalador verifica si `git rerere` (reuse recorded resolution) esta habilitado. Si no, ofrece habilitarlo globalmente:
 
@@ -131,11 +131,11 @@ El instalador muestra un resumen de todo lo instalado:
 
 ---
 
-## Vía Manual
+## Vía manual
 
 Para entornos donde el CLI interactivo no esta disponible (pipelines de CI, shells restringidos, maquinas corporativas).
 
-### Paso 1: Descargar y Extraer
+### Paso 1: descargar y extraer
 
 ```bash
 # Download the latest tarball from the registry
@@ -150,7 +150,7 @@ sha256sum -c agent-skills.tar.gz.sha256
 tar -xzf agent-skills.tar.gz
 ```
 
-### Paso 2: Copiar Archivos a Tu Proyecto
+### Paso 2: copiar archivos a tu proyecto
 
 ```bash
 # Copy the core .agents/ directory
@@ -182,7 +182,7 @@ for agent in .agents/agents/*.md; do
 done
 ```
 
-### Paso 3: Configurar Preferencias de Usuario
+### Paso 3: configurar preferencias de usuario
 
 ```bash
 mkdir -p /path/to/your/project/.agents/config
@@ -202,7 +202,7 @@ model_preset (per-agent overrides via `agents:`):
 EOF
 ```
 
-### Paso 4: Inicializar Directorio de Memoria
+### Paso 4: inicializar directorio de memoria
 
 ```bash
 oma memory:init
@@ -212,7 +212,7 @@ mkdir -p /path/to/your/project/.serena/memories
 
 ---
 
-## Lista de Verificación
+## Lista de verificación
 
 Despues de la instalacion (por cualquiera de las dos vias), verifica que todo este configurado correctamente:
 
@@ -257,11 +257,11 @@ cat .agents/skills/_version.json 2>/dev/null
 
 ---
 
-## Estructura de Enlaces Simbólicos Multi-IDE (Concepto SSOT)
+## Estructura de enlaces simbólicos Multi-IDE (concepto SSOT)
 
 oh-my-agent usa una arquitectura de Fuente Unica de Verdad (SSOT). El directorio `.agents/` es el unico lugar donde residen las habilidades, flujos de trabajo, configuraciones y definiciones de agentes. Todos los directorios especificos del IDE contienen solo symlinks que apuntan de vuelta a `.agents/`.
 
-### Estructura de Directorios
+### Estructura de directorios
 
 ```
 your-project/
@@ -301,7 +301,7 @@ your-project/
     metrics.json                    # Productivity metrics
 ```
 
-### Por Que Symlinks?
+### Por que symlinks?
 
 - **Una actualizacion, todos los IDEs se benefician.** Cuando `oma update` refresca `.agents/`, cada IDE recoge los cambios automaticamente.
 - **Sin duplicacion.** Las habilidades se almacenan una vez, no se copian por IDE.
@@ -310,14 +310,14 @@ your-project/
 
 ---
 
-## Consejos de Seguridad y Estrategia de Reversión
+## Consejos de seguridad y estrategia de reversión
 
-### Antes de la Instalacion
+### Antes de la instalacion
 
 1. **Confirma tu trabajo actual.** El instalador crea nuevos directorios y archivos. Tener un estado git limpio significa que puedes hacer `git checkout .` para deshacer todo.
 2. **Verifica si existe un directorio `.agents/`.** Si existe de otra herramienta, haz un respaldo primero. El instalador lo sobrescribira.
 
-### Despues de la Instalacion
+### Despues de la instalacion
 
 1. **Revisa lo que se creo.** Ejecuta `git status` para ver todos los archivos nuevos. El instalador crea archivos solo en `.agents/`, `.claude/` y opcionalmente `.github/`.
 2. **Agrega a `.gitignore` selectivamente.** La mayoria de equipos confirman `.agents/` y `.claude/` para compartir la configuracion. Pero `.serena/` (memoria en tiempo de ejecucion) y `.agents/results/` (resultados de ejecucion) deberian ignorarse en git:
@@ -354,7 +354,7 @@ git clean -fd .agents/ .claude/ .serena/
 
 ---
 
-## Configuración del Dashboard
+## Configuración del dashboard
 
 Despues de la instalacion, puedes configurar monitoreo en tiempo real. Consulta la [guia de Monitoreo con Dashboard](/docs/guide/dashboard-monitoring) para detalles completos.
 
@@ -370,23 +370,23 @@ oma dashboard:web
 
 ---
 
-## Qué Hace el Instalador Internamente
+## Qué hace el instalador internamente
 
 Cuando ejecutas `oma` (el comando de instalacion), esto es exactamente lo que sucede:
 
-### 1. Migracion Legacy
+### 1. Migracion legacy
 
 El instalador verifica el antiguo directorio `.agent/` (singular) y lo migra a `.agents/` (plural) si lo encuentra. Esta es una migracion unica para usuarios que actualizan desde versiones anteriores.
 
-### 2. Deteccion de Competidores
+### 2. Deteccion de competidores
 
 El instalador escanea herramientas competidoras y ofrece eliminarlas para evitar conflictos.
 
-### 3. Descarga del Tarball
+### 3. Descarga del tarball
 
 El instalador descarga el tarball de la ultima version desde los releases de GitHub de oh-my-agent. Este tarball contiene el directorio `.agents/` completo con todas las habilidades, recursos compartidos, flujos de trabajo, configuraciones y definiciones de agentes.
 
-### 4. Instalacion de Recursos Compartidos
+### 4. Instalacion de recursos compartidos
 
 `installShared()` copia el directorio `_shared/` a `.agents/skills/_shared/`. Esto incluye:
 
@@ -394,19 +394,19 @@ El instalador descarga el tarball de la ultima version desde los releases de Git
 - `runtime/` — Protocolo de memoria, protocolos de ejecucion por proveedor.
 - `conditional/` — Recursos cargados solo cuando se cumplen condiciones especificas (quality score, bucle de exploracion).
 
-### 5. Instalacion de Flujos de Trabajo
+### 5. Instalacion de flujos de trabajo
 
 `installWorkflows()` copia todos los archivos de flujo a `.agents/workflows/`. Estas son las definiciones para `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` y `/stack-set`.
 
-### 6. Instalacion de Configuracion
+### 6. Instalacion de configuracion
 
 `installConfigs()` copia archivos de configuracion por defecto a `.agents/config/`, incluyendo `oma-config.yaml` y `mcp.json`. Si estos archivos ya existen, se preservan (no se sobrescriben) a menos que se use `--force`.
 
-### 7. Instalacion de Habilidades
+### 7. Instalacion de habilidades
 
 Para cada habilidad seleccionada, `installSkill()` copia el directorio de la habilidad a `.agents/skills/{skill-name}/`. Si se selecciono una variante (ej., Python para backend), tambien configura el directorio `stack/` con recursos especificos del lenguaje.
 
-### 8. Adaptaciones de Proveedores
+### 8. Adaptaciones de proveedores
 
 `installVendorAdaptations()` instala archivos especificos del IDE para todos los proveedores soportados (Antigravity, Claude, Codex, Qwen):
 
@@ -424,10 +424,10 @@ Para cada habilidad seleccionada, `installSkill()` copia el directorio de la hab
 - `.claude/agents/{agent}.md` -> `../../.agents/agents/{agent}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (si Copilot esta habilitado)
 
-### 10. Flujos de Trabajo Globales
+### 10. Flujos de trabajo globales
 
 `installGlobalWorkflows()` instala archivos de flujo que pueden ser necesarios globalmente (fuera del directorio del proyecto).
 
-### 11. Configuracion de Git Rerere + MCP
+### 11. Configuracion de git rerere + MCP
 
 Como se describe en la via CLI arriba, el instalador opcionalmente configura git rerere y las configuraciones MCP.

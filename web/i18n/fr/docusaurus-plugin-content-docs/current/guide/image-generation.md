@@ -137,7 +137,7 @@ oma image list-vendors
 
 ### Flags clés
 
-| Flag | Rôle |
+| Option | Rôle |
 |---|---|
 | `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity` ou `all`. Avec `all`, chaque fournisseur demandé doit être authentifié (mode strict). |
 | `-n, --count <n>` | Nombre d'images par fournisseur, 1 à 5 (limite de wall-time). |

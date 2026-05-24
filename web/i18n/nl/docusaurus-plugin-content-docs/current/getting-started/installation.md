@@ -13,7 +13,7 @@ description: Volledige installatiegids voor oh-my-agent — drie installatiemeth
 
 ---
 
-## Methode 1: One-Liner Installatie (Aanbevolen)
+## Methode 1: one-liner installatie (aanbevolen)
 
 ```bash
 # macOS / Linux
@@ -37,7 +37,7 @@ Typische installatietijd: minder dan 60 seconden.
 
 ---
 
-## Methode 2: Handmatige Installatie via bunx
+## Methode 2: handmatige installatie via bunx
 
 ```bash
 bunx oh-my-agent@latest
@@ -62,7 +62,7 @@ Elke preset bevat oma-pm (planning), oma-qa (review), oma-debug (bugfixing), oma
 
 De gedeelde bronnen (`_shared/`) worden altijd geinstalleerd ongeacht de preset. Dit omvat kernroutering, contextlading, promptstructuur, leveranciersdetectie, uitvoeringsprotocollen en geheugenprotocol.
 
-### Wat er Wordt Aangemaakt
+### Wat er wordt aangemaakt
 
 Na de installatie bevat je project:
 
@@ -102,7 +102,7 @@ Na de installatie bevat je project:
 
 ---
 
-## Methode 3: Globale Installatie
+## Methode 3: globale installatie
 
 Voor CLI-niveau gebruik (dashboards, agent-spawning, diagnostiek), installeer oh-my-agent globaal:
 
@@ -146,7 +146,7 @@ oma star                # Repository een ster geven
 
 ---
 
-## AI CLI-Tool Installatie
+## AI CLI-Tool installatie
 
 Je hebt minimaal een AI CLI-tool nodig. oh-my-agent ondersteunt vijf leveranciers, en je kunt ze combineren — verschillende CLI's gebruiken voor verschillende agenten via de agent-CLI-mapping.
 
@@ -278,7 +278,7 @@ Als er iets mis is, vertelt `oma doctor` je precies wat je moet repareren, met k
 
 ## Bijwerken
 
-### CLI Bijwerken
+### CLI bijwerken
 
 ```bash
 oma update
@@ -286,7 +286,7 @@ oma update
 
 Dit werkt de globale oh-my-agent CLI bij naar de nieuwste versie.
 
-### Project Skills Bijwerken
+### Project skills bijwerken
 
 Skills en workflows binnen een project kunnen worden bijgewerkt via de GitHub Action (`action/`) voor geautomatiseerde updates, of handmatig door de installer opnieuw uit te voeren:
 
@@ -298,7 +298,7 @@ De installer detecteert bestaande installaties en biedt aan bij te werken met be
 
 ---
 
-## Wat Volgt
+## Wat volgt
 
 Open je project in je AI IDE en begin oh-my-agent te gebruiken. Skills worden automatisch gedetecteerd. Probeer:
 

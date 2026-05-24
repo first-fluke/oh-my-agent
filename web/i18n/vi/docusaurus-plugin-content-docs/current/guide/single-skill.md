@@ -53,7 +53,7 @@ Add tests for: <trường hợp test quan trọng>.
 
 ## Ví dụ thực
 
-### Frontend: Login form
+### Frontend: login form
 
 ```text
 Create a login form component in React + TypeScript + Tailwind CSS.
@@ -80,7 +80,7 @@ Acceptance criteria:
 Add tests for: auth required, pagination, status filter, empty results.
 ```
 
-### Mobile: Màn hình Settings
+### Mobile: màn hình settings
 
 ```text
 Build a settings screen in Flutter with profile editing (name, email, avatar), notification preferences (toggle switches), and a logout button.
@@ -94,7 +94,7 @@ Acceptance criteria:
 Add tests for: profile save, logout flow, offline state.
 ```
 
-### Database: Thiết kế schema
+### Database: thiết kế schema
 
 ```text
 Design a database schema for a multi-tenant SaaS project management tool. Entities: Organization, Project, Task, User, TeamMembership.

@@ -5,7 +5,7 @@ description: "Guia de uso abrangente do oh-my-agent — início rápido, exemplo
 
 # Como Usar o oh-my-agent
 
-## Início Rápido
+## Início rápido
 
 1. Abra seu projeto em uma IDE com IA (Claude Code, Gemini CLI, Cursor, Antigravity, etc.)
 2. As skills são auto-detectadas de `.agents/skills/`
@@ -16,7 +16,7 @@ Esse é todo o workflow. Nenhuma sintaxe especial é necessária para tarefas de
 
 ---
 
-## Exemplo 1: Tarefa Única Simples
+## Exemplo 1: tarefa única simples
 
 **Você digita:**
 ```
@@ -51,7 +51,7 @@ Create a login form component with email and password fields, client-side valida
 
 ---
 
-## Exemplo 2: Projeto Multi-Domínio
+## Exemplo 2: projeto multi-domínio
 
 **Você digita:**
 ```
@@ -103,7 +103,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 ---
 
-## Exemplo 3: Correção de Bug
+## Exemplo 3: correção de bug
 
 **Você digita:**
 ```
@@ -132,7 +132,7 @@ There's a bug — clicking the save button shows "Cannot read property 'map' of 
 
 ---
 
-## Exemplo 4: Design System
+## Exemplo 4: design system
 
 **Você digita:**
 ```
@@ -164,7 +164,7 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ---
 
-## Exemplo 5: Execução Paralela via CLI
+## Exemplo 5: execução paralela via CLI
 
 ```bash
 # Agente único — tarefa simples
@@ -189,7 +189,7 @@ oma stats
 
 ---
 
-## Exemplo 6: Ultrawork — Qualidade Máxima
+## Exemplo 6: ultrawork — qualidade máxima
 
 **Você digita:**
 ```
@@ -234,7 +234,7 @@ oma stats
 
 ---
 
-## Todos os Comandos de Workflow
+## Todos os comandos de workflow
 
 | Comando | Tipo | O Que Faz | Quando Usar |
 |---------|------|----------|-------------|
@@ -253,7 +253,7 @@ oma stats
 
 ---
 
-## Exemplos de Auto-Detecção
+## Exemplos de auto-detecção
 
 oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exemplos mostrando como linguagem natural aciona workflows:
 
@@ -289,7 +289,7 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 
 ---
 
-## Todas as 14 Skills — Referência Rápida
+## Todas as 14 skills — referência rápida
 
 | Skill | Melhor Para | Saída Principal |
 |-------|-----------|----------------|
@@ -310,9 +310,9 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 
 ---
 
-## Configuração de Dashboard
+## Configuração de dashboard
 
-### Dashboard no Terminal
+### Dashboard no terminal
 
 ```bash
 oma dashboard
@@ -323,7 +323,7 @@ Exibe tabela com atualização ao vivo no seu terminal:
 - Linhas por agente: status, contagem de turnos, última atividade, tempo decorrido
 - Observa `.serena/memories/` para atualizações de progresso em tempo real
 
-### Dashboard Web
+### Dashboard web
 
 ```bash
 oma dashboard:web
@@ -337,7 +337,7 @@ Recursos:
 - Streaming de log de atividade dos arquivos de progresso e resultado
 - Dados históricos de sessão
 
-### Layout Recomendado
+### Layout recomendado
 
 Use 3 terminais:
 1. **Terminal de dashboard:** `oma dashboard` — monitoramento contínuo
@@ -346,13 +346,13 @@ Use 3 terminais:
 
 ---
 
-## Conceitos-Chave Explicados
+## Conceitos-chave explicados
 
-### Divulgação Progressiva
+### Divulgação progressiva
 
 Skills carregam em duas camadas para economizar tokens. Camada 1 (SKILL.md, ~800 bytes) está sempre presente. Camada 2 (resources/) carrega apenas quando o agente está trabalhando, e apenas os recursos correspondentes à dificuldade da tarefa. Isso economiza aproximadamente 75% dos tokens comparado a carregar tudo antecipadamente. Em modelos flash-tier (128K de contexto), isso significa aproximadamente 125K tokens disponíveis para trabalho real em vez de 108K.
 
-### Otimização de Tokens
+### Otimização de tokens
 
 Além da divulgação progressiva, oh-my-agent otimiza tokens através de:
 - **Gerenciamento de orçamento de contexto** -- sem leitura completa de arquivos; use `find_symbol` em vez de `read_file`
@@ -404,7 +404,7 @@ A flag `-w` em `agent:spawn` isola um agente em um diretório específico. Isso 
 
 ---
 
-## Solução de Problemas
+## Solução de problemas
 
 | Problema | Causa | Solução |
 |----------|-------|--------|

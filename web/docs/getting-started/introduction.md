@@ -11,7 +11,7 @@ The entire system lives in a portable `.agents/` directory inside your project. 
 
 ---
 
-## The Multi-Agent Paradigm
+## The multi-agent paradigm
 
 Traditional AI coding assistants operate as generalists. They handle frontend, backend, database, security, and infrastructure with the same prompt context and the same level of expertise. This leads to:
 
@@ -25,13 +25,13 @@ oh-my-agent solves this with specialization:
 
 2. **Agents run in parallel.** While the backend agent builds your API, the frontend agent is already creating the UI. The orchestrator coordinates via shared memory.
 
-3. **Quality is built in.** Every agent has a domain-specific checklist and error playbook. Charter preflight catches scope creep before code is written. QA review is a first-class step, not an afterthought.
+3. **Quality is built in.** Every agent has a domain-specific checklist and error playbook. Charter preflight catches scope creep before code is written. QA review runs as part of the workflow, not as a separate add-on.
 
 ---
 
-## All 21 Agents
+## All 21 agents
 
-### Ideation, Architecture, and Planning
+### Ideation, architecture, and planning
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
@@ -54,7 +54,7 @@ oh-my-agent solves this with specialization:
 |-------|------|-----------------|
 | **oma-design** | Design system specialist | Creates DESIGN.md with tokens, typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2 compliance. 7-phase workflow: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Enforces anti-patterns (no "AI slop"). Optional Stitch MCP integration. Resources: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/` directory with typography, color, spatial, motion, responsive, component, accessibility, and shader guides. |
 
-### Infrastructure, DevOps, and Observability
+### Infrastructure, DevOps, and observability
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
@@ -62,14 +62,14 @@ oh-my-agent solves this with specialization:
 | **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Resources: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
 | **oma-observability** | Intent-based observability router | MELT+P signal coverage (metrics/logs/traces/profiles/cost/audit/privacy), transport tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector topology, sampling), W3C Trace Context propagation, SLO management and burn-rate alerts, incident forensics (6-dimension localization), meta-observability (self-health, clock sync, cardinality, retention). CNCF-first; Fluentd deprecated (use Fluent Bit or OTel Collector). |
 
-### Quality and Debugging
+### Quality and debugging
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-qa** | Quality assurance | Security audit (OWASP Top 10), performance analysis, accessibility (WCAG 2.1 AA), code quality review. Severity: CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation code. Supports ISO/IEC 25010 quality characteristics and ISO/IEC 29119 test alignment. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
 | **oma-debug** | Bug diagnosis and fixing | Reproduce-first methodology. Root cause analysis, minimal fixes, mandatory regression tests, similar pattern scanning. Uses Serena MCP for symbol tracing. Resources: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Localization, Coordination, and Git
+### Localization, coordination, and git
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
@@ -77,7 +77,7 @@ oh-my-agent solves this with specialization:
 | **oma-orchestrator** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Handles branching strategies, merge/rebase/conflict workflows, worktrees, baselines, and release-state tracking. Also generates Conventional Commit messages with safe staging. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
-### Search, Retrospective, and Document Processing
+### Search, retrospective, and document processing
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
@@ -88,7 +88,7 @@ oh-my-agent solves this with specialization:
 
 ---
 
-## Progressive Disclosure Model
+## Progressive disclosure model
 
 oh-my-agent uses a two-layer skill architecture to prevent context window exhaustion:
 
@@ -102,7 +102,7 @@ This design saves approximately 75% of tokens compared to loading everything upf
 
 ---
 
-## .agents/: The Single Source of Truth (SSOT)
+## .agents/: the single Source of Truth (SSOT)
 
 Everything oh-my-agent needs lives in the `.agents/` directory:
 
@@ -129,7 +129,7 @@ This architecture means your agent configuration is:
 
 ---
 
-## Supported IDEs and CLI Tools
+## Supported IDEs and CLI tools
 
 oh-my-agent works with any AI-powered IDE or CLI that supports skill/prompt loading:
 
@@ -146,7 +146,7 @@ Agent spawning adapts to each vendor automatically via the vendor detection prot
 
 ---
 
-## Skill Routing System
+## Skill routing system
 
 When you send a prompt, oh-my-agent determines which agent handles it using the skill routing map (`.agents/skills/_shared/core/skill-routing.md`):
 
@@ -168,7 +168,7 @@ For complex requests that span multiple domains, routing follows established exe
 
 ---
 
-## HUD Statusline
+## HUD statusline
 
 When running in Claude Code, oh-my-agent displays a persistent status indicator `[OMA]` in the status bar showing:
 - Model name (e.g., Opus, Sonnet)
@@ -179,7 +179,7 @@ The HUD is powered by `.claude/hooks/hud.ts` using Claude Code's `statusLine` ho
 
 ---
 
-## Automatic Workflow Detection
+## Automatic workflow detection
 
 You do not need to type `/command` to trigger workflows. oh-my-agent's `UserPromptSubmit` hook scans your natural language input against keyword triggers defined in `.claude/hooks/triggers.json`, supporting 11 languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
 
@@ -190,7 +190,7 @@ You do not need to type `/command` to trigger workflows. oh-my-agent's `UserProm
 
 ---
 
-## Cross-Vendor Support
+## Cross-vendor support
 
 oh-my-agent is not limited to Claude Code. The hook system supports:
 
@@ -205,7 +205,7 @@ Vendor detection happens automatically. Agents adapt their spawning method based
 
 ---
 
-## What is Next
+## What is next
 
 - **[Installation](./installation.md)**: Three install methods, presets, CLI setup, and verification
 - **[Agents](/docs/core-concepts/agents)**: Deep dive into all 21 agents and charter preflight

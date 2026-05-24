@@ -11,7 +11,7 @@ Existem 16 workflows, 4 dos quais são persistentes (mantêm estado e não podem
 
 ---
 
-## Workflows Persistentes
+## Workflows persistentes
 
 Workflows persistentes continuam executando até que todas as tarefas sejam concluídas. Mantêm estado em `.agents/state/` e reinjetam o contexto `[OMA PERSISTENT MODE: ...]` em cada mensagem do usuário até serem explicitamente desativados.
 
@@ -169,7 +169,7 @@ Lista permitida de substantivos (15): app, api, service, server, cli, tool, webs
 
 ---
 
-## Workflows Não-Persistentes
+## Workflows não-persistentes
 
 ### /plan
 
@@ -410,7 +410,7 @@ Lista permitida de substantivos (15): app, api, service, server, cli, tool, webs
 
 ---
 
-## Skills vs. Workflows
+## Skills vs. workflows
 
 | Aspecto | Skills | Workflows |
 |---------|--------|-----------|
@@ -422,9 +422,9 @@ Lista permitida de substantivos (15): app, api, service, server, cli, tool, webs
 
 ---
 
-## Auto-Detecção: Como Funciona
+## Auto-detecção: como funciona
 
-### O Sistema de Hooks
+### O sistema de hooks
 
 oh-my-agent usa um hook `UserPromptSubmit` que executa antes de cada mensagem do usuário ser processada. O sistema de hooks consiste em:
 
@@ -434,7 +434,7 @@ oh-my-agent usa um hook `UserPromptSubmit` que executa antes de cada mensagem do
 
 3. **`persistent-mode.ts`** (`.claude/hooks/persistent-mode.ts`): Aplica execução de workflow persistente verificando arquivos de estado ativos e reinjetando contexto de workflow.
 
-### Fluxo de Detecção
+### Fluxo de detecção
 
 1. Usuário digita entrada em linguagem natural
 2. Hook verifica se `/command` explícito está presente (se sim, pular detecção para evitar duplicação)
@@ -444,7 +444,7 @@ oh-my-agent usa um hook `UserPromptSubmit` que executa antes de cada mensagem do
 6. Se acionável, injetar `[OMA WORKFLOW: {workflow-name}]` no contexto
 7. O agente lê a tag injetada e carrega o arquivo de workflow correspondente de `.agents/workflows/`
 
-### Convenção de Seções de Idioma
+### Convenção de seções de idioma
 
 `.agents/hooks/core/triggers.json` usa uma estrutura de seções por idioma para `keywords`, `patterns` e `informationalPatterns`:
 
@@ -456,7 +456,7 @@ oh-my-agent usa um hook `UserPromptSubmit` que executa antes de cada mensagem do
 
 **Implicação**: Se você definir `language: en` em `.agents/oma-config.yaml`, apenas os padrões de `*` e `en` serão carregados. Gatilhos em linguagem natural em coreano/japonês/etc. não dispararão mesmo se o usuário digitar nesses idiomas. Para habilitar um idioma diferente do inglês, defina `language: <code>` adequadamente. O fallback em inglês em `*` permanece sempre ativo.
 
-### Campo Pattern (Regex Bruto)
+### Campo pattern (regex bruto)
 
 Além de `keywords` literais, cada workflow pode declarar `patterns` — strings regex brutas compiladas com flags `iu`. Patterns permitem correspondência de intenção multi-token que de outra forma exigiria listas combinatórias de palavras-chave.
 
@@ -480,7 +480,7 @@ Regras de autoria:
 - Sem encapsulamento automático de fronteira de palavra — autores de pattern lidam com `\b` por conta própria
 - Regex inválido é silenciosamente ignorado em runtime (visível em tempo de edição de configuração via falhas de teste)
 
-### Filtragem de Padrões Informativos
+### Filtragem de padrões informativos
 
 A seção `informationalPatterns` de `.agents/hooks/core/triggers.json` define frases que indicam perguntas em vez de comandos. Verificadas em uma janela de 60 caracteres ao redor de cada potencial correspondência de workflow:
 
@@ -495,7 +495,7 @@ Se a entrada corresponde tanto a um gatilho de workflow quanto a um padrão info
 - `"How do you build a TODO app?"` — `how do` em `*` bloqueia o regex de intenção do orchestrate
 - `"orchestrate 트리거 해주면 되나요?"` (sob `language: ko`) — `트리거` em `ko` bloqueia a palavra-chave do orchestrate
 
-### Workflows Excluídos
+### Workflows excluídos
 
 Os seguintes workflows são excluídos da auto-detecção e devem ser invocados com `/command` explícito:
 - `/scm`
@@ -506,9 +506,9 @@ Os seguintes workflows são excluídos da auto-detecção e devem ser invocados 
 
 ---
 
-## Mecânica do Modo Persistente
+## Mecânica do modo persistente
 
-### Arquivos de Estado
+### Arquivos de estado
 
 Workflows persistentes (orchestrate, ultrawork, work) criam arquivos de estado em `.agents/state/`:
 
@@ -536,34 +536,34 @@ O workflow também pode terminar naturalmente quando todas as etapas são comple
 
 ---
 
-## Sequências Típicas de Workflow
+## Sequências típicas de workflow
 
-### Funcionalidade Rápida
+### Funcionalidade rápida
 ```
 /plan → revisar saída → /exec-plan
 ```
 
-### Projeto Multi-Domínio Complexo
+### Projeto multi-domínio complexo
 ```
 /work → PM planeja → usuário confirma → agentes spawnam → QA revisa → corrigir problemas → entregar
 ```
 
-### Entrega de Qualidade Máxima
+### Entrega de qualidade máxima
 ```
 /ultrawork → PLAN (4 etapas de revisão) → IMPL → VERIFY (3 etapas de revisão) → REFINE (5 etapas de revisão) → SHIP (4 etapas de revisão)
 ```
 
-### Investigação de Bug
+### Investigação de bug
 ```
 /debug → reproduzir → causa raiz → correção mínima → teste de regressão → varredura de padrões similares
 ```
 
-### Pipeline Design-para-Implementação
+### Pipeline design-para-implementação
 ```
 /brainstorm → documento de design → /plan → breakdown de tarefas → /orchestrate → implementação paralela → /review → /scm
 ```
 
-### Setup de Novo Codebase
+### Setup de novo codebase
 ```
 /deepinit → AGENTS.md + ARCHITECTURE.md + docs/
 ```

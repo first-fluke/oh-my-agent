@@ -9,9 +9,9 @@ The core advantage of oh-my-agent is running multiple specialized agents simulta
 
 ---
 
-## agent:spawn: Single Agent Spawning
+## agent:spawn: single agent spawning
 
-### Basic Syntax
+### Basic syntax
 
 ```bash
 oma agent:spawn <agent-id> <prompt> <session-id> [options]
@@ -61,7 +61,7 @@ oma agent:spawn backend "Try a Drizzle-based rewrite" session-01 --isolation wor
 
 ---
 
-## Parallel Spawning with Background Processes
+## Parallel spawning with background processes
 
 To run multiple agents simultaneously, use shell background processes:
 
@@ -75,7 +75,7 @@ wait  # Block until all agents complete
 
 The `&` runs each agent in the background. `wait` blocks until all background processes finish.
 
-### Workspace-Aware Pattern
+### Workspace-aware pattern
 
 Always assign separate workspaces when running agents in parallel to prevent file conflicts:
 
@@ -92,7 +92,7 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel: Inline Parallel Mode
+## agent:parallel: inline parallel mode
 
 For a cleaner syntax that handles background process management automatically:
 
@@ -122,11 +122,11 @@ The `-i` (inline) flag allows specifying agent-prompt pairs directly in the comm
 
 ---
 
-## Multi-CLI Configuration
+## Multi-CLI configuration
 
 oh-my-agent routes each agent to the appropriate CLI via `model_preset` in `.agents/oma-config.yaml`. Choose a built-in preset for the vendor you use, and optionally override individual agents.
 
-### Configuration Example
+### Configuration example
 
 ```yaml
 # .agents/oma-config.yaml
@@ -141,7 +141,7 @@ agents:
 
 Built-in presets: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. See [Per-Agent Models](../guide/per-agent-models.md) for details.
 
-### Vendor Resolution
+### Vendor resolution
 
 When `oma agent:spawn` determines which CLI to use:
 
@@ -155,7 +155,7 @@ The `--model` flag always wins. If no flag is provided, the system checks `agent
 
 ---
 
-## Vendor-Specific Spawn Methods
+## Vendor-specific spawn methods
 
 The spawn mechanism varies by IDE/CLI:
 
@@ -183,9 +183,9 @@ The same dispatch rule applies across vendors:
 
 ---
 
-## Monitoring Agents
+## Monitoring agents
 
-### Terminal Dashboard
+### Terminal dashboard
 
 ```bash
 oma dashboard
@@ -200,7 +200,7 @@ Displays a live table with:
 
 The dashboard watches `.serena/memories/` for real-time updates. It refreshes as agents write progress.
 
-### Web Dashboard
+### Web dashboard
 
 ```bash
 oma dashboard:web
@@ -214,7 +214,7 @@ Features:
 - Activity log streaming from progress and result files
 - Session history
 
-### Recommended Terminal Layout
+### Recommended terminal layout
 
 Use 3 terminals for optimal visibility:
 
@@ -233,7 +233,7 @@ Use 3 terminals for optimal visibility:
 └────────────────────────────────────────────────┘
 ```
 
-### Checking Individual Agent Status
+### Checking individual agent status
 
 ```bash
 oma agent:status <session-id> <agent-id>
@@ -243,7 +243,7 @@ Returns the current status of a specific agent: running, completed, or failed, a
 
 ---
 
-## Session ID Strategy
+## Session ID strategy
 
 Session IDs group agents working on the same feature. Best practices:
 
@@ -259,7 +259,7 @@ Session IDs determine:
 
 ---
 
-## Tips for Parallel Execution
+## Tips for parallel execution
 
 ### Do
 
@@ -287,7 +287,7 @@ Session IDs determine:
 
 7. **Start with `/work` if unsure.** The work workflow guides you through the process step by step with user confirmation at each gate.
 
-### Do Not
+### Do not
 
 1. **Do not spawn agents in the same workspace.** Two agents writing to the same directory will create merge conflicts and overwrite each other's work.
 
@@ -301,7 +301,7 @@ Session IDs determine:
 
 ---
 
-## End-to-End Example
+## End-to-end example
 
 A complete parallel execution workflow for building a user authentication feature:
 

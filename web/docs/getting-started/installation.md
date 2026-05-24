@@ -14,7 +14,7 @@ description: Complete installation guide for oh-my-agent, covering three install
 
 ---
 
-## Method 1: One-Liner Install (Recommended)
+## Method 1: one-liner install (recommended)
 
 ```bash
 # macOS / Linux
@@ -38,7 +38,7 @@ Typical install time: under 60 seconds.
 
 ---
 
-## Method 2: Manual Install via bunx
+## Method 2: manual install via bunx
 
 ```bash
 bunx oh-my-agent@latest
@@ -63,7 +63,7 @@ Every preset includes oma-pm (planning), oma-qa (review), oma-debug (bug fixing)
 
 The shared resources (`_shared/`) are always installed regardless of preset. This includes core routing, context loading, prompt structure, vendor detection, execution protocols, and memory protocol.
 
-### What Gets Created
+### What gets created
 
 After installation, your project will contain:
 
@@ -103,7 +103,7 @@ After installation, your project will contain:
 
 ---
 
-## Method 3: Global Install
+## Method 3: global install
 
 For CLI-level usage (dashboards, agent spawning, diagnostics), install oh-my-agent globally:
 
@@ -153,7 +153,7 @@ oma star # Star the repository
 
 ---
 
-## AI CLI Tool Installation
+## AI CLI tool installation
 
 You need at least one AI CLI tool installed. oh-my-agent supports multiple vendors, and you can mix them by using different CLIs for different agents via the agent-CLI mapping.
 
@@ -238,7 +238,7 @@ agents:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
-### Field Reference
+### Field reference
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -250,7 +250,7 @@ agents:
 | `models` | map | No | User-defined model slugs, formerly in `models.yaml`. |
 | `custom_presets` | map | No | User-defined presets. Supports `extends:` for partial inheritance from a built-in preset. |
 
-### Vendor Resolution
+### Vendor resolution
 
 When spawning an agent, the CLI vendor is resolved from the active `model_preset` (and any `agents:` overrides). See [Per-Agent Models](../guide/per-agent-models.md) for full details.
 
@@ -287,7 +287,7 @@ See [Per-Agent Models](../guide/per-agent-models.md) for the full matrix and mig
 
 ## Updating
 
-### CLI Update
+### CLI update
 
 ```bash
 oma update
@@ -295,7 +295,7 @@ oma update
 
 This updates the global oh-my-agent CLI to the latest version.
 
-### Project Skills Update
+### Project skills update
 
 Skills and workflows within a project can be updated via the GitHub Action (`action/`) for automated updates, or manually by re-running the installer:
 
@@ -307,7 +307,7 @@ The installer detects existing installations and offers to update while preservi
 
 ---
 
-## What is Next
+## What is next
 
 Open your project in your AI IDE and start using oh-my-agent. Skills are auto-detected. Try:
 

@@ -5,7 +5,7 @@ description: "Guia completo para adicionar oh-my-agent a um projeto existente �
 
 # Guia: Integração em Projeto Existente
 
-## Dois Caminhos de Integração
+## Dois caminhos de integração
 
 Existem duas formas de adicionar oh-my-agent a um projeto existente:
 
@@ -16,7 +16,7 @@ Ambos os caminhos produzem o mesmo resultado: um diretório `.agents/` (o SSOT) 
 
 ---
 
-## Caminho CLI: Passo a Passo
+## Caminho CLI: passo a passo
 
 ### 1. Instalar o CLI
 
@@ -30,7 +30,7 @@ npx oh-my-agent
 
 Após instalação global, o comando `oma` (ou `oh-my-agent`) fica disponível.
 
-### 2. Navegar até a Raiz do Projeto
+### 2. Navegar até a raiz do projeto
 
 ```bash
 cd /path/to/your/project
@@ -38,7 +38,7 @@ cd /path/to/your/project
 
 O instalador espera executar da raiz do projeto (onde `.git/` reside).
 
-### 3. Executar o Instalador
+### 3. Executar o instalador
 
 ```bash
 oma
@@ -46,7 +46,7 @@ oma
 
 O comando padrão (sem subcomando) lança o instalador interativo.
 
-### 4. Selecionar Tipo de Projeto
+### 4. Selecionar tipo de projeto
 
 O instalador apresenta estes presets:
 
@@ -60,7 +60,7 @@ O instalador apresenta estes presets:
 | **DevOps** | Terraform + CI/CD + Workflow skills |
 | **Custom** | Escolha skills individuais da lista completa |
 
-### 5. Escolher Linguagem Backend (se aplicável)
+### 5. Escolher linguagem backend (se aplicável)
 
 Se você selecionou um preset que inclui a skill backend, você é questionado sobre a variante de linguagem:
 
@@ -69,7 +69,7 @@ Se você selecionou um preset que inclui a skill backend, você é questionado s
 - **Rust** — Axum/Actix-web
 - **Other / Auto-detect** — Configurar depois com `/stack-set`
 
-### 6. Configurar Symlinks de IDE
+### 6. Configurar symlinks de IDE
 
 O instalador sempre cria symlinks para Claude Code (`.claude/skills/`). Também gera arquivos de agentes e hooks nativos de vendor para Antigravity, Claude, Codex e Qwen, e se um diretório `.github/` existe, também cria symlinks para GitHub Copilot automaticamente. Caso contrário, pergunta:
 
@@ -77,7 +77,7 @@ O instalador sempre cria symlinks para Claude Code (`.claude/skills/`). Também 
 Also create symlinks for GitHub Copilot? (.github/skills/)
 ```
 
-### 7. Setup do Git Rerere
+### 7. Setup do git rerere
 
 O instalador verifica se `git rerere` (reuse recorded resolution) está habilitado. Se não, oferece habilitá-lo globalmente:
 
@@ -103,11 +103,11 @@ O instalador exibe um resumo de tudo instalado:
 
 ---
 
-## Caminho Manual
+## Caminho manual
 
 Para ambientes onde o CLI interativo não está disponível (pipelines CI, shells restritos, máquinas corporativas).
 
-### Step 1: Download e Extração
+### Step 1: download e extração
 
 ```bash
 # Baixar o tarball mais recente do registro
@@ -122,7 +122,7 @@ sha256sum -c agent-skills.tar.gz.sha256
 tar -xzf agent-skills.tar.gz
 ```
 
-### Step 2: Copiar Arquivos para Seu Projeto
+### Step 2: copiar arquivos para seu projeto
 
 ```bash
 # Copiar o diretório core .agents/
@@ -154,7 +154,7 @@ for agent in .agents/agents/*.md; do
 done
 ```
 
-### Step 3: Configurar Preferências do Usuário
+### Step 3: configurar preferências do usuário
 
 ```bash
 mkdir -p /path/to/your/project/.agents/config
@@ -169,7 +169,7 @@ agents:
 EOF
 ```
 
-### Step 4: Inicializar Diretório de Memória
+### Step 4: inicializar diretório de memória
 
 ```bash
 oma memory:init
@@ -179,7 +179,7 @@ mkdir -p /path/to/your/project/.serena/memories
 
 ---
 
-## Checklist de Verificação
+## Checklist de verificação
 
 Após instalação (qualquer caminho), verifique se tudo está configurado corretamente:
 
@@ -224,11 +224,11 @@ cat .agents/skills/_version.json 2>/dev/null
 
 ---
 
-## Estrutura de Symlinks Multi-IDE (Conceito SSOT)
+## Estrutura de symlinks Multi-IDE (conceito SSOT)
 
 oh-my-agent usa uma arquitetura de Única Fonte de Verdade (SSOT). O diretório `.agents/` é o único lugar onde skills, workflows, configs e definições de agentes residem. Todos os diretórios específicos de IDE contêm apenas symlinks apontando de volta para `.agents/`.
 
-### Layout de Diretórios
+### Layout de diretórios
 
 ```
 your-project/
@@ -249,7 +249,7 @@ your-project/
     memories/                       # Arquivos de memória em runtime
 ```
 
-### Por Que Symlinks?
+### Por que symlinks?
 
 - **Uma atualização, todos os IDEs se beneficiam.** Quando `oma update` atualiza `.agents/`, cada IDE recebe as mudanças automaticamente.
 - **Sem duplicação.** Skills são armazenadas uma vez, não copiadas por IDE.
@@ -258,14 +258,14 @@ your-project/
 
 ---
 
-## Dicas de Segurança e Estratégia de Rollback
+## Dicas de segurança e estratégia de rollback
 
-### Antes da Instalação
+### Antes da instalação
 
 1. **Commit seu trabalho atual.** O instalador cria novos diretórios e arquivos. Ter um estado git limpo significa que você pode `git checkout .` para desfazer tudo.
 2. **Verifique se existe um diretório `.agents/`.** Se existir de outra ferramenta, faça backup primeiro. O instalador irá sobrescrevê-lo.
 
-### Após Instalação
+### Após instalação
 
 1. **Revise o que foi criado.** Execute `git status` para ver todos os novos arquivos. O instalador cria arquivos apenas em `.agents/`, `.claude/` e opcionalmente `.github/`.
 2. **Adicione ao `.gitignore` seletivamente.** A maioria das equipes commita `.agents/` e `.claude/` para compartilhar o setup. Mas `.serena/` (memória em runtime) e `.agents/results/` (resultados de execução) devem ser ignorados pelo git:
@@ -302,7 +302,7 @@ git clean -fd .agents/ .claude/ .serena/
 
 ---
 
-## Configuração de Dashboard
+## Configuração de dashboard
 
 Após instalação, você pode configurar monitoramento em tempo real. Veja o [guia de Monitoramento com Dashboard](/docs/guide/dashboard-monitoring) para detalhes completos.
 
@@ -318,23 +318,23 @@ oma dashboard:web
 
 ---
 
-## O que o Instalador Faz por Baixo dos Panos
+## O que o instalador faz por baixo dos panos
 
 Quando você executa `oma` (o comando de instalação), aqui está exatamente o que acontece:
 
-### 1. Migração Legada
+### 1. Migração legada
 
 O instalador verifica a existência do diretório antigo `.agent/` (singular) e migra para `.agents/` (plural) se encontrado. Esta é uma migração única para usuários atualizando de versões anteriores.
 
-### 2. Detecção de Concorrentes
+### 2. Detecção de concorrentes
 
 O instalador escaneia ferramentas concorrentes e oferece removê-las para evitar conflitos.
 
-### 3. Download do Tarball
+### 3. Download do tarball
 
 O instalador baixa o tarball de release mais recente dos releases do GitHub do oh-my-agent. Este tarball contém o diretório `.agents/` completo com todas as skills, recursos compartilhados, workflows, configs e definições de agentes.
 
-### 4. Instalação de Recursos Compartilhados
+### 4. Instalação de recursos compartilhados
 
 `installShared()` copia o diretório `_shared/` para `.agents/skills/_shared/`. Inclui:
 
@@ -342,19 +342,19 @@ O instalador baixa o tarball de release mais recente dos releases do GitHub do o
 - `runtime/` — Protocolo de memória, protocolos de execução por vendor.
 - `conditional/` — Recursos carregados apenas quando condições específicas são atendidas (quality score, exploration loop).
 
-### 5. Instalação de Workflows
+### 5. Instalação de workflows
 
 `installWorkflows()` copia todos os arquivos de workflow para `.agents/workflows/`. Estas são as definições para `/orchestrate`, `/work`, `/ultrawork`, `/plan`, `/brainstorm`, `/deepinit`, `/review`, `/debug`, `/design`, `/scm`, `/tools` e `/stack-set`.
 
-### 6. Instalação de Configs
+### 6. Instalação de configs
 
 `installConfigs()` copia arquivos de configuração padrão para `.agents/config/`, incluindo `oma-config.yaml` e `mcp.json`. Se estes arquivos já existem, são preservados (não sobrescritos) a menos que `--force` seja usado.
 
-### 7. Instalação de Skills
+### 7. Instalação de skills
 
 Para cada skill selecionada, `installSkill()` copia o diretório da skill para `.agents/skills/{skill-name}/`. Se uma variante foi selecionada (ex: Python para backend), também configura o diretório `stack/` com recursos específicos da linguagem.
 
-### 8. Adaptações de Vendor
+### 8. Adaptações de vendor
 
 `installVendorAdaptations()` instala arquivos específicos de IDE para todos os vendors suportados (Antigravity, Claude, Codex, Qwen):
 
@@ -372,10 +372,10 @@ Para cada skill selecionada, `installSkill()` copia o diretório da skill para `
 
 Arquivos nativos de agente por vendor são gerados a partir de `.agents/agents/` por `oma link`, `oma install` ou `oma update`, em vez de symlinkados diretamente.
 
-### 10. Workflows Globais
+### 10. Workflows globais
 
 `installGlobalWorkflows()` instala arquivos de workflow que podem ser necessários globalmente (fora do diretório do projeto).
 
-### 11. Git Rerere + Configuração MCP
+### 11. Git rerere + configuração MCP
 
 Conforme descrito no caminho CLI acima, o instalador opcionalmente configura git rerere e settings de MCP.

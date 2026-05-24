@@ -9,7 +9,7 @@ Skills are structured knowledge packages that give each agent its domain experti
 
 ---
 
-## The Two-Layer Design
+## The two-layer design
 
 ### Layer 1: SKILL.md (~800 bytes, always loaded)
 
@@ -43,7 +43,7 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 ---
 
-## File Structure Example
+## File structure example
 
 ```
 .agents/skills/oma-frontend/
@@ -100,7 +100,7 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 ---
 
-## Per-Skill Resource Types
+## Per-skill resource types
 
 | Resource Type | Filename Pattern | Purpose | When Loaded |
 |--------------|-----------------|---------|-------------|
@@ -116,11 +116,11 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 ---
 
-## Shared Resources (_shared/)
+## Shared resources (_shared/)
 
 All agents share common foundations from `.agents/skills/_shared/`. These are organized into three categories:
 
-### Core Resources (`.agents/skills/_shared/core/`)
+### Core resources (`.agents/skills/_shared/core/`)
 
 | Resource | Purpose | When Loaded |
 |----------|---------|-------------|
@@ -139,7 +139,7 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 | **`evaluator-tuning.md`** | Semi-automated QA prompt tuning protocol. Tracks Evaluation Accuracy (EA) events, triggers tuning when EA >= 30, generates patch suggestions for QA checklists and execution protocols. Includes tuning log and positive reinforcement from `good_catch` events. | When `oma retro` detects EA threshold breach |
 | **`api-contracts/`** | Directory containing API contract template and generated contracts. `template.md` defines the per-endpoint format (method, path, request/response schemas, auth, errors). | When cross-boundary work is planned |
 
-### Runtime Resources (`.agents/skills/_shared/runtime/`)
+### Runtime resources (`.agents/skills/_shared/runtime/`)
 
 | Resource | Purpose |
 |----------|---------|
@@ -151,7 +151,7 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`. Agents do not need to manually load them.
 
-### Conditional Resources (`.agents/skills/_shared/conditional/`)
+### Conditional resources (`.agents/skills/_shared/conditional/`)
 
 These are loaded only when specific conditions are met during execution:
 
@@ -165,15 +165,15 @@ Budget impact: approximately 750 tokens total if all 3 are loaded. Since loading
 
 ---
 
-## How Skills Route via skill-routing.md
+## How skills route via skill-routing.md
 
 The skill routing map defines how tasks are matched to agents:
 
-### Simple Routing (Single Domain)
+### Simple routing (single domain)
 
 A prompt containing "Build a login form with Tailwind CSS" matches the keywords `UI`, `component`, `form`, `Tailwind`, and routes to **oma-frontend**.
 
-### Complex Request Routing
+### Complex request routing
 
 Multi-domain requests follow established execution orders:
 
@@ -186,7 +186,7 @@ Multi-domain requests follow established execution orders:
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> relevant agents -> oma-qa |
 | "Do everything automatically" | oma-orchestrator (internally: oma-pm -> agents -> oma-qa) |
 
-### Inter-Agent Dependency Rules
+### Inter-agent dependency rules
 
 **Can run in parallel (no dependencies):**
 - oma-backend + oma-frontend (when API contract is pre-defined)
@@ -203,7 +203,7 @@ Multi-domain requests follow established execution orders:
 
 ---
 
-## Token Savings Math
+## Token savings math
 
 Consider a 5-agent orchestration session (pm, backend, frontend, mobile, qa):
 
@@ -222,7 +222,7 @@ On flash-tier models (128K context), this is the difference between having 108K 
 
 ---
 
-## Resource Loading by Task Difficulty
+## Resource loading by task difficulty
 
 The difficulty guide classifies tasks into three levels, which determine how much of Layer 2 is loaded:
 
@@ -246,11 +246,11 @@ Loads: `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.md`
 
 ---
 
-## Context-Loading Task Maps (Per Agent)
+## Context-loading task maps (per agent)
 
 The context-loading guide provides detailed task-type-to-resource mappings. Here are the key mappings:
 
-### Backend Agent
+### Backend agent
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -260,7 +260,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | Performance optimization | examples.md (N+1 example) |
 | Existing code modification | examples.md + Serena MCP |
 
-### Frontend Agent
+### Frontend agent
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -270,7 +270,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | Styling | tailwind-rules.md |
 | Page layout | snippets.md (grid) + examples.md |
 
-### Design Agent
+### Design agent
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -281,7 +281,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | 3D / shader effects | reference/shader-and-3d.md + reference/motion-design.md |
 | Accessibility review | reference/accessibility.md + checklist.md |
 
-### QA Agent
+### QA agent
 
 | Task Type | Required Resources |
 |-----------|-------------------|
@@ -293,7 +293,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 
 ---
 
-## Orchestrator Prompt Composition
+## Orchestrator prompt composition
 
 When the orchestrator composes prompts for subagents, it includes only task-relevant resources:
 
@@ -307,7 +307,7 @@ This targeted composition avoids loading unnecessary resources, maximizing the s
 
 ---
 
-## Clarification Debt & Session Metrics (Deep Dive)
+## Clarification debt & session metrics (deep dive)
 
 Clarification Debt (CD) measures the cost of unclear requirements during a session. The orchestrator tracks every user correction and scores it:
 
@@ -330,7 +330,7 @@ The session log is maintained in `.serena/memories/session-metrics.md` with per-
 
 ---
 
-## Evaluator Accuracy & QA Tuning
+## Evaluator accuracy & QA tuning
 
 QA agents improve through tracked judgment errors. Unlike CD (real-time), Evaluator Accuracy (EA) is retrospective. Most errors are discovered after the session ends.
 
@@ -354,7 +354,7 @@ The full tuning loop is defined in `evaluator-tuning.md`: sessions accumulate EA
 
 ---
 
-## Sprint Decomposition for Complex Tasks
+## Sprint decomposition for complex tasks
 
 Complex tasks (4+ files, architecture decisions) use sprint-based execution rather than a single long run:
 
@@ -375,7 +375,7 @@ Complex tasks (4+ files, architecture decisions) use sprint-based execution rath
 
 ---
 
-## Context Reset Protocol
+## Context reset protocol
 
 Long-running agents degrade in quality as context fills up. The Orchestrator (not the agent itself) monitors for this and triggers resets.
 

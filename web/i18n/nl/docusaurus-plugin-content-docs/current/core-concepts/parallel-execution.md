@@ -5,11 +5,11 @@ description: Volledige gids voor het gelijktijdig draaien van meerdere oh-my-age
 
 # Parallelle Uitvoering
 
-Het kernvoordeel van oh-my-agent is het gelijktijdig draaien van meerdere gespecialiseerde agenten. Terwijl de backend-agent je API implementeert, maakt de frontend-agent de UI en bouwt de mobile-agent de app-schermen — allemaal gecoordineerd via gedeeld geheugen.
+Het kernvoordeel van oh-my-agent is het gelijktijdig draaien van meerdere gespecialiseerde agenten. Terwijl de backend-agent je API implementeert, maakt de frontend-agent de UI en bouwt de mobile-agent de app-schermen — allemaal gecoördineerd via gedeeld geheugen.
 
 ---
 
-## agent:spawn — Enkele Agent Spawnen
+## agent:spawn — enkele agent spawnen
 
 ### Basissyntaxis
 
@@ -57,7 +57,7 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ---
 
-## Parallel Spawnen met Achtergrondprocessen
+## Parallel spawnen met achtergrondprocessen
 
 Om meerdere agenten gelijktijdig te draaien, gebruik shell-achtergrondprocessen:
 
@@ -69,7 +69,7 @@ oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobil
 wait  # Blokkeer totdat alle agenten klaar zijn
 ```
 
-### Werkruimte-Bewust Patroon
+### Werkruimte-bewust patroon
 
 Wijs altijd gescheiden werkruimten toe bij het parallel draaien van agenten om bestandsconflicten te voorkomen:
 
@@ -86,7 +86,7 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel — Inline Parallelle Modus
+## agent:parallel — inline parallelle modus
 
 ```bash
 oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [opties]
@@ -110,7 +110,7 @@ oma agent:parallel -i \
 
 ---
 
-## Multi-CLI Configuratie
+## Multi-CLI configuratie
 
 ```yaml
 # .agents/oma-config.yaml
@@ -147,7 +147,7 @@ model_preset (per-agent overrides via `agents:`):
 
 ---
 
-## Leverancierspecifieke Spawnmethoden
+## Leverancierspecifieke spawnmethoden
 
 | Leverancier | Hoe Agenten Worden Gespawnd | Resultaatafhandeling |
 |-------------|---------------------------|---------------------|
@@ -159,9 +159,9 @@ model_preset (per-agent overrides via `agents:`):
 
 ---
 
-## Agenten Monitoren
+## Agenten monitoren
 
-### Terminal Dashboard
+### Terminal dashboard
 
 ```bash
 oma dashboard
@@ -178,7 +178,7 @@ oma dashboard:web
 
 Functies: realtime updates via WebSocket, auto-reconnect, gekleurde statusindicatoren, activiteitenlogstreaming, sessiegeschiedenis.
 
-### Aanbevolen Terminalindeling
+### Aanbevolen terminalindeling
 
 ```
 ┌─────────────────────────┬──────────────────────┐
@@ -193,7 +193,7 @@ Functies: realtime updates via WebSocket, auto-reconnect, gekleurde statusindica
 
 ---
 
-## Sessie-ID Strategie
+## Sessie-ID strategie
 
 - **Een sessie per functie:** Alle agenten die aan "gebruikersauthenticatie" werken delen `session-auth-01`
 - **Formaat:** Beschrijvende ID's: `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
@@ -202,9 +202,9 @@ Functies: realtime updates via WebSocket, auto-reconnect, gekleurde statusindica
 
 ---
 
-## Tips voor Parallelle Uitvoering
+## Tips voor parallelle uitvoering
 
-### Wel Doen
+### Wel doen
 
 1. **Vergrendel eerst API-contracten.** Draai `/plan` voordat je implementatieagenten spawnt.
 2. **Gebruik een sessie-ID per functie.**
@@ -214,7 +214,7 @@ Functies: realtime updates via WebSocket, auto-reconnect, gekleurde statusindica
 6. **Itereer met herspawns.** Herspawn met originele taak plus correctiecontext.
 7. **Begin met `/work` als je twijfelt.**
 
-### Niet Doen
+### Niet doen
 
 1. **Spawn geen agenten in dezelfde werkruimte.** Creert merge-conflicten.
 2. **Overschrijd MAX_PARALLEL (standaard 3) niet.**
@@ -224,7 +224,7 @@ Functies: realtime updates via WebSocket, auto-reconnect, gekleurde statusindica
 
 ---
 
-## End-to-End Voorbeeld
+## End-to-end voorbeeld
 
 ```bash
 # Stap 1: Plan de functie (in je AI IDE, voer /plan uit)

@@ -5,7 +5,7 @@ description: Exhaustive reference for all CLI options, covering global flags, ou
 
 # CLI Options
 
-## Global Options
+## Global options
 
 These options are available on the root `oma` / `oh-my-agent` command:
 
@@ -18,11 +18,11 @@ All subcommands also support `-h, --help` to show their specific help text.
 
 ---
 
-## Output Options
+## Output options
 
 Many commands support machine-readable output for CI/CD pipelines and automation. There are three ways to request JSON output, in priority order:
 
-### 1. --json Flag
+### 1. --json flag
 
 ```bash
 oma stats --json
@@ -32,7 +32,7 @@ oma cleanup --json
 
 The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
-### 2. --output Flag
+### 2. --output flag
 
 ```bash
 oma stats --output json
@@ -43,7 +43,7 @@ The `--output` flag accepts `text` or `json`. It provides the same functionality
 
 **Validation:** If an invalid format is provided, the CLI throws: `Invalid output format: {value}. Expected one of text, json`.
 
-### 3. OH_MY_AG_OUTPUT_FORMAT Environment Variable
+### 3. OH_MY_AG_OUTPUT_FORMAT environment variable
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
@@ -56,7 +56,7 @@ Set this environment variable to `json` to force JSON output on all commands tha
 
 **Resolution order:** `--json` flag > `--output` flag > `OH_MY_AG_OUTPUT_FORMAT` env var > `text` (default).
 
-### Commands Supporting JSON Output
+### Commands supporting JSON output
 
 | Command | `--json` | `--output` | Notes |
 |:--------|:---------|:----------|:------|
@@ -76,7 +76,7 @@ Set this environment variable to `json` to force JSON output on all commands tha
 
 ---
 
-## Per-Command Options
+## Per-command options
 
 ### oma (install)
 
@@ -336,9 +336,9 @@ oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 
 ---
 
-## Practical Examples
+## Practical examples
 
-### CI Pipeline: Update and Verify
+### CI pipeline: update and verify
 
 ```bash
 # Update in CI mode, then run doctor to verify installation
@@ -346,7 +346,7 @@ oma update --ci
 oma doctor --json | jq '.healthy'
 ```
 
-### Automated Metrics Collection
+### Automated metrics collection
 
 ```bash
 # Collect metrics as JSON and pipe to a monitoring system
@@ -354,7 +354,7 @@ export OH_MY_AG_OUTPUT_FORMAT=json
 oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
-### Batch Agent Execution with Status Monitoring
+### Batch agent execution with status monitoring
 
 ```bash
 # Start agents in background
@@ -365,14 +365,14 @@ SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
 watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
 ```
 
-### Cleanup in CI After Tests
+### Cleanup in CI after tests
 
 ```bash
 # Clean up all orphaned processes without prompts
 oma cleanup --yes --json
 ```
 
-### Workspace-Aware Verification
+### Workspace-aware verification
 
 ```bash
 # Verify each domain in its workspace
@@ -381,7 +381,7 @@ oma verify frontend -w ./apps/web
 oma verify mobile -w ./apps/mobile
 ```
 
-### Retro with Comparison for Sprint Reviews
+### Retro with comparison for sprint reviews
 
 ```bash
 # Two-week sprint retro with comparison to previous sprint
@@ -391,7 +391,7 @@ oma retro 2w --compare
 oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 ```
 
-### Full Health Check Script
+### Full health check script
 
 ```bash
 #!/bin/bash
@@ -411,7 +411,7 @@ oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 echo "=== Done ==="
 ```
 
-### Describe for Agent Introspection
+### Describe for agent introspection
 
 ```bash
 # An AI agent can discover available commands

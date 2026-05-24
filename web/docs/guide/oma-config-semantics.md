@@ -12,7 +12,7 @@ description: Per-key precedence rules for oma-config.yaml when both project and 
 
 When both files exist, the project file wins for every key. This is intentional: per-project customization is the more specific signal and should not be overridden by a user-wide default.
 
-## Precedence Table
+## Precedence table
 
 | Key | Project wins? | Notes |
 |-----|:---:|-------|
@@ -26,7 +26,7 @@ When both files exist, the project file wins for every key. This is intentional:
 
 "Project wins" means: if the key is present in the project file, that value is used regardless of what the global file says. If the key is absent from the project file, the global file's value is used. If it is absent from both, the default applies.
 
-## Default Values
+## Default values
 
 | Key | Default | When applied |
 |-----|---------|--------------|
@@ -38,7 +38,7 @@ When both files exist, the project file wins for every key. This is intentional:
 | `translation_voice` | `balanced` | Both files absent or key missing |
 | `timezone` | System timezone | Both files absent or key missing |
 
-## Read Order Rationale
+## Read order rationale
 
 Project config is read first because it represents the more specific context — the repository a developer is actively working in. A team might enforce `language: ko` or `model_preset: mixed` for their project, and those choices should not be silently overridden by an individual's global `oma-config.yaml`.
 

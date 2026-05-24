@@ -9,7 +9,7 @@ Na het installeren van oh-my-agent krijgt je project drie directorystructuren: `
 
 ---
 
-## Volledige Directorystructuur
+## Volledige directorystructuur
 
 ```
 your-project/
@@ -134,7 +134,7 @@ your-project/
 
 ---
 
-## .agents/ — De Bron van Waarheid
+## .agents/ — de bron van waarheid
 
 Dit is de kerndirectory. Alles wat agenten nodig hebben bevindt zich hier. Het is de enige directory die ertoe doet voor agentgedrag — alle andere directory's zijn ervan afgeleid.
 
@@ -216,7 +216,7 @@ Subagentdefinities voor Claude Code's Agent tool.
 
 ---
 
-## .serena/memories/ — Runtimestatus
+## .serena/memories/ — runtimestatus
 
 | Bestand | Eigenaar | Doel |
 |---------|----------|------|
@@ -231,7 +231,7 @@ Subagentdefinities voor Claude Code's Agent tool.
 
 ---
 
-## oh-my-agent Bronrepositorystructuur
+## oh-my-agent bronrepositorystructuur
 
 ```
 oh-my-agent/

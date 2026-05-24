@@ -11,7 +11,7 @@ Hay 16 flujos de trabajo, 4 de los cuales son persistentes (mantienen estado y n
 
 ---
 
-## Flujos de Trabajo Persistentes
+## Flujos de trabajo persistentes
 
 Los flujos persistentes continúan ejecutándose hasta que todas las tareas estén completadas. Mantienen estado en `.agents/state/` y reinyectan contexto `[OMA PERSISTENT MODE: ...]` en cada mensaje del usuario hasta que se desactivan explícitamente.
 
@@ -169,7 +169,7 @@ Lista blanca de sustantivos (15): app, api, service, server, cli, tool, website,
 
 ---
 
-## Flujos de Trabajo No Persistentes
+## Flujos de trabajo no persistentes
 
 ### /plan
 
@@ -410,7 +410,7 @@ Lista blanca de sustantivos (15): app, api, service, server, cli, tool, website,
 
 ---
 
-## Habilidades vs. Flujos de Trabajo
+## Habilidades vs. flujos de trabajo
 
 | Aspecto | Habilidades | Flujos de Trabajo |
 |---------|-------------|-------------------|
@@ -422,9 +422,9 @@ Lista blanca de sustantivos (15): app, api, service, server, cli, tool, website,
 
 ---
 
-## Auto-Detección: Cómo Funciona
+## Auto-detección: cómo funciona
 
-### El Sistema de Hooks
+### El sistema de hooks
 
 oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de que cada mensaje del usuario sea procesado. El sistema de hooks consiste en:
 
@@ -434,7 +434,7 @@ oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de que cada mens
 
 3. **`persistent-mode.ts`** (`.claude/hooks/persistent-mode.ts`): Aplica la ejecución de flujos persistentes verificando archivos de estado activos y reinyectando contexto del flujo.
 
-### Flujo de Detección
+### Flujo de detección
 
 1. El usuario escribe entrada en lenguaje natural
 2. El hook verifica si hay un `/command` explícito presente (si es así, omitir detección para evitar duplicación)
@@ -444,7 +444,7 @@ oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de que cada mens
 6. Si es accionable, inyectar `[OMA WORKFLOW: {workflow-name}]` en el contexto
 7. El agente lee la etiqueta inyectada y carga el archivo de flujo correspondiente desde `.agents/workflows/`
 
-### Convención de Secciones de Idioma
+### Convención de secciones de idioma
 
 `.agents/hooks/core/triggers.json` usa una estructura de secciones por idioma para `keywords`, `patterns` e `informationalPatterns`:
 
@@ -456,7 +456,7 @@ oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de que cada mens
 
 **Implicación**: Si establece `language: en` en `.agents/oma-config.yaml`, solo se cargan los patrones de `*` y `en`. Los activadores en lenguaje natural en coreano/japonés/etc. no se dispararán aunque el usuario escriba en esos idiomas. Para habilitar un idioma distinto al inglés, establezca `language: <code>` en consecuencia. El respaldo en inglés en `*` siempre permanece activo.
 
-### Campo Pattern (Regex Sin Procesar) {#pattern-field-raw-regex}
+### Campo pattern (regex sin procesar) {#pattern-field-raw-regex}
 
 Además de las `keywords` literales, cada flujo puede declarar `patterns` — cadenas regex sin procesar compiladas con flags `iu`. Los patrones permiten la coincidencia de intención multi-token que de otro modo requeriría listas combinatorias de palabras clave.
 
@@ -480,7 +480,7 @@ Reglas de autoría:
 - No hay envoltura automática de límite de palabra — los autores de patrones manejan `\b` por sí mismos
 - La regex inválida se omite silenciosamente en tiempo de ejecución (visible en tiempo de edición de configuración mediante fallos de pruebas)
 
-### Filtrado de Patrones Informativos
+### Filtrado de patrones informativos
 
 La sección `informationalPatterns` de `.agents/hooks/core/triggers.json` define frases que indican preguntas en lugar de comandos. Se verifican en una ventana de 60 caracteres alrededor de cada posible coincidencia de flujo:
 
@@ -495,7 +495,7 @@ Si la entrada coincide tanto con un activador de flujo como con un patrón infor
 - `"How do you build a TODO app?"` — `how do` en `*` bloquea la regex de intención de orchestrate
 - `"orchestrate 트리거 해주면 되나요?"` (bajo `language: ko`) — `트리거` en `ko` bloquea la palabra clave de orchestrate
 
-### Flujos Excluidos
+### Flujos excluidos
 
 Los siguientes flujos están excluidos de la auto-detección y deben invocarse con `/command` explícito:
 - `/scm`
@@ -506,9 +506,9 @@ Los siguientes flujos están excluidos de la auto-detección y deben invocarse c
 
 ---
 
-## Mecánica del Modo Persistente
+## Mecánica del modo persistente
 
-### Archivos de Estado
+### Archivos de estado
 
 Los flujos persistentes (orchestrate, ultrawork, work) crean archivos de estado en `.agents/state/`:
 
@@ -536,34 +536,34 @@ El flujo también puede terminar naturalmente cuando todos los pasos están comp
 
 ---
 
-## Secuencias Típicas de Flujos
+## Secuencias típicas de flujos
 
-### Funcionalidad Rápida
+### Funcionalidad rápida
 ```
 /plan → revisar salida → /exec-plan
 ```
 
-### Proyecto Multi-Dominio Complejo
+### Proyecto multi-dominio complejo
 ```
 /work → PM planifica → usuario confirma → agentes generados → QA revisa → corregir problemas → entregar
 ```
 
-### Entrega de Máxima Calidad
+### Entrega de máxima calidad
 ```
 /ultrawork → PLAN (4 pasos de revisión) → IMPL → VERIFY (3 pasos de revisión) → REFINE (5 pasos de revisión) → SHIP (4 pasos de revisión)
 ```
 
-### Investigación de Bug
+### Investigación de bug
 ```
 /debug → reproducir → causa raíz → corrección mínima → prueba de regresión → escaneo de patrones similares
 ```
 
-### Pipeline de Diseño a Implementación
+### Pipeline de diseño a implementación
 ```
 /brainstorm → documento de diseño → /plan → desglose de tareas → /orchestrate → implementación paralela → /review → /scm
 ```
 
-### Configuración de Nuevo Codebase
+### Configuración de nuevo codebase
 ```
 /deepinit → AGENTS.md + ARCHITECTURE.md + docs/
 ```

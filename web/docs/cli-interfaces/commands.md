@@ -11,7 +11,7 @@ The environment variable `OH_MY_AG_OUTPUT_FORMAT` can be set to `json` to force 
 
 ---
 
-## Setup & Installation
+## Setup & installation
 
 ### oma (install)
 
@@ -172,7 +172,7 @@ Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`
 The `/setup` workflow (invoked inside an agent session) provides interactive configuration of language, CLI installations, MCP connections, and agent-CLI mapping. This is different from `oma` (the installer): `/setup` configures an already-installed instance.
 ---
 
-## Monitoring & Metrics
+## Monitoring & metrics
 
 ### dashboard
 
@@ -354,7 +354,7 @@ oma retro 7d --json
 
 ---
 
-## Agent Management
+## Agent management
 
 ### agent:spawn
 
@@ -543,7 +543,7 @@ oma agent:review -m gemini -w ./apps/web --no-uncommitted
 
 ---
 
-## Memory Management
+## Memory management
 
 ### memory:init
 
@@ -574,7 +574,7 @@ oma memory:init --force
 
 ---
 
-## Integration & Utilities
+## Integration & utilities
 
 ### auth:status
 
@@ -999,7 +999,7 @@ Outputs the current CLI version and exits.
 
 ---
 
-## Environment Variables
+## Environment variables
 
 | Variable | Description | Used By |
 |:---------|:-----------|:--------|

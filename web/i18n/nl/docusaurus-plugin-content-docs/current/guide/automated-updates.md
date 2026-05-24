@@ -11,7 +11,7 @@ De oh-my-agent GitHub Action (`first-fluke/oma-update-action@v1`) werkt automati
 
 ---
 
-## Snelle Setup
+## Snelle setup
 
 ```yaml
 name: Update oh-my-agent
@@ -35,7 +35,7 @@ jobs:
 
 ---
 
-## Alle Action Invoer
+## Alle action invoer
 
 | Invoer | Type | Standaard | Beschrijving |
 |:------|:-----|:---------|:-----------|
@@ -47,7 +47,7 @@ jobs:
 | `commit-message` | string | `"chore(deps): update oh-my-agent skills"` | Aangepast commitbericht. |
 | `token` | string | `${{ github.token }}` | GitHub-token. Gebruik een PAT als de PR andere workflows moet triggeren. |
 
-## Alle Action Uitvoer
+## Alle action uitvoer
 
 | Uitvoer | Type | Beschrijving |
 |:-------|:-----|:-----------|
@@ -58,9 +58,9 @@ jobs:
 
 ---
 
-## Gedetailleerde Voorbeelden
+## Gedetailleerde voorbeelden
 
-### Voorbeeld 1: Standaard PR-Modus
+### Voorbeeld 1: standaard PR-Modus
 
 ```yaml
 - uses: first-fluke/oma-update-action@v1
@@ -70,7 +70,7 @@ jobs:
   run: echo "Bijgewerkt naar versie ${{ steps.update.outputs.version }}"
 ```
 
-### Voorbeeld 2: Directe Commit-Modus met PAT
+### Voorbeeld 2: directe commit-modus met PAT
 
 ```yaml
 - uses: first-fluke/oma-update-action@v1
@@ -80,7 +80,7 @@ jobs:
     base-branch: develop
 ```
 
-### Voorbeeld 3: Met Slack-Notificatie
+### Voorbeeld 3: met Slack-notificatie
 
 ```yaml
 - uses: first-fluke/oma-update-action@v1
@@ -95,7 +95,7 @@ jobs:
       {"text": "oh-my-agent bijgewerkt naar v${{ steps.update.outputs.version }}"}
 ```
 
-### Voorbeeld 4: Force-Modus
+### Voorbeeld 4: force-modus
 
 ```yaml
 - uses: first-fluke/oma-update-action@v1
@@ -108,7 +108,7 @@ jobs:
 
 ---
 
-## Hoe Het Onder de Motorkap Werkt
+## Hoe het onder de motorkap werkt
 
 1. **Setup Bun** — Installeert de Bun-runtime
 2. **Installeer oh-my-agent** — `bun install -g oh-my-agent`

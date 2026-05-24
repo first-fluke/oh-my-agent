@@ -5,7 +5,7 @@ description: "Guia completo para coordenar múltiplos agentes de domínio entre 
 
 # Guia: Projetos Multi-Agente
 
-## Quando Usar Coordenação Multi-Agente
+## Quando usar coordenação multi-agente
 
 Sua funcionalidade abrange múltiplos domínios — API backend + UI frontend + schema de banco de dados + cliente mobile + revisão QA. Um único agente não consegue lidar com o escopo completo, e você precisa que os domínios progridam em paralelo sem pisar nos arquivos uns dos outros.
 
@@ -20,11 +20,11 @@ Se sua tarefa cabe inteiramente em um domínio, use o agente específico diretam
 
 ---
 
-## A Sequência Completa: /plan até /review
+## A sequência completa: /plan até /review
 
 O workflow multi-agente recomendado segue um pipeline estrito de quatro etapas.
 
-### Step 1: /plan — Requisitos e Decomposição de Tarefas
+### Step 1: /plan — requisitos e decomposição de tarefas
 
 O workflow `/plan` executa inline (sem spawning de subagentes) e produz um plano estruturado.
 
@@ -43,7 +43,7 @@ O que acontece:
 
 A saída `.agents/results/plan-{sessionId}.json` é a entrada para ambos `/work` e `/orchestrate`.
 
-### Step 2: /work ou /orchestrate — Execução
+### Step 2: /work ou /orchestrate — execução
 
 Você tem dois caminhos de execução:
 
@@ -55,7 +55,7 @@ Você tem dois caminhos de execução:
 | **Modo persistente** | Sim — não pode ser terminado até completar | Sim — não pode ser terminado até completar |
 | **Melhor para** | Primeiro uso, projetos complexos precisando de supervisão | Execuções repetidas, tarefas bem definidas |
 
-#### /work — Pipeline Multi-Agente Interativo
+#### /work — pipeline multi-agente interativo
 
 ```
 /work
@@ -69,7 +69,7 @@ Você tem dois caminhos de execução:
 6. Executa revisão do agente QA em todos os entregáveis (OWASP Top 10, performance, acessibilidade, qualidade de código).
 7. Se QA encontrar problemas CRITICAL ou HIGH, re-spawna o agente responsável com achados do QA. Repete até 2 vezes por problema. Se o mesmo problema persiste, ativa o **Exploration Loop** — gera 2-3 abordagens alternativas, spawna o mesmo tipo de agente com diferentes prompts de hipótese em workspaces separados, QA pontua cada um, e o melhor resultado é adotado.
 
-#### /orchestrate — Execução Paralela Automatizada
+#### /orchestrate — execução paralela automatizada
 
 ```
 /orchestrate
@@ -83,7 +83,7 @@ Você tem dois caminhos de execução:
 6. Verifica cada agente completado via `verify.sh` — PASS (exit 0) aceita, FAIL (exit 1) re-spawna com contexto do erro (máximo 2 retries), e falha persistente aciona o Exploration Loop.
 7. Coleta todos os arquivos `result-{agent}.md` e compila relatório final.
 
-### Step 3: agent:spawn — Gerenciamento de Agentes via CLI
+### Step 3: agent:spawn — gerenciamento de agentes via CLI
 
 O comando `agent:spawn` é o mecanismo de baixo nível que workflows chamam internamente. Você também pode usá-lo diretamente:
 
@@ -108,7 +108,7 @@ oma agent:spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 **Auto-detecção de workspace** verifica configs de monorepo nesta ordem: pnpm-workspace.yaml, package.json workspaces, lerna.json, nx.json, turbo.json, mise.toml. Cada diretório de workspace é pontuado contra palavras-chave do tipo de agente (ex: "web", "frontend", "client" para o agente frontend). Se nenhuma config de monorepo é encontrada, recorre a candidatos codificados como `apps/web`, `apps/frontend`, `frontend/`, etc.
 
-### Step 4: /review — Verificação QA
+### Step 4: /review — verificação QA
 
 ```
 /review
@@ -128,7 +128,7 @@ Para escopos grandes, o workflow delega para o subagente QA. Com a opção `--fi
 
 ---
 
-## Estratégia de Session ID
+## Estratégia de session ID
 
 Cada sessão de orquestração recebe um identificador único no formato:
 
@@ -147,11 +147,11 @@ O session ID é usado para:
 
 ---
 
-## Atribuição de Workspace por Domínio
+## Atribuição de workspace por domínio
 
 Cada agente é spawnado em um diretório de workspace isolado para prevenir conflitos de arquivo.
 
-### Detecção Automática
+### Detecção automática
 
 Quando `-w` é omitido (ou definido como `.`), o CLI detecta o melhor workspace:
 
@@ -168,7 +168,7 @@ Quando `-w` é omitido (ou definido como `.`), o CLI detecta o melhor workspace:
 4. Correspondência exata de nome de diretório pontua 100, contém-palavra pontua 50, caminho-contém pontua 25.
 5. Diretório com maior pontuação vence.
 
-### Candidatos de Fallback
+### Candidatos de fallback
 
 Se nenhuma config de monorepo existe, o CLI verifica caminhos codificados em ordem:
 
@@ -178,7 +178,7 @@ Se nenhuma config de monorepo existe, o CLI verifica caminhos codificados em ord
 
 Se nada corresponde, o agente executa no diretório atual (`.`).
 
-### Sobrescrita Explícita
+### Sobrescrita explícita
 
 Sempre disponível:
 
@@ -188,7 +188,7 @@ oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 ---
 
-## Regra de Contrato Primeiro
+## Regra de contrato primeiro
 
 Contratos de API são o mecanismo de sincronização entre agentes. A regra de contrato primeiro significa:
 
@@ -211,23 +211,23 @@ Contratos de API são o mecanismo de sincronização entre agentes. A regra de c
 
 ---
 
-## Portões de Merge: 4 Condições
+## Portões de merge: 4 condições
 
 Antes de qualquer trabalho multi-agente ser considerado completo, quatro condições devem ser atendidas:
 
-### 1. Build Tem Sucesso
+### 1. Build tem sucesso
 
 Todo código compila e builda sem erros. Isso é verificado pelo script de verificação (`verify.sh`), que executa comandos de build apropriados ao tipo de agente.
 
-### 2. Testes Passam
+### 2. Testes passam
 
 Todos os testes existentes continuam passando, e novos testes cobrem a funcionalidade implementada. O agente QA revisa cobertura de testes como parte de sua Revisão de Qualidade de Código.
 
-### 3. Apenas Arquivos Planejados Modificados
+### 3. Apenas arquivos planejados modificados
 
 Agentes não devem modificar arquivos fora de seu escopo atribuído. A etapa de verificação verifica que apenas arquivos relacionados à tarefa do agente foram alterados. Isso previne agentes de fazer efeitos colaterais indesejados em código compartilhado.
 
-### 4. Revisão QA Aprovada
+### 4. Revisão QA aprovada
 
 Nenhum achado CRITICAL ou HIGH permanece da revisão do agente QA. Achados MEDIUM e LOW podem ser documentados para sprints futuros, mas bloqueadores devem ser resolvidos.
 
@@ -235,9 +235,9 @@ No workflow ultrawork, esses se traduzem em **portões de fase** explícitos (PL
 
 ---
 
-## Exemplos de Spawn
+## Exemplos de spawn
 
-### Spawn de Agente Único
+### Spawn de agente único
 
 ```bash
 # Spawnar agente backend com Gemini (padrão)
@@ -250,7 +250,7 @@ oma agent:spawn frontend "Build user dashboard with React" session-20260324-1430
 oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Execução Paralela via agent:parallel
+### Execução paralela via agent:parallel
 
 Usando arquivo YAML de tarefas:
 
@@ -296,39 +296,39 @@ oma agent:parallel tasks.yaml -m claude
 
 ---
 
-## Anti-Padrões a Evitar
+## Anti-padrões a evitar
 
-### 1. Pular o Plano
+### 1. Pular o plano
 
 Iniciar `/orchestrate` sem plan file. O workflow recusará prosseguir. Sempre execute `/plan` primeiro, ou use `/work` que tem planejamento integrado.
 
-### 2. Workspaces Sobrepostos
+### 2. Workspaces sobrepostos
 
 Atribuir dois agentes ao mesmo diretório de workspace. Isso causa conflitos de arquivo — as mudanças de um agente sobrescrevem as do outro. Sempre use diretórios de workspace separados.
 
-### 3. Contratos de API Ausentes
+### 3. Contratos de API ausentes
 
 Spawnar agentes backend e frontend sem definir contratos primeiro. Eles farão suposições incompatíveis sobre formatos de dados, nomes de campos e tratamento de erros.
 
-### 4. Ignorar Achados do QA
+### 4. Ignorar achados do QA
 
 Tratar revisão QA como opcional. Achados CRITICAL e HIGH representam bugs reais que aparecerão em produção. O workflow aplica isso fazendo loop até nenhum bloqueador permanecer.
 
-### 5. Coordenação Manual de Arquivos
+### 5. Coordenação manual de arquivos
 
 Tentar fazer merge manual das saídas de agentes em vez de deixar o pipeline de verificação e QA tratar a integração. O pipeline automatizado detecta problemas que revisão manual perde.
 
-### 6. Over-Paralelização
+### 6. Over-paralelização
 
 Executar tarefas P1 antes das tarefas P0 completarem. Tiers de prioridade existem porque tarefas P1 frequentemente dependem de saídas P0. Os workflows aplicam ordenação de tiers automaticamente.
 
-### 7. Pular Verificação
+### 7. Pular verificação
 
 Usar `agent:spawn` diretamente sem executar o script de verificação depois. A etapa de verificação detecta falhas de build, regressões de testes e violações de escopo que de outra forma se propagariam.
 
 ---
 
-## Validação de Integração Cross-Domínio
+## Validação de integração cross-domínio
 
 Após todos os agentes completarem suas tarefas individuais, a integração cross-domínio deve ser validada:
 
@@ -346,7 +346,7 @@ A Revisão de Alinhamento do agente QA (Step 6 no ultrawork, Step 6 no work) rea
 
 ---
 
-## Quando Está Pronto
+## Quando está pronto
 
 Um projeto multi-agente está completo quando:
 

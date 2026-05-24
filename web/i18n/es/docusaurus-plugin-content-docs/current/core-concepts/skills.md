@@ -9,7 +9,7 @@ Las habilidades son paquetes de conocimiento estructurado que otorgan a cada age
 
 ---
 
-## El Diseño de Dos Capas
+## El diseño de dos capas
 
 ### Capa 1: SKILL.md (~800 bytes, siempre cargada)
 
@@ -43,7 +43,7 @@ Esta carga bajo demanda se gobierna por la guía de carga de contexto (`.agents/
 
 ---
 
-## Ejemplo de Estructura de Archivos
+## Ejemplo de estructura de archivos
 
 ```
 .agents/skills/oma-frontend/
@@ -62,7 +62,7 @@ Esta carga bajo demanda se gobierna por la guía de carga de contexto (`.agents/
 
 ---
 
-## Tipos de Recursos por Habilidad
+## Tipos de recursos por habilidad
 
 | Tipo de Recurso | Patrón de Nombre | Propósito | Cuándo se Carga |
 |-----------------|------------------|-----------|-----------------|
@@ -78,11 +78,11 @@ Esta carga bajo demanda se gobierna por la guía de carga de contexto (`.agents/
 
 ---
 
-## Recursos Compartidos (_shared/)
+## Recursos compartidos (_shared/)
 
 Todos los agentes comparten fundamentos comunes desde `.agents/skills/_shared/`. Están organizados en tres categorías:
 
-### Recursos Core (`.agents/skills/_shared/core/`)
+### Recursos core (`.agents/skills/_shared/core/`)
 
 | Recurso | Propósito | Cuándo se Carga |
 |---------|-----------|-----------------|
@@ -100,7 +100,7 @@ Todos los agentes comparten fundamentos comunes desde `.agents/skills/_shared/`.
 | **`lessons-learned.md`** | Repositorio de aprendizajes de sesiones pasadas, auto-generado a partir de incumplimientos de Deuda de Clarificación y experimentos descartados. Organizado por sección de dominio. | Referenciado después de errores y al final de sesión |
 | **`api-contracts/`** | Directorio con plantilla de contrato API y contratos generados. `template.md` define el formato por endpoint (método, ruta, esquemas de solicitud/respuesta, autenticación, errores). | Cuando se planifica trabajo que cruza límites |
 
-### Recursos Runtime (`.agents/skills/_shared/runtime/`)
+### Recursos runtime (`.agents/skills/_shared/runtime/`)
 
 | Recurso | Propósito |
 |---------|-----------|
@@ -112,7 +112,7 @@ Todos los agentes comparten fundamentos comunes desde `.agents/skills/_shared/`.
 
 Los protocolos de ejecución específicos del proveedor se inyectan automáticamente por `oma agent:spawn` — los agentes no necesitan cargarlos manualmente.
 
-### Recursos Condicionales (`.agents/skills/_shared/conditional/`)
+### Recursos condicionales (`.agents/skills/_shared/conditional/`)
 
 Estos se cargan solo cuando se cumplen condiciones específicas durante la ejecución:
 
@@ -126,15 +126,15 @@ Impacto en presupuesto: aproximadamente 750 tokens en total si se cargan los 3. 
 
 ---
 
-## Cómo se Enrutan las Habilidades vía skill-routing.md
+## Cómo se enrutan las habilidades vía skill-routing.md
 
 El mapa de enrutamiento de habilidades define cómo se emparejan las tareas con los agentes:
 
-### Enrutamiento Simple (Dominio Único)
+### Enrutamiento simple (dominio único)
 
 Un prompt que contiene "Build a login form with Tailwind CSS" coincide con las palabras clave `UI`, `component`, `form`, `Tailwind`, y se enruta a **oma-frontend**.
 
-### Enrutamiento de Solicitudes Complejas
+### Enrutamiento de solicitudes complejas
 
 Las solicitudes multi-dominio siguen órdenes de ejecución establecidos:
 
@@ -147,7 +147,7 @@ Las solicitudes multi-dominio siguen órdenes de ejecución establecidos:
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> agentes relevantes -> oma-qa |
 | "Do everything automatically" | oma-orchestrator (internamente: oma-pm -> agentes -> oma-qa) |
 
-### Reglas de Dependencia entre Agentes
+### Reglas de dependencia entre agentes
 
 **Pueden ejecutarse en paralelo (sin dependencias):**
 - oma-backend + oma-frontend (cuando el contrato API está predefinido)
@@ -164,7 +164,7 @@ Las solicitudes multi-dominio siguen órdenes de ejecución establecidos:
 
 ---
 
-## Cálculo de Ahorro de Tokens
+## Cálculo de ahorro de tokens
 
 Consideremos una sesión de orquestación de 5 agentes (pm, backend, frontend, mobile, qa):
 
@@ -183,7 +183,7 @@ En modelos flash-tier (contexto de 128K), esta es la diferencia entre tener 108K
 
 ---
 
-## Carga de Recursos por Dificultad de Tarea
+## Carga de recursos por dificultad de tarea
 
 La guía de dificultad clasifica las tareas en tres niveles, que determinan cuánto de la Capa 2 se carga:
 
@@ -207,11 +207,11 @@ Carga: `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.md`
 
 ---
 
-## Mapas de Carga de Contexto por Tarea (Por Agente)
+## Mapas de carga de contexto por tarea (por agente)
 
 La guía de carga de contexto proporciona mapeos detallados tipo-tarea-a-recurso. Estos son los mapeos clave:
 
-### Agente Backend
+### Agente backend
 
 | Tipo de Tarea | Recursos Requeridos |
 |---------------|---------------------|
@@ -221,7 +221,7 @@ La guía de carga de contexto proporciona mapeos detallados tipo-tarea-a-recurso
 | Optimización de rendimiento | examples.md (ejemplo N+1) |
 | Modificación de código existente | examples.md + Serena MCP |
 
-### Agente Frontend
+### Agente frontend
 
 | Tipo de Tarea | Recursos Requeridos |
 |---------------|---------------------|
@@ -231,7 +231,7 @@ La guía de carga de contexto proporciona mapeos detallados tipo-tarea-a-recurso
 | Estilos | tailwind-rules.md |
 | Layout de página | snippets.md (grid) + examples.md |
 
-### Agente Design
+### Agente design
 
 | Tipo de Tarea | Recursos Requeridos |
 |---------------|---------------------|
@@ -254,7 +254,7 @@ La guía de carga de contexto proporciona mapeos detallados tipo-tarea-a-recurso
 
 ---
 
-## Composición de Prompts del Orquestador
+## Composición de prompts del orquestador
 
 Cuando el orquestador compone prompts para subagentes, incluye solo recursos relevantes para la tarea:
 

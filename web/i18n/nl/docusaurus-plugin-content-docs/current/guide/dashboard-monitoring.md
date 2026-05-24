@@ -5,7 +5,7 @@ description: Uitgebreide dashboardgids met terminal- en webdashboards, databronn
 
 # Gids: Dashboard Monitoring
 
-## Twee Dashboard-Commando's
+## Twee dashboard-commando's
 
 | Commando | Interface | URL | Technologie |
 |:---------|:---------|:----|:-----------|
@@ -14,7 +14,7 @@ description: Uitgebreide dashboardgids met terminal- en webdashboards, databronn
 
 Beide dashboards bewaken dezelfde databron: `.serena/memories/`-directory.
 
-### Terminal Dashboard
+### Terminal dashboard
 
 ```bash
 oma dashboard
@@ -39,7 +39,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 ---
 
-## Aanbevolen 3-Terminal Layout
+## Aanbevolen 3-Terminal layout
 
 ```
 ┌────────────────────────────────┬────────────────────────────────┐
@@ -68,21 +68,21 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 ## Probleemoplossing
 
-### Signaal 1: Agent Toont "draaiend" maar Geen Beurtvoortgang
+### Signaal 1: agent toont "draaiend" maar geen beurtvoortgang
 **Acties:** Controleer logbestand: `cat /tmp/subagent-{session-id}-{agent-id}.log`. Controleer of proces draait: `oma agent:status`. Herspawn indien gecrasht.
 
-### Signaal 2: Agent Toont "gecrasht"
+### Signaal 2: agent toont "gecrasht"
 **Acties:** Controleer logbestand, verifieer CLI-installatie met `oma doctor`, controleer authenticatie met `oma auth:status`, herspawn.
 
-### Signaal 3: Dashboard Toont "Geen agenten gedetecteerd"
+### Signaal 3: dashboard toont "geen agenten gedetecteerd"
 **Acties:** Verifieer memories-directory: `ls -la .serena/memories/`, controleer of workflow nog in planningsfase is.
 
-### Signaal 4: Webdashboard Toont "Verbinding verbroken"
+### Signaal 4: webdashboard toont "verbinding verbroken"
 **Acties:** Controleer of dashboardproces draait, probeer andere poort: `DASHBOARD_PORT=8080 oma dashboard:web`. Auto-reconnect met exponential backoff (1s initieel, max 10s).
 
 ---
 
-## Pre-Merge Monitoringchecklist
+## Pre-merge monitoringchecklist
 
 - [ ] Alle agenten tonen "voltooid"
 - [ ] Geen agenten tonen "mislukt"
@@ -93,9 +93,9 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 ---
 
-## Technische Details
+## Technische details
 
-### Terminal Dashboard
+### Terminal dashboard
 - **Bestandsbewaking:** chokidar met `awaitWriteFinish` (200ms stabiliteitsdrempel)
 - **Rendering:** Wist en hertekent hele terminal bij elke wijziging. Gebruikt `picocolors` voor ANSI-kleuren en Unicode box-drawing
 - **Afsluiten:** Vangt `SIGINT` en `SIGTERM`, sluit watcher netjes af

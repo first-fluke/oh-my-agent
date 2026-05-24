@@ -74,22 +74,22 @@ Mở web server trên cổng 9847 (có thể cấu hình qua biến môi trườ
 
 ## Khắc phục sự cố
 
-### Tín hiệu 1: Agent hiện "running" nhưng không có tiến trình lượt
+### Tín hiệu 1: agent hiện "running" nhưng không có tiến trình lượt
 
 **Hành động:**
 1. Kiểm tra file log agent: `cat /tmp/subagent-{session-id}-{agent-id}.log`
 2. Kiểm tra tiến trình: `oma agent:status {session-id} {agent-id}`
 3. Nếu tiến trình không chạy, agent đã crash. Re-spawn với ngữ cảnh lỗi.
 
-### Tín hiệu 2: Agent hiện "crashed"
+### Tín hiệu 2: agent hiện "crashed"
 
 **Hành động:** Kiểm tra log, xác minh cài đặt CLI (`oma doctor`), kiểm tra xác thực (`oma auth:status`), re-spawn agent.
 
-### Tín hiệu 3: Dashboard hiện "No agents detected yet"
+### Tín hiệu 3: dashboard hiện "no agents detected yet"
 
 **Hành động:** Xác minh thư mục memories, kiểm tra workflow có đang ở giai đoạn lập kế hoạch không, đảm bảo dashboard theo dõi đúng thư mục.
 
-### Tín hiệu 4: Dashboard web hiện "Disconnected"
+### Tín hiệu 4: dashboard web hiện "disconnected"
 
 **Hành động:** Kiểm tra tiến trình dashboard, thử cổng khác, kiểm tra cổng có sẵn. Dashboard web tự kết nối lại với backoff mũ (bắt đầu 1s, tối đa 10s).
 

@@ -5,7 +5,7 @@ description: Guía completa para coordinar múltiples agentes de dominio en fron
 
 # Guía: Proyectos Multi-Agente
 
-## Cuándo Usar Coordinación Multi-Agente
+## Cuándo usar coordinación multi-agente
 
 Tu funcionalidad abarca múltiples dominios — API backend + UI frontend + esquema de base de datos + cliente móvil + revisión QA. Un solo agente no puede manejar todo el alcance, y necesitas que los dominios progresen en paralelo sin pisar los archivos del otro.
 
@@ -20,11 +20,11 @@ Si tu tarea cabe completamente dentro de un dominio, usa el agente específico d
 
 ---
 
-## La Secuencia Completa: /plan a /review
+## La secuencia completa: /plan a /review
 
 El flujo multi-agente recomendado sigue una pipeline estricta de cuatro pasos.
 
-### Paso 1: /plan — Requisitos y Descomposición de Tareas
+### Paso 1: /plan — requisitos y descomposición de tareas
 
 El flujo `/plan` se ejecuta inline (sin generación de subagentes) y produce un plan estructurado.
 
@@ -43,7 +43,7 @@ Qué sucede:
 
 El output `.agents/results/plan-{sessionId}.json` es la entrada tanto para `/work` como para `/orchestrate`.
 
-### Paso 2: /work o /orchestrate — Ejecución
+### Paso 2: /work o /orchestrate — ejecución
 
 Tienes dos caminos de ejecución:
 
@@ -55,7 +55,7 @@ Tienes dos caminos de ejecución:
 | **Modo persistente** | Sí — no puede terminarse hasta completar | Sí — no puede terminarse hasta completar |
 | **Mejor para** | Primer uso, proyectos complejos que necesitan supervisión | Ejecuciones repetidas, tareas bien definidas |
 
-#### /work — Pipeline Multi-Agente Interactiva
+#### /work — pipeline multi-agente interactiva
 
 ```
 /work
@@ -69,7 +69,7 @@ Tienes dos caminos de ejecución:
 6. Ejecuta revisión del agente QA en todos los entregables (OWASP Top 10, rendimiento, accesibilidad, calidad de código).
 7. Si QA encuentra problemas CRITICAL o HIGH, regenera el agente responsable con los hallazgos de QA. Repite hasta 2 veces por problema. Si el mismo problema persiste, activa el **Bucle de Exploración**.
 
-#### /orchestrate — Ejecución Paralela Automatizada
+#### /orchestrate — ejecución paralela automatizada
 
 ```
 /orchestrate
@@ -83,7 +83,7 @@ Tienes dos caminos de ejecución:
 6. Verifica cada agente completado vía `verify.sh` — PASS (exit 0) acepta, FAIL (exit 1) regenera con contexto de error (máximo 2 reintentos), y fallo persistente activa el Bucle de Exploración.
 7. Recopila todos los archivos `result-{agent}.md` y compila un informe final.
 
-### Paso 3: agent:spawn — Gestión de Agentes a Nivel CLI
+### Paso 3: agent:spawn — gestión de agentes a nivel CLI
 
 El comando `agent:spawn` es el mecanismo de bajo nivel que los flujos llaman internamente. También puedes usarlo directamente:
 
@@ -91,7 +91,7 @@ El comando `agent:spawn` es el mecanismo de bajo nivel que los flujos llaman int
 oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-### Paso 4: /review — Verificación QA
+### Paso 4: /review — verificación QA
 
 ```
 /review
@@ -101,7 +101,7 @@ El flujo de revisión ejecuta una pipeline QA completa: verificaciones de seguri
 
 ---
 
-## Estrategia de ID de Sesión
+## Estrategia de ID de sesión
 
 Cada sesión de orquestación obtiene un identificador único en el formato `session-YYYYMMDD-HHMMSS`.
 
@@ -109,7 +109,7 @@ El ID de sesión se usa para nombrar archivos de memoria, rastrear procesos de a
 
 ---
 
-## Asignación de Workspace por Dominio
+## Asignación de workspace por dominio
 
 Cada agente se genera en un directorio de workspace aislado para prevenir conflictos de archivos. La asignación sigue auto-detección desde configuración de monorepo, candidatos de respaldo, o sobrescritura explícita con `-w`.
 
@@ -121,7 +121,7 @@ Cada agente se genera en un directorio de workspace aislado para prevenir confli
 
 ---
 
-## Regla de Contratos Primero
+## Regla de contratos primero
 
 Los contratos de API son el mecanismo de sincronización entre agentes. La regla de contratos primero significa:
 
@@ -135,25 +135,25 @@ Los contratos de API son el mecanismo de sincronización entre agentes. La regla
 
 ---
 
-## Puertas de Merge: 4 Condiciones
+## Puertas de merge: 4 condiciones
 
 Antes de que cualquier trabajo multi-agente se considere completo, cuatro condiciones deben cumplirse:
 
-### 1. Build Exitoso
+### 1. Build exitoso
 Todo el código compila y construye sin errores.
 
-### 2. Pruebas Pasan
+### 2. Pruebas pasan
 Todas las pruebas existentes continúan pasando, y nuevas pruebas cubren la funcionalidad implementada.
 
-### 3. Solo Archivos Planificados Modificados
+### 3. Solo archivos planificados modificados
 Los agentes no deben modificar archivos fuera de su alcance asignado.
 
-### 4. Revisión QA Limpia
+### 4. Revisión QA limpia
 No quedan hallazgos CRITICAL o HIGH de la revisión del agente QA.
 
 ---
 
-## Anti-Patrones a Evitar
+## Anti-patrones a evitar
 
 1. **Saltarse el Plan** — Iniciar `/orchestrate` sin plan file.
 2. **Workspaces Superpuestos** — Asignar dos agentes al mismo directorio de workspace.
@@ -165,13 +165,13 @@ No quedan hallazgos CRITICAL o HIGH de la revisión del agente QA.
 
 ---
 
-## Validación de Integración Cross-Dominio
+## Validación de integración cross-dominio
 
 Después de que todos los agentes completen sus tareas individuales, se debe validar la integración cross-dominio: alineación de contratos API, consistencia de tipos, flujo de autenticación, manejo de errores y alineación del esquema de base de datos.
 
 ---
 
-## Cuándo Está Terminado
+## Cuándo está terminado
 
 Un proyecto multi-agente está completo cuando:
 

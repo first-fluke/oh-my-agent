@@ -5,7 +5,7 @@ description: Grondige debugginggids met de gestructureerde 5-stappen debuglus, e
 
 # Gids: Bugfixing
 
-## Wanneer de Debug Workflow Gebruiken
+## Wanneer de debug workflow gebruiken
 
 Gebruik `/debug` (of zeg "fix bug", "fix error", "debug" in natuurlijke taal) wanneer je een specifieke bug hebt om te diagnosticeren en te fixen. De workflow biedt een gestructureerde, reproduceerbare benadering van debugging die de veelvoorkomende valkuil vermijdt van symptomen fixen in plaats van oorzaken.
 
@@ -15,7 +15,7 @@ De debug-workflow ondersteunt alle leveranciers (Gemini, Claude, Codex, Qwen). S
 
 ## Bugrapportsjabloon
 
-### Vereiste Velden
+### Vereiste velden
 
 | Veld | Beschrijving | Voorbeeld |
 |:-----|:-----------|:--------|
@@ -24,7 +24,7 @@ De debug-workflow ondersteunt alle leveranciers (Gemini, Claude, Codex, Qwen). S
 | **Verwacht gedrag** | Wat er zou moeten gebeuren | Gebruiker wordt verwijderd uit de lijst. |
 | **Werkelijk gedrag** | Wat er daadwerkelijk gebeurt | Pagina crasht met een wit scherm. |
 
-### Optionele Velden (Sterk Aanbevolen)
+### Optionele velden (sterk aanbevolen)
 
 | Veld | Beschrijving |
 |:-----|:-----------|
@@ -41,7 +41,7 @@ Hoe meer context je vooraf geeft, hoe minder heen-en-weer vragen de debug-workfl
 
 ## Ernsttriage (P0-P3)
 
-### P0 — Kritiek (Onmiddellijke Respons)
+### P0 — kritiek (onmiddellijke respons)
 
 **Definitie:** Productie is down, data gaat verloren of raakt beschadigd, beveiligingsinbreuk is actief.
 
@@ -54,7 +54,7 @@ Hoe meer context je vooraf geeft, hoe minder heen-en-weer vragen de debug-workfl
 
 **Debugbenadering:** Sla het volledige sjabloon over. Geef de foutmelding en eventuele stacktrace. De workflow start direct bij Stap 2 (Reproduceren).
 
-### P1 — Hoog (Dezelfde Sessie)
+### P1 — hoog (dezelfde sessie)
 
 **Definitie:** Een kernfunctie is kapot voor een aanzienlijk aantal gebruikers. Workaround kan bestaan maar is niet acceptabel op lange termijn.
 
@@ -62,7 +62,7 @@ Hoe meer context je vooraf geeft, hoe minder heen-en-weer vragen de debug-workfl
 
 **Debugbenadering:** Volledige 5-stappenlus. QA-review aanbevolen na de fix.
 
-### P2 — Gemiddeld (Deze Sprint)
+### P2 — gemiddeld (deze sprint)
 
 **Definitie:** Een functie werkt maar met verminderd gedrag. Beinvloedt bruikbaarheid maar niet functionaliteit.
 
@@ -70,7 +70,7 @@ Hoe meer context je vooraf geeft, hoe minder heen-en-weer vragen de debug-workfl
 
 **Debugbenadering:** Volledige 5-stappenlus. Opnemen in QA-regressiesuite.
 
-### P3 — Laag (Backlog)
+### P3 — laag (backlog)
 
 **Definitie:** Cosmetisch probleem, edge case of klein ongemak.
 
@@ -80,30 +80,30 @@ Hoe meer context je vooraf geeft, hoe minder heen-en-weer vragen de debug-workfl
 
 ---
 
-## De 5-Stappen Debuglus in Detail
+## De 5-Stappen debuglus in detail
 
-### Stap 1: Foutinformatie Verzamelen
+### Stap 1: foutinformatie verzamelen
 Foutmelding, stacktrace, reproductiestappen, verwacht vs werkelijk gedrag.
 
-### Stap 2: Bug Reproduceren
+### Stap 2: bug reproduceren
 **Tools:** `search_for_pattern`, `find_symbol` om de exacte locatie in de codebase te vinden.
 
-### Stap 3: Oorzaak Diagnosticeren
+### Stap 3: oorzaak diagnosticeren
 **Tools:** `find_referencing_symbols` om het uitvoeringspad terug te traceren. Veelvoorkomende patronen: null/undefined-toegang, race conditions, ontbrekende foutafhandeling, verkeerde datatypes, verouderde state, ontbrekende validatie.
 
 De kernvraag: diagnoseer de **oorzaak**, niet het symptoom.
 
-### Stap 4: Minimale Fix Voorstellen
+### Stap 4: minimale fix voorstellen
 Presenteert oorzaak, voorgestelde fix en uitleg. **Blokkeert tot gebruiker bevestigt.** Minimale fix principe: verander de minste regels mogelijk.
 
-### Stap 5: Fix Toepassen en Regressietest Schrijven
+### Stap 5: fix toepassen en regressietest schrijven
 1. Implementeer de goedgekeurde fix
 2. Schrijf een regressietest die faalt zonder de fix en slaagt met de fix
 
-### Stap 6: Scannen op Vergelijkbare Patronen
+### Stap 6: scannen op vergelijkbare patronen
 Scant de hele codebase op hetzelfde patroon. Spawnt een `debug-investigator` subagent wanneer: scope > 10 bestanden, meerdere domeinen, of diepgaande afhankelijkheidstracing nodig.
 
-### Stap 7: Bug Documenteren
+### Stap 7: bug documenteren
 Schrijft geheugenbestand met symptoom, oorzaak, fix, gewijzigde bestanden, regressietestlocatie.
 
 ---
@@ -149,7 +149,7 @@ De workflow vraagt indien nodig om aanvullende details.
 
 ## Escalatiesignalen
 
-### Signaal 1: Dezelfde Fix Twee Keer Geprobeerd
+### Signaal 1: dezelfde fix twee keer geprobeerd
 
 Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, is het probleem dieper dan de eerste diagnose. Dit activeert de **Exploratieslus** in workflows die dit ondersteunen (ultrawork, orchestrate, work):
 
@@ -157,13 +157,13 @@ Als de workflow een fix voorstelt, toepast en dezelfde fout opnieuw optreedt, is
 - Test elke hypothese in een aparte werkruimte (git stash per poging).
 - Scoor resultaten en neem de beste benadering over.
 
-### Signaal 2: Multi-Domein Oorzaak
+### Signaal 2: multi-domein oorzaak
 
 De fout in de frontend wordt veroorzaakt door een backend-wijziging die wordt veroorzaakt door een databaseschemamigratie. Wanneer de oorzaak domeingrenzen overschrijdt, escaleer naar `/work` of `/orchestrate` om de relevante domeinagenten te betrekken.
 
 **Voorbeeld:** Frontend toont "undefined" voor gebruikersnaam. Backend retourneert null voor `user.display_name`. Databasemigratie heeft de kolom toegevoegd, maar bestaande rijen hebben NULL-waarden. Fix vereist: databasemigratie (backfill), backend null-afhandeling en frontend fallback-weergave.
 
-### Signaal 3: Ontbrekende Reproductieomgeving
+### Signaal 3: ontbrekende reproductieomgeving
 
 De bug treedt alleen op in productie en is lokaal niet te reproduceren. Signalen zijn onder andere:
 - Omgevingsspecifieke configuratieverschillen.
@@ -172,7 +172,7 @@ De bug treedt alleen op in productie en is lokaal niet te reproduceren. Signalen
 
 **Actie:** Verzamel productielogs, vraag toegang tot productiemonitoring en overweeg instrumentatie/logging toe te voegen voordat je een fix probeert.
 
-### Signaal 4: Testinfrastructuur Kapot
+### Signaal 4: testinfrastructuur kapot
 
 De regressietest kan niet worden geschreven omdat de testinfrastructuur kapot, afwezig of ontoereikend is.
 
@@ -180,7 +180,7 @@ De regressietest kan niet worden geschreven omdat de testinfrastructuur kapot, a
 
 ---
 
-## Post-Fix Validatiechecklist
+## Post-fix validatiechecklist
 
 - [ ] Regressietest faalt zonder de fix
 - [ ] Regressietest slaagt met de fix

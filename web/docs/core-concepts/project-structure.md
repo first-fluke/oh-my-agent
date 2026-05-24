@@ -9,7 +9,7 @@ After installing oh-my-agent, your project gains three directory trees: `.agents
 
 ---
 
-## Complete Directory Tree
+## Complete directory tree
 
 ```
 your-project/
@@ -270,7 +270,7 @@ your-project/
 
 ---
 
-## .agents/: The Source of Truth
+## .agents/: the Source of Truth
 
 This is the core directory. Everything agents need lives here. It is the only directory that matters for agent behavior. All other directories are derived from it.
 
@@ -342,7 +342,7 @@ MCP server configuration including:
 
 ---
 
-## .claude/: IDE Integration
+## .claude/: IDE integration
 
 This directory connects oh-my-agent to Claude Code and other IDEs.
 
@@ -384,7 +384,7 @@ Subagent definitions formatted for Claude Code's Agent tool. These reference the
 
 ---
 
-## .serena/memories/: Runtime State
+## .serena/memories/: runtime state
 
 Where agents write their progress during orchestration sessions. This directory is watched by dashboards for real-time updates.
 
@@ -405,7 +405,7 @@ Memory file paths and tool names are configurable in `.agents/mcp.json` via `mem
 
 ---
 
-## oh-my-agent Source Repository Structure
+## oh-my-agent source repository structure
 
 If you are working on oh-my-agent itself (not just using it), the repository is a monorepo:
 

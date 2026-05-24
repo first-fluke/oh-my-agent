@@ -51,7 +51,7 @@ oma doctor [--json] [--output <format>]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--json` | Sortie au format JSON |
 | `--output <format>` | Format de sortie (`text` ou `json`) |
@@ -84,7 +84,7 @@ oma update [-f | --force] [--ci]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `-f, --force` | Écraser les fichiers de configuration personnalisés (`oma-config.yaml`, `mcp.json`, répertoires `stack/`) |
 | `--ci` | Mode CI non interactif (pas d'invites, sortie texte brut) |
@@ -175,7 +175,7 @@ oma stats [--json] [--output <format>] [--reset]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--json` | Sortie au format JSON |
 | `--output <format>` | Format de sortie (`text` ou `json`) |
@@ -219,7 +219,7 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--json` | Sortie au format JSON |
 | `--output <format>` | Format de sortie (`text` ou `json`) |
@@ -279,12 +279,14 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Répertoire de travail de l'agent. Détecté automatiquement depuis la config monorepo si omis. |
 
 **Ordre de résolution du fournisseur :** flag `--model` > `model_preset (per-agent overrides via `agents:`)` dans oma-config.yaml > `default_cli` > `active_vendor` dans cli-config.yaml > `gemini`.
+
+
 
 **Résolution du prompt :** Si l'argument prompt est un chemin vers un fichier existant, le contenu du fichier est utilisé comme prompt. Sinon, l'argument est utilisé comme texte en ligne. Les protocoles d'exécution spécifiques au fournisseur sont ajoutés automatiquement.
 
@@ -320,7 +322,7 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 
 **Options :**
 
-| Flag | Description | Défaut |
+| Option | Description | Défaut |
 |:-----|:-----------|:-------|
 | `-r, --root <path>` | Chemin racine pour les vérifications de mémoire | Répertoire courant |
 
@@ -360,7 +362,7 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `-m, --model <vendor>` | Fournisseur CLI à utiliser pour tous les agents |
 | `-i, --inline` | Mode en ligne : spécifier les tâches au format `agent:task[:workspace]` |
@@ -406,7 +408,7 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `codex`, `claude`, `qwen`. Par défaut, le fournisseur résolu depuis la config. |
 | `-p, --prompt <prompt>` | Prompt de revue personnalisé. Si omis, un prompt de revue de code par défaut est utilisé. |
@@ -455,7 +457,7 @@ oma memory:init [--json] [--output <format>] [--force]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--json` | Sortie au format JSON |
 | `--output <format>` | Format de sortie (`text` ou `json`) |
@@ -486,7 +488,7 @@ oma auth:status [--json] [--output <format>]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--json` | Sortie au format JSON |
 | `--output <format>` | Format de sortie (`text` ou `json`) |
@@ -542,7 +544,7 @@ oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 
 **Options :**
 
-| Flag | Description | Défaut |
+| Option | Description | Défaut |
 |:-----|:-----------|:-------|
 | `-w, --workspace <path>` | Chemin du workspace à vérifier | Répertoire courant |
 | `--json` | Sortie au format JSON | |
@@ -572,7 +574,7 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--dry-run` | Afficher ce qui serait nettoyé sans effectuer de modifications |
 | `-y, --yes` | Ignorer les invites de confirmation et tout nettoyer |
@@ -612,7 +614,7 @@ oma viz [--json] [--output <format>]
 
 **Options :**
 
-| Flag | Description |
+| Option | Description |
 |:-----|:-----------|
 | `--json` | Sortie au format JSON |
 | `--output <format>` | Format de sortie (`text` ou `json`) |

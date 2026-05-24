@@ -13,7 +13,7 @@ description: "Guia completo de instalação do oh-my-agent — três métodos de
 
 ---
 
-## Método 1: Instalação em uma Linha (Recomendado)
+## Método 1: instalação em uma linha (recomendado)
 
 ```bash
 # macOS / Linux
@@ -37,7 +37,7 @@ Tempo típico de instalação: menos de 60 segundos.
 
 ---
 
-## Método 2: Instalação Manual via bunx
+## Método 2: instalação manual via bunx
 
 ```bash
 bunx oh-my-agent@latest
@@ -62,7 +62,7 @@ Todos os presets incluem oma-pm (planejamento), oma-qa (revisão), oma-debug (co
 
 Os recursos compartilhados (`_shared/`) são sempre instalados independentemente do preset. Isso inclui roteamento principal, carregamento de contexto, estrutura de prompts, detecção de fornecedor, protocolos de execução e protocolo de memória.
 
-### O que é Criado
+### O que é criado
 
 Após a instalação, seu projeto conterá:
 
@@ -102,7 +102,7 @@ Após a instalação, seu projeto conterá:
 
 ---
 
-## Método 3: Instalação Global
+## Método 3: instalação global
 
 Para uso em nível de CLI (dashboards, execução de agentes, diagnósticos), instale oh-my-agent globalmente:
 
@@ -146,7 +146,7 @@ oma star                # Dar estrela no repositório
 
 ---
 
-## Instalação de Ferramentas CLI de IA
+## Instalação de ferramentas CLI de IA
 
 Você precisa de pelo menos uma ferramenta CLI de IA instalada. oh-my-agent suporta fornecedores, e você pode misturá-los — usando diferentes CLIs para diferentes agentes via mapeamento agente-CLI.
 
@@ -234,7 +234,7 @@ agents:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
-### Referência de Campos
+### Referência de campos
 
 | Campo | Tipo | Obrigatório | Descrição |
 |-------|------|-------------|-----------|
@@ -246,7 +246,7 @@ agents:
 | `models` | map | Não | Slugs de modelo definidos pelo usuário, antes em `models.yaml`. |
 | `custom_presets` | map | Não | Presets definidos pelo usuário. Suporta `extends:` para herança parcial de um preset built-in. |
 
-### Resolução de Vendor
+### Resolução de vendor
 
 Ao spawnar um agente, o vendor CLI é resolvido a partir do `model_preset` ativo (e de quaisquer overrides em `agents:`). Veja [Per-Agent Models](../guide/per-agent-models.md) para detalhes completos.
 
@@ -291,7 +291,7 @@ oma update
 
 Isso atualiza o CLI global do oh-my-agent para a versão mais recente.
 
-### Atualização de Habilidades do Projeto
+### Atualização de habilidades do projeto
 
 Habilidades e workflows dentro de um projeto podem ser atualizados via GitHub Action (`action/`) para atualizações automatizadas, ou manualmente reexecutando o instalador:
 
@@ -303,7 +303,7 @@ O instalador detecta instalações existentes e oferece atualizar preservando se
 
 ---
 
-## Próximos Passos
+## Próximos passos
 
 Abra seu projeto na sua IDE de IA e comece a usar oh-my-agent. As habilidades são detectadas automaticamente. Experimente:
 

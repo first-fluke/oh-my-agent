@@ -50,7 +50,7 @@ The default command (no subcommand) launches the interactive installer.
 
 The installer presents these presets:
 
-| Preset | Skills Included |
+| Préréglage | Compétences incluses |
 |:-------|:---------------|
 | **All** | Every available skill |
 | **Fullstack** | Frontend + Backend + PM + QA |
@@ -226,7 +226,7 @@ oma doctor --json
 
 The doctor command checks:
 
-| Check | What It Verifies |
+| Vérification | Ce qu'elle vérifie |
 |:------|:----------------|
 | **CLI installations** | agy, claude, codex, qwen — version and availability |
 | **Authentication** | API key or OAuth status for each CLI |

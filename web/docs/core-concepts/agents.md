@@ -19,7 +19,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-## Agent Categories
+## Agent categories
 
 | Category | Agents | Responsibility |
 |----------|--------|---------------|
@@ -42,7 +42,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-## Detailed Agent Reference
+## Detailed agent reference
 
 ### oma-brainstorm
 
@@ -545,7 +545,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-## Charter Preflight (CHARTER_CHECK)
+## Charter preflight (CHARTER_CHECK)
 
 Before writing any code, every implementation agent must output a CHARTER_CHECK block:
 
@@ -573,7 +573,7 @@ In subagent mode (CLI-spawned), agents cannot ask users directly. LOW proceeds, 
 
 ---
 
-## Two-Layer Skill Loading
+## Two-layer skill loading
 
 Each agent's knowledge is split across two layers:
 
@@ -596,7 +596,7 @@ Additional resources are loaded during execution as needed:
 
 ---
 
-## Scoped Execution
+## Scoped execution
 
 Agents operate under strict domain boundaries:
 
@@ -609,7 +609,7 @@ When a task is discovered that belongs to a different domain during execution, t
 
 ---
 
-## Workspace Strategy
+## Workspace strategy
 
 For multi-agent projects, separate workspaces prevent file conflicts:
 
@@ -628,7 +628,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ---
 
-## Orchestration Flow
+## Orchestration flow
 
 When running a multi-agent workflow (`/orchestrate` or `/work`):
 
@@ -643,7 +643,7 @@ When running a multi-agent workflow (`/orchestrate` or `/work`):
 
 ---
 
-## Agent Definitions
+## Agent definitions
 
 Agents are defined in two locations:
 
@@ -669,7 +669,7 @@ These generated files are refreshed by `oma link`, `oma install`, and `oma updat
 
 ---
 
-## Runtime State (Serena Memory)
+## Runtime state (Serena memory)
 
 During orchestration sessions, agents coordinate through shared memory files in `.serena/memories/` (configurable via `mcp.json`):
 

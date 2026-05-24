@@ -33,58 +33,58 @@ oh-my-agent résout cela par la spécialisation :
 
 ### Idéation, architecture et planification
 
-| Agent | Role | Key Capabilities |
+| Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-brainstorm** | Design-first ideation | Explores user intent, proposes 2-3 approaches with trade-off analysis, produces design documents before any code is written. 6-phase workflow: Context, Questions, Approaches, Design, Documentation, Transition to `/plan`. |
-| **oma-architecture** | System architecture specialist | Module/service/ownership boundaries, tradeoff analysis, stakeholder synthesis. Methodologies: diagnostic routing, design-twice comparison, ATAM-style risk analysis, CBAM-style prioritization, ADR-style decision records. Cost-aware by default. |
-| **oma-pm** | Product manager | Decomposes requirements into prioritized tasks with dependencies. Defines API contracts. Outputs `.agents/results/plan-{sessionId}.json` and `task-board.md`. Supports ISO 21500 concepts, ISO 31000 risk framing, ISO 38500 governance. |
+| **oma-brainstorm** | Idéation axée sur le design | Explore l'intention utilisateur, propose 2 à 3 approches avec analyse des compromis, produit des documents de conception avant toute écriture de code. Workflow en 6 phases : Contexte, Questions, Approches, Design, Documentation, Transition vers `/plan`. |
+| **oma-architecture** | Spécialiste de l'architecture système | Frontières module/service/propriété, analyse des compromis, synthèse des parties prenantes. Méthodologies : routage diagnostique, comparaison design-twice, analyse de risque façon ATAM, priorisation façon CBAM, enregistrements de décisions façon ADR. Conscient des coûts par défaut. |
+| **oma-pm** | Chef de produit | Décompose les exigences en tâches priorisées avec dépendances. Définit les contrats d'API. Produit `.agents/results/plan-{sessionId}.json` et `task-board.md`. Prend en charge les concepts ISO 21500, le cadrage des risques ISO 31000 et la gouvernance ISO 38500. |
 
 ### Implémentation
 
-| Agent | Role | Tech Stack & Resources |
+| Agent | Rôle | Stack technique et ressources |
 |-------|------|----------------------|
-| **oma-frontend** | UI/UX specialist | React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui, FSD-lite architecture. Libraries: luxon (dates), ahooks (hooks), es-toolkit (utils), Jotai (client state), TanStack Query (server state), @tanstack/react-form + Zod (forms), better-auth (auth), nuqs (URL state). Resources: `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `component-template.tsx`, `snippets.md`, `error-playbook.md`, `checklist.md`, `examples/`. |
-| **oma-backend** | API & server specialist | Clean architecture (Router-Service-Repository-Models). Stack-agnostic — detects Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET from project manifests. JWT + bcrypt for auth. Resources: `execution-protocol.md`, `orm-reference.md`, `examples.md`, `checklist.md`, `error-playbook.md`. Supports `/stack-set` for generating language-specific `stack/` references. |
-| **oma-mobile** | Cross-platform mobile | Flutter, Dart, Riverpod/Bloc for state management, Dio with interceptors for API calls, GoRouter for navigation. Clean architecture: domain-data-presentation. Material Design 3 (Android) + iOS HIG. 60fps target. Resources: `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `checklist.md`, `error-playbook.md`. |
-| **oma-db** | Database architecture | SQL, NoSQL, and vector database modeling. Schema design (3NF default), normalization, indexing, transactions, capacity planning, backup strategy. Supports ISO 27001/27002/22301-aware design. Resources: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`. |
+| **oma-frontend** | Spécialiste UI/UX | React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui, architecture FSD-lite. Bibliothèques : luxon (dates), ahooks (hooks), es-toolkit (utilitaires), Jotai (état client), TanStack Query (état serveur), @tanstack/react-form + Zod (formulaires), better-auth (authentification), nuqs (état d'URL). Ressources : `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `component-template.tsx`, `snippets.md`, `error-playbook.md`, `checklist.md`, `examples/`. |
+| **oma-backend** | Spécialiste API et serveur | Architecture propre (Router-Service-Repository-Models). Agnostique au stack, détecte Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET depuis les manifestes du projet. JWT + bcrypt pour l'authentification. Ressources : `execution-protocol.md`, `orm-reference.md`, `examples.md`, `checklist.md`, `error-playbook.md`. Prend en charge `/stack-set` pour générer des références `stack/` spécifiques au langage. |
+| **oma-mobile** | Mobile multiplateforme | Flutter, Dart, Riverpod/Bloc pour la gestion d'état, Dio avec intercepteurs pour les appels API, GoRouter pour la navigation. Architecture propre : domain-data-presentation. Material Design 3 (Android) + iOS HIG. Objectif 60 fps. Ressources : `execution-protocol.md`, `tech-stack.md`, `snippets.md`, `screen-template.dart`, `checklist.md`, `error-playbook.md`. |
+| **oma-db** | Architecture de bases de données | Modélisation SQL, NoSQL et bases de données vectorielles. Conception de schéma (3NF par défaut), normalisation, indexation, transactions, planification de capacité, stratégie de sauvegarde. Prend en charge la conception conforme ISO 27001/27002/22301. Ressources : `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`. |
 
 ### Design
 
-| Agent | Role | Key Capabilities |
+| Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-design** | Design system specialist | Creates DESIGN.md with tokens, typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2 compliance. 7-phase workflow: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Enforces anti-patterns (no "AI slop"). Optional Stitch MCP integration. Resources: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/` directory with typography, color, spatial, motion, responsive, component, accessibility, and shader guides. |
+| **oma-design** | Spécialiste des systèmes de design | Crée DESIGN.md avec tokens, typographie, systèmes de couleurs, motion design (motion/react, GSAP, Three.js), mises en page responsive-first, conformité WCAG 2.2. Workflow en 7 phases : Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Applique les anti-patterns (pas d'« AI slop »). Intégration Stitch MCP optionnelle. Ressources : `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, ainsi qu'un répertoire `reference/` avec des guides sur la typographie, la couleur, le spatial, le motion, le responsive, les composants, l'accessibilité et les shaders. |
 
 ### Infrastructure, DevOps et observabilité
 
-| Agent | Role | Key Capabilities |
+| Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), cost optimization. Supports ISO/IEC 42001 AI controls, ISO 22301 continuity, ISO/IEC/IEEE 42010 architecture documentation. Resources: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
-| **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Resources: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
-| **oma-observability** | Intent-based observability router | MELT+P signal coverage (metrics/logs/traces/profiles/cost/audit/privacy), transport tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector topology, sampling), W3C Trace Context propagation, SLO management and burn-rate alerts, incident forensics (6-dimension localization), meta-observability (self-health, clock sync, cardinality, retention). CNCF-first; Fluentd deprecated (use Fluent Bit or OTel Collector). |
+| **oma-tf-infra** | Infrastructure-as-code | Terraform multi-cloud (AWS, GCP, Azure, Oracle Cloud). Authentification OIDC en priorité, IAM au moindre privilège, policy-as-code (OPA/Sentinel), optimisation des coûts. Prend en charge les contrôles IA ISO/IEC 42001, la continuité ISO 22301, la documentation d'architecture ISO/IEC/IEEE 42010. Ressources : `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
+| **oma-dev-workflow** | Automatisation des tâches monorepo | Task runner mise, pipelines CI/CD, migrations de base de données, coordination des releases, git hooks, validation pre-commit. Ressources : `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | Routeur d'observabilité basé sur l'intention | Couverture des signaux MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), réglage du transport (UDP/MTU, OTLP gRPC vs HTTP, topologie du Collector, sampling), propagation W3C Trace Context, gestion des SLO et alertes burn-rate, investigation d'incidents (localisation en 6 dimensions), méta-observabilité (santé propre, synchro d'horloge, cardinalité, rétention). CNCF-first ; Fluentd déprécié (utiliser Fluent Bit ou OTel Collector). |
 
 ### Qualité et débogage
 
-| Agent | Role | Key Capabilities |
+| Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-qa** | Quality assurance | Security audit (OWASP Top 10), performance analysis, accessibility (WCAG 2.1 AA), code quality review. Severity: CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation code. Supports ISO/IEC 25010 quality characteristics and ISO/IEC 29119 test alignment. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
-| **oma-debug** | Bug diagnosis and fixing | Reproduce-first methodology. Root cause analysis, minimal fixes, mandatory regression tests, similar pattern scanning. Uses Serena MCP for symbol tracing. Resources: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
+| **oma-qa** | Assurance qualité | Audit de sécurité (OWASP Top 10), analyse de performance, accessibilité (WCAG 2.1 AA), revue de qualité du code. Sévérités : CRITICAL/HIGH/MEDIUM/LOW avec fichier:ligne et code de remédiation. Prend en charge les caractéristiques qualité ISO/IEC 25010 et l'alignement des tests ISO/IEC 29119. Ressources : `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
+| **oma-debug** | Diagnostic et correction de bugs | Méthodologie « reproduire d'abord ». Analyse de cause profonde, corrections minimales, tests de régression obligatoires, scan de motifs similaires. Utilise Serena MCP pour le traçage de symboles. Ressources : `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
 ### Localisation, coordination et Git
 
-| Agent | Role | Key Capabilities |
+| Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-translator** | Context-aware translation | 4-stage translation method: Analyze Source, Extract Meaning, Reconstruct in Target Language, Verify. Preserves tone, register, and domain terminology. Anti-AI pattern detection. Supports batch translation (i18n files). Optional 7-stage refined mode for publication quality. Resources: `translation-rubric.md`, `anti-ai-patterns.md`. |
-| **oma-orchestrator** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-scm** | Conventional commits | Analyzes changes, determines type/scope, splits by feature when appropriate, generates commit messages in Conventional Commits format. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
+| **oma-translator** | Traduction contextuelle | Méthode de traduction en 4 étapes : Analyser la source, Extraire le sens, Reconstruire dans la langue cible, Vérifier. Préserve le ton, le registre et la terminologie de domaine. Détection d'anti-patterns IA. Prend en charge la traduction par lots (fichiers i18n). Mode affiné en 7 étapes optionnel pour la qualité de publication. Ressources : `translation-rubric.md`, `anti-ai-patterns.md`. |
+| **oma-orchestrator** | Coordinateur multi-agents automatisé | Lance des sous-agents CLI en parallèle, coordonne via la mémoire MCP, surveille la progression, exécute des boucles de vérification. Configurable : MAX_PARALLEL (3 par défaut), MAX_RETRIES (2 par défaut), POLL_INTERVAL (30 s par défaut). Inclut une boucle de revue inter-agents et la surveillance de la Dette de clarification. Ressources : `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-scm** | Conventional commits | Analyse les modifications, détermine le type et le périmètre, découpe par fonctionnalité au besoin, génère des messages de commit au format Conventional Commits. Co-Author : `First Fluke <our.first.fluke@gmail.com>`. |
 
 ### Recherche, rétrospective et traitement de documents
 
-| Agent | Role | Key Capabilities |
+| Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-search** | Intent-based search router | Routes queries to Context7 (docs), native web search, `gh`/`glab` (code), Serena (local). Domain trust scoring on all non-local results. Fail-forward routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Cross-tool work retrospective | Analyzes conversation histories from Claude, Codex, Qwen, and Cursor. Resolves natural-language date/window input, groups by tool+session, extracts themes, renders daily/period summaries for standups, weekly retros, and work logs. |
-| **oma-hwp** | HWP/HWPX/HWPML → Markdown | Korean word-processor document conversion via `bunx kordoc@latest`. Preserves headings, tables (incl. nested), footnotes, hyperlinks, images. Strips Hancom Private Use Area characters via `flatten-tables.ts` post-processor. |
-| **oma-pdf** | PDF → Markdown | PDF document conversion via `uvx opendataloader-pdf`. Preserves headings, tables, lists, images; OCR hybrid mode for scanned PDFs; output normalized with `uvx mdformat`. |
+| **oma-search** | Routeur de recherche basé sur l'intention | Achemine les requêtes vers Context7 (documents), la recherche web native, `gh`/`glab` (code), Serena (local). Scoring de confiance de domaine sur tous les résultats non locaux. Routage fail-forward (docs→web→fetch). Flags : `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
+| **oma-recap** | Rétrospective de travail inter-outils | Analyse les historiques de conversation depuis Claude, Codex, Qwen et Cursor. Résout les saisies de date ou de fenêtre en langage naturel, regroupe par outil et session, extrait les thèmes, rend des résumés quotidiens ou périodiques pour les standups, rétros hebdomadaires et journaux de travail. |
+| **oma-hwp** | HWP/HWPX/HWPML → Markdown | Conversion de documents Hangul (traitement de texte coréen) via `bunx kordoc@latest`. Préserve les titres, tableaux (y compris imbriqués), notes de bas de page, hyperliens, images. Supprime les caractères de la zone Private Use Area Hancom via le post-processeur `flatten-tables.ts`. |
+| **oma-pdf** | PDF → Markdown | Conversion de documents PDF via `uvx opendataloader-pdf`. Préserve les titres, tableaux, listes, images ; mode hybride OCR pour les PDF scannés ; sortie normalisée avec `uvx mdformat`. |
 
 ---
 
@@ -109,15 +109,15 @@ Tout ce dont oh-my-agent a besoin réside dans le répertoire `.agents/` :
 ```
 .agents/
 ├── config/                 # oma-config.yaml
-├── skills/                 # 22 skill directories (21 agents + _shared)
-│   ├── _shared/            # Core resources used by all agents
-│   └── oma-{agent}/        # Per-agent SKILL.md + resources/
-├── workflows/              # 16 workflow definitions
-├── agents/                 # 9 subagent definitions
-├── results/plan-{sessionId}.json               # Generated plan output
-├── state/                  # Active workflow state files
-├── results/                # Agent result files
-└── mcp.json                # MCP server configuration
+├── skills/                 # 22 répertoires de compétences (21 agents + _shared)
+│   ├── _shared/            # Ressources centrales utilisées par tous les agents
+│   └── oma-{agent}/        # SKILL.md + resources/ par agent
+├── workflows/              # 16 définitions de workflows
+├── agents/                 # 9 définitions de sous-agents
+├── results/plan-{sessionId}.json               # Sortie du plan généré
+├── state/                  # Fichiers d'état des workflows actifs
+├── results/                # Fichiers de résultats des agents
+└── mcp.json                # Configuration du serveur MCP
 ```
 
 Le répertoire `.claude/` n'existe que comme couche d'intégration IDE -- il contient des symlinks pointant vers `.agents/`, ainsi que des hooks pour la détection de mots-clés et la barre de statut HUD. Le répertoire `.serena/memories/` contient l'état d'exécution pendant les sessions d'orchestration.
@@ -133,14 +133,14 @@ Cette architecture signifie que votre configuration d'agents est :
 
 oh-my-agent fonctionne avec tout IDE ou CLI propulsé par l'IA qui supporte le chargement de compétences/prompts :
 
-| Tool | Integration Method | Parallel Agents |
+| Outil | Méthode d'intégration | Agents parallèles |
 |------|-------------------|----------------|
-| **Claude Code** | Native skills + Agent tool | Task tool for true parallelism |
-| **Gemini CLI** | Skills auto-loaded from `.agents/skills/` | `oma agent:spawn` |
-| **Codex CLI** | Skills auto-loaded | Model-mediated parallel requests |
-| **Antigravity IDE** | Skills auto-loaded | `oma agent:spawn` |
-| **Cursor** | Skills via `.cursor/` integration | Manual spawning |
-| **OpenCode** | Skills loading | Manual spawning |
+| **Claude Code** | Compétences natives + outil Agent | Outil Task pour un parallélisme réel |
+| **Gemini CLI** | Compétences chargées automatiquement depuis `.agents/skills/` | `oma agent:spawn` |
+| **Codex CLI** | Compétences chargées automatiquement | Requêtes parallèles arbitrées par le modèle |
+| **Antigravity IDE** | Compétences chargées automatiquement | `oma agent:spawn` |
+| **Cursor** | Compétences via l'intégration `.cursor/` | Lancement manuel |
+| **OpenCode** | Chargement des compétences | Lancement manuel |
 
 Le lancement d'agents s'adapte automatiquement à chaque fournisseur via le protocole de détection du fournisseur, qui vérifie les marqueurs spécifiques au fournisseur (ex. : l'outil `Agent` pour Claude Code, `apply_patch` pour Codex CLI).
 
@@ -150,7 +150,7 @@ Le lancement d'agents s'adapte automatiquement à chaque fournisseur via le prot
 
 Lorsque vous envoyez un prompt, oh-my-agent détermine quel agent le traite grâce à la carte de routage des compétences (`.agents/skills/_shared/core/skill-routing.md`) :
 
-| Domain Keywords | Routed To |
+| Mots-clés du domaine | Acheminé vers |
 |----------------|-----------|
 | API, endpoint, REST, GraphQL, database, migration | oma-backend |
 | auth, JWT, login, register, password | oma-backend |
@@ -164,7 +164,7 @@ Lorsque vous envoyez un prompt, oh-my-agent détermine quel agent le traite grâ
 | plan, breakdown, task, sprint | oma-pm |
 | automatic, parallel, orchestrate | oma-orchestrator |
 
-Pour les requêtes complexes qui couvrent plusieurs domaines, le routage suit des ordres d'exécution établis. Par exemple, « Create a fullstack app » est routé vers : oma-pm (plan) puis oma-backend + oma-frontend (implémentation parallèle) puis oma-qa (revue).
+Pour les requêtes complexes qui couvrent plusieurs domaines, le routage suit des ordres d'exécution établis. Par exemple, « Create a fullstack app » est acheminé vers : oma-pm (planification), puis oma-backend + oma-frontend (implémentation parallèle), puis oma-qa (revue).
 
 ---
 

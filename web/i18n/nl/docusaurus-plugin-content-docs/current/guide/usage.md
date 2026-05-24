@@ -16,7 +16,7 @@ Dat is de volledige workflow. Geen speciale syntaxis nodig voor enkel-domein tak
 
 ---
 
-## Voorbeeld 1: Eenvoudige Enkele Taak
+## Voorbeeld 1: eenvoudige enkele taak
 
 **Je typt:**
 ```
@@ -36,7 +36,7 @@ Create a login form component with email and password fields, client-side valida
 
 ---
 
-## Voorbeeld 2: Multi-Domein Project
+## Voorbeeld 2: multi-domein project
 
 **Je typt:**
 ```
@@ -58,7 +58,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 
 ---
 
-## Voorbeeld 3: Bugfixing
+## Voorbeeld 3: bugfixing
 
 **Je typt:**
 ```
@@ -77,7 +77,7 @@ There's a bug — clicking the save button shows "Cannot read property 'map' of 
 
 ---
 
-## Voorbeeld 4: Designsysteem
+## Voorbeeld 4: designsysteem
 
 **Je typt:**
 ```
@@ -95,7 +95,7 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ---
 
-## Voorbeeld 5: CLI Parallelle Uitvoering
+## Voorbeeld 5: CLI parallelle uitvoering
 
 ```bash
 # Enkele agent
@@ -116,7 +116,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 
 ---
 
-## Voorbeeld 6: Ultrawork — Maximale Kwaliteit
+## Voorbeeld 6: ultrawork — maximale kwaliteit
 
 **Je typt:**
 ```
@@ -133,12 +133,12 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 
 ---
 
-## Alle Workflowcommando's
+## Alle workflowcommando's
 
 | Commando | Type | Wat Het Doet | Wanneer Gebruiken |
 |----------|------|-------------|-------------------|
 | `/orchestrate` | Persistent | Geautomatiseerde parallelle agentuitvoering met monitoring | Grote projecten met maximale parallelisme |
-| `/work` | Persistent | Stap-voor-stap multi-domeincoordinatie met gebruikersgoedkeuring | Functies die meerdere agenten beslaan |
+| `/work` | Persistent | Stap-voor-stap multi-domeincoördinatie met gebruikersgoedkeuring | Functies die meerdere agenten beslaan |
 | `/ultrawork` | Persistent | 5-fasen, 17-stappen kwaliteitsworkflow met 11 reviewcheckpoints | Maximale kwaliteitslevering |
 | `/plan` | Niet-persistent | PM-gedreven taakopsplitsing, API-contracten en bijgehouden planartefacten in `docs/plans/work/` (sequentieel `NNN-name.md`, Status-veld voor lifecycle) | Voor complex multi-agent werk; complexe functies met bijgehouden voortgang en beslissingslogs |
 | `/brainstorm` | Niet-persistent | Design-first ideevorming met 2-3 benaderingsvoorstellen | Voor het vastleggen van een implementatiebenadering |
@@ -152,7 +152,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 
 ---
 
-## Auto-Detectievoorbeelden
+## Auto-detectievoorbeelden
 
 | Je Typt | Gedetecteerde Workflow | Taal |
 |---------|----------------------|------|
@@ -170,7 +170,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 
 ---
 
-## Alle 14 Skills — Snelreferentie
+## Alle 14 skills — snelreferentie
 
 | Skill | Geschikt Voor | Primaire Uitvoer |
 |-------|-------------|------------------|

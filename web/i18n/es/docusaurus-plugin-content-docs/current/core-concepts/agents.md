@@ -9,7 +9,7 @@ Los agentes en oh-my-agent son roles de ingeniería especializados. Cada agente 
 
 ---
 
-## Categorías de Agentes
+## Categorías de agentes
 
 | Categoría | Agentes | Responsabilidad |
 |-----------|---------|-----------------|
@@ -32,7 +32,7 @@ Los agentes en oh-my-agent son roles de ingeniería especializados. Cada agente 
 
 ---
 
-## Referencia Detallada de Agentes
+## Referencia detallada de agentes
 
 ### oma-brainstorm
 
@@ -533,7 +533,7 @@ Los agentes en oh-my-agent son roles de ingeniería especializados. Cada agente 
 
 ---
 
-## Verificación Previa de Charter (CHARTER_CHECK)
+## Verificación previa de charter (CHARTER_CHECK)
 
 Antes de escribir cualquier código, cada agente de implementación debe producir un bloque CHARTER_CHECK:
 
@@ -561,7 +561,7 @@ En modo subagente (generado por CLI), los agentes no pueden preguntar a los usua
 
 ---
 
-## Carga de Habilidades en Dos Capas
+## Carga de habilidades en dos capas
 
 El conocimiento de cada agente se divide en dos capas:
 
@@ -584,7 +584,7 @@ Recursos adicionales se cargan durante la ejecución según sea necesario:
 
 ---
 
-## Ejecución Acotada
+## Ejecución acotada
 
 Los agentes operan bajo límites estrictos de dominio:
 
@@ -597,7 +597,7 @@ Cuando se descubre una tarea que pertenece a un dominio diferente durante la eje
 
 ---
 
-## Estrategia de Workspaces
+## Estrategia de workspaces
 
 Para proyectos multiagente, los workspaces separados previenen conflictos de archivos:
 
@@ -616,7 +616,7 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 
 ---
 
-## Flujo de Orquestación
+## Flujo de orquestación
 
 Al ejecutar un flujo multiagente (`/orchestrate` o `/work`):
 
@@ -631,7 +631,7 @@ Al ejecutar un flujo multiagente (`/orchestrate` o `/work`):
 
 ---
 
-## Definiciones de Agentes
+## Definiciones de agentes
 
 Los agentes se definen en dos ubicaciones:
 
@@ -650,7 +650,7 @@ Estos archivos definen la identidad del agente, referencia del protocolo de ejec
 
 ---
 
-## Estado en Tiempo de Ejecución (Memoria Serena)
+## Estado en tiempo de ejecución (memoria Serena)
 
 Durante las sesiones de orquestación, los agentes se coordinan a través de archivos de memoria compartida en `.serena/memories/` (configurable vía `mcp.json`):
 

@@ -3,11 +3,11 @@ title: "Guía: Instalación Global"
 description: Instala oh-my-agent en tu HOME de usuario (~/.agents/) en lugar de por proyecto, de modo que las mismas skills, workflows y reglas se apliquen en todos los proyectos. Cubre oma install --global, oma update --global, oma uninstall --global, la sobrescritura con OMA_HOME, la detección de doble instalación vía oma doctor y advertencias de plataforma (rechazo de sudo, CI, WSL, salvaguarda cwd=HOME).
 ---
 
-## ¿Qué es una instalación global?
+## ¿qué es una instalación global?
 
 Por defecto, `oma install` limita todo al directorio del proyecto actual: el SSOT vive en `<cwd>/.agents/` y las configuraciones de proveedor se escriben en `<cwd>/.claude/`, `<cwd>/.codex/`, etc. Una **instalación global** (`oma install --global`) instala oh-my-agent en tu HOME de usuario, de modo que las mismas skills, workflows y reglas estén disponibles en cada proyecto que abras sin repetir el paso de instalación. El SSOT vive en `~/.agents/` y las configuraciones de proveedor en `~/.claude/`, `~/.codex/`, etc.
 
-## Comparación entre Proyecto y Global
+## Comparación entre proyecto y global
 
 | Aspecto | Proyecto (`oma install`) | Global (`oma install --global`) |
 |--------|------------------------|--------------------------------|
@@ -20,7 +20,7 @@ Por defecto, `oma install` limita todo al directorio del proyecto actual: el SSO
 
 Ambos modos pueden coexistir. `oma doctor` informa de ambas instalaciones si están presentes y señala cualquier desviación entre ellas.
 
-## Configuración Inicial
+## Configuración inicial
 
 La primera vez que ejecutas `oma install --global` en una máquina, la instalación muestra una nota explicativa antes de continuar:
 

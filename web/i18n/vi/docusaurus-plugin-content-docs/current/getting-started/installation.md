@@ -13,7 +13,7 @@ description: Hướng dẫn cài đặt đầy đủ cho oh-my-agent — ba phư
 
 ---
 
-## Phương pháp 1: Cài đặt một dòng lệnh (Khuyến nghị)
+## Phương pháp 1: cài đặt một dòng lệnh (khuyến nghị)
 
 ```bash
 # macOS / Linux
@@ -37,7 +37,7 @@ Thời gian cài đặt thông thường: dưới 60 giây.
 
 ---
 
-## Phương pháp 2: Cài đặt thủ công qua bunx
+## Phương pháp 2: cài đặt thủ công qua bunx
 
 ```bash
 bunx oh-my-agent@latest
@@ -102,7 +102,7 @@ Sau khi cài đặt, dự án của bạn sẽ chứa:
 
 ---
 
-## Phương pháp 3: Cài đặt toàn cục
+## Phương pháp 3: cài đặt toàn cục
 
 Để sử dụng ở mức CLI (dashboard, spawn agent, chẩn đoán), cài đặt oh-my-agent toàn cục:
 

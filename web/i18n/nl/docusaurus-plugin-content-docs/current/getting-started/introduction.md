@@ -11,27 +11,27 @@ Het volledige systeem bevindt zich in een draagbare `.agents/`-directory binnen 
 
 ---
 
-## Het Multi-Agent Paradigma
+## Het multi-agent paradigma
 
 Traditionele AI-coderingsassistenten opereren als generalisten. Ze behandelen frontend, backend, database, beveiliging en infrastructuur met dezelfde promptcontext en hetzelfde niveau van expertise. Dit leidt tot:
 
 - **Contextverdunning** — kennis laden voor elk domein verspilt het contextvenster
 - **Inconsistente kwaliteit** — een generalist kan in geen enkel domein een specialist evenaren
-- **Geen coordinatie** — complexe functies die meerdere domeinen beslaan worden sequentieel afgehandeld
+- **Geen coördinatie** — complexe functies die meerdere domeinen beslaan worden sequentieel afgehandeld
 
 oh-my-agent lost dit op met specialisatie:
 
 1. **Elke agent kent een domein grondig.** De frontend-agent kent React/Next.js, shadcn/ui, TailwindCSS v4, FSD-lite architectuur. De backend-agent kent het Repository-Service-Router patroon, geparametriseerde queries, JWT-authenticatie. Ze overlappen niet.
 
-2. **Agenten draaien parallel.** Terwijl de backend-agent je API bouwt, maakt de frontend-agent al de UI. De orchestrator coordineert via gedeeld geheugen.
+2. **Agenten draaien parallel.** Terwijl de backend-agent je API bouwt, maakt de frontend-agent al de UI. De orchestrator coördineert via gedeeld geheugen.
 
 3. **Kwaliteit is ingebouwd.** Elke agent heeft een domeinspecifieke checklist en foutoplossingshandleiding. Charter preflight vangt scope creep op voordat code wordt geschreven. QA-review is een eersteklas stap, geen bijzaak.
 
 ---
 
-## Alle 21 Agenten
+## Alle 21 agenten
 
-### Ideevorming, Architectuur en Planning
+### Ideevorming, architectuur en planning
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
@@ -54,30 +54,30 @@ oh-my-agent lost dit op met specialisatie:
 |-------|-----|---------------------------|
 | **oma-design** | Designsysteem-specialist | Maakt DESIGN.md met tokens, typografie, kleursystemen, bewegingsontwerp (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2-compliance. 7-fasen workflow: Setup, Extractie, Verbetering, Voorstel, Generatie, Audit, Overdracht. Handhaaft anti-patronen (geen "AI slop"). Optionele Stitch MCP-integratie. Bronnen: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/`-directory met typografie, kleur, spatieel, beweging, responsief, component, toegankelijkheid en shader-gidsen. |
 
-### Infrastructuur, DevOps en Observability
+### Infrastructuur, DevOps en observability
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
 | **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), kostenoptimalisatie. Ondersteunt ISO/IEC 42001 AI-controls, ISO 22301-continuiteit, ISO/IEC/IEEE 42010-architectuurdocumentatie. Bronnen: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
-| **oma-dev-workflow** | Monorepo-taakautomatisering | mise task runner, CI/CD-pipelines, databasemigraties, releasecoordinatie, git hooks, pre-commit validatie. Bronnen: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
+| **oma-dev-workflow** | Monorepo-taakautomatisering | mise task runner, CI/CD-pipelines, databasemigraties, releasecoördinatie, git hooks, pre-commit validatie. Bronnen: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
 | **oma-observability** | Intent-gebaseerde observability-router | MELT+P-signaaldekking (metrics/logs/traces/profiles/cost/audit/privacy), transport-tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector-topologie, sampling), W3C Trace Context-propagatie, SLO-beheer en burn-rate alerts, incident-forensisch onderzoek (6-dimensionale lokalisatie), meta-observability (self-health, kloksync, kardinaliteit, retentie). CNCF-first; Fluentd verouderd (gebruik Fluent Bit of OTel Collector). |
 
-### Kwaliteit en Debugging
+### Kwaliteit en debugging
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
 | **oma-qa** | Kwaliteitsborging | Beveiligingsaudit (OWASP Top 10), prestatieanalyse, toegankelijkheid (WCAG 2.1 AA), codekwaliteitsreview. Ernst: CRITICAL/HIGH/MEDIUM/LOW met bestand:regel en remediatiecode. Ondersteunt ISO/IEC 25010-kwaliteitskenmerken en ISO/IEC 29119-testuitlijning. Bronnen: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `self-check.md`, `error-playbook.md`. |
 | **oma-debug** | Bugdiagnose en -oplossing | Reproduceer-eerst methodologie. Oorzaakanalyse, minimale fixes, verplichte regressietests, scanning van vergelijkbare patronen. Gebruikt Serena MCP voor symbooltracing. Bronnen: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
 
-### Lokalisatie, Coordinatie en Git
+### Lokalisatie, coördinatie en git
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
 | **oma-translator** | Contextbewuste vertaling | 4-stappen vertaalmethode: Bron Analyseren, Betekenis Extraheren, Reconstrueren in Doeltaal, Verifieren. Behoudt toon, register en domein-terminologie. Anti-AI-patroondetectie. Ondersteunt batchvertaling (i18n-bestanden). Optionele 7-stappen verfijnde modus voor publicatiekwaliteit. Bronnen: `translation-rubric.md`, `anti-ai-patterns.md`. |
-| **oma-orchestrator** | Geautomatiseerde multi-agent coordinator | Spawnt CLI-subagenten parallel, coordineert via MCP-geheugen, bewaakt voortgang, voert verificatielussen uit. Configureerbaar: MAX_PARALLEL (standaard 3), MAX_RETRIES (standaard 2), POLL_INTERVAL (standaard 30s). Bevat agent-naar-agent reviewlus en Clarification Debt-monitoring. Bronnen: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-orchestrator** | Geautomatiseerde multi-agent coördinator | Spawnt CLI-subagenten parallel, coördineert via MCP-geheugen, bewaakt voortgang, voert verificatielussen uit. Configureerbaar: MAX_PARALLEL (standaard 3), MAX_RETRIES (standaard 2), POLL_INTERVAL (standaard 30s). Bevat agent-naar-agent reviewlus en Clarification Debt-monitoring. Bronnen: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventionele commits | Analyseert wijzigingen, bepaalt type/scope, splitst per functie indien nodig, genereert commitberichten in Conventional Commits-formaat. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
-### Zoeken, Retrospectief en Documentverwerking
+### Zoeken, retrospectief en documentverwerking
 
 | Agent | Rol | Belangrijkste Mogelijkheden |
 |-------|-----|---------------------------|
@@ -88,7 +88,7 @@ oh-my-agent lost dit op met specialisatie:
 
 ---
 
-## Progressieve Onthulling Model
+## Progressieve onthulling model
 
 oh-my-agent gebruikt een tweelaagse skill-architectuur om uitputting van het contextvenster te voorkomen:
 
@@ -102,7 +102,7 @@ Dit ontwerp bespaart ongeveer 75% aan tokens vergeleken met alles vooraf laden. 
 
 ---
 
-## .agents/ — De Single Source of Truth (SSOT)
+## .agents/ — de single Source of Truth (SSOT)
 
 Alles wat oh-my-agent nodig heeft bevindt zich in de `.agents/`-directory:
 
@@ -146,7 +146,7 @@ Agent-spawning past zich automatisch aan elke leverancier aan via het leverancie
 
 ---
 
-## Skill Routeringssysteem
+## Skill routeringssysteem
 
 Wanneer je een prompt verstuurt, bepaalt oh-my-agent welke agent deze afhandelt met behulp van de skill-routeringskaart (`.agents/skills/_shared/core/skill-routing.md`):
 
@@ -168,7 +168,7 @@ Voor complexe verzoeken die meerdere domeinen beslaan, volgt de routering vastge
 
 ---
 
-## Wat Volgt
+## Wat volgt
 
 - **[Installatie](./installation.md)** — Drie installatiemethoden, presets, CLI-setup en verificatie
 - **[Agenten](/docs/core-concepts/agents)** — Diepgaand overzicht van alle 21 agenten en charter preflight

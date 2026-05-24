@@ -9,7 +9,7 @@ La ejecucion de skill individual es la via rapida — un agente, un dominio, una
 
 ---
 
-## Cuando Usar Skill Individual
+## Cuando usar skill individual
 
 Usa esto cuando tu tarea cumpla TODOS estos criterios:
 
@@ -35,7 +35,7 @@ Usa esto cuando tu tarea cumpla TODOS estos criterios:
 
 ---
 
-## Lista de Verificacion Previa
+## Lista de verificacion previa
 
 Antes de escribir el prompt, responde estas cuatro preguntas (se mapean a los cuatro elementos de la [Estructura de Prompt](/docs/core-concepts/skills)):
 
@@ -53,7 +53,7 @@ Si falta algun elemento en tu prompt, el agente:
 
 ---
 
-## Plantilla de Prompt
+## Plantilla de prompt
 
 ```text
 Build <specific artifact> using <stack/framework>.
@@ -65,7 +65,7 @@ Acceptance criteria:
 Add tests for: <critical test cases>.
 ```
 
-### Desglose de la Plantilla
+### Desglose de la plantilla
 
 | Parte | Proposito | Ejemplo |
 |-------|-----------|---------|
@@ -77,9 +77,9 @@ Add tests for: <critical test cases>.
 
 ---
 
-## Ejemplos Reales
+## Ejemplos reales
 
-### Frontend: Formulario de Login
+### Frontend: formulario de login
 
 ```text
 Create a login form component in React + TypeScript + Tailwind CSS.
@@ -126,7 +126,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 ---
 
-### Backend: Endpoint REST API
+### Backend: endpoint REST API
 
 ```text
 Add a paginated GET /api/tasks endpoint that returns tasks for the authenticated user.
@@ -165,7 +165,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 ---
 
-### Mobile: Pantalla de Configuracion
+### Mobile: pantalla de configuracion
 
 ```text
 Build a settings screen in Flutter with profile editing (name, email, avatar), notification preferences (toggle switches), and a logout button.
@@ -205,7 +205,7 @@ Add tests for: profile save, logout flow, offline state.
 
 ---
 
-### Base de Datos: Diseno de Esquema
+### Base de datos: diseno de esquema
 
 ```text
 Design a database schema for a multi-tenant SaaS project management tool. Entities: Organization, Project, Task, User, TeamMembership.
@@ -250,11 +250,11 @@ Add deliverables: data standards table, glossary, migration script.
 
 ---
 
-## Lista de Verificacion de Puerta de Calidad
+## Lista de verificacion de puerta de calidad
 
 Despues de que el agente entregue su salida, verifica estos elementos antes de aceptar:
 
-### Verificaciones Universales (Todos los Agentes)
+### Verificaciones universales (todos los agentes)
 
 - [ ] **El comportamiento coincide con los criterios de aceptacion** — cada criterio de tu prompt esta satisfecho
 - [ ] **Las pruebas cubren el camino feliz y casos limite clave** — no solo el camino feliz
@@ -263,7 +263,7 @@ Despues de que el agente entregue su salida, verifica estos elementos antes de a
 - [ ] **Se siguio el charter** — las restricciones "Must NOT do" fueron respetadas
 - [ ] **Lint, typecheck, build pasan** — ejecuta las verificaciones estandar de tu proyecto
 
-### Especificos de Frontend
+### Especificos de frontend
 
 - [ ] Accesibilidad: elementos interactivos tienen `aria-label`, encabezados semanticos, la navegacion por teclado funciona
 - [ ] Movil: renderiza correctamente en breakpoints 320px, 768px, 1024px, 1440px
@@ -272,7 +272,7 @@ Despues de que el agente entregue su salida, verifica estos elementos antes de a
 - [ ] Componentes shadcn/ui no modificados directamente (se usan wrappers)
 - [ ] Importaciones absolutas con `@/` (sin `../../` relativo)
 
-### Especificos de Backend
+### Especificos de backend
 
 - [ ] Arquitectura limpia mantenida: sin logica de negocio en manejadores de ruta
 - [ ] Todas las entradas validadas (sin confiar en entrada del usuario)
@@ -280,14 +280,14 @@ Despues de que el agente entregue su salida, verifica estos elementos antes de a
 - [ ] Excepciones personalizadas via modulo centralizado de errores (sin excepciones HTTP directas)
 - [ ] Endpoints de autenticacion con limite de tasa
 
-### Especificos de Mobile
+### Especificos de mobile
 
 - [ ] Todos los controladores liberados en el metodo `dispose()`
 - [ ] Offline manejado con gracia
 - [ ] Objetivo 60fps mantenido (sin jank)
 - [ ] Probado en iOS y Android
 
-### Especificos de Base de Datos
+### Especificos de base de datos
 
 - [ ] Al menos 3NF (o justificacion documentada para desnormalizacion)
 - [ ] Las tres capas de esquema documentadas (externa, conceptual, interna)
@@ -296,7 +296,7 @@ Despues de que el agente entregue su salida, verifica estos elementos antes de a
 
 ---
 
-## Senales de Escalamiento
+## Senales de escalamiento
 
 Observa estas senales que indican que deberias cambiar de skill individual a ejecucion multiagente:
 
@@ -310,6 +310,6 @@ Observa estas senales que indican que deberias cambiar de skill individual a eje
 | La tarea crece de "un componente" a "tres componentes + nueva ruta + API" | Ampliacion del alcance durante la ejecucion | Detener, ejecutar `/plan` para descomponer, luego `/orchestrate` |
 | El agente se bloquea con clarificacion HIGH | Requisitos fundamentalmente ambiguos | Responder las preguntas del agente o ejecutar `/brainstorm` para clarificar el enfoque |
 
-### La Regla General
+### La regla general
 
 Si te encuentras regenerando el mismo agente mas de dos veces con refinamientos, la tarea probablemente es multidominio y necesita `/work` o como minimo un paso `/plan` para descomponerla correctamente.

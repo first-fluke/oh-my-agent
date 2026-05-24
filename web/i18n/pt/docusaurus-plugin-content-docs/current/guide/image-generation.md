@@ -11,14 +11,14 @@ A skill ativa automaticamente em palavras-chave como *image*, *illustration*, *v
 
 ---
 
-## Quando Usar
+## Quando usar
 
 - Gerar imagens, ilustrações, fotos de produto, concept art, visuais de hero/landing
 - Comparar o mesmo prompt entre múltiplos modelos lado a lado (`--vendor all`)
 - Produzir assets de dentro de um workflow de editor (Claude Code, Codex, Gemini CLI)
 - Permitir que outra skill (design, marketing, docs) chame o pipeline de imagem como infraestrutura compartilhada
 
-## Quando NÃO Usar
+## Quando NÃO usar
 
 - Editar ou retocar uma imagem existente — fora de escopo (use uma ferramenta dedicada)
 - Gerar vídeos ou áudio — fora de escopo
@@ -27,7 +27,7 @@ A skill ativa automaticamente em palavras-chave como *image*, *illustration*, *v
 
 ---
 
-## Vendors em Resumo
+## Vendors em resumo
 
 A skill é CLI-first: quando a CLI nativa de um vendor consegue retornar bytes de imagem brutos, o caminho via subprocess é preferido em relação a uma chave de API direta.
 
@@ -41,7 +41,7 @@ A skill é CLI-first: quando a CLI nativa de um vendor consegue retornar bytes d
 
 ---
 
-## Início Rápido
+## Início rápido
 
 ```bash
 # Free, zero-config — uses pollinations/flux
@@ -67,11 +67,11 @@ oma image list-vendors
 
 ---
 
-## Usar como Skill
+## Usar como skill
 
 `oma-image` é uma skill — ela ativa automaticamente a partir de linguagem natural e também pode ser invocada explicitamente. Existem três pontos de entrada.
 
-### 1. Linguagem Natural (auto-ativação)
+### 1. Linguagem natural (auto-ativação)
 
 Dentro do Claude Code, Codex CLI ou Gemini CLI, basta descrever a imagem. A skill faz match com palavras-chave como *image*, *illustration*, *visual asset*, *concept art*, *hero shot*, *thumbnail*, *product photo*.
 
@@ -96,7 +96,7 @@ Exemplos:
 
 O agente executa o [Clarification Protocol](#clarification-protocol), amplifica o prompt se necessário e chama `oma image generate` com as flags inferidas. Use o slash command quando quiser controle explícito sobre os valores exatos das flags.
 
-### 2. Slash Command Explícito
+### 2. Slash command explícito
 
 ```text
 /oma-image a red apple on white background
@@ -106,7 +106,7 @@ O agente executa o [Clarification Protocol](#clarification-protocol), amplifica 
 
 Toda flag da CLI (`--vendor`, `-n`, `--size`, `-r`, `--dry-run`, …) funciona no slash command — ela é encaminhada para o mesmo pipeline `oma image generate`.
 
-### 3. A Partir de Outra Skill (infraestrutura compartilhada)
+### 3. A partir de outra skill (infraestrutura compartilhada)
 
 Outras skills (design, marketing, docs) chamam o pipeline como infraestrutura compartilhada com saída JSON:
 
@@ -135,7 +135,7 @@ oma image doctor
 oma image list-vendors
 ```
 
-### Flags Principais
+### Flags principais
 
 | Flag | Propósito |
 |---|---|
@@ -153,7 +153,7 @@ oma image list-vendors
 
 ---
 
-## Imagens de Referência
+## Imagens de referência
 
 Anexe até 10 imagens de referência para guiar estilo, identidade do sujeito ou composição.
 
@@ -169,7 +169,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 | `gemini` (2.5-flash-image) | Sim | Insere base64 `inlineData` inline na requisição |
 | `pollinations` | Não | Rejeitado com exit code 4 (requer hospedagem por URL) |
 
-### Onde as Imagens Anexadas Ficam
+### Onde as imagens anexadas ficam
 
 - **Claude Code** — `~/.claude/image-cache/<session>/N.png`, exposto em mensagens de sistema como `[Image: source: <path>]`. Escopo de sessão: copie para um local durável se quiser reutilizar depois.
 - **Antigravity** — diretório de upload do workspace (a IDE mostra o caminho exato)
@@ -179,7 +179,7 @@ Quando o usuário anexa uma imagem e pede para gerar ou editar uma com base nela
 
 ---
 
-## Layout de Saída
+## Layout de saída
 
 Cada execução escreve em `.agents/results/images/` com um diretório com timestamp e sufixo de hash:
 
@@ -198,7 +198,7 @@ Cada execução escreve em `.agents/results/images/` com um diretório com times
 
 ---
 
-## Custo, Segurança e Cancelamento
+## Custo, segurança e cancelamento
 
 1. **Guardrail de custo** — execuções estimadas em ≥ `$0.20` pedem confirmação. Ignore com `-y` ou `OMA_IMAGE_YES=1`. O `pollinations` padrão (flux/zimage) é gratuito, então o prompt é pulado automaticamente para ele.
 2. **Segurança de path** — caminhos de saída fora de `$PWD` exigem `--allow-external-out` para evitar gravações inesperadas.
@@ -209,7 +209,7 @@ Cada execução escreve em `.agents/results/images/` com um diretório com times
 
 ---
 
-## Protocolo de Clarificação {#clarification-protocol}
+## Protocolo de clarificação {#clarification-protocol}
 
 Antes de invocar `oma image generate`, o agente que faz a chamada executa este checklist. Se algo estiver faltando e não for inferível, ele pergunta primeiro ou amplifica o prompt e mostra a expansão para aprovação.
 

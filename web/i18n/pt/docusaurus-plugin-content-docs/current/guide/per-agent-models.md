@@ -5,7 +5,7 @@ description: Configure qual modelo de IA cada agente usa via model_preset em oma
 
 # Guia: Configuração de Modelo por Agente
 
-## Visão Geral
+## Visão geral
 
 `model_preset` é o conceito único que controla qual modelo cada agente usa. Escolha um dos presets nativos e cada agente (pm, backend, frontend, qa, …) é conectado a um modelo apropriado para aquela stack de fornecedor. Sobrescreva agentes individuais conforme necessário. Defina presets adicionais quando seu time tiver uma combinação fora do padrão.
 
@@ -22,7 +22,7 @@ Esta página cobre:
 
 ---
 
-## Presets Nativos
+## Presets nativos
 
 Defina `model_preset` como uma das chaves nativas:
 
@@ -46,7 +46,7 @@ Os presets nativos são distribuídos dentro do pacote da CLI e atualizam automa
 
 ---
 
-## Sobrescrevendo Agentes Individuais
+## Sobrescrevendo agentes individuais
 
 Use o mapa `agents:` para sobrescrever agentes específicos sobre o preset ativo. Apenas os agentes que você listar são afetados; o restante continua com os defaults do preset.
 
@@ -75,7 +75,7 @@ A mesclagem é rasa: cada campo do seu override substitui o valor do preset para
 
 ---
 
-## Definindo Slugs de Modelo Inline
+## Definindo slugs de modelo inline
 
 Registre slugs de modelo que ainda não estão no registro nativo sob `models:`. Uma vez registrado, use o slug em qualquer lugar em `agents:` ou `custom_presets:`.
 
@@ -94,7 +94,7 @@ models:
 
 ---
 
-## Presets Personalizados
+## Presets personalizados
 
 Defina presets adicionais em `custom_presets:`. Use `extends:` para herdar todos os defaults de agente de um preset nativo e sobrescrever apenas os agentes que importam.
 
@@ -145,7 +145,7 @@ Cada linha mostra o slug do modelo resolvido e qual fonte o aplicou (`(preset)` 
 
 ---
 
-## Migração a Partir do Legado `agent_cli_mapping`
+## Migração a partir do legado `agent_cli_mapping`
 
 A migração 008 roda automaticamente em `oma install` e `oma update`. Ela converte projetos legados in place:
 
@@ -163,7 +163,7 @@ Após a migração, `.agents/config/defaults.yaml`, `.agents/config/models.yaml`
 
 ---
 
-## Limite de Cota da Sessão
+## Limite de cota da sessão
 
 `session.quota_cap` permanece inalterado. Adicione-o ao `oma-config.yaml` para limitar spawn descontrolado de subagentes:
 
@@ -182,7 +182,7 @@ Quando um limite é atingido, o orchestrator recusa novos spawns e expõe um sta
 
 ---
 
-## Exemplo Completo
+## Exemplo completo
 
 ```yaml
 # .agents/oma-config.yaml

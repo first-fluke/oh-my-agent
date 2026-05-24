@@ -3,7 +3,7 @@ title: "Guia: Semântica do oma-config.yaml"
 description: Regras de precedência por chave para o oma-config.yaml quando coexistem instalações de projeto e global. Cobre auto_update_cli (projeto vence global), serena.mode, telemetry, language, model_preset, translation_voice, timezone e quais dotfiles agy / claude / codex / gemini / qwen leem.
 ---
 
-## Visão Geral
+## Visão geral
 
 `oma-config.yaml` pode viver em dois lugares:
 
@@ -12,7 +12,7 @@ description: Regras de precedência por chave para o oma-config.yaml quando coex
 
 Quando os dois arquivos existem, o arquivo de projeto vence para toda chave. Isso é intencional: a customização por projeto é o sinal mais específico e não deve ser sobrescrita por um default em nível de usuário.
 
-## Tabela de Precedência
+## Tabela de precedência
 
 | Chave | Projeto vence? | Notas |
 |-----|:---:|-------|
@@ -26,7 +26,7 @@ Quando os dois arquivos existem, o arquivo de projeto vence para toda chave. Iss
 
 "Projeto vence" significa: se a chave estiver presente no arquivo de projeto, esse valor é usado independentemente do que o arquivo global diga. Se a chave estiver ausente no arquivo de projeto, o valor do arquivo global é usado. Se estiver ausente em ambos, o default se aplica.
 
-## Valores Default
+## Valores default
 
 | Chave | Default | Quando se aplica |
 |-----|---------|--------------|
@@ -38,7 +38,7 @@ Quando os dois arquivos existem, o arquivo de projeto vence para toda chave. Iss
 | `translation_voice` | `balanced` | Ambos arquivos ausentes ou chave faltando |
 | `timezone` | Fuso horário do sistema | Ambos arquivos ausentes ou chave faltando |
 
-## Racional da Ordem de Leitura
+## Racional da ordem de leitura
 
 O config de projeto é lido primeiro porque representa o contexto mais específico — o repositório em que o desenvolvedor está trabalhando ativamente. Um time pode impor `language: ko` ou `model_preset: mixed` para seu projeto, e essas escolhas não devem ser sobrescritas silenciosamente pelo `oma-config.yaml` global de um indivíduo.
 

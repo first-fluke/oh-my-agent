@@ -5,7 +5,7 @@ description: Uitgebreide referentie voor alle CLI-opties — globale vlaggen, ui
 
 # CLI-Opties
 
-## Globale Opties
+## Globale opties
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
@@ -20,7 +20,7 @@ Alle subcommando's ondersteunen ook `-h, --help` om hun specifieke helptekst te 
 
 Veel commando's ondersteunen machineleesbare uitvoer voor CI/CD-pipelines en automatisering. Er zijn drie manieren om JSON-uitvoer aan te vragen, in prioriteitsvolgorde:
 
-### 1. --json Vlag
+### 1. --json vlag
 
 ```bash
 oma stats --json
@@ -29,7 +29,7 @@ oma doctor --json
 
 Beschikbaar op: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
 
-### 2. --output Vlag
+### 2. --output vlag
 
 ```bash
 oma stats --output json
@@ -38,7 +38,7 @@ oma doctor --output text
 
 Accepteert `text` of `json`.
 
-### 3. OH_MY_AG_OUTPUT_FORMAT Omgevingsvariabele
+### 3. OH_MY_AG_OUTPUT_FORMAT omgevingsvariabele
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
@@ -67,7 +67,7 @@ oma stats    # levert JSON
 
 ---
 
-## Per-Commando Opties
+## Per-commando opties
 
 ### oma (install)
 
@@ -249,21 +249,21 @@ Het uitvoerformaat wordt per subcommando bestuurd via `--format <text|json>` (ni
 
 ## Praktijkvoorbeelden
 
-### CI Pipeline: Bijwerken en Verifieren
+### CI pipeline: bijwerken en verifieren
 
 ```bash
 oma update --ci
 oma doctor --json | jq '.healthy'
 ```
 
-### Geautomatiseerde Metriekenverzameling
+### Geautomatiseerde metriekenverzameling
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
 oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
-### Batch Agentuitvoering met Statusmonitoring
+### Batch agentuitvoering met statusmonitoring
 
 ```bash
 oma agent:parallel tasks.yaml --no-wait
@@ -271,13 +271,13 @@ SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
 watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
 ```
 
-### Opruimen in CI Na Tests
+### Opruimen in CI na tests
 
 ```bash
 oma cleanup --yes --json
 ```
 
-### Werkruimte-Bewuste Verificatie
+### Werkruimte-bewuste verificatie
 
 ```bash
 oma verify backend -w ./apps/api
@@ -285,14 +285,14 @@ oma verify frontend -w ./apps/web
 oma verify mobile -w ./apps/mobile
 ```
 
-### Retro met Vergelijking voor Sprintreviews
+### Retro met vergelijking voor sprintreviews
 
 ```bash
 oma retro 2w --compare
 oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 ```
 
-### Volledig Gezondheidscontrolescript
+### Volledig gezondheidscontrolescript
 
 ```bash
 #!/bin/bash
@@ -305,7 +305,7 @@ oma stats --json | jq -r '"Sessies: \(.sessions), Taken: \(.tasksCompleted)"'
 echo "=== Klaar ==="
 ```
 
-### Describe voor Agent-Introspectie
+### Describe voor agent-introspectie
 
 ```bash
 oma describe | jq '.command.subcommands[] | {name, description}'

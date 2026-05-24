@@ -5,7 +5,7 @@ description: Guía completa de instalación de oh-my-agent — tres métodos de 
 
 # Instalación
 
-## Requisitos Previos
+## Requisitos previos
 
 - **Un IDE o CLI potenciado por IA** — al menos uno de: Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor u OpenCode
 - **bun** — Runtime y gestor de paquetes JavaScript (instalado automáticamente por el script si no está presente)
@@ -13,7 +13,7 @@ description: Guía completa de instalación de oh-my-agent — tres métodos de 
 
 ---
 
-## Método 1: Instalación con Un Solo Comando (Recomendado)
+## Método 1: instalación con un solo comando (recomendado)
 
 ```bash
 # macOS / Linux
@@ -37,7 +37,7 @@ Tiempo de instalación típico: menos de 60 segundos.
 
 ---
 
-## Método 2: Instalación Manual vía bunx
+## Método 2: instalación manual vía bunx
 
 ```bash
 bunx oh-my-agent@latest
@@ -62,7 +62,7 @@ Cada preset incluye oma-pm (planificación), oma-qa (revisión), oma-debug (corr
 
 Los recursos compartidos (`_shared/`) se instalan siempre independientemente del preset. Esto incluye enrutamiento central, carga de contexto, estructura de prompts, detección de proveedor, protocolos de ejecución y protocolo de memoria.
 
-### Qué Se Crea
+### Qué se crea
 
 Después de la instalación, tu proyecto contendrá:
 
@@ -102,7 +102,7 @@ Después de la instalación, tu proyecto contendrá:
 
 ---
 
-## Método 3: Instalación Global
+## Método 3: instalación global
 
 Para uso a nivel de CLI (dashboards, generación de agentes, diagnósticos), instala oh-my-agent globalmente:
 
@@ -146,7 +146,7 @@ oma star                # Dar estrella al repositorio
 
 ---
 
-## Instalación de Herramientas CLI de IA
+## Instalación de herramientas CLI de IA
 
 Necesitas al menos una herramienta CLI de IA instalada. oh-my-agent soporta cuatro proveedores, y puedes combinarlos — usando diferentes CLIs para diferentes agentes mediante el mapeo agente-CLI.
 
@@ -231,7 +231,7 @@ agents:
 #       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
-### Referencia de Campos
+### Referencia de campos
 
 | Campo | Tipo | Requerido | Descripción |
 |-------|------|-----------|-------------|
@@ -243,7 +243,7 @@ agents:
 | `models` | map | No | Slugs de modelo definidos por el usuario, antes en `models.yaml`. |
 | `custom_presets` | map | No | Presets definidos por el usuario. Soporta `extends:` para herencia parcial de un preset integrado. |
 
-### Resolución de Proveedor
+### Resolución de proveedor
 
 Al generar un agente, el proveedor CLI se resuelve desde el `model_preset` activo (y cualquier sobrescritura en `agents:`). Ver [Configuración de Modelo por Agente](../guide/per-agent-models.md) para detalles completos.
 
@@ -280,7 +280,7 @@ oma update
 
 Esto actualiza el CLI global de oh-my-agent a la última versión.
 
-### Actualización de Habilidades del Proyecto
+### Actualización de habilidades del proyecto
 
 Las habilidades y flujos de trabajo dentro de un proyecto pueden actualizarse mediante el GitHub Action (`action/`) para actualizaciones automatizadas, o manualmente re-ejecutando el instalador:
 
@@ -292,7 +292,7 @@ El instalador detecta instalaciones existentes y ofrece actualizar preservando t
 
 ---
 
-## Próximos Pasos
+## Próximos pasos
 
 Abre tu proyecto en tu IDE de IA y comienza a usar oh-my-agent. Las habilidades se auto-detectan. Prueba:
 

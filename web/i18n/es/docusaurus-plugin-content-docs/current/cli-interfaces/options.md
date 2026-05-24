@@ -5,7 +5,7 @@ description: Referencia exhaustiva de todas las opciones CLI — flags globales,
 
 # Opciones del CLI
 
-## Opciones Globales
+## Opciones globales
 
 Estas opciones están disponibles en el comando raíz `oma` / `oh-my-agent`:
 
@@ -18,7 +18,7 @@ Todos los subcomandos también soportan `-h, --help` para mostrar su texto de ay
 
 ---
 
-## Opciones de Salida
+## Opciones de salida
 
 Muchos comandos soportan salida legible por máquina para pipelines de CI/CD y automatización. Hay tres formas de solicitar salida JSON, en orden de prioridad:
 
@@ -43,7 +43,7 @@ El flag `--output` acepta `text` o `json`. Proporciona la misma funcionalidad qu
 
 **Validación:** Si se proporciona un formato inválido, el CLI lanza: `Invalid output format: {value}. Expected one of text, json`.
 
-### 3. Variable de Entorno OH_MY_AG_OUTPUT_FORMAT
+### 3. Variable de entorno OH_MY_AG_OUTPUT_FORMAT
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
@@ -56,7 +56,7 @@ Establece esta variable de entorno como `json` para forzar salida JSON en todos 
 
 **Orden de resolución:** flag `--json` > flag `--output` > variable de entorno `OH_MY_AG_OUTPUT_FORMAT` > `text` (por defecto).
 
-### Comandos que Soportan Salida JSON
+### Comandos que soportan salida JSON
 
 | Comando | `--json` | `--output` | Notas |
 |:--------|:---------|:----------|:------|
@@ -76,7 +76,7 @@ Establece esta variable de entorno como `json` para forzar salida JSON en todos 
 
 ---
 
-## Opciones por Comando
+## Opciones por comando
 
 ### update
 
@@ -316,9 +316,9 @@ oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 
 ---
 
-## Ejemplos Prácticos
+## Ejemplos prácticos
 
-### Pipeline de CI: Actualizar y Verificar
+### Pipeline de CI: actualizar y verificar
 
 ```bash
 # Actualizar en modo CI, luego ejecutar doctor para verificar la instalación
@@ -326,7 +326,7 @@ oma update --ci
 oma doctor --json | jq '.healthy'
 ```
 
-### Recopilación Automatizada de Métricas
+### Recopilación automatizada de métricas
 
 ```bash
 # Recopilar métricas como JSON y enviar a un sistema de monitoreo
@@ -334,7 +334,7 @@ export OH_MY_AG_OUTPUT_FORMAT=json
 oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
-### Ejecución por Lotes de Agentes con Monitoreo de Estado
+### Ejecución por lotes de agentes con monitoreo de estado
 
 ```bash
 # Iniciar agentes en segundo plano
@@ -345,14 +345,14 @@ SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
 watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
 ```
 
-### Limpieza en CI Después de Pruebas
+### Limpieza en CI después de pruebas
 
 ```bash
 # Limpiar todos los procesos huérfanos sin prompts
 oma cleanup --yes --json
 ```
 
-### Verificación con Workspace
+### Verificación con workspace
 
 ```bash
 # Verificar cada dominio en su workspace
@@ -361,7 +361,7 @@ oma verify frontend -w ./apps/web
 oma verify mobile -w ./apps/mobile
 ```
 
-### Retro con Comparación para Revisiones de Sprint
+### Retro con comparación para revisiones de sprint
 
 ```bash
 # Retro de sprint de dos semanas con comparación con el sprint anterior
@@ -371,7 +371,7 @@ oma retro 2w --compare
 oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 ```
 
-### Script Completo de Verificación de Salud
+### Script completo de verificación de salud
 
 ```bash
 #!/bin/bash
@@ -391,7 +391,7 @@ oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 echo "=== Done ==="
 ```
 
-### Describe para Introspección de Agentes
+### Describe para introspección de agentes
 
 ```bash
 # Un agente de IA puede descubrir los comandos disponibles

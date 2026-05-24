@@ -19,12 +19,12 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 | **Implementatie** | oma-frontend, oma-backend, oma-mobile, oma-db | Productiecode schrijven in hun respectievelijke domeinen |
 | **Design** | oma-design | Designsystemen, DESIGN.md, tokens, typografie, kleur, beweging, toegankelijkheid |
 | **Infrastructuur** | oma-tf-infra | Multi-cloud Terraform-provisioning, IAM, kostenoptimalisatie, policy-as-code |
-| **DevOps** | oma-dev-workflow | mise task runner, CI/CD, migraties, releasecoordinatie, monorepo-automatisering |
+| **DevOps** | oma-dev-workflow | mise task runner, CI/CD, migraties, releasecoördinatie, monorepo-automatisering |
 | **Observability** | oma-observability | Observability-pipelines, traceerbaarheidsroutering, MELT+P-signalen (metrics/logs/traces/profiles/cost/audit/privacy), SLO-beheer, incident-forensisch onderzoek, transport-tuning |
 | **Kwaliteit** | oma-qa | Beveiligingsaudit (OWASP), prestaties, toegankelijkheid (WCAG), codekwaliteitsreview |
 | **Debugging** | oma-debug | Bugreproductie, oorzaakanalyse, minimale fixes, regressietests |
 | **Lokalisatie** | oma-translator | Contextbewuste vertaling met behoud van toon, register en domein-termen |
-| **Coordinatie** | oma-orchestrator, oma-coordination | Geautomatiseerde en handmatige multi-agent orchestratie |
+| **Coördinatie** | oma-orchestrator, oma-coordination | Geautomatiseerde en handmatige multi-agent orchestratie |
 | **Git** | oma-scm | Conventional Commits-generatie, functie-gebaseerde commitsplitsing |
 | **Zoeken & Ophalen** | oma-search | Intent-gebaseerde zoekrouter met trust scoring (Context7-documentatie, web, `gh`/`glab`-code, Serena lokaal) |
 | **Retrospectief** | oma-recap | Tool-overkoepelende conversatiegeschiedenisanalyse en thematische werk-samenvattingen |
@@ -32,7 +32,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ---
 
-## Gedetailleerde Agentreferentie
+## Gedetailleerde agentreferentie
 
 ### oma-brainstorm
 
@@ -382,7 +382,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ### oma-orchestrator
 
-**Domein:** Geautomatiseerde multi-agent coordinatie via CLI-spawning.
+**Domein:** Geautomatiseerde multi-agent coördinatie via CLI-spawning.
 
 **Wanneer gebruiken:** Complexe functies die meerdere agenten parallel vereisen, geautomatiseerde uitvoering, full-stack implementatie.
 
@@ -432,9 +432,9 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ### oma-coordination
 
-**Domein:** Gids voor handmatige stapsgewijze multi-agent coordinatie.
+**Domein:** Gids voor handmatige stapsgewijze multi-agent coördinatie.
 
-**Wanneer gebruiken:** Complexe projecten waar je human-in-the-loop-controle wilt bij elke poort, handmatige begeleiding voor het spawnen van agenten, stapsgewijze coordinatierecepten.
+**Wanneer gebruiken:** Complexe projecten waar je human-in-the-loop-controle wilt bij elke poort, handmatige begeleiding voor het spawnen van agenten, stapsgewijze coördinatierecepten.
 
 **Wanneer NIET gebruiken:** Volledig geautomatiseerde parallelle uitvoering (gebruik oma-orchestrator), taken binnen een enkel domein (gebruik de domeinagent direct).
 
@@ -535,7 +535,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ---
 
-## Charter Preflight (CHARTER_CHECK)
+## Charter preflight (CHARTER_CHECK)
 
 Voordat er code wordt geschreven, moet elke implementatie-agent een CHARTER_CHECK-blok uitvoeren:
 
@@ -563,7 +563,7 @@ In subagentmodus (CLI-gespawnd) kunnen agenten gebruikers niet direct vragen. LO
 
 ---
 
-## Tweelaagse Skill Loading
+## Tweelaagse skill loading
 
 De kennis van elke agent is verdeeld over twee lagen:
 
@@ -586,7 +586,7 @@ Aanvullende bronnen worden tijdens uitvoering geladen wanneer nodig:
 
 ---
 
-## Afgebakende Uitvoering
+## Afgebakende uitvoering
 
 Agenten opereren binnen strikte domeingrenzen:
 
@@ -652,9 +652,9 @@ Deze bestanden definieren de identiteit van de agent, uitvoeringsprotocolreferen
 
 ---
 
-## Runtimestatus (Serena Geheugen)
+## Runtimestatus (Serena geheugen)
 
-Tijdens orchestratiesessies coordineren agenten via gedeelde geheugenbestanden in `.serena/memories/` (configureerbaar via `mcp.json`):
+Tijdens orchestratiesessies coördineren agenten via gedeelde geheugenbestanden in `.serena/memories/` (configureerbaar via `mcp.json`):
 
 | Bestand | Eigenaar | Doel | Anderen |
 |---------|----------|------|---------|

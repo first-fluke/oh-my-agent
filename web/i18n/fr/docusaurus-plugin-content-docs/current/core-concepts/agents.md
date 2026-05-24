@@ -656,14 +656,14 @@ Ces fichiers définissent l'identité de l'agent, la référence au protocole d'
 
 Pendant les sessions d'orchestration, les agents se coordonnent via des fichiers de mémoire partagés dans `.serena/memories/` (configurable via `mcp.json`) :
 
-| File | Owner | Purpose | Others |
+| File | Propriétaire | Objet | Autres |
 |------|-------|---------|--------|
-| `orchestrator-session.md` | Orchestrator | Session ID, status, start time, phase tracking | Read-only |
-| `task-board.md` | Orchestrator | Task assignments, priorities, status updates | Read-only |
-| `progress-{agent}.md` | That agent | Turn-by-turn progress: actions taken, files read/modified, current status | Orchestrator reads |
-| `result-{agent}.md` | That agent | Final output: status (completed/failed), summary, files changed, acceptance criteria checklist | Orchestrator reads |
-| `session-metrics.md` | Orchestrator | Clarification Debt tracking, Quality Score progression | QA reads |
-| `experiment-ledger.md` | Orchestrator/QA | Experiment tracking when Quality Score is active | All read |
+| `orchestrator-session.md` | Orchestrateur | Identifiant de session, statut, heure de début, suivi des phases | Lecture seule |
+| `task-board.md` | Orchestrateur | Attribution des tâches, priorités, mises à jour de statut | Lecture seule |
+| `progress-{agent}.md` | L'agent concerné | Progression tour par tour : actions effectuées, fichiers lus/modifiés, statut courant | Lu par l'orchestrateur |
+| `result-{agent}.md` | L'agent concerné | Sortie finale : statut (completed/failed), résumé, fichiers modifiés, checklist des critères d'acceptation | Lu par l'orchestrateur |
+| `session-metrics.md` | Orchestrateur | Suivi de la Dette de clarification, progression du Quality Score | Lu par la QA |
+| `experiment-ledger.md` | Orchestrateur/QA | Suivi des expériences lorsque le Quality Score est actif | Lu par tous |
 
 Les outils de mémoire sont configurables. Par défaut, Serena MCP est utilisé (`read_memory`, `write_memory`, `edit_memory`), mais des outils personnalisés peuvent être configurés dans `mcp.json` :
 

@@ -9,9 +9,9 @@ La ventaja principal de oh-my-agent es ejecutar múltiples agentes especializado
 
 ---
 
-## agent:spawn — Generación de Un Solo Agente
+## agent:spawn — generación de un solo agente
 
-### Sintaxis Básica
+### Sintaxis básica
 
 ```bash
 oma agent:spawn <agent-id> <prompt> <session-id> [opciones]
@@ -57,7 +57,7 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ---
 
-## Generación Paralela con Procesos en Segundo Plano
+## Generación paralela con procesos en segundo plano
 
 Para ejecutar múltiples agentes simultáneamente, usa procesos en segundo plano del shell:
 
@@ -71,7 +71,7 @@ wait  # Bloquear hasta que todos los agentes completen
 
 El `&` ejecuta cada agente en segundo plano. `wait` bloquea hasta que todos los procesos en segundo plano terminen.
 
-### Patrón con Workspace
+### Patrón con workspace
 
 Siempre asigna workspaces separados al ejecutar agentes en paralelo para prevenir conflictos de archivos:
 
@@ -88,7 +88,7 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel — Modo Paralelo Inline
+## agent:parallel — modo paralelo inline
 
 Para una sintaxis más limpia que maneja la gestión de procesos en segundo plano automáticamente:
 
@@ -122,7 +122,7 @@ El flag `-i` (inline) permite especificar pares agente-prompt directamente en el
 
 No todos los CLIs de IA rinden igual en todos los dominios. oh-my-agent te permite dirigir agentes al CLI que mejor maneja su dominio.
 
-### Ejemplo de Configuración Completa
+### Ejemplo de configuración completa
 
 ```yaml
 # .agents/oma-config.yaml
@@ -156,7 +156,7 @@ model_preset (per-agent overrides via `agents:`):
   commit: gemini         # Generación simple de mensajes de commit
 ```
 
-### Prioridad de Resolución de Proveedor
+### Prioridad de resolución de proveedor
 
 Cuando `oma agent:spawn` determina qué CLI usar, sigue esta prioridad (el más alto gana):
 
@@ -172,7 +172,7 @@ Esto significa que un flag `--model` siempre gana. Si no se proporciona flag, el
 
 ---
 
-## Métodos de Generación Específicos por Proveedor
+## Métodos de generación específicos por proveedor
 
 El mecanismo de generación varía por IDE/CLI:
 
@@ -194,9 +194,9 @@ Múltiples llamadas a la herramienta Agent en el mismo mensaje se ejecutan como 
 
 ---
 
-## Monitoreo de Agentes
+## Monitoreo de agentes
 
-### Dashboard de Terminal
+### Dashboard de terminal
 
 ```bash
 oma dashboard
@@ -211,7 +211,7 @@ Muestra una tabla en vivo con:
 
 El dashboard observa `.serena/memories/` para actualizaciones en tiempo real. Se refresca a medida que los agentes escriben progreso.
 
-### Dashboard Web
+### Dashboard web
 
 ```bash
 oma dashboard:web
@@ -225,7 +225,7 @@ Funcionalidades:
 - Streaming de registro de actividad desde archivos de progreso y resultados
 - Historial de sesiones
 
-### Layout de Terminal Recomendado
+### Layout de terminal recomendado
 
 Usa 3 terminales para visibilidad óptima:
 
@@ -244,7 +244,7 @@ Usa 3 terminales para visibilidad óptima:
 +--------------------------------------------------+
 ```
 
-### Verificar Estado de Agente Individual
+### Verificar estado de agente individual
 
 ```bash
 oma agent:status <session-id> <agent-id>
@@ -254,7 +254,7 @@ Retorna el estado actual de un agente específico: ejecutándose, completado o f
 
 ---
 
-## Estrategia de ID de Sesión
+## Estrategia de ID de sesión
 
 Los IDs de sesión agrupan agentes trabajando en la misma funcionalidad. Mejores prácticas:
 
@@ -270,7 +270,7 @@ Los IDs de sesión determinan:
 
 ---
 
-## Consejos para Ejecución Paralela
+## Consejos para ejecución paralela
 
 ### Hacer
 
@@ -298,7 +298,7 @@ Los IDs de sesión determinan:
 
 7. **Empezar con `/work` si no estás seguro.** El flujo de coordinación te guía paso a paso con confirmación del usuario en cada puerta.
 
-### No Hacer
+### No hacer
 
 1. **No generar agentes en el mismo workspace.** Dos agentes escribiendo en el mismo directorio crearán conflictos de merge y sobrescribirán el trabajo del otro.
 
@@ -312,7 +312,7 @@ Los IDs de sesión determinan:
 
 ---
 
-## Ejemplo de Extremo a Extremo
+## Ejemplo de extremo a extremo
 
 Un flujo completo de ejecución paralela para construir una funcionalidad de autenticación de usuario:
 

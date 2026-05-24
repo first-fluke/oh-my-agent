@@ -5,7 +5,7 @@ description: Guía completa de depuración que cubre el bucle estructurado de 5 
 
 # Guía: Corrección de Bugs
 
-## Cuándo Usar el Flujo de Depuración
+## Cuándo usar el flujo de depuración
 
 Usa `/debug` (o di "fix bug", "corregir error", "debug" en lenguaje natural) cuando tengas un bug específico por diagnosticar y corregir. El flujo proporciona un enfoque estructurado y reproducible para la depuración que evita la trampa común de corregir síntomas en lugar de causas raíz.
 
@@ -13,11 +13,11 @@ El flujo de depuración soporta todos los proveedores (Gemini, Claude, Codex, Qw
 
 ---
 
-## Plantilla de Reporte de Bug
+## Plantilla de reporte de bug
 
 Al reportar un bug, proporciona tanta información como sea posible. Cada campo ayuda al flujo de depuración a reducir la búsqueda más rápidamente.
 
-### Campos Requeridos
+### Campos requeridos
 
 | Campo | Descripción | Ejemplo |
 |:------|:-----------|:--------|
@@ -26,7 +26,7 @@ Al reportar un bug, proporciona tanta información como sea posible. Cada campo 
 | **Comportamiento esperado** | Qué debería suceder | El usuario es eliminado y removido de la lista. |
 | **Comportamiento real** | Qué sucede realmente | La página se congela con una pantalla blanca. |
 
-### Campos Opcionales (Muy Recomendados)
+### Campos opcionales (muy recomendados)
 
 | Campo | Descripción | Ejemplo |
 |:------|:-----------|:--------|
@@ -41,11 +41,11 @@ Cuanto más contexto proporciones de entrada, menos preguntas de ida y vuelta ne
 
 ---
 
-## Triaje de Severidad (P0-P3)
+## Triaje de severidad (P0-P3)
 
 La severidad determina cómo se maneja el bug y con qué rapidez debe corregirse.
 
-### P0 — Crítico (Respuesta Inmediata)
+### P0 — crítico (respuesta inmediata)
 
 **Definición:** La producción está caída, se están perdiendo o corrompiendo datos, hay una brecha de seguridad activa.
 
@@ -59,7 +59,7 @@ La severidad determina cómo se maneja el bug y con qué rapidez debe corregirse
 
 **Enfoque de depuración:** Omitir la plantilla completa. Proporcionar el mensaje de error y cualquier stack trace. El flujo comienza inmediatamente en el Paso 2 (Reproducir).
 
-### P1 — Alto (Misma Sesión)
+### P1 — alto (misma sesión)
 
 **Definición:** Una funcionalidad principal está rota para un número significativo de usuarios. Puede existir solución alternativa pero no es aceptable a largo plazo.
 
@@ -73,7 +73,7 @@ La severidad determina cómo se maneja el bug y con qué rapidez debe corregirse
 
 **Enfoque de depuración:** Bucle completo de 5 pasos. Se recomienda revisión QA después de la corrección.
 
-### P2 — Medio (Este Sprint)
+### P2 — medio (este sprint)
 
 **Definición:** Una funcionalidad funciona pero con comportamiento degradado. Afecta la usabilidad pero no la funcionalidad.
 
@@ -87,7 +87,7 @@ La severidad determina cómo se maneja el bug y con qué rapidez debe corregirse
 
 **Enfoque de depuración:** Bucle completo de 5 pasos. Incluir en la suite de regresión QA.
 
-### P3 — Bajo (Backlog)
+### P3 — bajo (backlog)
 
 **Definición:** Problema cosmético, caso límite o inconveniente menor.
 
@@ -103,11 +103,11 @@ La severidad determina cómo se maneja el bug y con qué rapidez debe corregirse
 
 ---
 
-## El Bucle de Depuración de 5 Pasos en Detalle
+## El bucle de depuración de 5 pasos en detalle
 
 El flujo `/debug` ejecuta estos pasos en orden estricto. Usa herramientas de análisis de código MCP en todo momento — nunca lecturas de archivos directas ni grep.
 
-### Paso 1: Recopilar Información del Error
+### Paso 1: recopilar información del error
 
 El flujo solicita (o recibe del usuario):
 - Mensaje de error y stack trace
@@ -117,7 +117,7 @@ El flujo solicita (o recibe del usuario):
 
 Si ya se proporcionó un mensaje de error en el prompt, el flujo procede inmediatamente al Paso 2.
 
-### Paso 2: Reproducir el Bug
+### Paso 2: reproducir el bug
 
 **Herramientas usadas:** `search_for_pattern` con el mensaje de error o palabras clave del stack trace, `find_symbol` para localizar la función y archivo exactos.
 
@@ -125,7 +125,7 @@ El objetivo es localizar el error en el codebase — encontrar la línea exacta 
 
 Este paso transforma un síntoma reportado por el usuario ("la página se congela") en una ubicación a nivel de codebase (`src/api/users.ts:47, deleteUser() lanza TypeError`).
 
-### Paso 3: Diagnosticar Causa Raíz
+### Paso 3: diagnosticar causa raíz
 
 **Herramientas usadas:** `find_referencing_symbols` para trazar la ruta de ejecución hacia atrás desde el punto de error.
 
@@ -142,7 +142,7 @@ El flujo traza hacia atrás desde la ubicación del error para encontrar la caus
 
 La disciplina clave: diagnosticar la **causa raíz**, no el síntoma. Si `user.id` es undefined, la pregunta no es "¿cómo verifico si es undefined?" sino "¿por qué user es undefined en este punto de la ruta de ejecución?"
 
-### Paso 4: Proponer Corrección Mínima
+### Paso 4: proponer corrección mínima
 
 El flujo presenta:
 1. La causa raíz identificada (con evidencia del rastreo de código).
@@ -153,7 +153,7 @@ El flujo presenta:
 
 **Principio de corrección mínima:** Cambiar la menor cantidad de líneas posible. No refactorizar, no mejorar estilo de código, no agregar funcionalidades no relacionadas. La corrección debería poder revisarse en menos de 2 minutos.
 
-### Paso 5: Aplicar Corrección y Escribir Prueba de Regresión
+### Paso 5: aplicar corrección y escribir prueba de regresión
 
 Dos acciones suceden en este paso:
 
@@ -165,7 +165,7 @@ Dos acciones suceden en este paso:
 
 La prueba de regresión es el resultado más importante del flujo de depuración. Sin ella, el mismo bug puede ser reintroducido por cualquier cambio futuro.
 
-### Paso 6: Escanear Patrones Similares
+### Paso 6: escanear patrones similares
 
 Después de aplicar la corrección, el flujo escanea todo el codebase buscando el mismo patrón que causó el bug.
 
@@ -187,7 +187,7 @@ Métodos de generación específicos del proveedor:
 
 Todas las ubicaciones vulnerables similares se reportan. Las instancias confirmadas se corrigen como parte de la misma sesión.
 
-### Paso 7: Documentar el Bug
+### Paso 7: documentar el bug
 
 El flujo escribe un archivo de memoria con:
 - Síntoma y causa raíz
@@ -197,7 +197,7 @@ El flujo escribe un archivo de memoria con:
 
 ---
 
-## Plantilla de Prompt para /debug
+## Plantilla de prompt para /debug
 
 Al activar el flujo de depuración, puedes proporcionar un prompt estructurado:
 
@@ -236,11 +236,11 @@ El flujo solicitará detalles adicionales según sea necesario.
 
 ---
 
-## Señales de Escalamiento
+## Señales de escalamiento
 
 Estas señales indican que el bug requiere escalamiento más allá del bucle estándar de depuración:
 
-### Señal 1: Misma Corrección Intentada Dos Veces
+### Señal 1: misma corrección intentada dos veces
 
 Si el flujo propone una corrección, la aplica y el mismo error reaparece, el problema es más profundo que el diagnóstico inicial. Esto activa el **Bucle de Exploración** en flujos que lo soportan (ultrawork, orchestrate, work):
 
@@ -248,13 +248,13 @@ Si el flujo propone una corrección, la aplica y el mismo error reaparece, el pr
 - Probar cada hipótesis en un workspace separado (git stash por intento).
 - Puntuar resultados y adoptar el mejor enfoque.
 
-### Señal 2: Causa Raíz Multi-Dominio
+### Señal 2: causa raíz multi-dominio
 
 El error en el frontend es causado por un cambio en el backend que es causado por una migración de esquema de base de datos. Cuando la causa raíz cruza límites de dominio, escalar a `/work` o `/orchestrate` para involucrar a los agentes de dominio relevantes.
 
 **Ejemplo:** El frontend muestra "undefined" para el nombre de usuario. El backend devuelve null para `user.display_name`. La migración de base de datos agregó la columna pero las filas existentes tienen valores NULL. La corrección requiere: migración de base de datos (backfill), manejo de null en backend y visualización de respaldo en frontend.
 
-### Señal 3: Entorno de Reproducción Faltante
+### Señal 3: entorno de reproducción faltante
 
 El bug solo ocurre en producción y no se puede reproducir localmente. Las señales incluyen:
 - Diferencias de configuración específicas del entorno.
@@ -263,7 +263,7 @@ El bug solo ocurre en producción y no se puede reproducir localmente. Las seña
 
 **Acción:** Recopilar logs de producción, solicitar acceso a monitoreo de producción y considerar agregar instrumentación/logging antes de intentar una corrección.
 
-### Señal 4: Fallo de Infraestructura de Pruebas
+### Señal 4: fallo de infraestructura de pruebas
 
 La prueba de regresión no puede escribirse porque la infraestructura de pruebas está rota, faltante o inadecuada.
 
@@ -271,7 +271,7 @@ La prueba de regresión no puede escribirse porque la infraestructura de pruebas
 
 ---
 
-## Lista de Verificación de Validación Post-Corrección
+## Lista de verificación de validación post-corrección
 
 Después de aplicar la corrección y prueba de regresión, verificar:
 
@@ -285,7 +285,7 @@ Después de aplicar la corrección y prueba de regresión, verificar:
 
 ---
 
-## Criterios de Completación
+## Criterios de completación
 
 El flujo de depuración está completo cuando:
 

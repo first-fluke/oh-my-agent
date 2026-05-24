@@ -7,7 +7,7 @@ description: Cài oh-my-agent vào HOME của người dùng (~/.agents/) thay v
 
 Mặc định, `oma install` giới hạn mọi thứ trong thư mục dự án hiện tại: SSOT nằm ở `<cwd>/.agents/` và cấu hình vendor được ghi vào `<cwd>/.claude/`, `<cwd>/.codex/`, v.v. **Cài đặt toàn cục** (`oma install --global`) đặt oh-my-agent vào HOME của người dùng, nên cùng một bộ skill, workflow và rule đều có sẵn ở mọi dự án bạn mở mà không cần lặp lại bước cài đặt. SSOT nằm ở `~/.agents/` còn cấu hình vendor ở `~/.claude/`, `~/.codex/`, v.v.
 
-## So sánh: Dự án vs Toàn cục
+## So sánh: dự án vs toàn cục
 
 | Khía cạnh | Dự án (`oma install`) | Toàn cục (`oma install --global`) |
 |--------|------------------------|--------------------------------|

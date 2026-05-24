@@ -3,7 +3,7 @@ title: "Guía: Semántica de oma-config.yaml"
 description: Reglas de precedencia por clave para oma-config.yaml cuando coexisten una instalación de proyecto y una global. Cubre auto_update_cli (gana el proyecto sobre el global), serena.mode, telemetry, language, model_preset, translation_voice, timezone, y qué dotfiles utilizan agy / claude / codex / gemini / qwen.
 ---
 
-## Visión General
+## Visión general
 
 `oma-config.yaml` puede vivir en dos ubicaciones:
 
@@ -12,7 +12,7 @@ description: Reglas de precedencia por clave para oma-config.yaml cuando coexist
 
 Cuando ambos archivos existen, el archivo de proyecto gana para todas las claves. Esto es intencional: la personalización por proyecto es la señal más específica y no debería ser sobrescrita por un valor por defecto a nivel de usuario.
 
-## Tabla de Precedencia
+## Tabla de precedencia
 
 | Clave | ¿Gana el proyecto? | Notas |
 |-----|:---:|-------|
@@ -26,7 +26,7 @@ Cuando ambos archivos existen, el archivo de proyecto gana para todas las claves
 
 "Gana el proyecto" significa: si la clave está presente en el archivo de proyecto, se usa ese valor independientemente de lo que diga el archivo global. Si la clave está ausente en el archivo de proyecto, se usa el valor del archivo global. Si está ausente en ambos, se aplica el valor por defecto.
 
-## Valores por Defecto
+## Valores por defecto
 
 | Clave | Por defecto | Cuándo se aplica |
 |-----|---------|--------------|
@@ -38,7 +38,7 @@ Cuando ambos archivos existen, el archivo de proyecto gana para todas las claves
 | `translation_voice` | `balanced` | Ambos archivos ausentes o falta la clave |
 | `timezone` | Zona horaria del sistema | Ambos archivos ausentes o falta la clave |
 
-## Razón del Orden de Lectura
+## Razón del orden de lectura
 
 El config de proyecto se lee primero porque representa el contexto más específico — el repositorio en el que un developer está trabajando activamente. Un equipo podría imponer `language: ko` o `model_preset: mixed` para su proyecto, y esas decisiones no deberían ser sobrescritas silenciosamente por el `oma-config.yaml` global de un individuo.
 

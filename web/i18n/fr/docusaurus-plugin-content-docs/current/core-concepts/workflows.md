@@ -38,7 +38,7 @@ Les workflows persistants continuent de s'exécuter jusqu'à ce que toutes les t
 | Polonais | "orkiestrować", "równolegle", "wykonaj wszystko" |
 
 **Patterns regex de déclenchement** (intention + liste blanche de noms, voir [Détection automatique : champ Pattern](#pattern-field-raw-regex)) :
-| Section | Pattern | Exemples qui déclenchent |
+| Section | Motif | Exemples qui déclenchent |
 |---------|---------|--------------------------|
 | `*` (universel) | `(build\|create\|make\|develop\|implement\|scaffold) + (a\|an\|the) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
 | `*` (universel) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |

@@ -112,7 +112,7 @@ your-project/
 
 ---
 
-## .agents/ — Nguồn dữ liệu duy nhất
+## .agents/ — nguồn dữ liệu duy nhất
 
 Đây là thư mục cốt lõi. Mọi thứ agent cần đều nằm ở đây. Đây là thư mục duy nhất quan trọng cho hành vi agent — tất cả thư mục khác đều bắt nguồn từ nó.
 
@@ -159,7 +159,7 @@ Cấu hình MCP server bao gồm định nghĩa server, cấu hình bộ nhớ v
 
 ---
 
-## .claude/ — Tích hợp IDE
+## .claude/ — tích hợp IDE
 
 Thư mục này kết nối oh-my-agent với Claude Code và các IDE khác.
 
@@ -193,7 +193,7 @@ Symlink trỏ đến `.agents/skills/`. Làm cho skill hiển thị với IDE đ
 
 ---
 
-## .serena/memories/ — Trạng thái runtime
+## .serena/memories/ — trạng thái runtime
 
 Nơi agent ghi tiến trình trong phiên điều phối. Thư mục này được dashboard theo dõi cho cập nhật thời gian thực.
 

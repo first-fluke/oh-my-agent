@@ -9,9 +9,9 @@ A vantagem central do oh-my-agent é executar múltiplos agentes especializados 
 
 ---
 
-## agent:spawn — Spawning de Agente Único
+## agent:spawn — spawning de agente único
 
-### Sintaxe Básica
+### Sintaxe básica
 
 ```bash
 oma agent:spawn <agent-id> <prompt> <session-id> [options]
@@ -57,7 +57,7 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ---
 
-## Spawning Paralelo com Processos em Background
+## Spawning paralelo com processos em background
 
 Para executar múltiplos agentes simultaneamente, use processos em background do shell:
 
@@ -71,7 +71,7 @@ wait  # Bloqueia até todos os agentes completarem
 
 O `&` executa cada agente em background. `wait` bloqueia até todos os processos em background terminarem.
 
-### Padrão com Workspace
+### Padrão com workspace
 
 Sempre atribua workspaces separados ao executar agentes em paralelo para prevenir conflitos de arquivo:
 
@@ -88,7 +88,7 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 
 ---
 
-## agent:parallel — Modo Paralelo Inline
+## agent:parallel — modo paralelo inline
 
 Para uma sintaxe mais limpa que gerencia processos em background automaticamente:
 
@@ -122,7 +122,7 @@ A flag `-i` (inline) permite especificar pares agente-prompt diretamente no coma
 
 Nem todos os CLIs de IA performam igualmente em todos os domínios. oh-my-agent permite rotear agentes para o CLI que melhor trata seu domínio.
 
-### Exemplo de Configuração Completa
+### Exemplo de configuração completa
 
 ```yaml
 # .agents/oma-config.yaml
@@ -137,7 +137,7 @@ agents:
 
 Presets built-in: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Veja [Per-Agent Models](../guide/per-agent-models.md) para detalhes.
 
-### Prioridade de Resolução de Vendor
+### Prioridade de resolução de vendor
 
 Quando `oma agent:spawn` determina qual CLI usar:
 
@@ -151,7 +151,7 @@ A flag `--model` sempre vence. Se nenhuma flag é fornecida, o sistema verifica 
 
 ---
 
-## Métodos de Spawn Específicos por Vendor
+## Métodos de spawn específicos por vendor
 
 O mecanismo de spawn varia por IDE/CLI:
 
@@ -173,9 +173,9 @@ Múltiplas chamadas da ferramenta Agent na mesma mensagem executam como paraleli
 
 ---
 
-## Monitoramento de Agentes
+## Monitoramento de agentes
 
-### Dashboard no Terminal
+### Dashboard no terminal
 
 ```bash
 oma dashboard
@@ -190,7 +190,7 @@ Exibe uma tabela ao vivo com:
 
 O dashboard observa `.serena/memories/` para atualizações em tempo real. Atualiza conforme os agentes escrevem progresso.
 
-### Dashboard Web
+### Dashboard web
 
 ```bash
 oma dashboard:web
@@ -204,7 +204,7 @@ Recursos:
 - Streaming de log de atividade dos arquivos de progresso e resultado
 - Histórico de sessões
 
-### Layout Recomendado de Terminal
+### Layout recomendado de terminal
 
 Use 3 terminais para visibilidade ótima:
 
@@ -224,7 +224,7 @@ Use 3 terminais para visibilidade ótima:
 └────────────────────────────────────────────────┘
 ```
 
-### Verificando Status de Agente Individual
+### Verificando status de agente individual
 
 ```bash
 oma agent:status <session-id> <agent-id>
@@ -234,7 +234,7 @@ Retorna o status atual de um agente específico: running, completed ou failed, j
 
 ---
 
-## Estratégia de Session ID
+## Estratégia de session ID
 
 Session IDs agrupam agentes trabalhando na mesma funcionalidade. Melhores práticas:
 
@@ -250,7 +250,7 @@ Session IDs determinam:
 
 ---
 
-## Dicas para Execução Paralela
+## Dicas para execução paralela
 
 ### Faça
 
@@ -278,7 +278,7 @@ Session IDs determinam:
 
 7. **Comece com `/work` se inseguro.** O workflow work guia você pelo processo passo a passo com confirmação do usuário em cada portão.
 
-### Não Faça
+### Não faça
 
 1. **Não spawne agentes no mesmo workspace.** Dois agentes escrevendo no mesmo diretório criarão conflitos de merge e sobrescreverão o trabalho um do outro.
 
@@ -292,7 +292,7 @@ Session IDs determinam:
 
 ---
 
-## Exemplo de Ponta a Ponta
+## Exemplo de ponta a ponta
 
 Um workflow completo de execução paralela para construir uma funcionalidade de autenticação de usuário:
 

@@ -49,7 +49,7 @@ L'installateur vous invite à sélectionner un preset, qui détermine quelles co
 
 ### Presets
 
-| Preset | Skills Included |
+| Préréglage | Compétences incluses |
 |--------|----------------|
 | **all** | oma-brainstorm, oma-pm, oma-frontend, oma-backend, oma-db, oma-mobile, oma-design, oma-qa, oma-debug, oma-tf-infra, oma-dev-workflow, oma-translator, oma-orchestrator, oma-scm, oma-coordination |
 | **fullstack** | oma-frontend, oma-backend, oma-db, oma-pm, oma-qa, oma-debug, oma-brainstorm, oma-scm |
@@ -69,35 +69,35 @@ Après l'installation, votre projet contiendra :
 ```
 .agents/
 ├── config/
-│   └── oma-config.yaml      # Your preferences
+│   └── oma-config.yaml      # Vos préférences
 ├── skills/
-│   ├── _shared/                    # Shared resources (always installed)
+│   ├── _shared/                    # Ressources partagées (toujours installées)
 │   │   ├── core/                   # skill-routing, context-loading, etc.
 │   │   ├── runtime/                # memory-protocol, execution-protocols/
 │   │   └── conditional/            # quality-score, experiment-ledger, etc.
-│   ├── oma-frontend/               # Per preset
+│   ├── oma-frontend/               # Selon le preset
 │   │   ├── SKILL.md
 │   │   └── resources/
-│   └── ...                         # Other selected skills
-├── workflows/                      # All 16 workflow definitions
-├── agents/                         # Subagent definitions
-├── mcp.json                        # MCP server configuration
-├── results/plan-{sessionId}.json                       # Empty (populated by /plan)
-├── state/                          # Empty (used by persistent workflows)
-└── results/                        # Empty (populated by agent runs)
+│   └── ...                         # Autres compétences sélectionnées
+├── workflows/                      # Les 16 définitions de workflows
+├── agents/                         # Définitions des sous-agents
+├── mcp.json                        # Configuration du serveur MCP
+├── results/plan-{sessionId}.json                       # Vide (renseigné par /plan)
+├── state/                          # Vide (utilisé par les workflows persistants)
+└── results/                        # Vide (renseigné par les exécutions d'agents)
 
 .claude/
-├── settings.json                   # Hooks and permissions
+├── settings.json                   # Hooks et permissions
 ├── hooks/
-│   ├── triggers.json               # Keyword-to-workflow mapping (11 languages)
-│   ├── keyword-detector.ts         # Auto-detection logic
-│   ├── persistent-mode.ts          # Persistent workflow enforcement
-│   └── hud.ts                      # [OMA] statusline indicator
+│   ├── triggers.json               # Mapping mot-clé/workflow (11 langues)
+│   ├── keyword-detector.ts         # Logique de détection automatique
+│   ├── persistent-mode.ts          # Application du mode workflow persistant
+│   └── hud.ts                      # Indicateur de barre d'état [OMA]
 ├── skills/                         # Symlinks → .agents/skills/
-└── agents/                         # Subagent definitions for IDE
+└── agents/                         # Définitions de sous-agents pour l'IDE
 
 .serena/
-└── memories/                       # Runtime state (populated during sessions)
+└── memories/                       # État d'exécution (renseigné pendant les sessions)
 ```
 
 ---
@@ -123,23 +123,23 @@ npm install --global oh-my-agent
 Cela installe la commande `oma` globalement, vous donnant accès à toutes les commandes CLI depuis n'importe quel répertoire :
 
 ```bash
-oma doctor              # Health check
-oma dashboard           # Terminal monitoring
-oma dashboard:web       # Web dashboard at http://localhost:9847
-oma agent:spawn         # Spawn agents from terminal
-oma agent:parallel      # Parallel agent execution
-oma agent:status        # Check agent status
-oma stats               # Session statistics
-oma retro               # Retrospective analysis
-oma cleanup             # Clean up session artifacts
-oma update              # Update oh-my-agent
-oma verify              # Verify agent output
-oma visualize           # Dependency visualization
-oma describe            # Describe project structure
-oma bridge              # SSE-to-stdio bridge for Antigravity
-oma memory:init         # Initialize memory provider
-oma auth:status         # Check CLI auth status
-oma star                # Star the repository
+oma doctor              # Vérification de santé
+oma dashboard           # Surveillance terminal
+oma dashboard:web       # Tableau de bord web sur http://localhost:9847
+oma agent:spawn         # Lance des agents depuis le terminal
+oma agent:parallel      # Exécution parallèle d'agents
+oma agent:status        # Vérifie le statut d'un agent
+oma stats               # Statistiques de session
+oma retro               # Analyse rétrospective
+oma cleanup             # Nettoyage des artefacts de session
+oma update              # Met à jour oh-my-agent
+oma verify              # Vérifie la sortie d'un agent
+oma visualize           # Visualisation des dépendances
+oma describe            # Décrit la structure du projet
+oma bridge              # Pont SSE vers stdio pour Antigravity
+oma memory:init         # Initialise le fournisseur de mémoire
+oma auth:status         # Vérifie le statut d'authentification des CLI
+oma star                # Ajoute une étoile au dépôt
 ```
 
 `oma` est l'abréviation de `oh-my-agent`. Les deux fonctionnent comme commandes CLI.
@@ -203,28 +203,28 @@ L'authentification est gérée par `agy` au premier lancement. Le binaire est `a
 La commande `oma install` crée `.agents/oma-config.yaml`. C'est le fichier de configuration central pour tout le comportement d'oh-my-agent :
 
 ```yaml
-# Response language for all agents and workflows
+# Langue de réponse pour tous les agents et workflows
 language: en
 
-# Date format used in reports and memory files
+# Format de date utilisé dans les rapports et fichiers mémoire
 date_format: "YYYY-MM-DD"
 
-# Timezone for timestamps
+# Fuseau horaire pour les horodatages
 timezone: "UTC"
 
-# Default CLI tool for agent spawning
-# Options: antigravity, claude, codex, qwen
+# CLI par défaut pour le lancement des agents
+# Options : antigravity, claude, codex, qwen
 default_cli: gemini
 
-# Per-agent CLI mapping (overrides default_cli)
+# Mapping CLI par agent (remplace default_cli)
 model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Complex UI reasoning
-  backend: gemini        # Fast API generation
+  frontend: claude       # Raisonnement UI complexe
+  backend: gemini        # Génération rapide d'API
   mobile: gemini
   db: gemini
-  pm: gemini             # Quick decomposition
-  qa: claude             # Thorough security review
-  debug: claude          # Deep root-cause analysis
+  pm: gemini             # Décomposition rapide
+  qa: claude             # Revue de sécurité approfondie
+  debug: claude          # Analyse de cause profonde
   design: claude
   tf-infra: gemini
   dev-workflow: gemini
@@ -235,23 +235,23 @@ model_preset (per-agent overrides via `agents:`):
 
 ### Référence des champs
 
-| Field | Type | Default | Description |
+| Champ | Type | Par défaut | Description |
 |-------|------|---------|-------------|
-| `language` | string | `en` | Response language code. All agent output, workflow messages, and reports use this language. Supports 11 languages (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
-| `date_format` | string | `YYYY-MM-DD` | Date format string for timestamps in plans, memory files, and reports. |
-| `timezone` | string | `UTC` | Timezone for all timestamps. Uses standard timezone identifiers (e.g., `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | Fallback CLI when no agent-specific mapping exists. Used as level 3 in vendor resolution priority. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (empty) | Maps agent IDs to specific CLI vendors. Takes precedence over `default_cli`. |
+| `language` | string | `en` | Code de langue de réponse. Toute sortie d'agent, message de workflow et rapport utilise cette langue. Prend en charge 11 langues (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
+| `date_format` | string | `YYYY-MM-DD` | Chaîne de format de date pour les horodatages des plans, fichiers mémoire et rapports. |
+| `timezone` | string | `UTC` | Fuseau horaire de tous les horodatages. Utilise les identifiants standard (par exemple `Asia/Seoul`, `America/New_York`). |
+| `default_cli` | string | `gemini` | CLI de repli lorsqu'aucun mapping spécifique à l'agent n'existe. Utilisé comme niveau 3 dans la priorité de résolution du fournisseur. |
+| `model_preset (per-agent overrides via `agents:`)` | map | (vide) | Associe les identifiants d'agent à des fournisseurs CLI spécifiques. Prioritaire sur `default_cli`. |
 
 ### Priorité de résolution du fournisseur
 
 Lors du lancement d'un agent, le fournisseur CLI est déterminé par cet ordre de priorité (le plus élevé en premier) :
 
-1. `--model` flag passed to `oma agent:spawn`
-2. `model_preset (per-agent overrides via `agents:`)` entry for that specific agent in `oma-config.yaml`
-3. `default_cli` setting in `oma-config.yaml`
-4. `active_vendor` in `cli-config.yaml` (legacy fallback)
-5. `gemini` (hardcoded final fallback)
+1. Flag `--model` passé à `oma agent:spawn`
+2. Entrée `model_preset (per-agent overrides via `agents:`)` pour cet agent spécifique dans `oma-config.yaml`
+3. Paramètre `default_cli` dans `oma-config.yaml`
+4. `active_vendor` dans `cli-config.yaml` (repli hérité)
+5. `gemini` (repli final codé en dur)
 
 ---
 

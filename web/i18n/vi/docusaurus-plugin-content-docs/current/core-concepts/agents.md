@@ -526,7 +526,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 ---
 
-## Charter Preflight (CHARTER_CHECK)
+## Charter preflight (CHARTER_CHECK)
 
 Trước khi viết bất kỳ mã nào, mọi agent triển khai phải xuất khối CHARTER_CHECK:
 
@@ -643,7 +643,7 @@ Các file này định nghĩa danh tính agent, tham chiếu quy trình thực t
 
 ---
 
-## Trạng thái runtime (Serena Memory)
+## Trạng thái runtime (Serena memory)
 
 Trong phiên điều phối, agent phối hợp qua file bộ nhớ chia sẻ trong `.serena/memories/` (có thể cấu hình qua `mcp.json`):
 

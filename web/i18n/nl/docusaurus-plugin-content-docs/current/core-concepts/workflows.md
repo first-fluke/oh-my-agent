@@ -11,13 +11,13 @@ Er zijn 16 workflows, waarvan 4 persistent zijn (ze behouden status en kunnen ni
 
 ---
 
-## Persistente Workflows
+## Persistente workflows
 
 Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden status in `.agents/state/` en herinjecteren `[OMA PERSISTENT MODE: ...]`-context bij elk gebruikersbericht totdat ze expliciet worden gedeactiveerd.
 
 ### /orchestrate
 
-**Beschrijving:** Geautomatiseerde CLI-gebaseerde parallelle agentuitvoering. Spawnt subagenten via CLI, coordineert door MCP-geheugen, bewaakt voortgang en draait verificatielussen.
+**Beschrijving:** Geautomatiseerde CLI-gebaseerde parallelle agentuitvoering. Spawnt subagenten via CLI, coördineert door MCP-geheugen, bewaakt voortgang en draait verificatielussen.
 
 **Persistent:** Ja. Statusbestand: `.agents/state/orchestrate-state.json`.
 
@@ -47,7 +47,7 @@ Persistente workflows blijven draaien totdat alle taken klaar zijn. Ze behouden 
 Whitelist van zelfstandige naamwoorden (15): app, api, service, server, cli, tool, website, dashboard, system, feature, backend, frontend, prototype, mvp, bot.
 
 **Stappen:**
-1. **Stap 0 — Voorbereiding:** Lees coordinatieskill, contextladingsgids, geheugenprotocol. Detecteer leverancier.
+1. **Stap 0 — Voorbereiding:** Lees coördinatieskill, contextladingsgids, geheugenprotocol. Detecteer leverancier.
 2. **Stap 1 — Plan Laden/Aanmaken:** Controleer op `.agents/results/plan-{sessionId}.json`. Indien afwezig, vraag gebruiker eerst `/plan` uit te voeren.
 3. **Stap 2 — Sessie Initialiseren:** Laad `oma-config.yaml`, toon CLI-mappingtabel, genereer sessie-ID (`session-JJJJMMDD-UUMMSS`), maak `orchestrator-session.md` en `task-board.md` aan in geheugen.
 4. **Stap 3 — Agenten Spawnen:** Voor elke prioriteitstier (P0 eerst, dan P1...), spawn agenten met leverancier-geschikte methode. Overschrijd nooit MAX_PARALLEL.
@@ -59,13 +59,13 @@ Whitelist van zelfstandige naamwoorden (15): app, api, service, server, cli, too
 **Gelezen bestanden:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, `progress-{agent}.md`, `result-{agent}.md`.
 **Geschreven bestanden:** `orchestrator-session.md`, `task-board.md` (geheugen), eindrapport.
 
-**Wanneer gebruiken:** Grote projecten die maximale parallelisme vereisen met geautomatiseerde coordinatie.
+**Wanneer gebruiken:** Grote projecten die maximale parallelisme vereisen met geautomatiseerde coördinatie.
 
 ---
 
 ### /work
 
-**Beschrijving:** Stap-voor-stap multi-domeincoordinatie. PM plant eerst, dan voeren agenten uit met gebruikersbevestiging bij elke poort, gevolgd door QA-review en probleemoplossing.
+**Beschrijving:** Stap-voor-stap multi-domeincoördinatie. PM plant eerst, dan voeren agenten uit met gebruikersbevestiging bij elke poort, gevolgd door QA-review en probleemoplossing.
 
 **Persistent:** Ja. Statusbestand: `.agents/state/work-state.json`.
 
@@ -161,7 +161,7 @@ Whitelist van zelfstandige naamwoorden (15): app, api, service, server, cli, too
 
 ---
 
-## Niet-Persistente Workflows
+## Niet-persistente workflows
 
 ### /plan
 
@@ -340,7 +340,7 @@ Whitelist van zelfstandige naamwoorden (15): app, api, service, server, cli, too
 
 ---
 
-## Skills vs. Workflows
+## Skills vs. workflows
 
 | Aspect | Skills | Workflows |
 |--------|--------|-----------|
@@ -352,9 +352,9 @@ Whitelist van zelfstandige naamwoorden (15): app, api, service, server, cli, too
 
 ---
 
-## Auto-Detectie: Hoe Het Werkt
+## Auto-detectie: hoe het werkt
 
-### Het Hook-Systeem
+### Het hook-systeem
 
 oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruikersbericht wordt verwerkt. Het hook-systeem bestaat uit:
 
@@ -384,7 +384,7 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 
 **Implicatie**: Indien u `language: en` instelt in `.agents/oma-config.yaml`, worden alleen `*` en `en` patronen geladen. Koreaanse/Japanse/etc. natuurlijke-taal triggers vuren niet, ook al typt de gebruiker in die talen. Om een niet-Engelse taal in te schakelen, stel `language: <code>` overeenkomstig in. De Engelse fallback in `*` blijft altijd actief.
 
-### Pattern-veld (Raw Regex)
+### Pattern-veld (raw regex)
 
 Naast letterlijke `keywords` kan elke workflow ook `patterns` declareren — raw regex-strings gecompileerd met `iu`-flags. Patronen maken multi-token intentiematching mogelijk die anders combinatorische trefwoordlijsten zou vereisen.
 
@@ -423,13 +423,13 @@ Indien de invoer zowel een workflowtrigger als een informatiepatroon matcht, kri
 - `"How do you build a TODO app?"` — `how do` in `*` blokkeert de orchestrate-intentie regex
 - `"orchestrate 트리거 해주면 되나요?"` (onder `language: ko`) — `트리거` in `ko` blokkeert het orchestrate-trefwoord
 
-### Uitgesloten Workflows
+### Uitgesloten workflows
 
 Vereisen expliciet `/command`: `/scm`, `/tools`, `/stack-set`, `/exec-plan`, `/pdf`.
 
 ---
 
-## Persistente Modus Mechanismen
+## Persistente modus mechanismen
 
 ### Statusbestanden
 
@@ -459,19 +459,19 @@ De workflow kan ook op natuurlijke wijze eindigen wanneer alle stappen zijn volt
 
 ---
 
-## Typische Workflowsequenties
+## Typische workflowsequenties
 
-### Snelle Functie
+### Snelle functie
 ```
 /plan → uitvoer reviewen → /exec-plan
 ```
 
-### Complex Multi-Domein Project
+### Complex multi-domein project
 ```
 /work → PM plant → gebruiker bevestigt → agenten spawnen → QA reviewt → problemen fixen → leveren
 ```
 
-### Maximale Kwaliteitslevering
+### Maximale kwaliteitslevering
 ```
 /ultrawork → PLAN (4 reviewstappen) → IMPL → VERIFY (3 reviewstappen) → REFINE (5 reviewstappen) → SHIP (4 reviewstappen)
 ```
@@ -481,12 +481,12 @@ De workflow kan ook op natuurlijke wijze eindigen wanneer alle stappen zijn volt
 /debug → reproduceren → oorzaak → minimale fix → regressietest → vergelijkbare patronen scannen
 ```
 
-### Design-naar-Implementatie Pipeline
+### Design-naar-implementatie pipeline
 ```
 /brainstorm → ontwerpdocument → /plan → taakopsplitsing → /orchestrate → parallelle implementatie → /review → /scm
 ```
 
-### Nieuwe Codebase Setup
+### Nieuwe codebase setup
 ```
 /deepinit → AGENTS.md + ARCHITECTURE.md + docs/
 ```

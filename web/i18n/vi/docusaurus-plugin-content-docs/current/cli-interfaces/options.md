@@ -338,7 +338,7 @@ oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 
 ## Ví dụ thực tế
 
-### Pipeline CI: Cập nhật và xác minh
+### Pipeline CI: cập nhật và xác minh
 
 ```bash
 # Cập nhật ở chế độ CI, sau đó chạy doctor để xác minh cài đặt

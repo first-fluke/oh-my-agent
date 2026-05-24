@@ -40,7 +40,7 @@ jobs:
 
 ---
 
-## Tất cả input Action
+## Tất cả input action
 
 | Input | Kiểu | Bắt buộc | Mặc định | Mô tả |
 |:------|:-----|:---------|:--------|:-----------|
@@ -54,7 +54,7 @@ jobs:
 
 ---
 
-## Tất cả output Action
+## Tất cả output action
 
 | Output | Kiểu | Mô tả | Có sẵn |
 |:-------|:-----|:-----------|:----------|

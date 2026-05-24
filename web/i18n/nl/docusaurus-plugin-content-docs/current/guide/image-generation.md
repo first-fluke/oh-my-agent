@@ -11,14 +11,14 @@ De skill activeert automatisch op trefwoorden zoals *image*, *illustration*, *vi
 
 ---
 
-## Wanneer Gebruiken
+## Wanneer gebruiken
 
 - Genereren van beelden, illustraties, productfoto's, concept art, hero/landing visuals
 - Dezelfde prompt naast elkaar vergelijken tussen meerdere modellen (`--vendor all`)
 - Assets produceren vanuit een editor-workflow (Claude Code, Codex, Gemini CLI)
 - Een andere skill (design, marketing, docs) de beeldpipeline laten aanroepen als gedeelde infrastructuur
 
-## Wanneer NIET Gebruiken
+## Wanneer NIET gebruiken
 
 - Een bestaand beeld bewerken of retoucheren — buiten scope (gebruik een speciaal tool)
 - Genereren van video of audio — buiten scope
@@ -27,7 +27,7 @@ De skill activeert automatisch op trefwoorden zoals *image*, *illustration*, *vi
 
 ---
 
-## Vendors in een Oogopslag
+## Vendors in een oogopslag
 
 De skill is CLI-first: wanneer de native CLI van een vendor ruwe beeldbytes kan teruggeven, krijgt het subprocess-pad voorrang boven een directe API-key.
 
@@ -41,7 +41,7 @@ De skill is CLI-first: wanneer de native CLI van een vendor ruwe beeldbytes kan 
 
 ---
 
-## Snelle Start
+## Snelle start
 
 ```bash
 # Free, zero-config — uses pollinations/flux
@@ -67,11 +67,11 @@ oma image list-vendors
 
 ---
 
-## Gebruiken als een Skill
+## Gebruiken als een skill
 
 `oma-image` is een skill — hij activeert automatisch op natuurlijke taal en kan ook expliciet worden aangeroepen. Er zijn drie ingangen.
 
-### 1. Natuurlijke Taal (auto-activatie)
+### 1. Natuurlijke taal (auto-activatie)
 
 Beschrijf het beeld gewoon binnen Claude Code, Codex CLI of Gemini CLI. De skill matcht trefwoorden zoals *image*, *illustration*, *visual asset*, *concept art*, *hero shot*, *thumbnail*, *product photo*.
 
@@ -96,7 +96,7 @@ Voorbeelden:
 
 De agent doorloopt het [Clarification Protocol](#clarification-protocol), versterkt de prompt indien nodig en roept `oma image generate` aan met de afgeleide flags. Gebruik het slash command wanneer je expliciete controle wilt over de exacte flag-waarden.
 
-### 2. Expliciet Slash Command
+### 2. Expliciet slash command
 
 ```text
 /oma-image a red apple on white background
@@ -106,7 +106,7 @@ De agent doorloopt het [Clarification Protocol](#clarification-protocol), verste
 
 Elke CLI-flag (`--vendor`, `-n`, `--size`, `-r`, `--dry-run`, …) werkt in het slash command — het wordt doorgestuurd naar dezelfde `oma image generate` pipeline.
 
-### 3. Vanuit een Andere Skill (gedeelde infrastructuur)
+### 3. Vanuit een andere skill (gedeelde infrastructuur)
 
 Andere skills (design, marketing, docs) roepen de pipeline aan als gedeelde infrastructuur met JSON-uitvoer:
 
@@ -135,7 +135,7 @@ oma image doctor
 oma image list-vendors
 ```
 
-### Belangrijke Flags
+### Belangrijke flags
 
 | Flag | Doel |
 |---|---|
@@ -169,7 +169,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 | `gemini` (2.5-flash-image) | Ja | Inlinet base64 `inlineData` in het verzoek |
 | `pollinations` | Nee | Afgewezen met exit code 4 (vereist URL-hosting) |
 
-### Waar Bijgevoegde Beelden Staan
+### Waar bijgevoegde beelden staan
 
 - **Claude Code** — `~/.claude/image-cache/<session>/N.png`, getoond in systeemberichten als `[Image: source: <path>]`. Sessie-gebonden: kopieer naar een duurzame locatie als je het later opnieuw wilt gebruiken.
 - **Antigravity** — workspace upload directory (de IDE toont het exacte pad)
@@ -198,7 +198,7 @@ Elke run schrijft naar `.agents/results/images/` met een directory voorzien van 
 
 ---
 
-## Kosten, Veiligheid en Annulering
+## Kosten, veiligheid en annulering
 
 1. **Kostenbeperking** — runs geschat op ≥ `$0.20` vragen om bevestiging. Omzeil dit met `-y` of `OMA_IMAGE_YES=1`. Standaard `pollinations` (flux/zimage) is gratis, dus de prompt wordt daarvoor automatisch overgeslagen.
 2. **Padveiligheid** — uitvoerpaden buiten `$PWD` vereisen `--allow-external-out` om verrassende schrijfacties te voorkomen.

@@ -5,7 +5,7 @@ description: Volledige gids voor het toevoegen van oh-my-agent aan een bestaand 
 
 # Gids: Integratie in Bestaand Project
 
-## Twee Integratiepaden
+## Twee integratiepaden
 
 1. **CLI-pad** — Voer `oma` (of `npx oh-my-agent`) uit en volg de interactieve prompts. Aanbevolen voor de meeste gebruikers.
 2. **Handmatig pad** — Kopieer bestanden en configureer symlinks zelf. Nuttig voor beperkte omgevingen of aangepaste opstellingen.
@@ -14,45 +14,45 @@ Beide paden produceren hetzelfde resultaat: een `.agents/`-directory (de SSOT) m
 
 ---
 
-## CLI-Pad: Stap voor Stap
+## CLI-Pad: stap voor stap
 
 ### 1. Installeer de CLI
 ```bash
 bun install --global oh-my-agent
 ```
 
-### 2. Navigeer naar je Projectroot
+### 2. Navigeer naar je projectroot
 ```bash
 cd /path/to/your/project
 ```
 
-### 3. Voer de Installer uit
+### 3. Voer de installer uit
 ```bash
 oma
 ```
 
-### 4. Selecteer Projecttype
+### 4. Selecteer projecttype
 Presets: All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom.
 
-### 5. Kies Backend-Taal (indien van toepassing)
+### 5. Kies backend-taal (indien van toepassing)
 Python, Node.js, Rust of Auto-detect.
 
-### 6. Configureer IDE Symlinks
+### 6. Configureer IDE symlinks
 De installer maakt altijd Claude Code symlinks (`.claude/skills/`) aan. Hij genereert ook vendor-native agentbestanden en hooks voor Antigravity, Claude, Codex en Qwen, en als er een `.github/`-directory bestaat, worden GitHub Copilot symlinks automatisch aangemaakt. Anders vraagt hij:
 
 ```
 Symlinks ook aanmaken voor GitHub Copilot? (.github/skills/)
 ```
 
-### 7. Git Rerere Setup
+### 7. Git rerere setup
 Aanbevolen voor multi-agent merge-conflicthergebruik.
 
-### 8. MCP Configuratie
+### 8. MCP configuratie
 Serena MCP bridge configuratie voor Antigravity IDE en Gemini CLI.
 
 ---
 
-## Handmatig Pad
+## Handmatig pad
 
 ```bash
 # Download en extraheer
@@ -83,7 +83,7 @@ Controleert: CLI-installaties (`agy`, claude, codex, qwen), authenticatie, MCP-c
 
 ---
 
-## Multi-IDE Symlinkstructuur (SSOT-Concept)
+## Multi-IDE symlinkstructuur (SSOT-Concept)
 
 oh-my-agent gebruikt een Single Source of Truth (SSOT)-architectuur. `.agents/` is de enige plek waar skills, workflows, configs en agentdefinities leven. Alle IDE-specifieke directory's bevatten alleen symlinks.
 
@@ -95,13 +95,13 @@ oh-my-agent gebruikt een Single Source of Truth (SSOT)-architectuur. `.agents/` 
 
 ---
 
-## Veiligheidstips en Terugdraaienstrategie
+## Veiligheidstips en terugdraaienstrategie
 
-### Voor Installatie
+### Voor installatie
 1. Commit je huidige werk
 2. Controleer op bestaande `.agents/`-directory
 
-### Na Installatie
+### Na installatie
 1. Review wat er is aangemaakt met `git status`
 2. Voeg selectief toe aan `.gitignore`:
 ```gitignore
@@ -117,7 +117,7 @@ rm -rf .agents/ .claude/skills/ .claude/agents/ .serena/
 
 ---
 
-## Wat de Installer Onder de Motorkap Doet
+## Wat de installer onder de motorkap doet
 
 1. **Legacy migratie** — `.agent/` (enkelvoud) naar `.agents/` (meervoud)
 2. **Concurrentdetectie** — Biedt aan concurrerende tools te verwijderen

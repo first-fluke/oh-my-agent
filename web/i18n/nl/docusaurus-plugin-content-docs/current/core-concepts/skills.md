@@ -9,7 +9,7 @@ Skills zijn gestructureerde kennispakketten die elke agent zijn domeinexpertise 
 
 ---
 
-## Het Tweelaagse Ontwerp
+## Het tweelaagse ontwerp
 
 ### Laag 1: SKILL.md (~800 bytes, altijd geladen)
 
@@ -43,7 +43,7 @@ Deze on-demand loading wordt gestuurd door de contextladingsgids (`.agents/skill
 
 ---
 
-## Bestandsstructuur Voorbeeld
+## Bestandsstructuur voorbeeld
 
 ```
 .agents/skills/oma-frontend/
@@ -100,7 +100,7 @@ Deze on-demand loading wordt gestuurd door de contextladingsgids (`.agents/skill
 
 ---
 
-## Per-Skill Resourcetypen
+## Per-skill resourcetypen
 
 | Resourcetype | Bestandsnaampatroon | Doel | Wanneer Geladen |
 |-------------|---------------------|------|----------------|
@@ -116,7 +116,7 @@ Deze on-demand loading wordt gestuurd door de contextladingsgids (`.agents/skill
 
 ---
 
-## Gedeelde Bronnen (_shared/)
+## Gedeelde bronnen (_shared/)
 
 Alle agenten delen gemeenschappelijke fundamenten vanuit `.agents/skills/_shared/`. Deze zijn georganiseerd in drie categorieen:
 
@@ -124,7 +124,7 @@ Alle agenten delen gemeenschappelijke fundamenten vanuit `.agents/skills/_shared
 
 | Resource | Doel | Wanneer Geladen |
 |----------|------|----------------|
-| **`skill-routing.md`** | Koppelt taaktrefwoorden aan de juiste agent. Bevat de Skill-Agent Mapping-tabel, Complex Request Routing-patronen, Inter-Agent Afhankelijkheidsregels, Escalatieregels en Beurtlimietgids. | Gerefereerd door orchestrator en coordinatie-skills |
+| **`skill-routing.md`** | Koppelt taaktrefwoorden aan de juiste agent. Bevat de Skill-Agent Mapping-tabel, Complex Request Routing-patronen, Inter-Agent Afhankelijkheidsregels, Escalatieregels en Beurtlimietgids. | Gerefereerd door orchestrator en coördinatie-skills |
 | **`context-loading.md`** | Definieert welke bronnen geladen worden voor welk taaktype en moeilijkheid. Bevat per-agent taaktype-naar-resource mappingtabellen en conditionele protocollaadtriggers. | Bij workflowstart (Stap 0 / Fase 0) |
 | **`prompt-structure.md`** | Definieert de vier elementen die elke taakprompt moet bevatten: Doel, Context, Beperkingen, Klaar Wanneer. Bevat sjablonen voor PM, implementatie en QA-agenten. Lijst anti-patronen (beginnen met alleen een Doel). | Gerefereerd door PM-agent en alle workflows |
 | **`clarification-protocol.md`** | Definieert onzekerheidsniveaus (LOW/MEDIUM/HIGH) met acties voor elk. Bevat onzekerheidstriggers, escalatiesjablonen, vereiste verificatie-items per agenttype en subagentmodusgedrag. | Wanneer requirements dubbelzinnig zijn |
@@ -138,7 +138,7 @@ Alle agenten delen gemeenschappelijke fundamenten vanuit `.agents/skills/_shared
 | **`lessons-learned.md`** | Repository van eerdere sessieleerpunten, automatisch gegenereerd uit Clarification Debt-overschrijdingen en afgewezen experimenten. Georganiseerd per domeinsectie. | Gerefereerd na fouten en aan sessieeinde |
 | **`api-contracts/`** | Directory met API-contractsjabloon en gegenereerde contracten. `template.md` definieert het per-endpoint formaat (methode, pad, request/response schema's, auth, fouten). | Wanneer cross-boundary werk gepland is |
 
-### Runtime Bronnen (`.agents/skills/_shared/runtime/`)
+### Runtime bronnen (`.agents/skills/_shared/runtime/`)
 
 | Resource | Doel |
 |----------|------|
@@ -150,7 +150,7 @@ Alle agenten delen gemeenschappelijke fundamenten vanuit `.agents/skills/_shared
 
 Leverancierspecifieke uitvoeringsprotocollen worden automatisch geinjecteerd door `oma agent:spawn` — agenten hoeven ze niet handmatig te laden.
 
-### Conditionele Bronnen (`.agents/skills/_shared/conditional/`)
+### Conditionele bronnen (`.agents/skills/_shared/conditional/`)
 
 Deze worden alleen geladen wanneer specifieke voorwaarden worden vervuld tijdens uitvoering:
 
@@ -164,15 +164,15 @@ Budgetimpact: ongeveer 750 tokens totaal als alle 3 worden geladen. Aangezien la
 
 ---
 
-## Hoe Skills Routeren via skill-routing.md
+## Hoe skills routeren via skill-routing.md
 
 De skill-routeringskaart definieert hoe taken aan agenten worden gekoppeld:
 
-### Eenvoudige Routering (Enkel Domein)
+### Eenvoudige routering (enkel domein)
 
 Een prompt met "Bouw een inlogformulier met Tailwind CSS" matcht de trefwoorden `UI`, `component`, `form`, `Tailwind`, en routeert naar **oma-frontend**.
 
-### Complexe Verzoekroutering
+### Complexe verzoekroutering
 
 Multi-domein verzoeken volgen vastgestelde uitvoeringsvolgorden:
 
@@ -185,7 +185,7 @@ Multi-domein verzoeken volgen vastgestelde uitvoeringsvolgorden:
 | "Ik heb een idee voor een functie" | oma-brainstorm -> oma-pm -> relevante agenten -> oma-qa |
 | "Doe alles automatisch" | oma-orchestrator (intern: oma-pm -> agenten -> oma-qa) |
 
-### Inter-Agent Afhankelijkheidsregels
+### Inter-agent afhankelijkheidsregels
 
 **Kunnen parallel draaien (geen afhankelijkheden):**
 - oma-backend + oma-frontend (wanneer API-contract vooraf gedefinieerd is)
@@ -221,7 +221,7 @@ Op flash-tier modellen (128K context) is dit het verschil tussen 108K tokens bes
 
 ---
 
-## Resource Loading per Taakmoeilijkheid
+## Resource loading per taakmoeilijkheid
 
 De moeilijkheidsgids classificeert taken in drie niveaus, die bepalen hoeveel van Laag 2 wordt geladen:
 
@@ -245,11 +245,11 @@ Laadt: `execution-protocol.md` + `examples.md` + `tech-stack.md` + `snippets.md`
 
 ---
 
-## Context-Loading Taakkaarten (Per Agent)
+## Context-loading taakkaarten (per agent)
 
 De contextladingsgids biedt gedetailleerde taaktype-naar-resource mappings. Hier zijn de belangrijkste mappings:
 
-### Backend Agent
+### Backend agent
 
 | Taaktype | Vereiste Bronnen |
 |----------|-----------------|
@@ -259,7 +259,7 @@ De contextladingsgids biedt gedetailleerde taaktype-naar-resource mappings. Hier
 | Prestatieoptimalisatie | examples.md (N+1 voorbeeld) |
 | Bestaande code aanpassen | examples.md + Serena MCP |
 
-### Frontend Agent
+### Frontend agent
 
 | Taaktype | Vereiste Bronnen |
 |----------|-----------------|
@@ -269,7 +269,7 @@ De contextladingsgids biedt gedetailleerde taaktype-naar-resource mappings. Hier
 | Styling | tailwind-rules.md |
 | Paginalayout | snippets.md (grid) + examples.md |
 
-### Design Agent
+### Design agent
 
 | Taaktype | Vereiste Bronnen |
 |----------|-----------------|
@@ -280,7 +280,7 @@ De contextladingsgids biedt gedetailleerde taaktype-naar-resource mappings. Hier
 | 3D / shader-effecten | reference/shader-and-3d.md + reference/motion-design.md |
 | Toegankelijkheidsreview | reference/accessibility.md + checklist.md |
 
-### QA Agent
+### QA agent
 
 | Taaktype | Vereiste Bronnen |
 |----------|-----------------|
@@ -292,7 +292,7 @@ De contextladingsgids biedt gedetailleerde taaktype-naar-resource mappings. Hier
 
 ---
 
-## Orchestrator Promptsamenstelling
+## Orchestrator promptsamenstelling
 
 Wanneer de orchestrator prompts samenstelt voor subagenten, bevat deze alleen taakrelevante bronnen:
 

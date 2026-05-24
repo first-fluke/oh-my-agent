@@ -9,7 +9,7 @@ A execução com skill única é o caminho rápido — um agente, um domínio, u
 
 ---
 
-## Quando Usar Skill Única
+## Quando usar skill única
 
 Use quando sua tarefa atende a TODOS estes critérios:
 
@@ -35,7 +35,7 @@ Use quando sua tarefa atende a TODOS estes critérios:
 
 ---
 
-## Checklist de Preflight
+## Checklist de preflight
 
 Antes de fazer o prompt, responda estas quatro perguntas (elas mapeiam para os quatro elementos da [Estrutura de Prompt](/docs/core-concepts/skills)):
 
@@ -53,7 +53,7 @@ Se qualquer elemento estiver faltando no seu prompt, o agente irá:
 
 ---
 
-## Template de Prompt
+## Template de prompt
 
 ```text
 Build <specific artifact> using <stack/framework>.
@@ -65,7 +65,7 @@ Acceptance criteria:
 Add tests for: <critical test cases>.
 ```
 
-### Detalhamento do Template
+### Detalhamento do template
 
 | Parte | Propósito | Exemplo |
 |-------|---------|---------|
@@ -77,9 +77,9 @@ Add tests for: <critical test cases>.
 
 ---
 
-## Exemplos Reais
+## Exemplos reais
 
-### Frontend: Formulário de Login
+### Frontend: formulário de login
 
 ```text
 Create a login form component in React + TypeScript + Tailwind CSS.
@@ -126,7 +126,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 ---
 
-### Backend: Endpoint de API REST
+### Backend: endpoint de API REST
 
 ```text
 Add a paginated GET /api/tasks endpoint that returns tasks for the authenticated user.
@@ -165,7 +165,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 ---
 
-### Mobile: Tela de Configurações
+### Mobile: tela de configurações
 
 ```text
 Build a settings screen in Flutter with profile editing (name, email, avatar), notification preferences (toggle switches), and a logout button.
@@ -205,7 +205,7 @@ Add tests for: profile save, logout flow, offline state.
 
 ---
 
-### Banco de Dados: Design de Schema
+### Banco de dados: design de schema
 
 ```text
 Design a database schema for a multi-tenant SaaS project management tool. Entities: Organization, Project, Task, User, TeamMembership.
@@ -250,11 +250,11 @@ Add deliverables: data standards table, glossary, migration script.
 
 ---
 
-## Checklist do Portão de Qualidade
+## Checklist do portão de qualidade
 
 Após o agente entregar sua saída, verifique estes itens antes de aceitar:
 
-### Verificações Universais (Todos os Agentes)
+### Verificações universais (todos os agentes)
 
 - [ ] **Comportamento corresponde aos critérios de aceitação** — cada critério do seu prompt é satisfeito
 - [ ] **Testes cobrem caminho feliz e casos de borda** — não apenas o caminho feliz
@@ -263,7 +263,7 @@ Após o agente entregar sua saída, verifique estes itens antes de aceitar:
 - [ ] **Charter foi seguido** — as restrições "Must NOT do" foram respeitadas
 - [ ] **Lint, typecheck, build passam** — execute as verificações padrão do seu projeto
 
-### Específico de Frontend
+### Específico de frontend
 
 - [ ] Acessibilidade: elementos interativos têm `aria-label`, headings semânticos, navegação por teclado funciona
 - [ ] Mobile: renderiza corretamente em breakpoints 320px, 768px, 1024px, 1440px
@@ -272,7 +272,7 @@ Após o agente entregar sua saída, verifique estes itens antes de aceitar:
 - [ ] Componentes shadcn/ui não modificados diretamente (wrappers usados)
 - [ ] Imports absolutos com `@/` (sem `../../` relativos)
 
-### Específico de Backend
+### Específico de backend
 
 - [ ] Arquitetura limpa mantida: sem lógica de negócio em route handlers
 - [ ] Todas as entradas validadas (sem confiar em entrada do usuário)
@@ -280,14 +280,14 @@ Após o agente entregar sua saída, verifique estes itens antes de aceitar:
 - [ ] Exceções customizadas via módulo centralizado de erros (sem exceções HTTP brutas)
 - [ ] Endpoints de auth com rate limiting
 
-### Específico de Mobile
+### Específico de mobile
 
 - [ ] Todos os controllers dispostos no método `dispose()`
 - [ ] Offline tratado graciosamente
 - [ ] Meta de 60fps mantida (sem jank)
 - [ ] Testado em iOS e Android
 
-### Específico de Banco de Dados
+### Específico de banco de dados
 
 - [ ] Pelo menos 3NF (ou justificativa documentada para desnormalização)
 - [ ] Todas as três camadas de schema documentadas (externa, conceitual, interna)
@@ -296,7 +296,7 @@ Após o agente entregar sua saída, verifique estes itens antes de aceitar:
 
 ---
 
-## Sinais de Escalação
+## Sinais de escalação
 
 Observe estes sinais que indicam que você deve mudar de skill única para execução multi-agente:
 
@@ -310,6 +310,6 @@ Observe estes sinais que indicam que você deve mudar de skill única para execu
 | Tarefa cresce de "um componente" para "três componentes + nova rota + API" | Desvio de escopo durante execução | Pare, execute `/plan` para decompor, depois `/orchestrate` |
 | Agente bloqueia com HIGH clarification | Requisitos fundamentalmente ambíguos | Responda as perguntas do agente ou execute `/brainstorm` para clarificar abordagem |
 
-### A Regra Geral
+### A regra geral
 
 Se você se encontrar re-spawnando o mesmo agente mais de duas vezes com refinamentos, a tarefa é provavelmente multi-domínio e precisa de `/work` ou no mínimo uma etapa de `/plan` para decompô-la adequadamente.
