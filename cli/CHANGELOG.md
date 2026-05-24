@@ -1,5 +1,30 @@
 # Changelog
 
+## [8.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.3...cli-v8.6.0) (2026-05-24)
+
+
+### Features
+
+* **antigravity:** agy mcp_config.json compatibility ([0099f2c](https://github.com/first-fluke/oh-my-agent/commit/0099f2cf82aebe1a2a9f6d8f8b13b08b6d61eae3))
+* **doctor:** dual-install presence + legacy backfill hint ([b628353](https://github.com/first-fluke/oh-my-agent/commit/b628353af565792e4bb87c7b7fbd658b83e872d8))
+* **install:** --global mode + context singleton + lock + guards + i18n + hook dedup ([36220f6](https://github.com/first-fluke/oh-my-agent/commit/36220f68ca011a43e5ddbdc3d83b391ea801716e))
+* **meta:** merge install state into _version.json (schemaVersion=2) ([72f3d20](https://github.com/first-fluke/oh-my-agent/commit/72f3d20ecb6a275ea8f5ff424092e015cd0f97e2))
+* **platform:** harden createLink with SSOT validation and Win32 long-path ([cda3424](https://github.com/first-fluke/oh-my-agent/commit/cda342471ac1b8f20c585a5629586f97e1093542))
+* **skills:** unify workflow skills under .agents/skills/ SSOT (Migration 011) ([757d697](https://github.com/first-fluke/oh-my-agent/commit/757d697f6340519b1921d7c49b8b5b1b69c7289a))
+* **uninstall:** add oma uninstall [--global] with dry-run preview ([ffb2bd5](https://github.com/first-fluke/oh-my-agent/commit/ffb2bd538ed52dc52cb17ca5f34fbee938e885a0))
+* **utils:** add safeWriteJson + safeReadJson with vendor-file guard ([a6dd155](https://github.com/first-fluke/oh-my-agent/commit/a6dd1555cbcedf87c6c617e0a855fb123ce847a6))
+
+
+### Refactoring
+
+* **skills:** rename createCliSymlinks → createVendorSymlinks, add Qwen ([5fb7b6e](https://github.com/first-fluke/oh-my-agent/commit/5fb7b6e3820502a1340ed299c6eed6b40cef7efb))
+* **vendors:** unify apply&lt;Vendor&gt;&lt;Subject&gt; naming convention ([51deebb](https://github.com/first-fluke/oh-my-agent/commit/51deebb348479fa619d5a418490041f4af17b009))
+
+
+### Documentation
+
+* global-install + oma-config-semantics guides with 10-locale i18n ([b618fc5](https://github.com/first-fluke/oh-my-agent/commit/b618fc52a9d467699f9a7cf052343e4c9a804eb0))
+
 ## [8.5.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.5.2...cli-v8.5.3) (2026-05-24)
 
 
