@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.7.0...cli-v8.8.0) (2026-05-25)
+
+
+### Features
+
+* **recap:** add antigravity parser and extract shared parser utils ([d314a20](https://github.com/first-fluke/oh-my-agent/commit/d314a20dc0d5e5145649c78dd12413865965e690))
+
 ## [8.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.6.0...cli-v8.7.0) (2026-05-24)
 
 
