@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.5...web-v3.5.6) (2026-05-24)
+
+
+### Documentation
+
+* humanize tone across all locales ([3a3acd0](https://github.com/first-fluke/oh-my-agent/commit/3a3acd0505ab9c3340543de9b8821009ef8eb20d))
+
 ## [3.5.5](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.4...web-v3.5.5) (2026-05-24)
 
 
