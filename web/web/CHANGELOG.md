@@ -1,6 +1,6 @@
 # Changelog
 
-## [3.5.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.5...web-v3.5.6) (2026-05-24)
+## [3.5.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.5...web-v3.5.6) (2026-05-25)
 
 
 ### Documentation
