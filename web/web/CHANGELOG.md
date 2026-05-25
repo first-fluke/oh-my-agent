@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.6...web-v3.6.0) (2026-05-25)
+
+
+### Features
+
+* **recap:** add antigravity parser and extract shared parser utils ([d314a20](https://github.com/first-fluke/oh-my-agent/commit/d314a20dc0d5e5145649c78dd12413865965e690))
+
 ## [3.5.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.5...web-v3.5.6) (2026-05-25)
 
 
