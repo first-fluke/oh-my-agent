@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.7.0",
-  "releaseDate": "2026-05-25T01:48:06.688Z",
+  "releaseDate": "2026-05-25T13:41:45.831Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -86,8 +86,8 @@
     },
     {
       "path": ".agents/hooks/core/constants.ts",
-      "sha256": "58bacf20f5a937e173a67399183ebd6e67792902fc54c2d9d1e757999eeea99c",
-      "size": 1155
+      "sha256": "f84a333ccff3046284f46ec7b376cd79c5576f79e44183cf07cc63ea66f22e11",
+      "size": 1185
     },
     {
       "path": ".agents/hooks/core/filter-test-output.sh",
@@ -101,33 +101,48 @@
     },
     {
       "path": ".agents/hooks/core/hook-output.ts",
-      "sha256": "91171f9effc2179dceaa3b8a5c8dd7fc6dfb5f59afc5242f1078968656484a3c",
-      "size": 2352
+      "sha256": "7c8d4abb63f3b4fc8d246953fce7e7a8b251a9c2fd107ed48e4de296406457b8",
+      "size": 2476
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "7c28378fa66ad77d9e67494fd935538b6e32cfc71db0116c28eef8aa88d26ed7",
-      "size": 11862
+      "sha256": "c4622d417cafe5dabfcade44cb1b136b56ea84c162c2c9c2a231ade2b69041cf",
+      "size": 11959
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "f19c0ccacf9ea506677e3d4f913cf47841aa3da88151420f7d0e57e203713cdc",
-      "size": 25677
+      "sha256": "b21aca8841103d182e769c66ff14df30c6a027394c4f5834c1cfaedddf786448",
+      "size": 26920
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "0289516475f8aef8ea6f925916b02a38afa53f22c166061917154fa925b62825",
-      "size": 7071
+      "sha256": "d185183aa2c221841819edf2f7738fc070f7124cfe0f6f764cd0725e98800513",
+      "size": 7351
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "09001395f607732a76e659e3be0c9836e4cc25a25b14911927182739bfc8c980",
-      "size": 16443
+      "sha256": "a0ba214dc05edb0a4e47514308cc425012953fe129fa61e2ea1c2c4467aed8cc",
+      "size": 16786
+    },
+    {
+      "path": ".agents/hooks/core/state-boundary.ts",
+      "sha256": "d5df22cf1c2008b8f0d28010aa1fdf9827c446cc7159803dfb8b635afcbbc08a",
+      "size": 4210
+    },
+    {
+      "path": ".agents/hooks/core/state-emit.ts",
+      "sha256": "303acfcd1b59d83671879de506b4133e485b0233f961249f3c4664a4dbbd02cf",
+      "size": 4354
+    },
+    {
+      "path": ".agents/hooks/core/state-marker.ts",
+      "sha256": "daa35f9871c1df9d529cdcbc2df5820ad0f41bdea89f74cecbc4b34da01c5bb7",
+      "size": 3188
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "44e4189bf89f6da42484bccce82735d5ac9a8fca5e009ac7eccfea116ff70e0e",
-      "size": 4406
+      "sha256": "32383f054f98fc3c4e707ba0587649e73400955f3e2bc901daa6dcc7b826eac8",
+      "size": 4762
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -140,34 +155,39 @@
       "size": 828
     },
     {
+      "path": ".agents/hooks/variants/antigravity.json",
+      "sha256": "a0c15013312a434f7dd3e637e15a5e9a14a63dc39bd83a69a1ea28781e7bef2a",
+      "size": 759
+    },
+    {
       "path": ".agents/hooks/variants/claude.json",
-      "sha256": "ae395bf3f110b056d5089e8edc8cfa71a5e5dd66eb0d12cc313b6a371982655a",
-      "size": 804
+      "sha256": "7415cc1b090912e639b3eb5d97ac16daa019c89c92c4b9f13461d0f098f90323",
+      "size": 879
     },
     {
       "path": ".agents/hooks/variants/codex.json",
-      "sha256": "d0b9bd6297fa2a662ddb9df8b1151933b267f440d4fee678a507fe6174cddb3f",
-      "size": 688
+      "sha256": "d26230c9f5990f1eb74231d3bea3f506a46dccaa92b6758deafeef6fd3735c61",
+      "size": 763
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "0247a53820201dc03f4df0e1010dd53396bb17c1ea33d6b7f450128c249bd26f",
-      "size": 606
+      "sha256": "41b48f9533bd16997ac31648c7e289edf004d72fdf81f0ef89b4c56e97ad52cf",
+      "size": 756
     },
     {
       "path": ".agents/hooks/variants/gemini.json",
-      "sha256": "e3d8e2748bc4572bdefecba3251f4a6b65c787678bb8acc98a38c2c4c4b7bde6",
-      "size": 983
+      "sha256": "52318f3dffafae0c8b149aa1207ef8bd446a859e8f835939db0b10a195218c9f",
+      "size": 1085
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "656a1ecc05671677441590c37ec2530784e39c12e203d170cca2c25713b34b51",
-      "size": 3992
+      "sha256": "a02f0a8c2cba8217e1fa14b8c0a26cdcb68aee0f244cbbc80dfcae30396b1bfb",
+      "size": 4007
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "bb1adcd864c1bc80ac3b3eb49931751a56d1246f2c1e3d2ee6e3105c73a1ec72",
-      "size": 575
+      "sha256": "4ae0b7145f4c554a482187546f7ac57c3a63fd579c2b3e2c747bb743b20bf58d",
+      "size": 650
     },
     {
       "path": ".agents/mcp.json",
@@ -1371,8 +1391,8 @@
     },
     {
       "path": ".agents/skills/oma-recap/SKILL.md",
-      "sha256": "58462e3acbb1bda38cb209a561fc5955967dc9285dfb256493cd366673cbebb7",
-      "size": 10544
+      "sha256": "a7b0c5007a50d0f8deff97f3d865d72bcba6907f7d74df61e23c68d4753e3805",
+      "size": 10549
     },
     {
       "path": ".agents/skills/oma-scholar/SKILL.md",
@@ -1756,6 +1776,6 @@
   "metadata": {
     "skillCount": 47,
     "workflowCount": 21,
-    "totalFiles": 349
+    "totalFiles": 353
   }
 }
