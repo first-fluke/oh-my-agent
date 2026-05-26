@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.8.0...cli-v8.9.0) (2026-05-26)
+
+
+### Features
+
+* **state:** enforce L1 decision snapshots ([203ddfb](https://github.com/first-fluke/oh-my-agent/commit/203ddfb13ee54c8e06c672b681c5015be1210fe2))
+
 ## [8.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.7.0...cli-v8.8.0) (2026-05-25)
 
 
