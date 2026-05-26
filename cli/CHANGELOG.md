@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.10.0...cli-v8.10.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **slide:** correct blank/collided/cropped merged viewer, bundle, and PDF ([fa99c3c](https://github.com/first-fluke/oh-my-agent/commit/fa99c3c77158f8f26931347747dc961748d4c4d1))
+
 ## [8.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.9.0...cli-v8.10.0) (2026-05-26)
 
 
