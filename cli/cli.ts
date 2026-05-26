@@ -20,6 +20,7 @@ import { registerRetro } from "./commands/retro/command.js";
 import { registerScholarCommand } from "./commands/scholar/index.js";
 import { registerSearchCommand } from "./commands/search/index.js";
 import { registerSkillsCommand } from "./commands/skills/command.js";
+import { registerSlideCommand } from "./commands/slide/index.js";
 import { registerStar } from "./commands/star/command.js";
 import { registerState } from "./commands/state/command.js";
 import { registerEmit } from "./commands/state/emit.js";
@@ -116,6 +117,7 @@ registerStar(program);
 registerVisualize(program);
 registerSearchCommand(program);
 registerSkillsCommand(program);
+registerSlideCommand(program);
 registerScholarCommand(program);
 registerImageCommand(program);
 

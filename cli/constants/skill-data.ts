@@ -135,6 +135,10 @@ export const SKILLS: SkillsRegistry = {
       desc: `Create or update OMA skills in the SSL-lite human-readable format. Use when adding a new \`.agents/skills/{skill-name}/SKILL.md\`, converting an existing skill to the standardized Scheduling / Structural Flow / Logical Operations / References structure, or validating whether a skill has enough routing, execution, resource, and safety detail.`,
     },
     {
+      name: "oma-slide",
+      desc: `HTML presentation deck generator and multi-format exporter. Generates distinctive, animation-rich HTML decks at a fixed 1920×1080 stage, then deterministically validates, bundles, and exports them to PDF/PNG/PPTX via the \`oma slide\` CLI. Use for slide, deck, presentation, slides, pptx, keynote, 슬라이드, 발표자료, プレゼン, 幻灯片 requests. Produces self-contained single-file HTML with keyboard/touch nav, speaker notes, and print-to-PDF support.`,
+    },
+    {
       name: "oma-translator",
       desc: `Context-aware translation that preserves tone, style, and natural word order. Use when translating UI strings, documentation, marketing copy, or any multilingual content. Infers register, domain, and style from the source text and surrounding codebase context.`,
     },

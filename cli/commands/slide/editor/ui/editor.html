@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oma slide editor</title>
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Layout ── */
+    html, body {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      overflow: hidden;
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      grid-template-rows: 48px 1fr 1fr;
+      grid-template-areas:
+        "toolbar toolbar"
+        "canvas  panel"
+        "log     panel";
+      height: 100vh;
+      gap: 1px;
+      background: #30363d;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      grid-area: toolbar;
+      background: #161b22;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      border-bottom: 1px solid #30363d;
+    }
+
+    #toolbar h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-right: auto;
+    }
+
+    #slide-select {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    #slide-select:focus { outline: 2px solid #58a6ff; outline-offset: 2px; }
+
+    /* ── Canvas area ── */
+    #canvas-wrap {
+      grid-area: canvas;
+      background: #0d1117;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #slide-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Bbox overlay */
+    #bbox-overlay {
+      position: absolute;
+      inset: 0;
+      cursor: crosshair;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #bbox-rect {
+      position: absolute;
+      border: 2px solid #f78166;
+      background: rgba(247, 129, 102, 0.12);
+      pointer-events: none;
+      display: none;
+    }
+
+    /* ── Log ── */
+    #log-wrap {
+      grid-area: log;
+      background: #161b22;
+      border-top: 1px solid #30363d;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #log-header {
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid #30363d;
+      flex-shrink: 0;
+    }
+
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+      font-family: "Menlo", "Consolas", "Monaco", monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-info  { color: #8b949e; }
+    .log-ok    { color: #3fb950; }
+    .log-err   { color: #f85149; }
+    .log-agent { color: #d2a8ff; }
+
+    /* ── Panel ── */
+    #panel {
+      grid-area: panel;
+      background: #161b22;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    .panel-section {
+      padding: 16px;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .panel-section h2 {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    /* bbox display */
+    #bbox-display {
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 12px;
+      color: #f78166;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 8px;
+      min-height: 52px;
+    }
+
+    /* prompt textarea */
+    #prompt-input {
+      width: 100%;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+
+    #prompt-input:focus {
+      outline: 2px solid #58a6ff;
+      outline-offset: -1px;
+      border-color: transparent;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn:focus { outline: 2px solid #58a6ff; outline-offset: 2px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: #238636;
+      border-color: #2ea043;
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #2ea043; }
+
+    .btn-secondary {
+      background: #21262d;
+      color: #e6edf3;
+    }
+    .btn-secondary:hover:not(:disabled) { background: #30363d; }
+
+    .btn-danger {
+      background: #da3633;
+      border-color: #f85149;
+      color: #fff;
+    }
+    .btn-danger:hover:not(:disabled) { background: #f85149; }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    /* Status badge */
+    #status-badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .status-idle    { background: #21262d; color: #8b949e; }
+    .status-busy    { background: #1f3b4d; color: #58a6ff; }
+    .status-ok      { background: #1b3a2a; color: #3fb950; }
+    .status-error   { background: #3a1212; color: #f85149; }
+
+    /* Screenshot preview */
+    #screenshot-preview {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      display: none;
+      margin-top: 8px;
+    }
+
+    /* Instructions */
+    .hint {
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    /* Loading spinner (CSS-only) */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #58a6ff;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation: none; opacity: 0.6; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Toolbar -->
+    <header id="toolbar" role="banner">
+      <h1>oma slide editor</h1>
+      <label for="slide-select" class="sr-only">Select slide</label>
+      <select id="slide-select" aria-label="Select slide to edit">
+        <option value="">Loading slides…</option>
+      </select>
+      <span id="status-badge" class="status-idle" role="status" aria-live="polite">Idle</span>
+    </header>
+
+    <!-- Canvas -->
+    <main id="canvas-wrap" aria-label="Slide canvas">
+      <iframe
+        id="slide-frame"
+        title="Slide preview"
+        sandbox="allow-scripts allow-same-origin"
+        aria-label="Slide preview frame"
+      ></iframe>
+      <div
+        id="bbox-overlay"
+        role="presentation"
+        aria-hidden="true"
+        title="Drag to select edit region"
+      >
+        <div id="bbox-rect" aria-hidden="true"></div>
+      </div>
+    </main>
+
+    <!-- Log -->
+    <section id="log-wrap" aria-label="Agent output log">
+      <div id="log-header">Agent output</div>
+      <div id="log" role="log" aria-live="polite" aria-label="Agent log"></div>
+    </section>
+
+    <!-- Panel -->
+    <aside id="panel" aria-label="Edit controls">
+      <!-- Slide info -->
+      <div class="panel-section">
+        <h2>Selected region</h2>
+        <div id="bbox-display" aria-label="Bounding box coordinates">
+          Drag on the canvas to select a region
+        </div>
+        <p class="hint">Drag on the slide to draw a bounding box around the element you want to edit.</p>
+      </div>
+
+      <!-- Screenshot -->
+      <div class="panel-section">
+        <h2>Region preview</h2>
+        <img id="screenshot-preview" alt="Annotated region screenshot" />
+        <p class="hint" id="screenshot-hint">A screenshot with the selected region annotated will appear here after you click "Capture".</p>
+        <div class="btn-row">
+          <button type="button" id="btn-capture" class="btn btn-secondary" disabled aria-label="Capture annotated screenshot">
+            Capture
+          </button>
+        </div>
+      </div>
+
+      <!-- Prompt -->
+      <div class="panel-section">
+        <h2>Edit instruction</h2>
+        <textarea
+          id="prompt-input"
+          placeholder="e.g. Make the heading larger and more impactful. Use a gradient for the text."
+          rows="4"
+          aria-label="Edit instruction for the agent"
+        ></textarea>
+        <div class="btn-row">
+          <button type="button" id="btn-submit" class="btn btn-primary" disabled aria-label="Submit edit to agent">
+            <span id="btn-submit-label">Submit edit</span>
+          </button>
+          <button type="button" id="btn-clear" class="btn btn-secondary" aria-label="Clear selection and prompt">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Save -->
+      <div class="panel-section">
+        <h2>Save</h2>
+        <p class="hint">After the agent completes, reload the preview and save the edited HTML if you are happy with the result.</p>
+        <div class="btn-row">
+          <button type="button" id="btn-reload" class="btn btn-secondary" aria-label="Reload slide preview">
+            Reload preview
+          </button>
+          <button type="button" id="btn-save" class="btn btn-danger" disabled aria-label="Save edited slide HTML">
+            Save slide
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    /* ── State ── */
+    let slides = [];         // [{ file, path, index }]
+    let currentSlide = null; // { file, path, index }
+    let bbox = null;         // { x, y, width, height } in design-space px
+    let dragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let screenshotDataUrl = null;
+    let editDone = false;
+    let evtSource = null;
+
+    const DESIGN_W = 1920;
+    const DESIGN_H = 1080;
+
+    /* ── Elements ── */
+    const slideSelect      = document.getElementById('slide-select');
+    const slideFrame       = document.getElementById('slide-frame');
+    const bboxOverlay      = document.getElementById('bbox-overlay');
+    const bboxRect         = document.getElementById('bbox-rect');
+    const bboxDisplay      = document.getElementById('bbox-display');
+    const screenshotPreview = document.getElementById('screenshot-preview');
+    const screenshotHint   = document.getElementById('screenshot-hint');
+    const promptInput      = document.getElementById('prompt-input');
+    const btnCapture       = document.getElementById('btn-capture');
+    const btnSubmit        = document.getElementById('btn-submit');
+    const btnSubmitLabel   = document.getElementById('btn-submit-label');
+    const btnClear         = document.getElementById('btn-clear');
+    const btnReload        = document.getElementById('btn-reload');
+    const btnSave          = document.getElementById('btn-save');
+    const statusBadge      = document.getElementById('status-badge');
+    const logEl            = document.getElementById('log');
+
+    /* ── Logging ── */
+    function log(msg, cls = 'log-info') {
+      const line = document.createElement('span');
+      line.className = cls;
+      line.textContent = `${msg}\n`;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    /* ── Status ── */
+    function setStatus(label, cls) {
+      statusBadge.textContent = label;
+      statusBadge.className = cls;
+    }
+
+    /* ── Slide list ── */
+    async function loadSlides() {
+      try {
+        const res = await fetch('/slides');
+        if (!res.ok) throw new Error(`/slides returned ${res.status}`);
+        const data = await res.json();
+        slides = data.slides || [];
+        slideSelect.innerHTML = '';
+        if (slides.length === 0) {
+          slideSelect.innerHTML = '<option>No slides found</option>';
+          return;
+        }
+        for (const s of slides) {
+          const opt = document.createElement('option');
+          opt.value = s.file;
+          opt.textContent = s.file;
+          slideSelect.appendChild(opt);
+        }
+        selectSlide(slides[0]);
+        log(`Loaded ${slides.length} slide(s)`, 'log-ok');
+      } catch (err) {
+        log(`Failed to load slides: ${err.message}`, 'log-err');
+      }
+    }
+
+    function selectSlide(slide) {
+      currentSlide = slide;
+      slideFrame.src = `/slide-file/${encodeURIComponent(slide.file)}`;
+      clearBbox();
+      editDone = false;
+      btnSave.disabled = true;
+      log(`Loaded slide: ${slide.file}`, 'log-info');
+    }
+
+    slideSelect.addEventListener('change', () => {
+      const s = slides.find(s => s.file === slideSelect.value);
+      if (s) selectSlide(s);
+    });
+
+    /* ── Bbox drag ── */
+    function canvasToDesign(clientX, clientY) {
+      const rect = bboxOverlay.getBoundingClientRect();
+      const scaleX = DESIGN_W / rect.width;
+      const scaleY = DESIGN_H / rect.height;
+      return {
+        x: Math.round((clientX - rect.left) * scaleX),
+        y: Math.round((clientY - rect.top) * scaleY),
+      };
+    }
+
+    bboxOverlay.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      dragStart = canvasToDesign(e.clientX, e.clientY);
+      bbox = null;
+      bboxRect.style.display = 'none';
+      updateBboxDisplay();
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      const cur = canvasToDesign(e.clientX, e.clientY);
+      const x = Math.min(dragStart.x, cur.x);
+      const y = Math.min(dragStart.y, cur.y);
+      const w = Math.abs(cur.x - dragStart.x);
+      const h = Math.abs(cur.y - dragStart.y);
+      if (w < 4 || h < 4) return;
+
+      bbox = { x, y, width: w, height: h };
+      renderBboxRect();
+      updateBboxDisplay();
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      if (bbox && bbox.width >= 4 && bbox.height >= 4) {
+        btnCapture.disabled = false;
+        updateSubmitButton();
+        log(`BBox selected: x=${bbox.x} y=${bbox.y} w=${bbox.width} h=${bbox.height}`, 'log-info');
+      }
+    });
+
+    /* Touch support */
+    bboxOverlay.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      dragging = true;
+      dragStart = canvasToDesign(t.clientX, t.clientY);
+      bbox = null;
+      bboxRect.style.display = 'none';
+      e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!dragging || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const cur = canvasToDesign(t.clientX, t.clientY);
+      const x = Math.min(dragStart.x, cur.x);
+      const y = Math.min(dragStart.y, cur.y);
+      const w = Math.abs(cur.x - dragStart.x);
+      const h = Math.abs(cur.y - dragStart.y);
+      if (w < 4 || h < 4) return;
+      bbox = { x, y, width: w, height: h };
+      renderBboxRect();
+      updateBboxDisplay();
+    });
+
+    window.addEventListener('touchend', () => {
+      if (!dragging) return;
+      dragging = false;
+      if (bbox && bbox.width >= 4 && bbox.height >= 4) {
+        btnCapture.disabled = false;
+        updateSubmitButton();
+      }
+    });
+
+    function renderBboxRect() {
+      if (!bbox) return;
+      const overlayRect = bboxOverlay.getBoundingClientRect();
+      const scaleX = overlayRect.width / DESIGN_W;
+      const scaleY = overlayRect.height / DESIGN_H;
+      bboxRect.style.left   = `${bbox.x * scaleX}px`;
+      bboxRect.style.top    = `${bbox.y * scaleY}px`;
+      bboxRect.style.width  = `${bbox.width * scaleX}px`;
+      bboxRect.style.height = `${bbox.height * scaleY}px`;
+      bboxRect.style.display = 'block';
+    }
+
+    function updateBboxDisplay() {
+      if (!bbox) {
+        bboxDisplay.textContent = 'Drag on the canvas to select a region';
+        return;
+      }
+      bboxDisplay.textContent =
+        `x:${bbox.x}  y:${bbox.y}\nwidth:${bbox.width}  height:${bbox.height}`;
+    }
+
+    function clearBbox() {
+      bbox = null;
+      bboxRect.style.display = 'none';
+      updateBboxDisplay();
+      screenshotPreview.style.display = 'none';
+      screenshotDataUrl = null;
+      screenshotHint.style.display = '';
+      btnCapture.disabled = true;
+      updateSubmitButton();
+    }
+
+    /* ── Capture screenshot ── */
+    btnCapture.addEventListener('click', async () => {
+      if (!currentSlide || !bbox) return;
+      btnCapture.disabled = true;
+      log('Capturing annotated screenshot…', 'log-info');
+      try {
+        const res = await fetch('/screenshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slideFile: currentSlide.file, bbox }),
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        screenshotDataUrl = data.dataUrl;
+        screenshotPreview.src = screenshotDataUrl;
+        screenshotPreview.style.display = 'block';
+        screenshotHint.style.display = 'none';
+        log('Screenshot captured', 'log-ok');
+      } catch (err) {
+        log(`Screenshot failed: ${err.message}`, 'log-err');
+      } finally {
+        btnCapture.disabled = false;
+        updateSubmitButton();
+      }
+    });
+
+    /* ── Submit edit ── */
+    promptInput.addEventListener('input', updateSubmitButton);
+
+    function updateSubmitButton() {
+      const ready = Boolean(bbox) && promptInput.value.trim().length > 0;
+      btnSubmit.disabled = !ready;
+    }
+
+    btnSubmit.addEventListener('click', async () => {
+      if (!currentSlide || !bbox || !promptInput.value.trim()) return;
+      closeEventSource();
+      setStatus('Editing…', 'status-busy');
+      btnSubmit.disabled = true;
+      btnSubmitLabel.innerHTML = '<span class="spinner"></span> Running…';
+      btnSave.disabled = true;
+      editDone = false;
+      log(`\n--- Submitting edit for ${currentSlide.file} ---`, 'log-agent');
+
+      const payload = {
+        slideFile: currentSlide.file,
+        bbox,
+        prompt: promptInput.value.trim(),
+        screenshotDataUrl: screenshotDataUrl || null,
+      };
+
+      // Open SSE stream before POST to avoid missing early events
+      openEventSource();
+
+      try {
+        const res = await fetch('/edit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        log(`Edit dispatched (editId: ${data.editId})`, 'log-ok');
+      } catch (err) {
+        log(`Dispatch failed: ${err.message}`, 'log-err');
+        setStatus('Error', 'status-error');
+        resetSubmitButton();
+        closeEventSource();
+      }
+    });
+
+    /* ── SSE progress ── */
+    function openEventSource() {
+      if (evtSource) return;
+      evtSource = new EventSource('/events');
+
+      evtSource.addEventListener('progress', (e) => {
+        log(e.data, 'log-agent');
+      });
+
+      evtSource.addEventListener('done', (e) => {
+        const exitCode = parseInt(e.data, 10);
+        if (exitCode === 0) {
+          setStatus('Done', 'status-ok');
+          log('Edit complete (exit 0)', 'log-ok');
+          editDone = true;
+          btnSave.disabled = false;
+        } else {
+          setStatus('Error', 'status-error');
+          log(`Edit agent exited with code ${exitCode}`, 'log-err');
+        }
+        resetSubmitButton();
+        closeEventSource();
+      });
+
+      evtSource.addEventListener('error', () => {
+        // SSE connection error / server closed stream
+        resetSubmitButton();
+        closeEventSource();
+      });
+    }
+
+    function closeEventSource() {
+      if (evtSource) {
+        evtSource.close();
+        evtSource = null;
+      }
+    }
+
+    function resetSubmitButton() {
+      btnSubmit.disabled = false;
+      btnSubmitLabel.textContent = 'Submit edit';
+      updateSubmitButton();
+    }
+
+    /* ── Reload preview ── */
+    btnReload.addEventListener('click', () => {
+      if (currentSlide) {
+        slideFrame.src = `/slide-file/${encodeURIComponent(currentSlide.file)}?t=${Date.now()}`;
+        log('Preview reloaded', 'log-info');
+        clearBbox();
+      }
+    });
+
+    /* ── Save ── */
+    btnSave.addEventListener('click', async () => {
+      if (!currentSlide || !editDone) return;
+      btnSave.disabled = true;
+      try {
+        const res = await fetch('/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slideFile: currentSlide.file }),
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt || `HTTP ${res.status}`);
+        }
+        log(`Saved ${currentSlide.file}`, 'log-ok');
+        setStatus('Saved', 'status-ok');
+      } catch (err) {
+        log(`Save failed: ${err.message}`, 'log-err');
+        setStatus('Error', 'status-error');
+        btnSave.disabled = false;
+      }
+    });
+
+    /* ── Clear ── */
+    btnClear.addEventListener('click', () => {
+      clearBbox();
+      promptInput.value = '';
+      updateSubmitButton();
+      setStatus('Idle', 'status-idle');
+      closeEventSource();
+      resetSubmitButton();
+      log('Cleared', 'log-info');
+    });
+
+    /* ── Keyboard shortcuts ── */
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Escape') && dragging) {
+        dragging = false;
+        clearBbox();
+      }
+    });
+
+    /* ── Init ── */
+    loadSlides();
+  </script>
+</body>
+</html>

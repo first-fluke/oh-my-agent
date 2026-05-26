@@ -2550,6 +2550,35 @@
         "zh": ["帮我查", "搜一下", "找找文档", "找个库", "查参考资料"]
       }
     },
+    "oma-slide": {
+      "keywords": {
+        "*": ["pptx", "keynote"],
+        "en": [
+          "make a presentation",
+          "create slides",
+          "build a deck",
+          "slide deck",
+          "pitch deck",
+          "presentation slides",
+          "html slides",
+          "convert pptx"
+        ],
+        "ko": [
+          "발표자료 만들어",
+          "슬라이드 만들어",
+          "프레젠테이션 만들어",
+          "피피티 만들어",
+          "덱 만들어"
+        ],
+        "ja": [
+          "プレゼン作って",
+          "スライド作って",
+          "発表資料作って",
+          "デッキ作って"
+        ],
+        "zh": ["做个演示", "做幻灯片", "做个PPT", "做演示文稿"]
+      }
+    },
     "oma-tf-infra": {
       "keywords": {
         "*": ["terraform", "OIDC", "IAM"],
