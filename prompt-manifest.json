@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.9.0",
-  "releaseDate": "2026-05-26T12:57:04.426Z",
+  "releaseDate": "2026-05-26T13:31:35.759Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -151,8 +151,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "db065d867460af550006e79ac565c22050ab130187675b43269b9fa6832e5e67",
-      "size": 77922
+      "sha256": "9980e3787e9c82c6552141d17dca411fd9e41c40d38ad2835a405840ac23621a",
+      "size": 78696
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -1535,6 +1535,51 @@
       "size": 3027
     },
     {
+      "path": ".agents/skills/oma-slide/SKILL.md",
+      "sha256": "7491127e4cdb6b3c62ffa8c231bd62fa0861852bc73f86c8d2d9a1a54dda9a24",
+      "size": 13111
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/animation-patterns.md",
+      "sha256": "398debeb67d9a53e98a0adf8c0f64e7d9ec8a183c2330d5134e80b92a785ac5f",
+      "size": 8614
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/assets/deck-stage.js",
+      "sha256": "efc52ff863905ef037887109281fa9703426ba8c124b7949bc299b1bd3931f94",
+      "size": 13909
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/assets/viewport-base.css",
+      "sha256": "d7b19d380776e3d641a254f784f799997b95eb75db137911ba74a705eed8c384",
+      "size": 7454
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/design-doctrine.md",
+      "sha256": "c6fee4b66b2b2dbbeb92d458e291dfd4242d352ef6b3862990c52647ca0e27a9",
+      "size": 11391
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/fixed-stage.md",
+      "sha256": "40b6521164160f6a291b547883bf3316a4ef5da90c223798421fe765c899c2d6",
+      "size": 8384
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/generation-protocol.md",
+      "sha256": "155eee6ad8222c148727a89310c15f25561aedcdd407188d23ff0a673242e690",
+      "size": 13913
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/selection-index.json",
+      "sha256": "9325a284b8e61f62f4943c1a6882789a43e7fbcf902737492277c0066ff92a8c",
+      "size": 25877
+    },
+    {
+      "path": ".agents/skills/oma-slide/resources/style-presets.md",
+      "sha256": "de4d0cf647856bd328720890f6d2a7693a382d557b0e805e8db4d7e5704a2ae6",
+      "size": 15822
+    },
+    {
       "path": ".agents/skills/oma-tf-infra/SKILL.md",
       "sha256": "712703c952b4ad95f40a5a49796774afe5fee237c4f8ffdde85808642cb79749",
       "size": 11452
@@ -1789,8 +1834,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 47,
+    "skillCount": 48,
     "workflowCount": 21,
-    "totalFiles": 356
+    "totalFiles": 365
   }
 }
