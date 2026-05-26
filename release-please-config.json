@@ -30,6 +30,11 @@
           "jsonpath": "$.version"
         },
         {
+          "type": "json",
+          "path": ".cursor-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
           "type": "generic",
           "path": "CITATION.cff"
         }

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://cursor.com/schemas/cursor-plugin/marketplace.json",
+  "name": "oma",
+  "owner": {
+    "name": "First Fluke"
+  },
+  "metadata": {
+    "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards."
+  },
+  "plugins": [
+    {
+      "name": "oma",
+      "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
+      "source": ".",
+      "license": "MIT",
+      "keywords": ["multi-agent", "orchestrator", "skills", "workflows"]
+    }
+  ]
+}
