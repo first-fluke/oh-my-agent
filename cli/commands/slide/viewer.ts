@@ -31,6 +31,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import color from "picocolors";
+import { firstSlideId, scopeStyleBlocks } from "./scope-css.js";
 import { resolveWorkspace } from "./workspace.js";
 
 // ─── HTML extraction helpers ──────────────────────────────────────────────────
@@ -54,6 +55,20 @@ export function extractSlides(html: string): string[] {
 export function extractStyles(html: string): string[] {
   const styleRe = /<style([^>]*)>([\s\S]*?)<\/style>/gi;
   return [...html.matchAll(styleRe)].map((m) => m[0]);
+}
+
+/**
+ * Escape content destined for an inline <script>…</script> block.
+ *
+ * The HTML parser ends a <script> at the first literal `</script` it sees —
+ * even inside a JS comment or string. deck-stage.js documents the speaker-notes
+ * usage with a literal `</script>` in a JSDoc comment, which silently truncated
+ * the inlined controller in viewer.html / the bundle (leaving the deck blank).
+ * Replacing `</` with `<\/` is inert in JS (in a string `<\/` === `</`; in a
+ * comment it is just text) but stops the parser from closing the tag early.
+ */
+export function escapeInlineScript(js: string): string {
+  return js.replace(/<\/(script)/gi, "<\\/$1");
 }
 
 /**
@@ -148,9 +163,13 @@ export async function runSlideViewer(opts: ViewerOptions): Promise<number> {
     }
     allSlides.push(...sections);
 
-    // Extract per-slide <style> blocks
+    // Extract per-slide <style> blocks and scope them to this slide's id so
+    // generic selectors (.slide, .title, h1 …) don't bleed across slides once
+    // every file is merged into one document. Falls back to unscoped styles
+    // only when the section has no id to anchor on.
     const styles = extractStyles(slideHtml);
-    allStyles.push(...styles);
+    const slideId = firstSlideId(slideHtml);
+    allStyles.push(...(slideId ? scopeStyleBlocks(styles, slideId) : styles));
 
     // Extract local link stylesheets
     const links = extractLinkStylesheets(slideHtml);
@@ -269,11 +288,11 @@ ${viewportCss}
 
   <!-- Speaker notes (read by deck-stage.js parseSpeakerNotes()) -->
   <script type="application/json" id="speaker-notes">
-${speakerNotesJson}
+${escapeInlineScript(speakerNotesJson)}
   </script>
 
   <script>
-${deckStageJs}
+${escapeInlineScript(deckStageJs)}
   </script>
 </body>
 </html>`;

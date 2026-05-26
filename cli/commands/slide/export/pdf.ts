@@ -154,10 +154,12 @@ async function captureMode(
 
   await awaitFontsReady(page);
 
-  // Use the design size in points (1920×1080 px = 1440×810 pt)
+  // Page size = exact design size (1920×1080 px). Do NOT set `landscape` here:
+  // when width/height are given explicitly, `landscape: true` ROTATES them to
+  // 1080×1920 (portrait), shrinking each slide to the top of an over-tall page.
   const pdfBuffer = await page.pdf({
     printBackground: true,
-    landscape: true,
+    landscape: false,
     width: `${FRAME_W_PX}px`,
     height: `${FRAME_H_PX}px`,
     margin: { top: "0", right: "0", bottom: "0", left: "0" },
@@ -196,10 +198,12 @@ async function printMode(
 
   await awaitFontsReady(page);
 
-  // Print mode uses @media print CSS — slides break per page at design size
+  // Print mode uses @media print CSS — slides break per page at design size.
+  // `landscape: false` because width/height already define the landscape page;
+  // setting landscape:true would rotate them to portrait (see captureMode).
   const pdfBuffer = await page.pdf({
     printBackground: true,
-    landscape: true,
+    landscape: false,
     width: `${FRAME_W_PX}px`,
     height: `${FRAME_H_PX}px`,
     margin: { top: "0", right: "0", bottom: "0", left: "0" },

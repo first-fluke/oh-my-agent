@@ -1,9 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
+  escapeInlineScript,
   extractLinkStylesheets,
   extractSlides,
   extractStyles,
 } from "./viewer.js";
+
+describe("escapeInlineScript", () => {
+  it("breaks a literal </script> so it cannot close the inline tag", () => {
+    // deck-stage.js documents speaker-notes usage with a literal </script>
+    // inside a JSDoc comment; unescaped it truncated the inlined controller.
+    const js = "/* see <script id=notes>…</script> */\nconst x = 1;";
+    const out = escapeInlineScript(js);
+    expect(out).not.toContain("</script");
+    expect(out).toContain("<\\/script");
+  });
+
+  it("is case-insensitive", () => {
+    expect(escapeInlineScript("a</SCRIPT>b")).toBe("a<\\/SCRIPT>b");
+  });
+
+  it("leaves JS without a closing-script sequence untouched", () => {
+    const js = "const a = b < c;\nconst d = '</style>';";
+    expect(escapeInlineScript(js)).toBe(js);
+  });
+});
 
 describe("extractSlides", () => {
   it("extracts a single slide section", () => {

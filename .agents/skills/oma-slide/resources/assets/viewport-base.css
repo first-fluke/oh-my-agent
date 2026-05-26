@@ -237,9 +237,17 @@
     display: none !important;
   }
 
-  /* Show all slides, each on its own page */
+  /*
+   * Show all slides, each on its own page.
+   * These use !important because per-slide author styles (which set
+   * `.slide { position: absolute }` per the generation protocol) are injected
+   * AFTER this stylesheet in the merged viewer/bundle and would otherwise win
+   * by source order — leaving every slide absolutely positioned, stacked at
+   * 0,0, and collapsing page flow so nothing paginates (and the PDF crops).
+   */
   .slide {
-    position: relative;
+    position: relative !important;
+    inset: auto !important;
     visibility: visible !important;
     opacity: 1 !important;
     pointer-events: none;

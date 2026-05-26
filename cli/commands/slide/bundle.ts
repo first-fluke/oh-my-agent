@@ -17,7 +17,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import color from "picocolors";
+import { firstSlideId, scopeStyleBlocks } from "./scope-css.js";
 import {
+  escapeInlineScript,
   extractLinkStylesheets,
   extractSlides,
   extractStyles,
@@ -174,8 +176,13 @@ export async function runSlideBundle(opts: BundleOptions): Promise<number> {
     }
     allSlides.push(...sections);
 
-    // Extract per-slide <style> blocks
-    allStyles.push(...extractStyles(slideHtml));
+    // Extract per-slide <style> blocks, scoped to this slide's id so generic
+    // selectors don't collide once every file is merged into one document.
+    const slideStyles = extractStyles(slideHtml);
+    const slideId = firstSlideId(slideHtml);
+    allStyles.push(
+      ...(slideId ? scopeStyleBlocks(slideStyles, slideId) : slideStyles),
+    );
 
     // Gather local (non-stage) link stylesheets
     const localLinks = extractLinkStylesheets(slideHtml);
@@ -394,11 +401,11 @@ ${viewportCss}
 
   <!-- Speaker notes (read by deck-stage.js) -->
   <script type="application/json" id="speaker-notes">
-${speakerNotesJson}
+${escapeInlineScript(speakerNotesJson)}
   </script>
 
   <script>
-${deckStageJs}
+${escapeInlineScript(deckStageJs)}
   </script>
 </body>
 </html>`;
