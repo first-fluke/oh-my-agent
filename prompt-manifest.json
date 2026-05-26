@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.9.0",
-  "releaseDate": "2026-05-26T09:08:29.082Z",
+  "releaseDate": "2026-05-26T12:57:04.426Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -85,6 +85,11 @@
       "size": 7044
     },
     {
+      "path": ".agents/hooks/core/agentmemory-client.ts",
+      "sha256": "fb0f08066f2078b729647fd9cbc6558577246c40bcc91c03614e9e9ae571c605",
+      "size": 3567
+    },
+    {
       "path": ".agents/hooks/core/constants.ts",
       "sha256": "f84a333ccff3046284f46ec7b376cd79c5576f79e44183cf07cc63ea66f22e11",
       "size": 1185
@@ -111,8 +116,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "b21aca8841103d182e769c66ff14df30c6a027394c4f5834c1cfaedddf786448",
-      "size": 26920
+      "sha256": "3b6a50318972f59267c0c148834df07dc6f3e4e70017ebe20671b99747a0461c",
+      "size": 26926
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
@@ -126,13 +131,13 @@
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "d5df22cf1c2008b8f0d28010aa1fdf9827c446cc7159803dfb8b635afcbbc08a",
-      "size": 4210
+      "sha256": "114e9359613847bc0846ca6ab0f167be5f396d4eb2530fc096c1b8ee129e56ba",
+      "size": 4216
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
-      "sha256": "303acfcd1b59d83671879de506b4133e485b0233f961249f3c4664a4dbbd02cf",
-      "size": 4354
+      "sha256": "4fe13f7259e18c94a8857a2334e11c290804db7a36b3208a2fdfdf204272eaae",
+      "size": 5160
     },
     {
       "path": ".agents/hooks/core/state-marker.ts",
@@ -1786,6 +1791,6 @@
   "metadata": {
     "skillCount": 47,
     "workflowCount": 21,
-    "totalFiles": 355
+    "totalFiles": 356
   }
 }
