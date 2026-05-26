@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.9.0...cli-v8.10.0) (2026-05-26)
+
+
+### Features
+
+* add Cursor plugin manifest for marketplace support ([878735b](https://github.com/first-fluke/oh-my-agent/commit/878735b7e3463b45273e6e81de5812571dd04d44))
+* **slide:** add oma-slide deck toolkit (skill + CLI) ([a41c852](https://github.com/first-fluke/oh-my-agent/commit/a41c8524f01f05438dcd456473805096fe8c9ab0))
+* **state:** add AgentMemory observe provider ([#433](https://github.com/first-fluke/oh-my-agent/issues/433)) ([1bb811a](https://github.com/first-fluke/oh-my-agent/commit/1bb811a49222f6e07f4c4a0cbecd6712b709398b))
+
+
+### Bug Fixes
+
+* **install:** honor --yes on `oma install` subcommand ([010e1dc](https://github.com/first-fluke/oh-my-agent/commit/010e1dc18a67f22eeec9ca4c96a2334cb7d07e2c))
+* **install:** release install lock on early exit and signals ([e2e2814](https://github.com/first-fluke/oh-my-agent/commit/e2e2814b76e554c46deea3ffcc0688764d723597))
+* restore missing fields in claude-plugin manifest ([38dfbc5](https://github.com/first-fluke/oh-my-agent/commit/38dfbc57347916d1d0722711ecf132c6085f8259))
+* **slide:** drop trailing blank page in PDF export ([34697d7](https://github.com/first-fluke/oh-my-agent/commit/34697d7f5154ec8afb08b778149d45ef1cfd2f3b))
+* **slide:** render blank deck when deck-stage.js loads in &lt;head&gt; ([53f590e](https://github.com/first-fluke/oh-my-agent/commit/53f590ef366a1b4f8040ba406a1bd5fd4f5c1a70))
+
 ## [8.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.8.0...cli-v8.9.0) (2026-05-26)
 
 
