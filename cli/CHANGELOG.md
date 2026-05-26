@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.10.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.10.1...cli-v8.10.2) (2026-05-26)
+
+
+### Bug Fixes
+
+* **slide:** repair corrupt editor /screenshot dataUrl ([a66f920](https://github.com/first-fluke/oh-my-agent/commit/a66f920d21cd85e7adf79e2aaf4fb32432433503))
+
 ## [8.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.10.0...cli-v8.10.1) (2026-05-26)
 
 
