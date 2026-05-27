@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.11.0...cli-v8.12.0) (2026-05-27)
+
+
+### Features
+
+* add first-class Grok support ([cb57928](https://github.com/first-fluke/oh-my-agent/commit/cb5792813c34c799455fa37bb0e97088cd8ee889))
+
+
+### Bug Fixes
+
+* **grok:** add grok to RuntimeVendor and harden parser/renderer for tsc ([ec2cfd3](https://github.com/first-fluke/oh-my-agent/commit/ec2cfd308c3d5f26dc16569e21df6ebee640c581))
+
+
+### Documentation
+
+* add grok to model_preset lists in alphabetical order ([7ef90af](https://github.com/first-fluke/oh-my-agent/commit/7ef90afd553f107e939a4d515eda2850e9319e8d))
+
 ## [8.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.10.2...cli-v8.11.0) (2026-05-27)
 
 
