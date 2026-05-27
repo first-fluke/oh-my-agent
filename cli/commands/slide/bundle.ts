@@ -381,6 +381,13 @@ ${viewportCss}
       overflow: hidden;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
+
+    @media print {
+      body {
+        background: transparent;
+        overflow: visible;
+      }
+    }
   </style>
 </head>
 <body>

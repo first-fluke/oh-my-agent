@@ -111,6 +111,15 @@ function splitSelectorList(selectorList: string): string[] {
 function scopeSelector(selector: string, idSelector: string): string {
   const trimmed = selector.trim();
   if (!trimmed) return trimmed;
+
+  // Standalone slide files commonly define theme tokens on :root, html, or body.
+  // Once multiple slides are merged into viewer.html/bundle.html those globals
+  // must become slide-local root rules so custom properties inherit through the
+  // slide subtree. Prefixing into "#slide-01 :root" never matches anything.
+  if (trimmed === ":root" || trimmed === "html" || trimmed === "body") {
+    return idSelector;
+  }
+
   const replaced = trimmed.replace(SLIDE_CLASS_TOKEN, idSelector);
   // If the selector already anchors on the slide id (it referenced .slide),
   // it is fully scoped. Otherwise it is a descendant — prefix it.

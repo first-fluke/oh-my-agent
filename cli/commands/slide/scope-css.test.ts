@@ -80,6 +80,23 @@ describe("scopeSlideCss", () => {
     );
     expect(out).toContain("section#slide-07 {");
   });
+
+  it("maps :root theme tokens to the slide root", () => {
+    const out = scopeSlideCss(":root { --bg: #0b0f0d; }", "slide-01");
+    expect(out).toContain("#slide-01 { --bg: #0b0f0d; }");
+    expect(out).not.toContain("#slide-01 :root");
+  });
+
+  it("maps standalone html/body rules to the slide root", () => {
+    const out = scopeSlideCss(
+      "html { background: black; } body { font-family: sans-serif; }",
+      "slide-02",
+    );
+    expect(out).toContain("#slide-02 { background: black; }");
+    expect(out).toContain("#slide-02 { font-family: sans-serif; }");
+    expect(out).not.toContain("#slide-02 html");
+    expect(out).not.toContain("#slide-02 body");
+  });
 });
 
 describe("firstSlideId", () => {
