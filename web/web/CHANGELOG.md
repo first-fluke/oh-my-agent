@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.6.0...web-v3.7.0) (2026-05-27)
+
+
+### Features
+
+* add first-class Grok support ([cb57928](https://github.com/first-fluke/oh-my-agent/commit/cb5792813c34c799455fa37bb0e97088cd8ee889))
+
 ## [3.6.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.5.6...web-v3.6.0) (2026-05-25)
 
 
