@@ -50,6 +50,7 @@ export function renderStateSnapshot(input: StateSnapshotRenderInput): string {
     case "codex":
     case "cursor":
     case "gemini":
+    case "grok":
     case "qwen":
       return renderClaudeSnapshot(input);
   }

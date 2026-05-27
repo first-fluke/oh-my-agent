@@ -147,20 +147,20 @@ registerParser({
 
           // Pair user → next assistant for entries we already collected in this workspace
           for (let i = 0; i < messages.length - 1; i++) {
-            if (messages[i].role === "user") {
-              const next = messages[i + 1];
-              if (next.role === "assistant") {
-                // Find matching entry by prompt prefix (cheap)
-                const prefix = messages[i].text.slice(0, 80);
-                const match = entries.find(
-                  (e) =>
-                    e.project === project &&
-                    e.prompt.slice(0, 80) === prefix &&
-                    !e.response,
-                );
-                if (match) {
-                  match.response = next.text;
-                }
+            const curr = messages[i];
+            if (!curr || curr.role !== "user") continue;
+            const next = messages[i + 1];
+            if (next && next.role === "assistant") {
+              // Find matching entry by prompt prefix (cheap)
+              const prefix = curr.text.slice(0, 80);
+              const match = entries.find(
+                (e) =>
+                  e.project === project &&
+                  e.prompt.slice(0, 80) === prefix &&
+                  !e.response,
+              );
+              if (match) {
+                match.response = next.text;
               }
             }
           }
