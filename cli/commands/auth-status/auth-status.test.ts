@@ -78,6 +78,7 @@ describe("auth:status command", () => {
         cursor: true,
         qwen: true,
         antigravity: false,
+        grok: false,
       });
     });
   });
@@ -103,6 +104,7 @@ describe("auth:status command", () => {
         cursor: false,
         qwen: false,
         antigravity: false,
+        grok: false,
       });
     });
   });

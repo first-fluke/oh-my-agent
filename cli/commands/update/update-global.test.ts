@@ -93,6 +93,17 @@ const migrationsState = vi.hoisted(() => ({
 const skillsState = vi.hoisted(() => ({
   REPO: "first-fluke/oh-my-agent",
   INSTALLED_SKILLS_DIR: ".agents/skills",
+  ALL_CLI_VENDORS: [
+    "antigravity",
+    "claude",
+    "codex",
+    "copilot",
+    "cursor",
+    "gemini",
+    "grok",
+    "hermes",
+    "qwen",
+  ],
 }));
 
 // ---------------------------------------------------------------------------

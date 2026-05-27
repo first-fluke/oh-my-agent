@@ -13,9 +13,11 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../vendors/index.js", () => ({
+  isAntigravityAuthenticated: vi.fn(() => false),
   isClaudeAuthenticated: vi.fn(() => false),
   isCodexAuthenticated: vi.fn(() => false),
   isGeminiAuthenticated: vi.fn(() => false),
+  isGrokAuthenticated: vi.fn(() => false),
   isQwenAuthenticated: vi.fn(() => false),
 }));
 

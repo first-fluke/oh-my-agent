@@ -44,6 +44,7 @@ describe("readVendorsFromConfig", () => {
       "copilot",
       "cursor",
       "gemini",
+      "grok",
       "hermes",
       "qwen",
     ]);
@@ -59,6 +60,7 @@ describe("readVendorsFromConfig", () => {
       "copilot",
       "cursor",
       "gemini",
+      "grok",
       "hermes",
       "qwen",
     ]);

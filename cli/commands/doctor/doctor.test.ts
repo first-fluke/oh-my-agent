@@ -74,9 +74,11 @@ vi.mock("../../platform/skills-installer.js", () => ({
 }));
 
 vi.mock("../../vendors/index.js", () => ({
+  isAntigravityAuthenticated: vi.fn(() => false),
   isClaudeAuthenticated: vi.fn(() => false),
   isCodexAuthenticated: vi.fn(() => false),
   isGeminiAuthenticated: vi.fn(() => false),
+  isGrokAuthenticated: vi.fn(() => false),
   isQwenAuthenticated: vi.fn(() => false),
 }));
 

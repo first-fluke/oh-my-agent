@@ -36,9 +36,11 @@ vi.mock("../../io/tarball.js", () => tarballState);
 vi.mock("../../platform/skills-installer.js", () => skillsState);
 
 vi.mock("../../vendors/index.js", () => ({
+  isAntigravityAuthenticated: vi.fn(() => false),
   isClaudeAuthenticated: vi.fn(() => false),
   isCodexAuthenticated: vi.fn(() => false),
   isGeminiAuthenticated: vi.fn(() => false),
+  isGrokAuthenticated: vi.fn(() => false),
   isQwenAuthenticated: vi.fn(() => false),
 }));
 
