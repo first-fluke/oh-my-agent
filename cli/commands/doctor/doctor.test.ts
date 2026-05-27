@@ -93,6 +93,7 @@ vi.mock("node:fs", async (importOriginal) => {
 });
 
 // ---- import module under test AFTER mocks ----
+import { existsSync, readFileSync } from "node:fs";
 import { collectDoctorReport } from "./doctor.js";
 
 // Settle all pending procs synchronously
@@ -194,5 +195,94 @@ describe("checkCLI via collectDoctorReport", () => {
     for (const proc of spawnState.lastProcs) {
       expect(proc.kill).toHaveBeenCalled();
     }
+  });
+});
+
+async function settleInstalledClis(
+  installedCommands: string[],
+  version = "1.2.3",
+): Promise<void> {
+  for (let i = 0; i < spawnState.lastProcs.length; i++) {
+    const proc = spawnState.lastProcs[i];
+    const cmd = spawnState.spawnFn.mock.calls[i]?.[0] as string | undefined;
+    if (cmd && installedCommands.includes(cmd)) {
+      proc.stdout.emit("data", Buffer.from(`${version}\n`));
+      proc._emit("close", 0);
+    } else {
+      proc._emit("close", 1);
+    }
+  }
+  await vi.advanceTimersByTimeAsync(0);
+}
+
+describe("vendor doc OMA block checks", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    spawnState.lastProcs.length = 0;
+    vi.clearAllMocks();
+    vi.mocked(existsSync).mockReturnValue(false);
+    vi.mocked(readFileSync).mockReturnValue("");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("requires AGENTS.md when codex is installed and counts missing OMA block as issue", async () => {
+    vi.mocked(existsSync).mockImplementation((p) =>
+      String(p).endsWith("AGENTS.md"),
+    );
+    vi.mocked(readFileSync).mockImplementation((p) =>
+      String(p).endsWith("AGENTS.md") ? "# user notes\n" : "",
+    );
+
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis(["codex"]);
+
+    const report = await reportPromise;
+    const agents = report.vendorDocs.find((d) => d.fileName === "AGENTS.md");
+
+    expect(agents).toEqual({
+      fileName: "AGENTS.md",
+      required: true,
+      hasOmaBlock: false,
+    });
+    expect(report.totalIssues).toBeGreaterThanOrEqual(1);
+  });
+
+  it("requires GEMINI.md when gemini is installed", async () => {
+    vi.mocked(existsSync).mockImplementation((p) =>
+      String(p).endsWith("GEMINI.md"),
+    );
+    vi.mocked(readFileSync).mockImplementation((p) =>
+      String(p).endsWith("GEMINI.md")
+        ? "<!-- OMA:START -->\n<!-- OMA:END -->\n"
+        : "",
+    );
+
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis(["gemini"]);
+
+    const report = await reportPromise;
+    const gemini = report.vendorDocs.find((d) => d.fileName === "GEMINI.md");
+
+    expect(gemini).toEqual({
+      fileName: "GEMINI.md",
+      required: true,
+      hasOmaBlock: true,
+    });
+  });
+
+  it("does not require AGENTS.md when only claude is installed", async () => {
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis(["claude"]);
+
+    const report = await reportPromise;
+    const agents = report.vendorDocs.find((d) => d.fileName === "AGENTS.md");
+
+    expect(agents?.required).toBe(false);
   });
 });

@@ -51,6 +51,24 @@ export interface McpCheck extends CLICheck {
   mcp: { configured: boolean; path?: string };
 }
 
+export interface VendorDocCheck {
+  fileName: string;
+  required: boolean;
+  hasOmaBlock: boolean;
+}
+
+/** Vendor context files checked when their CLI is installed. */
+const VENDOR_DOC_SPECS: Array<{
+  fileName: string;
+  cliNames: readonly string[];
+}> = [
+  { fileName: "CLAUDE.md", cliNames: ["claude"] },
+  { fileName: "AGENTS.md", cliNames: ["codex", "qwen"] },
+  { fileName: "GEMINI.md", cliNames: ["gemini"] },
+];
+
+const OMA_START_MARKER = "<!-- OMA:START";
+
 export interface DoctorReport {
   cwd: string;
   clis: CLICheck[];
@@ -58,8 +76,7 @@ export interface DoctorReport {
   skillChecks: SkillCheck[];
   missingCLIs: CLICheck[];
   missingSkills: SkillCheck[];
-  hasClaude: boolean;
-  claudeMdOk: boolean;
+  vendorDocs: VendorDocCheck[];
   hasSerena: boolean;
   serenaFileCount: number;
   totalIssues: number;
@@ -171,6 +188,29 @@ function checkSkills(): SkillCheck[] {
   });
 }
 
+function fileHasOmaBlock(cwd: string, fileName: string): boolean {
+  try {
+    const filePath = join(cwd, fileName);
+    if (!existsSync(filePath)) return false;
+    return readFileSync(filePath, "utf-8").includes(OMA_START_MARKER);
+  } catch {
+    return false;
+  }
+}
+
+function collectVendorDocChecks(
+  cwd: string,
+  clis: CLICheck[],
+): VendorDocCheck[] {
+  const installed = new Set(clis.filter((c) => c.installed).map((c) => c.name));
+
+  return VENDOR_DOC_SPECS.map(({ fileName, cliNames }) => ({
+    fileName,
+    required: cliNames.some((name) => installed.has(name)),
+    hasOmaBlock: fileHasOmaBlock(cwd, fileName),
+  }));
+}
+
 export async function collectDoctorReport(): Promise<DoctorReport> {
   const cwd = process.cwd();
   const dualInstall = await checkDualInstall(cwd);
@@ -187,16 +227,7 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
 
   const skillChecks = checkSkills();
 
-  const hasClaude = clis.some((c) => c.name === "claude" && c.installed);
-  let claudeMdOk = false;
-  try {
-    const claudeMdPath = join(cwd, "CLAUDE.md");
-    if (existsSync(claudeMdPath)) {
-      claudeMdOk = readFileSync(claudeMdPath, "utf-8").includes(
-        "<!-- OMA:START",
-      );
-    }
-  } catch {}
+  const vendorDocs = collectVendorDocChecks(cwd, clis);
 
   const serenaDir = join(cwd, ".serena", "memories");
   const hasSerena = existsSync(serenaDir);
@@ -219,10 +250,12 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
 
   const skillAudit = auditSkills(cwd);
 
+  const vendorDocIssues = vendorDocs.filter(
+    (d) => d.required && !d.hasOmaBlock,
+  ).length;
+
   const totalIssues =
-    missingCLIs.length +
-    missingSkills.length +
-    (hasClaude && !claudeMdOk ? 1 : 0);
+    missingCLIs.length + missingSkills.length + vendorDocIssues;
 
   return {
     cwd,
@@ -231,8 +264,7 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
     skillChecks,
     missingCLIs,
     missingSkills,
-    hasClaude,
-    claudeMdOk,
+    vendorDocs,
     hasSerena,
     serenaFileCount,
     totalIssues,
@@ -266,7 +298,16 @@ export function serializeReportAsJson(report: DoctorReport): string {
         : [],
     missingSkills: report.missingSkills.map((s) => s.name),
     serena: { exists: report.hasSerena, fileCount: report.serenaFileCount },
-    claudeMd: { hasOmaBlock: report.claudeMdOk },
+    vendorDocs: report.vendorDocs.map((d) => ({
+      file: d.fileName,
+      required: d.required,
+      hasOmaBlock: d.hasOmaBlock,
+    })),
+    claudeMd: {
+      hasOmaBlock:
+        report.vendorDocs.find((d) => d.fileName === "CLAUDE.md")
+          ?.hasOmaBlock ?? false,
+    },
     skillAudit: {
       skillCount: report.skillAudit.skillCount,
       worstPair: report.skillAudit.worstPair ?? null,

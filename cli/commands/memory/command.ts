@@ -4,7 +4,11 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
-import { initMemory } from "./memory.js";
+import {
+  initMemory,
+  printAgentMemoryStatus,
+  printMemoryRetryDrain,
+} from "./memory.js";
 
 export function registerMemory(program: Command): void {
   addOutputOptions(
@@ -16,6 +20,33 @@ export function registerMemory(program: Command): void {
     runAction(
       async (options) => {
         await initMemory(resolveJsonMode(options), options.force);
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    program
+      .command("memory:status")
+      .description("Show AgentMemory provider health"),
+  ).action(
+    runAction(
+      async (options) => {
+        await printAgentMemoryStatus(resolveJsonMode(options));
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    program
+      .command("memory:retry-drain")
+      .description("Drain queued AgentMemory observe retries")
+      .option("--dry-run", "Inspect retry queue without modifying it"),
+  ).action(
+    runAction(
+      async (options) => {
+        await printMemoryRetryDrain(resolveJsonMode(options), options.dryRun);
       },
       { supportsJsonOutput: true },
     ),
