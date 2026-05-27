@@ -1,5 +1,20 @@
 # Changelog
 
+## [8.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.12.0...cli-v8.13.0) (2026-05-27)
+
+
+### Features
+
+* **doctor,memory:** extend vendor doc checks and add memory CLI commands ([a2f22a7](https://github.com/first-fluke/oh-my-agent/commit/a2f22a7cd7e03ef2dd97f62184f88e6ac5157626))
+
+
+### Bug Fixes
+
+* **doctor:** align unresponsive CLI test with 5s probe timeout ([4464048](https://github.com/first-fluke/oh-my-agent/commit/44640485f1a0910686391a052a661b2cd53cc914))
+* **doctor:** increase CLI probe timeout to 5s ([61dea9d](https://github.com/first-fluke/oh-my-agent/commit/61dea9dd2b4c7fc5bccbe31fde6964f6d8cc6587))
+* **doctor:** raise vitest timeout for 5s CLI probe test ([80d380c](https://github.com/first-fluke/oh-my-agent/commit/80d380c4bb1949e0a2b96ce0fbcf92583bff3921))
+* **doctor:** satisfy tsc in vendor doc test helper ([e559236](https://github.com/first-fluke/oh-my-agent/commit/e5592360b512f5492b6e958dff66ad054cbc1246))
+
 ## [8.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.11.0...cli-v8.12.0) (2026-05-27)
 
 
