@@ -6,6 +6,7 @@ import { makePromptOutput } from "./hook-output.ts";
 import { emitEvent, readEvents } from "./state-emit.ts";
 import { getActiveSid, readIndex, setLastSession } from "./state-marker.ts";
 import type { Vendor } from "./types.ts";
+import { renderStateSnapshot } from "./vendor-renderer.ts";
 
 function inferVendorFromScriptPath(): Vendor | null {
   const path = import.meta.filename;
@@ -72,7 +73,7 @@ function getVendorSid(input: Record<string, unknown>): string {
 
 export async function onBoundary(
   projectDir: string,
-  vendor: string,
+  vendor: Vendor,
   vendorSid: string,
 ): Promise<string | null> {
   const idx = readIndex(projectDir);
@@ -106,15 +107,13 @@ export async function onBoundary(
   });
   setLastSession(projectDir, vendor, vendorSid);
 
-  const recent = readEvents(projectDir, sid).slice(-10);
-  const lines = [
-    "[OMA STATE SNAPSHOT]",
-    `sid: ${sid}`,
-    "reason: vendor/session boundary",
-    "recent events:",
-    ...recent.map((e) => `- ${e.ts} ${e.kind}`),
-  ];
-  return lines.join("\n");
+  return renderStateSnapshot({
+    vendor,
+    sid,
+    reason: "vendor/session boundary",
+    recentEvents: readEvents(projectDir, sid).slice(-10),
+    facts: [],
+  });
 }
 
 async function main() {
