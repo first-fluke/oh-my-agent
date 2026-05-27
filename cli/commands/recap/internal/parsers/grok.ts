@@ -110,10 +110,20 @@ registerParser({
             timestamp?: string;
           }>(chatHistory);
 
-          const messages: Array<{ role: "user" | "assistant"; text: string; ts?: number }> = [];
+          const messages: Array<{
+            role: "user" | "assistant";
+            text: string;
+            ts?: number;
+          }> = [];
 
           for (const r of rows) {
-            const role = r.role || (r.type === "user" ? "user" : r.type === "assistant" ? "assistant" : null);
+            const role =
+              r.role ||
+              (r.type === "user"
+                ? "user"
+                : r.type === "assistant"
+                  ? "assistant"
+                  : null);
             if (!role) continue;
 
             let text = "";

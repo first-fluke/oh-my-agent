@@ -38,7 +38,10 @@ export function isGrokAuthenticated(
         if (typeof rec.key === "string" && rec.key.length > 0) {
           return true;
         }
-        if (typeof rec.refresh_token === "string" && rec.refresh_token.length > 0) {
+        if (
+          typeof rec.refresh_token === "string" &&
+          rec.refresh_token.length > 0
+        ) {
           return true;
         }
       }

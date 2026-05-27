@@ -587,7 +587,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         hint: ".cursor/rules/ export + prompt hooks",
       },
       { value: "gemini", label: "Gemini CLI", hint: "hooks + Serena MCP" },
-      { value: "grok", label: "Grok", hint: "hooks + project MCP + .grok/agents/" },
+      {
+        value: "grok",
+        label: "Grok",
+        hint: "hooks + project MCP + .grok/agents/",
+      },
       ...(allowHomeWriteVendors
         ? [
             {
@@ -605,7 +609,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         const spec = (CLI_SKILLS_DIR as Record<string, SkillTargetSpec>)[
           opt.value
         ];
-        return !spec || !spec.requiresHomeConsent;
+        return !spec?.requiresHomeConsent;
       })
       .map((v) => v.value);
 

@@ -99,7 +99,10 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
       dir = process.env.QWEN_PROJECT_DIR || process.cwd();
       break;
     case "grok":
-      dir = process.env.GROK_WORKSPACE_ROOT || (input.cwd as string) || process.cwd();
+      dir =
+        process.env.GROK_WORKSPACE_ROOT ||
+        (input.cwd as string) ||
+        process.cwd();
       break;
     default:
       dir = process.env.CLAUDE_PROJECT_DIR || process.cwd();

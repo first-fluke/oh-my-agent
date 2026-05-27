@@ -96,7 +96,9 @@ export function needsGrokTelemetryUpdate(
     const content = readFileSync(GROK_GLOBAL_CONFIG_PATH, "utf-8");
     const parsed = parseToml(content) as TomlValue;
 
-    const current = isRecord(parsed.features) ? parsed.features.telemetry : undefined;
+    const current = isRecord(parsed.features)
+      ? parsed.features.telemetry
+      : undefined;
 
     if (wantTelemetry) {
       // We want telemetry → only update if we previously forced it off.

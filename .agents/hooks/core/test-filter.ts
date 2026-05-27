@@ -11,7 +11,7 @@ import type { Vendor } from "./types.ts";
 
 function detectVendor(input: Record<string, unknown>): Vendor {
   const event = input.hook_event_name as string | undefined;
-  const hookEventName = input.hookEventName as string | undefined;
+  const _hookEventName = input.hookEventName as string | undefined;
 
   if (process.env.GROK_WORKSPACE_ROOT) return "grok";
 
@@ -45,7 +45,10 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
       dir = process.env.QWEN_PROJECT_DIR || process.cwd();
       break;
     case "grok":
-      dir = process.env.GROK_WORKSPACE_ROOT || (input.cwd as string) || process.cwd();
+      dir =
+        process.env.GROK_WORKSPACE_ROOT ||
+        (input.cwd as string) ||
+        process.cwd();
       break;
     default:
       dir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
