@@ -4,6 +4,7 @@ import {
   mkdirSync,
   readFileSync,
   renameSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
@@ -18,21 +19,21 @@ import {
 } from "../../state/memory-provider.js";
 import type {
   AgentMemoryEndpointConfig,
+  MemoryCommandStatus,
   MemoryDaemonResult,
   MemoryProvider,
   MemoryProviderStatus,
+  MemoryRetryDrainResult,
+  MemoryServiceCommand,
+  MemoryServiceCommandPlanOptions,
+  MemoryServiceCommandResult,
+  MemoryServiceCommandRunOptions,
+  MemoryServiceOptions,
   MemoryServiceResult,
+  MemoryServiceUninstallOptions,
+  MemorySetupOptions,
   MemorySetupResult,
 } from "../../types/memory.js";
-
-export interface MemoryRetryDrainResult {
-  retryPath: string;
-  total: number;
-  drained: number;
-  retained: number;
-  invalid: number;
-  dryRun: boolean;
-}
 
 const AGENTMEMORY_INSTALL_COMMAND = "bun install -g @agentmemory/agentmemory";
 const AGENTMEMORY_START_COMMAND = "agentmemory";
@@ -40,15 +41,7 @@ const DEFAULT_AGENTMEMORY_PORT = 3111;
 const OMA_AGENTMEMORY_PID_FILE = "oma-agentmemory.pid";
 const LAUNCHD_AGENTMEMORY_LABEL = "dev.oma.agentmemory";
 
-type AgentMemoryInstaller = () => Promise<{
-  status: number | null;
-  error?: string;
-}>;
-
-function defaultAgentMemoryInstaller(): Promise<{
-  status: number | null;
-  error?: string;
-}> {
+function defaultAgentMemoryInstaller(): Promise<MemoryCommandStatus> {
   const result = spawnSync(
     "bun",
     ["install", "-g", "@agentmemory/agentmemory"],
@@ -199,6 +192,94 @@ WantedBy=default.target
 `;
 }
 
+function defaultServiceCommandRunner(
+  command: MemoryServiceCommand,
+): MemoryCommandStatus {
+  const result = spawnSync(command.bin, command.args, {
+    encoding: "utf-8",
+    stdio: "pipe",
+    timeout: 10000,
+  });
+  return {
+    status: result.status,
+    error: result.error?.message ?? result.stderr?.trim() ?? undefined,
+  };
+}
+
+function serviceDomain(): string {
+  const uid = typeof process.getuid === "function" ? process.getuid() : 0;
+  return `gui/${uid}`;
+}
+
+function serviceCommands(
+  args: MemoryServiceCommandPlanOptions,
+): MemoryServiceCommand[] {
+  if (args.platform === "darwin") {
+    const domain = serviceDomain();
+    const serviceId = `${domain}/${LAUNCHD_AGENTMEMORY_LABEL}`;
+    return args.action === "install"
+      ? [
+          {
+            bin: "launchctl",
+            args: ["bootout", domain, args.servicePath],
+            optional: true,
+          },
+          { bin: "launchctl", args: ["bootstrap", domain, args.servicePath] },
+          { bin: "launchctl", args: ["enable", serviceId] },
+          { bin: "launchctl", args: ["kickstart", "-k", serviceId] },
+        ]
+      : [
+          { bin: "launchctl", args: ["disable", serviceId], optional: true },
+          {
+            bin: "launchctl",
+            args: ["bootout", domain, args.servicePath],
+            optional: true,
+          },
+        ];
+  }
+
+  if (args.platform === "linux") {
+    return args.action === "install"
+      ? [
+          { bin: "systemctl", args: ["--user", "daemon-reload"] },
+          {
+            bin: "systemctl",
+            args: ["--user", "enable", "--now", "oma-agentmemory.service"],
+          },
+        ]
+      : [
+          {
+            bin: "systemctl",
+            args: ["--user", "disable", "--now", "oma-agentmemory.service"],
+            optional: true,
+          },
+          { bin: "systemctl", args: ["--user", "daemon-reload"] },
+        ];
+  }
+
+  return [];
+}
+
+function formatServiceCommand(command: MemoryServiceCommand): string {
+  return [command.bin, ...command.args].join(" ");
+}
+
+function runServiceCommands(
+  args: MemoryServiceCommandRunOptions,
+): MemoryServiceCommandResult {
+  for (const command of args.commands) {
+    const result = args.runner(command);
+    if (result.status === 0 || command.optional) continue;
+    return {
+      activated: false,
+      commandExitCode: result.status,
+      commandError: result.error,
+    };
+  }
+
+  return { activated: true };
+}
+
 export async function initMemory(
   jsonMode = false,
   forceMode = false,
@@ -245,17 +326,7 @@ export async function getAgentMemoryStatus(
 }
 
 export async function setupAgentMemory(
-  args: {
-    homeDir?: string;
-    env?: NodeJS.ProcessEnv;
-    endpoint?: string;
-    port?: number | string;
-    dryRun?: boolean;
-    install?: boolean;
-    start?: boolean;
-    platform?: NodeJS.Platform;
-    installer?: AgentMemoryInstaller;
-  } = {},
+  args: MemorySetupOptions = {},
 ): Promise<MemorySetupResult> {
   const homeDir = args.homeDir ?? homedir();
   const configDir = agentMemoryConfigDir(homeDir);
@@ -304,6 +375,7 @@ export async function setupAgentMemory(
         platform: args.platform ?? process.platform,
         dryRun: args.dryRun,
         port: port ?? DEFAULT_AGENTMEMORY_PORT,
+        runner: args.serviceRunner,
       });
     }
   }
@@ -506,12 +578,7 @@ export async function controlAgentMemoryDaemon(args: {
 }
 
 export function installAgentMemoryService(
-  args: {
-    homeDir?: string;
-    platform?: NodeJS.Platform;
-    dryRun?: boolean;
-    port?: number | string;
-  } = {},
+  args: MemoryServiceOptions = {},
 ): MemoryServiceResult {
   const homeDir = args.homeDir ?? homedir();
   const platform = args.platform ?? process.platform;
@@ -528,12 +595,28 @@ export function installAgentMemoryService(
       : platform === "linux"
         ? renderSystemdService({ homeDir, port })
         : undefined;
+  const commands =
+    servicePath === undefined
+      ? []
+      : serviceCommands({ action: "install", platform, servicePath });
+  const commandLines = commands.map(formatServiceCommand);
 
   let wroteFile = false;
+  let activated = false;
+  let commandExitCode: number | null | undefined;
+  let commandError: string | undefined;
   if (servicePath && content && !args.dryRun) {
     mkdirSync(dirname(servicePath), { recursive: true, mode: 0o700 });
     writeFileSync(servicePath, content, { encoding: "utf-8", mode: 0o600 });
     wroteFile = true;
+
+    const commandResult = runServiceCommands({
+      commands,
+      runner: args.runner ?? defaultServiceCommandRunner,
+    });
+    activated = commandResult.activated;
+    commandExitCode = commandResult.commandExitCode;
+    commandError = commandResult.commandError;
   }
 
   return {
@@ -543,13 +626,80 @@ export function installAgentMemoryService(
     dryRun: args.dryRun === true,
     servicePath,
     wroteFile,
+    removedFile: false,
+    activated,
+    commands: commandLines,
+    commandExitCode,
+    commandError,
     content: args.dryRun ? content : undefined,
     message:
       servicePath === undefined
         ? `AgentMemory service install is not supported on ${platform}`
         : args.dryRun
-          ? "AgentMemory service file would be written"
-          : "AgentMemory service file installed",
+          ? "AgentMemory service file would be written and activated"
+          : activated
+            ? "AgentMemory service installed and activated"
+            : "AgentMemory service file installed but activation failed",
+  };
+}
+
+export function uninstallAgentMemoryService(
+  args: MemoryServiceUninstallOptions = {},
+): MemoryServiceResult {
+  const homeDir = args.homeDir ?? homedir();
+  const platform = args.platform ?? process.platform;
+  const servicePath =
+    platform === "darwin"
+      ? join(homeDir, "Library", "LaunchAgents", "dev.oma.agentmemory.plist")
+      : platform === "linux"
+        ? join(homeDir, ".config", "systemd", "user", "oma-agentmemory.service")
+        : undefined;
+  const commands =
+    servicePath === undefined
+      ? []
+      : serviceCommands({ action: "uninstall", platform, servicePath });
+  const commandLines = commands.map(formatServiceCommand);
+
+  let removedFile = false;
+  let activated = false;
+  let commandExitCode: number | null | undefined;
+  let commandError: string | undefined;
+
+  if (servicePath && !args.dryRun) {
+    const commandResult = runServiceCommands({
+      commands,
+      runner: args.runner ?? defaultServiceCommandRunner,
+    });
+    activated = commandResult.activated;
+    commandExitCode = commandResult.commandExitCode;
+    commandError = commandResult.commandError;
+
+    if (existsSync(servicePath)) {
+      rmSync(servicePath, { force: true });
+      removedFile = true;
+    }
+  }
+
+  return {
+    action: "uninstall",
+    platform,
+    supported: servicePath !== undefined,
+    dryRun: args.dryRun === true,
+    servicePath,
+    wroteFile: false,
+    removedFile,
+    activated,
+    commands: commandLines,
+    commandExitCode,
+    commandError,
+    message:
+      servicePath === undefined
+        ? `AgentMemory service uninstall is not supported on ${platform}`
+        : args.dryRun
+          ? "AgentMemory service would be disabled and removed"
+          : commandError
+            ? "AgentMemory service file removed but disable failed"
+            : "AgentMemory service disabled and removed",
   };
 }
 
@@ -762,12 +912,44 @@ export function printAgentMemoryServiceInstall(
       `Platform: ${result.platform}`,
       result.servicePath ? `Path: ${pc.cyan(result.servicePath)}` : null,
       `Wrote file: ${result.wroteFile ? pc.green("yes") : "no"}`,
+      `Activated: ${result.activated ? pc.green("yes") : "no"}`,
+      result.commands.length > 0
+        ? `Commands:\n${result.commands.map((line) => `  ${line}`).join("\n")}`
+        : null,
+      result.commandError ? `Error: ${pc.red(result.commandError)}` : null,
       result.supported ? pc.yellow(result.message) : pc.red(result.message),
       result.content ? `\n${result.content.trimEnd()}` : null,
     ]
       .filter((line): line is string => line !== null)
       .join("\n"),
     "AgentMemory service: install",
+  );
+}
+
+export function printAgentMemoryServiceUninstall(
+  jsonMode = false,
+  dryRun = false,
+): void {
+  const result = uninstallAgentMemoryService({ dryRun });
+  if (jsonMode) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  p.note(
+    [
+      `Platform: ${result.platform}`,
+      result.servicePath ? `Path: ${pc.cyan(result.servicePath)}` : null,
+      `Removed file: ${result.removedFile ? pc.green("yes") : "no"}`,
+      result.commands.length > 0
+        ? `Commands:\n${result.commands.map((line) => `  ${line}`).join("\n")}`
+        : null,
+      result.commandError ? `Error: ${pc.red(result.commandError)}` : null,
+      result.supported ? pc.yellow(result.message) : pc.red(result.message),
+    ]
+      .filter((line): line is string => line !== null)
+      .join("\n"),
+    "AgentMemory service: uninstall",
   );
 }
 

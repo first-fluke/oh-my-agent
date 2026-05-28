@@ -21,6 +21,7 @@ import {
   getAgentMemoryStatus,
   installAgentMemoryService,
   setupAgentMemory,
+  uninstallAgentMemoryService,
 } from "./memory.js";
 
 function providerStub(args: {
@@ -124,6 +125,7 @@ describe("memory commands", () => {
 
   it("installs AgentMemory only when setup install is requested", async () => {
     let installCount = 0;
+    const serviceCommands: string[] = [];
     const result = await setupAgentMemory({
       homeDir: projectDir,
       env: { OMA_NO_AGENTMEMORY: "1" },
@@ -132,6 +134,10 @@ describe("memory commands", () => {
       install: true,
       async installer() {
         installCount += 1;
+        return { status: 0 };
+      },
+      serviceRunner(command) {
+        serviceCommands.push([command.bin, ...command.args].join(" "));
         return { status: 0 };
       },
     });
@@ -143,9 +149,13 @@ describe("memory commands", () => {
       service: {
         supported: true,
         wroteFile: true,
+        activated: true,
       },
       startRequested: false,
     });
+    expect(serviceCommands).toEqual(
+      expect.arrayContaining([expect.stringContaining("launchctl bootstrap")]),
+    );
     expect(result.service?.servicePath).toContain("LaunchAgents");
     const serviceFile = readFileSync(
       result.service?.servicePath ?? "",
@@ -242,7 +252,42 @@ describe("memory commands", () => {
       dryRun: true,
       wroteFile: false,
       content: expect.stringContaining("3444"),
+      activated: false,
+      commands: expect.arrayContaining([
+        expect.stringContaining("launchctl bootstrap"),
+      ]),
     });
+  });
+
+  it("uninstalls service files for supported platforms", () => {
+    const service = installAgentMemoryService({
+      homeDir: projectDir,
+      platform: "darwin",
+      runner() {
+        return { status: 0 };
+      },
+    });
+    expect(existsSync(service.servicePath ?? "")).toBe(true);
+
+    const commands: string[] = [];
+    const result = uninstallAgentMemoryService({
+      homeDir: projectDir,
+      platform: "darwin",
+      runner(command) {
+        commands.push([command.bin, ...command.args].join(" "));
+        return { status: 0 };
+      },
+    });
+
+    expect(result).toMatchObject({
+      action: "uninstall",
+      supported: true,
+      removedFile: true,
+    });
+    expect(commands).toEqual(
+      expect.arrayContaining([expect.stringContaining("launchctl disable")]),
+    );
+    expect(existsSync(service.servicePath ?? "")).toBe(false);
   });
 
   it("drains successful retry events and retains failed or invalid lines", async () => {

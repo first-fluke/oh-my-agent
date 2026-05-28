@@ -8,6 +8,7 @@ import {
   initMemory,
   printAgentMemoryDaemon,
   printAgentMemoryServiceInstall,
+  printAgentMemoryServiceUninstall,
   printAgentMemorySetup,
   printAgentMemoryStatus,
   printMemoryRetryDrain,
@@ -136,6 +137,23 @@ export function registerMemory(program: Command): void {
           resolveJsonMode(options),
           options.dryRun,
           options.port,
+        );
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    service
+      .command("uninstall")
+      .description("Uninstall AgentMemory launchd/systemd service integration")
+      .option("--dry-run", "Preview service uninstall without changing files"),
+  ).action(
+    runAction(
+      async (options) => {
+        printAgentMemoryServiceUninstall(
+          resolveJsonMode(options),
+          options.dryRun,
         );
       },
       { supportsJsonOutput: true },
