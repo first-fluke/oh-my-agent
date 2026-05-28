@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.14.0...cli-v8.15.0) (2026-05-28)
+
+
+### Features
+
+* **memory:** install AgentMemory service during setup ([c5a6462](https://github.com/first-fluke/oh-my-agent/commit/c5a646285451879c7fa24b47c3b5220ca624b002))
+
 ## [8.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.13.0...cli-v8.14.0) (2026-05-28)
 
 
