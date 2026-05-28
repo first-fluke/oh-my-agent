@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.13.0...cli-v8.14.0) (2026-05-28)
+
+
+### Features
+
+* **memory:** add AgentMemory setup and daemon commands ([10b846a](https://github.com/first-fluke/oh-my-agent/commit/10b846ae3b1267b6756c7a3a080379b1a08cccc3))
+
 ## [8.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.12.0...cli-v8.13.0) (2026-05-27)
 
 
