@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.15.0...cli-v8.16.0) (2026-05-28)
+
+
+### Features
+
+* **memory:** manage AgentMemory service lifecycle ([c274ab5](https://github.com/first-fluke/oh-my-agent/commit/c274ab5b8bc037b647f11bfcda798154c59fa027))
+
 ## [8.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.14.0...cli-v8.15.0) (2026-05-28)
 
 
