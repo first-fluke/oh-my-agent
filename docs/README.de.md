@@ -153,6 +153,7 @@ Wähl ein Preset und los geht's:
 | **oma-scm** | Verwaltet deine Branches, Merges, Worktrees und Conventional Commits |
 | **oma-search** | Leitet jede Suchanfrage an die beste Quelle weiter und bewertet, wie vertrauenswürdig das Ergebnis ist |
 | **oma-skill-creator** | Schreibt und prüft neue OMA-Skills im SSL-lite-Format |
+| **oma-slide** | Erzeugt markante, animationsreiche HTML-Präsentationsdecks und exportiert nach PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisioniert Multi-Cloud-Infrastruktur mit Terraform |
 | **oma-translator** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
 | **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |

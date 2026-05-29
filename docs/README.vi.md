@@ -153,6 +153,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-scm** | Quản lý nhánh, merge, worktree và Conventional Commits |
 | **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm độ tin cậy của kết quả |
 | **oma-skill-creator** | Soạn và kiểm tra skill OMA mới theo định dạng SSL-lite |
+| **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
 | **oma-tf-infra** | Triển khai hạ tầng đa đám mây bằng Terraform |
 | **oma-translator** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
 | **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |

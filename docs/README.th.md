@@ -153,6 +153,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-scm** | จัดการ branches, merges, worktrees และ Conventional Commits |
 | **oma-search** | ส่งคำค้นหาแต่ละรายการไปยังแหล่งที่ดีที่สุด พร้อมให้คะแนนความน่าเชื่อถือของผลลัพธ์ |
 | **oma-skill-creator** | เขียนและตรวจสอบ OMA skills ใหม่ในรูปแบบ SSL-lite |
+| **oma-slide** | สร้าง HTML presentation deck ที่มีเอกลักษณ์และแอนิเมชันสมบูรณ์ รวมถึงส่งออกเป็น PDF/PNG/PPTX |
 | **oma-tf-infra** | จัดเตรียม multi-cloud infrastructure ด้วย Terraform |
 | **oma-translator** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
 | **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนเครื่อง โดยไม่ต้องพึ่ง cloud |

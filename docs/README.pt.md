@@ -153,6 +153,7 @@ O `oh-my-agent` mantém `.agents/` como única fonte de verdade (SSOT) e o proje
 | **oma-scm** | Gerencia seus branches, merges, worktrees e Conventional Commits |
 | **oma-search** | Roteia cada consulta para a melhor fonte e pontua o nivel de confianca do resultado |
 | **oma-skill-creator** | Escreve e audita novos skills OMA no formato SSL-lite |
+| **oma-slide** | Gera decks de apresentacao HTML distintos e ricos em animacoes e exporta para PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisiona infraestrutura multi-cloud com Terraform |
 | **oma-translator** | Traduz entre idiomas de forma que parece escrito por um falante nativo |
 | **oma-voice** | Gera voiceovers e transcreve audio localmente, sem precisar de nuvem |

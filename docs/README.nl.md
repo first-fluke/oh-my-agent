@@ -153,6 +153,7 @@ Kies een preset en je bent klaar:
 | **oma-scm** | Beheert je branches, merges, worktrees en Conventional Commits |
 | **oma-search** | Routeert elke zoekopdracht naar de beste bron en geeft een vertrouwensscore |
 | **oma-skill-creator** | Schrijft en auditeert nieuwe OMA-skills in het SSL-lite-formaat |
+| **oma-slide** | Genereert onderscheidende, animatierijke HTML-presentatiedecks en exporteert naar PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisioneert multi-cloud infrastructuur met Terraform |
 | **oma-translator** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
 | **oma-voice** | Genereert voice-overs en transcribeert audio lokaal, zonder cloud |

@@ -153,6 +153,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
 | **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
 | **oma-skill-creator** | 以 SSL-lite 格式编写和审计 OMA skill |
+| **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
 | **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
 | **oma-translator** | 将内容翻译成目标语言，读来如同母语写就 |
 | **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |

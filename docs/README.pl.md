@@ -153,6 +153,7 @@ Wybierz preset i gotowe:
 | **oma-scm** | Zarządza branchami, mergami, worktrees i Conventional Commits |
 | **oma-search** | Kieruje każde zapytanie do najlepszego źródła i ocenia wiarygodność wyniku |
 | **oma-skill-creator** | Pisze i audytuje nowe skille OMA w formacie SSL-lite |
+| **oma-slide** | Generuje charakterystyczne, bogate w animacje decki prezentacji HTML i eksportuje do PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisionuje wielochmurową infrastrukturę za pomocą Terraform |
 | **oma-translator** | Tłumaczy między językami tak, jakby tekst napisał native speaker |
 | **oma-voice** | Generuje voiceover i transkrybuje audio lokalnie — bez chmury |
