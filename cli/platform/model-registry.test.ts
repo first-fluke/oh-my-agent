@@ -19,6 +19,7 @@ describe("CORE_REGISTRY", () => {
     "google/gemini-3.1-pro-preview",
     "google/gemini-3-flash",
     "google/gemini-3.1-flash-lite",
+    "google/gemini-3.5-flash",
     "antigravity/gemini-3.1-pro",
     "antigravity/gemini-3.5-flash",
     "cursor/composer-2.5",
@@ -31,9 +32,9 @@ describe("CORE_REGISTRY", () => {
     "qwen/qwen3-coder-next",
   ] as const;
 
-  it("contains exactly 21 slugs (Anthropic 3, OpenAI 5, Google 3, Antigravity 2, Cursor 5, Qwen 3)", async () => {
+  it("contains exactly 22 slugs (Anthropic 3, OpenAI 5, Google 4, Antigravity 2, Cursor 5, Qwen 3)", async () => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
-    expect(CORE_REGISTRY.size).toBe(21);
+    expect(CORE_REGISTRY.size).toBe(22);
   });
 
   it.each(EXPECTED_SLUGS)("includes slug: %s", async (slug) => {
@@ -57,6 +58,14 @@ describe("CORE_REGISTRY", () => {
     for (const [, spec] of antigravitySlugs) {
       expect(spec.supports.native_dispatch_from).toContain("antigravity");
     }
+  });
+
+  it("routes google/gemini-3.5-flash through antigravity", async () => {
+    const { getModelSpec } = await import("./model-registry.js");
+    const spec = getModelSpec("google/gemini-3.5-flash");
+    expect(spec?.cli).toBe("antigravity");
+    expect(spec?.cli_model).toBe("gemini-3.5-flash");
+    expect(spec?.supports.native_dispatch_from).toContain("antigravity");
   });
 
   it("all entries have api_only: false", async () => {
@@ -455,7 +464,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     );
     try {
       const merged = reloadRegistry(emptyDir);
-      expect(merged.size).toBe(21);
+      expect(merged.size).toBe(22);
       expect(getModelSpec("anthropic/claude-opus-4-7")).toBeDefined();
       expect(CORE_REGISTRY.has("openai/gpt-5.4")).toBe(true);
     } finally {
@@ -471,7 +480,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     const dir = makeTempProjectDir(MALFORMED_YAML);
     try {
       const merged = reloadRegistry(dir);
-      expect(merged.size).toBe(21);
+      expect(merged.size).toBe(22);
       expect(getModelSpec("openai/gpt-5.4")).toBeDefined();
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });

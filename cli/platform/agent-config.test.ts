@@ -1,9 +1,13 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   type AgentSpec,
   type OmaConfig,
   type OmaDocsConfig,
   parseOmaConfig,
+  resolveVendor,
 } from "./agent-config.js";
 
 // ---------------------------------------------------------------------------
@@ -220,5 +224,34 @@ describe("parseOmaConfig — docs.auto_verify field", () => {
   it("OmaDocsConfig TypeScript interface accepts auto_verify boolean", () => {
     const docsConfig: OmaDocsConfig = { auto_verify: true };
     expect(docsConfig.auto_verify).toBe(true);
+  });
+});
+
+describe("resolveVendor", () => {
+  it("routes registered google/gemini-3.5-flash alias through antigravity", () => {
+    const previousCwd = process.cwd();
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-agent-config-"));
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "oma-config.yaml"),
+        [
+          "language: en",
+          "model_preset: custom-google-side",
+          "custom_presets:",
+          "  custom-google-side:",
+          "    agent_defaults:",
+          "      orchestrator: { model: anthropic/claude-sonnet-4-6 }",
+          "      retrieval: { model: google/gemini-3.5-flash }",
+        ].join("\n"),
+      );
+      process.chdir(tempDir);
+
+      const result = resolveVendor("retrieval");
+      expect(result.vendor).toBe("antigravity");
+    } finally {
+      process.chdir(previousCwd);
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });

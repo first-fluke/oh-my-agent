@@ -298,8 +298,28 @@ const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
   ],
 
   // -------------------------------------------------------------------------
-  // Antigravity (agy CLI) (2)
+  // Antigravity (agy CLI) (3)
   // -------------------------------------------------------------------------
+  // Backward-compatible Google-family alias: local OMA configs written before
+  // Antigravity became the Google-side runtime may still use google/... here.
+  [
+    "google/gemini-3.5-flash",
+    {
+      cli: "antigravity",
+      cli_model: "gemini-3.5-flash",
+      supports: {
+        effort: null,
+        apply_patch: false,
+        task_budget: false,
+        prompt_cache: true,
+        computer_use: false,
+        native_dispatch_from: ["antigravity"],
+        api_only: false,
+      },
+      auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)",
+      subscription_tier: "google_ai_pro",
+    } satisfies ModelSpec,
+  ],
   // agy 1.0 has no `--model` flag — these entries are nominal: they let users
   // declare intent in oma-config.yaml and surface the right auth hint in
   // `oma doctor`, but at dispatch time the CLI uses its config-driven default.

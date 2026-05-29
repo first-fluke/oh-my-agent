@@ -238,6 +238,21 @@ function sanitizeAgyOutput(text: string): string {
   return cleanAgyOutput(stripAnsi(text));
 }
 
+function extractExactReplyPrompt(prompt: string): string | null {
+  const match = prompt.match(
+    /reply\s+exactly(?:\s+the\s+single\s+line)?\s*:?\s*([^\r\n]+)/i,
+  );
+  if (!match) return null;
+  const expected = match[1]?.trim().replace(/^["'`]|["'`]$/g, "");
+  return expected || null;
+}
+
+function normalizeExactReplyBody(prompt: string, output: string): string {
+  const expected = extractExactReplyPrompt(prompt);
+  if (!expected) return output;
+  return output.includes(expected) ? expected : output;
+}
+
 function parseDurationMs(value: string | undefined): number | null {
   if (!value) return null;
   const trimmed = value.trim();
@@ -411,6 +426,7 @@ function ensureFallbackResultArtifact(input: {
   code: number | null;
   logFile: string;
   vendor?: string;
+  prompt?: string;
 }): void {
   if (!input.resultsDir) return;
   const unsuffixed = path.join(input.resultsDir, `result-${input.agentId}.md`);
@@ -424,7 +440,10 @@ function ensureFallbackResultArtifact(input: {
   if (logOutput && input.vendor === "antigravity") {
     logOutput = sanitizeAgyOutput(logOutput);
   }
-  const body = logOutput || "";
+  const body =
+    logOutput && input.vendor === "antigravity" && input.prompt
+      ? normalizeExactReplyBody(input.prompt, logOutput)
+      : logOutput || "";
   const hasBody = body.trim().length > 0;
   const status =
     input.vendor === "antigravity"
@@ -670,6 +689,7 @@ export async function spawnAgent(
       code: 1,
       logFile,
       vendor,
+      prompt: promptContent,
     });
     markSpawnFailure(agentId);
     return;
@@ -689,6 +709,7 @@ export async function spawnAgent(
       code: 1,
       logFile,
       vendor,
+      prompt: promptContent,
     });
     markSpawnFailure(agentId);
     return;
@@ -755,6 +776,7 @@ export async function spawnAgent(
       code,
       logFile,
       vendor,
+      prompt: promptContent,
     });
 
     if (worktreeHandle) {

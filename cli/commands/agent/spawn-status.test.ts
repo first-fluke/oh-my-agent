@@ -248,6 +248,34 @@ describe("agent/spawn-status.ts", () => {
     expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
+  it("normalizes Antigravity exact-reply smoke output", async () => {
+    const files = setupFileBackedFs();
+    const pty = createInteractivePtyProcess(22349);
+    mockPtySpawn.mockReturnValue(pty.child);
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      return undefined as never;
+    });
+
+    await spawnAgent(
+      "agent1",
+      "Reply exactly the single line: GLOBAL_AGY_FIXED_OK",
+      "session1",
+      "/workspace",
+      "antigravity",
+    );
+    pty.emitData("[모드: 독립]GLOBAL_AGY_FIXED_OK### extra markdown\r\n");
+    pty.emitExit(0);
+
+    const result = [...files.entries()].find(([file]) =>
+      n(file).endsWith(".serena/memories/result-agent1-session1.md"),
+    )?.[1];
+    expect(result).toContain("## Status: completed");
+    expect(result).toContain("\nGLOBAL_AGY_FIXED_OK\n");
+    expect(result).not.toContain("[모드: 독립]");
+    expect(result).not.toContain("extra markdown");
+    expect(exitSpy).toHaveBeenCalledWith(0);
+  });
+
   it("marks Antigravity result failed when PTY output is empty", async () => {
     const files = setupFileBackedFs();
     const pty = createInteractivePtyProcess(22347);

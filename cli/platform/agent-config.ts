@@ -6,6 +6,7 @@ import {
   BUILT_IN_PRESET_ALIASES,
   BUILT_IN_PRESETS,
 } from "./built-in-presets.js";
+import { getModelSpec } from "./model-registry.js";
 
 // ---------------------------------------------------------------------------
 // AgentId — canonical set of agent role identifiers (11 values)
@@ -434,6 +435,9 @@ function readCliConfig(cwd: string): CliConfig | null {
  * Falls back to the raw owner prefix if no mapping exists.
  */
 function resolveVendorFromModelSlug(modelSlug: string): string {
+  const registeredSpec = getModelSpec(modelSlug);
+  if (registeredSpec) return registeredSpec.cli;
+
   const owner = modelSlug.split("/")[0] ?? modelSlug;
   const OWNER_TO_VENDOR: Record<string, string> = {
     anthropic: "claude",
