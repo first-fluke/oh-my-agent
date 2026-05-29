@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.16.0...cli-v8.17.0) (2026-05-29)
+
+
+### Features
+
+* **memory:** import vendor history into AgentMemory ([e75aaaf](https://github.com/first-fluke/oh-my-agent/commit/e75aaafdd2bc4932d00d75eea8b2aefb35140f47))
+
+
+### Documentation
+
+* add oma-slide skill entry to README agent tables ([80d7e38](https://github.com/first-fluke/oh-my-agent/commit/80d7e38fb02d27f3844bbe1ed370fcc804e4512b))
+
 ## [8.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.15.0...cli-v8.16.0) (2026-05-28)
 
 
