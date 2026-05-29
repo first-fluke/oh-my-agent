@@ -293,8 +293,10 @@ describe("install --global: _install.json schema and meta", () => {
     ).mock.calls.filter((call: unknown[]) => call[0] === configPath);
 
     // At least one write to oma-config.yaml should have occurred
-    expect(writes.length).toBeGreaterThan(0);
-    const lastWrite = writes[writes.length - 1]!;
+    const lastWrite = writes[writes.length - 1];
+    if (!lastWrite) {
+      throw new Error("Expected at least one write");
+    }
     const writtenContent = String(lastWrite[1]);
     expect(writtenContent).toContain("custom_user_field: my_value");
   });

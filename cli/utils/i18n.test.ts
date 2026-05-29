@@ -51,13 +51,13 @@ describe("t()", () => {
   it("returns ko text when LANG=ko_KR.UTF-8", () => {
     process.env.LANG = "ko_KR.UTF-8";
     const result = t("install.sudoRefused");
-    expect(result).toBe(MESSAGES["install.sudoRefused"]!.ko);
+    expect(result).toBe(MESSAGES["install.sudoRefused"]?.ko);
   });
 
   it("returns en text when LANG=en_US.UTF-8", () => {
     process.env.LANG = "en_US.UTF-8";
     const result = t("install.sudoRefused");
-    expect(result).toBe(MESSAGES["install.sudoRefused"]!.en);
+    expect(result).toBe(MESSAGES["install.sudoRefused"]?.en);
   });
 
   it("interpolates {pid} correctly", () => {
@@ -77,6 +77,6 @@ describe("t()", () => {
   it("returns message without interpolation when no vars passed", () => {
     process.env.LANG = "en_US.UTF-8";
     const result = t("install.sudoRefused");
-    expect(result).toBe(MESSAGES["install.sudoRefused"]!.en);
+    expect(result).toBe(MESSAGES["install.sudoRefused"]?.en);
   });
 });

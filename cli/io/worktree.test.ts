@@ -14,8 +14,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createWorktree, formatWorktreeSummary } from "./worktree.js";
 
 let repoDir: string;
+let sessionsToCleanup: string[] = [];
 
 beforeEach(() => {
+  sessionsToCleanup = [];
   repoDir = mkdtempSync(path.join(tmpdir(), "oma-worktree-test-"));
   execSync("git init -b main", { cwd: repoDir, stdio: "pipe" });
   execSync('git config user.email "test@example.com"', {
@@ -52,6 +54,19 @@ afterEach(() => {
   } catch {
     // ignore — repo may already be torn down
   }
+
+  // Clean up any worktree directories from tmp
+  for (const sess of sessionsToCleanup) {
+    try {
+      const wtRoot = path.join(tmpdir(), "oma-worktrees", sess);
+      if (existsSync(wtRoot)) {
+        rmSync(wtRoot, { recursive: true, force: true });
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   if (existsSync(repoDir)) {
     rmSync(repoDir, { recursive: true, force: true });
   }
@@ -59,9 +74,12 @@ afterEach(() => {
 
 describe("createWorktree", () => {
   it("creates a worktree + branch from the current HEAD", () => {
-    const handle = createWorktree("sess-001", "oma-backend", repoDir);
+    const sessId = `sess-001-${Math.random().toString(36).slice(2)}`;
+    sessionsToCleanup.push(sessId);
+
+    const handle = createWorktree(sessId, "oma-backend", repoDir);
     expect(existsSync(handle.path)).toBe(true);
-    expect(handle.branch).toBe("oma/sess-001/oma-backend");
+    expect(handle.branch).toBe(`oma/${sessId}/oma-backend`);
     expect(handle.base).toBe("main");
 
     // The branch should be checked out at the new path
@@ -73,8 +91,12 @@ describe("createWorktree", () => {
   });
 
   it("sanitizes unsafe characters in sessionId / agentId for the branch", () => {
-    const handle = createWorktree("sess with space", "agent$weird", repoDir);
-    expect(handle.branch).toMatch(/^oma\/sess-with-space\/agent-weird$/);
+    const sessId = `sess with space-${Math.random().toString(36).slice(2)}`;
+    sessionsToCleanup.push(sessId);
+
+    const handle = createWorktree(sessId, "agent$weird", repoDir);
+    const safeSess = sessId.replace(/[^A-Za-z0-9._-]/g, "-").slice(0, 64);
+    expect(handle.branch).toBe(`oma/${safeSess}/agent-weird`);
   });
 
   it("throws when source is not a git repo", () => {
@@ -86,8 +108,11 @@ describe("createWorktree", () => {
   });
 
   it("throws when the target worktree path already exists", () => {
-    createWorktree("dup-session", "agent", repoDir);
-    expect(() => createWorktree("dup-session", "agent", repoDir)).toThrow(
+    const sessId = `dup-session-${Math.random().toString(36).slice(2)}`;
+    sessionsToCleanup.push(sessId);
+
+    createWorktree(sessId, "agent", repoDir);
+    expect(() => createWorktree(sessId, "agent", repoDir)).toThrow(
       /Worktree path already exists/,
     );
   });

@@ -15,8 +15,10 @@ describe("hook self-dedup preamble (EC-6 / T2.1)", () => {
     expect(withoutShebang.startsWith(HOOK_DEDUP_PREAMBLE)).toBe(true);
   });
 
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variables
   it("dedup preamble references /tmp/oma-hook-${UID}-${OMA_SESSION_ID:-default}.lock", () => {
     expect(HOOK_DEDUP_PREAMBLE).toContain(
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variables
       '"/tmp/oma-hook-${UID:-${EUID:-0}}-${OMA_SESSION_ID:-default}.lock"',
     );
   });

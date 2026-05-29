@@ -280,7 +280,7 @@ describe("update --global: _install.json lifecycle", () => {
     fs.mkdirSync(path.join(repoDir, ".agents", "skills"), { recursive: true });
     fs.writeFileSync(
       path.join(repoDir, ".agents", "skills", "_version.json"),
-      JSON.stringify({ version: "8.1.0" }) + "\n",
+      `${JSON.stringify({ version: "8.1.0" })}\n`,
     );
     tarballState.downloadAndExtract.mockResolvedValue({
       dir: repoDir,

@@ -96,7 +96,7 @@ describe("applyWin32LongPathPrefix — Task 23 (T2.12) — cross-platform invari
       value: "win32",
       configurable: true,
     });
-    const path = "C:\\" + "a".repeat(260 - 3); // total 260
+    const path = `C:\\${"a".repeat(260 - 3)}`; // total 260
     expect(applyWin32LongPathPrefix(path)).toBe(path);
   });
 
@@ -105,7 +105,7 @@ describe("applyWin32LongPathPrefix — Task 23 (T2.12) — cross-platform invari
       value: "win32",
       configurable: true,
     });
-    const path = "C:\\" + "a".repeat(261 - 3); // total 261
+    const path = `C:\\${"a".repeat(261 - 3)}`; // total 261
     const out = applyWin32LongPathPrefix(path);
     expect(out.startsWith("\\\\?\\")).toBe(true);
     expect(out.endsWith(path)).toBe(true);
@@ -116,7 +116,7 @@ describe("applyWin32LongPathPrefix — Task 23 (T2.12) — cross-platform invari
       value: "win32",
       configurable: true,
     });
-    const prefixed = "\\\\?\\C:\\" + "a".repeat(300);
+    const prefixed = `\\\\?\\C:\\${"a".repeat(300)}`;
     expect(applyWin32LongPathPrefix(prefixed)).toBe(prefixed);
   });
 
@@ -125,7 +125,7 @@ describe("applyWin32LongPathPrefix — Task 23 (T2.12) — cross-platform invari
       value: "darwin",
       configurable: true,
     });
-    const path = "/tmp/" + "a".repeat(300);
+    const path = `/tmp/${"a".repeat(300)}`;
     expect(applyWin32LongPathPrefix(path)).toBe(path);
   });
 
@@ -134,7 +134,7 @@ describe("applyWin32LongPathPrefix — Task 23 (T2.12) — cross-platform invari
       value: "linux",
       configurable: true,
     });
-    const path = "/home/" + "a".repeat(300);
+    const path = `/home/${"a".repeat(300)}`;
     expect(applyWin32LongPathPrefix(path)).toBe(path);
   });
 });
