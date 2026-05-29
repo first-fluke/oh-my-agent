@@ -11,9 +11,9 @@ import {
   RESPONSE_PREVIEW,
   readJsonlSync,
   streamJsonl,
-} from "./shared.js";
+} from "./history-parser.js";
 
-const tmp = mkdtempSync(join(tmpdir(), "oma-shared-"));
+const tmp = mkdtempSync(join(tmpdir(), "oma-history-parser-"));
 
 afterAll(() => {
   rmSync(tmp, { recursive: true, force: true });

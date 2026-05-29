@@ -1,9 +1,18 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
-import { findResponse, inWindow, type PairMessage, preview } from "./shared.js";
+import {
+  createRawTurn,
+  findResponse,
+  inWindow,
+  type PairMessage,
+  parseTimestampMs,
+  preview,
+  sortRawTurns,
+} from "../utils/history-parser.js";
 
 const GEMINI_BASE = join(homedir(), ".gemini", "tmp");
 
@@ -25,6 +34,12 @@ function findSessionFiles(): Array<{ path: string; project: string }> {
     // ignore permission errors
   }
   return files;
+}
+
+function rawRole(msg: GeminiMessage): "user" | "assistant" | null {
+  if (msg.type === "user") return "user";
+  if (msg.type === "gemini") return "assistant";
+  return null;
 }
 
 interface GeminiMessage {
@@ -54,6 +69,42 @@ registerParser({
 
   async detect() {
     return existsSync(GEMINI_BASE);
+  },
+
+  async parseRaw(start, end) {
+    const turns: MemoryRawTurn[] = [];
+    for (const { path: file, project } of findSessionFiles()) {
+      try {
+        const data = JSON.parse(readFileSync(file, "utf-8"));
+        const sessionId = data.sessionId || file;
+        const messages: GeminiMessage[] = data.messages || [];
+        for (const msg of messages) {
+          const role = rawRole(msg);
+          if (!role) continue;
+
+          const timestamp = parseTimestampMs(msg.timestamp);
+          if (!inWindow(timestamp, start, end)) continue;
+
+          const text = messageText(msg).trim();
+          if (!text) continue;
+
+          turns.push(
+            createRawTurn({
+              vendor: "gemini",
+              role,
+              text,
+              timestamp,
+              sourcePath: file,
+              vendorSessionId: sessionId,
+              project,
+            }),
+          );
+        }
+      } catch {
+        // skip unreadable sessions
+      }
+    }
+    return sortRawTurns(turns);
   },
 
   async parse(start, end) {

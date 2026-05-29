@@ -1,16 +1,20 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
 import {
+  createRawTurn,
   findResponse,
   inWindow,
   type PairMessage,
+  parseTimestampMs,
   pathToProjectName,
   preview,
+  sortRawTurns,
   streamJsonl,
-} from "./shared.js";
+} from "../utils/history-parser.js";
 
 const QWEN_BASE = join(homedir(), ".qwen", "projects");
 
@@ -55,6 +59,37 @@ registerParser({
 
   async detect() {
     return existsSync(QWEN_BASE);
+  },
+
+  async parseRaw(start, end) {
+    const turns: MemoryRawTurn[] = [];
+    for (const file of findChatFiles()) {
+      for await (const row of streamJsonl<QwenRow>(file)) {
+        const role =
+          row.type === "user" || row.type === "assistant" ? row.type : null;
+        if (!role) continue;
+
+        const timestamp = parseTimestampMs(row.timestamp);
+        if (!inWindow(timestamp, start, end)) continue;
+
+        const text = rowText(row).trim();
+        if (!text) continue;
+
+        const sessionId = row.sessionId || file;
+        turns.push(
+          createRawTurn({
+            vendor: "qwen",
+            role,
+            text,
+            timestamp,
+            sourcePath: file,
+            vendorSessionId: sessionId,
+            project: pathToProjectName(row.cwd),
+          }),
+        );
+      }
+    }
+    return sortRawTurns(turns);
   },
 
   async parse(start, end) {

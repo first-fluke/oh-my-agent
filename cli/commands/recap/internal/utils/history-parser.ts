@@ -1,7 +1,9 @@
+import { createHash } from "node:crypto";
 import { createReadStream, readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
+import type { MemoryRawTurn } from "../../../../types/memory.js";
 
-// Shared helpers for recap history parsers. Each vendor parser reads a
+// Utility functions for recap history parsers. Each vendor parser reads a
 // different on-disk shape, but they converge on the same primitives: read
 // JSONL, window-filter by timestamp, name a project from a path, and pair a
 // user prompt with the following assistant response.
@@ -24,6 +26,54 @@ export function pathToProjectName(path?: string): string | undefined {
 /** True when ts is a finite number inside the half-open range [start, end). */
 export function inWindow(ts: number, start: number, end: number): boolean {
   return Number.isFinite(ts) && ts >= start && ts < end;
+}
+
+export function stableShortHash(value: string): string {
+  return createHash("sha256").update(value).digest("hex").slice(0, 16);
+}
+
+export function rawTurnIdempotencyKey(args: {
+  vendor: string;
+  sessionId: string;
+  timestamp: number;
+  role: string;
+  sourcePath: string;
+  text: string;
+}): string {
+  return [
+    args.vendor,
+    args.sessionId,
+    args.timestamp,
+    args.role,
+    stableShortHash(`${args.sourcePath}\n${args.text}`),
+  ].join(":");
+}
+
+export function parseTimestampMs(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return 0;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function createRawTurn(
+  args: Omit<MemoryRawTurn, "idempotencyKey">,
+): MemoryRawTurn {
+  return {
+    ...args,
+    idempotencyKey: rawTurnIdempotencyKey({
+      vendor: args.vendor,
+      sessionId: args.vendorSessionId ?? args.sourcePath ?? "no-session",
+      timestamp: args.timestamp,
+      role: args.role,
+      sourcePath: args.sourcePath ?? "",
+      text: args.text,
+    }),
+  };
+}
+
+export function sortRawTurns(turns: MemoryRawTurn[]): MemoryRawTurn[] {
+  return turns.sort((a, b) => a.timestamp - b.timestamp);
 }
 
 /** Parse a JSONL file synchronously, skipping blank and malformed lines. */

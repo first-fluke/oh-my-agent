@@ -1,17 +1,21 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
 import {
+  createRawTurn,
   findResponse,
   inWindow,
   type PairMessage,
+  parseTimestampMs,
   pathToProjectName,
   preview,
   readJsonlSync,
+  sortRawTurns,
   streamJsonl,
-} from "./shared.js";
+} from "../utils/history-parser.js";
 
 const CLAUDE_DIR = join(homedir(), ".claude");
 const HISTORY_PATH = join(CLAUDE_DIR, "history.jsonl");
@@ -35,6 +39,14 @@ function extractText(
 interface SessionPair {
   prefix: string; // first 80 chars of user prompt in session file
   response: string; // response preview
+}
+
+interface ClaudeSessionRow {
+  type?: string;
+  timestamp?: string | number;
+  message?: {
+    content?: string | Array<{ type?: string; text?: string }>;
+  };
 }
 
 /**
@@ -101,11 +113,77 @@ function loadSessionResponses(
   return result;
 }
 
+function findSessionFiles(): Array<{
+  path: string;
+  sessionId: string;
+  project: string;
+}> {
+  if (!existsSync(PROJECTS_DIR)) return [];
+
+  const files: Array<{ path: string; sessionId: string; project: string }> = [];
+  try {
+    for (const projDir of readdirSync(PROJECTS_DIR)) {
+      const projPath = join(PROJECTS_DIR, projDir);
+      let names: string[];
+      try {
+        names = readdirSync(projPath);
+      } catch {
+        continue;
+      }
+      for (const name of names) {
+        if (!name.endsWith(".jsonl")) continue;
+        files.push({
+          path: join(projPath, name),
+          sessionId: name.replace(".jsonl", ""),
+          project: pathToProjectName(projDir) ?? projDir,
+        });
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return files;
+}
+
+function loadRawTurns(start: number, end: number): MemoryRawTurn[] {
+  const turns: MemoryRawTurn[] = [];
+  for (const file of findSessionFiles()) {
+    for (const row of readJsonlSync<ClaudeSessionRow>(file.path)) {
+      const role =
+        row.type === "user" || row.type === "assistant" ? row.type : null;
+      if (!role) continue;
+
+      const timestamp = parseTimestampMs(row.timestamp);
+      if (!inWindow(timestamp, start, end)) continue;
+
+      const text = extractText(row.message?.content ?? "").trim();
+      if (!text) continue;
+
+      turns.push(
+        createRawTurn({
+          vendor: "claude",
+          role,
+          text,
+          timestamp,
+          sourcePath: file.path,
+          vendorSessionId: file.sessionId,
+          project: file.project,
+        }),
+      );
+    }
+  }
+  return sortRawTurns(turns);
+}
+
 registerParser({
   name: "claude",
 
   async detect() {
-    return existsSync(HISTORY_PATH);
+    return existsSync(HISTORY_PATH) || existsSync(PROJECTS_DIR);
+  },
+
+  async parseRaw(start, end) {
+    return loadRawTurns(start, end);
   },
 
   async parse(start, end) {

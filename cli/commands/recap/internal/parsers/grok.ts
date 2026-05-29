@@ -9,7 +9,7 @@ import {
   preview,
   readJsonlSync,
   streamJsonl,
-} from "./shared.js";
+} from "../utils/history-parser.js";
 
 const GROK_SESSIONS = join(homedir(), ".grok", "sessions");
 

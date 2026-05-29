@@ -2,6 +2,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import * as os from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type {
+  MemoryRawTurn,
+  MemoryRawTurnLoadResult,
+} from "../../../../types/memory.js";
 
 const tempHome = mkdtempSync(join(os.tmpdir(), "oma-gemini-home-"));
 
@@ -13,6 +17,13 @@ vi.mock("node:os", async () => {
 const { getParsers } = await import("../registry.js");
 await import("./gemini.js");
 const parser = getParsers().find((p) => p.name === "gemini");
+
+function rawTurns(
+  result: MemoryRawTurn[] | MemoryRawTurnLoadResult | undefined,
+): MemoryRawTurn[] {
+  if (!result) return [];
+  return Array.isArray(result) ? result : result.turns;
+}
 
 describe("gemini parser", () => {
   beforeEach(() => {
@@ -58,7 +69,8 @@ describe("gemini parser", () => {
         },
       ],
     };
-    writeFileSync(join(chatsDir, "session-1.json"), JSON.stringify(session));
+    const sessionPath = join(chatsDir, "session-1.json");
+    writeFileSync(sessionPath, JSON.stringify(session));
 
     const start = new Date("2026-03-01T00:00:00Z").getTime();
     const end = new Date("2026-05-01T00:00:00Z").getTime();
@@ -73,6 +85,23 @@ describe("gemini parser", () => {
       sessionId: "sess-1",
       metadata: { model: "gemini-2.0" },
     });
+
+    const turns = rawTurns(await parser?.parseRaw?.(start, end));
+    expect(turns).toHaveLength(2);
+    expect(turns[0]).toMatchObject({
+      vendor: "gemini",
+      role: "user",
+      text: "hello gemini",
+      sourcePath: sessionPath,
+      vendorSessionId: "sess-1",
+      project: "my-proj",
+    });
+    expect(turns[1]).toMatchObject({
+      role: "assistant",
+      text: "hi back",
+      sourcePath: sessionPath,
+    });
+    expect(turns[0]?.idempotencyKey).toContain("gemini:sess-1");
   });
 
   it("skips unreadable session files without crashing", async () => {

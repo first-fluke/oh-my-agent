@@ -1,9 +1,17 @@
+import type {
+  MemoryRawTurn,
+  MemoryRawTurnLoadResult,
+} from "../../../types/memory.js";
 import type { NormalizedEntry, ToolName } from "./schema.js";
 
 export interface HistoryParser {
   name: ToolName;
   detect(): Promise<boolean>;
   parse(start: number, end: number): Promise<NormalizedEntry[]>;
+  parseRaw?(
+    start: number,
+    end: number,
+  ): Promise<MemoryRawTurn[] | MemoryRawTurnLoadResult>;
 }
 
 const registry: HistoryParser[] = [];

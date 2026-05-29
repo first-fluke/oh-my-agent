@@ -137,6 +137,66 @@ export interface MemoryRetryDrainResult {
   dryRun: boolean;
 }
 
+export type MemoryImportSource =
+  | "all"
+  | "claude"
+  | "codex"
+  | "cursor"
+  | "gemini"
+  | "qwen"
+  | "retry";
+
+export type MemoryRawTurnRole = "user" | "assistant";
+
+export interface MemoryRawTurn {
+  vendor: Exclude<MemoryImportSource, "all" | "retry">;
+  role: MemoryRawTurnRole;
+  text: string;
+  timestamp: number;
+  sourcePath?: string;
+  vendorSessionId?: string;
+  idempotencyKey: string;
+  project?: string;
+}
+
+export type MemoryRawTurnLoader = (
+  options: MemoryImportLoadOptions,
+) => Promise<MemoryRawTurn[] | MemoryRawTurnLoadResult>;
+
+export interface MemoryImportLoadOptions {
+  sources: Array<Exclude<MemoryImportSource, "all" | "retry">>;
+  start: number;
+  end: number;
+}
+
+export interface MemoryRawTurnLoadResult {
+  turns: MemoryRawTurn[];
+  warnings: string[];
+}
+
+export interface MemoryImportOptions {
+  source?: string;
+  since?: string;
+  dryRun?: boolean;
+  forcePartial?: boolean;
+  projectDir?: string;
+  provider?: MemoryProvider;
+  rawTurnLoader?: MemoryRawTurnLoader;
+}
+
+export interface MemoryImportResult {
+  source: string;
+  start: number;
+  end: number;
+  total: number;
+  imported: number;
+  failed: number;
+  dryRun: boolean;
+  partial: boolean;
+  warnings: string[];
+  retry?: MemoryRetryDrainResult;
+}
+
 export interface MemoryServiceResult {
   action: MemoryServiceAction;
   platform: NodeJS.Platform;

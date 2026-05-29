@@ -11,7 +11,7 @@ import {
   preview,
   readJsonlSync,
   streamJsonl,
-} from "./shared.js";
+} from "../utils/history-parser.js";
 
 // Antigravity CLI stores per-conversation transcripts under brain/{conversationId}.
 // Prompts live in history.jsonl too, but only transcripts carry model responses,

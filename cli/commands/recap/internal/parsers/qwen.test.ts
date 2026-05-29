@@ -2,6 +2,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import * as os from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type {
+  MemoryRawTurn,
+  MemoryRawTurnLoadResult,
+} from "../../../../types/memory.js";
 
 const tempHome = mkdtempSync(join(os.tmpdir(), "oma-qwen-home-"));
 
@@ -14,6 +18,13 @@ const { getParsers } = await import("../registry.js");
 // import after mock so QWEN_BASE resolves to tempHome
 await import("./qwen.js");
 const parser = getParsers().find((p) => p.name === "qwen");
+
+function rawTurns(
+  result: MemoryRawTurn[] | MemoryRawTurnLoadResult | undefined,
+): MemoryRawTurn[] {
+  if (!result) return [];
+  return Array.isArray(result) ? result : result.turns;
+}
 
 describe("qwen parser", () => {
   beforeEach(() => {
@@ -59,7 +70,8 @@ describe("qwen parser", () => {
       "not json",
       "",
     ];
-    writeFileSync(join(chatsDir, "session1.jsonl"), lines.join("\n"));
+    const chatPath = join(chatsDir, "session1.jsonl");
+    writeFileSync(chatPath, lines.join("\n"));
 
     const start = new Date("2026-03-01T00:00:00Z").getTime();
     const end = new Date("2026-05-01T00:00:00Z").getTime();
@@ -73,6 +85,23 @@ describe("qwen parser", () => {
       project: "myproj",
       sessionId: "sess-1",
     });
+
+    const turns = rawTurns(await parser?.parseRaw?.(start, end));
+    expect(turns).toHaveLength(2);
+    expect(turns[0]).toMatchObject({
+      vendor: "qwen",
+      role: "user",
+      text: "hello",
+      sourcePath: chatPath,
+      vendorSessionId: "sess-1",
+      project: "myproj",
+    });
+    expect(turns[1]).toMatchObject({
+      role: "assistant",
+      text: "hi there",
+      sourcePath: chatPath,
+    });
+    expect(turns[0]?.idempotencyKey).toContain("qwen:sess-1");
   });
 
   it("detect returns true when QWEN_BASE exists", async () => {

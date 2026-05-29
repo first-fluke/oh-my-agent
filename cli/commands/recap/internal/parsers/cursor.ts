@@ -3,16 +3,20 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { MemoryRawTurn } from "../../../../types/memory.js";
 import { registerParser } from "../registry.js";
 import type { NormalizedEntry } from "../schema.js";
 import {
+  createRawTurn,
   findResponse,
   inWindow,
   type PairMessage,
+  parseTimestampMs,
   pathToProjectName,
   preview,
   readJsonlSync,
-} from "./shared.js";
+  sortRawTurns,
+} from "../utils/history-parser.js";
 
 const CURSOR_CHATS = join(homedir(), ".cursor", "chats");
 const CURSOR_PROJECTS = join(homedir(), ".cursor", "projects");
@@ -26,6 +30,13 @@ type CursorMeta = {
 type CursorMessage = {
   role: string;
   content: string;
+};
+
+type CursorRawTranscriptRow = {
+  role?: string;
+  timestamp?: string | number;
+  createdAt?: string | number;
+  message?: { content?: unknown };
 };
 
 type CursorStoreSnapshot = {
@@ -408,6 +419,48 @@ function entriesFromAgentTranscript(
   return entries;
 }
 
+function rawTurnsFromAgentTranscript(
+  file: AgentTranscriptFile,
+  start: number,
+  end: number,
+): { turns: MemoryRawTurn[]; skippedMissingTimestamp: number } {
+  const turns: MemoryRawTurn[] = [];
+  const project = projectSlugToName(file.projectSlug);
+  let skippedMissingTimestamp = 0;
+
+  for (const row of readJsonlSync<CursorRawTranscriptRow>(file.filePath)) {
+    const role =
+      row.role === "user" || row.role === "assistant" ? row.role : null;
+    if (!role) continue;
+
+    const timestamp = parseTimestampMs(row.timestamp ?? row.createdAt);
+    if (!timestamp) {
+      skippedMissingTimestamp += 1;
+      continue;
+    }
+    if (!inWindow(timestamp, start, end)) continue;
+
+    const content = extractMessageContent(row.message?.content);
+    const text =
+      role === "user" ? extractUserPrompt(content ?? "") : content?.trim();
+    if (!text) continue;
+
+    turns.push(
+      createRawTurn({
+        vendor: "cursor",
+        role,
+        text,
+        timestamp,
+        sourcePath: file.filePath,
+        vendorSessionId: file.sessionId,
+        project,
+      }),
+    );
+  }
+
+  return { turns, skippedMissingTimestamp };
+}
+
 function entriesFromStore(
   store: CursorStoreSnapshot,
   start: number,
@@ -479,6 +532,44 @@ registerParser({
     }
 
     return dedupeCursorEntries(entries);
+  },
+
+  async parseRaw(start, end) {
+    const turns: MemoryRawTurn[] = [];
+    const warnings: string[] = [];
+    let skippedTranscriptCount = 0;
+    let skippedTurnCount = 0;
+
+    for (const file of findAgentTranscriptFiles()) {
+      try {
+        const result = rawTurnsFromAgentTranscript(file, start, end);
+        turns.push(...result.turns);
+        if (result.skippedMissingTimestamp > 0) {
+          skippedTranscriptCount += 1;
+          skippedTurnCount += result.skippedMissingTimestamp;
+        }
+      } catch {
+        warnings.push(`cursor transcript ${file.sessionId} is unreadable`);
+      }
+    }
+
+    if (skippedTurnCount > 0) {
+      warnings.push(
+        `cursor skipped ${skippedTurnCount} transcript raw turns across ${skippedTranscriptCount} transcripts without exact timestamps`,
+      );
+    }
+
+    const stores = findStoreDBs();
+    if (stores.length > 0) {
+      warnings.push(
+        `cursor store.db raw import skipped for ${stores.length} stores because per-message timestamps are unavailable`,
+      );
+    }
+
+    return {
+      turns: sortRawTurns(turns),
+      warnings,
+    };
   },
 });
 

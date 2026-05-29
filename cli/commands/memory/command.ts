@@ -4,6 +4,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import { printAgentMemoryImport } from "./import.js";
 import {
   initMemory,
   printAgentMemoryDaemon,
@@ -182,6 +183,39 @@ export function registerMemory(program: Command): void {
     runAction(
       async (options) => {
         await printMemoryRetryDrain(resolveJsonMode(options), options.dryRun);
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    program
+      .command("memory:import")
+      .description("Import vendor conversation history into AgentMemory")
+      .option(
+        "--source <source>",
+        "Import source: all, claude, codex, cursor, gemini, qwen, retry",
+        "all",
+      )
+      .option(
+        "--since <since>",
+        "Import window start: 24h, 7d, 30d, or YYYY-MM-DD",
+        "30d",
+      )
+      .option("--dry-run", "Preview import without writing to AgentMemory")
+      .option(
+        "--force-partial",
+        "Accept partial source coverage for locked or best-effort stores",
+      ),
+  ).action(
+    runAction(
+      async (options) => {
+        await printAgentMemoryImport(resolveJsonMode(options), {
+          source: options.source,
+          since: options.since,
+          dryRun: options.dryRun,
+          forcePartial: options.forcePartial,
+        });
       },
       { supportsJsonOutput: true },
     ),
