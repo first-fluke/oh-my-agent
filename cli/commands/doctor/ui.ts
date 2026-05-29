@@ -1,5 +1,45 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+
+// ── Visual-width helpers (ANSI + emoji aware) ────────────────────────
+
+/** Strip ANSI escape sequences so we measure only visible characters. */
+function stripAnsi(s: string): string {
+  // biome-ignore lint: the regex is intentionally broad to cover all ANSI sequences
+  return s.replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+/**
+ * Approximate the visual (terminal column) width of a string.
+ * - strips ANSI first
+ * - treats common wide emoji / symbols as width 2
+ * - everything else as width 1
+ */
+function visualWidth(s: string): number {
+  const plain = stripAnsi(s);
+  let w = 0;
+  for (const ch of plain) {
+    const cp = ch.codePointAt(0) ?? 0;
+    // Variation Selector-16 (U+FE0F) adds no extra column
+    if (cp === 0xfe0f) continue;
+    // Common wide emoji ranges (Miscellaneous Symbols, Dingbats, Emoticons,
+    // Supplemental Symbols, etc.)  — conservatively flag anything above
+    // U+2600 that's likely rendered full-width in most terminals.
+    if (cp >= 0x2600) {
+      w += 2;
+    } else {
+      w += 1;
+    }
+  }
+  return w;
+}
+
+/** Right-pad a (possibly ANSI-colored) string to `targetWidth` visual columns. */
+function visualPadEnd(s: string, targetWidth: number): string {
+  const diff = targetWidth - visualWidth(s);
+  return diff > 0 ? s + " ".repeat(diff) : s;
+}
+
 import { checkStarred } from "../../io/github.js";
 import { getAllSkills } from "../../platform/skills-installer.js";
 import { printMigrationGuide } from "../../vendors/qwen/auth.js";
@@ -19,7 +59,7 @@ function renderCliTable(report: DoctorReport): void {
         ? pc.green("✅")
         : pc.red("❌")
       : pc.dim("-");
-    return `${status} ${cli.name.padEnd(8)} ${version.padEnd(12)} ${auth}`;
+    return `${visualPadEnd(status, 2)} ${cli.name.padEnd(8)} ${version.padEnd(12)} ${visualPadEnd(auth, 2)}`;
   });
 
   p.note(
@@ -41,19 +81,28 @@ function renderCliTable(report: DoctorReport): void {
 
 function renderMcpTable(report: DoctorReport): void {
   if (report.mcpChecks.length === 0) return;
+
+  // Dynamic column widths
+  const cliCol = Math.max(3, ...report.mcpChecks.map((c) => c.name.length));
+  const cfgCol = 16; // "⚠️  Not configured" visual width
+  const paths = report.mcpChecks.map((c) =>
+    c.mcp.path ? c.mcp.path.split("/").pop() || "" : "-",
+  );
+  const pathCol = Math.max(4, ...paths.map((p) => p.length));
+
   const lines = [
     pc.bold("🔗 MCP Connection Status"),
-    "┌─────────┬──────────┬─────────────────────┐",
-    `│ ${pc.bold("CLI")}     │ ${pc.bold("MCP Config")} │ ${pc.bold("Path")}                │`,
-    "├─────────┼──────────┼─────────────────────┤",
-    ...report.mcpChecks.map((cli) => {
+    `┌${"─".repeat(cliCol + 2)}┬${"─".repeat(cfgCol + 2)}┬${"─".repeat(pathCol + 2)}┐`,
+    `│ ${pc.bold("CLI").padEnd(cliCol)} │ ${visualPadEnd(pc.bold("MCP Config"), cfgCol)} │ ${pc.bold("Path").padEnd(pathCol)} │`,
+    `├${"─".repeat(cliCol + 2)}┼${"─".repeat(cfgCol + 2)}┼${"─".repeat(pathCol + 2)}┤`,
+    ...report.mcpChecks.map((cli, i) => {
       const status = cli.mcp.configured
         ? pc.green("✅ Configured")
         : pc.yellow("⚠️  Not configured");
-      const path = cli.mcp.path ? cli.mcp.path.split("/").pop() || "" : "-";
-      return `│ ${cli.name.padEnd(7)} │ ${status.padEnd(8)} │ ${path.padEnd(19)} │`;
+      const pathCell = paths[i] ?? "-";
+      return `│ ${cli.name.padEnd(cliCol)} │ ${visualPadEnd(status, cfgCol)} │ ${pathCell.padEnd(pathCol)} │`;
     }),
-    "└─────────┴──────────┴─────────────────────┘",
+    `└${"─".repeat(cliCol + 2)}┴${"─".repeat(cfgCol + 2)}┴${"─".repeat(pathCol + 2)}┘`,
   ].join("\n");
   p.note(lines, "MCP Status");
 }
@@ -65,19 +114,25 @@ function renderSkillsTable(report: DoctorReport): void {
   }
   const installedCount = report.skillChecks.filter((s) => s.installed).length;
   const completeCount = report.skillChecks.filter((s) => s.hasSkillMd).length;
+
+  // Dynamic column width: fit the longest skill name (minimum 5 for header)
+  const nameCol = Math.max(5, ...report.skillChecks.map((s) => s.name.length));
+  const instCol = 9; // "Installed"
+  const mdCol = 8; // "SKILL.md"
+
   const lines = [
     pc.bold(
       `📦 Skills (${installedCount}/${report.skillChecks.length} installed, ${completeCount} complete)`,
     ),
-    "┌────────────────────┬──────────┬─────────────┐",
-    `│ ${pc.bold("Skill")}                │ ${pc.bold("Installed")} │ ${pc.bold("SKILL.md")}    │`,
-    "├────────────────────┼──────────┼─────────────┤",
+    `┌${"─".repeat(nameCol + 2)}┬${"─".repeat(instCol + 2)}┬${"─".repeat(mdCol + 2)}┐`,
+    `│ ${pc.bold("Skill").padEnd(nameCol)} │ ${pc.bold("Installed").padEnd(instCol)} │ ${pc.bold("SKILL.md").padEnd(mdCol)} │`,
+    `├${"─".repeat(nameCol + 2)}┼${"─".repeat(instCol + 2)}┼${"─".repeat(mdCol + 2)}┤`,
     ...report.skillChecks.map((skill) => {
       const installed = skill.installed ? pc.green("✅") : pc.red("❌");
       const hasMd = skill.hasSkillMd ? pc.green("✅") : pc.red("❌");
-      return `│ ${skill.name.padEnd(18)} │ ${installed.padEnd(8)} │ ${hasMd.padEnd(11)} │`;
+      return `│ ${skill.name.padEnd(nameCol)} │ ${visualPadEnd(installed, instCol)} │ ${visualPadEnd(hasMd, mdCol)} │`;
     }),
-    "└────────────────────┴──────────┴─────────────┘",
+    `└${"─".repeat(nameCol + 2)}┴${"─".repeat(instCol + 2)}┴${"─".repeat(mdCol + 2)}┘`,
   ].join("\n");
   p.note(lines, "Skills Status");
 }
@@ -209,6 +264,51 @@ function renderSkillBoundaries(report: DoctorReport): void {
     ].join("\n"),
     "Skill Boundaries",
   );
+}
+
+function renderAgentMemory(report: DoctorReport): void {
+  const memory = report.agentMemory;
+  const status = memory.status.reachable
+    ? pc.green("✅ reachable")
+    : memory.status.endpoint
+      ? pc.red("❌ unreachable")
+      : pc.yellow("⚠️  not configured");
+  const service = memory.service.supported
+    ? memory.service.installed
+      ? pc.green("installed")
+      : pc.dim("not installed")
+    : pc.dim(`unsupported on ${memory.service.platform}`);
+  const binary = memory.binary.available
+    ? pc.green(memory.binary.path ?? memory.binary.command)
+    : pc.yellow(`not found (${memory.binary.command})`);
+  const daemon = memory.daemon.ownedProcessRunning
+    ? pc.green(`running (${memory.daemon.ownedPid})`)
+    : pc.dim("not running");
+  const retry =
+    memory.retryQueue.total > 0
+      ? pc.yellow(
+          `${memory.retryQueue.total} queued (${memory.retryQueue.invalid} invalid)`,
+        )
+      : pc.green("empty");
+
+  const lines = [
+    `Status: ${status}`,
+    `Endpoint: ${pc.cyan(memory.status.endpoint ?? memory.daemon.endpoint ?? "not configured")}`,
+    `Version: ${memory.status.version ?? "-"}`,
+    memory.status.reason ? `Reason: ${pc.yellow(memory.status.reason)}` : null,
+    `Binary: ${binary}`,
+    `Retry queue: ${retry}`,
+    `Service: ${service}`,
+    memory.service.servicePath
+      ? `Service path: ${pc.dim(memory.service.servicePath)}`
+      : null,
+    `OMA daemon pid: ${daemon}`,
+    `PID path: ${pc.dim(memory.daemon.pidPath)}`,
+    memory.issues.length > 0 ? "" : null,
+    ...memory.issues.map((issue) => `${pc.yellow("⚠️")} ${issue}`),
+  ].filter((line): line is string => line !== null);
+
+  p.note(lines.join("\n"), "AgentMemory");
 }
 
 function renderFooter(report: DoctorReport): void {
@@ -433,6 +533,7 @@ export async function renderDoctorReport(report: DoctorReport): Promise<void> {
     renderMcpTable(report);
     renderSkillsTable(report);
     renderSkillBoundaries(report);
+    renderAgentMemory(report);
     await promptRepair(report);
     renderFooter(report);
   } catch (error) {
