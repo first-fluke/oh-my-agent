@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.17.1...cli-v8.18.0) (2026-05-29)
+
+
+### Features
+
+* **doctor:** report AgentMemory diagnostics ([0ee3054](https://github.com/first-fluke/oh-my-agent/commit/0ee3054dfe431dd07f9c40e45a2b12e8d357717d))
+
+
+### Bug Fixes
+
+* **doctor:** use visual-width-aware padding for table alignment ([d12bc8c](https://github.com/first-fluke/oh-my-agent/commit/d12bc8c8adf3a8cc05dc5f0e8dbe4ac601afa64a))
+
 ## [8.17.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.17.0...cli-v8.17.1) (2026-05-29)
 
 
