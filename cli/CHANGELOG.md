@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.17.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.17.0...cli-v8.17.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* **agent:** route subagent result artifacts to .serena/memories with parseable status ([326a228](https://github.com/first-fluke/oh-my-agent/commit/326a228d0ece3e5c1e552c37c73051863b306fcf))
+
 ## [8.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.16.0...cli-v8.17.0) (2026-05-29)
 
 
