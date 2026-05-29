@@ -54,8 +54,51 @@ const spawnState = vi.hoisted(() => {
   };
 });
 
+const ptyState = vi.hoisted(() => {
+  type PtyProc = {
+    pid: number;
+    onData: ReturnType<typeof vi.fn>;
+    onExit: ReturnType<typeof vi.fn>;
+    kill: ReturnType<typeof vi.fn>;
+    _emitData: (data: string) => void;
+    _emitExit: (exitCode: number | null) => void;
+  };
+
+  const lastPtyProcs: PtyProc[] = [];
+  const createPtyProc = (): PtyProc => {
+    let dataHandler: ((data: string) => void) | undefined;
+    let exitHandler: ((event: { exitCode: number | null }) => void) | undefined;
+    return {
+      pid: 12345,
+      onData: vi.fn((handler: (data: string) => void) => {
+        dataHandler = handler;
+      }),
+      onExit: vi.fn((handler: (event: { exitCode: number | null }) => void) => {
+        exitHandler = handler;
+      }),
+      kill: vi.fn(),
+      _emitData: (data: string) => dataHandler?.(data),
+      _emitExit: (exitCode: number | null) => exitHandler?.({ exitCode }),
+    };
+  };
+
+  return {
+    lastPtyProcs,
+    ptySpawnFn: vi.fn(() => {
+      const proc = createPtyProc();
+      lastPtyProcs.push(proc);
+      return proc;
+    }),
+  };
+});
+
 vi.mock("node:child_process", () => ({
   spawn: spawnState.spawnFn,
+  execFileSync: vi.fn(),
+}));
+
+vi.mock("node-pty", () => ({
+  spawn: ptyState.ptySpawnFn,
 }));
 
 // ---- dependency mocks needed by doctor.ts imports ----
@@ -104,11 +147,18 @@ function settleProcs(exitCode: number, stdoutData?: string): void {
     }
     proc._emit("close", exitCode);
   }
+  for (const proc of ptyState.lastPtyProcs) {
+    if (stdoutData) proc._emitData(stdoutData);
+    proc._emitExit(exitCode);
+  }
 }
 
 function errorProcs(): void {
   for (const proc of spawnState.lastProcs) {
     proc._emit("error", new Error("ENOENT: not found"));
+  }
+  for (const proc of ptyState.lastPtyProcs) {
+    proc._emitExit(1);
   }
 }
 
@@ -116,6 +166,7 @@ describe("checkCLI via collectDoctorReport", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     spawnState.lastProcs.length = 0;
+    ptyState.lastPtyProcs.length = 0;
     vi.clearAllMocks();
   });
 
@@ -128,7 +179,8 @@ describe("checkCLI via collectDoctorReport", () => {
 
     // Let the Promise constructors run so spawn() is called for all CLIs
     await vi.advanceTimersByTimeAsync(0);
-    expect(spawnState.lastProcs).toHaveLength(6);
+    expect(spawnState.lastProcs).toHaveLength(5);
+    expect(ptyState.lastPtyProcs).toHaveLength(1);
 
     settleProcs(0, "1.2.3\n");
     await vi.advanceTimersByTimeAsync(0);
@@ -146,7 +198,8 @@ describe("checkCLI via collectDoctorReport", () => {
     const reportPromise = collectDoctorReport();
 
     await vi.advanceTimersByTimeAsync(0);
-    expect(spawnState.lastProcs).toHaveLength(6);
+    expect(spawnState.lastProcs).toHaveLength(5);
+    expect(ptyState.lastPtyProcs).toHaveLength(1);
 
     settleProcs(1);
     await vi.advanceTimersByTimeAsync(0);
@@ -162,7 +215,8 @@ describe("checkCLI via collectDoctorReport", () => {
     const reportPromise = collectDoctorReport();
 
     await vi.advanceTimersByTimeAsync(0);
-    expect(spawnState.lastProcs).toHaveLength(6);
+    expect(spawnState.lastProcs).toHaveLength(5);
+    expect(ptyState.lastPtyProcs).toHaveLength(1);
 
     errorProcs();
     await vi.advanceTimersByTimeAsync(0);
@@ -179,7 +233,8 @@ describe("checkCLI via collectDoctorReport", () => {
     const reportPromise = collectDoctorReport();
 
     await vi.advanceTimersByTimeAsync(0);
-    expect(spawnState.lastProcs).toHaveLength(6);
+    expect(spawnState.lastProcs).toHaveLength(5);
+    expect(ptyState.lastPtyProcs).toHaveLength(1);
 
     // Advance past the 5000ms probe timeout + 200ms SIGKILL grace
     await vi.advanceTimersByTimeAsync(5200);
@@ -193,6 +248,9 @@ describe("checkCLI via collectDoctorReport", () => {
 
     // At least one kill signal was sent on each proc (SIGTERM at minimum)
     for (const proc of spawnState.lastProcs) {
+      expect(proc.kill).toHaveBeenCalled();
+    }
+    for (const proc of ptyState.lastPtyProcs) {
       expect(proc.kill).toHaveBeenCalled();
     }
   }, 10_000);
@@ -216,6 +274,17 @@ async function settleInstalledClis(
       proc._emit("close", 1);
     }
   }
+  const agyInstalled =
+    installedCommands.includes("agy") ||
+    installedCommands.includes("antigravity");
+  for (const proc of ptyState.lastPtyProcs) {
+    if (agyInstalled) {
+      proc._emitData(`${version}\n`);
+      proc._emitExit(0);
+    } else {
+      proc._emitExit(1);
+    }
+  }
   await vi.advanceTimersByTimeAsync(0);
 }
 
@@ -223,6 +292,7 @@ describe("vendor doc OMA block checks", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     spawnState.lastProcs.length = 0;
+    ptyState.lastPtyProcs.length = 0;
     vi.clearAllMocks();
     vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(readFileSync).mockReturnValue("");

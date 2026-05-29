@@ -13,6 +13,7 @@ import { checkStatus } from "./spawn-status.js";
 const mockFsFunctions = vi.hoisted(() => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
+  readdirSync: vi.fn(),
 }));
 
 vi.mock("node:fs", async () => ({
@@ -33,9 +34,11 @@ describe("agent/check-status.ts", () => {
   });
 
   it("reports correct status from result file", async () => {
-    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) =>
-      pathArg.toString().includes("result-"),
-    );
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = pathArg.toString();
+      return target.includes(".serena") || target.includes("result-");
+    });
+    mockFsFunctions.readdirSync?.mockReturnValue(["result-agent1.md"]);
     mockFsFunctions.readFileSync.mockReturnValue(
       "## Status: completed\nSome detail",
     );
@@ -45,6 +48,27 @@ describe("agent/check-status.ts", () => {
     await checkStatus("session1", ["agent1"]);
 
     expect(consoleSpy).toHaveBeenCalledWith("agent1:completed");
+  });
+
+  it("prefers session-suffixed result files", async () => {
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = pathArg.toString();
+      return (
+        target.includes(".serena") ||
+        target.includes("result-agent1-session1.md")
+      );
+    });
+    mockFsFunctions.readFileSync.mockReturnValue("## Status: failed\nDetails");
+
+    const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await checkStatus("session1", ["agent1"]);
+
+    expect(mockFsFunctions.readFileSync).toHaveBeenCalledWith(
+      expect.stringContaining("result-agent1-session1.md"),
+      "utf-8",
+    );
+    expect(consoleSpy).toHaveBeenCalledWith("agent1:failed");
   });
 
   it("falls back to PID check if result file missing", async () => {

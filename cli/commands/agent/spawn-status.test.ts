@@ -6,16 +6,23 @@ import { spawnAgent } from "./spawn-status.js";
 // Normalize Windows backslashes for cross-platform path string checks.
 const n = (s: string) => s.replace(/\\/g, "/");
 
-const mockFsFunctions = vi.hoisted(() => ({
-  existsSync: vi.fn(),
-  readFileSync: vi.fn(),
-  writeFileSync: vi.fn(),
-  unlinkSync: vi.fn(),
-  openSync: vi.fn(),
-  closeSync: vi.fn(),
-  statSync: vi.fn(),
-  mkdirSync: vi.fn(),
-  readdirSync: vi.fn(),
+const { mockFsFunctions, mockPtySpawn } = vi.hoisted(() => ({
+  mockPtySpawn: vi.fn(),
+  mockFsFunctions: {
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+    writeFileSync: vi.fn(),
+    unlinkSync: vi.fn(),
+    openSync: vi.fn(),
+    closeSync: vi.fn(),
+    statSync: vi.fn(),
+    mkdirSync: vi.fn(),
+    readdirSync: vi.fn(),
+  },
+}));
+
+vi.mock("node-pty", () => ({
+  spawn: mockPtySpawn,
 }));
 
 vi.mock("node:fs", async () => ({
@@ -28,9 +35,64 @@ vi.mock("node:child_process", () => ({
   execSync: vi.fn(),
 }));
 
+function createInteractivePtyProcess(pid = 12345) {
+  let dataHandler: ((data: string) => void) | undefined;
+  let exitHandler: ((event: { exitCode: number | null }) => void) | undefined;
+  const child = {
+    pid,
+    onData: vi.fn((handler: (data: string) => void) => {
+      dataHandler = handler;
+      return { dispose: vi.fn() };
+    }),
+    onExit: vi.fn((handler: (event: { exitCode: number | null }) => void) => {
+      exitHandler = handler;
+      return { dispose: vi.fn() };
+    }),
+    kill: vi.fn(),
+  };
+  return {
+    child,
+    emitData: (data: string) => dataHandler?.(data),
+    emitExit: (exitCode: number | null) => exitHandler?.({ exitCode }),
+  };
+}
+
+function setupFileBackedFs(workspace = "/workspace") {
+  const files = new Map<string, string>();
+  mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+    const target = pathArg.toString();
+    if (files.has(target)) return true;
+    if (n(target).endsWith(workspace)) return true;
+    return false;
+  });
+  mockFsFunctions.statSync.mockReturnValue({
+    isDirectory: () => true,
+    isFile: () => false,
+  });
+  mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+    return files.get(pathArg.toString()) ?? "";
+  });
+  mockFsFunctions.writeFileSync.mockImplementation(
+    (
+      pathArg: fs.PathOrFileDescriptor,
+      data: string | NodeJS.ArrayBufferView,
+    ) => {
+      if (typeof pathArg === "string") {
+        files.set(pathArg, data.toString());
+      }
+    },
+  );
+  mockFsFunctions.unlinkSync.mockImplementation((pathArg: fs.PathLike) => {
+    files.delete(pathArg.toString());
+  });
+  return files;
+}
+
 describe("agent/spawn-status.ts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPtySpawn.mockReset();
+    process.exitCode = undefined;
     vi.stubEnv("OMA_RUNTIME_VENDOR", "");
     vi.stubEnv("CODEX_CI", "");
     vi.stubEnv("CODEX_THREAD_ID", "");
@@ -40,10 +102,12 @@ describe("agent/spawn-status.ts", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    process.exitCode = undefined;
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it("exits if spawn returns no pid", async () => {
+  it("marks failure if spawn returns no pid", async () => {
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
       return n(target).endsWith("/tmp");
@@ -62,18 +126,8 @@ describe("agent/spawn-status.ts", () => {
       mockChild as unknown as child_process.ChildProcess,
     );
 
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(
-        (_code?: string | number | null | undefined): never => {
-          throw new Error("exit");
-        },
-      );
-
-    await expect(
-      spawnAgent("agent1", "prompt.md", "session1", "/tmp"),
-    ).rejects.toThrow("exit");
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    await spawnAgent("agent1", "prompt.md", "session1", "/tmp");
+    expect(process.exitCode).toBe(1);
   });
 
   it("spawns process and writes PID", async () => {
@@ -134,6 +188,139 @@ describe("agent/spawn-status.ts", () => {
       expect.stringContaining(".pid"),
       "12345",
     );
+  });
+
+  it("uses node-pty only for Antigravity spawns", async () => {
+    const pty = createInteractivePtyProcess(22345);
+    mockPtySpawn.mockReturnValue(pty.child);
+    setupFileBackedFs();
+
+    await spawnAgent(
+      "agent1",
+      "Reply exactly: AGY_OK",
+      "session1",
+      "/workspace",
+      "antigravity",
+    );
+
+    expect(mockPtySpawn).toHaveBeenCalledWith(
+      "agy",
+      expect.arrayContaining([
+        "--dangerously-skip-permissions",
+        "-p",
+        "Reply exactly: AGY_OK",
+      ]),
+      expect.objectContaining({
+        cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/),
+      }),
+    );
+    expect(child_process.spawn).not.toHaveBeenCalled();
+    expect(mockFsFunctions.writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining(".pid"),
+      "22345",
+    );
+  });
+
+  it("writes Antigravity result from captured PTY stdout", async () => {
+    const files = setupFileBackedFs();
+    const pty = createInteractivePtyProcess(22346);
+    mockPtySpawn.mockReturnValue(pty.child);
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      return undefined as never;
+    });
+
+    await spawnAgent(
+      "agent1",
+      "Reply exactly: SHOULD_NOT_BE_USED",
+      "session1",
+      "/workspace",
+      "antigravity",
+    );
+    pty.emitData("\u001b[31mAGY_OK\u001b[0m\r\n");
+    pty.emitExit(0);
+
+    const result = [...files.entries()].find(([file]) =>
+      n(file).endsWith(".serena/memories/result-agent1-session1.md"),
+    )?.[1];
+    expect(result).toContain("## Status: completed");
+    expect(result).toContain("AGY_OK");
+    expect(result).not.toContain("SHOULD_NOT_BE_USED");
+    expect(exitSpy).toHaveBeenCalledWith(0);
+  });
+
+  it("marks Antigravity result failed when PTY output is empty", async () => {
+    const files = setupFileBackedFs();
+    const pty = createInteractivePtyProcess(22347);
+    mockPtySpawn.mockReturnValue(pty.child);
+    vi.spyOn(process, "exit").mockImplementation((): never => {
+      return undefined as never;
+    });
+
+    await spawnAgent(
+      "agent1",
+      "Reply exactly: AGY_OK",
+      "session1",
+      "/workspace",
+      "antigravity",
+    );
+    pty.emitExit(0);
+
+    const result = [...files.entries()].find(([file]) =>
+      n(file).endsWith(".serena/memories/result-agent1-session1.md"),
+    )?.[1];
+    expect(result).toContain("## Status: failed");
+    expect(result).toContain("(no output captured)");
+    expect(result).not.toContain("## Status: completed");
+  });
+
+  it("writes a failed result when Antigravity PTY spawn throws", async () => {
+    const files = setupFileBackedFs();
+    mockPtySpawn.mockImplementation(() => {
+      throw new Error("File not found");
+    });
+
+    await spawnAgent(
+      "agent1",
+      "Reply exactly: AGY_OK",
+      "session1",
+      "/workspace",
+      "antigravity",
+    );
+
+    const result = [...files.entries()].find(([file]) =>
+      n(file).endsWith(".serena/memories/result-agent1-session1.md"),
+    )?.[1];
+    expect(result).toContain("## Status: failed");
+    expect(result).toContain("Antigravity PTY spawn failed");
+    expect(result).not.toContain("## Status: completed");
+    expect(process.exitCode).toBe(1);
+  });
+
+  it("forces a failed Antigravity result when timeout kill never emits exit", async () => {
+    vi.useFakeTimers();
+    const files = setupFileBackedFs();
+    const pty = createInteractivePtyProcess(22348);
+    mockPtySpawn.mockReturnValue(pty.child);
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      return undefined as never;
+    });
+
+    await spawnAgent(
+      "agent1",
+      "Reply exactly: AGY_OK",
+      "session1",
+      "/workspace",
+      "antigravity",
+    );
+    await vi.advanceTimersByTimeAsync((5 * 60 + 12) * 1000);
+
+    const result = [...files.entries()].find(([file]) =>
+      n(file).endsWith(".serena/memories/result-agent1-session1.md"),
+    )?.[1];
+    expect(pty.child.kill).toHaveBeenCalled();
+    expect(result).toContain("## Status: failed");
+    expect(result).toContain("Antigravity PTY timed out");
+    expect(exitSpy).toHaveBeenCalledWith(124);
   });
 
   it("resolves vendor from oma-config.yaml found in parent directory", async () => {

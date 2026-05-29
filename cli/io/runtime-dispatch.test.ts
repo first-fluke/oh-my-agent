@@ -245,8 +245,12 @@ describe("planDispatch — plan integration (T10b)", () => {
     expect(tomlAfterSecond).toBe(tomlAfterFirst);
   });
 
-  it("missing oma-config.yaml → ConfigError handled gracefully, dispatch succeeds", () => {
-    // No oma-config.yaml → resolveAgentPlan throws ConfigError → fallback to vendor config
+  it("missing model_preset → ConfigError handled gracefully, dispatch succeeds", () => {
+    writeFileSync(
+      join(tempDir, ".agents", "oma-config.yaml"),
+      "language: en\n",
+    );
+    // Missing model_preset → resolveAgentPlan throws ConfigError → fallback to vendor config
     const plan = planDispatch(
       "nonexistent-agent",
       "claude",

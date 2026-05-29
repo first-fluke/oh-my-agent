@@ -1,6 +1,7 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { extname, join } from "node:path";
+import type { IPty } from "node-pty";
 import { downloadAndExtract } from "../../io/tarball.js";
 import {
   getAllSkills,
@@ -24,18 +25,48 @@ const OMA_DOCTOR_PROBE_TIMEOUT_MS = Number(
   process.env.OMA_DOCTOR_PROBE_TIMEOUT_MS ?? 5000,
 );
 const OMA_DOCTOR_PROBE_SIGKILL_GRACE_MS = 200;
+const WINDOWS_EXECUTABLE_EXTENSIONS = [".cmd", ".exe", ".bat"];
+type DoctorPtyModule = typeof import("node-pty");
+type CliProbeMode = "stdio" | "pty";
+interface CliDefinition {
+  name: string;
+  command: string;
+  installCmd: string;
+  probeMode?: CliProbeMode;
+}
 
-const CLI_DEFINITIONS: Array<[string, string, string]> = [
-  ["gemini", "gemini", "bun install --global @google/gemini-cli"],
-  ["claude", "claude", "bun install --global @anthropic-ai/claude-code"],
-  ["codex", "codex", "bun install --global @openai/codex"],
-  ["qwen", "qwen", "bun install --global @qwen-code/qwen-code"],
-  [
-    "antigravity",
-    "agy",
-    "curl -fsSL https://antigravity.google/cli/install.sh | bash",
-  ],
-  ["grok", "grok", "Follow instructions at https://grok.x.ai"],
+const CLI_DEFINITIONS: CliDefinition[] = [
+  {
+    name: "gemini",
+    command: "gemini",
+    installCmd: "bun install --global @google/gemini-cli",
+  },
+  {
+    name: "claude",
+    command: "claude",
+    installCmd: "bun install --global @anthropic-ai/claude-code",
+  },
+  {
+    name: "codex",
+    command: "codex",
+    installCmd: "bun install --global @openai/codex",
+  },
+  {
+    name: "qwen",
+    command: "qwen",
+    installCmd: "bun install --global @qwen-code/qwen-code",
+  },
+  {
+    name: "antigravity",
+    command: "agy",
+    installCmd: "curl -fsSL https://antigravity.google/cli/install.sh | bash",
+    probeMode: "pty",
+  },
+  {
+    name: "grok",
+    command: "grok",
+    installCmd: "Follow instructions at https://grok.x.ai",
+  },
 ];
 
 export const AUTH_CHECKERS: Record<string, () => boolean> = {
@@ -84,21 +115,172 @@ export interface DoctorReport {
   dualInstall: DualInstallReport;
 }
 
-async function checkCLI(
+export function resolveDoctorProbeCommand(command: string): string {
+  if (process.platform !== "win32") return command;
+  if (WINDOWS_EXECUTABLE_EXTENSIONS.includes(extname(command).toLowerCase())) {
+    return command;
+  }
+
+  try {
+    const whereOutput = execFileSync("where.exe", [command], {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const candidates = whereOutput
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    return (
+      candidates.find((candidate) =>
+        WINDOWS_EXECUTABLE_EXTENSIONS.includes(
+          extname(candidate).toLowerCase(),
+        ),
+      ) ??
+      candidates[0] ??
+      command
+    );
+  } catch {
+    return command;
+  }
+}
+
+// biome-ignore lint/suspicious/noControlCharactersInRegex: stripping terminal OSC escapes from agy PTY probe output requires literal ESC/BEL control chars.
+const OSC_SEQUENCE = /\x1b\][^\x07]*(?:\x07|\x1b\\)/g;
+// biome-ignore format: keep regex on one line so the lint suppression below targets it.
+// biome-ignore lint/suspicious/noControlCharactersInRegex: stripping terminal ANSI/CSI escapes from agy PTY probe output requires literal ESC/CSI control chars.
+const ANSI_SEQUENCE = /[\x1b\x9b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+
+function cleanProbeOutput(text: string): string {
+  return text.replace(OSC_SEQUENCE, "").replace(ANSI_SEQUENCE, "").trim();
+}
+
+async function loadDoctorPtyModule(): Promise<DoctorPtyModule> {
+  try {
+    return await import("node-pty");
+  } catch (err) {
+    throw new Error(`node-pty unavailable: ${String(err)}`);
+  }
+}
+
+async function checkPtyCLI(
   name: string,
   command: string,
   installCmd: string,
 ): Promise<CLICheck> {
+  let pty: DoctorPtyModule;
+  try {
+    pty = await loadDoctorPtyModule();
+  } catch (err) {
+    return {
+      name,
+      installed: false,
+      installCmd,
+      diagnostic: String(err),
+    };
+  }
+
+  return new Promise<CLICheck>((resolve) => {
+    const resolvedCommand = resolveDoctorProbeCommand(command);
+    let stdout = "";
+    let settled = false;
+    let proc: IPty | undefined;
+    let probeTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const settle = (
+      installed: boolean,
+      version?: string,
+      diagnostic?: string,
+    ) => {
+      if (settled) return;
+      settled = true;
+      if (probeTimer) clearTimeout(probeTimer);
+      resolve(
+        installed
+          ? { name, installed: true, version, installCmd }
+          : { name, installed: false, installCmd, diagnostic },
+      );
+    };
+
+    probeTimer = setTimeout(() => {
+      try {
+        proc?.kill();
+      } catch {}
+      settle(false, undefined, `PTY probe timed out for ${resolvedCommand}`);
+    }, OMA_DOCTOR_PROBE_TIMEOUT_MS);
+    probeTimer.unref?.();
+
+    try {
+      proc = pty.spawn(resolvedCommand, ["--version"], {
+        name: "xterm-256color",
+        cols: 80,
+        rows: 20,
+        cwd: process.cwd(),
+        env: process.env,
+        ...(process.platform === "win32" ? { useConpty: true } : {}),
+      });
+    } catch (err) {
+      settle(
+        false,
+        undefined,
+        `PTY spawn failed for ${resolvedCommand}: ${String(err)}`,
+      );
+      return;
+    }
+
+    proc.onData((chunk) => {
+      stdout += chunk;
+    });
+    proc.onExit(({ exitCode }) => {
+      const version = cleanProbeOutput(stdout);
+      if (exitCode === 0 && version) {
+        settle(true, version);
+      } else {
+        settle(
+          false,
+          undefined,
+          `PTY probe exited ${exitCode ?? "null"} for ${resolvedCommand}`,
+        );
+      }
+    });
+  });
+}
+
+async function checkCLI(
+  name: string,
+  command: string,
+  installCmd: string,
+  probeMode: CliProbeMode = "stdio",
+): Promise<CLICheck> {
+  if (probeMode === "pty") {
+    return checkPtyCLI(name, command, installCmd);
+  }
+
   return new Promise<CLICheck>((resolve) => {
     let stdout = "";
     let killGraceTimer: ReturnType<typeof setTimeout> | undefined;
     let settled = false;
 
-    const proc = spawn(command, ["--version"], {
-      stdio: ["ignore", "pipe", "ignore"],
-    });
+    const resolvedCommand = resolveDoctorProbeCommand(command);
+    const useCmdShim =
+      process.platform === "win32" &&
+      extname(resolvedCommand).toLowerCase() === ".cmd";
+    const spawnCommand = useCmdShim
+      ? (process.env.ComSpec ?? "cmd.exe")
+      : resolvedCommand;
+    const spawnArgs = useCmdShim
+      ? ["/d", "/s", "/c", resolvedCommand, "--version"]
+      : ["--version"];
+    let proc: ReturnType<typeof spawn>;
+    try {
+      proc = spawn(spawnCommand, spawnArgs, {
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+    } catch {
+      resolve({ name, installed: false, installCmd });
+      return;
+    }
 
-    proc.stdout.on("data", (chunk: Buffer) => {
+    proc.stdout?.on("data", (chunk: Buffer) => {
       stdout += chunk.toString("utf-8");
     });
 
@@ -148,10 +330,26 @@ function checkMCPConfig(cliName: string): {
   path?: string;
 } {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "";
+  if (cliName === "antigravity") {
+    const mcpPath = `${homeDir}/.gemini/antigravity-cli/mcp_config.json`;
+    if (existsSync(mcpPath)) {
+      try {
+        const json = JSON.parse(readFileSync(mcpPath, "utf-8"));
+        if (json.mcpServers || json.mcp) {
+          return { configured: true, path: mcpPath };
+        }
+      } catch {}
+    }
+  }
+
   const configs: Record<
     string,
     { path: string; type: "json" | "yaml" | "toml" }
   > = {
+    antigravity: {
+      path: `${homeDir}/.gemini/antigravity-cli/settings.json`,
+      type: "json",
+    },
     gemini: { path: `${homeDir}/.gemini/settings.json`, type: "json" },
     claude: { path: `${homeDir}/.claude.json`, type: "json" },
     codex: { path: `${homeDir}/.codex/config.toml`, type: "toml" },
@@ -216,8 +414,13 @@ export async function collectDoctorReport(): Promise<DoctorReport> {
   const dualInstall = await checkDualInstall(cwd);
 
   const clis = await Promise.all(
-    CLI_DEFINITIONS.map(([name, cmd, installCmd]) =>
-      checkCLI(name, cmd, installCmd),
+    CLI_DEFINITIONS.map((definition) =>
+      checkCLI(
+        definition.name,
+        definition.command,
+        definition.installCmd,
+        definition.probeMode,
+      ),
     ),
   );
 

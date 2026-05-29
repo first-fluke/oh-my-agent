@@ -57,7 +57,7 @@
   "scripts": {
     "sync:readme": "node ./scripts/sync-readme.mjs",
     "generate:skill-data": "node ./scripts/generate-skill-data.mjs",
-    "build": "bun run generate:skill-data && bun run sync:readme && bun build cli.ts --outfile bin/cli.js --target node --minify --external @napi-rs/keyring",
+    "build": "bun run generate:skill-data && bun run sync:readme && bun build cli.ts --outfile bin/cli.js --target node --minify --external @napi-rs/keyring --external node-pty",
     "dev": "bun run generate:skill-data && bun run cli.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write --unsafe .",
@@ -78,6 +78,7 @@
     "eld": "^2.0.3",
     "fast-xml-parser": "^5",
     "minimatch": "^10.2.5",
+    "node-pty": "^1.1.0",
     "p-map": "^7.0.4",
     "picocolors": "^1.1.1",
     "puppeteer-core": "^24",

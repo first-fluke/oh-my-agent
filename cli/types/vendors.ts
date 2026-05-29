@@ -29,4 +29,5 @@ export interface CLICheck {
   installed: boolean;
   version?: string;
   installCmd: string;
+  diagnostic?: string;
 }
