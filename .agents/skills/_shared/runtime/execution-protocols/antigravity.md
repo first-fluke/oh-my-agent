@@ -1,15 +1,23 @@
-# Execution Protocol (Qwen)
+# Execution Protocol (Antigravity)
 
-When running as a CLI subagent, follow this protocol for shared state coordination.
+When running as a CLI subagent (`agy -p` headless mode), follow this protocol for shared
+state coordination. **In headless mode your stdout is discarded by the spawner** — the only
+durable hand-off to the orchestrator is the result artifact written below. If you do not
+write it, the orchestrator reports your run as `crashed` even on success.
 
 ## MCP Memory Tools
 
-Tool names are configurable via `mcp.json → memoryConfig.tools`:
+Tool names are configurable via `mcp_config.json → memoryConfig.tools`:
 - `[READ]` → default: `read_memory`
 - `[WRITE]` → default: `write_memory`
 - `[EDIT]` → default: `edit_memory`
+- `[LIST]` → default: `list_memories`
+- `[DELETE]` → default: `delete_memory`
 
 Memory base path is configurable via `memoryConfig.basePath` (default: `.serena/memories`).
+
+If Serena MCP memory tools are unavailable, fall back to writing the same files directly to
+`.serena/memories/` using your native file-write tool.
 
 ### Path Resolution (CRITICAL)
 
@@ -46,13 +54,13 @@ All result, progress, and state files MUST be written to the **project root** me
 ## Status line format (REQUIRED)
 
 The orchestrator parses the status with the regex `^## Status:\s*(\S+)`. The result file
-MUST contain a single line in exactly this shape — heading marker, colon on the same line,
-plain word, no backticks, no quotes:
+MUST contain a single line in exactly this shape — colon on the same line, plain word, no
+backticks, no quotes:
 
 ```
 ## Status: completed
 ```
 
-Use `## Status: failed` on failure. Do NOT split it across lines or render it as a
-sub-bullet (e.g. `- Status: completed`) — that fails to parse and a failed run would be
-silently misreported as completed.
+Use `## Status: failed` on failure. Do NOT split it across lines (e.g. `## Status` then a
+separate ``` `completed` ``` line) — that fails to parse and a failed run would be silently
+misreported as completed.

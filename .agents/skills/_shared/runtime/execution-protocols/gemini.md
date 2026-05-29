@@ -35,12 +35,26 @@ All result, progress, and state files MUST be written to the **project root** me
 ## On Completion
 
 - `[WRITE]("result-{agent-id}[-{sessionId}].md")` with final result including:
-  - Status: `completed` or `failed`
+  - A status line — see **Status line format** below (REQUIRED)
   - Summary of work done
   - Files created/modified
   - Acceptance criteria checklist
 
 ## On Failure
 
-- Still create `result-{agent-id}[-{sessionId}].md` with Status: `failed`
+- Still create `result-{agent-id}[-{sessionId}].md` with the status line set to `failed`
 - Include detailed error description and what remains incomplete
+
+## Status line format (REQUIRED)
+
+The orchestrator parses the status with the regex `^## Status:\s*(\S+)`. The result file
+MUST contain a single line in exactly this shape — heading marker, colon on the same line,
+plain word, no backticks, no quotes:
+
+```
+## Status: completed
+```
+
+Use `## Status: failed` on failure. Do NOT split it across lines or render it as a
+sub-bullet (e.g. `- Status: completed`) — that fails to parse and a failed run would be
+silently misreported as completed.
