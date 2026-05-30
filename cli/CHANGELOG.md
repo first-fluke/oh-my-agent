@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.18.0...cli-v8.19.0) (2026-05-30)
+
+
+### Features
+
+* **cli:** add memory:maintain and memory:upgrade commands ([4023836](https://github.com/first-fluke/oh-my-agent/commit/4023836cb86411189b33373ddb8bf0f35e030572))
+
 ## [8.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.17.1...cli-v8.18.0) (2026-05-29)
 
 
