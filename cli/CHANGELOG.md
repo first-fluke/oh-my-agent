@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.19.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.19.0...cli-v8.19.1) (2026-05-30)
+
+
+### Documentation
+
+* **i18n:** refine korean docs for natural phrasing ([fc4112f](https://github.com/first-fluke/oh-my-agent/commit/fc4112f0c06b3fea801ce0e613ce0bcc542d56d3))
+
 ## [8.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.18.0...cli-v8.19.0) (2026-05-30)
 
 
