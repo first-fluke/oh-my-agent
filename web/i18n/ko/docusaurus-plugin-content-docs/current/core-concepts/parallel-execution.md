@@ -190,7 +190,7 @@ Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
 Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
 
-같은 메시지에서의 여러 Agent 도구 호출은 진정한 병렬로 실행됩니다(순차적 대기 없음).
+같은 메시지에서 여러 Agent 도구를 호출하면 진정한 병렬로 실행됩니다(순차적 대기 없음).
 
 ---
 

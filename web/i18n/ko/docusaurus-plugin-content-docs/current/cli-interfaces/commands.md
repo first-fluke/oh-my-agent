@@ -540,7 +540,7 @@ oma bridge http://localhost:12341/mcp
 
 ### verify
 
-서브에이전트 출력을 예상 기준에 대해 검증합니다.
+서브에이전트 출력을 예상 기준에 따라 검증합니다.
 
 ```
 oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
@@ -560,7 +560,7 @@ oma verify <agent-type> [-w <workspace>] [--json] [--output <format>]
 | `--json` | JSON으로 출력 | |
 | `--output <format>` | 출력 형식 (`text` 또는 `json`) | |
 
-**수행 내용:** 지정된 에이전트 타입에 대한 검증 스크립트를 실행하여 빌드 성공, 테스트 결과, 범위 준수를 확인합니다.
+**수행 내용:** 지정된 에이전트 타입의 검증 스크립트를 실행하여 빌드 성공, 테스트 결과, 범위 준수를 확인합니다.
 
 **공통 검사 (모든 에이전트 타입):**
 - **범위 검사**: `.agents/results/plan-{sessionId}.json`의 태스크 범위를 읽고, `git diff`로 변경된 파일을 정의된 범위 패턴과 비교합니다. 에이전트에 할당된 범위 외의 파일이 수정되면 실패합니다.
