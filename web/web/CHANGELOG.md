@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.7.0...web-v3.7.1) (2026-05-30)
+
+
+### Documentation
+
+* **i18n:** refine korean docs for natural phrasing ([fc4112f](https://github.com/first-fluke/oh-my-agent/commit/fc4112f0c06b3fea801ce0e613ce0bcc542d56d3))
+
 ## [3.7.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.6.0...web-v3.7.0) (2026-05-27)
 
 
