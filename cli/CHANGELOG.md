@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.19.1...cli-v8.20.0) (2026-05-31)
+
+
+### Features
+
+* **cli:** add Kiro CLI vendor and update README vendor grid ([3dcffd8](https://github.com/first-fluke/oh-my-agent/commit/3dcffd80d74753f7cf25615292c6f10402604201))
+
+
+### Bug Fixes
+
+* **docs:** align README vendor table and wire Kiro runtime dispatch ([8dfff4d](https://github.com/first-fluke/oh-my-agent/commit/8dfff4d6442cc6e1bfa88be1b053c7be7ef20a39))
+* **docs:** repair README vendor grid layout for Grok and Kiro ([ecd956f](https://github.com/first-fluke/oh-my-agent/commit/ecd956faf08dd7b97b4c65614c402107a12a1c71))
+
+
+### Refactoring
+
+* **cli:** centralize agents paths and unify SHA-256 hashing ([85aff4f](https://github.com/first-fluke/oh-my-agent/commit/85aff4f50e7cc9c60a12bbf4715a49fdd5355878))
+
 ## [8.19.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.19.0...cli-v8.19.1) (2026-05-30)
 
 
