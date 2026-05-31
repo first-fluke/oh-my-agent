@@ -117,6 +117,42 @@ export function buildAntigravityNativeInvocation(
 }
 
 /**
+ * Kiro CLI headless mode: `kiro-cli chat --no-interactive --trust-all-tools [--model …] "<prompt>"`.
+ *
+ * Notes:
+ * - `--no-interactive` is required for headless/subagent use.
+ * - `--trust-all-tools` bypasses all tool approval prompts (equivalent to --dangerously-skip-permissions).
+ * - `--model` accepts AWS Bedrock model IDs (e.g. anthropic.claude-sonnet-4-5-20251001-v1:0).
+ *   Omit to use the default model configured in Kiro settings.
+ */
+export function buildKiroNativeInvocation(
+  agentId: string,
+  promptContent: string,
+  vendorConfig: VendorConfig,
+): Invocation {
+  const command = vendorConfig.command || "kiro-cli";
+  const args: string[] = ["chat", "--no-interactive"];
+
+  if (vendorConfig.auto_approve_flag) {
+    args.push(vendorConfig.auto_approve_flag);
+  } else {
+    args.push("--trust-all-tools");
+  }
+
+  if (agentId) {
+    args.push("--agent", agentId);
+  }
+
+  if (vendorConfig.model_flag && vendorConfig.default_model) {
+    args.push(vendorConfig.model_flag, vendorConfig.default_model);
+  }
+
+  args.push(promptContent);
+
+  return { command, args, env: { ...process.env } };
+}
+
+/**
  * Cursor Agent headless CLI: `cursor agent -p [--output-format …] [--yolo|--force]
  * [--trust] [--model …] … <prompt>`. The `-p` flag is boolean; prompt is positional.
  *

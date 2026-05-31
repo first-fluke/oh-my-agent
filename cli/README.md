@@ -67,64 +67,71 @@ Pick a preset and you're ready:
 `oh-my-agent` keeps `.agents/` as the single source of truth and projects it into each runtime's native layout, so every supported tool shares the same skills, workflows, and rules.
 
 <table>
+<colgroup>
+<col span="6" style="width:16.67%" />
+</colgroup>
 <tr>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://claude.com/product/claude-code"><img src="https://github.com/anthropics.png?size=120" alt="Claude Code" width="48" height="48" /></a><br/>
 <strong>Claude Code</strong><br/>
 <sub>native + adapter</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://github.com/openai/codex"><img src="https://github.com/openai.png?size=120" alt="Codex CLI" width="48" height="48" /></a><br/>
 <strong>Codex CLI</strong><br/>
 <sub>native + adapter</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
 <strong>Gemini CLI</strong><br/>
 <sub>native + adapter</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
 <strong>Cursor</strong><br/>
 <sub>native + adapter</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://github.com/QwenLM/qwen-code"><img src="https://github.com/QwenLM.png?size=120" alt="Qwen Code" width="48" height="48" /></a><br/>
 <strong>Qwen Code</strong><br/>
 <sub>native dispatch</sub>
 </td>
-<td align="center" width="16%">
-<a href="https://grok.x.ai"><img src="./docs/assets/agents/grok.png" alt="Grok" width="48" height="48" /></a><br/>
-<strong>Grok</strong><br/>
-<sub>native hooks</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="20%">
-<a href="https://antigravity.google"><img src="./docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>native SSOT</sub>
-</td>
-<td align="center" width="20%">
-<a href="https://github.com/anomalyco/opencode"><img src="./docs/assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
-<strong>OpenCode</strong><br/>
-<sub>native-compatible</sub>
-</td>
-<td align="center" width="20%">
-<a href="https://ampcode.com"><img src="./docs/assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
-<strong>Amp</strong><br/>
-<sub>native-compatible</sub>
-</td>
-<td align="center" width="20%">
-<a href="https://github.com/features/copilot"><img src="https://github.com/github.png?size=120" alt="GitHub Copilot" width="48" height="48" /></a><br/>
-<strong>GitHub Copilot</strong><br/>
-<sub>symlinked skills</sub>
-</td>
-<td align="center" width="20%">
+
+<td align="center">
 <a href="https://kiro.dev"><img src="./docs/assets/agents/kiro.png" alt="Kiro CLI" width="48" height="48" /></a><br/>
 <strong>Kiro CLI</strong><br/>
 <sub>native hooks + agents</sub>
 </td>
+</tr>
+<tr>
+<td align="center">
+<a href="https://antigravity.google"><img src="./docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>native SSOT</sub>
+</td>
+<td align="center">
+<a href="https://github.com/anomalyco/opencode"><img src="./docs/assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
+<strong>OpenCode</strong><br/>
+<sub>native-compatible</sub>
+</td>
+<td align="center">
+<a href="https://ampcode.com"><img src="./docs/assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
+<strong>Amp</strong><br/>
+<sub>native-compatible</sub>
+</td>
+<td align="center">
+<a href="https://github.com/features/copilot"><img src="https://github.com/github.png?size=120" alt="GitHub Copilot" width="48" height="48" /></a><br/>
+<strong>GitHub Copilot</strong><br/>
+<sub>symlinked skills</sub>
+</td>
+<td align="center"></td>
+
+<td align="center">
+<a href="https://grok.x.ai"><img src="./docs/assets/agents/grok.png" alt="Grok" width="48" height="48" /></a><br/>
+<strong>Grok</strong><br/>
+<sub>native hooks</sub>
+</td>
+<td align="center"></td>
 </tr>
 </table>
 

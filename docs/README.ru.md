@@ -63,64 +63,70 @@ APM поставляет только скилы. Для workflow, правил,
 `oh-my-agent` хранит `.agents/` как единый источник истины (SSOT) и проецирует его в нативный layout каждого runtime. Поэтому все поддерживаемые инструменты используют одни и те же skills, workflows и правила.
 
 <table>
+<colgroup>
+<col span="6" style="width:16.67%" />
+</colgroup>
 <tr>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://claude.com/product/claude-code"><img src="https://github.com/anthropics.png?size=120" alt="Claude Code" width="48" height="48" /></a><br/>
 <strong>Claude Code</strong><br/>
 <sub>нативный + адаптер</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://github.com/openai/codex"><img src="https://github.com/openai.png?size=120" alt="Codex CLI" width="48" height="48" /></a><br/>
 <strong>Codex CLI</strong><br/>
 <sub>нативный + адаптер</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
 <strong>Gemini CLI</strong><br/>
 <sub>нативный + адаптер</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
 <strong>Cursor</strong><br/>
 <sub>нативный + адаптер</sub>
 </td>
-<td align="center" width="16%">
+<td align="center">
 <a href="https://github.com/QwenLM/qwen-code"><img src="https://github.com/QwenLM.png?size=120" alt="Qwen Code" width="48" height="48" /></a><br/>
 <strong>Qwen Code</strong><br/>
 <sub>нативный dispatch</sub>
 </td>
-<td align="center" width="16%">
-<a href="https://grok.x.ai"><img src="./assets/agents/grok.png" alt="Grok" width="48" height="48" /></a><br/>
-<strong>Grok</strong><br/>
-<sub>нативные hooks</sub>
-</td>
-</tr>
-<tr>
-<td align="center" width="20%">
-<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>нативный SSOT</sub>
-</td>
-<td align="center" width="20%">
-<a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
-<strong>OpenCode</strong><br/>
-<sub>нативная совместимость</sub>
-</td>
-<td align="center" width="20%">
-<a href="https://ampcode.com"><img src="./assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
-<strong>Amp</strong><br/>
-<sub>нативная совместимость</sub>
-</td>
-<td align="center" width="20%">
-<a href="https://github.com/features/copilot"><img src="https://github.com/github.png?size=120" alt="GitHub Copilot" width="48" height="48" /></a><br/>
-<strong>GitHub Copilot</strong><br/>
-<sub>skills через symlink</sub>
-</td>
-<td align="center" width="20%">
+
+<td align="center">
 <a href="https://kiro.dev"><img src="./assets/agents/kiro.png" alt="Kiro CLI" width="48" height="48" /></a><br/>
 <strong>Kiro CLI</strong><br/>
 <sub>нативные hooks + agents</sub>
 </td>
+</tr>
+<tr>
+<td align="center">
+<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>нативный SSOT</sub>
+</td>
+<td align="center">
+<a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
+<strong>OpenCode</strong><br/>
+<sub>нативная совместимость</sub>
+</td>
+<td align="center">
+<a href="https://ampcode.com"><img src="./assets/agents/amp.png" alt="Amp" width="48" height="48" /></a><br/>
+<strong>Amp</strong><br/>
+<sub>нативная совместимость</sub>
+</td>
+<td align="center">
+<a href="https://github.com/features/copilot"><img src="https://github.com/github.png?size=120" alt="GitHub Copilot" width="48" height="48" /></a><br/>
+<strong>GitHub Copilot</strong><br/>
+<sub>skills через symlink</sub>
+</td>
+
+<td align="center">
+<a href="https://grok.x.ai"><img src="./assets/agents/grok.png" alt="Grok" width="48" height="48" /></a><br/>
+<strong>Grok</strong><br/>
+<sub>нативные hooks</sub>
+</td>
+<td align="center"></td>
 </tr>
 </table>
 

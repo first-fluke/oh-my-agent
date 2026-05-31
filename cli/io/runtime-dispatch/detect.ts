@@ -8,6 +8,7 @@ const SUPPORTED_RUNTIME_VENDORS = new Set<RuntimeVendor>([
   "antigravity",
   "qwen",
   "grok",
+  "kiro",
 ]);
 
 export function detectRuntimeVendor(
@@ -48,6 +49,10 @@ export function detectRuntimeVendor(
 
   if (env.GROK_WORKSPACE_ROOT || env.GROK_SESSION_ID || env.GROK_BUILD) {
     return "grok";
+  }
+
+  if (env.KIRO_SESSION_ID || env.KIRO_CHAT_LOG_FILE || env.KIRO_HOME) {
+    return "kiro";
   }
 
   /**

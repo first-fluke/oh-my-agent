@@ -69,6 +69,17 @@ vendors:
     default_model: "auto"
     isolation_method: "directory"
 
+  # Kiro CLI headless: `kiro-cli chat --no-interactive --trust-all-tools [--model …] "<prompt>"`.
+  # Models: AWS Bedrock IDs (e.g. anthropic.claude-sonnet-4-5-20251001-v1:0).
+  # Use "auto" to let Kiro select the model based on its own configuration.
+  kiro:
+    command: kiro-cli
+    prompt_flag: none
+    auto_approve_flag: "--trust-all-tools"
+    model_flag: "--model"
+    default_model: "auto"
+    isolation_method: "directory"
+
 # SubAgent execution settings
 execution:
   # Directory for subagent results

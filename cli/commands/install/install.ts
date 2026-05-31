@@ -592,6 +592,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         label: "Grok",
         hint: "hooks + project MCP + .grok/agents/",
       },
+      {
+        value: "kiro",
+        label: "Kiro CLI",
+        hint: "hooks + Serena MCP + .kiro/agents/",
+      },
       ...(allowHomeWriteVendors
         ? [
             {

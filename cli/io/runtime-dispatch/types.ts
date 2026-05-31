@@ -12,6 +12,7 @@ export type RuntimeVendor =
   | "antigravity"
   | "qwen"
   | "grok"
+  | "kiro"
   | "unknown";
 
 export type DispatchMode = "native" | "external";

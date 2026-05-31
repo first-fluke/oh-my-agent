@@ -41,11 +41,36 @@ export function buildExternalInvocation(
   vendorConfig: VendorConfig,
   promptFlag: string | null,
   promptContent: string,
+  agentId?: string,
 ): Invocation {
   // Cursor Agent: `-p`/`--print` is a boolean flag; prompt must be a trailing positional argv.
   // The generic branch always pairs `promptFlag` with prompt as two args, which is wrong here.
   if (vendor === "cursor") {
     return buildExternalCursorInvocation(vendorConfig, promptContent);
+  }
+
+  // Kiro: `kiro-cli chat --no-interactive --trust-all-tools [--agent …] [--model …] "<prompt>"`.
+  if (vendor === "kiro") {
+    const command = vendorConfig.command || "kiro-cli";
+    const args: string[] = ["chat", "--no-interactive"];
+
+    if (vendorConfig.auto_approve_flag) {
+      args.push(vendorConfig.auto_approve_flag);
+    } else {
+      args.push("--trust-all-tools");
+    }
+
+    if (agentId) {
+      args.push("--agent", agentId);
+    }
+
+    if (vendorConfig.model_flag && vendorConfig.default_model) {
+      args.push(vendorConfig.model_flag, vendorConfig.default_model);
+    }
+
+    args.push(promptContent);
+
+    return { command, args, env: { ...process.env } };
   }
 
   // Grok: supports `grok --yolo -p "prompt"` for headless execution.
@@ -72,6 +97,7 @@ export function buildExternalInvocation(
   // Vendors whose CLI binary name differs from the vendor identifier.
   const binaryByVendor: Record<string, string> = {
     antigravity: "agy",
+    kiro: "kiro-cli",
   };
   const command = vendorConfig.command || binaryByVendor[vendor] || vendor;
   const args: string[] = [];
@@ -113,6 +139,7 @@ export function buildExternalInvocation(
       qwen: "--yolo",
       antigravity: "--dangerously-skip-permissions",
       grok: "--yolo",
+      kiro: "--trust-all-tools",
     };
     const fallbackFlag = defaultAutoApprove[vendor];
     if (fallbackFlag) {

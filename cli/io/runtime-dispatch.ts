@@ -9,6 +9,7 @@ import {
   buildCodexNativeInvocation,
   buildCursorAgentPrintInvocation,
   buildGeminiNativeInvocation,
+  buildKiroNativeInvocation,
 } from "./runtime-dispatch/invocations/native.js";
 import { buildAgentPlanArgs } from "./runtime-dispatch/plan-args.js";
 import { resolveAgentPlan } from "./runtime-dispatch/resolve-plan.js";
@@ -234,6 +235,22 @@ export function planDispatch(
       runtimeVendor,
       targetVendor,
       reason: "same-vendor Cursor agent CLI (--print)",
+      invocation: inv,
+    };
+  }
+
+  if (runtimeVendor === "kiro" && targetVendor === "kiro") {
+    const inv = buildKiroNativeInvocation(
+      agentId,
+      promptContent,
+      effectiveVendorConfig,
+    );
+    if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
+    return {
+      mode: "native",
+      runtimeVendor,
+      targetVendor,
+      reason: "same-vendor Kiro CLI (--no-interactive)",
       invocation: inv,
     };
   }

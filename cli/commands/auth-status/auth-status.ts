@@ -11,6 +11,7 @@ const AUTH_HINTS: Record<string, string> = {
   cursor: "cursor agent login",
   qwen: "qwen /auth",
   antigravity: "agy auth",
+  kiro: "kiro-cli login",
 };
 
 export async function checkAuthStatus(jsonMode = false): Promise<void> {
