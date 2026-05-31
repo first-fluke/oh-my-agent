@@ -14,6 +14,7 @@ import {
 import { registerLink } from "./commands/link/command.js";
 import { registerMarketCommand } from "./commands/market/index.js";
 import { registerMemory } from "./commands/memory/command.js";
+import { registerMigrate } from "./commands/migrations/command.js";
 import { registerModelCommands } from "./commands/model/command.js";
 import { registerRecap } from "./commands/recap/command.js";
 import { registerRetro } from "./commands/retro/command.js";
@@ -120,6 +121,7 @@ registerSkillsCommand(program);
 registerSlideCommand(program);
 registerScholarCommand(program);
 registerImageCommand(program);
+registerMigrate(program);
 
 program
   .command("help")
