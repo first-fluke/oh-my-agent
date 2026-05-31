@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.20.2...cli-v8.21.0) (2026-05-31)
+
+
+### Features
+
+* **state:** complete cross-runtime snapshot polish ([39e1d6c](https://github.com/first-fluke/oh-my-agent/commit/39e1d6cad8b2661c47e2ff3525fb7dc924cef469))
+
+
+### Bug Fixes
+
+* **oma-slide:** suppress intentional !important in print/reduced-motion layers ([7221aa3](https://github.com/first-fluke/oh-my-agent/commit/7221aa30272ecb9d65908f6caee7eb186c23025a))
+
 ## [8.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.20.1...cli-v8.20.2) (2026-05-31)
 
 
