@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.20.0...cli-v8.20.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* **market:** unblock reddit & bluesky harvest blocked by HTTP 403 ([d257b93](https://github.com/first-fluke/oh-my-agent/commit/d257b936c6773a44582bdd0b0e7777e569ff5258))
+* **search:** add bluesky keyword search via api.bsky.app ([803b7a2](https://github.com/first-fluke/oh-my-agent/commit/803b7a2b1ff35e02b70300ca3fbe3795314c8fed))
+
 ## [8.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.19.1...cli-v8.20.0) (2026-05-31)
 
 
