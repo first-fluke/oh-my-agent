@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.20.1...cli-v8.20.2) (2026-05-31)
+
+
+### Documentation
+
+* **readme:** add dsnix (DeepSeek) to the supported-agents table ([b7d055d](https://github.com/first-fluke/oh-my-agent/commit/b7d055d42e861576c89fb05e4362ad93ac87a7be))
+* **readme:** label the DeepSeek cell Reasonix instead of dsnix ([f62ebe2](https://github.com/first-fluke/oh-my-agent/commit/f62ebe283be1bb4539f0431b01c0865f25d47512))
+
 ## [8.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.20.0...cli-v8.20.1) (2026-05-31)
 
 
