@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.19.1",
-  "releaseDate": "2026-05-30T14:43:00.904Z",
+  "releaseDate": "2026-05-31T07:11:47.798Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -83,6 +83,11 @@
       "path": ".agents/agents/variants/grok.json",
       "sha256": "e868c77406ba8fb984a2e16e0d9bf294ade9120b071aa2eb727515ebc5927a44",
       "size": 782
+    },
+    {
+      "path": ".agents/agents/variants/kiro.json",
+      "sha256": "5239add621db4c4ab4079bd5404e339fb73f3ae4edb11dcdcdaa59a1ba0b21af",
+      "size": 961
     },
     {
       "path": ".agents/config/defaults.yaml",
@@ -201,8 +206,13 @@
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "03afdaf9a24d3ace9a9d47a4e7a543ccaba12035c236ad0035143a4727ff3a6a",
-      "size": 4079
+      "sha256": "1440a67fc94e779e6ccafe1a94da78a0e09c7d0d1d5b5814afdb1ca3f2837936",
+      "size": 4095
+    },
+    {
+      "path": ".agents/hooks/variants/kiro.json",
+      "sha256": "15de7c15a8484e06bcd7376713e729063238b69287d40b3690441d022ffe7438",
+      "size": 641
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
@@ -408,6 +418,11 @@
       "path": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
       "sha256": "fb7da4447bae1ed8e995291a1bbd73da0b0ec459f68756f43ce3a5c504d973da",
       "size": 2771
+    },
+    {
+      "path": ".agents/skills/_shared/runtime/execution-protocols/kiro.md",
+      "sha256": "7844a32c8201b7de6c63eb273fe310b3c87c31d8ab9a425d459e6cdcd35c08ef",
+      "size": 2659
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/qwen.md",
@@ -1866,6 +1881,6 @@
   "metadata": {
     "skillCount": 48,
     "workflowCount": 21,
-    "totalFiles": 371
+    "totalFiles": 374
   }
 }
