@@ -133,11 +133,13 @@
   }
 
   /* Authors: wrap animated elements in .motion-safe to respect this. */
+  /* biome-ignore-start lint/complexity/noImportantStyles: reduced-motion reset must defeat author animation specificity — this is the canonical a11y override */
   .motion-safe * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  /* biome-ignore-end lint/complexity/noImportantStyles: reduced-motion reset must defeat author animation specificity — this is the canonical a11y override */
 }
 
 /* ─── Nav controls (viewer / viewer.html) ────────────────────────────── */
@@ -208,6 +210,7 @@
  * a 1920×1080-equivalent layout. Each slide prints as its own page.
  */
 @media print {
+  /* biome-ignore-start lint/complexity/noImportantStyles: print overrides must defeat per-slide author styles injected AFTER this sheet (see .slide note below) or pagination collapses and the PDF crops */
   html,
   body {
     margin: 0;
@@ -266,4 +269,5 @@
   .slide.visible {
     z-index: auto;
   }
+  /* biome-ignore-end lint/complexity/noImportantStyles: print overrides must defeat per-slide author styles injected AFTER this sheet (see .slide note below) or pagination collapses and the PDF crops */
 }
