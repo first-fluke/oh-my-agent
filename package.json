@@ -26,5 +26,8 @@
     "@commitlint/cli": "20.4.3",
     "@commitlint/config-conventional": "20.4.3",
     "husky": "9.1.7"
+  },
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
   }
 }
