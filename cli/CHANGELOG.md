@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.22.0...cli-v8.23.0) (2026-06-01)
+
+
+### Features
+
+* **intel:** complete PRD pipeline with reviews, PRD/gap split, and issues ([d1edba6](https://github.com/first-fluke/oh-my-agent/commit/d1edba6a215770f71574cf6d93d0976fd9643df9))
+* **state:** expose self-healing gate check ([c9476cd](https://github.com/first-fluke/oh-my-agent/commit/c9476cd59820109fe4e716b534f8aa339b00f983))
+* **web:** add copy markdown plugin to docs site ([4f26f22](https://github.com/first-fluke/oh-my-agent/commit/4f26f2230a5de85139ea197eb444ee25d1a9ed86))
+
 ## [8.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.21.0...cli-v8.22.0) (2026-06-01)
 
 
