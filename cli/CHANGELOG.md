@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.26.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.26.0...cli-v8.26.1) (2026-06-01)
+
+
+### Bug Fixes
+
+* **serena:** stop dashboard opening on mcp startup ([952e905](https://github.com/first-fluke/oh-my-agent/commit/952e905b290b0f6c77359d05d8d67b2eefb1d1b9))
+
 ## [8.26.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.25.0...cli-v8.26.0) (2026-06-01)
 
 
