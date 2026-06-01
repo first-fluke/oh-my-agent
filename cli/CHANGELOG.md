@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.24.0...cli-v8.25.0) (2026-06-01)
+
+
+### Features
+
+* **doctor:** add self-healing gate check ([53d564a](https://github.com/first-fluke/oh-my-agent/commit/53d564a3b25dc90da188de0e9fa9f0662f66ecc1))
+
 ## [8.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.23.0...cli-v8.24.0) (2026-06-01)
 
 
