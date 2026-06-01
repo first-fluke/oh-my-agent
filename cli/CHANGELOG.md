@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.26.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.25.0...cli-v8.26.0) (2026-06-01)
+
+
+### Features
+
+* **doctor:** add state health diagnostics ([f25b4ff](https://github.com/first-fluke/oh-my-agent/commit/f25b4ff7e00ca46b2d7f91f9cef21c33620e7f72))
+
 ## [8.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.24.0...cli-v8.25.0) (2026-06-01)
 
 
