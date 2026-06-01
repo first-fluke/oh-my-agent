@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.23.0...cli-v8.24.0) (2026-06-01)
+
+
+### Features
+
+* **state:** add archived session lookup ([0359ede](https://github.com/first-fluke/oh-my-agent/commit/0359edeb4b291d83c904b2a5f35311dc375a362a))
+
 ## [8.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.22.0...cli-v8.23.0) (2026-06-01)
 
 
