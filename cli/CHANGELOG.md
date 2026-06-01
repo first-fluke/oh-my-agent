@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.21.0...cli-v8.22.0) (2026-06-01)
+
+
+### Features
+
+* **intel:** add product intelligence pipeline ([f91496d](https://github.com/first-fluke/oh-my-agent/commit/f91496db580da31e7b1d543f1fb9138773819668))
+
 ## [8.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.20.2...cli-v8.21.0) (2026-05-31)
 
 
