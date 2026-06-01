@@ -11,9 +11,11 @@ import {
 import {
   activateStateSession,
   archiveStateSessions,
+  collectArchivedState,
   collectState,
   parseOlderThan,
   purgeStateSessions,
+  renderArchivedStateList,
   renderArchiveResult,
   renderPurgeResult,
   renderSessionView,
@@ -228,5 +230,81 @@ describe("state command helpers", () => {
       ),
     ).toBe(true);
     expect(renderArchiveResult(result)).toContain("OMA state archive");
+  });
+
+  it("lists and views archived sessions", () => {
+    emitEvent(projectDir, "oma-archived", {
+      eventId: "created",
+      ts: "2026-01-01T00:00:00.000Z",
+      kind: "session.created",
+      payload: { workflow: "work", category: "main" },
+    });
+    emitEvent(projectDir, "oma-archived", {
+      eventId: "ended",
+      ts: "2026-01-02T00:00:00.000Z",
+      kind: "session.ended",
+      payload: { status: "completed" },
+    });
+    archiveStateSessions({
+      projectDir,
+      olderThan: "90d",
+      now: new Date("2026-05-26T00:00:00.000Z"),
+    });
+
+    const archived = collectArchivedState(projectDir);
+    expect(archived.sessions).toHaveLength(1);
+    expect(archived.sessions[0]).toMatchObject({
+      bucket: "2026-01",
+      sid: "oma-archived",
+      meta: { workflow: "work", status: "completed" },
+    });
+
+    const list = renderArchivedStateList(archived);
+    expect(list).toContain("OMA archived state sessions");
+    expect(list).toContain("oma-archived");
+
+    const session = viewSession("oma-archived", projectDir);
+    expect(session.archived).toBe(true);
+    expect(session.archivePath).toContain("2026-01");
+    const detail = renderSessionView(
+      "oma-archived",
+      session.meta,
+      session.events,
+      {
+        archived: session.archived,
+        archivePath: session.archivePath,
+      },
+    );
+    expect(detail).toContain("archived: yes");
+    expect(detail).toContain("archivePath:");
+  });
+
+  it("prefers a live session when the same sid exists in archive", () => {
+    emitEvent(projectDir, "oma-dup", {
+      eventId: "archived-created",
+      ts: "2026-01-01T00:00:00.000Z",
+      kind: "session.created",
+      payload: { workflow: "work", category: "main" },
+    });
+    emitEvent(projectDir, "oma-dup", {
+      eventId: "archived-ended",
+      ts: "2026-01-02T00:00:00.000Z",
+      kind: "session.ended",
+      payload: { status: "completed" },
+    });
+    archiveStateSessions({
+      projectDir,
+      olderThan: "90d",
+      now: new Date("2026-05-26T00:00:00.000Z"),
+    });
+    activateWorkflowSession({
+      projectDir,
+      sid: "oma-dup",
+      workflow: "debug",
+    });
+
+    const session = viewSession("oma-dup", projectDir);
+    expect(session.archived).toBe(false);
+    expect(session.meta.workflow).toBe("debug");
   });
 });

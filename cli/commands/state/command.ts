@@ -16,8 +16,10 @@ import {
 import {
   activateStateSession,
   archiveStateSessions,
+  collectArchivedState,
   collectState,
   purgeStateSessions,
+  renderArchivedStateList,
   renderArchiveResult,
   renderPurgeResult,
   renderSessionView,
@@ -33,6 +35,7 @@ export function registerState(program: Command): void {
       .option("--activate <sid>", "Set active session id")
       .option("--category <category>", "Active category", "main")
       .option("--archive", "Move inactive terminal sessions to state archive")
+      .option("--archived", "List archived sessions")
       .option("--purge", "Delete inactive sessions older than --older-than")
       .option("--older-than <duration>", "Purge age threshold", "90d")
       .option("--dry-run", "Preview purge without deleting sessions"),
@@ -43,6 +46,7 @@ export function registerState(program: Command): void {
         const activate = options.activate as string | undefined;
         const category = (options.category as string | undefined) ?? "main";
         const archive = options.archive === true;
+        const archived = options.archived === true;
         const purge = options.purge === true;
 
         if (activate) {
@@ -86,7 +90,22 @@ export function registerState(program: Command): void {
           if (jsonMode) {
             console.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(renderSessionView(sid, result.meta, result.events));
+            console.log(
+              renderSessionView(sid, result.meta, result.events, {
+                archived: result.archived,
+                archivePath: result.archivePath,
+              }),
+            );
+          }
+          return;
+        }
+
+        if (archived) {
+          const state = collectArchivedState();
+          if (jsonMode) {
+            console.log(JSON.stringify(state, null, 2));
+          } else {
+            console.log(renderArchivedStateList(state));
           }
           return;
         }

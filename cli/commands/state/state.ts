@@ -24,11 +24,30 @@ import {
   type SessionMeta,
   sessionsDir,
   setActiveSession,
+  sortEvents,
 } from "../../state/events.js";
 
 export interface StateView {
   index: ReturnType<typeof readIndex>;
   sessions: SessionMeta[];
+}
+
+export interface ArchivedSession {
+  bucket: string;
+  sid: string;
+  archivePath: string;
+  meta: SessionMeta;
+}
+
+export interface ArchivedStateView {
+  sessions: ArchivedSession[];
+}
+
+export interface SessionView {
+  meta: SessionMeta;
+  events: ReturnType<typeof readEvents>;
+  archived: boolean;
+  archivePath?: string;
 }
 
 export interface PurgeResult {
@@ -60,6 +79,51 @@ function loadSessionMeta(projectDir: string, sid: string): SessionMeta {
   return deriveMeta(sid, readEvents(projectDir, sid));
 }
 
+function eventsFromDir(dir: string): OmaEvent[] {
+  const path = join(dir, "events.jsonl");
+  if (!existsSync(path)) return [];
+  const events: OmaEvent[] = [];
+  for (const line of readFileSync(path, "utf-8").split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line) as OmaEvent;
+      if (event.sid && event.kind && event.eventId && event.ts) {
+        events.push(event);
+      }
+    } catch {
+      // Bad archive lines stay ignored here; doctor/repair can quarantine.
+    }
+  }
+  return sortEvents(events);
+}
+
+function loadArchivedSession(
+  bucket: string,
+  sid: string,
+  archivePath: string,
+): ArchivedSession {
+  const metaPath = join(archivePath, "meta.json");
+  if (existsSync(metaPath)) {
+    try {
+      return {
+        bucket,
+        sid,
+        archivePath,
+        meta: JSON.parse(readFileSync(metaPath, "utf-8")) as SessionMeta,
+      };
+    } catch {
+      // Re-derive below.
+    }
+  }
+  const events = eventsFromDir(archivePath);
+  return {
+    bucket,
+    sid,
+    archivePath,
+    meta: deriveMeta(sid, events),
+  };
+}
+
 export function collectState(projectDir = process.cwd()): StateView {
   const index = readIndex(projectDir);
   const root = sessionsDir(projectDir);
@@ -74,12 +138,61 @@ export function collectState(projectDir = process.cwd()): StateView {
   return { index, sessions };
 }
 
+export function collectArchivedState(
+  projectDir = process.cwd(),
+): ArchivedStateView {
+  const root = archiveRoot(projectDir);
+  const sessions: ArchivedSession[] = [];
+  if (existsSync(root)) {
+    for (const bucketEntry of readdirSync(root, { withFileTypes: true })) {
+      if (!bucketEntry.isDirectory()) continue;
+      const bucket = bucketEntry.name;
+      const bucketPath = join(root, bucket);
+      for (const sessionEntry of readdirSync(bucketPath, {
+        withFileTypes: true,
+      })) {
+        if (!sessionEntry.isDirectory()) continue;
+        sessions.push(
+          loadArchivedSession(
+            bucket,
+            sessionEntry.name,
+            join(bucketPath, sessionEntry.name),
+          ),
+        );
+      }
+    }
+  }
+  sessions.sort((a, b) =>
+    (b.meta.createdAt ?? "").localeCompare(a.meta.createdAt ?? ""),
+  );
+  return { sessions };
+}
+
 export function viewSession(
   sid: string,
   projectDir = process.cwd(),
-): { meta: SessionMeta; events: ReturnType<typeof readEvents> } {
+): SessionView {
+  const livePath = join(sessionsDir(projectDir), sid);
+  if (existsSync(livePath)) {
+    const events = readEvents(projectDir, sid);
+    return { meta: deriveMeta(sid, events), events, archived: false };
+  }
+
+  const archived = collectArchivedState(projectDir).sessions.find(
+    (session) => session.sid === sid,
+  );
+  if (archived) {
+    const events = eventsFromDir(archived.archivePath);
+    return {
+      meta: deriveMeta(sid, events),
+      events,
+      archived: true,
+      archivePath: archived.archivePath,
+    };
+  }
+
   const events = readEvents(projectDir, sid);
-  return { meta: deriveMeta(sid, events), events };
+  return { meta: deriveMeta(sid, events), events, archived: false };
 }
 
 export function activateStateSession(
@@ -272,6 +385,22 @@ export function renderStateList(view: StateView): string {
   return lines.join("\n");
 }
 
+export function renderArchivedStateList(view: ArchivedStateView): string {
+  const lines = [pc.bold("OMA archived state sessions")];
+  if (view.sessions.length === 0) {
+    lines.push("  (none)");
+    return lines.join("\n");
+  }
+  for (const session of view.sessions) {
+    const workflow = session.meta.workflow || "(unknown)";
+    const created = session.meta.createdAt ?? "(unknown)";
+    lines.push(
+      `  ${session.sid} ${workflow} ${session.meta.status} ${pc.dim(session.bucket)} ${pc.dim(created)}`,
+    );
+  }
+  return lines.join("\n");
+}
+
 export function renderPurgeResult(result: PurgeResult): string {
   const lines = [
     pc.bold(result.dryRun ? "OMA state purge preview" : "OMA state purge"),
@@ -309,14 +438,17 @@ export function renderSessionView(
   sid: string,
   meta: SessionMeta,
   events: ReturnType<typeof readEvents>,
+  options: { archived?: boolean; archivePath?: string } = {},
 ): string {
   const lines = [
     pc.bold(`OMA session ${sid}`),
     `workflow: ${meta.workflow || "(unknown)"}`,
     `status: ${meta.status}`,
     `phase: ${meta.currentPhase || "(none)"}`,
+    `archived: ${options.archived === true ? "yes" : "no"}`,
     `events: ${events.length}`,
   ];
+  if (options.archivePath) lines.push(`archivePath: ${options.archivePath}`);
   const gates = events.filter((event) => event.kind.startsWith("gate."));
   const decisions = events.filter((event) => event.kind === "decision.made");
   const missing = events.filter((event) => event.kind === "decision.missing");
