@@ -5,6 +5,10 @@ import {
   verifyRequiredDecisions,
 } from "../../state/decision-verifier.js";
 import {
+  evaluateSelfHealingGate,
+  renderSelfHealingGateResult,
+} from "../../state/self-healing.js";
+import {
   addOutputOptions,
   resolveJsonMode,
   runAction,
@@ -177,6 +181,33 @@ export function registerState(program: Command): void {
               console.log(`    - ${decision.subject}`);
             }
           }
+        }
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    program
+      .command("state:heal-check")
+      .description("Check whether self-healing is allowed for an agent")
+      .requiredOption("--agent <agentType>", "Agent or skill type, e.g. debug"),
+  ).action(
+    runAction(
+      async (options) => {
+        const result = evaluateSelfHealingGate({
+          workspace: process.cwd(),
+          agentType: options.agent as string,
+        });
+
+        if (resolveJsonMode(options)) {
+          console.log(JSON.stringify(result, null, 2));
+        } else {
+          console.log(renderSelfHealingGateResult(result));
+        }
+
+        if (!result.ok) {
+          process.exitCode = 1;
         }
       },
       { supportsJsonOutput: true },

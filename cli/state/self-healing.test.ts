@@ -3,7 +3,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { evaluateSelfHealingGate } from "./self-healing.js";
+import {
+  evaluateSelfHealingGate,
+  renderSelfHealingGateResult,
+} from "./self-healing.js";
 
 describe("self-healing gate", () => {
   let workspace: string;
@@ -99,5 +102,24 @@ describe("self-healing gate", () => {
     expect(result.ok).toBe(false);
     expect(result.reasons).toContain("missing-required-skill-artifacts");
     expect(result.skill.missingRequired).toEqual(["report"]);
+  });
+
+  it("renders check output with blockers and tracked changes", () => {
+    initRepo();
+    writeSkill("debug", "report.md");
+    writeFileSync(join(workspace, "tracked.txt"), "changed\n");
+
+    const output = renderSelfHealingGateResult(
+      evaluateSelfHealingGate({
+        workspace,
+        agentType: "debug",
+      }),
+    );
+
+    expect(output).toContain("OMA self-healing check");
+    expect(output).toContain("status:");
+    expect(output).toContain("blocked");
+    expect(output).toContain("tracked.txt");
+    expect(output).toContain("missing-required-skill-artifacts");
   });
 });

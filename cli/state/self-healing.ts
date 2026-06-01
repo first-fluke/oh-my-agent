@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import pc from "picocolors";
 import { checkClosure } from "../utils/skill-outputs.js";
 
 export interface GitSnapshotGate {
@@ -91,4 +92,37 @@ export function evaluateSelfHealingGate(args: {
     git: gitGate,
     skill: skillGate,
   };
+}
+
+export function renderSelfHealingGateResult(
+  result: SelfHealingGateResult,
+): string {
+  const head = result.git.head ? `\nhead: ${result.git.head}` : "";
+  const trackedChanges =
+    result.git.trackedChanges.length === 0
+      ? "  (none)"
+      : result.git.trackedChanges.map((file) => `  ${file}`).join("\n");
+  const missingRequired =
+    result.skill.missingRequired.length === 0
+      ? ""
+      : `\n  missing required artifacts:\n${result.skill.missingRequired
+          .map((artifact) => `    - ${artifact}`)
+          .join("\n")}`;
+  const blockers =
+    result.reasons.length === 0
+      ? ""
+      : `\n\n${pc.bold("Blockers")}\n${result.reasons
+          .map((reason) => `  - ${reason}`)
+          .join("\n")}`;
+
+  return `${pc.bold("OMA self-healing check")}
+status: ${result.ok ? pc.green("pass") : pc.red("blocked")}
+agent: ${result.skill.agentType}
+git: ${result.git.insideWorkTree ? "worktree" : "not a worktree"}${head}
+
+${pc.bold("Tracked changes")}
+${trackedChanges}
+
+${pc.bold("Skill metadata")}
+  expected outputs: ${result.skill.hasStructuredOutputs ? "present" : "missing"}${missingRequired}${blockers}`;
 }
