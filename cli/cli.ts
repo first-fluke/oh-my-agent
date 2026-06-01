@@ -11,6 +11,7 @@ import {
   registerDefaultInstallAction,
   registerInstall,
 } from "./commands/install/command.js";
+import { registerIntelCommand } from "./commands/intel/command.js";
 import { registerLink } from "./commands/link/command.js";
 import { registerMarketCommand } from "./commands/market/index.js";
 import { registerMemory } from "./commands/memory/command.js";
@@ -98,6 +99,7 @@ registerAuthStatus(program);
 registerUninstall(program);
 registerUpdate(program);
 registerLink(program);
+registerIntelCommand(program);
 registerMarketCommand(program);
 registerDoctor(program);
 registerEmit(program);
