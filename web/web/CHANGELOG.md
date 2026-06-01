@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.7.1...web-v3.8.0) (2026-06-01)
+
+
+### Features
+
+* **web:** add copy markdown plugin to docs site ([4f26f22](https://github.com/first-fluke/oh-my-agent/commit/4f26f2230a5de85139ea197eb444ee25d1a9ed86))
+
 ## [3.7.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.7.0...web-v3.7.1) (2026-05-30)
 
 
