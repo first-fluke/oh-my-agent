@@ -1,6 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+  withSerenaDashboardOpenDisabled,
+} from "../serena.js";
 
 export const KIRO_PROJECT_SETTINGS_PATH = ".kiro/settings/cli.json";
 export const KIRO_GLOBAL_SETTINGS_PATH = join(
@@ -13,7 +18,7 @@ export const KIRO_GLOBAL_SETTINGS_PATH = join(
 export const RECOMMENDED_KIRO_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "ide", "--project", "."],
+    args: serenaStartMcpArgs("ide"),
   },
 };
 
@@ -47,7 +52,8 @@ export function needsKiroMcpUpdate(cwd: string): boolean {
   const mcp = isRecord(settings.mcpServers) ? settings.mcpServers : {};
   const serena = isRecord(mcp.serena) ? mcp.serena : {};
   return !(
-    typeof serena.command === "string" || typeof serena.url === "string"
+    (typeof serena.command === "string" || typeof serena.url === "string") &&
+    hasSerenaDashboardOpenDisabled(serena)
   );
 }
 
@@ -66,7 +72,10 @@ export function applyKiroProjectMcp(cwd: string): void {
     ...settings,
     mcpServers: {
       ...currentMcp,
-      serena: { ...currentSerena, ...RECOMMENDED_KIRO_MCP.serena },
+      serena: withSerenaDashboardOpenDisabled({
+        ...currentSerena,
+        ...RECOMMENDED_KIRO_MCP.serena,
+      }),
     },
   };
 

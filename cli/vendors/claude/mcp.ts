@@ -1,3 +1,8 @@
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+} from "../serena.js";
+
 /**
  * Recommended Claude Code project-level MCP settings managed by oh-my-agent.
  * Applies to project-local `.mcp.json` (read by Claude Code at session start
@@ -14,7 +19,7 @@
 export const RECOMMENDED_CLAUDE_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "claude-code", "--project", "."],
+    args: serenaStartMcpArgs("claude-code"),
     env: {
       SERENA_LOG_LEVEL: "info",
     },
@@ -73,6 +78,7 @@ export function needsClaudeMcpUpdate(raw: unknown): boolean {
   if (!hasClaudeMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
   if (hasStaleContext(serena)) return true;
+  if (!hasSerenaDashboardOpenDisabled(serena)) return true;
   return false;
 }
 

@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { safeReadJson } from "../../utils/safe-json.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
+import { withSerenaDashboardOpenDisabled } from "../serena.js";
 
 /**
  * Antigravity CLI (agy) reads MCP server config from a dedicated
@@ -80,7 +81,7 @@ function transformForAgy(entry: Record<string, unknown>): McpServerEntry {
   } else if (typeof entry.url === "string") {
     out.serverUrl = entry.url;
   }
-  return out;
+  return withSerenaDashboardOpenDisabled(out);
 }
 
 /**

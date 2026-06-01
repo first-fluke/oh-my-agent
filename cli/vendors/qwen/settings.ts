@@ -1,3 +1,9 @@
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+  withSerenaDashboardOpenDisabled,
+} from "../serena.js";
+
 /**
  * Recommended Qwen Code settings managed by oh-my-agent.
  * Applies to project-local `.qwen/settings.json`.
@@ -20,7 +26,7 @@ export interface QwenSettingsOptions {
 export const RECOMMENDED_QWEN_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "ide", "--project", "."],
+    args: serenaStartMcpArgs("ide"),
     env: {
       SERENA_LOG_LEVEL: "info",
     },
@@ -126,6 +132,7 @@ export function needsQwenSettingsUpdate(
 
   const serenaServer = sanitized.mcpServers?.serena;
   if (!hasQwenMcpTransport(serenaServer)) return true;
+  if (!hasSerenaDashboardOpenDisabled(serenaServer)) return true;
 
   const privacy = isRecord(sanitized.privacy) ? sanitized.privacy : undefined;
   if (options.telemetry === true) {
@@ -143,12 +150,14 @@ export function applyQwenSettings(
 ): QwenSettings {
   const qwenSettings = sanitizeQwenSettings(rawSettings);
   const currentSerena = qwenSettings.mcpServers?.serena;
-  const nextSerena = hasQwenMcpTransport(currentSerena)
-    ? currentSerena
-    : {
-        ...(currentSerena || {}),
-        ...RECOMMENDED_QWEN_MCP.serena,
-      };
+  const nextSerena = withSerenaDashboardOpenDisabled(
+    hasQwenMcpTransport(currentSerena)
+      ? currentSerena
+      : {
+          ...(currentSerena || {}),
+          ...RECOMMENDED_QWEN_MCP.serena,
+        },
+  );
 
   qwenSettings.mcpServers = {
     ...(qwenSettings.mcpServers || {}),

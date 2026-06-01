@@ -41,6 +41,11 @@ import {
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
 import { LEGACY_GEMINI_BRIDGE_URL } from "../../vendors/gemini/settings.js";
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+  withSerenaDashboardOpenDisabled,
+} from "../../vendors/serena.js";
 import type { Migration } from "./index.js";
 
 const LEGACY_GIT_FRAGMENT = "git+https://github.com/oraios/serena";
@@ -114,7 +119,10 @@ function migrateEntry(
   return {
     ...entry,
     command: "serena",
-    args: finalArgs,
+    args: withSerenaDashboardOpenDisabled({
+      command: "serena",
+      args: finalArgs,
+    }).args,
   };
 }
 
@@ -137,7 +145,11 @@ function migrateJsonFile(
   const serena = servers.serena;
   const legacy = isLegacySerenaEntry(serena);
   const staleCtx = !legacy && hasStaleContext(serena, contextOverride);
-  if (!legacy && !staleCtx) return false;
+  const staleDashboard =
+    !legacy &&
+    isRecord(serena) &&
+    !hasSerenaDashboardOpenDisabled(serena as SerenaEntry);
+  if (!legacy && !staleCtx && !staleDashboard) return false;
 
   servers.serena = migrateEntry(serena as SerenaEntry, contextOverride);
   writeFileSync(path, `${JSON.stringify(parsed, null, 2)}\n`);
@@ -153,7 +165,8 @@ function migrateCodexToml(path: string): boolean {
   const serena = servers.serena as SerenaEntry | undefined;
   const legacy = isLegacySerenaEntry(serena);
   const staleCtx = !legacy && hasStaleContext(serena, "codex");
-  if (!legacy && !staleCtx) return false;
+  const staleDashboard = !legacy && !hasSerenaDashboardOpenDisabled(serena);
+  if (!legacy && !staleCtx && !staleDashboard) return false;
 
   const migrated = migrateEntry(serena as SerenaEntry, "codex");
   parsed.mcp_servers = {
@@ -202,7 +215,7 @@ function migrateGeminiLegacyBridge(cwd: string): boolean {
 
   servers.serena = {
     command: "serena",
-    args: ["start-mcp-server", "--context", "ide", "--project", "."],
+    args: serenaStartMcpArgs("ide"),
     env: { SERENA_LOG_LEVEL: "info" },
   };
   parsed.mcpServers = servers;
@@ -245,7 +258,7 @@ function migrateCursorSymlink(cwd: string): boolean {
       ...mcpServers,
       serena: {
         command: "serena",
-        args: ["start-mcp-server", "--context", "ide", "--project", "."],
+        args: serenaStartMcpArgs("ide"),
         env: { SERENA_LOG_LEVEL: "info" },
       },
     },

@@ -1,3 +1,9 @@
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+  withSerenaDashboardOpenDisabled,
+} from "../serena.js";
+
 /**
  * Recommended Gemini CLI settings managed by oh-my-agent.
  * Applies to project-local `.gemini/settings.json`.
@@ -14,7 +20,7 @@ export const RECOMMENDED_GEMINI_EXPERIMENTAL = {
 export const RECOMMENDED_GEMINI_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "ide", "--project", "."],
+    args: serenaStartMcpArgs("ide"),
     env: {
       SERENA_LOG_LEVEL: "info",
     },
@@ -192,6 +198,7 @@ export function needsGeminiSettingsUpdate(
 
   const serenaServer = geminiSettings.mcpServers?.serena;
   if (!hasGeminiMcpTransport(serenaServer)) return true;
+  if (!hasSerenaDashboardOpenDisabled(serenaServer)) return true;
 
   const privacy = isRecord(geminiSettings.privacy)
     ? geminiSettings.privacy
@@ -211,12 +218,14 @@ export function applyGeminiSettings(
 ): GeminiSettings {
   const geminiSettings = sanitizeGeminiSettings(rawSettings);
   const currentSerena = geminiSettings.mcpServers?.serena;
-  const nextSerena = hasGeminiMcpTransport(currentSerena)
-    ? currentSerena
-    : {
-        ...(currentSerena || {}),
-        ...RECOMMENDED_GEMINI_MCP.serena,
-      };
+  const nextSerena = withSerenaDashboardOpenDisabled(
+    hasGeminiMcpTransport(currentSerena)
+      ? currentSerena
+      : {
+          ...(currentSerena || {}),
+          ...RECOMMENDED_GEMINI_MCP.serena,
+        },
+  );
 
   geminiSettings.general = {
     ...(geminiSettings.general || {}),

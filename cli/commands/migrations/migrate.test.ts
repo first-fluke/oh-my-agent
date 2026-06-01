@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { serenaStartMcpArgs } from "../../vendors/serena.js";
 import { migrateToAgents as _migrateToAgents } from "../migrations/001-agents-dir.js";
 import { migrateSharedLayout as _migrateSharedLayout } from "../migrations/002-shared-layout.js";
 import { migrateOmaConfig } from "../migrations/003-oma-config.js";
@@ -843,6 +844,8 @@ SERENA_LOG_LEVEL = "info"
       "ide",
       "--project",
       ".",
+      "--open-web-dashboard",
+      "false",
     ]);
     expect(qwen.mcpServers.serena.env).toEqual({ SERENA_LOG_LEVEL: "info" });
 
@@ -870,7 +873,7 @@ SERENA_LOG_LEVEL = "info"
           mcpServers: {
             serena: {
               command: "serena",
-              args: ["start-mcp-server", "--context", "ide", "--project", "."],
+              args: serenaStartMcpArgs("ide"),
             },
           },
         },
@@ -929,6 +932,8 @@ SERENA_LOG_LEVEL = "info"
       "ide",
       "--project",
       ".",
+      "--open-web-dashboard",
+      "false",
     ]);
   });
 
@@ -948,7 +953,13 @@ SERENA_LOG_LEVEL = "info"
             },
             serena: {
               command: "serena",
-              args: ["start-mcp-server", "--context", "ide"],
+              args: [
+                "start-mcp-server",
+                "--context",
+                "ide",
+                "--open-web-dashboard",
+                "false",
+              ],
             },
           },
         },
@@ -991,7 +1002,7 @@ SERENA_LOG_LEVEL = "info"
     );
     expect(parsed.mcpServers.serena).toEqual({
       command: "serena",
-      args: ["start-mcp-server", "--context", "ide", "--project", "."],
+      args: serenaStartMcpArgs("ide"),
       env: { SERENA_LOG_LEVEL: "info" },
     });
   });

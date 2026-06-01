@@ -8,11 +8,16 @@
 
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import type { EffortLevel } from "../../platform/model-registry.js";
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+  withSerenaDashboardOpenDisabled,
+} from "../serena.js";
 
 export const RECOMMENDED_CODEX_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "codex", "--project", "."],
+    args: serenaStartMcpArgs("codex"),
     env: {
       SERENA_LOG_LEVEL: "info",
     },
@@ -102,6 +107,7 @@ export function needsCodexSettingsUpdate(
   const mcp = typed.mcp_servers;
   const serena = isRecord(mcp) ? (mcp.serena as CodexMcpServer) : undefined;
   if (!hasCodexMcpTransport(serena)) return true;
+  if (!hasSerenaDashboardOpenDisabled(serena)) return true;
 
   const features = isRecord(typed.features) ? typed.features : undefined;
   for (const [key, value] of Object.entries(RECOMMENDED_CODEX_FEATURES)) {
@@ -150,9 +156,11 @@ export function applyCodexSettings(
   const currentMcp = isRecord(base.mcp_servers) ? base.mcp_servers : {};
   const currentSerena = currentMcp.serena as CodexMcpServer | undefined;
 
-  const nextSerena = hasCodexMcpTransport(currentSerena)
-    ? currentSerena
-    : { ...(currentSerena || {}), ...RECOMMENDED_CODEX_MCP.serena };
+  const nextSerena = withSerenaDashboardOpenDisabled(
+    hasCodexMcpTransport(currentSerena)
+      ? currentSerena
+      : { ...(currentSerena || {}), ...RECOMMENDED_CODEX_MCP.serena },
+  );
 
   base.mcp_servers = {
     ...currentMcp,

@@ -2,6 +2,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+  withSerenaDashboardOpenDisabled,
+} from "../serena.js";
 
 export const GROK_GLOBAL_CONFIG_PATH = join(homedir(), ".grok", "config.toml");
 export const GROK_PROJECT_CONFIG_PATH = ".grok/config.toml";
@@ -15,7 +20,7 @@ export interface GrokConfigOptions {
 export const RECOMMENDED_GROK_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "ide", "--project", "."],
+    args: serenaStartMcpArgs("ide"),
   },
 };
 
@@ -148,8 +153,13 @@ export function applyGrokProjectMcp(cwd: string): void {
       ...currentMcp,
       serena: {
         ...currentSerena,
-        ...RECOMMENDED_GROK_MCP.serena,
+        ...withSerenaDashboardOpenDisabled(RECOMMENDED_GROK_MCP.serena),
       },
+    };
+  } else if (!hasSerenaDashboardOpenDisabled(currentSerena)) {
+    parsed.mcp_servers = {
+      ...currentMcp,
+      serena: withSerenaDashboardOpenDisabled(currentSerena),
     };
   }
 
@@ -177,7 +187,8 @@ export function needsGrokProjectMcpUpdate(cwd: string): boolean {
     const serena = isRecord(mcp.serena) ? mcp.serena : {};
 
     return !(
-      typeof serena.command === "string" || typeof serena.url === "string"
+      (typeof serena.command === "string" || typeof serena.url === "string") &&
+      hasSerenaDashboardOpenDisabled(serena)
     );
   } catch {
     return true;

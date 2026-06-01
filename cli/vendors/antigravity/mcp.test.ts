@@ -69,7 +69,7 @@ describe("applyAntigravityMcpConfig", () => {
     expect(applyAntigravityMcpConfig(root, "project")).toBeNull();
   });
 
-  it("writes a stdio server to project mcp_config.json verbatim", () => {
+  it("writes a stdio server to project mcp_config.json with dashboard opening disabled", () => {
     const root = makeTmp();
     writeSsotMcp(root, {
       serena: {
@@ -88,6 +88,8 @@ describe("applyAntigravityMcpConfig", () => {
       "start-mcp-server",
       "--context",
       "ide",
+      "--open-web-dashboard",
+      "false",
     ]);
     expect(written.mcpServers.serena.env).toEqual({ LOG: "info" });
   });

@@ -1,3 +1,8 @@
+import {
+  hasSerenaDashboardOpenDisabled,
+  serenaStartMcpArgs,
+} from "../serena.js";
+
 /**
  * Recommended Cursor settings managed by oh-my-agent.
  * Applies to project-local `.cursor/mcp.json`.
@@ -13,7 +18,7 @@
 export const RECOMMENDED_CURSOR_MCP = {
   serena: {
     command: "serena",
-    args: ["start-mcp-server", "--context", "ide", "--project", "."],
+    args: serenaStartMcpArgs("ide"),
     env: {
       SERENA_LOG_LEVEL: "info",
     },
@@ -73,6 +78,7 @@ export function needsCursorSettingsUpdate(rawSettings: unknown): boolean {
   if (!hasCursorMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
   if (isWrongContextSerena(serena)) return true;
+  if (!hasSerenaDashboardOpenDisabled(serena)) return true;
   return false;
 }
 

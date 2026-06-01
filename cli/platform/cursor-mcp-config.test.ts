@@ -69,7 +69,15 @@ describe("applyCursorMcpConfig", () => {
     });
     expect(parsed.mcpServers.serena).toEqual({
       command: "serena",
-      args: ["start-mcp-server", "--context", "ide", "--project", "."],
+      args: [
+        "start-mcp-server",
+        "--context",
+        "ide",
+        "--project",
+        ".",
+        "--open-web-dashboard",
+        "false",
+      ],
       env: { SERENA_LOG_LEVEL: "info" },
     });
     expect(parsed.memoryConfig).toBeUndefined();

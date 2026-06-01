@@ -187,7 +187,15 @@ describe("T2.9 rename regression — applyGeminiSettings", () => {
       mcpServers: {
         serena: {
           command: "serena",
-          args: ["start-mcp-server", "--context", "ide", "--project", "."],
+          args: [
+            "start-mcp-server",
+            "--context",
+            "ide",
+            "--project",
+            ".",
+            "--open-web-dashboard",
+            "false",
+          ],
           env: { SERENA_LOG_LEVEL: "info" },
         },
       },
@@ -206,7 +214,15 @@ describe("T2.9 rename regression — applyGeminiSettings", () => {
       mcpServers: {
         serena: {
           command: "serena",
-          args: ["start-mcp-server", "--context", "ide", "--project", "."],
+          args: [
+            "start-mcp-server",
+            "--context",
+            "ide",
+            "--project",
+            ".",
+            "--open-web-dashboard",
+            "false",
+          ],
           env: { SERENA_LOG_LEVEL: "info" },
         },
       },
