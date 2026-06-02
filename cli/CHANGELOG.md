@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.30.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.29.1...cli-v8.30.0) (2026-06-02)
+
+
+### Features
+
+* **memory:** guard daemon start races and add Windows Task Scheduler service ([a84f8de](https://github.com/first-fluke/oh-my-agent/commit/a84f8de143bdf04ff68102f68b88bea38ecb47b6))
+
+
+### Bug Fixes
+
+* **memory:** fall back to legacy launchctl load when bootstrap fails ([6aa2b5a](https://github.com/first-fluke/oh-my-agent/commit/6aa2b5ad228ca52a42a4f1d3873f25c1aaba7336))
+
 ## [8.29.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.29.0...cli-v8.29.1) (2026-06-02)
 
 
