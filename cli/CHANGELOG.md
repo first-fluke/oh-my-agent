@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.29.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.29.0...cli-v8.29.1) (2026-06-02)
+
+
+### Bug Fixes
+
+* **memory:** align AgentMemory client with published 0.9.24 REST contract ([3c37ef8](https://github.com/first-fluke/oh-my-agent/commit/3c37ef8673fb96d5d9347ff0c20ac9ae8422476d))
+* **memory:** keep AgentMemory data in ~/.agentmemory and stop the iii engine ([ce84e22](https://github.com/first-fluke/oh-my-agent/commit/ce84e22159edf7218162679bebb663b304eda1b8))
+
 ## [8.29.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.28.0...cli-v8.29.0) (2026-06-02)
 
 
