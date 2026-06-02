@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.28.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.27.0...cli-v8.28.0) (2026-06-02)
+
+
+### Features
+
+* **state:** add workflow decision event commands ([d8afbaa](https://github.com/first-fluke/oh-my-agent/commit/d8afbaa9e4a9f9b2bd12a7909dd73bbcff1d1c06))
+
 ## [8.27.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.26.1...cli-v8.27.0) (2026-06-02)
 
 
