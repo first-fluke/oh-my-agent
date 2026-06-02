@@ -5,13 +5,18 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-01 · 1 unstarred
+## 2026-06-02 · 5 unstarred
 
-- **@ybloom** · YBloom · Shanghai · XJTLU · 13 repos · 3 followers
+- **@ekko8600** · ekko · Southeast University · 6 repos · 7 followers
+  - Southeast University,State Key Laboratory of Bioelectronics
+- **@nampard** · 1 repos · 0 followers
+- **@nurazharsg** · 0 repos · 0 followers
+- **@rpls-byeongwoo** · 이병우 · 1 repos · 0 followers
+- **@szilleryy** · Szilléry Szabolcs · 1 repos · 1 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1042)
+## Current (1040)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -215,6 +220,7 @@ summaries to spot which persona is churning.
 - @dev2l0per — 2026-04-20
 - @devbear0217 — 2026-02-08
 - @devc313 — 2026-02-12
+- @devhb — 2026-06-01
 - @devsosin — 2026-02-02
 - @devYahia — 2026-02-06
 - @Dewey1230 — 2026-02-04
@@ -251,7 +257,6 @@ summaries to spot which persona is churning.
 - @egaoneko — 2026-02-13
 - @EhtishamAziz01 — 2026-02-03
 - @einsoft — 2026-02-12
-- @ekko8600 — 2026-05-30
 - @Eksakarya — 2026-03-18
 - @elaranjo — 2026-02-12
 - @ElegantCreationism — 2026-04-09
@@ -688,7 +693,6 @@ summaries to spot which persona is churning.
 - @naeo-dev — 2026-04-09
 - @nakayama900 — 2026-04-18
 - @Nalrarang — 2026-04-23
-- @Nampard — 2026-04-26
 - @nanpuhaha — 2026-03-16
 - @naoki-rafael-miura — 2026-02-12
 - @nasong27-oss — 2026-04-14
@@ -716,7 +720,7 @@ summaries to spot which persona is churning.
 - @nschlemm — 2026-05-25
 - @nsj6646 — 2026-05-05
 - @nueavv — 2026-04-05
-- @nurazharSG — 2026-02-02
+- @nurazhardotcom — 2026-02-02
 - @nvmker — 2026-03-18
 - @nyx-rattapoom — 2026-04-27
 - @oandrefelipee — 2026-04-22
@@ -816,7 +820,6 @@ summaries to spot which persona is churning.
 - @RooftoproomWhale — 2026-05-26
 - @rookedsysc — 2026-02-02
 - @route99-roadRunner — 2026-02-02
-- @rpls-byeongwoo — 2026-03-16
 - @runefor — 2026-05-21
 - @rvzaku — 2026-05-20
 - @RxScriptor — 2026-05-17
@@ -832,6 +835,7 @@ summaries to spot which persona is churning.
 - @samuelyuma — 2026-05-06
 - @sanchez-kim — 2026-04-17
 - @Sang-Hyuk — 2026-03-17
+- @sanyeof — 2026-06-01
 - @satoshiyamamoto — 2026-03-18
 - @satyaboya — 2026-04-14
 - @Satyamkryo — 2026-02-05
@@ -907,7 +911,6 @@ summaries to spot which persona is churning.
 - @SW-H — 2026-04-26
 - @swoh91 — 2026-04-25
 - @SynCROSS — 2026-03-17
-- @Szilleryy — 2026-05-24
 - @tae2089 — 2026-04-24
 - @tarakim95 — 2026-05-03
 - @taybin — 2026-03-18
