@@ -70,8 +70,17 @@ describe("agentmemory-service", () => {
 
     it("marks unsupported platforms", () => {
       expect(
-        getAgentMemoryServicePresence({ homeDir, platform: "win32" }),
+        getAgentMemoryServicePresence({ homeDir, platform: "aix" }),
       ).toMatchObject({ supported: false, installed: false });
+    });
+
+    it("supports win32 via a scheduled-task xml path", () => {
+      const presence = getAgentMemoryServicePresence({
+        homeDir,
+        platform: "win32",
+      });
+      expect(presence.supported).toBe(true);
+      expect(presence.servicePath).toMatch(/oma-agentmemory\.task\.xml$/);
     });
   });
 
@@ -191,13 +200,51 @@ describe("agentmemory-service", () => {
     });
 
     it("is a no-op on unsupported platforms", () => {
-      const result = installAgentMemoryService({ homeDir, platform: "win32" });
+      const result = installAgentMemoryService({ homeDir, platform: "aix" });
       expect(result).toMatchObject({
         supported: false,
         wroteFile: false,
         activated: false,
       });
       expect(result.message).toContain("not supported");
+    });
+
+    it("renders a Windows Task Scheduler XML with cwd pin and port on dry run", () => {
+      const result = installAgentMemoryService({
+        homeDir,
+        platform: "win32",
+        dryRun: true,
+        port: 3460,
+      });
+      expect(result).toMatchObject({ supported: true, wroteFile: false });
+      expect(result.content).toContain("<WorkingDirectory>");
+      expect(result.content).toContain(".agentmemory");
+      expect(result.content).toContain("III_REST_PORT=3460");
+      // IgnoreNew prevents the overlapping-engine race on Windows.
+      expect(result.content).toContain("IgnoreNew");
+      expect(result.commands).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining(`schtasks /create /tn ${"OMA AgentMemory"}`),
+          expect.stringContaining("schtasks /run /tn"),
+        ]),
+      );
+    });
+
+    it("writes the task xml and registers it via schtasks on win32", () => {
+      const ran: string[] = [];
+      const result = installAgentMemoryService({
+        homeDir,
+        platform: "win32",
+        runner(command) {
+          ran.push([command.bin, ...command.args].join(" "));
+          return { status: 0 };
+        },
+      });
+      expect(result.wroteFile).toBe(true);
+      expect(result.activated).toBe(true);
+      expect(existsSync(result.servicePath ?? "")).toBe(true);
+      expect(ran.some((line) => line.includes("schtasks /create"))).toBe(true);
+      expect(ran.some((line) => line.includes("schtasks /run"))).toBe(true);
     });
   });
 
@@ -250,6 +297,28 @@ describe("agentmemory-service", () => {
       });
       expect(result.removedFile).toBe(true);
       expect(existsSync(servicePath ?? "")).toBe(false);
+    });
+
+    it("deletes the scheduled task and removes the xml on win32", () => {
+      const installed = installAgentMemoryService({
+        homeDir,
+        platform: "win32",
+        runner: () => ({ status: 0 }),
+      });
+      expect(existsSync(installed.servicePath ?? "")).toBe(true);
+
+      const ran: string[] = [];
+      const result = uninstallAgentMemoryService({
+        homeDir,
+        platform: "win32",
+        runner(command) {
+          ran.push([command.bin, ...command.args].join(" "));
+          return { status: 0 };
+        },
+      });
+      expect(result).toMatchObject({ supported: true, removedFile: true });
+      expect(ran.some((line) => line.includes("schtasks /delete"))).toBe(true);
+      expect(existsSync(installed.servicePath ?? "")).toBe(false);
     });
   });
 });

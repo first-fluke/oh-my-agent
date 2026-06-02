@@ -665,6 +665,22 @@ export async function controlAgentMemoryDaemon(args: {
       });
     }
 
+    // Race guard (start only): if a healthy daemon already serves the port,
+    // reuse it instead of spawning a competitor — overlapping iii engines fight
+    // over port 3111 and can leave a half-initialised engine answering 404.
+    if (args.action === "start") {
+      const existing = await daemonStatus({ homeDir, env, action: "start" });
+      if (existing.status.reachable) {
+        return {
+          ...existing,
+          message: `AgentMemory already running on ${existing.endpoint ?? `port ${port}`}; reusing`,
+        };
+      }
+      // Not reachable but a stale engine may still hold the port; clear it so
+      // the fresh engine can bind cleanly.
+      spawnSync(bin, ["stop"], { env, timeout: 10000, encoding: "utf-8" });
+    }
+
     mkdirSync(agentMemoryConfigDir(homeDir), { recursive: true, mode: 0o700 });
     writeEndpointConfig(homeDir, {
       port,

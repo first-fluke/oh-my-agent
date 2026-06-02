@@ -25,6 +25,7 @@ import type {
 
 export const DEFAULT_AGENTMEMORY_PORT = 3111;
 export const LAUNCHD_AGENTMEMORY_LABEL = "dev.oma.agentmemory";
+export const WINDOWS_TASK_NAME = "OMA AgentMemory";
 
 export function parsePositivePort(
   value: number | string | undefined,
@@ -84,6 +85,11 @@ function agentMemoryServicePath(
       "user",
       "oma-agentmemory.service",
     );
+  }
+  if (platform === "win32") {
+    // The scheduled-task XML registered with schtasks; the task itself is named
+    // by WINDOWS_TASK_NAME.
+    return join(homeDir, ".agentmemory", "oma-agentmemory.task.xml");
   }
   return undefined;
 }
@@ -162,6 +168,50 @@ WantedBy=default.target
 `;
 }
 
+// Windows Task Scheduler definition. Task Scheduler has no per-task env block,
+// so III_REST_PORT is set inline via cmd; WorkingDirectory pins the cwd-relative
+// ./data store to the AgentMemory home, and MultipleInstancesPolicy=IgnoreNew
+// prevents the overlapping-engine race that produces 404s.
+function renderWindowsTaskXml(args: { homeDir: string; port: number }): string {
+  const dataHome = agentMemoryDataHome(args.homeDir);
+  return `<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>OMA AgentMemory daemon</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <LogonTrigger>
+      <Enabled>true</Enabled>
+    </LogonTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <RestartOnFailure>
+      <Interval>PT10S</Interval>
+      <Count>3</Count>
+    </RestartOnFailure>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>cmd</Command>
+      <Arguments>/c set "III_REST_PORT=${args.port}" &amp;&amp; agentmemory</Arguments>
+      <WorkingDirectory>${dataHome}</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
+`;
+}
+
 function serviceDomain(): string {
   const uid = typeof process.getuid === "function" ? process.getuid() : 0;
   return `gui/${uid}`;
@@ -213,6 +263,39 @@ function serviceCommands(
         ];
   }
 
+  if (args.platform === "win32") {
+    return args.action === "install"
+      ? [
+          {
+            bin: "schtasks",
+            args: [
+              "/create",
+              "/tn",
+              WINDOWS_TASK_NAME,
+              "/xml",
+              args.servicePath,
+              "/f",
+            ],
+          },
+          {
+            bin: "schtasks",
+            args: ["/run", "/tn", WINDOWS_TASK_NAME],
+          },
+        ]
+      : [
+          {
+            bin: "schtasks",
+            args: ["/end", "/tn", WINDOWS_TASK_NAME],
+            optional: true,
+          },
+          {
+            bin: "schtasks",
+            args: ["/delete", "/tn", WINDOWS_TASK_NAME, "/f"],
+            optional: true,
+          },
+        ];
+  }
+
   return [];
 }
 
@@ -248,7 +331,9 @@ export function installAgentMemoryService(
       ? renderLaunchdService({ homeDir, port })
       : platform === "linux"
         ? renderSystemdService({ homeDir, port })
-        : undefined;
+        : platform === "win32"
+          ? renderWindowsTaskXml({ homeDir, port })
+          : undefined;
   const commands =
     servicePath === undefined
       ? []
