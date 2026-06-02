@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.27.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.26.1...cli-v8.27.0) (2026-06-02)
+
+
+### Features
+
+* **state:** add repair command ([eb5273b](https://github.com/first-fluke/oh-my-agent/commit/eb5273bc4068872a9bfd8ec6cfa71883f2cb66d7))
+
 ## [8.26.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.26.0...cli-v8.26.1) (2026-06-01)
 
 
