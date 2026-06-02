@@ -1,5 +1,24 @@
 # Changelog
 
+## [8.29.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.28.0...cli-v8.29.0) (2026-06-02)
+
+
+### Features
+
+* **hook:** add cross-runtime L1 compatibility probe command ([f0ee01e](https://github.com/first-fluke/oh-my-agent/commit/f0ee01e41bd1721be3a2abbeffbc326c0c65a106))
+* **state:** mirror completed sessions to Serena and log boundary injects ([cf20382](https://github.com/first-fluke/oh-my-agent/commit/cf203828f7e4eb5b067298b228bcf2e8e37f5faf))
+
+
+### Bug Fixes
+
+* **recap:** read Cursor store.db read-only with busy timeout and report locks ([5383467](https://github.com/first-fluke/oh-my-agent/commit/538346748a235c84219f161b79dbf7a37b811afc))
+* **state:** make _index.json CAS exhaustion recoverable and verify event-order independence ([d1b16b9](https://github.com/first-fluke/oh-my-agent/commit/d1b16b944538326b355a1fdac60af1060df5236a))
+
+
+### Refactoring
+
+* **memory:** extract AgentMemory service generator to platform module ([63bcc4a](https://github.com/first-fluke/oh-my-agent/commit/63bcc4a395aeb94d54780871f5610cc366fa92a0))
+
 ## [8.28.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.27.0...cli-v8.28.0) (2026-06-02)
 
 
