@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { http } from "../io/http.js";
 import type {
   AgentMemoryProviderOptions,
@@ -8,11 +8,34 @@ import type {
   MemoryProviderStatus,
 } from "../types/memory.js";
 
-const SUPPORTED_AGENTMEMORY_VERSION = /^0\.(1[12])\./;
+// AgentMemory's published version line moved from 0.11/0.12 (original design
+// target) to 0.9.x service builds; accept 0.9.x and the 0.1x.x range.
+const SUPPORTED_AGENTMEMORY_VERSION = /^0\.(9|1\d)\./;
 
 function headerValue(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
   return value;
+}
+
+// Reachability keys off the /agentmemory/health body, because recent
+// AgentMemory releases stopped sending the `x-agentmemory-version` header and
+// only expose the version inside the JSON body.
+function inspectHealthBody(data: unknown): {
+  isAgentMemory: boolean;
+  version?: string;
+} {
+  if (!data || typeof data !== "object") return { isAgentMemory: false };
+  const body = data as {
+    service?: unknown;
+    status?: unknown;
+    version?: unknown;
+  };
+  const isAgentMemory =
+    body.service === "agentmemory" ||
+    body.status === "healthy" ||
+    body.status === "ok";
+  const version = typeof body.version === "string" ? body.version : undefined;
+  return { isAgentMemory, version };
 }
 
 export function resolveAgentMemoryEndpoint(options: {
@@ -95,7 +118,10 @@ export function createAgentMemoryProvider(
         timeout: options.healthTimeoutMs ?? 500,
         validateStatus: () => true,
       });
-      const version = headerValue(response.headers["x-agentmemory-version"]);
+      const health = inspectHealthBody(response.data);
+      const version =
+        headerValue(response.headers["x-agentmemory-version"]) ??
+        health.version;
       if (response.status < 200 || response.status >= 300) {
         cachedStatus = {
           provider: "agentmemory",
@@ -106,7 +132,10 @@ export function createAgentMemoryProvider(
         };
         return cachedStatus;
       }
-      if (!version || !SUPPORTED_AGENTMEMORY_VERSION.test(version)) {
+      const supported =
+        health.isAgentMemory ||
+        (version !== undefined && SUPPORTED_AGENTMEMORY_VERSION.test(version));
+      if (!supported) {
         cachedStatus = {
           provider: "agentmemory",
           endpoint,
@@ -141,12 +170,18 @@ export function createAgentMemoryProvider(
       const current = await status();
       if (!current.reachable || !current.endpoint) return false;
       try {
+        // AgentMemory's /observe expects a hook-event envelope
+        // (hookType, sessionId, project, cwd, timestamp) carrying the content.
+        const cwd = process.cwd();
         const response = await http.post(
           `${current.endpoint}/agentmemory/observe`,
           {
-            session_id: payload.sessionId,
+            hookType: payload.source,
+            sessionId: payload.sessionId,
+            project: basename(cwd),
+            cwd,
+            timestamp: new Date().toISOString(),
             content: payload.content,
-            source: payload.source,
           },
           {
             headers: { "content-type": "application/json" },

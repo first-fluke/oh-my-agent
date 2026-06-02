@@ -93,9 +93,10 @@ export async function emitEvent(
   }
   if (SEMANTIC_KINDS.has(enriched.kind)) {
     const observed = await observeWithTimeout({
-      session_id: sid,
+      sessionId: sid,
       content: `${JSON.stringify(enriched)}\n`,
       source: "oma-workflow",
+      projectDir,
     });
     if (!observed) enqueueRetry(projectDir, enriched);
   }

@@ -4,9 +4,11 @@ import type { IncomingHttpHeaders } from "node:http";
 import http from "node:http";
 import https from "node:https";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
-const SUPPORTED = /^0\.(1[12])\./;
+// AgentMemory's published version line moved from 0.11/0.12 (original design
+// target) to 0.9.x service builds; accept 0.9.x and the 0.1x.x range.
+const SUPPORTED = /^0\.(9|1\d)\./;
 
 function endpointUrl(): string | null {
   if (process.env.OMA_NO_AGENTMEMORY === "1") return null;
@@ -39,7 +41,7 @@ function requestAgentMemory(
     body?: string;
     timeoutMs?: number;
   } = {},
-): Promise<{ statusCode: number; headers: IncomingHttpHeaders }> {
+): Promise<{ statusCode: number; headers: IncomingHttpHeaders; body: string }> {
   return new Promise((resolve, reject) => {
     const target = new URL(path, baseUrl);
     const client = target.protocol === "https:" ? https : http;
@@ -61,11 +63,16 @@ function requestAgentMemory(
         headers,
       },
       (res) => {
-        res.resume();
+        let responseBody = "";
+        res.setEncoding("utf-8");
+        res.on("data", (chunk) => {
+          responseBody += chunk;
+        });
         res.on("end", () => {
           resolve({
             statusCode: res.statusCode ?? 0,
             headers: res.headers,
+            body: responseBody,
           });
         });
         res.on("error", reject);
@@ -90,18 +97,36 @@ export async function isAgentMemoryReachable(): Promise<boolean> {
 
   try {
     const response = await requestAgentMemory(url, "/agentmemory/health");
-    const version = response.headers["x-agentmemory-version"];
-    const normalizedVersion = Array.isArray(version) ? version[0] : version;
-    if (
-      response.statusCode < 200 ||
-      response.statusCode >= 300 ||
-      !normalizedVersion ||
-      !SUPPORTED.test(normalizedVersion)
-    ) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       reachable = false;
       return reachable;
     }
-    reachable = true;
+    const headerVersion = response.headers["x-agentmemory-version"];
+    const version = Array.isArray(headerVersion)
+      ? headerVersion[0]
+      : headerVersion;
+    // Recent AgentMemory releases expose the version only in the health body,
+    // not the `x-agentmemory-version` header.
+    let isAgentMemory = false;
+    let bodyVersion: string | undefined;
+    try {
+      const parsed = JSON.parse(response.body) as {
+        service?: unknown;
+        status?: unknown;
+        version?: unknown;
+      };
+      isAgentMemory =
+        parsed.service === "agentmemory" ||
+        parsed.status === "healthy" ||
+        parsed.status === "ok";
+      if (typeof parsed.version === "string") bodyVersion = parsed.version;
+    } catch {
+      // Non-JSON body — fall back to the header check below.
+    }
+    const resolvedVersion = version ?? bodyVersion;
+    reachable =
+      isAgentMemory ||
+      (resolvedVersion !== undefined && SUPPORTED.test(resolvedVersion));
     return reachable;
   } catch {
     reachable = false;
@@ -109,16 +134,31 @@ export async function isAgentMemoryReachable(): Promise<boolean> {
   }
 }
 
-export async function observeWithTimeout(payload: object): Promise<boolean> {
+export async function observeWithTimeout(payload: {
+  sessionId: string;
+  content: string;
+  source: string;
+  projectDir?: string;
+}): Promise<boolean> {
   if (!(await isAgentMemoryReachable())) return false;
   const url = endpointUrl();
   if (!url) return false;
 
   try {
+    // AgentMemory's /observe expects a hook-event envelope
+    // (hookType, sessionId, project, cwd, timestamp) carrying the content.
+    const cwd = payload.projectDir ?? process.cwd();
     const response = await requestAgentMemory(url, "/agentmemory/observe", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        hookType: payload.source,
+        sessionId: payload.sessionId,
+        project: basename(cwd),
+        cwd,
+        timestamp: new Date().toISOString(),
+        content: payload.content,
+      }),
     });
     return response.statusCode >= 200 && response.statusCode < 300;
   } catch {

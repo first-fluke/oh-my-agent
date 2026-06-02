@@ -10,6 +10,7 @@ import {
 
 async function startServer(args: {
   version?: string;
+  healthBody?: Record<string, unknown>;
   healthStatus?: number;
   observeStatus?: number;
   onObserve?: (body: string) => void;
@@ -18,6 +19,11 @@ async function startServer(args: {
     if (req.url === "/agentmemory/health") {
       res.statusCode = args.healthStatus ?? 200;
       if (args.version) res.setHeader("x-agentmemory-version", args.version);
+      if (args.healthBody) {
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify(args.healthBody));
+        return;
+      }
       res.end("ok");
       return;
     }
@@ -97,10 +103,31 @@ describe("AgentMemory provider", () => {
     ).resolves.toBe(false);
   });
 
-  it("posts observe payload when health is reachable", async () => {
+  it("treats a healthy body as reachable when the version header is missing", async () => {
+    const { server, url } = await startServer({
+      healthBody: {
+        service: "agentmemory",
+        status: "healthy",
+        version: "0.9.24",
+      },
+    });
+    cleanup.push(() => server.close());
+    const provider = createAgentMemoryProvider({
+      env: { AGENTMEMORY_URL: url },
+    });
+
+    await expect(provider.status()).resolves.toMatchObject({
+      provider: "agentmemory",
+      reachable: true,
+      version: "0.9.24",
+    });
+  });
+
+  it("posts the AgentMemory hook-event observe envelope when reachable", async () => {
     let observed = "";
     const { server, url } = await startServer({
-      version: "0.12.0",
+      version: "0.9.24",
+      observeStatus: 201,
       onObserve: (body) => {
         observed = body;
       },
@@ -117,10 +144,15 @@ describe("AgentMemory provider", () => {
         source: "oma-workflow",
       }),
     ).resolves.toBe(true);
-    expect(JSON.parse(observed)).toEqual({
-      session_id: "oma-test",
+
+    const parsed = JSON.parse(observed) as Record<string, unknown>;
+    expect(parsed).toMatchObject({
+      hookType: "oma-workflow",
+      sessionId: "oma-test",
       content: '{"kind":"decision.made"}\n',
-      source: "oma-workflow",
     });
+    expect(typeof parsed.project).toBe("string");
+    expect(typeof parsed.cwd).toBe("string");
+    expect(typeof parsed.timestamp).toBe("string");
   });
 });
