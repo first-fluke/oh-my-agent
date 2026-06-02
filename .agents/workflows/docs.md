@@ -16,6 +16,12 @@ description: Documentation drift detection and sync via `oma-docs`. Verify mode 
 
 ---
 
+## L1 Decision Events
+
+Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+
+---
+
 ## Step 1: Detect Mode
 
 Inspect the user's request to select a mode:
@@ -124,7 +130,14 @@ For each candidate doc:
    [y] apply  [n] skip  [d] show diff  [s] show full proposal
    ```
 
-5. On `[y]`, apply via `git apply` or by writing the doc directly. After applying any patches, regenerate the index:
+5. After each `[y]` or `[n]` decision, emit and verify the required patch approval decision:
+
+   ```bash
+   oma_emit "decision.made" '{"subject":"docs.sync-patch-approval","decision":"Apply or skip the proposed documentation sync patch for this document.","rationale":"The user reviewed the proposed doc patch and made an explicit per-document decision."}'
+   oma state:verify --workflow docs --checkpoint sync-patch-approval
+   ```
+
+6. On `[y]`, apply via `git apply` or by writing the doc directly. After applying any patches, regenerate the index:
 
    ```bash
    oma docs verify --json > /dev/null

@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -93,6 +93,48 @@ describe("required decision verifier", () => {
         "sync-patch-approval": [{ subject: "docs.sync-patch-approval" }],
       },
     });
+  });
+
+  it("documents every required workflow decision checkpoint in the workflow assets", () => {
+    const table = listRequiredDecisionCheckpoints();
+    const eventSpec = readFileSync(
+      new URL(
+        "../../.agents/skills/_shared/runtime/event-spec.md",
+        import.meta.url,
+      ),
+      "utf-8",
+    );
+
+    expect(eventSpec).toContain("oma_emit()");
+    expect(eventSpec).toContain('oma state:emit "$kind" "$payload"');
+    expect(eventSpec).toContain("oma state:verify --workflow");
+
+    for (const [workflow, checkpoints] of Object.entries(table)) {
+      const body = readFileSync(
+        new URL(`../../.agents/workflows/${workflow}.md`, import.meta.url),
+        "utf-8",
+      );
+
+      expect(body, `${workflow} should reference the L1 event spec`).toContain(
+        ".agents/skills/_shared/runtime/event-spec.md",
+      );
+
+      for (const [checkpoint, decisions] of Object.entries(checkpoints)) {
+        expect(
+          body,
+          `${workflow} should verify checkpoint ${checkpoint}`,
+        ).toContain(
+          `oma state:verify --workflow ${workflow} --checkpoint ${checkpoint}`,
+        );
+
+        for (const decision of decisions) {
+          expect(
+            body,
+            `${workflow} should emit subject ${decision.subject}`,
+          ).toContain(`"subject":"${decision.subject}"`);
+        }
+      }
+    }
   });
 
   it("emits decision.missing when a required decision is absent", async () => {

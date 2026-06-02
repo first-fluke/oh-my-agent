@@ -222,7 +222,7 @@ Workflows may define this shell helper before emitting required decisions:
 oma_emit() {
   kind="$1"
   payload="$2"
-  oma emit "$kind" "$payload"
+  oma state:emit "$kind" "$payload"
 }
 ```
 
@@ -230,5 +230,5 @@ Required decision example:
 
 ```bash
 oma_emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved plan.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
-oma state:verify-decisions --workflow ultrawork --checkpoint plan-approved
+oma state:verify --workflow ultrawork --checkpoint plan-approved
 ```

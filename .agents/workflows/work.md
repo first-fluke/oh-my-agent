@@ -30,14 +30,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Define the `oma_emit` helper for required L1 decisions:
-   ```bash
-   oma_emit() {
-     kind="$1"
-     payload="$2"
-     oma emit "$kind" "$payload"
-   }
-   ```
+5. Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` for required L1 decisions. The helper wraps `oma state:emit`.
 6. Record session start using memory write tool:
    - Create `session-work.md` in the memory base path
    - Include: session start time, user request summary.
@@ -152,7 +145,7 @@ If QA finds CRITICAL or HIGH issues:
 2. Emit and verify the remediation decision before accepting any fix/ignore choice:
    ```bash
    oma_emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
-   oma state:verify-decisions --workflow work --checkpoint remediation-choice
+   oma state:verify --workflow work --checkpoint remediation-choice
    ```
 3. If Quality Score is active: measure after fix, apply Keep/Discard rule, record in Experiment Ledger.
 4. Repeat Steps 5-7.

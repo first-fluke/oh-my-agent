@@ -29,6 +29,69 @@ import {
   viewSession,
 } from "./state.js";
 
+function registerDecisionVerifyCommand(
+  program: Command,
+  commandName: string,
+  description: string,
+): void {
+  addOutputOptions(
+    program
+      .command(commandName)
+      .description(description)
+      .requiredOption("--workflow <workflow>", "Workflow name")
+      .requiredOption(
+        "--checkpoint <checkpoint>",
+        "Required decision checkpoint",
+      )
+      .option("--sid <sid>", "Target session id")
+      .option("--category <category>", "Active category lookup", "main")
+      .option(
+        "--no-emit-missing",
+        "Do not append a decision.missing event when verification fails",
+      ),
+  ).action(
+    runAction(
+      async (options) => {
+        const jsonMode = resolveJsonMode(options);
+        const workflow = options.workflow as string;
+        const checkpoint = options.checkpoint as string;
+        const sid = resolveDecisionVerifierSid({
+          projectDir: process.cwd(),
+          sid: options.sid as string | undefined,
+          category: options.category as string | undefined,
+        });
+        const result = await verifyRequiredDecisions({
+          projectDir: process.cwd(),
+          sid,
+          workflow,
+          checkpoint,
+          emitMissing: options.emitMissing !== false,
+        });
+
+        if (jsonMode) {
+          console.log(JSON.stringify(result, null, 2));
+        } else if (result.ok) {
+          console.log(
+            `Required decisions present for ${workflow}/${checkpoint} -> ${sid}`,
+          );
+        } else {
+          console.error(
+            `Missing required decisions for ${workflow}/${checkpoint} -> ${sid}:`,
+          );
+          for (const decision of result.missing) {
+            console.error(`  - ${decision.subject}: ${decision.description}`);
+          }
+        }
+
+        if (!result.ok) {
+          process.exitCode = 1;
+        }
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+}
+
 export function registerState(program: Command): void {
   addOutputOptions(
     program
@@ -156,63 +219,10 @@ export function registerState(program: Command): void {
     ),
   );
 
-  addOutputOptions(
-    program
-      .command("state:verify-decisions")
-      .description(
-        "Verify required L1 decision.made events for a workflow checkpoint",
-      )
-      .requiredOption("--workflow <workflow>", "Workflow name")
-      .requiredOption(
-        "--checkpoint <checkpoint>",
-        "Required decision checkpoint",
-      )
-      .option("--sid <sid>", "Target session id")
-      .option("--category <category>", "Active category lookup", "main")
-      .option(
-        "--no-emit-missing",
-        "Do not append a decision.missing event when verification fails",
-      ),
-  ).action(
-    runAction(
-      async (options) => {
-        const jsonMode = resolveJsonMode(options);
-        const workflow = options.workflow as string;
-        const checkpoint = options.checkpoint as string;
-        const sid = resolveDecisionVerifierSid({
-          projectDir: process.cwd(),
-          sid: options.sid as string | undefined,
-          category: options.category as string | undefined,
-        });
-        const result = await verifyRequiredDecisions({
-          projectDir: process.cwd(),
-          sid,
-          workflow,
-          checkpoint,
-          emitMissing: options.emitMissing !== false,
-        });
-
-        if (jsonMode) {
-          console.log(JSON.stringify(result, null, 2));
-        } else if (result.ok) {
-          console.log(
-            `Required decisions present for ${workflow}/${checkpoint} -> ${sid}`,
-          );
-        } else {
-          console.error(
-            `Missing required decisions for ${workflow}/${checkpoint} -> ${sid}:`,
-          );
-          for (const decision of result.missing) {
-            console.error(`  - ${decision.subject}: ${decision.description}`);
-          }
-        }
-
-        if (!result.ok) {
-          process.exitCode = 1;
-        }
-      },
-      { supportsJsonOutput: true },
-    ),
+  registerDecisionVerifyCommand(
+    program,
+    "state:verify",
+    "Verify required L1 events for a workflow checkpoint",
   );
 
   addOutputOptions(

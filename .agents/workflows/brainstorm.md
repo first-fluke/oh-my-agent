@@ -20,6 +20,12 @@ description: Design-first ideation workflow that explores user intent, clarifies
 
 ---
 
+## L1 Decision Events
+
+Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+
+---
+
 ## Step 1: Explore Project Context
 
 // turbo
@@ -54,6 +60,13 @@ Present **2-3 distinct approaches** to solve the problem:
 **Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
 
 **You MUST get user confirmation on the chosen approach before proceeding to Step 4.**
+
+After the user chooses an option, emit and verify the required option-selection decision:
+
+```bash
+oma_emit "decision.made" '{"subject":"brainstorm.option-selection","decision":"Proceed with the user-selected approach.","rationale":"The user selected one option after comparing alternatives and tradeoffs."}'
+oma state:verify --workflow brainstorm --checkpoint option-selection
+```
 
 ---
 

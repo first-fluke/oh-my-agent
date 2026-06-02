@@ -19,6 +19,12 @@ description: PM planning workflow that gathers requirements, decomposes them int
 
 ---
 
+## L1 Decision Events
+
+Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+
+---
+
 ## Core Philosophy
 
 **Plans are first-class artifacts**: structured, templated, and consumed by other workflows. They are local working artifacts (not committed to the repo; `docs/plans/` is gitignored), but they follow strict conventions so any agent can read and update them.
@@ -89,6 +95,11 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
    - Auth requirements, error responses
 2. Save to `.agents/skills/_shared/core/api-contracts/{contract-name}.md`.
 3. Reference from the markdown tracker generated in Step 6.
+4. Emit and verify the required API contract decision:
+   ```bash
+   oma_emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
+   oma state:verify --workflow plan --checkpoint api-contract
+   ```
 
 ---
 

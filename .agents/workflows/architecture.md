@@ -20,6 +20,12 @@ description: Software architecture workflow that diagnoses architecture problems
 
 ---
 
+## L1 Decision Events
+
+Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+
+---
+
 ## Step 1: Frame the Decision
 
 Clarify what kind of architecture work this is:
@@ -128,6 +134,13 @@ Suggested filenames:
 - `architecture-review-<topic>.md`
 - `adr-<topic>.md`
 - `cbam-<topic>.md`
+
+Emit and verify the required ADR/architecture completion decision:
+
+```bash
+oma_emit "decision.made" '{"subject":"architecture.adr-complete","decision":"Use the completed architecture recommendation or ADR as the handoff basis.","rationale":"The architecture artifact captures the selected option, tradeoffs, risks, and validation steps."}'
+oma state:verify --workflow architecture --checkpoint adr-complete
+```
 
 Then guide the next step:
 - if approved and implementation is next: suggest `/plan`

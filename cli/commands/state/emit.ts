@@ -48,7 +48,7 @@ export function resolveEmitSid(
 export function registerEmit(program: Command): void {
   addOutputOptions(
     program
-      .command("emit <kind> [payload]")
+      .command("state:emit <kind> [payload]")
       .description("Append an OMA L1 workflow event")
       .option("--sid <sid>", "Target session id")
       .option("--category <category>", "Active category lookup", "main")
