@@ -16,7 +16,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1040)
+## Current (1048)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -31,6 +31,7 @@ summaries to spot which persona is churning.
 - @3wz — 2026-04-01
 - @51nk0r5w1m — 2026-02-05
 - @5oran9 — 2026-03-30
+- @5throck — 2026-06-02
 - @6dlz — 2026-02-02
 - @6oRim — 2026-04-26
 - @810230010 — 2026-04-21
@@ -91,6 +92,7 @@ summaries to spot which persona is churning.
 - @appleberry-dev — 2026-04-23
 - @Aranmobinarann — 2026-02-22
 - @archmagece — 2026-03-13
+- @arifgarayev — 2026-06-02
 - @arikon — 2026-04-04
 - @armstrongl — 2026-04-15
 - @ArnBdev — 2026-02-05
@@ -205,6 +207,7 @@ summaries to spot which persona is churning.
 - @danielhanold — 2026-03-19
 - @daudaudinang — 2026-03-11
 - @david-w-millar — 2026-04-21
+- @daybreaker42 — 2026-06-02
 - @Dayoooun — 2026-05-16
 - @dbydd — 2026-03-20
 - @ddx2r — 2026-04-19
@@ -311,6 +314,7 @@ summaries to spot which persona is churning.
 - @freevue — 2026-02-02
 - @freivokh — 2026-04-17
 - @FrogRim — 2026-04-17
+- @frostmute — 2026-06-02
 - @funetes — 2026-02-24
 - @furkangurr — 2026-04-21
 - @gabrielzevedo — 2026-02-12
@@ -381,6 +385,7 @@ summaries to spot which persona is churning.
 - @hang-in — 2026-03-23
 - @hanhyeonkyu — 2026-04-15
 - @HanTJ — 2026-02-02
+- @haojingcn — 2026-06-02
 - @hardboil — 2026-02-03
 - @harmonyself — 2026-02-01
 - @hartzelljkh — 2026-03-22
@@ -632,6 +637,7 @@ summaries to spot which persona is churning.
 - @LWH-9393 — 2026-04-19
 - @Lyine0924 — 2026-04-27
 - @m0ndez — 2026-03-23
+- @m2sh — 2026-06-02
 - @m8928 — 2026-04-22
 - @maacx2022 — 2026-02-12
 - @macintoxic — 2026-02-12
@@ -911,6 +917,7 @@ summaries to spot which persona is churning.
 - @SW-H — 2026-04-26
 - @swoh91 — 2026-04-25
 - @SynCROSS — 2026-03-17
+- @syphrpunk — 2026-06-02
 - @tae2089 — 2026-04-24
 - @tarakim95 — 2026-05-03
 - @taybin — 2026-03-18
@@ -1053,6 +1060,7 @@ summaries to spot which persona is churning.
 - @zhifengmuyu0769 — 2026-04-07
 - @zhiyuanep — 2026-02-27
 - @zinyboy — 2026-04-25
+- @zliaaan — 2026-06-02
 - @ZuBB — 2026-03-28
 - @zvndev — 2026-04-02
 - @zxygithub — 2026-03-27
