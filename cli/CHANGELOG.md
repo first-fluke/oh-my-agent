@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.31.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.30.0...cli-v8.31.0) (2026-06-03)
+
+
+### Features
+
+* **hooks:** integrate Antigravity CLI (agy) hooks via .agents/hooks.json ([af99809](https://github.com/first-fluke/oh-my-agent/commit/af9980934085c77f6193d3b95b055aeaf0760fe1))
+
 ## [8.30.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.29.1...cli-v8.30.0) (2026-06-02)
 
 
