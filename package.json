@@ -21,6 +21,9 @@
   "overrides": {
     "@types/node": "^24"
   },
+  "engines": {
+    "node": ">=24.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@commitlint/cli": "20.4.3",
