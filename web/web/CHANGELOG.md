@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.9.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.9.0...web-v3.9.1) (2026-06-04)
+
+
+### Documentation
+
+* document oma skills opt ([2d10f3e](https://github.com/first-fluke/oh-my-agent/commit/2d10f3e1f8e1c730b8e13fcf61c30788db6e412f))
+
 ## [3.9.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.8.2...web-v3.9.0) (2026-06-04)
 
 
