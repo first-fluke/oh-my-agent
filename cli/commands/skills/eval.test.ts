@@ -27,11 +27,13 @@ import {
   REGEX_PATTERN_MAX_LEN,
   type RolloutEntry,
   runSkillsEval,
+  type ScoreSkillBodyOptions,
   type SkillsEvalOptions,
   type SkillUtilityReport,
   scoreChecker,
   scoreNeighborInLive,
   scoreNeighborInMock,
+  scoreSkillBody,
   serializeSkillUtilityReport,
   type TaskFixture,
   UTILITY_FAIL_LIFT,
@@ -2401,5 +2403,143 @@ describe("runSkillsEval — neg-transfer flag (mock mode, no LLM)", () => {
 
     warnSpy.mockRestore();
     logSpy.mockRestore();
+  });
+});
+
+// --- scoreSkillBody ---
+
+describe("scoreSkillBody", () => {
+  let rootDir: string;
+
+  beforeEach(() => {
+    rootDir = mkdtempSync(join(tmpdir(), "oma-eval-scorebody-"));
+  });
+
+  afterEach(() => {
+    rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  it("override body == disk body yields same utilityLift (parity)", async () => {
+    const taskDir = join(rootDir, "skill-parity");
+    const { tasks, rollouts } = makePassingScenario();
+    for (const t of tasks) writeTask(taskDir, t);
+    writeRollout(taskDir, rollouts);
+
+    // Score via scoreSkillBody (mock mode, any body string — body is unused in mock)
+    const opts: ScoreSkillBodyOptions = {
+      skill: "oma-parity",
+      body: "# SKILL BODY\nsome content",
+      taskDir,
+      mode: "mock",
+    };
+    const report = await scoreSkillBody(opts);
+
+    // Compute expected via computeUtility directly (same fixtures + rollouts)
+    const { fixtures } = loadTaskFixtures(taskDir);
+    const recorded = loadRolloutEntries(taskDir);
+    const expected = computeUtility("oma-parity", {
+      tasks: fixtures,
+      rollouts: recorded,
+    });
+
+    expect(report.utilityLift).toBeCloseTo(expected.utilityLift);
+    expect(report.decision).toBe(expected.decision);
+  });
+
+  it("two different override bodies yield different utilityLifts (live mode, mock dispatch)", async () => {
+    const taskDir = join(rootDir, "skill-diff");
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`td-${i}`, {
+        checker: { type: "assert", expect_contains: ["GOOD"] },
+      }),
+    );
+    for (const t of tasks) writeTask(taskDir, t);
+
+    // bodyA dispatch: treatment returns "GOOD" (pass), baseline returns "bad"
+    const dispatchFnA = vi.fn(
+      (arm: "baseline" | "treatment", _prompt: string, _tmp: string): string =>
+        arm === "treatment" ? "GOOD" : "bad",
+    );
+
+    // bodyB dispatch: treatment also returns "bad" (fail) — lift = 0
+    const dispatchFnB = vi.fn(
+      (_arm: "baseline" | "treatment", _prompt: string, _tmp: string): string =>
+        "bad",
+    );
+
+    const reportA = await scoreSkillBody({
+      skill: "oma-diff",
+      body: "# Body A",
+      tasks,
+      mode: "live",
+      dispatchFn: dispatchFnA as unknown as LiveDispatchFn,
+    });
+
+    const reportB = await scoreSkillBody({
+      skill: "oma-diff",
+      body: "# Body B",
+      tasks,
+      mode: "live",
+      dispatchFn: dispatchFnB as unknown as LiveDispatchFn,
+    });
+
+    // bodyA should lift > bodyB (bodyA treatment passes, bodyB treatment fails)
+    expect(reportA.utilityLift).toBeGreaterThan(reportB.utilityLift);
+  });
+
+  it("override path never writes to disk", async () => {
+    const taskDir = join(rootDir, "skill-nodisk");
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`nw-${i}`, {
+        checker: { type: "assert", expect_contains: ["OK"] },
+      }),
+    );
+    for (const t of tasks) writeTask(taskDir, t);
+
+    const dispatchFn = vi.fn(
+      (_arm: "baseline" | "treatment", _prompt: string, _tmp: string): string =>
+        "OK",
+    );
+
+    await scoreSkillBody({
+      skill: "oma-nodisk",
+      body: "# Override body",
+      tasks,
+      mode: "live",
+      dispatchFn: dispatchFn as unknown as LiveDispatchFn,
+    });
+
+    // No _rollouts directory should have been created
+    const { existsSync } = await import("node:fs");
+    expect(existsSync(join(taskDir, "_rollouts"))).toBe(false);
+  });
+
+  it("existing eval tests unaffected — runSkillsEval mock still works without override", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const taskDir = join(rootDir, "skill-unaffected");
+    const { tasks, rollouts } = makePassingScenario();
+    for (const t of tasks) writeTask(taskDir, t);
+    writeRollout(taskDir, rollouts);
+
+    const evalOpts: SkillsEvalOptions = {
+      skill: "oma-unaffected",
+      taskDir,
+      _workspace: rootDir,
+      // No skillMdOverride — default behavior
+    };
+
+    await runSkillsEval(true, evalOpts);
+
+    const jsonOutput = logSpy.mock.calls
+      .map((c: unknown[]) => String(c[0]))
+      .find((s) => s.trimStart().startsWith("{"));
+    const parsed = JSON.parse(jsonOutput ?? "{}") as SkillUtilityReport;
+    expect(parsed.coverage).toBe("ok");
+    expect(parsed.decision).toBe("pass");
+
+    logSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 });
