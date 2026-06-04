@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.8.1...web-v3.8.2) (2026-06-04)
+
+
+### Documentation
+
+* document oma skills eval and eval fixture convention ([7633ee9](https://github.com/first-fluke/oh-my-agent/commit/7633ee90a1b1c2d5682936fc47b075e019df2030))
+
 ## [3.8.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.8.0...web-v3.8.1) (2026-06-04)
 
 
