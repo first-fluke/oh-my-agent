@@ -22,6 +22,12 @@ const EXCLUDED_PATTERNS = [
   ".DS_Store",
   "results/",
   "plan.json",
+  // Vendored-project build artifacts (e.g. oma-video's Remotion project): the
+  // npm deps + render cache are provisioned on demand by `oma video doctor`,
+  // never installed via the manifest, and would otherwise balloon it by 9000+
+  // files. The skill's tracked source (src/, package.json, config) still ships.
+  "node_modules/",
+  ".remotion/",
 ];
 
 interface FileInfo {

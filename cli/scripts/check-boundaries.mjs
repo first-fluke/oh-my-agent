@@ -9,8 +9,12 @@ import { fileURLToPath } from "node:url";
 const CLI_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const COMMANDS_DIR = join(CLI_DIR, "commands");
 
-// Non-slice directories under commands/ — allowed as shared targets.
-const ALLOWED_SHARED = new Set(["migrations"]);
+// Names this path-naive checker must not flag: real shared dirs under
+// commands/ (migrations), plus conventional within-slice subdirectory names it
+// mis-reads as a sibling slice (internal/ — e.g. video/providers importing
+// video/internal is same-slice, not cross-slice). A path-resolving check would
+// make the latter unnecessary.
+const ALLOWED_SHARED = new Set(["migrations", "internal"]);
 
 function walk(dir) {
   const entries = [];

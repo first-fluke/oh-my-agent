@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "20260603-abcdef-shorts",
+  "mode": "shorts",
+  "providers": {
+    "visual": []
+  },
+  "assets": [
+    {
+      "path": "script.json",
+      "sha256": "not-a-hash",
+      "bytes": 10
+    }
+  ],
+  "outputs": {},
+  "cost": { "usd": 0, "breakdown": {} },
+  "warnings": [],
+  "exitCode": 0
+}

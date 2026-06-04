@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "20260603-abcdef-shorts",
+  "mode": "shorts",
+  "providers": {
+    "script": "agent-script",
+    "voice": "stub-voice",
+    "visual": ["oma-image"],
+    "caption": "stub-caption",
+    "compositor": "remotion"
+  },
+  "assets": [
+    {
+      "path": "script.json",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "bytes": 10,
+      "seed": 1
+    }
+  ],
+  "outputs": {},
+  "cost": { "usd": 0, "breakdown": { "agent-script": 0 } },
+  "warnings": [],
+  "exitCode": 0,
+  "prompt": "fixture brief"
+}

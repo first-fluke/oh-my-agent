@@ -31,6 +31,7 @@ import { registerUninstall } from "./commands/uninstall/command.js";
 import { registerUpdate } from "./commands/update/command.js";
 import { registerVault } from "./commands/vault/command.js";
 import { registerVerify } from "./commands/verify/command.js";
+import { registerVideoCommand } from "./commands/video/index.js";
 import { registerVisualize } from "./commands/visualize/command.js";
 import { startDashboard } from "./dashboard.js";
 import pkg from "./package.json";
@@ -124,6 +125,7 @@ registerSkillsCommand(program);
 registerSlideCommand(program);
 registerScholarCommand(program);
 registerImageCommand(program);
+registerVideoCommand(program);
 
 program
   .command("help")

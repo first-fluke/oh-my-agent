@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.34.1",
-  "releaseDate": "2026-06-04T04:26:51.469Z",
+  "releaseDate": "2026-06-04T08:50:16.680Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,8 +176,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "a5839ba0911919fe09bec0972c257f39b42ae422616b45b087a4fd22aa9c3ca4",
-      "size": 78837
+      "sha256": "fe03678d98e49c318396976c7123fd5f056dd681bb1298a9347cab58a75969b0",
+      "size": 81116
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -1750,6 +1750,131 @@
       "size": 4080
     },
     {
+      "path": ".agents/skills/oma-video/SKILL.md",
+      "sha256": "01eefe3fb5262def4dc07ac459bd02fcc8f7ac130a564b538a6ce4b7e6d20136",
+      "size": 21289
+    },
+    {
+      "path": ".agents/skills/oma-video/config/video-config.yaml",
+      "sha256": "0fa5c1401b772eb8c7f5baaa0076425f8bc81cc871a93c6d21459c1fbbcbf284",
+      "size": 1114
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/checklist.md",
+      "sha256": "1d470b01bb187a138f4f23b6a4165f0d9cc5ebbb13cb0c143420890839bc1748",
+      "size": 1942
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/execution-protocol.md",
+      "sha256": "76a5a2511e8e9b74969992de810f49cacc1fdba59b56223ffbf270d64e339498",
+      "size": 7029
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/mpt/driver.py",
+      "sha256": "e02735d100ab2222e23c9a051164cb5129abaae5ee29c2999939496379970828",
+      "size": 12049
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/playwright/record.mjs",
+      "sha256": "d70560b0d28acd4149073bb94a60554cb62d8638e1b65fc1343064e7280bb200",
+      "size": 17681
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/prompt-tips.md",
+      "sha256": "718854b534106bb6f32de45f53027ffbedb07536297692cdec88678089ca9e04",
+      "size": 4100
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/.gitignore",
+      "sha256": "3378fd4b1c11a362ecf035c11bf6872af449b4cf60bcd32dc54d853fd2b9021c",
+      "size": 180
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/README.md",
+      "sha256": "6c3844b18ef04848cb1c55684a8cb31292d97cfdf48ff2bc56bbc13218ea7b13",
+      "size": 4498
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/package-lock.json",
+      "sha256": "377e52ae78d3edcbed0e3792cca994a85f8399d67208afb985ad2399beee0a0f",
+      "size": 98207
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/package.json",
+      "sha256": "b5e92cac596c6c0cc5cc09359bb83524437c766ca98fd102e0a6d8eb09864033",
+      "size": 805
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/public/fonts/README.md",
+      "sha256": "a4078102b28ce113cbb6bc1ea83fe387f958080b2d3acc5b98ba091977f9799a",
+      "size": 1079
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/remotion.config.ts",
+      "sha256": "dd2f9d33883f4b2fc994de29716d9f30bfb4fdff09c30e666ce7b12f4a0f8f65",
+      "size": 473
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/Root.tsx",
+      "sha256": "6ae58046c6d351e998f483c52ee15f5850d356f8fa0acab85af542bfb75eadd4",
+      "size": 2431
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/components/Captions.tsx",
+      "sha256": "27ddafba7c49f4a8663f1cba4db5b9de806764012ebcec38fa0e7e880d0c6005",
+      "size": 3650
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/components/Scene.tsx",
+      "sha256": "419b8f6794494909ede1728930f83e6c672cbb23d76ecb077ded4a78fa6613db",
+      "size": 2570
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/components/VideoBase.tsx",
+      "sha256": "c5ee9a6cfbc37b0bb06a95d84815a86e042cff6e8fde51575d4fc8fe1fe7c994",
+      "size": 2281
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/compositions/Demo.tsx",
+      "sha256": "8275c0a3b9bf896bec0a5a151314ca24cc17f73679eaea089e434d08eec9c1e3",
+      "size": 566
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/compositions/Explainer.tsx",
+      "sha256": "6152947b81c1a1a25a8ef4446849b48c894b20ab13212b897de8e9e148eb6466",
+      "size": 423
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/compositions/Shorts.tsx",
+      "sha256": "d180955d8b7c2f6b29b4b78f813d823daaf1df6f5dc032b8fc42ee188b49f3ee",
+      "size": 430
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/index.ts",
+      "sha256": "a50f3a0df4346f846a0c365387eafb3418dc3340d5a718a3419ac5d3df96ae79",
+      "size": 266
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/load-fonts.ts",
+      "sha256": "da6cb47997122d4fb79d9669c4fc3f51b95f2ce3439b6b883f0d23c9348294b0",
+      "size": 2648
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/src/render-spec.ts",
+      "sha256": "24e16315a79f412e205dfeeeff909e1110b1add49d455e602c81f966444a3fb7",
+      "size": 3011
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/remotion/tsconfig.json",
+      "sha256": "23f169252dcf9fe3e036f258c7eafb19d3c806b57a10f6b84e87145fb99fac1b",
+      "size": 415
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
+      "sha256": "e4fac24f109c3f739e0a1b0fedf8c03176e9bb71806c93e1b7149e9fd471e97f",
+      "size": 5891
+    },
+    {
       "path": ".agents/skills/oma-voice/SKILL.md",
       "sha256": "a48636c92f0813d3cd22bb0c74d3b03b50b2ccbb455b4b2ec8b65ed41d23a200",
       "size": 12240
@@ -1830,9 +1955,24 @@
       "size": 240
     },
     {
+      "path": ".agents/skills/video/SKILL.md",
+      "sha256": "dad829f57e5643c419fb4f394f96e8e67a6c2d5e5fde5fca0bef4b9a37e214e7",
+      "size": 392
+    },
+    {
       "path": ".agents/skills/work/SKILL.md",
       "sha256": "2a11556bcfc63a7545fe947949965f4e9348530e7bb6a690931c2da45b8fdbf9",
       "size": 265
+    },
+    {
+      "path": ".agents/state/keyword-detector-state.json",
+      "sha256": "c267245ee949e46002b949bd42544869a56c00009bd30d1c6eab8932a8c122cd",
+      "size": 115
+    },
+    {
+      "path": ".agents/state/skill-sessions.json",
+      "sha256": "ebc68e5ed73dbd09b79dd089356920164fcfb405e3e8469f0550c83e7a8f0ca9",
+      "size": 188
     },
     {
       "path": ".agents/workflows/architecture.md",
@@ -1935,6 +2075,11 @@
       "size": 20540
     },
     {
+      "path": ".agents/workflows/video.md",
+      "sha256": "b324639643dc3c28bf2e2a4bfcc63902371dcabdbd3c812b7beafa98fc0fa968",
+      "size": 20995
+    },
+    {
       "path": ".agents/workflows/work.md",
       "sha256": "7a20b32f9f57bdf18fd66c9ae8c780caccade06e9f481723b31593eba71e7593",
       "size": 8141
@@ -1944,8 +2089,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 48,
-    "workflowCount": 21,
-    "totalFiles": 387
+    "skillCount": 50,
+    "workflowCount": 22,
+    "totalFiles": 416
   }
 }

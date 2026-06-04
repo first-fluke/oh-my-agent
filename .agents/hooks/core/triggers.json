@@ -2792,6 +2792,93 @@
         ]
       }
     },
+    "oma-video": {
+      "keywords": {
+        "*": ["oma-video", "remotion", "shorts", "reels", "screencast"],
+        "en": [
+          "generate video",
+          "generate a video",
+          "create video",
+          "create a video",
+          "make a video",
+          "short-form video",
+          "shorts video",
+          "reels video",
+          "youtube short",
+          "tiktok video",
+          "explainer video",
+          "demo video",
+          "walkthrough video",
+          "screencast video",
+          "turn this into a video",
+          "video from readme",
+          "video from code"
+        ],
+        "ko": [
+          "영상 만들어",
+          "영상 만들어줘",
+          "영상 생성",
+          "영상 생성해",
+          "영상 생성해줘",
+          "비디오 만들어",
+          "비디오 만들어줘",
+          "숏폼 만들어",
+          "숏폼 영상",
+          "쇼츠 만들어",
+          "쇼츠 영상",
+          "릴스 만들어",
+          "릴스 영상",
+          "데모 영상",
+          "설명 영상",
+          "설명 영상 만들어",
+          "스크린캐스트",
+          "영상으로 만들어"
+        ],
+        "ja": [
+          "動画を生成",
+          "動画生成",
+          "動画を作",
+          "動画を作成",
+          "ショート動画",
+          "リール動画",
+          "解説動画",
+          "デモ動画",
+          "スクリーンキャスト"
+        ],
+        "zh": [
+          "生成视频",
+          "生成一段视频",
+          "制作视频",
+          "做个视频",
+          "短视频",
+          "竖屏短视频",
+          "讲解视频",
+          "演示视频",
+          "录屏视频"
+        ],
+        "es": [
+          "generar video",
+          "crear video",
+          "hazme un video",
+          "video corto",
+          "video explicativo"
+        ],
+        "fr": [
+          "générer une vidéo",
+          "créer une vidéo",
+          "fais-moi une vidéo",
+          "vidéo courte",
+          "vidéo explicative"
+        ],
+        "de": [
+          "video generieren",
+          "video erstellen",
+          "erstelle ein video",
+          "kurzvideo",
+          "erklärvideo"
+        ]
+      }
+    },
     "oma-voice": {
       "keywords": {
         "*": ["voicebox", "oma-voice", "tts", "stt"],

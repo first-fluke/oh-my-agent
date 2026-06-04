@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "audio": "audio/narration-01.wav",
+  "totalSec": 2,
+  "segments": [
+    {
+      "sceneId": "scene-01",
+      "startSec": 0,
+      "endSec": 2,
+      "words": [
+        { "t": "Fixture", "startSec": 0, "endSec": 0.5 },
+        { "t": "narration", "startSec": 0.5, "endSec": 1 }
+      ]
+    }
+  ],
+  "source": "estimated"
+}

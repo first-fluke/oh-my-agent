@@ -143,6 +143,10 @@ export const SKILLS: SkillsRegistry = {
       desc: `Context-aware translation that preserves tone, style, and natural word order. Use when translating UI strings, documentation, marketing copy, or any multilingual content. Infers register, domain, and style from the source text and surrounding codebase context.`,
     },
     {
+      name: "oma-video",
+      desc: `Short-form, explainer, and demo video generation via a key-optional 3-tier router. Composes scripts, oma-voice narration, oma-image/oma-slide/stock visuals, key-free captions, and a vendored Remotion compositor into reproducible run directories. Routes three modes — shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough (screen capture, incl. supervised headed web-app capture of any URL). Use for video, shorts, reels, short-form, demo, explainer, walkthrough, screencast, web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.`,
+    },
+    {
       name: "oma-voice",
       desc: `Local-first text-to-speech and speech-to-text via the Voicebox MCP server. Generates speech from cloned or preset voice profiles for agent notifications, content voiceovers, and audio asset creation, and transcribes audio files for meeting notes or memos. Runs entirely on-device with no cloud, no API keys, no per-call cost. Use for voice generation, TTS, STT, transcription, voiceover, narration, dictation, audio asset work.`,
     },
@@ -185,6 +189,10 @@ export const SKILLS: SkillsRegistry = {
     {
       name: "ultrawork",
       desc: `Ultrawork - high-quality 5-phase development workflow with 11 review steps out of 17`,
+    },
+    {
+      name: "video",
+      desc: `Agent-native, key-optional video generation workflow that turns a brief into a finished MP4 — script → parallel asset generation (voice/visual/caption) → render-spec → Remotion compositor (MPT fallback) → QA loop → output + manifest`,
     },
     {
       name: "work",

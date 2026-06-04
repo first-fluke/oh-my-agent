@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "compositor": "remotion",
+  "composition": "Shorts",
+  "fps": 30,
+  "dimensions": { "width": 1080, "height": 1920 },
+  "durationInFrames": 300,
+  "audio": { "narration": "audio/narration-01.wav" },
+  "scenes": [
+    {
+      "id": "scene-01",
+      "fromFrame": 0,
+      "durationInFrames": 300,
+      "visual": {
+        "type": "image",
+        "src": "visuals/scene-01.png",
+        "kenBurns": true
+      },
+      "onScreenText": ["Fixture"],
+      "transitionOut": "cut"
+    }
+  ],
+  "captions": {
+    "file": "captions.srt",
+    "style": "tiktok",
+    "fontFamily": "Pretendard",
+    "maxWidthPct": 86,
+    "safeArea": { "topPct": 8, "bottomPct": 18, "leftPct": 7, "rightPct": 7 }
+  },
+  "background": { "type": "color", "src": "#0f1117" },
+  "seed": 1
+}

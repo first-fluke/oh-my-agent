@@ -1,0 +1,40 @@
+default_output_dir: .agents/results/videos
+default_mode: shorts
+default_aspect: auto
+default_locale: en
+default_captions: tiktok
+default_visual: auto
+default_voice: none
+default_music: none
+default_compositor: remotion
+default_timeout_sec: 600
+
+providers:
+  script:
+    order: [agent-script]
+  voice:
+    order: [oma-voice]
+  visual:
+    order: [oma-image, pexels, pixelle]
+  caption:
+    order: [oma-captions]
+  capture:
+    order: [cap]
+  compositor:
+    order: [remotion, mpt]
+  pexels:
+    enabled: false
+    envVar: PEXELS_API_KEY
+  pixelle:
+    enabled: false
+    envVar: RUNNINGHUB_API_KEY
+
+cost:
+  guardrail_usd: 0.20
+
+limits:
+  max_duration_sec: 180
+  max_scenes: 40
+
+naming:
+  single_folder_pattern: "{timestamp}-{shortid}-{mode}"

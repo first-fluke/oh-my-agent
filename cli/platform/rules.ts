@@ -236,6 +236,7 @@ function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
     "| scm | `scm.md` | SCM + Git operations + Conventional Commits |",
     "| docs | `docs.md` | Documentation drift verify + sync |",
     "| recap | `recap.md` | Daily / period AI conversation recap |",
+    "| video | `video.md` | Brief → script → assets → render-spec → Remotion (oma-video) |",
     "",
     `To execute: read and follow \`.agents/workflows/{name}.md\` step by step.`,
     "",

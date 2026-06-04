@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "shorts",
+  "aspect": "9:16",
+  "locale": "en",
+  "title": "Fixture video",
+  "scenes": [
+    {
+      "id": "scene-01",
+      "durationSec": 10,
+      "narration": "Fixture narration.",
+      "onScreenText": ["Fixture"],
+      "visual": {
+        "kind": "still",
+        "prompt": "fixture visual",
+        "source": "fixture"
+      },
+      "transition": "cut"
+    }
+  ],
+  "music": "none",
+  "brand": {}
+}
