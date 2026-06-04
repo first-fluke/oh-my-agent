@@ -114,7 +114,7 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 ### Canonical command path
 ```bash
 bunx kordoc@latest "{input_path}" -o "{output_path}"
-bun run ".agents/skills/oma-hwp/resources/flatten-tables.ts" "{output_path}"
+node ".agents/skills/oma-hwp/resources/flatten-tables.ts" "{output_path}"
 ```
 
 For batch conversion, use an explicit output directory:
