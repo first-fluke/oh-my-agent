@@ -652,9 +652,14 @@ describe("migrateGeminiCliCompat (006)", () => {
           experimental: { enableAgents: true },
           privacy: { usageStatisticsEnabled: false },
           mcpServers: {
+            "chrome-devtools": {
+              command: "npx",
+              args: ["-y", "chrome-devtools-mcp@latest", "--no-usage-statistics", "--isolated"],
+            },
             serena: {
-              command: "uvx",
-              args: ["serena"],
+              command: "serena",
+              args: ["start-mcp-server", "--context", "ide", "--project", ".", "--open-web-dashboard", "false"],
+              env: { SERENA_LOG_LEVEL: "info" },
               includeTools: ["find_symbol"],
             },
           },
