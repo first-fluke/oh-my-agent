@@ -82,7 +82,6 @@ export class AntigravityProvider implements VendorProvider {
 
     const timeoutMs = (input.timeoutSec ?? 180) * 1000;
     const args = [
-      "-p",
       "--dangerously-skip-permissions",
       "--add-dir",
       input.outDir,
@@ -90,7 +89,7 @@ export class AntigravityProvider implements VendorProvider {
       `${Math.ceil(timeoutMs / 1000)}s`,
     ];
     if (refs) args.push("--add-dir", refs.dir);
-    args.push(instruction);
+    args.push("-p", instruction);
 
     const start = Date.now();
     // Force cwd to outDir so agy doesn't pick up a "recently active workspace"

@@ -334,4 +334,50 @@ describe("AntigravityProvider.generate", () => {
     expect(results[1]?.mime).toBe("image/jpeg");
     expect(results[1]?.filePath).toMatch(/\.jpg$/);
   });
+
+  // Regression for 21141241: agy's `-p` (= `--print`) is a VALUE flag — it
+  // consumes the NEXT argv token as the prompt. If `-p` leads the argv (as it
+  // once did), agy eats `--dangerously-skip-permissions` as the prompt value
+  // and the real instruction becomes a stray positional, so the prompt is
+  // never delivered. `-p` must sit immediately before the instruction.
+  it("passes -p immediately before the prompt, not leading the argv", async () => {
+    let captured: readonly string[] = [];
+    vi.mocked(runCapture).mockImplementation(async (_bin, args) => {
+      captured = args;
+      const instruction = args[args.length - 1];
+      if (typeof instruction === "string") {
+        for (const m of instruction.matchAll(/image\[\d+\]\s+->\s+(\S+)/g)) {
+          const filePath = m[1];
+          if (filePath) {
+            const fs = await import("node:fs/promises");
+            await fs.writeFile(
+              filePath,
+              Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
+            );
+          }
+        }
+      }
+      return { code: 0, stdout: "SAVED", stderr: "" };
+    });
+
+    const p = new AntigravityProvider();
+    await p.generate({
+      prompt: "a red apple",
+      size: "auto",
+      quality: "auto",
+      n: 1,
+      outDir: tmp,
+      signal: new AbortController().signal,
+    });
+
+    const pIndex = captured.indexOf("-p");
+    expect(pIndex).toBeGreaterThanOrEqual(0);
+    // `-p` must be the second-to-last token, with the instruction as its value.
+    expect(pIndex).toBe(captured.length - 2);
+    expect(captured[pIndex + 1]).toContain("a red apple");
+    // The bug shipped `-p` first; lock that it never leads and never pairs with
+    // a flag instead of the prompt.
+    expect(captured[0]).toBe("--dangerously-skip-permissions");
+    expect(captured[pIndex + 1]).not.toBe("--dangerously-skip-permissions");
+  });
 });
