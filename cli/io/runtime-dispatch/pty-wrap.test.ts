@@ -51,7 +51,15 @@ describe("targetVendorNeedsPty", () => {
 
   it("is false for vendors that emit headless stdout normally", async () => {
     const { targetVendorNeedsPty } = await freshWrap();
-    for (const v of ["claude", "codex", "gemini", "cursor", "qwen", "grok"]) {
+    for (const v of [
+      "claude",
+      "codex",
+      "gemini",
+      "cursor",
+      "qwen",
+      "grok",
+      "kiro",
+    ]) {
       expect(targetVendorNeedsPty(v)).toBe(false);
     }
   });
