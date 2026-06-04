@@ -21,6 +21,7 @@ import { migrateSerenaUvTool } from "./009-serena-uv-tool.js";
 import { migrateRenamePresetKeys } from "./010-rename-preset-keys.js";
 import { migrateUnifyWorkflowSkills } from "./011-unify-workflow-skills.js";
 import { migrateVersionInstallMode } from "./012-version-install-mode.js";
+import { migrateWorkflowDirectSymlinks } from "./013-workflow-direct-symlinks.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -35,6 +36,7 @@ const migrations: Migration[] = [
   migrateRenamePresetKeys,
   migrateUnifyWorkflowSkills,
   migrateVersionInstallMode,
+  migrateWorkflowDirectSymlinks,
 ];
 
 export function runMigrations(cwd: string): string[] {

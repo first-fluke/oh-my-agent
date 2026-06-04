@@ -18,7 +18,6 @@ import { clearNonDirectory } from "../utils/fs-utils.js";
 import { applyRecommendedCursorSettings } from "../vendors/cursor/settings.js";
 import { createLink } from "./fs-link.js";
 import { getInstallMode } from "./install-context.js";
-import { installUnifiedWorkflowSkills } from "./workflow-skills.js";
 
 export * from "../constants/index.js";
 export type { CliTool, CliVendor, SkillInfo } from "../types/index.js";
@@ -123,7 +122,7 @@ export function installWorkflows(sourceDir: string, installRoot: string): void {
   fs.cpSync(src, dest, { recursive: true, force: true });
 }
 
-const CODEX_WRAPPER_MARKER = "<!-- oma:generated -->";
+const WORKFLOW_GENERATED_MARKER = "<!-- oma:generated -->";
 
 function extractWorkflowDescription(filePath: string): string | null {
   let content: string;
@@ -147,23 +146,117 @@ function listWorkflowNames(workflowsDir: string): string[] {
 }
 
 /**
- * Mirror `.agents/workflows/*.md` into canonical `.agents/skills/<name>/SKILL.md`
- * wrappers (via the unified installer). The Codex-specific `.codex/skills/<n>`
- * symlink is created by the symlink layer (`createVendorSymlinks`).
+ * Names of workflows shipped under `<installRoot>/.agents/workflows/*.md`.
+ * These are exposed to vendors via `createVendorWorkflowSymlinks`, NOT as
+ * generated `.agents/skills/<name>` wrappers.
  */
-export function installCodexWorkflowSkills(
-  sourceDir: string,
-  installRoot: string,
-): void {
-  installUnifiedWorkflowSkills(sourceDir, installRoot);
+export function getInstalledWorkflowNames(installRoot: string): string[] {
+  return listWorkflowNames(join(installRoot, ".agents", "workflows"));
 }
 
 /**
- * Mirror `.agents/workflows/*.md` into canonical `.agents/skills/<name>/SKILL.md`
- * (via the unified installer) and also into `.github/prompts/<name>.prompt.md`
- * wrappers so GitHub Copilot Chat can invoke workflows via slash commands.
- * The `.prompt.md` format uses a markdown-link body that cannot be replicated
- * by symlinks, so the Copilot-specific write is kept here.
+ * Expose each `.agents/workflows/<name>.md` to vendors as a slash-command skill
+ * by symlinking `<vendor-skills-dir>/<name>/SKILL.md` directly at the workflow
+ * file. No wrapper is generated under `.agents/skills/` — the workflow file is
+ * its own skill manifest (it carries `name` + `disable-model-invocation` in
+ * frontmatter).
+ *
+ * Idempotent. Replaces legacy directory-symlinks (which pointed at the old
+ * `.agents/skills/<name>` wrapper) and stale generated SKILL.md copies. Never
+ * touches a user-authored real `SKILL.md`.
+ */
+export function createVendorWorkflowSymlinks(
+  installRoot: string,
+  cliTools: CliTool[],
+  workflowNames: string[],
+): { created: string[]; skipped: string[] } {
+  const created: string[] = [];
+  const skipped: string[] = [];
+  const workflowsDir = resolve(installRoot, ".agents", "workflows");
+
+  for (const cli of cliTools) {
+    const spec = CLI_SKILLS_DIR[cli];
+    const label = spec.requiresHomeConsent ? spec.homePath : spec.projectPath;
+    const linkRootDir = resolveCliSkillsDir(installRoot, cli);
+
+    for (const name of workflowNames) {
+      const source = join(workflowsDir, `${name}.md`);
+      if (!fs.existsSync(source)) {
+        skipped.push(`${label}/${name} (workflow missing)`);
+        continue;
+      }
+
+      const skillDir = join(linkRootDir, name);
+      const skillFile = join(skillDir, "SKILL.md");
+
+      let entryStat: fs.Stats | undefined;
+      try {
+        entryStat = fs.lstatSync(skillDir);
+      } catch {
+        entryStat = undefined;
+      }
+
+      if (entryStat?.isSymbolicLink()) {
+        // Legacy dir-symlink → old `.agents/skills/<name>` wrapper. Replace it.
+        fs.rmSync(skillDir, { force: true });
+      } else if (entryStat?.isDirectory()) {
+        let fileStat: fs.Stats | undefined;
+        try {
+          fileStat = fs.lstatSync(skillFile);
+        } catch {
+          fileStat = undefined;
+        }
+        if (fileStat?.isSymbolicLink()) {
+          const existing = resolve(skillDir, fs.readlinkSync(skillFile));
+          if (existing === resolve(source)) {
+            skipped.push(`${label}/${name} (already linked)`);
+            continue;
+          }
+          fs.rmSync(skillFile, { force: true });
+        } else if (fileStat?.isFile()) {
+          let content = "";
+          try {
+            content = fs.readFileSync(skillFile, "utf-8");
+          } catch {}
+          if (content.includes(WORKFLOW_GENERATED_MARKER)) {
+            fs.rmSync(skillFile, { force: true }); // stale generated copy
+          } else {
+            skipped.push(`${label}/${name} (real file exists)`);
+            continue;
+          }
+        }
+      } else if (entryStat) {
+        skipped.push(`${label}/${name} (unexpected entry)`);
+        continue;
+      }
+
+      fs.mkdirSync(skillDir, { recursive: true });
+      const relativePath = relative(skillDir, source);
+      try {
+        createLink(relativePath, skillFile, "file", workflowsDir);
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          err.message.startsWith("createLink: target")
+        ) {
+          skipped.push(`${label}/${name} (workflow escapes base)`);
+          continue;
+        }
+        throw err;
+      }
+      created.push(`${label}/${name}`);
+    }
+  }
+
+  return { created, skipped };
+}
+
+/**
+ * Generate `.github/prompts/<name>.prompt.md` wrappers so GitHub Copilot Chat
+ * can invoke workflows via slash commands. Copilot's `.prompt.md` format
+ * requires `mode: agent` frontmatter and a markdown-link body that cannot be
+ * replicated by a symlink, so this vendor keeps a generated wrapper (unlike
+ * Claude/Codex/Qwen, which symlink the workflow file directly).
  *
  * Prunes stale oma-generated prompts whose workflow no longer exists in SSOT;
  * never touches user-authored prompts (those lack the oma:generated marker).
@@ -176,8 +269,6 @@ export function installCopilotWorkflowPrompts(
   sourceDir: string,
   installRoot: string,
 ): void {
-  installUnifiedWorkflowSkills(sourceDir, installRoot);
-
   const workflowsDir = join(sourceDir, ".agents", "workflows");
   const promptsRoot = join(installRoot, ".github", "prompts");
   const names = listWorkflowNames(workflowsDir);
@@ -192,7 +283,7 @@ export function installCopilotWorkflowPrompts(
       } catch {
         continue;
       }
-      if (!existing.includes(CODEX_WRAPPER_MARKER)) continue;
+      if (!existing.includes(WORKFLOW_GENERATED_MARKER)) continue;
       const name = entry.name.slice(0, -".prompt.md".length);
       if (!names.includes(name)) {
         fs.rmSync(promptFile, { force: true });
@@ -208,7 +299,7 @@ export function installCopilotWorkflowPrompts(
       extractWorkflowDescription(join(workflowsDir, `${name}.md`)) ??
       `Workflow: ${name}`;
     const promptFile = join(promptsRoot, `${name}.prompt.md`);
-    const body = `---\ndescription: ${description}\nmode: agent\n---\n${CODEX_WRAPPER_MARKER}\n\nRead and follow [.agents/workflows/${name}.md](../../.agents/workflows/${name}.md) step by step.\n`;
+    const body = `---\ndescription: ${description}\nmode: agent\n---\n${WORKFLOW_GENERATED_MARKER}\n\nRead and follow [.agents/workflows/${name}.md](../../.agents/workflows/${name}.md) step by step.\n`;
     fs.writeFileSync(promptFile, body);
   }
 }

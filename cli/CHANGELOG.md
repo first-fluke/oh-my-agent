@@ -1,5 +1,54 @@
 # Changelog
 
+## [8.38.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.37.0...cli-v8.38.0) (2026-06-04)
+
+
+### Features
+
+* **agent:** add --read-only tool restriction to agent:spawn ([412e44e](https://github.com/first-fluke/oh-my-agent/commit/412e44e79b64885705b05d33cb299ce5c713a345))
+* **doctor:** report skill eval coverage ([ff59bb1](https://github.com/first-fluke/oh-my-agent/commit/ff59bb1070c5e10ab3d487aca0a907114e8a36c3))
+* **skills:** add negative-transfer sampling to skills eval ([94db859](https://github.com/first-fluke/oh-my-agent/commit/94db859328ffe1b44a9fb280b86093f624796969))
+* **skills:** add oma skills eval for skill utility measurement ([f0f2a6a](https://github.com/first-fluke/oh-my-agent/commit/f0f2a6a11b29c4fdc83a98c3671a35fe9ff0937b))
+
+
+### Documentation
+
+* add SkillOpt and SkillLens to references ([25f3faa](https://github.com/first-fluke/oh-my-agent/commit/25f3faada36ab34d85af827ecb4587fa76a26453))
+* document oma skills eval and eval fixture convention ([7633ee9](https://github.com/first-fluke/oh-my-agent/commit/7633ee90a1b1c2d5682936fc47b075e019df2030))
+
+## [8.37.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.36.0...cli-v8.37.0) (2026-06-04)
+
+
+### Features
+
+* **hooks:** add qwen statusLine (HUD) support with ui nesting ([cee4023](https://github.com/first-fluke/oh-my-agent/commit/cee4023b120eaed86293621f1c8f1d9a0baea0b1))
+* **pi:** add Pi support ([#478](https://github.com/first-fluke/oh-my-agent/issues/478)) ([cd12359](https://github.com/first-fluke/oh-my-agent/commit/cd123591bd651df2b9bb6b08c49cb4db69b2504d))
+
+## [8.36.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.35.0...cli-v8.36.0) (2026-06-04)
+
+
+### Features
+
+* **cursor:** disable cursor-agent commit attribution on link ([b1dc2c1](https://github.com/first-fluke/oh-my-agent/commit/b1dc2c1b0ad0d6be0908f0361dac552b251df53f))
+
+## [8.35.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.34.1...cli-v8.35.0) (2026-06-04)
+
+
+### Features
+
+* **skills:** add black-hole and library-size checks to skills audit ([2a5aea4](https://github.com/first-fluke/oh-my-agent/commit/2a5aea458fe99cdccc24764ed15679b8125b0f8e))
+
+
+### Refactoring
+
+* **oma-hwp:** use Node fs API and proper types in flatten-tables ([8bca339](https://github.com/first-fluke/oh-my-agent/commit/8bca3397809938cc1c52797c09b780667aed2f7c))
+* **skills:** symlink workflows directly, drop generated wrappers ([0206d71](https://github.com/first-fluke/oh-my-agent/commit/0206d713fcb290ade033fd30e2fffd16ca7fe9b6))
+
+
+### Documentation
+
+* bump SSL-lite arXiv preprint reference to Version 4 ([d3b7d7e](https://github.com/first-fluke/oh-my-agent/commit/d3b7d7ee63b0d136535b75e098d4c34e23ee5a28))
+
 ## [8.34.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.34.0...cli-v8.34.1) (2026-06-04)
 
 

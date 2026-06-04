@@ -8,6 +8,14 @@ import type {
 import type { SkillAuditReport } from "../skills/audit.js";
 import type { DualInstallReport } from "./dual-install.js";
 
+/** Eval fixture coverage summary — computed cheaply from filesystem scan. */
+export interface SkillEvalCoverage {
+  /** Number of skills that have >= MIN_TASKS task fixture YAML files under .agents/eval/<skill>/. */
+  skillsWithEval: number;
+  /** Total number of installed skills. */
+  totalSkills: number;
+}
+
 export interface DoctorOptions {
   healCheckAgent?: string;
 }
@@ -101,6 +109,7 @@ export interface DoctorReport {
   agentMemory: AgentMemoryDoctorCheck;
   totalIssues: number;
   skillAudit: SkillAuditReport;
+  skillEval: SkillEvalCoverage;
   dualInstall: DualInstallReport;
   state: StateDoctorCheck;
   selfHealing?: SelfHealingGateResult;

@@ -1,5 +1,15 @@
-import type { VendorConfig } from "../../../platform/agent-config.js";
+import {
+  splitArgs,
+  type VendorConfig,
+} from "../../../platform/agent-config.js";
 import type { Invocation } from "../types.js";
+
+export interface NativeInvocationOptions {
+  /** When true, constrains the spawned agent to non-destructive tools.
+   * Suppresses `auto_approve_flag` and appends the vendor's `read_only_flag`.
+   * Emits a console.warn when the vendor has no `read_only_flag` defined. */
+  readOnly?: boolean;
+}
 
 export function buildMentionPrompt(
   agentId: string,
@@ -12,7 +22,9 @@ export function buildClaudeNativeInvocation(
   agentId: string,
   promptContent: string,
   vendorConfig: VendorConfig,
+  options: NativeInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "claude";
   const args = ["--agent", agentId];
 
@@ -25,7 +37,12 @@ export function buildClaudeNativeInvocation(
   if (vendorConfig.model_flag && vendorConfig.default_model) {
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
-  if (vendorConfig.auto_approve_flag) {
+
+  if (readOnly) {
+    const readOnlyFlag =
+      vendorConfig.read_only_flag ?? "--permission-mode plan";
+    args.push(...splitArgs(readOnlyFlag));
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   }
 
@@ -38,7 +55,9 @@ export function buildCodexNativeInvocation(
   agentId: string,
   promptContent: string,
   vendorConfig: VendorConfig,
+  options: NativeInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "codex";
   const args: string[] = [];
 
@@ -51,7 +70,11 @@ export function buildCodexNativeInvocation(
   if (vendorConfig.model_flag && vendorConfig.default_model) {
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
-  if (vendorConfig.auto_approve_flag) {
+
+  if (readOnly) {
+    const readOnlyFlag = vendorConfig.read_only_flag ?? "--sandbox read-only";
+    args.push(...splitArgs(readOnlyFlag));
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   }
 
@@ -64,7 +87,9 @@ export function buildGeminiNativeInvocation(
   agentId: string,
   promptContent: string,
   vendorConfig: VendorConfig,
+  options: NativeInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "gemini";
   const args: string[] = [];
 
@@ -76,7 +101,16 @@ export function buildGeminiNativeInvocation(
   if (vendorConfig.model_flag && vendorConfig.default_model) {
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
-  if (vendorConfig.auto_approve_flag) {
+
+  if (readOnly) {
+    if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      console.warn(
+        "[agent-spawn] read-only mode requested but vendor 'gemini' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
+      );
+    }
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   }
 
@@ -101,11 +135,21 @@ export function buildAntigravityNativeInvocation(
   agentId: string,
   promptContent: string,
   vendorConfig: VendorConfig,
+  options: NativeInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "agy";
   const args: string[] = [];
 
-  if (vendorConfig.auto_approve_flag) {
+  if (readOnly) {
+    if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      console.warn(
+        "[agent-spawn] read-only mode requested but vendor 'antigravity' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
+      );
+    }
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
     args.push("--dangerously-skip-permissions");
@@ -129,11 +173,21 @@ export function buildKiroNativeInvocation(
   agentId: string,
   promptContent: string,
   vendorConfig: VendorConfig,
+  options: NativeInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "kiro-cli";
   const args: string[] = ["chat", "--no-interactive"];
 
-  if (vendorConfig.auto_approve_flag) {
+  if (readOnly) {
+    if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      console.warn(
+        "[agent-spawn] read-only mode requested but vendor 'kiro' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
+      );
+    }
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
     args.push("--trust-all-tools");
@@ -162,7 +216,9 @@ export function buildCursorAgentPrintInvocation(
   agentId: string,
   promptContent: string,
   vendorConfig: VendorConfig,
+  options: NativeInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "cursor";
   const args: string[] = ["agent", "-p"];
 
@@ -171,7 +227,16 @@ export function buildCursorAgentPrintInvocation(
   } else if (vendorConfig.output_format_flag) {
     args.push(vendorConfig.output_format_flag);
   }
-  if (vendorConfig.auto_approve_flag) {
+
+  if (readOnly) {
+    if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      console.warn(
+        "[agent-spawn] read-only mode requested but vendor 'cursor' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
+      );
+    }
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
     args.push("--yolo");

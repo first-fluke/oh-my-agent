@@ -1,5 +1,7 @@
 ---
+name: tools
 description: Manage MCP tools with natural language commands to list, enable, and disable tools and tool groups
+disable-model-invocation: true
 ---
 
 # MANDATORY RULES: VIOLATION IS FORBIDDEN

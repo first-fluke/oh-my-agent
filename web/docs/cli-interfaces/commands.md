@@ -391,6 +391,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] 
 | `-m, --model <vendor>` | CLI vendor override: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Working directory for the agent. Auto-detected from monorepo config if omitted. |
 | `--isolation <mode>` | Per-spawn isolation mode. Currently supports `worktree`: creates a fresh git worktree at `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` on branch `oma/{sessionId}/{agentId}` and runs the agent there. The worktree is retained after exit; merge or discard commands are printed for manual review (no auto-merge). |
+| `--read-only` | Restrict the spawned agent to non-destructive tools (suppresses auto-approve flags). Used internally by `oma skills eval --live` for both eval arms. |
 
 **Vendor resolution order:** `--model` flag > `agents:` override in `oma-config.yaml` > active `model_preset` agent defaults.
 
@@ -989,6 +990,111 @@ oma describe agent:spawn
 oma describe "agent:parallel"
 ```
 
+---
+
+## Skill management
+
+### skills audit
+
+Check installed skills for overlapping descriptions, black-hole generalism, and library-size routing decay.
+
+```
+oma skills audit [--json] [--output <format>]
+```
+
+**Options:**
+
+| Flag | Description |
+|:-----|:-----------|
+| `--json` | Output as JSON for CI/CD |
+| `--output <format>` | Output format (`text` or `json`) |
+
+**What it checks:**
+- **Pairwise description similarity**: TF-IDF cosine similarity between every pair of installed skills. Warns at ≥ 60%, fails at ≥ 75%.
+- **Black-hole detection**: flags any skill whose mean similarity to all others is a positive outlier (≥ mean + 1.5 × stddev), indicating an over-generic description that could hijack routing.
+- **Library-size decay**: warns when more than 60 skills are installed (routing accuracy decays logarithmically as the library grows).
+
+**Exit codes:** `0` all findings in warn band or none; `1` at least one fail-band pair.
+
+**Examples:**
+```bash
+oma skills audit
+oma skills audit --json | jq '.findings'
+```
+
+### skills eval
+
+Measure per-skill utility: does loading a skill actually improve held-out task outcomes? This is the *utility* counterpart to `skills audit` (which measures description-boundary overlap). Where `audit` asks "are two skills redundant?", `eval` asks "does this skill help?"
+
+```
+oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
+                [--task-dir <path>] [--max-tasks <n>] [--require-coverage]
+                [--json] [--output <format>]
+```
+
+**Options:**
+
+| Flag | Description |
+|:-----|:-----------|
+| `--skill <id>` | Skill ID to evaluate (simple name, no path separators). Defaults to `_all`. |
+| `--mock` | Replay recorded rollouts from `_rollouts/` (default; deterministic, no LLM dispatch). Safe for CI. |
+| `--live` | Live agent dispatch — spawns two arms (baseline and treatment) per task via `oma agent:spawn --read-only`. Prints a cost preview and asks for confirmation unless `--yes`. |
+| `--record` | Write captured live rollouts (including judge verdicts) to `_rollouts/` for future `--mock` replay. Only meaningful with `--live`. |
+| `--yes` | Skip the cost-preview confirmation prompt. Only meaningful with `--live`. |
+| `--task-dir <path>` | Override the task fixture directory (must be inside the workspace root). Default: `.agents/eval/<skill>/`. |
+| `--max-tasks <n>` | Cap number of tasks evaluated (applied in deterministic sort order). |
+| `--require-coverage` | Exit non-zero when fewer than 5 tasks are found (prevents silent green in CI). |
+| `--json` | Output as JSON for CI/CD |
+| `--output <format>` | Output format (`text` or `json`) |
+
+**How it works:**
+
+For each task fixture in `.agents/eval/<skill>/`:
+1. **Baseline arm** — the task prompt is dispatched without the skill loaded.
+2. **Treatment arm** — `SKILL.md` is prepended to the prompt, then dispatched.
+3. Each arm is scored by its checker (judge by default; assert or regex for deterministic opt-ins).
+4. `utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)`.
+
+**Decisions:**
+
+| Decision | Condition |
+|:---------|:---------|
+| `pass` | `utilityLift ≥ 5%` |
+| `warn` | `0% < utilityLift < 5%` |
+| `fail` | `utilityLift ≤ 0%` (exit code 1) |
+| `insufficient` | Fewer than 5 scoreable tasks (exit code 1 only with `--require-coverage`) |
+
+**Honesty note:** `--mock` without recorded judge verdicts is a *measurement substrate*, not a trustworthy utility score. A meaningful number requires `--live` with judge checkers (the judge calls the LLM to grade each arm output against a rubric, then records the verdict so `--mock` replay is fully deterministic and offline). This mirrors how the academic benchmarks behind this feature score utility (SkillOpt arXiv:2605.23904, SkillLens arXiv:2605.23899).
+
+**Environment variable:** `OMA_SKILLEVAL_MOCK=1` forces mock mode regardless of flags.
+
+**Exit codes:** `0` pass or warn; `1` fail or insufficient-with-`--require-coverage`.
+
+**Examples:**
+```bash
+# Dry-run on recorded rollouts (CI-safe)
+oma skills eval --skill oma-scholar
+
+# Live run with cost preview
+oma skills eval --skill oma-scholar --live
+
+# Live run, record results for future mock replay, skip prompt
+oma skills eval --skill oma-scholar --live --record --yes
+
+# JSON output for CI
+oma skills eval --skill oma-scholar --json
+
+# Fail CI when no tasks exist
+oma skills eval --skill oma-scholar --require-coverage
+
+# Limit to 10 tasks
+oma skills eval --skill oma-scholar --max-tasks 10
+```
+
+See the [Skill Utility Eval guide](../guide/skill-eval.md) for the `.agents/eval/` fixture format and checker types.
+
+---
+
 ### help
 
 Show help information.
@@ -1018,6 +1124,7 @@ Outputs the current CLI version and exits.
 | `OH_MY_AG_OUTPUT_FORMAT` | Set to `json` to force JSON output on all commands that support it | All commands with `--json` flag |
 | `DASHBOARD_PORT` | Port for the web dashboard | `dashboard:web` |
 | `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard:web` |
+| `OMA_SKILLEVAL_MOCK` | Set to `1` to force mock mode in `oma skills eval` regardless of flags | `skills eval` |
 
 ---
 

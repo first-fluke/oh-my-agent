@@ -63,7 +63,7 @@ Notes:
 2. **Private Use Area characters**: HWP references Hancom-font-specific glyphs via U+E000-U+F8FF / U+F0000-U+FFFFD / U+100000-U+10FFFD code points. Without the Hancom font these render as blanks or tofu squares. Silently stripped.
 
 ```bash
-bun run "{skill_resources}/flatten-tables.ts" "{output_path}"
+node "{skill_resources}/flatten-tables.ts" "{output_path}"
 ```
 
 - `{skill_resources}` = `.agents/skills/oma-hwp/resources`

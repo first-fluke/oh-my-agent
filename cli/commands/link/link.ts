@@ -5,6 +5,7 @@ import { VENDORS } from "../../constants/vendors.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { getInstallMode } from "../../platform/install-context.js";
 import { installPiExtension } from "../../platform/pi-extension-composer.js";
+import { installPiPromptTemplates } from "../../platform/pi-prompts.js";
 import {
   applyCursorRules,
   mergeRulesIndexForVendor,
@@ -12,9 +13,10 @@ import {
 import {
   applyCursorMcpConfig,
   createVendorSymlinks,
+  createVendorWorkflowSymlinks,
   detectExistingCliSymlinkDirs,
   getInstalledSkillNames,
-  installCodexWorkflowSkills,
+  getInstalledWorkflowNames,
   installCopilotWorkflowPrompts,
   installVendorAdaptations,
   isExtensionVendor,
@@ -41,6 +43,7 @@ import {
   parseCodexConfig,
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
+import { disableCursorAgentAttribution } from "../../vendors/cursor/settings.js";
 import {
   applyGeminiSettings,
   needsGeminiSettingsUpdate,
@@ -154,8 +157,8 @@ export function link(opts: LinkOptions = {}): LinkResult {
       : readVendorsFromConfig(cwd);
   const hookVendors = configuredVendors.filter(isHookVendor);
   // Extension-model vendors (pi) install via a forked path, not the
-  // settings-file hook flow. They are not in the CliVendor union, so match on
-  // the raw configured strings.
+  // settings-file hook flow. Match through the extension-vendor guard so they
+  // stay out of the hook-vendor pipeline.
   const extensionVendors = (configuredVendors as readonly string[]).filter(
     isExtensionVendor,
   );
@@ -168,17 +171,24 @@ export function link(opts: LinkOptions = {}): LinkResult {
   }
 
   // Install in-process extension vendors (pi) regardless of whether any
-  // hook-model vendors are configured. pi auto-loads `.pi/extensions/oma/`.
-  if (extensionVendors.includes("pi")) {
+  // hook-model vendors are configured. pi auto-loads `.pi/extensions/oma/` and
+  // `.pi/prompts/*.md` supplies OMA workflow slash commands.
+  const piConfigured = extensionVendors.includes("pi");
+  let piMergedDocs = false;
+  if (piConfigured) {
     installPiExtension(cwd, cwd);
+    installPiPromptTemplates(cwd, cwd);
+    if (hookVendors.length === 0) {
+      piMergedDocs = mergeRulesIndexForVendor(cwd, "pi");
+    }
     if (!quiet) {
-      console.log(`${pc.green("✓")} pi (.pi/extensions/oma/)`);
+      console.log(`${pc.green("✓")} pi (.pi/extensions/oma/, .pi/prompts/)`);
     }
   }
 
   if (hookVendors.length === 0) {
-    // Only extension vendors were configured; the bridge is installed above.
-    return empty;
+    // Only extension vendors were configured; the bridge/prompts are installed above.
+    return { ...empty, mergedDocs: piMergedDocs ? ["AGENTS.md"] : [] };
   }
 
   if (!quiet) {
@@ -274,9 +284,8 @@ export function link(opts: LinkOptions = {}): LinkResult {
     installCopilotWorkflowPrompts(cwd, cwd);
   }
 
-  // 4e. Codex `.codex/config.toml` + workflow skills.
+  // 4e. Codex `.codex/config.toml`.
   if (configuredVendors.includes("codex")) {
-    installCodexWorkflowSkills(cwd, cwd);
     const codexConfigPath = join(cwd, ".codex", "config.toml");
     const rawToml = existsSync(codexConfigPath)
       ? readFileSync(codexConfigPath, "utf-8")
@@ -382,10 +391,13 @@ export function link(opts: LinkOptions = {}): LinkResult {
     }
   }
 
-  // 5. Cursor-specific: MCP config (regular file, serena with --context=ide) + rules
+  // 5. Cursor-specific: MCP config (regular file, serena with --context=ide) +
+  //    rules + disable cursor-agent commit/PR attribution (no "Co-authored-by:
+  //    Cursor" stamping).
   if (configuredVendors.includes("cursor")) {
     applyCursorMcpConfig(cwd);
     applyCursorRules(cwd);
+    disableCursorAgentAttribution();
   }
 
   // 6. Merge vendor documentation (CLAUDE.md, GEMINI.md, AGENTS.md)
@@ -399,6 +411,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (mergeRulesIndexForVendor(cwd, v)) {
       mergedDocsSet.add(target);
       mergedDocs.push(target);
+    }
+  }
+  if (piConfigured && !mergedDocsSet.has("AGENTS.md")) {
+    if (mergeRulesIndexForVendor(cwd, "pi")) {
+      mergedDocsSet.add("AGENTS.md");
+      mergedDocs.push("AGENTS.md");
     }
   }
 
@@ -416,6 +434,17 @@ export function link(opts: LinkOptions = {}): LinkResult {
       );
       if (skillNames.length > 0 && safeCliTools.length > 0) {
         const { created } = createVendorSymlinks(cwd, safeCliTools, skillNames);
+        symlinksCreated.push(...created);
+      }
+      // Workflows are surfaced as slash-command skills via direct symlinks at
+      // `.agents/workflows/<name>.md` (no generated wrapper under .agents/skills).
+      const workflowNames = getInstalledWorkflowNames(cwd);
+      if (workflowNames.length > 0 && safeCliTools.length > 0) {
+        const { created } = createVendorWorkflowSymlinks(
+          cwd,
+          safeCliTools,
+          workflowNames,
+        );
         symlinksCreated.push(...created);
       }
     }

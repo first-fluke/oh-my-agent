@@ -9,6 +9,7 @@ const SUPPORTED_RUNTIME_VENDORS = new Set<RuntimeVendor>([
   "qwen",
   "grok",
   "kiro",
+  "pi",
 ]);
 
 export function detectRuntimeVendor(
@@ -53,6 +54,10 @@ export function detectRuntimeVendor(
 
   if (env.KIRO_SESSION_ID || env.KIRO_CHAT_LOG_FILE || env.KIRO_HOME) {
     return "kiro";
+  }
+
+  if (env.PI_CODING_AGENT === "true" || env.PI_CODING_AGENT === "1") {
+    return "pi";
   }
 
   /**

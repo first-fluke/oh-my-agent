@@ -187,17 +187,19 @@ describe("resolveUpdateVendors", () => {
     tempRoots.push(root);
 
     mkdirSync(join(root, ".claude"), { recursive: true });
+    mkdirSync(join(root, ".pi"), { recursive: true });
     mkdirSync(join(root, ".qwen"), { recursive: true });
 
-    expect(resolveUpdateVendors(root)).toEqual(["claude", "qwen"]);
+    expect(resolveUpdateVendors(root)).toEqual(["claude", "pi", "qwen"]);
   });
 
   it("--vendor explicitly targets vendors even when directories do not exist", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-update-vendors-"));
     tempRoots.push(root);
 
-    expect(resolveUpdateVendors(root, { vendor: "claude,qwen" })).toEqual([
+    expect(resolveUpdateVendors(root, { vendor: "claude,pi,qwen" })).toEqual([
       "claude",
+      "pi",
       "qwen",
     ]);
   });
@@ -211,6 +213,7 @@ describe("resolveUpdateVendors", () => {
     expect(vendors).toContain("claude");
     expect(vendors).toContain("gemini");
     expect(vendors).toContain("grok");
+    expect(vendors).toContain("pi");
     expect(vendors).toContain("qwen");
     expect(vendors).not.toContain("antigravity");
     expect(vendors).not.toContain("hermes");

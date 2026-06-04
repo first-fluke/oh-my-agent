@@ -74,12 +74,13 @@ const skillsState = vi.hoisted(() => ({
   ]),
   installShared: vi.fn(),
   installWorkflows: vi.fn(),
-  installCodexWorkflowSkills: vi.fn(),
   installCopilotWorkflowPrompts: vi.fn(),
   installRules: vi.fn(),
   installConfigs: vi.fn(),
   installSkill: vi.fn(),
   installVendorAdaptations: vi.fn(),
+  getInstalledWorkflowNames: vi.fn(() => []),
+  createVendorWorkflowSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   createVendorSymlinks: vi.fn<
     (
       targetDir: string,

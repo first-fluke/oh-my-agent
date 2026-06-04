@@ -1,4 +1,4 @@
-import type { VENDORS } from "../constants/vendors.js";
+import type { EXTENSION_VENDORS, VENDORS } from "../constants/vendors.js";
 
 /**
  * Canonical vendor type, derived from the `VENDORS` runtime constant in
@@ -7,6 +7,7 @@ import type { VENDORS } from "../constants/vendors.js";
  * for the inclusion rationale (especially the cursor partial-support note).
  */
 export type VendorType = (typeof VENDORS)[number];
+export type ExtensionVendorType = (typeof EXTENSION_VENDORS)[number];
 
 /** CLI tools that support skill symlinking. */
 export const CLI_TOOLS = [
@@ -22,8 +23,8 @@ export const CLI_TOOLS = [
 ] as const;
 export type CliTool = (typeof CLI_TOOLS)[number];
 
-/** All CLI tools including non-hook vendors. */
-export type CliVendor = VendorType | "copilot" | "hermes";
+/** All CLI tools including non-hook and extension-model vendors. */
+export type CliVendor = VendorType | ExtensionVendorType | "copilot" | "hermes";
 
 export interface CLICheck {
   name: string;

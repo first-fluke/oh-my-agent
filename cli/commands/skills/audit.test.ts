@@ -3,7 +3,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { INSTALLED_SKILLS_DIR } from "../../constants/vendors.js";
-import { auditSkills } from "./audit.js";
+import type { SimilarityPair } from "../../utils/text-similarity.js";
+import {
+  auditSkills,
+  computeBreadths,
+  detectBlackHoles,
+  SKILLS_COUNT_WARN_THRESHOLD,
+} from "./audit.js";
 
 function writeSkill(root: string, name: string, description: string): void {
   const dir = join(root, INSTALLED_SKILLS_DIR, name);
@@ -68,5 +74,92 @@ describe("auditSkills", () => {
     });
     const report = auditSkills(workspace);
     expect(report.skillCount).toBe(1);
+  });
+
+  it("warns on library size past the routing-decay threshold", () => {
+    const count = SKILLS_COUNT_WARN_THRESHOLD + 1;
+    for (let i = 0; i < count; i++) {
+      // Distinct token per skill → no pairwise/black-hole noise.
+      writeSkill(workspace, `oma-skill-${i}`, `uniquedomain${i} specialist`);
+    }
+    const report = auditSkills(workspace);
+    expect(report.skillCount).toBe(count);
+    expect(report.sizeFinding).toBeDefined();
+    expect(report.sizeFinding?.threshold).toBe(SKILLS_COUNT_WARN_THRESHOLD);
+    expect(report.findings).toHaveLength(0);
+  });
+
+  it("does not warn on library size at or below the threshold", () => {
+    writeSkill(workspace, "oma-a", "alpha domain specialist");
+    writeSkill(workspace, "oma-b", "bravo domain specialist");
+    const report = auditSkills(workspace);
+    expect(report.sizeFinding).toBeUndefined();
+  });
+});
+
+describe("computeBreadths", () => {
+  it("returns mean similarity of each skill to all others", () => {
+    const pairs: SimilarityPair[] = [
+      { a: "x", b: "y", similarity: 0.4 },
+      { a: "x", b: "z", similarity: 0.6 },
+      { a: "y", b: "z", similarity: 0.2 },
+    ];
+    const breadths = computeBreadths(["x", "y", "z"], pairs);
+    const byId = new Map(breadths.map((b) => [b.id, b.breadth]));
+    expect(byId.get("x")).toBeCloseTo(0.5, 6); // (0.4 + 0.6) / 2
+    expect(byId.get("y")).toBeCloseTo(0.3, 6); // (0.4 + 0.2) / 2
+    expect(byId.get("z")).toBeCloseTo(0.4, 6); // (0.6 + 0.2) / 2
+    // sorted descending by breadth
+    expect(breadths[0]?.id).toBe("x");
+  });
+
+  it("returns empty for fewer than two skills", () => {
+    expect(computeBreadths(["x"], [])).toHaveLength(0);
+  });
+});
+
+describe("detectBlackHoles", () => {
+  it("flags an outlier breadth as a black-hole", () => {
+    const breadths = [
+      { id: "generic", breadth: 0.45 },
+      { id: "a", breadth: 0.05 },
+      { id: "b", breadth: 0.06 },
+      { id: "c", breadth: 0.04 },
+      { id: "d", breadth: 0.05 },
+    ];
+    const found = detectBlackHoles(breadths);
+    expect(found.map((f) => f.id)).toContain("generic");
+    expect(found.every((f) => f.severity === "warn")).toBe(true);
+  });
+
+  it("stays quiet when breadth is uniform", () => {
+    const breadths = [
+      { id: "a", breadth: 0.2 },
+      { id: "b", breadth: 0.2 },
+      { id: "c", breadth: 0.2 },
+      { id: "d", breadth: 0.2 },
+      { id: "e", breadth: 0.2 },
+    ];
+    expect(detectBlackHoles(breadths)).toHaveLength(0);
+  });
+
+  it("needs a minimum population before flagging", () => {
+    const breadths = [
+      { id: "generic", breadth: 0.9 },
+      { id: "a", breadth: 0.01 },
+    ];
+    expect(detectBlackHoles(breadths)).toHaveLength(0);
+  });
+
+  it("respects the absolute breadth floor", () => {
+    // An outlier in z-score terms but well below the floor → not a black-hole.
+    const breadths = [
+      { id: "slightly-high", breadth: 0.08 },
+      { id: "a", breadth: 0.01 },
+      { id: "b", breadth: 0.01 },
+      { id: "c", breadth: 0.01 },
+      { id: "d", breadth: 0.01 },
+    ];
+    expect(detectBlackHoles(breadths)).toHaveLength(0);
   });
 });

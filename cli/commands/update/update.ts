@@ -41,7 +41,10 @@ import {
   ALL_CLI_VENDORS,
   CLI_SKILLS_DIR,
   createVendorSymlinks,
+  createVendorWorkflowSymlinks,
+  EXTENSION_VENDORS,
   getInstalledSkillNames,
+  getInstalledWorkflowNames,
   REPO,
   vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
@@ -171,15 +174,18 @@ const VENDOR_ROOTS: Record<CliVendor, string[]> = {
   grok: [".grok"],
   hermes: [".hermes"],
   kiro: [".kiro"],
+  pi: [".pi"],
   qwen: [".qwen"],
 };
+
+const UPDATE_VENDORS = [...ALL_CLI_VENDORS, ...EXTENSION_VENDORS].sort();
 
 function isCliTool(vendor: CliVendor): vendor is CliTool {
   return vendor in CLI_SKILLS_DIR;
 }
 
 function parseVendorList(raw: string): CliVendor[] {
-  const validVendors = new Set<string>(ALL_CLI_VENDORS);
+  const validVendors = new Set<string>(UPDATE_VENDORS);
   const vendors = raw
     .split(",")
     .map((v) => v.trim().toLowerCase())
@@ -188,7 +194,7 @@ function parseVendorList(raw: string): CliVendor[] {
 
   if (invalid.length > 0) {
     throw new Error(
-      `Unsupported vendor(s): ${invalid.join(", ")}. Supported vendors: ${ALL_CLI_VENDORS.join(", ")}`,
+      `Unsupported vendor(s): ${invalid.join(", ")}. Supported vendors: ${UPDATE_VENDORS.join(", ")}`,
     );
   }
 
@@ -202,7 +208,7 @@ function hasExistingVendorRoot(cwd: string, vendor: CliVendor): boolean {
 }
 
 function supportedProjectVendors(): CliVendor[] {
-  return ALL_CLI_VENDORS.filter((vendor) => {
+  return UPDATE_VENDORS.filter((vendor) => {
     if (!isCliTool(vendor)) return true;
     return !vendorRequiresHomeConsent(vendor);
   });
@@ -215,7 +221,7 @@ export function resolveUpdateVendors(
   if (options.vendor) return parseVendorList(options.vendor);
   if (options.all) return supportedProjectVendors();
 
-  return ALL_CLI_VENDORS.filter((vendor) => hasExistingVendorRoot(cwd, vendor));
+  return UPDATE_VENDORS.filter((vendor) => hasExistingVendorRoot(cwd, vendor));
 }
 
 function toCliTools(vendors: CliVendor[]): CliTool[] {
@@ -473,6 +479,15 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
                 getInstalledSkillNames(cwd),
               )
             : { created: [], skipped: [] };
+
+        // Workflows are surfaced via direct symlinks at .agents/workflows/*.md.
+        if (updateVendors.length > 0) {
+          createVendorWorkflowSymlinks(
+            cwd,
+            toCliTools(updateVendors),
+            getInstalledWorkflowNames(cwd),
+          );
+        }
 
         // Vendor adaptations complete — clear reconcile flag
         if (needsReconcile) {

@@ -97,7 +97,11 @@ vi.mock("node:fs", async (importOriginal) => {
 
 // ---- import module under test AFTER mocks ----
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { collectDoctorReport } from "./doctor.js";
+import {
+  collectDoctorReport,
+  computeEvalCoverage,
+  serializeReportAsJson,
+} from "./doctor.js";
 
 // Settle all pending procs synchronously
 function settleProcs(exitCode: number, stdoutData?: string): void {
@@ -578,5 +582,133 @@ describe("state and hook doctor checks", () => {
         ok: true,
       }),
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeEvalCoverage unit tests
+// ---------------------------------------------------------------------------
+//
+// These tests use the mocked node:fs from the top-level vi.mock — they drive
+// computeEvalCoverage directly with controlled existsSync / readdirSync stubs.
+
+describe("computeEvalCoverage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(existsSync).mockReturnValue(false);
+    vi.mocked(readdirSync).mockReturnValue([]);
+  });
+
+  it("returns 0/0 when .agents/eval dir does not exist", () => {
+    vi.mocked(existsSync).mockReturnValue(false);
+    const result = computeEvalCoverage("/fake/cwd", 0);
+    expect(result).toEqual({ skillsWithEval: 0, totalSkills: 0 });
+  });
+
+  it("returns 0/N when eval root exists but no skill dirs have enough fixtures", () => {
+    // evalRoot exists, skill dir "oma-test" has 4 yaml files (< MIN_TASKS=5)
+    vi.mocked(existsSync).mockImplementation((p) =>
+      String(p).endsWith(".agents/eval"),
+    );
+    vi.mocked(readdirSync).mockImplementation((p) => {
+      if (String(p).endsWith(".agents/eval")) return ["oma-test"] as never;
+      if (String(p).endsWith("oma-test"))
+        return [
+          "task1.yaml",
+          "task2.yaml",
+          "task3.yaml",
+          "task4.yaml",
+        ] as never;
+      return [] as never;
+    });
+
+    const result = computeEvalCoverage("/fake/cwd", 10);
+    expect(result).toEqual({ skillsWithEval: 0, totalSkills: 10 });
+  });
+
+  it("counts skills that have >= MIN_TASKS (5) yaml fixtures", () => {
+    // 3 skill dirs: "skill-a" has 5 yaml (passes), "skill-b" has 3 (fails),
+    // "skill-c" has 5 (passes). Plus "_shared" is underscore-prefixed and skipped.
+    vi.mocked(existsSync).mockImplementation((p) =>
+      String(p).endsWith(".agents/eval"),
+    );
+    vi.mocked(readdirSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.endsWith(".agents/eval"))
+        return ["_shared", "skill-a", "skill-b", "skill-c"] as never;
+      if (path.endsWith("skill-a"))
+        return ["t1.yaml", "t2.yaml", "t3.yaml", "t4.yaml", "t5.yaml"] as never;
+      if (path.endsWith("skill-b"))
+        return ["t1.yaml", "t2.yaml", "t3.yml"] as never;
+      if (path.endsWith("skill-c"))
+        return [
+          "t1.yaml",
+          "t2.yaml",
+          "t3.yaml",
+          "t4.yaml",
+          "t5.yaml",
+          "t6.yaml",
+        ] as never;
+      return [] as never;
+    });
+
+    const result = computeEvalCoverage("/fake/cwd", 37);
+    expect(result).toEqual({ skillsWithEval: 2, totalSkills: 37 });
+  });
+
+  it("ignores _rollouts and non-yaml files when counting fixture tasks", () => {
+    vi.mocked(existsSync).mockImplementation((p) =>
+      String(p).endsWith(".agents/eval"),
+    );
+    vi.mocked(readdirSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.endsWith(".agents/eval")) return ["skill-x"] as never;
+      if (path.endsWith("skill-x"))
+        return [
+          "_rollouts", // dir — skipped (underscore-prefix)
+          "task1.yaml",
+          "task2.yaml",
+          "task3.yaml",
+          "task4.yaml",
+          "task5.yaml",
+          "README.md", // not yaml — not counted
+        ] as never;
+      return [] as never;
+    });
+
+    const result = computeEvalCoverage("/fake/cwd", 5);
+    expect(result).toEqual({ skillsWithEval: 1, totalSkills: 5 });
+  });
+
+  it("includes skillEval field in JSON output from serializeReportAsJson", async () => {
+    vi.useFakeTimers();
+    spawnState.lastProcs.length = 0;
+    vi.clearAllMocks();
+    spawnState.execFileSyncFn.mockReturnValue("");
+    vi.mocked(existsSync).mockReturnValue(false);
+    vi.mocked(readFileSync).mockReturnValue("");
+    vi.mocked(readdirSync).mockReturnValue([]);
+
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis([]);
+
+    const report = await reportPromise;
+
+    // skillEval is present on report with correct shape
+    expect(report.skillEval).toEqual({
+      skillsWithEval: 0,
+      totalSkills: expect.any(Number),
+    });
+
+    // JSON serialization includes skillEval field
+    const json = serializeReportAsJson(report);
+    const parsed = JSON.parse(json) as Record<string, unknown>;
+    expect(parsed.skillEval).toEqual({
+      skillsWithEval: 0,
+      totalSkills: expect.any(Number),
+    });
+
+    vi.useRealTimers();
   });
 });

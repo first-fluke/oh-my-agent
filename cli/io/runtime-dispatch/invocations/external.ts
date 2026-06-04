@@ -11,7 +11,9 @@ import type { Invocation } from "../types.js";
 function buildExternalCursorInvocation(
   vendorConfig: VendorConfig,
   promptContent: string,
+  options: ExternalInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
   const command = vendorConfig.command || "cursor";
   const args: string[] = ["agent", "-p"];
 
@@ -20,7 +22,18 @@ function buildExternalCursorInvocation(
   } else if (vendorConfig.output_format_flag) {
     args.push(vendorConfig.output_format_flag);
   }
-  if (vendorConfig.auto_approve_flag) {
+
+  if (readOnly) {
+    // In read-only mode: suppress auto-approve/--yolo entirely.
+    // Append the vendor's read_only_flag if defined; otherwise warn explicitly.
+    if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      console.warn(
+        "[agent-spawn] read-only mode requested but vendor 'cursor' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
+      );
+    }
+  } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
     args.push("--yolo");
@@ -36,17 +49,27 @@ function buildExternalCursorInvocation(
   return { command, args, env: { ...process.env } };
 }
 
+export interface ExternalInvocationOptions {
+  /** When true, constrains the spawned agent to non-destructive tools.
+   * Suppresses `auto_approve_flag` and appends the vendor's `read_only_flag`.
+   * Emits a console.warn when the vendor has no `read_only_flag` defined. */
+  readOnly?: boolean;
+}
+
 export function buildExternalInvocation(
   vendor: string,
   vendorConfig: VendorConfig,
   promptFlag: string | null,
   promptContent: string,
   agentId?: string,
+  options: ExternalInvocationOptions = {},
 ): Invocation {
+  const { readOnly = false } = options;
+
   // Cursor Agent: `-p`/`--print` is a boolean flag; prompt must be a trailing positional argv.
   // The generic branch always pairs `promptFlag` with prompt as two args, which is wrong here.
   if (vendor === "cursor") {
-    return buildExternalCursorInvocation(vendorConfig, promptContent);
+    return buildExternalCursorInvocation(vendorConfig, promptContent, options);
   }
 
   // Kiro: `kiro-cli chat --no-interactive --trust-all-tools [--agent …] [--model …] "<prompt>"`.
@@ -54,10 +77,18 @@ export function buildExternalInvocation(
     const command = vendorConfig.command || "kiro-cli";
     const args: string[] = ["chat", "--no-interactive"];
 
-    if (vendorConfig.auto_approve_flag) {
-      args.push(vendorConfig.auto_approve_flag);
+    if (!readOnly) {
+      if (vendorConfig.auto_approve_flag) {
+        args.push(vendorConfig.auto_approve_flag);
+      } else {
+        args.push("--trust-all-tools");
+      }
+    } else if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
     } else {
-      args.push("--trust-all-tools");
+      console.warn(
+        `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
+      );
     }
 
     if (agentId) {
@@ -78,10 +109,18 @@ export function buildExternalInvocation(
     const command = vendorConfig.command || "grok";
     const args: string[] = [];
 
-    if (vendorConfig.auto_approve_flag) {
-      args.push(vendorConfig.auto_approve_flag);
+    if (!readOnly) {
+      if (vendorConfig.auto_approve_flag) {
+        args.push(vendorConfig.auto_approve_flag);
+      } else {
+        args.push("--yolo");
+      }
+    } else if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
     } else {
-      args.push("--yolo");
+      console.warn(
+        `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
+      );
     }
 
     if (vendorConfig.model_flag && vendorConfig.default_model) {
@@ -130,20 +169,41 @@ export function buildExternalInvocation(
     optionArgs.push(...splitArgs(vendorConfig.isolation_flags));
   }
 
-  if (vendorConfig.auto_approve_flag) {
-    optionArgs.push(vendorConfig.auto_approve_flag);
+  if (readOnly) {
+    // In read-only mode: suppress all permissive auto-approve flags.
+    // Append the vendor's read_only_flag if defined; otherwise warn explicitly.
+    if (vendorConfig.read_only_flag) {
+      optionArgs.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      const defaultReadOnly: Record<string, string> = {
+        codex: "--sandbox read-only",
+        claude: "--permission-mode plan",
+      };
+      const builtInFlag = defaultReadOnly[vendor];
+      if (builtInFlag) {
+        optionArgs.push(...splitArgs(builtInFlag));
+      } else {
+        console.warn(
+          `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
+        );
+      }
+    }
   } else {
-    const defaultAutoApprove: Record<string, string> = {
-      gemini: "--approval-mode=yolo",
-      codex: "--full-auto",
-      qwen: "--yolo",
-      antigravity: "--dangerously-skip-permissions",
-      grok: "--yolo",
-      kiro: "--trust-all-tools",
-    };
-    const fallbackFlag = defaultAutoApprove[vendor];
-    if (fallbackFlag) {
-      optionArgs.push(fallbackFlag);
+    if (vendorConfig.auto_approve_flag) {
+      optionArgs.push(vendorConfig.auto_approve_flag);
+    } else {
+      const defaultAutoApprove: Record<string, string> = {
+        gemini: "--approval-mode=yolo",
+        codex: "--full-auto",
+        qwen: "--yolo",
+        antigravity: "--dangerously-skip-permissions",
+        grok: "--yolo",
+        kiro: "--trust-all-tools",
+      };
+      const fallbackFlag = defaultAutoApprove[vendor];
+      if (fallbackFlag) {
+        optionArgs.push(fallbackFlag);
+      }
     }
   }
 

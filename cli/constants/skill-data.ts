@@ -55,34 +55,6 @@ export const SKILLS: SkillsRegistry = {
   ],
   utility: [
     {
-      name: "architecture",
-      desc: `Software architecture workflow that diagnoses architecture problems, selects the right analysis method, compares options, synthesizes stakeholder input, and produces a recommendation, review, or ADR`,
-    },
-    {
-      name: "brainstorm",
-      desc: `Design-first ideation workflow that explores user intent, clarifies constraints, proposes approaches, and produces an approved design document before planning`,
-    },
-    {
-      name: "debug",
-      desc: `Structured bug diagnosis and fixing workflow that reproduces, diagnoses root cause, applies a minimal fix, writes regression tests, and scans for similar patterns`,
-    },
-    {
-      name: "deepinit",
-      desc: `Initialize project harness with AGENTS.md as table of contents, ARCHITECTURE.md as domain map, and a structured docs/ knowledge base`,
-    },
-    {
-      name: "deepsec",
-      desc: `Drive the \`oma-deepsec\` skill end-to-end. Installs \`.deepsec/\`, calibrates cost, runs the right scan/process/triage/revalidate/export pass, gates PRs with \`process --diff\`, writes custom matchers, and routes findings to follow-up specialists.`,
-    },
-    {
-      name: "design",
-      desc: `Design workflow that creates design systems, DESIGN.md, and design tokens with anti-pattern enforcement and accessibility checks`,
-    },
-    {
-      name: "docs",
-      desc: `Documentation drift detection and sync via \`oma-docs\`. Verify mode finds broken refs in docs/**/*.md, sync mode proposes patches for docs affected by a git diff.`,
-    },
-    {
       name: "oma-academic-writer",
       desc: `Academic writing specialist for publication-grade English prose. Drafts, revises, and audits essays, reports, analysis sections, executive summaries, conclusions, and literature reviews while enforcing sentence-structure variation, high-frequency academic verbs, calibrated hedging, and anti-AI stylistic compliance. USE for academic writing, essay polish, paragraph rewrite, prose revision against any rubric tier (HD/D/C, A/B/C, top-band/mid-band, etc.), anti-AI audit, reverse outlining, claim-evidence mapping, and rubric enforcement on assignments.`,
     },
@@ -149,54 +121,6 @@ export const SKILLS: SkillsRegistry = {
     {
       name: "oma-voice",
       desc: `Local-first text-to-speech and speech-to-text via the Voicebox MCP server. Generates speech from cloned or preset voice profiles for agent notifications, content voiceovers, and audio asset creation, and transcribes audio files for meeting notes or memos. Runs entirely on-device with no cloud, no API keys, no per-call cost. Use for voice generation, TTS, STT, transcription, voiceover, narration, dictation, audio asset work.`,
-    },
-    {
-      name: "orchestrate",
-      desc: `Automated CLI-based parallel agent execution that spawns subagents via Gemini CLI, coordinates through MCP Memory, monitors progress, and runs verification`,
-    },
-    {
-      name: "pdf",
-      desc: `Convert PDF to Markdown using opendataloader-pdf, extracting text, tables, headings, and images with correct reading order`,
-    },
-    {
-      name: "plan",
-      desc: `PM planning workflow that gathers requirements, decomposes them into prioritized tasks, defines API contracts, and produces both a machine-readable plan and a human-readable tracker in docs/plans/`,
-    },
-    {
-      name: "ralph",
-      desc: `Ralph - persistent self-referential execution loop wrapping ultrawork with independent verifier verification`,
-    },
-    {
-      name: "recap",
-      desc: `Daily or period recap via \`oma-recap\`. Resolves a date or window from natural language, invokes \`oma recap --json\`, delegates theme analysis and Markdown formatting to the skill, and reports a TL;DR plus saved path.`,
-    },
-    {
-      name: "review",
-      desc: `Full QA review pipeline covering security audit (OWASP Top 10), performance analysis, accessibility check (WCAG 2.1 AA), and code quality review`,
-    },
-    {
-      name: "scm",
-      desc: `SCM workflow for Git operations (branching/merge/conflict/worktree) plus Conventional Commit execution.`,
-    },
-    {
-      name: "stack-set",
-      desc: `Auto-detect project tech stack and generate stack-specific references for domain skills`,
-    },
-    {
-      name: "tools",
-      desc: `Manage MCP tools with natural language commands to list, enable, and disable tools and tool groups`,
-    },
-    {
-      name: "ultrawork",
-      desc: `Ultrawork - high-quality 5-phase development workflow with 11 review steps out of 17`,
-    },
-    {
-      name: "video",
-      desc: `Agent-native, key-optional video generation workflow that turns a brief into a finished MP4 — script → parallel asset generation (voice/visual/caption) → render-spec → Remotion compositor (MPT fallback) → QA loop → output + manifest`,
-    },
-    {
-      name: "work",
-      desc: `Coordinate multiple agents for a complex multi-domain project using PM planning, parallel agent spawning, and QA review`,
     },
   ],
   infrastructure: [

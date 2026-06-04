@@ -49,11 +49,14 @@ uses), rather than forcing continuation within a single turn.
 (`.agents/hooks/core/constants.ts`) so the `Vendor` dialect in `hook-output.ts`
 can emit pi-native shapes. It is intentionally **absent** from the cli-runtime
 `VENDORS` (`cli/constants/vendors.ts`), which drives the settings-file install
-that does not apply to pi.
+that does not apply to pi. The CLI spawn path still supports `-m pi` through the
+runtime-dispatch external CLI config; it invokes `pi -p` as a subprocess rather
+than a native subagent API.
 
 ## Enabling
 
 Add `pi` to the `vendors:` block in `.agents/oma-config.yaml`, then run
 `oma link` (or `oma install` / `oma update`). The bridge is regenerated into
-`.pi/extensions/oma/` on every link. pi picks up changes on `/reload` or next
+`.pi/extensions/oma/` and workflow prompt wrappers are regenerated into
+`.pi/prompts/` on every link. pi picks up extension changes on `/reload` or next
 launch.

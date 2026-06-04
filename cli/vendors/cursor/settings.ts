@@ -1,9 +1,64 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
   serenaStartMcpArgs,
 } from "../serena.js";
+
+/** Global cursor-agent CLI config (`~/.cursor/cli-config.json`). */
+function cursorCliConfigPath(): string {
+  return join(homedir(), ".cursor", "cli-config.json");
+}
+
+/**
+ * Turn off cursor-agent commit/PR attribution so commits and PRs it creates are
+ * not stamped with `Co-authored-by: Cursor`. Mutates only the `attribution`
+ * block of the global `~/.cursor/cli-config.json`; every other key is preserved.
+ *
+ * No-op when the file is absent (cursor-agent not installed) or already
+ * disabled. Returns true only when a write occurred.
+ */
+export function disableCursorAgentAttribution(
+  configPath: string = cursorCliConfigPath(),
+): boolean {
+  if (!existsSync(configPath)) return false;
+
+  let config: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(readFileSync(configPath, "utf-8"));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return false;
+    }
+    config = parsed as Record<string, unknown>;
+  } catch {
+    return false;
+  }
+
+  const current =
+    config.attribution &&
+    typeof config.attribution === "object" &&
+    !Array.isArray(config.attribution)
+      ? (config.attribution as Record<string, unknown>)
+      : {};
+
+  if (
+    current.attributeCommitsToAgent === false &&
+    current.attributePRsToAgent === false
+  ) {
+    return false; // already disabled — keep the write idempotent
+  }
+
+  config.attribution = {
+    ...current,
+    attributeCommitsToAgent: false,
+    attributePRsToAgent: false,
+  };
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  return true;
+}
 
 /**
  * Recommended Cursor settings managed by oh-my-agent.

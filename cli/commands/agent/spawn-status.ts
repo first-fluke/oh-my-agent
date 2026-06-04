@@ -130,6 +130,7 @@ export async function spawnAgent(
   vendorOverride?: string,
   taskHints?: TaskHints,
   isolation?: string,
+  readOnly?: boolean,
 ) {
   let worktreeHandle: WorktreeHandle | null = null;
   if (isolation === "worktree") {
@@ -221,12 +222,17 @@ export async function spawnAgent(
   console.log(color.dim(`  Log: ${logFile}`));
 
   const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
+  if (readOnly) {
+    console.log(color.dim("  Mode: read-only (auto-approve suppressed)"));
+  }
   const dispatch = planDispatch(
     agentId,
     vendor,
     vendorConfig,
     promptFlag,
     promptContent,
+    undefined,
+    { readOnly: readOnly ?? false },
   );
   console.log(
     color.dim(

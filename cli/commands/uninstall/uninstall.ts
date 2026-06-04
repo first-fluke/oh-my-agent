@@ -57,6 +57,27 @@ function hasOmaMarker(filePath: string): boolean {
 }
 
 /**
+ * Returns true when `entryPath` is a vendor workflow entry: a real directory
+ * whose `SKILL.md` is a symlink resolving into `.agents/workflows/` (created by
+ * `createVendorWorkflowSymlinks`). These are oma-owned, not user-authored.
+ */
+function isWorkflowSymlinkDir(entryPath: string, installRoot: string): boolean {
+  const skillFile = path.join(entryPath, "SKILL.md");
+  try {
+    if (!fs.lstatSync(skillFile).isSymbolicLink()) return false;
+    const target = fs.realpathSync(skillFile);
+    const workflowsDir = fs.realpathSync(
+      path.join(installRoot, ".agents", "workflows"),
+    );
+    return (
+      target === workflowsDir || target.startsWith(workflowsDir + path.sep)
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Scan a directory for child entries. Returns an empty array when the directory
  * does not exist or cannot be read.
  */
@@ -179,6 +200,15 @@ export function buildRemovalPlan(installRoot: string): {
           path: entryPath,
           kind: "symlink",
           reason: `created by createVendorSymlinks (${vendor})`,
+        });
+      } else if (
+        kind === "dir" &&
+        isWorkflowSymlinkDir(entryPath, installRoot)
+      ) {
+        omaOwned.push({
+          path: entryPath,
+          kind: "dir",
+          reason: `created by createVendorWorkflowSymlinks (${vendor})`,
         });
       } else {
         // Real directory or file — user authored

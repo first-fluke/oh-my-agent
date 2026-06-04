@@ -161,3 +161,4 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 - Validation checklist: `resources/validation-checklist.md`
 - Shared context loading: `../_shared/core/context-loading.md`
 - Shared quality principles: `../_shared/core/quality-principles.md`
+- Skill utility eval: when creating a new skill, consider adding held-out task fixtures under `.agents/eval/<skill>/` so `oma skills eval` can measure whether the skill improves task outcomes. See `web/docs/guide/skill-eval.md` for the fixture schema and checker types.

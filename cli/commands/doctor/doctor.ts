@@ -37,6 +37,7 @@ import {
   getAgentMemoryServicePresence,
 } from "../memory/memory.js";
 import { auditSkills } from "../skills/audit.js";
+import { MIN_TASKS } from "../skills/eval.js";
 import { checkDualInstall } from "./dual-install.js";
 import { collectStateDoctorCheck } from "./state-health.js";
 import type {
@@ -47,6 +48,7 @@ import type {
   DoctorOptions,
   DoctorReport,
   McpCheck,
+  SkillEvalCoverage,
   VendorDocCheck,
 } from "./types.js";
 
@@ -344,6 +346,59 @@ function collectVendorDocChecks(
   }));
 }
 
+/**
+ * Compute eval fixture coverage cheaply via filesystem scan.
+ *
+ * Scans `.agents/eval/<skill>/` for each installed skill and counts
+ * how many directories contain >= MIN_TASKS non-underscore YAML files.
+ * Pure readdir — no YAML parsing, no LLM, no network.
+ *
+ * @param cwd - workspace root (project dir)
+ * @param totalSkills - number of installed skills (from skillAudit or getAllSkills)
+ */
+export function computeEvalCoverage(
+  cwd: string,
+  totalSkills: number,
+): SkillEvalCoverage {
+  const evalRoot = join(cwd, ".agents", "eval");
+  if (!existsSync(evalRoot)) {
+    return { skillsWithEval: 0, totalSkills };
+  }
+
+  let skillDirs: string[];
+  try {
+    skillDirs = readdirSync(evalRoot);
+  } catch {
+    return { skillsWithEval: 0, totalSkills };
+  }
+
+  let skillsWithEval = 0;
+
+  for (const entry of skillDirs) {
+    // Skip hidden / underscore directories (e.g. _rollouts at root level)
+    if (entry.startsWith("_") || entry.startsWith(".")) continue;
+
+    const skillDir = join(evalRoot, entry);
+    let files: string[];
+    try {
+      files = readdirSync(skillDir);
+    } catch {
+      continue;
+    }
+
+    // Count YAML task fixture files (skip _-prefixed dirs and non-yaml files)
+    const yamlCount = files.filter(
+      (f) => !f.startsWith("_") && (f.endsWith(".yaml") || f.endsWith(".yml")),
+    ).length;
+
+    if (yamlCount >= MIN_TASKS) {
+      skillsWithEval++;
+    }
+  }
+
+  return { skillsWithEval, totalSkills };
+}
+
 export async function collectDoctorReport(
   options: DoctorOptions = {},
 ): Promise<DoctorReport> {
@@ -384,6 +439,7 @@ export async function collectDoctorReport(
         }));
 
   const skillAudit = auditSkills(cwd);
+  const skillEval = computeEvalCoverage(cwd, skillAudit.skillCount);
   const agentMemory = await collectAgentMemoryCheck(cwd);
   const state = collectStateDoctorCheck(cwd);
   const selfHealing = options.healCheckAgent
@@ -419,6 +475,7 @@ export async function collectDoctorReport(
     agentMemory,
     totalIssues,
     skillAudit,
+    skillEval,
     dualInstall,
     state,
     selfHealing,
@@ -489,6 +546,17 @@ export function serializeReportAsJson(report: DoctorReport): string {
         similarity: Number(f.pair.similarity.toFixed(4)),
         severity: f.severity,
       })),
+      blackHoles: report.skillAudit.blackHoles.map((b) => ({
+        id: b.id,
+        breadth: Number(b.breadth.toFixed(4)),
+        cutoff: Number(b.cutoff.toFixed(4)),
+        severity: b.severity,
+      })),
+      sizeFinding: report.skillAudit.sizeFinding ?? null,
+    },
+    skillEval: {
+      skillsWithEval: report.skillEval.skillsWithEval,
+      totalSkills: report.skillEval.totalSkills,
     },
     dualInstall: {
       project: report.dualInstall.project.installed

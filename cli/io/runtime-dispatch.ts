@@ -2,7 +2,10 @@ import type { VendorConfig } from "../platform/agent-config.js";
 import { persistCodexEffortToToml } from "./runtime-dispatch/codex-effort.js";
 import { ConfigError } from "./runtime-dispatch/config-error.js";
 import { detectRuntimeVendor } from "./runtime-dispatch/detect.js";
-import { buildExternalInvocation } from "./runtime-dispatch/invocations/external.js";
+import {
+  buildExternalInvocation,
+  type ExternalInvocationOptions,
+} from "./runtime-dispatch/invocations/external.js";
 import {
   buildAntigravityNativeInvocation,
   buildClaudeNativeInvocation,
@@ -10,6 +13,7 @@ import {
   buildCursorAgentPrintInvocation,
   buildGeminiNativeInvocation,
   buildKiroNativeInvocation,
+  type NativeInvocationOptions,
 } from "./runtime-dispatch/invocations/native.js";
 import { buildAgentPlanArgs } from "./runtime-dispatch/plan-args.js";
 import { resolveAgentPlan } from "./runtime-dispatch/resolve-plan.js";
@@ -21,7 +25,11 @@ import type {
 
 export { ConfigError } from "./runtime-dispatch/config-error.js";
 export { detectRuntimeVendor } from "./runtime-dispatch/detect.js";
-export { buildExternalInvocation } from "./runtime-dispatch/invocations/external.js";
+export {
+  buildExternalInvocation,
+  type ExternalInvocationOptions,
+} from "./runtime-dispatch/invocations/external.js";
+export type { NativeInvocationOptions } from "./runtime-dispatch/invocations/native.js";
 export {
   buildAgentPlanArgs,
   geminiThinkingBudgetFlag,
@@ -94,6 +102,13 @@ function applyResolvedPlan(
   return applyPlanArgs(invocation, plan);
 }
 
+export interface PlanDispatchOptions {
+  /** When true, constrains the spawned agent to non-destructive tools.
+   * Suppresses auto_approve_flag and appends the vendor's read_only_flag.
+   * Emits console.warn when the vendor has no read_only_flag defined. */
+  readOnly?: boolean;
+}
+
 export function planDispatch(
   agentId: string,
   targetVendor: string,
@@ -101,7 +116,13 @@ export function planDispatch(
   promptFlag: string | null,
   promptContent: string,
   env: NodeJS.ProcessEnv = process.env,
+  options: PlanDispatchOptions = {},
 ): DispatchPlan {
+  const { readOnly = false } = options;
+  const invOptions: NativeInvocationOptions & ExternalInvocationOptions = {
+    readOnly,
+  };
+
   const runtimeVendor = detectRuntimeVendor(env);
 
   // Resolve per-agent plan from oma-config.yaml + defaults.yaml.
@@ -148,6 +169,8 @@ export function planDispatch(
       effectiveVendorConfig,
       promptFlag,
       promptContent,
+      undefined,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -164,6 +187,7 @@ export function planDispatch(
       agentId,
       promptContent,
       effectiveVendorConfig,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -180,6 +204,7 @@ export function planDispatch(
       agentId,
       promptContent,
       effectiveVendorConfig,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -196,6 +221,7 @@ export function planDispatch(
       agentId,
       promptContent,
       effectiveVendorConfig,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -212,6 +238,7 @@ export function planDispatch(
       agentId,
       promptContent,
       effectiveVendorConfig,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -228,6 +255,7 @@ export function planDispatch(
       agentId,
       promptContent,
       effectiveVendorConfig,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -244,6 +272,7 @@ export function planDispatch(
       agentId,
       promptContent,
       effectiveVendorConfig,
+      invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
     return {
@@ -260,6 +289,8 @@ export function planDispatch(
     effectiveVendorConfig,
     promptFlag,
     promptContent,
+    undefined,
+    invOptions,
   );
   if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
   return {

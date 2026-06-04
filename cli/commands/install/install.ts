@@ -35,8 +35,10 @@ import {
 import {
   CLI_SKILLS_DIR,
   createVendorSymlinks,
+  createVendorWorkflowSymlinks,
   type ExtensionVendor,
   getAllSkills,
+  getInstalledWorkflowNames,
   getVendorDisplayPath,
   INSTALLED_SKILLS_DIR,
   installConfigs,
@@ -786,6 +788,14 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         installRoot,
         selectedClis,
         selectedSkills,
+      );
+
+      // Expose workflows as slash-command skills by symlinking the workflow
+      // files directly (no generated wrapper under .agents/skills).
+      createVendorWorkflowSymlinks(
+        installRoot,
+        selectedClis,
+        getInstalledWorkflowNames(installRoot),
       );
 
       p.note(

@@ -10,7 +10,7 @@ export function registerAgentCommands(program: Command): void {
     .description("Spawn a subagent (prompt can be inline text or a file path)")
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/qwen/grok)",
+      "CLI vendor override (antigravity/claude/codex/cursor/qwen/grok/pi)",
     )
     .option(
       "-w, --workspace <path>",
@@ -19,6 +19,10 @@ export function registerAgentCommands(program: Command): void {
     .option(
       "--isolation <mode>",
       "Isolation mode: 'worktree' creates a git worktree per spawn (default: none)",
+    )
+    .option(
+      "--read-only",
+      "Restrict the spawned agent to non-destructive tools (suppresses auto-approve flags)",
     )
     .action(
       runAction(async (agentId, prompt, sessionId, options) => {
@@ -30,6 +34,7 @@ export function registerAgentCommands(program: Command): void {
           options.model,
           undefined,
           options.isolation,
+          options.readOnly,
         );
       }),
     );
@@ -49,7 +54,7 @@ export function registerAgentCommands(program: Command): void {
     .description("Run multiple sub-agents in parallel")
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/qwen/grok)",
+      "CLI vendor override (antigravity/claude/codex/cursor/qwen/grok/pi)",
     )
     .option(
       "-i, --inline",

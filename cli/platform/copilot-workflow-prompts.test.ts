@@ -35,7 +35,7 @@ describe("installCopilotWorkflowPrompts", () => {
     return dir;
   }
 
-  it("generates .agents/skills/ SKILL.md AND .github/prompts/ .prompt.md for each top-level workflow", () => {
+  it("generates a .github/prompts/ .prompt.md for each top-level workflow", () => {
     const sourceDir = mkTemp("oma-copilot-src-");
     const targetDir = mkTemp("oma-copilot-dst-");
     setupSource(sourceDir, {
@@ -45,30 +45,10 @@ describe("installCopilotWorkflowPrompts", () => {
 
     installCopilotWorkflowPrompts(sourceDir, targetDir);
 
-    // Unified canonical output
-    const ralphSkill = join(
-      targetDir,
-      ".agents",
-      "skills",
-      "ralph",
-      "SKILL.md",
-    );
-    const debugSkill = join(
-      targetDir,
-      ".agents",
-      "skills",
-      "debug",
-      "SKILL.md",
-    );
-    expect(existsSync(ralphSkill)).toBe(true);
-    expect(existsSync(debugSkill)).toBe(true);
+    // Copilot uses .prompt.md wrappers (mode: agent) — it does NOT get a
+    // generated .agents/skills/ wrapper (workflows symlink directly elsewhere).
+    expect(existsSync(join(targetDir, ".agents", "skills"))).toBe(false);
 
-    const ralphSkillBody = readFileSync(ralphSkill, "utf-8");
-    expect(ralphSkillBody).toContain("<!-- oma:generated -->");
-    expect(ralphSkillBody).toContain("name: ralph");
-    expect(ralphSkillBody).toContain("description: Ralph loop");
-
-    // Copilot-specific output
     const ralphFile = join(targetDir, ".github", "prompts", "ralph.prompt.md");
     const debugFile = join(targetDir, ".github", "prompts", "debug.prompt.md");
     expect(existsSync(ralphFile)).toBe(true);
@@ -91,12 +71,6 @@ describe("installCopilotWorkflowPrompts", () => {
     });
 
     installCopilotWorkflowPrompts(sourceDir, targetDir);
-
-    const skillBody = readFileSync(
-      join(targetDir, ".agents", "skills", "bare", "SKILL.md"),
-      "utf-8",
-    );
-    expect(skillBody).toContain("description: Workflow: bare");
 
     const promptBody = readFileSync(
       join(targetDir, ".github", "prompts", "bare.prompt.md"),
@@ -171,26 +145,17 @@ describe("installCopilotWorkflowPrompts", () => {
     setupSource(sourceDir, { ralph: "---\ndescription: Ralph\n---\n" });
 
     installCopilotWorkflowPrompts(sourceDir, targetDir);
-    const firstSkill = readFileSync(
-      join(targetDir, ".agents", "skills", "ralph", "SKILL.md"),
-      "utf-8",
-    );
     const firstPrompt = readFileSync(
       join(targetDir, ".github", "prompts", "ralph.prompt.md"),
       "utf-8",
     );
 
     installCopilotWorkflowPrompts(sourceDir, targetDir);
-    const secondSkill = readFileSync(
-      join(targetDir, ".agents", "skills", "ralph", "SKILL.md"),
-      "utf-8",
-    );
     const secondPrompt = readFileSync(
       join(targetDir, ".github", "prompts", "ralph.prompt.md"),
       "utf-8",
     );
 
-    expect(secondSkill).toBe(firstSkill);
     expect(secondPrompt).toBe(firstPrompt);
   });
 

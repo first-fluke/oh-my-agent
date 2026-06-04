@@ -17,13 +17,22 @@ vi.mock("../../../platform/rules.js", () => ({
   mergeRulesIndexForVendor: vi.fn(() => true),
 }));
 
+vi.mock("../../../platform/pi-extension-composer.js", () => ({
+  installPiExtension: vi.fn(),
+}));
+
+vi.mock("../../../platform/pi-prompts.js", () => ({
+  installPiPromptTemplates: vi.fn(() => []),
+}));
+
 vi.mock("../../../platform/skills-installer.js", () => ({
   createVendorSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
+  createVendorWorkflowSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   createCliSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   detectExistingCliSymlinkDirs: vi.fn(() => []),
   applyCursorMcpConfig: vi.fn(),
   getInstalledSkillNames: vi.fn(() => []),
-  installCodexWorkflowSkills: vi.fn(),
+  getInstalledWorkflowNames: vi.fn(() => []),
   installCopilotWorkflowPrompts: vi.fn(),
   installVendorAdaptations: vi.fn(),
   isHookVendor: vi.fn((v: string) =>
@@ -75,6 +84,9 @@ vi.mock("../../../vendors/qwen/settings.js", () => ({
   needsQwenSettingsUpdate: vi.fn(() => false),
 }));
 
+import * as piExtension from "../../../platform/pi-extension-composer.js";
+import * as piPrompts from "../../../platform/pi-prompts.js";
+import * as rules from "../../../platform/rules.js";
 import * as skills from "../../../platform/skills-installer.js";
 import * as safeWrite from "../../../utils/safe-write.js";
 import * as antigravity from "../../../vendors/antigravity/hud.js";
@@ -196,6 +208,29 @@ describe("link kernel", () => {
 
       expect(result.vendors).toEqual([]);
       expect(skills.installVendorAdaptations).not.toHaveBeenCalled();
+    });
+
+    it("links pi-only projects through the extension path", () => {
+      const projectDir = makeProject(["pi"]);
+      process.chdir(projectDir);
+
+      const result = link({ quiet: true });
+
+      expect(piExtension.installPiExtension).toHaveBeenCalledWith(
+        expect.stringContaining("oma-link-test-"),
+        expect.stringContaining("oma-link-test-"),
+      );
+      expect(piPrompts.installPiPromptTemplates).toHaveBeenCalledWith(
+        expect.stringContaining("oma-link-test-"),
+        expect.stringContaining("oma-link-test-"),
+      );
+      expect(rules.mergeRulesIndexForVendor).toHaveBeenCalledWith(
+        expect.stringContaining("oma-link-test-"),
+        "pi",
+      );
+      expect(skills.installVendorAdaptations).not.toHaveBeenCalled();
+      expect(result.vendors).toEqual([]);
+      expect(result.mergedDocs).toEqual(["AGENTS.md"]);
     });
   });
 

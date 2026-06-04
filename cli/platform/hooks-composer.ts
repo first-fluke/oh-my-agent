@@ -74,6 +74,12 @@ export interface HookVariant {
   runtime: string;
   events: Record<string, HookEvent | HookEvent[]>;
   statusLine?: { hook: string };
+  /**
+   * Parent settings key to nest the statusLine under. Omit for top-level
+   * (Claude / agy use root `statusLine`). Qwen requires `ui.statusLine` — a
+   * root-level statusLine is silently ignored by the Qwen Code renderer.
+   */
+  statusLineKey?: string;
   // biome-ignore lint/suspicious/noExplicitAny: extra settings vary by vendor
   extra?: Record<string, any>;
   featureFlags?: {
@@ -99,6 +105,11 @@ function buildHookCmd(variant: HookVariant, script: string): string {
 
 function deriveHookName(script: string): string {
   return script.replace(/\.[^.]+$/, "");
+}
+
+/** True for non-null, non-array plain objects (used for shallow settings merges). */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function patchVendorHookTypes(hooksDest: string, vendor: string): void {
@@ -295,7 +306,18 @@ export function mergeIntoSettings(
   }
 
   settings.hooks = { ...(settings.hooks || {}), ...hookEntries };
-  if (extra) Object.assign(settings, extra);
+  if (extra) {
+    // Shallow-merge one level deep so nested keys like `ui` (Qwen statusLine)
+    // or `permissions` augment — rather than clobber — existing vendor settings.
+    for (const [key, value] of Object.entries(extra)) {
+      const existing = settings[key];
+      if (isPlainObject(value) && isPlainObject(existing)) {
+        settings[key] = { ...existing, ...value };
+      } else {
+        settings[key] = value;
+      }
+    }
+  }
   writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
 }
 
@@ -380,10 +402,16 @@ export function installHooksFromVariant(
   // biome-ignore lint/suspicious/noExplicitAny: extra settings are dynamic
   const extra: Record<string, any> = {};
   if (variant.statusLine) {
-    extra.statusLine = {
+    const statusLineEntry = {
       type: "command",
       command: buildHookCmd(variant, variant.statusLine.hook),
     };
+    if (variant.statusLineKey) {
+      // Qwen Code reads `ui.statusLine`; a root-level entry is ignored.
+      extra[variant.statusLineKey] = { statusLine: statusLineEntry };
+    } else {
+      extra.statusLine = statusLineEntry;
+    }
   }
   if (variant.extra) Object.assign(extra, variant.extra);
 

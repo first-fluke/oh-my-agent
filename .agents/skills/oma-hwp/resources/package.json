@@ -5,5 +5,9 @@
   "dependencies": {
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@types/turndown": "^5.0.6"
   }
 }

@@ -10,9 +10,46 @@ import {
 export const SKILLS_AUDIT_WARN_THRESHOLD = 0.6;
 export const SKILLS_AUDIT_FAIL_THRESHOLD = 0.75;
 
+// Library-size routing-decay heuristic (Routing Law — Chen et al. 2026,
+// arXiv:2605.16508). Routing/selection accuracy decays logarithmically as the
+// skill library grows. There is no "safe" count, but we warn once the installed
+// set grows well past the curated baseline (~48 shipped skills) so users who
+// pile on custom skills get a signal to consolidate or sharpen boundaries.
+export const SKILLS_COUNT_WARN_THRESHOLD = 60;
+
+// Black-hole detection (Routing Law, ibid.): an overly-generic skill whose
+// description overlaps *many* neighbors and inappropriately captures requests
+// ("skill hijacking"). Pairwise similarity misses this — a black-hole need not
+// be a near-duplicate of any single skill. We flag a skill whose mean similarity
+// to all others is a positive outlier in the library's breadth distribution.
+export const BLACKHOLE_MIN_SKILLS = 5;
+export const BLACKHOLE_Z = 1.5;
+export const BLACKHOLE_BREADTH_FLOOR = 0.15;
+
 export interface SkillAuditFinding {
   pair: SimilarityPair;
   severity: "warn" | "fail";
+}
+
+/** Per-skill mean cosine similarity to every other skill ("breadth"). */
+export interface SkillBreadth {
+  id: string;
+  breadth: number;
+}
+
+/** A skill flagged as an overly-generic "black-hole" by outlier breadth. */
+export interface BlackHoleFinding {
+  id: string;
+  breadth: number;
+  cutoff: number;
+  severity: "warn";
+}
+
+/** Library-size routing-decay warning. */
+export interface SkillCountFinding {
+  skillCount: number;
+  threshold: number;
+  severity: "warn";
 }
 
 export interface SkillAuditReport {
@@ -21,6 +58,9 @@ export interface SkillAuditReport {
   pairs: SimilarityPair[];
   findings: SkillAuditFinding[];
   worstPair?: SimilarityPair;
+  breadths: SkillBreadth[];
+  blackHoles: BlackHoleFinding[];
+  sizeFinding?: SkillCountFinding;
 }
 
 function readSkillDescriptions(
@@ -43,6 +83,10 @@ function readSkillDescriptions(
     if (!existsSync(skillMdPath)) continue;
     try {
       const raw = readFileSync(skillMdPath, "utf-8");
+      // Skip oma-generated wrappers (e.g. workflow routers). They are command
+      // adapters, not domain skills, and their descriptions are copied from the
+      // workflow — auditing them produces false-positive collisions.
+      if (raw.includes("<!-- oma:generated -->")) continue;
       const { frontmatter } = parseFrontmatter(raw);
       const description =
         typeof frontmatter.description === "string"
@@ -53,6 +97,56 @@ function readSkillDescriptions(
     } catch {}
   }
   return docs;
+}
+
+/**
+ * Mean cosine similarity of each skill to every other skill. A skill with a
+ * high breadth overlaps the whole library — the black-hole signature that
+ * pairwise similarity (which only compares two skills at a time) cannot see.
+ */
+export function computeBreadths(
+  ids: string[],
+  pairs: SimilarityPair[],
+): SkillBreadth[] {
+  if (ids.length < 2) return [];
+  const sums = new Map<string, number>(ids.map((id) => [id, 0]));
+  for (const pair of pairs) {
+    sums.set(pair.a, (sums.get(pair.a) ?? 0) + pair.similarity);
+    sums.set(pair.b, (sums.get(pair.b) ?? 0) + pair.similarity);
+  }
+  const denom = ids.length - 1;
+  return ids
+    .map((id) => ({ id, breadth: (sums.get(id) ?? 0) / denom }))
+    .sort((x, y) => y.breadth - x.breadth);
+}
+
+/**
+ * Flag skills whose breadth is a positive outlier in the library distribution
+ * (>= mean + BLACKHOLE_Z * stddev) and clears an absolute floor. Self-calibrating
+ * so it stays quiet on a library of well-separated skills and only fires on a
+ * genuinely over-generic description.
+ */
+export function detectBlackHoles(breadths: SkillBreadth[]): BlackHoleFinding[] {
+  if (breadths.length < BLACKHOLE_MIN_SKILLS) return [];
+  const values = breadths.map((b) => b.breadth);
+  const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+  const variance =
+    values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  const stddev = Math.sqrt(variance);
+  if (stddev < 1e-9) return []; // uniform breadth → no outlier
+  const cutoff = mean + BLACKHOLE_Z * stddev;
+  const findings: BlackHoleFinding[] = [];
+  for (const b of breadths) {
+    if (b.breadth >= cutoff && b.breadth >= BLACKHOLE_BREADTH_FLOOR) {
+      findings.push({
+        id: b.id,
+        breadth: b.breadth,
+        cutoff,
+        severity: "warn",
+      });
+    }
+  }
+  return findings;
 }
 
 export function auditSkills(workspace: string): SkillAuditReport {
@@ -67,12 +161,28 @@ export function auditSkills(workspace: string): SkillAuditReport {
       findings.push({ pair, severity: "warn" });
     }
   }
+  const breadths = computeBreadths(
+    docs.map((d) => d.id),
+    pairs,
+  );
+  const blackHoles = detectBlackHoles(breadths);
+  const sizeFinding: SkillCountFinding | undefined =
+    docs.length > SKILLS_COUNT_WARN_THRESHOLD
+      ? {
+          skillCount: docs.length,
+          threshold: SKILLS_COUNT_WARN_THRESHOLD,
+          severity: "warn",
+        }
+      : undefined;
   return {
     skillsDir,
     skillCount: docs.length,
     pairs,
     findings,
     worstPair: pairs[0],
+    breadths,
+    blackHoles,
+    sizeFinding,
   };
 }
 
@@ -89,6 +199,13 @@ export function serializeSkillAuditReport(report: SkillAuditReport): string {
         similarity: Number(f.pair.similarity.toFixed(4)),
         severity: f.severity,
       })),
+      blackHoles: report.blackHoles.map((b) => ({
+        id: b.id,
+        breadth: Number(b.breadth.toFixed(4)),
+        cutoff: Number(b.cutoff.toFixed(4)),
+        severity: b.severity,
+      })),
+      sizeFinding: report.sizeFinding ?? null,
     },
     null,
     2,
@@ -97,6 +214,27 @@ export function serializeSkillAuditReport(report: SkillAuditReport): string {
 
 function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function renderBlackHolesAndSize(report: SkillAuditReport): void {
+  for (const bh of report.blackHoles) {
+    console.log(
+      `  [WARN] black-hole: ${bh.id}  (breadth ${formatPercent(bh.breadth)} ≥ cutoff ${formatPercent(bh.cutoff)})`,
+    );
+  }
+  if (report.blackHoles.length > 0) {
+    console.log(
+      "  Over-generic descriptions hijack routing — narrow the trigger to its specific domain.",
+    );
+  }
+  if (report.sizeFinding) {
+    console.log(
+      `  [WARN] library size: ${report.sizeFinding.skillCount} skills (> ${report.sizeFinding.threshold}).`,
+    );
+    console.log(
+      "  Routing accuracy decays as the library grows — consolidate overlapping skills.",
+    );
+  }
 }
 
 export function renderSkillAuditReport(report: SkillAuditReport): void {
@@ -114,6 +252,7 @@ export function renderSkillAuditReport(report: SkillAuditReport): void {
         `  closest pair: ${worst.a} ↔ ${worst.b} (${formatPercent(worst.similarity)})`,
       );
     }
+    renderBlackHolesAndSize(report);
     return;
   }
   for (const finding of report.findings) {
@@ -128,6 +267,7 @@ export function renderSkillAuditReport(report: SkillAuditReport): void {
   console.log(
     "  Rewrite frontmatter `description:` to differentiate triggers, domains, or boundaries.",
   );
+  renderBlackHolesAndSize(report);
 }
 
 export function runSkillsAudit(jsonMode = false): void {

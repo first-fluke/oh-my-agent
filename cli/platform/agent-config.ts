@@ -106,6 +106,7 @@ export type VendorConfig = {
   subcommand?: string;
   prompt_flag?: string;
   auto_approve_flag?: string;
+  read_only_flag?: string;
   output_format_flag?: string;
   output_format?: string;
   model_flag?: string;
@@ -299,6 +300,7 @@ const VendorConfigSchema = z
         return value;
       }),
     auto_approve_flag: z.string().optional(),
+    read_only_flag: z.string().optional(),
     output_format_flag: z.string().optional(),
     output_format: z.string().optional(),
     model_flag: z.string().optional(),

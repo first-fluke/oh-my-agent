@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent-workspace",
-  "version": "8.34.1",
+  "version": "8.38.0",
   "private": true,
   "workspaces": [
     "cli",
@@ -23,6 +23,14 @@
   },
   "engines": {
     "node": ">=24.0"
+  },
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "skills": [
+      ".agents/skills"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",

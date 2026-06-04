@@ -64,6 +64,7 @@ vi.mock("../../platform/skills-installer.js", () => ({
     "hermes",
     "qwen",
   ],
+  EXTENSION_VENDORS: ["pi"],
   CLI_SKILLS_DIR: {
     antigravity: {
       projectPath: ".gemini/antigravity-cli/skills",
@@ -84,11 +85,12 @@ vi.mock("../../platform/skills-installer.js", () => ({
     qwen: { projectPath: ".qwen/skills", homePath: ".qwen/skills" },
   },
   REPO: "first-fluke/oh-my-agent",
-  installCodexWorkflowSkills: vi.fn(),
   installCopilotWorkflowPrompts: vi.fn(),
   installVendorAdaptations: vi.fn(),
   detectExistingCliSymlinkDirs: vi.fn(() => []),
   getInstalledSkillNames: vi.fn(() => []),
+  getInstalledWorkflowNames: vi.fn(() => []),
+  createVendorWorkflowSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   createVendorSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   createCliSymlinks: vi.fn(() => ({ created: [], skipped: [] })),
   applyCursorMcpConfig: vi.fn(),

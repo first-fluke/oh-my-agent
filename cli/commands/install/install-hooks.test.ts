@@ -149,6 +149,51 @@ describe("installHooksFromVariant", () => {
     expect(settings.statusLine.command).toContain("hud.ts");
   });
 
+  it("nests statusLine under ui for Qwen and preserves existing ui keys", () => {
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        const norm = n(p);
+        // Existing Qwen settings already carry a ui.theme entry.
+        if (norm.endsWith(".qwen/settings.json")) {
+          return JSON.stringify({ ui: { theme: "Dark" } });
+        }
+        return JSON.stringify({
+          vendor: "qwen",
+          hookDir: ".qwen/hooks",
+          settingsFile: ".qwen/settings.json",
+          projectDirEnv: "QWEN_PROJECT_DIR",
+          runtime: "bun",
+          events: {},
+          statusLine: { hook: "hud.ts" },
+          statusLineKey: "ui",
+        });
+      },
+    );
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        const norm = n(p);
+        if (norm.includes("variants/") && norm.endsWith(".json")) return true;
+        if (norm.includes("hooks/core")) return true;
+        if (norm.endsWith(".qwen/settings.json")) return true;
+        return false;
+      },
+    );
+
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["qwen"]);
+
+    const writeCall = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(
+      (call: string[]) =>
+        typeof call[0] === "string" &&
+        n(call[0]).endsWith(".qwen/settings.json"),
+    );
+    const settings = JSON.parse(writeCall?.[1] as string);
+    expect(settings.statusLine).toBeUndefined();
+    expect(settings.ui.statusLine.command).toContain("hud.ts");
+    expect(settings.ui.theme).toBe("Dark");
+  });
+
   it("wires hud.ts into Gemini SessionStart, AfterTool, and AfterAgent events", () => {
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({

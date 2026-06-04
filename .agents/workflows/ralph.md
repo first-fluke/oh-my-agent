@@ -1,5 +1,7 @@
 ---
+name: ralph
 description: Ralph - persistent self-referential execution loop wrapping ultrawork with independent verifier verification
+disable-model-invocation: true
 ---
 
 # MANDATORY RULES: VIOLATION IS FORBIDDEN
