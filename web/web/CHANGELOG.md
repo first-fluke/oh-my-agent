@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.9.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.8.2...web-v3.9.0) (2026-06-04)
+
+
+### Features
+
+* **video:** oma-video skill, /video workflow, and key-optional CLI ([#482](https://github.com/first-fluke/oh-my-agent/issues/482)) ([846f0c1](https://github.com/first-fluke/oh-my-agent/commit/846f0c1347d7879b429c47450d85652a248513c3))
+
 ## [3.8.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.8.1...web-v3.8.2) (2026-06-04)
 
 
