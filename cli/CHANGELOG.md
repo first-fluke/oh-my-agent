@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.32.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.32.0...cli-v8.32.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* **codex:** add serena mcp startup timeout ([3b77a0d](https://github.com/first-fluke/oh-my-agent/commit/3b77a0df1c00daf15b5133f7a4238ddbd99029d7))
+
 ## [8.32.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.31.0...cli-v8.32.0) (2026-06-04)
 
 
