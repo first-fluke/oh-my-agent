@@ -53,7 +53,7 @@ function buildPingCommand(cli: string, cliModel: string): CliArgs | null {
     case "cursor":
       return {
         bin: "cursor",
-        args: ["agent", "-p", "--model", cliModel, "ping"],
+        args: ["agent", "-p", "--yolo", "--trust", "--model", cliModel, "ping"],
       };
     default:
       return null;

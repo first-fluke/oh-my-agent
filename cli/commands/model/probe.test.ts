@@ -238,6 +238,62 @@ describe("probeSlug", () => {
 });
 
 // ---------------------------------------------------------------------------
+// probeSlug — spawnSync argv assertions (regression guard for exact args)
+// ---------------------------------------------------------------------------
+
+describe("probeSlug spawnSync argv", () => {
+  it("invokes claude with correct argv for anthropic slug", async () => {
+    mockSpawn({ status: 0 });
+    await probeSlug("anthropic/claude-x");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "claude",
+      ["-p", "ping", "--model", "claude-x"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+
+  it("invokes codex with correct argv for openai slug", async () => {
+    mockSpawn({ status: 0 });
+    await probeSlug("openai/gpt-x");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "codex",
+      ["exec", "-m", "gpt-x", "ping"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+
+  it("invokes gemini with correct argv for google slug", async () => {
+    mockSpawn({ status: 0 });
+    await probeSlug("google/gemini-x");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "gemini",
+      ["-p", "ping", "--model", "gemini-x"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+
+  it("invokes qwen with correct argv for qwen slug", async () => {
+    mockSpawn({ status: 0 });
+    await probeSlug("qwen/qwen-x");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "qwen",
+      ["-p", "ping", "-m", "qwen-x"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+
+  it("invokes cursor with --yolo and --trust flags for cursor slug", async () => {
+    mockSpawn({ status: 0 });
+    await probeSlug("cursor/composer-x");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "cursor",
+      ["agent", "-p", "--yolo", "--trust", "--model", "composer-x", "ping"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
 // describeProbeStatus
 // ---------------------------------------------------------------------------
 
