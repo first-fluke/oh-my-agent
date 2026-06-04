@@ -156,6 +156,7 @@ const VENDOR_FILES: Record<string, string> = {
   codex: "AGENTS.md",
   cursor: "AGENTS.md",
   qwen: "AGENTS.md",
+  pi: "AGENTS.md",
 };
 
 /** Vendor-specific subagent spawn instructions. */
@@ -168,6 +169,7 @@ const VENDOR_SPAWN: Record<string, string> = {
   codex:
     "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent:spawn`",
   qwen: "`oma agent:spawn {agent} {prompt} {sessionId}`",
+  pi: "pi has no native subagent API; use `oma agent:spawn {agent} {prompt} {sessionId} -m pi` for CLI subprocess dispatch",
 };
 
 /** Vendor-specific hook info. */
@@ -181,6 +183,7 @@ const VENDOR_HOOKS: Record<string, string> = {
   cursor:
     "Hooks: `UserPromptSubmit` / `beforeSubmitPrompt` (keyword detection)",
   qwen: "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)",
+  pi: "Extension bridge: `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts",
 };
 
 /**

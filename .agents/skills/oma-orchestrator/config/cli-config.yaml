@@ -80,6 +80,15 @@ vendors:
     default_model: "auto"
     isolation_method: "directory"
 
+  # pi headless print mode: `pi [--model …] -p "<prompt>"`.
+  # Model accepts any pi model pattern/alias, including thinking suffixes.
+  pi:
+    command: pi
+    prompt_flag: "-p"
+    model_flag: "--model"
+    default_model: "sonnet:high"
+    isolation_method: "directory"
+
 # SubAgent execution settings
 execution:
   # Directory for subagent results

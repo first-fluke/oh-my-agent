@@ -13,6 +13,7 @@ export type RuntimeVendor =
   | "qwen"
   | "grok"
   | "kiro"
+  | "pi"
   | "unknown";
 
 export type DispatchMode = "native" | "external";

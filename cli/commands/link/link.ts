@@ -5,6 +5,7 @@ import { VENDORS } from "../../constants/vendors.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { getInstallMode } from "../../platform/install-context.js";
 import { installPiExtension } from "../../platform/pi-extension-composer.js";
+import { installPiPromptTemplates } from "../../platform/pi-prompts.js";
 import {
   applyCursorRules,
   mergeRulesIndexForVendor,
@@ -156,8 +157,8 @@ export function link(opts: LinkOptions = {}): LinkResult {
       : readVendorsFromConfig(cwd);
   const hookVendors = configuredVendors.filter(isHookVendor);
   // Extension-model vendors (pi) install via a forked path, not the
-  // settings-file hook flow. They are not in the CliVendor union, so match on
-  // the raw configured strings.
+  // settings-file hook flow. Match through the extension-vendor guard so they
+  // stay out of the hook-vendor pipeline.
   const extensionVendors = (configuredVendors as readonly string[]).filter(
     isExtensionVendor,
   );
@@ -170,17 +171,24 @@ export function link(opts: LinkOptions = {}): LinkResult {
   }
 
   // Install in-process extension vendors (pi) regardless of whether any
-  // hook-model vendors are configured. pi auto-loads `.pi/extensions/oma/`.
-  if (extensionVendors.includes("pi")) {
+  // hook-model vendors are configured. pi auto-loads `.pi/extensions/oma/` and
+  // `.pi/prompts/*.md` supplies OMA workflow slash commands.
+  const piConfigured = extensionVendors.includes("pi");
+  let piMergedDocs = false;
+  if (piConfigured) {
     installPiExtension(cwd, cwd);
+    installPiPromptTemplates(cwd, cwd);
+    if (hookVendors.length === 0) {
+      piMergedDocs = mergeRulesIndexForVendor(cwd, "pi");
+    }
     if (!quiet) {
-      console.log(`${pc.green("✓")} pi (.pi/extensions/oma/)`);
+      console.log(`${pc.green("✓")} pi (.pi/extensions/oma/, .pi/prompts/)`);
     }
   }
 
   if (hookVendors.length === 0) {
-    // Only extension vendors were configured; the bridge is installed above.
-    return empty;
+    // Only extension vendors were configured; the bridge/prompts are installed above.
+    return { ...empty, mergedDocs: piMergedDocs ? ["AGENTS.md"] : [] };
   }
 
   if (!quiet) {
@@ -403,6 +411,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (mergeRulesIndexForVendor(cwd, v)) {
       mergedDocsSet.add(target);
       mergedDocs.push(target);
+    }
+  }
+  if (piConfigured && !mergedDocsSet.has("AGENTS.md")) {
+    if (mergeRulesIndexForVendor(cwd, "pi")) {
+      mergedDocsSet.add("AGENTS.md");
+      mergedDocs.push("AGENTS.md");
     }
   }
 

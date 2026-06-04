@@ -104,6 +104,7 @@ const skillsState = vi.hoisted(() => ({
     "hermes",
     "qwen",
   ],
+  EXTENSION_VENDORS: ["pi"],
   CLI_SKILLS_DIR: {
     antigravity: {
       projectPath: ".gemini/antigravity-cli/skills",
