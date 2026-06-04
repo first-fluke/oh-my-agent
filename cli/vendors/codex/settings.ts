@@ -16,11 +16,14 @@ import {
   withSerenaDashboardOpenDisabled,
 } from "../serena.js";
 
+export const RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC = 90;
+
 export const RECOMMENDED_CODEX_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
   serena: {
     command: "serena",
     args: serenaStartMcpArgs("codex"),
+    startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
     env: {
       SERENA_LOG_LEVEL: "info",
     },
@@ -112,6 +115,7 @@ export function needsCodexSettingsUpdate(
   if (!hasCodexMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
   if (!hasSerenaDashboardOpenDisabled(serena)) return true;
+  if (typeof serena.startup_timeout_sec !== "number") return true;
   const chromeDevtools = isRecord(mcp)
     ? (mcp["chrome-devtools"] as CodexMcpServer)
     : undefined;
@@ -154,6 +158,14 @@ function applyPrivacyTable(
   }
 }
 
+function withSerenaStartupTimeout<T extends CodexMcpServer>(server: T): T {
+  if (typeof server.startup_timeout_sec === "number") return server;
+  return {
+    ...server,
+    startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
+  };
+}
+
 export function applyCodexSettings(
   settings: unknown,
   options: CodexSettingsOptions = {},
@@ -165,9 +177,11 @@ export function applyCodexSettings(
   const currentSerena = currentMcp.serena as CodexMcpServer | undefined;
 
   const nextSerena = withSerenaDashboardOpenDisabled(
-    hasCodexMcpTransport(currentSerena)
-      ? currentSerena
-      : { ...(currentSerena || {}), ...RECOMMENDED_CODEX_MCP.serena },
+    withSerenaStartupTimeout(
+      hasCodexMcpTransport(currentSerena)
+        ? currentSerena
+        : { ...(currentSerena || {}), ...RECOMMENDED_CODEX_MCP.serena },
+    ),
   );
 
   base.mcp_servers = {

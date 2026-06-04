@@ -6,6 +6,7 @@ import {
   parseCodexConfig,
   RECOMMENDED_CODEX_FEATURES,
   RECOMMENDED_CODEX_MCP,
+  RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
   serializeCodexConfig,
   setCodexReasoningEffort,
 } from "./settings.js";
@@ -71,6 +72,7 @@ describe("codex settings", () => {
             "--open-web-dashboard",
             "false",
           ],
+          startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
         },
       },
       features: { ...RECOMMENDED_CODEX_FEATURES },
@@ -108,7 +110,11 @@ describe("codex settings", () => {
             "--isolated",
           ],
         },
-        serena: { command: "uvx", args: ["serena"] },
+        serena: {
+          command: "uvx",
+          args: ["serena"],
+          startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
+        },
       },
       features: { ...RECOMMENDED_CODEX_FEATURES },
     };
@@ -124,6 +130,31 @@ describe("codex settings", () => {
       analytics: { enabled: false },
     };
     expect(needsCodexSettingsUpdate(settings, { telemetry: true })).toBe(true);
+  });
+
+  it("requires update when serena startup timeout is missing", () => {
+    const settings = {
+      mcp_servers: {
+        "chrome-devtools": RECOMMENDED_CODEX_MCP["chrome-devtools"],
+        serena: {
+          command: "serena",
+          args: [
+            "start-mcp-server",
+            "--context",
+            "codex",
+            "--project",
+            ".",
+            "--open-web-dashboard",
+            "false",
+          ],
+        },
+      },
+      features: { ...RECOMMENDED_CODEX_FEATURES },
+      analytics: { enabled: false },
+      feedback: { enabled: false },
+    };
+
+    expect(needsCodexSettingsUpdate(settings)).toBe(true);
   });
 
   it("applies analytics.enabled=false and feedback.enabled=false by default", () => {
@@ -217,6 +248,7 @@ describe("codex settings", () => {
         serena: {
           command: "uvx",
           args: ["serena"],
+          startup_timeout_sec: 120,
         },
       },
     };
@@ -225,7 +257,24 @@ describe("codex settings", () => {
     expect(result.mcp_servers?.serena).toEqual({
       command: "uvx",
       args: ["serena"],
+      startup_timeout_sec: 120,
     });
+  });
+
+  it("adds serena startup timeout to existing serena config when missing", () => {
+    const settings = {
+      mcp_servers: {
+        serena: {
+          command: "uvx",
+          args: ["serena"],
+        },
+      },
+    };
+
+    const result = applyCodexSettings(settings);
+    expect(result.mcp_servers?.serena?.startup_timeout_sec).toBe(
+      RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
+    );
   });
 
   it("round-trips TOML via parse and serialize", () => {
