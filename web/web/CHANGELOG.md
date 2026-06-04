@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.8.0...web-v3.8.1) (2026-06-04)
+
+
+### Documentation
+
+* document Swift native iOS support across en and i18n ([fc0cbb0](https://github.com/first-fluke/oh-my-agent/commit/fc0cbb01d6ed2b2f59a2ef4329069c79b3e047d1))
+
 ## [3.8.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.7.1...web-v3.8.0) (2026-06-01)
 
 
