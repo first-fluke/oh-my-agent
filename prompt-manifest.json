@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.38.0",
-  "releaseDate": "2026-06-04T12:43:25.090Z",
+  "releaseDate": "2026-06-04T12:46:10.784Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1775,11 +1775,6 @@
       "size": 4498
     },
     {
-      "path": ".agents/skills/oma-video/resources/remotion/package-lock.json",
-      "sha256": "377e52ae78d3edcbed0e3792cca994a85f8399d67208afb985ad2399beee0a0f",
-      "size": 98207
-    },
-    {
       "path": ".agents/skills/oma-video/resources/remotion/package.json",
       "sha256": "b5e92cac596c6c0cc5cc09359bb83524437c766ca98fd102e0a6d8eb09864033",
       "size": 805
@@ -1883,16 +1878,6 @@
       "path": ".agents/skills/oma-voice/resources/voice-matrix.md",
       "sha256": "edf4818cd4b3b9c73214341a399095037ab5563bbd442c23df8e49ed7036739a",
       "size": 3452
-    },
-    {
-      "path": ".agents/state/keyword-detector-state.json",
-      "sha256": "c267245ee949e46002b949bd42544869a56c00009bd30d1c6eab8932a8c122cd",
-      "size": 115
-    },
-    {
-      "path": ".agents/state/skill-sessions.json",
-      "sha256": "ebc68e5ed73dbd09b79dd089356920164fcfb405e3e8469f0550c83e7a8f0ca9",
-      "size": 188
     },
     {
       "path": ".agents/workflows/architecture.md",
@@ -2011,6 +1996,6 @@
   "metadata": {
     "skillCount": 31,
     "workflowCount": 22,
-    "totalFiles": 400
+    "totalFiles": 397
   }
 }
