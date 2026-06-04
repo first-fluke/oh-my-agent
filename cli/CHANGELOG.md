@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.35.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.34.1...cli-v8.35.0) (2026-06-04)
+
+
+### Features
+
+* **skills:** add black-hole and library-size checks to skills audit ([2a5aea4](https://github.com/first-fluke/oh-my-agent/commit/2a5aea458fe99cdccc24764ed15679b8125b0f8e))
+
+
+### Refactoring
+
+* **oma-hwp:** use Node fs API and proper types in flatten-tables ([8bca339](https://github.com/first-fluke/oh-my-agent/commit/8bca3397809938cc1c52797c09b780667aed2f7c))
+* **skills:** symlink workflows directly, drop generated wrappers ([0206d71](https://github.com/first-fluke/oh-my-agent/commit/0206d713fcb290ade033fd30e2fffd16ca7fe9b6))
+
+
+### Documentation
+
+* bump SSL-lite arXiv preprint reference to Version 4 ([d3b7d7e](https://github.com/first-fluke/oh-my-agent/commit/d3b7d7ee63b0d136535b75e098d4c34e23ee5a28))
+
 ## [8.34.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.34.0...cli-v8.34.1) (2026-06-04)
 
 
