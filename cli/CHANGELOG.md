@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.34.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.34.0...cli-v8.34.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* **agent:** wrap antigravity subagents in a PTY to capture headless stdout ([d85fa6c](https://github.com/first-fluke/oh-my-agent/commit/d85fa6c40b64433e07c02c87091f7a14e660e4e7))
+
 ## [8.34.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.33.0...cli-v8.34.0) (2026-06-04)
 
 
