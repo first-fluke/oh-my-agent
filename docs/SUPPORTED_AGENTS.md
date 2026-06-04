@@ -17,6 +17,7 @@ The installer can then project compatibility to other tool-specific directories 
 | Cursor | `.cursor/skills/` + `.cursor/rules/*.mdc` | First-class | Native + Adapter | `oma install` / `oma link cursor` materializes skills, rules, MCP symlink, and AGENTS.md from `.agents/`; `cursor-agent` is dispatched natively via the `cursor` preset |
 | GitHub Copilot | `.github/skills/` | Supported | Optional symlink | Created when selected during install |
 | Grok | `.agents/skills/` (direct) + `.grok/hooks/` + `.grok/agents/` | Native + Hooks + Agents | Supported (hooks + agent variant) |
+| pi | `.agents/skills/` + `.pi/prompts/` + `.pi/extensions/oma/` | Supported | Native skills + Extension bridge | Pi loads OMA skills directly, workflow prompts via `.pi/prompts`, and keyword/test hooks through a TypeScript extension bridge. |
 
 ## Vendor Adaptation
 
@@ -31,6 +32,7 @@ Abstract agent definitions in `.agents/agents/` are vendor-neutral (name, descri
 | Gemini CLI | `.gemini/agents/*.md` | Markdown | Native |
 | Antigravity | (reads `.agents/agents/` directly) | YAML | Not supported (no custom subagents) |
 | Grok | `.grok/agents/` (generated) + `.grok/hooks/` | Markdown + JSON | Supported via variant |
+| pi | `.pi/prompts/*.md` + `.pi/extensions/oma/` | Prompt templates + TypeScript extension | External via `oma agent:spawn -m pi` |
 
 ## What “First-class” Means
 

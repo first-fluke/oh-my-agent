@@ -56,6 +56,10 @@ describe("detectRuntimeVendor", () => {
     );
   });
 
+  it("returns 'pi' when PI_CODING_AGENT=true", () => {
+    expect(detectRuntimeVendor({ PI_CODING_AGENT: "true" })).toBe("pi");
+  });
+
   it("returns 'unknown' when no known env vars are present", () => {
     expect(detectRuntimeVendor({})).toBe("unknown");
   });
@@ -549,6 +553,17 @@ describe("buildExternalInvocation — vendor branches", () => {
       "the-prompt",
     );
     expect(inv.args.at(-1)).toBe("the-prompt");
+  });
+
+  it("pi: uses -p as the prompt value flag and omits approval flags", () => {
+    const inv = buildExternalInvocation(
+      "pi",
+      { command: "pi", model_flag: "--model", default_model: "sonnet:high" },
+      "-p",
+      "the-prompt",
+    );
+    expect(inv.command).toBe("pi");
+    expect(inv.args).toEqual(["--model", "sonnet:high", "-p", "the-prompt"]);
   });
 
   it("with promptFlag → flag and prompt appended as a pair", () => {

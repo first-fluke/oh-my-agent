@@ -24,6 +24,14 @@
   "engines": {
     "node": ">=24.0"
   },
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "skills": [
+      ".agents/skills"
+    ]
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@commitlint/cli": "20.4.3",

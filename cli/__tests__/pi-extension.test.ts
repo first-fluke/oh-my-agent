@@ -1,4 +1,11 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -12,6 +19,7 @@ import {
   installPiExtension,
   PI_EXTENSION_DIR,
 } from "../platform/pi-extension-composer.js";
+import { installPiPromptTemplates } from "../platform/pi-prompts.js";
 
 const REPO_ROOT = join(__dirname, "../..");
 
@@ -77,6 +85,34 @@ describe("installPiExtension", () => {
  * (subprocess spawn → JSON parse → systemPrompt assembly / in-place command
  * rewrite) without depending on keyword config or mutating the repo.
  */
+describe("installPiPromptTemplates", () => {
+  let target: string;
+
+  beforeEach(() => {
+    target = mkdtempSync(join(tmpdir(), "oma-pi-prompts-"));
+  });
+
+  it("materializes workflow slash-command wrappers", () => {
+    const written = installPiPromptTemplates(REPO_ROOT, target);
+    const workPrompt = join(target, ".pi", "prompts", "work.md");
+    expect(written).toContain(join(".pi", "prompts", "work.md"));
+    expect(existsSync(workPrompt)).toBe(true);
+    rmSync(target, { recursive: true, force: true });
+  });
+
+  it("does not overwrite user-authored pi prompts", () => {
+    const promptDir = join(target, ".pi", "prompts");
+    const workPrompt = join(promptDir, "work.md");
+    mkdirSync(promptDir, { recursive: true });
+    writeFileSync(workPrompt, "custom user prompt");
+
+    installPiPromptTemplates(REPO_ROOT, target);
+
+    expect(readFileSync(workPrompt, "utf-8")).toBe("custom user prompt");
+    rmSync(target, { recursive: true, force: true });
+  });
+});
+
 describe("pi bridge handlers", () => {
   let target: string;
   let extDir: string;
