@@ -489,6 +489,13 @@ export function serializeReportAsJson(report: DoctorReport): string {
         similarity: Number(f.pair.similarity.toFixed(4)),
         severity: f.severity,
       })),
+      blackHoles: report.skillAudit.blackHoles.map((b) => ({
+        id: b.id,
+        breadth: Number(b.breadth.toFixed(4)),
+        cutoff: Number(b.cutoff.toFixed(4)),
+        severity: b.severity,
+      })),
+      sizeFinding: report.skillAudit.sizeFinding ?? null,
     },
     dualInstall: {
       project: report.dualInstall.project.installed
