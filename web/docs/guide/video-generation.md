@@ -114,7 +114,7 @@ It reports `node`, `chromium`, `ffmpeg`, `remotion-project`, `mpt-project`, `pla
 ## Output layout
 
 ```
-.agents/results/video/{timestamp}-{shortid}-{mode}/
+.agents/results/videos/{timestamp}-{shortid}-{mode}/
 ├── script.json          # scenes + narration
 ├── render-spec.json     # the deterministic render contract
 ├── timing.json          # per-segment timing (voicebox-stt or estimated)

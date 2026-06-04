@@ -419,7 +419,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 4. **Build the render-spec:** Write `render-spec.json` (the determinism boundary) plus assets into the run directory.
 5. **Render:** Spawn the vendored Remotion project (or MoneyPrinterTurbo) as a subprocess; on any failure, emit a deterministic placeholder so the run still completes. Live capture is recorded as `nondeterministic` in the manifest.
 
-**Output:** A run directory at `.agents/results/video/{timestamp}-{shortid}-{mode}/` with `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4`, and `manifest.json`. See the [Video Generation guide](../guide/video-generation.md).
+**Output:** A run directory at `.agents/results/videos/{timestamp}-{shortid}-{mode}/` with `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4`, and `manifest.json`. See the [Video Generation guide](../guide/video-generation.md).
 
 ---
 
