@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.36.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.35.0...cli-v8.36.0) (2026-06-04)
+
+
+### Features
+
+* **cursor:** disable cursor-agent commit attribution on link ([b1dc2c1](https://github.com/first-fluke/oh-my-agent/commit/b1dc2c1b0ad0d6be0908f0361dac552b251df53f))
+
 ## [8.35.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.34.1...cli-v8.35.0) (2026-06-04)
 
 

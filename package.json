@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent-workspace",
-  "version": "8.35.0",
+  "version": "8.36.0",
   "private": true,
   "workspaces": [
     "cli",
