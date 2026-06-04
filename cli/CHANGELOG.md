@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.32.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.31.0...cli-v8.32.0) (2026-06-04)
+
+
+### Features
+
+* **hooks:** add pi (Earendil) extension bridge variant ([e1f98c2](https://github.com/first-fluke/oh-my-agent/commit/e1f98c21b921d9d1fe1b2a1bc16dd4ad1968ce4d))
+* **hooks:** mirror Grok resume context to .grok/rules/oma-state.md ([5bcb607](https://github.com/first-fluke/oh-my-agent/commit/5bcb607aea9bb513c8eb2e14076f09b383ddb106))
+* **mcp:** add chrome-devtools MCP to all vendors and migrate uvx serena ([4469116](https://github.com/first-fluke/oh-my-agent/commit/4469116c2053d6c5a986afa113a8d94da3ccbd94))
+
+
+### Bug Fixes
+
+* **hooks:** drop non-functional Grok file mirror ([0a45d85](https://github.com/first-fluke/oh-my-agent/commit/0a45d8581f724356de06484608c3446506d95dbc))
+* **hooks:** make skill-injector agy-aware ([ddf4bdd](https://github.com/first-fluke/oh-my-agent/commit/ddf4bddfeb74fe69f0a5a65a4c1a8a0ab3290af3))
+* **test:** update gemini migration 006 idempotency fixture for chrome-devtools ([04c09b7](https://github.com/first-fluke/oh-my-agent/commit/04c09b76eedd5d5fc75876b138dc745d1af48afb))
+
 ## [8.31.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.30.0...cli-v8.31.0) (2026-06-03)
 
 
