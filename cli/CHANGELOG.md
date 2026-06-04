@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.33.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.32.1...cli-v8.33.0) (2026-06-04)
+
+
+### Features
+
+* **mobile:** add Swift native iOS support to oma-mobile ([276e968](https://github.com/first-fluke/oh-my-agent/commit/276e9687d52c47c57a47f7327f4f76b77f67289f))
+* **stack-set:** detect mobile stacks and route to resolved skill ([2d5271a](https://github.com/first-fluke/oh-my-agent/commit/2d5271a5179788ae75ee4ddfaedf90c4d9378a40))
+* **verify:** run swift build/test for oma verify mobile ([564faa1](https://github.com/first-fluke/oh-my-agent/commit/564faa18c17907deede2f9b891896238037afe07))
+
+
+### Refactoring
+
+* **verify:** extract shared stack-verify schema ([2fc3f2c](https://github.com/first-fluke/oh-my-agent/commit/2fc3f2c8ffbac6b67767324cc2e665efdd05eb31))
+
 ## [8.32.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.32.0...cli-v8.32.1) (2026-06-04)
 
 
