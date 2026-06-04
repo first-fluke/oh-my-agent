@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.39.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.38.0...cli-v8.39.0) (2026-06-04)
+
+
+### Features
+
+* **video:** oma-video skill, /video workflow, and key-optional CLI ([#482](https://github.com/first-fluke/oh-my-agent/issues/482)) ([846f0c1](https://github.com/first-fluke/oh-my-agent/commit/846f0c1347d7879b429c47450d85652a248513c3))
+
 ## [8.38.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.37.0...cli-v8.38.0) (2026-06-04)
 
 
