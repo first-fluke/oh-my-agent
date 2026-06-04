@@ -83,6 +83,12 @@ interface StatuslineStdin {
     five_hour?: RateLimit;
     seven_day?: RateLimit;
   };
+  // Qwen Code statusLine fields (git branch + line metrics live under
+  // different keys than Claude/agy). Schema: qwen-code statusLine docs.
+  git?: { branch?: string };
+  metrics?: {
+    files?: { total_lines_added?: number; total_lines_removed?: number };
+  };
   // agy StatusLine fields (snake_case; Antigravity hides $cost / rate-limits).
   // Schema: antigravity.google StatusLine "Available JSON fields".
   agent_state?: string;
@@ -328,8 +334,11 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
 
   // 6. Lines changed (vendor-provided only; agy doesn't track this and we
   //    intentionally don't synthesize from git — keep what the vendor knows).
-  const added = input.cost?.total_lines_added;
-  const removed = input.cost?.total_lines_removed;
+  const added =
+    input.cost?.total_lines_added ?? input.metrics?.files?.total_lines_added;
+  const removed =
+    input.cost?.total_lines_removed ??
+    input.metrics?.files?.total_lines_removed;
   if (added || removed) {
     const diffParts: string[] = [];
     if (added) diffParts.push(green(`+${added}`));
@@ -340,8 +349,9 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
   // 7. agy StatusLine signals (presence-guarded; Claude payloads omit these).
   //    git branch (+dirty marker), live agent state, active subagents,
   //    background tasks, queued inputs, and a pending tool-confirmation flag.
-  if (input.vcs?.branch) {
-    parts.push(dim(`⎇ ${input.vcs.branch}${input.vcs.dirty ? "*" : ""}`));
+  const branch = input.vcs?.branch ?? input.git?.branch;
+  if (branch) {
+    parts.push(dim(`⎇ ${branch}${input.vcs?.dirty ? "*" : ""}`));
   }
   if (input.agent_state && input.agent_state !== "idle") {
     parts.push(yellow(input.agent_state));

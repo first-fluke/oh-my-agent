@@ -29,5 +29,9 @@
       "hook": "persistent-mode.ts",
       "timeout": 5
     }
-  }
+  },
+  "statusLine": {
+    "hook": "hud.ts"
+  },
+  "statusLineKey": "ui"
 }
