@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.34.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.33.0...cli-v8.34.0) (2026-06-04)
+
+
+### Features
+
+* **hooks:** restore Grok .grok/rules context mirror ([fdbe42f](https://github.com/first-fluke/oh-my-agent/commit/fdbe42fc79839d980a887210e498c8cc12cde9fd))
+
 ## [8.33.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.32.1...cli-v8.33.0) (2026-06-04)
 
 
