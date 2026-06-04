@@ -583,13 +583,20 @@ export class VideoOrchestrator {
       const estimate = provider.estimateCost(input);
       ctx.costBreakdown[provider.id] =
         (ctx.costBreakdown[provider.id] ?? 0) + estimate.usd;
+      // Gate on the CUMULATIVE total across providers, not this provider's
+      // single estimate — otherwise several individually-under-cap providers
+      // can together exceed --max-usd without ever tripping the guardrail.
+      const totalUsd = Object.values(ctx.costBreakdown).reduce(
+        (acc, value) => acc + value,
+        0,
+      );
       if (
         estimate.usd > 0 &&
-        estimate.usd >= ctx.normalized.maxUsd &&
+        totalUsd >= ctx.normalized.maxUsd &&
         !ctx.normalized.yes
       ) {
         throw new CostGuardrailError(
-          `${provider.id} estimated ${estimate.usd.toFixed(2)} USD (${estimate.basis}); pass -y or raise --max-usd to continue.`,
+          `estimated ${totalUsd.toFixed(2)} USD total (${provider.id} +${estimate.usd.toFixed(2)}, ${estimate.basis}); pass -y or raise --max-usd to continue.`,
         );
       }
       try {

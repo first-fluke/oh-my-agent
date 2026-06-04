@@ -221,8 +221,8 @@ export class RemotionLikeCompositor implements Compositor {
     const parsed = this.parseDriverResult(res.stdout);
     if (!parsed || parsed.ok !== true) {
       const reason =
-        parsed?.error ??
-        (res.stderr || res.stdout).trim().split("\n").slice(-2).join(" | ") ??
+        parsed?.error ||
+        (res.stderr || res.stdout).trim().split("\n").slice(-2).join(" | ") ||
         `exit ${res.code}`;
       throw new Error(`driver: ${reason}`);
     }
