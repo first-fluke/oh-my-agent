@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.37.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.36.0...cli-v8.37.0) (2026-06-04)
+
+
+### Features
+
+* **hooks:** add qwen statusLine (HUD) support with ui nesting ([cee4023](https://github.com/first-fluke/oh-my-agent/commit/cee4023b120eaed86293621f1c8f1d9a0baea0b1))
+* **pi:** add Pi support ([#478](https://github.com/first-fluke/oh-my-agent/issues/478)) ([cd12359](https://github.com/first-fluke/oh-my-agent/commit/cd123591bd651df2b9bb6b08c49cb4db69b2504d))
+
 ## [8.36.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.35.0...cli-v8.36.0) (2026-06-04)
 
 
