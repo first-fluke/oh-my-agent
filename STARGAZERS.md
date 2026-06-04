@@ -5,18 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-02 · 5 unstarred
+## 2026-06-04 · 1 unstarred
 
-- **@ekko8600** · ekko · Southeast University · 6 repos · 7 followers
-  - Southeast University,State Key Laboratory of Bioelectronics
-- **@nampard** · 1 repos · 0 followers
-- **@nurazharsg** · 0 repos · 0 followers
-- **@rpls-byeongwoo** · 이병우 · 1 repos · 0 followers
-- **@szilleryy** · Szilléry Szabolcs · 1 repos · 1 followers
+- **@thehealingcenterllc4-lgtm** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1048)
+## Current (1054)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -154,6 +149,7 @@ summaries to spot which persona is churning.
 - @caicedoadosnis974 — 2026-04-18
 - @caldremch — 2026-04-22
 - @callmejustdodo — 2026-02-26
+- @CatGaoGao — 2026-06-03
 - @cavanaug — 2026-03-18
 - @cbbfcd — 2026-05-07
 - @CBottle — 2026-02-10
@@ -394,6 +390,7 @@ summaries to spot which persona is churning.
 - @hd0126 — 2026-04-26
 - @he9lin — 2026-04-20
 - @hebingbinghe — 2026-03-25
+- @Hecateto — 2026-06-03
 - @HectorSin — 2026-03-09
 - @hegc-co — 2026-05-31
 - @helloicyvodka — 2026-05-09
@@ -496,6 +493,7 @@ summaries to spot which persona is churning.
 - @jhkim-timplus — 2026-05-26
 - @ji-hun-park — 2026-02-02
 - @Jian-debug — 2026-05-23
+- @jianbangzhang — 2026-06-03
 - @jiho1120 — 2026-03-17
 - @jihoon-seo — 2026-02-02
 - @jikoo11 — 2026-05-17
@@ -631,11 +629,13 @@ summaries to spot which persona is churning.
 - @ludongrong — 2026-04-20
 - @luisfernandosoni — 2026-02-10
 - @lujunlujun66 — 2026-04-20
+- @luluthehungrycat — 2026-06-03
 - @LunaticChanel — 2026-05-21
 - @Luxthelee — 2026-03-17
 - @lvt-yousiang — 2026-05-15
 - @LWH-9393 — 2026-04-19
 - @Lyine0924 — 2026-04-27
+- @lz-lunzi — 2026-06-03
 - @m0ndez — 2026-03-23
 - @m2sh — 2026-06-02
 - @m8928 — 2026-04-22
@@ -660,6 +660,7 @@ summaries to spot which persona is churning.
 - @mazhenxiao — 2026-04-23
 - @mazoonfahmi — 2026-02-25
 - @me3602 — 2026-03-16
+- @melbazpeach-source — 2026-06-03
 - @Melivo — 2026-04-05
 - @mementio — 2026-02-01
 - @menglikanhua — 2026-04-10
@@ -930,7 +931,6 @@ summaries to spot which persona is churning.
 - @Terminator637 — 2026-05-11
 - @Teteulggu — 2026-02-12
 - @TheCrAge100 — 2026-03-05
-- @thehealingcenterllc4-lgtm — 2026-04-24
 - @themagrus — 2026-04-28
 - @therustyrobot — 2026-03-26
 - @thexmeta — 2026-02-07
@@ -981,6 +981,7 @@ summaries to spot which persona is churning.
 - @victoryhb — 2026-03-24
 - @vinnyduke — 2026-05-18
 - @virajp — 2026-03-21
+- @vishalbelsare — 2026-06-04
 - @vladdick88 — 2026-03-17
 - @vmouradev — 2026-02-02
 - @Vnyl — 2026-04-10
