@@ -11,7 +11,7 @@
 //
 // MECHANISM ONLY: nothing here assumes anything about the flow, its purpose, or
 // its platform. No credential handling of any kind — a human drives the flow.
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 import { CaptureRequiredError } from "../errors.js";
 import { runCapture } from "../internal/exec.js";
@@ -100,9 +100,9 @@ export class PlaywrightCaptureProvider implements CaptureProvider {
    */
   async ingest(capturePath: string): Promise<RawFootage> {
     const abs = path.resolve(this.cwd, capturePath);
-    if (!existsSync(abs)) {
+    if (!existsSync(abs) || statSync(abs).size === 0) {
       throw new CaptureRequiredError(
-        `web capture produced no file at ${maskPath(abs)}`,
+        `web capture produced no usable file at ${maskPath(abs)}`,
       );
     }
     return { path: realCanonical(abs) };

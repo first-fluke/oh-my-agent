@@ -68,7 +68,7 @@ export class PexelsVisualProvider implements VisualProvider {
 
   private async search(scene: Scene): Promise<string | null> {
     const query =
-      scene.visual.prompt ?? scene.onScreenText.join(" ") ?? scene.id;
+      scene.visual.prompt || scene.onScreenText.join(" ") || scene.id;
     try {
       const res = await http.get(PEXELS_API, {
         params: { query, per_page: 1, orientation: "portrait" },

@@ -12,7 +12,7 @@
 //      node_modules contains `playwright` (or `@playwright/test`) at/above the
 //      minimum version, with a chromium browser already downloaded
 //   3. cache: ~/.cache/oma-video/playwright (installed by doctor --install-playwright)
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -245,6 +245,9 @@ export async function installPlaywright(): Promise<PlaywrightInstallResult> {
 
   // 1. Install the `playwright` package into the cache dir if absent/outdated.
   if (!isUsablePlaywrightDir(dir)) {
+    // `npm init`/`npm i` run with `cwd: dir`; npm does not create its working
+    // directory, so the cache dir must exist first (critical on a fresh machine).
+    mkdirSync(dir, { recursive: true });
     // `npm i` needs a package.json to anchor the install in the cache dir.
     await runCapture("npm", ["init", "-y"], {
       cwd: dir,

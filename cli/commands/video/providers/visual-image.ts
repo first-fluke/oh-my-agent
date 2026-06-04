@@ -66,7 +66,7 @@ export class OmaImageVisualProvider implements VisualProvider {
   ): Promise<string | null> {
     const { width, height } = snapAspectToImageSize(opts.aspect);
     const prompt =
-      scene.visual.prompt ?? scene.onScreenText.join(" ") ?? scene.id;
+      scene.visual.prompt || scene.onScreenText.join(" ") || scene.id;
     const outDir = path.join(opts.runDir, "visuals");
     const { bin, prefixArgs } = resolveOmaInvocation();
     const res = await runCapture(
