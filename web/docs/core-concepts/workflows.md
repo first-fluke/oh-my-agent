@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Complete reference for all 16 oh-my-agent workflows, covering slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
+description: Complete reference for all 17 oh-my-agent workflows, covering slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
 ---
 
 # Workflows
 
 Workflows are structured multi-step processes triggered by slash commands or natural language keywords. They define how agents collaborate on tasks, from single-phase utilities to complex 5-phase quality gates.
 
-There are 16 workflows, 4 of which are persistent (they maintain state and cannot be accidentally interrupted).
+There are 17 workflows, 4 of which are persistent (they maintain state and cannot be accidentally interrupted).
 
 ---
 
@@ -396,6 +396,30 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Steps:** Detect (scan manifests: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> Confirm (display detected stack, get user confirmation) -> Generate (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` with 8 mandatory patterns, `stack/api-template.*`) -> Verify.
 
 **Output:** Files in the resolved domain skill's `stack/` directory (e.g. `.agents/skills/oma-backend/stack/` or `.agents/skills/oma-mobile/stack/`). Does not modify SKILL.md or `resources/`.
+
+---
+
+### /video
+
+**Description:** Drive the `oma-video` skill end-to-end: brief → script → narration → visuals → captions → render-spec → vendored Remotion (or MoneyPrinterTurbo) compositor, producing a reproducible run directory with a real `.mp4`. Key-optional — every stage falls back to a deterministic branch, so a run completes with no API keys. Executes inline (no subagent spawning).
+
+**Trigger keywords:**
+| Language | Keywords |
+|----------|----------|
+| Universal | "/video", "oma-video", "remotion", "shorts", "reels", "screencast" |
+| English | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
+| Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
+| Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
+| Chinese | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+
+**Steps:**
+1. **Resolve the brief and mode:** Pick `shorts` (9:16), `explainer` (16:9), or `demo` (screen/web capture); apply mode defaults, overridable by flags.
+2. **Compose the script:** Generate scenes + narration (LLM when a key is present, else a deterministic outline from the brief).
+3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised Playwright web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
+4. **Build the render-spec:** Write `render-spec.json` (the determinism boundary) plus assets into the run directory.
+5. **Render:** Spawn the vendored Remotion project (or MoneyPrinterTurbo) as a subprocess; on any failure, emit a deterministic placeholder so the run still completes. Live capture is recorded as `nondeterministic` in the manifest.
+
+**Output:** A run directory at `.agents/results/video/{timestamp}-{shortid}-{mode}/` with `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4`, and `manifest.json`. See the [Video Generation guide](../guide/video-generation.md).
 
 ---
 

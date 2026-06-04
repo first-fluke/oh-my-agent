@@ -36,6 +36,7 @@ const sidebars: SidebarsConfig = {
         "guide/automated-updates",
         "guide/per-agent-models",
         "guide/image-generation",
+        "guide/video-generation",
       ],
     },
     {
