@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.40.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.39.0...cli-v8.40.0) (2026-06-04)
+
+
+### Features
+
+* **skills:** add oma skills opt skill optimizer ([108188e](https://github.com/first-fluke/oh-my-agent/commit/108188eed6bc67cb2c4f45800b91ded206faa57e))
+
+
+### Bug Fixes
+
+* **cli:** pass optsWithGlobals to action handlers so --yes reaches them ([de6a3a1](https://github.com/first-fluke/oh-my-agent/commit/de6a3a157fdae01a1720b2b14a3ad4a0060c4d5f))
+
 ## [8.39.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.38.0...cli-v8.39.0) (2026-06-04)
 
 
