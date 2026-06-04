@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.38.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.37.0...cli-v8.38.0) (2026-06-04)
+
+
+### Features
+
+* **agent:** add --read-only tool restriction to agent:spawn ([412e44e](https://github.com/first-fluke/oh-my-agent/commit/412e44e79b64885705b05d33cb299ce5c713a345))
+* **doctor:** report skill eval coverage ([ff59bb1](https://github.com/first-fluke/oh-my-agent/commit/ff59bb1070c5e10ab3d487aca0a907114e8a36c3))
+* **skills:** add negative-transfer sampling to skills eval ([94db859](https://github.com/first-fluke/oh-my-agent/commit/94db859328ffe1b44a9fb280b86093f624796969))
+* **skills:** add oma skills eval for skill utility measurement ([f0f2a6a](https://github.com/first-fluke/oh-my-agent/commit/f0f2a6a11b29c4fdc83a98c3671a35fe9ff0937b))
+
+
+### Documentation
+
+* add SkillOpt and SkillLens to references ([25f3faa](https://github.com/first-fluke/oh-my-agent/commit/25f3faada36ab34d85af827ecb4587fa76a26453))
+* document oma skills eval and eval fixture convention ([7633ee9](https://github.com/first-fluke/oh-my-agent/commit/7633ee90a1b1c2d5682936fc47b075e019df2030))
+
 ## [8.37.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.36.0...cli-v8.37.0) (2026-06-04)
 
 
