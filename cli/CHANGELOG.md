@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.41.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.1...cli-v8.41.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* **scripts:** improve JSON parsing from agent output in devto script ([41b9138](https://github.com/first-fluke/oh-my-agent/commit/41b9138d920e7a587b465c9921ae36d2b36e0d8d))
+* **skills:** isolate eval baseline so utility lift is honest ([54e8b2a](https://github.com/first-fluke/oh-my-agent/commit/54e8b2a10aa05556a4dd4a7a37ea94105d5164fb))
+
+
+### Documentation
+
+* replace Gemini CLI with Antigravity and add Pi agent ([5874ebe](https://github.com/first-fluke/oh-my-agent/commit/5874ebea6288c0089b6dfc25968ab8f4d7530645))
+
 ## [8.41.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.0...cli-v8.41.1) (2026-06-05)
 
 
