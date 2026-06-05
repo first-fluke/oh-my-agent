@@ -104,21 +104,23 @@ try {
   // final concat is chronological.
   context.on("page", (page) => {
     recorded.push({ page, openedAt: Date.now() });
-    if (showCursor) injectCursor(page).catch(() => {});
+    if (showCursor) injectCursor(page).catch(() => undefined);
   });
 
   const firstPage = await context.newPage();
   if (recorded.length === 0) {
     recorded.push({ page: firstPage, openedAt: Date.now() });
   }
-  if (showCursor) await injectCursor(firstPage).catch(() => {});
+  if (showCursor) await injectCursor(firstPage).catch(() => undefined);
 
   // Hard ceiling: abort the whole capture cleanly if it runs past --timeout.
   if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
     hardTimer = setTimeout(() => {
       aborted = true;
       log(`capture timeout (${timeoutMs}ms) reached — stopping`);
-      stopWaiters.forEach((resolve) => resolve("timeout"));
+      stopWaiters.forEach((resolve) => {
+        resolve("timeout");
+      });
     }, timeoutMs);
     hardTimer.unref?.();
   }
@@ -174,7 +176,7 @@ try {
     code: aborted ? "aborted" : "capture-error",
     error: stringifyError(err),
   });
-  if (browser) await browser.close().catch(() => {});
+  if (browser) await browser.close().catch(() => undefined);
   process.exit(1);
 }
 
@@ -208,7 +210,7 @@ function waitForStop(firstPage, stop) {
       firstPage
         .waitForSelector(stop.selector, { timeout: 0 })
         .then(() => done("selector"))
-        .catch(() => {});
+        .catch(() => undefined);
       return;
     }
 
