@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -14,6 +15,7 @@ import {
   computeNegativeTransfer,
   computeUtility,
   discoverNeighborTasks,
+  type IsolationStatus,
   JUDGE_DEFAULT_RUBRIC,
   type JudgeDispatchFn,
   judgeScore,
@@ -26,6 +28,9 @@ import {
   REGEX_OUTPUT_MAX_LEN,
   REGEX_PATTERN_MAX_LEN,
   type RolloutEntry,
+  renderSkillUtilityReport,
+  resolveSkillIsolation,
+  runEvalDispatch,
   runSkillsEval,
   type ScoreSkillBodyOptions,
   type SkillsEvalOptions,
@@ -35,6 +40,7 @@ import {
   scoreNeighborInMock,
   scoreSkillBody,
   serializeSkillUtilityReport,
+  setupIsolatedSkillsDir,
   type TaskFixture,
   UTILITY_FAIL_LIFT,
   UTILITY_WARN_LIFT,
@@ -593,6 +599,7 @@ describe("serializeSkillUtilityReport", () => {
       negativeTransfer: [],
       decision: "pass",
       coverage: "ok",
+      isolation: "n/a",
     };
     const json = serializeSkillUtilityReport(report);
     const parsed = JSON.parse(json) as Record<string, unknown>;
@@ -621,6 +628,7 @@ describe("serializeSkillUtilityReport", () => {
       negativeTransfer: [],
       decision: "warn",
       coverage: "ok",
+      isolation: "n/a",
     };
     const parsed = JSON.parse(serializeSkillUtilityReport(report)) as Record<
       string,
@@ -642,6 +650,7 @@ describe("serializeSkillUtilityReport", () => {
       negativeTransfer: [],
       decision: "fail",
       coverage: "ok",
+      isolation: "n/a",
     };
     const parsed = JSON.parse(serializeSkillUtilityReport(report)) as Record<
       string,
@@ -664,6 +673,7 @@ describe("serializeSkillUtilityReport", () => {
       negativeTransfer: [],
       decision: "insufficient",
       coverage: "insufficient",
+      isolation: "n/a",
     };
     const parsed = JSON.parse(serializeSkillUtilityReport(report)) as Record<
       string,
@@ -688,6 +698,7 @@ describe("serializeSkillUtilityReport", () => {
       negativeTransfer: [],
       decision: "insufficient",
       coverage: "insufficient",
+      isolation: "n/a",
     };
     const parsed = JSON.parse(serializeSkillUtilityReport(report)) as Record<
       string,
@@ -709,6 +720,7 @@ describe("serializeSkillUtilityReport", () => {
       negativeTransfer: [],
       decision: "pass",
       coverage: "ok",
+      isolation: "n/a",
     };
     expect(serializeSkillUtilityReport(report)).toBe(
       serializeSkillUtilityReport(report),
@@ -2541,5 +2553,241 @@ describe("scoreSkillBody", () => {
 
     logSpy.mockRestore();
     warnSpy.mockRestore();
+  });
+});
+
+// --- Skill isolation (plan 013) ---
+
+describe("resolveSkillIsolation", () => {
+  it("returns 'unavailable' for a HOME-based vendor (antigravity)", () => {
+    // antigravity discovers skills from ~/.gemini/antigravity-cli/skills
+    // (requiresHomeConsent) — a clean cwd cannot isolate it.
+    const status: IsolationStatus = resolveSkillIsolation(
+      "antigravity",
+      "oma-scholar",
+    );
+    expect(status).toBe("unavailable");
+  });
+
+  it("returns 'best-effort' for an unknown vendor (cannot prove isolation)", () => {
+    expect(resolveSkillIsolation("grok", "oma-scholar")).toBe("best-effort");
+  });
+
+  it("returns 'enforced' for a cwd-relative vendor when the skill is absent from HOME", () => {
+    // A uniquely-named skill guaranteed not installed under ~/.codex/skills.
+    expect(
+      resolveSkillIsolation("codex", "__oma_test_nonexistent_skill__"),
+    ).toBe("enforced");
+  });
+
+  it("returns 'best-effort' for a path-traversal id without probing the filesystem", () => {
+    // Defense-in-depth: a non-simple id must not be used to build a HOME probe path.
+    expect(resolveSkillIsolation("codex", "../../etc/passwd")).toBe(
+      "best-effort",
+    );
+    expect(resolveSkillIsolation("codex", "a/b")).toBe("best-effort");
+  });
+});
+
+describe("runEvalDispatch (dash-leading prompt handling)", () => {
+  let dir: string;
+  let echoArgv: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "oma-dispatch-"));
+    // Harness: prints what it received on stdin and in argv (after the script path),
+    // so we can prove where the prompt was routed. .cjs = CommonJS regardless of pkg type.
+    echoArgv = join(dir, "harness.cjs");
+    writeFileSync(
+      echoArgv,
+      "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>process.stdout.write('STDIN['+d+']ARGV['+process.argv.slice(2).join(',')+']'));",
+    );
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("routes a dash-leading prompt through stdin, not argv (the SKILL.md '---' bug)", () => {
+    // Regression for plan-013 T4: a prompt starting with '-' (SKILL.md frontmatter)
+    // was misparsed as a CLI option by `claude -p <prompt>` → empty output.
+    const prompt = "--- name: oma-scholar frontmatter";
+    const out = runEvalDispatch(
+      {
+        command: process.execPath,
+        args: [echoArgv, "-p", prompt],
+        env: process.env,
+      },
+      dir,
+      prompt,
+      "-p",
+    );
+    // Prompt arrived via stdin; only the bare flag remains in argv.
+    expect(out).toBe(`STDIN[${prompt}]ARGV[-p]`);
+  });
+
+  it("finds the prompt by flag→value pair even when trailing flags follow it", () => {
+    // Real eval invocations append plan flags (e.g. `--model sonnet`) AFTER `-p <prompt>`,
+    // so the prompt is NOT the last arg. Only the prompt VALUE must move to stdin.
+    const prompt = "--- frontmatter prompt";
+    const out = runEvalDispatch(
+      {
+        command: process.execPath,
+        args: [echoArgv, "-p", prompt, "--model", "x"],
+        env: process.env,
+      },
+      dir,
+      prompt,
+      "-p",
+    );
+    expect(out).toBe(`STDIN[${prompt}]ARGV[-p,--model,x]`);
+  });
+
+  it("passes a non-dash prompt as an argv value (stdin unused)", () => {
+    const prompt = "plain task prompt";
+    const out = runEvalDispatch(
+      {
+        command: process.execPath,
+        args: [echoArgv, "-p", prompt],
+        env: process.env,
+      },
+      dir,
+      prompt,
+      "-p",
+    );
+    expect(out).toBe(`STDIN[]ARGV[-p,${prompt}]`);
+  });
+
+  it("warns and returns captured stdout on non-zero exit (no longer silently swallowed)", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const failer = join(dir, "fail.cjs");
+    writeFileSync(failer, "process.stdout.write('partial');process.exit(3);");
+    const out = runEvalDispatch(
+      { command: process.execPath, args: [failer], env: process.env },
+      dir,
+      "x",
+      null,
+    );
+    expect(out).toBe("partial");
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+});
+
+describe("setupIsolatedSkillsDir", () => {
+  let workspace: string;
+  let tmpBase: string;
+
+  beforeEach(() => {
+    workspace = mkdtempSync(join(tmpdir(), "oma-iso-ws-"));
+    tmpBase = mkdtempSync(join(tmpdir(), "oma-iso-tmp-"));
+    // Seed a cwd-relative vendor skills dir with three skills (incl. the target).
+    for (const skill of ["skill-a", "skill-b", "target-skill"]) {
+      const dir = join(workspace, ".codex", "skills", skill);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "SKILL.md"), `# ${skill}\n`);
+    }
+  });
+
+  afterEach(() => {
+    rmSync(workspace, { recursive: true, force: true });
+    rmSync(tmpBase, { recursive: true, force: true });
+  });
+
+  it("mirrors every installed skill EXCEPT the target into tmpBase", () => {
+    setupIsolatedSkillsDir(tmpBase, "codex", workspace, "target-skill");
+    const dest = join(tmpBase, ".codex", "skills");
+    expect(existsSync(join(dest, "skill-a"))).toBe(true);
+    expect(existsSync(join(dest, "skill-b"))).toBe(true);
+    // The target skill is withheld so the baseline arm cannot auto-load it.
+    expect(existsSync(join(dest, "target-skill"))).toBe(false);
+  });
+
+  it("does not mutate the source install (target stays installed)", () => {
+    setupIsolatedSkillsDir(tmpBase, "codex", workspace, "target-skill");
+    const src = join(workspace, ".codex", "skills");
+    expect(existsSync(join(src, "skill-a"))).toBe(true);
+    expect(existsSync(join(src, "target-skill"))).toBe(true);
+  });
+});
+
+describe("isolation status in report", () => {
+  it("computeUtility threads isolation + isolationVendor into the report", () => {
+    const report = computeUtility("oma-test", {
+      tasks: [],
+      rollouts: [],
+      isolation: "enforced",
+      isolationVendor: "codex",
+    });
+    expect(report.isolation).toBe("enforced");
+    expect(report.isolationVendor).toBe("codex");
+  });
+
+  it("computeUtility defaults isolation to 'n/a' when not provided (mock)", () => {
+    const report = computeUtility("oma-test", { tasks: [], rollouts: [] });
+    expect(report.isolation).toBe("n/a");
+  });
+
+  it("serializeSkillUtilityReport exposes isolation in the JSON", () => {
+    const report = computeUtility("oma-test", {
+      tasks: [],
+      rollouts: [],
+      isolation: "best-effort",
+      isolationVendor: "claude",
+    });
+    const parsed = JSON.parse(serializeSkillUtilityReport(report)) as Record<
+      string,
+      unknown
+    >;
+    expect(parsed.isolation).toBe("best-effort");
+    expect(parsed.isolationVendor).toBe("claude");
+  });
+
+  it("renderSkillUtilityReport prints a low-confidence line for non-enforced isolation", () => {
+    const report: SkillUtilityReport = {
+      skill: "oma-test",
+      taskCount: 5,
+      skippedFiles: [],
+      baselineScore: 0.5,
+      treatmentScore: 0.5,
+      utilityLift: 0,
+      utilityStdDev: 0,
+      findings: [],
+      negativeTransfer: [],
+      decision: "fail",
+      coverage: "ok",
+      isolation: "best-effort",
+      isolationVendor: "claude",
+    };
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    renderSkillUtilityReport(report);
+    const printed = logSpy.mock.calls.map((c: unknown[]) => String(c[0]));
+    const isoLine = printed.find((s) => s.includes("isolation:"));
+    expect(isoLine).toBeDefined();
+    expect(isoLine).toContain("best-effort");
+    expect(isoLine).toContain("low-confidence");
+    logSpy.mockRestore();
+  });
+
+  it("renderSkillUtilityReport omits the isolation line for 'n/a' (mock mode)", () => {
+    const report: SkillUtilityReport = {
+      skill: "oma-test",
+      taskCount: 5,
+      skippedFiles: [],
+      baselineScore: 0.5,
+      treatmentScore: 0.5,
+      utilityLift: 0,
+      utilityStdDev: 0,
+      findings: [],
+      negativeTransfer: [],
+      decision: "fail",
+      coverage: "ok",
+      isolation: "n/a",
+    };
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    renderSkillUtilityReport(report);
+    const printed = logSpy.mock.calls.map((c: unknown[]) => String(c[0]));
+    expect(printed.some((s) => s.includes("isolation:"))).toBe(false);
+    logSpy.mockRestore();
   });
 });

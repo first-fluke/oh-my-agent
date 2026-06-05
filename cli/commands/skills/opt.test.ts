@@ -126,6 +126,7 @@ function makeMockReport(
     negativeTransfer: negTransfer,
     decision: lift > 0.05 ? "pass" : lift > 0 ? "warn" : "fail",
     coverage: "ok",
+    isolation: "n/a",
   };
 }
 

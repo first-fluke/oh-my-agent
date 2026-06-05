@@ -1,20 +1,26 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
 import { parse as parseYaml } from "yaml";
 import { AGENTS_DIR } from "../../constants/paths.js";
-import { INSTALLED_SKILLS_DIR } from "../../constants/vendors.js";
+import {
+  CLI_SKILLS_DIR,
+  INSTALLED_SKILLS_DIR,
+  type SkillTargetSpec,
+} from "../../constants/vendors.js";
 import { planDispatch } from "../../io/runtime-dispatch.js";
 import {
   resolvePromptFlag,
@@ -357,6 +363,23 @@ export interface NegativeTransfer {
  * check `coverage` first; `decision` carries the verdict only when
  * `coverage === "ok"`.
  */
+/**
+ * Isolation status for a live eval run.
+ *
+ * - `"enforced"` — cwd-relative vendor, target skill absent from HOME path; clean
+ *   tmpBase fully hides the skill.
+ * - `"best-effort"` — cwd-relative vendor but a HOME copy of the skill also exists;
+ *   tmpBase hides the project copy but the HOME copy remains visible to the CLI.
+ * - `"unavailable"` — HOME-based vendor (e.g. antigravity, hermes) where cwd cannot
+ *   isolate; baseline may be contaminated.
+ * - `"n/a"` — mock mode or no live dispatch; not applicable.
+ */
+export type IsolationStatus =
+  | "enforced"
+  | "best-effort"
+  | "unavailable"
+  | "n/a";
+
 export interface SkillUtilityReport {
   skill: string;
   taskCount: number;
@@ -369,6 +392,14 @@ export interface SkillUtilityReport {
   negativeTransfer: NegativeTransfer[];
   decision: "pass" | "warn" | "fail" | "insufficient";
   coverage: "ok" | "insufficient";
+  /**
+   * Isolation status for the live dispatch arms. Set to `"n/a"` in mock mode.
+   * When `"best-effort"` or `"unavailable"`, the result is low-confidence
+   * (baseline may be contaminated by the target skill).
+   */
+  isolation: IsolationStatus;
+  /** Vendor resolved for live dispatch. Undefined in mock mode. */
+  isolationVendor?: string;
 }
 
 // --- Task fixture schema ---
@@ -648,6 +679,10 @@ export interface ComputeUtilityOptions {
   maxTasks?: number;
   /** Pre-computed negative-transfer entries (populated by computeNegativeTransfer). */
   negativeTransfer?: NegativeTransfer[];
+  /** Isolation status from the live dispatch path. Defaults to `"n/a"` (mock mode). */
+  isolation?: IsolationStatus;
+  /** Vendor resolved for live dispatch. */
+  isolationVendor?: string;
 }
 
 /**
@@ -667,6 +702,8 @@ export function computeUtility(
   const { rollouts, maxTasks } = options;
   const skippedFiles = options.skippedFiles ?? [];
   const negativeTransferInput = options.negativeTransfer ?? [];
+  const isolation: IsolationStatus = options.isolation ?? "n/a";
+  const isolationVendor = options.isolationVendor;
   let tasks = options.tasks;
 
   // Apply maxTasks cap in deterministic order (fixtures are sorted at load time)
@@ -689,6 +726,8 @@ export function computeUtility(
       negativeTransfer: negativeTransferInput,
       decision: "insufficient",
       coverage: "insufficient",
+      isolation,
+      isolationVendor,
     };
   }
 
@@ -788,6 +827,8 @@ export function computeUtility(
       negativeTransfer: negativeTransferInput,
       decision: "insufficient",
       coverage: "insufficient",
+      isolation,
+      isolationVendor,
     };
   }
 
@@ -826,6 +867,8 @@ export function computeUtility(
     negativeTransfer: negativeTransferInput,
     decision,
     coverage: "ok",
+    isolation,
+    isolationVendor,
   };
 }
 
@@ -853,6 +896,8 @@ export function serializeSkillUtilityReport(
         lift: Number(f.lift.toFixed(4)),
       })),
       negativeTransfer: report.negativeTransfer,
+      isolation: report.isolation,
+      isolationVendor: report.isolationVendor,
     },
     null,
     2,
@@ -863,7 +908,18 @@ export function serializeSkillUtilityReport(
 
 export function renderSkillUtilityReport(report: SkillUtilityReport): void {
   console.log(`\nSkill utility eval  (skill: ${report.skill})`);
-  console.log(`  tasks: ${report.taskCount}\n`);
+  console.log(`  tasks: ${report.taskCount}`);
+  if (report.isolation && report.isolation !== "n/a") {
+    const vendorTag = report.isolationVendor
+      ? ` [${report.isolationVendor}]`
+      : "";
+    const lowConfidence =
+      report.isolation === "enforced"
+        ? ""
+        : "  ⚠ low-confidence (baseline may be contaminated)";
+    console.log(`  isolation: ${report.isolation}${vendorTag}${lowConfidence}`);
+  }
+  console.log("");
 
   if (report.skippedFiles.length > 0) {
     console.log(
@@ -976,17 +1032,195 @@ export type LiveDispatchFn = (
 export type JudgeDispatchFn = (gradingPrompt: string) => string;
 
 /**
+ * Run a built dispatch invocation and capture stdout.
+ *
+ * Dash-leading prompts (plan 013): the claude/gemini/qwen CLIs receive the prompt as
+ * a trailing `<promptFlag> <prompt>` arg (e.g. `-p <prompt>`). When the prompt STARTS
+ * with `-` — as an injected `SKILL.md` does (`---` YAML frontmatter) — the vendor's
+ * arg parser misreads it as an unknown CLI option and exits non-zero with empty
+ * stdout (silently scoring the arm 0). For that case we pass the prompt via STDIN
+ * (keeping the bare flag) so it is never parsed as an option. Non-dash prompts keep
+ * the existing arg path unchanged.
+ *
+ * On non-zero exit we return any captured stdout (possibly "") AND warn once, so a
+ * failed dispatch is no longer silently indistinguishable from a real empty answer.
+ */
+export function runEvalDispatch(
+  invocation: { command: string; args: string[]; env: NodeJS.ProcessEnv },
+  cwd: string,
+  prompt: string,
+  promptFlag: string | null,
+): string {
+  const { command, args, env } = invocation;
+  // Locate the prompt VALUE: the arg immediately after `promptFlag` (e.g. `-p`).
+  // It is NOT always the trailing arg — plan-derived flags (e.g. `--model sonnet`)
+  // can be appended after it, so search by the flag→value pair, not by position.
+  let promptIdx = -1;
+  if (promptFlag !== null) {
+    for (let i = 0; i < args.length - 1; i++) {
+      if (args[i] === promptFlag && args[i + 1] === prompt) {
+        promptIdx = i + 1;
+        break;
+      }
+    }
+  }
+  const viaStdin = promptIdx >= 0 && prompt.startsWith("-");
+  // Drop only the prompt VALUE, keeping the bare flag (claude `-p` then reads stdin).
+  const execArgs = viaStdin ? args.filter((_, idx) => idx !== promptIdx) : args;
+  try {
+    const output = execFileSync(command, execArgs, {
+      cwd,
+      env,
+      encoding: "utf-8",
+      input: viaStdin ? prompt : undefined,
+      // stdin: pipe the prompt when via-stdin; otherwise ignore. stdout captured;
+      // stderr inherited to the parent.
+      stdio: viaStdin ? ["pipe", "pipe", "pipe"] : ["ignore", "pipe", "pipe"],
+      // Generous buffer: agent JSON transcripts can be large; default 1 MB can
+      // overflow (ENOBUFS) and look like an empty answer.
+      maxBuffer: 64 * 1024 * 1024,
+      // No timeout here — caller controls task-level time budgets.
+    });
+    return typeof output === "string" ? output : "";
+  } catch (err) {
+    const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
+    const stderrSnippet =
+      typeof e.stderr === "string"
+        ? e.stderr.replace(/\s+/g, " ").trim().slice(0, 200)
+        : "";
+    console.warn(
+      `[oma skills eval] dispatch failed (exit ${e.status ?? "?"})${
+        stderrSnippet ? `: ${stderrSnippet}` : ""
+      }`,
+    );
+    // Return captured stdout so checkers can still score it (likely 0).
+    return typeof e.stdout === "string" ? e.stdout : "";
+  }
+}
+
+/**
+ * Determine the isolation status for a live eval run of `skillId` via `vendor`
+ * (plan 013). Isolation works by running the dispatch in a clean tmpBase cwd whose
+ * skills dir excludes the target skill — but that only hides skills the vendor CLI
+ * discovers cwd-relative.
+ *
+ * - `enforced`    — cwd-relative vendor and the target skill is NOT present in the
+ *                   vendor's HOME skills path; a clean tmpBase cwd fully hides it.
+ * - `best-effort` — cwd-relative vendor but a HOME copy of the skill also exists
+ *                   (tmpBase hides the project copy; the HOME copy stays visible),
+ *                   or the vendor is unknown so isolation cannot be proven.
+ * - `unavailable` — HOME-based vendor (`requiresHomeConsent`, e.g. antigravity)
+ *                   where cwd cannot isolate; baseline may be contaminated.
+ */
+export function resolveSkillIsolation(
+  vendor: string,
+  skillId: string,
+): IsolationStatus {
+  const spec = CLI_SKILLS_DIR[vendor as keyof typeof CLI_SKILLS_DIR] as
+    | SkillTargetSpec
+    | undefined;
+  if (!spec) return "best-effort"; // unknown vendor — cannot prove isolation
+  if (spec.requiresHomeConsent) return "unavailable"; // HOME-based discovery
+  // Defense-in-depth: never build a filesystem probe path from an unsanitized id.
+  // A non-simple id (path separators / "..") cannot name a real installed skill,
+  // so we cannot claim enforced isolation — report best-effort without probing.
+  if (
+    skillId.includes("..") ||
+    skillId.includes("/") ||
+    skillId.includes(sep)
+  ) {
+    return "best-effort";
+  }
+  const homeSkill = join(homedir(), spec.homePath, skillId);
+  return existsSync(homeSkill) ? "best-effort" : "enforced";
+}
+
+/**
+ * Seed `tmpBase` with a filtered skills directory containing every installed skill
+ * for `vendor` EXCEPT `excludeSkillId`, so a dispatch run with `cwd = tmpBase`
+ * cannot auto-load the target skill from runtime discovery. Other skills remain
+ * available, so the agent keeps its normal capability — only the target is withheld.
+ *
+ * Per-entry symlinks (cheap; recursive copy fallback on error). Idempotent per
+ * tmpBase. Never mutates the real install — only reads the source dir and writes
+ * into tmpBase.
+ */
+export function setupIsolatedSkillsDir(
+  tmpBase: string,
+  vendor: string,
+  workspace: string,
+  excludeSkillId: string,
+): void {
+  const spec = CLI_SKILLS_DIR[vendor as keyof typeof CLI_SKILLS_DIR] as
+    | SkillTargetSpec
+    | undefined;
+  const subPath = spec?.projectPath ?? INSTALLED_SKILLS_DIR;
+  const vendorSrc = join(workspace, subPath);
+  // Prefer the vendor's own skills dir (what that CLI discovers); fall back to the
+  // SSOT .agents/skills if the vendor dir is absent.
+  const sourceDir = existsSync(vendorSrc)
+    ? vendorSrc
+    : join(workspace, INSTALLED_SKILLS_DIR);
+  if (!existsSync(sourceDir)) return; // nothing to mirror
+  const destDir = join(tmpBase, subPath);
+  mkdirSync(destDir, { recursive: true });
+  for (const entry of readdirSync(sourceDir)) {
+    if (entry === excludeSkillId) continue; // exclude the target skill
+    const from = join(sourceDir, entry);
+    const to = join(destDir, entry);
+    if (existsSync(to)) continue;
+    try {
+      symlinkSync(from, to);
+    } catch {
+      try {
+        cpSync(from, to, { recursive: true, dereference: true });
+      } catch {
+        // best-effort: skip this entry
+      }
+    }
+  }
+}
+
+/**
  * Build the real live-dispatch function that spawns a subprocess via planDispatch
  * and captures its stdout. Uses execFileSync so the call blocks until the agent
  * exits and stdout is fully captured.
  *
+ * Skill isolation (plan 013): when `excludeSkillId` is set and the caller passes a
+ * per-call workspace (the throwaway tmpBase from collectLiveRollouts), BOTH arms run
+ * with `cwd = tmpBase` seeded with every skill EXCEPT the target — so the baseline
+ * arm cannot auto-load the installed target skill. The treatment arm re-adds the
+ * skill ONLY via the injected SKILL.md (prompt), making that injection the single
+ * controlled variable. Without a per-call workspace (legacy/tests), cwd falls back
+ * to `workspace` (repo root) and no isolation is applied.
+ *
  * Both arms: readOnly: true (constrained profile), temp workspace per run.
  */
-export function buildLiveDispatchFn(workspace: string): LiveDispatchFn {
-  return (_arm, prompt, _workspace) => {
-    const { vendor, config } = resolveVendor("eval-agent");
-    const vendorConfig = config?.vendors?.[vendor] ?? {};
-    const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
+export function buildLiveDispatchFn(
+  workspace: string,
+  excludeSkillId?: string,
+): LiveDispatchFn {
+  const { vendor, config } = resolveVendor("eval-agent");
+  const vendorConfig = config?.vendors?.[vendor] ?? {};
+  const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
+  // Memoize isolation setup per tmpBase: one run reuses a single tmpBase across all
+  // tasks/arms, so the filtered skills dir is built exactly once.
+  const isolatedBases = new Set<string>();
+
+  return (_arm, prompt, perCallWorkspace) => {
+    let cwd = workspace;
+    if (perCallWorkspace) {
+      cwd = perCallWorkspace;
+      if (excludeSkillId && !isolatedBases.has(perCallWorkspace)) {
+        setupIsolatedSkillsDir(
+          perCallWorkspace,
+          vendor,
+          workspace,
+          excludeSkillId,
+        );
+        isolatedBases.add(perCallWorkspace);
+      }
+    }
 
     const dispatch = planDispatch(
       "eval-agent",
@@ -998,26 +1232,7 @@ export function buildLiveDispatchFn(workspace: string): LiveDispatchFn {
       { readOnly: true },
     );
 
-    const { command, args, env } = dispatch.invocation;
-    try {
-      const output = execFileSync(command, args, {
-        cwd: workspace,
-        env,
-        encoding: "utf-8",
-        // Capture stdout; stderr goes to parent process
-        stdio: ["ignore", "pipe", "pipe"],
-        // No timeout here — caller controls task-level time budgets
-      });
-      return typeof output === "string" ? output : "";
-    } catch (err) {
-      // Non-zero exit or spawn error — return stderr/message as output so
-      // checkers can still score it (likely score 0 = skill-absent signal)
-      if (err && typeof err === "object" && "stdout" in err) {
-        const captured = (err as { stdout?: unknown }).stdout;
-        return typeof captured === "string" ? captured : "";
-      }
-      return "";
-    }
+    return runEvalDispatch(dispatch.invocation, cwd, prompt, promptFlag);
   };
 }
 
@@ -1057,22 +1272,12 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
       { readOnly: true },
     );
 
-    const { command, args, env } = dispatch.invocation;
-    try {
-      const output = execFileSync(command, args, {
-        cwd: process.cwd(),
-        env,
-        encoding: "utf-8",
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-      return typeof output === "string" ? output : "";
-    } catch (err) {
-      if (err && typeof err === "object" && "stdout" in err) {
-        const captured = (err as { stdout?: unknown }).stdout;
-        return typeof captured === "string" ? captured : "";
-      }
-      return "";
-    }
+    return runEvalDispatch(
+      dispatch.invocation,
+      process.cwd(),
+      gradingPrompt,
+      promptFlag,
+    );
   };
 }
 
@@ -1399,7 +1604,23 @@ export async function scoreSkillBody(
   }
 
   if (mode === "live") {
-    const resolvedDispatchFn = dispatchFn ?? buildLiveDispatchFn(workspace);
+    // Isolation status is only meaningful for the real dispatch path; an injected
+    // dispatchFn (tests) bypasses runtime skill discovery entirely.
+    const usingRealDispatch = dispatchFn === undefined;
+    const isolationVendor = usingRealDispatch
+      ? resolveVendor("eval-agent").vendor
+      : undefined;
+    const isolation: IsolationStatus =
+      usingRealDispatch && isolationVendor
+        ? resolveSkillIsolation(isolationVendor, skill)
+        : "n/a";
+    if (isolation !== "enforced" && isolation !== "n/a") {
+      console.warn(
+        `[oma skills eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
+      );
+    }
+    const resolvedDispatchFn =
+      dispatchFn ?? buildLiveDispatchFn(workspace, skill);
     const resolvedJudgeFn = judgeFn ?? buildJudgeDispatchFn();
 
     const { rollouts, cleanupTmp } = collectLiveRollouts(
@@ -1415,6 +1636,8 @@ export async function scoreSkillBody(
         rollouts,
         skippedFiles,
         maxTasks,
+        isolation,
+        isolationVendor,
       });
     } finally {
       cleanupTmp();
@@ -1574,9 +1797,27 @@ export async function runSkillsEval(
           ? loadSkillMdBody(skillId, workspace)
           : "";
 
+    // Skill isolation (plan 013): exclude the target skill from runtime discovery
+    // for BOTH arms. Only meaningful for the real dispatch path and a single skill
+    // (not the `_all` aggregate, which has no single target to withhold).
+    const targetSkill = skillId !== "_all" ? skillId : undefined;
+    const usingRealDispatch = options._liveDispatchFn === undefined;
+    const isolationVendor = usingRealDispatch
+      ? resolveVendor("eval-agent").vendor
+      : undefined;
+    const isolation: IsolationStatus =
+      usingRealDispatch && isolationVendor && targetSkill
+        ? resolveSkillIsolation(isolationVendor, targetSkill)
+        : "n/a";
+    if (isolation !== "enforced" && isolation !== "n/a") {
+      console.warn(
+        `[oma skills eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
+      );
+    }
+
     // Dispatch functions (real or injected for tests)
     const dispatchFn =
-      options._liveDispatchFn ?? buildLiveDispatchFn(workspace);
+      options._liveDispatchFn ?? buildLiveDispatchFn(workspace, targetSkill);
     const judgeDispatchFn = options._judgeDispatchFn ?? buildJudgeDispatchFn();
 
     // Run both arms per task; judge tasks get their verdict computed inline
@@ -1630,6 +1871,8 @@ export async function runSkillsEval(
         skippedFiles,
         maxTasks: options.maxTasks,
         negativeTransfer,
+        isolation,
+        isolationVendor,
       });
     } finally {
       cleanupTmp();

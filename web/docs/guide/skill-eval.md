@@ -158,6 +158,33 @@ oma skills eval --skill oma-scholar --live
 oma skills eval --skill oma-scholar --live --yes
 ```
 
+#### Skill isolation (keeping the baseline honest)
+
+`utilityLift` is only meaningful if the **baseline arm runs without the target skill**. The catch: a dispatched
+agent auto-loads every skill installed in its runtime, so a naive baseline would still pick up the skill it is
+supposed to be measured *without* — contaminating the comparison (baseline ≈ treatment, lift ≈ 0).
+
+To prevent this, `--live` runs **both arms in an isolated temporary workspace** whose skills directory contains
+every installed skill **except the target**. The treatment arm re-adds the target **only** via the injected
+`SKILL.md` (prepended to the prompt). The injection is therefore the single controlled variable: baseline = no
+skill, treatment = the candidate `SKILL.md`.
+
+This works because most vendors discover skills **relative to the working directory** (e.g.
+`<cwd>/.claude/skills`, `<cwd>/.codex/skills`) — a clean working directory genuinely hides the skill. The report
+declares how well isolation held via an `isolation` field:
+
+| Status | Meaning |
+|---|---|
+| `enforced` | cwd-relative vendor, target skill absent from the HOME path — fully isolated. |
+| `best-effort` | cwd-relative vendor, but a HOME copy of the skill also exists (or the vendor is unknown); the project copy is hidden but a HOME copy may still leak. Flagged low-confidence. |
+| `unavailable` | HOME-based vendor (e.g. **antigravity**, which reads `~/.gemini/antigravity-cli/skills`); a clean cwd cannot hide it. A warning is printed and the result is flagged low-confidence. |
+| n/a | mock mode — no live dispatch. |
+
+When isolation is not `enforced`, a one-line warning is printed and the result should be treated as
+low-confidence. For a clean signal, run the eval against a **cwd-relative, isolatable vendor** (claude / codex /
+qwen) rather than a HOME-based one — the eval vendor follows `model_preset` in `.agents/oma-config.yaml`, so
+select a preset whose default vendor is cwd-relative.
+
 ### --live --record
 
 Runs live arms and writes the captured outputs (including judge verdicts for judge-checker tasks) to `_rollouts/<hash>.json`. The filename is a deterministic SHA-256 hash of the task ID set — not date or random-based.
@@ -213,6 +240,7 @@ oma skills eval --skill oma-scholar --json
 ```
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
+  isolation: enforced [codex]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
@@ -243,11 +271,15 @@ Skill utility eval  (skill: oma-scholar)
   "findings": [
     { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0 }
   ],
-  "negativeTransfer": []
+  "negativeTransfer": [],
+  "isolation": "enforced",
+  "isolationVendor": "codex"
 }
 ```
 
-`ok` is `true` only when `coverage === "ok"` and `decision === "pass"`.
+`ok` is `true` only when `coverage === "ok"` and `decision === "pass"`. The `isolation` field reports whether the
+baseline arm was genuinely run without the target skill (see [Skill isolation](#skill-isolation-keeping-the-baseline-honest));
+`isolation` is `"n/a"` in `--mock` mode.
 
 ---
 
