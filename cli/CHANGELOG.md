@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.41.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.2...cli-v8.41.3) (2026-06-05)
+
+
+### Bug Fixes
+
+* **install:** enforce TLS 1.2 in Windows installer ([772ac3d](https://github.com/first-fluke/oh-my-agent/commit/772ac3d4c75506bccf7d677d4cb463c9d815882f))
+
 ## [8.41.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.1...cli-v8.41.2) (2026-06-05)
 
 
