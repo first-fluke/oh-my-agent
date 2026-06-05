@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.42.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.3...cli-v8.42.0) (2026-06-05)
+
+
+### Features
+
+* **plugin:** bootstrap oma CLI from Claude marketplace install ([8505ac1](https://github.com/first-fluke/oh-my-agent/commit/8505ac199b4cd4e9d5d87a756b1ee25501e61404))
+
+
+### Bug Fixes
+
+* **install:** reclaim a crashed install/update lock in 60s, not 10min ([#496](https://github.com/first-fluke/oh-my-agent/issues/496)) ([a4a0c77](https://github.com/first-fluke/oh-my-agent/commit/a4a0c777a7cb86b43e4338eb90cbef510f517b3f))
+
 ## [8.41.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.2...cli-v8.41.3) (2026-06-05)
 
 
