@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.10.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.9.1...web-v3.10.0) (2026-06-05)
+
+
+### Features
+
+* **antigravity:** disable agy telemetry by default ([9f35a37](https://github.com/first-fluke/oh-my-agent/commit/9f35a37075cab46a5ec83c0e0125683d2251f3bf))
+
+
+### Bug Fixes
+
+* **docs:** use absolute doc links so the ko build passes ([a66ec28](https://github.com/first-fluke/oh-my-agent/commit/a66ec28a7f9f3e76c91752e36537fd01f589c0d8))
+
 ## [3.9.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.9.0...web-v3.9.1) (2026-06-04)
 
 
