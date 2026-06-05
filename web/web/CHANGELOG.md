@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.0...web-v3.10.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* **docs:** pin pattern-field anchor slug across locales ([6e0dea3](https://github.com/first-fluke/oh-my-agent/commit/6e0dea39c1d55ea9d7c0ae83d254c562c3a62d8b))
+
 ## [3.10.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.9.1...web-v3.10.0) (2026-06-05)
 
 
