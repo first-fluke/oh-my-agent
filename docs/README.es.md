@@ -8,7 +8,7 @@
 
 En vez de que una sola IA haga todo (y se pierda a mitad de camino), oh-my-agent reparte el trabajo entre **agentes especializados**: frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design y más. Cada uno conoce su dominio a fondo, tiene sus propias herramientas y checklists, y se mantiene en su carril.
 
-Funciona con todos los IDEs de IA principales: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode y más.
+Funciona con todos los IDEs de IA principales: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode y más.
 
 ## Inicio Rápido
 
@@ -78,9 +78,9 @@ Elige un preset y listo:
 <sub>nativo + adaptador</sub>
 </td>
 <td align="center">
-<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
-<strong>Gemini CLI</strong><br/>
-<sub>nativo + adaptador</sub>
+<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>SSOT nativo</sub>
 </td>
 <td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
@@ -100,9 +100,9 @@ Elige un preset y listo:
 </tr>
 <tr>
 <td align="center">
-<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>SSOT nativo</sub>
+<a href="https://pi.dev/"><img src="./assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<strong>Pi</strong><br/>
+<sub>compatible nativamente</sub>
 </td>
 <td align="center">
 <a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>

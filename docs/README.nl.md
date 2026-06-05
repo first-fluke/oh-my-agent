@@ -8,7 +8,7 @@ Ooit gewenst dat je AI-assistent collega's had? Dat is precies wat oh-my-agent d
 
 In plaats van een enkele AI die alles doet (en halverwege de draad kwijtraakt), verdeelt oh-my-agent het werk over **gespecialiseerde agents**: frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design en meer. Elk van hen kent zijn domein door en door, heeft eigen tools en checklists, en blijft in zijn eigen baan.
 
-Werkt met alle grote AI IDE's: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode en meer.
+Werkt met alle grote AI IDE's: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode en meer.
 
 ## Snel starten
 
@@ -78,9 +78,9 @@ Kies een preset en je bent klaar:
 <sub>native + adapter</sub>
 </td>
 <td align="center">
-<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
-<strong>Gemini CLI</strong><br/>
-<sub>native + adapter</sub>
+<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>native SSOT</sub>
 </td>
 <td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
@@ -100,9 +100,9 @@ Kies een preset en je bent klaar:
 </tr>
 <tr>
 <td align="center">
-<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>native SSOT</sub>
+<a href="https://pi.dev/"><img src="./assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<strong>Pi</strong><br/>
+<sub>native compatibel</sub>
 </td>
 <td align="center">
 <a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>

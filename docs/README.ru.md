@@ -8,7 +8,7 @@
 
 Вместо того чтобы один ИИ делал все (и терялся на полпути), oh-my-agent распределяет работу между **специализированными агентами**: frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design и другими. Каждый глубоко знает свою область, имеет свои инструменты и чеклисты и не лезет в чужую зону.
 
-Работает со всеми основными AI IDE: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode и другими.
+Работает со всеми основными AI IDE: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode и другими.
 
 ## Быстрый старт
 
@@ -78,9 +78,9 @@ APM поставляет только скилы. Для workflow, правил,
 <sub>нативный + адаптер</sub>
 </td>
 <td align="center">
-<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
-<strong>Gemini CLI</strong><br/>
-<sub>нативный + адаптер</sub>
+<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>нативный SSOT</sub>
 </td>
 <td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
@@ -100,9 +100,9 @@ APM поставляет только скилы. Для workflow, правил,
 </tr>
 <tr>
 <td align="center">
-<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>нативный SSOT</sub>
+<a href="https://pi.dev/"><img src="./assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<strong>Pi</strong><br/>
+<sub>нативная совместимость</sub>
 </td>
 <td align="center">
 <a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>

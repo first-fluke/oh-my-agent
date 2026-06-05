@@ -8,7 +8,7 @@ Hast du dir schon mal gewünscht, dein KI-Assistent hätte Kollegen? Genau das m
 
 Statt dass eine einzige KI alles erledigt (und sich auf halbem Weg verheddert), verteilt oh-my-agent die Arbeit auf **spezialisierte Agenten**: Frontend, Backend, Architektur, QA, PM, DB, Mobile, Infra, Debug, Design und mehr. Jeder kennt sein Fachgebiet in- und auswendig, hat eigene Tools und Checklisten und bleibt in seiner Spur.
 
-Funktioniert mit allen großen KI-IDEs: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode und weiteren.
+Funktioniert mit allen großen KI-IDEs: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode und weiteren.
 
 ## Schnellstart
 
@@ -78,9 +78,9 @@ Wähl ein Preset und los geht's:
 <sub>nativ + Adapter</sub>
 </td>
 <td align="center">
-<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
-<strong>Gemini CLI</strong><br/>
-<sub>nativ + Adapter</sub>
+<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>natives SSOT</sub>
 </td>
 <td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
@@ -100,9 +100,9 @@ Wähl ein Preset und los geht's:
 </tr>
 <tr>
 <td align="center">
-<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>natives SSOT</sub>
+<a href="https://pi.dev/"><img src="./assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<strong>Pi</strong><br/>
+<sub>nativ kompatibel</sub>
 </td>
 <td align="center">
 <a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>

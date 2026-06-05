@@ -8,7 +8,7 @@
 
 แทนที่จะให้ AI ตัวเดียวทำทุกอย่าง (และเริ่มสับสนระหว่างทำงาน) oh-my-agent จะแบ่งงานออกเป็น **Specialized agents** เช่น frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design และอื่นๆ แต่ละตัวจะมีความเข้าใจในโดเมนของตัวเองอย่างลึกซึ้ง มีเครื่องมือและรายการตรวจสอบ (checklists) ของตัวเอง และมุ่งเน้นเฉพาะงานในหน้าที่ของตน
 
-ตอนนี้ใช้งานได้กับ AI IDE ชั้นนำทั้งหมดได้แก่: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode และอื่นๆ
+ตอนนี้ใช้งานได้กับ AI IDE ชั้นนำทั้งหมดได้แก่: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode และอื่นๆ
 
 ## Quick Start
 
@@ -78,9 +78,9 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 <sub>เนทีฟ + อะแดปเตอร์</sub>
 </td>
 <td align="center">
-<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
-<strong>Gemini CLI</strong><br/>
-<sub>เนทีฟ + อะแดปเตอร์</sub>
+<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>SSOT เนทีฟ</sub>
 </td>
 <td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
@@ -100,9 +100,9 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 </tr>
 <tr>
 <td align="center">
-<a href="https://antigravity.google"><img src="./assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>SSOT เนทีฟ</sub>
+<a href="https://pi.dev/"><img src="./assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<strong>Pi</strong><br/>
+<sub>เข้ากันได้แบบเนทีฟ</sub>
 </td>
 <td align="center">
 <a href="https://github.com/anomalyco/opencode"><img src="./assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>

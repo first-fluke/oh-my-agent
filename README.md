@@ -8,7 +8,7 @@ Ever wished your AI assistant had coworkers? That's what oh-my-agent does.
 
 Instead of one AI doing everything (and getting confused halfway through), oh-my-agent splits work across **specialized agents** — frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design, and more. Each one knows its domain deeply, has its own tools and checklists, and stays in its lane.
 
-Works with all major AI IDEs: Antigravity, Claude Code, Cursor, Gemini CLI, Codex CLI, OpenCode, and more.
+Works with all major AI IDEs: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode, and more.
 
 ## Quick Start
 
@@ -82,9 +82,9 @@ Pick a preset and you're ready:
 <sub>native + adapter</sub>
 </td>
 <td align="center">
-<a href="https://github.com/google-gemini/gemini-cli"><img src="https://github.com/google-gemini.png?size=120" alt="Gemini CLI" width="48" height="48" /></a><br/>
-<strong>Gemini CLI</strong><br/>
-<sub>native + adapter</sub>
+<a href="https://antigravity.google"><img src="./docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
+<strong>Antigravity</strong><br/>
+<sub>native SSOT</sub>
 </td>
 <td align="center">
 <a href="https://cursor.com"><img src="https://github.com/cursor.png?size=120" alt="Cursor" width="48" height="48" /></a><br/>
@@ -104,9 +104,9 @@ Pick a preset and you're ready:
 </tr>
 <tr>
 <td align="center">
-<a href="https://antigravity.google"><img src="./docs/assets/agents/antigravity.png" alt="Antigravity" width="48" height="48" /></a><br/>
-<strong>Antigravity</strong><br/>
-<sub>native SSOT</sub>
+<a href="https://pi.dev/"><img src="./docs/assets/agents/pi.svg" alt="Pi" width="48" height="48" /></a><br/>
+<strong>Pi</strong><br/>
+<sub>native-compatible</sub>
 </td>
 <td align="center">
 <a href="https://github.com/anomalyco/opencode"><img src="./docs/assets/agents/opencode.png" alt="OpenCode" width="48" height="48" /></a><br/>
