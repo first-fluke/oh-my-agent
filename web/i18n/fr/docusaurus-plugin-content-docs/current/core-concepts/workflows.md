@@ -456,7 +456,7 @@ oh-my-agent utilise un hook `UserPromptSubmit` qui s'exécute avant le traitemen
 
 **Implication** : Si vous définissez `language: en` dans `.agents/oma-config.yaml`, seuls les patterns `*` et `en` sont chargés. Les déclencheurs en langage naturel coréen/japonais/etc. ne se déclencheront pas, même si l'utilisateur saisit du texte dans ces langues. Pour activer une langue autre que l'anglais, définissez `language: <code>` en conséquence. Le repli anglais dans `*` reste toujours actif.
 
-### Champ Pattern (regex brut)
+### Champ Pattern (regex brut) {#pattern-field-raw-regex}
 
 En plus des `keywords` littéraux, chaque workflow peut déclarer des `patterns` — des chaînes regex brutes compilées avec les drapeaux `iu`. Les patterns permettent de faire correspondre des intentions multi-jetons qui exigeraient sinon des listes de mots-clés combinatoires.
 

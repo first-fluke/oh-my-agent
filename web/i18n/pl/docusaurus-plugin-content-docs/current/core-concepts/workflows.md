@@ -456,7 +456,7 @@ oh-my-agent używa hooka `UserPromptSubmit`, który uruchamia się przed przetwo
 
 **Konsekwencja**: Jeśli ustawisz `language: en` w `.agents/oma-config.yaml`, załadowane zostaną wyłącznie wzorce z `*` i `en`. Wyzwalacze w języku naturalnym dla koreańskiego/japońskiego/itd. nie zadziałają, nawet jeśli użytkownik pisze w tych językach. Aby włączyć język inny niż angielski, ustaw odpowiednio `language: <kod>`. Angielski fallback w `*` pozostaje zawsze aktywny.
 
-### Pole Pattern (surowe regex)
+### Pole Pattern (surowe regex) {#pattern-field-raw-regex}
 
 Oprócz literalnych `keywords`, każdy workflow może deklarować `patterns` — surowe ciągi regex kompilowane z flagami `iu`. Wzorce umożliwiają dopasowanie intencji obejmujące wiele tokenów, które w przeciwnym razie wymagałyby kombinatorycznych list słów kluczowych.
 

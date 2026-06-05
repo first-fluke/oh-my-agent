@@ -469,7 +469,7 @@ oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is
 
 **Implication**: If you set `language: en` in `.agents/oma-config.yaml`, only `*` and `en` patterns load. Korean/Japanese/etc. natural-language triggers will not fire even if the user types in those languages. To enable a non-English language, set `language: <code>` accordingly. The English fallback in `*` always remains active.
 
-### Pattern field (raw regex)
+### Pattern field (raw regex) {#pattern-field-raw-regex}
 
 In addition to literal `keywords`, each workflow can declare `patterns`, raw regex strings compiled with `iu` flags. Patterns enable multi-token intent matching that would otherwise require combinatorial keyword lists.
 

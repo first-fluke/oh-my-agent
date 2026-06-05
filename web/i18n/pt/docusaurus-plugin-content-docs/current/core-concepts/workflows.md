@@ -456,7 +456,7 @@ oh-my-agent usa um hook `UserPromptSubmit` que executa antes de cada mensagem do
 
 **Implicação**: Se você definir `language: en` em `.agents/oma-config.yaml`, apenas os padrões de `*` e `en` serão carregados. Gatilhos em linguagem natural em coreano/japonês/etc. não dispararão mesmo se o usuário digitar nesses idiomas. Para habilitar um idioma diferente do inglês, defina `language: <code>` adequadamente. O fallback em inglês em `*` permanece sempre ativo.
 
-### Campo pattern (regex bruto)
+### Campo pattern (regex bruto) {#pattern-field-raw-regex}
 
 Além de `keywords` literais, cada workflow pode declarar `patterns` — strings regex brutas compiladas com flags `iu`. Patterns permitem correspondência de intenção multi-token que de outra forma exigiria listas combinatórias de palavras-chave.
 

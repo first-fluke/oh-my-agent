@@ -459,7 +459,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息之前
 
 **含义**：如果在 `.agents/oma-config.yaml` 中设置 `language: en`，则只会加载 `*` 和 `en` 模式。即使用户使用韩语/日语等输入，这些自然语言触发器也不会触发。要启用非英语语言，请相应地设置 `language: <code>`。`*` 中的英语回退始终保持活跃。
 
-### 模式字段（原始正则）
+### 模式字段（原始正则） {#pattern-field-raw-regex}
 
 除了字面量 `keywords` 之外，每个工作流还可以声明 `patterns`，使用 `iu` 标志编译的原始正则表达式字符串。模式可实现多 token 的意图匹配，否则需要组合爆炸的关键词列表才能覆盖。
 

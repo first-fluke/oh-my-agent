@@ -384,7 +384,7 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 
 **Implicatie**: Indien u `language: en` instelt in `.agents/oma-config.yaml`, worden alleen `*` en `en` patronen geladen. Koreaanse/Japanse/etc. natuurlijke-taal triggers vuren niet, ook al typt de gebruiker in die talen. Om een niet-Engelse taal in te schakelen, stel `language: <code>` overeenkomstig in. De Engelse fallback in `*` blijft altijd actief.
 
-### Pattern-veld (raw regex)
+### Pattern-veld (raw regex) {#pattern-field-raw-regex}
 
 Naast letterlijke `keywords` kan elke workflow ook `patterns` declareren — raw regex-strings gecompileerd met `iu`-flags. Patronen maken multi-token intentiematching mogelijk die anders combinatorische trefwoordlijsten zou vereisen.
 
