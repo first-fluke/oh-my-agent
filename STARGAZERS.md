@@ -11,7 +11,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1054)
+## Current (1060)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -183,6 +183,7 @@ summaries to spot which persona is churning.
 - @comicsansbestfont — 2026-04-19
 - @cookie98 — 2026-04-22
 - @coolzero74 — 2026-02-01
+- @Coooolrui — 2026-06-05
 - @copixon — 2026-05-20
 - @covagashi — 2026-04-17
 - @cpm9662 — 2026-04-27
@@ -361,6 +362,7 @@ summaries to spot which persona is churning.
 - @grsh50 — 2026-05-27
 - @gtolarc — 2026-02-02
 - @gugahoi — 2026-03-20
+- @GuiEpiphany — 2026-06-04
 - @GuiMedeirox — 2026-05-02
 - @gushuaialan1 — 2026-05-19
 - @gustavocp — 2026-02-13
@@ -402,6 +404,7 @@ summaries to spot which persona is churning.
 - @hey-jude — 2026-04-11
 - @himomohi — 2026-04-16
 - @hizzang — 2026-03-18
+- @hjaewon — 2026-06-04
 - @hjerpbakk — 2026-04-27
 - @hjyshane — 2026-04-16
 - @HK-hub — 2026-04-11
@@ -472,6 +475,7 @@ summaries to spot which persona is churning.
 - @jalon-dg — 2026-04-20
 - @JAM-PARK — 2026-01-31
 - @jamyeong3-collab — 2026-04-19
+- @JandY95 — 2026-06-04
 - @jarodsim — 2026-02-12
 - @JarrStan — 2026-04-05
 - @Jarweb — 2026-05-08
@@ -915,6 +919,7 @@ summaries to spot which persona is churning.
 - @superbjl — 2026-05-07
 - @Superstone-han — 2026-04-16
 - @surplusus — 2026-03-16
+- @surpmh — 2026-06-04
 - @SW-H — 2026-04-26
 - @swoh91 — 2026-04-25
 - @SynCROSS — 2026-03-17
@@ -974,6 +979,7 @@ summaries to spot which persona is churning.
 - @unquo — 2026-05-11
 - @UnseenWizzard — 2026-03-30
 - @uyaki — 2026-02-23
+- @vanilalatte03 — 2026-06-04
 - @veiman — 2026-03-26
 - @verysys-pal — 2026-03-17
 - @vichhka-git — 2026-03-11
