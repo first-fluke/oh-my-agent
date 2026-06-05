@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.40.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.40.0...cli-v8.40.1) (2026-06-05)
+
+
+### Refactoring
+
+* **install:** replace Gemini CLI option with Antigravity (agy) ([8d957b9](https://github.com/first-fluke/oh-my-agent/commit/8d957b990ef923ceb772f06f6b6657bcf6dd2e3a))
+
 ## [8.40.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.39.0...cli-v8.40.0) (2026-06-04)
 
 
