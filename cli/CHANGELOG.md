@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.41.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.40.1...cli-v8.41.0) (2026-06-05)
+
+
+### Features
+
+* **antigravity:** disable agy telemetry by default ([9f35a37](https://github.com/first-fluke/oh-my-agent/commit/9f35a37075cab46a5ec83c0e0125683d2251f3bf))
+* **update:** preserve installed skill selection on update ([6fa88de](https://github.com/first-fluke/oh-my-agent/commit/6fa88de9d244c83eddfefda4228a3d1031266a93))
+
+
+### Bug Fixes
+
+* **cli:** stop runAction from clobbering positional operands ([436503d](https://github.com/first-fluke/oh-my-agent/commit/436503db7df7316d9fa73ca6e3ad4bf942f31a67))
+
 ## [8.40.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.40.0...cli-v8.40.1) (2026-06-05)
 
 
