@@ -4,6 +4,13 @@
 
 $ErrorActionPreference = "Stop"
 
+# ── TLS 1.2 (Windows PowerShell 5.1 defaults to 1.0/1.1, which breaks
+#    HTTPS downloads from bun.sh / astral.sh on older Windows) ─────────
+try {
+  [Net.ServicePointManager]::SecurityProtocol = `
+    [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+} catch {}
+
 # ── Output helpers ──────────────────────────────────────────────────
 function Write-Info { param([string]$Message) Write-Host "▸ $Message" -ForegroundColor Cyan }
 function Write-Ok   { param([string]$Message) Write-Host "✓ $Message" -ForegroundColor Green }
