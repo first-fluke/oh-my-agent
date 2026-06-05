@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.1...web-v3.10.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* **skills:** isolate eval baseline so utility lift is honest ([54e8b2a](https://github.com/first-fluke/oh-my-agent/commit/54e8b2a10aa05556a4dd4a7a37ea94105d5164fb))
+
 ## [3.10.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.0...web-v3.10.1) (2026-06-05)
 
 
