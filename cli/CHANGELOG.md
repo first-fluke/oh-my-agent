@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.41.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.0...cli-v8.41.1) (2026-06-05)
+
+
+### Refactoring
+
+* **slide:** drop print !important via source-side cascade fixes ([0bed0db](https://github.com/first-fluke/oh-my-agent/commit/0bed0dbedea48e250a0aed3b0f72b62b2230e424))
+
 ## [8.41.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.40.1...cli-v8.41.0) (2026-06-05)
 
 
