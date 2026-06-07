@@ -9,7 +9,7 @@
  * (e) cursor + readOnly:false + custom auto_approve_flag → custom flag present
  * (f) table-driven: kiro/grok/codex/claude/gemini external with readOnly:true each suppress auto-approve
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { VendorConfig } from "../../../platform/agent-config.js";
 import {
   buildExternalInvocation,
