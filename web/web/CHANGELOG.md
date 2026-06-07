@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.2...web-v3.10.3) (2026-06-07)
+
+
+### Documentation
+
+* document oma hook abi, debug path, and migration ([4ae137d](https://github.com/first-fluke/oh-my-agent/commit/4ae137df077266f429a0f8255507e28cadd9fd75))
+
 ## [3.10.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.1...web-v3.10.2) (2026-06-05)
 
 
