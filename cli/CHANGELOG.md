@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.44.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.43.0...cli-v8.44.0) (2026-06-07)
+
+
+### Features
+
+* **memory:** rehydrate AgentMemory facts at vendor boundary ([81717e7](https://github.com/first-fluke/oh-my-agent/commit/81717e7625d971e1d5df6c3a43bbd6817854a971))
+
 ## [8.43.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.42.0...cli-v8.43.0) (2026-06-07)
 
 
