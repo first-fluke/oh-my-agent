@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.42.0",
-  "releaseDate": "2026-06-05T14:16:14.894Z",
+  "releaseDate": "2026-06-07T03:14:53.249Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,23 +176,23 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "2115d9367357305f0073828f35ec97f1bb93365de6a029c11c32bfb5b3daab2e",
-      "size": 28933
+      "sha256": "0d80cbf4af7a0bf89ad8c5265640b501d1444c31e9d6bed90eac725289659c8d",
+      "size": 29599
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "7bd2d490fde82e4436791a050af90fd176b7edd9de8fdd31d5bde554c6c0d534",
-      "size": 8497
+      "sha256": "c824a8bc4ebeb8d1212e5a518a7fd5b71b4cfccac8020f8968a8ef77bbf565aa",
+      "size": 10844
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "46e4b82eef19fc3f4b66563e9e5ce1184ba92220aee13ca64e8a345ade81166d",
-      "size": 18450
+      "sha256": "82fb9b3af2ab361a92092128fa9696a7fe4e6cfb4e7c8e6d2244f45fe86dc757",
+      "size": 19432
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "d589ffe572a322b7920f033f9531b233ad7b913e3fc72fa3f1f80a515456c1df",
-      "size": 6269
+      "sha256": "b6edbfa6c553a746af8bca86a4620631ecfe28c52f84ea8644d01effa6e0400c",
+      "size": 7583
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
@@ -206,8 +206,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "32fccd65a9ca359bacbbeffeff5b3fad16212d30f302f01d2360501bf726fef4",
-      "size": 5737
+      "sha256": "1a967e00b0fff53dfdf62b844f7194491438cf606d36505a71593306de34d8eb",
+      "size": 7063
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -216,8 +216,8 @@
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "7d2be6b7471d7cf9d85528f85fb6755103eebeed0b54e897e62d1eb4a2e4148d",
-      "size": 828
+      "sha256": "5761a667193df5a546b178df7d06010fab44b9c2ff7e0d120fef7c7775e627a0",
+      "size": 3530
     },
     {
       "path": ".agents/hooks/core/vendor-renderer.ts",
