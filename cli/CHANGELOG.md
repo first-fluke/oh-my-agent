@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.43.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.42.0...cli-v8.43.0) (2026-06-07)
+
+
+### Features
+
+* **hook:** centralize vendor hook dispatch via oma hook abi ([2f5c89a](https://github.com/first-fluke/oh-my-agent/commit/2f5c89aed531a4170f3faa5a03966aeb9b4c7ecf))
+
 ## [8.42.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.41.3...cli-v8.42.0) (2026-06-05)
 
 
