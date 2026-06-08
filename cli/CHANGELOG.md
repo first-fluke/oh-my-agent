@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.45.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.45.0...cli-v8.45.1) (2026-06-08)
+
+
+### Bug Fixes
+
+* **security:** contain path traversal in vendor install and video assets ([7317081](https://github.com/first-fluke/oh-my-agent/commit/731708102ff4bd6b5b1a26004b24983423c1ba4e))
+* **security:** harden slide --inline-fonts against XSS and SSRF ([ec69987](https://github.com/first-fluke/oh-my-agent/commit/ec69987ca854eb482acb2416fe0c96a3fa124ba8))
+* **security:** prevent shell command injection in CLI subprocess calls ([c069080](https://github.com/first-fluke/oh-my-agent/commit/c0690809d259ad884378df4812d3bc4162697ae6))
+
 ## [8.45.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.44.0...cli-v8.45.0) (2026-06-08)
 
 
