@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.45.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.44.0...cli-v8.45.0) (2026-06-08)
+
+
+### Features
+
+* **agent:** add pi as a per-agent dispatch vendor ([319bafe](https://github.com/first-fluke/oh-my-agent/commit/319bafe69137ebe5a7a4a1e1de908a849ad5e85f))
+
 ## [8.44.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.43.0...cli-v8.44.0) (2026-06-07)
 
 
