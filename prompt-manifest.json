@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.46.0",
-  "releaseDate": "2026-06-08T04:09:41.985Z",
+  "releaseDate": "2026-06-08T13:38:17.660Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -68,6 +68,11 @@
       "path": ".agents/agents/variants/codex.json",
       "sha256": "fd00a6a6429d9746d33bcc3411942c116ca6601592c153b46d79e64b67c93cb7",
       "size": 1394
+    },
+    {
+      "path": ".agents/agents/variants/commandcode.json",
+      "sha256": "1086835016ec0a59bf69ca9e00fab190f8577243259dbb77f72c47d55e5af374",
+      "size": 1027
     },
     {
       "path": ".agents/agents/variants/cursor.json",
@@ -240,6 +245,11 @@
       "size": 763
     },
     {
+      "path": ".agents/hooks/variants/commandcode.json",
+      "sha256": "adae182a3ad74f432d0cd5d2fe4235563a669ba3008b6e8ca7876757fcc422fc",
+      "size": 658
+    },
+    {
       "path": ".agents/hooks/variants/cursor.json",
       "sha256": "41b48f9533bd16997ac31648c7e289edf004d72fdf81f0ef89b4c56e97ad52cf",
       "size": 756
@@ -256,8 +266,8 @@
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "6aa1ec708fe6fa456666b6e74278f5ea30d19a0be7084dca9e6cec9d5879e739",
-      "size": 4389
+      "sha256": "97afcf3d4aba265cabea01ef02f0a62dc60691255a42cb4cd2841625fb4553bb",
+      "size": 4412
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
@@ -473,6 +483,11 @@
       "path": ".agents/skills/_shared/runtime/execution-protocols/codex.md",
       "sha256": "ff45f86e1c8b1dd91af18bdb5cedc0e139e613804df6139b635179f2e6acd2c8",
       "size": 2472
+    },
+    {
+      "path": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
+      "sha256": "913196c726dd4d94df0ca6abb6096e0874b07c52b9d2d48cfcb2b4f439d3319c",
+      "size": 2479
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
@@ -2031,6 +2046,6 @@
   "metadata": {
     "skillCount": 31,
     "workflowCount": 22,
-    "totalFiles": 404
+    "totalFiles": 407
   }
 }
