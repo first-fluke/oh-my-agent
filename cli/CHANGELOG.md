@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.46.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.45.1...cli-v8.46.0) (2026-06-08)
+
+
+### Features
+
+* **scripts:** add unified sns pipeline for dev.to and Qiita ([4513b5c](https://github.com/first-fluke/oh-my-agent/commit/4513b5c65802eb5411f808707541994c3fc584f6))
+
 ## [8.45.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.45.0...cli-v8.45.1) (2026-06-08)
 
 
