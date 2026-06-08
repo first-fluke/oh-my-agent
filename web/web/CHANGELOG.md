@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.3...web-v3.11.0) (2026-06-08)
+
+
+### Features
+
+* **agent:** add pi as a per-agent dispatch vendor ([319bafe](https://github.com/first-fluke/oh-my-agent/commit/319bafe69137ebe5a7a4a1e1de908a849ad5e85f))
+
 ## [3.10.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.2...web-v3.10.3) (2026-06-07)
 
 
