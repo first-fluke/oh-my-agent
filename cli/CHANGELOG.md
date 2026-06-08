@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.47.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.46.0...cli-v8.47.0) (2026-06-08)
+
+
+### Features
+
+* add commandcode vendor support ([27f072d](https://github.com/first-fluke/oh-my-agent/commit/27f072d5fd0486bb7dde2696f6416ae7930a5afe))
+* **install:** revamp preset options and vendor default selection ([860f20e](https://github.com/first-fluke/oh-my-agent/commit/860f20eb653558d79c4a1ac533251aa00114362a))
+
 ## [8.46.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.45.1...cli-v8.46.0) (2026-06-08)
 
 
