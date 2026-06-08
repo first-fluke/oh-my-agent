@@ -555,7 +555,7 @@ describe("buildExternalInvocation — vendor branches", () => {
     expect(inv.args.at(-1)).toBe("the-prompt");
   });
 
-  it("pi: uses -p as the prompt value flag and omits approval flags", () => {
+  it("pi: -p print mode, no approval flag, fallback model before positional prompt", () => {
     const inv = buildExternalInvocation(
       "pi",
       { command: "pi", model_flag: "--model", default_model: "sonnet:high" },
@@ -563,7 +563,28 @@ describe("buildExternalInvocation — vendor branches", () => {
       "the-prompt",
     );
     expect(inv.command).toBe("pi");
-    expect(inv.args).toEqual(["--model", "sonnet:high", "-p", "the-prompt"]);
+    // pi has its own branch: `-p` print flag, no auto-approve (pi has no
+    // permission sandbox), then the vendor-default model, then the positional
+    // prompt last. With a resolved plan the model flag comes from plan-args.
+    expect(inv.args).toEqual(["-p", "--model", "sonnet:high", "the-prompt"]);
+  });
+
+  it("pi: read-only excludes mutating tools when no read_only_flag", () => {
+    const inv = buildExternalInvocation(
+      "pi",
+      { command: "pi" },
+      "-p",
+      "the-prompt",
+      undefined,
+      { readOnly: true },
+    );
+    expect(inv.command).toBe("pi");
+    expect(inv.args).toEqual([
+      "-p",
+      "--exclude-tools",
+      "edit,write",
+      "the-prompt",
+    ]);
   });
 
   it("with promptFlag → flag and prompt appended as a pair", () => {

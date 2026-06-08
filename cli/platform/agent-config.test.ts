@@ -1,8 +1,12 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
-import { VENDORS } from "../constants/vendors.js";
+import { afterEach, describe, expect, it } from "vitest";
+import { EXTENSION_VENDORS, VENDORS } from "../constants/vendors.js";
 import {
   type AgentSpec,
+  loadAgentPersona,
   loadExecutionProtocol,
   type OmaConfig,
   type OmaDocsConfig,
@@ -253,9 +257,13 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
   // automatically enrolls it here, so a new vendor cannot be added without
   // either shipping a protocol or explicitly exempting it above. This is the
   // guard that prevents the antigravity bug from recurring for future vendors.
-  const REQUIRED_PROTOCOL_VENDORS = VENDORS.filter(
-    (v) => !PROTOCOL_EXEMPT_VENDORS.has(v),
-  );
+  // EXTENSION_VENDORS (pi) dispatch via external `oma agent:spawn` too, but are
+  // kept out of the canonical VENDORS set. Enroll them explicitly so the result
+  // artifact guard covers them as well.
+  const REQUIRED_PROTOCOL_VENDORS = [
+    ...VENDORS.filter((v) => !PROTOCOL_EXEMPT_VENDORS.has(v)),
+    ...EXTENSION_VENDORS,
+  ];
 
   it("antigravity protocol documents the headless stdout hand-off", () => {
     // The crux of the bug: agy `-p` stdout is discarded, so the result file is
@@ -326,5 +334,66 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
 
   it("returns empty string for an unknown vendor", () => {
     expect(loadExecutionProtocol("does-not-exist", repoRoot)).toBe("");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// loadAgentPersona — SSOT persona inlining (pi external dispatch)
+// ---------------------------------------------------------------------------
+
+describe("loadAgentPersona", () => {
+  const roots: string[] = [];
+
+  afterEach(() => {
+    for (const root of roots.splice(0)) {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  /** Build a temp project with .agents/oma-config.yaml + one agent source file. */
+  function tempProject(): string {
+    const root = mkdtempSync(join(tmpdir(), "oma-persona-"));
+    roots.push(root);
+    const agentsDir = join(root, ".agents", "agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(root, ".agents", "oma-config.yaml"),
+      "language: en\nmodel_preset: claude\n",
+    );
+    writeFileSync(
+      join(agentsDir, "backend-engineer.md"),
+      "---\nname: backend-engineer\nmodel: sonnet\n---\n\nYou are a Backend Specialist.",
+    );
+    return root;
+  }
+
+  it("resolves the persona body by canonical agent id (backend → backend-engineer)", () => {
+    const root = tempProject();
+    expect(loadAgentPersona("backend", root)).toBe(
+      "You are a Backend Specialist.",
+    );
+  });
+
+  it("resolves by the source file name too (backend-engineer)", () => {
+    const root = tempProject();
+    expect(loadAgentPersona("backend-engineer", root)).toBe(
+      "You are a Backend Specialist.",
+    );
+  });
+
+  it("strips YAML frontmatter from the returned body", () => {
+    const root = tempProject();
+    expect(loadAgentPersona("backend", root)).not.toContain("name:");
+  });
+
+  it("returns empty string when the agent source is not found", () => {
+    const root = tempProject();
+    expect(loadAgentPersona("nonexistent", root)).toBe("");
+  });
+
+  it("returns empty string when there is no .agents project", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-persona-empty-"));
+    roots.push(root);
+    expect(loadAgentPersona("backend", root)).toBe("");
   });
 });

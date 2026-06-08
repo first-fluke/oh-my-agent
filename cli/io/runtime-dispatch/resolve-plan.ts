@@ -19,6 +19,7 @@ import {
 import { warnGeminiDeprecationOnce } from "../../utils/gemini-deprecation.js";
 import { ConfigError } from "./config-error.js";
 import { loadUserConfig } from "./config-loader.js";
+import { toPiModel } from "./pi-model-map.js";
 import type { AgentPlan } from "./types.js";
 
 /**
@@ -179,7 +180,17 @@ export function resolveAgentPlanFromConfig(
     vendorOverride ?? process.env.OMA_RUNTIME_VENDOR?.trim().toLowerCase();
 
   let cli: RuntimeId = modelSpec.cli;
-  if (effectiveOverride) {
+  // pi-specific cli_model override: pi addresses models by their `provider/id`
+  // slug (the registry key), not the native CLI's bare `cli_model` form.
+  let piCliModel: string | undefined;
+  if (effectiveOverride === "pi") {
+    // pi is a universal multi-provider proxy: it can dispatch any real-provider
+    // model regardless of which native CLI owns it, so bypass the
+    // native_dispatch_from gate. toPiModel throws ConfigError for
+    // CLI-proprietary owners that pi cannot run.
+    cli = "pi";
+    piCliModel = toPiModel(spec.model);
+  } else if (effectiveOverride) {
     if (
       modelSpec.supports.native_dispatch_from.includes(
         effectiveOverride as RuntimeId,
@@ -196,7 +207,11 @@ export function resolveAgentPlanFromConfig(
   let finalEffort: EffortLevel | undefined = spec.effort as
     | EffortLevel
     | undefined;
+  // Drop cli-session effort only for the native CLI (e.g. Claude Code, which
+  // has no CLI effort flag). When dispatching via pi, effort is preserved and
+  // translated to pi's `--thinking` level by plan-args, so keep it.
   if (
+    cli !== "pi" &&
     modelSpec.supports.effort?.type === "cli-session" &&
     finalEffort !== undefined
   ) {
@@ -212,7 +227,7 @@ export function resolveAgentPlanFromConfig(
 
   const plan: AgentPlan = {
     cli,
-    cliModel: modelSpec.cli_model,
+    cliModel: piCliModel ?? modelSpec.cli_model,
     spec: modelSpec,
   };
 

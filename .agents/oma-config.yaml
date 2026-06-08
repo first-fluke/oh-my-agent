@@ -149,6 +149,28 @@ model_preset: antigravity
 #       backend: { model: openai/gpt-5.5, effort: high }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# pi (Earendil) transport runtime
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# pi is a multi-provider proxy runtime. Dispatch any agent through it with
+# `oma agent:spawn <agent> "<prompt>" <session> -m pi`. The per-agent model
+# resolved from `model_preset` / `agents:` is translated to pi's `--model`
+# (provider/id slug) and effort to pi's `--thinking` level — so per-subagent
+# models work on pi too. pi only runs real-provider models (anthropic, openai,
+# google); CLI-proprietary presets (cursor/kiro/qwen/antigravity) are rejected.
+#
+# The `vendors.pi` block below is the FALLBACK model path, used only when no
+# resolved plan applies (e.g. no model_preset). Normal runs do not need it.
+#
+# vendors:
+#   pi:
+#     command: pi
+#     prompt_flag: "-p"
+#     model_flag: "--model"
+#     default_model: anthropic/claude-sonnet-4-6
+#     thinking_flag: "--thinking"
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Resolution order (when an agent runs):
 #   1. agents.<id>            — explicit per-agent override
 #   2. model_preset entry     — built-in or custom_presets[model_preset]

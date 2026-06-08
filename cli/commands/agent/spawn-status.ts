@@ -22,6 +22,7 @@ import {
   type WorktreeHandle,
 } from "../../io/worktree.js";
 import {
+  loadAgentPersona,
   loadExecutionProtocol,
   resolvePromptContent,
   resolvePromptFlag,
@@ -209,9 +210,19 @@ export async function spawnAgent(
 
   const { vendor, config } = resolveVendor(agentId, vendorOverride);
   const executionProtocol = loadExecutionProtocol(vendor, process.cwd());
-  const promptContent = executionProtocol
+  let promptContent = executionProtocol
     ? `${rawPromptContent}\n\n${executionProtocol}`
     : rawPromptContent;
+
+  // pi has no vendor-side agent file to resolve via `@<agentId>` mention, so the
+  // agent's persona (system prompt) must be inlined ahead of the task. Other
+  // vendors get this from `.{vendor}/agents/<id>.md`.
+  if (vendor === "pi") {
+    const persona = loadAgentPersona(agentId, process.cwd());
+    if (persona) {
+      promptContent = `${persona}\n\n---\n\n${promptContent}`;
+    }
+  }
 
   const vendorConfig = config?.vendors?.[vendor] || {};
   const logStream = fs.openSync(logFile, "w");

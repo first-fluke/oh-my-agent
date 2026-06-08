@@ -213,3 +213,41 @@ session:
 ```
 
 Run `oma doctor --profile` to confirm resolution, then start a workflow as usual.
+
+---
+
+## Dispatching through pi (transport runtime)
+
+[pi](https://github.com/earendil-works/pi) (Earendil) is a multi-provider proxy
+runtime rather than a model owner — it can run any real-provider model
+(Anthropic, OpenAI, Google) under one CLI. oma treats pi as a **transport
+overlay**: your `model_preset` and `agents:` overrides stay exactly as they are,
+and pi becomes the executing CLI for a given agent.
+
+Dispatch any agent through pi with the `-m pi` override:
+
+```bash
+oma agent:spawn backend "Implement the export endpoint" <session> -m pi
+```
+
+What happens:
+
+- The per-agent model resolved from your preset/overrides (e.g.
+  `openai/gpt-5.5`) is translated to pi's `--model <provider/id>` form, and
+  `effort` is translated to pi's `--thinking` level. **Per-subagent models work
+  on pi exactly as they do natively** — different agents can run different models.
+- The agent's persona (system prompt) is inlined from `.agents/agents/<id>.md`,
+  since pi has no vendor-side agent file to reference.
+- Auth is whatever pi itself is configured for (`~/.pi/agent/auth.json` or a
+  provider API key in the environment). `oma doctor` reports pi install + auth
+  status alongside the other CLIs.
+
+**Constraint:** pi only runs real-provider models. CLI-proprietary presets
+(`cursor`, `kiro`, `qwen`, `antigravity`) name models that exist only inside
+their own CLIs, so dispatching them through pi is rejected with a clear error.
+Use a real-provider preset (`claude`, `codex`, `gemini`, or `mixed`) when routing
+agents through pi.
+
+> pi's model catalog is release-tracked and auth-gated. If a resolved slug does
+> not match what your pi install exposes, check `pi --list-models` — pi's
+> `--model` matching is fuzzy, so most provider slugs resolve as-is.

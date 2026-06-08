@@ -130,7 +130,13 @@ export function planDispatch(
   // existing installs without oma-config.yaml continue to work unchanged.
   let plan: AgentPlan | null = null;
   try {
-    plan = resolveAgentPlan(agentId);
+    // Thread the pi override into plan resolution only when pi is the target (or
+    // runtime), so pi resolves `plan.cli = "pi"` with a per-agent provider model.
+    // All other vendors keep the prior behavior (no override → OMA_RUNTIME_VENDOR
+    // env fallback inside resolveAgentPlan), avoiding any regression.
+    const planOverride =
+      targetVendor === "pi" || runtimeVendor === "pi" ? "pi" : undefined;
+    plan = resolveAgentPlan(agentId, planOverride);
   } catch (err) {
     if (err instanceof ConfigError) {
       console.warn(

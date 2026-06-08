@@ -133,6 +133,33 @@ export function buildExternalInvocation(
     return { command, args, env: { ...process.env } };
   }
 
+  // pi (Earendil): `pi -p [--exclude-tools …] [--model …] "<prompt>"`. pi has no
+  // permission sandbox or auto-approve flag — tools run without prompting — so
+  // read-only is enforced by excluding the mutating tools. The model/thinking
+  // flags are appended after the positional prompt by applyResolvedPlan when a
+  // per-agent plan is active; pi tolerates options after positionals.
+  if (vendor === "pi") {
+    const command = vendorConfig.command || "pi";
+    const args: string[] = ["-p"];
+
+    if (readOnly) {
+      if (vendorConfig.read_only_flag) {
+        args.push(...splitArgs(vendorConfig.read_only_flag));
+      } else {
+        args.push("--exclude-tools", "edit,write");
+      }
+    }
+
+    // Fallback model path (no resolved plan): emit the vendor default model.
+    if (vendorConfig.model_flag && vendorConfig.default_model) {
+      args.push(vendorConfig.model_flag, vendorConfig.default_model);
+    }
+
+    args.push(promptContent);
+
+    return { command, args, env: { ...process.env } };
+  }
+
   // Vendors whose CLI binary name differs from the vendor identifier.
   const binaryByVendor: Record<string, string> = {
     antigravity: "agy",

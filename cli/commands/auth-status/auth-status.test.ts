@@ -33,6 +33,20 @@ describe("auth:status command", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubEnv("CURSOR_API_KEY", "");
+    // pi auth reads provider API keys from the real environment; neutralize them
+    // so pi's authenticated state is driven by the mocked auth.json alone.
+    for (const key of [
+      "ANTHROPIC_API_KEY",
+      "OPENAI_API_KEY",
+      "GEMINI_API_KEY",
+      "GOOGLE_API_KEY",
+      "DEEPSEEK_API_KEY",
+      "XAI_API_KEY",
+      "MISTRAL_API_KEY",
+      "AZURE_OPENAI_API_KEY",
+    ]) {
+      vi.stubEnv(key, "");
+    }
   });
 
   afterEach(() => {
@@ -62,6 +76,9 @@ describe("auth:status command", () => {
             security: { auth: { selectedType: "openai" } },
           });
         }
+        if (path.includes(".pi")) {
+          return JSON.stringify({ anthropic: { key: "sk-ant-xxx" } });
+        }
         return "{}";
       });
 
@@ -80,6 +97,7 @@ describe("auth:status command", () => {
         antigravity: false,
         grok: false,
         kiro: true,
+        pi: true,
       });
     });
   });
@@ -107,6 +125,7 @@ describe("auth:status command", () => {
         antigravity: false,
         grok: false,
         kiro: false,
+        pi: false,
       });
     });
   });
@@ -384,6 +403,9 @@ describe("auth:status command", () => {
           return JSON.stringify({
             security: { auth: { selectedType: "openai" } },
           });
+        }
+        if (path.includes(".pi")) {
+          return JSON.stringify({ anthropic: { key: "sk-ant-xxx" } });
         }
         return "{}";
       });

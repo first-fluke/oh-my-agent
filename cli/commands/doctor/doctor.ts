@@ -30,6 +30,7 @@ import {
   isGeminiAuthenticated,
   isGrokAuthenticated,
   isKiroAuthenticated,
+  isPiAuthenticated,
   isQwenAuthenticated,
 } from "../../vendors/index.js";
 import {
@@ -70,6 +71,7 @@ const CLI_DEFINITIONS: Array<[string, string, string]> = [
   ],
   ["grok", "grok", "Follow instructions at https://grok.x.ai"],
   ["kiro", "kiro-cli", "Follow instructions at https://kiro.dev"],
+  ["pi", "pi", "bun install --global @earendil-works/pi-coding-agent"],
 ];
 
 export const AUTH_CHECKERS: Record<string, () => boolean> = {
@@ -80,6 +82,7 @@ export const AUTH_CHECKERS: Record<string, () => boolean> = {
   antigravity: () => isAntigravityAuthenticated(),
   grok: isGrokAuthenticated,
   kiro: isKiroAuthenticated,
+  pi: isPiAuthenticated,
 };
 
 /** Vendor context files checked when their CLI is installed. */

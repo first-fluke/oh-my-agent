@@ -1,3 +1,4 @@
+import { toPiThinking } from "./pi-model-map.js";
 import type { AgentPlan } from "./types.js";
 
 /**
@@ -95,6 +96,16 @@ export function buildAgentPlanArgs(plan: AgentPlan): string[] {
     }
     case "antigravity": {
       // agy 1.0 exposes no model or thinking-budget flag — model is config-driven.
+      break;
+    }
+    case "pi": {
+      // pi addresses models by their provider/id slug (cliModel already holds
+      // the pi form, set in resolve-plan via toPiModel). Effort is translated to
+      // pi's `--thinking` level. pi tolerates options after the positional
+      // prompt, so these append cleanly via applyResolvedPlan.
+      args.push("--model", plan.cliModel);
+      const thinkingLevel = toPiThinking(plan);
+      if (thinkingLevel) args.push("--thinking", thinkingLevel);
       break;
     }
     default: {

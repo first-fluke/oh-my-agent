@@ -238,6 +238,59 @@ describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_di
 });
 
 // ---------------------------------------------------------------------------
+// Case 8c: pi vendorOverride — universal proxy transport
+// pi can run any real-provider model regardless of which native CLI owns it.
+// plan.cli becomes "pi"; cliModel becomes the provider/id slug; effort is
+// preserved (translated to --thinking by plan-args). CLI-proprietary owners
+// (cursor/kiro/qwen/antigravity) are rejected.
+// ---------------------------------------------------------------------------
+
+describe("resolveAgentPlanFromConfig — Case 8c: pi vendorOverride", () => {
+  it("codex backend → cli=pi, cliModel=openai/gpt-5.5, effort preserved", () => {
+    const plan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG, "pi");
+    expect(plan.cli).toBe("pi");
+    expect(plan.cliModel).toBe("openai/gpt-5.5");
+    expect(plan.effort).toBe("high");
+    // plan-args translates effort → pi --thinking and keeps the provider slug.
+    expect(buildAgentPlanArgs(plan)).toEqual([
+      "--model",
+      "openai/gpt-5.5",
+      "--thinking",
+      "high",
+    ]);
+  });
+
+  it("claude model via pi keeps effort (not dropped as cli-session)", () => {
+    // anthropic/claude-* is cli-session on the claude CLI (effort dropped), but
+    // pi supports --thinking, so a thinking override must survive.
+    const plan = resolveAgentPlanFromConfig(
+      "qa",
+      {
+        ...CLAUDE_ONLY_CONFIG,
+        agents: {
+          qa: { model: "anthropic/claude-sonnet-4-6", thinking: true },
+        },
+      },
+      "pi",
+    );
+    expect(plan.cli).toBe("pi");
+    expect(plan.cliModel).toBe("anthropic/claude-sonnet-4-6");
+    expect(buildAgentPlanArgs(plan)).toEqual([
+      "--model",
+      "anthropic/claude-sonnet-4-6",
+      "--thinking",
+      "high",
+    ]);
+  });
+
+  it("rejects CLI-proprietary owners (cursor) with ConfigError", () => {
+    expect(() =>
+      resolveAgentPlanFromConfig("pm", CURSOR_ONLY_CONFIG, "pi"),
+    ).toThrow(ConfigError);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Case 8b: cursor preset routes to cursor cli + cursor cliModel
 // Regression for issue #336 follow-up — preset must produce cursor-owned
 // model slugs, not bleed gemini/codex slugs into
