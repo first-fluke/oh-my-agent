@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.49.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.49.0...cli-v8.49.1) (2026-06-09)
+
+
+### Refactoring
+
+* **backup:** consolidate all on-disk backups under .agents/backup/ ([fb909ac](https://github.com/first-fluke/oh-my-agent/commit/fb909aca5a10719225dbae98353eb654eb0bbe51))
+
 ## [8.49.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.48.0...cli-v8.49.0) (2026-06-09)
 
 
