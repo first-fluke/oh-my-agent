@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.47.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.47.0...cli-v8.47.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* **skills-installer:** add commandcode to HOOK_VENDORS ([4e0b1e5](https://github.com/first-fluke/oh-my-agent/commit/4e0b1e5872965e226d13dfe3916916a496347c2e))
+
 ## [8.47.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.46.0...cli-v8.47.0) (2026-06-08)
 
 
