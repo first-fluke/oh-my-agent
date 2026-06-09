@@ -1406,6 +1406,23 @@ describe("backupSkillMd", () => {
     // Original .bak is untouched
     expect(readFileSync(`${skillMdPath}.bak`, "utf-8")).toBe("earlier backup");
   });
+
+  it("routes in-project backups under .agents/backup/skills-opt (no sibling .bak)", () => {
+    // Make tmpDir a project so the canonical backup root applies.
+    mkdirSync(join(tmpDir, ".agents"), { recursive: true });
+    const skillMdPath = join(tmpDir, ".agents", "skills", "demo", "SKILL.md");
+    const original = makeValidSkillBody("## Routed\n\nContent.");
+    writeSkillMd(skillMdPath, original);
+
+    const bakPath = backupSkillMd(skillMdPath);
+
+    expect(
+      bakPath.startsWith(join(tmpDir, ".agents", "backup", "skills-opt")),
+    ).toBe(true);
+    expect(readFileSync(bakPath, "utf-8")).toBe(original);
+    // no sibling .bak next to the SKILL.md
+    expect(existsSync(`${skillMdPath}.bak`)).toBe(false);
+  });
 });
 
 // --- estimateLiveDispatchCalls ---

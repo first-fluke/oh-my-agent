@@ -5,9 +5,10 @@ import {
   renameSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, sep } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import { createInterface } from "node:readline";
 import { AGENTS_DIR, AGENTS_SKILLS_DIR } from "../../constants/paths.js";
+import { backupPathFromRoot, findProjectRoot } from "../../io/backup.js";
 import { planDispatch } from "../../io/runtime-dispatch.js";
 import {
   resolvePromptFlag,
@@ -638,30 +639,37 @@ export function resolveSkillMdPath(skillId: string, workspace: string): string {
 // --- Backup helper ---
 
 /**
- * Back up a SKILL.md to `<path>.bak`.
+ * Back up a SKILL.md before the optimizer overwrites it.
  *
- * If `<path>.bak` already exists, tries suffixed names (`<path>.bak.1`,
- * `<path>.bak.2`, …) up to 99. Throws when all suffixes are exhausted.
- *
- * Returns the path actually written.
+ * Lands under the canonical gitignored root `<project>/.agents/backup/skills-opt/`
+ * (relative path flattened with `__` to avoid collisions), falling back to a
+ * sibling `<path>.bak` when the file lives outside any project. If the chosen
+ * `<name>.bak` already exists, tries suffixed names (`.bak.1`, `.bak.2`, …) up
+ * to 99. Throws when all suffixes are exhausted. Returns the path written.
  */
 export function backupSkillMd(skillMdPath: string): string {
-  const base = `${skillMdPath}.bak`;
-  if (!existsSync(base)) {
-    const content = readFileSync(skillMdPath, "utf-8");
-    writeFileSync(base, content, "utf-8");
-    return base;
-  }
+  const root = findProjectRoot(skillMdPath);
+  const base = root
+    ? backupPathFromRoot(
+        root,
+        "skills-opt",
+        `${relative(root, skillMdPath).split(sep).join("__")}.bak`,
+      )
+    : `${skillMdPath}.bak`;
+
+  const write = (dest: string): string => {
+    mkdirSync(dirname(dest), { recursive: true });
+    writeFileSync(dest, readFileSync(skillMdPath, "utf-8"), "utf-8");
+    return dest;
+  };
+
+  if (!existsSync(base)) return write(base);
   for (let i = 1; i <= 99; i++) {
     const candidate = `${base}.${i}`;
-    if (!existsSync(candidate)) {
-      const content = readFileSync(skillMdPath, "utf-8");
-      writeFileSync(candidate, content, "utf-8");
-      return candidate;
-    }
+    if (!existsSync(candidate)) return write(candidate);
   }
   throw new Error(
-    `[oma skills opt] cannot create backup: all suffix slots (.bak through .bak.99) are taken for ${skillMdPath}`,
+    `[oma skills opt] cannot create backup: all suffix slots (.bak through .bak.99) are taken for ${base}`,
   );
 }
 
