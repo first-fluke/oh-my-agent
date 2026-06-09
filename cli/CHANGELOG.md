@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.50.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.49.1...cli-v8.50.0) (2026-06-09)
+
+
+### Features
+
+* **workflows:** harden ralph judge independence and session memory ([2ad2796](https://github.com/first-fluke/oh-my-agent/commit/2ad279694ba2d0c4d5e159da91588e6eabb6aa9a))
+
+
+### Bug Fixes
+
+* **cli:** exclude local runtime state from prompt manifest ([ad15b6f](https://github.com/first-fluke/oh-my-agent/commit/ad15b6f1ab0e01239ad6108adcaa375f03ce6161))
+
+
+### Refactoring
+
+* **backup:** route `oma skills opt` SKILL.md backups to .agents/backup/ ([77df982](https://github.com/first-fluke/oh-my-agent/commit/77df982975ec9ac15fa7a4acda6d8beca133e4c5))
+
 ## [8.49.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.49.0...cli-v8.49.1) (2026-06-09)
 
 
