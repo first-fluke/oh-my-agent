@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.48.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.47.1...cli-v8.48.0) (2026-06-09)
+
+
+### Features
+
+* **ralph:** gate EXEC on ultrawork artifacts and L1 checkpoint ([31b5ff4](https://github.com/first-fluke/oh-my-agent/commit/31b5ff460c6df1b52d60a606de7995e7cfef91b3))
+
+
+### Bug Fixes
+
+* **hooks:** stop meta-discussion from activating persistent workflows ([2a7649b](https://github.com/first-fluke/oh-my-agent/commit/2a7649b3fa3996ce6605fd7e50cded1f3bbddda1))
+
 ## [8.47.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.47.0...cli-v8.47.1) (2026-06-09)
 
 
