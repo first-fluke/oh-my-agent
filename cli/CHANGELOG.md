@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.49.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.48.0...cli-v8.49.0) (2026-06-09)
+
+
+### Features
+
+* **antigravity:** disable feedback survey prompt on install/update ([3344a30](https://github.com/first-fluke/oh-my-agent/commit/3344a30aa6099a70904ee9ac933c717534b6fbe8))
+
+
+### Bug Fixes
+
+* **gitignore:** ignore .migration-backup created by update migrations ([22d224c](https://github.com/first-fluke/oh-my-agent/commit/22d224c40437f2e865a70b0cf0f0991de4a69588))
+
 ## [8.48.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.47.1...cli-v8.48.0) (2026-06-09)
 
 
