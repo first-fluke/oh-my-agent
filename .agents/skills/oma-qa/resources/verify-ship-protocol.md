@@ -79,7 +79,7 @@ Execution guide for VERIFY Phase (Steps 6-8) and SHIP Phase (Steps 14-17) in ult
 - [ ] End-to-end user journey test
 - [ ] Error states verified
 - [ ] Loading states verified
-- [ ] Accessibility compliance (WCAG 2.1 AA)
+- [ ] Accessibility compliance (WCAG 2.2 AA)
 
 ---
 

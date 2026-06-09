@@ -228,4 +228,4 @@ Other skills can request audio output by calling the same MCP tools directly, or
 - Configuration: `config/voice-config.yaml`
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
-- Design reference: `docs/plans/designs/012-oma-voice.md`
+- Design reference: `../../../docs/plans/designs/012-oma-voice.md` (source repo only; absent in global-mode installs)

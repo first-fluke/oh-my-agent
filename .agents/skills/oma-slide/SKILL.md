@@ -92,7 +92,7 @@ exportable to PDF, PNG, and PPTX.
 6. **REVIEW** (Phase 5): Run `oma slide viewer --dir`. Optionally open `oma slide edit --dir`
    for bbox visual edits. Optional aesthetic review using chrome-devtools MCP screenshots (judgment,
    not the pass/fail gate).
-7. **DELIVER** (Phase 6): Run `oma slide bundle --out out/deck.html`. Optionally export
+7. **DELIVER** (Phase 6): Run `oma slide bundle --dir "$DECK_DIR" --out out/deck.html` (`--dir` is required). Optionally export
    PDF / PNG / PPTX on user request. Warn if deck contains video (bundle is not fully self-contained).
 
 ### Transitions

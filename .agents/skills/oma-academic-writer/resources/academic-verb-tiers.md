@@ -2,7 +2,7 @@
 
 Ranked by frequency in a corpus of academic papers. Higher tiers are more universally appropriate; lower tiers are more specialised.
 
-Source: `src/_ingredients/verbs.md` (top 437 verbs from academic corpus).
+Source: top 437 verbs from an academic corpus (frequency-ranked).
 
 ## Banned verbs (generic / low-level)
 
@@ -72,7 +72,7 @@ These are safe in any academic context. Use liberally.
 | leverage | 50 | Strategic use (use sparingly; borderline AI word) |
 | generalise | 52 | Abstraction, broad application |
 | study | 54 | Investigation, research, examination |
-| utilise | 55 | Application (prefer "employ" or "use" in less formal contexts) |
+| utilise | 55 | Application (prefer "employ"; "use" is itself on the banned-main-verb list) |
 | solve | 56 | Resolution, addressing problems |
 
 ## Tier 2: strong academic verbs (frequency rank 31–80)

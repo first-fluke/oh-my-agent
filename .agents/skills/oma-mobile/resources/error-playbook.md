@@ -95,7 +95,7 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 
 ## Rate Limit / Quota / Memory Fallback
 
-Same as backend-agent playbook: See "Rate Limit" and "Serena Memory" sections.
+Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md` §"Rate Limit / Quota Error (Gemini API)" and §"Serena Memory Unavailable".
 
 ---
 

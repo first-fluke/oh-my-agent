@@ -106,7 +106,7 @@ Where `{ver}` is the cli package version (read from `cli/package.json` `version`
 7. LAW 1 (trailing Sources block) — strip.
 8. LAW 5 (footer) — verify present.
 
-Steps 1, 3, 7 auto-correct. Steps 2, 4, 5, 6 fail render with exit 1 (use `--no-self-check` to bypass for debug).
+LAWs 8, 7, 3, 1 auto-correct. LAWs 2, 4, 6, 5 are violations that fail render with exit 1 (use `--no-self-check` to bypass for debug).
 
 ---
 

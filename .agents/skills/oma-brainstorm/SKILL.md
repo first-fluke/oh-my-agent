@@ -22,10 +22,10 @@ Explore user intent, constraints, and alternative approaches before planning or 
 - Before invoking `/plan` for complex or ambiguous requests
 
 ### When NOT to use
-- Requirements are already clear and well-defined -> use pm-agent directly
+- Requirements are already clear and well-defined -> use `oma-pm` directly
 - Implementing actual code -> delegate to specialized agents
-- Performing code reviews -> use QA Agent
-- Debugging existing issues -> use debug-agent
+- Performing code reviews -> use `oma-qa`
+- Debugging existing issues -> use `oma-debug`
 
 ### Expected inputs
 - Early idea, ambiguous goal, product concept, design question, or set of constraints

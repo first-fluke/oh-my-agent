@@ -28,8 +28,8 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 - Deciding whether detailed examples belong inline or in `resources/`
 
 ### When NOT to use
-- Installing third-party skills into `$CODEX_HOME/skills` -> use skill installer
-- Creating a Codex plugin bundle -> use plugin creator
+- Installing third-party skills into `$CODEX_HOME/skills` -> use Codex's built-in skill installer (external; not an OMA skill)
+- Creating a Codex plugin bundle -> use Codex's plugin tooling (external; not an OMA skill)
 - Writing a general project plan unrelated to skill authoring -> use PM Agent
 - Editing product code, infrastructure, frontend, backend, or mobile implementation directly -> use the matching specialist skill
 

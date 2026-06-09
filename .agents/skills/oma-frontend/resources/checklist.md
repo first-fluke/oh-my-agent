@@ -18,7 +18,7 @@ Run through every item before submitting your work.
 - [ ] Dark mode supported (if project uses it)
 - [ ] No hardcoded colors (use Tailwind theme tokens)
 
-## Accessibility (WCAG 2.1 AA)
+## Accessibility (WCAG 2.2 AA)
 - [ ] Semantic HTML elements (`<nav>`, `<main>`, `<button>`)
 - [ ] All images have alt text
 - [ ] Color contrast >= 4.5:1 (normal text), >= 3:1 (large text)

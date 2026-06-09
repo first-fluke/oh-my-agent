@@ -84,7 +84,7 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 
 ### Failure and recovery
 - Extractor parse error on a single doc: skip doc + warn, continue with remaining docs.
-- Resolver network timeout on URL refs: mark as `verify-skipped: unreachable`, continue.
+- lychee unavailable or URL check incomplete: print install hint, skip URL checking, continue (core check is unaffected).
 - Host-LLM context limit exceeded while drafting patches: process candidate docs in smaller batches.
 - `oma docs` CLI not found: skip with installation hint (workflow hook: skip silently).
 - `doc-refs.json` write failure: abort and report the write error; do not emit partial index.
@@ -194,8 +194,8 @@ oma docs verify --json
 | `LOCAL_FS` read | `docs/**/*.md` (extractor input), `docs/generated/doc-refs.json` (index), `.env.example`, `package.json`, `.agents/oma-config.yaml` |
 | `LOCAL_FS` write | `docs/generated/doc-refs.json` (regenerated each verify run), approved sync patches |
 | `CODEBASE` read-only | Existence checks for file/cli/script/env/config refs; git diff intake |
-| `PROCESS` | `git diff`, `git apply`, `which`, HTTP HEAD requests |
-| `NETWORK` | URL ref HEAD requests (external hosts only; internal hosts skipped) |
+| `PROCESS` | `git diff`, `git apply`, `which`, background `lychee` spawn |
+| `NETWORK` | URL checking delegated to `lychee` (no internal HEAD fallback; see Guardrail 6) |
 
 ### Preconditions
 - `docs/` directory exists at repo root.

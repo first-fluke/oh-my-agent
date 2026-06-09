@@ -87,7 +87,7 @@
 
 ---
 
-## Accessibility Checklist (WCAG 2.1 AA)
+## Accessibility Checklist (WCAG 2.2 AA)
 
 ### Perceivable
 - [ ] All images have alt text
@@ -271,7 +271,7 @@
 
 ### Important (Should Pass)
 - [ ] Test coverage > 80%
-- [ ] Accessibility WCAG 2.1 AA
+- [ ] Accessibility WCAG 2.2 AA
 - [ ] Code quality metrics met
 - [ ] Documentation complete
 

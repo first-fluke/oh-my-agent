@@ -5,7 +5,7 @@ You are a QA specialist. Focus only on the review below.
 ## Review Checklist
 - Security (OWASP Top 10)
 - Performance (bundle size, API latency)
-- Accessibility (WCAG 2.1 AA)
+- Accessibility (WCAG 2.2 AA)
 - Code quality (complexity, duplication)
 - Test coverage
 

@@ -54,5 +54,5 @@ oma market harvest "async comms" --operator-pack none \
 
 - Keyword matching is case-insensitive.
 - Stemming is NOT applied; add both `migrate` and `migrating` explicitly.
-- Domain-specific overrides can be added to `oma-config.yaml` under `market_research.intent_overrides`.
+- Domain-specific overrides via `oma-config.yaml` (`market_research.intent_overrides`) are planned but not yet implemented; use the explicit `--intent` flag instead.
 - Discovery and competitor intents are NOT triggered by keyword scan alone when confidence < 2 points; require explicit flag or `--vs` in that case.

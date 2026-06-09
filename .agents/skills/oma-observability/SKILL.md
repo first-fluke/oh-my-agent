@@ -293,7 +293,7 @@ Before submitting, run `resources/checklist.md`.
 - Incident forensics: `resources/incident-forensics.md`
 - Meta-observability: `resources/meta-observability.md`
 - Observability-as-code: `resources/observability-as-code.md`
-- Anti-patterns (18 items): `resources/anti-patterns.md`
+- Anti-patterns catalog (72 entries): `resources/anti-patterns.md`
 - Checklist: `resources/checklist.md`
 - Examples: `resources/examples.md`
 - Transport:

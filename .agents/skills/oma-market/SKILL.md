@@ -157,7 +157,7 @@ oma market detect-trap "$TOPIC" \
 | `competitor` | `resources/operator-packs/competitor.md` | SWOT + Porter's 5F (v1.1 stub) | Weights: relevance 0.35, engagement 0.35, quality 0.30; `--vs` enables COMPARISON template |
 | `discovery` | `resources/operator-packs/discovery.md` | SWOT + PESTEL (v1.1 stub) | Weights: relevance 0.45, engagement 0.30, quality 0.25 |
 
-Porter's 5F and PESTEL are v1.1 stub templates only; auto-enabled by intent flag but render as placeholder sections.
+Porter's 5F and PESTEL: the CLI renders empty framework slots; the host LLM fills them using the analyst prompts in `resources/frameworks/porters-5f.md` and `pestel.md` (execution-protocol Step 6).
 
 ### Default Workflow
 1. **Preflight**: `oma market detect-trap` exits 0 or halts.
@@ -183,7 +183,7 @@ Pass the rendered brief path (`.agents/results/market/{slug}-{YYYYMMDD}.md`) as 
 ## References
 - Intent classification: `resources/intent-rules.md`
 - Operator packs: `resources/operator-packs/` (pain.md, positive.md, competitor.md, discovery.md)
-- Frameworks: `resources/frameworks/` (swot.md v1; porters-5f.md, pestel.md v1.1 stubs)
+- Frameworks: `resources/frameworks/` (swot.md, porters-5f.md, pestel.md — analyst prompts the host LLM fills into the rendered slots)
 - Execution steps: `resources/execution-protocol.md`
 - Output LAWs and self-check rules: `resources/output-laws.md`
 - Input/output examples: `resources/examples.md`

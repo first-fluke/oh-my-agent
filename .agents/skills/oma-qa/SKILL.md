@@ -18,7 +18,7 @@ Review and verify software quality with priority on security, performance, acces
 - Final review before deployment
 - Security audits (OWASP Top 10)
 - Performance analysis
-- Accessibility compliance (WCAG 2.1 AA)
+- Accessibility compliance (WCAG 2.2 AA)
 - Test coverage analysis
 
 ### When NOT to use

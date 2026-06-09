@@ -10,7 +10,7 @@
 3. Inform user: "Could not find official docs via Context7. Falling back to web search."
 
 ### Context7 returns empty/irrelevant docs
-**Symptom**: `get-library-docs` returns content that doesn't match the query topic
+**Symptom**: `query-docs` returns content that doesn't match the query topic
 **Recovery**:
 1. Try broader or narrower topic parameter
 2. Fall back to `web` route with the original query

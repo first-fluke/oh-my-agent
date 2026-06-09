@@ -1,6 +1,6 @@
 ---
 name: oma-recap
-description: Analyze conversation histories from multiple AI tools (Claude, Codex, Qwen, Cursor, Antigravity) and generate themed daily/period work summaries. Filter by date or time window.
+description: Analyze conversation histories from multiple AI tools (Grok, Claude, Codex, Qwen, Cursor, Antigravity) and generate themed daily/period work summaries. Filter by date or time window.
 ---
 
 # AI Tool Conversation History Summary
@@ -165,11 +165,16 @@ oma recap --tool claude,codex --json
 **Fallback when CLI is not installed**: process Claude history only via inline jq:
 
 ```bash
+# Uses the system timezone; export TZ=<zone> first to override, and state the
+# timezone assumption in the recap (per the Failure and recovery rules).
 TARGET_DATE=$(date +%Y-%m-%d)
-TZ=Asia/Seoul start_ts=$(date -j -f "%Y-%m-%d %H:%M:%S" "${TARGET_DATE} 00:00:00" +%s)000
+# macOS/BSD date:
+start_ts=$(date -j -f "%Y-%m-%d %H:%M:%S" "${TARGET_DATE} 00:00:00" +%s)000
+# Linux/GNU date alternative:
+# start_ts=$(date -d "${TARGET_DATE} 00:00:00" +%s)000
 end_ts=$((start_ts + 86400000))
 
-TZ=Asia/Seoul jq -r --argjson start "$start_ts" --argjson end "$end_ts" '
+jq -r --argjson start "$start_ts" --argjson end "$end_ts" '
   select(.timestamp >= $start and .timestamp < $end and .display != null and .display != "") |
   {
     time: (.timestamp / 1000 | localtime | strftime("%H:%M")),
@@ -204,83 +209,11 @@ Read **all** extracted data and analyze with the following criteria:
 
 Save results to `.agents/results/recap/{date}.md` and display simultaneously.
 
-Output in the following markdown format. **Response language follows `language` setting in `.agents/oma-config.yaml`.**
+Use the markdown templates in `resources/output-formats.md`:
+- **Daily format** (1d or specific date): TL;DR → Overview → time-blocked themes → Miscellaneous → Tool Usage Patterns.
+- **Multi-day format** (3d+): project-driven sprint-report structure with Side Projects for small (<30 prompts) work; follow the multi-day grouping rules in the same file.
 
-#### Daily format (1d or specific date)
-
-```markdown
-## {date} Recap
-
-> **TL;DR**
-> - {What I accomplished 1: project name + outcome}
-> - {What I accomplished 2}
-> - {What I accomplished 3}
-
-### Overview
-2-3 sentence summary of the day. Written from "I did X" perspective.
-Focus on outcomes and progress, not tool ratios or technical details.
-
-### {Theme 1} (AM 09:36~11:30)
-- Core work performed
-- Key decisions
-- 2-4 bullets per theme
-
-### {Theme 2} (PM 13:33~15:21)
-- Core work performed
-- Key decisions
-
-### Miscellaneous
-- Brief summary of sub-15-minute tasks
-
-### Tool Usage Patterns
-- Tool usage ratios and primary purposes
-- Notable tool-switching patterns
-```
-
-#### Multi-day format (3d, 7d, 2w, 30d)
-
-For any multi-day window, use a **project-driven structure** like a sprint report.
-Focus on what was accomplished per project, not day-by-day chronology.
-
-```markdown
-## {start} ~ {end} Monthly Recap
-
-> **TL;DR**
-> - {What I accomplished 1: project name + outcome}
-> - {What I accomplished 2}
-> - {What I accomplished 3}
-
-### Overview
-3-5 sentence narrative of the month. Major focus shifts week-by-week,
-key milestones achieved, and overall direction. Written from "I did X" perspective.
-
-### {Project A}
-What this project is, what was accomplished during the period.
-- Key milestone or deliverable 1
-- Key milestone or deliverable 2
-- Key decision made
-- Current status (shipped / in progress / blocked)
-
-### {Project B}
-- ...
-
-### Side Projects
-Projects with <30 prompts, summarized briefly.
-- {project}: one-line summary
-- {project}: one-line summary
-
-### Tool Usage Patterns
-- Tool usage ratios and how they evolved over the month
-- Notable shifts (e.g., "started using Codex mid-month")
-```
-
-**Multi-day grouping rules:**
-- Group by **project**, not by date
-- Order projects by activity volume (most active first)
-- Each project section: what it is, what was accomplished, key decisions, current status
-- Do NOT include prompt counts or date ranges in project headers (those are internal metrics)
-- Small projects (<30 prompts) go into "Side Projects" as one-liners
-- Overview should read like a sprint report narrative, not a log
+**Response language follows `language` setting in `.agents/oma-config.yaml`.**
 
 ### 5. Save Results
 
@@ -295,6 +228,7 @@ For window ranges, use `{start-date}~{end-date}.md` format.
 
 ## References
 
+- Output format templates: `resources/output-formats.md`
 - Recap CLI: `oma recap --json`
 - Output directory: `.agents/results/recap/`
 - Language config: `.agents/oma-config.yaml`

@@ -272,6 +272,7 @@ Use `resources/prompt-tips.md` for writing effective briefs per mode.
 Before submitting, run `resources/checklist.md`.
 The vendored Remotion compositor lives at `resources/remotion/` (see its `README.md`).
 The web-capture driver lives at `resources/playwright/record.mjs` (runs as a subprocess under the resolved Playwright; never imported into the CLI).
+The MPT fallback compositor driver lives at `resources/mpt/driver.py` (consumed by the CLI's mpt-project internals).
 
 ### Configuration
 

@@ -148,6 +148,7 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - ISO planning guide: `resources/iso-planning.md`
 - Error recovery: `resources/error-playbook.md`
 - Task schema: `resources/task-template.json`
+- Ultrawork PLAN phase protocol: `resources/plan-phase-protocol.md` (used when this skill runs inside the ultrawork workflow)
 - API contracts: `../_shared/core/api-contracts/`
 - Context loading: `../_shared/core/context-loading.md`
 - Reasoning templates: `../_shared/core/reasoning-templates.md`

@@ -6,7 +6,7 @@
 - [ ] harvest `sources_used` has >= 2 entries, or warn coverage in brief footer
 - [ ] All cluster representatives have URL or plain-text fallback (no bare signal IDs)
 - [ ] No `—` (em-dash) or `–` (en-dash) characters in output body (use ` - ` instead)
-- [ ] No `## ` headers in output body outside framework sections (JTBD, SWOT, etc.)
+- [ ] No `## ` headers in output body outside framework sections (SWOT, Porter's 5F, PESTEL)
 - [ ] No `Sources:` / `References:` / `Further reading:` block at end of brief
 - [ ] Badge present on line 1 in format `🔎 oma-market v{ver} · synced {YYYY-MM-DD}`
 - [ ] Inline `[name](url)` citation count > 0 (at least one cited source in body)
