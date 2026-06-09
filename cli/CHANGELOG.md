@@ -1,5 +1,19 @@
 # Changelog
 
+## [8.51.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.50.0...cli-v8.51.0) (2026-06-09)
+
+
+### Features
+
+* **cli:** add oma ralph:verify for the EXEC anti-circumvention gate ([f2502e8](https://github.com/first-fluke/oh-my-agent/commit/f2502e83ec1a0a7289cdfa4b0cf88cd2d987cb8b))
+
+
+### Bug Fixes
+
+* **hooks:** stop workflow-name artifact mentions re-triggering ralph ([5478ceb](https://github.com/first-fluke/oh-my-agent/commit/5478cebdb466f334bdf7d6ad306ee9525c38d6c6))
+* **skills:** correct drifted commands, refs, and defaults across skills ([7dc29bb](https://github.com/first-fluke/oh-my-agent/commit/7dc29bbbfdf785dd727498ff9ba97a59f251406b))
+* **skills:** resolve remaining low-severity review findings ([9284c6c](https://github.com/first-fluke/oh-my-agent/commit/9284c6c3ac0e3f19512126e0fd2f2d9082228151))
+
 ## [8.50.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.49.1...cli-v8.50.0) (2026-06-09)
 
 
