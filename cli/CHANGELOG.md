@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.52.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.2...cli-v8.52.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* **cli:** cross-platform process and resource lifecycle hardening ([f332e1e](https://github.com/first-fluke/oh-my-agent/commit/f332e1e05ad54d5c6b37ede9b97a6b34e6fc9a22))
+* **install:** copy hook runtime and agent definitions on install ([6f3993c](https://github.com/first-fluke/oh-my-agent/commit/6f3993c0c94e69caad5e5633894f57975e750153))
+* **market:** deterministic clustering and diversity threshold wiring ([095775a](https://github.com/first-fluke/oh-my-agent/commit/095775aa856484931d1e7dc990a3e7e577cbcd2e))
+* **platform:** case-insensitive containment and manifest hardening ([c5b8533](https://github.com/first-fluke/oh-my-agent/commit/c5b85337bb4b95e92a32248a32f29d72f4f68f2f))
+* **recap:** pair responses by full prompt in claude/grok parsers ([169e621](https://github.com/first-fluke/oh-my-agent/commit/169e6213a00b5f398e73e662e135409e4dd2e29e))
+* **retro:** format git dates in local timezone for shipping streak ([bbbf47c](https://github.com/first-fluke/oh-my-agent/commit/bbbf47c43e1b39de152061835449b7bf6535cbc1))
+* **security:** replace shell execs and validate runtime inputs ([a802343](https://github.com/first-fluke/oh-my-agent/commit/a802343dc65b6f8ea3dccb361d2f93ed65ef79a1))
+
 ## [8.52.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.1...cli-v8.52.2) (2026-06-10)
 
 
