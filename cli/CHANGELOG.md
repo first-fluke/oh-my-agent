@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.52.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.51.1...cli-v8.52.0) (2026-06-10)
+
+
+### Features
+
+* **hooks:** add serena-primer to inject serena tool guidance per session ([e6eea37](https://github.com/first-fluke/oh-my-agent/commit/e6eea37d9dceb00f9322fc26091f5ee5b7c9435a))
+
 ## [8.51.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.51.0...cli-v8.51.1) (2026-06-10)
 
 
