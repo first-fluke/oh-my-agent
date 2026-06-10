@@ -417,6 +417,17 @@ export function installVendorAgents(
   if (!variant?.destDir) return;
   try {
     assertContainedRelPath(targetDir, variant.destDir, "agent dest dir");
+    // protocolPath is embedded verbatim into every generated agent file the AI
+    // runtime loads. Require a contained relative path with no markdown/newline
+    // breakout characters so a hostile variant can't smuggle instructions.
+    if (variant.protocolPath) {
+      if (/[`\r\n]/.test(variant.protocolPath)) {
+        throw new Error(
+          `protocol path "${variant.protocolPath}" contains forbidden characters.`,
+        );
+      }
+      assertContainedRelPath(targetDir, variant.protocolPath, "protocol path");
+    }
   } catch (err) {
     console.warn(
       `[oma] Skipping unsafe agent variant ${variantPath}: ${

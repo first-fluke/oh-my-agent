@@ -43,9 +43,10 @@ pick_downloader() {
 download_to_stdout() {
   local url="$1"
 
+  # HTTPS only, TLS 1.2+: refuse protocol downgrade for piped-to-shell installers.
   case "${DOWNLOADER}" in
-    curl) curl -fsSL "$url" ;;
-    wget) wget -qO- "$url" ;;
+    curl) curl --proto '=https' --tlsv1.2 -fsSL "$url" ;;
+    wget) wget --https-only -qO- "$url" ;;
     *) fail "No downloader configured" ;;
   esac
 }

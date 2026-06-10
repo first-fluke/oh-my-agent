@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { reconstructAbstract } from "./api.js";
+import { reconstructAbstract, redactUrl } from "./api.js";
 import { slugFromKnowsId } from "./get.js";
 import { lintDoc } from "./lint.js";
 import {
@@ -354,5 +354,24 @@ describe("reconstructAbstract", () => {
       "in-the": [1, 3],
     };
     expect(reconstructAbstract(inv)).toBe("the in-the middle in-the end");
+  });
+});
+
+describe("redactUrl", () => {
+  it("masks api_key query values", () => {
+    expect(
+      redactUrl("https://api.openalex.org/works?api_key=sk-secret&per_page=5"),
+    ).toBe("https://api.openalex.org/works?api_key=***&per_page=5");
+  });
+
+  it("masks api_key when it is not the first param", () => {
+    expect(
+      redactUrl("https://api.openalex.org/works?q=x&api_key=sk-secret"),
+    ).toBe("https://api.openalex.org/works?q=x&api_key=***");
+  });
+
+  it("leaves URLs without api_key untouched", () => {
+    const url = "https://api.openalex.org/works?mailto=a@b.c";
+    expect(redactUrl(url)).toBe(url);
   });
 });

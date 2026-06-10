@@ -222,11 +222,15 @@ export function generateOmaHookWrapper(recordedOmaPath: string): string {
   // Resolution order: the recorded install-time path FIRST (the exact oma that
   // generated this wrapper — guaranteed to support `hook`), then PATH `oma`. A
   // stale `oma` on PATH must not shadow the installer's feature set.
+  //
+  // The recorded path lands inside double quotes; escape `\` `"` `` ` `` `$`
+  // so a path with shell metacharacters can't break or inject into the script.
+  const safePath = escapeDoubleQuoted(recordedOmaPath);
   return `#!/usr/bin/env bash
 ${HOOK_DEDUP_PREAMBLE}
 __oma_bin=""
-if [ -x "${recordedOmaPath}" ]; then
-  __oma_bin="${recordedOmaPath}"
+if [ -x "${safePath}" ]; then
+  __oma_bin="${safePath}"
 elif command -v oma >/dev/null 2>&1; then
   __oma_bin="$(command -v oma)"
 fi

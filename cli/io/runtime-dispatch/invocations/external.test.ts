@@ -14,6 +14,7 @@ import type { VendorConfig } from "../../../platform/agent-config.js";
 import {
   buildExternalInvocation,
   type ExternalInvocationOptions,
+  isSafeIsolationEnvKey,
 } from "./external.js";
 
 // Base cursor vendorConfig used across tests
@@ -293,5 +294,43 @@ describe("buildExternalInvocation — table-driven: all external vendors suppres
       );
       expect(inv.args).toContain(expectedAutoApprove);
     }
+  });
+});
+
+describe("isolation_env hardening", () => {
+  it("applies a safe isolation_env key with $$ pid substitution", () => {
+    // gemini takes the generic build path, which is where isolation_env applies.
+    const cfg = { ...cursorConfig(), isolation_env: "OMA_SANDBOX_ID=run-$$" };
+    const inv = buildExternalInvocation("gemini", cfg, null, "task");
+    expect(inv.env.OMA_SANDBOX_ID).toBe(`run-${process.pid}`);
+  });
+
+  it("refuses loader-hijack env keys from config", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      for (const dangerous of [
+        "LD_PRELOAD=/tmp/evil.so",
+        "DYLD_INSERT_LIBRARIES=/tmp/evil.dylib",
+        "PATH=/evil/bin",
+        "NODE_OPTIONS=--require /tmp/evil.js",
+        "PYTHONPATH=/tmp/evil",
+      ]) {
+        const key = dangerous.split("=")[0] as string;
+        const before = process.env[key];
+        const cfg = { ...cursorConfig(), isolation_env: dangerous };
+        const inv = buildExternalInvocation("gemini", cfg, null, "task");
+        expect(inv.env[key]).toBe(before);
+      }
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("isSafeIsolationEnvKey accepts benign keys and rejects malformed ones", () => {
+    expect(isSafeIsolationEnvKey("OMA_SESSION_ID")).toBe(true);
+    expect(isSafeIsolationEnvKey("ld_preload")).toBe(false);
+    expect(isSafeIsolationEnvKey("1BAD")).toBe(false);
+    expect(isSafeIsolationEnvKey("BAD-KEY")).toBe(false);
   });
 });

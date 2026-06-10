@@ -31,6 +31,12 @@ export interface OpenAlexHit {
 
 export type Hit = KnowsHit | OpenAlexHit;
 
+// OpenAlex only accepts the key as an `api_key` query param, so it must travel
+// in the URL — but it must never surface in error messages or logs.
+export function redactUrl(url: string): string {
+  return url.replace(/([?&]api_key=)[^&]*/gi, "$1***");
+}
+
 async function getJson(url: string): Promise<unknown> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
@@ -48,7 +54,9 @@ async function getJson(url: string): Promise<unknown> {
     return await res.json();
   } catch (err) {
     if ((err as Error).name === "AbortError") {
-      throw new Error(`request timed out after ${TIMEOUT_MS}ms: ${url}`);
+      throw new Error(
+        `request timed out after ${TIMEOUT_MS}ms: ${redactUrl(url)}`,
+      );
     }
     throw err;
   } finally {

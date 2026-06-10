@@ -247,10 +247,25 @@ export function buildExternalInvocation(
   if (vendorConfig.isolation_env) {
     const [key, ...rest] = vendorConfig.isolation_env.split("=");
     const rawValue = rest.join("=");
-    if (key && rawValue) {
+    if (key && rawValue && isSafeIsolationEnvKey(key)) {
       env[key] = rawValue.replace("$$", String(process.pid));
+    } else if (key && rawValue) {
+      console.warn(
+        `[agent-spawn] isolation_env key '${key}' can hijack process loading; skipped.`,
+      );
     }
   }
 
   return { command, args, env };
+}
+
+// isolation_env comes from user-editable oma-config.yaml. Loader/interpreter
+// hijack variables must never be injected into trusted vendor CLI processes.
+const DANGEROUS_ENV_KEY_RE =
+  /^(PATH|LD_[A-Z_]+|DYLD_[A-Z_]+|PYTHONPATH|PYTHONSTARTUP|NODE_OPTIONS|NODE_PATH|BUN_INSTALL|PERL5LIB|RUBYLIB|IFS|ENV|BASH_ENV|SHELL)$/i;
+
+export function isSafeIsolationEnvKey(key: string): boolean {
+  return (
+    /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) && !DANGEROUS_ENV_KEY_RE.test(key)
+  );
 }

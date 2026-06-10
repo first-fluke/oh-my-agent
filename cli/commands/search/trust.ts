@@ -177,10 +177,26 @@ function heuristic(domain: string): TrustScore | null {
   return null;
 }
 
+// Domains arrive from externally-parsed URL hostnames; only well-formed public
+// FQDNs may be interpolated into the Tranco request (SSRF guard).
+const FQDN_RE =
+  /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i;
+const PRIVATE_HOST_RE =
+  /^(localhost|127\.|0\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/i;
+
+export function isSafePublicDomain(domain: string): boolean {
+  return (
+    domain.length <= 253 &&
+    FQDN_RE.test(domain) &&
+    !PRIVATE_HOST_RE.test(domain)
+  );
+}
+
 async function trancoRank(domain: string): Promise<TrustScore | null> {
+  if (!isSafePublicDomain(domain)) return null;
   try {
     const resp = await httpFetch(
-      `https://tranco-list.eu/api/ranks/domain/${domain}`,
+      `https://tranco-list.eu/api/ranks/domain/${encodeURIComponent(domain)}`,
       { timeoutMs: 5000 },
     );
     if (!resp.ok) return null;

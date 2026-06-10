@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   generateHookShellWrapper,
+  generateOmaHookWrapper,
   HOOK_DEDUP_PREAMBLE,
   type HookVariant,
   installHooksFromVariant,
@@ -331,5 +332,23 @@ describe("mergeHookGroups", () => {
   it("handles non-array existing gracefully", () => {
     const result = mergeHookGroups("invalid", [newOmaGroup]);
     expect(result).toHaveLength(1);
+  });
+});
+
+describe("generateOmaHookWrapper path escaping", () => {
+  it("escapes shell metacharacters in the recorded oma path", () => {
+    const wrapper = generateOmaHookWrapper(
+      '/tmp/$(touch /tmp/pwned)/weird"path`/oma',
+    );
+    expect(wrapper).toContain(
+      '"/tmp/\\$(touch /tmp/pwned)/weird\\"path\\`/oma"',
+    );
+    // The raw, unescaped interpolation must not appear anywhere.
+    expect(wrapper).not.toContain("/tmp/$(touch");
+  });
+
+  it("leaves a plain path unchanged", () => {
+    const wrapper = generateOmaHookWrapper("/usr/local/bin/oma");
+    expect(wrapper).toContain('if [ -x "/usr/local/bin/oma" ]; then');
   });
 });
