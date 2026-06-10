@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.52.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.0...cli-v8.52.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* **hooks:** cap oma hook stdin read with fail-open timeout ([dffcf55](https://github.com/first-fluke/oh-my-agent/commit/dffcf556bd7797408eb67e7b5e4decb9c37e9800))
+
 ## [8.52.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.51.1...cli-v8.52.0) (2026-06-10)
 
 
