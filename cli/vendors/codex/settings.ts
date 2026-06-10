@@ -1,3 +1,4 @@
+import { isRecord } from "../../utils/type-guards.js";
 /**
  * Recommended Codex CLI settings managed by oh-my-agent.
  * Applies to project-local `.codex/config.toml`.
@@ -53,8 +54,6 @@ export interface CodexSettingsOptions {
   telemetry?: boolean;
 }
 
-type JsonRecord = Record<string, unknown>;
-
 interface CodexMcpServer {
   command?: string;
   args?: string[];
@@ -67,10 +66,6 @@ export interface CodexSettings {
   mcp_servers?: Record<string, CodexMcpServer>;
   features?: Record<string, unknown>;
   [key: string]: unknown;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function hasCodexMcpTransport(

@@ -1,16 +1,13 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { isTelemetryEnabled } from "../../utils/config.js";
+import { isRecord } from "../../utils/type-guards.js";
 import {
   applyGeminiSettings,
   type GeminiSettings,
   sanitizeGeminiSettings,
 } from "../../vendors/gemini/settings.js";
 import type { Migration } from "./index.js";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function normalizeGeminiProjectHooks(settings: GeminiSettings): boolean {
   let changed = false;

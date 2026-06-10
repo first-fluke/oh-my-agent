@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
@@ -28,10 +29,6 @@ export const RECOMMENDED_GROK_MCP = {
 };
 
 type TomlValue = Record<string, unknown>;
-
-function isRecord(value: unknown): value is TomlValue {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 /**
  * Ensures that Grok's global config has telemetry disabled when the user has

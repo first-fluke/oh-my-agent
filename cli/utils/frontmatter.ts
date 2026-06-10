@@ -1,12 +1,9 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { isRecord } from "./type-guards.js";
 
 export interface ParsedFrontmatter {
   frontmatter: Record<string, unknown>;
   body: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function sanitizeFrontmatterValue(value: unknown): unknown {

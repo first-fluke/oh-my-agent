@@ -1,3 +1,7 @@
+import { isRecord } from "../../../utils/type-guards.js";
+
+export { isRecord };
+
 // v0.9.0 sidecar linter — port of resources/scripts/lint.py.
 // See .agents/skills/oma-scholar/resources/sidecar-spec.md for rule sources.
 
@@ -16,10 +20,6 @@ import {
   REQUIRED_TOP_LEVEL,
 } from "./constants.js";
 import type { Reporter } from "./report.js";
-
-export function isRecord(x: unknown): x is Record<string, unknown> {
-  return typeof x === "object" && x !== null && !Array.isArray(x);
-}
 
 function isKebabWithPrefix(value: string, prefix: string): boolean {
   if (!value.startsWith(prefix)) return false;

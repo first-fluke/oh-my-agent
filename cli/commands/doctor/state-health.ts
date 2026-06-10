@@ -8,6 +8,7 @@ import {
 } from "../../constants/paths.js";
 import { isGitRepo, isPathGitIgnored } from "../../io/gitignore.js";
 import { indexPath, sessionsDir } from "../../state/events.js";
+import { isRecord } from "../../utils/type-guards.js";
 import type {
   HookOrderDoctorCheck,
   StateDoctorCheck,
@@ -76,10 +77,6 @@ function parseJsonFile(
       error: error instanceof Error ? error.message : String(error),
     };
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function hookName(entry: unknown): string | null {

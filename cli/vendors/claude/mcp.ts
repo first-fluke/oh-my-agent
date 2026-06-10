@@ -1,3 +1,4 @@
+import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
@@ -27,8 +28,6 @@ export const RECOMMENDED_CLAUDE_MCP = {
   },
 };
 
-type JsonRecord = Record<string, unknown>;
-
 interface ClaudeMcpServer {
   command?: string;
   args?: string[];
@@ -40,10 +39,6 @@ interface ClaudeMcpServer {
 export interface ClaudeMcpConfig {
   mcpServers?: Record<string, ClaudeMcpServer>;
   [key: string]: unknown;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function hasClaudeMcpTransport(

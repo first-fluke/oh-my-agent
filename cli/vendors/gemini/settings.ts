@@ -1,3 +1,4 @@
+import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
@@ -75,10 +76,6 @@ export interface GeminiSettings {
   experimental?: JsonRecord;
   mcpServers?: Record<string, GeminiMcpServer>;
   [key: string]: unknown;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 const GEMINI_ALLOWED_MCP_SERVER_KEYS = new Set([

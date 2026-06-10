@@ -32,6 +32,7 @@ import {
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { loadSerenaConfig } from "../../utils/config.js";
+import { isRecord } from "../../utils/type-guards.js";
 import {
   applyClaudeMcp,
   needsClaudeMcpUpdate,
@@ -55,10 +56,6 @@ interface SerenaEntry {
   args?: unknown;
   env?: Record<string, unknown>;
   [key: string]: unknown;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isLegacySerenaEntry(entry: unknown): entry is SerenaEntry {

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
@@ -83,8 +84,6 @@ export const RECOMMENDED_CURSOR_MCP = {
   },
 };
 
-type JsonRecord = Record<string, unknown>;
-
 interface CursorMcpServer {
   command?: string;
   args?: string[];
@@ -96,10 +95,6 @@ interface CursorMcpServer {
 export interface CursorSettings {
   mcpServers?: Record<string, CursorMcpServer>;
   [key: string]: unknown;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function hasCursorMcpTransport(

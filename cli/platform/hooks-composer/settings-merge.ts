@@ -1,13 +1,11 @@
+import { isPlainObject } from "../../utils/type-guards.js";
+
+export { isPlainObject };
+
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 /** True for non-null, non-array plain objects (used for shallow settings merges). */
-export function isPlainObject(
-  value: unknown,
-): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 /**
  * Known OMA-managed core hook script basenames (without extension).
  *

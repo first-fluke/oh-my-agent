@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { OmaConfig } from "../platform/agent-config.js";
+import { isRecord } from "./type-guards.js";
 
 export type { OmaConfig } from "../platform/agent-config.js";
 
@@ -100,10 +101,6 @@ export interface SerenaConfig {
 }
 
 const DEFAULT_BRIDGE_URL = "http://localhost:12341/mcp";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 export function loadSerenaConfig(cwd?: string): SerenaConfig {
   const config = loadOmaConfig(cwd) as unknown as {
