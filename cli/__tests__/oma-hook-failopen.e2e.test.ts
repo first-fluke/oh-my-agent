@@ -21,7 +21,7 @@
  *      → stdout is valid JSON, exit 0
  */
 
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -181,6 +181,45 @@ describe("oma hook fail-open guarantees", () => {
       expect(() => JSON.parse(out)).not.toThrow();
     }
   });
+
+  /**
+   * Case 7: stdin write end held open (regression for the Codex 21s timeout).
+   *
+   * Codex was observed spawning the UserPromptSubmit hook with a stdin pipe
+   * that is never closed. Before the STDIN_READ_TIMEOUT_MS guard in
+   * readAllStdin, `oma hook` blocked on the 'end' event forever and the vendor
+   * killed it at its hook timeout (18–21s). The guard must dispatch with the
+   * buffered payload and exit on its own.
+   *
+   * The payload is written but stdin is deliberately NOT ended; the process
+   * must still exit 0 well before the vendor-side timeout (2s stdin budget +
+   * node startup + chain — 15s is generous headroom for slow CI).
+   */
+  it("Case 7: stdin held open → exits on its own, exit 0", async () => {
+    const child = spawn(NODE, [
+      CLI_BIN,
+      "hook",
+      "--vendor",
+      "codex",
+      "--event",
+      "UserPromptSubmit",
+    ]);
+    child.stdin.write(JSON.stringify({ prompt: "hello", cwd: tempDir }));
+    // Intentionally never call child.stdin.end().
+
+    const exitCode = await new Promise<number | null>((resolve) => {
+      const killer = setTimeout(() => {
+        child.kill("SIGKILL");
+        resolve(null);
+      }, 15_000);
+      child.on("exit", (code) => {
+        clearTimeout(killer);
+        resolve(code);
+      });
+    });
+
+    expect(exitCode).toBe(0);
+  }, 20_000);
 });
 
 // ---------------------------------------------------------------------------

@@ -42,15 +42,28 @@ function parseVendors(value: string | undefined): ProbeVendor[] | undefined {
   return requested as ProbeVendor[];
 }
 
+// Vendors write the hook payload and close stdin immediately; if the write end
+// of the pipe is held open (observed with Codex UserPromptSubmit spawns), an
+// unbounded read blocks until the vendor's hook timeout kills the process.
+// Fail-open: after this budget, dispatch with whatever has been received.
+const STDIN_READ_TIMEOUT_MS = 2_000;
+
 async function readAllStdin(): Promise<string> {
   if (process.stdin.isTTY) return "";
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      process.stdin.pause();
+      resolve(Buffer.concat(chunks).toString("utf-8"));
+    };
+    const timer = setTimeout(finish, STDIN_READ_TIMEOUT_MS);
     process.stdin.on("data", (chunk: Buffer) => chunks.push(chunk));
-    process.stdin.on("end", () =>
-      resolve(Buffer.concat(chunks).toString("utf-8")),
-    );
-    process.stdin.on("error", () => resolve(""));
+    process.stdin.on("end", finish);
+    process.stdin.on("error", finish);
   });
 }
 
