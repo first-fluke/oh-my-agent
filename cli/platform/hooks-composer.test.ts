@@ -1,4 +1,12 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,6 +19,7 @@ import {
   installHooksFromVariant,
   isOmaManagedHookGroup,
   mergeHookGroups,
+  requiredVariantScripts,
   withDedup,
 } from "./hooks-composer.js";
 
@@ -350,5 +359,132 @@ describe("generateOmaHookWrapper path escaping", () => {
   it("leaves a plain path unchanged", () => {
     const wrapper = generateOmaHookWrapper("/usr/local/bin/oma");
     expect(wrapper).toContain('if [ -x "/usr/local/bin/oma" ]; then');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// requiredVariantScripts — per-variant hook materialization whitelist
+// ---------------------------------------------------------------------------
+
+describe("requiredVariantScripts", () => {
+  const variantsDir = join(repoRoot, ".agents", "hooks", "variants");
+  const coreDir = join(repoRoot, ".agents", "hooks", "core");
+
+  const loadVariant = (name: string): HookVariant =>
+    JSON.parse(
+      readFileSync(join(variantsDir, `${name}.json`), "utf-8"),
+    ) as HookVariant;
+
+  const allVendorVariants = (): HookVariant[] =>
+    readdirSync(variantsDir, { withFileTypes: true })
+      .filter(
+        (e) =>
+          e.isFile() &&
+          e.name.endsWith(".json") &&
+          e.name !== "hook-variant.schema.json",
+      )
+      .map((e) => loadVariant(e.name.replace(/\.json$/, "")));
+
+  it("claude requires only hud.ts (statusLine) and filter-test-output.sh (test-filter)", () => {
+    expect(requiredVariantScripts(loadVariant("claude"))).toEqual(
+      new Set(["hud.ts", "filter-test-output.sh"]),
+    );
+  });
+
+  it("gemini requires hud.ts via hud-only events (no statusLine entry)", () => {
+    const required = requiredVariantScripts(loadVariant("gemini"));
+    expect(required).toEqual(new Set(["hud.ts", "filter-test-output.sh"]));
+  });
+
+  it("cursor requires nothing (no statusLine, no test-filter, no hud-only events)", () => {
+    expect(requiredVariantScripts(loadVariant("cursor"))).toEqual(new Set());
+  });
+
+  it("codex requires only filter-test-output.sh (test-filter, no statusLine)", () => {
+    expect(requiredVariantScripts(loadVariant("codex"))).toEqual(
+      new Set(["filter-test-output.sh"]),
+    );
+  });
+
+  it("every required script exists in .agents/hooks/core for every variant", () => {
+    for (const variant of allVendorVariants()) {
+      for (const script of requiredVariantScripts(variant)) {
+        expect(
+          existsSync(join(coreDir, script)),
+          `${variant.vendor}: ${script} missing from core`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("required .ts scripts have no runtime sibling imports outside the required set", () => {
+    // The whitelist copies only the required scripts, so any RUNTIME (non
+    // type-only) relative import of a sibling that is not also required would
+    // break at `bun <hookDir>/<script>` execution. `import type` is erased by
+    // bun at transpile time and is therefore safe.
+    const runtimeSiblingImport = /^import\s+(?!type\b)[^;]*?from\s+["']\.\//m;
+    for (const variant of allVendorVariants()) {
+      for (const script of requiredVariantScripts(variant)) {
+        if (!script.endsWith(".ts")) continue;
+        const source = readFileSync(join(coreDir, script), "utf-8");
+        expect(
+          runtimeSiblingImport.test(source),
+          `${script} has a runtime sibling import — add it to requiredVariantScripts or the copy whitelist`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("installHooksFromVariant materializes only oma-hook.sh + required scripts and sweeps stale copies", () => {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-hooks-whitelist-"));
+    try {
+      // Simulate an older full-copy install: stale handler scripts on disk.
+      const hooksDir = join(targetDir, ".claude", "hooks");
+      mkdirSync(hooksDir, { recursive: true });
+      writeFileSync(join(hooksDir, "keyword-detector.ts"), "// stale\n");
+      writeFileSync(join(hooksDir, "persistent-mode.ts"), "// stale\n");
+      writeFileSync(join(hooksDir, "triggers.json"), "{}\n");
+
+      installHooksFromVariant(repoRoot, targetDir, loadVariant("claude"));
+
+      const materialized = readdirSync(hooksDir).sort();
+      expect(materialized).toEqual([
+        "filter-test-output.sh",
+        "hud.ts",
+        "oma-hook.sh",
+      ]);
+    } finally {
+      rmSync(targetDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("isOmaManagedHookGroup — flat entries (flatHookEntries vendors)", () => {
+  it("detects a flat oma-hook.sh entry (Cursor format)", () => {
+    expect(
+      isOmaManagedHookGroup({
+        command:
+          "'.cursor/hooks/oma-hook.sh' --vendor 'cursor' --event 'beforeSubmitPrompt'",
+        timeout: 21,
+      }),
+    ).toBe(true);
+  });
+
+  it("detects a flat legacy bun core-script entry", () => {
+    expect(
+      isOmaManagedHookGroup({
+        command: "bun .cursor/hooks/serena-primer.ts",
+        timeout: 3,
+      }),
+    ).toBe(true);
+  });
+
+  it("preserves a user-added flat entry", () => {
+    expect(
+      isOmaManagedHookGroup({
+        command: "./scripts/my-own-hook.sh",
+        timeout: 5,
+      }),
+    ).toBe(false);
   });
 });

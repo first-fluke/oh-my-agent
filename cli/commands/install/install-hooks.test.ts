@@ -61,8 +61,11 @@ describe("installHooksFromVariant", () => {
     vi.restoreAllMocks();
   });
 
-  it("should copy core hooks to vendor hookDir", () => {
-    // Use a minimal inline variant to avoid real file reads
+  it("should copy only the variant's runtime-required scripts to vendor hookDir", () => {
+    // Use a minimal inline variant to avoid real file reads.
+    // test-filter.ts requires filter-test-output.sh at runtime; statusLine
+    // requires hud.ts. The handler .ts itself runs in-process via `oma hook`
+    // and must NOT be materialized.
     (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
       JSON.stringify({
         vendor: "claude",
@@ -75,16 +78,41 @@ describe("installHooksFromVariant", () => {
             hook: "keyword-detector.ts",
             timeout: 5,
           },
+          PreToolUse: {
+            hook: "test-filter.ts",
+            matcher: "Bash",
+            timeout: 5,
+          },
         },
+        statusLine: { hook: "hud.ts" },
       }),
     );
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
 
     expect(fs.cpSync).toHaveBeenCalledWith(
-      join(mockSourceDir, ".agents", "hooks", "core"),
-      join(mockTargetDir, ".claude", "hooks"),
-      { recursive: true, force: true, dereference: true },
+      join(mockSourceDir, ".agents", "hooks", "core", "hud.ts"),
+      join(mockTargetDir, ".claude", "hooks", "hud.ts"),
+      { force: true, dereference: true },
+    );
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      join(mockSourceDir, ".agents", "hooks", "core", "filter-test-output.sh"),
+      join(mockTargetDir, ".claude", "hooks", "filter-test-output.sh"),
+      { force: true, dereference: true },
+    );
+
+    // No full-directory dump and no in-process handler copies.
+    const copiedSources = (
+      fs.cpSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.map((c: string[]) => n(c[0] ?? ""));
+    expect(copiedSources).not.toContainEqual(
+      n(join(mockSourceDir, ".agents", "hooks", "core")),
+    );
+    expect(copiedSources).not.toContainEqual(
+      n(join(mockSourceDir, ".agents", "hooks", "core", "keyword-detector.ts")),
+    );
+    expect(copiedSources).not.toContainEqual(
+      n(join(mockSourceDir, ".agents", "hooks", "core", "test-filter.ts")),
     );
   });
 
@@ -663,6 +691,7 @@ describe("installHooksFromVariant", () => {
             timeout: 5,
           },
         },
+        statusLine: { hook: "hud.ts" },
       }),
     );
 
@@ -703,7 +732,8 @@ describe("installHooksFromVariant", () => {
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude"]);
 
-    // Should have called unlinkSync on existing files before cpSync
+    // Should have called unlinkSync on existing files before cpSync — this
+    // also sweeps stale handler copies left by older full-copy installs.
     const unlinkCalls = (
       fs.unlinkSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.map((c: string[]) => c[0]);
@@ -715,8 +745,12 @@ describe("installHooksFromVariant", () => {
       join(mockTargetDir, ".claude", "hooks", "hud.ts"),
     );
 
-    // cpSync should still be called after cleanup
-    expect(fs.cpSync).toHaveBeenCalled();
+    // The required script (statusLine hud.ts) is recopied after cleanup.
+    expect(fs.cpSync).toHaveBeenCalledWith(
+      join(mockSourceDir, ".agents", "hooks", "core", "hud.ts"),
+      join(mockTargetDir, ".claude", "hooks", "hud.ts"),
+      { force: true, dereference: true },
+    );
   });
 
   it("should skip vendor when variant file does not exist", () => {
@@ -740,6 +774,7 @@ describe("installHooksFromVariant", () => {
         events: {
           Stop: { hook: "persistent-mode.ts", timeout: 5 },
         },
+        statusLine: { hook: "hud.ts" },
       }),
     );
 
@@ -788,11 +823,12 @@ describe("installHooksFromVariant", () => {
       join(mockTargetDir, ".claude", "hooks", "persistent-mode.ts"),
     );
 
-    // cpSync should use dereference: true to always copy real files
+    // cpSync should use dereference: true to always copy real files —
+    // per-file for the variant's required scripts (statusLine hud.ts here).
     expect(fs.cpSync).toHaveBeenCalledWith(
-      join(mockSourceDir, ".agents", "hooks", "core"),
-      join(mockTargetDir, ".claude", "hooks"),
-      { recursive: true, force: true, dereference: true },
+      join(mockSourceDir, ".agents", "hooks", "core", "hud.ts"),
+      join(mockTargetDir, ".claude", "hooks", "hud.ts"),
+      { force: true, dereference: true },
     );
   });
 });

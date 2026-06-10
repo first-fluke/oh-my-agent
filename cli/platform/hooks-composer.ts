@@ -74,6 +74,13 @@ export interface HookVariant {
   settingsFile: string;
   projectDirEnv: string | null;
   runtime: string;
+  /**
+   * When true, settings hook entries are written as flat
+   * `{command, timeout[, matcher]}` objects under each event key (Cursor's
+   * hooks.json format — nested `{matcher, hooks: [...]}` groups do not fire
+   * in Cursor CLI). Defaults to the Claude Code nested-group format.
+   */
+  flatHookEntries?: boolean;
   events: Record<string, HookEvent | HookEvent[]>;
   statusLine?: { hook: string };
   /**
@@ -279,6 +286,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 const OMA_CORE_SCRIPT_NAMES = new Set([
   "keyword-detector",
   "skill-injector",
+  "serena-primer",
   "state-boundary",
   "test-filter",
   "persistent-mode",
@@ -306,30 +314,44 @@ export function isOmaManagedHookGroup(
   group: any,
 ): boolean {
   if (!isPlainObject(group)) return false;
+
+  // Flat-entry form (flatHookEntries vendors, e.g. Cursor): the event array
+  // element IS the hook object — `{command, timeout[, matcher]}` with no
+  // nested `hooks` array.
   const hooks = group.hooks;
-  if (!Array.isArray(hooks)) return false;
+  if (!Array.isArray(hooks)) {
+    return isOmaManagedHookCommand(group);
+  }
 
-  return hooks.some((h: unknown) => {
-    if (!isPlainObject(h)) return false;
-    const name = typeof h.name === "string" ? h.name : "";
-    const cmd = typeof h.command === "string" ? h.command : "";
+  return hooks.some(
+    (h: unknown) => isPlainObject(h) && isOmaManagedHookCommand(h),
+  );
+}
 
-    // New-style: oma-hook.sh wrapper (design 019+)
-    if (name.startsWith("oma-hook-") || cmd.includes("oma-hook.sh")) {
-      return true;
-    }
+/**
+ * True when a single hook object (nested-group member or flat entry) was
+ * written by oma: either the new oma-hook.sh wrapper command / `oma-hook-*`
+ * name, or a legacy `bun …/<core-script>.{ts,js}` command.
+ */
+function isOmaManagedHookCommand(h: Record<string, unknown>): boolean {
+  const name = typeof h.name === "string" ? h.name : "";
+  const cmd = typeof h.command === "string" ? h.command : "";
 
-    // Legacy-style: `bun "<path>/<script>.ts"` or `bun <path>/<script>.ts`
-    // e.g. bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"
-    //      bun .codex/hooks/persistent-mode.ts
-    const legacyMatch = cmd.match(/\bbun\b.*?[/\\]([\w-]+)\.(ts|js)["']?\s*$/);
-    if (legacyMatch) {
-      const scriptName = legacyMatch[1];
-      if (scriptName && OMA_CORE_SCRIPT_NAMES.has(scriptName)) return true;
-    }
+  // New-style: oma-hook.sh wrapper (design 019+)
+  if (name.startsWith("oma-hook-") || cmd.includes("oma-hook.sh")) {
+    return true;
+  }
 
-    return false;
-  });
+  // Legacy-style: `bun "<path>/<script>.ts"` or `bun <path>/<script>.ts`
+  // e.g. bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"
+  //      bun .codex/hooks/persistent-mode.ts
+  const legacyMatch = cmd.match(/\bbun\b.*?[/\\]([\w-]+)\.(ts|js)["']?\s*$/);
+  if (legacyMatch) {
+    const scriptName = legacyMatch[1];
+    if (scriptName && OMA_CORE_SCRIPT_NAMES.has(scriptName)) return true;
+  }
+
+  return false;
 }
 
 /**
@@ -356,11 +378,57 @@ export function mergeHookGroups(
 }
 
 /**
+ * Compute the set of core scripts that must be materialized in a vendor's
+ * hookDir for a given variant. Everything else runs in-process via `oma hook`
+ * (design 019) and must NOT be copied — stale copies are dead files that make
+ * vendor directories look hand-rolled.
+ *
+ * A script is required only when something executes or reads it from the
+ * hookDir at runtime:
+ *  - Hud-only events keep their `bun <hookDir>/<script>` command (T1-c), so
+ *    those scripts are materialized (gemini registers hud via events).
+ *  - The statusLine entry runs `bun <hookDir>/<hook>` directly.
+ *  - The in-process test-filter handler rewrites Bash commands to pipe through
+ *    `<hookDir>/filter-test-output.sh` (see test-filter.ts vendorHooksDir),
+ *    so that shell script must exist wherever test-filter.ts is registered.
+ *
+ * triggers.json is statically inlined into the oma binary and handler chains
+ * run inside `oma hook`, so neither it nor the handler .ts files are needed.
+ */
+export function requiredVariantScripts(variant: HookVariant): Set<string> {
+  const required = new Set<string>();
+  for (const rawConfig of Object.values(variant.events)) {
+    const configs = Array.isArray(rawConfig) ? rawConfig : [rawConfig];
+    if (configs.length === 0) continue;
+    // Hud-only events keep the direct bun command; mixed events route through
+    // oma-hook.sh and drop hud (mirrors installHooksFromVariant step 3).
+    if (configs.every((c) => c.hook === "hud.ts")) {
+      for (const c of configs) required.add(c.hook);
+    }
+    if (configs.some((c) => c.hook === "test-filter.ts")) {
+      required.add("filter-test-output.sh");
+    }
+  }
+  if (variant.statusLine) required.add(variant.statusLine.hook);
+  return required;
+}
+
+/**
  * Copy core hook scripts from .agents/hooks/core/ to a vendor's hooks directory.
  * Clears stale symlinks/files first, then copies with dereference to ensure
  * real file copies (never symlinks that break when the temp dir is deleted).
+ *
+ * @param only - When provided, copy ONLY these basenames (the variant's
+ *   runtime-required scripts — see requiredVariantScripts). Omit to copy the
+ *   full core set (pi bridge, which spawns the scripts as subprocesses).
+ *   The destination is cleared either way, so a re-install with a whitelist
+ *   also removes stale full-copy files from older installs.
  */
-export function copyHookScripts(sourceDir: string, hooksDest: string): void {
+export function copyHookScripts(
+  sourceDir: string,
+  hooksDest: string,
+  only?: ReadonlySet<string>,
+): void {
   const hooksSrc = join(sourceDir, ".agents", "hooks", "core");
   if (!existsSync(hooksSrc)) return;
 
@@ -370,6 +438,15 @@ export function copyHookScripts(sourceDir: string, hooksDest: string): void {
   // before cpSync — Bun's cpSync fails with ENOENT on broken symlinks even with force.
   for (const entry of readdirSync(hooksDest, { withFileTypes: true })) {
     clearNonDirectory(join(hooksDest, entry.name));
+  }
+
+  if (only) {
+    for (const name of only) {
+      const src = join(hooksSrc, name);
+      if (!existsSync(src)) continue;
+      cpSync(src, join(hooksDest, name), { force: true, dereference: true });
+    }
+    return;
   }
 
   cpSync(hooksSrc, hooksDest, {
@@ -512,9 +589,12 @@ export function ensureFeatureFlags(
  *       Hud-only configs within mixed events are intentionally dropped from
  *       the settings entry (display is a statusLine concern, not a handler).
  *
- * ### copyHookScripts is still called
- * `copyHookScripts` materializes `hud.ts` (needed by statusLine entries) and
- * all other core scripts (needed by the pi bridge — see pi-extension-composer).
+ * ### copyHookScripts copies ONLY the variant's runtime-required scripts
+ * `copyHookScripts` materializes just what the hookDir executes or reads at
+ * runtime (hud.ts for statusLine/hud-only events, filter-test-output.sh for
+ * test-filter — see requiredVariantScripts). Handler .ts files run in-process
+ * inside `oma hook` and are NOT copied; the pi bridge, which spawns them as
+ * subprocesses, gets the full set via its own composer (pi-extension-composer).
  * We no longer call `patchVendorHookTypes` or `patchVendorDetection` because
  * vendor identity is now a `--vendor` CLI argument, not a runtime detection.
  *
@@ -527,12 +607,12 @@ export function installHooksFromVariant(
   targetDir: string,
   variant: HookVariant,
 ): void {
-  // 1. Copy core hook files to vendor hooks directory.
-  //    Keeps hud.ts available for statusLine entries and pi bridge subprocesses.
-  //    patchVendorHookTypes / patchVendorDetection are intentionally omitted:
-  //    vendor identity is now the `--vendor` arg, not a runtime-detected value.
+  // 1. Materialize ONLY the scripts this variant executes/reads from hookDir
+  //    (hud.ts, filter-test-output.sh — see requiredVariantScripts). The
+  //    destination is cleared first, so re-install also sweeps stale handler
+  //    copies left by older full-copy installs.
   const hooksDest = join(targetDir, variant.hookDir);
-  copyHookScripts(sourceDir, hooksDest);
+  copyHookScripts(sourceDir, hooksDest, requiredVariantScripts(variant));
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);
@@ -573,17 +653,24 @@ export function installHooksFromVariant(
       const handlerTimeout =
         nonHudConfigs.reduce((sum, c) => sum + c.timeout, 0) + 5;
       const omaHookCmd = buildOmaHookCmd(variant, eventName, matcher);
-      entry = {
-        hooks: [
-          {
-            name: `oma-hook-${eventName}`,
-            type: "command",
-            command: omaHookCmd,
-            timeout: handlerTimeout,
-          },
-        ],
-      };
-      if (matcher) entry.matcher = matcher;
+      if (variant.flatHookEntries) {
+        // Flat-entry vendors (Cursor): the event array holds the hook object
+        // directly — nested {matcher, hooks: [...]} groups do not fire there.
+        entry = { command: omaHookCmd, timeout: handlerTimeout };
+        if (matcher) entry.matcher = matcher;
+      } else {
+        entry = {
+          hooks: [
+            {
+              name: `oma-hook-${eventName}`,
+              type: "command",
+              command: omaHookCmd,
+              timeout: handlerTimeout,
+            },
+          ],
+        };
+        if (matcher) entry.matcher = matcher;
+      }
     }
 
     hookEntries[eventName] = [entry];
