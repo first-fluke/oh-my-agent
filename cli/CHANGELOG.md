@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.52.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.4...cli-v8.52.5) (2026-06-10)
+
+
+### Refactoring
+
+* **cli:** split files over 500 lines into sub-modules ([e3100c3](https://github.com/first-fluke/oh-my-agent/commit/e3100c30c202faced370a7f27d75d95675881a14))
+
+
+### Documentation
+
+* **rules:** add self-describing file naming convention for frontend ([543002e](https://github.com/first-fluke/oh-my-agent/commit/543002e49c993c35c92257d8e8ad0f00f7f40a3f))
+
 ## [8.52.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.3...cli-v8.52.4) (2026-06-10)
 
 
