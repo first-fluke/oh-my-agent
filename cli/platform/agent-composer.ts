@@ -12,6 +12,7 @@ import {
 } from "../utils/frontmatter.js";
 import type { Difficulty } from "./context-loader.js";
 import { assertContainedRelPath } from "./path-containment.js";
+import { safeLoadVariant } from "./variant-loader.js";
 
 // =============================================================================
 // Agent Tool Mapping (Abstract -> Vendor-specific)
@@ -400,42 +401,31 @@ export function installVendorAgents(
 
   if (!existsSync(agentsSrcDir) || !existsSync(variantPath)) return;
 
-  // Variant JSON comes from the (untrusted) working project. Guard the parse so
-  // a malformed file doesn't abort install mid-loop, and validate destDir so a
-  // traversing value (e.g. "../../../tmp/evil") can't escape the install root.
-  let variant: AgentVariant;
-  try {
-    variant = JSON.parse(readFileSync(variantPath, "utf-8")) as AgentVariant;
-  } catch (err) {
-    console.warn(
-      `[oma] Skipping malformed agent variant ${variantPath}: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
-    return;
-  }
-  if (!variant?.destDir) return;
-  try {
-    assertContainedRelPath(targetDir, variant.destDir, "agent dest dir");
-    // protocolPath is embedded verbatim into every generated agent file the AI
-    // runtime loads. Require a contained relative path with no markdown/newline
-    // breakout characters so a hostile variant can't smuggle instructions.
-    if (variant.protocolPath) {
-      if (/[`\r\n]/.test(variant.protocolPath)) {
-        throw new Error(
-          `protocol path "${variant.protocolPath}" contains forbidden characters.`,
-        );
+  // Variant JSON comes from the (untrusted) working project. safeLoadVariant
+  // guards the parse so a malformed file doesn't abort install mid-loop, and
+  // destDir is validated so a traversing value (e.g. "../../../tmp/evil")
+  // can't escape the install root.
+  const variant = safeLoadVariant<AgentVariant>({
+    variantPath,
+    kind: "agent",
+    validate: (v) => {
+      if (!v?.destDir) return; // missing destDir is a silent skip below
+      assertContainedRelPath(targetDir, v.destDir, "agent dest dir");
+      // protocolPath is embedded verbatim into every generated agent file the
+      // AI runtime loads. Require a contained relative path with no markdown/
+      // newline breakout characters so a hostile variant can't smuggle
+      // instructions.
+      if (v.protocolPath) {
+        if (/[`\r\n]/.test(v.protocolPath)) {
+          throw new Error(
+            `protocol path "${v.protocolPath}" contains forbidden characters.`,
+          );
+        }
+        assertContainedRelPath(targetDir, v.protocolPath, "protocol path");
       }
-      assertContainedRelPath(targetDir, variant.protocolPath, "protocol path");
-    }
-  } catch (err) {
-    console.warn(
-      `[oma] Skipping unsafe agent variant ${variantPath}: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
-    return;
-  }
+    },
+  });
+  if (!variant?.destDir) return;
 
   const destDir = join(targetDir, variant.destDir);
   mkdirSync(destDir, { recursive: true });

@@ -1,52 +1,36 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { VendorType } from "../types/index.js";
 import { installVendorAgents } from "./agent-composer.js";
 import { type HookVariant, installHooksFromVariant } from "./hooks-composer.js";
 import { assertContainedRelPath } from "./path-containment.js";
 import { generateClaudeRules } from "./rules.js";
+import { safeLoadVariant } from "./variant-loader.js";
 
-/**
- * Parse and validate a hook variant config read from the (untrusted) working
- * project. Returns `null` — without throwing — when the file is malformed or
- * declares a path-bearing field that escapes `installRoot`, so a single bad
- * `.agents/hooks/variants/<vendor>.json` neither crashes the install mid-loop
- * (reliability) nor lets the installer write outside the workspace (security).
- */
+/** Load a hook variant, rejecting path-bearing fields that escape `installRoot`. */
 function safeLoadHookVariant(
   variantPath: string,
   installRoot: string,
 ): HookVariant | null {
-  let variant: HookVariant;
-  try {
-    variant = JSON.parse(readFileSync(variantPath, "utf-8")) as HookVariant;
-  } catch (err) {
-    console.warn(
-      `[oma] Skipping malformed hook variant ${variantPath}: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
-    return null;
-  }
-  try {
-    assertContainedRelPath(installRoot, variant.hookDir, "hook dir");
-    assertContainedRelPath(installRoot, variant.settingsFile, "settings file");
-    if (variant.featureFlags?.file) {
+  return safeLoadVariant<HookVariant>({
+    variantPath,
+    kind: "hook",
+    validate: (variant) => {
+      assertContainedRelPath(installRoot, variant.hookDir, "hook dir");
       assertContainedRelPath(
         installRoot,
-        variant.featureFlags.file,
-        "feature-flags file",
+        variant.settingsFile,
+        "settings file",
       );
-    }
-  } catch (err) {
-    console.warn(
-      `[oma] Skipping unsafe hook variant ${variantPath}: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
-    return null;
-  }
-  return variant;
+      if (variant.featureFlags?.file) {
+        assertContainedRelPath(
+          installRoot,
+          variant.featureFlags.file,
+          "feature-flags file",
+        );
+      }
+    },
+  });
 }
 
 /**
