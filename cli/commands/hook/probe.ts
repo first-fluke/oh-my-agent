@@ -26,6 +26,9 @@ import { join } from "node:path";
  * and its JSON-hook execution may be feature-flag gated.
  */
 
+// commandcode is deliberately absent: its hook surface has no prompt event
+// (only PreToolUse/PostToolUse/Stop per commandcode.ai/docs/hooks/reference),
+// and the probe exercises the prompt-injection flow.
 export type ProbeVendor =
   | "antigravity"
   | "claude"

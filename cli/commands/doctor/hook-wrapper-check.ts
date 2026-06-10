@@ -25,21 +25,18 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { VARIANT_ROUTES } from "../hook/dispatch.js";
 
 // ---------------------------------------------------------------------------
-// Vendor → hookDir table (mirrors .agents/hooks/variants/*.json hookDir field)
+// Vendor → hookDir table — derived from the embedded variant route table so
+// doctor coverage can never drift from what `oma hook` actually dispatches.
 // Project-scoped vendors only; antigravity is HOME-scoped (handled separately).
 // ---------------------------------------------------------------------------
 
-const PROJECT_HOOK_DIRS: Array<{ vendor: string; hookDir: string }> = [
-  { vendor: "claude", hookDir: ".claude/hooks" },
-  { vendor: "codex", hookDir: ".codex/hooks" },
-  { vendor: "cursor", hookDir: ".cursor/hooks" },
-  { vendor: "gemini", hookDir: ".gemini/hooks" },
-  { vendor: "grok", hookDir: ".grok/hooks" },
-  { vendor: "kiro", hookDir: ".kiro/hooks" },
-  { vendor: "qwen", hookDir: ".qwen/hooks" },
-];
+const PROJECT_HOOK_DIRS: Array<{ vendor: string; hookDir: string }> =
+  Object.values(VARIANT_ROUTES)
+    .filter((v) => v.vendor !== "antigravity")
+    .map(({ vendor, hookDir }) => ({ vendor, hookDir }));
 
 /** Antigravity writes to HOME rather than the project dir. */
 const ANTIGRAVITY_HOOK_DIR = ".gemini/antigravity-cli/hooks";

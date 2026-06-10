@@ -40,12 +40,18 @@ const NODE = process.execPath;
 describe("hook-output golden — makePromptOutput (context/prompt)", () => {
   const ctx = "workflow context text";
 
-  it("claude -> {additionalContext}", () => {
+  it("claude -> {additionalContext, hookSpecificOutput.additionalContext}", () => {
+    // Official Claude Code contract is hookSpecificOutput.additionalContext
+    // (code.claude.com/docs/en/hooks); the top-level field is kept for
+    // back-compat with older builds.
     const out = JSON.parse(makePromptOutput("claude", ctx)) as Record<
       string,
       unknown
     >;
-    expect(out).toStrictEqual({ additionalContext: ctx });
+    expect(out.additionalContext).toBe(ctx);
+    const hso = out.hookSpecificOutput as Record<string, unknown>;
+    expect(hso.hookEventName).toBe("UserPromptSubmit");
+    expect(hso.additionalContext).toBe(ctx);
   });
 
   it("codex -> {hookSpecificOutput:{hookEventName,additionalContext}}", () => {
@@ -212,13 +218,18 @@ describe("hook-output golden — makePreToolOutput (pre_tool/mutate)", () => {
     expect(hso.updatedInput).toStrictEqual(updatedInput);
   });
 
-  it("gemini -> {decision:'rewrite',tool_input}", () => {
+  it("gemini -> {hookSpecificOutput:{hookEventName:'BeforeTool',tool_input}}", () => {
+    // Official BeforeTool rewrite contract: hookSpecificOutput.tool_input
+    // merges with and overrides the model's arguments; there is no
+    // "rewrite" decision value (geminicli.com/docs/hooks/reference).
     const out = JSON.parse(makePreToolOutput("gemini", updatedInput)) as Record<
       string,
       unknown
     >;
-    expect(out.decision).toBe("rewrite");
-    expect(out.tool_input).toStrictEqual(updatedInput);
+    const hso = out.hookSpecificOutput as Record<string, unknown>;
+    expect(hso.hookEventName).toBe("BeforeTool");
+    expect(hso.tool_input).toStrictEqual(updatedInput);
+    expect(out.decision).toBeUndefined();
   });
 
   it("qwen -> {hookSpecificOutput:{hookEventName:'PreToolUse',updatedInput}}", () => {

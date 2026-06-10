@@ -67,10 +67,26 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
   return resolveGitRoot(dir);
 }
 
-function getHookDir(vendor: Vendor): string {
+/**
+ * Vendor → hooks directory (relative to the project root) where
+ * `filter-test-output.sh` is materialized by the installer.
+ *
+ * MUST mirror the `hookDir` field of `.agents/hooks/variants/<vendor>.json`.
+ * This switch cannot import the variant JSONs (pi spawns this script as a
+ * standalone subprocess from a directory where variants are not copied), so
+ * the mapping is duplicated here and locked by a contract test
+ * (`cli/commands/hook/vendor-wiring.test.ts`).
+ */
+export function getHookDir(vendor: Vendor): string {
   switch (vendor) {
+    case "claude":
+      return ".claude/hooks";
     case "codex":
       return ".codex/hooks";
+    case "commandcode":
+      return ".commandcode/hooks";
+    case "cursor":
+      return ".cursor/hooks";
     case "gemini":
       return ".gemini/hooks";
     case "antigravity":
@@ -85,8 +101,6 @@ function getHookDir(vendor: Vendor): string {
       // pi keeps the core scripts (and filter-test-output.sh) inside the
       // bridge's directory extension, not a dedicated hooks dir.
       return join(".pi", "extensions", "oma");
-    default:
-      return ".claude/hooks";
   }
 }
 

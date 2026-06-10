@@ -5,25 +5,8 @@
   "settingsFile": ".cursor/hooks.json",
   "projectDirEnv": null,
   "runtime": "bun",
+  "flatHookEntries": true,
   "events": {
-    "UserPromptSubmit": [
-      {
-        "hook": "keyword-detector.ts",
-        "timeout": 5
-      },
-      {
-        "hook": "state-boundary.ts",
-        "timeout": 5
-      },
-      {
-        "hook": "skill-injector.ts",
-        "timeout": 3
-      },
-      {
-        "hook": "serena-primer.ts",
-        "timeout": 3
-      }
-    ],
     "beforeSubmitPrompt": [
       {
         "hook": "keyword-detector.ts",

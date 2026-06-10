@@ -158,15 +158,15 @@ describe("test-filter hook", () => {
       );
     });
 
-    it("should output rewrite decision for Gemini", () => {
+    it("should output hookSpecificOutput.tool_input rewrite for Gemini", () => {
       const result = runHook({
         tool_name: "Bash",
         tool_input: { command: "vitest" },
         hook_event_name: "BeforeTool",
       });
       const parsed = JSON.parse(result);
-      expect(parsed.decision).toBe("rewrite");
-      expect(parsed.tool_input.command).toContain("vitest");
+      expect(parsed.hookSpecificOutput.hookEventName).toBe("BeforeTool");
+      expect(parsed.hookSpecificOutput.tool_input.command).toContain("vitest");
     });
 
     it("should preserve original tool_input fields", () => {

@@ -33,19 +33,27 @@ const OMA_KIRO_HOOKS_AGENT = {
   prompt:
     "You are Kiro CLI running in an oh-my-agent workspace. Follow project instructions and use hook-provided context when present.",
   includeMcpJson: true,
+  // Hooks route through oma-hook.sh → `oma hook` (design 019): handler .ts
+  // files are no longer materialized in .kiro/hooks/, so per-script `bun`
+  // commands would point at missing files. One wrapper call runs the whole
+  // in-process chain for the event.
   hooks: {
     userPromptSubmit: [
-      { command: "bun .kiro/hooks/keyword-detector.ts" },
-      { command: "bun .kiro/hooks/state-boundary.ts" },
-      { command: "bun .kiro/hooks/skill-injector.ts" },
+      {
+        command:
+          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event userPromptSubmit",
+      },
     ],
     preToolUse: [
       {
         matcher: "execute_bash",
-        command: "bun .kiro/hooks/test-filter.ts",
+        command:
+          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher shell",
       },
     ],
-    stop: [{ command: "bun .kiro/hooks/persistent-mode.ts" }],
+    stop: [
+      { command: "bash .kiro/hooks/oma-hook.sh --vendor kiro --event stop" },
+    ],
   },
 };
 

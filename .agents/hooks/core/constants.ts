@@ -33,6 +33,7 @@ export const VENDORS = [
   "antigravity",
   "claude",
   "codex",
+  "commandcode",
   "cursor",
   "gemini",
   "grok",

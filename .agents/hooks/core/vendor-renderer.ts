@@ -48,6 +48,7 @@ export function renderStateSnapshot(input: StateSnapshotRenderInput): string {
       return renderClaudeSnapshot(input);
     case "antigravity":
     case "codex":
+    case "commandcode":
     case "cursor":
     case "gemini":
     case "grok":

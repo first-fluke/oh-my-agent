@@ -208,7 +208,8 @@ function incrementReinforcement(
   sessionId: string,
   state: ModeState,
 ): void {
-  state.reinforcementCount += 1;
+  // Coalesce malformed/hand-edited state files (missing field -> NaN forever).
+  state.reinforcementCount = (Number(state.reinforcementCount) || 0) + 1;
   writeFileSync(
     join(getStateDir(projectDir), `${workflow}-state-${sessionId}.json`),
     JSON.stringify(state, null, 2),

@@ -48,10 +48,14 @@
       "description": "Map of vendor event names to hook configs. Keys are vendor-specific event names (e.g., PreToolUse, BeforeTool). Value may be a single hook entry or an ordered array of entries (chained).",
       "additionalProperties": {
         "oneOf": [
-          { "$ref": "#/$defs/hookEvent" },
+          {
+            "$ref": "#/$defs/hookEvent"
+          },
           {
             "type": "array",
-            "items": { "$ref": "#/$defs/hookEvent" },
+            "items": {
+              "$ref": "#/$defs/hookEvent"
+            },
             "minItems": 1
           }
         ]
@@ -64,7 +68,7 @@
     },
     "statusLineKey": {
       "type": "string",
-      "description": "Parent settings key to nest statusLine under. Omit for root-level (Claude/agy). Qwen requires \"ui\" — a root-level statusLine is ignored by the Qwen renderer."
+      "description": "Parent settings key to nest statusLine under. Omit for root-level (Claude/agy). Qwen requires \"ui\" \u2014 a root-level statusLine is ignored by the Qwen renderer."
     },
     "extra": {
       "type": "object",
@@ -73,6 +77,10 @@
     "featureFlags": {
       "$ref": "#/$defs/featureFlags",
       "description": "Vendor-specific feature flags to enable (e.g., Codex config.toml)."
+    },
+    "flatHookEntries": {
+      "type": "boolean",
+      "description": "When true, settings hook entries are written as flat {command, timeout[, matcher]} objects under each event key (Cursor hooks.json format) instead of nested {matcher, hooks:[...]} groups (Claude Code format)."
     }
   },
   "$defs": {

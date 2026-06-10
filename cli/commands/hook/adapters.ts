@@ -19,17 +19,19 @@ import type { HookInput, Vendor } from "./types.js";
 //
 // Vendor → event kind mapping (sourced from variant JSONs and vendor docs):
 //
-// prompt  : UserPromptSubmit (claude, codex, grok, cursor, qwen, antigravity)
+// prompt  : UserPromptSubmit (claude, codex, grok, qwen, antigravity)
 //           BeforeAgent      (gemini)
 //           beforeSubmitPrompt (cursor)
 //           PreInvocation    (antigravity)
 //           userPromptSubmit  (kiro)
+//           (commandcode has NO prompt event — only PreToolUse/PostToolUse/
+//            Stop per commandcode.ai/docs/hooks/reference)
 //
 // pre_tool: PreToolUse  (claude, codex, qwen, antigravity)
 //           BeforeTool  (gemini)
 //           preToolUse  (kiro)
 //
-// stop    : Stop        (claude, codex, grok, qwen, antigravity)
+// stop    : Stop        (claude, codex, commandcode, grok, qwen, antigravity)
 //           stop        (kiro — lowercase, per kiro.json)
 //           AfterAgent  (gemini)
 // ---------------------------------------------------------------------------

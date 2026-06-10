@@ -26,6 +26,9 @@ import claudeVariant from "../../../.agents/hooks/variants/claude.json" with {
 import codexVariant from "../../../.agents/hooks/variants/codex.json" with {
   type: "json",
 };
+import commandcodeVariant from "../../../.agents/hooks/variants/commandcode.json" with {
+  type: "json",
+};
 import cursorVariant from "../../../.agents/hooks/variants/cursor.json" with {
   type: "json",
 };
@@ -86,14 +89,26 @@ interface HookEntry {
 
 interface VariantJson {
   vendor: string;
+  hookDir: string;
   events: Record<string, HookEntry | HookEntry[]>;
 }
 
-/** Vendor → embedded variant config. Self-contained; no filesystem read. */
-const VARIANT_ROUTES: Readonly<Record<string, VariantJson>> = {
+/**
+ * Vendor → embedded variant config. Self-contained; no filesystem read.
+ *
+ * Exported as the canonical table of hook-model vendors `oma hook` can
+ * dispatch for. Consumers (doctor wrapper checks, contract tests) derive
+ * vendor/hookDir lists from this table instead of keeping their own copies.
+ * A variant JSON without an entry here is dead config — the installer would
+ * register its hooks but `oma hook` would dispatch an empty chain (this is
+ * exactly how commandcode shipped broken). `vendor-wiring.test.ts` fails
+ * when this table and `.agents/hooks/variants/*.json` drift.
+ */
+export const VARIANT_ROUTES: Readonly<Record<string, VariantJson>> = {
   antigravity: antigravityVariant as VariantJson,
   claude: claudeVariant as VariantJson,
   codex: codexVariant as VariantJson,
+  commandcode: commandcodeVariant as VariantJson,
   cursor: cursorVariant as VariantJson,
   gemini: geminiVariant as VariantJson,
   grok: grokVariant as VariantJson,
