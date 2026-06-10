@@ -125,7 +125,8 @@ Then run the project's frontend verification commands, typically lint, typecheck
 3. Keep server/client boundaries explicit: Server Components for static/layout work, Client Components for interaction and hooks.
 4. Use project sources of truth for design tokens, i18n strings, and shared utilities before adding local alternatives.
 5. Run the execution checklist before handoff and include relevant verification results.
-6. **Next.js 16 `proxy.ts` is mandatory; `middleware.ts` is BANNED**: this project is Next.js 16+. `middleware.ts` is NOT "deprecated"; it is forbidden, touch it and you die. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function. NEVER create, recommend, suggest, or "restore" `middleware.ts`. NEVER flag `proxy.ts` as dead code, unused, or not-wired. Any such finding is a fatal self-error: retract it immediately and write `proxy.ts`.
+6. **Self-describing file names**: every new file follows the File Naming convention in `../../rules/frontend.md` §Naming Conventions — domain + role readable from the basename alone (`order-summary-card.tsx`, `use-order-polling.ts`, `cart.atoms.ts`). Grab-bag names (`utils.ts`, `helpers.ts`, `misc.ts`) and version suffixes (`*-v2`, `*-final`) are banned.
+7. **Next.js 16 `proxy.ts` is mandatory; `middleware.ts` is BANNED**: this project is Next.js 16+. `middleware.ts` is NOT "deprecated"; it is forbidden, touch it and you die. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function. NEVER create, recommend, suggest, or "restore" `middleware.ts`. NEVER flag `proxy.ts` as dead code, unused, or not-wired. Any such finding is a fatal self-error: retract it immediately and write `proxy.ts`.
 
 ### Libraries
 

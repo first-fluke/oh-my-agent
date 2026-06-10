@@ -34,12 +34,42 @@ src/features/[feature]/
 
 ## Naming Conventions
 
-- Files: `kebab-case.tsx`
+### Symbols
+
 - Components/Types/Interfaces: `PascalCase`
 - Functions/Vars/Hooks: `camelCase`
 - Constants: `SCREAMING_SNAKE_CASE`
 - Imports: Absolute `@/` is MANDATORY (no relative `../../`)
 - MUST use `import type` for interfaces/types
+
+### File Naming — self-describing names
+
+**Principle: the filename alone must answer "what domain + what role". If a reader has to open the file to know what it is, the name is wrong.**
+
+All files are `kebab-case`. Components use `<domain>-<ui-role>.tsx`; non-component modules use `<domain>.<kind>.ts`.
+
+| Kind | Pattern | Example |
+|------|---------|---------|
+| Component | `<domain>-<ui-role>.tsx` | `order-summary-card.tsx` → `OrderSummaryCard` |
+| Skeleton | `<component>-skeleton.tsx` | `order-summary-card-skeleton.tsx` |
+| Hook | `use-<behavior>.ts` | `use-order-polling.ts` |
+| TanStack Query | `<domain>.queries.ts` / `<domain>.mutations.ts` | `orders.queries.ts` |
+| Jotai atoms | `<domain>.atoms.ts` | `cart.atoms.ts` |
+| Zod schema | `<domain>.schema.ts` | `checkout.schema.ts` |
+| Types | `<domain>.types.ts` | `order.types.ts` |
+| Constants | `<domain>.constants.ts` | `payment.constants.ts` |
+| API client | `<domain>.api.ts` | `orders.api.ts` |
+| Utility | one capability per file, named as a verb phrase | `format-price.ts`, `parse-tracking-number.ts` |
+| Test | colocated `<target>.test.ts(x)` | `format-price.test.ts` |
+
+Rules:
+
+1. **Filename = kebab-case of the main export.** One main export per file; `order-summary-card.tsx` exports `OrderSummaryCard`.
+2. **Keep the domain in the name even inside a feature directory.** Editor tabs and search results show only the basename — `cart-summary-card.tsx`, not `summary-card.tsx` inside `features/cart/components/`.
+3. **`index.ts` only as a feature public-API barrel** (`src/features/<feature>/index.ts`). Never `index.tsx` as a component file.
+4. **Grab-bag filenames are BANNED**: `utils.ts`, `helpers.ts`, `common.ts`, `misc.ts`, `data.ts`, `styles.ts`, and bare `types.ts` / `constants.ts` / `hooks.ts` without a domain prefix. Split them by domain or capability instead.
+5. **Version/status suffixes are BANNED**: `*-v2`, `*-new`, `*-old`, `*-final`, `*-copy`, `*-refactored`. Git owns history, not filenames.
+6. **No abbreviations** beyond universally known ones (`api`, `db`, `i18n`, `a11y`): `user-profile-card.tsx`, never `usr-prf-crd.tsx`.
 
 ## Performance
 
