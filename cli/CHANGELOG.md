@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.52.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.3...cli-v8.52.4) (2026-06-10)
+
+
+### Bug Fixes
+
+* **hooks:** align vendor hook dialects with official specs, wire commandcode ([95eedeb](https://github.com/first-fluke/oh-my-agent/commit/95eedeb26acbf199e9dac4514fa8bf194505c9d2))
+* **install:** materialize only variant-required hook scripts per vendor ([d8c59fd](https://github.com/first-fluke/oh-my-agent/commit/d8c59fd9f328fcaf1155f9fb3e209118310d0f09))
+
 ## [8.52.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.2...cli-v8.52.3) (2026-06-10)
 
 
