@@ -5,13 +5,15 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-09 · 1 unstarred
+## 2026-06-10 · 2 unstarred
 
-- **@ai-ml-architect** · 0 repos · 0 followers
+- **@ergo9ine** · 9ine · 6 repos · 8 followers
+  - Meltdown
+- **@rookedsysc** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1073)
+## Current (1076)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -209,6 +211,7 @@ summaries to spot which persona is churning.
 - @david-w-millar — 2026-04-21
 - @daybreaker42 — 2026-06-02
 - @Dayoooun — 2026-05-16
+- @dbswhd — 2026-06-09
 - @dbydd — 2026-03-20
 - @ddx2r — 2026-04-19
 - @dearjunyeolryu — 2026-03-09
@@ -273,7 +276,6 @@ summaries to spot which persona is churning.
 - @eonofpixel — 2026-04-20
 - @epicsagas — 2026-01-31
 - @eraxel-dev — 2026-05-20
-- @ergo9ine — 2026-05-02
 - @ericmil87 — 2026-04-26
 - @EricZhou05 — 2026-05-24
 - @est22 — 2026-06-08
@@ -379,7 +381,7 @@ summaries to spot which persona is churning.
 - @H0onnn — 2026-02-01
 - @H1GHR — 2026-02-09
 - @hadamyeedady12-dev — 2026-04-22
-- @haena-j — 2026-03-18
+- @haena-j — 2026-06-09
 - @haesookimDev — 2026-03-16
 - @HaeungLee — 2026-02-02
 - @hah20 — 2026-03-15
@@ -441,6 +443,7 @@ summaries to spot which persona is churning.
 - @Hyuk — 2026-04-17
 - @hyungseokyoon — 2026-03-04
 - @hyuunnn — 2026-04-20
+- @I3eka — 2026-06-09
 - @iamvince — 2026-02-03
 - @ianstream — 2026-04-23
 - @icartsh — 2026-04-20
@@ -697,6 +700,7 @@ summaries to spot which persona is churning.
 - @moongchichi — 2026-04-19
 - @Mr-Process — 2026-05-17
 - @mridhoda — 2026-03-07
+- @Mrshulan — 2026-06-09
 - @mschueler — 2026-05-06
 - @MSVICKI8310 — 2026-03-20
 - @Mulraeng — 2026-02-03
@@ -837,7 +841,6 @@ summaries to spot which persona is churning.
 - @rockwork4 — 2026-02-18
 - @rongxu1 — 2026-05-20
 - @RooftoproomWhale — 2026-05-26
-- @rookedsysc — 2026-02-02
 - @route99-roadRunner — 2026-02-02
 - @runefor — 2026-05-21
 - @rvzaku — 2026-05-20
@@ -1023,6 +1026,7 @@ summaries to spot which persona is churning.
 - @williamjeong2 — 2026-06-08
 - @winterrainlee — 2026-02-02
 - @WithDevelop — 2026-05-17
+- @WizMasia — 2026-06-10
 - @wjdrjs00 — 2026-04-17
 - @wjunneng — 2026-04-06
 - @wkdgml01020030 — 2026-04-15
@@ -1068,6 +1072,7 @@ summaries to spot which persona is churning.
 - @yqecea — 2026-02-17
 - @ysjkof — 2026-02-07
 - @yucz — 2026-03-08
+- @YUjinEDU — 2026-06-09
 - @yulepapa — 2026-02-01
 - @Yunsang-Jeong — 2026-03-16
 - @Yuremin — 2026-03-10
