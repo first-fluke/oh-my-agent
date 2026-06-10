@@ -1,3 +1,4 @@
+import type { ExtensionVendorType, VendorType } from "../types/vendors.js";
 import { isAntigravityAuthenticated } from "./antigravity/auth.js";
 import { isClaudeAuthenticated } from "./claude/auth.js";
 import { isCodexAuthenticated } from "./codex/auth.js";
@@ -9,17 +10,12 @@ import { isKiroAuthenticated } from "./kiro/auth.js";
 import { isPiAuthenticated } from "./pi/auth.js";
 import { isQwenAuthenticated } from "./qwen/auth.js";
 
-export type VendorId =
-  | "claude"
-  | "gemini"
-  | "codex"
-  | "commandcode"
-  | "cursor"
-  | "qwen"
-  | "antigravity"
-  | "grok"
-  | "kiro"
-  | "pi";
+/**
+ * Runtime-adapter vendor id: every hook vendor plus the extension-model
+ * vendors. Derived from the canonical lists in `cli/constants/vendors.ts`
+ * so a new vendor cannot be added without surfacing here.
+ */
+export type VendorId = VendorType | ExtensionVendorType;
 
 export interface Vendor {
   id: VendorId;
