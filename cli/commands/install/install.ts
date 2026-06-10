@@ -1,23 +1,7 @@
-import { execFileSync } from "node:child_process";
-import {
-  type Dirent,
-  existsSync,
-  lstatSync,
-  readdirSync,
-  readFileSync,
-  readlinkSync,
-  unlinkSync,
-  writeFileSync,
-} from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import {
-  isAlreadyStarred,
-  isGhAuthenticated,
-  isGhInstalled,
-} from "../../io/github.js";
 import {
   ensureSerenaProject,
   resolveSerenaLanguages,
@@ -33,13 +17,9 @@ import {
   saveLocalVersion,
 } from "../../platform/manifest.js";
 import {
-  CLI_SKILLS_DIR,
   createVendorSymlinks,
   createVendorWorkflowSymlinks,
-  type ExtensionVendor,
-  getAllSkills,
   getInstalledWorkflowNames,
-  getVendorDisplayPath,
   INSTALLED_SKILLS_DIR,
   installAgents,
   installConfigs,
@@ -48,14 +28,7 @@ import {
   installShared,
   installSkill,
   installWorkflows,
-  isExtensionVendor,
-  PRESETS,
-  REPO,
-  type SkillTargetSpec,
-  vendorRequiresHomeConsent,
-  writeVendorsToConfig,
 } from "../../platform/skills-installer.js";
-import type { CliTool, CliVendor } from "../../types/index.js";
 import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import { isTelemetryEnabled } from "../../utils/config.js";
 import {
@@ -66,164 +39,36 @@ import {
 } from "../../utils/install-lock.js";
 import { link } from "../link/link.js";
 import { runMigrations } from "../migrations/index.js";
+import {
+  detectWsl,
+  type InstallOptions,
+  isExplicitYes,
+  isNonInteractive,
+} from "./install/environment.js";
+import { maybePromptGithubStar } from "./install/github-star.js";
+import { patchUserConfig } from "./install/preferences.js";
+import {
+  promptBackendVariant,
+  promptLanguage,
+  promptModelPreset,
+  promptProjectSkills,
+  promptVendors,
+  selectClisWithConsent,
+} from "./install/prompts.js";
+import { cleanDanglingSymlinks } from "./install/symlinks.js";
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English",
-  ko: "한국어",
-  ja: "日本語",
-  zh: "中文",
-  vi: "Tiếng Việt",
-  de: "Deutsch",
-  es: "Español",
-  fr: "Français",
-  nl: "Nederlands",
-  pl: "Polski",
-  pt: "Português",
-  ru: "Русский",
-};
-
-export function scanLanguages(
-  repoDir: string,
-): { value: string; label: string }[] {
-  const docsDir = join(repoDir, "docs");
-  const codes: string[] = ["en"];
-
-  if (existsSync(docsDir)) {
-    for (const file of readdirSync(docsDir)) {
-      const match = file.match(/^README\.(.+)\.md$/);
-      if (match?.[1]) codes.push(match[1]);
-    }
-  }
-
-  return codes.map((code) => ({
-    value: code,
-    label: LANGUAGE_NAMES[code] ?? code,
-  }));
-}
-
-export function getExistingLanguage(targetDir: string): string | null {
-  const prefsPath = join(targetDir, ".agents", "oma-config.yaml");
-  if (!existsSync(prefsPath)) return null;
-
-  try {
-    const prefs = readFileSync(prefsPath, "utf-8");
-    const match = prefs.match(/^language:\s*([A-Za-z-]+)/m);
-    return match?.[1] ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Scan a directory for dangling symlinks (symlinks whose target does not
- * exist) and remove them. Uses lstat so cyclic or broken links are handled
- * safely without following the symlink. No-ops silently when the directory
- * does not exist.
- *
- * @param dir - Absolute path to the directory to scan.
- */
-export function cleanDanglingSymlinks(dir: string): void {
-  if (!existsSync(dir)) return;
-
-  let entries: Dirent[];
-  try {
-    entries = readdirSync(dir, { withFileTypes: true, encoding: "utf-8" });
-  } catch {
-    return;
-  }
-
-  for (const entry of entries) {
-    if (!entry.isSymbolicLink()) continue;
-
-    const linkPath = join(dir, entry.name);
-
-    let target: string;
-    try {
-      target = readlinkSync(linkPath);
-    } catch {
-      continue;
-    }
-
-    // Resolve relative targets against the containing directory
-    const resolvedTarget = resolve(dir, target);
-
-    let targetExists: boolean;
-    try {
-      lstatSync(resolvedTarget);
-      targetExists = true;
-    } catch {
-      targetExists = false;
-    }
-
-    if (!targetExists) {
-      try {
-        unlinkSync(linkPath);
-        console.log(`cleaned broken symlink: ${linkPath}`);
-      } catch {
-        // best-effort; skip if we cannot remove
-      }
-    }
-  }
-}
-
-export type InstallOptions = {
-  /**
-   * Non-interactive mode. Skips every prompt and falls back to safe
-   * defaults (language=existing|en, model_preset=existing|claude,
-   * project_type=all, vendors=all non-HOME-base). HOME-base vendor consent
-   * stays opt-in (skipped), competitor uninstall is skipped, GitHub star
-   * prompt is skipped.
-   *
-   * Also activated by `OMA_YES=1` or `CI=true` env vars.
-   */
-  yes?: boolean;
-};
-
-/**
- * True when the user explicitly opted into "yes to everything" via the
- * `--yes` flag or `OMA_YES` env. Distinct from CI auto-detection because
- * explicit opt-in also enables affirmative side-effects (e.g. GitHub star).
- */
-export function isExplicitYes(options: InstallOptions = {}): boolean {
-  if (options.yes) return true;
-  if (process.env.OMA_YES === "1" || process.env.OMA_YES === "true")
-    return true;
-  return false;
-}
-
-export function isNonInteractive(options: InstallOptions = {}): boolean {
-  if (isExplicitYes(options)) return true;
-  if (process.env.CI === "true" || process.env.CI === "1") return true;
-  return false;
-}
-
-export function getExistingPreset(targetDir: string): string | null {
-  const prefsPath = join(targetDir, ".agents", "oma-config.yaml");
-  if (!existsSync(prefsPath)) return null;
-
-  try {
-    const prefs = readFileSync(prefsPath, "utf-8");
-    const match = prefs.match(/^model_preset:\s*([A-Za-z0-9_-]+)/m);
-    return match?.[1] ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Detects if the current process is running inside Windows Subsystem for Linux
- * by checking the Microsoft/WSL signature in /proc/version.
- */
-export function detectWsl(
-  readProcVersion: () => string = () => readFileSync("/proc/version", "utf-8"),
-): boolean {
-  if (process.platform !== "linux") return false;
-  try {
-    return /microsoft|wsl/i.test(readProcVersion());
-  } catch {
-    return false;
-  }
-}
+export {
+  detectWsl,
+  type InstallOptions,
+  isExplicitYes,
+  isNonInteractive,
+} from "./install/environment.js";
+export {
+  getExistingLanguage,
+  getExistingPreset,
+  scanLanguages,
+} from "./install/preferences.js";
+export { cleanDanglingSymlinks } from "./install/symlinks.js";
 
 export async function install(options: InstallOptions = {}): Promise<void> {
   const nonInteractive = isNonInteractive(options);
@@ -379,339 +224,33 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
     spinner.stop("Downloaded!");
 
-    const languages = scanLanguages(repoDir);
-    const existingLanguage = getExistingLanguage(installRoot);
-    const initialLanguage = languages.some(
-      (option) => option.value === existingLanguage,
-    )
-      ? (existingLanguage as string)
-      : "en";
-    const language = nonInteractive
-      ? initialLanguage
-      : await p.select({
-          message: "Response language?",
-          options: languages,
-          initialValue: initialLanguage,
-        });
-
-    if (p.isCancel(language)) {
-      cleanup();
-      p.cancel("Cancelled.");
-      process.exit(0);
-    }
-
-    const BUILT_IN_PRESET_OPTIONS: {
-      value: string;
-      label: string;
-      hint: string;
-    }[] = [
-      {
-        value: "claude",
-        label: "Claude Code",
-        hint: "Claude Max subscription holders",
-      },
-      {
-        value: "codex",
-        label: "Codex",
-        hint: "ChatGPT Plus/Pro subscription holders",
-      },
-      {
-        value: "cursor",
-        label: "Cursor Agent",
-        hint: "Cursor editor with built-in agent",
-      },
-      {
-        value: "qwen",
-        label: "Qwen Code",
-        hint: "Qwen Code subscription holders",
-      },
-      {
-        value: "antigravity",
-        label: "Antigravity CLI (agy)",
-        hint: "Gemini 3.1 Pro impl + Gemini 3.5 Flash orchestration",
-      },
-      {
-        value: "mixed",
-        label: "Mixed (cross-vendor)",
-        hint: "Claude orchestrator + cross-vendor subagents",
-      },
-    ];
-
-    const existingPreset = getExistingPreset(installRoot);
-    const initialPreset = BUILT_IN_PRESET_OPTIONS.some(
-      (o) => o.value === existingPreset,
-    )
-      ? (existingPreset as string)
-      : "claude";
-
-    const modelPreset = nonInteractive
-      ? initialPreset
-      : await p.select({
-          message: "Model preset?",
-          options: BUILT_IN_PRESET_OPTIONS,
-          initialValue: initialPreset,
-        });
-
-    if (p.isCancel(modelPreset)) {
-      cleanup();
-      p.cancel("Cancelled.");
-      process.exit(0);
-    }
-
-    // CLI tools selection — placed immediately after preset so the preset
-    // can seed the initial vendor selection.
-    // Auto-exclude HOME-write vendors on Windows / CI where symlink and
-    // HOME semantics are unreliable.
-    const allowHomeWriteVendors =
-      process.platform !== "win32" && !process.env.CI;
-
-    const vendorOptions: {
-      value: CliVendor | ExtensionVendor;
-      label: string;
-      hint: string;
-    }[] = [
-      {
-        value: "claude",
-        label: "Claude Code",
-        hint: "hooks + settings + CLAUDE.md",
-      },
-      { value: "codex", label: "Codex", hint: "hooks + plugin" },
-      {
-        value: "commandcode",
-        label: "Command Code",
-        hint: "hooks + skills + .commandcode/agents/",
-      },
-      {
-        value: "copilot",
-        label: "GitHub Copilot",
-        hint: "skill symlinks + .github/prompts/ wrappers",
-      },
-      {
-        value: "cursor",
-        label: "Cursor",
-        hint: ".cursor/rules/ export + prompt hooks",
-      },
-      {
-        value: "grok",
-        label: "Grok",
-        hint: "hooks + project MCP + .grok/agents/",
-      },
-      {
-        value: "kiro",
-        label: "Kiro CLI",
-        hint: "hooks + Serena MCP + .kiro/agents/",
-      },
-      {
-        value: "pi",
-        label: "pi (Earendil)",
-        hint: "in-process extension bridge — .pi/extensions/oma/",
-      },
-      ...(allowHomeWriteVendors
-        ? [
-            {
-              value: "antigravity" as const,
-              label: "Antigravity CLI (agy)",
-              hint: "hooks + HUD + Serena MCP — HOME-shared (~/.gemini/antigravity-cli/)",
-            },
-            {
-              value: "hermes" as const,
-              label: "Hermes Agent",
-              hint: "skills only — workflows N/A, HOME-shared (no per-project isolation)",
-            },
-          ]
-        : []),
-      { value: "qwen", label: "Qwen Code", hint: "hooks + settings" },
-    ];
-
-    // Infer default vendor selection from the chosen preset. Single-vendor
-    // presets pre-select only that vendor; mixed falls back to the full
-    // default list (all non-opt-in, non-home-consent, non-extension vendors).
-    const PRESET_TO_VENDOR: Partial<Record<string, CliVendor>> = {
-      claude: "claude",
-      codex: "codex",
-      cursor: "cursor",
-      qwen: "qwen",
-      antigravity: "antigravity",
-    };
-    const fullDefaultVendors = vendorOptions
-      .filter((opt) => {
-        if (isExtensionVendor(opt.value)) return false;
-        const spec = (CLI_SKILLS_DIR as Record<string, SkillTargetSpec>)[
-          opt.value
-        ];
-        if (spec?.optIn) return false;
-        if (spec?.requiresHomeConsent && !allowHomeWriteVendors) return false;
-        return true;
-      })
-      .map((v) => v.value);
-    const presetVendor = PRESET_TO_VENDOR[modelPreset as string];
-    const defaultVendorValues =
-      presetVendor && vendorOptions.some((o) => o.value === presetVendor)
-        ? [presetVendor]
-        : fullDefaultVendors;
-
-    const selectedVendors = nonInteractive
-      ? defaultVendorValues
-      : await p.multiselect({
-          message: "CLI tools to configure:",
-          options: vendorOptions,
-          initialValues: defaultVendorValues,
-          required: true,
-        });
-
-    if (p.isCancel(selectedVendors)) {
-      p.cancel("Cancelled.");
-      process.exit(0);
-    }
-
-    const vendors = selectedVendors as CliVendor[];
-
-    const projectType = nonInteractive
-      ? "all"
-      : await p.select({
-          message: "What type of project?",
-          options: [
-            { value: "all", label: "All", hint: "Install everything" },
-            {
-              value: "fullstack",
-              label: "Fullstack",
-              hint: "Web + Mobile + Infra (kitchen sink)",
-            },
-            {
-              value: "fullstack-web",
-              label: "Fullstack Web",
-              hint: "Frontend + Backend + DB (no mobile/infra)",
-            },
-            {
-              value: "fullstack-mobile",
-              label: "Fullstack Mobile",
-              hint: "Mobile + Backend + DB",
-            },
-            { value: "frontend", label: "Frontend", hint: "React/Next.js" },
-            {
-              value: "backend",
-              label: "Backend",
-              hint: "Python, Node.js, Rust, ...",
-            },
-            { value: "mobile", label: "Mobile", hint: "Flutter/Dart" },
-            {
-              value: "devops",
-              label: "DevOps",
-              hint: "Terraform + CI/CD + Observability",
-            },
-            {
-              value: "research",
-              label: "Research",
-              hint: "Scholar + Market + PDF/HWP + Writer",
-            },
-            {
-              value: "content",
-              label: "Content",
-              hint: "Image + Voice + Design + Writer",
-            },
-            { value: "custom", label: "Custom", hint: "Choose skills" },
-          ],
-        });
-
-    if (p.isCancel(projectType)) {
-      p.cancel("Cancelled.");
-      process.exit(0);
-    }
-
-    let selectedSkills: string[];
-
-    if (projectType === "custom") {
-      const allSkills = getAllSkills();
-      const selected = await p.multiselect({
-        message: "Select skills:",
-        options: allSkills.map((s) => ({
-          value: s.name,
-          label: s.name,
-          hint: s.desc,
-        })),
-        required: true,
-      });
-
-      if (p.isCancel(selected)) {
-        p.cancel("Cancelled.");
-        process.exit(0);
-      }
-      selectedSkills = selected as string[];
-    } else {
-      selectedSkills = PRESETS[projectType as string] ?? [];
-    }
-
-    // Ask for language variant when backend skill is selected
-    const variantSelections: Record<string, string> = {};
-    if (selectedSkills.includes("oma-backend")) {
-      const backendLang = nonInteractive
-        ? "python"
-        : await p.select({
-            message: "Backend language?",
-            options: [
-              {
-                value: "python",
-                label: "🐍 Python",
-                hint: "FastAPI/SQLAlchemy (default)",
-              },
-              {
-                value: "node",
-                label: "🟢 Node.js",
-                hint: "NestJS/Hono + Prisma/Drizzle",
-              },
-              { value: "rust", label: "🦀 Rust", hint: "Axum/Actix-web" },
-              {
-                value: "other",
-                label: "🔧 Other / Auto-detect",
-                hint: "Configure later with /stack-set",
-              },
-            ],
-            initialValue: "python",
-          });
-
-      if (p.isCancel(backendLang)) {
-        p.cancel("Cancelled.");
-        process.exit(0);
-      }
-      if (backendLang !== "other") {
-        variantSelections["oma-backend"] = backendLang as string;
-      }
-    }
-
-    // Build selectedClis from CLI_SKILLS_DIR (data-driven). Vendors with
-    // requiresHomeConsent require explicit consent; other vendors are added directly.
-    const cliToolKeys = Object.keys(CLI_SKILLS_DIR) as CliTool[];
-    const requestedClis = vendors.filter((v): v is CliTool =>
-      (cliToolKeys as string[]).includes(v),
+    const language = await promptLanguage(
+      repoDir,
+      installRoot,
+      nonInteractive,
+      cleanup,
     );
 
-    const selectedClis: CliTool[] = [];
-    for (const cli of requestedClis) {
-      if (vendorRequiresHomeConsent(cli)) {
-        // HOME-base vendors require explicit consent. In non-interactive mode
-        // we never auto-approve writes to the user's HOME directory.
-        if (nonInteractive) {
-          p.log.info(
-            pc.dim(`Skipped ${cli} export (HOME write requires -y opt-in).`),
-          );
-          continue;
-        }
-        const consent = await p.confirm({
-          message: `${cli} export writes to HOME (${pc.cyan(getVendorDisplayPath(cli))}). Proceed?`,
-          initialValue: false,
-        });
-        if (p.isCancel(consent)) {
-          cleanup();
-          p.cancel("Cancelled.");
-          process.exit(0);
-        }
-        if (!consent) {
-          p.log.info(pc.dim(`Skipped ${cli} export.`));
-          continue;
-        }
-      }
-      selectedClis.push(cli);
-    }
+    const modelPreset = await promptModelPreset(
+      installRoot,
+      nonInteractive,
+      cleanup,
+    );
+
+    const vendors = await promptVendors(modelPreset, nonInteractive);
+
+    const selectedSkills = await promptProjectSkills(nonInteractive);
+
+    const variantSelections = await promptBackendVariant(
+      selectedSkills,
+      nonInteractive,
+    );
+
+    const selectedClis = await selectClisWithConsent(
+      vendors,
+      nonInteractive,
+      cleanup,
+    );
 
     spinner.start("Installing skills...");
 
@@ -753,33 +292,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
         // Patch oma-config.yaml with selected language, model_preset, and vendors.
         // Uses regex-level replacement to preserve user-edited fields (timezone, etc.).
-        const userPrefsPath = join(installRoot, ".agents", "oma-config.yaml");
-        if (existsSync(userPrefsPath)) {
-          let prefs = readFileSync(userPrefsPath, "utf-8");
-
-          // Update language field
-          prefs = prefs.replace(
-            /^language:\s*.+$/m,
-            `language: ${language as string}`,
-          );
-
-          // Update or insert model_preset field
-          if (/^model_preset:/m.test(prefs)) {
-            prefs = prefs.replace(
-              /^model_preset:\s*.+$/m,
-              `model_preset: ${modelPreset as string}`,
-            );
-          } else {
-            // Insert model_preset after language line (preserve user fields)
-            prefs = prefs.replace(
-              /^(language:\s*.+)$/m,
-              `$1\nmodel_preset: ${modelPreset as string}`,
-            );
-          }
-
-          writeFileSync(userPrefsPath, prefs);
-          writeVendorsToConfig(installRoot, vendors);
-        }
+        patchUserConfig(installRoot, language, modelPreset, vendors);
 
         // Reconcile all vendor adaptations via the link kernel. agy HUD,
         // Claude .mcp.json seeding, vendor settings (Claude / Gemini / Qwen /
@@ -916,40 +429,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       p.outro(pc.green("Done!"));
 
       // Task 33 — Skip GitHub star prompt when --global + --yes (T2.3)
-      if (getInstallMode() === "global" && explicitYes) {
-        p.log.info(pc.dim("Skipped GitHub star prompt (--global + --yes)."));
-      } else if (
-        isGhInstalled() &&
-        isGhAuthenticated() &&
-        !isAlreadyStarred()
-      ) {
-        // Auto-star on explicit `--yes` / OMA_YES (user opted in to "yes
-        // everything"). Stay silent on auto-detected CI to avoid drive-by
-        // stars from build runners that happen to have gh auth.
-        let shouldStar: boolean | symbol;
-        if (explicitYes) {
-          shouldStar = true;
-        } else if (nonInteractive) {
-          shouldStar = false;
-        } else {
-          shouldStar = await p.confirm({
-            message: `${pc.yellow("⭐")} Star ${pc.cyan(REPO)} on GitHub? It helps a lot!`,
-          });
-        }
-
-        if (!p.isCancel(shouldStar) && shouldStar) {
-          try {
-            execFileSync("gh", ["api", "-X", "PUT", `/user/starred/${REPO}`], {
-              stdio: "ignore",
-            });
-            p.log.success(`Starred ${pc.cyan(REPO)}! Thank you! 🌟`);
-          } catch {
-            p.log.warn(
-              `Could not star automatically. Try: ${pc.dim(`gh api --method PUT /user/starred/${REPO}`)}`,
-            );
-          }
-        }
-      }
+      await maybePromptGithubStar(explicitYes, nonInteractive);
     } catch (error) {
       spinner.stop("Installation failed");
       p.log.error(error instanceof Error ? error.message : String(error));

@@ -2,21 +2,14 @@ import { execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
-  mkdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { backupPathFromRoot, backupRoot } from "../../io/backup.js";
-import {
-  isAlreadyStarred,
-  isGhAuthenticated,
-  isGhInstalled,
-} from "../../io/github.js";
+import { backupRoot } from "../../io/backup.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
 import { ensureSerenaProject, inferSerenaLanguages } from "../../io/serena.js";
 import { downloadAndExtract } from "../../io/tarball.js";
@@ -26,30 +19,21 @@ import {
   getInstallRoot,
 } from "../../platform/install-context.js";
 import {
-  diffArtifacts,
   fetchRemoteManifest,
   getLocalVersion,
   getNeedsReconcile,
-  hasArtifactChanges,
   hasInstalledProject,
   readSkillDescription,
-  readWorkflowDescription,
   saveLocalVersion,
   setNeedsReconcile,
   snapshotArtifacts,
 } from "../../platform/manifest.js";
 import {
-  ALL_CLI_VENDORS,
-  CLI_SKILLS_DIR,
   createVendorSymlinks,
   createVendorWorkflowSymlinks,
-  EXTENSION_VENDORS,
   getInstalledSkillNames,
   getInstalledWorkflowNames,
-  REPO,
-  vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
-import type { CliTool, CliVendor } from "../../types/index.js";
 import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isTelemetryEnabled,
@@ -69,194 +53,28 @@ import {
 } from "../../utils/install-lock.js";
 import { link } from "../link/link.js";
 import { runMigrations } from "../migrations/index.js";
+import { resolveAutoUpdateCli } from "./update/auto-update-config.js";
+import {
+  captureBackendStackBeforeCopy,
+  restoreBackendStackAfterCopy,
+} from "./update/backend-stack.js";
+import { maybePromptGitHubStar } from "./update/github-star.js";
+import {
+  classifyUpdateTarget,
+  selectSkillsToPrune,
+} from "./update/install-state.js";
+import { noteArtifactDiff, noteNewSkills } from "./update/notes.js";
+import type { UpdateOptions } from "./update/types.js";
+import { createUI } from "./update/ui.js";
+import { resolveUpdateVendors, toCliTools } from "./update/vendors.js";
 
-/**
- * Resolve whether to auto-update the CLI binary.
- *
- * Precedence (highest first):
- *   1. Project-level: <cwd>/.agents/oma-config.yaml
- *   2. Global-level:  <HOME>/.agents/oma-config.yaml
- *   3. Default: true (opt-out model)
- *
- * When both installs are present, project config beats global.
- * TODO: see docs/oma-config-semantics.md (Task 53)
- */
-export function resolveAutoUpdateCli(cwd: string): boolean {
-  // 1. Project-level config
-  const projectConfigPath = join(cwd, ".agents", "oma-config.yaml");
-  if (existsSync(projectConfigPath)) {
-    try {
-      const content = readFileSync(projectConfigPath, "utf-8");
-      const match = content.match(/^auto_update_cli:\s*(true|false)/m);
-      if (match) {
-        return match[1] === "true";
-      }
-    } catch {
-      // fall through
-    }
-  }
-
-  // 2. Global-level config
-  const globalConfigPath = join(homedir(), ".agents", "oma-config.yaml");
-  if (existsSync(globalConfigPath)) {
-    try {
-      const content = readFileSync(globalConfigPath, "utf-8");
-      const match = content.match(/^auto_update_cli:\s*(true|false)/m);
-      if (match) {
-        return match[1] === "true";
-      }
-    } catch {
-      // fall through
-    }
-  }
-
-  // 3. Default: opt-out (enabled unless explicitly set to false)
-  return true;
-}
-
-/** Thin UI abstraction: interactive (@clack/prompts) vs CI (plain console) */
-function createUI(ci: boolean) {
-  if (!ci) {
-    return {
-      intro: (msg: string) => p.intro(msg),
-      outro: (msg: string) => p.outro(msg),
-      note: (msg: string, title?: string) => p.note(msg, title),
-      logError: (msg: string) => p.log.error(msg),
-      spinnerStart: (msg: string) => {
-        const s = p.spinner();
-        s.start(msg);
-        return s;
-      },
-    };
-  }
-  const noop = {
-    start(_msg: string) {},
-    stop(msg?: string) {
-      if (msg) console.log(msg);
-    },
-    message(msg: string) {
-      console.log(msg);
-    },
-  };
-  return {
-    intro: (msg: string) => console.log(msg),
-    outro: (msg: string) => console.log(msg),
-    note: (msg: string, _title?: string) => console.log(msg),
-    logError: (msg: string) => console.error(msg),
-    spinnerStart: (msg: string) => {
-      console.log(msg);
-      return noop;
-    },
-  };
-}
-
-export function classifyUpdateTarget(
-  localVersion: string | null,
-  hasExistingInstall: boolean,
-): "ready" | "legacy" | "missing" {
-  if (localVersion !== null) return "ready";
-  return hasExistingInstall ? "legacy" : "missing";
-}
-
-export type UpdateOptions = {
-  force?: boolean;
-  withNewSkills?: boolean;
-  ci?: boolean;
-  global?: boolean;
-  yes?: boolean;
-  all?: boolean;
-  vendor?: string;
-};
-
-/**
- * Decide which freshly-copied skills to prune after the bulk `.agents` copy.
- *
- * An update overwrites the whole `.agents` tree with the release, which drops
- * in every skill the release ships. To preserve the selection the user made at
- * install time, we prune skills that are new in the release and were not already
- * present — unless the user opts into them with `--with-new-skills`.
- *
- * @param installedBefore skill dirs present before the copy (the user's selection)
- * @param installedAfter  skill dirs present after the copy (the full release set)
- * @param withNewSkills   when true, keep new skills instead of pruning them
- * @returns skill names to remove (sorted): new in the release and not opted in
- */
-export function selectSkillsToPrune(
-  installedBefore: string[],
-  installedAfter: string[],
-  withNewSkills: boolean,
-): string[] {
-  if (withNewSkills) return [];
-  const kept = new Set(installedBefore);
-  return installedAfter
-    .filter((name) => name.startsWith("oma-") && !kept.has(name))
-    .sort();
-}
-
-const VENDOR_ROOTS: Record<CliVendor, string[]> = {
-  antigravity: [".gemini/antigravity-cli"],
-  claude: [".claude"],
-  codex: [".codex"],
-  commandcode: [".commandcode"],
-  copilot: [".github"],
-  cursor: [".cursor"],
-  gemini: [".gemini"],
-  grok: [".grok"],
-  hermes: [".hermes"],
-  kiro: [".kiro"],
-  pi: [".pi"],
-  qwen: [".qwen"],
-};
-
-const UPDATE_VENDORS = [...ALL_CLI_VENDORS, ...EXTENSION_VENDORS].sort();
-
-function isCliTool(vendor: CliVendor): vendor is CliTool {
-  return vendor in CLI_SKILLS_DIR;
-}
-
-function parseVendorList(raw: string): CliVendor[] {
-  const validVendors = new Set<string>(UPDATE_VENDORS);
-  const vendors = raw
-    .split(",")
-    .map((v) => v.trim().toLowerCase())
-    .filter(Boolean);
-  const invalid = vendors.filter((v) => !validVendors.has(v));
-
-  if (invalid.length > 0) {
-    throw new Error(
-      `Unsupported vendor(s): ${invalid.join(", ")}. Supported vendors: ${UPDATE_VENDORS.join(", ")}`,
-    );
-  }
-
-  return [...new Set(vendors)] as CliVendor[];
-}
-
-function hasExistingVendorRoot(cwd: string, vendor: CliVendor): boolean {
-  const roots = [...VENDOR_ROOTS[vendor]];
-  if (isCliTool(vendor)) roots.push(CLI_SKILLS_DIR[vendor].projectPath);
-  return roots.some((rel) => existsSync(join(cwd, rel)));
-}
-
-function supportedProjectVendors(): CliVendor[] {
-  return UPDATE_VENDORS.filter((vendor) => {
-    if (!isCliTool(vendor)) return true;
-    return !vendorRequiresHomeConsent(vendor);
-  });
-}
-
-export function resolveUpdateVendors(
-  cwd: string,
-  options: Pick<UpdateOptions, "all" | "vendor"> = {},
-): CliVendor[] {
-  if (options.vendor) return parseVendorList(options.vendor);
-  if (options.all) return supportedProjectVendors();
-
-  return UPDATE_VENDORS.filter((vendor) => hasExistingVendorRoot(cwd, vendor));
-}
-
-function toCliTools(vendors: CliVendor[]): CliTool[] {
-  return vendors.filter(isCliTool);
-}
+export { resolveAutoUpdateCli } from "./update/auto-update-config.js";
+export {
+  classifyUpdateTarget,
+  selectSkillsToPrune,
+} from "./update/install-state.js";
+export type { UpdateOptions } from "./update/types.js";
+export { resolveUpdateVendors } from "./update/vendors.js";
 
 export async function update(options: UpdateOptions = {}): Promise<void> {
   const {
@@ -395,40 +213,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         const savedMcp =
           !force && existsSync(mcpPath) ? readFileSync(mcpPath) : null;
 
-        // Preserve stack/ directories (user-generated or preset).
-        // Lands under the canonical gitignored backup root; survives the bulk
-        // .agents/ cpSync below (cpSync overwrites, never prunes) and is cleared
-        // with the rest of the backup root after a successful update.
-        const stackBackupDir = backupPathFromRoot(cwd, "stack");
-        const backendStackDir = join(
-          cwd,
-          ".agents",
-          "skills",
-          "oma-backend",
-          "stack",
-        );
-        const hasBackendStack = !force && existsSync(backendStackDir);
-        if (hasBackendStack) {
-          mkdirSync(stackBackupDir, { recursive: true });
-          cpSync(backendStackDir, join(stackBackupDir, "oma-backend"), {
-            recursive: true,
-          });
-        }
-
-        // Detect legacy Python resources BEFORE cpSync overwrites them
-        // (new source moves these files to variants/python/, so they won't exist after copy)
-        const legacyFiles = ["snippets.md", "tech-stack.md", "api-template.py"];
-        const backendResourcesDir = join(
-          cwd,
-          ".agents",
-          "skills",
-          "oma-backend",
-          "resources",
-        );
-        const hasLegacyFiles =
-          !force &&
-          !hasBackendStack &&
-          legacyFiles.some((f) => existsSync(join(backendResourcesDir, f)));
+        const backendStackState = captureBackendStackBeforeCopy(cwd, force);
 
         const beforeArtifacts = snapshotArtifacts(cwd);
 
@@ -441,56 +226,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         if (savedUserPrefs) writeFileSync(userPrefsPath, savedUserPrefs);
         if (savedMcp) writeFileSync(mcpPath, savedMcp);
 
-        // Restore stack/ directories
-        if (hasBackendStack) {
-          try {
-            mkdirSync(backendStackDir, { recursive: true });
-            cpSync(join(stackBackupDir, "oma-backend"), backendStackDir, {
-              recursive: true,
-              force: true,
-            });
-          } finally {
-            rmSync(stackBackupDir, { recursive: true, force: true });
-          }
-        }
-
-        // Migrate legacy Python resources to stack/ (one-time)
-        // hasLegacyFiles was captured before cpSync (old resources/ had Python files)
-        // Read variant from repoDir (source temp dir), not cwd (already overwritten)
-        if (hasLegacyFiles) {
-          const variantPythonDir = join(
-            repoDir,
-            ".agents",
-            "skills",
-            "oma-backend",
-            "variants",
-            "python",
-          );
-          if (existsSync(variantPythonDir)) {
-            mkdirSync(backendStackDir, { recursive: true });
-            cpSync(variantPythonDir, backendStackDir, {
-              recursive: true,
-              force: true,
-            });
-            writeFileSync(
-              join(backendStackDir, "stack.yaml"),
-              "language: python\nframework: fastapi\norm: sqlalchemy\nsource: migrated\n",
-            );
-          }
-        }
-
-        // Clean up variants/ from user project (not needed at runtime)
-        // Must run AFTER migration (which reads from repoDir, not cwd)
-        const backendVariantsDir = join(
-          cwd,
-          ".agents",
-          "skills",
-          "oma-backend",
-          "variants",
-        );
-        if (existsSync(backendVariantsDir)) {
-          rmSync(backendVariantsDir, { recursive: true, force: true });
-        }
+        restoreBackendStackAfterCopy(cwd, repoDir, backendStackState);
 
         // Post-copy migrations
         const postCopyMigrations = runMigrations(cwd);
@@ -615,64 +351,9 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
             : `Updated to version ${pc.cyan(remoteManifest.version)}!`,
         );
 
-        const artifactDiff = diffArtifacts(
-          beforeArtifacts,
-          snapshotArtifacts(cwd),
-        );
-        if (hasArtifactChanges(artifactDiff)) {
-          const lines: string[] = [];
-          if (artifactDiff.addedSkills.length > 0) {
-            lines.push(pc.green("+ Skills"));
-            for (const name of artifactDiff.addedSkills) {
-              const desc = readSkillDescription(cwd, name);
-              lines.push(
-                desc
-                  ? `  ${pc.cyan(name)}: ${pc.dim(desc)}`
-                  : `  ${pc.cyan(name)}`,
-              );
-            }
-          }
-          if (artifactDiff.addedWorkflows.length > 0) {
-            lines.push(pc.green("+ Workflows"));
-            for (const name of artifactDiff.addedWorkflows) {
-              const desc = readWorkflowDescription(cwd, name);
-              lines.push(
-                desc
-                  ? `  ${pc.cyan(name)}: ${pc.dim(desc)}`
-                  : `  ${pc.cyan(name)}`,
-              );
-            }
-          }
-          if (artifactDiff.removedSkills.length > 0) {
-            lines.push(
-              `${pc.red("- Skills")}    ${artifactDiff.removedSkills.join(", ")}`,
-            );
-          }
-          if (artifactDiff.removedWorkflows.length > 0) {
-            lines.push(
-              `${pc.red("- Workflows")} ${artifactDiff.removedWorkflows.join(", ")}`,
-            );
-          }
-          ui.note(lines.join("\n"), "What's new");
-        }
+        noteArtifactDiff(ui, cwd, beforeArtifacts);
 
-        if (newSkillNotes.length > 0) {
-          const plural = newSkillNotes.length === 1 ? "" : "s";
-          const lines = [
-            pc.dim(
-              `${newSkillNotes.length} new skill${plural} shipped in this release but ${newSkillNotes.length === 1 ? "was" : "were"} not installed:`,
-            ),
-            ...newSkillNotes.map(({ name, desc }) =>
-              desc
-                ? `  ${pc.cyan(name)}: ${pc.dim(desc)}`
-                : `  ${pc.cyan(name)}`,
-            ),
-            pc.dim(
-              `Run ${pc.cyan("oma update --with-new-skills")} to add ${newSkillNotes.length === 1 ? "it" : "them"}.`,
-            ),
-          ];
-          ui.note(lines.join("\n"), "New skills available");
-        }
+        noteNewSkills(ui, newSkillNotes);
 
         if (cliSymlinks.created.length > 0) {
           ui.note(
@@ -692,31 +373,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
             : `${remoteManifest.metadata?.totalFiles ?? 0} files updated successfully`,
         );
 
-        if (
-          !nonInteractive &&
-          isGhInstalled() &&
-          isGhAuthenticated() &&
-          !isAlreadyStarred()
-        ) {
-          const shouldStar = await p.confirm({
-            message: `${pc.yellow("⭐")} Star ${pc.cyan(REPO)} on GitHub? It helps a lot!`,
-          });
-
-          if (!p.isCancel(shouldStar) && shouldStar) {
-            try {
-              execFileSync(
-                "gh",
-                ["api", "-X", "PUT", `/user/starred/${REPO}`],
-                { stdio: "ignore" },
-              );
-              p.log.success(`Starred ${pc.cyan(REPO)}! Thank you! 🌟`);
-            } catch {
-              p.log.warn(
-                `Could not star automatically. Try: ${pc.dim(`gh api --method PUT /user/starred/${REPO}`)}`,
-              );
-            }
-          }
-        }
+        await maybePromptGitHubStar(nonInteractive);
       } finally {
         cleanup();
       }

@@ -33,21 +33,26 @@ import {
   type IncomingMessage,
   type ServerResponse,
 } from "node:http";
-import { createServer as createNetServer } from "node:net";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import color from "picocolors";
 import { resolveWorkspace } from "../workspace.js";
 import type { BBox } from "./dispatch.js";
 import { assertSafeSlideFile, dispatchEdit } from "./dispatch.js";
+import { readJsonBody, sendJson, sendText } from "./server/http-helpers.js";
+import { withSlideLock } from "./server/locks.js";
+import { BIND_HOST, DEFAULT_PORT, probeFreePort } from "./server/ports.js";
+import { findChrome, loadPuppeteer } from "./server/puppeteer.js";
+import { broadcastSse, handleEvents, sseClients } from "./server/sse.js";
+import { isValidBbox } from "./server/validate.js";
+
+export { withSlideLock } from "./server/locks.js";
+export { isPortFree, probeFreePort } from "./server/ports.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DEFAULT_PORT = 3737;
-const BIND_HOST = "127.0.0.1";
 const FRAME_W = 1920;
 const FRAME_H = 1080;
-const MAX_BODY_BYTES = 5 * 1024 * 1024; // 5 MB JSON body cap
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,211 +61,7 @@ export interface RunSlideEditOptions {
   port?: number;
 }
 
-// ─── Port probe ───────────────────────────────────────────────────────────────
-
-/**
- * Check if a TCP port on 127.0.0.1 is free.
- */
-export function isPortFree(port: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const server = createNetServer();
-    server.once("error", () => resolve(false));
-    server.once("listening", () => {
-      server.close(() => resolve(true));
-    });
-    server.listen(port, BIND_HOST);
-  });
-}
-
-/**
- * Find a free port starting from `start`, probing up to `maxAttempts` times.
- */
-export async function probeFreePort(
-  start: number,
-  maxAttempts = 20,
-): Promise<number> {
-  for (let i = 0; i < maxAttempts; i++) {
-    const port = start + i;
-    if (await isPortFree(port)) return port;
-  }
-  throw new Error(
-    `No free port found in range [${start}, ${start + maxAttempts - 1}]`,
-  );
-}
-
-// ─── Per-slide write lock ─────────────────────────────────────────────────────
-
-/**
- * Per-slide serialization lock.
- * Prevents concurrent edits to the same slide file.
- * Key = slideFile (bare filename), Value = Promise chain tail.
- */
-const slideLocks = new Map<string, Promise<void>>();
-
-/**
- * Serialize `fn` for the given slideFile.
- * Subsequent callers for the same file will queue behind the current operation.
- */
-export function withSlideLock<T>(
-  slideFile: string,
-  fn: () => Promise<T>,
-): Promise<T> {
-  const prev = slideLocks.get(slideFile) ?? Promise.resolve();
-  let resolveTail!: () => void;
-  const tail = new Promise<void>((r) => {
-    resolveTail = r;
-  });
-  slideLocks.set(slideFile, tail);
-
-  const result = prev
-    .then(() => fn())
-    .finally(() => {
-      resolveTail();
-      // Clean up lock entry if it's still ours
-      if (slideLocks.get(slideFile) === tail) {
-        slideLocks.delete(slideFile);
-      }
-    });
-  return result;
-}
-
-// ─── SSE channel ─────────────────────────────────────────────────────────────
-
-interface SseClient {
-  res: ServerResponse;
-  editId: string;
-}
-
-/**
- * Active SSE clients (typically one at a time from the editor UI).
- */
-const sseClients = new Set<SseClient>();
-
-function broadcastSse(event: string, data: string) {
-  for (const client of sseClients) {
-    try {
-      client.res.write(`event: ${event}\ndata: ${data}\n\n`);
-    } catch {
-      sseClients.delete(client);
-    }
-  }
-}
-
-// ─── HTTP response helpers ─────────────────────────────────────────────────────
-
-function sendJson(res: ServerResponse, code: number, data: unknown): void {
-  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
-  res.end(JSON.stringify(data));
-}
-
-function sendText(
-  res: ServerResponse,
-  code: number,
-  contentType: string,
-  body: string,
-): void {
-  res.writeHead(code, { "Content-Type": contentType });
-  res.end(body);
-}
-
-/**
- * Collect and JSON-parse a request body, with a size cap.
- */
-function readJsonBody(req: IncomingMessage): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    let raw = "";
-    let size = 0;
-    req.on("data", (chunk: Buffer) => {
-      size += chunk.length;
-      if (size > MAX_BODY_BYTES) {
-        reject(new Error("request body too large"));
-        req.destroy();
-        return;
-      }
-      raw += chunk.toString();
-    });
-    req.on("end", () => {
-      if (!raw.trim()) {
-        resolve({});
-        return;
-      }
-      try {
-        resolve(JSON.parse(raw));
-      } catch {
-        reject(new Error("invalid JSON body"));
-      }
-    });
-    req.on("error", reject);
-  });
-}
-
 // ─── Screenshot with bbox annotation ─────────────────────────────────────────
-
-/**
- * Puppeteer minimal types (mirrors png.ts pattern).
- */
-interface PuppeteerModule {
-  launch(options: {
-    executablePath: string;
-    headless: boolean | "new";
-    args?: string[];
-  }): Promise<PuppeteerBrowser>;
-}
-
-interface PuppeteerBrowser {
-  newPage(): Promise<PuppeteerPage>;
-  close(): Promise<void>;
-}
-
-interface PuppeteerPage {
-  setViewport(opts: {
-    width: number;
-    height: number;
-    deviceScaleFactor?: number;
-  }): Promise<void>;
-  setRequestInterception(enabled: boolean): Promise<void>;
-  on(
-    event: "request",
-    cb: (req: {
-      url(): string;
-      abort(): Promise<void>;
-      continue(): Promise<void>;
-    }) => void,
-  ): void;
-  goto(
-    url: string,
-    opts: { waitUntil: string; timeout: number },
-  ): Promise<unknown>;
-  evaluate<T>(fn: (() => T | Promise<T>) | string): Promise<T>;
-  screenshot(opts: {
-    type?: "png";
-    clip?: { x: number; y: number; width: number; height: number };
-    encoding?: "base64";
-  }): Promise<string>;
-  close(): Promise<void>;
-}
-
-async function loadPuppeteer(): Promise<PuppeteerModule | null> {
-  try {
-    const mod = (await import("puppeteer-core")) as unknown as {
-      default?: PuppeteerModule;
-    } & PuppeteerModule;
-    return mod.default ?? mod;
-  } catch {
-    return null;
-  }
-}
-
-async function findChrome(): Promise<string | null> {
-  try {
-    const { findChromeExecutable } = await import(
-      "../../search/strategies/browser.js"
-    );
-    return findChromeExecutable();
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Render a slide via puppeteer-core, draw a red bbox annotation, and return
@@ -371,21 +172,6 @@ export async function captureAnnotatedScreenshot(
     await page.close().catch(() => {});
     await browser.close().catch(() => {});
   }
-}
-
-// ─── Request validation helpers ───────────────────────────────────────────────
-
-function isValidBbox(b: unknown): b is BBox {
-  if (typeof b !== "object" || b === null) return false;
-  const bb = b as Record<string, unknown>;
-  return (
-    typeof bb.x === "number" &&
-    typeof bb.y === "number" &&
-    typeof bb.width === "number" &&
-    typeof bb.height === "number" &&
-    bb.width > 0 &&
-    bb.height > 0
-  );
 }
 
 // ─── Main entry ───────────────────────────────────────────────────────────────
@@ -559,35 +345,6 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
       broadcastSse("progress", `[lock error] ${(err as Error).message}`);
       broadcastSse("done", "1");
     });
-  };
-
-  const handleEvents = (req: IncomingMessage, res: ServerResponse): void => {
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-      "X-Accel-Buffering": "no",
-    });
-
-    const client: SseClient = { res, editId: String(Date.now()) };
-    sseClients.add(client);
-
-    // Heartbeat every 15 s to prevent proxy timeouts
-    const heartbeat = setInterval(() => {
-      try {
-        res.write(": heartbeat\n\n");
-      } catch {
-        clearInterval(heartbeat);
-        sseClients.delete(client);
-      }
-    }, 15_000);
-
-    const cleanup = () => {
-      clearInterval(heartbeat);
-      sseClients.delete(client);
-    };
-    req.on("close", cleanup);
-    res.on("close", cleanup);
   };
 
   const handleSave = (

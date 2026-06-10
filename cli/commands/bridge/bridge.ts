@@ -1,20 +1,16 @@
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import http, { type IncomingMessage } from "node:http";
 import https from "node:https";
-import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import {
+  DEFAULT_MCP_URL,
+  STARTUP_CHECK_INTERVAL_MS,
+  STARTUP_PROBE_TIMEOUT_MS,
+  STARTUP_TIMEOUT_MS,
+} from "./bridge/config.js";
+import { validateSerenaConfigs } from "./bridge/serena-config.js";
+import { parseSSEStream } from "./bridge/sse.js";
 
-const DEFAULT_MCP_URL = "http://localhost:12341/mcp";
-const STARTUP_CHECK_INTERVAL_MS = 1000;
-const STARTUP_PROBE_TIMEOUT_MS = Number.parseInt(
-  process.env.OH_MY_AG_BRIDGE_PROBE_TIMEOUT_MS ?? "2000",
-  10,
-);
-const STARTUP_TIMEOUT_MS = Number.parseInt(
-  process.env.OH_MY_AG_BRIDGE_STARTUP_TIMEOUT_MS ?? "120000",
-  10,
-);
+export { validateSerenaConfigs };
 
 type BridgeRuntimeListeners = {
   stdinData?: (chunk: string | Buffer) => void;
@@ -35,67 +31,6 @@ function clearBridgeRuntimeListeners(): void {
     process.off("SIGTERM", activeBridgeListeners.sigterm);
   }
   activeBridgeListeners = {};
-}
-
-export function validateSerenaConfigs(): void {
-  const globalConfigPath = join(homedir(), ".serena", "serena_config.yml");
-
-  if (!existsSync(globalConfigPath)) {
-    return;
-  }
-
-  try {
-    const globalContent = readFileSync(globalConfigPath, "utf8");
-
-    const projectsMatch = globalContent.match(
-      /^projects:\s*\n((?:\s*-\s*.+\n?)*)/m,
-    );
-    if (!projectsMatch) {
-      return;
-    }
-
-    const projectLines =
-      (projectsMatch[1] ?? "").match(/^\s*-\s*(.+)$/gm) || [];
-    const projects = projectLines.map((line) =>
-      line.replace(/^\s*-\s*/, "").trim(),
-    );
-
-    for (const rawProjectPath of projects) {
-      const projectPath = resolve(rawProjectPath);
-
-      if (!existsSync(projectPath)) {
-        console.error(
-          `[Bridge] Skipping non-existent project path: ${projectPath}`,
-        );
-        continue;
-      }
-
-      const projectConfigPath = join(projectPath, ".serena", "project.yml");
-
-      if (!existsSync(projectConfigPath)) {
-        continue;
-      }
-
-      const content = readFileSync(projectConfigPath, "utf8");
-
-      if (!/^languages:/m.test(content)) {
-        console.error(
-          `[Bridge] Missing 'languages' key in ${projectConfigPath}, adding default...`,
-        );
-
-        const insertIndex = content.search(/\n(?=\w)/);
-        if (insertIndex !== -1) {
-          const newContent = `${content.slice(0, insertIndex)}\n\nlanguages:\n  - python\n  - typescript\n  - dart\n  - terraform${content.slice(insertIndex)}`;
-          writeFileSync(projectConfigPath, newContent);
-          console.error(`[Bridge] Fixed ${projectConfigPath}`);
-        }
-      }
-    }
-  } catch (err) {
-    console.error(
-      `[Bridge] Warning: Failed to validate Serena configs: ${err instanceof Error ? err.message : err}`,
-    );
-  }
 }
 
 export async function bridge(mcpUrlArg?: string) {
@@ -258,36 +193,6 @@ export async function bridge(mcpUrlArg?: string) {
 
     req.write(body);
     req.end();
-  }
-
-  function parseSSEStream(
-    res: IncomingMessage,
-    onMessage: (data: string) => void,
-  ): void {
-    let buffer = "";
-
-    res.on("data", (chunk: string | Buffer) => {
-      buffer += chunk.toString();
-      buffer = buffer.replace(/\r\n/g, "\n");
-
-      const parts = buffer.split("\n\n");
-      buffer = parts.pop() || "";
-
-      for (const part of parts) {
-        const lines = part.split("\n");
-        let eventData = "";
-
-        for (const line of lines) {
-          if (line.startsWith("data:")) {
-            eventData += line.slice(5).trim();
-          }
-        }
-
-        if (eventData) {
-          onMessage(eventData);
-        }
-      }
-    });
   }
 
   function connectServerStream(): void {
