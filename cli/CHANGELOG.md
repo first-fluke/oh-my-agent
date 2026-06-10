@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.52.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.1...cli-v8.52.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* **agent:** add auth probe timeouts and close log fd on spawn failure ([c422ce9](https://github.com/first-fluke/oh-my-agent/commit/c422ce9d7f760678bf19d598bcf7de2c6bac3f50))
+* **recap:** stamp single-turn cursor sessions at file birth time ([c022b3b](https://github.com/first-fluke/oh-my-agent/commit/c022b3b1c02c85f7ec32caf9ddc5f0d18ac55d3b))
+* **security:** harden cli against ssrf and injection vectors ([4ecaf22](https://github.com/first-fluke/oh-my-agent/commit/4ecaf22b9c18b79f342c39c2bb81d29e7aedf165))
+
 ## [8.52.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.0...cli-v8.52.1) (2026-06-10)
 
 
