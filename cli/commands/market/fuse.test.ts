@@ -212,4 +212,75 @@ describe("fuseCandidates", () => {
   it("empty input: returns empty array", () => {
     expect(fuseCandidates([])).toEqual([]);
   });
+
+  // Test 11: diversityRelevanceThreshold filters low-score candidates when set
+  it("diversityRelevanceThreshold: filters candidates below threshold when option is provided", () => {
+    const candidates: Candidate[] = [
+      makeCandidate({
+        item_id: "high-score",
+        source: "reddit",
+        author: "auth1",
+        url: "https://reddit.com/r/a",
+        scores: { ...BASE_SCORES, final: 0.9 },
+      }),
+      makeCandidate({
+        item_id: "mid-score",
+        source: "hn",
+        author: "auth2",
+        url: "https://news.ycombinator.com/item?id=2",
+        scores: { ...BASE_SCORES, final: 0.5 },
+      }),
+      makeCandidate({
+        item_id: "low-score",
+        source: "bluesky",
+        author: "auth3",
+        url: "https://bsky.app/profile/x/post/3",
+        scores: { ...BASE_SCORES, final: 0.1 },
+      }),
+    ];
+
+    // Each candidate is rank 0 in its source → rrf_score = 1/(60+1) ≈ 0.0164
+    // Set threshold above that so all are filtered
+    const resultFiltered = fuseCandidates(candidates, {
+      diversityRelevanceThreshold: 0.1,
+    });
+    // rrf_score ~= 0.0164 which is below 0.1 → all filtered
+    expect(resultFiltered).toHaveLength(0);
+
+    // With a threshold of 0, no filtering occurs
+    const resultZero = fuseCandidates(candidates, {
+      diversityRelevanceThreshold: 0,
+    });
+    expect(resultZero).toHaveLength(3);
+  });
+
+  // Test 12: without diversityRelevanceThreshold, output is unchanged
+  it("diversityRelevanceThreshold: without option output is identical to no option at all", () => {
+    const candidates: Candidate[] = [
+      makeCandidate({
+        item_id: "item-1",
+        source: "reddit",
+        author: "auth1",
+        url: "https://reddit.com/r/a",
+        scores: { ...BASE_SCORES, final: 0.9 },
+      }),
+      makeCandidate({
+        item_id: "item-2",
+        source: "hn",
+        author: "auth2",
+        url: "https://news.ycombinator.com/item?id=2",
+        scores: { ...BASE_SCORES, final: 0.5 },
+      }),
+    ];
+
+    const withoutOption = fuseCandidates(candidates);
+    const withNoThreshold = fuseCandidates(candidates, { rrfK: 60 });
+
+    expect(withoutOption.map((c) => c.item_id)).toEqual(
+      withNoThreshold.map((c) => c.item_id),
+    );
+    expect(withoutOption.map((c) => c.rrf_score)).toEqual(
+      withNoThreshold.map((c) => c.rrf_score),
+    );
+  });
 });

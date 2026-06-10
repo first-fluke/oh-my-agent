@@ -100,8 +100,8 @@ export function fuseCandidates(
 ): Candidate[] {
   const rrfK = opts?.rrfK ?? RRF_K;
   const maxPerAuthor = opts?.maxPerAuthor ?? 3;
-  // diversityRelevanceThreshold kept for future use
-  // const diversityRelevanceThreshold = opts?.diversityRelevanceThreshold ?? 0.25;
+  // Only defined when explicitly provided — no default applied.
+  const diversityRelevanceThreshold = opts?.diversityRelevanceThreshold;
 
   if (items.length === 0) return [];
 
@@ -199,11 +199,15 @@ export function fuseCandidates(
   }
 
   // -------------------------------------------------------------------------
-  // Step 5: Diversity guard (no-op v1)
-  // TODO: diversity guard refinement (T28 review)
+  // Step 5: Diversity guard — filter candidates below the relevance threshold.
+  // Only applied when the option is explicitly provided; absent = no-op so
+  // output remains byte-identical to prior behaviour.
   // -------------------------------------------------------------------------
 
-  const guarded = capped;
+  const guarded =
+    diversityRelevanceThreshold !== undefined
+      ? capped.filter((c) => (c.rrf_score ?? 0) >= diversityRelevanceThreshold)
+      : capped;
 
   // -------------------------------------------------------------------------
   // Step 6: Sort — (-rrf_score, -scores.final, -scores.freshness, source, title)

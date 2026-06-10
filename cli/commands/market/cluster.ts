@@ -358,6 +358,9 @@ interface ClusterState {
 
 /**
  * Cluster candidates using greedy single-pass entity overlap.
+ * Candidates are sorted by score descending (then url as stable tiebreaker)
+ * before the greedy pass so that cluster assignment is input-order-independent
+ * and the output is byte-identical regardless of the original ordering.
  */
 export function clusterCandidates(
   items: Candidate[],
@@ -367,10 +370,22 @@ export function clusterCandidates(
   const maxReps = opts?.maxRepresentatives ?? MAX_REPRESENTATIVES;
   const lambda = opts?.diversityLambda ?? MMR_LAMBDA;
 
+  // Sort by score descending then url ascending as a stable tiebreaker.
+  // This makes the greedy assignment deterministic regardless of input order.
+  const total = items.length;
+  const sorted = [...items].sort((a, b) => {
+    const aIdx = items.indexOf(a);
+    const bIdx = items.indexOf(b);
+    const qa = quality(a, aIdx, total);
+    const qb = quality(b, bIdx, total);
+    if (qb !== qa) return qb - qa;
+    return (a.url ?? "").localeCompare(b.url ?? "");
+  });
+
   const states: ClusterState[] = [];
 
-  for (let i = 0; i < items.length; i++) {
-    const candidate = items[i];
+  for (let i = 0; i < sorted.length; i++) {
+    const candidate = sorted[i];
     if (candidate === undefined) continue;
 
     const entities = extractEntities(candidateText(candidate));
@@ -408,7 +423,7 @@ export function clusterCandidates(
   return states
     .map((state): Cluster | null => {
       const members = state.memberIndices
-        .map((i) => items[i])
+        .map((i) => sorted[i])
         .filter((m): m is Candidate => m !== undefined);
 
       if (members.length === 0) return null;

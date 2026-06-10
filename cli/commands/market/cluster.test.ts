@@ -264,4 +264,43 @@ describe("clusterCandidates", () => {
     const clusters = clusterCandidates([]);
     expect(clusters).toEqual([]);
   });
+
+  it("12. input-order independence: same candidates in two different orderings produce identical cluster output", () => {
+    // Use fixed item_ids and scores so quality() is deterministic.
+    const a = makeCandidate({
+      item_id: "order-a",
+      title: "Python asyncio event loop performance tuning",
+      source: "reddit",
+      url: "https://reddit.com/a",
+      rrf_score: 0.9,
+    });
+    const b = makeCandidate({
+      item_id: "order-b",
+      title: "Python asyncio performance event loop tuning",
+      source: "hn",
+      url: "https://hn.com/b",
+      rrf_score: 0.85,
+    });
+    const c = makeCandidate({
+      item_id: "order-c",
+      title: "Cooking pasta garlic butter recipe",
+      source: "reddit",
+      url: "https://reddit.com/c",
+      rrf_score: 0.4,
+    });
+
+    const order1 = clusterCandidates([a, b, c], { overlapThreshold: 0.3 });
+    const order2 = clusterCandidates([c, b, a], { overlapThreshold: 0.3 });
+    const order3 = clusterCandidates([b, c, a], { overlapThreshold: 0.3 });
+
+    expect(order1.length).toBe(order2.length);
+    expect(order1.length).toBe(order3.length);
+    for (let i = 0; i < order1.length; i++) {
+      expect(order1[i]?.cluster_id).toBe(order2[i]?.cluster_id);
+      expect(order1[i]?.cluster_id).toBe(order3[i]?.cluster_id);
+      expect(order1[i]?.members.map((m) => m.item_id).sort()).toEqual(
+        order2[i]?.members.map((m) => m.item_id).sort(),
+      );
+    }
+  });
 });
