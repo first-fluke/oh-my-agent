@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.51.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.51.0...cli-v8.51.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* **workflows:** resolve workflow review findings across all severities ([1ecf200](https://github.com/first-fluke/oh-my-agent/commit/1ecf20076025c46c8c30ddb493b21e0c582e75ef))
+
 ## [8.51.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.50.0...cli-v8.51.0) (2026-06-09)
 
 
