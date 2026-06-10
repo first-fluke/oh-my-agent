@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.11.0...web-v3.11.1) (2026-06-10)
+
+
+### Documentation
+
+* record per-vendor hook materialization and dispatch architecture ([65cf5a7](https://github.com/first-fluke/oh-my-agent/commit/65cf5a7a2e24f66732a7b7e24f6c64a3e8d893b4))
+
 ## [3.11.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.10.3...web-v3.11.0) (2026-06-08)
 
 
