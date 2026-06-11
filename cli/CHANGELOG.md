@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.53.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.9...cli-v8.53.0) (2026-06-11)
+
+
+### Features
+
+* **skills:** add oma-refactor skill ([53f1d88](https://github.com/first-fluke/oh-my-agent/commit/53f1d88c1f85db50556f6c093771732e0ea4636c))
+
 ## [8.52.9](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.8...cli-v8.52.9) (2026-06-11)
 
 
