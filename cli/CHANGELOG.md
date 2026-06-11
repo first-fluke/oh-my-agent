@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.52.9](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.8...cli-v8.52.9) (2026-06-11)
+
+
+### Bug Fixes
+
+* **antigravity:** preserve user-registered hooks in agy hooks.json ([204af86](https://github.com/first-fluke/oh-my-agent/commit/204af86e5680fe0a1a3a4031e6cf2eba68249825))
+* **install:** stop writing project-level .gemini/antigravity-cli ([dce2373](https://github.com/first-fluke/oh-my-agent/commit/dce237312b0642b72b37548141857586989af962))
+
 ## [8.52.8](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.7...cli-v8.52.8) (2026-06-11)
 
 
