@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.54.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.53.0...cli-v8.54.0) (2026-06-11)
+
+
+### Features
+
+* **agents:** add refactor-engineer and research-explorer agents ([e2672d3](https://github.com/first-fluke/oh-my-agent/commit/e2672d3f91396934c0a5efda9465e7d138416990))
+* **agents:** rename canonical agent id retrieval to explore ([3a26950](https://github.com/first-fluke/oh-my-agent/commit/3a2695019a34125e36f2efc86662d7c31e59e38e))
+* **agents:** wire research-explorer to the retrieval preset slot ([c5764ef](https://github.com/first-fluke/oh-my-agent/commit/c5764ef0462ff1a17b21bceb2c2b380e0f3add66))
+
 ## [8.53.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.9...cli-v8.53.0) (2026-06-11)
 
 
