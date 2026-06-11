@@ -5,11 +5,9 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-10 · 2 unstarred
+## 2026-06-11 · 1 unstarred
 
-- **@ergo9ine** · 9ine · 6 repos · 8 followers
-  - Meltdown
-- **@rookedsysc** · 0 repos · 0 followers
+- **@ttt43ttt** · Wilson Tian · China · Revvity · 16 repos · 21 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -975,7 +973,6 @@ summaries to spot which persona is churning.
 - @tritran-dev — 2026-03-12
 - @truongphamit — 2026-02-07
 - @try2fair-ux — 2026-02-06
-- @ttt43ttt — 2026-03-22
 - @ttubuckee — 2026-04-24
 - @ttxz — 2026-03-11
 - @tu-nguyen-otsv — 2026-05-10
@@ -987,6 +984,7 @@ summaries to spot which persona is churning.
 - @Ugee0810 — 2026-02-20
 - @ukongee — 2026-02-27
 - @ultragen — 2026-02-05
+- @ummsehun — 2026-06-10
 - @uncle-rennus — 2026-02-12
 - @Universe-Coin — 2026-05-08
 - @unquo — 2026-05-11
