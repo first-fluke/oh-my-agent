@@ -43,4 +43,6 @@ export const AGENT_CONFIG_ALIASES: Record<string, string[]> = {
   "architecture-reviewer": ["architecture", "architect"],
   "tf-infra-engineer": ["tf-infra", "infra", "terraform"],
   "docs-curator": ["docs", "documentation"],
+  "research-explorer": ["retrieval"],
+  explorer: ["retrieval"],
 };
