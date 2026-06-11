@@ -44,7 +44,6 @@ import {
   formatGeminiDeprecationWarning,
   usesGeminiCli,
 } from "../../utils/gemini-deprecation.js";
-import { t } from "../../utils/i18n.js";
 import {
   acquireLock,
   bindInstallLockRelease,
@@ -102,11 +101,10 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
   // Acquire install lock — prevents concurrent install/update runs
   const lock = acquireLock(installRoot);
   if (!lock.ok) {
-    const msg = t("install.lockHeld", {
-      pid: lock.held.pid,
-      path: lockPath(installRoot),
-      grace: DEAD_PID_GRACE_MS / 1000,
-    });
+    const msg =
+      `Another oma install/update is running (pid=${lock.held.pid}). ` +
+      `If none is running it crashed — remove ${lockPath(installRoot)}, ` +
+      `or wait ~${DEAD_PID_GRACE_MS / 1000}s for it to auto-clear.`;
     if (ci) {
       throw new Error(msg);
     }
