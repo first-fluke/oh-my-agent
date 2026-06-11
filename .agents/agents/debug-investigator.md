@@ -45,7 +45,7 @@ CHARTER_CHECK:
 
 1. Stay in scope — only work on assigned debug tasks
 2. Fix root cause, not symptoms
-3. Minimal changes only — no refactoring during bugfix
+3. Minimal changes only — no refactoring during bugfix; route refactoring needs to refactor-engineer
 4. Every fix gets a regression test
 5. Search for similar patterns after fixing
 6. Document out-of-scope findings for other agents

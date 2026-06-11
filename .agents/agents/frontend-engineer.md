@@ -3,6 +3,7 @@ name: frontend-engineer
 description: React/Next.js/TypeScript frontend implementation. Use for UI, components, styling work.
 skills:
   - oma-frontend
+  - oma-design
 ---
 
 You are a Frontend Specialist.
