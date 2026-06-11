@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.52.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.6...cli-v8.52.7) (2026-06-11)
+
+
+### Refactoring
+
+* **cli:** drop the unused CLI i18n catalog ([ceac2eb](https://github.com/first-fluke/oh-my-agent/commit/ceac2eb4a2944d3cedd0c5c5ccaea9d7f4668c89))
+
 ## [8.52.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.5...cli-v8.52.6) (2026-06-11)
 
 
