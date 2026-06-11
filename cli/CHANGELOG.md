@@ -1,5 +1,32 @@
 # Changelog
 
+## [8.52.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.5...cli-v8.52.6) (2026-06-11)
+
+
+### Performance
+
+* **cli:** lazy-load command tree with an argv fast path for oma hook ([b31d08b](https://github.com/first-fluke/oh-my-agent/commit/b31d08bf75fb833455f1819488b91bc6964aa9d5))
+
+
+### Refactoring
+
+* **cli:** back terminal dashboard with dashboard/state parser ([9e193b7](https://github.com/first-fluke/oh-my-agent/commit/9e193b757446d6ac8ce5d53bec38b33da0f3d04c))
+* **cli:** centralize the standard exit-code scale ([04ad3a0](https://github.com/first-fluke/oh-my-agent/commit/04ad3a0c833636db4dd3be6349eebbb9392323aa))
+* **cli:** consolidate findFileUp into utils/fs-utils ([cfef58e](https://github.com/first-fluke/oh-my-agent/commit/cfef58ec308080937cd39a74e9c5866c5c41bf5c))
+* **cli:** consolidate isRecord type guards into utils/type-guards ([7aba567](https://github.com/first-fluke/oh-my-agent/commit/7aba5679aebee0fd285108cd734649cf333b9c3e))
+* **cli:** deduplicate search subcommand action boilerplate ([4a28d90](https://github.com/first-fluke/oh-my-agent/commit/4a28d9042e13045b76486bdbfd2497a095bf6a36))
+* **cli:** derive vendor type unions from canonical constants ([9213c07](https://github.com/first-fluke/oh-my-agent/commit/9213c07f379609ee42e60ca9ada75e2379ca6be4))
+* **cli:** extract shared MarkdownRecordStore for session memories ([e612e7f](https://github.com/first-fluke/oh-my-agent/commit/e612e7f1f04998eb86672d1b275d0f3b26e7bc4e))
+* **cli:** extract shared run naming and dir-guard helpers from image/video ([632c83b](https://github.com/first-fluke/oh-my-agent/commit/632c83b8f859a59abf8b35020e7603ea27a408fd))
+* **cli:** make command registration data-driven in cli.ts ([a57cd52](https://github.com/first-fluke/oh-my-agent/commit/a57cd52d32aaa713ec9d3a19edeff070c13c27fa))
+* **cli:** restore the cross-slice boundary gate to green ([8e772f4](https://github.com/first-fluke/oh-my-agent/commit/8e772f4c647d1a1def8c27bf772e6d664aec2f17))
+* **cli:** route vendor config writes through safe-write ([c46aad2](https://github.com/first-fluke/oh-my-agent/commit/c46aad27b9f56499175478b65a68c06c1664b640))
+* **cli:** share auth-probe boilerplate across vendor adapters ([b5b3d73](https://github.com/first-fluke/oh-my-agent/commit/b5b3d73522c54701a5cc771ff1b21d1cf2936d9b))
+* **cli:** share gemini-family settings helpers between gemini/qwen ([f0792da](https://github.com/first-fluke/oh-my-agent/commit/f0792da7a9fb1080a57ddeefcdb046d647084f51))
+* **cli:** share untrusted-variant loading between composers ([cb9dcf3](https://github.com/first-fluke/oh-my-agent/commit/cb9dcf377032f1bab3371f00ae0f40c9fe51c090))
+* **cli:** split agentmemory-service into file/command/orchestration layers ([5aa9cca](https://github.com/first-fluke/oh-my-agent/commit/5aa9cca211f81a39605297cd1708b6a107d69e9e))
+* **cli:** use shared isRecord in qwen settings ([2948f31](https://github.com/first-fluke/oh-my-agent/commit/2948f31e5b4e7949024276bb28feb04f48115046))
+
 ## [8.52.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.4...cli-v8.52.5) (2026-06-10)
 
 
