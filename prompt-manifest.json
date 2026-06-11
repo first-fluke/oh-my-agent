@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.52.8",
-  "releaseDate": "2026-06-11T10:30:10.438Z",
+  "releaseDate": "2026-06-11T10:58:37.617Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -181,8 +181,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "677f486f079f31ea5fa276369cc0d03b36e783bb15c593bf8d38764103e53dd8",
-      "size": 7665
+      "sha256": "368b8dee6c4d0b31f7e75d84612c9ccdb2d07500e68ccac4984708a68d6c7fec",
+      "size": 7811
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -201,8 +201,8 @@
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
-      "sha256": "3773d025833610e5d6e29c06630f343c762be566953a3faa6f6e81350cc022e8",
-      "size": 840
+      "sha256": "6e136de369de60414f4f6d55971d821fa820125c62148b95063399dfc9ff4fcf",
+      "size": 791
     },
     {
       "path": ".agents/hooks/variants/claude.json",
@@ -236,8 +236,8 @@
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "9b6bdc18ddb704a631ec705659bfed793f7dd0d6a8300c13cd554c6dbac35217",
-      "size": 4752
+      "sha256": "31db3cce776b54800535025983fc0dca47990756ce654d95f6da2a309ad23ff5",
+      "size": 5179
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
