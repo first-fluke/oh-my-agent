@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.11.2...web-v3.12.0) (2026-06-11)
+
+
+### Features
+
+* **agents:** rename canonical agent id retrieval to explore ([3a26950](https://github.com/first-fluke/oh-my-agent/commit/3a2695019a34125e36f2efc86662d7c31e59e38e))
+
 ## [3.11.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.11.1...web-v3.11.2) (2026-06-11)
 
 
