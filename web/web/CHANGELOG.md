@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.11.1...web-v3.11.2) (2026-06-11)
+
+
+### Bug Fixes
+
+* **install:** stop writing project-level .gemini/antigravity-cli ([dce2373](https://github.com/first-fluke/oh-my-agent/commit/dce237312b0642b72b37548141857586989af962))
+
 ## [3.11.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.11.0...web-v3.11.1) (2026-06-10)
 
 
