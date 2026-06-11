@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.52.8](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.7...cli-v8.52.8) (2026-06-11)
+
+
+### Documentation
+
+* **readme:** drop cli section, fold per-agent models into how it works ([253d658](https://github.com/first-fluke/oh-my-agent/commit/253d65836353f7f33827adc90962c54f78259b16))
+
 ## [8.52.7](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.52.6...cli-v8.52.7) (2026-06-11)
 
 
