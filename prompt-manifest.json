@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "8.52.8",
-  "releaseDate": "2026-06-11T10:28:09.296Z",
+  "releaseDate": "2026-06-11T10:30:10.438Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -93,51 +93,6 @@
       "path": ".agents/agents/variants/kiro.json",
       "sha256": "5239add621db4c4ab4079bd5404e339fb73f3ae4edb11dcdcdaa59a1ba0b21af",
       "size": 961
-    },
-    {
-      "path": ".agents/backup/safe-write/.agents__hooks.json.backup-1781173293645-2329",
-      "sha256": "10cdbd33ae546e82eadf14b1e2bcffc2b2c1d00588244ba08de3d166d58b7509",
-      "size": 1260
-    },
-    {
-      "path": ".agents/backup/safe-write/.claude__settings.json.backup-1781173293551-2329",
-      "sha256": "8b96706a5d0c150f40e4dcdd83dd4ffe048c0b4c94878e8aab0ee30269bc08c2",
-      "size": 2012
-    },
-    {
-      "path": ".agents/backup/safe-write/.codex__hooks.json.backup-1781173293566-2329",
-      "sha256": "a254df402deeecf9c843bdd3de50f6ed242b334057b029d9fe42d398fcb8aaeb",
-      "size": 925
-    },
-    {
-      "path": ".agents/backup/safe-write/.commandcode__settings.json.backup-1781173293576-2329",
-      "sha256": "8669a1e83de709cd13654c9ac0d17afed2bb79ba695d60d1c8087fc0dfa8c5e8",
-      "size": 963
-    },
-    {
-      "path": ".agents/backup/safe-write/.cursor__hooks.json.backup-1781173293584-2329",
-      "sha256": "65af44845aaf4554eb4049ea9bfe2752963ddb6b63e87edab0b1768ca6f497ed",
-      "size": 656
-    },
-    {
-      "path": ".agents/backup/safe-write/.gemini__settings.json.backup-1781173293592-2329",
-      "sha256": "042e0a0685274c031adb2d7221d99c94aa569fb70c203a75705de459952dfe9b",
-      "size": 2321
-    },
-    {
-      "path": ".agents/backup/safe-write/.kiro__agents__oma-hooks.json.backup-1781173293630-2329",
-      "sha256": "719556deaa0d8e5c9db51b86e5aab859b79a2323721287a8013d9638fd26362b",
-      "size": 765
-    },
-    {
-      "path": ".agents/backup/safe-write/.kiro__settings__cli.json.backup-1781173293607-2329",
-      "sha256": "e0b4ea90f4e842070a251c85aef2eea6ba3f8e4e2dd8119cf2f0a815829c8890",
-      "size": 1385
-    },
-    {
-      "path": ".agents/backup/safe-write/.qwen__settings.json.backup-1781173293611-2329",
-      "sha256": "d8e51a58b26db31cf68b6bc0f144c65c27965d034828c542e1ec7dd1c0c89b8d",
-      "size": 1671
     },
     {
       "path": ".agents/config/defaults.yaml",
@@ -2071,6 +2026,6 @@
   "metadata": {
     "skillCount": 31,
     "workflowCount": 22,
-    "totalFiles": 412
+    "totalFiles": 403
   }
 }
