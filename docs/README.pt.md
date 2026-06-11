@@ -201,30 +201,9 @@ Ou use slash commands para workflows estruturados:
 
 **Auto-deteccao**: Voce nem precisa dos slash commands. Palavras como "arquitetura", "plan", "review" e "debug" na sua mensagem (em 11 idiomas!) ativam automaticamente o workflow certo.
 
-## CLI
+### Modelos por agente
 
-```bash
-# Instalar globalmente
-bun install --global oh-my-agent   # ou: brew install oh-my-agent
-
-# Usar em qualquer lugar
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Monitoramento em tempo real
-oma doctor                  # Health check
-oma image generate "cat"    # Geração de imagens IA multi-fornecedor
-oma link                    # Regenera .claude/.codex/.gemini/etc. a partir de .agents/
-oma model:check             # Detecta drift entre modelos registrados e listas de vendor ao vivo
-oma recap --window 1d       # Recap de histórico de conversa entre ferramentas
-oma retro 7d --compare      # Retrospectiva de engenharia com métricas + tendências
-oma search fetch <url>      # Busca mecânica com estratégias auto-escaláveis
-```
-
-A seleção de modelo segue duas camadas:
-- Dispatch nativo de mesmo vendor usa a definição de agente gerada em `.claude/agents/`, `.codex/agents/` ou `.gemini/agents/`.
-- Dispatch cross-vendor ou fallback via CLI usa os padrões de vendor em `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**modelos por agente**: cada agente pode apontar para seu próprio modelo e `effort` a partir de `.agents/oma-config.yaml`. Os runtime profiles disponíveis: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Confira a matriz de auth resolvida com `oma doctor --profile`. Guia completo: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Cada agente pode apontar para seu próprio modelo e `effort` a partir de `.agents/oma-config.yaml`. Os runtime profiles disponíveis: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Confira a matriz de auth resolvida com `oma doctor --profile`. Guia completo: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Por Que oh-my-agent?
 

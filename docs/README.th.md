@@ -201,30 +201,9 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 
 **การตรวจจับอัตโนมัติ**: คุณไม่จำเป็นต้องใช้คำสั่ง slash ตลอดเวลา คำสำคัญเช่น "architecture", "plan", "review", และ "debug" ในข้อความของคุณ (รองรับ 11 ภาษา!) จะเปิดใช้งานเวิร์กโฟลว์ที่ถูกต้องโดยอัตโนมัติ
 
-## CLI
+### โมเดลต่อเอเจนต์
 
-```bash
-# ติดตั้งแบบ Global
-bun install --global oh-my-agent   # หรือ: brew install oh-my-agent
-
-# ใช้งานได้ทุกที่
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # ตรวจสอบการทำงานของเอเจนต์แบบเรียลไทม์
-oma doctor                  # ตรวจสอบความพร้อมของระบบ
-oma image generate "cat"    # สร้างภาพ AI แบบหลายผู้ให้บริการ
-oma link                    # สร้าง .claude/.codex/.gemini/ฯลฯ ใหม่จาก .agents/
-oma model:check             # ตรวจจับความคลาดเคลื่อนระหว่างโมเดลที่ลงทะเบียนกับรายการผู้ให้บริการจริง
-oma recap --window 1d       # สรุปประวัติบทสนทนาข้ามเครื่องมือ
-oma retro 7d --compare      # ย้อนทบทวนงานวิศวกรรมพร้อมเมตริกและเทรนด์
-oma search fetch <url>      # ค้นหาเชิงกลด้วยกลยุทธ์ยกระดับอัตโนมัติ
-```
-
-การเลือกโมเดลทำงานเป็นสองชั้น:
-- Dispatch แบบ same-vendor native ใช้คำนิยาม vendor agent ที่สร้างไว้ใน `.claude/agents/`, `.codex/agents/` หรือ `.gemini/agents/`
-- Dispatch แบบ cross-vendor หรือ fallback CLI ใช้ค่าเริ่มต้นของ vendor ใน `.agents/skills/oma-orchestrator/config/cli-config.yaml`
-
-**โมเดลต่อเอเจนต์**: แต่ละเอเจนต์สามารถกำหนดโมเดลและ `effort` ของตัวเองผ่าน `.agents/oma-config.yaml` ได้ มี runtime profiles พร้อมใช้งาน: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen` ตรวจสอบ auth matrix ที่ resolve แล้วด้วย `oma doctor --profile` คู่มือฉบับเต็ม: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)
+แต่ละเอเจนต์สามารถกำหนดโมเดลและ `effort` ของตัวเองผ่าน `.agents/oma-config.yaml` ได้ มี runtime profiles พร้อมใช้งาน: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen` ตรวจสอบ auth matrix ที่ resolve แล้วด้วย `oma doctor --profile` คู่มือฉบับเต็ม: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)
 
 ## ทำไมต้อง oh-my-agent?
 

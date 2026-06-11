@@ -201,30 +201,9 @@ Of gebruik slash commands voor gestructureerde workflows:
 
 **Autodetectie**: Je hebt de slash commands niet eens nodig. Woorden als "architectuur", "plan", "review" en "debug" in je bericht (in 11 talen!) activeren automatisch de juiste workflow.
 
-## CLI
+### Modellen per agent
 
-```bash
-# Globaal installeren
-bun install --global oh-my-agent   # of: brew install oh-my-agent
-
-# Overal gebruiken
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Realtime agent-monitoring
-oma doctor                  # Health check
-oma image generate "cat"    # Multi-vendor AI-beeldgeneratie
-oma link                    # Regenereer .claude/.codex/.gemini/etc. uit .agents/
-oma model:check             # Drift detecteren tussen geregistreerde modellen en live vendor-lijsten
-oma recap --window 1d       # Cross-tool gespreksgeschiedenis-samenvatting
-oma retro 7d --compare      # Engineering-retro met metrics + trends
-oma search fetch <url>      # Mechanisch zoeken met auto-opschalende strategieën
-```
-
-Modelselectie volgt twee lagen:
-- Same-vendor native dispatch gebruikt de gegenereerde vendor-agent-definitie in `.claude/agents/`, `.codex/agents/` of `.gemini/agents/`.
-- Cross-vendor of fallback CLI dispatch gebruikt de vendor-defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**modellen per agent**: elke agent kan via `.agents/oma-config.yaml` een eigen model en `effort` kiezen. Kant-en-klare runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Bekijk de opgeloste auth-matrix met `oma doctor --profile`. Volledige gids: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Elke agent kan via `.agents/oma-config.yaml` een eigen model en `effort` kiezen. Kant-en-klare runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Bekijk de opgeloste auth-matrix met `oma doctor --profile`. Volledige gids: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Waarom oh-my-agent?
 

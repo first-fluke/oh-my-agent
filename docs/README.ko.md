@@ -201,30 +201,9 @@ You: "사용자 인증이 있는 TODO 앱 만들어줘"
 
 **자동 감지**: 슬래시 커맨드를 쓰지 않아도, 메시지에 "아키텍처", "계획", "리뷰", "디버그" 같은 키워드만 있으면 (11개 언어 지원!) 맞는 워크플로우가 자동으로 실행됩니다.
 
-## CLI
+### 에이전트별 모델
 
-```bash
-# 전역 설치
-bun install --global oh-my-agent   # 또는: brew install oh-my-agent
-
-# 어디서든 사용
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # 실시간 에이전트 모니터링
-oma doctor                  # 상태 점검
-oma image generate "cat"    # 멀티 벤더 AI 이미지 생성
-oma link                    # .agents/에서 .claude/.codex/.gemini 등 재생성
-oma model:check             # 등록된 모델과 실제 벤더 목록 사이 드리프트 감지
-oma recap --window 1d       # 도구 간 대화 히스토리 요약
-oma retro 7d --compare      # 메트릭 + 트렌드 기반 엔지니어링 회고
-oma search fetch <url>      # 자동 단계 상승 전략으로 메커니컬 검색
-```
-
-모델 선택은 두 단계로 이뤄집니다.
-- 같은 벤더 네이티브 디스패치는 `.claude/agents/`, `.codex/agents/`, `.gemini/agents/`에 생성된 벤더 에이전트 정의를 사용합니다.
-- 벤더가 다르거나 CLI 폴백으로 디스패치할 때는 `.agents/skills/oma-orchestrator/config/cli-config.yaml`의 벤더 기본값을 사용합니다.
-
-**에이전트별 모델**: `.agents/oma-config.yaml`에서 각 에이전트마다 모델과 `effort`를 따로 지정할 수 있습니다. runtime profile이 기본 제공됩니다: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. `oma doctor --profile`로 해석된 auth 매트릭스를 확인하세요. 전체 가이드: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+`.agents/oma-config.yaml`에서 각 에이전트마다 모델과 `effort`를 따로 지정할 수 있습니다. runtime profile이 기본 제공됩니다: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. `oma doctor --profile`로 해석된 auth 매트릭스를 확인하세요. 전체 가이드: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## 왜 oh-my-agent인가?
 

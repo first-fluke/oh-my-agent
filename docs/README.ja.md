@@ -201,30 +201,9 @@ You: "ユーザー認証付きのTODOアプリを作って"
 
 **自動検出**: スラッシュコマンドがなくても、メッセージに「アーキテクチャ」「計画」「レビュー」「デバッグ」などのキーワードがあれば（11言語対応！）適切なワークフローが自動で起動します。
 
-## CLI
+### エージェント別モデル
 
-```bash
-# グローバルインストール
-bun install --global oh-my-agent   # または: brew install oh-my-agent
-
-# どこでも使える
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # リアルタイムエージェントモニタリング
-oma doctor                  # ヘルスチェック
-oma image generate "cat"    # マルチベンダー AI 画像生成
-oma link                    # .agents/ から .claude/.codex/.gemini などを再生成
-oma model:check             # 登録済みモデルとライブベンダーリストのドリフト検知
-oma recap --window 1d       # ツール横断の会話履歴サマリー
-oma retro 7d --compare      # メトリクス + トレンド付きエンジニアリングレトロ
-oma search fetch <url>      # 自動エスカレーション戦略によるメカニカル検索
-```
-
-モデル選択は2層で行われます。
-- 同一ベンダーのネイティブディスパッチは、`.claude/agents/`、`.codex/agents/`、`.gemini/agents/` に生成されたベンダーエージェント定義を使用します。
-- クロスベンダーや CLI フォールバックのディスパッチでは、`.agents/skills/oma-orchestrator/config/cli-config.yaml` のベンダーデフォルトを使用します。
-
-**エージェント別モデル**: `.agents/oma-config.yaml` で各エージェントに独自のモデルと `effort` を割り当てられます。プリセットは runtime profile: `antigravity`、`claude`、`codex`、`cursor`、`grok`、`mixed`、`qwen`。解決後の auth マトリクスは `oma doctor --profile` で確認できます。完全ガイド: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
+`.agents/oma-config.yaml` で各エージェントに独自のモデルと `effort` を割り当てられます。プリセットは runtime profile: `antigravity`、`claude`、`codex`、`cursor`、`grok`、`mixed`、`qwen`。解決後の auth マトリクスは `oma doctor --profile` で確認できます。完全ガイド: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
 
 ## なぜ oh-my-agent？
 

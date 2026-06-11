@@ -201,30 +201,9 @@ Lub uzyj slash commands do ustrukturyzowanych workflow:
 
 **Autodetekcja**: Nie musisz nawet uzywac slash commands. Slowa takie jak "architektura", "plan", "review" i "debug" w Twojej wiadomosci (w 11 jezykach!) automatycznie uruchamiaja odpowiedni workflow.
 
-## CLI
+### Modele per agent
 
-```bash
-# Zainstaluj globalnie
-bun install --global oh-my-agent   # lub: brew install oh-my-agent
-
-# Uzywaj gdziekolwiek
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Monitoring w czasie rzeczywistym
-oma doctor                  # Sprawdzenie stanu
-oma image generate "cat"    # Generowanie obrazów AI od wielu dostawców
-oma link                    # Regeneruj .claude/.codex/.gemini/itd. z .agents/
-oma model:check             # Wykrywanie rozbieżności między zarejestrowanymi modelami a aktualnymi listami dostawców
-oma recap --window 1d       # Podsumowanie historii rozmów między narzędziami
-oma retro 7d --compare      # Retrospekcja inżynierska z metrykami + trendami
-oma search fetch <url>      # Wyszukiwanie mechaniczne z automatyczną eskalacją strategii
-```
-
-Wybor modelu przebiega w dwoch warstwach:
-- Natywny dispatch tego samego dostawcy uzywa wygenerowanej definicji agenta dostawcy w `.claude/agents/`, `.codex/agents/` lub `.gemini/agents/`.
-- Dispatch miedzy dostawcami lub awaryjny CLI uzywa domyslnych wartosci dostawcy w `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**modele per agent**: kazdy agent moze miec wlasny model i `effort` zdefiniowany w `.agents/oma-config.yaml`. Dostepne gotowe runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Sprawdz rozwiazana macierz auth komenda `oma doctor --profile`. Pelny przewodnik: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Kazdy agent moze miec wlasny model i `effort` zdefiniowany w `.agents/oma-config.yaml`. Dostepne gotowe runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Sprawdz rozwiazana macierz auth komenda `oma doctor --profile`. Pelny przewodnik: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Dlaczego oh-my-agent?
 

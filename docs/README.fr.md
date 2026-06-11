@@ -201,30 +201,9 @@ Ou utilise les slash commands pour des workflows structurés :
 
 **Auto-détection** : Tu n'as même pas besoin des slash commands. Des mots-clés comme "architecture", "plan", "review" et "debug" dans ton message (en 11 langues !) activent automatiquement le bon workflow.
 
-## CLI
+### Modèles par agent
 
-```bash
-# Installer globalement
-bun install --global oh-my-agent   # ou : brew install oh-my-agent
-
-# Utiliser n'importe où
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Monitoring des agents en temps réel
-oma doctor                  # Bilan de santé
-oma image generate "cat"    # Génération d'images IA multi-fournisseur
-oma link                    # Régénère .claude/.codex/.gemini/etc. depuis .agents/
-oma model:check             # Détecte la dérive entre modèles enregistrés et listes fournisseurs en direct
-oma recap --window 1d       # Récapitulatif d'historique de conversation inter-outils
-oma retro 7d --compare      # Rétrospective ingénierie avec métriques + tendances
-oma search fetch <url>      # Recherche mécanique avec stratégies à escalade automatique
-```
-
-La sélection de modèle suit deux couches :
-- Le dispatch natif du même fournisseur utilise la définition d'agent générée dans `.claude/agents/`, `.codex/agents/` ou `.gemini/agents/`.
-- Le dispatch inter-fournisseur ou le fallback CLI utilise les valeurs par défaut du fournisseur dans `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**modèles par agent** : chaque agent peut cibler son propre modèle et son `effort` via `.agents/oma-config.yaml`. Runtime profiles prêts à l'emploi : `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Vérifiez la matrice d'auth résolue avec `oma doctor --profile`. Guide complet : [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Chaque agent peut cibler son propre modèle et son `effort` via `.agents/oma-config.yaml`. Runtime profiles prêts à l'emploi : `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Vérifiez la matrice d'auth résolue avec `oma doctor --profile`. Guide complet : [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Pourquoi oh-my-agent ?
 

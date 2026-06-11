@@ -201,30 +201,9 @@ You: "做一个带用户认证的 TODO 应用"
 
 **自动检测**：不用斜杠命令也行，消息里出现“架构”“计划”“审查”“调试”等关键词（支持 11 种语言！）就会自动激活对应工作流。
 
-## CLI
+### 按 agent 配置模型
 
-```bash
-# 全局安装
-bun install --global oh-my-agent   # 或者: brew install oh-my-agent
-
-# 随处使用
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # 实时 agent 监控
-oma doctor                  # 健康检查
-oma image generate "cat"    # 多供应商 AI 图像生成
-oma link                    # 从 .agents/ 重新生成 .claude/.codex/.gemini 等
-oma model:check             # 检测已注册模型与实时供应商列表的漂移
-oma recap --window 1d       # 跨工具对话历史回顾
-oma retro 7d --compare      # 含指标与趋势的工程复盘
-oma search fetch <url>      # 自动升级策略的机械搜索
-```
-
-模型选择分两层：
-- 同厂商原生调度使用生成在 `.claude/agents/`、`.codex/agents/`、`.gemini/agents/` 里的厂商 agent 定义。
-- 跨厂商或 CLI 回退调度使用 `.agents/skills/oma-orchestrator/config/cli-config.yaml` 里的厂商默认值。
-
-**按 agent 配置模型**：可在 `.agents/oma-config.yaml` 里为每个 agent 单独指定模型和 `effort`。内置 runtime profiles：`antigravity`、`claude`、`codex`、`cursor`、`grok`、`mixed`、`qwen`。用 `oma doctor --profile` 查看解析后的 auth 矩阵。完整指南：[web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
+可在 `.agents/oma-config.yaml` 里为每个 agent 单独指定模型和 `effort`。内置 runtime profiles：`antigravity`、`claude`、`codex`、`cursor`、`grok`、`mixed`、`qwen`。用 `oma doctor --profile` 查看解析后的 auth 矩阵。完整指南：[web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md)。
 
 ## 为什么选 oh-my-agent？
 

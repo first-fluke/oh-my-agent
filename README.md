@@ -207,29 +207,6 @@ Or use slash commands for structured workflows:
 
 **Auto-detection**: You don't even need slash commands — keywords like "architecture", "plan", "review", and "debug" in your message (in 11 languages!) auto-activate the right workflow.
 
-## CLI
-
-```bash
-# Install globally
-bun install --global oh-my-agent   # or: brew install oh-my-agent
-
-# Use anywhere (sorted alphabetically)
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Real-time agent monitoring
-oma doctor                  # Health check
-oma image generate "cat"    # Multi-vendor AI image generation
-oma link                    # Regenerate .claude/.codex/.gemini/etc. from .agents/
-oma model:check             # Detect drift between registered models and live vendor lists
-oma recap --window 1d       # Cross-tool conversation history recap
-oma retro 7d --compare      # Engineering retrospective with metrics + trends
-oma search fetch <url>      # Mechanical search with auto-escalating strategies
-```
-
-Model selection follows two layers:
-- Same-vendor native dispatch uses the generated vendor agent definition in `.claude/agents/`, `.codex/agents/`, or `.gemini/agents/`.
-- Cross-vendor or fallback CLI dispatch uses the vendor defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
 ### Per-Agent Models
 
 Set `model_preset` in `.agents/oma-config.yaml` to choose which AI models each agent uses:

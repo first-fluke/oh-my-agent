@@ -201,30 +201,9 @@ Hoặc sử dụng slash command cho các workflow có cấu trúc:
 
 **Tự động phát hiện**: Bạn không nhất thiết cần slash command. Các từ khóa như "kiến trúc", "kế hoạch", "đánh giá", "debug" trong tin nhắn (hỗ trợ 11 ngôn ngữ!) sẽ tự động kích hoạt workflow phù hợp.
 
-## CLI
+### Model theo từng agent
 
-```bash
-# Cài đặt toàn cục
-bun install --global oh-my-agent   # hoặc: brew install oh-my-agent
-
-# Sử dụng ở bất kỳ đâu
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Giám sát agent thời gian thực
-oma doctor                  # Kiểm tra sức khỏe hệ thống
-oma image generate "cat"    # Tạo ảnh AI đa nhà cung cấp
-oma link                    # Tạo lại .claude/.codex/.gemini/v.v. từ .agents/
-oma model:check             # Phát hiện độ lệch giữa model đã đăng ký và danh sách vendor đang hoạt động
-oma recap --window 1d       # Tóm tắt lịch sử hội thoại đa công cụ
-oma retro 7d --compare      # Retrospective kỹ thuật với metrics + xu hướng
-oma search fetch <url>      # Tìm kiếm máy móc với chiến lược tự leo thang
-```
-
-Việc chọn model đi theo hai lớp:
-- Dispatch bản địa cùng nhà cung cấp dùng định nghĩa agent được sinh ra trong `.claude/agents/`, `.codex/agents/` hoặc `.gemini/agents/`.
-- Dispatch chéo nhà cung cấp hoặc fallback CLI dùng giá trị mặc định của nhà cung cấp trong `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**model theo từng agent**: mỗi agent có thể trỏ tới model và `effort` riêng thông qua `.agents/oma-config.yaml`. Có sẵn các runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Kiểm tra ma trận auth đã resolve bằng `oma doctor --profile`. Hướng dẫn đầy đủ: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Mỗi agent có thể trỏ tới model và `effort` riêng thông qua `.agents/oma-config.yaml`. Có sẵn các runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Kiểm tra ma trận auth đã resolve bằng `oma doctor --profile`. Hướng dẫn đầy đủ: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Tại sao chọn oh-my-agent?
 

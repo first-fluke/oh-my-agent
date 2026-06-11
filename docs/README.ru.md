@@ -201,30 +201,9 @@ APM поставляет только скилы. Для workflow, правил,
 
 **Автодетекция**: Slash-команды не обязательны. Слова вроде «архитектура», «plan», «review» и «debug» в сообщении (на 11 языках!) автоматически активируют нужный воркфлоу.
 
-## CLI
+### Модели по агенту
 
-```bash
-# Установить глобально
-bun install --global oh-my-agent   # или: brew install oh-my-agent
-
-# Использовать где угодно
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Мониторинг в реальном времени
-oma doctor                  # Проверка здоровья
-oma image generate "cat"    # Мультивендорная генерация AI-изображений
-oma link                    # Регенерирует .claude/.codex/.gemini/и т.д. из .agents/
-oma model:check             # Обнаружение расхождений между зарегистрированными моделями и актуальными списками вендоров
-oma recap --window 1d       # Сводка истории диалогов между инструментами
-oma retro 7d --compare      # Инженерная ретроспектива с метриками + трендами
-oma search fetch <url>      # Механический поиск со стратегиями автоэскалации
-```
-
-Выбор модели работает в два слоя:
-- Нативный диспатч того же вендора использует сгенерированное определение агента в `.claude/agents/`, `.codex/agents/` или `.gemini/agents/`.
-- Кросс-вендорный или fallback CLI диспатч использует дефолты вендора из `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**модели по агенту**: каждый агент может указывать собственную модель и `effort` через `.agents/oma-config.yaml`. Доступные runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Проверьте итоговую auth-матрицу командой `oma doctor --profile`. Полное руководство: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Каждый агент может указывать собственную модель и `effort` через `.agents/oma-config.yaml`. Доступные runtime profiles: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Проверьте итоговую auth-матрицу командой `oma doctor --profile`. Полное руководство: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Почему oh-my-agent?
 

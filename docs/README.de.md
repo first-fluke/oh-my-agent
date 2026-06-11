@@ -201,30 +201,9 @@ Oder nutz Slash Commands für strukturierte Workflows:
 
 **Auto-Erkennung**: Du brauchst nicht mal Slash Commands. Schlüsselwörter wie "Architektur", "plan", "review" und "debug" in deiner Nachricht (in 11 Sprachen!) aktivieren automatisch den richtigen Workflow.
 
-## CLI
+### Per-Agent-Modelle
 
-```bash
-# Global installieren
-bun install --global oh-my-agent   # oder: brew install oh-my-agent
-
-# Überall nutzen
-oma agent:parallel -i backend:"Auth API" frontend:"Login form"
-oma agent:spawn backend "Build auth API" session-01
-oma dashboard               # Echtzeit-Agenten-Monitoring
-oma doctor                  # Gesundheitscheck
-oma image generate "cat"    # Multi-Vendor-KI-Bildgenerierung
-oma link                    # Regeneriert .claude/.codex/.gemini/etc. aus .agents/
-oma model:check             # Drift zwischen registrierten Modellen und Live-Vendor-Listen erkennen
-oma recap --window 1d       # Tool-übergreifende Konversationshistorie-Zusammenfassung
-oma retro 7d --compare      # Engineering-Retro mit Metriken + Trends
-oma search fetch <url>      # Mechanische Suche mit auto-eskalierenden Strategien
-```
-
-Die Modellauswahl folgt zwei Schichten:
-- Same-Vendor-Native-Dispatch verwendet die generierte Vendor-Agent-Definition in `.claude/agents/`, `.codex/agents/` oder `.gemini/agents/`.
-- Cross-Vendor- oder Fallback-CLI-Dispatch verwendet die Vendor-Defaults in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
-
-**Per-Agent-Modelle**: Jeder Agent kann ein eigenes Modell und `effort` über `.agents/oma-config.yaml` beziehen. Folgende Runtime-Profile sind vorkonfiguriert: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Prüfe die aufgelöste Auth-Matrix mit `oma doctor --profile`. Vollständige Anleitung: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+Jeder Agent kann ein eigenes Modell und `effort` über `.agents/oma-config.yaml` beziehen. Folgende Runtime-Profile sind vorkonfiguriert: `antigravity`, `claude`, `codex`, `cursor`, `grok`, `mixed`, `qwen`. Prüfe die aufgelöste Auth-Matrix mit `oma doctor --profile`. Vollständige Anleitung: [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
 
 ## Warum oh-my-agent?
 
