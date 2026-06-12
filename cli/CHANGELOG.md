@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.0.0...cli-v9.0.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **skills:** close skill registry and README drift, add drift guard ([719e4db](https://github.com/first-fluke/oh-my-agent/commit/719e4dbf8f41effa20ad32942e1364d36945bed5))
+
 ## [9.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.54.0...cli-v9.0.0) (2026-06-12)
 
 
