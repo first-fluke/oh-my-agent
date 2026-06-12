@@ -142,6 +142,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-architecture** | 权衡架构方案、划定模块边界，提供 ADR/ATAM/CBAM 分析 |
 | **oma-backend** | 用 Python、Node.js 或 Rust 构建并加固你的 API |
 | **oma-brainstorm** | 在动手之前，先和你一起把想法探索清楚 |
+| **oma-coordination** | 指导你逐步手动协调 PM、前端、后端、移动端与 QA 代理 |
 | **oma-db** | 设计 schema、迁移、索引与 vector store |
 | **oma-debug** | 找到根因、修复 bug，并补上回归测试 |
 | **oma-deepsec** | 扫描代码中的安全漏洞，拦截高风险 pull request |
@@ -159,6 +160,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-pm** | 规划任务、拆解需求、定义 API 契约 |
 | **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
 | **oma-recap** | 将会话历史整理成有主题分类的工作摘要 |
+| **oma-refactor** | 借助热点定位与特性化测试安全网，在不改变行为的前提下重构代码 |
 | **oma-scholar** | 检索学术文献，协助开展同行评审 |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
 | **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
@@ -166,6 +168,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
 | **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
 | **oma-translator** | 将内容翻译成目标语言，读来如同母语写就 |
+| **oma-video** | 通过可免密钥的 Remotion 流水线生成短视频、讲解视频和演示视频 |
 | **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
 
 ## 工作原理

@@ -142,6 +142,7 @@ Choisis un preset et c'est parti :
 | **oma-architecture** | Évalue les arbitrages d'architecture et trace les frontières de modules avec une analyse ADR/ATAM/CBAM |
 | **oma-backend** | Construit et sécurise tes APIs en Python, Node.js ou Rust |
 | **oma-brainstorm** | Explore les idées avec toi avant de te lancer dans le code |
+| **oma-coordination** | Guide la coordination manuelle pas à pas des agents PM, frontend, backend, mobile et QA |
 | **oma-db** | Conçoit tes schémas, migrations, index et vector stores |
 | **oma-debug** | Identifie la cause racine, corrige le bug et écrit un test de régression |
 | **oma-deepsec** | Scanne ton code pour détecter les failles de sécurité et bloque les pull requests à risque |
@@ -159,6 +160,7 @@ Choisis un preset et c'est parti :
 | **oma-pm** | Planifie les tâches, découpe les exigences et définit les contrats d'API |
 | **oma-qa** | Passe ton code en revue pour détecter les failles OWASP, les problèmes de performance et d'accessibilité |
 | **oma-recap** | Résume ton historique de conversations en synthèses de travail organisées par thème |
+| **oma-refactor** | Refactorise le code sans changer son comportement grâce au ciblage des hotspots, aux tests de caractérisation et aux commits dédiés au refactor |
 | **oma-scholar** | Explore la littérature académique et t'aide à mener une évaluation par les pairs |
 | **oma-scm** | Gère tes branches, fusions, worktrees et Conventional Commits |
 | **oma-search** | Route chaque requête vers la meilleure source et évalue le niveau de confiance du résultat |
@@ -166,6 +168,7 @@ Choisis un preset et c'est parti :
 | **oma-slide** | Génère des decks de présentation HTML distinctifs riches en animations et exporte vers PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisionne une infrastructure multi-cloud avec Terraform |
 | **oma-translator** | Traduit entre les langues comme si un natif avait écrit le texte |
+| **oma-video** | Génère des vidéos courtes, explicatives et de démo via un pipeline Remotion utilisable sans clés |
 | **oma-voice** | Génère des voix off et transcrit de l'audio en local, sans cloud |
 
 ## Comment Ça Marche

@@ -91,6 +91,10 @@ export const SKILLS: SkillsRegistry = {
       desc: `Analyze conversation histories from multiple AI tools (Grok, Claude, Codex, Qwen, Cursor, Antigravity) and generate themed daily/period work summaries. Filter by date or time window.`,
     },
     {
+      name: "oma-refactor",
+      desc: `Behavior-preserving refactoring specialist - plans and executes safe incremental restructuring with code smell / SATD / hotspot targeting, characterization-test safety nets, metric and coverage gates, and refactor-only commits. Use for refactor, refactoring, code smell, technical debt, legacy code modernization, extract method, hotspot, and characterization test work.`,
+    },
+    {
       name: "oma-scholar",
       desc: `Scholarly research companion using Knows sidecar spec (.knows.yaml). Generates, validates, reviews, queries, and compares structured research-paper sidecars, and fetches them from knows.academy. Use for academic literature search, survey synthesis, paper authoring assistance, and peer review with token-efficient claim/evidence/relation access.`,
     },

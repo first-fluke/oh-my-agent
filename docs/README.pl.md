@@ -142,6 +142,7 @@ Wybierz preset i gotowe:
 | **oma-architecture** | Waży kompromisy architektoniczne i wyznacza granice modułów z analizą ADR/ATAM/CBAM |
 | **oma-backend** | Buduje i zabezpiecza Twoje API w Python, Node.js lub Rust |
 | **oma-brainstorm** | Eksploruje pomysły razem z Tobą, zanim cokolwiek zaczniesz budować |
+| **oma-coordination** | Prowadzi krok po kroku ręczną koordynację agentów PM, frontend, backend, mobile i QA |
 | **oma-db** | Projektuje schematy, migracje, indeksy i vector stores |
 | **oma-debug** | Znajduje przyczynę błędu, naprawia go i pisze test regresji |
 | **oma-deepsec** | Skanuje kod w poszukiwaniu luk bezpieczeństwa i blokuje ryzykowne pull requesty |
@@ -159,6 +160,7 @@ Wybierz preset i gotowe:
 | **oma-pm** | Planuje zadania, rozbija wymagania i definiuje kontrakty API |
 | **oma-qa** | Przegląda kod pod kątem bezpieczeństwa OWASP, wydajności i dostępności |
 | **oma-recap** | Podsumowuje historię rozmów w tematyczne raporty z pracy |
+| **oma-refactor** | Refaktoryzuje kod bez zmiany zachowania, wykorzystując hotspoty, testy charakteryzujące i commity zawierające wyłącznie refactor |
 | **oma-scholar** | Przeszukuje literaturę akademicką i pomaga przeprowadzić recenzję naukową |
 | **oma-scm** | Zarządza branchami, mergami, worktrees i Conventional Commits |
 | **oma-search** | Kieruje każde zapytanie do najlepszego źródła i ocenia wiarygodność wyniku |
@@ -166,6 +168,7 @@ Wybierz preset i gotowe:
 | **oma-slide** | Generuje charakterystyczne, bogate w animacje decki prezentacji HTML i eksportuje do PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisionuje wielochmurową infrastrukturę za pomocą Terraform |
 | **oma-translator** | Tłumaczy między językami tak, jakby tekst napisał native speaker |
+| **oma-video** | Generuje krótkie filmy, materiały objaśniające i dema przez pipeline Remotion działający także bez kluczy |
 | **oma-voice** | Generuje voiceover i transkrybuje audio lokalnie — bez chmury |
 
 ## Jak to dziala

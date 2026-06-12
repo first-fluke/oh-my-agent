@@ -142,6 +142,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-architecture** | Phân tích đánh đổi kiến trúc và vạch ranh giới module theo hướng ADR/ATAM/CBAM |
 | **oma-backend** | Xây dựng và bảo mật API bằng Python, Node.js hoặc Rust |
 | **oma-brainstorm** | Cùng bạn khám phá ý tưởng trước khi bắt tay vào xây dựng |
+| **oma-coordination** | Hướng dẫn phối hợp thủ công từng bước các agent PM, frontend, backend, mobile và QA |
 | **oma-db** | Thiết kế schema, migration, index và vector store cho dự án của bạn |
 | **oma-debug** | Tìm nguyên nhân gốc rễ, sửa lỗi và viết regression test |
 | **oma-deepsec** | Quét lỗ hổng bảo mật trong code và chặn pull request rủi ro |
@@ -159,6 +160,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-pm** | Lập kế hoạch tác vụ, phân tích yêu cầu và định nghĩa API contract |
 | **oma-qa** | Rà soát code theo tiêu chuẩn bảo mật OWASP, hiệu suất và accessibility |
 | **oma-recap** | Tóm tắt lịch sử hội thoại thành báo cáo công việc theo chủ đề |
+| **oma-refactor** | Tái cấu trúc mã mà không đổi hành vi, dùng hotspot, characterization test làm lưới an toàn và commit chỉ chứa refactor |
 | **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
 | **oma-scm** | Quản lý nhánh, merge, worktree và Conventional Commits |
 | **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm độ tin cậy của kết quả |
@@ -166,6 +168,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
 | **oma-tf-infra** | Triển khai hạ tầng đa đám mây bằng Terraform |
 | **oma-translator** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
+| **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline Remotion dùng được cả khi không có khóa |
 | **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
 
 ## Cách hoạt động

@@ -142,6 +142,7 @@ Elige un preset y listo:
 | **oma-architecture** | Evalúa trade-offs arquitectónicos y define límites de módulos con análisis ADR/ATAM/CBAM |
 | **oma-backend** | Construye y protege tus APIs en Python, Node.js o Rust |
 | **oma-brainstorm** | Explora ideas contigo antes de que te comprometas a construir |
+| **oma-coordination** | Guía la coordinación manual paso a paso de los agentes PM, frontend, backend, móvil y QA |
 | **oma-db** | Diseña tu esquema, migraciones, índices y almacenes vectoriales |
 | **oma-debug** | Encuentra la causa raíz, corrige el bug y escribe un test de regresión |
 | **oma-deepsec** | Escanea tu código en busca de vulnerabilidades y bloquea pull requests con riesgos |
@@ -159,6 +160,7 @@ Elige un preset y listo:
 | **oma-pm** | Planifica tareas, desglosa requisitos y define contratos de API |
 | **oma-qa** | Revisa tu código en busca de problemas de seguridad OWASP, rendimiento y accesibilidad |
 | **oma-recap** | Convierte tu historial de conversaciones en resúmenes de trabajo organizados por tema |
+| **oma-refactor** | Refactoriza el código sin cambiar su comportamiento usando hotspots, pruebas de caracterización y commits solo de refactor |
 | **oma-scholar** | Busca literatura académica y te ayuda a llevar a cabo revisiones por pares |
 | **oma-scm** | Gestiona tus ramas, fusiones, worktrees y Conventional Commits |
 | **oma-search** | Dirige cada consulta a la mejor fuente y puntúa qué tan confiable es el resultado |
@@ -166,6 +168,7 @@ Elige un preset y listo:
 | **oma-slide** | Genera decks de presentaciones HTML distintivos y ricos en animaciones, y exporta a PDF/PNG/PPTX |
 | **oma-tf-infra** | Aprovisiona infraestructura multi-cloud con Terraform |
 | **oma-translator** | Traduce entre idiomas de forma que parezca escrito por un hablante nativo |
+| **oma-video** | Genera videos cortos, explicativos y demos mediante un pipeline de Remotion que funciona sin claves |
 | **oma-voice** | Genera voiceovers y transcribe audio en el dispositivo, sin necesidad de nube |
 
 ## Cómo Funciona

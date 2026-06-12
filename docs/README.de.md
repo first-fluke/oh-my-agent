@@ -142,6 +142,7 @@ Wähl ein Preset und los geht's:
 | **oma-architecture** | Wägt Architektur-Trade-offs ab und zieht Modulgrenzen — mit ADR/ATAM/CBAM-Analyse |
 | **oma-backend** | Baut und sichert deine APIs in Python, Node.js oder Rust |
 | **oma-brainstorm** | Erkundet Ideen gemeinsam mit dir, bevor du dich für einen Weg entscheidest |
+| **oma-coordination** | Führt Schritt für Schritt durch die manuelle Koordination von PM-, Frontend-, Backend-, Mobile- und QA-Agenten |
 | **oma-db** | Entwirft dein Schema, Migrationen, Indizes und Vector Stores |
 | **oma-debug** | Findet die Ursache, behebt den Bug und schreibt einen Regressionstest |
 | **oma-deepsec** | Scannt deinen Code auf Sicherheitslücken und blockiert riskante Pull Requests |
@@ -159,6 +160,7 @@ Wähl ein Preset und los geht's:
 | **oma-pm** | Plant Aufgaben, zerlegt Anforderungen und definiert API-Verträge |
 | **oma-qa** | Überprüft deinen Code auf OWASP-Sicherheitslücken, Performance- und Barrierefreiheitsprobleme |
 | **oma-recap** | Fasst deinen Gesprächsverlauf in thematische Arbeitsberichte zusammen |
+| **oma-refactor** | Refaktoriert Code ohne Verhaltensänderung mit Hotspot-Auswahl, Charakterisierungstests als Sicherheitsnetz und reinen Refactor-Commits |
 | **oma-scholar** | Durchsucht akademische Literatur und unterstützt dich beim Peer-Review |
 | **oma-scm** | Verwaltet deine Branches, Merges, Worktrees und Conventional Commits |
 | **oma-search** | Leitet jede Suchanfrage an die beste Quelle weiter und bewertet, wie vertrauenswürdig das Ergebnis ist |
@@ -166,6 +168,7 @@ Wähl ein Preset und los geht's:
 | **oma-slide** | Erzeugt markante, animationsreiche HTML-Präsentationsdecks und exportiert nach PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisioniert Multi-Cloud-Infrastruktur mit Terraform |
 | **oma-translator** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
+| **oma-video** | Erzeugt Kurzvideos, Erklärvideos und Demos über eine auch ohne Schlüssel nutzbare Remotion-Pipeline |
 | **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |
 
 ## So Funktioniert's

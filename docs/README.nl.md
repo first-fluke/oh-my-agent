@@ -142,6 +142,7 @@ Kies een preset en je bent klaar:
 | **oma-architecture** | Weegt architectuurafwegingen af en bepaalt modulegrenzen met ADR/ATAM/CBAM-analyse |
 | **oma-backend** | Bouwt en beveiligt je API's in Python, Node.js of Rust |
 | **oma-brainstorm** | Verkent ideeën samen met jou voordat je begint met bouwen |
+| **oma-coordination** | Begeleidt stap voor stap de handmatige coördinatie van PM-, frontend-, backend-, mobile- en QA-agents |
 | **oma-db** | Ontwerpt je schema, migraties, indexes en vector stores |
 | **oma-debug** | Zoekt de root cause, lost de bug op en schrijft een regressietest |
 | **oma-deepsec** | Scant je code op beveiligingslekken en blokkeert riskante pull requests |
@@ -159,6 +160,7 @@ Kies een preset en je bent klaar:
 | **oma-pm** | Plant taken, splitst requirements op en definieert API-contracten |
 | **oma-qa** | Reviewt je code op OWASP-beveiliging, performance en toegankelijkheid |
 | **oma-recap** | Vat je gespreksgeschiedenis samen in thematische werkoverviews |
+| **oma-refactor** | Refactort code zonder gedragsverandering met hotspot-targeting, karakterisatietests als vangnet en refactor-only commits |
 | **oma-scholar** | Doorzoekt academische literatuur en helpt je bij peer review |
 | **oma-scm** | Beheert je branches, merges, worktrees en Conventional Commits |
 | **oma-search** | Routeert elke zoekopdracht naar de beste bron en geeft een vertrouwensscore |
@@ -166,6 +168,7 @@ Kies een preset en je bent klaar:
 | **oma-slide** | Genereert onderscheidende, animatierijke HTML-presentatiedecks en exporteert naar PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisioneert multi-cloud infrastructuur met Terraform |
 | **oma-translator** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
+| **oma-video** | Genereert korte video's, uitlegvideo's en demo's via een Remotion-pijplijn die ook zonder sleutels werkt |
 | **oma-voice** | Genereert voice-overs en transcribeert audio lokaal, zonder cloud |
 
 ## Hoe het werkt

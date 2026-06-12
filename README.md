@@ -146,6 +146,7 @@ Pick a preset and you're ready:
 | **oma-architecture** | Weighs architecture tradeoffs and draws module boundaries, with ADR/ATAM/CBAM analysis. |
 | **oma-backend** | Builds and secures your APIs in Python, Node.js, or Rust. |
 | **oma-brainstorm** | Explores ideas with you before you commit to building. |
+| **oma-coordination** | Guides manual step-by-step coordination of PM, frontend, backend, mobile, and QA agents. |
 | **oma-db** | Designs your schema, migrations, indexes, and vector stores. |
 | **oma-debug** | Finds the root cause, fixes the bug, and writes a regression test. |
 | **oma-deepsec** | Scans your code for security holes and blocks risky pull requests. |
@@ -163,6 +164,7 @@ Pick a preset and you're ready:
 | **oma-pm** | Plans tasks, breaks down requirements, and defines API contracts. |
 | **oma-qa** | Reviews your code for OWASP security, performance, and accessibility issues. |
 | **oma-recap** | Recaps your conversation history into themed work summaries. |
+| **oma-refactor** | Refactors code without changing its behavior, using hotspot targeting, characterization-test safety nets, and refactor-only commits. |
 | **oma-scholar** | Searches academic literature and helps you run peer review. |
 | **oma-scm** | Manages your branches, merges, worktrees, and Conventional Commits. |
 | **oma-search** | Routes each query to the best source and scores how much you can trust the result. |
@@ -170,6 +172,7 @@ Pick a preset and you're ready:
 | **oma-slide** | Generates distinctive, animation-rich HTML presentation decks and exports to PDF/PNG/PPTX. |
 | **oma-tf-infra** | Provisions multi-cloud infrastructure with Terraform. |
 | **oma-translator** | Translates between languages so it reads like a native wrote it. |
+| **oma-video** | Generates short-form, explainer, and demo videos through a key-optional Remotion pipeline. |
 | **oma-voice** | Generates voiceovers and transcribes audio on-device, no cloud needed. |
 
 ## How It Works

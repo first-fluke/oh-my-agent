@@ -142,6 +142,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-architecture** | ชั่งน้ำหนัก tradeoffs ด้านสถาปัตยกรรม กำหนดขอบเขตโมดูล พร้อมวิเคราะห์ด้วย ADR/ATAM/CBAM |
 | **oma-backend** | สร้างและเสริมความปลอดภัยให้ API ด้วย Python, Node.js หรือ Rust |
 | **oma-brainstorm** | สำรวจแนวคิดร่วมกับคุณก่อนตัดสินใจลงมือสร้างจริง |
+| **oma-coordination** | แนะนำการประสานงานเอเจนต์ PM, frontend, backend, mobile และ QA ทีละขั้นตอนแบบแมนวล |
 | **oma-db** | ออกแบบ schema, migration, indexes และ vector stores ให้กับโปรเจกต์ของคุณ |
 | **oma-debug** | ค้นหาสาเหตุต้นตอ แก้ไขบัค และเขียน regression test ไว้กันซ้ำ |
 | **oma-deepsec** | สแกนโค้ดหาช่องโหว่ด้านความปลอดภัย และบล็อก pull request ที่มีความเสี่ยง |
@@ -159,6 +160,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-pm** | วางแผนงาน ย่อย requirements และกำหนด API contracts |
 | **oma-qa** | ตรวจสอบโค้ดตามมาตรฐาน OWASP ด้านความปลอดภัย ประสิทธิภาพ และ accessibility |
 | **oma-recap** | สรุปประวัติการสนทนาของคุณออกมาเป็น work summaries ตามธีม |
+| **oma-refactor** | รีแฟกเตอร์โค้ดโดยไม่เปลี่ยนพฤติกรรม ด้วยการเลือก hotspot ใช้ characterization test เป็นตาข่ายนิรภัย และคอมมิตเฉพาะ refactor |
 | **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และช่วยดำเนินการทบทวนโดยผู้เชี่ยวชาญ |
 | **oma-scm** | จัดการ branches, merges, worktrees และ Conventional Commits |
 | **oma-search** | ส่งคำค้นหาแต่ละรายการไปยังแหล่งที่ดีที่สุด พร้อมให้คะแนนความน่าเชื่อถือของผลลัพธ์ |
@@ -166,6 +168,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-slide** | สร้าง HTML presentation deck ที่มีเอกลักษณ์และแอนิเมชันสมบูรณ์ รวมถึงส่งออกเป็น PDF/PNG/PPTX |
 | **oma-tf-infra** | จัดเตรียม multi-cloud infrastructure ด้วย Terraform |
 | **oma-translator** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
+| **oma-video** | สร้างวิดีโอสั้น วิดีโออธิบาย และวิดีโอเดโมผ่านไปป์ไลน์ Remotion ที่ใช้ได้แม้ไม่มีคีย์ |
 | **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนเครื่อง โดยไม่ต้องพึ่ง cloud |
 
 ## วิธีการทำงาน

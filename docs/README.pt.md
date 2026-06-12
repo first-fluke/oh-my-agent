@@ -142,6 +142,7 @@ O `oh-my-agent` mantém `.agents/` como única fonte de verdade (SSOT) e o proje
 | **oma-architecture** | Avalia trade-offs de arquitetura e define limites de modulos com analise ADR/ATAM/CBAM |
 | **oma-backend** | Constroi e protege suas APIs em Python, Node.js ou Rust |
 | **oma-brainstorm** | Explora ideias com voce antes de voce se comprometer a construir |
+| **oma-coordination** | Orienta passo a passo a coordenacao manual dos agentes de PM, frontend, backend, mobile e QA |
 | **oma-db** | Projeta seu schema, migrations, indexes e vector stores |
 | **oma-debug** | Encontra a causa raiz, corrige o bug e escreve um teste de regressao |
 | **oma-deepsec** | Varre seu codigo em busca de falhas de seguranca e bloqueia pull requests arriscados |
@@ -159,6 +160,7 @@ O `oh-my-agent` mantém `.agents/` como única fonte de verdade (SSOT) e o proje
 | **oma-pm** | Planeja tarefas, detalha requisitos e define contratos de API |
 | **oma-qa** | Revisa seu codigo em busca de problemas de seguranca OWASP, performance e acessibilidade |
 | **oma-recap** | Resume seu historico de conversas em resumos tematicos de trabalho |
+| **oma-refactor** | Refatora o codigo sem mudar o comportamento usando hotspots, testes de caracterizacao e commits apenas de refactor |
 | **oma-scholar** | Busca literatura academica e ajuda voce a conduzir revisoes por pares |
 | **oma-scm** | Gerencia seus branches, merges, worktrees e Conventional Commits |
 | **oma-search** | Roteia cada consulta para a melhor fonte e pontua o nivel de confianca do resultado |
@@ -166,6 +168,7 @@ O `oh-my-agent` mantém `.agents/` como única fonte de verdade (SSOT) e o proje
 | **oma-slide** | Gera decks de apresentacao HTML distintos e ricos em animacoes e exporta para PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisiona infraestrutura multi-cloud com Terraform |
 | **oma-translator** | Traduz entre idiomas de forma que parece escrito por um falante nativo |
+| **oma-video** | Gera videos curtos, explicativos e demos por um pipeline Remotion que funciona mesmo sem chaves |
 | **oma-voice** | Gera voiceovers e transcreve audio localmente, sem precisar de nuvem |
 
 ## Como Funciona
