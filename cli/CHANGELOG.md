@@ -1,5 +1,16 @@
 # Changelog
 
+## [9.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.54.0...cli-v9.0.0) (2026-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **agents:** the `retrieval` agent id is no longer accepted at runtime. `agents: retrieval:` overrides in oma-config.yaml are auto-migrated to `agents: explore:` by migration 014; configs edited by hand afterwards must use `explore`.
+
+### Features
+
+* **agents:** drop the retrieval alias; migrate configs to explore ([b2d55e5](https://github.com/first-fluke/oh-my-agent/commit/b2d55e5c82a51050d3047c1a2738fe20b221a666))
+
 ## [8.54.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v8.53.0...cli-v8.54.0) (2026-06-11)
 
 
