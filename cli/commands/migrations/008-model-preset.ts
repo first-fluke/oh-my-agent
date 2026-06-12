@@ -219,7 +219,7 @@ export const migrateModelPreset: Migration = {
           >
         | undefined;
 
-      let modelPreset: BuiltInPresetKey = "gemini"; // sensible default
+      let modelPreset: BuiltInPresetKey = "antigravity"; // matches the shipped template default
       const agentsOverride: Partial<Record<AgentId, AgentSpec>> = {};
 
       if (legacyMapping && Object.keys(legacyMapping).length > 0) {
