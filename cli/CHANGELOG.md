@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.0.1...cli-v9.0.2) (2026-06-12)
+
+
+### Bug Fixes
+
+* **update:** never prune skills that shipped agents require ([07a331a](https://github.com/first-fluke/oh-my-agent/commit/07a331a73c144cfe5c92fbc57d222fbde01d111f))
+
 ## [9.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.0.0...cli-v9.0.1) (2026-06-12)
 
 
