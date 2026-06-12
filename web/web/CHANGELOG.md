@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.12.0...web-v3.13.0) (2026-06-12)
+
+
+### Features
+
+* **update:** append missing template config keys to oma-config.yaml ([424fd9e](https://github.com/first-fluke/oh-my-agent/commit/424fd9e8f7755b334caf6c195fedb64e88a71105))
+
 ## [3.12.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.11.2...web-v3.12.0) (2026-06-11)
 
 
