@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.1.0...cli-v9.1.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **cli:** stop bulk-deleting vendor skill symlinks on every update ([5f33f83](https://github.com/first-fluke/oh-my-agent/commit/5f33f83976d7eaebc8214a5899f4d86ddc7424cf))
+
 ## [9.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.0.2...cli-v9.1.0) (2026-06-12)
 
 
