@@ -5,13 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-11 · 1 unstarred
+## 2026-06-12 · 1 unstarred
 
-- **@ttt43ttt** · Wilson Tian · China · Revvity · 16 repos · 21 followers
+- **@kipeum86** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1076)
+## Current (1079)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -295,6 +295,7 @@ summaries to spot which persona is churning.
 - @Fastdust — 2026-05-23
 - @Fato07 — 2026-05-28
 - @fatsby — 2026-02-02
+- @fbdlsgud — 2026-06-12
 - @fbsbittencourt — 2026-02-13
 - @fdkgenie — 2026-02-25
 - @fengxiaoyi34 — 2026-05-31
@@ -575,7 +576,6 @@ summaries to spot which persona is churning.
 - @kimyejoon — 2026-04-25
 - @Kimym123 — 2026-04-24
 - @KIMYOUNGGWANG — 2026-04-27
-- @kipeum86 — 2026-05-18
 - @kipphan — 2026-02-15
 - @kippsterr — 2026-03-19
 - @kiryllifi — 2026-05-11
@@ -630,6 +630,7 @@ summaries to spot which persona is churning.
 - @locnguyen0904 — 2026-03-14
 - @lontaian — 2026-04-19
 - @losscutime-bit — 2026-03-07
+- @lowtidebuild — 2026-05-18
 - @LsMin124 — 2026-04-24
 - @ltyfyahmdrwml-star — 2026-02-04
 - @Lubomirdemsky — 2026-02-12
@@ -651,6 +652,7 @@ summaries to spot which persona is churning.
 - @m2sh — 2026-06-02
 - @m8928 — 2026-04-22
 - @maacx2022 — 2026-02-12
+- @mabuu69046 — 2026-06-12
 - @macintoxic — 2026-02-12
 - @magnolemos — 2026-05-04
 - @magus635 — 2026-03-19
@@ -1048,6 +1050,7 @@ summaries to spot which persona is churning.
 - @xiushaomin — 2026-04-16
 - @xusyang — 2026-04-21
 - @xycool — 2026-02-07
+- @Yaklede — 2026-06-11
 - @yakubmungai — 2026-02-06
 - @yakzan — 2026-03-23
 - @yamyay — 2026-05-13
