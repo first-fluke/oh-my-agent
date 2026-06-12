@@ -1,5 +1,24 @@
 # Changelog
 
+## [9.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.0.2...cli-v9.1.0) (2026-06-12)
+
+
+### Features
+
+* **agents:** add oma-refactor keyword triggers and uvx metric commands ([c9a7b67](https://github.com/first-fluke/oh-my-agent/commit/c9a7b67eef1cac9c19896905ee516074c6f3b043))
+* **update:** append missing template config keys to oma-config.yaml ([424fd9e](https://github.com/first-fluke/oh-my-agent/commit/424fd9e8f7755b334caf6c195fedb64e88a71105))
+
+
+### Bug Fixes
+
+* **cli:** default migrated model preset to antigravity ([7a2c72f](https://github.com/first-fluke/oh-my-agent/commit/7a2c72fe336e81e1863ed7b82143c30b738c93d8))
+* **docs:** cut verify false positives in extract and resolve ([3f480fe](https://github.com/first-fluke/oh-my-agent/commit/3f480feece01463d1b9faf66bef9f51a2a92697e)), closes [#533](https://github.com/first-fluke/oh-my-agent/issues/533)
+
+
+### Documentation
+
+* **cli:** list coordination, refactor, and video skills in README ([4170c8d](https://github.com/first-fluke/oh-my-agent/commit/4170c8d14ce8d917e2aa5141aaf98a760a820b35))
+
 ## [9.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.0.1...cli-v9.0.2) (2026-06-12)
 
 
