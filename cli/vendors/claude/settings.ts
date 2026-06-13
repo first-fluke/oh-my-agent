@@ -3,10 +3,10 @@
  * Single source of truth — install, update, and doctor all reference this.
  */
 
+// Flag-style env vars — exact string match. env values are strings at runtime,
+// so they are written as strings (Claude Code would coerce numbers, but strings
+// avoid any parse ambiguity).
 export const RECOMMENDED_ENV = {
-  cleanupPeriodDays: 180,
-  CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-  CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
   DISABLE_ERROR_REPORTING: "1",
   CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
   CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
@@ -14,6 +14,13 @@ export const RECOMMENDED_ENV = {
   CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
   ENABLE_PROMPT_CACHING_1H: "1",
 } as const;
+
+// Numeric env tunables — stored as strings, compared "at least" so a user's
+// higher value is preserved rather than forced back down to the recommended floor.
+export const RECOMMENDED_ENV_MIN: Record<string, number> = {
+  CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
+  CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+};
 
 const DEPRECATED_ENV_KEYS = ["DISABLE_PROMPT_CACHING"] as const;
 
@@ -27,6 +34,9 @@ export type ClaudeSettingsOptions = {
 };
 
 export const RECOMMENDED_TOP_LEVEL = {
+  // `cleanupPeriodDays` is a TOP-LEVEL Claude Code setting, not an env var. It
+  // previously lived (incorrectly) under `env`, where Claude Code ignored it.
+  cleanupPeriodDays: 180,
   skipDangerousModePermissionPrompt: true,
   effortLevel: "high",
   skillListingBudgetFraction: 0.02,
@@ -77,17 +87,23 @@ export function needsClaudeSettingsUpdate(
   }
 
   for (const [key, expected] of Object.entries(RECOMMENDED_ENV)) {
-    const actual = env[key];
-    if (typeof expected === "number") {
-      if ((actual ?? 0) < expected) return true;
-    } else {
-      if (actual !== expected) return true;
-    }
+    if (env[key] !== expected) return true;
+  }
+
+  for (const [key, min] of Object.entries(RECOMMENDED_ENV_MIN)) {
+    const actual = Number(env[key]);
+    if (!Number.isFinite(actual) || actual < min) return true;
   }
 
   for (const [key, expected] of Object.entries(RECOMMENDED_TOP_LEVEL)) {
     if (key === "effortLevel") {
       if (!effortLevelMeetsRecommended(claudeSettings[key])) return true;
+      continue;
+    }
+    if (key === "cleanupPeriodDays") {
+      const actual = Number(claudeSettings[key]);
+      if (!Number.isFinite(actual) || actual < (expected as number))
+        return true;
       continue;
     }
     if (claudeSettings[key] !== expected) return true;
@@ -116,6 +132,16 @@ export function applyClaudeSettings(
   for (const key of DEPRECATED_ENV_KEYS) {
     delete env[key];
   }
+  // Migrate `cleanupPeriodDays` out of env: it is a top-level setting and was
+  // a no-op under env. Older installs may still carry it there.
+  delete env.cleanupPeriodDays;
+  // Numeric tunables: keep the larger of user-set vs recommended, as a string.
+  for (const [key, min] of Object.entries(RECOMMENDED_ENV_MIN)) {
+    const existing = Number(env[key]);
+    env[key] = String(
+      Number.isFinite(existing) ? Math.max(existing, min) : min,
+    );
+  }
   if (options.telemetry === true) {
     delete env[TELEMETRY_ENV_KEY];
   } else {
@@ -128,7 +154,12 @@ export function applyClaudeSettings(
   )
     ? claudeSettings.effortLevel
     : undefined;
+  const existingCleanup = Number(claudeSettings.cleanupPeriodDays);
+  const preservedCleanup = Number.isFinite(existingCleanup)
+    ? Math.max(existingCleanup, RECOMMENDED_TOP_LEVEL.cleanupPeriodDays)
+    : RECOMMENDED_TOP_LEVEL.cleanupPeriodDays;
   Object.assign(claudeSettings, RECOMMENDED_TOP_LEVEL);
+  claudeSettings.cleanupPeriodDays = preservedCleanup;
   if (preservedEffortLevel) {
     claudeSettings.effortLevel = preservedEffortLevel;
   }

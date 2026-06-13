@@ -5,10 +5,10 @@ describe("Claude settings", () => {
   it("treats DISABLE_PROMPT_CACHING as deprecated and requiring cleanup", () => {
     expect(
       needsClaudeSettingsUpdate({
+        cleanupPeriodDays: 180,
         env: {
-          cleanupPeriodDays: 180,
-          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
           DISABLE_TELEMETRY: "1",
           DISABLE_ERROR_REPORTING: "1",
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
@@ -29,6 +29,31 @@ describe("Claude settings", () => {
     ).toBe(true);
   });
 
+  it("flags cleanupPeriodDays nested under env (no top-level) as needing update", () => {
+    // Regression: cleanupPeriodDays is a top-level setting; under env it is a
+    // no-op and must be migrated.
+    expect(
+      needsClaudeSettingsUpdate({
+        env: {
+          cleanupPeriodDays: 180,
+          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
+          DISABLE_TELEMETRY: "1",
+          DISABLE_ERROR_REPORTING: "1",
+          CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
+          CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
+          CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
+          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
+          ENABLE_PROMPT_CACHING_1H: "1",
+        },
+        skipDangerousModePermissionPrompt: true,
+        effortLevel: "xhigh",
+        skillListingBudgetFraction: 0.02,
+        attribution: { commit: "c", pr: "p" },
+      }),
+    ).toBe(true);
+  });
+
   it("preserves effortLevel xhigh as recommended", () => {
     const settings = applyClaudeSettings({
       env: {},
@@ -41,10 +66,10 @@ describe("Claude settings", () => {
   it("does not flag xhigh effortLevel as needing update", () => {
     expect(
       needsClaudeSettingsUpdate({
+        cleanupPeriodDays: 180,
         env: {
-          cleanupPeriodDays: 180,
-          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
           DISABLE_TELEMETRY: "1",
           DISABLE_ERROR_REPORTING: "1",
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
@@ -59,6 +84,38 @@ describe("Claude settings", () => {
         attribution: { commit: "c", pr: "p" },
       }),
     ).toBe(false);
+  });
+
+  it("preserves a user's higher cleanupPeriodDays and env tunables", () => {
+    expect(
+      needsClaudeSettingsUpdate({
+        cleanupPeriodDays: 365,
+        env: {
+          CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "200000",
+          CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "90",
+          DISABLE_TELEMETRY: "1",
+          DISABLE_ERROR_REPORTING: "1",
+          CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
+          CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
+          CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
+          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
+          ENABLE_PROMPT_CACHING_1H: "1",
+        },
+        skipDangerousModePermissionPrompt: true,
+        effortLevel: "xhigh",
+        skillListingBudgetFraction: 0.02,
+        attribution: { commit: "c", pr: "p" },
+      }),
+    ).toBe(false);
+
+    const settings = applyClaudeSettings({
+      cleanupPeriodDays: 365,
+      env: { CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "200000" },
+      attribution: {},
+    });
+    expect(settings.cleanupPeriodDays).toBe(365);
+    expect(settings.env.CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS).toBe("200000");
+    expect(settings.env.cleanupPeriodDays).toBeUndefined();
   });
 
   it("downgrades invalid effortLevel values to the recommended level", () => {
@@ -95,6 +152,15 @@ describe("Claude settings", () => {
     expect(settings.attribution.commit).toContain("Generated with oh-my-agent");
   });
 
+  it("migrates a nested env.cleanupPeriodDays to the top level", () => {
+    const settings = applyClaudeSettings({
+      env: { cleanupPeriodDays: 180 },
+      attribution: {},
+    });
+    expect(settings.env.cleanupPeriodDays).toBeUndefined();
+    expect(settings.cleanupPeriodDays).toBe(180);
+  });
+
   it("sets DISABLE_TELEMETRY by default to preserve current behavior", () => {
     const settings = applyClaudeSettings({ env: {}, attribution: {} });
     expect(settings.env.DISABLE_TELEMETRY).toBe("1");
@@ -120,10 +186,10 @@ describe("Claude settings", () => {
     expect(
       needsClaudeSettingsUpdate(
         {
+          cleanupPeriodDays: 180,
           env: {
-            cleanupPeriodDays: 180,
-            CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-            CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+            CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+            CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
             DISABLE_TELEMETRY: "1",
             DISABLE_ERROR_REPORTING: "1",
             CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
@@ -146,10 +212,10 @@ describe("Claude settings", () => {
     expect(
       needsClaudeSettingsUpdate(
         {
+          cleanupPeriodDays: 180,
           env: {
-            cleanupPeriodDays: 180,
-            CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-            CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+            CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+            CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
             DISABLE_ERROR_REPORTING: "1",
             CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
             CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
@@ -186,9 +252,8 @@ describe("T2.9 rename regression — applyClaudeSettings", () => {
     const expected = {
       env: {
         SOME_USER_KEY: "keep",
-        cleanupPeriodDays: 180,
-        CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+        CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
         DISABLE_ERROR_REPORTING: "1",
         CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
         CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
@@ -202,6 +267,7 @@ describe("T2.9 rename regression — applyClaudeSettings", () => {
           "Generated with oh-my-agent\n\nCo-Authored-By: First Fluke <our.first.fluke@gmail.com>",
         pr: "Generated with [oh-my-agent](https://github.com/first-fluke/oh-my-agent)",
       },
+      cleanupPeriodDays: 180,
       skipDangerousModePermissionPrompt: true,
       effortLevel: "high",
       skillListingBudgetFraction: 0.02,
@@ -213,10 +279,10 @@ describe("T2.9 rename regression — applyClaudeSettings", () => {
   it("needsClaudeSettingsUpdate returns false for the recommended-state fixture (needsClaudeSettingsUpdate)", () => {
     // Locks output for the targetDir → installRoot rename (plan T2.9).
     const upToDate = {
+      cleanupPeriodDays: 180,
       env: {
-        cleanupPeriodDays: 180,
-        CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: 100000,
-        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: 80,
+        CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS: "100000",
+        CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "80",
         DISABLE_TELEMETRY: "1",
         DISABLE_ERROR_REPORTING: "1",
         CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
