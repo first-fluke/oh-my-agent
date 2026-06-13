@@ -11,7 +11,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1079)
+## Current (1082)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -129,6 +129,7 @@ summaries to spot which persona is churning.
 - @Bo-growing — 2026-04-15
 - @bob-kkn — 2026-04-17
 - @bogdanliusik — 2026-04-12
+- @Bonggoo — 2026-06-12
 - @Bounasissi — 2026-05-03
 - @boysbelegend — 2026-03-18
 - @br8km — 2026-03-25
@@ -700,6 +701,7 @@ summaries to spot which persona is churning.
 - @moongchichi — 2026-04-19
 - @Mr-Process — 2026-05-17
 - @mridhoda — 2026-03-07
+- @mrind3v — 2026-06-12
 - @Mrshulan — 2026-06-09
 - @mschueler — 2026-05-06
 - @MSVICKI8310 — 2026-03-20
@@ -755,6 +757,7 @@ summaries to spot which persona is churning.
 - @oiloilo44 — 2026-04-30
 - @OKEunsu — 2026-04-19
 - @OldCoderIsMe — 2026-04-22
+- @onepisYa — 2026-06-12
 - @opita04 — 2026-03-02
 - @orakle — 2026-05-09
 - @orangec-at — 2026-02-03
