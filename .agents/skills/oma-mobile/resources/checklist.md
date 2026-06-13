@@ -43,5 +43,6 @@ Run through every item before submitting your work.
 - [ ] SwiftUI state via `@Observable` (Observation framework); `Task`s cancelled in `deinit` to avoid leaks
 - [ ] Loading / error (with retry) / empty / data states handled in views
 - [ ] iOS Human Interface Guidelines followed
+- [ ] Push routes registered via a `swipeBackDestination` wrapper (not bare `navigationDestination`), so nav-bar-hidden screens keep edge swipe-back; guarded pops (unsaved edits) override explicitly — see `variants/swift-ios/snippets.md` §9
 - [ ] `swift build` succeeds (runs the generator plugin) and `swift test` passes
 - [ ] XCTest/XCUITest coverage for critical flows

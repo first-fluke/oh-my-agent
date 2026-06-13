@@ -127,6 +127,7 @@ Then run the project's mobile verification commands, typically unit/widget tests
 10. Swift native: follow `App/Core/Features/Shared` project layout
 11. Swift native: iOS Human Interface Guidelines for all UI decisions
 12. Swift native: XCTest/XCUITest for critical flows; cancel `Task` in `deinit` to prevent leaks
+13. Swift native: restore edge swipe-back at the route layer — nav-bar-hidden screens (`.toolbar(.hidden, for: .navigationBar)`) lose it, so register push routes via a `swipeBackDestination` wrapper, not per-screen (see `variants/swift-ios/snippets.md` §9)
 
 ## References
 Follow `resources/execution-protocol.md` step by step.

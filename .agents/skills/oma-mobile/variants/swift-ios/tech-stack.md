@@ -108,3 +108,17 @@ Backend REST API
 ```
 
 Each `Features/<Name>/` folder is a vertical slice: it owns its own `View` + `ViewModel` and depends only on `Core` services injected at app startup. `Shared/` contains stateless, reusable UI components and Swift extensions with no feature knowledge.
+
+## Navigation: NavigationStack + swipe-back
+
+Path-based `NavigationStack(path:)` with typed routes registered via
+`navigationDestination`. Swipe-back is a **navigation-layer** concern, not a
+per-screen one.
+
+Apps that hide the nav bar for custom headers (`.toolbar(.hidden, for: .navigationBar)`)
+lose the system edge swipe-back, because UIKit ties `interactivePopGestureRecognizer`
+to the system back button and re-disables it on every nav-bar-hidden transition.
+Restore it at the **route-registration layer** with a `swipeBackDestination`
+wrapper (see `snippets.md` §9) so every pushed route keeps the gesture and tab
+roots are excluded for free. Never restore it ad-hoc per `View` body — that drifts
+silently because forgetting it still compiles.

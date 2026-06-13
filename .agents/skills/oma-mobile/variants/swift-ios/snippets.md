@@ -411,3 +411,104 @@ final class TodosViewModelTests: XCTestCase {
     }
 }
 ```
+
+## 9. Navigation: interactive swipe-back on nav-bar-hidden routes
+
+**Root cause.** `NavigationStack` is backed by UIKit's `UINavigationController`, and
+the edge swipe-back is its `interactivePopGestureRecognizer`. UIKit ties that
+recognizer to the system back button, so any screen that hides the nav bar
+(`.toolbar(.hidden, for: .navigationBar)` — common with custom headers) loses the
+swipe gesture, and UIKit re-disables it every time such a screen becomes top.
+
+**Standard.** Swipe-back restoration is a navigation-layer concern, so restore it
+once at the **route-registration layer** (`navigationDestination`), not per screen.
+Pushed destinations always have something to pop to; tab roots aren't
+`navigationDestination`s, so they're correctly excluded for free.
+
+```swift
+// Shared/InteractiveSwipeBack.swift
+import SwiftUI
+import UIKit
+
+/// Reaches the enclosing UINavigationController, takes over the pop recognizer's
+/// delegate, and re-enables the edge swipe — scoped to the screen that asks for
+/// it (re-runs on every appear because UIKit re-disables it on nav-bar-hidden
+/// transitions). `canPop`/`onBlocked` guard the pop (e.g. confirm unsaved edits).
+private struct InteractiveSwipeBack: UIViewControllerRepresentable {
+    var canPop: () -> Bool
+    var onBlocked: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        Controller(canPop: canPop, onBlocked: onBlocked)
+    }
+    func updateUIViewController(_ vc: UIViewController, context: Context) {
+        guard let c = vc as? Controller else { return }
+        c.canPop = canPop; c.onBlocked = onBlocked
+    }
+
+    final class Controller: UIViewController, UIGestureRecognizerDelegate {
+        var canPop: () -> Bool
+        var onBlocked: () -> Void
+        init(canPop: @escaping () -> Bool, onBlocked: @escaping () -> Void) {
+            self.canPop = canPop; self.onBlocked = onBlocked
+            super.init(nibName: nil, bundle: nil)
+        }
+        @available(*, unavailable) required init?(coder: NSCoder) { fatalError() }
+
+        override func didMove(toParent parent: UIViewController?) {
+            super.didMove(toParent: parent)
+            guard let r = navigationController?.interactivePopGestureRecognizer else { return }
+            r.delegate = self
+            r.isEnabled = true
+        }
+        func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
+            guard (navigationController?.viewControllers.count ?? 0) > 1 else { return false }
+            if canPop() { return true }
+            onBlocked(); return false
+        }
+    }
+}
+
+extension View {
+    /// Restore edge swipe-back on a nav-bar-hidden screen.
+    func enableInteractiveSwipeBack() -> some View {
+        background(InteractiveSwipeBack(canPop: { true }, onBlocked: {}).frame(width: 0, height: 0))
+    }
+    /// Guarded variant: swallow the swipe and run `onBlocked` when `canPop` is false.
+    func interactiveSwipeBack(
+        canPop: @escaping () -> Bool,
+        onBlocked: @escaping () -> Void
+    ) -> some View {
+        background(InteractiveSwipeBack(canPop: canPop, onBlocked: onBlocked).frame(width: 0, height: 0))
+    }
+
+    /// PREFERRED registration: every pushed route gets swipe-back automatically.
+    /// Use this instead of bare `navigationDestination(for:)` for push routes.
+    func swipeBackDestination<D: Hashable, C: View>(
+        for type: D.Type,
+        @ViewBuilder destination: @escaping (D) -> C
+    ) -> some View {
+        navigationDestination(for: type) { value in
+            destination(value).enableInteractiveSwipeBack()
+        }
+    }
+}
+```
+
+```swift
+// Usage — register routes through the wrapper, not bare navigationDestination:
+NavigationStack(path: $router.path) {
+    RootView()
+        .swipeBackDestination(for: ProgramID.self) { ProgramDetailView(id: $0) }
+        .swipeBackDestination(for: SettingsRoute.self) { _ in SettingsView() }
+}
+
+// Only screens with a custom pop policy override explicitly:
+NewPostView()
+    .interactiveSwipeBack(canPop: { viewModel.isSaved }, onBlocked: { showDiscardConfirm = true })
+```
+
+> Anti-pattern: sprinkling `.enableInteractiveSwipeBack()` on each `View` body. It
+> compiles even when forgotten, so nav-bar-hidden routes silently lose the gesture.
+> Enforce at the route layer; optionally add a SwiftLint rule that flags
+> `.toolbar(.hidden, for: .navigationBar)` without a swipe-back modifier.
