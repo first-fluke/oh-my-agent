@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.13.0...web-v3.13.1) (2026-06-13)
+
+
+### Documentation
+
+* sync README and web/docs with actual CLI and skill/workflow surface ([5de4fc3](https://github.com/first-fluke/oh-my-agent/commit/5de4fc3ea700b17c92f7ba6bfa8861c943ec9a71))
+
 ## [3.13.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.12.0...web-v3.13.0) (2026-06-12)
 
 
