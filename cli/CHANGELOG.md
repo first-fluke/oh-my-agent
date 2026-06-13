@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.3.0...cli-v9.3.1) (2026-06-13)
+
+
+### Documentation
+
+* **i18n:** add /deepinit and /ralph rows to translated READMEs ([cbe1313](https://github.com/first-fluke/oh-my-agent/commit/cbe1313b6e8d22006d2752174449f4f185e79c8e))
+* sync README and web/docs with actual CLI and skill/workflow surface ([5de4fc3](https://github.com/first-fluke/oh-my-agent/commit/5de4fc3ea700b17c92f7ba6bfa8861c943ec9a71))
+
 ## [9.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.2.0...cli-v9.3.0) (2026-06-13)
 
 
