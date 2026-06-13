@@ -137,7 +137,7 @@ describe("OmaConfig TypeScript interface", () => {
   it("accepts agents override map as partial record (object shape)", () => {
     const config: OmaConfig = {
       language: "en",
-      model_preset: "gemini",
+      model_preset: "antigravity",
       agents: {
         backend: { model: "openai/gpt-5.4", effort: "high" },
       },

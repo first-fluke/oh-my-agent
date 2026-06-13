@@ -76,7 +76,7 @@ describe("loadUserConfig", () => {
   const legacyCases: Array<[string, string]> = [
     ["claude-only", "claude"],
     ["codex-only", "codex"],
-    ["gemini-only", "gemini"],
+    ["gemini-only", "antigravity"],
     ["qwen-only", "qwen"],
     ["cursor-only", "cursor"],
   ];

@@ -18,7 +18,8 @@ const PI_RUNNABLE_PROVIDERS = new Set(["anthropic", "openai", "google"]);
  *
  * Throws ConfigError when the model's owner is not a provider pi proxies to —
  * pi transport is only meaningful with real-provider presets (claude / codex /
- * gemini / mixed), not CLI-proprietary ones (cursor / kiro / qwen / antigravity).
+ * mixed) and google-owned model slugs, not CLI-proprietary owners (cursor /
+ * kiro / qwen / antigravity).
  *
  * TODO(oma-deferred): pi's catalog is release-tracked and auth-gated; verify
  * unresolved slugs at runtime via `pi --list-models` (see doctor probe).
@@ -38,7 +39,7 @@ export function toPiModel(slug: string): string {
   throw new ConfigError(
     `Model "${slug}" cannot be dispatched via pi: "${provider}" is a CLI-proprietary ` +
       `owner, not an LLM provider pi proxies to. Use a real-provider preset ` +
-      `(claude, codex, gemini, or mixed) when dispatching agents through pi.`,
+      `(claude, codex, or mixed) when dispatching agents through pi.`,
   );
 }
 

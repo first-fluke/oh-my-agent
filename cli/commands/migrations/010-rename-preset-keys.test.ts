@@ -61,7 +61,7 @@ describe("migration 010 — rename-preset-keys", () => {
   const renameCases: Array<[string, string]> = [
     ["claude-only", "claude"],
     ["codex-only", "codex"],
-    ["gemini-only", "gemini"],
+    ["gemini-only", "antigravity"],
     ["qwen-only", "qwen"],
     ["cursor-only", "cursor"],
   ];
@@ -139,7 +139,7 @@ describe("migration 010 — rename-preset-keys", () => {
 
     const after = readOmaConfig(root);
     expect(after).toContain("# header comment");
-    expect(after).toContain("model_preset: gemini  # legacy");
+    expect(after).toContain("model_preset: antigravity  # legacy");
     expect(after).toContain("agents:");
     expect(after).toContain("model: openai/gpt-5.5");
   });
@@ -153,7 +153,7 @@ describe("migration 010 — rename-preset-keys", () => {
 
     const first = migrateRenamePresetKeys.up(root);
     expect(first.length).toBeGreaterThan(0);
-    expect(readOmaConfig(root)).toContain("model_preset: gemini");
+    expect(readOmaConfig(root)).toContain("model_preset: antigravity");
 
     // remove backup so we can detect whether a second run creates a new one
     rmSync(backupPath(root));

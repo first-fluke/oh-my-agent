@@ -36,7 +36,9 @@ export type LegacyDefaultsYaml = {
 const OWNER_TO_VENDOR: Record<string, BuiltInPresetKey> = {
   anthropic: "claude",
   openai: "codex",
-  google: "gemini",
+  // The standalone gemini preset was removed; google-owned models map to
+  // antigravity (Google's successor CLI) for preset-frequency resolution.
+  google: "antigravity",
   qwen: "qwen",
 };
 
@@ -52,7 +54,8 @@ export function vendorToPresetKey(vendor: string): BuiltInPresetKey | null {
       return "codex";
     case "gemini":
     case "gemini-only":
-      return "gemini";
+      // standalone gemini preset removed → map to its successor, antigravity
+      return "antigravity";
     case "qwen":
     case "qwen-only":
       return "qwen";

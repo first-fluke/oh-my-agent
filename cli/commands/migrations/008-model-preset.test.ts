@@ -8,7 +8,7 @@
 // Coverage (≥ 12 fixtures):
 //  1.  Single-vendor claude    → model_preset: claude, no agents block
 //  2.  Single-vendor codex     → model_preset: codex, no agents block
-//  3.  Single-vendor gemini    → model_preset: gemini, no agents block
+//  3.  Single-vendor gemini    → model_preset: antigravity (gemini preset retired)
 //  4.  Single-vendor qwen      → model_preset: qwen, no agents block
 //  5.  Single-vendor mixed → model_preset: mixed, no agents block
 //  6.  Mixed-vendor (claude dominant) → preset=claude, non-dominant → agents
@@ -152,9 +152,10 @@ describe("migration 008 — model_preset", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Fixture 3: single-vendor gemini
+  // Fixture 3: single-vendor gemini → antigravity (standalone gemini preset
+  // was removed; google-owned agents resolve to its successor, antigravity).
   // -------------------------------------------------------------------------
-  it("(3) single-vendor gemini → model_preset: gemini", () => {
+  it("(3) single-vendor gemini → model_preset: antigravity", () => {
     const root = makeTempRoot();
     tempRoots.push(root);
     scaffoldAgentsDir(root);
@@ -173,7 +174,7 @@ describe("migration 008 — model_preset", () => {
     runMigration(root);
 
     const config = readOmaConfig(root);
-    expect(config.model_preset).toBe("gemini");
+    expect(config.model_preset).toBe("antigravity");
     expect(config.language).toBe("ko");
   });
 
@@ -305,22 +306,22 @@ describe("migration 008 — model_preset", () => {
 
     writeOmaConfig(
       root,
-      `${["language: en", "agent_cli_mapping:", "  orchestrator: gemini"].join(
+      `${["language: en", "agent_cli_mapping:", "  orchestrator: claude"].join(
         "\n",
       )}\n`,
     );
 
-    // Write a customized defaults.yaml that differs from built-in presets
+    // Write a customized defaults.yaml whose claude profile differs from the
+    // built-in claude preset (orchestrator opus instead of sonnet).
     writeDefaults(
       root,
       `${[
         "version: 2.1.0",
         "runtime_profiles:",
-        "  gemini:",
+        "  claude:",
         "    agent_defaults:",
         "      orchestrator:",
-        "        model: google/gemini-3.1-pro-preview",
-        "        thinking: true",
+        "        model: anthropic/claude-opus-4-7",
       ].join("\n")}\n`,
     );
 

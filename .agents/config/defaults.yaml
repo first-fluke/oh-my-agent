@@ -55,21 +55,6 @@ runtime_profiles:
       tf-infra:      { model: "openai/gpt-5.5", effort: "high" }
       explore:       { model: "openai/gpt-5.4-mini", effort: "low" }
 
-  gemini:
-    description: "Gemini — Google AI Pro"
-    agent_defaults:
-      orchestrator:  { model: "google/gemini-3-flash" }
-      architecture:  { model: "google/gemini-3.1-pro-preview", thinking: true }
-      qa:            { model: "google/gemini-3-flash", thinking: true }
-      pm:            { model: "google/gemini-3-flash" }
-      backend:       { model: "google/gemini-3-flash", thinking: true }
-      frontend:      { model: "google/gemini-3-flash", thinking: true }
-      mobile:        { model: "google/gemini-3-flash", thinking: true }
-      db:            { model: "google/gemini-3-flash", thinking: true }
-      debug:         { model: "google/gemini-3-flash", thinking: true }
-      tf-infra:      { model: "google/gemini-3-flash", thinking: true }
-      explore:       { model: "google/gemini-3.1-flash-lite" }
-
   mixed:
     description: "Mixed — role-optimal vendors per agent (Claude for orchestration/QA/PM, Codex for impl, Gemini for explore)"
     agent_defaults:

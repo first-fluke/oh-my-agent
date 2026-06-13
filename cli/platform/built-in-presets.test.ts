@@ -16,7 +16,6 @@ const EXPECTED_PRESET_KEYS = [
   "antigravity",
   "claude",
   "codex",
-  "gemini",
   "qwen",
   "cursor",
   "kiro",

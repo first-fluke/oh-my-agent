@@ -43,6 +43,12 @@ export function usesGeminiCli(
 
   const rawPreset = config.model_preset;
   if (rawPreset) {
+    // The standalone gemini preset was removed and now soft-redirects to
+    // antigravity via BUILT_IN_PRESET_ALIASES. A config that still literally
+    // names it should keep getting the deprecation nudge to make the switch
+    // explicit, so detect the legacy names before alias resolution.
+    if (rawPreset === "gemini" || rawPreset === "gemini-only") return true;
+
     const resolvedKey = BUILT_IN_PRESET_ALIASES[rawPreset] ?? rawPreset;
     const builtIn = BUILT_IN_PRESETS[resolvedKey as BuiltInPresetKey];
     if (builtIn && presetTargetsGemini(builtIn, userModels)) return true;

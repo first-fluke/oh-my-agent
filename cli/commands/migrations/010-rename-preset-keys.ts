@@ -4,7 +4,7 @@
  * Maps:
  *   claude-only  → claude
  *   codex-only   → codex
- *   gemini-only  → gemini
+ *   gemini-only  → antigravity
  *   qwen-only    → qwen
  *   cursor-only  → cursor
  *
@@ -33,7 +33,7 @@ import type { Migration } from "./index.js";
 const LEGACY_TO_CANONICAL: Record<string, string> = {
   "claude-only": "claude",
   "codex-only": "codex",
-  "gemini-only": "gemini",
+  "gemini-only": "antigravity",
   "qwen-only": "qwen",
   "cursor-only": "cursor",
 };

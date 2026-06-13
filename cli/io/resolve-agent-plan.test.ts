@@ -55,10 +55,19 @@ const CLAUDE_ONLY_CONFIG = {
   model_preset: "claude",
 } as const;
 
-/** Minimal config using gemini preset */
+/**
+ * Config that dispatches every relevant agent to the gemini CLI via google/*
+ * agent overrides. The standalone `gemini` preset was removed, but the gemini
+ * vendor/CLI path is retained — exercise it through overrides on a base preset.
+ */
 const GEMINI_ONLY_CONFIG = {
   language: "en",
-  model_preset: "gemini",
+  model_preset: "claude",
+  agents: {
+    orchestrator: { model: "google/gemini-3-flash" },
+    backend: { model: "google/gemini-3-flash", thinking: true },
+    explore: { model: "google/gemini-3.1-flash-lite" },
+  },
 } as const;
 
 /** Minimal config using qwen preset */

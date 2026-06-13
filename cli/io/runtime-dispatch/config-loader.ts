@@ -18,11 +18,15 @@ const LEGACY_PRESET_KEYS = new Set([
   "cursor-only",
 ]);
 
-/** Maps legacy key → canonical replacement. */
+/**
+ * Maps legacy key → canonical replacement.
+ * `gemini-only` retires to `antigravity` (the standalone gemini preset was
+ * removed; antigravity is Google's successor CLI).
+ */
 const LEGACY_TO_CANONICAL: Record<string, string> = {
   "claude-only": "claude",
   "codex-only": "codex",
-  "gemini-only": "gemini",
+  "gemini-only": "antigravity",
   "qwen-only": "qwen",
   "cursor-only": "cursor",
 };

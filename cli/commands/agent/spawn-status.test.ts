@@ -195,12 +195,12 @@ describe("agent/spawn-status.ts", () => {
   });
 
   it("model_preset agent_defaults take precedence over default_cli", async () => {
-    // model_preset=gemini; default_cli=codex; backend has no agents override.
-    // resolveVendor must resolve through the preset (gemini), not fall back to
+    // model_preset=claude; default_cli=codex; backend has no agents override.
+    // resolveVendor must resolve through the preset (claude), not fall back to
     // default_cli (codex). default_cli is now a non-agent-context global hint only.
     const OMA_CONFIG_YAML = [
       "language: en",
-      "model_preset: gemini",
+      "model_preset: claude",
       "default_cli: codex",
     ].join("\n");
 
@@ -237,7 +237,7 @@ describe("agent/spawn-status.ts", () => {
     );
 
     expect(child_process.spawn).toHaveBeenCalledWith(
-      "gemini",
+      "claude",
       expect.arrayContaining([
         "-p",
         expect.stringContaining("implement feature"),

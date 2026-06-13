@@ -71,24 +71,6 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
     },
   },
 
-  gemini: {
-    description: "Gemini — Google AI Pro",
-    agent_defaults: {
-      orchestrator: { model: "google/gemini-3-flash" },
-      architecture: { model: "google/gemini-3.1-pro-preview", thinking: true },
-      qa: { model: "google/gemini-3-flash", thinking: true },
-      pm: { model: "google/gemini-3-flash" },
-      backend: { model: "google/gemini-3-flash", thinking: true },
-      frontend: { model: "google/gemini-3-flash", thinking: true },
-      mobile: { model: "google/gemini-3-flash", thinking: true },
-      db: { model: "google/gemini-3-flash", thinking: true },
-      debug: { model: "google/gemini-3-flash", thinking: true },
-      docs: { model: "google/gemini-3-flash" },
-      "tf-infra": { model: "google/gemini-3-flash", thinking: true },
-      explore: { model: "google/gemini-3.1-flash-lite" },
-    },
-  },
-
   qwen: {
     description:
       "Qwen Code — all agents routed external (no native parallel); Qwen has no --effort, only binary --thinking",
@@ -169,12 +151,16 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
 // Aliases — redirect legacy "-only" preset keys to canonical names.
 // `antigravity` is no longer aliased: it is now a first-class preset that
 // targets the agy CLI directly (see BUILT_IN_PRESETS above).
+//
+// The standalone `gemini` preset was removed (Gemini CLI deprecation, see
+// gemini-deprecation.ts). Existing `model_preset: gemini` configs soft-redirect
+// to `antigravity` — Google's designated successor CLI — so they keep resolving.
 // ---------------------------------------------------------------------------
 
 export const BUILT_IN_PRESET_ALIASES: Record<string, BuiltInPresetKey> = {
   "claude-only": "claude",
   "codex-only": "codex",
-  "gemini-only": "gemini",
+  gemini: "antigravity",
   "qwen-only": "qwen",
   "cursor-only": "cursor",
 };

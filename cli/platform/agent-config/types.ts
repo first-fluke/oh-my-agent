@@ -19,14 +19,13 @@ export type AgentId =
   | "explore";
 
 // ---------------------------------------------------------------------------
-// BuiltInPresetKey — the 6 shipped presets
+// BuiltInPresetKey — the shipped presets
 // ---------------------------------------------------------------------------
 
 export type BuiltInPresetKey =
   | "antigravity"
   | "claude"
   | "codex"
-  | "gemini"
   | "cursor"
   | "kiro"
   | "qwen"
