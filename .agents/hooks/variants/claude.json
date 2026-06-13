@@ -9,19 +9,19 @@
     "UserPromptSubmit": [
       {
         "hook": "keyword-detector.ts",
-        "timeout": 5
+        "timeout": 2
       },
       {
         "hook": "state-boundary.ts",
-        "timeout": 5
+        "timeout": 4
       },
       {
         "hook": "skill-injector.ts",
-        "timeout": 3
+        "timeout": 2
       },
       {
         "hook": "serena-primer.ts",
-        "timeout": 3
+        "timeout": 2
       }
     ],
     "PreToolUse": {
