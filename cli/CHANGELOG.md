@@ -1,5 +1,27 @@
 # Changelog
 
+## [9.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.1.1...cli-v9.2.0) (2026-06-13)
+
+
+### Features
+
+* **hooks:** add age-based TTL to AgentMemory recall ([99012bd](https://github.com/first-fluke/oh-my-agent/commit/99012bde3fa3b0adecb8d4a9eef6302ebce4c57e))
+
+
+### Bug Fixes
+
+* **settings:** move cleanupPeriodDays to top level, stringify env tunables ([fdebf5c](https://github.com/first-fluke/oh-my-agent/commit/fdebf5c325eeab0c376ccc3495dc96ec95529636))
+
+
+### Performance
+
+* **hooks:** tighten UserPromptSubmit handler timeouts ([9f20466](https://github.com/first-fluke/oh-my-agent/commit/9f204665753e4137101ac242b48e8c8725449dc9))
+
+
+### Refactoring
+
+* **rules:** sort index deterministically, split ARB into scoped rule ([7261c42](https://github.com/first-fluke/oh-my-agent/commit/7261c423f41b68bd34c8b6bc453eb7aacf250ff4))
+
 ## [9.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.1.0...cli-v9.1.1) (2026-06-12)
 
 
