@@ -1,5 +1,23 @@
 # Changelog
 
+## [9.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.2.0...cli-v9.3.0) (2026-06-13)
+
+
+### Features
+
+* **memory:** add memory:gc to prune project-local L1 + Serena state ([6190f80](https://github.com/first-fluke/oh-my-agent/commit/6190f80ade7ef34740981e89d285ce76b04f786d))
+
+
+### Refactoring
+
+* **commands:** flatten nested same-name dirs and files ([354b732](https://github.com/first-fluke/oh-my-agent/commit/354b732bfd369a78a6dd4e7e3278b68d7facc0b1))
+* **config:** drop standalone gemini preset, redirect to antigravity ([84968cf](https://github.com/first-fluke/oh-my-agent/commit/84968cff10d06440966bef869df5e2914a0196cc))
+
+
+### Documentation
+
+* **mobile:** standardize route-layer swipe-back for nav-bar-hidden screens ([6b275e2](https://github.com/first-fluke/oh-my-agent/commit/6b275e2ed38895ad66105bd98335798c7778e7ea))
+
 ## [9.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.1.1...cli-v9.2.0) (2026-06-13)
 
 
