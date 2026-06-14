@@ -13,11 +13,31 @@
     },
     "framework": {
       "type": "string",
-      "description": "Primary UI framework (e.g., swiftui, uikit)."
+      "description": "Primary UI framework (e.g., swiftui, flutter, react-native)."
     },
     "ui": {
       "type": "string",
-      "description": "UI toolkit or paradigm (e.g., swiftui, uikit)."
+      "description": "UI toolkit or paradigm (e.g., swiftui, material3, react-native)."
+    },
+    "state": {
+      "type": "string",
+      "description": "State-management approach (e.g., observation, riverpod, zustand)."
+    },
+    "navigation": {
+      "type": "string",
+      "description": "Navigation/router library (e.g., navigationstack, gorouter, react-navigation)."
+    },
+    "http_client": {
+      "type": "string",
+      "description": "HTTP transport client (e.g., urlsession, dio, axios)."
+    },
+    "data_fetching": {
+      "type": "string",
+      "description": "Server-state / data-fetching layer where distinct from the raw HTTP client (e.g., tanstack-query)."
+    },
+    "local_storage": {
+      "type": "string",
+      "description": "Durable on-device persistence (e.g., swiftdata, drift, mmkv)."
     },
     "api_generator": {
       "type": "string",
@@ -26,6 +46,10 @@
     "api_spec": {
       "type": "string",
       "description": "Relative path to the OpenAPI document consumed by the generator (e.g., Core/Networking/openapi.yaml)."
+    },
+    "response_cache": {
+      "type": "string",
+      "description": "Repository-layer response cache library used to memoize decoded API models (e.g., hyperoslo-cache)."
     },
     "structure": {
       "type": "string",

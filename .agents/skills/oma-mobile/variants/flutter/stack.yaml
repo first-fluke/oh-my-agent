@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../stack.schema.json
+language: flutter
+framework: flutter
+ui: material3
+state: riverpod
+navigation: gorouter
+http_client: dio
+local_storage: drift
+response_cache: drift-offline-repo
+structure: lib/core/features/shared
+source: variant
+
+verify:
+  detect: pubspec.yaml
+  syntax:
+    cmd: "dart analyze"
+    skip_if_missing: dart
+  tests:
+    cmd: "flutter test"
+    pass_signal: "All tests passed"
+    skip_if_missing: flutter

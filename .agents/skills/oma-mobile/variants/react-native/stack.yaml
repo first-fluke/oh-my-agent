@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=../stack.schema.json
+language: react-native
+framework: react-native
+ui: react-native
+state: zustand
+navigation: react-navigation
+http_client: axios
+data_fetching: tanstack-query
+local_storage: mmkv
+response_cache: tanstack-query
+structure: src/api,src/features/<feature>/{model,ui},src/shared,src/navigation,src/store
+source: variant
+
+verify:
+  detect: package.json
+  syntax:
+    cmd: "npx tsc --noEmit"
+    skip_if_missing: npx
+  tests:
+    cmd: "npx jest --ci"
+    pass_signal: "Tests:"
+    skip_if_missing: npx

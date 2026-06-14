@@ -1,78 +1,67 @@
-# Mobile Agent - Tech Stack Reference
+# Mobile Agent - Tech Stack Index
 
-## Flutter (Recommended)
-- **Framework**: Flutter 3.19+
-- **Language**: Dart 3.3+
-- **State**: Riverpod 2.4+, Bloc, Provider
-- **Navigation**: GoRouter 13+
-- **API Client**: Dio
-- **Local Storage**: Drift, Hive
-- **Testing**: flutter_test, mockito
-- **E2E Testing**: Maestro
+Per-platform tech stacks live under `variants/{platform}/`, mirroring
+`oma-backend/variants/`. Each variant owns its own `stack.yaml` (SSOT),
+`tech-stack.md`, `snippets.md`, and API template. This file holds only the
+**cross-platform guidance** shared by every variant plus a pointer index.
 
-## React Native (Alternative)
-- **Framework**: React Native 0.73+
-- **Language**: TypeScript
-- **State**: Redux Toolkit, Zustand
-- **Navigation**: React Navigation 6+
-- **Testing**: Jest, React Native Testing Library
-- **E2E Testing**: Maestro
+## Platform Variants
 
-## Project Structure (Flutter)
+| Platform | Stack manifest | Tech stack | Snippets | API template |
+|----------|----------------|-----------|----------|--------------|
+| Swift (iOS native) | `../variants/swift-ios/stack.yaml` | `../variants/swift-ios/tech-stack.md` | `../variants/swift-ios/snippets.md` | `../variants/swift-ios/api-template.swift` |
+| Flutter | `../variants/flutter/stack.yaml` | `../variants/flutter/tech-stack.md` | `../variants/flutter/snippets.md` | `../variants/flutter/api-template.dart` |
+| React Native | `../variants/react-native/stack.yaml` | `../variants/react-native/tech-stack.md` | `../variants/react-native/snippets.md` | `../variants/react-native/api-template.ts` |
 
-```
-lib/
-  main.dart
-  core/              # Theme, router, utils
-  features/
-    [feature]/
-      data/          # Models, repositories
-      domain/        # Entities, use cases
-      presentation/  # Screens, widgets, providers
-  shared/            # Shared widgets
-```
+Stack selection: detect from project files (`Package.swift` / `pubspec.yaml` /
+`package.json` + `react-native`), or run `/stack-set` to generate a
+project-specific `stack/` from the matching variant baseline. The variant
+`stack.yaml` is the default; `/stack-set` may override any field per project.
 
-## Architecture Pattern
+## Stack at a glance
 
-Clean Architecture with Riverpod:
-1. Entity (Domain) - Pure business objects
-2. Repository Interface (Domain) - Abstract data access
-3. Repository Implementation (Data) - Dio, database
-4. Providers (Presentation) - State management
-5. Screens/Widgets (Presentation) - UI
+| | Swift iOS | Flutter | React Native |
+|---|---|---|---|
+| Language | Swift 5.9+ / Swift 6 | Dart 3.3+ | TypeScript (strict) |
+| UI | SwiftUI | Flutter / Material 3 | React Native |
+| State | Observation (`@Observable`) | Riverpod | Zustand |
+| Navigation | NavigationStack | GoRouter | React Navigation v6 |
+| HTTP transport | URLSession | Dio | Axios |
+| API/data layer | swift-openapi-generator | Repository (Dio) | TanStack Query + `api/` |
+| Response cache (mandatory, repo layer) | hyperoslo/Cache | Drift offline-first repo | TanStack Query |
+| Durable storage | SwiftData / Keychain | Drift / flutter_secure_storage | MMKV / secure-store |
+| Unit test | XCTest / Swift Testing | flutter_test + mocktail | jest + RNTL |
+| E2E | XCUITest | Maestro | Maestro |
 
-## Platform Guidelines
-- Material Design 3 for Android
-- iOS Human Interface Guidelines for iOS
-- Use `Platform.isIOS` for platform-specific code
+## Mandatory: repository-layer response cache
 
-## Swift (iOS Native)
+Every variant **mandates a response cache at the Repository / data layer** — the
+same philosophy across platforms, different idiomatic tooling:
 
-- **Language**: Swift 5.9+ (Swift 6 compatible)
-- **UI Framework**: SwiftUI
-- **State Management**: Observation framework (`@Observable`, iOS 17+)
-- **API Client**: `swift-openapi-generator` (SwiftPM build plugin) + `swift-openapi-runtime` + `swift-openapi-urlsession`
-- **Concurrency**: async/await, structured concurrency
-- **Local Storage**: SwiftData, UserDefaults, Keychain
-- **Testing**: XCTest, XCUITest
+- Cache **decoded domain models**, never raw transport bytes / `HTTPBody` /
+  raw HTTP responses.
+- **Stale-while-revalidate** on reads: serve cached immediately, revalidate in
+  the background, update state.
+- **Invalidate on write**: every create/update/delete drops the affected cache
+  keys so the next read repopulates.
+- Cache key = operation + params (never URLs); explicit TTL (never infinite).
+- The cache is for transient, server-owned data only. Durable user-owned data
+  and secrets stay in the platform's durable store / secure store.
 
-Full reference: `../variants/swift-ios/tech-stack.md`
+See each variant's `tech-stack.md` "Response Cache" section and `snippets.md`
+for the platform-specific implementation.
 
-### Project Layout (App / Core / Features / Shared)
+## Cross-platform guidelines (shared)
 
-```
-Sources/
-  App/          # @main entry, composition root, DI wiring
-  Core/
-    Networking/ # openapi.yaml, generated Client, transport, auth middleware
-    Services/   # AuthService, TokenStore, etc.
-  Features/     # Vertical slices — one folder per feature (View + @Observable ViewModel)
-  Shared/       # Reusable UI components, extensions, utilities
-Tests/
-```
-
-### Architecture Pattern
-
-```
-View (SwiftUI)  ->  @Observable ViewModel  ->  Core Service  ->  Generated Client  ->  Backend
-```
+- **Clean Architecture**: domain → data → presentation (or App/Core/Features/Shared
+  on Swift). Business logic never lives in UI widgets/views.
+- **Platform design**: Material Design 3 on Android, iOS Human Interface
+  Guidelines on iOS. Use platform checks for platform-specific behavior.
+- **State management**: no raw `setState`/ad-hoc state for complex logic — use
+  the variant's state solution.
+- **Networking**: transport-layer interceptors handle auth/retry/logging only;
+  domain-model caching is a repository concern (see above). Handle offline
+  gracefully.
+- **Lifecycle**: dispose controllers / cancel tasks to prevent leaks.
+- **Performance**: 60fps target; test on both platforms.
+- **E2E**: Maestro for critical user flows.

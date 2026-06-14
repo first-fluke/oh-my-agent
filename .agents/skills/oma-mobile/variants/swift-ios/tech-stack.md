@@ -32,9 +32,40 @@ The OpenAPI document is **vendored** at `Core/Networking/openapi.yaml`. Its sour
 
 The iOS project is purely a **consumer** of the spec. It never modifies `openapi.yaml` directly. If the spec is missing, `swift build` fails with a generator error — ensure the sync step is complete before building.
 
+## Response Cache: hyperoslo/Cache
+
+| Component | Package |
+|-----------|---------|
+| Hybrid (memory + disk) cache | `hyperoslo/Cache` |
+
+Read-through caching of API responses is **mandatory at the Repository (Service) layer**, backed by `hyperoslo/Cache`. The generated `Components.Schemas.*` types are `Codable`, so they are cached directly through `Cache`'s `Storage<Key, Value>` with `TransformerFactory.forCodable`. This memoizes **decoded models**, not raw bytes — the cache sits between the `@Observable` view model and the generated `Client`, never inside a `ClientMiddleware`.
+
+**Placement rule — Repository layer, not transport.** Do **not** intercept `HTTPBody` in a `ClientMiddleware` to cache responses: `HTTPBody` is a single-consumption async stream, so capturing it for replay corrupts the request/response lifecycle. Cache the typed result *after* the generated `Client` call returns instead.
+
+```
+@Observable ViewModel
+  |  calls
+  v
+Core Service (Repository)  ──reads/writes──►  ResponseCache (hyperoslo/Cache)
+  |  on miss / revalidate
+  v
+Generated Client → URLSession → Backend
+```
+
+**Mandatory rules:**
+
+1. Every read endpoint (`GET`-shaped operation) goes through a `ResponseCache` actor that wraps `hyperoslo/Cache`'s `Storage`. The `Storage` type is not `Sendable`, so it is **always** owned by an `actor` to stay Swift 6 strict-concurrency clean.
+2. Cache **key** = `operationID` + a stable encoding of its path/query params (e.g. `"listTodos"`, `"getTodo:\(id)"`). Never key on URLs.
+3. Apply a **stale-while-revalidate** policy: return the cached value immediately when present, then refresh in the background and update state. Memory expiry and disk expiry are set explicitly per resource via `MemoryConfig` / `DiskConfig` — no implicit infinite TTL.
+4. Any **write** endpoint (`POST`/`PATCH`/`DELETE`) must `removeObject`/`removeAll` the affected keys after success so the next read repopulates.
+5. `Cache` is for transient/server-owned data. **Durable, user-owned** state (drafts, offline records) still belongs in **SwiftData**; **secrets** still belong in **Keychain**. Do not use `hyperoslo/Cache` as a system of record.
+
+See `snippets.md` §10 for the canonical `ResponseCache` actor and cached `TodoService`.
+
 ## Local Storage
 
-- **SwiftData** (iOS 17+) — Swift-native ORM built on Core Data; preferred for structured persistence.
+- **hyperoslo/Cache** — hybrid memory+disk cache for **API response memoization** at the Repository layer (see above). Transient, server-owned data only.
+- **SwiftData** (iOS 17+) — Swift-native ORM built on Core Data; preferred for **durable, user-owned** structured persistence (system of record).
 - **UserDefaults / `@AppStorage`** — lightweight key-value preferences.
 - **Keychain** (`Security` framework) — tokens and credentials.
 
@@ -63,6 +94,9 @@ MyApp/
         openapi-generator-config.yaml
         APIClient.swift             # Wraps the generated Client; adds URLSession transport + auth
         BearerAuthMiddleware.swift  # ClientMiddleware for bearer token injection
+        TodoService.swift           # Repository: generated Client + ResponseCache read-through
+      Cache/
+        ResponseCache.swift         # actor wrapping hyperoslo/Cache Storage<String, Value>
       Services/
         AuthService.swift
         TokenStore.swift
@@ -98,8 +132,10 @@ View (SwiftUI)
 @Observable ViewModel  (Features/<Feature>/FeatureViewModel.swift)
   |  calls
   v
-Core Service           (Core/Networking/APIClient.swift or Core/Services/…)
-  |  calls
+Core Service           (Core/Networking/TodoService.swift)
+  |  reads/writes (stale-while-revalidate)
+  +────────────────►  ResponseCache (Core/Cache/, actor over hyperoslo/Cache)
+  |  on miss / revalidate
   v
 Generated Client       (auto-generated from Core/Networking/openapi.yaml)
   |  HTTP via URLSession transport

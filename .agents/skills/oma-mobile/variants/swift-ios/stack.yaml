@@ -4,6 +4,7 @@ framework: swiftui
 ui: swiftui
 api_generator: swift-openapi-generator
 api_spec: Core/Networking/openapi.yaml
+response_cache: hyperoslo-cache
 structure: App/Core/Features/Shared
 source: variant
 

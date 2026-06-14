@@ -111,18 +111,23 @@ Core/
     openapi.yaml                # Vendored OpenAPI spec; source of truth for generator
     openapi-generator-config.yaml
     APIClient.swift             # Wraps generated Client; URLSession transport + auth
-    TodoService.swift           # Typed wrapper around generated client.listTodos()
+    TodoProviding.swift         # Protocol seam the VM depends on (mockable)
+    TodoService.swift           # Cached repository: generated Client + ResponseCache
+  Cache/
+    ResponseCache.swift         # actor over hyperoslo/Cache; read-through + invalidation
 App/
   MyApp.swift                   # @main; instantiates AppDependencies
   AppDependencies.swift         # Composition root; injects TodoService into TodosView
 Tests/
-  TodosViewModelTests.swift     # XCTest; MockTodoService via subclass/protocol override
+  TodosViewModelTests.swift     # XCTest; MockTodoService conforms to TodoProviding
 
 ### Files Created
 - Sources/Features/Todos/TodosViewModel.swift
 - Sources/Features/Todos/TodosView.swift
+- Sources/Core/Networking/TodoProviding.swift
 - Sources/Core/Networking/TodoService.swift
 - Sources/Core/Networking/APIClient.swift
+- Sources/Core/Cache/ResponseCache.swift
 - Sources/App/AppDependencies.swift
 - Tests/TodosViewModelTests.swift
 
@@ -130,6 +135,9 @@ Tests/
 - @Observable replaces ObservableObject/@Published — no Combine dependency
 - View holds VM with @State (not @StateObject); init via State(wrappedValue:)
 - .task { viewModel.load() } cancels automatically when view disappears
-- TodoService calls the generated client.listTodos() — never hand-rolled URLRequest
+- TodoService calls the generated client — never hand-rolled URLRequest
+- Read-through cache at the repository layer: ResponseCache (hyperoslo/Cache) wraps
+  the generated Client; reads are stale-while-revalidate, writes invalidate keys
+- VM depends on TodoProviding (protocol seam), so MockTodoService needs no mock lib
 - deinit { loadTask?.cancel() } prevents Task leaks when VM is deallocated
 ```
