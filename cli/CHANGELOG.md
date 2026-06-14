@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.3.1...cli-v9.4.0) (2026-06-14)
+
+
+### Features
+
+* **skills:** mandate repo-layer response cache across mobile variants ([58e5b11](https://github.com/first-fluke/oh-my-agent/commit/58e5b11873042f27fede9e2767d26f3c060b0ec2))
+
 ## [9.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.3.0...cli-v9.3.1) (2026-06-13)
 
 
