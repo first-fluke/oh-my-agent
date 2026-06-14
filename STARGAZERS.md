@@ -5,9 +5,9 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-12 · 1 unstarred
+## 2026-06-14 · 1 unstarred
 
-- **@kipeum86** · 0 repos · 0 followers
+- **@vvineey** · Bovin · 4 repos · 14 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -330,6 +330,7 @@ summaries to spot which persona is churning.
 - @Gareryer — 2026-02-02
 - @garettmd — 2026-03-21
 - @GarryLaly — 2026-05-19
+- @gauravkanoongo — 2026-06-13
 - @gdaegeun539 — 2026-02-02
 - @gdfernandes2019 — 2026-03-21
 - @geekypanda411 — 2026-02-02
@@ -1009,7 +1010,6 @@ summaries to spot which persona is churning.
 - @Vnyl — 2026-04-10
 - @votus777 — 2026-02-04
 - @vsenn — 2026-04-01
-- @vvineey — 2026-03-11
 - @wanghaisheng — 2026-05-09
 - @WangShunye — 2026-05-27
 - @waterhumanB — 2026-03-20
