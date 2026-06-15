@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.4.0...cli-v9.5.0) (2026-06-15)
+
+
+### Features
+
+* add OpenCode vendor support for subagent dispatch ([8757e41](https://github.com/first-fluke/oh-my-agent/commit/8757e413ae5f37a180425cbda365da1ec8d02c39)), closes [#544](https://github.com/first-fluke/oh-my-agent/issues/544)
+* add OpenCode vendor support for subagent dispatch ([#544](https://github.com/first-fluke/oh-my-agent/issues/544)) ([fa224ac](https://github.com/first-fluke/oh-my-agent/commit/fa224ace76d3d7a6be9b7392ee820cfc05f3a7c2))
+
 ## [9.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.3.1...cli-v9.4.0) (2026-06-14)
 
 
