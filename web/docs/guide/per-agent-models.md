@@ -77,18 +77,35 @@ The merge is shallow: each field in your override replaces the preset value for 
 
 ## Inlining model slugs
 
-Register model slugs that are not yet in the built-in registry under `models:`. Once registered, use the slug anywhere in `agents:` or `custom_presets:`.
+Register model slugs that are not yet in the built-in registry under `models:`. Once registered, reference the slug from `agents:` or `custom_presets:`.
 
 ```yaml
 # .agents/oma-config.yaml
 models:
-  my-fast-model:
+  google/gemini-3-flash-fast:
     cli: gemini
     cli_model: gemini-3-flash
+    auth_hint: "Google AI Pro"
     supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
       native_dispatch_from: [gemini]
-      thinking: true
+      api_only: false
 ```
+
+Two rules apply to a registered slug you reference from `agents:`:
+
+1. **The key must be in `owner/model` form.** `agents.<id>.model` validates against
+   an `owner/model` pattern, so a bare key like `my-fast-model` is rejected — use
+   a slashed key such as `google/gemini-3-flash-fast` (or the vendor's own
+   `provider/model` slug).
+2. **The spec must be complete.** `cli`, `cli_model`, `auth_hint`, and every
+   `supports` boolean are required at resolution time. An incomplete spec is
+   accepted by the config parser but fails model-registry validation and silently
+   falls back to the core registry.
 
 > If a user-defined slug collides with a built-in slug, the user definition wins and a warning is emitted.
 
@@ -193,10 +210,18 @@ agents:
   frontend: { model: anthropic/claude-sonnet-4-6 }
 
 models:
-  my-fast-model:
+  google/gemini-3-flash-fast:
     cli: gemini
     cli_model: gemini-3-flash
-    supports: { native_dispatch_from: [gemini], thinking: true }
+    auth_hint: "Google AI Pro"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [gemini]
+      api_only: false
 
 custom_presets:
   my-team:
@@ -251,3 +276,101 @@ agents through pi.
 > pi's model catalog is release-tracked and auth-gated. If a resolved slug does
 > not match what your pi install exposes, check `pi --list-models` — pi's
 > `--model` matching is fuzzy, so most provider slugs resolve as-is.
+
+---
+
+## Dispatching through OpenCode
+
+[OpenCode](https://opencode.ai) is an extension-class vendor: like pi, it is not
+a model owner but a CLI that runs models from its own catalog — the free
+`opencode` provider, the low-cost `opencode-go` subscription plan, and the
+`opencode-zen` gateway. oma integrates it as an **in-process plugin vendor**:
+opencode auto-loads `.opencode/plugins/oma/` instead of registering settings-file
+hooks, and resolves each agent's persona from generated `.opencode/agents/<id>.md`
+files.
+
+### Explicit dispatch
+
+Route any agent through opencode with the `-m opencode` override:
+
+```bash
+oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+```
+
+This runs `opencode run --agent pm --dir <workspace> "<prompt>"`. The prompt is a
+**trailing positional argument** — opencode's `-p` flag means `--password`, not
+the prompt.
+
+### Per-agent OpenCode models
+
+To route specific agents to an opencode model, register the model under `models:`
+and reference it from `agents:`. Two requirements apply (see
+[Inlining model slugs](#inlining-model-slugs)):
+
+1. **Slug must be in `owner/model` form.** Use the opencode `provider/model` slug
+   as the registry key — bare names are rejected by the `agents.<id>.model` schema.
+2. **The spec must be complete** — `cli`, `cli_model`, `auth_hint`, and every
+   `supports` boolean. An incomplete spec fails validation and silently falls
+   back to the core registry (so the agent would not route to opencode).
+
+```yaml
+# .agents/oma-config.yaml
+language: en
+model_preset: claude          # heavier impl roles stay on Claude
+
+models:
+  opencode-go/deepseek-v4-flash:
+    cli: opencode
+    cli_model: opencode-go/deepseek-v4-flash
+    auth_hint: "OpenCode Go subscription — run: opencode auth login"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [opencode]
+      api_only: false
+
+agents:
+  pm:      { model: opencode-go/deepseek-v4-flash }
+  qa:      { model: opencode-go/deepseek-v4-flash }
+  docs:    { model: opencode-go/deepseek-v4-flash }
+  explore: { model: opencode-go/deepseek-v4-flash }
+```
+
+Each routed agent dispatches `opencode run -m opencode-go/deepseek-v4-flash
+--agent <id> --dir <workspace> "<prompt>"`. This is a good fit for lightweight,
+fast roles (pm, qa, docs, explore) while heavier implementation agents stay on
+Codex/Claude/etc.
+
+### Validating a model slug
+
+opencode's catalog is subscription- and login-gated, so oma does **not** hardcode
+opencode model slugs. Validate one against your installed catalog:
+
+```bash
+oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+opencode models opencode-go                            # list everything your plan exposes
+```
+
+`oma model:probe` reports `accepted` when the slug is listed by
+`opencode models`, `rejected` when it is not, and `auth_required` when the
+provider needs login or a subscription.
+
+### Auth and generated files
+
+- **Auth:** `opencode auth login` stores credentials in
+  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` report
+  opencode auth alongside the other CLIs (default provider check: `opencode-go`).
+- **Generated files:** `oma link` (or `oma link opencode`) writes one
+  `.opencode/agents/<id>.md` persona per agent plus the `.opencode/plugins/oma/`
+  bridge. These are generated from the `.agents/` SSOT — do not edit them
+  directly; re-run `oma link` to regenerate.
+
+> **Persistent-workflow note:** opencode's `session.idle` event (its nearest
+> analog to the Claude `Stop` hook) is notification-only and cannot block the
+> session from ending. Persistent workflows (orchestrate / work / ultrawork)
+> therefore run with **degraded Stop semantics** under opencode — workflow
+> reinforcement happens on the next message rather than by holding the session
+> open.
