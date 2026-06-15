@@ -1,0 +1,22 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "opencode",
+  "destDir": ".opencode/agents",
+  "modelDefault": "opencode-go/deepseek-v4-flash",
+  "toolsDefault": [],
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/opencode.md",
+  "agents": {
+    "backend-engineer": {},
+    "frontend-engineer": {},
+    "db-engineer": {},
+    "debug-investigator": {},
+    "architecture-reviewer": {},
+    "tf-infra-engineer": {},
+    "mobile-engineer": {},
+    "pm-planner": {},
+    "qa-reviewer": {},
+    "docs-curator": {},
+    "refactor-engineer": {},
+    "research-explorer": {}
+  }
+}

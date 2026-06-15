@@ -3,7 +3,9 @@ import { dirname, join } from "node:path";
 import pc from "picocolors";
 import { VENDORS } from "../../constants/vendors.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
+import { installVendorAgents } from "../../platform/agent-composer.js";
 import { getInstallMode } from "../../platform/install-context.js";
+import { installOpencodePlugin } from "../../platform/opencode-plugin-composer.js";
 import { installPiExtension } from "../../platform/pi-extension-composer.js";
 import { installPiPromptTemplates } from "../../platform/pi-prompts.js";
 import {
@@ -183,6 +185,23 @@ export function link(opts: LinkOptions = {}): LinkResult {
     }
     if (!quiet) {
       console.log(`${pc.green("✓")} pi (.pi/extensions/oma/, .pi/prompts/)`);
+    }
+  }
+
+  // Install in-process extension vendor: opencode (Sst opencode). opencode
+  // auto-loads `.opencode/plugins/oma/` as a plugin directory and dispatches
+  // plugin event handlers rather than settings-file hook registrations.
+  const opencodeConfigured = extensionVendors.includes("opencode");
+  if (opencodeConfigured) {
+    installOpencodePlugin(cwd, cwd);
+    // Generate `.opencode/agents/*.md` subagent personas from the SSOT variant
+    // (`.agents/agents/variants/opencode.json`). Extension vendors are skipped
+    // by installVendorAdaptations (hook-vendor only), so generate them here.
+    installVendorAgents(cwd, cwd, "opencode");
+    if (!quiet) {
+      console.log(
+        `${pc.green("✓")} opencode (.opencode/plugins/oma/, .opencode/agents/)`,
+      );
     }
   }
 

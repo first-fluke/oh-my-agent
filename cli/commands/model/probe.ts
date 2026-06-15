@@ -29,6 +29,9 @@ const OWNER_TO_CLI: Record<string, string> = {
   google: "gemini",
   qwen: "qwen",
   cursor: "cursor",
+  opencode: "opencode",
+  "opencode-go": "opencode",
+  "opencode-zen": "opencode",
 };
 
 // ---------------------------------------------------------------------------
@@ -125,6 +128,39 @@ export function classifyProbeError(
 }
 
 // ---------------------------------------------------------------------------
+// OpenCode list-based probe — checks `opencode models <provider>` stdout
+// ---------------------------------------------------------------------------
+
+/**
+ * Classify an opencode `models <provider>` result by checking whether the
+ * requested model slug appears in stdout's line list.
+ * Exported for unit-testing.
+ */
+export function classifyOpenCodeList(
+  stdout: string,
+  stderr: string,
+  exitCode: number | null,
+  slug: string,
+  modelId: string,
+): ProbeStatus {
+  if (exitCode !== 0) {
+    const combined = [stdout, stderr].filter(Boolean).join("\n");
+    for (const pattern of AUTH_PATTERNS) {
+      if (pattern.test(combined)) return "auth_required";
+    }
+    return "unknown";
+  }
+
+  // exit 0: check whether the model appears in the stdout line list
+  const lines = stdout
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const matched = lines.some((line) => line === slug || line === modelId);
+  return matched ? "accepted" : "rejected";
+}
+
+// ---------------------------------------------------------------------------
 // Core probe function
 // ---------------------------------------------------------------------------
 
@@ -148,6 +184,102 @@ export async function probeSlug(
   const cliModel = slashIndex >= 0 ? slug.slice(slashIndex + 1) : slug;
   const cli = OWNER_TO_CLI[owner] ?? owner;
 
+  // ---------------------------------------------------------------------------
+  // opencode: list-membership probe — runs `opencode models <owner>`
+  // ---------------------------------------------------------------------------
+  if (cli === "opencode") {
+    const startMs = Date.now();
+    let result: ReturnType<typeof spawnSync>;
+
+    try {
+      result = spawnSync("opencode", ["models", owner], {
+        encoding: "utf-8",
+        timeout: timeoutMs,
+      });
+    } catch (err) {
+      const durationMs = Date.now() - startMs;
+      const errCode = (err as NodeJS.ErrnoException).code;
+      if (errCode === "ENOENT") {
+        return {
+          slug,
+          cli,
+          cliModel,
+          status: "unknown",
+          durationMs,
+          stderr: `${cli} CLI not found (ENOENT)`,
+        };
+      }
+      return {
+        slug,
+        cli,
+        cliModel,
+        status: "unknown",
+        durationMs,
+        stderr: err instanceof Error ? err.message : String(err),
+      };
+    }
+
+    const durationMs = Date.now() - startMs;
+
+    if (result.error) {
+      const errCode = (result.error as NodeJS.ErrnoException).code;
+      const errMsg =
+        result.error instanceof Error
+          ? result.error.message
+          : String(result.error);
+      if (errCode === "ENOENT") {
+        return {
+          slug,
+          cli,
+          cliModel,
+          status: "unknown",
+          durationMs,
+          stderr: `${cli} CLI not found (ENOENT)`,
+        };
+      }
+      if (errCode === "ETIMEDOUT") {
+        return {
+          slug,
+          cli,
+          cliModel,
+          status: "unknown",
+          durationMs,
+          stderr: `Probe timed out after ${timeoutMs}ms`,
+        };
+      }
+      return {
+        slug,
+        cli,
+        cliModel,
+        status: "unknown",
+        durationMs,
+        stderr: errMsg,
+      };
+    }
+
+    const stderrStr = result.stderr ? String(result.stderr).trim() : "";
+    const stdoutStr = result.stdout ? String(result.stdout).trim() : "";
+    const status = classifyOpenCodeList(
+      stdoutStr,
+      stderrStr,
+      result.status,
+      slug,
+      cliModel,
+    );
+
+    return {
+      slug,
+      cli,
+      cliModel,
+      status,
+      durationMs,
+      ...(stderrStr ? { stderr: stderrStr } : {}),
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // All other vendors: ping-command probe
+  // ---------------------------------------------------------------------------
   const cmd = buildPingCommand(cli, cliModel);
   if (!cmd) {
     return {

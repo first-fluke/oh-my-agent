@@ -297,6 +297,188 @@ describe("buildExternalInvocation — table-driven: all external vendors suppres
   });
 });
 
+describe("buildExternalInvocation — opencode", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const opencodeConfig = (): VendorConfig => ({
+    command: "opencode",
+    auto_approve_flag: undefined,
+    read_only_flag: undefined,
+    model_flag: "-m",
+    default_model: "opencode-go/deepseek-v4-flash",
+    output_format_flag: undefined,
+    output_format: undefined,
+    subcommand: undefined,
+    isolation_flags: undefined,
+    isolation_env: undefined,
+    prompt_flag: undefined,
+  });
+
+  it("opencode: args start with ['run', '-m', ...]", () => {
+    const cfg = opencodeConfig();
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      "pm",
+    );
+    expect(inv.command).toBe("opencode");
+    expect(inv.args[0]).toBe("run");
+    expect(inv.args[1]).toBe("-m");
+    expect(inv.args[2]).toBe("opencode-go/deepseek-v4-flash");
+  });
+
+  it("opencode: prompt is the LAST positional arg and -p is never used as prompt flag", () => {
+    const cfg = opencodeConfig();
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      "pm",
+    );
+    // Prompt must be last
+    expect(inv.args[inv.args.length - 1]).toBe("my prompt");
+    // -p must never appear (it means --password in opencode)
+    expect(inv.args).not.toContain("-p");
+  });
+
+  it("opencode: --agent and --dir are included when agentId is provided", () => {
+    const cfg = opencodeConfig();
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      "pm",
+    );
+    const agentIdx = inv.args.indexOf("--agent");
+    expect(agentIdx).toBeGreaterThan(-1);
+    expect(inv.args[agentIdx + 1]).toBe("pm");
+    expect(inv.args).toContain("--dir");
+  });
+
+  it("opencode: --dangerously-skip-permissions present when readOnly:false", () => {
+    const cfg = opencodeConfig();
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      "pm",
+      { readOnly: false },
+    );
+    expect(inv.args).toContain("--dangerously-skip-permissions");
+  });
+
+  it("opencode: readOnly:true omits --dangerously-skip-permissions", () => {
+    const cfg = opencodeConfig();
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      "pm",
+      { readOnly: true },
+    );
+    expect(inv.args).not.toContain("--dangerously-skip-permissions");
+  });
+
+  it("opencode: readOnly:true + read_only_flag defined → appends it", () => {
+    const cfg: VendorConfig = {
+      ...opencodeConfig(),
+      read_only_flag: "--read-only-mode",
+    };
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      "pm",
+      { readOnly: true },
+    );
+    expect(inv.args).not.toContain("--dangerously-skip-permissions");
+    expect(inv.args).toContain("--read-only-mode");
+  });
+
+  it("opencode: readOnly:true + no read_only_flag → warns", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const cfg = opencodeConfig(); // no read_only_flag
+    buildExternalInvocation("opencode", cfg, null, "my prompt", "pm", {
+      readOnly: true,
+    });
+    const warnMessages = warnSpy.mock.calls.map((c) => String(c[0]));
+    expect(
+      warnMessages.some(
+        (m) => m.includes("read-only") && m.includes("opencode"),
+      ),
+    ).toBe(true);
+  });
+
+  it("opencode: --agent is omitted when agentId is not provided", () => {
+    const cfg = opencodeConfig();
+    const inv = buildExternalInvocation(
+      "opencode",
+      cfg,
+      null,
+      "my prompt",
+      undefined,
+    );
+    expect(inv.args).not.toContain("--agent");
+  });
+
+  it("opencode: uses vendorConfig.command when set", () => {
+    const cfg: VendorConfig = { ...opencodeConfig(), command: "opencode-dev" };
+    const inv = buildExternalInvocation("opencode", cfg, null, "my prompt");
+    expect(inv.command).toBe("opencode-dev");
+  });
+
+  it("opencode: model slug passes through opaquely", () => {
+    const cfg: VendorConfig = {
+      ...opencodeConfig(),
+      default_model: "opencode-go/deepseek-v4-flash",
+    };
+    const inv = buildExternalInvocation("opencode", cfg, null, "my prompt");
+    const mIdx = inv.args.indexOf("-m");
+    expect(inv.args[mIdx + 1]).toBe("opencode-go/deepseek-v4-flash");
+  });
+});
+
+describe("buildExternalInvocation — cursor regression (byte-identical check)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("cursor readOnly:false: produces ['agent','-p','--yolo','--trust', prompt] with default config", () => {
+    const cfg: VendorConfig = {
+      command: "cursor",
+      auto_approve_flag: undefined,
+      read_only_flag: undefined,
+      model_flag: undefined,
+      default_model: undefined,
+      output_format_flag: undefined,
+      output_format: undefined,
+      subcommand: undefined,
+      isolation_flags: undefined,
+      isolation_env: undefined,
+      prompt_flag: undefined,
+    };
+    const inv = buildExternalInvocation(
+      "cursor",
+      cfg,
+      null,
+      "do work",
+      undefined,
+      { readOnly: false },
+    );
+    expect(inv.command).toBe("cursor");
+    expect(inv.args).toEqual(["agent", "-p", "--yolo", "--trust", "do work"]);
+  });
+});
+
 describe("isolation_env hardening", () => {
   it("applies a safe isolation_env key with $$ pid substitution", () => {
     // gemini takes the generic build path, which is where isolation_env applies.

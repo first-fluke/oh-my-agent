@@ -10,7 +10,7 @@ export function registerAgentCommands(program: Command): void {
     .description("Spawn a subagent (prompt can be inline text or a file path)")
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/qwen/grok/pi)",
+      "CLI vendor override (antigravity/claude/codex/cursor/opencode/qwen/grok/pi)",
     )
     .option(
       "-w, --workspace <path>",
@@ -54,7 +54,7 @@ export function registerAgentCommands(program: Command): void {
     .description("Run multiple sub-agents in parallel")
     .option(
       "-m, --model <vendor>",
-      "CLI vendor override (antigravity/claude/codex/cursor/qwen/grok/pi)",
+      "CLI vendor override (antigravity/claude/codex/cursor/opencode/qwen/grok/pi)",
     )
     .option(
       "-i, --inline",

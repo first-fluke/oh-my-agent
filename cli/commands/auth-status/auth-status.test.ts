@@ -79,6 +79,11 @@ describe("auth:status command", () => {
         if (path.includes(".pi")) {
           return JSON.stringify({ anthropic: { key: "sk-ant-xxx" } });
         }
+        if (path.includes("opencode")) {
+          return JSON.stringify({
+            "opencode-go": { type: "api", key: "sk-opencode-xxx" },
+          });
+        }
         return "{}";
       });
 
@@ -99,6 +104,7 @@ describe("auth:status command", () => {
         grok: false,
         kiro: true,
         pi: true,
+        opencode: true,
       });
     });
   });
@@ -128,6 +134,7 @@ describe("auth:status command", () => {
         grok: false,
         kiro: false,
         pi: false,
+        opencode: false,
       });
     });
   });

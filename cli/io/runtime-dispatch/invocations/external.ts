@@ -160,6 +160,43 @@ export function buildExternalInvocation(
     return { command, args, env: { ...process.env } };
   }
 
+  // opencode: `opencode run -m <model> [--agent <agentId>] --dir <cwd>
+  //            [--dangerously-skip-permissions] "<prompt>"`.
+  // CRITICAL: `-p` in opencode means `--password`, NOT prompt. The prompt MUST
+  // be the trailing positional arg (matches the [message..] positional in
+  // `opencode run --help`). Never precede it with a prompt flag.
+  if (vendor === "opencode") {
+    const command = vendorConfig.command || "opencode";
+    const args: string[] = ["run"];
+
+    const modelFlag = vendorConfig.model_flag || "-m";
+    const modelValue = vendorConfig.default_model;
+    if (modelValue) {
+      args.push(modelFlag, modelValue);
+    }
+
+    if (agentId) {
+      args.push("--agent", agentId);
+    }
+
+    args.push("--dir", process.cwd());
+
+    if (!readOnly) {
+      args.push("--dangerously-skip-permissions");
+    } else if (vendorConfig.read_only_flag) {
+      args.push(...splitArgs(vendorConfig.read_only_flag));
+    } else {
+      console.warn(
+        `[agent-spawn] read-only mode requested but vendor '${vendor}' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)`,
+      );
+    }
+
+    // Prompt is the last positional arg — never preceded by a -p flag.
+    args.push(promptContent);
+
+    return { command, args, env: { ...process.env } };
+  }
+
   // Vendors whose CLI binary name differs from the vendor identifier.
   const binaryByVendor: Record<string, string> = {
     antigravity: "agy",

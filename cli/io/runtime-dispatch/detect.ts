@@ -9,6 +9,7 @@ const SUPPORTED_RUNTIME_VENDORS = new Set<RuntimeVendor>([
   "qwen",
   "grok",
   "kiro",
+  "opencode",
   "pi",
 ]);
 
@@ -55,6 +56,12 @@ export function detectRuntimeVendor(
   if (env.KIRO_SESSION_ID || env.KIRO_CHAT_LOG_FILE || env.KIRO_HOME) {
     return "kiro";
   }
+
+  // TODO(oma-deferred): add env-based opencode session detection when opencode
+  // sets a confirmed session env var. The only OPENCODE_* vars found in the
+  // binary at detection time are OPENCODE_SERVER_PASSWORD / OPENCODE_SERVER_USERNAME
+  // (server auth), which must NOT be used for runtime detection. Use explicit
+  // `OMA_RUNTIME_VENDOR=opencode` or `-m opencode` to select this runtime.
 
   if (env.PI_CODING_AGENT === "true" || env.PI_CODING_AGENT === "1") {
     return "pi";

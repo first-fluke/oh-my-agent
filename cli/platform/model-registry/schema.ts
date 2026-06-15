@@ -12,7 +12,18 @@ const RuntimeIdSchema = z.enum([
   "antigravity",
   "qwen",
   "kiro",
+  "opencode",
 ]);
+
+/**
+ * Valid CLI values for model specs. Extends the canonical VENDORS set with
+ * "opencode", which is an extension-class vendor (not a hook vendor) and
+ * therefore excluded from VENDORS, but is a valid host CLI for user-defined
+ * model entries. OpenCode models are environment/subscription-dependent and
+ * validated dynamically via `opencode models` — no hardcoded specs are
+ * shipped in raw-registry.ts.
+ */
+const CliSchema = z.enum([...VENDORS, "opencode"] as const);
 
 const EffortLevelSchema = z.enum(["none", "low", "medium", "high", "xhigh"]);
 
@@ -30,7 +41,7 @@ const EffortSpecSchema = z.union([
 ]);
 
 export const ModelSpecSchema = z.object({
-  cli: z.enum(VENDORS),
+  cli: CliSchema,
   cli_model: z.string().min(1),
   supports: z.object({
     effort: EffortSpecSchema,

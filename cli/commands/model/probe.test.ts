@@ -1,8 +1,13 @@
 // cli/commands/model/probe.test.ts
 
 import * as childProcess from "node:child_process";
-import { describe, expect, it, vi } from "vitest";
-import { classifyProbeError, describeProbeStatus, probeSlug } from "./probe.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  classifyOpenCodeList,
+  classifyProbeError,
+  describeProbeStatus,
+  probeSlug,
+} from "./probe.js";
 
 vi.mock("node:child_process", () => ({
   spawnSync: vi.fn(),
@@ -288,6 +293,185 @@ describe("probeSlug spawnSync argv", () => {
     expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
       "cursor",
       ["agent", "-p", "--yolo", "--trust", "--model", "composer-x", "ping"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// classifyOpenCodeList
+// ---------------------------------------------------------------------------
+
+describe("classifyOpenCodeList", () => {
+  it("returns accepted when slug appears in stdout line list", () => {
+    const stdout =
+      "opencode-go/deepseek-v4-flash\nopencode-go/deepseek-v3\nopencode-go/gpt-4o";
+    expect(
+      classifyOpenCodeList(
+        stdout,
+        "",
+        0,
+        "opencode-go/deepseek-v4-flash",
+        "deepseek-v4-flash",
+      ),
+    ).toBe("accepted");
+  });
+
+  it("returns accepted when bare modelId appears in stdout line list", () => {
+    const stdout = "deepseek-v4-flash\ndeepseek-v3";
+    expect(
+      classifyOpenCodeList(
+        stdout,
+        "",
+        0,
+        "opencode-go/deepseek-v4-flash",
+        "deepseek-v4-flash",
+      ),
+    ).toBe("accepted");
+  });
+
+  it("returns rejected when model absent from stdout on exit 0", () => {
+    const stdout = "opencode-go/deepseek-v3\nopencode-go/gpt-4o";
+    expect(
+      classifyOpenCodeList(
+        stdout,
+        "",
+        0,
+        "opencode-go/deepseek-v4-flash",
+        "deepseek-v4-flash",
+      ),
+    ).toBe("rejected");
+  });
+
+  it("returns auth_required on auth-pattern stderr with non-zero exit", () => {
+    expect(
+      classifyOpenCodeList(
+        "",
+        "Error: Unauthorized",
+        1,
+        "opencode-go/deepseek-v4-flash",
+        "deepseek-v4-flash",
+      ),
+    ).toBe("auth_required");
+  });
+
+  it("returns unknown on non-zero exit with unrecognized output", () => {
+    expect(
+      classifyOpenCodeList(
+        "",
+        "something went wrong",
+        1,
+        "opencode-go/deepseek-v4-flash",
+        "deepseek-v4-flash",
+      ),
+    ).toBe("unknown");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// probeSlug — opencode list probe
+// ---------------------------------------------------------------------------
+
+describe("probeSlug — opencode", () => {
+  beforeEach(() => {
+    // Clear any leftover mock queue entries from previous test suites so
+    // each opencode test receives exactly the mock it sets up.
+    vi.mocked(childProcess.spawnSync).mockReset();
+  });
+
+  it("returns accepted when model slug appears in opencode models output", async () => {
+    mockSpawn({
+      status: 0,
+      stdout:
+        "opencode-go/deepseek-v4-flash\nopencode-go/deepseek-v3\nopencode-go/gpt-4o",
+      stderr: "",
+    });
+
+    const result = await probeSlug("opencode-go/deepseek-v4-flash");
+    expect(result.status).toBe("accepted");
+    expect(result.cli).toBe("opencode");
+    expect(result.cliModel).toBe("deepseek-v4-flash");
+  });
+
+  it("returns rejected when model absent from opencode models output (exit 0)", async () => {
+    mockSpawn({
+      status: 0,
+      stdout: "opencode-go/deepseek-v3\nopencode-go/gpt-4o",
+      stderr: "",
+    });
+
+    const result = await probeSlug("opencode-go/deepseek-v4-flash");
+    expect(result.status).toBe("rejected");
+  });
+
+  it("returns auth_required on auth-pattern stderr with non-zero exit", async () => {
+    mockSpawn({
+      status: 1,
+      stdout: "",
+      stderr: "Error: Unauthorized — please log in first",
+    });
+
+    const result = await probeSlug("opencode-go/deepseek-v4-flash");
+    expect(result.status).toBe("auth_required");
+  });
+
+  it("returns unknown on ENOENT (opencode binary missing)", async () => {
+    const enoentError = Object.assign(new Error("spawn opencode ENOENT"), {
+      code: "ENOENT",
+    });
+    vi.mocked(childProcess.spawnSync).mockReturnValueOnce({
+      stdout: "",
+      stderr: "",
+      status: null,
+      error: enoentError,
+      pid: 0,
+      signal: null,
+      output: [],
+    } as unknown as ReturnType<typeof childProcess.spawnSync>);
+
+    const result = await probeSlug("opencode-go/deepseek-v4-flash");
+    expect(result.status).toBe("unknown");
+    expect(result.stderr).toContain("ENOENT");
+  });
+
+  it("invokes opencode with correct argv (models <owner>)", async () => {
+    mockSpawn({
+      status: 0,
+      stdout: "opencode-go/deepseek-v4-flash",
+      stderr: "",
+    });
+
+    await probeSlug("opencode-go/deepseek-v4-flash");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "opencode",
+      ["models", "opencode-go"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+  });
+
+  it("maps opencode-zen owner to opencode CLI", async () => {
+    mockSpawn({ status: 0, stdout: "opencode-zen/some-model", stderr: "" });
+
+    const result = await probeSlug("opencode-zen/some-model");
+    expect(result.cli).toBe("opencode");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression: existing vendors unchanged
+// ---------------------------------------------------------------------------
+
+describe("probeSlug — existing vendor regression", () => {
+  beforeEach(() => {
+    vi.mocked(childProcess.spawnSync).mockReset();
+  });
+
+  it("still builds ping command unchanged for claude (anthropic)", async () => {
+    mockSpawn({ status: 0 });
+    await probeSlug("anthropic/claude-opus-4-7");
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "claude",
+      ["-p", "ping", "--model", "claude-opus-4-7"],
       expect.objectContaining({ encoding: "utf-8" }),
     );
   });

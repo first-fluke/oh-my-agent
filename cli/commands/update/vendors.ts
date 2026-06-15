@@ -24,6 +24,7 @@ const VENDOR_ROOTS: Record<CliVendor, string[]> = {
   grok: [".grok"],
   hermes: [".hermes"],
   kiro: [".kiro"],
+  opencode: [".opencode"],
   pi: [".pi"],
   qwen: [".qwen"],
 };

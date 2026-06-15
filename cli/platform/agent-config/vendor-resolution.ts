@@ -4,6 +4,7 @@ import {
   BUILT_IN_PRESET_ALIASES,
   BUILT_IN_PRESETS,
 } from "../built-in-presets.js";
+import { getModelSpec } from "../model-registry.js";
 import { AGENT_CONFIG_ALIASES, AGENT_IDS } from "./agent-ids.js";
 import {
   findConfigFileUp,
@@ -20,11 +21,22 @@ import type {
 } from "./types.js";
 
 /**
- * Maps an OpenRouter-style model slug owner to a CLI vendor name.
- * Used to derive vendor from an AgentSpec object's model slug.
- * Falls back to the raw owner prefix if no mapping exists.
+ * Resolves the CLI vendor for an AgentSpec's model.
+ *
+ * Registry-aware: when the slug (a custom `models:` key or a built-in registry
+ * entry) resolves to a ModelSpec, the spec's `cli` field is authoritative —
+ * this is the same source `resolve-plan.ts` uses, so a custom slug such as
+ * `deepseek-flash-opencode` (with `cli: opencode`) maps to the `opencode`
+ * vendor rather than to the literal slug. Falls back to the OpenRouter-style
+ * owner-prefix heuristic for slugs absent from the registry.
  */
-function resolveVendorFromModelSlug(modelSlug: string): string {
+function resolveVendorFromModelSlug(
+  modelSlug: string,
+  userModels?: Record<string, unknown>,
+): string {
+  const spec = getModelSpec(modelSlug, userModels);
+  if (spec?.cli) return spec.cli;
+
   const owner = modelSlug.split("/")[0] ?? modelSlug;
   const OWNER_TO_VENDOR: Record<string, string> = {
     anthropic: "claude",
@@ -133,7 +145,10 @@ export function resolveVendor(
   }
 
   const mappedVendor = agentSpec
-    ? resolveVendorFromModelSlug(agentSpec.model)
+    ? resolveVendorFromModelSlug(
+        agentSpec.model,
+        parsedConfig?.models as Record<string, unknown> | undefined,
+      )
     : undefined;
 
   const vendor =
@@ -160,6 +175,10 @@ export function resolvePromptFlag(
     qwen: "-p",
     codex: null,
     cursor: null,
+    // opencode's prompt is a trailing positional arg; `-p` means --password.
+    // The opencode branch in buildExternalInvocation ignores promptFlag, but
+    // null keeps the generic path from ever pairing a prompt with -p.
+    opencode: null,
   };
 
   if (Object.hasOwn(defaults, vendor)) return defaults[vendor] as string | null;

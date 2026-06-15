@@ -96,7 +96,9 @@ function getTimeoutField(vendor: string): string {
 }
 
 function supportsSkillsFrontmatter(vendor: string): boolean {
-  return vendor !== "gemini";
+  // gemini references skills via generated doc links; opencode's markdown agent
+  // schema has no `skills` frontmatter key (skills are project-level config).
+  return vendor !== "gemini" && vendor !== "opencode";
 }
 
 function serializeTomlString(value: string): string {
@@ -219,6 +221,9 @@ function buildMarkdownAgentFile(
   }
   if (config.extra) {
     Object.assign(fm, config.extra);
+  }
+  if (vendor === "opencode") {
+    fm.mode = "subagent";
   }
 
   const geminiSkillReferences =
@@ -346,6 +351,15 @@ const ALLOWED_FIELDS: Record<string, readonly string[]> = {
   ],
   antigravity: ["name", "description", "model"],
   qwen: ["name", "description", "model", "thinking"],
+  opencode: [
+    "name",
+    "description",
+    "mode",
+    "model",
+    "temperature",
+    "tools",
+    "permission",
+  ],
 };
 
 /**

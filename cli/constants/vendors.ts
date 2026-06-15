@@ -35,8 +35,13 @@ export const VENDORS = [
  * `pi` (Earendil pi-coding-agent) auto-discovers `.pi/extensions/*​/index.ts`
  * and dispatches `pi.on(event, handler)`; `installPiExtension` writes that
  * bridge. See `cli/platform/pi-extension-composer.ts`.
+ *
+ * `opencode` (Sst opencode) is also a pi-class in-process plugin vendor. Its
+ * hooks are loaded as extensions rather than settings-file registrations, so it
+ * receives its own dedicated install path and is excluded from `VENDORS`,
+ * `HOOK_VENDORS`, and `installHooksFromVariant`.
  */
-export const EXTENSION_VENDORS = ["pi"] as const;
+export const EXTENSION_VENDORS = ["pi", "opencode"] as const;
 export type ExtensionVendor = (typeof EXTENSION_VENDORS)[number];
 
 /**
@@ -80,7 +85,9 @@ export interface SkillTargetSpec {
   optIn?: boolean;
 }
 
-export const CLI_SKILLS_DIR: Record<CliTool, SkillTargetSpec> = {
+export const CLI_SKILLS_DIR: Record<CliTool, SkillTargetSpec> & {
+  opencode: SkillTargetSpec;
+} = {
   antigravity: {
     projectPath: ".gemini/antigravity-cli/skills",
     homePath: ".gemini/antigravity-cli/skills",
@@ -102,5 +109,9 @@ export const CLI_SKILLS_DIR: Record<CliTool, SkillTargetSpec> = {
     requiresHomeConsent: true,
   },
   kiro: { projectPath: ".kiro/skills", homePath: ".kiro/skills", optIn: true },
+  opencode: {
+    projectPath: ".opencode/skills",
+    homePath: ".opencode/skills",
+  },
   qwen: { projectPath: ".qwen/skills", homePath: ".qwen/skills" },
 };

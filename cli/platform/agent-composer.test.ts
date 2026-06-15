@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -536,5 +537,198 @@ describe("installVendorAgents — protocolPath validation", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T1-config-gen — opencode vendor
+// ---------------------------------------------------------------------------
+
+describe("sanitizeFrontmatterForVendor — opencode", () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("keeps all allowed opencode fields and drops unsupported ones", () => {
+    const input = {
+      name: "backend-engineer",
+      description: "Backend specialist",
+      mode: "subagent",
+      model: "opencode-go/deepseek-v4-flash",
+      temperature: 0.7,
+      tools: [],
+      permission: { write: false, edit: false },
+      // unsupported fields:
+      sandbox_mode: "workspace-write",
+      effort: "high",
+      maxTurns: 20,
+    };
+
+    const result = sanitizeFrontmatterForVendor(input, "opencode");
+
+    expect(result).toEqual({
+      name: "backend-engineer",
+      description: "Backend specialist",
+      mode: "subagent",
+      model: "opencode-go/deepseek-v4-flash",
+      temperature: 0.7,
+      tools: [],
+      permission: { write: false, edit: false },
+    });
+    expect(result).not.toHaveProperty("sandbox_mode");
+    expect(result).not.toHaveProperty("effort");
+    expect(result).not.toHaveProperty("maxTurns");
+    expect(warnSpy).toHaveBeenCalledTimes(3);
+    const warnMessages: string[] = warnSpy.mock.calls.map(
+      (c: unknown[]) => c[0] as string,
+    );
+    expect(warnMessages.every((m) => m.includes("opencode variant"))).toBe(
+      true,
+    );
+  });
+
+  it("strips sandbox_mode and effort from opencode frontmatter", () => {
+    const input = {
+      name: "backend-engineer",
+      description: "desc",
+      model: "opencode-go/deepseek-v4-flash",
+      sandbox_mode: "workspace-write",
+      effort: "high",
+    };
+
+    const result = sanitizeFrontmatterForVendor(input, "opencode");
+
+    expect(result).not.toHaveProperty("sandbox_mode");
+    expect(result).not.toHaveProperty("effort");
+    expect(result).toHaveProperty("name", "backend-engineer");
+    expect(result).toHaveProperty("model", "opencode-go/deepseek-v4-flash");
+  });
+});
+
+describe("installVendorAgents — opencode variant", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+    vi.restoreAllMocks();
+  });
+
+  function makeOpencodeSourceDir(
+    agentOverride: Record<string, unknown> = {},
+  ): string {
+    const sourceDir = mkdtempSync(join(tmpdir(), "oma-opencode-src-"));
+    tempRoots.push(sourceDir);
+    const agentsDir = join(sourceDir, ".agents", "agents");
+    mkdirSync(join(agentsDir, "variants"), { recursive: true });
+    writeFileSync(
+      join(agentsDir, "backend-engineer.md"),
+      "---\nname: backend-engineer\ndescription: Backend specialist\n---\nFollow the vendor-specific execution protocol:\n",
+    );
+    writeFileSync(
+      join(agentsDir, "variants", "opencode.json"),
+      JSON.stringify({
+        vendor: "opencode",
+        destDir: ".opencode/agents",
+        modelDefault: "opencode-go/deepseek-v4-flash",
+        toolsDefault: [],
+        protocolPath:
+          ".agents/skills/_shared/runtime/execution-protocols/opencode.md",
+        agents: {
+          "backend-engineer": agentOverride,
+        },
+      }),
+    );
+    return sourceDir;
+  }
+
+  function makeTargetDir(): string {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-opencode-dst-"));
+    tempRoots.push(targetDir);
+    return targetDir;
+  }
+
+  it("generates .md files (not .toml) in .opencode/agents", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeOpencodeSourceDir();
+    const targetDir = makeTargetDir();
+
+    installVendorAgents(sourceDir, targetDir, "opencode");
+
+    const generatedFile = join(
+      targetDir,
+      ".opencode",
+      "agents",
+      "backend-engineer.md",
+    );
+    expect(existsSync(generatedFile)).toBe(true);
+
+    // Confirm no .toml was generated
+    const tomlFile = join(
+      targetDir,
+      ".opencode",
+      "agents",
+      "backend-engineer.toml",
+    );
+    expect(existsSync(tomlFile)).toBe(false);
+    warnSpy.mockRestore();
+  });
+
+  it("generated frontmatter includes mode:subagent and modelDefault", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeOpencodeSourceDir();
+    const targetDir = makeTargetDir();
+
+    installVendorAgents(sourceDir, targetDir, "opencode");
+
+    const content = readFileSync(
+      join(targetDir, ".opencode", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(content).toContain("mode: subagent");
+    expect(content).toContain("opencode-go/deepseek-v4-flash");
+    warnSpy.mockRestore();
+  });
+
+  it("per-agent model override wins over modelDefault", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeOpencodeSourceDir({
+      model: "opencode-go/claude-sonnet-4-5",
+    });
+    const targetDir = makeTargetDir();
+
+    installVendorAgents(sourceDir, targetDir, "opencode");
+
+    const content = readFileSync(
+      join(targetDir, ".opencode", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(content).toContain("opencode-go/claude-sonnet-4-5");
+    expect(content).not.toContain("opencode-go/deepseek-v4-flash");
+    warnSpy.mockRestore();
+  });
+
+  it("generated frontmatter does not contain sandbox_mode or effort", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeOpencodeSourceDir();
+    const targetDir = makeTargetDir();
+
+    installVendorAgents(sourceDir, targetDir, "opencode");
+
+    const content = readFileSync(
+      join(targetDir, ".opencode", "agents", "backend-engineer.md"),
+      "utf-8",
+    );
+    expect(content).not.toContain("sandbox_mode");
+    expect(content).not.toContain("effort");
+    warnSpy.mockRestore();
   });
 });

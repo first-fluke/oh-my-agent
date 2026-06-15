@@ -9,6 +9,7 @@ export type RuntimeId =
   | "antigravity"
   | "qwen"
   | "kiro"
+  | "opencode"
   // `pi` never appears as a model's owning `cli` (the registry schema validates
   // `cli` against the canonical VENDORS set, which excludes pi). It is a valid
   // RuntimeId only as a *resolved plan target*: pi is a universal proxy runtime

@@ -7,6 +7,7 @@ import { isCursorAuthenticated } from "./cursor/auth.js";
 import { isGeminiAuthenticated } from "./gemini/auth.js";
 import { isGrokAuthenticated } from "./grok/auth.js";
 import { isKiroAuthenticated } from "./kiro/auth.js";
+import { isOpencodeAuthenticated } from "./opencode/auth.js";
 import { isPiAuthenticated } from "./pi/auth.js";
 import { isQwenAuthenticated } from "./qwen/auth.js";
 
@@ -54,6 +55,11 @@ export const VENDORS: readonly Vendor[] = [
     label: "pi (Earendil)",
     isAuthenticated: isPiAuthenticated,
   },
+  {
+    id: "opencode",
+    label: "OpenCode CLI",
+    isAuthenticated: isOpencodeAuthenticated,
+  },
 ];
 
 export {
@@ -65,6 +71,7 @@ export {
   isGeminiAuthenticated,
   isGrokAuthenticated,
   isKiroAuthenticated,
+  isOpencodeAuthenticated,
   isPiAuthenticated,
   isQwenAuthenticated,
 };

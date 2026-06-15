@@ -12,6 +12,7 @@ const AUTH_HINTS: Record<string, string> = {
   qwen: "qwen /auth",
   antigravity: "agy auth",
   kiro: "kiro-cli login",
+  opencode: "opencode auth login",
 };
 
 export async function checkAuthStatus(jsonMode = false): Promise<void> {

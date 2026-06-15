@@ -69,15 +69,19 @@ function applyPlanArgs(invocation: Invocation, plan: AgentPlan): Invocation {
 }
 
 /**
- * Inject `--model {cliModel}` immediately before the trailing positional prompt argument.
+ * Inject `{modelFlag} {cliModel}` immediately before the trailing positional
+ * prompt argument. Used by vendors whose prompt is a trailing positional
+ * (cursor: `--model`; opencode: `-m`), where appending the model flag after the
+ * prompt would let a variadic positional swallow it.
  */
-function injectCursorModelBeforeTrailingPrompt(
+function injectModelBeforeTrailingPrompt(
   invocation: Invocation,
+  modelFlag: string,
   cliModel: string,
 ): Invocation {
   const prompt = invocation.args.pop();
   if (prompt === undefined) return invocation;
-  invocation.args.push("--model", cliModel);
+  invocation.args.push(modelFlag, cliModel);
   invocation.args.push(prompt);
   return invocation;
 }
@@ -97,7 +101,15 @@ function applyResolvedPlan(
 ): Invocation {
   if (!plan) return invocation;
   if (targetVendor === "cursor") {
-    return injectCursorModelBeforeTrailingPrompt(invocation, plan.cliModel);
+    return injectModelBeforeTrailingPrompt(
+      invocation,
+      "--model",
+      plan.cliModel,
+    );
+  }
+  if (targetVendor === "opencode") {
+    // opencode's prompt is a trailing positional and `-m` is its model flag.
+    return injectModelBeforeTrailingPrompt(invocation, "-m", plan.cliModel);
   }
   return applyPlanArgs(invocation, plan);
 }
@@ -175,7 +187,7 @@ export function planDispatch(
       effectiveVendorConfig,
       promptFlag,
       promptContent,
-      undefined,
+      targetVendor === "opencode" ? agentId : undefined,
       invOptions,
     );
     if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);
@@ -290,12 +302,16 @@ export function planDispatch(
     };
   }
 
+  // opencode resolves the per-agent persona from the generated
+  // `.opencode/agents/<id>.md` via `--agent <id>`; other external vendors keep
+  // the historical plain-prompt form (agentId stays undefined → no regression).
+  const externalAgentId = targetVendor === "opencode" ? agentId : undefined;
   const inv = buildExternalInvocation(
     targetVendor,
     effectiveVendorConfig,
     promptFlag,
     promptContent,
-    undefined,
+    externalAgentId,
     invOptions,
   );
   if (activePlan) applyResolvedPlan(inv, activePlan, targetVendor);

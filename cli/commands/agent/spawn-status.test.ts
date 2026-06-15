@@ -194,6 +194,90 @@ describe("agent/spawn-status.ts", () => {
     cwdSpy.mockRestore();
   });
 
+  it("routes a per-agent opencode custom model slug to the opencode vendor", async () => {
+    // Regression for #544: a custom `models:` entry whose `cli` is opencode must
+    // resolve to the opencode vendor via the registry (getModelSpec), NOT to the
+    // slug's owner prefix. The slug is keyed `owner/model` (the AgentSpec.model
+    // schema requires that form). The prompt must be a trailing positional arg,
+    // never paired with -p (which means --password in opencode).
+    const OMA_CONFIG_YAML = [
+      "language: en",
+      "model_preset: antigravity",
+      "models:",
+      "  opencode-go/deepseek-v4-flash:",
+      "    cli: opencode",
+      "    cli_model: opencode-go/deepseek-v4-flash",
+      '    auth_hint: "OpenCode Go subscription"',
+      "    supports:",
+      "      effort: null",
+      "      apply_patch: false",
+      "      task_budget: false",
+      "      prompt_cache: false",
+      "      computer_use: false",
+      "      native_dispatch_from: [opencode]",
+      "      api_only: false",
+      "agents:",
+      "  backend:",
+      "    model: opencode-go/deepseek-v4-flash",
+    ].join("\n");
+
+    const cwdSpy = vi
+      .spyOn(process, "cwd")
+      .mockReturnValue("/project/apps/api");
+
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = pathArg.toString();
+      if (n(target).endsWith("/project/.agents/oma-config.yaml")) return true;
+      if (n(target).includes("oma-config.yaml")) return false;
+      if (n(target).includes("user-preferences.yaml")) return false;
+      if (n(target).includes("cli-config.yaml")) return false;
+      if (n(target).endsWith("/project/apps/api")) return true;
+      return false;
+    });
+    mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = pathArg.toString();
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
+      return "";
+    });
+    mockFsFunctions.openSync.mockReturnValue(123);
+
+    const mockChild = { pid: 77777, on: vi.fn(), unref: vi.fn() };
+    vi.mocked(child_process.spawn).mockReturnValue(
+      mockChild as unknown as child_process.ChildProcess,
+    );
+
+    await spawnAgent(
+      "backend",
+      "implement feature",
+      "session1",
+      "/project/apps/api",
+    );
+
+    const lastCall = vi.mocked(child_process.spawn).mock.calls.at(-1);
+    expect(lastCall?.[0]).toBe("opencode");
+    const args = lastCall?.[1] as string[];
+    // Per-agent model flows from the resolved plan; --agent points at the
+    // generated .opencode/agents/<id>.md persona.
+    expect(args).toEqual(
+      expect.arrayContaining([
+        "run",
+        "-m",
+        "opencode-go/deepseek-v4-flash",
+        "--agent",
+        "backend",
+      ]),
+    );
+    // Prompt is the last positional arg and never preceded by -p (=password).
+    expect(args).not.toContain("-p");
+    expect(args.at(-1)).toContain("implement feature");
+    // -m must sit immediately before the trailing prompt (not swallowed by the
+    // variadic positional).
+    expect(args[args.length - 3]).toBe("-m");
+    expect(args[args.length - 2]).toBe("opencode-go/deepseek-v4-flash");
+
+    cwdSpy.mockRestore();
+  });
+
   it("model_preset agent_defaults take precedence over default_cli", async () => {
     // model_preset=claude; default_cli=codex; backend has no agents override.
     // resolveVendor must resolve through the preset (claude), not fall back to

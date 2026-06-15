@@ -13,6 +13,7 @@ export type RuntimeVendor =
   | "qwen"
   | "grok"
   | "kiro"
+  | "opencode"
   | "pi"
   | "unknown";
 
