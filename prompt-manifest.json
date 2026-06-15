@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "9.4.0",
-  "releaseDate": "2026-06-14T13:42:08.795Z",
+  "releaseDate": "2026-06-15T02:59:30.661Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -103,6 +103,11 @@
       "path": ".agents/agents/variants/kiro.json",
       "sha256": "5239add621db4c4ab4079bd5404e339fb73f3ae4edb11dcdcdaa59a1ba0b21af",
       "size": 961
+    },
+    {
+      "path": ".agents/agents/variants/opencode.json",
+      "sha256": "570a869222812d9dd3947fc3f021b9bcaee2bda178a5c3d77395896876318b82",
+      "size": 605
     },
     {
       "path": ".agents/config/defaults.yaml",
@@ -253,6 +258,11 @@
       "path": ".agents/hooks/variants/kiro.json",
       "sha256": "921ae2f9515a047d6ac800a21047b46c6ccb079584f75843a9f8059249e46020",
       "size": 715
+    },
+    {
+      "path": ".agents/hooks/variants/opencode/oma.ts",
+      "sha256": "1d7d5d1ffe8ec07e101d58989e75e6dfa0cb043c9eab4740f25ca66a005a0277",
+      "size": 7435
     },
     {
       "path": ".agents/hooks/variants/pi/README.md",
@@ -488,6 +498,11 @@
       "path": ".agents/skills/_shared/runtime/execution-protocols/kiro.md",
       "sha256": "7844a32c8201b7de6c63eb273fe310b3c87c31d8ab9a425d459e6cdcd35c08ef",
       "size": 2659
+    },
+    {
+      "path": ".agents/skills/_shared/runtime/execution-protocols/opencode.md",
+      "sha256": "26122148a303e0d4a220de38793c2db34abab26caacb895c80807a0488ccd7e2",
+      "size": 2968
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/pi.md",
@@ -2096,6 +2111,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 22,
-    "totalFiles": 417
+    "totalFiles": 420
   }
 }
