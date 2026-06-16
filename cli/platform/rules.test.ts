@@ -208,20 +208,20 @@ describe("mergeRulesIndexForVendor", () => {
   it("should still generate usage guide even without rules", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
-        if (typeof p === "string" && p.endsWith("GEMINI.md")) return false;
+        if (typeof p === "string" && p.endsWith("CLAUDE.md")) return false;
         if (typeof p === "string" && p.includes(".agents/rules")) return false;
         return false;
       },
     );
 
-    const result = mergeRulesIndexForVendor(mockTargetDir, "gemini");
+    const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
     expect(result).toBe(true);
 
     const writeCall = (
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("GEMINI.md"),
+        typeof call[0] === "string" && call[0].endsWith("CLAUDE.md"),
     );
     expect(writeCall).toBeDefined();
     const content = writeCall?.[1] as string;
@@ -230,11 +230,29 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).not.toContain("## Project Rules");
   });
 
-  it("should create GEMINI.md with usage guide and rules index", () => {
+  it("no longer generates GEMINI.md for the deprecated gemini vendor", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    );
+
+    const result = mergeRulesIndexForVendor(mockTargetDir, "gemini");
+
+    // gemini is no longer a single-file vendor → no-op, nothing written.
+    expect(result).toBe(false);
+    const wroteGemini = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.some(
+      (call: string[]) =>
+        typeof call[0] === "string" && call[0].endsWith("GEMINI.md"),
+    );
+    expect(wroteGemini).toBe(false);
+  });
+
+  it("should create CLAUDE.md with usage guide and rules index", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (p: string) => {
         const norm = typeof p === "string" ? p.replace(/\\/g, "/") : "";
-        if (norm.endsWith("GEMINI.md")) return false;
+        if (norm.endsWith("CLAUDE.md")) return false;
         return norm.includes(".agents/rules");
       },
     );
@@ -246,14 +264,14 @@ describe("mergeRulesIndexForVendor", () => {
       '---\ndescription: test\nglobs: "**/*.tsx"\n---\n\n# Test',
     );
 
-    const result = mergeRulesIndexForVendor(mockTargetDir, "gemini");
+    const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
     expect(result).toBe(true);
 
     const writeCall = (
       fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
     ).mock.calls.find(
       (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("GEMINI.md"),
+        typeof call[0] === "string" && call[0].endsWith("CLAUDE.md"),
     );
     expect(writeCall).toBeDefined();
     const content = writeCall?.[1] as string;

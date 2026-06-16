@@ -157,7 +157,9 @@ const OMA_END = "<!-- OMA:END -->";
  */
 const VENDOR_FILES: Record<string, string> = {
   claude: "CLAUDE.md",
-  gemini: "GEMINI.md",
+  // gemini (GEMINI.md) removed — Gemini CLI is deprecated (see
+  // utils/gemini-deprecation.ts; sunset June 18, 2026). Legacy configs
+  // soft-redirect to antigravity; oma no longer generates GEMINI.md.
   codex: "AGENTS.md",
   cursor: "AGENTS.md",
   qwen: "AGENTS.md",
