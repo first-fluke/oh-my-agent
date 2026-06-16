@@ -5,9 +5,10 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-14 · 1 unstarred
+## 2026-06-16 · 1 unstarred
 
-- **@vvineey** · Bovin · 4 repos · 14 followers
+- **@charliewilco** · 𝕮𝖍𝖆𝖗𝖑𝖎𝖊 ⚡️ · Seattle, WA · 103 repos · 0 followers
+  - SWE
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -163,7 +164,6 @@ summaries to spot which persona is churning.
 - @chansantheman — 2026-04-25
 - @chany2m4655 — 2026-02-09
 - @chaosong — 2026-02-02
-- @charliewilco — 2026-03-22
 - @chattongchai-t8 — 2026-03-23
 - @chenrui333 — 2026-04-26
 - @chethanyadav456 — 2026-02-02
@@ -270,6 +270,7 @@ summaries to spot which persona is churning.
 - @EMESTAY — 2026-04-30
 - @emilioforrer — 2026-03-11
 - @emperuna — 2026-01-31
+- @enchan087 — 2026-06-15
 - @endlessdev — 2026-06-14
 - @Enitsed — 2026-04-22
 - @entranoweb — 2026-04-06
