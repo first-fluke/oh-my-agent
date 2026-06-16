@@ -138,6 +138,7 @@ EOF
 3. Stage only explicit files; never use broad staging unless the user explicitly approves it.
 4. Do not rewrite shared history without maintainer approval.
 5. Never stage or commit likely-secret material.
+6. **Response language follows `oma-config.yaml` `language`**: user-facing SCM output (status summaries, conflict explanations, CM audit notes, action plans) is localized. Per `i18n-guide.md`, commit messages, PR titles/body, branch names, and status keywords stay in English regardless of the setting.
 
 ### Configuration
 
