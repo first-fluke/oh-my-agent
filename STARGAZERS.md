@@ -5,14 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-16 · 1 unstarred
+## 2026-06-17 · 1 unstarred
 
-- **@charliewilco** · 𝕮𝖍𝖆𝖗𝖑𝖎𝖊 ⚡️ · Seattle, WA · 103 repos · 0 followers
-  - SWE
+- **@smashah** · Shah · LHR/JED · I don't know, yno · 65 repos · 237 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1085)
+## Current (1088)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -101,6 +100,7 @@ summaries to spot which persona is churning.
 - @azizsayadi1155 — 2026-05-10
 - @azla-leomin9 — 2026-05-21
 - @ba-hc — 2026-04-09
+- @babynme0320-sketch — 2026-06-16
 - @BaGyun0107 — 2026-03-12
 - @BangKeonwoong — 2026-04-17
 - @banshanshenlou — 2026-04-03
@@ -522,6 +522,7 @@ summaries to spot which persona is churning.
 - @JK-AJAE — 2026-05-20
 - @joaomagdaleno — 2026-02-12
 - @joarechi — 2026-04-23
+- @jocenunes — 2026-06-17
 - @joeynyc — 2026-03-26
 - @JohannesLauk — 2026-04-07
 - @johansten — 2026-01-31
@@ -596,6 +597,7 @@ summaries to spot which persona is churning.
 - @krnomad — 2026-03-16
 - @ksj1368 — 2026-02-02
 - @KyongSik-Yoon — 2026-02-02
+- @Kyuwyn — 2026-06-16
 - @l2zeo — 2026-02-05
 - @lapel0314 — 2026-04-22
 - @larryjiggler-glitch — 2026-04-25
@@ -861,6 +863,7 @@ summaries to spot which persona is churning.
 - @sabino — 2026-04-09
 - @sagos95 — 2026-03-31
 - @samjegal — 2026-03-18
+- @samueldc — 2026-06-16
 - @samuelyuma — 2026-05-06
 - @sanchez-kim — 2026-04-17
 - @Sang-Hyuk — 2026-03-17
@@ -902,7 +905,6 @@ summaries to spot which persona is churning.
 - @slbug — 2026-03-18
 - @smallq3868 — 2026-05-06
 - @smartyjpark — 2026-02-08
-- @smashah — 2026-03-15
 - @smg1024 — 2026-04-03
 - @smileBeda — 2026-03-23
 - @smqd19 — 2026-05-04
