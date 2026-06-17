@@ -22,6 +22,21 @@ export interface DevtoArticleSummary {
 
 export interface DevtoArticle extends DevtoArticleSummary {
   body_markdown: string;
+  // dev.to's single-article endpoint returns `tags` as an array and
+  // `tag_list` as a comma-separated string, the reverse of the list endpoint.
+  tags?: string[];
+}
+
+function normalizeArticleTags(article: DevtoArticle): string[] {
+  if (Array.isArray(article.tags)) return article.tags;
+  if (Array.isArray(article.tag_list)) return article.tag_list;
+  if (typeof article.tag_list === "string") {
+    return article.tag_list
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
+  return [];
 }
 
 function devtoApiKey(): string {
@@ -87,7 +102,7 @@ export function parseEnglishDraft(raw: string): EnglishDraft | SkipPayload {
 export function articleToEnglishDraft(article: DevtoArticle): EnglishDraft {
   return {
     title: article.title,
-    tags: article.tag_list,
+    tags: normalizeArticleTags(article),
     body_markdown: article.body_markdown,
     source_url: article.url,
   };
