@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.1.0...cli-v10.2.0) (2026-06-18)
+
+
+### Features
+
+* **workflows:** replace pdf workflow with category-routed convert ([e3dca07](https://github.com/first-fluke/oh-my-agent/commit/e3dca0770441f22f7e2567b4066776c40fa96ae8))
+
 ## [10.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.0.1...cli-v10.1.0) (2026-06-18)
 
 
