@@ -1,5 +1,28 @@
 # Changelog
 
+## [10.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.10.0...cli-v10.0.0) (2026-06-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **vendors:** complete Gemini CLI removal across .agents runtime + cli
+
+### Features
+
+* **vendors:** complete Gemini CLI removal across .agents runtime + cli ([ff390a8](https://github.com/first-fluke/oh-my-agent/commit/ff390a870b77f91958fafae81ef08f653a3f0f3a))
+
+
+### Refactoring
+
+* **hooks:** centralize vendor detection in .agents/hooks/core (P6) ([02b0213](https://github.com/first-fluke/oh-my-agent/commit/02b02136e463891d3c1d9b5d4e56ba11279373cb))
+* **scripts:** reuse cli dispatch in agent-spawn (drop hand map) ([cfabbb7](https://github.com/first-fluke/oh-my-agent/commit/cfabbb74ab8d4452030665ee3f14899ce3c2620a))
+* **scripts:** validate AgentVendor against RuntimeVendor SSOT ([33d2bf7](https://github.com/first-fluke/oh-my-agent/commit/33d2bf729883928dc51474535a5c515460b8c669))
+
+
+### Documentation
+
+* **vendors:** drop stale gemini mentions from hook-runtime comments ([b13273f](https://github.com/first-fluke/oh-my-agent/commit/b13273fcc9aff051ff1d405df1b32ac7e410602b))
+
 ## [9.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v9.9.1...cli-v9.10.0) (2026-06-18)
 
 
