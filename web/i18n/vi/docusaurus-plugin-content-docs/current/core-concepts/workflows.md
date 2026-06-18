@@ -133,17 +133,17 @@ Danh sách trắng danh từ (15): app, api, service, server, cli, tool, website
 
 **Mô tả:** Quản lý khả năng hiển thị và hạn chế công cụ MCP.
 
-### /pdf
+### /convert
 
-**Mô tả:** Chuyển đổi PDF sang Markdown bằng `opendataloader-pdf` — trích xuất văn bản, bảng, tiêu đề và hình ảnh theo thứ tự đọc chính xác.
+**Mô tả:** Chuyển đổi file từ định dạng này sang định dạng khác, định tuyến theo loại media. **Tài liệu** (PDF qua `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML qua `kordoc`/`oma-hwp`) trích xuất sang Markdown. File **hình ảnh**, **video** và **âm thanh** transcode sang định dạng đích qua `ffmpeg` (đã được cấp sẵn cho `oma-video`).
 
 **Từ khóa trigger:** Không (gọi tường minh với đường dẫn file đầu vào).
 
-**Các bước:** Xác minh đầu vào (kiểm tra file tồn tại) -> Xác định vị trí đầu ra (người dùng chỉ định hoặc cùng thư mục với đầu vào) -> Chạy `uvx opendataloader-pdf` (không cần cài đặt) -> Với PDF quét, dùng chế độ hybrid với OCR -> Chuẩn hóa đầu ra bằng `uvx mdformat` -> Xác minh khả năng đọc và cấu trúc -> Báo cáo bất kỳ vấn đề chuyển đổi nào (bảng thiếu, văn bản lộn xộn).
+**Các bước:** Xác minh đầu vào & định tuyến theo loại (tài liệu `.pdf`/`.hwp*`; hình ảnh `.jpg`/`.png`/`.webp`/…; video `.mp4`/`.mov`/…; âm thanh `.mp3`/`.wav`/…) -> Xác định định dạng đích (tài liệu mặc định = Markdown; media = `--to` tường minh) -> Chuyển đổi (PDF: `uvx opendataloader-pdf`, PDF quét dùng OCR hybrid; HWP: `bunx kordoc@latest`; media: `ffmpeg`) -> Chuẩn hóa tài liệu (PDF: `uvx mdformat`; HWP: `flatten-tables.ts`) -> Xác minh (đọc Markdown / `ffprobe` media) -> Báo cáo định dạng nguồn→đích và mọi lựa chọn chất lượng/codec.
 
-**Quy tắc:** Vị trí đầu ra mặc định là cùng thư mục với PDF đầu vào. Không bao giờ bỏ qua bước. Ngôn ngữ phản hồi theo `.agents/oma-config.yaml`.
+**Quy tắc:** Định tuyến theo loại — không bao giờ chạy bộ chuyển đổi tài liệu trên file media hoặc ngược lại. Vị trí đầu ra mặc định là cùng thư mục với file đầu vào. Báo cáo lựa chọn chất lượng/codec cho media (transcode không phải không mất mát). Không bao giờ bỏ qua bước. Ngôn ngữ phản hồi theo `.agents/oma-config.yaml`.
 
-**Khi dùng:** Chuyển đổi tài liệu PDF sang Markdown cho ngữ cảnh LLM hoặc thu thập RAG, trích xuất nội dung có cấu trúc (bảng, tiêu đề, danh sách) từ PDF.
+**Khi dùng:** Chuyển đổi tài liệu PDF hoặc dòng HWP của Hàn Quốc sang Markdown cho ngữ cảnh LLM/RAG, hoặc transcode hình ảnh (jpg→webp/png), video (mov→mp4, mp4→gif) và âm thanh (wav→mp3) giữa các định dạng.
 
 ---
 
@@ -243,7 +243,7 @@ Các workflow sau bị loại trừ khỏi phát hiện tự động và phải 
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
-- `/pdf`
+- `/convert`
 
 ---
 

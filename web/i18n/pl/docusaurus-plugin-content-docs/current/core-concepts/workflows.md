@@ -384,17 +384,17 @@ Lista dozwolonych rzeczowników (15): app, api, service, server, cli, tool, webs
 
 ---
 
-### /pdf
+### /convert
 
-**Opis:** Konwertuje PDF do Markdown przy użyciu `opendataloader-pdf` — wyodrębnia tekst, tabele, nagłówki i obrazy w poprawnej kolejności czytania.
+**Opis:** Konwertuje plik z jednego formatu na inny, z routingiem według kategorii mediów. **Dokumenty** (PDF przez `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML przez `kordoc`/`oma-hwp`) są wyodrębniane do Markdown. Pliki **obrazów**, **wideo** i **audio** są transkodowane do docelowego formatu przez `ffmpeg` (już dostarczony dla `oma-video`).
 
 **Słowa kluczowe wyzwalające:** Brak (wywoływane jawnie ze ścieżką pliku wejściowego).
 
-**Kroki:** Walidacja wejścia (potwierdzenie istnienia pliku) -> Ustalenie lokalizacji wyjścia (określonej przez użytkownika lub tego samego katalogu co wejście) -> Uruchom `uvx opendataloader-pdf` (nie wymaga instalacji) -> Dla zeskanowanych PDF-ów użyj trybu hybrydowego z OCR -> Normalizacja wyjścia za pomocą `uvx mdformat` -> Walidacja czytelności i struktury -> Zgłaszanie problemów z konwersją (brakujące tabele, zniekształcony tekst).
+**Kroki:** Walidacja wejścia i routing według kategorii (dokument `.pdf`/`.hwp*`; obraz `.jpg`/`.png`/`.webp`/…; wideo `.mp4`/`.mov`/…; audio `.mp3`/`.wav`/…) -> Ustalenie formatu docelowego (dokument domyślnie = Markdown; media = jawne `--to`) -> Konwersja (PDF: `uvx opendataloader-pdf`, zeskanowane PDF-y używają trybu hybrydowego z OCR; HWP: `bunx kordoc@latest`; media: `ffmpeg`) -> Normalizacja dokumentów (PDF: `uvx mdformat`; HWP: `flatten-tables.ts`) -> Weryfikacja (odczyt Markdown / `ffprobe` dla mediów) -> Zgłoszenie formatu źródłowego→docelowego oraz wszelkich wyborów jakości/kodeka.
 
-**Reguły:** Domyślna lokalizacja wyjścia to ten sam katalog co wejściowy PDF. Nigdy nie pomijaj kroków. Język odpowiedzi zgodny z `.agents/oma-config.yaml`.
+**Reguły:** Routuj według kategorii — nigdy nie uruchamiaj konwertera dokumentów na pliku medialnym ani odwrotnie. Domyślna lokalizacja wyjścia to ten sam katalog co plik wejściowy. Zgłaszaj wybory jakości/kodeka dla mediów (transkodowanie nie jest bezstratne). Nigdy nie pomijaj kroków. Język odpowiedzi zgodny z `.agents/oma-config.yaml`.
 
-**Kiedy używać:** Konwersja dokumentów PDF do Markdown dla kontekstu LLM lub ingestu RAG, wyodrębnianie ustrukturyzowanej zawartości (tabele, nagłówki, listy) z PDF-ów.
+**Kiedy używać:** Konwersja dokumentów PDF lub koreańskich z rodziny HWP do Markdown dla ingestu LLM/RAG, albo transkodowanie obrazów (jpg→webp/png), wideo (mov→mp4, mp4→gif) i audio (wav→mp3) między formatami.
 
 ---
 
@@ -497,12 +497,12 @@ Jeśli dane wejściowe pasują zarówno do wyzwalacza workflow, jak i do wzorca 
 
 ### Wykluczane workflow
 
-Następujące workflow są wykluczone z automatycznego wykrywania i muszą być wywoływane jawną `/komendą`:
+Następujące workflow nie są wyzwalane słowami kluczowymi i muszą być wywoływane jawną `/komendą`. `/tools` i `/stack-set` znajdują się w `excludedWorkflows` (celowo usunięte z wykrywania słów kluczowych); `/convert` po prostu nie udostępnia żadnych słów kluczowych wyzwalających (skille `oma-pdf` i `oma-hwp` mają własne wykrywanie słów kluczowych):
 - `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
-- `/pdf`
+- `/convert`
 
 ---
 

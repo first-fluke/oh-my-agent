@@ -373,17 +373,17 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ---
 
-### /pdf
+### /convert
 
-**Description:** Convert PDF to Markdown using `opendataloader-pdf`. Extracts text, tables, headings, and images with correct reading order.
+**Description:** Convert a file from one format to another, routed by media category. **Documents** (PDF via `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML via `kordoc`/`oma-hwp`) extract to Markdown. **Image**, **video**, and **audio** files transcode to a target format via `ffmpeg` (already provisioned for `oma-video`).
 
 **Trigger keywords:** None (invoked explicitly with an input file path).
 
-**Steps:** Validate input (confirm file exists) -> Determine output location (user-specified or same directory as input) -> Run `uvx opendataloader-pdf` (no install required) -> For scanned PDFs use hybrid mode with OCR -> Normalize output with `uvx mdformat` -> Validate readability and structure -> Report any conversion issues (missing tables, garbled text).
+**Steps:** Validate input & route by category (document `.pdf`/`.hwp*`; image `.jpg`/`.png`/`.webp`/…; video `.mp4`/`.mov`/…; audio `.mp3`/`.wav`/…) -> Resolve target format (document default = Markdown; media = explicit `--to`) -> Convert (PDF: `uvx opendataloader-pdf`, scanned PDFs use hybrid OCR; HWP: `bunx kordoc@latest`; media: `ffmpeg`) -> Normalize documents (PDF: `uvx mdformat`; HWP: `flatten-tables.ts`) -> Verify (read Markdown / `ffprobe` media) -> Report source→target format and any quality/codec choices.
 
-**Rules:** Default output location is the same directory as the input PDF. Never skip steps. Response language follows `.agents/oma-config.yaml`.
+**Rules:** Route by category — never run a document converter on a media file or vice versa. Default output location is the same directory as the input file. Report quality/codec choices for media (transcode is not lossless). Never skip steps. Response language follows `.agents/oma-config.yaml`.
 
-**When to use:** Converting PDF documents to Markdown for LLM context or RAG ingestion, extracting structured content (tables, headings, lists) from PDFs.
+**When to use:** Converting PDF or Korean HWP-family documents to Markdown for LLM/RAG ingestion, or transcoding images (jpg→webp/png), video (mov→mp4, mp4→gif), and audio (wav→mp3) between formats.
 
 ---
 
@@ -544,10 +544,10 @@ If the input matches both a workflow trigger and an informational pattern, the i
 
 ### Excluded workflows
 
-The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/pdf` simply ships no trigger keywords:
+The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/convert` simply ships no trigger keywords (the `oma-pdf` and `oma-hwp` skills carry their own keyword detection):
 - `/tools`
 - `/stack-set`
-- `/pdf`
+- `/convert`
 
 ---
 

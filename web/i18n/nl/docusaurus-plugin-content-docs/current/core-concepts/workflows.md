@@ -316,17 +316,17 @@ Whitelist van zelfstandige naamwoorden (15): app, api, service, server, cli, too
 
 ---
 
-### /pdf
+### /convert
 
-**Beschrijving:** PDF naar Markdown converteren met `opendataloader-pdf` — extraheert tekst, tabellen, koppen en afbeeldingen in de juiste leesvolgorde.
+**Beschrijving:** Een bestand van het ene formaat naar het andere converteren, gerouteerd op mediacategorie. **Documenten** (PDF via `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML via `kordoc`/`oma-hwp`) worden naar Markdown geëxtraheerd. **Afbeeldings-**, **video-** en **audiobestanden** worden naar een doelformaat getranscodeerd via `ffmpeg` (al voorzien voor `oma-video`).
 
 **Triggertrefwoorden:** Geen (wordt expliciet aangeroepen met een pad naar een invoerbestand).
 
-**Stappen:** Invoer valideren (bestaan van bestand bevestigen) -> Uitvoerlocatie bepalen (door gebruiker opgegeven of zelfde directory als invoer) -> `uvx opendataloader-pdf` uitvoeren (geen installatie vereist) -> Voor gescande PDF's hybride modus met OCR gebruiken -> Uitvoer normaliseren met `uvx mdformat` -> Leesbaarheid en structuur valideren -> Conversieproblemen (ontbrekende tabellen, vervormde tekst) rapporteren.
+**Stappen:** Invoer valideren & routeren op categorie (document `.pdf`/`.hwp*`; afbeelding `.jpg`/`.png`/`.webp`/…; video `.mp4`/`.mov`/…; audio `.mp3`/`.wav`/…) -> Doelformaat bepalen (document standaard = Markdown; media = expliciete `--to`) -> Converteren (PDF: `uvx opendataloader-pdf`, gescande PDF's gebruiken hybride OCR; HWP: `bunx kordoc@latest`; media: `ffmpeg`) -> Documenten normaliseren (PDF: `uvx mdformat`; HWP: `flatten-tables.ts`) -> Verifiëren (Markdown lezen / `ffprobe` voor media) -> Bron→doelformaat en eventuele kwaliteits-/codeckeuzes rapporteren.
 
-**Regels:** Standaard uitvoerlocatie is dezelfde directory als de invoer-PDF. Sla nooit stappen over. De antwoordtaal volgt `.agents/oma-config.yaml`.
+**Regels:** Routeer op categorie — draai nooit een documentconverter op een mediabestand of andersom. Standaard uitvoerlocatie is dezelfde directory als het invoerbestand. Rapporteer kwaliteits-/codeckeuzes voor media (transcoderen is niet verliesvrij). Sla nooit stappen over. De antwoordtaal volgt `.agents/oma-config.yaml`.
 
-**Wanneer gebruiken:** PDF-documenten converteren naar Markdown voor LLM-context of RAG-ingestion, gestructureerde inhoud (tabellen, koppen, lijsten) uit PDF's extraheren.
+**Wanneer gebruiken:** PDF- of Koreaanse HWP-familiedocumenten naar Markdown converteren voor LLM-/RAG-ingestion, of afbeeldingen (jpg→webp/png), video (mov→mp4, mp4→gif) en audio (wav→mp3) tussen formaten transcoderen.
 
 ---
 
@@ -425,7 +425,7 @@ Indien de invoer zowel een workflowtrigger als een informatiepatroon matcht, kri
 
 ### Uitgesloten workflows
 
-Vereisen expliciet `/command`: `/scm`, `/tools`, `/stack-set`, `/exec-plan`, `/pdf`.
+Vereisen expliciet `/command`: `/scm`, `/tools`, `/stack-set`, `/exec-plan`, `/convert`.
 
 ---
 

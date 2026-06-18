@@ -384,17 +384,17 @@ Substantiv-Whitelist (15): app, api, service, server, cli, tool, website, dashbo
 
 ---
 
-### /pdf
+### /convert
 
-**Beschreibung:** PDF mit `opendataloader-pdf` in Markdown konvertieren — extrahiert Text, Tabellen, Überschriften und Bilder in korrekter Leseordnung.
+**Beschreibung:** Konvertiert eine Datei von einem Format in ein anderes, geroutet nach Medienkategorie. **Dokumente** (PDF über `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML über `kordoc`/`oma-hwp`) werden zu Markdown extrahiert. **Bild**-, **Video**- und **Audio**-Dateien werden über `ffmpeg` (bereits für `oma-video` bereitgestellt) in ein Zielformat transkodiert.
 
-**Trigger-Keywords:** Keine (muss explizit mit einem Eingabedateipfad aufgerufen werden).
+**Trigger-Keywords:** Keine (wird explizit mit einem Eingabedateipfad aufgerufen).
 
-**Schritte:** Eingabe validieren (Dateiexistenz bestätigen) -> Ausgabespeicherort bestimmen (benutzerdefiniert oder gleiches Verzeichnis wie Eingabe) -> `uvx opendataloader-pdf` ausführen (keine Installation erforderlich) -> Für gescannte PDFs Hybridmodus mit OCR verwenden -> Ausgabe mit `uvx mdformat` normalisieren -> Lesbarkeit und Struktur validieren -> Konvertierungsprobleme (fehlende Tabellen, verstümmelter Text) melden.
+**Schritte:** Eingabe validieren & nach Kategorie routen (Dokument `.pdf`/`.hwp*`; Bild `.jpg`/`.png`/`.webp`/…; Video `.mp4`/`.mov`/…; Audio `.mp3`/`.wav`/…) -> Zielformat bestimmen (Dokument-Standard = Markdown; Medien = explizites `--to`) -> Konvertieren (PDF: `uvx opendataloader-pdf`, gescannte PDFs nutzen hybrides OCR; HWP: `bunx kordoc@latest`; Medien: `ffmpeg`) -> Dokumente normalisieren (PDF: `uvx mdformat`; HWP: `flatten-tables.ts`) -> Verifizieren (Markdown lesen / Medien mit `ffprobe`) -> Quell- und Zielformat sowie etwaige Qualitäts-/Codec-Entscheidungen melden.
 
-**Regeln:** Standard-Ausgabespeicherort ist das gleiche Verzeichnis wie die Eingabe-PDF. Überspringen Sie nie Schritte. Die Antwortsprache folgt `.agents/oma-config.yaml`.
+**Regeln:** Nach Kategorie routen — niemals einen Dokumentkonverter auf eine Mediendatei anwenden oder umgekehrt. Standard-Ausgabespeicherort ist das gleiche Verzeichnis wie die Eingabedatei. Qualitäts-/Codec-Entscheidungen für Medien melden (Transkodierung ist nicht verlustfrei). Überspringen Sie nie Schritte. Die Antwortsprache folgt `.agents/oma-config.yaml`.
 
-**Verwendung:** PDF-Dokumente in Markdown für LLM-Kontext oder RAG-Ingestion konvertieren, strukturierte Inhalte (Tabellen, Überschriften, Listen) aus PDFs extrahieren.
+**Verwendung:** PDF- oder koreanische HWP-Dokumente in Markdown für LLM-/RAG-Ingestion konvertieren oder Bilder (jpg→webp/png), Videos (mov→mp4, mp4→gif) und Audio (wav→mp3) zwischen Formaten transkodieren.
 
 ---
 
@@ -497,12 +497,12 @@ Wenn die Eingabe sowohl einem Workflow-Trigger als auch einem informationellen M
 
 ### Ausgeschlossene Workflows
 
-Die folgenden Workflows sind von der Auto-Erkennung ausgeschlossen und müssen mit einem expliziten `/command` aufgerufen werden:
+Die folgenden Workflows werden nicht per Keyword ausgelöst und müssen mit einem expliziten `/command` aufgerufen werden. `/convert` liefert schlicht keine Trigger-Keywords (die Skills `oma-pdf` und `oma-hwp` bringen ihre eigene Keyword-Erkennung mit):
 - `/scm`
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
-- `/pdf`
+- `/convert`
 
 ---
 

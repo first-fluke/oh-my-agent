@@ -381,17 +381,17 @@ description: oh-my-agent 16개 워크플로우 완전 레퍼런스입니다. 슬
 
 ---
 
-### /pdf
+### /convert
 
-**설명:** `opendataloader-pdf`를 사용하여 PDF를 Markdown으로 변환합니다. 텍스트, 표, 제목, 이미지를 올바른 읽기 순서로 추출합니다.
+**설명:** 미디어 범주에 따라 라우팅하여 파일을 다른 형식으로 변환합니다. **문서**(`opendataloader-pdf`/`oma-pdf` 기반 PDF, `kordoc`/`oma-hwp` 기반 HWP/HWPX/HWPML)는 Markdown으로 추출됩니다. **이미지**, **비디오**, **오디오** 파일은 `ffmpeg`(이미 `oma-video`용으로 준비됨)로 대상 형식으로 트랜스코딩됩니다.
 
 **트리거 키워드:** 없음 (입력 파일 경로와 함께 명시적으로 호출).
 
-**단계:** 입력 검증(파일 존재 확인) -> 출력 위치 결정(사용자 지정 또는 입력과 같은 디렉토리) -> `uvx opendataloader-pdf` 실행(설치 불필요) -> 스캔된 PDF의 경우 OCR과 함께 하이브리드 모드 사용 -> `uvx mdformat`으로 출력 정규화 -> 가독성 및 구조 검증 -> 변환 이슈(누락된 표, 깨진 텍스트) 보고.
+**단계:** 입력 검증 및 범주별 라우팅(문서 `.pdf`/`.hwp*`; 이미지 `.jpg`/`.png`/`.webp`/…; 비디오 `.mp4`/`.mov`/…; 오디오 `.mp3`/`.wav`/…) -> 대상 형식 결정(문서 기본값 = Markdown; 미디어 = 명시적 `--to`) -> 변환(PDF: `uvx opendataloader-pdf`, 스캔된 PDF는 하이브리드 OCR 사용; HWP: `bunx kordoc@latest`; 미디어: `ffmpeg`) -> 문서 정규화(PDF: `uvx mdformat`; HWP: `flatten-tables.ts`) -> 검증(Markdown 읽기 / `ffprobe`로 미디어 확인) -> 원본→대상 형식 및 품질/코덱 선택 사항 보고.
 
-**규칙:** 기본 출력 위치는 입력 PDF와 같은 디렉토리입니다. 단계를 건너뛰지 않습니다. 응답 언어는 `.agents/oma-config.yaml`을 따릅니다.
+**규칙:** 범주별로 라우팅하며, 미디어 파일에 문서 변환기를 돌리거나 그 반대로 하지 않습니다. 기본 출력 위치는 입력 파일과 같은 디렉토리입니다. 미디어의 품질/코덱 선택 사항을 보고합니다(트랜스코딩은 무손실이 아닙니다). 단계를 건너뛰지 않습니다. 응답 언어는 `.agents/oma-config.yaml`을 따릅니다.
 
-**사용 시기:** LLM 컨텍스트 또는 RAG 수집을 위해 PDF 문서를 Markdown으로 변환, PDF에서 구조화된 콘텐츠(표, 제목, 목록) 추출.
+**사용 시기:** LLM/RAG 수집을 위해 PDF나 한국어 HWP 계열 문서를 Markdown으로 변환, 또는 이미지(jpg→webp/png), 비디오(mov→mp4, mp4→gif), 오디오(wav→mp3)를 형식 간 트랜스코딩.
 
 ---
 
@@ -492,7 +492,7 @@ oh-my-agent는 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 제외된 워크플로우
 
-자동 감지에서 제외되며 명시적 `/command`로만 호출: `/scm`, `/tools`, `/stack-set`, `/exec-plan`, `/pdf`.
+자동 감지에서 제외되며 명시적 `/command`로만 호출: `/scm`, `/tools`, `/stack-set`, `/exec-plan`, `/convert`. `/convert`에는 트리거 키워드가 아예 없는데, `oma-pdf`와 `oma-hwp` 스킬이 각자 자체 키워드 감지를 가지고 있기 때문입니다.
 
 ---
 

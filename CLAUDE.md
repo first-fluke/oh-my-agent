@@ -50,7 +50,7 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 | docs | `docs.md` | Documentation drift verify + sync |
 | recap | `recap.md` | Daily / period AI conversation recap |
 | deepinit | `deepinit.md` | Project harness init (AGENTS.md / ARCHITECTURE.md / docs/) |
-| pdf | `pdf.md` | PDF → Markdown via opendataloader-pdf |
+| convert | `convert.md` | File format conversion by category: documents→Markdown (oma-pdf/oma-hwp), image/video/audio transcode (ffmpeg) |
 | video | `video.md` | Brief → script → assets → render-spec → Remotion (oma-video) |
 | schedule | `schedule.md` | Register & manage time-based agent jobs via `oma schedule:*` |
 

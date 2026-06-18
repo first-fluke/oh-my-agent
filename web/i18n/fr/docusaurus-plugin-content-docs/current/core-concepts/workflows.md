@@ -384,17 +384,17 @@ Liste blanche de noms (15) : app, api, service, server, cli, tool, website, dash
 
 ---
 
-### /pdf
+### /convert
 
-**Description :** Convertir un PDF en Markdown en utilisant `opendataloader-pdf` — extrait le texte, les tables, les titres et les images avec un ordre de lecture correct.
+**Description :** Convertir un fichier d'un format à un autre, routé par catégorie de média. Les **documents** (PDF via `opendataloader-pdf`/`oma-pdf` ; HWP/HWPX/HWPML via `kordoc`/`oma-hwp`) sont extraits en Markdown. Les fichiers **image**, **vidéo** et **audio** sont transcodés vers un format cible via `ffmpeg` (déjà provisionné pour `oma-video`).
 
 **Mots-clés de déclenchement :** Aucun (invoqué explicitement avec un chemin de fichier d'entrée).
 
-**Étapes :** Valider l'entrée (confirmer l'existence du fichier) -> Déterminer l'emplacement de sortie (spécifié par l'utilisateur ou même répertoire que l'entrée) -> Exécuter `uvx opendataloader-pdf` (aucune installation requise) -> Pour les PDF scannés, utiliser le mode hybride avec OCR -> Normaliser la sortie avec `uvx mdformat` -> Valider la lisibilité et la structure -> Signaler tout problème de conversion (tables manquantes, texte illisible).
+**Étapes :** Valider l'entrée et router par catégorie (document `.pdf`/`.hwp*` ; image `.jpg`/`.png`/`.webp`/… ; vidéo `.mp4`/`.mov`/… ; audio `.mp3`/`.wav`/…) -> Résoudre le format cible (document par défaut = Markdown ; média = `--to` explicite) -> Convertir (PDF : `uvx opendataloader-pdf`, les PDF scannés utilisent l'OCR hybride ; HWP : `bunx kordoc@latest` ; média : `ffmpeg`) -> Normaliser les documents (PDF : `uvx mdformat` ; HWP : `flatten-tables.ts`) -> Vérifier (lire le Markdown / `ffprobe` pour les médias) -> Signaler le format source→cible et tout choix de qualité/codec.
 
-**Règles :** L'emplacement de sortie par défaut est le même répertoire que le PDF d'entrée. Ne jamais sauter d'étapes. La langue de réponse suit `.agents/oma-config.yaml`.
+**Règles :** Router par catégorie — ne jamais lancer un convertisseur de documents sur un fichier média ni l'inverse. L'emplacement de sortie par défaut est le même répertoire que le fichier d'entrée. Signaler les choix de qualité/codec pour les médias (le transcodage n'est pas sans perte). Ne jamais sauter d'étapes. La langue de réponse suit `.agents/oma-config.yaml`.
 
-**Quand l'utiliser :** Conversion de documents PDF en Markdown pour le contexte LLM ou l'ingestion RAG, extraction de contenu structuré (tables, titres, listes) depuis des PDF.
+**Quand l'utiliser :** Conversion de documents PDF ou de la famille HWP coréenne en Markdown pour le contexte LLM ou l'ingestion RAG, ou transcodage d'images (jpg→webp/png), de vidéos (mov→mp4, mp4→gif) et d'audio (wav→mp3) entre formats.
 
 ---
 
@@ -502,7 +502,7 @@ Les workflows suivants sont exclus de la détection automatique et doivent être
 - `/tools`
 - `/stack-set`
 - `/exec-plan`
-- `/pdf`
+- `/convert`
 
 ---
 
