@@ -13,10 +13,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 const repoRoot = join(__dirname, "../..");
 const hooksRoot = join(repoRoot, ".agents", "hooks", "core");
 
-type Vendor = "antigravity" | "claude" | "codex" | "cursor" | "gemini" | "qwen";
+type Vendor = "antigravity" | "claude" | "codex" | "cursor" | "qwen";
 type CloseReopenVendor = Extract<
   Vendor,
-  "claude" | "codex" | "cursor" | "gemini" | "qwen"
+  "claude" | "codex" | "cursor" | "qwen"
 >;
 
 function runHook(
@@ -60,9 +60,7 @@ function expectPromptOutput(vendor: Vendor, raw: string): void {
     | Record<string, unknown>
     | undefined;
   expect(hookSpecificOutput?.additionalContext).toEqual(expect.any(String));
-  expect(hookSpecificOutput?.hookEventName).toBe(
-    vendor === "gemini" ? "BeforeAgent" : "UserPromptSubmit",
-  );
+  expect(hookSpecificOutput?.hookEventName).toBe("UserPromptSubmit");
 }
 
 function getAdditionalContext(vendor: Vendor, raw: string): string {
@@ -172,15 +170,6 @@ describe("L1 hook vendor probe", () => {
           },
           env: {},
         };
-      case "gemini":
-        return {
-          input: {
-            hook_event_name: "BeforeAgent",
-            sessionId: "gemini-session-1",
-            prompt,
-          },
-          env: { GEMINI_PROJECT_DIR: projectDir },
-        };
       case "qwen":
         return {
           input: {
@@ -198,7 +187,6 @@ describe("L1 hook vendor probe", () => {
     "claude",
     "codex",
     "cursor",
-    "gemini",
     "qwen",
   ])("%s runs keyword-detector -> state-boundary and records L1 events", (vendor) => {
     const { input, env } = makeCase(vendor);
@@ -242,7 +230,6 @@ describe("L1 hook vendor probe", () => {
     "claude",
     "codex",
     "cursor",
-    "gemini",
     "qwen",
   ])("%s close-reopen keeps the OMA sid and flushes an L1-only snapshot", (vendor) => {
     const caseByVendor = {
@@ -294,21 +281,6 @@ describe("L1 hook vendor probe", () => {
         },
         firstVendorSid: "cursor-session-1",
         reopenedVendorSid: "cursor-session-2",
-      },
-      gemini: {
-        env: { GEMINI_PROJECT_DIR: projectDir },
-        firstInput: {
-          hook_event_name: "BeforeAgent",
-          sessionId: "gemini-session-1",
-          prompt: "work",
-        },
-        reopenedInput: {
-          hook_event_name: "BeforeAgent",
-          sessionId: "gemini-session-2",
-          prompt: "continue",
-        },
-        firstVendorSid: "gemini-session-1",
-        reopenedVendorSid: "gemini-session-2",
       },
       qwen: {
         env: { QWEN_PROJECT_DIR: projectDir },

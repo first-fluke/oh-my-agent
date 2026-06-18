@@ -66,16 +66,6 @@ describe("hook-output golden — makePromptOutput (context/prompt)", () => {
     expect(out.additionalContext).toBeUndefined();
   });
 
-  it("gemini -> {hookSpecificOutput:{hookEventName:'BeforeAgent',additionalContext}}", () => {
-    const out = JSON.parse(makePromptOutput("gemini", ctx)) as Record<
-      string,
-      unknown
-    >;
-    const hso = out.hookSpecificOutput as Record<string, unknown>;
-    expect(hso.hookEventName).toBe("BeforeAgent");
-    expect(hso.additionalContext).toBe(ctx);
-  });
-
   it("qwen -> {hookSpecificOutput:{hookEventName:'UserPromptSubmit',additionalContext}}", () => {
     const out = JSON.parse(makePromptOutput("qwen", ctx)) as Record<
       string,
@@ -143,15 +133,6 @@ describe("hook-output golden — makeBlockOutput (stop/block)", () => {
     expect(out).toStrictEqual({ decision: "block", reason });
   });
 
-  it("gemini -> {decision:'deny',reason}", () => {
-    const out = JSON.parse(makeBlockOutput("gemini", reason)) as Record<
-      string,
-      unknown
-    >;
-    expect(out.decision).toBe("deny");
-    expect(out.reason).toBe(reason);
-  });
-
   it("qwen -> {decision:'block',reason}", () => {
     const out = JSON.parse(makeBlockOutput("qwen", reason)) as Record<
       string,
@@ -216,20 +197,6 @@ describe("hook-output golden — makePreToolOutput (pre_tool/mutate)", () => {
     const hso = out.hookSpecificOutput as Record<string, unknown>;
     expect(hso.hookEventName).toBe("PreToolUse");
     expect(hso.updatedInput).toStrictEqual(updatedInput);
-  });
-
-  it("gemini -> {hookSpecificOutput:{hookEventName:'BeforeTool',tool_input}}", () => {
-    // Official BeforeTool rewrite contract: hookSpecificOutput.tool_input
-    // merges with and overrides the model's arguments; there is no
-    // "rewrite" decision value (geminicli.com/docs/hooks/reference).
-    const out = JSON.parse(makePreToolOutput("gemini", updatedInput)) as Record<
-      string,
-      unknown
-    >;
-    const hso = out.hookSpecificOutput as Record<string, unknown>;
-    expect(hso.hookEventName).toBe("BeforeTool");
-    expect(hso.tool_input).toStrictEqual(updatedInput);
-    expect(out.decision).toBeUndefined();
   });
 
   it("qwen -> {hookSpecificOutput:{hookEventName:'PreToolUse',updatedInput}}", () => {

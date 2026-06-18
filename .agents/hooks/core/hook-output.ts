@@ -1,5 +1,5 @@
 // Vendor-specific hook output builders.
-// Each runtime (Claude Code, Codex CLI, Cursor, Gemini CLI, Qwen Code)
+// Each runtime (Claude Code, Codex CLI, Cursor, Qwen Code)
 // expects a slightly different stdout JSON shape; centralize the dialect
 // translation here so individual hooks can stay vendor-agnostic.
 
@@ -49,13 +49,6 @@ export function makePromptOutput(
           additionalContext,
         },
       });
-    case "gemini":
-      return JSON.stringify({
-        hookSpecificOutput: {
-          hookEventName: "BeforeAgent",
-          additionalContext,
-        },
-      });
     case "grok":
       // Grok hook context injection: return additionalContext; Grok may surface
       // it via hook annotations or ignore for prompt events. State side-effects
@@ -97,9 +90,6 @@ export function makeBlockOutput(vendor: Vendor, reason: string): string {
       // agy Stop: `decision:"continue"` re-enters the loop (= block the stop);
       // `reason` is injected as a system message. (Any other value allows stop.)
       return JSON.stringify({ decision: "continue", reason });
-    case "gemini":
-      // Gemini AfterAgent uses "deny" to reject response and force retry
-      return JSON.stringify({ decision: "deny", reason });
     case "pi":
       // pi has no stop-blocking event (agent_end is notification-only), so
       // persistent-mode never runs under pi. This shape mirrors pi's native
@@ -131,16 +121,6 @@ export function makePreToolOutput(
   updatedInput: Record<string, unknown>,
 ): string {
   switch (vendor) {
-    case "gemini":
-      // Official BeforeTool rewrite contract (geminicli.com/docs/hooks/reference):
-      // `hookSpecificOutput.tool_input` merges with and overrides the model's
-      // arguments. There is no "rewrite" decision value (only allow/deny).
-      return JSON.stringify({
-        hookSpecificOutput: {
-          hookEventName: "BeforeTool",
-          tool_input: updatedInput,
-        },
-      });
     case "cursor":
       return JSON.stringify({
         updated_input: updatedInput,

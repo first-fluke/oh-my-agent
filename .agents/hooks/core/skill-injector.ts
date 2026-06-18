@@ -2,7 +2,7 @@
 /**
  * oh-my-agent — Skill Injector Hook (UserPromptSubmit)
  *
- * Works with: Claude Code, Codex CLI, Gemini CLI, Cursor, Qwen Code.
+ * Works with: Claude Code, Codex CLI, Cursor, Qwen Code.
  *
  * Discovers `.agents/skills/<name>/` directories (requires `SKILL.md` to exist),
  * looks up multilingual triggers from `triggers.json` (`skills` section),
@@ -47,7 +47,6 @@ function inferVendorFromScriptPath(): Vendor | null {
   if (path.includes(`${join(".cursor", "hooks")}`)) return "cursor";
   if (path.includes(`${join(".qwen", "hooks")}`)) return "qwen";
   if (path.includes(`${join(".claude", "hooks")}`)) return "claude";
-  if (path.includes(`${join(".gemini", "hooks")}`)) return "gemini";
   if (path.includes(`${join(".codex", "hooks")}`)) return "codex";
   if (path.includes(`${join(".grok", "hooks")}`)) return "grok";
   if (path.includes(`${join(".kiro", "hooks")}`)) return "kiro";
@@ -79,7 +78,6 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   }
 
   if (event === "PreInvocation") return "antigravity";
-  if (event === "BeforeAgent") return "gemini";
   if (event === "beforeSubmitPrompt") return "cursor";
   if (event === "UserPromptSubmit") {
     if ("session_id" in input && !("sessionId" in input)) return "codex";
@@ -94,9 +92,6 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
     case "codex":
     case "cursor":
       dir = (input.cwd as string) || process.cwd();
-      break;
-    case "gemini":
-      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
       break;
     case "antigravity":
       dir =

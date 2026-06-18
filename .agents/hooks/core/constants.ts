@@ -35,7 +35,6 @@ export const VENDORS = [
   "codex",
   "commandcode",
   "cursor",
-  "gemini",
   "grok",
   "kimi",
   "kiro",

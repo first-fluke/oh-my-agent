@@ -73,10 +73,8 @@ export function registerAgentCommands(program: Command): void {
 
   program
     .command("agent:review")
-    .description(
-      "Run code review using external CLI (codex/claude/gemini/grok)",
-    )
-    .option("-m, --model <vendor>", "CLI vendor (codex/claude/gemini/grok)")
+    .description("Run code review using external CLI (codex/claude/qwen/grok)")
+    .option("-m, --model <vendor>", "CLI vendor (codex/claude/qwen/grok)")
     .option("-p, --prompt <prompt>", "Custom review prompt")
     .option("-w, --workspace <path>", "Working directory (default: current)")
     .option("--no-uncommitted", "Review committed changes only")

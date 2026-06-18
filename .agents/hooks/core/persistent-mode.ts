@@ -2,7 +2,7 @@
 /**
  * oh-my-agent — Stop Hook (Persistent Mode)
  *
- * Works with: Claude Code (Stop), Codex CLI (Stop), Gemini CLI (AfterAgent)
+ * Works with: Claude Code (Stop), Codex CLI (Stop)
  *
  * Prevents the agent from stopping while a long-running workflow
  * (ultrawork, orchestrate, work) is active.
@@ -90,7 +90,6 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   if (isAgyInput(input)) return "antigravity";
   if (event === "Stop" && process.env.ANTIGRAVITY_PROJECT_DIR)
     return "antigravity";
-  if (event === "AfterAgent") return "gemini";
   if (event === "Stop") {
     if ("session_id" in input && !("sessionId" in input)) return "codex";
   }
@@ -103,9 +102,6 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
   switch (vendor) {
     case "codex":
       dir = (input.cwd as string) || process.cwd();
-      break;
-    case "gemini":
-      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
       break;
     case "antigravity":
       dir =
@@ -304,7 +300,7 @@ async function main() {
   // This raw-stdin check is standalone-path-only; the canonical HookInput
   // { kind: "stop" } does not carry these text fields.
   const textToCheck = [
-    input.prompt_response, // Gemini AfterAgent
+    input.prompt_response,
     input.response,
     input.content,
     input.message,

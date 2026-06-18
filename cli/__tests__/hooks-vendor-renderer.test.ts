@@ -30,7 +30,6 @@ describe("hook vendor renderer", () => {
 
   it.each([
     ["codex", "UserPromptSubmit"],
-    ["gemini", "BeforeAgent"],
     ["qwen", "UserPromptSubmit"],
   ] as const)("wraps a %s state snapshot in the vendor prompt output contract", (vendor, hookEventName) => {
     const sid = `oma-${vendor}-test`;

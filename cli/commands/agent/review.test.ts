@@ -138,36 +138,6 @@ describe("agent/review.ts", () => {
     expect(args).not.toContain("--output-format");
   });
 
-  it("uses custom prompt for gemini review", async () => {
-    mockFsFunctions.existsSync.mockReturnValue(false);
-    mockFsFunctions.openSync.mockReturnValue(123);
-
-    const mockChild = { pid: 44448, on: vi.fn(), unref: vi.fn() };
-    vi.mocked(child_process.spawn).mockReturnValue(
-      mockChild as unknown as child_process.ChildProcess,
-    );
-    vi.spyOn(console, "log").mockImplementation(() => {});
-
-    await reviewAgent({
-      model: "gemini",
-      workspace: "/tmp",
-      prompt: "Check auth logic only",
-    });
-
-    expect(child_process.spawn).toHaveBeenCalledWith(
-      "gemini",
-      expect.arrayContaining([
-        "-p",
-        expect.stringContaining("Check auth logic only"),
-      ]),
-      expect.anything(),
-    );
-    const args = vi.mocked(child_process.spawn).mock.calls[0]?.[1] as
-      | string[]
-      | undefined;
-    expect(args).not.toContain("--output-format");
-  });
-
   it("inlines git diff for committed-only claude review", async () => {
     mockFsFunctions.existsSync.mockReturnValue(false);
     mockFsFunctions.openSync.mockReturnValue(123);

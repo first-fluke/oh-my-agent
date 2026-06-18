@@ -124,20 +124,6 @@ describe("persistent-mode", () => {
       );
       expect(exitSpy).toHaveBeenCalledWith(2);
     });
-
-    it("emits gemini deny payload on stdout while still populating stderr", () => {
-      const stderrSpy = vi.spyOn(process.stderr, "write").mockReturnValue(true);
-      const stdoutSpy = vi.spyOn(process.stdout, "write").mockReturnValue(true);
-      vi.spyOn(process, "exit").mockImplementation(() => {
-        throw new Error("exit");
-      });
-
-      expect(() => writeBlockAndExit("gemini", "keep going")).toThrow();
-      expect(stderrSpy).toHaveBeenCalledWith("keep going");
-      expect(stdoutSpy).toHaveBeenCalledWith(
-        JSON.stringify({ decision: "deny", reason: "keep going" }),
-      );
-    });
   });
 
   describe("deactivate", () => {

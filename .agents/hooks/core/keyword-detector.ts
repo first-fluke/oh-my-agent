@@ -2,7 +2,7 @@
 /**
  * oh-my-agent — Prompt Hook (keyword detection)
  *
- * Works with: Claude Code (UserPromptSubmit), Codex CLI (UserPromptSubmit), Gemini CLI (BeforeAgent)
+ * Works with: Claude Code (UserPromptSubmit), Codex CLI (UserPromptSubmit), and the other host CLIs in VENDORS
  *
  * Detects natural-language keywords in user prompts and injects
  * workflow instructions into the agent's context.
@@ -62,7 +62,7 @@ export function normalizeForMatching(text: string): string {
 
 /**
  * Brands that count as CLI invocations: Oma plus the host LLM CLIs declared
- * in `VENDORS` (claude, codex, cursor, gemini, qwen). The vendor list is
+ * in `VENDORS` (claude, codex, cursor, qwen, …). The vendor list is
  * the single source of truth for hook-supported runtimes; pulling from it
  * here keeps the brand set in sync when a new vendor is added.
  *
@@ -103,8 +103,7 @@ const SIGNALS_RE_SOURCE = CLI_INVOCATION_SIGNALS.join("|");
  *      enumerated subcommand verbs (agent / auto / exec / run / spawn),
  *      a --flag, or a colon-namespaced subcommand ('agent:spawn').
  *      Examples: 'oma agent:spawn brainstorm', 'claude --help',
- *      'codex exec --workflow ralph', 'gemini agent', 'cursor agent',
- *      'qwen run'.
+ *      'codex exec --workflow ralph', 'cursor agent', 'qwen run'.
  */
 export const CLI_INVOCATION_AT_START = new RegExp(
   `^\\s*(?:\\/(?:${BRANDS_RE_SOURCE}):|(?:${BRANDS_RE_SOURCE})\\s+(?:${SIGNALS_RE_SOURCE}))`,
@@ -143,7 +142,6 @@ const VALID_USER_EVENTS = new Set([
   "user_prompt_submit", // Grok
   "userPromptSubmit", // Kiro
   "beforeSubmitPrompt", // Cursor
-  "BeforeAgent", // Gemini (fires before agent processes user prompt)
   "PreInvocation", // Antigravity CLI (agy)
 ]);
 
@@ -280,7 +278,6 @@ function inferVendorFromScriptPath(): Vendor | null {
   if (path.includes(`${join(".cursor", "hooks")}`)) return "cursor";
   if (path.includes(`${join(".qwen", "hooks")}`)) return "qwen";
   if (path.includes(`${join(".claude", "hooks")}`)) return "claude";
-  if (path.includes(`${join(".gemini", "hooks")}`)) return "gemini";
   if (path.includes(`${join(".codex", "hooks")}`)) return "codex";
   if (path.includes(`${join(".grok", "hooks")}`)) return "grok";
   if (path.includes(`${join(".kiro", "hooks")}`)) return "kiro";
@@ -312,7 +309,6 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   }
 
   if (event === "PreInvocation") return "antigravity";
-  if (event === "BeforeAgent") return "gemini";
   if (event === "beforeSubmitPrompt") return "cursor";
   if (event === "UserPromptSubmit") {
     // Codex uses snake_case session_id, Claude uses camelCase sessionId
@@ -329,9 +325,6 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
     case "codex":
     case "cursor":
       dir = (input.cwd as string) || process.cwd();
-      break;
-    case "gemini":
-      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
       break;
     case "antigravity":
       dir =

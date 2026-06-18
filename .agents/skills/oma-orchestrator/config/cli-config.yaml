@@ -3,24 +3,10 @@
 
 # Default CLI vendor (used as fallback when oma-config.yaml is not configured)
 # For per-agent CLI mapping, see: .agents/oma-config.yaml
-active_vendor: gemini
+active_vendor: claude
 
 # Vendor configurations
 vendors:
-  gemini:
-    command: gemini
-    prompt_flag: "-p"
-    output_format_flag: "--output-format"
-    output_format: "json"
-    auto_approve_flag: "--approval-mode=yolo"
-    model_flag: "-m"
-    default_model: "auto"
-    include_dirs_flag: "--include-directories"
-    # JSON output parsing
-    response_jq: ".response"
-    # Isolation: gemini uses current directory context
-    isolation_method: "directory"
-
   claude:
     command: claude
     prompt_flag: "-p"

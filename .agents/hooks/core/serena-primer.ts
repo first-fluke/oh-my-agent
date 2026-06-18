@@ -2,7 +2,7 @@
 /**
  * oh-my-agent — Serena Primer Hook (prompt kind)
  *
- * Works with: Claude Code, Codex CLI, Cursor, Gemini CLI, Qwen Code,
+ * Works with: Claude Code, Codex CLI, Cursor, Qwen Code,
  * Antigravity, Grok, Kiro.
  *
  * Serena ships per-vendor context prompts that say "prefer Serena's symbolic
@@ -154,7 +154,6 @@ function inferVendorFromScriptPath(): Vendor | null {
   if (path.includes(`${join(".cursor", "hooks")}`)) return "cursor";
   if (path.includes(`${join(".qwen", "hooks")}`)) return "qwen";
   if (path.includes(`${join(".claude", "hooks")}`)) return "claude";
-  if (path.includes(`${join(".gemini", "hooks")}`)) return "gemini";
   if (path.includes(`${join(".codex", "hooks")}`)) return "codex";
   if (path.includes(`${join(".grok", "hooks")}`)) return "grok";
   if (path.includes(`${join(".kiro", "hooks")}`)) return "kiro";
@@ -177,7 +176,6 @@ function detectVendor(input: Record<string, unknown>): Vendor {
     return "kiro";
   }
   if (event === "PreInvocation") return "antigravity";
-  if (event === "BeforeAgent") return "gemini";
   if (event === "beforeSubmitPrompt") return "cursor";
   if (
     event === "UserPromptSubmit" &&
@@ -195,9 +193,6 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
     case "codex":
     case "cursor":
       dir = (input.cwd as string) || process.cwd();
-      break;
-    case "gemini":
-      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
       break;
     case "antigravity":
       dir =

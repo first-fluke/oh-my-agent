@@ -1,5 +1,5 @@
 // PreToolUse hook — Filter test output to show only failures
-// Works with: Claude Code, Codex CLI, Gemini CLI, Qwen Code
+// Works with: Claude Code, Codex CLI, Qwen Code
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,7 +20,6 @@ function detectVendor(input: Record<string, unknown>): Vendor {
   if (process.env.GROK_WORKSPACE_ROOT) return "grok";
   if (process.env.KIRO_PROJECT_DIR) return "kiro";
 
-  if (event === "BeforeTool") return "gemini";
   if (event === "preToolUse" || _hookEventName === "preToolUse") return "kiro";
   if (event === "PreToolUse" && process.env.ANTIGRAVITY_PROJECT_DIR)
     return "antigravity";
@@ -36,9 +35,6 @@ function getProjectDir(vendor: Vendor, input: Record<string, unknown>): string {
   switch (vendor) {
     case "codex":
       dir = (input.cwd as string) || process.cwd();
-      break;
-    case "gemini":
-      dir = process.env.GEMINI_PROJECT_DIR || process.cwd();
       break;
     case "antigravity":
       dir =
@@ -87,8 +83,6 @@ export function getHookDir(vendor: Vendor): string {
       return ".commandcode/hooks";
     case "cursor":
       return ".cursor/hooks";
-    case "gemini":
-      return ".gemini/hooks";
     case "antigravity":
       // agy has no project hook dir — its `.agents/hooks.json` runs handlers
       // straight from the SSOT core dir, where filter-test-output.sh lives.
@@ -186,7 +180,7 @@ export async function run(
   const { toolName, toolInput, cwd: projectDir } = input;
   const { vendor } = ctx;
 
-  // Gemini uses run_shell_command; Claude-family uses Bash.
+  // Claude-family uses Bash; some CLIs use run_shell_command.
   if (toolName !== "Bash" && toolName !== "run_shell_command") return null;
 
   const command = toolInput.command as string | undefined;

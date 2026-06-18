@@ -2,7 +2,6 @@ import { execSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildGeminiBar } from "../../.agents/hooks/core/hud.ts";
 
 const HUD_PATH = join(__dirname, "../../.agents/hooks/core/hud.ts");
 const HUD_PROJECT_DIR = join(tmpdir(), "oma-hud-test-empty-project");
@@ -394,56 +393,5 @@ describe("hud.ts", () => {
       expect(result).toContain("[OMA]");
       expect(result.split("│").length).toBe(1);
     });
-  });
-});
-
-describe("hud.ts (gemini bar)", () => {
-  const cwd = join(__dirname, "../..");
-
-  it("renders OMA label and HH:MM even on empty input", () => {
-    const bar = stripAnsi(buildGeminiBar({}, cwd));
-    expect(bar).toContain("[OMA]");
-    expect(bar).toMatch(/\d{2}:\d{2}/);
-  });
-
-  it("includes the hook event name when provided", () => {
-    const bar = stripAnsi(
-      buildGeminiBar({ hook_event_name: "AfterTool" }, cwd),
-    );
-    expect(bar).toContain("AfterTool");
-  });
-
-  it("shows tool name on AfterTool events", () => {
-    const bar = stripAnsi(
-      buildGeminiBar(
-        { hook_event_name: "AfterTool", tool_name: "run_shell_command" },
-        cwd,
-      ),
-    );
-    expect(bar).toContain("tool:run_shell_command");
-  });
-
-  it("emits the bar on a single line so cursor-restore is safe", () => {
-    const bar = buildGeminiBar(
-      { hook_event_name: "AfterTool", tool_name: "ReadFile" },
-      cwd,
-    );
-    expect(bar).not.toContain("\n");
-    expect(bar).not.toContain("\r");
-  });
-
-  it("does not write the gemini bar to stdout (would corrupt agent context)", () => {
-    const stdout = execSync(`bun "${HUD_PATH}"`, {
-      input: JSON.stringify({
-        hook_event_name: "AfterTool",
-        tool_name: "noop",
-      }),
-      encoding: "utf-8",
-    });
-    // Script path is .agents/hooks/core/hud.ts → detected as claude, so the
-    // statusline string lands on stdout. The gemini path is exercised only when
-    // the script is installed at .gemini/hooks/hud.ts (verified by builder unit
-    // tests above + the install-hooks integration suite).
-    expect(stdout).toContain("[OMA]");
   });
 });

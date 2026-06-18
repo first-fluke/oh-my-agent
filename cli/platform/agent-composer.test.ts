@@ -190,68 +190,6 @@ describe("sanitizeFrontmatterForVendor — codex", () => {
   });
 });
 
-describe("sanitizeFrontmatterForVendor — gemini", () => {
-  let warnSpy: ReturnType<typeof vi.spyOn>;
-
-  beforeEach(() => {
-    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("keeps all allowed gemini fields and drops unsupported ones", () => {
-    const input = {
-      name: "backend-engineer",
-      description: "Backend specialist",
-      tools: "read_file, write_file",
-      model: "gemini-2.5-pro",
-      max_turns: 20,
-      timeout_mins: 30,
-      kind: "agent",
-      // unsupported:
-      effort: "high",
-      maxTurns: 20,
-      skills: ["oma-backend"],
-    };
-
-    const result = sanitizeFrontmatterForVendor(input, "gemini");
-
-    expect(result).toEqual({
-      name: "backend-engineer",
-      description: "Backend specialist",
-      tools: "read_file, write_file",
-      model: "gemini-2.5-pro",
-      max_turns: 20,
-      timeout_mins: 30,
-      kind: "agent",
-    });
-    expect(result).not.toHaveProperty("effort");
-    expect(result).not.toHaveProperty("maxTurns");
-    expect(result).not.toHaveProperty("skills");
-  });
-
-  it("warns for each dropped gemini field", () => {
-    const input = {
-      name: "db-engineer",
-      description: "DB specialist",
-      model: "gemini-2.5-flash",
-      max_turns: 15,
-      effort: "medium",
-      maxTurns: 15,
-    };
-
-    sanitizeFrontmatterForVendor(input, "gemini");
-
-    expect(warnSpy).toHaveBeenCalledTimes(2);
-    const warnMessages: string[] = warnSpy.mock.calls.map(
-      (c: unknown[]) => c[0] as string,
-    );
-    expect(warnMessages.every((m) => m.includes("gemini variant"))).toBe(true);
-  });
-});
-
 describe("sanitizeFrontmatterForVendor — antigravity", () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
 

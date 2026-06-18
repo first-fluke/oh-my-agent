@@ -207,15 +207,6 @@ function resolveCwd(vendor: Vendor, payload: Record<string, unknown>): string {
         ""
       );
     }
-    case "gemini": {
-      const workspaceRoots = payload.workspace_roots as string[] | undefined;
-      return (
-        workspaceRoots?.[0] ||
-        (payload.cwd as string | undefined) ||
-        process.env.GEMINI_PROJECT_DIR ||
-        ""
-      );
-    }
     case "grok": {
       return (
         process.env.GROK_WORKSPACE_ROOT ||

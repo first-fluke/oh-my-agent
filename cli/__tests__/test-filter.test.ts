@@ -11,7 +11,7 @@ const HOOK_PATH = join(__dirname, "../../.agents/hooks/core/test-filter.ts");
 // directory (git-ignored) and works on fresh CI checkouts.
 function makeProjectDir(): string {
   const root = mkdtempSync(join(tmpdir(), "oma-test-filter-proj-"));
-  for (const vendor of [".claude", ".codex", ".gemini", ".qwen"]) {
+  for (const vendor of [".claude", ".codex", ".qwen"]) {
     const hooksDir = join(root, vendor, "hooks");
     mkdirSync(hooksDir, { recursive: true });
     writeFileSync(join(hooksDir, "filter-test-output.sh"), "#!/bin/sh\ncat\n", {
@@ -46,7 +46,6 @@ function runHook(
         // the hook finds the stub filter-test-output.sh regardless of which
         // vendor it detects from the input.
         CLAUDE_PROJECT_DIR: projectDir,
-        GEMINI_PROJECT_DIR: projectDir,
         QWEN_PROJECT_DIR: env.QWEN_PROJECT_DIR ? projectDir : "",
         OMA_HOOK_INPUT_FILE: inputFile,
         ...env,
@@ -158,17 +157,6 @@ describe("test-filter hook", () => {
       );
     });
 
-    it("should output hookSpecificOutput.tool_input rewrite for Gemini", () => {
-      const result = runHook({
-        tool_name: "Bash",
-        tool_input: { command: "vitest" },
-        hook_event_name: "BeforeTool",
-      });
-      const parsed = JSON.parse(result);
-      expect(parsed.hookSpecificOutput.hookEventName).toBe("BeforeTool");
-      expect(parsed.hookSpecificOutput.tool_input.command).toContain("vitest");
-    });
-
     it("should preserve original tool_input fields", () => {
       const result = runHook({
         tool_name: "Bash",
@@ -194,18 +182,6 @@ describe("test-filter hook", () => {
       const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
 
       expect(normalized).toContain(".codex/hooks/filter-test-output.sh");
-      expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
-    });
-
-    it("should use the Gemini hook directory for Gemini sessions", () => {
-      const result = runHook({
-        tool_name: "Bash",
-        tool_input: { command: "vitest --run" },
-        hook_event_name: "BeforeTool",
-      });
-      const normalized = result.replace(/\\\\/g, "/").replace(/\\/g, "/");
-
-      expect(normalized).toContain(".gemini/hooks/filter-test-output.sh");
       expect(normalized).not.toContain(".claude/hooks/filter-test-output.sh");
     });
 

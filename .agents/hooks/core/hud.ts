@@ -2,44 +2,18 @@
 /**
  * oh-my-agent — HUD
  *
- * Lightweight status display. Two modes:
- *
- *   - Claude Code / agy (statusLine): stdin = vendor payload, stdout = ANSI
- *     text consumed by the native status-line renderer. Field names line up
- *     across both vendors; vendor-specific extras are best-effort.
- *   - Gemini CLI (SessionStart, AfterTool, AfterAgent hooks): stdin = Gemini
- *     hook payload, stdout = `{}` (protocol no-op), side effect = best-effort
- *     bottom-row bar written to /dev/tty.
- *
- * Vendor is inferred from the installed script path:
- *   `.gemini/hooks/` → gemini bar mode
- *   `.claude/hooks/` or `.gemini/antigravity-cli/hooks/` → claude statusline mode
+ * Lightweight status display for Claude Code / agy (statusLine): stdin =
+ * vendor payload, stdout = ANSI text consumed by the native status-line
+ * renderer. Field names line up across both vendors; vendor-specific extras
+ * are best-effort.
  *
  * Set `OMA_HUD_DEBUG=1` to dump the raw stdin payload to
  * `<hookDir>/../last-hud-input.json` for schema reverse-engineering.
  */
 
-import {
-  closeSync,
-  existsSync,
-  openSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-  writeSync,
-} from "node:fs";
-import { join, sep } from "node:path";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ModeState } from "./types.ts";
-
-type HudVendor = "claude" | "gemini";
-
-function inferVendor(): HudVendor {
-  const path = import.meta.filename ?? "";
-  // Strict match on `/.gemini/hooks/` so agy (`/.gemini/antigravity-cli/hooks/`)
-  // falls through to claude — agy's StatusLine uses Claude's stdout protocol.
-  if (path.includes(`${sep}.gemini${sep}hooks${sep}`)) return "gemini";
-  return "claude";
-}
 
 // ── ANSI Colors ───────────────────────────────────────────────
 
@@ -105,33 +79,7 @@ interface StatuslineStdin {
   terminal_width?: number;
 }
 
-interface GeminiHookInput {
-  hook_event_name?: string;
-  cwd?: string;
-  tool_name?: string;
-  tool_response?: { exit_code?: number; success?: boolean } | unknown;
-  prompt?: string;
-  prompt_response?: string;
-  source?: string;
-}
-
 function readStdin(): StatuslineStdin {
-  const raw = (() => {
-    try {
-      return readFileSync(0, "utf-8");
-    } catch {
-      return "";
-    }
-  })();
-  maybeDumpDebugPayload(raw);
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
-}
-
-function readRaw(): unknown {
   const raw = (() => {
     try {
       return readFileSync(0, "utf-8");
@@ -235,67 +183,6 @@ function formatTokens(n: number): string {
   return `${(n / 1_000_000).toFixed(1)}M`;
 }
 
-// ── Gemini bar (DECSTBM-free best-effort bottom row) ──────────
-
-/**
- * Write `line` to the controlling TTY at the bottom row, then restore the
- * cursor so the host CLI's render is not visibly disturbed. Best-effort:
- * silently no-ops in environments without /dev/tty (CI, piped runs); when
- * the host CLI repaints, the bar is overwritten until the next event.
- * Intentionally avoids DECSTBM scroll-region changes so scrollback survives
- * a mid-write hook kill.
- */
-function paintBottomBar(line: string): void {
-  let fd: number | null = null;
-  try {
-    fd = openSync("/dev/tty", "w");
-    const SAVE = "\x1b7"; // DECSC: save cursor + attrs
-    const RESTORE = "\x1b8"; // DECRC: restore cursor + attrs
-    const TO_BOTTOM = "\x1b[999;1H"; // clamp to last row, col 1
-    const CLEAR_LINE = "\x1b[2K";
-    writeSync(fd, `${SAVE}${TO_BOTTOM}${CLEAR_LINE}\r${line}${RESTORE}`);
-  } catch {
-    // No tty available — silent.
-  } finally {
-    if (fd !== null) {
-      try {
-        closeSync(fd);
-      } catch {
-        // ignore close failures
-      }
-    }
-  }
-}
-
-export function buildGeminiBar(
-  input: GeminiHookInput,
-  projectDir: string,
-): string {
-  const parts: string[] = [bold(cyan("[OMA]"))];
-
-  const event = input.hook_event_name;
-  if (event) parts.push(dim(event));
-
-  const workflow = getActiveWorkflow(projectDir);
-  if (workflow) {
-    parts.push(yellow(`${workflow.workflow}:${workflow.reinforcementCount}`));
-  }
-
-  if (input.tool_name) {
-    const resp = input.tool_response as { exit_code?: number } | undefined;
-    const failed = typeof resp?.exit_code === "number" && resp.exit_code !== 0;
-    const label = `tool:${input.tool_name}`;
-    parts.push(failed ? red(label) : green(label));
-  }
-
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  parts.push(dim(`${hh}:${mm}`));
-
-  return parts.join(dim(" │ "));
-}
-
 // ── Claude / agy statusline ───────────────────────────────────
 
 export function buildClaudeStatusline(input: StatuslineStdin): string {
@@ -397,21 +284,6 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
 // ── Main ──────────────────────────────────────────────────────
 
 function main() {
-  const vendor = inferVendor();
-
-  if (vendor === "gemini") {
-    const raw = readRaw() as GeminiHookInput;
-    const projectDir =
-      process.env.GEMINI_PROJECT_DIR ||
-      process.env.ANTIGRAVITY_PROJECT_DIR ||
-      raw.cwd ||
-      process.cwd();
-    paintBottomBar(buildGeminiBar(raw, projectDir));
-    // Gemini hook protocol: empty object = no-op, do not influence the agent.
-    process.stdout.write("{}");
-    return;
-  }
-
   process.stdout.write(buildClaudeStatusline(readStdin()));
 }
 

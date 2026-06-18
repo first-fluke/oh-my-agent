@@ -11,7 +11,7 @@ import { registerSignalCleanup } from "../../utils/process-signals.js";
 import { isProcessRunning, resolveSessionId } from "./common.js";
 
 const REVIEW_FALLBACK_VENDOR = "codex";
-const REVIEW_SUPPORTED_VENDORS = ["codex", "claude", "gemini", "qwen", "grok"];
+const REVIEW_SUPPORTED_VENDORS = ["codex", "claude", "qwen", "grok"];
 
 function buildReviewDiffPrompt(
   prompt: string,
@@ -58,7 +58,6 @@ function buildReviewArgs(
     args.push(vendorConfig.auto_approve_flag);
   } else {
     const defaultAutoApprove: Record<string, string> = {
-      gemini: "--approval-mode=yolo",
       qwen: "--yolo",
     };
     const fallback = defaultAutoApprove[vendor];

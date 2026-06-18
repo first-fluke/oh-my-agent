@@ -141,10 +141,6 @@ describe("keyword-detector", () => {
       expect(CLI_INVOCATION_AT_START.test("omc auto")).toBe(false);
     });
 
-    it("matches: gemini agent (host LLM CLI)", () => {
-      expect(CLI_INVOCATION_AT_START.test("gemini agent")).toBe(true);
-    });
-
     it("matches: cursor exec (host LLM CLI)", () => {
       expect(CLI_INVOCATION_AT_START.test("cursor exec --help")).toBe(true);
     });
@@ -1243,12 +1239,6 @@ describe("keyword-detector", () => {
       expect(
         isGenuineUserPrompt({ hook_event_name: "beforeSubmitPrompt" }),
       ).toBe(true);
-    });
-
-    it("should allow Gemini BeforeAgent events", () => {
-      expect(isGenuineUserPrompt({ hook_event_name: "BeforeAgent" })).toBe(
-        true,
-      );
     });
 
     it("should allow Antigravity PreInvocation events", () => {

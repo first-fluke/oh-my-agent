@@ -170,8 +170,6 @@ const VENDOR_FILES: Record<string, string> = {
 const VENDOR_SPAWN: Record<string, string> = {
   claude:
     "Same-vendor native dispatch via Claude Code Agent tool with `.claude/agents/{name}.md`; cross-vendor fallback via `oma agent:spawn`",
-  gemini:
-    "Same-vendor native dispatch via `.gemini/agents/{name}.md`; cross-vendor or unsupported cases fall back to `oma agent:spawn {agent} {prompt} {sessionId}`",
   cursor: "`@agent-name` (defined in `.cursor/agents/`)",
   codex:
     "Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent:spawn`",
@@ -183,8 +181,6 @@ const VENDOR_SPAWN: Record<string, string> = {
 const VENDOR_HOOKS: Record<string, string> = {
   claude:
     "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)",
-  gemini:
-    "Hooks: `BeforeAgent` (keyword detection), `BeforeTool`, `AfterAgent` (persistent mode)",
   codex:
     "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)",
   cursor:
