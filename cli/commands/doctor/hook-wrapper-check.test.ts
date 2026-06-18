@@ -125,7 +125,7 @@ describe("collectHookWrapperChecks", () => {
 
     fsState.existsSyncFn.mockImplementation((p: unknown) => {
       const path = String(p);
-      if (path.endsWith(".gemini/hooks/oma-hook.sh")) return true;
+      if (path.endsWith(".qwen/hooks/oma-hook.sh")) return true;
       if (path === recordedOmaPath) return true;
       return false;
     });
@@ -133,7 +133,7 @@ describe("collectHookWrapperChecks", () => {
       // accessSync does not throw → file is executable
     });
     fsState.readFileSyncFn.mockImplementation((p: unknown) => {
-      if (String(p).endsWith(".gemini/hooks/oma-hook.sh")) {
+      if (String(p).endsWith(".qwen/hooks/oma-hook.sh")) {
         return wrapperWithPath(recordedOmaPath);
       }
       return "";
@@ -143,9 +143,9 @@ describe("collectHookWrapperChecks", () => {
     const env = makeEnv([]);
     const checks = collectHookWrapperChecks("/project", env);
 
-    const gemini = checks.find((c) => c.vendor === "gemini");
-    expect(gemini).toBeDefined();
-    expect(gemini?.status).toBe("pass");
+    const qwen = checks.find((c) => c.vendor === "qwen");
+    expect(qwen).toBeDefined();
+    expect(qwen?.status).toBe("pass");
   });
 
   it("excludes the antigravity vendor (no oma-hook.sh — .agents/hooks.json runs handlers directly)", () => {

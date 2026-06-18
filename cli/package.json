@@ -35,8 +35,7 @@
     "terraform",
     "database",
     "workflow",
-    "bug-fixing",
-    "gemini"
+    "bug-fixing"
   ],
   "author": "our.first.fluke <our.first.fluke@gmail.com>",
   "contributors": [

@@ -286,7 +286,6 @@ export function buildExternalInvocation(
       optionArgs.push(vendorConfig.auto_approve_flag);
     } else {
       const defaultAutoApprove: Record<string, string> = {
-        gemini: "--approval-mode=yolo",
         codex: "--full-auto",
         qwen: "--yolo",
         antigravity: "--dangerously-skip-permissions",

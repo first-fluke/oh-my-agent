@@ -183,23 +183,9 @@ describe("planDispatch — regression: native paths unaffected", () => {
     expect(plan.invocation.args.at(-1)).toContain("@test-agent");
   });
 
-  // Characterization: gemini and kiro same-vendor native dispatch were not
-  // directly asserted before. Pin the dispatch contract (mode/runtimeVendor/
-  // reason) so the native-builder table collapse stays behavior-preserving.
-  it("gemini runtime + gemini target → mode:'native'", () => {
-    const plan = planDispatch(
-      "test-agent",
-      "gemini",
-      { command: "gemini", prompt_flag: "-p" },
-      "-p",
-      "hello",
-      { OMA_RUNTIME_VENDOR: "gemini" },
-    );
-    expect(plan.mode).toBe("native");
-    expect(plan.runtimeVendor).toBe("gemini");
-    expect(plan.reason).toBe("same-vendor Gemini runtime detected");
-  });
-
+  // Characterization: kiro same-vendor native dispatch was not directly
+  // asserted before. Pin the dispatch contract (mode/runtimeVendor/reason) so
+  // the native-builder table collapse stays behavior-preserving.
   it("kiro runtime + kiro target → mode:'native' (chat --no-interactive)", () => {
     const plan = planDispatch(
       "test-agent",
@@ -212,7 +198,10 @@ describe("planDispatch — regression: native paths unaffected", () => {
     expect(plan.mode).toBe("native");
     expect(plan.runtimeVendor).toBe("kiro");
     expect(plan.reason).toBe("same-vendor Kiro CLI (--no-interactive)");
-    expect(plan.invocation.args.slice(0, 2)).toEqual(["chat", "--no-interactive"]);
+    expect(plan.invocation.args.slice(0, 2)).toEqual([
+      "chat",
+      "--no-interactive",
+    ]);
   });
 });
 
@@ -499,16 +488,6 @@ describe("buildExternalInvocation — vendor branches", () => {
     expect(inv.args).toContain("--trust");
   });
 
-  it("gemini: missing auto_approve_flag → falls back to --approval-mode=yolo", () => {
-    const inv = buildExternalInvocation(
-      "gemini",
-      { command: "gemini" },
-      "-p",
-      "hi",
-    );
-    expect(inv.args).toContain("--approval-mode=yolo");
-  });
-
   it("codex: missing auto_approve_flag → falls back to --full-auto", () => {
     const inv = buildExternalInvocation(
       "codex",
@@ -621,8 +600,8 @@ describe("buildExternalInvocation — vendor branches", () => {
 
   it("with promptFlag → flag and prompt appended as a pair", () => {
     const inv = buildExternalInvocation(
-      "gemini",
-      { command: "gemini" },
+      "qwen",
+      { command: "qwen" },
       "-p",
       "the-prompt",
     );

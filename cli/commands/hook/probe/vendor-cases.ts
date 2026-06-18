@@ -6,7 +6,6 @@ export type ProbeVendor =
   | "claude"
   | "codex"
   | "cursor"
-  | "gemini"
   | "grok"
   | "kimi"
   | "kiro"
@@ -16,7 +15,6 @@ export const PROBE_VENDORS: ProbeVendor[] = [
   "claude",
   "codex",
   "cursor",
-  "gemini",
   "grok",
   "kimi",
   "kiro",
@@ -97,20 +95,6 @@ export const VENDOR_CASES: Record<ProbeVendor, VendorCase> = {
         prompt,
       },
       env: {},
-    }),
-  },
-  gemini: {
-    promptEvent: "BeforeAgent",
-    expectedHookEvent: "BeforeAgent",
-    injectionFields: ["hookSpecificOutput.additionalContext"],
-    usesHookSpecificOutput: true,
-    build: (projectDir, vendorSid, prompt) => ({
-      input: {
-        hook_event_name: "BeforeAgent",
-        sessionId: vendorSid,
-        prompt,
-      },
-      env: { GEMINI_PROJECT_DIR: projectDir },
     }),
   },
   grok: {

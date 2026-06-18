@@ -61,7 +61,6 @@ describe("ModelSpecSchema — cli field", () => {
     const vendors = [
       "claude",
       "codex",
-      "gemini",
       "cursor",
       "antigravity",
       "qwen",

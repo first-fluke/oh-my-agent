@@ -14,7 +14,6 @@ const KNOWN_VENDORS: VendorType[] = [
   "codex",
   "commandcode",
   "cursor",
-  "gemini",
   "grok",
   "kimi",
   "kiro",

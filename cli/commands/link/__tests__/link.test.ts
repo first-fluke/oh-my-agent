@@ -40,7 +40,7 @@ vi.mock("../../../platform/skills-installer.js", () => ({
   installCopilotWorkflowPrompts: vi.fn(),
   installVendorAdaptations: vi.fn(),
   isHookVendor: vi.fn((v: string) =>
-    ["claude", "codex", "cursor", "gemini", "qwen"].includes(v),
+    ["claude", "codex", "cursor", "qwen"].includes(v),
   ),
   isExtensionVendor: vi.fn((v: string) => v === "pi"),
   readVendorsFromConfig: vi.fn(() => configuredVendorsForTest),
@@ -73,11 +73,6 @@ vi.mock("../../../vendors/codex/settings.js", () => ({
   serializeCodexConfig: vi.fn(() => ""),
 }));
 
-vi.mock("../../../vendors/gemini/settings.js", () => ({
-  applyGeminiSettings: vi.fn(),
-  needsGeminiSettingsUpdate: vi.fn(() => false),
-}));
-
 vi.mock("../../../vendors/grok/settings.js", () => ({
   applyGrokTelemetryConfig: vi.fn(),
   needsGrokTelemetryUpdate: vi.fn(() => false),
@@ -95,7 +90,6 @@ import * as skills from "../../../platform/skills-installer.js";
 import * as safeWrite from "../../../utils/safe-write.js";
 import * as antigravity from "../../../vendors/antigravity/hud.js";
 import * as claudeMcp from "../../../vendors/claude/mcp.js";
-import * as gemini from "../../../vendors/gemini/settings.js";
 import * as grok from "../../../vendors/grok/settings.js";
 import * as qwen from "../../../vendors/qwen/settings.js";
 import { link } from "../run.js";
@@ -283,24 +277,24 @@ describe("link kernel", () => {
 
   describe("telemetry propagation", () => {
     it("threads explicit telemetry: true to vendor settings checkers", () => {
-      const projectDir = makeProject(["gemini"]);
+      const projectDir = makeProject(["qwen"]);
       process.chdir(projectDir);
 
       link({ quiet: true, telemetry: true });
 
-      expect(gemini.needsGeminiSettingsUpdate).toHaveBeenCalledWith(
+      expect(qwen.needsQwenSettingsUpdate).toHaveBeenCalledWith(
         expect.anything(),
         { telemetry: true },
       );
     });
 
     it("threads explicit telemetry: false to vendor settings checkers", () => {
-      const projectDir = makeProject(["gemini"]);
+      const projectDir = makeProject(["qwen"]);
       process.chdir(projectDir);
 
       link({ quiet: true, telemetry: false });
 
-      expect(gemini.needsGeminiSettingsUpdate).toHaveBeenCalledWith(
+      expect(qwen.needsQwenSettingsUpdate).toHaveBeenCalledWith(
         expect.anything(),
         { telemetry: false },
       );
@@ -403,26 +397,6 @@ describe("link kernel", () => {
       expect(forbidden).toBeUndefined();
     });
 
-    it("calls safeWriteJson for Gemini settings.json when update is needed", () => {
-      (
-        gemini.needsGeminiSettingsUpdate as ReturnType<typeof vi.fn>
-      ).mockReturnValueOnce(true);
-
-      const projectDir = makeProject(["gemini"]);
-      process.chdir(projectDir);
-
-      link({ quiet: true });
-
-      const calls = (
-        safeWrite.safeWriteJson as ReturnType<typeof vi.fn>
-      ).mock.calls.map((args: unknown[]) => args[0] as string);
-      expect(
-        calls.some(
-          (p: string) => p.includes(".gemini") && p.endsWith("settings.json"),
-        ),
-      ).toBe(true);
-    });
-
     it("calls safeWriteJson for Qwen settings.json when update is needed", () => {
       (
         qwen.needsQwenSettingsUpdate as ReturnType<typeof vi.fn>
@@ -444,7 +418,7 @@ describe("link kernel", () => {
     });
 
     it("never calls safeWriteJson with .claude.json for any vendor", () => {
-      const projectDir = makeProject(["claude", "gemini", "qwen", "codex"]);
+      const projectDir = makeProject(["claude", "qwen", "codex"]);
       process.chdir(projectDir);
 
       link({ quiet: true });

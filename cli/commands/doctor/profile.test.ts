@@ -21,7 +21,6 @@ vi.mock("../../vendors/index.js", () => ({
   isAntigravityAuthenticated: vi.fn(() => false),
   isClaudeAuthenticated: vi.fn(() => false),
   isCodexAuthenticated: vi.fn(() => false),
-  isGeminiAuthenticated: vi.fn(() => false),
   isGrokAuthenticated: vi.fn(() => false),
   isKimiAuthenticated: vi.fn(() => false),
   isKiroAuthenticated: vi.fn(() => false),
@@ -80,7 +79,6 @@ beforeEach(() => {
   vi.mocked(vendorsMock.isAntigravityAuthenticated).mockReturnValue(false);
   vi.mocked(vendorsMock.isClaudeAuthenticated).mockReturnValue(false);
   vi.mocked(vendorsMock.isCodexAuthenticated).mockReturnValue(false);
-  vi.mocked(vendorsMock.isGeminiAuthenticated).mockReturnValue(false);
   vi.mocked(vendorsMock.isQwenAuthenticated).mockReturnValue(false);
   vi.mocked(qwenAuthMock.detectDeprecatedOAuthSession).mockReturnValue({
     hasLegacySession: false,
@@ -120,7 +118,6 @@ describe("collectProfileReport — Claude logged in", () => {
 
     const claudeRows = report.rows.filter((r) => r.cli === "claude");
     const codexRows = report.rows.filter((r) => r.cli === "codex");
-    const geminiRows = report.rows.filter((r) => r.cli === "gemini");
 
     expect(claudeRows.length).toBeGreaterThan(0);
     for (const row of claudeRows) {
@@ -129,11 +126,6 @@ describe("collectProfileReport — Claude logged in", () => {
       );
     }
     for (const row of codexRows) {
-      expect(row.authStatus, `role ${row.role} should be not_logged_in`).toBe(
-        "not_logged_in",
-      );
-    }
-    for (const row of geminiRows) {
       expect(row.authStatus, `role ${row.role} should be not_logged_in`).toBe(
         "not_logged_in",
       );
@@ -154,26 +146,6 @@ describe("collectProfileReport — Codex logged in", () => {
     const codexRows = report.rows.filter((r) => r.cli === "codex");
     expect(codexRows.length).toBeGreaterThan(0);
     for (const row of codexRows) {
-      expect(row.authStatus, `role ${row.role} should be logged_in`).toBe(
-        "logged_in",
-      );
-    }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Tests: Gemini auth state
-// ---------------------------------------------------------------------------
-
-describe("collectProfileReport — Gemini logged in", () => {
-  it("marks Gemini-based roles as logged_in when isGeminiAuthenticated returns true", async () => {
-    vi.mocked(vendorsMock.isGeminiAuthenticated).mockReturnValue(true);
-
-    const report = await profileModule.collectProfileReport("/fake/cwd");
-
-    const geminiRows = report.rows.filter((r) => r.cli === "gemini");
-    expect(geminiRows.length).toBeGreaterThan(0);
-    for (const row of geminiRows) {
       expect(row.authStatus, `role ${row.role} should be logged_in`).toBe(
         "logged_in",
       );
@@ -340,13 +312,6 @@ describe("collectProfileReport — model and CLI mapping", () => {
     const backend = report.rows.find((r) => r.role === "backend");
     expect(backend?.cli).toBe("codex");
     expect(backend?.model).toBe("openai/gpt-5.5");
-  });
-
-  it("correctly maps google/ models to gemini CLI", async () => {
-    const report = await profileModule.collectProfileReport("/fake/cwd");
-    const explore = report.rows.find((r) => r.role === "explore");
-    expect(explore?.cli).toBe("gemini");
-    expect(explore?.model).toBe("google/gemini-3.1-flash-lite");
   });
 });
 

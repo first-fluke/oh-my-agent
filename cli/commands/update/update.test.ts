@@ -311,7 +311,6 @@ describe("resolveUpdateVendors", () => {
     const vendors = resolveUpdateVendors(root, { all: true });
 
     expect(vendors).toContain("claude");
-    expect(vendors).toContain("gemini");
     expect(vendors).toContain("grok");
     expect(vendors).toContain("pi");
     expect(vendors).toContain("qwen");

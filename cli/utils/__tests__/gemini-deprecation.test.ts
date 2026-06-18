@@ -21,10 +21,6 @@ describe("usesGeminiCli", () => {
     );
   });
 
-  it("returns true for mixed preset (explore routes through gemini)", () => {
-    expect(usesGeminiCli({ language: "en", model_preset: "mixed" })).toBe(true);
-  });
-
   it("returns false for antigravity preset (uses agy CLI, not gemini)", () => {
     expect(usesGeminiCli({ language: "en", model_preset: "antigravity" })).toBe(
       false,

@@ -8,30 +8,24 @@ import {
   BUILT_IN_PRESET_ALIASES,
   BUILT_IN_PRESETS,
 } from "../platform/built-in-presets.js";
-import { getModelSpec } from "../platform/model-registry.js";
 
 export const GEMINI_DEPRECATION_DATE = "June 18, 2026";
 export const GEMINI_MIGRATION_URL = "https://goo.gle/gemini-cli-migration";
 
 const warnedContexts = new Set<string>();
 
-function isGeminiModelSlug(
-  slug: string | undefined,
-  userModels?: Record<string, unknown>,
-): boolean {
+// The Gemini CLI vendor and its `google/*` registry models were removed. A
+// legacy config may still literally name a `google/*` slug (now an unknown
+// model), so detect it by owner prefix to keep nudging users to migrate.
+function isGeminiModelSlug(slug: string | undefined): boolean {
   if (!slug) return false;
-  const spec = getModelSpec(slug, userModels);
-  if (spec) return spec.cli === "gemini";
   return slug.startsWith("google/");
 }
 
-function presetTargetsGemini(
-  preset: ModelPreset | undefined,
-  userModels: Record<string, unknown> | undefined,
-): boolean {
+function presetTargetsGemini(preset: ModelPreset | undefined): boolean {
   if (!preset?.agent_defaults) return false;
   return Object.values(preset.agent_defaults).some(
-    (spec: AgentSpec | undefined) => isGeminiModelSlug(spec?.model, userModels),
+    (spec: AgentSpec | undefined) => isGeminiModelSlug(spec?.model),
   );
 }
 
@@ -39,7 +33,6 @@ export function usesGeminiCli(
   config: Partial<OmaConfig> | null | undefined,
 ): boolean {
   if (!config) return false;
-  const userModels = config.models as Record<string, unknown> | undefined;
 
   const rawPreset = config.model_preset;
   if (rawPreset) {
@@ -51,16 +44,15 @@ export function usesGeminiCli(
 
     const resolvedKey = BUILT_IN_PRESET_ALIASES[rawPreset] ?? rawPreset;
     const builtIn = BUILT_IN_PRESETS[resolvedKey as BuiltInPresetKey];
-    if (builtIn && presetTargetsGemini(builtIn, userModels)) return true;
+    if (builtIn && presetTargetsGemini(builtIn)) return true;
 
     const customPreset = config.custom_presets?.[resolvedKey];
-    if (customPreset && presetTargetsGemini(customPreset, userModels))
-      return true;
+    if (customPreset && presetTargetsGemini(customPreset)) return true;
   }
 
   if (config.agents) {
     for (const spec of Object.values(config.agents)) {
-      if (isGeminiModelSlug(spec?.model, userModels)) return true;
+      if (isGeminiModelSlug(spec?.model)) return true;
     }
   }
 

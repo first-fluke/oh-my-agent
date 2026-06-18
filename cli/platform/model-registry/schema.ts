@@ -7,7 +7,6 @@ import { VENDORS } from "../../constants/vendors.js";
 const RuntimeIdSchema = z.enum([
   "claude",
   "codex",
-  "gemini",
   "cursor",
   "antigravity",
   "qwen",

@@ -4,7 +4,6 @@ import { isClaudeAuthenticated } from "./claude/auth.js";
 import { isCodexAuthenticated } from "./codex/auth.js";
 import { isCommandCodeAuthenticated } from "./commandcode/auth.js";
 import { isCursorAuthenticated } from "./cursor/auth.js";
-import { isGeminiAuthenticated } from "./gemini/auth.js";
 import { isGrokAuthenticated } from "./grok/auth.js";
 import { isKimiAuthenticated } from "./kimi/auth.js";
 import { isKiroAuthenticated } from "./kiro/auth.js";
@@ -27,7 +26,6 @@ export interface Vendor {
 
 export const VENDORS: readonly Vendor[] = [
   { id: "claude", label: "Claude CLI", isAuthenticated: isClaudeAuthenticated },
-  { id: "gemini", label: "Gemini CLI", isAuthenticated: isGeminiAuthenticated },
   { id: "codex", label: "Codex CLI", isAuthenticated: isCodexAuthenticated },
   {
     id: "commandcode",
@@ -74,7 +72,6 @@ export {
   isCodexAuthenticated,
   isCommandCodeAuthenticated,
   isCursorAuthenticated,
-  isGeminiAuthenticated,
   isGrokAuthenticated,
   isKimiAuthenticated,
   isKiroAuthenticated,

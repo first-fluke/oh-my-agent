@@ -31,7 +31,6 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { loadSerenaConfig } from "../../utils/config.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   applyClaudeMcp,
@@ -41,7 +40,6 @@ import {
   parseCodexConfig,
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
-import { LEGACY_GEMINI_BRIDGE_URL } from "../../vendors/gemini/settings.js";
 import {
   hasSerenaDashboardOpenDisabled,
   serenaStartMcpArgs,
@@ -179,48 +177,6 @@ function migrateCodexToml(path: string): boolean {
 }
 
 /**
- * Migrate the legacy Gemini bridge URL (`{url: http://localhost:12341/mcp}`)
- * to direct stdio. Only fires when oma-config serena.mode is stdio (default)
- * — if the user opted into bridge mode with bridge_host=gemini, the URL is
- * intentional and left alone.
- */
-function migrateGeminiLegacyBridge(cwd: string): boolean {
-  const path = join(cwd, ".gemini", "settings.json");
-  if (!existsSync(path)) return false;
-
-  const cfg = loadSerenaConfig(cwd);
-  if (cfg.mode === "bridge" && cfg.bridgeHost === "gemini") return false;
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(readFileSync(path, "utf-8"));
-  } catch {
-    return false;
-  }
-  if (!isRecord(parsed)) return false;
-  const servers = isRecord(parsed.mcpServers)
-    ? (parsed.mcpServers as Record<string, unknown>)
-    : null;
-  if (!servers) return false;
-  const serena = servers.serena;
-  if (!isRecord(serena)) return false;
-  if (
-    serena.url !== LEGACY_GEMINI_BRIDGE_URL &&
-    serena.httpUrl !== LEGACY_GEMINI_BRIDGE_URL
-  )
-    return false;
-
-  servers.serena = {
-    command: "serena",
-    args: serenaStartMcpArgs("ide"),
-    env: { SERENA_LOG_LEVEL: "info" },
-  };
-  parsed.mcpServers = servers;
-  writeFileSync(path, `${JSON.stringify(parsed, null, 2)}\n`);
-  return true;
-}
-
-/**
  * Migrate the legacy `.cursor/mcp.json` symlink (pointing at .agents/mcp.json)
  * to a regular file with serena `--context=ide`. This breaks the symlink
  * sharing — Cursor now has its own MCP config so it can use the IDE-optimized
@@ -279,20 +235,6 @@ export const migrateSerenaUvTool: Migration = {
       migrateJsonFile(join(cwd, ".qwen", "settings.json"), "mcpServers", "ide")
     ) {
       actions.push(".qwen/settings.json (Serena uvx → uv tool install)");
-    }
-
-    if (
-      migrateJsonFile(
-        join(cwd, ".gemini", "settings.json"),
-        "mcpServers",
-        "ide",
-      )
-    ) {
-      actions.push(".gemini/settings.json (Serena uvx → uv tool install)");
-    }
-
-    if (migrateGeminiLegacyBridge(cwd)) {
-      actions.push(".gemini/settings.json (bridge URL → direct stdio)");
     }
 
     if (

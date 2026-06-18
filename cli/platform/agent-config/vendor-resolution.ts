@@ -41,7 +41,6 @@ function resolveVendorFromModelSlug(
   const OWNER_TO_VENDOR: Record<string, string> = {
     anthropic: "claude",
     openai: "codex",
-    google: "gemini",
     qwen: "qwen",
   };
   return OWNER_TO_VENDOR[owner] ?? owner;
@@ -156,7 +155,7 @@ export function resolveVendor(
     mappedVendor ||
     defaultCli ||
     cliConfig?.active_vendor ||
-    "gemini";
+    "claude";
 
   return { vendor: vendor.toLowerCase(), config: cliConfig };
 }
@@ -170,7 +169,6 @@ export function resolvePromptFlag(
   }
 
   const defaults: Record<string, string | null> = {
-    gemini: "-p",
     claude: "-p",
     qwen: "-p",
     codex: null,

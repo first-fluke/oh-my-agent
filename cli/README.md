@@ -8,7 +8,7 @@ Ever wished your AI assistant had coworkers? That's what oh-my-agent does.
 
 Instead of one AI doing everything (and getting confused halfway through), oh-my-agent splits work across **specialized agents** — frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design, and more. Each one knows its domain deeply, has its own tools and checklists, and stays in its lane.
 
-Works with all major AI IDEs: Pi, Claude Code, Cursor, Antigravity, Codex CLI, OpenCode, and more.
+Works with all major AI IDEs: Antigravity, Claude Code, Codex, Cursor, Grok Build, Kimi Code, OpenCode, Pi, Qwen Code, and more.
 
 ## Quick Start
 
@@ -124,8 +124,8 @@ Pick a preset and you're ready:
 <sub>symlinked skills</sub>
 </td>
 <td align="center">
-<a href="https://grok.x.ai"><img src="./docs/assets/agents/grok.png" alt="Grok" width="48" height="48" /></a><br/>
-<strong>Grok</strong><br/>
+<a href="https://grok.x.ai"><img src="./docs/assets/agents/grok.png" alt="Grok Build" width="48" height="48" /></a><br/>
+<strong>Grok Build</strong><br/>
 <sub>native hooks</sub>
 </td>
 <td align="center">

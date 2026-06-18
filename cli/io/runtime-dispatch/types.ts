@@ -7,7 +7,6 @@ import type {
 export type RuntimeVendor =
   | "claude"
   | "codex"
-  | "gemini"
   | "cursor"
   | "antigravity"
   | "qwen"

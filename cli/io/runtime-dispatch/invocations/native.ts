@@ -83,42 +83,6 @@ export function buildCodexNativeInvocation(
   return { command, args, env: { ...process.env } };
 }
 
-export function buildGeminiNativeInvocation(
-  agentId: string,
-  promptContent: string,
-  vendorConfig: VendorConfig,
-  options: NativeInvocationOptions = {},
-): Invocation {
-  const { readOnly = false } = options;
-  const command = vendorConfig.command || "gemini";
-  const args: string[] = [];
-
-  if (vendorConfig.output_format_flag && vendorConfig.output_format) {
-    args.push(vendorConfig.output_format_flag, vendorConfig.output_format);
-  } else if (vendorConfig.output_format_flag) {
-    args.push(vendorConfig.output_format_flag);
-  }
-  if (vendorConfig.model_flag && vendorConfig.default_model) {
-    args.push(vendorConfig.model_flag, vendorConfig.default_model);
-  }
-
-  if (readOnly) {
-    if (vendorConfig.read_only_flag) {
-      args.push(...splitArgs(vendorConfig.read_only_flag));
-    } else {
-      console.warn(
-        "[agent-spawn] read-only mode requested but vendor 'gemini' has no read_only_flag defined; spawning without auto-approve (permissive flags suppressed)",
-      );
-    }
-  } else if (vendorConfig.auto_approve_flag) {
-    args.push(vendorConfig.auto_approve_flag);
-  }
-
-  args.push("-p", buildMentionPrompt(agentId, promptContent));
-
-  return { command, args, env: { ...process.env } };
-}
-
 /**
  * Antigravity CLI (agy) headless mode: `agy [--dangerously-skip-permissions] -p "<prompt>"`.
  *

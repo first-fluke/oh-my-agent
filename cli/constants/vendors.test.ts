@@ -36,7 +36,6 @@ describe("VENDORS (unchanged guard)", () => {
       "codex",
       "commandcode",
       "cursor",
-      "gemini",
       "grok",
       "kimi",
       "kiro",

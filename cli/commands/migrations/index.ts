@@ -14,7 +14,7 @@ import { migrateSharedLayout } from "./002-shared-layout.js";
 import { migrateOmaConfig } from "./003-oma-config.js";
 import { migrateClaudeMdLocal } from "./004-claude-md-local.js";
 import { migrateRenameOmaScm } from "./005-rename-oma-scm.js";
-import { migrateGeminiCliCompat } from "./006-gemini-cli-compat.js";
+// 006-gemini-cli-compat removed with the Gemini CLI vendor (no-op for new installs).
 import { migrateCodexQwenSerena } from "./007-codex-qwen-serena.js";
 import { migrateModelPreset } from "./008-model-preset.js";
 import { migrateSerenaUvTool } from "./009-serena-uv-tool.js";
@@ -30,7 +30,6 @@ const migrations: Migration[] = [
   migrateOmaConfig,
   migrateClaudeMdLocal,
   migrateRenameOmaScm,
-  migrateGeminiCliCompat,
   migrateCodexQwenSerena,
   migrateModelPreset,
   migrateSerenaUvTool,

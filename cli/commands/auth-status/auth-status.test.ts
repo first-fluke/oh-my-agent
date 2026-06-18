@@ -96,7 +96,6 @@ describe("auth:status command", () => {
       const result = JSON.parse(output);
       expect(result).toEqual({
         github: true,
-        gemini: true,
         claude: true,
         codex: true,
         commandcode: true,
@@ -127,7 +126,6 @@ describe("auth:status command", () => {
       const result = JSON.parse(output);
       expect(result).toEqual({
         github: false,
-        gemini: false,
         claude: false,
         codex: false,
         commandcode: false,
@@ -180,59 +178,6 @@ describe("auth:status command", () => {
       const [output] = firstCall(consoleSpy);
       const result = JSON.parse(output);
       expect(result.claude).toBe(false);
-    });
-  });
-
-  describe("gemini auth", () => {
-    beforeEach(() => {
-      isGhAuthenticatedMock.mockReturnValue(false);
-      execSyncMock.mockImplementation(() => {
-        throw new Error("fail");
-      });
-    });
-
-    it("should detect valid oauth creds", async () => {
-      mockFsFunctions.existsSync.mockImplementation((p: string) =>
-        p.includes(".gemini"),
-      );
-      mockFsFunctions.readFileSync.mockReturnValue(
-        JSON.stringify({
-          access_token: "ya29.xxx",
-          refresh_token: "1//xxx",
-        }),
-      );
-
-      const consoleSpy = vi.spyOn(console, "log");
-      await checkAuthStatus(true);
-
-      const [output] = firstCall(consoleSpy);
-      const result = JSON.parse(output);
-      expect(result.gemini).toBe(true);
-    });
-
-    it("should return false when creds file missing", async () => {
-      mockFsFunctions.existsSync.mockReturnValue(false);
-
-      const consoleSpy = vi.spyOn(console, "log");
-      await checkAuthStatus(true);
-
-      const [output] = firstCall(consoleSpy);
-      const result = JSON.parse(output);
-      expect(result.gemini).toBe(false);
-    });
-
-    it("should return false when creds have no tokens", async () => {
-      mockFsFunctions.existsSync.mockImplementation((p: string) =>
-        p.includes(".gemini"),
-      );
-      mockFsFunctions.readFileSync.mockReturnValue(JSON.stringify({}));
-
-      const consoleSpy = vi.spyOn(console, "log");
-      await checkAuthStatus(true);
-
-      const [output] = firstCall(consoleSpy);
-      const result = JSON.parse(output);
-      expect(result.gemini).toBe(false);
     });
   });
 
@@ -473,7 +418,6 @@ describe("auth:status command", () => {
 
       const [output] = firstCall(consoleSpy);
       const result = JSON.parse(output);
-      expect(result.gemini).toBe(false);
       expect(result.codex).toBe(false);
       expect(result.qwen).toBe(false);
     });

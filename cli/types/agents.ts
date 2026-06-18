@@ -8,5 +8,4 @@ export interface AgentAbstract {
 export interface VendorAgentConfig {
   claude?: { tools?: string; model?: string; maxTurns?: number };
   codex?: { sandbox_mode?: string };
-  gemini?: { model?: string; tools?: string[] };
 }

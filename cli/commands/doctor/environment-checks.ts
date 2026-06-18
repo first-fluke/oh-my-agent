@@ -10,7 +10,6 @@ import {
   isAntigravityAuthenticated,
   isClaudeAuthenticated,
   isCodexAuthenticated,
-  isGeminiAuthenticated,
   isGrokAuthenticated,
   isKimiAuthenticated,
   isKiroAuthenticated,
@@ -25,7 +24,6 @@ const OMA_DOCTOR_PROBE_TIMEOUT_MS = Number(
 const OMA_DOCTOR_PROBE_SIGKILL_GRACE_MS = 200;
 
 export const CLI_DEFINITIONS: Array<[string, string, string]> = [
-  ["gemini", "gemini", "bun install --global @google/gemini-cli"],
   ["claude", "claude", "bun install --global @anthropic-ai/claude-code"],
   ["codex", "codex", "bun install --global @openai/codex"],
   ["qwen", "qwen", "bun install --global @qwen-code/qwen-code"],
@@ -41,7 +39,6 @@ export const CLI_DEFINITIONS: Array<[string, string, string]> = [
 ];
 
 export const AUTH_CHECKERS: Record<string, () => boolean> = {
-  gemini: isGeminiAuthenticated,
   claude: isClaudeAuthenticated,
   codex: isCodexAuthenticated,
   qwen: isQwenAuthenticated,
@@ -59,7 +56,6 @@ const VENDOR_DOC_SPECS: Array<{
 }> = [
   { fileName: "CLAUDE.md", cliNames: ["claude"] },
   { fileName: "AGENTS.md", cliNames: ["codex", "qwen"] },
-  { fileName: "GEMINI.md", cliNames: ["gemini"] },
 ];
 
 const OMA_START_MARKER = "<!-- OMA:START";
@@ -132,7 +128,6 @@ export function checkMCPConfig(cliName: string): {
     string,
     { path: string; type: "json" | "yaml" | "toml" }
   > = {
-    gemini: { path: `${homeDir}/.gemini/settings.json`, type: "json" },
     claude: { path: `${homeDir}/.claude.json`, type: "json" },
     codex: { path: `${homeDir}/.codex/config.toml`, type: "toml" },
   };

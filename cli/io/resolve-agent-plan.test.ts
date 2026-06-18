@@ -34,7 +34,6 @@ import {
 import {
   buildAgentPlanArgs,
   ConfigError,
-  geminiThinkingBudgetFlag,
   qwenThinkingFlag,
   resolveAgentPlanFromConfig,
 } from "./runtime-dispatch.js";
@@ -53,21 +52,6 @@ const CODEX_ONLY_CONFIG = {
 const CLAUDE_ONLY_CONFIG = {
   language: "en",
   model_preset: "claude",
-} as const;
-
-/**
- * Config that dispatches every relevant agent to the gemini CLI via google/*
- * agent overrides. The standalone `gemini` preset was removed, but the gemini
- * vendor/CLI path is retained — exercise it through overrides on a base preset.
- */
-const GEMINI_ONLY_CONFIG = {
-  language: "en",
-  model_preset: "claude",
-  agents: {
-    orchestrator: { model: "google/gemini-3-flash" },
-    backend: { model: "google/gemini-3-flash", thinking: true },
-    explore: { model: "google/gemini-3.1-flash-lite" },
-  },
 } as const;
 
 /** Minimal config using qwen preset */
@@ -110,28 +94,6 @@ describe("resolveAgentPlanFromConfig — Case 1: agents override precedence", ()
     // qa is not overridden — falls back to codex preset qa entry
     const plan = resolveAgentPlanFromConfig("qa", config);
     expect(plan.cli).toBe("codex");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Case 2: thinking flag from agents override
-// ---------------------------------------------------------------------------
-
-describe("resolveAgentPlanFromConfig — Case 2: thinking flag from override", () => {
-  it("picks up thinking flag from agents override", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3-flash",
-          thinking: true as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(plan.cli).toBe("gemini");
-    expect(plan.thinking).toBe(true);
-    expect(plan.cliModel).toBe("gemini-3-flash");
   });
 });
 
@@ -206,43 +168,6 @@ describe("resolveAgentPlanFromConfig — Case 5: unknown slug throws ConfigError
     expect(() => resolveAgentPlanFromConfig("frontend", config)).toThrow(
       /Unknown model slug/,
     );
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Case 7: vendorOverride matches native_dispatch_from
-// ---------------------------------------------------------------------------
-
-describe("resolveAgentPlanFromConfig — Case 7: vendorOverride matches native_dispatch_from", () => {
-  it("overrides cli when vendorOverride is in native_dispatch_from", () => {
-    // gemini explore uses google/gemini-3.1-flash-lite (native_dispatch_from: gemini)
-    const plan = resolveAgentPlanFromConfig(
-      "explore",
-      GEMINI_ONLY_CONFIG,
-      "gemini",
-    );
-    expect(plan.cli).toBe("gemini");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Case 8: vendorOverride not in native_dispatch_from
-// ---------------------------------------------------------------------------
-
-describe("resolveAgentPlanFromConfig — Case 8: vendorOverride not in native_dispatch_from", () => {
-  it("warns and keeps original cli when vendorOverride not supported", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    // gemini explore; codex is NOT in native_dispatch_from
-    const plan = resolveAgentPlanFromConfig(
-      "explore",
-      GEMINI_ONLY_CONFIG,
-      "codex",
-    );
-    expect(plan.cli).toBe("gemini");
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('"codex" is not in native_dispatch_from'),
-    );
-    warnSpy.mockRestore();
   });
 });
 
@@ -465,117 +390,6 @@ describe("qwenThinkingFlag — Cases 10 & 11: Qwen effort translation", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Case 12: Gemini effort → thinking-budget
-// ---------------------------------------------------------------------------
-
-describe("geminiThinkingBudgetFlag — Case 12: Gemini effort translation", () => {
-  it("effort=high maps to --thinking-budget=dynamic for gemini-3-flash", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3-flash",
-          effort: "high" as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(plan.cli).toBe("gemini");
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
-    const args = buildAgentPlanArgs(plan);
-    expect(args).toContain("--model");
-    expect(args).toContain("gemini-3-flash");
-    expect(args).toContain("--thinking-budget=dynamic");
-  });
-
-  it("effort=xhigh maps to --thinking-budget=dynamic", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3-flash",
-          effort: "xhigh" as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
-  });
-
-  it("effort=low maps to --thinking-budget=none", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3-flash",
-          effort: "low" as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=none");
-  });
-
-  it("effort=medium maps to --thinking-budget=none", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3-flash",
-          effort: "medium" as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=none");
-  });
-
-  it("thinking:true maps to --thinking-budget=dynamic regardless of effort", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3-flash",
-          effort: "low" as const,
-          thinking: true as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
-  });
-
-  it("thinking:false maps to --thinking-budget=none regardless of effort", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        explore: {
-          model: "google/gemini-3.1-pro-preview",
-          effort: "xhigh" as const,
-          thinking: false as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("explore", config);
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=none");
-  });
-
-  it("gemini-3.1-pro-preview high effort uses dynamic", () => {
-    const config = {
-      ...GEMINI_ONLY_CONFIG,
-      agents: {
-        architecture: {
-          model: "google/gemini-3.1-pro-preview",
-          effort: "high" as const,
-        },
-      },
-    };
-    const plan = resolveAgentPlanFromConfig("architecture", config);
-    expect(geminiThinkingBudgetFlag(plan)).toBe("--thinking-budget=dynamic");
-  });
-});
-
-// ---------------------------------------------------------------------------
 // Case 13: no agents override — uses preset defaults directly
 // ---------------------------------------------------------------------------
 
@@ -743,27 +557,6 @@ describe("buildAgentPlanArgs — Codex", () => {
     expect(plan.cli).toBe("codex");
     expect(plan.cliModel).toBe("gpt-5.5");
     expect(buildAgentPlanArgs(plan)).toEqual(["-m", "gpt-5.5"]);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// buildAgentPlanArgs — Gemini
-// ---------------------------------------------------------------------------
-
-describe("buildAgentPlanArgs — Gemini", () => {
-  it("produces --model + --thinking-budget=dynamic for thinking:true", () => {
-    const plan = resolveAgentPlanFromConfig("backend", GEMINI_ONLY_CONFIG);
-    expect(plan.cli).toBe("gemini");
-    const args = buildAgentPlanArgs(plan);
-    expect(args[0]).toBe("--model");
-    expect(args[1]).toBe(plan.cliModel);
-    expect(args).toContain("--thinking-budget=dynamic");
-  });
-
-  it("produces --model only when no thinking flag applies", () => {
-    const plan = resolveAgentPlanFromConfig("orchestrator", GEMINI_ONLY_CONFIG);
-    const args = buildAgentPlanArgs(plan);
-    expect(args).toEqual(["--model", plan.cliModel]);
   });
 });
 

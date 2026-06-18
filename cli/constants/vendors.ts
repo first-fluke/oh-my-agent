@@ -20,7 +20,6 @@ export const VENDORS = [
   "codex",
   "commandcode",
   "cursor",
-  "gemini",
   "grok",
   "kimi",
   "kiro",
@@ -103,7 +102,6 @@ export const CLI_SKILLS_DIR: Record<CliTool, SkillTargetSpec> & {
   },
   copilot: { projectPath: ".github/skills", homePath: ".copilot/skills" },
   cursor: { projectPath: ".cursor/skills", homePath: ".cursor/skills" },
-  gemini: { projectPath: ".gemini/skills", homePath: ".gemini/skills" },
   hermes: {
     projectPath: ".hermes/skills/oma",
     homePath: ".hermes/skills/oma",

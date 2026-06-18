@@ -27,7 +27,7 @@ import {
   vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
-import { isTelemetryEnabled, loadSerenaConfig } from "../../utils/config.js";
+import { isTelemetryEnabled } from "../../utils/config.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { installAntigravityHud } from "../../vendors/antigravity/hud.js";
 import { applyAntigravityMcpConfig } from "../../vendors/antigravity/mcp.js";
@@ -46,10 +46,6 @@ import {
   serializeCodexConfig,
 } from "../../vendors/codex/settings.js";
 import { disableCursorAgentAttribution } from "../../vendors/cursor/settings.js";
-import {
-  applyGeminiSettings,
-  needsGeminiSettingsUpdate,
-} from "../../vendors/gemini/settings.js";
 import {
   applyGrokProjectMcp,
   applyGrokTelemetryConfig,
@@ -225,8 +221,6 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // 3. Install vendor-specific adaptations (agents, hooks, settings).
   installVendorAdaptations(cwd, cwd, hookVendors);
 
-  const serenaCfg = loadSerenaConfig(cwd);
-
   // 4a. Claude `.claude/settings.json` — telemetry-aware env opt-out.
   if (configuredVendors.includes("claude")) {
     const claudeSettingsPath = join(cwd, ".claude", "settings.json");
@@ -241,45 +235,6 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (needsClaudeSettingsUpdate(claudeSettings, telemetryOptions)) {
       applyClaudeSettings(claudeSettings, telemetryOptions);
       safeWriteJson(claudeSettingsPath, claudeSettings);
-    }
-  }
-
-  // 4b. Gemini `.gemini/settings.json` — serena MCP follows oma-config
-  //     serena.mode. stdio (default): direct `serena start-mcp-server
-  //     --context=ide`. bridge + bridge_host=gemini: `{url: bridge_url}` so
-  //     Gemini shares the HTTP serena started by `oma bridge` (used when
-  //     subagent fan-out matters or when paired with Antigravity).
-  if (configuredVendors.includes("gemini")) {
-    const geminiSettingsPath = join(cwd, ".gemini", "settings.json");
-    let geminiSettings: unknown = {};
-    if (existsSync(geminiSettingsPath)) {
-      try {
-        geminiSettings = JSON.parse(readFileSync(geminiSettingsPath, "utf-8"));
-      } catch {
-        geminiSettings = {};
-      }
-    }
-    if (needsGeminiSettingsUpdate(geminiSettings, telemetryOptions)) {
-      applyGeminiSettings(geminiSettings, telemetryOptions);
-      safeWriteJson(geminiSettingsPath, geminiSettings);
-    }
-    // Override serena entry for bridge mode (settings.ts only knows stdio).
-    if (serenaCfg.mode === "bridge" && serenaCfg.bridgeHost === "gemini") {
-      let parsed: Record<string, unknown> = {};
-      try {
-        parsed = JSON.parse(readFileSync(geminiSettingsPath, "utf-8"));
-      } catch {
-        parsed = {};
-      }
-      const mcpServers =
-        parsed.mcpServers &&
-        typeof parsed.mcpServers === "object" &&
-        !Array.isArray(parsed.mcpServers)
-          ? (parsed.mcpServers as Record<string, unknown>)
-          : {};
-      mcpServers.serena = { url: serenaCfg.bridgeUrl };
-      parsed.mcpServers = mcpServers;
-      safeWriteJson(geminiSettingsPath, parsed);
     }
   }
 
@@ -440,13 +395,12 @@ export function link(opts: LinkOptions = {}): LinkResult {
     disableCursorAgentAttribution();
   }
 
-  // 6. Merge vendor documentation (CLAUDE.md, GEMINI.md, AGENTS.md)
+  // 6. Merge vendor documentation (CLAUDE.md, AGENTS.md)
   const mergedDocs: string[] = [];
   const mergedDocsSet = new Set<string>();
   for (const v of VENDORS) {
     if (!configuredVendors.includes(v)) continue;
-    const target =
-      v === "claude" ? "CLAUDE.md" : v === "gemini" ? "GEMINI.md" : "AGENTS.md";
+    const target = v === "claude" ? "CLAUDE.md" : "AGENTS.md";
     if (mergedDocsSet.has(target)) continue;
     if (mergeRulesIndexForVendor(cwd, v)) {
       mergedDocsSet.add(target);

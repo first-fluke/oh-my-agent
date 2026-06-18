@@ -16,9 +16,6 @@ describe("CORE_REGISTRY", () => {
     "openai/gpt-5.4-pro",
     "openai/gpt-5.4-mini",
     "openai/gpt-5.3-codex",
-    "google/gemini-3.1-pro-preview",
-    "google/gemini-3-flash",
-    "google/gemini-3.1-flash-lite",
     "antigravity/gemini-3.1-pro",
     "antigravity/gemini-3.5-flash",
     "cursor/composer-2.5",
@@ -34,9 +31,9 @@ describe("CORE_REGISTRY", () => {
     "kiro/auto",
   ] as const;
 
-  it("contains exactly 24 slugs (Anthropic 3, OpenAI 5, Google 3, Antigravity 2, Cursor 5, Qwen 3, Kiro 3)", async () => {
+  it("contains exactly 21 slugs (Anthropic 3, OpenAI 5, Antigravity 2, Cursor 5, Qwen 3, Kiro 3)", async () => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
-    expect(CORE_REGISTRY.size).toBe(24);
+    expect(CORE_REGISTRY.size).toBe(21);
   });
 
   it.each(EXPECTED_SLUGS)("includes slug: %s", async (slug) => {
@@ -136,19 +133,6 @@ describe("ModelSpec shape validation", () => {
         levels: ["none", "low", "medium", "high", "xhigh"],
       });
       expect(spec?.supports.apply_patch).toBe(true);
-    }
-  });
-
-  it("Google Gemini slugs use thinking-budget effort type", async () => {
-    const { getModelSpec } = await import("./model-registry.js");
-    const slugs = [
-      "google/gemini-3.1-pro-preview",
-      "google/gemini-3-flash",
-      "google/gemini-3.1-flash-lite",
-    ];
-    for (const slug of slugs) {
-      const spec = getModelSpec(slug);
-      expect(spec?.supports.effort).toMatchObject({ type: "thinking-budget" });
     }
   });
 
@@ -458,7 +442,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     );
     try {
       const merged = reloadRegistry(emptyDir);
-      expect(merged.size).toBe(24);
+      expect(merged.size).toBe(21);
       expect(getModelSpec("anthropic/claude-opus-4-7")).toBeDefined();
       expect(CORE_REGISTRY.has("openai/gpt-5.4")).toBe(true);
     } finally {
@@ -474,7 +458,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     const dir = makeTempProjectDir(MALFORMED_YAML);
     try {
       const merged = reloadRegistry(dir);
-      expect(merged.size).toBe(24);
+      expect(merged.size).toBe(21);
       expect(getModelSpec("openai/gpt-5.4")).toBeDefined();
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
@@ -518,12 +502,6 @@ describe("buildUnknownSlugError", () => {
     const msg = buildUnknownSlugError("openai/gpt-99-future");
     expect(msg).toContain("openai (CLI: codex)");
     expect(msg).toContain("cli_model: gpt-99-future");
-  });
-
-  it("scaffolds for google/gemini pairing", async () => {
-    const { buildUnknownSlugError } = await import("./model-registry.js");
-    const msg = buildUnknownSlugError("google/gemini-99-flash");
-    expect(msg).toContain("google (CLI: gemini)");
   });
 
   it("scaffolds for qwen pairing", async () => {

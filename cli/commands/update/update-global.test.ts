@@ -99,7 +99,6 @@ const skillsState = vi.hoisted(() => ({
     "codex",
     "copilot",
     "cursor",
-    "gemini",
     "grok",
     "hermes",
     "qwen",
@@ -115,7 +114,6 @@ const skillsState = vi.hoisted(() => ({
     codex: { projectPath: ".codex/skills", homePath: ".codex/skills" },
     copilot: { projectPath: ".github/skills", homePath: ".copilot/skills" },
     cursor: { projectPath: ".cursor/skills", homePath: ".cursor/skills" },
-    gemini: { projectPath: ".gemini/skills", homePath: ".gemini/skills" },
     grok: { projectPath: ".grok/skills", homePath: ".grok/skills" },
     hermes: {
       projectPath: ".hermes/skills/oma",

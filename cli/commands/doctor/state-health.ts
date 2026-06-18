@@ -41,11 +41,6 @@ const HOOK_SETTINGS: Array<{
     path: ".cursor/hooks.json",
     promptEvents: ["UserPromptSubmit", "beforeSubmitPrompt"],
   },
-  {
-    vendor: "gemini",
-    path: ".gemini/settings.json",
-    promptEvents: ["BeforeAgent"],
-  },
   // antigravity is checked separately (collectAntigravityHookOrder): it loads
   // a named-map `.agents/hooks.json`, not settings.json event arrays.
   {

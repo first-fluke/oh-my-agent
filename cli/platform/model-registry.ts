@@ -150,7 +150,6 @@ export function hasModelSpec(slug: string): boolean {
 const OWNER_TO_CLI: Record<string, RuntimeId> = {
   anthropic: "claude",
   openai: "codex",
-  google: "gemini",
   cursor: "cursor",
   qwen: "qwen",
 };

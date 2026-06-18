@@ -59,7 +59,6 @@ vi.mock("../../platform/skills-installer.js", () => ({
     "codex",
     "copilot",
     "cursor",
-    "gemini",
     "grok",
     "hermes",
     "qwen",
@@ -75,7 +74,6 @@ vi.mock("../../platform/skills-installer.js", () => ({
     codex: { projectPath: ".codex/skills", homePath: ".codex/skills" },
     copilot: { projectPath: ".github/skills", homePath: ".copilot/skills" },
     cursor: { projectPath: ".cursor/skills", homePath: ".cursor/skills" },
-    gemini: { projectPath: ".gemini/skills", homePath: ".gemini/skills" },
     grok: { projectPath: ".grok/skills", homePath: ".grok/skills" },
     hermes: {
       projectPath: ".hermes/skills/oma",
@@ -100,7 +98,7 @@ vi.mock("../../platform/skills-installer.js", () => ({
   applyCursorMcpConfig: vi.fn(),
   readVendorsFromConfig: vi.fn(() => configuredVendorsForTest),
   isHookVendor: vi.fn((v: string) =>
-    ["claude", "codex", "cursor", "gemini", "qwen"].includes(v),
+    ["claude", "codex", "cursor", "qwen"].includes(v),
   ),
   isExtensionVendor: vi.fn((v: string) => v === "pi"),
   vendorRequiresHomeConsent: vi.fn((cli: string) => cli === "hermes"),

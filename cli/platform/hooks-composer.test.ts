@@ -391,11 +391,6 @@ describe("requiredVariantScripts", () => {
     );
   });
 
-  it("gemini requires hud.ts via hud-only events (no statusLine entry)", () => {
-    const required = requiredVariantScripts(loadVariant("gemini"));
-    expect(required).toEqual(new Set(["hud.ts", "filter-test-output.sh"]));
-  });
-
   it("cursor requires nothing (no statusLine, no test-filter, no hud-only events)", () => {
     expect(requiredVariantScripts(loadVariant("cursor"))).toEqual(new Set());
   });

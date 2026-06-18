@@ -11,7 +11,6 @@ import {
   buildClaudeNativeInvocation,
   buildCodexNativeInvocation,
   buildCursorAgentPrintInvocation,
-  buildGeminiNativeInvocation,
   buildKiroNativeInvocation,
   type NativeInvocationOptions,
 } from "./runtime-dispatch/invocations/native.js";
@@ -32,7 +31,6 @@ export {
 export type { NativeInvocationOptions } from "./runtime-dispatch/invocations/native.js";
 export {
   buildAgentPlanArgs,
-  geminiThinkingBudgetFlag,
   qwenThinkingFlag,
 } from "./runtime-dispatch/plan-args.js";
 export {
@@ -143,10 +141,6 @@ const NATIVE_DISPATCH: Record<
   codex: {
     build: buildCodexNativeInvocation,
     reason: "same-vendor Codex runtime detected",
-  },
-  gemini: {
-    build: buildGeminiNativeInvocation,
-    reason: "same-vendor Gemini runtime detected",
   },
   cursor: {
     build: buildCursorAgentPrintInvocation,

@@ -83,7 +83,7 @@ describe("agent/spawn-status.ts", () => {
       if (n(target).includes("cli-config.yaml")) return false;
       if (
         n(target).includes(
-          ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
+          ".agents/skills/_shared/runtime/execution-protocols/claude.md",
         )
       ) {
         return true;
@@ -107,7 +107,7 @@ describe("agent/spawn-status.ts", () => {
       if (n(target).includes("prompt.md")) return "prompt content";
       if (
         n(target).includes(
-          ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
+          ".agents/skills/_shared/runtime/execution-protocols/claude.md",
         )
       ) {
         return "execution protocol";
@@ -124,7 +124,7 @@ describe("agent/spawn-status.ts", () => {
     await spawnAgent("agent1", "prompt.md", "session1", "/tmp");
 
     expect(child_process.spawn).toHaveBeenCalledWith(
-      "gemini",
+      "claude",
       expect.arrayContaining([
         "-p",
         expect.stringContaining("prompt content\n\nexecution protocol"),
@@ -590,71 +590,6 @@ describe("agent/spawn-status.ts", () => {
         "gpt-5.5",
         "--full-auto",
         "@backend-engineer\n\nimplement auth",
-      ]),
-      expect.objectContaining({
-        cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/),
-      }),
-    );
-  });
-
-  it("uses Gemini native agent dispatch when runtime and target are both gemini", async () => {
-    vi.stubEnv("OMA_RUNTIME_VENDOR", "gemini");
-
-    const OMA_CONFIG_YAML = [
-      "default_cli: gemini",
-      "agent_cli_mapping:",
-      "  frontend: gemini",
-    ].join("\n");
-    const CLI_CONFIG_YAML = [
-      "active_vendor: gemini",
-      "vendors:",
-      "  gemini:",
-      "    command: gemini",
-      "    prompt_flag: -p",
-      "    output_format_flag: --output-format",
-      "    output_format: json",
-      "    auto_approve_flag: --approval-mode=yolo",
-      "    model_flag: -m",
-      "    default_model: auto",
-    ].join("\n");
-
-    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
-      const target = pathArg.toString();
-      if (n(target).includes("oma-config.yaml")) return true;
-      if (n(target).includes("cli-config.yaml")) return true;
-      if (n(target).endsWith("/workspace")) return true;
-      return false;
-    });
-    mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
-      const target = pathArg.toString();
-      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
-      if (n(target).includes("cli-config.yaml")) return CLI_CONFIG_YAML;
-      return "";
-    });
-    mockFsFunctions.openSync.mockReturnValue(123);
-
-    const mockChild = { pid: 66668, on: vi.fn(), unref: vi.fn() };
-    vi.mocked(child_process.spawn).mockReturnValue(
-      mockChild as unknown as child_process.ChildProcess,
-    );
-
-    await spawnAgent(
-      "frontend-engineer",
-      "build dashboard",
-      "session1",
-      "/workspace",
-    );
-
-    expect(child_process.spawn).toHaveBeenCalledWith(
-      "gemini",
-      expect.arrayContaining([
-        "--output-format",
-        "json",
-        "-m",
-        "auto",
-        "--approval-mode=yolo",
-        "-p",
-        "@frontend-engineer\n\nbuild dashboard",
       ]),
       expect.objectContaining({
         cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/),

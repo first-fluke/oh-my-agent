@@ -6,7 +6,6 @@ import { VENDORS } from "../../vendors/index.js";
 const AUTH_HINTS: Record<string, string> = {
   github: "gh auth login",
   claude: "claude auth",
-  gemini: "gemini auth",
   codex: "codex login",
   cursor: "cursor agent login",
   qwen: "qwen /auth",

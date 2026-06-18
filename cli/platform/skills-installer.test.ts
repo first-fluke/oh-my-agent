@@ -303,7 +303,7 @@ describe("installVendorAdaptations", () => {
     vi.clearAllMocks();
   });
 
-  it("should generate Claude, Codex, and Gemini agent variants from .agents/agents", () => {
+  it("should generate Claude and Codex agent variants from .agents/agents", () => {
     (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       (target: fs.PathLike) => {
         const path = target.toString();
@@ -312,8 +312,6 @@ describe("installVendorAdaptations", () => {
         if (n(path).endsWith(".agents/agents/variants/claude.json"))
           return true;
         if (n(path).endsWith(".agents/agents/variants/codex.json")) return true;
-        if (n(path).endsWith(".agents/agents/variants/gemini.json"))
-          return true;
         return false;
       },
     );
@@ -368,20 +366,6 @@ describe("installVendorAdaptations", () => {
             },
           });
         }
-        if (n(path).endsWith("gemini.json")) {
-          return JSON.stringify({
-            vendor: "gemini",
-            destDir: ".gemini/agents",
-            modelDefault: "gemini-3-flash-preview",
-            toolsDefault: ["read", "write"],
-            protocolPath:
-              ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
-            agents: {
-              "architecture-reviewer": {},
-              "tf-infra-engineer": {},
-            },
-          });
-        }
         if (n(path).endsWith("architecture-reviewer.md")) {
           return [
             "---",
@@ -410,11 +394,7 @@ describe("installVendorAdaptations", () => {
       },
     );
 
-    installVendorAdaptations(mockSourceDir, mockTargetDir, [
-      "claude",
-      "codex",
-      "gemini",
-    ]);
+    installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude", "codex"]);
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       join(mockTargetDir, ".claude", "agents", "architecture-reviewer.md"),
@@ -431,10 +411,6 @@ describe("installVendorAdaptations", () => {
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
       expect.stringContaining("execution-protocols/codex.md"),
-    );
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
-      join(mockTargetDir, ".gemini", "agents", "tf-infra-engineer.md"),
-      expect.stringContaining("execution-protocols/gemini.md"),
     );
   });
 });

@@ -24,7 +24,6 @@ import {
   isAntigravityAuthenticated,
   isClaudeAuthenticated,
   isCodexAuthenticated,
-  isGeminiAuthenticated,
   isQwenAuthenticated,
 } from "../../vendors/index.js";
 import {
@@ -76,7 +75,6 @@ const IMPL_ROLES: readonly string[] = [
 export const CLI_AUTH_CHECKERS: Record<string, () => boolean> = {
   claude: isClaudeAuthenticated,
   codex: isCodexAuthenticated,
-  gemini: isGeminiAuthenticated,
   qwen: isQwenAuthenticated,
   antigravity: () => isAntigravityAuthenticated(),
 };
@@ -178,7 +176,6 @@ function resolvePreset(
 const OWNER_TO_CLI: Record<string, string> = {
   anthropic: "claude",
   openai: "codex",
-  google: "gemini",
   qwen: "qwen",
   cursor: "cursor",
   antigravity: "antigravity",

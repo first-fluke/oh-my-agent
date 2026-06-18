@@ -20,7 +20,6 @@ const VENDOR_ROOTS: Record<CliVendor, string[]> = {
   commandcode: [".commandcode"],
   copilot: [".github"],
   cursor: [".cursor"],
-  gemini: [".gemini"],
   grok: [".grok"],
   hermes: [".hermes"],
   // Kimi is global-only (~/.kimi-code, KIMI_CODE_HOME) — it has no project

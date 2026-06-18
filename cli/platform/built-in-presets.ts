@@ -129,7 +129,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
 
   mixed: {
     description:
-      "Mixed — role-optimal vendors per agent (Claude for orchestration/QA/PM, Codex for impl, Gemini for explore)",
+      "Mixed — role-optimal vendors per agent (Claude for orchestration/QA/PM, Codex for impl/explore)",
     agent_defaults: {
       orchestrator: { model: "anthropic/claude-sonnet-4-6" },
       architecture: { model: "anthropic/claude-opus-4-7" },
@@ -142,7 +142,7 @@ export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
       debug: { model: "openai/gpt-5.5", effort: "high" },
       docs: { model: "anthropic/claude-sonnet-4-6" },
       "tf-infra": { model: "openai/gpt-5.5", effort: "high" },
-      explore: { model: "google/gemini-3.1-flash-lite" },
+      explore: { model: "openai/gpt-5.4-mini", effort: "low" },
     },
   },
 };

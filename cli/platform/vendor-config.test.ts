@@ -44,7 +44,6 @@ describe("readVendorsFromConfig", () => {
       "commandcode",
       "copilot",
       "cursor",
-      "gemini",
       "grok",
       "hermes",
       "kimi",
@@ -63,7 +62,6 @@ describe("readVendorsFromConfig", () => {
       "commandcode",
       "copilot",
       "cursor",
-      "gemini",
       "grok",
       "hermes",
       "kimi",
@@ -105,7 +103,7 @@ describe("writeVendorsToConfig", () => {
 
   it("appends vendors to config without existing vendors field", () => {
     const dir = createTemp("language: en\ntimezone: Asia/Seoul\n");
-    writeVendorsToConfig(dir, ["claude", "gemini"]);
+    writeVendorsToConfig(dir, ["claude", "qwen"]);
 
     const content = readFileSync(
       join(dir, ".agents", "oma-config.yaml"),
@@ -113,7 +111,7 @@ describe("writeVendorsToConfig", () => {
     );
     expect(content).toContain("vendors:");
     expect(content).toContain("  - claude");
-    expect(content).toContain("  - gemini");
+    expect(content).toContain("  - qwen");
     expect(content).toContain("language: en");
   });
 
@@ -143,7 +141,7 @@ describe("writeVendorsToConfig", () => {
 
   it("roundtrips correctly", () => {
     const dir = createTemp("language: ko\n");
-    const vendors = ["claude", "codex", "copilot", "gemini", "qwen"] as const;
+    const vendors = ["claude", "codex", "copilot", "qwen"] as const;
 
     writeVendorsToConfig(dir, [...vendors]);
     const result = readVendorsFromConfig(dir);

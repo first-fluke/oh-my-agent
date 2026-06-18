@@ -66,33 +66,6 @@ SERENA_LOG_LEVEL = "info"
       "utf-8",
     );
 
-    mkdirSync(join(root, ".gemini"), { recursive: true });
-    writeFileSync(
-      join(root, ".gemini", "settings.json"),
-      `${JSON.stringify(
-        {
-          mcpServers: {
-            serena: {
-              command: "uvx",
-              args: [
-                "--from",
-                "git+https://github.com/oraios/serena",
-                "serena",
-                "start-mcp-server",
-                "--context",
-                "ide",
-                "--project",
-                ".",
-              ],
-            },
-          },
-        },
-        null,
-        2,
-      )}\n`,
-      "utf-8",
-    );
-
     mkdirSync(join(root, ".agents"), { recursive: true });
     writeFileSync(
       join(root, ".agents", "mcp.json"),
@@ -129,9 +102,6 @@ SERENA_LOG_LEVEL = "info"
       ".qwen/settings.json (Serena uvx → uv tool install)",
     );
     expect(actions).toContain(
-      ".gemini/settings.json (Serena uvx → uv tool install)",
-    );
-    expect(actions).toContain(
       ".agents/mcp.json (Serena uvx → uv tool install)",
     );
 
@@ -159,12 +129,6 @@ SERENA_LOG_LEVEL = "info"
       "false",
     ]);
     expect(qwen.mcpServers.serena.env).toEqual({ SERENA_LOG_LEVEL: "info" });
-
-    const gemini = JSON.parse(
-      readFileSync(join(root, ".gemini", "settings.json"), "utf-8"),
-    );
-    expect(gemini.mcpServers.serena.command).toBe("serena");
-    expect(gemini.mcpServers.serena.args[0]).toBe("start-mcp-server");
 
     const agents = JSON.parse(
       readFileSync(join(root, ".agents", "mcp.json"), "utf-8"),
@@ -282,102 +246,5 @@ SERENA_LOG_LEVEL = "info"
 
     const actions = migrateSerenaUvTool.up(root);
     expect(actions).toHaveLength(0);
-  });
-
-  it("converts the legacy Gemini bridge URL to direct stdio when no bridge mode is configured", () => {
-    const root = mkdtempSync(join(tmpdir(), "oma-migrate-009-"));
-    tempRoots.push(root);
-
-    mkdirSync(join(root, ".gemini"), { recursive: true });
-    writeFileSync(
-      join(root, ".gemini", "settings.json"),
-      `${JSON.stringify(
-        {
-          mcpServers: {
-            serena: { url: "http://localhost:12341/mcp" },
-          },
-        },
-        null,
-        2,
-      )}\n`,
-      "utf-8",
-    );
-
-    const actions = migrateSerenaUvTool.up(root);
-    expect(actions).toContain(
-      ".gemini/settings.json (bridge URL → direct stdio)",
-    );
-
-    const parsed = JSON.parse(
-      readFileSync(join(root, ".gemini", "settings.json"), "utf-8"),
-    );
-    expect(parsed.mcpServers.serena).toEqual({
-      command: "serena",
-      args: serenaStartMcpArgs("ide"),
-      env: { SERENA_LOG_LEVEL: "info" },
-    });
-  });
-
-  it("leaves the Gemini URL alone when oma-config opts into bridge mode with bridge_host=gemini", () => {
-    const root = mkdtempSync(join(tmpdir(), "oma-migrate-009-"));
-    tempRoots.push(root);
-
-    mkdirSync(join(root, ".agents"), { recursive: true });
-    writeFileSync(
-      join(root, ".agents", "oma-config.yaml"),
-      "language: en\nserena:\n  mode: bridge\n  bridge_host: gemini\n",
-      "utf-8",
-    );
-    mkdirSync(join(root, ".gemini"), { recursive: true });
-    writeFileSync(
-      join(root, ".gemini", "settings.json"),
-      `${JSON.stringify(
-        {
-          mcpServers: {
-            serena: { url: "http://localhost:12341/mcp" },
-          },
-        },
-        null,
-        2,
-      )}\n`,
-      "utf-8",
-    );
-
-    const actions = migrateSerenaUvTool.up(root);
-    expect(actions).not.toContain(
-      ".gemini/settings.json (bridge URL → direct stdio)",
-    );
-
-    const parsed = JSON.parse(
-      readFileSync(join(root, ".gemini", "settings.json"), "utf-8"),
-    );
-    expect(parsed.mcpServers.serena).toEqual({
-      url: "http://localhost:12341/mcp",
-    });
-  });
-
-  it("does not touch a custom Gemini URL that differs from the oma default", () => {
-    const root = mkdtempSync(join(tmpdir(), "oma-migrate-009-"));
-    tempRoots.push(root);
-
-    mkdirSync(join(root, ".gemini"), { recursive: true });
-    writeFileSync(
-      join(root, ".gemini", "settings.json"),
-      `${JSON.stringify(
-        {
-          mcpServers: {
-            serena: { url: "http://192.168.1.10:9000/mcp" },
-          },
-        },
-        null,
-        2,
-      )}\n`,
-      "utf-8",
-    );
-
-    const actions = migrateSerenaUvTool.up(root);
-    expect(actions).not.toContain(
-      ".gemini/settings.json (bridge URL → direct stdio)",
-    );
   });
 });

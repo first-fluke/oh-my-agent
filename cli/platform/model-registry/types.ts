@@ -4,7 +4,6 @@
 export type RuntimeId =
   | "claude"
   | "codex"
-  | "gemini"
   | "cursor"
   | "antigravity"
   | "qwen"

@@ -3,7 +3,6 @@ import type { RuntimeVendor } from "./types.js";
 const SUPPORTED_RUNTIME_VENDORS = new Set<RuntimeVendor>([
   "claude",
   "codex",
-  "gemini",
   "cursor",
   "antigravity",
   "qwen",
@@ -30,12 +29,6 @@ export function detectRuntimeVendor(
   }
   if (env.CODEX_THREAD_ID || env.CODEX_CI) {
     return "codex";
-  }
-  if (
-    Object.keys(env).some((key) => key.startsWith("GEMINI_CLI_")) ||
-    env.GEMINI_CLI === "1"
-  ) {
-    return "gemini";
   }
   if (
     Object.keys(env).some((key) => key.startsWith("ANTIGRAVITY_")) ||

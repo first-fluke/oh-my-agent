@@ -32,9 +32,6 @@ import commandcodeVariant from "../../../.agents/hooks/variants/commandcode.json
 import cursorVariant from "../../../.agents/hooks/variants/cursor.json" with {
   type: "json",
 };
-import geminiVariant from "../../../.agents/hooks/variants/gemini.json" with {
-  type: "json",
-};
 import grokVariant from "../../../.agents/hooks/variants/grok.json" with {
   type: "json",
 };
@@ -113,7 +110,6 @@ export const VARIANT_ROUTES: Readonly<Record<string, VariantJson>> = {
   codex: codexVariant as VariantJson,
   commandcode: commandcodeVariant as VariantJson,
   cursor: cursorVariant as VariantJson,
-  gemini: geminiVariant as VariantJson,
   grok: grokVariant as VariantJson,
   kimi: kimiVariant as VariantJson,
   kiro: kiroVariant as VariantJson,
