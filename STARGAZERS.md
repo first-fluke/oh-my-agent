@@ -11,7 +11,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1088)
+## Current (1093)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -30,6 +30,7 @@ summaries to spot which persona is churning.
 - @6dlz — 2026-02-02
 - @6oRim — 2026-04-26
 - @810230010 — 2026-04-21
+- @aaronedev — 2026-06-17
 - @abcfy2 — 2026-04-25
 - @abdalrohman — 2026-02-12
 - @abdelpy — 2026-06-05
@@ -131,6 +132,7 @@ summaries to spot which persona is churning.
 - @bob-kkn — 2026-04-17
 - @bogdanliusik — 2026-04-12
 - @Bonggoo — 2026-06-12
+- @boscodb — 2026-06-17
 - @Bounasissi — 2026-05-03
 - @boysbelegend — 2026-03-18
 - @br8km — 2026-03-25
@@ -673,11 +675,13 @@ summaries to spot which persona is churning.
 - @masahirokawasaki0920-glitch — 2026-04-20
 - @masakioui — 2026-03-19
 - @massinlaaouaj — 2026-03-29
+- @Masterofowls — 2026-06-17
 - @MatiasCollan — 2026-02-13
 - @mattloker — 2026-02-04
 - @maxmaximov — 2026-03-29
 - @mazhenxiao — 2026-04-23
 - @mazoonfahmi — 2026-02-25
+- @mcdyzg — 2026-06-17
 - @me3602 — 2026-03-16
 - @melbazpeach-source — 2026-06-03
 - @Melivo — 2026-04-05
@@ -923,6 +927,7 @@ summaries to spot which persona is churning.
 - @soWhatmf — 2026-05-29
 - @sparfenyuk — 2026-04-25
 - @sparkeh9 — 2026-02-13
+- @srddevj — 2026-06-17
 - @srevilla55 — 2026-03-02
 - @srgejji — 2026-03-20
 - @sskys18 — 2026-04-15
