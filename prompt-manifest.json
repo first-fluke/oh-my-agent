@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "9.10.0",
-  "releaseDate": "2026-06-18T06:51:52.134Z",
+  "releaseDate": "2026-06-18T07:39:45.870Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -111,7 +111,7 @@
     },
     {
       "path": ".agents/config/defaults.yaml",
-      "sha256": "76961af8bb2d9d189b1ac8feb7cfa1552210ae8ce3cfaef5a68e2d51b0636544",
+      "sha256": "fa957f6b267dfa84f71d1f95da0eb52e0e20bd35de0e5167608f45046785d957",
       "size": 6206
     },
     {
@@ -126,8 +126,8 @@
     },
     {
       "path": ".agents/hooks/core/constants.ts",
-      "sha256": "5f3e66cd6a57dee7dfbf28360d73f3d7c6089ceea8014723f219b923e8b126da",
-      "size": 1904
+      "sha256": "ebb622612c888fb64f155185c87889988a9281f9dedd2d382d048ad86da51eef",
+      "size": 1892
     },
     {
       "path": ".agents/hooks/core/filter-test-output.sh",
@@ -146,13 +146,13 @@
     },
     {
       "path": ".agents/hooks/core/hook-output.ts",
-      "sha256": "5caa813b78d2d832944b2574fe2b655e4beb53887a63d0e9b37f62d9443339af",
-      "size": 7019
+      "sha256": "07e2f2582b4d8740389b5349cd6bf3a1efab4858b5ef454e903e644e8c1df3d3",
+      "size": 6272
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "79e2887a6c6488814353717f64d3fa8ed4e6c499fde87f9779d1320cf0eca559",
-      "size": 13747
+      "sha256": "7d30118f06ce1077909bd23a9f721237510794bd92992872db2de03e6a12eae0",
+      "size": 10034
     },
     {
       "path": ".agents/hooks/core/inject-log.ts",
@@ -161,28 +161,28 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "f466ce31b755cc0a599c4deae23359b562978142eb64f3ba6c0b2c7dacc93313",
-      "size": 33643
+      "sha256": "e28466e097e0012dfa128ecfb25734db73a4177c376b7ef63180627ade4f9529",
+      "size": 31734
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "ea10a6626dcf40fe6fb973254eff66a95d8460df1e7fd2949fd6c37a96cb9412",
-      "size": 10965
+      "sha256": "932bb2515c0de817a73bd0fb06174882048341273eeb3adf90a09ea6941a6714",
+      "size": 9824
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
-      "sha256": "7b80af01eadca780966939deb1c678f9a03dc482d6f5dfd6b84f2b1e862e1b31",
-      "size": 9682
+      "sha256": "9a1d22deccd1799ce1fe295098a3272d39f1be8c31da4f78f9897b04bd558ee2",
+      "size": 7852
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "82fb9b3af2ab361a92092128fa9696a7fe4e6cfb4e7c8e6d2244f45fe86dc757",
-      "size": 19432
+      "sha256": "6c145e15b601a46038f8fd47a48e0216a3a6a333832898546bcafa6dc043e34c",
+      "size": 17490
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "91ea831f68888abbfc05230c381bc31f256f9643786b4333391120385aa73b4e",
-      "size": 9800
+      "sha256": "c1209104234ced1757882eeb49a388d04196b678b205e0756f1d8748da39fab9",
+      "size": 8051
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
@@ -196,8 +196,8 @@
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
-      "sha256": "9ae83c4f0cb5bb4d9bc4594c2743df66be995710385bbcbd1f0d4db4709f0090",
-      "size": 8235
+      "sha256": "8757e28df10d65d17ec7def36864dc0ec6fc01e3572572d25e7ee241aae4fde1",
+      "size": 5440
     },
     {
       "path": ".agents/hooks/core/triggers.json",
@@ -206,13 +206,18 @@
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "5761a667193df5a546b178df7d06010fab44b9c2ff7e0d120fef7c7775e627a0",
-      "size": 3530
+      "sha256": "a28b5f4bbc95a341a922a039f8dd2331c2f697f2ac2217c9e4021fa634e6f7e9",
+      "size": 3585
+    },
+    {
+      "path": ".agents/hooks/core/vendor-detect.ts",
+      "sha256": "30fd36774e04f7d727e435786918c7e50ef44a46d53e2b1bb84c3c8ef7c6cf95",
+      "size": 4404
     },
     {
       "path": ".agents/hooks/core/vendor-renderer.ts",
-      "sha256": "a2ca47d3bd5b338ced08a639877256d96fcfb62a6bf82ab2ec8d4f4ef9abab52",
-      "size": 1507
+      "sha256": "d46265abfd591721f91781e1a0ff8a49e1000b255a57cd0693e68ea86dc254fd",
+      "size": 1488
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
@@ -240,19 +245,14 @@
       "size": 598
     },
     {
-      "path": ".agents/hooks/variants/gemini.json",
-      "sha256": "7a4c7f2b4a3bf3854c9bc21e198abeca8ecabbe2bab60a23acd68a376ca59e7f",
-      "size": 1186
-    },
-    {
       "path": ".agents/hooks/variants/grok.json",
       "sha256": "c91e9003609009d264f850b6ff5949423786c4be5e9e345bfd73d19dc3a708a1",
       "size": 746
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
-      "sha256": "0c62fe49c427ad5057ff6c9c28adcc992ad170c11d375ddc1ccd34d1ed51868c",
-      "size": 5195
+      "sha256": "0205a34b06475bb79aeedca618e1be29cc1dc75babcb7d14b3194528cacbf1af",
+      "size": 5177
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
@@ -493,11 +493,6 @@
       "path": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
       "sha256": "913196c726dd4d94df0ca6abb6096e0874b07c52b9d2d48cfcb2b4f439d3319c",
       "size": 2479
-    },
-    {
-      "path": ".agents/skills/_shared/runtime/execution-protocols/gemini.md",
-      "sha256": "ef7478e55f48d9973d3a6869db189b2059f9bd061f2ea47b7fb8f72a12a9f4bc",
-      "size": 2230
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
@@ -1441,8 +1436,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestrator/config/cli-config.yaml",
-      "sha256": "8a3d0cc2bb999878740784d6c9828d46fafebd354665e6c06fc166b8ae645d6a",
-      "size": 3091
+      "sha256": "16bf70b889744781b00ec96873f6e3935927751af2fe3c75cec8c07ba92fe95c",
+      "size": 2686
     },
     {
       "path": ".agents/skills/oma-orchestrator/resources/memory-schema.md",
@@ -2131,6 +2126,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 424
+    "totalFiles": 423
   }
 }
