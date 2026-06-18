@@ -129,14 +129,21 @@ async function extractFromFile(
  *
  * @param repoRoot - Absolute path to the repository root.
  * @param glob - Optional glob pattern (currently only **‌/*.md supported; other patterns walk full tree).
+ * @param excludeGlobs - Optional `docs.exclude` patterns; matched docs are not scanned.
  * @returns A deterministic DocRefsIndex (no generatedAt).
  */
 export async function extractDocRefs(
   repoRoot: string,
   glob?: string,
+  excludeGlobs: readonly string[] = [],
 ): Promise<DocRefsIndex> {
   const ignoredSet = listGitIgnoredPaths(repoRoot);
-  const mdFiles = globToMdFiles(repoRoot, glob ?? "**/*.md", ignoredSet);
+  const mdFiles = globToMdFiles(
+    repoRoot,
+    glob ?? "**/*.md",
+    ignoredSet,
+    excludeGlobs,
+  );
 
   // Sort files for determinism
   mdFiles.sort();

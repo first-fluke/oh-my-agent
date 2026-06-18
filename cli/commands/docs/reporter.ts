@@ -21,13 +21,16 @@ import type { BrokenRef, DriftReport } from "./resolve.js";
 
 /**
  * Render a DriftReport as deterministic JSON.
- * Only the broken refs are included (skipped are omitted for --json output
- * per the design spec example).
+ * Broken refs are listed in full. Skipped refs (refs deliberately not counted
+ * as broken — e.g. gitignored generated-output targets) are surfaced as a
+ * count so the host LLM can see that some refs were auto-excluded rather than
+ * silently dropped.
  */
 export function renderJson(report: DriftReport): string {
   const payload = {
     scannedDocs: report.scannedDocs,
     totalRefs: report.totalRefs,
+    skippedCount: report.skipped.length,
     broken: report.broken,
   };
   return JSON.stringify(payload, null, 2);

@@ -27,6 +27,23 @@ export function readCheckUrlsConfig(repoRoot: string): boolean {
   }
 }
 
+/**
+ * Read `docs.exclude` from `.agents/oma-config.yaml`. Returns the configured
+ * glob list, or `[]` when the config, the `docs` block, or the field is
+ * absent (no exclusions by default).
+ */
+export function readDocsExcludeConfig(repoRoot: string): string[] {
+  try {
+    const cfgPath = path.join(repoRoot, ".agents", "oma-config.yaml");
+    if (!fs.existsSync(cfgPath)) return [];
+    const yaml = fs.readFileSync(cfgPath, "utf-8");
+    const cfg = parseOmaConfig(yaml);
+    return cfg?.docs?.exclude ?? [];
+  } catch {
+    return [];
+  }
+}
+
 /** Detect whether `lychee` is on PATH. */
 export function hasLychee(): boolean {
   try {

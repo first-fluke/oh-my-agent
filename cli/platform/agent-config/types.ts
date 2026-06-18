@@ -102,6 +102,17 @@ export interface OmaDocsConfig {
    * Default: true when absent.
    */
   check_urls?: boolean;
+  /**
+   * Glob patterns (repo-root-relative, POSIX) for markdown trees that
+   * `oma docs verify` must NOT scan. Use for committed-but-non-prose trees
+   * that legitimately contain unresolvable refs: benchmark run artifacts,
+   * translation mirrors (validated separately by `oma docs i18n`), vendored
+   * docs, etc. Matched with minimatch (`{ dot: true }`) against each doc's
+   * relative path. Gitignored paths are already skipped automatically and do
+   * not need an entry here.
+   * Default: [] when absent.
+   */
+  exclude?: string[];
 }
 
 export interface OmaConfig {

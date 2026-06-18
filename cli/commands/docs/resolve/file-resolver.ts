@@ -7,6 +7,7 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { isPathGitIgnored } from "../../../io/gitignore.js";
 import { toPosixPath } from "../../../utils/fs-utils.js";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +24,30 @@ import { toPosixPath } from "../../../utils/fs-utils.js";
  * does ~12k readdir syscalls; with the cache, typically under 200.
  */
 const dirListingCache = new Map<string, Set<string> | null>();
+
+/**
+ * Per-(repoRoot, absPath) `git check-ignore` result cache. A documented
+ * generated-output path (e.g. `.agents/results/result-pm.md`) does not exist
+ * on disk, so the bulk ignored-file listing misses it — only the rule-based
+ * `git check-ignore` recognizes it. Cached because the same generated target
+ * is referenced from many docs.
+ */
+const gitIgnoreCache = new Map<string, boolean>();
+
+/**
+ * True when `absPath` matches the project's gitignore rules — i.e. it is a
+ * documented runtime/generated output, not a broken reference. Rule-based
+ * (works for paths that do not exist yet); result-cached per path.
+ */
+function isGeneratedTarget(absPath: string, repoRoot: string): boolean {
+  const key = `${repoRoot}\0${absPath}`;
+  let cached = gitIgnoreCache.get(key);
+  if (cached === undefined) {
+    cached = isPathGitIgnored(absPath, repoRoot);
+    gitIgnoreCache.set(key, cached);
+  }
+  return cached;
+}
 
 function existsCaseSensitive(absPath: string): boolean {
   const dir = path.dirname(absPath);
@@ -46,6 +71,7 @@ function existsCaseSensitive(absPath: string): boolean {
 export function _clearDirListingCache(): void {
   dirListingCache.clear();
   trackedFilesCache.clear();
+  gitIgnoreCache.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -117,7 +143,7 @@ export async function resolveFile(
   target: string,
   docPath: string,
   repoRoot: string,
-): Promise<{ ok: boolean; reason?: string }> {
+): Promise<{ ok: boolean; skipped?: boolean; reason?: string }> {
   // Anchor fragments (`commands.md#doctor`) reference a section within the
   // file; resolution applies to the file itself.
   const cleanTarget = target.replace(/#.*$/, "");
@@ -178,6 +204,23 @@ export async function resolveFile(
 
   // All failed
   const repoRelPath = path.resolve(repoRoot, cleanTarget);
+
+  // A target that does not exist but matches the project's gitignore rules is
+  // a documented *generated output* (e.g. `.agents/state/*.json`,
+  // `.agents/results/result-*.md`, `.serena/memories/*`), not a broken
+  // reference. gitignore is the single source of truth for "this path is
+  // produced at runtime", so classify it as skipped rather than broken.
+  if (
+    isGeneratedTarget(repoRelPath, repoRoot) ||
+    isGeneratedTarget(docRelPath, repoRoot)
+  ) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "generated (gitignored target)",
+    };
+  }
+
   const attempted1 = toPosixPath(path.relative(repoRoot, docRelPath));
   const attempted2 = toPosixPath(path.relative(repoRoot, repoRelPath));
   return {

@@ -108,8 +108,14 @@ docs:
   # https://github.com/lycheeverse/lychee#installation for other platforms.
   check_urls: true
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Session quota caps (orchestrate / agent:spawn token & spawn budget)
+  # Glob patterns (repo-root-relative, POSIX) for markdown trees `oma docs
+  # verify` must NOT scan. Use for committed-but-non-prose trees that
+  # legitimately contain unresolvable refs. Gitignored paths are skipped
+  # automatically and need no entry here. Matched with minimatch (dot:true).
+  exclude:
+    - "benchmarks/**" # agent run artifacts referencing benchmarked projects
+    - "web/i18n/**" # translation mirrors — validated by `oma docs i18n` instead
+
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # When set, `oma agent:spawn` records token usage per agent and blocks the

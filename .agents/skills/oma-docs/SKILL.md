@@ -51,7 +51,7 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 - `docs/generated/doc-refs.json`: single-direction reference index (git-tracked, regenerated on every verify run).
 - `docs/generated/url-drift.json`: lychee-produced URL drift report (written by background lychee spawn; gitignored or tracked at user discretion).
 - `lychee`: external Rust tool for URL link checking. Detected on PATH; install via `brew install lychee` or see https://github.com/lycheeverse/lychee#installation. Optional but recommended.
-- `.agents/oma-config.yaml`: `docs.auto_verify` (workflow hook opt-in) and `docs.check_urls` (URL checking on/off, default true) toggles.
+- `.agents/oma-config.yaml`: `docs.auto_verify` (workflow hook opt-in), `docs.check_urls` (URL checking on/off, default true), and `docs.exclude` (glob list of markdown trees the walker must not scan — benchmark artifacts, translation mirrors, etc.; default `[]`) toggles.
 
 ### Control-flow features
 - Mode is selected from the first argument: `verify` or `sync`.
@@ -218,7 +218,9 @@ oma docs verify --json
 6. **URL link checking delegated to lychee**: when `docs.check_urls=true` (default), URL refs are checked by `lychee` running in the background; results land in `docs/generated/url-drift.json`. If `lychee` is missing, an install hint is printed and URL checking is skipped (no internal HEAD fallback).
 7. **No direct LLM API calls from the CLI**: the CLI never imports vendor SDKs, never reads API keys, never makes outbound LLM requests. All synthesis, patch drafting, and natural-language framing is the host LLM's responsibility (mirrors `oma-scholar`'s pattern). This makes `oma-docs` vendor-agnostic: works identically under Claude Code / Codex / Gemini / Qwen / Antigravity.
 8. **Hook is warn-only in v1**: broken refs never block workflow completion; `docs.auto_verify: false` by default (explicit opt-in required).
-9. **Escape hatch respected**: `<!-- oma-docs:ignore-start -->` / `<!-- oma-docs:ignore-end -->` blocks and frontmatter `oma-docs: skip` are honored; no ref extraction from ignored regions.
+9. **Escape hatch respected**: `<!-- oma-docs:ignore-start -->` / `<!-- oma-docs:ignore-end -->` blocks and frontmatter `oma-docs: skip` are honored; no ref extraction from ignored regions. Use this for illustrative example paths in tutorials (hypothetical project files in inline code) that intentionally do not resolve.
+10. **Gitignored targets are generated, not broken**: a `file` ref whose target does not exist but matches the project's gitignore rules (`git check-ignore`) is classified as `skipped` (a documented runtime/generated output such as `.agents/results/result-*.md`, `.serena/memories/*`, `.agents/state/*.json`), never as `broken`. gitignore is the single source of truth for "produced at runtime" — gitignore an output path and it stops being flagged. The `skipped` count is surfaced (markdown summary + JSON `skippedCount`) so nothing is silently dropped.
+11. **Non-prose trees excluded via `docs.exclude`**: committed-but-non-prose markdown (benchmark run artifacts, translation mirrors validated separately by `oma docs i18n`) is dropped from the scan by the `docs.exclude` globs rather than producing unactionable broken refs. An explicit single-file path argument bypasses `docs.exclude`.
 
 ### v1 scope note
 v1 covers `verify` and `sync` (broken-only classification, L2 ref extraction). The following are explicitly deferred to v2: `create` mode (generate missing docs), multilingual sync (deeper `oma-translator` integration), L3 symbol-level extraction (Tree-sitter/LSP), GitHub Action wrapper, `block` hook mode.

@@ -8,6 +8,7 @@ import {
   hasLychee,
   lycheeArgs,
   readCheckUrlsConfig,
+  readDocsExcludeConfig,
   runLycheeSync,
   spawnLycheeBackground,
   urlReportPath,
@@ -76,8 +77,11 @@ export function registerDocsCommands(program: Command): void {
         const urlsEnabled = opts.urls === false ? false : cfgEnabled;
         const urlsSync = !!opts.urlsSync;
 
-        // Extract doc refs
-        const index = await extractDocRefs(repoRoot, pathArg);
+        // Extract doc refs. `docs.exclude` drops committed-but-non-prose
+        // trees (benchmark artifacts, translation mirrors) that legitimately
+        // contain unresolvable refs.
+        const excludeGlobs = readDocsExcludeConfig(repoRoot);
+        const index = await extractDocRefs(repoRoot, pathArg, excludeGlobs);
 
         // Write doc-refs.json (URL refs are recorded for downstream tools
         // even when we delegate the actual checking to lychee).
@@ -85,6 +89,8 @@ export function registerDocsCommands(program: Command): void {
 
         // Foreground: core kinds only — file/cli/script/env/config.
         // URL kind is always handled separately (delegated to lychee or skipped).
+        // The resolver classifies missing-but-gitignored targets (generated
+        // outputs) as skipped rather than broken via `git check-ignore`.
         const report = await resolveRefs(index, repoRoot, {
           kinds: ["file", "cli", "script", "env", "config"],
         });
@@ -176,7 +182,11 @@ export function registerDocsCommands(program: Command): void {
           "generated",
           "doc-refs.json",
         );
-        let index = await extractDocRefs(repoRoot);
+        let index = await extractDocRefs(
+          repoRoot,
+          undefined,
+          readDocsExcludeConfig(repoRoot),
+        );
 
         // Use cached index if it exists and is recent (within 5 minutes)
         if (fs.existsSync(indexPath)) {

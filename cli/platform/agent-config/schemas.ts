@@ -66,6 +66,7 @@ const OmaDocsConfigSchema = z
   .object({
     auto_verify: z.boolean().optional(),
     check_urls: z.boolean().optional(),
+    exclude: z.array(z.string()).optional(),
   })
   .strict();
 
