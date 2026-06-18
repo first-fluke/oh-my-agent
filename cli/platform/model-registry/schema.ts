@@ -3,17 +3,9 @@
 
 import { z } from "zod";
 import { VENDORS } from "../../constants/vendors.js";
+import { MODEL_OWNER_CLIS } from "./types.js";
 
-const RuntimeIdSchema = z.enum([
-  "claude",
-  "codex",
-  "cursor",
-  "antigravity",
-  "qwen",
-  "kiro",
-  "kimi",
-  "opencode",
-]);
+const RuntimeIdSchema = z.enum(MODEL_OWNER_CLIS);
 
 /**
  * Valid CLI values for model specs. Extends the canonical VENDORS set with
