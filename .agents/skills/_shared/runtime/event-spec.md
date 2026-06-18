@@ -214,21 +214,15 @@ Required payload fields:
 
 - `status`: `completed` or `failed`.
 
-## `oma_emit` Helper
+## Emitting Decisions
 
-Workflows may define this shell helper before emitting required decisions:
+Call `oma state:emit` **directly** at each required checkpoint — do not wrap it in a shell helper.
 
-```bash
-oma_emit() {
-  kind="$1"
-  payload="$2"
-  oma state:emit "$kind" "$payload"
-}
-```
+Every Bash tool call runs in a fresh shell, so a shell function defined in one call (such as the historical `oma_emit`) does not exist in the next call. The wrapper saved nothing over the underlying command and only produced "command not found" fallbacks, so it has been removed.
 
 Required decision example:
 
 ```bash
-oma_emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved plan.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
+oma state:emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved plan.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
 oma state:verify --workflow ultrawork --checkpoint plan-approved
 ```

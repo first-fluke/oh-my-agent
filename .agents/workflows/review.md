@@ -24,7 +24,7 @@ The detected vendor determines how the QA agent is spawned (Step 7).
 
 ### L1 Decision Events
 
-Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -101,7 +101,7 @@ Use memory write tool to record the final report.
 After severity classification is complete, emit and verify the required review decision:
 
 ```bash
-oma_emit "decision.made" '{"subject":"review.severity-classification","decision":"Use the classified finding severities for the QA report and follow-up routing.","rationale":"Findings have been reviewed and assigned CRITICAL/HIGH/MEDIUM/LOW severity with remediation context."}'
+oma state:emit "decision.made" '{"subject":"review.severity-classification","decision":"Use the classified finding severities for the QA report and follow-up routing.","rationale":"Findings have been reviewed and assigned CRITICAL/HIGH/MEDIUM/LOW severity with remediation context."}'
 oma state:verify --workflow review --checkpoint severity-classification
 ```
 

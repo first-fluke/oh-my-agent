@@ -25,15 +25,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
-
-```bash
-oma_emit() {
-  kind="$1"
-  payload="$2"
-  oma state:emit "$kind" "$payload"
-}
-```
+Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 This workflow has two required checkpoints: **mode-selection** (Step 2) and **cost-confirmation** (Step 5). Do not skip either emit/verify pair.
 
@@ -98,7 +90,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
 3. **You MUST get user confirmation on the mode/plan before Step 3.**
 4. After the user confirms, emit and verify the mode-selection decision:
    ```bash
-   oma_emit "decision.made" '{"subject":"video.mode-selection","decision":"Proceed with the confirmed mode and pipeline plan.","rationale":"The user confirmed mode, aspect, visual track, and compositor before asset generation."}'
+   oma state:emit "decision.made" '{"subject":"video.mode-selection","decision":"Proceed with the confirmed mode and pipeline plan.","rationale":"The user confirmed mode, aspect, visual track, and compositor before asset generation."}'
    oma state:verify --workflow video --checkpoint mode-selection
    ```
 
@@ -164,7 +156,7 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 1. Inspect the cost estimate the orchestrator computed across providers (`cost.usd` + breakdown in the manifest/JSON output).
 2. **If the estimate meets or exceeds the guardrail** (default $0.20, or `--max-usd`), pause and present the breakdown. **You MUST get user confirmation before the paid render proceeds.** Then emit and verify:
    ```bash
-   oma_emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
+   oma state:emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
    oma state:verify --workflow video --checkpoint cost-confirmation
    ```
    If the user declines, re-run with the key-free providers (drop `--visual stock|aigc`) — the fallback chain keeps the run alive.

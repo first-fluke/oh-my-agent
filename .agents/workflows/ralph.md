@@ -33,7 +33,7 @@ The detected vendor determines how ultrawork spawns agents internally.
 1. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 2. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 3. Read `.agents/workflows/ralph/resources/judge-protocol.md` for JUDGE rules.
-4. Read `.agents/skills/_shared/runtime/event-spec.md` for the L1 event protocol and the `oma_emit` helper (used by the EXEC checkpoint in Step 1.2).
+4. Read `.agents/skills/_shared/runtime/event-spec.md` for the L1 event protocol and `oma state:emit` (used by the EXEC checkpoint in Step 1.2).
 
 ### Step 0.2: Define Completion Criteria
 
@@ -91,7 +91,7 @@ Compose the ultrawork input based on current iteration:
 **EXEC-entry checkpoint (MANDATORY — emit before delegating).** This records, in the auditable L1 event log, that this iteration delegates to the full ultrawork workflow. A run without this event is a non-compliant run.
 
 ```bash
-oma_emit "decision.made" '{"subject":"ralph.exec-delegated","decision":"Delegate this iteration to the full ultrawork 5-phase workflow.","rationale":"Ralph EXEC must run ultrawork in full; abridging, substituting, or skipping phases for cost/stability/time reasons is forbidden without explicit user approval."}'
+oma state:emit "decision.made" '{"subject":"ralph.exec-delegated","decision":"Delegate this iteration to the full ultrawork 5-phase workflow.","rationale":"Ralph EXEC must run ultrawork in full; abridging, substituting, or skipping phases for cost/stability/time reasons is forbidden without explicit user approval."}'
 oma state:verify --workflow ralph --checkpoint exec-delegated
 ```
 
@@ -132,7 +132,7 @@ oma ralph:verify --json --session {sessionId} --newer-than {iteration_start_iso}
   1. Record the violation in `session-ralph-{sessionId}.md`: `exec-circumvention detected at iteration {N}: missing {artifact}`.
   2. Emit the audit event:
      ```bash
-     oma_emit "decision.made" '{"subject":"ralph.exec-circumvention","decision":"EXEC artifacts incomplete — ultrawork did not run in full.","rationale":"Required VERIFY/REFINE agent result files are absent; the iteration was abridged."}'
+     oma state:emit "decision.made" '{"subject":"ralph.exec-circumvention","decision":"EXEC artifacts incomplete — ultrawork did not run in full.","rationale":"Required VERIFY/REFINE agent result files are absent; the iteration was abridged."}'
      ```
   3. STOP and report to the user that ultrawork was not executed in full, citing the missing artifact. Ask whether to re-run the iteration in full or to explicitly authorize a reduced-scope run. Do NOT silently retry with the same abridged approach.
 
@@ -163,7 +163,7 @@ oma ralph:verify --json --session {sessionId} --newer-than {iteration_start_iso}
 3. **Wait for `result-judge-{sessionId}-iter{N}.md`**, then read it as the JUDGE result.
 4. **Inline fallback (exception)**: only if subagent spawning is unavailable in the current runtime, perform the verification inline. Record `judge-inline-fallback at iteration {N}` in `session-ralph-{sessionId}.md` and emit:
    ```bash
-   oma_emit "decision.made" '{"subject":"ralph.judge-inline-fallback","decision":"Run JUDGE inline in the orchestrator context.","rationale":"Subagent spawning unavailable in this runtime; judge independence is downgraded for this iteration."}'
+   oma state:emit "decision.made" '{"subject":"ralph.judge-inline-fallback","decision":"Run JUDGE inline in the orchestrator context.","rationale":"Subagent spawning unavailable in this runtime; judge independence is downgraded for this iteration."}'
    ```
 
 For **EVERY criterion regardless of current status** (including PASS from prior iterations), the judge executes the verification method defined in Phase 0:

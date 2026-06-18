@@ -17,7 +17,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -149,7 +149,7 @@ Do not create commits unless explicitly requested.
 1. Separate features if needed (different scope/type and >5 files).
    After deciding the commit grouping, emit and verify the required split decision:
    ```bash
-   oma_emit "decision.made" '{"subject":"scm.commit-split","decision":"Use the selected commit grouping for the current repository changes.","rationale":"The working tree was inspected and changes were grouped by scope/type before committing."}'
+   oma state:emit "decision.made" '{"subject":"scm.commit-split","decision":"Use the selected commit grouping for the current repository changes.","rationale":"The working tree was inspected and changes were grouped by scope/type before committing."}'
    oma state:verify --workflow scm --checkpoint commit-split
    ```
 2. Determine type.

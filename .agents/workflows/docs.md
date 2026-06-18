@@ -20,7 +20,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -135,7 +135,7 @@ For each candidate doc:
 5. After each `[y]` or `[n]` decision, emit and verify the required patch approval decision:
 
    ```bash
-   oma_emit "decision.made" '{"subject":"docs.sync-patch-approval","decision":"Apply or skip the proposed documentation sync patch for this document.","rationale":"The user reviewed the proposed doc patch and made an explicit per-document decision."}'
+   oma state:emit "decision.made" '{"subject":"docs.sync-patch-approval","decision":"Apply or skip the proposed documentation sync patch for this document.","rationale":"The user reviewed the proposed doc patch and made an explicit per-document decision."}'
    oma state:verify --workflow docs --checkpoint sync-patch-approval
    ```
 

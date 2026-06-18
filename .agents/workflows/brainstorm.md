@@ -24,7 +24,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -66,7 +66,7 @@ Present **2-3 distinct approaches** to solve the problem:
 After the user chooses an option, emit and verify the required option-selection decision:
 
 ```bash
-oma_emit "decision.made" '{"subject":"brainstorm.option-selection","decision":"Proceed with the user-selected approach.","rationale":"The user selected one option after comparing alternatives and tradeoffs."}'
+oma state:emit "decision.made" '{"subject":"brainstorm.option-selection","decision":"Proceed with the user-selected approach.","rationale":"The user selected one option after comparing alternatives and tradeoffs."}'
 oma state:verify --workflow brainstorm --checkpoint option-selection
 ```
 

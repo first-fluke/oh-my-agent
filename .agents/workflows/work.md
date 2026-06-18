@@ -32,7 +32,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` for required L1 decisions. The helper wraps `oma state:emit`.
+5. Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 6. Record session start using memory write tool:
    - Create `session-work.md` in the memory base path
    - Include: session start time, user request summary.
@@ -146,7 +146,7 @@ If QA finds CRITICAL or HIGH issues:
 1. Re-spawn the responsible agent with QA findings. **The fix prompt MUST instruct root-cause remediation, not symptom suppression.** Forbid tactical patches (try/catch swallowing, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent can explicitly justify why a structural fix is out of scope for this iteration (e.g., upstream library bug, deprecated path, hotfix window). Bias toward the orthodox engineering fix even when it costs more lines or touches more files.
 2. Emit and verify the remediation decision before accepting any fix/ignore choice:
    ```bash
-   oma_emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
+   oma state:emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
    oma state:verify --workflow work --checkpoint remediation-choice
    ```
 3. If Quality Score is active: measure after fix, apply Keep/Discard rule, record in Experiment Ledger.

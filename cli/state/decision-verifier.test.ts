@@ -108,8 +108,7 @@ describe("required decision verifier", () => {
       "utf-8",
     );
 
-    expect(eventSpec).toContain("oma_emit()");
-    expect(eventSpec).toContain('oma state:emit "$kind" "$payload"');
+    expect(eventSpec).toContain('oma state:emit "decision.made"');
     expect(eventSpec).toContain("oma state:verify --workflow");
 
     for (const [workflow, checkpoints] of Object.entries(table)) {

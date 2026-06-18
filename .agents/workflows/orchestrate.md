@@ -31,7 +31,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` for required L1 decisions. The helper wraps `oma state:emit`.
+5. Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -78,7 +78,7 @@ Look for a plan file:
 Before spawning agents, emit and verify the required fan-out decision:
 
 ```bash
-oma_emit "decision.made" '{"subject":"orchestrate.fanout-strategy","decision":"Spawn agents by priority tier using the loaded plan.","rationale":"The plan is available and determines which agents run in parallel."}'
+oma state:emit "decision.made" '{"subject":"orchestrate.fanout-strategy","decision":"Spawn agents by priority tier using the loaded plan.","rationale":"The plan is available and determines which agents run in parallel."}'
 oma state:verify --workflow orchestrate --checkpoint fanout-strategy
 ```
 
@@ -202,7 +202,7 @@ Compile summary: completed tasks, failed tasks, files changed, remaining issues.
 Emit and verify the required QA verdict decision before the final report:
 
 ```bash
-oma_emit "decision.made" '{"subject":"orchestrate.qa-verdict","decision":"Accept completed agents or record change requests.","rationale":"Agent verification results have been collected and classified."}'
+oma state:emit "decision.made" '{"subject":"orchestrate.qa-verdict","decision":"Accept completed agents or record change requests.","rationale":"Agent verification results have been collected and classified."}'
 oma state:verify --workflow orchestrate --checkpoint qa-verdict
 ```
 

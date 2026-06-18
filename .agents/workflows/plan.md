@@ -23,7 +23,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Use the `oma_emit` helper documented in `.agents/skills/_shared/runtime/event-spec.md` before required L1 decision checkpoints. The helper wraps `oma state:emit`.
+Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -99,7 +99,7 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
 3. Reference from the markdown tracker generated in Step 6.
 4. Emit and verify the required API contract decision:
    ```bash
-   oma_emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
+   oma state:emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
    oma state:verify --workflow plan --checkpoint api-contract
    ```
 

@@ -234,7 +234,7 @@ export async function verifyRequiredDecisions(args: {
         checkpoint: args.checkpoint,
         missing,
         remediation:
-          "Emit the required decision.made event with oma_emit, then rerun this verifier.",
+          "Emit the required decision.made event with oma state:emit, then rerun this verifier.",
       },
     });
   }
