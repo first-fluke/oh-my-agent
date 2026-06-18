@@ -1,11 +1,10 @@
 import { spawnSync } from "node:child_process";
 
-export type AgentVendor = "claude" | "codex" | "gemini" | "qwen";
+export type AgentVendor = "claude" | "codex" | "qwen";
 
 const HEADLESS_COMMANDS: Record<AgentVendor, (prompt: string) => string[]> = {
   claude: (prompt) => ["claude", "-p", prompt],
   codex: (prompt) => ["codex", "exec", prompt],
-  gemini: (prompt) => ["gemini", "-p", prompt],
   qwen: (prompt) => ["qwen", "-p", prompt],
 };
 
