@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.2.1",
-  "releaseDate": "2026-06-19T07:24:49.026Z",
+  "releaseDate": "2026-06-19T07:44:10.012Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -331,8 +331,8 @@
     },
     {
       "path": ".agents/rules/frontend.md",
-      "sha256": "7d2b02573af0153e20e186c778249043cd35781d1d3aa4b159d073a1b43319b9",
-      "size": 5648
+      "sha256": "73f5cd56df2ec5b1853be8d0f94f3909649ab55448440236b39b0d099506a381",
+      "size": 5809
     },
     {
       "path": ".agents/rules/i18n-arb.md",
@@ -971,8 +971,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "1623edc9dae085866ec1e4ecb349fa0f1dff8132a7eca32003c1583741c23ea4",
-      "size": 10860
+      "sha256": "e613bf3c296d6b411c1103df041bf2484b883dd6b9ce0337e7a1bcf4ca68113a",
+      "size": 10941
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
@@ -986,8 +986,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/execution-protocol.md",
-      "sha256": "6fac2fe0a4c2432bdb13a1764142b4e9d4aeb3ea0bb6073826102d55a9d5a3ba",
-      "size": 2323
+      "sha256": "119c763a13e8366848a73b04ff8d70b4c24cdcd85d7810976831d4579f59d648",
+      "size": 2334
     },
     {
       "path": ".agents/skills/oma-frontend/resources/snippets.md",
@@ -1001,8 +1001,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "e80bdcdac81e22562ab8ac272d4b89e5d460200ee240167b16ce1cdc3a67ea25",
-      "size": 3068
+      "sha256": "e29e61744db9ba2cbaab723030e4f724c63ea6a2e8c4af58c3c3d22b7f9ac610",
+      "size": 4343
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
