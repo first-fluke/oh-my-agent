@@ -1,5 +1,24 @@
 # Changelog
 
+## [10.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.2.1...cli-v10.3.0) (2026-06-19)
+
+
+### Features
+
+* **video:** inject agent-authored scripts via --script flag ([38fda9c](https://github.com/first-fluke/oh-my-agent/commit/38fda9c309943bcde6769a6740a493a59dc9d137))
+
+
+### Bug Fixes
+
+* **video:** show active caption cue and align caption timing to scenes ([67aa654](https://github.com/first-fluke/oh-my-agent/commit/67aa654feb50e19688f1cb5db79c2f5fe39c7868))
+* **video:** verify headless shell binary and self-heal extraction ([f633ebd](https://github.com/first-fluke/oh-my-agent/commit/f633ebd5ef1eb8261f5ee67bc65ead7e5744c3e2))
+
+
+### Documentation
+
+* **oma-frontend:** allow Jotai or Zustand for client state ([0273a48](https://github.com/first-fluke/oh-my-agent/commit/0273a4844db9d0abdf608d77c8d3c736b173f054))
+* **oma-frontend:** default shadcn/ui to Base UI engine ([f52299e](https://github.com/first-fluke/oh-my-agent/commit/f52299eeedad3b9e82b81e27256d233c9f566d80))
+
 ## [10.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.2.0...cli-v10.2.1) (2026-06-18)
 
 
