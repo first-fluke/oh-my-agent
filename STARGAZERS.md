@@ -5,13 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-17 · 1 unstarred
+## 2026-06-19 · 1 unstarred
 
-- **@smashah** · Shah · LHR/JED · I don't know, yno · 65 repos · 237 followers
+- **@ummsehun** · Umsehun · 경북소프트웨어마이스터고 · 7 repos · 2 followers
+  - Umsehuns Account
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1093)
+## Current (1095)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -45,6 +46,7 @@ summaries to spot which persona is churning.
 - @adrian-doyeon-kim — 2026-04-26
 - @adriancbo — 2026-03-18
 - @aero — 2026-02-06
+- @agagtmdtlr — 2026-06-18
 - @ahmed-esmail — 2026-03-03
 - @ahnbu — 2026-02-13
 - @airaum — 2026-04-19
@@ -76,6 +78,7 @@ summaries to spot which persona is churning.
 - @Amir2244 — 2026-03-19
 - @anchapin — 2026-05-10
 - @anderson — 2026-02-12
+- @anderson-c-santos — 2026-06-18
 - @andyandsmoothies-ship-it — 2026-02-06
 - @anjin0910-afk — 2026-05-13
 - @annieppss — 2026-04-27
@@ -100,6 +103,7 @@ summaries to spot which persona is churning.
 - @Axelvrdn — 2026-05-20
 - @azizsayadi1155 — 2026-05-10
 - @azla-leomin9 — 2026-05-21
+- @B67687 — 2026-06-18
 - @ba-hc — 2026-04-09
 - @babynme0320-sketch — 2026-06-16
 - @BaGyun0107 — 2026-03-12
@@ -1000,7 +1004,6 @@ summaries to spot which persona is churning.
 - @Ugee0810 — 2026-02-20
 - @ukongee — 2026-02-27
 - @ultragen — 2026-02-05
-- @ummsehun — 2026-06-10
 - @uncle-rennus — 2026-02-12
 - @Universe-Coin — 2026-05-08
 - @unquo — 2026-05-11
