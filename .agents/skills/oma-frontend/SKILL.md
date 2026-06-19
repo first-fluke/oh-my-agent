@@ -134,7 +134,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 |----------|---------|
 | Framework | `next@16+` (App Router) + `react@19+`; `next < 16` is BANNED |
 | Date | `luxon` |
-| Styling | `TailwindCSS v4` + `shadcn/ui` |
+| Styling | `TailwindCSS v4` + `shadcn/ui` (Base UI engine; see `resources/tech-stack.md`) |
 | Hooks | `ahooks` (pre-made hooks preferred) |
 | Utils | `es-toolkit` (first choice) |
 | State (URL) | `nuqs` |
@@ -145,6 +145,10 @@ Then run the project's frontend verification commands, typically lint, typecheck
 | Animation | `motion`; import from `motion/react`. `framer-motion` (legacy package name) is BANNED. |
 
 ### Shadcn Workflow
+
+- **Engine default: Base UI** (`components.json` → `style: "base-*"`). Radix (`radix-*`) is a
+  reasoned fallback for existing Radix codebases only; no big-bang migration. Details in
+  `resources/tech-stack.md` §shadcn/ui Primitive Engine.
 
 1. Search: `shadcn_search_items_in_registries`
 2. Review: `shadcn_get_item_examples_from_registries`
