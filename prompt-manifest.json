@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.3.0",
-  "releaseDate": "2026-06-19T07:47:22.179Z",
+  "releaseDate": "2026-06-19T08:02:27.982Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -116,8 +116,8 @@
     },
     {
       "path": ".agents/hooks/core/agentmemory-client.ts",
-      "sha256": "d19dc983dd81256c61e999a2a1ac0f87eaa42a3be40669aea475dc7c065f2f7d",
-      "size": 9571
+      "sha256": "fb6ff31580539ca9794c55be17a121ca3e47c8034ef4320dfcb40392266fc989",
+      "size": 10396
     },
     {
       "path": ".agents/hooks/core/agy-input.ts",
