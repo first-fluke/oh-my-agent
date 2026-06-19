@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.0...cli-v10.3.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **hooks:** make AgentMemory recall/observe never throw (flaky fix) ([d993ae4](https://github.com/first-fluke/oh-my-agent/commit/d993ae4ff9a501ef8d9d6f090ca1cc6c8b686f20))
+
 ## [10.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.2.1...cli-v10.3.0) (2026-06-19)
 
 
