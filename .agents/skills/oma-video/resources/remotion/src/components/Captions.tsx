@@ -2,19 +2,20 @@
 //
 // The CLI's oma-captions provider writes captions.srt (+ .vtt) into the run
 // dir; render-spec.captions.file points at it. Here we fetch + parseSrt() the
-// .srt, then createTikTokStyleCaptions() to page it, and display the active
-// page at the current frame. Two styles map from render-spec.captions.style:
+// .srt and display the cue active at the current frame. Two styles map from
+// render-spec.captions.style:
 //   - "tiktok"      : centered, large, animated pop, sits in the lower-third
 //                     above the safe-area bottom margin.
 //   - "lower-third" : smaller, left-aligned band near the bottom.
 //   - "none"        : nothing rendered (handled by the caller).
+//
+// We window on the raw SRT cues (one per scene narration), NOT on
+// createTikTokStyleCaptions pages: our cues are sentence-level and back-to-back
+// (zero gap), so token-combining merged every cue into a single page and dumped
+// the entire script on screen at once. Showing the active cue is correct for
+// sentence-level captions and degrades gracefully for any style.
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  createTikTokStyleCaptions,
-  parseSrt,
-  type Caption,
-  type TikTokPage,
-} from "@remotion/captions";
+import { parseSrt, type Caption } from "@remotion/captions";
 import {
   AbsoluteFill,
   staticFile,
@@ -30,9 +31,6 @@ import type { z } from "zod";
 
 type CaptionStyle = z.infer<typeof CaptionStyleSchema>;
 
-// How often TikTok-style caption pages switch (ms). Higher = more words/page.
-const SWITCH_CAPTIONS_EVERY_MS = 1200;
-
 export const Captions: React.FC<{
   file?: string;
   style: CaptionStyle;
@@ -41,12 +39,12 @@ export const Captions: React.FC<{
 }> = ({ file, style, maxWidthPct, safeArea }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const [pages, setPages] = useState<TikTokPage[] | null>(null);
+  const [cues, setCues] = useState<Caption[] | null>(null);
   const [handle] = useState(() => delayRender("Loading captions"));
 
   const fetchCaptions = useCallback(async () => {
     if (!file) {
-      setPages([]);
+      setCues([]);
       continueRender(handle);
       return;
     }
@@ -54,11 +52,7 @@ export const Captions: React.FC<{
       const res = await fetch(staticFile(file));
       const text = await res.text();
       const { captions } = parseSrt({ input: text }) as { captions: Caption[] };
-      const { pages: built } = createTikTokStyleCaptions({
-        captions,
-        combineTokensWithinMilliseconds: SWITCH_CAPTIONS_EVERY_MS,
-      });
-      setPages(built);
+      setCues(captions);
       continueRender(handle);
     } catch (err) {
       cancelRender(err);
@@ -69,17 +63,15 @@ export const Captions: React.FC<{
     fetchCaptions();
   }, [fetchCaptions]);
 
-  const activePage = useMemo<TikTokPage | null>(() => {
-    if (!pages) return null;
+  const activeCue = useMemo<Caption | null>(() => {
+    if (!cues) return null;
     const nowMs = (frame / fps) * 1000;
     return (
-      pages.find(
-        (page) => nowMs >= page.startMs && nowMs < page.startMs + page.durationMs,
-      ) ?? null
+      cues.find((cue) => nowMs >= cue.startMs && nowMs < cue.endMs) ?? null
     );
-  }, [pages, frame, fps]);
+  }, [cues, frame, fps]);
 
-  if (style === "none" || !activePage) return null;
+  if (style === "none" || !activeCue) return null;
 
   const isTikTok = style === "tiktok";
   return (
@@ -109,7 +101,7 @@ export const Captions: React.FC<{
           borderRadius: isTikTok ? 0 : 12,
         }}
       >
-        {activePage.text}
+        {activeCue.text}
       </div>
     </AbsoluteFill>
   );

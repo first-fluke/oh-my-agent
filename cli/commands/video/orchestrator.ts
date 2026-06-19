@@ -134,6 +134,7 @@ export class VideoOrchestrator {
         script.scenes.map((scene) => ({
           sceneId: scene.id,
           text: scene.narration,
+          durationSec: scene.durationSec,
         })),
         {
           runDir,

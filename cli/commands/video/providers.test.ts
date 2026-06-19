@@ -59,6 +59,39 @@ describe("AgentScriptProvider", () => {
     expect((await provider.available()).ok).toBe(true);
     expect(provider.estimateCost().usd).toBe(0);
   });
+
+  it("never leaks a 'Scene N' marker into narration or on-screen text", () => {
+    const brief: Brief = {
+      text: "AI made writing code cheap. Maintenance is the real cost. oma fixes that.",
+      mode: "explainer",
+      aspect: "16:9",
+      locale: "en",
+      durationSec: 18,
+      seed: 1,
+    };
+    const script = buildSkeletonScript(brief, { maxScenes: 40 });
+    for (const scene of script.scenes) {
+      expect(scene.narration).not.toMatch(/Scene \d/);
+      expect(scene.onScreenText).toEqual([]);
+      expect(scene.visual.prompt).not.toMatch(/-- scene/);
+    }
+  });
+
+  it("distributes brief sentences across scenes for narration", () => {
+    const brief: Brief = {
+      text: "First sentence here. Second sentence here. Third sentence here.",
+      mode: "explainer",
+      aspect: "16:9",
+      locale: "en",
+      durationSec: 18,
+      seed: 1,
+    };
+    const script = buildSkeletonScript(brief, { maxScenes: 3 });
+    expect(script.scenes).toHaveLength(3);
+    expect(script.scenes[0]?.narration).toContain("First sentence");
+    expect(script.scenes[1]?.narration).toContain("Second sentence");
+    expect(script.scenes[2]?.narration).toContain("Third sentence");
+  });
 });
 
 describe("VoiceboxVoiceProvider", () => {
@@ -102,6 +135,30 @@ describe("VoiceboxVoiceProvider", () => {
       locale: "en",
     });
     expect(JSON.stringify(a.timing)).toBe(JSON.stringify(b.timing));
+  });
+
+  it("aligns segment durations to scene durationSec so captions don't drift", async () => {
+    const provider = new VoiceboxVoiceProvider();
+    const { timing } = await provider.synthesize(
+      [
+        { sceneId: "scene-01", text: "short line", durationSec: 6 },
+        {
+          sceneId: "scene-02",
+          text: "a much longer narration line with many more words here",
+          durationSec: 5,
+        },
+      ],
+      { runDir: tmp, voice: "none", locale: "en" },
+    );
+    // Segment boundaries follow scene durations (0→6→11), not word counts.
+    expect(timing.segments[0]?.startSec).toBe(0);
+    expect(timing.segments[0]?.endSec).toBe(6);
+    expect(timing.segments[1]?.startSec).toBe(6);
+    expect(timing.segments[1]?.endSec).toBe(11);
+    expect(timing.totalSec).toBe(11);
+    // Per-word timings stay within the scene's window.
+    const lastWord = timing.segments[1]?.words.at(-1);
+    expect(lastWord?.endSec).toBeCloseTo(11, 5);
   });
 });
 

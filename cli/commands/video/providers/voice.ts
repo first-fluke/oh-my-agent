@@ -218,18 +218,24 @@ function estimateSegments(lines: NarrationLine[]): {
   let cursor = 0;
   const segments = lines.map((line) => {
     const words = line.text.split(/\s+/).filter(Boolean);
-    const duration = Math.max(1, words.length * ESTIMATED_SECONDS_PER_WORD);
+    const estimated = Math.max(1, words.length * ESTIMATED_SECONDS_PER_WORD);
+    // Honor the scene's allotted duration when provided so captions stay aligned
+    // with the scene visuals; fall back to the word-count estimate otherwise.
+    const duration =
+      line.durationSec && line.durationSec > 0 ? line.durationSec : estimated;
     const startSec = cursor;
     const endSec = cursor + duration;
     cursor = endSec;
+    // Distribute word timings evenly across the (possibly scene-fixed) duration.
+    const perWord = words.length > 0 ? duration / words.length : duration;
     return {
       sceneId: line.sceneId,
       startSec,
       endSec,
       words: words.map((t, idx) => ({
         t,
-        startSec: startSec + idx * ESTIMATED_SECONDS_PER_WORD,
-        endSec: startSec + (idx + 1) * ESTIMATED_SECONDS_PER_WORD,
+        startSec: startSec + idx * perWord,
+        endSec: startSec + (idx + 1) * perWord,
       })),
     };
   });

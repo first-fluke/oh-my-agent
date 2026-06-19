@@ -56,6 +56,10 @@ export function buildSkeletonScript(brief: Brief, opts: ScriptOpts): Script {
   const duration = brief.durationSec ?? (brief.mode === "shorts" ? 30 : 60);
   const perScene = Math.max(1, Math.round(duration / sceneCount));
   const title = makeTitle(brief.text);
+  // Distribute the brief's own sentences across scenes for narration, so the
+  // fallback produces presentable captions instead of a literal "Scene N"
+  // marker leaking into the lower-third and the on-screen text overlay.
+  const narrations = splitNarration(brief.text, sceneCount, title);
   return {
     schemaVersion: VIDEO_SCHEMA_VERSION,
     mode: brief.mode,
@@ -69,17 +73,42 @@ export function buildSkeletonScript(brief: Brief, opts: ScriptOpts): Script {
       return {
         id: `scene-${String(n).padStart(2, "0")}`,
         durationSec: perScene,
-        narration: `${title}. Scene ${n}.`,
-        onScreenText: [`Scene ${n}`],
+        narration: narrations[idx] ?? title,
+        // No "Scene N" watermark — the skeleton has no real on-screen copy, so
+        // leave the overlay empty and let the visual carry the frame.
+        onScreenText: [],
         visual: {
           kind: brief.mode === "explainer" ? "slide" : "still",
-          prompt: `${brief.text} -- scene ${n}`,
+          prompt: brief.text,
           source: "agent-skeleton",
         },
         transition: idx === sceneCount - 1 ? "none" : "cut",
       };
     }),
   };
+}
+
+/**
+ * Split the brief into `n` narration chunks along sentence boundaries (pure,
+ * deterministic). Falls back to the title when the brief yields no sentences.
+ */
+function splitNarration(text: string, n: number, title: string): string[] {
+  const sentences = (
+    text
+      .trim()
+      .replace(/\s+/g, " ")
+      .match(/[^.!?]+[.!?]*/g) ?? []
+  )
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  if (sentences.length === 0) {
+    return Array.from({ length: n }, () => title);
+  }
+  const per = Math.ceil(sentences.length / n);
+  return Array.from({ length: n }, (_, idx) => {
+    const chunk = sentences.slice(idx * per, (idx + 1) * per).join(" ");
+    return chunk.length > 0 ? chunk : title;
+  });
 }
 
 function makeTitle(brief: string): string {

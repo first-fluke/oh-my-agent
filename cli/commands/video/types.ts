@@ -181,6 +181,12 @@ export interface Brief {
 export interface NarrationLine {
   sceneId: string;
   text: string;
+  /**
+   * The scene's allotted duration (script `durationSec`). When set, the
+   * estimated-timing fallback uses it as the segment length so captions stay
+   * aligned with the scene visuals instead of drifting on a word-count estimate.
+   */
+  durationSec?: number;
 }
 
 export interface AudioRef {
