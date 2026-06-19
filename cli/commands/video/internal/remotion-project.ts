@@ -12,7 +12,7 @@
 // Mirrors the upward-search resolver in commands/slide/workspace.ts. We cannot
 // import that resolver across slices (commands/<x> must not import commands/<y>),
 // so the ~20-line walk is duplicated here to keep the boundary clean.
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -79,16 +79,86 @@ export function isRemotionProjectInstalled(projectDir: string): boolean {
   return existsSync(join(projectDir, "node_modules", "remotion"));
 }
 
+/** Platform binary name for Remotion's Chrome Headless Shell. */
+function headlessShellBinaryName(): string {
+  return process.platform === "win32"
+    ? "chrome-headless-shell.exe"
+    : "chrome-headless-shell";
+}
+
+/** Absolute path of the Chrome Headless Shell download dir for a project. */
+function headlessShellDir(projectDir: string): string {
+  return join(projectDir, "node_modules", ".remotion", "chrome-headless-shell");
+}
+
 /**
- * True when Remotion's Chrome Headless Shell has been downloaded. This is the
- * supported, reliable render browser — far more stable than forcing the full
- * system Chrome via `--browser-executable` (which intermittently fails at
- * `makePage`/`getPool`). `oma video doctor --install` ensures it.
+ * True when Remotion's Chrome Headless Shell is *actually usable* — the platform
+ * binary has been extracted, not merely that the download directory exists.
+ *
+ * Remotion's `browser ensure` can leave a partial extraction (only ABOUT +
+ * LICENSE, no binary) that still creates the directory. Checking dir existence
+ * alone reports a false "ready" and the render then dies at
+ * `internalOpenBrowser`. We require a >1MB binary named `chrome-headless-shell`.
  */
 export function isRemotionBrowserReady(projectDir: string): boolean {
-  return existsSync(
-    join(projectDir, "node_modules", ".remotion", "chrome-headless-shell"),
+  const shellDir = headlessShellDir(projectDir);
+  if (!existsSync(shellDir)) return false;
+  const target = headlessShellBinaryName();
+  let entries: string[];
+  try {
+    entries = readdirSync(shellDir, { recursive: true }) as string[];
+  } catch {
+    return false;
+  }
+  return entries.some((rel) => {
+    if ((rel.split(/[\\/]/).pop() ?? "") !== target) return false;
+    try {
+      return statSync(join(shellDir, rel)).size > 1_000_000;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
+ * Self-heal a partial Chrome Headless Shell extraction: when `browser ensure`
+ * downloaded the zip but failed to extract the binary, extract the zip in
+ * place. No-op when already ready or when no zip is present. Returns whether
+ * the binary is present after the attempt.
+ */
+async function repairHeadlessShellExtraction(
+  projectDir: string,
+): Promise<boolean> {
+  if (isRemotionBrowserReady(projectDir)) return true;
+  const shellDir = headlessShellDir(projectDir);
+  if (!existsSync(shellDir)) return false;
+  const zip = readdirSync(shellDir).find((file) =>
+    file.toLowerCase().endsWith(".zip"),
   );
+  if (!zip) return false;
+  // zip is `chrome-headless-shell-<platform>.zip`; its sibling `<platform>` dir
+  // is where Remotion expects the extracted tree.
+  const platform = zip
+    .replace(/^chrome-headless-shell-/i, "")
+    .replace(/\.zip$/i, "");
+  const destDir = join(shellDir, platform);
+  const zipPath = join(shellDir, zip);
+  const res =
+    process.platform === "win32"
+      ? await runCapture(
+          "powershell",
+          [
+            "-NoProfile",
+            "-Command",
+            `Expand-Archive -Force -LiteralPath '${zipPath}' -DestinationPath '${destDir}'`,
+          ],
+          { timeoutMs: 120_000 },
+        )
+      : await runCapture("unzip", ["-o", "-q", zipPath, "-d", destDir], {
+          timeoutMs: 120_000,
+        });
+  if (res.code !== 0) return false;
+  return isRemotionBrowserReady(projectDir);
 }
 
 /** Resolve the project dir + whether it is installed + browser-ready, in one call. */
@@ -162,16 +232,22 @@ export async function installRemotionProject(): Promise<RemotionInstallResult> {
     if (browser.timedOut) {
       return { ok: false, dir, detail: "remotion browser ensure timed out" };
     }
-    if (browser.code !== 0 || !isRemotionBrowserReady(dir)) {
-      const tail = (browser.stderr || browser.stdout)
-        .trim()
-        .split("\n")
-        .slice(-3);
-      return {
-        ok: false,
-        dir,
-        detail: `deps installed, but "remotion browser ensure" failed: ${tail.join(" | ")}`,
-      };
+    // `browser ensure` can exit 0 while leaving a partial extraction (zip
+    // present, binary missing). Self-heal by extracting the zip in place before
+    // declaring failure.
+    if (!isRemotionBrowserReady(dir)) {
+      const repaired = await repairHeadlessShellExtraction(dir);
+      if (!repaired) {
+        const tail = (browser.stderr || browser.stdout)
+          .trim()
+          .split("\n")
+          .slice(-3);
+        return {
+          ok: false,
+          dir,
+          detail: `deps installed, but Chrome Headless Shell binary is missing after "browser ensure" + zip repair: ${tail.join(" | ")}`,
+        };
+      }
     }
   }
 
