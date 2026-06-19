@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.2.1",
-  "releaseDate": "2026-06-18T23:56:31.884Z",
+  "releaseDate": "2026-06-19T07:24:49.026Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -971,8 +971,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "a1d7852d37e12af895f3156f40ebf0ffb3a2161139ea3dea819758c76e5c033e",
-      "size": 10568
+      "sha256": "1623edc9dae085866ec1e4ecb349fa0f1dff8132a7eca32003c1583741c23ea4",
+      "size": 10860
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
@@ -1001,8 +1001,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "81f8f9b2f13dbcf70d4f585ef95f3f6e7a057c2a4f225651af7547087e7f2be0",
-      "size": 1143
+      "sha256": "e80bdcdac81e22562ab8ac272d4b89e5d460200ee240167b16ce1cdc3a67ea25",
+      "size": 3068
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
@@ -1921,8 +1921,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion/src/components/Captions.tsx",
-      "sha256": "27ddafba7c49f4a8663f1cba4db5b9de806764012ebcec38fa0e7e880d0c6005",
-      "size": 3650
+      "sha256": "23bc815b5e2e929e52350b346bceacc7dfc508b8043770b844a61d454a103090",
+      "size": 3600
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion/src/components/Scene.tsx",
