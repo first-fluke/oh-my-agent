@@ -137,6 +137,7 @@ Then run the project's frontend verification commands, typically lint, typecheck
 | Styling | `TailwindCSS v4` + `shadcn/ui` (Base UI engine; see `resources/tech-stack.md`) |
 | Hooks | `ahooks` (pre-made hooks preferred) |
 | Utils | `es-toolkit` (first choice) |
+| Types | `type-fest` (TS type utilities not in the standard lib: `SetRequired`, `Merge`, `JsonValue`, `Promisable`, etc.; built-in `Partial`/`Pick`/`Omit` stay first choice) |
 | State (URL) | `nuqs` |
 | State (Server) | `TanStack Query` |
 | State (Client) | `Jotai` or `Zustand` (intent-based, no default; minimize use — see `resources/tech-stack.md`) |

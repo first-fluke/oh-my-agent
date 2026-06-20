@@ -6,6 +6,7 @@
 - **Framework**: NestJS 11+ or Hono 4+
 - **ORM**: Prisma 6+ or Drizzle ORM
 - **Validation**: Zod
+- **Type utilities**: type-fest (`SetRequired`, `Merge`, `JsonValue`, `Promisable`, etc.; prefer over hand-rolled conditional-type gymnastics)
 - **Database**: PostgreSQL 16+, Redis 7+
 - **Auth**: jsonwebtoken, bcrypt
 - **Testing**: Vitest, Supertest
