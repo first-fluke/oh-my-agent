@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.3.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.1...cli-v10.3.2) (2026-06-20)
+
+
+### Documentation
+
+* **skills:** recommend type-fest for frontend and node backend stacks ([006f038](https://github.com/first-fluke/oh-my-agent/commit/006f03811a725b3497377b8c9a0da6809c7f4f84))
+
 ## [10.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.0...cli-v10.3.1) (2026-06-19)
 
 
