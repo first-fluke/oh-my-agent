@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.3.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.2...cli-v10.3.3) (2026-06-21)
+
+
+### Bug Fixes
+
+* **opencode:** generate valid config in oma link ([#571](https://github.com/first-fluke/oh-my-agent/issues/571)) ([6227e1b](https://github.com/first-fluke/oh-my-agent/commit/6227e1bc910f5dbff7287985e6d3bc6b1e531c99))
+
 ## [10.3.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.1...cli-v10.3.2) (2026-06-20)
 
 
