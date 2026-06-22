@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.4.0",
-  "releaseDate": "2026-06-22T03:09:13.940Z",
+  "releaseDate": "2026-06-22T05:54:26.196Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -126,8 +126,8 @@
     },
     {
       "path": ".agents/hooks/core/constants.ts",
-      "sha256": "ebb622612c888fb64f155185c87889988a9281f9dedd2d382d048ad86da51eef",
-      "size": 1892
+      "sha256": "1963620aac462121d4eb721de146087c392f564d546aa47f86a45d73e4a63454",
+      "size": 2497
     },
     {
       "path": ".agents/hooks/core/filter-test-output.sh",
@@ -161,13 +161,13 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "e28466e097e0012dfa128ecfb25734db73a4177c376b7ef63180627ade4f9529",
-      "size": 31734
+      "sha256": "a43e86449bf369d2aa4b9267ac743fca5c6f4e9d6207e74baa3ca15080a0bb4e",
+      "size": 32126
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "932bb2515c0de817a73bd0fb06174882048341273eeb3adf90a09ea6941a6714",
-      "size": 9824
+      "sha256": "a379303f5214c4fd6f094ed70df2fbd9560bd5f7442683b31af0a31babd78eb0",
+      "size": 10331
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
