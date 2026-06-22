@@ -39,6 +39,7 @@ const {
   KEYWORD_SKIP_PREDICATES,
   shouldSkipAllWorkflows,
   normalizeForMatching,
+  run,
 } = await import("../../.agents/hooks/core/keyword-detector.ts");
 
 describe("keyword-detector", () => {
@@ -1554,6 +1555,41 @@ describe("keyword-detector", () => {
       expect(isReinforcementSuppressed(state2, "ultrawork", BASE_NOW)).toBe(
         true,
       );
+    });
+  });
+
+  describe("unknown-session persistence guard (activateMode)", () => {
+    // Regression: when the vendor session id cannot be resolved it falls back
+    // to "unknown". A persistent-mode state file keyed to that fallback cannot
+    // be isolated per session, so activateMode must NOT write one — otherwise a
+    // later unrelated session inherits a stale persistent block.
+    const stateWrites = () =>
+      (fs.writeFileSync as ReturnType<typeof vi.fn>).mock.calls
+        .map((c) => String(c[0]))
+        .filter((p) => /-state-[^/]+\.json$/.test(p));
+
+    it("does not write a persistent-state file for the unknown session", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      await run(
+        { kind: "prompt", prompt: "orchestrate the whole thing", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "unknown" },
+      );
+      expect(stateWrites().some((p) => p.endsWith("-state-unknown.json"))).toBe(
+        false,
+      );
+    });
+
+    it("still writes a persistent-state file for a resolvable session", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      await run(
+        { kind: "prompt", prompt: "orchestrate the whole thing", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "real-sess" },
+      );
+      expect(
+        stateWrites().some((p) =>
+          p.endsWith("orchestrate-state-real-sess.json"),
+        ),
+      ).toBe(true);
     });
   });
 });

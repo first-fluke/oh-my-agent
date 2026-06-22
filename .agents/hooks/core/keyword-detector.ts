@@ -22,7 +22,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
-import { VENDORS } from "./constants.ts";
+import { UNKNOWN_SESSION_ID, VENDORS } from "./constants.ts";
 import { clearGrokContext } from "./grok-context.ts";
 import { makePromptOutput } from "./hook-output.ts";
 // triggers.json is imported statically: the bundler inlines it into the oma
@@ -305,7 +305,7 @@ function getSessionId(input: Record<string, unknown>): string {
     (input.sessionId as string) ||
     (input.session_id as string) ||
     agyConversationId(input) ||
-    "unknown"
+    UNKNOWN_SESSION_ID
   );
 }
 
@@ -656,6 +656,11 @@ function activateMode(
   workflow: string,
   sessionId: string,
 ): void {
+  // Never persist a workflow under the unresolved-session fallback id: such a
+  // file cannot be isolated per session and would cross-contaminate any later
+  // session that also resolves to UNKNOWN_SESSION_ID. The workflow context is
+  // still injected by the caller — it just won't be enforced across stops.
+  if (sessionId === UNKNOWN_SESSION_ID) return;
   const state: ModeState = {
     workflow,
     sessionId,

@@ -10,6 +10,7 @@
  */
 
 import * as fs from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("node:fs", () => ({
@@ -162,6 +163,28 @@ describe("handler run() exports — lockstep guard (T1-a)", () => {
         { vendor: "claude", cwd: "/tmp", sid: "test-session" },
       );
       expect(result).toBeNull();
+    });
+
+    // Regression: a stop whose session id resolves to the "unknown" fallback
+    // must never block (it cannot be isolated per session) and must sweep any
+    // orphan `-state-unknown.json` files without touching real sessions' state.
+    it("never blocks on the unknown-session fallback and sweeps its orphans", async () => {
+      vi.clearAllMocks();
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(true);
+      (fs.readdirSync as ReturnType<typeof vi.fn>).mockReturnValue([
+        "orchestrate-state-unknown.json",
+        "work-state-real-session.json",
+      ]);
+      const result = await pm.run(
+        { kind: "stop", cwd: "/tmp" },
+        { vendor: "claude", cwd: "/tmp", sid: "unknown" },
+      );
+      expect(result).toBeNull();
+      // Only the orphan keyed to the fallback id is removed.
+      expect(fs.unlinkSync).toHaveBeenCalledTimes(1);
+      expect(fs.unlinkSync).toHaveBeenCalledWith(
+        join("/tmp", ".agents", "state", "orchestrate-state-unknown.json"),
+      );
     });
   });
 });

@@ -41,3 +41,16 @@ export const VENDORS = [
   "pi",
   "qwen",
 ] as const;
+
+/**
+ * Fallback session id used when no vendor session id can be resolved from the
+ * hook stdin (`getSessionId`). It is shared across BOTH the keyword-detector and
+ * persistent-mode hooks so the two stay in sync.
+ *
+ * A persistent-mode state file keyed to this value cannot be isolated per
+ * session: any later session whose id ALSO resolves to the fallback would
+ * inherit the stale workflow's persistent block (a cross-session false
+ * positive). Both hooks therefore refuse to write — and refuse to act on —
+ * persistent state under this id.
+ */
+export const UNKNOWN_SESSION_ID = "unknown";

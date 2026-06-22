@@ -22,6 +22,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { agyConversationId, isAgyInput } from "./agy-input.ts";
+import { UNKNOWN_SESSION_ID } from "./constants.ts";
 import { makeBlockOutput } from "./hook-output.ts";
 import { isDeactivationRequest } from "./keyword-detector.ts";
 // triggers.json is imported statically: bundler inlines it into the oma binary;
@@ -102,7 +103,7 @@ function getSessionId(input: Record<string, unknown>): string {
     (input.sessionId as string) ||
     (input.session_id as string) ||
     agyConversationId(input) ||
-    "unknown"
+    UNKNOWN_SESSION_ID
   );
 }
 
@@ -202,7 +203,16 @@ export async function run(
 ): Promise<HandlerResult | null> {
   if (input.kind !== "stop") return null;
 
-  const { cwd: projectDir, sid: sessionId = "unknown" } = ctx;
+  const { cwd: projectDir, sid: sessionId = UNKNOWN_SESSION_ID } = ctx;
+
+  // A stop event whose session id resolves to the fallback cannot be isolated:
+  // blocking on an `-unknown` state file would freeze unrelated sessions that
+  // also lack a resolvable id. Sweep any such orphan files (they should no
+  // longer be created — see activateMode) and never block under this id.
+  if (sessionId === UNKNOWN_SESSION_ID) {
+    deactivateAllForSession(projectDir, UNKNOWN_SESSION_ID);
+    return null;
+  }
 
   // Honor "workflow done" deactivation carried in the stop payload's response
   // text (parity with the standalone main() path). Without this, persistent
