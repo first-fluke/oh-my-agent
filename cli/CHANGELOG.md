@@ -1,5 +1,28 @@
 # Changelog
 
+## [10.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.3...cli-v10.4.0) (2026-06-22)
+
+
+### Features
+
+* **cli:** add ZCode workflow command vendor ([f9b6f14](https://github.com/first-fluke/oh-my-agent/commit/f9b6f1401eba60c037808d775a1d3fe7af3ecc66))
+* **install:** add OpenCode to CLI picker and allow skipping selection ([08639a3](https://github.com/first-fluke/oh-my-agent/commit/08639a377cde27dbc80a74b57fc5ae9c05928a5c)), closes [#575](https://github.com/first-fluke/oh-my-agent/issues/575)
+
+
+### Bug Fixes
+
+* **manifest:** exclude run-time backups and vendored lockfile ([06d5a98](https://github.com/first-fluke/oh-my-agent/commit/06d5a98f5d22c31157db94270d32eecd5eeec349))
+
+
+### Refactoring
+
+* **contracts:** relocate generated API contracts out of skill SSOT ([275a475](https://github.com/first-fluke/oh-my-agent/commit/275a475cbc1602bf8a548e264287d4fdfdde932a))
+
+
+### Documentation
+
+* **readme:** clarify workflow table, add /schedule and kiro preset ([60a0646](https://github.com/first-fluke/oh-my-agent/commit/60a0646297c20c0aa3cbd8a3002c13ae059a900f))
+
 ## [10.3.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.2...cli-v10.3.3) (2026-06-21)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent",
-  "version": "10.3.3",
+  "version": "10.4.0",
   "description": "Portable multi-agent harness for .agents-based skills and workflows across Antigravity, Claude Code, Codex, OpenCode, and more",
   "type": "module",
   "bin": {
