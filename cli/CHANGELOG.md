@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.4.0...cli-v10.4.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* **hooks:** guard persistent mode against unknown-session state files ([cd8af17](https://github.com/first-fluke/oh-my-agent/commit/cd8af17e6be66233c63b41db17961bacbe0c9145))
+
 ## [10.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.3.3...cli-v10.4.0) (2026-06-22)
 
 
