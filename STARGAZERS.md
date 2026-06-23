@@ -5,13 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-22 · 1 unstarred
+## 2026-06-23 · 2 unstarred
 
-- **@anjin0910-afk** · 0 repos · 0 followers
+- **@minjun8702-byte** · 0 repos · 0 followers
+- **@smallq3868** · SeungQ · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1112)
+## Current (1114)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -154,6 +155,7 @@ summaries to spot which persona is churning.
 - @Busy6ee — 2026-04-23
 - @ByounghoLee — 2026-04-12
 - @bytonylee — 2026-02-20
+- @Byun-jinyoung — 2026-06-22
 - @Byuntil — 2026-03-16
 - @c22 — 2026-03-20
 - @caicedoadosnis974 — 2026-04-18
@@ -356,6 +358,7 @@ summaries to spot which persona is churning.
 - @gkgus9630-design — 2026-02-01
 - @gkio — 2026-02-12
 - @Gleisser — 2026-04-25
+- @Global-mindee — 2026-04-11
 - @Gloveman — 2026-05-27
 - @Gnnhnk — 2026-04-04
 - @gnswlcn — 2026-04-25
@@ -505,6 +508,7 @@ summaries to spot which persona is churning.
 - @jasonpa — 2026-04-19
 - @jasonshanks — 2026-03-22
 - @jeasonzhang-eth — 2026-04-22
+- @jeffersongoncalves — 2026-06-22
 - @JEO-tech-ai — 2026-02-09
 - @jeongpiano — 2026-04-19
 - @jeongseunghoon95987 — 2026-02-03
@@ -709,7 +713,6 @@ summaries to spot which persona is churning.
 - @mindok7520 — 2026-02-02
 - @ming12713 — 2026-04-21
 - @minju-kim98 — 2026-03-16
-- @minjun8702-byte — 2026-04-11
 - @minmaogong — 2026-05-29
 - @mintheon — 2026-03-21
 - @Misaka-No-10032 — 2026-04-22
@@ -914,6 +917,7 @@ summaries to spot which persona is churning.
 - @sibbl — 2026-01-31
 - @sigco3111 — 2026-05-20
 - @silobust-hash — 2026-05-17
+- @sinyear — 2026-06-22
 - @sioaeko — 2026-05-14
 - @siwilizhao — 2026-04-24
 - @SJ-9-L — 2026-04-19
@@ -921,7 +925,6 @@ summaries to spot which persona is churning.
 - @Skogix — 2026-06-08
 - @skswj22 — 2026-05-19
 - @slbug — 2026-03-18
-- @smallq3868 — 2026-05-06
 - @smartyjpark — 2026-02-08
 - @smg1024 — 2026-04-03
 - @smileBeda — 2026-03-23
