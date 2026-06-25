@@ -133,6 +133,8 @@ EOF
 
 ### Guardrails
 
+0. **Explicit user override (highest priority).** When the user gives an explicit, unambiguous instruction on how to perform a Git/SCM operation, follow it exactly and do not argue, re-litigate, or block on the conditions below. This overrides every default and guardrail in this skill — including "no direct push to `main`/protected branches", broad staging, the commit-split rules, single vs. multiple commits, message type/scope/length, and shared-history rewrite. State briefly what you are doing and proceed; do not ask for re-confirmation of an instruction the user already gave. Only confirm if the instruction is genuinely ambiguous (multiple plausible interpretations) — never as a way to push back on a clear directive.
+   - **Single hard exception:** likely-secret material (`.env`, keys, raw tokens). If the user's instruction would stage/commit such material, surface it once before proceeding; everything else proceeds without challenge.
 1. Choose Quick Path for ordinary commits and Full CM Path for branching, history, release, or governance work.
 2. Read `config/commit-config.yaml` and `config/cm-config.yaml` before applying project-specific commit or CM rules.
 3. Stage only explicit files; never use broad staging unless the user explicitly approves it.
@@ -330,6 +332,7 @@ Use HEREDOC by default, and switch to `-F` for long or flaky terminal sessions.
 
 ### Important notes
 
+- **Explicit user instruction wins.** A clear user directive on how to commit/push/branch overrides every rule below (and every other guardrail). Follow it without arguing; the only thing that still warrants a heads-up is likely-secret material.
 - **NEVER** `git add -A` or `git add .` without explicit user permission.
 - **NEVER** commit likely-secret material.
 - **ALWAYS** stage by explicit paths; tie non-trivial CM work to the five CM rows above, even briefly.
