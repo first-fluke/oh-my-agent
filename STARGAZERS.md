@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1116)
+## Current (1117)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -168,6 +168,7 @@ summaries to spot which persona is churning.
 - @cbr1024 — 2026-04-30
 - @cbtekno — 2026-05-11
 - @CGMM592 — 2026-02-01
+- @changyoulpark — 2026-06-24
 - @Chanmin88 — 2026-04-07
 - @chansantheman — 2026-04-25
 - @chany2m4655 — 2026-02-09
