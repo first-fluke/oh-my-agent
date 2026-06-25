@@ -3,17 +3,21 @@
   "vendor": "commandcode",
   "destDir": ".commandcode/agents",
   "modelDefault": "inherit",
-  "maxTurnsDefault": 20,
+  "maxTurnsDefault": 30,
   "toolsDefault": "Read, Write, Edit, Bash, Grep, Glob",
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
   "agents": {
-    "backend-engineer": {},
-    "frontend-engineer": {},
+    "backend-engineer": {
+      "maxTurns": 40
+    },
+    "frontend-engineer": {
+      "maxTurns": 40
+    },
     "db-engineer": {
-      "maxTurns": 15
+      "maxTurns": 25
     },
     "debug-investigator": {
-      "maxTurns": 15
+      "maxTurns": 25
     },
     "architecture-reviewer": {
       "tools": "Read, Write, Edit, Bash, Grep, Glob",
@@ -21,9 +25,11 @@
     },
     "tf-infra-engineer": {
       "tools": "Read, Write, Edit, Bash, Grep, Glob",
-      "maxTurns": 20
+      "maxTurns": 30
     },
-    "mobile-engineer": {},
+    "mobile-engineer": {
+      "maxTurns": 40
+    },
     "pm-planner": {
       "tools": "Read, Write, Grep, Glob, Bash",
       "maxTurns": 10
