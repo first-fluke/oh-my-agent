@@ -20,6 +20,15 @@ vi.mock("node:fs", () => ({
   writeFileSync: vi.fn(),
   unlinkSync: vi.fn(),
   readdirSync: vi.fn(() => []),
+  // state-marker.ts (reached via keyword-detector L1 activation) performs an
+  // atomic write that fsyncs the file and parent dir. Without these the
+  // activation throws and fail-opens, logging "L1 session activation failed".
+  openSync: vi.fn(() => 0),
+  closeSync: vi.fn(),
+  fsyncSync: vi.fn(),
+  renameSync: vi.fn(),
+  statSync: vi.fn(),
+  appendFileSync: vi.fn(),
 }));
 
 // Import all six handlers — each must export `run`.
