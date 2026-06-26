@@ -66,6 +66,15 @@ vi.mock("../../../vendors/claude/settings.js", () => ({
   needsClaudeSettingsUpdate: vi.fn(() => false),
 }));
 
+// Stub workspace trust so link() never touches the real ~/.claude.json. The
+// merge logic itself is covered by vendors/claude/trust.test.ts.
+vi.mock("../../../vendors/claude/trust.js", () => ({
+  ensureClaudeWorkspaceTrust: vi.fn(() => ({
+    changed: false,
+    alreadyTrusted: true,
+  })),
+}));
+
 vi.mock("../../../vendors/codex/settings.js", () => ({
   applyCodexSettings: vi.fn((s: unknown) => s),
   needsCodexSettingsUpdate: vi.fn(() => false),

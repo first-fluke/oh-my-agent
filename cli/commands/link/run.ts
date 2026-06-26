@@ -4,7 +4,10 @@ import pc from "picocolors";
 import { VENDORS } from "../../constants/vendors.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { installVendorAgents } from "../../platform/agent-composer.js";
-import { getInstallMode } from "../../platform/install-context.js";
+import {
+  getInstallMode,
+  safeGetInstallMode,
+} from "../../platform/install-context.js";
 import {
   installOpencodePlugin,
   registerOpencodePlugin,
@@ -43,6 +46,7 @@ import {
   applyClaudeSettings,
   needsClaudeSettingsUpdate,
 } from "../../vendors/claude/settings.js";
+import { ensureClaudeWorkspaceTrust } from "../../vendors/claude/trust.js";
 import {
   applyCodexSettings,
   needsCodexSettingsUpdate,
@@ -262,6 +266,30 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (needsClaudeSettingsUpdate(claudeSettings, telemetryOptions)) {
       applyClaudeSettings(claudeSettings, telemetryOptions);
       safeWriteJson(claudeSettingsPath, claudeSettings);
+    }
+  }
+
+  // 4b. Claude Code workspace trust — pre-accept the trust dialog for this
+  //     project so the permissions.allow entries written to
+  //     .claude/settings.json take effect immediately. Without this Claude Code
+  //     prints "Ignoring N permissions.allow entries ... this workspace has not
+  //     been trusted" and re-prompts for each permission. Only project installs
+  //     trust process.cwd(); global installs are skipped because the trusted
+  //     workspace is whatever project the user later opens. Surgically merges
+  //     ~/.claude.json (never overwrites it). See vendors/claude/trust.ts.
+  if (
+    configuredVendors.includes("claude") &&
+    safeGetInstallMode() === "project"
+  ) {
+    const trust = ensureClaudeWorkspaceTrust(cwd);
+    if (!quiet) {
+      if (trust.changed) {
+        console.log(
+          `${pc.green("✓")} claude: trusted workspace (~/.claude.json)`,
+        );
+      } else if (trust.reason) {
+        console.log(`${pc.yellow("⚠")} claude trust: ${trust.reason}`);
+      }
     }
   }
 
