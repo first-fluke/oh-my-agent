@@ -1,5 +1,19 @@
 # Changelog
 
+## [10.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.4.2...cli-v10.5.0) (2026-06-26)
+
+
+### Features
+
+* **serena:** self-install binary on install, probe in doctor ([b712bac](https://github.com/first-fluke/oh-my-agent/commit/b712bac819886c2a2df5e5b46c26bba616364227)), closes [#578](https://github.com/first-fluke/oh-my-agent/issues/578)
+
+
+### Bug Fixes
+
+* **antigravity:** re-stamp serena MCP --context to antigravity ([169a9d2](https://github.com/first-fluke/oh-my-agent/commit/169a9d2a94a838f1b0444c53701804111c5b4696)), closes [#578](https://github.com/first-fluke/oh-my-agent/issues/578)
+* **serena:** exclude .serena/cache from default project scan ([4cac889](https://github.com/first-fluke/oh-my-agent/commit/4cac889cdd8b93e9384309f7061f4e3b6bc83904)), closes [#578](https://github.com/first-fluke/oh-my-agent/issues/578)
+* **serena:** use --project-from-cwd for project resolution ([3f22ce4](https://github.com/first-fluke/oh-my-agent/commit/3f22ce4ef70a55ded2eae449cac1adf1b37ac019)), closes [#578](https://github.com/first-fluke/oh-my-agent/issues/578)
+
 ## [10.4.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.4.1...cli-v10.4.2) (2026-06-25)
 
 
