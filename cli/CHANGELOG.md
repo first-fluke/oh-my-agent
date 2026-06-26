@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.5.0...cli-v10.6.0) (2026-06-26)
+
+
+### Features
+
+* **install:** pre-accept Claude Code workspace trust on project link ([580b178](https://github.com/first-fluke/oh-my-agent/commit/580b1788619a3e02249b298d3a8fae43b42b5bec))
+
+
+### Bug Fixes
+
+* **opencode:** inherit user default model instead of hardcoded slug ([31bcc39](https://github.com/first-fluke/oh-my-agent/commit/31bcc39f25c9fff3f119c066cf59160d825a8bff))
+
 ## [10.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.4.2...cli-v10.5.0) (2026-06-26)
 
 
