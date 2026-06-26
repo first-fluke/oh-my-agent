@@ -21,7 +21,7 @@
       "args": [
         "start-mcp-server",
         "--context",
-        "claude-code",
+        "antigravity",
         "--project",
         ".",
         "--open-web-dashboard",

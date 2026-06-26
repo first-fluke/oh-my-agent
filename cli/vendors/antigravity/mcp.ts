@@ -3,7 +3,18 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { safeReadJson } from "../../utils/safe-json.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
-import { withSerenaDashboardOpenDisabled } from "../serena.js";
+import {
+  withSerenaContext,
+  withSerenaDashboardOpenDisabled,
+} from "../serena.js";
+
+/**
+ * Serena's dedicated context for the Antigravity (`agy`) client. The SSOT
+ * `.agents/mcp.json` is Claude Code's template (`--context claude-code`); the
+ * Antigravity-derived `mcp_config.json` must re-stamp its own context so the
+ * Claude value does not leak (serena ships a built-in `antigravity` context).
+ */
+const ANTIGRAVITY_SERENA_CONTEXT = "antigravity";
 
 /**
  * Antigravity CLI (agy) reads MCP server config from a dedicated
@@ -81,7 +92,10 @@ function transformForAgy(entry: Record<string, unknown>): McpServerEntry {
   } else if (typeof entry.url === "string") {
     out.serverUrl = entry.url;
   }
-  return withSerenaDashboardOpenDisabled(out);
+  return withSerenaContext(
+    withSerenaDashboardOpenDisabled(out),
+    ANTIGRAVITY_SERENA_CONTEXT,
+  );
 }
 
 /**

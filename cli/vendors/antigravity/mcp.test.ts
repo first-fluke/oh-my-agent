@@ -69,7 +69,7 @@ describe("applyAntigravityMcpConfig", () => {
     expect(applyAntigravityMcpConfig(root, "project")).toBeNull();
   });
 
-  it("writes a stdio server to project mcp_config.json with dashboard opening disabled", () => {
+  it("writes a stdio server to project mcp_config.json with dashboard opening disabled and the antigravity context", () => {
     const root = makeTmp();
     writeSsotMcp(root, {
       serena: {
@@ -87,11 +87,55 @@ describe("applyAntigravityMcpConfig", () => {
     expect(written.mcpServers.serena.args).toEqual([
       "start-mcp-server",
       "--context",
-      "ide",
+      "antigravity",
       "--open-web-dashboard",
       "false",
     ]);
     expect(written.mcpServers.serena.env).toEqual({ LOG: "info" });
+  });
+
+  // Regression (issue #578): the SSOT .agents/mcp.json is Claude Code's
+  // template (--context claude-code). The Antigravity-derived mcp_config.json
+  // must re-stamp serena's context to `antigravity` so the Claude value does
+  // not leak — previously transformForAgy copied the args verbatim, which made
+  // `agy` launch serena under --context claude-code.
+  it("re-stamps serena --context claude-code to antigravity (no Claude context leak)", () => {
+    const root = makeTmp();
+    writeSsotMcp(root, {
+      serena: {
+        command: "serena",
+        args: [
+          "start-mcp-server",
+          "--context",
+          "claude-code",
+          "--project",
+          ".",
+          "--open-web-dashboard",
+          "false",
+        ],
+        env: { SERENA_LOG_LEVEL: "info" },
+      },
+    });
+
+    const out = applyAntigravityMcpConfig(root, "project");
+    const written = JSON.parse(readFileSync(expectPath(out), "utf-8"));
+
+    const args: string[] = written.mcpServers.serena.args;
+    expect(args[args.indexOf("--context") + 1]).toBe("antigravity");
+    expect(args).not.toContain("claude-code");
+  });
+
+  it("inserts --context antigravity when the SSOT serena entry omits it", () => {
+    const root = makeTmp();
+    writeSsotMcp(root, {
+      serena: { command: "serena", args: ["start-mcp-server"] },
+    });
+
+    const out = applyAntigravityMcpConfig(root, "project");
+    const written = JSON.parse(readFileSync(expectPath(out), "utf-8"));
+    const args: string[] = written.mcpServers.serena.args;
+    expect(args).toContain("--context");
+    expect(args[args.indexOf("--context") + 1]).toBe("antigravity");
   });
 
   it("renames remote MCP `url` to `serverUrl` (Antigravity field rename)", () => {

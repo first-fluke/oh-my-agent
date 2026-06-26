@@ -66,3 +66,29 @@ export function withSerenaDashboardOpenDisabled<T extends SerenaMcpServerLike>(
     args: [...server.args, ...DISABLE_DASHBOARD_OPEN_ARGS],
   } as T;
 }
+
+/**
+ * Force a serena entry's `--context` to `context`, inserting the flag when
+ * absent. No-op for non-serena entries (guarded on `command === "serena"`).
+ *
+ * Vendors that derive their MCP config by copying the SSOT `.agents/mcp.json`
+ * (Claude Code's template, which carries `--context claude-code`) must re-stamp
+ * their own context so Claude's value does not leak — every vendor that builds
+ * its serena entry from scratch already does this via `serenaStartMcpArgs`.
+ */
+export function withSerenaContext<T extends SerenaMcpServerLike>(
+  server: T,
+  context: string,
+): T {
+  if (server.command !== "serena" || !Array.isArray(server.args)) return server;
+
+  const idx = server.args.indexOf("--context");
+  if (idx === -1) {
+    return { ...server, args: [...server.args, "--context", context] } as T;
+  }
+  if (server.args[idx + 1] === context) return server;
+
+  const nextArgs = [...server.args];
+  nextArgs[idx + 1] = context;
+  return { ...server, args: nextArgs } as T;
+}
