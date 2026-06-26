@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1117)
+## Current (1120)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -152,6 +152,7 @@ summaries to spot which persona is churning.
 - @bsead — 2026-03-16
 - @bukit-kronik — 2026-04-21
 - @buluktaev — 2026-02-03
+- @business4wangyi — 2026-06-26
 - @Busy6ee — 2026-04-23
 - @ByounghoLee — 2026-04-12
 - @bytonylee — 2026-02-20
@@ -250,6 +251,7 @@ summaries to spot which persona is churning.
 - @djun — 2026-04-12
 - @dkmin — 2026-02-03
 - @DoddiC — 2026-03-19
+- @Dodo9128 — 2026-06-25
 - @DoK6n — 2026-04-22
 - @Dominic-QI — 2026-04-20
 - @dongsilverk-collab — 2026-05-17
@@ -338,6 +340,7 @@ summaries to spot which persona is churning.
 - @gabrielzevedo — 2026-02-12
 - @gahyun-git — 2026-02-09
 - @GaliRithvik — 2026-04-11
+- @Gangdaewon — 2026-06-25
 - @GaoSSR — 2026-04-22
 - @gardinermichael — 2026-03-25
 - @Gareryer — 2026-02-02
