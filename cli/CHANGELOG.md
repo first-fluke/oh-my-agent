@@ -1,5 +1,23 @@
 # Changelog
 
+## [10.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.6.1...cli-v10.7.0) (2026-06-27)
+
+
+### Features
+
+* **agent-composer:** pin opencode model/variant for routed agents ([bc7a3c5](https://github.com/first-fluke/oh-my-agent/commit/bc7a3c5fd5842906b5d60115a31f682a84c5b1c7))
+* **sns:** add Bluesky announce target ([725c7be](https://github.com/first-fluke/oh-my-agent/commit/725c7be0dd69553212942d2f807bf43c6dc60eb3))
+
+
+### Bug Fixes
+
+* **agent:** persist spawn status and fix opencode subagent dispatch ([82b8cf9](https://github.com/first-fluke/oh-my-agent/commit/82b8cf94632a054471290cc50443948a72dad6de))
+
+
+### Documentation
+
+* **vendor-detection:** rank opencode native task above apply_patch ([991ab19](https://github.com/first-fluke/oh-my-agent/commit/991ab191fb37215ba9f8a0f51b23b0e3659ed316))
+
 ## [10.6.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.6.0...cli-v10.6.1) (2026-06-26)
 
 
