@@ -233,13 +233,14 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       cleanup,
     );
 
+    const vendors = await promptVendors(installRoot, nonInteractive);
+
     const modelPreset = await promptModelPreset(
       installRoot,
+      vendors,
       nonInteractive,
       cleanup,
     );
-
-    const vendors = await promptVendors(modelPreset, nonInteractive);
 
     const selectedSkills = await promptProjectSkills(nonInteractive);
 

@@ -17,6 +17,49 @@ import {
   scanLanguages,
 } from "./preferences.js";
 
+/**
+ * Built-in single-vendor model presets, keyed by the CLI vendor they target.
+ * `mixed` is intentionally excluded — it is a cross-vendor meta-preset, not a
+ * single vendor. A vendor in this set has a matching preset; a vendor outside
+ * it (OpenCode, grok, kiro, copilot, pi, …) relies on native subagent dispatch
+ * and only needs `model_preset` for the cross-vendor `oma agent:spawn` fallback.
+ */
+export const PRESET_BACKED_VENDORS = [
+  "claude",
+  "codex",
+  "cursor",
+  "qwen",
+  "antigravity",
+] as const satisfies readonly CliVendor[];
+
+/** Selected vendors that have a matching single-vendor preset. */
+export function selectedPresetVendors(vendors: CliVendor[]): CliVendor[] {
+  return vendors.filter((v) =>
+    (PRESET_BACKED_VENDORS as readonly CliVendor[]).includes(v),
+  );
+}
+
+/**
+ * Resolve the model_preset default given the user's already-chosen vendors and
+ * any preset already in config. Used to seed the interactive prompt and as the
+ * value written when the preset step is skipped.
+ *
+ *   1. an existing preset (re-install) is preserved verbatim — built-in *or*
+ *      custom (e.g. a generated OpenCode preset) — so install never clobbers it;
+ *   2. else the preset matching the first preset-backed vendor selected;
+ *   3. else "mixed" — the neutral cross-vendor default. OpenCode-only and other
+ *      native-dispatch installs land here instead of a misleading single-vendor
+ *      preset (the root cause of #580).
+ */
+export function resolveDefaultPreset(
+  existingPreset: string | null,
+  vendors: CliVendor[],
+): string {
+  if (existingPreset) return existingPreset;
+  const [presetVendor] = selectedPresetVendors(vendors);
+  return presetVendor ?? "mixed";
+}
+
 export async function promptLanguage(
   repoDir: string,
   installRoot: string,
@@ -49,6 +92,7 @@ export async function promptLanguage(
 
 export async function promptModelPreset(
   installRoot: string,
+  vendors: CliVendor[],
   nonInteractive: boolean,
   cleanup: () => void,
 ): Promise<string> {
@@ -90,19 +134,50 @@ export async function promptModelPreset(
   ];
 
   const existingPreset = getExistingPreset(installRoot);
-  const initialPreset = BUILT_IN_PRESET_OPTIONS.some(
-    (o) => o.value === existingPreset,
-  )
-    ? (existingPreset as string)
-    : "claude";
+  const defaultPreset = resolveDefaultPreset(existingPreset, vendors);
 
-  const modelPreset = nonInteractive
-    ? initialPreset
-    : await p.select({
-        message: "Model preset?",
-        options: BUILT_IN_PRESET_OPTIONS,
-        initialValue: initialPreset,
-      });
+  if (nonInteractive) {
+    return defaultPreset;
+  }
+
+  // When the user selected only native-dispatch vendors (e.g. OpenCode) that
+  // have no matching single-vendor preset, model_preset only affects the
+  // cross-vendor `oma agent:spawn` fallback. Make the step optional so these
+  // users aren't forced into a misleading single-vendor preset (#580).
+  if (selectedPresetVendors(vendors).length === 0) {
+    p.log.info(
+      pc.dim(
+        "Selected CLI(s) use native subagent dispatch. model_preset only " +
+          "affects the cross-vendor 'oma agent:spawn' fallback.",
+      ),
+    );
+    const configure = await p.confirm({
+      message: `Pick a cross-vendor model preset? (otherwise defaults to '${defaultPreset}')`,
+      initialValue: false,
+    });
+    if (p.isCancel(configure)) {
+      cleanup();
+      p.cancel("Cancelled.");
+      process.exit(0);
+    }
+    if (!configure) {
+      return defaultPreset;
+    }
+  }
+
+  // Seed the select with a built-in option value — a custom preset cannot be a
+  // select initialValue, so fall back to "mixed" when the default isn't built-in.
+  const initialPreset = BUILT_IN_PRESET_OPTIONS.some(
+    (o) => o.value === defaultPreset,
+  )
+    ? defaultPreset
+    : "mixed";
+
+  const modelPreset = await p.select({
+    message: "Model preset?",
+    options: BUILT_IN_PRESET_OPTIONS,
+    initialValue: initialPreset,
+  });
 
   if (p.isCancel(modelPreset)) {
     cleanup();
@@ -114,13 +189,14 @@ export async function promptModelPreset(
 }
 
 /**
- * CLI tools selection — placed immediately after preset so the preset
- * can seed the initial vendor selection.
+ * CLI tools selection — asked before the model preset so the chosen vendors
+ * can drive whether the preset step is required (#580). On re-install the
+ * existing preset still seeds the initial vendor selection.
  * Auto-exclude HOME-write vendors on Windows / CI where symlink and
  * HOME semantics are unreliable.
  */
 export async function promptVendors(
-  modelPreset: string,
+  installRoot: string,
   nonInteractive: boolean,
 ): Promise<CliVendor[]> {
   const allowHomeWriteVendors = process.platform !== "win32" && !process.env.CI;
@@ -198,9 +274,10 @@ export async function promptVendors(
     },
   ];
 
-  // Infer default vendor selection from the chosen preset. Single-vendor
-  // presets pre-select only that vendor; mixed falls back to the full
-  // default list (all non-opt-in, non-home-consent, non-extension vendors).
+  // Seed the default vendor selection from any preset already in config
+  // (re-install UX): a single-vendor preset pre-selects only that vendor. A
+  // fresh install (no preset yet) or a cross-vendor preset falls back to the
+  // full default list (all non-opt-in, non-home-consent, non-extension vendors).
   const PRESET_TO_VENDOR: Partial<Record<string, CliVendor>> = {
     claude: "claude",
     codex: "codex",
@@ -219,7 +296,10 @@ export async function promptVendors(
       return true;
     })
     .map((v) => v.value);
-  const presetVendor = PRESET_TO_VENDOR[modelPreset];
+  const existingPreset = getExistingPreset(installRoot);
+  const presetVendor = existingPreset
+    ? PRESET_TO_VENDOR[existingPreset]
+    : undefined;
   const defaultVendorValues =
     presetVendor && vendorOptions.some((o) => o.value === presetVendor)
       ? [presetVendor]
