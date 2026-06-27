@@ -256,17 +256,19 @@ describe("agent/spawn-status.ts", () => {
     const lastCall = vi.mocked(child_process.spawn).mock.calls.at(-1);
     expect(lastCall?.[0]).toBe("opencode");
     const args = lastCall?.[1] as string[];
-    // Per-agent model flows from the resolved plan; --agent points at the
-    // generated .opencode/agents/<id>.md persona.
+    // Per-agent model flows from the resolved plan. #583: `--agent` no longer
+    // points at the `mode: subagent` persona directly (OpenCode rejects that and
+    // falls back to the default agent); it points at a generated primary wrapper.
     expect(args).toEqual(
       expect.arrayContaining([
         "run",
         "-m",
         "opencode-go/deepseek-v4-flash",
         "--agent",
-        "backend",
+        "oma-spawn-backend-session1",
       ]),
     );
+    expect(args).not.toContain("backend");
     // Prompt is the last positional arg and never preceded by -p (=password).
     expect(args).not.toContain("-p");
     expect(args.at(-1)).toContain("implement feature");
@@ -274,6 +276,16 @@ describe("agent/spawn-status.ts", () => {
     // variadic positional).
     expect(args[args.length - 3]).toBe("-m");
     expect(args[args.length - 2]).toBe("opencode-go/deepseek-v4-flash");
+
+    // A throwaway primary wrapper was written under .opencode/agents/.
+    const wrapperWrite = mockFsFunctions.writeFileSync.mock.calls.find((call) =>
+      n(String(call[0])).endsWith(
+        "/.opencode/agents/oma-spawn-backend-session1.md",
+      ),
+    );
+    expect(wrapperWrite).toBeDefined();
+    expect(String(wrapperWrite?.[1])).toContain("mode: primary");
+    expect(String(wrapperWrite?.[1])).toContain('subagent_type: "backend"');
 
     cwdSpy.mockRestore();
   });
@@ -432,6 +444,65 @@ describe("agent/spawn-status.ts", () => {
     );
     expect(consoleSpy).toHaveBeenCalledWith("Error: something failed");
     expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  // Regression for #583: on a clean (code 0) exit the child must leave a
+  // durable, session-specific terminal status behind and the log must survive
+  // cleanup, so `agent:status` can tell a successful short-lived run from a
+  // crash. Only the PID file is removed.
+  it("persists a completed status file and preserves the log on clean exit", async () => {
+    mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = n(pathArg.toString());
+      if (target.endsWith("/tmp")) return true;
+      // PID file is present at cleanup time; status file is absent at spawn.
+      if (target.includes("subagent-") && target.endsWith(".pid")) return true;
+      return false;
+    });
+    mockFsFunctions.statSync.mockReturnValue({
+      isDirectory: () => true,
+      isFile: () => false,
+    });
+    mockFsFunctions.openSync.mockReturnValue(123);
+
+    let exitHandler: ((code: number | null) => void) | undefined;
+    const mockChild = {
+      pid: 44444,
+      on: vi.fn((event: string, handler: (code: number | null) => void) => {
+        if (event === "exit") exitHandler = handler;
+      }),
+      unref: vi.fn(),
+    };
+    vi.mocked(child_process.spawn).mockReturnValue(
+      mockChild as unknown as child_process.ChildProcess,
+    );
+
+    const exitSpy = vi.spyOn(process, "exit").mockImplementation((): never => {
+      throw new Error("exit");
+    });
+
+    await spawnAgent("agent1", "do stuff", "session1", "/tmp");
+
+    expect(exitHandler).toBeDefined();
+    expect(() => exitHandler?.(0)).toThrow("exit");
+
+    // A terminal "completed" status is persisted to the session-specific file.
+    const statusWrite = mockFsFunctions.writeFileSync.mock.calls.find((call) =>
+      n(String(call[0])).endsWith(".status"),
+    );
+    expect(statusWrite).toBeDefined();
+    expect(n(String(statusWrite?.[0]))).toContain(
+      "subagent-session1-agent1.status",
+    );
+    expect(String(statusWrite?.[1])).toContain("completed");
+
+    // The PID file is cleaned up, but the log is preserved for inspection.
+    const unlinked = mockFsFunctions.unlinkSync.mock.calls.map((call) =>
+      n(String(call[0])),
+    );
+    expect(unlinked.some((p) => p.endsWith(".pid"))).toBe(true);
+    expect(unlinked.some((p) => p.endsWith(".log"))).toBe(false);
+
+    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   it("does not inject CODEX_HOME isolation env for codex fallback", async () => {

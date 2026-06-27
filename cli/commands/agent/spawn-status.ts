@@ -5,6 +5,12 @@ import path from "node:path";
 import color from "picocolors";
 import { lookupFinding, recordFinding } from "../../io/findings-cache.js";
 import {
+  createOpencodeSpawnWrapper,
+  type OpencodeWrapper,
+  removeOpencodeSpawnWrapper,
+  swapOpencodeAgentArg,
+} from "../../io/runtime-dispatch/opencode-wrapper.js";
+import {
   targetVendorNeedsPty,
   wrapInvocationWithPty,
 } from "../../io/runtime-dispatch/pty-wrap.js";
@@ -167,6 +173,13 @@ export async function spawnAgent(
 
   const logFile = path.join(tmpdir(), `subagent-${sessionId}-${agentId}.log`);
   const pidFile = path.join(tmpdir(), `subagent-${sessionId}-${agentId}.pid`);
+  // Session-specific terminal status. Persisted on child exit (#583) so
+  // `agent:status` can distinguish a successful short-lived run that wrote no
+  // result memory from an actual crash, even after the PID file is removed.
+  const statusFile = path.join(
+    tmpdir(),
+    `subagent-${sessionId}-${agentId}.status`,
+  );
 
   // T11: Pre-create .serena/memories/ so agent subprocesses can write findings
   // immediately without having to create the directory themselves.
@@ -251,6 +264,37 @@ export async function spawnAgent(
     ),
   );
 
+  // #583: OpenCode refuses to run a `mode: subagent` agent as the entry point
+  // (`opencode run --agent <subagent>` falls back to the default agent and
+  // still exits 0 — silently running the WRONG agent). For the external
+  // fallback, create a throwaway primary wrapper that delegates to the real
+  // subagent via the task tool, and repoint `--agent` at the wrapper. The
+  // wrapper lives under `process.cwd()` to match the `--dir` opencode is given.
+  let opencodeWrapper: OpencodeWrapper | null = null;
+  if (dispatch.targetVendor === "opencode" && dispatch.mode === "external") {
+    const dispatchArgs = dispatch.invocation.args;
+    const modelIdx = dispatchArgs.indexOf("-m");
+    const wrapperModel =
+      modelIdx !== -1 ? dispatchArgs[modelIdx + 1] : undefined;
+    const wrapper = createOpencodeSpawnWrapper(
+      agentId,
+      sessionId,
+      process.cwd(),
+      wrapperModel,
+    );
+    if (swapOpencodeAgentArg(dispatchArgs, agentId, wrapper.name)) {
+      opencodeWrapper = wrapper;
+      console.log(
+        color.dim(
+          `  OpenCode: primary wrapper ${wrapper.name} → task(${agentId})`,
+        ),
+      );
+    } else {
+      // `--agent` was not present as expected — drop the unused wrapper file.
+      removeOpencodeSpawnWrapper(wrapper.filePath);
+    }
+  }
+
   // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
   // subagent under a pseudo-terminal so its headless output is captured.
   let invocation = dispatch.invocation;
@@ -292,15 +336,25 @@ export async function spawnAgent(
   }
 
   fs.writeFileSync(pidFile, child.pid.toString());
+  // Drop any stale terminal status left by a previous run that reused this
+  // session id + agent id, so a lingering "completed" cannot mask the new run
+  // while it is still in flight.
+  try {
+    if (fs.existsSync(statusFile)) fs.unlinkSync(statusFile);
+  } catch {
+    // ignore
+  }
   console.log(color.green(`[${agentId}] Started with PID ${child.pid}`));
 
+  // Remove the PID file but preserve the log for post-run inspection (#583).
+  // Also drop the temporary OpenCode wrapper agent, if one was created.
   const cleanup = () => {
     try {
       if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile);
-      if (fs.existsSync(logFile)) fs.unlinkSync(logFile);
     } catch {
       // ignore
     }
+    if (opencodeWrapper) removeOpencodeSpawnWrapper(opencodeWrapper.filePath);
   };
 
   const cleanAndExit = () => {
@@ -322,6 +376,23 @@ export async function spawnAgent(
     (code: number | null) => {
       unregisterSignalCleanup();
       console.log(color.blue(`[${agentId}] Exited with code ${code}`));
+
+      // Persist a durable, session-specific terminal status BEFORE cleanup
+      // removes the PID file (#583). A clean exit (code 0) is "completed"; any
+      // other code is "crashed". `agent:status` reads this when the agent left
+      // no result memory, so a successful short-lived run is no longer
+      // indistinguishable from a crash.
+      try {
+        fs.writeFileSync(
+          statusFile,
+          `${code === 0 ? "completed" : "crashed"}\n`,
+        );
+      } catch (err) {
+        console.warn(
+          `[${agentId}] could not persist terminal status (non-fatal): ${String(err)}`,
+        );
+      }
+
       if (code !== 0 && fs.existsSync(logFile)) {
         const log = fs.readFileSync(logFile, "utf-8").trim();
         if (log) {
@@ -375,11 +446,21 @@ export async function checkStatus(
       `result-${agent}.md`,
     );
     const pidFile = path.join(tmpdir(), `subagent-${sessionId}-${agent}.pid`);
+    const statusFile = path.join(
+      tmpdir(),
+      `subagent-${sessionId}-${agent}.status`,
+    );
 
     if (fs.existsSync(resultFile)) {
       const content = fs.readFileSync(resultFile, "utf-8");
       const match = content.match(/^## Status:\s*(\S+)/m);
       results[agent] = match?.[1] ? match[1] : "completed";
+    } else if (fs.existsSync(statusFile)) {
+      // Session-specific terminal status written by spawnAgent on child exit
+      // (#583). Ranks above the PID check: once a terminal status exists the
+      // process has exited, even if its PID file was not yet cleaned up.
+      const status = fs.readFileSync(statusFile, "utf-8").trim();
+      results[agent] = status || "crashed";
     } else if (fs.existsSync(pidFile)) {
       const pidContent = fs.readFileSync(pidFile, "utf-8").trim();
       const pid = Number.parseInt(pidContent, 10);
