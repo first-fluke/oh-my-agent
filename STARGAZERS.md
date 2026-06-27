@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1120)
+## Current (1126)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -79,6 +79,7 @@ summaries to spot which persona is churning.
 - @anchapin — 2026-05-10
 - @anderson — 2026-02-12
 - @anderson-c-santos — 2026-06-18
+- @andrebaboim — 2026-06-26
 - @andyandsmoothies-ship-it — 2026-02-06
 - @Anjingyeong — 2026-05-13
 - @annieppss — 2026-04-27
@@ -517,6 +518,7 @@ summaries to spot which persona is churning.
 - @jeongpiano — 2026-04-19
 - @jeongseunghoon95987 — 2026-02-03
 - @JeongYunSung — 2026-04-26
+- @jeshwan — 2026-06-26
 - @JetMan-007 — 2026-04-07
 - @jetmobsol — 2026-04-16
 - @jeyechoi — 2026-03-25
@@ -533,6 +535,7 @@ summaries to spot which persona is churning.
 - @jikoo11 — 2026-05-17
 - @jimcru21 — 2026-05-25
 - @JimmyLee0714 — 2026-04-29
+- @jinni2k — 2026-06-26
 - @Jinstein — 2026-03-16
 - @jiurang — 2026-04-13
 - @jj1985 — 2026-03-21
@@ -733,6 +736,7 @@ summaries to spot which persona is churning.
 - @Mrshulan — 2026-06-09
 - @mschueler — 2026-05-06
 - @MSVICKI8310 — 2026-03-20
+- @muhghal — 2026-06-26
 - @Mulraeng — 2026-02-03
 - @munkgorn — 2026-05-20
 - @muratclk — 2026-02-18
@@ -1129,9 +1133,11 @@ summaries to spot which persona is churning.
 - @zhiyuanep — 2026-02-27
 - @zinyboy — 2026-04-25
 - @zliaaan — 2026-06-02
+- @zorakion — 2026-06-26
 - @ZuBB — 2026-03-28
 - @zvndev — 2026-04-02
 - @zxygithub — 2026-03-27
 - @zydgmail — 2026-04-09
+- @zzorica — 2026-06-26
 - @zzsoszz — 2026-04-04
 <!-- current-end -->
