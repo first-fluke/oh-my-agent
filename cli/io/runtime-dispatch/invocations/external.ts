@@ -12,31 +12,35 @@ export interface ExternalInvocationOptions {
 }
 
 /**
- * A vendor-specific external-invocation builder. All builders share one
- * signature (mirroring buildExternalInvocation's own) so they can be routed
- * through EXTERNAL_DISPATCH; each ignores the arguments it does not need.
+ * The full argument set every external-invocation builder receives. Bundled
+ * into one object so builders destructure only what they need (instead of a
+ * positional signature where most params are underscore-ignored).
  */
-type ExternalInvocationBuilder = (
-  vendor: string,
-  vendorConfig: VendorConfig,
-  promptFlag: string | null,
-  promptContent: string,
-  agentId: string | undefined,
-  options: ExternalInvocationOptions,
-) => Invocation;
+export interface ExternalInvocationArgs {
+  vendor: string;
+  vendorConfig: VendorConfig;
+  promptFlag: string | null;
+  promptContent: string;
+  agentId?: string;
+  options: ExternalInvocationOptions;
+}
+
+/**
+ * A vendor-specific external-invocation builder. All builders share one
+ * signature so they can be routed through EXTERNAL_DISPATCH; each reads only
+ * the fields it needs from the shared argument object.
+ */
+type ExternalInvocationBuilder = (args: ExternalInvocationArgs) => Invocation;
 
 /**
  * Cursor headless prompt with a plain trailing prompt — used by the external-invocation builder
  * (no @{agentId} preamble).
  */
-const buildExternalCursorInvocation: ExternalInvocationBuilder = (
-  _vendor,
+const buildExternalCursorInvocation: ExternalInvocationBuilder = ({
   vendorConfig,
-  _promptFlag,
   promptContent,
-  _agentId,
   options,
-) => {
+}) => {
   const { readOnly = false } = options;
   const command = vendorConfig.command || "cursor";
   const args: string[] = ["agent", "-p"];
@@ -74,14 +78,13 @@ const buildExternalCursorInvocation: ExternalInvocationBuilder = (
 };
 
 /** Kiro: `kiro-cli chat --no-interactive --trust-all-tools [--agent …] [--model …] "<prompt>"`. */
-const buildExternalKiroInvocation: ExternalInvocationBuilder = (
+const buildExternalKiroInvocation: ExternalInvocationBuilder = ({
   vendor,
   vendorConfig,
-  _promptFlag,
   promptContent,
   agentId,
   options,
-) => {
+}) => {
   const { readOnly = false } = options;
   const command = vendorConfig.command || "kiro-cli";
   const args: string[] = ["chat", "--no-interactive"];
@@ -114,14 +117,12 @@ const buildExternalKiroInvocation: ExternalInvocationBuilder = (
 };
 
 /** Grok: supports `grok --yolo -p "prompt"` for headless execution. */
-const buildExternalGrokInvocation: ExternalInvocationBuilder = (
+const buildExternalGrokInvocation: ExternalInvocationBuilder = ({
   vendor,
   vendorConfig,
-  _promptFlag,
   promptContent,
-  _agentId,
   options,
-) => {
+}) => {
   const { readOnly = false } = options;
   const command = vendorConfig.command || "grok";
   const args: string[] = [];
@@ -157,14 +158,12 @@ const buildExternalGrokInvocation: ExternalInvocationBuilder = (
  * EXCLUSIVE with `--prompt`, so we must NOT append them. Kimi exposes no
  * headless read-only sandbox flag, so read-only mode can only warn.
  */
-const buildExternalKimiInvocation: ExternalInvocationBuilder = (
+const buildExternalKimiInvocation: ExternalInvocationBuilder = ({
   vendor,
   vendorConfig,
-  _promptFlag,
   promptContent,
-  _agentId,
   options,
-) => {
+}) => {
   const { readOnly = false } = options;
   const command = vendorConfig.command || "kimi";
   const args: string[] = [];
@@ -196,14 +195,11 @@ const buildExternalKimiInvocation: ExternalInvocationBuilder = (
  * flags are appended after the positional prompt by applyResolvedPlan when a
  * per-agent plan is active; pi tolerates options after positionals.
  */
-const buildExternalPiInvocation: ExternalInvocationBuilder = (
-  _vendor,
+const buildExternalPiInvocation: ExternalInvocationBuilder = ({
   vendorConfig,
-  _promptFlag,
   promptContent,
-  _agentId,
   options,
-) => {
+}) => {
   const { readOnly = false } = options;
   const command = vendorConfig.command || "pi";
   const args: string[] = ["-p"];
@@ -233,14 +229,13 @@ const buildExternalPiInvocation: ExternalInvocationBuilder = (
  * be the trailing positional arg (matches the [message..] positional in
  * `opencode run --help`). Never precede it with a prompt flag.
  */
-const buildExternalOpencodeInvocation: ExternalInvocationBuilder = (
+const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
   vendor,
   vendorConfig,
-  _promptFlag,
   promptContent,
   agentId,
   options,
-) => {
+}) => {
   const { readOnly = false } = options;
   const command = vendorConfig.command || "opencode";
   const args: string[] = ["run"];
@@ -287,26 +282,18 @@ const EXTERNAL_DISPATCH: Record<string, ExternalInvocationBuilder> = {
   opencode: buildExternalOpencodeInvocation,
 };
 
-export function buildExternalInvocation(
-  vendor: string,
-  vendorConfig: VendorConfig,
-  promptFlag: string | null,
-  promptContent: string,
-  agentId?: string,
-  options: ExternalInvocationOptions = {},
-): Invocation {
-  const specialized = EXTERNAL_DISPATCH[vendor];
-  if (specialized) {
-    return specialized(
-      vendor,
-      vendorConfig,
-      promptFlag,
-      promptContent,
-      agentId,
-      options,
-    );
-  }
-
+/**
+ * Generic external builder for vendors absent from EXTERNAL_DISPATCH (mirrors
+ * NATIVE_DISPATCH's fallthrough). Assembles the common argv/env shape from the
+ * vendor config.
+ */
+const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
+  vendor,
+  vendorConfig,
+  promptFlag,
+  promptContent,
+  options,
+}) => {
   const { readOnly = false } = options;
 
   // Vendors whose CLI binary name differs from the vendor identifier.
@@ -405,6 +392,30 @@ export function buildExternalInvocation(
   }
 
   return { command, args, env };
+};
+
+/**
+ * Builds the external (cross-vendor subprocess) invocation for a spawned agent.
+ * Routes to the vendor's dedicated builder, falling back to the generic builder
+ * for vendors absent from EXTERNAL_DISPATCH.
+ */
+export function buildExternalInvocation(
+  vendor: string,
+  vendorConfig: VendorConfig,
+  promptFlag: string | null,
+  promptContent: string,
+  agentId?: string,
+  options: ExternalInvocationOptions = {},
+): Invocation {
+  const builder = EXTERNAL_DISPATCH[vendor] ?? buildGenericExternalInvocation;
+  return builder({
+    vendor,
+    vendorConfig,
+    promptFlag,
+    promptContent,
+    agentId,
+    options,
+  });
 }
 
 // isolation_env comes from user-editable oma-config.yaml. Loader/interpreter
