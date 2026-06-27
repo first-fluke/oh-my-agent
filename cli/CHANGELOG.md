@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.7.0...cli-v10.7.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **install:** make model preset OpenCode-aware and skippable ([3601dbd](https://github.com/first-fluke/oh-my-agent/commit/3601dbd24d9f2328b86af04872e2397bada5def6)), closes [#580](https://github.com/first-fluke/oh-my-agent/issues/580)
+
+
+### Refactoring
+
+* **cli:** bundle external invocation builder args into one object ([59c31f5](https://github.com/first-fluke/oh-my-agent/commit/59c31f5d29a84d3506d3f2b4985d4fa4c2b3fb44))
+
 ## [10.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.6.1...cli-v10.7.0) (2026-06-27)
 
 
