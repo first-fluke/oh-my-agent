@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.6.1",
-  "releaseDate": "2026-06-26T16:37:39.989Z",
+  "releaseDate": "2026-06-27T04:04:50.916Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -461,8 +461,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
-      "sha256": "fa9a844aefaff4cf2dcf0456f6344907e84d83103607fb5c0d66ed2776f8951a",
-      "size": 2359
+      "sha256": "a90c409e0b34cdf329007f72179eaec64920d7b93406089ea3884ad26c5f2538",
+      "size": 3881
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
