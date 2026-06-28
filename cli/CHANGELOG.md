@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.7.1...cli-v10.7.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* **cli:** normalize cwd to project root for .agents state writes ([83b4344](https://github.com/first-fluke/oh-my-agent/commit/83b434400d59e994cdbcecfbb361b176174dfbca))
+
 ## [10.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.7.0...cli-v10.7.1) (2026-06-27)
 
 
