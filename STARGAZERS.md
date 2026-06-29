@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1128)
+## Current (1130)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -52,6 +52,7 @@ summaries to spot which persona is churning.
 - @airaum — 2026-04-19
 - @airclear — 2026-05-28
 - @airscholar — 2026-03-19
+- @airyland — 2026-06-28
 - @ajrmooreuk — 2026-04-30
 - @akanariaa — 2026-02-02
 - @akillness — 2026-02-10
@@ -522,6 +523,7 @@ summaries to spot which persona is churning.
 - @JetMan-007 — 2026-04-07
 - @jetmobsol — 2026-04-16
 - @jeyechoi — 2026-03-25
+- @jezFAM — 2026-06-29
 - @jghoman — 2026-03-19
 - @jgoodacre93 — 2026-03-25
 - @jhchat — 2026-05-12
