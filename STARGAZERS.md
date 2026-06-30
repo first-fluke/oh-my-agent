@@ -12,7 +12,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1130)
+## Current (1138)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -313,6 +313,7 @@ summaries to spot which persona is churning.
 - @Fastdust — 2026-05-23
 - @Fato07 — 2026-05-28
 - @fatsby — 2026-02-02
+- @FATTAL-FairFight — 2026-06-29
 - @fbdlsgud — 2026-06-12
 - @fbsbittencourt — 2026-02-13
 - @fdkgenie — 2026-02-25
@@ -404,6 +405,7 @@ summaries to spot which persona is churning.
 - @H1GHR — 2026-02-09
 - @hadamyeedady12-dev — 2026-04-22
 - @haena-j — 2026-06-09
+- @haengyi9090 — 2026-06-29
 - @haesookimDev — 2026-03-16
 - @HaeungLee — 2026-02-02
 - @hah20 — 2026-03-15
@@ -489,6 +491,7 @@ summaries to spot which persona is churning.
 - @iproxyhub — 2026-03-19
 - @isthistechsupport — 2026-04-10
 - @ityc — 2026-04-02
+- @itzolbro — 2026-06-30
 - @iyuuya — 2026-03-19
 - @izznfkhrlislm — 2026-05-12
 - @j-t-black — 2026-03-26
@@ -499,6 +502,7 @@ summaries to spot which persona is churning.
 - @jackiesre721 — 2026-04-21
 - @JacksonLoh-13 — 2026-05-16
 - @JackyCZJ — 2026-04-02
+- @jadhavrupesh — 2026-06-29
 - @jaeyong-miles — 2026-04-28
 - @jagdishsolunke955 — 2026-05-10
 - @JakeKang — 2026-03-20
@@ -574,6 +578,7 @@ summaries to spot which persona is churning.
 - @justn-hyeok — 2026-05-07
 - @JustRain — 2026-03-20
 - @JustTunya — 2026-03-22
+- @juyeongjung — 2026-06-29
 - @jvisualschool — 2026-02-08
 - @jxding-dev — 2026-04-19
 - @Jyeon324 — 2026-02-03
@@ -824,6 +829,7 @@ summaries to spot which persona is churning.
 - @pedroborges — 2026-05-18
 - @pgtn — 2026-04-08
 - @phase3dev — 2026-05-06
+- @philippeweymans — 2026-06-29
 - @phochoco — 2026-04-24
 - @phoward38 — 2026-03-26
 - @phreck — 2026-04-24
@@ -964,6 +970,7 @@ summaries to spot which persona is churning.
 - @sskys18 — 2026-04-15
 - @stalinkay — 2026-03-18
 - @stargt — 2026-02-01
+- @Starkium — 2026-06-29
 - @stephenholli — 2026-04-12
 - @steve-goldberg — 2026-04-09
 - @stigsb — 2026-03-18
@@ -1045,6 +1052,7 @@ summaries to spot which persona is churning.
 - @vichhka-git — 2026-03-11
 - @victorpreston — 2026-03-09
 - @victoryhb — 2026-03-24
+- @Vincent1993 — 2026-06-29
 - @vinnyduke — 2026-05-18
 - @virajp — 2026-03-21
 - @vishalbelsare — 2026-06-04
