@@ -1,8 +1,26 @@
 import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveProjectRoot } from "./fs-utils.js";
+
+// resolveProjectRoot walks up to the filesystem root, so a marker at any
+// ancestor of the temp root — e.g. /tmp/.git left by a parallel vitest worker
+// on Linux CI, where os.tmpdir() === "/tmp" — leaks into the walk and breaks
+// the no-marker test. Confine existsSync to the test's own tree so the walk
+// sees a marker-free world above it, regardless of shared machine state.
+let markerScope: string | null = null;
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  const existsSync: typeof actual.existsSync = (p) => {
+    if (markerScope !== null && !String(p).startsWith(markerScope)) {
+      return false;
+    }
+    return actual.existsSync(p);
+  };
+  return { ...actual, existsSync, default: { ...actual, existsSync } };
+});
 
 describe("resolveProjectRoot", () => {
   let root: string;
@@ -10,9 +28,11 @@ describe("resolveProjectRoot", () => {
   beforeEach(() => {
     // realpathSync to normalize macOS /var -> /private/var so equality holds.
     root = realpathSync(mkdtempSync(join(tmpdir(), "oma-project-root-")));
+    markerScope = root;
   });
 
   afterEach(() => {
+    markerScope = null;
     rmSync(root, { recursive: true, force: true });
   });
 
