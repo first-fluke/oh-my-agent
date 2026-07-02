@@ -15,7 +15,7 @@ Analyze project files to detect the tech stack, resolve the target domain skill,
 
 ## Step 1: Detect
 
-Scan the project root for package manifests. Evaluate **both** tables independently — do not stop at the first match.
+Scan the project root for package manifests. Evaluate **all three** tables independently — do not stop at the first match.
 
 ### Backend manifests → domain `backend`
 
@@ -36,6 +36,24 @@ Read manifest contents to detect framework:
 - Rust: Axum? Actix-web? Rocket?
 - Java: Spring Boot? Quarkus?
 
+**Frontend exclusion (amendment F):** `package.json` + `tsconfig.json` count as a backend (Node.js/TypeScript) signal only when no frontend signal from the table below claims them. In an Angular-only repo, `package.json` and `tsconfig.json` do NOT create a backend domain. A backend domain still counts when a non-Node backend manifest exists (e.g. `pyproject.toml`) or a separate package carries backend framework dependencies (NestJS, Express, Hono, …) in a monorepo.
+
+### Frontend manifests → domain `frontend`
+
+| File | Detection |
+|:---|:---|
+| `angular.json` | Angular |
+| `package.json` with `@angular/core`, `@angular/cli`, or `@angular/build` | Angular |
+| `tsconfig.app.json`, `tsconfig.spec.json` | Angular (supporting signal only — never sufficient alone) |
+
+Read manifest contents to detect the rest of the stack:
+- Angular version from `@angular/core`
+- Package manager from the lockfile (`bun.lock` → bun, `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm)
+- UI library: `@spartan-ng/*` (Spartan UI)? `@angular/material`? PrimeNG? none
+- Styling: Tailwind CSS? SCSS? (`components.json` is a Spartan/shadcn-style marker)
+- Test runner: Vitest? Jest? Jasmine/Karma?
+- RxJS: is `rxjs` used beyond Angular internals (streams in services/components)?
+
 ### Mobile manifests → domain `mobile`
 
 | File | Detection |
@@ -50,15 +68,16 @@ For Swift / iOS native, additionally inspect the project to detect the UI framew
 
 ### Resolve `target_skill`
 
-After scanning both tables, record every domain that has at least one detected manifest file:
+After scanning all tables, record every domain that has at least one detected manifest file:
 
 | Detected domain | `target_skill` |
 |:---|:---|
 | backend only | `oma-backend` |
+| frontend only | `angular-developer` if `.agents/skills/angular-developer/` is installed, otherwise `oma-frontend` |
 | mobile only | `oma-mobile` |
-| both (monorepo) | carry **both** into Step 2 — do NOT first-match |
+| two or more (monorepo) | carry **all** into Step 2 — do NOT first-match |
 
-**Multi-domain rule (amendment B):** If manifests from both backend and mobile tables are found, collect both domains as the detected set and proceed to Step 2. Do not silently discard either.
+**Multi-domain rule (amendment B):** If manifests from two or more tables are found, collect all detected domains as the detected set and proceed to Step 2. Do not silently discard any.
 
 ---
 
@@ -75,6 +94,21 @@ Detected backend stack:
   Validation: {validation}
   Migration: {migration}
   Test: {test framework}
+
+Correct? (Y/n) or modify:
+```
+
+### Single-domain: frontend (Angular)
+
+Present detection results and ask for confirmation:
+```
+Detected frontend stack:
+  Framework: Angular {version}
+  Package manager: {pm}
+  UI: {ui_library}            (e.g. Spartan UI, Angular Material, none)
+  Styling: {styling}          (e.g. Tailwind CSS v4, SCSS)
+  Async/State: {async}        (signals-only, or signals + rxjs)
+  Test: {test_runner}         (e.g. Vitest, Jest, Jasmine/Karma)
 
 Correct? (Y/n) or modify:
 ```
@@ -102,11 +136,14 @@ When more than one domain was detected in Step 1, **before** showing any per-dom
 
 ```
 Multiple domains detected in this repo:
-  [backend]  {backend_language} / {backend_framework}
-  [mobile]   {mobile_language} / {mobile_ui}
+  [backend]   {backend_language} / {backend_framework}
+  [frontend]  Angular {angular_version} / {ui_library}
+  [mobile]    {mobile_language} / {mobile_ui}
 
-Generate stack references for: [both / backend / mobile]
+Generate stack references for: [all / backend / frontend / mobile]
 ```
+
+(List only the domains actually detected.)
 
 After the user selects, show the per-domain confirmation block(s) for the chosen domain(s) and confirm each before generating.
 
@@ -117,6 +154,7 @@ After the user selects, show the per-domain confirmation block(s) for the chosen
 Write generated files into `.agents/skills/{target_skill}/stack/`.
 
 - Backend → `.agents/skills/oma-backend/stack/`
+- Frontend → `.agents/skills/{frontend_target_skill}/stack/` (`angular-developer` or `oma-frontend`, per Step 1)
 - Mobile → `.agents/skills/oma-mobile/stack/`
 - Multi-domain → run the appropriate generation sub-path for each selected domain in turn.
 
@@ -166,6 +204,63 @@ Generate copy-paste code patterns. MANDATORY patterns (all 8 required):
 
 #### api-template.*
 Generate CRUD endpoint boilerplate in the detected language.
+
+---
+
+### Frontend path — Angular
+
+#### stack.yaml
+```yaml
+language: typescript
+framework: angular
+framework_version: "{angular_version}"   # e.g. "22.0.0" from @angular/core
+package_manager: {pm}                    # bun | pnpm | yarn | npm, from lockfile
+ui: {ui_library}                         # e.g. spartan-ui, angular-material, none
+styling: {styling}                       # e.g. tailwindcss-v4, scss
+state: signals
+async: {async}                           # signals-only | rxjs
+test: {test_runner}                      # e.g. vitest, jest, jasmine-karma
+source: detected
+detected_from:
+  - angular.json
+  - package.json
+verify:                          # consumed by `oma verify frontend` (see _shared/core/stack-verify.schema.json)
+  detect: angular.json
+  syntax:
+    cmd: "{syntax_check_cmd}"    # e.g. bunx tsc --noEmit -p tsconfig.app.json
+  tests:
+    cmd: "{test_cmd}"            # e.g. bunx vitest run, or ng test --watch=false
+    skip_if_missing: "{optional_binary}"
+```
+
+#### tech-stack.md
+Generate an Angular-specific tech stack reference with these MANDATORY sections:
+- Angular version and CLI workflow (`ng generate`, `ng build`, `ng serve`, detected build system)
+- Standalone components (no NgModules in new code)
+- Change detection: `ChangeDetectionStrategy.OnPush` default; zoneless setup if detected
+- Signals as the default state primitive (`signal`, `computed`, `effect`, `input()`, `model()`)
+- Lazy routes (`loadComponent` / `loadChildren`)
+- UI library + styling integration (detected values)
+- Test runner and how to run it
+- **RxJS policy: signals first; every non-trivial Observable pipeline MUST ship with a marble test (`TestScheduler` from `rxjs/testing`)** — omit this section only when `async: signals-only`
+
+#### snippets.md
+Generate copy-paste code patterns. MANDATORY patterns (all 8 required):
+- [ ] Standalone component with `ChangeDetectionStrategy.OnPush` + signals + new control flow (`@if` / `@for`)
+- [ ] `inject()`-based service + provider example
+- [ ] Lazy route config (`loadComponent` / `loadChildren`)
+- [ ] Typed Reactive Form + validation example
+- [ ] HttpClient data-access service (or `httpResource`) example
+- [ ] Signal ↔ RxJS interop (`toSignal` / `toObservable`)
+- [ ] RxJS stream **with paired marble test** (`TestScheduler.run`) — when `rxjs` is in the detected stack; otherwise a signals-based async pattern
+- [ ] Component test in the detected runner
+
+#### component-template.ts
+Generate a standalone CRUD feature (component + data service) in the detected style. The template must:
+- Use standalone components with `ChangeDetectionStrategy.OnPush` and signals for state.
+- Be lazy-routable (`loadComponent`) and use `inject()` for DI.
+- Use the detected UI library and styling conventions.
+- If the data service exposes RxJS streams, include a paired `*.spec.ts` marble test using `TestScheduler`.
 
 ---
 
@@ -242,6 +337,14 @@ Confirm generated files meet requirements.
 - [ ] `api-template` file uses the correct language extension
 - [ ] Code follows existing project conventions
 
+### Frontend (Angular) checks
+- [ ] `stack.yaml` has `language`, `framework`, `framework_version`, `package_manager`, `ui`, `styling`, `test` fields
+- [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd`
+- [ ] `snippets.md` contains all 8 mandatory Angular patterns
+- [ ] Generated references mention standalone components, OnPush, signals, lazy routes, and the Angular CLI
+- [ ] If `rxjs` is in the detected stack: `snippets.md` includes a runnable marble test (`TestScheduler`) and `tech-stack.md` states that marble tests are mandatory for stream logic
+- [ ] An Angular-only repo did NOT also generate `.agents/skills/oma-backend/stack/`
+
 ### Mobile (Swift) checks
 - [ ] `stack.yaml` has `language`, `api_generator`, `api_spec`, and `structure` fields populated with project-specific values (not variant defaults)
 - [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd` (otherwise `oma verify mobile` cannot dispatch)
@@ -258,4 +361,4 @@ Confirm generated files meet requirements.
 - Do NOT modify `resources/` common files under any skill
 - Only create or modify files in the resolved skill's `stack/` directory
 - If `stack/` already exists for the resolved domain skill, ask before overwriting
-- `target_skill` is always the resolved domain skill (`oma-backend` or `oma-mobile`); never hardcode a single skill name in generation logic
+- `target_skill` is always the resolved domain skill (`oma-backend`, `oma-mobile`, or the resolved frontend skill — `angular-developer` / `oma-frontend`); never hardcode a single skill name in generation logic

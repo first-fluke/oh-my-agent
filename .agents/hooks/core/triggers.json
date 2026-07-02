@@ -2067,7 +2067,8 @@
           "react",
           "tailwind",
           "tsx",
-          "frontend"
+          "frontend",
+          "angular"
         ],
         "en": [
           "make a react component",
@@ -2086,7 +2087,8 @@
           "넥스트 페이지",
           "tailwind로 스타일",
           "shadcn 붙여줘",
-          "프론트 구현"
+          "프론트 구현",
+          "앵귤러"
         ],
         "ja": [
           "reactコンポーネント",
