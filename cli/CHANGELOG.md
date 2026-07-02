@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.7.2...cli-v10.8.0) (2026-07-02)
+
+
+### Features
+
+* **frontend:** support angular in oma-frontend skill and /stack-set ([b87ca76](https://github.com/first-fluke/oh-my-agent/commit/b87ca76152379fe26882a6483b1194a61e513f3e)), closes [#587](https://github.com/first-fluke/oh-my-agent/issues/587)
+
 ## [10.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.7.1...cli-v10.7.2) (2026-06-28)
 
 

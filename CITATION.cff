@@ -13,8 +13,8 @@ authors:
     given-names: Eunkwang
   - family-names: Kim
     given-names: Gahyun
-version: 10.7.2 # x-release-please-version
-date-released: "2026-06-28" # x-release-please-date
+version: 10.8.0 # x-release-please-version
+date-released: "2026-07-02" # x-release-please-date
 license: MIT
 repository-code: "https://github.com/first-fluke/oh-my-agent"
 url: "https://github.com/first-fluke/oh-my-agent"
@@ -35,9 +35,9 @@ preferred-citation:
       given-names: Eunkwang
     - family-names: Kim
       given-names: Gahyun
-  version: 10.7.2 # x-release-please-version
+  version: 10.8.0 # x-release-please-version
   year: 2026
-  date-released: "2026-06-28" # x-release-please-date
+  date-released: "2026-07-02" # x-release-please-date
   license: MIT
   url: "https://github.com/first-fluke/oh-my-agent"
   repository-code: "https://github.com/first-fluke/oh-my-agent"
