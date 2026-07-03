@@ -5,10 +5,9 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-06-23 · 2 unstarred
+## 2026-07-03 · 1 unstarred
 
-- **@minjun8702-byte** · 0 repos · 0 followers
-- **@smallq3868** · SeungQ · 0 repos · 0 followers
+- **@wilbur-yu** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -1074,6 +1073,7 @@ summaries to spot which persona is churning.
 - @WeiYiAcc — 2026-04-20
 - @wellNestAppDev — 2026-02-10
 - @wemener — 2026-03-18
+- @wenber-yu — 2026-03-24
 - @wenboliu2012 — 2026-05-03
 - @wf4006hufman — 2026-04-20
 - @whatthejay — 2026-02-03
@@ -1082,7 +1082,6 @@ summaries to spot which persona is churning.
 - @whoshe — 2026-02-02
 - @whYBeKim — 2026-04-18
 - @widisaadi — 2026-05-30
-- @wilbur-yu — 2026-03-24
 - @WilfOo — 2026-05-21
 - @Willhong — 2026-04-22
 - @williamjeong2 — 2026-06-08
