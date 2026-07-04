@@ -5,9 +5,9 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-03 · 1 unstarred
+## 2026-07-04 · 1 unstarred
 
-- **@wilbur-yu** · 0 repos · 0 followers
+- **@soraul2** · 김태우 · 1 repos · 1 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -962,7 +962,6 @@ summaries to spot which persona is churning.
 - @songbongs — 2026-04-26
 - @songmw90 — 2026-02-17
 - @SongSeoYoung — 2026-02-01
-- @soraul2 — 2026-02-02
 - @soujhony — 2026-03-15
 - @soulfactorx — 2026-03-16
 - @soWhatmf — 2026-05-29
@@ -978,6 +977,7 @@ summaries to spot which persona is churning.
 - @stephenholli — 2026-04-12
 - @steve-goldberg — 2026-04-09
 - @stigsb — 2026-03-18
+- @stochastic-sisyphus — 2026-07-04
 - @stomx — 2026-03-26
 - @strauss-vasconcelos — 2026-03-22
 - @stribus — 2026-02-12
