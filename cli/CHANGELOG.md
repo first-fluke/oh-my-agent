@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.9.0...cli-v10.10.0) (2026-07-04)
+
+
+### Features
+
+* **cli:** enable serena auto_update by default ([739590d](https://github.com/first-fluke/oh-my-agent/commit/739590da819bb8172f1d961ce3b76541cb854326))
+
+
+### Documentation
+
+* **agents:** add serena mcp timeout fallback guidance for opencode ([b9752c8](https://github.com/first-fluke/oh-my-agent/commit/b9752c88459260f3947f69e79492b5ee667dea6d))
+
 ## [10.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.8.0...cli-v10.9.0) (2026-07-04)
 
 
