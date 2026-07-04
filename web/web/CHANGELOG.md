@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.17.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.2...web-v3.17.3) (2026-07-04)
+
+
+### Documentation
+
+* **web:** document serena.auto_update in config semantics ([2fba9ac](https://github.com/first-fluke/oh-my-agent/commit/2fba9aca5fa45a14077929fb9c1fa0cf183e65b7))
+
 ## [3.17.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.1...web-v3.17.2) (2026-07-04)
 
 
