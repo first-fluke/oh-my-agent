@@ -191,14 +191,14 @@ Unlike CD (tracked in real-time), Evaluator Accuracy (EA) is a
 |-------|--------|-----------------|
 | `false_negative` | +30 | Next session or production: bug that QA missed |
 | `false_positive` | +15 | During session: impl agent disputes QA finding successfully |
-| `severity_mismatch` | +10 | During session or retro: wrong severity assigned |
+| `severity_mismatch` | +10 | During session or next-session review: wrong severity assigned |
 | `missed_stub` | +20 | During session: runtime verification catches display-only feature |
 | `good_catch` | -10 | During session: QA caught non-obvious bug (reward signal) |
 
 ### Recording
 
 - `false_positive`, `missed_stub`, `good_catch`: Recorded during session by Orchestrator
-- `false_negative`, `severity_mismatch`: Recorded retroactively via `oma retro` or next session discovery
+- `false_negative`, `severity_mismatch`: Recorded retroactively on next-session discovery
 
 ### Evaluator Accuracy Score (EA)
 
@@ -210,10 +210,10 @@ EA = sum(accuracy_event_points across last 3 sessions)
 
 | Threshold | Action |
 |-----------|--------|
-| EA >= 30 | **TUNING SUGGESTED**: `oma retro` flags QA patterns for review |
+| EA >= 30 | **TUNING SUGGESTED**: Review accumulated EA events for recurring QA judgment errors |
 | EA >= 50 | **TUNING REQUIRED**: Review and update QA execution-protocol.md |
 | `false_negative` >= 3 across window | **CHECKLIST UPDATE**: Add detection pattern to QA checklist.md |
-| `good_catch` >= 5 across window | **PROPAGATE**: Document successful pattern in evaluator-tuning.md |
+| `good_catch` >= 5 across window | **PROPAGATE**: Generalize the successful pattern into `common-checklist.md` |
 
 ### Accuracy Log Format
 

@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.9.0",
-  "releaseDate": "2026-07-04T07:05:01.891Z",
+  "releaseDate": "2026-07-04T07:25:23.702Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -420,11 +420,6 @@
       "size": 2486
     },
     {
-      "path": ".agents/skills/_shared/core/evaluator-tuning.md",
-      "sha256": "015037467d1cb892bfebf7e336bf232844cd91398be3bbb3c57d04d9c9bd7040",
-      "size": 2849
-    },
-    {
       "path": ".agents/skills/_shared/core/lessons-learned.md",
       "sha256": "9c0422f8bfd93f4f3047b04a0f0cd8b48a4ed6b5d04be8c5e79dc6cc4675ba4b",
       "size": 7860
@@ -446,8 +441,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/session-metrics.md",
-      "sha256": "8eb555b773c95296b23c0bd17682cac4f3e227a1edf1126222534326edf40447",
-      "size": 8769
+      "sha256": "c1059a259a094bcae64964220ce5df7eb371692a2033d3b1890ee031b5c72794",
+      "size": 8798
     },
     {
       "path": ".agents/skills/_shared/core/skill-routing.md",
@@ -2136,6 +2131,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 425
+    "totalFiles": 424
   }
 }

@@ -24,6 +24,7 @@ import { migrateVersionInstallMode } from "./012-version-install-mode.js";
 import { migrateWorkflowDirectSymlinks } from "./013-workflow-direct-symlinks.js";
 import { migrateRenameAgentExplore } from "./014-rename-agent-explore.js";
 import { migrateSerenaProjectFromCwd } from "./015-serena-project-from-cwd.js";
+import { migrateRemoveEvaluatorTuning } from "./016-remove-evaluator-tuning.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -40,6 +41,7 @@ const migrations: Migration[] = [
   migrateWorkflowDirectSymlinks,
   migrateRenameAgentExplore,
   migrateSerenaProjectFromCwd,
+  migrateRemoveEvaluatorTuning,
 ];
 
 export function runMigrations(cwd: string): string[] {
