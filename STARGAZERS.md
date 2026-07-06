@@ -5,13 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-04 · 1 unstarred
+## 2026-07-06 · 1 unstarred
 
-- **@soraul2** · 김태우 · 1 repos · 1 followers
+- **@ugee0810** · pochacco · Chuo City, Tokyo · 34 repos · 7 followers
+  - Software Engineer based in Tokyo | Ex-Unity/AR dev (3y+) pivoting to AI Agents & Full-Stack. 🛠️ C#/.NET 9, Python, Local LLMs.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1146)
+## Current (1149)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -62,6 +63,7 @@ summaries to spot which persona is churning.
 - @alekseevconsult-coder — 2026-02-17
 - @Alekseylekontsev — 2026-04-24
 - @alexanderishikawa — 2026-06-08
+- @alexdegit — 2026-07-05
 - @alexey-pronkin — 2026-03-25
 - @alexg0 — 2026-03-18
 - @AlexNovakRamdass — 2026-01-31
@@ -332,6 +334,7 @@ summaries to spot which persona is churning.
 - @formy000516-creator — 2026-04-15
 - @forsh4w — 2026-04-07
 - @foxion37 — 2026-04-18
+- @freakey95 — 2026-07-05
 - @fredleger — 2026-03-18
 - @freeeebie — 2026-06-06
 - @freeNanum — 2026-02-14
@@ -780,6 +783,7 @@ summaries to spot which persona is churning.
 - @nikita-rudenko — 2026-03-20
 - @nikolay — 2026-03-18
 - @nimah79 — 2026-02-02
+- @Nithiwatp — 2026-07-05
 - @nmsohn — 2026-03-17
 - @noffolo — 2026-04-19
 - @NOirBRight — 2026-03-04
@@ -847,6 +851,7 @@ summaries to spot which persona is churning.
 - @playnowokdupe-web — 2026-03-19
 - @plugtheliam — 2026-06-21
 - @Pnakotic — 2026-04-02
+- @Po00ol — 2026-07-05
 - @ppsssj — 2026-05-09
 - @PrestPro — 2026-04-03
 - @PrinceAA — 2026-04-03
@@ -1044,7 +1049,6 @@ summaries to spot which persona is churning.
 - @Twoshobby — 2026-05-28
 - @ubaidkhoiri — 2026-04-29
 - @ueno-ryu — 2026-04-23
-- @Ugee0810 — 2026-02-20
 - @ukongee — 2026-02-27
 - @ultragen — 2026-02-05
 - @uncle-rennus — 2026-02-12
