@@ -47,19 +47,6 @@ export function registerMarketCommand(program: Command): void {
       },
     );
 
-  const _stub = (name: string, taskId: string) =>
-    market
-      .command(name)
-      .description(`(stub) ${name} — pending ${taskId}`)
-      .allowUnknownOption(true)
-      .allowExcessArguments(true)
-      .action(() => {
-        process.stderr.write(
-          `[oma market ${name}] not yet implemented (pending ${taskId})\n`,
-        );
-        process.exit(0);
-      });
-
   market
     .command("harvest <query>")
     .description("Fan-out harvest across community sources")
@@ -166,7 +153,7 @@ export function registerMarketCommand(program: Command): void {
     .option("--max-per-author <n>", "max candidates per author (default 3)")
     .option(
       "--diversity-threshold <t>",
-      "relevance threshold for diversity guard (default 0.25)",
+      "relevance threshold for diversity guard (guard disabled unless set)",
     )
     .action(
       async (opts: {
