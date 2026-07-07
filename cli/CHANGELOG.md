@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.10.0...cli-v10.11.0) (2026-07-07)
+
+
+### Features
+
+* **skills:** add naming roles and api evolution patterns ([1b14c18](https://github.com/first-fluke/oh-my-agent/commit/1b14c187aef696af125f81433526286c66338962))
+
 ## [10.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.9.0...cli-v10.10.0) (2026-07-04)
 
 
