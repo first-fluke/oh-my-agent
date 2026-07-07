@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.10.0",
-  "releaseDate": "2026-07-04T09:18:34.914Z",
+  "releaseDate": "2026-07-07T10:27:35.045Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -551,8 +551,13 @@
     },
     {
       "path": ".agents/skills/oma-architecture/SKILL.md",
-      "sha256": "53ab18dc536ff1d515f524ddff36f1032f0eaf1f4312a2c3ff820bb12c36133a",
-      "size": 8474
+      "sha256": "7baa194ee1de13c9aac8a1dbd8a34323546c3b937232acd812e94463413bc70c",
+      "size": 8866
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/api-evolution.md",
+      "sha256": "05259fa654c56f8b1f8236b14e019d9751950bc72c87319778209f0cb40a3359",
+      "size": 4210
     },
     {
       "path": ".agents/skills/oma-architecture/resources/checklist.md",
@@ -1601,13 +1606,13 @@
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
-      "sha256": "f8a2024b1fefdca1326b9db7d8279c865d8c21786f11369cb73b875d963f10aa",
-      "size": 12266
+      "sha256": "b4153fb63c7031498eed10d94c60aa167c8f19baa836e166c1967c3c45baa2c6",
+      "size": 12294
     },
     {
       "path": ".agents/skills/oma-refactor/resources/definition.md",
-      "sha256": "ee27f3fd9aca053e3a55d0f48d5c866b5d0fda440690e837be9f0e9d499dba35",
-      "size": 10547
+      "sha256": "9d89d0bbc8ccdf11990582582770d947e1f71bdf0dafeb8acf6f8be2aaa0d543",
+      "size": 12757
     },
     {
       "path": ".agents/skills/oma-refactor/resources/governance.md",
@@ -2131,6 +2136,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 424
+    "totalFiles": 425
   }
 }
