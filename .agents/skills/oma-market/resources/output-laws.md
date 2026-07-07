@@ -10,7 +10,7 @@ LAWs apply to every QUERY_TYPE except where an explicit COMPARISON exception is 
 
 Do not append `Sources:`, `References:`, `Further reading:`, `Citations:`, or any bulleted list of publication names / handles / URLs after the closing line of the brief. The engine footer is the only visible citation list. The saved raw JSON sidecar (when emitted) is the durable record.
 
-**Self-check**: scan the last 15 lines for `^Sources:`, `^References:`, `^Further reading:`, `^Citations:` (case-insensitive) followed by a bulleted list. If found, strip.
+**Self-check**: scan the last 30 lines for `^Sources:`, `^References:`, `^Further reading:`, `^Citations:` (case-insensitive) followed by a bulleted list. If found, strip.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: oma-market
-description: "Market research skill for pain-point extraction, trend detection, competitor positioning, and discovery across community sources (Reddit, HN, Bluesky, Mastodon, GitHub Issues, web). Routes via oma-search transport, deterministic CLI compute, intent-auto SWOT/Porter's 5F/PESTEL frameworks. Use for market research, pain point analysis, trend detection, competitor research, user complaints, voice-of-customer, 시장조사, 사용자 페인, 트렌드, 경쟁구도."
+description: "Market research skill for pain-point extraction, trend detection, competitor positioning, and discovery across community sources (Reddit, HN, Bluesky, Mastodon, GitHub Issues, web). Built-in harvest fetchers, deterministic CLI compute, intent-auto SWOT/Porter's 5F/PESTEL frameworks. Use for market research, pain point analysis, trend detection, competitor research, user complaints, voice-of-customer, 시장조사, 사용자 페인, 트렌드, 경쟁구도."
 ---
 
 # Market Research Agent - Community Signal Intelligence
@@ -8,7 +8,7 @@ description: "Market research skill for pain-point extraction, trend detection, 
 ## Scheduling
 
 ### Goal
-Classify user intent into pain / trend / competitor / discovery, fan-out to community sources via `oma search fetch`, score and cluster findings with deterministic CLI compute, auto-apply strategic frameworks, and emit a single LAW-compliant markdown brief.
+Classify user intent into pain / trend / competitor / discovery, fan-out to community sources via `oma market harvest`, score and cluster findings with deterministic CLI compute, auto-apply strategic frameworks, and emit a single LAW-compliant markdown brief.
 
 ### Intent signature
 - User asks about pain points, user complaints, or voice-of-customer signals for a product or category.
@@ -41,14 +41,13 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 - No raw evidence dump; no Sources block; no em-dash; no `##` in body (framework/COMPARISON sections excepted)
 
 ### Dependencies
-- `oma-search` for all fetches (`oma search fetch --only api`); never fetches directly
-- Serena `trust-registry-cache` (read-only); Trust Registry labels inherited from oma-search
+- `oma market harvest` built-in per-source fetchers (all network I/O stays inside harvest)
 - `resources/intent-rules.md`, `resources/operator-packs/`, `resources/output-laws.md`
 
 ### Control-flow features
 - Branches by classified intent, window, source availability, and env key presence
 - detect-trap gate before harvest (exit 2 on broad/ambiguous topic, exit 4 on invalid)
-- Paid sources (X, TikTok, Instagram, YouTube, Perplexity) auto-skip when env key absent
+- Env-keyed sources (X, TikTok, Instagram, Perplexity) auto-skip when env key absent; YouTube joins when `yt-dlp` is installed
 - Framework auto-toggle by intent (see Routes table)
 
 ## Structural Flow
@@ -60,7 +59,7 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 
 ### Scenes
 1. **PREPARE**: Parse topic and flags; run detect-trap; resolve intent, operator pack, window.
-2. **ACT**: Build per-source `oma search fetch` URLs with operator pack query expansion.
+2. **ACT**: Build per-source harvest queries with operator pack query expansion.
 3. **ACQUIRE**: Fan-out harvest via `oma market harvest` (parallel, per-source-limit 12, cache TTL 15m).
 4. **VERIFY**: Score, fuse, and cluster candidates; validate JSON at each pipe stage.
 5. **FINALIZE**: Render LAW-compliant markdown brief; run self-check; write to output path.
@@ -74,10 +73,10 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 
 ### Failure and recovery
 - detect-trap exit 2: surface REFUSE reason and suggested reframe; do not proceed to harvest.
-- Network timeout (exit 6): report and suggest `--window` reduction or `--no-cache`.
+- Per-source timeout or fetch failure: source lands in `sources_failed`; harvest exits 2 only when all sources fail.
 - Invalid JSON from any pipe stage: exit 4 with offending line in stderr.
-- Render LAW self-check violation: strip or regenerate; exit 1 only if regeneration also fails.
-- FS permission denied at write: exit 5.
+- Render LAW self-check violation: auto-fixable LAWs are repaired in place; unfixable violations are annotated in the doc and exit 1.
+- Render error (invalid input JSON, write failure incl. FS permission denied): exit 4 with the error in stderr.
 
 ### Exit
 - Success: brief file written; first 50 lines previewed; engine footer present.
@@ -91,7 +90,7 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 | Run detect-trap preflight | `VALIDATE` | Topic arg, trap pattern rules |
 | Classify intent | `SELECT` | Intent rules, user flags |
 | Select operator pack | `SELECT` | `resources/operator-packs/` |
-| Fan-out harvest | `CALL_TOOL` | `oma market harvest` -> `oma search fetch` |
+| Fan-out harvest | `CALL_TOOL` | `oma market harvest` built-in per-source fetchers |
 | Score candidates | `INFER` | Engagement weights, freshness, intent blends |
 | Fuse and deduplicate | `INFER` | URL canonicalize, RRF k=60, author cap |
 | Cluster by entity overlap | `INFER` | Overlap coefficient >= 0.4, MMR lambda=0.75 |
@@ -102,7 +101,8 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 
 ### Tools and instruments
 - `oma market detect-trap` (preflight gate)
-- `oma market harvest` (delegates to `oma search fetch --only api`)
+- `oma market discover-competitors` (auto-discover peer entities for a topic; feeds `--vs` in competitor mode)
+- `oma market harvest` (fan-out via built-in per-source fetchers)
 - `oma market score` (engagement weights, log1p, intent blends)
 - `oma market fuse` (URL canonical, RRF, diversity guard)
 - `oma market cluster` (entity overlap, MMR)
@@ -113,7 +113,7 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 TOPIC="VS Code pain points"
 oma market detect-trap "$TOPIC" \
   && oma market harvest "vscode (broken OR bug OR migrate OR quit OR slow)" \
-       --sources reddit,hn,bluesky,mastodon,github-issues --window 30d \
+       --sources reddit,hn,bluesky,mastodon,github --window 30d \
        --operator-pack pain \
   | oma market score --intent pain \
   | oma market fuse \
@@ -124,29 +124,27 @@ oma market detect-trap "$TOPIC" \
 ### Resource scope
 | Scope | Resource target |
 |-------|-----------------|
-| `NETWORK` | Community sources via `oma search fetch` (reddit, hn, bluesky, mastodon, github-issues, grounding) |
+| `NETWORK` | Community sources via harvest's built-in fetchers (reddit, hn, bluesky, mastodon, github, grounding; youtube via `yt-dlp`) |
 | `LOCAL_FS` | Brief output at `.agents/results/market/`; cache at `~/.cache/oma/market/` |
-| `PROCESS` | `oma market` subcommands; `oma search fetch` |
+| `PROCESS` | `oma market` subcommands |
 | `MEMORY` | Intent classification, operator pack selection, cluster summaries |
 
 ### Preconditions
 - Topic is non-empty and passes detect-trap (not demographic-shopping, not single-noun-too-broad).
-- At least one keyless source is reachable (reddit, hn, bluesky, mastodon, github-issues, or grounding).
+- At least one keyless source is reachable (reddit, hn, bluesky, mastodon, github, or grounding).
 
 ### Effects and side effects
 - Writes brief markdown to `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
-- Populates local cache at `~/.cache/oma/market/{sha1-hash}/result.json` (TTL 15m).
-- Reads Serena `trust-registry-cache` (no write).
+- Populates local cache at `~/.cache/oma/market-research/{sha256-16hex}/result.json` (TTL 15m).
 
 ### Guardrails
 1. **detect-trap first**: never harvest without preflight; `--force` bypasses only in test mode.
-2. **Delegate all fetches**: `harvest` calls `oma search fetch --only api`; no direct platform HTTP.
-3. **Trust labels read-only**: no re-scoring; Trust Registry ownership stays with `oma-search`.
-4. **Paid sources auto-skip**: drop silently with `[INFO]` stderr if env key absent; never error.
-5. **LAW self-check mandatory**: render runs self-check before file write; `--no-self-check` for debug only.
-6. **No raw evidence dump**: cluster internals (scores, item counts) stay in JSON output; markdown body paraphrases.
-7. **Stdout pure JSON per stage**: each pipe stage (except render) emits valid JSON only; stderr for warnings.
-8. **No Serena writes in v1**: `trust-registry-cache` is read-only; write authority stays with `oma-search`.
+2. **Fetches stay inside harvest**: all network I/O happens in `oma market harvest`'s per-source fetchers; no direct platform HTTP from other stages or the agent.
+3. **Env-keyed sources auto-skip**: dropped with a `[harvest] <source> skipped:` stderr notice when the env key is absent; never a hard error. X/TikTok/Instagram/Perplexity fetchers are deferred stubs pending integration and land in `sources_failed` even when keyed.
+4. **LAW self-check mandatory**: render runs self-check before file write; `--no-self-check` for debug only.
+5. **No raw evidence dump**: cluster internals (scores, item counts) stay in JSON output; markdown body paraphrases.
+6. **Stdout pure JSON per stage**: each pipe stage (except render) emits valid JSON only; stderr for warnings.
+7. **Personal data refuse**: refuse private-individual PII queries at the agent level before harvest (detect-trap automates demographic-shopping and overly-broad-topic refusal only).
 
 ### Routes
 
@@ -154,10 +152,10 @@ oma market detect-trap "$TOPIC" \
 |--------|--------------|-----------------|-------|
 | `pain` | `resources/operator-packs/pain.md` | SWOT | Weights: engagement 0.40, freshness 0.30, quality 0.30 |
 | `trend` | none (optional: `resources/operator-packs/positive.md` for pain/positive contrast) | SWOT | Weights: freshness 0.50, engagement 0.30, quality 0.20 |
-| `competitor` | `resources/operator-packs/competitor.md` | SWOT + Porter's 5F (v1.1 stub) | Weights: relevance 0.35, engagement 0.35, quality 0.30; `--vs` enables COMPARISON template |
-| `discovery` | `resources/operator-packs/discovery.md` | SWOT + PESTEL (v1.1 stub) | Weights: relevance 0.45, engagement 0.30, quality 0.25 |
+| `competitor` | `resources/operator-packs/competitor.md` | SWOT + Porter's 5F | Weights: relevance 0.35, engagement 0.35, quality 0.30; `--vs` enables COMPARISON template; `discover-competitors` can suggest the `--vs` entity |
+| `discovery` | `resources/operator-packs/discovery.md` | SWOT + PESTEL | Weights: relevance 0.45, engagement 0.30, quality 0.25 |
 
-Porter's 5F and PESTEL: the CLI renders empty framework slots; the host LLM fills them using the analyst prompts in `resources/frameworks/porters-5f.md` and `pestel.md` (execution-protocol Step 6).
+Porter's 5F and PESTEL: the CLI renders complete labeled framework skeletons (all 5 forces / all 6 dimensions); the host LLM fills them using the analyst prompts in `resources/frameworks/porters-5f.md` and `pestel.md` (execution-protocol Step 6).
 
 ### Default Workflow
 1. **Preflight**: `oma market detect-trap` exits 0 or halts.

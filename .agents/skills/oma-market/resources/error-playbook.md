@@ -5,7 +5,7 @@
 Cause: Every configured source returned 429, 403, or auth failure.
 
 Recovery steps:
-1. Check paid-source env keys if those sources were requested (X_BEARER_TOKEN, SCRAPECREATORS_API_KEY, PERPLEXITY_API_KEY; GITHUB_TOKEN raises github-issues rate limits). reddit, hn, bluesky, mastodon, and grounding are keyless.
+1. Check env keys if keyed sources were requested (X_BEARER_TOKEN, SCRAPECREATORS_API_KEY, PERPLEXITY_API_KEY; GITHUB_TOKEN raises github rate limits). reddit, hn, bluesky, mastodon, github, and grounding are keyless.
 2. Retry with `--window 90d` to widen the harvest window (more cache-eligible content).
 3. Try `--sources reddit` to isolate a single known-working source.
 4. If all sources are blocked, the run cannot proceed. Report to user:
@@ -15,9 +15,9 @@ All configured sources are currently unavailable. Check your API keys or try aga
 Use --sources to restrict to a source you know is accessible.
 ```
 
-## harvest exit 6 - Timeout
+## harvest per-source timeout
 
-Cause: One or more source adapters exceeded the per-request time limit.
+Cause: One or more source adapters exceeded the per-request time limit. Timed-out sources land in `sources_failed`; harvest still exits 0 while at least one source succeeds (exit 2 only when all fail).
 
 Recovery steps:
 1. Reduce result set with `--per-source-limit 6` (default is 12).
