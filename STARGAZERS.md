@@ -5,14 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-06 · 1 unstarred
+## 2026-07-07 · 1 unstarred
 
-- **@ugee0810** · pochacco · Chuo City, Tokyo · 34 repos · 7 followers
-  - Software Engineer based in Tokyo | Ex-Unity/AR dev (3y+) pivoting to AI Agents & Full-Stack. 🛠️ C#/.NET 9, Python, Local LLMs.
+- **@bforbilly24** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1149)
+## Current (1152)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -91,6 +90,7 @@ summaries to spot which persona is churning.
 - @antonizdp — 2026-04-27
 - @antonyshen — 2026-03-08
 - @anujbhandare — 2026-04-21
+- @aphelion31 — 2026-05-12
 - @aporozny — 2026-02-14
 - @appleberry-dev — 2026-04-23
 - @Aranmobinarann — 2026-02-22
@@ -126,7 +126,6 @@ summaries to spot which persona is churning.
 - @bermanboris — 2026-04-11
 - @beyondnk — 2026-02-26
 - @bez-soomgo — 2026-03-18
-- @bforbilly24 — 2026-05-12
 - @bgembalczyk — 2026-06-06
 - @bigccc — 2026-05-14
 - @Bill0538 — 2026-05-14
@@ -292,6 +291,7 @@ summaries to spot which persona is churning.
 - @enchan087 — 2026-06-15
 - @endlessdev — 2026-06-14
 - @Enitsed — 2026-04-22
+- @EnterDevelope — 2026-07-06
 - @entranoweb — 2026-04-06
 - @eonofpixel — 2026-04-20
 - @epicsagas — 2026-01-31
@@ -359,6 +359,7 @@ summaries to spot which persona is churning.
 - @gdfernandes2019 — 2026-03-21
 - @geekypanda411 — 2026-02-02
 - @GeneralProgrammer — 2026-02-02
+- @genevera — 2026-07-06
 - @geomih — 2026-03-18
 - @getdatasurge — 2026-04-27
 - @ghga20-ui — 2026-02-03
@@ -890,6 +891,7 @@ summaries to spot which persona is churning.
 - @richardfrk — 2026-02-10
 - @rkafp — 2026-05-20
 - @rkayman — 2026-03-20
+- @rl-rossi — 2026-07-06
 - @roachesyan — 2026-05-11
 - @robertpelloni — 2026-02-07
 - @robertvonk — 2026-05-08
