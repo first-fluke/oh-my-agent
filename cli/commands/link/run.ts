@@ -38,6 +38,7 @@ import { isTelemetryEnabled } from "../../utils/config.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { installAntigravityHud } from "../../vendors/antigravity/hud.js";
 import { applyAntigravityMcpConfig } from "../../vendors/antigravity/mcp.js";
+import type { ClaudeMcpServer } from "../../vendors/claude/mcp.js";
 import {
   applyClaudeMcp,
   needsClaudeMcpUpdate,
@@ -361,6 +362,26 @@ export function link(opts: LinkOptions = {}): LinkResult {
   if (configuredVendors.includes("claude")) {
     const claudeMcpPath = join(cwd, ".mcp.json");
     const claudeMcpExists = existsSync(claudeMcpPath);
+
+    // Read the SSOT server set so both first-seed and subsequent updates can
+    // propagate newly-added servers (chrome-devtools, context7, …) into
+    // `.mcp.json`. On first create the file is empty and every SSOT server is
+    // added; on later runs only servers still missing from `.mcp.json` are
+    // back-filled (existing user customizations are preserved). serena is
+    // excluded here — it's managed via RECOMMENDED_CLAUDE_MCP.
+    let ssotServers: Record<string, ClaudeMcpServer> | undefined;
+    const agentsMcpPath = join(cwd, ".agents", "mcp.json");
+    if (existsSync(agentsMcpPath)) {
+      try {
+        const ssot = JSON.parse(readFileSync(agentsMcpPath, "utf-8"));
+        if (ssot && typeof ssot === "object" && ssot.mcpServers) {
+          ssotServers = ssot.mcpServers as Record<string, ClaudeMcpServer>;
+        }
+      } catch {
+        ssotServers = undefined;
+      }
+    }
+
     let claudeMcp: unknown = {};
     if (claudeMcpExists) {
       try {
@@ -368,22 +389,9 @@ export function link(opts: LinkOptions = {}): LinkResult {
       } catch {
         claudeMcp = {};
       }
-    } else {
-      // Seed from SSOT so Claude sees the same MCP server set as Cursor.
-      const agentsMcpPath = join(cwd, ".agents", "mcp.json");
-      if (existsSync(agentsMcpPath)) {
-        try {
-          const ssot = JSON.parse(readFileSync(agentsMcpPath, "utf-8"));
-          if (ssot && typeof ssot === "object" && ssot.mcpServers) {
-            claudeMcp = { mcpServers: ssot.mcpServers };
-          }
-        } catch {
-          claudeMcp = {};
-        }
-      }
     }
-    if (!claudeMcpExists || needsClaudeMcpUpdate(claudeMcp)) {
-      const next = applyClaudeMcp(claudeMcp);
+    if (!claudeMcpExists || needsClaudeMcpUpdate(claudeMcp, ssotServers)) {
+      const next = applyClaudeMcp(claudeMcp, ssotServers);
       safeWriteJson(claudeMcpPath, next);
     }
   }
