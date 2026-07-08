@@ -11,7 +11,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1152)
+## Current (1154)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -394,6 +394,7 @@ summaries to spot which persona is churning.
 - @greeninsightidea-ctrl — 2026-04-15
 - @griffinshim — 2026-06-20
 - @grollcake — 2026-02-07
+- @groo-yeogi — 2026-07-08
 - @grsh50 — 2026-05-27
 - @gtolarc — 2026-02-02
 - @gtpgg1013 — 2026-06-21
@@ -493,6 +494,7 @@ summaries to spot which persona is churning.
 - @insung — 2026-02-21
 - @InSuperposition — 2026-03-18
 - @Interstellar-code — 2026-04-08
+- @ioixioi — 2026-07-07
 - @iops-leo — 2026-03-16
 - @iproxyhub — 2026-03-19
 - @isthistechsupport — 2026-04-10
