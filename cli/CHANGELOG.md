@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.12.0...cli-v10.12.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* **cli:** back-fill new SSOT MCP servers into existing .mcp.json ([5bc0b78](https://github.com/first-fluke/oh-my-agent/commit/5bc0b786ccbcf234f685d344444da487d19eb363))
+
 ## [10.12.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.11.0...cli-v10.12.0) (2026-07-07)
 
 
