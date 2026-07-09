@@ -5,9 +5,9 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-07 · 1 unstarred
+## 2026-07-09 · 1 unstarred
 
-- **@bforbilly24** · 0 repos · 0 followers
+- **@guiepiphany** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -399,7 +399,6 @@ summaries to spot which persona is churning.
 - @gtolarc — 2026-02-02
 - @gtpgg1013 — 2026-06-21
 - @gugahoi — 2026-03-20
-- @GuiEpiphany — 2026-06-04
 - @GuiMedeirox — 2026-05-02
 - @gushuaialan1 — 2026-05-19
 - @gustavocp — 2026-02-13
@@ -913,6 +912,7 @@ summaries to spot which persona is churning.
 - @Ryuun78 — 2026-04-25
 - @ryuwon-ai — 2026-04-25
 - @s1ev — 2026-04-14
+- @saadev0 — 2026-07-08
 - @sabino — 2026-04-09
 - @sagos95 — 2026-03-31
 - @samjegal — 2026-03-18
