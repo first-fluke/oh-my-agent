@@ -1,5 +1,21 @@
 # Changelog
 
+## [10.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.12.1...cli-v10.13.0) (2026-07-10)
+
+
+### Features
+
+* **hooks:** implement pi persistent-mode via agent_settled re-entry ([0550bdb](https://github.com/first-fluke/oh-my-agent/commit/0550bdb5ae7e18159617296443dbaac62cd557f2))
+* **hooks:** wire cursor/commandcode lifecycle events and kiro merge skip ([233b817](https://github.com/first-fluke/oh-my-agent/commit/233b81748268d4375b41f26fc5936f1e74c18cde))
+
+
+### Bug Fixes
+
+* **codex:** bypass hook trust on oma-driven runs and drop dead flags ([211684c](https://github.com/first-fluke/oh-my-agent/commit/211684c153d5d4a6bf355cd0dfc7602ceae82229))
+* **hooks:** correct grok/qwen shell matchers and force-enable qwen hooks ([6f3c421](https://github.com/first-fluke/oh-my-agent/commit/6f3c4213373f1da1dfe76f8d4e4c42f7715ab10d))
+* **hooks:** normalize ContentPart[] prompts and skip relayed agent messages ([8abc2c5](https://github.com/first-fluke/oh-my-agent/commit/8abc2c5f8ffc28694d2b06985c52bc8d609d8eb2))
+* **hooks:** rewrite opencode bridge for plugin API mutation contract ([8428360](https://github.com/first-fluke/oh-my-agent/commit/84283605bb8e9c8f7995c592cc5f7d3b8a41ad90))
+
 ## [10.12.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.12.0...cli-v10.12.1) (2026-07-07)
 
 
