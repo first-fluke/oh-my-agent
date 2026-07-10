@@ -5,13 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-09 · 1 unstarred
+## 2026-07-10 · 2 unstarred
 
-- **@guiepiphany** · 0 repos · 0 followers
+- **@ozymandias-1987** · 0 repos · 0 followers
+- **@sskys18** · 15 repos · 10 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1154)
+## Current (1155)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -818,7 +819,6 @@ summaries to spot which persona is churning.
 - @oudommeas — 2026-04-03
 - @ourfirstfluke — 2026-02-05
 - @Oyedee — 2026-03-26
-- @ozymandias-1987 — 2026-04-28
 - @pabloalvrezz — 2026-03-19
 - @pajew-ski — 2026-02-02
 - @pancudaniel7 — 2026-02-10
@@ -873,6 +873,7 @@ summaries to spot which persona is churning.
 - @raghavpatnecha — 2026-04-04
 - @raidan-bot — 2026-06-24
 - @ramyo564 — 2026-06-07
+- @rancidem — 2026-07-09
 - @rangsso — 2026-05-21
 - @raphaelhuefner — 2026-03-19
 - @Rawmanski — 2026-03-18
@@ -880,6 +881,7 @@ summaries to spot which persona is churning.
 - @RayanYousef — 2026-02-28
 - @rbenzing — 2026-03-24
 - @rbq — 2026-05-20
+- @Readsea — 2026-07-09
 - @reallyticsai — 2026-04-17
 - @redwit-user1 — 2026-04-21
 - @Regen99 — 2026-04-19
@@ -980,7 +982,6 @@ summaries to spot which persona is churning.
 - @srddevj — 2026-06-17
 - @srevilla55 — 2026-03-02
 - @srgejji — 2026-03-20
-- @sskys18 — 2026-04-15
 - @stalinkay — 2026-03-18
 - @stargt — 2026-02-01
 - @Starkium — 2026-06-29
@@ -1037,6 +1038,7 @@ summaries to spot which persona is churning.
 - @tomkim007 — 2026-05-17
 - @tommy-ca — 2026-06-20
 - @tonglil — 2026-03-19
+- @TopMan48 — 2026-07-09
 - @totoroyyb — 2026-02-19
 - @toughCSB — 2026-05-20
 - @Traianosv — 2026-05-06
