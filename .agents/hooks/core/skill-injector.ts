@@ -24,6 +24,7 @@ import { basename, dirname, join } from "node:path";
 import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
 import { toPosixPath } from "./fs-utils.ts";
 import { makePromptOutput } from "./hook-output.ts";
+import { normalizePromptInput } from "./prompt-input.ts";
 // triggers.json is imported statically: bundler inlines it into the oma binary;
 // standalone bun runs resolve the sibling file (pi / direct run).
 import embeddedTriggers from "./triggers.json" with { type: "json" };
@@ -514,7 +515,7 @@ async function main() {
   const vendor = detectVendor(input);
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
-  let prompt = (input.prompt as string) ?? "";
+  let prompt = normalizePromptInput(input.prompt);
 
   // agy's PreInvocation stdin carries no `prompt`; recover it from the
   // transcript, and only act on the first invocation of a turn.

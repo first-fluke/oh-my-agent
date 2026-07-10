@@ -39,6 +39,8 @@ const {
   resolveAgentFromExtensions,
   // Guard 1
   isGenuineUserPrompt,
+  // Guard: relayed inter-agent messages
+  isRelayedAgentMessage,
   // Guard 3
   isReinforcementSuppressed,
   recordKwTrigger,
@@ -50,6 +52,10 @@ const {
   normalizeForMatching,
   run,
 } = await import("../../.agents/hooks/core/keyword-detector.ts");
+
+const { normalizePromptInput } = await import(
+  "../../.agents/hooks/core/prompt-input.ts"
+);
 
 describe("keyword-detector", () => {
   beforeEach(() => {
@@ -1599,6 +1605,134 @@ describe("keyword-detector", () => {
           p.endsWith("orchestrate-state-real-sess.json"),
         ),
       ).toBe(true);
+    });
+  });
+
+  // ── FINDING 1: ContentPart[] prompt normalization (Kimi Code CLI) ──
+  // Kimi's UserPromptSubmit payload delivers `prompt` as a ContentPart[] array
+  // like [{ type: "text", text: "..." }], not a string. The old
+  // `(input.prompt as string)` cast passed the array straight through, so the
+  // first `.trim()` threw and the top-level catch silently no-op'd every hook.
+
+  describe("normalizePromptInput", () => {
+    it("passes a plain string through unchanged", () => {
+      expect(normalizePromptInput("orchestrate the deployment")).toBe(
+        "orchestrate the deployment",
+      );
+    });
+
+    it("joins the text parts of a Kimi ContentPart[] payload", () => {
+      expect(
+        normalizePromptInput([
+          { type: "text", text: "orchestrate" },
+          { type: "text", text: "the deployment" },
+        ]),
+      ).toBe("orchestrate the deployment");
+    });
+
+    it("ignores non-text parts and malformed entries", () => {
+      expect(
+        normalizePromptInput([
+          { type: "image", url: "x" },
+          null,
+          { type: "text", text: "review this" },
+          { type: "text" },
+        ]),
+      ).toBe("review this");
+    });
+
+    it("returns empty string for missing / non-array / non-string input", () => {
+      expect(normalizePromptInput(undefined)).toBe("");
+      expect(normalizePromptInput(null)).toBe("");
+      expect(normalizePromptInput({ prompt: "x" })).toBe("");
+    });
+  });
+
+  describe("ContentPart[] payload drives the same detection as a string", () => {
+    const ctx = { vendor: "claude" as const, cwd: "/tmp", sid: "unknown" };
+
+    it("normalized ContentPart[] and the equivalent string yield identical run() results", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const parts = [{ type: "text", text: "orchestrate the whole thing" }];
+      const viaArray = await run(
+        {
+          kind: "prompt",
+          prompt: normalizePromptInput(parts),
+          cwd: "/tmp",
+        },
+        ctx,
+      );
+      const viaString = await run(
+        { kind: "prompt", prompt: "orchestrate the whole thing", cwd: "/tmp" },
+        ctx,
+      );
+      expect(viaArray?.type).toBe("context");
+      expect(viaArray).toEqual(viaString);
+    });
+  });
+
+  // ── FINDING 2: relayed inter-agent messages must not activate workflows ──
+
+  describe("isRelayedAgentMessage", () => {
+    it("flags <teammate-message> envelopes", () => {
+      expect(
+        isRelayedAgentMessage(
+          "<teammate-message from=lead># Review report\nplease review\n</teammate-message>",
+        ),
+      ).toBe(true);
+    });
+
+    it("flags <agent-message> and <task-notification> envelopes", () => {
+      expect(
+        isRelayedAgentMessage('<agent-message from="x">hi</agent-message>'),
+      ).toBe(true);
+      expect(
+        isRelayedAgentMessage("<task-notification>done</task-notification>"),
+      ).toBe(true);
+    });
+
+    it("flags leading-whitespace envelopes", () => {
+      expect(
+        isRelayedAgentMessage("\n  <teammate-message>x</teammate-message>"),
+      ).toBe(true);
+    });
+
+    it("flags idle_notification JSON in the first 200 chars", () => {
+      expect(
+        isRelayedAgentMessage('{"type":"idle_notification","agent":"x"}'),
+      ).toBe(true);
+    });
+
+    it("does not flag a normal user prompt", () => {
+      expect(isRelayedAgentMessage("please review this")).toBe(false);
+      expect(isRelayedAgentMessage("orchestrate the deployment")).toBe(false);
+    });
+  });
+
+  describe("relayed-message guard in run()", () => {
+    const ctx = { vendor: "claude" as const, cwd: "/tmp", sid: "unknown" };
+
+    it("does NOT activate the review workflow for a relayed agent report", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const relayed =
+        "<teammate-message from=lead>\n# Review report\nThe review found three issues; please review the findings.\n</teammate-message>";
+      const result = await run(
+        { kind: "prompt", prompt: relayed, cwd: "/tmp" },
+        ctx,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("still activates the review workflow for a genuine user request", async () => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+      const result = await run(
+        { kind: "prompt", prompt: "please review this", cwd: "/tmp" },
+        ctx,
+      );
+      if (result?.type !== "context") {
+        throw new Error("expected a context result");
+      }
+      expect(result.additionalContext).toContain("REVIEW");
     });
   });
 });

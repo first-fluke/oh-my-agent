@@ -6,6 +6,7 @@ import { agyConversationId, isAgyInput } from "./agy-input.ts";
 import { syncGrokContext } from "./grok-context.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { writeInjectLog } from "./inject-log.ts";
+import { normalizePromptInput } from "./prompt-input.ts";
 import { emitEvent, type OmaEvent, readEvents } from "./state-emit.ts";
 import { getActiveSid, readIndex, setLastSession } from "./state-marker.ts";
 import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
@@ -218,7 +219,7 @@ async function main() {
   // Delegate to run() — single logic source.
   const hookInput: HookInput = {
     kind: "prompt",
-    prompt: (input.prompt as string) ?? "",
+    prompt: normalizePromptInput(input.prompt),
     cwd: projectDir,
   };
   const ctxVal: HandlerCtx = { vendor, cwd: projectDir, sid: vendorSid };

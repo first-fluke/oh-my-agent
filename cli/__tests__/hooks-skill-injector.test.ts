@@ -23,7 +23,12 @@ const {
   parseSkillFrontmatter,
   findClaudeSlashSkill,
   formatClaudeSlashSkillContext,
+  run,
 } = await import("../../.agents/hooks/core/skill-injector.ts");
+
+const { normalizePromptInput } = await import(
+  "../../.agents/hooks/core/prompt-input.ts"
+);
 
 describe("skill-injector", () => {
   beforeEach(() => {
@@ -532,6 +537,67 @@ describe("skill-injector", () => {
       expect(ctx).toContain(".claude/skills/ralph/SKILL.md");
       expect(ctx).toContain("Read and follow `.agents/workflows/ralph.md`");
       expect(ctx).toContain("Do NOT respond that the skill is unavailable.");
+    });
+  });
+
+  // ── FINDING 1: ContentPart[] prompt normalization (Kimi Code CLI) ──
+  // skill-injector's stdin read runs the raw `prompt` through
+  // normalizePromptInput before delegating to run(). A Kimi ContentPart[]
+  // payload must collapse to the same string a native string payload carries,
+  // so detection/injection is identical across vendors.
+
+  describe("normalizePromptInput (ContentPart[] payloads)", () => {
+    it("collapses a Kimi ContentPart[] to the equivalent string", () => {
+      expect(normalizePromptInput([{ type: "text", text: "/ralph" }])).toBe(
+        "/ralph",
+      );
+    });
+
+    it("passes a plain string through unchanged", () => {
+      expect(normalizePromptInput("/ralph")).toBe("/ralph");
+    });
+  });
+
+  describe("ContentPart[] payload drives the same injection as a string", () => {
+    const ctx = { vendor: "claude" as const, cwd: "/repo", sid: "sess-1" };
+
+    it("normalized ContentPart[] and the equivalent string yield identical run() results", async () => {
+      const skillContent = [
+        "---",
+        "name: ralph",
+        "disable-model-invocation: true",
+        "---",
+        "",
+        "# /ralph",
+        "Read and follow `.agents/workflows/ralph.md`.",
+      ].join("\n");
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        (p: string) =>
+          p.replace(/\\/g, "/").endsWith("/.claude/skills/ralph/SKILL.md"),
+      );
+      (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        skillContent,
+      );
+
+      const viaArray = await run(
+        {
+          kind: "prompt",
+          prompt: normalizePromptInput([{ type: "text", text: "/ralph" }]),
+          cwd: "/repo",
+        },
+        ctx,
+      );
+      const viaString = await run(
+        { kind: "prompt", prompt: "/ralph", cwd: "/repo" },
+        ctx,
+      );
+      if (viaArray?.type !== "context") {
+        throw new Error("expected a context result");
+      }
+      expect(viaArray.additionalContext).toContain(
+        "[OMA CLAUDE SLASH SKILL INVOKED: ralph]",
+      );
+      expect(viaArray).toEqual(viaString);
     });
   });
 });
