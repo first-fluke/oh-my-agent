@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.13.0",
-  "releaseDate": "2026-07-10T12:35:59.962Z",
+  "releaseDate": "2026-07-10T13:34:05.057Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -226,8 +226,8 @@
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
-      "sha256": "6e136de369de60414f4f6d55971d821fa820125c62148b95063399dfc9ff4fcf",
-      "size": 791
+      "sha256": "e39c570e133e68ba2cfd6d26acd6b863c63ff4ee5464f23ee24710cbcf738487",
+      "size": 681
     },
     {
       "path": ".agents/hooks/variants/claude.json",
