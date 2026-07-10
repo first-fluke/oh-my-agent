@@ -26,7 +26,7 @@
     ],
     "PreToolUse": {
       "hook": "test-filter.ts",
-      "matcher": "run_terminal_cmd",
+      "matcher": "Bash",
       "timeout": 5
     },
     "Stop": {

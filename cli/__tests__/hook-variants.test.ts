@@ -1,8 +1,22 @@
-import { readdirSync, readFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  type HookVariant,
+  installHooksFromVariant,
+} from "../platform/hooks-composer.js";
 import { isHookVendor } from "../platform/skills-installer.js";
 import type { VendorType } from "../types/index.js";
+
+const REPO_ROOT = join(__dirname, "../..");
 
 const VARIANTS_DIR = join(__dirname, "../../.agents/hooks/variants");
 const SCHEMA_PATH = join(VARIANTS_DIR, "hook-variant.schema.json");
@@ -75,6 +89,23 @@ describe("hook variant files", () => {
     }
   });
 
+  // Regression: July 2026 CLI audit against installed Grok / Qwen binaries.
+  // The PreToolUse matcher is a real tool-name gate — a wrong value makes the
+  // test-filter hook dead on the native hooks path.
+  it("grok PreToolUse matcher is the Bash alias (real tool: run_terminal_command)", () => {
+    // Grok CLI 0.2.93's shell tool is `run_terminal_command`, not
+    // `run_terminal_cmd`; the `Bash` alias is doc-guaranteed to match both.
+    const v = loadVariant("grok");
+    expect(v.events.PreToolUse.matcher).toBe("Bash");
+  });
+
+  it("qwen PreToolUse matcher is run_shell_command (real Qwen shell tool)", () => {
+    // Qwen Code 0.12.6's shell tool is `run_shell_command`; `Bash` is a
+    // subagent-type enum there and never matches a PreToolUse tool name.
+    const v = loadVariant("qwen");
+    expect(v.events.PreToolUse.matcher).toBe("run_shell_command");
+  });
+
   it("each event references a file that exists in core/", () => {
     const coreDir = join(__dirname, "../../.agents/hooks/core");
     const coreFiles = readdirSync(coreDir);
@@ -99,6 +130,50 @@ describe("hook variant files", () => {
           `${vendor}.statusLine references missing core file: ${v.statusLine.hook}`,
         ).toContain(v.statusLine.hook);
       }
+    }
+  });
+});
+
+// Regression: Qwen Code only runs registered hooks when
+// `settings.hooksConfig.enabled === true`. The qwen variant carries that flag
+// in `extra` so the installer writes it into .qwen/settings.json.
+describe("qwen hook variant install output", () => {
+  it("writes hooksConfig.enabled=true into .qwen/settings.json", () => {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-hooks-"));
+    try {
+      const variant = loadVariant("qwen") as HookVariant;
+      installHooksFromVariant(REPO_ROOT, targetDir, variant);
+
+      const settings = JSON.parse(
+        readFileSync(join(targetDir, ".qwen", "settings.json"), "utf-8"),
+      );
+      expect(settings.hooksConfig).toEqual({ enabled: true });
+    } finally {
+      rmSync(targetDir, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves a user's existing hooksConfig keys while enabling hooks", () => {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-qwen-hooks-"));
+    try {
+      const qwenDir = join(targetDir, ".qwen");
+      // Seed a pre-existing settings.json with an unrelated hooksConfig key.
+      mkdirSync(qwenDir, { recursive: true });
+      writeFileSync(
+        join(qwenDir, "settings.json"),
+        JSON.stringify({ hooksConfig: { timeout: 30 } }),
+      );
+
+      const variant = loadVariant("qwen") as HookVariant;
+      installHooksFromVariant(REPO_ROOT, targetDir, variant);
+
+      const settings = JSON.parse(
+        readFileSync(join(qwenDir, "settings.json"), "utf-8"),
+      );
+      // enabled is added; the user's `timeout` key survives the shallow merge.
+      expect(settings.hooksConfig).toEqual({ timeout: 30, enabled: true });
+    } finally {
+      rmSync(targetDir, { recursive: true, force: true });
     }
   });
 });
