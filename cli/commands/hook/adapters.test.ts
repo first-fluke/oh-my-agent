@@ -22,7 +22,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { nativeEventToKind } from "./adapters.js";
+import { nativeEventToKind, normalizeInput } from "./adapters.js";
 import type { Vendor } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -126,4 +126,41 @@ describe("nativeEventToKind — variant JSON coverage", () => {
       }
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// normalizeInput — prompt payload shapes through the central dispatch path.
+// Kimi delivers `prompt` as a ContentPart[] array (MoonshotAI/kimi-code #917);
+// every settings-file vendor reaches handlers via this path, so the array must
+// normalize here, not only in the standalone script entrypoints.
+
+describe("normalizeInput — prompt field shapes", () => {
+  it("normalizes a Kimi ContentPart[] prompt to its text", () => {
+    const raw = JSON.stringify({
+      prompt: [
+        { type: "text", text: "work: fix" },
+        { type: "image", data: "…" },
+        { type: "text", text: "the bug" },
+      ],
+      cwd: "/tmp/p",
+      session_id: "kimi-1",
+      hook_event_name: "UserPromptSubmit",
+    });
+    const input = normalizeInput("kimi", "UserPromptSubmit", raw);
+    expect(input).toEqual({
+      kind: "prompt",
+      prompt: "work: fix the bug",
+      cwd: "/tmp/p",
+    });
+  });
+
+  it("passes a plain string prompt through unchanged", () => {
+    const raw = JSON.stringify({
+      prompt: "hello",
+      cwd: "/tmp/p",
+      hook_event_name: "UserPromptSubmit",
+    });
+    const input = normalizeInput("claude", "UserPromptSubmit", raw);
+    expect(input).toEqual({ kind: "prompt", prompt: "hello", cwd: "/tmp/p" });
+  });
 });

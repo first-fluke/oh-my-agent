@@ -8,6 +8,7 @@ import {
   isAgyInput,
   readAgyPrompt,
 } from "../../../.agents/hooks/core/agy-input.js";
+import { normalizePromptInput } from "../../../.agents/hooks/core/prompt-input.js";
 import type { HookInput, Vendor } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -256,7 +257,8 @@ function resolveCwd(vendor: Vendor, payload: Record<string, unknown>): string {
  *
  * antigravity: recover from transcript via readAgyPrompt(.transcriptPath).
  *              Skip if invocationNum > 1 (mid-turn re-invocation).
- * all others : payload.prompt (string field)
+ * all others : payload.prompt — a string, or a ContentPart[] array (Kimi
+ *              delivers [{type:"text",text}] parts), normalized to text.
  */
 function resolvePrompt(
   vendor: Vendor,
@@ -274,10 +276,10 @@ function resolvePrompt(
       return readAgyPrompt(payload.transcriptPath) || "";
     }
     // Fallback: some agy PreInvocation payloads may include prompt directly
-    return (payload.prompt as string | undefined) ?? "";
+    return normalizePromptInput(payload.prompt);
   }
 
-  return (payload.prompt as string | undefined) ?? "";
+  return normalizePromptInput(payload.prompt);
 }
 
 /**
