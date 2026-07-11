@@ -5,14 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-10 · 2 unstarred
+## 2026-07-11 · 1 unstarred
 
-- **@ozymandias-1987** · 0 repos · 0 followers
-- **@sskys18** · 15 repos · 10 followers
+- **@agagtmdtlr** · agagtmdtlr · 2 repos · 2 followers
+  - Hello, I'm game developer Park Seungsik.I have experience developing a C++ based game graphics engine.Currently, I am mainly developing game content bas
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1155)
+## Current (1157)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -43,10 +43,10 @@ summaries to spot which persona is churning.
 - @Achyuth072 — 2026-02-01
 - @acrossMika — 2026-05-06
 - @acutbh — 2026-02-06
+- @adamstz — 2026-07-11
 - @adrian-doyeon-kim — 2026-04-26
 - @adriancbo — 2026-03-18
 - @aero — 2026-02-06
-- @agagtmdtlr — 2026-06-18
 - @ahmed-esmail — 2026-03-03
 - @ahnbu — 2026-02-13
 - @airaum — 2026-04-19
@@ -220,6 +220,7 @@ summaries to spot which persona is churning.
 - @Daehyeob-Ryu — 2026-02-04
 - @daeryundf2-prog — 2026-05-19
 - @damanegi — 2026-02-04
+- @damian87x — 2026-07-10
 - @danielhanold — 2026-03-19
 - @daudaudinang — 2026-03-11
 - @david-w-millar — 2026-04-21
@@ -644,6 +645,7 @@ summaries to spot which persona is churning.
 - @leaxoy — 2026-03-19
 - @LectomT — 2026-03-17
 - @Lede-dev — 2026-03-18
+- @Lee-Kris — 2026-07-10
 - @LEE1026icarus — 2026-05-17
 - @leechangsu2131 — 2026-04-14
 - @leechoohyoung — 2026-02-01
