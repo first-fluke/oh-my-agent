@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/first-fluke/oh-my-agent/compare/action-v1.2.1...action-v1.2.2) (2026-07-11)
+
+
+### Documentation
+
+* resolve all 84 broken refs flagged by oma docs verify ([2bf619a](https://github.com/first-fluke/oh-my-agent/commit/2bf619a126181304f53d4577a77be67109f6cb13))
+
 ## [1.2.1](https://github.com/first-fluke/oh-my-agent/compare/action-v1.2.0...action-v1.2.1) (2026-06-18)
 
 
