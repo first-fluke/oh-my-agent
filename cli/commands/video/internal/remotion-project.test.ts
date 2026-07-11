@@ -1,8 +1,20 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
-import { isRemotionBrowserReady } from "./remotion-project.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  installPretendardFont,
+  isPretendardFontPresent,
+  isRemotionBrowserReady,
+  PRETENDARD_FONT_RELATIVE,
+  PRETENDARD_FONT_URL,
+} from "./remotion-project.js";
 
 // Regression: isRemotionBrowserReady must verify the actual Chrome Headless
 // Shell *binary*, not just the download directory. Remotion's `browser ensure`
@@ -67,5 +79,79 @@ describe("isRemotionBrowserReady binary verification", () => {
   it("returns false when the download directory is absent", () => {
     root = mkdtempSync(path.join(tmpdir(), "oma-remotion-"));
     expect(isRemotionBrowserReady(root)).toBe(false);
+  });
+});
+
+// The doctor's one-time Pretendard fetch (determinism boundary). The network is
+// always mocked here: success writes the woff2 into public/fonts/, and any
+// network failure degrades gracefully (ok:false result, no file, no throw).
+describe("installPretendardFont", () => {
+  let root: string | null = null;
+
+  afterEach(() => {
+    if (root) {
+      rmSync(root, { recursive: true, force: true });
+      root = null;
+    }
+  });
+
+  it("is a no-op when the font is already present", async () => {
+    root = mkdtempSync(path.join(tmpdir(), "oma-remotion-"));
+    const dest = path.join(root, PRETENDARD_FONT_RELATIVE);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    writeFileSync(dest, Buffer.alloc(16));
+    const fetchImpl = vi.fn();
+    const result = await installPretendardFont(
+      root,
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.detail).toBe("already present");
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("downloads the pinned woff2 into public/fonts/ on success", async () => {
+    root = mkdtempSync(path.join(tmpdir(), "oma-remotion-"));
+    const bytes = Buffer.from("woff2-bytes");
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(bytes, { status: 200 }));
+    const result = await installPretendardFont(
+      root,
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(fetchImpl).toHaveBeenCalledWith(
+      PRETENDARD_FONT_URL,
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+    expect(result.ok).toBe(true);
+    expect(isPretendardFontPresent(root)).toBe(true);
+  });
+
+  it("warns and continues (no throw, no file) on a network failure", async () => {
+    root = mkdtempSync(path.join(tmpdir(), "oma-remotion-"));
+    const fetchImpl = vi.fn().mockRejectedValue(new Error("offline"));
+    const result = await installPretendardFont(
+      root,
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(result.ok).toBe(false);
+    expect(result.detail).toContain("system fonts");
+    expect(isPretendardFontPresent(root)).toBe(false);
+    expect(existsSync(path.join(root, PRETENDARD_FONT_RELATIVE))).toBe(false);
+  });
+
+  it("reports a non-2xx response as a graceful failure", async () => {
+    root = mkdtempSync(path.join(tmpdir(), "oma-remotion-"));
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response("not found", { status: 404 }));
+    const result = await installPretendardFont(
+      root,
+      fetchImpl as unknown as typeof fetch,
+    );
+    expect(result.ok).toBe(false);
+    expect(result.detail).toContain("HTTP 404");
+    expect(isPretendardFontPresent(root)).toBe(false);
   });
 });

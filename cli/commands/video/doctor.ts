@@ -7,7 +7,10 @@ import color from "picocolors";
 import { installMptProject } from "./internal/mpt-project.js";
 import { installPlaywright } from "./internal/playwright-project.js";
 import { runReadinessChecks } from "./internal/readiness.js";
-import { installRemotionProject } from "./internal/remotion-project.js";
+import {
+  installPretendardFont,
+  installRemotionProject,
+} from "./internal/remotion-project.js";
 
 const BASELINE = new Set(["node", "chromium", "ffmpeg", "oma-image"]);
 
@@ -26,6 +29,17 @@ export async function runVideoDoctor({
       const mark = result.ok ? color.green("✓") : color.yellow("!");
       console.log(`${mark} remotion-project install: ${result.detail}`);
       if (result.dir) console.log(color.dim(`    ${result.dir}`));
+    }
+    // Fetch the embedded Pretendard font once (determinism boundary). Graceful
+    // degrade: on network failure, warn and continue — the render falls back to
+    // system fonts and is not byte-identical until the font is present.
+    if (result.dir) {
+      const font = await installPretendardFont(result.dir);
+      if (formatMode !== "json") {
+        const mark = font.ok ? color.green("✓") : color.yellow("!");
+        console.log(`${mark} pretendard-font: ${font.detail}`);
+        console.log(color.dim(`    ${font.path}`));
+      }
     }
   }
 

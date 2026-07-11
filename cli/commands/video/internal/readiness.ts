@@ -7,7 +7,10 @@ import { http } from "@cli/io/http";
 import { binaryAvailable, resolveOmaInvocation, runCapture } from "./exec.js";
 import { getMptProjectStatus } from "./mpt-project.js";
 import { getPlaywrightStatus } from "./playwright-project.js";
-import { getRemotionProjectStatus } from "./remotion-project.js";
+import {
+  getRemotionProjectStatus,
+  isPretendardFontPresent,
+} from "./remotion-project.js";
 
 export interface ReadinessCheck {
   name: string;
@@ -174,6 +177,37 @@ export function checkRemotionProject(): ReadinessCheck {
 }
 
 /**
+ * Embedded Pretendard font — part of the determinism boundary (render-spec +
+ * assets + seed + embedded Pretendard). `oma video doctor --install` fetches it
+ * once into the vendored project's `public/fonts/`. A missing font degrades
+ * gracefully: the render still succeeds on the system font stack, but is not
+ * guaranteed byte-identical across machines until the font is present.
+ */
+export function checkPretendardFont(): ReadinessCheck {
+  const status = getRemotionProjectStatus();
+  if (!status.dir) {
+    return {
+      name: "pretendard-font",
+      ok: false,
+      detail: "remotion project not found",
+      remediation:
+        "Install the oma-video skill, then run `oma video doctor --install`.",
+    };
+  }
+  const present = isPretendardFontPresent(status.dir);
+  return {
+    name: "pretendard-font",
+    ok: present,
+    detail: present
+      ? "embedded (byte-identical renders)"
+      : "missing (system-font fallback; renders not byte-identical)",
+    remediation: present
+      ? undefined
+      : "Run `oma video doctor --install` to fetch Pretendard once (network required).",
+  };
+}
+
+/**
  * Cloned MoneyPrinterTurbo (MPT) checkout — the alternative shorts compositor
  * (`--compositor mpt`). The MPT real branch only fires when the clone + its venv
  * are present; otherwise the deterministic placeholder is used. The checkout
@@ -263,6 +297,7 @@ export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
     checkChromium(),
     ffmpeg,
     checkRemotionProject(),
+    checkPretendardFont(),
     checkMptProject(),
     checkPlaywright(),
     voicebox,

@@ -18,8 +18,12 @@ providers:
     order: [oma-image, pexels, pixelle]
   caption:
     order: [oma-captions]
+  # Capture dispatch is currently driven by --source directly
+  # (orchestrator/capture.ts): --source web -> playwright-web, --source file ->
+  # guided/cap. This key mirrors the code default (config.ts) and is
+  # informational only — the orchestrator does not walk it as a chain.
   capture:
-    order: [cap]
+    order: [playwright-web, cap]
   compositor:
     order: [remotion, mpt]
   pexels:

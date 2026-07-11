@@ -4,9 +4,13 @@ import {
   checkMptProject,
   checkNode,
   checkPixelle,
+  checkPretendardFont,
   checkRemotionProject,
 } from "./internal/readiness.js";
-import { getRemotionProjectStatus } from "./internal/remotion-project.js";
+import {
+  getRemotionProjectStatus,
+  isPretendardFontPresent,
+} from "./internal/remotion-project.js";
 
 // The subprocess/network checks (ffmpeg, voicebox, oma-image, cap) are exercised
 // end-to-end by the doctor command; here we cover the pure/synchronous checks
@@ -58,6 +62,26 @@ describe("video readiness checks (pure)", () => {
       }
     } else {
       expect(check.detail).toContain("ready");
+    }
+  });
+
+  it("reports the pretendard font status consistently", () => {
+    // The font is optional (graceful system-font fallback), so ok must simply
+    // mirror the woff2's presence in the resolved project dir, and a missing
+    // font must point at the one-time `doctor --install` fetch. No network.
+    const status = getRemotionProjectStatus();
+    const check = checkPretendardFont();
+    expect(check.name).toBe("pretendard-font");
+    if (!status.dir) {
+      expect(check.ok).toBe(false);
+      return;
+    }
+    expect(check.ok).toBe(isPretendardFontPresent(status.dir));
+    if (check.ok) {
+      expect(check.detail).toContain("embedded");
+    } else {
+      expect(check.detail).toContain("system-font fallback");
+      expect(check.remediation).toContain("--install");
     }
   });
 

@@ -13,6 +13,7 @@
 // import that resolver across slices (commands/<x> must not import commands/<y>),
 // so the ~20-line walk is duplicated here to keep the boundary clean.
 import { existsSync, readdirSync, statSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -169,6 +170,68 @@ export function getRemotionProjectStatus(): RemotionProjectStatus {
     installed: dir ? isRemotionProjectInstalled(dir) : false,
     browserReady: dir ? isRemotionBrowserReady(dir) : false,
   };
+}
+
+/** Relative path of the embedded Pretendard font under the project dir. */
+export const PRETENDARD_FONT_RELATIVE = "public/fonts/PretendardVariable.woff2";
+
+/**
+ * Pinned Pretendard release the determinism boundary embeds. Must stay in sync
+ * with `resources/remotion/src/load-fonts.ts` (which loads
+ * `public/fonts/PretendardVariable.woff2` via staticFile) and
+ * `resources/remotion/public/fonts/README.md`.
+ */
+export const PRETENDARD_FONT_URL =
+  "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/variable/woff2/PretendardVariable.woff2";
+
+/** True when the embedded Pretendard woff2 is present in the project dir. */
+export function isPretendardFontPresent(projectDir: string): boolean {
+  return existsSync(join(projectDir, PRETENDARD_FONT_RELATIVE));
+}
+
+export interface FontInstallResult {
+  ok: boolean;
+  path: string;
+  detail: string;
+}
+
+/**
+ * Fetch the embedded Pretendard font once into `public/fonts/` (graceful
+ * degrade): on network failure this warns via the result detail and the caller
+ * continues — the render then falls back to the system font stack and is not
+ * guaranteed byte-identical across machines until the font is present.
+ * Idempotent: a no-op when the woff2 already exists.
+ */
+export async function installPretendardFont(
+  projectDir: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<FontInstallResult> {
+  const dest = join(projectDir, PRETENDARD_FONT_RELATIVE);
+  if (existsSync(dest)) {
+    return { ok: true, path: dest, detail: "already present" };
+  }
+  try {
+    const res = await fetchImpl(PRETENDARD_FONT_URL, {
+      signal: AbortSignal.timeout(120_000),
+    });
+    if (!res.ok) {
+      return {
+        ok: false,
+        path: dest,
+        detail: `fetch failed (HTTP ${res.status}); renders fall back to system fonts`,
+      };
+    }
+    const bytes = Buffer.from(await res.arrayBuffer());
+    await mkdir(dirname(dest), { recursive: true });
+    await writeFile(dest, bytes);
+    return { ok: true, path: dest, detail: `fetched (${bytes.length} bytes)` };
+  } catch (err) {
+    return {
+      ok: false,
+      path: dest,
+      detail: `fetch failed (${(err as Error).message}); renders fall back to system fonts`,
+    };
+  }
 }
 
 export interface RemotionInstallResult {
