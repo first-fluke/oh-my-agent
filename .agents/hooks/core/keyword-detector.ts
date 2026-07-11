@@ -25,7 +25,7 @@ import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
 import { UNKNOWN_SESSION_ID, VENDORS } from "./constants.ts";
 import { clearGrokContext } from "./grok-context.ts";
 import { makePromptOutput } from "./hook-output.ts";
-import { normalizePromptInput } from "./prompt-input.ts";
+import { isRelayedAgentMessage, normalizePromptInput } from "./prompt-input.ts";
 // triggers.json is imported statically: the bundler inlines it into the oma
 // binary (bundled `oma hook` path needs no file on disk), while a standalone
 // bun run resolves the sibling file next to this module (pi / direct run).
@@ -156,22 +156,9 @@ export function isGenuineUserPrompt(input: Record<string, unknown>): boolean {
 }
 
 // ── Guard: relayed inter-agent messages ──────────────────────
-// In multi-agent sessions, another agent's report / teammate relay / task
-// notification is transported through the prompt channel. Its content is not a
-// user request, so scanning it for workflow keywords produces false positives
-// (a relayed report containing "review" would activate the review workflow).
-// Detect the transport envelopes conservatively and skip detection for them.
-const RELAY_ENVELOPE_PREFIXES = [
-  "<agent-message",
-  "<teammate-message",
-  "<task-notification",
-];
-
-export function isRelayedAgentMessage(prompt: string): boolean {
-  const trimmed = prompt.trimStart();
-  if (RELAY_ENVELOPE_PREFIXES.some((p) => trimmed.startsWith(p))) return true;
-  return trimmed.slice(0, 200).includes('"type":"idle_notification"');
-}
+// Shared with skill-injector — see prompt-input.ts. Re-exported here so
+// existing imports/tests keep resolving from this module.
+export { isRelayedAgentMessage };
 
 // ── Guard 3: Reinforcement suppression ───────────────────────
 

@@ -24,7 +24,7 @@ import { basename, dirname, join } from "node:path";
 import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
 import { toPosixPath } from "./fs-utils.ts";
 import { makePromptOutput } from "./hook-output.ts";
-import { normalizePromptInput } from "./prompt-input.ts";
+import { isRelayedAgentMessage, normalizePromptInput } from "./prompt-input.ts";
 // triggers.json is imported statically: bundler inlines it into the oma binary;
 // standalone bun runs resolve the sibling file (pi / direct run).
 import embeddedTriggers from "./triggers.json" with { type: "json" };
@@ -463,6 +463,11 @@ export async function run(
   const { vendor, cwd: projectDir, sid: sessionId = "unknown" } = ctx;
 
   if (!prompt.trim()) return null;
+
+  // Relayed inter-agent messages (teammate reports, idle notifications) are
+  // not user intent — their content routinely contains skill trigger words
+  // and produced false skill suggestions. Same guard as keyword-detector.
+  if (isRelayedAgentMessage(prompt)) return null;
 
   // Claude-specific: slash-skill resolution must run BEFORE the slash early-exit
   // and persistent-workflow guard (same order as the original standalone path).

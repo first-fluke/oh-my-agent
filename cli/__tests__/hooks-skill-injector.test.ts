@@ -546,6 +546,26 @@ describe("skill-injector", () => {
   // payload must collapse to the same string a native string payload carries,
   // so detection/injection is identical across vendors.
 
+  describe("relayed inter-agent messages are skipped", () => {
+    const ctx = { vendor: "claude" as const, cwd: "/repo", sid: "sess-relay" };
+
+    it("does not suggest skills for a relayed teammate report containing trigger words", async () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+        false,
+      );
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt:
+            '<teammate-message teammate_id="x"># i18n report: translate the UI strings</teammate-message>',
+          cwd: "/repo",
+        },
+        ctx,
+      );
+      expect(result).toBeNull();
+    });
+  });
+
   describe("normalizePromptInput (ContentPart[] payloads)", () => {
     it("collapses a Kimi ContentPart[] to the equivalent string", () => {
       expect(normalizePromptInput([{ type: "text", text: "/ralph" }])).toBe(

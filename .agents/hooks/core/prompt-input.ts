@@ -8,6 +8,24 @@
 // prompt chain silently no-ops. Route every raw read through this helper so the
 // array shape collapses to the equivalent string.
 
+// Relayed inter-agent messages (teammate reports, task notifications, idle
+// notifications) are transported through the prompt channel but are not user
+// intent: their content routinely carries workflow keywords and skill trigger
+// words, producing false activations. Detect the transport envelopes
+// conservatively so prompt-driven handlers can skip them.
+const RELAY_ENVELOPE_PREFIXES = [
+  "<agent-message",
+  "<teammate-message",
+  "<task-notification",
+];
+
+/** True when the prompt is a relayed inter-agent envelope, not user intent. */
+export function isRelayedAgentMessage(prompt: string): boolean {
+  const trimmed = prompt.trimStart();
+  if (RELAY_ENVELOPE_PREFIXES.some((p) => trimmed.startsWith(p))) return true;
+  return trimmed.slice(0, 200).includes('"type":"idle_notification"');
+}
+
 /** Coerce a raw stdin `prompt` field to a string across vendor payload shapes. */
 export function normalizePromptInput(prompt: unknown): string {
   if (typeof prompt === "string") return prompt;
