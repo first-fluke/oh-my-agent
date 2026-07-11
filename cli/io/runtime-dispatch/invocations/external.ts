@@ -369,6 +369,18 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
     }
   }
 
+  // Codex gates every non-managed command hook behind a per-invocation trust
+  // (TOFU) check, so oma-installed .codex/hooks.json reverts to untrusted
+  // whenever an install changes the command string. Pass
+  // `--dangerously-bypass-hook-trust` so oma-spawned codex runs its own vetted
+  // hooks without the manual re-trust step. Verified against codex 0.144.1:
+  // the flag runs an enabled hook whose trusted_hash is stale; the
+  // BYPASS_HOOK_TRUST env var is NOT honored. Applied only to oma-spawned
+  // processes, never written to user config.
+  if (vendor === "codex") {
+    optionArgs.push("--dangerously-bypass-hook-trust");
+  }
+
   if (promptFlag) {
     optionArgs.push(promptFlag, promptContent);
   }
@@ -389,16 +401,6 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
         `[agent-spawn] isolation_env key '${key}' can hijack process loading; skipped.`,
       );
     }
-  }
-
-  // Codex gates every non-managed command hook behind a per-invocation trust
-  // (TOFU) check, so oma-installed .codex/hooks.json stays untrusted until the
-  // user runs `/hooks`. oma-spawned subprocesses vet their own hook source, so
-  // set the documented BYPASS_HOOK_TRUST env (equivalent to
-  // --dangerously-bypass-hook-trust) to run hooks without the manual trust step.
-  // Applied only to oma-spawned processes, never written to user config.
-  if (vendor === "codex") {
-    env.BYPASS_HOOK_TRUST = "1";
   }
 
   return { command, args, env };

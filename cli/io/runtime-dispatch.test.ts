@@ -204,7 +204,7 @@ describe("planDispatch — regression: native paths unaffected", () => {
     ]);
   });
 
-  it("codex runtime + codex target → native invocation sets BYPASS_HOOK_TRUST=1", () => {
+  it("codex runtime + codex target → native invocation passes the hook-trust bypass flag", () => {
     const plan = planDispatch(
       "test-agent",
       "codex",
@@ -215,7 +215,8 @@ describe("planDispatch — regression: native paths unaffected", () => {
     );
     expect(plan.mode).toBe("native");
     expect(plan.runtimeVendor).toBe("codex");
-    expect(plan.invocation.env.BYPASS_HOOK_TRUST).toBe("1");
+    expect(plan.invocation.args).toContain("--dangerously-bypass-hook-trust");
+    expect(plan.invocation.env.BYPASS_HOOK_TRUST).toBeUndefined();
   });
 });
 

@@ -603,7 +603,9 @@ describe("buildExternalInvocation — codex hook-trust bypass", () => {
     prompt_flag: undefined,
   });
 
-  it("sets BYPASS_HOOK_TRUST=1 for oma-spawned codex invocations", () => {
+  it("passes --dangerously-bypass-hook-trust for oma-spawned codex invocations", () => {
+    // Verified against codex 0.144.1: the flag runs enabled-but-stale-hash
+    // hooks; the BYPASS_HOOK_TRUST env var is NOT honored.
     const inv = buildExternalInvocation(
       "codex",
       codexConfig(),
@@ -612,10 +614,15 @@ describe("buildExternalInvocation — codex hook-trust bypass", () => {
       undefined,
       { readOnly: false },
     );
-    expect(inv.env.BYPASS_HOOK_TRUST).toBe("1");
+    expect(inv.args).toContain("--dangerously-bypass-hook-trust");
+    // The flag must precede the positional prompt.
+    expect(inv.args.indexOf("--dangerously-bypass-hook-trust")).toBeLessThan(
+      inv.args.indexOf("do work"),
+    );
+    expect(inv.env.BYPASS_HOOK_TRUST).toBeUndefined();
   });
 
-  it("does not set BYPASS_HOOK_TRUST for non-codex vendors", () => {
+  it("does not pass the bypass flag for non-codex vendors", () => {
     const inv = buildExternalInvocation(
       "gemini",
       cursorConfig(),
@@ -624,6 +631,6 @@ describe("buildExternalInvocation — codex hook-trust bypass", () => {
       undefined,
       { readOnly: false },
     );
-    expect(inv.env.BYPASS_HOOK_TRUST).toBeUndefined();
+    expect(inv.args).not.toContain("--dangerously-bypass-hook-trust");
   });
 });

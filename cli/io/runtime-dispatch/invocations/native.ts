@@ -78,15 +78,20 @@ export function buildCodexNativeInvocation(
     args.push(vendorConfig.auto_approve_flag);
   }
 
-  args.push(buildMentionPrompt(agentId, promptContent));
-
   // Codex gates every non-managed command hook behind a per-invocation trust
   // (TOFU) check: oma-installed .codex/hooks.json stays untrusted until the user
   // runs `/hooks`, and re-installs that change the command string silently
-  // revert trust. oma-spawned subprocesses vet their own hook source, so set the
-  // documented BYPASS_HOOK_TRUST env (equivalent to --dangerously-bypass-hook-trust)
-  // to run hooks without the manual trust step. Never written to user config.
-  return { command, args, env: { ...process.env, BYPASS_HOOK_TRUST: "1" } };
+  // revert trust. oma-spawned subprocesses vet their own hook source, so pass
+  // `--dangerously-bypass-hook-trust` to run enabled-but-untrusted hooks without
+  // the manual re-trust step. Verified against codex 0.144.1: the flag runs an
+  // enabled hook whose trusted_hash is stale; the BYPASS_HOOK_TRUST env var is
+  // NOT honored. Never written to user config; hooks never enabled at all
+  // (fresh project, no /hooks visit) still require one manual review.
+  args.push("--dangerously-bypass-hook-trust");
+
+  args.push(buildMentionPrompt(agentId, promptContent));
+
+  return { command, args, env: { ...process.env } };
 }
 
 /**
