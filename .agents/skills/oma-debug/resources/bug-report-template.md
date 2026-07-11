@@ -1,3 +1,7 @@
+---
+oma-docs: skip
+---
+
 # Bug Report Template
 
 Use this template when documenting bugs in the Knowledge Base.

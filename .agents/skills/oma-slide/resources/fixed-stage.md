@@ -82,7 +82,9 @@ output.
 </body>
 ```
 
+<!-- oma-docs:ignore-start -->
 ### Option B — Inlined (single-file bundle — `out/deck.html`)
+<!-- oma-docs:ignore-end -->
 
 `oma slide bundle` inlines both files; the structure is the same but the
 `<link>` is replaced by `<style>...</style>` and `<script src>` becomes `<script>...</script>`.

@@ -19,12 +19,16 @@ Every item maps to a SKILL.md guardrail or the validator contract in `fixed-stag
 
 ## Delivery artifacts
 
+<!-- oma-docs:ignore-start -->
 - [ ] `oma slide bundle --dir "$DECK_DIR"` produced `out/deck.html` and it opens in a browser
+<!-- oma-docs:ignore-end -->
 - [ ] If `./assets/` contains video: user was warned the bundle is not fully self-contained
 - [ ] PPTX export (if requested) labeled **experimental** in user-facing output
 - [ ] Canva export (if performed): design URL included in the delivery summary
 
 ## Delivery summary (Phase 6c)
 
+<!-- oma-docs:ignore-start -->
 - [ ] Reported: workdir path, slide file list, `out/deck.html` path, export paths, validate status
+<!-- oma-docs:ignore-end -->
 - [ ] Reported: any `TODO(oma-deferred)` items (e.g., unresolved image generation placeholders)

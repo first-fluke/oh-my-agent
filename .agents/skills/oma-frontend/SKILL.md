@@ -169,7 +169,9 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 
 - **Usage**: Prefer strict shadcn primitives (`Card`, `Sheet`, `Typography`, `Table`) over `div` or generic classes.
 - **Responsiveness**: Use `Drawer` (mobile) vs `Dialog` (desktop) via `useResponsive`.
+<!-- oma-docs:ignore-start -->
 - **Customization**: Treat `components/ui/*` as read-only. Create wrappers (e.g., `components/common/ProductButton.tsx`) or use `cva` composition. Never edit `components/ui/button.tsx` directly.
+<!-- oma-docs:ignore-end -->
 
 ### Sources of Truth
 

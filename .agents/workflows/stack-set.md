@@ -269,7 +269,9 @@ Generate a standalone CRUD feature (component + data service) in the detected st
 **Adapt, not copy (amendment E):** Seed from `.agents/skills/oma-mobile/variants/swift-ios/` as the baseline, then adapt every value to match the detected project. Specifically:
 
 - Replace placeholder `Features/` module names with the actual feature module names found in the project (e.g., `Features/Auth`, `Features/Home`).
+<!-- oma-docs:ignore-start -->
 - Set `api_spec` to the actual path where the OpenAPI document lives in this project (default `Core/Networking/openapi.yaml` only when no other location is found).
+<!-- oma-docs:ignore-end -->
 - Set the minimum iOS deployment target to the value detected from `Package.swift` or `.xcodeproj`; default `17.0` when not specified.
 - Populate the DI wiring in the App entry snippet with the real `Client` and service types from the project, not generic placeholders.
 

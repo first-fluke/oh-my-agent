@@ -23,7 +23,9 @@ Zustand stores live in `src/store/`. Keep stores small and feature-scoped — on
 
 ## HTTP Transport: Axios
 
+<!-- oma-docs:ignore-start -->
 Network calls are made through a **singleton Axios instance** configured in `src/api/client.ts`. The instance wires request interceptors for bearer-token injection and response interceptors for 401 handling / token refresh. Retry logic (exponential back-off) is attached via `axios-retry`.
+<!-- oma-docs:ignore-end -->
 
 **Transport vs. server-state distinction.** Axios is a transport concern only — it sends and receives bytes. It knows nothing about caching, stale data, or background revalidation. TanStack Query (below) owns those concerns. React components never import the Axios instance directly; they consume typed hooks built on TanStack Query.
 
@@ -62,7 +64,9 @@ Backend REST API
 2. Query keys follow the pattern `[operation, ...params]` — for example `['todos', 'list']` or `['todos', 'detail', id]`. **Never key on URLs** (they conflate transport with cache identity and break under proxy/versioning changes).
 3. Every mutation (`useMutation`) **must call `queryClient.invalidateQueries({ queryKey })`** for all affected query keys on `onSuccess`. Optimistic updates are optional but, when used, must pair a `rollback` in `onError`.
 4. Offline persistence: `@tanstack/query-persist-client-core` + a custom MMKV persister (`react-native-mmkv`) so the query cache survives app restarts. This mirrors the swift disk-cache tier.
+<!-- oma-docs:ignore-start -->
 5. The `QueryClient` is created once at app startup (`src/api/queryClient.ts`) and provided via `<QueryClientProvider>` in the root component. Never create per-component `QueryClient` instances.
+<!-- oma-docs:ignore-end -->
 6. Network calls are isolated in `src/api/` typed functions (axios). **Screens and components never call axios directly** — this is the repository seam. Components consume hooks; hooks consume the api layer.
 7. The query cache is for **transient, server-owned data**. Durable user-owned data belongs in MMKV; secrets belong in `expo-secure-store` / `react-native-keychain`. TanStack Query is never a system of record.
 
@@ -163,7 +167,9 @@ Each `features/<name>/` folder is a vertical slice owning its types, UI componen
 
 Use **`@react-navigation/native-stack`** (backed by `react-native-screens` native primitives) for push navigation — it is measurably faster than the JS-animated `@react-navigation/stack`. Tab navigation uses `@react-navigation/bottom-tabs`.
 
+<!-- oma-docs:ignore-start -->
 Route param lists are **fully typed** in `src/navigation/types.ts` with a `RootStackParamList`. Screen components receive `NativeStackScreenProps<RootStackParamList, 'ScreenName'>` as props, giving compile-time checked navigation calls.
+<!-- oma-docs:ignore-end -->
 
 ```typescript
 // src/navigation/types.ts
@@ -174,6 +180,8 @@ export type RootStackParamList = {
 };
 ```
 
+<!-- oma-docs:ignore-start -->
 Pass `<NavigationContainer>` and navigator composition to `src/navigation/RootNavigator.tsx`; never embed navigation logic inside screen components.
+<!-- oma-docs:ignore-end -->
 
 See `snippets.md §7` for the typed navigator setup and `snippets.md §6` for a screen consuming typed route params.

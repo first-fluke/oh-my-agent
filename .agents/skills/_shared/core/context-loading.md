@@ -17,7 +17,9 @@ This saves context window and prevents confusion from irrelevant information.
 ### Load Based on Difficulty
 4. **Simple**: Proceed to implementation without additional loading
 5. **Medium**: `resources/examples.md` (reference similar examples)
+<!-- oma-docs:ignore-start -->
 6. **Complex**: `resources/examples.md` + `stack/tech-stack.md` + `stack/snippets.md`
+<!-- oma-docs:ignore-end -->
 
 ### Load During Execution as Needed
 7. `resources/checklist.md`: Load at Step 4 (Verify)

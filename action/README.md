@@ -6,7 +6,9 @@ Automatically update [oh-my-agent](https://github.com/first-fluke/oh-my-agent) s
 
 ## Usage
 
+<!-- oma-docs:ignore-start -->
 Create `.github/workflows/update-oh-my-agent.yml` in your repository:
+<!-- oma-docs:ignore-end -->
 
 ```yaml
 name: Update oh-my-agent

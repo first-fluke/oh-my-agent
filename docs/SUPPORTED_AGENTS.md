@@ -21,7 +21,9 @@ The installer can then project compatibility to other tool-specific directories 
 
 ## Vendor Adaptation
 
+<!-- oma-docs:ignore-start -->
 > **slug-based dispatch.** Vendor selection is now driven by model slugs resolved against `CORE_REGISTRY` (12 verified slugs) plus user additions via `.agents/config/models.yaml`. Per-agent overrides and the active runtime profile live in `.agents/oma-config.yaml`. See [web/docs/guide/per-agent-models.md](../web/docs/guide/per-agent-models.md).
+<!-- oma-docs:ignore-end -->
 
 Abstract agent definitions in `.agents/agents/` are vendor-neutral (name, description, skills only). The CLI generates vendor-specific files:
 

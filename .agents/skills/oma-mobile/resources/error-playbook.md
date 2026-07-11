@@ -103,7 +103,9 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 
 **Symptoms**: Build error from the `swift-openapi-generator` plugin such as `error: openapi.yaml not found` or YAML parse error; the build fails before any Swift file is compiled.
 
+<!-- oma-docs:ignore-start -->
 1. Confirm the spec exists at `Core/Networking/openapi.yaml` — this is where the build plugin looks.
+<!-- oma-docs:ignore-end -->
 2. If the file is absent: re-sync it from the backend (`curl -o Sources/Core/Networking/openapi.yaml https://<backend>/api-docs/openapi.yaml` or copy from the CI artifact). The iOS project is a **consumer** of the spec; never edit `openapi.yaml` directly.
 3. If the file is present but the error is a parse error: validate the YAML (`python3 -c "import yaml, sys; yaml.safe_load(open(sys.argv[1]))" Sources/Core/Networking/openapi.yaml`); fix the upstream spec and re-sync.
 4. After syncing, `swift build` will regenerate `Client`, `Operations`, and `Components` automatically — no manual code-gen step needed.
@@ -132,7 +134,9 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 1. The root cause is that the OpenAPI spec does not declare that HTTP status code for the operation. The generator only emits cases for status codes listed in the spec.
 2. Do NOT add the case manually to the generated file — it will be overwritten on the next `swift build`.
 3. Ask the backend team to add the missing status code to the spec (e.g., add `409: description: Conflict` under the operation's `responses:`).
+<!-- oma-docs:ignore-start -->
 4. Re-sync `Core/Networking/openapi.yaml` once the spec is updated.
+<!-- oma-docs:ignore-end -->
 5. Run `swift build` to regenerate; the new response case will appear and the compile error will resolve.
 6. Update the Swift `switch` in the service layer to handle the new case explicitly.
 

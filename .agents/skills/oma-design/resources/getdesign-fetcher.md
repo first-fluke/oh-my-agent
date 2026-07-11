@@ -166,12 +166,14 @@ After reading the file into the Claude session, delete the temp:
 rm -f "${TMPDIR:-/tmp}/oma-seed-<brand>-$$.md"
 ```
 
+<!-- oma-docs:ignore-start -->
 **Telemetry verification (one-time)**: the CLI source
 (`src/cli.mjs`) checks `GETDESIGN_DISABLE_TELEMETRY` for values
 `1`, `true`, `yes`. Any of those disables the POST to
 `https://getdesign.md/api/cli/downloads`. The env var must be exported
 or prefixed in the same command line; do not set it in a prior
 statement and assume persistence across sessions.
+<!-- oma-docs:ignore-end -->
 
 ## Integrity Verification
 

@@ -110,6 +110,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Success criteria: form validation, accessibility, loading state, tests
    - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
    ```
+<!-- oma-docs:ignore-start -->
 5. **Implementation:**
    - Creates `src/features/auth/components/login-form.tsx` (Client Component with `"use client"`)
    - Creates `src/features/auth/utils/login-schema.ts` (Zod schema)
@@ -123,6 +124,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Mobile: renders correctly at 320px viewport
    - Performance: no CLS
    - Tests: Vitest test file at `src/features/auth/utils/__tests__/login-schema.test.ts`
+<!-- oma-docs:ignore-end -->
 
 ---
 
@@ -146,8 +148,10 @@ Add tests for: auth required, pagination, status filter, empty results.
 3. **Difficulty assessment:** Medium (2-3 files: route, service, repository, plus test)
 4. **Resources loaded:**
    - `execution-protocol.md` (always)
+<!-- oma-docs:ignore-start -->
    - `stack/snippets.md` if available (route, paginated query patterns)
    - `stack/tech-stack.md` if available (framework-specific API)
+<!-- oma-docs:ignore-end -->
 5. **CHARTER_CHECK:**
    ```
    CHARTER_CHECK:
@@ -196,12 +200,14 @@ Add tests for: profile save, logout flow, offline state.
    - Success criteria: profile editing, notification toggles, logout, offline
    - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
    ```
+<!-- oma-docs:ignore-start -->
 5. **Implementation:**
    - Screen: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget with Riverpod)
    - Providers: `lib/features/settings/providers/settings_provider.dart`
    - Repository: `lib/features/settings/data/settings_repository.dart`
    - Offline handling: Dio interceptor catches `SocketException`, falls back to cached data
    - All controllers disposed in `dispose()` method
+<!-- oma-docs:ignore-end -->
 
 ---
 

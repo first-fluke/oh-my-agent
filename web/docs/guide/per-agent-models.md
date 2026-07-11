@@ -176,7 +176,9 @@ Migration 008 runs automatically on `oma install` and `oma update`. It converts 
 
 Originals are backed up to `.agents/.backup-pre-008-{timestamp}/` before any changes. The migration is idempotent. If `model_preset` is already present, it skips.
 
+<!-- oma-docs:ignore-start -->
 After migration, `.agents/config/defaults.yaml`, `.agents/config/models.yaml`, and the `.agents/config/` directory are removed.
+<!-- oma-docs:ignore-end -->
 
 ---
 

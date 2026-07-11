@@ -45,7 +45,9 @@ import { installSkill } from "@cli/platform/skills-installer";
 import { fetchRemoteManifest } from "@cli/platform/manifest";
 ```
 
+<!-- oma-docs:ignore-start -->
 Relative imports are fine **within** a slice (`./internal/foo`). Avoid relative imports that traverse siblings (`../other-slice/...`).
+<!-- oma-docs:ignore-end -->
 
 ## Boundary enforcement
 
@@ -70,4 +72,6 @@ Added in v1 (issue [#326](https://github.com/gracefullight/oh-my-agent/issues/32
 
 - `install` and `update` slices still inline Clack prompts in `install.ts` / `update.ts`. A follow-up can extract `ui.ts` once an `InstallOptions` / `UpdateOptions` type is defined and tests cover the interactive flow.
 - `platform/skills-installer.ts` still re-exports `agent-composer`, `hooks-composer`, `vendor-adapter`. Drop the barrel once all callers import from the real module.
+<!-- oma-docs:ignore-start -->
 - Extract MCP HTTP-stdio bridge from `commands/bridge/run.ts` into `io/mcp-bridge.ts`.
+<!-- oma-docs:ignore-end -->

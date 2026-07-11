@@ -169,9 +169,11 @@ Folder = type. Status field = lifecycle. Filenames use a 3-digit zero-padded seq
 
 - **`designs/{NNN}-{name}.md`**: permanent design references (architecture, API specs, tradeoffs)
 - **`work/{NNN}-{name}.md`**: execution plans with progress, decision log, and `Status` header (`Active` → `Completed`)
+<!-- oma-docs:ignore-start -->
 - **`work/tech-debt-tracker.md`**: known tech debt with priority, rationale, and proposed resolution
 
 Initially: create `designs/` and `work/` subdirectories + `work/tech-debt-tracker.md` with any debt discovered in Step 1.
+<!-- oma-docs:ignore-end -->
 
 ### `docs/generated/`
 
@@ -212,7 +214,9 @@ Generate only those relevant to the project:
 | `SECURITY.md` | Has auth/data handling | Security policies, threat model, auth patterns, data handling rules |
 | `CODE-REVIEW.md` | Always | Code review standards, checklist, and review behavior configuration |
 
+<!-- oma-docs:ignore-start -->
 ### `docs/CODE-REVIEW.md`
+<!-- oma-docs:ignore-end -->
 
 **Code review standards referenced from AGENTS.md.**
 
@@ -348,7 +352,9 @@ deepinit no longer detects drift on update runs; it only generates 0→1 bootstr
 5. Root AGENTS.md is under 120 lines.
 6. ARCHITECTURE.md is under 200 lines.
 7. Each boundary AGENTS.md is under 60 lines.
+<!-- oma-docs:ignore-start -->
 8. `docs/design-docs/index.md` lists all design docs that exist.
 9. `docs/product-specs/index.md` lists all product specs that exist.
+<!-- oma-docs:ignore-end -->
 
 Report validation results to the user.

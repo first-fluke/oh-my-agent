@@ -16,10 +16,13 @@ export default defineConfig({
 });
 ```
 
+<!-- oma-docs:ignore-start -->
 For a fully-worked example exercising every common field (`infoMarkdown`, `promptAppend`, `priorityPaths`, an inline plugin), see `samples/webapp/deepsec.config.ts` in the deepsec repo.
+<!-- oma-docs:ignore-end -->
 
 ## Top-level fields
 
+<!-- oma-docs:ignore-start -->
 | Field | Type | Purpose |
 |---|---|---|
 | `projects` | `ProjectDeclaration[]` | Codebases deepsec knows about. |
@@ -27,6 +30,7 @@ For a fully-worked example exercising every common field (`infoMarkdown`, `promp
 | `matchers` | `{ only?: string[]; exclude?: string[] }` | Filter the matcher set used by `scan`. |
 | `defaultAgent` | `"claude" | "codex"` | Default `--agent` value. |
 | `dataDir` | `string` | Override the `data/` directory. Defaults to `./data`. |
+<!-- oma-docs:ignore-end -->
 
 ## `ProjectDeclaration`
 
@@ -175,6 +179,7 @@ The Sandbox SDK reads these directly from `process.env` at `Sandbox.create()` ti
 
 ## Troubleshooting
 
+<!-- oma-docs:ignore-start -->
 | Symptom | Cause | Fix |
 |---|---|---|
 | `Missing AI credentials for --agent claude|codex` | No credential present. | Set `AI_GATEWAY_API_KEY=vck_…` in `.env.local`, or `claude login` / `codex login`. |
@@ -187,6 +192,7 @@ The Sandbox SDK reads these directly from `process.env` at `Sandbox.create()` ti
 | Sandbox spawn fails with auth error | OIDC expired or access-token vars wrong. | `vercel env pull`, or verify the three access-token vars. |
 | Findings missing cost in the log | Pricing entry missing for a non-default Codex model. | Add a line to `MODEL_PRICING_USD_PER_M_TOKENS` in `packages/processor/src/agents/codex-sdk.ts` (only matters if you are extending deepsec itself). |
 | Persistent refusal on a single file (>5 % of batches) | Hard-to-disambiguate exploit pattern. | Add to `data/<id>/config.json:ignorePaths`, or run with `--batch-size 1`. |
+<!-- oma-docs:ignore-end -->
 
 After **any** quota / credit fix, `process` and `revalidate` resume on re-run. No recovery flag, no state to reset. Files already analyzed stay analyzed; only unfinished ones get picked up. Use `--reinvestigate` (process) or `--force` (revalidate) only when you specifically want to redo finished work.
 

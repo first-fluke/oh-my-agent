@@ -31,8 +31,10 @@ export const migrateExample: Migration = {
 
 ## Current migrations
 
+<!-- oma-docs:ignore-start -->
 | # | File | Description |
 |---|------|-------------|
 | 001 | `001-agents-dir.ts` | `.agent/` → `.agents/`, legacy skill/agent renames, `.cursor/skills` cleanup |
 | 002 | `002-shared-layout.ts` | `_shared/` flat → `core/conditional/runtime` nested structure |
 | 003 | `003-oma-config.ts` | `.agents/config/user-preferences.yaml` → `.agents/oma-config.yaml` |
+<!-- oma-docs:ignore-end -->

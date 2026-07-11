@@ -59,7 +59,9 @@ Bootstrap with `npx shadcn create` (prompts for the engine) or `npx shadcn init`
 - File: `middleware.ts` → `proxy.ts` (root or `src/`)
 - Exported function: `middleware` → `proxy`
 - Config flags: `skipMiddlewareUrlNormalize` → `skipProxyUrlNormalize`, etc.
+<!-- oma-docs:ignore-start -->
 - `src/proxy.ts` is the canonical request-proxy / auth-gate location
+<!-- oma-docs:ignore-end -->
 
 Forbidden actions (any of these is a fatal self-error; retract immediately):
 

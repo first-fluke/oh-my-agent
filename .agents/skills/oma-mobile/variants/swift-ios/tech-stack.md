@@ -27,12 +27,14 @@ generated sources.
 
 `swift-openapi-generator` runs in one of two modes — **both build a real app**; the choice is
 a workflow trade-off, not a capability one. This variant is the baseline default; the
+<!-- oma-docs:ignore-start -->
 per-project `stack/stack.yaml` (seeded by `/stack-set`) pins which mode the repo uses.
 
 | Mode | Mechanics | Trade-off |
 |------|-----------|-----------|
 | **Build plugin** (Apple-recommended default) | Generator runs during the build; output is ephemeral (not committed). Declared in `Package.swift` `plugins:` for SwiftPM targets, **and works in Xcode app targets too** — Xcode requires "trust & enable" for the plugin (Xcode Cloud needs a post-clone script to bypass fingerprint validation). Spec vendored at `Core/Networking/openapi.yaml`. | Zero commit noise, always in sync; but extra Xcode/CI setup, generated diffs invisible in review, regen on every clean build. |
 | **Committed (command plugin / CLI)** | Apple's documented fallback "if the build plugin cannot be used". Run `swift package generate-code-from-openapi` (or a task: `mise` / `make` / script) → write `Core/Networking/Generated/` → **commit** it; the build sees plain checked-in source. | Generated code is reviewable and CI is simpler; but a human must remember to regenerate + commit on spec changes. |
+<!-- oma-docs:ignore-end -->
 
 ### Where the API contract comes from
 

@@ -16,7 +16,9 @@ Follow these steps in order (adjust depth by difficulty).
 ## Step 1: Analyze
 - Read the task requirements carefully
 - Identify target platform: check for `Package.swift` (Swift iOS), `pubspec.yaml` (Flutter), or `package.json` + `react-native` dep (React Native)
+<!-- oma-docs:ignore-start -->
 - **If Swift (Package.swift detected)**: identify which `Features/` modules are affected; check for `Core/Networking/openapi.yaml`
+<!-- oma-docs:ignore-end -->
 - **If Flutter**: identify screens, widgets, and Riverpod/Bloc providers
 - Check existing code with Serena: `get_symbols_overview("Sources/Features")` (Swift) or `get_symbols_overview("lib/features")` (Flutter)
 - Determine platform-specific requirements (iOS HIG vs Material Design 3)

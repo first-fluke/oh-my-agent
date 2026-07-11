@@ -106,7 +106,7 @@ Write three self-contained `preview-*.html` files (cover slide only, 1920×1080,
 
 Each preview must:
 - Follow the canonical structure: `<div class="deck-viewport"><div class="deck-stage"><section class="slide" …></section></div></div><script src="./deck-stage.js"></script>`
-- Include a link to `./viewport-base.css`
+- Include a link to `./assets/viewport-base.css`
 - Represent the deck's actual tone and content (use the real deck title + first key message)
 - Be readable side-by-side in a browser
 
@@ -318,7 +318,9 @@ PDF and PNG use poster frames in place of video elements (video cannot be includ
 After bundle/export, report:
 - Working directory path
 - List of `slide-NN.html` files created
+<!-- oma-docs:ignore-start -->
 - Path to `out/deck.html` (and any exports)
+<!-- oma-docs:ignore-end -->
 - Canva design URL (if Canva export was performed)
 - Validate status (pass / surfaced diff)
 - Any deferred items (`TODO(oma-deferred)`) such as unresolved image generation

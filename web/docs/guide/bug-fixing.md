@@ -28,6 +28,7 @@ When reporting a bug, provide as much of the following as possible. Each field h
 
 ### Optional fields (highly recommended)
 
+<!-- oma-docs:ignore-start -->
 | Field | Description | Example |
 |:------|:-----------|:--------|
 | **Environment** | Browser, OS, Node version, device | Chrome 124, macOS 15.3, Node 22.1 |
@@ -36,6 +37,7 @@ When reporting a bug, provide as much of the following as possible. Each field h
 | **Related code** | Files or functions you suspect | `src/api/users.ts`, `deleteUser()` |
 | **Logs** | Server logs, console output | `[ERROR] UserService.delete: user.organizationId is undefined` |
 | **Screenshots/recordings** | Visual evidence | Screenshot of the error screen |
+<!-- oma-docs:ignore-end -->
 
 The more context you provide upfront, the fewer back-and-forth questions the debug workflow needs.
 

@@ -13,7 +13,9 @@ The oh-my-agent GitHub Action (`first-fluke/oma-update-action@v1`) automatically
 
 ## Quick setup
 
+<!-- oma-docs:ignore-start -->
 Add this file to your project as `.github/workflows/update-oh-my-agent.yml`:
+<!-- oma-docs:ignore-end -->
 
 ```yaml
 name: Update oh-my-agent

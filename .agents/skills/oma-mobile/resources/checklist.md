@@ -39,7 +39,9 @@ Run through every item before submitting your work.
 > Applies when the project is Swift native (`Package.swift` / `.xcodeproj` present). Skip for Flutter/RN.
 - [ ] `App/Core/Features/Shared` layout respected (App = entry/DI, Core = networking/generated client, Features = view+`@Observable` VM slices, Shared = reusable UI/util)
 - [ ] API access goes through the generated `Client` from `swift-openapi-generator` — no hand-rolled `URLRequest`/`JSONDecoder` for spec-covered endpoints
+<!-- oma-docs:ignore-start -->
 - [ ] OpenAPI document present at `Core/Networking/openapi.yaml` and synced from the backend before build
+<!-- oma-docs:ignore-end -->
 - [ ] SwiftUI state via `@Observable` (Observation framework); `Task`s cancelled in `deinit` to avoid leaks
 - [ ] Loading / error (with retry) / empty / data states handled in views
 - [ ] iOS Human Interface Guidelines followed

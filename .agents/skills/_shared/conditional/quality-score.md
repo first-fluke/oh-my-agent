@@ -112,6 +112,7 @@ Record via memory protocol: `[EDIT]("experiment-ledger.md", append row)`.
 
 ## Dimension Customization (Optional)
 
+<!-- oma-docs:ignore-start -->
 Projects can override weights in `.agents/config/quality-score.yaml`:
 
 ```yaml
@@ -125,6 +126,7 @@ thresholds:
   pass: 85
   hard_fail: 60
 ```
+<!-- oma-docs:ignore-end -->
 
 If config file is absent, use the defaults defined in this document.
 

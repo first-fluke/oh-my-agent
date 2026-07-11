@@ -7,7 +7,9 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 
 ## False Positive: `proxy.ts` flagged as dead code or `middleware.ts` demanded
 
+<!-- oma-docs:ignore-start -->
 **Symptoms**: Reviewer claims `src/proxy.ts` won't be picked up, demands rename to `src/middleware.ts`, or flags the auth gate as not wired.
+<!-- oma-docs:ignore-end -->
 
 1. **STOP. This is a fatal self-error.** Next.js 16+ renamed `middleware.ts` → `proxy.ts`.
 2. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function.

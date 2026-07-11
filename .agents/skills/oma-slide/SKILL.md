@@ -47,7 +47,9 @@ exportable to PDF, PNG, and PPTX.
   (authored at 1920×1080 px)
 - Updated `meta.json` with `{ title, order[], style, density, speakerNotes }`
 - Validation pass via `oma slide validate` (or a surfaced diff if auto-fix fails after 3 iterations)
+<!-- oma-docs:ignore-start -->
 - Optional: `viewer.html`, `out/deck.html` bundle, exports
+<!-- oma-docs:ignore-end -->
 - Optional: Canva design URL (when Canva export is requested)
 
 ```yaml
@@ -127,7 +129,9 @@ outputs:
 - Image generation failure: placeholder image + TODO comment; continue deck generation.
 
 ### Exit
+<!-- oma-docs:ignore-start -->
 - Success: `out/deck.html` exists, `oma slide validate` passes, deck opens in browser.
+<!-- oma-docs:ignore-end -->
 - Partial success: generated slides present but exports skipped (missing dependencies) — explicit notice.
 
 ## Logical Operations

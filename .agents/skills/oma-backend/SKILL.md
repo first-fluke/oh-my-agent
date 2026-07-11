@@ -39,7 +39,9 @@ Implement or review backend APIs, authentication, database integration, server-s
 ### Dependencies
 - Project stack manifests and existing backend conventions
 - `resources/execution-protocol.md`, `resources/checklist.md`, and `resources/orm-reference.md`
+<!-- oma-docs:ignore-start -->
 - Optional `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API templates
+<!-- oma-docs:ignore-end -->
 - Database, queue, cache, mail, auth, or external API resources configured through environment or secret managers
 
 ### Control-flow features
@@ -103,7 +105,9 @@ rg --files
 rg "route|router|service|repository|model|schema|migration" .
 ```
 
+<!-- oma-docs:ignore-start -->
 Then run the project's discovered verification commands, usually lint/typecheck/tests and migrations when schema changes are involved. Prefer `stack/stack.yaml` `verify:` commands when present.
+<!-- oma-docs:ignore-end -->
 
 ### Resource scope
 | Scope | Resource target |
@@ -174,10 +178,12 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 
 ### Stack-Specific Reference
 
+<!-- oma-docs:ignore-start -->
 - **Stack manifest (SSOT)**: `stack/stack.yaml`: structured declaration (`language`, `framework`, `orm`) and `verify:` contract consumed by `oma verify backend`. Schema: `variants/stack.schema.json`.
 - Tech stack narrative: `stack/tech-stack.md`: human-readable reference only; `stack.yaml` wins on conflict.
 - Code snippets (copy-paste ready): `stack/snippets.md`
 - API template: `stack/api-template.*`
+<!-- oma-docs:ignore-end -->
 
 ## References
 

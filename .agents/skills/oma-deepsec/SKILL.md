@@ -211,10 +211,14 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 
 ### Effects and side effects
 - Creates `.deepsec/` (config, lockfile, scaffolding) and `.deepsec/data/<id>/` (gitignored) inside the target repo.
+<!-- oma-docs:ignore-start -->
 - Writes `.env.local` (never commit) and may run `vercel link` / `vercel env pull` (writes `.vercel/project.json` + token).
+<!-- oma-docs:ignore-end -->
 - Spawns long-running AI processes that **cost real money**. Single full scans range from $25 to over $1,200 per the official cost guide and can climb to tens of thousands on very large repos.
 - Reads source code; sends snippets to the configured LLM (gateway = zero retention; direct provider = subject to that provider's policy). Never exfiltrates secrets; the gateway key stays outside the worker sandbox in `sandbox` mode.
+<!-- oma-docs:ignore-start -->
 - May write `.github/workflows/deepsec.yml` (or analogue) when the user asks for a CI gate.
+<!-- oma-docs:ignore-end -->
 - Edits `deepsec.config.ts` and adds `.deepsec/matchers/*.ts` when authoring matchers.
 - Does not commit, push, or open PRs unless the user explicitly authorizes a separate commit step (route via `oma-scm`).
 

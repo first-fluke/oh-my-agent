@@ -49,6 +49,7 @@ Note: for non-Kubernetes hosts use `host.id`; for Kubernetes workloads set both 
 
 Error spans (those where `status.code = ERROR`) MUST additionally carry code and exception attributes to enable the Code dimension pivot.
 
+<!-- oma-docs:ignore-start -->
 | Attribute | Semconv group | Stability | Example value |
 |-----------|--------------|-----------|---------------|
 | `code.function` | `code.*` | Stable | `processPayment` |
@@ -57,6 +58,7 @@ Error spans (those where `status.code = ERROR`) MUST additionally carry code and
 | `exception.type` | `exception.*` | Stable | `TimeoutException` |
 | `exception.message` | `exception.*` | Stable | `Redis pool exhausted after 5000ms` |
 | `exception.stacktrace` | `exception.*` | Stable | full stack trace string |
+<!-- oma-docs:ignore-end -->
 
 Set these via the OTel SDK `span.recordException(e)` call, which populates all three `exception.*` attributes atomically.
 

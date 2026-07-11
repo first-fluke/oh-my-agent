@@ -40,11 +40,13 @@ Create a login form component with email and password fields, client-side valida
    - Success criteria: email/password validation, accessible labels, keyboard-friendly
    - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
    ```
+<!-- oma-docs:ignore-start -->
 5. Agent implements:
    - React component with TypeScript in `src/features/auth/components/login-form.tsx`
    - Zod validation schema in `src/features/auth/utils/login-validation.ts`
    - Vitest tests in `src/features/auth/utils/__tests__/login-validation.test.ts`
    - Loading skeleton in `src/features/auth/components/skeleton/login-form-skeleton.tsx`
+<!-- oma-docs:ignore-end -->
 6. Agent runs the checklist: accessibility (ARIA labels, semantic HTML, keyboard nav), mobile viewport, performance (no CLS), error boundaries
 
 **Output:** A production-ready React component with TypeScript, validation, tests, and accessibility, not just a suggestion.
@@ -114,7 +116,9 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 1. `oma-debug` activates automatically (keywords: "bug", "error", "Cannot read property")
 2. **Step 1, Collect:** The error message and context are captured
+<!-- oma-docs:ignore-start -->
 3. **Step 2, Reproduce:** MCP `search_for_pattern` finds the `.map()` call in `src/features/tasks/components/task-list.tsx`
+<!-- oma-docs:ignore-end -->
 4. **Step 3, Diagnose:** MCP `find_referencing_symbols` traces the data flow:
    - `useQuery` hook fetches tasks from API
    - Component renders before data arrives
@@ -391,7 +395,9 @@ Agents coordinate through shared memory files at `.serena/memories/`. The orches
 
 ### Workspaces
 
+<!-- oma-docs:ignore-start -->
 The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This is critical for parallel execution. Without workspace isolation, two agents might modify the same file simultaneously, creating conflicts. Standard workspace layout: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
+<!-- oma-docs:ignore-end -->
 
 ---
 

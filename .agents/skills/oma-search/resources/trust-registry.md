@@ -112,6 +112,6 @@ Cache is project-scoped and survives skill updates.
 | Source | Purpose | Cost | API |
 |--------|---------|------|-----|
 | Heuristic patterns | Domain category classification | Free | N/A (built-in rules) |
-| [Tranco List](https://tranco-list.eu/) | Domain popularity validation | Free | `siterank.redirect2.me/api/rank.json` |
+| [Tranco List](https://tranco-list.eu/) | Domain popularity validation | Free | `https://siterank.redirect2.me/api/rank.json` |
 | [redirect2me/siterank](https://github.com/redirect2me/siterank) | Self-hostable Tranco API | Free, OSS | Self-host option |
 | Serena memory | Score caching | Free | MCP memory tools |

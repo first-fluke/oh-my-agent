@@ -1,3 +1,7 @@
+---
+oma-docs: skip
+---
+
 # PRD 001: Intelligence Pipeline Command
 
 ## Summary
