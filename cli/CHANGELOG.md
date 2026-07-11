@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.13.1...cli-v10.14.0) (2026-07-11)
+
+
+### Features
+
+* **hooks:** adopt claude SessionStart with reloadSkills and compact rehydration ([a35bd6c](https://github.com/first-fluke/oh-my-agent/commit/a35bd6c2c68a32e604a16ccbaa5186c895975a37))
+
+
+### Bug Fixes
+
+* **hooks:** extend the relayed-message guard to skill-injector ([f798e86](https://github.com/first-fluke/oh-my-agent/commit/f798e8677b05dd2c966c00d2ca6e0e0859b57b53))
+
 ## [10.13.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.13.0...cli-v10.13.1) (2026-07-11)
 
 
