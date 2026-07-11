@@ -1,5 +1,15 @@
 # Changelog
 
+## [10.13.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.13.0...cli-v10.13.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* **codex:** use the bypass flag — BYPASS_HOOK_TRUST env is not honored ([82d4293](https://github.com/first-fluke/oh-my-agent/commit/82d4293a49d5fd0f4779c57f48dd6cffc4955bbc))
+* **hooks:** drop inert antigravity test-filter registration ([d9ec29e](https://github.com/first-fluke/oh-my-agent/commit/d9ec29e9d42e1f0dfff0f661775d53ceca67a921))
+* **hooks:** normalize ContentPart[] prompts in the central dispatch path ([7b0f905](https://github.com/first-fluke/oh-my-agent/commit/7b0f90573514b2007bce53f52713b047ced37941))
+* **hooks:** unwrap opencode run's quoted prompt before keyword detection ([706998d](https://github.com/first-fluke/oh-my-agent/commit/706998db1ea3eaf2a8b0efd06485f547c5baa55f))
+
 ## [10.13.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.12.1...cli-v10.13.0) (2026-07-10)
 
 
