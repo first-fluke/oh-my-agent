@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.17.7](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.6...web-v3.17.7) (2026-07-11)
+
+
+### Documentation
+
+* **web:** document codex hook trust (TOFU) and the one-time /hooks step ([97bcb25](https://github.com/first-fluke/oh-my-agent/commit/97bcb25509371168302a1df055bb5211a69dfe8a))
+
 ## [3.17.6](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.5...web-v3.17.6) (2026-07-10)
 
 
