@@ -28,7 +28,16 @@ function runHook(
     cwd: repoRoot,
     input: JSON.stringify(input),
     encoding: "utf-8",
-    env: { ...process.env, ...env },
+    // OMA_NO_AGENTMEMORY=1 keeps these L1 hook probes hermetic: state-boundary's
+    // snapshot render calls recallFacts(), which otherwise makes a live HTTP
+    // request to a developer's running AgentMemory daemon (~/.agentmemory/
+    // endpoint.json). Under vitest worker-pool load that async recall
+    // intermittently drops the hook's stdout after the L1 boundary event is
+    // already emitted — the hook exits 0 with no output, surfacing as
+    // `expected '' not to be ''`. These tests verify L1 event recording and
+    // injection shape, not L2/L3 recall, so disabling it is both the correct
+    // isolation boundary and the flake fix.
+    env: { ...process.env, OMA_NO_AGENTMEMORY: "1", ...env },
   });
 }
 

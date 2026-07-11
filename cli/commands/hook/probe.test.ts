@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   PROBE_VENDORS,
   type ProbeVendor,
@@ -11,6 +11,24 @@ import {
 const repoRoot = join(__dirname, "..", "..", "..");
 
 describe("hook compatibility probe", () => {
+  // Keep the probe hermetic: the spawned state-boundary hook's snapshot render
+  // calls recallFacts(), which otherwise makes a live HTTP request to a
+  // developer's running AgentMemory daemon (~/.agentmemory/endpoint.json).
+  // Under vitest worker-pool load that async recall intermittently drops the
+  // hook's stdout after the L1 boundary event is emitted, so the probe reads an
+  // empty injection and reports a false failure. inspect.runHook spreads
+  // process.env into the spawned hook, so scoping the flag here propagates it.
+  // The probe verifies L1 injection + events, not L2/L3 recall.
+  let prevNoAgentMemory: string | undefined;
+  beforeAll(() => {
+    prevNoAgentMemory = process.env.OMA_NO_AGENTMEMORY;
+    process.env.OMA_NO_AGENTMEMORY = "1";
+  });
+  afterAll(() => {
+    if (prevNoAgentMemory === undefined) delete process.env.OMA_NO_AGENTMEMORY;
+    else process.env.OMA_NO_AGENTMEMORY = prevNoAgentMemory;
+  });
+
   // Cover the stdout-injection styles and the newer project-hook vendors.
   const vendors: ProbeVendor[] = ["claude", "codex", "cursor", "grok", "kiro"];
 
