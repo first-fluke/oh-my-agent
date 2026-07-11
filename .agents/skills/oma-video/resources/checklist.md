@@ -20,4 +20,5 @@
 - [ ] External assets were copied into the run dir and hashed (no URL refs).
 - [ ] The mp4 plays (or, on the toolchain-free path, the deterministic placeholder is present and reproducible).
 - [ ] Re-rendering with `oma video render <runDir>` reproduces the same output from `render-spec.json`.
-- [ ] If results are consumed downstream, the consumer parses `--format json` stdout rather than re-reading the manifest file.
+- [ ] If results are consumed downstream, the consumer parses the `--format json` stdout envelope `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` (there is no `outputs` key) and reads output/asset paths from the manifest at `manifestPath`.
+- [ ] Old run directories under `.agents/results/videos/` are pruned **manually** when no longer needed — every run adds a new dir and the CLI never auto-deletes them.

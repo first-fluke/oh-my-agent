@@ -16,12 +16,15 @@ time. The `.woff2` is **not committed** to keep the skill tree light.
 
 ## How it is provisioned
 
-`oma video doctor` fetches the font once into this directory (lockfile-pinned,
-no fetch during a render). Until then, `ensurePretendard()` swallows the missing
-file and the browser falls back to the system stack defined in `FONT_STACK`
-(`system-ui, -apple-system, …`). The render still succeeds, but is not
-guaranteed byte-identical across machines.
+`oma video doctor --install` fetches the font once into this directory
+(release-pinned, no fetch during a render). If the fetch fails — e.g. offline —
+doctor warns and continues; `ensurePretendard()` then swallows the missing file
+and the browser falls back to the system stack defined in `FONT_STACK`
+(`system-ui, -apple-system, …`). The render still succeeds, but byte-identical
+output across machines is only guaranteed once the font is present (re-run
+`oma video doctor --install` with network to fetch it).
 
 Source: Pretendard (OFL-1.1) — https://github.com/orioncactus/pretendard
-Mirror the exact release pinned by `oma video doctor` so renders stay
-reproducible.
+Pinned release: `v1.3.9` via jsDelivr (see `PRETENDARD_FONT_URL` in
+`cli/commands/video/internal/remotion-project.ts`). Keep the pin in sync so
+renders stay reproducible.

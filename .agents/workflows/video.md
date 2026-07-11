@@ -75,7 +75,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
    ```bash
    oma video doctor --format json
    ```
-   This reports Node / Chromium / FFmpeg, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Playwright web-capture readiness. If Remotion is not yet installed, doctor performs the **install-once** bootstrap — do not install during a run. For web capture, `oma video doctor --install-playwright` is the one-time install (`npm i playwright` + chromium); it reuses the project's Playwright when present.
+   This reports Node / Chromium / FFmpeg, the vendored Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Playwright web-capture readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. The MPT fallback compositor needs a one-time `oma video doctor --install-mpt` (clone + venv + deps). For web capture, `oma video doctor --install-playwright` is the one-time install (`npm i playwright` + chromium); it reuses the project's Playwright when present.
 3. If doctor reports a hard blocker for the chosen mode (e.g. no compositor for `shorts`/`explainer`), report the remediation and stop. If only an optional provider is missing (Pexels, Pixelle, Cap), note it and continue on the fallback.
 4. Record run start with the memory write tool: brief summary, requested mode, doctor result.
 
@@ -108,12 +108,13 @@ The agent writes the script — this is the start of the determinism boundary. D
    - `demo`: narration + on-screen callouts over the captured footage; visual refs point at the ingested capture segments.
 4. Translate narration / on-screen text via oma-translator when `locale` differs from the source language (key-free). If oma-translator is absent, keep the source text and let the run warn.
 5. // turbo
-   Hand the agent-authored script to the CLI as a custom script and let it validate against the schema. Use `--dry-run` for the first pass so the pipeline emits `script.json` + `render-spec.json` + `manifest.json` **without rendering**:
+   Write the agent-authored script to a file and hand it to the CLI via `--script <path>` so it validates against the schema. **`--script` is mandatory for the agent-as-key path: without it the CLI builds its own skeleton script from the brief and your authored script is never used.** Use `--dry-run` for the first pass so the pipeline emits `script.json` + `render-spec.json` + `manifest.json` **without rendering**:
    ```bash
    oma video generate "<brief>" --mode <mode> --aspect <aspect> --locale <lang> \
      --captions <tiktok|lower-third|none> --visual <auto|generate|stock|aigc|slide> \
      --voice <profile|none> --music <upbeat|calm|none> --duration <sec|auto> \
-     --compositor <remotion|mpt> --seed <n> --dry-run --format json
+     --compositor <remotion|mpt> --seed <n> \
+     --script <path-to-agent-authored-script.json> --dry-run --format json
    ```
 6. Review the emitted `script.json` for scene count, durations, and narration quality. Iterate here — fixing the script is cheap; fixing a render is not.
 
@@ -124,12 +125,12 @@ The agent writes the script — this is the start of the determinism boundary. D
 The CLI orchestrator fans out the asset tracks per the asset bus. Trigger the full (non-dry) run; the orchestrator runs the tracks and writes them into the run directory. **Do not author assets by hand.**
 
 ```bash
-oma video generate "<brief>" --mode <mode> [same flags as Step 3, without --dry-run] --format json
+oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script <path>, without --dry-run] --format json
 ```
 
 The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution protocol):
 
-- **Voice** (oma-voice / Voicebox MCP) → `audio/narration-*.wav` + `timing.json`. Timing source preference: TTS-native → `voicebox-stt` (transcribe the generated wav) → `whisper.cpp` → `estimated`. If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
+- **Voice** (oma-voice / Voicebox MCP) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source preference: TTS-native → `voicebox-stt` (transcribe the generated wav) → `whisper.cpp` → `estimated`. If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
 - **Visual** (per-scene, fallback chain `oma-image → pexels → pixelle`) → `visuals/scene-NN.*`. Default is key-free oma-image stills (aspect snapped to the nearest 16-multiple; Remotion crops to exact frame). `--visual stock` engages Pexels only when `PEXELS_API_KEY` is set; `--visual aigc` engages Pixelle only after consent + cost gate. Each scene that falls back is recorded with `pathTaken: fallback`.
 - **Caption** (key-free) → `captions.srt` / `.vtt`, aligned to `timing.json`, styled `tiktok` or `lower-third`, with platform safe-area presets. Non-source locales translate via oma-translator; if absent, captions keep the source locale and warn.
 
@@ -145,7 +146,8 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
   2. Prompts on the terminal: the **human performs the entire on-screen flow** (whatever it is — multi-page popups / new tabs / redirects are all recorded generically) and presses **ENTER** to stop. The tool **never automates a login**; if the flow needs one, the human does it.
   3. Records to a real `capture.mp4` in the run dir, validated with ffprobe. The `--url` and any query tokens are **masked** in logs and `manifest.json`; outputs stay in the run dir.
   4. **Fallback (key-optional, non-blocking):** if Playwright is unresolvable, or there is no interactive TTY (CI / `-y` / no stdin), the orchestrator falls back to the **guided protocol** and warns — it never hangs. `--capture-stop duration:<sec>|selector:<css>` gives CI a non-interactive stop instead of the ENTER prompt.
-  5. Live capture is **outside** the determinism boundary, so the manifest records `nondeterministic: true`.
+  5. **Display caveat:** the capture launches a **headed** Chromium, which needs a display. On display-less hosts (CI / Linux without X), pass `--capture-stop …` — the driver then runs headless (`record.mjs --headless 1`) — or expect a capture error / guided fallback.
+  6. Live capture is **outside** the determinism boundary, so the manifest records `nondeterministic: true`.
 
 > **Optional fast-path (agent sessions only):** when an agent session has a Playwright/Chrome MCP available, it may drive the headed flow through that MCP as a complement. This is **not** the primary path — the CLI web-capture subprocess remains canonical, and the same rules hold (human drives any login, URL/tokens masked, run-dir-only).
 
@@ -171,7 +173,7 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
    - **Remotion** (default, all modes): renders the vendored `Shorts` / `Explainer` / `Demo` composition from `render-spec.json` props, with embedded Pretendard for cross-machine identical output. Long renders are SIGINT-abortable.
    - **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alt): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs.
    - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output (no compositor over-processing). `--polish` overlays the Remotion `Demo` composition (intro / captions / zoom) with the captured `capture.mp4` as the full-frame background.
-2. If Remotion bootstrap fails (`CompositorBootstrapError`), the doctor remediation is the fix path — re-run `oma video doctor` to install once, then re-render. Do not attempt an ad-hoc install mid-run.
+2. If Remotion bootstrap fails (`CompositorBootstrapError`), the doctor remediation is the fix path — run `oma video doctor --install` once, then re-render. Do not attempt an ad-hoc install mid-run.
 3. // turbo
    To reproduce or re-render an existing run without regenerating assets (deterministic from the spec):
    ```bash
@@ -188,7 +190,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
 1. **Checklist** (priority order: correctness → sync → readability → polish):
    - Output plays; duration matches the script total within tolerance.
    - Narration audio is present (or intentionally silent) and aligns to scenes.
-   - Captions are synced to `timing.json`, within the safe area, and legible (greedy-wrap, Pretendard, design rule 2).
+   - Captions are synced to `timing.json`, within the safe area, and legible (static windowed cues, CSS-wrapped, Pretendard, design rule 2).
    - Visuals match each scene's intent; no placeholder leakage unless the run intentionally used the fallback.
    - Aspect / dimensions are correct for the mode; branding/music applied as requested.
 2. **Route each defect to its stage:**
@@ -212,7 +214,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
 1. Confirm the run directory is complete (mirrors `.agents/results/videos/<runId>-<mode>/`):
    ```
    script.json · timing.json · render-spec.json
-   audio/narration-*.wav
+   audio/narration-01.wav                # single narration track (all lines joined)
    visuals/scene-*.{jpg,png,mp4}        # synthetic modes
    capture.mp4                           # demo: ingested or web-captured footage
    captions.srt (+ .vtt)

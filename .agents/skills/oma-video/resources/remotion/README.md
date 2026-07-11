@@ -24,7 +24,7 @@ resources/remotion/
     └── components/
         ├── VideoBase.tsx   # shared timeline: scenes + audio + captions
         ├── Scene.tsx       # one render-spec scene (image/video/slide/capture) + Ken Burns
-        └── Captions.tsx    # @remotion/captions: parseSrt -> createTikTokStyleCaptions
+        └── Captions.tsx    # @remotion/captions parseSrt -> static windowed SRT cues (active cue per frame)
 ```
 
 ## render-spec.json as input props
@@ -57,23 +57,19 @@ npx remotion render src/index.ts Demo out.mp4 --props=render-spec.json
 Where `render-spec.json` is the run dir's spec (the CLI passes an absolute path).
 Preview interactively with `npm run studio`.
 
-## Live render is deferred (key-optional, backend rule 11)
+## Live render is wired (default), placeholder is the fallback
 
-Actual rendering needs **Node + Chromium + FFmpeg**, bootstrapped by
-`oma video doctor`. The CLI adapter
-(`cli/commands/video/providers/compositor.ts`) gates the real invocation on
-FFmpeg availability and, until the toolchain is wired, falls back to a
-deterministic placeholder mp4 derived from the render-spec so the run dir +
-manifest are always well-formed:
+Actual rendering needs **Node + Chrome Headless Shell + FFmpeg**, bootstrapped
+once by `oma video doctor --install`. The CLI adapter
+(`cli/commands/video/providers/compositor.ts`, `spawnRemotionRender`) **spawns
+the real `npx remotion render` subprocess by default** whenever FFmpeg and this
+vendored project (deps + headless shell) are present:
 
 ```
-// real     : when FFmpeg + this vendored project are present, invoke
-//            `npx remotion render src/index.ts <CompId> out.mp4 --props=render-spec.json`
-// fallback : deterministic placeholder mp4 from the render-spec (zero toolchain)
-//
-// TODO(oma-deferred): remotion render (F3) — wire the CLI adapter to spawn the
-//   `npx remotion render` subprocess against this project once doctor guarantees
-//   Node/Chromium/FFmpeg. The placeholder branch stays as the key-free fallback.
+// real (default) : spawn `npx remotion render src/index.ts <CompId> out.mp4
+//                  --props=render-spec.json --public-dir=<runDir>` in this dir
+// fallback       : deterministic placeholder mp4 from the render-spec, used only
+//                  when the toolchain is absent or the render fails (zero toolchain)
 ```
 
 The fallback is itself a pure function of the render-spec, so it is reproducible
@@ -83,7 +79,10 @@ from the same spec.
 
 - `render-spec.json` + asset files + `seed` + the embedded **Pretendard** font
   are the determinism boundary. The same inputs render byte-stable across
-  machines.
+  machines. `oma video doctor --install` fetches the font once into
+  `public/fonts/`; if the fetch fails (offline), the render gracefully falls
+  back to system fonts, and byte-identical output is only guaranteed once the
+  font is present.
 - Ken Burns and all motion are driven purely by the frame (no randomness).
 - `loadFont(..., { display: "block" })` blocks the render until Pretendard is
   ready, so text never flashes a fallback face mid-render.

@@ -4,8 +4,8 @@
 // dir; render-spec.captions.file points at it. Here we fetch + parseSrt() the
 // .srt and display the cue active at the current frame. Two styles map from
 // render-spec.captions.style:
-//   - "tiktok"      : centered, large, animated pop, sits in the lower-third
-//                     above the safe-area bottom margin.
+//   - "tiktok"      : centered, large, static (no animation), sits in the
+//                     lower-third above the safe-area bottom margin.
 //   - "lower-third" : smaller, left-aligned band near the bottom.
 //   - "none"        : nothing rendered (handled by the caller).
 //

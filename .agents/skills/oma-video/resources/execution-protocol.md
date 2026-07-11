@@ -53,14 +53,14 @@ plan when the brief is a one-liner.
 ```
 brief ─► [ScriptProvider] ─► script.json {scenes[], narration[], onScreenText[]}
 script.json ─► parallel:
-   ├► [VoiceProvider]   ─► audio/narration-*.wav + timing.json
+   ├► [VoiceProvider]   ─► audio/narration-01.wav (single joined track) + timing.json
    ├► [VisualProvider]  ─► visuals/scene-NN.*
    └► [CaptionProvider] ─► captions.srt / captions.vtt
 all assets ─► render-spec.json ─► [Compositor: Remotion] ─► <mode>-<slug>.mp4
 ```
 
 1. **Script**: AgentScriptProvider writes `script.json` (start of the determinism boundary).
-2. **Voice**: oma-voice synthesizes narration -> `audio/narration-NN.wav` + `timing.json`. Fallback: estimated timing (no wav).
+2. **Voice**: oma-voice synthesizes narration -> a **single** `audio/narration-01.wav` (all scene lines joined into one track; per-line offsets live in `timing.json`). Fallback: estimated timing (no wav).
 3. **Visuals**: walk the visual chain. oma-image stills (key-free default) / oma-slide frames (explainer) / Pexels (key) / Pixelle (key). Aspect -> 16-multiple size; Remotion crops to the exact frame.
 4. **Captions**: oma-captions builds `captions.srt` + `captions.vtt` from `timing.json`. For a non-source locale, translate via oma-translator (key-free); absent -> warn + keep source.
 5. **render-spec**: compose `render-spec.json` (the deterministic compute boundary) from the assets + seed.
@@ -75,8 +75,8 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 
 ## Step 5: Compositor Render
 
-- **Remotion (default)**: when the vendored toolchain (Node + Chromium + FFmpeg) is bootstrapped, run `npx remotion render <entry> <CompId> <mode>-<slug>.mp4 --props=render-spec.json` from `resources/remotion/`. The live invocation is deferred at the CLI adapter (`TODO(oma-deferred): remotion render`).
-- **Fallback**: write a deterministic placeholder mp4 derived from the render-spec so the run dir + manifest are still well-formed with zero toolchain.
+- **Remotion (default, live)**: when the toolchain (FFmpeg + the vendored project installed via `oma video doctor --install`) is present, the CLI adapter spawns `npx remotion render src/index.ts <CompId> <mode>-<slug>.mp4 --props=render-spec.json` from `resources/remotion/` — this is the wired, real render path.
+- **Fallback**: only when the toolchain is missing or the render fails, write a deterministic placeholder mp4 derived from the render-spec so the run dir + manifest are still well-formed with zero toolchain.
 - **MPT (`--compositor mpt`)**: inject the agent-written script (custom-script mode); keys env-only + log masking.
 
 ## Step 6: Write Artifacts
@@ -92,7 +92,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
    - `[oma video] <capability> <provider> ok (Xs)`
    - `[oma video] <capability> <provider> fallback -> <fallback>`
 2. Print the run-dir path + the mp4 path.
-3. For `--format json`: write `{exitCode, runDir, manifestPath, outputs}` to stdout as one JSON object.
+3. For `--format json`: write `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}` to stdout as one JSON object (no `outputs` key — read output/asset paths from the manifest at `manifestPath`).
 
 ## Step 8: Exit Code Aggregation (aligned with `oma search fetch`)
 

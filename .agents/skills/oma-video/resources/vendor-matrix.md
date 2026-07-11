@@ -14,8 +14,8 @@ otherwise the chain falls through to a key-free default.
 | voice | `[oma-voice]` | Voicebox MCP TTS + STT timing | estimated timing (no wav) | — |
 | visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
 | caption | `[oma-captions]` | oma-translator for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translator` |
-| capture | `[cap]` | Cap CLI trigger | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
-| compositor | `[remotion, mpt]` | Remotion render · MPT custom-script | deterministic placeholder mp4 | `TODO(oma-deferred): remotion render` |
+| capture | `[playwright-web, cap]` (informational — dispatch is by `--source`) | Playwright headed web capture (`--source web`) · Cap CLI trigger | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
+| compositor | `[remotion, mpt]` | Remotion live render (wired, default) · MPT custom-script | deterministic placeholder mp4 (toolchain missing / render failed) | — |
 
 ## Tier model
 
@@ -23,7 +23,7 @@ otherwise the chain falls through to a key-free default.
 |:---:|---------|-----------|-------|
 | 1 | CLI-first (subprocess) | Remotion, MPT, oma-image, oma-slide, oma-voice (REST) | deterministic; preferred whenever a CLI can drive the work |
 | 2 | MCP | Voicebox MCP, Pixelle-MCP | localhost MCP; Pixelle off by default, community-MCP consent + key |
-| 3 | Guided (human) | Cap, openscreen | `demo` capture is performed by a human |
+| 3 | Guided (human) | playwright-web (headed web capture, human drives the flow), Cap | `demo` capture is performed by a human |
 
 ## oma-voice (VoiceProvider + timing)
 
@@ -87,11 +87,10 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Real | vendored `resources/remotion/` -> `npx remotion render <entry> <CompId> out.mp4 --props=render-spec.json` |
-| Requires | Node + Chromium + FFmpeg (bootstrapped once via `oma video doctor`) |
-| Fallback | deterministic placeholder mp4 derived from the render-spec (well-formed run dir + manifest, zero toolchain) |
-| Determinism | render-spec + assets + seed + embedded Pretendard; re-render is byte-stable |
-| Marker | `TODO(oma-deferred): remotion render` on the live-render branch (CLI adapter) |
+| Real | **wired (default)** — the CLI adapter spawns `npx remotion render src/index.ts <CompId> out.mp4 --props=render-spec.json` in the vendored `resources/remotion/` |
+| Requires | Node + Chrome Headless Shell + FFmpeg (bootstrapped once via `oma video doctor --install`) |
+| Fallback | deterministic placeholder mp4 derived from the render-spec, used only when the toolchain is missing or the render fails (well-formed run dir + manifest, zero toolchain) |
+| Determinism | render-spec + assets + seed + embedded Pretendard (fetched once by `oma video doctor --install`; system-font fallback when absent); re-render is byte-stable |
 | MPT alt | inject the agent-written script (custom-script mode); keys env-only + log masking; `--compositor mpt` |
 
 ## Error Classification
