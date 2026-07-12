@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.17.8](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.7...web-v3.17.8) (2026-07-12)
+
+
+### Documentation
+
+* document skills lint and cite anatomy-to-smells ([e4a6f74](https://github.com/first-fluke/oh-my-agent/commit/e4a6f74b75a7cea7a3a7080e0732acbb2b3147fe))
+* resolve all 84 broken refs flagged by oma docs verify ([2bf619a](https://github.com/first-fluke/oh-my-agent/commit/2bf619a126181304f53d4577a77be67109f6cb13))
+* **web:** retarget memory store paths to .agents/state/memories ([29f27e1](https://github.com/first-fluke/oh-my-agent/commit/29f27e1598e1ff580da0f63197ef608111599dc3))
+* **web:** sync video guide with doctor install flags and --script ([c4443d5](https://github.com/first-fluke/oh-my-agent/commit/c4443d589bb79571e38463edb947c627a85a7ed6))
+
 ## [3.17.7](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.6...web-v3.17.7) (2026-07-11)
 
 
