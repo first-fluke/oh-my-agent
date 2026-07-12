@@ -5,10 +5,10 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-11 · 1 unstarred
+## 2026-07-12 · 2 unstarred
 
-- **@agagtmdtlr** · agagtmdtlr · 2 repos · 2 followers
-  - Hello, I'm game developer Park Seungsik.I have experience developing a C++ based game graphics engine.Currently, I am mainly developing game content bas
+- **@piker0925** · JUNSEO OH · 25 repos · 0 followers
+- **@saadev0** · 𝓈𝒶𝒶 · 0 repos · 1 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -19,6 +19,7 @@ summaries to spot which persona is churning.
 - @0cherry — 2026-04-02
 - @0dot77 — 2026-05-22
 - @0xSeb — 2026-04-30
+- @1-Vast — 2026-07-11
 - @1wos — 2026-04-15
 - @201411108 — 2026-05-07
 - @2111518 — 2026-03-18
@@ -419,6 +420,7 @@ summaries to spot which persona is churning.
 - @hah20 — 2026-03-15
 - @hahwul — 2026-02-02
 - @halavah — 2026-04-21
+- @Hamigua314 — 2026-07-11
 - @hang-in — 2026-03-23
 - @hanhyeonkyu — 2026-04-15
 - @HanTJ — 2026-02-02
@@ -847,7 +849,6 @@ summaries to spot which persona is churning.
 - @phreck — 2026-04-24
 - @piano4889 — 2026-04-27
 - @pickteemo — 2026-03-29
-- @piker0925 — 2026-03-21
 - @pixist — 2026-02-06
 - @pjj11005 — 2026-02-07
 - @pjj11005-pv — 2026-02-09
@@ -916,7 +917,6 @@ summaries to spot which persona is churning.
 - @Ryuun78 — 2026-04-25
 - @ryuwon-ai — 2026-04-25
 - @s1ev — 2026-04-14
-- @saadev0 — 2026-07-08
 - @sabino — 2026-04-09
 - @sagos95 — 2026-03-31
 - @samjegal — 2026-03-18
