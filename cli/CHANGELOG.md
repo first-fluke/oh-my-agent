@@ -1,5 +1,20 @@
 # Changelog
 
+## [10.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.15.0...cli-v10.16.0) (2026-07-12)
+
+
+### Features
+
+* **emit:** add oma emit for spec skills, plugin manifest, AGENTS.md ([21664a3](https://github.com/first-fluke/oh-my-agent/commit/21664a3fd7693178beb91f62637bda7f0af26a61))
+* **verify:** add deterministic trigger-accuracy harness ([7bb50f1](https://github.com/first-fluke/oh-my-agent/commit/7bb50f1e9a96c4fd84a1ddb448db2475e83b9973))
+* **workflows:** run ultrawork reviews as isolated cross-context passes ([c82200d](https://github.com/first-fluke/oh-my-agent/commit/c82200dd14ebe01f76e6051fade24f7770ea1503))
+
+
+### Bug Fixes
+
+* **cli:** resolve project root for results and metrics paths ([5d041e0](https://github.com/first-fluke/oh-my-agent/commit/5d041e0622bd288f2f479418e60d397f48b376fb))
+* **hooks:** stop suppressing genuine ko review requests ([f9e2163](https://github.com/first-fluke/oh-my-agent/commit/f9e21638f6b3ba412e92021ffc23eb87834f0811))
+
 ## [10.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.14.0...cli-v10.15.0) (2026-07-12)
 
 
