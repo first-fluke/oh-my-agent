@@ -611,7 +611,10 @@ describe("keyword-detector", () => {
         "보강할",
         "에 대해",
         "에 대한",
-        "한번 봐",
+        // "한번 봐" was removed from the live config: it is a substring of the
+        // review keyword "한번 봐줘", so it silently suppressed every genuine
+        // Korean review request. The meta-discussion prompt it targeted stays
+        // covered by "깊게 봐" and "코드를 한번" (see regression block below).
         "깊게 봐",
         "코드를 한번",
         "그 워크플로우",
@@ -687,6 +690,28 @@ describe("keyword-detector", () => {
         expect(blockedByWindow || blockedByFirstLine).toBe(true);
       });
     }
+
+    // Regression for the "한번 봐" over-suppression: the informational pattern
+    // was a substring of review's own "한번 봐줘" keyword, so genuine Korean
+    // review requests were silently suppressed.
+    it("does not suppress a genuine '한번 봐줘' review request", () => {
+      const prompt = "이 PR 한번 봐줘";
+      const matchIndex = prompt.indexOf("한번 봐줘");
+      const blockedByWindow = isInformationalContext(
+        prompt,
+        matchIndex,
+        POST_FIX_KO_INFORMATIONAL,
+      );
+      expect(blockedByWindow || isAnalyticalQuestion(prompt)).toBe(false);
+    });
+
+    it("still suppresses the meta-discussion prompt without '한번 봐'", () => {
+      const prompt = "그 랄프 코드를 한번 깊게 봐볼래?";
+      const matchIndex = prompt.indexOf("랄프");
+      expect(
+        isInformationalContext(prompt, matchIndex, POST_FIX_KO_INFORMATIONAL),
+      ).toBe(true);
+    });
 
     it("[TO-BE] still allows genuine ralph requests to trigger", () => {
       // Prompts that genuinely request the ralph workflow must NOT be
