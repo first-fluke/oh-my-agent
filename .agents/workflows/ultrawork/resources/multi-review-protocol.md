@@ -5,6 +5,38 @@
 
 ---
 
+## Cross-Context Review (CCR) Mandate
+
+**Every review below runs in a fresh, context-isolated reviewer subagent — never inline in the main session, and never batched with implementation work or another review.**
+
+### Why isolation is mandatory
+- Same-session review is degraded by anchoring and sycophancy: a reviewer that shares the author's context tends to ratify the author's choices instead of independently re-deriving them. Cross-Context Review measurably outperforms repeated same-session review (F1 28.6% cross-context vs 21.7% same-session repeated) — arXiv 2603.12123, "Cross-Context Review".
+- Adding more same-session review rounds does not recover the gap and can amplify shared-context error — arXiv 2603.16244, "More Rounds, More Noise". The fix is a fresh context per review, not more passes in the same one.
+
+### Isolation contract (per review)
+Each reviewer subagent's prompt MUST contain ONLY:
+1. The **durable artifacts** under review, referenced by path so the reviewer reads them fresh: git diff, changed files, `.agents/results/plan-{sessionId}.json`, prior `result-*.md`, and test/lint output.
+2. **That single review's guide section** copied from below.
+
+Each reviewer subagent's prompt MUST NOT contain:
+- the main session's conversation history,
+- the implementation agent's reasoning or self-justification, or
+- any prior review's verdict — **unless** that review's guide explicitly requires chaining a specific prior finding (none below do by default).
+
+### Verdict output
+The reviewer writes a structured verdict to memory per `.agents/skills/_shared/runtime/memory-protocol.md`:
+
+```
+review: <name> (Step N)
+verdict: PASS | FAIL
+findings: [ { severity: CRITICAL|HIGH|MEDIUM|LOW, file:line, description, fix } ]
+evidence: <artifact paths the reviewer actually read>
+```
+
+The phase coordinator collects these verdicts and folds them into the phase's `result-*.md` and `session-ultrawork.md` records. Dispatch mechanics (native subagent vs `oma agent:spawn`) are defined once in the **Cross-Context Review (CCR) Dispatch** section of `ultrawork.md`.
+
+---
+
 ## Review Types Guide
 
 ### 1. Completeness Review (Step 2)

@@ -2,6 +2,8 @@
 
 Each phase must pass its gate before proceeding to the next.
 
+The "Owner" of each gate coordinates the phase and records the verdict; it does **not** review its own phase inline. The review-type criteria below (completeness, alignment, safety, reusability, consistency, quality, cascade, final) are assessed by fresh, context-isolated reviewer subagents per the **Cross-Context Review (CCR) Dispatch** section of `ultrawork.md` and the CCR Mandate in `multi-review-protocol.md`. On a repeated gate failure, re-review with a fresh reviewer context — adding more same-context passes does not recover the gap.
+
 ---
 
 ## PLAN_GATE
