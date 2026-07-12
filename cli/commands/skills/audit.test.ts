@@ -7,7 +7,10 @@ import type { SimilarityPair } from "../../utils/text-similarity.js";
 import {
   auditSkills,
   computeBreadths,
+  computeFocusFindings,
   detectBlackHoles,
+  FOCUS_BODY_WARN_THRESHOLD,
+  FOCUS_DOC_WARN_THRESHOLD,
   SKILLS_COUNT_WARN_THRESHOLD,
 } from "./audit.js";
 
@@ -94,6 +97,73 @@ describe("auditSkills", () => {
     writeSkill(workspace, "oma-b", "bravo domain specialist");
     const report = auditSkills(workspace);
     expect(report.sizeFinding).toBeUndefined();
+  });
+});
+
+describe("computeFocusFindings", () => {
+  let workspace: string;
+
+  beforeEach(() => {
+    workspace = mkdtempSync(join(tmpdir(), "oma-skills-focus-"));
+  });
+
+  afterEach(() => {
+    rmSync(workspace, { recursive: true, force: true });
+  });
+
+  function skillsDir(): string {
+    return join(workspace, INSTALLED_SKILLS_DIR);
+  }
+
+  function writeDocs(skill: string, subdir: string, count: number): void {
+    const dir = join(skillsDir(), skill, subdir);
+    mkdirSync(dir, { recursive: true });
+    for (let i = 0; i < count; i++) {
+      writeFileSync(join(dir, `doc-${i}.md`), `# doc ${i}\n`);
+    }
+  }
+
+  it("stays quiet on a lean skill", () => {
+    writeSkill(workspace, "oma-lean", "narrow domain specialist");
+    writeDocs("oma-lean", "resources", 3);
+    expect(computeFocusFindings(skillsDir(), ["oma-lean"])).toHaveLength(0);
+  });
+
+  it("warns when reference docs exceed the focus threshold", () => {
+    writeSkill(workspace, "oma-bundle", "sprawling multi domain bundle");
+    writeDocs("oma-bundle", "resources", FOCUS_DOC_WARN_THRESHOLD + 1);
+    const findings = computeFocusFindings(skillsDir(), ["oma-bundle"]);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.reasons).toContain("docs");
+    expect(findings[0]?.docCount).toBe(FOCUS_DOC_WARN_THRESHOLD + 1);
+    expect(findings[0]?.severity).toBe("warn");
+  });
+
+  it("warns when the SKILL.md body is oversized", () => {
+    writeSkill(workspace, "oma-fat", "oversized body skill");
+    const path = join(skillsDir(), "oma-fat", "SKILL.md");
+    writeFileSync(
+      path,
+      `---\nname: oma-fat\ndescription: x\n---\n${"y".repeat(FOCUS_BODY_WARN_THRESHOLD + 1)}`,
+    );
+    const findings = computeFocusFindings(skillsDir(), ["oma-fat"]);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.reasons).toContain("body");
+  });
+
+  it("ignores vendored trees when counting docs", () => {
+    writeSkill(workspace, "oma-vendored", "skill with vendored tooling");
+    writeDocs("oma-vendored", "node_modules/pkg", FOCUS_DOC_WARN_THRESHOLD + 5);
+    writeDocs("oma-vendored", "vendor/lib", FOCUS_DOC_WARN_THRESHOLD + 5);
+    expect(computeFocusFindings(skillsDir(), ["oma-vendored"])).toHaveLength(0);
+  });
+
+  it("is wired into auditSkills", () => {
+    writeSkill(workspace, "oma-bundle", "sprawling bundle skill docs");
+    writeSkill(workspace, "oma-lean", "narrow database specialist");
+    writeDocs("oma-bundle", "resources", FOCUS_DOC_WARN_THRESHOLD + 1);
+    const report = auditSkills(workspace);
+    expect(report.focusFindings.map((f) => f.id)).toEqual(["oma-bundle"]);
   });
 });
 

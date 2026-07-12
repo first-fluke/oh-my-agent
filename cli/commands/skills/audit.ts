@@ -26,6 +26,15 @@ export const BLACKHOLE_MIN_SKILLS = 5;
 export const BLACKHOLE_Z = 1.5;
 export const BLACKHOLE_BREADTH_FLOOR = 0.15;
 
+// Focus check (SkillsBench — Li et al. 2026, arXiv:2602.12670). Focused skills
+// with few instruction modules outperform larger bundles, and gains shrink as
+// a skill sprawls. OMA's progressive disclosure (resources load on demand)
+// softens the penalty, so we only flag extremes: a skill whose reference-doc
+// count or SKILL.md body is far past the curated library's norm.
+export const FOCUS_DOC_WARN_THRESHOLD = 20;
+export const FOCUS_BODY_WARN_THRESHOLD = 25_000;
+const FOCUS_EXCLUDED_DIRS = new Set(["node_modules", "vendor", "vendored"]);
+
 export interface SkillAuditFinding {
   pair: SimilarityPair;
   severity: "warn" | "fail";
@@ -52,6 +61,15 @@ export interface SkillCountFinding {
   severity: "warn";
 }
 
+/** A skill flagged as an oversized bundle by the focus check. */
+export interface FocusFinding {
+  id: string;
+  docCount: number;
+  bodyChars: number;
+  reasons: Array<"docs" | "body">;
+  severity: "warn";
+}
+
 export interface SkillAuditReport {
   skillsDir: string;
   skillCount: number;
@@ -61,6 +79,7 @@ export interface SkillAuditReport {
   breadths: SkillBreadth[];
   blackHoles: BlackHoleFinding[];
   sizeFinding?: SkillCountFinding;
+  focusFindings: FocusFinding[];
 }
 
 function readSkillDescriptions(
@@ -149,6 +168,57 @@ export function detectBlackHoles(breadths: SkillBreadth[]): BlackHoleFinding[] {
   return findings;
 }
 
+/** Count non-SKILL.md markdown docs under a skill dir, skipping vendored trees. */
+function countReferenceDocs(dir: string): number {
+  let count = 0;
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return 0;
+  }
+  for (const name of entries) {
+    if (FOCUS_EXCLUDED_DIRS.has(name)) continue;
+    const full = join(dir, name);
+    try {
+      const stat = statSync(full);
+      if (stat.isDirectory()) {
+        count += countReferenceDocs(full);
+      } else if (name.endsWith(".md") && name !== "SKILL.md") {
+        count += 1;
+      }
+    } catch {}
+  }
+  return count;
+}
+
+/**
+ * Flag skills that have sprawled into bundles: too many reference docs or an
+ * oversized SKILL.md body. Focused skills outperform bundles (SkillsBench);
+ * the fix is splitting into narrower skills, not deleting content.
+ */
+export function computeFocusFindings(
+  skillsDir: string,
+  ids: string[],
+): FocusFinding[] {
+  const findings: FocusFinding[] = [];
+  for (const id of ids) {
+    const skillDir = join(skillsDir, id);
+    const docCount = countReferenceDocs(skillDir);
+    let bodyChars = 0;
+    try {
+      bodyChars = readFileSync(join(skillDir, "SKILL.md"), "utf-8").length;
+    } catch {}
+    const reasons: Array<"docs" | "body"> = [];
+    if (docCount > FOCUS_DOC_WARN_THRESHOLD) reasons.push("docs");
+    if (bodyChars > FOCUS_BODY_WARN_THRESHOLD) reasons.push("body");
+    if (reasons.length > 0) {
+      findings.push({ id, docCount, bodyChars, reasons, severity: "warn" });
+    }
+  }
+  return findings.sort((a, b) => b.docCount - a.docCount);
+}
+
 export function auditSkills(workspace: string): SkillAuditReport {
   const skillsDir = join(workspace, INSTALLED_SKILLS_DIR);
   const docs = readSkillDescriptions(skillsDir);
@@ -174,6 +244,10 @@ export function auditSkills(workspace: string): SkillAuditReport {
           severity: "warn",
         }
       : undefined;
+  const focusFindings = computeFocusFindings(
+    skillsDir,
+    docs.map((d) => d.id),
+  );
   return {
     skillsDir,
     skillCount: docs.length,
@@ -183,6 +257,7 @@ export function auditSkills(workspace: string): SkillAuditReport {
     breadths,
     blackHoles,
     sizeFinding,
+    focusFindings,
   };
 }
 
@@ -206,6 +281,13 @@ export function serializeSkillAuditReport(report: SkillAuditReport): string {
         severity: b.severity,
       })),
       sizeFinding: report.sizeFinding ?? null,
+      focusFindings: report.focusFindings.map((f) => ({
+        id: f.id,
+        docCount: f.docCount,
+        bodyChars: f.bodyChars,
+        reasons: f.reasons,
+        severity: f.severity,
+      })),
     },
     null,
     2,
@@ -233,6 +315,22 @@ function renderBlackHolesAndSize(report: SkillAuditReport): void {
     );
     console.log(
       "  Routing accuracy decays as the library grows — consolidate overlapping skills.",
+    );
+  }
+  for (const f of report.focusFindings) {
+    const parts = [
+      f.reasons.includes("docs")
+        ? `${f.docCount} reference docs > ${FOCUS_DOC_WARN_THRESHOLD}`
+        : null,
+      f.reasons.includes("body")
+        ? `SKILL.md ${f.bodyChars} chars > ${FOCUS_BODY_WARN_THRESHOLD}`
+        : null,
+    ].filter(Boolean);
+    console.log(`  [WARN] bundle: ${f.id}  (${parts.join(", ")})`);
+  }
+  if (report.focusFindings.length > 0) {
+    console.log(
+      "  Focused skills outperform bundles — split sprawling skills into narrower ones.",
     );
   }
 }
