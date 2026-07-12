@@ -51,6 +51,11 @@ const {
   shouldSkipAllWorkflows,
   normalizeForMatching,
   run,
+  // Specificity ranking (trigger demotion round 1)
+  collectLangEntries,
+  buildPatternEntries,
+  buildRawPatternEntries,
+  pickWinningCandidate,
 } = await import("../../.agents/hooks/core/keyword-detector.ts");
 
 const { normalizePromptInput } = await import(
@@ -1758,6 +1763,363 @@ describe("keyword-detector", () => {
         throw new Error("expected a context result");
       }
       expect(result.additionalContext).toContain("REVIEW");
+    });
+  });
+
+  // ── Specificity ranking (trigger demotion round 1) ────────────
+  // Replaces declaration-order first-match-wins with: collect every
+  // surviving candidate across ALL workflows, then rank by specificity.
+  // See pickWinningCandidate's doc comment in keyword-detector.ts for the
+  // full rule set and the suppressed-specific-vs-generic design decision.
+
+  describe("collectLangEntries", () => {
+    it("merges universal + en + the configured language", () => {
+      const bank = { "*": ["a"], en: ["b"], ko: ["c"] };
+      expect(collectLangEntries(bank, "ko")).toEqual(["a", "b", "c"]);
+    });
+
+    it("does not duplicate en entries when lang is en", () => {
+      const bank = { "*": ["a"], en: ["b"], ko: ["c"] };
+      expect(collectLangEntries(bank, "en")).toEqual(["a", "b"]);
+    });
+
+    it("returns only universal + en entries for an unconfigured language", () => {
+      const bank = { "*": ["a"], en: ["b"] };
+      expect(collectLangEntries(bank, "fr")).toEqual(["a", "b"]);
+    });
+
+    it("handles a bank with no matching keys", () => {
+      expect(collectLangEntries({ fr: ["x"] }, "en")).toEqual([]);
+    });
+  });
+
+  describe("buildPatternEntries / buildRawPatternEntries — keyword linkage", () => {
+    // Specificity ranking needs the LITERAL keyword string a pattern was
+    // built from, not a re-derivation from match[0] (which would require
+    // re-implementing buildPatterns' word-boundary peeling and gets CJK
+    // wrong, since CJK keywords compile without boundary wrapping at all).
+
+    it("pairs each compiled regex with its literal keyword string, in order", () => {
+      const entries = buildPatternEntries(
+        { "*": ["review"], en: ["deepsec pr review"] },
+        "en",
+        ["ko", "ja", "zh"],
+      );
+      expect(entries.map((e) => e.keyword)).toEqual([
+        "review",
+        "deepsec pr review",
+      ]);
+      expect(entries[1]?.regex.test("kick off a deepsec pr review")).toBe(true);
+    });
+
+    it("does not add word-boundary wrapping for CJK keywords", () => {
+      const entries = buildPatternEntries({ ko: ["디버그"] }, "ko", [
+        "ko",
+        "ja",
+        "zh",
+      ]);
+      expect(entries[0]?.regex.source).not.toContain("[^\\w-]");
+    });
+
+    it("buildPatterns(...) still returns exactly the regexes from buildPatternEntries", () => {
+      const keywords = { "*": ["orchestrate"], en: ["parallel"] };
+      const entries = buildPatternEntries(keywords, "en", ["ko", "ja", "zh"]);
+      const patterns = buildPatterns(keywords, "en", ["ko", "ja", "zh"]);
+      expect(patterns).toEqual(entries.map((e) => e.regex));
+    });
+
+    it("pairs each raw pattern's regex with its source string", () => {
+      const entries = buildRawPatternEntries({ "*": ["\\bfoo\\b"] }, "en");
+      expect(entries[0]?.source).toBe("\\bfoo\\b");
+      expect(entries[0]?.regex.test("a foo b")).toBe(true);
+    });
+
+    it("skips invalid raw patterns without throwing, keeping source pairing intact", () => {
+      const entries = buildRawPatternEntries(
+        { en: ["valid", "[invalid("] },
+        "en",
+      );
+      expect(entries).toHaveLength(1);
+      expect(entries[0]?.source).toBe("valid");
+    });
+
+    it("buildRawPatterns(...) still returns exactly the regexes from buildRawPatternEntries", () => {
+      const patterns = { en: ["\\bfoo\\b", "\\bbar\\b"] };
+      const entries = buildRawPatternEntries(patterns, "en");
+      expect(buildRawPatterns(patterns, "en")).toEqual(
+        entries.map((e) => e.regex),
+      );
+    });
+  });
+
+  describe("pickWinningCandidate — specificity ranking rules", () => {
+    type Candidate = Parameters<typeof pickWinningCandidate>[0][number];
+
+    function candidate(overrides: Partial<Candidate>): Candidate {
+      return {
+        workflow: "review",
+        persistent: false,
+        matchIndex: 0,
+        matchText: "review",
+        origIndex: 0,
+        keywordLength: 6,
+        isMultiWord: false,
+        declarationIndex: 0,
+        suppressed: false,
+        ...overrides,
+      };
+    }
+
+    it("returns null for an empty candidate list", () => {
+      expect(pickWinningCandidate([])).toBeNull();
+    });
+
+    it("returns null when every candidate is suppressed", () => {
+      const result = pickWinningCandidate([
+        candidate({ workflow: "review", suppressed: true }),
+        candidate({ workflow: "debug", suppressed: true }),
+      ]);
+      expect(result).toBeNull();
+    });
+
+    it("rule 1: longest keyword wins regardless of declaration order", () => {
+      // Mirrors the live fix: 'deepsec pr review' (18) beats 'review' (6)
+      // even though review is declared before deepsec in triggers.json.
+      const review = candidate({
+        workflow: "review",
+        keywordLength: 6,
+        declarationIndex: 0,
+      });
+      const deepsec = candidate({
+        workflow: "deepsec",
+        keywordLength: 18,
+        isMultiWord: true,
+        declarationIndex: 4,
+      });
+      expect(pickWinningCandidate([review, deepsec])?.workflow).toBe("deepsec");
+      // Order in the input array must not matter.
+      expect(pickWinningCandidate([deepsec, review])?.workflow).toBe("deepsec");
+    });
+
+    it("rule 2: on equal length, a multi-word candidate beats a single word", () => {
+      const single = candidate({
+        workflow: "a",
+        keywordLength: 8,
+        isMultiWord: false,
+        declarationIndex: 0,
+      });
+      const multi = candidate({
+        workflow: "b",
+        keywordLength: 8,
+        isMultiWord: true,
+        declarationIndex: 1,
+      });
+      expect(pickWinningCandidate([single, multi])?.workflow).toBe("b");
+    });
+
+    it("rule 3: on a length + multi-word tie, the earliest match position wins", () => {
+      const later = candidate({
+        workflow: "a",
+        keywordLength: 8,
+        isMultiWord: true,
+        origIndex: 40,
+        declarationIndex: 0,
+      });
+      const earlier = candidate({
+        workflow: "b",
+        keywordLength: 8,
+        isMultiWord: true,
+        origIndex: 5,
+        declarationIndex: 1,
+      });
+      expect(pickWinningCandidate([later, earlier])?.workflow).toBe("b");
+    });
+
+    it("rule 4: final tiebreak falls back to triggers.json declaration order", () => {
+      const declaredSecond = candidate({
+        workflow: "b",
+        keywordLength: 8,
+        isMultiWord: true,
+        origIndex: 5,
+        declarationIndex: 3,
+      });
+      const declaredFirst = candidate({
+        workflow: "a",
+        keywordLength: 8,
+        isMultiWord: true,
+        origIndex: 5,
+        declarationIndex: 1,
+      });
+      expect(
+        pickWinningCandidate([declaredSecond, declaredFirst])?.workflow,
+      ).toBe("a");
+    });
+
+    it("suppressed-specific behavior: a suppressed candidate does not block a different, unsuppressed candidate", () => {
+      // Design decision (see pickWinningCandidate doc comment): suppression
+      // is per-candidate, not a prompt-wide veto. The longer/more specific
+      // 'deepsec pr review' is suppressed (e.g. informational window), but
+      // the shorter, unsuppressed 'review' candidate still wins — it is not
+      // blocked just because a more specific sibling match was suppressed.
+      const suppressedSpecific = candidate({
+        workflow: "deepsec",
+        keywordLength: 18,
+        isMultiWord: true,
+        suppressed: true,
+      });
+      const genericUnsuppressed = candidate({
+        workflow: "review",
+        keywordLength: 6,
+        isMultiWord: false,
+        suppressed: false,
+      });
+      const winner = pickWinningCandidate([
+        suppressedSpecific,
+        genericUnsuppressed,
+      ]);
+      expect(winner?.workflow).toBe("review");
+    });
+
+    it("a suppressed candidate with no unsuppressed alternative yields no winner", () => {
+      const onlySuppressed = candidate({
+        workflow: "deepsec",
+        keywordLength: 18,
+        suppressed: true,
+      });
+      expect(pickWinningCandidate([onlySuppressed])).toBeNull();
+    });
+  });
+
+  describe("specificity ranking — run() integration", () => {
+    const ctx = { vendor: "claude" as const, cwd: "/tmp", sid: "unknown" };
+
+    beforeEach(() => {
+      (fs.existsSync as ReturnType<typeof vi.fn>).mockReturnValue(false);
+    });
+
+    it("[fixed missed-fire] 'deepsec pr review' beats bare 'review'", async () => {
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt: "Kick off a deepsec pr review for this branch.",
+          cwd: "/tmp",
+        },
+        ctx,
+      );
+      expect(result?.type).toBe("context");
+      if (result?.type === "context") {
+        expect(result.additionalContext).toContain("[OMA WORKFLOW: DEEPSEC]");
+      }
+    });
+
+    it("[fixed missed-fire] 'check docs' beats bare 'broken' (debug)", async () => {
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt: "Check docs for any broken links after the restructuring.",
+          cwd: "/tmp",
+        },
+        ctx,
+      );
+      expect(result?.type).toBe("context");
+      if (result?.type === "context") {
+        expect(result.additionalContext).toContain("[OMA WORKFLOW: DOCS]");
+      }
+    });
+
+    it("[fixed missed-fire] genuine 'what if' brainstorm request now fires", async () => {
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt: "What if we explored a completely different pricing model?",
+          cwd: "/tmp",
+        },
+        ctx,
+      );
+      expect(result?.type).toBe("context");
+      if (result?.type === "context") {
+        expect(result.additionalContext).toContain(
+          "[OMA WORKFLOW: BRAINSTORM]",
+        );
+      }
+    });
+
+    it("meta question using the same 'what if' phrasing stays suppressed", async () => {
+      // 'what if' was removed from informationalPatterns.* (it was
+      // self-suppressing brainstorm's own keyword), but this hard negative
+      // must remain non-triggering via the still-present 'detector' pattern.
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt: "What if the detector fires twice?",
+          cwd: "/tmp",
+        },
+        ctx,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("suppressed-specific policy: a suppressed deepsec mention does not block a separate genuine review request", async () => {
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt:
+            "What is the deepsec pr review workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
+          cwd: "/tmp",
+        },
+        ctx,
+      );
+      expect(result?.type).toBe("context");
+      if (result?.type === "context") {
+        expect(result.additionalContext).toContain("[OMA WORKFLOW: REVIEW]");
+      }
+    });
+  });
+
+  describe("brainstorm collision fix — informationalPatterns.ko data checks", () => {
+    // Live config checks (no fs mocking needed): confirms the narrowed
+    // '하면 좋을지' / '어떻게 동작' etc. entries no longer self-suppress
+    // brainstorm's own '어떻게 하면 좋을까' / '구상' keywords, while genuine
+    // Korean meta-discussion prompts stay suppressed.
+    let liveConfig: Parameters<typeof buildInformationalPatterns>[0];
+
+    beforeEach(async () => {
+      const mod = await import("../../.agents/hooks/core/triggers.json", {
+        with: { type: "json" },
+      });
+      liveConfig = mod.default as unknown as Parameters<
+        typeof buildInformationalPatterns
+      >[0];
+    });
+
+    it("no longer suppresses '어떻게 하면 좋을까 구상해보자' via bare '어떻게' or '하면 좋을'", () => {
+      const patterns = buildInformationalPatterns(liveConfig);
+      const prompt = normalizeForMatching(
+        "가격 모델을 완전히 다르게 하면 어떻게 하면 좋을까 구상해보자.",
+      );
+      const idx = prompt.indexOf("구상");
+      expect(isInformationalContext(prompt, idx, patterns)).toBe(false);
+    });
+
+    it("still suppresses a genuine 'how does it work' meta-question via '어떻게 동작'", () => {
+      const patterns = buildInformationalPatterns(liveConfig);
+      const prompt = normalizeForMatching(
+        "이 워크플로우가 어떻게 동작하는지 설명해줘.",
+      );
+      const idx = prompt.indexOf("설명해");
+      expect(isInformationalContext(prompt, idx, patterns)).toBe(true);
+    });
+
+    it("still suppresses '어떨까'/'할까요' family meta-discussion unchanged", () => {
+      const patterns = buildInformationalPatterns(liveConfig);
+      const promptA = normalizeForMatching("이 방식이 어떨까 라고 생각했어");
+      const promptB = normalizeForMatching("이렇게 처리할까요?");
+      expect(
+        isInformationalContext(promptA, promptA.indexOf("어떨까"), patterns),
+      ).toBe(true);
+      expect(
+        isInformationalContext(promptB, promptB.indexOf("할까요"), patterns),
+      ).toBe(true);
     });
   });
 });

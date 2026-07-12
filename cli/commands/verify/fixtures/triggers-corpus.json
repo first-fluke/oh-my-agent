@@ -865,5 +865,29 @@
     "lang": "ko",
     "expected": null,
     "note": "meta-discussion about ralph; must stay suppressed by '깊게 봐'/'코드를 한번' after '한번 봐' removal"
+  },
+  {
+    "prompt": "What if the detector fires twice?",
+    "lang": "en",
+    "expected": null,
+    "note": "specificity-round hard negative: meta question about the detector itself, using the same 'what if' phrasing brainstorm now relies on — must stay suppressed via the 'detector' informationalPattern even though 'what if' was removed from informationalPatterns.*"
+  },
+  {
+    "prompt": "그 리뷰 워크플로우 자체가 뭐야?",
+    "lang": "ko",
+    "expected": null,
+    "note": "meta question about the review workflow itself ('그 ... 워크플로우 자체'), not a request to run review"
+  },
+  {
+    "prompt": "이 워크플로우가 어떻게 동작하는지 설명해줘.",
+    "lang": "ko",
+    "expected": null,
+    "note": "narrowed informationalPatterns.ko regression check: bare '어떻게' was replaced with specific forms ('어떻게 동작', '어떻게 하는지', ...) after it collided with brainstorm's own '어떻게 하면 좋을까' keyword — this genuine 'how does it work' meta-question must still be suppressed by '어떻게 동작'"
+  },
+  {
+    "prompt": "What is the deepsec pr review workflow for, out of curiosity? Separately and unrelated to that question, please review this PR today.",
+    "lang": "en",
+    "expected": "review",
+    "note": "specificity-ranking policy check: the more specific 'deepsec pr review' match is suppressed (informational window around 'what is'), but a separate, unsuppressed 'review this' request later in the same prompt is NOT suppressed — a suppressed specific candidate must not block a different, genuine generic request from firing"
   }
 ]
