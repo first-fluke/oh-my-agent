@@ -1,0 +1,68 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "oh-my-agent-workspace",
+  "owner": {
+    "name": "First Fluke",
+    "url": "https://firstfluke.com/oh-my-agent"
+  },
+  "metadata": {
+    "description": "Portable multi-agent harness for .agents-based skills and workflows",
+    "version": "10.14.0"
+  },
+  "plugins": [
+    {
+      "name": "oma",
+      "description": "Portable multi-agent harness for .agents-based skills and workflows",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./.agents/skills/oma-academic-writer",
+        "./.agents/skills/oma-architecture",
+        "./.agents/skills/oma-backend",
+        "./.agents/skills/oma-brainstorm",
+        "./.agents/skills/oma-coordination",
+        "./.agents/skills/oma-db",
+        "./.agents/skills/oma-debug",
+        "./.agents/skills/oma-deepsec",
+        "./.agents/skills/oma-design",
+        "./.agents/skills/oma-dev-workflow",
+        "./.agents/skills/oma-docs",
+        "./.agents/skills/oma-frontend",
+        "./.agents/skills/oma-hwp",
+        "./.agents/skills/oma-image",
+        "./.agents/skills/oma-market",
+        "./.agents/skills/oma-mobile",
+        "./.agents/skills/oma-observability",
+        "./.agents/skills/oma-orchestrator",
+        "./.agents/skills/oma-pdf",
+        "./.agents/skills/oma-pm",
+        "./.agents/skills/oma-qa",
+        "./.agents/skills/oma-recap",
+        "./.agents/skills/oma-refactor",
+        "./.agents/skills/oma-scholar",
+        "./.agents/skills/oma-scm",
+        "./.agents/skills/oma-search",
+        "./.agents/skills/oma-skill-creator",
+        "./.agents/skills/oma-slide",
+        "./.agents/skills/oma-tf-infra",
+        "./.agents/skills/oma-translator",
+        "./.agents/skills/oma-video",
+        "./.agents/skills/oma-voice"
+      ],
+      "agents": [
+        "./.claude/agents/architecture-reviewer.md",
+        "./.claude/agents/backend-engineer.md",
+        "./.claude/agents/db-engineer.md",
+        "./.claude/agents/debug-investigator.md",
+        "./.claude/agents/docs-curator.md",
+        "./.claude/agents/frontend-engineer.md",
+        "./.claude/agents/mobile-engineer.md",
+        "./.claude/agents/pm-planner.md",
+        "./.claude/agents/qa-reviewer.md",
+        "./.claude/agents/refactor-engineer.md",
+        "./.claude/agents/research-explorer.md",
+        "./.claude/agents/tf-infra-engineer.md"
+      ]
+    }
+  ]
+}

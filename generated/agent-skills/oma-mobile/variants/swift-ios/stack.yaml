@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=../stack.schema.json
+language: swift
+framework: swiftui
+ui: swiftui
+api_generator: swift-openapi-generator
+api_spec: Core/Networking/openapi.yaml
+response_cache: hyperoslo-cache
+structure: App/Core/Features/Shared
+source: variant
+
+verify:
+  detect: Package.swift
+  syntax:
+    cmd: "swift build"
+    skip_if_missing: swift
+  tests:
+    cmd: "swift test"
+    pass_signal: "Test Suite 'All tests' passed"
+    skip_if_missing: swift

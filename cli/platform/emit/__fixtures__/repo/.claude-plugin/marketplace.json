@@ -1,0 +1,10 @@
+{
+  "name": "fixture-repo",
+  "plugins": [
+    {
+      "name": "fixture",
+      "description": "Hand-authored fixture, intentionally stale.",
+      "source": "./"
+    }
+  ]
+}

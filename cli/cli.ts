@@ -94,6 +94,7 @@ async function registerFullCli(): Promise<void> {
     import("./commands/retro/command.js").then((m) => m.registerRetro),
     import("./commands/recap/command.js").then((m) => m.registerRecap),
     import("./commands/docs/command.js").then((m) => m.registerDocsCommands),
+    import("./commands/emit/command.js").then((m) => m.registerEmitCommand),
     import("./commands/cleanup/command.js").then((m) => m.registerCleanup),
     import("./commands/bridge/command.js").then((m) => m.registerBridge),
     import("./commands/agent/command.js").then((m) => m.registerAgentCommands),

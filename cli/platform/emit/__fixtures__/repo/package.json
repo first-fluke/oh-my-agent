@@ -1,0 +1,9 @@
+{
+  "name": "fixture-repo",
+  "description": "Fixture repo for oma emit tests",
+  "version": "0.0.1",
+  "homepage": "https://example.test/fixture-repo",
+  "author": {
+    "name": "Fixture Author"
+  }
+}
