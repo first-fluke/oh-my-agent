@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.15.0",
-  "releaseDate": "2026-07-12T01:24:50.418Z",
+  "releaseDate": "2026-07-12T04:03:00.809Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -206,8 +206,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "44400428d82f49bcc2abd8ce0118fbcefeb98d0c7ce5d84affaf1a5e3f00d858",
-      "size": 84740
+      "sha256": "ea8f8e3d37f45f202d3e914da1218575172b0d353a90a0a01a0a0d2e23f81bb4",
+      "size": 84720
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -2111,18 +2111,18 @@
     },
     {
       "path": ".agents/workflows/ultrawork/resources/multi-review-protocol.md",
-      "sha256": "41c26316eab324a879884d6625e23b289a2412c5ac8c898726b0857821047d77",
-      "size": 2425
+      "sha256": "71cf42fac078ce438545e51c0afce056eb77e68d248f3e6133167255ae2b590c",
+      "size": 4518
     },
     {
       "path": ".agents/workflows/ultrawork/resources/phase-gates.md",
-      "sha256": "b82abca1dffa519fb7d22ecd2644603b45fd18b9313e2fffdcbec0f84e0dc170",
-      "size": 3271
+      "sha256": "8dbe5e5d36e5731cefa2676df83d20c31cf705fcba9b4f9e9f89324d0c46eed4",
+      "size": 3819
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "4d0b6b9faaeb99aed910e81298b485604e70c38dcd099c851c35b0d93c5e742d",
-      "size": 21385
+      "sha256": "15c499fcffac6ea94dd21a4bccf366a06b80072bf362703e7d8e0345c389c4a3",
+      "size": 30365
     },
     {
       "path": ".agents/workflows/video.md",
