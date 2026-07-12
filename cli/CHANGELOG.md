@@ -1,5 +1,33 @@
 # Changelog
 
+## [10.15.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.14.0...cli-v10.15.0) (2026-07-12)
+
+
+### Features
+
+* **memory:** accept agentmemory health by capability ([fff3b4d](https://github.com/first-fluke/oh-my-agent/commit/fff3b4d591d78b3b2c12879e2f002e766591f46d))
+* **memory:** move coordination store to .agents/state/memories ([c8a2031](https://github.com/first-fluke/oh-my-agent/commit/c8a2031d778e1e63c6d919ea93087dcaaf5215be))
+* **skills:** add skills lint smell detector ([84112ae](https://github.com/first-fluke/oh-my-agent/commit/84112ae7a4ab11afe6da03a8097850aa73dfa385))
+* **skills:** warn on bundle sprawl in skills audit ([6f70fcb](https://github.com/first-fluke/oh-my-agent/commit/6f70fcb36a465d31119edfd07c65ce1475bf3293))
+
+
+### Bug Fixes
+
+* **slide:** allow font cdns in export and fix speaker-notes contract ([5b8e748](https://github.com/first-fluke/oh-my-agent/commit/5b8e748aa3a3c4701d5247ec8f171819b9dff7f6))
+* **video:** fetch pretendard font in doctor and sync capture order ([2ca8a26](https://github.com/first-fluke/oh-my-agent/commit/2ca8a262b7f9964e9a2538fcb6af84fef22496c7))
+
+
+### Documentation
+
+* cite skillsbench and bump skillopt reference to v2 ([e395205](https://github.com/first-fluke/oh-my-agent/commit/e3952059a587e323f441d0f581e303d5940c6c0a))
+* document skills lint and cite anatomy-to-smells ([e4a6f74](https://github.com/first-fluke/oh-my-agent/commit/e4a6f74b75a7cea7a3a7080e0732acbb2b3147fe))
+* **readme:** sync korean readme presets and fix stilted phrasing ([58dc2e5](https://github.com/first-fluke/oh-my-agent/commit/58dc2e5ee615fb51f10907d320f2dd901139c710))
+* **readme:** sync remaining 11 locale readmes with english source ([bba0450](https://github.com/first-fluke/oh-my-agent/commit/bba045085e8ff59e4e254c7bbda1d6dcac4a0cb6))
+* resolve all 84 broken refs flagged by oma docs verify ([2bf619a](https://github.com/first-fluke/oh-my-agent/commit/2bf619a126181304f53d4577a77be67109f6cb13))
+* **skill-creator:** add skilllens utility content rubric ([a2505bf](https://github.com/first-fluke/oh-my-agent/commit/a2505bf72b50c7f003cb9c3d033c4ddeed3ee335))
+* **slide:** fix resolution, density, and pptx metric doc drift ([013431d](https://github.com/first-fluke/oh-my-agent/commit/013431d5a5304331d7eb9e5702f5428505d52fd3))
+* **video:** document --script flag and correct skill doc drift ([724467c](https://github.com/first-fluke/oh-my-agent/commit/724467c3217c638f457c80e3d68a5ebc3aa95ab1))
+
 ## [10.14.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.13.1...cli-v10.14.0) (2026-07-11)
 
 
