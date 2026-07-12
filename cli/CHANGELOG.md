@@ -1,5 +1,18 @@
 # Changelog
 
+## [10.17.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.16.0...cli-v10.17.0) (2026-07-12)
+
+
+### Features
+
+* **hooks:** rank keyword matches by specificity, fix self-suppression ([99f5d85](https://github.com/first-fluke/oh-my-agent/commit/99f5d85a22c0e7d546ae054705d9f84b3c30cc11))
+
+
+### Bug Fixes
+
+* **emit:** exclude junk from skill resources copy ([08f5029](https://github.com/first-fluke/oh-my-agent/commit/08f5029df42a64de98664ae94af3809d50b97a37))
+* **emit:** source marketplace agents from tracked .agents SSOT ([4fc8487](https://github.com/first-fluke/oh-my-agent/commit/4fc8487ae768bca1970bdd8f01769b22b4107d9b))
+
 ## [10.16.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.15.0...cli-v10.16.0) (2026-07-12)
 
 
