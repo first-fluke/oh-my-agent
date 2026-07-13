@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.17.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.1...cli-v10.17.2) (2026-07-13)
+
+
+### Refactoring
+
+* **emit:** make root .claude-plugin the single marketplace SSOT ([b79f738](https://github.com/first-fluke/oh-my-agent/commit/b79f7389ab0269f36d76415e2bf92aeed4125778))
+
 ## [10.17.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.0...cli-v10.17.1) (2026-07-12)
 
 
