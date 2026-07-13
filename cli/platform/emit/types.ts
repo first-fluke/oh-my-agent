@@ -39,8 +39,6 @@ export interface AgentSkillsEmitReport {
 export interface ClaudePluginEmitReport {
   target: "claude-plugin";
   outPath: string;
-  existingPath: string;
-  existingDiffers: boolean;
 }
 
 export interface AgentsMdEmitReport {

@@ -33,11 +33,7 @@ function renderAgentSkillsSection(report: AgentSkillsEmitReport): string[] {
 }
 
 function renderClaudePluginSection(report: ClaudePluginEmitReport): string[] {
-  return [
-    `claude-plugin -> ${report.outPath}`,
-    `  existing: ${report.existingPath}`,
-    `  differs from existing: ${report.existingDiffers ? "yes" : "no"}`,
-  ];
+  return [`claude-plugin -> ${report.outPath}`];
 }
 
 function renderAgentsMdSection(report: AgentsMdEmitReport): string[] {

@@ -3,15 +3,66 @@
   "name": "oh-my-agent",
   "owner": {
     "name": "First Fluke",
-    "url": "https://github.com/first-fluke"
+    "url": "https://firstfluke.com/oh-my-agent"
+  },
+  "metadata": {
+    "description": "Portable multi-agent harness for .agents-based skills and workflows",
+    "version": "10.17.0"
   },
   "plugins": [
     {
       "name": "oma",
       "description": "Portable multi-agent harness for .agents-based skills and workflows",
-      "category": "productivity",
-      "tags": ["multi-agent", "orchestrator", "skills", "workflows"],
-      "source": "./"
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./.agents/skills/oma-academic-writer",
+        "./.agents/skills/oma-architecture",
+        "./.agents/skills/oma-backend",
+        "./.agents/skills/oma-brainstorm",
+        "./.agents/skills/oma-coordination",
+        "./.agents/skills/oma-db",
+        "./.agents/skills/oma-debug",
+        "./.agents/skills/oma-deepsec",
+        "./.agents/skills/oma-design",
+        "./.agents/skills/oma-dev-workflow",
+        "./.agents/skills/oma-docs",
+        "./.agents/skills/oma-frontend",
+        "./.agents/skills/oma-hwp",
+        "./.agents/skills/oma-image",
+        "./.agents/skills/oma-market",
+        "./.agents/skills/oma-mobile",
+        "./.agents/skills/oma-observability",
+        "./.agents/skills/oma-orchestrator",
+        "./.agents/skills/oma-pdf",
+        "./.agents/skills/oma-pm",
+        "./.agents/skills/oma-qa",
+        "./.agents/skills/oma-recap",
+        "./.agents/skills/oma-refactor",
+        "./.agents/skills/oma-scholar",
+        "./.agents/skills/oma-scm",
+        "./.agents/skills/oma-search",
+        "./.agents/skills/oma-skill-creator",
+        "./.agents/skills/oma-slide",
+        "./.agents/skills/oma-tf-infra",
+        "./.agents/skills/oma-translator",
+        "./.agents/skills/oma-video",
+        "./.agents/skills/oma-voice"
+      ],
+      "agents": [
+        "./.agents/agents/architecture-reviewer.md",
+        "./.agents/agents/backend-engineer.md",
+        "./.agents/agents/db-engineer.md",
+        "./.agents/agents/debug-investigator.md",
+        "./.agents/agents/docs-curator.md",
+        "./.agents/agents/frontend-engineer.md",
+        "./.agents/agents/mobile-engineer.md",
+        "./.agents/agents/pm-planner.md",
+        "./.agents/agents/qa-reviewer.md",
+        "./.agents/agents/refactor-engineer.md",
+        "./.agents/agents/research-explorer.md",
+        "./.agents/agents/tf-infra-engineer.md"
+      ]
     }
   ]
 }

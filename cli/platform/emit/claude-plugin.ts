@@ -10,8 +10,12 @@ import { parseFrontmatter } from "../../utils/frontmatter.js";
 import { discoverSkillDirs, SKILLS_DIR } from "./agent-skills.js";
 import type { ClaudePluginEmitReport } from "./types.js";
 
-/** Existing hand-authored marketplace manifest — never overwritten by emit. */
-export const EXISTING_MARKETPLACE_PATH = ".claude-plugin/marketplace.json";
+/**
+ * Stable public marketplace identity. Deliberately NOT sourced from
+ * package.json: the npm workspace root is named `oh-my-agent-workspace`, but
+ * the marketplace that consumers `marketplace add` is `oh-my-agent`.
+ */
+const MARKETPLACE_NAME = "oh-my-agent";
 
 // Agent definitions are read from the tracked .agents/ SSOT, NOT from
 // .claude/agents (a gitignored per-machine vendor artifact of `oma install`) —
@@ -79,7 +83,7 @@ export function buildMarketplaceManifest(
 
   return {
     $schema: "https://anthropic.com/claude-code/marketplace.schema.json",
-    name: pkg.name ?? "oh-my-agent",
+    name: MARKETPLACE_NAME,
     owner: {
       name: ownerName ?? "First Fluke",
       url: pkg.homepage ?? "https://github.com/first-fluke/oh-my-agent",
@@ -106,9 +110,12 @@ export function buildMarketplaceManifest(
 }
 
 /**
- * Emit the generated marketplace manifest to `outDir/marketplace.json` and
- * report whether it differs from the existing hand-authored
- * `.claude-plugin/marketplace.json` (which is never overwritten by emit).
+ * Emit the marketplace manifest to `outDir/marketplace.json`. The canonical
+ * committed copy lives at the repo-root `.claude-plugin/marketplace.json`
+ * (the path Claude Code auto-discovers), so `oma emit` targets that directory
+ * directly — emit, not a hand-authored file, is the single source of truth.
+ * `outDir` is honored verbatim so the drift check can emit into a scratch
+ * directory without touching the working tree.
  */
 export function emitClaudePlugin(
   repoRoot: string,
@@ -121,16 +128,5 @@ export function emitClaudePlugin(
   const outPath = join(outDir, "marketplace.json");
   writeFileSync(outPath, serialized);
 
-  const existingPath = join(repoRoot, EXISTING_MARKETPLACE_PATH);
-  const existingExists = existsSync(existingPath);
-  const existingContent = existingExists
-    ? readFileSync(existingPath, "utf-8")
-    : "";
-
-  return {
-    target: "claude-plugin",
-    outPath,
-    existingPath,
-    existingDiffers: !existingExists || existingContent !== serialized,
-  };
+  return { target: "claude-plugin", outPath };
 }
