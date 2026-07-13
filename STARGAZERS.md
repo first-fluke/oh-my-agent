@@ -5,14 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-07-12 · 2 unstarred
+## 2026-07-13 · 1 unstarred
 
-- **@piker0925** · JUNSEO OH · 25 repos · 0 followers
-- **@saadev0** · 𝓈𝒶𝒶 · 0 repos · 1 followers
+- **@youngchangjo** · SnapWorks Lab · SnapWorks Lab · 7 repos · 2 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1157)
+## Current (1156)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -1140,7 +1139,6 @@ summaries to spot which persona is churning.
 - @yongjikyang — 2026-04-23
 - @yoonwootak — 2026-05-05
 - @yoony97 — 2026-02-05
-- @youngchangjo — 2026-04-10
 - @younghyundev — 2026-04-25
 - @youngjin-yun-kurly — 2026-02-03
 - @YounJJ — 2026-02-07
