@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.17.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.2...cli-v10.17.3) (2026-07-14)
+
+
+### Bug Fixes
+
+* **state:** use writable handle for atomicWriteJson fsync on Windows ([13fa956](https://github.com/first-fluke/oh-my-agent/commit/13fa956ecd37a0dd278983033471fba0e1765ef0))
+
+
+### Documentation
+
+* **brainstorm:** delegate high-stakes blind review to fresh-context subagents ([12b0374](https://github.com/first-fluke/oh-my-agent/commit/12b037488ee347a7ec70a75cdae6bdaff36c2be4))
+
 ## [10.17.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.1...cli-v10.17.2) (2026-07-13)
 
 
