@@ -134,7 +134,10 @@ export function atomicWriteJson(path: string, value: unknown): void {
   ensureParent(path);
   const tmp = `${path}.${process.pid}.${Date.now()}.tmp`;
   writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`, "utf-8");
-  const fd = openSync(tmp, "r");
+  // Open read-write ("r+"): fsyncSync on a read-only handle fails with EPERM
+  // on Windows, which aborts the metadata write even though the durable
+  // JSONL event was already appended. See issue #613.
+  const fd = openSync(tmp, "r+");
   try {
     fsyncSync(fd);
   } finally {

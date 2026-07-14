@@ -1,12 +1,13 @@
 import {
   existsSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   activateWorkflowSession,
@@ -178,6 +179,36 @@ describe("L1 state events", () => {
       category: "main",
       status: "active",
     });
+  });
+
+  it("writes meta.json for each meta-refreshing event without leaving a temp file (issue #613)", () => {
+    for (const kind of ["session.created", "workflow.phase", "session.ended"]) {
+      emitEvent(projectDir, "oma-win", {
+        kind,
+        payload: { workflow: "debug", category: "main" },
+      });
+    }
+
+    // Exactly one event appended per invocation.
+    const lines = readFileSync(eventsPath(projectDir, "oma-win"), "utf-8")
+      .trim()
+      .split("\n");
+    expect(lines).toHaveLength(3);
+
+    // meta.json exists (the fsync path succeeded)...
+    const meta = metaPath(projectDir, "oma-win");
+    expect(existsSync(meta)).toBe(true);
+    expect(JSON.parse(readFileSync(meta, "utf-8"))).toMatchObject({
+      sid: "oma-win",
+      workflow: "debug",
+      status: "completed",
+    });
+
+    // ...and no atomic-write temp file is left behind.
+    const leftovers = readdirSync(dirname(meta)).filter((name) =>
+      name.includes(".tmp"),
+    );
+    expect(leftovers).toEqual([]);
   });
 
   it("ignores malformed JSONL lines when reading events", () => {
