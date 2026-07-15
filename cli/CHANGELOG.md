@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.3...cli-v10.18.0) (2026-07-15)
+
+
+### Features
+
+* **install:** restore opt-in global git config for rerere and defaultBranch ([7da2c7d](https://github.com/first-fluke/oh-my-agent/commit/7da2c7d28a60871885a357289f305b20f7306528))
+
 ## [10.17.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.2...cli-v10.17.3) (2026-07-14)
 
 
