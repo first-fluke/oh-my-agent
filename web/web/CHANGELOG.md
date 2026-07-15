@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.8...web-v3.18.0) (2026-07-15)
+
+
+### Features
+
+* **install:** restore opt-in global git config for rerere and defaultBranch ([7da2c7d](https://github.com/first-fluke/oh-my-agent/commit/7da2c7d28a60871885a357289f305b20f7306528))
+
 ## [3.17.8](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.7...web-v3.17.8) (2026-07-12)
 
 
