@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.18.0...cli-v10.19.0) (2026-07-16)
+
+
+### Features
+
+* **brainstorm:** add prose approach briefs and gated triz-lite seeding ([9af9865](https://github.com/first-fluke/oh-my-agent/commit/9af9865734054f07f71df5292ad33f35e410794d))
+
 ## [10.18.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.17.3...cli-v10.18.0) (2026-07-15)
 
 
