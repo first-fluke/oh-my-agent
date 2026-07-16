@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.18.0",
-  "releaseDate": "2026-07-15T19:29:58.753Z",
+  "releaseDate": "2026-07-16T06:41:59.164Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -271,8 +271,8 @@
     },
     {
       "path": ".agents/hooks/variants/opencode/oma.ts",
-      "sha256": "554abe2366c557d1b5d03793c8d5d84cc1294a8b0ad86c953c7ceb73ae97aa8b",
-      "size": 15635
+      "sha256": "d6358d3c1d0cdc0545fc2e5455e1f9c635d646d28caa8b61893e1c491430a750",
+      "size": 15620
     },
     {
       "path": ".agents/hooks/variants/pi/README.md",
@@ -691,8 +691,13 @@
     },
     {
       "path": ".agents/skills/oma-brainstorm/SKILL.md",
-      "sha256": "948e1b40746ff58bf23ee91a40abb4d552724bc679d2e27a24ddabefc3cea178",
-      "size": 6906
+      "sha256": "a12b4968726d5d32aed72a0755688695ad86f2c9d069cefeebc51cc00ed28086",
+      "size": 8503
+    },
+    {
+      "path": ".agents/skills/oma-brainstorm/resources/triz-lite.md",
+      "sha256": "253afee1fc6bce921020013e390d2864f53f7a84aef98ad1598d0ab621f3a229",
+      "size": 4674
     },
     {
       "path": ".agents/skills/oma-coordination/SKILL.md",
@@ -2026,8 +2031,8 @@
     },
     {
       "path": ".agents/workflows/brainstorm.md",
-      "sha256": "06b3508a42552c817af71c0f58269d91db186cd375ff8d6de6e65885c173be7e",
-      "size": 7964
+      "sha256": "f028f3e2bafb151eb337d4ddaa98c7f114f567788a00f21ed957928d45c4acd3",
+      "size": 9708
     },
     {
       "path": ".agents/workflows/convert.md",
@@ -2141,6 +2146,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 426
+    "totalFiles": 427
   }
 }
