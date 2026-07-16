@@ -53,13 +53,67 @@ Do NOT proceed to Step 3 until you have a clear understanding of the user's inte
 
 ## Step 3: Propose Approaches
 
-Present **2-3 distinct approaches** to solve the problem:
-- For each approach: summary, pros, cons, effort estimate (S/M/L)
-- **Label each approach as `tactical` (patch/workaround/quick win) or `structural` (root-cause/proper engineering).**
-- Highlight the **recommended approach** with rationale
-- Include a brief trade-off comparison matrix
+Present **2-3 distinct approaches** to solve the problem.
 
-**Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
+### Optional TRIZ-lite (contradiction problems only)
+
+**Default: off.** If the core issue is a technical or UX tradeoff ("improving A worsens B"), draft approaches collapse into the same axis (only knob-turning: interval, TTL, debounce, log level), or the user asks for inventive / contradiction framing, load and follow:
+
+`.agents/skills/oma-brainstorm/resources/triz-lite.md`
+
+Use T1–T4 only to **seed** mechanistically different options, then present them with the brief format below. Skip TRIZ-lite for ordinary product exploration without a contradiction. Do not run full TRIZ, ARIZ, classical matrices, or fake numeric scores.
+
+### Presentation order (mandatory)
+
+**Prose briefs first → comparison matrix → recommendation.** Do not lead with a matrix-only dump.
+
+For **each** approach, write a short choosable brief (enough to decide — not a full Step 4 design):
+
+```markdown
+## Approach {A|B|C} — {short name}
+**Label:** tactical | structural
+**One-liner:** {one sentence}
+
+### What changes (user / system scenario)
+- When the user {does X} → {what they see / what the system does}
+- How this differs from today: {1–2 sentences}
+
+### How it works (plain language)
+- {3–5 short bullets on the mechanism — no file lists or code}
+
+### What it solves vs leaves
+- Solves: ...
+- Intentionally leaves: ...
+- Residual risks: ...
+
+### Cost feel
+- Effort: S | M | L
+- Likely touch surface: {areas}
+- Reversibility: low | medium | high
+
+### Pros / Cons
+- Pros: ...
+- Cons: ...
+```
+
+Then:
+
+```markdown
+## Comparison at a glance
+| Criterion | A | B | C |
+|-----------|---|---|---|
+| ... | ... | ... | ... |
+
+## Recommendation
+**{X}** — {3–6 sentences: scenario + tradeoff + why structural fits}
+Questions that help choose: {1–2 optional prompts for the user}
+```
+
+### Approach rules
+
+- **Label each approach** as `tactical` (patch/workaround/quick win) or `structural` (root-cause/proper engineering).
+- Approaches must be **mechanistically distinct** when possible — not three intensities of the same knob.
+- **Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
 
 **You MUST get user confirmation on the chosen approach before proceeding to Step 4.**
 
