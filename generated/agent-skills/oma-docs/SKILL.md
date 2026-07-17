@@ -1,9 +1,11 @@
 ---
 name: oma-docs
-description: Verify documentation references against the current codebase and
-  propose updates for diff-affected docs. Use to check if docs still match
-  reality (broken file paths, CLI commands, config keys, env vars, scripts) and
-  to surface docs that may need updating after code changes.
+description: Verify documentation references against the current codebase,
+  propose updates for diff-affected docs, detect i18n translation drift, and
+  lint translated docs for CJK style issues. Use to check if docs still match
+  reality (broken file paths, CLI commands, config keys, env vars, scripts), to
+  surface docs that may need updating after code changes, or to find stale or
+  style-broken translations.
 ---
 
 # oma-docs - Documentation Drift Detector
@@ -11,22 +13,25 @@ description: Verify documentation references against the current codebase and
 ## Scheduling
 
 ### Goal
-Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generated patch proposals for docs affected by recent code changes (sync mode). Both modes run on-demand; sync is always interactive.
+Detect broken references in repo markdown — default glob `**/*.md` (verify mode), propose LLM-generated patch proposals for docs affected by recent code changes (sync mode), detect structural drift between English source docs and their translations (i18n mode), and lint translated docs for CJK style anti-patterns (lint mode). All modes run on-demand; sync is always interactive.
 
 ### Intent signature
 - User asks to check if docs are up to date, find broken doc links, verify file paths referenced in docs, or detect documentation drift.
 - User asks to update docs after a code change, propose doc patches for a git diff, or sync affected docs.
+- User asks whether translations are stale, which i18n docs drifted from the English source, or to lint translated docs for style issues (em-dashes in CJK targets, etc.).
 - A workflow hook checks `docs.auto_verify: true` and runs `oma docs verify --json` at completion.
 
 ### When to use
 - After a refactor, rename, or file deletion, to find stale references in docs.
 - Before a release, to confirm that CLI commands, file paths, and config keys in docs still exist.
 - After a significant git diff, to discover which docs reference the changed files and may need updating.
+- After updating English source docs (`web/docs`), to find translations (`web/i18n/{lang}/...`) that drifted or went missing.
+- Before a docs release, to lint CJK translations for content-level anti-patterns.
 - Routine drift check on any docs-heavy repo.
 
 ### When NOT to use
 - Generating docs from scratch for undocumented features → v2 create mode.
-- Multilingual translation of docs → use `oma-translator`.
+- Actually translating or restructuring docs → use `oma-translator` (`oma docs i18n` / `oma docs lint` only detect; they never edit translations).
 - Symbol-level semantic drift (function signature changes not reflected in prose) → v2 L3 mode.
 - CI-blocking enforcement → v2 block mode (v1 is warn-only).
 
@@ -35,6 +40,10 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 **verify mode**: Optional glob path (default `**/*.md`), optional `--json` flag, optional `--report-file <path>`.
 
 **sync mode**: Optional git diff range (default `--cached`, fallback `HEAD~1..HEAD`).
+
+**i18n mode**: Optional `--min-severity <CRITICAL|HIGH|MEDIUM|LOW>` (default `MEDIUM`), optional `--json`.
+
+**lint mode**: Optional `--locales <list>` (comma-separated CJK locales, default `ko,ja,zh`), optional `--json`.
 
 ### Expected outputs
 
@@ -46,33 +55,42 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 - Per-doc patch proposals drafted by the host LLM from the CLI's candidate-doc list, confirmed per doc (`[y] apply [n] skip [d] diff [s] full proposal` style).
 - Docs modified only on explicit user approval; `doc-refs.json` regenerated after applies.
 
+**i18n mode**:
+- Per-pair structural drift signals (line count, heading count, EN-newer recency flag) with severity, as markdown summary or `--json`. Report-only: drifting pairs are handed to `oma-translator` in diff-sync mode.
+
+**lint mode**:
+- Style issues grouped by rule / language / file, as markdown summary or `--json`. Report-only: restructuring goes through `oma-translator`.
+
 ### Dependencies
 - `cli/commands/docs/extract.ts`: markdown AST + L2 pattern extractor.
 - `cli/commands/docs/resolve.ts`: deterministic broken-ref checker.
 - `cli/commands/docs/reporter.ts`: deterministic markdown/JSON report renderer (no LLM call; host LLM does narrative synthesis).
 - `cli/commands/docs/sync-propose.ts`: git diff intake, reverse lookup, candidate-doc selector with secret redaction (no LLM call; host LLM drafts patches).
-- `docs/generated/doc-refs.json`: single-direction reference index (git-tracked, regenerated on every verify run).
-- `docs/generated/url-drift.json`: lychee-produced URL drift report (written by background lychee spawn; gitignored or tracked at user discretion).
+- `cli/commands/docs/i18n-drift.ts`: EN↔translation structural drift detector (line/heading counts, last-commit recency; no LLM call).
+- `cli/commands/docs/lint-i18n.ts`: CJK style linter for translated docs (no LLM call, no auto-fix).
+- `docs/generated/doc-refs.json`: single-direction reference index, regenerated on every verify run. Gitignored — the CLI force-adds `docs/generated/` to `.gitignore` so generated artifacts are never committed.
+- `docs/generated/url-drift.json`: lychee-produced URL drift report (written by background lychee spawn; gitignored under the same `docs/generated/` rule).
 - `lychee`: external Rust tool for URL link checking. Detected on PATH; install via `brew install lychee` or see https://github.com/lycheeverse/lychee#installation. Optional but recommended.
 - `.agents/oma-config.yaml`: `docs.auto_verify` (workflow hook opt-in), `docs.check_urls` (URL checking on/off, default true), and `docs.exclude` (glob list of markdown trees the walker must not scan — benchmark artifacts, translation mirrors, etc.; default `[]`) toggles.
 
 ### Control-flow features
-- Mode is selected from the first argument: `verify` or `sync`.
+- Mode is selected from the first argument: `verify`, `sync`, `i18n`, or `lint`.
 - verify: extract → resolve → report (fully deterministic CLI; host LLM adds narrative summary on top of the JSON/markdown output).
 - sync: git diff → reverse lookup → candidate list (CLI) → host-LLM patch proposals → interactive accept/reject.
+- i18n / lint: fully deterministic CLI reports; host LLM routes drifting pairs / style issues to `oma-translator`.
 - Branches on `--json`, `--report-file`, LLM availability, and network reachability.
 - Never blocks workflow completion in v1 (warn-only hook policy).
 
 ## Structural Flow
 
 ### Entry
-1. Read first argument to select mode (`verify` | `sync`). If absent, print help and exit.
+1. Read first argument to select mode (`verify` | `sync` | `i18n` | `lint`). If absent, print help and exit.
 2. Load `oma-config.yaml` to check `docs.auto_verify` when invoked from a workflow hook.
 3. Confirm required CLI dependencies (`oma docs verify`, `oma docs sync`) are on PATH.
 
 ### Scenes
 1. **PREPARE**: Determine mode, resolve path/diff-range arguments, confirm tool availability.
-2. **ACQUIRE**: Run extractor (`extract.ts`) to regenerate `doc-refs.json` from `docs/**/*.md` (verify) or build in-memory reverse index from existing `doc-refs.json` (sync).
+2. **ACQUIRE**: Run extractor (`extract.ts`) to regenerate `doc-refs.json` from repo markdown (`**/*.md`, verify) or build in-memory reverse index from `doc-refs.json` (sync; a cached index newer than 5 minutes is reused, otherwise regenerated).
 3. **REASON**: Resolve each reference deterministically (verify) or correlate changed files to candidate docs via reverse lookup (sync).
 4. **ACT**: Render the deterministic drift report (verify) or list candidate docs with matched refs (sync). Host LLM does any natural-language synthesis or patch drafting on top of this output.
 5. **VERIFY**: Confirm output shape is valid (JSON schema check for `--json`; structured candidate list for sync).
@@ -83,7 +101,7 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 - sync mode: PREPARE → ACQUIRE (reverse index) → REASON (candidate matching) → ACT (LLM proposals) → VERIFY (interactive) → FINALIZE (apply approved).
 - If LLM is unavailable in verify: skip reporter summary, emit raw JSON drift report.
 - If LLM is unavailable in sync: emit candidate-list-only output (no patch proposals); user reviews manually.
-- If `doc-refs.json` is stale or missing in sync: run extractor first, then continue.
+- If `doc-refs.json` is missing or older than 5 minutes in sync: regenerate via the extractor, then continue.
 
 ### Failure and recovery
 - Extractor parse error on a single doc: skip doc + warn, continue with remaining docs.
@@ -108,6 +126,8 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 | Build reverse index | `INFER` | `sync-propose.ts`: in-memory map from `doc-refs.json` |
 | Match diff to candidate docs | `RESOLVE` | `sync-propose.ts`: git diff + reverse lookup |
 | Redact secrets from diff | `VALIDATE` | Exclude `.env*`, `*.pem`, `*.key`, `id_rsa*`; sanitize content |
+| Detect i18n drift | `RESOLVE` | `i18n-drift.ts`: EN↔translation structural signals + severity |
+| Lint translated docs | `VALIDATE` | `lint-i18n.ts`: CJK style anti-patterns, report-only |
 | Generate patch proposals | `INFER` | Host LLM drafts patches from `sync-propose.ts` candidate output (no CLI LLM call) |
 | Render drift report | `RENDER` | `reporter.ts`: markdown (default), JSON (`--json`), file (`--report-file`) |
 | Apply approved patches | `WRITE` | `git apply` on user-confirmed patches only |
@@ -115,9 +135,11 @@ Detect broken references in `docs/**/*.md` (verify mode) and propose LLM-generat
 
 ### Tools and instruments
 - `cli/commands/docs/extract.ts`: `remark` + `unified` markdown AST, L2 pattern extraction, escape hatch filter, `docs/generated/doc-refs.json` writer.
-- `cli/commands/docs/resolve.ts`: case-sensitive file existence, `which` for CLI tokens, `package.json` scripts lookup, ripgrep/git grep for env vars, `oma-config.yaml` deep-path check. Per-target dedupe caches (cli by first token, env, config) and per-directory listing cache for file resolution. URL kind is filtered out by the verify command and delegated to lychee.
+- `cli/commands/docs/resolve.ts`: case-sensitive file existence, `which` for CLI tokens, `package.json` scripts lookup, ripgrep/git grep for env vars, `oma-config.yaml` deep-path check. URL kind is filtered out by the verify command and delegated to lychee. (Internal caching strategy: see design doc.)
 - `cli/commands/docs/reporter.ts`: deterministic markdown + JSON renderer. **No LLM call.** Friendly summary, severity tagging, fix prioritization are the host LLM's responsibility.
 - `cli/commands/docs/sync-propose.ts`: git diff intake, reverse index build, secret-pattern + gitignore file exclusion. Returns candidate docs with matched refs only. **No LLM call.** Patch synthesis is the host LLM's responsibility.
+- `cli/commands/docs/i18n-drift.ts`: pairs `web/docs` English sources with `web/i18n/{lang}/...` translations, emits line/heading/recency drift signals with severity. **No LLM call.** Translation patching is `oma-translator`'s responsibility.
+- `cli/commands/docs/lint-i18n.ts`: content-level style linter for CJK translations (e.g. em-dash anti-pattern). **No LLM call, no auto-fix.** Restructuring is the host LLM's responsibility via `oma-translator`.
 - External: [`lychee`](https://github.com/lycheeverse/lychee) (background URL link checking; install via `brew install lychee`).
 
 ### Host-LLM contract
@@ -136,12 +158,22 @@ After `oma docs sync <range> --json`:
 3. Present patches to the user for review. **Never auto-apply.**
 4. On user approval, apply via `git apply` or by writing the doc directly.
 
+After `oma docs i18n --json`:
+1. Read the drift pairs (severity, line/heading diff, EN-newer flag per translation).
+2. Prioritize CRITICAL/HIGH pairs; pass each to `oma-translator` in diff-sync mode (see that skill's § Diff-Sync Mode).
+3. Never bulk-retranslate; patch only the drifted sections, with user confirmation.
+
+After `oma docs lint --json`:
+1. Read the style issues grouped by rule / language / file.
+2. Restructure flagged sentences via `oma-translator` (e.g. § Stage 4-A em-dash rule); confirm edits with the user before writing.
+
 ### Canonical command path
 
 **verify mode** runs a drift check against the current codebase:
 
 ```bash
-# Default: scan all docs/**/*.md, render markdown to stdout.
+# Default: scan all repo markdown (**/*.md, gitignored files excluded),
+# render markdown to stdout.
 # URL link checking is delegated to lychee in the background
 # (install: `brew install lychee`). Core check ~8s on a 1k-doc repo.
 oma docs verify
@@ -153,7 +185,7 @@ oma docs verify cli/README.md
 # Machine-readable output for CI / hooks
 oma docs verify --json
 
-# Persist full markdown report to a file
+# Persist full markdown report to a file (works alongside --json too)
 oma docs verify --report-file ./drift-report.md
 
 # Skip URL checking entirely (when lychee is run separately, or as a
@@ -183,6 +215,27 @@ oma docs sync main..feature-branch
 # Sync regenerates docs/generated/doc-refs.json after applying any patches.
 ```
 
+**i18n mode** detects structural drift between English source docs (`web/docs`) and translations (`web/i18n/{lang}/...`); report-only, never edits translations:
+
+```bash
+# Default: severity ≥ MEDIUM, markdown summary to stdout
+oma docs i18n
+
+# Machine-readable, custom threshold
+oma docs i18n --json --min-severity HIGH
+
+# Output: per-pair drift signals (line/heading diff, EN-newer flag).
+# Hand CRITICAL/HIGH pairs to `oma-translator` diff-sync mode.
+```
+
+**lint mode** checks translated docs for content-level style anti-patterns (report-only, no auto-fix):
+
+```bash
+# Default CJK locales: ko,ja,zh
+oma docs lint
+oma docs lint --json --locales ko,ja
+```
+
 **Workflow hook (opt-in)** runs verify automatically at workflow completion when `docs.auto_verify: true` in `oma-config.yaml`:
 
 ```bash
@@ -194,21 +247,23 @@ oma docs verify --json
 ### Resource scope
 | Scope | Resource target |
 |-------|-----------------|
-| `LOCAL_FS` read | `docs/**/*.md` (extractor input), `docs/generated/doc-refs.json` (index), `.env.example`, `package.json`, `.agents/oma-config.yaml` |
+| `LOCAL_FS` read | repo markdown `**/*.md` (extractor input), `docs/generated/doc-refs.json` (index), `web/docs` + `web/i18n/**` (i18n/lint), `.env.example`, `package.json`, `.agents/oma-config.yaml` |
 | `LOCAL_FS` write | `docs/generated/doc-refs.json` (regenerated each verify run), approved sync patches |
 | `CODEBASE` read-only | Existence checks for file/cli/script/env/config refs; git diff intake |
 | `PROCESS` | `git diff`, `git apply`, `which`, background `lychee` spawn |
 | `NETWORK` | URL checking delegated to `lychee` (no internal HEAD fallback; see Guardrail 6) |
 
 ### Preconditions
-- `docs/` directory exists at repo root.
+- Markdown files exist in the repo; `docs/generated/` is created on demand for the index.
 - `cli/commands/docs/` is built and `oma` binary is on PATH (or invoked directly via `bun run`).
 - For sync mode: a git diff is available (`--cached` stage or recent commits).
+- For i18n / lint modes: `web/docs` (EN source) and `web/i18n/{lang}` trees exist.
 
 ### Effects and side effects
 - verify: regenerates `docs/generated/doc-refs.json` (always overwrites).
 - sync: modifies docs files only on user approval; regenerates `doc-refs.json` after applies.
-- Both modes: stdout output (summary or full report).
+- i18n / lint: stdout report only; no file writes.
+- All modes: stdout output (summary or full report).
 - No `.agents/` files are ever modified.
 
 ### Guardrails
@@ -224,9 +279,10 @@ oma docs verify --json
 9. **Escape hatch respected**: `<!-- oma-docs:ignore-start -->` / `<!-- oma-docs:ignore-end -->` blocks and frontmatter `oma-docs: skip` are honored; no ref extraction from ignored regions. Use this for illustrative example paths in tutorials (hypothetical project files in inline code) that intentionally do not resolve.
 10. **Gitignored targets are generated, not broken**: a `file` ref whose target does not exist but matches the project's gitignore rules (`git check-ignore`) is classified as `skipped` (a documented runtime/generated output such as `.agents/results/result-*.md`, `.agents/state/memories/*`, `.serena/memories/*`, `.agents/state/*.json`), never as `broken`. gitignore is the single source of truth for "produced at runtime" — gitignore an output path and it stops being flagged. The `skipped` count is surfaced (markdown summary + JSON `skippedCount`) so nothing is silently dropped.
 11. **Non-prose trees excluded via `docs.exclude`**: committed-but-non-prose markdown (benchmark run artifacts, translation mirrors validated separately by `oma docs i18n`) is dropped from the scan by the `docs.exclude` globs rather than producing unactionable broken refs. An explicit single-file path argument bypasses `docs.exclude`.
+12. **i18n / lint modes never write**: both emit reports only. Translation patches go through `oma-translator` with per-file user confirmation; the CLI never edits translations.
 
 ### v1 scope note
-v1 covers `verify` and `sync` (broken-only classification, L2 ref extraction). The following are explicitly deferred to v2: `create` mode (generate missing docs), multilingual sync (deeper `oma-translator` integration), L3 symbol-level extraction (Tree-sitter/LSP), GitHub Action wrapper, `block` hook mode.
+v1 covers `verify`, `sync` (broken-only classification, L2 ref extraction), `i18n` (structural translation drift), and `lint` (CJK style anti-patterns). The following are explicitly deferred to v2: `create` mode (generate missing docs), semantic (content-level) translation drift, L3 symbol-level extraction (Tree-sitter/LSP), GitHub Action wrapper, `block` hook mode.
 
 ## References
 - Design doc: `docs/plans/designs/008-oma-docs.md` (full architecture, schema spec, decision log, edge cases).

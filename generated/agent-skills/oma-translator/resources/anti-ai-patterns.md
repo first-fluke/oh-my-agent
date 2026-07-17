@@ -25,7 +25,7 @@ AI appends shallow analysis as participle phrases. In Korean/Japanese translatio
 
 - EN: "The update improves performance, **ensuring a seamless experience**"
 - Bad KO: "업데이트는 성능을 향상시키며, **원활한 경험을 보장합니다**" (직역)
-- Good KO: "업데이트로 성능이 좋아졌어요" (의미만 살림)
+- Good KO: "이번 업데이트로 성능이 개선되어 더 매끄럽게 사용할 수 있습니다" (구조는 풀되 의미는 보존)
 
 ### 3. Promotional Tone
 
@@ -132,7 +132,7 @@ AI heavily relies on "adjective + noun" or "noun + adjective" compound phrases:
 
 These compounds stack up and create a dense, unnatural rhythm:
 - Bad: "직관적인 UI와 강력한 성능, 원활한 연동을 제공합니다"
-- Good: "UI가 쓰기 편하고, 빠르고, 연동도 잘 돼요"
+- Good: "UI는 쓰기 편하고, 성능이 좋고, 연동도 매끄럽습니다"
 
 Rules:
 - Break compounds into simpler, spoken-style expressions
@@ -300,7 +300,7 @@ English uses passive voice frequently. CJK languages strongly prefer active voic
 - **Chinese:** 被, 由, 受到 overuse
   - Bad: "这个功能**被团队开发了**"
   - Good: "团队开发了这个功能"
-- **Japanese:** ~される, ~られる overuse where能動態 is natural
+- **Japanese:** ~される, ~られる overuse where 能動態 (active voice) is natural
 
 ### 21. Noun Pile-up (Long Modifier Chains)
 
@@ -379,11 +379,11 @@ Korean publishing and technical-writing convention attaches the trailing particl
 - Bad: "`prompt` 로 5 개 하네스를 비교합니다"
 - Good: "`prompt`로 5개 하네스를 비교합니다"
 - Bad: "`oh-my-agent` 소스를 프로젝트에 시드"
-- Good: "`oh-my-agent` 소스를 프로젝트에 심습니다" (also avoid Sino-Korean noun transliteration of English verbs; see the next sub-rule)
+- Good: "`oh-my-agent` 소스를 프로젝트에 심습니다" (also avoid noun-pinned verbs; see the next sub-rule)
 
-**No Sino-Korean noun transliteration of English verbs:**
+**No noun-pinned verbs (loanword or Sino-Korean):**
 
-Pinning English verbs into Korean as Sino-Korean nouns ("시드", "로드", "발동", "진행") strips out the action and reads as jargon. Unpack them into natural Korean verbs.
+Pinning English verbs into Korean as bare noun forms — whether English loanword nouns ("시드", "로드") or stiff Sino-Korean nouns ("발동", "진행") — strips out the action and reads as jargon. Unpack them into natural Korean verbs.
 
 - Bad KO: "skill을 **로드**" → Good KO: "skill을 **불러옵니다**"
 - Bad KO: "프로젝트에 **시드**" → Good KO: "프로젝트에 **심습니다**"
@@ -417,4 +417,4 @@ Before finalizing any translation, scan for:
 - [ ] No cleft sentence calques from English
 - [ ] No body-text fragments (noun-ending sentences appearing abruptly in CJK body text); labels and table cells are exempt
 - [ ] CJK typography: no space between inline code and a trailing Korean particle
-- [ ] No Sino-Korean transliteration of English verbs (e.g., 시드 / 로드 / 발동 / 진행); unpack into natural Korean verbs
+- [ ] No noun-pinned verbs (e.g., 시드 / 로드 as loanword nouns, 발동 / 진행 as stiff Sino-Korean nouns); unpack into natural Korean verbs

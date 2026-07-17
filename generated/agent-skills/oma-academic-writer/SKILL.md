@@ -47,7 +47,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - `rubric_or_constraint`: assignment brief, rubric file, or word/structure limits (path or inline text)
 - `existing_draft`: prior text to revise or audit (path or inline text); required for `revise` and `review`
 - `source_data`: available evidence, figures, citations the writer may use
-- `target_register`: defaults to formal academic English
+- `target_register`: defaults to formal academic English with American spelling (en-US)
 
 ### Expected outputs
 - `draft` mode: section heading + drafted prose + Writing Notes (sentence mix, key verbs, anti-AI flags resolved, paragraph lengths) + Claim-Evidence Map
@@ -165,7 +165,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 1. Every sentence must be verifiable; never fabricate data, statistics, or citations.
 2. Quote-before-judgment: cite the literal constraint or rubric text before applying any rule.
 3. Never combine distinct rules to invent a new constraint; apply rules exactly as written.
-4. Banned generic verbs (`show`, `have`, `make`, `do`, `get`, `use`, `give`, `say`, `put`, `see`, `come`, `go`, `take`, `find`, `know`, `think`, `want`, `try`, `need`, `seem`, `become`, `keep`, `help`, `start`, `turn`, `bring`, `run`, `hold`, `set`) must not appear as main verbs; replace per `academic-verb-tiers.md`.
+4. Banned generic verbs (`show`, `have`, `make`, `do`, `get`, `use`, `give`, `say`, `put`, `see`, `come`, `go`, `take`, `find`, `know`, `think`, `want`, `try`, `need`, `seem`, `become`, `keep`, `help`, `start`, `turn`, `bring`, `run`, `hold`, `set`) must not appear as main verbs; replace per `academic-verb-tiers.md`. Exception: natural copular/possessive `is`/`are`/`has` are allowed and preferred over inflated substitutes (anti-AI checklist §4).
 5. Never place 3+ sentences of the same structural type consecutively; vary length (short 8–15, medium 16–25, long 26–40 words) and openers.
 6. Match hedge strength to evidence strength per `hedging-guide.md`; never use absolute claim words (`definitely`, `clearly`, `obviously`) outside mathematical facts; never first-person `I think` / `I believe`.
 7. Never cluster 3+ flagged AI-vocabulary items in a single paragraph; never insert promotional or inflated language; never append superficial `-ing` clauses for analysis.

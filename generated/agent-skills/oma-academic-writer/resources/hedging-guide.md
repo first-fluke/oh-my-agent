@@ -30,13 +30,13 @@ Academic writing requires calibrated certainty: neither overclaiming nor excessi
 |----------------|-------|
 | High | demonstrate, confirm, establish, verify, prove |
 | Moderate | suggest, indicate, imply, point to, appear |
-| Low | hint at, raise the possibility, seem to, tend to |
+| Low | hint at, raise the possibility, appear to, tend to |
 
 ### Hedging adverbs
 
 | Certainty Level | Adverbs |
 |----------------|---------|
-| High | clearly, definitively, conclusively, unequivocally |
+| High | clearly, definitively, conclusively, unequivocally (rule 7: mathematical or logical certainties only) |
 | Moderate | generally, typically, largely, predominantly |
 | Low | possibly, potentially, perhaps, arguably, presumably |
 | Speculative | conceivably, hypothetically, tentatively |
@@ -86,13 +86,15 @@ Using two hedge devices where one suffices weakens the claim unnecessarily.
 - Good: "It **may** be the case that..."
 
 - Bad: "The results **seem to suggest** that..."
-- Good: "The results **suggest** that..." or "The results **seem to indicate** that..."
+- Good: "The results **suggest** that..." or "The results **appear to** support..."
+
+Note: "seem" is a banned generic main verb (see `academic-verb-tiers.md`); prefer "appear" for this hedge.
 
 ### 5. Use attribution hedging for interpretive claims
 
 When offering your own analysis (not reporting others' findings), attribute the interpretation explicitly.
 
-- "This pattern **appears to** reflect broader changes in playing strategy."
+- "This pattern **appears to** reflect a shift in playing strategy."
 - "One interpretation of this trend is that..."
 - "Based on this analysis, it is **reasonable to infer** that..."
 

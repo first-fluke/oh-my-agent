@@ -107,7 +107,7 @@ outputs:
 ### Failure and recovery
 - If a provider is unavailable, try the next provider in the capability's `order`; only chain exhaustion is a stage failure.
 - If the Remotion toolchain is not bootstrapped, point the user to `oma video doctor --install` (one-time: deps + headless shell + Pretendard font); fall back to the MPT compositor where applicable (MPT itself needs a one-time `oma video doctor --install-mpt`).
-- If Voicebox MCP is down, fall back through voicebox-stt -> whisper.cpp -> estimated timing (still produces captions).
+- If Voicebox MCP is down, fall back to estimated timing (still produces captions). A whisper.cpp hop between the two is reserved but not yet wired (`TODO(oma-deferred): whisper-cpp`).
 - If the brief locale is non-source, translate via oma-translator (key-free); if absent, warn and keep source text.
 
 ### Exit
@@ -209,7 +209,7 @@ Before invoking `oma video generate`, the calling agent runs this checklist. **I
 - [ ] **Locale**: narration + caption language (default from config; translated via oma-translator when non-source).
 - [ ] **Captions**: `tiktok` (centered, static windowed cues), `lower-third`, or `none`.
 - [ ] **Duration**: target seconds (<= 180) or `auto` (derived from the script).
-- [ ] **Voice / music**: voice profile or `none`; music `upbeat` / `calm` / `none`.
+- [ ] **Voice / music**: voice profile or `none`; music `upbeat` / `calm` / `none`. **The default voice is `none` → a silent video with estimated caption timing.** Pass `--voice <profile>` (a Voicebox profile) whenever narration is expected. Music mixing is currently deferred (recorded + warned, not mixed).
 
 **Amplification shortcut.** For a one-line brief (e.g. "shorts about Jeju coffee"), do not pop a questionnaire if the request is genuinely simple. Instead **amplify inline and show the user** the inferred plan before invoking:
 
@@ -302,14 +302,15 @@ Other skills call `oma video generate --format json` and parse the JSON envelope
 ### Audio Sync & Captions Format
 
 - **Narration is one wav**: oma-voice joins every scene line into a single `audio/narration-01.wav`, referenced by `render-spec.audio.narration`. There are no per-scene `narration-NN.wav` files.
-- **Timing**: per-line offsets live in `timing.json` (TTS-native -> voicebox-stt -> whisper.cpp -> estimated); scene boundaries and caption cues are derived from it.
+- **Timing**: per-line offsets live in `timing.json` (voicebox-stt -> estimated; the `tts-native` and `whisper-cpp` source values are reserved but not yet wired — `TODO(oma-deferred): whisper-cpp`); scene boundaries and caption cues are derived from it.
 - **Captions**: key-free `.srt` (+ `.vtt`) built from `timing.json`; `render-spec.captions.file` points at the `.srt`. The compositor renders **static windowed cues** — the cue active at the current frame, CSS-wrapped (no per-word animation).
-- **Music**: when set, mixed under narration at `render-spec.audio.musicGainDb` (default −18 dB).
+- **Music**: deferred (`TODO(oma-deferred): music`) — no music asset source is wired yet, so a requested `--music` mode is recorded in `script.json` and surfaced as a warning, but no music is mixed. When implemented, it mixes under narration at `render-spec.audio.musicGainDb` (default −18 dB).
 
 ## References
 
 Follow `resources/execution-protocol.md` step by step.
 See `resources/vendor-matrix.md` for provider precheck + fallback-chain rules.
+Author `--script` files against `resources/script-schema.md` (full field reference + example; `schemaVersion: "1.0"` is required).
 Use `resources/prompt-tips.md` for writing effective briefs per mode.
 Before submitting, run `resources/checklist.md`.
 The vendored Remotion compositor lives at `resources/remotion/` (see its `README.md`).

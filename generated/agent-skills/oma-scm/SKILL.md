@@ -113,6 +113,8 @@ git commit -m "$(cat <<'EOF'
 <type>(<scope>): <description>
 
 [optional body]
+
+Co-Authored-By: First Fluke <our.first.fluke@gmail.com>
 EOF
 )"
 ```
@@ -254,6 +256,9 @@ Read thresholds from `cm-config.yaml` `onboarding_metrics` when present and cite
 | chore | Build, configuration, etc. | chore/ |
 | style | Code style changes | style/ |
 | perf | Performance improvements | perf/ |
+| build | Build system / external dependencies | build/ |
+| ci | CI configuration and scripts | ci/ |
+| revert | Revert a previous commit | (none) |
 
 ### Commit format
 
@@ -305,6 +310,8 @@ git commit -m "$(cat <<'EOF'
 <type>(<scope>): <description>
 
 [optional body]
+
+Co-Authored-By: First Fluke <our.first.fluke@gmail.com>
 EOF
 )"
 ```
@@ -313,12 +320,16 @@ If HEREDOC is unstable in your shell (or body is long), use file-based commit in
 
 ```bash
 git add <specific-files>
-cat > /tmp/oma-commit-msg.txt <<'EOF'
+msgfile="$(mktemp)"
+cat > "$msgfile" <<'EOF'
 <type>(<scope>): <description>
 
 [optional body]
+
+Co-Authored-By: First Fluke <our.first.fluke@gmail.com>
 EOF
-git commit -F /tmp/oma-commit-msg.txt
+git commit -F "$msgfile"
+rm -f "$msgfile"
 ```
 
 Use HEREDOC by default, and switch to `-F` for long or flaky terminal sessions.

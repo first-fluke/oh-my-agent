@@ -301,10 +301,11 @@ class DeckStage extends HTMLElement {
    * and applies transform: scale(s) + translate to centre the stage.
    *
    * The stage is positioned so (scaledW, scaledH) is centred in the viewport.
-   * We achieve this by:
-   *   left: (vw - 1920) / 2   (works for both scale < 1 and scale > 1)
-   *   top:  (vh - 1080) / 2
-   * and then transform: scale(s) with transform-origin: top left.
+   * With transform-origin: top left, the on-screen box is scaledW × scaledH,
+   * so centring must use the SCALED dimensions:
+   *   left: (vw - 1920 * s) / 2   (works for both scale < 1 and scale > 1)
+   *   top:  (vh - 1080 * s) / 2
+   * and then transform: scale(s).
    */
   #scaleStage() {
     if (!this.#stageEl) return;

@@ -46,8 +46,8 @@ Aim for **average ≥1.5 relations per statement**. Common patterns:
 | Claim | `depends_on` | Assumption |
 | Method | `evaluates_on` | Dataset |
 | Method | `implements` | Code repo |
-| Paper | `cites` | Other paper |
-| Result | `contradicts` | Prior work |
+| Paper | `cites` | Other paper (optional `citation_intent`) |
+| Claim | `challenged_by` | Counter-claim / prior work |
 
 ### Step 4: Optional Metadata Enrichment
 
@@ -60,6 +60,11 @@ curl -s "https://api.openalex.org/works?search={title}&api_key=$OPENALEX_API_KEY
 ```
 
 If the key is not set, skip enrichment and tell the user how to set it (point to `setup-openalex.md`).
+
+Enrichment does **not** violate the anti-fabrication rule: backfilling `doi`/`venue`/`year`
+from OpenAlex is sourcing from a curated external catalog, not guessing. The rule forbids
+placeholders (`TODO`/`TBD`) and invented values; fields resolved via OpenAlex are fine.
+Mention in the final report which fields were enriched rather than extracted from source.
 
 ### Step 5: Lint
 
@@ -111,10 +116,25 @@ Generate a peer-review sidecar covering what claims need stronger evidence, what
    - Is `depends_on` assumption explicit?
    - Are limitations acknowledged?
 3. Produce review sidecar at `{base}.review.knows.yaml` with:
+   - `profile: "review@1"` (not `paper@1`)
    - top-level `coverage`: `{statements: key_claims_and_limitations, evidence: partial}`
-   - `statements` capturing reviewer assertions, each with `statement_type: review_comment` (or `limitation`)
-   - `relations` linking review comments to original paper statements via `predicate: critiques` or `extends`
-4. Lint and report (same as Generate)
+   - `statements` capturing reviewer assertions using the **closed `statement_type`
+     enum**: weaknesses and strengths as `claim`, identified gaps as `limitation`,
+     open issues as `question` (there is no `review_comment` type)
+   - `relations` linking the reviewed paper's claims to reviewer weaknesses via
+     `predicate: challenged_by`, using the **cross-record reference grammar**
+     `record_id#local_id` for the original paper's side:
+
+   ```yaml
+   relations:
+     - id: rel:generalization-challenges-main-claim
+       predicate: challenged_by
+       subject_ref: "knows:examples/resnet/1.0.0#stmt:main-contribution"  # original paper's claim
+       object_ref: "stmt:missing-ablation-study"                          # this review's weakness
+   ```
+
+4. Lint and report (same as Generate). `oma scholar lint` recognizes
+   `record_id#local_id` cross-record refs and does not flag them as dangling.
 
 ## Mode 4: Analyze / Query
 
@@ -144,7 +164,7 @@ Structural diff between two sidecars.
    - **Evidence quality**: relations-per-statement ratio for each
    - **Citation overlap**: shared `artifacts` with `role: cited`
 3. Output a markdown table; cite specific IDs from each paper
-4. Optional: surface contradicting claims (search for `predicate: contradicts` patterns)
+4. Optional: surface opposing claims (search for `predicate: challenged_by` relations or `citation_intent: contradicts` on `cites`)
 
 ## Mode 6: Remote (with OpenAlex fallback)
 

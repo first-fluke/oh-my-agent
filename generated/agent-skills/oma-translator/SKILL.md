@@ -99,7 +99,7 @@ If context is insufficient to make a confident decision, ask the user. Prefer on
 
 ### Translation Method
 
-### Stage 1: Analyze Source
+#### Stage 1: Analyze Source
 
 Read the source text and identify:
 - **Register**: Formal, casual, conversational, technical, literary
@@ -114,7 +114,7 @@ Read the source text and identify:
   - **Retain**: Keep the original image if it works equally well in the target language
 - **Emotional connotations**: Words carrying subjective feeling beyond dictionary meaning (e.g., "alarming" = urgency, "haunting" = lingering unease); note the emotional effect to preserve in translation
 
-### Stage 2: Extract Meaning
+#### Stage 2: Extract Meaning
 
 Strip away source language structure. Ask yourself:
 - What is the author actually trying to say?
@@ -123,11 +123,11 @@ Strip away source language structure. Ask yourself:
 
 Do NOT start forming target sentences yet.
 
-### Stage 2.5: Persona Assignment
+#### Stage 2.5: Persona Assignment
 
 Persona resolution has two layers: **content-type** (what kind of text) and **voice** (how punchy or formal the rhythm). Both are needed.
 
-#### Layer 1: Read `translation_voice` from `.agents/oma-config.yaml`
+##### Layer 1: Read `translation_voice` from `.agents/oma-config.yaml`
 
 The `translation_voice` field controls global rhythm/formality. Three values:
 
@@ -139,7 +139,7 @@ The `translation_voice` field controls global rhythm/formality. Three values:
 
 If the field is missing, default to `balanced`. If `oma-config.yaml` is unreadable, also `balanced`.
 
-#### Layer 2: Content-type persona table
+##### Layer 2: Content-type persona table
 
 | Content type | Persona | Base style markers |
 |---|---|---|
@@ -160,7 +160,7 @@ Classification heuristics:
 
 When unclear, default to **technical writer** for code-adjacent content and **essayist** for prose. Never use a generic "translator" persona.
 
-#### Combining layers
+##### Combining layers
 
 Voice is applied **on top** of the content-type persona. Examples:
 
@@ -170,7 +170,7 @@ Voice is applied **on top** of the content-type persona. Examples:
 
 The persona is then **localized to the target language** at execution time. Translating into Korean as a "technical reporter" with `interpreter` voice means thinking as a Korean technical reporter who values rhythm and audience scan-speed over formal completeness.
 
-#### Optional Layer 3: Voice sample calibration
+##### Optional Layer 3: Voice sample calibration
 
 If the user provides an author/user writing sample, analyze it before drafting. Use it as a style constraint, not as permission to alter meaning.
 
@@ -189,7 +189,7 @@ Apply only where style matters:
 
 Guardrail: Voice matching may adjust rhythm, diction, and sentence shape. It must not add new opinions, first-person perspective, humor, facts, examples, or emotional color that is absent from the source.
 
-### Stage 3: Reconstruct in Target Language
+#### Stage 3: Reconstruct in Target Language
 
 Rebuild from meaning **as the assigned persona**, following target language norms:
 
@@ -210,7 +210,7 @@ Rebuild from meaning **as the assigned persona**, following target language norm
 - Many languages (Korean, Japanese, Chinese, etc.) allow subject or pronoun omission when contextually clear
 - Don't force subjects or pronouns that feel unnatural in the target language
 
-### Stage 4: Verification Gate (blocking; do not emit output until every item is confirmed)
+#### Stage 4: Verification Gate (blocking; do not emit output until every item is confirmed)
 
 This stage is mandatory. Skipping any item is a bug, not a shortcut. Before producing the final translation, run the mechanical checks first, then the rubric.
 
@@ -260,7 +260,7 @@ If any answer is missing, hand-wavy, or "I think so" without evidence, run Stage
 
 When adding explanatory notes for terms, cultural references, or concepts that target readers may struggle with:
 
-**Format**: `번역어（원어, 쉬운 설명）` or `번역어(원어)` for well-known terms that just need the original
+**Format**: `번역어(원어, 쉬운 설명)` or `번역어(원어)` for well-known terms that just need the original. Use halfwidth parentheses for Korean; use fullwidth `（）` only when the target language convention calls for them (Japanese, Chinese)
 
 **Calibration by audience**:
 - **Technical readers**: Skip annotation on common tech terms (API, deploy, refactor). Only annotate domain-specific or coined terms
@@ -276,7 +276,7 @@ When adding explanatory notes for terms, cultural references, or concepts that t
 
 ### Reflection Mode (default for non-trivial content)
 
-Reflection passes (Stage 5–7) are the default (not optional) for any content that is more than a short snippet. Empirical evidence (Slator 2024, Self-Refine paper) shows a single polish pass cuts translationese rates roughly in half. Skipping reflection on non-trivial content is the most common cause of translationese complaints.
+Reflection passes (Stage 5–7) are the default (not optional) for any content that is more than a short snippet. Skipping reflection on non-trivial content is the most common cause of translationese complaints.
 
 ### When to run Stage 5–7
 
@@ -299,7 +299,7 @@ Default OFF (Stage 4 verification only) for:
 |---|---|---|
 | README table cell (short AND documentation) | <10 words but lives in `README*.md` | ON: README is documentation |
 | CHANGELOG line entry | <10 words but lives in changelog | ON: changelog is documentation |
-| Skill description in registry | short noun phrase but commits to git-tracked source | ON: any git-tracked text |
+| Skill description in registry | short noun phrase but commits to git-tracked source | ON: registry descriptions are documentation, not UI locale values |
 | Tooltip in i18n file | <10 words AND in `messages/` | OFF: UI string in locale file |
 
 Reflection cost is acceptable; post-merge revision cost is not.
@@ -394,7 +394,7 @@ Ambiguities resolved: <terminology decisions made>
 
 ### Output Format
 
-### Single text
+#### Single text
 ```
 Source (EN):
 > original text
@@ -406,10 +406,10 @@ Notes:
 - [any decisions made about ambiguous terms or cultural adaptation]
 ```
 
-### Batch (i18n files)
+#### Batch (i18n files)
 Output in the same format as input (JSON, ARB, YAML, etc.) with only values translated.
 
-### Review mode
+#### Review mode
 ```
 Original translation:
 > existing translation

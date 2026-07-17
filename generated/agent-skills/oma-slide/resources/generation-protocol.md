@@ -154,17 +154,19 @@ Every slide fragment must follow this exact structure:
   </style>
 </head>
 <body>
-  <div class="deck-viewport">
-    <div class="deck-stage">
-      <section
-        class="slide"
-        id="slide-NN"
-        data-om-validate="no_overflowing_text,no_overlapping_text,slide_sized_text"
-      >
-        <!-- 1920×1080 content -->
-      </section>
+  <deck-stage>
+    <div class="deck-viewport">
+      <div class="deck-stage">
+        <section
+          class="slide"
+          id="slide-NN"
+          data-om-validate="no_overflowing_text,no_overlapping_text,slide_sized_text"
+        >
+          <!-- 1920×1080 content -->
+        </section>
+      </div>
     </div>
-  </div>
+  </deck-stage>
   <script src="./deck-stage.js"></script>
 </body>
 </html>
@@ -380,7 +382,7 @@ oma slide doctor                                   # check deps (chrome, puppete
 
 Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_YTDLP` (yt-dlp binary for fetch-video), `OMA_HOME` (root for canonical stage assets).
 
-Exit codes: `0 ok · 4 invalid-input · 6 timeout · 1 error`.
+Exit codes: `0 ok · 4 invalid-input · 1 error` (timeouts surface as `1`).
 
 ---
 

@@ -111,7 +111,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 |-----------|--------|
 | No provider for a required capability | Exit 5, print `Run: oma video doctor` |
 | Remotion toolchain not bootstrapped | Exit 1 (CompositorBootstrapError) + doctor remediation; MPT fallback where applicable |
-| Voicebox MCP down | Fall back voicebox-stt -> whisper.cpp -> estimated timing; still emit captions |
+| Voicebox MCP down | Fall back to estimated timing; still emit captions (whisper.cpp hop deferred: `TODO(oma-deferred): whisper-cpp`) |
 | Pexels / Pixelle key absent | Skip provider; fall through to oma-image stills; annotate coverage in `warnings` |
 | `demo` with no capture + no Cap | Guided protocol (Step 4b); stop without rendering |
 | `--capture` outside `$PWD` or wrong format | Exit 4 with the path/format problem |

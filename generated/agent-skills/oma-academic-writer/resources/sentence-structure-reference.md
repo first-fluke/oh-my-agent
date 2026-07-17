@@ -38,7 +38,7 @@ One independent clause + one dependent clause (introduced by a subordinating con
 
 **Examples:**
 
-- As the Australian government recognised the necessity to significantly reduce greenhouse gas emissions, it introduced an official carbon tax on 1 July 2012.
+- As the Australian government recognized the necessity to significantly reduce greenhouse gas emissions, it introduced an official carbon tax on 1 July 2012.
 - Although the dataset spans 121 seasons, only matches after 1968 include detailed set-level data.
 - Because five-set matches impose greater physical demands, average rally length decreases in the fourth and fifth sets.
 
@@ -52,8 +52,8 @@ Two or more independent clauses + one or more dependent clauses.
 
 **Examples:**
 
-- As the Australian government recognised the necessity to significantly reduce greenhouse gas emissions, it introduced an official carbon tax on 1 July 2012, but this was met with opposition from the general public.
-- While set durations vary considerably between Grand Slam events, the median match length has increased by 12 minutes since 2000, and this trend correlates with advances in racquet technology.
+- As the Australian government recognized the necessity to significantly reduce greenhouse gas emissions, it introduced an official carbon tax on 1 July 2012, but this was met with opposition from the general public.
+- While set durations vary considerably between Grand Slam events, the median match length has increased by 12 minutes since 2000, and this trend correlates with advances in racket technology.
 - Because the 1905–1968 era lacked professional circuits, participation remained limited to amateur players; however, match records from this period still provide valuable longitudinal data.
 
 **Target:** 10–20% of sentences per paragraph (use sparingly for maximum impact).
@@ -67,7 +67,7 @@ Two or more independent clauses + one or more dependent clauses.
    - Short: 8–15 words (for impact)
    - Medium: 16–25 words (for flow)
    - Long: 26–40 words (for depth)
-3. Each paragraph should contain at least 3 of the 4 sentence types
+3. Paragraphs of 4+ sentences should contain at least 3 of the 4 sentence types; short emphasis paragraphs (2–3 sentences) are exempt
 4. Vary paragraph length (2–8 sentences); uniform blocks signal AI
 
 > For detailed burstiness detection, semicolon limits, and paragraph length variation rules, see `anti-ai-checklist.md` §9.
@@ -94,9 +94,9 @@ A sentence missing subject, verb, or complete thought.
 
 | Error Type | Bad | Fixed |
 |-----------|-----|-------|
-| Missing subject | "Becoming extinct because of rising sea temperatures." | "Phytoplankton could become extinct because of rising sea temperatures." |
+| Missing subject | "Becoming extinct because of rising sea temperatures." | "Phytoplankton may face extinction because of rising sea temperatures." |
 | Missing verb | "Significantly, one particular form of Western Australian finch." | "Significantly, one particular form of Western Australian finch has decreased in numbers." |
-| Incomplete thought | "In a recent article about loss of habitat due to climate change." | "In a recent article about loss of habitat due to climate change, Australian animals were shown to be particularly vulnerable." |
+| Incomplete thought | "In a recent article about loss of habitat due to climate change." | "In a recent article about loss of habitat due to climate change, Australian animals were identified as particularly vulnerable." |
 
 **Watch out for:** Sentences beginning with so, as, because, who, which, that, since these are often incomplete.
 
@@ -130,9 +130,9 @@ Every sentence must be fully understandable when read in isolation. If a sentenc
 
 ### Good example (varied structure)
 
-> Nursing educators argue that strict measures should be implemented to avoid infection in medical institutions. There is also much evidence to demonstrate that infection rates rise dramatically when hygiene standards begin to fall. Therefore, it is argued that appropriate steps need to be in place to decrease and minimise these potential risks. Furthermore, aggressive steps should be taken to ensure that all staff maintain effective hygiene and infection control.
+> Nursing educators argue that strict measures should be implemented to avoid infection in medical institutions. Considerable evidence links falling hygiene standards to sharply rising infection rates. Because these risks escalate quickly once standards slip, institutions must adopt procedures that reduce them. To this end, hospitals should require all staff to maintain effective hygiene, and managers should audit compliance at regular intervals.
 
-**Improvements:** Varied openers, mixed simple/complex/compound structures, varied sentence lengths, logical flow from claim → evidence → argument → recommendation.
+**Improvements:** Varied openers (subject-first, dependent clause, transitional phrase), mixed simple/complex/compound structures, varied sentence lengths, logical flow from claim → evidence → argument → recommendation — with no banned generic verbs as main verbs and no flagged AI vocabulary.
 
 ## Quick reference: conjunction inventory
 
@@ -143,7 +143,7 @@ for, and, nor, but, or, yet, so
 ### Subordinating: for complex sentences
 
 **Cause/reason:** because, since, as, given that, owing to the fact that
-**Contrast:** although, though, even though, whereas, while, whilst
+**Contrast:** although, though, even though, whereas, while
 **Condition:** if, unless, provided that, on condition that
 **Time:** when, whenever, after, before, until, since, while, as soon as
 **Purpose:** so that, in order that

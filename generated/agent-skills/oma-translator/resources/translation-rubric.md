@@ -1,6 +1,6 @@
 # Translation Quality Rubric
 
-5-point scale per criterion. Total 50 points.
+5 criteria, each scored on a 10-point scale. Total 50 points.
 
 ## Criteria
 

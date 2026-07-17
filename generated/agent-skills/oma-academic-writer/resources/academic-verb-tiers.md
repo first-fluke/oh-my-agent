@@ -8,6 +8,8 @@ Source: top 437 verbs from an academic corpus (frequency-ranked).
 
 These verbs lack precision and register in academic writing. Never use them as the main verb of a sentence.
 
+**Exception:** natural copular and possessive uses of `is/are/has` are always allowed — and preferred over inflated substitutes like "serves as" or "boasts" (see `anti-ai-checklist.md` §4). The ban targets vague generic usage ("the study has three parts" → "the study comprises three parts" only when precision genuinely improves), not natural English.
+
 | Banned verb | Academic replacements |
 |-------------|----------------------|
 | show | illustrate, demonstrate, reveal, indicate, depict, exhibit |
@@ -15,14 +17,14 @@ These verbs lack precision and register in academic writing. Never use them as t
 | make | generate, produce, construct, establish, formulate, create |
 | do | perform, execute, conduct, accomplish, undertake |
 | get | obtain, acquire, achieve, attain, derive, secure |
-| use | employ, leverage, utilise, adopt, exploit, harness |
+| use | employ, adopt, apply, implement, exploit |
 | give | provide, furnish, yield, deliver, grant, supply |
 | say | argue, assert, contend, maintain, posit, state |
 | put | position, allocate, situate, deploy, place |
-| see | observe, identify, recognise, discern, perceive, detect |
+| see | observe, identify, recognize, discern, perceive, detect |
 | find | identify, determine, establish, ascertain, uncover |
-| know | recognise, acknowledge, understand, appreciate |
-| think | hypothesise, postulate, theorise, reason, infer |
+| know | recognize, acknowledge, understand, appreciate |
+| think | hypothesize, postulate, theorize, reason, infer |
 | want | seek, aspire, endeavour, aim, intend |
 | try | attempt, endeavour, pursue, strive, undertake |
 | need | require, necessitate, demand, warrant, entail |
@@ -40,7 +42,7 @@ These verbs lack precision and register in academic writing. Never use them as t
 | take | adopt, assume, undertake, acquire, embrace |
 | become | emerge, evolve, develop, transition, transform |
 
-## Tier 1: universal academic verbs (frequency rank 1–30)
+## Tier 1: universal academic verbs (frequency rank 8–56)
 
 These are safe in any academic context. Use liberally.
 
@@ -55,8 +57,8 @@ These are safe in any academic context. Use liberally.
 | compare | 18 | Analysis, juxtaposition, relative assessment |
 | achieve | 22 | Results, outcomes, attainment of goals |
 | enable | 24 | Facilitation, capability description |
-| improve | 28 | Enhancement, progress, optimisation of outcomes |
-| describe | 29 | Characterisation, explanation, narration |
+| improve | 28 | Enhancement, progress, optimization of outcomes |
+| describe | 29 | Characterization, explanation, narration |
 | demonstrate | 30 | Proof, evidence presentation, showing results |
 | present | 32 | Introduction of findings, display of data |
 | propose | 34 | Hypotheses, recommendations, new approaches |
@@ -69,13 +71,13 @@ These are safe in any academic context. Use liberally.
 | combine | 46 | Integration, synthesis, merging |
 | design | 47 | Creation, planning, structuring |
 | execute | 48 | Implementation, carrying out procedures |
-| leverage | 50 | Strategic use (use sparingly; borderline AI word) |
-| generalise | 52 | Abstraction, broad application |
+| leverage | 50 | Strategic use (flagged AI word per `anti-ai-checklist.md` §1; prefer "employ" or "apply") |
+| generalize | 52 | Abstraction, broad application |
 | study | 54 | Investigation, research, examination |
-| utilise | 55 | Application (prefer "employ"; "use" is itself on the banned-main-verb list) |
+| utilize | 55 | Application (prefer "employ"; "use" is itself on the banned-main-verb list) |
 | solve | 56 | Resolution, addressing problems |
 
-## Tier 2: strong academic verbs (frequency rank 31–80)
+## Tier 2: strong academic verbs (frequency rank 65–133)
 
 Excellent for adding precision and variety.
 
@@ -88,7 +90,7 @@ Excellent for adding precision and variety.
 | specify | 72 | Defining precisely, setting parameters |
 | focus | 73 | Directing attention, narrowing scope |
 | correspond | 76 | Correlation, matching, alignment |
-| employ | 79 | Using methods or tools (preferred over "utilise") |
+| employ | 79 | Using methods or tools (preferred over "utilize") |
 | aim | 80 | Purpose, objective, intention |
 | develop | 82 | Creation, evolution, progression |
 | produce | 83 | Generation, creation, yielding outcomes |
@@ -106,7 +108,7 @@ Excellent for adding precision and variety.
 | exhibit | 113 | Displaying characteristics, showing qualities |
 | assess | 119 | Evaluation, measurement, appraisal |
 | illustrate | 122 | Visual representation, exemplification |
-| reduce | 123 | Decrease, minimisation, simplification |
+| reduce | 123 | Decrease, minimization, simplification |
 | address | 124 | Tackling issues, responding to concerns |
 | extend | 126 | Expansion, broadening scope |
 | denote | 127 | Signification, representation |
@@ -114,7 +116,7 @@ Excellent for adding precision and variety.
 | serve | 132 | Function, role fulfillment |
 | process | 133 | Handling, transformation, treatment |
 
-## Tier 3: precision verbs (frequency rank 81–200)
+## Tier 3: precision verbs (frequency rank 139–350)
 
 For nuanced, specific claims. Excellent for adding sophistication without over-reaching.
 
@@ -122,12 +124,12 @@ For nuanced, specific claims. Excellent for adding sophistication without over-r
 |------|------|---------------|
 | suggest | 139 | Moderate-confidence claims, implications |
 | capture | 142 | Recording, encapsulating, representing |
-| summarise | 143 | Condensation, overview, synthesis |
+| summarize | 143 | Condensation, overview, synthesis |
 | measure | 149 | Quantification, assessment |
-| integrate | 150 | Combining, synthesising, unifying |
+| integrate | 150 | Combining, synthesizing, unifying |
 | mitigate | 154 | Reducing negative effects, lessening risk |
-| align | 155 | Agreement, correspondence, matching |
-| define | 156 | Specification, delimitation, characterisation |
+| align | 155 | Agreement, correspondence, matching (use carefully; "align with" is a flagged AI phrase) |
+| define | 156 | Specification, delimitation, characterization |
 | interpret | 161 | Meaning extraction, analysis, reading data |
 | enhance | 162 | Improvement (use carefully; borderline AI word) |
 | affect | 165 | Influence, impact on outcomes |
@@ -139,18 +141,18 @@ For nuanced, specific claims. Excellent for adding sophistication without over-r
 | construct | 205 | Building, creating, assembling |
 | attribute | 206 | Assigning cause, crediting |
 | formulate | 243 | Creating plans, theories, equations |
-| identify | 227 | Recognising, pinpointing, discovering |
-| analyse | 229 | Examination, investigation, deconstruction |
+| identify | 227 | Recognizing, pinpointing, discovering |
+| analyze | 229 | Examination, investigation, deconstruction |
 | reveal | 259 | Discovery, making known, uncovering |
 | establish | 289 | Founding, proving, confirming |
 | operate | 291 | Functioning, running, working |
-| recognise | 292 | Acknowledging, identifying, accepting |
-| categorise | 293 | Classification, grouping, sorting |
+| recognize | 292 | Acknowledging, identifying, accepting |
+| categorize | 293 | Classification, grouping, sorting |
 | retain | 294 | Keeping, preserving, maintaining |
 | highlight | 297 | Drawing attention (use sparingly; borderline AI word) |
 | validate | 321 | Confirming, verifying, proving correct |
 | constrain | 326 | Limiting, restricting, bounding |
-| visualise | 329 | Representing graphically, depicting |
+| visualize | 329 | Representing graphically, depicting |
 | resolve | 338 | Solving, addressing, settling |
 | calculate | 350 | Computing, determining numerically |
 
@@ -163,10 +165,10 @@ For nuanced, specific claims. Excellent for adding sophistication without over-r
 | Describing methodology | employ, adopt, implement, conduct, execute |
 | Comparing | compare, contrast, distinguish, differentiate, juxtapose |
 | Showing causation | cause, produce, generate, yield, result in |
-| Hedging | suggest, appear, may indicate, seem to imply |
+| Hedging | suggest, appear, may indicate, tend to |
 | Quantifying | measure, calculate, quantify, estimate, compute |
 | Evaluating | assess, evaluate, appraise, judge, critique |
-| Synthesising | integrate, combine, synthesise, consolidate, unify |
+| Synthesizing | integrate, combine, synthesize, consolidate, unify |
 | Proposing | propose, recommend, suggest, advocate, put forward |
 | Limiting scope | focus, confine, restrict, constrain, delimit |
 | Citing work | note, report, document, record, observe |

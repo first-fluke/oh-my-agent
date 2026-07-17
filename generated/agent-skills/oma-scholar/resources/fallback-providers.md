@@ -8,7 +8,7 @@ beyond the (currently 2026-only) knows.academy index.
 
 | Source | Coverage | Gives | Doesn't give |
 |--------|----------|-------|--------------|
-| **knows.academy** | ~50K papers, **2026 only** (verified empirically) | Full v0.9 sidecar (claims, evidence, relations, methods) | Pre-2026 papers, full text |
+| **knows.academy** | **2026 only**, mostly arXiv (verified empirically; current counts via `/api/proxy/jobs/stats`) | Full v0.9 sidecar (claims, evidence, relations, methods) | Pre-2026 papers, full text |
 | **OpenAlex** | ~240M works, all years | Title, authors, year, venue, DOI, abstract (reconstructed), OA PDF URL, citation count, references | Structured claims/evidence (no sidecar) |
 
 When a paper is in **both**, prefer knows.academy (richer structure). When a

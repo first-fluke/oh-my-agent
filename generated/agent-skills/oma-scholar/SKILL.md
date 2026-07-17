@@ -26,7 +26,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 - Producing peer reviews as sidecars
 - Querying or summarizing existing sidecars
 - Structurally comparing two papers (claims, methods, evidence)
-- Searching/fetching sidecars from `knows.academy` (~50K papers indexed)
+- Searching/fetching sidecars from `knows.academy` (2026 papers only; current counts via `/api/proxy/jobs/stats`)
 
 ### When NOT to use
 
@@ -130,7 +130,7 @@ oma scholar lint "<paper.knows.yaml>"
 
 ### Guardrails
 
-1. **Target spec is v0.9.0 / `paper@1` profile**: verified against production sidecars from knows.academy; see `resources/sidecar-spec.md`
+1. **Target spec is v0.9.0 / `paper@1` profile** (review sidecars use `review@1`): verified against production sidecars from knows.academy; see `resources/sidecar-spec.md`
 2. **Host LLM generates sidecars**: never shell out to `anthropic` SDK or external LLM CLI; this skill runs inside an agent
 3. **Anti-fabrication**: if DOI/venue/year is not visible in source, **omit the key entirely**; never write `doi: TODO` or guess
 4. **Top-level metadata**: `title`, `authors`, `venue`, `year` live at the top level (no `metadata` wrapper)
@@ -140,9 +140,9 @@ oma scholar lint "<paper.knows.yaml>"
 8. **Coverage is an object**: `coverage.statements` (4-value enum) + `coverage.evidence` (3-value enum)
 9. **Closed enums**: actor `tool|person|org` (never `ai`/`llm`/`model`); artifact role `subject|supporting|cited`; predicates in present tense
 10. **Numbers unquoted**: `value: 22`, never `value: '22'`
-11. **Relation density**: average ≥1.5 relations per statement; every claim needs `supported_by` evidence (lint warns when ratio is below; orphan statements warned per-id)
+11. **Relation density**: average ≥1.5 relations per statement; every claim needs `supported_by` evidence (checklist rule — lint enforces only the average-ratio warning and a per-id warning for statements with zero relations)
 12. **ID format**: descriptive kebab-case with prefix: `stmt:privacy-budget-tradeoff`, `ev:cifar10-accuracy-table`, `art:paper`
-13. **Validate before sharing**: run `oma scholar lint` after Generate
+13. **Validate before sharing**: run `oma scholar lint` after Generate and Review; cross-record refs (`record_id#local_id`) in review sidecars are recognized and not flagged as dangling
 14. **Remote API has no auth**: `https://knows.academy/api/proxy/*` is public; do not invent auth headers
 15. **Partial fetch param is `section` (singular)**: fixed enum `statements|evidence|relations|artifacts|citation`
 16. **OpenAlex key is optional**: metadata enrichment only; gracefully degrade when missing
@@ -162,7 +162,7 @@ oma scholar lint "<paper.knows.yaml>"
 
 ### Provider Fallback (knows.academy → OpenAlex)
 
-`knows.academy` currently indexes **only 2026 papers** (~50K, mostly arXiv). For
+`knows.academy` currently indexes **only 2026 papers** (mostly arXiv). For
 older or non-2026 papers (Transformer 2017, BERT 2018, classics, journals),
 the skill automatically falls back to **OpenAlex** for metadata and abstract.
 
@@ -188,19 +188,19 @@ Follow `resources/execution-protocol.md` step by step for the selected mode.
 
 ### Quick Reference
 
-### Search (knows + auto OpenAlex fallback)
+#### Search (knows + auto OpenAlex fallback)
 ```bash
 oma scholar search "diffusion super resolution"
 oma scholar search --year-min 2024 "vision language action"
 ```
 
-### Find one specific paper
+#### Find one specific paper
 ```bash
 oma scholar resolve "Attention Is All You Need"
 # returns top hit from each source + recommendation
 ```
 
-### Fetch a sidecar or work
+#### Fetch a sidecar or work
 ```bash
 # knows.academy full sidecar
 oma scholar get "knows:generated/reconvla/1.0.0"
@@ -217,7 +217,7 @@ to OpenAlex by extracting the slug from the record_id. The result is marked
 with `fallback: "openalex"` and contains metadata + abstract, useful for
 running Mode 1 Generate locally.
 
-### Validate
+#### Validate
 ```bash
 # Strict mode for own Generate output (default)
 oma scholar lint paper.knows.yaml
@@ -234,7 +234,7 @@ cross-reference** (typo in `subject_ref`/`object_ref`, measured across 15
 production samples). Use `--lenient` when consuming third-party records so
 these surface as warnings rather than blocking errors.
 
-### Raw API (when CLI is unavailable)
+#### Raw API (when CLI is unavailable)
 ```bash
 curl -s "https://knows.academy/api/proxy/search?q=..."
 curl -s "https://knows.academy/api/proxy/sidecars/<encoded-id>"
@@ -254,7 +254,7 @@ Project-specific settings: `config/scholar-config.yaml`
 | `[ERROR] provenance.actor.type: 'ai' is not allowed` | Change to `tool`, `person`, or `org` |
 | `[ERROR] *.type: use \`statement_type\` instead of \`type\`` | Rename `type` -> `statement_type` (or `evidence_type`/`predicate`/`artifact_type`) |
 | `[ERROR] provenance.actors: v0.9 spec uses singular \`actor\`` | Replace `actors: [{...}]` array with `actor: {...}` object |
-| `[ERROR] *.object_ref: reference 'X' does not match any defined id` | Fix the `subject_ref`/`object_ref` to point to a real id, OR use `--lenient` if consuming third-party data |
+| `[ERROR] *.object_ref: reference 'X' does not match any defined id` | Fix the `subject_ref`/`object_ref` to point to a real id, OR use `--lenient` if consuming third-party data (cross-record `record_id#local_id` refs are recognized and never flagged) |
 | `[WARN] relations: avg relations/statement is N.NN (target ≥ 1.5)` | Add more `supported_by`/`depends_on` relations |
 | `[WARN] statements: only N statements; most papers warrant ≥ 8` | Expected when generating from abstract only; full-paper Generate should hit 15+ |
 | `[WARN] *.predicate: past-tense '...' is suspicious` | Switch to present tense (`evaluated_on` -> `evaluates_on`) |

@@ -12,7 +12,7 @@ Run through each category. A single FAIL requires revision before output.
 
 ### Flagged Words (High AI Correlation)
 
-Additionally, align with, crucial, delve, emphasize/emphasizing, enduring, enhance, foster/fostering, garner, highlight (as verb), interplay, intricate/intricacies, key (as adjective), landscape (abstract), multifaceted, nuanced, pivotal, robust, seamless, showcase, synergy, tapestry (abstract), testament, underscore (as verb), valuable, vibrant, holistic, paradigm, cutting-edge, groundbreaking, comprehensive, Furthermore, Moreover, navigating, realm, embark, noteworthy
+Additionally, align with, crucial, delve, leverage, emphasize/emphasizing, enduring, enhance, foster/fostering, garner, highlight (as verb), interplay, intricate/intricacies, key (as adjective), landscape (abstract), multifaceted, nuanced, pivotal, robust, seamless, showcase, synergy, tapestry (abstract), testament, underscore (as verb), valuable, vibrant, holistic, paradigm, cutting-edge, groundbreaking, comprehensive, Furthermore, Moreover, navigating, realm, embark, noteworthy
 
 ### Self-check
 
@@ -31,7 +31,7 @@ Additionally, align with, crucial, delve, emphasize/emphasizing, enduring, enhan
 | stands/serves as | is |
 | is a testament to | demonstrates / reflects |
 | a vital/crucial/pivotal role | an important role / a role in |
-| underscores/highlights its importance | shows / indicates |
+| underscores/highlights its importance | indicates / demonstrates |
 | reflects broader trends | relates to |
 | symbolizing its enduring legacy | (delete unless legacy is the subject) |
 | setting the stage for | preceding / leading to |
@@ -45,7 +45,7 @@ Additionally, align with, crucial, delve, emphasize/emphasizing, enduring, enhan
 
 - [ ] Does every significance claim have supporting evidence cited?
 - [ ] Is the language proportional to the evidence?
-- [ ] Would a sceptical reader accept the level of emphasis?
+- [ ] Would a skeptical reader accept the level of emphasis?
 
 ## 3. Superficial -ing Analysis
 
@@ -114,7 +114,7 @@ Additionally, align with, crucial, delve, emphasize/emphasizing, enduring, enhan
 - [ ] Terminology is consistent (no synonym cycling)
 - [ ] All "from X to Y" constructions have a meaningful scale
 
-## 6. Formatting Artefacts
+## 6. Formatting Artifacts
 
 ### Boldface
 
@@ -231,7 +231,7 @@ Additionally, align with, crucial, delve, emphasize/emphasizing, enduring, enhan
 - [ ] Paragraph lengths vary (no 4+ consecutive same-length paragraphs)
 - [ ] Semicolons ≤2 per 1000 words
 
-## 10. Chatbot Artefacts
+## 10. Chatbot Artifacts
 
 ### Never Include
 
@@ -245,7 +245,7 @@ Additionally, align with, crucial, delve, emphasize/emphasizing, enduring, enhan
 
 ### Self-check
 
-- [ ] Zero chatbot artefacts in output
+- [ ] Zero chatbot artifacts in output
 
 ## Final Verification
 
@@ -256,11 +256,11 @@ Run all checks in sequence:
 3. [ ] No superficial -ing analysis
 4. [ ] Natural copula usage: "is/are" used where appropriate
 5. [ ] No banned structural patterns
-6. [ ] Clean formatting: no artefacts (bold, em dash, colon, tables)
+6. [ ] Clean formatting: no artifacts (bold, em dash, colon, tables)
 7. [ ] No meta-commentary
 8. [ ] Varied sentence openers
 9. [ ] Rhythm & paragraph length: no metronomic patterns or uniform blocks
-10. [ ] Zero chatbot artefacts
+10. [ ] Zero chatbot artifacts
 11. [ ] Natural sentence flow: colons and em dashes not substituting for proper subordination/coordination
 12. [ ] Claim-evidence alignment: every major claim has cited support
 

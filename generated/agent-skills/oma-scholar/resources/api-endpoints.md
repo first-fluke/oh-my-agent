@@ -108,7 +108,7 @@ GET /api/proxy/jobs/stats
 curl -s "https://knows.academy/api/proxy/jobs/stats"
 ```
 
-Returns processing queue health (verified):
+Returns processing queue health (response shape verified; values are a point-in-time example):
 ```json
 {
   "pending": 10735,

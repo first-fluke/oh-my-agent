@@ -223,7 +223,8 @@ Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_Y
 - Working directory is writable.
 - For image generation: oma-image skill is reachable (or placeholder path accepted).
 - Network for font CDNs: validate/export fetch fonts from allowlisted CDNs (fonts.googleapis.com,
-  fonts.gstatic.com, cdn.jsdelivr.net); on offline machines run `oma slide bundle --inline-fonts`
+  fonts.gstatic.com, fonts.bunny.net, use.typekit.net, cdn.jsdelivr.net — see
+  `cli/commands/slide/font-hosts.ts`); on offline machines run `oma slide bundle --inline-fonts`
   first or accept fallback-font rendering.
 
 ### Effects and side effects
