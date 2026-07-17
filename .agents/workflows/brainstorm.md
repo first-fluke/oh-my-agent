@@ -158,7 +158,7 @@ Groupthink and authority bias hide real gaps. A blind round, where each perspect
    - **Tier 2**: enhancement, should resolve or explicitly defer
    - **Tier 3**: nice-to-have, defer to next version
 
-4. **Check for suppressed compromises**: for each prior design decision where a reviewer voted `PARTIAL→PASS`, verify the objection was answered on principle (regulatory, consumer, architectural) rather than overridden by majority. Restore any principled objection that was suppressed.
+4. **Check for suppressed compromises**: revisit each Step 2–4 decision where a concern was raised but the design moved forward anyway (a clarification answered with an unvalidated assumption, a section approved with reservations, a tradeoff accepted under time pressure). Verify each was resolved on principle (regulatory, consumer, architectural) rather than waved through; restore any principled objection that was dropped.
 
 5. **Resolve Tier 1 issues** by updating Step 4 design with either new sections in existing files, new files, or explicit out-of-scope declarations.
 
@@ -171,7 +171,7 @@ The default inline lenses run in *this* session, so the model that authored the 
 **Escalation (high-stakes designs only):** when the design is architecturally significant, hard to reverse, or security-/compliance-sensitive, delegate the critique to **fresh-context reviewer subagents** instead of inline lenses, so each reviewer sees only the design artifact — not the conversation history, rationale, or approval flow that carries the author's bias.
 
 - Resolve `target_vendor_for_agent` per agent, then dispatch each reviewer lens using the standard per-agent path: native subagent when `target_vendor_for_agent === current_runtime_vendor`, otherwise `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
-- Pass **only the Step 4 design document** (and minimal domain constraints) in the prompt file. Do **not** include the clarification Q&A, prior `PARTIAL→PASS` votes, or user approvals — that context is exactly what a blind reviewer must not see.
+- Pass **only the Step 4 design document** (and minimal domain constraints) in the prompt file. Do **not** include the clarification Q&A, prior reservations or accepted compromises, or user approvals — that context is exactly what a blind reviewer must not see.
 - Suggested reviewer agents: `qa-reviewer`, `architecture-reviewer`, plus domain lenses from the stakeholder map in point 1.
 - Consolidate their findings back through points 3-6 above.
 
@@ -183,7 +183,7 @@ Skip only if the design is trivially small (1-2 files, low stakes). Otherwise th
 
 // turbo
 Save the approved design:
-1. Write to `docs/plans/designs/<NNN>-<feature-name>.md` where `<NNN>` is the next zero-padded 3-digit number (`ls docs/plans/designs/ | grep -E '^[0-9]{3}-' | tail -1`). Do not append `-design` to the filename; the folder already encodes type.
+1. Write to `docs/plans/designs/<NNN>-<feature-name>.md` where `<NNN>` is the next zero-padded 3-digit number (`ls docs/plans/designs/ | grep -E '^[0-9]{3}-' | tail -1`). Run the listing immediately before writing — not earlier in the session — and if `<NNN>` is already taken (concurrent sessions have produced duplicate numbers), take max+1. Do not append `-design` to the filename; the folder already encodes type.
 2. Use memory write tool to record design summary for future reference.
 
 ---

@@ -74,7 +74,7 @@ Rules:
 
 1. Choose principles that **connect to the T1 contradiction** — no random lists.
 2. For each chosen principle, write **one concrete seed sentence** (not only the principle name).
-3. Produce at least four seeds, then compress to **2–3 approaches**.
+3. Produce at least four seeds (a principle may contribute more than one seed), then compress to **2–3 approaches**.
 
 ### T4 — Compress into normal Step 3 approaches
 
