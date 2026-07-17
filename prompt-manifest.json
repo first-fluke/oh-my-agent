@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.20.2",
-  "releaseDate": "2026-07-17T11:50:22.694Z",
+  "releaseDate": "2026-07-17T11:54:01.560Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -146,8 +146,8 @@
     },
     {
       "path": ".agents/hooks/core/hook-output.ts",
-      "sha256": "97fe2fc5822f8c4244a2e56905336b1396ebeb06b5721e73ea0f462372df58ae",
-      "size": 7904
+      "sha256": "6fc30a8a3fb091eece662862a59bc901ea01887a8f9bdf71d6da3fefb45e4a20",
+      "size": 10217
     },
     {
       "path": ".agents/hooks/core/hud.ts",
@@ -173,6 +173,11 @@
       "path": ".agents/hooks/core/prompt-input.ts",
       "sha256": "9ac55ce2763d1368c48cb238240d7c14ebd5ff8da5f0f73f483de06f09c90cf2",
       "size": 1961
+    },
+    {
+      "path": ".agents/hooks/core/scm-guard.ts",
+      "sha256": "1c4394fabb81268e6644f6eb230648948532af1d173d9cad2d6a878e5d08bd2e",
+      "size": 7950
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
@@ -206,8 +211,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "b9b446d487ca9cd430575089f49835b0113c7da8529d9155f8390d9fb68d0ae3",
-      "size": 85072
+      "sha256": "df8381c53ec63043f1cace1058c490b880fe803f3182515584cbe212cf4cc3a8",
+      "size": 85467
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -231,13 +236,13 @@
     },
     {
       "path": ".agents/hooks/variants/claude.json",
-      "sha256": "11c3d10707063a21344558aa9e7098b581a176caf96f0fa162afff0f6a8291d0",
-      "size": 1130
+      "sha256": "99d105d7fa19c24e7bf7343da89e4486e2bb0c3983dc5717aa80050bb9898d00",
+      "size": 1249
     },
     {
       "path": ".agents/hooks/variants/codex.json",
-      "sha256": "61b1fe2815bf3eafc5539a9c6b20c32519de5f4e01f5e8a6308d327d4cca3419",
-      "size": 710
+      "sha256": "dddc0cca851225df271b148538cacde899e093a47985a2fb445e750a3d21bb6f",
+      "size": 829
     },
     {
       "path": ".agents/hooks/variants/commandcode.json",
@@ -246,13 +251,13 @@
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "22da40e56f7aeb156ff74905fb6313ab13f885164ad2620c9421bdd3a8b6a063",
-      "size": 980
+      "sha256": "e60db4f0d6071681eeef55434764837415403b18563b8bbb7841b0abdc6de117",
+      "size": 1100
     },
     {
       "path": ".agents/hooks/variants/grok.json",
-      "sha256": "d481af4d73d66e7243400eae7c8bf9e6f85e9c3e727578b34ab14b345f5cf526",
-      "size": 734
+      "sha256": "03f1b8f833588da26c6213150b45eed70e807fe22a6be622e0e41ec7b5a5498a",
+      "size": 853
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
@@ -261,18 +266,18 @@
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
-      "sha256": "4d74dbcb10e54819fa67e33d1282974377da1ef97f6b3094f3831c48b821c0dc",
-      "size": 740
+      "sha256": "a837452029ced3070d0680afbbdfff5e41baf0d63b9776b65b16aee59476fcee",
+      "size": 859
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
-      "sha256": "522738d4d37d3db7e15d69192dbaabbded71a537bf2712f71e2275d6a3f6c729",
-      "size": 744
+      "sha256": "5f0d9c61b277251bf3195de332403f484e02993dc18291c99d86dfad69e41521",
+      "size": 864
     },
     {
       "path": ".agents/hooks/variants/opencode/oma.ts",
-      "sha256": "d6358d3c1d0cdc0545fc2e5455e1f9c635d646d28caa8b61893e1c491430a750",
-      "size": 15620
+      "sha256": "ac56ffeb64c076fe16a7f2555370cfa1f1f6e417dba1acfe23f93ab52396c915",
+      "size": 17497
     },
     {
       "path": ".agents/hooks/variants/pi/README.md",
@@ -281,13 +286,13 @@
     },
     {
       "path": ".agents/hooks/variants/pi/index.ts",
-      "sha256": "fce829825a62ff0d388c3148fab7dac584bbf7d5b3522e7085f52655bf6afba7",
-      "size": 8877
+      "sha256": "15d60cc74cf7133d546fea5eb1fe932341fff65abb4df28330fb6ec380aad0fe",
+      "size": 9880
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "9c25f7910ff6043b75a07334f5b8ec5feddc3fa880ae62f161ad31937cb271d1",
-      "size": 873
+      "sha256": "fb0cc9f2410aee613e9b8194892370855041ba5982edeb1445fca9bb78b28c7d",
+      "size": 1005
     },
     {
       "path": ".agents/mcp.json",
@@ -311,8 +316,8 @@
     },
     {
       "path": ".agents/rules/commit.md",
-      "sha256": "5a33af32caded4416b91862afe785da120c361c44bf1b5caf8e70a332a790589",
-      "size": 847
+      "sha256": "9e2c2b3c99ad9c0237e58574b3135e5d1d206939ac21c6e15686b1a309db64b4",
+      "size": 1022
     },
     {
       "path": ".agents/rules/database.md",
@@ -1691,18 +1696,18 @@
     },
     {
       "path": ".agents/skills/oma-scm/SKILL.md",
-      "sha256": "d16681b8dc9037a3e25eb19040e7666cecc964f7f736fb345d2b9f4eb46cad78",
-      "size": 15122
+      "sha256": "df1c50f3fc7652dfff8d8e5d65c40bcc6abf3fe13616f00b8df99c9d437a29f6",
+      "size": 17231
     },
     {
       "path": ".agents/skills/oma-scm/config/cm-config.yaml",
-      "sha256": "ca5ba8460dd2815710e8351f124c43682e1bb0bc614371b928c287c9a6a35922",
-      "size": 1136
+      "sha256": "e79090d628599186b8695c83f1270a39ae1e246a771c427d204839773d9177ee",
+      "size": 1220
     },
     {
       "path": ".agents/skills/oma-scm/config/commit-config.yaml",
-      "sha256": "8d9c8b68df4f53855a9659dfc1eae133dc3bdc3375ececdd8549a5206a6270d4",
-      "size": 1111
+      "sha256": "7ae6559e04eb483397caef86075be44cbc277cafa5442454d9fb0b8db6b6288d",
+      "size": 1343
     },
     {
       "path": ".agents/skills/oma-scm/resources/codeowners-playbook.md",
@@ -1711,7 +1716,7 @@
     },
     {
       "path": ".agents/skills/oma-scm/resources/conventional-commits.md",
-      "sha256": "cedbc9d6c1b75bb57e3e2b42a3068df5b8d180899c4d6736daac0ad2c675d775",
+      "sha256": "a96ff09989acbed2841df908dace4888240fd78c1fcc03c98238d54ffc94ddc6",
       "size": 4206
     },
     {
@@ -2116,8 +2121,8 @@
     },
     {
       "path": ".agents/workflows/scm.md",
-      "sha256": "bbbae3509b4409a6f9560207ac54979255584a60144e6900a7e8a98311acab5f",
-      "size": 7912
+      "sha256": "97b0545f8052c9a217d5a88b29620797aa8866ae58d947b23e047dbde8fd52e5",
+      "size": 8432
     },
     {
       "path": ".agents/workflows/stack-set.md",
@@ -2161,6 +2166,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 430
+    "totalFiles": 431
   }
 }
