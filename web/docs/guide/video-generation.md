@@ -74,7 +74,7 @@ oma video list-providers         # provider availability + key/fallback status
 | `--locale <lang>` | Narration/caption language tag. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (key-free alignment). |
 | `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
-| `--voice <profile>` | Narration voice, or `none`. |
+| `--voice <profile>` | Narration voice, or `none` (the default — omit it and the video renders silent with estimated caption timing). |
 | `--compositor <c>` | `remotion` (default) \| `mpt`. |
 | `--source <k>` | Demo capture source: `file` \| `web`. |
 | `--url <url>` | Target URL for `--source web` (local, staging, or prod). |
@@ -139,7 +139,7 @@ oma video doctor --install-playwright  # Playwright + Chromium for web capture
 ├── captions.srt / .vtt
 ├── audio/narration-*.wav
 ├── visuals/scene-*.{png,svg,…}
-├── {composition}.mp4    # the rendered output
+├── {mode}-{slug}.mp4    # the rendered output (slug derived from the script title)
 └── manifest.json        # providers, assets, cost, warnings
 ```
 

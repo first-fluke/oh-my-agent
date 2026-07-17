@@ -56,7 +56,8 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
   |------|------|------|------|
   | stock video | Pexels (`PEXELS_API_KEY`) | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` |
   | AIGC video | Pixelle-MCP + RunningHub (`RUNNINGHUB_API_KEY`) | oma-image stills | `TODO(oma-deferred): pixelle` |
-  | caption timing | TTS-native timestamps | voicebox-stt → whisper.cpp → estimate | — |
+  | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) | estimate | `TODO(oma-deferred): whisper-cpp` |
+  | music mixing | (not wired — recorded + warned only) | render without music | `TODO(oma-deferred): music` |
   | premium TTS | (not needed — oma-voice is local) | — | — |
 
 - **Pixelle AIGC is a community MCP**: off by default, requires one-time explicit user consent plus a source review before connecting, and is always cost-gated on RunningHub credits.
@@ -100,7 +101,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
 
 The agent writes the script — this is the start of the determinism boundary. Do NOT call an external LLM; you are the script provider.
 
-1. Produce a script honoring the `script.json` schema (`mode, aspect, locale, title, scenes[{id, durationSec, narration, onScreenText, visual{kind,prompt,ref,source}, transition}], music, brand`).
+1. Produce a script honoring the `script.json` schema (`schemaVersion: "1.0"` — required literal — plus `mode, aspect, locale, title, scenes[{id, durationSec, narration, onScreenText, visual{kind: still|clip|mixed|slide|capture, prompt, ref, source}, transition}], music, brand`). Author against `.agents/skills/oma-video/resources/script-schema.md` (full field reference + example) — a schema mismatch is exit 4.
 2. Respect limits from `.agents/skills/oma-video/config/video-config.yaml` (`max_duration_sec: 180`, `max_scenes: 40`). Keep narration tight and per-scene so scene boundaries map cleanly to TTS timing.
 3. Mode-specific sourcing:
    - `shorts`: a hook-first synthetic script from the topic; each scene gets a `visual.prompt` for oma-image.
@@ -130,7 +131,7 @@ oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script
 
 The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution protocol):
 
-- **Voice** (oma-voice / Voicebox MCP) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source preference: TTS-native → `voicebox-stt` (transcribe the generated wav) → `whisper.cpp` → `estimated`. If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
+- **Voice** (oma-voice / Voicebox MCP) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source: `voicebox-stt` (MCP `voicebox_transcribe`, REST `/transcribe` fallback, on the generated wav) → `estimated` (the `tts-native` / `whisper-cpp` source values are reserved but deferred). **The default voice is `none` → a silent video with estimated timing; pass `--voice <profile>` for narration.** If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
 - **Visual** (per-scene, fallback chain `oma-image → pexels → pixelle`) → `visuals/scene-NN.*`. Default is key-free oma-image stills (aspect snapped to the nearest 16-multiple; Remotion crops to exact frame). `--visual stock` engages Pexels only when `PEXELS_API_KEY` is set; `--visual aigc` engages Pixelle only after consent + cost gate. Each scene that falls back is recorded with `pathTaken: fallback`.
 - **Caption** (key-free) → `captions.srt` / `.vtt`, aligned to `timing.json`, styled `tiktok` or `lower-third`, with platform safe-area presets. Non-source locales translate via oma-translator; if absent, captions keep the source locale and warn.
 
@@ -192,7 +193,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - Narration audio is present (or intentionally silent) and aligns to scenes.
    - Captions are synced to `timing.json`, within the safe area, and legible (static windowed cues, CSS-wrapped, Pretendard, design rule 2).
    - Visuals match each scene's intent; no placeholder leakage unless the run intentionally used the fallback.
-   - Aspect / dimensions are correct for the mode; branding/music applied as requested.
+   - Aspect / dimensions are correct for the mode; branding applied as requested. (Music mixing is deferred — a requested music mode only produces a warning, never audio.)
 2. **Route each defect to its stage:**
    - script/narration/scene-count → **Step 3** (re-author script).
    - audio/timing → **Step 4** voice track (check oma-voice, re-synthesize).
