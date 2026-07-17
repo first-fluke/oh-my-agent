@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.19.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.19.1...cli-v10.19.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **academic-writer:** resolve rule contradictions and en-US spelling ([76d5375](https://github.com/first-fluke/oh-my-agent/commit/76d5375a0df991dd606e0d472d7bca7b2e598c8c))
+
+
+### Documentation
+
+* **skills:** fix oma-translator content errors and heading hierarchy ([4ef7f6a](https://github.com/first-fluke/oh-my-agent/commit/4ef7f6a02fa9355bdc009d0c362023da72ee8d98))
+
 ## [10.19.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.19.0...cli-v10.19.1) (2026-07-17)
 
 
