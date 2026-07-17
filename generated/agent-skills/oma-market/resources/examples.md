@@ -7,7 +7,7 @@ These are reference outputs showing the expected shape of `oma market render` re
 ## Example 1 — pain intent: VS Code performance pain points (last 30 days)
 
 ```
-oma-market v0.1.0 · intent: pain · synced 2026-05-14 · window: 30d
+🔎 oma-market v10.20.0 · synced 2026-05-14
 ```
 
 What we learned: Extension host crashes and startup latency dominate the VS Code pain conversation this month, with remote SSH workflows amplifying both issues.
@@ -42,14 +42,25 @@ KEY PATTERNS from the research:
 - JetBrains Fleet's remote story is maturing and targets the SSH pain cluster explicitly.
 
 ---
-Engine: oma-market v0.1.0 · sources: reddit, hn, github · window: 30d · clusters: 4 · trust >= 0.6
+<!-- ENGINE FOOTER -->
+---
+✅ market research footer:
+  - sources used: reddit, hn, github (3/3 requested)
+  - sources failed: none
+  - coverage: 3/3 sources
+  - clusters: 4
+  - items: 11
+  - cache: miss
+  - latency: 812ms
+---
+<!-- END ENGINE FOOTER -->
 
 ---
 
 ## Example 2 — trend intent: RAG framework adoption trend (last 30 days)
 
 ```
-oma-market v0.1.0 · intent: trend · synced 2026-05-14 · window: 30d
+🔎 oma-market v10.20.0 · synced 2026-05-14
 ```
 
 What we learned: LlamaIndex and LangChain are losing ground to lighter orchestration layers as teams prioritize latency and cost over feature breadth.
@@ -84,14 +95,25 @@ KEY PATTERNS from the research:
 - Hallucination in retrieved context — a fundamental trust issue — could trigger regulatory scrutiny in healthcare and finance verticals.
 
 ---
-Engine: oma-market v0.1.0 · sources: reddit, hn, github · window: 30d · clusters: 4 · trust >= 0.6
+<!-- ENGINE FOOTER -->
+---
+✅ market research footer:
+  - sources used: reddit, hn, github (3/3 requested)
+  - sources failed: none
+  - coverage: 3/3 sources
+  - clusters: 4
+  - items: 13
+  - cache: miss
+  - latency: 764ms
+---
+<!-- END ENGINE FOOTER -->
 
 ---
 
 ## Example 3 — competitor intent: Cursor vs Windsurf market signal
 
 ```
-oma-market v0.1.0 · intent: competitor · synced 2026-05-14 · window: 30d
+🔎 oma-market v10.20.0 · synced 2026-05-14
 ```
 
 # Cursor vs Windsurf: 시장 신호
@@ -148,7 +170,33 @@ From Cursor's perspective:
 
 ## Porter's 5 Forces
 
-_Porter's 5 Forces analysis is available in v1.1 (planned)._
+**Threat of new entrants** — Verdict: Moderate
+- [r/cursor](https://reddit.com/r/cursor/comments/mno345/why_i_keep_coming_back_to_cursor/) discussion notes new AI coding tools launching monthly, but matching tab-completion quality takes months of tuning.
+
+**Bargaining power of suppliers** — Verdict: Low
+- Both products build on commodity LLM APIs; the [HN discussion](https://news.ycombinator.com/item?id=39200100) notes users can bring their own key, reducing single-vendor lock-in.
+
+**Bargaining power of buyers** — Verdict: High
+- [r/cursor](https://reddit.com/r/cursor/comments/pqr678/cursor_usage_limits_frustrating/) shows users threatening to churn over usage caps, and switching cost between Cursor and Windsurf is low since both fork VS Code.
+
+**Threat of substitutes** — Verdict: Moderate
+- [GitHub Copilot Workspace's launch coverage](https://news.ycombinator.com/item?id=39301500) targets the same agentic segment with Microsoft distribution, giving buyers a credible substitute.
+
+**Industry rivalry** — Verdict: High
+- Frequent head-to-head comparisons between Cursor and Windsurf on [r/webdev](https://reddit.com/r/webdev/comments/stu901/tried_windsurf_for_a_week/) and HN indicate active feature and pricing competition.
+
+**Strategic implication**: Buyer power and industry rivalry are the most active forces right now; closing the pricing-friction gap while shipping a competitive agentic mode would neutralize Windsurf's differentiation without ceding ground to Copilot Workspace.
 
 ---
-Engine: oma-market v0.1.0 · sources: reddit, hn · window: 30d · clusters: 5 · trust >= 0.6
+<!-- ENGINE FOOTER -->
+---
+✅ market research footer:
+  - sources used: reddit, hn (2/2 requested)
+  - sources failed: none
+  - coverage: 2/2 sources
+  - clusters: 5
+  - items: 14
+  - cache: miss
+  - latency: 693ms
+---
+<!-- END ENGINE FOOTER -->

@@ -76,7 +76,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-image",
-      desc: `Multi-vendor AI image generation with authentication-aware parallel dispatch. Routes to Codex (gpt-image-2 via ChatGPT OAuth), Antigravity (gemini-2.5-flash-image aka nano-banana via \`agy\` CLI + Gemini Code Assist), and Pollinations (flux/zimage, free with signup). Use for image generation, image creation, visual asset generation, and AI art.`,
+      desc: `Multi-vendor AI image generation with authentication-aware parallel dispatch. Routes to Codex (gpt-image-2 via ChatGPT OAuth), Antigravity (Gemini-family "nano-banana" image models via \`agy\` CLI + Gemini Code Assist; exact model chosen internally by agy), and Pollinations (flux/zimage, free with signup). Use for image generation, image creation, visual asset generation, and AI art.`,
     },
     {
       name: "oma-market",

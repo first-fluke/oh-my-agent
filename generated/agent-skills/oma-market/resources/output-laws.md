@@ -52,7 +52,7 @@ Any other `##` is forbidden.
 
 ## LAW 5 — Engine footer pass-through
 
-The render command emits a footer block bounded by `<!-- ENGINE FOOTER -->` and `<!-- END ENGINE FOOTER -->`. It contains: sources_used, sources_failed coverage, cluster count, item count, p50/p95 latency, cache hit/miss, total cost (if paid sources used).
+The render command emits a footer block bounded by `<!-- ENGINE FOOTER -->` and `<!-- END ENGINE FOOTER -->`. It contains: sources used (N/M requested), sources failed, coverage (`coverage: N/M sources`, with a low-coverage warning when only 1 source returned signals), cluster count, item count, cache hit/miss, and a single latency value in ms.
 
 Render must emit this verbatim. Do not paraphrase, recompute, reorder, or replace with a synthesized `## Notable Stats`.
 
@@ -91,7 +91,7 @@ Line 1 of every brief is the badge, exactly:
 
 Where `{ver}` is the cli package version (read from `cli/package.json` `version`) and `{YYYY-MM-DD}` is today's UTC date. Line 2 is blank. Line 3 begins the body.
 
-**Self-check**: line 1 must match `/^🔎 oma-market v[\d.]+ · synced \d{4}-\d{2}-\d{2}$/`. If missing, prepend.
+**Self-check**: line 1 must match `/^🔎 oma-market v[\w.-]+ · synced \d{4}-\d{2}-\d{2}$/`. If missing, prepend.
 
 ---
 

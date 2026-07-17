@@ -69,22 +69,22 @@ IP / copyright / antitrust / GDPR-PIPA / litigation / compliance.
 ## Output skeleton
 
 ```markdown
-**Political** — _direction_
+**Political** - _direction_
 - [name](url) - signal summary. (C#)
 
-**Economic** — _direction_
+**Economic** - _direction_
 - [name](url) - signal summary. (C#)
 
-**Social** — _direction_
+**Social** - _direction_
 - ...
 
-**Technological** — _direction_
+**Technological** - _direction_
 - ...
 
-**Environmental** — _direction_
+**Environmental** - _direction_
 - ...
 
-**Legal** — _direction_
+**Legal** - _direction_
 - ...
 
 **Net stance**: 2-3 sentences identifying the dominant axes and

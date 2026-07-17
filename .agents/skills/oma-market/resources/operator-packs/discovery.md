@@ -16,14 +16,20 @@
 
 Discovery intent is only triggered by explicit `--intent discovery` flag or by keyword scan with confidence >= 2. It is NOT triggered by fallback chain.
 
-```
+```bash
 # Example invocation:
-oma market research "async standup tools" --intent discovery
+oma market harvest "async standup tools (wish OR need OR missing OR underrated OR underserved OR \"I want\" OR \"if only\")" \
+     --sources reddit,hn,bluesky,mastodon,github,grounding --window 30d \
+     --operator-pack discovery \
+  | oma market score --intent discovery \
+  | oma market fuse \
+  | oma market cluster \
+  | oma market render --format md --intent discovery --frameworks auto
 ```
 
 ## Notes
 
 - Discovery signals are forward-looking; they reveal what users want to exist, not what exists and fails.
 - Combine with trend pack results to distinguish "gap that nobody has filled" from "gap that is being filled but is unknown."
-- Signal quality is lower than pain signals — apply higher `--min-trust` threshold in score stage.
+- Signal quality is lower than pain signals — apply a higher `--min-trust` threshold (`verified` or `community`) in the render stage.
 - Sources: Reddit (r/entrepreneur, r/startups, r/productivity) and HN "Ask HN" threads are highest-yield for discovery signals.

@@ -53,7 +53,7 @@ oma market harvest "<topic>" \
   [--no-cache]
 ```
 
-Default `--sources reddit,hn,bluesky,mastodon,grounding` (paid sources
+Default `--sources reddit,hn,bluesky,mastodon,github,grounding` (paid sources
 auto-added when env keys present). Default `--window 30d`.
 
 ## Step 4 — Score, Fuse, Cluster (CLI)

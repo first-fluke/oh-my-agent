@@ -31,7 +31,7 @@ oma market harvest "<topic>" --operator-pack pain
 oma market harvest "<topic>" --operator-pack positive
 ```
 
-The fuse stage merges both result sets and tags each cluster with a `sentiment` field (`pain | positive | mixed`).
+The two harvest result sets are scored, fused, and clustered separately (there is no `sentiment` field in fuse output); the host LLM synthesizes the pain/positive contrast when writing the brief.
 
 ## Notes
 

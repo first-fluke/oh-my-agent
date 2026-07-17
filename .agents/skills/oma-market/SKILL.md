@@ -34,6 +34,8 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 - Optional `--sources <list>` to override defaults
 - Optional `--vs <entity>` for competitor COMPARISON mode
 - Optional `--frameworks auto|none|swot,5f,pestel`
+- Optional harvest flags: `--sites <list>` (grounding site: filters, e.g. Naver/tistory/brunch for `ko` locale), `--query-strict` (post-filters results to those whose title contains every whitespace-separated query token)
+- Auto-widen (harvest, on by default): widens the window on a thin corpus via the ladder 7d -> 30d -> 90d -> 180d, unless `--window` is explicitly pinned. Disable with `--no-widen`; force it on even with a pinned window via `--widen-on-thin`; tune the thin-corpus cutoff with `--widen-threshold <n>`.
 
 ### Expected outputs
 - Single markdown brief at `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`
@@ -113,7 +115,7 @@ Classify user intent into pain / trend / competitor / discovery, fan-out to comm
 TOPIC="VS Code pain points"
 oma market detect-trap "$TOPIC" \
   && oma market harvest "vscode (broken OR bug OR migrate OR quit OR slow)" \
-       --sources reddit,hn,bluesky,mastodon,github --window 30d \
+       --sources reddit,hn,bluesky,mastodon,github,grounding --window 30d \
        --operator-pack pain \
   | oma market score --intent pain \
   | oma market fuse \
@@ -125,7 +127,7 @@ oma market detect-trap "$TOPIC" \
 | Scope | Resource target |
 |-------|-----------------|
 | `NETWORK` | Community sources via harvest's built-in fetchers (reddit, hn, bluesky, mastodon, github, grounding; youtube via `yt-dlp`) |
-| `LOCAL_FS` | Brief output at `.agents/results/market/`; cache at `~/.cache/oma/market/` |
+| `LOCAL_FS` | Brief output at `.agents/results/market/`; cache at `~/.cache/oma/market-research/` |
 | `PROCESS` | `oma market` subcommands |
 | `MEMORY` | Intent classification, operator pack selection, cluster summaries |
 

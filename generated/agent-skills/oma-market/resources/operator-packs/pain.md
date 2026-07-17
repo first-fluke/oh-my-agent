@@ -28,7 +28,7 @@ Pain signals are the highest-value leading indicator for product-market gaps. Us
 
 ## Usage
 
-This pack is auto-injected when `--intent pain` is resolved. It can be suppressed with `--no-operators`.
+This pack is auto-injected when `--intent pain` is resolved. It can be suppressed with `--operator-pack none`.
 
 ```
 # Query built by execution-protocol Step 3:

@@ -112,7 +112,7 @@ oh-my-agent solves this with specialization:
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-market** | Community signal intelligence | Classifies intent (pain / trend / competitor / discovery), fans out to keyless community sources (Reddit, HN, Bluesky, Mastodon, GitHub Issues) via `oma search fetch --only api`, then scores, fuses (RRF k=60), and clusters (entity-overlap + MMR) with deterministic CLI compute. Intent-auto frameworks (SWOT / Porter's 5F / PESTEL), mandatory `detect-trap` preflight, paid sources auto-skip without env keys. Emits one LAW-compliant brief at `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
+| **oma-market** | Community signal intelligence | Classifies intent (pain / trend / competitor / discovery), fans out to keyless community sources (Reddit, HN, Bluesky, Mastodon, GitHub, Grounding; YouTube when `yt-dlp` is installed) via `oma market harvest`'s own built-in per-source fetchers (all network I/O stays inside harvest), then scores, fuses (RRF k=60), and clusters (entity-overlap + MMR) with deterministic CLI compute. Intent-auto frameworks (SWOT / Porter's 5F / PESTEL), mandatory `detect-trap` preflight, paid sources auto-skip without env keys. Emits one LAW-compliant brief at `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
 
 ### Media and content generation
 
