@@ -6,7 +6,7 @@
 |--------|-----------------|-----------|-------|
 | `codex` | PASS | `codex exec -i <path>` (repeatable) | Local file path; 5MB-per-file cap enforced by Codex CLI |
 | `antigravity` | PASS | Per-run temp dir staged via `agy --add-dir`; paths referenced inline in prompt | Up to 10 refs (skill cap); copied so agy sandboxes don't need access to the originals' parent dir |
-| `pollinations` | N/A | (none) | Requires URL hosting; rejected with exit 4. Planned for PR #2. |
+| `pollinations` | N/A | (none) | Requires URL hosting; rejected with exit 4 when explicitly selected, silently dropped from the run set under `--vendor auto`. Planned for PR #2. |
 
 All paths are validated in `reference-guard.ts` (magic-byte MIME check + size + count + duplicate rejection) before dispatch. The magic-byte-detected MIME is threaded through `GenerateInput.referenceImages` and used verbatim at the vendor API boundary; file extension is never trusted for MIME type.
 
@@ -33,7 +33,7 @@ The Antigravity CLI (`agy`) is an agentic CLI that runs against the user's Gemin
 |-------|-------|
 | Binary | `agy` (Antigravity CLI) |
 | Auth | Sign-in via Gemini Code Assist account during `agy install` |
-| Health check | `agy --version` exits 0 |
+| Health check | `agy --version` exits 0 — **install check only**. Sign-in state is not verified; a signed-out agy passes health and fails at generate time. |
 | Model selection | Opaque — chosen by agy's internal agent loop. Not exposed via flags, not recorded as a vendor-side promise. |
 | Transport | `agy -p --dangerously-skip-permissions --add-dir <outDir> --print-timeout <s> "<instruction>"` (spawn `cwd` is forced to `<outDir>` to prevent agy from inheriting a stale workspace context) |
 | Output bytes | Saved directly by agy to absolute paths embedded in the prompt; detected via PNG/JPEG/WebP/GIF magic bytes and renamed accordingly |
@@ -48,6 +48,20 @@ The Antigravity CLI (`agy`) is an agentic CLI that runs against the user's Gemin
 ### Output format gotcha
 
 Gemini image surfaces currently return JPEG bytes regardless of the requested filename extension. The provider writes to a `.img` placeholder, sniffs the actual format from the first 12 bytes, then renames to `.png` / `.jpg` / `.webp` / `.gif`. The result's `mime` field reflects the sniffed format, not the user's requested extension.
+
+## Pollinations
+
+| Field | Value |
+|-------|-------|
+| Binary | (none — direct HTTP) |
+| Auth | `POLLINATIONS_API_KEY` env var (free key at https://enter.pollinations.ai) |
+| Health check | `POLLINATIONS_API_KEY` is set |
+| Models | Free (no pollen credits): `flux`, `zimage`. Credit-gated (positive pollen balance required): `qwen-image`, `wan-image`, `gptimage`, `gptimage-large`, `gpt-image-2`, `klein`, `kontext`. Select via `--model`; default `flux`. |
+| Transport | `POST https://gen.pollinations.ai/v1/images/generations` (OpenAI-compatible), `response_format: b64_json` |
+| Sizes | Any `WxH` (non-`WxH` or `auto` falls back to `1024x1024`) |
+| Output | PNG or JPEG, sniffed from magic bytes |
+
+A credit-gated model without pollen balance fails as `invalid-input` (exit 4) with a hint to switch to `flux`/`zimage`.
 
 ## Strategy Attempt Record
 
