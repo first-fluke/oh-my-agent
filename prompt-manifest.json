@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.20.0",
-  "releaseDate": "2026-07-17T06:52:26.700Z",
+  "releaseDate": "2026-07-17T07:02:23.411Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -766,28 +766,28 @@
     },
     {
       "path": ".agents/skills/oma-debug/SKILL.md",
-      "sha256": "6378e8fe2539ab6b702037a6377f3550f653343d410bcda9874cfbcade1c654b",
-      "size": 6251
+      "sha256": "a66748ff355d22d5215975a9e58175c8821a041a4c613cb1499331365c62814d",
+      "size": 6327
     },
     {
       "path": ".agents/skills/oma-debug/resources/bug-report-template.md",
-      "sha256": "160dcfe16e65ea39f66133e5a5c79599c296ee8052b51135ba6f10902d422c9b",
-      "size": 7397
+      "sha256": "8dfc8b9e5db286e2800586f4c673f9c2361f9a0808aec42816f94ce59c097c99",
+      "size": 7617
     },
     {
       "path": ".agents/skills/oma-debug/resources/checklist.md",
-      "sha256": "5b27eb5fda9c244a578dfd165d54b046d402ea63d09be3204e67f7c04bb8d88b",
-      "size": 1063
+      "sha256": "5f6302eaa090625109d481c953b10493abc80800bfee56c6a7b7a608b8557353",
+      "size": 1136
     },
     {
       "path": ".agents/skills/oma-debug/resources/common-patterns.md",
-      "sha256": "0c050dbbba21ebe1d78032cd12aefa959b013876503bdc807aaefc4304378796",
-      "size": 14992
+      "sha256": "207142e2e2e4c59d3f0238aec0fa7f57ad413590284c549c2c68235a6ec75551",
+      "size": 15153
     },
     {
       "path": ".agents/skills/oma-debug/resources/debugging-checklist.md",
-      "sha256": "d2de2c1e6e32ad2c06e707eea8da5141d46e1293d7f834c1a0468d575389eaf7",
-      "size": 9935
+      "sha256": "7714f2c4c1d8ed06c8ab0fa234779754ddf3599a5bfa1f8804042a9cfe2cd912",
+      "size": 10135
     },
     {
       "path": ".agents/skills/oma-debug/resources/error-playbook.md",
@@ -801,8 +801,8 @@
     },
     {
       "path": ".agents/skills/oma-debug/resources/execution-protocol.md",
-      "sha256": "4c01b00ae8dd0d30a4deedb69c0d4a30565a48bcceec5ba5f7e849b9ead1a99b",
-      "size": 2371
+      "sha256": "32e63c93fe4c8a5a11a7d99ccf51b44d7fcf5fc7defc90757e8ace4a703a0bce",
+      "size": 2663
     },
     {
       "path": ".agents/skills/oma-deepsec/SKILL.md",
