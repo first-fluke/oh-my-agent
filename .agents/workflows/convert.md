@@ -60,7 +60,8 @@ uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_di
 ```
 
 Variants: `--use-struct-tree` (Tagged PDF), `--image-output embedded` (inline images),
-`--format markdown,json` (multiple formats). Then go to **Step 3 (document normalization)**.
+`--format markdown,json` (multiple formats), `--table-method cluster` (borderless tables),
+`--pages "1-50"` (large PDFs in ranges). Then go to **Step 3 (document normalization)**.
 
 ---
 

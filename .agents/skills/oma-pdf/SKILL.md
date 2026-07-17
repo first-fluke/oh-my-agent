@@ -72,9 +72,10 @@ Convert PDF files into structured Markdown or another requested extraction forma
 ### Transitions
 - If the preview text is readable, use standard conversion.
 - If the PDF is tagged and standard output is garbled, retry with `--use-struct-tree`.
+- If tables are missing or broken, retry with `--table-method cluster` or `--markdown-with-html` before escalating to hybrid mode.
 - If the PDF is scanned or image-based, start or reuse the hybrid OCR server and convert with hybrid mode.
 - If conversion fails because the PDF is encrypted, stop and ask for the password or an unlocked copy.
-- If conversion hits memory or size limits, process smaller page ranges or batches.
+- If conversion hits memory or size limits, process smaller page ranges via `--pages` or batch smaller inputs.
 
 ### Failure and recovery
 | Failure | Recovery |
@@ -83,9 +84,9 @@ Convert PDF files into structured Markdown or another requested extraction forma
 | `opendataloader-pdf-hybrid` not found | Invoke via `uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid`; the bare package name does not exist on PyPI |
 | Password-protected PDF | Ask for password or unlocked PDF |
 | Garbled output | Retry with tagged structure or hybrid mode |
-| Missing tables | Retry with hybrid mode for complex or borderless tables |
+| Missing tables | Retry with `--table-method cluster` or `--markdown-with-html` first; hybrid mode for scanned tables |
 | OCR language mismatch | Retry with explicit OCR languages, for example `ko,en` |
-| Large file or memory pressure | Split into page ranges or batch smaller inputs |
+| Large file or memory pressure | Split into page ranges with `--pages` or batch smaller inputs |
 
 ### Exit
 - Success: output file exists, Markdown is formatted when applicable, and extracted structure is readable.
@@ -115,6 +116,7 @@ Convert PDF files into structured Markdown or another requested extraction forma
 
 ### Canonical command path
 ```bash
+uvx opendataloader-pdf "{input_path}" -f text --pages 1-3 --to-stdout -q   # text-layer probe (no temp files)
 uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}"
 uvx mdformat "{output_path}"
 ```
@@ -124,6 +126,8 @@ For scanned/image-based PDFs, start OCR first and then convert through hybrid mo
 uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid --port 5002 --force-ocr --ocr-lang "{languages}"
 uvx opendataloader-pdf --hybrid docling-fast "{input_path}" --format markdown --output-dir "{output_dir}"
 ```
+
+On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `--threads` (parallel pages), `--detect-strikethrough`, hybrid `--enrich-formula` / `--enrich-picture-description` — are detailed in `resources/execution-protocol.md`.
 
 ### Resource scope
 | Scope | Resource target |
@@ -138,6 +142,7 @@ uvx opendataloader-pdf --hybrid docling-fast "{input_path}" --format markdown --
 - The output location is writable or can be created.
 - Required CLIs are available through `uvx`.
 - OCR is only attempted when hybrid mode is available or can be started.
+- Defaults come from `config/pdf-config.yaml`; explicit user options override them, and `output.overwrite: false` requires confirmation before replacing an existing output file.
 
 ### Effects and side effects
 - Creates or overwrites extraction output depending on configuration and user intent.
