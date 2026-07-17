@@ -40,11 +40,15 @@ Follow these steps in order (adjust depth by difficulty).
 ## Step 3: Decompose Tasks
 - Break into tasks completable by a single agent
 - Each task has: agent, title, description, acceptance criteria, priority, dependencies, **scope**
+- `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
 - `scope`: array of directory prefixes this agent is allowed to modify (e.g., `["src/api/", "migrations/"]`). Used by `verify` to detect cross-agent boundary violations in parallel execution.
 - Minimize dependencies for maximum parallel execution
 - Priority tiers: 1 = independent (run first), 2 = depends on tier 1, etc.
+  - The numeric tier is the **canonical** `priority` value in plan JSON (what the orchestrator fans out on).
+  - Human-readable trackers (`docs/plans/work/{NNN}-{name}.md`) use the same numeric tier in their Priority column. Do not use a separate P0/P1-style scale.
 - Complexity: Low / Medium / High / Very High
 - Save to `.agents/results/plan-{sessionId}.json` and `.agents/results/result-pm.md`
+- `{sessionId}` = `{YYYYMMDD}-{HHMMSS}` at plan creation, matching the orchestrator session convention (`oma-orchestrator/resources/memory-schema.md`); also record it in the plan JSON `session_id` field
 
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?
