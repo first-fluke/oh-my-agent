@@ -44,13 +44,13 @@ generation:
   # Average relations per statement (relation wiring quality threshold)
   min_relations_per_statement: 1.5
   # ID format
+  # Methods are statements (statement_type: method) and use "stmt:"; actors have no ids
   id_prefixes:
     statement: "stmt:"
     evidence: "ev:"
     relation: "rel:"
-    method: "method:"
     artifact: "art:"
-    actor: "actor:"
+    representation: "rep:"
 
 # Output behavior
 output:

@@ -38,7 +38,7 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 
 ## Statement Internals
 
-- [ ] Each statement has `statement_type` from: `claim`, `method`, `limitation`, `assumption`, `definition`, `question`
+- [ ] Each statement has `statement_type` from: `claim`, `method`, `limitation`, `assumption`, `definition`, `question` (review sidecars use the same enum — no `review_comment`)
 - [ ] Each statement has `modality` from: `descriptive`, `empirical`, `theoretical`
 - [ ] Each statement has `status` (commonly `asserted`)
 - [ ] `confidence` is an object: `{claim_strength: ..., extraction_fidelity: ...}`, both from `high|medium|low`
@@ -59,6 +59,7 @@ Run this after Mode 1 (Generate) or Mode 3 (Review) before reporting done.
 - [ ] Average relations-per-statement ratio ≥ 1.5
 - [ ] Methods have at least one of: `implements`, `uses`, `evaluates_on`, `documents`
 - [ ] No dangling references; every `subject_ref` and `object_ref` points to an existing id
+- [ ] Review sidecars (Mode 3): cross-record refs use the `record_id#local_id` grammar (e.g., `knows:examples/resnet/1.0.0#stmt:main-contribution`) — lint accepts these; bare foreign ids are still errors
 
 ## Density
 
