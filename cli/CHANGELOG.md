@@ -1,5 +1,30 @@
 # Changelog
 
+## [10.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.20.0...cli-v10.20.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* **hwp:** report non-th tables as kept instead of flattened ([2cdd342](https://github.com/first-fluke/oh-my-agent/commit/2cdd342fc880a086c75dfb95745d74cd1c0a83f2))
+* **image:** block non-TTY cost confirmation with actionable guidance ([404bc6b](https://github.com/first-fluke/oh-my-agent/commit/404bc6b8fde564c3fa53298f2d5a28ecc9007436))
+* **market:** complete harvest cache key and implement min-trust filter ([ce5a5fb](https://github.com/first-fluke/oh-my-agent/commit/ce5a5fb05789d274b07c41dd7360bedf1d37a8a2))
+
+
+### Documentation
+
+* **coordination:** align dispatch and progress-file conventions ([fc14c90](https://github.com/first-fluke/oh-my-agent/commit/fc14c902b6c3889099b065b53b2e903e8075d957))
+* **deepsec:** document pr gate tradeoffs and enrich stage ([f3edcfc](https://github.com/first-fluke/oh-my-agent/commit/f3edcfc597097b389139cfc9774c0e1c40f57533))
+* **design:** merge examples into resources and unify breakpoints ([a78b00c](https://github.com/first-fluke/oh-my-agent/commit/a78b00c1a6f2f8073fae38e02d57feb3d0b8976d))
+* **hwp:** cover kordoc 4.x chunks format, quality flags, and scope ([d36f287](https://github.com/first-fluke/oh-my-agent/commit/d36f28792f41efdd7e2a6b4bcde3e6d072aeee75))
+* **image:** sync skill docs with CLI behavior ([2026b3a](https://github.com/first-fluke/oh-my-agent/commit/2026b3a5185a22a08140cf0451b333850a77414f))
+* **market:** fix phantom commands and sync skill docs with CLI ([32c3c86](https://github.com/first-fluke/oh-my-agent/commit/32c3c868b0bfb8640172a96c2f24bfd82eb9741b))
+* **observability:** fix integration back-references and remove schedule promises ([6346e8a](https://github.com/first-fluke/oh-my-agent/commit/6346e8a0e19ee5aa430ecf3d50fd02d660bd69f4))
+* **observability:** note exception span-event deprecation (semconv 1.40) ([4413b1c](https://github.com/first-fluke/oh-my-agent/commit/4413b1c1a65027c22e2c651b28cd3a923c70b663))
+* **observability:** refresh semconv citations from 1.27.0 to 1.43.0 ([01a5910](https://github.com/first-fluke/oh-my-agent/commit/01a591002dc3d93e5ded08c5c6e2e53cd5c3743c))
+* **orchestrator:** align skill spec with workflow and dispatch reality ([0cf1387](https://github.com/first-fluke/oh-my-agent/commit/0cf1387f2aa2ee84025ac223712cf88d49a546c1))
+* **recap:** fix window semantics, 30d cap, and stale gemini example ([4fc6da1](https://github.com/first-fluke/oh-my-agent/commit/4fc6da1abe9ed22c8a9142edacd80d3437fc3698))
+* **skills:** resolve oma-debug internal contradictions ([e038051](https://github.com/first-fluke/oh-my-agent/commit/e03805124918ad077ba75e60e1b66e05d05daaa7))
+
 ## [10.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.19.2...cli-v10.20.0) (2026-07-17)
 
 
