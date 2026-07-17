@@ -14,7 +14,7 @@ alwaysApply: false
 [optional body]
 ```
 
-**Types**: feat, fix, refactor, docs, test, chore, style, perf
+**Types**: feat, fix, refactor, docs, test, chore, style, perf, build, ci, revert
 
 ## Rules
 

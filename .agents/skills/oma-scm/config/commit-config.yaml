@@ -3,7 +3,7 @@
 # Enable Conventional Commits
 conventional_commits: true
 
-# Allowed commit types
+# Allowed commit types (aligned with @commitlint/config-conventional)
 types:
   - feat
   - fix
@@ -13,6 +13,9 @@ types:
   - chore
   - style
   - perf
+  - build
+  - ci
+  - revert
 
 # Branch prefix rules
 branch_prefixes:
@@ -25,6 +28,8 @@ branch_prefixes:
   hotfix: "hotfix/"
   style: "style/"
   perf: "perf/"
+  build: "build/"
+  ci: "ci/"
 
 # Commit message rules
 message:
@@ -53,3 +58,11 @@ forbidden_patterns:
   - "*.pem"
   - "*.key"
   - ".env.local"
+  - "*.p12"
+  - "*.pfx"
+  - "id_rsa*"
+  - "id_ed25519*"
+  - ".npmrc"
+  - "service-account*.json"
+  - "*.keystore"
+  - "*.jks"
