@@ -1,5 +1,26 @@
 # Changelog
 
+## [10.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.20.2...cli-v10.21.0) (2026-07-17)
+
+
+### Features
+
+* **agents:** register refactor as canonical agent id ([22b8ff1](https://github.com/first-fluke/oh-my-agent/commit/22b8ff173483d1c55c5971a247093d286bb63743))
+
+
+### Bug Fixes
+
+* **agents:** cover swift native and variant stacks in mobile-engineer ([7e8f503](https://github.com/first-fluke/oh-my-agent/commit/7e8f50329deeeb3d9942f6e6719dffd05321dd2c))
+* **mobile:** fix broken snippets, secure tokens, refresh 2026 stacks ([dcd80aa](https://github.com/first-fluke/oh-my-agent/commit/dcd80aac432b671fdaefa11e6dfd6d15a7489c0d))
+* **rules:** make mobile rule variant-aware with secrets guidance ([97d35d6](https://github.com/first-fluke/oh-my-agent/commit/97d35d6b37d7ff6ff37d889a8896656218299da3))
+* **workflows:** dispatch ultrawork refine actions to refactor-engineer ([979a0e4](https://github.com/first-fluke/oh-my-agent/commit/979a0e4843af2a68ed610a8637706c79de9007ac))
+
+
+### Documentation
+
+* **architecture:** tighten skill guidance, add migration patterns ([ce51c8d](https://github.com/first-fluke/oh-my-agent/commit/ce51c8db1ce36e4d2f753d19cca1b53c9b597f94))
+* **refactor:** clarify outputs, extend tool registry and triggers ([2b51963](https://github.com/first-fluke/oh-my-agent/commit/2b51963abd5f8db60278e39bdd1354bff0af66b0))
+
 ## [10.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.20.1...cli-v10.20.2) (2026-07-17)
 
 
