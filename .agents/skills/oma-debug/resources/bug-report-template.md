@@ -329,6 +329,10 @@ const name = user.profile.name; // Crashes if profile undefined
 - Screenshots (if text description is clear)
 - Stack trace (if no error thrown)
 - Migration notes (if no DB/config changes)
+- Communication, Metrics, Sign-off (org-process sections; skip when running as an autonomous agent)
+
+**For Simple/Medium bugs**: the condensed template in
+`debugging-checklist.md` §Documentation Template is sufficient.
 
 **Optional sections to add**:
 - Timeline (for long-running bugs)

@@ -312,7 +312,9 @@ Escalate to other agents if:
 
 ## Documentation Template
 
-After fixing, document in `.agents/results/bugs/`:
+After fixing, document in `.agents/results/bugs/`. For Complex or CRITICAL/HIGH
+severity bugs, use the full `bug-report-template.md`; for Simple/Medium bugs,
+this condensed form is sufficient:
 
 ```markdown
 # Bug: [Title]
@@ -356,7 +358,7 @@ After fixing, document in `.agents/results/bugs/`:
 
 - **Browser DevTools**: F12 (Console, Network, React DevTools)
 - **Serena MCP**: find_symbol, search_for_pattern, find_referencing_symbols
-- **Antigravity Browser**: Automated testing and reproduction
+- **Browser automation** (Playwright, Chrome DevTools MCP, or vendor browser tools): Automated testing and reproduction
 - **React Profiler**: Performance analysis
 - **Lighthouse**: Performance audit
 - **Git bisect**: Find when bug was introduced
