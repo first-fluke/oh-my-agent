@@ -212,7 +212,7 @@ Use this when the user asks about branching strategy, merges, rebase/cherry-pick
 ### 5) Verification & audit
 
 1. Required CI and `merge_group` when merge queue applies.
-2. Never stage/commit secrets (`.env`, keys, raw tokens).
+2. Never stage/commit secrets (`.env`, keys, raw tokens). Filename patterns from `commit-config.yaml` `forbidden_patterns` are enforced mechanically by the `scm-guard` PreToolUse hook; for content-level leaks (tokens hardcoded in ordinary source files), run a scanner when available (`gitleaks protect --staged`, `trufflehog git`) before large or unfamiliar commits.
 3. Call out signed-commit expectations when the org cares about verification badges.
 
 #### CODEOWNERS maintenance checklist
@@ -284,9 +284,14 @@ git log --oneline -5
 
 If changes span multiple features/domains, **split commits by feature**.
 
-**Split when:** different scopes, different types, logically independent work.
+**Split when:** the changes are logically independent (different features, unrelated fixes).
 
-**Do not split when:** one feature, few files (≤5), or user asked for a single commit.
+**Do not split when:** one logical change (even if it touches code + tests + docs together), or the user asked for a single commit.
+
+**Precedence for edge cases** (when both readings are defensible):
+1. Logical independence decides first — one logical change is one commit regardless of how many types/scopes it touches.
+2. File count is only a tiebreaker: ≤5 files lean single commit; >5 files spanning multiple scopes/types lean split.
+3. An explicit user instruction (single commit or split) overrides both.
 
 #### Step 2: Determine type
 
@@ -333,6 +338,28 @@ rm -f "$msgfile"
 ```
 
 Use HEREDOC by default, and switch to `-F` for long or flaky terminal sessions.
+
+### Push and PR safety (only when requested)
+
+Push only when the user asks or a workflow requires it. Before pushing:
+
+1. `git status -sb` — confirm branch, remote tracking, ahead/behind.
+2. Protected-branch check: if the target is the default/protected branch and `cm-config.yaml` sets `require_pr_for_default_branch: true`, push a topic branch and open a PR (`gh pr create`) instead of pushing directly — unless the user explicitly instructed a direct push (Guardrail 0).
+3. Never plain `--force`; after an approved history rewrite use `git push --force-with-lease`.
+4. If push is rejected (non-fast-forward), fetch and rebase/merge locally; do not retry with force.
+
+### Amend, fixup, autosquash
+
+First determine whether the target commits are shared:
+
+```bash
+git status -sb                 # ahead/behind vs upstream
+git log --oneline @{u}..HEAD   # commits not yet pushed (errors when no upstream — treat all as unpushed)
+```
+
+- **Unpushed commits:** `git commit --amend`, `git commit --fixup <sha>` + `git rebase -i --autosquash`, and interactive rebase are safe — proceed.
+- **Pushed/shared commits:** this is a shared-history rewrite — require maintainer approval (Guardrail 4) and use `--force-with-lease` when pushing the result.
+- Before `--amend`, check `git diff --staged`: the amend must not silently absorb unrelated staged changes.
 
 ## References
 

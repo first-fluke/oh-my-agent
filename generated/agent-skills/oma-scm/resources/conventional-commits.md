@@ -120,7 +120,7 @@ Refs #123, #789
 feat(ui): redesign dashboard
 
 Co-Authored-By: Jane Doe <jane@example.com>
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: First Fluke <our.first.fluke@gmail.com>
 ```
 
 ## Branch Naming Convention

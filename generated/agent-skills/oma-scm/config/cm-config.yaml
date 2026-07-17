@@ -1,7 +1,7 @@
 # Configuration management: project pointers (read with commit-config.yaml)
 
 documented_process:
-  contributing: CONTRIBUTING.md
+  # contributing: CONTRIBUTING.md  # enable when the file exists (this repo has none yet)
   security: SECURITY.md
   # adr_glob: "docs/adr/*.md"
 
@@ -23,6 +23,7 @@ ownership:
   critical_paths:
     - ".agents/hooks/**"
     - ".agents/workflows/**"
+    - ".agents/skills/**"
 
 status_accounting:
   changelog: CHANGELOG.md

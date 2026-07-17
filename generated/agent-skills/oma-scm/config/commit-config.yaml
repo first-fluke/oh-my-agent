@@ -66,3 +66,14 @@ forbidden_patterns:
   - "service-account*.json"
   - "*.keystore"
   - "*.jks"
+  - "*.tfvars"
+  - "*.tfstate"
+  - "*.tfstate.*"
+  - ".netrc"
+  - ".pypirc"
+
+# Files matching forbidden_patterns that are still safe to commit (templates/examples)
+allowed_exceptions:
+  - "*.example"
+  - "*.sample"
+  - "*.template"
