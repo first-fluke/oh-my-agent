@@ -50,6 +50,8 @@ If the problem is vague, start in Diagnostic Mode.
 ## Step 2: Analyze the Existing System
 
 // turbo
+Read prior decisions in `.agents/results/architecture/` first — new decisions supersede old ones explicitly (update the old ADR's `Status`), never contradict them silently.
+
 Use MCP code analysis tools to understand the current architecture:
 - `get_symbols_overview` for project structure and boundaries
 - `find_symbol` and `find_referencing_symbols` for ownership and coupling
@@ -131,11 +133,14 @@ If the decision remains user-owned, present the options with clear tradeoffs rat
 // turbo
 Save the architecture artifact to `.agents/results/architecture/`.
 
-Suggested filenames:
+Suggested filenames (kebab-case topic, no sequence numbers):
+- `adr-<topic>.md`
 - `architecture-recommendation-<topic>.md`
 - `architecture-review-<topic>.md`
-- `adr-<topic>.md`
 - `cbam-<topic>.md`
+- `diagnosis-<topic>.md`
+
+ADR lifecycle: set `Status` (`Proposed` / `Accepted` / `Superseded by <adr-file>`); when replacing an old ADR, update its `Status` in the same run.
 
 Emit and verify the required ADR/architecture completion decision:
 

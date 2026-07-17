@@ -41,6 +41,7 @@ Analyze, compare, and document software architecture decisions with explicit tra
 ### Expected outputs
 - Architecture diagnosis, recommendation, comparison, prioritization, or ADR
 - Assumptions, tradeoffs, risks, and validation steps
+- A Mermaid context/container diagram when the decision changes structure (boundaries, dependencies, data flow)
 - Saved architecture artifacts under `.agents/results/architecture/` when producing durable outputs
 
 ```yaml
@@ -57,6 +58,7 @@ outputs:
 - `resources/stakeholder-synthesis.md` when cross-cutting stakeholder consultation is justified
 - `resources/output-templates.md` for final artifact shapes
 - `resources/api-evolution.md` for published-contract versioning/deprecation decisions (MAP evolution patterns)
+- `resources/migration-patterns.md` for transition plans when the chosen architecture requires restructuring a live system
 
 ### Control-flow features
 - Branches by request clarity, decision materiality, risk level, and need for stakeholder consultation
@@ -68,7 +70,8 @@ outputs:
 ### Entry
 1. Identify the architecture problem, decision, or pain signal.
 2. Gather existing constraints, source evidence, and stakeholder context.
-3. Select the lightest sufficient method.
+3. Read prior decisions in `.agents/results/architecture/` — new decisions supersede old ones explicitly, never contradict them silently.
+4. Select the lightest sufficient method.
 
 ### Scenes
 1. **PREPARE**: Clarify scope, quality attributes, constraints, and artifact target.
@@ -112,7 +115,10 @@ outputs:
 - Optional stakeholder-agent consultation only when cross-cutting enough to justify cost
 
 ### Canonical workflow path
+Prefer symbol-aware tools (serena MCP) when available: `get_symbols_overview` for structure, `find_symbol` / `find_referencing_symbols` for ownership and coupling, `search_for_pattern` for integration points. Fall back to plain search only when serena is unavailable:
+
 ```bash
+ls .agents/results/architecture/   # prior decisions — read before deciding
 rg --files
 rg "ADR|architecture|boundary|service|module|dependency|owner|interface" .
 ```
@@ -145,6 +151,8 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 7. Be cost-aware by default: implementation cost, operational cost, team complexity, and future change cost.
 8. When a decision is material, compare at least two genuinely different options before recommending one.
 9. Save architecture artifacts to `.agents/results/architecture/`.
+10. Read prior artifacts in `.agents/results/architecture/` before deciding; when replacing an old decision, mark it superseded rather than contradicting it.
+11. When a durable artifact is finalized, emit the `architecture.adr-complete` L1 decision event and verify the checkpoint (commands in `resources/execution-protocol.md` Step 7).
 
 ### Method Selection Summary
 - **Diagnostic Mode**: vague pain, unclear architecture symptom
@@ -168,6 +176,7 @@ Before submitting, run `resources/checklist.md`.
 - Stakeholder protocol: `resources/stakeholder-synthesis.md`
 - Output templates: `resources/output-templates.md`
 - API evolution patterns (versioning, deprecation, lifecycle guarantees): `resources/api-evolution.md`
+- Migration/transition patterns (strangler fig, branch by abstraction, expand-contract): `resources/migration-patterns.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Difficulty guide: `../_shared/core/difficulty-guide.md`
 - Reasoning templates: `../_shared/core/reasoning-templates.md`

@@ -73,6 +73,15 @@ Output:
 - alternatives
 - consequences
 
+## Recommendation vs Design-Twice
+
+Both modes compare options; the difference is where the discipline sits:
+
+- **Recommendation Mode** starts from options that already exist or are obvious — the work is the comparison and the call.
+- **Design-Twice Mode** exists to *generate* a genuinely different second design before comparing — use it when the obvious first option would anchor the team too early.
+
+Litmus test: if you cannot name a materially different second decomposition, you are in Recommendation Mode.
+
 ## Selection Heuristics
 
 - Start with Diagnostic Mode if the problem is fuzzy

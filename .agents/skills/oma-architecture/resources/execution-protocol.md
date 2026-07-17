@@ -22,7 +22,11 @@
 - Record constraints, quality attributes, and non-goals
 
 ## Step 2: Gather Context
+- Read prior artifacts in `.agents/results/architecture/` first:
+  - note decisions that constrain this one
+  - if this decision replaces one, plan to mark the old ADR superseded — never silently contradict it
 - Analyze only the code and docs relevant to the decision
+  - prefer symbol-aware tools (serena MCP: `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `search_for_pattern`) when available
 - Map existing architecture:
   - key modules or services
   - ownership boundaries
@@ -57,16 +61,24 @@
 
 ### ATAM-style Mode
 - Identify quality attribute scenarios
+- Write each scenario as stimulus → environment → response measure
+  (e.g., "traffic spikes to 5x baseline [stimulus] during a regional failover [environment] → p99 stays under 800ms [response measure]")
 - Surface sensitivity points, tradeoff points, risks, and non-risks
 - Prioritize architectural concerns by impact
 
 ### CBAM-style Mode
 - Compare candidate investments
 - Estimate benefit, cost, and sequencing value
+- Score benefit and cost on a shared 1-5 scale (1 = minimal, 5 = very high) so rankings are comparable across runs
+- Tag each estimate with its confidence (low / medium / high) instead of implying false precision
 - Recommend a prioritized investment path
 
 ### ADR Mode
 - Produce a concise decision artifact after analysis
+
+### Transition planning (any mode)
+- If the recommended option requires restructuring a live system (service extraction, sync → event-driven, datastore split), append a Transition Plan section using `migration-patterns.md`
+- If the change breaks a published API contract, apply `api-evolution.md`
 
 ## Step 5: Synthesize
 - Summarize stakeholder perspectives
@@ -84,14 +96,25 @@
   - cost-aware
   - scoped correctly
   - explicit about risks and assumptions
+- Make validation executable where possible: propose an architecture fitness function or dependency rule (dependency-cruiser, import-linter, ArchUnit, or equivalent) that fails CI when the decision is violated — a validation step no one can run will not be run
 
 ## Step 7: Document
-- Save artifact to `.agents/results/architecture/`
-- Recommended filename patterns:
+- Save the durable artifact to `.agents/results/architecture/`
+- Filename patterns (kebab-case topic, no sequence numbers):
+  - `adr-<topic>.md`
   - `architecture-recommendation-<topic>.md`
   - `architecture-review-<topic>.md`
-  - `adr-<topic>.md`
   - `cbam-<topic>.md`
+  - `diagnosis-<topic>.md`
+- Rerunning the same topic updates the existing file; record the revision in the ADR `Status` line rather than creating a copy
+- ADR lifecycle: `Status` is `Proposed`, `Accepted`, or `Superseded by <adr-file>`; when a new ADR replaces an old one, update the old ADR's `Status` in the same run
+- When running as a dispatched subagent, ALSO write the run report to `.agents/results/result-architecture.md` per the agent protocol; the report links to the durable artifact, it does not replace it
+- Emit and verify the completion decision event:
+
+```bash
+oma state:emit "decision.made" '{"subject":"architecture.adr-complete","decision":"<one-line decision>","rationale":"<one-line rationale>"}'
+oma state:verify --workflow architecture --checkpoint adr-complete
+```
 
 ## Escalation
 - If the question is really about task sequencing -> hand off to oma-pm

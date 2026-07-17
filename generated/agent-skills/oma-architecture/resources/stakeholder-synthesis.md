@@ -33,6 +33,21 @@ Use when:
 - multiple teams/domains are materially affected
 - the decision will constrain future roadmap work
 
+## Dispatch Mechanics
+
+Consultation is a real subagent call, not an imagined persona.
+
+1. Resolve dispatch per the project's Per-Agent Dispatch rules (`target_vendor_for_agent` in `.agents/oma-config.yaml`):
+   - same vendor as the current runtime → the runtime's native subagent path (e.g., Claude Code Agent tool)
+   - different vendor, or no native subagent support → `oma agent:spawn <agent>` for that agent only
+2. Give each consulted agent a bounded charter:
+   - the decision in one sentence
+   - constraints that are already fixed (not up for debate)
+   - the specific question for that specialty
+   - expected output: position plus top risk, 10 lines or fewer
+3. One round only by default; a second round requires a named unresolved conflict.
+4. Cost bound: targeted consultation is 1-3 agents. A full sweep must state its cross-cutting justification in the artifact.
+
 ## Synthesis Rules
 
 1. Capture perspectives as inputs, not votes
