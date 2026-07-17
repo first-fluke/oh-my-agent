@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { harvest } from "./harvest.js";
+import { type HarvestOptions, harvest, harvestCacheKey } from "./harvest.js";
 import { HarvestOutputSchema } from "./shared/schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -267,5 +267,84 @@ describe("harvest (mock)", () => {
 
     // Verify pain-pack items pass schema
     HarvestOutputSchema.parse(resultPain.output);
+  });
+
+  // -------------------------------------------------------------------------
+  // Default trust tagging — items carry their source's default trust level
+  // -------------------------------------------------------------------------
+  it("trust tagging: mock items get source-default trust levels", async () => {
+    const result = await harvest(
+      {
+        query: uniqueQuery(),
+        sources: ["reddit", "github"],
+        noCache: true,
+      },
+      repoRoot,
+    );
+
+    const bySource = new Map(
+      result.output.items.map((it) => [it.source, it.trust?.level]),
+    );
+    expect(bySource.get("reddit")).toBe("community");
+    expect(bySource.get("github")).toBe("verified");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// harvestCacheKey — every result-affecting option must vary the key
+// ---------------------------------------------------------------------------
+
+describe("harvestCacheKey", () => {
+  const baseOpts: HarvestOptions = { query: "vscode pain" };
+  const resolved = {
+    window: "30d",
+    limit: 12,
+    locale: "en",
+    operatorPackId: "none",
+    sources: ["reddit", "hn"],
+  };
+
+  it("differs when --sites differs", () => {
+    const noSites = harvestCacheKey(baseOpts, resolved);
+    const withSites = harvestCacheKey(
+      { ...baseOpts, sites: ["blog.naver.com"] },
+      resolved,
+    );
+    expect(withSites).not.toBe(noSites);
+  });
+
+  it("differs when --query-strict differs", () => {
+    const loose = harvestCacheKey(baseOpts, resolved);
+    const strict = harvestCacheKey(
+      { ...baseOpts, queryStrict: true },
+      resolved,
+    );
+    expect(strict).not.toBe(loose);
+  });
+
+  it("differs between widen-enabled and widen-disabled runs", () => {
+    // A pinned-window run (widen off) must not hit a cache entry that was
+    // written by an auto-widened run of the same narrow window.
+    const widened = harvestCacheKey(
+      { ...baseOpts, widenOnThin: true },
+      resolved,
+    );
+    const pinned = harvestCacheKey(
+      { ...baseOpts, widenOnThin: false },
+      resolved,
+    );
+    expect(widened).not.toBe(pinned);
+  });
+
+  it("is stable for identical inputs and site order", () => {
+    const a = harvestCacheKey(
+      { ...baseOpts, sites: ["b.com", "a.com"] },
+      resolved,
+    );
+    const b = harvestCacheKey(
+      { ...baseOpts, sites: ["a.com", "b.com"] },
+      resolved,
+    );
+    expect(a).toBe(b);
   });
 });

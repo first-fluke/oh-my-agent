@@ -401,4 +401,65 @@ describe("render", () => {
     }
     expect(result.markdown).toContain("resources/frameworks/pestel.md");
   });
+
+  // -------------------------------------------------------------------------
+  // Engine footer — coverage annotation (market.md rule 7)
+  // -------------------------------------------------------------------------
+  it("15. footer coverage: annotates coverage N/M and warns when only 1 source returned", async () => {
+    const cluster = makeCluster({ snippet: "coverage test signal" });
+
+    const partial = await render(
+      [cluster],
+      baseOpts({ sourcesUsed: ["reddit"], sourcesFailed: ["hn", "github"] }),
+      REPO_ROOT,
+    );
+    expect(partial.markdown).toContain("coverage: 1/3 sources");
+    expect(partial.markdown).toContain("⚠ Low coverage: only 1 source");
+
+    const full = await render(
+      [cluster],
+      baseOpts({ sourcesUsed: ["reddit", "hn"], sourcesFailed: [] }),
+      REPO_ROOT,
+    );
+    expect(full.markdown).toContain("coverage: 2/2 sources");
+    expect(full.markdown).not.toContain("⚠ Low coverage");
+  });
+
+  // -------------------------------------------------------------------------
+  // --min-trust — representatives below the trust rank are filtered out
+  // -------------------------------------------------------------------------
+  it("16. min-trust: drops clusters below the requested trust level and notes it in the footer", async () => {
+    const trusted = makeCluster({
+      id: "c-trusted",
+      snippet: "trusted community signal",
+    });
+    for (const rep of trusted.representatives) {
+      rep.trust = { level: "community", score: null };
+    }
+
+    const external = makeCluster({
+      id: "c-external",
+      snippet: "external web signal",
+    });
+    for (const rep of external.representatives) {
+      rep.trust = { level: "external", score: null };
+    }
+
+    // No trust field at all → treated as unknown (rank 0), always filtered
+    const untagged = makeCluster({
+      id: "c-untagged",
+      snippet: "untagged legacy signal",
+    });
+
+    const result = await render(
+      [trusted, external, untagged],
+      baseOpts({ minTrust: "community" }),
+      REPO_ROOT,
+    );
+
+    expect(result.markdown).toContain("trusted community signal");
+    expect(result.markdown).not.toContain("external web signal");
+    expect(result.markdown).not.toContain("untagged legacy signal");
+    expect(result.markdown).toContain("min trust: community");
+  });
 });

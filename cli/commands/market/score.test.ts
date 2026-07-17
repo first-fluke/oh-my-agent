@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { scoreItems } from "./score.js";
+import { scoreItems, validateScoreItems } from "./score.js";
 import type { SourceItem } from "./shared/schema.js";
 
 // ---------------------------------------------------------------------------
@@ -284,6 +284,45 @@ describe("scoreItems", () => {
       // source_quality must be > 0 (minimum is DEFAULT_SOURCE_QUALITY=0.6)
       expect(sq).toBeGreaterThan(0);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// validateScoreItems — stage-boundary schema validation
+// ---------------------------------------------------------------------------
+
+describe("validateScoreItems", () => {
+  it("accepts well-formed items and applies schema defaults", () => {
+    const items = validateScoreItems([
+      {
+        item_id: "hn:1",
+        source: "hn",
+        url: "https://news.ycombinator.com/item?id=1",
+        published_at: new Date(NOW_MS).toISOString(),
+      },
+    ]);
+    expect(items).toHaveLength(1);
+    expect(items[0]?.engagement).toEqual({});
+    expect(items[0]?.metadata).toEqual({});
+  });
+
+  it("rejects unknown source values instead of scoring them with defaults", () => {
+    expect(() =>
+      validateScoreItems([
+        {
+          item_id: "x:1",
+          source: "myspace",
+          url: "https://example.com",
+          published_at: new Date(NOW_MS).toISOString(),
+        },
+      ]),
+    ).toThrow(/schema mismatch at items\.0\.source/);
+  });
+
+  it("rejects items missing required fields", () => {
+    expect(() =>
+      validateScoreItems([{ item_id: "hn:1", source: "hn" }]),
+    ).toThrow(/schema mismatch/);
   });
 });
 
