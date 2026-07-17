@@ -1,8 +1,8 @@
 # Fallback Provider Cascade
 
-`oma-scholar` queries `knows.academy` first, then falls back to OpenAlex for
-records the platform doesn't have. The fallback is what makes the skill useful
-beyond the (currently 2026-only) knows.academy index.
+`oma-scholar` queries `knows.academy` first, then falls back to OpenAlex, then
+Semantic Scholar for records the platform doesn't have. The fallback is what
+makes the skill useful beyond the (currently 2026-only) knows.academy index.
 
 ## Coverage Matrix
 
@@ -10,6 +10,7 @@ beyond the (currently 2026-only) knows.academy index.
 |--------|----------|-------|--------------|
 | **knows.academy** | **2026 only**, mostly arXiv (verified empirically; current counts via `/api/proxy/jobs/stats`) | Full v0.9 sidecar (claims, evidence, relations, methods) | Pre-2026 papers, full text |
 | **OpenAlex** | ~240M works, all years | Title, authors, year, venue, DOI, abstract (reconstructed), OA PDF URL, citation count, references | Structured claims/evidence (no sidecar) |
+| **Semantic Scholar** | ~214M papers, all years (Ai2) | AI TL;DR, abstract (verbatim), citation + influential-citation counts, arXiv/DOI/CorpusId cross-ids, OA PDF URL | Structured claims/evidence; anonymous access 429s under load |
 
 When a paper is in **both**, prefer knows.academy (richer structure). When a
 paper is **only in OpenAlex** (most pre-2026 work), use OpenAlex metadata as
@@ -25,10 +26,16 @@ search "query"
    │     │
    │     no hits
    │     ▼
-   └─ openalex ─────────────────► return metadata + abstract (no sidecar)
+   ├─ openalex ──── any hits? ────► return metadata + abstract (no sidecar)
+   │     │
+   │     no hits
+   │     ▼
+   └─ semanticscholar ───────────► return metadata + TL;DR + citations
                                   ↓
                              user wants deeper? → Mode 1 Generate locally
 ```
+
+`--always-fallback` includes every tier regardless of earlier hits.
 
 ## CLI Reference (`oma scholar`)
 
@@ -57,6 +64,10 @@ oma scholar get "10.48550/arXiv.1706.03762"
 
 # OpenAlex by W-id
 oma scholar get "W2147144213"
+
+# Semantic Scholar: TL;DR + citation/influential-citation counts
+oma scholar get "arXiv:1706.03762"
+oma scholar get "CorpusId:13756489"
 ```
 
 When `oma scholar get` is asked for a `knows:...` id and the platform is
@@ -64,13 +75,14 @@ unreachable, the command extracts the slug from the record_id and searches
 OpenAlex for the same paper, returning metadata with a `fallback: "openalex"`
 marker. The user can then run **Mode 1 Generate** from the abstract.
 
-### Resolve a title across both
+### Resolve a title across all sources
 
 ```bash
 oma scholar resolve "Attention Is All You Need"
 ```
 
-Returns the best match from each source side-by-side, plus a recommendation.
+Returns the best match from each source (knows.academy, OpenAlex, Semantic
+Scholar) side-by-side, plus a recommendation.
 
 ## When Fallback is Needed
 
@@ -108,14 +120,20 @@ pool access, see `setup-openalex.md`. The skill works without any key.
 `oma scholar` reads:
 - `OPENALEX_API_KEY`: passed as `?api_key=` (recommended)
 - `OPENALEX_EMAIL`: passed as `?mailto=` (polite pool, no signup)
+- `S2_API_KEY`: Semantic Scholar key, passed as the `x-api-key` header
 
-Neither is required.
+None are required. Without `S2_API_KEY`, Semantic Scholar uses the shared
+anonymous pool, which 429s under load; the CLI retries once after a short
+delay, then skips the source. Request a free key via the form at
+https://www.semanticscholar.org/product/api (delivered by email; grants a
+dedicated 1 req/sec).
 
 ## Trust Considerations
 
 - **knows.academy sidecars are AI-generated**: all have `provenance.origin: machine`. Verified `lint_passed: true` is platform-internal; our local `oma scholar lint` finds dangling refs in ~47% (use `--lenient` when consuming)
 - **OpenAlex metadata is curated**: generally reliable for title/authors/DOI/year, but venue and abstract can be missing for older works
 - **Reconstructed abstracts** from OpenAlex's inverted index are exact (no paraphrasing), but punctuation/formatting may be lossy
+- **Semantic Scholar TL;DRs are AI-generated** (Ai2's TLDR model): good `summary` seeds for Mode 1 Generate, but verify against the abstract before citing; citation counts differ from OpenAlex's (different corpora)
 
 ## Limitations
 

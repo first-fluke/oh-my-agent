@@ -166,10 +166,11 @@ Structural diff between two sidecars.
 3. Output a markdown table; cite specific IDs from each paper
 4. Optional: surface opposing claims (search for `predicate: challenged_by` relations or `citation_intent: contradicts` on `cites`)
 
-## Mode 6: Remote (with OpenAlex fallback)
+## Mode 6: Remote (with OpenAlex / Semantic Scholar fallback)
 
 Search and fetch from knows.academy first, then fall back to OpenAlex when the
-paper isn't in the (2026-only) knows.academy index.
+paper isn't in the (2026-only) knows.academy index, then to Semantic Scholar
+(AI TL;DR + citation counts) when OpenAlex also has nothing.
 
 ### Recommended path: `oma scholar` (handles cascade automatically)
 
@@ -180,7 +181,7 @@ oma scholar search "<query>"
 # Cross-source resolve (decides which source has the right paper)
 oma scholar resolve "<title>"
 
-# Get specific record (knows id, OpenAlex W-id, or DOI)
+# Get specific record (knows id, OpenAlex W-id, DOI, arXiv:<id>, CorpusId:<n>)
 oma scholar get [--section <one>] "<id>"
 ```
 

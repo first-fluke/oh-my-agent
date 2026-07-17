@@ -26,6 +26,13 @@ partial_fields:
     - statements
     - citation
 
+# Semantic Scholar fallback (optional key)
+# Tier-3 search fallback + `get arXiv:<id>` / `CorpusId:<n>` direct fetch.
+# Anonymous use shares a global pool (429s under load; CLI retries once).
+semanticscholar:
+  env_var: S2_API_KEY          # sent as x-api-key header
+  key_request_url: https://www.semanticscholar.org/product/api
+
 # OpenAlex metadata enrichment (optional)
 # Used during Generate mode to backfill DOI/venue/year when missing
 openalex:

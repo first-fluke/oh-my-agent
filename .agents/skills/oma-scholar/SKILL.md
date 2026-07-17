@@ -49,7 +49,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 
 ### Dependencies
 - `oma scholar` CLI subcommands
-- knows.academy public API and OpenAlex fallback
+- knows.academy public API; OpenAlex and Semantic Scholar fallbacks
 - `resources/sidecar-spec.md`, API endpoints, OpenAlex setup, upstream cache, checklist, and execution protocol
 
 ### Control-flow features
@@ -146,7 +146,7 @@ oma scholar lint "<paper.knows.yaml>"
 13. **Validate before sharing**: run `oma scholar lint` after Generate and Review; cross-record refs (`record_id#local_id`) in review sidecars are recognized and not flagged as dangling
 14. **Remote API has no auth**: `https://knows.academy/api/proxy/*` is public; do not invent auth headers
 15. **Partial fetch param is `section` (singular)**: fixed enum `statements|evidence|relations|artifacts|citation`
-16. **OpenAlex key is optional**: metadata enrichment only; gracefully degrade when missing
+16. **Fallback API keys are optional**: `OPENALEX_API_KEY` (metadata enrichment) and `S2_API_KEY` (Semantic Scholar dedicated rate limit) both improve throughput but the cascade degrades gracefully without them
 17. **Sidecar content stays English**: schema fields, IDs, statement text follow upstream convention; user-facing responses follow `oma-config.yaml` `language`
 18. **Spec drift awareness**: our local rules track v0.9.0 production behavior, which differs from the upstream `knows.md` natural-language description; refresh `resources/upstream-spec-cache.md` periodically
 
@@ -161,11 +161,13 @@ oma scholar lint "<paper.knows.yaml>"
 | **Compare** | "compare paper A and paper B structurally" | Diff table (claims/methods/evidence) |
 | **Remote** | "find papers on X", "fetch sidecar :id", "get claims only for :id" | Search results / sidecar payload |
 
-### Provider Fallback (knows.academy → OpenAlex)
+### Provider Fallback (knows.academy → OpenAlex → Semantic Scholar)
 
 `knows.academy` currently indexes **only 2026 papers** (mostly arXiv). For
 older or non-2026 papers (Transformer 2017, BERT 2018, classics, journals),
-the skill automatically falls back to **OpenAlex** for metadata and abstract.
+the skill automatically falls back to **OpenAlex** for metadata and abstract,
+then to **Semantic Scholar** (AI TL;DR, citation + influential-citation
+counts) when OpenAlex also has nothing. See `resources/fallback-providers.md`.
 
 Use the `oma scholar` CLI subcommands:
 
@@ -176,7 +178,7 @@ oma scholar search "vision language action"
 # Cross-source resolve: figures out which source has the right paper
 oma scholar resolve "Attention Is All You Need"
 
-# Get by id (knows record_id, OpenAlex W-id, or DOI)
+# Get by id (knows record_id, OpenAlex W-id, DOI, arXiv:<id>, CorpusId:<n>)
 oma scholar get "10.48550/arXiv.1706.03762"
 ```
 
@@ -211,6 +213,9 @@ oma scholar get --section statements "knows:generated/reconvla/1.0.0"
 
 # By DOI or OpenAlex W-id (works regardless of knows.academy availability)
 oma scholar get "10.48550/arXiv.1706.03762"
+
+# Semantic Scholar: AI TL;DR + citation/influential-citation counts
+oma scholar get "arXiv:1706.03762"
 ```
 
 When knows.academy is unreachable, `get knows:...` automatically falls back
@@ -262,6 +267,7 @@ Project-specific settings: `config/scholar-config.yaml`
 | Remote API returns empty results | Try broader query; check `/api/proxy/jobs/stats`; CLI auto-falls-back to OpenAlex |
 | `knows.academy search failed: fetch failed` (stderr) | Platform timeout; fallback to OpenAlex is automatic; retry later for sidecars |
 | OpenAlex 403/429 | Set `OPENALEX_API_KEY` (see `resources/setup-openalex.md`) |
+| `semanticscholar error: HTTP 429` (stderr) | Anonymous pool throttled; CLI retries once then skips the source. Set `S2_API_KEY` (free form at semanticscholar.org/product/api) for a dedicated limit |
 | YAML won't parse | Check indentation; numbers/booleans must be unquoted; strings with `:` need quotes |
 
 ## References
