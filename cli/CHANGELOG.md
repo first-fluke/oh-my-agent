@@ -1,5 +1,40 @@
 # Changelog
 
+## [10.20.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.19.2...cli-v10.20.0) (2026-07-17)
+
+
+### Features
+
+* **scholar:** add Semantic Scholar as tier-3 fallback source ([8d2087d](https://github.com/first-fluke/oh-my-agent/commit/8d2087d4b192985efc233c59c237b1a88e7b1673))
+* **search:** expand trust registry and add subdomain heuristics ([0ce260c](https://github.com/first-fluke/oh-my-agent/commit/0ce260c020301e6257f7a13472a5ef401787d45d))
+* **video:** mcp-first voicebox speak/transcribe with rest fallback ([8262434](https://github.com/first-fluke/oh-my-agent/commit/8262434babd4044b186628ef2ac3fae508b15023))
+
+
+### Bug Fixes
+
+* **docs:** write --report-file report even when --json is set ([21220b6](https://github.com/first-fluke/oh-my-agent/commit/21220b6814913d6ce4d12f6e39c49b49f91264ac))
+* **scholar:** accept cross-record refs in sidecar lint ([8671055](https://github.com/first-fluke/oh-my-agent/commit/86710551002ffa23a70899dfa8f14812dffa9646))
+* **scm:** align commit types and guardrails with commitlint ([b0a8ac5](https://github.com/first-fluke/oh-my-agent/commit/b0a8ac5098be503fb7f281f8878f7e66c88f9f93))
+* **slide:** compare per-line rects in overlap check for wrapped inlines ([49ec2b3](https://github.com/first-fluke/oh-my-agent/commit/49ec2b32a5e170f3e610ba97dee9161428caf30a))
+* **slide:** harden render pipeline and repair validator false positives ([7dda1f6](https://github.com/first-fluke/oh-my-agent/commit/7dda1f6f73175bd125782577dd2ea45f48e14cb8))
+* **video:** render &lt;mode&gt;-&lt;slug&gt;.mp4 and defer music mixing ([83a91d4](https://github.com/first-fluke/oh-my-agent/commit/83a91d42d811e720b127ec96fed67c3766924cd3))
+
+
+### Documentation
+
+* **db:** add migration playbook, query tuning guide, and graph path ([ff613c8](https://github.com/first-fluke/oh-my-agent/commit/ff613c8657ab743e4ab024332bb664341a9490f7))
+* **dev-workflow:** fix broken mise examples in skill docs ([a565bfd](https://github.com/first-fluke/oh-my-agent/commit/a565bfdbe16272170f65adc6f925419f398b1991))
+* **oma-search:** delegate trust and code search to oma cli ([29ed265](https://github.com/first-fluke/oh-my-agent/commit/29ed265661b9c6471819a7b1cf0ddc2741493197))
+* require local CLI execution when testing in source repo ([4e33d69](https://github.com/first-fluke/oh-my-agent/commit/4e33d69c4d701b07a8ba3a2c6ff87d1b6215e984))
+* **scholar:** align review mode with upstream review@1 and fix drift ([0e3e46e](https://github.com/first-fluke/oh-my-agent/commit/0e3e46e7dfe6af75fb319235069ee4909e1b2e99))
+* **scholar:** document Semantic Scholar fallback tier ([4b4660e](https://github.com/first-fluke/oh-my-agent/commit/4b4660ebe96deb06ebbfd749be9665fe96e7c421))
+* **skills:** document i18n/lint modes and fix drift in oma-docs ([bc16823](https://github.com/first-fluke/oh-my-agent/commit/bc1682396ee9f890df2e846159d17aa656f0f707))
+* **skills:** modernize auth, stack, and scan guidance ([7d809b9](https://github.com/first-fluke/oh-my-agent/commit/7d809b930ff06b3e2d052c9bb3070405d2061e55))
+* **slide:** sync skill docs with actual CLI behavior ([4726f32](https://github.com/first-fluke/oh-my-agent/commit/4726f329cf1847c8b003848f3180d2e2b8b862a1))
+* **tf-infra:** refresh skill for terraform 1.11, opa 1.0, and trivy ([b67d4dc](https://github.com/first-fluke/oh-my-agent/commit/b67d4dcc6dfe7e929598b5e1a05ef33a161c7458))
+* **video:** align skill docs with implementation, add script schema ([0ebb332](https://github.com/first-fluke/oh-my-agent/commit/0ebb332cb5a61bb9f4891f64cc1df6b5aaa2284d))
+* **voice:** align skill docs with voicebox wav output and REST-only model status ([91b5c9d](https://github.com/first-fluke/oh-my-agent/commit/91b5c9d2a5cd62ac720764a9a791f756f33f10de))
+
 ## [10.19.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.19.1...cli-v10.19.2) (2026-07-17)
 
 
