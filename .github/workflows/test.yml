@@ -65,12 +65,14 @@ jobs:
       #   - schedule selectAdapter win32 -> Schtasks routing
       #   - test-filter hook win32 guard (never wrap commands in the Bash-only
       #     pipefail pipeline on Windows hosts, #618)
+      #   - state events atomic write (fsyncSync on a writable temp-file
+      #     handle — the EPERM failure only manifests on real Windows, #613)
       # All are pure (mocked command runners / fs, no spawn/stdin), so they run
       # safely here without triggering the suite-wide hang.
       - name: Test win32-only code paths
         if: matrix.os == 'windows-latest'
         timeout-minutes: 5
-        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test
+        run: bun run --cwd cli test agentmemory-service.test schtasks.test schedule/port.test test-filter-run.test events.atomic-write.test state/events.test
 
       - name: Smoke test install.sh (skip bunx)
         if: matrix.os != 'windows-latest'
