@@ -83,10 +83,49 @@ describe("VideoOrchestrator", () => {
 
     expect(script.mode).toBe("shorts");
     expect(renderSpec.seed).toBe(42);
+    // The output filename slug is derived from the script title.
+    expect(renderSpec.slug).toBe("explain-the-local-test-runner");
+    // TODO(oma-deferred): music — never a dangling mode-string file ref.
+    expect(renderSpec.audio.music).toBeUndefined();
     expect(manifest.exitCode).toBe(0);
     expect(manifest.outputs.video).toBeUndefined();
     expect(manifest.assets.map((asset) => asset.path)).toEqual(
       expect.arrayContaining(["script.json", "render-spec.json"]),
+    );
+  });
+
+  it("renders the output as <mode>-<slug>.mp4 (full mock run)", async () => {
+    const config = await loadVideoConfig(tmp);
+    const orchestrator = new VideoOrchestrator(
+      config,
+      defaultVideoRegistry(config, { cwd: tmp }),
+    );
+    const result = await orchestrator.generate({
+      brief: "jeju coffee",
+      opts: { seed: "1", yes: true },
+      cwd: tmp,
+    });
+    expect(result.exitCode).toBe(0);
+    expect(result.manifest?.outputs.video).toBe("shorts-jeju-coffee.mp4");
+    expect(
+      existsSync(path.join(result.runDir ?? "", "shorts-jeju-coffee.mp4")),
+    ).toBe(true);
+  });
+
+  it("warns that a requested music mode is deferred (no asset source)", async () => {
+    const config = await loadVideoConfig(tmp);
+    const orchestrator = new VideoOrchestrator(
+      config,
+      defaultVideoRegistry(config, { cwd: tmp }),
+    );
+    const result = await orchestrator.generate({
+      brief: "music warning check",
+      opts: { dryRun: true, music: "upbeat", seed: "9" },
+      cwd: tmp,
+    });
+    expect(result.exitCode).toBe(0);
+    expect(result.warnings.join("\n")).toContain(
+      'music: requested "upbeat" but no music asset source is available yet',
     );
   });
 

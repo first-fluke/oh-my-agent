@@ -235,6 +235,16 @@ export class VideoOrchestrator {
         captionStyle: normalized.captions,
         footageBackground,
       });
+      // TODO(oma-deferred): music — no music asset source is wired yet, so a
+      // requested music mode (script.music or --music) is recorded in
+      // script.json but not mixed.
+      const requestedMusic =
+        script.music !== "none" ? script.music : normalized.music;
+      if (requestedMusic !== "none") {
+        ctx.warnings.push(
+          `music: requested "${requestedMusic}" but no music asset source is available yet — rendering without music`,
+        );
+      }
       const renderSpecPath = path.join(runDir, "render-spec.json");
       await writeValidatedJson(
         "render-spec.json",
@@ -252,7 +262,7 @@ export class VideoOrchestrator {
         ctx.capturedFootage &&
         !normalized.polish;
       if (rawDemoOutput && ctx.capturedFootage) {
-        await emitRawDemoOutput(runDir, ctx);
+        await emitRawDemoOutput(runDir, ctx, renderSpec.slug);
       } else if (!normalized.dryRun) {
         const compositor = await this.pickProvider<Compositor>(
           "compositor",

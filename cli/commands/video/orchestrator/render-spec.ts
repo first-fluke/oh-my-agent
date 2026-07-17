@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { slugify } from "../naming.js";
 import {
   type AudioRef,
   type CaptionStyleSchema,
@@ -65,13 +66,21 @@ export function buildRenderSpec(args: {
     schemaVersion: VIDEO_SCHEMA_VERSION,
     compositor: args.compositor,
     composition: compositionForMode(args.script.mode),
+    slug: slugify(args.script.title),
     fps,
     dimensions,
     durationInFrames: cursor,
     audio: {
       narration: args.audio.path ? args.audio.path : undefined,
-      music: args.script.music === "none" ? undefined : args.script.music,
-      musicGainDb: args.script.music === "none" ? undefined : -16,
+      // TODO(oma-deferred): music — `audio.music` must be a run-dir-relative
+      // audio FILE for the compositor (`staticFile(...)`), but no music asset
+      // source exists yet (no bundled loops, no provider). Writing the mode
+      // string ("upbeat"/"calm") here produced a dangling file ref that could
+      // fail the real Remotion render, so the field stays unset until an
+      // asset source is wired; the requested mode is still recorded in
+      // script.json. Mix at -18 dB default when implemented.
+      music: undefined,
+      musicGainDb: undefined,
     },
     scenes,
     captions: {

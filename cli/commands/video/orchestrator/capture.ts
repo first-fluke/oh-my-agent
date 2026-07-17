@@ -6,6 +6,7 @@ import { runCapture } from "../internal/exec.js";
 import { collectAssetRecord } from "../manifest.js";
 import { GuidedCaptureProvider } from "../providers/capture.js";
 import { PlaywrightCaptureProvider } from "../providers/capture-playwright.js";
+import { outputFileName } from "../types.js";
 import { dimensionsForAspect } from "./render-spec.js";
 import type { RunContext } from "./run-context.js";
 
@@ -123,10 +124,11 @@ async function handleFileCapture(
 export async function emitRawDemoOutput(
   runDir: string,
   ctx: RunContext,
+  slug?: string,
 ): Promise<void> {
   if (!ctx.capturedFootage) return;
   const src = path.resolve(runDir, ctx.capturedFootage);
-  const outName = "demo.mp4";
+  const outName = outputFileName({ composition: "Demo", slug });
   const dest = path.resolve(runDir, outName);
   if (src !== dest) {
     await copyFile(src, dest);

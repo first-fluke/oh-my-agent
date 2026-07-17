@@ -75,6 +75,12 @@ export const RenderSpecSchema = z.object({
   schemaVersion: SchemaVersion,
   compositor: CompositorNameSchema,
   composition: z.string().min(1),
+  /**
+   * Filename slug derived from the script title → `<mode>-<slug>.mp4`.
+   * Optional so render-specs written before the field existed still validate
+   * (they render to the unslugged `<mode>.mp4`).
+   */
+  slug: z.string().min(1).optional(),
   fps: z.number().int().positive(),
   dimensions: z.object({
     width: z.number().int().positive(),
@@ -265,6 +271,18 @@ export function snapAspectToImageSize(aspect: "9:16" | "16:9" | "1:1"): {
   if (aspect === "9:16") return { width: 1088, height: 1920 };
   if (aspect === "1:1") return { width: 1088, height: 1088 };
   return { width: 1920, height: 1088 };
+}
+
+/**
+ * Output mp4 filename for a render-spec: `<mode>-<slug>.mp4` when the spec
+ * carries a slug, `<mode>.mp4` for legacy specs without one. Shared by the
+ * compositor and the raw-demo output path so every branch names identically.
+ */
+export function outputFileName(
+  spec: Pick<RenderSpec, "composition" | "slug">,
+): string {
+  const base = spec.composition.toLowerCase();
+  return spec.slug ? `${base}-${spec.slug}.mp4` : `${base}.mp4`;
 }
 
 export function parseVideoSchema<T extends z.ZodTypeAny>(

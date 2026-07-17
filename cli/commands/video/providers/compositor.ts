@@ -32,7 +32,11 @@ import {
   type RemotionProjectStatus,
 } from "../internal/remotion-project.js";
 import type { Availability, Compositor, CostEstimate } from "../providers.js";
-import type { RenderSpec, VideoArtifact } from "../types.js";
+import {
+  outputFileName,
+  type RenderSpec,
+  type VideoArtifact,
+} from "../types.js";
 
 // Generous ceiling: a real render is ~1-2 frames/ms; a 180s clip at 30fps is
 // 5400 frames. 10 min covers the slowest machines without hanging a run.
@@ -50,7 +54,7 @@ export class RemotionLikeCompositor implements Compositor {
   }
 
   async render(spec: RenderSpec): Promise<VideoArtifact> {
-    const file = `${spec.composition.toLowerCase()}.mp4`;
+    const file = outputFileName(spec);
     const durationSec = spec.durationInFrames / spec.fps;
     // The orchestrator/render command chdir into the run dir before calling, so
     // cwd is the run dir; capture it as an absolute base for the subprocess.

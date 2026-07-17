@@ -71,6 +71,17 @@ describe("RemotionLikeCompositor", () => {
     expect(body).toContain("composition=Shorts");
   });
 
+  it("names the output <mode>-<slug>.mp4 when the spec carries a slug", async () => {
+    process.env.OMA_VIDEO_MOCK = "1";
+    const artifact = await new RemotionLikeCompositor("remotion").render({
+      ...SPEC,
+      slug: "jeju-coffee",
+    });
+    expect(artifact.path).toBe("shorts-jeju-coffee.mp4");
+    const body = readFileSync(path.join(tmp, "shorts-jeju-coffee.mp4"), "utf8");
+    expect(body).toContain("oma-video placeholder render");
+  });
+
   it("is reproducible from the same spec in mock mode", async () => {
     process.env.OMA_VIDEO_MOCK = "1";
     const a = await new RemotionLikeCompositor("remotion").render(SPEC);
