@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.20.2",
-  "releaseDate": "2026-07-17T11:35:02.699Z",
+  "releaseDate": "2026-07-17T11:50:22.694Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -36,8 +36,8 @@
     },
     {
       "path": ".agents/agents/mobile-engineer.md",
-      "sha256": "8b6e9be94b5c48f84c85bef271b04f41c37260eb99afc37cc3761743871f67eb",
-      "size": 1273
+      "sha256": "6b9649301c573c7ec55671396406c6ceb27bebee31e53eca9c0b127ce7d232ca",
+      "size": 1606
     },
     {
       "path": ".agents/agents/pm-planner.md",
@@ -361,8 +361,8 @@
     },
     {
       "path": ".agents/rules/mobile.md",
-      "sha256": "a7b6053bc1fbadeb326c090c960359cef476ed65eaaec07dd2624aada8edd93e",
-      "size": 672
+      "sha256": "3bff67afdcb6ca72d967e04e37969d77560af3b8844ce80cdab820e2ce94a30b",
+      "size": 1499
     },
     {
       "path": ".agents/rules/quality.md",
@@ -1176,43 +1176,48 @@
     },
     {
       "path": ".agents/skills/oma-mobile/SKILL.md",
-      "sha256": "f8a1094864b978274166982153ee3b22aadecd216805399a269c660c2ee61d85",
-      "size": 8815
+      "sha256": "903717ac74f1251451f2239c5bf63933061431ea8c4af54ef62241914d663177",
+      "size": 9174
     },
     {
       "path": ".agents/skills/oma-mobile/resources/checklist.md",
-      "sha256": "412192d43cf7be18c2d5e2b041d7fa434b211c8fcc7e09c42d2a636684e169a7",
-      "size": 2531
+      "sha256": "8f3b737f8f8b89e65c9d252c38be221b14cf947567d998020f98cf29dcf57f2c",
+      "size": 3985
     },
     {
       "path": ".agents/skills/oma-mobile/resources/error-playbook.md",
-      "sha256": "a1cae4ddd7f15660ddc54179b2c5fbe677ee0b1b328775589e0f8398d0febc70",
-      "size": 8602
+      "sha256": "946fa8548c864ad2c8a9b97a5be0728c0efb77cbf1329ff8e6d53ba2d06d1420",
+      "size": 10904
     },
     {
       "path": ".agents/skills/oma-mobile/resources/examples.md",
-      "sha256": "b9bc18a2bdee2f56a8901f79434082e6815f0d2ea9d816d8ba4ae3e05fc0d5b6",
-      "size": 5301
+      "sha256": "68181406edaa37c54fd156950065d8046c4ecca8e05a779bb08a047879ea9f8d",
+      "size": 7087
     },
     {
       "path": ".agents/skills/oma-mobile/resources/execution-protocol.md",
-      "sha256": "c98ddeae854221afe191a4fb72a79bc980cf36c9c4fc4bb3647733b331fbc4ad",
-      "size": 2744
+      "sha256": "29db820e934cd863337db8d038b317ac47e0634e5b8cca4919f87bb5977ec3a5",
+      "size": 3553
     },
     {
       "path": ".agents/skills/oma-mobile/resources/screen-template.dart",
-      "sha256": "5758c31e5d51ddd1f6b12e5ce22af535f01aa9b0074c2f476ef3566a766f8e9f",
-      "size": 7849
+      "sha256": "91abcabacd6bacedb109945449d0f5e026416be5efd1f98c124b27805b0240fd",
+      "size": 11231
     },
     {
       "path": ".agents/skills/oma-mobile/resources/screen-template.swift",
-      "sha256": "78e156f49316a664bb7b54eb8ba883c5ae91bd8391417417f67c00ad0c22ab73",
-      "size": 6923
+      "sha256": "4443303b086cd93c3331eaba50b17b0eb9ae5f2b9899de7d9b8728f6c4ddc4e1",
+      "size": 8276
+    },
+    {
+      "path": ".agents/skills/oma-mobile/resources/screen-template.tsx",
+      "sha256": "413c3698ff786bace78f4a9a5ae7c839dd388baf2da11f2ed36e79006340ed43",
+      "size": 5855
     },
     {
       "path": ".agents/skills/oma-mobile/resources/tech-stack.md",
-      "sha256": "5e60f1aefc015dc208af77bfe23f9484e29388aca507b73d4fd81d29da97f91c",
-      "size": 3760
+      "sha256": "32b74e8dcbf27f2b9790d27d957ccba5a9110d5df1b3d6c6424cc7e08400bf6b",
+      "size": 3832
     },
     {
       "path": ".agents/skills/oma-mobile/variants/README.md",
@@ -1221,13 +1226,13 @@
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/api-template.dart",
-      "sha256": "f67def73018e33a2b894b774607ab1eddbaf45bbc7bb989d9506e220e1c13668",
-      "size": 16758
+      "sha256": "58bc8dce4611f7baabae84eefea33d5c9a0c6209b8bbfe133e489381961ea0ab",
+      "size": 18688
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/snippets.md",
-      "sha256": "051ebe6f4c6a2faafa9b7d557517a2513fbfbc37ed2925aa85f3f2e0cec414d4",
-      "size": 36251
+      "sha256": "ba8c1dfe661894bd920d756323bdd10caf419430b65728d78025317cce87b125",
+      "size": 42346
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/stack.yaml",
@@ -1236,28 +1241,28 @@
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/tech-stack.md",
-      "sha256": "74b47e691672069c78325ddf2fe5a2c6355c9af217387f9c165379febfb173db",
-      "size": 10020
+      "sha256": "eb59f2991e725f32c14c1d41f13eb312133a929358325a26d77f0a65a6e5fe74",
+      "size": 11352
     },
     {
       "path": ".agents/skills/oma-mobile/variants/react-native/api-template.ts",
-      "sha256": "e05cda47d7035909c7d05d3e810c9feb9afc531d2d2d04867e70c22fbf9425b4",
-      "size": 11866
+      "sha256": "bb39891289bbe8049c5439ae42c21d0ca2185bee4bcc8f5fd40d2700f0fbc949",
+      "size": 16640
     },
     {
       "path": ".agents/skills/oma-mobile/variants/react-native/snippets.md",
-      "sha256": "7a3b6e32ca221b773387ee2fd38a9b366cd7fdcdb2cf8ff5bb41dabf2706398b",
-      "size": 22258
+      "sha256": "a5f94f24d2c5ec9d41f04bf57ee8afa335517f6f5600b738a29ccf1b45ca0c76",
+      "size": 31118
     },
     {
       "path": ".agents/skills/oma-mobile/variants/react-native/stack.yaml",
-      "sha256": "be42a7259d77d6106740f8146bd4f0bea2c60754a1f4efebea8b412c0a7c2ca8",
-      "size": 546
+      "sha256": "191c7a5dc1458a6c8a1e6787d8445eeb4b5eee79ae48fd2f85c45ba178f5525b",
+      "size": 574
     },
     {
       "path": ".agents/skills/oma-mobile/variants/react-native/tech-stack.md",
-      "sha256": "431a48c0ea83a0f5900303d1fbf755f0fe8e71faa122059ae2bdff6fdd9502d4",
-      "size": 10202
+      "sha256": "74d0b92cd06f2ef816a3f02b3e36980f7be6a02c1c913dcbdda3ed43d49cf60f",
+      "size": 11202
     },
     {
       "path": ".agents/skills/oma-mobile/variants/stack.schema.json",
@@ -1271,18 +1276,18 @@
     },
     {
       "path": ".agents/skills/oma-mobile/variants/swift-ios/snippets.md",
-      "sha256": "472533e3ed0d5e01556ec0d0d227a479e26b75da623218bd7a73ade9c21b1c0a",
-      "size": 23428
+      "sha256": "90d08e52b28689f7a118e903e8076024b7809d0524cce25ef5120bfe501773d2",
+      "size": 31817
     },
     {
       "path": ".agents/skills/oma-mobile/variants/swift-ios/stack.yaml",
-      "sha256": "329677c8d918f401cfaa1e89ee56afde93f84d0e7f3aadaa3d44a35e27c4b510",
-      "size": 462
+      "sha256": "c291d3ee734696dcf576520091a2dccee89d2daf586c29c2015b35bac2bb51e8",
+      "size": 682
     },
     {
       "path": ".agents/skills/oma-mobile/variants/swift-ios/tech-stack.md",
-      "sha256": "a04a7e6cd33be167298204637e2e3bbf79fc6409a996c05242039eb49c23d9d4",
-      "size": 10750
+      "sha256": "efe7c6b76d837b7f1f09a03acfeb06d60bba09c2fe5ab85db97ab710834e1a87",
+      "size": 10947
     },
     {
       "path": ".agents/skills/oma-observability/SKILL.md",
@@ -2156,6 +2161,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 429
+    "totalFiles": 430
   }
 }
