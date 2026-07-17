@@ -26,7 +26,7 @@ bunx deepsec process --limit 50 --concurrency 5       # upstream-recommended cal
 
 `scan` runs ~110 regex matchers across the codebase. **No AI calls.** ~15s on 2k files. Output goes to `data/<id>/files/` as one `FileRecord` JSON per scanned source file.
 
-The calibration `process` is a budget-capped AI pass. Read the per-batch cost the CLI prints, multiply by `(total_files / 50)` to extrapolate. **Get the user's explicit go-ahead before launching the unbounded `process`.**
+The calibration `process` is a budget-capped AI pass. Extrapolate from the run's **total** cost: multiply it by `(total_files / 50)`. If the CLI reports only a per-batch number, multiply by `(total_files / batch_size)` — `--batch-size` defaults to 5, so a `--limit 50` calibration is 10 batches, not 1. Sanity-check the result against the cost bands below; an estimate an order of magnitude under the band means the wrong multiplier was used. **Get the user's explicit go-ahead before launching the unbounded `process`.**
 
 ## Cost guide (`--agent claude`, Claude Opus — the most expensive backend)
 

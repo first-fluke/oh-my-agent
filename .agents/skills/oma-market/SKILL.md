@@ -178,7 +178,7 @@ Porter's 5F and PESTEL: the CLI renders complete labeled framework skeletons (al
 ```
 
 #### Shared (from other skills or workflows)
-Pass the rendered brief path (`.agents/results/market/{slug}-{YYYYMMDD}.md`) as a `--use-market-research` arg to Brainstorm or PM workflows. The brief is a static file; the calling skill reads it directly.
+The rendered brief is a static file at `.agents/results/market/{slug}-{YYYYMMDD}.md`. Brainstorm or PM workflows consume it by reading that path directly — there is no intake flag to pass.
 
 ## References
 - Intent classification: `resources/intent-rules.md`

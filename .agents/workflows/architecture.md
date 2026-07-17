@@ -100,13 +100,13 @@ Requirements:
 For cross-cutting decisions, read:
 - `.agents/skills/oma-architecture/resources/stakeholder-synthesis.md`
 
-Consult only the agents that matter to the decision:
-- `oma-pm` for business scope and priorities
-- `oma-backend` for service/API/domain tradeoffs
-- `oma-db` for data ownership and consistency
-- `oma-tf-infra` for deployment and operational architecture
-- `oma-qa` for security, performance, and testability risks
-- `oma-frontend` / `oma-mobile` for client complexity and integration impact
+Consult only the agents that matter to the decision (agent ids per the mapping table in `.agents/workflows/orchestrate.md`):
+- `pm` for business scope and priorities
+- `backend` for service/API/domain tradeoffs
+- `db` for data ownership and consistency
+- `tf-infra` for deployment and operational architecture
+- `qa` for security, performance, and testability risks
+- `frontend` / `mobile` for client complexity and integration impact
 
 Do not turn consultation into consensus theater. Synthesize and recommend explicitly.
 
