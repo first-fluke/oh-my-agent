@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ImageConfig } from "./config.js";
-import { estimateCost, formatCost } from "./cost.js";
+import { costGateDecision, estimateCost, formatCost } from "./cost.js";
 import type {
   GenerateInput,
   GenerateResult,
@@ -118,5 +118,53 @@ describe("formatCost", () => {
   it("formats USD to two decimals", () => {
     expect(formatCost(0.2)).toBe("$0.20");
     expect(formatCost(1)).toBe("$1.00");
+  });
+});
+
+describe("costGateDecision", () => {
+  it("proceeds when estimate is below threshold", () => {
+    expect(
+      costGateDecision({
+        estimate: 0.1,
+        thresholdUsd: 0.2,
+        skipConfirm: false,
+        isTTY: false,
+      }),
+    ).toBe("proceed");
+  });
+
+  it("proceeds when confirmation is skipped via --yes", () => {
+    expect(
+      costGateDecision({
+        estimate: 1,
+        thresholdUsd: 0.2,
+        skipConfirm: true,
+        isTTY: false,
+      }),
+    ).toBe("proceed");
+  });
+
+  it("prompts when at/above threshold on an interactive terminal", () => {
+    expect(
+      costGateDecision({
+        estimate: 0.2,
+        thresholdUsd: 0.2,
+        skipConfirm: false,
+        isTTY: true,
+      }),
+    ).toBe("prompt");
+  });
+
+  it("blocks with guidance instead of silently declining when non-interactive", () => {
+    // Regression: agents invoking via non-TTY shells used to get exit 1 with
+    // a misleading "Cancelled by user." and no cost prompt at all.
+    expect(
+      costGateDecision({
+        estimate: 0.2,
+        thresholdUsd: 0.2,
+        skipConfirm: false,
+        isTTY: false,
+      }),
+    ).toBe("block-non-interactive");
   });
 });
