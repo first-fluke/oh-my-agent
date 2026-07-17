@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.1...web-v3.18.2) (2026-07-17)
+
+
+### Documentation
+
+* **web:** drop oma-design examples references across locales ([f89cd12](https://github.com/first-fluke/oh-my-agent/commit/f89cd12a187dcdba0725fa911f9a68043466ede9))
+
 ## [3.18.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.0...web-v3.18.1) (2026-07-17)
 
 
