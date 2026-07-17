@@ -172,7 +172,7 @@ All files referenced in this matrix belong to the `oma-observability` skill tree
 
 ## 8. Review and Maintenance
 
-- **Review cadence**: quarterly, aligned with `resources/standards.md` version update cadence.
+- **Review triggers**: same as `resources/standards.md` (no scheduled cadence; see `SKILL.md` §Versioning & Deprecation).
 - **On semconv promotion** (Development → RC → Stable): re-evaluate PARTIAL cells that cite stability as a caveat; promote to PASS if the semconv group is now stable.
 - **On new layer or boundary addition**: this file requires a new table section and all cross-references updated. Signal columns do not change without a taxonomy revision in the design document.
 - **On N/A re-evaluation**: add a Caveat entry (Section 5) explaining why a previously N/A combination is now meaningful before changing the cell marker.

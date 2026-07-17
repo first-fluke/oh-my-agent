@@ -263,10 +263,10 @@ Before submitting, run `resources/checklist.md`.
 | `oma-qa` | Canary post-deploy loop via chrome-devtools MCP: console errors + Core Web Vitals trend; INP/LCP/CLS from `layers/L7-application/web-rum.md` |
 | `oma-tf-infra` | Terraform modules for OTel Collector, Grafana, and Loki stack provisioning |
 | `oma-scm` | Deployment SHA → `service.version` OTel attribute + release marker events; see `boundaries/release.md` |
-| `oma-backend` | Propagator and baggage rules cross-referenced in `backend.md` ruleset; DB N+1 + Kafka patterns in `signals/traces.md` |
-| `oma-frontend` | `layers/L7-application/web-rum.md` INP/LCP/CLS checklist cross-referenced in `frontend.md` ruleset |
-| `oma-mobile` | `layers/L7-application/mobile-rum.md` offline-queuing pattern cross-referenced in `mobile.md` ruleset |
-| `oma-db` | `signals/traces.md` DB patterns (N+1, connection pool) cross-referenced in `database.md` ruleset |
+| `oma-backend` | Propagator and baggage rules; DB N+1 + Kafka patterns in `signals/traces.md`. Back-reference: `oma-backend/SKILL.md` §References "Observability handoff" |
+| `oma-frontend` | `layers/L7-application/web-rum.md` INP/LCP/CLS checklist. Back-reference: `oma-frontend/SKILL.md` §References "Observability handoff" |
+| `oma-mobile` | `layers/L7-application/mobile-rum.md` offline-queuing pattern. Back-reference: `oma-mobile/SKILL.md` §References "Observability handoff" |
+| `oma-db` | `signals/traces.md` DB patterns (N+1, connection pool). Back-reference: `oma-db/SKILL.md` §References "Observability handoff" |
 
 ### Versioning & Deprecation
 

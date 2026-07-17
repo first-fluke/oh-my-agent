@@ -6,7 +6,7 @@ specs:
   - "W3C Baggage: Recommendation 2022-12-22"
   - "ISO/IEC 25010: 2023; ISO/IEC 27001:2022; ISO/IEC 42010:2011"
 notes:
-  - "Pinned versions (update quarterly or on spec promotion)"
+  - "Pinned versions (update on spec promotion or attribute deprecation; see SKILL.md §Versioning & Deprecation — no scheduled review)"
 ---
 
 # Observability Standards Reference
@@ -77,7 +77,7 @@ Usage rules enforced by this skill:
 
 ## 3. OpenTelemetry Semconv Stability Tiers
 
-Semantic convention stability determines which attributes can be used in production without risk of breaking changes. Pin the semconv version in the file header above and update on quarterly review.
+Semantic convention stability determines which attributes can be used in production without risk of breaking changes. Pin the semconv version in the file header above and update on the triggers listed in §7 (spec promotion, attribute deprecation).
 
 Source: <https://opentelemetry.io/docs/specs/semconv/general/attribute-requirement-level/>
 
@@ -179,13 +179,13 @@ NTP drift left unmonitored is anti-pattern #18 in this skill: waterfall charts a
 
 ---
 
-## 7. Versioning and Review Cadence
+## 7. Versioning and Review Triggers
 
 - The spec version block in this file's header MUST be updated when:
   - Any listed semconv group promotes from Development → RC or RC → Stable.
   - A listed W3C document advances maturity (CR → PR → Recommendation).
   - OTel releases a new minor version with breaking semconv changes.
-- **Review cadence**: quarterly, aligned with OTel spec releases and CNCF landscape updates (<https://landscape.cncf.io/>).
+- **Review triggers only, no scheduled cadence** (see `SKILL.md` §Versioning & Deprecation): OTel spec releases and CNCF landscape changes (<https://landscape.cncf.io/>) affecting cited content; verify live when load-bearing.
 - When updating, also check and update affected signal/layer files that reference the changed attribute group.
 - Skill minor version bump required on any normative change to this file.
 

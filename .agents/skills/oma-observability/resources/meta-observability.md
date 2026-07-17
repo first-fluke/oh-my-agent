@@ -597,7 +597,7 @@ The full Jsonnet/YAML implementation of this dashboard belongs in `resources/obs
 
 ## Review and Maintenance
 
-- **Review cadence**: quarterly, aligned with `resources/standards.md`.
+- **Review triggers**: same as `resources/standards.md` (no scheduled cadence; see `SKILL.md` §Versioning & Deprecation).
 - On OTel Collector minor version bump: verify `otelcol_*` metric names have not changed.
   Metric names are stable within a major version but have changed between 0.x and 1.x.
 - On cloud provider NTP endpoint changes: update Section B2 table.

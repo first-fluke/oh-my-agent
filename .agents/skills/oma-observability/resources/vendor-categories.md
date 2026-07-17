@@ -5,7 +5,7 @@ notes:
 
 # Observability Vendor Categories
 
-> as of 2026-Q2; review quarterly. Verify live status at https://landscape.cncf.io
+> as of 2026-Q2. No scheduled review is promised (see `SKILL.md` §Versioning & Deprecation); verify live status at https://landscape.cncf.io when load-bearing.
 
 ## Preamble: Why Categories, Not a Registry
 
@@ -34,7 +34,7 @@ This file is a **category taxonomy with timestamped example vendors**. It is not
 
 All example vendor lists in this file are marked `as of 2026-Q2`.
 
-**Review cadence:** quarterly (aligned with OTel spec release cadence).
+**Review triggers** (no scheduled cadence; see `SKILL.md` §Versioning & Deprecation): CNCF project status changes, acquisitions, deprecations, or new CNCF Graduated/Incubating entrants in covered categories.
 
 When reviewing:
 - Check CNCF project status changes at landscape.cncf.io
@@ -342,7 +342,7 @@ Or navigate directly to https://landscape.cncf.io; it is the authoritative live 
 
 **Timestamp:** as of 2026-Q2
 
-**Review cadence:** Quarterly. Triggered by: CNCF project status changes, acquisitions, deprecations, or new CNCF Graduated/Incubating entrants in covered categories.
+**Review triggers** (no scheduled cadence): CNCF project status changes, acquisitions, deprecations, or new CNCF Graduated/Incubating entrants in covered categories.
 
 **Authoritative live source:** https://landscape.cncf.io
 

@@ -31,7 +31,7 @@ Three properties make mesh observability distinct enough to warrant a dedicated 
 | **Consul Connect** | Not CNCF | Envoy (via xDS) | Sidecar | HashiCorp ecosystem; strong multi-datacenter support |
 | **Kuma** | CNCF Sandbox | Envoy (via xDS) | Sidecar, Universal (VM) | Multi-cloud and multi-zone; Kong-backed |
 
-CNCF status source: <https://landscape.cncf.io>; verify quarterly.
+CNCF status source: <https://landscape.cncf.io>; verify at use time when load-bearing.
 
 ---
 
