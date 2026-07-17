@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.21.0",
-  "releaseDate": "2026-07-17T11:54:36.494Z",
+  "releaseDate": "2026-07-17T12:02:10.637Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1546,23 +1546,23 @@
     },
     {
       "path": ".agents/skills/oma-pm/SKILL.md",
-      "sha256": "0548590379ab707f0cc5b3373b784fdc06746907d807ac7d7ae32ad8882c42bd",
-      "size": 7352
+      "sha256": "0c805c08f3c6d873a3795770ca67306baa235fd52b6d082dde1eae5aeefe69f5",
+      "size": 7599
     },
     {
       "path": ".agents/skills/oma-pm/resources/error-playbook.md",
-      "sha256": "34062439b05f3ec0426ad03be23afc2b0051849c34c8ff4473129e2db5b13184",
-      "size": 2741
+      "sha256": "10e7ab3ee3a460dc5f84f62eb3d412938b8566f5eef44d6ab68c9367708b5ac2",
+      "size": 2787
     },
     {
       "path": ".agents/skills/oma-pm/resources/examples.md",
-      "sha256": "e40554319bc1a4747d007ba26e608a942a452602ca508ab7e17fc9971541c828",
-      "size": 4167
+      "sha256": "82a947a7050e6f989aa6afe1bae7376363a8394f8163b63ec9b0d87daefa7d35",
+      "size": 4633
     },
     {
       "path": ".agents/skills/oma-pm/resources/execution-protocol.md",
-      "sha256": "4efc734850ffee3f41741a815593e2170889f7882605796ccd3a6f3948212e2b",
-      "size": 3072
+      "sha256": "80ab56c13316575c10ca3845befd5501847ec69c1af1b0c57986e549a737c5b6",
+      "size": 3764
     },
     {
       "path": ".agents/skills/oma-pm/resources/iso-planning.md",
