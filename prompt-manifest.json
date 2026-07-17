@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.19.2",
-  "releaseDate": "2026-07-17T03:52:57.666Z",
+  "releaseDate": "2026-07-17T03:59:46.013Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1876,8 +1876,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "e09b683d4385dc6a433eb9f92b527ef8c8bb0814bca97f2c866c2e32e65e8a9d",
-      "size": 24587
+      "sha256": "bbc447465a12f98314458cb817e1b1b61b7191b0d80f3d9e98248af138bf906d",
+      "size": 25299
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -1891,8 +1891,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "eb1bd6fa2620edcd6e5b935d42718f53b74bf49ee99a1f29a89777964419b59d",
-      "size": 7316
+      "sha256": "cceacfa0c6eee0ee52285851045e9ee3744db8c931cb5ecbd399a81bc74d2a8f",
+      "size": 7350
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -1906,8 +1906,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/prompt-tips.md",
-      "sha256": "0b1dabeeab65227fe9ba9bd5f4ff21edfc913b54fe162edfb5070b5c79b97c6c",
-      "size": 4398
+      "sha256": "2d7eb8918230e6ad2cad38c9dad2f81ccd9742745f2e88ac4a9bafe63016b767",
+      "size": 4515
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion/.gitignore",
@@ -1990,9 +1990,14 @@
       "size": 415
     },
     {
+      "path": ".agents/skills/oma-video/resources/script-schema.md",
+      "sha256": "5618627fe5767a6687691aad6adfa063f4e2385cc443e2d9bfae2a08457ce384",
+      "size": 3596
+    },
+    {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
-      "sha256": "59dd7bc8cacf3db83b78d5ba291ab77c784840cce516dab58615c9f980dacec7",
-      "size": 6205
+      "sha256": "0e10f30268d588d5c2bf3b216a8fe8e96abd7179ff3c2f4bf8706401ebfceab6",
+      "size": 6389
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
@@ -2131,8 +2136,8 @@
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "63fee229205d53c23cd397b2f18cc3175711b80897c70df703983cc238eccb14",
-      "size": 22040
+      "sha256": "d8d97029a0b0dd7abce67f1083b34b797ed5377567256c2ce68bcbe752ff18e8",
+      "size": 22680
     },
     {
       "path": ".agents/workflows/work.md",
@@ -2146,6 +2151,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 427
+    "totalFiles": 428
   }
 }
