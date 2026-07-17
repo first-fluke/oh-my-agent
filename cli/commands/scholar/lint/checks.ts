@@ -288,6 +288,11 @@ export function checkArtifacts(
   });
 }
 
+// Cross-record reference grammar (`record_id#local_id`), used by review@1
+// sidecars to link back to statements in the reviewed paper's record.
+// These target another record, so they are never resolvable locally.
+const CROSS_RECORD_REF = /^[^#\s]+#(stmt|ev|art|rel|rep):/;
+
 export function checkRelations(
   rels: unknown,
   seenIds: Set<string>,
@@ -336,6 +341,8 @@ export function checkRelations(
       const refVal = rel[refField];
       if (refVal === undefined || refVal === null) {
         r.error(`${p}.${refField}`, "required field missing");
+      } else if (typeof refVal === "string" && CROSS_RECORD_REF.test(refVal)) {
+        // valid cross-record ref; skip local dangling check
       } else if (typeof refVal !== "string" || !refIds.has(refVal)) {
         const reportFn = lenient ? r.warn.bind(r) : r.error.bind(r);
         reportFn(

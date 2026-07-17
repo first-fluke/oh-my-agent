@@ -197,6 +197,27 @@ describe("lintDoc — v0.9.0 sidecar", () => {
     expect(warns.length).toBeGreaterThan(0);
   });
 
+  it("cross-record ref (record_id#local_id) → no dangling error in strict mode", () => {
+    const review = {
+      ...validSidecar,
+      relations: [
+        ...validSidecar.relations,
+        {
+          id: "rel:generalization-challenges-claim",
+          predicate: "challenged_by",
+          subject_ref: "knows:examples/resnet/1.0.0#stmt:main-contribution",
+          object_ref: "stmt:claim-one",
+        },
+      ],
+    };
+    const report = lintDoc(review);
+    const refFindings = report.findings.filter(
+      (f) => f.path.endsWith(".subject_ref") || f.path.endsWith(".object_ref"),
+    );
+    expect(refFindings.length).toBe(0);
+    expect(report.errors).toBe(0);
+  });
+
   it("quoted number on evidence value → error", () => {
     const bad = {
       ...validSidecar,
