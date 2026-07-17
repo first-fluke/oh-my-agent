@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 specs:
   - "W3C Trace Context: Level 1 Recommendation 2020-02-06; Level 2 Candidate Recommendation"
   - "W3C Baggage: Recommendation 2022-12-22"

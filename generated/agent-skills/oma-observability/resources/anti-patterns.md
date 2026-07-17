@@ -110,7 +110,7 @@
 **Remediation**: Use `http_requests_total{tenant_id="acme"}` with a top-N cap (≤ 1000 explicit tenants). Map overflow to label value `"other"`. Apply Collector `transform` processor for normalization.
 **See also**: `signals/metrics.md §9.3 Tenant Cap`, `signals/cost.md §10`
 
-### B.3 Raw `http.url` as metric label
+### B.3 Raw `url.full` as metric label
 
 **Severity**: HIGH
 **Why it fails**: URL query strings are unbounded and may contain tokens or email addresses (`?token=...`, `?email=...`). Using raw `url.full` as a label causes cardinality explosion and PII leakage in the TSDB.

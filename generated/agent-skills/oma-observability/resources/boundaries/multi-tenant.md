@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 specs:
   - "W3C Baggage: Recommendation 2022-12-22"
   - "GDPR: Regulation (EU) 2016/679; KR PIPA: amended 2023"
@@ -31,7 +31,7 @@ Multi-tenant observability covers the collection, routing, isolation, attributio
 
 ## 2. OTel Attribute Conventions for Tenant
 
-OpenTelemetry Semantic Conventions do not include a stable `tenant.*` group as of semconv 1.27.0. The attributes below are **custom application-defined** attributes. Follow the naming convention from `../standards.md §3` and prefix with the domain noun to avoid collisions with future OTel semconv additions.
+OpenTelemetry Semantic Conventions do not include a stable `tenant.*` group as of semconv 1.43.0. The attributes below are **custom application-defined** attributes. Follow the naming convention from `../standards.md §3` and prefix with the domain noun to avoid collisions with future OTel semconv additions.
 
 | Attribute | Type | Example | Status |
 |-----------|------|---------|--------|

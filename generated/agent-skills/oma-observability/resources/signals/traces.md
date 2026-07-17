@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 specs:
   - "W3C Trace Context: Level 1 Recommendation 2020-02-06"
 ---
@@ -168,7 +168,7 @@ Source: <https://opentelemetry.io/docs/specs/semconv/messaging/>
 |-----------|---------|-------|
 | `messaging.system` | `kafka`, `rabbitmq`, `nats` | Required |
 | `messaging.destination.name` | `orders-topic` | Topic or queue name |
-| `messaging.operation` | `publish`, `create`, `receive`, `deliver`, `settle`, `process` | Operation type per semconv 1.27.0 (note: the attribute is spelled `messaging.operation.type` in latest drafts; pin via `../standards.md`). `settle` covers ack/nack; `ack` alone is NOT a valid enum value |
+| `messaging.operation.type` | `create`, `send`, `receive`, `process`, `settle` | Operation type per semconv 1.43.0 (Development; replaces deprecated `messaging.operation`; `publish`→`send`, `deliver`→`process`). `settle` covers ack/nack; `ack` alone is NOT a valid enum value |
 | `messaging.message.id` | `msg-uuid-1234` | Message identifier for dedup |
 | `messaging.kafka.message.key` | `order-9988` | Kafka partition key |
 | `messaging.kafka.consumer.group` | `payment-consumer-group` | Kafka consumer group |
@@ -198,7 +198,7 @@ Kafka consumer lag is an external metric, not a trace attribute: MSK (`kafka.con
 
 ### 5.2 Flink and Spark Streaming
 
-Create one span per pipeline stage; the trace covers end-to-end job from source read to sink write. Flink OTel instrumentation is emerging (not stable as of semconv 1.27.0); use `messaging.system = kafka` for source/sink spans and `INTERNAL` for operator chains. Spark: instrument at the `foreachBatch` boundary; each micro-batch is one `INTERNAL` span. Checkpoint metrics: cross-ref `../signals/metrics.md §streaming`.
+Create one span per pipeline stage; the trace covers end-to-end job from source read to sink write. Flink OTel instrumentation is emerging (not stable as of 2026-Q2); use `messaging.system = kafka` for source/sink spans and `INTERNAL` for operator chains. Spark: instrument at the `foreachBatch` boundary; each micro-batch is one `INTERNAL` span. Checkpoint metrics: cross-ref `../signals/metrics.md §streaming`.
 
 ### 5.3 Dead Letter Queue (DLQ) Observability
 
@@ -219,7 +219,7 @@ Source: <https://opentelemetry.io/docs/specs/semconv/rpc/grpc/>
 
 | Attribute | Example |
 |-----------|---------|
-| `rpc.system` | `grpc` |
+| `rpc.system.name` | `grpc` |
 | `rpc.service` | `com.example.OrderService` |
 | `rpc.method` | `CreateOrder` |
 
@@ -231,7 +231,7 @@ Use `http.*` attributes for REST and JSON-RPC over HTTP. `rpc.*` is for binary R
 
 ### Error handling
 
-Set `status.code = ERROR` and `status.description` on RPC failures. Use `span.recordException(e)` to atomically populate `exception.type`, `exception.message`, and `exception.stacktrace`; required by MRA in `../incident-forensics.md §2.2`.
+Set `status.code = ERROR` and `status.description` on RPC failures. Use `span.recordException(e)` to atomically populate `exception.type`, `exception.message`, and `exception.stacktrace`; required by MRA in `../incident-forensics.md §2.2`. Note: since semconv 1.40 the span-event form of exception recording is deprecated in favor of exception LogRecords (`OTEL_SEMCONV_EXCEPTION_SIGNAL_OPT_IN`); during migration prefer `logs/dup` so both the span pivot and log-based queries keep working.
 
 ---
 

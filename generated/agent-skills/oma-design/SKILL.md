@@ -159,7 +159,7 @@ bunx getdesign@latest list
 
 ### Anti-Pattern Quick Reference
 
-### Typography
+#### Typography
 - DON'T: Default to custom Google Fonts when system fonts suffice
 - DON'T: Reach for Inter as the default custom sans (LLM signature); override only on explicit neutral/Linear-style ask or public-sector/a11y-first brief
 - DON'T: Load 3+ font families without justification
@@ -167,7 +167,7 @@ bunx getdesign@latest list
 - DO: System font stack first, custom fonts for brand identity only
 - DO: Test CJK at every size (line-height 1.7-1.8)
 
-### Color & Gradient
+#### Color & Gradient
 - DON'T: Purple-to-blue gradient backgrounds (strongest AI slop signal)
 - DON'T: Gradient orbs/blobs as hero decoration ("AI SaaS look")
 - DON'T: Gradient + glassmorphism + blur combo (triple slop)
@@ -177,7 +177,7 @@ bunx getdesign@latest list
 - DO: Texture (noise, grain, dither) over plain gradients
 - DO: Derive gradients from brand colors with clear purpose
 
-### Layout
+#### Layout
 - DON'T: Nested cards inside nested cards
 - DON'T: Desktop-only fixed-width layouts
 - DON'T: Hero with identical 3-metric stats layout (AI pattern)
@@ -185,28 +185,28 @@ bunx getdesign@latest list
 - DO: Responsive-first, works at 375px minimum
 - DO: Mix layout patterns (chess, grid, bento, full-bleed)
 
-### Motion
+#### Motion
 - DON'T: Bounce easing on everything
 - DON'T: Animation duration > 800ms for UI transitions
 - DON'T: Ignore prefers-reduced-motion
 - DO: transform + opacity only for 60fps
 - DO: 150ms micro-interactions, 200-500ms transitions
 
-### Components
+#### Components
 - DON'T: Glassmorphism everywhere; use sparingly
 - DON'T: Hover-only interactions without touch/keyboard alternatives
 - DON'T: Default to lucide-react or hand-rolled SVG icons; pick one family deliberately (Phosphor > HugeIcons > Radix > Tabler; lucide on explicit ask or existing dependency)
 - DO: shadcn/ui for base, Aceternity UI / React Bits for accent effects
 - DO: All interactive elements must have visible focus states
 
-### Content & Copy
+#### Content & Copy
 - DON'T: "John Doe" personas, "Acme/Nexus" brand names, Lorem Ipsum, fake-perfect numbers (99.99%)
 - DON'T: Filler verbs ("Elevate", "Seamless", "Unleash") or performative labels ("Quietly trusted by")
 - DON'T: Em-dash (`—`) anywhere in visible output — zero tolerance, no "sparingly" allowance; en-dash as separator also banned (hyphen only)
 - DO: Copy self-audit before handoff — re-read every visible string, rewrite anything broken or AI-cute
 - DO: One label per CTA intent per page
 
-### Assets
+#### Assets
 - DON'T: Div-based fake screenshots; text wordmark logo walls; hand-rolled SVG icons
 - DO: oma-image generation first → picsum seed → labeled placeholder + report
 
@@ -250,12 +250,12 @@ injection defenses, and multi-vendor merge policy live in
 `resources/getdesign-fetcher.md`.
 
 ### Resources
-- `resources/execution-protocol.md`: 7-phase workflow
+- `resources/execution-protocol.md`: 7-phase workflow + example `.design-context.md` appendix
 - `resources/anti-patterns.md`: Full DO/DON'T catalog
 - `resources/checklist.md`: Audit checklist (Responsive + WCAG + Nielsen + Slop + Mechanical counts)
 - `resources/design-md-spec.md`: DESIGN.md generation guide (9 sections)
 - `resources/design-tokens.md`: CSS/Tailwind/shadcn export templates
-- `resources/prompt-enhancement.md`: Vague request to detailed spec
+- `resources/prompt-enhancement.md`: Vague request to detailed spec + worked landing-page example
 - `resources/stitch-integration.md`: Stitch MCP tool mapping (optional)
 - `resources/getdesign-fetcher.md`: Vendor seed fetch, hash verify, seed rules
 - `resources/redesign-protocol.md`: Preserve/Overhaul modes, audit-first, modernization levers
@@ -272,7 +272,3 @@ injection defenses, and multi-vendor merge policy live in
 - `reference/component-patterns.md`: shadcn/Aceternity/React Bits catalog
 - `reference/accessibility.md`: WCAG 2.2, ARIA, focus, reduced-motion
 - `reference/shader-and-3d.md`: WebGL, R3F, ogl, performance
-
-### Examples
-- `examples/design-context-example.md`: .design-context.md example
-- `examples/landing-page-prompt.md`: Detailed landing page prompt

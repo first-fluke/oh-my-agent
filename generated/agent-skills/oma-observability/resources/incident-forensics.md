@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 ---
 
 # Incident Forensics Playbook
@@ -52,15 +52,17 @@ Error spans (those where `status.code = ERROR`) MUST additionally carry code and
 <!-- oma-docs:ignore-start -->
 | Attribute | Semconv group | Stability | Example value |
 |-----------|--------------|-----------|---------------|
-| `code.function` | `code.*` | Stable | `processPayment` |
-| `code.filepath` | `code.*` | Stable | `src/payments/processor.ts` |
-| `code.lineno` | `code.*` | Stable | `287` |
+| `code.function.name` | `code.*` | Stable | `processPayment` |
+| `code.file.path` | `code.*` | Stable | `src/payments/processor.ts` |
+| `code.line.number` | `code.*` | Stable | `287` |
 | `exception.type` | `exception.*` | Stable | `TimeoutException` |
 | `exception.message` | `exception.*` | Stable | `Redis pool exhausted after 5000ms` |
 | `exception.stacktrace` | `exception.*` | Stable | full stack trace string |
 <!-- oma-docs:ignore-end -->
 
 Set these via the OTel SDK `span.recordException(e)` call, which populates all three `exception.*` attributes atomically.
+
+> **Migration note (semconv 1.40+)**: recording exceptions as span events is deprecated in favor of exception LogRecords (`OTEL_SEMCONV_EXCEPTION_SIGNAL_OPT_IN=logs|logs/dup`). Default SDK behavior still emits span events, and log-based exceptions can be routed back to span events at the SDK layer, so this pivot keeps working. For instrumentation that has migrated, run the same pivot by joining exception LogRecords on `trace_id`/`span_id` (§2.3).
 
 ### 2.3 Structured log mandatory fields
 
@@ -141,21 +143,21 @@ Classify the failing span's network layer using `span.kind` and span name patter
 
 | `span.kind` value | Layer | Typical next pivot |
 |---|---|---|
-| `SERVER` or `CLIENT` with HTTP attributes | L7 application | code.function |
+| `SERVER` or `CLIENT` with HTTP attributes | L7 application | code.function.name |
 | `CLIENT` with `db.*` attributes | L7 DB call | traces.md DB patterns |
 | `INTERNAL` with `messaging.*` | L7 messaging | check DLQ |
 | eBPF-sourced span (Beyla/Pixie) | L4 transport | TCP retransmit metrics |
 | Envoy/Istio proxy span | mesh | layers/mesh.md |
 
-For L3/L4 root causes (PMTUD black hole, TCP retransmit storm), the L7 error manifests as a connection timeout. The trace will show a CLIENT span with no child spans and a `net.peer.name` pointing to the downstream. Pivot to L3/L4 metrics from there.
+For L3/L4 root causes (PMTUD black hole, TCP retransmit storm), the L7 error manifests as a connection timeout. The trace will show a CLIENT span with no child spans and a `server.address` pointing to the downstream. Pivot to L3/L4 metrics from there.
 
-#### 3e. Code (`code.function`, `code.filepath`, `code.lineno`, `exception.stacktrace`)
+#### 3e. Code (`code.function.name`, `code.file.path`, `code.line.number`, `exception.stacktrace`)
 
 On the failing span, read the error attributes set by MRA §2.2:
 
 - `exception.type` and `exception.message` give the immediate cause.
 - `exception.stacktrace` gives the call chain.
-- `code.function` + `code.filepath` + `code.lineno` identify the exact source location without needing to search the codebase.
+- `code.function.name` + `code.file.path` + `code.line.number` identify the exact source location without needing to search the codebase.
 
 Cross-check: if `exception.stacktrace` points to a library call (e.g., a Redis client timeout), the root cause is likely downstream resource exhaustion, not a code bug; continue to cross-signal validation.
 
@@ -261,7 +263,7 @@ Alert fires: `http_requests_total{status=~"5..", service_name="payment-service",
 4. **Server pivot**: error spans distributed across 3 of 6 pods, all on `k8s.node.name = ip-10-0-2-11.ec2.internal`. Potential node-level issue; note but continue to service pivot first.
 5. **Service pivot**: earliest ERROR span is `service.name = payment-service`, `service.version = v2.4.1`. Downstream span to `redis-cache` shows CLIENT timeout with no response.
 6. **Layer pivot**: `span.kind = CLIENT`, `db.system = redis`. Layer: L7 DB call. No L3/L4 trace artifacts; this is an application-layer Redis client timeout.
-7. **Code pivot**: `exception.type = TimeoutException`, `exception.message = "Redis pool exhausted after 5000ms"`, `code.function = processPayment`, `code.filepath = src/payments/processor.ts`, `code.lineno = 287`.
+7. **Code pivot**: `exception.type = TimeoutException`, `exception.message = "Redis pool exhausted after 5000ms"`, `code.function.name = processPayment`, `code.file.path = src/payments/processor.ts`, `code.line.number = 287`.
 8. **Cross-signal validation**:
    - metrics: Redis connection pool saturation metric (`redis_pool_active_connections / redis_pool_max_connections`) at 100% from 14:21 UTC.
    - logs: filter `trace_id = 9a3f1c8e2b7d4e50a1c3f9d2b8e7a4c0`. Log at 14:22: `WARN: connection pool at capacity (256/256)` from `payment-service`.

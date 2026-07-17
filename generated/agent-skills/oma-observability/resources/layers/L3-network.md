@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 ---
 
 # L3-Network Layer Observability
@@ -17,7 +17,7 @@ otel_semconv: "1.27.0 (2024-11)"
 
 ## 2. OTel Semantic Conventions Relevant to L3
 
-The following attributes from the `network.*` group are **Stable** (semconv 1.27.0) and safe for production instrumentation. Reference: `../standards.md §3` for the full stability tier table.
+The following attributes from the `network.*` group are **Stable** (semconv 1.43.0) and safe for production instrumentation. Reference: `../standards.md §3` for the full stability tier table.
 
 | Attribute | Type | Example values | Notes |
 |-----------|------|----------------|-------|

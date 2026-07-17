@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 notes:
   - "OTel mobile semconv still experimental; vendor-native SDKs dominate in 2026"
 ---
@@ -135,9 +135,9 @@ Mobile device CPU and network activity contribute to device-level energy consump
 | Metered data awareness | Detect cellular vs. Wi-Fi; warn or throttle SDK sends on cellular by default (opt-in to always-on) |
 | Request coalescing | Combine multiple queued spans into a single OTLP export request per flush cycle |
 | Certificate pinning | Implement mTLS or certificate pinning for telemetry endpoints beyond mesh-level TLS; use platform SecTrustEvaluate / TrustManager accordingly |
-| PII leakage via URL | Strip query parameters containing tokens, emails, or IDs before recording `http.url` in spans |
+| PII leakage via URL | Strip query parameters containing tokens, emails, or IDs before recording `url.full` in spans |
 
-Network request spans follow OTel HTTP client semconv (`http.request.method`, `server.address`, `http.response.status_code`, `network.protocol.name`). These are Stable semconv as of 1.27.0.
+Network request spans follow OTel HTTP client semconv (`http.request.method`, `server.address`, `http.response.status_code`, `network.protocol.name`). These are Stable semconv as of 1.43.0.
 
 ---
 

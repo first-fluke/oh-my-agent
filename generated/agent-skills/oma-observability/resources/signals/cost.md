@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 specs:
   - "FOCUS Spec: 1.0 (FinOps Open Cost and Usage Specification)"
 notes:
@@ -170,7 +170,7 @@ This ratio surfaces the cost multiplier of tiered SLO guarantees and feeds tier-
 
 Full LLM observability is out of scope for this skill. The tools for that domain are Langfuse, Arize Phoenix, LangSmith, and Braintrust (see `SKILL.md §When NOT to use`). This section covers only the intersection where LLM cost surfaces as a span attribute in the OTel pipeline.
 
-**Token-based pricing attributes** (OTel `gen_ai.*` semconv, currently Experimental tier per `../standards.md §Semconv Stability`):
+**Token-based pricing attributes** (OTel `gen_ai.*` semconv — deprecated in the core registry since semconv 1.42 and maintained in the dedicated GenAI semconv repository; treat as unstable per `../standards.md §Semconv Stability`):
 
 | Span attribute | Description |
 |----------------|-------------|
@@ -180,7 +180,7 @@ Full LLM observability is out of scope for this skill. The tools for that domain
 
 **Threshold-based sampling rule:** if `gen_ai.cost.total_usd > 0.50`, always retain the span regardless of sampling rate. This prevents silent budget overruns from being dropped before they reach the backend. Cross-ref `../transport/sampling-recipes.md §Cost-aware sampling` for the tail-sampler rule configuration.
 
-Note: `gen_ai.*` semconv is Experimental as of semconv 1.27.0. Do not use these attributes as inputs to production SLOs until the group reaches Stable or RC.
+Note: `gen_ai.*` conventions moved to a dedicated GenAI semconv repository in semconv 1.42 (2026-06); the core-registry entries are deprecated. Do not use these attributes as inputs to production SLOs until they reach Stable or RC in their new home.
 
 ---
 

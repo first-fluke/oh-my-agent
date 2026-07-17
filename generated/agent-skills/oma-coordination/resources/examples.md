@@ -17,7 +17,7 @@ Step 2: Spawn Priority 1 agents via CLI
   wait
 
 Step 3: Monitor progress
-  - Use memory read tool to poll progress-{agent}.md files
+  - Use memory read tool to poll progress-{agent}[-{sessionId}].md files
   - Verify API contracts align between backend/frontend
 
 Step 4: Spawn Priority 2 after P1 completes
@@ -62,7 +62,7 @@ Step 4: QA review
 "You want fully automated execution. Let me switch to the
 orchestrator skill instead, which will:
 1. Spawn CLI subagents automatically
-2. Coordinate via Serena Memory
+2. Coordinate via MCP Memory
 3. Monitor progress and handle retries
 4. Return unified results
 

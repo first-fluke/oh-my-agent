@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 notes:
   - "OpenMetrics: IETF RFC 9416 (2023-08)"
 ---
@@ -147,7 +147,7 @@ Pattern: `{component}_{operation}_{unit}_{suffix}`
 Low-cardinality labels only. Cross-ref `../meta-observability.md §Section C Cardinality Guardrails`.
 
 Safe label examples: `method`, `status_code`, `route` (normalized), `service`, `region`, `env`.
-Forbidden label examples: `user.id`, `request.id`, `trace.id`, `http.url` (raw), `error.message`.
+Forbidden label examples: `user.id`, `request.id`, `trace.id`, `url.full` (raw), `error.message`.
 
 ### 3.4 OpenMetrics Snippet (RFC 9416)
 
@@ -396,7 +396,7 @@ count({job="my-service"}) > 4000
 | `user.id` | Unbounded; one series per user |
 | `request.id` | One series per request; instant explosion |
 | `trace.id` | One series per trace |
-| `http.url` (raw) | Query strings are unbounded |
+| `url.full` (raw) | Query strings are unbounded |
 | `error.message` | Free-text; unbounded cardinality |
 
 ### 9.3 Tenant Cap
@@ -436,7 +436,7 @@ This table maps the metrics signal cells from `../matrix.md` for quick navigatio
 | mesh | slo | PASS | Request rate and error rate as primary SLI sources |
 | mesh | release | PASS | Request split metrics for canary traffic (Flagger/Argo Rollouts) |
 | L7-application | multi-tenant | PASS | Per-tenant RED + custom business metrics with `tenant.id` |
-| L7-application | cross-application | PASS | Inter-service histograms with `service.name` + `peer.service` |
+| L7-application | cross-application | PASS | Inter-service histograms with `service.name` + `service.peer.name` |
 | L7-application | slo | PASS | SLI metric computation; SLO targets in OpenSLO YAML |
 | L7-application | release | PASS | Release marker; `service.version` label for before/after delta |
 
@@ -452,7 +452,7 @@ These are candidates for `../anti-patterns.md §Section B Cardinality & Cost`:
 | New metric name per tenant | `http_requests_total_tenant_acme` bypasses cardinality controls | Use `http_requests_total{tenant="acme"}` with top-N cap |
 | Summary for cross-service aggregation | Client-side quantiles cannot be merged across replicas | Replace with Histogram + `histogram_quantile` at query time |
 | Healthcheck not tied to underlying SLI | `/healthz` returns 200 regardless of dependency health | Emit `service_health_status{check="db"} 0` when unhealthy; wire into SLI |
-| Raw `http.url` label | Query strings are unbounded; `?token=...` leaks secrets | Use `http.route` (normalized); apply `replace_pattern` in Collector |
+| Raw `url.full` label | Query strings are unbounded; `?token=...` leaks secrets | Use `http.route` (normalized); apply `replace_pattern` in Collector |
 | Histogram with default bucket boundaries | Default millisecond buckets are meaningless for second-scale requests | Set explicit bucket boundaries per instrument matching the expected value range |
 
 ---

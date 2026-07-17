@@ -1,5 +1,5 @@
 ---
-otel_semconv: "1.27.0 (2024-11); GDPR: 2016/679; PIPA: 2023 amendment"
+otel_semconv: "1.43.0 (2026-07); GDPR: 2016/679; PIPA: 2023 amendment"
 ---
 
 # Privacy in Telemetry
@@ -144,14 +144,14 @@ processors:
   redaction/allowlist:
     allow_all_keys: false
     allowed_keys:
-      - http.method
-      - http.status_code
+      - http.request.method
+      - http.response.status_code
       - http.route
       - service.name
       - trace.id
       - span.id
       - db.system
-      - rpc.system
+      - rpc.system.name
     blocked_values:
       - "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"   # email pattern
       - "\\b(?:\\d[ -]?){13,16}\\b"                                    # card number pattern
@@ -258,7 +258,7 @@ Cross-reference: `../transport/collector-topology.md §Multi-cluster + regional`
 
 ## 11. TLS Context Attributes (L6 Development Status)
 
-OTel `tls.*` semantic conventions are **Development** stability tier as of semconv 1.27.0. See `../standards.md` for stability tier definitions.
+OTel `tls.*` semantic conventions are **Development** stability tier as of semconv 1.43.0 (verified 2026-07). See `../standards.md` for stability tier definitions.
 
 | Attribute | Type | Use Case |
 |-----------|------|----------|

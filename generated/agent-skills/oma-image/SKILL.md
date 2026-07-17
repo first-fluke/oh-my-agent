@@ -2,9 +2,10 @@
 name: oma-image
 description: Multi-vendor AI image generation with authentication-aware parallel
   dispatch. Routes to Codex (gpt-image-2 via ChatGPT OAuth), Antigravity
-  (gemini-2.5-flash-image aka nano-banana via `agy` CLI + Gemini Code Assist),
-  and Pollinations (flux/zimage, free with signup). Use for image generation,
-  image creation, visual asset generation, and AI art.
+  (Gemini-family "nano-banana" image models via `agy` CLI + Gemini Code Assist;
+  exact model chosen internally by agy), and Pollinations (flux/zimage, free
+  with signup). Use for image generation, image creation, visual asset
+  generation, and AI art.
 ---
 
 # Image Agent - Multi-Vendor Image Router
@@ -134,8 +135,8 @@ oma image generate --reference "<absolute-path>" --vendor codex "<prompt>"
 ### Guardrails
 
 1. **Clarify before invoking**: if the user's request is ambiguous about subject, style, composition, or usage context, **ask the user first** or **amplify the prompt explicitly** (showing the user the expanded version for approval). Do NOT silently generate from a vague prompt. See `Clarification Protocol` below.
-2. **Authentication-aware dispatch**: detect which vendor CLIs are authenticated and run only those; with `--vendor all`, every requested vendor must be available (strict).
-3. **Cost guardrail**: confirm before executing runs whose estimated cost is ≥ `$0.20` (configurable). `--yes` / `OMA_IMAGE_YES=1` bypass. Default vendors `pollinations` (flux/zimage) and `antigravity` (nano-banana via Gemini Code Assist) are free, so auto-triggering on keywords is safe.
+2. **Authentication-aware dispatch**: detect which vendor CLIs are available and run only those; with `--vendor all`, every requested vendor must be available (strict). Caveat: the `antigravity` health check verifies installation only (`agy --version`) — a signed-out agy passes health and fails at generate time with agy's own error.
+3. **Cost guardrail**: confirm before executing runs whose estimated cost is ≥ `$0.20` (configurable). `--yes` / `OMA_IMAGE_YES=1` bypass. Default vendors `pollinations` (flux/zimage) and `antigravity` (nano-banana via Gemini Code Assist) are free, so auto-triggering on keywords is safe. **Non-interactive contexts** (agents, CI — no TTY on stdin): the CLI cannot prompt, so a run at/over the threshold exits 1 with a message naming `--yes`. Calling agents must confirm the estimated cost with the user in-conversation (use `--dry-run` to get the estimate), then re-run with `-y`.
 4. **Path safety**: output paths outside `$PWD` require `--allow-external-out`.
 5. **Cancellable**: SIGINT/SIGTERM aborts in-flight provider calls and the orchestrator.
 6. **Deterministic outputs**: every run writes `manifest.json` next to the images for reproducibility.
@@ -195,6 +196,7 @@ This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native C
 oma image generate "<prompt>" [--vendor auto|codex|pollinations|antigravity|all] [-n 1..5] \
                              [--size WxH|auto] \
                              [--quality low|medium|high|auto] \
+                             [--model <name>] \
                              [--out <dir>] [--allow-external-out] \
                              [-r <path>]... \
                              [--timeout 180] [-y] [--no-prompt-in-manifest] \
@@ -202,6 +204,8 @@ oma image generate "<prompt>" [--vendor auto|codex|pollinations|antigravity|all]
 oma image doctor
 oma image list-vendors
 ```
+
+`--model <name>` overrides the vendor's default model for this run — e.g. `--vendor pollinations --model zimage`, or a credit-gated Pollinations model like `gpt-image-2`. It applies to every vendor in the run set, so combine it with an explicit `--vendor`; `antigravity` ignores it (agy picks its model internally).
 
 #### Reference Images (`-r`, `--reference`)
 
@@ -218,7 +222,7 @@ Supported vendors:
 |--------|---------|-----|
 | `codex` (gpt-image-2) | PASS | Passes `-i <path>` to `codex exec` |
 | `antigravity` | PASS | Refs copied to a per-run temp dir, `agy --add-dir <tmpdir>` grants access, paths inlined into the prompt |
-| `pollinations` | N/A | Rejected with exit code 4 (requires URL hosting; see PR #2 roadmap) |
+| `pollinations` | N/A | Rejected with exit code 4 when explicitly selected (requires URL hosting; see PR #2 roadmap). Under `--vendor auto`, reference-unsupported vendors are silently dropped from the run set instead. |
 
 **Paths**: absolute or relative to `$CWD`. Host CLIs usually expose attached images via:
 - **Claude Code**: `~/.claude/image-cache/<session>/N.png` (surfaced in system messages as `[Image: source: <path>]`)
@@ -249,15 +253,18 @@ Other skills call `oma image generate --format json` and parse the JSON manifest
 
 ### Output Layout
 
+Filenames follow `<vendor>[-<model>]-<shortid>[-<n>].<ext>` — the model segment is omitted for `antigravity` (opaque model), the extension reflects the sniffed format (JPEG is common), and `-<n>` appears only when `-n` > 1.
+
 ```
 .agents/results/images/
 ├── 20260424-143052-ab12cd/                    # single-vendor run
-│   └── pollinations-flux.jpg
-│       (or codex-gpt-image-2.png)
-│       manifest.json
+│   ├── pollinations-flux-ab12cd.jpg
+│   │   (or codex-gpt-image-2-ab12cd.png, antigravity-ab12cd.jpg)
+│   └── manifest.json
 └── 20260424-143122-7z9kqw-compare/            # --vendor all run
-    ├── codex-gpt-image-2.png
-    ├── pollinations-flux.jpg
+    ├── codex-gpt-image-2-7z9kqw.png
+    ├── pollinations-flux-7z9kqw.jpg
+    ├── antigravity-7z9kqw.jpg
     └── manifest.json
 ```
 

@@ -1,5 +1,5 @@
 ---
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 ---
 
 # Crash Analytics: L7 Application Layer

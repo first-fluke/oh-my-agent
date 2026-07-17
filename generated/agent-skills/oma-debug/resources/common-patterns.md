@@ -710,11 +710,12 @@ flutter build apk --analyze-size
 
 | Bug Type | Best Agent | Reason |
 |----------|-----------|---------|
-| Frontend crash | debug-agent | Specializes in bug diagnosis |
-| Backend API error | debug-agent | Can trace through stack |
+| Frontend crash | debug-investigator | Specializes in bug diagnosis |
+| Backend API error | debug-investigator | Can trace through stack |
 | Complex multi-domain | oma-coordination | Coordinates multiple agents |
-| Security vulnerability | qa-agent | Security expertise |
-| Performance issue | qa-agent | Performance profiling tools |
+| Security vulnerability | qa-reviewer | Security expertise |
+| Performance bug (specific slowdown/regression) | debug-investigator | Root-cause diagnosis + fix (see §Performance Bugs) |
+| Performance audit (broad review) | qa-reviewer | Profiling and audit tooling |
 | New feature needed | Specialist agent | Not a bug, it's a feature |
 
 ---

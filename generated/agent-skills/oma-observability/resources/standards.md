@@ -1,12 +1,12 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 specs:
   - "W3C Trace Context: Level 1 Recommendation 2020-02-06; Level 2 Candidate Recommendation"
   - "W3C Baggage: Recommendation 2022-12-22"
   - "ISO/IEC 25010: 2023; ISO/IEC 27001:2022; ISO/IEC 42010:2011"
 notes:
-  - "Pinned versions (update quarterly or on spec promotion)"
+  - "Pinned versions (update on spec promotion or attribute deprecation; see SKILL.md §Versioning & Deprecation — no scheduled review)"
 ---
 
 # Observability Standards Reference
@@ -77,7 +77,7 @@ Usage rules enforced by this skill:
 
 ## 3. OpenTelemetry Semconv Stability Tiers
 
-Semantic convention stability determines which attributes can be used in production without risk of breaking changes. Pin the semconv version in the file header above and update on quarterly review.
+Semantic convention stability determines which attributes can be used in production without risk of breaking changes. Pin the semconv version in the file header above and update on the triggers listed in §7 (spec promotion, attribute deprecation).
 
 Source: <https://opentelemetry.io/docs/specs/semconv/general/attribute-requirement-level/>
 
@@ -86,12 +86,12 @@ Source: <https://opentelemetry.io/docs/specs/semconv/general/attribute-requireme
 | Stable | `service.*`, `host.*`, `cloud.*`, `k8s.*`, `http.*`, `db.*` (core), `network.*` (core), `error.*` | Yes, without caveat |
 | Release Candidate (RC) | `rpc.*`, gRPC semconv | Yes, expect minor changes |
 | Development | `tls.*`, `network.connection.*` | Test environments; production use requires change-tolerance |
-| Experimental | `gen_ai.*`, profiles (OTEP 0239 alpha) | Not for production SLOs |
+| Experimental | `gen_ai.*` (deprecated in core registry since semconv 1.42; maintained in the dedicated GenAI semconv repository), profiles (OTEP 0239; Development) | Not for production SLOs |
 
 Notes:
 - `network.*` core attributes (e.g., `network.protocol.name`, `network.transport`) are Stable. `network.connection.*` (e.g., `network.connection.type`, `network.connection.subtype`) are Development.
-- `tls.*` (all) are Development as of semconv 1.27.0. For TLS deep inspection, use Wireshark or vendor-specific TLS tooling rather than OTel attributes.
-- OTEP 0239 (profiling signal) is alpha. Parca and Pyroscope are in production, but the OTel profiling spec is not yet stable. Mark any profiling-related SLOs as experimental.
+- `tls.*` (all) are Development as of semconv 1.43.0 (verified 2026-07). For TLS deep inspection, use Wireshark or vendor-specific TLS tooling rather than OTel attributes.
+- OTEP 0239 (profiling signal) is Development; SDK support is Java-only as of 2026-Q2. Parca and Pyroscope are in production, but the OTel profiling spec is not yet stable. Mark any profiling-related SLOs as experimental.
 
 Verified sources:
 - TLS attrs: <https://opentelemetry.io/docs/specs/semconv/attributes-registry/tls/>
@@ -179,13 +179,13 @@ NTP drift left unmonitored is anti-pattern #18 in this skill: waterfall charts a
 
 ---
 
-## 7. Versioning and Review Cadence
+## 7. Versioning and Review Triggers
 
 - The spec version block in this file's header MUST be updated when:
   - Any listed semconv group promotes from Development → RC or RC → Stable.
   - A listed W3C document advances maturity (CR → PR → Recommendation).
   - OTel releases a new minor version with breaking semconv changes.
-- **Review cadence**: quarterly, aligned with OTel spec releases and CNCF landscape updates (<https://landscape.cncf.io/>).
+- **Review triggers only, no scheduled cadence** (see `SKILL.md` §Versioning & Deprecation): OTel spec releases and CNCF landscape changes (<https://landscape.cncf.io/>) affecting cited content; verify live when load-bearing.
 - When updating, also check and update affected signal/layer files that reference the changed attribute group.
 - Skill minor version bump required on any normative change to this file.
 

@@ -21,7 +21,7 @@ Run through every item before submitting your fix.
 - [ ] Noted if systemic issue needs architectural fix
 
 ## Documentation
-- [ ] Bug report saved to `.agents/results/bugs/`
+- [ ] Bug report saved to `.agents/results/bugs/` (condensed form OK for Simple/Medium; or explicit reason it was skipped)
 - [ ] Root cause clearly explained
 - [ ] Prevention advice included
 - [ ] Files modified listed

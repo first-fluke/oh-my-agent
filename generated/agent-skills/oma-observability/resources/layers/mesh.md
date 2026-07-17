@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 tools:
   - "Istio: 1.22+; Envoy: 1.29+; OTel Operator: v0.100+"
 ---
@@ -31,7 +31,7 @@ Three properties make mesh observability distinct enough to warrant a dedicated 
 | **Consul Connect** | Not CNCF | Envoy (via xDS) | Sidecar | HashiCorp ecosystem; strong multi-datacenter support |
 | **Kuma** | CNCF Sandbox | Envoy (via xDS) | Sidecar, Universal (VM) | Multi-cloud and multi-zone; Kong-backed |
 
-CNCF status source: <https://landscape.cncf.io>; verify quarterly.
+CNCF status source: <https://landscape.cncf.io>; verify at use time when load-bearing.
 
 ---
 
@@ -55,9 +55,9 @@ Istio 1.22+ Telemetry API disables `destination_service_name` by default at high
 
 Envoy automatically creates **ingress and egress spans** for every HTTP/gRPC call that traverses the proxy. Each span captures:
 
-- `http.method`, `http.status_code`, `http.url` (Stable semconv)
-- `peer.service` derived from Envoy cluster name
-- mTLS peer identity as `net.peer.name` (when available)
+- `http.request.method`, `http.response.status_code`, `url.full` (Stable semconv)
+- `service.peer.name` derived from Envoy cluster name (Development semconv; successor to the deprecated `peer.service`)
+- mTLS peer identity (SPIFFE SVID) via `tls.*` attributes (Development semconv; see `resources/standards.md §3`)
 - `x-request-id` correlation ID (Istio-specific; carries across internal calls)
 
 Spans are created without SDK changes. The caveat is that without application-level header forwarding, each service starts a **new root span** rather than contributing to the existing trace. This is the context propagation problem addressed in Section 5.
@@ -266,7 +266,7 @@ For Collector topology options see `resources/transport/collector-topology.md`.
 
 When Istio PeerAuthentication is set to `STRICT` mode, all pod-to-pod traffic is encrypted with mTLS. The mesh then exposes security context as observable attributes:
 
-- **TLS version**: `tls.protocol_version` (Development tier per semconv 1.27.0; see `resources/standards.md §Semconv Stability Tiers`)
+- **TLS version**: `tls.protocol.version` (Development tier per semconv 1.43.0; see `resources/standards.md §Semconv Stability Tiers`)
 - **Cipher suite**: `tls.cipher` (Development tier)
 - **Certificate expiry**: alertable via PrometheusRule on `citadel_server_root_cert_expiry_timestamp`
 - **SPIFFE peer identity**: available in Envoy access log via `%DOWNSTREAM_PEER_SUBJECT%`; identifies source workload for zero-trust audit

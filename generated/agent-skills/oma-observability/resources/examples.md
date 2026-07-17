@@ -141,7 +141,7 @@ Exemplar retrieved: `trace_id = 9a3f1c8e2b7d4e50a1c3f9d2b8e7a4c0`.
 | Server | Errors on 3 of 6 pods, all on `k8s.node.name = ip-10-0-2-11.ec2.internal`. |
 | Service | Earliest ERROR span: `service.name = payments-checkout`, `service.version = v2.4.1`. |
 | Layer | `span.kind = CLIENT`, `db.system = redis`; L7 DB call, not a network-layer issue. |
-| Code | `exception.type = TimeoutException`, `exception.message = "Redis pool exhausted after 5000ms"`, `code.function = processPayment`, `code.lineno = 287`. |
+| Code | `exception.type = TimeoutException`, `exception.message = "Redis pool exhausted after 5000ms"`, `code.function.name = processPayment`, `code.line.number = 287`. |
 
 **Step 3; Cross-signal validation (`incident-forensics.md §4`):**
 

@@ -1,6 +1,6 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 tools:
   - "@opentelemetry/sdk-trace-web: 1.x (stable); browser instrumentations: some experimental"
 notes:
@@ -64,7 +64,7 @@ SLI recommendation: use **p75** for each CWV metric as the SLI value (aligns wit
 
 ## 3. Browser OpenTelemetry SDK
 
-The OTel JavaScript SDK provides browser instrumentation for traces and metrics. Logs from the browser are currently in progress (no stable browser LogRecord exporter as of semconv 1.27.0).
+The OTel JavaScript SDK provides browser instrumentation for traces and metrics. Logs from the browser are currently in progress (no stable browser LogRecord exporter as of 2026-Q2).
 
 **Stability note:** `@opentelemetry/sdk-trace-web` and `@opentelemetry/sdk-metrics` are stable. Some browser instrumentation packages (e.g., Core Web Vitals plugin for OTel) remain experimental. Do not build production SLOs on experimental instrumentations without a fallback to `web-vitals` directly.
 

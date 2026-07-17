@@ -1,13 +1,13 @@
 ---
 otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.27.0 (2024-11)"
+otel_semconv: "1.43.0 (2026-07)"
 notes:
-  - "Profiles signal (OTEP 0239) is alpha; semconv in development"
+  - "Profiles signal (OTEP 0239) is Development-status; semconv in development"
 ---
 
 # Profiles Signal
 
-> **EXPERIMENTAL; OTEP 0239 alpha (as of 2026-Q2)**
+> **EXPERIMENTAL; OTEP 0239 Development (as of 2026-Q2)**
 > Continuous profiling tooling (Parca, Pyroscope) is production-ready.
 > The OpenTelemetry profiling data model and OTLP signal are in alpha / active development; semantic conventions and wire format may change without backward compatibility.
 > Do NOT define SLOs against OTel-native profiling attributes. Treat any `profile.*` OTel semconv as experimental tier.

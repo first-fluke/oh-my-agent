@@ -5,6 +5,7 @@
 - [ ] `-n` is ≤ 5; wall time scales with count.
 - [ ] `--out` is inside the project, or you've set `--allow-external-out`.
 - [ ] Estimated cost is acceptable. Run `--dry-run` first for unfamiliar combinations.
+- [ ] Running non-interactively (agent/CI) with cost ≥ threshold? Confirm with the user first, then pass `-y` — the CLI cannot prompt without a TTY and exits 1.
 - [ ] Secrets are not in the prompt, or `--no-prompt-in-manifest` is set.
 - [ ] For `--vendor all`, every enabled vendor is healthy (strict mode exits 5 otherwise).
 

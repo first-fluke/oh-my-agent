@@ -13,6 +13,7 @@ Run the **Clarification Protocol** in `SKILL.md` before shelling out.
    - `size` is `auto` or any `WxH` passing `size-guard.ts` (each edge ∈ [16, 3840], multiples of 16, aspect ratio 1:3..3:1).
    - `quality` ∈ {`low`, `medium`, `high`, `auto`}
    - `vendor` ∈ {`auto`, `codex`, `pollinations`, `antigravity`, `all`} or a concrete registered name.
+   - `model` (optional): vendor-specific override passed through as-is; applies to every vendor in the run set. `antigravity` ignores it.
    - `reference` (if any): each path exists, is a regular file ≤ 5MB, magic-byte-matches PNG/JPEG/GIF/WebP, ≤ 10 total, and duplicate paths are rejected with exit 4.
 4. If invalid: exit code 4 and a message identifying the offending field.
 
@@ -21,7 +22,9 @@ Run the **Clarification Protocol** in `SKILL.md` before shelling out.
 When `--reference <path...>` is supplied:
 
 1. Validate every path via `reference-guard.ts`. On failure → exit 4.
-2. Reject the request if the selected vendor(s) do not support references (currently only `codex` and `antigravity`). Pollinations returns exit 4 with a hint to switch vendor.
+2. Vendor support check (only `codex` and `antigravity` support references):
+   - Explicit `--vendor <name>` / `--vendor all`: reject with exit 4 and a hint to switch vendor if any requested vendor lacks reference support.
+   - `--vendor auto`: silently drop reference-unsupported vendors from the healthy set. If no reference-supporting vendor remains: exit 4 when none is registered at all, exit 5 (with per-vendor setup hints) when some are registered but unhealthy.
 3. Pass validated absolute paths through `GenerateInput.referenceImages`:
    - `codex` provider appends `-i <path>` per reference to `codex exec` and adds a guidance sentence to the instruction text.
    - `antigravity` provider copies each reference into a per-run temp dir, exposes it to agy via `--add-dir <tmpdir>`, and lists the resulting paths inline in the agy prompt.
@@ -61,8 +64,8 @@ Agents should prefer user-supplied explicit paths (e.g., `~/Downloads/otter.jpeg
 1. Estimate cost as `sum(per_image_usd[vendor][model][quality] × count)` over all selected vendors.
 2. If `--dry-run`: print the plan (vendors, counts, outDir, cost) and exit 0.
 3. If estimate ≥ `cost_guardrail.estimate_threshold_usd` and not `--yes`/`OMA_IMAGE_YES=1`:
-   - Prompt user on stderr: `Estimated cost $X.XX. Proceed? (y/N)`
-   - Decline → exit 1.
+   - Interactive terminal (stdin is a TTY): prompt user on stderr: `Estimated cost $X.XX. Proceed? (y/N)`. Decline → exit 1.
+   - Non-interactive (no TTY — agents, CI): no prompt is possible; exit 1 with a message naming `--yes`/`OMA_IMAGE_YES=1`. **Calling agents**: confirm the cost with the user in-conversation (`--dry-run` prints the estimate), then re-run with `-y`. Never pass `-y` preemptively without user confirmation.
 
 ## Step 3: Cancellation Setup
 
@@ -78,7 +81,7 @@ Agents should prefer user-supplied explicit paths (e.g., `~/Downloads/otter.jpeg
 
 ## Step 5: Write Artifacts
 
-1. Save each image to `outDir/<vendor>-<model>[-<n>].png`.
+1. Save each image to `outDir/<vendor>[-<model>]-<runShortid>[-<n>].<ext>` — the model segment is omitted when the vendor has no caller-visible model (`antigravity`), and `<ext>` reflects the magic-byte-sniffed format (`png`/`jpg`/`webp`/`gif`), not a fixed `.png`.
 2. Build `manifest.json` with schema version 1 (see `vendor-matrix.md` for fields).
 3. If `--no-prompt-in-manifest` is set, replace `prompt` with `prompt_sha256`.
 

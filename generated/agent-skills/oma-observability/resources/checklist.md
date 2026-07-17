@@ -34,7 +34,7 @@
 
 - [ ] Confirm matrix coverage gaps are identified and acknowledged; every uncovered cell in `matrix.md` has an explicit N/A rationale or a remediation plan (P1)
 - [ ] Set cardinality budget per service; alert at 80% of budget (default 5 000 series/service); configure `count({job="<service>"}) > 4000` alert (P1)
-- [ ] Allow-list metric attributes explicitly in the OTel SDK View; use `attribute_keys` to prevent unbounded label sets; never let raw `http.url`, `user.id`, `request.id`, `trace.id`, or `error.message` appear as metric labels (P0)
+- [ ] Allow-list metric attributes explicitly in the OTel SDK View; use `attribute_keys` to prevent unbounded label sets; never let raw `url.full`, `user.id`, `request.id`, `trace.id`, or `error.message` appear as metric labels (P0)
 - [ ] Normalize high-cardinality route labels; apply `transform` processor to replace numeric path segments with `/_` (e.g., `/users/42` → `/users/_`) (P1)
 - [ ] Define per-tenant sampling policy when multi-tenant; enterprise tenants may require 100% error retention + dedicated pipeline; free-tier tenants use probabilistic baseline (P1)
 - [ ] Configure four-tier tenant isolation strategy; select Tier (soft label / routing / dedicated-collector / dedicated-backend) per tenant compliance obligation and document the decision (P1)
@@ -42,7 +42,7 @@
 - [ ] Verify `tenant.region` drives data residency routing; EU and KR tenants must have telemetry routed to compliant regional Collector pipelines before reaching a cross-region backend (P0)
 - [ ] Configure two-tier Collector topology for Kubernetes; DaemonSet agent (hostmetrics, filelog, kubeletstats, k8sattributes) forwarding to Deployment gateway (batch, tail_sampling, exporters) (P1)
 - [ ] Deploy loadbalancing exporter upstream of tail_sampling processor; consistent hash by `trace_id` ensures complete traces arrive at the same gateway replica (P0)
-- [ ] Confirm `exception.type`, `exception.message`, `exception.stacktrace`, `code.function`, `code.filepath`, `code.lineno` are populated on every ERROR span; use `span.recordException(e)` for atomicity (P0)
+- [ ] Confirm `exception.type`, `exception.message`, `exception.stacktrace`, `code.function.name`, `code.file.path`, `code.line.number` are populated on every ERROR span or on exception LogRecords joinable by `trace_id`/`span_id`; `span.recordException(e)` remains valid for atomicity, but the span-event form is deprecated since semconv 1.40 — set `OTEL_SEMCONV_EXCEPTION_SIGNAL_OPT_IN=logs/dup` during migration (P0)
 - [ ] Confirm IP address logging is masked or hashed before long-term retention; IP addresses are personal data under GDPR Art. 4(1) and PIPA; apply prefix truncation or HMAC+salt at pipeline ingress (P0)
 
 ---

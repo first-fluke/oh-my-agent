@@ -1,5 +1,5 @@
 ---
-otel_semconv: "1.27.0 (2024-11); security.* namespace: Development/proposed"
+otel_semconv: "1.43.0 (2026-07); security.* namespace: Development/proposed"
 tools:
   - "Falco: v0.38+ (CNCF Graduated); rekor: v1.x (sigstore)"
 ---

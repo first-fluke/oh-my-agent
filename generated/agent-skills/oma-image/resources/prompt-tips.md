@@ -1,6 +1,6 @@
 # Prompt Tips
 
-Good prompts are specific about scene, subject, lighting, and style. Both `gpt-image-2` (codex) and `gemini-2.5-flash-image` (antigravity / nano-banana) respond well to the same structural cues.
+Good prompts are specific about scene, subject, lighting, and style. `gpt-image-2` (codex), the Gemini-family "nano-banana" models (antigravity, chosen internally by agy), and flux/zimage (pollinations) all respond well to the same structural cues.
 
 ## Structure
 
@@ -22,7 +22,7 @@ Example: `minimalist product photography: single white ceramic coffee cup on dar
 
 - Avoid vague prompts like "a nice picture"; both models produce generic output.
 - Don't stack contradicting styles ("photorealistic cel-shaded 3D").
-- Skip negative prompts; neither `gpt-image-2` nor `gemini-2.5-flash-image` treats them as first-class.
+- Skip negative prompts; none of the routed models treats them as first-class.
 
 ## Examples
 
@@ -39,11 +39,11 @@ Example: `minimalist product photography: single white ceramic coffee cup on dar
 ## Vendor Nuances
 
 - **Codex (`gpt-image-2`)**: prefers slightly longer, descriptive prompts. Quality flag `high` noticeably sharpens fine detail but doubles generation time.
-- **Antigravity (`gemini-2.5-flash-image` aka nano-banana)**: robust on CJK-composed scenes ("hanok", "cherry blossom"); slightly stronger on illustrated/painterly styles. Driven via the `agy` CLI's agentic loop — output is JPEG by default even if `.png` is requested (the provider sniffs magic bytes and renames the extension accordingly).
+- **Antigravity (Gemini-family "nano-banana" models, chosen internally by agy)**: robust on CJK-composed scenes ("hanok", "cherry blossom"); slightly stronger on illustrated/painterly styles. Driven via the `agy` CLI's agentic loop — output is JPEG by default even if `.png` is requested (the provider sniffs magic bytes and renames the extension accordingly).
 
 ## Comparing Output
 
-`--vendor all` generates the same prompt on both providers and writes both PNGs into a `…-compare/` folder with a single `manifest.json`. Use it for A/B picking when starting a new visual style.
+`--vendor all` generates the same prompt on every registered provider and writes each result (PNG or JPEG, per provider) into a `…-compare/` folder with a single `manifest.json`. Use it for A/B picking when starting a new visual style.
 
 ## External Prompt Libraries (agent reference only)
 

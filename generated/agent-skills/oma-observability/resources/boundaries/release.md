@@ -186,7 +186,7 @@ application layer while Flagger controls infrastructure-level traffic weight.
 
 ## 6. Observing Feature Flag Evaluations
 
-OTel semantic conventions: `feature_flag.*` (Experimental as of semconv 1.27.0).
+OTel semantic conventions: `feature_flag.*` (Release Candidate as of semconv 1.43.0).
 
 Key span attributes emitted on each flag evaluation:
 

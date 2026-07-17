@@ -112,7 +112,7 @@ Project-specific rules that encode visual discipline. Pull from
 
 ### 8. Responsive Behavior
 
-- **Breakpoints** with pixel values (mobile 320-639, md 768+, lg 1024+, xl 1280+)
+- **Breakpoints** with pixel values (mobile 320-767, md 768+, lg 1024+, xl 1280+)
 - **Touch targets**: minimum 44x44pt on mobile
 - **Collapsing strategy**: what stacks, what hides, what resizes, what
   swaps (e.g., horizontal nav → hamburger, grid → single column)
