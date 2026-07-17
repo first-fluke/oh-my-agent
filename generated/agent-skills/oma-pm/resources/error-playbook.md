@@ -43,7 +43,7 @@ When you encounter a failure during planning, follow these recovery steps.
 
 1. Identify the cycle
 2. Break it by defining an API contract or shared interface first
-3. Create a priority-0 task: "Define API contracts" (no dependencies)
+3. Create a tier-1 task: "Define API contracts" (no dependencies), and shift the formerly-circular tasks to tier 2+
 4. Both tasks then depend on the contract, not on each other
 
 ---

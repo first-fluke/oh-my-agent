@@ -8,7 +8,13 @@
 ```json
 {
   "project_name": "TODO App with JWT Auth",
-  "tech_stack": "Resolve from each domain skill's resources/tech-stack.md at planning time",
+  "tech_stack": {
+    "frontend": "resolve from oma-frontend/resources/tech-stack.md at planning time",
+    "backend": "resolve from oma-backend/variants/{node,python,rust}/tech-stack.md at planning time",
+    "mobile": "",
+    "database": "resolve from oma-db guidance at planning time",
+    "infrastructure": ""
+  },
   "tasks": [
     {
       "id": "task-1",
@@ -31,6 +37,7 @@
       "title": "TODO CRUD API",
       "priority": 1,
       "dependencies": [],
+      "estimated_complexity": "medium",
       "scope": ["src/api/todos/"],
       "acceptance_criteria": [
         "CRUD endpoints for /api/todos",
@@ -44,6 +51,7 @@
       "title": "Login + Register UI",
       "priority": 1,
       "dependencies": [],
+      "estimated_complexity": "medium",
       "scope": ["src/web/auth/"],
       "acceptance_criteria": [
         "Login and register forms with validation",
@@ -57,6 +65,7 @@
       "title": "TODO List UI",
       "priority": 2,
       "dependencies": ["task-2", "task-3"],
+      "estimated_complexity": "medium",
       "scope": ["src/web/todos/"],
       "acceptance_criteria": [
         "Add, toggle, delete todos",
@@ -70,6 +79,7 @@
       "title": "Security & Performance Review",
       "priority": 3,
       "dependencies": ["task-1", "task-2", "task-3", "task-4"],
+      "estimated_complexity": "medium",
       "scope": [],
       "acceptance_criteria": [
         "OWASP Top 10 audit passed",
@@ -96,6 +106,7 @@
       "title": "Comments API",
       "priority": 1,
       "dependencies": [],
+      "estimated_complexity": "medium",
       "scope": ["src/api/comments/", "migrations/"],
       "acceptance_criteria": [
         "POST /api/posts/{id}/comments (auth required)",
@@ -110,6 +121,7 @@
       "title": "Comment Section UI",
       "priority": 2,
       "dependencies": ["task-1"],
+      "estimated_complexity": "medium",
       "scope": ["src/web/comments/"],
       "acceptance_criteria": [
         "Comment list with pagination (load more)",
