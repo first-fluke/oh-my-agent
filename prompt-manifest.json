@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.20.0",
-  "releaseDate": "2026-07-17T06:51:30.520Z",
+  "releaseDate": "2026-07-17T06:52:26.700Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1616,13 +1616,13 @@
     },
     {
       "path": ".agents/skills/oma-recap/SKILL.md",
-      "sha256": "a0a909047f61bdb424bd6af0fa82be6402ab6316d69c3ece44bb40d703ec4b4d",
-      "size": 9053
+      "sha256": "fb4fa9756d458caac11b1bf56f605c2b3b25da3dad3660bc96c24a8099c77325",
+      "size": 9533
     },
     {
       "path": ".agents/skills/oma-recap/resources/output-formats.md",
-      "sha256": "df1de2e82ad9c163a9777430049b3c22015bc2566054029b45c2edd286919849",
-      "size": 2332
+      "sha256": "c159b99fc11d58ac3a385a130143c14033c53957ae6f7fc2759ae1b81d028c23",
+      "size": 2347
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
@@ -2101,8 +2101,8 @@
     },
     {
       "path": ".agents/workflows/recap.md",
-      "sha256": "faa6dc1737054bd11ab20fdc7eef500fb02e9122dbd763217d96bbd98418da6d",
-      "size": 5228
+      "sha256": "92761d14e379f3f454713bc22a805dc69c6d61071f5a2201eec74e20aea4bc44",
+      "size": 5430
     },
     {
       "path": ".agents/workflows/review.md",
