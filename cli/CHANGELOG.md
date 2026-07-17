@@ -1,5 +1,20 @@
 # Changelog
 
+## [10.21.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.21.0...cli-v10.21.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* **brainstorm:** drop phantom vote check, sync skill with workflow ([e8d0be8](https://github.com/first-fluke/oh-my-agent/commit/e8d0be895a078ce2e3d4838c0fe15d1804024b66))
+* **pm:** align task schema and planning references ([8ebf956](https://github.com/first-fluke/oh-my-agent/commit/8ebf956297d2727691a0480d97fc0218e107229b))
+* **skills:** correct deepsec cost formula and unresolvable dispatch ids ([48ac9f2](https://github.com/first-fluke/oh-my-agent/commit/48ac9f2c7702a80589359c21312bc0b3802cd024))
+
+
+### Documentation
+
+* require typecheck before commit in source-repo rules ([2446bdf](https://github.com/first-fluke/oh-my-agent/commit/2446bdf3b847d6c974037e2070e52c42603817be))
+* **skill-creator:** adopt skills lint as primary validation path ([17725b0](https://github.com/first-fluke/oh-my-agent/commit/17725b0ee251012caeb6910358e0f91eaa65e744))
+
 ## [10.21.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.20.2...cli-v10.21.0) (2026-07-17)
 
 
