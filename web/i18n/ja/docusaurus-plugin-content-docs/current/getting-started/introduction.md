@@ -44,7 +44,7 @@ oh-my-agentは専門化によってこれを解決します：
 | エージェント | 役割 | 技術スタックとリソース |
 |-------|------|----------------------|
 | **oma-frontend** | UI/UXスペシャリスト | React、Next.js、TypeScript、TailwindCSS v4、shadcn/ui、FSD-liteアーキテクチャ。ライブラリ：luxon（日付）、ahooks（フック）、es-toolkit（ユーティリティ）、Jotai（クライアント状態）、TanStack Query（サーバー状態）、@tanstack/react-form + Zod（フォーム）、better-auth（認証）、nuqs（URL状態）。リソース：`execution-protocol.md`、`tech-stack.md`、`tailwind-rules.md`、`component-template.tsx`、`snippets.md`、`error-playbook.md`、`checklist.md`、`examples/`。 |
-| **oma-backend** | API・サーバーサイドスペシャリスト | クリーンアーキテクチャ（Router-Service-Repository-Models）。スタック非依存で、プロジェクトマニフェストからPython/Node.js/Rust/Go/Java/Elixir/Ruby/.NETを検出。認証にJWT + bcrypt。リソース：`execution-protocol.md`、`orm-reference.md`、`examples.md`、`checklist.md`、`error-playbook.md`。言語固有の`stack/`リファレンス生成に`/stack-set`をサポート。 |
+| **oma-backend** | API・サーバーサイドスペシャリスト | クリーンアーキテクチャ（Router-Service-Repository-Models）。スタック非依存で、プロジェクトマニフェストからPython/Node.js/Rust/Go/Java/Elixir/Ruby/.NETを検出。認証にJWT + Argon2id。リソース：`execution-protocol.md`、`orm-reference.md`、`examples.md`、`checklist.md`、`error-playbook.md`。言語固有の`stack/`リファレンス生成に`/stack-set`をサポート。 |
 | **oma-mobile** | クロスプラットフォームモバイル | Flutter、Dart、Riverpod/Bloc（状態管理）、Dio with interceptors（API呼び出し）、GoRouter（ナビゲーション）。クリーンアーキテクチャ：domain-data-presentation。Material Design 3（Android）+ iOS HIG。60fpsターゲット。リソース：`execution-protocol.md`、`tech-stack.md`、`snippets.md`、`screen-template.dart`、`checklist.md`、`error-playbook.md`。 |
 | **oma-db** | データベースアーキテクチャ | SQL、NoSQL、ベクトルデータベースのモデリング。スキーマ設計（デフォルト3NF）、正規化、インデックス、トランザクション、キャパシティプランニング、バックアップ戦略。ISO 27001/27002/22301対応設計をサポート。リソース：`execution-protocol.md`、`document-templates.md`、`anti-patterns.md`、`vector-db.md`、`iso-controls.md`、`checklist.md`、`error-playbook.md`。 |
 

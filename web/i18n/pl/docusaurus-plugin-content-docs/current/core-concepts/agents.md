@@ -162,7 +162,7 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 - Czysta architektura: żadnej logiki biznesowej w handlerach route
 - Wszystkie dane wejściowe walidowane biblioteką walidacji projektu
 - Wyłącznie zapytania parametryzowane (nigdy interpolacja stringów w SQL)
-- JWT + bcrypt do uwierzytelniania; rate limit na endpointach auth
+- JWT + Argon2id do uwierzytelniania; rate limit na endpointach auth
 - Async gdzie obsługiwane; adnotacje typów na wszystkich sygnaturach
 - Niestandardowe wyjątki przez scentralizowany moduł błędów
 - Jawna strategia ładowania ORM, granice transakcji, bezpieczny cykl życia

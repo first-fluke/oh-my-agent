@@ -44,7 +44,7 @@ oh-my-agent 通过专业化解决这些问题：
 | 智能体 | 角色 | 技术栈与资源 |
 |-------|------|------------|
 | **oma-frontend** | UI/UX 专家 | React、Next.js、TypeScript、TailwindCSS v4、shadcn/ui、FSD-lite 架构。库：luxon（日期）、ahooks（hooks）、es-toolkit（工具）、Jotai（客户端状态）、TanStack Query（服务端状态）、@tanstack/react-form + Zod（表单）、better-auth（认证）、nuqs（URL 状态）。资源：`execution-protocol.md`、`tech-stack.md`、`tailwind-rules.md`、`component-template.tsx`、`snippets.md`、`error-playbook.md`、`checklist.md`、`examples/`。 |
-| **oma-backend** | API 与服务端专家 | 整洁架构（Router-Service-Repository-Models）。技术栈无关：从项目清单文件检测 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET。JWT + bcrypt 用于认证。资源：`execution-protocol.md`、`orm-reference.md`、`examples.md`、`checklist.md`、`error-playbook.md`。支持 `/stack-set` 生成特定语言的 `stack/` 参考资源。 |
+| **oma-backend** | API 与服务端专家 | 整洁架构（Router-Service-Repository-Models）。技术栈无关：从项目清单文件检测 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET。JWT + Argon2id 用于认证。资源：`execution-protocol.md`、`orm-reference.md`、`examples.md`、`checklist.md`、`error-playbook.md`。支持 `/stack-set` 生成特定语言的 `stack/` 参考资源。 |
 | **oma-mobile** | 跨平台移动端 | Flutter、Dart、Riverpod/Bloc 状态管理、Dio 带拦截器的 API 调用、GoRouter 导航。整洁架构：domain-data-presentation。Material Design 3（Android）+ iOS HIG。60fps 目标。资源：`execution-protocol.md`、`tech-stack.md`、`snippets.md`、`screen-template.dart`、`checklist.md`、`error-playbook.md`。 |
 | **oma-db** | 数据库架构 | SQL、NoSQL 和向量数据库建模。模式设计（默认 3NF）、规范化、索引、事务、容量规划、备份策略。支持 ISO 27001/27002/22301 感知设计。资源：`execution-protocol.md`、`document-templates.md`、`anti-patterns.md`、`vector-db.md`、`iso-controls.md`、`checklist.md`、`error-playbook.md`。 |
 

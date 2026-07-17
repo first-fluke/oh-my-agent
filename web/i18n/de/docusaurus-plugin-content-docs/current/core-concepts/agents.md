@@ -162,7 +162,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 - Clean Architecture: keine Gesch채ftslogik in Route-Handlern
 - Alle Eingaben mit der Validierungsbibliothek des Projekts validiert
 - Nur parametrisierte Abfragen (niemals String-Interpolation in SQL)
-- JWT + bcrypt f체r Authentifizierung; Rate-Limiting f체r Auth-Endpunkte
+- JWT + Argon2id f체r Authentifizierung; Rate-Limiting f체r Auth-Endpunkte
 - Async wo unterst체tzt; Typannotationen auf allen Signaturen
 - Benutzerdefinierte Exceptions 체ber zentrales Fehlermodul
 - Explizite ORM-Ladestrategie, Transaktionsgrenzen, sicherer Lebenszyklus

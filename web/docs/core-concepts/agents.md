@@ -134,10 +134,10 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 |---------|---------|
 | Dates | luxon |
 | Styling | TailwindCSS v4 + shadcn/ui |
-| Hooks | ahooks |
+| Hooks | ahooks or @mantine/hooks |
 | Utils | es-toolkit |
 | URL State | nuqs |
-| Server State | TanStack Query |
+| Server State | TanStack Query (orval-generated hooks when an OpenAPI spec exists) |
 | Client State | Jotai (minimize use) |
 | Forms | @tanstack/react-form + Zod |
 | Auth | better-auth |
@@ -179,7 +179,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 - Clean architecture: no business logic in route handlers
 - All inputs validated with the project's validation library
 - Parameterized queries only (never string interpolation in SQL)
-- JWT + bcrypt for auth; rate limit auth endpoints
+- JWT + Argon2id for auth (bcrypt acceptable for legacy compatibility); rate limit auth endpoints
 - Async where supported; type annotations on all signatures
 - Custom exceptions via centralized error module
 - Explicit ORM loading strategy, transaction boundaries, safe lifecycle

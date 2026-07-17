@@ -162,7 +162,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 - Kiến trúc sạch: không có logic nghiệp vụ trong route handler
 - Tất cả đầu vào được xác thực bằng thư viện xác thực của dự án
 - Chỉ dùng truy vấn tham số hóa (không bao giờ nội suy chuỗi trong SQL)
-- JWT + bcrypt cho xác thực; giới hạn tốc độ endpoint xác thực
+- JWT + Argon2id cho xác thực; giới hạn tốc độ endpoint xác thực
 - Async khi được hỗ trợ; chú thích kiểu trên tất cả signature
 - Exception tùy chỉnh qua module lỗi tập trung
 - Chiến lược tải ORM tường minh, ranh giới transaction, vòng đời an toàn
