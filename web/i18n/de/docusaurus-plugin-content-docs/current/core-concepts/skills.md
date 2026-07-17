@@ -84,18 +84,15 @@ Dieses bedarfsgesteuerte Laden wird durch den Context-Loading-Leitfaden (`.agent
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         <- Vertieftes Referenzmaterial
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         <- Vertieftes Referenzmaterial
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -274,7 +271,7 @@ Der Context-Loading-Leitfaden bietet detaillierte Aufgabentyp-zu-Ressource-Zuord
 | Aufgabentyp | Erforderliche Ressourcen |
 |-----------|-------------------|
 | Design-System-Erstellung | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Landingpage-Design | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Landingpage-Design | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Design-Audit | checklist.md + anti-patterns.md |
 | Design-Token-Export | design-tokens.md |
 | 3D- / Shader-Effekte | reference/shader-and-3d.md + reference/motion-design.md |

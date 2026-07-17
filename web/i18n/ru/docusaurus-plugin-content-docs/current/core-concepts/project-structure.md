@@ -33,7 +33,7 @@ your-project/
 │   │   ├── oma-backend/              <- SKILL.md + resources/ + stack/ (от /stack-set)
 │   │   ├── oma-mobile/               <- SKILL.md + resources/
 │   │   ├── oma-db/                   <- SKILL.md + resources/
-│   │   ├── oma-design/               <- SKILL.md + resources/ + reference/ + examples/
+│   │   ├── oma-design/               <- SKILL.md + resources/ + reference/
 │   │   ├── oma-pm/                   <- SKILL.md + resources/
 │   │   ├── oma-qa/                   <- SKILL.md + resources/
 │   │   ├── oma-debug/                <- SKILL.md + resources/

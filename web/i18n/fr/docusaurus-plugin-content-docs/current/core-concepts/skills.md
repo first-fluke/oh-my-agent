@@ -84,18 +84,15 @@ Ce chargement à la demande est régi par le guide de chargement du contexte (`.
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         ← Documentation de référence approfondie
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         ← Documentation de référence approfondie
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -274,7 +271,7 @@ Le guide de chargement du contexte fournit des mappings détaillés type-de-tâc
 | Type de tâche | Ressources requises |
 |-----------|-------------------|
 | Création de design system | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Design de page d'atterrissage | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Design de page d'atterrissage | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Audit de design | checklist.md + anti-patterns.md |
 | Export de tokens de design | design-tokens.md |
 | Effets 3D / shaders | reference/shader-and-3d.md + reference/motion-design.md |

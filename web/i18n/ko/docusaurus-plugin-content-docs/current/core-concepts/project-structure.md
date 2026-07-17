@@ -108,18 +108,15 @@ your-project/
 │   │   │   │   ├── prompt-enhancement.md
 │   │   │   │   ├── stitch-integration.md
 │   │   │   │   └── error-playbook.md
-│   │   │   ├── reference/
-│   │   │   │   ├── typography.md
-│   │   │   │   ├── color-and-contrast.md
-│   │   │   │   ├── spatial-design.md
-│   │   │   │   ├── motion-design.md
-│   │   │   │   ├── responsive-design.md
-│   │   │   │   ├── component-patterns.md
-│   │   │   │   ├── accessibility.md
-│   │   │   │   └── shader-and-3d.md
-│   │   │   └── examples/
-│   │   │       ├── design-context-example.md
-│   │   │       └── landing-page-prompt.md
+│   │   │   └── reference/
+│   │   │       ├── typography.md
+│   │   │       ├── color-and-contrast.md
+│   │   │       ├── spatial-design.md
+│   │   │       ├── motion-design.md
+│   │   │       ├── responsive-design.md
+│   │   │       ├── component-patterns.md
+│   │   │       ├── accessibility.md
+│   │   │       └── shader-and-3d.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -297,7 +294,7 @@ your-project/
 **`oma-{agent}/`**: 에이전트별 스킬 디렉토리. 각각 다음을 포함합니다.
 - `SKILL.md` (~800바이트): 레이어 1입니다. 항상 로드되며 아이덴티티, 라우팅, 핵심 규칙을 담습니다.
 - `resources/`: 레이어 2입니다. 온디맨드로 로드되며 실행 프로토콜, 예제, 체크리스트, 오류 플레이북, 기술 스택, 스니펫, 템플릿을 담습니다.
-- 일부 에이전트는 추가 하위 디렉토리를 가집니다: `stack/` (oma-backend, /stack-set으로 생성), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
+- 일부 에이전트는 추가 하위 디렉토리를 가집니다: `stack/` (oma-backend, /stack-set으로 생성), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 

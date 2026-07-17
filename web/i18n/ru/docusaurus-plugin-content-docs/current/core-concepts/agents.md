@@ -243,7 +243,7 @@ description: Полный справочник по всем 21 агентам o
 - Responsive-first (мобильные по умолчанию)
 - Представить 2-3 направления, получить подтверждение
 
-**Ресурсы:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, плюс директория `reference/` (типографика, цвет и контраст, пространственный дизайн, анимация, адаптивный дизайн, паттерны компонентов, доступность, шейдеры и 3D) и `examples/` (design-context-example, landing-page-prompt).
+**Ресурсы:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, плюс директория `reference/` (типографика, цвет и контраст, пространственный дизайн, анимация, адаптивный дизайн, паттерны компонентов, доступность, шейдеры и 3D).
 
 ---
 

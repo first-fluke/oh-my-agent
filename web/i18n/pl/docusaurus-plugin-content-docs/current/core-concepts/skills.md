@@ -84,18 +84,15 @@ To ładowanie na żądanie jest regulowane przez przewodnik ładowania kontekstu
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         ← Głęboki materiał referencyjny
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         ← Głęboki materiał referencyjny
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -274,7 +271,7 @@ Przewodnik ładowania kontekstu dostarcza szczegółowe mapowania typ-zadania-na
 | Typ zadania | Wymagane zasoby |
 |-----------|-------------------|
 | Tworzenie systemu projektowego | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Projekt strony landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Projekt strony landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Audyt projektowy | checklist.md + anti-patterns.md |
 | Eksport tokenów projektowych | design-tokens.md |
 | Efekty 3D / shader | reference/shader-and-3d.md + reference/motion-design.md |

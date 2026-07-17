@@ -236,7 +236,7 @@ La guía de carga de contexto proporciona mapeos detallados tipo-tarea-a-recurso
 | Tipo de Tarea | Recursos Requeridos |
 |---------------|---------------------|
 | Creación de sistema de diseño | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Diseño de landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Diseño de landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Auditoría de diseño | checklist.md + anti-patterns.md |
 | Exportación de tokens de diseño | design-tokens.md |
 | Efectos 3D / shader | reference/shader-and-3d.md + reference/motion-design.md |

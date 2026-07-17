@@ -84,18 +84,15 @@ Deze on-demand loading wordt gestuurd door de contextladingsgids (`.agents/skill
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         ← Diepgaand referentiemateriaal
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         ← Diepgaand referentiemateriaal
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -274,7 +271,7 @@ De contextladingsgids biedt gedetailleerde taaktype-naar-resource mappings. Hier
 | Taaktype | Vereiste Bronnen |
 |----------|-----------------|
 | Designsysteemcreatie | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Landingspagina-ontwerp | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Landingspagina-ontwerp | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Designaudit | checklist.md + anti-patterns.md |
 | Design token-export | design-tokens.md |
 | 3D / shader-effecten | reference/shader-and-3d.md + reference/motion-design.md |

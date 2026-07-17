@@ -240,7 +240,7 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 - レスポンシブファースト（モバイルがデフォルト）
 - 2〜3の方向性を提示し、確認を得る
 
-**リソース：** `execution-protocol.md`、`anti-patterns.md`、`checklist.md`、`design-md-spec.md`、`design-tokens.md`、`prompt-enhancement.md`、`stitch-integration.md`、`error-playbook.md`、さらに`reference/`ディレクトリ（typography、color-and-contrast、spatial-design、motion-design、responsive-design、component-patterns、accessibility、shader-and-3d）と`examples/`（design-context-example、landing-page-prompt）。
+**リソース：** `execution-protocol.md`、`anti-patterns.md`、`checklist.md`、`design-md-spec.md`、`design-tokens.md`、`prompt-enhancement.md`、`stitch-integration.md`、`error-playbook.md`、さらに`reference/`ディレクトリ（typography、color-and-contrast、spatial-design、motion-design、responsive-design、component-patterns、accessibility、shader-and-3d）。
 
 ---
 

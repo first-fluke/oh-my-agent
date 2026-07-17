@@ -243,7 +243,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 - 반응형 우선 (모바일이 기본)
 - 2-3가지 방향 제시 후 확인 받기
 
-**리소스:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, 그리고 `reference/` 디렉토리(typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d)와 `examples/` (design-context-example, landing-page-prompt).
+**리소스:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, 그리고 `reference/` 디렉토리(typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d).
 
 ---
 

@@ -84,18 +84,15 @@ Este carregamento sob demanda é governado pelo guia de context-loading (`.agent
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         ← Material de referência aprofundado
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         ← Material de referência aprofundado
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -274,7 +271,7 @@ O guia de context-loading fornece mapeamentos detalhados tipo-tarefa-para-recurs
 | Tipo de Tarefa | Recursos Necessários |
 |---------------|---------------------|
 | Criação de design system | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Design de landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Design de landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Auditoria de design | checklist.md + anti-patterns.md |
 | Exportação de design tokens | design-tokens.md |
 | Efeitos 3D / shader | reference/shader-and-3d.md + reference/motion-design.md |

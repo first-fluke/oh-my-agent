@@ -107,18 +107,15 @@ your-project/
 │   │   │   │   ├── prompt-enhancement.md
 │   │   │   │   ├── stitch-integration.md
 │   │   │   │   └── error-playbook.md
-│   │   │   ├── reference/
-│   │   │   │   ├── typography.md
-│   │   │   │   ├── color-and-contrast.md
-│   │   │   │   ├── spatial-design.md
-│   │   │   │   ├── motion-design.md
-│   │   │   │   ├── responsive-design.md
-│   │   │   │   ├── component-patterns.md
-│   │   │   │   ├── accessibility.md
-│   │   │   │   └── shader-and-3d.md
-│   │   │   └── examples/
-│   │   │       ├── design-context-example.md
-│   │   │       └── landing-page-prompt.md
+│   │   │   └── reference/
+│   │   │       ├── typography.md
+│   │   │       ├── color-and-contrast.md
+│   │   │       ├── spatial-design.md
+│   │   │       ├── motion-design.md
+│   │   │       ├── responsive-design.md
+│   │   │       ├── component-patterns.md
+│   │   │       ├── accessibility.md
+│   │   │       └── shader-and-3d.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -297,7 +294,7 @@ Onde a expertise dos agentes reside. 22 diretórios no total: 21 skills de agent
 **`oma-{agent}/`** — Diretórios de skill por agente. Cada um contém:
 - `SKILL.md` (~800 bytes) — Camada 1: sempre carregado. Identidade, roteamento, regras principais.
 - `resources/` — Camada 2: sob demanda. Protocolos de execução, exemplos, checklists, playbooks de erros, stacks tecnológicos, snippets, templates.
-- Alguns agentes têm subdiretórios adicionais: `stack/` (oma-backend, gerado por /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
+- Alguns agentes têm subdiretórios adicionais: `stack/` (oma-backend, gerado por /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 

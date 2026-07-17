@@ -241,7 +241,7 @@ Los agentes en oh-my-agent son roles de ingeniería especializados. Cada agente 
 - Responsive-first (móvil como predeterminado)
 - Presentar 2-3 direcciones, obtener confirmación
 
-**Recursos:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, más directorio `reference/` (typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d) y `examples/` (design-context-example, landing-page-prompt).
+**Recursos:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, más directorio `reference/` (typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d).
 
 ---
 

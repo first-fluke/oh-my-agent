@@ -154,7 +154,7 @@ Hier lebt die Agentenexpertise. 22 Verzeichnisse insgesamt: 21 Agenten-Skills + 
 **`oma-{agent}/`** — Pro-Agent-Skill-Verzeichnisse. Jedes enthält:
 - `SKILL.md` (~800 Bytes) — Schicht 1: immer geladen. Identität, Routing, Kernregeln.
 - `resources/` — Schicht 2: bedarfsgesteuert. Ausführungsprotokolle, Beispiele, Checklisten, Fehler-Playbooks, Tech-Stacks, Snippets, Vorlagen.
-- Manche Agenten haben zusätzliche Unterverzeichnisse: `stack/` (oma-backend, generiert durch /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
+- Manche Agenten haben zusätzliche Unterverzeichnisse: `stack/` (oma-backend, generiert durch /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 

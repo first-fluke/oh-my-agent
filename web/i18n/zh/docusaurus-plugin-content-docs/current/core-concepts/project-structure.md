@@ -108,18 +108,15 @@ your-project/
 │   │   │   │   ├── prompt-enhancement.md
 │   │   │   │   ├── stitch-integration.md
 │   │   │   │   └── error-playbook.md
-│   │   │   ├── reference/
-│   │   │   │   ├── typography.md
-│   │   │   │   ├── color-and-contrast.md
-│   │   │   │   ├── spatial-design.md
-│   │   │   │   ├── motion-design.md
-│   │   │   │   ├── responsive-design.md
-│   │   │   │   ├── component-patterns.md
-│   │   │   │   ├── accessibility.md
-│   │   │   │   └── shader-and-3d.md
-│   │   │   └── examples/
-│   │   │       ├── design-context-example.md
-│   │   │       └── landing-page-prompt.md
+│   │   │   └── reference/
+│   │   │       ├── typography.md
+│   │   │       ├── color-and-contrast.md
+│   │   │       ├── spatial-design.md
+│   │   │       ├── motion-design.md
+│   │   │       ├── responsive-design.md
+│   │   │       ├── component-patterns.md
+│   │   │       ├── accessibility.md
+│   │   │       └── shader-and-3d.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -297,7 +294,7 @@ your-project/
 **`oma-{agent}/`**：每智能体技能目录。每个包含：
 - `SKILL.md`（约 800 字节）：第一层：始终加载。身份、路由、核心规则。
 - `resources/`：第二层：按需加载。执行协议、示例、检查清单、错误手册、技术栈、代码片段、模板。
-- 某些智能体有额外子目录：`stack/`（oma-backend，由 /stack-set 生成）、`reference/`（oma-design）、`examples/`（oma-design）、`scripts/`（oma-orchestrator）、`config/`（oma-orchestrator、oma-scm）。
+- 某些智能体有额外子目录：`stack/`（oma-backend，由 /stack-set 生成）、`reference/`（oma-design）、`scripts/`（oma-orchestrator）、`config/`（oma-orchestrator、oma-scm）。
 
 ### workflows/
 

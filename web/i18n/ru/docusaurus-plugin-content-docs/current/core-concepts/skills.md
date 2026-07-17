@@ -84,18 +84,15 @@ description: Frontend specialist for React, Next.js, TypeScript with FSD-lite ar
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         <- Глубокие справочные материалы
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         <- Глубокие справочные материалы
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -264,7 +261,7 @@ description: Frontend specialist for React, Next.js, TypeScript with FSD-lite ar
 | Тип задачи | Необходимые ресурсы |
 |-----------|-------------------|
 | Создание дизайн-системы | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Дизайн лендинга | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Дизайн лендинга | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Аудит дизайна | checklist.md + anti-patterns.md |
 | Экспорт дизайн-токенов | design-tokens.md |
 | 3D / шейдерные эффекты | reference/shader-and-3d.md + reference/motion-design.md |

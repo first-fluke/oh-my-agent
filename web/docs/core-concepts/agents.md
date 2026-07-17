@@ -260,7 +260,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 - Responsive-first (mobile as default)
 - Present 2-3 directions, get confirmation
 
-**Resources:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, plus `reference/` directory (typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d) and `examples/` (design-context-example, landing-page-prompt).
+**Resources:** `execution-protocol.md`, `anti-patterns.md`, `checklist.md`, `design-md-spec.md`, `design-tokens.md`, `prompt-enhancement.md`, `stitch-integration.md`, `error-playbook.md`, plus `reference/` directory (typography, color-and-contrast, spatial-design, motion-design, responsive-design, component-patterns, accessibility, shader-and-3d).
 
 ---
 

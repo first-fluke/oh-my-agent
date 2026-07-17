@@ -102,18 +102,15 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 │   ├── prompt-enhancement.md
 │   ├── stitch-integration.md
 │   └── error-playbook.md
-├── reference/                         ← Deep reference material
-│   ├── typography.md
-│   ├── color-and-contrast.md
-│   ├── spatial-design.md
-│   ├── motion-design.md
-│   ├── responsive-design.md
-│   ├── component-patterns.md
-│   ├── accessibility.md
-│   └── shader-and-3d.md
-└── examples/
-    ├── design-context-example.md
-    └── landing-page-prompt.md
+└── reference/                         ← Deep reference material
+    ├── typography.md
+    ├── color-and-contrast.md
+    ├── spatial-design.md
+    ├── motion-design.md
+    ├── responsive-design.md
+    ├── component-patterns.md
+    ├── accessibility.md
+    └── shader-and-3d.md
 ```
 
 ---
@@ -292,7 +289,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | Task Type | Required Resources |
 |-----------|-------------------|
 | Design system creation | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Landing page design | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md + examples/landing-page-prompt.md |
+| Landing page design | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
 | Design audit | checklist.md + anti-patterns.md |
 | Design token export | design-tokens.md |
 | 3D / shader effects | reference/shader-and-3d.md + reference/motion-design.md |

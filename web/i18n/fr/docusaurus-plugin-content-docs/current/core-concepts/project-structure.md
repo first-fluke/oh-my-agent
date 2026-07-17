@@ -108,18 +108,15 @@ your-project/
 │   │   │   │   ├── prompt-enhancement.md
 │   │   │   │   ├── stitch-integration.md
 │   │   │   │   └── error-playbook.md
-│   │   │   ├── reference/
-│   │   │   │   ├── typography.md
-│   │   │   │   ├── color-and-contrast.md
-│   │   │   │   ├── spatial-design.md
-│   │   │   │   ├── motion-design.md
-│   │   │   │   ├── responsive-design.md
-│   │   │   │   ├── component-patterns.md
-│   │   │   │   ├── accessibility.md
-│   │   │   │   └── shader-and-3d.md
-│   │   │   └── examples/
-│   │   │       ├── design-context-example.md
-│   │   │       └── landing-page-prompt.md
+│   │   │   └── reference/
+│   │   │       ├── typography.md
+│   │   │       ├── color-and-contrast.md
+│   │   │       ├── spatial-design.md
+│   │   │       ├── motion-design.md
+│   │   │       ├── responsive-design.md
+│   │   │       ├── component-patterns.md
+│   │   │       ├── accessibility.md
+│   │   │       └── shader-and-3d.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -297,7 +294,7 @@ L'expertise des agents y réside. 22 répertoires au total : 21 compétences d'a
 **`oma-{agent}/`** — Répertoires de compétences par agent. Chacun contient :
 - `SKILL.md` (~800 octets) — Couche 1 : toujours chargée. Identité, routage, règles fondamentales.
 - `resources/` — Couche 2 : à la demande. Protocoles d'exécution, exemples, checklists, error playbooks, stacks techniques, snippets, templates.
-- Certains agents disposent de sous-répertoires additionnels : `stack/` (oma-backend, généré par /stack-set), `reference/` (oma-design), `examples/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
+- Certains agents disposent de sous-répertoires additionnels : `stack/` (oma-backend, généré par /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
 
 ### workflows/
 
