@@ -47,6 +47,15 @@ You do not need to run `deepsec init` first. With a direct-mode flag, `process` 
 
 Auto-creation is one-line and non-destructive. It never modifies your `deepsec.config.ts`.
 
+## Stateless vs workspace-backed runs
+
+The CI example below runs from the **repo root** and is deliberately stateless:
+
+- Config discovery walks **up** from the cwd (see `config.md`), so the committed `.deepsec/deepsec.config.ts` — and with it `INFO.md`, custom matchers, and `ignorePaths` — is **not** loaded. The run uses an auto-created project and built-in matchers only.
+- Without persisted `data/`, every push re-analyzes the diff and reports the same findings as net-new again: the gate stays **red until the code is fixed**, and each push pays for a fresh analysis and posts a fresh comment.
+
+To make PR runs workspace-backed instead, run from inside `.deepsec/` (install its dependencies first) so `INFO.md` and custom matchers apply, and persist `.deepsec/data` between runs (e.g. `actions/cache`). Flip side: with persisted `data/`, a finding fails the build **once** — the next push goes green even if the code is unchanged, because only net-new findings gate. It also makes the "pre-existing findings on touched files are excluded" contract meaningful across runs. Pick per team policy; the stateless default is the stricter gate.
+
 ## Exit codes (gating contract)
 
 | Code | Meaning |
@@ -98,6 +107,7 @@ jobs:
           CLAUDE_CODE_EXECUTABLE: claude
         run: |
           pnpm deepsec process \
+            --agent claude \
             --diff origin/${{ github.event.pull_request.base.ref }} \
             --comment-out comment.md
 
@@ -136,7 +146,9 @@ jobs:
             });
 ```
 
-> Swap `pnpm deepsec` for `bunx deepsec` / `npx -y deepsec` / `yarn deepsec` to match the project's package manager. If using `bun`, replace the `pnpm/action-setup` + `setup-node(cache: pnpm)` block with `oven-sh/setup-bun` and `bun install --frozen-lockfile`.
+> Swap `pnpm deepsec` for `bunx deepsec` / `npx -y deepsec` / `yarn deepsec` to match the project's package manager. If using `bun`, replace the `pnpm/action-setup` + `setup-node(cache: pnpm)` block with `oven-sh/setup-bun` and `bun install --frozen-lockfile`. Note `pnpm deepsec` / `yarn deepsec` resolve the local bin, so deepsec must be a dependency of the repo (or of an installed `.deepsec/` workspace); `bunx` / `npx -y` need no install step.
+>
+> The example pins `--agent claude`, which is why it installs `@anthropic-ai/claude-code` and sets `CLAUDE_CODE_EXECUTABLE`. To use the cheaper default `codex` backend instead, drop all three.
 
 ### Why the split
 

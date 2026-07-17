@@ -87,6 +87,10 @@ bunx deepsec report                                         # per-project markdo
 
 Each command takes `--project-id <id>` if your config has multiple projects.
 
+## Enrich (optional)
+
+`enrich` is the stage between `revalidate` and `export` in the pipeline diagram: it annotates findings with committer and ownership metadata (`+committers` from git history, `+ownership` via the `ownership` / `people` plugin slots — see `config.md` § Plugin slots). Run it when exports or notifiers need to route findings to owning teams; `export` / `report` / `metrics` work fine without it. Check `bunx deepsec enrich --help` for flags before use (no-invented-flags guardrail).
+
 ## Useful flags
 
 | Flag | Purpose |

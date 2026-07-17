@@ -139,6 +139,8 @@ bunx deepsec triage  --model claude-haiku-4-5                    # cheaper triag
 
 `--agent` and `--model` are accepted on `process`, `revalidate`, and `triage`. Set the workspace-wide default via `defaultAgent` in `deepsec.config.ts`.
 
+Model IDs above track upstream at the time of writing. If `--help` or run logs print different defaults, trust the CLI.
+
 ## Environment variables
 
 deepsec reads `.env.local` (auto-loaded by the CLI) or the process environment.
