@@ -143,6 +143,41 @@ export function slugToName(slug: string): string {
     .join(" ");
 }
 
+/**
+ * The 12 vendored preset slugs in style-presets.md — used only when
+ * parsePresetsFromMd returns nothing (heading-format drift). styles.test.ts
+ * asserts this list matches the actual file so the fallback can't go stale.
+ */
+export const VENDORED_PRESET_SLUGS: readonly string[] = [
+  "ink-press",
+  "night-signal",
+  "studio-electric",
+  "parchment-serif",
+  "cobalt-clean",
+  "forest-quiet",
+  "neobrutalist-block",
+  "warm-monochrome",
+  "coral-editorial",
+  "pastel-pop",
+  "midnight-scholar",
+  "clean-tech",
+];
+
+/**
+ * Vendored preset shown when `styles get` has no network and no cache.
+ * Must be a real slug in style-presets.md (asserted by styles.test.ts).
+ */
+export const FALLBACK_PRESET_SLUG = "ink-press";
+
+/** Extract a single "### `slug`" section from style-presets.md content. */
+export function extractPresetSection(md: string, slug: string): string | null {
+  const re = new RegExp(
+    `^### \`${slug}\`[\\s\\S]*?(?=^###|$(?![\\s\\S]))`,
+    "m",
+  );
+  return re.exec(md)?.[0] ?? null;
+}
+
 // ─── list ─────────────────────────────────────────────────────────────────────
 
 export async function runStylesList(): Promise<number> {
@@ -190,22 +225,9 @@ export async function runStylesList(): Promise<number> {
         );
       }
     } else {
-      // Fallback: list known preset slugs from the file content
-      const knownPresets = [
-        "default",
-        "dark-pro",
-        "minimal-white",
-        "vibrant-color",
-        "editorial",
-        "deep-dark",
-        "warm-cream",
-        "ocean-deep",
-        "forest-green",
-        "tech-blue",
-        "sunset-warm",
-        "monochrome",
-      ];
-      for (const slug of knownPresets) {
+      // Fallback: list the vendored preset slugs (kept in sync with
+      // style-presets.md by styles.test.ts)
+      for (const slug of VENDORED_PRESET_SLUGS) {
         console.log(`  ${color.cyan(slug)}`);
       }
     }
@@ -446,26 +468,26 @@ export async function runStylesGet(opts: StylesGetOptions): Promise<number> {
       return 0;
     }
 
-    // Final fallback: print a vendored preset message
+    // Final fallback: print a vendored preset section
     console.warn(
       color.yellow(
-        `  No cache available for "${slug}". Falling back to vendored preset "default".`,
+        `  No cache available for "${slug}". Falling back to vendored preset "${FALLBACK_PRESET_SLUG}".`,
       ),
     );
     const presetsPath = join(resourcesDir, "style-presets.md");
     if (existsSync(presetsPath)) {
       const fallbackContent = readFileSync(presetsPath, "utf8");
-      // Extract just the default preset section
-      const defaultMatch = /### `default`[\s\S]*?(?=^###|$(?![\s\S]))/m.exec(
+      const section = extractPresetSection(
         fallbackContent,
+        FALLBACK_PRESET_SLUG,
       );
-      if (defaultMatch) {
+      if (section) {
         console.log(
           color.dim(
-            `\n── Vendored fallback: "default" preset (from style-presets.md) ──\n`,
+            `\n── Vendored fallback: "${FALLBACK_PRESET_SLUG}" preset (from style-presets.md) ──\n`,
           ),
         );
-        console.log(defaultMatch[0]);
+        console.log(section);
         return 0;
       }
     }

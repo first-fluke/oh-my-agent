@@ -15,14 +15,15 @@
  *   2160p → 1920×1080 @2x    → 3840×2160
  *   4k    → alias for 2160p
  *
- * Exit codes: 0 ok · 1 error · 4 invalid-input · 6 timeout
+ * Exit codes: 0 ok · 1 error (incl. timeouts) · 4 invalid-input
  */
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import color from "picocolors";
 import { findChromeExecutable } from "../../../io/chrome.js";
-import { isAllowedFontUrl } from "../font-hosts.js";
+import { isAllowedFontUrl, isLocalUrl } from "../font-hosts.js";
+import { awaitFontsReady } from "../validate/puppeteer.js";
 import { resolveWorkspace } from "../workspace.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -108,30 +109,6 @@ async function loadPuppeteer(): Promise<PuppeteerModule | null> {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function isLocalUrl(url: string): boolean {
-  if (url.startsWith("file://")) return true;
-  if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))
-    return true;
-  if (url.startsWith("data:")) return true;
-  return false;
-}
-
-async function awaitFontsReady(page: PuppeteerPage): Promise<void> {
-  try {
-    await Promise.race([
-      page.evaluate("document.fonts.ready"),
-      new Promise<void>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("fonts.ready timeout")),
-          FONTS_READY_TIMEOUT_MS,
-        ),
-      ),
-    ]);
-  } catch {
-    // Timeout — proceed
-  }
-}
-
 /**
  * Pause video elements on the page so we capture a stable poster frame.
  * Also calls load() to trigger the poster attribute if not already loaded.
@@ -179,7 +156,7 @@ async function screenshotSlide(
     timeout: PAGE_LOAD_TIMEOUT_MS,
   });
 
-  await awaitFontsReady(page);
+  await awaitFontsReady(page, FONTS_READY_TIMEOUT_MS);
 
   // Pause any video elements (poster frame capture)
   await page.evaluate(PAUSE_VIDEOS_FN);

@@ -144,7 +144,7 @@ export async function runSlideValidate(opts: ValidateOptions): Promise<number> {
       await page.setRequestInterception(true);
       page.on("request", (req) => {
         const url = req.url();
-        if (isLocalUrl(url, ws.dir) || isAllowedFontUrl(url)) {
+        if (isLocalUrl(url) || isAllowedFontUrl(url)) {
           req.continue().catch(() => {});
         } else {
           req.abort().catch(() => {});

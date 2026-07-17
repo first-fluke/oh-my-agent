@@ -16,6 +16,15 @@ export interface SseClient {
  */
 export const sseClients = new Set<SseClient>();
 
+/**
+ * Escape line terminators for a single-line SSE `data:` field. Per the SSE
+ * spec a lone `\r` also terminates a line, so agent stdout containing
+ * carriage returns (progress bars) would otherwise split/garble the frame.
+ */
+export function escapeSseData(chunk: string): string {
+  return chunk.replace(/\r\n|\r|\n/g, "\\n");
+}
+
 export function broadcastSse(event: string, data: string) {
   for (const client of sseClients) {
     try {

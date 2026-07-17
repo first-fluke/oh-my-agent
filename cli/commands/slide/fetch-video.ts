@@ -7,7 +7,7 @@
  * Reuses the yt-dlp spawn pattern from cli/commands/search/media.ts.
  * yt-dlp respects OMA_YTDLP env var for custom binary path.
  *
- * Exit codes: 0 ok · 1 error · 4 invalid-input · 6 timeout
+ * Exit codes: 0 ok · 1 error (incl. timeouts) · 4 invalid-input
  */
 
 import { spawn } from "node:child_process";
@@ -65,6 +65,19 @@ async function runYtDlp(args: string[]): Promise<YtDlpResult> {
 
 // ─── Main entry ───────────────────────────────────────────────────────────────
 
+/**
+ * True when the --output-name value is a bare filename that cannot escape
+ * the assets/ directory (no separators, no traversal).
+ */
+export function isSafeOutputName(name: string): boolean {
+  return (
+    name.length > 0 &&
+    !name.includes("/") &&
+    !name.includes("\\") &&
+    !name.includes("..")
+  );
+}
+
 export interface FetchVideoOptions {
   url: string;
   dir?: string;
@@ -79,6 +92,17 @@ export async function runSlideFetchVideo(
   // Validate URL minimally
   if (!url?.trim()) {
     console.error(color.red("URL is required."));
+    return 4;
+  }
+
+  // --output-name joins into assets/ — reject traversal like the
+  // meta.json order[] guard (assertSafeSlideFile) does for slide files.
+  if (opts.outputName && !isSafeOutputName(opts.outputName)) {
+    console.error(
+      color.red(
+        `--output-name "${opts.outputName}" contains path separators or ".." — must be a bare filename.`,
+      ),
+    );
     return 4;
   }
 

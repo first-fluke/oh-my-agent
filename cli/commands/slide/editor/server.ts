@@ -36,6 +36,8 @@ import {
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import color from "picocolors";
+import { isLocalUrl } from "../font-hosts.js";
+import { awaitFontsReady } from "../validate/puppeteer.js";
 import { resolveWorkspace } from "../workspace.js";
 import type { BBox } from "./dispatch.js";
 import { assertSafeSlideFile, dispatchEdit } from "./dispatch.js";
@@ -43,7 +45,12 @@ import { readJsonBody, sendJson, sendText } from "./server/http-helpers.js";
 import { withSlideLock } from "./server/locks.js";
 import { BIND_HOST, DEFAULT_PORT, probeFreePort } from "./server/ports.js";
 import { findChrome, loadPuppeteer } from "./server/puppeteer.js";
-import { broadcastSse, handleEvents, sseClients } from "./server/sse.js";
+import {
+  broadcastSse,
+  escapeSseData,
+  handleEvents,
+  sseClients,
+} from "./server/sse.js";
 import { isValidBbox } from "./server/validate.js";
 
 export { withSlideLock } from "./server/locks.js";
@@ -103,12 +110,7 @@ export async function captureAnnotatedScreenshot(
     await page.setRequestInterception(true);
     page.on("request", (req) => {
       const url = req.url();
-      if (
-        url.startsWith("file://") ||
-        url.startsWith("http://127.0.0.1") ||
-        url.startsWith("http://localhost") ||
-        url.startsWith("data:")
-      ) {
+      if (isLocalUrl(url)) {
         req.continue().catch(() => {});
       } else {
         req.abort().catch(() => {});
@@ -119,16 +121,7 @@ export async function captureAnnotatedScreenshot(
     await page.goto(fileUrl, { waitUntil: "networkidle0", timeout: 30_000 });
 
     // Wait for fonts
-    try {
-      await Promise.race([
-        page.evaluate("document.fonts.ready"),
-        new Promise<void>((_, reject) =>
-          setTimeout(() => reject(new Error("fonts timeout")), 10_000),
-        ),
-      ]);
-    } catch {
-      // proceed
-    }
+    await awaitFontsReady(page, 10_000);
 
     // Annotate bbox by injecting a red overlay rectangle via DOM.
     // Built as an interpolated string so the cli tsconfig (no "dom" lib)
@@ -328,7 +321,7 @@ export async function runSlideEdit(opts: RunSlideEditOptions): Promise<number> {
             bbox: bboxInput,
             prompt: promptText.trim(),
             onProgress: (chunk) => {
-              broadcastSse("progress", chunk.replace(/\n/g, "\\n"));
+              broadcastSse("progress", escapeSseData(chunk));
             },
             onDone: (exitCode) => {
               broadcastSse("done", String(exitCode));

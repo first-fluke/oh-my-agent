@@ -21,6 +21,17 @@ describe("hasLocalVideoRef", () => {
     const html = `<img src="./assets/logo.png">`;
     expect(hasLocalVideoRef(html)).toBe(false);
   });
+
+  it("detects a local video despite a query string or fragment", () => {
+    // Regression: endsWith(ext) missed "clip.mp4?v=2", silently skipping
+    // the bundle self-containment warning.
+    expect(
+      hasLocalVideoRef(`<video src="./assets/clip.mp4?v=2"></video>`),
+    ).toBe(true);
+    expect(
+      hasLocalVideoRef(`<video src="./assets/clip.mp4#t=1"></video>`),
+    ).toBe(true);
+  });
 });
 
 describe("extractRemoteLinkStylesheets", () => {

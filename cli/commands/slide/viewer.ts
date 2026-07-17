@@ -45,13 +45,39 @@ import { resolveWorkspace } from "./workspace.js";
 /**
  * Extract all <section class="slide"...>…</section> blocks from a slide HTML file.
  * Returns the raw outer HTML of each matching section element.
+ *
+ * Uses a depth-counting scan for the closing tag: a lazy `[\s\S]*?<\/section>`
+ * regex stops at the FIRST `</section>`, truncating any slide that nests
+ * sections (e.g. `<section class="slide"><section class="col">…`).
  */
 export function extractSlides(html: string): string[] {
-  // Match <section> tags that have class containing "slide"
+  // Match <section> open tags that have class containing "slide"
   // Handles: class="slide", class="slide foo", class="foo slide bar"
-  const sectionRe =
-    /<section([^>]*)class="([^"]*\bslide\b[^"]*)"([^>]*)>([\s\S]*?)<\/section>/gi;
-  return [...html.matchAll(sectionRe)].map((m) => m[0]);
+  const openRe = /<section\b[^>]*class="[^"]*\bslide\b[^"]*"[^>]*>/gi;
+  const out: string[] = [];
+  let open = openRe.exec(html);
+  while (open !== null) {
+    const tokenRe = /<section\b[^>]*>|<\/section\s*>/gi;
+    tokenRe.lastIndex = open.index;
+    let depth = 0;
+    let end = -1;
+    let token = tokenRe.exec(html);
+    while (token !== null) {
+      depth += token[0].startsWith("</") ? -1 : 1;
+      if (depth === 0) {
+        end = token.index + token[0].length;
+        break;
+      }
+      token = tokenRe.exec(html);
+    }
+    if (end !== -1) {
+      out.push(html.slice(open.index, end));
+      openRe.lastIndex = end; // don't re-match nested slide sections
+    }
+    // end === -1: unbalanced markup — skip this section
+    open = openRe.exec(html);
+  }
+  return out;
 }
 
 /**

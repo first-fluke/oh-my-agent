@@ -7,6 +7,14 @@ export interface InPageTextElement {
   rect: Rect;
   fontSize: number;
   text: string;
+  /**
+   * Indices (into the same textElements array) of previously collected
+   * elements that CONTAIN this element in the DOM. The overlap check skips
+   * ancestor-descendant pairs: a parent with a direct text node always
+   * encloses its inline children (`<p>text <strong>…</strong></p>`), which
+   * is nesting, not a layout collision.
+   */
+  ancestorIndices: number[];
 }
 
 /** Serializable result from page.evaluate. */
@@ -52,6 +60,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
   var frames = slideEls.length > 0 ? slideEls : [document.body];
 
   var textElements = [];
+  var collectedEls = [];
 
   for (var fi = 0; fi < frames.length; fi++) {
     var frame = frames[fi];
@@ -73,6 +82,11 @@ export const IN_PAGE_CHECK_FN = `(function() {
       if (r.width === 0 && r.height === 0) continue;
       var style = window.getComputedStyle(el);
       var fontSize = parseFloat(style.fontSize) || 0;
+      var ancestorIndices = [];
+      for (var ai = 0; ai < collectedEls.length; ai++) {
+        if (collectedEls[ai].contains(el)) ancestorIndices.push(ai);
+      }
+      collectedEls.push(el);
       textElements.push({
         selector: getSelector(el),
         rect: {
@@ -82,7 +96,8 @@ export const IN_PAGE_CHECK_FN = `(function() {
           height: r.height
         },
         fontSize: fontSize,
-        text: el.textContent ? el.textContent.trim().slice(0, 60) : ''
+        text: el.textContent ? el.textContent.trim().slice(0, 60) : '',
+        ancestorIndices: ancestorIndices
       });
     }
   }

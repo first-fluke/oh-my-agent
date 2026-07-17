@@ -4,20 +4,23 @@
  * Exports a slide deck to PDF via puppeteer-core.
  *
  * Modes:
- *   capture (default): navigate viewer.html (or per-slide files) at 1920×1080 and
- *     use page.pdf() with A4 landscape / custom 1920×1080 pt page size, one page per slide.
- *   print: use deck-stage.js @media print path — print all slides in a single PDF call
- *     from viewer.html (CSS print rules make each .slide break to its own page).
+ *   Both --mode values currently share ONE pipeline: navigate viewer.html and
+ *   emit a single page.pdf() at the 1920×1080 design size, with the @media
+ *   print CSS breaking each .slide to its own page. `capture` was originally
+ *   specced as a screenshot-per-slide path but converged on the print-CSS
+ *   pipeline (see captureMode docstring); the flag is kept for CLI
+ *   compatibility until the modes actually diverge.
  *
  * Lazy-loads puppeteer-core exactly like validate.ts (graceful "not installed" fallback).
- * Exit codes: 0 ok · 1 error · 4 invalid-input · 6 timeout
+ * Exit codes: 0 ok · 1 error (incl. timeouts) · 4 invalid-input
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import color from "picocolors";
 import { findChromeExecutable } from "../../../io/chrome.js";
-import { isAllowedFontUrl } from "../font-hosts.js";
+import { isAllowedFontUrl, isLocalUrl } from "../font-hosts.js";
+import { awaitFontsReady } from "../validate/puppeteer.js";
 import { runSlideViewer } from "../viewer.js";
 import { resolveWorkspace } from "../workspace.js";
 
@@ -83,30 +86,6 @@ async function loadPuppeteer(): Promise<PuppeteerModule | null> {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function isLocalUrl(url: string): boolean {
-  if (url.startsWith("file://")) return true;
-  if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))
-    return true;
-  if (url.startsWith("data:")) return true;
-  return false;
-}
-
-async function awaitFontsReady(page: PuppeteerPage): Promise<void> {
-  try {
-    await Promise.race([
-      page.evaluate("document.fonts.ready"),
-      new Promise<void>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("fonts.ready timeout")),
-          FONTS_READY_TIMEOUT_MS,
-        ),
-      ),
-    ]);
-  } catch {
-    // Timeout — proceed with available fonts
-  }
-}
-
 /**
  * Match the interactive "Save as PDF" path before calling page.pdf().
  *
@@ -170,7 +149,7 @@ async function captureMode(
     timeout: PAGE_LOAD_TIMEOUT_MS,
   });
 
-  await awaitFontsReady(page);
+  await awaitFontsReady(page, FONTS_READY_TIMEOUT_MS);
   await clearInlineStageTransform(page);
 
   // Page size = exact design size (1920×1080 px). Do NOT set `landscape` here:
@@ -218,7 +197,7 @@ async function printMode(
     timeout: PAGE_LOAD_TIMEOUT_MS,
   });
 
-  await awaitFontsReady(page);
+  await awaitFontsReady(page, FONTS_READY_TIMEOUT_MS);
   await clearInlineStageTransform(page);
 
   // Print mode uses @media print CSS — slides break per page at design size.

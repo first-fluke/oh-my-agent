@@ -1,9 +1,30 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  extractPresetSection,
+  FALLBACK_PRESET_SLUG,
   getCachedStylePath,
   parsePresetsFromMd,
   slugToName,
+  VENDORED_PRESET_SLUGS,
 } from "./styles.js";
+
+const STYLE_PRESETS_MD = readFileSync(
+  join(
+    dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "..",
+    "..",
+    ".agents",
+    "skills",
+    "oma-slide",
+    "resources",
+    "style-presets.md",
+  ),
+  "utf8",
+);
 
 describe("slugToName", () => {
   it("title-cases a hyphenated slug", () => {
@@ -52,6 +73,27 @@ describe("parsePresetsFromMd", () => {
 
   it("returns empty array when no preset headings exist", () => {
     expect(parsePresetsFromMd("# nothing here")).toEqual([]);
+  });
+});
+
+describe("vendored preset fallbacks stay in sync with style-presets.md", () => {
+  it("VENDORED_PRESET_SLUGS matches the real preset headings", () => {
+    // Regression: the old hardcoded fallback listed 12 slugs (default,
+    // dark-pro, …) that never existed in style-presets.md.
+    const actual = parsePresetsFromMd(STYLE_PRESETS_MD).map((p) => p.slug);
+    expect(actual).toEqual([...VENDORED_PRESET_SLUGS]);
+  });
+
+  it("FALLBACK_PRESET_SLUG resolves to a real section", () => {
+    // Regression: `styles get` fell back to a nonexistent "default" preset,
+    // turning the documented graceful degradation into a hard exit 1.
+    expect(VENDORED_PRESET_SLUGS).toContain(FALLBACK_PRESET_SLUG);
+    const section = extractPresetSection(
+      STYLE_PRESETS_MD,
+      FALLBACK_PRESET_SLUG,
+    );
+    expect(section).not.toBeNull();
+    expect(section).toContain(`### \`${FALLBACK_PRESET_SLUG}\``);
   });
 });
 

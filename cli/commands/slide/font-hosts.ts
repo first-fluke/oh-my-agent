@@ -37,3 +37,33 @@ export function isAllowedFontUrl(href: string): boolean {
   }
   return url.protocol === "https:" && ALLOWED_FONT_HOSTS.has(url.hostname);
 }
+
+const LOCAL_HOSTNAMES: ReadonlySet<string> = new Set<string>([
+  "127.0.0.1",
+  "localhost",
+  "[::1]",
+]);
+
+/**
+ * Return true only for URLs a render context may load without touching the
+ * network: file:/data: URLs and http(s) on an exact loopback hostname.
+ *
+ * Parses with `new URL()` — a prefix check like startsWith("http://127.0.0.1")
+ * would also accept "http://127.0.0.1.evil.com" (attacker-controlled DNS) and
+ * "http://127.0.0.1@evil.com" (userinfo), reopening the SSRF/exfil vector the
+ * interceptors exist to close.
+ */
+export function isLocalUrl(url: string): boolean {
+  if (url.startsWith("data:")) return true;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol === "file:") return true;
+  return (
+    (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+    LOCAL_HOSTNAMES.has(parsed.hostname)
+  );
+}

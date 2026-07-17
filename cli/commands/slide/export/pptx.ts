@@ -22,14 +22,15 @@
  *   - sharp        (optional) — used only if resolution scaling needed (not in
  *                  this code path; screenshots are taken at 1920×1080)
  *
- * Exit codes: 0 ok · 1 error · 4 invalid-input · 6 timeout
+ * Exit codes: 0 ok · 1 error (incl. timeouts) · 4 invalid-input
  */
 
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import color from "picocolors";
 import { findChromeExecutable } from "../../../io/chrome.js";
-import { isAllowedFontUrl } from "../font-hosts.js";
+import { isAllowedFontUrl, isLocalUrl } from "../font-hosts.js";
+import { awaitFontsReady } from "../validate/puppeteer.js";
 import { resolveWorkspace } from "../workspace.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -176,14 +177,6 @@ async function loadPuppeteer(): Promise<PuppeteerModule | null> {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function isLocalUrl(url: string): boolean {
-  if (url.startsWith("file://")) return true;
-  if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))
-    return true;
-  if (url.startsWith("data:")) return true;
-  return false;
-}
-
 const PAUSE_VIDEOS_FN = `(function() {
   var videos = Array.from(document.querySelectorAll('video'));
   for (var i = 0; i < videos.length; i++) {
@@ -219,19 +212,7 @@ async function screenshotSlideToBase64(
   });
 
   // Await fonts.ready — same approach as validate.ts (H1 fix)
-  try {
-    await Promise.race([
-      page.evaluate("document.fonts.ready"),
-      new Promise<void>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("fonts.ready timeout")),
-          FONTS_READY_TIMEOUT_MS,
-        ),
-      ),
-    ]);
-  } catch {
-    // Timeout — proceed with available fonts
-  }
+  await awaitFontsReady(page, FONTS_READY_TIMEOUT_MS);
 
   // Pause video elements so we capture a stable poster frame
   await page.evaluate(PAUSE_VIDEOS_FN);

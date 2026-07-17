@@ -48,16 +48,19 @@ const VIDEO_EXTENSIONS = [
  * (./assets/something.mp4 etc.) — cannot be inlined into a single file.
  */
 export function hasLocalVideoRef(html: string): boolean {
+  // Strip ?query / #fragment before the extension check so refs like
+  // "./assets/clip.mp4?v=2" still trigger the self-containment warning.
+  const pathOf = (url: string): string => url.split(/[?#]/, 1)[0] ?? url;
   const srcRe = /(?:src|href)=["']([^"']+)["']/gi;
   for (const m of html.matchAll(srcRe)) {
-    const url = (m[1] ?? "").toLowerCase();
+    const url = pathOf((m[1] ?? "").toLowerCase());
     if (url.startsWith("http://") || url.startsWith("https://")) continue;
     if (VIDEO_EXTENSIONS.some((ext) => url.endsWith(ext))) return true;
   }
   // Also check CSS url() in style attributes or <style> blocks
   const cssUrlRe = /url\(["']?([^"')]+)["']?\)/gi;
   for (const cm of html.matchAll(cssUrlRe)) {
-    const url = (cm[1] ?? "").toLowerCase();
+    const url = pathOf((cm[1] ?? "").toLowerCase());
     if (url.startsWith("http://") || url.startsWith("https://")) continue;
     if (VIDEO_EXTENSIONS.some((ext) => url.endsWith(ext))) return true;
   }

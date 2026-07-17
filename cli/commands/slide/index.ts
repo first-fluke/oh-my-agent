@@ -139,7 +139,7 @@ export function registerSlideCommand(program: Command): void {
     .option("--out <file>", "Output PDF file (default: out/deck.pdf)")
     .option(
       "--mode <mode>",
-      "Export mode: capture (screenshot) | print (CSS print) (default: capture)",
+      "Export mode: capture | print (currently identical pipelines; default: capture)",
       "capture",
     )
     .action(async (opts: { dir: string; out?: string; mode?: string }) => {

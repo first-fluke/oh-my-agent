@@ -32,6 +32,39 @@ export interface PuppeteerPage {
   close(): Promise<void>;
 }
 
+/**
+ * Await document.fonts.ready with a timeout guard. Returns true when fonts
+ * loaded, false on timeout (callers proceed with fallback-font metrics).
+ *
+ * page.evaluate("document.fonts.ready") returns the FontFaceSet promise and
+ * puppeteer awaits it (page.waitForFunction would NOT — a promise is always
+ * truthy). The race timer is cleared in `finally`: an uncleared setTimeout
+ * keeps the event loop alive after the last page closes, so the CLI would
+ * hang up to the timeout after printing its final output.
+ */
+export async function awaitFontsReady(
+  page: Pick<PuppeteerPage, "evaluate">,
+  timeoutMs: number,
+): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      page.evaluate("document.fonts.ready"),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("fonts.ready timeout")),
+          timeoutMs,
+        );
+      }),
+    ]);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export async function loadPuppeteer(): Promise<PuppeteerModule | null> {
   try {
     const mod = (await import("puppeteer-core")) as unknown as {

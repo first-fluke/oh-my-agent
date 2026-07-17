@@ -6,8 +6,12 @@ import {
   PAGE_LOAD_TIMEOUT_MS,
 } from "./constants.js";
 import { isOverflowing, isOverlapping } from "./geometry.js";
-import { IN_PAGE_CHECK_FN, type InPageCheckResult } from "./in-page-check.js";
-import type { PuppeteerPage } from "./puppeteer.js";
+import {
+  IN_PAGE_CHECK_FN,
+  type InPageCheckResult,
+  type InPageTextElement,
+} from "./in-page-check.js";
+import { awaitFontsReady, type PuppeteerPage } from "./puppeteer.js";
 import type { IssueCode, SlideResult, ValidateIssue } from "./types.js";
 
 // ─── Core validation logic ─────────────────────────────────────────────────────
@@ -24,24 +28,10 @@ export async function validateSlide(
     timeout: PAGE_LOAD_TIMEOUT_MS,
   });
 
-  // H1 fix: await document.fonts.ready via page.evaluate (which awaits a returned
-  // thenable). `page.waitForFunction("document.fonts.ready")` is a NO-OP because
-  // waitForFunction polls the expression for truthiness — a Promise is always
-  // truthy so it resolves immediately without awaiting font load.
-  // page.evaluate(() => document.fonts.ready) returns the FontFaceSet Promise
-  // and puppeteer-core awaits it before resolving, so we actually block until
-  // all fonts are loaded (or the timeout guard fires).
-  try {
-    await Promise.race([
-      page.evaluate("document.fonts.ready"),
-      new Promise<void>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("fonts.ready timeout")),
-          FONTS_READY_TIMEOUT_MS,
-        ),
-      ),
-    ]);
-  } catch {
+  // H1 fix: await document.fonts.ready with a cleared-timer race — see
+  // awaitFontsReady in puppeteer.ts for the waitForFunction NO-OP rationale.
+  const fontsLoaded = await awaitFontsReady(page, FONTS_READY_TIMEOUT_MS);
+  if (!fontsLoaded) {
     // Fonts didn't resolve in time — proceed with available metrics.
     // This may produce false-negatives on slow CDN fonts.
     console.warn(
@@ -69,21 +59,14 @@ export async function validateSlide(
   }
 
   // (b) no_overlapping_text — two text boxes overlap
-  for (let i = 0; i < textElements.length; i++) {
-    for (let j = i + 1; j < textElements.length; j++) {
-      const a = textElements[i];
-      const b = textElements[j];
-      if (!a || !b) continue;
-      if (isOverlapping(a.rect, b.rect)) {
-        issues.push({
-          code: "no_overlapping_text",
-          message: `Text elements overlap: "${a.text}" ↔ "${b.text}"`,
-          slide: slideFile,
-          selector: `${a.selector} ↔ ${b.selector}`,
-          rect: a.rect,
-        });
-      }
-    }
+  for (const [a, b] of findOverlappingTextPairs(textElements)) {
+    issues.push({
+      code: "no_overlapping_text",
+      message: `Text elements overlap: "${a.text}" ↔ "${b.text}"`,
+      slide: slideFile,
+      selector: `${a.selector} ↔ ${b.selector}`,
+      rect: a.rect,
+    });
   }
 
   // (c) slide_sized_text — font-size below readable floor relative to 1080h
@@ -123,17 +106,37 @@ export async function validateSlide(
   };
 }
 
+// ─── Overlap pairing (pure, vitest-testable) ──────────────────────────────────
+
+/**
+ * Return all genuinely overlapping text-element pairs, skipping
+ * ancestor-descendant pairs: a parent with a direct text node always encloses
+ * the rects of its inline children (`<p>text <strong>bold</strong></p>`), so
+ * pairing them geometrically would flag every inline-formatted paragraph as a
+ * critical collision. `ancestorIndices` is collected in-page (DOM containment).
+ */
+export function findOverlappingTextPairs(
+  textElements: InPageTextElement[],
+): Array<[InPageTextElement, InPageTextElement]> {
+  const pairs: Array<[InPageTextElement, InPageTextElement]> = [];
+  for (let i = 0; i < textElements.length; i++) {
+    for (let j = i + 1; j < textElements.length; j++) {
+      const a = textElements[i];
+      const b = textElements[j];
+      if (!a || !b) continue;
+      // Document order puts ancestors first, so only b can descend from a.
+      if (b.ancestorIndices?.includes(i)) continue;
+      if (isOverlapping(a.rect, b.rect)) {
+        pairs.push([a, b]);
+      }
+    }
+  }
+  return pairs;
+}
+
 // ─── Request interception — offline context ───────────────────────────────────
 
-export function isLocalUrl(url: string, workDir: string): boolean {
-  if (url.startsWith("file://")) return true;
-  if (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))
-    return true;
-  if (url.startsWith("data:")) return true;
-  const encodedDir = encodeURI(workDir.replace(/\\/g, "/"));
-  if (url.startsWith(`file://${encodedDir}`)) return true;
-  return false;
-}
+export { isLocalUrl } from "../font-hosts.js";
 
 // ─── Path traversal guard (M1) ────────────────────────────────────────────────
 

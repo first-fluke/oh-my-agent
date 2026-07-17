@@ -74,6 +74,36 @@ describe("extractSlides", () => {
   it("returns empty array when no sections present", () => {
     expect(extractSlides("<div>nothing</div>")).toEqual([]);
   });
+
+  it("keeps the full slide when it contains nested sections", () => {
+    // Regression: the lazy regex stopped at the FIRST </section>, truncating
+    // slides that use <section> for internal layout columns.
+    const html =
+      `<section class="slide" id="slide-01">` +
+      `<section class="col">A</section>` +
+      `<section class="col">B</section>` +
+      `</section>`;
+    const slides = extractSlides(html);
+    expect(slides).toHaveLength(1);
+    expect(slides[0]).toContain(">A<");
+    expect(slides[0]).toContain(">B<");
+    expect(slides[0]).toBe(html);
+  });
+
+  it("extracts multiple slides even when each nests sections", () => {
+    const html =
+      `<section class="slide"><section class="inner">1</section></section>` +
+      `<section class="slide"><section class="inner">2</section></section>`;
+    const slides = extractSlides(html);
+    expect(slides).toHaveLength(2);
+    expect(slides[0]).toContain(">1<");
+    expect(slides[1]).toContain(">2<");
+  });
+
+  it("skips a slide with unbalanced section markup instead of corrupting output", () => {
+    const html = `<section class="slide"><section class="col">A</section>`;
+    expect(extractSlides(html)).toEqual([]);
+  });
 });
 
 describe("extractStyles", () => {
