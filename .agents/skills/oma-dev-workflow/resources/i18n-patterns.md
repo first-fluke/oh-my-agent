@@ -10,11 +10,11 @@ Internationalization workflows for monorepos.
 description = "Build i18n files for all platforms"
 depends = ["build:web", "build:mobile"]
 
-[tasks.build:web]
+[tasks."build:web"]
 description = "Build for web (next-intl JSON)"
 run = "bun scripts/build-web.js"
 
-[tasks.build:mobile]
+[tasks."build:mobile"]
 description = "Build for mobile (Flutter ARB)"
 run = "bun scripts/build-mobile.js"
 
@@ -52,7 +52,7 @@ run = "bun run build"
 
 ```toml
 # apps/mobile/mise.toml
-[tasks.gen:l10n]
+[tasks."gen:l10n"]
 description = "Generate Flutter localizations"
 run = "flutter gen-l10n"
 

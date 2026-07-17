@@ -12,7 +12,7 @@ module.exports = {
     'type-enum': [
       2,
       'always',
-      ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'chore', 'ci', 'infra']
+      ['feat', 'fix', 'perf', 'build', 'revert', 'docs', 'style', 'refactor', 'test', 'chore', 'ci', 'infra']
     ],
     'scope-enum': [
       2,
@@ -61,7 +61,8 @@ EOF
 ```toml
 [tasks."git:commit-msg"]
 description = "Validate commit message using commitlint"
-run = "bunx @commitlint/cli@20 --edit $1"
+usage = 'arg "<file>"'
+run = "bunx @commitlint/cli@20 --edit $usage_file"
 
 [tasks."git:pre-commit"]
 description = "Run lint on changed files"
@@ -71,17 +72,17 @@ changed=$(git diff --cached --name-only)
 
 if echo "$changed" | grep -q "^apps/api/"; then
     echo "[pre-commit] apps/api detected, running lint..."
-    mise //apps/api:lint || exit 1
+    mise run //apps/api:lint || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/web/"; then
     echo "[pre-commit] apps/web detected, running lint..."
-    mise //apps/web:lint || exit 1
+    mise run //apps/web:lint || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/mobile/"; then
     echo "[pre-commit] apps/mobile detected, running lint..."
-    mise //apps/mobile:lint || exit 1
+    mise run //apps/mobile:lint || exit 1
 fi
 '''
 
@@ -97,17 +98,17 @@ changed=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name
 
 if echo "$changed" | grep -q "^apps/api/"; then
     echo "[pre-push] apps/api detected, running test..."
-    mise //apps/api:test || exit 1
+    mise run //apps/api:test || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/web/"; then
     echo "[pre-push] apps/web detected, running test..."
-    mise //apps/web:test || exit 1
+    mise run //apps/web:test || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/mobile/"; then
     echo "[pre-push] apps/mobile detected, running test..."
-    mise //apps/mobile:test || exit 1
+    mise run //apps/mobile:test || exit 1
 fi
 '''
 ```
@@ -194,7 +195,7 @@ jobs:
 
 ```toml
 # Root mise.toml
-[tasks.lint:changed]
+[tasks."lint:changed"]
 description = "Lint only changed apps"
 run = '''
 #!/usr/bin/env bash
@@ -216,7 +217,7 @@ if echo "$changed_files" | grep -q "^apps/mobile/"; then
 fi
 '''
 
-[tasks.test:changed]
+[tasks."test:changed"]
 description = "Test only changed apps"
 run = '''
 #!/usr/bin/env bash
@@ -238,7 +239,7 @@ if echo "$changed_files" | grep -q "^apps/mobile/"; then
 fi
 '''
 
-[tasks.validate:changed]
+[tasks."validate:changed"]
 description = "Validate only changed apps"
 depends = ["lint:changed", "test:changed"]
 ```
@@ -246,6 +247,12 @@ depends = ["lint:changed", "test:changed"]
 ## Complete Root mise.toml Example
 
 ```toml
+# Required for //path:task monorepo syntax (top-level key, before any table)
+monorepo_root = true
+
+[monorepo]
+config_roots = ["apps/*", "packages/*"]
+
 [tools]
 node = "24"
 python = "3.12"
@@ -275,6 +282,10 @@ EOF
   chmod +x .git/hooks/pre-push
 '''
 
+[tasks.install]
+description = "Install dependencies for all apps"
+depends = ["//apps/api:install", "//apps/web:install", "//apps/mobile:install"]
+
 [tasks.dev]
 description = "Start all development services"
 depends = ["//apps/api:dev", "//apps/web:dev"]
@@ -289,7 +300,8 @@ depends = ["//apps/api:test", "//apps/web:test", "//apps/mobile:test"]
 
 [tasks."git:commit-msg"]
 description = "Validate commit message"
-run = "bunx @commitlint/cli@20 --edit $1"
+usage = 'arg "<file>"'
+run = "bunx @commitlint/cli@20 --edit $usage_file"
 
 [tasks."git:pre-commit"]
 description = "Run lint on changed files"
@@ -298,11 +310,11 @@ run = '''
 changed=$(git diff --cached --name-only)
 
 if echo "$changed" | grep -q "^apps/web/"; then
-    mise //apps/web:lint || exit 1
+    mise run //apps/web:lint || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/api/"; then
-    mise //apps/api:lint || exit 1
+    mise run //apps/api:lint || exit 1
 fi
 '''
 
@@ -315,15 +327,15 @@ bunx @gracefullight/validate-branch || exit 1
 changed=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1)
 
 if echo "$changed" | grep -q "^apps/web/"; then
-    mise //apps/web:test || exit 1
+    mise run //apps/web:test || exit 1
 fi
 
 if echo "$changed" | grep -q "^apps/api/"; then
-    mise //apps/api:test || exit 1
+    mise run //apps/api:test || exit 1
 fi
 '''
 
-[tasks.lint:changed]
+[tasks."lint:changed"]
 description = "Lint only changed apps"
 run = '''
 #!/usr/bin/env bash
@@ -338,7 +350,7 @@ if echo "$changed_files" | grep -q "^apps/api/"; then
 fi
 '''
 
-[tasks.test:changed]
+[tasks."test:changed"]
 description = "Test only changed apps"
 run = '''
 #!/usr/bin/env bash

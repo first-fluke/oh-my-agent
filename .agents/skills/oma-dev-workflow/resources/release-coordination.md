@@ -45,7 +45,7 @@ jobs:
 node = "24"
 bun = "latest"
 
-[tasks.release:check]
+[tasks."release:check"]
 description = "Check release-please status"
 run = '''
 #!/usr/bin/env bash
@@ -58,16 +58,16 @@ echo "Latest releases:"
 gh release list --limit 5
 '''
 
-[tasks.release:manifest]
+[tasks."release:manifest"]
 description = "Show current release manifest"
 run = "cat .release-please-manifest.json"
 
-[tasks.release:changelog]
+[tasks."release:changelog"]
 description = "Preview changelog (local dry-run)"
 run = '''
 #!/usr/bin/env bash
 echo "Recent conventional commits:"
-git log --pretty=format:"%s" $(git describe --tags --abbrev=0)..HEAD | grep -E "^(feat|fix|docs|style|refactor|test|chore|ci)(\(.+\))?:"
+git log --pretty=format:"%s" $(git describe --tags --abbrev=0)..HEAD | grep -E "^(feat|fix|perf|build|revert|docs|style|refactor|test|chore|ci)(\(.+\))?:"
 '''
 ```
 
@@ -144,7 +144,7 @@ git diff origin/main...release-please--branches--main
 
 ### 5. Verify Release
 ```toml
-[tasks.release:verify]
+[tasks."release:verify"]
 description = "Verify latest release"
 run = '''
 #!/usr/bin/env bash
@@ -162,7 +162,7 @@ gh release view --json assets
 If needed, manually trigger release-please:
 
 ```toml
-[tasks.release:trigger]
+[tasks."release:trigger"]
 description = "Manually trigger release-please (CI will handle)"
 run = '''
 #!/usr/bin/env bash
@@ -177,7 +177,7 @@ mise run release:check
 ## Post-Release Tasks
 
 ```toml
-[tasks.release:cleanup]
+[tasks."release:cleanup"]
 description = "Cleanup after release"
 run = '''
 #!/usr/bin/env bash
@@ -203,7 +203,7 @@ echo "Release cleanup complete"
 ## Troubleshooting
 
 ```toml
-[tasks.release:debug]
+[tasks."release:debug"]
 description = "Debug release issues"
 run = '''
 #!/usr/bin/env bash
@@ -211,7 +211,7 @@ echo "Release Debugging"
 echo ""
 
 echo "1. Conventional commits since last tag:"
-git log --pretty=format:"%s" $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD | grep -E "^(feat|fix|docs|style|refactor|test|chore|ci)(\(.+\))?:" || echo "  No conventional commits found"
+git log --pretty=format:"%s" $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD | grep -E "^(feat|fix|perf|build|revert|docs|style|refactor|test|chore|ci)(\(.+\))?:" || echo "  No conventional commits found"
 
 echo ""
 echo "2. Release Please config files:"

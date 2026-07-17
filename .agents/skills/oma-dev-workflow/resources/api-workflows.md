@@ -19,7 +19,7 @@ mise run //apps/mobile:gen:api
 
 ```toml
 # apps/api/mise.toml
-[tasks.gen:openapi]
+[tasks."gen:openapi"]
 description = "Generate OpenAPI schema"
 run = "uv run python -c 'from src.main import app; import json; print(json.dumps(app.openapi()))' > openapi.json"
 ```
@@ -28,7 +28,7 @@ run = "uv run python -c 'from src.main import app; import json; print(json.dumps
 
 ```toml
 # apps/web/mise.toml
-[tasks.gen:api]
+[tasks."gen:api"]
 description = "Generate API client from OpenAPI"
 depends = ["//apps/api:gen:openapi"]
 run = "bunx orval"
@@ -38,7 +38,7 @@ run = "bunx orval"
 
 ```toml
 # apps/mobile/mise.toml
-[tasks.gen:api]
+[tasks."gen:api"]
 description = "Generate API client from OpenAPI"
 depends = ["//apps/api:gen:openapi"]
 run = "flutter pub run swagger_parser"
@@ -48,7 +48,7 @@ run = "flutter pub run swagger_parser"
 
 ```toml
 # Root mise.toml
-[tasks.gen:api]
+[tasks."gen:api"]
 description = "Generate API clients for all apps"
 depends = [
   "//apps/api:gen:openapi",

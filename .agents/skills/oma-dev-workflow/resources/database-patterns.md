@@ -10,23 +10,24 @@ Database migration workflows and local development infrastructure.
 description = "Run Alembic migrations"
 run = "uv run alembic upgrade head"
 
-[tasks.migrate:create]
+[tasks."migrate:create"]
 description = "Create new migration"
-run = "uv run alembic revision --autogenerate -m '{{arg(name)}}'"
+usage = 'arg "<name>"'
+run = 'uv run alembic revision --autogenerate -m "$usage_name"'
 
-[tasks.migrate:check]
+[tasks."migrate:check"]
 description = "Check migration status"
 run = "uv run alembic current"
 
-[tasks.migrate:history]
+[tasks."migrate:history"]
 description = "Show migration history"
 run = "uv run alembic history --verbose"
 
-[tasks.migrate:rollback]
+[tasks."migrate:rollback"]
 description = "Rollback one migration"
 run = "uv run alembic downgrade -1"
 
-[tasks.migrate:reset]
+[tasks."migrate:reset"]
 description = "Reset database (all down then up)"
 run = "uv run alembic downgrade base && uv run alembic upgrade head"
 ```
@@ -57,11 +58,11 @@ mise run //apps/api:migrate:rollback
 
 ```toml
 # Root mise.toml
-[tasks.db:migrate]
+[tasks."db:migrate"]
 description = "Run all database migrations"
 depends = ["//apps/api:migrate"]
 
-[tasks.db:reset]
+[tasks."db:reset"]
 description = "Reset all databases"
 depends = ["//apps/api:migrate:reset"]
 ```
@@ -70,19 +71,19 @@ depends = ["//apps/api:migrate:reset"]
 
 ```toml
 # apps/api/mise.toml
-[tasks.infra:up]
+[tasks."infra:up"]
 description = "Start local infrastructure (PostgreSQL, Redis, etc.)"
 run = "docker compose -f docker-compose.infra.yml up -d"
 
-[tasks.infra:down]
+[tasks."infra:down"]
 description = "Stop local infrastructure"
 run = "docker compose -f docker-compose.infra.yml down"
 
-[tasks.infra:logs]
+[tasks."infra:logs"]
 description = "View infrastructure logs"
 run = "docker compose -f docker-compose.infra.yml logs -f"
 
-[tasks.infra:reset]
+[tasks."infra:reset"]
 description = "Reset infrastructure (remove volumes)"
 run = "docker compose -f docker-compose.infra.yml down -v"
 ```
@@ -91,11 +92,11 @@ run = "docker compose -f docker-compose.infra.yml down -v"
 
 ```toml
 # Root mise.toml
-[tasks.infra:up]
+[tasks."infra:up"]
 description = "Start all local infrastructure"
 depends = ["//apps/api:infra:up"]
 
-[tasks.infra:down]
+[tasks."infra:down"]
 description = "Stop all local infrastructure"
 depends = ["//apps/api:infra:down"]
 ```
