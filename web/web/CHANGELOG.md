@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.19.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.3...web-v3.19.0) (2026-07-17)
+
+
+### Features
+
+* **agents:** register refactor as canonical agent id ([22b8ff1](https://github.com/first-fluke/oh-my-agent/commit/22b8ff173483d1c55c5971a247093d286bb63743))
+
+
+### Documentation
+
+* **web:** sync ultrawork refine agent naming to refactor agent ([5ea2256](https://github.com/first-fluke/oh-my-agent/commit/5ea2256e6a52574ee7f377518c49d591b4ab3e37))
+
 ## [3.18.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.2...web-v3.18.3) (2026-07-17)
 
 
