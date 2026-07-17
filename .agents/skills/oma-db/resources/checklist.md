@@ -6,6 +6,7 @@ Run through every item before submitting your work.
 - [ ] DB type selection justified from workload, not preference
 - [ ] Relational models normalized to at least 3NF, or denormalization explicitly justified
 - [ ] NoSQL models aligned to concrete access patterns and aggregate boundaries
+- [ ] Graph model used only where variable-depth traversal or relationship-pattern queries dominate; relational adjacency preferred for shallow fixed-depth cases
 - [ ] Vector retrieval is used only where semantic similarity is actually required
 - [ ] Keys, cardinality, and ownership clearly defined
 - [ ] No obvious anti-patterns remain: CSV-in-column, repeated columns, EAV, polymorphic FK, missing FK
@@ -31,6 +32,9 @@ Run through every item before submitting your work.
 - [ ] Full and incremental backup strategy documented
 - [ ] Restore test or recovery validation approach documented
 - [ ] Query anti-patterns reviewed: `SELECT *`, random sort, ambiguous grouping, full wildcard search without proper tooling
+- [ ] Slow-query fixes verified with before/after execution plans on production-like data (estimate vs actual rows checked)
+- [ ] Schema changes on live tables follow expand-contract with lock-aware DDL, lock timeouts, and batched, resumable backfill
+- [ ] Destructive (contract) steps deferred to a separate deploy after a soak window, with a final backup taken first
 
 ## Vector Retrieval
 - [ ] Vector DB is not being used as the canonical document store

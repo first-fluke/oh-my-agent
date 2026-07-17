@@ -124,3 +124,33 @@
 - Similarity score distribution monitored by policy domain
 - Prompt token waste tracked for bad retrieval
 ```
+
+## Example 5: Anti-Pattern Remediation on a Live Table
+
+**Input**: "Our `products` table stores tags as a comma-separated column, prices as FLOAT, and category lookups are slow. Fix it without downtime."
+
+**Output**:
+```md
+## Findings (anti-pattern review)
+- CSV-in-column: `products.tags VARCHAR` holds comma-separated tags -> junction table
+- Floating-point money: `products.price FLOAT` -> NUMERIC(12,2)
+- Slow category lookup: Seq Scan confirmed via EXPLAIN (ANALYZE); estimated 200 rows vs actual 1.8M -> stale stats + missing composite index
+
+## Remediation Plan (expand-contract, four deploys)
+1. Expand (additive only)
+   - CREATE TABLE product_tags(product_id FK, tag_id FK, PRIMARY KEY(product_id, tag_id))
+   - ALTER TABLE products ADD COLUMN price_amount NUMERIC(12,2) (nullable)
+   - CREATE INDEX CONCURRENTLY idx_products_category_active ON products(category_id, is_active)
+2. Migrate (dual-write + backfill)
+   - App writes tags to both column and junction table; price to both columns
+   - Backfill in 10k-row PK batches with checkpointing; replication lag watched, throttled at threshold
+   - Parity: row-count + sampled checksum comparison recorded
+3. Switch (reads behind flag)
+   - Reads flip to product_tags / price_amount; old paths kept for rollback; 1-week soak
+4. Contract (separate deploy, after soak + final backup)
+   - Drop products.tags and products.price; VALIDATE NOT NULL on price_amount via CHECK NOT VALID first
+
+## Verification
+- ANALYZE products; EXPLAIN (ANALYZE, BUFFERS) before/after recorded: Seq Scan -> Index Scan, p95 420ms -> 6ms
+- lock_timeout = '2s' + retry on every DDL; no COPY-algorithm DDL on the hot table
+```

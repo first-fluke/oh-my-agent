@@ -21,3 +21,5 @@ alwaysApply: false
 11. Vector DBs are retrieval infrastructure, not source-of-truth databases. Store embeddings and metadata there; keep canonical documents elsewhere.
 12. Never treat vector search as a drop-in for lexical search. Default to hybrid retrieval when exact match or explainability matters.
 13. Embeddings are schema-like assets: version model, dimension, chunking, and preprocessing. Plan re-embedding migrations explicitly.
+14. Schema or data changes on live tables follow expand-contract: additive expand, dual-write + batched backfill, verified read switch, delayed contract. Use lock-aware DDL with timeouts; ship destructive steps in a separate deploy after a soak window.
+15. Tune queries from measurement and execution plans, never guesswork: measure, explain, nominate the dominant cost node, optimize, re-measure p95.

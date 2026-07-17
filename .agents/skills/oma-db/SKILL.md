@@ -45,7 +45,7 @@ Design, review, optimize, and document SQL, NoSQL, vector, and retrieval-oriente
 
 ### Dependencies
 - Existing database schemas, migration files, query logs, workload descriptions, and application access paths
-- `resources/document-templates.md`, `resources/anti-patterns.md`, `resources/vector-db.md`, and `resources/iso-controls.md`
+- `resources/document-templates.md`, `resources/anti-patterns.md`, `resources/vector-db.md`, `resources/iso-controls.md`, `resources/migration-playbook.md`, and `resources/query-tuning.md`
 - SQL/NoSQL/vector database tools or project-specific migration toolchains when implementation is requested
 
 ### Control-flow features
@@ -142,6 +142,8 @@ Then run the project's migration, query-plan, or retrieval-quality commands only
 13. Never treat vector search as a drop-in replacement for lexical search. Default to hybrid retrieval when exact match, compliance filtering, or explainability matters.
 14. Embeddings are schema-like assets: version model, dimension, chunking, and preprocessing, and plan re-embedding migrations explicitly.
 15. Retrieval quality is won at chunking, filtering, reranking, and observability, not only at the vector index layer.
+16. Schema or data changes on live tables follow expand-contract (parallel change): additive expand, dual-write + batched backfill, verified read switch, delayed contract. DDL on hot tables is lock-aware with timeouts; destructive steps ship in a separate deploy after a soak window.
+17. Query tuning starts from measurement and execution plans, never guesswork: measure, explain, nominate the dominant cost node, then optimize and re-measure.
 
 ### Default Workflow
 1. **Explore**
@@ -175,6 +177,8 @@ Use `resources/document-templates.md` when you need concrete deliverable structu
 Use `resources/anti-patterns.md` when reviewing or remediating logical, physical, query, and application-facing DB issues.
 Use `resources/vector-db.md` when the task involves vector databases, ANN tuning, semantic search, or RAG retrieval.
 Use `resources/iso-controls.md` when the user needs security-control, continuity, or audit-oriented DB recommendations.
+Use `resources/migration-playbook.md` when a schema or data change targets live tables (expand-contract, lock-aware DDL, batched backfill, cutover).
+Use `resources/query-tuning.md` when the task involves slow queries, execution plans, or index design.
 Before submitting, run `resources/checklist.md`.
 Vendor-specific execution protocols are injected automatically by `oh-my-agent agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
@@ -183,6 +187,8 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Examples: `resources/examples.md`
 - Deliverable templates: `resources/document-templates.md`
 - Anti-pattern review guide: `resources/anti-patterns.md`
+- Live migration playbook: `resources/migration-playbook.md`
+- Query tuning and index design: `resources/query-tuning.md`
 - Vector DB and RAG guide: `resources/vector-db.md`
 - ISO control guide: `resources/iso-controls.md`
 - Error recovery: `resources/error-playbook.md`

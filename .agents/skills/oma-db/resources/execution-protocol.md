@@ -11,6 +11,8 @@
 3. **Budget context**: follow `../../_shared/core/context-budget.md`
 4. **If vector search is involved**, read `resources/vector-db.md`
 5. **If security, audit, backup, or resilience requirements are central**, read `resources/iso-controls.md`
+6. **If a schema or data change targets live tables**, read `resources/migration-playbook.md`
+7. **If slow queries, execution plans, or index selection are in scope**, read `resources/query-tuning.md`
 
 ## Step 1: Explore
 - Identify actors and external views that need data
@@ -25,6 +27,7 @@
 - Decide relational vs non-relational:
   - Prefer relational when joins, strong integrity, and transactional consistency dominate
   - Prefer NoSQL when aggregate reads/writes, massive scale, flexible schema, or distribution tolerance dominate
+  - Prefer a graph model only when variable-depth traversals or relationship-pattern queries dominate the workload; adjacency (`parent_id`, junction tables) in a relational engine handles shallow, fixed-depth traversals fine
   - Prefer vector retrieval only for semantic similarity workloads; do not replace keyword/search engines blindly
 - Screen for anti-pattern signals early:
   - comma-separated values in one column
@@ -56,6 +59,11 @@
   - model around access patterns and aggregate boundaries
   - define sharding/partition keys, secondary indexes, TTL, duplication policy
   - document consistency model, conflict strategy, and repair/reconciliation approach
+- Graph path:
+  - model nodes/edges from the traversal questions the business actually asks, not from the ERD
+  - define edge direction, cardinality, and properties; decide which lookups still need secondary indexes on node properties
+  - document traversal depth expectations and whether the engine's strength (index-free adjacency) is actually exercised
+  - keep source-of-truth entities in the primary store when the graph is a derived projection; document the sync path
 - Vector path:
   - define embedding model, dimension, normalization, and metadata versioning
   - define chunking policy, overlap, and document-type-specific chunk rules
@@ -74,7 +82,8 @@
   - continuity and recovery alignment for ISO 22301
 
 ## Step 3: Optimize
-- Validate hot paths against indexes and partitions
+- Validate hot paths against indexes and partitions; tune with `resources/query-tuning.md` (measure -> explain -> nominate -> test, never guesswork)
+- If optimization requires schema changes on live tables, plan them via `resources/migration-playbook.md` (expand-contract, lock-aware DDL, batched backfill)
 - For vector systems:
   - benchmark recall vs latency on production-like queries
   - measure ANN parameter tradeoffs, filter pushdown cost, and write amplification
