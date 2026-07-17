@@ -26,3 +26,4 @@ alwaysApply: false
 6. **Always** use specific file names when staging
 7. Split commits when: different scopes, different types, logically independent changes
 8. Do NOT split when: all changes belong to a single feature, few files (5 or fewer)
+9. Precedence: logical independence decides first (one logical change = one commit); file count (5 or fewer) is only a tiebreaker; an explicit user instruction overrides both

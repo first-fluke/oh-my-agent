@@ -103,7 +103,13 @@ Scoring guidance:
 
 Data sources (preferred order):
 1. PR metadata/diff from GitHub CLI or API
-2. Line-overlap detection (diff hunk ranges compared across candidate branches; use a dedicated detector tool if the project has one)
+2. Line-overlap detection — compare diff hunk ranges across candidate branches (no dedicated tool required):
+   ```bash
+   # Changed line ranges per file for one branch vs its merge-base
+   git diff -U0 "$(git merge-base <base> <branch>)"..<branch> -- <file> | grep '^@@'
+   # Repeat per candidate branch; two branches overlap on <file> when their
+   # "+start,count" ranges from the @@ headers intersect.
+   ```
 3. Merge simulation (GitHub mergeability/queue simulation when available)
 4. Local git history for churn/hotspot and ownership hints
 
@@ -146,7 +152,7 @@ Do not create commits unless explicitly requested.
 
 ### Step 3B: Commit execution path
 
-1. Separate features if needed (different scope/type and >5 files).
+1. Separate features if needed — one commit per logical change. Tiebreaker when unclear: ≤5 files lean single commit; >5 files spanning multiple scopes/types lean split (see `oma-scm` SKILL.md Step 1.5 precedence).
    After deciding the commit grouping, emit and verify the required split decision:
    ```bash
    oma state:emit "decision.made" '{"subject":"scm.commit-split","decision":"Use the selected commit grouping for the current repository changes.","rationale":"The working tree was inspected and changes were grouped by scope/type before committing."}'
@@ -156,6 +162,7 @@ Do not create commits unless explicitly requested.
 3. Determine scope.
 4. Write description (imperative, lowercase, <=72 chars, no trailing period).
 5. Execute commit with explicit file paths.
+6. Push only when explicitly requested; follow `oma-scm` SKILL.md "Push and PR safety".
 
 ### Step 3.5: Optional Doc Verify Hook
 
