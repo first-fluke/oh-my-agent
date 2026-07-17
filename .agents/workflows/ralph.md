@@ -123,7 +123,7 @@ oma ralph:verify --json --session {sessionId} --newer-than {iteration_start_iso}
 | A1 | `{memBase}/session-ultrawork.md` with this iteration's phase-completion records | PLAN + gate progression |
 | A2 | `.agents/results/plan-{sessionId}.json` | PLAN produced a real task breakdown |
 | A3 | `{memBase}/result-qa*.md` or `.agents/results/result-qa*.md` (VERIFY) | **a distinct QA agent ran** — absent if IMPL was the only spawn. CLI fallback writes `result-qa-agent*` to `{memBase}`; Claude-native `qa-reviewer` writes `result-qa*` to `.agents/results/` |
-| A4 | `{memBase}/result-debug*.md` or `.agents/results/result-debug*.md` (REFINE) | **a distinct Debug agent ran** — same naming split (`debug-investigator` on the native path) |
+| A4 | `{memBase}/result-refactor*.md` or `.agents/results/result-refactor*.md` (REFINE) | **a distinct Refactor agent ran** — same naming split (`refactor-engineer` on the native path). Legacy `result-debug*` from older runs is also accepted |
 
 **Decision:**
 

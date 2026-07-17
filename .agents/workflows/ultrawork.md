@@ -271,7 +271,7 @@ REFINE mixes two kinds of work: **reviews** (Steps 10, 12), which are read-only 
 
 **First, dispatch the two reviews as fresh isolated reviewer subagents** per the **Cross-Context Review (CCR) Dispatch** section — one reviewer for Step 10 (Reusability), one for Step 12 (Consistency). Each reads only the durable artifacts (git diff, changed files) plus its guide section; do not pass this session's history or the implementation agents' reasoning. Collect their verdicts from memory.
 
-**Then, spawn the Debug Agent** to perform the refactor actions (Steps 9, 11, 13) and apply the isolated reviewers' findings, and to write `result-debug-{sessionId}.md` (this satisfies the REFINE artifact contract).
+**Then, spawn the Refactor Agent** to perform the refactor actions (Steps 9, 11, 13) and apply the isolated reviewers' findings, and to write `result-refactor-{sessionId}.md` (this satisfies the REFINE artifact contract).
 
 #### If Claude Code
 Reviews (two separate calls, isolated contexts):
@@ -279,47 +279,47 @@ Reviews (two separate calls, isolated contexts):
 - `Agent(subagent_type="qa-reviewer", prompt="CCR Step 12 Consistency Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files>. Guide: Consistency Review section. Write a structured verdict to memory.", run_in_background=true)`
 
 Refactor actions (after the review verdicts are collected):
-- `Agent(subagent_type="debug-investigator", prompt="Execute Phase 4 refactor actions. Step 9: Split large files. Step 11: Side Effect analysis (find_referencing_symbols). Step 13: Cleanup dead code. Apply the collected Reusability/Consistency verdicts. Write result-debug-{sessionId}.md. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
+- `Agent(subagent_type="refactor-engineer", prompt="Execute Phase 4 refactor actions. Step 9: Split large files. Step 11: Side Effect analysis (find_referencing_symbols). Step 13: Cleanup dead code. Apply the collected Reusability/Consistency verdicts. Write result-refactor-{sessionId}.md. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
 
 #### If Codex CLI
-Spawn one native Codex reviewer per review (`.codex/agents/{agent}.toml`) with only its artifacts + guide section, then a native refactor agent for Steps 9/11/13.
+Spawn one native Codex reviewer per review (`.codex/agents/{agent}.toml`) with only its artifacts + guide section, then the native refactor agent (`.codex/agents/refactor-engineer.toml`) for Steps 9/11/13.
 If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
 
 #### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
 oma agent:spawn qa-agent "CCR Step 10 Reusability Review ONLY. Inputs (read fresh): <diff>. Guide: Reusability Review section. Write a structured verdict to memory." session-id
 oma agent:spawn qa-agent "CCR Step 12 Consistency Review ONLY. Inputs (read fresh): <diff>. Guide: Consistency Review section. Write a structured verdict to memory." session-id
-oma agent:spawn debug-agent "Execute Phase 4 refactor actions. Step 9: Split large files. Step 11: Side Effect analysis. Step 13: Cleanup dead code. Apply the collected Reusability/Consistency verdicts. Write result-debug-{sessionId}.md. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
+oma agent:spawn refactor-engineer "Execute Phase 4 refactor actions. Step 9: Split large files. Step 11: Side Effect analysis. Step 13: Cleanup dead code. Apply the collected Reusability/Consistency verdicts. Write result-refactor-{sessionId}.md. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." session-id
 ```
 
 ---
 
-### Monitor Reviewers & Debug Agent Progress
+### Monitor Reviewers & Refactor Agent Progress
 
-**Wait for the two reviewers and the Debug Agent to complete refinement before proceeding.**
+**Wait for the two reviewers and the Refactor Agent to complete refinement before proceeding.**
 
 1. Confirm both isolated reviewers wrote their structured verdicts to memory.
-2. Use memory read tool to poll `progress-debug-agent[-{sessionId}].md`
-3. Check for `result-debug-agent[-{sessionId}].md` to confirm completion
-   - **Claude-native path**: the Agent tool returns synchronously and the `debug-investigator` subagent writes `result-debug[-{sessionId}].md` under `.agents/results/` — check that file instead of polling.
+2. Use memory read tool to poll `progress-refactor-engineer[-{sessionId}].md`
+3. Check for `result-refactor-engineer[-{sessionId}].md` to confirm completion
+   - **Claude-native path**: the Agent tool returns synchronously and the `refactor-engineer` subagent writes `result-refactor[-{sessionId}].md` under `.agents/results/` — check that file instead of polling.
 4. Use memory edit tool to record refinement results (reviews + actions) in `session-ultrawork.md`
 
-**Continue polling until the reviewers and Debug Agent report completion.**
+**Continue polling until the reviewers and Refactor Agent report completion.**
 
 ### Step 9: Split Large Files/Functions
-- **Executed by Debug Agent (action)**: Files > 500 lines, Functions > 50 lines.
+- **Executed by Refactor Agent (action)**: Files > 500 lines, Functions > 50 lines.
 
 ### Step 10: Integration/Reuse Review (Reusability)
 - **Executed by a fresh isolated reviewer subagent (CCR)**: Check for duplicate logic.
 
 ### Step 11: Side Effect Review (Cascade Impact)
-- **Executed by Debug Agent (action)**: Analyze impact scope.
+- **Executed by Refactor Agent (action)**: Analyze impact scope.
 
 ### Step 12: Full Change Review (Consistency)
 - **Executed by a fresh isolated reviewer subagent (CCR)**: Review naming and style.
 
 ### Step 13: Clean Up Unused Code
-- **Executed by Debug Agent (action)**: Remove newly created dead code.
+- **Executed by Refactor Agent (action)**: Remove newly created dead code.
 
 ### Step 13.1: Measure Post-REFINE Quality Score (Conditional)
 
@@ -344,13 +344,13 @@ If baseline was measured at Step 5.2:
    oma state:verify --workflow ultrawork --checkpoint refine-outcome
    ```
 
-**Gate failure → Before re-spawning the Debug Agent, apply the same termination check:**
+**Gate failure → Before re-spawning the Refactor Agent, apply the same termination check:**
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Total REFINE failure count has reached the configured maximum iterations (default: 5 cycles across all phases). Do not start another cycle.
 > 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop. Save current step results before stopping, then report early termination due to quota.
 >
-> If neither condition is met, re-spawn the Debug Agent with specific issues and repeat until GATE passes.
+> If neither condition is met, re-spawn the Refactor Agent with specific issues and repeat until GATE passes.
 
 **Skip conditions**: Simple tasks < 50 lines
 
@@ -458,7 +458,7 @@ This hook is opt-in; the default `auto_verify: false` skips this step entirely.
 | PLAN   | 1-4   | PM (author) + CCR reviewers  | CCR isolated review  | Completeness, Meta, Simplicity    |
 | IMPL   | 5     | Dev Agents                   | Spawn (action)       | Implementation                    |
 | VERIFY | 6-8   | CCR reviewers                | CCR isolated review  | Alignment, Safety, Regression     |
-| REFINE | 9-13  | Debug Agent + CCR reviewers  | Action + CCR review  | Reusability, Cascade, Consistency |
+| REFINE | 9-13  | Refactor Agent + CCR reviewers | Action + CCR review | Reusability, Cascade, Consistency |
 | SHIP   | 14-17 | CCR reviewers                | CCR isolated review  | Quality, UX, Cascade 2nd, Deploy  |
 
 **Total 11 review steps, each run in a fresh isolated reviewer (Cross-Context Review), + conditional Quality Score checkpoints → High quality guaranteed**

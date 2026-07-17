@@ -106,7 +106,7 @@ function escapeRegExp(value: string): string {
  * Agent result files have two naming/location schemes depending on dispatch
  * path: CLI fallback (`oma agent:spawn qa-agent`) writes
  * `{memBase}/result-qa-agent*.md`, while Claude-native subagents
- * (qa-reviewer / debug-investigator) write `.agents/results/result-qa*.md`.
+ * (qa-reviewer / refactor-engineer) write `.agents/results/result-qa*.md`.
  * Scan both so a fully executed native run is not falsely gated.
  */
 function listMatchesAcross(
@@ -180,15 +180,16 @@ export async function verifyRalphExecArtifacts(args: {
     {
       id: "A4",
       description:
-        "a distinct Debug agent ran (REFINE phase), or a documented skip reason is recorded",
-      pattern: `${memBase}/result-debug*.md or ${AGENTS_RESULTS_DIR}/result-debug*.md`,
+        "a distinct Refactor agent ran (REFINE phase), or a documented skip reason is recorded",
+      pattern: `${memBase}/result-refactor*.md or ${AGENTS_RESULTS_DIR}/result-refactor*.md`,
       status: "missing",
       matches: listMatchesAcross(
         [
           { dir: memDir, label: memBase },
           { dir: resultsDir, label: AGENTS_RESULTS_DIR },
         ],
-        /^result-debug.*\.md$/,
+        // result-debug* accepted for runs from before REFINE moved to refactor-engineer
+        /^result-(?:refactor|debug).*\.md$/,
         newerThanMs,
       ),
     },

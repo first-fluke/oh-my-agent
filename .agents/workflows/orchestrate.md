@@ -111,6 +111,7 @@ Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
 | db | `.claude/agents/db-engineer.md` |
 | qa | `.claude/agents/qa-reviewer.md` |
 | debug | `.claude/agents/debug-investigator.md` |
+| refactor | `.claude/agents/refactor-engineer.md` |
 | pm | `.claude/agents/pm-planner.md` |
 | architecture | `.claude/agents/architecture-reviewer.md` |
 | tf-infra | `.claude/agents/tf-infra-engineer.md` |

@@ -31,7 +31,7 @@ function writeFullArtifactSet(projectDir: string, sid = "s1") {
   );
   writeArtifact(projectDir, `.agents/results/plan-${sid}.json`, "{}");
   writeArtifact(projectDir, `${MEM_BASE}/result-qa-agent-${sid}.md`);
-  writeArtifact(projectDir, `${MEM_BASE}/result-debug-agent-${sid}.md`);
+  writeArtifact(projectDir, `${MEM_BASE}/result-refactor-engineer-${sid}.md`);
 }
 
 describe("resolveMemoryBasePath", () => {
@@ -104,7 +104,7 @@ describe("verifyRalphExecArtifacts", () => {
     ]);
   });
 
-  it("accepts Claude-native result naming in .agents/results (qa-reviewer/debug-investigator)", async () => {
+  it("accepts Claude-native result naming in .agents/results (qa-reviewer/refactor-engineer)", async () => {
     writeArtifact(
       projectDir,
       `${MEM_BASE}/session-ultrawork.md`,
@@ -112,7 +112,7 @@ describe("verifyRalphExecArtifacts", () => {
     );
     writeArtifact(projectDir, ".agents/results/plan-s1.json", "{}");
     writeArtifact(projectDir, ".agents/results/result-qa-s1.md");
-    writeArtifact(projectDir, ".agents/results/result-debug-s1.md");
+    writeArtifact(projectDir, ".agents/results/result-refactor-s1.md");
 
     const result = await verifyRalphExecArtifacts({
       projectDir,
@@ -122,6 +122,21 @@ describe("verifyRalphExecArtifacts", () => {
     expect(result.ok).toBe(true);
     const a3 = result.checks.find((check) => check.id === "A3");
     expect(a3?.matches).toEqual([".agents/results/result-qa-s1.md"]);
+  });
+
+  it("accepts legacy result-debug A4 naming from runs before REFINE moved to refactor-engineer", async () => {
+    writeFullArtifactSet(projectDir);
+    rmSync(join(projectDir, `${MEM_BASE}/result-refactor-engineer-s1.md`));
+    writeArtifact(projectDir, `${MEM_BASE}/result-debug-agent-s1.md`);
+
+    const result = await verifyRalphExecArtifacts({
+      projectDir,
+      emitOnFail: false,
+    });
+
+    expect(result.ok).toBe(true);
+    const a4 = result.checks.find((check) => check.id === "A4");
+    expect(a4?.matches).toEqual([`${MEM_BASE}/result-debug-agent-s1.md`]);
   });
 
   it("fails with a structured missing list when the QA result is absent", async () => {
@@ -140,7 +155,7 @@ describe("verifyRalphExecArtifacts", () => {
 
   it("accepts a missing A4 when session-ultrawork.md records a REFINE skip", async () => {
     writeFullArtifactSet(projectDir);
-    rmSync(join(projectDir, `${MEM_BASE}/result-debug-agent-s1.md`));
+    rmSync(join(projectDir, `${MEM_BASE}/result-refactor-engineer-s1.md`));
     writeArtifact(
       projectDir,
       `${MEM_BASE}/session-ultrawork.md`,
@@ -157,7 +172,7 @@ describe("verifyRalphExecArtifacts", () => {
 
   it("treats a missing A4 without a recorded skip reason as circumvention", async () => {
     writeFullArtifactSet(projectDir);
-    rmSync(join(projectDir, `${MEM_BASE}/result-debug-agent-s1.md`));
+    rmSync(join(projectDir, `${MEM_BASE}/result-refactor-engineer-s1.md`));
 
     const result = await verifyRalphExecArtifacts({
       projectDir,

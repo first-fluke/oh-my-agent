@@ -71,7 +71,7 @@ Return to IMPL with findings
 
 ## REFINE_GATE
 
-**Owner**: Implementation + Debug Agents
+**Owner**: Implementation + Refactor Agents
 **Trigger**: After Steps 9-13
 
 ### Criteria
