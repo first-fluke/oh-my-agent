@@ -1,9 +1,10 @@
 import { httpFetch } from "./http.js";
 
 /**
- * Trust scoring — hybrid of static registry + Tranco ranking proxy.
- * The registry mirrors `oma-search` resources/trust-registry.md; Tranco
- * provides a global popularity signal for unknown domains.
+ * Trust scoring — hybrid of static registry + heuristics + Tranco ranking.
+ * This module is the single source of truth for domain trust scores;
+ * `oma-search` resources/trust-registry.md documents it. Tranco provides a
+ * popularity prior for unknown domains, capped below the verified threshold.
  */
 
 export type TrustLevel =
@@ -35,6 +36,13 @@ const REGISTRY: Record<string, TrustScore> = {
     level: "verified",
     score: 0.95,
     tags: ["lang-docs"],
+    source: "registry",
+  },
+  "gitlab.com": {
+    domain: "gitlab.com",
+    level: "verified",
+    score: 0.95,
+    tags: ["code-host"],
     source: "registry",
   },
   "developer.mozilla.org": {
@@ -72,6 +80,48 @@ const REGISTRY: Record<string, TrustScore> = {
     tags: ["qna"],
     source: "registry",
   },
+  "stackexchange.com": {
+    domain: "stackexchange.com",
+    level: "community",
+    score: 0.7,
+    tags: ["qna"],
+    source: "registry",
+  },
+  "w3.org": {
+    domain: "w3.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["standards"],
+    source: "registry",
+  },
+  "tc39.es": {
+    domain: "tc39.es",
+    level: "verified",
+    score: 0.95,
+    tags: ["standards"],
+    source: "registry",
+  },
+  "ietf.org": {
+    domain: "ietf.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["standards"],
+    source: "registry",
+  },
+  "datatracker.ietf.org": {
+    domain: "datatracker.ietf.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["standards"],
+    source: "registry",
+  },
+  "owasp.org": {
+    domain: "owasp.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["standards"],
+    source: "registry",
+  },
   "dev.to": {
     domain: "dev.to",
     level: "external",
@@ -86,6 +136,62 @@ const REGISTRY: Record<string, TrustScore> = {
     tags: ["blog"],
     source: "registry",
   },
+  "hashnode.com": {
+    domain: "hashnode.com",
+    level: "external",
+    score: 0.35,
+    tags: ["blog"],
+    source: "registry",
+  },
+  "substack.com": {
+    domain: "substack.com",
+    level: "external",
+    score: 0.35,
+    tags: ["blog"],
+    source: "registry",
+  },
+  "velog.io": {
+    domain: "velog.io",
+    level: "external",
+    score: 0.3,
+    tags: ["blog", "kr"],
+    source: "registry",
+  },
+  "tistory.com": {
+    domain: "tistory.com",
+    level: "external",
+    score: 0.3,
+    tags: ["blog", "kr"],
+    source: "registry",
+  },
+  "w3schools.com": {
+    domain: "w3schools.com",
+    level: "external",
+    score: 0.3,
+    tags: ["tutorial"],
+    source: "registry",
+  },
+  "geeksforgeeks.org": {
+    domain: "geeksforgeeks.org",
+    level: "external",
+    score: 0.3,
+    tags: ["tutorial"],
+    source: "registry",
+  },
+  "freecodecamp.org": {
+    domain: "freecodecamp.org",
+    level: "external",
+    score: 0.45,
+    tags: ["tutorial"],
+    source: "registry",
+  },
+  "baeldung.com": {
+    domain: "baeldung.com",
+    level: "external",
+    score: 0.45,
+    tags: ["tutorial"],
+    source: "registry",
+  },
   "npmjs.com": {
     domain: "npmjs.com",
     level: "verified",
@@ -95,6 +201,20 @@ const REGISTRY: Record<string, TrustScore> = {
   },
   "pypi.org": {
     domain: "pypi.org",
+    level: "verified",
+    score: 0.9,
+    tags: ["registry"],
+    source: "registry",
+  },
+  "crates.io": {
+    domain: "crates.io",
+    level: "verified",
+    score: 0.9,
+    tags: ["registry"],
+    source: "registry",
+  },
+  "pub.dev": {
+    domain: "pub.dev",
     level: "verified",
     score: 0.9,
     tags: ["registry"],
@@ -135,6 +255,41 @@ const REGISTRY: Record<string, TrustScore> = {
     tags: ["academic"],
     source: "registry",
   },
+  "react.dev": {
+    domain: "react.dev",
+    level: "verified",
+    score: 0.95,
+    tags: ["lang-docs"],
+    source: "registry",
+  },
+  "go.dev": {
+    domain: "go.dev",
+    level: "verified",
+    score: 0.95,
+    tags: ["lang-docs"],
+    source: "registry",
+  },
+  "rust-lang.org": {
+    domain: "rust-lang.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["lang-docs"],
+    source: "registry",
+  },
+  "python.org": {
+    domain: "python.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["lang-docs"],
+    source: "registry",
+  },
+  "nodejs.org": {
+    domain: "nodejs.org",
+    level: "verified",
+    score: 0.95,
+    tags: ["lang-docs"],
+    source: "registry",
+  },
 };
 
 function stripWww(host: string): string {
@@ -171,6 +326,24 @@ function heuristic(domain: string): TrustScore | null {
       level: "verified",
       score: 0.85,
       tags: ["institution"],
+      source: "heuristic",
+    };
+  }
+  if (/^docs\./.test(domain) || /\.docs\./.test(domain)) {
+    return {
+      domain,
+      level: "verified",
+      score: 0.9,
+      tags: ["docs-subdomain"],
+      source: "heuristic",
+    };
+  }
+  if (/^developers?\./.test(domain)) {
+    return {
+      domain,
+      level: "verified",
+      score: 0.85,
+      tags: ["dev-portal"],
       source: "heuristic",
     };
   }

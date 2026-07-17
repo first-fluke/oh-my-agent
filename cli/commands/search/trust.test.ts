@@ -38,6 +38,39 @@ describe("trustScore", () => {
     expect(result.level).toBe("verified");
   });
 
+  it("resolves gitlab.com at parity with github.com", async () => {
+    const result = await trustScore("gitlab.com");
+    expect(result.level).toBe("verified");
+    expect(result.score).toBe(0.95);
+  });
+
+  it("resolves standards bodies as verified", async () => {
+    const result = await trustScore("datatracker.ietf.org");
+    expect(result.level).toBe("verified");
+    expect(result.score).toBe(0.95);
+  });
+
+  it("returns heuristic verified 0.90 for docs.* subdomains", async () => {
+    const result = await trustScore("docs.astro.build");
+    expect(result.source).toBe("heuristic");
+    expect(result.level).toBe("verified");
+    expect(result.score).toBe(0.9);
+    expect(result.tags).toContain("docs-subdomain");
+  });
+
+  it("returns heuristic verified 0.85 for developer(s).* portals", async () => {
+    const result = await trustScore("developer.apple.com");
+    expect(result.source).toBe("heuristic");
+    expect(result.level).toBe("verified");
+    expect(result.score).toBe(0.85);
+  });
+
+  it("resolves KR blog platforms as external", async () => {
+    const result = await trustScore("velog.io");
+    expect(result.level).toBe("external");
+    expect(result.score).toBe(0.3);
+  });
+
   it("falls back to unknown for unrecognized domain", async () => {
     const result = await trustScore("totally-unknown-domain-123456.example");
     expect(result.level).toBe("unknown");
