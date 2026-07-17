@@ -16,8 +16,13 @@
  *
  * Event mapping (see README.md):
  *   before_agent_start  ← UserPromptSubmit  (keyword-detector + skill-injector)
- *   tool_call (bash)    ← PreToolUse        (test-filter)
+ *   tool_call (bash)    ← PreToolUse        (scm-guard + test-filter)
  *   agent_settled       ← Stop              (persistent-mode + re-entry)
+ *
+ * tool_call blocking: a handler that returns `{ block: true, reason }` blocks
+ * the tool call (documented pi extension contract — see
+ * badlogic/pi-mono packages/coding-agent/docs/extensions.md). scm-guard uses
+ * this to deny `git add` of likely-secret files.
  *
  * persistent-mode: `agent_settled` fires once a run has fully settled (no
  * pending retry / compaction / queued continuation) — the pi analog of a Stop
@@ -142,14 +147,34 @@ export default function omaHooks(pi: ExtensionAPI): void {
     return { systemPrompt: `${event.systemPrompt}\n\n${parts.join("\n\n")}` };
   });
 
-  // tool_call ← PreToolUse (Bash). test-filter rewrites test-runner commands
-  // so only failures reach the model. pi exposes `event.input` as mutable, so
-  // we rewrite the command in place.
+  // tool_call ← PreToolUse (Bash). scm-guard first: it denies `git add` of
+  // likely-secret files by returning pi's documented `{ block: true, reason }`
+  // shape. Then test-filter rewrites test-runner commands so only failures
+  // reach the model. pi exposes `event.input` as mutable, so we rewrite the
+  // command in place.
   pi.on("tool_call", async (event) => {
     if (event.toolName !== "bash") return undefined;
     const input = event.input as { command?: string } | undefined;
     const command = input?.command;
     if (!command) return undefined;
+
+    const sg = runCore("scm-guard.ts", {
+      tool_name: "Bash",
+      tool_input: { command },
+      cwd: process.cwd(),
+      hook_event_name: "PreToolUse",
+    });
+    // The core script emits the claude dialect
+    // (`hookSpecificOutput.permissionDecision: "deny"`).
+    const hso = sg?.hookSpecificOutput as
+      | { permissionDecision?: string; permissionDecisionReason?: string }
+      | undefined;
+    if (hso?.permissionDecision === "deny") {
+      return {
+        block: true,
+        reason: hso.permissionDecisionReason ?? "Blocked by oma scm-guard.",
+      };
+    }
 
     const tf = runCore("test-filter.ts", {
       tool_name: "Bash",

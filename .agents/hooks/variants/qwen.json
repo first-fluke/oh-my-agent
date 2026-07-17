@@ -24,11 +24,18 @@
         "timeout": 3
       }
     ],
-    "PreToolUse": {
-      "hook": "test-filter.ts",
-      "matcher": "run_shell_command",
-      "timeout": 5
-    },
+    "PreToolUse": [
+      {
+        "hook": "scm-guard.ts",
+        "matcher": "run_shell_command",
+        "timeout": 3
+      },
+      {
+        "hook": "test-filter.ts",
+        "matcher": "run_shell_command",
+        "timeout": 5
+      }
+    ],
     "Stop": {
       "hook": "persistent-mode.ts",
       "timeout": 5

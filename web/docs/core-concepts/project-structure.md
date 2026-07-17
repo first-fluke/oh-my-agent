@@ -395,6 +395,8 @@ The handler sources are the SSOT at `.agents/hooks/core/` and run in-process via
 
 **`persistent-mode.ts`**: Pure handler (`run()`) that checks for active state files in `.agents/state/` and reinforces persistent workflow execution. Called in-process via `oma hook` on `Stop` events.
 
+**`scm-guard.ts`**: Pure handler (`run()`) on `PreToolUse` (Bash/shell tools) that denies `git add` of likely-secret files. Enforces `forbidden_patterns` minus `allowed_exceptions` from `.agents/skills/oma-scm/config/commit-config.yaml` (embedded defaults when the config is absent). Runs before `test-filter` in the chain for claude, codex, cursor, grok, kimi, kiro, and qwen, and in the opencode bridge (`tool.execute.before` throws to block) and pi bridge (`tool_call` returns `{ block: true, reason }`); a command prefixed with `OMA_SCM_ALLOW_SECRETS=1` bypasses the guard after explicit user approval. Broad staging (`git add -A` / `git add .`) is intentionally not blocked — that rule depends on user consent the hook cannot observe.
+
 **`triggers.json`**: The keyword-to-workflow mapping, statically inlined into the `oma` binary at build time (source: `.agents/hooks/core/triggers.json`). Defines:
 - `workflows`: Map of workflow name to `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] } }`. `keywords` are literal phrases; `patterns` are raw regex strings (compiled with `iu` flags).
 - `informationalPatterns`: Phrases that indicate questions (filtered out from auto-detection)

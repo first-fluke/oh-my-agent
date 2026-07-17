@@ -42,8 +42,13 @@
  *       harmless and a chat.message→transform ordering assumption cannot
  *       permanently drop context.
  *   tool.execute.before                 ← PreToolUse (bash only)
- *       Runs test-filter on output.args.command and writes the rewritten
- *       command back onto output.args.command.
+ *       Runs scm-guard first (throws to block `git add` of likely-secret
+ *       files — throwing is opencode's documented block mechanism, see
+ *       opencode.ai/docs/plugins), then test-filter on output.args.command,
+ *       writing the rewritten command back onto output.args.command.
+ *       Known upstream caveat: plugin hooks do not intercept subagent tool
+ *       calls (anomalyco/opencode#5894), so the guard covers the primary
+ *       agent only.
  *   event: "session.idle"               ← Stop (BEST-EFFORT / re-entrant)
  *       Runs persistent-mode. If it returns a block decision, the workflow is
  *       still active: re-enter the loop by posting the block reason as a new
@@ -132,6 +137,33 @@ function extractUpdatedCommand(
   const hso = out.hookSpecificOutput;
   if (hso && typeof hso === "object") {
     return readCommand((hso as Record<string, unknown>).updatedInput);
+  }
+  return null;
+}
+
+/**
+ * Extract a PreToolUse deny reason from an scm-guard result. The core script
+ * emits the `claude` dialect (`hookSpecificOutput.permissionDecision: "deny"`
+ * + `permissionDecisionReason`); a top-level `permission: "deny"` +
+ * `user_message`/`reason` is also accepted for dialect resilience.
+ */
+function extractDenyReason(out: Record<string, unknown> | null): string | null {
+  if (!out) return null;
+  const hso = out.hookSpecificOutput;
+  if (hso && typeof hso === "object") {
+    const h = hso as Record<string, unknown>;
+    if (h.permissionDecision === "deny") {
+      return typeof h.permissionDecisionReason === "string" &&
+        h.permissionDecisionReason
+        ? h.permissionDecisionReason
+        : "Blocked by oma scm-guard.";
+    }
+  }
+  if (out.permission === "deny" || out.decision === "deny") {
+    const reason = out.user_message ?? out.reason;
+    return typeof reason === "string" && reason
+      ? reason
+      : "Blocked by oma scm-guard.";
   }
   return null;
 }
@@ -301,9 +333,12 @@ export default (async ({
      * tool.execute.before ← PreToolUse (bash)
      *
      * `input.tool` is a plain string and the command lives on
-     * `output.args.command`. Runs the OMA test-filter for bash commands to
-     * rewrite test-runner invocations so only failures reach the model, then
-     * writes the rewritten command back. Non-bash tools pass through unchanged.
+     * `output.args.command`. First runs scm-guard — throwing is opencode's
+     * documented mechanism for blocking a tool call, so a deny becomes a
+     * `throw` (this is the ONE deliberate non-fail-open path in this bridge).
+     * Then runs the OMA test-filter for bash commands to rewrite test-runner
+     * invocations so only failures reach the model, and writes the rewritten
+     * command back. Non-bash tools pass through unchanged.
      */
     "tool.execute.before": async (
       input: { tool?: string },
@@ -312,6 +347,20 @@ export default (async ({
       if (input.tool !== "bash") return;
       const command = output.args?.command;
       if (typeof command !== "string" || !command) return;
+
+      const denyReason = extractDenyReason(
+        runCore(
+          "scm-guard.ts",
+          {
+            tool_name: "Bash",
+            tool_input: { command },
+            cwd,
+            hook_event_name: "PreToolUse",
+          },
+          cwd,
+        ),
+      );
+      if (denyReason) throw new Error(denyReason);
 
       const updated = extractUpdatedCommand(
         runCore(

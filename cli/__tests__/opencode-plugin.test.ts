@@ -98,6 +98,20 @@ describe("opencode bridge source — locked event names", () => {
     expect(bridgeSrc).toContain('"session.idle"');
   });
 
+  it("bridge source runs scm-guard before test-filter and throws on deny", () => {
+    const bridgeSrc = readFileSync(
+      join(REPO_ROOT, ".agents", "hooks", "variants", "opencode", "oma.ts"),
+      "utf-8",
+    );
+    // Throwing is opencode's documented block mechanism for
+    // tool.execute.before; the guard must run before the test-filter rewrite.
+    expect(bridgeSrc).toContain('"scm-guard.ts"');
+    expect(bridgeSrc).toContain("throw new Error(denyReason)");
+    expect(bridgeSrc.indexOf('"scm-guard.ts"')).toBeLessThan(
+      bridgeSrc.indexOf('"test-filter.ts"'),
+    );
+  });
+
   it("bridge source documents non-blocking / best-effort Stop semantics", () => {
     const bridgeSrc = readFileSync(
       join(REPO_ROOT, ".agents", "hooks", "variants", "opencode", "oma.ts"),

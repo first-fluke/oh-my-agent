@@ -92,18 +92,32 @@ describe("hook variant files", () => {
   // Regression: July 2026 CLI audit against installed Grok / Qwen binaries.
   // The PreToolUse matcher is a real tool-name gate — a wrong value makes the
   // test-filter hook dead on the native hooks path.
-  it("grok PreToolUse matcher is the Bash alias (real tool: run_terminal_command)", () => {
+  // PreToolUse is now a chain (scm-guard → test-filter); every entry must
+  // carry the vendor's real shell tool matcher.
+  const preToolEntries = (v: {
+    events: Record<string, { matcher?: string } | Array<{ matcher?: string }>>;
+  }): Array<{ matcher?: string }> => {
+    const e = v.events.PreToolUse;
+    if (!e) return [];
+    return Array.isArray(e) ? e : [e];
+  };
+
+  it("grok PreToolUse matchers are the Bash alias (real tool: run_terminal_command)", () => {
     // Grok CLI 0.2.93's shell tool is `run_terminal_command`, not
     // `run_terminal_cmd`; the `Bash` alias is doc-guaranteed to match both.
     const v = loadVariant("grok");
-    expect(v.events.PreToolUse.matcher).toBe("Bash");
+    for (const entry of preToolEntries(v)) {
+      expect(entry.matcher).toBe("Bash");
+    }
   });
 
-  it("qwen PreToolUse matcher is run_shell_command (real Qwen shell tool)", () => {
+  it("qwen PreToolUse matchers are run_shell_command (real Qwen shell tool)", () => {
     // Qwen Code 0.12.6's shell tool is `run_shell_command`; `Bash` is a
     // subagent-type enum there and never matches a PreToolUse tool name.
     const v = loadVariant("qwen");
-    expect(v.events.PreToolUse.matcher).toBe("run_shell_command");
+    for (const entry of preToolEntries(v)) {
+      expect(entry.matcher).toBe("run_shell_command");
+    }
   });
 
   it("each event references a file that exists in core/", () => {

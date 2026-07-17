@@ -18,6 +18,7 @@ const OMA_CORE_SCRIPT_NAMES = new Set([
   "skill-injector",
   "serena-primer",
   "state-boundary",
+  "scm-guard",
   "test-filter",
   "persistent-mode",
   "hud",

@@ -140,6 +140,64 @@ export function makeBlockOutput(vendor: Vendor, reason: string): string {
   }
 }
 
+/**
+ * Pre-tool DENY dialect — used when a PreToolUse handler blocks a tool call
+ * (scm-guard). Distinct from makeBlockOutput, whose dialects are Stop-shaped
+ * (e.g. cursor's followup_message re-submits a turn instead of denying).
+ * scm-guard is wired for claude/codex/qwen/kimi/kiro/grok/cursor (plus the
+ * opencode/pi bridges, which read the claude dialect from the standalone
+ * entry); the remaining cases are best-effort so the switch stays exhaustive.
+ */
+export function makePreToolDenyOutput(vendor: Vendor, reason: string): string {
+  switch (vendor) {
+    case "claude":
+    case "codex":
+    case "commandcode":
+    case "qwen":
+      // Claude-documented PreToolUse deny shape (Codex/Qwen follow the dialect).
+      return JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "deny",
+          permissionDecisionReason: reason,
+        },
+      });
+    case "kimi":
+      // Kimi honours both the Claude-style decision keys and the
+      // hookSpecificOutput deny form (same rationale as makeBlockOutput).
+      return JSON.stringify({
+        decision: "block",
+        reason,
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "deny",
+          permissionDecisionReason: reason,
+        },
+      });
+    case "kiro":
+      return JSON.stringify({ decision: "block", reason });
+    case "grok":
+      // Grok PreToolUse output is a gate decision (see makePreToolOutput).
+      return JSON.stringify({ decision: "deny", reason });
+    case "antigravity":
+      // agy PreToolUse output is a gate decision; deny analog of the allow gate.
+      return JSON.stringify({ decision: "deny", reason });
+    case "cursor":
+      // Documented preToolUse output (cursor.com/docs/hooks): permission
+      // allow|deny, user_message shown in the client, agent_message sent to
+      // the agent. Cursor also accepts Claude's nested hookSpecificOutput
+      // form, but the native flat shape is authoritative.
+      return JSON.stringify({
+        permission: "deny",
+        user_message: reason,
+        agent_message: reason,
+      });
+    case "pi":
+      // pi's bridge accepts {block:true, reason} on tool_call interception.
+      return JSON.stringify({ block: true, reason });
+  }
+}
+
 export function makePreToolOutput(
   vendor: Vendor,
   updatedInput: Record<string, unknown>,

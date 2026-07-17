@@ -4,11 +4,13 @@
 import { resolveGitRoot } from "../../../.agents/hooks/core/fs-utils.js";
 import {
   makeBlockOutput,
+  makePreToolDenyOutput,
   makePreToolOutput,
   makePromptOutput,
 } from "../../../.agents/hooks/core/hook-output.js";
 import * as keywordDetector from "../../../.agents/hooks/core/keyword-detector.js";
 import * as persistentMode from "../../../.agents/hooks/core/persistent-mode.js";
+import * as scmGuard from "../../../.agents/hooks/core/scm-guard.js";
 import * as serenaPrimer from "../../../.agents/hooks/core/serena-primer.js";
 import * as skillInjector from "../../../.agents/hooks/core/skill-injector.js";
 import * as stateBoundary from "../../../.agents/hooks/core/state-boundary.js";
@@ -69,6 +71,7 @@ const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
   "skill-injector": skillInjector.run,
   "serena-primer": serenaPrimer.run,
   "state-boundary": stateBoundary.run,
+  "scm-guard": scmGuard.run,
   "test-filter": testFilter.run,
   "persistent-mode": persistentMode.run,
 };
@@ -337,7 +340,13 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
       output = makePreToolOutput(vendor, merged.updatedInput);
       break;
     case "block":
-      output = makeBlockOutput(vendor, merged.reason);
+      // Pre-tool blocks use the deny dialect; makeBlockOutput's dialects are
+      // Stop-shaped (cursor's followup_message would re-submit a turn instead
+      // of denying the tool call).
+      output =
+        kind === "pre_tool"
+          ? makePreToolDenyOutput(vendor, merged.reason)
+          : makeBlockOutput(vendor, merged.reason);
       break;
   }
 
