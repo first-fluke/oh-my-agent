@@ -14,13 +14,13 @@ What we learned: Extension host crashes and startup latency dominate the VS Code
 
 **Extension host instability is the top complaint cluster.** Users on [r/vscode](https://reddit.com/r/vscode/comments/abc123/extension_host_crashes_python/) report the Python and Pylance extensions crashing the host 2-3 times per session on large monorepos. A [HN thread](https://news.ycombinator.com/item?id=38471200) from last week accumulated 140 comments on the same pattern, with many switching to Neovim LSP as a workaround.
 
-**Startup time degrades sharply beyond 40 extensions.** A [GitHub issue](https://github.com/microsoft/vscode/issues/200001) tracking extension activation order has 380 upvotes. Community benchmarks shared on [r/programming](https://reddit.com/r/programming/comments/def456/vscode_startup_benchmark_2026/) show median cold-start at 4.2 s with 45+ extensions, versus 0.9 s for a clean profile — a 4.7x gap that users call "unacceptable for a daily driver."
+**Startup time degrades sharply beyond 40 extensions.** A [GitHub issue](https://github.com/microsoft/vscode/issues/200001) tracking extension activation order has 380 upvotes. Community benchmarks shared on [r/programming](https://reddit.com/r/programming/comments/def456/vscode_startup_benchmark_2026/) show median cold-start at 4.2 s with 45+ extensions, versus 0.9 s for a clean profile - a 4.7x gap that users call "unacceptable for a daily driver."
 
 KEY PATTERNS from the research:
 
 1. Extension host crashes are triggered most often by language server extensions (Python, Go, Rust Analyzer) on files > 5 MB.
 2. Remote SSH sessions compound latency: file-save round-trips average 800 ms vs. 120 ms local, per a [community benchmark repo](https://github.com/vscode-bench/remote-latency).
-3. Memory footprint complaints cluster around the 16 GB RAM threshold — users with less RAM report swap-induced freezes during indexing.
+3. Memory footprint complaints cluster around the 16 GB RAM threshold - users with less RAM report swap-induced freezes during indexing.
 4. Settings Sync conflicts after team upgrades generate a secondary pain cluster, particularly around keybinding merges.
 
 ## SWOT
@@ -65,14 +65,14 @@ KEY PATTERNS from the research:
 
 What we learned: LlamaIndex and LangChain are losing ground to lighter orchestration layers as teams prioritize latency and cost over feature breadth.
 
-**Minimal orchestration is the dominant emerging pattern.** Posts on [r/LocalLLaMA](https://reddit.com/r/LocalLLaMA/comments/ghi789/ditching_langchain_for_raw_openai_calls/) and [r/MachineLearning](https://reddit.com/r/MachineLearning/comments/jkl012/rag_without_frameworks_benchmark/) show teams stripping LangChain from production and replacing it with direct API calls plus a single vector store client. The cited reason in 70% of cases is debugging difficulty — framework abstractions hide retrieval failures.
+**Minimal orchestration is the dominant emerging pattern.** Posts on [r/LocalLLaMA](https://reddit.com/r/LocalLLaMA/comments/ghi789/ditching_langchain_for_raw_openai_calls/) and [r/MachineLearning](https://reddit.com/r/MachineLearning/comments/jkl012/rag_without_frameworks_benchmark/) show teams stripping LangChain from production and replacing it with direct API calls plus a single vector store client. The cited reason in 70% of cases is debugging difficulty, since framework abstractions hide retrieval failures.
 
 **Hybrid retrieval (dense + sparse) is crossing from research to production.** A [HN thread](https://news.ycombinator.com/item?id=39100450) on a Pinecone blog post about BM25 + ADA-002 hybrid search generated 200 comments, most positive. Teams report 12-18% precision gains on domain-specific corpora over pure dense retrieval.
 
 KEY PATTERNS from the research:
 
 1. LlamaIndex GitHub stars grew 8% month-over-month but issue volume grew 22%, suggesting adoption is outpacing maintainer capacity.
-2. "RAG evaluation" is a rising search term — teams are investing in offline evals (RAGAS, TruLens) before production rollout.
+2. "RAG evaluation" is a rising search term - teams are investing in offline evals (RAGAS, TruLens) before production rollout.
 3. Chunking strategy discussions dominate practitioner forums; semantic chunking libraries saw 3 new releases this month.
 4. Cost-driven architectural shifts: teams moving retrieval to local embeddings (nomic-embed, mxbai) to cut OpenAI embedding spend by 60-80%.
 
@@ -84,7 +84,7 @@ KEY PATTERNS from the research:
 
 **Weaknesses**
 - Evaluation tooling is fragmented; no single standard for measuring retrieval quality.
-- Framework churn creates maintenance debt — teams upgrading LangChain face breaking changes every 3-4 months.
+- Framework churn creates maintenance debt - teams upgrading LangChain face breaking changes every 3-4 months.
 
 **Opportunities**
 - Evaluation-as-a-service is an open market gap; no dominant player yet.
@@ -92,7 +92,7 @@ KEY PATTERNS from the research:
 
 **Threats**
 - LLM providers building retrieval natively (OpenAI file search, Gemini grounding) reduce the need for custom RAG pipelines.
-- Hallucination in retrieved context — a fundamental trust issue — could trigger regulatory scrutiny in healthcare and finance verticals.
+- Hallucination in retrieved context, a fundamental trust issue, could trigger regulatory scrutiny in healthcare and finance verticals.
 
 ---
 <!-- ENGINE FOOTER -->
@@ -170,19 +170,19 @@ From Cursor's perspective:
 
 ## Porter's 5 Forces
 
-**Threat of new entrants** — Verdict: Moderate
+**Threat of new entrants** - Verdict: Moderate
 - [r/cursor](https://reddit.com/r/cursor/comments/mno345/why_i_keep_coming_back_to_cursor/) discussion notes new AI coding tools launching monthly, but matching tab-completion quality takes months of tuning.
 
-**Bargaining power of suppliers** — Verdict: Low
+**Bargaining power of suppliers** - Verdict: Low
 - Both products build on commodity LLM APIs; the [HN discussion](https://news.ycombinator.com/item?id=39200100) notes users can bring their own key, reducing single-vendor lock-in.
 
-**Bargaining power of buyers** — Verdict: High
+**Bargaining power of buyers** - Verdict: High
 - [r/cursor](https://reddit.com/r/cursor/comments/pqr678/cursor_usage_limits_frustrating/) shows users threatening to churn over usage caps, and switching cost between Cursor and Windsurf is low since both fork VS Code.
 
-**Threat of substitutes** — Verdict: Moderate
+**Threat of substitutes** - Verdict: Moderate
 - [GitHub Copilot Workspace's launch coverage](https://news.ycombinator.com/item?id=39301500) targets the same agentic segment with Microsoft distribution, giving buyers a credible substitute.
 
-**Industry rivalry** — Verdict: High
+**Industry rivalry** - Verdict: High
 - Frequent head-to-head comparisons between Cursor and Windsurf on [r/webdev](https://reddit.com/r/webdev/comments/stu901/tried_windsurf_for_a_week/) and HN indicate active feature and pricing competition.
 
 **Strategic implication**: Buyer power and industry rivalry are the most active forces right now; closing the pricing-friction gap while shipping a competitive agentic mode would neutralize Windsurf's differentiation without ceding ground to Copilot Workspace.
