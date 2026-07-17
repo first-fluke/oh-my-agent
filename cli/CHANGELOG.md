@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.19.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.19.0...cli-v10.19.1) (2026-07-17)
+
+
+### Bug Fixes
+
+* **hooks:** skip bash test-filter wrapper on win32 and guard re-entry ([74a890a](https://github.com/first-fluke/oh-my-agent/commit/74a890ac4ee7fa4ea23e743a5dd6f214b8a5dbba)), closes [#618](https://github.com/first-fluke/oh-my-agent/issues/618)
+
 ## [10.19.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.18.0...cli-v10.19.0) (2026-07-16)
 
 
