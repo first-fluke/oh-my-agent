@@ -1,5 +1,13 @@
 # Changelog
 
+## [10.20.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.20.1...cli-v10.20.2) (2026-07-17)
+
+
+### Documentation
+
+* **pdf:** sync skill docs with opendataloader-pdf 2.5.0 cli ([9bee0c5](https://github.com/first-fluke/oh-my-agent/commit/9bee0c54675d4d7b01a58b953bd5eb3d5efa263b))
+* **pm:** unify priority tier semantics and fix plan schema drift ([a2bb35e](https://github.com/first-fluke/oh-my-agent/commit/a2bb35e0f5e6adb4da69fffb94e870040536ebce))
+
 ## [10.20.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.20.0...cli-v10.20.1) (2026-07-17)
 
 
