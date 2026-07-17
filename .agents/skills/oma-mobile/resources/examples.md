@@ -91,7 +91,7 @@
 ## Task: Swift Native Todo List Screen (iOS 17+)
 
 ### Implementation
-- State: @Observable TodosViewModel with TodosViewState enum (idle/loading/loaded/empty/error)
+- State: @MainActor @Observable TodosViewModel with TodosViewState enum (idle/loading/loaded/empty/error)
 - Networking: TodoService wrapping the generated Client from swift-openapi-generator
 - View: SwiftUI TodosView switching over TodosViewState; pull-to-refresh via .refreshable
 - Tests: XCTest unit tests for the view model using a protocol-based mock service
@@ -132,12 +132,51 @@ Tests/
 - Tests/TodosViewModelTests.swift
 
 ### Key Patterns
-- @Observable replaces ObservableObject/@Published — no Combine dependency
+- @MainActor @Observable replaces ObservableObject/@Published — no Combine dependency,
+  and all state mutation is main-actor-isolated (Swift 6 strict-concurrency clean)
 - View holds VM with @State (not @StateObject); init via State(wrappedValue:)
-- .task { viewModel.load() } cancels automatically when view disappears
+- .task { await viewModel.load() } cancels automatically when view disappears —
+  structured cancellation, no deinit-based cleanup (nonisolated deinit cannot
+  touch @MainActor state under Swift 6)
 - TodoService calls the generated client — never hand-rolled URLRequest
 - Read-through cache at the repository layer: ResponseCache (hyperoslo/Cache) wraps
   the generated Client; reads are stale-while-revalidate, writes invalidate keys
 - VM depends on TodoProviding (protocol seam), so MockTodoService needs no mock lib
-- deinit { loadTask?.cancel() } prevents Task leaks when VM is deallocated
+```
+
+---
+
+## Example 5: React Native — Offline-Ready Todo List
+
+**Platform**: React Native (TypeScript strict + TanStack Query 5 + Zustand 5 + React Navigation v7)
+
+**Input**: "Create a todo list screen that works offline and syncs when back online"
+
+**Output**:
+```
+## Task: RN Offline-Ready Todo List
+
+### Implementation
+- Server state: TanStack Query hooks (useTodosQuery / useToggleTodo) with shared todoKeys factory
+- Persistence: MMKV persister via PersistQueryClientProvider (gcTime 24h = maxAge)
+- Connectivity: onlineManager wired to NetInfo; paused mutations resume on reconnect
+- Auth: token in Zustand authStore, hydrated from react-native-keychain at bootstrap
+- Screen: TodosScreen consumes hooks only — no direct axios; loading/error/empty/data states
+
+### Files Created
+- src/api/client.ts            # axios + auth/401 interceptors
+- src/api/queryClient.ts       # QueryClient + MMKV persister + onlineManager
+- src/features/todos/queries.ts
+- src/features/todos/mutations.ts
+- src/features/todos/ui/TodosScreen.tsx
+- src/store/authStore.ts       # Zustand; keychain-hydrated token
+- src/shared/utils/storage.ts  # MMKV instance (non-secret data only)
+- e2e/todos.yaml               # Maestro critical flow
+- src/features/todos/__tests__/queries.test.tsx
+
+### Key Patterns
+- Screens never import axios — TanStack Query hooks are the repository layer
+- Explicit staleTime/gcTime on every query; mutations invalidate list + detail keys
+- Optimistic updates roll back on error; never fabricate a cache entry when none exists
+- Secrets in keychain, never plain MMKV; MMKV holds only the query-cache snapshot
 ```

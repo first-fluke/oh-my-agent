@@ -31,10 +31,15 @@ struct ExampleItem: Identifiable {
 }
 
 /// Protocol-backed so the view model is testable with a mock service.
+/// A real conformer is a Repository over the generated `swift-openapi-generator`
+/// `Client` fronted by a `ResponseCache` (read-through, stale-while-revalidate) —
+/// see variants/swift-ios/snippets.md §10 and variants/swift-ios/api-template.swift.
+/// Never hand-roll `URLRequest`/`JSONDecoder` for endpoints in the OpenAPI spec.
 protocol ExampleServiceProtocol {
     func fetchItems() async throws -> [ExampleItem]
 }
 
+@MainActor
 @Observable
 final class ExampleViewModel {
     // MARK: - State observed by the View
@@ -45,8 +50,9 @@ final class ExampleViewModel {
     // MARK: - Private
 
     private let service: ExampleServiceProtocol
-    /// Retained so it can be cancelled before re-triggering a load.
-    private var loadTask: Task<Void, Never>?
+    /// Retained so it can be cancelled before re-triggering a load, and so tests can
+    /// `await viewModel.loadTask?.value` instead of sleeping.
+    private(set) var loadTask: Task<Void, Never>?
 
     init(service: ExampleServiceProtocol) {
         self.service = service
@@ -77,10 +83,15 @@ final class ExampleViewModel {
     /// Convenience retry; identical to load() but named for the error-state button.
     func retry() { load() }
 
-    deinit {
-        // Ensure in-flight work is cleaned up when the VM is deallocated.
-        loadTask?.cancel()
-    }
+    /// Cancel the in-flight load explicitly. `.task` already cancels its structured
+    /// child on view disappear; this only stops the unstructured `loadTask` sooner.
+    func cancelLoad() { loadTask?.cancel() }
+
+    // Pitfall — do NOT cancel in `deinit`. A `deinit` is nonisolated under Swift 6
+    // strict concurrency, so it cannot touch `@MainActor`-isolated state like
+    // `loadTask` (isolated deinit / SE-0371 landed only in Swift 6.2). It is moot
+    // anyway: the `Task { [weak self] }` captures `self` weakly, so `deinit` cannot
+    // fire while a load is in flight. Rely on `.task`'s auto-cancel on disappear.
 }
 
 // MARK: - View
@@ -95,27 +106,29 @@ struct ExampleScreen: View {
     }
 
     var body: some View {
-        NavigationStack {
-            content
-                .navigationTitle("Example")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            viewModel.load()
-                        } label: {
-                            Label("Refresh", systemImage: "arrow.clockwise")
-                        }
-                        // Disable the button while a load is in progress.
-                        .disabled({
-                            if case .loading = viewModel.viewState { return true }
-                            return false
-                        }())
+        // The router owns the enclosing NavigationStack(path:); a feature view
+        // assumes it is already inside one and never wraps itself in a stack.
+        content
+            .navigationTitle("Example")
+            .toolbar {
+                // .topBarTrailing (iOS 17+) replaces .navigationBarTrailing, which
+                // is formally deprecated at iOS 27.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.load()
+                    } label: {
+                        Label("Refresh", systemImage: "arrow.clockwise")
                     }
+                    // Disable the button while a load is in progress.
+                    .disabled({
+                        if case .loading = viewModel.viewState { return true }
+                        return false
+                    }())
                 }
-        }
-        // .task is preferred over .onAppear for async work:
-        // it creates a structured Task that is cancelled when the View disappears.
-        .task { viewModel.load() }
+            }
+            // .task is preferred over .onAppear for async work:
+            // it creates a structured Task that is cancelled when the View disappears.
+            .task { viewModel.load() }
     }
 
     // MARK: - Content switch
@@ -149,10 +162,11 @@ struct ExampleScreen: View {
     /// Shown when data is available.
     private func listView(_ items: [ExampleItem]) -> some View {
         List(items) { item in
-            NavigationLink {
-                // Replace with a real detail screen.
-                Text(item.title)
-            } label: {
+            // Value-based navigation: push a route value, not an inline destination.
+            // The route layer registers the destination for `ExampleItem.ID` via
+            // `swipeBackDestination(for:)` on the router's NavigationStack — see
+            // variants/swift-ios/snippets.md §9.
+            NavigationLink(value: item.id) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.title)
                         .font(.headline)

@@ -11,43 +11,47 @@ Screens and components **never** call axios directly — they consume hooks buil
 // package.json (relevant dependencies)
 {
   "dependencies": {
-    // Core
-    "react": "18.3.1",
-    "react-native": "0.75.x",
+    // Core (RN 0.86 defaults to the New Architecture; 0.82+ is New-Arch only)
+    "react": "^19.0.0",
+    "react-native": "^0.86.0",
 
-    // Navigation
-    "@react-navigation/native": "^6.1.18",
-    "@react-navigation/native-stack": "^6.11.0",
-    "@react-navigation/bottom-tabs": "^6.6.1",
-    "react-native-screens": "^3.34.0",
-    "react-native-safe-area-context": "^4.10.0",
+    // Navigation (v7 is the current stable line)
+    "@react-navigation/native": "^7.3.10",
+    "@react-navigation/native-stack": "^7.3.10",
+    "@react-navigation/bottom-tabs": "^7.3.10",
+    "react-native-screens": "^4.26.2",
+    "react-native-safe-area-context": "^5.8.0",
 
     // HTTP transport
     "axios": "^1.7.7",
     "axios-retry": "^4.5.0",
 
-    // Server-state cache
-    "@tanstack/react-query": "^5.56.2",
-    "@tanstack/query-persist-client-core": "^5.56.2",
+    // Server-state cache + offline persistence
+    "@tanstack/react-query": "^5.101.2",
+    "@tanstack/query-sync-storage-persister": "^5.101.2",
+    "@tanstack/react-query-persist-client": "^5.101.2",
 
-    // Local storage
-    "react-native-mmkv": "^3.1.0",
+    // Network status (drives onlineManager + useNetworkStatus)
+    "@react-native-community/netinfo": "^11.4.1",
+
+    // Local storage (v4 is the Nitro module; requires RN 0.76+)
+    "react-native-mmkv": "^4.3.2",
 
     // Secrets (choose one)
     "expo-secure-store": "^13.0.0",
     // -- OR (bare RN) --
-    "react-native-keychain": "^8.2.0",
+    "react-native-keychain": "^10.0.0",
 
     // Client-state
-    "zustand": "^5.0.0"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "@types/react": "^18.3.5",
-    "@types/react-native": "^0.73.0",
+    "@types/react": "^19.0.0",
     "jest": "^29.7.0",
-    "@testing-library/react-native": "^12.7.2",
-    "@testing-library/jest-native": "^5.4.3",
+    // Matchers (toBeVisible, etc.) ship inside @testing-library/react-native >=12.4,
+    // so no separate matcher package is needed. React Native ships its own types too.
+    "@testing-library/react-native": "^14.0.1",
     "babel-jest": "^29.7.0"
   }
 }
@@ -80,19 +84,36 @@ Screens and components **never** call axios directly — they consume hooks buil
 ## 2. QueryClient + MMKV Persister Setup
 
 ```typescript
-// src/api/queryClient.ts
-// Creates the single QueryClient and wires MMKV offline persistence.
-// Import this module once in App.tsx — never create per-component QueryClients.
+// src/shared/utils/storage.ts
+// Canonical MMKV singletons. Every module that needs MMKV imports from here —
+// never call `new MMKV(...)` anywhere else. MMKV stores plain text unless an
+// encryptionKey is passed, so it holds NON-SECRET data only (prefs, offline
+// flags, the query cache). Secrets live in the Keychain-backed auth store (§10).
 
-import { QueryClient } from '@tanstack/react-query';
-import { createSyncStoragePersister } from '@tanstack/query-persist-client-core';
 import { MMKV } from 'react-native-mmkv';
 
-// Shared MMKV instance — re-export so other modules (store, utils) can reuse it.
 export const storage = new MMKV({ id: 'app-storage' });
 
-// Separate MMKV instance namespaced for the query cache to avoid key collisions.
-const queryStorage = new MMKV({ id: 'query-cache' });
+// Separate instance namespaced for the query cache to avoid key collisions.
+export const queryStorage = new MMKV({ id: 'query-cache' });
+```
+
+```typescript
+// src/api/queryClient.ts
+// Creates the single QueryClient, the MMKV cache persister, and wires
+// onlineManager to NetInfo. Import this module once in App.tsx — never create
+// per-component QueryClients.
+
+import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import NetInfo from '@react-native-community/netinfo';
+import { queryStorage } from '@shared/utils/storage';
+
+// Drive TanStack Query's online state from the real network status so paused
+// mutations resume and stale queries refetch the moment connectivity returns.
+onlineManager.setEventListener((setOnline) =>
+  NetInfo.addEventListener((state) => setOnline(!!state.isConnected)),
+);
 
 // Persister adapter: TanStack Query serialises/deserialises its cache as a
 // single JSON string under the key below. MMKV provides synchronous access so
@@ -110,8 +131,11 @@ export const queryClient = new QueryClient({
     queries: {
       // Data older than 60 s triggers a background revalidation on next mount.
       staleTime: 60_000,
-      // Remove unused cache entries from memory after 5 minutes.
-      gcTime: 5 * 60_000,
+      // gcTime MUST be >= the persister's maxAge (see App.tsx below), or the
+      // in-memory entry is garbage-collected before the persisted copy can be
+      // restored — which silently defeats "survives app restart". 24h matches
+      // persistQueryClient's default maxAge.
+      gcTime: 1000 * 60 * 60 * 24,
       // Retry failed queries up to 3 times with exponential back-off.
       retry: 3,
       // Do not refetch when the window regains focus (mobile has no browser focus).
@@ -126,19 +150,36 @@ export const queryClient = new QueryClient({
 
 ```typescript
 // src/App.tsx  (provider wiring — abridged)
-import React from 'react';
-import { PersistQueryClientProvider } from '@tanstack/react-query/persist-client';
+import React, { useEffect } from 'react';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { NavigationContainer } from '@react-navigation/native';
 import { queryClient, mmkvPersister } from '@api/queryClient';
 import { RootNavigator } from '@navigation/RootNavigator';
+import { hydrateAuth } from '@store/authStore';
+
+// Bump on breaking changes to any cached shape to discard the persisted cache.
+// Keep it stable across a release (e.g. the app version string).
+const CACHE_BUSTER = '1.0.0';
 
 export default function App() {
+  // Restore the access token from the Keychain into the in-memory auth store
+  // before navigation reads `isAuthenticated`.
+  useEffect(() => {
+    hydrateAuth();
+  }, []);
+
   return (
-    // PersistQueryClientProvider restores the MMKV-persisted cache before
-    // the first render, so screens show stale data instantly while revalidating.
+    // PersistQueryClientProvider restores the MMKV-persisted cache before the
+    // first render, so screens show stale data instantly while revalidating.
+    // maxAge caps how long a persisted cache is trusted; it must be <= the
+    // QueryClient's gcTime (24h) or entries GC out before they can be restored.
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister: mmkvPersister }}
+      persistOptions={{
+        persister: mmkvPersister,
+        maxAge: 1000 * 60 * 60 * 24,
+        buster: CACHE_BUSTER,
+      }}
     >
       <NavigationContainer>
         <RootNavigator />
@@ -164,7 +205,7 @@ import axios, {
   type AxiosError,
 } from 'axios';
 import axiosRetry from 'axios-retry';
-import { storage } from './queryClient';
+import { useAuthStore } from '@store/authStore';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://api.example.com';
 
@@ -175,21 +216,55 @@ export const apiClient: AxiosInstance = axios.create({
 });
 
 // --- Request interceptor: inject bearer token ---
+// Read synchronously from the in-memory auth store (hydrated from the Keychain
+// at app start, §10). Secrets NEVER live in plain-text MMKV.
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = storage.getString('accessToken');
+  const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
   }
   return config;
 });
 
-// --- Response interceptor: surface typed API errors ---
+// --- Single-flight token refresh ---
+// Only one refresh is ever in flight; concurrent 401s await the same promise
+// and then replay their original request exactly once.
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    // Bare axios (no interceptors/retry) so the refresh can't recurse on itself.
+    const { data } = await axios.post<{ accessToken: string }>(
+      `${BASE_URL}/auth/refresh`,
+      {},
+      { withCredentials: true }, // refresh token rides as an httpOnly cookie
+    );
+    await useAuthStore.getState().setToken(data.accessToken);
+    return data.accessToken;
+  } catch {
+    await useAuthStore.getState().clearToken(); // logout: clears Keychain + store
+    return null;
+  }
+}
+
+// --- Response interceptor: refresh once on 401, else logout ---
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Clear stale token — auth store / navigation will redirect to login.
-      storage.delete('accessToken');
+    const original = error.config as
+      | (InternalAxiosRequestConfig & { _retried?: boolean })
+      | undefined;
+
+    if (error.response?.status === 401 && original && !original._retried) {
+      original._retried = true;
+      refreshPromise ??= refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+      const newToken = await refreshPromise;
+      if (newToken) {
+        original.headers.set('Authorization', `Bearer ${newToken}`);
+        return apiClient(original); // replay the original request once
+      }
     }
     return Promise.reject(error);
   },
@@ -277,7 +352,7 @@ export async function deleteTodo(id: string): Promise<void> {
 // Read hooks — wrap src/api/todos.ts functions with TanStack Query.
 // Explicit staleTime / gcTime on every query; never rely on defaults alone.
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetchTodos, fetchTodo } from '@api/todos';
 
 // Centralise query key definitions so mutations can reference them without
@@ -294,8 +369,8 @@ export function useTodosQuery() {
   return useQuery({
     queryKey: todoKeys.lists(),
     queryFn: fetchTodos,
-    staleTime: 60_000,   // 1 minute — adjust per resource freshness requirement
-    gcTime: 5 * 60_000,  // 5 minutes idle before memory GC
+    staleTime: 60_000,             // 1 minute — adjust per resource freshness requirement
+    gcTime: 1000 * 60 * 60 * 24,  // 24h — must stay >= the persister maxAge (§2)
   });
 }
 
@@ -305,7 +380,7 @@ export function useTodoDetailQuery(id: string) {
     queryKey: todoKeys.detail(id),
     queryFn: () => fetchTodo(id),
     staleTime: 60_000,
-    gcTime: 5 * 60_000,
+    gcTime: 1000 * 60 * 60 * 24,  // 24h — see useTodosQuery
     enabled: Boolean(id),
   });
 }
@@ -318,7 +393,7 @@ export function useTodoDetailQuery(id: string) {
 // so the cache repopulates from the server on the next read.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createTodo, toggleTodo, deleteTodo, type CreateTodoInput } from '@api/todos';
+import { createTodo, toggleTodo, deleteTodo, type CreateTodoInput, type Todo } from '@api/todos';
 import { todoKeys } from './queries';
 
 /** Create a new todo then invalidate the list cache. */
@@ -343,23 +418,35 @@ export function useToggleTodo() {
     // Optimistic update: flip the flag in the cache immediately for instant UI
     // feedback; roll back if the mutation fails.
     onMutate: async (id) => {
+      // Cancel in-flight queries for both keys so they can't clobber our patch.
       await queryClient.cancelQueries({ queryKey: todoKeys.lists() });
-      const previous = queryClient.getQueryData(todoKeys.lists());
-      queryClient.setQueryData(todoKeys.lists(), (old: any[] | undefined) =>
-        old?.map((todo) =>
-          todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-        ) ?? [],
+      await queryClient.cancelQueries({ queryKey: todoKeys.detail(id) });
+
+      const previousList = queryClient.getQueryData<Todo[]>(todoKeys.lists());
+      const previousDetail = queryClient.getQueryData<Todo>(todoKeys.detail(id));
+
+      // Patch each cache entry only when it exists — returning `old` untouched
+      // when undefined avoids materialising a fake empty list.
+      queryClient.setQueryData<Todo[] | undefined>(todoKeys.lists(), (old) =>
+        old ? old.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)) : old,
       );
-      return { previous };
+      queryClient.setQueryData<Todo | undefined>(todoKeys.detail(id), (old) =>
+        old ? { ...old, completed: !old.completed } : old,
+      );
+
+      return { previousList, previousDetail };
     },
-    onError: (_err, _id, context) => {
-      // Roll back on error.
-      if (context?.previous) {
-        queryClient.setQueryData(todoKeys.lists(), context.previous);
+    onError: (_err, id, context) => {
+      // Roll back both keys on error.
+      if (context?.previousList !== undefined) {
+        queryClient.setQueryData(todoKeys.lists(), context.previousList);
+      }
+      if (context?.previousDetail !== undefined) {
+        queryClient.setQueryData(todoKeys.detail(id), context.previousDetail);
       }
     },
-    onSuccess: (_data, id) => {
-      // Invalidate both list and detail to ensure consistency.
+    onSettled: (_data, _err, id) => {
+      // Reconcile with server truth for both keys once the mutation settles.
       queryClient.invalidateQueries({ queryKey: todoKeys.lists() });
       queryClient.invalidateQueries({ queryKey: todoKeys.detail(id) });
     },
@@ -394,54 +481,30 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
   StyleSheet,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
+import { LoadingView } from '@shared/components/LoadingView';
+import { ErrorView } from '@shared/components/ErrorView';
+import { EmptyStateView } from '@shared/components/EmptyStateView';
 import { useTodosQuery } from '../queries';
 import { useDeleteTodo, useToggleTodo } from '../mutations';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TodoList'>;
 
 export function TodosScreen({ navigation }: Props) {
-  const { data: todos, isLoading, isError, error, refetch, isRefetching } = useTodosQuery();
+  const { data: todos, isPending, isError, error, refetch, isRefetching } = useTodosQuery();
   const toggleMutation = useToggleTodo();
   const deleteMutation = useDeleteTodo();
 
-  // --- Loading state ---
-  if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" accessibilityLabel="Loading todos" />
-      </View>
-    );
-  }
-
-  // --- Error state ---
-  if (isError) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>
-          {error instanceof Error ? error.message : 'Something went wrong.'}
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // --- Empty state ---
-  if (!todos || todos.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.emptyText}>No todos yet. Add your first one!</Text>
-      </View>
-    );
-  }
+  // States delegate to the shared components (§12) so every screen renders them
+  // identically. isPending is the v5 first-load flag (there is no cached data yet).
+  if (isPending) return <LoadingView label="Loading todos" />;
+  if (isError) return <ErrorView error={error} onRetry={refetch} />;
+  if (todos.length === 0) return <EmptyStateView message="No todos yet. Add your first one!" />;
 
   // --- Data state ---
   return (
@@ -484,11 +547,6 @@ export function TodosScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  errorText: { color: '#d32f2f', textAlign: 'center', marginBottom: 12 },
-  emptyText: { color: '#757575', textAlign: 'center' },
-  retryButton: { backgroundColor: '#1976d2', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
-  retryText: { color: '#fff', fontWeight: '600' },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e0e0e0' },
   checkbox: { marginRight: 12 },
   titleContainer: { flex: 1 },
@@ -671,12 +729,193 @@ describe('TodosScreen', () => {
 ## 9. Cache Rules Recap
 
 > These rules apply to every `useQuery` and `useMutation` in the codebase.
-> They mirror the swift-ios `hyperoslo/Cache` mandatory contract, adapted for TanStack Query.
+> They define the repository-layer cache contract for TanStack Query: the
+> data-fetching layer is the single source of caching truth.
 
 1. **Cache decoded objects, not bytes.** TanStack Query stores the return value of `queryFn` — a decoded TypeScript object. Never cache raw `AxiosResponse` or `ArrayBuffer`.
 2. **Explicit `staleTime` and `gcTime` on every `useQuery`.** No implicit infinite TTL. `staleTime` governs background revalidation; `gcTime` governs memory reclamation.
 3. **Query keys = `[operation, ...params]`.** Never key on URLs. Centralise key definitions in a `todoKeys` (or `<resource>Keys`) object so mutations and queries share the same reference.
 4. **Invalidate on write.** Every `useMutation` calls `queryClient.invalidateQueries({ queryKey })` for all affected list and detail keys in `onSuccess`. Optimistic updates (optional) must pair a rollback in `onError`.
 5. **MMKV persistence for offline-first.** The `PersistQueryClientProvider` + MMKV persister hydrates the cache before the first render. Stale data renders immediately; revalidation runs in the background.
-6. **Repository seam.** `src/api/*.ts` functions are the only axis callers. Screens and components never import from `axios` or from `src/api/` directly — they consume query/mutation hooks.
-7. **Query cache = transient server-owned data.** Durable user data belongs in MMKV; secrets belong in `expo-secure-store` / `react-native-keychain`. Never use TanStack Query as a system of record.
+6. **Repository seam.** `src/api/*.ts` functions are the only axios callers. Screens and components never import from `axios` or from `src/api/` directly — they consume query/mutation hooks.
+7. **Query cache = transient server-owned data.** Durable non-secret user data belongs in MMKV; secrets (the access token) live only in memory in the Keychain-backed auth store (§10), never in plain-text MMKV. Never use TanStack Query as a system of record.
+
+---
+
+## 10. Auth Store (Zustand + Keychain)
+
+```typescript
+// src/store/authStore.ts
+// Auth session store. The access token lives ONLY in memory here and in the
+// platform secure enclave via react-native-keychain (iOS Keychain / Android
+// Keystore) — never in plain-text MMKV. The axios request interceptor (§3)
+// reads `accessToken` synchronously via useAuthStore.getState().
+
+import { create } from 'zustand';
+import * as Keychain from 'react-native-keychain';
+
+// Namespaces the credential entry. Use a stable, app-unique service string.
+const KEYCHAIN_SERVICE = 'com.example.app.auth';
+
+interface AuthState {
+  accessToken: string | null;
+  isAuthenticated: boolean;
+  setToken: (token: string) => Promise<void>;
+  clearToken: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>()((set) => ({
+  accessToken: null,
+  isAuthenticated: false,
+
+  // Persist to the secure enclave and mirror into memory for synchronous reads.
+  setToken: async (token) => {
+    await Keychain.setGenericPassword('accessToken', token, {
+      service: KEYCHAIN_SERVICE,
+    });
+    set({ accessToken: token, isAuthenticated: true });
+  },
+
+  // Logout: wipe both the secure enclave and the in-memory copy.
+  clearToken: async () => {
+    await Keychain.resetGenericPassword({ service: KEYCHAIN_SERVICE });
+    set({ accessToken: null, isAuthenticated: false });
+  },
+}));
+
+/**
+ * Restore the token from the Keychain into the store at app start.
+ * Call once from App.tsx before navigation reads `isAuthenticated` (§2).
+ */
+export async function hydrateAuth(): Promise<void> {
+  const creds = await Keychain.getGenericPassword({ service: KEYCHAIN_SERVICE });
+  if (creds) {
+    useAuthStore.setState({ accessToken: creds.password, isAuthenticated: true });
+  }
+}
+```
+
+---
+
+## 11. Network Status Hook
+
+```typescript
+// src/shared/hooks/useNetworkStatus.ts
+// Reactive online/offline flag backed by NetInfo. Complements the onlineManager
+// wiring in §2 (which drives TanStack Query) — use this hook for UI affordances
+// such as an offline banner.
+
+import { useEffect, useState } from 'react';
+import NetInfo from '@react-native-community/netinfo';
+
+/** Returns true while the device reports an active network connection. */
+export function useNetworkStatus(): boolean {
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    // addEventListener returns its own unsubscribe function.
+    const unsubscribe = NetInfo.addEventListener((state) =>
+      setIsOnline(!!state.isConnected),
+    );
+    return unsubscribe;
+  }, []);
+
+  return isOnline;
+}
+```
+
+---
+
+## 12. Shared UI Components (Loading / Error / Empty)
+
+```typescript
+// src/shared/components/LoadingView.tsx
+import React from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+
+export function LoadingView({ label = 'Loading' }: { label?: string }) {
+  return (
+    <View style={styles.center}>
+      <ActivityIndicator size="large" accessibilityLabel={label} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+});
+```
+
+```typescript
+// src/shared/components/ErrorView.tsx
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+type Props = { error: unknown; onRetry?: () => void };
+
+export function ErrorView({ error, onRetry }: Props) {
+  const message = error instanceof Error ? error.message : 'Something went wrong.';
+  return (
+    <View style={styles.center}>
+      <Text style={styles.errorText}>{message}</Text>
+      {onRetry ? (
+        <TouchableOpacity style={styles.retryButton} onPress={onRetry} accessibilityRole="button">
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      ) : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  errorText: { color: '#d32f2f', textAlign: 'center', marginBottom: 12 },
+  retryButton: { backgroundColor: '#1976d2', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
+  retryText: { color: '#fff', fontWeight: '600' },
+});
+```
+
+```typescript
+// src/shared/components/EmptyStateView.tsx
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+export function EmptyStateView({ message }: { message: string }) {
+  return (
+    <View style={styles.center}>
+      <Text style={styles.emptyText}>{message}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  emptyText: { color: '#757575', textAlign: 'center' },
+});
+```
+
+---
+
+## 13. Maestro E2E Flow
+
+```yaml
+# e2e/todos.yaml
+# Maestro flow exercising the todos happy path end to end. Run with `maestro test e2e/`.
+appId: com.example.app
+---
+- launchApp:
+    clearState: true
+- assertVisible: "My Todos"
+- tapOn: "Add"
+- inputText: "Buy milk"
+- tapOn: "Save"
+- assertVisible: "Buy milk"
+- tapOn:
+    id: "todo-checkbox-Buy milk"   # toggle complete
+- tapOn: "Buy milk"                # open detail
+- assertVisible: "Todo Detail"
+- back
+- tapOn:
+    id: "todo-delete-Buy milk"
+- assertNotVisible: "Buy milk"
+```

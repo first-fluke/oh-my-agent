@@ -7,27 +7,92 @@
  * src/features/todos/queries.ts and mutations.ts, which call these functions.
  *
  * Layout (split into separate files in production):
+ *   src/shared/utils/
+ *     storage.ts         ← MMKV singletons (non-secret KV + query cache)
+ *   src/store/
+ *     authStore.ts       ← Zustand auth store (in-memory token, Keychain-backed)
  *   src/api/
- *     client.ts          ← singleton axios instance + interceptors (auth, retry)
- *     queryClient.ts     ← QueryClient + MMKV persister (offline-first cache)
+ *     client.ts          ← singleton axios instance + interceptors (auth, refresh, retry)
+ *     queryClient.ts     ← QueryClient + MMKV persister + onlineManager (offline-first)
  *     todos.ts           ← THIS FILE: typed axios functions for /todos
  *   src/features/todos/
  *     queries.ts         ← useQuery hooks (useTodosQuery, useTodoDetailQuery)
  *     mutations.ts       ← useMutation hooks (useCreateTodo, useToggleTodo, useDeleteTodo)
  *
- * Caching contract (TanStack Query — the RN parallel to swift's ResponseCache actor):
+ * Caching contract (TanStack Query owns the repository-layer cache):
  *   - Reads: useQuery caches DECODED JS objects (not AxiosResponse bytes).
- *     staleTime / gcTime are explicit on every query — no implicit infinite TTL.
- *     Query keys = [operation, ...params], never URLs.
- *     Stale-while-revalidate: the cache entry renders immediately; a background
- *     fetch updates it when the entry is older than staleTime.
+ *     staleTime / gcTime are explicit — no implicit infinite TTL. gcTime must be
+ *     >= the persister's maxAge or the persisted cache is GC'd before it can be
+ *     restored, silently defeating offline-first. Query keys = [operation, ...params],
+ *     never URLs. Stale-while-revalidate: the cache entry renders immediately; a
+ *     background fetch updates it once the entry is older than staleTime.
  *   - Writes: useMutation calls queryClient.invalidateQueries() for all affected
- *     keys on onSuccess so the next read repopulates from the server.
- *   - Offline persistence: @tanstack/query-persist-client-core + MMKV persister
- *     (react-native-mmkv) serialises the cache to disk so it survives app restarts.
- *   - Secrets / durable user data: expo-secure-store or react-native-keychain.
- *     Never use TanStack Query as a system of record.
+ *     keys so the next read repopulates from the server.
+ *   - Offline persistence: @tanstack/query-sync-storage-persister +
+ *     @tanstack/react-query-persist-client + an MMKV persister (react-native-mmkv)
+ *     serialise the cache to disk so it survives app restarts.
+ *   - Secrets: the access token lives in an in-memory Zustand store hydrated from
+ *     react-native-keychain — NEVER in plain-text MMKV. Durable non-secret user
+ *     data belongs in MMKV. TanStack Query is never a system of record.
  */
+
+// ============================================================================
+// src/shared/utils/storage.ts
+// ============================================================================
+// Canonical MMKV singletons. Every module imports from here — never call
+// `new MMKV(...)` anywhere else. MMKV is plain text unless an encryptionKey is
+// passed, so it holds NON-SECRET data only (prefs, offline flags, query cache).
+
+import { MMKV } from 'react-native-mmkv';
+
+/** General-purpose non-secret KV store. */
+export const storage = new MMKV({ id: 'app-storage' });
+
+/** Separate instance namespaced for the query cache to avoid key collisions. */
+export const queryStorage = new MMKV({ id: 'query-cache' });
+
+// ============================================================================
+// src/store/authStore.ts
+// ============================================================================
+// Auth session store. The access token lives ONLY in memory here and in the
+// platform secure enclave via react-native-keychain — never in plain MMKV.
+
+import { create } from 'zustand';
+import * as Keychain from 'react-native-keychain';
+
+const KEYCHAIN_SERVICE = 'com.example.app.auth';
+
+interface AuthState {
+  accessToken: string | null;
+  isAuthenticated: boolean;
+  setToken: (token: string) => Promise<void>;
+  clearToken: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>()((set) => ({
+  accessToken: null,
+  isAuthenticated: false,
+  // Persist to the secure enclave and mirror into memory for synchronous reads.
+  setToken: async (token) => {
+    await Keychain.setGenericPassword('accessToken', token, {
+      service: KEYCHAIN_SERVICE,
+    });
+    set({ accessToken: token, isAuthenticated: true });
+  },
+  // Logout: wipe both the secure enclave and the in-memory copy.
+  clearToken: async () => {
+    await Keychain.resetGenericPassword({ service: KEYCHAIN_SERVICE });
+    set({ accessToken: null, isAuthenticated: false });
+  },
+}));
+
+/** Restore the token from the Keychain into the store at app start (call from App.tsx). */
+export async function hydrateAuth(): Promise<void> {
+  const creds = await Keychain.getGenericPassword({ service: KEYCHAIN_SERVICE });
+  if (creds) {
+    useAuthStore.setState({ accessToken: creds.password, isAuthenticated: true });
+  }
+}
 
 // ============================================================================
 // src/api/client.ts
@@ -40,10 +105,6 @@ import axios, {
   type AxiosError,
 } from 'axios';
 import axiosRetry from 'axios-retry';
-import { MMKV } from 'react-native-mmkv';
-
-/** Shared MMKV instance. Re-export so other modules (store, utils) can reuse it. */
-export const storage = new MMKV({ id: 'app-storage' });
 
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://api.example.com';
@@ -59,23 +120,56 @@ export const apiClient: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// --- Request interceptor: inject bearer token from MMKV ---
+// --- Request interceptor: inject bearer token ---
+// Read synchronously from the in-memory auth store (hydrated from the Keychain
+// at app start). Secrets NEVER live in plain-text MMKV.
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = storage.getString('accessToken');
+  const token = useAuthStore.getState().accessToken;
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
   }
   return config;
 });
 
-// --- Response interceptor: handle 401 centrally ---
+// --- Single-flight token refresh ---
+// Only one refresh is ever in flight; concurrent 401s await the same promise
+// and then replay their original request exactly once.
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    // Bare axios (no interceptors/retry) so the refresh can't recurse on itself.
+    const { data } = await axios.post<{ accessToken: string }>(
+      `${BASE_URL}/auth/refresh`,
+      {},
+      { withCredentials: true }, // refresh token rides as an httpOnly cookie
+    );
+    await useAuthStore.getState().setToken(data.accessToken);
+    return data.accessToken;
+  } catch {
+    await useAuthStore.getState().clearToken(); // logout: clears Keychain + store
+    return null;
+  }
+}
+
+// --- Response interceptor: refresh once on 401, else logout ---
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Purge the stale token — the auth store / navigation will redirect
-      // the user to the login screen.
-      storage.delete('accessToken');
+    const original = error.config as
+      | (InternalAxiosRequestConfig & { _retried?: boolean })
+      | undefined;
+
+    if (error.response?.status === 401 && original && !original._retried) {
+      original._retried = true;
+      refreshPromise ??= refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+      const newToken = await refreshPromise;
+      if (newToken) {
+        original.headers.set('Authorization', `Bearer ${newToken}`);
+        return apiClient(original); // replay the original request once
+      }
     }
     return Promise.reject(error);
   },
@@ -94,17 +188,20 @@ axiosRetry(apiClient, {
 // src/api/queryClient.ts
 // ============================================================================
 
-import { QueryClient } from '@tanstack/react-query';
-import { createSyncStoragePersister } from '@tanstack/query-persist-client-core';
+import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import NetInfo from '@react-native-community/netinfo';
 
-/** Separate MMKV instance namespaced for the query cache to avoid key collisions. */
-const queryStorage = new MMKV({ id: 'query-cache' });
+// Drive TanStack Query's online state from the real network status so paused
+// mutations resume and stale queries refetch the moment connectivity returns.
+onlineManager.setEventListener((setOnline) =>
+  NetInfo.addEventListener((state) => setOnline(!!state.isConnected)),
+);
 
 /**
  * MMKV-backed persister for TanStack Query.
  * Serialises the entire query cache to disk under a single key so the cache
- * survives app restarts — this is the offline-first persistence tier, mirroring
- * the disk-tier of swift's hyperoslo/Cache Storage.
+ * survives app restarts — this is the offline-first persistence tier.
  */
 export const mmkvPersister = createSyncStoragePersister({
   storage: {
@@ -118,17 +215,18 @@ export const mmkvPersister = createSyncStoragePersister({
  * Application-wide QueryClient. Created once; provided via
  * <PersistQueryClientProvider> in App.tsx. Never instantiate per-component.
  *
- * Default staleTime (60 s) and gcTime (5 min) apply to all queries unless
- * a query overrides them explicitly. Overriding is encouraged for resources
- * with different freshness requirements.
+ * gcTime MUST stay >= the persister's maxAge (24h, set in App.tsx) or an
+ * unused entry is garbage-collected from memory before the persisted copy can
+ * be restored — which silently breaks "survives app restart". Override
+ * staleTime per-query for resources with different freshness requirements.
  */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,        // 1 minute — triggers background revalidation
-      gcTime: 5 * 60_000,       // 5 minutes idle before memory GC
+      staleTime: 60_000,            // 1 minute — triggers background revalidation
+      gcTime: 1000 * 60 * 60 * 24,  // 24h — must stay >= the persister maxAge
       retry: 3,
-      refetchOnWindowFocus: false, // Irrelevant on mobile; disabling avoids surprises
+      refetchOnWindowFocus: false,  // Irrelevant on mobile; disabling avoids surprises
     },
     mutations: {
       retry: 0,
@@ -191,7 +289,7 @@ export async function createTodo(input: CreateTodoInput): Promise<Todo> {
 /**
  * Toggle the completed flag on a todo.
  * Called by: useToggleTodo (src/features/todos/mutations.ts)
- * Cache effect: mutations.ts invalidates todoKeys.lists() + todoKeys.detail(id) on success.
+ * Cache effect: mutations.ts optimistically patches todoKeys.lists() + todoKeys.detail(id).
  */
 export async function toggleTodo(id: string): Promise<Todo> {
   const { data } = await apiClient.patch<Todo>(`/todos/${id}/toggle`);
@@ -239,8 +337,8 @@ export function useTodosQuery() {
   return useQuery({
     queryKey: todoKeys.lists(),
     queryFn: fetchTodos,
-    staleTime: 60_000,   // 1 minute
-    gcTime: 5 * 60_000,  // 5 minutes
+    staleTime: 60_000,            // 1 minute
+    gcTime: 1000 * 60 * 60 * 24,  // 24h — must stay >= the persister maxAge
   });
 }
 
@@ -253,7 +351,7 @@ export function useTodoDetailQuery(id: string) {
     queryKey: todoKeys.detail(id),
     queryFn: () => fetchTodo(id),
     staleTime: 60_000,
-    gcTime: 5 * 60_000,
+    gcTime: 1000 * 60 * 60 * 24,  // 24h — see useTodosQuery
     enabled: Boolean(id),
   });
 }
@@ -262,7 +360,7 @@ export function useTodoDetailQuery(id: string) {
 // src/features/todos/mutations.ts
 // ============================================================================
 // Write hooks — useMutation wrappers that call api functions and invalidate cache.
-// Rule: EVERY mutation invalidates all affected query keys in onSuccess.
+// Rule: EVERY mutation invalidates all affected query keys once it settles.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -290,27 +388,36 @@ export function useToggleTodo() {
     mutationFn: (id: string) => toggleTodo(id),
     // Optimistic: flip the completed flag in-cache before the network call.
     onMutate: async (id) => {
-      // Cancel any in-flight list queries to avoid overwriting our optimistic update.
+      // Cancel in-flight queries for both keys so they can't clobber our patch.
       await qc.cancelQueries({ queryKey: todoKeys.lists() });
-      const previousList = qc.getQueryData<Todo[]>(todoKeys.lists());
+      await qc.cancelQueries({ queryKey: todoKeys.detail(id) });
 
-      qc.setQueryData<Todo[]>(todoKeys.lists(), (old) =>
-        old?.map((todo) =>
-          todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-        ) ?? [],
+      const previousList = qc.getQueryData<Todo[]>(todoKeys.lists());
+      const previousDetail = qc.getQueryData<Todo>(todoKeys.detail(id));
+
+      // Patch each cache entry only when it exists — returning `old` untouched
+      // when undefined avoids materialising a fake empty list.
+      qc.setQueryData<Todo[] | undefined>(todoKeys.lists(), (old) =>
+        old ? old.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)) : old,
+      );
+      qc.setQueryData<Todo | undefined>(todoKeys.detail(id), (old) =>
+        old ? { ...old, completed: !old.completed } : old,
       );
 
-      // Return snapshot for rollback.
-      return { previousList };
+      // Return snapshots for rollback.
+      return { previousList, previousDetail };
     },
-    onError: (_err, _id, context) => {
-      // Roll back the optimistic update on failure.
+    onError: (_err, id, context) => {
+      // Roll back both keys on failure.
       if (context?.previousList !== undefined) {
         qc.setQueryData(todoKeys.lists(), context.previousList);
       }
+      if (context?.previousDetail !== undefined) {
+        qc.setQueryData(todoKeys.detail(id), context.previousDetail);
+      }
     },
-    onSuccess: (_data, id) => {
-      // Invalidate both list and detail to ensure server truth after success.
+    onSettled: (_data, _err, id) => {
+      // Reconcile with server truth for both keys once the mutation settles.
       qc.invalidateQueries({ queryKey: todoKeys.lists() });
       qc.invalidateQueries({ queryKey: todoKeys.detail(id) });
     },

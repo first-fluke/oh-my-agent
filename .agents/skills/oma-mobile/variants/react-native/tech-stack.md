@@ -3,9 +3,10 @@
 ## Framework: React Native + TypeScript
 
 - **Language**: TypeScript (strict mode; `"strict": true` in `tsconfig.json`)
-- **UI Framework**: React Native (core components); Expo is the recommended toolchain for new projects (managed or bare workflow)
+- **UI Framework**: React Native 0.86 with React 19 (core components); Expo is the recommended toolchain for new projects (managed or bare workflow)
+- **Architecture**: New Architecture (Fabric + TurboModules) — default since RN 0.76 and the only mode from 0.82 onward
 - **Minimum OS**: iOS 16.0 / Android API 26 (Oreo)
-- **Tooling**: Metro bundler, Expo CLI or React Native CLI, Flipper for dev debugging
+- **Tooling**: Metro bundler, Expo CLI or React Native CLI, React Native DevTools for dev debugging
 
 React Native renders to native UI components — not a WebView or canvas. Expo adds a curated native module layer, OTA updates, and a first-class build service (EAS Build), which removes native toolchain friction for most projects. Bare workflow gives full native access when Expo modules do not cover a capability.
 
@@ -40,7 +41,7 @@ See `snippets.md §3` for the canonical Axios instance and auth interceptor.
 
 ## Response Cache: TanStack Query (@tanstack/react-query)
 
-**Read-through caching at the data-fetching layer is mandatory.** TanStack Query is the direct RN parallel to the swift `ResponseCache` actor — it caches **decoded JavaScript objects** (not raw response bytes), provides stale-while-revalidate out of the box, and centralizes invalidation.
+**Read-through caching at the data-fetching layer is mandatory.** TanStack Query owns the repository-layer cache: it caches **decoded JavaScript objects** (not raw response bytes), provides stale-while-revalidate out of the box, and centralizes invalidation so the data-fetching layer is the single source of caching truth.
 
 ```
 Screen / Component
@@ -60,15 +61,15 @@ Backend REST API
 
 **Mandatory rules:**
 
-1. Every read is wrapped in a `useQuery` call with **explicit `staleTime` and `gcTime`** — no implicit infinite TTL. `staleTime` controls when a cached entry is considered stale and triggers a background revalidation; `gcTime` (formerly `cacheTime`) controls when an unused entry is garbage-collected from memory.
+1. Every read is wrapped in a `useQuery` call with **explicit `staleTime` and `gcTime`** — no implicit infinite TTL. `staleTime` controls when a cached entry is considered stale and triggers a background revalidation; `gcTime` (formerly `cacheTime`) controls when an unused entry is garbage-collected from memory. For offline-first, `gcTime` **must stay `>=` the persister's `maxAge`** (default 24h) or the persisted cache is discarded before it can be restored on the next launch.
 2. Query keys follow the pattern `[operation, ...params]` — for example `['todos', 'list']` or `['todos', 'detail', id]`. **Never key on URLs** (they conflate transport with cache identity and break under proxy/versioning changes).
 3. Every mutation (`useMutation`) **must call `queryClient.invalidateQueries({ queryKey })`** for all affected query keys on `onSuccess`. Optimistic updates are optional but, when used, must pair a `rollback` in `onError`.
-4. Offline persistence: `@tanstack/query-persist-client-core` + a custom MMKV persister (`react-native-mmkv`) so the query cache survives app restarts. This mirrors the swift disk-cache tier.
+4. Offline persistence: `@tanstack/react-query-persist-client` (the `PersistQueryClientProvider`) + `@tanstack/query-sync-storage-persister` driving a custom MMKV persister (`react-native-mmkv`) so the query cache survives app restarts. Wire `onlineManager` to `@react-native-community/netinfo` so paused mutations resume and stale queries refetch when connectivity returns.
 <!-- oma-docs:ignore-start -->
 5. The `QueryClient` is created once at app startup (`src/api/queryClient.ts`) and provided via `<QueryClientProvider>` in the root component. Never create per-component `QueryClient` instances.
 <!-- oma-docs:ignore-end -->
 6. Network calls are isolated in `src/api/` typed functions (axios). **Screens and components never call axios directly** — this is the repository seam. Components consume hooks; hooks consume the api layer.
-7. The query cache is for **transient, server-owned data**. Durable user-owned data belongs in MMKV; secrets belong in `expo-secure-store` / `react-native-keychain`. TanStack Query is never a system of record.
+7. The query cache is for **transient, server-owned data**. Durable non-secret user-owned data belongs in MMKV; secrets (the access token) live only in memory in a Zustand `authStore` hydrated from `react-native-keychain` — never in plain-text MMKV. TanStack Query is never a system of record.
 
 See `snippets.md §2` for QueryClient + MMKV persister setup, `snippets.md §5` for `queries.ts` / `mutations.ts`, and `snippets.md §9` for the cache rules recap.
 
@@ -78,11 +79,11 @@ See `snippets.md §2` for QueryClient + MMKV persister setup, `snippets.md §5` 
 |-------|---------|---------|
 | Fast KV (non-secret) | `react-native-mmkv` | User preferences, offline flags, TanStack Query persistence |
 | Secrets / tokens | `expo-secure-store` or `react-native-keychain` | Auth tokens, API keys |
-| Query cache persistence | MMKV persister (`@tanstack/query-persist-client-core`) | Offline-first server-state survival across restarts |
+| Query cache persistence | MMKV persister (`@tanstack/query-sync-storage-persister` + `@tanstack/react-query-persist-client`) | Offline-first server-state survival across restarts |
 
 **MMKV** is a C++-backed key-value store (the same one WeChat uses) that is 30× faster than `AsyncStorage` on both platforms. Use it for all non-secret durable state. Use `expo-secure-store` (Expo projects) or `react-native-keychain` (bare RN) for anything that must live in the platform secure enclave (iOS Keychain / Android Keystore).
 
-Never store secrets in MMKV — it is not encrypted by default.
+Never store secrets in MMKV — it stores plain text unless an `encryptionKey` is passed. The access token lives in an in-memory Zustand `authStore` (`src/store/authStore.ts`) that is hydrated from the Keychain at app start; the axios request interceptor reads it synchronously via `useAuthStore.getState().accessToken`, and a 401 clears both the Keychain and the store. See `snippets.md §10`.
 
 ## Testing
 
@@ -163,7 +164,7 @@ Backend REST API
 
 Each `features/<name>/` folder is a vertical slice owning its types, UI components, and data hooks. `shared/` contains stateless, reusable components and utilities with no feature knowledge. The `api/` layer is the only place that touches axios and the network.
 
-## Navigation: React Navigation v6 (native-stack)
+## Navigation: React Navigation v7 (native-stack)
 
 Use **`@react-navigation/native-stack`** (backed by `react-native-screens` native primitives) for push navigation — it is measurably faster than the JS-animated `@react-navigation/stack`. Tab navigation uses `@react-navigation/bottom-tabs`.
 

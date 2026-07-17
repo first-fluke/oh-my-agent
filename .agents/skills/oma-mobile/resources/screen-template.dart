@@ -1,26 +1,95 @@
 /**
  * Screen Template for Mobile Agent (Flutter)
  *
- * This template demonstrates best practices for Flutter screens.
+ * Demonstrates the stack's canonical screen patterns:
+ *   - A `@riverpod` codegen notifier (StreamNotifier) consuming a repository
+ *     interface — never a hand-written global FutureProvider with an inline API call.
+ *   - GoRouter typed-route navigation (`GoRouteData` subclass `.push(context)`),
+ *     never Navigator 1.0 named routes (`pushNamed` / `static routeName`).
+ *   - AsyncValue.when → loading / data / empty / error(retry) states.
+ *   - Controller lifecycle (create in field/initState, dispose in dispose()).
+ *   - Dark-mode-safe colors via `Theme.of(context).colorScheme` and
+ *     `withValues(alpha:)` (NOT the deprecated `withOpacity`).
+ *
+ * This is a reference: the notifier, repository, and routes normally live in
+ * separate files (see variants/flutter/snippets.md §2/§3/§4/§6). Shown together
+ * here for readability; the `part` directive pulls in build_runner output.
  */
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-// Provider definition (in separate file: providers/example_providers.dart)
-/*
-final exampleProvider = FutureProvider<List<ExampleModel>>((ref) async {
-  final repository = ref.watch(exampleRepositoryProvider);
-  return repository.fetchData();
-});
-*/
+part 'example_screen.g.dart';
 
-/// Example screen demonstrating common patterns
+// ---------------------------------------------------------------------------
+// DOMAIN — entity + repository interface (normally under features/example/domain/)
+// ---------------------------------------------------------------------------
+
+/// Minimal domain entity. In a real feature use freezed (see snippets §3a).
+class Example {
+  const Example({required this.id, required this.title, this.description});
+  final int id;
+  final String title;
+  final String? description;
+}
+
+/// The presentation layer depends on this interface, never on a concrete impl.
+/// Swap the offline-first impl, a stub, or a mock behind this seam.
+abstract interface class ExampleRepository {
+  /// Emits the cached list immediately, then re-emits after network revalidation.
+  Stream<List<Example>> watchAll();
+}
+
+/// DI seam. Override this in `ProviderScope(overrides: [...])` (or a codegen
+/// provider that returns the real `ExampleRepositoryImpl`) at app startup.
+@riverpod
+ExampleRepository exampleRepository(Ref ref) =>
+    throw UnimplementedError('Override exampleRepositoryProvider with a real impl.');
+
+// ---------------------------------------------------------------------------
+// STATE — @riverpod StreamNotifier consuming the repository (features/example/presentation/)
+// ---------------------------------------------------------------------------
+
+/// Exposes the example list as `AsyncValue<List<Example>>`.
+///
+/// Riverpod converts the repository's `Stream` into an `AsyncValue`: loading on
+/// first subscription, data(cachedList) on the first emission, then data(freshList)
+/// after revalidation — no loading flicker when the cache is warm.
+@riverpod
+class ExamplesNotifier extends _$ExamplesNotifier {
+  @override
+  Stream<List<Example>> build() {
+    final repo = ref.watch(exampleRepositoryProvider);
+    return repo.watchAll();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// NAVIGATION — typed routes (features/example/... registered on the app router)
+// ---------------------------------------------------------------------------
+
+/// Typed detail route. `go_router_builder` generates the `.push()` / `.go()`
+/// helpers from `@TypedGoRoute`; the annotation and `GoRouteData` come from
+/// `package:go_router/go_router.dart`. Navigate with:
+///   `const ExampleDetailRoute(id: 42).push(context);`
+class ExampleDetailRoute extends GoRouteData {
+  const ExampleDetailRoute({required this.id});
+  final int id;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      // Replace with the real detail screen.
+      Scaffold(appBar: AppBar(title: Text('Example $id')));
+}
+
+// ---------------------------------------------------------------------------
+// SCREEN
+// ---------------------------------------------------------------------------
+
+/// Example screen demonstrating common patterns.
 class ExampleScreen extends ConsumerStatefulWidget {
-  /// Route name for navigation
-  static const routeName = '/example';
-
-  /// Constructor
   const ExampleScreen({super.key});
 
   @override
@@ -28,7 +97,7 @@ class ExampleScreen extends ConsumerStatefulWidget {
 }
 
 class _ExampleScreenState extends ConsumerState<ExampleScreen> {
-  // Local state (if needed)
+  // Local UI state and controllers.
   final _scrollController = ScrollController();
   bool _showScrollToTop = false;
 
@@ -40,7 +109,7 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _scrollController.dispose(); // always dispose controllers
     super.dispose();
   }
 
@@ -55,63 +124,55 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch providers
-    final dataAsync = ref.watch(exampleProvider);
+    // Watch the notifier — rebuilds on every AsyncValue transition.
+    final examplesAsync = ref.watch(examplesNotifierProvider);
 
     return Scaffold(
-      // App bar
       appBar: AppBar(
         title: const Text('Example Screen'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(exampleProvider),
+            // Invalidate re-subscribes build() → fresh revalidation cycle.
+            onPressed: () => ref.invalidate(examplesNotifierProvider),
             tooltip: 'Refresh',
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: _navigateToSettings,
+            // GoRouter imperative push; prefer a typed route when the
+            // destination is in the typed route graph.
+            onPressed: () => context.push('/settings'),
             tooltip: 'Settings',
           ),
         ],
       ),
-
-      // Body with async handling
-      body: dataAsync.when(
-        // Success state
-        data: (items) => _buildContent(items),
-
-        // Loading state
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-
-        // Error state
-        error: (error, stackTrace) => _buildErrorState(error),
+      body: examplesAsync.when(
+        // Warm cache renders immediately; a background revalidation does not
+        // re-show the spinner (skipLoadingOnRefresh is on by default).
+        data: (items) =>
+            items.isEmpty ? _buildEmptyState() : _buildContent(items),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => _buildErrorState(error),
       ),
-
-      // Floating action button
       floatingActionButton: _showScrollToTop
           ? FloatingActionButton(
               onPressed: _scrollToTop,
+              tooltip: 'Scroll to top',
               child: const Icon(Icons.arrow_upward),
             )
           : null,
     );
   }
 
-  /// Builds main content
-  Widget _buildContent(List<dynamic> items) {
-    if (items.isEmpty) {
-      return _buildEmptyState();
-    }
-
+  /// Builds main content.
+  Widget _buildContent(List<Example> items) {
     return RefreshIndicator(
-      onRefresh: _handleRefresh,
+      // Await the next stream value so the spinner stays until fresh data
+      // arrives — `ref.invalidate` returns synchronously and dismisses early.
+      onRefresh: () => ref.refresh(examplesNotifierProvider.future),
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // Header
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -121,14 +182,9 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
               ),
             ),
           ),
-
-          // List
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final item = items[index];
-                return _buildListItem(item, index);
-              },
+              (context, index) => _buildListItem(items[index], index),
               childCount: items.length,
             ),
           ),
@@ -137,53 +193,40 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
     );
   }
 
-  /// Builds individual list item
-  Widget _buildListItem(dynamic item, int index) {
+  /// Builds an individual list item.
+  Widget _buildListItem(Example item, int index) {
     return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        leading: CircleAvatar(
-          child: Text('${index + 1}'),
-        ),
-        title: Text(item.title ?? 'Untitled'),
-        subtitle: Text(item.description ?? ''),
-        trailing: IconButton(
-          icon: const Icon(Icons.chevron_right),
-          onPressed: () => _navigateToDetail(item),
-        ),
-        onTap: () => _navigateToDetail(item),
+        leading: CircleAvatar(child: Text('${index + 1}')),
+        title: Text(item.title),
+        subtitle: item.description != null ? Text(item.description!) : null,
+        trailing: const Icon(Icons.chevron_right),
+        // Typed-route navigation — no Navigator.pushNamed.
+        onTap: () => ExampleDetailRoute(id: item.id).push(context),
       ),
     );
   }
 
-  /// Builds empty state
+  /// Builds the empty state.
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.inbox,
-            size: 64,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
+          Icon(Icons.inbox, size: 64, color: theme.colorScheme.secondary),
           const SizedBox(height: 16),
-          Text(
-            'No items yet',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text('No items yet', style: theme.textTheme.titleLarge),
           const SizedBox(height: 8),
           Text(
             'Add your first item to get started',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton.icon(
+          FilledButton.icon(
             onPressed: _showAddDialog,
             icon: const Icon(Icons.add),
             label: const Text('Add Item'),
@@ -193,36 +236,33 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
     );
   }
 
-  /// Builds error state
+  /// Builds the error state with a retry affordance.
   Widget _buildErrorState(Object error) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: theme.colorScheme.error),
             const SizedBox(height: 16),
             Text(
               'Oops! Something went wrong',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               error.toString(),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  ),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => ref.invalidate(exampleProvider),
+            FilledButton.icon(
+              onPressed: () => ref.invalidate(examplesNotifierProvider),
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
             ),
@@ -234,10 +274,6 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
 
   // Event handlers
 
-  Future<void> _handleRefresh() async {
-    await ref.refresh(exampleProvider.future);
-  }
-
   void _scrollToTop() {
     _scrollController.animateTo(
       0,
@@ -246,53 +282,36 @@ class _ExampleScreenState extends ConsumerState<ExampleScreen> {
     );
   }
 
-  void _navigateToDetail(dynamic item) {
-    Navigator.of(context).pushNamed(
-      '/detail',
-      arguments: item,
-    );
-  }
-
-  void _navigateToSettings() {
-    Navigator.of(context).pushNamed('/settings');
-  }
-
   void _showAddDialog() {
-    showDialog(
+    // Controller is local to the dialog and disposed when it closes.
+    final controller = TextEditingController();
+    showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('Add Item'),
         content: TextField(
+          controller: controller,
+          autofocus: true,
           decoration: const InputDecoration(
             labelText: 'Title',
             hintText: 'Enter title',
           ),
-          onSubmitted: (value) {
-            // Handle submission
-            Navigator.of(context).pop();
-          },
+          onSubmitted: (_) => Navigator.of(ctx).pop(),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
-              // Handle add
-              Navigator.of(context).pop();
+              // In a real screen: await ref.read(examplesNotifierProvider.notifier).create(...)
+              Navigator.of(ctx).pop();
             },
             child: const Text('Add'),
           ),
         ],
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 }
-
-// Placeholder provider (move to separate file)
-final exampleProvider = FutureProvider<List<dynamic>>((ref) async {
-  // Simulate API call
-  await Future.delayed(const Duration(seconds: 1));
-  return [];
-});

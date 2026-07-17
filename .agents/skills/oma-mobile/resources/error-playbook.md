@@ -93,6 +93,42 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 
 ---
 
+## React Native: Metro / Build Failure
+
+**Symptoms**: Metro bundler errors, `Unable to resolve module`, pod install failures, Gradle errors
+
+1. **Unable to resolve module**: check the import path and `tsconfig.json`/`babel.config.js` path aliases (`@api`, `@store`, ...) agree; then `npx react-native start --reset-cache`
+2. **iOS pod failure**: `cd ios && pod install --repo-update`; New Architecture (0.76+) requires up-to-date pods for Nitro/TurboModules (e.g., react-native-mmkv v4 needs RN 0.76+)
+3. **Gradle failure**: check `android/build.gradle` versions match the RN release template; clean with `cd android && ./gradlew clean`
+4. **Native module mismatch after upgrade**: rebuild the app binary — JS-only reload cannot load new native modules
+5. If persists: note in result with full error; may be an environment issue
+
+---
+
+## React Native: TypeScript / Test Failure
+
+**Symptoms**: `npx tsc --noEmit` errors, jest failures, RNTL matcher errors
+
+1. Read the error: file, line, expected vs actual type
+2. Navigation typing: screens must use the typed props from `RootStackParamList` — never `any`
+3. Matcher not found (`toBeOnTheScreen` etc.): matchers are built into `@testing-library/react-native` ≥12.4 — remove any `@testing-library/jest-native` residue from jest setup
+4. Query hook tests: wrap in a fresh `QueryClientProvider` per test (`retry: false`); async UI needs `await screen.findBy...`, not `getBy...`
+5. **NEVER**: `@ts-ignore` / `as any` to silence type errors
+
+---
+
+## React Native: Stale Cache / Offline Issues
+
+**Symptoms**: UI shows old data, mutations don't refresh lists, cache gone after restart
+
+1. Mutation missing invalidation? Every mutation must invalidate the affected query keys (list AND detail) via the shared key factory
+2. Cache not surviving restart: `gcTime` must be >= the persister's `maxAge` (default 24h); a short `gcTime` lets GC prune entries from the persisted MMKV snapshot
+3. Offline behavior dead: confirm `onlineManager.setEventListener` is wired to NetInfo — RN has no default online detection
+4. Optimistic update ghosts: `setQueryData` must return `old` unchanged when the cache entry is absent — never fabricate `[]`
+5. Persisted schema drift after model changes: bump the persister `buster` string to drop the old snapshot
+
+---
+
 ## Rate Limit / Quota / Memory Fallback
 
 Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md` §"Rate Limit / Quota Error (LLM runtime)" and §"Serena Memory Unavailable".

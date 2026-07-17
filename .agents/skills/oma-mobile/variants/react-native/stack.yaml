@@ -8,7 +8,7 @@ http_client: axios
 data_fetching: tanstack-query
 local_storage: mmkv
 response_cache: tanstack-query
-structure: src/api,src/features/<feature>/{model,ui},src/shared,src/navigation,src/store
+structure: src/api,src/features/<feature>/{model,ui,queries.ts,mutations.ts},src/shared,src/navigation,src/store,e2e
 source: variant
 
 verify:

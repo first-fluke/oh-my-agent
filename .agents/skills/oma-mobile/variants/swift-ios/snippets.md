@@ -89,6 +89,7 @@ enum TodosViewState {
     case error(String)
 }
 
+@MainActor
 @Observable
 final class TodosViewModel {
     // MARK: - Published state (observed by the View automatically)
@@ -98,7 +99,9 @@ final class TodosViewModel {
     // Depend on the protocol seam, not the concrete service — enables protocol-based
     // mocking in tests without a third-party mock lib (see §8).
     private let service: any TodoProviding
-    private var loadTask: Task<Void, Never>?
+    // `private(set)` so tests can `await viewModel.loadTask?.value` to observe the
+    // load deterministically instead of sleeping (see §8).
+    private(set) var loadTask: Task<Void, Never>?
 
     init(service: any TodoProviding) {
         self.service = service
@@ -130,10 +133,21 @@ final class TodosViewModel {
 
     func retry() { load() }
 
-    // Cancel the in-flight task when the view model is deallocated.
-    deinit { loadTask?.cancel() }
+    /// Cancel the in-flight load explicitly (e.g. a "Cancel" button). The `.task`
+    /// modifier already cancels its structured child on view disappear, so this is
+    /// only needed for the unstructured `loadTask` handle kept above.
+    func cancelLoad() { loadTask?.cancel() }
 }
 ```
+
+> **Pitfall — don't cancel in `deinit`.** Under Swift 6 strict concurrency a
+> `deinit` is *nonisolated*, so it cannot touch `@MainActor`-isolated stored state
+> like `loadTask` (isolated `deinit`, SE-0371, only shipped in Swift 6.2). The
+> pattern is fragile for a second reason too: the `Task { [weak self] }` above
+> captures `self` weakly, so an in-flight load holds no strong reference — `deinit`
+> can only run *after* the task already finished, never mid-stream. Rely on `.task`'s
+> automatic cancellation on disappear (structured), and expose `cancelLoad()` for the
+> unstructured handle when you need to stop it sooner.
 
 ---
 
@@ -152,11 +166,11 @@ struct TodosView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            content
-                .navigationTitle("Todos")
-                .task { viewModel.load() }         // runs on appear, cancelled on disappear
-        }
+        // The router owns the enclosing NavigationStack(path:) (see §9); a feature
+        // view assumes it is already inside one and never wraps itself in a stack.
+        content
+            .navigationTitle("Todos")
+            .task { viewModel.load() }             // runs on appear, cancelled on disappear
     }
 
     // MARK: - Content switch
@@ -233,7 +247,8 @@ public final class APIClient {
     public init(serverURL: URL, tokenProvider: @escaping () -> String?) {
         let transport = URLSessionTransport()
         let authMiddleware = BearerAuthMiddleware(tokenProvider: tokenProvider)
-        self.client = try! Client(
+        // The generated Client initialiser is non-throwing — no `try` needed.
+        self.client = Client(
             serverURL: serverURL,
             transport: transport,
             middlewares: [authMiddleware]
@@ -276,15 +291,17 @@ public struct BearerAuthMiddleware: ClientMiddleware {
 
 ## 6. Generated-Client Call Pattern
 
-> Isolates the raw generated-`Client` call + response mapping. The **production**
-> `TodoService` wraps this with a `ResponseCache` (read-through + invalidation) —
-> see §10. Use the cached form for real features; this excerpt is the inner call only.
+> Isolates the raw generated-`Client` call + response mapping — this is the **inner
+> call shape** only. The **production** service is the cached `TodoService` in §10
+> that wraps this shape with a `ResponseCache` (read-through + invalidation). Use the
+> cached form for real features; this type is named `TodoServiceUncached` so it never
+> collides with §10's `TodoService`.
 
 ```swift
-// Core/Networking/TodoService.swift  (excerpt showing call + response handling)
+// Core/Networking/TodoServiceUncached.swift  (excerpt showing call + response handling)
 import OpenAPIRuntime
 
-public final class TodoService {
+public final class TodoServiceUncached {
     private let client: Client
 
     public init(client: Client) {
@@ -307,7 +324,6 @@ public final class TodoService {
 
     public enum APIError: Error {
         case undocumented(statusCode: Int)
-        case notFound
     }
 }
 ```
@@ -334,6 +350,58 @@ struct MyApp: App {
 }
 
 // ---------------------------------------------------------------------------
+// Core/Security/KeychainTokenStore.swift
+// ---------------------------------------------------------------------------
+import Foundation
+import Security
+
+/// Minimal Keychain-backed token store — no third-party dependency.
+/// Secrets (access tokens, refresh tokens) belong in the Keychain, never in
+/// `UserDefaults`, which is an unencrypted plist readable from a device backup.
+struct KeychainTokenStore {
+    let service: String   // e.g. Bundle.main.bundleIdentifier ?? "MyApp"
+
+    /// Read a stored token, or nil if absent.
+    func token(account: String = "accessToken") -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    /// Insert or overwrite a token (delete-then-add keeps it idempotent).
+    func setToken(_ value: String, account: String = "accessToken") {
+        let base: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+        ]
+        SecItemDelete(base as CFDictionary)
+        var add = base
+        add[kSecValueData as String] = Data(value.utf8)
+        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        SecItemAdd(add as CFDictionary, nil)
+    }
+
+    /// Remove a stored token (e.g. on sign-out).
+    func deleteToken(account: String = "accessToken") {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+        ]
+        SecItemDelete(query as CFDictionary)
+    }
+}
+
+// ---------------------------------------------------------------------------
 // App/AppDependencies.swift
 // ---------------------------------------------------------------------------
 import Foundation
@@ -345,9 +413,10 @@ final class AppDependencies {
     init() {
         let serverURL = URL(string: ProcessInfo.processInfo.environment["API_BASE_URL"]
                            ?? "https://api.example.com")!
+        // Secrets come from the Keychain — never UserDefaults (see tech-stack.md).
+        let tokens = KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "MyApp")
         let apiClient = APIClient(serverURL: serverURL, tokenProvider: {
-            // TODO: replace with real keychain / token store lookup
-            UserDefaults.standard.string(forKey: "accessToken")
+            tokens.token()
         })
         // Repository-layer response cache (hyperoslo/Cache) — see snippets §10.
         let todoCache = try! ResponseCache<[Components.Schemas.Todo]>(name: "Todos")
@@ -397,6 +466,10 @@ final class MockTodoService: TodoProviding, @unchecked Sendable {
 
 // MARK: - Tests
 
+// The view model is `@MainActor`, so the test methods are too. Instead of polling
+// with `Task.sleep`, await the exposed `loadTask` handle — the assertion runs only
+// once the load has actually finished, so the test is deterministic and fast.
+@MainActor
 final class TodosViewModelTests: XCTestCase {
     // Test that a successful response transitions to .loaded.
     func testLoad_success_transitionsToLoaded() async {
@@ -407,8 +480,7 @@ final class TodosViewModelTests: XCTestCase {
         let sut = TodosViewModel(service: mock)
 
         sut.load()
-        // Give the Task a tick to complete.
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        await sut.loadTask?.value          // wait for the load to complete
 
         guard case .loaded(let todos) = sut.viewState else {
             return XCTFail("Expected .loaded, got \(sut.viewState)")
@@ -424,7 +496,7 @@ final class TodosViewModelTests: XCTestCase {
         let sut = TodosViewModel(service: mock)
 
         sut.load()
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        await sut.loadTask?.value
 
         guard case .empty = sut.viewState else {
             return XCTFail("Expected .empty, got \(sut.viewState)")
@@ -438,7 +510,7 @@ final class TodosViewModelTests: XCTestCase {
         let sut = TodosViewModel(service: mock)
 
         sut.load()
-        try? await Task.sleep(nanoseconds: 50_000_000)
+        await sut.loadTask?.value
 
         guard case .error = sut.viewState else {
             return XCTFail("Expected .error, got \(sut.viewState)")
@@ -446,6 +518,8 @@ final class TodosViewModelTests: XCTestCase {
     }
 }
 ```
+
+---
 
 ## 9. Navigation: interactive swipe-back on nav-bar-hidden routes
 
@@ -492,6 +566,19 @@ private struct InteractiveSwipeBack: UIViewControllerRepresentable {
 
         override func didMove(toParent parent: UIViewController?) {
             super.didMove(toParent: parent)
+            reassertSwipeBack()
+        }
+        // UIKit re-disables the recognizer on every nav-bar-hidden transition, so
+        // re-assert on each appear — not just once at insertion (`didMove`).
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            reassertSwipeBack()
+        }
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            reassertSwipeBack()
+        }
+        private func reassertSwipeBack() {
             guard let r = navigationController?.interactivePopGestureRecognizer else { return }
             r.delegate = self
             r.isEnabled = true
@@ -576,9 +663,13 @@ actor ResponseCache<Value: Codable & Sendable> {
         memoryExpiry: Expiry = .seconds(120),
         diskExpiry: Expiry = .seconds(60 * 60)
     ) throws {
+        // `fileManager:` is REQUIRED on the 7.4.0 release tag (last release, 2024-08).
+        // The README shows the master signature where it defaults to `.default`, but
+        // that default is unreleased — pass it explicitly and pin the exact version.
         self.storage = try Storage<String, Value>(
             diskConfig: DiskConfig(name: name, expiry: diskExpiry),
             memoryConfig: MemoryConfig(expiry: memoryExpiry, countLimit: 200, totalCostLimit: 0),
+            fileManager: .default,
             transformer: TransformerFactory.forCodable(ofType: Value.self)
         )
     }
@@ -690,3 +781,132 @@ Wire the cache into the service at the composition root — see §7 `AppDependen
 > key on `operationID` + params; explicit memory/disk TTLs (never `.never`);
 > invalidate affected keys after every write. Durable user-owned data → SwiftData;
 > secrets → Keychain. `hyperoslo/Cache` is never a system of record.
+
+---
+
+## 11. Durable storage: SwiftData (system of record)
+
+`hyperoslo/Cache` (§10) memoizes transient server-owned responses. **Durable,
+user-owned** data (drafts, offline records) lives in **SwiftData** — the Swift-native
+ORM on Core Data. Model with `@Model`, own one `ModelContainer`, and read/write
+through a repository so features never touch a `ModelContext` directly.
+
+```swift
+// Core/Models/Draft.swift
+import SwiftData
+
+/// A user-owned draft persisted across launches. `@Model` makes the class a
+/// SwiftData entity (schema inferred from stored properties).
+@Model
+final class Draft {
+    @Attribute(.unique) var id: UUID
+    var title: String
+    var body: String
+    var updatedAt: Date
+
+    init(id: UUID = UUID(), title: String, body: String, updatedAt: Date = .now) {
+        self.id = id
+        self.title = title
+        self.body = body
+        self.updatedAt = updatedAt
+    }
+}
+```
+
+```swift
+// Core/Services/DraftRepository.swift
+import Foundation
+import SwiftData
+
+/// Repository over SwiftData. Owns a `ModelContext` bound to the app's container;
+/// `@MainActor` because the default context is main-actor bound.
+@MainActor
+final class DraftRepository {
+    private let context: ModelContext
+
+    init(container: ModelContainer) {
+        self.context = container.mainContext
+    }
+
+    /// Fetch newest-first, optionally filtered by a title substring.
+    func drafts(matching query: String = "") throws -> [Draft] {
+        let predicate = query.isEmpty ? nil : #Predicate<Draft> {
+            $0.title.localizedStandardContains(query)
+        }
+        let descriptor = FetchDescriptor<Draft>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+        return try context.fetch(descriptor)
+    }
+
+    func upsert(_ draft: Draft) throws {
+        context.insert(draft)          // insert is idempotent on the unique id
+        try context.save()
+    }
+
+    func delete(_ draft: Draft) throws {
+        context.delete(draft)
+        try context.save()
+    }
+}
+```
+
+```swift
+// App/MyApp.swift — build one ModelContainer for the whole app.
+import SwiftUI
+import SwiftData
+
+@main
+struct MyApp: App {
+    // One container per app; SwiftUI injects it into the environment.
+    let container: ModelContainer = {
+        do { return try ModelContainer(for: Draft.self) }
+        catch { fatalError("Failed to create ModelContainer: \(error)") }
+    }()
+
+    var body: some Scene {
+        WindowGroup { RootView() }
+            .modelContainer(container)
+    }
+}
+```
+
+---
+
+## 12. UI testing: XCUITest
+
+Unit tests (§8) cover view models against protocol mocks. **XCUITest** drives the
+real app through the accessibility layer for critical user flows — launch, interact,
+assert on-screen. Give interactive views stable `.accessibilityIdentifier`s so the
+queries don't depend on visible copy.
+
+```swift
+// UITests/TodosFlowUITests.swift
+import XCTest
+
+final class TodosFlowUITests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        continueAfterFailure = false     // stop at the first failed assertion
+    }
+
+    func testTodosScreen_loadsAndShowsList() {
+        let app = XCUIApplication()
+        // Pass a launch argument the app reads to serve deterministic fixtures.
+        app.launchArguments += ["-uiTestMode"]
+        app.launch()
+
+        // Wait for the navigation title to appear (async load).
+        let title = app.navigationBars["Todos"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+
+        // Tap the first row and assert navigation happened.
+        let firstCell = app.cells.element(boundBy: 0)
+        XCTAssertTrue(firstCell.waitForExistence(timeout: 5))
+        firstCell.tap()
+
+        XCTAssertTrue(app.staticTexts["todoDetailTitle"].waitForExistence(timeout: 5))
+    }
+}
+```

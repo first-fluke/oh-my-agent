@@ -2,6 +2,10 @@
 language: swift
 framework: swiftui
 ui: swiftui
+state: observation
+navigation: navigationstack
+http_client: urlsession
+local_storage: swiftdata
 api_generator: swift-openapi-generator
 api_spec: Core/Networking/openapi.yaml
 response_cache: hyperoslo-cache
@@ -15,5 +19,7 @@ verify:
     skip_if_missing: swift
   tests:
     cmd: "swift test"
-    pass_signal: "Test Suite 'All tests' passed"
+    # Substring match must cover both XCTest ("Test Suite 'All tests' passed")
+    # and Swift Testing ("Test run with N tests passed") summaries.
+    pass_signal: "passed"
     skip_if_missing: swift

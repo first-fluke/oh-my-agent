@@ -122,14 +122,14 @@ Then run the project's mobile verification commands, typically unit/widget tests
 5. Dio with interceptors for API calls; handle offline gracefully
 6. 60fps target; test on both platforms
 7. Use Maestro for E2E testing of critical user flows
-8. Swift native: SwiftUI + `@Observable` (Observation framework, iOS 17+) for state management
+8. Swift native: SwiftUI + `@MainActor @Observable` view models (Observation framework, iOS 17+) — non-isolated VMs mutating observed state from a `Task` are a Swift 6 strict-concurrency error
 9. Swift native: use the generated `Client` from `swift-openapi-generator` — never hand-roll `URLRequest`/`JSONDecoder` for API calls
 10. Swift native: cache API responses at the Repository layer via a `ResponseCache` actor over `hyperoslo/Cache` — cache DECODED models (never `HTTPBody`), serve stale-while-revalidate on reads, invalidate keys on writes; view models depend on a protocol seam, not the concrete service (see `variants/swift-ios/snippets.md` §10)
 11. Swift native: follow `App/Core/Features/Shared` project layout
 12. Swift native: iOS Human Interface Guidelines for all UI decisions
-13. Swift native: XCTest/XCUITest for critical flows; cancel `Task` in `deinit` to prevent leaks
+13. Swift native: XCTest or Swift Testing for units, XCUITest for critical flows; cancel work via structured `.task {}` (auto-cancels on disappear) — never in `deinit`, which is nonisolated and cannot touch `@MainActor` state under Swift 6 (isolated deinit requires Swift 6.2+)
 14. Swift native: restore edge swipe-back at the route layer — nav-bar-hidden screens (`.toolbar(.hidden, for: .navigationBar)`) lose it, so register push routes via a `swipeBackDestination` wrapper, not per-screen (see `variants/swift-ios/snippets.md` §9)
-15. Flutter: mandate a repository-layer offline-first cache (Drift) — read cached entities then revalidate (stale-while-revalidate), invalidate/refresh affected rows on every write; cache decoded entities at the data layer, never at the Dio transport (see `variants/flutter/snippets.md`)
+15. Flutter: mandate a repository-layer offline-first cache (Drift) — read cached entities then revalidate (stale-while-revalidate), invalidate/refresh affected rows on every write; cache decoded entities at the data layer, never at the Dio transport (see `variants/flutter/snippets.md` §3, §10)
 16. React Native: server state goes through TanStack Query (the repository-layer cache) with explicit `staleTime`/`gcTime` — invalidate affected query keys on every mutation, persist the cache to MMKV for offline; screens consume query/mutation hooks, never call axios directly (see `variants/react-native/snippets.md`)
 
 ## References
@@ -151,6 +151,7 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Tech stack (React Native): `variants/react-native/tech-stack.md`
 - Screen template (Flutter): `resources/screen-template.dart`
 - Screen template (Swift): `resources/screen-template.swift`
+- Screen template (React Native): `resources/screen-template.tsx`
 - API service template (Swift): `variants/swift-ios/api-template.swift`
 - API service template (Flutter): `variants/flutter/api-template.dart`
 - API service template (React Native): `variants/react-native/api-template.ts`
