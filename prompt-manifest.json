@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.19.2",
-  "releaseDate": "2026-07-17T01:05:42.451Z",
+  "releaseDate": "2026-07-17T01:46:12.161Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -981,8 +981,8 @@
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
-      "sha256": "427a2e5b59ec4718ade35e353f8c3c73316c5ba66e3db44567690fea2eddef34",
-      "size": 16098
+      "sha256": "c63e8e520d7ac468415f1863cde9abf20971827be972ed46f3c8b7a1a07dd112",
+      "size": 20383
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
@@ -2061,8 +2061,8 @@
     },
     {
       "path": ".agents/workflows/docs.md",
-      "sha256": "d7ad4191cde9d386d8b868023342f0614737606ea9854c2f49f363f6f74e924b",
-      "size": 7658
+      "sha256": "bf0ae31df4f8d29d3f7c6a31b34327d77ee32fc82037bd4e0334a3e0031a5903",
+      "size": 8784
     },
     {
       "path": ".agents/workflows/orchestrate.md",
