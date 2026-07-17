@@ -1,13 +1,13 @@
 {
   "name": "oh-my-agent",
   "version": "10.20.2",
-  "releaseDate": "2026-07-17T11:20:36.619Z",
+  "releaseDate": "2026-07-17T11:35:02.699Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
       "path": ".agents/agents/architecture-reviewer.md",
-      "sha256": "2206377cf0c1738a9052472d606f189638967871fbc089f8cc62d62a48aafea8",
-      "size": 1808
+      "sha256": "82ddc323f37a8c435aab22b07cefbbdbdc33db26b0512380cef973e7cd489b50",
+      "size": 2019
     },
     {
       "path": ".agents/agents/backend-engineer.md",
@@ -206,8 +206,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "04a8e69097be2fa15844317ecea23aebd2769ce4f5df0d1ef7d5b9301c6243a3",
-      "size": 84797
+      "sha256": "b9b446d487ca9cd430575089f49835b0113c7da8529d9155f8390d9fb68d0ae3",
+      "size": 85072
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -301,8 +301,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "b878734a5a6b9e4b6973c2d3d56d52dfdf173394f9e6c521300dfdb8b547f3b1",
-      "size": 13167
+      "sha256": "b600dfb9da8f448b9b2723825adbed040952fe09c5bae536224abe66ad86b170",
+      "size": 13177
     },
     {
       "path": ".agents/rules/backend.md",
@@ -556,8 +556,8 @@
     },
     {
       "path": ".agents/skills/oma-architecture/SKILL.md",
-      "sha256": "7baa194ee1de13c9aac8a1dbd8a34323546c3b937232acd812e94463413bc70c",
-      "size": 8866
+      "sha256": "e937c05f9b0140b16ded1cf3a14680a026dbc67735f1dbe0b69d5e7039e9e6ef",
+      "size": 10048
     },
     {
       "path": ".agents/skills/oma-architecture/resources/api-evolution.md",
@@ -566,33 +566,38 @@
     },
     {
       "path": ".agents/skills/oma-architecture/resources/checklist.md",
-      "sha256": "7d92ba3aadd0a4903320ebcb2204d67c16720738a6a2c4c2f0246789a3c135e7",
-      "size": 1219
+      "sha256": "c76a442a481106b01860ca604f0a5d3d90725d886bcc3aedde754b411cb11734",
+      "size": 1750
     },
     {
       "path": ".agents/skills/oma-architecture/resources/examples.md",
-      "sha256": "6c7b5121f5a56d1ecec29d975486449c1f77650798603c3df8e1bd1794fa6f9f",
-      "size": 1468
+      "sha256": "54308a62c6d06876fed02c0fa08d2b925410d8c0d43d6dd7702a1201f3a80220",
+      "size": 3115
     },
     {
       "path": ".agents/skills/oma-architecture/resources/execution-protocol.md",
-      "sha256": "e5e15445d9cb0b8d3932ca75e1c177dc8c397dca0cd858d6e84005725a1f48e5",
-      "size": 3174
+      "sha256": "1b82ff323cbdeabe098d901c6e39beefdaa6842acb85775ad3420db0d4205116",
+      "size": 5349
     },
     {
       "path": ".agents/skills/oma-architecture/resources/methodology-selection.md",
-      "sha256": "15ab64fccf7ff540d82d48045c6079a5b099e00ccfad786f9b78e195906c06ea",
-      "size": 2113
+      "sha256": "ac5cd41b31117a2e08a4bcfa7ae4d700671ff1ab713d83ca512ae9f95f78fd98",
+      "size": 2630
+    },
+    {
+      "path": ".agents/skills/oma-architecture/resources/migration-patterns.md",
+      "sha256": "b99d837587a98059f441735e4546a9db9cbc420f38cab790341fb77f26c07833",
+      "size": 2823
     },
     {
       "path": ".agents/skills/oma-architecture/resources/output-templates.md",
-      "sha256": "f5456b9701e8123c807d578dd52cc591c25e2ff18d10c090645c586860cfa69c",
-      "size": 830
+      "sha256": "7111bf5cd3399206cfce3a10888c571bfc61b01e9bb26896a5165f445730f7da",
+      "size": 1697
     },
     {
       "path": ".agents/skills/oma-architecture/resources/stakeholder-synthesis.md",
-      "sha256": "ff8b0eb833718c9028ebc548f5d8f6c125fb861cadb225eb61322741007354dd",
-      "size": 1496
+      "sha256": "8dcd780efeb4c1bc9312dfb595140647bd9b10b2d0e3ae933b44eccadb2ea59e",
+      "size": 2378
     },
     {
       "path": ".agents/skills/oma-backend/SKILL.md",
@@ -1616,18 +1621,18 @@
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
-      "sha256": "b4153fb63c7031498eed10d94c60aa167c8f19baa836e166c1967c3c45baa2c6",
-      "size": 12294
+      "sha256": "cb6b7cee28ca36720d51d094c6e2e05d7fa3131850ec7747c4a876765ea62682",
+      "size": 12570
     },
     {
       "path": ".agents/skills/oma-refactor/resources/definition.md",
-      "sha256": "9d89d0bbc8ccdf11990582582770d947e1f71bdf0dafeb8acf6f8be2aaa0d543",
-      "size": 12757
+      "sha256": "52c150409f6fe49346b7d0c3d2be8782ff1fbe24c45cb75278c8e1a1cd6b53bb",
+      "size": 12799
     },
     {
       "path": ".agents/skills/oma-refactor/resources/governance.md",
-      "sha256": "59e27deab21af04dbd82deb7c38f01ae13e72e21bcf34b345e477af852876435",
-      "size": 4478
+      "sha256": "ee090a367e6da27e1bc4b52d825aa0a1620f57b187f1b3f496afd2611eca499e",
+      "size": 4833
     },
     {
       "path": ".agents/skills/oma-refactor/resources/measurement.md",
@@ -2031,8 +2036,8 @@
     },
     {
       "path": ".agents/workflows/architecture.md",
-      "sha256": "4903328277935f1ba56dac4ad4642f9ea52cfd9c1731632170bfa163fd7cd57b",
-      "size": 4983
+      "sha256": "e84e5e9168d0caf0c2ebaed2286077af7dd214b33d9c3714cf80ed384bb571ca",
+      "size": 5373
     },
     {
       "path": ".agents/workflows/brainstorm.md",
@@ -2071,8 +2076,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "6d51a289f0a86524d9d5228ecb46d17c1f0c74e00c7206fb0353d1750f008a40",
-      "size": 10889
+      "sha256": "8290feea1534058fc856da3e4c3501bb2bb4c628860c1702f876d7eca6ad03d0",
+      "size": 10942
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -2086,8 +2091,8 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "a3d34beb508bbdf401f5f1c60c7fab0ec213fd7c94549d3f1aba42cf362ebbd4",
-      "size": 19032
+      "sha256": "e0d3efed762c7d8b1eead614d5a1d288a00e75d63e926170f3c6877902bd348a",
+      "size": 19097
     },
     {
       "path": ".agents/workflows/recap.md",
@@ -2126,13 +2131,13 @@
     },
     {
       "path": ".agents/workflows/ultrawork/resources/phase-gates.md",
-      "sha256": "8dbe5e5d36e5731cefa2676df83d20c31cf705fcba9b4f9e9f89324d0c46eed4",
-      "size": 3819
+      "sha256": "916609114edf2e9a2f22babddb8a9a001a2a1a9a83884542c43a78ecc14bd2f0",
+      "size": 3822
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "15c499fcffac6ea94dd21a4bccf366a06b80072bf362703e7d8e0345c389c4a3",
-      "size": 30365
+      "sha256": "573ccf308cf0385eedbb15dabc519d41c2f15154f83f1cae383993a81af30bd1",
+      "size": 30464
     },
     {
       "path": ".agents/workflows/video.md",
@@ -2151,6 +2156,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 428
+    "totalFiles": 429
   }
 }
