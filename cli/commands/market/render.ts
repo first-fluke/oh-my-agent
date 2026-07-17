@@ -38,8 +38,8 @@ import {
   renderFrameworkSkeleton,
   resolveFrameworks,
 } from "./shared/frameworks.js";
-import type { Cluster } from "./shared/schema.js";
-import { ClusterOutputSchema } from "./shared/schema.js";
+import type { Candidate, Cluster } from "./shared/schema.js";
+import { ClusterOutputSchema, TRUST_RANK } from "./shared/schema.js";
 
 export type { RenderOptions, RenderResult } from "./render/types.js";
 export { packArgv };
@@ -50,11 +50,42 @@ const DEFAULT_OUTPUT_DIR = `${AGENTS_RESULTS_DIR}/market/`;
 // Core render function
 // ---------------------------------------------------------------------------
 
-export async function render(
+/**
+ * Apply `--min-trust`: drop candidates below the requested trust rank
+ * (untrusted/unknown counts as rank 0) and drop clusters left without
+ * representatives. Cross-source counts are recomputed from the survivors.
+ */
+export function filterClustersByTrust(
   clusters: Cluster[],
+  minTrust: NonNullable<RenderOptions["minTrust"]>,
+): Cluster[] {
+  const min = TRUST_RANK[minTrust];
+  const passes = (c: Candidate): boolean =>
+    TRUST_RANK[c.trust?.level ?? "unknown"] >= min;
+  return clusters
+    .map((cluster) => {
+      const representatives = cluster.representatives.filter(passes);
+      const members = cluster.members.filter(passes);
+      return {
+        ...cluster,
+        representatives,
+        members,
+        cross_source_count: new Set(
+          [...representatives, ...members].map((c) => c.source),
+        ).size,
+      };
+    })
+    .filter((cluster) => cluster.representatives.length > 0);
+}
+
+export async function render(
+  inputClusters: Cluster[],
   opts: RenderOptions,
   repoRoot: string,
 ): Promise<RenderResult> {
+  const clusters = opts.minTrust
+    ? filterClustersByTrust(inputClusters, opts.minTrust)
+    : inputClusters;
   const nowMs = opts.nowMs ?? Date.now();
   const version = opts.version ?? getPackageVersion();
   const selfCheck = opts.selfCheck !== false;
@@ -262,7 +293,9 @@ export async function runRender(argv: string[]): Promise<number> {
         intent: opts.intent,
         vs: opts.vs ?? null,
         version: opts.version,
-        clusters: parsed.clusters,
+        clusters: opts.minTrust
+          ? filterClustersByTrust(parsed.clusters, opts.minTrust)
+          : parsed.clusters,
         markdown: result.markdown,
         violations: result.violations,
         self_check_passed: result.selfCheckPassed,

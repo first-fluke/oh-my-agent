@@ -234,17 +234,26 @@ export function buildFooter(clusters: Cluster[], opts: RenderOptions): string {
   );
   const N = sourcesUsed.length + sourcesFailed.length;
 
-  return [
+  const lines = [
     "<!-- ENGINE FOOTER -->",
     "---",
     `✅ market research footer:`,
     `  - sources used: ${sourcesUsed.join(", ")} (${sourcesUsed.length}/${N} requested)`,
     `  - sources failed: ${sourcesFailed.length ? sourcesFailed.join(", ") : "none"}`,
+    `  - coverage: ${sourcesUsed.length}/${N} sources`,
     `  - clusters: ${clusters.length}`,
     `  - items: ${totalItems}`,
     `  - cache: ${opts.cacheHit ? "hit" : "miss"}`,
     `  - latency: ${opts.latencyMs ?? 0}ms`,
-    "---",
-    "<!-- END ENGINE FOOTER -->",
-  ].join("\n");
+  ];
+  if (opts.minTrust) {
+    lines.push(`  - min trust: ${opts.minTrust}`);
+  }
+  if (sourcesUsed.length === 1 && N > 1) {
+    lines.push(
+      "  - ⚠ Low coverage: only 1 source returned signals. Consider --window 90d or check env keys.",
+    );
+  }
+  lines.push("---", "<!-- END ENGINE FOOTER -->");
+  return lines.join("\n");
 }

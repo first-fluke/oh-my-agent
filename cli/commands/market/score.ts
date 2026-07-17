@@ -8,7 +8,12 @@
  *     → intentBlend → Candidate[]
  */
 
-import type { Candidate, SourceItem } from "./shared/schema.js";
+import { z } from "zod";
+import {
+  type Candidate,
+  type SourceItem,
+  SourceItemSchema,
+} from "./shared/schema.js";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -18,6 +23,21 @@ export interface ScoreOptions {
   intent: "pain" | "trend" | "competitor" | "discovery";
   freshnessMode?: "balanced_recent" | "strict_recent" | "evergreen_ok";
   nowMs?: number;
+}
+
+/**
+ * Validate stdin items at the stage boundary with the shared schema —
+ * unknown sources or malformed fields are rejected here instead of being
+ * silently scored with defaults. Throws with the first offending path.
+ */
+export function validateScoreItems(inputItems: unknown[]): SourceItem[] {
+  const parsed = z.array(SourceItemSchema).safeParse(inputItems);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    const path = first?.path.join(".") || "(root)";
+    throw new Error(`schema mismatch at items.${path}: ${first?.message}`);
+  }
+  return parsed.data;
 }
 
 // ---------------------------------------------------------------------------
@@ -384,48 +404,13 @@ export async function runScore(argv: string[]): Promise<number> {
     return 4;
   }
 
-  // Validate items loosely — require item_id, source, url, published_at
-  const items: SourceItem[] = [];
-  for (let i = 0; i < inputItems.length; i++) {
-    const raw = inputItems[i];
-    if (raw === null || typeof raw !== "object") {
-      process.stderr.write(`[score] error: items[${i}] is not an object\n`);
-      return 4;
-    }
-    const obj = raw as Record<string, unknown>;
-    if (
-      typeof obj.item_id !== "string" ||
-      typeof obj.source !== "string" ||
-      typeof obj.url !== "string" ||
-      typeof obj.published_at !== "string"
-    ) {
-      process.stderr.write(
-        `[score] error: items[${i}] missing required fields (item_id, source, url, published_at)\n`,
-      );
-      return 4;
-    }
-    items.push({
-      item_id: obj.item_id,
-      source: obj.source as SourceItem["source"],
-      title: typeof obj.title === "string" ? obj.title : undefined,
-      body: typeof obj.body === "string" ? obj.body : undefined,
-      snippet: typeof obj.snippet === "string" ? obj.snippet : undefined,
-      url: obj.url,
-      author: typeof obj.author === "string" ? obj.author : undefined,
-      published_at: obj.published_at,
-      engagement:
-        obj.engagement !== null && typeof obj.engagement === "object"
-          ? (obj.engagement as Record<string, number>)
-          : {},
-      metadata:
-        obj.metadata !== null && typeof obj.metadata === "object"
-          ? (obj.metadata as SourceItem["metadata"])
-          : {},
-      trust:
-        obj.trust !== null && typeof obj.trust === "object"
-          ? (obj.trust as SourceItem["trust"])
-          : undefined,
-    });
+  let items: SourceItem[];
+  try {
+    items = validateScoreItems(inputItems);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`[score] error: ${msg}\n`);
+    return 4;
   }
 
   // Score

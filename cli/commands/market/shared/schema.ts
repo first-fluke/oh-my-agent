@@ -41,6 +41,37 @@ export const TrustLevelSchema = z.enum([
   "external",
   "unknown",
 ]);
+export type TrustLevel = z.infer<typeof TrustLevelSchema>;
+
+/**
+ * Default trust level per source, applied by harvest when a fetcher doesn't
+ * set one: first-party issue trackers are verified, community boards
+ * community, open-web search results external.
+ */
+export const SOURCE_TRUST_DEFAULTS: Record<SourceName, TrustLevel> = {
+  github: "verified",
+  reddit: "community",
+  hn: "community",
+  bluesky: "community",
+  mastodon: "community",
+  youtube: "community",
+  clien: "community",
+  okky: "community",
+  x: "community",
+  tiktok: "community",
+  instagram: "community",
+  polymarket: "community",
+  grounding: "external",
+  perplexity: "external",
+};
+
+/** Ordering for `--min-trust` filtering: higher rank = more trusted. */
+export const TRUST_RANK: Record<TrustLevel, number> = {
+  verified: 3,
+  community: 2,
+  external: 1,
+  unknown: 0,
+};
 
 // ---------------------------------------------------------------------------
 // Core item

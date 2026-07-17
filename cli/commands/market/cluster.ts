@@ -70,15 +70,16 @@ export function clusterCandidates(
 
   // Sort by score descending then url ascending as a stable tiebreaker.
   // This makes the greedy assignment deterministic regardless of input order.
+  // Quality is precomputed against the original index — calling indexOf
+  // inside the comparator would make this O(n² log n).
   const total = items.length;
-  const sorted = [...items].sort((a, b) => {
-    const aIdx = items.indexOf(a);
-    const bIdx = items.indexOf(b);
-    const qa = quality(a, aIdx, total);
-    const qb = quality(b, bIdx, total);
-    if (qb !== qa) return qb - qa;
-    return (a.url ?? "").localeCompare(b.url ?? "");
-  });
+  const sorted = items
+    .map((item, idx) => ({ item, q: quality(item, idx, total) }))
+    .sort((a, b) => {
+      if (b.q !== a.q) return b.q - a.q;
+      return (a.item.url ?? "").localeCompare(b.item.url ?? "");
+    })
+    .map((d) => d.item);
 
   const states: ClusterState[] = [];
 
@@ -127,11 +128,10 @@ export function clusterCandidates(
       if (members.length === 0) return null;
 
       const total = members.length;
-      const sortedMembers = [...members].sort((a, b) => {
-        const qa = quality(a, members.indexOf(a), total);
-        const qb = quality(b, members.indexOf(b), total);
-        return qb - qa;
-      });
+      const sortedMembers = members
+        .map((m, idx) => ({ m, q: quality(m, idx, total) }))
+        .sort((a, b) => b.q - a.q)
+        .map((d) => d.m);
 
       const entitySignature = buildEntitySignature(state.memberEntities);
       const clusterId = computeClusterId(entitySignature);

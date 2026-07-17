@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": 2301998877,
+      "title": "Sync conflict silently drops notes when two devices edit offline",
+      "body": "Repro: edit the same note on two devices while offline, reconnect both. One device's edits are gone with no conflict file. This has cost me real data twice.",
+      "html_url": "https://github.com/notesapp/notesapp/issues/4821",
+      "user": { "login": "gh_user_amy" },
+      "created_at": "2024-05-06T09:30:00Z",
+      "reactions": { "total_count": 42 },
+      "comments": 17
+    },
+    {
+      "id": 2302115533,
+      "title": "Feature request: plain-markdown vault export without proprietary metadata",
+      "body": "Export currently embeds app-specific front matter. A clean markdown export would make migration and backup workflows much easier.",
+      "html_url": "https://github.com/notesapp/notesapp/issues/4837",
+      "user": { "login": "gh_user_bo" },
+      "created_at": "2024-05-07T16:45:00Z",
+      "reactions": { "total_count": 28 },
+      "comments": 9
+    }
+  ]
+}

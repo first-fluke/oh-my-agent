@@ -27,7 +27,11 @@ import {
   loadOperatorPack,
 } from "./shared/operators.js";
 import { findRepoRoot } from "./shared/repo-root.js";
-import type { HarvestOutput, SourceItem } from "./shared/schema.js";
+import {
+  type HarvestOutput,
+  SOURCE_TRUST_DEFAULTS,
+  type SourceItem,
+} from "./shared/schema.js";
 
 // Re-exported for downstream importers and `harvest.endpoints.test.ts`.
 export {
@@ -70,6 +74,37 @@ export interface HarvestResult {
   cacheHit: boolean;
 }
 
+/**
+ * Cache key over every option that affects the harvest result set.
+ * `sites`/`queryStrict` filter items; the widen options change the effective
+ * window a thin corpus is re-fetched with — omitting any of these lets two
+ * semantically different runs collide on one cache entry within the TTL.
+ */
+export function harvestCacheKey(
+  opts: HarvestOptions,
+  resolved: {
+    window: string;
+    limit: number;
+    locale: string;
+    operatorPackId: string;
+    sources: string[];
+  },
+): string {
+  return cacheKey({
+    query: opts.query.trim(),
+    window: resolved.window,
+    sources: [...resolved.sources].sort(),
+    operatorPack: resolved.operatorPackId,
+    locale: resolved.locale,
+    vs: opts.vs ?? null,
+    perSourceLimit: resolved.limit,
+    sites: opts.sites?.length ? [...opts.sites].sort() : null,
+    queryStrict: opts.queryStrict ?? false,
+    widenOnThin: opts.widenOnThin ?? false,
+    widenThreshold: opts.widenOnThin ? (opts.widenThreshold ?? 5) : null,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Core harvest function
 // ---------------------------------------------------------------------------
@@ -100,15 +135,15 @@ export async function harvest(
   const operatorPack = await loadOperatorPack(operatorPackId, repoRoot);
   const builtQuery = buildQueryWithOperators(rawQuery, operatorPack, locale);
 
-  // 4. Cache check — include perSourceLimit so different limits don't collide
-  const key = cacheKey({
-    query: rawQuery,
+  // 4. Cache check — the key must cover every option that changes the result
+  // set (sites/queryStrict filter items; widen options change the effective
+  // window), otherwise differently-flagged runs collide on one entry.
+  const key = harvestCacheKey(opts, {
     window,
-    sources: [...sources].sort(),
-    operatorPack: operatorPackId,
+    limit,
     locale,
-    vs: opts.vs ?? null,
-    perSourceLimit: limit,
+    operatorPackId,
+    sources,
   });
 
   if (!opts.noCache) {
@@ -225,7 +260,7 @@ export async function harvest(
     .toLowerCase()
     .split(/\s+/)
     .filter((t) => t.length > 0);
-  const finalItems = opts.queryStrict
+  const strictFiltered = opts.queryStrict
     ? allItems.filter((it) => {
         const haystack = [it.title ?? "", it.snippet ?? "", it.body ?? ""]
           .join(" ")
@@ -233,6 +268,20 @@ export async function harvest(
         return tokens.every((tok) => haystack.includes(tok));
       })
     : allItems;
+
+  // Tag each item with its source's default trust level unless the fetcher
+  // already set one. Downstream `render --min-trust` filters on this.
+  const finalItems = strictFiltered.map((it) =>
+    it.trust
+      ? it
+      : {
+          ...it,
+          trust: {
+            level: SOURCE_TRUST_DEFAULTS[it.source] ?? ("unknown" as const),
+            score: null,
+          },
+        },
+  );
 
   let output: HarvestOutput = {
     query: rawQuery,

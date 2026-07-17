@@ -5,7 +5,17 @@
  * `SourceItem` shape. No network, no env, no side effects.
  */
 
+import { shortHash } from "../../utils/hash.js";
 import type { SourceItem } from "./shared/schema.js";
+
+/**
+ * Deterministic item-id fallback for responses missing a platform id.
+ * Hashing the citable fields keeps ids stable across runs so dedup/fuse and
+ * the mock-replay determinism contract keep working; Math.random() would not.
+ */
+function fallbackId(...parts: Array<string | null | undefined>): string {
+  return shortHash(parts.map((p) => p ?? ""));
+}
 
 // ---------------------------------------------------------------------------
 // Reddit
@@ -38,12 +48,11 @@ export function normalizeReddit(data: unknown, source: string): SourceItem[] {
   for (const child of children) {
     const d = child.data;
     if (!d) continue;
-    const id = String(d.id ?? d.name ?? Math.random());
-
     const title = d.title != null ? String(d.title).trim() : "";
     const selftext = d.selftext != null ? String(d.selftext).trim() : "";
     const rawUrl = d.url != null ? String(d.url) : "";
     const permalink = d.permalink != null ? String(d.permalink) : "";
+    const id = String(d.id ?? d.name ?? fallbackId(permalink, rawUrl, title));
 
     // Image/video-only with no usable text → drop
     let isMediaUrl = false;
@@ -87,7 +96,14 @@ export function normalizeHN(data: unknown): SourceItem[] {
   const items: SourceItem[] = [];
   const typed = data as { hits?: Array<Record<string, unknown>> };
   for (const hit of typed?.hits ?? []) {
-    const id = String(hit.objectID ?? Math.random());
+    const id = String(
+      hit.objectID ??
+        fallbackId(
+          hit.url != null ? String(hit.url) : null,
+          hit.title != null ? String(hit.title) : null,
+          hit.created_at != null ? String(hit.created_at) : null,
+        ),
+    );
     items.push({
       item_id: `hn:${id}`,
       source: "hn",
@@ -126,8 +142,14 @@ export function normalizeBluesky(data: unknown): SourceItem[] {
   const items: SourceItem[] = [];
   const typed = data as { posts?: Array<Record<string, unknown>> };
   for (const post of typed?.posts ?? []) {
-    const cid = String(post.cid ?? Math.random());
     const record = post.record as Record<string, unknown> | undefined;
+    const cid = String(
+      post.cid ??
+        fallbackId(
+          post.uri != null ? String(post.uri) : null,
+          record?.text != null ? String(record.text) : null,
+        ),
+    );
     const author = post.author as Record<string, unknown> | undefined;
     items.push({
       item_id: `bluesky:${cid}`,
@@ -170,10 +192,13 @@ export function normalizeMastodon(data: unknown): SourceItem[] {
     statuses?: Array<Record<string, unknown>>;
   };
   for (const status of typed?.statuses ?? []) {
-    const id = String(status.id ?? Math.random());
     const account = status.account as Record<string, unknown> | undefined;
     // Strip HTML tags from content
     const rawContent = status.content != null ? String(status.content) : "";
+    const id = String(
+      status.id ??
+        fallbackId(status.url != null ? String(status.url) : null, rawContent),
+    );
     const body = rawContent.replace(/<[^>]+>/g, "").trim();
     items.push({
       item_id: `mastodon:${id}`,
@@ -323,7 +348,13 @@ export function normalizeGithub(data: unknown): SourceItem[] {
   const items: SourceItem[] = [];
   const typed = data as { items?: Array<Record<string, unknown>> };
   for (const issue of typed?.items ?? []) {
-    const id = String(issue.id ?? Math.random());
+    const id = String(
+      issue.id ??
+        fallbackId(
+          issue.html_url != null ? String(issue.html_url) : null,
+          issue.title != null ? String(issue.title) : null,
+        ),
+    );
     const user = issue.user as Record<string, unknown> | undefined;
     items.push({
       item_id: `github:${id}`,
