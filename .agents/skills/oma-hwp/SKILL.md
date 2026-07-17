@@ -27,19 +27,19 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 ### When NOT to use
 - PDF files -> use `oma-pdf` (OCR + Tagged PDF specialization)
 - XLSX / DOCX files -> out of scope; run `bunx kordoc` directly if needed (note: `oma-docs` is the documentation-drift skill, not a converter)
-- Generating or editing HWP documents -> out of scope
+- Generating or editing HWP documents -> out of scope (kordoc itself supports `generate` / `fill` / `seal` / `patch` / `redact` / `lint` / `validate` / `render` subcommands; run `bunx kordoc@latest <subcommand>` directly if needed)
 - Already-text files -> use Read tool directly
 
 ### Expected inputs
 - `input_path`: `.hwp`, `.hwpx`, or `.hwpml` file path
 - `output_path` or `output_dir`: optional explicit output target
-- `format`: optional output format, default `markdown`
+- `format`: optional output format — `markdown` (default), `json` (structured AST), or `chunks` (RAG-oriented structural chunk JSON with heading breadcrumbs and standalone table chunks)
 - `page_range`: optional page or section range
 - `kordoc_version`: optional pinned kordoc version
 
 ### Expected outputs
 - Markdown output next to the input file or in the requested directory
-- Optional JSON output when requested
+- Optional JSON or RAG-chunks output when requested
 - Post-processed Markdown with flattened GFM tables and stripped Private Use Area glyphs by default
 - A short report with output path, detected source format, and conversion issues
 
@@ -86,7 +86,7 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 | Empty Markdown output | Treat as possible scanned-image content and recommend OCR outside this skill |
 | Complex merged tables | Accept flattened Markdown or HTML fallback as best effort |
 | Stale kordoc cache | Use `bunx kordoc@latest` or configured pinned version |
-| `Cannot find module "turndown"` from `flatten-tables.ts` | Run `bun install` in `.agents/skills/oma-hwp/resources/` (its `node_modules` is gitignored and absent on fresh clones) |
+| `Cannot find module "turndown"` from `flatten-tables.ts` | Run `bun install` in this skill's `resources/` directory (its `node_modules` is gitignored and absent on fresh clones) |
 
 ### Exit
 - Success: output file exists and structure is readable after post-processing.
@@ -115,8 +115,9 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 ### Canonical command path
 ```bash
 bunx kordoc@latest "{input_path}" -o "{output_path}"
-# fresh clone: run `bun install` in .agents/skills/oma-hwp/resources/ first (node_modules is gitignored)
-bun ".agents/skills/oma-hwp/resources/flatten-tables.ts" "{output_path}"
+# fresh clone: run `bun install` in {skill_dir}/resources/ first (node_modules is gitignored)
+bun "{skill_dir}/resources/flatten-tables.ts" "{output_path}"
+# {skill_dir} = this skill's directory: .agents/skills/oma-hwp (project mode) or ~/.agents/skills/oma-hwp (global mode)
 ```
 
 For batch conversion, use an explicit output directory:
@@ -157,7 +158,7 @@ bunx kordoc@latest "{input_pattern}" -d "{output_dir}"
 | HWPX | `.hwpx` | Full support incl. nested tables, merged cells |
 | HWPML | `.hwp` (XML variant) | Auto-detected by signature |
 
-> kordoc also parses PDF / XLSX / DOCX. Those are intentionally outside this skill's scope; see "When NOT to use".
+> kordoc also parses PDF / XLSX / DOCX and offers document-authoring subcommands (`generate`, `fill`, `seal`, `patch`, `redact`, `lint`, `validate`, `render`). All of those are intentionally outside this skill's scope; see "When NOT to use". Conversion-quality flags (`--dedupe-headers`, `--keep-empty-cols`, `--inline-images`) and the `chunks` format are documented in `resources/execution-protocol.md`.
 
 ## References
 - Execution protocol: `resources/execution-protocol.md`

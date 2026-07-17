@@ -1,14 +1,15 @@
 # oma-hwp configuration
 # HWP / HWPX / HWPML to Markdown conversion settings
 
-format: markdown              # "markdown" (default) or "json"
+format: markdown              # "markdown" (default), "json", or "chunks" (RAG structural chunks)
 
 # kordoc version policy
 # - "latest": always use latest (recommended for active kordoc development)
 # - "pinned": use the version in `version.pinned`
+#   (verify with `npm view kordoc version` before pinning; the example below may be stale)
 version:
   channel: latest
-  pinned: "2.4.0"
+  pinned: "4.1.0"
 
 # Output behavior
 output:

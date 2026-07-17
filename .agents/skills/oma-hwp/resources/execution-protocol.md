@@ -51,8 +51,21 @@ bunx kordoc@latest "{input_path}" -p "{range}"
 bunx kordoc@latest "{input_path}" --format json
 ```
 
+### RAG chunks output (structural chunk JSON)
+```bash
+bunx kordoc@latest "{input_path}" --format chunks
+```
+Emits RAG-oriented structural chunks: each chunk carries a heading / outline-hierarchy breadcrumb, and tables become standalone chunks. Prefer this over plain Markdown when the user is preparing HWP content for RAG ingestion or embedding pipelines.
+
+### Conversion-quality flags (HWP-family relevant)
+| Flag | Effect | When to use |
+|------|--------|-------------|
+| `--dedupe-headers` | Removes running headers repeated per page in HWP5 layout tables (default off) | Paginated forms where the same header row repeats; beware: may over-remove per-attachment renumbering |
+| `--keep-empty-cols` | Preserves trailing empty table columns (form input fields); default trims them | Government form templates where blank fill-in columns are meaningful |
+| `--inline-images` | Inlines images as base64 data URIs (BMP→PNG compression, HWP5 only) | Single self-contained Markdown file needed; skips writing an assets directory for inlined images |
+
 Notes:
-- Default format is `markdown`. Pass `--format json` only when you need the structured AST.
+- Default format is `markdown`. Pass `--format json` for the structured AST, `--format chunks` for RAG chunks.
 - `--silent` suppresses progress output, useful in automation / piping contexts.
 
 ## Step 2.5: Post-process kordoc output (default)
@@ -63,10 +76,10 @@ Notes:
 2. **Private Use Area characters**: HWP references Hancom-font-specific glyphs via U+E000-U+F8FF / U+F0000-U+FFFFD / U+100000-U+10FFFD code points. Without the Hancom font these render as blanks or tofu squares. Silently stripped.
 
 ```bash
-node "{skill_resources}/flatten-tables.ts" "{output_path}"
+bun "{skill_resources}/flatten-tables.ts" "{output_path}"
 ```
 
-- `{skill_resources}` = `.agents/skills/oma-hwp/resources`
+- `{skill_resources}` = this skill's `resources/` directory (`.agents/skills/oma-hwp/resources` in project mode, `~/.agents/skills/oma-hwp/resources` in global mode)
 - Ensure `bun install` has been run once inside that directory (it installs `turndown` + `turndown-plugin-gfm` locally)
 - Merged cells get flattened during the conversion (accepted trade-off)
 - Skip this step only if the caller explicitly needs HTML tables or PUA characters preserved (rare)
@@ -116,4 +129,17 @@ If the user hands you a `.pdf` / `.xlsx` / `.docx` with this skill activated, **
 - `.pdf` → switch to `oma-pdf`
 - `.xlsx` / `.docx` → ask the user to run `bunx kordoc@latest <file>` directly; this skill does not advertise those formats
 
-kordoc technically supports them, but routing keeps skill scopes clean.
+Likewise, document **authoring / editing** requests are out of this skill's scope even though kordoc supports them. Point the user at the subcommand directly:
+
+| Request | kordoc subcommand |
+|---------|-------------------|
+| Generate HWPX from Markdown | `bunx kordoc@latest generate <md> -o <hwpx>` |
+| Fill form blanks | `bunx kordoc@latest fill <template> -f 'k=v,...' -o <out>` |
+| Place stamp/signature image | `bunx kordoc@latest seal <file> --image <png> --anchor "(인)" -o <out>` |
+| Apply edited Markdown back to original | `bunx kordoc@latest patch <original> <edited-md> -o <out>` |
+| Mask personal data (주민번호 etc.) | `bunx kordoc@latest redact <files...>` |
+| Check official-document notation | `bunx kordoc@latest lint <file>` |
+| Validate HWPX structure | `bunx kordoc@latest validate <file>` |
+| Layout-preserving SVG render | `bunx kordoc@latest render <file> -o <svg>` |
+
+kordoc technically supports all of the above, but routing keeps skill scopes clean.
