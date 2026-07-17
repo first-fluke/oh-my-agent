@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.18.3](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.2...web-v3.18.3) (2026-07-17)
+
+
+### Documentation
+
+* **market:** fix phantom commands and sync skill docs with CLI ([32c3c86](https://github.com/first-fluke/oh-my-agent/commit/32c3c868b0bfb8640172a96c2f24bfd82eb9741b))
+
 ## [3.18.2](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.1...web-v3.18.2) (2026-07-17)
 
 
