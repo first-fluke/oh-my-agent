@@ -70,7 +70,7 @@
 1. Check if `glab` is available: `which glab`
 2. If not installed: "GitLab CLI is not installed. Using GitHub search as default."
 3. If not authenticated: "GitLab CLI requires authentication. Run `glab auth login` first."
-4. Fall back to `gh search code` with notice
+4. Fall back to `oma search code` with the default github host, with notice
 
 ### gh/glab returns 0 results
 **Symptom**: No code matches found
@@ -82,7 +82,7 @@
 ## Trust Scoring Errors
 
 ### Domain not in registry
-**Symptom**: URL domain has no entry in trust-registry.md
+**Symptom**: `oma search trust <domain>` returns `level: "unknown"` (no registry, heuristic, or Tranco hit)
 **Recovery**: Label as `unknown` with score `—`. Do NOT exclude from results.
 
 ### --strict mode returns 0 results

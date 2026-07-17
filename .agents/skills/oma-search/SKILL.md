@@ -89,13 +89,14 @@ Classify information-seeking requests, route them to the best search channel, at
 ### Tools and instruments
 - Context7 docs tools
 - Runtime-native web search
-- `gh search code` or `glab api`
+- `oma search` CLI primitives: `fetch`, `code`, `trust`, `api`, `api:search`, `meta`, `rss`, `rss:google`, `media`, `archive`, `doctor`
 - Serena MCP for local project search
 
 ### Canonical command path
 ```bash
-gh search code "<query>"
-glab api "/search?scope=blobs&search=<query>"
+oma search code "<query>" [--host gitlab] [--language <lang>] [--repo <owner/repo>]
+oma search trust <domain>
+oma search fetch <url>
 ```
 
 For docs and web routes, use the runtime's available official-docs or web-search tools after classifying intent; do not duplicate routes unless the intent is ambiguous.
@@ -119,7 +120,7 @@ For docs and web routes, use the runtime's available official-docs or web-search
 ### Guardrails
 1. **Classify intent before searching**: every query goes through IntentClassifier first
 2. **One query, one best route**: avoid redundant multi-route unless intent is ambiguous
-3. **Trust score every result**: all non-local results get domain trust labels from the registry
+3. **Trust score every result**: all non-local results get domain trust labels via `oma search trust <domain>` (single source: `cli/commands/search/trust.ts`)
 4. **Flags override classifier**: user-provided flags (`--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`) always take precedence
 5. **Fail forward**: if primary route fails, fall back gracefully (docs->web, web->`oma search fetch` strategies)
 6. **No additional MCP required**: Context7 for docs, runtime native for web, CLI for code, Serena for local
@@ -132,7 +133,7 @@ For docs and web routes, use the runtime's available official-docs or web-search
 |-------|-------------|----------|---------|
 | `docs` | Context7 MCP (`resolve-library-id` → `query-docs`) | `web` route | Official docs, API reference |
 | `web` | Runtime native search | `oma search fetch` (api/probe/impersonate/browser) | Tutorials, examples, solutions |
-| `code` | `gh search code` / `glab api` | (none) | Implementation patterns, repos |
+| `code` | `oma search code` (wraps `gh` / `glab`) | (none) | Implementation patterns, repos |
 | `local` | Serena MCP (delegate) | (none) | Current project files, symbols |
 
 ### Default Workflow

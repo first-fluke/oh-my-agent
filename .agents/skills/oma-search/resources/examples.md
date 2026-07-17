@@ -35,9 +35,9 @@ DOCS #3  useEffect API Reference — react.dev     [verified,lang-docs 0.95]
 Query: "Redis pub/sub use cases"
 Mode: web (auto)
 
-WEB  #1  Redis Pub/Sub Guide — redis.io/docs     [verified,vendor-docs 0.90]
+WEB  #1  Redis Pub/Sub Guide — redis.io/docs     [verified,official-site 0.90]
 WEB  #2  Real-time Chat with Redis — dev.to      [external,blog 0.40]
-WEB  #3  Redis Pub/Sub Patterns — stackoverflow   [community,qa 0.65]
+WEB  #3  Redis Pub/Sub Patterns — stackoverflow   [community,qna 0.70]
 WEB  #4  Redis Event-Driven Architecture — medium [external,blog 0.35]
 ```
 
@@ -99,8 +99,8 @@ Query: "JWT refresh token rotation"
 Mode: docs + web (auto, strict)
 
 DOCS #1  JWT Best Practices — datatracker.ietf.org  [verified,standards 0.95]
-WEB  #2  Token Rotation — auth0.com/docs             [verified,vendor-docs 0.90]
-WEB  #3  Refresh Token Rotation — auth0.com/docs       [verified,vendor-docs 0.90]
+WEB  #2  Token Rotation — auth0.com/docs             [verified,official-site 0.90]
+WEB  #3  Refresh Token Rotation — auth0.com/docs       [verified,official-site 0.90]
 
 Filtered: 4 results below trust threshold (0.85). Use --wide to see all.
 ```
@@ -137,7 +137,7 @@ Query: "TypeError: Cannot read properties of undefined (reading 'map') React"
 Query: "TypeError: Cannot read properties of undefined (reading 'map') React"
 Mode: web (explicit)
 
-WEB  #1  Common React Error Fix — stackoverflow      [community,qa 0.65]
+WEB  #1  Common React Error Fix — stackoverflow      [community,qna 0.70]
 WEB  #2  Handling Undefined in React — react.dev      [verified,lang-docs 0.95]
 WEB  #3  TypeError Debugging — dev.to                 [external,blog 0.40]
 ```
@@ -158,7 +158,7 @@ Mode: docs -> web (fallback)
 
 Could not find official docs via Context7. Showing web results.
 
-WEB  #1  Form Validation — htmx.org                  [verified,lang-docs 0.90]
+WEB  #1  Form Validation — htmx.org                  [verified,official-site 0.90]
 WEB  #2  htmx Validation Guide — dev.to              [external,blog 0.40]
-WEB  #3  htmx Form Patterns — reddit.com/r/htmx      [community,forum 0.50]
+WEB  #3  htmx Form Patterns — reddit.com/r/htmx      [community,forum 0.55]
 ```

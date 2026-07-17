@@ -22,6 +22,7 @@ Run this checklist before presenting results to the user.
 
 ## Trust Scoring
 - [ ] Every non-local result has a trust label attached
+- [ ] Scores resolved via `oma search trust` (agent overrides are upgrade-only: Context7 docs, official-site)
 - [ ] Unknown domains labeled as `—`, not excluded
 - [ ] `--strict` mode correctly filters below 0.85
 - [ ] `--strict` with 0 results shows rerun suggestion
