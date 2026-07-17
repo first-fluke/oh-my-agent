@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.18.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.0...web-v3.18.1) (2026-07-17)
+
+
+### Documentation
+
+* **video:** align skill docs with implementation, add script schema ([0ebb332](https://github.com/first-fluke/oh-my-agent/commit/0ebb332cb5a61bb9f4891f64cc1df6b5aaa2284d))
+* **web:** propagate skill guidance sweep to docs and translations ([307e20a](https://github.com/first-fluke/oh-my-agent/commit/307e20a71bbeccc07b2630f4fd37bb0859137448))
+
 ## [3.18.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.17.8...web-v3.18.0) (2026-07-15)
 
 
