@@ -378,7 +378,9 @@ export function collectStateDoctorCheck(projectDir: string): StateDoctorCheck {
 
   const issues: string[] = [];
   if (rootExists && !gitignoreSkipped && !gitignored) {
-    issues.push(".agents/state/ is not gitignored");
+    issues.push(
+      ".agents/state/ is not gitignored (re-run `oma install` or `oma link` to add it)",
+    );
   }
   if (!index.parseOk) issues.push("state index is corrupt");
   for (const active of index.missingActive) {

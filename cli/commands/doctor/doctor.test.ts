@@ -590,7 +590,9 @@ describe("state and hook doctor checks", () => {
     expect(report.state.sessions).toEqual([
       { sid: "sid-1", metaOk: false, invalidEventLines: 1 },
     ]);
-    expect(report.state.issues).toContain(".agents/state/ is not gitignored");
+    expect(report.state.issues).toContain(
+      ".agents/state/ is not gitignored (re-run `oma install` or `oma link` to add it)",
+    );
     expect(report.state.issues).toContain(
       "active state session missing: tool=missing-sid",
     );

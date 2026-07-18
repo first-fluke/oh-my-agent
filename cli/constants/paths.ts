@@ -43,6 +43,14 @@ export const AGENTS_BACKUP_DIR = `${AGENTS_DIR}/backup`;
  */
 export const MIGRATION_BACKUP_DIR = ".migration-backup";
 
+/**
+ * Local plan artifacts written by the /plan, /brainstorm, and /deepinit
+ * workflows (designs/, work/, contracts/). Working notes by convention —
+ * a file that committed docs must reference is promoted deliberately with
+ * `git add -f` and stays tracked despite this ignore.
+ */
+export const DOCS_PLANS_DIR = "docs/plans";
+
 /** Directory pattern for `.gitignore` (trailing slash). */
 export function asGitignoreDir(relativeDir: string): string {
   return relativeDir.endsWith("/") ? relativeDir : `${relativeDir}/`;
@@ -53,6 +61,7 @@ export const AGENTS_STATE_GITIGNORE = asGitignoreDir(AGENTS_STATE_DIR);
 export const ANTIGRAVITYCLI_GITIGNORE = asGitignoreDir(ANTIGRAVITYCLI_DIR);
 export const AGENTS_BACKUP_GITIGNORE = asGitignoreDir(AGENTS_BACKUP_DIR);
 export const MIGRATION_BACKUP_GITIGNORE = asGitignoreDir(MIGRATION_BACKUP_DIR);
+export const DOCS_PLANS_GITIGNORE = asGitignoreDir(DOCS_PLANS_DIR);
 
 /** Lines appended by `ensureOmaProjectGitignore()` during install / link / update. */
 export const OMA_PROJECT_GITIGNORE_PATTERNS = [
@@ -60,6 +69,7 @@ export const OMA_PROJECT_GITIGNORE_PATTERNS = [
   AGENTS_RESULTS_GITIGNORE,
   AGENTS_STATE_GITIGNORE,
   AGENTS_BACKUP_GITIGNORE,
+  DOCS_PLANS_GITIGNORE,
   MIGRATION_BACKUP_GITIGNORE, // legacy artifacts (no longer written)
 ] as const;
 

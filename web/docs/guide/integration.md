@@ -310,13 +310,11 @@ When `oma update` refreshes `.agents/`, every IDE that points at it picks up the
 ### After installation
 
 1. **Review what was created.** Run `git status` to see all new files. The installer creates files only in `.agents/`, `.claude/`, and optionally `.github/`.
-2. **Add to `.gitignore` selectively.** Most teams commit `.agents/` and `.claude/` to share the setup. But `.serena/` (runtime memory) and `.agents/results/` (execution results) should be gitignored:
+2. **Check `.gitignore`.** In a git repo, install/update/link automatically appends the runtime entries to your root `.gitignore` (`.antigravitycli/`, `.agents/results/`, `.agents/state/`, `.agents/backup/`, `docs/plans/`) — verify they landed. Most teams commit `.agents/` and `.claude/` to share the setup. The one entry left to your judgment is `.serena/`: Serena manages its own cache via an internal `.serena/.gitignore`, so you can either commit `.serena/project.yml` (shared project config) or ignore the directory entirely:
 
 ```gitignore
-# oh-my-agent runtime files
+# optional — ignore Serena entirely (runtime memory)
 .serena/
-.agents/results/
-.agents/state/
 ```
 
 ### Rollback
