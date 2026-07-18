@@ -830,13 +830,7 @@
       "persistent": true,
       "keywords": {
         "*": ["work", "step by step"],
-        "en": [
-          "one by one",
-          "guide me",
-          "walk me through",
-          "manual mode",
-          "one step at a time"
-        ],
+        "en": ["one by one", "one step at a time"],
         "ko": [
           "단계별",
           "단계별로",
@@ -845,83 +839,21 @@
           "하나씩 해줘",
           "순서대로 해줘",
           "차근차근",
-          "차근차근 해줘",
-          "수동으로 해줘"
+          "차근차근 해줘"
         ],
-        "ja": [
-          "ステップバイステップ",
-          "一歩ずつ",
-          "ガイドして",
-          "手動で",
-          "一つずつ",
-          "順番にやって",
-          "手順を教えて"
-        ],
-        "zh": [
-          "逐步",
-          "一步一步",
-          "指导我",
-          "手动",
-          "一个一个",
-          "按顺序",
-          "带我做"
-        ],
-        "es": [
-          "paso a paso",
-          "guíame",
-          "uno por uno",
-          "modo manual",
-          "de a uno",
-          "llévame paso a paso"
-        ],
-        "fr": [
-          "étape par étape",
-          "guide-moi",
-          "un par un",
-          "mode manuel",
-          "accompagne-moi",
-          "montre-moi étape par étape"
-        ],
+        "ja": ["ステップバイステップ", "一歩ずつ", "一つずつ", "順番にやって"],
+        "zh": ["逐步", "一步一步", "一个一个", "按顺序"],
+        "es": ["paso a paso", "uno por uno", "de a uno"],
+        "fr": ["étape par étape", "un par un"],
         "de": [
           "schritt für schritt",
-          "führe mich",
           "eins nach dem anderen",
-          "manueller modus",
-          "zeig mir wie",
           "der reihe nach"
         ],
-        "pt": [
-          "passo a passo",
-          "me guie",
-          "um por um",
-          "modo manual",
-          "me acompanhe",
-          "me mostre passo a passo"
-        ],
-        "ru": [
-          "шаг за шагом",
-          "направь меня",
-          "по одному",
-          "ручной режим",
-          "покажи по шагам",
-          "веди меня"
-        ],
-        "nl": [
-          "stap voor stap",
-          "begeleid me",
-          "een voor een",
-          "handmatige modus",
-          "leid me erdoor",
-          "stap voor stap uitleg"
-        ],
-        "pl": [
-          "krok po kroku",
-          "poprowadź mnie",
-          "jeden po drugim",
-          "tryb ręczny",
-          "przeprowadź mnie",
-          "pokaż krok po kroku"
-        ]
+        "pt": ["passo a passo", "um por um"],
+        "ru": ["шаг за шагом", "по одному"],
+        "nl": ["stap voor stap", "een voor een"],
+        "pl": ["krok po kroku", "jeden po drugim"]
       }
     },
     "deepinit": {
@@ -3253,7 +3185,7 @@
       "wykryto"
     ]
   },
-  "excludedWorkflows": ["tools", "stack-set", "schedule"],
+  "excludedWorkflows": ["tools", "stack-set", "schedule", "convert"],
   "cjkScripts": ["ko", "ja", "zh"],
   "extensionRouting": {
     "frontend-engineer": [
