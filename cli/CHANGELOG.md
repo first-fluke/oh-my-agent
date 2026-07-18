@@ -1,5 +1,13 @@
 # Changelog
 
+## [10.21.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.21.2...cli-v10.21.3) (2026-07-18)
+
+
+### Bug Fixes
+
+* **ci:** restore stargazers daily API access ([6b3a44b](https://github.com/first-fluke/oh-my-agent/commit/6b3a44b4786b48ffedb32df5b3459af1c88802ba))
+* **ci:** restore stargazers daily API access ([cf1b336](https://github.com/first-fluke/oh-my-agent/commit/cf1b336ea1e9e847aa5bb2ba6c70677e513dc42d))
+
 ## [10.21.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.21.1...cli-v10.21.2) (2026-07-18)
 
 
