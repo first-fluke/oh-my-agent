@@ -1,5 +1,20 @@
 # Changelog
 
+## [10.21.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.21.1...cli-v10.21.2) (2026-07-18)
+
+
+### Bug Fixes
+
+* **hwp:** include plugin type declaration ([f4100a7](https://github.com/first-fluke/oh-my-agent/commit/f4100a7b96cd949f1b38061f964412f2bac02ce8))
+* **hwp:** isolate parser from optional dependencies ([1554262](https://github.com/first-fluke/oh-my-agent/commit/1554262a7fe2511853c1dcd89e95c4eee960cb5d))
+* **runtime:** correct audited execution paths ([60f2cce](https://github.com/first-fluke/oh-my-agent/commit/60f2cce9a8e5732628ebcf17262045246cb07136))
+* **skills:** resolve confirmed audit findings ([1dc2336](https://github.com/first-fluke/oh-my-agent/commit/1dc2336bf29eeaee627352e42b84e4cc897417e0))
+
+
+### Documentation
+
+* **skills:** align audited contracts and workflows ([a3fc2c5](https://github.com/first-fluke/oh-my-agent/commit/a3fc2c5ea92c7884c454fd4d75aa82f770cc0bfd))
+
 ## [10.21.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.21.0...cli-v10.21.1) (2026-07-17)
 
 
