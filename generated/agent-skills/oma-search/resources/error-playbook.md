@@ -30,15 +30,14 @@
 **Recovery**:
 1. Run `oma search fetch <url>`; this auto-escalates api → probe → impersonate → browser
 2. Each strategy tries progressively more aggressive access methods
-3. If all strategies fail: report "Unable to access this source"; rerun
-   with `--include-archive` to try caches (AMP / archive.today / Wayback)
+3. If all primary strategies fail, the pipeline automatically tries its archive sidecar (AMP / archive.today / Wayback). If that also fails, report "Unable to access this source"; `--include-archive` only promotes archive into the ordered strategy list and is not a second recovery attempt.
 
 ### `oma search fetch` all strategies fail
 **Symptom**: Non-zero exit code after api/probe/impersonate/browser exhausted.
 **Recovery**:
 1. Read the `attempts` array in JSON output: strategies, `elapsedMs`,
    HTTP status, detected `signals`.
-2. Rerun with `--include-archive` for cached fallbacks.
+2. Inspect the archive sidecar attempt, which runs automatically after the primary strategies. Do not rerun solely with `--include-archive`; that flag only changes strategy ordering.
 3. `paywall` signal → content gated; report auth requirement.
 4. `js-essential` + browser failed → site blocks headless Chrome;
    suggest manual fetch or alternative source.

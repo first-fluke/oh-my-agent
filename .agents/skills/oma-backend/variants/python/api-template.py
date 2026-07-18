@@ -5,7 +5,7 @@ This template demonstrates best practices for FastAPI endpoints.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List
 from uuid import UUID
 
@@ -16,7 +16,7 @@ from app.schemas import ResourceCreate, ResourceUpdate, ResourceResponse
 from app.services import ResourceService
 
 # Type aliases for cleaner code
-DatabaseDep = Annotated[Session, Depends(get_db)]
+DatabaseDep = Annotated[AsyncSession, Depends(get_db)]
 UserDep = Annotated[User, Depends(get_current_user)]
 
 # Router setup
@@ -51,7 +51,7 @@ async def list_resources(
     - **status**: Optional status filter
     """
     service = ResourceService(db)
-    resources = service.list_resources(
+    resources = await service.list_resources(
         user_id=current_user.id,
         skip=skip,
         limit=limit,
@@ -85,7 +85,7 @@ async def get_resource(
         403: User doesn't own this resource
     """
     service = ResourceService(db)
-    resource = service.get_resource(resource_id)
+    resource = await service.get_resource(resource_id)
 
     if not resource:
         raise HTTPException(
@@ -125,7 +125,7 @@ async def create_resource(
     service = ResourceService(db)
 
     try:
-        resource = service.create_resource(
+        resource = await service.create_resource(
             user_id=current_user.id,
             data=resource_data
         )
@@ -155,7 +155,7 @@ async def update_resource(
     Only provided fields will be updated.
     """
     service = ResourceService(db)
-    resource = service.get_resource(resource_id)
+    resource = await service.get_resource(resource_id)
 
     if not resource:
         raise HTTPException(
@@ -170,7 +170,7 @@ async def update_resource(
         )
 
     try:
-        updated_resource = service.update_resource(resource, resource_data)
+        updated_resource = await service.update_resource(resource, resource_data)
         return updated_resource
     except ValueError as e:
         raise HTTPException(
@@ -198,7 +198,7 @@ async def delete_resource(
     - **hard=true**: Hard delete - permanently removes from database
     """
     service = ResourceService(db)
-    resource = service.get_resource(resource_id)
+    resource = await service.get_resource(resource_id)
 
     if not resource:
         raise HTTPException(
@@ -212,7 +212,7 @@ async def delete_resource(
             detail="Access denied"
         )
 
-    service.delete_resource(resource, hard=hard)
+    await service.delete_resource(resource, hard=hard)
     # 204 No Content - no response body
 
 
@@ -240,87 +240,139 @@ async def bulk_create_resources(
         )
 
     service = ResourceService(db)
-    created_resources = []
-
     try:
-        for data in resources_data:
-            resource = service.create_resource(
-                user_id=current_user.id,
-                data=data
-            )
-            created_resources.append(resource)
-
-        return created_resources
+        return await service.bulk_create_resources(
+            user_id=current_user.id,
+            resources_data=resources_data,
+        )
     except ValueError as e:
-        db.rollback()  # Rollback on error
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
 
 
-# Service class template (separate file: app/services/resource_service.py)
+# Repository and service templates (separate files in app/repositories and app/services)
 """
-from sqlalchemy.orm import Session
-from app.models import Resource
-from app.schemas import ResourceCreate, ResourceUpdate
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Sequence
 from uuid import UUID
 
-class ResourceService:
-    def __init__(self, db: Session):
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import Resource
+from app.schemas import ResourceCreate, ResourceUpdate
+
+
+class ResourceRepository:
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def list_resources(
+    async def list_for_user(
         self,
         user_id: UUID,
         skip: int = 0,
         limit: int = 100,
         search: str | None = None,
         status: str | None = None,
-    ):
-        query = self.db.query(Resource).filter(
+    ) -> Sequence[Resource]:
+        statement = select(Resource).where(
             Resource.user_id == user_id,
-            Resource.deleted_at.is_(None)
+            Resource.deleted_at.is_(None),
         )
-
         if search:
-            query = query.filter(Resource.name.ilike(f"%{search}%"))
-
+            statement = statement.where(Resource.name.ilike(f"%{search}%"))
         if status:
-            query = query.filter(Resource.status == status)
+            statement = statement.where(Resource.status == status)
+        result = await self.db.execute(statement.offset(skip).limit(limit))
+        return result.scalars().all()
 
-        return query.offset(skip).limit(limit).all()
-
-    def get_resource(self, resource_id: UUID) -> Resource | None:
-        return self.db.query(Resource).filter(
+    async def get(self, resource_id: UUID) -> Resource | None:
+        statement = select(Resource).where(
             Resource.id == resource_id,
-            Resource.deleted_at.is_(None)
-        ).first()
-
-    def create_resource(self, user_id: UUID, data: ResourceCreate) -> Resource:
-        resource = Resource(
-            **data.model_dump(),
-            user_id=user_id
+            Resource.deleted_at.is_(None),
         )
+        result = await self.db.execute(statement)
+        return result.scalar_one_or_none()
+
+    def add(self, resource: Resource) -> None:
         self.db.add(resource)
-        self.db.commit()
-        self.db.refresh(resource)
+
+    async def delete(self, resource: Resource) -> None:
+        await self.db.delete(resource)
+
+
+class ResourceService:
+    def __init__(self, db: AsyncSession):
+        self.db = db
+        self.repository = ResourceRepository(db)
+
+    async def list_resources(
+        self,
+        user_id: UUID,
+        skip: int = 0,
+        limit: int = 100,
+        search: str | None = None,
+        status: str | None = None,
+    ) -> Sequence[Resource]:
+        return await self.repository.list_for_user(
+            user_id=user_id,
+            skip=skip,
+            limit=limit,
+            search=search,
+            status=status,
+        )
+
+    async def get_resource(self, resource_id: UUID) -> Resource | None:
+        return await self.repository.get(resource_id)
+
+    async def create_resource(self, user_id: UUID, data: ResourceCreate) -> Resource:
+        resource = Resource(**data.model_dump(), user_id=user_id)
+        self.repository.add(resource)
+        try:
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
+            raise
+        await self.db.refresh(resource)
         return resource
 
-    def update_resource(self, resource: Resource, data: ResourceUpdate) -> Resource:
+    async def update_resource(self, resource: Resource, data: ResourceUpdate) -> Resource:
         for field, value in data.model_dump(exclude_unset=True).items():
             setattr(resource, field, value)
 
-        self.db.commit()
-        self.db.refresh(resource)
+        await self.db.commit()
+        await self.db.refresh(resource)
         return resource
 
-    def delete_resource(self, resource: Resource, hard: bool = False):
+    async def delete_resource(self, resource: Resource, hard: bool = False) -> None:
         if hard:
-            self.db.delete(resource)
+            await self.repository.delete(resource)
         else:
-            resource.deleted_at = datetime.utcnow()
+            resource.deleted_at = datetime.now(timezone.utc)
 
-        self.db.commit()
+        await self.db.commit()
+
+    async def bulk_create_resources(
+        self,
+        user_id: UUID,
+        resources_data: list[ResourceCreate],
+    ) -> list[Resource]:
+        resources = [
+            Resource(**data.model_dump(), user_id=user_id)
+            for data in resources_data
+        ]
+        for resource in resources:
+            self.repository.add(resource)
+
+        try:
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
+            raise
+
+        for resource in resources:
+            await self.db.refresh(resource)
+        return resources
 """

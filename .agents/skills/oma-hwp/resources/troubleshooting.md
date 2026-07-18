@@ -21,9 +21,9 @@ Most likely causes:
 ### 4. Missing or broken tables
 - Simple tables: GFM pipe syntax.
 - Tables with `colspan` / `rowspan`: kordoc falls back to HTML `<table>`. This is expected and correct.
-- Nested tables: large nested tables become separate blocks; small ones get flattened into the parent cell.
+- Nested tables: kordoc emits the nested `<table>` inside its parent cell. The post-processor preserves the complete balanced outer table as HTML rather than flattening it and risking structural loss.
 - If tables are completely absent, confirm the source file actually contains tables (sometimes they are images).
-- Known limitation of `flatten-tables.ts`: its `<table>...</table>` regex is non-greedy, so a *nested* HTML `<table>` inside another would be truncated at the first `</table>`, leaving stray closing tags. kordoc emits nested tables as separate blocks (see above), so this should not occur in practice — but if you ever see dangling `</td></tr></table>` after post-processing, this is why; keep the pre-flatten output instead.
+- `flatten-tables.ts` scans balanced outer `<table>...</table>` blocks. If a block contains a nested table, it is kept as HTML so parent/child structure and closing tags remain intact.
 
 ### 5. Hyperlinks look wrong
 kordoc sanitizes links (XSS defense). If a legitimate link is stripped, verify the original URL scheme: only `http://`, `https://`, `mailto:`, and relative paths are preserved by default.

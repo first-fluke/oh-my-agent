@@ -28,8 +28,8 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
    - If neither exists, create a timestamped id such as `session-YYYYMMDD-HHmmss`.
    - Store the deck title in `meta.json.title`; do not use the title as the directory name.
 
-3. For `import-pptx`: run `oma slide import-pptx <file> --dir <deck-dir>` and skip to Phase 3
-   (use the extracted fragments as the generation base; apply the chosen style on top).
+3. For `import-pptx`: run `oma slide import-pptx <file> --dir <deck-dir>`, skip Phase 1, and continue at Phase 2
+   so the user can choose the style applied to the extracted fragments in Phase 3.
 
 4. For `import-canva`: probe Canva MCP with `list_designs`.
    - If Canva MCP is not configured: offer auto-provisioning (see `resources/canva-integration.md`
@@ -37,7 +37,7 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
      the agy CLI global config (`~/.gemini/antigravity-cli/mcp_config.json`) with user approval.
      Notify that a session restart may be needed, then retry the probe.
    - If configured and authed: `export_design` (PPTX), then `oma slide import-pptx` on the
-     downloaded file. Skip to Phase 3.
+     downloaded file. Skip Phase 1 and continue at Phase 2 for style selection.
    - If configured but unauthed: notify user about OAuth; skip to local import path.
    See `resources/canva-integration.md` for full pipeline details.
 

@@ -50,7 +50,7 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Transport | `oma slide` generate deck -> `oma slide export --format png` -> 1920×1080 frames |
+| Transport | `oma slide` generate deck -> `oma slide png --dir <deck> --out-dir <runDir>/visuals` -> 1920×1080 frames |
 | Layering | oma-slide internally calls oma-image (same key-free chain) |
 | Use | explainer code/diagram frames |
 

@@ -52,7 +52,7 @@ Models occasionally refuse to investigate a candidate (exploit-shaped source, co
 
 Handling:
 
-- A refused batch produces no false negatives. Affected files stay `pending`, so re-run `--reinvestigate` against the **other** backend (Claude ↔ Codex) to pick up the dropped sites. Findings dedupe across agents.
+- A refused batch produces no false negatives. Affected files stay `pending`, so re-run the same `process` command with `--agent <other-backend>` (Claude ↔ Codex); finished files are skipped and only pending work is picked up. Do not add `--reinvestigate`, which forces already-finished files to be analyzed again. Findings dedupe across agents.
 - If a single file consistently triggers refusals (>5 % of batches), add it to `data/<id>/config.json:ignorePaths`, **or** run that file alone with `--batch-size 1` so a refusal does not take an otherwise-fine batch down with it.
 - Never silently drop a refusal. Document it in the user-facing summary.
 

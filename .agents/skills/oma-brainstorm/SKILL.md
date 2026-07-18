@@ -128,7 +128,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 ### Guardrails
 1. **No implementation or planning before design approval** - brainstorm produces a design document, not code or task plans
 2. **One question at a time** - ask clarifying questions sequentially, not in batches
-3. **Always propose 2-3 approaches** - mechanistically distinct when possible; recommended option with trade-off analysis
+3. **Always propose 2-3 approaches** - mechanistically distinct when possible; label each `tactical` or `structural`. The recommended option defaults to `structural` and must address the root cause. Recommend `tactical` only for genuinely throwaway scope, not merely because of deadline or effort pressure; include trade-off analysis.
 4. **Prose before matrix** - explain each approach with scenario, plain-language mechanism, solves/leaves, and cost feel; then comparison matrix; then recommendation. Do not lead with matrix-only output
 5. **Section-by-section design** - present design incrementally with user confirmation at each step
 6. **Blind review before save** - mandatory unless the design is trivially small (1-2 files, low stakes); lenses critique independently; use fresh-context reviewer subagents for architecturally significant, hard-to-reverse, or security-/compliance-sensitive designs
@@ -140,7 +140,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 Follow the brainstorm workflow step by step:
 1. **Phase 1 - Context**: Explore the existing codebase and understand the project landscape
 2. **Phase 2 - Questions**: Ask clarifying questions one at a time to understand intent and constraints
-3. **Phase 3 - Approaches**: Optionally seed with TRIZ-lite when contradiction-shaped; present 2-3 prose approach briefs, matrix, and recommendation
+3. **Phase 3 - Approaches**: Optionally seed with TRIZ-lite when contradiction-shaped; present 2-3 prose approach briefs labelled tactical/structural, a matrix, and an engineering-first structural recommendation unless the work is genuinely throwaway
 4. **Phase 4 - Design**: Present the detailed design section by section, getting user approval at each step
 5. **Phase 5 - Blind Review**: Run 4-8 independent reviewer lenses on the design, consolidate into Tier 1/2/3 issues, resolve Tier 1 before save; escalate to fresh-context reviewer subagents for high-stakes designs. Skip only for trivially small designs (1-2 files, low stakes)
 6. **Phase 6 - Documentation**: Save the approved design to `docs/plans/designs/` and project memory

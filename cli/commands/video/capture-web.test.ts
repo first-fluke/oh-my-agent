@@ -203,12 +203,12 @@ describe("demo source dispatch", () => {
     expect(result.error).toContain("--url");
   });
 
-  it("falls back to guided when web capture is unavailable (no hang)", async () => {
+  it("stops with guided capture-required when web capture is unavailable", async () => {
     const result = await run({ source: "web", url: "https://example.com" });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(3);
     expect(result.manifest?.providers.capture).toBe("cap");
     const joined = result.warnings.join("\n");
-    expect(joined).toContain("falling back to guided");
+    expect(joined).toContain("Capture is performed by a human");
     // The URL is masked (no raw query); the manifest records the masked URL.
     expect(result.manifest?.captureUrlMasked).toContain("https://example.com");
   });
@@ -218,15 +218,15 @@ describe("demo source dispatch", () => {
       source: "web",
       url: "https://example.com/app?token=supersecretvalue",
     });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(3);
     const masked = result.manifest?.captureUrlMasked ?? "";
     expect(masked).not.toContain("supersecretvalue");
     expect(masked).toContain("<redacted>");
   });
 
-  it("defaults to the file source (guided protocol) without --source", async () => {
+  it("defaults to the file source and stops with capture-required", async () => {
     const result = await run({});
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(3);
     expect(result.manifest?.providers.capture).toBe("cap");
     expect(result.warnings.join("\n")).toContain(
       "Capture is performed by a human",

@@ -40,7 +40,7 @@ Follow these steps in order (adjust depth by difficulty).
 ## Step 3: Decompose Tasks
 - Break into tasks completable by a single agent
 - Each task has: agent, title, description, acceptance criteria, priority, dependencies, **scope**
-- `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
+- `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `refactor`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
 - `scope`: array of directory prefixes this agent is allowed to modify (e.g., `["src/api/", "migrations/"]`). Used by `verify` to detect cross-agent boundary violations in parallel execution.
 - Minimize dependencies for maximum parallel execution
 - Priority tiers: 1 = independent (run first), 2 = depends on tier 1, etc.

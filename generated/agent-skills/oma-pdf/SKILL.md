@@ -75,7 +75,7 @@ Convert PDF files into structured Markdown or another requested extraction forma
 - If tables are missing or broken, retry with `--table-method cluster` or `--markdown-with-html` before escalating to hybrid mode.
 - If the PDF is scanned or image-based, start or reuse the hybrid OCR server and convert with hybrid mode.
 - If conversion fails because the PDF is encrypted, stop and ask for the password or an unlocked copy.
-- If conversion hits memory or size limits, process smaller page ranges via `--pages` or batch smaller inputs.
+- If conversion hits memory or size limits, process smaller page ranges into distinct output directories (or append `--to-stdout`) so repeated runs do not overwrite the same basename.
 
 ### Failure and recovery
 | Failure | Recovery |
@@ -86,7 +86,7 @@ Convert PDF files into structured Markdown or another requested extraction forma
 | Garbled output | Retry with tagged structure or hybrid mode |
 | Missing tables | Retry with `--table-method cluster` or `--markdown-with-html` first; hybrid mode for scanned tables |
 | OCR language mismatch | Retry with explicit OCR languages, for example `ko,en` |
-| Large file or memory pressure | Split into page ranges with `--pages` or batch smaller inputs |
+| Large file or memory pressure | Split into page ranges using distinct output directories or `--to-stdout`; never reuse one output directory for the same basename |
 
 ### Exit
 - Success: output file exists, Markdown is formatted when applicable, and extracted structure is readable.
@@ -124,10 +124,10 @@ uvx mdformat "{output_path}"
 For scanned/image-based PDFs, start OCR first and then convert through hybrid mode:
 ```bash
 uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid --port 5002 --force-ocr --ocr-lang "{languages}"
-uvx opendataloader-pdf --hybrid docling-fast "{input_path}" --format markdown --output-dir "{output_dir}"
+uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full "{input_path}" --format markdown --output-dir "{output_dir}"
 ```
 
-On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `--threads` (parallel pages), `--detect-strikethrough`, hybrid `--enrich-formula` / `--enrich-picture-description` — are detailed in `resources/execution-protocol.md`.
+On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `--threads` (parallel pages), `--detect-strikethrough`, hybrid `--enrich-formula` / `--enrich-picture-description` — are detailed in `resources/execution-protocol.md`. The two enrichment flags require client-side `--hybrid-mode full`.
 
 ### Resource scope
 | Scope | Resource target |

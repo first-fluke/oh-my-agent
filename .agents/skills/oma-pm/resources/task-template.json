@@ -20,7 +20,7 @@
   "tasks": [
     {
       "id": "task-1",
-      "agent": "backend|frontend|mobile|db|qa|debug|pm|architecture|tf-infra|docs",
+      "agent": "backend|frontend|mobile|db|qa|debug|pm|architecture|refactor|tf-infra|docs",
       "title": "",
       "description": "",
       "priority": 1,

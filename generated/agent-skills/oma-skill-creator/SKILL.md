@@ -70,7 +70,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 2. **ACQUIRE**: Read analogous skills, existing resources, project conventions, and any user-provided source material.
 3. **REASON**: Decide what belongs inline in `SKILL.md` and what belongs in `resources/`, `config/`, `scripts/`, or `assets/`.
 4. **ACT**: Create or update the skill using the SSL-lite template.
-5. **VERIFY**: Run structural, routing, execution, resource, utility-content, and formatting checks.
+5. **VERIFY**: Run `oma skills lint --skill {name}`, then the remaining routing, execution, resource, utility-content, and formatting checks.
 6. **FINALIZE**: Report created/changed files, validation result, and any remaining assumptions.
 
 ### Transitions
@@ -86,7 +86,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 | Skill scope overlaps heavily with another skill | Add a clear `When NOT to use` boundary and cross-route |
 | Execution path is vague | Add canonical command or workflow path inline |
 | `SKILL.md` becomes too long | Move detailed examples to `resources/` and keep navigation in `References` |
-| No reliable validation command exists | Use structural grep/awk checks and manual checklist validation |
+| `oma skills lint` is unavailable (CLI not installed) | Fall back to structural grep/awk checks and manual checklist validation |
 | User input is underspecified | Make conservative assumptions and list them, unless the target behavior would be unsafe |
 
 ### Exit
@@ -104,12 +104,13 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 | Infer boundaries | `INFER` | Trigger intents and adjacent skill overlap |
 | Write skill file | `WRITE` | New or updated `SKILL.md` |
 | Add resources | `WRITE` | `resources/`, `config/`, `scripts/`, or `assets/` |
-| Validate structure | `VALIDATE` | Heading and canonical-path checks |
+| Validate structure | `VALIDATE` | `oma skills lint` smell report; heading and canonical-path checks |
 | Report result | `NOTIFY` | Changed files and validation summary |
 
 ### Tools and instruments
+- `oma skills lint --skill <id>` for automated smell detection (frontmatter, structure, canonical path, broken references, boundaries)
 - `rg`, `find`, `awk`, `sed`, `git diff --check`
-- `apply_patch` for manual file edits
+- The runtime's native file-edit tool for manual edits
 - Existing OMA skills as examples
 - `resources/ssl-lite-template.md` for the canonical section skeleton
 - `resources/validation-checklist.md` for acceptance criteria
@@ -122,7 +123,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
    - `### Canonical command path` for fragile or repeatable commands
    - `### Canonical workflow path` for decision, review, design, or research flow
 5. Move long examples, provider-specific details, or optional protocols into `resources/`.
-6. Validate top-level headings, canonical path presence, frontmatter, and whitespace.
+6. Validate with `oma skills lint --skill <name>` (frontmatter, headings, canonical path, broken references, boundaries), then `git diff --check` for whitespace. If the CLI is unavailable, fall back to the structural grep/awk checks in `resources/validation-checklist.md`.
 
 ### Resource scope
 | Scope | Resource target |
@@ -163,3 +164,4 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 - Shared context loading: `../_shared/core/context-loading.md`
 - Shared quality principles: `../_shared/core/quality-principles.md`
 - Skill utility eval: when creating a new skill, consider adding held-out task fixtures under `.agents/eval/<skill>/` so `oma skills eval` can measure whether the skill improves task outcomes. See `web/docs/guide/skill-eval.md` for the fixture schema and checker types.
+- Skill optimization: once eval fixtures exist, `oma skills opt --skill <id>` proposes SKILL.md edits and keeps only those that improve measured held-out utility lift — use it after authoring instead of hand-tuning prose.

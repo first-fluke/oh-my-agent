@@ -111,4 +111,4 @@ Agents should prefer user-supplied explicit paths (e.g., `~/Downloads/otter.jpeg
 | Specific vendor unhealthy | Exit 5 with the vendor's setup guide (URL + env var + steps, rendered by `oma image doctor`) |
 | All sub-strategies failed for a provider | Exit 1 with last classified error; include `strategy_attempts` in manifest |
 | Timeout | Exit 6, manifest records `after_ms` |
-| Cancelled (Ctrl+C) | Exit 130 (signal); no manifest if abort was pre-write |
+| Cancelled (Ctrl+C/SIGTERM) | In-flight calls abort, failures are recorded as `timeout`, the manifest is written, and the command exits 6 when no provider succeeded |

@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+/// <reference path="./turndown-plugin-gfm.d.ts" />
 /**
  * flatten-tables.ts: post-process kordoc output:
  *   1. convert HTML <table> blocks to GFM pipe tables
@@ -20,6 +21,9 @@ import { constants } from "node:fs";
 import { access, readFile, writeFile } from "node:fs/promises";
 import TurndownService from "turndown";
 import { tables } from "turndown-plugin-gfm";
+import { replaceBalancedTables } from "./balanced-tables.js";
+
+export { replaceBalancedTables } from "./balanced-tables.js";
 
 const td = new TurndownService({
   headingStyle: "atx",
@@ -30,15 +34,11 @@ const td = new TurndownService({
 td.use(tables);
 
 const files = process.argv.slice(2);
-if (files.length === 0) {
+if (import.meta.main && files.length === 0) {
   console.error("Usage: bun flatten-tables.ts <file.md> [<file.md>...]");
   process.exit(1);
 }
 
-// Non-greedy: a nested <table> inside another would be truncated at the first
-// </table>. kordoc emits nested tables as separate blocks, so this holds in
-// practice; see troubleshooting.md §4 if stray closing tags ever appear.
-const TABLE_BLOCK = /<table[\s\S]*?<\/table>/g;
 const PUA = /[\uE000-\uF8FF\u{F0000}-\u{FFFFD}\u{100000}-\u{10FFFD}]/gu;
 
 async function main(): Promise<void> {
@@ -55,7 +55,12 @@ async function main(): Promise<void> {
 
     let tableCount = 0;
     let keptCount = 0;
-    let out = src.replace(TABLE_BLOCK, (match: string) => {
+    let out = replaceBalancedTables(src, (match: string) => {
+      const nestedTableCount = (match.match(/<table\b/gi) ?? []).length;
+      if (nestedTableCount > 1) {
+        keptCount += 1;
+        return match;
+      }
       const converted = td.turndown(match).trim();
       // turndown-plugin-gfm only converts tables whose first row is <th>
       // (kordoc always emits one); anything else is kept as HTML — do not
@@ -89,7 +94,9 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err: unknown) => {
-  console.error("[flatten-tables]", err);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((err: unknown) => {
+    console.error("[flatten-tables]", err);
+    process.exit(1);
+  });
+}

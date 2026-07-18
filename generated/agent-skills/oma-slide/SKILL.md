@@ -116,11 +116,11 @@ outputs:
    on-screen speaker-notes panel). Optionally open `oma slide edit --dir`
    for bbox visual edits. Optional aesthetic review using chrome-devtools MCP screenshots (judgment,
    not the pass/fail gate).
-7. **DELIVER** (Phase 6): Run `oma slide bundle --dir "$DECK_DIR" --out out/deck.html` (`--dir` is required). Optionally export
+7. **DELIVER** (Phase 6): Run `oma slide bundle --dir "$DECK_DIR"` (`--dir` is required; the default output is `$DECK_DIR/out/deck.html`). Optionally export
    PDF / PNG / PPTX on user request. Warn if deck contains video (bundle is not fully self-contained).
 
 ### Transitions
-- If `import-pptx` is requested, skip Phase 1–2 and proceed from Phase 3 with extracted fragments.
+- If `import-pptx` or `import-canva` is requested, skip Phase 1 (Discovery), run Phase 2 (Style), then proceed from Phase 3 with extracted fragments.
 - If validate auto-fix loop exceeds 3 iterations, surface the JSON diff to the user and wait.
 - If imagery is needed and no oma-image vendor is authenticated (check via `oma image doctor`), insert placeholder + `// TODO(oma-deferred)`.
 - If deck contains CJK text at any point, inject Pretendard font before generation.

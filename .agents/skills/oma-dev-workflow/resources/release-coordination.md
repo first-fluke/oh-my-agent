@@ -114,8 +114,8 @@ Release Please recognizes these commit types:
 ### 1. Develop Features
 ```bash
 # Make changes with conventional commits
-git commit -m "feat(cli): add infrastructure skills category"
-git commit -m "fix(cli): correct skill installation path"
+git commit -m "feat(infra): add infrastructure skills category"
+git commit -m "fix(shared): correct skill installation path"
 git commit -m "docs: update installation guide"
 ```
 

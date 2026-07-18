@@ -80,7 +80,7 @@ spec:
       memory_limiter: { check_interval: 1s, limit_percentage: 75 }
       batch: {}
     exporters:
-      otlphttp/tempo: { endpoint: http://tempo.observability.svc:4418 }
+      otlphttp/tempo: { endpoint: http://tempo.observability.svc:4318 }
       prometheusremotewrite: { endpoint: http://mimir.observability.svc:9009/api/v1/push }
       loki: { endpoint: http://loki.observability.svc:3100/loki/api/v1/push }
     service:

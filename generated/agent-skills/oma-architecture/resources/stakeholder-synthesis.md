@@ -18,13 +18,13 @@ Consult 1-3 agents when:
 - tradeoffs are real but bounded
 - specific specialist input is needed
 
-Typical pairings:
-- oma-pm: business constraints, scope, product priorities
-- oma-backend: service/API/domain concerns
-- oma-db: data ownership, schema, consistency
-- oma-tf-infra: deployment and operational architecture
-- oma-qa: risk, performance, security, testability
-- oma-frontend / oma-mobile: client integration and complexity costs
+Typical pairings (agent ids, not skill names — see the mapping table in `.agents/workflows/orchestrate.md`):
+- `pm`: business constraints, scope, product priorities
+- `backend`: service/API/domain concerns
+- `db`: data ownership, schema, consistency
+- `tf-infra`: deployment and operational architecture
+- `qa`: risk, performance, security, testability
+- `frontend` / `mobile`: client integration and complexity costs
 
 ### Full Stakeholder Sweep
 

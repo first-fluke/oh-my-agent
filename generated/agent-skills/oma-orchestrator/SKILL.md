@@ -133,6 +133,7 @@ When native runtime dispatch is available, prefer the runtime-specific native pa
 
 Current native executor paths:
 - Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
+- OpenCode: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent:spawn` for same-session OpenCode work because it will not appear as a native child task
 - Codex CLI: `codex exec "@agent ..."` using `.codex/agents/*.toml`
 - Gemini CLI: `gemini -p "@agent ..."` using `.gemini/agents/*.md`
 
@@ -175,7 +176,7 @@ Memory provider and tool names are configurable via `.agents/mcp.json` (not the 
 **PHASE 2 - Setup**: Use memory write tool to create `orchestrator-session.md` + `task-board.md` (include `exposed_skill_set` per task)
 **PHASE 3 - Execute**: Spawn agents by priority tier (never exceed MAX_PARALLEL); inject only `exposed_skill_set` into each subagent's available specialist list
 **PHASE 4 - Monitor**: Poll every POLL_INTERVAL; handle completed/failed/crashed agents
-**PHASE 4.5 - Verify**: Run `oma verify {agent-type}` per completed agent
+**PHASE 4.5 - Verify**: Run mechanical checks for every completed agent; run `oma verify {agent-type}` only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`; then run QA cross-review for every completed implementation
 **PHASE 5 - Collect**: Read all `result-{agent}-{sessionId}.md`, compile summary, cleanup progress files
 
 See `resources/subagent-prompt-template.md` for prompt construction.
@@ -201,7 +202,8 @@ Agent completes work
     ↓
 [1] Mechanical Self-Check: lint, type-check, tests, diff scope
     ↓
-[2] Verify: Run `oma verify {agent-type} --workspace {workspace}`
+[2] Verify: For supported types, run `oma verify {agent-type} --workspace {workspace}`
+    Unsupported (`db`, `refactor`, `architecture`, `tf-infra`, `docs`) → record SKIP and continue
     ↓ FAIL → Agent receives feedback, fixes, back to [1]
     ↓ PASS
 [3] Cross-Review: QA agent reviews the changes
@@ -228,6 +230,8 @@ Reason: Self-evaluation bias causes agents to consistently overrate their own ou
 ```bash
 oma verify {agent-type} --workspace {workspace} --json
 ```
+- Run only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`.
+- For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record that automated verify is unsupported and continue to QA cross-review after the mechanical checks.
 - **PASS (exit 0)**: Proceed to cross-review
 - **FAIL (exit 1)**: Feed verify output back to the agent as correction context
 

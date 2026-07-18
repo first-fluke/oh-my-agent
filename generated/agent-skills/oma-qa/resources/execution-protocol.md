@@ -89,7 +89,7 @@ at runtime. This step requires interacting with the running application.
 7. Performance profiling (when performance criteria exist):
    - `performance_start_trace(reload: true)` → capture Core Web Vitals
    - `performance_stop_trace()` → analyze LCP, INP, CLS
-   - `take_memory_snapshot(filePath)` → detect memory leaks
+   - `take_heapsnapshot(filePath)` → detect memory leaks
 8. Cleanup:
    ```
    close_page(pageId)  → close isolated test pages after verification

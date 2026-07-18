@@ -38,17 +38,20 @@ Explore user intent, constraints, and alternative approaches before planning or 
 - Clarified intent and constraints
 - Two or three approaches as prose briefs (scenario, mechanism, residual risk) plus a comparison matrix and recommended option
 - Section-by-section approved design document
+- Blind-review issue list (Tier 1 resolved, Tier 2/3 resolved or explicitly deferred)
 - Saved design artifact before handoff to planning
 
 ### Dependencies
 - Shared context loading, reasoning templates, clarification protocol, quality principles, and skill routing
 - Optional `resources/triz-lite.md` for contradiction-shaped approach seeding
+- Per-agent reviewer dispatch (e.g. `qa-reviewer`, `architecture-reviewer`) for the high-stakes blind-review escalation path
 - Downstream PM workflow for task decomposition after design approval
 
 ### Control-flow features
 - Branches by ambiguity, user answers, approach comparison, and approval gates
 - Optional TRIZ-lite branch when a technical/UX contradiction blocks distinct approaches
 - Asks one question at a time
+- Blind review round before save; may dispatch fresh-context reviewer subagents for high-stakes designs (the only subagent-spawning path in this skill)
 - Stops before implementation or task planning
 
 ## Structural Flow
@@ -62,7 +65,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 1. **PREPARE**: Explore context and frame the design question.
 2. **ACQUIRE**: Ask clarifying questions one at a time.
 3. **REASON**: Generate two or three approaches with tradeoffs.
-4. **VERIFY**: Get user approval section by section.
+4. **VERIFY**: Get user approval section by section, then run a blind review round (independent lenses critique without seeing each other's feedback) before saving.
 5. **FINALIZE**: Save design and transition to planning when appropriate.
 
 ### Transitions
@@ -89,7 +92,9 @@ Explore user intent, constraints, and alternative approaches before planning or 
 | Ask targeted questions | `REQUEST` | Clarification phase |
 | Compare approaches | `COMPARE` | Tradeoff matrix |
 | Infer recommendation | `INFER` | Recommended option |
+| Emit option-selection decision | `CALL_TOOL` | `oma state:emit` + `oma state:verify --checkpoint option-selection` |
 | Validate approval | `VALIDATE` | Section-by-section confirmation |
+| Run blind review | `VALIDATE` | Independent lens critiques, tiered issue list, Tier 1 resolution |
 | Write design artifact | `WRITE` | `docs/plans/designs/` and memory |
 | Transition to plan | `NOTIFY` | Handoff summary |
 
@@ -102,8 +107,9 @@ Explore user intent, constraints, and alternative approaches before planning or 
 ```text
 1. Ask one clarifying question at a time.
 2. (Optional) If technical/UX contradiction or same-axis approaches only → resources/triz-lite.md.
-3. Present 2-3 approaches as prose briefs, then matrix, then recommendation; get user pick.
-4. Save the approved design to `docs/plans/designs/` before handing off to planning.
+3. Present 2-3 approaches as prose briefs, then matrix, then recommendation; get user pick, then emit and verify the `brainstorm.option-selection` L1 decision.
+4. Design section by section with user approval, then blind review: 4-8 independent lenses critique the design; resolve Tier 1 issues (fresh-context reviewer subagents for high-stakes designs).
+5. Save the approved design to `docs/plans/designs/` before handing off to planning.
 ```
 
 ### Resource scope
@@ -124,21 +130,23 @@ Explore user intent, constraints, and alternative approaches before planning or 
 ### Guardrails
 1. **No implementation or planning before design approval** - brainstorm produces a design document, not code or task plans
 2. **One question at a time** - ask clarifying questions sequentially, not in batches
-3. **Always propose 2-3 approaches** - mechanistically distinct when possible; recommended option with trade-off analysis
+3. **Always propose 2-3 approaches** - mechanistically distinct when possible; label each `tactical` or `structural`. The recommended option defaults to `structural` and must address the root cause. Recommend `tactical` only for genuinely throwaway scope, not merely because of deadline or effort pressure; include trade-off analysis.
 4. **Prose before matrix** - explain each approach with scenario, plain-language mechanism, solves/leaves, and cost feel; then comparison matrix; then recommendation. Do not lead with matrix-only output
 5. **Section-by-section design** - present design incrementally with user confirmation at each step
-6. **YAGNI** - do not over-engineer; design only what is needed for the stated goal
-7. **TRIZ-lite is optional** - only for technical/UX contradictions or same-axis collapse; max 3–5 principles from the curated set; no fake scores, full TRIZ/ARIZ, or classical matrices; seeds feed Step 3 briefs and do not replace user approval
-8. **Save design, then transition** - persist the approved design document before handing off to `/plan`
+6. **Blind review before save** - mandatory unless the design is trivially small (1-2 files, low stakes); lenses critique independently; use fresh-context reviewer subagents for architecturally significant, hard-to-reverse, or security-/compliance-sensitive designs
+7. **YAGNI** - do not over-engineer; design only what is needed for the stated goal
+8. **TRIZ-lite is optional** - only for technical/UX contradictions or same-axis collapse; max 3–5 principles from the curated set; no fake scores, full TRIZ/ARIZ, or classical matrices; seeds feed Step 3 briefs and do not replace user approval
+9. **Save design, then transition** - persist the approved design document before handing off to `/plan`
 
 ### Execution Phases
 Follow the brainstorm workflow step by step:
 1. **Phase 1 - Context**: Explore the existing codebase and understand the project landscape
 2. **Phase 2 - Questions**: Ask clarifying questions one at a time to understand intent and constraints
-3. **Phase 3 - Approaches**: Optionally seed with TRIZ-lite when contradiction-shaped; present 2-3 prose approach briefs, matrix, and recommendation
+3. **Phase 3 - Approaches**: Optionally seed with TRIZ-lite when contradiction-shaped; present 2-3 prose approach briefs labelled tactical/structural, a matrix, and an engineering-first structural recommendation unless the work is genuinely throwaway
 4. **Phase 4 - Design**: Present the detailed design section by section, getting user approval at each step
-5. **Phase 5 - Documentation**: Save the approved design to `docs/plans/designs/` and project memory
-6. **Phase 6 - Transition**: Hand off to `/plan` for task decomposition
+5. **Phase 5 - Blind Review**: Run 4-8 independent reviewer lenses on the design, consolidate into Tier 1/2/3 issues, resolve Tier 1 before save; escalate to fresh-context reviewer subagents for high-stakes designs. Skip only for trivially small designs (1-2 files, low stakes)
+6. **Phase 6 - Documentation**: Save the approved design to `docs/plans/designs/` and project memory
+7. **Phase 7 - Transition**: Hand off to `/plan` for task decomposition
 
 ### Common Pitfalls
 - **Jumping to solutions**: Asking "how" before fully understanding "what" and "why"
@@ -149,6 +157,7 @@ Follow the brainstorm workflow step by step:
 - **TRIZ on everything**: Loading triz-lite without a real contradiction, adding ceremony without better options
 - **Over-engineering**: Designing for hypothetical future requirements instead of stated needs
 - **Skipping confirmation**: Moving forward without explicit user approval on design decisions
+- **Skipping blind review**: Saving a non-trivial design without the independent critique round, or letting the design's author-context leak into escalated reviewer prompts
 
 ## References
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.

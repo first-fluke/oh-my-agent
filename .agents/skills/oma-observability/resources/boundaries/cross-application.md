@@ -269,7 +269,7 @@ export TRACEPARENT="00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
 # Child process (e.g., test runner) inherits the parent span context
 ```
 
-This pattern enables a single trace to span from the CI trigger event through build, test, deploy, and smoke-test verification steps. Cross-ref `../SKILL.md` for the TRACEPARENT env var description in the skill architecture.
+This pattern enables a single trace to span from the CI trigger event through build, test, deploy, and smoke-test verification steps.
 
 ---
 

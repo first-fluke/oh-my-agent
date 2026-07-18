@@ -121,7 +121,7 @@ Then run the project's mobile verification commands, typically unit/widget tests
 2. Riverpod/Bloc for state management (no raw setState for complex logic)
 3. Material Design 3 (Android) + iOS HIG (iOS)
 4. All controllers disposed in `dispose()` method
-5. Dio with interceptors for API calls; handle offline gracefully
+5. Use the platform transport with auth/retry/logging interception and offline handling: Flutter uses Dio, React Native uses axios behind TanStack Query, and Swift uses generated `Client` middleware.
 6. 60fps target; test on both platforms
 7. Use Maestro for E2E testing of critical user flows
 8. Swift native: SwiftUI + `@MainActor @Observable` view models (Observation framework, iOS 17+) — non-isolated VMs mutating observed state from a `Task` are a Swift 6 strict-concurrency error

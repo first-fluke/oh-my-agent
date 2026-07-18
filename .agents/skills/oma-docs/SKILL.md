@@ -38,7 +38,7 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 
 **i18n mode**: Optional `--min-severity <CRITICAL|HIGH|MEDIUM|LOW>` (default `MEDIUM`), optional `--json`.
 
-**lint mode**: Optional `--locales <list>` (comma-separated CJK locales, default `ko,ja,zh`), optional `--json`.
+**lint mode**: Optional `--locales <list>` (comma-separated CJK locales for the `cjk-em-dash` rule, default `ko,ja,zh`), optional `--json`. The default `wrong-language` rule always scans every locale under `web/i18n/` and is not narrowed by `--locales`.
 
 ### Expected outputs
 
@@ -62,7 +62,7 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 - `cli/commands/docs/reporter.ts`: deterministic markdown/JSON report renderer (no LLM call; host LLM does narrative synthesis).
 - `cli/commands/docs/sync-propose.ts`: git diff intake, reverse lookup, candidate-doc selector with secret redaction (no LLM call; host LLM drafts patches).
 - `cli/commands/docs/i18n-drift.ts`: EN↔translation structural drift detector (line/heading counts, last-commit recency; no LLM call).
-- `cli/commands/docs/lint-i18n.ts`: CJK style linter for translated docs (no LLM call, no auto-fix).
+- `cli/commands/docs/lint-i18n.ts`: translated-doc linter for selected-locale CJK em-dash style and all-locale wrong-language placeholders (no LLM call, no auto-fix).
 - `docs/generated/doc-refs.json`: single-direction reference index, regenerated on every verify run. Gitignored — the CLI force-adds `docs/generated/` to `.gitignore` so generated artifacts are never committed.
 - `docs/generated/url-drift.json`: lychee-produced URL drift report (written by background lychee spawn; gitignored under the same `docs/generated/` rule).
 - `lychee`: external Rust tool for URL link checking. Detected on PATH; install via `brew install lychee` or see https://github.com/lycheeverse/lychee#installation. Optional but recommended.
@@ -122,7 +122,7 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 | Match diff to candidate docs | `RESOLVE` | `sync-propose.ts`: git diff + reverse lookup |
 | Redact secrets from diff | `VALIDATE` | Exclude `.env*`, `*.pem`, `*.key`, `id_rsa*`; sanitize content |
 | Detect i18n drift | `RESOLVE` | `i18n-drift.ts`: EN↔translation structural signals + severity |
-| Lint translated docs | `VALIDATE` | `lint-i18n.ts`: CJK style anti-patterns, report-only |
+| Lint translated docs | `VALIDATE` | `lint-i18n.ts`: selected-locale CJK style plus all-locale wrong-language placeholders, report-only |
 | Generate patch proposals | `INFER` | Host LLM drafts patches from `sync-propose.ts` candidate output (no CLI LLM call) |
 | Render drift report | `RENDER` | `reporter.ts`: markdown (default), JSON (`--json`), file (`--report-file`) |
 | Apply approved patches | `WRITE` | `git apply` on user-confirmed patches only |
@@ -134,7 +134,7 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 - `cli/commands/docs/reporter.ts`: deterministic markdown + JSON renderer. **No LLM call.** Friendly summary, severity tagging, fix prioritization are the host LLM's responsibility.
 - `cli/commands/docs/sync-propose.ts`: git diff intake, reverse index build, secret-pattern + gitignore file exclusion. Returns candidate docs with matched refs only. **No LLM call.** Patch synthesis is the host LLM's responsibility.
 - `cli/commands/docs/i18n-drift.ts`: pairs `web/docs` English sources with `web/i18n/{lang}/...` translations, emits line/heading/recency drift signals with severity. **No LLM call.** Translation patching is `oma-translator`'s responsibility.
-- `cli/commands/docs/lint-i18n.ts`: content-level style linter for CJK translations (e.g. em-dash anti-pattern). **No LLM call, no auto-fix.** Restructuring is the host LLM's responsibility via `oma-translator`.
+- `cli/commands/docs/lint-i18n.ts`: content-level linter with `cjk-em-dash` for selected CJK locales and `wrong-language` placeholder detection across all locales. **No LLM call, no auto-fix.** Restructuring is the host LLM's responsibility via `oma-translator`.
 - External: [`lychee`](https://github.com/lycheeverse/lychee) (background URL link checking; install via `brew install lychee`).
 
 ### Host-LLM contract

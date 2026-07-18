@@ -1,7 +1,7 @@
 import { realpathSync } from "node:fs";
 import { copyFile } from "node:fs/promises";
 import path from "node:path";
-import { messageForError } from "../errors.js";
+import { CaptureRequiredError, messageForError } from "../errors.js";
 import { runCapture } from "../internal/exec.js";
 import { collectAssetRecord } from "../manifest.js";
 import { GuidedCaptureProvider } from "../providers/capture.js";
@@ -54,10 +54,9 @@ async function handleWebCapture(cwd: string, ctx: RunContext): Promise<void> {
     ctx.providers.capture = "cap";
     const guided = new GuidedCaptureProvider(cwd);
     const guide = await guided.guide({ mode: "demo" });
-    ctx.warnings.push(
-      `capture: web capture unavailable (${reason}); falling back to guided. ${guide.message}`,
-    );
-    return;
+    const message = `web capture unavailable (${reason}); ${guide.message}`;
+    ctx.warnings.push(`capture: ${message}`);
+    throw new CaptureRequiredError(message);
   }
 
   ctx.providers.capture = web.id;
@@ -89,9 +88,9 @@ async function handleWebCapture(cwd: string, ctx: RunContext): Promise<void> {
     ctx.providers.capture = "cap";
     const guided = new GuidedCaptureProvider(cwd);
     const guide = await guided.guide({ mode: "demo" });
-    ctx.warnings.push(
-      `capture: live web capture failed (${messageForError(err)}); falling back to guided. ${guide.message}`,
-    );
+    const message = `live web capture failed (${messageForError(err)}); ${guide.message}`;
+    ctx.warnings.push(`capture: ${message}`);
+    throw new CaptureRequiredError(message);
   }
 }
 
@@ -106,7 +105,7 @@ async function handleFileCapture(
   if (!capturePath) {
     const guide = await provider.guide({ mode: "demo" });
     ctx.warnings.push(`capture: ${guide.message}`);
-    return;
+    throw new CaptureRequiredError(guide.message);
   }
   const footage = await provider.ingest(capturePath);
   ctx.capturedFootage = runRelative(ctx.runDir, footage.path);

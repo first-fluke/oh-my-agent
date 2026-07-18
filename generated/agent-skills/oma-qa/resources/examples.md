@@ -73,7 +73,7 @@ Status: WARNING
 **Output**:
 ```
 # QA Report: Pre-Launch Audit
-Status: WARNING
+Status: FAIL
 
 ## Summary
 - Security: 0 CRITICAL, 1 HIGH, 2 MEDIUM
