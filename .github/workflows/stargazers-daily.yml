@@ -20,7 +20,8 @@ jobs:
 
       - name: Track stargazers on orphan branch
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Stargazer listings require an admin/collaborator identity since 2026-07-14.
+          GH_TOKEN: ${{ secrets.ACTION_SYNC_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
