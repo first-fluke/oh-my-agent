@@ -1,7 +1,7 @@
 # Vendor Detection Protocol
 
 When executing a workflow, determine your runtime environment using this priority order.
-Then resolve the target vendor for each agent from `.agents/oma-config.yaml` (`agent_cli_mapping`, `default_cli`).
+Then resolve the target vendor for each agent from `.agents/oma-config.yaml`: the `model_preset` entry plus per-agent `agents:` overrides resolve each agent to a model slug (`<owner>/<slug>`), and the model's owning vendor is that agent's target vendor. See `web/docs/guide/per-agent-models.md` for the resolution order. (The legacy `agent_cli_mapping` / `default_cli` keys were replaced by `model_preset` in migration 008; only pre-migration configs still carry them.)
 
 Important:
 - Do **not** choose one spawn strategy for the entire workflow based only on the main runtime vendor.
@@ -46,7 +46,7 @@ For each agent:
 
 Example:
 - Runtime: Claude Code
-- Mapping: `frontend: claude`, `backend: claude`, `qa: gemini`
+- Resolved models: `frontend` → `anthropic/…`, `backend` → `anthropic/…`, `qa` → `google/…` (owning vendors: claude, claude, gemini)
 - Result:
   - `frontend` -> native Claude subagent
   - `backend` -> native Claude subagent

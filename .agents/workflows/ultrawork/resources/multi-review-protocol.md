@@ -21,7 +21,7 @@ Each reviewer subagent's prompt MUST contain ONLY:
 Each reviewer subagent's prompt MUST NOT contain:
 - the main session's conversation history,
 - the implementation agent's reasoning or self-justification, or
-- any prior review's verdict — **unless** that review's guide explicitly requires chaining a specific prior finding (none below do by default).
+- any prior review's verdict — **unless** that review's guide explicitly requires chaining a specific prior finding (only the Meta Review, Step 3, does: it audits the Step 2 verdict).
 
 ### Verdict output
 The reviewer writes a structured verdict to memory per `.agents/skills/_shared/runtime/memory-protocol.md`:
@@ -46,7 +46,8 @@ The phase coordinator collects these verdicts and folds them into the phase's `r
 
 ### 2. Meta Review (Step 3)
 - **Question**: "Was the review done properly?"
-- **Check**: Self-verify previous review was sufficient
+- **Check**: Verify the Step 2 completeness review was sufficient
+- **Chaining exception**: this reviewer receives the Step 2 verdict as input — auditing it is the job (the only permitted verdict chaining in this protocol)
 - **Pass Condition**: No review gaps confirmed
 
 ### 3. Simplicity Review (Step 4)
@@ -85,12 +86,17 @@ The phase coordinator collects these verdicts and folds them into the phase's `r
 - **Check**: lint, types, coverage, complexity
 - **Pass Condition**: All quality metrics pass
 
-### 10. Cascade Impact Review (Step 16)
+### 10. UX Flow Review (Step 15)
+- **Question**: "Do the user-facing flows still work end to end?"
+- **Check**: Walk the primary user journeys affected by the diff — routes, navigation, forms, error/empty/loading states
+- **Pass Condition**: No broken or degraded user journey
+
+### 11. Cascade Impact Review (Step 16)
 - **Question**: "Did we break anything elsewhere?"
 - **Check**: Use find_referencing_symbols for impact scope
 - **Pass Condition**: No cascade impact or handled
 
-### 11. Final Review (Step 17)
+### 12. Final Review (Step 17)
 - **Question**: "Is this ready to deploy?"
 - **Check**: Complete checklist final verification
 - **Pass Condition**: User final approval

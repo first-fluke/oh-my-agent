@@ -31,6 +31,8 @@ Emit required L1 decisions by calling `oma state:emit` directly, as documented i
 
 **Plans are first-class artifacts**: structured, templated, and consumed by other workflows. They are local working artifacts (not committed to the repo; `docs/plans/` is gitignored), but they follow strict conventions so any agent can read and update them.
 
+> `docs/plans/` does not survive a fresh clone. When a specific artifact must be durable across machines (a design doc referenced from committed documentation, a promoted API contract), commit that file deliberately with `git add -f` — tracked files are unaffected by the ignore afterwards. Committed docs must never reference a plan file that has not been promoted this way.
+
 Two artifacts per plan:
 
 1. **Machine-readable**: `.agents/results/plan-{sessionId}.json` consumed by `/orchestrate` and `/work`.
@@ -41,7 +43,9 @@ Two artifacts per plan:
 ```
 docs/plans/
 ├── designs/                       ← permanent design references (Status: Approved/Draft/Superseded)
-│   └── {NNN}-{name}.md
+│   └── {NNN}-{name}.md            (referenced-from-committed-docs files are force-added)
+├── contracts/                     ← promoted API contracts (deliberately committed via `git add -f`)
+│   └── {contract-name}.md
 └── work/                          ← execution plans (Status: Active/Completed)
     ├── {NNN}-{name}.md
     └── tech-debt-tracker.md
@@ -49,7 +53,7 @@ docs/plans/
 
 - Folder = type (designs vs work). Status field = lifecycle.
 - Filename always uses 3-digit zero-padded sequential prefix (`001-`, `002-`, …) per folder.
-- Determine the next number with `ls docs/plans/{designs,work}/ | grep -E '^[0-9]{3}-' | tail -1`.
+- Numbering is **per folder**. Determine the next number for the target folder only: `ls docs/plans/work/ | grep -E '^[0-9]{3}-' | tail -1` (or `docs/plans/designs/` respectively). Never combine both folders in one listing — the trailing entry would come from whichever folder lists last.
 - Plan content language follows the top-of-file rule (`oma-config.yaml` `language` setting). Mixed-language guidance lives in `.agents/rules/i18n-guide.md`.
 
 ---

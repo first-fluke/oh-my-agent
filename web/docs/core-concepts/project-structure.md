@@ -240,7 +240,6 @@ your-project/
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
-│   │       ├── tool-overrides.md          ← Temporary tool restrictions (/tools --temp)
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
 │   ├── results/                       ← Agent result files
@@ -506,7 +505,6 @@ Where agents write their progress during orchestration sessions. This is the can
 | `session-work.md` | Work workflow | Work-specific session state |
 | `session-ultrawork.md` | Ultrawork workflow | Ultrawork-specific phase tracking |
 | `session-cost-{sessionId}.md` | System | Per-session spawn cost telemetry |
-| `tool-overrides.md` | /tools workflow | Temporary tool restrictions (session-scoped) |
 | `archive/metrics-{date}.md` | System | Archived session metrics (30-day retention) |
 
 Memory file paths and tool names are configurable in `.agents/mcp.json` via `memoryConfig`.

@@ -56,7 +56,6 @@ Parse natural language commands:
 | "disable {tool}", "turn off {tool}" | Remove that tool from `available_tools` |
 | "enable all", "turn on all", "reset" | Set `available_tools: null` |
 | "enable only {tool1}, {tool2}" | Set only specified tools in `available_tools` |
-| "temporarily", "--temp" | Apply for session only (Step 3b) |
 
 **Group combination support:**
 - "memory + file tools" → Merge `memory` + `file-ops` groups
@@ -65,8 +64,6 @@ Parse natural language commands:
 ---
 
 ## Step 3: Update Configuration
-
-### Step 3a: Permanent Modification (Default)
 
 1. **Show before/after diff:**
    ```
@@ -89,40 +86,6 @@ Parse natural language commands:
 
    Note: Changes will fully apply after IDE/CLI restart.
    Previous settings may continue to apply in current session.
-   ```
-
-### Step 3b: Temporary Application (`--temp` or "temporarily")
-
-Temporary settings that apply only during the session:
-
-1. Create `.serena/memories/tool-overrides.md` using `write_memory`:
-   ```markdown
-   # Tool Overrides (Temporary)
-
-   ## Session
-   Created: {ISO timestamp}
-   Expires: Session end
-
-   ## Overrides
-   ```json
-   {
-     "serena": {
-       "available_tools": ["read_memory", "write_memory"]
-     }
-   }
-   ```
-
-   ## Note
-   This file contains temporary settings. It will be ignored in the next session.
-   To apply permanently, run the `/tools` workflow without `--temp`.
-   ```
-
-2. **Completion message:**
-   ```
-   Temporarily applied!
-
-   serena will only use memory tools for this session.
-   To apply permanently, run `/tools enable memory only` (without --temp).
    ```
 
 ---
@@ -171,17 +134,8 @@ Are you sure you want to continue? (Y/N)
 | `/tools all` | Enable all tools (reset) |
 | `/tools read_memory, write_memory only` | Enable only specified tools |
 | `/tools disable code edit` | Remove that group |
-| `/tools memory only --temp` | Apply temporarily (this session only) |
 
 ---
-
-## Runtime Override Protocol
-
-How other workflows SHOULD check tool restrictions (advisory — no workflow currently automates this check; apply it manually when tool discipline matters):
-
-1. **At workflow start:** Check `read_memory("tool-overrides.md")`
-2. **If override exists:** Apply that setting with priority
-3. **If not present or expired:** Use `.agents/mcp.json` settings
 
 **Note:** If IDE/CLI doesn't directly support `available_tools`,
 tool usage must be self-restricted at the workflow level.

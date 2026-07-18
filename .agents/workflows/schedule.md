@@ -51,6 +51,11 @@ oma schedule:add <agent-id> "<prompt>" --every "<phrase>" [--model <vendor>] [--
 oma schedule:add <agent-id> "<prompt>" --cron "<expr>" [--model <vendor>] [--workspace <path>] [--once]
 ```
 
+Additional options when the user asks for them:
+
+- `--max-age-days <n>` — auto-expire a recurring job after N days (`0` = indefinite)
+- `--env <keys>` — comma-separated env var **names** to capture for the run (e.g. `OPENAI_API_KEY,FOO`)
+
 If the interval was rounded (the CLI prints a "Note:" line), surface that note to the user and ask for confirmation before continuing.
 
 ---

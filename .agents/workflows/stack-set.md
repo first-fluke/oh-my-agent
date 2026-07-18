@@ -4,6 +4,15 @@ description: Auto-detect project tech stack and generate stack-specific referenc
 disable-model-invocation: true
 ---
 
+# MANDATORY RULES: VIOLATION IS FORBIDDEN
+
+- **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
+- **NEVER skip steps.** Execute from Step 1 in order.
+- **This workflow is slash-invoked only** (`/stack-set`). It is NOT triggered by keyword detection.
+- **Read manifests BEFORE generating.** Never fabricate stack values that were not detected.
+
+---
+
 # /stack-set: Stack Configuration Workflow
 
 ## Goal
@@ -36,7 +45,7 @@ Read manifest contents to detect framework:
 - Rust: Axum? Actix-web? Rocket?
 - Java: Spring Boot? Quarkus?
 
-**Frontend exclusion (amendment F):** `package.json` + `tsconfig.json` count as a backend (Node.js/TypeScript) signal only when no frontend signal from the table below claims them. In an Angular-only repo, `package.json` and `tsconfig.json` do NOT create a backend domain. A backend domain still counts when a non-Node backend manifest exists (e.g. `pyproject.toml`) or a separate package carries backend framework dependencies (NestJS, Express, Hono, …) in a monorepo.
+**Frontend exclusion (amendment F):** `package.json` + `tsconfig.json` count as a backend (Node.js/TypeScript) signal only when no frontend signal from the table below claims them. In a frontend-only repo (Angular, Next.js, React, Vue, Svelte, …), `package.json` and `tsconfig.json` do NOT create a backend domain. A backend domain still counts when a non-Node backend manifest exists (e.g. `pyproject.toml`) or a separate package carries backend framework dependencies (NestJS, Express, Hono, …) in a monorepo. (Next.js API routes / server actions belong to the frontend domain, not a separate backend domain, unless a dedicated backend package exists.)
 
 ### Frontend manifests → domain `frontend`
 
@@ -44,9 +53,15 @@ Read manifest contents to detect framework:
 |:---|:---|
 | `angular.json` | Angular |
 | `package.json` with `@angular/core`, `@angular/cli`, or `@angular/build` | Angular |
+| `next.config.{js,mjs,ts}` or `package.json` with `next` | Next.js (React) |
+| `package.json` with `react` + `react-dom` (no `next`, no `react-native`) | React SPA (Vite / CRA / Remix — infer from deps) |
+| `nuxt.config.*` or `package.json` with `vue` / `nuxt` | Vue / Nuxt |
+| `svelte.config.*` or `package.json` with `svelte` | Svelte / SvelteKit |
 | `tsconfig.app.json`, `tsconfig.spec.json` | Angular (supporting signal only — never sufficient alone) |
 
-Read manifest contents to detect the rest of the stack:
+Any row above counts as a frontend signal for the amendment-F backend exclusion — a Next.js or React repo must NOT fall through to the backend (Node.js) domain just because it has `package.json` + `tsconfig.json`.
+
+For Angular, read manifest contents to detect the rest of the stack:
 - Angular version from `@angular/core`
 - Package manager from the lockfile (`bun.lock` → bun, `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm)
 - UI library: `@spartan-ng/*` (Spartan UI)? `@angular/material`? PrimeNG? none
@@ -73,7 +88,8 @@ After scanning all tables, record every domain that has at least one detected ma
 | Detected domain | `target_skill` |
 |:---|:---|
 | backend only | `oma-backend` |
-| frontend only | `angular-developer` if `.agents/skills/angular-developer/` is installed, otherwise `oma-frontend` |
+| frontend only (Angular) | `angular-developer` if `.agents/skills/angular-developer/` is installed, otherwise `oma-frontend` |
+| frontend only (React / Next.js / Vue / Svelte) | `oma-frontend` |
 | mobile only | `oma-mobile` |
 | two or more (monorepo) | carry **all** into Step 2 — do NOT first-match |
 
@@ -112,6 +128,8 @@ Detected frontend stack:
 
 Correct? (Y/n) or modify:
 ```
+
+For React / Next.js / Vue / Svelte detection, present an equivalent confirmation block using the relevant fields (framework + version, package manager, UI library, styling, state management, test runner).
 
 ### Single-domain: mobile (Swift)
 
@@ -271,6 +289,24 @@ Generate a standalone CRUD feature (component + data service) in the detected st
 
 ---
 
+### Frontend path — React / Next.js / Vue / Svelte
+
+Target is always `oma-frontend`. Mirror the Angular path's file set, adapted to the detected framework:
+
+#### stack.yaml
+Same shape as the Angular `stack.yaml` with framework-appropriate values: `language`, `framework` (`nextjs` | `react` | `vue` | `svelte`), `framework_version`, `package_manager` (from lockfile), `ui` (e.g. `shadcn-ui`, `mui`, none), `styling` (e.g. `tailwindcss-v4`, css-modules), `state` (e.g. `zustand`, `redux-toolkit`, context, runes/composables), `test`, `source: detected`, `detected_from`, and a `verify:` block with runnable `syntax.cmd` (e.g. `bunx tsc --noEmit`) and `tests.cmd`.
+
+#### tech-stack.md
+MANDATORY sections: framework version + CLI/build workflow (e.g. `next build` / Vite), routing model (App Router / file-based), rendering strategy (SSR/SSG/CSR as detected), state management approach, UI library + styling integration, data-fetching convention, test runner and how to run it.
+
+#### snippets.md
+MANDATORY patterns (all 8): typed component (server + client component split where the framework has one) · route/page with data loading · form with validation · shared state example (detected state lib) · API/data-access module · error/loading boundary · UI-library component usage · component test in the detected runner.
+
+#### component-template.*
+A CRUD feature (component + data-access module) in the detected framework's idiom, using the detected UI library and styling conventions.
+
+---
+
 ### Mobile path — Swift / iOS native
 
 **Adapt, not copy (amendment E):** Seed from `.agents/skills/oma-mobile/variants/swift-ios/` as the baseline, then adapt every value to match the detected project. Specifically:
@@ -334,6 +370,12 @@ Generate a CRUD service built on the generated `Client` (using `Operations.*` ca
 
 ---
 
+### Mobile path — Flutter / React Native
+
+Seed from `.agents/skills/oma-mobile/variants/flutter/` or `.agents/skills/oma-mobile/variants/react-native/` respectively (same **adapt, not copy** rule as amendment E): generate `stack.yaml` (with a runnable `verify:` block, e.g. `flutter analyze` / `flutter test`, or `bunx tsc --noEmit` / `jest`), `tech-stack.md`, `snippets.md`, and an api-template in the detected idiom, replacing variant placeholders with the project's actual module names, SDK versions, and state-management library.
+
+---
+
 ## Step 4: Verify
 
 Confirm generated files meet requirements.
@@ -353,7 +395,12 @@ Confirm generated files meet requirements.
 - [ ] `snippets.md` contains all 8 mandatory Angular patterns
 - [ ] Generated references mention standalone components, OnPush, signals, lazy routes, and the Angular CLI
 - [ ] If `rxjs` is in the detected stack: `snippets.md` includes a runnable marble test (`TestScheduler`) and `tech-stack.md` states that marble tests are mandatory for stream logic
-- [ ] An Angular-only repo did NOT also generate `.agents/skills/oma-backend/stack/`
+- [ ] A frontend-only repo (Angular, Next.js, React, Vue, Svelte) did NOT also generate `.agents/skills/oma-backend/stack/`
+
+### Frontend (React / Next.js / Vue / Svelte) checks
+- [ ] `stack.yaml` has `language`, `framework`, `framework_version`, `package_manager`, `ui`, `styling`, `test` fields and a runnable `verify:` block
+- [ ] `snippets.md` contains all 8 mandatory patterns in the detected framework's idiom
+- [ ] Generated references match the detected rendering strategy and routing model (no Angular-specific content)
 
 ### Mobile (Swift) checks
 - [ ] `stack.yaml` has `language`, `api_generator`, `api_spec`, and `structure` fields populated with project-specific values (not variant defaults)

@@ -43,6 +43,8 @@ disable-model-invocation: true
    | **Audio** | `.mp3`, `.wav`, `.m4a`, `.flac`, `.ogg`, `.opus`, `.aac` | Step 2E | `ffmpeg` |
    | other | — | Stop — out of scope | route to the matching skill |
 
+   **`.gif` disambiguation** (listed in both Image and Video): route by the **target** format — still-image target (`png`, `webp`, …) → Step 2C; video target (`mp4`, `webm`, …) or no target given → Step 2D (treat as animated GIF).
+
 If user provided no file path, ask:
 ```
 Which file should I convert? Provide the path, and the target format if it's an image/video/audio file.

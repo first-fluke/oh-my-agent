@@ -152,10 +152,10 @@ For each candidate doc:
    [y] apply  [n] skip  [d] show diff  [s] show full proposal
    ```
 
-5. After each `[y]` or `[n]` decision, emit and verify the required patch approval decision:
+5. After each `[y]` or `[n]` decision, emit and verify the required patch approval decision. Substitute the actual outcome and doc path — do not emit the literal template:
 
    ```bash
-   oma state:emit "decision.made" '{"subject":"docs.sync-patch-approval","decision":"Apply or skip the proposed documentation sync patch for this document.","rationale":"The user reviewed the proposed doc patch and made an explicit per-document decision."}'
+   oma state:emit "decision.made" '{"subject":"docs.sync-patch-approval","decision":"<applied|skipped>: <doc path>","rationale":"The user reviewed the proposed doc patch and chose to <apply|skip> it."}'
    oma state:verify --workflow docs --checkpoint sync-patch-approval
    ```
 

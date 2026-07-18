@@ -163,7 +163,7 @@ Generate only the files that are **relevant and discoverable** from the codebase
 
 ### `docs/plans/`
 
-**Structured plan artifacts (local working notes; add `docs/plans/` to the target repo's `.gitignore` if not already ignored).**
+**Structured plan artifacts (local working notes; add `docs/plans/` to the target repo's `.gitignore` if not already ignored). A file that committed docs must reference is promoted deliberately with `git add -f`.**
 
 Folder = type. Status field = lifecycle. Filenames use a 3-digit zero-padded sequential prefix per folder.
 
@@ -205,7 +205,7 @@ Generate only those relevant to the project:
 
 | File | When to Generate | Content |
 |------|-----------------|---------|
-| `DESIGN.md` | Project has UI/design system | Design system principles, component patterns, visual language |
+| `DESIGN.md` | Project has UI/design system | Design system principles, component patterns, visual language. If the `/design` workflow already maintains a root-level `DESIGN.md`, do NOT generate a second copy here — link to the root file instead |
 | `FRONTEND.md` | Project has frontend | Frontend architecture, rendering strategy, state management, routing |
 | `PLANS.md` | Always | Planning process conventions, how to write plans, template |
 | `PRODUCT-SENSE.md` | User-facing product | Product thinking, user mental models, prioritization framework |

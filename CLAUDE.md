@@ -37,7 +37,7 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 |----------|------|-------------|
 | orchestrate | `orchestrate.md` | Parallel subagents + Review Loop |
 | work | `work.md` | Step-by-step with remediation loop |
-| ultrawork | `ultrawork.md` | 5-Phase Gate Loop (11 reviews) |
+| ultrawork | `ultrawork.md` | 5-Phase Gate Loop (12 reviews) |
 | ralph | `ralph.md` | Persistent loop wrapping ultrawork with an independent judge |
 | plan | `plan.md` | PM task breakdown |
 | brainstorm | `brainstorm.md` | Design-first ideation |
@@ -54,7 +54,7 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 | video | `video.md` | Brief → script → assets → render-spec → Remotion (oma-video) |
 | schedule | `schedule.md` | Register & manage time-based agent jobs via `oma schedule:*` |
 
-(`tools` and `stack-set` are slash-invoked utilities, and `schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs); all are intentionally excluded from keyword detection.)
+(`tools` and `stack-set` are slash-invoked utilities, `schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs), and `convert` is slash-invoked to avoid false positives on "convert this code" phrasing; all are intentionally excluded from keyword detection.)
 
 To execute: read and follow `.agents/workflows/{name}.md` step by step.
 

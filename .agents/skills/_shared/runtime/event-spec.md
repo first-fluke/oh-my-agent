@@ -195,6 +195,8 @@ Optional payload fields:
 - `alternatives`
 - `evidence`
 
+> **Substitute real content.** Workflow files show `oma state:emit` commands as templates. When emitting, fill `decision` and `rationale` with the *actual* decision made in this run — the chosen option, the target file, the approve/skip outcome — never the literal template sentence. Only `subject` is a fixed key (the verifier matches on it); an audit log of identical boilerplate strings records that decisions happened but not what they were.
+
 ### `decision.missing`
 
 Records deterministic verifier failure for a required `decision.made` event.

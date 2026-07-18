@@ -33,9 +33,10 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
 5. Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
-6. Record session start using memory write tool:
+6. Generate a session ID (format: `YYYYMMDD-HHmmss`). It keys `plan-{sessionId}.json` and all session-scoped memory artifacts (`progress-*-{sessionId}.md`, `result-*-{sessionId}.md`).
+7. Record session start using memory write tool:
    - Create `session-work.md` in the memory base path
-   - Include: session start time, user request summary.
+   - Include: session start time, session ID, user request summary.
 
 ---
 
@@ -117,6 +118,8 @@ wait
 - Use MCP code analysis tools (`find_symbol` and `search_for_pattern`) to verify API contract alignment between agents
 - Use memory edit tool to record monitoring results
 
+> **Claude Code note**: the Agent tool returns results synchronously (or notifies on background completion), so no file polling is needed. Check status, files changed, and issues directly in each agent's return value.
+
 ---
 
 ## Step 6: Run QA Agent Review
@@ -150,14 +153,21 @@ If QA finds CRITICAL or HIGH issues:
    oma state:verify --workflow work --checkpoint remediation-choice
    ```
 3. If Quality Score is active: measure after fix, apply Keep/Discard rule, record in Experiment Ledger.
-4. Repeat Steps 5-7.
+4. Before each new fix cycle, apply the loop termination check:
+
+   > **Fix Loop termination conditions** (OR, whichever fires first wins):
+   > 1. Total fix cycles have reached the configured maximum (default: 5). Do not start another cycle; report the remaining CRITICAL/HIGH findings and stop.
+   > 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately. Save current results before stopping, then report early termination due to quota.
+   >
+   > If neither condition is met, repeat Steps 5-7.
+
 5. **If same issue persists after 2 fix attempts**: Activate **Exploration Loop** (load `exploration-loop.md` per `context-loading.md`):
    - Generate 2-3 alternative approaches via Exploration Decision template
    - Re-spawn the same agent type with different hypothesis prompts (separate workspaces)
    - QA scores each result
    - Best result adopted, others discarded
    - All experiments recorded in Experiment Ledger
-6. Continue until all critical issues are resolved.
+6. Continue until all critical issues are resolved or a termination condition fires.
 7. Use memory write tool to record final results.
 8. If Quality Score was measured: generate Experiment Ledger summary and auto-generate lessons from discarded experiments.
 

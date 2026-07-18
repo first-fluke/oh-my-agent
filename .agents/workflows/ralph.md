@@ -98,7 +98,7 @@ oma state:verify --workflow ralph --checkpoint exec-delegated
 Delegate to the ultrawork workflow:
 
 1. Read and follow `.agents/workflows/ultrawork.md` step by step.
-2. Pass the prepared input as the task description.
+2. Pass the prepared input as the task description, **and pass this ralph run's `sessionId` as ultrawork's session id**. Ultrawork must save `plan-{sessionId}.json` and all `result-*-{sessionId}.md` artifacts under ralph's id — otherwise the Step 1.3 verifier (`oma ralph:verify --session {sessionId}`) cannot match them.
 3. Ultrawork handles all vendor-specific agent spawning internally.
 4. Wait for ultrawork to complete all 5 phases (PLAN, IMPL, VERIFY, REFINE, SHIP).
 5. **Do NOT abridge ultrawork.** If you believe the environment (subagent instability, cost, time) warrants reducing fan-out or collapsing phases, STOP and ask the user first. Single-judgment substitution of ultrawork's structure is forbidden — see the Anti-Circumvention gate in Step 1.3.
@@ -141,7 +141,7 @@ oma ralph:verify --json --session {sessionId} --newer-than {iteration_start_iso}
 ### Step 1.4: Record EXEC Completion
 
 1. Increment `current_iteration`
-2. Use memory edit tool to record iteration start in `session-ralph-{sessionId}.md`
+2. Use memory edit tool to record EXEC completion for iteration `{current_iteration}` in `session-ralph-{sessionId}.md`
 
 ---
 
