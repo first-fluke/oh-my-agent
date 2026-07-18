@@ -109,7 +109,7 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
 
 // turbo
 Break down the project into actionable tasks. Each task must have:
-- Assigned agent (backend/frontend/mobile/db/qa/debug/architecture/tf-infra/docs — see the agent mapping in `orchestrate.md`)
+- Assigned agent (backend/frontend/mobile/db/qa/debug/architecture/refactor/tf-infra/docs — see the agent mapping in `orchestrate.md`)
 - Title, acceptance criteria
 - Priority tier (1 = independent, ascending; lower runs first), dependencies
 

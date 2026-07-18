@@ -51,7 +51,7 @@ Intent vocabulary:
 ## Step 2: Matrix Navigation
 
 1. Based on (intent × layer × boundary × signal), identify relevant cells in `resources/matrix.md`
-2. Collect file references for each cell marked as covered (checkmark) or conditional (warning marker)
+2. Collect file references for each cell marked `PASS` (covered) or `PARTIAL` (conditional)
 3. Flag any N/A cells the user is asking about; redirect to an alternative dimension rather than producing a stub answer
 4. Record the active (layer, boundary, signal) triple for use in Step 6 output header
 
@@ -108,7 +108,7 @@ Dispatch based on intent. Use the table below as the primary routing map, then a
 
 ## Step 5: Validate Against Constraints
 
-1. Consult `resources/anti-patterns.md`: does the proposed approach violate any of the 18 items?
+1. Consult `resources/anti-patterns.md`: does the proposed approach violate any catalogued anti-pattern?
 2. Consult `resources/checklist.md`: will this pass Pre-prod and Prod gates?
 3. Run `resources/meta-observability.md` cardinality guardrail preview: flag any label dimension that risks unbounded growth
 4. If `--strict` flag is set → reject any semconv attribute in Development or Experimental stability tier; cite stable alternative

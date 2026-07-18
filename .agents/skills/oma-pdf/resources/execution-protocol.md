@@ -53,8 +53,12 @@ Escalate to hybrid mode only if tables are still wrong (typically scanned tables
 ### If the PDF is large (memory pressure or slow conversion)
 
 ```bash
-# Convert in page ranges, then concatenate outputs
-uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}" --pages "1-50"
+# Convert each page range into a distinct directory, then concatenate the files
+uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}/p1-50" --pages "1-50"
+uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}/p51-100" --pages "51-100"
+
+# Or append each range from stdout into one combined file
+uvx opendataloader-pdf "{input_path}" --format markdown --pages "1-50" --to-stdout >> "{output_path}"
 
 # Or parallelize per-page processing (experimental)
 uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}" --threads 4
@@ -65,7 +69,7 @@ uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_di
 - `--sanitize` — mask PII (emails, phone numbers, IPs, credit cards, URLs) for AI-ready data prep
 - `--detect-strikethrough` — mark struck-through text with `~~` (experimental)
 - `--markdown-page-separator "%page-number%"` — insert page markers between pages
-- Hybrid server extras: `--enrich-formula` (LaTeX formulas), `--enrich-picture-description` (AI chart/image descriptions)
+- Hybrid server extras: `--enrich-formula` (LaTeX formulas), `--enrich-picture-description` (AI chart/image descriptions). Both require client-side `--hybrid-mode full`; the default `auto` mode may keep pages on the local path and skip enrichment.
 
 ### If scanned/image-based PDF (requires hybrid server)
 ```bash
@@ -75,7 +79,7 @@ uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_di
 uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid --port 5002 --force-ocr --ocr-lang "{languages}"
 
 # Convert
-uvx opendataloader-pdf --hybrid docling-fast "{input_path}" --format markdown --output-dir "{output_dir}"
+uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full "{input_path}" --format markdown --output-dir "{output_dir}"
 ```
 
 ## Step 3: Lint & Format
@@ -119,5 +123,5 @@ Tell the user:
 | PDF password protected | Ask user for the password, then retry with `-p "{password}"` (`opendataloader-pdf --password`) |
 | Missing or broken tables | Retry with `--table-method cluster` or `--markdown-with-html` first; hybrid mode only for scanned tables |
 | Hybrid server not running | Guide user to start it, or fall back to standard mode with quality warning |
-| Out of memory on large PDF | Process in smaller page ranges with `--pages "1-50"`, `--pages "51-100"`, … and concatenate |
+| Out of memory on large PDF | Process each `--pages` range into a distinct output directory (or append `--to-stdout`) before concatenating; reusing one directory overwrites the same basename |
 | Network error (hybrid mode) | Check server port, retry, or fall back to standard mode |

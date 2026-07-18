@@ -1,6 +1,6 @@
 ---
 name: docs
-description: Documentation drift detection and sync via `oma-docs`. Verify mode finds broken refs in all repo markdown (default glob `**/*.md`), sync mode proposes patches for docs affected by a git diff, i18n mode surfaces stale translations, lint mode flags CJK style issues in translated docs.
+description: Documentation drift detection and sync via `oma-docs`. Verify mode finds broken refs in all repo markdown (default glob `**/*.md`), sync mode proposes patches for docs affected by a git diff, i18n mode surfaces stale translations, and lint mode checks CJK em-dash style plus wrong-language placeholders across all locales.
 disable-model-invocation: true
 ---
 
@@ -32,7 +32,7 @@ Inspect the user's request to select a mode:
 |------|----------|
 | `sync` | Prompt mentions `sync`, "동기화", "patch docs", "update docs after change", or supplies a git diff range (e.g. `HEAD~1..HEAD`, `main..feature`). |
 | `i18n` | Prompt mentions translation drift, stale/missing translations, "번역 드리프트", "translations out of date". |
-| `lint` | Prompt mentions translated-doc style lint, em-dash cleanup, CJK style anti-patterns in translations. |
+| `lint` | Prompt mentions translated-doc style lint, em-dash cleanup, CJK style anti-patterns, or wrong-language placeholders in translations. |
 | `verify` | Default. Use when the request is about checking, auditing, or validating docs. |
 
 If intent is ambiguous, ask once:
@@ -45,7 +45,7 @@ Capture optional arguments from the prompt:
 - **verify**: glob path (e.g. `docs/**/*.md`, `cli/README.md`), `--no-urls`, `--urls-sync`, `--report-file <path>`.
 - **sync**: git diff range (default: staged, fallback `HEAD~1..HEAD`).
 - **i18n**: `--min-severity <CRITICAL|HIGH|MEDIUM|LOW>` (default `MEDIUM`).
-- **lint**: `--locales <list>` (default `ko,ja,zh`).
+- **lint**: `--locales <list>` narrows only the CJK em-dash rule (default `ko,ja,zh`); wrong-language placeholder detection still scans every locale.
 
 ---
 

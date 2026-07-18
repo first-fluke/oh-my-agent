@@ -36,7 +36,7 @@ Use ` - ` (hyphen with spaces) instead of `—` or `–`. Em-dashes are the stro
 
 ## LAW 4 — No `##` headers in body
 
-For QUERY_TYPE pain/trend/discovery, body has no `##` or `###` headers. Structure: bold-lead-in paragraphs + a prose label `KEY PATTERNS from the research:` + numbered list. Framework sections (`## SWOT`, `## Porter's 5 Forces`, `## PESTEL`) are allowed when frameworks are active.
+For QUERY_TYPE pain/trend/discovery, body has no `##` or `###` headers except the renderer-owned `## Cluster Bank` section and its `### C{n}` cluster anchors. Structure: bold-lead-in paragraphs + a prose label `KEY PATTERNS from the research:` + numbered list. Framework sections (`## SWOT`, `## Porter's 5 Forces`, `## PESTEL`) are allowed when frameworks are active.
 
 For QUERY_TYPE competitor (COMPARISON): the following `##` headers are required and allowed:
 - `## Quick Verdict`
@@ -46,7 +46,7 @@ For QUERY_TYPE competitor (COMPARISON): the following `##` headers are required 
 
 Any other `##` is forbidden.
 
-**Self-check**: scan body lines for `^#{2,3}\s`. If header text is not in the allowed framework or COMPARISON list, flag for regenerate.
+**Self-check**: scan body lines for `^#{2,3}\s`. Allow the framework and COMPARISON lists plus `## Cluster Bank` and `### C{n}`; flag anything else for regenerate.
 
 ---
 

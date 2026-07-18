@@ -140,7 +140,7 @@ oma market detect-trap "$TOPIC" \
 - Populates local cache at `~/.cache/oma/market-research/{sha256-16hex}/result.json` (TTL 15m).
 
 ### Guardrails
-1. **detect-trap first**: never harvest without preflight; `--force` bypasses only in test mode.
+1. **detect-trap first**: never harvest without preflight. `--force` bypasses the trap gate unconditionally; use it only after the user explicitly reconfirms a refused topic.
 2. **Fetches stay inside harvest**: all network I/O happens in `oma market harvest`'s per-source fetchers; no direct platform HTTP from other stages or the agent.
 3. **Env-keyed sources auto-skip**: dropped with a `[harvest] <source> skipped:` stderr notice when the env key is absent; never a hard error. X/TikTok/Instagram/Perplexity fetchers are deferred stubs pending integration and land in `sources_failed` even when keyed.
 4. **LAW self-check mandatory**: render runs self-check before file write; `--no-self-check` for debug only.

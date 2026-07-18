@@ -120,6 +120,10 @@ Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
 - Include API contracts from `.agents/results/api-contracts/` (run artifacts) or `docs/plans/contracts/` (durable specs) if they exist
 - Load only task-relevant context (check codebase structure around affected domains)
 
+### If OpenCode and target vendor is OpenCode
+
+Spawn same-session subagents with the native `task` tool and `subagent_type: {agent-id}`. Do not use `oma agent:spawn` for same-session OpenCode tasks; that external fallback does not appear as a native child task in the active UI/TUI.
+
 ### If Codex CLI and target vendor is Codex
 
 Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
@@ -172,13 +176,16 @@ Record reset events in `task-board.md`:
 ## Step 5: Verify Completed Agents
 
 // turbo
-For each completed agent, run automated verification:
+For each completed agent, execute the complete review loop:
+
+1. **Mechanical self-check**: require the implementation agent to run applicable lint, typecheck, tests, and diff-scope checks. Feed failures back for correction, up to 3 cycles.
+2. **Automated verify**: run the command below only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`. For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record `SKIP (unsupported agent type)` and continue.
 
 ```
 bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
 ```
 
-- PASS (exit 0): accept result. If Quality Score is active, measure and record in Experiment Ledger.
+- PASS (exit 0) or documented unsupported-type SKIP: continue to cross-review.
 - FAIL (exit 1): Before re-spawning, apply the Review Loop termination check:
 
   > **Review Loop termination conditions** (OR, whichever fires first wins):
@@ -193,6 +200,8 @@ bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
   3. Score each result with Quality Score (if available)
   4. Keep the highest-scoring approach, discard others
   5. Record all experiments in Experiment Ledger
+
+3. **QA cross-review**: spawn a QA agent with the completed agent's diff, acceptance criteria, mechanical-check evidence, and automated-verify result/SKIP reason. The QA agent returns PASS or FAIL with file-and-line findings. On FAIL, send the findings back to the implementation agent and restart at mechanical self-check. Allow at most 2 QA rejections and 5 total review-loop iterations; after either limit, report the review history and force-complete only with an explicit quality warning.
 
 ---
 
