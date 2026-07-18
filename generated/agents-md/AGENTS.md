@@ -63,7 +63,7 @@ Portable instruction file for AI coding agents. Generated from the
 | scm | `.agents/workflows/scm.md` | SCM workflow for Git operations (branching/merge/conflict/worktree) plus Conventional Commit execution. |
 | stack-set | `.agents/workflows/stack-set.md` | Auto-detect project tech stack and generate stack-specific references for domain skills |
 | tools | `.agents/workflows/tools.md` | Manage MCP tools with natural language commands to list, enable, and disable tools and tool groups |
-| ultrawork | `.agents/workflows/ultrawork.md` | Ultrawork - high-quality 5-phase development workflow with 11 review steps out of 17 |
+| ultrawork | `.agents/workflows/ultrawork.md` | Ultrawork - high-quality 5-phase development workflow with 12 review steps out of 17 |
 | video | `.agents/workflows/video.md` | Agent-native, key-optional video generation workflow that turns a brief into a finished MP4 — script → parallel asset generation (voice/visual/caption) → render-spec → Remotion compositor (MPT fallback) → QA loop → output + manifest |
 | work | `.agents/workflows/work.md` | Coordinate multiple agents for a complex multi-domain project using PM planning, parallel agent spawning, and QA review |
 
