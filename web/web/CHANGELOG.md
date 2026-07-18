@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.20.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.19.0...web-v3.20.0) (2026-07-18)
+
+
+### Features
+
+* **cli:** add docs/plans to managed gitignore patterns ([876d881](https://github.com/first-fluke/oh-my-agent/commit/876d881b0b241b37b5470b56fd1b2a43ba2a2645))
+
+
+### Documentation
+
+* **workflows:** align workflow specs with audit findings ([d75672e](https://github.com/first-fluke/oh-my-agent/commit/d75672eb531b7487f761da25406944857a0564e9))
+
 ## [3.19.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.18.3...web-v3.19.0) (2026-07-17)
 
 
