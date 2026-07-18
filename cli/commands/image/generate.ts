@@ -88,7 +88,7 @@ export async function runGenerate({
     }
   }
 
-  const providers = defaultRegistry().list();
+  const providers = defaultRegistry(config).list();
   const requested = resolveRequestedProviders(vendorFlag, providers);
   if (requested.length === 0) {
     console.error(color.red(msgs.unknownVendor(vendorFlag)));

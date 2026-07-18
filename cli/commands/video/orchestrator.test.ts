@@ -187,7 +187,7 @@ describe("VideoOrchestrator", () => {
     expect(result.manifest?.providers.visual).toContain("oma-image");
   });
 
-  it("surfaces guided capture protocol for demo mode without --capture", async () => {
+  it("stops with capture-required for demo mode without --capture", async () => {
     const config = await loadVideoConfig(tmp);
     const orchestrator = new VideoOrchestrator(
       config,
@@ -198,8 +198,9 @@ describe("VideoOrchestrator", () => {
       opts: { dryRun: true, mode: "demo" },
       cwd: tmp,
     });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(3);
     expect(result.manifest?.providers.capture).toBe("cap");
+    expect(result.error).toContain("Capture is performed by a human");
     expect(result.warnings.join("\n")).toContain(
       "Capture is performed by a human",
     );

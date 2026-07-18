@@ -30,16 +30,52 @@ const td = new TurndownService({
 td.use(tables);
 
 const files = process.argv.slice(2);
-if (files.length === 0) {
+if (import.meta.main && files.length === 0) {
   console.error("Usage: bun flatten-tables.ts <file.md> [<file.md>...]");
   process.exit(1);
 }
 
-// Non-greedy: a nested <table> inside another would be truncated at the first
-// </table>. kordoc emits nested tables as separate blocks, so this holds in
-// practice; see troubleshooting.md §4 if stray closing tags ever appear.
-const TABLE_BLOCK = /<table[\s\S]*?<\/table>/g;
 const PUA = /[\uE000-\uF8FF\u{F0000}-\u{FFFFD}\u{100000}-\u{10FFFD}]/gu;
+
+/**
+ * Replace balanced outermost table blocks. Nested tables are passed to the
+ * callback as part of their parent instead of being truncated at the first
+ * closing tag.
+ */
+export function replaceBalancedTables(
+  source: string,
+  replace: (tableHtml: string) => string,
+): string {
+  const tag = /<\/?table\b[^>]*>/gi;
+  let depth = 0;
+  let blockStart = -1;
+  let cursor = 0;
+  let output = "";
+
+  for (let match = tag.exec(source); match; match = tag.exec(source)) {
+    const closing = /^<\/table/i.test(match[0]);
+    if (!closing) {
+      if (depth === 0) {
+        blockStart = match.index;
+        output += source.slice(cursor, blockStart);
+      }
+      depth += 1;
+      continue;
+    }
+
+    if (depth === 0) continue;
+    depth -= 1;
+    if (depth === 0 && blockStart >= 0) {
+      const blockEnd = tag.lastIndex;
+      output += replace(source.slice(blockStart, blockEnd));
+      cursor = blockEnd;
+      blockStart = -1;
+    }
+  }
+
+  // Preserve malformed/unclosed input verbatim rather than dropping content.
+  return output + source.slice(blockStart >= 0 ? blockStart : cursor);
+}
 
 async function main(): Promise<void> {
   for (const path of files) {
@@ -55,7 +91,12 @@ async function main(): Promise<void> {
 
     let tableCount = 0;
     let keptCount = 0;
-    let out = src.replace(TABLE_BLOCK, (match: string) => {
+    let out = replaceBalancedTables(src, (match: string) => {
+      const nestedTableCount = (match.match(/<table\b/gi) ?? []).length;
+      if (nestedTableCount > 1) {
+        keptCount += 1;
+        return match;
+      }
       const converted = td.turndown(match).trim();
       // turndown-plugin-gfm only converts tables whose first row is <th>
       // (kordoc always emits one); anything else is kept as HTML — do not
@@ -89,7 +130,9 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err: unknown) => {
-  console.error("[flatten-tables]", err);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((err: unknown) => {
+    console.error("[flatten-tables]", err);
+    process.exit(1);
+  });
+}
