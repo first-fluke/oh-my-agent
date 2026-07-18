@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { replaceBalancedTables } from "../../.agents/skills/oma-hwp/resources/flatten-tables.js";
+import { replaceBalancedTables } from "../../.agents/skills/oma-hwp/resources/balanced-tables.js";
 
 describe("replaceBalancedTables", () => {
   it("passes a nested table as one balanced outer block", () => {
