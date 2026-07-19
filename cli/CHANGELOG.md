@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.23.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.23.0...cli-v10.23.1) (2026-07-19)
+
+
+### Documentation
+
+* **sns:** remove author name from titles ([7984c25](https://github.com/first-fluke/oh-my-agent/commit/7984c251a019fbaf76bcba90e1ea7d6bc96fd702))
+
 ## [10.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.22.0...cli-v10.23.0) (2026-07-19)
 
 
