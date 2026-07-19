@@ -29,6 +29,7 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 - Actually translating or restructuring docs → use `oma-translator` (`oma docs i18n` / `oma docs lint` only detect; they never edit translations).
 - Symbol-level semantic drift (function signature changes not reflected in prose) → v2 L3 mode.
 - CI-blocking enforcement → v2 block mode (v1 is warn-only).
+- Explaining a code change as an educational document → use `oma-explainer` (this skill detects drift; it does not author explainers).
 
 ### Expected inputs
 

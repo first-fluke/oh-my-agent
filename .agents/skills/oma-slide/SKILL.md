@@ -33,6 +33,7 @@ exportable to PDF, PNG, and PPTX.
 - Image generation alone → use oma-image directly
 - Brand/design-system definition → defer to oma-design
 - Deterministic CLI ops (validate/bundle/export) without generation → call `oma slide` CLI directly
+- Long-form scrolling code-change explainer document → use oma-explainer (deck is a fixed 1920×1080 stage)
 
 ### Expected inputs
 - Topic, title, or outline (text or markdown)
