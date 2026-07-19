@@ -152,6 +152,7 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-design** | Xây dựng hệ thống thiết kế với token, accessibility và responsive layout |
 | **oma-dev-workflow** | Tự động hóa CI/CD, release và các tác vụ monorepo |
 | **oma-docs** | Kiểm tra tài liệu có tham chiếu bị hỏng và đánh dấu những tài liệu bị ảnh hưởng bởi thay đổi code |
+| **oma-explainer** | Chuyển diff, PR hoặc nhánh thành tài liệu giải thích HTML tương tác độc lập kèm quiz |
 | **oma-frontend** | Xây dựng giao diện với React/Next.js, TypeScript, Tailwind CSS v4 và shadcn/ui |
 | **oma-hwp** | Chuyển đổi file HWP, HWPX và HWPML sang Markdown |
 | **oma-image** | Tạo ảnh qua nhiều nhà cung cấp AI cùng lúc |

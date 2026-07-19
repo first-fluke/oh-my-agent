@@ -152,6 +152,7 @@ O `oh-my-agent` mantém `.agents/` como única fonte de verdade (SSOT) e o proje
 | **oma-design** | Constroi design systems com tokens, acessibilidade e layouts responsivos |
 | **oma-dev-workflow** | Automatiza seu CI/CD, releases e tarefas de monorepo |
 | **oma-docs** | Verifica referencias quebradas na documentacao e sinaliza o que uma mudanca de codigo afetou |
+| **oma-explainer** | Converte um diff, PR ou branch em um explicador HTML interativo autônomo com quiz |
 | **oma-frontend** | Constroi sua UI com React/Next.js, TypeScript, Tailwind CSS v4 e shadcn/ui |
 | **oma-hwp** | Converte arquivos HWP, HWPX e HWPML para Markdown |
 | **oma-image** | Gera imagens por varios provedores de IA ao mesmo tempo |

@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Complete reference for all 19 oh-my-agent workflows, covering slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
+description: Complete reference for all 21 oh-my-agent workflows, covering slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
 ---
 
 # Workflows
 
 Workflows are structured multi-step processes triggered by slash commands or natural language keywords. They define how agents collaborate on tasks, from single-phase utilities to complex 5-phase quality gates.
 
-There are 19 workflows, 4 of which are persistent (they maintain state and cannot be accidentally interrupted).
+There are 21 workflows, 4 of which are persistent (they maintain state and cannot be accidentally interrupted).
 
 ---
 
@@ -459,6 +459,30 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ---
 
+### /schedule
+
+**Description:** Register and manage time-based agent jobs via the `oma schedule:*` commands. Jobs live in a global registry (`~/.agents/schedule/`) and fire through the OS-native scheduler (launchd on macOS, systemd user timers on Linux, schtasks on Windows, crontab as POSIX fallback), each run re-entering the harness via `oma agent:spawn`.
+
+**Trigger keywords:** None (slash-invoked workflow for `oma schedule:*` time-based jobs).
+
+**Steps:** Resolve intent (add / list / remove / sync) -> Parse the schedule (explicit `--cron`, or natural language via `--every`) -> Register with `oma schedule:add` (named-only env capture, files 0600) -> Verify with `oma schedule:list` (manifest × OS drift, grouped by project) -> Report the job id and next fire time.
+
+**When to use:** Recurring agent tasks — nightly recaps, scheduled scans, periodic housekeeping — that must fire even when no interactive session is open.
+
+---
+
+### /explain
+
+**Description:** Drive the `oma-explainer` skill end-to-end: turn a diff, PR, branch, or commit range into a self-contained interactive HTML explainer (Background / Intuition / Code / Quiz). Executes inline (no subagent spawning).
+
+**Trigger keywords:** None ("explain" is everyday vocabulary — keyword detection would false-positive on ordinary "explain this function" questions, so the workflow is slash-only).
+
+**Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explainer` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate the HTML per the document and HTML contracts -> Validate (grep checklist including a final-HTML secret scan, max 3 fix loops) -> Deliver (`open` warn-only, TL;DR + path).
+
+**Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (Asia/Seoul date; rerunning the same date + slug overwrites). See the [Code Explainer guide](../guide/code-explainer.md).
+
+---
+
 ## Skills vs. workflows
 
 | Aspect | Skills | Workflows |
@@ -546,10 +570,12 @@ If the input matches both a workflow trigger and an informational pattern, the i
 
 ### Excluded workflows
 
-The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/convert` simply ships no trigger keywords (the `oma-pdf` and `oma-hwp` skills carry their own keyword detection):
+The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/convert` simply ships no trigger keywords (the `oma-pdf` and `oma-hwp` skills carry their own keyword detection); `/schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs); `/explain` ships no trigger keywords because "explain" is everyday vocabulary and keyword detection would constantly false-positive:
 - `/tools`
 - `/stack-set`
 - `/convert`
+- `/schedule`
+- `/explain`
 
 ---
 

@@ -152,6 +152,7 @@ Wybierz preset i gotowe:
 | **oma-design** | Buduje design systemy z tokenami, dostępnością i responsywnymi layoutami |
 | **oma-dev-workflow** | Automatyzuje CI/CD, releasy i zadania w monorepo |
 | **oma-docs** | Sprawdza dokumentację pod kątem zepsutych referencji i wskazuje miejsca dotknięte zmianami w kodzie |
+| **oma-explainer** | Zamienia diff, PR lub gałąź w samodzielny interaktywny objaśniacz HTML z quizem |
 | **oma-frontend** | Buduje interfejs użytkownika z React/Next.js, TypeScript, Tailwind CSS v4 i shadcn/ui |
 | **oma-hwp** | Konwertuje pliki HWP, HWPX i HWPML do Markdown |
 | **oma-image** | Generuje obrazy równolegle przez kilku dostawców AI |

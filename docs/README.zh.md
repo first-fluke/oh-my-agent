@@ -152,6 +152,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-design** | 构建含 token、无障碍支持与响应式布局的设计系统 |
 | **oma-dev-workflow** | 自动化 CI/CD、发布流程与 monorepo 任务 |
 | **oma-docs** | 检查文档中的失效引用，并标出被代码变更波及的内容 |
+| **oma-explainer** | 将 diff/PR/分支转换为带测验的自包含交互式 HTML 讲解文档 |
 | **oma-frontend** | 用 React/Next.js、TypeScript、Tailwind CSS v4 与 shadcn/ui 构建 UI |
 | **oma-hwp** | 将 HWP、HWPX 和 HWPML 文件转换为 Markdown |
 | **oma-image** | 同时调用多家 AI 供应商生成图像 |
