@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.20.1](https://github.com/first-fluke/oh-my-agent/compare/web-v3.20.0...web-v3.20.1) (2026-07-19)
+
+
+### Documentation
+
+* add code-explainer guide and sync workflow references ([0fbafcd](https://github.com/first-fluke/oh-my-agent/commit/0fbafcdf124241ec5fc9259d32ea60bd8db39e6b))
+
 ## [3.20.0](https://github.com/first-fluke/oh-my-agent/compare/web-v3.19.0...web-v3.20.0) (2026-07-18)
 
 
