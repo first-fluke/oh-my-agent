@@ -49,4 +49,4 @@ CHARTER_CHECK:
 4. Every fix gets a regression test
 5. Search for similar patterns after fixing
 6. Document out-of-scope findings for other agents
-7. Never modify `.agents/` files
+7. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

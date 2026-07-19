@@ -39,7 +39,7 @@ CHARTER_CHECK:
 2. **Analyze**: Technical feasibility using codebase analysis
 3. **Contracts**: Define API contracts using template `.agents/skills/_shared/core/api-contracts/template.md`; save the generated contract to `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
 4. **Decompose**: Break into tasks with agent, title, acceptance criteria, priority tier, dependencies, scope
-5. **Output**: Save to `.agents/results/plan-{sessionId}.json`
+5. **Output**: Save to `.agents/results/plan-{sessionId}.json` (manual non-orchestrated runs: `plan.json`)
 
 ## Task Format
 
@@ -58,4 +58,4 @@ Each task must include:
 3. Minimize dependencies for maximum parallelism
 4. Security and testing are part of every task (not separate)
 5. Each task completable by a single agent
-6. Never modify `.agents/` files
+6. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

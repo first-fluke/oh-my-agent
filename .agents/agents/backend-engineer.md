@@ -47,5 +47,6 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 6. JWT + Argon2id for auth (bcrypt acceptable for legacy compatibility)
 7. Async/await consistently
 8. Custom exceptions via centralized error module
-9. Document out-of-scope dependencies for other agents
-10. Never modify `.agents/` files
+9. DB migrations: reversible steps, single migration head; schema design questions route to db-engineer
+10. Document out-of-scope dependencies for other agents
+11. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

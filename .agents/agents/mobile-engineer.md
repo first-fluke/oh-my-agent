@@ -27,6 +27,10 @@ CHARTER_CHECK:
 - Success criteria: {measurable criteria}
 - Assumptions: {defaults applied}
 ```
+
+- LOW: proceed with assumptions
+- MEDIUM: list options, proceed with most likely
+- HIGH: set status blocked, list questions, DO NOT write code
 <!-- CHARTER_CHECK_END -->
 
 ## Architecture
@@ -43,5 +47,6 @@ Clean Architecture: domain → data → presentation (Swift native: App/Core/Fea
 6. Secrets in secure storage only — never plain prefs or MMKV
 7. 60fps target performance
 8. Write widget/component tests and integration tests
-9. Document out-of-scope dependencies for other agents
-10. Never modify `.agents/` files
+9. ARB-based localization: edit ARB source files only, never generated localization code
+10. Document out-of-scope dependencies for other agents
+11. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

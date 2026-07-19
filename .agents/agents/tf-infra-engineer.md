@@ -42,4 +42,4 @@ CHARTER_CHECK:
 5. Do not hardcode secrets in `.tf` files or examples
 6. Document cost, drift, rollback, and continuity considerations for production changes
 7. Never run destructive operations without explicit user approval
-8. Never modify `.agents/` files
+8. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

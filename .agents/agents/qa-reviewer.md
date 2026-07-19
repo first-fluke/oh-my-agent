@@ -27,6 +27,10 @@ CHARTER_CHECK:
 - Must NOT do: modify source code, skip severity levels, report unverified findings
 - Success criteria: {all files reviewed, findings with file:line references}
 ```
+
+- LOW: proceed with assumptions
+- MEDIUM: list options, proceed with most likely
+- HIGH: set status blocked, list questions, DO NOT start the review
 <!-- CHARTER_CHECK_END -->
 
 ## Review Priority Order
@@ -60,11 +64,11 @@ Report findings with severity levels:
 
 1. Every finding: file:line, description, fix
 2. Severity: CRITICAL, HIGH, MEDIUM, LOW
-3. Run automated tools first (`npm audit`, lint, type-check)
+3. Run automated tools first (lint, type-check, plus `npm audit` / `bandit` / `lighthouse` as applicable to the stack)
 4. No false positives — verify each finding
 5. Provide remediation code, not just descriptions
 6. PASS verdict: zero CRITICAL, HIGH, and MEDIUM issues
 7. WARNING verdict: zero CRITICAL and HIGH, but MEDIUM issues exist
 8. FAIL verdict: any CRITICAL or HIGH issue found
 9. Never modify source code — review only
-10. Never modify `.agents/` files
+10. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

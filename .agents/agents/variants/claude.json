@@ -41,6 +41,9 @@
     "docs-curator": {
       "tools": "Read, Write, Edit, Bash, Grep, Glob",
       "maxTurns": 15
+    },
+    "research-explorer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch"
     }
   }
 }
