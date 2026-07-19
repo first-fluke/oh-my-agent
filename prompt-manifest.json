@@ -1,68 +1,68 @@
 {
   "name": "oh-my-agent",
   "version": "10.22.0",
-  "releaseDate": "2026-07-19T02:25:33.304Z",
+  "releaseDate": "2026-07-19T03:29:03.040Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
       "path": ".agents/agents/architecture-reviewer.md",
-      "sha256": "82ddc323f37a8c435aab22b07cefbbdbdc33db26b0512380cef973e7cd489b50",
-      "size": 2019
+      "sha256": "897ac69412b2d487ffa2c6e37b8ee71a64c4abaac3184b07817c583d652dfe47",
+      "size": 2121
     },
     {
       "path": ".agents/agents/backend-engineer.md",
-      "sha256": "1bf509ca9b9153e5449ccc20c0c3cb9224ee41de1b489b1a019fe9ea02ce591a",
-      "size": 1790
+      "sha256": "73f26a655a1390e1d92dd344824bf6ebd2b0bc1974ba76c204340d5e90e52e63",
+      "size": 1997
     },
     {
       "path": ".agents/agents/db-engineer.md",
-      "sha256": "f2cdb1f800658c4d17448099c269da8c05fcf406428629f6ac0fa37c85226f3d",
-      "size": 1446
+      "sha256": "97d0d405aa16fa9d4b96a87932eaed58460caa98d41b0a0cf55b01dcd441842b",
+      "size": 1975
     },
     {
       "path": ".agents/agents/debug-investigator.md",
-      "sha256": "4124f1e180a333eaa74c9a22111a82d51ccd180f21ee10530b62da1483462672",
-      "size": 1637
+      "sha256": "59160989db47bb61f9106aacfb8bfff5b37299343c30ea0abb54b3fd76a8771f",
+      "size": 1739
     },
     {
       "path": ".agents/agents/docs-curator.md",
-      "sha256": "d2ca4cbb3b5a96cb6dde993e048c153006d5c7f07d0a96af4cd1a27aeddc9bfd",
-      "size": 3913
+      "sha256": "cefbd76340331b6cb2d59d5488c66b53f9df721e4ec3bd5a1801baf761ed0dff",
+      "size": 3995
     },
     {
       "path": ".agents/agents/frontend-engineer.md",
-      "sha256": "03bae0d9cf14c61fca0cd870f34722ed68d63ac90234a0fc4244d0c8b5be2069",
-      "size": 1492
+      "sha256": "b094392f11c60bd23f372398acc2dcb091323fe8135023dda1465d4c6ac5b840",
+      "size": 1979
     },
     {
       "path": ".agents/agents/mobile-engineer.md",
-      "sha256": "6b9649301c573c7ec55671396406c6ceb27bebee31e53eca9c0b127ce7d232ca",
-      "size": 1606
+      "sha256": "9d0fedd208638b628392fcd1be8898244e8179cd8c09e1801b5f7e53f14cb376",
+      "size": 1942
     },
     {
       "path": ".agents/agents/pm-planner.md",
-      "sha256": "fc6d200dc5c7e77faed9c9dfc0ffc6ab346834b757dbbea3ab5a0fb0c37ad56c",
-      "size": 2165
+      "sha256": "e90f85c5834cfc3d9ab2a740abcf267155d77c5e8320b9eaa1e943f19a2d37b9",
+      "size": 2311
     },
     {
       "path": ".agents/agents/qa-reviewer.md",
-      "sha256": "f84f04d2827a50f27e2ffef6005a68c8caa46f46289ac47b934306f2a0d53d9e",
-      "size": 1957
+      "sha256": "f7406cc44fdfa2cdeffd6bad4dd882deb04be34e3b0de27fad26f466fb335bd6",
+      "size": 2267
     },
     {
       "path": ".agents/agents/refactor-engineer.md",
-      "sha256": "9413da2721130dd412f123f4593ce63e944ec4712338415bf301bd27a6ba36d4",
-      "size": 2861
+      "sha256": "b3f3076c662b540bdb1950477057bdba5b1be2f961cde570a0d8ef857f381d28",
+      "size": 2963
     },
     {
       "path": ".agents/agents/research-explorer.md",
-      "sha256": "378f44b465c1f4754399f703c6c1f20fcac47cacc80e8cf516467c0a071d5d62",
-      "size": 3165
+      "sha256": "4439997368104be65e5b10004d401b20633e32db17f1141bcd98373a9682281d",
+      "size": 3267
     },
     {
       "path": ".agents/agents/tf-infra-engineer.md",
-      "sha256": "6c6164bb149c928e1b8bec7a80f9f5d8c6dd515fc9156a99ca61874c4cd4ba04",
-      "size": 1788
+      "sha256": "7f8e5a76518f6c50696124a6a6fe73cf2a3857d651d606fb3c64f87235f9f7e1",
+      "size": 1890
     },
     {
       "path": ".agents/agents/variants/agent-variant.schema.json",
@@ -71,8 +71,8 @@
     },
     {
       "path": ".agents/agents/variants/claude.json",
-      "sha256": "f3af5bd268392da995bad9c17014726329649c547c666105ae9557314eda1ce9",
-      "size": 1089
+      "sha256": "88f23e7e7542b4c5cfd6a54698e6e4f97275fc9ed78f2dc30bc6010341b30f04",
+      "size": 1197
     },
     {
       "path": ".agents/agents/variants/codex.json",
@@ -88,11 +88,6 @@
       "path": ".agents/agents/variants/cursor.json",
       "sha256": "4bbafc6eac58357a0b3a3f5049362d06c86a9882ff2783cfc901221b7478fd90",
       "size": 1059
-    },
-    {
-      "path": ".agents/agents/variants/gemini.json",
-      "sha256": "7e71983a2171cbf924e97279cb9efa87b47a3690ee783840e6300f09b25f1f49",
-      "size": 700
     },
     {
       "path": ".agents/agents/variants/grok.json",
@@ -2191,6 +2186,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 436
+    "totalFiles": 435
   }
 }
