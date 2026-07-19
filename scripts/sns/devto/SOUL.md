@@ -1,4 +1,4 @@
-# dev.to Author Voice — gracefullight
+# dev.to Author Voice
 
 Style guide distilled from the author's existing dev.to posts. Inject this verbatim into the prompt when generating new posts so the voice stays consistent.
 

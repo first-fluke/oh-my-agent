@@ -1,4 +1,4 @@
-# Bluesky Announce Voice — gracefullight
+# Bluesky Announce Voice
 
 Style guide for the short Bluesky post that announces a new dev.to article.
 Inject this verbatim into the prompt so the voice stays consistent. This is a

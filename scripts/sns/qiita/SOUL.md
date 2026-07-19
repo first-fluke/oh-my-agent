@@ -1,4 +1,4 @@
-# Qiita Author Voice — gracefullight
+# Qiita Author Voice
 
 Style guide for oh-my-agent weekly updates on Qiita. The agent receives **raw git context** (commits, diff stat, changed files) and drafts a native Japanese post. A separate `REVIEW.md` pass polishes the first draft.
 

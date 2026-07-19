@@ -1,4 +1,4 @@
-# TabNews Author Voice — gracefullight (pt-BR)
+# TabNews Author Voice (pt-BR)
 
 Style guide for adapting oh-my-agent posts for TabNews, the Brazilian dev community. Inject verbatim into the translation prompt so the Portuguese voice stays consistent. This is a localization for a pt-BR audience, not a literal translation.
 
