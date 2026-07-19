@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.22.0",
-  "releaseDate": "2026-07-18T13:22:25.854Z",
+  "releaseDate": "2026-07-19T02:11:07.944Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -991,8 +991,23 @@
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
-      "sha256": "5ce4b881231e4c138c5de06ab130f7f69f0a91f0268446b413119426f8f2ed8d",
-      "size": 20687
+      "sha256": "6bc59428f92df1846d60514ec29d35bf84083a49f0b3fb3ce9bcc669c941b07f",
+      "size": 20824
+    },
+    {
+      "path": ".agents/skills/oma-explainer/SKILL.md",
+      "sha256": "2d1036148379f65fe77320e687c0e919dcc4710d86588cdefbd24e32559e1d43",
+      "size": 8952
+    },
+    {
+      "path": ".agents/skills/oma-explainer/resources/document-structure.md",
+      "sha256": "0dbf97ba948631ef170d854dcbe853d50723afb551bec7ceab7ff8a54473f7b9",
+      "size": 4372
+    },
+    {
+      "path": ".agents/skills/oma-explainer/resources/html-contract.md",
+      "sha256": "5b8eed81083db6fd02d4116c8a7b3b94de8250278654076cc020ced68182fd24",
+      "size": 6038
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
@@ -1781,8 +1796,8 @@
     },
     {
       "path": ".agents/skills/oma-slide/SKILL.md",
-      "sha256": "383867bae8227357b0bd70e3c85ba4ffc7009696799258485e3bfb5197bf5174",
-      "size": 17519
+      "sha256": "e7e7208dd4cef510b0b3467356273c7ccfb34f95f32822bbeb95b87cf149714d",
+      "size": 17629
     },
     {
       "path": ".agents/skills/oma-slide/resources/animation-patterns.md",
@@ -1896,8 +1911,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "bbc447465a12f98314458cb817e1b1b61b7191b0d80f3d9e98248af138bf906d",
-      "size": 25299
+      "sha256": "42da68b4f829bd87bd51cf2abc7d7732db13180c0bbeb86dd5312ed16dffed17",
+      "size": 25374
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -2090,6 +2105,11 @@
       "size": 8978
     },
     {
+      "path": ".agents/workflows/explain.md",
+      "sha256": "e9633141e2606e70973c4a6ff2a0b5438e5e5292500c95e3c7998f662360eb53",
+      "size": 4021
+    },
+    {
       "path": ".agents/workflows/orchestrate.md",
       "sha256": "e8a0db7f4a3b97bc66a1e4447ed6a6285a180356628408bca6f20b7ad07e3cf6",
       "size": 12156
@@ -2151,7 +2171,7 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "397c9c4cd904f538180009de40d49166bfa771305ee21a93af06be4f74226a2e",
+      "sha256": "ca497e2a8a6400534e551b5058b1fe4dd29454777876f777fa8cf3d1c5b17a95",
       "size": 31216
     },
     {
@@ -2169,8 +2189,8 @@
     "algorithm": "sha256"
   },
   "metadata": {
-    "skillCount": 32,
-    "workflowCount": 23,
-    "totalFiles": 432
+    "skillCount": 33,
+    "workflowCount": 24,
+    "totalFiles": 436
   }
 }
