@@ -506,6 +506,8 @@ describe("agent/spawn-status.ts", () => {
   });
 
   it("does not inject CODEX_HOME isolation env for codex fallback", async () => {
+    const originalCodexHome = process.env.CODEX_HOME;
+    delete process.env.CODEX_HOME;
     const CLI_CONFIG_YAML = [
       "active_vendor: codex",
       "vendors:",
@@ -542,11 +544,14 @@ describe("agent/spawn-status.ts", () => {
       expect.any(Array),
       expect.objectContaining({
         cwd: expect.stringMatching(/[\\/]workspace(?:[\\/]|$)/),
-        env: expect.not.objectContaining({
-          CODEX_HOME: expect.any(String),
-        }),
       }),
     );
+
+    const callArgs = vi.mocked(child_process.spawn).mock.calls[0]!;
+    expect(callArgs[2]?.env).not.toHaveProperty("CODEX_HOME");
+    if (originalCodexHome) {
+      process.env.CODEX_HOME = originalCodexHome;
+    }
   });
 
   it("uses Claude native agent dispatch when runtime and target are both claude", async () => {
