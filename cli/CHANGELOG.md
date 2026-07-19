@@ -1,5 +1,26 @@
 # Changelog
 
+## [10.23.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.22.0...cli-v10.23.0) (2026-07-19)
+
+
+### Features
+
+* **cli:** emit cli-scoped vendor docs and cover them in the drift gate ([6ec377d](https://github.com/first-fluke/oh-my-agent/commit/6ec377dfcdafb5afbbeea1fb7f4cc1580d81772a))
+* **cli:** register explain workflow across generated docs ([f25e770](https://github.com/first-fluke/oh-my-agent/commit/f25e77037d9b879ef4a82043828d5c170d9ff425))
+* **skills:** add oma-explainer skill and slash-only explain workflow ([4ded4ae](https://github.com/first-fluke/oh-my-agent/commit/4ded4ae8844d659f289b8b519132d3a97906af23))
+* **skills:** shuffle quiz options per page load and restrain em-dashes ([72d3a37](https://github.com/first-fluke/oh-my-agent/commit/72d3a37c0784736b384e74f7e7c1c04a85d63c04))
+
+
+### Bug Fixes
+
+* **agents:** resolve agent definition drift and stale gemini variant ([f61d361](https://github.com/first-fluke/oh-my-agent/commit/f61d361239a738b040fd3cf5bc6d5429a81f8197))
+* **cli:** route agy writes to the workspace and forward per-agent model ([9e51d16](https://github.com/first-fluke/oh-my-agent/commit/9e51d16d5b39a5c7e24d9ee32f1304fab184aff7))
+
+
+### Documentation
+
+* add code-explainer guide and sync workflow references ([0fbafcd](https://github.com/first-fluke/oh-my-agent/commit/0fbafcdf124241ec5fc9259d32ea60bd8db39e6b))
+
 ## [10.22.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.21.3...cli-v10.22.0) (2026-07-18)
 
 
