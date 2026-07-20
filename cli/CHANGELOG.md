@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.23.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.23.1...cli-v10.23.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **dispatch:** repair antigravity headless subagent spawns ([1ff3082](https://github.com/first-fluke/oh-my-agent/commit/1ff3082ff71d332af8ec1e0400160b893b76c82a))
+
 ## [10.23.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.23.0...cli-v10.23.1) (2026-07-19)
 
 
