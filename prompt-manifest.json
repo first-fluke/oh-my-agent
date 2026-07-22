@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "10.23.2",
-  "releaseDate": "2026-07-20T07:35:26.826Z",
+  "releaseDate": "2026-07-22T14:29:25.588Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -106,7 +106,7 @@
     },
     {
       "path": ".agents/config/defaults.yaml",
-      "sha256": "fa957f6b267dfa84f71d1f95da0eb52e0e20bd35de0e5167608f45046785d957",
+      "sha256": "1e956d7796327fbeb6ed9f12cf81a96da2ab86e7f71e47e4b18106ed3a41b2c9",
       "size": 6206
     },
     {
@@ -146,8 +146,8 @@
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "7d30118f06ce1077909bd23a9f721237510794bd92992872db2de03e6a12eae0",
-      "size": 10034
+      "sha256": "2c5d00734b06967df91ed89559e4721fbce9135a2bfee3bf9130bbba53335845",
+      "size": 10369
     },
     {
       "path": ".agents/hooks/core/inject-log.ts",
@@ -301,7 +301,7 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "67548a3ea4553beb560284bcaeff9d600cbd15fc39168df0fc0af4bc03927b5a",
+      "sha256": "5a7c3e3f284140fca99aaaaebbbe1fbeca0f5e60f12e297a2e9ebd8507c81604",
       "size": 13351
     },
     {
