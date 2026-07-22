@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.23.2...cli-v10.24.0) (2026-07-22)
+
+
+### Features
+
+* **antigravity:** update Gemini model references to 3.6 Flash and refine HUD ([20b3e0c](https://github.com/first-fluke/oh-my-agent/commit/20b3e0ce3489128eca71751a49d12dff8d6342fb))
+
 ## [10.23.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.23.1...cli-v10.23.2) (2026-07-20)
 
 
