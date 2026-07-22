@@ -176,12 +176,12 @@ model_preset: antigravity
 
 # Inline custom model slugs (optional; replaces the legacy models.yaml file).
 # `cli_model` must be the exact id the CLI itself accepts — for antigravity that
-# is an `agy models` display name, not a slug (`gemini-3.5-flash` is rejected).
+# is an `agy models` display name, not a slug (`gemini-3.6-flash` is rejected).
 # Example:
 # models:
 #   my-fast:
 #     cli: antigravity
-#     cli_model: "Gemini 3.5 Flash (Medium)"
+#     cli_model: "Gemini 3.6 Flash (Medium)"
 #     supports:
 #       native_dispatch_from: [antigravity]
 

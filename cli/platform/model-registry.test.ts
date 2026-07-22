@@ -18,7 +18,7 @@ describe("CORE_REGISTRY", () => {
     "openai/gpt-5.4-mini",
     "openai/gpt-5.3-codex",
     "antigravity/gemini-3.1-pro",
-    "antigravity/gemini-3.5-flash",
+    "antigravity/gemini-3.6-flash",
     "cursor/composer-2.5",
     "cursor/composer-2.5-fast",
     "cursor/composer-2",

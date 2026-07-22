@@ -71,19 +71,19 @@ runtime_profiles:
       explore:       { model: "openai/gpt-5.4-mini", effort: "low" }
 
   antigravity:
-    description: "Antigravity CLI (agy) — nominal Gemini 3.1 Pro for impl/architecture, Gemini 3.5 Flash for orchestration & explore (agy 1.0 has no --model flag; model is config-driven)"
+    description: "Antigravity CLI (agy) — nominal Gemini 3.1 Pro for impl/architecture, Gemini 3.6 Flash for orchestration & explore (agy 1.0 has no --model flag; model is config-driven)"
     agent_defaults:
-      orchestrator:  { model: "antigravity/gemini-3.5-flash" }
+      orchestrator:  { model: "antigravity/gemini-3.6-flash" }
       architecture:  { model: "antigravity/gemini-3.1-pro" }
       qa:            { model: "antigravity/gemini-3.1-pro" }
-      pm:            { model: "antigravity/gemini-3.5-flash" }
+      pm:            { model: "antigravity/gemini-3.6-flash" }
       backend:       { model: "antigravity/gemini-3.1-pro" }
       frontend:      { model: "antigravity/gemini-3.1-pro" }
       mobile:        { model: "antigravity/gemini-3.1-pro" }
       db:            { model: "antigravity/gemini-3.1-pro" }
       debug:         { model: "antigravity/gemini-3.1-pro" }
       tf-infra:      { model: "antigravity/gemini-3.1-pro" }
-      explore:       { model: "antigravity/gemini-3.5-flash" }
+      explore:       { model: "antigravity/gemini-3.6-flash" }
 
   cursor:
     description: "Cursor — Cursor Pro / Pro Student"

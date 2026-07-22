@@ -53,17 +53,24 @@ describe("hud.ts", () => {
 
     it("should shorten Gemini Flash display name (agy)", () => {
       const result = stripAnsi(
-        hud({ model: { display_name: "Gemini 3.5 Flash (High)" } }),
+        hud({ model: { display_name: "Gemini 3.6 Flash (High)" } }),
       );
-      expect(result).toContain("Gemini 3.5 Flash");
+      expect(result).toContain("Gemini 3.6 Flash");
       expect(result).not.toContain("(High)");
+    });
+
+    it("should shorten Gemini slug model id (agy)", () => {
+      const result = stripAnsi(
+        hud({ model: { id: "antigravity/gemini-3.6-flash" } }),
+      );
+      expect(result).toContain("Gemini 3.6 Flash");
     });
 
     it("should shorten Gemini Pro display name (agy)", () => {
       const result = stripAnsi(
-        hud({ model: { display_name: "Gemini 2.5 Pro" } }),
+        hud({ model: { display_name: "Gemini 3.1 Pro" } }),
       );
-      expect(result).toContain("Gemini 2.5 Pro");
+      expect(result).toContain("Gemini 3.1 Pro");
     });
 
     it("should fall back to model id", () => {

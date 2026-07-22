@@ -18,21 +18,21 @@ import { getModelSpec } from "./model-registry.js";
 export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
   antigravity: {
     description:
-      "Antigravity CLI (agy) — nominal Gemini 3.1 Pro for impl/architecture, Gemini 3.5 Flash for orchestration & explore (agy 1.0 has no `--model` flag, so the model is selected by agy's own config)",
+      "Antigravity CLI (agy) — nominal Gemini 3.1 Pro for impl/architecture, Gemini 3.6 Flash for orchestration & explore (agy 1.0 has no `--model` flag, so the model is selected by agy's own config)",
     agent_defaults: {
-      orchestrator: { model: "antigravity/gemini-3.5-flash" },
+      orchestrator: { model: "antigravity/gemini-3.6-flash" },
       architecture: { model: "antigravity/gemini-3.1-pro" },
       qa: { model: "antigravity/gemini-3.1-pro" },
-      pm: { model: "antigravity/gemini-3.5-flash" },
+      pm: { model: "antigravity/gemini-3.6-flash" },
       backend: { model: "antigravity/gemini-3.1-pro" },
       frontend: { model: "antigravity/gemini-3.1-pro" },
       mobile: { model: "antigravity/gemini-3.1-pro" },
       db: { model: "antigravity/gemini-3.1-pro" },
       debug: { model: "antigravity/gemini-3.1-pro" },
       refactor: { model: "antigravity/gemini-3.1-pro" },
-      docs: { model: "antigravity/gemini-3.5-flash" },
+      docs: { model: "antigravity/gemini-3.6-flash" },
       "tf-infra": { model: "antigravity/gemini-3.1-pro" },
-      explore: { model: "antigravity/gemini-3.5-flash" },
+      explore: { model: "antigravity/gemini-3.6-flash" },
     },
   },
 

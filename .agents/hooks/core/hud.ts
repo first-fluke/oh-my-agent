@@ -149,11 +149,20 @@ export function shortModel(model?: {
   // Claude: "Claude Opus 4.6 (1M context)" → "Opus 4.6"
   const claude = name.match(/(Opus|Sonnet|Haiku)[\s.]*([\d.]*)/i);
   if (claude) return `${claude[1]}${claude[2] ? ` ${claude[2]}` : ""}`;
-  // Gemini / agy: "Gemini 3.5 Flash (High)" → "Gemini 3.5 Flash"
+  // Gemini / agy: "Gemini 3.6 Flash (High)" → "Gemini 3.6 Flash"
   const gemini = name.match(
     /(Gemini)\s+([\d.]+)\s+(Pro|Flash|Ultra|Nano|Thinking)/i,
   );
   if (gemini) return `${gemini[1]} ${gemini[2]} ${gemini[3]}`;
+  // Gemini / agy slug: "antigravity/gemini-3.6-flash" → "Gemini 3.6 Flash"
+  const geminiSlug = name.match(
+    /gemini-([\d.]+)-(pro|flash|ultra|nano|thinking)/i,
+  );
+  if (geminiSlug) {
+    const capType =
+      geminiSlug[2].charAt(0).toUpperCase() + geminiSlug[2].slice(1);
+    return `Gemini ${geminiSlug[1]} ${capType}`;
+  }
   return name.split("/").pop()?.slice(0, 20) || "";
 }
 

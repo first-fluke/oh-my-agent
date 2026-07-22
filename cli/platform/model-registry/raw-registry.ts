@@ -205,10 +205,10 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
     } satisfies ModelSpec,
   ],
   [
-    "antigravity/gemini-3.5-flash",
+    "antigravity/gemini-3.6-flash",
     {
       cli: "antigravity",
-      cli_model: "Gemini 3.5 Flash (Medium)",
+      cli_model: "Gemini 3.6 Flash (Medium)",
       supports: {
         effort: { type: "granular", levels: ["low", "medium", "high"] },
         apply_patch: false,
