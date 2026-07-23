@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.25.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.25.0...cli-v10.25.1) (2026-07-23)
+
+
+### Refactoring
+
+* **scm:** unify commit-config.yaml and cm-config.yaml into oma-config.yaml ([265ee2a](https://github.com/first-fluke/oh-my-agent/commit/265ee2aa706f4b375a33337cd1840ee4dbfb5ca0))
+
 ## [10.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.24.0...cli-v10.25.0) (2026-07-23)
 
 
