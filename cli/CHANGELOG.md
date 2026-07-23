@@ -1,5 +1,12 @@
 # Changelog
 
+## [10.25.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.24.0...cli-v10.25.0) (2026-07-23)
+
+
+### Features
+
+* **explain:** add oma explain validate CLI command and enhance explainer contracts ([78c3863](https://github.com/first-fluke/oh-my-agent/commit/78c386303966d086fbb808b6705f3ad801ffc3fb))
+
 ## [10.24.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.23.2...cli-v10.24.0) (2026-07-22)
 
 
