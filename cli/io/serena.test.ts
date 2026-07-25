@@ -585,4 +585,168 @@ describe("parseProjectYmlLanguages", () => {
       parseProjectYmlLanguages('languages:\n\nproject_name: "test"\n'),
     ).toEqual([]);
   });
+
+  it("should read serena >=1.6.2's language_servers key", () => {
+    const yml = `language_servers:\n- typescript\n- bash\n\nproject_name: "t"\n`;
+    expect(parseProjectYmlLanguages(yml)).toEqual(["typescript", "bash"]);
+  });
+
+  it("should prefer language_servers when both keys are present", () => {
+    // serena promotes `languages` only when `language_servers` is ABSENT, so
+    // the legacy block is inert once both exist — reading it would mislead.
+    const yml = `languages:\n- dart\n\nlanguage_servers:\n- typescript\n`;
+    expect(parseProjectYmlLanguages(yml)).toEqual(["typescript"]);
+  });
+
+  it("should read a flow-style list", () => {
+    expect(parseProjectYmlLanguages('languages: ["python"]\n')).toEqual([
+      "python",
+    ]);
+  });
+
+  it("should return empty array for malformed yaml", () => {
+    expect(parseProjectYmlLanguages("languages:\n  - [unclosed\n")).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Schema drift, pruning, and byte fidelity
+// ---------------------------------------------------------------------------
+
+describe("reconcileSerenaLanguages — cross-version language keys", () => {
+  it("should edit language_servers in place", () => {
+    const yml = `language_servers:\n- typescript\n\nproject_name: "t"\n`;
+    const result = reconcileSerenaLanguages(yml, ["typescript", "python"]);
+    expect(result).toContain("language_servers:\n- typescript\n- python\n");
+  });
+
+  it("should mirror language_servers under the legacy key for serena 1.6.1", () => {
+    // 1.6.1 treats `languages` as required and dies with KeyError otherwise,
+    // so a file written by a newer serena must gain the legacy key back.
+    const yml = `language_servers:\n- typescript\n\nproject_name: "t"\n`;
+    const result = reconcileSerenaLanguages(yml, ["typescript"]) ?? "";
+    expect(result).toContain("languages:\n- typescript\n");
+    expect(result).toContain("language_servers:\n- typescript\n");
+  });
+
+  it("should keep both keys in sync rather than letting one rot", () => {
+    const yml = `languages:\n- dart\n\nlanguage_servers:\n- typescript\n`;
+    const result = reconcileSerenaLanguages(yml, ["typescript", "python"]);
+    expect(result).toContain("languages:\n- typescript\n- python\n");
+    expect(result).toContain("language_servers:\n- typescript\n- python\n");
+  });
+
+  it("should treat language_servers as authoritative when the two disagree", () => {
+    // A modern serena reads language_servers, so the stale legacy list must not
+    // resurrect languages the project dropped.
+    const yml = `languages:\n- dart\n- typescript\n\nlanguage_servers:\n- typescript\n`;
+    const result = reconcileSerenaLanguages(yml, ["typescript"]) ?? "";
+    expect(result).not.toContain("- dart");
+  });
+
+  it("should be idempotent once both keys agree", () => {
+    const yml = `languages:\n- typescript\n\nlanguage_servers:\n- typescript\n`;
+    expect(reconcileSerenaLanguages(yml, ["typescript"])).toBeNull();
+  });
+
+  it("should not add a mirror when only the legacy key exists", () => {
+    // `languages` alone is readable by every serena version — nothing to fix.
+    const yml = `languages:\n- typescript\n`;
+    expect(reconcileSerenaLanguages(yml, ["typescript"])).toBeNull();
+  });
+});
+
+describe("reconcileSerenaLanguages — pruning", () => {
+  const yml = `languages:\n- typescript\n- dart\n- bash\n\nproject_name: "t"\n`;
+
+  it("should drop a language the project no longer contains", () => {
+    const result = reconcileSerenaLanguages(yml, ["typescript"], {
+      prunable: new Set(["dart"]),
+    });
+    expect(parseProjectYmlLanguages(result ?? "")).toEqual([
+      "typescript",
+      "bash",
+    ]);
+  });
+
+  it("should keep entries oma cannot detect", () => {
+    // bash is never in the prunable set, so a hand-added entry survives.
+    const result = reconcileSerenaLanguages(yml, ["typescript"], {
+      prunable: new Set(["dart", "python"]),
+    });
+    expect(parseProjectYmlLanguages(result ?? "")).toContain("bash");
+  });
+
+  it("should remain additive when no prunable set is given", () => {
+    expect(reconcileSerenaLanguages(yml, ["typescript"])).toBeNull();
+  });
+
+  it("should never empty the list", () => {
+    const only = `languages:\n- dart\n`;
+    const result = reconcileSerenaLanguages(only, ["dart"], {
+      prunable: new Set(["dart"]),
+    });
+    expect(result).toBeNull();
+  });
+
+  it("should be idempotent once pruned", () => {
+    const once = reconcileSerenaLanguages(yml, ["typescript"], {
+      prunable: new Set(["dart"]),
+    });
+    const twice = reconcileSerenaLanguages(once ?? "", ["typescript"], {
+      prunable: new Set(["dart"]),
+    });
+    expect(twice).toBeNull();
+  });
+});
+
+describe("reconcileSerenaLanguages — source fidelity", () => {
+  it("should leave every byte outside the list untouched", () => {
+    // Long lines and blank-line placement must survive: re-serializing the
+    // whole document would re-fold and re-space unrelated content.
+    const yml = [
+      "# leading comment",
+      "",
+      'project_name: "t"',
+      "languages:",
+      "- typescript",
+      "- dart",
+      "",
+      "description: a very long description line that a yaml serializer would happily re-fold at eighty columns",
+      "ignored_paths: []",
+      "",
+    ].join("\n");
+
+    const result = reconcileSerenaLanguages(yml, ["typescript"], {
+      prunable: new Set(["dart"]),
+    });
+
+    expect(result).toBe(yml.replace("- typescript\n- dart", "- typescript"));
+  });
+
+  it("should carry an inline comment along with its entry", () => {
+    const yml = `languages:\n- typescript # pinned\n- dart\n`;
+    const result = reconcileSerenaLanguages(yml, ["typescript"], {
+      prunable: new Set(["dart"]),
+    });
+    expect(result).toContain("- typescript # pinned");
+  });
+
+  it("should not duplicate an entry that carries a comment", () => {
+    const yml = `languages:\n- typescript # pinned\n`;
+    expect(reconcileSerenaLanguages(yml, ["typescript"])).toBeNull();
+  });
+
+  it("should preserve flow style", () => {
+    const result = reconcileSerenaLanguages('languages: ["python"]\n', [
+      "python",
+      "typescript",
+    ]);
+    expect(result).toBe('languages: ["python", "typescript"]\n');
+  });
+
+  it("should leave malformed yaml alone", () => {
+    const broken = "languages:\n  - [unclosed\n";
+    expect(reconcileSerenaLanguages(broken, ["typescript"])).toBeNull();
+  });
 });

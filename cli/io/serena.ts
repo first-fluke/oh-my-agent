@@ -2,6 +2,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
+import { type Document, isMap, isScalar, isSeq, parseDocument } from "yaml";
+import {
+  detectableLanguages,
+  detectProjectLanguages,
+} from "./project-languages.js";
 
 /**
  * `uv` arguments that install the Serena binary the MCP transport invokes
@@ -182,6 +187,51 @@ export function inferSerenaLanguages(cwd: string): string[] {
   return [...languages];
 }
 
+/**
+ * Resolve the language servers this project should actually run.
+ *
+ * Skill-derived languages (`skillLanguages`) describe what the user might work
+ * on; the project's files describe what they DO work on. A repo with the
+ * `oma-mobile` skill installed but no `.dart` file has no use for a Dart LSP —
+ * yet it paid ~15 MB plus startup latency for one in every concurrent agent
+ * session, since every session spawns its own serena process tree.
+ *
+ * The two signals are NOT symmetric, and treating them as such backfires:
+ * detection alone would hand a Flutter repo kotlin, swift, and ruby servers off
+ * the back of its `android/`, `ios/`, and `Podfile` scaffolding — three LSPs
+ * nobody asked for, making memory worse. So:
+ *
+ *   - ADDING a language stays skill-driven, intersected with what is present.
+ *   - REMOVING is detection-driven, and only for languages oma can positively
+ *     detect. `prunable` therefore holds detectable-but-absent languages, which
+ *     leaves alone both hand-added entries oma has no detector for (bash) and
+ *     languages the project genuinely contains.
+ *
+ * When detection finds nothing (empty scaffold, unreadable tree) the
+ * skill-derived set passes through unfiltered and nothing is pruned — there is
+ * no evidence to act on.
+ */
+export function deriveSerenaLanguages(
+  cwd: string,
+  skillLanguages: string[],
+): { languages: string[]; prunable?: Set<string> } {
+  const detected = new Set(detectProjectLanguages(cwd));
+  if (detected.size === 0) return { languages: skillLanguages };
+
+  const present = skillLanguages.filter((lang) =>
+    detected.has(lang.toLowerCase()),
+  );
+  // No overlap at all means the skill set and the codebase disagree completely
+  // (e.g. skills not installed yet). Trust neither enough to prune.
+  if (present.length === 0) return { languages: skillLanguages };
+
+  const prunable = new Set(
+    [...detectableLanguages()].filter((lang) => !detected.has(lang)),
+  );
+
+  return { languages: present, prunable };
+}
+
 // ---------------------------------------------------------------------------
 // Language reconcile (additive merge — Track A, Task 10)
 // ---------------------------------------------------------------------------
@@ -210,66 +260,279 @@ const HEAVY_UNMAPPED_LANGUAGES: Record<string, string> = {
 };
 
 /**
- * Pure function — additive merge of skill-derived languages into existing YAML content.
+ * Serena renamed the project.yml language list from `languages` to
+ * `language_servers` in 1.6.2, and the two versions are mutually incompatible
+ * in one direction:
+ *
+ *   - ≥1.6.2 reads `language_servers`, and promotes `languages` only when the
+ *     new key is ABSENT (`ProjectConfig.RENAMED_FIELDS`). Either key works.
+ *   - 1.6.1 knows only `languages` and treats it as a required field, so a file
+ *     carrying just `language_servers` makes it die with `KeyError: 'languages'`
+ *     before the MCP server ever starts.
+ *
+ * That asymmetry bites on any machine running both — e.g. an IDE wired to
+ * `uvx --from git+…serena` (tracking main) beside oma's `uv tool install`
+ * (stable). The newer one rewrites project.yml under the new name and the older
+ * one can no longer start in that project at all.
+ *
+ * So oma keeps every language key that is present in sync, and repairs a file
+ * that has only the new key by adding the legacy one back. Both keys side by
+ * side is a configuration both versions accept. New files oma writes carry
+ * `languages` alone, which is the universally readable form.
+ */
+const LANGUAGE_KEYS = ["language_servers", "languages"] as const;
+
+/** The key whose list is authoritative, preferring serena's current name. */
+function languageKey(doc: Document): (typeof LANGUAGE_KEYS)[number] | null {
+  for (const key of LANGUAGE_KEYS) {
+    if (doc.has(key)) return key;
+  }
+  return null;
+}
+
+/** One entry of the language list, with any comment attached to it. */
+interface LanguageEntry {
+  /** Lower-cased value, for comparison. */
+  name: string;
+  /** Value exactly as written. */
+  raw: string;
+  /** Trailing `# …` comment content, without the marker. */
+  comment?: string;
+}
+
+/**
+ * The language list located in the source text.
+ *
+ * `start`/`end` are byte offsets of the sequence node itself, so a caller can
+ * splice a rebuilt list in without disturbing a single byte elsewhere in the
+ * file. Re-serializing the whole `Document` would be simpler but is not
+ * faithful: it re-folds long scalars and collapses blank lines, which rewrites
+ * hundreds of unrelated lines in a real project.yml.
+ */
+interface LanguageList {
+  /** Which of {@link LANGUAGE_KEYS} this list belongs to. */
+  key: (typeof LANGUAGE_KEYS)[number];
+  entries: LanguageEntry[];
+  /** Flow style (`["ts"]`) vs block style (`- ts`). */
+  flow: boolean;
+  /** Indentation of block-style entries, e.g. `""` or `"  "`. */
+  indent: string;
+  /** Offset of the key's own line, for inserting a sibling block. */
+  keyLineStart: number;
+  start: number;
+  end: number;
+}
+
+/**
+ * Every language list in the file, authoritative one first. A file may legally
+ * carry both keys — that is in fact the cross-version-safe shape — and oma
+ * keeps them in sync rather than picking one and letting the other rot.
+ */
+function readLanguageLists(yml: string): LanguageList[] {
+  const doc = parseDocument(yml);
+  if (doc.errors.length > 0) return [];
+
+  const primary = languageKey(doc);
+  if (!primary) return [];
+
+  const ordered = [
+    primary,
+    ...LANGUAGE_KEYS.filter((key) => key !== primary && doc.has(key)),
+  ];
+
+  const lists: LanguageList[] = [];
+  for (const key of ordered) {
+    const list = readLanguageList(yml, doc, key);
+    if (!list) return []; // any unreadable list disqualifies the whole rewrite
+    lists.push(list);
+  }
+  return lists;
+}
+
+/** Source offset of a top-level key's own token, e.g. the `l` of `languages:`. */
+function findKeyOffset(doc: Document, key: string): number | null {
+  if (!isMap(doc.contents)) return null;
+  for (const pair of doc.contents.items) {
+    const node = pair.key;
+    if (isScalar(node) && String(node.value) === key && node.range) {
+      return node.range[0];
+    }
+  }
+  return null;
+}
+
+function readLanguageList(
+  yml: string,
+  doc: Document,
+  key: (typeof LANGUAGE_KEYS)[number],
+): LanguageList | null {
+  const seq = doc.get(key, true);
+  if (!isSeq(seq) || !seq.range) return null;
+
+  const keyOffset = findKeyOffset(doc, key);
+  if (keyOffset === null) return null;
+  const keyLineStart = yml.lastIndexOf("\n", keyOffset - 1) + 1;
+
+  const entries: LanguageEntry[] = [];
+  let firstStart = seq.range[0];
+  let lastValueEnd = seq.range[1];
+
+  for (const [index, item] of seq.items.entries()) {
+    if (!isScalar(item) || !item.range) return null; // nested structure — hands off
+    // A comment on its own line above an entry lives outside the span this
+    // function reports, so rewriting the list could orphan or duplicate it.
+    // Rare enough (serena's own template has none) to simply decline.
+    if (item.commentBefore) return null;
+    const raw = String(item.value ?? "").trim();
+    if (!raw) return null;
+    entries.push({
+      name: raw.toLowerCase(),
+      raw,
+      comment: item.comment ?? undefined,
+    });
+    if (index === 0) firstStart = item.range[0];
+    lastValueEnd = item.range[1];
+  }
+
+  if (entries.length === 0) return null;
+
+  if (seq.flow) {
+    const [start, end] = seq.range;
+    return { key, entries, flow: true, indent: "", keyLineStart, start, end };
+  }
+
+  // Block style: span from the start of the first entry's LINE (so the `- `
+  // marker and indentation are inside the splice) to the end of the last
+  // entry's line (so a trailing `# comment` is replaced rather than
+  // duplicated). Deliberately excludes the sequence node's own trailing
+  // whitespace, which `range[1]` swallows along with any following blank line.
+  const start = yml.lastIndexOf("\n", firstStart - 1) + 1;
+  const indent = /^[ \t]*/.exec(yml.slice(start, firstStart))?.[0] ?? "";
+
+  const lineBreak = yml.indexOf("\n", lastValueEnd);
+  const end = lineBreak === -1 ? yml.length : lineBreak;
+
+  return { key, entries, flow: false, indent, keyLineStart, start, end };
+}
+
+/** Render a language list back to source text in its original style. */
+function renderLanguageList(
+  list: LanguageList,
+  entries: LanguageEntry[],
+): string {
+  if (list.flow) {
+    return `[${entries.map((entry) => JSON.stringify(entry.raw)).join(", ")}]`;
+  }
+  return entries
+    .map((entry) => {
+      const trailing = entry.comment ? ` #${entry.comment}` : "";
+      return `${list.indent}- ${entry.raw}${trailing}`;
+    })
+    .join("\n");
+}
+
+export interface ReconcileLanguagesOptions {
+  /**
+   * Languages that may be REMOVED when absent from `derivedLanguages` —
+   * populated by {@link deriveSerenaLanguages} with the languages oma can
+   * detect but did not find in the project. Everything else is preserved:
+   * entries oma has no detector for (bash, hand-added exotica) and entries the
+   * project genuinely contains. Omit it for additive-only reconcile.
+   */
+  prunable?: Set<string>;
+}
+
+/**
+ * Pure function — merge derived languages into existing YAML content.
  *
  * Rules:
- * - Parses the `languages:` block from existing yml content.
- * - Adds any skill-derived languages that are missing (case-insensitive comparison).
- * - NEVER removes existing languages (preserves intentional user choices).
+ * - The authoritative list is the one under serena's current key; every other
+ *   language key present is rewritten to match, and a file carrying only
+ *   `language_servers` gains a `languages` mirror so serena 1.6.1 can still
+ *   read it (see {@link LANGUAGE_KEYS}).
+ * - Adds derived languages that are missing (case-insensitive comparison).
+ * - Removes entries only when `opts.prunable` says oma can detect that language
+ *   and the project no longer contains it. Never empties the list.
  * - Returns the updated YAML string, or null when no change is needed (idempotent).
- * - Only touches the `languages:` list; all other file content is preserved verbatim.
+ * - Only the bytes of the language lists themselves are rewritten. Comments
+ *   attached to a surviving entry (`- typescript # pinned`) ride along with it.
  *
- * Blocking autogenerate: by always writing an explicit `languages:` list, oma ensures
- * serena's `ProjectConfig.autogenerate` (file scan) never fills in broadly. This function
- * preserves that invariant on reconcile — the list is always explicit and non-empty.
+ * Malformed YAML is left alone — better to skip a reconcile than to clobber a
+ * file the user is mid-edit on. serena reports the parse error itself.
+ *
+ * Blocking autogenerate: by always writing an explicit, non-empty list, oma
+ * ensures serena's `ProjectConfig.autogenerate` (broad file scan) never fires.
  */
 export function reconcileSerenaLanguages(
   existingYml: string,
   derivedLanguages: string[],
+  opts: ReconcileLanguagesOptions = {},
 ): string | null {
   if (derivedLanguages.length === 0) return null;
 
-  // Match the languages: block — captures the header line and all list items.
-  const blockMatch = existingYml.match(
-    /^(languages:\s*\n)((?:[ \t]*-[ \t]+\S[^\n]*\n?)*)/m,
-  );
+  const lists = readLanguageLists(existingYml);
+  const primary = lists[0];
 
-  if (!blockMatch) {
-    // No languages: block found — prepend one so autogenerate never fires.
-    const languagesBlock = `languages:\n${derivedLanguages.map((l) => `- ${l}`).join("\n")}\n`;
-    return `${languagesBlock}\n${existingYml}`;
+  if (!primary) {
+    // Unparseable file — don't touch it.
+    if (parseDocument(existingYml).errors.length > 0) return null;
+
+    // No usable list — prepend one so autogenerate never fires. The legacy key
+    // is accepted natively by serena 1.6.1 and promoted by ≥1.6.2.
+    const block = `languages:\n${derivedLanguages.map((l) => `- ${l}`).join("\n")}\n`;
+    return `${block}\n${existingYml}`;
   }
 
-  const header = blockMatch[1]; // "languages:\n"
-  const listRaw = blockMatch[2] ?? ""; // "- typescript\n- python\n"
-  const blockStart = blockMatch.index ?? 0;
-  const blockEnd = blockStart + blockMatch[0].length;
+  const derivedLower = new Set(derivedLanguages.map((l) => l.toLowerCase()));
+  const { prunable } = opts;
 
-  // Parse existing items (preserve original raw text — incl. inline comments —
-  // so the file is rewritten faithfully).
-  const existingItems: string[] = (
-    listRaw.match(/^[ \t]*-[ \t]+(\S[^\n]*)$/gm) ?? []
-  ).map((line) => line.replace(/^[ \t]*-[ \t]+/, "").trim());
-  // Dedup comparison strips inline YAML comments so `- typescript # note`
-  // matches the derived `typescript` and is not duplicated (QA F3).
-  const stripComment = (item: string) => item.replace(/\s+#.*$/, "").trim();
-  const existingLower = new Set(
-    existingItems.map((l) => stripComment(l).toLowerCase()),
-  );
+  const kept = primary.entries.filter((entry) => {
+    if (derivedLower.has(entry.name)) return true;
+    if (!prunable) return true; // additive-only mode
+    return !prunable.has(entry.name); // undetectable languages stay
+  });
 
-  // Only add languages not already present (case-insensitive)
-  const toAdd = derivedLanguages.filter(
-    (lang) => !existingLower.has(lang.toLowerCase()),
-  );
+  const keptNames = new Set(kept.map((entry) => entry.name));
+  const added: LanguageEntry[] = derivedLanguages
+    .filter((lang) => !keptNames.has(lang.toLowerCase()))
+    .map((lang) => ({ name: lang.toLowerCase(), raw: lang }));
 
-  if (toAdd.length === 0) return null; // already up-to-date
+  const next = [...kept, ...added];
+  if (next.length === 0) return null; // never empty the list
 
-  const newListItems = [...existingItems, ...toAdd];
-  const newBlock = `${header}${newListItems.map((l) => `- ${l}`).join("\n")}\n`;
+  // A file with only the new key is unreadable to serena 1.6.1, so mirror the
+  // list under the legacy name as well.
+  const needsLegacyMirror = !lists.some((list) => list.key === "languages");
 
-  return (
-    existingYml.slice(0, blockStart) + newBlock + existingYml.slice(blockEnd)
-  );
+  const primaryUnchanged =
+    kept.length === primary.entries.length && added.length === 0;
+  const mirrorsMatch = lists
+    .slice(1)
+    .every(
+      (list) =>
+        list.entries.length === next.length &&
+        list.entries.every((entry, i) => entry.name === next[i]?.name),
+    );
+  if (primaryUnchanged && mirrorsMatch && !needsLegacyMirror) return null;
+
+  // Splice back to front so earlier offsets stay valid.
+  let updated = existingYml;
+  for (const list of [...lists].sort((a, b) => b.start - a.start)) {
+    updated =
+      updated.slice(0, list.start) +
+      renderLanguageList(list, next) +
+      updated.slice(list.end);
+  }
+
+  if (needsLegacyMirror) {
+    const mirror = `languages:\n${next.map((entry) => `- ${entry.raw}`).join("\n")}\n`;
+    updated =
+      updated.slice(0, primary.keyLineStart) +
+      mirror +
+      updated.slice(primary.keyLineStart);
+  }
+
+  return updated === existingYml ? null : updated;
 }
 
 /**
@@ -280,13 +543,14 @@ export function reconcileSerenaLanguages(
 export function reconcileSerenaProjectConfig(
   cwd: string,
   derivedLanguages: string[],
+  opts: ReconcileLanguagesOptions = {},
 ): boolean {
   const projectYml = join(cwd, ".serena", "project.yml");
 
   if (!existsSync(projectYml)) return false;
 
   const existing = readFileSync(projectYml, "utf-8");
-  const updated = reconcileSerenaLanguages(existing, derivedLanguages);
+  const updated = reconcileSerenaLanguages(existing, derivedLanguages, opts);
 
   if (updated === null) return false;
 
@@ -337,18 +601,22 @@ export function advisoryHeavyLanguages(
 }
 
 /**
- * Parse the languages list from a .serena/project.yml content string.
- * Convenience helper for consumers (e.g. doctor command) that already hold the
- * file content and need the language list without re-reading the file.
+ * Parse the language list from a .serena/project.yml content string, reading
+ * whichever key the file uses (`language_servers` on serena ≥1.6.2, `languages`
+ * before it). Convenience helper for consumers (e.g. doctor command) that
+ * already hold the file content and need the list without re-reading the file.
  */
 export function parseProjectYmlLanguages(ymlContent: string): string[] {
-  const blockMatch = ymlContent.match(
-    /^languages:\s*\n((?:[ \t]*-[ \t]+\S[^\n]*\n?)*)/m,
-  );
-  if (!blockMatch) return [];
-  return ((blockMatch[1] ?? "").match(/^[ \t]*-[ \t]+(\S[^\n]*)$/gm) ?? []).map(
-    (line) => line.replace(/^[ \t]*-[ \t]+/, "").trim(),
-  );
+  const doc = parseDocument(ymlContent);
+  if (doc.errors.length > 0) return [];
+
+  const key = languageKey(doc);
+  const seq = key ? doc.get(key, true) : null;
+  if (!isSeq(seq)) return [];
+
+  return seq.items
+    .map((item) => (isScalar(item) ? String(item.value ?? "").trim() : ""))
+    .filter((name) => name.length > 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -436,13 +704,13 @@ ls_specific_settings: {}
 export function ensureSerenaProjectConfig(
   cwd: string,
   languages: string[],
+  opts: ReconcileLanguagesOptions = {},
 ): "created" | "reconciled" | "unchanged" {
   const serenaDir = join(cwd, ".serena");
   const projectYml = join(serenaDir, "project.yml");
 
   if (existsSync(projectYml)) {
-    // Additive reconcile: merge skill-derived languages into the existing file.
-    const changed = reconcileSerenaProjectConfig(cwd, languages);
+    const changed = reconcileSerenaProjectConfig(cwd, languages, opts);
     return changed ? "reconciled" : "unchanged";
   }
 
@@ -481,8 +749,9 @@ export function ensureSerenaProjectConfig(
 export function ensureSerenaProject(
   cwd: string,
   languages: string[],
+  opts: ReconcileLanguagesOptions = {},
 ): { configured: "created" | "reconciled" | "unchanged"; registered: boolean } {
-  const configured = ensureSerenaProjectConfig(cwd, languages);
+  const configured = ensureSerenaProjectConfig(cwd, languages, opts);
   const registered = ensureSerenaRegistered(cwd);
   return { configured, registered };
 }

@@ -182,6 +182,9 @@ additional_workspace_folders: []
 # When using multiple language servers, the first language server that supports a given file will be used for that file.
 # The first language server is the default language and the respective language server will be used as a fallback.
 # Note that when using the JetBrains backend, language servers are not used and this list is correspondingly ignored.
+languages:
+- typescript
+- bash
 language_servers:
 - typescript
 - bash
