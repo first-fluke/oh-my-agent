@@ -101,31 +101,6 @@ export interface SerenaMcpEntry {
 }
 
 /**
- * Absolute invocation of the running oma, for embedding in a vendor MCP config.
- *
- * Never a bare `oma`: MCP clients launched from a GUI often have a PATH that
- * does not include the user's shell bin dirs, and a serena entry that cannot be
- * spawned fails with an opaque `-32001` timeout. Both halves are absolute, and
- * every `oma link` / `oma update` rewrites the entry, so it self-heals if oma
- * later moves.
- */
-export function omaExecutableInvocation(): { command: string; args: string[] } {
-  const script = process.argv[1];
-
-  // Only trust argv[1] when it actually looks like an oma entrypoint. Under a
-  // test runner it is the worker script, and under `bunx` it is a temp cache
-  // path that gets swept — either would be baked into the user's config. Bare
-  // `oma` is the safer answer in those cases.
-  const isOmaEntrypoint =
-    typeof script === "string" &&
-    /(^|[\\/])(oma|oh-my-agent|cli)(\.[cm]?[jt]s)?$/.test(script);
-
-  return isOmaEntrypoint
-    ? { command: process.execPath, args: [script] }
-    : { command: "oma", args: [] };
-}
-
-/**
  * The serena entry oma writes into a vendor's MCP config.
  *
  * Default is `bridge`: a small stdio proxy that connects the session to one
@@ -150,10 +125,16 @@ export function serenaMcpEntry(
     };
   }
 
-  const { command, args } = omaExecutableInvocation();
+  // Always the bare `oma` binary, never an absolute path. An earlier version
+  // baked `process.execPath` + the script path in — but several of these
+  // configs are COMMITTED files (Claude's `.mcp.json`, often
+  // `.codex/config.toml`), so a machine-specific `/Users/<name>/...mise...`
+  // path broke every other checkout of the repo and churned with every node
+  // version bump. Bare `oma` carries exactly the same PATH assumption as the
+  // bare `serena` these entries have always shipped with.
   return {
-    command,
-    args: [...args, "bridge", "--context", context],
+    command: "oma",
+    args: ["bridge", "--context", context],
     env: { SERENA_LOG_LEVEL: "info" },
   };
 }
@@ -197,19 +178,26 @@ export function isSerenaLauncherEntry(
 }
 
 /**
- * True when an oma-written entry's transport disagrees with the configured mode.
+ * True when an oma-written entry disagrees with what oma would write now:
+ * wrong transport for the configured mode, or a bridge entry that still
+ * launches oma by absolute path.
  *
  * Every vendor's "does this config need rewriting?" check has to consult this.
  * The entries left behind by earlier oma versions are otherwise perfectly
- * valid, so without it the switch to (or away from) the shared daemon would
- * never reach an install that already has serena working.
+ * valid, so without it the switch to (or away from) the shared daemon — and
+ * the repair of 11.0.0's machine-specific-path entries — would never reach an
+ * install that already has serena working.
  */
 export function hasStaleSerenaTransport(
   server: SerenaMcpServerLike | undefined,
   mode: "bridge" | "stdio",
 ): boolean {
   if (!isSerenaLauncherEntry(server)) return false;
-  return (mode === "bridge") !== isBridgeSerenaEntry(server);
+  if ((mode === "bridge") !== isBridgeSerenaEntry(server)) return true;
+  // 11.0.0 briefly wrote bridge entries as `<abs node> <abs script> bridge …`.
+  // Those are machine-specific (and committed, for Claude's .mcp.json), so any
+  // bridge entry not invoking the bare `oma` binary is due for a rewrite.
+  return isBridgeSerenaEntry(server) && server?.command !== "oma";
 }
 
 export function hasSerenaDashboardOpenDisabled(

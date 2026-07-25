@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  hasStaleSerenaTransport,
+  serenaMcpEntry,
   serenaStartMcpArgs,
   withSerenaContext,
   withSerenaProjectFromCwd,
@@ -146,5 +148,38 @@ describe("syncDevToolsMcp", () => {
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }
+  });
+});
+
+describe("serenaMcpEntry — machine portability", () => {
+  it("bridge entries invoke the bare oma binary, never an absolute path", () => {
+    // Regression for 11.0.0, which baked process.execPath + the script path
+    // into the entry. Claude's .mcp.json is a committed file, so that put
+    // /Users/<name>/... into version control and broke every other checkout.
+    const entry = serenaMcpEntry("claude-code", "bridge");
+    expect(entry.command).toBe("oma");
+    expect(entry.args).toEqual(["bridge", "--context", "claude-code"]);
+  });
+
+  it("stdio entries keep the bare serena binary", () => {
+    const entry = serenaMcpEntry("ide", "stdio");
+    expect(entry.command).toBe("serena");
+  });
+});
+
+describe("hasStaleSerenaTransport — absolute-path bridge repair", () => {
+  it("flags a 11.0.0 absolute-path bridge entry for rewrite", () => {
+    const contaminated = {
+      command:
+        "/Users/someone/.local/share/mise/installs/node/24.17.0/bin/node",
+      args: ["/Users/someone/.local/bin/oma", "bridge", "--context", "ide"],
+    };
+    expect(hasStaleSerenaTransport(contaminated, "bridge")).toBe(true);
+  });
+
+  it("accepts a bare-oma bridge entry in bridge mode", () => {
+    expect(
+      hasStaleSerenaTransport(serenaMcpEntry("ide", "bridge"), "bridge"),
+    ).toBe(false);
   });
 });

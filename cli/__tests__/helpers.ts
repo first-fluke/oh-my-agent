@@ -64,4 +64,13 @@ export function expectOmaSerenaEntry(
       `expected an oma-managed serena entry, got ${JSON.stringify(entry)}`,
     );
   }
+  // Guard against the 11.0.0 regression: bridge entries must invoke the bare
+  // `oma` binary. An absolute interpreter/script path is machine-specific and
+  // lands in committed config files.
+  const expectedCommand = isBridge ? "oma" : "serena";
+  if (entry.command !== expectedCommand) {
+    throw new Error(
+      `expected serena entry command "${expectedCommand}", got ${JSON.stringify(entry.command)}`,
+    );
+  }
 }
