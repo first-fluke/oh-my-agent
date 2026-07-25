@@ -4,13 +4,19 @@ import {
   type InstallMode,
   safeGetInstallMode,
 } from "../../platform/install-context.js";
+import {
+  loadDevToolsBrowsers,
+  serenaTransportMode,
+} from "../../utils/config.js";
 import { safeReadJson } from "../../utils/safe-json.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  hasStaleSerenaTransport,
   isLegacyUvxSerena,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
   withSerenaDashboardOpenDisabled,
 } from "../serena.js";
 import { KIMI_HOME_MISSING_REASON, kimiHome } from "./auth.js";
@@ -29,12 +35,8 @@ import { KIMI_HOME_MISSING_REASON, kimiHome } from "./auth.js";
  */
 export const RECOMMENDED_KIMI_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("ide"),
-    env: {
-      SERENA_LOG_LEVEL: "info",
-    },
+  get serena(): SerenaMcpEntry {
+    return serenaMcpEntry("ide", serenaTransportMode());
   },
 };
 
@@ -58,29 +60,47 @@ function hasKimiMcpTransport(
   return typeof server.command === "string" || typeof server.url === "string";
 }
 
-export function needsKimiMcpUpdate(raw: unknown): boolean {
+/**
+ * @param withChromeDevtools — whether chrome-devtools belongs in the config.
+ *   Browser tooling is opt-in (`mcp.devtools_browsers` in oma-config.yaml); it
+ *   costs processes in every concurrent agent session, so Kimi must not
+ *   re-add it behind the user's back.
+ */
+export function needsKimiMcpUpdate(
+  raw: unknown,
+  withChromeDevtools = false,
+): boolean {
   if (!isRecord(raw)) return true;
   const mcp = raw.mcpServers;
   if (!isRecord(mcp)) return true;
   const serena = mcp.serena as KimiMcpServer | undefined;
   if (!hasKimiMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
+  if (hasStaleSerenaTransport(serena, serenaTransportMode())) return true;
   if (!hasSerenaDashboardOpenDisabled(serena)) return true;
-  const chromeDevtools = mcp["chrome-devtools"] as KimiMcpServer | undefined;
-  if (!hasKimiMcpTransport(chromeDevtools)) return true;
+  if (withChromeDevtools) {
+    const chromeDevtools = mcp["chrome-devtools"] as KimiMcpServer | undefined;
+    if (!hasKimiMcpTransport(chromeDevtools)) return true;
+  }
   return false;
 }
 
-export function applyKimiMcp(raw: unknown): KimiMcpConfig {
+export function applyKimiMcp(
+  raw: unknown,
+  withChromeDevtools = false,
+): KimiMcpConfig {
   const base: KimiMcpConfig = isRecord(raw) ? (raw as KimiMcpConfig) : {};
   const currentMcp = isRecord(base.mcpServers) ? base.mcpServers : {};
-  base.mcpServers = {
+  const next: Record<string, KimiMcpServer> = {
     ...currentMcp,
-    "chrome-devtools":
-      (currentMcp["chrome-devtools"] as KimiMcpServer | undefined) ??
-      RECOMMENDED_KIMI_MCP["chrome-devtools"],
     serena: withSerenaDashboardOpenDisabled({ ...RECOMMENDED_KIMI_MCP.serena }),
   };
+  if (withChromeDevtools) {
+    next["chrome-devtools"] =
+      (currentMcp["chrome-devtools"] as KimiMcpServer | undefined) ??
+      RECOMMENDED_KIMI_MCP["chrome-devtools"];
+  }
+  base.mcpServers = next;
   return base;
 }
 
@@ -127,14 +147,18 @@ export function installKimiMcp(cwd: string): KimiMcpInstallResult {
     return { installed: false, reason: KIMI_HOME_MISSING_REASON };
   }
 
+  const withChromeDevtools = (loadDevToolsBrowsers(cwd) ?? []).includes(
+    "chrome",
+  );
+
   const mcpPath = kimiMcpConfigPath(cwd, mode);
   const current = safeReadJson<KimiMcpConfig>(mcpPath);
-  if (!needsKimiMcpUpdate(current)) {
+  if (!needsKimiMcpUpdate(current, withChromeDevtools)) {
     return { installed: true, path: mcpPath };
   }
 
   mkdirSync(dirname(mcpPath), { recursive: true });
-  const next = applyKimiMcp(current ?? {});
+  const next = applyKimiMcp(current ?? {}, withChromeDevtools);
   writeFileSync(mcpPath, `${JSON.stringify(next, null, 2)}\n`);
   return { installed: true, path: mcpPath };
 }

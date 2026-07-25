@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { SerenaLanguageAdvisory } from "../../io/serena.js";
 import {
   advisoryHeavyLanguages,
+  deriveSerenaLanguages,
   inferSerenaLanguages,
   parseProjectYmlLanguages,
 } from "../../io/serena.js";
@@ -22,6 +23,7 @@ import {
   runPs,
   scanSerenaLogs,
 } from "../../io/serena-reaper-runtime.js";
+import { daemonPidsWithLiveClients } from "../bridge/daemon.js";
 import type { SerenaReapDoctorCheck } from "./types.js";
 
 /**
@@ -51,9 +53,17 @@ export function collectSerenaReapCheck(cwd: string): SerenaReapDoctorCheck {
   const configContent = loadOmaConfigContent();
   const config = loadSerenaReaperConfigFromContent(configContent);
 
-  // 4. Compute reap targets (diagnostic — not acting on them)
+  // 4. Compute reap targets (diagnostic — not acting on them). Protected
+  // daemon pids are passed so the KEEP/REAP labels shown here match what an
+  // actual `oma serena reap` would do.
   const nowMs = Date.now();
-  const targets = computeReapTargets(roots, config, undefined, nowMs);
+  const targets = computeReapTargets(
+    roots,
+    config,
+    undefined,
+    nowMs,
+    daemonPidsWithLiveClients(),
+  );
 
   // 5. Aggregate RSS
   const totalLspRssMb = roots.reduce(
@@ -72,7 +82,12 @@ export function collectSerenaReapCheck(cwd: string): SerenaReapDoctorCheck {
     try {
       const ymlContent = readFileSync(projectYmlPath, "utf-8");
       const projectYmlLanguages = parseProjectYmlLanguages(ymlContent);
-      const derivedLanguages = inferSerenaLanguages(cwd);
+      // Match what `oma update` would derive, so doctor and update agree on
+      // which entries are justified: project files first, skills as fallback.
+      const { languages: derivedLanguages } = deriveSerenaLanguages(
+        cwd,
+        inferSerenaLanguages(cwd),
+      );
       languageAdvisories = advisoryHeavyLanguages(
         projectYmlLanguages,
         derivedLanguages,

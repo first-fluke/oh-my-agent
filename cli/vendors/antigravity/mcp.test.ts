@@ -10,6 +10,7 @@ import {
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import { antigravityMcpConfigPath, applyAntigravityMcpConfig } from "./mcp.js";
 
 const tmpRoots: string[] = [];
@@ -83,16 +84,9 @@ describe("applyAntigravityMcpConfig", () => {
     expect(out).toBe(join(root, ".agents", "mcp_config.json"));
 
     const written = JSON.parse(readFileSync(expectPath(out), "utf-8"));
-    expect(written.mcpServers.serena.command).toBe("serena");
-    expect(written.mcpServers.serena.args).toEqual([
-      "start-mcp-server",
-      "--context",
-      "antigravity",
-      "--open-web-dashboard",
-      "false",
-      "--project-from-cwd",
-    ]);
-    expect(written.mcpServers.serena.env).toEqual({ LOG: "info" });
+    // serena is rebuilt from oma's own builder rather than copied out of the
+    // SSOT, so Antigravity gets the same transport as every other vendor.
+    expectOmaSerenaEntry(written.mcpServers.serena, "antigravity");
   });
 
   // Regression (issue #578): the SSOT .agents/mcp.json is Claude Code's
@@ -124,9 +118,8 @@ describe("applyAntigravityMcpConfig", () => {
     const args: string[] = written.mcpServers.serena.args;
     expect(args[args.indexOf("--context") + 1]).toBe("antigravity");
     expect(args).not.toContain("claude-code");
-    // The derived config is also normalized to --project-from-cwd (never both).
-    expect(args).toContain("--project-from-cwd");
-    expect(args).not.toContain("--project");
+    // No --project-from-cwd assertion: the bridge form has no such flag. It
+    // resolves the project root from cwd itself and pins it on the daemon.
   });
 
   it("inserts --context antigravity when the SSOT serena entry omits it", () => {

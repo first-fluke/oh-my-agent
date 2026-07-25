@@ -8,6 +8,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import {
   applyKiroProjectMcp,
   KIRO_PROJECT_SETTINGS_PATH,
@@ -41,8 +42,9 @@ describe("kiro settings", () => {
     expect(parsed.mcpServers["chrome-devtools"]).toEqual(
       RECOMMENDED_KIRO_MCP["chrome-devtools"],
     );
-    expect(parsed.mcpServers.serena.command).toBe("serena");
-    expect(parsed.mcpServers.serena.args).toContain("--open-web-dashboard");
+    // No --open-web-dashboard assertion: the default bridge entry has no such
+    // flag to carry — the shared daemon it starts passes it itself.
+    expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
     expect(needsKiroMcpUpdate(root)).toBe(false);
   });
 
@@ -65,6 +67,6 @@ describe("kiro settings", () => {
     expect(parsed.mcpServers["chrome-devtools"]).toEqual({
       command: "custom-chrome-mcp",
     });
-    expect(parsed.mcpServers.serena.command).toBe("serena");
+    expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
   });
 });

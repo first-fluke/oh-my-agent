@@ -1,12 +1,13 @@
 import { spawn } from "node:child_process";
 import http, { type IncomingMessage } from "node:http";
 import https from "node:https";
+import { STARTUP_PROBE_TIMEOUT_MS } from "./config.js";
 import {
-  DEFAULT_MCP_URL,
-  STARTUP_CHECK_INTERVAL_MS,
-  STARTUP_PROBE_TIMEOUT_MS,
-  STARTUP_TIMEOUT_MS,
-} from "./config.js";
+  daemonKey,
+  detachClient,
+  ensureSerenaDaemon,
+  resolveProjectRoot,
+} from "./daemon.js";
 import { validateSerenaConfigs } from "./serena-config.js";
 import { parseSSEStream } from "./sse.js";
 
@@ -14,6 +15,8 @@ export { validateSerenaConfigs };
 
 type BridgeRuntimeListeners = {
   stdinData?: (chunk: string | Buffer) => void;
+  /** Also registered for stdin `end`/`close` — see cleanup wiring. */
+  stdinGone?: () => void;
   sigint?: () => void;
   sigterm?: () => void;
 };
@@ -24,6 +27,10 @@ function clearBridgeRuntimeListeners(): void {
   if (activeBridgeListeners.stdinData) {
     process.stdin.off("data", activeBridgeListeners.stdinData);
   }
+  if (activeBridgeListeners.stdinGone) {
+    process.stdin.off("end", activeBridgeListeners.stdinGone);
+    process.stdin.off("close", activeBridgeListeners.stdinGone);
+  }
   if (activeBridgeListeners.sigint) {
     process.off("SIGINT", activeBridgeListeners.sigint);
   }
@@ -33,10 +40,79 @@ function clearBridgeRuntimeListeners(): void {
   activeBridgeListeners = {};
 }
 
-export async function bridge(mcpUrlArg?: string) {
+export interface BridgeOptions {
+  /**
+   * Serena context for the daemon, which decides its tool set and prompts.
+   * Daemons are keyed by it, so vendors asking for different contexts do not
+   * have to share one.
+   */
+  context?: string;
+  /** Working directory the project root is resolved from. */
+  cwd?: string;
+}
+
+/**
+ * Run serena over stdio in this process, exactly as an unbridged MCP config
+ * would. The fallback for every path where a shared daemon cannot be reached:
+ * losing code intelligence entirely is a far worse outcome than losing the
+ * memory savings, and the failure would be invisible to the user mid-session.
+ */
+async function runStdioFallback(context: string): Promise<void> {
+  console.error("[Bridge] Falling back to a session-local serena (stdio).");
+
+  await new Promise<void>((done) => {
+    const child = spawn(
+      "serena",
+      [
+        "start-mcp-server",
+        "--context",
+        context,
+        "--project-from-cwd",
+        "--open-web-dashboard",
+        "false",
+      ],
+      { stdio: "inherit" },
+    );
+    child.on("error", (err: Error) => {
+      console.error(`[Bridge] serena is not runnable: ${err.message}`);
+      done();
+    });
+    child.on("exit", () => done());
+  });
+}
+
+export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
   clearBridgeRuntimeListeners();
 
-  const MCP_URL = mcpUrlArg || DEFAULT_MCP_URL;
+  const context = opts.context ?? "ide";
+  const cwd = opts.cwd ?? process.cwd();
+  const root = resolveProjectRoot(cwd);
+  /** Set once this proxy is counted as a client, so exit knows to detach. */
+  let attachedKey: string | null = null;
+
+  validateSerenaConfigs(root);
+
+  // An explicit URL (argument or env) means the caller manages the server;
+  // otherwise oma resolves the project's shared daemon and starts it on demand.
+  const explicitUrl = mcpUrlArg || process.env.OMA_BRIDGE_URL;
+  let MCP_URL: string;
+
+  if (explicitUrl) {
+    MCP_URL = explicitUrl;
+  } else {
+    const daemon = await ensureSerenaDaemon({ root, context });
+    if (!daemon) {
+      await runStdioFallback(context);
+      return;
+    }
+    console.error(
+      daemon.started
+        ? `[Bridge] Started shared serena for ${root} on port ${daemon.port}`
+        : `[Bridge] Reusing shared serena for ${root} on port ${daemon.port}`,
+    );
+    MCP_URL = daemon.url;
+    attachedKey = daemonKey(root, context);
+  }
 
   const url = new URL(MCP_URL);
   if (!url.hostname) {
@@ -47,7 +123,6 @@ export async function bridge(mcpUrlArg?: string) {
   const isHttps = url.protocol === "https:";
   const httpModule = isHttps ? https : http;
 
-  let serenaProcess: ReturnType<typeof spawn> | null = null;
   let isShuttingDown = false;
   let sessionId: string | null = null;
   let serverStreamActive = false;
@@ -83,83 +158,6 @@ export async function bridge(mcpUrlArg?: string) {
     }
 
     return false;
-  }
-
-  async function startServer(): Promise<void> {
-    const port = url.port || "12341";
-    const host = url.hostname;
-    if (!host) {
-      throw new Error(
-        "MCP URL must include a non-empty hostname (e.g. http://localhost:12341/mcp)",
-      );
-    }
-
-    console.error(`Starting Serena server on ${host}:${port}...`);
-
-    const args = [
-      "start-mcp-server",
-      "--transport",
-      "streamable-http",
-      "--host",
-      host,
-      "--port",
-      port,
-      "--context",
-      "ide",
-      "--open-web-dashboard",
-      "false",
-    ];
-
-    serenaProcess = spawn("serena", args, {
-      stdio: "pipe",
-      detached: false,
-    });
-    const serenaProcessEvents = serenaProcess as typeof serenaProcess & {
-      on: (
-        event: "error" | "exit",
-        listener: (...args: unknown[]) => void,
-      ) => void;
-    };
-
-    if (serenaProcess.stderr) {
-      serenaProcess.stderr.on("data", (data) => {
-        process.stderr.write(`[Serena] ${data}`);
-      });
-    }
-
-    if (serenaProcess.stdout) {
-      serenaProcess.stdout.on("data", () => {});
-    }
-
-    serenaProcessEvents.on("error", (err) => {
-      console.error("Failed to start Serena server:", err);
-      process.exit(1);
-    });
-
-    serenaProcessEvents.on("exit", (code, signal) => {
-      console.error(
-        `Serena server exited with code ${String(code)} signal ${String(signal)}`,
-      );
-      if (!isShuttingDown) {
-        process.exit(typeof code === "number" ? code : 1);
-      }
-    });
-
-    console.error("Waiting for Serena to be ready...");
-    const maxAttempts = Math.max(
-      1,
-      Math.ceil(STARTUP_TIMEOUT_MS / STARTUP_CHECK_INTERVAL_MS),
-    );
-    for (let i = 0; i < maxAttempts; i++) {
-      if (await checkServer()) {
-        console.error("Serena server is ready!");
-        return;
-      }
-      await new Promise((r) => setTimeout(r, STARTUP_CHECK_INTERVAL_MS));
-    }
-
-    console.error("Timed out waiting for Serena server to start.");
-    process.exit(1);
   }
 
   function postToServer(
@@ -270,12 +268,14 @@ export async function bridge(mcpUrlArg?: string) {
     req.end();
   }
 
-  validateSerenaConfigs();
-
-  const isRunning = await checkServer();
-  if (!isRunning) {
-    await startServer();
-  } else {
+  if (explicitUrl) {
+    // Caller-managed endpoint: connect, but never leave the session without
+    // serena if nothing is listening there.
+    if (!(await checkServer())) {
+      console.error(`[Bridge] No MCP server reachable at ${MCP_URL}.`);
+      await runStdioFallback(context);
+      return;
+    }
     console.error(`Connected to existing Serena server at ${MCP_URL}`);
   }
 
@@ -389,20 +389,29 @@ export async function bridge(mcpUrlArg?: string) {
   process.stdin.resume();
 
   const cleanup = () => {
+    // Detach, never kill: the daemon is shared, so tearing it down here would
+    // take serena out from under every other session on the project. Dropping
+    // to zero clients only starts the grace period — a session restarting
+    // moments later re-attaches to a still-warm daemon, and one that is truly
+    // abandoned is reclaimed by the next bridge to start.
     isShuttingDown = true;
+    if (attachedKey) detachClient(attachedKey);
     clearBridgeRuntimeListeners();
-    if (serenaProcess) {
-      console.error("Stopping Serena server...");
-      serenaProcess.kill("SIGTERM");
-    }
     process.exit(0);
   };
 
   activeBridgeListeners = {
     stdinData: handleStdinData,
+    stdinGone: cleanup,
     sigint: cleanup,
     sigterm: cleanup,
   };
+
+  // stdin closing is the normal way an MCP client goes away — it usually
+  // arrives without a signal, so detaching only on SIGINT/SIGTERM would leak
+  // this client into the registry until its pid was reused.
+  process.stdin.on("end", cleanup);
+  process.stdin.on("close", cleanup);
 
   process.on("SIGINT", cleanup);
   process.on("SIGTERM", cleanup);

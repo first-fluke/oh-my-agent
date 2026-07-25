@@ -753,28 +753,49 @@ oma auth:status --json
 
 ### bridge
 
-Bridge MCP stdio to Streamable HTTP transport.
+Proxy MCP stdio onto a shared per-project Serena server.
 
 ```
-oma bridge [url]
+oma bridge [url] [--context <name>]
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |:---------|:---------|:-----------|
-| `url` | No | The Streamable HTTP endpoint URL (e.g., `http://localhost:12341/mcp`) |
+| `url` | No | Connect to a caller-managed endpoint instead of resolving a shared daemon |
+| `--context` | No | Serena context for the daemon (default `ide`); daemons are keyed by it |
 
-**What it does:** Acts as a protocol bridge between MCP stdio transport (used by Antigravity IDE) and Streamable HTTP transport (used by Serena MCP server). This is required because Antigravity IDE does not support HTTP/SSE transports directly.
+**What it does:** This is what every vendor's serena MCP entry runs by default —
+you do not invoke it by hand. Serena's stdio transport gives each agent session
+its own Python process plus a full language-server stack, so the cost scales
+with the number of open sessions. The bridge collapses that to one server per
+project: it resolves the project root from the working directory, starts a
+`--project`-pinned Serena HTTP server if none is running, and proxies the
+session onto it.
+
+Pinning `--project` matters — a server started without it exposes the
+`activate_project` tool, letting any session swap the project out from under
+every other one.
 
 **Architecture:**
 ```
-Antigravity IDE <-- stdio --> oma bridge <-- HTTP --> Serena Server
+session A --stdio--> oma bridge --.
+                                   >-- HTTP --> one Serena server (+ LSPs)
+session B --stdio--> oma bridge --'
 ```
+
+**Lifecycle:** the first session starts the server, later ones reuse it, and
+each proxy registers itself as a client. When the last session detaches the
+server is kept warm for 10 minutes — a restart re-attaches — and is otherwise
+shut down by the next bridge to start. If the shared server cannot be reached,
+the proxy falls back to a session-local stdio serena.
+
+Opt out with `serena.mode: stdio` in `.agents/oma-config.yaml`.
 
 **Example:**
 ```bash
-# Bridge to local Serena server
+# Connect to a server you manage yourself
 oma bridge http://localhost:12341/mcp
 ```
 

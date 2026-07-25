@@ -1,8 +1,12 @@
+import { serenaTransportMode } from "../../utils/config.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  hasStaleSerenaTransport,
+  isBridgeSerenaEntry,
   isLegacyUvxSerena,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
 } from "../serena.js";
 
 /**
@@ -19,12 +23,10 @@ import {
  */
 
 export const RECOMMENDED_CLAUDE_MCP = {
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("claude-code"),
-    env: {
-      SERENA_LOG_LEVEL: "info",
-    },
+  get serena(): SerenaMcpEntry {
+    // A getter, not a frozen literal: the bridge form embeds the absolute path
+    // of the running oma, which differs per machine and per install.
+    return serenaMcpEntry("claude-code", serenaTransportMode());
   },
 };
 
@@ -49,7 +51,8 @@ function hasClaudeMcpTransport(
 }
 
 function hasStaleContext(server: ClaudeMcpServer | undefined): boolean {
-  if (server?.command !== "serena") return false;
+  if (!server) return false;
+  if (server.command !== "serena" && !isBridgeSerenaEntry(server)) return false;
   if (!Array.isArray(server.args)) return false;
   const idx = server.args.indexOf("--context");
   if (idx === -1) return true;
@@ -89,6 +92,7 @@ export function needsClaudeMcpUpdate(
   if (!hasClaudeMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
   if (hasStaleContext(serena)) return true;
+  if (hasStaleSerenaTransport(serena, serenaTransportMode())) return true;
   if (!hasSerenaDashboardOpenDisabled(serena)) return true;
   if (missingServerNames(mcp, ssotServers).length > 0) return true;
   return false;
@@ -111,7 +115,7 @@ export function applyClaudeMcp(
   for (const [name, def] of Object.entries(ssotServers ?? {})) {
     if (missing.has(name)) merged[name] = def;
   }
-  merged.serena = { ...RECOMMENDED_CLAUDE_MCP.serena };
+  merged.serena = { ...RECOMMENDED_CLAUDE_MCP.serena } as ClaudeMcpServer;
   base.mcpServers = merged;
   return base;
 }

@@ -108,6 +108,11 @@ export function serializeReportAsJson(report: DoctorReport): string {
       status: w.status,
       remediation: w.remediation ?? null,
     })),
+    serenaDaemons: {
+      daemons: report.serenaDaemons.daemons,
+      prunedCount: report.serenaDaemons.prunedCount,
+      issues: report.serenaDaemons.issues,
+    },
     serenaReap: {
       rootCount: report.serenaReap.roots.length,
       totalLspRssMb: report.serenaReap.totalLspRssMb,

@@ -6,9 +6,11 @@
  * sections (e.g. gemini `general`/`experimental`), and legacy migrations.
  */
 
+import { serenaTransportMode } from "../utils/config.js";
 import { isRecord } from "../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  hasStaleSerenaTransport,
   isLegacyUvxSerena,
   withSerenaDashboardOpenDisabled,
 } from "./serena.js";
@@ -59,6 +61,9 @@ export function needsRecommendedMcpUpdate(
   const serena = mcpServers?.serena;
   if (!hasMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
+  // Without this an install whose serena already works is judged current, so
+  // the transport switch would only ever reach fresh installs.
+  if (hasStaleSerenaTransport(serena, serenaTransportMode())) return true;
   if (!hasSerenaDashboardOpenDisabled(serena)) return true;
   return !hasMcpTransport(mcpServers?.["chrome-devtools"]);
 }
@@ -73,8 +78,11 @@ export function applyRecommendedMcpServers<T extends McpServerEntry>(
   recommended: { serena: T; "chrome-devtools": T },
 ): Record<string, T> {
   const currentSerena = mcpServers?.serena;
+  const keepCurrent =
+    hasMcpTransport(currentSerena) &&
+    !hasStaleSerenaTransport(currentSerena, serenaTransportMode());
   const nextSerena = withSerenaDashboardOpenDisabled(
-    hasMcpTransport(currentSerena)
+    keepCurrent
       ? currentSerena
       : ({ ...(currentSerena || {}), ...recommended.serena } as T),
   );

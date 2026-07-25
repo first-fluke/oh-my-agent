@@ -176,6 +176,9 @@ vi.mock("../../io/git-recommended.js", () => ({
 vi.mock("../../io/serena.js", () => ({
   ensureSerenaProject: miscState.ensureSerenaProject,
   resolveSerenaLanguages: miscState.resolveSerenaLanguages,
+  // Detection is exercised in io/serena.test.ts; here it passes the
+  // skill-derived set straight through.
+  deriveSerenaLanguages: (_cwd: string, languages: string[]) => ({ languages }),
   ensureSerenaBinary: miscState.ensureSerenaBinary,
   SERENA_INSTALL_HINT:
     "uv tool install -p 3.13 serena-agent@latest --prerelease=allow",

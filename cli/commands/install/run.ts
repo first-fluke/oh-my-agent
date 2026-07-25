@@ -4,6 +4,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
 import {
+  deriveSerenaLanguages,
   ensureSerenaBinary,
   ensureSerenaProject,
   resolveSerenaLanguages,
@@ -33,7 +34,10 @@ import {
   installWorkflows,
 } from "../../platform/skills-installer.js";
 import { promptUninstallCompetitors } from "../../utils/competitors.js";
-import { isTelemetryEnabled } from "../../utils/config.js";
+import {
+  isTelemetryEnabled,
+  loadDevToolsBrowsers,
+} from "../../utils/config.js";
 import {
   acquireLock,
   bindInstallLockRelease,
@@ -237,7 +241,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
     const vendors = await promptVendors(installRoot, nonInteractive);
 
-    const devToolsBrowsers: DevToolsBrowser[] = ["chrome"];
+    // Opt-in: a fresh install wires up no browser DevTools server. Each one
+    // costs processes in every concurrent agent session regardless of whether a
+    // browser is ever driven — see `mcp.devtools_browsers` in oma-config.yaml.
+    const devToolsBrowsers: DevToolsBrowser[] =
+      loadDevToolsBrowsers(installRoot) ?? [];
 
     const modelPreset = await promptModelPreset(
       installRoot,
@@ -401,13 +409,20 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
       // --- Serena Project Setup ---
       {
-        const serenaLangs = resolveSerenaLanguages(
-          selectedSkills,
-          variantSelections["oma-backend"],
+        // Detection from the project's own files wins; the skill-derived set
+        // is the fallback for an empty scaffold, where there is nothing to
+        // detect yet and pruning would be guesswork.
+        const { languages: serenaLangs, prunable } = deriveSerenaLanguages(
+          installRoot,
+          resolveSerenaLanguages(
+            selectedSkills,
+            variantSelections["oma-backend"],
+          ),
         );
         const { configured, registered } = ensureSerenaProject(
           installRoot,
           serenaLangs,
+          { prunable },
         );
         if (configured === "created") {
           p.log.success(

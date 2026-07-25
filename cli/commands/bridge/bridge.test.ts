@@ -139,6 +139,14 @@ function setupServerRunning() {
   );
 }
 
+/**
+ * Point the bridge at a fixed endpoint so these tests exercise the stdio↔HTTP
+ * proxy in isolation. Without it every call would go through per-project daemon
+ * discovery (registry, lock file, detached spawn), which is covered separately
+ * in daemon.test.ts.
+ */
+const PROXY_ONLY_URL = "http://localhost:12341/mcp";
+
 describe("bridge command", () => {
   let mockProcess: MockProcess;
   let mockReq: MockRequest;
@@ -195,59 +203,45 @@ describe("bridge command", () => {
     vi.useRealTimers();
   });
 
-  describe("server startup", () => {
-    it("should start server if checkServer fails initially", async () => {
-      let attempt = 0;
-
-      mockHttp.get.mockImplementation(
-        (_url: string | URL, cb?: (res: http.IncomingMessage) => void) => {
-          attempt++;
-          const isFirstAttempt = attempt <= 2;
-          const req = {
-            on: (event: string, handler: (err?: Error) => void) => {
-              if (event === "error" && isFirstAttempt) {
-                handler(new Error("fail"));
-              }
-            },
-            end: vi.fn(),
-            destroy: vi.fn(),
-            write: vi.fn(),
-            setTimeout: vi.fn(),
-          };
-
-          if (!isFirstAttempt && cb) {
-            cb({} as http.IncomingMessage);
-          }
-          return req;
-        },
-      );
-
-      const _bridgePromise = bridge();
-      await vi.advanceTimersByTimeAsync(2000);
-
-      expect(child_process.spawn).toHaveBeenCalledWith(
-        "serena",
-        expect.arrayContaining([
-          "start-mcp-server",
-          "--transport",
-          "streamable-http",
-        ]),
-        expect.anything(),
-      );
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Starting Serena server"),
-      );
-    });
-
-    it("should connect to existing server without starting new one", async () => {
+  describe("explicit endpoint", () => {
+    it("connects to a reachable server without spawning anything", async () => {
       setupServerRunning();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       expect(child_process.spawn).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("Connected to existing Serena server"),
+      );
+    });
+
+    it("falls back to a session-local serena when nothing is listening", async () => {
+      // Losing code intelligence for the whole session is a far worse outcome
+      // than losing the shared-daemon savings, so an unreachable endpoint must
+      // degrade to plain stdio rather than fail.
+      mockHttp.get.mockImplementation(
+        (_url: string | URL, _cb?: (res: http.IncomingMessage) => void) => ({
+          on: (event: string, handler: (err?: Error) => void) => {
+            if (event === "error") handler(new Error("ECONNREFUSED"));
+          },
+          end: vi.fn(),
+          destroy: vi.fn(),
+          write: vi.fn(),
+          setTimeout: vi.fn(),
+        }),
+      );
+
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(child_process.spawn).toHaveBeenCalledWith(
+        "serena",
+        expect.arrayContaining(["start-mcp-server", "--project-from-cwd"]),
+        expect.objectContaining({ stdio: "inherit" }),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Falling back to a session-local serena"),
       );
     });
   });
@@ -296,7 +290,7 @@ describe("bridge command", () => {
       const { triggerStdin, getPostCallback, getPostOptions } =
         setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       const initMsg = JSON.stringify({
@@ -335,7 +329,7 @@ describe("bridge command", () => {
     it("should send POST with correct Accept header", async () => {
       const { triggerStdin, getPostOptions } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -356,7 +350,7 @@ describe("bridge command", () => {
     it("should handle SSE response with CRLF line endings", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -388,7 +382,7 @@ describe("bridge command", () => {
     it("should handle SSE response with LF line endings", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -420,7 +414,7 @@ describe("bridge command", () => {
     it("should ignore SSE priming events with empty data", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -456,7 +450,7 @@ describe("bridge command", () => {
     it("should handle 202 Accepted and drain response", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -481,7 +475,7 @@ describe("bridge command", () => {
     it("should handle JSON response (non-SSE)", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -507,7 +501,7 @@ describe("bridge command", () => {
     it("should log error for invalid JSON from stdin", async () => {
       const { triggerStdin } = setupBridgeWithStdin();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin("not-valid-json");
@@ -557,7 +551,7 @@ describe("bridge command", () => {
     it("should open GET stream after successful initialize", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeAndInitialize();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       const requestCallsBefore = mockHttp.request.mock.calls.length;
@@ -601,7 +595,7 @@ describe("bridge command", () => {
     it("should not open duplicate GET streams (serverStreamActive guard)", async () => {
       const { triggerStdin, getPostCallback } = setupBridgeAndInitialize();
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       // First initialize
@@ -670,7 +664,7 @@ describe("bridge command", () => {
         },
       );
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -728,7 +722,7 @@ describe("bridge command", () => {
         },
       );
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -780,7 +774,7 @@ describe("bridge command", () => {
         },
       );
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -839,7 +833,7 @@ describe("bridge command", () => {
         },
       );
 
-      const _bridgePromise = bridge();
+      const _bridgePromise = bridge(PROXY_ONLY_URL);
       await vi.advanceTimersByTimeAsync(100);
 
       triggerStdin(
@@ -910,7 +904,7 @@ describe("bridge command", () => {
 
       let sseRes: ReturnType<typeof createMockRes> | null = null;
 
-      bridge().catch(() => {});
+      bridge(PROXY_ONLY_URL).catch(() => {});
 
       // Wait for bridge to set up, then send initialize
       setTimeout(() => {
@@ -1088,9 +1082,11 @@ describe("validateSerenaConfigs", () => {
     expect(mockFs.writeFileSync).not.toHaveBeenCalled();
   });
 
-  it("should skip and warn when a project directory does not exist on disk", () => {
+  it("should skip a project directory that no longer exists, silently", () => {
+    // serena_config.yml accumulates stale registrations (deleted checkouts,
+    // test temp dirs). Warning about each one buries real output in noise the
+    // user cannot act on.
     mockFs.existsSync.mockImplementation((path: string) => {
-      // global config exists; project dir itself does not
       if (n(path) === "/mock/home/.serena/serena_config.yml") return true;
       return false;
     });
@@ -1101,9 +1097,7 @@ describe("validateSerenaConfigs", () => {
     validateSerenaConfigs();
 
     expect(mockFs.writeFileSync).not.toHaveBeenCalled();
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Skipping non-existent project path"),
-    );
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
 
   it("should not modify project.yml if languages key already exists", () => {
@@ -1123,7 +1117,31 @@ describe("validateSerenaConfigs", () => {
     expect(mockFs.writeFileSync).not.toHaveBeenCalled();
   });
 
-  it("should add languages key if missing from project.yml", () => {
+  it("should mirror language_servers under the legacy key", () => {
+    // serena >=1.6.2 writes `language_servers`; 1.6.1 requires `languages` and
+    // dies with KeyError without it. Both keys side by side satisfy either one.
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockImplementation((path: string) => {
+      if (n(path) === "/mock/home/.serena/serena_config.yml") {
+        return "projects:\n  - /project1\n";
+      }
+      if (n(path) === "/project1/.serena/project.yml") {
+        return "language_servers:\n- typescript\n";
+      }
+      return "";
+    });
+
+    validateSerenaConfigs();
+
+    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+      expect.stringMatching(/[\\/]project1[\\/]\.serena[\\/]project\.yml$/),
+      expect.stringContaining("languages:\n- typescript\n"),
+    );
+  });
+
+  it("should not install a default language set into a config that has none", () => {
+    // An earlier version injected python + typescript + dart + terraform here,
+    // which starts four language servers per session in a single-language repo.
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockImplementation((path: string) => {
       if (n(path) === "/mock/home/.serena/serena_config.yml") {
@@ -1137,48 +1155,20 @@ describe("validateSerenaConfigs", () => {
 
     validateSerenaConfigs();
 
-    const projectYmlMatcher = expect.stringMatching(
-      /[\\/]project1[\\/]\.serena[\\/]project\.yml$/,
-    );
-    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      projectYmlMatcher,
-      expect.stringContaining("languages:"),
-    );
-    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      projectYmlMatcher,
-      expect.stringContaining("- python"),
-    );
-    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      projectYmlMatcher,
-      expect.stringContaining("- typescript"),
-    );
-    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      projectYmlMatcher,
-      expect.stringContaining("- dart"),
-    );
-    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      projectYmlMatcher,
-      expect.stringContaining("- terraform"),
-    );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Missing 'languages' key"),
-    );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Fixed"),
-    );
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
   });
 
-  it("should handle multiple projects", () => {
+  it("should repair only the projects that need it", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockImplementation((path: string) => {
       if (n(path) === "/mock/home/.serena/serena_config.yml") {
         return "projects:\n  - /project1\n  - /project2\n";
       }
       if (n(path) === "/project1/.serena/project.yml") {
-        return "project:\n  name: test1\n\nlanguages:\n  - python\n";
+        return "languages:\n- python\n";
       }
       if (n(path) === "/project2/.serena/project.yml") {
-        return "project:\n  name: test2\n\nstructure:\n  monorepo: true\n";
+        return "language_servers:\n- python\n";
       }
       return "";
     });

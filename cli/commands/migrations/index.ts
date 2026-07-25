@@ -27,6 +27,7 @@ import { migrateSerenaProjectFromCwd } from "./015-serena-project-from-cwd.js";
 import { migrateRemoveEvaluatorTuning } from "./016-remove-evaluator-tuning.js";
 import { migrateStateMemories } from "./017-state-memories.js";
 import { migrateUnifyScmConfig } from "./018-unify-scm-config.js";
+import { migrateMcpProcessCost } from "./019-mcp-process-cost.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -46,6 +47,7 @@ const migrations: Migration[] = [
   migrateRemoveEvaluatorTuning,
   migrateStateMemories,
   migrateUnifyScmConfig,
+  migrateMcpProcessCost,
 ];
 
 export function runMigrations(cwd: string): string[] {

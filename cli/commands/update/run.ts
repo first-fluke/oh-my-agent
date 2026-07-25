@@ -12,7 +12,11 @@ import pc from "picocolors";
 import { backupRoot } from "../../io/backup.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
-import { ensureSerenaProject, inferSerenaLanguages } from "../../io/serena.js";
+import {
+  deriveSerenaLanguages,
+  ensureSerenaProject,
+  inferSerenaLanguages,
+} from "../../io/serena.js";
 import { downloadAndExtract } from "../../io/tarball.js";
 import pkg from "../../package.json";
 import {
@@ -38,6 +42,7 @@ import {
 import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isTelemetryEnabled,
+  loadDevToolsBrowsers,
   loadOmaConfig,
   loadSerenaConfig,
 } from "../../utils/config.js";
@@ -51,6 +56,7 @@ import {
   DEAD_PID_GRACE_MS,
   lockPath,
 } from "../../utils/install-lock.js";
+import { syncDevToolsMcp } from "../../vendors/serena.js";
 import { link } from "../link/run.js";
 import { runMigrations } from "../migrations/index.js";
 import { resolveAutoUpdateCli } from "./auto-update-config.js";
@@ -331,10 +337,26 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
         }
 
-        // --- Serena Project Setup ---
+        // --- Browser DevTools MCP ---
+        // Only acts when the user has stated a preference. An unset key means
+        // "leave it as is": removing a server someone may be using is their
+        // call, not an update's side effect.
         {
-          const serenaLangs = inferSerenaLanguages(cwd);
-          ensureSerenaProject(cwd, serenaLangs);
+          const browsers = loadDevToolsBrowsers(cwd);
+          if (browsers) syncDevToolsMcp(cwd, browsers);
+        }
+
+        // --- Serena Project Setup ---
+        // Language servers follow the project's own files; the skill-derived
+        // set only fills in when detection comes up empty. Each open agent
+        // session spawns its own serena + LSP tree, so an unused language
+        // server costs its memory once per concurrent session.
+        {
+          const { languages, prunable } = deriveSerenaLanguages(
+            cwd,
+            inferSerenaLanguages(cwd),
+          );
+          ensureSerenaProject(cwd, languages, { prunable });
         }
 
         // --- Optional Serena Binary Upgrade ---

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import type { EffortLevel } from "../../platform/model-registry.js";
 import {
   applyCodexSettings,
@@ -81,7 +82,10 @@ describe("codex settings", () => {
       analytics: { enabled: false },
       feedback: { enabled: false },
     };
-    expect(needsCodexSettingsUpdate(settings)).toBe(false);
+    // An oma-written stdio entry is now stale: bridge is the default transport,
+    // and without flagging it the shared daemon would never reach installs that
+    // already had serena working.
+    expect(needsCodexSettingsUpdate(settings)).toBe(true);
   });
 
   it("requires update when analytics or feedback opt-outs are missing (default telemetry off)", () => {
@@ -120,7 +124,24 @@ describe("codex settings", () => {
       },
       features: { ...RECOMMENDED_CODEX_FEATURES },
     };
-    expect(needsCodexSettingsUpdate(settings, { telemetry: true })).toBe(false);
+    // Telemetry is satisfied, but the uvx serena entry still has to move onto
+    // the managed transport, so an update is still required.
+    expect(needsCodexSettingsUpdate(settings, { telemetry: true })).toBe(true);
+    expect(
+      needsCodexSettingsUpdate(
+        {
+          ...settings,
+          mcp_servers: {
+            ...settings.mcp_servers,
+            serena: {
+              ...RECOMMENDED_CODEX_MCP.serena,
+              startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
+            },
+          },
+        },
+        { telemetry: true },
+      ),
+    ).toBe(false);
   });
 
   it("flags stale settings when telemetry is opted in but analytics opt-out still present", () => {
@@ -273,7 +294,10 @@ describe("codex settings", () => {
     expect(needsCodexSettingsUpdate(settings)).toBe(true);
   });
 
-  it("preserves existing serena config when transport is present", () => {
+  it("migrates a uvx-launched serena onto the managed transport", () => {
+    // `uvx serena` is not customization, just another route to the same server,
+    // so it is in scope for the transport switch. Leaving it alone would keep
+    // that install paying for a full serena stack per session.
     const settings = {
       mcp_servers: {
         serena: {
@@ -285,9 +309,26 @@ describe("codex settings", () => {
     };
 
     const result = applyCodexSettings(settings);
+    expectOmaSerenaEntry(result.mcp_servers?.serena, "codex");
+  });
+
+  it("preserves a serena entry oma does not recognize", () => {
+    // A fork or wrapper script is genuine customization — oma has no idea what
+    // it does, so it must survive untouched.
+    const settings = {
+      mcp_servers: {
+        serena: {
+          command: "my-serena-wrapper",
+          args: ["--flag"],
+          startup_timeout_sec: 120,
+        },
+      },
+    };
+
+    const result = applyCodexSettings(settings);
     expect(result.mcp_servers?.serena).toEqual({
-      command: "uvx",
-      args: ["serena"],
+      command: "my-serena-wrapper",
+      args: ["--flag"],
       startup_timeout_sec: 120,
     });
   });

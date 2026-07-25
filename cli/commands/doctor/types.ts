@@ -99,6 +99,7 @@ export interface StateDoctorCheck {
 import type { SerenaLanguageAdvisory } from "../../io/serena.js";
 import type { SerenaReaperConfig } from "../../io/serena-reaper.js";
 import type { HookWrapperCheck } from "./hook-wrapper-check.js";
+import type { SerenaDaemonDoctorCheck } from "./serena-daemons.js";
 import type { SerenaRootSummary } from "./serena-reap.js";
 
 export interface SerenaReapDoctorCheck {
@@ -146,6 +147,8 @@ export interface DoctorReport {
   serenaBinary: CLICheck;
   agentMemory: AgentMemoryDoctorCheck;
   serenaReap: SerenaReapDoctorCheck;
+  /** Shared per-project serena daemons started by `oma bridge`. */
+  serenaDaemons: SerenaDaemonDoctorCheck;
   /** Recommended global git config (rerere.enabled, init.defaultBranch). */
   gitRecommended: GitRecommendedDoctorCheck;
   totalIssues: number;

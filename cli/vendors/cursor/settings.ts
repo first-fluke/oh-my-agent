@@ -1,13 +1,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { serenaTransportMode } from "../../utils/config.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
 } from "../serena.js";
 
 /** Global cursor-agent CLI config (`~/.cursor/cli-config.json`). */
@@ -76,12 +78,8 @@ export function disableCursorAgentAttribution(
 
 export const RECOMMENDED_CURSOR_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("ide"),
-    env: {
-      SERENA_LOG_LEVEL: "info",
-    },
+  get serena(): SerenaMcpEntry {
+    return serenaMcpEntry("ide", serenaTransportMode());
   },
 };
 

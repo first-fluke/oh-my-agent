@@ -458,14 +458,25 @@ export function computeReapTargets(
   config: SerenaReaperConfig,
   parentClaudeActivityMs?: Map<number, number>,
   nowMs: number = Date.now(),
+  protectedPids?: Set<number>,
 ): ReapTarget[] {
   if (roots.length === 0) return [];
 
   const graceWindowMs = config.graceSeconds * 1000;
 
+  // A protected root (a shared daemon with attached MCP clients) counts as
+  // active RIGHT NOW, whatever the log/mtime/cpu signals say — those signals
+  // cannot see a client that is simply between tool calls. Folding it into the
+  // activity value (rather than filtering the root out) keeps LRU semantics
+  // honest: protected daemons rank at the top and consume keep-warm slots, so
+  // "keep at most N stacks warm" still means N.
+  const activityMs = (root: SerenaRoot): number =>
+    protectedPids?.has(root.pid)
+      ? nowMs
+      : effectiveActivityMs(root, parentClaudeActivityMs);
+
   function withinGrace(root: SerenaRoot): boolean {
-    const eff = effectiveActivityMs(root, parentClaudeActivityMs);
-    return nowMs - eff < graceWindowMs;
+    return nowMs - activityMs(root) < graceWindowMs;
   }
 
   function projectedFreedRssMb(root: SerenaRoot): number {
@@ -473,11 +484,7 @@ export function computeReapTargets(
   }
 
   if (config.policy === "lru") {
-    const sorted = [...roots].sort(
-      (a, b) =>
-        effectiveActivityMs(b, parentClaudeActivityMs) -
-        effectiveActivityMs(a, parentClaudeActivityMs),
-    );
+    const sorted = [...roots].sort((a, b) => activityMs(b) - activityMs(a));
     const keepCount = Math.min(config.keepWarm, sorted.length);
     const candidates = sorted.slice(keepCount);
 
@@ -496,13 +503,11 @@ export function computeReapTargets(
     const idleThresholdMs = config.idleMinutes * 60 * 1000;
     return roots
       .filter((root) => {
-        const eff = effectiveActivityMs(root, parentClaudeActivityMs);
-        const idleMs = nowMs - eff;
+        const idleMs = nowMs - activityMs(root);
         return idleMs >= idleThresholdMs && !withinGrace(root);
       })
       .map((root): ReapTarget => {
-        const eff = effectiveActivityMs(root, parentClaudeActivityMs);
-        const idleMinutes = Math.floor((nowMs - eff) / 60000);
+        const idleMinutes = Math.floor((nowMs - activityMs(root)) / 60000);
         return {
           root,
           reason: `idle: ${idleMinutes}m idle (threshold: ${config.idleMinutes}m)`,

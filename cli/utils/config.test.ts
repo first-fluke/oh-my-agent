@@ -40,10 +40,12 @@ describe("loadSerenaConfig", () => {
     expect(loadSerenaConfig(dir).autoUpdate).toBe(true);
   });
 
-  it("defaults mode to stdio and autoUpdate to true with no config file", () => {
-    // No oma-config.yaml anywhere under the temp dir.
+  it("defaults mode to bridge and autoUpdate to true with no config file", () => {
+    // No oma-config.yaml anywhere under the temp dir. The shared per-project
+    // daemon is the default so it needs no setup from the user; `stdio` is the
+    // explicit opt-out.
     const result = loadSerenaConfig(dir);
-    expect(result.mode).toBe("stdio");
+    expect(result.mode).toBe("bridge");
     expect(result.autoUpdate).toBe(true);
   });
 });

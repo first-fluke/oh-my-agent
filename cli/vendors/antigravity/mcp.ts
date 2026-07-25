@@ -1,9 +1,11 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { serenaTransportMode } from "../../utils/config.js";
 import { safeReadJson } from "../../utils/safe-json.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import {
+  serenaMcpEntry,
   withSerenaContext,
   withSerenaDashboardOpenDisabled,
   withSerenaProjectFromCwd,
@@ -123,6 +125,15 @@ export function applyAntigravityMcpConfig(
   for (const [name, entry] of Object.entries(ssot.mcpServers)) {
     transformed[name] = transformForAgy(entry as Record<string, unknown>);
   }
+
+  // serena is rebuilt rather than copied. The SSOT is a committed file, so it
+  // can only carry the stdio form — the bridge entry embeds the absolute path
+  // of the running oma, which is machine-specific. Copying would quietly leave
+  // Antigravity as the one vendor still spawning a serena per session.
+  transformed.serena = serenaMcpEntry(
+    ANTIGRAVITY_SERENA_CONTEXT,
+    serenaTransportMode(installRoot),
+  );
 
   const targetPath = antigravityMcpConfigPath(installRoot, mode);
   const targetDir = dirname(targetPath);

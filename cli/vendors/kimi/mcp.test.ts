@@ -8,19 +8,33 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import {
   _resetInstallContext,
   setInstallContext,
 } from "../../platform/install-context.js";
+import { serenaMcpEntry } from "../serena.js";
 import { applyKimiMcp, installKimiMcp, needsKimiMcpUpdate } from "./mcp.js";
 
 describe("applyKimiMcp / needsKimiMcpUpdate", () => {
-  it("adds serena + chrome-devtools to an empty config", () => {
+  it("adds serena to an empty config", () => {
     const next = applyKimiMcp({});
-    expect(next.mcpServers?.serena?.command).toBe("serena");
-    expect(next.mcpServers?.serena?.args).toContain("--context");
-    expect(next.mcpServers?.serena?.args).toContain("ide");
-    expect(next.mcpServers?.["chrome-devtools"]?.command).toBe("npx");
+    expectOmaSerenaEntry(next.mcpServers?.serena, "ide");
+  });
+
+  it("leaves chrome-devtools out unless the browser is opted in", () => {
+    // Browser tooling costs processes in every concurrent agent session, so it
+    // is opt-in via `mcp.devtools_browsers` rather than always-on.
+    expect(applyKimiMcp({}).mcpServers?.["chrome-devtools"]).toBeUndefined();
+    expect(
+      applyKimiMcp({}, true).mcpServers?.["chrome-devtools"]?.command,
+    ).toBe("npx");
+  });
+
+  it("does not consider a missing chrome-devtools stale when opted out", () => {
+    const applied = applyKimiMcp({});
+    expect(needsKimiMcpUpdate(applied)).toBe(false);
+    expect(needsKimiMcpUpdate(applied, true)).toBe(true);
   });
 
   it("preserves a user's own MCP servers", () => {
@@ -36,12 +50,13 @@ describe("applyKimiMcp / needsKimiMcpUpdate", () => {
     expect(needsKimiMcpUpdate(applyKimiMcp({}))).toBe(false);
   });
 
-  it("disables the serena web dashboard", () => {
-    const next = applyKimiMcp({});
-    const args = next.mcpServers?.serena?.args ?? [];
-    const idx = args.indexOf("--open-web-dashboard");
+  it("disables the serena web dashboard in stdio form", () => {
+    // The bridge form has no dashboard flag to set — the shared daemon it
+    // starts passes --open-web-dashboard false itself.
+    const stdio = serenaMcpEntry("ide", "stdio");
+    const idx = stdio.args.indexOf("--open-web-dashboard");
     expect(idx).toBeGreaterThan(-1);
-    expect(args[idx + 1]).toBe("false");
+    expect(stdio.args[idx + 1]).toBe("false");
   });
 });
 
@@ -74,7 +89,7 @@ describe("installKimiMcp — global mode (HOME)", () => {
     const parsed = JSON.parse(
       readFileSync(join(kimiHomeDir, "mcp.json"), "utf-8"),
     );
-    expect(parsed.mcpServers.serena.command).toBe("serena");
+    expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
   });
 
   it("is idempotent and preserves user servers", () => {
@@ -112,6 +127,6 @@ describe("installKimiMcp — project mode (in-project)", () => {
     expect(result.path).toBe(expectedPath);
     expect(existsSync(expectedPath)).toBe(true);
     const parsed = JSON.parse(readFileSync(expectedPath, "utf-8"));
-    expect(parsed.mcpServers.serena.command).toBe("serena");
+    expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
   });
 });

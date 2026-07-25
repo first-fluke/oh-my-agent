@@ -23,6 +23,7 @@ import {
   collectVendorDocChecks,
 } from "./environment-checks.js";
 import { collectHookWrapperChecks } from "./hook-wrapper-check.js";
+import { collectSerenaDaemonCheck } from "./serena-daemons.js";
 import { collectSerenaReapCheck } from "./serena-reap.js";
 import { collectStateDoctorCheck } from "./state-health.js";
 import type {
@@ -139,6 +140,7 @@ export async function collectDoctorReport(
   const skillEval = computeEvalCoverage(cwd, skillAudit.skillCount);
   const agentMemory = await collectAgentMemoryCheck(cwd);
   const serenaReap = collectSerenaReapCheck(cwd);
+  const serenaDaemons = collectSerenaDaemonCheck();
   const state = collectStateDoctorCheck(cwd);
   const hookWrappers = collectHookWrapperChecks(cwd);
   const selfHealing = options.healCheckAgent
@@ -175,6 +177,7 @@ export async function collectDoctorReport(
     vendorDocIssues +
     agentMemory.issues.length +
     serenaReap.issues.length +
+    serenaDaemons.issues.length +
     state.issues.length +
     selfHealingIssues +
     serenaBinaryIssues +
@@ -193,6 +196,7 @@ export async function collectDoctorReport(
     serenaBinary,
     agentMemory,
     serenaReap,
+    serenaDaemons,
     gitRecommended,
     totalIssues,
     skillAudit,

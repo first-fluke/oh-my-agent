@@ -9,11 +9,14 @@ import { isRecord } from "../../utils/type-guards.js";
 
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
 import type { EffortLevel } from "../../platform/model-registry.js";
+import { serenaTransportMode } from "../../utils/config.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  hasStaleSerenaTransport,
   isLegacyUvxSerena,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
   withSerenaDashboardOpenDisabled,
 } from "../serena.js";
 
@@ -21,13 +24,13 @@ export const RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC = 90;
 
 export const RECOMMENDED_CODEX_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("codex"),
-    startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
-    env: {
-      SERENA_LOG_LEVEL: "info",
-    },
+  get serena(): SerenaMcpEntry {
+    return {
+      ...serenaMcpEntry("codex", serenaTransportMode()),
+      // Cold start still pays for language-server init, whichever transport is
+      // in play — the shared daemon just amortizes it across later sessions.
+      startup_timeout_sec: RECOMMENDED_SERENA_STARTUP_TIMEOUT_SEC,
+    };
   },
 };
 
@@ -114,6 +117,7 @@ export function needsCodexSettingsUpdate(
   const serena = isRecord(mcp) ? (mcp.serena as CodexMcpServer) : undefined;
   if (!hasCodexMcpTransport(serena)) return true;
   if (isLegacyUvxSerena(serena)) return true;
+  if (hasStaleSerenaTransport(serena, serenaTransportMode())) return true;
   if (!hasSerenaDashboardOpenDisabled(serena)) return true;
   if (typeof serena.startup_timeout_sec !== "number") return true;
   const chromeDevtools = isRecord(mcp)
@@ -176,9 +180,16 @@ export function applyCodexSettings(
   const currentMcp = isRecord(base.mcp_servers) ? base.mcp_servers : {};
   const currentSerena = currentMcp.serena as CodexMcpServer | undefined;
 
+  // A usable entry is preserved as-is UNLESS its transport no longer matches
+  // the configured mode — otherwise an install that already had serena working
+  // would never move onto (or off) the shared daemon.
+  const keepCurrent =
+    hasCodexMcpTransport(currentSerena) &&
+    !hasStaleSerenaTransport(currentSerena, serenaTransportMode());
+
   const nextSerena = withSerenaDashboardOpenDisabled(
     withSerenaStartupTimeout(
-      hasCodexMcpTransport(currentSerena)
+      keepCurrent
         ? currentSerena
         : { ...(currentSerena || {}), ...RECOMMENDED_CODEX_MCP.serena },
     ),

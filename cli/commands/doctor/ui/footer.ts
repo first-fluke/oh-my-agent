@@ -31,6 +31,7 @@ export async function renderFooter(report: DoctorReport): Promise<void> {
     );
   }
 
+  renderSerenaDaemons(report);
   renderSerenaReap(report);
 
   for (const doc of report.vendorDocs) {
@@ -106,6 +107,28 @@ async function renderGitRecommended(report: DoctorReport): Promise<void> {
  * source; T2-2: surface heavy/unmapped language advisories). Skipped silently
  * only when no Serena roots are running (nothing to report).
  */
+/**
+ * Render the shared serena daemon fleet (`oma bridge`). Skipped when empty —
+ * a machine using stdio mode, or with no sessions yet, has nothing to show.
+ */
+function renderSerenaDaemons(report: DoctorReport): void {
+  const check = report.serenaDaemons;
+  if (!check || check.daemons.length === 0) return;
+
+  const lines = check.daemons.map((daemon) => {
+    const status = daemon.pendingReclaim
+      ? pc.yellow(`idle ${daemon.idleMinutes}m — reclaim pending`)
+      : daemon.liveClients > 0
+        ? pc.green(`${daemon.liveClients} client(s)`)
+        : pc.dim(`idle ${daemon.idleMinutes ?? 0}m (grace)`);
+    return `${daemon.root} ${pc.dim(`(${daemon.context}, :${daemon.port}, pid ${daemon.pid})`)} — ${status}`;
+  });
+  if (check.prunedCount > 0) {
+    lines.push(pc.dim(`pruned ${check.prunedCount} dead registration(s)`));
+  }
+  p.note(lines.join("\n"), "Serena Daemons");
+}
+
 function renderSerenaReap(report: DoctorReport): void {
   const check = report.serenaReap;
   if (!check || check.roots.length === 0) {

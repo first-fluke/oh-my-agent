@@ -1,7 +1,9 @@
+import { serenaTransportMode } from "../../utils/config.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
 } from "../serena.js";
 import {
   applyPrivacyTelemetry,
@@ -33,12 +35,8 @@ export interface QwenSettingsOptions {
 
 export const RECOMMENDED_QWEN_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("ide"),
-    env: {
-      SERENA_LOG_LEVEL: "info",
-    },
+  get serena(): SerenaMcpEntry {
+    return serenaMcpEntry("ide", serenaTransportMode());
   },
 };
 

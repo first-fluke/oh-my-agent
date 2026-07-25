@@ -2,13 +2,16 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
+import { serenaTransportMode } from "../../utils/config.js";
 import { safeWriteFile } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  hasStaleSerenaTransport,
   isLegacyUvxSerena,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
   withSerenaDashboardOpenDisabled,
 } from "../serena.js";
 
@@ -23,9 +26,8 @@ export interface GrokConfigOptions {
 /** Recommended MCP servers for Grok (especially Serena). */
 export const RECOMMENDED_GROK_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("ide"),
+  get serena(): SerenaMcpEntry {
+    return serenaMcpEntry("ide", serenaTransportMode());
   },
 };
 
@@ -159,7 +161,10 @@ export function applyGrokProjectMcp(cwd: string): void {
     nextMcp["chrome-devtools"] = { ...RECOMMENDED_GROK_MCP["chrome-devtools"] };
   }
 
-  if (!hasTransport) {
+  if (
+    !hasTransport ||
+    hasStaleSerenaTransport(currentSerena, serenaTransportMode())
+  ) {
     nextMcp.serena = {
       ...currentSerena,
       ...withSerenaDashboardOpenDisabled(RECOMMENDED_GROK_MCP.serena),

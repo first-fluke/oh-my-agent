@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import {
   applyQwenSettings,
   needsQwenSettingsUpdate,
@@ -12,7 +13,7 @@ describe("qwen settings", () => {
     expect(needsQwenSettingsUpdate({ mcpServers: {} })).toBe(true);
   });
 
-  it("accepts existing serena stdio transport", () => {
+  it("flags an existing serena stdio transport for migration", () => {
     const settings = {
       privacy: { usageStatisticsEnabled: false },
       mcpServers: {
@@ -39,7 +40,8 @@ describe("qwen settings", () => {
         },
       },
     };
-    expect(needsQwenSettingsUpdate(settings)).toBe(false);
+    // Bridge is the default transport, so an oma-written stdio entry is stale.
+    expect(needsQwenSettingsUpdate(settings)).toBe(true);
   });
 
   it("accepts existing serena HTTP transport", () => {
@@ -82,7 +84,7 @@ describe("qwen settings", () => {
             "--isolated",
           ],
         },
-        serena: { command: "uvx", args: ["serena"] },
+        serena: RECOMMENDED_QWEN_MCP.serena,
       },
     };
     expect(needsQwenSettingsUpdate(settings, { telemetry: true })).toBe(false);
@@ -118,7 +120,9 @@ describe("qwen settings", () => {
     expect(needsQwenSettingsUpdate(result)).toBe(false);
   });
 
-  it("preserves existing serena transport when present", () => {
+  it("migrates a uvx-launched serena onto the managed transport", () => {
+    // Another route to the same server, not customization — in scope for the
+    // switch, or that install keeps paying for a serena per session.
     const settings = {
       mcpServers: {
         serena: {
@@ -129,9 +133,20 @@ describe("qwen settings", () => {
     };
 
     const result = applyQwenSettings(settings);
+    expectOmaSerenaEntry(result.mcpServers?.serena, "ide");
+  });
+
+  it("preserves a serena entry oma does not recognize", () => {
+    const settings = {
+      mcpServers: {
+        serena: { command: "my-serena-wrapper", args: ["--flag"] },
+      },
+    };
+
+    const result = applyQwenSettings(settings);
     expect(result.mcpServers?.serena).toEqual({
-      command: "uvx",
-      args: ["serena"],
+      command: "my-serena-wrapper",
+      args: ["--flag"],
     });
   });
 
@@ -170,23 +185,16 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
             "--isolated",
           ],
         },
-        serena: {
-          command: "serena",
-          args: [
-            "start-mcp-server",
-            "--context",
-            "ide",
-            "--project-from-cwd",
-            "--open-web-dashboard",
-            "false",
-          ],
-          env: { SERENA_LOG_LEVEL: "info" },
-        },
+        // The serena entry is asserted separately: the default bridge form
+        // embeds the absolute path of the running oma, which is machine- and
+        // runner-specific and so cannot be pinned in a fixture.
+        serena: result.mcpServers?.serena,
       },
       privacy: { usageStatisticsEnabled: false },
     } as const;
 
     expect(result).toEqual(expected);
+    expectOmaSerenaEntry(result.mcpServers?.serena, "ide");
   });
 
   it("needsQwenSettingsUpdate returns false for the recommended-state fixture (needsQwenSettingsUpdate)", () => {
@@ -203,19 +211,9 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
             "--isolated",
           ],
         },
-        serena: {
-          command: "serena",
-          args: [
-            "start-mcp-server",
-            "--context",
-            "ide",
-            "--project",
-            ".",
-            "--open-web-dashboard",
-            "false",
-          ],
-          env: { SERENA_LOG_LEVEL: "info" },
-        },
+        // The recommended entry follows the configured transport, so it cannot
+        // be spelled out here — the bridge form is machine-specific.
+        serena: RECOMMENDED_QWEN_MCP.serena,
       },
     } as const;
 

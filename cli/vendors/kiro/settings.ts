@@ -1,12 +1,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { serenaTransportMode } from "../../utils/config.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  hasStaleSerenaTransport,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serenaStartMcpArgs,
+  type SerenaMcpEntry,
+  serenaMcpEntry,
   withSerenaDashboardOpenDisabled,
 } from "../serena.js";
 
@@ -21,9 +24,8 @@ export const KIRO_GLOBAL_SETTINGS_PATH = join(
 
 export const RECOMMENDED_KIRO_MCP = {
   "chrome-devtools": RECOMMENDED_CHROME_DEVTOOLS_MCP,
-  serena: {
-    command: "serena",
-    args: serenaStartMcpArgs("ide"),
+  get serena(): SerenaMcpEntry {
+    return serenaMcpEntry("ide", serenaTransportMode());
   },
 };
 
@@ -94,6 +96,7 @@ export function needsKiroMcpUpdate(cwd: string): boolean {
   ) {
     return true;
   }
+  if (hasStaleSerenaTransport(serena, serenaTransportMode())) return true;
   return !(
     (typeof serena.command === "string" || typeof serena.url === "string") &&
     hasSerenaDashboardOpenDisabled(serena)

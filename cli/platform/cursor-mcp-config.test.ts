@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { expectOmaSerenaEntry } from "../__tests__/helpers.js";
 import { applyCursorMcpConfig } from "./skills-installer.js";
 
 describe("applyCursorMcpConfig", () => {
@@ -67,18 +68,9 @@ describe("applyCursorMcpConfig", () => {
       command: "npx",
       args: ["-y", "x"],
     });
-    expect(parsed.mcpServers.serena).toEqual({
-      command: "serena",
-      args: [
-        "start-mcp-server",
-        "--context",
-        "ide",
-        "--project-from-cwd",
-        "--open-web-dashboard",
-        "false",
-      ],
-      env: { SERENA_LOG_LEVEL: "info" },
-    });
+    // Cursor's entry is re-stamped with --context ide regardless of the
+    // claude-code value in the SSOT, and of which transport is configured.
+    expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
     expect(parsed.memoryConfig).toBeUndefined();
     expect(parsed.toolGroups).toBeUndefined();
   });

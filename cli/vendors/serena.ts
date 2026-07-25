@@ -56,7 +56,7 @@ export function syncDevToolsMcp(
         delete mcpServers["firefox-devtools"];
       }
 
-      writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+      writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
     } catch {
       // ignore parse errors
     }
@@ -90,6 +90,126 @@ export function serenaStartMcpArgs(context: string): string[] {
     "--project-from-cwd",
     ...DISABLE_DASHBOARD_OPEN_ARGS,
   ];
+}
+
+export interface SerenaMcpEntry {
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+  /** Vendor configs carry extra per-server keys; keep the shape assignable. */
+  [key: string]: unknown;
+}
+
+/**
+ * Absolute invocation of the running oma, for embedding in a vendor MCP config.
+ *
+ * Never a bare `oma`: MCP clients launched from a GUI often have a PATH that
+ * does not include the user's shell bin dirs, and a serena entry that cannot be
+ * spawned fails with an opaque `-32001` timeout. Both halves are absolute, and
+ * every `oma link` / `oma update` rewrites the entry, so it self-heals if oma
+ * later moves.
+ */
+export function omaExecutableInvocation(): { command: string; args: string[] } {
+  const script = process.argv[1];
+
+  // Only trust argv[1] when it actually looks like an oma entrypoint. Under a
+  // test runner it is the worker script, and under `bunx` it is a temp cache
+  // path that gets swept — either would be baked into the user's config. Bare
+  // `oma` is the safer answer in those cases.
+  const isOmaEntrypoint =
+    typeof script === "string" &&
+    /(^|[\\/])(oma|oh-my-agent|cli)(\.[cm]?[jt]s)?$/.test(script);
+
+  return isOmaEntrypoint
+    ? { command: process.execPath, args: [script] }
+    : { command: "oma", args: [] };
+}
+
+/**
+ * The serena entry oma writes into a vendor's MCP config.
+ *
+ * Default is `bridge`: a small stdio proxy that connects the session to one
+ * shared, project-pinned serena HTTP server, starting it on first use. Sessions
+ * on the same project then share a single language-server stack instead of each
+ * paying for its own, which is what makes several concurrent agents affordable.
+ * The proxy falls back to a session-local stdio serena whenever the daemon
+ * cannot be reached, so the worst case is today's behaviour.
+ *
+ * `stdio` restores the unshared form for anyone who wants it
+ * (`serena.mode: stdio` in oma-config.yaml).
+ */
+export function serenaMcpEntry(
+  context: string,
+  mode: "bridge" | "stdio" = "bridge",
+): SerenaMcpEntry {
+  if (mode === "stdio") {
+    return {
+      command: "serena",
+      args: serenaStartMcpArgs(context),
+      env: { SERENA_LOG_LEVEL: "info" },
+    };
+  }
+
+  const { command, args } = omaExecutableInvocation();
+  return {
+    command,
+    args: [...args, "bridge", "--context", context],
+    env: { SERENA_LOG_LEVEL: "info" },
+  };
+}
+
+/** True for an oma-managed serena entry in bridge form. */
+export function isBridgeSerenaEntry(
+  server: SerenaMcpServerLike | undefined,
+): boolean {
+  if (!server || !Array.isArray(server.args)) return false;
+  return server.args.includes("bridge") && server.args.includes("--context");
+}
+
+/**
+ * True for an entry that launches serena in any form oma recognizes:
+ * the `oma bridge` proxy, the `serena` binary, or a `uv`/`uvx` invocation of the
+ * package.
+ *
+ * All of these are the same server reached by a different route, so oma owns
+ * their transport — leaving one behind would silently keep that install paying
+ * for a full serena stack per session while every other install shares one.
+ *
+ * What this deliberately does NOT match is an entry oma cannot recognize: a
+ * fork, a wrapper script with bespoke env, or a remote `url` entry. Those are
+ * genuine customization and are left exactly as the user wrote them.
+ */
+export function isSerenaLauncherEntry(
+  server: SerenaMcpServerLike | undefined,
+): boolean {
+  if (!server) return false;
+  if (isBridgeSerenaEntry(server)) return true;
+  if (server.command === "serena") return true;
+  if (server.command === "uvx" || server.command === "uv") {
+    return (
+      Array.isArray(server.args) &&
+      server.args.some(
+        (arg) => typeof arg === "string" && arg.includes("serena"),
+      )
+    );
+  }
+  return false;
+}
+
+/**
+ * True when an oma-written entry's transport disagrees with the configured mode.
+ *
+ * Every vendor's "does this config need rewriting?" check has to consult this.
+ * The entries left behind by earlier oma versions are otherwise perfectly
+ * valid, so without it the switch to (or away from) the shared daemon would
+ * never reach an install that already has serena working.
+ */
+export function hasStaleSerenaTransport(
+  server: SerenaMcpServerLike | undefined,
+  mode: "bridge" | "stdio",
+): boolean {
+  if (!isSerenaLauncherEntry(server)) return false;
+  return (mode === "bridge") !== isBridgeSerenaEntry(server);
 }
 
 export function hasSerenaDashboardOpenDisabled(
@@ -134,7 +254,10 @@ export function withSerenaContext<T extends SerenaMcpServerLike>(
   server: T,
   context: string,
 ): T {
-  if (server.command !== "serena" || !Array.isArray(server.args)) return server;
+  // Applies to both entry shapes: `serena … --context X` and the bridge's
+  // `oma bridge --context X`, which is likewise stamped per vendor.
+  const isManaged = server.command === "serena" || isBridgeSerenaEntry(server);
+  if (!isManaged || !Array.isArray(server.args)) return server;
 
   const idx = server.args.indexOf("--context");
   if (idx === -1) {

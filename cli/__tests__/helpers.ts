@@ -34,3 +34,34 @@ export function lastCall<T extends unknown[]>(
   if (!call) throw new Error("expected at least one mock call");
   return call;
 }
+
+/**
+ * Assert that an MCP entry is the serena entry oma writes, carrying `context`.
+ *
+ * Tests must not hardcode `command: "serena"`: the default transport is the
+ * `oma bridge` proxy onto a shared per-project daemon, whose command is the
+ * absolute path of whichever oma is running. Both shapes stamp `--context`.
+ */
+export function expectOmaSerenaEntry(
+  entry: { command?: string; args?: string[] } | undefined,
+  context: string,
+): void {
+  if (!entry?.args) {
+    throw new Error(
+      `expected a serena MCP entry, got ${JSON.stringify(entry)}`,
+    );
+  }
+  const idx = entry.args.indexOf("--context");
+  if (idx === -1 || entry.args[idx + 1] !== context) {
+    throw new Error(
+      `expected serena entry with --context ${context}, got ${JSON.stringify(entry.args)}`,
+    );
+  }
+  const isBridge = entry.args.includes("bridge");
+  const isStdio = entry.args.includes("start-mcp-server");
+  if (!isBridge && !isStdio) {
+    throw new Error(
+      `expected an oma-managed serena entry, got ${JSON.stringify(entry)}`,
+    );
+  }
+}

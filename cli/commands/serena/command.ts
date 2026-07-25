@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import { runAction } from "../../utils/cli-framework.js";
+import { daemonPidsWithLiveClients, pruneRegistry } from "../bridge/daemon.js";
 
 /**
  * Register all `oma serena *` commands:
@@ -68,9 +69,20 @@ export function registerSerenaCommands(program: Command): void {
           return;
         }
 
-        // 5. Compute reap targets
+        // 5. Compute reap targets. Shared daemons with attached MCP clients
+        // are protected: the reaper's log/mtime/cpu signals can't see a client
+        // that is merely between tool calls, and stripping a warm LSP stack
+        // out from under live sessions defeats the point of sharing.
+        // Dead daemon registrations are pruned on the same pass.
+        pruneRegistry();
         const nowMs = Date.now();
-        const targets = computeReapTargets(roots, config, undefined, nowMs);
+        const targets = computeReapTargets(
+          roots,
+          config,
+          undefined,
+          nowMs,
+          daemonPidsWithLiveClients(),
+        );
 
         // 6. Always show summary first (T1-4: no surprise kills)
         if (!quiet) {
