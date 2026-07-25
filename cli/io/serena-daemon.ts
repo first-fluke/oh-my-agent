@@ -463,9 +463,19 @@ export function detachClient(key: string, pid = process.pid): void {
  *
  * Called opportunistically whenever a bridge starts, which keeps the fleet
  * bounded without a scheduler, a background process, or anything for the user
- * to run. `nowMs` is injectable so the grace period is testable.
+ * to run.
+ *
+ * `nowMs` and `kill` are injectable for tests: the grace period must be
+ * steppable, and a test that lets the real `process.kill` fire would have to
+ * spawn a live victim process — child handles in a vitest worker are exactly
+ * the kind of thing that wedges its teardown on slow CI runners.
  */
-export function reclaimIdleDaemons(nowMs = Date.now()): DaemonRecord[] {
+export function reclaimIdleDaemons(
+  nowMs = Date.now(),
+  kill: (pid: number, signal: NodeJS.Signals) => void = (pid, signal) => {
+    process.kill(pid, signal);
+  },
+): DaemonRecord[] {
   const registry = readRegistry();
   const reclaimed: DaemonRecord[] = [];
 
@@ -496,7 +506,7 @@ export function reclaimIdleDaemons(nowMs = Date.now()): DaemonRecord[] {
     if (Number.isNaN(idleMs) || idleMs < DAEMON_IDLE_GRACE_MS) continue;
 
     try {
-      process.kill(record.pid, "SIGTERM");
+      kill(record.pid, "SIGTERM");
     } catch {
       // already gone
     }

@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -11,7 +10,10 @@ vi.mock("node:os", async (importOriginal) => {
   return { ...actual, homedir: () => homeState.home };
 });
 
-const {
+// Static import is safe under the hoisted os mock, and avoids top-level
+// await — TLA in a forks worker is one more thing that can wedge module
+// evaluation during collection on a loaded machine.
+import {
   attachClient,
   DAEMON_IDLE_GRACE_MS,
   daemonKey,
@@ -23,7 +25,7 @@ const {
   readRegistry,
   reclaimIdleDaemons,
   resolveProjectRoot,
-} = await import("./serena-daemon.js");
+} from "./serena-daemon.js";
 
 let home: string;
 let work: string;
@@ -381,62 +383,62 @@ describe("daemon lifecycle", () => {
 
 describe("reclaimIdleDaemons — actually stopping a daemon", () => {
   it("SIGTERMs an abandoned daemon and forgets it", async () => {
-    // A real child process, not this one: the reclaim path sends a signal, and
-    // registering the test runner's own pid as the daemon would kill the run.
-    const victim = spawn(
-      process.execPath,
-      ["-e", "setTimeout(() => {}, 60000)"],
-      {
-        stdio: "ignore",
+    // The kill is injected rather than spawning a real victim process: a live
+    // child handle inside a vitest worker is exactly what wedged worker
+    // teardown on slow CI runners ("Timeout terminating forks worker"). The
+    // daemon must still read as alive, so it registers under this process's
+    // own pid and the injected kill records instead of signalling.
+    const listening = new Set<number>();
+    await ensureSerenaDaemon({
+      root: "/abandoned",
+      context: "ide",
+      timeoutMs: 5_000,
+      spawnDaemon: (port: number) => {
+        listening.add(port);
+        return process.pid;
       },
+      probe: async (port: number) => listening.has(port),
+    });
+
+    const key = daemonKey("/abandoned", "ide");
+    detachClient(key);
+
+    const kills: Array<{ pid: number; signal: string }> = [];
+    const reclaimed = reclaimIdleDaemons(
+      Date.now() + DAEMON_IDLE_GRACE_MS + 1,
+      (pid, signal) => kills.push({ pid, signal }),
     );
-    // Never let the victim pin the worker's event loop: if any expectation
-    // below throws while it is still alive, an un-unref'd handle would block
-    // vitest's worker teardown ("Timeout terminating forks worker") and fail
-    // the whole run despite every test passing.
-    victim.unref();
 
-    try {
-      await new Promise((r) => setTimeout(r, 200));
+    expect(reclaimed.map((r) => r.root)).toEqual(["/abandoned"]);
+    expect(kills).toEqual([{ pid: process.pid, signal: "SIGTERM" }]);
+    expect(readRegistry()[key]).toBeUndefined();
+  });
 
-      const listening = new Set<number>();
-      await ensureSerenaDaemon({
-        root: "/abandoned",
-        context: "ide",
-        timeoutMs: 5_000,
-        spawnDaemon: (port: number) => {
-          listening.add(port);
-          return victim.pid as number;
+  it("still forgets the daemon when the kill itself fails", () => {
+    // The process can die between the liveness check and the signal; a throw
+    // from kill must not leave a zombie registration behind.
+    const now = Date.now();
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [daemonKey("/gone", "ide")]: {
+          root: "/gone",
+          context: "ide",
+          port: 12440,
+          pid: process.pid,
+          startedAt: new Date(now).toISOString(),
+          clients: [],
+          idleSince: new Date(now - DAEMON_IDLE_GRACE_MS - 1).toISOString(),
         },
-        probe: async (port: number) => listening.has(port),
-      });
+      }),
+    );
 
-      const key = daemonKey("/abandoned", "ide");
-      detachClient(key);
+    const reclaimed = reclaimIdleDaemons(now, () => {
+      throw new Error("ESRCH");
+    });
 
-      const reclaimed = reclaimIdleDaemons(
-        Date.now() + DAEMON_IDLE_GRACE_MS + 1,
-      );
-
-      expect(reclaimed.map((r) => r.root)).toEqual(["/abandoned"]);
-      expect(readRegistry()[key]).toBeUndefined();
-
-      const exited = await new Promise<boolean>((done) => {
-        // The exit event may already have fired before this listener attaches.
-        if (victim.exitCode !== null || victim.signalCode !== null) {
-          done(true);
-          return;
-        }
-        victim.on("exit", () => done(true));
-        setTimeout(() => done(false), 3_000).unref();
-      });
-      expect(exited).toBe(true);
-    } finally {
-      try {
-        victim.kill("SIGKILL");
-      } catch {
-        // already gone
-      }
-    }
+    expect(reclaimed.map((r) => r.root)).toEqual(["/gone"]);
+    expect(readRegistry()[daemonKey("/gone", "ide")]).toBeUndefined();
   });
 });

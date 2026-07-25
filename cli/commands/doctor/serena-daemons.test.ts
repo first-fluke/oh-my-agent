@@ -10,10 +10,8 @@ vi.mock("node:os", async (importOriginal) => {
   return { ...actual, homedir: () => homeState.home };
 });
 
-const { collectSerenaDaemonCheck } = await import("./serena-daemons.js");
-const { DAEMON_IDLE_GRACE_MS, daemonKey } = await import(
-  "../../io/serena-daemon.js"
-);
+import { DAEMON_IDLE_GRACE_MS, daemonKey } from "../../io/serena-daemon.js";
+import { collectSerenaDaemonCheck } from "./serena-daemons.js";
 
 let home: string;
 
