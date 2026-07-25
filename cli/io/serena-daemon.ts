@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import {
+  closeSync,
   existsSync,
   mkdirSync,
   openSync,
@@ -207,7 +208,14 @@ function acquireLock(): (() => void) | null {
   const path = lockPath();
   try {
     const fd = openSync(path, "wx");
-    writeFileSync(fd, String(process.pid));
+    try {
+      // writeFileSync with a descriptor does NOT close it; leaving it open
+      // leaks one fd per lock, and on Windows an open handle can make the
+      // release's rmSync fail — permanently wedging the lock.
+      writeFileSync(fd, String(process.pid));
+    } finally {
+      closeSync(fd);
+    }
     return () => {
       try {
         rmSync(path, { force: true });

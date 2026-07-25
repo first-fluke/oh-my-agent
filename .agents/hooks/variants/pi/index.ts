@@ -89,7 +89,15 @@ const REENTRY_SENTINEL = "[OMA PERSISTENT MODE:";
 // a single pi process, reset on every genuine user turn. persistent-mode's own
 // state file (5-reinforcement + staleness cap) is the primary terminator; this
 // only defends against a pathological state file that never exhausts.
-const MAX_REENTRIES = 50;
+//
+// Env-overridable for tests: each re-entry spawns a real core-script
+// subprocess (spawnSync), so proving the cap at 50 costs 55 sequential
+// spawns — enough to blow the test timeout on a loaded machine. Tests lower
+// the cap instead of paying for it.
+const MAX_REENTRIES = Number.parseInt(
+  process.env.OMA_PI_MAX_REENTRIES ?? "50",
+  10,
+);
 
 /** Read a stable per-session id from pi's context, or undefined if unavailable. */
 function sessionIdOf(ctx: unknown): string | undefined {

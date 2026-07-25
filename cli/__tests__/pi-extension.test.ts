@@ -153,23 +153,34 @@ describe("pi bridge handlers", () => {
     // Default: no active workflow (persistent-mode allows the stop).
     writeFileSync(join(extDir, "persistent-mode.ts"), fakeScript({}));
 
+    handlers = await freshHandlers();
+  });
+
+  /**
+   * Import the bridge module fresh and capture its handlers. Re-callable
+   * inside a test after mutating env: the module reads configuration at
+   * module scope, and the unique cache-buster forces re-evaluation.
+   */
+  let importSeq = 0;
+  async function freshHandlers(): Promise<Record<string, any>> {
     // Reset the once-guard so the freshly imported module registers handlers.
     (globalThis as Record<string, unknown>).__OMA_PI_EXT_REGISTERED = undefined;
 
-    handlers = {};
+    const captured: Record<string, any> = {};
     sent = [];
     const mod = await import(
-      `${pathToFileURL(join(extDir, "index.ts")).href}?t=${target}`
+      `${pathToFileURL(join(extDir, "index.ts")).href}?t=${target}-${importSeq++}`
     );
     mod.default({
       on: (event: string, handler: unknown) => {
-        handlers[event] = handler;
+        captured[event] = handler;
       },
       sendUserMessage: (content: string) => {
         sent.push(content);
       },
     });
-  });
+    return captured;
+  }
 
   it("before_agent_start appends keyword + skill context to the system prompt", async () => {
     const out = await handlers.before_agent_start(
@@ -250,20 +261,34 @@ describe("pi bridge handlers", () => {
   });
 
   it("agent_settled honors the consecutive re-entry backstop", async () => {
-    writeFileSync(
-      join(extDir, "persistent-mode.ts"),
-      fakeScript({ decision: "block", reason: "[OMA PERSISTENT MODE: WORK]" }),
-    );
-    for (let i = 0; i < 55; i++) await handlers.agent_settled({}, ctx());
-    expect(sent.length).toBe(50);
+    // Every re-entry is a real spawnSync of a core script, so this test's cost
+    // is (cap + overshoot) sequential subprocess spawns. At the production cap
+    // of 50 that took ~6s idle and blew the 30s timeout on a loaded machine
+    // (flaked in full-suite runs). The cap semantics are what's under test,
+    // not its magnitude — so prove them at a small env-injected cap.
+    process.env.OMA_PI_MAX_REENTRIES = "5";
+    try {
+      handlers = await freshHandlers();
+      writeFileSync(
+        join(extDir, "persistent-mode.ts"),
+        fakeScript({
+          decision: "block",
+          reason: "[OMA PERSISTENT MODE: WORK]",
+        }),
+      );
+      for (let i = 0; i < 8; i++) await handlers.agent_settled({}, ctx());
+      expect(sent.length).toBe(5);
 
-    // A genuine user turn resets the backstop, allowing re-entry again.
-    await handlers.before_agent_start(
-      { prompt: "new user request", systemPrompt: "BASE" },
-      ctx(),
-    );
-    await handlers.agent_settled({}, ctx());
-    expect(sent.length).toBe(51);
+      // A genuine user turn resets the backstop, allowing re-entry again.
+      await handlers.before_agent_start(
+        { prompt: "new user request", systemPrompt: "BASE" },
+        ctx(),
+      );
+      await handlers.agent_settled({}, ctx());
+      expect(sent.length).toBe(6);
+    } finally {
+      delete process.env.OMA_PI_MAX_REENTRIES;
+    }
     rmSync(target, { recursive: true, force: true });
   });
 });
