@@ -390,32 +390,53 @@ describe("reclaimIdleDaemons — actually stopping a daemon", () => {
         stdio: "ignore",
       },
     );
-    await new Promise((r) => setTimeout(r, 200));
+    // Never let the victim pin the worker's event loop: if any expectation
+    // below throws while it is still alive, an un-unref'd handle would block
+    // vitest's worker teardown ("Timeout terminating forks worker") and fail
+    // the whole run despite every test passing.
+    victim.unref();
 
-    const listening = new Set<number>();
-    await ensureSerenaDaemon({
-      root: "/abandoned",
-      context: "ide",
-      timeoutMs: 5_000,
-      spawnDaemon: (port: number) => {
-        listening.add(port);
-        return victim.pid as number;
-      },
-      probe: async (port: number) => listening.has(port),
-    });
+    try {
+      await new Promise((r) => setTimeout(r, 200));
 
-    const key = daemonKey("/abandoned", "ide");
-    detachClient(key);
+      const listening = new Set<number>();
+      await ensureSerenaDaemon({
+        root: "/abandoned",
+        context: "ide",
+        timeoutMs: 5_000,
+        spawnDaemon: (port: number) => {
+          listening.add(port);
+          return victim.pid as number;
+        },
+        probe: async (port: number) => listening.has(port),
+      });
 
-    const reclaimed = reclaimIdleDaemons(Date.now() + DAEMON_IDLE_GRACE_MS + 1);
+      const key = daemonKey("/abandoned", "ide");
+      detachClient(key);
 
-    expect(reclaimed.map((r) => r.root)).toEqual(["/abandoned"]);
-    expect(readRegistry()[key]).toBeUndefined();
+      const reclaimed = reclaimIdleDaemons(
+        Date.now() + DAEMON_IDLE_GRACE_MS + 1,
+      );
 
-    const exited = await new Promise<boolean>((done) => {
-      victim.on("exit", () => done(true));
-      setTimeout(() => done(false), 3_000);
-    });
-    expect(exited).toBe(true);
+      expect(reclaimed.map((r) => r.root)).toEqual(["/abandoned"]);
+      expect(readRegistry()[key]).toBeUndefined();
+
+      const exited = await new Promise<boolean>((done) => {
+        // The exit event may already have fired before this listener attaches.
+        if (victim.exitCode !== null || victim.signalCode !== null) {
+          done(true);
+          return;
+        }
+        victim.on("exit", () => done(true));
+        setTimeout(() => done(false), 3_000).unref();
+      });
+      expect(exited).toBe(true);
+    } finally {
+      try {
+        victim.kill("SIGKILL");
+      } catch {
+        // already gone
+      }
+    }
   });
 });
