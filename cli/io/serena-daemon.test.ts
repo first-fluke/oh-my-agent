@@ -2,18 +2,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const homeState = vi.hoisted(() => ({ home: "" }));
-
-vi.mock("node:os", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:os")>();
-  return { ...actual, homedir: () => homeState.home };
-});
-
-// Static import is safe under the hoisted os mock, and avoids top-level
-// await — TLA in a forks worker is one more thing that can wedge module
-// evaluation during collection on a loaded machine.
+// No module mocks here on purpose: the state dir has a direct test seam, and
+// mocking node:os routed this file's whole import graph through the mock
+// pipeline — its forks worker intermittently wedged during collection.
 import {
+  _setOmaStateDirForTests,
   attachClient,
   DAEMON_IDLE_GRACE_MS,
   daemonKey,
@@ -33,18 +26,21 @@ let work: string;
 beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), "oma-daemon-home-"));
   work = mkdtempSync(join(tmpdir(), "oma-daemon-work-"));
-  homeState.home = home;
+  _setOmaStateDirForTests(join(home, ".config", "oma"));
 });
 
 afterEach(() => {
+  _setOmaStateDirForTests(null);
   rmSync(home, { recursive: true, force: true });
   rmSync(work, { recursive: true, force: true });
   vi.restoreAllMocks();
 });
 
 describe("omaStateDir", () => {
-  it("uses the same ~/.config/oma location as the rest of oma", () => {
+  it("honors the test override and falls back to ~/.config/oma", () => {
     expect(omaStateDir()).toBe(join(home, ".config", "oma"));
+    _setOmaStateDirForTests(null);
+    expect(omaStateDir().endsWith(join(".config", "oma"))).toBe(true);
   });
 });
 

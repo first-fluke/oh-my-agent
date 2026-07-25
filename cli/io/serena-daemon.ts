@@ -53,11 +53,24 @@ export const STARTUP_PROBE_TIMEOUT_MS = Number.parseInt(
  */
 
 /**
+ * Test seam for the state root. A direct override instead of mocking
+ * `node:os`: module mocks pull the whole module graph through the mock
+ * pipeline during collection, and the daemon test file's worker was
+ * intermittently wedging exactly there under load.
+ */
+let stateDirOverride: string | null = null;
+
+/** @internal test-only */
+export function _setOmaStateDirForTests(dir: string | null): void {
+  stateDirOverride = dir;
+}
+
+/**
  * Runtime state root, matching the `~/.config/oma/` location the vault index
  * already uses. Deliberately not `~/.agents`, which install-mode detection reads.
  */
 export function omaStateDir(): string {
-  return join(homedir(), ".config", "oma");
+  return stateDirOverride ?? join(homedir(), ".config", "oma");
 }
 
 export function daemonRegistryPath(): string {

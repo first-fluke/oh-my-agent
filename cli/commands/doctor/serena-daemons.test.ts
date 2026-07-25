@@ -1,16 +1,15 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const homeState = vi.hoisted(() => ({ home: "" }));
-
-vi.mock("node:os", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:os")>();
-  return { ...actual, homedir: () => homeState.home };
-});
-
-import { DAEMON_IDLE_GRACE_MS, daemonKey } from "../../io/serena-daemon.js";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+// No module mocks here on purpose: the state dir has a direct test seam, and
+// mocking node:os routed the import graph through the mock pipeline — the
+// sibling daemon test's forks worker intermittently wedged during collection.
+import {
+  _setOmaStateDirForTests,
+  DAEMON_IDLE_GRACE_MS,
+  daemonKey,
+} from "../../io/serena-daemon.js";
 import { collectSerenaDaemonCheck } from "./serena-daemons.js";
 
 let home: string;
@@ -23,12 +22,12 @@ function writeRegistry(records: Record<string, unknown>): void {
 
 beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), "oma-doctor-daemons-"));
-  homeState.home = home;
+  _setOmaStateDirForTests(join(home, ".config", "oma"));
 });
 
 afterEach(() => {
+  _setOmaStateDirForTests(null);
   rmSync(home, { recursive: true, force: true });
-  vi.restoreAllMocks();
 });
 
 describe("collectSerenaDaemonCheck", () => {
