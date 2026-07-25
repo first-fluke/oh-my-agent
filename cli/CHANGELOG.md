@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.2...cli-v11.0.3) (2026-07-25)
+
+
+### Bug Fixes
+
+* **hooks:** stop baking an install-time oma path into oma-hook.sh ([10754d4](https://github.com/first-fluke/oh-my-agent/commit/10754d4838e96f7fdee30c8036aaca0c4f33b146))
+
 ## [11.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.1...cli-v11.0.2) (2026-07-25)
 
 
