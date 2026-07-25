@@ -1,54 +1,42 @@
-import { homedir } from "node:os";
-import { resolve, sep } from "node:path";
-import { escapeDoubleQuoted } from "./hook-command.js";
 import { HOOK_DEDUP_PREAMBLE } from "./shell-wrapper.js";
 
 /**
- * Render the recorded oma path for the wrapper's double-quoted `[ -x "..." ]`
- * test.
+ * Well-known install locations, searched (in order) only when `oma` is not on
+ * the hook environment's PATH.
  *
- * When the path lives under the installing user's home directory, the home
- * prefix is emitted as a literal `${HOME}` instead of the expanded path. Many
- * projects commit their vendor hook directory (`.claude/`, `.qwen/`, …), and an
- * expanded path would carry the installer's username into version control —
- * dead weight for every other machine, which falls through to the PATH lookup.
+ * GUI-launched agents inherit a minimal PATH — no shell rc runs — so a
+ * perfectly working `oma` is routinely invisible to `command -v` inside a hook.
+ * That is the one problem an install-time path solved, and this list solves it
+ * without writing anything machine-specific into the wrapper.
  *
- * `$HOME` unset (or a different home) is harmless: the `-x` test simply fails
- * and the wrapper falls back to `command -v oma`.
- *
- * POSIX hosts only. On win32 `homedir()` is `C:\Users\<name>` while the Bash
- * that runs this wrapper (Git Bash / MSYS) reports `$HOME` as `/c/Users/<name>`,
- * so the prefix cannot be swapped one-for-one and the `\` separators in the
- * tail would need their own quoting. There we keep the recorded path verbatim.
- *
- * The remaining segments still land inside double quotes, so they are escaped
- * for that context (see escapeDoubleQuoted).
+ * Emitted verbatim into the script, so every entry must be a literal we control
+ * (`$HOME` expands in the wrapper's shell, not here).
  */
-function renderRecordedPath(recordedOmaPath: string): string {
-  const home = homedir();
-  const prefix = `${home}${sep}`;
-  if (
-    sep === "/" &&
-    home &&
-    home !== sep &&
-    recordedOmaPath.startsWith(prefix)
-  ) {
-    const rest = recordedOmaPath.slice(prefix.length);
-    // `\${HOME}` is emitted literally — the wrapper's shell expands it, not JS.
-    return `\${HOME}/${escapeDoubleQuoted(rest)}`;
-  }
-  return escapeDoubleQuoted(recordedOmaPath);
-}
+const OMA_BIN_CANDIDATES = [
+  '"$HOME/.bun/bin/oma"',
+  '"$HOME/.local/bin/oma"',
+  '"$HOME/.local/share/mise/shims/oma"',
+  // mise-managed node without shims on PATH: the version dir is not stable, so
+  // glob it. An unmatched glob stays literal and simply fails the -x test.
+  '"$HOME"/.local/share/mise/installs/node/*/bin/oma',
+  '"$HOME/.volta/bin/oma"',
+  '"$HOME/.npm-global/bin/oma"',
+  '"/opt/homebrew/bin/oma"',
+  '"/usr/local/bin/oma"',
+];
 
 /**
  * Generate the oma-hook wrapper shell script for a given vendor.
  *
- * oma path resolution strategy (T1-d from design 019):
- *   1. Recorded path from install time (`process.argv[1]` resolved to the oma
- *      binary, captured at the moment `oma link/install` ran) — written
- *      `${HOME}`-relative when it sits under the user's home directory.
- *   2. `command -v oma` — the user's PATH.
- *   3. If neither resolves — `exit 0` (fail-open, never block the agent).
+ * oma resolution, entirely at runtime — the script is byte-identical on every
+ * machine, so projects can commit their vendor hook dir without carrying one
+ * developer's install path (and without the file churning as teammates with
+ * different install methods each re-link):
+ *
+ *   1. `$OMA_BIN` — explicit override for an install in an exotic location.
+ *   2. `command -v oma` — the hook environment's PATH.
+ *   3. The well-known install locations above (GUI agents get a minimal PATH).
+ *   4. If nothing resolves — `exit 0` (fail-open, never block the agent).
  *
  * The dedup preamble suppresses double-fire when both a project and global
  * install register the same event (existing dedup strategy, kept intact).
@@ -56,27 +44,26 @@ function renderRecordedPath(recordedOmaPath: string): string {
  * Passes `"$@"` verbatim so `--vendor`, `--event`, `--matcher` args that
  * the settings entry emits reach `oma hook` unchanged (no shell injection).
  */
-export function generateOmaHookWrapper(recordedOmaPath: string): string {
+export function generateOmaHookWrapper(): string {
   // Authored directly (NOT via generateHookShellWrapper, whose `exec ${cmd} "$@"`
   // template is for single-command wrappers). This is a multi-statement script,
   // and it must ALWAYS exit 0 — a non-zero hook exit (e.g. a stale oma without
   // the `hook` command) can disrupt the vendor agent.
-  //
-  // Resolution order: the recorded install-time path FIRST (the exact oma that
-  // generated this wrapper — guaranteed to support `hook`), then PATH `oma`. A
-  // stale `oma` on PATH must not shadow the installer's feature set.
-  //
-  // The recorded path lands inside double quotes; escape `\` `"` `` ` `` `$`
-  // so a path with shell metacharacters can't break or inject into the script.
-  // A home-directory prefix is kept as an unexpanded `${HOME}` (renderRecordedPath).
-  const safePath = renderRecordedPath(recordedOmaPath);
   return `#!/usr/bin/env bash
 ${HOOK_DEDUP_PREAMBLE}
 __oma_bin=""
-if [ -x "${safePath}" ]; then
-  __oma_bin="${safePath}"
+if [ -n "\${OMA_BIN:-}" ] && [ -x "\${OMA_BIN}" ]; then
+  __oma_bin="\${OMA_BIN}"
 elif command -v oma >/dev/null 2>&1; then
   __oma_bin="$(command -v oma)"
+else
+  # PATH is minimal under GUI-launched agents; check the usual install dirs.
+  for __oma_candidate in ${OMA_BIN_CANDIDATES.join(" ")}; do
+    if [ -x "$__oma_candidate" ]; then
+      __oma_bin="$__oma_candidate"
+      break
+    fi
+  done
 fi
 if [ -n "$__oma_bin" ]; then
   # Run oma hook; swallow a non-zero exit so the wrapper is always fail-open.
@@ -84,24 +71,4 @@ if [ -n "$__oma_bin" ]; then
 fi
 exit 0
 `;
-}
-
-/**
- * Resolve the oma binary path to record in the oma-hook wrapper.
- *
- * Priority:
- *   1. `process.argv[1]` — the JS entry point (works for `node cli.js` invocations).
- *   2. `process.execPath` — the Node/Bun executable itself (fallback when argv[1]
- *      is not the oma wrapper, e.g. during tests).
- *
- * The resolved path is what the wrapper tries FIRST at runtime, with the PATH
- * `oma` as the fallback; a home prefix is written unexpanded so the wrapper
- * stays machine-independent (see generateOmaHookWrapper).
- */
-export function resolveOmaRecordedPath(): string {
-  const argv1 = process.argv[1];
-  if (argv1) {
-    return resolve(argv1);
-  }
-  return process.execPath;
 }

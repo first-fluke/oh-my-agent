@@ -8,10 +8,7 @@ import {
   buildOmaHookArgs,
   shellQuote,
 } from "../../platform/hooks-composer/hook-command.js";
-import {
-  generateOmaHookWrapper,
-  resolveOmaRecordedPath,
-} from "../../platform/hooks-composer/oma-hook-wrapper.js";
+import { generateOmaHookWrapper } from "../../platform/hooks-composer/oma-hook-wrapper.js";
 import {
   copyHookScripts,
   requiredVariantScripts,
@@ -105,9 +102,7 @@ export function installKimiHooks(sourceDir: string): KimiHookInstallResult {
 
   // 2. Write the oma-hook wrapper that resolves oma and execs `oma hook "$@"`.
   const wrapperPath = join(hooksDir, OMA_HOOK_WRAPPER);
-  writeFileSync(wrapperPath, generateOmaHookWrapper(resolveOmaRecordedPath()), {
-    mode: 0o755,
-  });
+  writeFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
 
   // 3. Merge our `[[hooks]]` entries into config.toml, preserving user config.
   const configPath = join(base, "config.toml");

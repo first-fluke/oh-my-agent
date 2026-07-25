@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -340,64 +341,70 @@ describe("mergeHookGroups", () => {
   });
 });
 
-describe("generateOmaHookWrapper path escaping", () => {
-  it("escapes shell metacharacters in the recorded oma path", () => {
-    const wrapper = generateOmaHookWrapper(
-      '/tmp/$(touch /tmp/pwned)/weird"path`/oma',
-    );
+describe("generateOmaHookWrapper machine independence", () => {
+  it("carries no install-time path — the script is identical everywhere", () => {
+    const wrapper = generateOmaHookWrapper();
+
+    // Nothing about THIS machine may end up in a file projects commit: not the
+    // user's home, not the running binary, not the repo checkout.
+    expect(wrapper).not.toContain(homedir());
+    expect(wrapper).not.toContain(process.execPath);
+    expect(wrapper).not.toContain(repoRoot);
+    // Regenerating must be a no-op diff for every teammate.
+    expect(generateOmaHookWrapper()).toBe(wrapper);
+  });
+
+  it("resolves oma at runtime: $OMA_BIN, then PATH, then known install dirs", () => {
+    const wrapper = generateOmaHookWrapper();
+
     expect(wrapper).toContain(
-      '"/tmp/\\$(touch /tmp/pwned)/weird\\"path\\`/oma"',
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
+      '[ -n "${OMA_BIN:-}" ] && [ -x "${OMA_BIN}" ]',
     );
-    // The raw, unescaped interpolation must not appear anywhere.
-    expect(wrapper).not.toContain("/tmp/$(touch");
+    expect(wrapper).toContain("command -v oma >/dev/null 2>&1");
+    expect(wrapper).toContain('"$HOME/.bun/bin/oma"');
+    expect(wrapper).toContain('"$HOME/.local/share/mise/shims/oma"');
+    expect(wrapper).toContain('"/opt/homebrew/bin/oma"');
+    // $HOME is expanded by the wrapper's shell, never at generation time.
+    expect(wrapper).toContain("$HOME");
   });
 
-  it("leaves a plain path unchanged", () => {
-    const wrapper = generateOmaHookWrapper("/usr/local/bin/oma");
-    expect(wrapper).toContain('if [ -x "/usr/local/bin/oma" ]; then');
-  });
-
-  // The ${HOME} rewrite is POSIX-only: on win32 homedir() is `C:\Users\<name>`
-  // while the Git Bash that runs the wrapper reports $HOME as `/c/Users/<name>`,
-  // so the generator keeps the recorded path verbatim there.
-  const posixOnly = it.skipIf(process.platform === "win32");
-
-  posixOnly(
-    "records a home-directory path with an unexpanded HOME prefix",
+  it.skipIf(process.platform === "win32")(
+    "runs the first candidate that exists and stays fail-open otherwise",
     () => {
-      const wrapper = generateOmaHookWrapper(join(homedir(), ".bun/bin/oma"));
+      const dir = mkdtempSync(join(tmpdir(), "oma-wrapper-run-"));
+      try {
+        const fakeOma = join(dir, "oma");
+        writeFileSync(fakeOma, '#!/usr/bin/env bash\necho "ran: $*"\n', {
+          mode: 0o755,
+        });
+        const wrapperPath = join(dir, "oma-hook.sh");
+        writeFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
 
-      expect(wrapper).toContain(
-        // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
-        'if [ -x "${HOME}/.bun/bin/oma" ]; then',
-      );
-      // The installing user's home must not leak into a file projects commit.
-      expect(wrapper).not.toContain(homedir());
+        const run = (env: NodeJS.ProcessEnv) =>
+          spawnSync("bash", [wrapperPath, "--vendor", "claude"], {
+            encoding: "utf-8",
+            env: { ...process.env, PATH: "/usr/bin:/bin", ...env },
+          });
+
+        // $OMA_BIN wins.
+        const found = run({ OMA_BIN: fakeOma, OMA_SESSION_ID: "wrap-found" });
+        expect(found.status).toBe(0);
+        expect(found.stdout).toContain("ran: hook --vendor claude");
+
+        // No oma anywhere it looks → still exit 0, no output.
+        const missing = run({
+          OMA_BIN: join(dir, "nope"),
+          HOME: dir,
+          OMA_SESSION_ID: "wrap-missing",
+        });
+        expect(missing.status).toBe(0);
+        expect(missing.stdout).not.toContain("ran:");
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
     },
   );
-
-  posixOnly(
-    "still escapes metacharacters in the tail of a HOME-relative path",
-    () => {
-      const wrapper = generateOmaHookWrapper(
-        join(homedir(), '.bun/$(touch /tmp/pwned)/weird"path/oma'),
-      );
-
-      expect(wrapper).toContain(
-        // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
-        '"${HOME}/.bun/\\$(touch /tmp/pwned)/weird\\"path/oma"',
-      );
-      expect(wrapper).not.toContain("/.bun/$(touch");
-    },
-  );
-
-  posixOnly("leaves a path outside the home directory expanded", () => {
-    const wrapper = generateOmaHookWrapper("/opt/oma/bin/oma");
-
-    expect(wrapper).toContain('if [ -x "/opt/oma/bin/oma" ]; then');
-    // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
-    expect(wrapper).not.toContain("${HOME}");
-  });
 });
 
 // ---------------------------------------------------------------------------

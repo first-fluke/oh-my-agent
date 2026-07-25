@@ -7,10 +7,7 @@ import {
   deriveHookName,
   OMA_HOOK_WRAPPER_FILENAME,
 } from "./hooks-composer/hook-command.js";
-import {
-  generateOmaHookWrapper,
-  resolveOmaRecordedPath,
-} from "./hooks-composer/oma-hook-wrapper.js";
+import { generateOmaHookWrapper } from "./hooks-composer/oma-hook-wrapper.js";
 import {
   copyHookScripts,
   requiredVariantScripts,
@@ -68,7 +65,9 @@ export type {
  *
  * ### ONE wrapper per vendor
  * A single `oma-hook.sh` is written to `hookDir`. It resolves the oma binary
- * (recorded install-time path → PATH → exit 0 fail-open) and `exec`s `oma hook "$@"`.
+ * ($OMA_BIN → PATH → known install dirs → exit 0 fail-open) and `exec`s
+ * `oma hook "$@"`. The script is identical on every machine — no install-time
+ * path is baked in, so a committed hook dir carries nobody's home directory.
  */
 export function installHooksFromVariant(
   sourceDir: string,
@@ -84,10 +83,7 @@ export function installHooksFromVariant(
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);
-  const recordedOmaPath = resolveOmaRecordedPath();
-  writeFileSync(wrapperPath, generateOmaHookWrapper(recordedOmaPath), {
-    mode: 0o755,
-  });
+  writeFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
 
   // 3. Build hook entries from events.
   // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor
