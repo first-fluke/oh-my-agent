@@ -7,6 +7,7 @@ import {
   inferSerenaLanguages,
   parseProjectYmlLanguages,
 } from "../../io/serena.js";
+import { daemonPidsWithLiveClients } from "../../io/serena-daemon.js";
 import type {
   ActivitySignalSource,
   SerenaReaperConfig,
@@ -23,7 +24,6 @@ import {
   runPs,
   scanSerenaLogs,
 } from "../../io/serena-reaper-runtime.js";
-import { daemonPidsWithLiveClients } from "../bridge/daemon.js";
 import type { SerenaReapDoctorCheck } from "./types.js";
 
 /**

@@ -3,7 +3,7 @@ import {
   type DaemonRecord,
   pruneRegistry,
   readRegistry,
-} from "../bridge/daemon.js";
+} from "../../io/serena-daemon.js";
 
 /**
  * Doctor view of the shared serena daemon fleet (`oma bridge`).

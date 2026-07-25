@@ -11,10 +11,15 @@ import {
 import http from "node:http";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import {
-  STARTUP_CHECK_INTERVAL_MS,
-  STARTUP_PROBE_TIMEOUT_MS,
-} from "./config.js";
+
+/** Poll interval while waiting for a starting daemon to answer. */
+export const STARTUP_CHECK_INTERVAL_MS = 1000;
+
+/** Per-probe timeout when checking whether a daemon port is listening. */
+export const STARTUP_PROBE_TIMEOUT_MS = Number.parseInt(
+  process.env.OH_MY_AG_BRIDGE_PROBE_TIMEOUT_MS ?? "2000",
+  10,
+);
 
 /**
  * Per-project Serena daemons.

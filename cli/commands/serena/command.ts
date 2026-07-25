@@ -1,6 +1,9 @@
 import type { Command } from "commander";
+import {
+  daemonPidsWithLiveClients,
+  pruneRegistry,
+} from "../../io/serena-daemon.js";
 import { runAction } from "../../utils/cli-framework.js";
-import { daemonPidsWithLiveClients, pruneRegistry } from "../bridge/daemon.js";
 
 /**
  * Register all `oma serena *` commands:

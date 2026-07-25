@@ -11,7 +11,9 @@ vi.mock("node:os", async (importOriginal) => {
 });
 
 const { collectSerenaDaemonCheck } = await import("./serena-daemons.js");
-const { DAEMON_IDLE_GRACE_MS, daemonKey } = await import("../bridge/daemon.js");
+const { DAEMON_IDLE_GRACE_MS, daemonKey } = await import(
+  "../../io/serena-daemon.js"
+);
 
 let home: string;
 

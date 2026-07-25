@@ -1,13 +1,13 @@
 import { spawn } from "node:child_process";
 import http, { type IncomingMessage } from "node:http";
 import https from "node:https";
-import { STARTUP_PROBE_TIMEOUT_MS } from "./config.js";
 import {
   daemonKey,
   detachClient,
   ensureSerenaDaemon,
   resolveProjectRoot,
-} from "./daemon.js";
+  STARTUP_PROBE_TIMEOUT_MS,
+} from "../../io/serena-daemon.js";
 import { validateSerenaConfigs } from "./serena-config.js";
 import { parseSSEStream } from "./sse.js";
 

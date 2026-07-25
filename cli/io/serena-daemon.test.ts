@@ -23,7 +23,7 @@ const {
   readRegistry,
   reclaimIdleDaemons,
   resolveProjectRoot,
-} = await import("./daemon.js");
+} = await import("./serena-daemon.js");
 
 let home: string;
 let work: string;
