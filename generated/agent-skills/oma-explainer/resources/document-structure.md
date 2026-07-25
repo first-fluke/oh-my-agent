@@ -69,9 +69,12 @@ Choose from the following conceptual families:
 - **System/Data-Flow Diagram**: Component interaction flows carrying **example data** directly on the arrows.
 - **Before/After State**: Visual comparison of the system state before and after the change.
 
-### Format Constraints
+### Format & Responsiveness Constraints
 - Diagrams must be rendered using **HTML/CSS** or **inline SVG** only.
 - **ASCII art is strictly forbidden.**
+- **Responsive Container**: Every diagram must be wrapped in a `<div class="diagram-wrapper">` container with `overflow-x: auto; max-width: 100%;` to prevent horizontal clipping on mobile devices (375px+). Inline SVGs must declare `viewBox` and responsive width (`width="100%"`).
+- **Theme-Aware Colors**: All diagram elements (borders, text, arrows, node backgrounds) MUST use CSS variables (e.g. `var(--border-color)`, `var(--text-primary)`) or `currentColor` rather than hardcoded hex colors, ensuring seamless adaptation to Dark/Light theme toggling.
+- **Accessibility (a11y)**: Diagrams must include `role="img"` and a descriptive `aria-label` or `<title>` element summarizing the diagram flow for assistive technologies.
 - Use semantic HTML lists (`<ul>`, `<ol>`, `<dl>`) for textual lists.
 
 ---

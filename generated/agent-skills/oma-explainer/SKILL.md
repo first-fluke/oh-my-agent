@@ -77,8 +77,7 @@ outputs:
   and surface the failing items.
 - Oversized diffs: lockfiles/generated files excluded automatically, remaining diff grouped per
   file; exclusions listed in the provenance footer (never silent).
-- v1 validation is grep-based (see `html-contract.md`); a deterministic `oma explain validate`
-  CLI is deferred to v2.
+- Validation is supported via the `oma explain validate [file]` CLI command (and deterministic grep checklist in `html-contract.md`).
 
 ## Structural Flow
 
