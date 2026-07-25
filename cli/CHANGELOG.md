@@ -1,5 +1,22 @@
 # Changelog
 
+## [11.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.25.1...cli-v11.0.0) (2026-07-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **mcp:** `serena.mode` now defaults to `bridge` (shared per-project daemon); set `serena.mode: stdio` to restore one serena per session. `serena.bridge_host` / `serena.bridge_url` are removed. chrome-devtools is no longer wired by default — set `mcp.devtools_browsers: [chrome]` to keep it. context7 entries are rewritten from npx to https://mcp.context7.com/mcp.
+
+### Features
+
+* **mcp:** share one serena per project and trim per-session cost ([b9e5a99](https://github.com/first-fluke/oh-my-agent/commit/b9e5a99a6e888b4c7dd18d625f54cd70c65ccbad))
+
+
+### Bug Fixes
+
+* **mcp:** move serena daemon module out of the bridge command slice ([a5eb18b](https://github.com/first-fluke/oh-my-agent/commit/a5eb18b420477f392c8dc0fdaa681657003ceaf7))
+* **serena:** survive the languages -&gt; language_servers key rename ([eb36926](https://github.com/first-fluke/oh-my-agent/commit/eb36926d88b3111f0ec877d0320efd9a1ab132ee))
+
 ## [10.25.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.25.0...cli-v10.25.1) (2026-07-23)
 
 
