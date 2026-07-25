@@ -285,6 +285,22 @@ describe("pruneRegistry", () => {
 });
 
 describe("daemon lifecycle", () => {
+  /**
+   * These tests register the daemon under `process.pid` (it has to be a live
+   * pid), so reclaiming one with the REAL `process.kill` would SIGTERM the
+   * vitest process itself and take the whole run down with exit 143. Every
+   * reclaim here therefore injects a kill that records instead of signalling —
+   * the tests below assert nothing is reclaimed anyway.
+   */
+  const kills: Array<{ pid: number; signal: NodeJS.Signals }> = [];
+  const recordKill = (pid: number, signal: NodeJS.Signals) => {
+    kills.push({ pid, signal });
+  };
+
+  beforeEach(() => {
+    kills.length = 0;
+  });
+
   async function startDaemon(root: string, killed = { pid: 0 }) {
     const listening = new Set<number>();
     const handle = await ensureSerenaDaemon({
@@ -336,11 +352,19 @@ describe("daemon lifecycle", () => {
     // down immediately would throw away a warm LSP stack for nothing.
     await startDaemon("/proj");
     const key = daemonKey("/proj", "ide");
+    // Anchor the clock BEFORE detaching: `idleSince` is stamped inside
+    // detachClient, so `Date.now()` afterwards is already past it and
+    // `now + GRACE - 1` can land outside the grace on a slow run.
+    const beforeDetach = Date.now();
     detachClient(key);
 
-    const reclaimed = reclaimIdleDaemons(Date.now() + DAEMON_IDLE_GRACE_MS - 1);
+    const reclaimed = reclaimIdleDaemons(
+      beforeDetach + DAEMON_IDLE_GRACE_MS - 1,
+      recordKill,
+    );
 
     expect(reclaimed).toEqual([]);
+    expect(kills).toEqual([]);
     expect(readRegistry()[key]).toBeDefined();
   });
 
@@ -352,9 +376,11 @@ describe("daemon lifecycle", () => {
 
     const reclaimed = reclaimIdleDaemons(
       Date.now() + DAEMON_IDLE_GRACE_MS * 10,
+      recordKill,
     );
 
     expect(reclaimed).toEqual([]);
+    expect(kills).toEqual([]);
     expect(readRegistry()[key]?.idleSince).toBeUndefined();
   });
 
@@ -371,8 +397,9 @@ describe("daemon lifecycle", () => {
       JSON.stringify(registry),
     );
 
-    reclaimIdleDaemons();
+    reclaimIdleDaemons(Date.now(), recordKill);
 
+    expect(kills).toEqual([]);
     expect(readRegistry()[key]?.idleSince).toBeDefined();
   });
 });
