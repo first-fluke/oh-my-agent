@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.1...cli-v11.0.2) (2026-07-25)
+
+
+### Bug Fixes
+
+* **hooks:** record the oma path $HOME-relative in oma-hook.sh ([2119ece](https://github.com/first-fluke/oh-my-agent/commit/2119ecea9f807855c58d350b349f3f3d09a79807))
+
 ## [11.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.0...cli-v11.0.1) (2026-07-25)
 
 
