@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.0...cli-v11.0.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* **mcp:** write bridge entries with bare oma, not machine paths ([39a5585](https://github.com/first-fluke/oh-my-agent/commit/39a55859db04eeb0a3edbc5c01027b54005a838a))
+
 ## [11.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v10.25.1...cli-v11.0.0) (2026-07-25)
 
 
