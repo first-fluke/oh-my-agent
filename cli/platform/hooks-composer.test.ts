@@ -7,7 +7,7 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -355,6 +355,48 @@ describe("generateOmaHookWrapper path escaping", () => {
   it("leaves a plain path unchanged", () => {
     const wrapper = generateOmaHookWrapper("/usr/local/bin/oma");
     expect(wrapper).toContain('if [ -x "/usr/local/bin/oma" ]; then');
+  });
+
+  // The ${HOME} rewrite is POSIX-only: on win32 homedir() is `C:\Users\<name>`
+  // while the Git Bash that runs the wrapper reports $HOME as `/c/Users/<name>`,
+  // so the generator keeps the recorded path verbatim there.
+  const posixOnly = it.skipIf(process.platform === "win32");
+
+  posixOnly(
+    "records a home-directory path with an unexpanded HOME prefix",
+    () => {
+      const wrapper = generateOmaHookWrapper(join(homedir(), ".bun/bin/oma"));
+
+      expect(wrapper).toContain(
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
+        'if [ -x "${HOME}/.bun/bin/oma" ]; then',
+      );
+      // The installing user's home must not leak into a file projects commit.
+      expect(wrapper).not.toContain(homedir());
+    },
+  );
+
+  posixOnly(
+    "still escapes metacharacters in the tail of a HOME-relative path",
+    () => {
+      const wrapper = generateOmaHookWrapper(
+        join(homedir(), '.bun/$(touch /tmp/pwned)/weird"path/oma'),
+      );
+
+      expect(wrapper).toContain(
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
+        '"${HOME}/.bun/\\$(touch /tmp/pwned)/weird\\"path/oma"',
+      );
+      expect(wrapper).not.toContain("/.bun/$(touch");
+    },
+  );
+
+  posixOnly("leaves a path outside the home directory expanded", () => {
+    const wrapper = generateOmaHookWrapper("/opt/oma/bin/oma");
+
+    expect(wrapper).toContain('if [ -x "/opt/oma/bin/oma" ]; then');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
+    expect(wrapper).not.toContain("${HOME}");
   });
 });
 

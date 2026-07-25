@@ -68,7 +68,7 @@ export type {
  *
  * ### ONE wrapper per vendor
  * A single `oma-hook.sh` is written to `hookDir`. It resolves the oma binary
- * (PATH → recorded absolute path → exit 0 fail-open) and `exec`s `oma hook "$@"`.
+ * (recorded install-time path → PATH → exit 0 fail-open) and `exec`s `oma hook "$@"`.
  */
 export function installHooksFromVariant(
   sourceDir: string,

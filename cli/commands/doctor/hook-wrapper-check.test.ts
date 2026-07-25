@@ -148,6 +148,32 @@ describe("collectHookWrapperChecks", () => {
     expect(qwen?.status).toBe("pass");
   });
 
+  it("expands a HOME-relative recorded path before testing it", () => {
+    // Wrappers written on POSIX hosts record the home prefix unexpanded so the
+    // file stays machine-independent when a project commits its hook dir.
+    const expanded = "/home/testuser/.bun/bin/oma";
+
+    fsState.existsSyncFn.mockImplementation((p: unknown) => {
+      const path = String(p);
+      if (path.endsWith(".claude/hooks/oma-hook.sh")) return true;
+      return path === expanded;
+    });
+    fsState.accessSyncFn.mockImplementation((_p: unknown, _mode: unknown) => {
+      // accessSync does not throw → file is executable
+    });
+    fsState.readFileSyncFn.mockImplementation((p: unknown) =>
+      String(p).endsWith(".claude/hooks/oma-hook.sh")
+        ? // biome-ignore lint/suspicious/noTemplateCurlyInString: Bash variable
+          wrapperWithPath("${HOME}/.bun/bin/oma")
+        : "",
+    );
+
+    // Empty PATH → the recorded path is the only way this can pass
+    const checks = collectHookWrapperChecks("/project", makeEnv([]));
+
+    expect(checks.find((c) => c.vendor === "claude")?.status).toBe("pass");
+  });
+
   it("excludes the antigravity vendor (no oma-hook.sh — .agents/hooks.json runs handlers directly)", () => {
     fsState.existsSyncFn.mockReturnValue(false);
     const checks = collectHookWrapperChecks("/project", makeEnv());

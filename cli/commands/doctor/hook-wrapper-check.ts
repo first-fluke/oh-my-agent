@@ -3,10 +3,11 @@
  *
  * For each hook-model vendor, if `<projectDir>/<hookDir>/oma-hook.sh` is
  * present the check verifies that the oma binary is resolvable the same
- * way the wrapper does at runtime:
+ * way the wrapper does at runtime (either source is enough):
  *
- *   1. `command -v oma` on the current PATH (PATH lookup via executableSearchPaths)
- *   2. The recorded absolute path embedded in the wrapper (exists + executable)
+ *   1. The path recorded in the wrapper at install time, `${HOME}` expanded
+ *      (exists + executable)
+ *   2. `command -v oma` on the current PATH (PATH lookup via executableSearchPaths)
  *
  * Possible outcomes per vendor:
  *   - "skip"    — wrapper not installed (vendor not set up); check is silent / N/A.
@@ -88,10 +89,16 @@ function omaOnPath(env: NodeJS.ProcessEnv): boolean {
  * We match that line to recover the path written at install time.
  * Returns null if the wrapper doesn't contain the expected pattern
  * (e.g. it's an older wrapper or has been modified).
+ *
+ * A path under the installing user's home is recorded as a literal `${HOME}`
+ * prefix (machine-independent — see generateOmaHookWrapper); expand it here the
+ * way the shell would before testing the file.
  */
 function extractRecordedPath(wrapperContent: string): string | null {
   const match = wrapperContent.match(/\[ -x "([^"]+)" \]/);
-  return match?.[1] ?? null;
+  const recorded = match?.[1];
+  if (!recorded) return null;
+  return recorded.replace(/^\$\{HOME\}(?=\/|$)/, homedir());
 }
 
 /** True when the recorded install-time path still exists and is executable. */
