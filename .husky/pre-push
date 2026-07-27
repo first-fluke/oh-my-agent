@@ -2,3 +2,7 @@ bun run typecheck
 # Mirror GitHub Actions, which sets CI=true automatically. Catches tests
 # that behave differently under non-interactive yes-mode (install.ts).
 CI=true bun run test
+# Same gate CI runs on ubuntu. Without it, edits under .agents/ that change the
+# emitted marketplace manifest or cli/{CLAUDE,AGENTS}.md only surface after the
+# push has already landed on main.
+bun run --cwd cli check:emit-drift

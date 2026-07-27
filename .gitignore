@@ -127,3 +127,9 @@ __pycache__/
 
 # oh-my-agent runtime (local artifacts — do not commit)
 .migration-backup/
+
+# `oma emit --target agent-skills|agents-md` output. Not committed: it was a
+# near-verbatim copy of .agents/skills/ whose ../_shared/ references did not
+# survive the copy, so the drop-in-distribution purpose never held. The command
+# still works for users emitting into their own projects.
+/generated/
