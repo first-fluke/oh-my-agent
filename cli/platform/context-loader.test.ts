@@ -131,11 +131,11 @@ describe("resolveContextBundle — resource lists", () => {
     ).toBe(true);
   });
 
-  it("Medium bundle contains reasoning-templates.md", () => {
+  it("Medium bundle carries no fill-in reasoning templates", () => {
     const bundle = resolveContextBundle("backend-engineer", "Medium");
     expect(
       bundle.resources.some((r) => r.includes("reasoning-templates.md")),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("Complex bundle is a superset of Medium bundle", () => {

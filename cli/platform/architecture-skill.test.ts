@@ -55,7 +55,6 @@ describe("oma-architecture skill", () => {
       "SKILL.md",
       "resources/execution-protocol.md",
       "resources/checklist.md",
-      "resources/examples.md",
       "resources/methodology-selection.md",
       "resources/stakeholder-synthesis.md",
       "resources/output-templates.md",

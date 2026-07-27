@@ -13,6 +13,12 @@ import { parseFrontmatter } from "../../utils/frontmatter.js";
 
 export const LINT_MIN_DESCRIPTION_CHARS = 40;
 
+// Anthropic's skill authoring guide caps the SKILL.md body at 500 lines; past
+// that, content belongs in `resources/` behind progressive disclosure. The body
+// is measured with frontmatter excluded, since only the body is loaded on
+// trigger.
+export const LINT_MAX_BODY_LINES = 500;
+
 const SSL_LITE_SECTIONS = [
   "Scheduling",
   "Structural Flow",
@@ -99,6 +105,16 @@ function lintGeneric(
       smell: "weak-description",
       severity: "warn",
       detail: `frontmatter \`description\` is ${description.trim().length} chars (< ${LINT_MIN_DESCRIPTION_CHARS}) — too thin to route on`,
+    });
+  }
+
+  const bodyLines = body.replace(/\n$/, "").split("\n").length;
+  if (bodyLines > LINT_MAX_BODY_LINES) {
+    smells.push({
+      skill,
+      smell: "body-too-long",
+      severity: "warn",
+      detail: `SKILL.md body is ${bodyLines} lines (> ${LINT_MAX_BODY_LINES}) — move detail into \`resources/\` and keep navigation here`,
     });
   }
 

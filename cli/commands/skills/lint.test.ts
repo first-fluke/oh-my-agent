@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { INSTALLED_SKILLS_DIR } from "../../constants/vendors.js";
-import { lintSkills } from "./lint.js";
+import { LINT_MAX_BODY_LINES, lintSkills } from "./lint.js";
 
 const SSL_LITE_BODY = `
 # Test Skill
@@ -105,6 +105,23 @@ describe("lintSkills", () => {
     });
     const report = lintSkills(workspace);
     expect(report.smells.map((s) => s.smell)).toContain("weak-description");
+  });
+
+  it("warns when the SKILL.md body exceeds the 500-line cap", () => {
+    writeSkill(workspace, "oma-bloated", {
+      body: `# Bloated\n\n${"Filler line.\n".repeat(LINT_MAX_BODY_LINES)}`,
+    });
+    const report = lintSkills(workspace);
+    const smell = report.smells.find((s) => s.smell === "body-too-long");
+    expect(smell?.severity).toBe("warn");
+  });
+
+  it("does not flag a body at the 500-line cap", () => {
+    writeSkill(workspace, "oma-atcap", {
+      body: `${"Filler line.\n".repeat(LINT_MAX_BODY_LINES - 1)}`,
+    });
+    const report = lintSkills(workspace);
+    expect(report.smells.map((s) => s.smell)).not.toContain("body-too-long");
   });
 
   it("warns on leftover template placeholders outside code", () => {

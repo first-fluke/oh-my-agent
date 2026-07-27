@@ -52,12 +52,11 @@ const SIMPLE_RESOURCES = [
 ];
 
 /**
- * Medium tier: everything in Simple + clarification protocol,
- * reasoning templates, and the relevant rules files.
+ * Medium tier: everything in Simple + clarification protocol
+ * and the relevant rules files.
  */
 const MEDIUM_EXTRA_RESOURCES = [
   ".agents/skills/_shared/core/clarification-protocol.md",
-  ".agents/skills/_shared/core/reasoning-templates.md",
   // Rules loaded for Medium+ — agents need coding conventions at this level
   ".agents/rules/backend.md",
   ".agents/rules/quality.md",
