@@ -305,6 +305,10 @@ function spawnDaemonProcess(
     },
   );
 
+  // A missing executable reports failure asynchronously through `error`.
+  // Always consume it: pid is undefined in that case, so the caller can return
+  // null and use the stdio fallback instead of crashing on an unhandled event.
+  child.once("error", () => {});
   if (typeof child.pid !== "number") return null;
   child.unref();
   return child.pid;

@@ -103,6 +103,28 @@ describe.skipIf(process.platform === "win32")("install.sh", () => {
     expect(result.stdout).toContain("main-executed");
   });
 
+  it("continues the bootstrap when optional Serena setup fails", () => {
+    const script = readFileSync(installScript, "utf-8");
+    const stubBody = (name: string) =>
+      new RegExp(`^${name}\\(\\)\\s*\\{[\\s\\S]*?^\\}`, "m");
+    const testScript = script
+      .replace(stubBody("check_bun"), "check_bun() { return 0; }")
+      .replace(stubBody("check_uv"), "check_uv() { return 1; }")
+      .replace(stubBody("install_uv"), "install_uv() { return 1; }")
+      .replace(stubBody("check_serena"), "check_serena() { return 1; }")
+      .replace(stubBody("install_serena"), "install_serena() { return 1; }")
+      .replace(/exec bunx.*$/m, 'printf "main-executed"; exit 0');
+
+    const result = spawnSync("bash", [], {
+      input: testScript,
+      encoding: "utf-8",
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("main-executed");
+    expect(result.stdout).toContain("Continuing without Serena");
+  });
+
   it("redirects Windows users to the PowerShell installer", () => {
     const result = runBash(`
       source "${installScript}"

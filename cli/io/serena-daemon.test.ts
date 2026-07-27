@@ -218,6 +218,27 @@ describe("ensureSerenaDaemon", () => {
     expect(handle).toBeNull();
   });
 
+  it("handles a missing serena executable without an unhandled spawn error", async () => {
+    const originalPath = process.env.PATH;
+    const emptyBin = join(work, "empty-bin");
+    mkdirSync(emptyBin, { recursive: true });
+    process.env.PATH = emptyBin;
+
+    try {
+      const handle = await ensureSerenaDaemon({
+        root: work,
+        context: "ide",
+        timeoutMs: 2_000,
+        probe: async () => false,
+      });
+      await new Promise<void>((resolve) => setImmediate(resolve));
+
+      expect(handle).toBeNull();
+    } finally {
+      process.env.PATH = originalPath;
+    }
+  });
+
   it("drops the registration when the daemon dies during startup", async () => {
     const handle = await ensureSerenaDaemon({
       root: "/proj",

@@ -53,6 +53,7 @@ export function isUvAvailable(): boolean {
 export type SerenaBinaryOutcome =
   | { status: "present" }
   | { status: "installed" }
+  | { status: "installed-not-on-path" }
   | { status: "install-failed"; error: string }
   | { status: "uv-missing" };
 
@@ -65,7 +66,9 @@ export type SerenaBinaryOutcome =
  * closes that gap by self-installing via `uv` when possible.
  *
  *  - `present`        — already on PATH; no-op.
- *  - `installed`      — was missing; `uv tool install` succeeded.
+ *  - `installed`      — installed via `uv` and verified on PATH.
+ *  - `installed-not-on-path` — `uv` succeeded, but the binary is not runnable
+ *                              from the current environment.
  *  - `install-failed` — `uv` present but the install errored (network, etc.).
  *  - `uv-missing`     — neither `serena` nor `uv` available; cannot self-install.
  *
@@ -84,7 +87,9 @@ export function ensureSerenaBinary(opts?: {
       stdio: "ignore",
       timeout: SERENA_INSTALL_TIMEOUT_MS,
     });
-    return { status: "installed" };
+    return isSerenaBinaryAvailable()
+      ? { status: "installed" }
+      : { status: "installed-not-on-path" };
   } catch (err) {
     return {
       status: "install-failed",

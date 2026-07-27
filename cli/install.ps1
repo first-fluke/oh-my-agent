@@ -72,7 +72,8 @@ if (Test-Command bun) {
   Write-Ok "bun installed"
 }
 
-# ── uv (required for Serena MCP) ────────────────────────────────────
+# ── uv (optional; required only for Serena MCP) ─────────────────────
+$serenaSetupReady = $true
 if (Test-Command uv) {
   Write-Ok "uv found"
 } else {
@@ -80,33 +81,46 @@ if (Test-Command uv) {
   try {
     Invoke-RestMethod https://astral.sh/uv/install.ps1 | Invoke-Expression
   } catch {
-    Write-Fail "uv installation failed. See https://docs.astral.sh/uv"
+    Write-Warn "uv installation failed. See https://docs.astral.sh/uv"
+    $serenaSetupReady = $false
   }
-  Add-ToPath "$env:USERPROFILE\.local\bin"
-  if (-not (Test-Command uv)) {
-    Write-Fail "uv installation failed. Restart your shell and retry, or install manually: https://docs.astral.sh/uv"
+  if ($serenaSetupReady) {
+    Add-ToPath "$env:USERPROFILE\.local\bin"
+    if (-not (Test-Command uv)) {
+      Write-Warn "uv installation failed. Restart your shell and retry, or install manually: https://docs.astral.sh/uv"
+      $serenaSetupReady = $false
+    } else {
+      Write-Ok "uv installed"
+    }
   }
-  Write-Ok "uv installed"
 }
 
 # ── serena (Serena MCP binary, installed via uv tool) ───────────────
 if (Test-Command serena) {
   Write-Ok "serena found"
-} else {
+  $serenaSetupReady = $true
+} elseif ($serenaSetupReady) {
   Write-Info "Installing serena-agent via uv tool..."
   & uv tool install -p 3.13 serena-agent@latest --prerelease=allow
   if ($LASTEXITCODE -ne 0) {
-    Write-Fail "serena-agent install failed. Please install manually: uv tool install -p 3.13 serena-agent@latest --prerelease=allow"
+    Write-Warn "serena-agent install failed. Please install manually: uv tool install -p 3.13 serena-agent@latest --prerelease=allow"
+    $serenaSetupReady = $false
+  } else {
+    Add-ToPath "$env:USERPROFILE\.local\bin"
+    if (-not (Test-Command serena)) {
+      Write-Warn "serena binary not on PATH after install. Run: uv tool update-shell"
+      $serenaSetupReady = $false
+    } else {
+      Write-Ok "serena installed"
+    }
   }
-  Add-ToPath "$env:USERPROFILE\.local\bin"
-  if (-not (Test-Command serena)) {
-    Write-Fail "serena binary not on PATH after install. Run: uv tool update-shell"
-  }
-  Write-Ok "serena installed"
+}
+if (-not $serenaSetupReady) {
+  Write-Warn "Continuing without Serena; install it later to enable code intelligence."
 }
 
 Write-Host ""
-Write-Ok "All dependencies ready"
+Write-Ok "Core dependencies ready"
 Write-Host ""
 
 # ── Run oh-my-agent ─────────────────────────────────────────────────

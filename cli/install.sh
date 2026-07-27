@@ -104,13 +104,17 @@ check_uv() {
 
 install_uv() {
   info "Installing uv..."
-  download_to_stdout https://astral.sh/uv/install.sh | sh
+  if ! download_to_stdout https://astral.sh/uv/install.sh | sh; then
+    warn "uv installation failed. See https://docs.astral.sh/uv"
+    return 1
+  fi
   # Source the updated shell profile to pick up uv
   export PATH="${HOME}/.local/bin:${PATH}"
   if command_exists uv; then
     ok "uv installed"
   else
-    fail "uv installation failed. Please install manually: https://docs.astral.sh/uv"
+    warn "uv installation failed. Restart your shell and retry, or install manually: https://docs.astral.sh/uv"
+    return 1
   fi
 }
 
@@ -130,10 +134,12 @@ install_serena() {
     if command_exists serena; then
       ok "serena installed"
     else
-      fail "serena binary not on PATH after install. Run: uv tool update-shell"
+      warn "serena binary not on PATH after install. Run: uv tool update-shell"
+      return 1
     fi
   else
-    fail "serena-agent install failed. Please install manually: uv tool install -p 3.13 serena-agent@latest --prerelease=allow"
+    warn "serena-agent install failed. Please install manually: uv tool install -p 3.13 serena-agent@latest --prerelease=allow"
+    return 1
   fi
 }
 
@@ -151,18 +157,26 @@ main() {
     install_bun
   fi
 
-  # ── uv (required for Serena MCP) ──
+  # ── uv (optional; required only for Serena MCP) ──
+  local serena_setup_ready=true
   if ! check_uv; then
-    install_uv
+    if ! install_uv; then
+      serena_setup_ready=false
+    fi
   fi
 
   # ── serena (Serena MCP binary, installed via uv tool) ──
-  if ! check_serena; then
-    install_serena
+  if check_serena; then
+    serena_setup_ready=true
+  elif [[ "${serena_setup_ready}" == "true" ]] && ! install_serena; then
+    serena_setup_ready=false
+  fi
+  if [[ "${serena_setup_ready}" != "true" ]]; then
+    warn "Continuing without Serena; install it later to enable code intelligence."
   fi
 
   echo ""
-  ok "All dependencies ready"
+  ok "Core dependencies ready"
   echo ""
 
   # CI smoke tests set OMA_INSTALL_NO_RUN=1 to verify the bootstrap path

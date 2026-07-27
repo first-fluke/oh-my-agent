@@ -448,6 +448,10 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         });
         if (serenaBinary.status === "installed") {
           p.log.success(pc.green("Installed serena-agent"));
+        } else if (serenaBinary.status === "installed-not-on-path") {
+          p.log.warn(
+            "Installed serena-agent, but `serena` is not on PATH — run `uv tool update-shell`, then restart your terminal or IDE.",
+          );
         } else if (serenaBinary.status === "install-failed") {
           p.log.warn(
             `serena-agent install failed — run \`${SERENA_INSTALL_HINT}\` manually.`,

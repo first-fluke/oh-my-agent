@@ -68,7 +68,8 @@ describe("ensureSerenaBinary", () => {
     mockExec
       .mockImplementationOnce(fail) // serena --version → missing
       .mockReturnValueOnce(ok()) // uv --version → present
-      .mockReturnValueOnce(ok()); // uv tool install → success
+      .mockReturnValueOnce(ok()) // uv tool install → success
+      .mockReturnValueOnce(ok()); // serena --version → now runnable
     const onInstallStart = vi.fn();
 
     expect(ensureSerenaBinary({ onInstallStart })).toEqual({
@@ -86,6 +87,18 @@ describe("ensureSerenaBinary", () => {
       "serena-agent@latest",
       "--prerelease=allow",
     ]);
+  });
+
+  it("reports when uv installs serena but the binary is still not on PATH", () => {
+    mockExec
+      .mockImplementationOnce(fail) // serena --version → missing
+      .mockReturnValueOnce(ok()) // uv --version → present
+      .mockReturnValueOnce(ok()) // uv tool install → success
+      .mockImplementationOnce(fail); // serena --version → still missing
+
+    expect(ensureSerenaBinary()).toEqual({
+      status: "installed-not-on-path",
+    });
   });
 
   it("returns uv-missing when neither serena nor uv is available", () => {
