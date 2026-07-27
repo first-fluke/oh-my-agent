@@ -72,7 +72,9 @@ not — a well-written skill can still fail `oma skills eval`.
 ## Reference Checks
 
 - `References` points only to files that exist or are intentionally planned.
-- Long examples and provider-specific variants are in `resources/`, not duplicated inline.
+- Provider-specific variants are in `resources/`, not duplicated inline.
+- Any examples that remain document a parsed output contract, not a preferred report shape.
+- No instruction tells the agent to re-verify or self-review its own answer; only runnable validators.
 - Reference files are one hop from `SKILL.md`; avoid deep reference chains.
 
 ## Suggested Commands

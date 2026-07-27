@@ -134,12 +134,10 @@ Then run the project's mobile verification commands, typically unit/widget tests
 
 ## References
 Follow `resources/execution-protocol.md` step by step.
-See `resources/examples.md` for input/output examples.
 Before submitting, run `resources/checklist.md`.
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
-- Code examples: `resources/examples.md`
 - Code snippets (Swift): `variants/swift-ios/snippets.md`
 - Code snippets (Flutter): `variants/flutter/snippets.md`
 - Code snippets (React Native): `variants/react-native/snippets.md`
@@ -157,7 +155,6 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - API service template (React Native): `variants/react-native/api-template.ts`
 - Variant registry: `variants/README.md`
 - Context loading: `../_shared/core/context-loading.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Lessons learned: `../_shared/core/lessons-learned.md`

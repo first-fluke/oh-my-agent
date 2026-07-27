@@ -74,7 +74,7 @@ function runAgentChecks(
     }
     case "qa":
       checks.push(
-        createCheck("QA Report", "pass", "Verified by self-check.md"),
+        createCheck("QA Report", "pass", "No mechanical checks for QA output"),
       );
       break;
     case "debug":

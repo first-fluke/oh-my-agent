@@ -8,8 +8,7 @@
 3. **Clarify requirements**: follow `../../_shared/core/clarification-protocol.md`
    - Check **Uncertainty Triggers**: security/auth related bugs, existing code conflict potential?
    - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
-4. **Use reasoning templates**: for Complex bugs, use `../../_shared/core/reasoning-templates.md` (hypothesis loop, execution trace)
-5. **Budget context**: follow `../../_shared/core/context-budget.md` (use find_symbol, not read_file)
+4. **Budget context**: follow `../../_shared/core/context-budget.md` (use find_symbol, not read_file)
 
 **Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
 

@@ -153,7 +153,9 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 7. Include resource scope and resource targets for filesystem, codebase, process, credentials, network, user data, or memory.
 8. Include effects and side effects, especially for commands, network calls, credentials, destructive actions, generated files, and long-running processes.
 9. Add one canonical path inline so an agent can execute or reason without loading every resource file.
-10. Put long variant-specific details in `resources/`, not in the main skill body.
+10. Put long variant-specific details in `resources/`, not in the main skill body. Keep the SKILL.md body under 500 lines; `oma skills lint` warns as `body-too-long` past that.
+10a. Write examples only when the output format is a contract someone parses — a CLI's result block, a schema, a LAW-validated document. Worked input/output pairs that merely show "what a good report looks like" narrow the model's exploration space to the example's shape, so state the requirement instead and let the model choose the form. Per-task shape belongs in the task, not the skill.
+10b. Do not add instructions to double-check, re-verify, or self-review before answering — current models already do this, and the instruction compounds into over-verification. Deterministic validators the skill can actually run (`oma verify`, a lint script, a schema check) are the exception and should stay: they are feedback loops, not re-reading.
 11. Do not create extra README, changelog, or installation docs inside a skill.
 12. Do not overwrite unrelated user edits.
 13. Enforce the three utility-predictive content dimensions — failure mechanism encoding, actionable specificity, high-risk action blacklist — per the Utility Content Checks in `resources/validation-checklist.md` (SkillLens, arXiv:2605.23899).

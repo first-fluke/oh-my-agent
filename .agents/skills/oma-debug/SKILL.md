@@ -133,19 +133,16 @@ Then run the smallest reproduction command first, add a regression test, and re-
 
 ## References
 Follow `resources/execution-protocol.md` step by step.
-See `resources/examples.md` for input/output examples.
 Before submitting, run `resources/checklist.md`.
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
-- Code examples: `resources/examples.md`
 - Checklist (pre-submit self-verification): `resources/checklist.md`
 - Error recovery: `resources/error-playbook.md`
 - Bug report template: `resources/bug-report-template.md`
 - Common patterns: `resources/common-patterns.md`
 - Debugging checklist (investigation guide, used during Steps 1-2): `resources/debugging-checklist.md`
 - Context loading: `../_shared/core/context-loading.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Lessons learned: `../_shared/core/lessons-learned.md`
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — traces/logs by `trace_id`, 6-dim forensics

@@ -36,7 +36,7 @@ Review and verify software quality with priority on security, performance, acces
 - Verification summary and residual risks
 
 ### Dependencies
-- `resources/execution-protocol.md`, examples, ISO guide, checklist, and self-check
+- `resources/execution-protocol.md`, ISO guide, and checklist
 - Automated tools such as `npm audit`, `bandit`, `lighthouse`, linters, tests, and coverage tools when applicable
 
 ### Control-flow features
@@ -88,7 +88,7 @@ Review and verify software quality with priority on security, performance, acces
 
 ### Tools and instruments
 - Security, lint, coverage, performance, accessibility, and test tools
-- ISO quality guide, checklist, self-check, and examples
+- ISO quality guide and checklist
 
 ### Canonical command path
 ```bash
@@ -127,16 +127,12 @@ Run only the tools that match the detected stack and available target. Add proje
 
 ## References
 Follow `resources/execution-protocol.md` step by step.
-See `resources/examples.md` for input/output examples.
 Use `resources/iso-quality.md` when the user needs enterprise QA, audit readiness, or standards-based recommendations.
-Before submitting, run `resources/self-check.md`.
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
-- Report examples: `resources/examples.md`
 - ISO quality guide: `resources/iso-quality.md`
 - QA checklist: `resources/checklist.md`
-- Self-check: `resources/self-check.md`
 - Error recovery: `resources/error-playbook.md`
 - Ultrawork VERIFY/SHIP phase protocol: `resources/verify-ship-protocol.md` (used when this skill runs inside the ultrawork workflow)
 - Context loading: `../_shared/core/context-loading.md`

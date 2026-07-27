@@ -193,7 +193,6 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - ISO control guide: `resources/iso-controls.md`
 - Error recovery: `resources/error-playbook.md`
 - Context loading: `../_shared/core/context-loading.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Lessons learned: `../_shared/core/lessons-learned.md`

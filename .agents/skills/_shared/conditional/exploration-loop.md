@@ -26,17 +26,7 @@ Do NOT activate for:
 
 ### Step 1: Hypothesize
 
-Generate 2-3 alternative approaches using the **Exploration Decision** reasoning template (see `reasoning-templates.md` #6):
-
-```
-=== Exploration Decision ===
-Problem: {what needs to be solved}
-Current Score: {quality score}
-Attempts So Far: {count and outcomes}
-
-Hypothesis A: ...
-Hypothesis B: ...
-```
+Generate 2-3 alternative approaches that differ in mechanism, not just in wording — if two hypotheses would touch the same code the same way, they are one hypothesis. For each, state the approach, which score dimensions it is expected to move, and the files it would touch. Keep the scope of each experiment to at most 3 files so failures stay attributable.
 
 ### Step 2: Experiment
 
@@ -160,6 +150,5 @@ Same CRITICAL/HIGH issue persists after fix attempt
 | **Quality Score** | Provides measurement for hypothesis comparison |
 | **Experiment Ledger** | Records all hypotheses (kept and discarded) |
 | **Phase Gates** | Repeated gate failure triggers exploration |
-| **Reasoning Templates** | #6 Exploration Decision provides structured format |
 | **Context Loading** | Loaded conditionally, only when triggered |
 | **Memory Protocol** | Uses same memory tools for experiment recording |

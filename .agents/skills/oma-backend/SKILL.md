@@ -188,18 +188,15 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 ## References
 
 Follow `resources/execution-protocol.md` step by step.
-See `resources/examples.md` for input/output examples.
 Use `resources/orm-reference.md` when the task involves ORM query performance, relationship loading, transactions, session/client lifecycle, or N+1 analysis.
 Before submitting, run `resources/checklist.md`.
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
-- Code examples: `resources/examples.md`
 - Checklist: `resources/checklist.md`
 - ORM reference: `resources/orm-reference.md`
 - Error recovery: `resources/error-playbook.md`
 - Context loading: `../_shared/core/context-loading.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Lessons learned: `../_shared/core/lessons-learned.md`

@@ -200,7 +200,6 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - ISO controls: `resources/iso-42001-infra.md`
 - Error recovery: `resources/error-playbook.md`
 - Context loading: `../_shared/core/context-loading.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Difficulty assessment: `../_shared/core/difficulty-guide.md`

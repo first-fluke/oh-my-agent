@@ -6,9 +6,8 @@
 2. **Clarify requirements**: follow `../../_shared/core/clarification-protocol.md` (critical for PM)
    - Check **Uncertainty Triggers**: business logic, security/auth, existing code conflicts?
    - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
-3. **Use reasoning templates**: for architecture decisions, use `../../_shared/core/reasoning-templates.md` (decision matrix)
-4. **Check lessons**: read cross-domain section in `../../_shared/core/lessons-learned.md`
-5. **If governance, risk, or formal planning matters**: read `resources/iso-planning.md`
+3. **Check lessons**: read cross-domain section in `../../_shared/core/lessons-learned.md`
+4. **If governance, risk, or formal planning matters**: read `resources/iso-planning.md`
 
 **Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
 
