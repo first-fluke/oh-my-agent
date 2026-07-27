@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.1...web-v4.0.2) (2026-07-27)
+
+
+### Documentation
+
+* sync skill docs with removed shared resources ([1d539be](https://github.com/first-fluke/oh-my-agent/commit/1d539bef72fc1074c7bc5afca58e91e74f2c2d4b))
+
 ## [4.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.0...web-v4.0.1) (2026-07-25)
 
 
