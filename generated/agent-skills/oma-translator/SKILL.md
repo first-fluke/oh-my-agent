@@ -212,7 +212,7 @@ Rebuild from meaning **as the assigned persona**, following target language norm
 
 #### Stage 4: Verification Gate (blocking; do not emit output until every item is confirmed)
 
-This stage is mandatory. Skipping any item is a bug, not a shortcut. Before producing the final translation, run the mechanical checks first, then the rubric.
+Run the mechanical checks first, then the rubric.
 
 **A. Mechanical checks (run before rubric, must all pass):**
 
@@ -246,16 +246,6 @@ If any mechanical check fails, revise and re-run. Do not proceed to the rubric u
 14. Were all metaphors/idioms handled per the classify decision (interpret/substitute/retain)?
 15. Do figurative expressions read naturally in the target language, not as literal calques?
 
-**E. Pre-emit gate (must answer in writing before output):**
-
-Before emitting the translation, write 1–2 sentences answering each:
-
-1. **"Why is Stage 5 reflection ON or OFF for this content?"**: must cite the specific classification rule from the "When to run Stage 5–7" section. If the target qualifies for both ON and OFF lists (e.g., README table cell as both a short string AND documentation), default ON wins.
-2. **"Does my draft match the sibling patterns in the target context?"**: must reference at least one specific sibling and the matched (or unmatched) pattern dimension.
-3. **"Is any source-language structural artifact (em dash, colon-after-X, parentheses-after-noun) merely substituted rather than restructured?"**: must answer No, with evidence.
-
-If any answer is missing, hand-wavy, or "I think so" without evidence, run Stage 5 anyway before emitting.
-
 ### Translator's Notes Guidelines
 
 When adding explanatory notes for terms, cultural references, or concepts that target readers may struggle with:
@@ -273,10 +263,6 @@ When adding explanatory notes for terms, cultural references, or concepts that t
 - Explain *what it means*, not just provide the English original
 - Don't annotate self-explanatory terms or widely recognized loanwords
 - If a comprehension challenge was identified in Stage 1, use the pre-planned explanation
-
-### Reflection Mode (default for non-trivial content)
-
-Reflection passes (Stage 5–7) are the default (not optional) for any content that is more than a short snippet. Skipping reflection on non-trivial content is the most common cause of translationese complaints.
 
 ### When to run Stage 5–7
 
@@ -302,9 +288,7 @@ Default OFF (Stage 4 verification only) for:
 | Skill description in registry | short noun phrase but commits to git-tracked source | ON: registry descriptions are documentation, not UI locale values |
 | Tooltip in i18n file | <10 words AND in `messages/` | OFF: UI string in locale file |
 
-Reflection cost is acceptable; post-merge revision cost is not.
-
-When in doubt, run reflection. The cost is roughly 1.5–2× tokens; the quality gain on body-text fragments and Europeanized patterns is large.
+When in doubt, run reflection: roughly 1.5–2× tokens, against a post-merge revision that costs more. Skipping it on non-trivial content is the most common source of translationese complaints.
 
 ### Extended workflow
 
@@ -434,11 +418,6 @@ Why:
 | Target language requires gendered forms | Follow source text intent; prefer gender-neutral forms when available in target language |
 | Tone shifts across a long document | Re-read end-to-end after translating; normalize register to the dominant tone |
 
-### How to Execute
-
-Follow the translation method (Stage 1-4) step by step.
-Before submitting, verify against `resources/translation-rubric.md` and `resources/anti-ai-patterns.md`.
-
 ### Execution Protocol (CLI Mode)
 
 Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
@@ -504,4 +483,19 @@ rg "<source-key-or-term>" .
 7. Flag ambiguous source text rather than guessing
 8. Preserve domain terminology: if a term has established meaning in the field (e.g., harness, scaffold, shim, polyfill, middleware), keep it even if a "simpler" native word exists
 9. Never produce literal word-for-word translations
-> **Note:** this file exceeded the Agent Skills spec's recommended 500-line body and was mechanically split by `oma emit`. The rest of the content continues in `references/overflow.md`.
+10. Never mix registers within a single piece (formal + casual)
+11. Never replace domain-specific terms with generic equivalents (e.g., "harness" → "framework", "shim" → "wrapper")
+12. Never translate proper nouns unless existing translations do so
+13. Never change the meaning to "sound better"
+14. Never skip verification stage for batches > 10 strings
+15. Never modify source file structure (keys, nesting, comments)
+16. Never preserve source-language formatting artifacts that are unnatural in the target language. For CJK targets (Korean, Japanese, Chinese), em dashes (—), title case in headings, and trailing "-ing" participle clauses must be restructured, even when the source uses them. See `resources/anti-ai-patterns.md` rules 2 (-ing phrases), 14–15 (em dash, title case), and 25 (CJK typography & fragments).
+17. Never "humanize" by inventing personality. Do not add first person, jokes, opinions, examples, facts, citations, stronger emotion, or messiness unless the source or user explicitly calls for adaptation.
+18. When a voice sample is provided, match observable style traits only: rhythm, diction level, punctuation habits, transitions, and paragraph shape. Preserve source meaning and target-language naturalness above mimicry.
+
+## References
+
+- Translation rubric: `resources/translation-rubric.md` (5-criterion scoring: naturalness, accuracy, register, terminology, technical integrity)
+- Anti-AI patterns: `resources/anti-ai-patterns.md` (AI output patterns + Europeanized/translation-ese patterns to avoid)
+- Context loading: `../_shared/core/context-loading.md`
+- Quality principles: `../_shared/core/quality-principles.md`

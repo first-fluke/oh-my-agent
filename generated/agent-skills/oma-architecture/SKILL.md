@@ -168,14 +168,12 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 
 ## References
 Follow `resources/execution-protocol.md` step by step.
-See `resources/examples.md` for output examples.
 Use `resources/methodology-selection.md` to select the right method.
 Use `resources/stakeholder-synthesis.md` when stakeholder consultation is needed.
 Use `resources/output-templates.md` to format the final artifact.
 Before submitting, run `resources/checklist.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Checklist: `resources/checklist.md`
-- Examples: `resources/examples.md`
 - Method selection: `resources/methodology-selection.md`
 - Stakeholder protocol: `resources/stakeholder-synthesis.md`
 - Output templates: `resources/output-templates.md`
@@ -183,6 +181,5 @@ Before submitting, run `resources/checklist.md`.
 - Migration/transition patterns (strangler fig, branch by abstraction, expand-contract): `resources/migration-patterns.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Difficulty guide: `../_shared/core/difficulty-guide.md`
-- Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification protocol: `../_shared/core/clarification-protocol.md`
 - Quality principles: `../_shared/core/quality-principles.md`

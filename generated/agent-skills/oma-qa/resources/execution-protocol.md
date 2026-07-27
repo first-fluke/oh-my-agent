@@ -169,9 +169,6 @@ Generate structured report with:
   - missing test design / traceability / exit criteria
 
 ## Step 4: Verify
-- Run `resources/self-check.md` to verify your own review quality
-- Ensure no false positives (each finding is real and reproducible)
-- Confirm remediation suggestions are correct and complete
 - Run `../../_shared/core/common-checklist.md` for general quality
 
 ## On Error
