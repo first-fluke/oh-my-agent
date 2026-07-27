@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.1.1",
-  "releaseDate": "2026-07-27T06:57:34.859Z",
+  "releaseDate": "2026-07-27T22:32:18.073Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1856,8 +1856,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "42da68b4f829bd87bd51cf2abc7d7732db13180c0bbeb86dd5312ed16dffed17",
-      "size": 25374
+      "sha256": "d45e3f0e3ac8ee0a68259541fd04a5981641a1b8b45d77bd7c3977804639269b",
+      "size": 27110
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -1871,8 +1871,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "cceacfa0c6eee0ee52285851045e9ee3744db8c931cb5ecbd399a81bc74d2a8f",
-      "size": 7350
+      "sha256": "25898eb80f0e4f59745947d3c6c721dc297e409c7dce2f6f1db8686cbfe9998c",
+      "size": 7380
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -1886,8 +1886,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/prompt-tips.md",
-      "sha256": "2d7eb8918230e6ad2cad38c9dad2f81ccd9742745f2e88ac4a9bafe63016b767",
-      "size": 4515
+      "sha256": "fbc1a3e183657b1f9957e16afabbdfa6b3e475f95c1cf992a883df33081b7841",
+      "size": 4578
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion/.gitignore",
@@ -1971,8 +1971,23 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/script-schema.md",
-      "sha256": "5618627fe5767a6687691aad6adfa063f4e2385cc443e2d9bfae2a08457ce384",
-      "size": 3596
+      "sha256": "c49049bbdbb809f718838140685a71fbc7edd3a4af452efb0eeac5c3582e92db",
+      "size": 3597
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/strudel/package.json",
+      "sha256": "95609e33d153f5bf37e47b8d825f759bad1c2d849baeae2676b5852ab3c32bd2",
+      "size": 477
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/strudel/page.html",
+      "sha256": "4089d6ec273c3b72654638bc13ad2299be28cee94a9d42a4126542b4c7da38c3",
+      "size": 3088
+    },
+    {
+      "path": ".agents/skills/oma-video/resources/strudel/render.mjs",
+      "sha256": "07eeed318a47be38204c2068374bddbd6acf17521f91557acfd6a2f45c58caf4",
+      "size": 10017
     },
     {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
@@ -2121,8 +2136,8 @@
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "d8d97029a0b0dd7abce67f1083b34b797ed5377567256c2ce68bcbe752ff18e8",
-      "size": 22680
+      "sha256": "2473b33cbc5923f72daa7a16884eeffb28f6dbd92c96c677612014e95cc0cb27",
+      "size": 22748
     },
     {
       "path": ".agents/workflows/work.md",
@@ -2136,6 +2151,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 425
+    "totalFiles": 428
   }
 }
