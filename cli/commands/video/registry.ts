@@ -4,6 +4,7 @@ import { TimedCaptionProvider } from "./providers/caption.js";
 import { GuidedCaptureProvider } from "./providers/capture.js";
 import { PlaywrightCaptureProvider } from "./providers/capture-playwright.js";
 import { RemotionLikeCompositor } from "./providers/compositor.js";
+import { StrudelMusicProvider } from "./providers/music-strudel.js";
 import {
   AgentScriptProvider,
   type ScriptInjector,
@@ -91,6 +92,7 @@ export function defaultVideoRegistry(
     .register("caption", new TimedCaptionProvider())
     .register("capture", new PlaywrightCaptureProvider(options.cwd))
     .register("capture", new GuidedCaptureProvider(options.cwd))
+    .register("music", new StrudelMusicProvider())
     .register("compositor", new RemotionLikeCompositor("remotion"))
     .register("compositor", new RemotionLikeCompositor("mpt"));
   return registry;

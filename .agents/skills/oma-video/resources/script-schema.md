@@ -15,7 +15,7 @@ required** — omitting it is the most common authoring failure.
 | `locale` | string (min 1) | ✅ | narration/caption language tag, e.g. `en`, `ko` |
 | `title` | string (min 1) | ✅ | also drives the output filename slug: `<mode>-<slug>.mp4` |
 | `scenes` | array (min 1, ≤ 40) | ✅ | see per-scene fields below |
-| `music` | `upbeat` \| `calm` \| `none` | ✅ | recorded only — music mixing is deferred (`TODO(oma-deferred): music`) |
+| `music` | `upbeat` \| `calm` \| `cinematic` \| `lofi` \| `piano` \| `none` | ✅ | drives the Strudel BGM bed; mixed at −18 dB under narration |
 | `brand` | object | — | free-form; defaults to `{}` |
 
 ### Per-scene fields (`scenes[]`)
@@ -77,5 +77,5 @@ required** — omitting it is the most common authoring failure.
 - [ ] `aspect` is concrete (`9:16` / `16:9` / `1:1`) — never `auto`.
 - [ ] Scene count ≤ 40, total `durationSec` ≤ 180.
 - [ ] Every scene has a `visual.kind` from the enum; `still` scenes carry an English `visual.prompt`.
-- [ ] `music` is set (use `"none"` unless the user asked — mixing is deferred either way).
+- [ ] `music` is set (use `"none"` unless the user asked for a bed).
 - [ ] Validate cheaply before rendering: pass the file via `--script` with `--dry-run` first.

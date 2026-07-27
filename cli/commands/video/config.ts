@@ -47,6 +47,7 @@ export interface VideoConfig {
     visual: ProviderOrderConfig;
     caption: ProviderOrderConfig;
     capture: ProviderOrderConfig;
+    music: ProviderOrderConfig;
     compositor: ProviderOrderConfig;
     pexels: EnvGatedProviderConfig;
     pixelle: EnvGatedProviderConfig;
@@ -82,6 +83,7 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
     visual: { order: ["oma-image", "pexels", "pixelle"] },
     caption: { order: ["oma-captions"] },
     capture: { order: ["playwright-web", "cap"] },
+    music: { order: ["strudel"] },
     compositor: { order: ["remotion", "mpt"] },
     pexels: { enabled: false, envVar: "PEXELS_API_KEY" },
     pixelle: { enabled: false, envVar: "RUNNINGHUB_API_KEY" },
@@ -139,6 +141,10 @@ function mergeConfig(
       capture: {
         ...defaults.providers.capture,
         ...(fileConfig.providers?.capture ?? {}),
+      },
+      music: {
+        ...defaults.providers.music,
+        ...(fileConfig.providers?.music ?? {}),
       },
       compositor: {
         ...defaults.providers.compositor,

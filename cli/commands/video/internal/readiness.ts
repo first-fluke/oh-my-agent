@@ -11,6 +11,7 @@ import {
   getRemotionProjectStatus,
   isPretendardFontPresent,
 } from "./remotion-project.js";
+import { getStrudelProjectStatus } from "./strudel-project.js";
 
 export interface ReadinessCheck {
   name: string;
@@ -272,6 +273,33 @@ export function checkPlaywright(): ReadinessCheck {
   };
 }
 
+/**
+ * Strudel BGM renderer — optional; a missing install just means no music track.
+ * Its deps are AGPL-3.0-or-later, so they are installed only on explicit
+ * request (`oma video doctor --install-strudel`) and never bundled with the CLI.
+ */
+export function checkStrudel(): ReadinessCheck {
+  const status = getStrudelProjectStatus();
+  if (!status.dir) {
+    return {
+      name: "strudel",
+      ok: false,
+      detail: "not found (renders without music)",
+      remediation: "Install the oma-video skill, or set OMA_VIDEO_STRUDEL_DIR.",
+    };
+  }
+  return {
+    name: "strudel",
+    ok: status.installed,
+    detail: status.installed
+      ? `ready (${status.dir})`
+      : `project found, @strudel/web missing (${status.dir})`,
+    remediation: status.installed
+      ? undefined
+      : "Run `oma video doctor --install-strudel` (installs AGPL-3.0-or-later packages locally).",
+  };
+}
+
 /** Cap capture CLI — optional; guided capture is the fallback. */
 export async function checkCap(): Promise<ReadinessCheck> {
   const probe = await binaryAvailable("cap", ["--version"]);
@@ -300,6 +328,7 @@ export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
     checkPretendardFont(),
     checkMptProject(),
     checkPlaywright(),
+    checkStrudel(),
     voicebox,
     omaImage,
     checkPixelle(),

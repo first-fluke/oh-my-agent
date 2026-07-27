@@ -112,7 +112,7 @@ describe("VideoOrchestrator", () => {
     ).toBe(true);
   });
 
-  it("warns that a requested music mode is deferred (no asset source)", async () => {
+  it("takes the music fallback branch on a dry run (no bed, no dangling ref)", async () => {
     const config = await loadVideoConfig(tmp);
     const orchestrator = new VideoOrchestrator(
       config,
@@ -125,8 +125,15 @@ describe("VideoOrchestrator", () => {
     });
     expect(result.exitCode).toBe(0);
     expect(result.warnings.join("\n")).toContain(
-      'music: requested "upbeat" but no music asset source is available yet',
+      "music provider strudel used fallback path",
     );
+    // The fallback branch must never leave a music ref the compositor would
+    // then try to resolve with staticFile().
+    const spec = JSON.parse(
+      readFileSync(path.join(result.runDir ?? "", "render-spec.json"), "utf8"),
+    ) as { audio: { music?: string; musicGainDb?: number } };
+    expect(spec.audio.music).toBeUndefined();
+    expect(spec.audio.musicGainDb).toBeUndefined();
   });
 
   it("records voice fallback provenance (estimated timing, no audio)", async () => {

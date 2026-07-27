@@ -53,7 +53,7 @@ Scene/backdrop → Subject → Details → Constraints
 - Anchor the **arc**: hook → body → payoff. A short without a hook gets swiped past.
 - Match **aspect to mode** (9:16 shorts, 16:9 explainer/demo) or use `auto`.
 - Keep narration **per-scene and short** so caption pages and scene boundaries align.
-- Pick **music** that matches pacing (`upbeat` for shorts, `calm` for explainer) — note music mixing is currently deferred: the choice is recorded in `script.json` and warned, but not yet audible.
+- Pick **music** that matches pacing (`upbeat` for shorts, `calm` for explainer) — Strudel renders the bed offline and mixes it at −18 dB under narration. Needs a one-time `oma video doctor --install-strudel`; without it the run still succeeds, just silent.
 
 ## Don'ts
 

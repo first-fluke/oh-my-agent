@@ -23,7 +23,10 @@ export function registerVideoCommand(program: Command): void {
       "Visuals: auto | generate | stock | aigc | slide",
     )
     .option("--voice <profile>", "Voice profile, or none")
-    .option("--music <mode>", "Music: upbeat | calm | none")
+    .option(
+      "--music <mode>",
+      "Music: upbeat | calm | cinematic | lofi | piano | none",
+    )
     .option("--duration <sec>", "Duration in seconds, or auto")
     .option("--compositor <name>", "Compositor: remotion | mpt")
     .option(
@@ -96,6 +99,10 @@ export function registerVideoCommand(program: Command): void {
     .option(
       "--install-playwright",
       "One-time install of Playwright (npm i playwright + chromium) for web capture",
+    )
+    .option(
+      "--install-strudel",
+      "One-time install of the Strudel BGM renderer (AGPL-3.0-or-later deps)",
     )
     .action(async (opts: Record<string, unknown>): Promise<void> => {
       try {

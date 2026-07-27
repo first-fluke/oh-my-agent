@@ -11,6 +11,7 @@ import {
   installPretendardFont,
   installRemotionProject,
 } from "./internal/remotion-project.js";
+import { installStrudelProject } from "./internal/strudel-project.js";
 
 const BASELINE = new Set(["node", "chromium", "ffmpeg", "oma-image"]);
 
@@ -61,6 +62,18 @@ export async function runVideoDoctor({
     if (formatMode !== "json") {
       const mark = result.ok ? color.green("✓") : color.yellow("!");
       console.log(`${mark} playwright install: ${result.detail}`);
+      if (result.dir) console.log(color.dim(`    ${result.dir}`));
+    }
+  }
+
+  // Opt-in, one-time install of the vendored Strudel BGM renderer's deps.
+  // Explicit by design: `@strudel/*` is AGPL-3.0-or-later, so it is never
+  // installed implicitly and never bundled with the MIT-licensed CLI.
+  if (opts.installStrudel === true) {
+    const result = await installStrudelProject();
+    if (formatMode !== "json") {
+      const mark = result.ok ? color.green("✓") : color.yellow("!");
+      console.log(`${mark} strudel install: ${result.detail}`);
       if (result.dir) console.log(color.dim(`    ${result.dir}`));
     }
   }

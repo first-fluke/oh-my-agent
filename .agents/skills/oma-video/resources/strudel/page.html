@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>oma-video strudel offline render</title>
+  </head>
+  <body>
+    <!-- Served by render.mjs from the resolved @strudel/web dist. The IIFE
+         bundle exposes everything on `window.strudel` + `window.initStrudel`. -->
+    <script src="/strudel.js"></script>
+    <script>
+      window.__omaLog = [];
+      window.addEventListener('error', (e) =>
+        window.__omaLog.push('error: ' + e.message),
+      );
+      window.addEventListener('unhandledrejection', (e) =>
+        window.__omaLog.push('rejection: ' + (e.reason?.message ?? e.reason)),
+      );
+
+      /**
+       * Render `code` to a WAV and stash it on window as base64.
+       *
+       * `strudel.renderPatternAudio()` is a real OfflineAudioContext render
+       * (faster than realtime, no audio device involved) but it delivers the
+       * finished wav as a browser DOWNLOAD. Rather than plumb a download
+       * directory through CDP, we intercept URL.createObjectURL to capture the
+       * Blob in-page and hand the bytes back over the debugger protocol.
+       *
+       * Returns the base64 length; the driver pulls window.__omaWav in chunks.
+       */
+      window.__omaRender = async function (code, seconds, cps, sampleRate) {
+        await window.initStrudel();
+
+        // repl.evaluate(code, autostart=false) transpiles + evaluates without
+        // starting the realtime scheduler, and returns the Pattern itself.
+        const evaluated = await window.strudel.evaluate(code, false);
+        const pattern = evaluated?.pattern ?? evaluated;
+        if (!pattern || typeof pattern.queryArc !== 'function') {
+          throw new Error(
+            'strudel: pattern code did not evaluate to a Pattern (got ' +
+              typeof pattern +
+              ')',
+          );
+        }
+
+        let captured = null;
+        const realCreate = URL.createObjectURL.bind(URL);
+        const realRevoke = URL.revokeObjectURL.bind(URL);
+        URL.createObjectURL = (blob) => {
+          captured = blob;
+          return 'blob:oma-captured';
+        };
+        URL.revokeObjectURL = () => {};
+        try {
+          await window.strudel.renderPatternAudio(
+            pattern,
+            cps,
+            0,
+            seconds * cps,
+            sampleRate,
+            128,
+            false,
+            'oma-bgm',
+          );
+        } finally {
+          URL.createObjectURL = realCreate;
+          URL.revokeObjectURL = realRevoke;
+        }
+        if (!captured) {
+          throw new Error('strudel: renderPatternAudio produced no audio blob');
+        }
+
+        const bytes = new Uint8Array(await captured.arrayBuffer());
+        let binary = '';
+        const CHUNK = 0x8000; // stay under the String.fromCharCode arg limit
+        for (let i = 0; i < bytes.length; i += CHUNK) {
+          binary += String.fromCharCode.apply(
+            null,
+            bytes.subarray(i, i + CHUNK),
+          );
+        }
+        window.__omaWav = btoa(binary);
+        return window.__omaWav.length;
+      };
+    </script>
+  </body>
+</html>

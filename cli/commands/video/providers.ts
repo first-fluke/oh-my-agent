@@ -4,6 +4,8 @@ import type {
   Captions,
   CapturePlan,
   Instructions,
+  MusicBed,
+  MusicMode,
   NarrationLine,
   RawFootage,
   RenderSpec,
@@ -89,6 +91,21 @@ export interface CaptionProvider extends ProviderMeta {
   ): Promise<Captions>;
 }
 
+export interface MusicOpts {
+  runDir: string;
+  /** Requested bed character; `none` short-circuits to the fallback branch. */
+  mode: MusicMode;
+  /** Bed length — the full timeline duration, so the music covers the video. */
+  durationSec: number;
+  seed: number;
+  timeoutMs: number;
+  dryRun?: boolean;
+}
+
+export interface MusicProvider extends ProviderMeta {
+  compose(opts: MusicOpts): Promise<MusicBed>;
+}
+
 export interface CaptureProvider extends ProviderMeta {
   guide(plan: CapturePlan): Promise<Instructions>;
   ingest(path: string): Promise<RawFootage>;
@@ -111,6 +128,7 @@ export type Capability =
   | "visual"
   | "caption"
   | "capture"
+  | "music"
   | "compositor";
 
 export type CapabilityProvider =
@@ -119,4 +137,5 @@ export type CapabilityProvider =
   | VisualProvider
   | CaptionProvider
   | CaptureProvider
+  | MusicProvider
   | Compositor;

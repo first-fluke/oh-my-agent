@@ -14,7 +14,17 @@ export const VisualModeSchema = z.enum([
   "aigc",
   "slide",
 ]);
-export const MusicModeSchema = z.enum(["upbeat", "calm", "none"]);
+export const MusicModeSchema = z.enum([
+  "upbeat",
+  "calm",
+  "cinematic",
+  "lofi",
+  "piano",
+  "none",
+]);
+export type MusicMode = z.infer<typeof MusicModeSchema>;
+/** Every music mode that actually renders a bed (i.e. everything but `none`). */
+export type MusicPreset = Exclude<MusicMode, "none">;
 export const CompositorNameSchema = z.enum(["remotion", "mpt"]);
 export const OutputFormatSchema = z.enum(["text", "json"]);
 
@@ -136,6 +146,7 @@ export const ManifestSchema = z.object({
     visual: z.array(z.string()).default([]),
     caption: z.string().optional(),
     capture: z.string().optional(),
+    music: z.string().optional(),
     compositor: z.string().optional(),
   }),
   assets: z.array(
@@ -215,6 +226,24 @@ export interface Captions {
   /** Locale actually used; may differ from requested when translation absent. */
   locale: string;
   pathTaken: "real" | "fallback";
+}
+
+/**
+ * A rendered background-music bed. `path` is absent on the fallback branch
+ * (no music asset produced) — the pattern is still recorded so the run is
+ * reproducible and the user can tweak + re-render it by hand.
+ */
+export interface MusicBed {
+  /** Run-dir-relative wav path (POSIX separators, for Remotion staticFile). */
+  path?: string;
+  /** Run-dir-relative mp3 of the same bed, for previewing outside the render. */
+  mp3Path?: string;
+  /** The strudel source that produced (or would have produced) the bed. */
+  pattern?: string;
+  mode: z.infer<typeof MusicModeSchema>;
+  pathTaken: "real" | "fallback";
+  /** Why the fallback branch ran; surfaced as a run warning. */
+  reason?: string;
 }
 
 export interface VideoArtifact {

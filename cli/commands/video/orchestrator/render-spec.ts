@@ -5,6 +5,7 @@ import {
   type CaptionStyleSchema,
   type Captions,
   type CompositorNameSchema,
+  type MusicBed,
   type RenderSpec,
   type Script,
   type Timing,
@@ -13,6 +14,12 @@ import {
   type VisualAsset,
   type VisualModeSchema,
 } from "../types.js";
+
+/**
+ * Default mix level for the music bed, sitting under narration. Applied by the
+ * Remotion `VideoBase` component via `dbToGain(audio.musicGainDb ?? -18)`.
+ */
+export const DEFAULT_MUSIC_GAIN_DB = -18;
 
 export function visualProviderOrder(
   visual: z.infer<typeof VisualModeSchema>,
@@ -38,6 +45,8 @@ export function buildRenderSpec(args: {
   captionStyle: z.infer<typeof CaptionStyleSchema>;
   /** Run-dir-relative live-capture footage to use as the video background. */
   footageBackground?: string;
+  /** Rendered BGM bed; only its real branch carries a wav to mix. */
+  music?: MusicBed;
 }): RenderSpec {
   const fps = 30;
   const dimensions = dimensionsForAspect(args.script.aspect);
@@ -72,15 +81,12 @@ export function buildRenderSpec(args: {
     durationInFrames: cursor,
     audio: {
       narration: args.audio.path ? args.audio.path : undefined,
-      // TODO(oma-deferred): music — `audio.music` must be a run-dir-relative
-      // audio FILE for the compositor (`staticFile(...)`), but no music asset
-      // source exists yet (no bundled loops, no provider). Writing the mode
-      // string ("upbeat"/"calm") here produced a dangling file ref that could
-      // fail the real Remotion render, so the field stays unset until an
-      // asset source is wired; the requested mode is still recorded in
-      // script.json. Mix at -18 dB default when implemented.
-      music: undefined,
-      musicGainDb: undefined,
+      // `audio.music` must be a run-dir-relative audio FILE — the compositor
+      // resolves it with staticFile(). The music provider only sets `path` on
+      // its real branch, so a fallback bed leaves both fields unset and the
+      // render simply has no music (never a dangling file ref).
+      music: args.music?.path,
+      musicGainDb: args.music?.path ? DEFAULT_MUSIC_GAIN_DB : undefined,
     },
     scenes,
     captions: {

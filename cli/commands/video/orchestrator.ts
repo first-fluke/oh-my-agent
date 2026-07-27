@@ -8,6 +8,7 @@ import {
   ProviderUnavailableError,
   VIDEO_EXIT_CODES,
 } from "./errors.js";
+import { isMockMode } from "./internal/mock.js";
 import { collectAssetRecord, writeManifest } from "./manifest.js";
 import { makeVideoRunId } from "./naming.js";
 import { emitRawDemoOutput, handleCapture } from "./orchestrator/capture.js";
@@ -26,6 +27,7 @@ import type {
   CapabilityProvider,
   CaptionProvider,
   Compositor,
+  MusicProvider,
   ScriptProvider,
   VisualProvider,
   VoiceProvider,
@@ -34,6 +36,8 @@ import type { VideoProviderRegistry } from "./registry.js";
 import {
   type Brief,
   type Captions,
+  type MusicBed,
+  type MusicMode,
   RenderSpecSchema,
   ScriptSchema,
   TimingSchema,
@@ -224,6 +228,15 @@ export class VideoOrchestrator {
         normalized.mode === "demo" && ctx.capturedFootage
           ? ctx.capturedFootage
           : undefined;
+      // The bed must cover the whole timeline; scene durations are the same
+      // source the frame math below uses, so summing them needs no render-spec.
+      const music = await this.composeMusic(
+        script.music !== "none" ? script.music : normalized.music,
+        script.scenes.reduce((total, scene) => total + scene.durationSec, 0),
+        { runDir, seed: normalized.seed, timeoutSec: normalized.timeoutSec },
+        normalized.dryRun,
+        ctx,
+      );
       const renderSpec = buildRenderSpec({
         script,
         timing,
@@ -234,17 +247,8 @@ export class VideoOrchestrator {
         seed: normalized.seed,
         captionStyle: normalized.captions,
         footageBackground,
+        music,
       });
-      // TODO(oma-deferred): music — no music asset source is wired yet, so a
-      // requested music mode (script.music or --music) is recorded in
-      // script.json but not mixed.
-      const requestedMusic =
-        script.music !== "none" ? script.music : normalized.music;
-      if (requestedMusic !== "none") {
-        ctx.warnings.push(
-          `music: requested "${requestedMusic}" but no music asset source is available yet — rendering without music`,
-        );
-      }
       const renderSpecPath = path.join(runDir, "render-spec.json");
       await writeValidatedJson(
         "render-spec.json",
@@ -306,6 +310,10 @@ export class VideoOrchestrator {
         ...visualAssets.map((asset) => asset.path),
         ...(captions ? [captions.path] : []),
         ...(captions?.vttPath ? [captions.vttPath] : []),
+        // Music artifacts ship next to the video; record them so the manifest
+        // carries their sha256/bytes like every other asset.
+        ...(music.path ? [music.path] : []),
+        ...(music.mp3Path ? [music.mp3Path] : []),
       ];
       ctx.assets.push(
         ...(await Promise.all(
@@ -334,6 +342,63 @@ export class VideoOrchestrator {
     } catch (err) {
       return await this.handleFailure(err, request.brief, ctx);
     }
+  }
+
+  /**
+   * Render the BGM bed. Music is strictly optional: a missing renderer, a
+   * missing browser, or a failed render degrades to "no music" with a warning
+   * rather than failing the run (the compositor then just omits the track).
+   */
+  private async composeMusic(
+    requested: MusicMode,
+    durationSec: number,
+    opts: { runDir: string; seed: number; timeoutSec: number },
+    dryRun: boolean | undefined,
+    ctx: RunContext,
+  ): Promise<MusicBed> {
+    if (requested === "none") return { mode: "none", pathTaken: "fallback" };
+
+    const order = this.config.providers.music.order;
+    let provider: MusicProvider;
+    if (isMockMode() || dryRun) {
+      // Skip the availability gate entirely: the provider short-circuits to its
+      // deterministic fallback anyway, and probing would leak host state (is
+      // Strudel installed?) into the run's warnings.
+      const [first] = this.registry.resolve("music", order) as MusicProvider[];
+      if (!first) return { mode: requested, pathTaken: "fallback" };
+      provider = first;
+    } else {
+      try {
+        provider = await this.pickProvider<MusicProvider>(
+          "music",
+          order,
+          { mode: requested, durationSec },
+          ctx,
+        );
+      } catch (err) {
+        if (!(err instanceof ProviderUnavailableError)) throw err;
+        ctx.warnings.push(
+          `music: requested "${requested}" but no music provider is available — rendering without music`,
+        );
+        return { mode: requested, pathTaken: "fallback", reason: err.message };
+      }
+    }
+
+    ctx.providers.music = provider.id;
+    const bed = await provider.compose({
+      runDir: opts.runDir,
+      mode: requested,
+      durationSec,
+      seed: opts.seed,
+      timeoutMs: opts.timeoutSec * 1000,
+      dryRun,
+    });
+    ctx.warnings.push(
+      bed.pathTaken === "real"
+        ? `music provider ${provider.id} rendered a "${bed.mode}" bed (${bed.path})`
+        : `music provider ${provider.id} used fallback path: ${bed.reason ?? "no bed produced"} — rendering without music`,
+    );
+    return bed;
   }
 
   private async pickProvider<T extends CapabilityProvider>(

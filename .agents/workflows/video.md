@@ -57,7 +57,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
   | stock video | Pexels (`PEXELS_API_KEY`) | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` |
   | AIGC video | Pixelle-MCP + RunningHub (`RUNNINGHUB_API_KEY`) | oma-image stills | `TODO(oma-deferred): pixelle` |
   | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) | estimate | `TODO(oma-deferred): whisper-cpp` |
-  | music mixing | (not wired — recorded + warned only) | render without music | `TODO(oma-deferred): music` |
+  | music mixing | Strudel offline render (`oma video doctor --install-strudel`) | render without music | — |
   | premium TTS | (not needed — oma-voice is local) | — | — |
 
 - **Pixelle AIGC is a community MCP**: off by default, requires one-time explicit user consent plus a source review before connecting, and is always cost-gated on RunningHub credits.
@@ -113,7 +113,7 @@ The agent writes the script — this is the start of the determinism boundary. D
    ```bash
    oma video generate "<brief>" --mode <mode> --aspect <aspect> --locale <lang> \
      --captions <tiktok|lower-third|none> --visual <auto|generate|stock|aigc|slide> \
-     --voice <profile|none> --music <upbeat|calm|none> --duration <sec|auto> \
+     --voice <profile|none> --music <upbeat|calm|cinematic|lofi|piano|none> --duration <sec|auto> \
      --compositor <remotion|mpt> --seed <n> \
      --script <path-to-agent-authored-script.json> --dry-run --format json
    ```
@@ -193,7 +193,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - Narration audio is present (or intentionally silent) and aligns to scenes.
    - Captions are synced to `timing.json`, within the safe area, and legible (static windowed cues, CSS-wrapped, Pretendard, design rule 2).
    - Visuals match each scene's intent; no placeholder leakage unless the run intentionally used the fallback.
-   - Aspect / dimensions are correct for the mode; branding applied as requested. (Music mixing is deferred — a requested music mode only produces a warning, never audio.)
+   - Aspect / dimensions are correct for the mode; branding applied as requested. (A requested music mode yields `music/bgm.wav` mixed at −18 dB, or a fallback warning and a silent render when Strudel is not installed.)
 2. **Route each defect to its stage:**
    - script/narration/scene-count → **Step 3** (re-author script).
    - audio/timing → **Step 4** voice track (check oma-voice, re-synthesize).

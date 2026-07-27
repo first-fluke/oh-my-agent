@@ -24,6 +24,10 @@ providers:
   # informational only — the orchestrator does not walk it as a chain.
   capture:
     order: [playwright-web, cap]
+  # Strudel renders the BGM bed offline (headless Chrome + OfflineAudioContext).
+  # Deps are AGPL and opt-in: `oma video doctor --install-strudel`.
+  music:
+    order: [strudel]
   compositor:
     order: [remotion, mpt]
   pexels:
