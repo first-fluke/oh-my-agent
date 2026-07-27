@@ -68,7 +68,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **Workflow:** 6 phases: Context exploration, Questions, Approaches, Design, Documentation (saves to `docs/plans/`), Transition to `/plan`.
 
-**Resources:** Uses shared resources only (clarification-protocol, reasoning-templates, quality-principles, skill-routing).
+**Resources:** Uses shared resources only (clarification-protocol, quality-principles, skill-routing).
 
 ---
 

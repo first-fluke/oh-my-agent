@@ -26,7 +26,6 @@ your-project/
 │   │   │   │   ├── clarification-protocol.md
 │   │   │   │   ├── context-budget.md
 │   │   │   │   ├── difficulty-guide.md
-│   │   │   │   ├── reasoning-templates.md
 │   │   │   │   ├── quality-principles.md
 │   │   │   │   ├── vendor-detection.md
 │   │   │   │   ├── session-metrics.md

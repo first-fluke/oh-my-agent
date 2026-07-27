@@ -1377,6 +1377,7 @@ oma skills lint [--skill <id>] [--json] [--output <format>]
 | `missing-name` | fail | frontmatter `name` absent or empty |
 | `missing-description` | fail | frontmatter `description` absent or empty — routing depends on it |
 | `weak-description` | warn | description under 40 chars — too thin to route on |
+| `body-too-long` | warn | SKILL.md body over 500 lines — move detail into `resources/` behind progressive disclosure |
 | `template-placeholder` | warn | leftover `{Placeholder}` text outside code spans |
 | `broken-reference` | fail | references a `resources/`, `config/`, `scripts/`, or `assets/` file that does not exist |
 
