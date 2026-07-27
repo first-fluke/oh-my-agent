@@ -1,5 +1,22 @@
 # Changelog
 
+## [11.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.3...cli-v11.1.0) (2026-07-27)
+
+
+### Features
+
+* **cli:** warn when a SKILL.md body exceeds 500 lines ([d82e5fe](https://github.com/first-fluke/oh-my-agent/commit/d82e5feadba734f4180998fb34f62fd160d0b992))
+
+
+### Bug Fixes
+
+* **emit:** regenerate agent-skills after the skill cleanup ([11a16d5](https://github.com/first-fluke/oh-my-agent/commit/11a16d5024387b10839bb16a7a7cc70358f2183e))
+
+
+### Refactoring
+
+* **skills:** drop output-shape examples and self-verification scaffolding ([0fc7cc0](https://github.com/first-fluke/oh-my-agent/commit/0fc7cc01f750f9e2fc748daffdec9464d95ccf7d))
+
 ## [11.0.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.2...cli-v11.0.3) (2026-07-25)
 
 
