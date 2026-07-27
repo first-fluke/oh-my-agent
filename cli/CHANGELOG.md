@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.1.0...cli-v11.1.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **cli:** harden Serena first-time installation ([e0a3683](https://github.com/first-fluke/oh-my-agent/commit/e0a3683595b6ac58e817400a47496432ba3cc25f))
+
+
+### Refactoring
+
+* **emit:** stop committing generated/ and gate only consumed artifacts ([af549a0](https://github.com/first-fluke/oh-my-agent/commit/af549a0e031d2242c09cff37e89f536baaeb9650))
+
 ## [11.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.0.3...cli-v11.1.0) (2026-07-27)
 
 
