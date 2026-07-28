@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.1.1...cli-v11.2.0) (2026-07-28)
+
+
+### Features
+
+* **video:** render BGM beds with Strudel ([9248bf2](https://github.com/first-fluke/oh-my-agent/commit/9248bf21040d48741d1403d8241eb17f5f29b0f0))
+
 ## [11.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.1.0...cli-v11.1.1) (2026-07-27)
 
 
