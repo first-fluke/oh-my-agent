@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.2.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.2...cli-v11.2.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* **cli:** stop global install registering $HOME as a serena project ([ec60c35](https://github.com/first-fluke/oh-my-agent/commit/ec60c355592d446053d7e9c26edcab934283c08d)), closes [#657](https://github.com/first-fluke/oh-my-agent/issues/657)
+
 ## [11.2.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.1...cli-v11.2.2) (2026-07-29)
 
 
