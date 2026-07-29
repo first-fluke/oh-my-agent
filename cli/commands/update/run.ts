@@ -358,7 +358,11 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // set only fills in when detection comes up empty. Each open agent
         // session spawns its own serena + LSP tree, so an unused language
         // server costs its memory once per concurrent session.
-        {
+        //
+        // Skipped in global mode: `cwd` is then $HOME (or OMA_HOME), which is
+        // not a project — see isForbiddenSerenaProjectRoot. Gating on the mode
+        // also avoids scanning $HOME for languages.
+        if (mode !== "global") {
           const { languages, prunable } = deriveSerenaLanguages(
             cwd,
             inferSerenaLanguages(cwd),

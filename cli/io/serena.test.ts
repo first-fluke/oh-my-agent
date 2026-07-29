@@ -6,15 +6,19 @@ import {
   ensureSerenaProjectConfig,
   ensureSerenaRegistered,
   inferSerenaLanguages,
+  isForbiddenSerenaProjectRoot,
   parseProjectYmlLanguages,
   reconcileSerenaLanguages,
   reconcileSerenaProjectConfig,
   resolveSerenaLanguages,
+  unregisterSerenaProject,
 } from "./serena.js";
 
 // Use platform-resolved paths so assertions match what production resolve() returns.
 const MY_PROJECT = resolve("/my/project");
 const OTHER_PROJECT = resolve("/other/project");
+/** Matches the mocked node:os homedir() below. */
+const HOME_DIR = resolve("/mock/home");
 
 // Mock fs
 const mockFs = vi.hoisted(() => ({
@@ -219,6 +223,113 @@ describe("ensureSerenaRegistered", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue("gui_log_window: false\n");
     expect(ensureSerenaRegistered(MY_PROJECT)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// $HOME is never a project (issue #657)
+//
+// `oma install --global` resolves its install root to $HOME. Running per-project
+// serena setup against it registered the whole home directory as a project on
+// every (re)install, and recreated it after the user cleaned up by hand.
+// ---------------------------------------------------------------------------
+
+describe("isForbiddenSerenaProjectRoot", () => {
+  it("should be true for the home directory", () => {
+    expect(isForbiddenSerenaProjectRoot(HOME_DIR)).toBe(true);
+  });
+
+  it("should be true for a non-normalized path to the home directory", () => {
+    expect(isForbiddenSerenaProjectRoot(join(HOME_DIR, "sub", ".."))).toBe(
+      true,
+    );
+  });
+
+  it("should be false for a directory under home", () => {
+    expect(isForbiddenSerenaProjectRoot(join(HOME_DIR, "project"))).toBe(false);
+  });
+
+  it("should be false for an unrelated project", () => {
+    expect(isForbiddenSerenaProjectRoot(MY_PROJECT)).toBe(false);
+  });
+});
+
+describe("serena setup declines $HOME", () => {
+  beforeEach(() => {
+    // Everything the happy path needs — only the guard should prevent writes.
+    mockFs.existsSync.mockImplementation((p: string) =>
+      String(p).includes("serena_config.yml"),
+    );
+    mockFs.readFileSync.mockReturnValue(`projects:\n- ${OTHER_PROJECT}\n`);
+  });
+
+  it("ensureSerenaRegistered should not add $HOME to the projects list", () => {
+    expect(ensureSerenaRegistered(HOME_DIR)).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("ensureSerenaProjectConfig should not write ~/.serena/project.yml", () => {
+    expect(ensureSerenaProjectConfig(HOME_DIR, ["typescript"])).toBe("skipped");
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    expect(mockFs.mkdirSync).not.toHaveBeenCalled();
+  });
+
+  it("ensureSerenaProject should skip both steps", () => {
+    expect(ensureSerenaProject(HOME_DIR, ["typescript", "python"])).toEqual({
+      configured: "skipped",
+      registered: false,
+    });
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("should still set up a real project under $HOME", () => {
+    const project = join(HOME_DIR, "GitHub", "app");
+    const result = ensureSerenaProject(project, ["typescript"]);
+    expect(result.configured).toBe("created");
+    expect(result.registered).toBe(true);
+  });
+});
+
+describe("unregisterSerenaProject", () => {
+  const configPath = join("/mock/home", ".serena", "serena_config.yml");
+
+  it("should remove the entry and preserve the rest of the file", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      `gui_mode: false\nprojects:\n- ${OTHER_PROJECT}\n- ${HOME_DIR}\n- ${MY_PROJECT}\nlanguage_backend: LSP\n`,
+    );
+
+    expect(unregisterSerenaProject(HOME_DIR)).toBe(true);
+
+    const written = mockFs.writeFileSync.mock.calls.at(0)?.[1] as string;
+    expect(mockFs.writeFileSync.mock.calls.at(0)?.[0]).toBe(configPath);
+    expect(written).not.toContain(`- ${HOME_DIR}\n`);
+    expect(written).toContain(`- ${OTHER_PROJECT}`);
+    expect(written).toContain(`- ${MY_PROJECT}`);
+    expect(written).toContain("gui_mode: false");
+    expect(written).toContain("language_backend: LSP");
+  });
+
+  it("should not remove a project nested under the target path", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      `projects:\n- ${join(HOME_DIR, "GitHub")}\n`,
+    );
+    expect(unregisterSerenaProject(HOME_DIR)).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("should be idempotent when the entry is absent", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(`projects:\n- ${OTHER_PROJECT}\n`);
+    expect(unregisterSerenaProject(HOME_DIR)).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("should return false when the config file does not exist", () => {
+    mockFs.existsSync.mockReturnValue(false);
+    expect(unregisterSerenaProject(HOME_DIR)).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
   });
 });
 

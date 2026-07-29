@@ -412,32 +412,49 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
       // --- Serena Project Setup ---
       {
-        // Detection from the project's own files wins; the skill-derived set
-        // is the fallback for an empty scaffold, where there is nothing to
-        // detect yet and pruning would be guesswork.
-        const { languages: serenaLangs, prunable } = deriveSerenaLanguages(
-          installRoot,
-          resolveSerenaLanguages(
-            selectedSkills,
-            variantSelections["oma-backend"],
-          ),
-        );
-        const { configured, registered } = ensureSerenaProject(
-          installRoot,
-          serenaLangs,
-          { prunable },
-        );
-        if (configured === "created") {
-          p.log.success(
-            pc.green(`Serena project configured (${serenaLangs.join(", ")})`),
+        // A global install has no project: its root is $HOME (or OMA_HOME),
+        // which is not a codebase. Running per-project setup against it wrote
+        // `~/.serena/project.yml` and appended $HOME to serena's `projects:`
+        // list on every (re)install — see isForbiddenSerenaProjectRoot for what
+        // that breaks. Serena resolves the real project from the session's
+        // working directory at MCP start (`--project-from-cwd`), so there is
+        // nothing for install to do here. Gating on the MODE (not just the
+        // path) also skips the language scan, which would otherwise walk up to
+        // 20k files under $HOME for no result.
+        if (getInstallMode() === "global") {
+          p.log.info(
+            pc.dim(
+              "Serena project setup skipped (global install) — serena resolves the project from your working directory.",
+            ),
           );
-        } else if (configured === "reconciled") {
-          p.log.success(
-            pc.green(`Serena languages updated (${serenaLangs.join(", ")})`),
+        } else {
+          // Detection from the project's own files wins; the skill-derived set
+          // is the fallback for an empty scaffold, where there is nothing to
+          // detect yet and pruning would be guesswork.
+          const { languages: serenaLangs, prunable } = deriveSerenaLanguages(
+            installRoot,
+            resolveSerenaLanguages(
+              selectedSkills,
+              variantSelections["oma-backend"],
+            ),
           );
-        }
-        if (registered) {
-          p.log.success(pc.green("Project registered in Serena"));
+          const { configured, registered } = ensureSerenaProject(
+            installRoot,
+            serenaLangs,
+            { prunable },
+          );
+          if (configured === "created") {
+            p.log.success(
+              pc.green(`Serena project configured (${serenaLangs.join(", ")})`),
+            );
+          } else if (configured === "reconciled") {
+            p.log.success(
+              pc.green(`Serena languages updated (${serenaLangs.join(", ")})`),
+            );
+          }
+          if (registered) {
+            p.log.success(pc.green("Project registered in Serena"));
+          }
         }
 
         // The Serena MCP transport runs `command: "serena"` (migration 009), so

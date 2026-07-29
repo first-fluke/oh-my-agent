@@ -629,10 +629,38 @@ export function parseProjectYmlLanguages(ymlContent: string): string[] {
 // ---------------------------------------------------------------------------
 
 /**
+ * True when `cwd` must never be set up as a Serena project.
+ *
+ * `$HOME` is the install root of `oma install --global`, but it is not a
+ * codebase. Treating it as one has three distinct costs:
+ *
+ *   - `~/.serena/project.yml` lands in the directory serena keeps its own GLOBAL
+ *     config in, so the two are no longer separable.
+ *   - `--project-from-cwd` walks UP from the session's working directory looking
+ *     for `.serena/project.yml` or `.git`. Once that file exists at `$HOME`,
+ *     every non-git directory under it silently activates the entire home
+ *     directory as its project.
+ *   - language detection scans up to 20k files under `$HOME` and picks up
+ *     whatever happens to live there, booting language servers nobody asked for.
+ *
+ * The same reasoning applies to a project-mode install run from `$HOME`, so the
+ * guard is keyed on the path rather than on the install mode. Callers that know
+ * they are in global mode should skip the whole setup earlier — this is the
+ * backstop that keeps any future caller from re-introducing the damage.
+ */
+export function isForbiddenSerenaProjectRoot(cwd: string): boolean {
+  return resolve(cwd) === resolve(homedir());
+}
+
+/**
  * Register the project path in ~/.serena/serena_config.yml if not already present.
  */
 export function ensureSerenaRegistered(cwd: string): boolean {
   const projectPath = resolve(cwd);
+
+  if (isForbiddenSerenaProjectRoot(projectPath)) {
+    return false;
+  }
 
   if (!existsSync(SERENA_CONFIG_PATH)) {
     return false;
@@ -672,6 +700,52 @@ export function ensureSerenaRegistered(cwd: string): boolean {
   }
 }
 
+/**
+ * Remove `target` from the `projects:` list in ~/.serena/serena_config.yml.
+ * Returns true when an entry was actually removed.
+ *
+ * Only the bytes of the matching list lines are rewritten; serena's own
+ * config file is heavily commented and must survive untouched.
+ */
+export function unregisterSerenaProject(target: string): boolean {
+  if (!existsSync(SERENA_CONFIG_PATH)) return false;
+
+  const wanted = resolve(target);
+
+  try {
+    const content = readFileSync(SERENA_CONFIG_PATH, "utf-8");
+
+    const projectsMatch = content.match(
+      /^(projects:\s*\n)((?:\s*-\s*.+\n?)*)/m,
+    );
+    if (!projectsMatch) return false;
+
+    const block = projectsMatch[2] ?? "";
+    const kept = block
+      .split("\n")
+      .filter((line) => {
+        const entry = /^\s*-\s*(.+)$/.exec(line);
+        if (!entry?.[1]) return true; // trailing empty segment — preserve
+        return resolve(entry[1].trim()) !== wanted;
+      })
+      .join("\n");
+
+    if (kept === block) return false;
+
+    const blockStart =
+      (projectsMatch.index ?? 0) + (projectsMatch[1] ?? "").length;
+    const updated =
+      content.slice(0, blockStart) +
+      kept +
+      content.slice(blockStart + block.length);
+
+    writeFileSync(SERENA_CONFIG_PATH, updated);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const DEFAULT_PROJECT_YML = (languages: string[], projectName: string) =>
   `languages:
 ${languages.map((l) => `- ${l}`).join("\n")}
@@ -705,12 +779,16 @@ ls_specific_settings: {}
  *   "created"    — file did not exist and was created
  *   "reconciled" — file existed and new languages were merged in
  *   "unchanged"  — file existed and was already up-to-date
+ *   "skipped"    — cwd is not a legal project root (see
+ *                  {@link isForbiddenSerenaProjectRoot}); nothing was written
  */
 export function ensureSerenaProjectConfig(
   cwd: string,
   languages: string[],
   opts: ReconcileLanguagesOptions = {},
-): "created" | "reconciled" | "unchanged" {
+): "created" | "reconciled" | "unchanged" | "skipped" {
+  if (isForbiddenSerenaProjectRoot(cwd)) return "skipped";
+
   const serenaDir = join(cwd, ".serena");
   const projectYml = join(serenaDir, "project.yml");
 
@@ -748,14 +826,21 @@ export function ensureSerenaProjectConfig(
  * 2. Register in ~/.serena/serena_config.yml if missing
  *
  * Returns:
- *   configured  — "created" | "reconciled" | "unchanged" (project.yml outcome)
+ *   configured  — "created" | "reconciled" | "unchanged" | "skipped" (project.yml outcome)
  *   registered  — true when the project was newly registered in serena_config.yml
+ *
+ * Both steps decline for a forbidden root (see
+ * {@link isForbiddenSerenaProjectRoot}), yielding `{ configured: "skipped",
+ * registered: false }`.
  */
 export function ensureSerenaProject(
   cwd: string,
   languages: string[],
   opts: ReconcileLanguagesOptions = {},
-): { configured: "created" | "reconciled" | "unchanged"; registered: boolean } {
+): {
+  configured: "created" | "reconciled" | "unchanged" | "skipped";
+  registered: boolean;
+} {
   const configured = ensureSerenaProjectConfig(cwd, languages, opts);
   const registered = ensureSerenaRegistered(cwd);
   return { configured, registered };
