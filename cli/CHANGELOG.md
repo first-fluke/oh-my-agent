@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.2.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.1...cli-v11.2.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* **cli:** gate vendor-scoped migrations on the selected vendors ([969b45c](https://github.com/first-fluke/oh-my-agent/commit/969b45c44d5b8be8807857cf43af0ea0dccd5d85)), closes [#655](https://github.com/first-fluke/oh-my-agent/issues/655)
+
 ## [11.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.0...cli-v11.2.1) (2026-07-29)
 
 
