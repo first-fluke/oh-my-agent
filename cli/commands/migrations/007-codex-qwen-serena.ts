@@ -11,19 +11,24 @@ import {
   needsQwenSettingsUpdate,
 } from "../../vendors/qwen/settings.js";
 import type { Migration } from "./index.js";
+import { allowsVendor, type MigrationContext } from "./vendor-scope.js";
 
 /**
  * Ensure Serena MCP is registered for Codex (.codex/config.toml) and
  * Qwen (.qwen/settings.json) on existing installs that predate the
  * per-vendor settings generators.
+ *
+ * Both files can exist because the user installed that CLI independently of
+ * oma, so file existence alone is not consent to write — the vendor must also
+ * be in the run's selection set.
  */
 export const migrateCodexQwenSerena: Migration = {
   name: "007-codex-qwen-serena",
-  up(cwd: string): string[] {
+  up(cwd: string, ctx?: MigrationContext): string[] {
     const actions: string[] = [];
 
     const qwenSettingsPath = join(cwd, ".qwen", "settings.json");
-    if (existsSync(qwenSettingsPath)) {
+    if (allowsVendor(ctx, "qwen") && existsSync(qwenSettingsPath)) {
       let parsed: unknown = {};
       try {
         parsed = JSON.parse(readFileSync(qwenSettingsPath, "utf-8"));
@@ -38,7 +43,7 @@ export const migrateCodexQwenSerena: Migration = {
     }
 
     const codexConfigPath = join(cwd, ".codex", "config.toml");
-    if (existsSync(codexConfigPath)) {
+    if (allowsVendor(ctx, "codex") && existsSync(codexConfigPath)) {
       const rawToml = readFileSync(codexConfigPath, "utf-8");
       const parsed = parseCodexConfig(rawToml);
       if (needsCodexSettingsUpdate(parsed)) {

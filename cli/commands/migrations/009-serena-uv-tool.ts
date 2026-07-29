@@ -46,6 +46,7 @@ import {
   withSerenaDashboardOpenDisabled,
 } from "../../vendors/serena.js";
 import type { Migration } from "./index.js";
+import { allowsVendor, type MigrationContext } from "./vendor-scope.js";
 
 const LEGACY_GIT_FRAGMENT = "git+https://github.com/oraios/serena";
 
@@ -224,14 +225,18 @@ function migrateCursorSymlink(cwd: string): boolean {
 
 export const migrateSerenaUvTool: Migration = {
   name: "009-serena-uv-tool",
-  up(cwd: string): string[] {
+  up(cwd: string, ctx?: MigrationContext): string[] {
     const actions: string[] = [];
 
-    if (migrateCodexToml(join(cwd, ".codex", "config.toml"))) {
+    if (
+      allowsVendor(ctx, "codex") &&
+      migrateCodexToml(join(cwd, ".codex", "config.toml"))
+    ) {
       actions.push(".codex/config.toml (Serena uvx → uv tool install)");
     }
 
     if (
+      allowsVendor(ctx, "qwen") &&
       migrateJsonFile(join(cwd, ".qwen", "settings.json"), "mcpServers", "ide")
     ) {
       actions.push(".qwen/settings.json (Serena uvx → uv tool install)");
@@ -247,7 +252,7 @@ export const migrateSerenaUvTool: Migration = {
       actions.push(".agents/mcp.json (Serena uvx → uv tool install)");
     }
 
-    if (migrateCursorSymlink(cwd)) {
+    if (allowsVendor(ctx, "cursor") && migrateCursorSymlink(cwd)) {
       actions.push(".cursor/mcp.json (symlink → regular file, --context=ide)");
     }
 
@@ -259,7 +264,7 @@ export const migrateSerenaUvTool: Migration = {
     // applyClaudeMcp merges instead of overwriting non-serena
     // entries.
     const claudeMcpPath = join(cwd, ".mcp.json");
-    if (existsSync(claudeMcpPath)) {
+    if (allowsVendor(ctx, "claude") && existsSync(claudeMcpPath)) {
       let claudeMcp: unknown = {};
       try {
         claudeMcp = JSON.parse(readFileSync(claudeMcpPath, "utf-8"));
@@ -278,6 +283,7 @@ export const migrateSerenaUvTool: Migration = {
     // ~/.claude.json (user-global Claude Code MCP config). Only touched when
     // it contains the legacy uvx form, to avoid clobbering user customizations.
     if (
+      allowsVendor(ctx, "claude") &&
       migrateJsonFile(
         join(homedir(), ".claude.json"),
         "mcpServers",

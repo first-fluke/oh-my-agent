@@ -28,8 +28,10 @@ import {
   parseProjectYmlLanguages,
   reconcileSerenaLanguages,
 } from "../../io/serena.js";
+import type { CliVendor } from "../../types/index.js";
 import { isRecord } from "../../utils/type-guards.js";
 import type { Migration } from "./index.js";
+import { allowsVendor, type MigrationContext } from "./vendor-scope.js";
 
 const CONTEXT7_URL = "https://mcp.context7.com/mcp";
 
@@ -122,16 +124,24 @@ function migrateProjectYml(path: string): boolean {
 
 export const migrateMcpProcessCost: Migration = {
   name: "019-mcp-process-cost",
-  up(cwd: string): string[] {
+  up(cwd: string, ctx?: MigrationContext): string[] {
     const actions: string[] = [];
     const note = "context7 npx → hosted HTTP";
 
+    // `vendor: undefined` marks an oma-owned path (`.agents/**`), which exists
+    // only because oma created it and therefore needs no selection gate.
     const targets: Array<{
       path: string;
       label: string;
       flavor: "standard" | "antigravity";
+      vendor?: CliVendor;
     }> = [
-      { path: join(cwd, ".mcp.json"), label: ".mcp.json", flavor: "standard" },
+      {
+        path: join(cwd, ".mcp.json"),
+        label: ".mcp.json",
+        flavor: "standard",
+        vendor: "claude",
+      },
       {
         path: join(cwd, ".agents", "mcp.json"),
         label: ".agents/mcp.json",
@@ -146,20 +156,24 @@ export const migrateMcpProcessCost: Migration = {
         path: join(cwd, ".cursor", "mcp.json"),
         label: ".cursor/mcp.json",
         flavor: "standard",
+        vendor: "cursor",
       },
       {
         path: join(cwd, ".kimi-code", "mcp.json"),
         label: ".kimi-code/mcp.json",
         flavor: "standard",
+        vendor: "kimi",
       },
       {
         path: join(homedir(), ".claude.json"),
         label: "~/.claude.json",
         flavor: "standard",
+        vendor: "claude",
       },
     ];
 
-    for (const { path, label, flavor } of targets) {
+    for (const { path, label, flavor, vendor } of targets) {
+      if (vendor && !allowsVendor(ctx, vendor)) continue;
       if (migrateContext7(path, flavor)) actions.push(`${label} (${note})`);
     }
 

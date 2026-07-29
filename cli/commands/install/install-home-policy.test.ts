@@ -136,7 +136,7 @@ vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
 vi.mock("../../io/github.js", () => githubState);
 vi.mock("../../platform/skills-installer.js", () => skillsState);
-vi.mock("./migrations/index.js", () => ({
+vi.mock("../migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
 vi.mock("../../utils/competitors.js", () => ({

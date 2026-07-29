@@ -146,7 +146,10 @@ vi.mock("node:child_process", () => ({ execSync: vi.fn() }));
 
 vi.mock("../../io/github.js", () => githubState);
 vi.mock("../../platform/skills-installer.js", () => skillsState);
-vi.mock("./migrations/index.js", () => ({
+// Path is relative to this test file: install/run.ts imports ../migrations/.
+// (It read "./migrations/index.js" before, which resolves to nothing and let
+// the real runMigrations run against the mocked fs.)
+vi.mock("../migrations/index.js", () => ({
   runMigrations: miscState.runMigrations,
 }));
 vi.mock("../../utils/competitors.js", () => ({
@@ -291,6 +294,31 @@ describe("install --global: _install.json schema and meta", () => {
   it.todo(
     "never writes .claude.json (FORBIDDEN_VENDOR_FILES) — link() is fully mocked so no real file writes occur",
   );
+
+  // Regression: issue #655 — the pre-prompt migration pass registered Serena
+  // MCP into .codex/config.toml purely because the file existed, before the
+  // vendor multiselect was shown. Migrations only learn the vendor set the
+  // install actually chose; before that, they are allowed no vendor writes.
+  it("runs pre-prompt migrations with an empty vendor set", async () => {
+    await install({ yes: true });
+
+    const calls = miscState.runMigrations.mock.calls as unknown[][];
+    expect(calls.length).toBeGreaterThanOrEqual(2);
+    expect(calls[0]?.[1]).toEqual({ vendors: [] });
+  });
+
+  it("runs post-install migrations with the selected vendor set", async () => {
+    await install({ yes: true });
+
+    const calls = miscState.runMigrations.mock.calls as unknown[][];
+    const postInstall = calls[calls.length - 1]?.[1] as
+      | { vendors: string[] }
+      | undefined;
+    expect(postInstall?.vendors).toBeInstanceOf(Array);
+    // Non-interactive install selects the default vendor set, which is
+    // non-empty — the point is that it is a concrete selection, not a guess.
+    expect(postInstall?.vendors.length).toBeGreaterThan(0);
+  });
 
   it("deep-merges existing oma-config.yaml preserving custom_user_field", async () => {
     const customYaml =

@@ -37,6 +37,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { backupPathFromRoot } from "../../io/backup.js";
 import { createLink } from "../../platform/fs-link.js";
 import type { Migration } from "./index.js";
+import { allowsVendor, type MigrationContext } from "./vendor-scope.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -94,11 +95,15 @@ function backupDirectory(
 
 export const migrateUnifyWorkflowSkills: Migration = {
   name: "011-unify-workflow-skills",
-  up(cwd: string): string[] {
+  up(cwd: string, ctx?: MigrationContext): string[] {
     const actions: string[] = [];
     const ssotSkillsDir = join(cwd, ".agents", "skills");
 
     for (const vendor of VENDORS) {
+      // Deselected vendors keep their legacy directories as-is; converting them
+      // would write into a vendor tree this run was told to leave alone.
+      if (!allowsVendor(ctx, vendor)) continue;
+
       const vendorSkillsDir = join(cwd, `.${vendor}`, "skills");
 
       if (!existsSync(vendorSkillsDir)) {

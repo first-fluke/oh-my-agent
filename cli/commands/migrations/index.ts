@@ -4,9 +4,25 @@
  * Returns action log strings for UI display.
  */
 
+import {
+  type MigrationContext,
+  UNRESTRICTED_MIGRATION_CONTEXT,
+} from "./vendor-scope.js";
+
+export {
+  allowsVendor,
+  type MigrationContext,
+  UNRESTRICTED_MIGRATION_CONTEXT,
+} from "./vendor-scope.js";
+
 export interface Migration {
   name: string;
-  up(cwd: string): string[];
+  /**
+   * `ctx` carries the vendor selection in force for this run. Any migration
+   * that writes into a vendor-owned path must gate that write on
+   * `allowsVendor(ctx, vendor)`. Omitting `ctx` means unrestricted.
+   */
+  up(cwd: string, ctx?: MigrationContext): string[];
 }
 
 import { migrateToAgents } from "./001-agents-dir.js";
@@ -50,10 +66,13 @@ const migrations: Migration[] = [
   migrateMcpProcessCost,
 ];
 
-export function runMigrations(cwd: string): string[] {
+export function runMigrations(
+  cwd: string,
+  ctx: MigrationContext = UNRESTRICTED_MIGRATION_CONTEXT,
+): string[] {
   const actions: string[] = [];
   for (const migration of migrations) {
-    actions.push(...migration.up(cwd));
+    actions.push(...migration.up(cwd, ctx));
   }
   return actions;
 }

@@ -200,8 +200,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       }
     }
 
-    // Run all migrations (legacy dirs, shared layout, config rename)
-    const migrationActions = runMigrations(installRoot);
+    // Run all migrations (legacy dirs, shared layout, config rename).
+    // Vendor selection has not been prompted yet, so no vendor-owned file may
+    // be touched here — `vendors: []` blocks those writes. The post-install
+    // pass below re-runs every migration with the selection the user made.
+    const migrationActions = runMigrations(installRoot, { vendors: [] });
     if (migrationActions.length > 0) {
       p.note(
         migrationActions.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
@@ -332,7 +335,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           await saveLocalVersion(installRoot, bundledVersion);
         }
 
-        const postInstallMigrations = runMigrations(installRoot);
+        const postInstallMigrations = runMigrations(installRoot, { vendors });
         if (postInstallMigrations.length > 0) {
           p.note(
             postInstallMigrations

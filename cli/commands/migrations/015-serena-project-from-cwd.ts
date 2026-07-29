@@ -20,6 +20,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { CliVendor } from "../../types/index.js";
 import { isRecord } from "../../utils/type-guards.js";
 import {
   parseCodexConfig,
@@ -27,6 +28,7 @@ import {
 } from "../../vendors/codex/settings.js";
 import { withSerenaProjectFromCwd } from "../../vendors/serena.js";
 import type { Migration } from "./index.js";
+import { allowsVendor, type MigrationContext } from "./vendor-scope.js";
 
 interface SerenaEntry {
   command?: unknown;
@@ -86,12 +88,18 @@ function migrateCodexToml(path: string): boolean {
 
 export const migrateSerenaProjectFromCwd: Migration = {
   name: "015-serena-project-from-cwd",
-  up(cwd: string): string[] {
+  up(cwd: string, ctx?: MigrationContext): string[] {
     const actions: string[] = [];
     const note = "serena --project . → --project-from-cwd";
 
-    const jsonTargets: Array<{ path: string; label: string }> = [
-      { path: join(cwd, ".mcp.json"), label: ".mcp.json" },
+    // `vendor: undefined` marks an oma-owned path (`.agents/**`), which exists
+    // only because oma created it and therefore needs no selection gate.
+    const jsonTargets: Array<{
+      path: string;
+      label: string;
+      vendor?: CliVendor;
+    }> = [
+      { path: join(cwd, ".mcp.json"), label: ".mcp.json", vendor: "claude" },
       { path: join(cwd, ".agents", "mcp.json"), label: ".agents/mcp.json" },
       {
         path: join(cwd, ".agents", "mcp_config.json"),
@@ -100,16 +108,29 @@ export const migrateSerenaProjectFromCwd: Migration = {
       {
         path: join(cwd, ".qwen", "settings.json"),
         label: ".qwen/settings.json",
+        vendor: "qwen",
       },
-      { path: join(cwd, ".cursor", "mcp.json"), label: ".cursor/mcp.json" },
-      { path: join(homedir(), ".claude.json"), label: "~/.claude.json" },
+      {
+        path: join(cwd, ".cursor", "mcp.json"),
+        label: ".cursor/mcp.json",
+        vendor: "cursor",
+      },
+      {
+        path: join(homedir(), ".claude.json"),
+        label: "~/.claude.json",
+        vendor: "claude",
+      },
     ];
 
-    for (const { path, label } of jsonTargets) {
+    for (const { path, label, vendor } of jsonTargets) {
+      if (vendor && !allowsVendor(ctx, vendor)) continue;
       if (migrateJsonFile(path)) actions.push(`${label} (${note})`);
     }
 
-    if (migrateCodexToml(join(cwd, ".codex", "config.toml"))) {
+    if (
+      allowsVendor(ctx, "codex") &&
+      migrateCodexToml(join(cwd, ".codex", "config.toml"))
+    ) {
       actions.push(`.codex/config.toml (${note})`);
     }
 

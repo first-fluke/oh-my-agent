@@ -156,8 +156,13 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
       process.exit(1);
     }
 
+    // Vendors this update is allowed to touch. Migrations share the set the
+    // reconcile step below uses (`link` at the end of this function), so a
+    // vendor excluded from the update never has its config rewritten.
+    const migrationVendors = resolveUpdateVendors(cwd, options);
+
     // Run all migrations (after confirming project is installed)
-    const migrationActions = runMigrations(cwd);
+    const migrationActions = runMigrations(cwd, { vendors: migrationVendors });
     if (migrationActions.length > 0) {
       ui.note(
         migrationActions.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
@@ -209,7 +214,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         spinner.message("Copying files...");
 
         // Run migrations (e.g. legacy config path rename)
-        runMigrations(cwd);
+        runMigrations(cwd, { vendors: migrationVendors });
 
         // Preserve user-customized config files before bulk copy
         const userPrefsPath = join(cwd, ".agents", "oma-config.yaml");
@@ -237,7 +242,9 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         restoreBackendStackAfterCopy(cwd, repoDir, backendStackState);
 
         // Post-copy migrations
-        const postCopyMigrations = runMigrations(cwd);
+        const postCopyMigrations = runMigrations(cwd, {
+          vendors: migrationVendors,
+        });
         if (postCopyMigrations.length > 0) {
           ui.note(
             postCopyMigrations.map((m) => `${pc.green("✓")} ${m}`).join("\n"),
@@ -296,7 +303,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // Codex telemetry-aware), Cursor MCP + rules, doc merging, and CLI
         // skill symlinks are all owned by link() — adding a new vendor only
         // requires changes in cli/commands/link/link.ts.
-        const updateVendors = resolveUpdateVendors(cwd, options);
+        const updateVendors = migrationVendors;
         link({
           vendorFilter: updateVendors,
           quiet: true,
