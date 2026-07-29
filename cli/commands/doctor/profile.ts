@@ -19,7 +19,11 @@ import {
   BUILT_IN_PRESET_ALIASES,
   BUILT_IN_PRESETS,
 } from "../../platform/built-in-presets.js";
-import { getModelSpec, ownerToVendor } from "../../platform/model-registry.js";
+import {
+  getModelSpec,
+  type ModelSpec,
+  ownerToVendor,
+} from "../../platform/model-registry.js";
 import { AUTH_CHECKERS } from "../../vendors/index.js";
 import {
   type DeprecatedOAuthSessionResult,
@@ -162,7 +166,16 @@ function resolvePreset(
 // Model slug → CLI vendor
 // ---------------------------------------------------------------------------
 
-function cliFromModelSlug(slug: string): string {
+/**
+ * Resolve a model slug to its CLI vendor the same way the dispatch path does
+ * (`resolveVendorFromModelSlug` in agent-config/vendor-resolution.ts): a
+ * registered ModelSpec's `cli` field is authoritative — including inline
+ * `models:` entries from oma-config.yaml — and the owner-prefix heuristic is
+ * only the fallback for unregistered slugs. Returns "unknown" when neither
+ * source resolves, which the matrix renders as `? unknown`.
+ */
+function cliFromModelSpec(spec: ModelSpec | undefined, slug: string): string {
+  if (spec?.cli) return spec.cli;
   const owner = slug.split("/")[0] ?? "";
   return ownerToVendor(owner) ?? "unknown";
 }
@@ -251,12 +264,12 @@ export async function collectProfileReport(
     }
 
     const model = spec?.model ?? "unknown";
-    const cli = cliFromModelSlug(model);
-    const authStatus = cli !== "unknown" ? checkAuthStatus(cli) : "unknown";
     const registrySpec = getModelSpec(
       model,
       config?.models as Record<string, unknown> | undefined,
     );
+    const cli = cliFromModelSpec(registrySpec, model);
+    const authStatus = cli !== "unknown" ? checkAuthStatus(cli) : "unknown";
     const authHint = registrySpec?.auth_hint;
 
     return { role, model, cli, authStatus, authHint, source };

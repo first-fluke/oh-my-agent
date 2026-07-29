@@ -347,6 +347,86 @@ describe("collectProfileReport — model and CLI mapping", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tests: user models: registry (regression — issue #656)
+// ---------------------------------------------------------------------------
+
+describe("collectProfileReport — user models: registry", () => {
+  const CUSTOM_MODEL_YAML = `
+language: en
+model_preset: my-preset
+models:
+  moonshotai/kimi-k3:
+    cli: opencode
+    cli_model: moonshotai/kimi-k3
+    auth_hint: "Moonshot AI — run: opencode auth login"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [opencode]
+      api_only: false
+custom_presets:
+  my-preset:
+    description: custom
+    agent_defaults:
+      orchestrator:
+        model: moonshotai/kimi-k3
+      architecture:
+        model: moonshotai/kimi-k3
+`.trim();
+
+  beforeEach(() => {
+    // Only oma-config.yaml exists — .agents/config/models.yaml must not be
+    // found, so the inline `models:` block is the sole registry source.
+    vi.mocked(fsMock.existsSync).mockImplementation((p) =>
+      String(p).endsWith("/.agents/oma-config.yaml"),
+    );
+    vi.mocked(fsMock.readFileSync).mockReturnValue(CUSTOM_MODEL_YAML);
+  });
+
+  it("resolves CLI from a custom models: entry whose owner is not a built-in prefix", async () => {
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const archRow = report.rows.find((r) => r.role === "architecture");
+
+    expect(archRow?.model).toBe("moonshotai/kimi-k3");
+    expect(archRow?.cli).toBe("opencode");
+  });
+
+  it("reports the real auth status for a custom models: entry", async () => {
+    vi.mocked(vendorsMock.isOpencodeAuthenticated).mockReturnValue(true);
+
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const archRow = report.rows.find((r) => r.role === "architecture");
+
+    expect(archRow?.authStatus).toBe("logged_in");
+    expect(archRow?.authHint).toContain("Moonshot AI");
+  });
+
+  it("still reports unknown for slugs absent from both registry and owner map", async () => {
+    vi.mocked(fsMock.readFileSync).mockReturnValue(
+      `
+language: en
+model_preset: my-preset
+custom_presets:
+  my-preset:
+    description: custom
+    agent_defaults:
+      orchestrator:
+        model: moonshotai/kimi-k3
+`.trim(),
+    );
+
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const orchestrator = report.rows.find((r) => r.role === "orchestrator");
+
+    expect(orchestrator?.cli).toBe("unknown");
+    expect(orchestrator?.authStatus).toBe("unknown");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Tests: auth_hint
 // ---------------------------------------------------------------------------
 
