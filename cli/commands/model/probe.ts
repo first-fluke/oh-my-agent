@@ -2,7 +2,11 @@
 // Probes a model slug against its vendor CLI to verify whether it is accepted.
 
 import { spawnSync } from "node:child_process";
-import { ownerToVendor } from "../../platform/model-registry.js";
+import {
+  getModelSpec,
+  loadInlineUserModels,
+  ownerToVendor,
+} from "../../platform/model-registry.js";
 
 export type ProbeStatus =
   | "accepted"
@@ -150,33 +154,84 @@ export function classifyOpenCodeList(
 
 export type ProbeOptions = {
   timeoutMs?: number;
+  /**
+   * Inline `models:` entries from oma-config.yaml. Defaults to reading the
+   * config found by walking up from process.cwd(). Pass explicitly to probe
+   * against a specific config (or `{}` to probe registry/heuristic only).
+   */
+  userModels?: Record<string, unknown>;
 };
+
+export type ProbeTarget = {
+  /** CLI binary that owns the model. */
+  cli: string;
+  /** Model id passed to that CLI (`--model`, list membership, …). */
+  cliModel: string;
+  /** Provider argument for `opencode models <provider>`. */
+  provider: string;
+};
+
+/**
+ * Resolve which CLI a slug should be probed against, and under what model id.
+ *
+ * Registry-first, mirroring the dispatch path (`resolveVendorFromModelSlug` in
+ * agent-config/vendor-resolution.ts): a registered ModelSpec's `cli`/`cli_model`
+ * are authoritative, so a custom slug such as `moonshotai/kimi-k3` declaring
+ * `cli: opencode` is probed via the opencode CLI instead of a nonexistent
+ * `moonshotai` binary. Unregistered slugs — the common case for probe, which
+ * exists to vet a candidate before it is registered — keep the OpenRouter-style
+ * owner-prefix heuristic, falling back to the owner itself.
+ *
+ * Exported for unit-testing and so the command layer prints exactly what the
+ * probe will run.
+ */
+export function resolveProbeTarget(
+  slug: string,
+  userModels?: Record<string, unknown>,
+): ProbeTarget {
+  const slashIndex = slug.indexOf("/");
+  const owner = slashIndex >= 0 ? slug.slice(0, slashIndex) : "";
+  const derivedModel = slashIndex >= 0 ? slug.slice(slashIndex + 1) : slug;
+
+  const spec = getModelSpec(slug, userModels);
+  const cli = spec?.cli ?? ownerToVendor(owner) ?? owner;
+  const cliModel = spec?.cli_model ?? derivedModel;
+
+  // opencode model ids are `provider/model`; when a registered cli_model
+  // carries its own provider, that provider wins over the slug's owner (they
+  // differ whenever the slug is an alias, e.g. `my-fast-model`).
+  const modelSlashIndex = cliModel.indexOf("/");
+  const provider =
+    modelSlashIndex >= 0 ? cliModel.slice(0, modelSlashIndex) : owner;
+
+  return { cli, cliModel, provider };
+}
 
 /**
  * Probe a model slug against its vendor CLI and classify the result.
  *
  * @param slug   Full model slug, e.g. "anthropic/claude-opus-4.7"
- * @param options  Optional probe configuration (timeout, etc.)
+ * @param options  Optional probe configuration (timeout, user models, etc.)
  */
 export async function probeSlug(
   slug: string,
   options?: ProbeOptions,
 ): Promise<ProbeResult> {
   const timeoutMs = options?.timeoutMs ?? 30_000;
-  const slashIndex = slug.indexOf("/");
-  const owner = slashIndex >= 0 ? slug.slice(0, slashIndex) : "";
-  const cliModel = slashIndex >= 0 ? slug.slice(slashIndex + 1) : slug;
-  const cli = ownerToVendor(owner) ?? owner;
+  const { cli, cliModel, provider } = resolveProbeTarget(
+    slug,
+    options?.userModels ?? loadInlineUserModels(),
+  );
 
   // ---------------------------------------------------------------------------
-  // opencode: list-membership probe — runs `opencode models <owner>`
+  // opencode: list-membership probe — runs `opencode models <provider>`
   // ---------------------------------------------------------------------------
   if (cli === "opencode") {
     const startMs = Date.now();
     let result: ReturnType<typeof spawnSync>;
 
     try {
-      result = spawnSync("opencode", ["models", owner], {
+      result = spawnSync("opencode", ["models", provider], {
         encoding: "utf-8",
         timeout: timeoutMs,
       });

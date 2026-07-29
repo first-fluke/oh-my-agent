@@ -7,6 +7,7 @@ import {
   classifyProbeError,
   describeProbeStatus,
   probeSlug,
+  resolveProbeTarget,
 } from "./probe.js";
 
 vi.mock("node:child_process", () => ({
@@ -231,6 +232,110 @@ describe("probeSlug", () => {
     const result = await probeSlug("bare-slug");
     expect(result.slug).toBe("bare-slug");
     expect(result.cliModel).toBe("bare-slug");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveProbeTarget — registry-first CLI resolution
+// ---------------------------------------------------------------------------
+
+const CUSTOM_MODELS: Record<string, unknown> = {
+  "moonshotai/kimi-k3": {
+    cli: "opencode",
+    cli_model: "moonshotai/kimi-k3",
+    auth_hint: "Moonshot AI — run: opencode auth login",
+    supports: {
+      effort: null,
+      apply_patch: false,
+      task_budget: false,
+      prompt_cache: false,
+      computer_use: false,
+      native_dispatch_from: ["opencode"],
+      api_only: false,
+    },
+  },
+  "my-fast-model": {
+    cli: "opencode",
+    cli_model: "moonshotai/kimi-k3-turbo",
+    auth_hint: "Moonshot AI — run: opencode auth login",
+    supports: {
+      effort: null,
+      apply_patch: false,
+      task_budget: false,
+      prompt_cache: false,
+      computer_use: false,
+      native_dispatch_from: ["opencode"],
+      api_only: false,
+    },
+  },
+};
+
+describe("resolveProbeTarget", () => {
+  it("prefers a registered models: entry over the owner prefix", () => {
+    const target = resolveProbeTarget("moonshotai/kimi-k3", CUSTOM_MODELS);
+    expect(target.cli).toBe("opencode");
+    expect(target.cliModel).toBe("moonshotai/kimi-k3");
+    expect(target.provider).toBe("moonshotai");
+  });
+
+  it("takes the provider from cli_model when the slug is an alias", () => {
+    const target = resolveProbeTarget("my-fast-model", CUSTOM_MODELS);
+    expect(target.cli).toBe("opencode");
+    expect(target.cliModel).toBe("moonshotai/kimi-k3-turbo");
+    expect(target.provider).toBe("moonshotai");
+  });
+
+  it("falls back to the owner-prefix heuristic for unregistered slugs", () => {
+    const target = resolveProbeTarget("anthropic/some-unregistered", {});
+    expect(target.cli).toBe("claude");
+    expect(target.cliModel).toBe("some-unregistered");
+  });
+
+  it("falls back to the raw owner when no heuristic matches", () => {
+    const target = resolveProbeTarget("moonshotai/kimi-k3", {});
+    expect(target.cli).toBe("moonshotai");
+    expect(target.cliModel).toBe("kimi-k3");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// probeSlug — registered custom slugs (regression: would spawn a nonexistent
+// `moonshotai` binary before registry-first resolution)
+// ---------------------------------------------------------------------------
+
+describe("probeSlug — registered custom slug", () => {
+  beforeEach(() => {
+    // Clear leftover queue entries from earlier suites (probeSlug returns
+    // early without spawning when no ping command is defined, leaving unused
+    // mockReturnValueOnce values behind).
+    vi.mocked(childProcess.spawnSync).mockReset();
+  });
+
+  it("probes via the registered CLI instead of the owner prefix", async () => {
+    mockSpawn({ status: 0, stdout: "moonshotai/kimi-k3\nmoonshotai/kimi-k2" });
+
+    const result = await probeSlug("moonshotai/kimi-k3", {
+      userModels: CUSTOM_MODELS,
+    });
+
+    expect(childProcess.spawnSync).toHaveBeenLastCalledWith(
+      "opencode",
+      ["models", "moonshotai"],
+      expect.objectContaining({ encoding: "utf-8" }),
+    );
+    expect(result.cli).toBe("opencode");
+    expect(result.status).toBe("accepted");
+  });
+
+  it("still treats an unregistered slug via the owner heuristic", async () => {
+    // No mock queued: with cli "moonshotai" there is no ping command, so
+    // probeSlug returns before spawning anything.
+    const result = await probeSlug("moonshotai/kimi-k3", { userModels: {} });
+
+    expect(result.cli).toBe("moonshotai");
+    expect(result.status).toBe("unknown");
+    expect(result.stderr).toContain("No ping command defined");
+    expect(childProcess.spawnSync).not.toHaveBeenCalled();
   });
 });
 

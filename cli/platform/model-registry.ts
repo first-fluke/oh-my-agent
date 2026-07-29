@@ -15,7 +15,10 @@ export type {
   ThinkingMode,
 } from "./model-registry/types.js";
 
-export { loadUserModels } from "./model-registry/user-models.js";
+export {
+  loadInlineUserModels,
+  loadUserModels,
+} from "./model-registry/user-models.js";
 
 // ---------------------------------------------------------------------------
 // Initialization guard: defensive filter for api_only:true entries

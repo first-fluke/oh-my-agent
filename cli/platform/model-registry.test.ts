@@ -586,3 +586,69 @@ describe("listBuiltInSlugsByOwner", () => {
     expect(listBuiltInSlugsByOwner("nonexistent")).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// loadInlineUserModels — oma-config.yaml `models:` block
+// ---------------------------------------------------------------------------
+
+function makeTempOmaConfigDir(content: string): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-inline-models-"));
+  fs.mkdirSync(path.join(dir, ".agents"), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, ".agents", "oma-config.yaml"),
+    content,
+    "utf-8",
+  );
+  return dir;
+}
+
+describe("loadInlineUserModels", () => {
+  it("returns the raw models: block from oma-config.yaml", async () => {
+    const { loadInlineUserModels } = await import("./model-registry.js");
+    const dir = makeTempOmaConfigDir(`
+language: en
+model_preset: mixed
+models:
+  moonshotai/kimi-k3:
+    cli: opencode
+    cli_model: moonshotai/kimi-k3
+`);
+    try {
+      const result = loadInlineUserModels(dir);
+      expect(result).toBeDefined();
+      expect(Object.keys(result ?? {})).toEqual(["moonshotai/kimi-k3"]);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("returns undefined when the config has no models: key", async () => {
+    const { loadInlineUserModels } = await import("./model-registry.js");
+    const dir = makeTempOmaConfigDir("language: en\nmodel_preset: mixed\n");
+    try {
+      expect(loadInlineUserModels(dir)).toBeUndefined();
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("returns undefined when oma-config.yaml does not exist", async () => {
+    const { loadInlineUserModels } = await import("./model-registry.js");
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-no-oma-config-"));
+    try {
+      expect(loadInlineUserModels(dir)).toBeUndefined();
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("returns undefined on malformed YAML without throwing", async () => {
+    const { loadInlineUserModels } = await import("./model-registry.js");
+    const dir = makeTempOmaConfigDir("models: {unclosed bracket\n");
+    try {
+      expect(loadInlineUserModels(dir)).toBeUndefined();
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

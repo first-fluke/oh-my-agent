@@ -1,10 +1,13 @@
 import type { Command } from "commander";
 import pc from "picocolors";
 import type { ModelSpec } from "../../platform/model-registry.js";
-import { CORE_REGISTRY, ownerToVendor } from "../../platform/model-registry.js";
+import {
+  CORE_REGISTRY,
+  loadInlineUserModels,
+} from "../../platform/model-registry.js";
 import { runAction } from "../../utils/cli-framework.js";
 import { computeDiff, formatHumanReadable, formatJson } from "./check.js";
-import { describeProbeStatus, probeSlug } from "./probe.js";
+import { describeProbeStatus, probeSlug, resolveProbeTarget } from "./probe.js";
 import { proposeMissingSlugs, writeProposalToFile } from "./propose.js";
 import { fetchCursorModels } from "./sources/cursor.js";
 import { fetchOpenRouterModels } from "./sources/openrouter.js";
@@ -213,10 +216,13 @@ export function registerModelCommands(program: Command): void {
           const timeoutMs: number | undefined =
             typeof options.timeout === "number" ? options.timeout : undefined;
 
-          const slashIndex = (slug as string).indexOf("/");
-          const owner = slashIndex >= 0 ? slug.slice(0, slashIndex) : "";
-          const cliModel = slashIndex >= 0 ? slug.slice(slashIndex + 1) : slug;
-          const cliName = ownerToVendor(owner) ?? owner;
+          // Resolve once and hand the same userModels to probeSlug, so the
+          // line printed here always matches the command actually run.
+          const userModels = loadInlineUserModels();
+          const { cli: cliName, cliModel } = resolveProbeTarget(
+            slug as string,
+            userModels,
+          );
 
           if (!options.json) {
             process.stderr.write(
@@ -224,7 +230,7 @@ export function registerModelCommands(program: Command): void {
             );
           }
 
-          const result = await probeSlug(slug, { timeoutMs });
+          const result = await probeSlug(slug, { timeoutMs, userModels });
 
           if (options.json) {
             console.log(JSON.stringify(result, null, 2));

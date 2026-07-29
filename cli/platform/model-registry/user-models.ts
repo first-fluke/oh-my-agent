@@ -23,6 +23,45 @@ function findFileUp(startDir: string, relativePath: string): string | null {
 }
 
 /**
+ * Read the inline `models:` block from .agents/oma-config.yaml, walking up from
+ * `cwd`. Returns the raw record without validating entries — callers pass it to
+ * `getModelSpec(slug, userModels)`, which validates the single slug it needs via
+ * ModelSpecSchema and warns on failure. Returns undefined when the file is
+ * missing, unreadable, malformed, or has no `models:` key.
+ *
+ * This is the oma-config.yaml counterpart to loadUserModels(), which reads the
+ * separate .agents/config/models.yaml file. Both are user-registered model
+ * sources; call sites that resolve a slug's CLI need this one to see models
+ * declared inline alongside `custom_presets:`.
+ */
+export function loadInlineUserModels(
+  cwd?: string,
+): Record<string, unknown> | undefined {
+  const searchDir = cwd ?? process.cwd();
+  const filePath = findFileUp(
+    searchDir,
+    path.join(".agents", "oma-config.yaml"),
+  );
+  if (!filePath) return undefined;
+
+  let raw: unknown;
+  try {
+    raw = parseYaml(fs.readFileSync(filePath, "utf-8"));
+  } catch {
+    // Malformed YAML — the config loader reports this elsewhere; stay silent
+    // here so a probe/doctor read does not double-warn.
+    return undefined;
+  }
+
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const models = (raw as Record<string, unknown>).models;
+  if (!models || typeof models !== "object" || Array.isArray(models)) {
+    return undefined;
+  }
+  return models as Record<string, unknown>;
+}
+
+/**
  * Load and validate user-provided model entries from .agents/config/models.yaml.
  * Returns only valid, non-api_only entries as a Map.
  * Malformed YAML → logs error, returns empty Map.
