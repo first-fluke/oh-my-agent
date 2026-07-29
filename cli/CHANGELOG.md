@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.0...cli-v11.2.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **cli:** resolve doctor --profile CLI from the models registry ([d840606](https://github.com/first-fluke/oh-my-agent/commit/d840606cbcc0b34e9958c108fd94a677755454ba)), closes [#656](https://github.com/first-fluke/oh-my-agent/issues/656)
+* **cli:** resolve model:probe CLI from the models registry ([4032916](https://github.com/first-fluke/oh-my-agent/commit/403291630f57ddeb9dc20df629430cc58b838c7a))
+
 ## [11.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.1.1...cli-v11.2.0) (2026-07-28)
 
 
