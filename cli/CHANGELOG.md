@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.4...cli-v11.3.0) (2026-07-30)
+
+
+### Documentation
+
+* **cli:** list oma-explainer in the skills table ([c982a56](https://github.com/first-fluke/oh-my-agent/commit/c982a5600fffc005a8b81c8d345070ccc848a7fa))
+* document the Node 26 requirement in Quick Start ([33f1d15](https://github.com/first-fluke/oh-my-agent/commit/33f1d15b86d6af69776a571cc7147b6ee1f402f5))
+
 ## [11.2.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.3...cli-v11.2.4) (2026-07-30)
 
 
