@@ -12,6 +12,8 @@ Works with all major AI IDEs: Antigravity, Claude Code, Codex, Cursor, Grok Buil
 
 ## Quick Start
 
+Requires **Node.js 26+**. The install scripts below auto-install bun, uv, and serena if they're missing.
+
 ```bash
 # macOS / Linux — auto-installs bun, uv & serena if missing
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
