@@ -11,10 +11,13 @@ These options are available on the root `oma` / `oh-my-agent` command:
 
 | Flag | Description |
 |:-----|:-----------|
+| `-g, --global` | Operate on the HOME install (`~/.agents/`) instead of `<cwd>/.agents/` |
 | `-V, --version` | Output the version number and exit |
 | `-h, --help` | Display help for the command |
 
 All subcommands also support `-h, --help` to show their specific help text.
+
+`--global` sets the install root for the whole process, so `install`, `update`, `link`, and `uninstall` all resolve to `~/.agents/` regardless of the directory you run them from. `OMA_HOME=<abs-path>` overrides it — see [Global install](/guide/global-install).
 
 ---
 

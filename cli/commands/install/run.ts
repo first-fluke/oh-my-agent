@@ -323,6 +323,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         // (`selectedClis`), so we skip link's auto-detection here.
         spinner.start("Installing vendor adaptations...");
         linkResult = link({
+          root: installRoot,
           vendorFilter: vendors,
           quiet: true,
           telemetry: isTelemetryEnabled(installRoot),

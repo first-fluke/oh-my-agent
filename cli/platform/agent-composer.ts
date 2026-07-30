@@ -419,16 +419,21 @@ function resolveOpencodeAgentModel(
 
 /**
  * Generate vendor-specific agent files from core definitions and variant config.
+ *
+ * @returns how many agent files were written. Zero means nothing was generated
+ * (no `.agents/agents/` under `sourceDir`, no variant for `vendor`, or no
+ * abstract definitions) — callers that print a success line should gate on this
+ * so a wrong source dir can't be reported as a successful link.
  */
 export function installVendorAgents(
   sourceDir: string,
   targetDir: string,
   vendor: string,
-): void {
+): number {
   const agentsSrcDir = join(sourceDir, ".agents", "agents");
   const variantPath = join(agentsSrcDir, "variants", `${vendor}.json`);
 
-  if (!existsSync(agentsSrcDir) || !existsSync(variantPath)) return;
+  if (!existsSync(agentsSrcDir) || !existsSync(variantPath)) return 0;
 
   // Variant JSON comes from the (untrusted) working project. safeLoadVariant
   // guards the parse so a malformed file doesn't abort install mid-loop, and
@@ -454,11 +459,12 @@ export function installVendorAgents(
       }
     },
   });
-  if (!variant?.destDir) return;
+  if (!variant?.destDir) return 0;
 
   const destDir = join(targetDir, variant.destDir);
   mkdirSync(destDir, { recursive: true });
 
+  let written = 0;
   for (const definition of readAbstractAgentDefinitions(sourceDir)) {
     const config: AgentConfig = {
       ...(variant.agents[definition.agentKey] || {}),
@@ -482,5 +488,7 @@ export function installVendorAgents(
         : buildMarkdownAgentFile(definition, variant, config, vendor);
 
     writeFileSync(join(destDir, output.fileName), output.content);
+    written += 1;
   }
+  return written;
 }

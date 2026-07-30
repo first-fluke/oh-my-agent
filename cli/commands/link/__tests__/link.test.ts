@@ -92,6 +92,10 @@ vi.mock("../../../vendors/qwen/settings.js", () => ({
   needsQwenSettingsUpdate: vi.fn(() => false),
 }));
 
+import {
+  _resetInstallContext,
+  setInstallContext,
+} from "../../../platform/install-context.js";
 import * as piExtension from "../../../platform/pi-extension-composer.js";
 import * as piPrompts from "../../../platform/pi-prompts.js";
 import * as rules from "../../../platform/rules.js";
@@ -437,6 +441,97 @@ describe("link kernel", () => {
       ).mock.calls.map((args: unknown[]) => args[0] as string);
       const forbidden = calls.find((p: string) => p.endsWith(".claude.json"));
       expect(forbidden).toBeUndefined();
+    });
+  });
+
+  // Regression — #658: link() hardcoded process.cwd() as both source and target,
+  // so `oma link --global` from any directory other than $HOME silently
+  // reconciled the wrong root (or no-op'd when that root had no .agents/).
+  describe("install-root resolution (#658)", () => {
+    it("reconciles the global install root, not the cwd, in global mode", () => {
+      const homeRoot = makeProject(["claude"]);
+      const unrelatedProject = mkdtempSync(join(tmpdir(), "oma-link-cwd-"));
+      tempRoots.push(unrelatedProject);
+      process.chdir(unrelatedProject);
+      _resetInstallContext();
+      setInstallContext({ installRoot: homeRoot, mode: "global" });
+
+      const result = link({ quiet: true });
+
+      expect(result.vendors).toEqual(["claude"]);
+      expect(skills.installVendorAdaptations).toHaveBeenCalledWith(
+        homeRoot,
+        homeRoot,
+        ["claude"],
+      );
+    });
+
+    it("does not fail when cwd has no .agents/ but the global root does", () => {
+      const homeRoot = makeProject(["claude"]);
+      const unrelatedProject = mkdtempSync(join(tmpdir(), "oma-link-cwd-"));
+      tempRoots.push(unrelatedProject);
+      process.chdir(unrelatedProject);
+      _resetInstallContext();
+      setInstallContext({ installRoot: homeRoot, mode: "global" });
+
+      const consoleError = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      link({ quiet: true });
+
+      expect(consoleError).not.toHaveBeenCalled();
+      expect(process.exitCode).not.toBe(1);
+      consoleError.mockRestore();
+    });
+
+    it("uses the project install root in project mode", () => {
+      const projectRoot = makeProject(["claude"]);
+      _resetInstallContext();
+      setInstallContext({ installRoot: projectRoot, mode: "project" });
+      // cwd deliberately left elsewhere — the resolved root must still win.
+      const elsewhere = mkdtempSync(join(tmpdir(), "oma-link-elsewhere-"));
+      tempRoots.push(elsewhere);
+      process.chdir(elsewhere);
+
+      link({ quiet: true });
+
+      expect(skills.installVendorAdaptations).toHaveBeenCalledWith(
+        projectRoot,
+        projectRoot,
+        ["claude"],
+      );
+    });
+
+    it("an explicit root option overrides the install context", () => {
+      const explicitRoot = makeProject(["claude"]);
+      const contextRoot = mkdtempSync(join(tmpdir(), "oma-link-ctx-"));
+      tempRoots.push(contextRoot);
+      _resetInstallContext();
+      setInstallContext({ installRoot: contextRoot, mode: "global" });
+
+      link({ quiet: true, root: explicitRoot });
+
+      expect(skills.installVendorAdaptations).toHaveBeenCalledWith(
+        explicitRoot,
+        explicitRoot,
+        ["claude"],
+      );
+    });
+
+    it("names the searched root when .agents/ is missing", () => {
+      const empty = mkdtempSync(join(tmpdir(), "oma-link-missing-"));
+      tempRoots.push(empty);
+      _resetInstallContext();
+      setInstallContext({ installRoot: empty, mode: "global" });
+
+      const consoleError = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+      link({ quiet: true });
+
+      expect(String(consoleError.mock.calls[0]?.[0])).toContain(empty);
+      consoleError.mockRestore();
+      process.exitCode = 0;
     });
   });
 

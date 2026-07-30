@@ -150,7 +150,7 @@ oma update --vendor claude,qwen
 Regenerate vendor-native files from the `.agents/` source of truth without reinstalling.
 
 ```
-oma link [vendors...]
+oma link [vendors...] [--global]
 ```
 
 **Examples:**
@@ -161,7 +161,12 @@ oma link
 
 # Regenerate only Claude and Codex files
 oma link claude codex
+
+# Regenerate the HOME install (~/.agents/) from any directory
+oma link opencode --global
 ```
+
+Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.agents/` (or `OMA_HOME`). See [Global install](/guide/global-install).
 
 **What it does:**
 1. Rebuilds vendor-native agent files from `.agents/agents/`

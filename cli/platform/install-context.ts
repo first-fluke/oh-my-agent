@@ -57,6 +57,21 @@ export function safeGetInstallMode(): InstallMode {
   }
 }
 
+/**
+ * Like {@link getInstallRoot} but never throws: returns `process.cwd()` when
+ * the install context has not been set yet (early bootstrap or unit tests that
+ * don't initialise it). Use at call sites that must degrade gracefully rather
+ * than fail when the context is absent — note this mirrors the project-mode
+ * default of {@link resolveInstallContext}.
+ */
+export function safeGetInstallRoot(): string {
+  try {
+    return getInstallRoot();
+  } catch {
+    return process.cwd();
+  }
+}
+
 /** Test-only — resets the module-level singleton between vitest cases. */
 export function _resetInstallContext(): void {
   _ctx = null;

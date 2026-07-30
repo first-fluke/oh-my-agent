@@ -305,6 +305,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         // requires changes in cli/commands/link/link.ts.
         const updateVendors = migrationVendors;
         link({
+          root: cwd,
           vendorFilter: updateVendors,
           quiet: true,
           telemetry: isTelemetryEnabled(cwd),

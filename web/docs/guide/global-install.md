@@ -90,6 +90,20 @@ files in ~/. Are you sure?
 
 In non-interactive / CI mode this aborts automatically. Use `--global` if you intend a user-wide install.
 
+## Relinking a global install
+
+`oma link` regenerates vendor-native files from the SSOT without reinstalling. Like `install` and `update`, it resolves its target from the install context, so pass `--global` to reconcile `~/.agents/` — it works from any directory, not just `$HOME`:
+
+```bash
+# Regenerate every configured vendor in the global install
+oma link --global
+
+# Regenerate only opencode (e.g. after editing per-agent models in ~/.agents/oma-config.yaml)
+oma link opencode --global
+```
+
+Without `--global`, `oma link` targets `<cwd>/.agents/` — so running it inside a project when your install is global reports that no `.agents/` directory was found there.
+
 ## Uninstall
 
 ```bash

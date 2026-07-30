@@ -767,6 +767,27 @@ describe("installVendorAgents — opencode variant", () => {
     warnSpy.mockRestore();
   });
 
+  // Regression (issue #658): callers print a success line for the opencode link
+  // step, so a zero-write pass (wrong sourceDir, missing variant) must be
+  // distinguishable from a real one instead of silently reporting success.
+  it("returns the number of agent files written", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const sourceDir = makeOpencodeSourceDir();
+    const targetDir = makeTargetDir();
+
+    expect(installVendorAgents(sourceDir, targetDir, "opencode")).toBe(1);
+    warnSpy.mockRestore();
+  });
+
+  it("returns 0 when sourceDir has no .agents/agents/ directory", () => {
+    const sourceDir = mkdtempSync(join(tmpdir(), "oma-opencode-empty-src-"));
+    tempRoots.push(sourceDir);
+    const targetDir = makeTargetDir();
+
+    expect(installVendorAgents(sourceDir, targetDir, "opencode")).toBe(0);
+    expect(existsSync(join(targetDir, ".opencode", "agents"))).toBe(false);
+  });
+
   it("still emits tools when the agent declares a non-empty tool list", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const sourceDir = makeOpencodeSourceDir({ tools: ["read", "edit"] });
