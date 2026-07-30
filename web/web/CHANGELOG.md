@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.2...web-v4.0.3) (2026-07-30)
+
+
+### Bug Fixes
+
+* **cli:** resolve install root in link instead of process.cwd() ([ee52eb5](https://github.com/first-fluke/oh-my-agent/commit/ee52eb57a371aefc2ef3fcba878edc7172a4777e)), closes [#658](https://github.com/first-fluke/oh-my-agent/issues/658)
+
+
+### Documentation
+
+* use relative paths for global-install cross-links ([0b82227](https://github.com/first-fluke/oh-my-agent/commit/0b8222763c554c5bae5bb3b8f6941d35f06cf938))
+
 ## [4.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.1...web-v4.0.2) (2026-07-27)
 
 
