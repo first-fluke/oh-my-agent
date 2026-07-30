@@ -4,6 +4,7 @@ import { inspectRecommendedGitConfig } from "../../io/git-recommended.js";
 import { getMemoriesPath } from "../../io/memory.js";
 import { SERENA_INSTALL_HINT } from "../../io/serena.js";
 import { downloadAndExtract } from "../../io/tarball.js";
+import { safeGetInstallRoot } from "../../platform/install-context.js";
 import {
   getAllSkills,
   installShared,
@@ -92,6 +93,14 @@ export function computeEvalCoverage(
 export async function collectDoctorReport(
   options: DoctorOptions = {},
 ): Promise<DoctorReport> {
+  // Install-scoped checks (.agents/, vendor dirs, hook wrappers) follow the
+  // resolved install root so `oma doctor --global` inspects ~/.agents/ from any
+  // directory. Project mode resolves to process.cwd(), so nothing changes there.
+  const root = safeGetInstallRoot();
+  // The dual-install comparison and the serena project registration are about
+  // the directory the user is standing in, not the install root: probing the
+  // same path as `home` would make every --global run report the global install
+  // as a phantom project install with mode=global.
   const cwd = process.cwd();
   const dualInstall = await checkDualInstall(cwd);
 
@@ -111,13 +120,13 @@ export async function collectDoctorReport(
     .filter((c) => c.installed)
     .map((cli) => ({ ...cli, mcp: checkMCPConfig(cli.name) }));
 
-  const skillChecks = checkSkills();
+  const skillChecks = checkSkills(root);
 
-  const vendorDocs = collectVendorDocChecks(cwd, clis);
+  const vendorDocs = collectVendorDocChecks(root, clis);
 
   // Coordination memory store (canonical .agents/state/memories, legacy
   // .serena/memories fallback) — the dir the dashboards watch.
-  const memoriesDir = getMemoriesPath(cwd);
+  const memoriesDir = getMemoriesPath(root);
   const hasSerena = existsSync(memoriesDir);
   let serenaFileCount = 0;
   if (hasSerena) {
@@ -136,16 +145,16 @@ export async function collectDoctorReport(
           hasSkillMd: false,
         }));
 
-  const skillAudit = auditSkills(cwd);
-  const skillEval = computeEvalCoverage(cwd, skillAudit.skillCount);
-  const agentMemory = await collectAgentMemoryCheck(cwd);
+  const skillAudit = auditSkills(root);
+  const skillEval = computeEvalCoverage(root, skillAudit.skillCount);
+  const agentMemory = await collectAgentMemoryCheck(root);
   const serenaReap = collectSerenaReapCheck(cwd);
   const serenaDaemons = collectSerenaDaemonCheck();
-  const state = collectStateDoctorCheck(cwd);
-  const hookWrappers = collectHookWrapperChecks(cwd);
+  const state = collectStateDoctorCheck(root);
+  const hookWrappers = collectHookWrapperChecks(root);
   const selfHealing = options.healCheckAgent
     ? evaluateSelfHealingGate({
-        workspace: cwd,
+        workspace: root,
         agentType: options.healCheckAgent,
       })
     : undefined;
@@ -184,7 +193,7 @@ export async function collectDoctorReport(
     gitRecommended.issueCount;
 
   return {
-    cwd,
+    installRoot: root,
     clis,
     mcpChecks,
     skillChecks,

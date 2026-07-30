@@ -61,9 +61,13 @@ export async function promptRepair(report: DoctorReport): Promise<void> {
   const spinner = p.spinner();
   spinner.start("Downloading source...");
   try {
-    await installSkillsFromRemote(report.cwd, skillsToInstall, (name) => {
-      spinner.message(`Installing ${pc.cyan(name)}...`);
-    });
+    await installSkillsFromRemote(
+      report.installRoot,
+      skillsToInstall,
+      (name) => {
+        spinner.message(`Installing ${pc.cyan(name)}...`);
+      },
+    );
     spinner.stop(`Installed ${skillsToInstall.length} skill(s)!`);
     p.note(
       skillsToInstall.map((s) => `${pc.green("✓")} ${s}`).join("\n"),

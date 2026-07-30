@@ -163,6 +163,10 @@ vi.mock("../../io/git-recommended.js", () => ({
 // ---- import module under test AFTER mocks ----
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import {
+  _resetInstallContext,
+  setInstallContext,
+} from "../../platform/install-context.js";
+import {
   collectDoctorReport,
   computeEvalCoverage,
   serializeReportAsJson,
@@ -808,5 +812,83 @@ describe("computeEvalCoverage", () => {
     });
 
     vi.useRealTimers();
+  });
+});
+
+// Regression — #658 (same class as the `oma link` bug): doctor read
+// process.cwd() directly, so `oma doctor --global` reported on whatever
+// directory it was invoked from instead of the HOME install.
+describe("install-root resolution (#658)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    spawnState.lastProcs.length = 0;
+    vi.clearAllMocks();
+    spawnState.execFileSyncFn.mockReturnValue("");
+    vi.mocked(existsSync).mockReturnValue(false);
+    vi.mocked(readFileSync).mockReturnValue("");
+    vi.mocked(readdirSync).mockReturnValue([]);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    _resetInstallContext();
+  });
+
+  async function reportWithContext(
+    installRoot: string,
+    mode: "project" | "global",
+  ) {
+    _resetInstallContext();
+    setInstallContext({ installRoot, mode });
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis([]);
+    return reportPromise;
+  }
+
+  it("reports on the global install root, not the cwd", async () => {
+    const report = await reportWithContext("/fake/home", "global");
+
+    expect(report.installRoot).toBe("/fake/home");
+    expect(report.installRoot).not.toBe(process.cwd());
+  });
+
+  it("reports on the project root in project mode", async () => {
+    const report = await reportWithContext("/fake/project", "project");
+
+    expect(report.installRoot).toBe("/fake/project");
+  });
+
+  it("falls back to cwd when the install context is unset", async () => {
+    _resetInstallContext();
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    await settleInstalledClis([]);
+    const report = await reportPromise;
+
+    expect(report.installRoot).toBe(process.cwd());
+  });
+
+  it("resolves install-scoped paths under the global root", async () => {
+    await reportWithContext("/fake/home", "global");
+
+    // The install-owned trees (skills / state / eval) must be probed under the
+    // global root. Excluded on purpose: `_version.json` (the dual-install
+    // comparison probes the cwd by design) and `oma-config.yaml` (serena-reap's
+    // resolver has its own project-then-HOME fallback).
+    const installProbes = vi
+      .mocked(existsSync)
+      .mock.calls.map((c) => String(c[0]))
+      .filter(
+        (probe) =>
+          !probe.includes("_version.json") &&
+          [".agents/skills", ".agents/state", ".agents/eval"].some((seg) =>
+            probe.includes(seg),
+          ),
+      );
+    expect(installProbes.length).toBeGreaterThan(0);
+    for (const probe of installProbes) {
+      expect(probe.startsWith("/fake/home/")).toBe(true);
+    }
   });
 });

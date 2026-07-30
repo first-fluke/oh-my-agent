@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { safeGetInstallRoot } from "../../platform/install-context.js";
 import {
   addOutputOptions,
   resolveJsonMode,
@@ -14,7 +15,10 @@ export async function doctor(
   healCheckAgent?: string,
 ): Promise<void> {
   if (profileMode) {
-    const report = await collectProfileReport(process.cwd());
+    // Install root, not process.cwd(): `--global` must read ~/.agents/oma-config.yaml.
+    // In project mode this resolves to process.cwd(), preserving the walk-up
+    // that lets `oma doctor --profile` work from a subdirectory.
+    const report = await collectProfileReport(safeGetInstallRoot());
     await renderProfileReport(report);
     return;
   }

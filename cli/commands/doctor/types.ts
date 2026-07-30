@@ -134,7 +134,12 @@ export interface GitRecommendedDoctorCheck {
 }
 
 export interface DoctorReport {
-  cwd: string;
+  /**
+   * Root the install-scoped checks ran against — `~/.agents/`'s parent under
+   * `--global`, otherwise the project dir. Also the root `oma doctor`'s repair
+   * prompt installs missing skills into.
+   */
+  installRoot: string;
   clis: CLICheck[];
   mcpChecks: McpCheck[];
   skillChecks: SkillCheck[];

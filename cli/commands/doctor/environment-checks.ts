@@ -128,8 +128,13 @@ export function checkMCPConfig(cliName: string): {
   }
 }
 
-export function checkSkills(): SkillCheck[] {
-  const skillsDir = join(process.cwd(), INSTALLED_SKILLS_DIR);
+/**
+ * @param root - Install root to inspect (`~` under `--global`, else the project
+ *   dir). Never `process.cwd()` directly: a global install is otherwise reported
+ *   as having zero skills whenever doctor runs from a project directory.
+ */
+export function checkSkills(root: string): SkillCheck[] {
+  const skillsDir = join(root, INSTALLED_SKILLS_DIR);
   if (!existsSync(skillsDir)) return [];
 
   return getAllSkills().map((skill) => {
