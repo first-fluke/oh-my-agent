@@ -166,7 +166,7 @@ oma link claude codex
 oma link opencode --global
 ```
 
-Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.agents/` (or `OMA_HOME`). See [Global install](/guide/global-install).
+Without `--global`, link targets `<cwd>/.agents/`; with it, `~/.agents/` (or `OMA_HOME`). See [Global install](../guide/global-install.md).
 
 **What it does:**
 1. Rebuilds vendor-native agent files from `.agents/agents/`

@@ -17,7 +17,7 @@ These options are available on the root `oma` / `oh-my-agent` command:
 
 All subcommands also support `-h, --help` to show their specific help text.
 
-`--global` sets the install root for the whole process, so `install`, `update`, `link`, and `uninstall` all resolve to `~/.agents/` regardless of the directory you run them from. `OMA_HOME=<abs-path>` overrides it — see [Global install](/guide/global-install).
+`--global` sets the install root for the whole process, so `install`, `update`, `link`, and `uninstall` all resolve to `~/.agents/` regardless of the directory you run them from. `OMA_HOME=<abs-path>` overrides it — see [Global install](../guide/global-install.md).
 
 ---
 
