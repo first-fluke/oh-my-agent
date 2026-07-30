@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.2.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.3...cli-v11.2.4) (2026-07-30)
+
+
+### Bug Fixes
+
+* **cli:** resolve install root in doctor instead of process.cwd() ([f165b45](https://github.com/first-fluke/oh-my-agent/commit/f165b454fdc4d7033ee42a4af7da8f7357252203))
+* **cli:** resolve install root in link instead of process.cwd() ([ee52eb5](https://github.com/first-fluke/oh-my-agent/commit/ee52eb57a371aefc2ef3fcba878edc7172a4777e)), closes [#658](https://github.com/first-fluke/oh-my-agent/issues/658)
+
 ## [11.2.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.2...cli-v11.2.3) (2026-07-29)
 
 
