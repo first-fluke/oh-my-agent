@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  // Inlined from @docusaurus/tsconfig (3.10.1): TypeScript 7 removed
+  // Inlined from @docusaurus/tsconfig (3.10.2): TypeScript 7 removed
   // `baseUrl`, which the upstream preset still sets, so extending it fails
   // typecheck. `paths` entries below resolve relative to this file, which
   // reproduces the old `baseUrl: "."` behavior.

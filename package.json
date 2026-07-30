@@ -30,10 +30,10 @@
     "web:build": "bun run --cwd web build"
   },
   "overrides": {
-    "@types/node": "^24"
+    "@types/node": "^26"
   },
   "engines": {
-    "node": ">=24.0"
+    "node": ">=26.0"
   },
   "keywords": [
     "pi-package"
@@ -44,12 +44,12 @@
     ]
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.4",
-    "@commitlint/cli": "20.4.3",
-    "@commitlint/config-conventional": "20.4.3",
+    "@biomejs/biome": "^2.5.6",
+    "@commitlint/cli": "21.2.1",
+    "@commitlint/config-conventional": "21.2.0",
     "husky": "9.1.7"
   },
   "dependencies": {
-    "jsonrepair": "^3.14.1"
+    "jsonrepair": "^3.15.0"
   }
 }

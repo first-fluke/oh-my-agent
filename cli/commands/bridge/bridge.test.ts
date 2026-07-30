@@ -262,7 +262,7 @@ describe("bridge command", () => {
         origSetEncoding,
       );
       vi.spyOn(process.stdin, "on").mockImplementation(
-        (event: string, handler: (...args: unknown[]) => void) => {
+        (event: string | symbol, handler: (...args: unknown[]) => void) => {
           if (event === "data") {
             stdinHandler = handler as (chunk: string) => void;
           }
@@ -528,7 +528,7 @@ describe("bridge command", () => {
         origSetEncoding,
       );
       vi.spyOn(process.stdin, "on").mockImplementation(
-        (event: string, handler: (...args: unknown[]) => void) => {
+        (event: string | symbol, handler: (...args: unknown[]) => void) => {
           if (event === "data") {
             stdinHandler = handler as (chunk: string) => void;
           }
@@ -893,7 +893,7 @@ describe("bridge command", () => {
         origSetEncoding,
       );
       vi.spyOn(process.stdin, "on").mockImplementation(
-        (event: string, handler: (...args: unknown[]) => void) => {
+        (event: string | symbol, handler: (...args: unknown[]) => void) => {
           if (event === "data") {
             stdinHandler = handler as (chunk: string) => void;
           }
