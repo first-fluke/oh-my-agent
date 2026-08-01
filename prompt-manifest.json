@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.3.1",
-  "releaseDate": "2026-08-01T03:05:04.874Z",
+  "releaseDate": "2026-08-01T03:48:30.294Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -2071,8 +2071,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "e8a0db7f4a3b97bc66a1e4447ed6a6285a180356628408bca6f20b7ad07e3cf6",
-      "size": 12156
+      "sha256": "48782eb0a5739ff182dd3f5d73d19b713d7c306acac583ee032e75c0441037dd",
+      "size": 13318
     },
     {
       "path": ".agents/workflows/plan.md",
