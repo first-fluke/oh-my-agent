@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.3.0",
-  "releaseDate": "2026-07-30T09:51:41.115Z",
+  "releaseDate": "2026-08-01T02:26:09.814Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -176,8 +176,8 @@
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
-      "sha256": "c26d6b468c700d49f8b2b3470661073fed86b37e580d02a8111efe6de6ae7c25",
-      "size": 8503
+      "sha256": "ff946f24ae111219ffb1124dcc3d8a0a07e7023a46f290a6de953eb4ba97386f",
+      "size": 8809
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
@@ -301,8 +301,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "4c84e7e8d92d4193faefb4bbf926bffa2a97785e1161ca467b75576e8c8aa187",
-      "size": 15880
+      "sha256": "c13e6e197f69c988f14df8250e78de89fe110c05be9d8967d28d07c7d0565598",
+      "size": 16231
     },
     {
       "path": ".agents/rules/backend.md",
