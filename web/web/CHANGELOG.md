@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.3...web-v4.1.0) (2026-08-01)
+
+
+### Features
+
+* **orchestrate:** create a plan inline when none is usable ([faaab26](https://github.com/first-fluke/oh-my-agent/commit/faaab26d6c1a94d8f28c76dcb1811230f4352513)), closes [#665](https://github.com/first-fluke/oh-my-agent/issues/665)
+
 ## [4.0.3](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.2...web-v4.0.3) (2026-07-30)
 
 
