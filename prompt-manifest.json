@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.3.1",
-  "releaseDate": "2026-08-01T03:48:30.294Z",
+  "releaseDate": "2026-08-01T13:33:53.450Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -981,8 +981,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "19e5a2143817f40b02264d244de32a6ad5187dfba5ab2252cf0aac988feacc6b",
-      "size": 12864
+      "sha256": "1573f1c4c076f054fb0b648c51e671aabcc6d7ae73564fea79140a454dcd116a",
+      "size": 13435
     },
     {
       "path": ".agents/skills/oma-frontend/resources/angular-rules.md",
@@ -991,8 +991,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/checklist.md",
-      "sha256": "62ada61ba2bef6db8e98dee94f83f226a7f18620c8a2bb82c0359ba9a7ba99da",
-      "size": 4646
+      "sha256": "583bef5705c65f3d30069fade6def832647af963c2e7f63457c6e9f207edfa5e",
+      "size": 4772
     },
     {
       "path": ".agents/skills/oma-frontend/resources/error-playbook.md",
@@ -1006,8 +1006,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/snippets.md",
-      "sha256": "ad3016603805455bcf6296bf68ee138c0729ceb2237e5e953d0596b7217957a6",
-      "size": 11576
+      "sha256": "1fbcb2a077d7828ed1653ca1382ae271fccc31fc8cc6de727905e693e679493f",
+      "size": 11847
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tailwind-rules.md",
