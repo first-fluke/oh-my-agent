@@ -8,8 +8,13 @@ Copy-paste ready patterns. Use these as starting points, adapt to the specific t
 
 ```tsx
 // Internal nav: <Link>, never <a href="/...">
+// prefetch={false} is the DEFAULT — viewport prefetching eats container CPU/RAM.
 import Link from "next/link";
-<Link href="/gallery" className="...">View gallery</Link>
+<Link href="/gallery" prefetch={false} className="...">View gallery</Link>
+
+// Opt back in only for a few high-intent targets, and say why:
+// primary funnel CTA — prefetch is intentional
+<Link href="/checkout" className="...">Checkout</Link>
 
 // Custom font: next/font, never <link rel="stylesheet">
 import { Inter } from "next/font/google";

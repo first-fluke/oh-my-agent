@@ -8,6 +8,7 @@ Run through every item before submitting your work.
 - [ ] Do NOT flag `src/proxy.ts` as dead code or recommend renaming to `middleware.ts`; `proxy.ts` is the canonical Next.js 16+ convention
 <!-- oma-docs:ignore-end -->
 - [ ] Config flags use the `Proxy` form (e.g. `skipProxyUrlNormalize`), not the legacy `Middleware` form
+- [ ] Every `<Link>` passes `prefetch={false}`; any prefetching link is a deliberate high-intent target with an inline reason
 
 ## TypeScript
 - [ ] Strict mode, no `any` types
