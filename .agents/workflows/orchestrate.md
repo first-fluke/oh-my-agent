@@ -37,12 +37,26 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 
 ## Step 1: Load or Create Plan
 
+### 1a. Load
+
 Look for a plan file:
 
 1. Check `.agents/results/plan-{sessionId}.json` (current session's plan).
 2. If not found: find the most recent `.agents/results/plan-*.json` file.
-3. If none exist: ask the user to run `/plan` first, or ask them to describe the tasks to execute.
-- **Do NOT proceed without a plan.**
+3. A plan is **usable** only when every task carries an agent assignment, a priority tier, its dependencies, and acceptance criteria. A plan missing any of these is not execution-ready — fall through to 1b rather than fanning out against it.
+
+### 1b. Create (no usable plan)
+
+A missing plan is not a stop condition. `/orchestrate` creates the plan itself instead of handing the request back to the user:
+
+1. Generate the session ID now (format: `session-YYYYMMDD-HHMMSS`). Step 2 reuses this id verbatim — do not generate a second one.
+2. Read and follow `.agents/workflows/plan.md` step by step, passing this session ID as its `{sessionId}` so the artifact lands at `.agents/results/plan-{sessionId}.json`.
+3. **Do NOT skip `plan.md` Step 6 (Review Plan with User).** It is this run's approval gate — the Step 3 fan-out is authorized by it. Delegation never removes a user gate.
+4. Once the plan is saved and approved, load it and continue to Step 2 with the same session ID.
+
+Stop and report only when the plan cannot be produced: the user declines to plan, or `plan.md` blocks because the request is too underspecified to decompose.
+
+- **Do NOT spawn agents without a usable plan.**
 
 ---
 
@@ -66,7 +80,7 @@ Look for a plan file:
    └──────────┴───────────────────┘
    ```
 
-3. Generate session ID (format: `session-YYYYMMDD-HHMMSS`).
+3. Session ID: reuse the id generated in Step 1b when the plan was created in this run; otherwise generate one now (format: `session-YYYYMMDD-HHMMSS`).
 4. **Domain gate**: for each planned task, classify it into `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`, and derive `exposed_skill_set` (skills whose name is in `domain_tags`). If fewer than 2 skills match confidently, fall back to the full installed set and mark `exposure_fallback: true`. See `.agents/skills/oma-orchestrator/SKILL.md` (PHASE 1.5) for the full rules.
 5. Use memory write tool to create `orchestrator-session.md` and `task-board.md` in the memory base path. Record `Exposed Skills` and `Exposure Fallback` per task in `task-board.md`.
 6. Set session status to RUNNING.

@@ -302,9 +302,9 @@ oma agent:parallel tasks.yaml -m claude
 
 ## Anti-patterns to avoid
 
-### 1. Skipping the plan
+### 1. Rubber-stamping the plan
 
-Starting `/orchestrate` without a plan file. The workflow will refuse to proceed. Always run `/plan` first, or use `/work` which has built-in planning.
+`/orchestrate` no longer refuses to start without a plan file — it delegates to `/plan` inline and continues with the result. That inline plan still goes through `/plan`'s review gate, and approving it without reading it is what actually causes trouble: the fan-out in the next step is authorized by that approval. For large multi-domain work, run `/plan` up front anyway — you get a durable tracker in `docs/plans/work/` and room to iterate on the decomposition before any agent spawns.
 
 ### 2. Overlapping workspaces
 
