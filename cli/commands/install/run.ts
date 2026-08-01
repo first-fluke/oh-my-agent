@@ -439,11 +439,8 @@ export async function install(options: InstallOptions = {}): Promise<void> {
               variantSelections["oma-backend"],
             ),
           );
-          const { configured, registered } = ensureSerenaProject(
-            installRoot,
-            serenaLangs,
-            { prunable },
-          );
+          const { configured, registered, maxAnswerChars } =
+            ensureSerenaProject(installRoot, serenaLangs, { prunable });
           if (configured === "created") {
             p.log.success(
               pc.green(`Serena project configured (${serenaLangs.join(", ")})`),
@@ -455,6 +452,13 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           }
           if (registered) {
             p.log.success(pc.green("Project registered in Serena"));
+          }
+          if (maxAnswerChars) {
+            p.log.success(
+              pc.green(
+                "Serena default_max_tool_answer_chars set (avoids truncated search hits)",
+              ),
+            );
           }
         }
 

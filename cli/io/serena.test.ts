@@ -2,6 +2,7 @@ import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   advisoryHeavyLanguages,
+  ensureSerenaDefaultMaxAnswerChars,
   ensureSerenaProject,
   ensureSerenaProjectConfig,
   ensureSerenaRegistered,
@@ -11,6 +12,7 @@ import {
   reconcileSerenaLanguages,
   reconcileSerenaProjectConfig,
   resolveSerenaLanguages,
+  SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS,
   unregisterSerenaProject,
 } from "./serena.js";
 
@@ -177,6 +179,60 @@ describe("inferSerenaLanguages", () => {
   });
 });
 
+describe("ensureSerenaDefaultMaxAnswerChars", () => {
+  const configPath = join("/mock/home", ".serena", "serena_config.yml");
+
+  it("should return false when config file does not exist", () => {
+    mockFs.existsSync.mockReturnValue(false);
+    expect(ensureSerenaDefaultMaxAnswerChars()).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("should append the default when the key is missing", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue("projects:\n- /other\n");
+    expect(ensureSerenaDefaultMaxAnswerChars()).toBe(true);
+    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+      configPath,
+      expect.stringContaining(
+        `default_max_tool_answer_chars: ${SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS}`,
+      ),
+    );
+  });
+
+  it("should raise a too-low existing value", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      "gui_log_window: false\ndefault_max_tool_answer_chars: 3000\nprojects:\n- /x\n",
+    );
+    expect(ensureSerenaDefaultMaxAnswerChars()).toBe(true);
+    const written = mockFs.writeFileSync.mock.calls.at(0)?.[1] as string;
+    expect(written).toContain(
+      `default_max_tool_answer_chars: ${SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS}`,
+    );
+    expect(written).toContain("gui_log_window: false");
+    expect(written).not.toMatch(/default_max_tool_answer_chars:\s*3000/);
+  });
+
+  it("should leave a sufficient existing value alone", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      "default_max_tool_answer_chars: 150000\nprojects:\n- /x\n",
+    );
+    expect(ensureSerenaDefaultMaxAnswerChars()).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("should leave intentional higher caps alone", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      "default_max_tool_answer_chars: 500000\n",
+    );
+    expect(ensureSerenaDefaultMaxAnswerChars()).toBe(false);
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
+});
+
 describe("ensureSerenaRegistered", () => {
   const configPath = join("/mock/home", ".serena", "serena_config.yml");
 
@@ -274,12 +330,21 @@ describe("serena setup declines $HOME", () => {
     expect(mockFs.mkdirSync).not.toHaveBeenCalled();
   });
 
-  it("ensureSerenaProject should skip both steps", () => {
+  it("ensureSerenaProject should skip project steps but still ensure global max_answer_chars", () => {
+    // Global default is missing → ensure appends it (independent of $HOME guard).
     expect(ensureSerenaProject(HOME_DIR, ["typescript", "python"])).toEqual({
       configured: "skipped",
       registered: false,
+      maxAnswerChars: true,
     });
-    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+      expect.stringContaining("serena_config.yml"),
+      expect.stringContaining(
+        `default_max_tool_answer_chars: ${SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS}`,
+      ),
+    );
+    // Project root must not get a .serena/ tree under $HOME.
+    expect(mockFs.mkdirSync).not.toHaveBeenCalled();
   });
 
   it("should still set up a real project under $HOME", () => {
@@ -585,6 +650,8 @@ describe("ensureSerenaProject", () => {
     const result = ensureSerenaProject("/my/project", ["typescript"]);
     expect(result.configured).toBe("created");
     expect(result.registered).toBe(true);
+    // Missing global key → ensure appends default_max_tool_answer_chars.
+    expect(result.maxAnswerChars).toBe(true);
   });
 
   it("should return configured='unchanged' when project.yml has all languages", () => {
@@ -597,12 +664,13 @@ describe("ensureSerenaProject", () => {
       if ((p as string).includes("project.yml")) {
         return 'languages:\n- typescript\n\nproject_name: "p"\n';
       }
-      return `projects:\n- ${MY_PROJECT}\n`;
+      return `projects:\n- ${MY_PROJECT}\ndefault_max_tool_answer_chars: 150000\n`;
     });
 
     const result = ensureSerenaProject("/my/project", ["typescript"]);
     expect(result.configured).toBe("unchanged");
     expect(result.registered).toBe(false); // already registered
+    expect(result.maxAnswerChars).toBe(false);
   });
 });
 

@@ -278,6 +278,9 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain("<!-- OMA:START");
     expect(content).toContain("<!-- OMA:END -->");
     expect(content).toContain("# oh-my-agent");
+    expect(content).toContain("## Code Search");
+    expect(content).toContain("max_answer_chars");
+    expect(content).toContain("default_max_tool_answer_chars");
     expect(content).toContain("## Workflows");
     expect(content).toContain("| frontend |");
     expect(content).toContain("| backend |");

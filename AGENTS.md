@@ -8,7 +8,7 @@
 - **Response language**: Follows `language` in `.agents/oma-config.yaml`
 - **Skills**: `.agents/skills/` (domain specialists)
 - **Workflows**: `.agents/workflows/` (multi-step orchestration)
-- **Subagents**: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent:spawn`
+- **Subagents**: pi has no native subagent API; use `oma agent:spawn {agent} {prompt} {sessionId} -m pi` for CLI subprocess dispatch
 
 ## Per-Agent Dispatch
 
@@ -28,6 +28,8 @@ Prefer **serena MCP** tools over native find/grep when locating code — they ar
 | Pattern or regex search across the codebase | `search_for_pattern` |
 | Find a file by name | `find_file` |
 | List directory contents | `list_dir` |
+
+Serena result size: omit `max_answer_chars` (uses `default_max_tool_answer_chars` in `~/.serena/serena_config.yml`, typically 150000) unless you need a hard cap. Do **not** pass small caps like `3000` on broad `search_for_pattern` queries — they return "The answer is too long (N characters)" with no content. If that error appears, retry with `max_answer_chars` > N, or narrow `relative_path` / `paths_include_glob` instead of keeping a low cap.
 
 ## Workflows
 
@@ -61,7 +63,7 @@ To execute: read and follow `.agents/workflows/{name}.md` step by step.
 
 ## Auto-Detection
 
-Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)
+Extension bridge: `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts
 Keywords defined in `.agents/hooks/core/triggers.json` (multi-language).
 Persistent workflows (orchestrate, ultrawork, work, ralph) block termination until complete.
 Deactivate: say "workflow done".

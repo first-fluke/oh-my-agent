@@ -100,6 +100,19 @@ export function ensureSerenaBinary(opts?: {
 
 const SERENA_CONFIG_PATH = join(homedir(), ".serena", "serena_config.yml");
 
+/**
+ * Floor for Serena's global `default_max_tool_answer_chars`.
+ *
+ * Serena tools accept per-call `max_answer_chars` (default -1 → this global).
+ * Agents sometimes pass tiny caps (e.g. 3000); that is a call-site mistake,
+ * not fixed by this floor. What we *do* fix: missing or legacy-low global
+ * defaults that reject moderate search hits (~25k+) with
+ * "The answer is too long". Serena's own template uses 150_000.
+ */
+export const SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS = 150_000;
+/** Raise the global default only when it is missing or below this floor. */
+export const SERENA_MAX_TOOL_ANSWER_CHARS_FLOOR = 50_000;
+
 // Maps oma skill names to the Serena language server keys they require.
 // DELIBERATE EXCLUSION: "bash" (bash-language-server ~40 MB) is never auto-added
 // here. It is low-value for the projects oma manages and adds ~40 MB of LSP memory
@@ -653,6 +666,55 @@ export function isForbiddenSerenaProjectRoot(cwd: string): boolean {
 }
 
 /**
+ * Ensure `~/.serena/serena_config.yml` has a usable
+ * `default_max_tool_answer_chars`.
+ *
+ * - Missing key → append Serena's default (150_000).
+ * - Present but below {@link SERENA_MAX_TOOL_ANSWER_CHARS_FLOOR} → raise to
+ *   {@link SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS}.
+ * - Present and ≥ floor → leave alone (respect intentional higher/equal caps).
+ *
+ * Comment-preserving: only rewrites the target key line (or appends one).
+ * Returns true when the file was modified.
+ */
+export function ensureSerenaDefaultMaxAnswerChars(): boolean {
+  if (!existsSync(SERENA_CONFIG_PATH)) return false;
+
+  try {
+    const content = readFileSync(SERENA_CONFIG_PATH, "utf-8");
+    const keyRe =
+      /^([ \t]*default_max_tool_answer_chars:[ \t]*)(-?\d+)[ \t]*$/m;
+    const match = content.match(keyRe);
+
+    if (match) {
+      const current = Number(match[2]);
+      if (
+        Number.isFinite(current) &&
+        current >= SERENA_MAX_TOOL_ANSWER_CHARS_FLOOR
+      ) {
+        return false;
+      }
+      const updated = content.replace(
+        keyRe,
+        `$1${SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS}`,
+      );
+      if (updated === content) return false;
+      writeFileSync(SERENA_CONFIG_PATH, updated);
+      return true;
+    }
+
+    const suffix = content.endsWith("\n") ? "" : "\n";
+    writeFileSync(
+      SERENA_CONFIG_PATH,
+      `${content}${suffix}default_max_tool_answer_chars: ${SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS}\n`,
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Register the project path in ~/.serena/serena_config.yml if not already present.
  */
 export function ensureSerenaRegistered(cwd: string): boolean {
@@ -824,14 +886,16 @@ export function ensureSerenaProjectConfig(
  * Ensure the project is set up for Serena:
  * 1. Create .serena/project.yml if missing (or reconcile languages if it exists)
  * 2. Register in ~/.serena/serena_config.yml if missing
+ * 3. Ensure global `default_max_tool_answer_chars` is not missing/too low
  *
  * Returns:
  *   configured  — "created" | "reconciled" | "unchanged" | "skipped" (project.yml outcome)
  *   registered  — true when the project was newly registered in serena_config.yml
+ *   maxAnswerChars  — true when global default_max_tool_answer_chars was written
  *
- * Both steps decline for a forbidden root (see
+ * Steps 1–2 decline for a forbidden root (see
  * {@link isForbiddenSerenaProjectRoot}), yielding `{ configured: "skipped",
- * registered: false }`.
+ * registered: false }`. Step 3 still runs (global config is independent of cwd).
  */
 export function ensureSerenaProject(
   cwd: string,
@@ -840,8 +904,10 @@ export function ensureSerenaProject(
 ): {
   configured: "created" | "reconciled" | "unchanged" | "skipped";
   registered: boolean;
+  maxAnswerChars: boolean;
 } {
   const configured = ensureSerenaProjectConfig(cwd, languages, opts);
   const registered = ensureSerenaRegistered(cwd);
-  return { configured, registered };
+  const maxAnswerChars = ensureSerenaDefaultMaxAnswerChars();
+  return { configured, registered, maxAnswerChars };
 }

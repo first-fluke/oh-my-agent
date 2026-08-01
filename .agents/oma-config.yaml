@@ -67,6 +67,12 @@ telemetry: false
 # serena:
 #   mode: stdio                     # opt out of the shared server
 #   auto_update: false              # skip serena-agent upgrade on `oma update`
+#
+# Answer-size default lives in ~/.serena/serena_config.yml (not here):
+#   default_max_tool_answer_chars: 150000
+# `oma install` / `oma update` raise a missing or too-low value (≥50k floor)
+# so broad search_for_pattern hits are not rejected. Per-call max_answer_chars
+# still overrides this — agents should omit it unless they need a hard cap.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Browser DevTools MCP
