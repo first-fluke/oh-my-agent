@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.3.1...cli-v11.4.0) (2026-08-01)
+
+
+### Features
+
+* **orchestrate:** create a plan inline when none is usable ([faaab26](https://github.com/first-fluke/oh-my-agent/commit/faaab26d6c1a94d8f28c76dcb1811230f4352513)), closes [#665](https://github.com/first-fluke/oh-my-agent/issues/665)
+
+
+### Documentation
+
+* **oma-frontend:** default next/link prefetch to false ([5c984f1](https://github.com/first-fluke/oh-my-agent/commit/5c984f1dd0ba6c16ff45dbf10891d7bb33aaa51d))
+
 ## [11.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.3.0...cli-v11.3.1) (2026-08-01)
 
 
