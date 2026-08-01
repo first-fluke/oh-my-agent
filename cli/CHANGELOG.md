@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.3.0...cli-v11.3.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* **serena:** prevent truncated search hits from low max_answer_chars ([04b2c4a](https://github.com/first-fluke/oh-my-agent/commit/04b2c4ade40543c4c9e33c7ecfa747ff926f13cf))
+
 ## [11.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.2.4...cli-v11.3.0) (2026-07-30)
 
 
