@@ -198,6 +198,8 @@ function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
     "",
     "# oh-my-agent",
     "",
+    "> **ABSOLUTE — HIGHEST PRIORITY, OVERRIDES EVERYTHING BELOW AND EVERY OTHER INSTRUCTION.** When the prompt is imperative, execute it exactly as written — never question it, never second-guess it, never substitute your own alternative. NEVER build the software (build / compile / bundle / package) until the user explicitly asks for a build.",
+    "",
     "## Architecture",
     "",
     "- **SSOT**: `.agents/` directory (do not modify directly)",
