@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.4.0...cli-v11.5.0) (2026-08-01)
+
+
+### Features
+
+* **rules:** add absolute top-priority directive to OMA block ([7abdac7](https://github.com/first-fluke/oh-my-agent/commit/7abdac742dfed088af456b16eebfc9c5e454847b))
+
 ## [11.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.3.1...cli-v11.4.0) (2026-08-01)
 
 
