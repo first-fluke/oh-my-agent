@@ -51,6 +51,9 @@ export const MIGRATION_BACKUP_DIR = ".migration-backup";
  */
 export const DOCS_PLANS_DIR = "docs/plans";
 
+/** Qwen Code runtime temporary session directory */
+export const QWEN_TMP_DIR = ".qwen/tmp";
+
 /** Directory pattern for `.gitignore` (trailing slash). */
 export function asGitignoreDir(relativeDir: string): string {
   return relativeDir.endsWith("/") ? relativeDir : `${relativeDir}/`;
@@ -62,6 +65,7 @@ export const ANTIGRAVITYCLI_GITIGNORE = asGitignoreDir(ANTIGRAVITYCLI_DIR);
 export const AGENTS_BACKUP_GITIGNORE = asGitignoreDir(AGENTS_BACKUP_DIR);
 export const MIGRATION_BACKUP_GITIGNORE = asGitignoreDir(MIGRATION_BACKUP_DIR);
 export const DOCS_PLANS_GITIGNORE = asGitignoreDir(DOCS_PLANS_DIR);
+export const QWEN_TMP_GITIGNORE = asGitignoreDir(QWEN_TMP_DIR);
 
 /** Lines appended by `ensureOmaProjectGitignore()` during install / link / update. */
 export const OMA_PROJECT_GITIGNORE_PATTERNS = [
@@ -71,6 +75,7 @@ export const OMA_PROJECT_GITIGNORE_PATTERNS = [
   AGENTS_BACKUP_GITIGNORE,
   DOCS_PLANS_GITIGNORE,
   MIGRATION_BACKUP_GITIGNORE, // legacy artifacts (no longer written)
+  QWEN_TMP_GITIGNORE,
 ] as const;
 
 /**

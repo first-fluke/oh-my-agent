@@ -30,6 +30,7 @@ describe("paths constants", () => {
     expect(OMA_PROJECT_GITIGNORE_PATTERNS).toContain(".antigravitycli/");
     expect(OMA_PROJECT_GITIGNORE_PATTERNS).toContain(".agents/backup/");
     expect(OMA_PROJECT_GITIGNORE_PATTERNS).toContain(".migration-backup/");
+    expect(OMA_PROJECT_GITIGNORE_PATTERNS).toContain(".qwen/tmp/");
   });
 
   it("agentsPathFromRoot resolves under POSIX project root", () => {
