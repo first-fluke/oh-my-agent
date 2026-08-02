@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.5.0...cli-v11.6.0) (2026-08-02)
+
+
+### Features
+
+* **cli:** add .qwen/tmp/ to managed project gitignore patterns ([f23a2ea](https://github.com/first-fluke/oh-my-agent/commit/f23a2eaa2b198094d91bdae7bd4e0e465042ce8f))
+
 ## [11.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.4.0...cli-v11.5.0) (2026-08-01)
 
 
