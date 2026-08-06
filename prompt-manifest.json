@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.8.0",
-  "releaseDate": "2026-08-06T04:18:09.593Z",
+  "releaseDate": "2026-08-06T07:39:19.560Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -156,13 +156,13 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "fe2233c3a07b49602113733d5234d822c7b4496691de70490ea096dcad2dcaa2",
-      "size": 40065
+      "sha256": "95daceaa34e9699068788cf81ada0044dd9d0d856c5bb4cd0e16be210259a76a",
+      "size": 40315
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "a379303f5214c4fd6f094ed70df2fbd9560bd5f7442683b31af0a31babd78eb0",
-      "size": 10331
+      "sha256": "0ffa3545e3c55b19c6d189ee44141b77824708ff00c34420fca3b4a8b03afbad",
+      "size": 17043
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
@@ -211,8 +211,8 @@
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "abc13a4cab1600ca4dfc1494ef2ea5ae760f4e01f30aee6f6ae1c38d3dc188b8",
-      "size": 3960
+      "sha256": "721328d3a53f726f69364f719922bd2bb691bd979e85fc3ba87c273530d9373e",
+      "size": 5211
     },
     {
       "path": ".agents/hooks/core/vendor-detect.ts",
@@ -301,8 +301,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "c13e6e197f69c988f14df8250e78de89fe110c05be9d8967d28d07c7d0565598",
-      "size": 16231
+      "sha256": "49c467b0ed0b17e81653c7ab7251b39dc692b5afd3a23436edca1bd9cf66f3b9",
+      "size": 16521
     },
     {
       "path": ".agents/rules/backend.md",
@@ -411,8 +411,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/context-budget.md",
-      "sha256": "b6937a4a828155973d27de5e5b8b86e3d52b0b6fbb8ce8d8a3f3d9b0f3efd5f5",
-      "size": 5854
+      "sha256": "84c7e85ae98696a159b2a888bd6239bff51c7d0faf186024b4df8662bfc5c9f3",
+      "size": 6390
     },
     {
       "path": ".agents/skills/_shared/core/context-loading.md",
@@ -1731,8 +1731,8 @@
     },
     {
       "path": ".agents/skills/oma-skill-creator/SKILL.md",
-      "sha256": "da61555b2a26c7b90e904a784c2e63856931be2c70f238ab6199529cb450d6d5",
-      "size": 11928
+      "sha256": "61acc6aaec43821fbfbd8ab9548102fe5129e357cfd3dd80f349728177bd889b",
+      "size": 12279
     },
     {
       "path": ".agents/skills/oma-skill-creator/resources/ssl-lite-template.md",
@@ -2076,8 +2076,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "48782eb0a5739ff182dd3f5d73d19b713d7c306acac583ee032e75c0441037dd",
-      "size": 13318
+      "sha256": "9d1ec8147acb739eff675ef306de1becc17284f3c62e1354efb399f1a02312f1",
+      "size": 13665
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -2136,8 +2136,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "83ba205238202a29ad5d1e174d06c79454654ae756669c7ba2e1612f5fecf9b5",
-      "size": 31207
+      "sha256": "cfe6382fe2179575e4328c64f49827da1b431b069a7d46fad74c5274ee6976da",
+      "size": 31615
     },
     {
       "path": ".agents/workflows/video.md",
