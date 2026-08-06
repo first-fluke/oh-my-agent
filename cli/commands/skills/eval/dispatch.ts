@@ -175,6 +175,32 @@ export function setupIsolatedSkillsDir(
 }
 
 /**
+ * Drop a `--agent eval-agent` pair from a claude invocation when the project
+ * defines no such agent. "eval-agent" is a vendor-resolution role id, not a
+ * real agent definition — claude's native invocation always appends
+ * `--agent <agentId>`, and the claude CLI hard-fails on unknown agents
+ * (`--agent 'eval-agent' not found`), silently scoring the arm 0. A plain
+ * (agent-less) run is the correct eval arm anyway: the skill under test is the
+ * single controlled variable, not an agent persona.
+ */
+export function stripUndefinedEvalAgentFlag(
+  invocation: { command: string; args: string[]; env: NodeJS.ProcessEnv },
+  vendor: string,
+  workspace: string,
+): { command: string; args: string[]; env: NodeJS.ProcessEnv } {
+  if (vendor !== "claude") return invocation;
+  const i = invocation.args.indexOf("--agent");
+  if (i === -1 || invocation.args[i + 1] !== "eval-agent") return invocation;
+  if (existsSync(join(workspace, ".claude", "agents", "eval-agent.md"))) {
+    return invocation;
+  }
+  return {
+    ...invocation,
+    args: invocation.args.filter((_, idx) => idx !== i && idx !== i + 1),
+  };
+}
+
+/**
  * Build the real live-dispatch function that spawns a subprocess via planDispatch
  * and captures its stdout. Uses execFileSync so the call blocks until the agent
  * exits and stdout is fully captured.
@@ -224,8 +250,13 @@ export function buildLiveDispatchFn(
       process.env,
       { readOnly: true },
     );
+    const invocation = stripUndefinedEvalAgentFlag(
+      dispatch.invocation,
+      vendor,
+      workspace,
+    );
 
-    return runEvalDispatch(dispatch.invocation, cwd, prompt, promptFlag);
+    return runEvalDispatch(invocation, cwd, prompt, promptFlag);
   };
 }
 
@@ -264,9 +295,14 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
       process.env,
       { readOnly: true },
     );
+    const invocation = stripUndefinedEvalAgentFlag(
+      dispatch.invocation,
+      vendor,
+      process.cwd(),
+    );
 
     return runEvalDispatch(
-      dispatch.invocation,
+      invocation,
       process.cwd(),
       gradingPrompt,
       promptFlag,

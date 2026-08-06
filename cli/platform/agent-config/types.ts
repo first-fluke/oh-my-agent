@@ -17,7 +17,8 @@ export type AgentId =
   | "refactor"
   | "docs"
   | "tf-infra"
-  | "explore";
+  | "explore"
+  | "eval";
 
 // ---------------------------------------------------------------------------
 // BuiltInPresetKey — the shipped presets

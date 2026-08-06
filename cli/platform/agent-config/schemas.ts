@@ -59,6 +59,7 @@ const AgentsMapSchema = z
     debug: AgentSpecSchema.optional(),
     "tf-infra": AgentSpecSchema.optional(),
     explore: AgentSpecSchema.optional(),
+    eval: AgentSpecSchema.optional(),
   })
   .strict();
 

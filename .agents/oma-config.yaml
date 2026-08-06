@@ -288,3 +288,10 @@ scm:
     - "*.sample"
     - "*.template"
 
+
+# Per-agent vendor overrides. `eval` pins skill-eval dispatch (`oma skills
+# eval --live`) to claude: antigravity external dispatch is unreliable in this
+# environment (prompts do not reach the model; see spawn artifact guard notes).
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6
