@@ -707,6 +707,7 @@ function activateMode(
   projectDir: string,
   workflow: string,
   sessionId: string,
+  omaSid?: string | null,
 ): void {
   // Never persist a workflow under the unresolved-session fallback id: such a
   // file cannot be isolated per session and would cross-contaminate any later
@@ -718,6 +719,7 @@ function activateMode(
     sessionId,
     activatedAt: new Date().toISOString(),
     reinforcementCount: 0,
+    ...(omaSid ? { omaSid } : {}),
   };
   writeFileSync(
     join(getStateDir(projectDir), `${workflow}-state-${sessionId}.json`),
@@ -1038,10 +1040,17 @@ export async function run(
 
   const { workflow } = winner;
 
+  // Activate the L1 session first so its sid can be recorded in the
+  // persistent-mode state file (the Stop hook emits gate events under it).
+  const omaSid = await activateL1WorkflowSession(
+    projectDir,
+    workflow,
+    vendor,
+    sessionId,
+  );
   if (winner.persistent) {
-    activateMode(projectDir, workflow, sessionId);
+    activateMode(projectDir, workflow, sessionId, omaSid);
   }
-  await activateL1WorkflowSession(projectDir, workflow, vendor, sessionId);
   const updatedState = recordKwTrigger(kwState, workflow);
   saveKwState(projectDir, updatedState);
 

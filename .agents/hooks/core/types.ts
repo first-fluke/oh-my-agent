@@ -35,11 +35,45 @@ export interface RawHookInput {
   stopReason?: string;
 }
 
+/**
+ * Optional goal contract for a persistent workflow (design-prime-agent-adoption
+ * Track B). Written by `oma goal:set`; read by the persistent-mode Stop hook.
+ */
+export interface ModeGoal {
+  /** Human description of the objective. Informational only. */
+  description?: string;
+  budget?: {
+    /**
+     * Wall-clock budget in minutes, measured from `activatedAt`. When
+     * exceeded the Stop hook deactivates the workflow and allows an honest
+     * partial stop (machine verdict, not model discretion).
+     */
+    wallClockMinutes?: number;
+  };
+  completion?: {
+    /**
+     * Deterministic stop gate. MUST be an allowlist keyword ("typecheck" |
+     * "test" | "lint") that maps to an existing package.json script; the hook
+     * runs it as an argv array with no shell. Free-form strings are NEVER
+     * executed — this value lives in an agent-writable state file, so
+     * executing it verbatim would be an arbitrary-command-execution path
+     * that bypasses the PreToolUse permission layer.
+     */
+    gate?: string;
+  };
+}
+
 export interface ModeState {
   workflow: string;
   sessionId: string;
   activatedAt: string;
   reinforcementCount: number;
+  /**
+   * L1 session id (`oma-…`) recorded at activation so the Stop hook can emit
+   * gate.passed / gate.failed events onto the same events.jsonl trail.
+   */
+  omaSid?: string;
+  goal?: ModeGoal;
 }
 
 // ---------------------------------------------------------------------------

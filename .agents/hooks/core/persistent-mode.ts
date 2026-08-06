@@ -13,6 +13,7 @@
  * exit 2 = block stop
  */
 
+import { spawnSync } from "node:child_process";
 import {
   existsSync,
   readdirSync,
@@ -39,6 +40,126 @@ import { getProjectDir } from "./vendor-detect.ts";
 
 const MAX_REINFORCEMENTS = 5;
 const STALE_HOURS = 2;
+
+// ── Goal contract: deterministic stop gate + wall-clock budget ─
+// (design-prime-agent-adoption Track B — no-exec-of-agent-writable-strings)
+
+/**
+ * The only gate values the Stop hook will ever execute. Each maps to a
+ * package.json script of the same name, run as an argv array WITHOUT a shell.
+ * The gate value lives in an agent-writable state file; executing anything
+ * outside this allowlist would be an arbitrary-command path that bypasses the
+ * PreToolUse permission layer. Never widen this to free-form strings.
+ */
+const GATE_KEYWORDS = new Set(["typecheck", "test", "lint"]);
+
+/** Hard cap on a gate run; SIGKILL after this. Keeps Stop-hook latency bounded. */
+const GATE_TIMEOUT_MS = 60_000;
+
+/** Tail of gate output carried back into the block reason. */
+const GATE_OUTPUT_TAIL_CHARS = 2_000;
+
+/**
+ * Resolve an allowlisted gate keyword to a package-runner argv, or null when
+ * the keyword is not allowlisted, package.json is absent, or it defines no
+ * script of that name. Pure node:fs — no shell, no third-party imports.
+ */
+export function resolveGateArgv(
+  gateKeyword: string,
+  projectDir: string,
+): string[] | null {
+  if (!GATE_KEYWORDS.has(gateKeyword)) return null;
+  const pkgPath = join(projectDir, "package.json");
+  if (!existsSync(pkgPath)) return null;
+  try {
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8")) as {
+      scripts?: Record<string, unknown>;
+    };
+    if (typeof pkg.scripts?.[gateKeyword] !== "string") return null;
+  } catch {
+    return null;
+  }
+  if (
+    existsSync(join(projectDir, "bun.lock")) ||
+    existsSync(join(projectDir, "bun.lockb"))
+  ) {
+    return ["bun", "run", gateKeyword];
+  }
+  if (existsSync(join(projectDir, "pnpm-lock.yaml"))) {
+    return ["pnpm", "run", gateKeyword];
+  }
+  if (existsSync(join(projectDir, "yarn.lock"))) {
+    return ["yarn", gateKeyword];
+  }
+  return ["npm", "run", gateKeyword];
+}
+
+export interface GateRunResult {
+  passed: boolean;
+  timedOut: boolean;
+  outputTail: string;
+}
+
+/** Run a resolved gate argv with a hard timeout. No shell involved. */
+export function runGateCommand(
+  argv: string[],
+  projectDir: string,
+): GateRunResult {
+  const [command, ...args] = argv;
+  const result = spawnSync(command as string, args, {
+    cwd: projectDir,
+    encoding: "utf-8",
+    timeout: GATE_TIMEOUT_MS,
+    killSignal: "SIGKILL",
+    maxBuffer: 8 * 1024 * 1024,
+  });
+  const timedOut =
+    (result.error as NodeJS.ErrnoException | undefined)?.code === "ETIMEDOUT" ||
+    result.signal === "SIGKILL";
+  const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
+  return {
+    passed: result.status === 0 && !result.error,
+    timedOut,
+    outputTail: combined.slice(-GATE_OUTPUT_TAIL_CHARS),
+  };
+}
+
+/** True when the goal's wall-clock budget (from activatedAt) is exhausted. */
+export function isBudgetExhausted(state: ModeState): boolean {
+  const minutes = state.goal?.budget?.wallClockMinutes;
+  if (
+    typeof minutes !== "number" ||
+    !Number.isFinite(minutes) ||
+    minutes <= 0
+  ) {
+    return false;
+  }
+  const elapsedMs = Date.now() - new Date(state.activatedAt).getTime();
+  return elapsedMs >= minutes * 60_000;
+}
+
+/**
+ * Emit a gate event onto the L1 trail recorded at activation. Best-effort:
+ * older state files carry no omaSid, and event emission must never break the
+ * Stop decision itself.
+ */
+async function emitGateEvent(
+  projectDir: string,
+  state: ModeState,
+  kind: "gate.passed" | "gate.failed",
+  payload: Record<string, unknown>,
+): Promise<void> {
+  if (!state.omaSid) return;
+  try {
+    const { emitEvent } = await import("./state-emit.ts");
+    await emitEvent(projectDir, state.omaSid, {
+      kind,
+      payload: { workflow: state.workflow, ...payload },
+    });
+  } catch {
+    // best-effort — never let event I/O change the stop decision
+  }
+}
 
 function detectLanguage(projectDir: string): string {
   const prefsPath = join(projectDir, ".agents", "oma-config.yaml");
@@ -236,16 +357,75 @@ export async function run(
       continue;
     }
 
-    incrementReinforcement(projectDir, workflow, sessionId, state);
+    // (1) Wall-clock budget: exhausted → honest partial stop. A machine
+    // verdict, not model discretion — the stop is allowed and the exhaustion
+    // is recorded on the L1 trail.
+    if (isBudgetExhausted(state)) {
+      deactivate(projectDir, workflow, sessionId);
+      await emitGateEvent(projectDir, state, "gate.failed", {
+        gate: "budget",
+        summary: `wall-clock budget (${state.goal?.budget?.wallClockMinutes}m) exhausted for /${workflow}; stopping with partial status`,
+      });
+      continue;
+    }
 
     const stateFile = `.agents/state/${workflow}-state-${sessionId}.json`;
+
+    // (2) Deterministic completion gate. Only allowlisted keywords resolve to
+    // a runnable argv; anything else (including free-form shell strings an
+    // agent may have written into the state file) is NEVER executed and falls
+    // through to the plain reinforcement block below.
+    const gateKeyword = state.goal?.completion?.gate;
+    let ignoredGateNote = "";
+    if (gateKeyword) {
+      const argv = resolveGateArgv(gateKeyword, projectDir);
+      if (argv) {
+        const gate = runGateCommand(argv, projectDir);
+        if (gate.passed) {
+          // The gate is the mechanical proof of completion: allow the stop.
+          deactivate(projectDir, workflow, sessionId);
+          await emitGateEvent(projectDir, state, "gate.passed", {
+            gate: gateKeyword,
+            summary: `stop gate '${gateKeyword}' passed for /${workflow}`,
+          });
+          continue;
+        }
+        // Failure and timeout both count toward MAX_REINFORCEMENTS so a
+        // permanently red gate cannot block stops forever.
+        incrementReinforcement(projectDir, workflow, sessionId, state);
+        await emitGateEvent(projectDir, state, "gate.failed", {
+          gate: gateKeyword,
+          timedOut: gate.timedOut,
+          summary: `stop gate '${gateKeyword}' ${gate.timedOut ? "timed out" : "failed"} for /${workflow}`,
+        });
+        const reason = [
+          `[OMA PERSISTENT MODE: ${workflow.toUpperCase()}]`,
+          `Stop gate '${gateKeyword}' ${gate.timedOut ? `timed out after ${GATE_TIMEOUT_MS / 1000}s` : "FAILED"} (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,
+          `Fix the failures below, then finish the workflow — the stop is allowed only when the gate passes.`,
+          gate.outputTail
+            ? `--- gate output (tail) ---\n${gate.outputTail}`
+            : "",
+          `To abandon instead: delete ${stateFile} or say "workflow done".`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+        return { type: "block", reason };
+      }
+      ignoredGateNote = `Note: configured stop gate ${JSON.stringify(gateKeyword)} is not an allowed keyword (typecheck|test|lint) or has no matching package.json script — it was NOT executed.`;
+    }
+
+    incrementReinforcement(projectDir, workflow, sessionId, state);
+
     const reason = [
       `[OMA PERSISTENT MODE: ${workflow.toUpperCase()}]`,
       `The /${workflow} workflow is still active (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,
       `Continue executing the workflow. If all tasks are genuinely complete:`,
       `  1. Delete the state file: Bash \`rm ${stateFile}\``,
       `  2. Or ask the user to say "워크플로우 완료" / "workflow done"`,
-    ].join("\n");
+      ignoredGateNote,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     return { type: "block", reason };
   }
