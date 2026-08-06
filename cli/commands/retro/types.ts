@@ -27,6 +27,11 @@ export {
   getShippingStreak,
 } from "./internal/git.js";
 export {
+  collectHarnessSignals,
+  fmtHarnessSignals,
+  type HarnessSignal,
+} from "./internal/harness-signals.js";
+export {
   computeAuthorStats,
   computeCommitTypes,
   computeFocusScore,

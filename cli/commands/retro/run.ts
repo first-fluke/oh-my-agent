@@ -2,9 +2,11 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import {
   analyze,
+  collectHarnessSignals,
   fetchOrigin,
   fmtCommitTypes,
   fmtDelta,
+  fmtHarnessSignals,
   fmtHotspots,
   fmtHourlyHistogram,
   fmtLeaderboard,
@@ -27,6 +29,7 @@ function renderRetro(
   hourly: number[],
   currentUser: string,
   previous: RetroSnapshot | null,
+  harnessSignals: ReturnType<typeof collectHarnessSignals> = [],
 ): void {
   // Tweetable summary
   console.log(pc.bold(pc.cyan(fmtTweetable(snapshot))));
@@ -51,6 +54,12 @@ function renderRetro(
   // Sessions
   if (sessions.length > 0) {
     p.note(fmtSessions(sessions), "Work Sessions");
+  }
+
+  // Harness refine signals (gate.failed / blocker.raised / decision.missing
+  // aggregated from the L1 event trail — evidence-backed edit proposals)
+  if (harnessSignals.length > 0) {
+    p.note(fmtHarnessSignals(harnessSignals), "Harness Refine Signals");
   }
 
   // Commit Types
@@ -216,6 +225,7 @@ export async function retro(
   s.start(`Analyzing ${window.label} window...`);
   const snapshot = analyze(cwd, window);
   const displayData = getDisplayData(cwd, window);
+  const harnessSignals = collectHarnessSignals(cwd, window.days);
   s.stop(`Analysis complete (${snapshot.metrics.commits} commits)`);
 
   if (snapshot.metrics.commits === 0) {
@@ -225,7 +235,7 @@ export async function retro(
   }
 
   if (options.json) {
-    console.log(JSON.stringify(snapshot, null, 2));
+    console.log(JSON.stringify({ ...snapshot, harnessSignals }, null, 2));
     return;
   }
 
@@ -236,6 +246,7 @@ export async function retro(
     displayData.hourly,
     currentUser,
     previous,
+    harnessSignals,
   );
 
   // Save snapshot
