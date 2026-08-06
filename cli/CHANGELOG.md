@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.7.0...cli-v11.8.0) (2026-08-06)
+
+
+### Features
+
+* **cli:** add per-task test approach with red-green evidence checks ([047da3d](https://github.com/first-fluke/oh-my-agent/commit/047da3da543dcb8822ce7ddc47f3b351c3c721e4)), closes [#671](https://github.com/first-fluke/oh-my-agent/issues/671)
+
 ## [11.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.6.0...cli-v11.7.0) (2026-08-06)
 
 
