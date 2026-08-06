@@ -889,5 +889,41 @@
     "lang": "en",
     "expected": "review",
     "note": "specificity-ranking policy check: the more specific 'deepsec pr review' match is suppressed (informational window around 'what is'), but a separate, unsuppressed 'review this' request later in the same prompt is NOT suppressed — a suppressed specific candidate must not block a different, genuine generic request from firing"
+  },
+  {
+    "prompt": "둘 다 해줘. 그리고 sbt 사용 이력에 공연들이 다 나열되고 바로 연결되면 좋겠는데.",
+    "lang": "ko",
+    "expected": null,
+    "note": "issue #672 repro: ralph's bare '다 해' keyword matched '둘 다 해줘' ('do both'), which carries no completion/exhaustive intent — CJK keywords match as substrings with no word boundary, so 2-syllable '다 해' was a substring of ordinary conversational Korean. Removed from ralph.keywords.ko; the compound forms ('다 끝내', '다 끝내줘') still cover the real intent"
+  },
+  {
+    "prompt": "이거 다 해봤어.",
+    "lang": "ko",
+    "expected": null,
+    "note": "issue #672: past-tense narrative '다 해봤어' ('already tried all of it') must not activate ralph"
+  },
+  {
+    "prompt": "밥 다 해놨어.",
+    "lang": "ko",
+    "expected": null,
+    "note": "issue #672: '다 해놨어' in a fully non-technical sentence must not activate ralph"
+  },
+  {
+    "prompt": "이 얘기 끝까지 들어보자.",
+    "lang": "ko",
+    "expected": null,
+    "note": "issue #672 (secondary, unconfirmed in the report but reproduced): bare '끝까지' matched 'hear me out to the end'. Removed from ralph.keywords.ko — the already-present '끝까지 해' / '끝까지 해줘' require the 'do' verb stem and still cover genuine requests"
+  },
+  {
+    "prompt": "이 작업 끝까지 해줘, 멈추지 말고.",
+    "lang": "ko",
+    "expected": "ralph",
+    "note": "issue #672 counter-check: removing bare '끝까지' and '다 해' must NOT weaken genuine ralph activation — '끝까지 해' and '멈추지 말고' still match"
+  },
+  {
+    "prompt": "이 마이그레이션 한번에 다 해줘.",
+    "lang": "ko",
+    "expected": "orchestrate",
+    "note": "issue #672 side effect: orchestrate's '한번에 다 해줘' was previously shadowed by ralph's shorter '다 해' substring. With '다 해' gone, the specific orchestrate keyword wins"
   }
 ]
