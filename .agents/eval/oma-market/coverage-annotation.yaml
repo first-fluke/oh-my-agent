@@ -1,0 +1,12 @@
+id: oma-market-coverage-annotation
+skill: oma-market
+domain: market-research
+prompt: |
+  During an oma market harvest fan-out, 2 of 6 sources fail (they land in
+  `sources_failed`) but the rest succeed. Does the pipeline abort? And what
+  must the rendered brief disclose about this run, where?
+checker:
+  type: assert
+  expect_contains:
+    - "coverage:"
+weight: 1

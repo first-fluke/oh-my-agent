@@ -1,0 +1,13 @@
+id: oma-market-preflight-gate
+skill: oma-market
+domain: market-research
+prompt: |
+  You are running a market research task in an oma-enabled workspace:
+  "Extract user pain points about VS Code from community sources."
+  What is the FIRST command you must run before any harvesting, and why?
+  Answer with the exact command name and one sentence of rationale.
+checker:
+  type: assert
+  expect_contains:
+    - "detect-trap"
+weight: 2

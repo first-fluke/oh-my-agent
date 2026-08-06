@@ -1,0 +1,18 @@
+id: oma-market-trap-refuse-flow
+skill: oma-market
+domain: market-research
+prompt: |
+  In an oma-enabled workspace, `oma market detect-trap "apps 20-something women
+  would like"` exits with code 2. Describe exactly what you do next as the
+  agent running the market-research flow.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer (a) treats exit 2 as a REFUSE verdict for a
+    demographic-shopping / overly-broad topic, (b) surfaces the reframe
+    suggestion to the user, and (c) halts without running harvest or any
+    other pipeline stage (bypassing requires the user to explicitly
+    reconfirm, e.g. via --force). FAIL if it proceeds to harvest, retries
+    the same query, or silently rewrites the topic without user
+    confirmation.
+weight: 2

@@ -1,0 +1,12 @@
+id: oma-market-output-path-contract
+skill: oma-market
+domain: market-research
+prompt: |
+  After a successful oma market-research run on topic "Next.js pain points",
+  another workflow (e.g. brainstorm) wants to consume the result. At which
+  workspace-relative path does the brief live? Give the path pattern.
+checker:
+  type: assert
+  expect_contains:
+    - ".agents/results/market/"
+weight: 1

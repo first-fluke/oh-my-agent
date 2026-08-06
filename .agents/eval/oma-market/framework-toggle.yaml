@@ -1,0 +1,13 @@
+id: oma-market-framework-toggle
+skill: oma-market
+domain: market-research
+prompt: |
+  A user asks: "How does Cursor compare to Windsurf in community sentiment?"
+  Using the oma market-research flow with `--frameworks auto`, which strategic
+  framework(s) will the brief include for this intent? Name them precisely.
+checker:
+  type: assert
+  expect_contains:
+    - "SWOT"
+    - "Porter"
+weight: 1

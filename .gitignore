@@ -69,7 +69,7 @@ web/.serena/
 # OMA runtime state (hook persistent mode)
 .agents/state/
 .agents/results/
-.agents/eval/
+# .agents/eval/ fixtures are tracked SSOT (skill eval/opt coverage — design-prime-agent-adoption-202608)
 
 # oma backups — single gitignored root for migration snapshots, stack copies,
 # and safe-write siblings (see cli/io/backup.ts)

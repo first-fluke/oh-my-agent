@@ -1,0 +1,12 @@
+id: oma-market-keyed-source-skip
+skill: oma-market
+domain: market-research
+prompt: |
+  In the oma market-research flow, the user wants X (Twitter) included as a
+  source but no X API env key is configured. What happens to the X source
+  when harvest runs, and is this an error?
+checker:
+  type: assert
+  expect_contains:
+    - "skip"
+weight: 1
