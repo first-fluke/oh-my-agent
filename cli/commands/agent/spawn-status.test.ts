@@ -461,6 +461,17 @@ describe("agent/spawn-status.ts", () => {
     mockFsFunctions.statSync.mockReturnValue({
       isDirectory: () => true,
       isFile: () => false,
+      // Fresh mtime so the workspace-artifact guard sees the result file
+      // below as written during this run (clean-exit path stays exit 0).
+      mtimeMs: Date.now() + 60_000,
+    });
+    // A session result artifact exists under the workspace: this test models
+    // a SUCCESSFUL run (#583 status persistence), not the no-artifact
+    // fail-loud path, and must stay deterministic across dispatch modes.
+    mockFsFunctions.readdirSync.mockImplementation((pathArg: fs.PathLike) => {
+      const target = n(pathArg.toString());
+      if (target.includes(".agents")) return ["result-agent1-session1.md"];
+      return [];
     });
     mockFsFunctions.openSync.mockReturnValue(123);
 
