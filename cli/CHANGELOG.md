@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.9.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.9.0...cli-v11.9.1) (2026-08-06)
+
+
+### Documentation
+
+* add Knows sidecar spec paper to references ([9a0db94](https://github.com/first-fluke/oh-my-agent/commit/9a0db949b455bd4437c72be4a35faa3b15163617))
+
 ## [11.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.8.0...cli-v11.9.0) (2026-08-06)
 
 
