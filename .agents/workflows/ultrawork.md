@@ -59,6 +59,9 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
 10. Record session start using memory write tool:
    - Create `session-ultrawork.md` in the memory base path
    - Include: session start time, session ID, user request summary, workflow version (ultrawork)
+11. (Recommended) Attach a mechanical stop gate when the project has a cheap deterministic check:
+   - `oma goal:set --gate typecheck` (allowlist: `typecheck` | `test` | `lint`; maps to the package.json script)
+   - While set, the Stop hook allows the session to end only when the gate passes; failures return the output tail. Add `--budget-minutes <n>` to bound unattended runs with an honest partial stop.
 
 ---
 

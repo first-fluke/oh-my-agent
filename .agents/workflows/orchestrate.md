@@ -162,6 +162,7 @@ Also use memory read tool to poll `progress-{agent}[-{sessionId}].md` for logic 
 
 - Use memory edit tool to update `task-board.md` with turn counts and status changes.
 - Watch for: completion, failures, crashes.
+- A `no-artifact` status (or `oma agent:spawn` exit code 3) means the vendor exited 0 but wrote no result artifact under the workspace — a silent misdirected write. Treat it as a failed spawn: do NOT collect it as completed; re-dispatch (natively if the external vendor is unreliable) and check the session trail for the `blocker.raised` event.
 
 ### Context Anxiety Check (per polling cycle)
 

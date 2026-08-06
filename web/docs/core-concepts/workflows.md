@@ -599,6 +599,15 @@ These files contain: workflow name, current phase/step, session ID, timestamp, a
 
 While a persistent workflow is active, the `persistent-mode.ts` hook injects `[OMA PERSISTENT MODE: {workflow-name}]` into every user message. This ensures the workflow continues executing even across conversation turns.
 
+### Goal contract (optional stop gate + budget)
+
+`oma goal:set` attaches a mechanical completion contract to an active persistent workflow:
+
+- `--gate typecheck|test|lint`: the Stop hook allows the session to end **only when that package.json script passes** (run as an argv array, no shell; free-form commands are rejected by design). On failure it blocks with the output tail; failures and timeouts count toward the reinforcement limit so a red gate cannot block forever.
+- `--budget-minutes <n>`: wall-clock budget from activation. Exceeding it deactivates the workflow and allows an honest partial stop, recorded on the session event trail.
+
+Without a contract, persistent mode behaves as described above — the contract is opt-in. See `goal:set` in the [CLI commands reference](../cli-interfaces/commands.md#goalset).
+
 ### Deactivation
 
 To deactivate a persistent workflow, the user says "workflow done" (or equivalent in their configured language). This:
@@ -606,7 +615,7 @@ To deactivate a persistent workflow, the user says "workflow done" (or equivalen
 2. Stops injecting the persistent mode context
 3. Returns to normal operation
 
-The workflow can also end naturally when all steps are completed and the final gate passes.
+The workflow can also end naturally when all steps are completed and the final gate passes. When a `goal:set` gate is configured, passing that gate deactivates the workflow automatically.
 
 ---
 

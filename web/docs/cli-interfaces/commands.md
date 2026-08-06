@@ -402,6 +402,14 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] 
 
 **Prompt resolution:** If the prompt argument is a path to an existing file, the file contents are used as the prompt. Otherwise, the argument is used as inline text. Vendor-specific execution protocols are appended automatically.
 
+**Exit codes:**
+
+| Code | Meaning |
+|:-----|:--------|
+| `0` | Vendor process exited 0 and a session result artifact exists under the workspace. |
+| `3` | Vendor process exited 0 but wrote **no session result artifact** under the workspace (e.g. agy writing into its own trusted root instead of `-w`). A `blocker.raised` event is appended to the session trail and `agent:status` reports `no-artifact`. Do not treat the spawn as completed. |
+| other | The vendor process itself failed; its exit code is passed through. |
+
 **Examples:**
 ```bash
 # Inline prompt, auto-detect workspace
@@ -446,6 +454,7 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 - `completed`: Result file exists (with optional status header).
 - `running`: PID file exists and process is alive.
 - `crashed`: PID file exists but process is dead, or no PID/result file found.
+- `no-artifact`: Vendor process exited 0 but wrote no session result artifact under the workspace (silent misdirected write — see `agent:spawn` exit code `3`). Treat as a failed spawn.
 
 **Output format:** One line per agent: `{agent-id}:{status}`
 
@@ -557,6 +566,38 @@ oma agent:review --no-uncommitted
 
 # Review committed changes in a specific workspace with gemini
 oma agent:review -m gemini -w ./apps/web --no-uncommitted
+```
+
+### goal:set
+
+Attach a goal contract to an active persistent workflow (orchestrate, ultrawork, work, ralph). The contract is enforced mechanically by the persistent-mode Stop hook — completion stops being a model judgment call.
+
+```
+oma goal:set [--workflow <name>] [--session <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
+```
+
+**Options:**
+
+| Flag | Description |
+|:-----|:-----------|
+| `--gate <keyword>` | Deterministic stop gate: `typecheck`, `test`, or `lint`. Maps to the package.json script of the same name, run as an argv array with no shell. While set, the Stop hook allows the workflow to end **only when this script passes**; on failure it blocks with the output tail so the agent knows what to fix. Free-form commands are rejected — the gate value lives in an agent-writable state file, so executing arbitrary strings from it would bypass the permission layer. |
+| `--budget-minutes <n>` | Wall-clock budget measured from workflow activation. When exceeded, the Stop hook deactivates the workflow and allows an honest partial stop (machine verdict, recorded as `gate.failed` with `gate: "budget"` on the session event trail). |
+| `--description <text>` | Human description of the objective. Informational only. |
+| `--workflow <name>` | Target workflow when several persistent workflows are active. |
+| `--session <id>` | Target session id suffix of the state file. |
+
+**Behavior notes:**
+- Gate pass → workflow deactivates, `gate.passed` is emitted, the stop is allowed.
+- Gate failure and timeout (60s hard cap) both count toward the reinforcement limit (5), so a permanently red gate cannot block stops forever; the 2-hour staleness expiry remains as the final backstop.
+- Without a goal contract, persistent mode behaves exactly as before (reinforcement prompts only) — the contract is fully opt-in.
+
+**Examples:**
+```bash
+# After starting /ultrawork: require typecheck to pass before the session may end
+oma goal:set --gate typecheck
+
+# Bound an autonomous run: stop honestly after 2 hours even if incomplete
+oma goal:set --workflow ultrawork --gate test --budget-minutes 120
 ```
 
 ---
