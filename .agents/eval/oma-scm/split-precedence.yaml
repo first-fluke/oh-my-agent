@@ -1,0 +1,18 @@
+id: oma-scm-split-precedence
+skill: oma-scm
+domain: scm
+prompt: |
+  In an oma-managed repo you have 7 changed files spanning three commit
+  scopes: a new feature module, its tests, and its docs page. They are all
+  part of the same feature. The user just said "commit this" with no other
+  instruction. One commit or several? State the deciding rule.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer chooses a SINGLE commit and grounds it in the
+    precedence rule: logical independence decides first (one logical change
+    = one commit, even across code+tests+docs), and the file-count heuristic
+    (<=5 files) is only a tiebreaker, with an explicit user instruction
+    overriding both. FAIL if it splits by type/scope (feat + test + docs),
+    or decides purely on file count.
+weight: 2

@@ -1,0 +1,17 @@
+id: oma-scm-protected-branch-pr
+skill: oma-scm
+domain: scm
+prompt: |
+  The user asks you to push the current work. The target is the repo's
+  default branch and the project config sets
+  `require_pr_for_default_branch: true`. The user gave no instruction about
+  how to push. What do you do?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer pushes a topic branch and opens a pull request
+    (e.g. gh pr create) instead of pushing directly to the default branch,
+    and notes that an explicit user instruction to push directly would
+    override this default. FAIL if it pushes directly to the default branch,
+    or refuses to push at all.
+weight: 1

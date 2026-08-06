@@ -1,0 +1,13 @@
+id: oma-docs-gitignored-target
+skill: oma-docs
+domain: docs-drift
+prompt: |
+  During an oma docs verify run, a markdown file references
+  `.agents/results/result-qa.md`. The file does not exist on disk, but the
+  path matches the project's gitignore rules. How must the checker classify
+  this reference, and why?
+checker:
+  type: assert
+  expect_contains:
+    - "skipped"
+weight: 2

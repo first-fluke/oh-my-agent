@@ -1,0 +1,12 @@
+id: oma-docs-translation-routing
+skill: oma-docs
+domain: docs-drift
+prompt: |
+  oma docs i18n reports a CRITICAL drift pair between an English source doc
+  and its Korean translation. Which component is responsible for actually
+  patching the translation, and what does the i18n mode itself write?
+checker:
+  type: assert
+  expect_contains:
+    - "oma-translator"
+weight: 1

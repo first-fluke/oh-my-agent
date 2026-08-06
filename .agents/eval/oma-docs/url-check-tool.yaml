@@ -1,0 +1,12 @@
+id: oma-docs-url-check-tool
+skill: oma-docs
+domain: docs-drift
+prompt: |
+  In oma docs verify, which tool performs URL link checking, how does it
+  run relative to the core check, and does a URL failure affect the verify
+  exit code?
+checker:
+  type: assert
+  expect_contains:
+    - "lychee"
+weight: 1

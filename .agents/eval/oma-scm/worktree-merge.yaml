@@ -1,0 +1,13 @@
+id: oma-scm-worktree-merge
+skill: oma-scm
+domain: scm
+prompt: |
+  A repo uses several git worktrees. You need to merge a feature branch into
+  a release branch. Per the oma SCM flow, from which checkout do you run the
+  merge, and what is the relationship between the worktrees' object
+  databases?
+checker:
+  type: assert
+  expect_contains:
+    - "target branch"
+weight: 1

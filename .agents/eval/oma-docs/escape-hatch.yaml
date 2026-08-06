@@ -1,0 +1,13 @@
+id: oma-docs-escape-hatch
+skill: oma-docs
+domain: docs-drift
+prompt: |
+  A tutorial doc contains illustrative example paths (hypothetical project
+  files in inline code) that intentionally do not resolve, and oma docs
+  verify keeps flagging them. What is the supported way to exclude exactly
+  those regions from ref extraction? Give the concrete marker syntax.
+checker:
+  type: assert
+  expect_contains:
+    - "oma-docs:ignore"
+weight: 1

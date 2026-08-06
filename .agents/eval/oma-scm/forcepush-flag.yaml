@@ -1,0 +1,12 @@
+id: oma-scm-forcepush-flag
+skill: oma-scm
+domain: scm
+prompt: |
+  A shared-history rewrite was approved by the maintainer and completed
+  locally. The remote now diverges. Per the oma SCM flow, exactly which push
+  command/flag do you use, and which one is forbidden?
+checker:
+  type: assert
+  expect_contains:
+    - "force-with-lease"
+weight: 1

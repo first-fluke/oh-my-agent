@@ -1,0 +1,12 @@
+id: oma-scm-coauthor-trailer
+skill: oma-scm
+domain: scm
+prompt: |
+  You are committing in an oma-managed repository using its standard commit
+  format. Write out the full commit message template, including any trailer
+  the format requires.
+checker:
+  type: assert
+  expect_contains:
+    - "First Fluke"
+weight: 1
