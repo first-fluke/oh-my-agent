@@ -39,6 +39,7 @@ import {
   classifyDifficulty,
   type Difficulty,
 } from "../../platform/context-loader.js";
+import { emitEvent } from "../../state/events.js";
 import { registerSignalCleanup } from "../../utils/process-signals.js";
 import { isProcessRunning } from "./common.js";
 
@@ -428,12 +429,15 @@ export async function spawnAgent(
         );
       }
 
-      // agy can exit 0 having written its artifacts into its own trusted root
-      // instead of the workspace (tech-debt #7). Surface that loudly instead
-      // of letting the "completed" status mask an empty workspace.
+      // An external agent can exit 0 having written its artifacts outside the
+      // workspace (agy writes into its own trusted root — tech-debt #7 — but
+      // the check itself is vendor-agnostic: exit 0 + no workspace artifact is
+      // a silent failure whoever the vendor is). Fail loudly: distinct status
+      // for `agent:status` consumers, a blocker.raised event on the session
+      // trail, and a non-zero exit code for the spawning caller.
+      let missingArtifact = false;
       if (
         code === 0 &&
-        dispatch.targetVendor === "antigravity" &&
         dispatch.mode === "external" &&
         !hasSessionResultArtifact(
           resolvedWorkspace,
@@ -441,11 +445,36 @@ export async function spawnAgent(
           spawnStartMs - 2_000,
         )
       ) {
+        missingArtifact = true;
+        const summary = `agent ${agentId} (vendor ${dispatch.targetVendor}) exited 0 but wrote no session result artifact under the workspace`;
         console.warn(
           color.yellow(
-            `[${agentId}] exited 0 but wrote no session result artifact under the workspace — agy may have written to its own trusted root (~/.gemini/antigravity-cli). Verify agy workspace trust / --add-dir support.`,
+            `[${agentId}] ${summary} — the vendor may have written to its own trusted root (agy: ~/.gemini/antigravity-cli). Verify workspace trust / --add-dir support.`,
           ),
         );
+        try {
+          fs.writeFileSync(statusFile, "no-artifact\n");
+        } catch {
+          // best-effort: the exit code below still carries the signal
+        }
+        try {
+          emitEvent(resolvedWorkspace, sessionId, {
+            kind: "blocker.raised",
+            vendor: dispatch.targetVendor,
+            payload: {
+              summary,
+              severity: "high",
+              remediation:
+                "Verify the vendor writes into the -w workspace (workspace trust / --add-dir); do not treat this spawn as completed.",
+              code: "spawn.no-workspace-artifact",
+              agentId,
+            },
+          });
+        } catch (err) {
+          console.warn(
+            `[${agentId}] blocker.raised emit failed (non-fatal): ${String(err)}`,
+          );
+        }
       }
 
       if (code !== 0 && fs.existsSync(logFile)) {
@@ -481,7 +510,9 @@ export async function spawnAgent(
       }
 
       cleanup();
-      process.exit(code ?? 0);
+      // Exit 3 marks "vendor exited 0 but produced no workspace artifact" so
+      // spawning callers cannot mistake a silent misdirected write for success.
+      process.exit(missingArtifact ? 3 : (code ?? 0));
     },
   );
 }
