@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.0...web-v4.1.1) (2026-08-06)
+
+
+### Documentation
+
+* **cli:** document goal:set, spawn exit 3, and stop-gate integration ([b74514a](https://github.com/first-fluke/oh-my-agent/commit/b74514ac4756b8785f1599fcdd42d62779833576))
+
 ## [4.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v4.0.3...web-v4.1.0) (2026-08-01)
 
 
