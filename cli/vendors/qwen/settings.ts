@@ -54,6 +54,12 @@ interface QwenMcpServer extends McpServerEntry {
 
 export interface QwenSettings {
   mcpServers?: Record<string, QwenMcpServer>;
+  model?: {
+    generationConfig?: {
+      timeout?: number;
+    };
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -95,6 +101,57 @@ function normalizeQwenSettings(input: unknown): QwenSettings {
   return { ...input, mcpServers };
 }
 
+/**
+ * Request timeout (ms) oma pins for Qwen model generation. Qwen Code's stock
+ * default is short enough that long agent turns abort mid-stream, so oma
+ * writes an explicit 5-minute ceiling.
+ *
+ * Where it lands depends on the settings shape: newer configs carry a
+ * `modelProviders` map (per-provider entry lists) and the timeout belongs on
+ * each provider entry; older configs have none, and the single top-level
+ * `model.generationConfig` is the only slot. The two are mutually exclusive —
+ * when `modelProviders` is present the top-level copy is removed so there is
+ * exactly one source of truth.
+ */
+export const QWEN_REQUEST_TIMEOUT_MS = 300_000;
+
+function updateModelProvidersTimeout(
+  modelProviders: unknown,
+  timeout: number,
+): void {
+  if (!isRecord(modelProviders)) return;
+  for (const key of Object.keys(modelProviders)) {
+    const list = modelProviders[key];
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      if (!isRecord(item)) continue;
+      const genConfig = isRecord(item.generationConfig)
+        ? item.generationConfig
+        : {};
+      item.generationConfig = { ...genConfig, timeout };
+    }
+  }
+}
+
+function hasModelProvidersTimeoutMismatch(
+  modelProviders: unknown,
+  targetTimeout: number,
+): boolean {
+  if (!isRecord(modelProviders)) return false;
+  for (const key of Object.keys(modelProviders)) {
+    const list = modelProviders[key];
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      if (!isRecord(item)) continue;
+      const genConfig = isRecord(item.generationConfig)
+        ? item.generationConfig
+        : {};
+      if (genConfig.timeout !== targetTimeout) return true;
+    }
+  }
+  return false;
+}
+
 export function needsQwenSettingsUpdate(
   rawSettings: unknown,
   options: QwenSettingsOptions = {},
@@ -104,6 +161,33 @@ export function needsQwenSettingsUpdate(
   if (JSON.stringify(normalized) !== JSON.stringify(sanitized)) return true;
 
   if (needsRecommendedMcpUpdate(sanitized.mcpServers)) return true;
+
+  // applyQwenSettings drops `contentGenerator`, and every call site gates that
+  // apply behind this function — without reporting the leftover key here the
+  // removal is unreachable for a config that is otherwise already current.
+  if ("contentGenerator" in sanitized) return true;
+
+  if (isRecord(sanitized.modelProviders)) {
+    if (
+      hasModelProvidersTimeoutMismatch(
+        sanitized.modelProviders,
+        QWEN_REQUEST_TIMEOUT_MS,
+      )
+    ) {
+      return true;
+    }
+    // A leftover top-level copy must be cleared once modelProviders owns it.
+    if (
+      sanitized.model?.generationConfig &&
+      "timeout" in sanitized.model.generationConfig
+    ) {
+      return true;
+    }
+  } else if (
+    sanitized.model?.generationConfig?.timeout !== QWEN_REQUEST_TIMEOUT_MS
+  ) {
+    return true;
+  }
 
   return needsPrivacyTelemetryUpdate(sanitized, options.telemetry);
 }
@@ -118,6 +202,36 @@ export function applyQwenSettings(
     qwenSettings.mcpServers,
     RECOMMENDED_QWEN_MCP,
   );
+
+  delete qwenSettings.contentGenerator;
+
+  if (isRecord(qwenSettings.modelProviders)) {
+    updateModelProvidersTimeout(
+      qwenSettings.modelProviders,
+      QWEN_REQUEST_TIMEOUT_MS,
+    );
+    if (
+      isRecord(qwenSettings.model) &&
+      isRecord(qwenSettings.model.generationConfig)
+    ) {
+      delete qwenSettings.model.generationConfig.timeout;
+    }
+  } else {
+    const existingModel = isRecord(qwenSettings.model)
+      ? qwenSettings.model
+      : {};
+    const existingGenConfig = isRecord(existingModel.generationConfig)
+      ? existingModel.generationConfig
+      : {};
+
+    qwenSettings.model = {
+      ...existingModel,
+      generationConfig: {
+        ...existingGenConfig,
+        timeout: QWEN_REQUEST_TIMEOUT_MS,
+      },
+    };
+  }
 
   applyPrivacyTelemetry(qwenSettings, options.telemetry);
 
