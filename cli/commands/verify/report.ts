@@ -19,6 +19,7 @@ import {
   checkDeclaredOutputs,
   checkPmPlan,
   checkScopeViolation,
+  checkTddEvidence,
 } from "./plan-checks.js";
 import {
   checkBackendRawSql,
@@ -29,7 +30,13 @@ import {
 
 export type { AgentType } from "./agent-types.js";
 export { isValidAgent, VALID_AGENTS } from "./agent-types.js";
-export { checkScopeViolation } from "./plan-checks.js";
+export {
+  checkPmPlan,
+  checkScopeViolation,
+  checkTddEvidence,
+  TEST_APPROACHES,
+  validateTestApproach,
+} from "./plan-checks.js";
 export { hasBinary, runManifestCmd } from "./stack-checks.js";
 
 function runAgentChecks(
@@ -105,6 +112,7 @@ export function collectVerifyReport(
   checks.push(checkHardcodedSecrets(workspace));
   checks.push(checkTodoComments(workspace));
   checks.push(checkDeclaredOutputs(workspace, agentType));
+  checks.push(checkTddEvidence(workspace, agentType));
   checks.push(...runAgentChecks(agentType, workspace));
 
   const passed = checks.filter((c) => c.status === "pass").length;

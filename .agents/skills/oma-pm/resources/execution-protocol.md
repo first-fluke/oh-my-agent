@@ -41,6 +41,13 @@ Follow these steps in order (adjust depth by difficulty).
 - Each task has: agent, title, description, acceptance criteria, priority, dependencies, **scope**
 - `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `refactor`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
 - `scope`: array of directory prefixes this agent is allowed to modify (e.g., `["src/api/", "migrations/"]`). Used by `verify` to detect cross-agent boundary violations in parallel execution.
+- **Test approach (opt-in, per task)**: set `test_approach` where a test strategy matters
+  - `tdd`: deterministic, high-risk behavior (validation, authorization, state transitions, calculations, error handling). Implementation agent must record RED→GREEN evidence (see `TDD_EVIDENCE` block below).
+  - `test_after`: automated tests required, but a useful isolated RED state is impractical
+  - `not_applicable`: automated tests inappropriate — **must** fill `test_approach_rationale` and `alternative_verification` (documented manual/alternative check)
+  - Do **not** mark `tdd` for: documentation, pure styling, generated code, IaC plans, behavior-preserving refactors (refactor tasks keep their characterization-test safety net), or inherently nondeterministic integrations
+  - `test_scope`: which layers the tests cover (e.g., `["unit", "integration"]`)
+  - No `test_approach` value ever waives the global unit-test coverage gate (>= 80%); `not_applicable` code still counts toward the aggregate unless declaratively excluded in coverage config with justification
 - Minimize dependencies for maximum parallel execution
 - Priority tiers: 1 = independent (run first), 2 = depends on tier 1, etc.
   - The numeric tier is the **canonical** `priority` value in plan JSON (what the orchestrator fans out on).
@@ -52,6 +59,7 @@ Follow these steps in order (adjust depth by difficulty).
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?
 - Check: Are acceptance criteria measurable and testable?
+- Check: Is `test_approach` valid where set (`tdd|test_after|not_applicable`), with rationale + alternative verification for every `not_applicable`? (`oma verify pm` enforces this contract)
 - Check: Is security considered from the start (not deferred)?
 - Check: Are API contracts defined before frontend/mobile tasks?
 - Check: Are major risks, owners, and approval points explicit when needed?

@@ -29,6 +29,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Plan responsive breakpoints and accessibility requirements
 
 ## Step 3: Implement
+- **Honor the task's `test_approach`** (see `../../_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue
 - Create/modify files in this order:
   1. TypeScript types/interfaces
   2. API client hooks (orval-generated from OpenAPI when available; hand-written TanStack Query otherwise)
@@ -42,6 +43,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Run `resources/checklist.md` items
 - Run `../../_shared/core/common-checklist.md` items
 - Check TypeScript strict mode: no errors
+- For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
 - Verify responsive design at 320px, 768px, 1024px, 1440px
 - Test keyboard navigation and screen reader compatibility
 

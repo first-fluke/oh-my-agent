@@ -24,6 +24,9 @@
       "dependencies": [],
       "estimated_complexity": "high",
       "scope": ["src/api/auth/"],
+      "test_approach": "tdd",
+      "test_scope": ["unit", "integration"],
+      "test_approach_rationale": "Deterministic authorization rules with clear inputs and outputs.",
       "acceptance_criteria": [
         "POST /api/auth/register with email + password",
         "POST /api/auth/login returns access + refresh tokens",

@@ -46,7 +46,7 @@ CHARTER_CHECK:
 1. Stay in scope — only work on assigned debug tasks
 2. Fix root cause, not symptoms
 3. Minimal changes only — no refactoring during bugfix; route refactoring needs to refactor-engineer
-4. Every fix gets a regression test
+4. Every fix gets a regression test; run it before the fix where feasible and record RED (failing output) → GREEN (post-fix pass) in the bug report
 5. Search for similar patterns after fixing
 6. Document out-of-scope findings for other agents
 7. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

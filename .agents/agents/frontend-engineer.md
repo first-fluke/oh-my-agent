@@ -47,6 +47,6 @@ FSD-lite: root `src/` + feature `src/features/*/`
 5. TailwindCSS v4 for styling, design tokens 1:1 mapping
 6. Library defaults (greenfield; existing project choices win): luxon (dates), ahooks (hooks), es-toolkit (utils), jotai (client state), TanStack Query (server state)
 7. Absolute imports with `@/`
-8. Write tests for custom logic (>90% coverage target)
+8. Write tests for custom logic (>90% coverage target); honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
 9. Document out-of-scope dependencies for other agents
 10. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

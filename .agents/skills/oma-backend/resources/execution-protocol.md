@@ -28,6 +28,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Identify security requirements (auth, validation, rate limiting)
 
 ## Step 3: Implement
+- **Honor the task's `test_approach`** (see `../../_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue; for `tdd` the test comes before item 3 below
 - Create/modify files in this order:
   1. Database models + migrations
   2. Validation schemas (request/response)
@@ -41,6 +42,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Run `resources/checklist.md` items
 - Run `../../_shared/core/common-checklist.md` items
 - Ensure all tests pass
+- For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
 - Confirm OpenAPI docs are complete
 
 ## On Error

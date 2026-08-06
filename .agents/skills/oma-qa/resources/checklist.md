@@ -127,7 +127,8 @@
 ## Testing Checklist
 
 ### Unit Tests
-- [ ] Test coverage > 80%
+- [ ] Test coverage >= 80% (never waived by any task's `test_approach`; `not_applicable` code counts toward the aggregate unless declaratively excluded in coverage config with justification)
+- [ ] Tasks marked `test_approach: tdd` have a `TDD_EVIDENCE` block in the implementation result (focused test command, RED failure, GREEN pass) — see `../../_shared/core/test-approach.md`; do not require this evidence for `test_after` / `not_applicable` tasks
 - [ ] All business logic functions tested
 - [ ] Edge cases covered
 - [ ] Error handling tested
@@ -270,7 +271,7 @@
 - [ ] No data loss scenarios
 
 ### Important (Should Pass)
-- [ ] Test coverage > 80%
+- [ ] Test coverage >= 80%
 - [ ] Accessibility WCAG 2.2 AA
 - [ ] Code quality metrics met
 - [ ] Documentation complete

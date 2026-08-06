@@ -50,12 +50,13 @@ Each task must include:
 - `priority`: execution tier — 1 = independent (runs first), 2 = depends on tier 1, etc. (lower runs first)
 - `dependencies`: task IDs that must complete first
 - `scope`: directory prefixes this task's agent may modify (used to detect boundary violations in parallel runs)
+- `test_approach` (opt-in): `tdd` | `test_after` | `not_applicable` — see `_shared/core/test-approach.md`. `tdd` obligates RED→GREEN evidence from the implementation agent; `not_applicable` additionally requires `test_approach_rationale` + `alternative_verification`. Never assign `tdd` to refactor tasks (characterization tests instead)
 
 ## Rules
 
 1. Stay in scope — planning only, no code implementation
 2. API-first design
 3. Minimize dependencies for maximum parallelism
-4. Security and testing are part of every task (not separate)
+4. Security and testing are part of every task (not separate); assign per-task `test_approach` (`tdd|test_after|not_applicable`) where a test strategy matters — `not_applicable` requires rationale + alternative verification, and no approach waives the >= 80% coverage gate
 5. Each task completable by a single agent
 6. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

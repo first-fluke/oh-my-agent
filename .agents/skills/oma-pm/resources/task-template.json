@@ -28,7 +28,12 @@
       "estimated_complexity": "low|medium|high|very-high",
       "acceptance_criteria": [],
       "artifacts_expected": [],
-      "scope": []
+      "scope": [],
+      "test_approach": "tdd|test_after|not_applicable",
+      "test_scope": [],
+      "tdd_evidence_required": true,
+      "test_approach_rationale": "",
+      "alternative_verification": ""
     }
   ],
   "api_contracts": [

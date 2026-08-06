@@ -46,7 +46,7 @@ Clean Architecture: domain → data → presentation (Swift native: App/Core/Fea
 5. Transport client with interceptors (Dio / axios / generated Client) + repository-layer response cache, offline-first architecture
 6. Secrets in secure storage only — never plain prefs or MMKV
 7. 60fps target performance
-8. Write widget/component tests and integration tests
+8. Write widget/component tests and integration tests; honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
 9. ARB-based localization: edit ARB source files only, never generated localization code
 10. Document out-of-scope dependencies for other agents
 11. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions

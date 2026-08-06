@@ -40,7 +40,7 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 ## Rules
 
 1. Stay in scope — only work on assigned backend tasks
-2. Write tests for all new code
+2. Write tests for all new code; honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
 3. Follow Repository → Service → Router pattern (no business logic in routes)
 4. Validate all inputs with the project's validation library
 5. Parameterized queries only (no string interpolation in SQL)

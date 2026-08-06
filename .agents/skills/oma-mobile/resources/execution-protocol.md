@@ -33,6 +33,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Note platform differences (iOS HIG vs Material Design 3)
 
 ## Step 3: Implement
+- **Honor the task's `test_approach`** (see `../../_shared/core/test-approach.md`): for `tdd` tasks, write and run the focused test first (record the RED failure), make the minimal change (GREEN), then continue
 - Create/modify files in this order (Flutter shown; Swift maps to Core → Features → Tests, RN to api → queries/mutations → store → ui → navigation → tests):
   1. Domain: entities and repository interfaces
   2. Data: models, API clients (Dio / axios / generated Client), repository implementations
@@ -45,6 +46,7 @@ Follow these steps in order (adjust depth by difficulty).
 ## Step 4: Verify
 - Run `resources/checklist.md` items
 - Run `../../_shared/core/common-checklist.md` items
+- For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
 - Test on both iOS and Android (or emulators)
 - Verify 60fps performance (no jank)
 - Check dark mode support

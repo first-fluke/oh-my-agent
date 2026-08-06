@@ -33,11 +33,12 @@ Follow these steps in order (adjust depth by difficulty).
 - Check `resources/common-patterns.md` for known patterns
 
 ## Step 3: Fix & Test
-- Apply minimal fix that addresses the root cause
 - Write a regression test that:
   - Fails without the fix
   - Passes with the fix
   - Covers the specific edge case
+- **Run the regression test before applying the fix where feasible**: record the failing output (RED), apply the minimal fix, record the pass (GREEN) — include both in the bug report / result file (see `../../_shared/core/test-approach.md` §Debug parity)
+- Apply minimal fix that addresses the root cause
 - Check for similar patterns elsewhere: `search_for_pattern("same_bug_pattern")`
 - If found, fix proactively or report them
 

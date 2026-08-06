@@ -11,6 +11,20 @@ import { checkClosure } from "../../utils/skill-outputs.js";
 import type { AgentType } from "./agent-types.js";
 import { createCheck, runCommand } from "./check-utils.js";
 
+export const TEST_APPROACHES = ["tdd", "test_after", "not_applicable"] as const;
+export type TestApproach = (typeof TEST_APPROACHES)[number];
+
+export interface PlanTask {
+  id?: string;
+  agent?: string;
+  scope?: string[];
+  test_approach?: string;
+  test_scope?: string[];
+  tdd_evidence_required?: boolean;
+  test_approach_rationale?: string;
+  alternative_verification?: string;
+}
+
 function findResultFile(workspace: string, agentType: string): string | null {
   const pattern = new RegExp(`^result-${agentType}(?:-[\\w-]+)?\\.md$`);
   for (const memoriesDir of getMemoryDirs(workspace)) {
@@ -131,15 +145,140 @@ export function checkCharterPreflight(
   return createCheck("Charter Preflight", "pass", "Properly filled");
 }
 
+/**
+ * Contract validation for the opt-in per-task test strategy (issue #671).
+ * `test_approach` is optional; when present it must be a known value,
+ * `not_applicable` must carry a rationale plus an alternative verification
+ * method, and refactor tasks keep their characterization-test model instead
+ * of TDD. Approach selection never waives the global >= 80% coverage gate.
+ */
+export function validateTestApproach(tasks: PlanTask[]): string[] {
+  const errors: string[] = [];
+  tasks.forEach((task, index) => {
+    const id = task.id || `tasks[${index}]`;
+    const approach = task.test_approach;
+    if (approach === undefined || approach === "") return;
+    if (!(TEST_APPROACHES as readonly string[]).includes(approach)) {
+      errors.push(
+        `${id}: invalid test_approach "${approach}" (expected ${TEST_APPROACHES.join("|")})`,
+      );
+      return;
+    }
+    if (approach === "tdd" && task.agent?.toLowerCase() === "refactor") {
+      errors.push(
+        `${id}: refactor tasks keep characterization tests; test_approach must not be "tdd"`,
+      );
+    }
+    if (approach === "not_applicable") {
+      if (!task.test_approach_rationale?.trim()) {
+        errors.push(`${id}: not_applicable requires test_approach_rationale`);
+      }
+      if (!task.alternative_verification?.trim()) {
+        errors.push(`${id}: not_applicable requires alternative_verification`);
+      }
+    }
+  });
+  return errors;
+}
+
 export function checkPmPlan(workspace: string): VerifyCheck {
   const planPath = findLatestPlan(workspace);
   if (!planPath) return createCheck("PM Plan", "warn", "No plan file found");
+  let plan: { tasks?: PlanTask[] };
   try {
-    JSON.parse(readFileSync(planPath, "utf-8"));
-    return createCheck("PM Plan", "pass", "Valid JSON");
+    plan = JSON.parse(readFileSync(planPath, "utf-8"));
   } catch {
     return createCheck("PM Plan", "fail", "Invalid JSON");
   }
+  const errors = validateTestApproach(plan.tasks ?? []);
+  if (errors.length > 0) {
+    return createCheck(
+      "PM Plan",
+      "fail",
+      `test_approach contract: ${errors[0]}${errors.length > 1 ? ` (+${errors.length - 1} more)` : ""}`,
+    );
+  }
+  return createCheck("PM Plan", "pass", "Valid JSON");
+}
+
+/**
+ * For tasks marked `test_approach: "tdd"` (unless the task opts out via
+ * `tdd_evidence_required: false`), the agent's result file must contain a
+ * `TDD_EVIDENCE:` block naming each task id with RED and GREEN entries.
+ * Tasks with `test_after` / `not_applicable` are intentionally not checked.
+ */
+export function checkTddEvidence(
+  workspace: string,
+  agentType: string,
+): VerifyCheck {
+  const planPath = findLatestPlan(workspace);
+  if (!planPath)
+    return createCheck("TDD Evidence", "skip", "No plan file found");
+
+  let plan: { tasks?: PlanTask[] };
+  try {
+    plan = JSON.parse(readFileSync(planPath, "utf-8"));
+  } catch {
+    return createCheck("TDD Evidence", "skip", "Invalid plan file");
+  }
+
+  const tddTasks = (plan.tasks ?? []).filter(
+    (t) =>
+      t.agent?.toLowerCase() === agentType &&
+      t.test_approach === "tdd" &&
+      t.tdd_evidence_required !== false,
+  );
+  if (tddTasks.length === 0) {
+    return createCheck("TDD Evidence", "skip", "No tdd tasks for this agent");
+  }
+
+  const resultFile = findResultFile(workspace, agentType);
+  if (!resultFile) {
+    return createCheck(
+      "TDD Evidence",
+      "fail",
+      `No result file for ${tddTasks.length} tdd task(s)`,
+    );
+  }
+
+  const content = readFileSync(resultFile, "utf-8");
+  const markerIndex = content.indexOf("TDD_EVIDENCE:");
+  if (markerIndex === -1) {
+    return createCheck(
+      "TDD Evidence",
+      "fail",
+      `TDD_EVIDENCE block missing for ${tddTasks.length} tdd task(s)`,
+    );
+  }
+
+  const evidence = content.slice(markerIndex);
+  const missingIds = tddTasks
+    .map((t) => t.id)
+    .filter((id): id is string => Boolean(id))
+    .filter((id) => !evidence.includes(id));
+  if (missingIds.length > 0) {
+    return createCheck(
+      "TDD Evidence",
+      "fail",
+      `No evidence for: ${missingIds.join(", ")}`,
+    );
+  }
+
+  const hasRed = /\bred\b\s*[:=]/i.test(evidence);
+  const hasGreen = /\bgreen\b\s*[:=]/i.test(evidence);
+  if (!hasRed || !hasGreen) {
+    return createCheck(
+      "TDD Evidence",
+      "fail",
+      `Evidence incomplete: missing ${[!hasRed && "RED", !hasGreen && "GREEN"].filter(Boolean).join(" and ")} entry`,
+    );
+  }
+
+  return createCheck(
+    "TDD Evidence",
+    "pass",
+    `RED/GREEN evidence present for ${tddTasks.length} tdd task(s)`,
+  );
 }
 
 export function checkDeclaredOutputs(
