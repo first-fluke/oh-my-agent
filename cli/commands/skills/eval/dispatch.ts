@@ -74,7 +74,9 @@ export function runEvalDispatch(
       maxBuffer: 64 * 1024 * 1024,
       // No timeout here — caller controls task-level time budgets.
     });
-    return typeof output === "string" ? output : "";
+    const text = typeof output === "string" ? output : "";
+    warnOnErrorEnvelope(text);
+    return text;
   } catch (err) {
     const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
     const stderrSnippet =
@@ -88,6 +90,40 @@ export function runEvalDispatch(
     );
     // Return captured stdout so checkers can still score it (likely 0).
     return typeof e.stdout === "string" ? e.stdout : "";
+  }
+}
+
+/**
+ * Warn when a dispatch "succeeded" (exit 0) but the vendor's JSON envelope
+ * carries an API error — e.g. the claude CLI returns exit 0 with
+ * `{"is_error":true,…,"api_error_status":429,"result":"You've hit your
+ * session limit …"}` when the subscription limit is hit. Without this check
+ * the error envelope is scored (and, with --record, persisted) as a normal
+ * rollout: a silent failure that poisons every arm after the limit.
+ */
+export function warnOnErrorEnvelope(output: string): boolean {
+  const trimmed = output.trim();
+  if (!trimmed.startsWith("{")) return false;
+  try {
+    const parsed = JSON.parse(trimmed) as {
+      is_error?: boolean;
+      api_error_status?: number;
+      result?: string;
+    };
+    if (parsed.is_error !== true) return false;
+    const status = parsed.api_error_status
+      ? ` (HTTP ${parsed.api_error_status})`
+      : "";
+    const reason =
+      typeof parsed.result === "string"
+        ? `: ${parsed.result.replace(/\s+/g, " ").trim().slice(0, 160)}`
+        : "";
+    console.warn(
+      `[oma skills eval] dispatch returned an API error envelope${status}${reason} — this arm will score 0; do not trust or --record this run.`,
+    );
+    return true;
+  } catch {
+    return false;
   }
 }
 
