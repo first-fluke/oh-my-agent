@@ -159,6 +159,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 11. Do not create extra README, changelog, or installation docs inside a skill.
 12. Do not overwrite unrelated user edits.
 13. Enforce the three utility-predictive content dimensions — failure mechanism encoding, actionable specificity, high-risk action blacklist — per the Utility Content Checks in `resources/validation-checklist.md` (SkillLens, arXiv:2605.23899).
+14. Bulk-data scenes must run functions over data, not read data into context: route the processing through a deterministic tool/CLI stage (`CALL_TOOL`) and return only a summary plus the artifact path. Do not design scenes that stream raw harvested/parsed data through the model's context (see `../_shared/core/context-budget.md`, Core Principle 5).
 
 ## References
 - SSL-lite template: `resources/ssl-lite-template.md`
