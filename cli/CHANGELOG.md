@@ -1,5 +1,26 @@
 # Changelog
 
+## [11.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.8.0...cli-v11.9.0) (2026-08-06)
+
+
+### Features
+
+* **hooks:** add stop-gate and wall-clock budget goal contract ([b0d813f](https://github.com/first-fluke/oh-my-agent/commit/b0d813fdb6317f3a2d96cf466862bb962823a1b0))
+* **retro:** add harness refine signals from the L1 event trail ([179e40a](https://github.com/first-fluke/oh-my-agent/commit/179e40ace6fd506248fb7573d4027c5f3f7bba21))
+
+
+### Bug Fixes
+
+* **agent:** fail loud when external spawn leaves no workspace artifact ([e9963c1](https://github.com/first-fluke/oh-my-agent/commit/e9963c181a1433e12dff8c575ca78c9e3b5c2125))
+* **skills:** make live skill-eval dispatch runnable ([5f0780e](https://github.com/first-fluke/oh-my-agent/commit/5f0780ed7ee3675f042147b93b1ffa080d7c2b38))
+* **skills:** warn when eval dispatch returns an API error envelope ([e5a361f](https://github.com/first-fluke/oh-my-agent/commit/e5a361f3f143c8946526cd83c22ec083b694a9ec))
+
+
+### Documentation
+
+* **cli:** document goal:set, spawn exit 3, and stop-gate integration ([b74514a](https://github.com/first-fluke/oh-my-agent/commit/b74514ac4756b8785f1599fcdd42d62779833576))
+* **skills:** add run-functions-over-data context guardrail ([2ed20ad](https://github.com/first-fluke/oh-my-agent/commit/2ed20ad978825ff1664c36a2362fdef9ece7d656))
+
 ## [11.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.7.0...cli-v11.8.0) (2026-08-06)
 
 
