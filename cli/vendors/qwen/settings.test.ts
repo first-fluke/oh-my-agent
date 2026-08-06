@@ -3,9 +3,20 @@ import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import {
   applyQwenSettings,
   needsQwenSettingsUpdate,
+  QWEN_REQUEST_TIMEOUT_MS,
   RECOMMENDED_QWEN_MCP,
   sanitizeQwenSettings,
 } from "./settings.js";
+
+/**
+ * oma pins a model request timeout, so any fixture that must read as
+ * "already up to date" has to carry it — otherwise needsQwenSettingsUpdate
+ * reports true for the timeout alone and the assertion under test says
+ * nothing about the property it was written for.
+ */
+const PINNED_TIMEOUT = {
+  model: { generationConfig: { timeout: QWEN_REQUEST_TIMEOUT_MS } },
+} as const;
 
 describe("qwen settings", () => {
   it("requires update when serena MCP config is missing", () => {
@@ -47,6 +58,7 @@ describe("qwen settings", () => {
   it("accepts existing serena HTTP transport", () => {
     const settings = {
       privacy: { usageStatisticsEnabled: false },
+      ...PINNED_TIMEOUT,
       mcpServers: {
         "chrome-devtools": {
           command: "npx",
@@ -74,6 +86,7 @@ describe("qwen settings", () => {
 
   it("accepts missing privacy.usageStatisticsEnabled when telemetry is opted in", () => {
     const settings = {
+      ...PINNED_TIMEOUT,
       mcpServers: {
         "chrome-devtools": {
           command: "npx",
@@ -190,6 +203,7 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
         // runner-specific and so cannot be pinned in a fixture.
         serena: result.mcpServers?.serena,
       },
+      ...PINNED_TIMEOUT,
       privacy: { usageStatisticsEnabled: false },
     } as const;
 
@@ -201,6 +215,7 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
     // Locks output for the targetDir → installRoot rename (plan T2.9).
     const upToDate = {
       privacy: { usageStatisticsEnabled: false },
+      ...PINNED_TIMEOUT,
       mcpServers: {
         "chrome-devtools": {
           command: "npx",
@@ -218,5 +233,113 @@ describe("T2.9 rename regression — applyQwenSettings", () => {
     } as const;
 
     expect(needsQwenSettingsUpdate(upToDate)).toBe(false);
+  });
+});
+
+describe("qwen model request timeout", () => {
+  /** Recommended-state fixture minus the model/timeout slot under test. */
+  const baseline = () => ({
+    privacy: { usageStatisticsEnabled: false },
+    mcpServers: {
+      "chrome-devtools": RECOMMENDED_QWEN_MCP["chrome-devtools"],
+      serena: RECOMMENDED_QWEN_MCP.serena,
+    },
+  });
+
+  it("pins the timeout on model.generationConfig when modelProviders is absent", () => {
+    const result = applyQwenSettings({});
+    expect(result.model?.generationConfig?.timeout).toBe(
+      QWEN_REQUEST_TIMEOUT_MS,
+    );
+  });
+
+  it("preserves sibling model and generationConfig keys while pinning", () => {
+    const result = applyQwenSettings({
+      model: {
+        name: "qwen3-coder-plus",
+        generationConfig: { temperature: 0.2 },
+      },
+    });
+    expect(result.model).toEqual({
+      name: "qwen3-coder-plus",
+      generationConfig: {
+        temperature: 0.2,
+        timeout: QWEN_REQUEST_TIMEOUT_MS,
+      },
+    });
+  });
+
+  it("requires update when the timeout is missing or stale", () => {
+    expect(needsQwenSettingsUpdate(baseline())).toBe(true);
+    expect(
+      needsQwenSettingsUpdate({
+        ...baseline(),
+        model: { generationConfig: { timeout: 60_000 } },
+      }),
+    ).toBe(true);
+  });
+
+  it("pins the timeout on every modelProviders entry instead", () => {
+    const result = applyQwenSettings({
+      modelProviders: {
+        openai: [
+          { model: "a" },
+          { model: "b", generationConfig: { top_p: 1 } },
+        ],
+      },
+    });
+    expect(result.modelProviders).toEqual({
+      openai: [
+        { model: "a", generationConfig: { timeout: QWEN_REQUEST_TIMEOUT_MS } },
+        {
+          model: "b",
+          generationConfig: { top_p: 1, timeout: QWEN_REQUEST_TIMEOUT_MS },
+        },
+      ],
+    });
+  });
+
+  it("clears the top-level timeout once modelProviders owns it", () => {
+    // Both slots set at once is the migration case: modelProviders wins, so
+    // the stale top-level copy must go or the two can silently disagree.
+    const result = applyQwenSettings({
+      model: { generationConfig: { timeout: 60_000, temperature: 0.2 } },
+      modelProviders: { openai: [{ model: "a" }] },
+    });
+    expect(result.model?.generationConfig).toEqual({ temperature: 0.2 });
+    expect(needsQwenSettingsUpdate(result)).toBe(false);
+  });
+
+  it("requires update when a modelProviders entry has a stale timeout", () => {
+    expect(
+      needsQwenSettingsUpdate({
+        ...baseline(),
+        modelProviders: {
+          openai: [{ model: "a", generationConfig: { timeout: 60_000 } }],
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it("drops a stale contentGenerator and reports it as needing update", () => {
+    // Regression: the removal used to be unreachable because
+    // needsQwenSettingsUpdate never reported the leftover key, so an
+    // otherwise-current config kept contentGenerator forever.
+    const stale = {
+      ...baseline(),
+      ...PINNED_TIMEOUT,
+      contentGenerator: { apiKey: "legacy" },
+    };
+    expect(needsQwenSettingsUpdate(stale)).toBe(true);
+    expect(applyQwenSettings(stale).contentGenerator).toBeUndefined();
+  });
+
+  it("is idempotent — a freshly applied config needs no further update", () => {
+    expect(needsQwenSettingsUpdate(applyQwenSettings({}))).toBe(false);
+    expect(
+      needsQwenSettingsUpdate(
+        applyQwenSettings({ modelProviders: { openai: [{ model: "a" }] } }),
+      ),
+    ).toBe(false);
   });
 });
