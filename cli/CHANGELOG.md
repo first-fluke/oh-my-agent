@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.6.0...cli-v11.7.0) (2026-08-06)
+
+
+### Features
+
+* **cli:** pin qwen model request timeout ([878d2ad](https://github.com/first-fluke/oh-my-agent/commit/878d2ad2b15b948239f33f1b4d428647c6f63f2b))
+
+
+### Bug Fixes
+
+* **hooks:** remove ambiguous ralph korean keywords ([a107c73](https://github.com/first-fluke/oh-my-agent/commit/a107c735da06387c4bcba4ee74483e3a30540bdd)), closes [#672](https://github.com/first-fluke/oh-my-agent/issues/672)
+
 ## [11.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.5.0...cli-v11.6.0) (2026-08-02)
 
 
