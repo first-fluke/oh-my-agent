@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.9.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.9.1...cli-v11.9.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* **cli:** exclude .agents/eval from install and update ([b9913bb](https://github.com/first-fluke/oh-my-agent/commit/b9913bb1aa5c7209e68869fb080729626ca2224a))
+
 ## [11.9.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.9.0...cli-v11.9.1) (2026-08-06)
 
 
