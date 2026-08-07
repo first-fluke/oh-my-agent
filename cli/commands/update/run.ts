@@ -233,7 +233,13 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         cpSync(join(repoDir, ".agents"), join(cwd, ".agents"), {
           recursive: true,
           force: true,
+          filter: (src) => !src.replace(/\\/g, "/").includes(".agents/eval"),
         });
+
+        const evalDir = join(cwd, ".agents", "eval");
+        if (existsSync(evalDir)) {
+          rmSync(evalDir, { recursive: true, force: true });
+        }
 
         // Restore user-customized config files
         if (savedUserPrefs) writeFileSync(userPrefsPath, savedUserPrefs);

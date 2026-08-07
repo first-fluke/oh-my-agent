@@ -1,3 +1,4 @@
+import { existsSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import * as p from "@clack/prompts";
@@ -307,6 +308,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         }
 
         spinner.stop("Skills installed!");
+
+        const evalDir = join(installRoot, ".agents", "eval");
+        if (existsSync(evalDir)) {
+          rmSync(evalDir, { recursive: true, force: true });
+        }
 
         // Sync DevTools MCP servers (Chrome / Firefox) into .agents/mcp.json etc.
         syncDevToolsMcp(installRoot, devToolsBrowsers);

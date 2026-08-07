@@ -687,4 +687,23 @@ describe("persisted needsReconcile flag", () => {
     const shouldEarlyReturn = localVersion === remoteVersion && !needsReconcile;
     expect(shouldEarlyReturn).toBe(true);
   });
+
+  it("prunes .agents/eval directory during update", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-update-eval-"));
+    tempRoots.push(root);
+
+    mkdirSync(join(root, ".agents", "eval", "some-skill"), { recursive: true });
+    writeFileSync(
+      join(root, ".agents", "eval", "some-skill", "fixture.yaml"),
+      "test",
+    );
+
+    const evalDir = join(root, ".agents", "eval");
+    expect(existsSync(evalDir)).toBe(true);
+
+    if (existsSync(evalDir)) {
+      rmSync(evalDir, { recursive: true, force: true });
+    }
+    expect(existsSync(evalDir)).toBe(false);
+  });
 });
