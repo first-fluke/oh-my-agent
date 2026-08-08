@@ -1,5 +1,17 @@
 # Changelog
 
+## [11.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.9.2...cli-v11.10.0) (2026-08-08)
+
+
+### Features
+
+* **emit:** add agent-plugin target for Agent Plugins 1.0.0 packages ([78c7da4](https://github.com/first-fluke/oh-my-agent/commit/78c7da4a7fd57365a07116757d251e8e6eedba01))
+
+
+### Documentation
+
+* **readme:** reframe apm section around the agent plugins format ([f923093](https://github.com/first-fluke/oh-my-agent/commit/f923093902f3e4908eb03bd039587e08da84d161))
+
 ## [11.9.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.9.1...cli-v11.9.2) (2026-08-07)
 
 
