@@ -1,5 +1,6 @@
 import { isAbsolute, join } from "node:path";
 import type { Command } from "commander";
+import { emitAgentPlugin } from "../../platform/emit/agent-plugin.js";
 import { emitAgentSkills } from "../../platform/emit/agent-skills.js";
 import { emitAgentsMd } from "../../platform/emit/agents-md.js";
 import { emitClaudePlugin } from "../../platform/emit/claude-plugin.js";
@@ -15,6 +16,7 @@ import { type EmitRunReport, renderJson, renderText } from "./report.js";
 
 const EMIT_TARGETS = [
   "agent-skills",
+  "agent-plugin",
   "claude-plugin",
   "agents-md",
   "cli-docs",
@@ -62,6 +64,12 @@ export function runEmit(options: RunEmitOptions): EmitRunReport {
       join(outDir, "generated", "agent-skills"),
     );
   }
+  if (target === "agent-plugin" || target === "all") {
+    report.agentPlugin = emitAgentPlugin(
+      repoRoot,
+      join(outDir, "generated", "agent-plugin"),
+    );
+  }
   if (target === "claude-plugin" || target === "all") {
     report.claudePlugin = emitClaudePlugin(
       repoRoot,
@@ -87,8 +95,8 @@ export function registerEmitCommand(program: Command): void {
       .command("emit")
       .description(
         "Emit standards-conformant artifacts from the .agents/ SSOT " +
-          "(Agent Skills spec, Claude Code plugin marketplace, AGENTS.md, " +
-          "cli/-scoped vendor docs)",
+          "(Agent Skills spec, Agent Plugins package, Claude Code plugin " +
+          "marketplace, AGENTS.md, cli/-scoped vendor docs)",
       )
       .option(
         "--target <target>",

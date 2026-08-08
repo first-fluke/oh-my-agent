@@ -30,6 +30,7 @@ describe("runEmit", () => {
       outDir,
     });
     expect(report.agentSkills).toBeDefined();
+    expect(report.agentPlugin).toBeUndefined();
     expect(report.claudePlugin).toBeUndefined();
     expect(report.agentsMd).toBeUndefined();
     expect(report.agentSkills?.failCount).toBeGreaterThan(0);
@@ -39,6 +40,7 @@ describe("runEmit", () => {
     outDir = mkdtempSync(path.join(tmpdir(), "oma-emit-command-"));
     const report = runEmit({ target: "all", repoRoot: FIXTURES_REPO, outDir });
     expect(report.agentSkills).toBeDefined();
+    expect(report.agentPlugin).toBeDefined();
     expect(report.claudePlugin).toBeDefined();
     expect(report.agentsMd).toBeDefined();
   });

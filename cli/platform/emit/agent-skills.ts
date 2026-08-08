@@ -29,7 +29,7 @@ const OPTIONAL_FIELDS = [
 const RECOMMENDED_MAX_BODY_LINES = 500;
 
 /** Names never copied from a skill's resources/ tree, at any directory depth. */
-const EXCLUDED_RESOURCE_NAMES = new Set([
+export const EXCLUDED_RESOURCE_NAMES = new Set([
   "node_modules",
   ".DS_Store",
   ".git",

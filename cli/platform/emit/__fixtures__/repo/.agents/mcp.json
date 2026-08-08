@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "good-stdio": {
+      "command": "echo",
+      "args": ["hello"],
+      "env": { "FIXTURE": "1" },
+      "available_tools": null
+    },
+    "good-http": {
+      "type": "http",
+      "url": "https://example.com/mcp"
+    },
+    "loopback-http": {
+      "url": "http://localhost:8080/mcp"
+    },
+    "insecure-http": {
+      "type": "http",
+      "url": "http://example.com/mcp"
+    },
+    "shell-string": {
+      "command": "npx -y something"
+    },
+    "bad-entry": {
+      "nonsense": true
+    }
+  },
+  "memoryConfig": {
+    "provider": "file"
+  }
+}

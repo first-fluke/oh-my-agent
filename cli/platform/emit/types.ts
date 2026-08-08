@@ -1,6 +1,7 @@
 /** Targets the `oma emit` command can produce. */
 export const EMIT_TARGETS = [
   "agent-skills",
+  "agent-plugin",
   "claude-plugin",
   "agents-md",
   "cli-docs",
@@ -42,6 +43,28 @@ export interface ClaudePluginEmitReport {
   outPath: string;
 }
 
+export interface AgentPluginMcpSkip {
+  server: string;
+  reason: string;
+}
+
+export interface AgentPluginEmitReport {
+  target: "agent-plugin";
+  outDir: string;
+  manifestPath: string;
+  skills: SkillEmitResult[];
+  passCount: number;
+  failCount: number;
+  /** Portable mcp.json conversion outcome; `emitted` is false when the SSOT has no mcp.json. */
+  mcp: {
+    emitted: boolean;
+    servers: string[];
+    skipped: AgentPluginMcpSkip[];
+  };
+  /** Repo-relative SSOT entries copied into the client-extension namespace dir. */
+  extensionEntries: string[];
+}
+
 export interface AgentsMdEmitReport {
   target: "agents-md";
   outPath: string;
@@ -65,6 +88,7 @@ export interface CliDocsEmitReport {
 
 export type EmitReport =
   | AgentSkillsEmitReport
+  | AgentPluginEmitReport
   | ClaudePluginEmitReport
   | AgentsMdEmitReport
   | CliDocsEmitReport;
