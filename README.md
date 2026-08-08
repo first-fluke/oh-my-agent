@@ -29,10 +29,18 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 bunx oh-my-agent@latest
 ```
 
-### Install via Agent Package Manager
+### Install as an Agent Plugin
+
+oma exports a portable [Agent Plugins](https://agent-plugins.org) 1.0.0 package — the open packaging standard backed by AWS, Cursor, Microsoft, OpenAI, and Vercel:
+
+```bash
+oma emit --target agent-plugin   # writes generated/agent-plugin/
+```
+
+Point any conformant client (Kiro, AWS Agent Toolkit, and more as clients roll out support) at that directory. Conformant clients load the skills and MCP servers; workflows, rules, and `oma-config.yaml` ride along under the `com.firstfluke.oma` extension namespace for oma-aware installs. Hooks and `oma agent:spawn` still need the full `bunx oh-my-agent@latest` install.
 
 <details>
-<summary>Microsoft's <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM) — skills-only distribution. Click to expand.</summary>
+<summary>Or install skills with Microsoft's <a href="https://github.com/microsoft/apm">Agent Package Manager</a> (APM), a package manager for the same ecosystem. Click to expand.</summary>
 
 > Not to be confused with `oma-observability`'s APM (Application Performance Monitoring).
 
@@ -45,7 +53,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+Agent Plugins is the package format; APM is an installer that ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
 
 </details>
 
