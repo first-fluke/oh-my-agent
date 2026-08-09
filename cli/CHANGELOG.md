@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.10.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.1...cli-v11.10.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **hooks:** stop gating trigger keywords by config language ([9f60adc](https://github.com/first-fluke/oh-my-agent/commit/9f60adc09db7be5984b73cff44eecbbc672fe1ee))
+
 ## [11.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.0...cli-v11.10.1) (2026-08-09)
 
 
