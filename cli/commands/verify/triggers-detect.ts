@@ -66,7 +66,7 @@ function findMatchedKeyword(
       entry.lang,
       CONFIG.cjkScripts,
     ),
-    ...keywordDetector.buildRawPatterns(def.patterns, entry.lang),
+    ...keywordDetector.buildRawPatterns(def.patterns),
   ];
   for (const pattern of patterns) {
     const match = pattern.exec(cleaned);

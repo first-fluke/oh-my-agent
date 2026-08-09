@@ -345,10 +345,13 @@ describe("keyword-detector", () => {
       expect(true).toBe(true);
     });
 
-    it("should return empty array when no keywords match language", () => {
+    it("compiles every language's keywords regardless of config language", () => {
+      // Regression: non-en banks used to be dropped for `language: en`
+      // projects, silently disabling all localized triggers.
       const keywords = { fr: ["débogueur"] };
       const patterns = buildPatterns(keywords, "en", ["ko"]);
-      expect(patterns).toHaveLength(0);
+      expect(patterns).toHaveLength(1);
+      expect(patterns[0]?.test("lance le débogueur")).toBe(true);
     });
   });
 
@@ -481,80 +484,79 @@ describe("keyword-detector", () => {
     };
 
     it("returns empty array for undefined patterns", () => {
-      expect(buildRawPatterns(undefined, "en")).toHaveLength(0);
+      expect(buildRawPatterns(undefined)).toHaveLength(0);
     });
 
     it("compiles English intent patterns", () => {
-      const compiled = buildRawPatterns(orchestratePatterns, "en");
+      const compiled = buildRawPatterns(orchestratePatterns);
       expect(compiled.length).toBeGreaterThan(0);
     });
 
     it("matches Build a TODO app with user authentication (the README example)", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("Build a TODO app with user authentication")).toBe(
         true,
       );
     });
 
     it("matches Build me an app (omc parity)", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("Build me an app")).toBe(true);
     });
 
     it("matches Create an awesome web service", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("Create an awesome web service")).toBe(true);
     });
 
     it("matches Develop a backend with PostgreSQL", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("Develop a backend with PostgreSQL")).toBe(true);
     });
 
     it("does NOT match Build TODO app (no article)", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("Build TODO app")).toBe(false);
     });
 
     it("does NOT match Build a relationship (noun not in whitelist)", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("Build a relationship")).toBe(false);
     });
 
     it("does NOT match I built a TODO app yesterday (past tense)", () => {
-      const [pattern] = buildRawPatterns(orchestratePatterns, "en");
+      const [pattern] = buildRawPatterns(orchestratePatterns);
       expect(pattern?.test("I built a TODO app yesterday")).toBe(false);
     });
 
     it("matches Korean: TODO 앱 만들어줘", () => {
-      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPatterns = buildRawPatterns(orchestratePatterns);
       const koPattern = koPatterns[koPatterns.length - 1];
       expect(koPattern?.test("TODO 앱 만들어줘")).toBe(true);
     });
 
     it("matches Korean: REST API 구현해", () => {
-      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPatterns = buildRawPatterns(orchestratePatterns);
       const koPattern = koPatterns[koPatterns.length - 1];
       expect(koPattern?.test("REST API 구현해")).toBe(true);
     });
 
     it("matches Korean: 백엔드를 개발해주세요", () => {
-      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPatterns = buildRawPatterns(orchestratePatterns);
       const koPattern = koPatterns[koPatterns.length - 1];
       expect(koPattern?.test("백엔드를 개발해주세요")).toBe(true);
     });
 
     it("does NOT match Korean: 앱 만드는 법 알려줘", () => {
-      const koPatterns = buildRawPatterns(orchestratePatterns, "ko");
+      const koPatterns = buildRawPatterns(orchestratePatterns);
       const koPattern = koPatterns[koPatterns.length - 1];
       expect(koPattern?.test("앱 만드는 법 알려줘")).toBe(false);
     });
 
     it("skips invalid regex without throwing", () => {
-      const compiled = buildRawPatterns(
-        { en: ["valid pattern", "[invalid("] },
-        "en",
-      );
+      const compiled = buildRawPatterns({
+        en: ["valid pattern", "[invalid("],
+      });
       expect(compiled).toHaveLength(1);
     });
   });
@@ -995,51 +997,53 @@ describe("keyword-detector", () => {
 
   describe("isDeactivationRequest", () => {
     it("should detect English deactivation phrases", () => {
-      expect(isDeactivationRequest("workflow done", "en")).toBe(true);
-      expect(isDeactivationRequest("workflow complete", "en")).toBe(true);
-      expect(isDeactivationRequest("workflow finished", "en")).toBe(true);
+      expect(isDeactivationRequest("workflow done")).toBe(true);
+      expect(isDeactivationRequest("workflow complete")).toBe(true);
+      expect(isDeactivationRequest("workflow finished")).toBe(true);
     });
 
     it("should detect Korean deactivation phrases", () => {
-      expect(isDeactivationRequest("워크플로우 완료", "ko")).toBe(true);
-      expect(isDeactivationRequest("워크플로우 종료", "ko")).toBe(true);
-      expect(isDeactivationRequest("워크플로우 끝", "ko")).toBe(true);
+      expect(isDeactivationRequest("워크플로우 완료")).toBe(true);
+      expect(isDeactivationRequest("워크플로우 종료")).toBe(true);
+      expect(isDeactivationRequest("워크플로우 끝")).toBe(true);
     });
 
     it("should detect Japanese deactivation phrases", () => {
-      expect(isDeactivationRequest("ワークフロー完了", "ja")).toBe(true);
-      expect(isDeactivationRequest("ワークフロー終了", "ja")).toBe(true);
+      expect(isDeactivationRequest("ワークフロー完了")).toBe(true);
+      expect(isDeactivationRequest("ワークフロー終了")).toBe(true);
     });
 
     it("should detect Chinese deactivation phrases", () => {
-      expect(isDeactivationRequest("工作流完成", "zh")).toBe(true);
-      expect(isDeactivationRequest("工作流结束", "zh")).toBe(true);
+      expect(isDeactivationRequest("工作流完成")).toBe(true);
+      expect(isDeactivationRequest("工作流结束")).toBe(true);
     });
 
     it("should be case insensitive", () => {
-      expect(isDeactivationRequest("Workflow Done", "en")).toBe(true);
-      expect(isDeactivationRequest("WORKFLOW DONE", "en")).toBe(true);
+      expect(isDeactivationRequest("Workflow Done")).toBe(true);
+      expect(isDeactivationRequest("WORKFLOW DONE")).toBe(true);
     });
 
     it("should match phrases within longer messages", () => {
       expect(
-        isDeactivationRequest("모든 작업이 끝났으니 워크플로우 완료", "ko"),
+        isDeactivationRequest("모든 작업이 끝났으니 워크플로우 완료"),
       ).toBe(true);
-      expect(
-        isDeactivationRequest("I think we're done. workflow done.", "en"),
-      ).toBe(true);
+      expect(isDeactivationRequest("I think we're done. workflow done.")).toBe(
+        true,
+      );
     });
 
     it("should not match unrelated prompts", () => {
-      expect(isDeactivationRequest("run the workflow", "en")).toBe(false);
-      expect(isDeactivationRequest("워크플로우 실행", "ko")).toBe(false);
-      expect(isDeactivationRequest("hello world", "en")).toBe(false);
+      expect(isDeactivationRequest("run the workflow")).toBe(false);
+      expect(isDeactivationRequest("워크플로우 실행")).toBe(false);
+      expect(isDeactivationRequest("hello world")).toBe(false);
     });
 
-    it("should always include English phrases regardless of language", () => {
-      expect(isDeactivationRequest("workflow done", "ko")).toBe(true);
-      expect(isDeactivationRequest("workflow done", "ja")).toBe(true);
-      expect(isDeactivationRequest("workflow done", "zh")).toBe(true);
+    it("detects every language's phrases regardless of config language", () => {
+      // Regression: phrases used to be gated by the config `language`, which
+      // silently disabled e.g. Korean deactivation for `language: en` projects.
+      expect(isDeactivationRequest("워크플로우 완료")).toBe(true);
+      expect(isDeactivationRequest("flujo completado")).toBe(true);
+      expect(isDeactivationRequest("workflow abgeschlossen")).toBe(true);
     });
   });
 
@@ -1773,23 +1777,30 @@ describe("keyword-detector", () => {
   // full rule set and the suppressed-specific-vs-generic design decision.
 
   describe("collectLangEntries", () => {
-    it("merges universal + en + the configured language", () => {
-      const bank = { "*": ["a"], en: ["b"], ko: ["c"] };
-      expect(collectLangEntries(bank, "ko")).toEqual(["a", "b", "c"]);
+    it("merges universal + en + every other language bank", () => {
+      const bank = { "*": ["a"], en: ["b"], ko: ["c"], ja: ["d"] };
+      expect(collectLangEntries(bank)).toEqual(["a", "b", "c", "d"]);
     });
 
-    it("does not duplicate en entries when lang is en", () => {
-      const bank = { "*": ["a"], en: ["b"], ko: ["c"] };
-      expect(collectLangEntries(bank, "en")).toEqual(["a", "b"]);
+    it("includes non-en banks regardless of config language (regression)", () => {
+      // Keyword banks used to be gated by the config `language`, which
+      // silently disabled every Korean trigger for `language: en` projects
+      // even though the user was prompting in Korean.
+      const bank = { "*": [], en: ["debug this"], ko: ["버그 찾아줘"] };
+      expect(collectLangEntries(bank)).toContain("버그 찾아줘");
     });
 
-    it("returns only universal + en entries for an unconfigured language", () => {
-      const bank = { "*": ["a"], en: ["b"] };
-      expect(collectLangEntries(bank, "fr")).toEqual(["a", "b"]);
+    it("dedupes case-insensitively across banks, keeping first occurrence", () => {
+      const bank = { "*": ["a"], en: ["B"], ko: ["b", "c"] };
+      expect(collectLangEntries(bank)).toEqual(["a", "B", "c"]);
     });
 
-    it("handles a bank with no matching keys", () => {
-      expect(collectLangEntries({ fr: ["x"] }, "en")).toEqual([]);
+    it("handles a bank with only non-en keys", () => {
+      expect(collectLangEntries({ fr: ["x"] })).toEqual(["x"]);
+    });
+
+    it("handles an empty bank", () => {
+      expect(collectLangEntries({})).toEqual([]);
     });
   });
 
@@ -1829,26 +1840,21 @@ describe("keyword-detector", () => {
     });
 
     it("pairs each raw pattern's regex with its source string", () => {
-      const entries = buildRawPatternEntries({ "*": ["\\bfoo\\b"] }, "en");
+      const entries = buildRawPatternEntries({ "*": ["\\bfoo\\b"] });
       expect(entries[0]?.source).toBe("\\bfoo\\b");
       expect(entries[0]?.regex.test("a foo b")).toBe(true);
     });
 
     it("skips invalid raw patterns without throwing, keeping source pairing intact", () => {
-      const entries = buildRawPatternEntries(
-        { en: ["valid", "[invalid("] },
-        "en",
-      );
+      const entries = buildRawPatternEntries({ en: ["valid", "[invalid("] });
       expect(entries).toHaveLength(1);
       expect(entries[0]?.source).toBe("valid");
     });
 
     it("buildRawPatterns(...) still returns exactly the regexes from buildRawPatternEntries", () => {
       const patterns = { en: ["\\bfoo\\b", "\\bbar\\b"] };
-      const entries = buildRawPatternEntries(patterns, "en");
-      expect(buildRawPatterns(patterns, "en")).toEqual(
-        entries.map((e) => e.regex),
-      );
+      const entries = buildRawPatternEntries(patterns);
+      expect(buildRawPatterns(patterns)).toEqual(entries.map((e) => e.regex));
     });
   });
 

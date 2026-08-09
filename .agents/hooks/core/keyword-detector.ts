@@ -357,20 +357,35 @@ export function escapeRegex(s: string): string {
 
 /**
  * Merge a language-keyed keyword/pattern bank into a single flat list:
- * universal ("*") + English (the universal default) + the configured
- * language's own entries (skipped when lang === "en" to avoid duplicates).
- * Shared by buildPatterns and buildRawPatterns — both keyword banks and
- * pattern banks use this exact `Record<string, string[]>` shape.
+ * universal ("*") + English + EVERY other language's entries, deduped
+ * case-insensitively. Same rationale as RC4 (buildInformationalPatterns):
+ * users prompt in whichever language they think in — `language` in
+ * oma-config.yaml controls the RESPONSE language, not the prompt language —
+ * so gating by config language silently disabled e.g. every Korean trigger
+ * for `language: en` projects. A keyword written in language X can only
+ * match a prompt that contains X-script text (current banks are en/ko/ja/zh;
+ * if a Latin-script bank like es/fr is ever added, phrase distinctiveness is
+ * the gate instead), so merging all languages cannot fire on unrelated
+ * prompts. Shared by buildPatterns and buildRawPatterns — both keyword banks
+ * and pattern banks use this exact `Record<string, string[]>` shape.
  */
-export function collectLangEntries(
-  bank: Record<string, string[]>,
-  lang: string,
-): string[] {
-  return [
+export function collectLangEntries(bank: Record<string, string[]>): string[] {
+  const ordered = [
     ...(bank["*"] ?? []),
     ...(bank.en ?? []),
-    ...(lang !== "en" ? (bank[lang] ?? []) : []),
+    ...Object.entries(bank)
+      .filter(([key]) => key !== "*" && key !== "en")
+      .flatMap(([, entries]) => entries),
   ];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const entry of ordered) {
+    const key = entry.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(entry);
+  }
+  return out;
 }
 
 /**
@@ -390,7 +405,7 @@ export function buildPatternEntries(
   lang: string,
   cjkScripts: string[],
 ): KeywordPatternEntry[] {
-  return collectLangEntries(keywords, lang).map((kw) => {
+  return collectLangEntries(keywords).map((kw) => {
     const escaped = escapeRegex(kw).replace(/\s+/g, "\\s+");
     const regex =
       cjkScripts.includes(lang) || /[^\p{ASCII}]/u.test(kw)
@@ -421,11 +436,10 @@ export interface RawPatternEntry {
 
 export function buildRawPatternEntries(
   patterns: Record<string, string[]> | undefined,
-  lang: string,
 ): RawPatternEntry[] {
   if (!patterns) return [];
   const compiled: RawPatternEntry[] = [];
-  for (const raw of collectLangEntries(patterns, lang)) {
+  for (const raw of collectLangEntries(patterns)) {
     try {
       compiled.push({ regex: new RegExp(raw, "iu"), source: raw });
     } catch {
@@ -443,9 +457,8 @@ export function buildRawPatternEntries(
  */
 export function buildRawPatterns(
   patterns: Record<string, string[]> | undefined,
-  lang: string,
 ): RegExp[] {
-  return buildRawPatternEntries(patterns, lang).map((e) => e.regex);
+  return buildRawPatternEntries(patterns).map((e) => e.regex);
 }
 
 export function buildInformationalPatterns(config: TriggerConfig): RegExp[] {
@@ -772,11 +785,12 @@ export const DEACTIVATION_PHRASES: Record<string, string[]> = {
   pl: ["workflow zakończony", "workflow ukończony"],
 };
 
-export function isDeactivationRequest(prompt: string, lang: string): boolean {
-  const phrases = [
-    ...(DEACTIVATION_PHRASES.en ?? []),
-    ...(lang !== "en" ? (DEACTIVATION_PHRASES[lang] ?? []) : []),
-  ];
+export function isDeactivationRequest(prompt: string): boolean {
+  // All languages merged, never gated by config language (same rationale as
+  // collectLangEntries): a user prompting in Korean must be able to say
+  // "워크플로우 완료" even when `language: en`. A phrase only matches a prompt
+  // actually written in that language, so merging cannot misfire.
+  const phrases = Object.values(DEACTIVATION_PHRASES).flat();
   const normalized = normalizeForMatching(prompt);
   return phrases.some((phrase) =>
     normalized.includes(normalizeForMatching(phrase)),
@@ -927,7 +941,7 @@ export async function run(
   const lang = detectLanguage(projectDir);
 
   // Check for deactivation request before workflow detection
-  if (isDeactivationRequest(prompt, lang)) {
+  if (isDeactivationRequest(prompt)) {
     deactivateAllPersistentModes(projectDir, sessionId);
     // Grok's resume context lives in a session-start file, not L1 stdout — clear it.
     if (vendor === "grok") clearGrokContext(projectDir);
@@ -1027,10 +1041,7 @@ export async function run(
     )) {
       considerMatch(regex, keyword);
     }
-    for (const { regex, source } of buildRawPatternEntries(
-      def.patterns,
-      lang,
-    )) {
+    for (const { regex, source } of buildRawPatternEntries(def.patterns)) {
       considerMatch(regex, source);
     }
   }

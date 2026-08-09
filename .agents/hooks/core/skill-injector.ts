@@ -188,10 +188,16 @@ export function matchSkills(
     const jsonEntry = config.skills?.[skill.name];
     if (!jsonEntry) continue;
 
+    // All languages merged, never gated by config language: users prompt in
+    // whichever language they think in (`language` controls the RESPONSE
+    // language). A keyword written in language X can only match a prompt
+    // containing X-script text, so merging cannot fire on unrelated prompts.
     const jsonTriggers = [
       ...(jsonEntry.keywords["*"] ?? []),
       ...(jsonEntry.keywords.en ?? []),
-      ...(lang !== "en" ? (jsonEntry.keywords[lang] ?? []) : []),
+      ...Object.entries(jsonEntry.keywords)
+        .filter(([key]) => key !== "*" && key !== "en")
+        .flatMap(([, entries]) => entries),
     ];
 
     const seen = new Set<string>();

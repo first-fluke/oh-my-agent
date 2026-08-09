@@ -132,6 +132,21 @@ describe("skill-injector", () => {
       expect(matches[0]?.matchedTriggers).toContain("번역해줘");
     });
 
+    it("matches non-en triggers even when config language is en (regression)", () => {
+      // Triggers used to be gated by the config `language`, so a Korean
+      // prompt in a `language: en` project never matched its own ko keywords.
+      const config = {
+        skills: {
+          "oma-translator": {
+            keywords: { "*": [], en: ["translate strings"], ko: ["번역해줘"] },
+          },
+        },
+      };
+      const matches = matchSkills("이거 번역해줘 빨리", "en", [skillB], config);
+      expect(matches).toHaveLength(1);
+      expect(matches[0]?.matchedTriggers).toContain("번역해줘");
+    });
+
     it("returns multiple skills sorted by score desc", () => {
       const config = {
         skills: {

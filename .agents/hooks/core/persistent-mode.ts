@@ -161,18 +161,6 @@ async function emitGateEvent(
   }
 }
 
-function detectLanguage(projectDir: string): string {
-  const prefsPath = join(projectDir, ".agents", "oma-config.yaml");
-  if (!existsSync(prefsPath)) return "en";
-  try {
-    const content = readFileSync(prefsPath, "utf-8");
-    const match = content.match(/^language:\s*(\S+)/m);
-    return match?.[1] ?? "en";
-  } catch {
-    return "en";
-  }
-}
-
 // ── Config Loading ────────────────────────────────────────────
 
 interface TriggerConfig {
@@ -339,8 +327,7 @@ export async function run(
   // text (parity with the standalone main() path). Without this, persistent
   // mode could not be deactivated via the central `oma hook` dispatch.
   if (input.responseText) {
-    const lang = detectLanguage(projectDir);
-    if (isDeactivationRequest(input.responseText, lang)) {
+    if (isDeactivationRequest(input.responseText)) {
       deactivateAllForSession(projectDir, sessionId);
       return null;
     }
@@ -447,7 +434,6 @@ async function main() {
   const vendor = detectVendor(input);
   const projectDir = getProjectDir(vendor, input);
   const sessionId = getSessionId(input);
-  const lang = detectLanguage(projectDir);
 
   // Check all text fields in stdin for deactivation phrases.
   // The assistant may have included "workflow done" in its response,
@@ -464,7 +450,7 @@ async function main() {
     .filter((v): v is string => typeof v === "string")
     .join(" ");
 
-  if (textToCheck && isDeactivationRequest(textToCheck, lang)) {
+  if (textToCheck && isDeactivationRequest(textToCheck)) {
     // Deactivate all persistent workflows for this session (shared helper).
     deactivateAllForSession(projectDir, sessionId);
     process.exit(0);
