@@ -4,6 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
+**De hardcore multi-agent orchestrator voor productie-grade software.**
+Niet zomaar een chat wrapper—oh-my-agent is een professioneel harnas dat je AI-assistent een heel engineeringteam geeft.
+
 Ooit gewenst dat je AI-assistent collega's had? Dat is precies wat oh-my-agent doet.
 
 In plaats van een enkele AI die alles doet (en halverwege de draad kwijtraakt), verdeelt oh-my-agent het werk over **gespecialiseerde agents**: frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design en meer. Elk van hen kent zijn domein door en door, heeft eigen tools en checklists, en blijft in zijn eigen baan.

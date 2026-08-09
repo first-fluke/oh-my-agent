@@ -4,6 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [ภาษาไทย](./README.th.md)
 
+**Orchestrator đa tác nhân hardcore dành cho phần mềm cấp độ sản xuất.**
+Không chỉ là một trình bọc trò chuyện khác — oh-my-agent là một dây chuyền chuyên nghiệp cung cấp cho trợ lý AI của bạn một toàn bộ đội ngũ kỹ sư.
+
 Bạn đã bao giờ ước trợ lý AI của mình có đồng nghiệp chưa? Đó chính là điều oh-my-agent làm được.
 
 Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa chừng), oh-my-agent phân chia công việc cho các **agent chuyên biệt**: frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design và nhiều hơn nữa. Mỗi agent hiểu sâu lĩnh vực của mình, có công cụ và checklist riêng, và chỉ tập trung vào phần việc được giao.

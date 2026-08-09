@@ -4,6 +4,9 @@
 
 [English](../README.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
+**실제 프로덕션 코드를 위한 하드코어 멀티 에이전트 오케스트레이터.**
+단순한 AI 챗봇이 아닙니다. oh-my-agent는 장난감 수준을 넘어선 진지한 프로젝트를 위해 AI에게 전체 엔지니어링 팀을 쥐어주는 전문가용 하네스입니다.
+
 AI 어시스턴트에게도 동료가 있으면 좋겠다고 생각해본 적 없으신가요? 그게 바로 oh-my-agent입니다.
 
 AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 작업을 **전문 에이전트**들에게 나눠 맡깁니다. frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design 같은 전문가들이죠. 각 에이전트는 자기 영역을 깊이 알고, 전용 도구와 체크리스트를 갖춘 채 맡은 역할에만 집중합니다.

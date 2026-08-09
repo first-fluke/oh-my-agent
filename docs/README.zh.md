@@ -4,6 +4,9 @@
 
 [English](../README.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md) 
 
+**专为生产级软件打造的硬核多智能体编排器。**
+不仅仅是又一个聊天包装器——oh-my-agent 是一个专业的控制套件，能为你的 AI 助手配备一整个工程团队。
+
 有没有想过，要是你的 AI 助手有同事就好了？oh-my-agent 就是干这个的。
 
 与其让一个 AI 包揽一切（然后做到一半就迷路），oh-my-agent 把工作分配给**专业 agent**：frontend、backend、architecture、QA、PM、DB、mobile、infra、debug、design 等等。每个 agent 深耕自己的领域，拥有专属工具和检查清单，各司其职。
