@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.10.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.0...cli-v11.10.1) (2026-08-09)
+
+
+### Documentation
+
+* update positioning to hardcore production orchestrator ([3e7be18](https://github.com/first-fluke/oh-my-agent/commit/3e7be1874f601ef467e95ad1a5aeed8f888e178f))
+
 ## [11.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.9.2...cli-v11.10.0) (2026-08-08)
 
 
