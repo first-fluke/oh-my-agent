@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.10.1",
-  "releaseDate": "2026-08-09T04:51:33.643Z",
+  "releaseDate": "2026-08-09T14:49:21.238Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -156,13 +156,13 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "95daceaa34e9699068788cf81ada0044dd9d0d856c5bb4cd0e16be210259a76a",
-      "size": 40315
+      "sha256": "fca10b472dee40fc712e43fefbd20003ea32ea600fba67ed9fa7e1e802df4093",
+      "size": 41275
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "0ffa3545e3c55b19c6d189ee44141b77824708ff00c34420fca3b4a8b03afbad",
-      "size": 17043
+      "sha256": "3a28bc8febaa373e88d3c1a260e0dc342b71163f649e8e398cb2cada8d11c9d3",
+      "size": 16593
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
@@ -181,8 +181,8 @@
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "d086c8d8e3f78a8eb8bc7c07aaec75d22a021cf89e629e1d0663d4489528f247",
-      "size": 17856
+      "sha256": "97723082e49a89c691a6b9c58114f4da90dba279c32da5cb3dfaee2121abd0ce",
+      "size": 18237
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
