@@ -558,7 +558,8 @@ describe("agent/spawn-status.ts", () => {
       }),
     );
 
-    const callArgs = vi.mocked(child_process.spawn).mock.calls[0]!;
+    const callArgs = vi.mocked(child_process.spawn).mock.calls[0];
+    if (!callArgs) throw new Error("expected spawn to have been called");
     expect(callArgs[2]?.env).not.toHaveProperty("CODEX_HOME");
     if (originalCodexHome) {
       process.env.CODEX_HOME = originalCodexHome;

@@ -114,10 +114,23 @@ describe("installPiPromptTemplates", () => {
 });
 
 describe("pi bridge handlers", () => {
+  // The pi event handlers the bridge registers, typed by how the bridge
+  // actually implements them (see the extension's index.ts).
+  interface PiHandlers {
+    before_agent_start: (
+      input: { prompt: string; systemPrompt: string },
+      ctx: unknown,
+    ) => Promise<{ systemPrompt: string } | undefined>;
+    tool_call: (event: {
+      toolName: string;
+      input: { command: string };
+    }) => Promise<{ block?: boolean; reason?: string } | undefined>;
+    agent_settled: (input: object, ctx: unknown) => Promise<void>;
+  }
+
   let target: string;
   let extDir: string;
-  // biome-ignore lint/suspicious/noExplicitAny: test captures pi handlers
-  let handlers: Record<string, any>;
+  let handlers: PiHandlers;
   let sent: string[];
 
   function fakeScript(json: object): string {
@@ -162,11 +175,11 @@ describe("pi bridge handlers", () => {
    * module scope, and the unique cache-buster forces re-evaluation.
    */
   let importSeq = 0;
-  async function freshHandlers(): Promise<Record<string, any>> {
+  async function freshHandlers(): Promise<PiHandlers> {
     // Reset the once-guard so the freshly imported module registers handlers.
     (globalThis as Record<string, unknown>).__OMA_PI_EXT_REGISTERED = undefined;
 
-    const captured: Record<string, any> = {};
+    const captured: Record<string, unknown> = {};
     sent = [];
     const mod = await import(
       `${pathToFileURL(join(extDir, "index.ts")).href}?t=${target}-${importSeq++}`
@@ -179,7 +192,7 @@ describe("pi bridge handlers", () => {
         sent.push(content);
       },
     });
-    return captured;
+    return captured as unknown as PiHandlers;
   }
 
   it("before_agent_start appends keyword + skill context to the system prompt", async () => {
