@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.10.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.2...cli-v11.10.3) (2026-08-10)
+
+
+### Bug Fixes
+
+* **cli:** prevent stale eval artifacts during update ([0172001](https://github.com/first-fluke/oh-my-agent/commit/0172001d43065ef08f5689514e2e6dad336a96d3))
+
 ## [11.10.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.1...cli-v11.10.2) (2026-08-09)
 
 
