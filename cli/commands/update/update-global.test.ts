@@ -377,4 +377,14 @@ describe("update --global: _install.json lifecycle", () => {
     };
     expect(meta.version).toBe("8.1.0");
   });
+
+  it("starts CLI self-update only after project reconciliation completes", async () => {
+    await update({ global: true, force: true, ci: true });
+
+    expect(linkState.link).toHaveBeenCalled();
+    expect(selfUpdateState.maybeSelfUpdate).toHaveBeenCalled();
+    expect(linkState.link.mock.invocationCallOrder[0]).toBeLessThan(
+      selfUpdateState.maybeSelfUpdate.mock.invocationCallOrder[0] ?? Infinity,
+    );
+  });
 });

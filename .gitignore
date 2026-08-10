@@ -61,6 +61,7 @@ docs/generated/
 .serena/memories/*
 !.serena/memories/.gitkeep
 .serena/metrics.json
+.serena/retrospectives/
 
 # Serena runtime (nested workspaces)
 cli/.serena/

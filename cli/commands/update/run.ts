@@ -135,13 +135,6 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
   const cwd = mode === "global" ? installRoot : process.cwd();
 
   try {
-    await maybeSelfUpdate({
-      currentVersion: pkg.version,
-      enabled: resolveAutoUpdateCli(cwd),
-      onSpawnStart: (msg) => ui.note(msg, "CLI auto-update"),
-      onNotice: (msg) => ui.note(msg, "CLI update available"),
-    });
-
     const localVersion = await getLocalVersion(cwd);
     const hasExistingInstall = hasInstalledProject(cwd);
     const targetState = classifyUpdateTarget(localVersion, hasExistingInstall);
@@ -201,6 +194,12 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
       if (localVersion === remoteManifest.version && !needsReconcile) {
         spinner.stop(pc.green("Already up to date!"));
         ui.outro(`Current version: ${pc.cyan(localVersion)}`);
+        await maybeSelfUpdate({
+          currentVersion: pkg.version,
+          enabled: resolveAutoUpdateCli(cwd),
+          onSpawnStart: (msg) => ui.note(msg, "CLI auto-update"),
+          onNotice: (msg) => ui.note(msg, "CLI update available"),
+        });
         return;
       }
 
@@ -445,6 +444,18 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
 
         await maybeApplyRecommendedGitConfig({ nonInteractive });
         await maybePromptGitHubStar(nonInteractive);
+
+        // A detached self-update replaces the global executable while this
+        // process keeps running. Starting it before the project reconciliation
+        // lets an old process copy stale release contents into `.agents/`.
+        // Defer it until every project write has completed; the new CLI still
+        // takes effect on the next command, as documented by maybeSelfUpdate.
+        await maybeSelfUpdate({
+          currentVersion: pkg.version,
+          enabled: resolveAutoUpdateCli(cwd),
+          onSpawnStart: (msg) => ui.note(msg, "CLI auto-update"),
+          onNotice: (msg) => ui.note(msg, "CLI update available"),
+        });
       } finally {
         cleanup();
       }
