@@ -1,17 +1,29 @@
-# oh-my-agent: Portable Multi-Agent Harness
+# oh-my-agent：会核查成果的多智能体控制套件
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md) 
 
-**专为生产级软件打造的硬核多智能体编排器。**
-不仅仅是又一个聊天包装器——oh-my-agent 是一个专业的控制套件，能为你的 AI 助手配备一整个工程团队。
+**agent 会讲述自己成功了。oh-my-agent 会核查产出物。**
 
-有没有想过，要是你的 AI 助手有同事就好了？oh-my-agent 就是干这个的。
+并行拉起一堆 agent 是容易的那部分，难的是判断它们到底有没有把活干完。“测试全过，所有标准达标”这句话对 agent 来说毫无成本，而同一个会话里也没有任何东西能反驳它。
 
-与其让一个 AI 包揽一切（然后做到一半就迷路），oh-my-agent 把工作分配给**专业 agent**：frontend、backend、architecture、QA、PM、DB、mobile、infra、debug、design 等等。每个 agent 深耕自己的领域，拥有专属工具和检查清单，各司其职。
+oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，直到项目自己的 `typecheck` / `test` / `lint` 脚本以 0 退出为止。门禁命令判断某个工作流是否真的跑过，靠的是它跑过就必然留下的产出物；最终结果以这条命令给出的 JSON 判定为准，而不是 agent 的自述。独立的 judge 每一轮都会在全新上下文里重新校验每一条标准，包括那些已经通过的。每一次门禁判定都会落到一份只追加的事件日志上，事后可以逐条翻看。同一套纪律，再从一个可移植的 `.agents/` 目录铺到十几种 agent 运行时上。
 
-支持所有主流 AI IDE：Antigravity、Claude Code、Codex、Cursor、Grok Build、Kimi Code、OpenCode、Pi、Qwen Code 等。
+## 只看验证，不听自述
+
+下面这些机制都是机械的：命令要么以 0 退出，要么没有；文件要么在磁盘上，要么不在。没有任何一步会去问 LLM 这活儿“看起来对不对”。
+
+| 机制 | 机械核查的内容 | 位置 |
+|------|---------------|------|
+| **Stop hook 门禁** | persistent workflow 处于激活状态时阻止会话终止，并在放行前运行配置好的门禁脚本。可执行的只有 `typecheck`、`test`、`lint` 三个；agent 往状态文件里写别的东西只会被忽略，绝不会被执行。加固次数上限为 5 次，因此一个始终飘红的门禁不会把你困住。 | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention 门禁** | `oma ralph:verify --json` 会核查四样抄近路伪造不了的产出物：ultrawork 的 phase 记录、plan JSON、一个**独立 QA agent** 的 result 文件，以及一个**独立 refactor agent** 的 result 文件。产出物缺失就说明这个 phase 没跑过，自述里怎么写都不算数。 | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **独立 judge** | 作为拥有全新上下文的独立 agent 启动，只告知标准本身，绝不告知实现方声称自己修好了什么。每次 iteration 都会重新校验**每一条**标准，已经 PASS 的也不例外，因为 C1 悄悄回退往往正是修 C2 时发生的。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **事件溯源状态** | 每一次门禁通过、门禁失败和判定，都会向 `.agents/state/sessions/{sid}/events.jsonl` 追加一行 JSON，并盖上厂商与运行时会话 id。只追加、跨厂商、跑完之后仍可审计。 | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **按 agent 的检查组合** | `oma verify <agent>` 会运行共享核心检查（scope 越界、charter alignment、硬编码密钥、TODO 扫描、declared outputs），再加上按类型的检查（TypeScript strict、tests、raw SQL、Flutter analyze、inline styles）。 | `oma verify <agent>` |
+| **skill 评测框架** | `oma skills eval` 不去假定某个 skill 有用，而是在留出任务上对比 treatment 与 baseline，测出实际的效用增益。`oma skills opt` 只保留那些能提高实测增益的改动。 | [skill-eval 指南](../web/docs/guide/skill-eval.md) |
+
+预算也用同一套办法约束。`session.quota_cap` 会限定 token 数、spawn 次数和单厂商开销，任何一个维度超标，编排器都会拒绝下一次 spawn。当挂钟时间预算耗尽时，Stop hook 也会诚实地停下来，把部分完成状态记入事件日志，而不是假装已经收工。
 
 ## 快速开始
 
@@ -67,7 +79,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 
 ## 适配所有 Agent
 
-`oh-my-agent` 始终把 `.agents/` 作为唯一信源（SSOT），并按每个运行时的原生布局生成对应文件，所有受支持的工具因此共享同一套技能、工作流和规则。
+验证要是只能绑定在一家厂商上，那价值就有限了。`oh-my-agent` 始终把 `.agents/` 作为唯一信源（SSOT），并按每个运行时的原生布局生成对应文件，所有受支持的工具因此共享同一套技能、工作流、规则和门禁，换厂商也就成了改配置，而不是做迁移。
 
 <table>
 <colgroup>
@@ -141,11 +153,12 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 
 <p align="center"><sub><a href="./SUPPORTED_AGENTS.md">& 更多</a></sub></p>
 
-## Agent 团队
+## 工程团队
+
+与其让一个 AI 包揽一切（然后做到一半就迷路），oh-my-agent 把工作分配给专业 agent。每个 agent 深耕自己的领域，拥有专属工具和检查清单，各司其职。
 
 | Agent | 职责 |
 |-------|------|
-| **oma-academic-writer** | 将学术文章写到发表级别，涵盖起草、修订与审稿 |
 | **oma-architecture** | 权衡架构方案、划定模块边界，提供 ADR/ATAM/CBAM 分析 |
 | **oma-backend** | 用 Python、Node.js 或 Rust 构建并加固你的 API |
 | **oma-brainstorm** | 在动手之前，先和你一起把想法探索清楚 |
@@ -157,25 +170,15 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-docs** | 检查文档中的失效引用，并标出被代码变更波及的内容 |
 | **oma-explainer** | 将 diff/PR/分支转换为带测验的自包含交互式 HTML 讲解文档 |
 | **oma-frontend** | 用 React/Next.js、TypeScript、Tailwind CSS v4 与 shadcn/ui 构建 UI |
-| **oma-hwp** | 将 HWP、HWPX 和 HWPML 文件转换为 Markdown |
-| **oma-image** | 同时调用多家 AI 供应商生成图像 |
-| **oma-market** | 从社区信号中挖掘市场洞察，并套用 SWOT、Porter's 5F 和 PESTEL 框架呈现结论 |
 | **oma-mobile** | 用 Flutter 构建跨平台移动应用 |
 | **oma-observability** | 统一路由可观测性工作，覆盖指标、日志、追踪、SLO 与事故取证 |
 | **oma-orchestrator** | 通过 CLI 并行调度多个 agent |
-| **oma-pdf** | 将 PDF 文件转换为 Markdown |
 | **oma-pm** | 规划任务、拆解需求、定义 API 契约 |
 | **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
-| **oma-recap** | 将会话历史整理成有主题分类的工作摘要 |
 | **oma-refactor** | 借助热点定位与特性化测试安全网，在不改变行为的前提下重构代码 |
-| **oma-scholar** | 检索学术文献，协助开展同行评审 |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
 | **oma-search** | 将每条查询路由至最优来源，并标注结果的可信度评分 |
-| **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
 | **oma-tf-infra** | 使用 Terraform 完成多云基础设施的自动化编排 |
-| **oma-translator** | 将内容翻译成目标语言，读来如同母语写就 |
-| **oma-video** | 通过可免密钥的 Remotion 流水线生成短视频、讲解视频和演示视频 |
-| **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
 
 <details>
 <summary>内部与元工具</summary>
@@ -186,6 +189,24 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-skill-creator** | 以 SSL-lite 格式编写和审计 OMA skill |
 
 </details>
+
+## 代码之外：内容与研究流水线
+
+在工程团队之外，oma 还提供一批按同样工程纪律打造的内容与研究流水线：可从 fixture 确定性重放、带 manifest 保证可复现，以及在某个来源或厂商密钥不可用时如实上报降级，而不是悄悄给出一份缩水的结果。
+
+| Agent | 职责 |
+|-------|------|
+| **oma-academic-writer** | 将学术文章写到发表级别，涵盖起草、修订与审稿 |
+| **oma-hwp** | 将 HWP、HWPX 和 HWPML 文件转换为 Markdown |
+| **oma-image** | 同时调用多家 AI 供应商生成图像 |
+| **oma-market** | 从社区信号中挖掘市场洞察，并套用 SWOT、Porter's 5F 和 PESTEL 框架呈现结论 |
+| **oma-pdf** | 将 PDF 文件转换为 Markdown |
+| **oma-recap** | 将会话历史整理成有主题分类的工作摘要 |
+| **oma-scholar** | 检索学术文献，协助开展同行评审 |
+| **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
+| **oma-translator** | 将内容翻译成目标语言，读来如同母语写就 |
+| **oma-video** | 通过可免密钥的 Remotion 流水线生成短视频、讲解视频和演示视频 |
+| **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
 
 ## 工作原理
 
@@ -241,15 +262,10 @@ agents:
 
 ## 为什么选 oh-my-agent？
 
-- **可移植**：`.agents/` 跟着项目走，不被任何 IDE 绑定。`oma emit` 会把同一份 SSOT 投影成开放标准产物——符合 [Agent Skills](https://agentskills.io/specification) 规范的技能文件夹、一个 `.claude-plugin/marketplace.json` 以及 `AGENTS.md`——因此 oma 技能能在任何读取该开放规范的工具中运行，而 CI 中的漂移检查会让生成结果始终保持一致
 - **角色化**：像真正的工程团队一样建模，而不是一堆 prompt 的堆砌
 - **省 token**：双层 skill 设计节省约 75% 的 token（[原理](../web/docs/guide/usage.md)）
-- **质量优先**：内置 Charter preflight、quality gate 和审查工作流：
-  - `oma verify <agent>` — 按 agent 类型运行的确定性检查组合：共享核心检查（scope 越界、charter alignment、硬编码密钥、TODO 扫描、declared outputs），再加上按类型的检查（TypeScript strict、tests、raw SQL、Flutter analyze、inline styles …）
-  - `session.quota_cap` — 在 `oma-config.yaml` 中按会话设定 token / spawn / 单厂商预算上限；`orchestrate` Step 5 在超限时阻断下一次 spawn
-  - `ralph` 工作流 — 独立的 JUDGE 每次迭代都重新校验所有 criterion，捕获静默回归；>30s 的重测有缓存
-  - Exploration Loop — 重试 2 次后，`orchestrate` 并行 spawn 多个 hypothesis 变体并保留得分最高的
-  - 单仓自动路由 — `detectWorkspace` 读取 pnpm / nx / turbo / lerna 并把每个 agent 路由到自己的 workspace
+- **可挽回**：重试 2 次仍失败后，`orchestrate` 会并行 spawn 多个 hypothesis 变体并保留得分最高的，而不是抱着一条错路无限重试
+- **识别单仓**：`detectWorkspace` 读取 pnpm / nx / turbo / lerna 并把每个 agent 路由到自己的 workspace
 - **多厂商**：按 agent 类型混用 Antigravity、Claude、Codex、Cursor、Kiro、Qwen
 - **可观测**：终端和 Web 仪表盘实时监控
 
@@ -304,6 +320,7 @@ flowchart TD
 
 - **[详细文档](./AGENTS_SPEC.md)**：完整技术规格和架构
 - **[支持的 Agent](./SUPPORTED_AGENTS.md)**：各 IDE 的 agent 支持情况
+- **[基准测试报告](../benchmarks/README.md)**：方法、分数、截图与注意事项
 - **[Web 文档](https://first-fluke.github.io/oh-my-agent/)**：指南、教程和 CLI 参考
 
 ## 赞助

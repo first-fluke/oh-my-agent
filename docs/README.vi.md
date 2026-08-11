@@ -1,17 +1,29 @@
-# oh-my-agent: Portable Multi-Agent Harness
+# oh-my-agent: Bộ khung đa tác nhân biết kiểm chứng công việc
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [ภาษาไทย](./README.th.md)
 
-**Orchestrator đa tác nhân hardcore dành cho phần mềm cấp độ sản xuất.**
-Không chỉ là một trình bọc trò chuyện khác — oh-my-agent là một dây chuyền chuyên nghiệp cung cấp cho trợ lý AI của bạn một toàn bộ đội ngũ kỹ sư.
+**Agent kể chuyện thành công. oh-my-agent kiểm chứng artifact.**
 
-Bạn đã bao giờ ước trợ lý AI của mình có đồng nghiệp chưa? Đó chính là điều oh-my-agent làm được.
+Chạy song song nhiều agent là phần dễ. Phần khó là biết được chúng có thực sự làm việc hay không. Câu "test đã pass, mọi tiêu chí đều đạt" chẳng tốn gì của một agent, và không có gì bên trong chính phiên đó phản bác lại được.
 
-Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa chừng), oh-my-agent phân chia công việc cho các **agent chuyên biệt**: frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design và nhiều hơn nữa. Mỗi agent hiểu sâu lĩnh vực của mình, có công cụ và checklist riêng, và chỉ tập trung vào phần việc được giao.
+oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook không cho kết thúc phiên làm việc cho đến khi script `typecheck` / `test` / `lint` của chính dự án bạn thoát với mã 0. Một lệnh gate quyết định workflow có thực sự chạy hay không bằng cách tìm những artifact mà nó bắt buộc phải để lại — và kết quả chính là phán quyết JSON của lệnh đó, không phải bản tóm tắt của agent. Một trọng tài độc lập với ngữ cảnh hoàn toàn mới kiểm chứng lại mọi tiêu chí ở từng vòng, kể cả những tiêu chí đã đạt. Mọi quyết định của gate đều được ghi vào một nhật ký sự kiện chỉ-thêm mà bạn có thể đọc lại sau. Rồi oh-my-agent áp dụng đúng kỷ luật đó trên cả chục agent runtime, từ một thư mục `.agents/` di động duy nhất.
 
-Hỗ trợ tất cả các AI IDE chính: Antigravity, Claude Code, Codex, Cursor, Grok Build, Kimi Code, OpenCode, Pi, Qwen Code và nhiều hơn nữa.
+## Kiểm chứng, không phải kể chuyện
+
+Mọi cơ chế dưới đây đều mang tính máy móc: một lệnh hoặc thoát với mã 0 hoặc không, một file hoặc có trên đĩa hoặc không. Không LLM nào bị hỏi rằng công việc "trông có vẻ đúng" hay chưa.
+
+| Cơ chế | Kiểm tra máy móc điều gì | Nằm ở đâu |
+|--------|--------------------------|-----------|
+| **Stop-hook gate** | Chặn việc kết thúc phiên khi còn một persistent workflow đang chạy, và chạy gate script đã cấu hình trước khi cho phép dừng. Chỉ `typecheck`, `test` và `lint` mới được thực thi — agent ghi bất cứ thứ gì khác vào file trạng thái thì thứ đó bị bỏ qua, không bao giờ được chạy. Giới hạn 5 lần nhắc lại để một gate đỏ vĩnh viễn không giam bạn lại. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` kiểm tra bốn artifact mà việc đi tắt không thể giả mạo: bản ghi các phase của ultrawork, file JSON kế hoạch, file kết quả của **một QA agent riêng biệt** và file kết quả của **một refactor agent riêng biệt**. Thiếu artifact nghĩa là phase đó không hề chạy, bất kể lời kể ra sao. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Trọng tài độc lập** | Được spawn như một agent riêng với ngữ cảnh mới tinh, chỉ biết các tiêu chí — không bao giờ biết bên thực thi tuyên bố đã sửa những gì. Kiểm chứng lại **mọi** tiêu chí ở từng iteration, kể cả những tiêu chí đã PASS, vì sửa C2 chính là cách C1 âm thầm regression. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Trạng thái event-sourced** | Mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `.agents/state/sessions/{sid}/events.jsonl`, kèm dấu vendor và session id của runtime. Chỉ-thêm, xuyên vendor, kiểm toán được sau khi chạy xong. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Bộ kiểm tra theo từng agent** | `oma verify <agent>` chạy phần core dùng chung (scope violation, charter alignment, secret hardcode, quét TODO, declared outputs) cộng thêm các kiểm tra theo loại (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
+| **Bộ đo hiệu quả skill** | `oma skills eval` đo mức cải thiện hữu ích trên các task giữ riêng — treatment so với baseline — thay vì mặc định tin rằng một skill có ích. `oma skills opt` chỉ giữ lại những chỉnh sửa làm tăng mức cải thiện đo được. | [hướng dẫn skill-eval](../web/docs/guide/skill-eval.md) |
+
+Ngân sách cũng được thực thi theo đúng cách đó. `session.quota_cap` giới hạn token, số lần spawn và chi phí theo từng vendor; orchestrator từ chối lần spawn kế tiếp khi một chiều vượt hạn mức. Khi hết ngân sách thời gian thực, Stop hook dừng một cách trung thực và ghi trạng thái dở dang vào nhật ký sự kiện, thay vì giả vờ đã hoàn thành.
 
 ## Bắt đầu nhanh
 
@@ -67,7 +79,7 @@ Chọn một preset và bạn đã sẵn sàng:
 
 ## Tương thích với mọi Agent
 
-`oh-my-agent` giữ `.agents/` làm nguồn sự thật duy nhất (SSOT) và chiếu vào layout gốc của từng runtime. Nhờ đó mọi công cụ được hỗ trợ đều dùng chung skills, workflows và rules.
+Việc kiểm chứng chẳng có mấy giá trị nếu nó bị khóa vào một nhà cung cấp. `oh-my-agent` giữ `.agents/` làm nguồn sự thật duy nhất (SSOT) và chiếu vào layout gốc của từng runtime, nhờ đó mọi công cụ được hỗ trợ đều dùng chung skills, workflows, rules và gate — và đổi nhà cung cấp chỉ là thay đổi cấu hình, không phải một cuộc di trú.
 
 <table>
 <colgroup>
@@ -141,11 +153,12 @@ Chọn một preset và bạn đã sẵn sàng:
 
 <p align="center"><sub><a href="./SUPPORTED_AGENTS.md">& thêm</a></sub></p>
 
-## Đội ngũ Agent
+## Đội ngũ kỹ thuật của bạn
+
+Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa chừng), oh-my-agent phân chia công việc cho các agent chuyên biệt. Mỗi agent hiểu sâu lĩnh vực của mình, có công cụ và checklist riêng, và chỉ tập trung vào phần việc được giao.
 
 | Agent | Chức năng |
 |-------|----------|
-| **oma-academic-writer** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật đạt chuẩn xuất bản |
 | **oma-architecture** | Phân tích đánh đổi kiến trúc và vạch ranh giới module theo hướng ADR/ATAM/CBAM |
 | **oma-backend** | Xây dựng và bảo mật API bằng Python, Node.js hoặc Rust |
 | **oma-brainstorm** | Cùng bạn khám phá ý tưởng trước khi bắt tay vào xây dựng |
@@ -157,25 +170,15 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-docs** | Kiểm tra tài liệu có tham chiếu bị hỏng và đánh dấu những tài liệu bị ảnh hưởng bởi thay đổi code |
 | **oma-explainer** | Chuyển diff, PR hoặc nhánh thành tài liệu giải thích HTML tương tác độc lập kèm quiz |
 | **oma-frontend** | Xây dựng giao diện với React/Next.js, TypeScript, Tailwind CSS v4 và shadcn/ui |
-| **oma-hwp** | Chuyển đổi file HWP, HWPX và HWPML sang Markdown |
-| **oma-image** | Tạo ảnh qua nhiều nhà cung cấp AI cùng lúc |
-| **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng và trình bày theo khung SWOT, Porter's 5F và PESTEL |
 | **oma-mobile** | Xây dựng ứng dụng di động đa nền tảng với Flutter |
 | **oma-observability** | Định tuyến công việc observability qua metrics, logs, traces, SLO và điều tra sự cố |
 | **oma-orchestrator** | Chạy nhiều agent song song từ CLI |
-| **oma-pdf** | Chuyển đổi file PDF sang Markdown |
 | **oma-pm** | Lập kế hoạch tác vụ, phân tích yêu cầu và định nghĩa API contract |
 | **oma-qa** | Rà soát code theo tiêu chuẩn bảo mật OWASP, hiệu suất và accessibility |
-| **oma-recap** | Tóm tắt lịch sử hội thoại thành báo cáo công việc theo chủ đề |
 | **oma-refactor** | Tái cấu trúc mã mà không đổi hành vi, dùng hotspot, characterization test làm lưới an toàn và commit chỉ chứa refactor |
-| **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
 | **oma-scm** | Quản lý nhánh, merge, worktree và Conventional Commits |
 | **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm độ tin cậy của kết quả |
-| **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
 | **oma-tf-infra** | Triển khai hạ tầng đa đám mây bằng Terraform |
-| **oma-translator** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
-| **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline Remotion dùng được cả khi không có khóa |
-| **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
 
 <details>
 <summary>Công cụ nội bộ & meta</summary>
@@ -186,6 +189,24 @@ Chọn một preset và bạn đã sẵn sàng:
 | **oma-skill-creator** | Soạn và kiểm tra skill OMA mới theo định dạng SSL-lite |
 
 </details>
+
+## Ngoài code: Pipeline nội dung & nghiên cứu
+
+Tách khỏi đội ngũ kỹ thuật, oma còn cung cấp các pipeline nội dung và nghiên cứu được xây theo đúng kỷ luật kỹ thuật đó: chạy lại xác định từ fixture, manifest để tái lập kết quả, và báo cáo suy giảm một cách trung thực khi thiếu nguồn dữ liệu hoặc khóa nhà cung cấp, thay vì âm thầm trả về kết quả mỏng hơn.
+
+| Agent | Chức năng |
+|-------|----------|
+| **oma-academic-writer** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật đạt chuẩn xuất bản |
+| **oma-hwp** | Chuyển đổi file HWP, HWPX và HWPML sang Markdown |
+| **oma-image** | Tạo ảnh qua nhiều nhà cung cấp AI cùng lúc |
+| **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng và trình bày theo khung SWOT, Porter's 5F và PESTEL |
+| **oma-pdf** | Chuyển đổi file PDF sang Markdown |
+| **oma-recap** | Tóm tắt lịch sử hội thoại thành báo cáo công việc theo chủ đề |
+| **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
+| **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
+| **oma-translator** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
+| **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline Remotion dùng được cả khi không có khóa |
+| **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
 
 ## Cách hoạt động
 
@@ -241,15 +262,10 @@ agents:
 
 ## Tại sao chọn oh-my-agent?
 
-- **Di động**: `.agents/` đi cùng dự án, không bị ràng buộc vào một IDE. `oma emit` chiếu cùng một SSOT thành các artifact theo chuẩn mở — các thư mục skill tuân thủ [Agent Skills](https://agentskills.io/specification), một `.claude-plugin/marketplace.json` và `AGENTS.md` — nhờ đó các skill oma hoạt động trong bất kỳ công cụ nào đọc được chuẩn mở, với kiểm tra drift trong CI giữ cho đầu ra được sinh ra luôn chính xác
 - **Dựa trên vai trò**: agent được mô hình hóa như đội kỹ thuật thực, không phải một đống prompt
 - **Tiết kiệm token**: thiết kế skill 2 lớp tiết kiệm ~75% token ([cách hoạt động](../web/docs/guide/usage.md))
-- **Ưu tiên chất lượng**: Charter preflight, quality gate và review workflow được tích hợp sẵn:
-  - `oma verify <agent>` — bộ kiểm tra xác định theo từng loại agent: phần core dùng chung (scope violation, charter alignment, secret hardcode, quét TODO, declared outputs) cộng thêm các kiểm tra theo loại (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles, …)
-  - `session.quota_cap` — giới hạn token / spawn / theo vendor mỗi session trong `oma-config.yaml`; Step 5 của `orchestrate` chặn spawn tiếp theo khi vượt
-  - workflow `ralph` — JUDGE độc lập tái xác minh mọi criterion mỗi iteration để bắt regression im lặng; cache cho test >30s
-  - Exploration Loop — sau 2 lần retry, `orchestrate` spawn các biến thể hypothesis song song và giữ kết quả điểm cao nhất
-  - Auto-routing monorepo — `detectWorkspace` đọc pnpm / nx / turbo / lerna và route mỗi agent đến workspace của nó
+- **Phục hồi được**: sau 2 lần retry thất bại, `orchestrate` spawn các biến thể hypothesis song song và giữ kết quả điểm cao nhất, thay vì lặp mãi một hướng đi sai
+- **Hiểu monorepo**: `detectWorkspace` đọc pnpm / nx / turbo / lerna và route mỗi agent đến workspace của nó
 - **Đa nhà cung cấp**: kết hợp Antigravity, Claude, Codex, Cursor, Kiro và Qwen theo loại agent
 - **Có thể quan sát**: dashboard terminal và web để giám sát thời gian thực
 
@@ -304,6 +320,7 @@ flowchart TD
 
 - **[Tài liệu chi tiết](./AGENTS_SPEC.md)**: đặc tả kỹ thuật và kiến trúc đầy đủ
 - **[Agent được hỗ trợ](./SUPPORTED_AGENTS.md)**: ma trận hỗ trợ agent theo IDE
+- **[Báo cáo benchmark](../benchmarks/README.md)**: phương pháp, điểm số, ảnh chụp màn hình và các lưu ý
 - **[Tài liệu web](https://first-fluke.github.io/oh-my-agent/)**: hướng dẫn, tutorial và CLI reference
 
 ## Nhà tài trợ

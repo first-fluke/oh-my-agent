@@ -1,17 +1,29 @@
-# oh-my-agent: เครื่องมือจัดการชุดเอเจนต์หลากหลายรูปแบบ (Portable Multi-Agent Harness)
+# oh-my-agent: เครื่องมือจัดการชุดเอเจนต์ที่ตรวจสอบงานจริง (The Multi-Agent Harness That Checks the Work)
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md)
 
-**ตัวจัดการระบบเอเจนต์ที่จริงจังสำหรับซอฟต์แวร์ระดับโปรดักชัน**
-ไม่ใช่แค่แชทบอททั่วไป — oh-my-agent คือเครื่องมือระดับมืออาชีพที่มอบทีมวิศวกรแบบเต็มรูปแบบให้กับผู้ช่วย AI ของคุณ
+**เอเจนต์เล่าว่างานสำเร็จ ส่วน oh-my-agent ตรวจสอบอาร์ติแฟกต์**
 
-คุณเคยหวังว่าผ AI Assistant ของคุณจะมี "เพื่อนร่วมงาน" บ้างไหม? นั่นคือสิ่งที่ oh-my-agent ทำได้
+การรันเอเจนต์แบบขนานคือส่วนที่ง่าย ส่วนที่ยากคือการรู้ว่าพวกมันลงมือทำงานนั้นจริงหรือไม่ ประโยค "เทสต์ผ่าน ครบทุกเกณฑ์แล้ว" ไม่มีต้นทุนอะไรเลยสำหรับเอเจนต์ และไม่มีอะไรภายในเซสชันเดียวกันนั้นที่จะโต้แย้งได้
 
-แทนที่จะให้ AI ตัวเดียวทำทุกอย่าง (และเริ่มสับสนระหว่างทำงาน) oh-my-agent จะแบ่งงานออกเป็น **Specialized agents** เช่น frontend, backend, architecture, QA, PM, DB, mobile, infra, debug, design และอื่นๆ แต่ละตัวจะมีความเข้าใจในโดเมนของตัวเองอย่างลึกซึ้ง มีเครื่องมือและรายการตรวจสอบ (checklists) ของตัวเอง และมุ่งเน้นเฉพาะงานในหน้าที่ของตน
+oh-my-agent ทำให้คำกล่าวอ้างนั้นพิสูจน์ผิดได้ Stop hook จะไม่ยอมให้จบเซสชันจนกว่าสคริปต์ `typecheck` / `test` / `lint` ของโปรเจกต์คุณเองจะจบด้วย exit code 0 คำสั่ง gate ตัดสินว่าเวิร์กโฟลว์ได้รันจริงหรือไม่ ด้วยการมองหาอาร์ติแฟกต์ที่มันต้องทิ้งไว้ — และผลลัพธ์คือคำตัดสิน JSON ของคำสั่งนั้น ไม่ใช่บทสรุปของเอเจนต์ ผู้ตัดสินอิสระที่มีคอนเท็กซ์ใหม่จะตรวจสอบทุกเกณฑ์ซ้ำในทุกรอบ รวมถึงเกณฑ์ที่ผ่านไปแล้วด้วย ทุกการตัดสินของ gate จะถูกบันทึกลง event log แบบเพิ่มได้อย่างเดียวที่คุณย้อนอ่านได้ภายหลัง จากนั้นก็ใช้วินัยชุดเดียวกันนี้กับ agent runtime อีกนับสิบตัว จากไดเรกทอรี `.agents/` ที่พกพาไปได้เพียงชุดเดียว
 
-ตอนนี้ใช้งานได้กับ AI IDE ชั้นนำทั้งหมดได้แก่: Antigravity, Claude Code, Codex, Cursor, Grok Build, Kimi Code, OpenCode, Pi, Qwen Code และอื่นๆ
+## ตรวจสอบ ไม่ใช่เล่าเรื่อง
+
+กลไกทุกข้อด้านล่างเป็นเชิงกลไกล้วน: คำสั่งจบด้วย exit code 0 หรือไม่ก็ไม่จบ ไฟล์อยู่บนดิสก์หรือไม่ก็ไม่มี ไม่มีการถาม LLM ว่างาน "ดูถูกต้องแล้วหรือยัง"
+
+| กลไก | ตรวจสอบอะไรเชิงกลไก | อยู่ที่ไหน |
+|------|---------------------|-----------|
+| **Stop-hook gate** | บล็อกการจบเซสชันขณะที่ persistent workflow ยังทำงานอยู่ และรัน gate script ที่ตั้งค่าไว้ก่อนจะอนุญาตให้หยุด มีเพียง `typecheck`, `test` และ `lint` เท่านั้นที่รันได้ — สิ่งอื่นที่เอเจนต์เขียนลงไฟล์สถานะจะถูกเพิกเฉย ไม่มีวันถูกรัน จำกัดการย้ำเตือนไว้ที่ 5 ครั้ง เพื่อไม่ให้ gate ที่แดงถาวรกักคุณไว้ | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` ตรวจอาร์ติแฟกต์ 4 อย่างที่การลัดขั้นตอนปลอมไม่ได้ ได้แก่ บันทึกเฟสของ ultrawork, ไฟล์ JSON ของแผน, ไฟล์ผลลัพธ์จาก **QA agent คนละตัว** และไฟล์ผลลัพธ์จาก **refactor agent คนละตัว** อาร์ติแฟกต์ที่หายไปหมายความว่าเฟสนั้นไม่ได้รันจริง ไม่ว่าจะเล่ามาอย่างไรก็ตาม | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **ผู้ตัดสินอิสระ** | ถูก spawn เป็นเอเจนต์แยกที่มีคอนเท็กซ์ใหม่หมด รับรู้เพียงเกณฑ์เท่านั้น — ไม่เคยรู้ว่าฝ่ายลงมือทำอ้างว่าแก้อะไรไปบ้าง ตรวจสอบซ้ำ **ทุก** เกณฑ์ในทุก iteration รวมถึงเกณฑ์ที่ PASS ไปแล้ว เพราะการแก้ C2 คือวิธีที่ C1 พังแบบเงียบๆ | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **สถานะแบบ event-sourced** | ทุกครั้งที่ gate ผ่าน gate ไม่ผ่าน และทุกการตัดสินใจ จะเพิ่ม JSON หนึ่งบรรทัดลงใน `.agents/state/sessions/{sid}/events.jsonl` พร้อมประทับ vendor และ session id ของ runtime เพิ่มได้อย่างเดียว ข้ามผู้ให้บริการได้ และตรวจสอบย้อนหลังได้หลังรันเสร็จ | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **ชุดตรวจสอบรายเอเจนต์** | `oma verify <agent>` รัน core ที่ใช้ร่วมกัน (scope violation, charter alignment, secret ที่ hardcode, สแกน TODO, declared outputs) บวกกับการตรวจสอบเฉพาะประเภท (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles) | `oma verify <agent>` |
+| **ชุดวัดผล skill** | `oma skills eval` วัดว่า skill ช่วยเพิ่มประโยชน์ได้จริงแค่ไหนบนงานที่กันไว้ — treatment เทียบกับ baseline — แทนที่จะเดาเอาว่า skill นั้นช่วยได้ ส่วน `oma skills opt` จะเก็บไว้เฉพาะการแก้ไขที่ทำให้ค่าที่วัดได้ดีขึ้น | [คู่มือ skill-eval](../web/docs/guide/skill-eval.md) |
+
+งบประมาณก็บังคับใช้ด้วยวิธีเดียวกัน `session.quota_cap` จำกัดจำนวน token, จำนวน spawn และค่าใช้จ่ายต่อผู้ให้บริการ ออร์เคสเตรเตอร์จะปฏิเสธการ spawn ครั้งถัดไปทันทีที่มิติใดมิติหนึ่งเกินเพดาน และเมื่องบประมาณเวลาหมดลง Stop hook จะหยุดอย่างตรงไปตรงมาพร้อมบันทึกสถานะที่ทำได้บางส่วนลง event log แทนที่จะแกล้งทำเป็นว่างานเสร็จแล้ว
 
 ## Quick Start
 
@@ -67,7 +79,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 
 ## ใช้งานได้กับทุก Agent
 
-`oh-my-agent` รักษา `.agents/` ไว้เป็นแหล่งความจริงเพียงแหล่งเดียว (SSOT) แล้วฉายไปยัง layout เนทีฟของแต่ละ runtime เครื่องมือที่รองรับทุกตัวจึงใช้ skills, workflows และกฎร่วมกัน
+การตรวจสอบจะมีค่าน้อยมากถ้ามันถูกล็อกไว้กับผู้ให้บริการรายเดียว `oh-my-agent` รักษา `.agents/` ไว้เป็นแหล่งความจริงเพียงแหล่งเดียว (SSOT) แล้วฉายไปยัง layout เนทีฟของแต่ละ runtime เครื่องมือที่รองรับทุกตัวจึงใช้ skills, workflows, กฎ และ gate ร่วมกัน — และการเปลี่ยนผู้ให้บริการก็เป็นแค่การแก้คอนฟิก ไม่ใช่การย้ายระบบ
 
 <table>
 <colgroup>
@@ -141,11 +153,12 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 
 <p align="center"><sub><a href="./SUPPORTED_AGENTS.md">& อื่นๆ</a></sub></p>
 
-## ทีมเอเจนต์ของคุณ
+## ทีมวิศวกรของคุณ
+
+แทนที่จะให้ AI ตัวเดียวทำทุกอย่าง (และเริ่มสับสนระหว่างทำงาน) oh-my-agent จะแบ่งงานให้เอเจนต์เฉพาะทาง แต่ละตัวจะมีความเข้าใจในโดเมนของตัวเองอย่างลึกซึ้ง มีเครื่องมือและรายการตรวจสอบ (checklists) ของตัวเอง และมุ่งเน้นเฉพาะงานในหน้าที่ของตน
 
 | Agent | หน้าที่ |
 |-------|-------------|
-| **oma-academic-writer** | ร่าง แก้ไข และตรวจสอบงานเขียนเชิงวิชาการให้ได้มาตรฐานระดับตีพิมพ์ |
 | **oma-architecture** | ชั่งน้ำหนัก tradeoffs ด้านสถาปัตยกรรม กำหนดขอบเขตโมดูล พร้อมวิเคราะห์ด้วย ADR/ATAM/CBAM |
 | **oma-backend** | สร้างและเสริมความปลอดภัยให้ API ด้วย Python, Node.js หรือ Rust |
 | **oma-brainstorm** | สำรวจแนวคิดร่วมกับคุณก่อนตัดสินใจลงมือสร้างจริง |
@@ -157,25 +170,15 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-docs** | ตรวจสอบเอกสารว่ามีการอ้างอิงที่ผิดหรือไม่ และระบุส่วนที่ได้รับผลกระทบจากการเปลี่ยนแปลงโค้ด |
 | **oma-explainer** | แปลง diff/PR/สาขาเป็นเอกสารอธิบาย HTML แบบอินเทอร์แอกทีฟพร้อมแบบทดสอบในไฟล์เดียว |
 | **oma-frontend** | สร้าง UI ด้วย React/Next.js, TypeScript, Tailwind CSS v4 และ shadcn/ui |
-| **oma-hwp** | แปลงไฟล์ HWP, HWPX และ HWPML ให้เป็น Markdown |
-| **oma-image** | สร้างภาพผ่าน AI หลายผู้ให้บริการพร้อมกันในคราวเดียว |
-| **oma-market** | วิจัยตลาดจากสัญญาณคอมมิวนิตี้ และวิเคราะห์ด้วยกรอบ SWOT, Porter's 5F และ PESTEL |
 | **oma-mobile** | สร้างแอปพลิเคชัน cross-platform ด้วย Flutter |
 | **oma-observability** | กระจายงานด้าน observability ครอบคลุม metrics, logs, traces, SLOs และการวิเคราะห์เหตุการณ์ |
 | **oma-orchestrator** | รันเอเจนต์หลายตัวพร้อมกันแบบ parallel ผ่าน CLI |
-| **oma-pdf** | แปลงไฟล์ PDF ให้เป็น Markdown |
 | **oma-pm** | วางแผนงาน ย่อย requirements และกำหนด API contracts |
 | **oma-qa** | ตรวจสอบโค้ดตามมาตรฐาน OWASP ด้านความปลอดภัย ประสิทธิภาพ และ accessibility |
-| **oma-recap** | สรุปประวัติการสนทนาของคุณออกมาเป็น work summaries ตามธีม |
 | **oma-refactor** | รีแฟกเตอร์โค้ดโดยไม่เปลี่ยนพฤติกรรม ด้วยการเลือก hotspot ใช้ characterization test เป็นตาข่ายนิรภัย และคอมมิตเฉพาะ refactor |
-| **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และช่วยดำเนินการทบทวนโดยผู้เชี่ยวชาญ |
 | **oma-scm** | จัดการ branches, merges, worktrees และ Conventional Commits |
 | **oma-search** | ส่งคำค้นหาแต่ละรายการไปยังแหล่งที่ดีที่สุด พร้อมให้คะแนนความน่าเชื่อถือของผลลัพธ์ |
-| **oma-slide** | สร้าง HTML presentation deck ที่มีเอกลักษณ์และแอนิเมชันสมบูรณ์ รวมถึงส่งออกเป็น PDF/PNG/PPTX |
 | **oma-tf-infra** | จัดเตรียม multi-cloud infrastructure ด้วย Terraform |
-| **oma-translator** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
-| **oma-video** | สร้างวิดีโอสั้น วิดีโออธิบาย และวิดีโอเดโมผ่านไปป์ไลน์ Remotion ที่ใช้ได้แม้ไม่มีคีย์ |
-| **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนเครื่อง โดยไม่ต้องพึ่ง cloud |
 
 <details>
 <summary>เครื่องมือภายในและเมตา</summary>
@@ -186,6 +189,24 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-skill-creator** | เขียนและตรวจสอบ OMA skills ใหม่ในรูปแบบ SSL-lite |
 
 </details>
+
+## นอกเหนือจากโค้ด: ไปป์ไลน์คอนเทนต์และงานวิจัย
+
+แยกออกจากทีมวิศวกร oma ยังมีไปป์ไลน์สำหรับคอนเทนต์และงานวิจัยที่สร้างขึ้นด้วยวินัยทางวิศวกรรมชุดเดียวกัน ได้แก่ การเล่นซ้ำแบบกำหนดผลได้จาก fixture, manifest สำหรับการทำซ้ำผลลัพธ์ และการรายงานอย่างตรงไปตรงมาเมื่อคุณภาพลดลงเพราะขาดแหล่งข้อมูลหรือคีย์ของผู้ให้บริการ แทนที่จะให้ผลลัพธ์ที่บางลงอย่างเงียบๆ
+
+| Agent | หน้าที่ |
+|-------|-------------|
+| **oma-academic-writer** | ร่าง แก้ไข และตรวจสอบงานเขียนเชิงวิชาการให้ได้มาตรฐานระดับตีพิมพ์ |
+| **oma-hwp** | แปลงไฟล์ HWP, HWPX และ HWPML ให้เป็น Markdown |
+| **oma-image** | สร้างภาพผ่าน AI หลายผู้ให้บริการพร้อมกันในคราวเดียว |
+| **oma-market** | วิจัยตลาดจากสัญญาณคอมมิวนิตี้ และวิเคราะห์ด้วยกรอบ SWOT, Porter's 5F และ PESTEL |
+| **oma-pdf** | แปลงไฟล์ PDF ให้เป็น Markdown |
+| **oma-recap** | สรุปประวัติการสนทนาของคุณออกมาเป็น work summaries ตามธีม |
+| **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และช่วยดำเนินการทบทวนโดยผู้เชี่ยวชาญ |
+| **oma-slide** | สร้าง HTML presentation deck ที่มีเอกลักษณ์และแอนิเมชันสมบูรณ์ รวมถึงส่งออกเป็น PDF/PNG/PPTX |
+| **oma-translator** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
+| **oma-video** | สร้างวิดีโอสั้น วิดีโออธิบาย และวิดีโอเดโมผ่านไปป์ไลน์ Remotion ที่ใช้ได้แม้ไม่มีคีย์ |
+| **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนเครื่อง โดยไม่ต้องพึ่ง cloud |
 
 ## วิธีการทำงาน
 
@@ -241,15 +262,10 @@ agents:
 
 ## ทำไมต้อง oh-my-agent?
 
-- **Portable**: `.agents/` เดินทางไปพร้อมกับโปรเจกต์ของคุณ โดยไม่ยึดติดกับ IDE ใด IDE หนึ่ง `oma emit` ฉาย SSOT ชุดเดียวกันออกไปเป็นอาร์ติแฟกต์ตามมาตรฐานเปิด — โฟลเดอร์ skill ที่สอดคล้องกับ [Agent Skills](https://agentskills.io/specification), ไฟล์ `.claude-plugin/marketplace.json` และ `AGENTS.md` — เพื่อให้ skill ของ oma ทำงานได้ในทุกเครื่องมือที่อ่านสเปกมาตรฐานเปิด พร้อมการตรวจสอบ drift ใน CI ที่คอยรักษาให้เอาต์พุตที่สร้างขึ้นตรงตามจริง
 - **Role-based**: เอเจนต์ถูกจำลองตามทีมวิศวกรจริง ไม่ใช่แค่กลุ่มของ prompt
 - **ประหยัด Token**: การออกแบบ Two layer skill ช่วยประหยัด token ได้ประมาณ 75% ([วิธีการทำงาน](../web/docs/guide/usage.md))
-- **Quality-first**: มี Charter preflight, quality gates และรีวิวเวิร์กโฟลว์ในตัว:
-  - `oma verify <agent>` — ชุดการตรวจสอบเชิงกำหนดต่อประเภท agent: มี core ที่ใช้ร่วมกัน (scope violation, charter alignment, secret ที่ hardcode, สแกน TODO, declared outputs) บวกกับการตรวจสอบเฉพาะประเภท (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles, …)
-  - `session.quota_cap` — เพดาน token / spawn / per-vendor ต่อ session ใน `oma-config.yaml`; Step 5 ของ `orchestrate` บล็อก spawn ต่อไปเมื่อเกินเพดาน
-  - `ralph` workflow — JUDGE อิสระตรวจสอบทุก criterion ซ้ำในแต่ละ iteration เพื่อจับ regression แบบเงียบ; cache สำหรับ test ที่ใช้เวลา >30 วินาที
-  - Exploration Loop — หลังจาก retry 2 ครั้ง `orchestrate` จะ spawn variant ของ hypothesis แบบขนานและเก็บผลที่ได้คะแนนสูงสุด
-  - Monorepo auto-routing — `detectWorkspace` อ่าน pnpm / nx / turbo / lerna และส่งแต่ละ agent ไปยัง workspace ของตัวเอง
+- **กู้คืนได้ (Recoverable)**: หลังจาก retry ล้มเหลว 2 ครั้ง `orchestrate` จะ spawn variant ของ hypothesis แบบขนานและเก็บผลที่ได้คะแนนสูงสุด แทนที่จะวนซ้ำแนวทางที่ผิดอยู่ไม่จบสิ้น
+- **เข้าใจ Monorepo**: `detectWorkspace` อ่าน pnpm / nx / turbo / lerna และส่งแต่ละ agent ไปยัง workspace ของตัวเอง
 - **รองรับหลายผู้ให้บริการ (Multi-vendor)**: ผสมผสานการใช้ Antigravity, Claude, Codex, Cursor, Kiro และ Qwen ตามประเภทของเอเจนต์
 - **ตรวจสอบได้ (Observable)**: มีหน้าจอ Dashboard ทั้งใน Terminal และ Web เพื่อดูสถานะแบบเรียลไทม์
 
@@ -304,6 +320,7 @@ flowchart TD
 
 - **[รายละเอียดสเปก (Docs)](./AGENTS_SPEC.md)**: รายละเอียดทางเทคนิคและสถาปัตยกรรมฉบับเต็ม
 - **[เอเจนต์ที่รองรับ](./SUPPORTED_AGENTS.md)**: ตารางเปรียบเทียบเอเจนต์ใน IDE ต่างๆ
+- **[รายงานเบนช์มาร์ก](../benchmarks/README.md)**: วิธีการวัดผล คะแนน ภาพหน้าจอ และข้อควรระวัง
 - **[เอกสารบนเว็บ](https://first-fluke.github.io/oh-my-agent/)**: คู่มือ บทเรียน และการอ้างอิง CLI
 
 ## ผู้สนับสนุน (Sponsors)

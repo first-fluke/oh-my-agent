@@ -1,17 +1,29 @@
-# oh-my-agent: Portable Multi-Agent Harness
+# oh-my-agent: 成果物を検証するマルチエージェント・ハーネス
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**プロダクションレベルのソフトウェアのためのハードコアなマルチエージェント・オーケストレーター。**
-単なるチャットラッパーではありません。oh-my-agent は、あなたのAIアシスタントにエンジニアリングチーム全体を提供するプロフェッショナルなハーネスです。
+**エージェントは成功したと語ります。oh-my-agent は成果物を確認します。**
 
-AIアシスタントに同僚がいたらいいのに、って思ったことありませんか？ oh-my-agentはまさにそれです。
+エージェントを並列で立ち上げるのは簡単なほうです。難しいのは、そのエージェントが本当に作業をやり切ったかどうかを知ることです。「テストは通過、すべての基準を満たした」と言うのにエージェントは何のコストも払わず、同じセッションの中にはその言葉に反証できるものが何もありません。
 
-1つのAIに全部やらせて途中で混乱する代わりに、oh-my-agentは作業を**専門エージェント**に分担します。担当するのはfrontend、backend、architecture、QA、PM、DB、mobile、infra、debug、designなどの領域です。各エージェントは自分の領域を深く理解し、専用ツールとチェックリストを持ち、担当範囲に集中します。
+oh-my-agent はその主張を反証可能にします。Stop hook は、プロジェクト自身の `typecheck` / `test` / `lint` スクリプトが 0 で終了するまでセッションの終了を拒みます。ゲートコマンドは、ワークフローが本当に走ったかどうかを、走ったなら必ず残っているはずの成果物があるかどうかで判定します。結果になるのはエージェントの要約ではなく、このコマンドが返す JSON の判定です。独立した judge は毎ラウンド、まっさらなコンテキストですべての基準を検証し直します。すでに通過した基準も含めてです。ゲートの判定はひとつ残らず、あとから読める append-only のイベントログに積み上がります。そしてこの規律を、移植可能な `.agents/` ディレクトリひとつから十数種類のエージェントランタイムに同じように適用します。
 
-主要なAI IDEすべてに対応: Antigravity、Claude Code、Codex、Cursor、Grok Build、Kimi Code、OpenCode、Pi、Qwen Codeなど。
+## ナレーションではなく検証
+
+以下のメカニズムはすべて機械的です。コマンドは 0 で終わるか終わらないか、ファイルはディスクにあるかないか、それだけです。作業が「正しそうに見えるか」を LLM に尋ねることはありません。
+
+| メカニズム | 機械的に確認する内容 | 場所 |
+|-----------|--------------------|------|
+| **Stop hook ゲート** | persistent workflow が有効な間はセッションの終了をブロックし、終了を許可する前に設定されたゲートスクリプトを実行します。実行できるのは `typecheck`、`test`、`lint` の 3 つだけ。エージェントがそれ以外を状態ファイルに書き込んでも無視されるだけで、実行されることはありません。再強制は 5 回までなので、赤のままのゲートに閉じ込められることもありません。 | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention ゲート** | `oma ralph:verify --json` は、近道では偽装できない 4 つの成果物を確認します。ultrawork の phase 記録、plan JSON、**別個の QA エージェント**が残した result ファイル、**別個の refactor エージェント**が残した result ファイルです。成果物がなければ、ナレーションが何と言おうとその phase は実行されていません。 | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **独立した judge** | まっさらなコンテキストを持つ別エージェントとして起動し、基準だけを伝えます。実装側が何を直したと主張しているかは知らせません。毎 iteration、すでに PASS したものも含めて**すべての**基準を検証し直します。C2 を直した拍子に C1 が静かに壊れるのは、まさにそういう経路だからです。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **イベントソースの状態管理** | ゲートの通過、ゲートの失敗、判定のひとつひとつが `.agents/state/sessions/{sid}/events.jsonl` に JSON 1 行として追記され、ベンダーとランタイムのセッション id が刻まれます。append-only、クロスベンダー、実行後も監査できます。 | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **エージェント別チェックバッテリー** | `oma verify <agent>` は共通コア（スコープ違反、charter alignment、ハードコードされたシークレット、TODO スキャン、declared outputs）に、タイプ別チェック（TypeScript strict、テスト、raw SQL、Flutter analyze、インラインスタイル）を加えて実行します。 | `oma verify <agent>` |
+| **スキル eval ハーネス** | `oma skills eval` は、スキルが役に立つと決めつける代わりに、ホールドアウトタスクで treatment と baseline を比較して有用性の向上幅を測定します。`oma skills opt` は測定された向上幅を高める編集だけを残します。 | [skill-eval ガイド](../web/docs/guide/skill-eval.md) |
+
+予算も同じやり方で強制されます。`session.quota_cap` はトークン、spawn 回数、ベンダー別の支出に上限をかけ、どれか 1 つでも超えればオーケストレーターが次の spawn を拒否します。実時間の予算が尽きたときも、Stop hook は完了したふりをせず、途中経過をイベントログに記録して正直に停止します。
 
 ## クイックスタート
 
@@ -67,7 +79,7 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 
 ## あらゆるエージェントで動く
 
-`oh-my-agent` は `.agents/` を唯一の真実の源（SSOT）として保ち、各ランタイムのネイティブレイアウトに投影します。だから対応するすべてのツールが同じスキル、ワークフロー、ルールを共有できます。
+検証が 1 つのベンダーに縛られていては、たいした価値になりません。`oh-my-agent` は `.agents/` を唯一の真実の源（SSOT）として保ち、各ランタイムのネイティブレイアウトに投影します。だから対応するすべてのツールが同じスキル、ワークフロー、ルール、ゲートを共有でき、ベンダーの乗り換えは移行作業ではなく設定変更で済みます。
 
 <table>
 <colgroup>
@@ -141,11 +153,12 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 
 <p align="center"><sub><a href="./SUPPORTED_AGENTS.md">& その他</a></sub></p>
 
-## エージェントチーム
+## エンジニアリングチーム
+
+1つのAIに全部やらせて途中で混乱する代わりに、oh-my-agentは作業を専門エージェントに分担します。各エージェントは自分の領域を深く理解し、専用ツールとチェックリストを持ち、担当範囲に集中します。
 
 | エージェント | 役割 |
 |-------------|------|
-| **oma-academic-writer** | アカデミック文章の起草・改稿・監査を通じ、出版品質に仕上げる |
 | **oma-architecture** | ADR/ATAM/CBAM分析でアーキテクチャのトレードオフを評価し、モジュール境界を定義する |
 | **oma-backend** | Python、Node.js、RustでAPIを構築し、セキュリティを確保する |
 | **oma-brainstorm** | 実装を決める前にアイデアをいっしょに探索する |
@@ -157,25 +170,15 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 | **oma-docs** | ドキュメントの参照切れを検出し、コード変更の影響を受けた箇所を特定する |
 | **oma-explainer** | diff/PR/ブランチをクイズ付きの自己完結型インタラクティブHTML解説書に変換する |
 | **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/uiでUIを構築する |
-| **oma-hwp** | HWP、HWPX、HWPMLファイルをMarkdownに変換する |
-| **oma-image** | 複数のAIプロバイダーに並列で画像生成をリクエストする |
-| **oma-market** | コミュニティシグナルから市場を調査し、SWOT/Porter's 5F/PESTELで整理する |
 | **oma-mobile** | Flutterでクロスプラットフォームモバイルアプリを構築する |
 | **oma-observability** | メトリクス、ログ、トレース、SLO、インシデント調査にまたがるオブザーバビリティ作業をルーティングする |
 | **oma-orchestrator** | CLIから複数のエージェントを並列で起動・管理する |
-| **oma-pdf** | PDFファイルをMarkdownに変換する |
 | **oma-pm** | タスクを計画し、要件を分解し、APIコントラクトを定義する |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティの観点でコードをレビューする |
-| **oma-recap** | 会話履歴をテーマ別の作業サマリーにまとめる |
 | **oma-refactor** | ホットスポット選定と特性化テストの安全網で挙動を変えずにコードをリファクタリング |
-| **oma-scholar** | 学術文献を検索し、ピアレビューを支援する |
 | **oma-scm** | ブランチ、マージ、ワークツリー、Conventional Commitsを管理する |
 | **oma-search** | クエリを最適なソースにルーティングし、結果の信頼スコアを付与する |
-| **oma-slide** | 特徴的でアニメーション豊かなHTMLプレゼンテーションデッキを生成し、PDF/PNG/PPTXへエクスポートする |
 | **oma-tf-infra** | Terraformでマルチクラウドインフラをプロビジョニングする |
-| **oma-translator** | ネイティブが書いたように自然な多言語翻訳を行う |
-| **oma-video** | キー不要でも動く Remotion パイプラインでショート動画・解説動画・デモ動画を生成 |
-| **oma-voice** | クラウド不要のオンデバイスでボイスオーバーを生成し、音声を文字起こしする |
 
 <details>
 <summary>内部・メタツール</summary>
@@ -186,6 +189,24 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 | **oma-skill-creator** | 新しいOMAスキルをSSL-liteフォーマットで作成・監査する |
 
 </details>
+
+## コードの先へ: コンテンツ & リサーチのパイプライン
+
+エンジニアリングチームとは別に、oma は同じエンジニアリングの規律で作られたコンテンツ・リサーチのパイプラインも備えています。フィクスチャからの決定論的な再生、再現性のための manifest、そしてソースやベンダーキーが使えないときに黙って中身の薄い結果を返すのではなく、劣化を正直に報告する仕組みです。
+
+| エージェント | 役割 |
+|-------------|------|
+| **oma-academic-writer** | アカデミック文章の起草・改稿・監査を通じ、出版品質に仕上げる |
+| **oma-hwp** | HWP、HWPX、HWPMLファイルをMarkdownに変換する |
+| **oma-image** | 複数のAIプロバイダーに並列で画像生成をリクエストする |
+| **oma-market** | コミュニティシグナルから市場を調査し、SWOT/Porter's 5F/PESTELで整理する |
+| **oma-pdf** | PDFファイルをMarkdownに変換する |
+| **oma-recap** | 会話履歴をテーマ別の作業サマリーにまとめる |
+| **oma-scholar** | 学術文献を検索し、ピアレビューを支援する |
+| **oma-slide** | 特徴的でアニメーション豊かなHTMLプレゼンテーションデッキを生成し、PDF/PNG/PPTXへエクスポートする |
+| **oma-translator** | ネイティブが書いたように自然な多言語翻訳を行う |
+| **oma-video** | キー不要でも動く Remotion パイプラインでショート動画・解説動画・デモ動画を生成 |
+| **oma-voice** | クラウド不要のオンデバイスでボイスオーバーを生成し、音声を文字起こしする |
 
 ## 仕組み
 
@@ -241,15 +262,10 @@ agents:
 
 ## なぜ oh-my-agent？
 
-- **ポータブル**: `.agents/` はプロジェクトと一緒に移動し、特定のIDEに縛られません。`oma emit` は同じ SSOT を開放型標準のアーティファクトへ投影します — [Agent Skills](https://agentskills.io/specification) 準拠のスキルフォルダ、`.claude-plugin/marketplace.json`、`AGENTS.md` です。そのため oma スキルは開放仕様を読むあらゆるツールで動作し、CI のドリフトチェックが生成物を常に正確に保ちます
 - **ロールベース**: プロンプトの寄せ集めではなく、実際のエンジニアリングチームのように設計
 - **トークン効率**: 2レイヤースキル設計でトークンを約75%節約 ([仕組み](../web/docs/guide/usage.md))
-- **品質重視**: Charter preflight、quality gate、レビューワークフローを内蔵:
-  - `oma verify <agent>` — エージェントタイプ別の決定論的チェックバッテリー。共通コア（スコープ違反、charter alignment、ハードコードされたシークレット、TODO スキャン、declared outputs）に、タイプ別チェック（TypeScript strict、テスト、raw SQL、Flutter analyze、インラインスタイル …）を加えます
-  - `session.quota_cap` — `oma-config.yaml` でセッションごとのトークン / spawn / ベンダー別予算上限；`orchestrate` Step 5 は上限超過時に次の spawn を遮断します
-  - `ralph` ワークフロー — 独立した JUDGE がイテレーションごとに全 criterion を再検証し silent regression を捕捉；30秒超のテストはキャッシュします
-  - Exploration Loop — 2回リトライ後、`orchestrate` が hypothesis のバリアントを並列 spawn し最高スコアのみ残します
-  - モノレポ自動ルーティング — `detectWorkspace` が pnpm / nx / turbo / lerna を読み取り、各エージェントを担当 workspace にルーティングします
+- **リカバリ可能**: リトライが2回失敗すると、`orchestrate` が hypothesis のバリアントを並列 spawn して最高スコアのものだけを残します。間違ったアプローチをいつまでもやり直し続けることはありません
+- **モノレポ対応**: `detectWorkspace` が pnpm / nx / turbo / lerna を読み取り、各エージェントを担当 workspace にルーティングします
 - **マルチベンダー**: エージェントタイプごとにAntigravity、Claude、Codex、Cursor、Kiro、Qwenを混在可能
 - **可観測性**: ターミナルとWebダッシュボードでリアルタイムにモニタリング
 
@@ -304,6 +320,7 @@ flowchart TD
 
 - **[詳細ドキュメント](./AGENTS_SPEC.md)**: 完全な技術仕様とアーキテクチャ
 - **[対応エージェント](./SUPPORTED_AGENTS.md)**: IDE別エージェント対応状況
+- **[ベンチマークレポート](../benchmarks/README.md)**: 方法論、スコア、スクリーンショット、注意点
 - **[Webドキュメント](https://first-fluke.github.io/oh-my-agent/)**: ガイド、チュートリアル、CLIリファレンス
 
 ## スポンサー

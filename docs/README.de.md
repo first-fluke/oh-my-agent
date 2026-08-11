@@ -1,17 +1,29 @@
-# oh-my-agent: Portable Multi-Agent Harness
+# oh-my-agent: Das Multi-Agenten-Harness, das die Arbeit überprüft
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**Der Hardcore-Multi-Agenten-Orchestrator für Produktionssoftware.**
-Nicht nur ein weiterer Chat-Wrapper – oh-my-agent ist ein professionelles Harness, das deinem KI-Assistenten ein komplettes Engineering-Team zur Seite stellt.
+**Agenten erzählen vom Erfolg. oh-my-agent prüft die Artefakte.**
 
-Hast du dir schon mal gewünscht, dein KI-Assistent hätte Kollegen? Genau das macht oh-my-agent.
+Parallele Agenten zu spawnen ist der einfache Teil. Schwierig wird die Frage, ob sie die Arbeit tatsächlich erledigt haben. „Tests bestanden, alle Kriterien erfüllt" kostet einen Agenten nichts, und innerhalb derselben Session kann ihm nichts widersprechen.
 
-Statt dass eine einzige KI alles erledigt (und sich auf halbem Weg verheddert), verteilt oh-my-agent die Arbeit auf **spezialisierte Agenten**: Frontend, Backend, Architektur, QA, PM, DB, Mobile, Infra, Debug, Design und mehr. Jeder kennt sein Fachgebiet in- und auswendig, hat eigene Tools und Checklisten und bleibt in seiner Spur.
+oh-my-agent macht diese Behauptung falsifizierbar. Ein Stop-Hook weigert sich, deine Session zu beenden, solange das projekteigene `typecheck`- / `test`- / `lint`-Skript nicht mit Exit-Code 0 durchläuft. Ein Gate-Command entscheidet anhand der Artefakte, die ein Workflow hinterlassen haben muss, ob er wirklich gelaufen ist — und maßgeblich ist sein JSON-Verdikt, nicht die Zusammenfassung des Agenten. Ein unabhängiger Judge mit frischem Kontext verifiziert in jeder Runde jedes Kriterium neu, auch die bereits bestandenen. Jede Gate-Entscheidung landet in einem Append-only-Event-Log, das du im Nachhinein lesen kannst. Und dieselbe Disziplin läuft über ein Dutzend Agenten-Runtimes hinweg, aus einem einzigen portablen `.agents/`-Verzeichnis.
 
-Funktioniert mit allen großen KI-IDEs: Antigravity, Claude Code, Codex, Cursor, Grok Build, Kimi Code, OpenCode, Pi, Qwen Code und weiteren.
+## Verifikation statt Narration
+
+Jeder Mechanismus unten ist mechanisch: Ein Command endet mit Exit-Code 0 oder eben nicht, eine Datei liegt auf der Platte oder eben nicht. Kein LLM wird gefragt, ob die Arbeit „korrekt aussieht".
+
+| Mechanismus | Was mechanisch geprüft wird | Wo es liegt |
+|-------------|------------------------------|-------------|
+| **Stop-Hook-Gate** | Blockiert das Beenden der Session, solange ein persistenter Workflow aktiv ist, und führt vor dem Stopp das konfigurierte Gate-Skript aus. Ausführbar sind nur `typecheck`, `test` und `lint` — schreibt ein Agent etwas anderes in die State-Datei, wird es ignoriert und nie ausgeführt. Auf 5 Reinforcements begrenzt, damit dich ein dauerhaft rotes Gate nicht einsperrt. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention-Gate** | `oma ralph:verify --json` prüft vier Artefakte, die sich per Abkürzung nicht fälschen lassen: die Phasen-Records von ultrawork, das Plan-JSON, die Ergebnisdatei eines **eigenständigen QA-Agenten** und die eines **eigenständigen Refactor-Agenten**. Fehlende Artefakte heißen: Die Phase ist nicht gelaufen, was die Erzählung auch behauptet. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Unabhängiger Judge** | Läuft als separater Agent mit frischem Kontext, gebrieft ausschließlich auf die Kriterien — nie darauf, was der Implementierer behauptet behoben zu haben. Verifiziert in jeder Iteration **jedes** Kriterium neu, auch frühere PASSes, denn ein Fix an C2 ist genau der Weg, auf dem C1 stillschweigend regrediert. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Event-basierter State** | Jeder bestandene Gate-Durchlauf, jeder Gate-Fehlschlag und jede Entscheidung hängt eine JSON-Zeile an `.agents/state/sessions/{sid}/events.jsonl` an, gestempelt mit Vendor und Runtime-Session-ID. Append-only, vendorübergreifend, nach dem Lauf auditierbar. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Check-Batterie pro Agent** | `oma verify <agent>` führt einen gemeinsamen Kern aus (Scope-Verletzung, Charter-Alignment, hartkodierte Secrets, TODO-Scan, declared outputs) plus typspezifische Checks (TypeScript strict, Tests, raw SQL, Flutter analyze, Inline-Styles). | `oma verify <agent>` |
+| **Skill-Eval-Harness** | `oma skills eval` misst den Utility-Lift auf zurückgehaltenen Tasks — Treatment gegen Baseline — statt anzunehmen, dass ein Skill hilft. `oma skills opt` behält nur Änderungen, die den gemessenen Lift verbessern. | [skill-eval-Guide](../web/docs/guide/skill-eval.md) |
+
+Budgets werden genauso durchgesetzt. `session.quota_cap` deckelt Tokens, Spawn-Anzahl und Ausgaben pro Vendor; der Orchestrator verweigert den nächsten Spawn, sobald eine Dimension überschritten ist. Läuft das Zeitbudget aus, stoppt der Stop-Hook ehrlich und hält den Teilstatus im Event-Log fest, statt Fertigstellung vorzutäuschen.
 
 ## Schnellstart
 
@@ -67,7 +79,7 @@ Wähl ein Preset und los geht's:
 
 ## Funktioniert mit jedem Agent
 
-`oh-my-agent` behält `.agents/` als Single Source of Truth (SSOT) und projiziert es in das native Layout jeder Runtime. So teilen sich alle unterstützten Tools dieselben Skills, Workflows und Regeln.
+Verifikation nützt wenig, wenn sie an einen einzigen Anbieter gebunden ist. `oh-my-agent` behält `.agents/` als Single Source of Truth (SSOT) und projiziert es in das native Layout jeder Runtime. So teilen sich alle unterstützten Tools dieselben Skills, Workflows, Regeln und Gates — und ein Vendor-Wechsel ist eine Config-Änderung, keine Migration.
 
 <table>
 <colgroup>
@@ -141,11 +153,12 @@ Wähl ein Preset und los geht's:
 
 <p align="center"><sub><a href="./SUPPORTED_AGENTS.md">& mehr</a></sub></p>
 
-## Dein Agenten-Team
+## Dein Engineering-Team
+
+Statt dass eine einzige KI alles erledigt (und sich auf halbem Weg verheddert), verteilt oh-my-agent die Arbeit auf spezialisierte Agenten. Jeder kennt sein Fachgebiet in- und auswendig, hat eigene Tools und Checklisten und bleibt in seiner Spur.
 
 | Agent | Was Er Macht |
 |-------|-------------|
-| **oma-academic-writer** | Entwirft, überarbeitet und prüft akademische Prosa bis zur Publikationsreife |
 | **oma-architecture** | Wägt Architektur-Trade-offs ab und zieht Modulgrenzen — mit ADR/ATAM/CBAM-Analyse |
 | **oma-backend** | Baut und sichert deine APIs in Python, Node.js oder Rust |
 | **oma-brainstorm** | Erkundet Ideen gemeinsam mit dir, bevor du dich für einen Weg entscheidest |
@@ -157,25 +170,15 @@ Wähl ein Preset und los geht's:
 | **oma-docs** | Prüft deine Docs auf defekte Referenzen und markiert Stellen, die ein Code-Change berührt hat |
 | **oma-explainer** | Verwandelt einen Diff, PR oder Branch in einen eigenständigen interaktiven HTML-Explainer mit Quiz |
 | **oma-frontend** | Baut deine UI mit React/Next.js, TypeScript, Tailwind CSS v4 und shadcn/ui |
-| **oma-hwp** | Konvertiert HWP-, HWPX- und HWPML-Dateien in Markdown |
-| **oma-image** | Generiert Bilder parallel über mehrere KI-Anbieter |
-| **oma-market** | Recherchiert deinen Markt aus Community-Signalen und rahmt ihn mit SWOT, Porter's 5F und PESTEL |
 | **oma-mobile** | Baut plattformübergreifende Mobile-Apps mit Flutter |
 | **oma-observability** | Routet Observability-Arbeit über Metriken, Logs, Traces, SLOs und Incident-Forensik |
 | **oma-orchestrator** | Führt mehrere Agenten parallel über die CLI aus |
-| **oma-pdf** | Konvertiert PDF-Dateien in Markdown |
 | **oma-pm** | Plant Aufgaben, zerlegt Anforderungen und definiert API-Verträge |
 | **oma-qa** | Überprüft deinen Code auf OWASP-Sicherheitslücken, Performance- und Barrierefreiheitsprobleme |
-| **oma-recap** | Fasst deinen Gesprächsverlauf in thematische Arbeitsberichte zusammen |
 | **oma-refactor** | Refaktoriert Code ohne Verhaltensänderung mit Hotspot-Auswahl, Charakterisierungstests als Sicherheitsnetz und reinen Refactor-Commits |
-| **oma-scholar** | Durchsucht akademische Literatur und unterstützt dich beim Peer-Review |
 | **oma-scm** | Verwaltet deine Branches, Merges, Worktrees und Conventional Commits |
 | **oma-search** | Leitet jede Suchanfrage an die beste Quelle weiter und bewertet, wie vertrauenswürdig das Ergebnis ist |
-| **oma-slide** | Erzeugt markante, animationsreiche HTML-Präsentationsdecks und exportiert nach PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisioniert Multi-Cloud-Infrastruktur mit Terraform |
-| **oma-translator** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
-| **oma-video** | Erzeugt Kurzvideos, Erklärvideos und Demos über eine auch ohne Schlüssel nutzbare Remotion-Pipeline |
-| **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |
 
 <details>
 <summary>Interne & Meta-Tools</summary>
@@ -186,6 +189,24 @@ Wähl ein Preset und los geht's:
 | **oma-skill-creator** | Schreibt und prüft neue OMA-Skills im SSL-lite-Format |
 
 </details>
+
+## Jenseits von Code: Content- und Research-Pipelines
+
+Getrennt vom Engineering-Team liefert oma Content- und Research-Pipelines, die nach derselben Engineering-Disziplin gebaut sind: deterministisches Replay aus Fixtures, Manifeste für Reproduzierbarkeit und ehrliche Berichte über Einschränkungen, wenn eine Quelle oder ein Vendor-Key fehlt — statt eines stillschweigend dünneren Ergebnisses.
+
+| Agent | Was Er Macht |
+|-------|-------------|
+| **oma-academic-writer** | Entwirft, überarbeitet und prüft akademische Prosa bis zur Publikationsreife |
+| **oma-hwp** | Konvertiert HWP-, HWPX- und HWPML-Dateien in Markdown |
+| **oma-image** | Generiert Bilder parallel über mehrere KI-Anbieter |
+| **oma-market** | Recherchiert deinen Markt aus Community-Signalen und rahmt ihn mit SWOT, Porter's 5F und PESTEL |
+| **oma-pdf** | Konvertiert PDF-Dateien in Markdown |
+| **oma-recap** | Fasst deinen Gesprächsverlauf in thematische Arbeitsberichte zusammen |
+| **oma-scholar** | Durchsucht akademische Literatur und unterstützt dich beim Peer-Review |
+| **oma-slide** | Erzeugt markante, animationsreiche HTML-Präsentationsdecks und exportiert nach PDF/PNG/PPTX |
+| **oma-translator** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
+| **oma-video** | Erzeugt Kurzvideos, Erklärvideos und Demos über eine auch ohne Schlüssel nutzbare Remotion-Pipeline |
+| **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |
 
 ## So Funktioniert's
 
@@ -241,15 +262,10 @@ agents:
 
 ## Warum oh-my-agent?
 
-- **Portabel**: `.agents/` reist mit deinem Projekt, nicht in einer IDE eingesperrt. `oma emit` projiziert dieselbe SSOT in Artefakte nach offenem Standard: [Agent Skills](https://agentskills.io/specification)-konforme Skill-Ordner, ein `.claude-plugin/marketplace.json` und `AGENTS.md`, sodass oma-Skills in jedem Tool funktionieren, das die offene Spec liest — mit einem Drift-Check in der CI, der die generierte Ausgabe ehrlich hält
 - **Rollenbasiert**: Agenten wie ein echtes Engineering-Team modelliert, kein Haufen Prompts
 - **Token-effizient**: Zwei-Schichten-Skill-Design spart ~75% der Tokens ([wie es funktioniert](../web/docs/guide/usage.md))
-- **Qualität zuerst**: Charter Preflight, Quality Gates und Review-Workflows eingebaut:
-  - `oma verify <agent>` — eine deterministische Check-Batterie pro Agententyp: ein gemeinsamer Kern (Scope-Verletzung, charter alignment, hartkodierte Secrets, TODO-Scan, declared outputs) plus typspezifische Checks (TypeScript strict, Tests, raw SQL, Flutter analyze, Inline-Styles, …)
-  - `session.quota_cap` — Token- / Spawn- / Per-Vendor-Budgets pro Session in `oma-config.yaml`; `orchestrate` Step 5 blockiert den nächsten Spawn bei Überschreitung
-  - `ralph` Workflow — unabhängiger JUDGE verifiziert jedes Criterion in jeder Iteration erneut, um stille Regressionen zu erkennen; Caching für Tests >30s
-  - Exploration Loop — nach 2 Retries spawnt `orchestrate` Hypothesen-Varianten parallel und behält das Ergebnis mit der höchsten Punktzahl
-  - Monorepo-Auto-Routing — `detectWorkspace` liest pnpm / nx / turbo / lerna und routet jeden Agenten zu seinem Workspace
+- **Wiederherstellbar**: nach 2 gescheiterten Retries spawnt `orchestrate` Hypothesen-Varianten parallel und behält das Ergebnis mit der höchsten Punktzahl, statt endlos einen falschen Ansatz zu wiederholen
+- **Monorepo-fähig**: `detectWorkspace` liest pnpm / nx / turbo / lerna und routet jeden Agenten zu seinem Workspace
 - **Multi-Vendor**: mische Antigravity, Claude, Codex, Cursor, Kiro und Qwen je nach Agententyp
 - **Beobachtbar**: Terminal- und Web-Dashboards für Echtzeit-Monitoring
 
@@ -304,6 +320,7 @@ flowchart TD
 
 - **[Detaillierte Dokumentation](./AGENTS_SPEC.md)**: vollständige technische Spec und Architektur
 - **[Unterstützte Agenten](./SUPPORTED_AGENTS.md)**: Agenten-Support-Matrix nach IDE
+- **[Benchmark-Report](../benchmarks/README.md)**: Methode, Scores, Screenshots und Vorbehalte
 - **[Web-Docs](https://first-fluke.github.io/oh-my-agent/)**: Guides, Tutorials und CLI-Referenz
 
 ## Sponsors
