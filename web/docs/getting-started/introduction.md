@@ -7,6 +7,8 @@ description: A comprehensive overview of oh-my-agent, the multi-agent orchestrat
 
 oh-my-agent is a multi-agent orchestration framework for AI-powered IDEs and CLI tools. Instead of relying on a single AI assistant for everything, oh-my-agent decomposes work across 21 specialized agents, each modeled after a real engineering team role with its own tech stack knowledge, execution protocols, error playbooks, and quality checklists.
 
+What separates it from a faster spawner is that agent work is checked mechanically rather than taken on trust. A Stop hook holds the session open until your project's own `typecheck` / `test` / `lint` script exits 0; `oma ralph:verify` decides whether a workflow really ran from the artifacts it left on disk; an independently spawned judge re-verifies every criterion — including ones that already passed — against silent regressions. Every gate decision is appended to a durable event log.
+
 The entire system lives in a portable `.agents/` directory inside your project. Switch between Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor, or any other supported tool, and your agent configuration travels with your code.
 
 ---
