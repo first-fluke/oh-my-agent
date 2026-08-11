@@ -8,9 +8,13 @@ export function registerLink(program: Command): void {
     .description(
       "Regenerate vendor files (.claude/, .cursor/, etc.) from .agents/ SSOT",
     )
+    .option("--dry-run", "Preview what would be written without changing files")
     .action(
-      runAction((vendors: string[]) => {
-        link({ vendorFilter: vendors.length > 0 ? vendors : undefined });
+      runAction((vendors: string[], opts: { dryRun?: boolean }) => {
+        link({
+          vendorFilter: vendors.length > 0 ? vendors : undefined,
+          dryRun: opts.dryRun,
+        });
       }),
     );
 }

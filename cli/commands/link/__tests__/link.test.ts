@@ -1,4 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -45,6 +51,9 @@ vi.mock("../../../platform/skills-installer.js", () => ({
   isExtensionVendor: vi.fn((v: string) => v === "pi"),
   readVendorsFromConfig: vi.fn(() => configuredVendorsForTest),
   vendorRequiresHomeConsent: vi.fn((cli: string) => cli === "hermes"),
+  vendorSkillsDir: vi.fn(
+    (cli: string, root: string) => `${root}/.${cli}/skills`,
+  ),
 }));
 
 vi.mock("../../../utils/config.js", () => ({
@@ -576,6 +585,149 @@ describe("link kernel", () => {
       const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
       expect(logged).not.toContain("Codex hooks installed/updated");
       logSpy.mockRestore();
+    });
+  });
+
+  describe("dry-run", () => {
+    // Earlier blocks pin a global-mode context; reset so the kernel resolves
+    // project mode from cwd and the .gitignore step is in scope.
+    beforeEach(() => {
+      _resetInstallContext();
+    });
+
+    /** Recursively list paths under `dir`, relative and sorted, for diffing. */
+    function snapshot(dir: string, prefix = ""): string[] {
+      const out: string[] = [];
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+        out.push(rel);
+        if (entry.isDirectory()) {
+          out.push(...snapshot(join(dir, entry.name), rel));
+        }
+      }
+      return out.sort();
+    }
+
+    /**
+     * Make the mocked adaptation step write a sentinel, so "nothing changed"
+     * is a real signal: the temp project is not a git repo, so every unmocked
+     * writer the kernel reaches would no-op anyway.
+     */
+    function writeSentinelOnInstall(): void {
+      (
+        skills.installVendorAdaptations as ReturnType<typeof vi.fn>
+      ).mockImplementation(() => {
+        writeFileSync(join(process.cwd(), "sentinel.txt"), "written", "utf-8");
+      });
+    }
+
+    it("writes nothing to disk", () => {
+      const projectDir = makeProject(["claude", "codex", "cursor"]);
+      process.chdir(projectDir);
+      writeSentinelOnInstall();
+      const before = snapshot(projectDir);
+
+      link({ quiet: true, dryRun: true });
+
+      expect(snapshot(projectDir)).toEqual(before);
+      expect(snapshot(projectDir)).not.toContain("sentinel.txt");
+    });
+
+    it("invokes no vendor writer", () => {
+      const projectDir = makeProject(["claude", "codex", "cursor", "pi"]);
+      process.chdir(projectDir);
+
+      link({ quiet: true, dryRun: true });
+
+      expect(skills.installVendorAdaptations).not.toHaveBeenCalled();
+      expect(skills.createVendorSymlinks).not.toHaveBeenCalled();
+      expect(skills.createVendorWorkflowSymlinks).not.toHaveBeenCalled();
+      expect(skills.applyCursorMcpConfig).not.toHaveBeenCalled();
+      expect(rules.applyCursorRules).not.toHaveBeenCalled();
+      expect(rules.mergeRulesIndexForVendor).not.toHaveBeenCalled();
+      expect(piExtension.installPiExtension).not.toHaveBeenCalled();
+      expect(piPrompts.installPiPromptTemplates).not.toHaveBeenCalled();
+      expect(antigravity.installAntigravityHud).not.toHaveBeenCalled();
+      expect(safeWrite.safeWriteJson).not.toHaveBeenCalled();
+    });
+
+    it("reports the targets a real pass would touch", () => {
+      const projectDir = makeProject(["claude", "cursor"]);
+      process.chdir(projectDir);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+      const reasons = plan.map((e) => e.reason).join("\n");
+      // Compare by suffix: macOS resolves the temp root through /private,
+      // so plan paths and `projectDir` differ by prefix.
+      const endsWith = (name: string) =>
+        plan.some((e) => e.path.endsWith(name));
+
+      expect(plan.length).toBeGreaterThan(0);
+      expect(reasons).toContain("installVendorAdaptations");
+      expect(reasons).toContain("applyCursorRules");
+      expect(endsWith("CLAUDE.md")).toBe(true);
+      expect(endsWith(".gitignore")).toBe(true);
+    });
+
+    it("records CLAUDE.md and AGENTS.md at most once each", () => {
+      const projectDir = makeProject(["claude", "codex", "qwen", "pi"]);
+      process.chdir(projectDir);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+      const docs = plan
+        .map((e) => e.path)
+        .filter((p) => p.endsWith("CLAUDE.md") || p.endsWith("AGENTS.md"));
+
+      expect(new Set(docs).size).toBe(docs.length);
+    });
+
+    it("leaves derived counters empty and defers to the plan", () => {
+      const projectDir = makeProject(["claude"]);
+      process.chdir(projectDir);
+
+      const result = link({ quiet: true, dryRun: true });
+
+      expect(result.mergedDocs).toEqual([]);
+      expect(result.symlinksCreated).toEqual([]);
+      expect(result.agyInstalled).toBe(false);
+      expect(result.plan.length).toBeGreaterThan(0);
+    });
+
+    it("suppresses the codex hook-trust notice", () => {
+      const projectDir = makeProject(["codex"]);
+      process.chdir(projectDir);
+      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      link({ quiet: true, dryRun: true });
+
+      const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
+      expect(logged).not.toContain("Codex hooks installed/updated");
+      logSpy.mockRestore();
+    });
+
+    it("previews extension-only projects without writing", () => {
+      const projectDir = makeProject(["pi"]);
+      process.chdir(projectDir);
+      const before = snapshot(projectDir);
+
+      const { plan } = link({ quiet: true, dryRun: true });
+
+      expect(snapshot(projectDir)).toEqual(before);
+      expect(plan.map((e) => e.reason).join("\n")).toContain(
+        "installPiExtension",
+      );
+    });
+
+    it("still writes and populates the plan on a normal pass", () => {
+      const projectDir = makeProject(["claude"]);
+      process.chdir(projectDir);
+      writeSentinelOnInstall();
+
+      const result = link({ quiet: true });
+
+      expect(skills.installVendorAdaptations).toHaveBeenCalled();
+      expect(result.plan.length).toBeGreaterThan(0);
+      expect(snapshot(projectDir)).toContain("sentinel.txt");
     });
   });
 });
