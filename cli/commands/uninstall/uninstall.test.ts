@@ -1,12 +1,26 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   _resetInstallContext,
   setInstallContext,
 } from "../../platform/install-context.js";
 import { buildRemovalPlan, uninstall } from "./run.js";
+
+// buildRemovalPlan resolves home-consent vendor dirs (hermes, antigravity,
+// kimi) via homedir(); tests must NEVER scan or mutate the real HOME.
+// `mockHome` defaults to a nonexistent sentinel and is pointed at a fresh
+// tmp dir per test that needs it.
+let mockHome = "/nonexistent-oma-uninstall-test-home";
+vi.mock("node:os", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:os")>();
+  return {
+    ...actual,
+    homedir: () => mockHome,
+    default: { ...actual, homedir: () => mockHome },
+  };
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,6 +89,7 @@ function seedOmaLayout(root: string): void {
 
 beforeEach(() => {
   _resetInstallContext();
+  mockHome = "/nonexistent-oma-uninstall-test-home";
 });
 
 afterEach(() => {
@@ -368,5 +383,102 @@ describe("uninstall extended — non-interactive behavior", () => {
     //   if (CI && !yes) { p.cancel("..."); process.exit(1); }
     // Currently uninstall.ts treats CI=true as non-interactive (proceeds
     // with the removal). Add an explicit CI-without-yes abort guard first.
+  });
+});
+
+// ── Regression: home-consent vendor symlinks (hermes/antigravity/kimi) ───────
+//
+// createVendorSymlinks writes these vendors' symlinks under HOME even in
+// project mode (vendorSkillsDir, requiresHomeConsent). buildRemovalPlan
+// previously re-derived the path as installRoot + projectPath and never found
+// them, leaking symlinks on uninstall.
+
+describe("home-consent vendor symlinks", () => {
+  /** Seed a hermes-style symlink under the mocked HOME. */
+  function seedHermesSymlink(root: string, name: string): string {
+    const hermesDir = path.join(mockHome, ".hermes", "skills", "oma");
+    fs.mkdirSync(hermesDir, { recursive: true });
+    const linkPath = path.join(hermesDir, name);
+    fs.symlinkSync(path.join(root, ".agents", "skills", name), linkPath);
+    return linkPath;
+  }
+
+  it("project mode: finds oma-owned symlinks under HOME", () => {
+    const root = makeTmpDir();
+    mockHome = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+    const linkPath = seedHermesSymlink(root, "oma-frontend");
+
+    const { omaOwned } = buildRemovalPlan(root);
+
+    const found = omaOwned.find((e) => e.path === linkPath);
+    expect(found).toBeDefined();
+    expect(found?.kind).toBe("symlink");
+    expect(found?.reason).toContain("hermes");
+  });
+
+  it("preserves symlinks that point at another install", () => {
+    const root = makeTmpDir();
+    const otherRoot = makeTmpDir();
+    mockHome = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+
+    // Symlink created by ANOTHER project's install — must not be claimed.
+    const hermesDir = path.join(mockHome, ".hermes", "skills", "oma");
+    fs.mkdirSync(hermesDir, { recursive: true });
+    const foreignSkill = path.join(otherRoot, ".agents", "skills", "oma-qa");
+    fs.mkdirSync(foreignSkill, { recursive: true });
+    const foreignLink = path.join(hermesDir, "oma-qa");
+    fs.symlinkSync(foreignSkill, foreignLink);
+
+    const { omaOwned, userOwned } = buildRemovalPlan(root);
+
+    expect(omaOwned.some((e) => e.path === foreignLink)).toBe(false);
+    expect(
+      userOwned.some(
+        (e) =>
+          e.path === foreignLink && e.reason === "symlink to another install",
+      ),
+    ).toBe(true);
+  });
+
+  it("removes this install's HOME symlinks on real uninstall, keeps foreign ones", async () => {
+    const root = makeTmpDir();
+    const otherRoot = makeTmpDir();
+    mockHome = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    seedOmaLayout(root);
+    const ownLink = seedHermesSymlink(root, "oma-frontend");
+
+    const hermesDir = path.dirname(ownLink);
+    const foreignSkill = path.join(otherRoot, ".agents", "skills", "oma-qa");
+    fs.mkdirSync(foreignSkill, { recursive: true });
+    const foreignLink = path.join(hermesDir, "oma-qa");
+    fs.symlinkSync(foreignSkill, foreignLink);
+
+    await uninstall({ yes: true });
+
+    expect(fs.lstatSync(foreignLink).isSymbolicLink()).toBe(true);
+    expect(() => fs.lstatSync(ownLink)).toThrow();
+  });
+
+  it("claims dangling symlinks whose lexical target is this install", () => {
+    const root = makeTmpDir();
+    mockHome = makeTmpDir();
+    setInstallContext({ installRoot: root, mode: "project" });
+    // No .agents on disk — half-removed install; link target is dangling.
+    const hermesDir = path.join(mockHome, ".hermes", "skills", "oma");
+    fs.mkdirSync(hermesDir, { recursive: true });
+    const danglingLink = path.join(hermesDir, "oma-frontend");
+    fs.symlinkSync(
+      path.join(root, ".agents", "skills", "oma-frontend"),
+      danglingLink,
+    );
+
+    const { omaOwned } = buildRemovalPlan(root);
+
+    expect(omaOwned.some((e) => e.path === danglingLink)).toBe(true);
   });
 });

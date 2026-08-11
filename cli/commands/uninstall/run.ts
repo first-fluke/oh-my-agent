@@ -1,12 +1,11 @@
 import * as fs from "node:fs";
+import { homedir } from "node:os";
 import * as path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { CLI_SKILLS_DIR, INSTALLED_SKILLS_DIR } from "../../constants/index.js";
-import {
-  getInstallMode,
-  getInstallRoot,
-} from "../../platform/install-context.js";
+import { getInstallRoot } from "../../platform/install-context.js";
+import { vendorSkillsDir } from "../../platform/skills-installer/vendor-dirs.js";
 import type { CliTool } from "../../types/index.js";
 
 export type UninstallOptions = {
@@ -94,6 +93,42 @@ function isWorkflowSymlinkFile(
       path.join(installRoot, ".agents", "workflows"),
     );
     return path.dirname(target) === workflowsDir;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Returns true when the symlink at `entryPath` resolves into THIS install's
+ * `.agents/` tree. Vendor skill dirs that live under HOME (requiresHomeConsent
+ * vendors, or any dir shared between installs) can contain symlinks created by
+ * a global install or by another project's install — those must be preserved.
+ * Dangling symlinks fall back to lexical resolution of the raw link target so
+ * a half-removed install can still be cleaned up.
+ */
+function symlinkTargetsInstall(
+  entryPath: string,
+  installRoot: string,
+): boolean {
+  try {
+    const raw = fs.readlinkSync(entryPath);
+    const lexical = path.resolve(path.dirname(entryPath), raw);
+
+    let target = lexical;
+    try {
+      target = fs.realpathSync(lexical);
+    } catch {
+      // Dangling link — keep the lexical resolution.
+    }
+
+    let agentsDir = path.resolve(installRoot, ".agents");
+    try {
+      agentsDir = fs.realpathSync(agentsDir);
+    } catch {
+      // `.agents/` already gone — compare lexically.
+    }
+
+    return target === agentsDir || target.startsWith(agentsDir + path.sep);
   } catch {
     return false;
   }
@@ -204,25 +239,32 @@ export function buildRemovalPlan(installRoot: string): {
 
   // ── Vendor skill directories ──────────────────────────────────────────────
 
-  for (const [vendor, spec] of Object.entries(CLI_SKILLS_DIR) as [
-    CliTool,
-    (typeof CLI_SKILLS_DIR)[CliTool],
-  ][]) {
-    const mode = getInstallMode();
-    const relPath = mode === "global" ? spec.homePath : spec.projectPath;
-    const vendorSkillsDir = path.join(installRoot, relPath);
+  for (const vendor of Object.keys(CLI_SKILLS_DIR) as CliTool[]) {
+    // Canonical mode-aware resolver: requiresHomeConsent vendors (hermes,
+    // antigravity, kimi) always live under HOME, matching where
+    // createVendorSymlinks actually wrote them (previously this loop
+    // re-derived the path by hand and missed those in project mode).
+    const scanDir = vendorSkillsDir(vendor, installRoot);
 
-    for (const entry of listDir(vendorSkillsDir)) {
-      const entryPath = path.join(vendorSkillsDir, entry.name);
+    for (const entry of listDir(scanDir)) {
+      const entryPath = path.join(scanDir, entry.name);
       const kind = detectKind(entryPath);
       if (kind === null) continue;
 
       if (kind === "symlink") {
-        omaOwned.push({
-          path: entryPath,
-          kind: "symlink",
-          reason: `created by createVendorSymlinks (${vendor})`,
-        });
+        if (symlinkTargetsInstall(entryPath, installRoot)) {
+          omaOwned.push({
+            path: entryPath,
+            kind: "symlink",
+            reason: `created by createVendorSymlinks (${vendor})`,
+          });
+        } else {
+          userOwned.push({
+            path: entryPath,
+            kind: "symlink",
+            reason: "symlink to another install",
+          });
+        }
       } else if (
         kind === "dir" &&
         isWorkflowSymlinkDir(entryPath, installRoot)
@@ -282,7 +324,16 @@ export function buildRemovalPlan(installRoot: string): {
  */
 function displayPath(entryPath: string, installRoot: string): string {
   const rel = path.relative(installRoot, entryPath);
-  return path.join("<root>", rel);
+  if (!rel.startsWith("..") && !path.isAbsolute(rel)) {
+    return path.join("<root>", rel);
+  }
+
+  // Outside the install root (home-consent vendor dirs in project mode).
+  const home = homedir();
+  if (entryPath === home || entryPath.startsWith(home + path.sep)) {
+    return path.join("~", path.relative(home, entryPath));
+  }
+  return entryPath;
 }
 
 /**
