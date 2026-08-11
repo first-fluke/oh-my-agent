@@ -1,16 +1,11 @@
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { http, isAxiosError } from "../io/http.js";
 import type { Manifest, ManifestFile } from "../types/index.js";
 import { parseFrontmatter } from "../utils/frontmatter.js";
 import { sha256Hex } from "../utils/hash.js";
 import { safeReadJson } from "../utils/safe-json.js";
+import { atomicWriteFileSync } from "../utils/safe-write.js";
 import { assertContainedRelPath } from "./path-containment.js";
 import { INSTALLED_SKILLS_DIR, REPO } from "./skills-installer.js";
 
@@ -80,7 +75,7 @@ export function setNeedsReconcile(targetDir: string, value: boolean): void {
     } else {
       delete json.needsReconcile;
     }
-    writeFileSync(versionFile, JSON.stringify(json, null, 2), "utf-8");
+    atomicWriteFileSync(versionFile, JSON.stringify(json, null, 2));
   } catch {
     // ignore — best-effort
   }
@@ -152,7 +147,7 @@ export async function saveLocalVersion(
     next.installedAt = new Date().toISOString();
   }
 
-  writeFileSync(versionFile, `${JSON.stringify(next, null, 2)}\n`, "utf-8");
+  atomicWriteFileSync(versionFile, `${JSON.stringify(next, null, 2)}\n`);
 }
 
 export interface ArtifactSnapshot {
@@ -299,7 +294,7 @@ export async function downloadFile(
     mkdirSync(targetDir, { recursive: true });
   }
 
-  writeFileSync(targetPath, content, "utf-8");
+  atomicWriteFileSync(targetPath, content);
   return {
     path: mappedRelPath,
     success: true,

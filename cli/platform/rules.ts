@@ -4,13 +4,13 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
-  writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
 import {
   parseFrontmatter,
   serializeFrontmatter,
 } from "../utils/frontmatter.js";
+import { atomicWriteFileSync } from "../utils/safe-write.js";
 
 /** SSOT for all rules. */
 export const RULES_DIR = ".agents/rules";
@@ -84,7 +84,7 @@ export function applyCursorRules(targetDir: string): string[] {
       "",
     ].join("\n");
 
-    writeFileSync(join(cursorDir, `${rule.name}.mdc`), content);
+    atomicWriteFileSync(join(cursorDir, `${rule.name}.mdc`), content);
     exported.push(rule.name);
   }
 
@@ -118,7 +118,7 @@ export function generateClaudeRules(targetDir: string): string[] {
     }
 
     const content = serializeFrontmatter(fm, `\n${rule.body}\n`);
-    writeFileSync(join(claudeDir, `${rule.name}.md`), content);
+    atomicWriteFileSync(join(claudeDir, `${rule.name}.md`), content);
     exported.push(rule.name);
   }
 
@@ -315,12 +315,12 @@ function mergeOmaBlock(filePath: string, block: string): void {
     if (startIdx !== -1 && endIdx !== -1) {
       const before = existing.slice(0, startIdx);
       const after = existing.slice(endIdx + OMA_END.length);
-      writeFileSync(filePath, `${before}${block}${after}`);
+      atomicWriteFileSync(filePath, `${before}${block}${after}`);
     } else {
-      writeFileSync(filePath, `${existing.trimEnd()}\n\n${block}\n`);
+      atomicWriteFileSync(filePath, `${existing.trimEnd()}\n\n${block}\n`);
     }
   } else {
-    writeFileSync(filePath, `${block}\n`);
+    atomicWriteFileSync(filePath, `${block}\n`);
   }
 }
 

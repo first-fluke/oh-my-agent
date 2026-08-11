@@ -37,6 +37,11 @@ vi.mock("../../utils/safe-write.js", async () => {
     safeWriteFile: vi.fn((path: string, content: string) => {
       mockedFs.writeFileSync(path, content);
     }),
+    atomicWriteFileSync: vi.fn(
+      (path: string, content: string, options?: { mode?: number }) => {
+        mockedFs.writeFileSync(path, content, options);
+      },
+    ),
   };
 });
 

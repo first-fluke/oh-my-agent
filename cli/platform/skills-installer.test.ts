@@ -30,7 +30,28 @@ vi.mock("node:fs", () => ({
   lstatSync: vi.fn(),
   unlinkSync: vi.fn(),
   symlinkSync: vi.fn(),
+  renameSync: vi.fn(),
+  chmodSync: vi.fn(),
+  copyFileSync: vi.fn(),
 }));
+
+/**
+ * Assert that content matching `matcher` was atomically written to `dest`.
+ *
+ * Generated agent files go to a temp sibling and only reach their real name via
+ * renameSync, so the destination has to be read back off the rename.
+ */
+function expectAtomicWrite(dest: string, matcher: unknown): void {
+  const renames = (fs.renameSync as unknown as ReturnType<typeof vi.fn>).mock
+    .calls as [string, string][];
+  const tmp = renames.find(([, target]) => target === dest)?.[0];
+  expect(tmp, `nothing was atomically written to ${dest}`).toBeDefined();
+  expect(fs.writeFileSync).toHaveBeenCalledWith(
+    tmp,
+    matcher,
+    expect.objectContaining({ encoding: "utf-8" }),
+  );
+}
 
 vi.mock("node:os", () => ({
   homedir: vi.fn(() => "/tmp/test-home"),
@@ -396,19 +417,19 @@ describe("installVendorAdaptations", () => {
 
     installVendorAdaptations(mockSourceDir, mockTargetDir, ["claude", "codex"]);
 
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expectAtomicWrite(
       join(mockTargetDir, ".claude", "agents", "architecture-reviewer.md"),
       expect.stringContaining("execution-protocols/claude.md"),
     );
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expectAtomicWrite(
       join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
       expect.stringContaining('sandbox_mode = "read-only"'),
     );
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expectAtomicWrite(
       join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
       expect.stringContaining("[[skills.config]]"),
     );
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expectAtomicWrite(
       join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
       expect.stringContaining("execution-protocols/codex.md"),
     );

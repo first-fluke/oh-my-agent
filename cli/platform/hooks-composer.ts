@@ -1,5 +1,6 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { atomicWriteFileSync } from "../utils/safe-write.js";
 import { ensureFeatureFlags } from "./hooks-composer/feature-flags.js";
 import {
   buildHookCmd,
@@ -83,7 +84,7 @@ export function installHooksFromVariant(
 
   // 2. Write the single oma-hook wrapper (one per vendor hookDir).
   const wrapperPath = join(hooksDest, OMA_HOOK_WRAPPER_FILENAME);
-  writeFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
+  atomicWriteFileSync(wrapperPath, generateOmaHookWrapper(), { mode: 0o755 });
 
   // 3. Build hook entries from events.
   // biome-ignore lint/suspicious/noExplicitAny: hook config varies by vendor
@@ -169,7 +170,10 @@ export function installHooksFromVariant(
     const grokHookFile = join(targetDir, variant.settingsFile);
     mkdirSync(dirname(grokHookFile), { recursive: true });
     const grokPayload = { hooks: hookEntries };
-    writeFileSync(grokHookFile, `${JSON.stringify(grokPayload, null, 2)}\n`);
+    atomicWriteFileSync(
+      grokHookFile,
+      `${JSON.stringify(grokPayload, null, 2)}\n`,
+    );
   } else if (variant.skipSettingsMerge) {
     // Kiro: the CLI reads hooks from .kiro/agents/oma-hooks.json (written by
     // applyKiroOmaHooksAgent), not from settingsFile — merging hookEntries into

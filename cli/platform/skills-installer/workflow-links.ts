@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { CLI_SKILLS_DIR } from "../../constants/index.js";
 import type { CliTool } from "../../types/index.js";
+import { atomicWriteFileSync } from "../../utils/safe-write.js";
 import { createLink } from "../fs-link.js";
 import { resolveCliSkillsDir } from "./vendor-dirs.js";
 
@@ -269,6 +270,6 @@ export function installCopilotWorkflowPrompts(
       `Workflow: ${name}`;
     const promptFile = join(promptsRoot, `${name}.prompt.md`);
     const body = `---\ndescription: ${description}\nmode: agent\n---\n${WORKFLOW_GENERATED_MARKER}\n\nRead and follow [.agents/workflows/${name}.md](../../.agents/workflows/${name}.md) step by step.\n`;
-    fs.writeFileSync(promptFile, body);
+    atomicWriteFileSync(promptFile, body);
   }
 }

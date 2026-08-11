@@ -14,9 +14,39 @@ vi.mock("node:fs", () => ({
   readdirSync: vi.fn(),
   writeFileSync: vi.fn(),
   cpSync: vi.fn(),
+  chmodSync: vi.fn(),
+  lstatSync: vi.fn(),
+  readlinkSync: vi.fn(),
+  realpathSync: vi.fn(),
+  renameSync: vi.fn(),
+  copyFileSync: vi.fn(),
+  unlinkSync: vi.fn(),
 }));
 
 const mockTargetDir = "/tmp/test-project";
+
+/**
+ * Recover the content that landed at a path ending in `suffix`.
+ *
+ * Rule files are written atomically, so the payload goes to a temp sibling and
+ * only reaches its real name via renameSync — the destination has to be read
+ * back off the rename rather than off the write.
+ */
+function findAtomicWrite(
+  suffix: string,
+): { path: string; content: string } | undefined {
+  const renames = (fs.renameSync as unknown as ReturnType<typeof vi.fn>).mock
+    .calls as [string, string][];
+  const writes = (fs.writeFileSync as unknown as ReturnType<typeof vi.fn>).mock
+    .calls as [string, string][];
+
+  for (const [tmp, dest] of renames) {
+    if (typeof dest !== "string" || !dest.endsWith(suffix)) continue;
+    const write = writes.find(([target]) => target === tmp);
+    if (write) return { path: dest, content: write[1] };
+  }
+  return undefined;
+}
 
 describe("readRules", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -90,15 +120,10 @@ describe("applyCursorRules", () => {
     const result = applyCursorRules(mockTargetDir);
     expect(result).toEqual(["frontend"]);
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith(".mdc"),
-    );
+    const writeCall = findAtomicWrite(".mdc");
 
     expect(writeCall).toBeDefined();
-    const content = writeCall?.[1] as string;
+    const content = writeCall?.content as string;
     expect(content).toContain('description: "Frontend standards"');
     expect(content).toContain('globs: "**/*.{tsx,jsx}"');
     expect(content).toContain("alwaysApply: false");
@@ -119,14 +144,9 @@ describe("applyCursorRules", () => {
 
     applyCursorRules(mockTargetDir);
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith(".mdc"),
-    );
+    const writeCall = findAtomicWrite(".mdc");
 
-    expect(writeCall?.[1] as string).toContain("alwaysApply: true");
+    expect(writeCall?.content as string).toContain("alwaysApply: true");
   });
 });
 
@@ -155,15 +175,10 @@ describe("generateClaudeRules", () => {
     const result = generateClaudeRules(mockTargetDir);
     expect(result).toEqual(["frontend"]);
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("frontend.md"),
-    );
+    const writeCall = findAtomicWrite("frontend.md");
 
     expect(writeCall).toBeDefined();
-    const content = writeCall?.[1] as string;
+    const content = writeCall?.content as string;
     expect(content).toContain("description:");
     expect(content).toContain("paths: ");
     expect(content).toContain("**/*.{tsx,jsx}");
@@ -183,14 +198,9 @@ describe("generateClaudeRules", () => {
 
     generateClaudeRules(mockTargetDir);
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("i18n.md"),
-    );
+    const writeCall = findAtomicWrite("i18n.md");
 
-    const content = writeCall?.[1] as string;
+    const content = writeCall?.content as string;
     expect(content).not.toContain("paths:");
   });
 });
@@ -217,14 +227,9 @@ describe("mergeRulesIndexForVendor", () => {
     const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
     expect(result).toBe(true);
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("CLAUDE.md"),
-    );
+    const writeCall = findAtomicWrite("CLAUDE.md");
     expect(writeCall).toBeDefined();
-    const content = writeCall?.[1] as string;
+    const content = writeCall?.content as string;
     expect(content).toContain("# oh-my-agent");
     expect(content).toContain("## Workflows");
     expect(content).not.toContain("## Project Rules");
@@ -239,13 +244,7 @@ describe("mergeRulesIndexForVendor", () => {
 
     // gemini is no longer a single-file vendor → no-op, nothing written.
     expect(result).toBe(false);
-    const wroteGemini = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.some(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("GEMINI.md"),
-    );
-    expect(wroteGemini).toBe(false);
+    expect(findAtomicWrite("GEMINI.md")).toBeUndefined();
   });
 
   it("should create CLAUDE.md with usage guide and rules index", () => {
@@ -267,14 +266,9 @@ describe("mergeRulesIndexForVendor", () => {
     const result = mergeRulesIndexForVendor(mockTargetDir, "claude");
     expect(result).toBe(true);
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("CLAUDE.md"),
-    );
+    const writeCall = findAtomicWrite("CLAUDE.md");
     expect(writeCall).toBeDefined();
-    const content = writeCall?.[1] as string;
+    const content = writeCall?.content as string;
     expect(content).toContain("<!-- OMA:START");
     expect(content).toContain("<!-- OMA:END -->");
     expect(content).toContain("# oh-my-agent");
@@ -303,12 +297,7 @@ describe("mergeRulesIndexForVendor", () => {
 
     mergeRulesIndexForVendor(mockTargetDir, "codex");
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("AGENTS.md"),
-    );
+    const writeCall = findAtomicWrite("AGENTS.md");
     expect(writeCall).toBeDefined();
   });
 
@@ -328,12 +317,7 @@ describe("mergeRulesIndexForVendor", () => {
 
     mergeRulesIndexForVendor(mockTargetDir, "claude");
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("CLAUDE.md"),
-    );
+    const writeCall = findAtomicWrite("CLAUDE.md");
     expect(writeCall).toBeDefined();
   });
 
@@ -353,12 +337,7 @@ describe("mergeRulesIndexForVendor", () => {
 
     mergeRulesIndexForVendor(mockTargetDir, "qwen");
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("AGENTS.md"),
-    );
+    const writeCall = findAtomicWrite("AGENTS.md");
     expect(writeCall).toBeDefined();
   });
 
@@ -378,12 +357,7 @@ describe("mergeRulesIndexForVendor", () => {
 
     mergeRulesIndexForVendor(mockTargetDir, "cursor");
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("AGENTS.md"),
-    );
+    const writeCall = findAtomicWrite("AGENTS.md");
     expect(writeCall).toBeDefined();
   });
 
@@ -407,13 +381,8 @@ describe("mergeRulesIndexForVendor", () => {
 
     mergeRulesIndexForVendor(mockTargetDir, "codex");
 
-    const writeCall = (
-      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
-    ).mock.calls.find(
-      (call: string[]) =>
-        typeof call[0] === "string" && call[0].endsWith("AGENTS.md"),
-    );
-    const content = writeCall?.[1] as string;
+    const writeCall = findAtomicWrite("AGENTS.md");
+    const content = writeCall?.content as string;
     expect(content).toContain("# My Project");
     expect(content).toContain("Custom content");
     expect(content).toContain("More user content");

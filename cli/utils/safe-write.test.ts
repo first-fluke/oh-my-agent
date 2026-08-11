@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  atomicWriteFileSync,
   FORBIDDEN_VENDOR_FILES,
   listBackups,
   safeWriteJson,
@@ -107,6 +108,56 @@ describe("safeWriteJson", () => {
     expect(JSON.parse(fs.readFileSync(target, "utf-8"))).toEqual({
       nested: true,
     });
+  });
+});
+
+describe("atomicWriteFileSync", () => {
+  it("A1: writes a fresh file and creates missing parent directories", () => {
+    const target = path.join(tmpDir, "sub", "deep", "generated.md");
+    atomicWriteFileSync(target, "hello\n");
+
+    expect(fs.readFileSync(target, "utf-8")).toBe("hello\n");
+  });
+
+  it("A2: overwrites without creating any backup", () => {
+    fs.mkdirSync(path.join(tmpDir, ".agents"), { recursive: true });
+    const target = path.join(tmpDir, ".claude", "agents", "oma-qa.md");
+
+    atomicWriteFileSync(target, "v1");
+    atomicWriteFileSync(target, "v2");
+
+    expect(fs.readFileSync(target, "utf-8")).toBe("v2");
+    expect(listBackups(target)).toEqual([]);
+    expect(
+      fs.existsSync(path.join(tmpDir, ".agents", "backup", "safe-write")),
+    ).toBe(false);
+  });
+
+  it("A3: leaves no temp files behind next to the target", () => {
+    const target = path.join(tmpDir, "clean.md");
+    atomicWriteFileSync(target, "a");
+    atomicWriteFileSync(target, "b");
+
+    expect(fs.readdirSync(tmpDir)).toEqual(["clean.md"]);
+  });
+
+  it("A4: applies the requested mode (executable hook wrappers)", () => {
+    const target = path.join(tmpDir, "oma-hook.sh");
+    atomicWriteFileSync(target, "#!/bin/sh\n", { mode: 0o755 });
+
+    expect(fs.statSync(target).mode & 0o777).toBe(0o755);
+  });
+
+  it("A5: writes through a symlink instead of replacing it", () => {
+    const real = path.join(tmpDir, "CLAUDE.md");
+    const link = path.join(tmpDir, "AGENTS.md");
+    fs.writeFileSync(real, "old", "utf-8");
+    fs.symlinkSync(real, link);
+
+    atomicWriteFileSync(link, "new");
+
+    expect(fs.lstatSync(link).isSymbolicLink()).toBe(true);
+    expect(fs.readFileSync(real, "utf-8")).toBe("new");
   });
 });
 

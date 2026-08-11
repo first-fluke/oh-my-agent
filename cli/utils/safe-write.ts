@@ -48,6 +48,97 @@ export function safeWriteJson(targetPath: string, value: unknown): void {
   safeWriteFile(targetPath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+export interface AtomicWriteOptions {
+  /** Mode for the created file, e.g. `0o755` for executable wrappers. */
+  mode?: number;
+}
+
+/**
+ * Atomically write raw text to `targetPath` via a sibling temp file + rename,
+ * **without** backup rotation.
+ *
+ * Use this for oma-generated files (composed agent/rule/hook/prompt artifacts,
+ * `_version.json`, downloaded manifest files) — they are reproducible from the
+ * `.agents/` SSOT, so what they need is crash-atomicity, not rollback history.
+ * `safeWriteFile` would stamp a backup on every `oma link`, flooding vendor
+ * directories with copies of files that can simply be regenerated.
+ *
+ * For user- or vendor-owned config that oma merges into (settings.json,
+ * config.toml), use `safeWriteFile` / `safeWriteJson` instead — those need the
+ * backup trail.
+ *
+ * Strategy: resolve symlinks → mkdir parent → write `<dir>/.<name>.tmp-<stamp>`
+ * → `renameSync` onto the target, falling back to copy+unlink on `EXDEV`
+ * (cross-device). Readers therefore see either the old file or the new one,
+ * never a partial write. The temp file is removed if the swap fails.
+ *
+ * @param targetPath absolute path
+ * @param content full file content, written verbatim as UTF-8
+ */
+export function atomicWriteFileSync(
+  targetPath: string,
+  content: string,
+  options: AtomicWriteOptions = {},
+): void {
+  const finalPath = resolveWriteTarget(targetPath);
+  const dir = path.dirname(finalPath);
+  const basename = path.basename(finalPath);
+  const stamp = `${Date.now()}-${process.pid}-${atomicWriteCounter++}`;
+  const tmpPath = path.join(dir, `.${basename}.tmp-${stamp}`);
+
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(tmpPath, content, { encoding: "utf-8", mode: options.mode });
+
+  try {
+    // writeFileSync's `mode` is only honored when it creates the file; a
+    // restrictive umask would otherwise silently drop the executable bit off
+    // hook wrappers.
+    if (options.mode !== undefined) fs.chmodSync(tmpPath, options.mode);
+    fs.renameSync(tmpPath, finalPath);
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      (err as NodeJS.ErrnoException).code === "EXDEV"
+    ) {
+      fs.copyFileSync(tmpPath, finalPath);
+      if (options.mode !== undefined) fs.chmodSync(finalPath, options.mode);
+      fs.unlinkSync(tmpPath);
+      return;
+    }
+    try {
+      fs.unlinkSync(tmpPath);
+    } catch {
+      // Best-effort cleanup; surface the original failure.
+    }
+    throw err;
+  }
+}
+
+/** Disambiguates temp names for repeated writes within the same millisecond. */
+let atomicWriteCounter = 0;
+
+/**
+ * Follow a symlinked target to the file it points at.
+ *
+ * `writeFileSync` writes *through* a symlink; `renameSync` would instead
+ * replace the link with a regular file. Users routinely symlink the vendor
+ * doc set together (`AGENTS.md` → `CLAUDE.md`), so swapping the link out would
+ * silently desynchronize files that used to update as one.
+ */
+function resolveWriteTarget(targetPath: string): string {
+  try {
+    if (!fs.lstatSync(targetPath).isSymbolicLink()) return targetPath;
+  } catch {
+    return targetPath; // Nothing there yet — write the path as given.
+  }
+  try {
+    return fs.realpathSync(targetPath);
+  } catch {
+    // Dangling link: realpath fails, so resolve the recorded destination.
+    return path.resolve(path.dirname(targetPath), fs.readlinkSync(targetPath));
+  }
+}
+
 /**
  * Atomically write raw text to `targetPath` with the same backup / temp-file /
  * rename strategy as `safeWriteJson` (see above). Use this for non-JSON
@@ -66,11 +157,8 @@ export function safeWriteFile(targetPath: string, content: string): void {
     );
   }
 
-  const dir = path.dirname(targetPath);
-  const stamp = `${Date.now()}-${process.pid}`;
-
   // Ensure parent directory exists
-  fs.mkdirSync(dir, { recursive: true });
+  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
   // Step 1: backup existing target if it exists, into the canonical location.
   if (fs.existsSync(targetPath)) {
@@ -78,28 +166,12 @@ export function safeWriteFile(targetPath: string, content: string): void {
     fs.mkdirSync(backup.dir, { recursive: true });
     fs.copyFileSync(
       targetPath,
-      path.join(backup.dir, `${backup.prefix}${stamp}`),
+      path.join(backup.dir, `${backup.prefix}${Date.now()}-${process.pid}`),
     );
   }
 
-  // Step 2: write to temp file (sibling to target — atomic rename needs same fs)
-  const tmpPath = path.join(dir, `.${basename}.tmp-${stamp}`);
-  fs.writeFileSync(tmpPath, content, "utf-8");
-
-  // Step 3: atomic rename, EXDEV fallback
-  try {
-    fs.renameSync(tmpPath, targetPath);
-  } catch (err) {
-    if (
-      err instanceof Error &&
-      (err as NodeJS.ErrnoException).code === "EXDEV"
-    ) {
-      fs.copyFileSync(tmpPath, targetPath);
-      fs.unlinkSync(tmpPath);
-    } else {
-      throw err;
-    }
-  }
+  // Step 2-3: temp-file write + atomic rename (EXDEV fallback).
+  atomicWriteFileSync(targetPath, content);
 
   // Step 4: prune old backups, keep last BACKUP_RETENTION
   pruneBackups(targetPath);

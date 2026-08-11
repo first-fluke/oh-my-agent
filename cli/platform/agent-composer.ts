@@ -1,10 +1,4 @@
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadUserConfig } from "../io/runtime-dispatch/config-loader.js";
 import { resolveAgentPlanFromConfig } from "../io/runtime-dispatch/resolve-plan.js";
@@ -12,6 +6,7 @@ import {
   parseFrontmatter,
   serializeFrontmatter,
 } from "../utils/frontmatter.js";
+import { atomicWriteFileSync } from "../utils/safe-write.js";
 import type { Difficulty } from "./context-loader.js";
 import { assertContainedRelPath } from "./path-containment.js";
 import { safeLoadVariant } from "./variant-loader.js";
@@ -487,7 +482,7 @@ export function installVendorAgents(
         ? buildCodexAgentFile(definition, variant, config)
         : buildMarkdownAgentFile(definition, variant, config, vendor);
 
-    writeFileSync(join(destDir, output.fileName), output.content);
+    atomicWriteFileSync(join(destDir, output.fileName), output.content);
     written += 1;
   }
   return written;
