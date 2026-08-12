@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.11.1",
-  "releaseDate": "2026-08-12T04:38:57.265Z",
+  "releaseDate": "2026-08-12T05:10:15.372Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -301,8 +301,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "9b2f8b158d008b0bbc3a58a3268b096c0d1966df9117cf9b337cbe98913ab4c2",
-      "size": 23904
+      "sha256": "a82d72c07eb7c834370cd5684f3d20ed33f84370eb5bb480f64390dc300a9dcd",
+      "size": 23771
     },
     {
       "path": ".agents/rules/backend.md",
@@ -1031,8 +1031,8 @@
     },
     {
       "path": ".agents/skills/oma-hwp/config/hwp-config.yaml",
-      "sha256": "4e1f675096c542c1d01242e0480e8e03b2cf77dae49758030f1ba410940092eb",
-      "size": 1317
+      "sha256": "00e797d1707f818b9ae2af4132acb4113099dacc6d0958cfb230560b1f1d032a",
+      "size": 1342
     },
     {
       "path": ".agents/skills/oma-hwp/resources/balanced-tables.ts",
@@ -1076,13 +1076,13 @@
     },
     {
       "path": ".agents/skills/oma-image/SKILL.md",
-      "sha256": "0b84bbd691215b27fbad956186d80997d9c84247b720cc67489831373f93a19a",
-      "size": 16499
+      "sha256": "5239ab60860d676d500e806838f92c94245f77e630cf27e8c4ae4fbe6b766882",
+      "size": 16875
     },
     {
       "path": ".agents/skills/oma-image/config/image-config.yaml",
-      "sha256": "24f1dc914d3750e89cfc070e404229e853f002d20a448da9daf35895088ca085",
-      "size": 2335
+      "sha256": "1f3c6c56ef463aa76049be1cc4242783716203c5da97aecb7de1cb2a76e50a4a",
+      "size": 2308
     },
     {
       "path": ".agents/skills/oma-image/resources/checklist.md",
@@ -1091,8 +1091,8 @@
     },
     {
       "path": ".agents/skills/oma-image/resources/execution-protocol.md",
-      "sha256": "bf445d48d9f7c7369a10c6ec15e93182fdfdf8f2977f69a1b85d4a925ac81be2",
-      "size": 7192
+      "sha256": "703722d1ddca05b1b7d65324c7c6a18e5ad4d9f2e09bd5f11f484697afc40869",
+      "size": 7286
     },
     {
       "path": ".agents/skills/oma-image/resources/prompt-tips.md",
@@ -1461,8 +1461,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestrator/config/cli-config.yaml",
-      "sha256": "29fc62f4015ee21fe5c5ca19d16b9e8456f84f3ac4af286a1efe769b67ffef17",
-      "size": 3340
+      "sha256": "c9638d8671ad4f82428e99614a63822561214ab0e1d5ec9f196a1c21416ac2e5",
+      "size": 3441
     },
     {
       "path": ".agents/skills/oma-orchestrator/resources/memory-schema.md",
@@ -1526,8 +1526,8 @@
     },
     {
       "path": ".agents/skills/oma-pdf/config/pdf-config.yaml",
-      "sha256": "437f3a70b0bb99edcf4ac3e0e8306ba34f32f05e7b6f59bb2e57c14421438f9a",
-      "size": 950
+      "sha256": "9f83b7f79e8fb8a69ed087d19584646baf27d48ed045e971756e426b20c1d6e0",
+      "size": 975
     },
     {
       "path": ".agents/skills/oma-pdf/resources/execution-protocol.md",
@@ -1636,8 +1636,8 @@
     },
     {
       "path": ".agents/skills/oma-scholar/config/scholar-config.yaml",
-      "sha256": "d7ff820f0514208124e518d5b5d40b0c5065b15d87fba23e32aa3afe32b058f3",
-      "size": 2643
+      "sha256": "ac269ca9aec5218b87300463dd298f55d1caeb59e6f3d67af4ac2255d1b7bd37",
+      "size": 2719
     },
     {
       "path": ".agents/skills/oma-scholar/resources/api-endpoints.md",
@@ -1861,13 +1861,13 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "d45e3f0e3ac8ee0a68259541fd04a5981641a1b8b45d77bd7c3977804639269b",
-      "size": 27110
+      "sha256": "84ad5bd60805374f4b7f629e8111dea063d9b2b4610508682a4b268601650d0a",
+      "size": 27550
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
-      "sha256": "76645c3e32355a057f1afaffa6b93b01bde45c2ac68d29e96e3178060acda61a",
-      "size": 1930
+      "sha256": "ab1eb53dc44717f76cf72ec86ac89ee438c6375c17c16716a81c7e3da6e5fca2",
+      "size": 1895
     },
     {
       "path": ".agents/skills/oma-video/resources/checklist.md",
@@ -1876,8 +1876,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "25898eb80f0e4f59745947d3c6c721dc297e409c7dce2f6f1db8686cbfe9998c",
-      "size": 7380
+      "sha256": "2669f22e3b0e30ad0122a0cb64b9d4a29529220340eef67ff98adf0bab4e4fcb",
+      "size": 7473
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -2006,8 +2006,8 @@
     },
     {
       "path": ".agents/skills/oma-voice/config/voice-config.yaml",
-      "sha256": "c1a123b22b98be5f409853ddd1911d44918f82f503d0ea08bbff9b03a17727fd",
-      "size": 1166
+      "sha256": "1355818d19b18422c4976ac679c831e5e2aa4fbb211726a13abdaac938ccffb9",
+      "size": 1191
     },
     {
       "path": ".agents/skills/oma-voice/resources/checklist.md",
