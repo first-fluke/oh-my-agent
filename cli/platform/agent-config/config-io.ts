@@ -79,6 +79,14 @@ import { findFileUpwards } from "../../utils/fs-utils.js";
 
 export const findConfigFileUp = findFileUpwards;
 
+/**
+ * Read `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+ *
+ * The `vendors:` half is a shipped capability registry (command names, flag
+ * spellings, `response_jq`) and stays here permanently. The `active_vendor:`
+ * half is deprecated in favour of oma-config's `default_cli` and survives one
+ * release only — see design 024 §4.6 and the warning in `resolveVendor`.
+ */
 export function readCliConfig(cwd: string): CliConfig | null {
   const configPath = findConfigFileUp(
     cwd,

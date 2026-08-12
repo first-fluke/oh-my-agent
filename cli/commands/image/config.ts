@@ -3,6 +3,13 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import YAML from "yaml";
 import { AGENTS_RESULTS_DIR } from "../../constants/paths.js";
+import {
+  deepMerge,
+  readRootOmaConfig,
+  skillSectionFrom,
+  sparseDiff,
+  warnLegacySection,
+} from "../../platform/agent-config/skill-sections.js";
 
 export type VendorConfig = {
   enabled: boolean;
@@ -88,31 +95,63 @@ const DEFAULTS: ImageConfig = {
   language: "en",
 };
 
-const CONFIG_PATH = ".agents/skills/oma-image/config/image-config.yaml";
+/**
+ * Superseded by the `image:` section of `.agents/oma-config.yaml` (design 024).
+ * Still read for one release, and only for keys that diverge from the shipped
+ * default, so a user who has not migrated keeps their behaviour byte for byte.
+ */
+const LEGACY_CONFIG_PATH = ".agents/skills/oma-image/config/image-config.yaml";
 
 export async function loadConfig(cwd = process.cwd()): Promise<ImageConfig> {
-  const full = path.join(cwd, CONFIG_PATH);
-  let fileConfig: Partial<ImageConfig> = {};
-  if (existsSync(full)) {
-    const raw = await readFile(full, "utf8");
-    fileConfig = normalizeKeys(YAML.parse(raw) ?? {});
+  const root = readRootOmaConfig(cwd);
+  // structuredClone, not a reference: applyEnvOverrides mutates the result, and
+  // sharing nested objects would write those mutations into the module default.
+  let raw = structuredClone(DEFAULTS) as unknown as Record<string, unknown>;
+
+  const section = skillSectionFrom(root, "image");
+  if (section) raw = deepMerge(raw, normalizeKeys(section));
+
+  const legacy = await readLegacyOverrides(cwd);
+  if (legacy) raw = deepMerge(raw, legacy);
+
+  const merged = raw as unknown as ImageConfig;
+  applyEnvOverrides(merged);
+  // `language` is a root key, never a per-skill one — one read serves both.
+  const language = root?.language;
+  if (typeof language === "string" && language) merged.language = language;
+  return merged;
+}
+
+/**
+ * Legacy-file keys the user actually changed, or undefined when the file is
+ * absent or still pristine. Diffing against the shipped default is what keeps a
+ * never-edited file from silently outranking the user's oma-config section.
+ */
+async function readLegacyOverrides(
+  cwd: string,
+): Promise<Record<string, unknown> | undefined> {
+  const full = path.join(cwd, LEGACY_CONFIG_PATH);
+  if (!existsSync(full)) return undefined;
+
+  let parsed: unknown;
+  try {
+    parsed = YAML.parse(await readFile(full, "utf8"));
+  } catch {
+    return undefined;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return undefined;
   }
 
-  const merged: ImageConfig = {
-    ...DEFAULTS,
-    ...fileConfig,
-    vendors: { ...DEFAULTS.vendors, ...(fileConfig.vendors ?? {}) },
-    costGuardrail: {
-      ...DEFAULTS.costGuardrail,
-      ...(fileConfig.costGuardrail ?? {}),
-    },
-    compare: { ...DEFAULTS.compare, ...(fileConfig.compare ?? {}) },
-    naming: { ...DEFAULTS.naming, ...(fileConfig.naming ?? {}) },
-  };
+  const normalized = normalizeKeys(parsed as Record<string, unknown>);
+  const overrides = sparseDiff(
+    normalized as Record<string, unknown>,
+    DEFAULTS as unknown as Record<string, unknown>,
+  );
+  if (Object.keys(overrides).length === 0) return undefined;
 
-  applyEnvOverrides(merged);
-  applyRootLanguage(merged, cwd);
-  return merged;
+  warnLegacySection(overrides, LEGACY_CONFIG_PATH, "image");
+  return overrides;
 }
 
 function normalizeKeys(raw: Record<string, unknown>): Partial<ImageConfig> {
@@ -170,18 +209,5 @@ function applyEnvOverrides(cfg: ImageConfig): void {
   }
   if (process.env.OMA_IMAGE_DEFAULT_OUT) {
     cfg.defaultOutputDir = process.env.OMA_IMAGE_DEFAULT_OUT;
-  }
-}
-
-function applyRootLanguage(cfg: ImageConfig, cwd: string): void {
-  const rootConfigPath = path.join(cwd, ".agents/oma-config.yaml");
-  if (!existsSync(rootConfigPath)) return;
-  try {
-    const raw = YAML.parse(
-      require("node:fs").readFileSync(rootConfigPath, "utf8"),
-    ) as { language?: string } | null;
-    if (raw?.language) cfg.language = raw.language;
-  } catch {
-    // ignore
   }
 }

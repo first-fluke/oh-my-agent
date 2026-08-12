@@ -142,7 +142,7 @@ On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `
 - The output location is writable or can be created.
 - Required CLIs are available through `uvx`.
 - OCR is only attempted when hybrid mode is available or can be started.
-- Defaults come from `config/pdf-config.yaml`; explicit user options override them, and `output.overwrite: false` requires confirmation before replacing an existing output file.
+- Defaults come from the `pdf:` section of `.agents/oma-config.yaml`, falling back to `config/pdf-config.yaml` for unset keys; explicit user options override both, and `output.overwrite: false` requires confirmation before replacing an existing output file.
 
 ### Effects and side effects
 - Creates or overwrites extraction output depending on configuration and user intent.
@@ -159,6 +159,6 @@ On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `
 
 ## References
 - Execution protocol: `resources/execution-protocol.md`
-- Configuration: `config/pdf-config.yaml`
+- Configuration: read the `pdf:` section of `.agents/oma-config.yaml` first, then fall back to `config/pdf-config.yaml` for any key it does not set. User overrides belong in `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`

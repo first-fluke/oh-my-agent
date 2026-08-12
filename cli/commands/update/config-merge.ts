@@ -17,9 +17,17 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+const UPDATE_HEADER =
+  "Added by oma update — new config keys (template defaults; edit freely)";
+
+/**
+ * @param headerComment Comment introducing the appended block. Migrations pass
+ * their own so the file records which change put the keys there.
+ */
 export function appendMissingConfigKeys(
   userRaw: string,
   templateRaw: string,
+  headerComment: string = UPDATE_HEADER,
 ): ConfigMergeResult {
   const noop: ConfigMergeResult = { content: userRaw, addedKeys: [] };
 
@@ -52,6 +60,6 @@ export function appendMissingConfigKeys(
 
   const base =
     userRaw.length === 0 || userRaw.endsWith("\n") ? userRaw : `${userRaw}\n`;
-  const block = `\n# Added by oma update — new config keys (template defaults; edit freely)\n${stringifyYaml(missing)}`;
+  const block = `\n# ${headerComment}\n${stringifyYaml(missing)}`;
   return { content: base + block, addedKeys };
 }

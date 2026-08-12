@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { resetLegacyWarnings } from "../../platform/agent-config/skill-sections.js";
 import { loadConfig } from "./config.js";
 
 describe("loadConfig", () => {
@@ -69,5 +70,78 @@ naming:
     process.env.OMA_IMAGE_DEFAULT_VENDOR = "antigravity";
     const cfg = await loadConfig(tmp);
     expect(cfg.defaultVendor).toBe("antigravity");
+  });
+
+  describe("oma-config image: section", () => {
+    function writeOmaConfig(body: string): void {
+      mkdirSync(path.join(tmp, ".agents"), { recursive: true });
+      writeFileSync(
+        path.join(tmp, ".agents/oma-config.yaml"),
+        `language: en\nmodel_preset: claude\n${body}`,
+        "utf8",
+      );
+    }
+
+    function writeLegacy(body: string): void {
+      const dir = path.join(tmp, ".agents/skills/oma-image/config");
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(path.join(dir, "image-config.yaml"), body, "utf8");
+    }
+
+    beforeEach(() => {
+      resetLegacyWarnings();
+    });
+
+    it("reads overrides from the oma-config section", async () => {
+      writeOmaConfig("image:\n  default_vendor: pollinations\n");
+      const cfg = await loadConfig(tmp);
+      expect(cfg.defaultVendor).toBe("pollinations");
+      expect(cfg.defaultSize).toBe("1024x1024");
+    });
+
+    it("merges a partial cost matrix onto the shipped one", async () => {
+      writeOmaConfig(
+        `image:\n  cost_guardrail:\n    per_image_usd:\n      codex:\n        gpt-image-2:\n          high: 0.5\n`,
+      );
+      const cfg = await loadConfig(tmp);
+      expect(cfg.costGuardrail.perImageUsd.codex?.["gpt-image-2"]?.high).toBe(
+        0.5,
+      );
+      // Untouched prices keep tracking the vendor, which is the whole reason
+      // the matrix is not copied wholesale into the user's config.
+      expect(cfg.costGuardrail.perImageUsd.codex?.["gpt-image-2"]?.low).toBe(
+        0.02,
+      );
+      expect(cfg.costGuardrail.perImageUsd.pollinations?.flux).toBeDefined();
+    });
+
+    it("ignores a legacy file that still matches the shipped defaults", async () => {
+      writeOmaConfig("image:\n  default_vendor: pollinations\n");
+      writeLegacy("default_vendor: auto\ndefault_size: 1024x1024\n");
+      expect((await loadConfig(tmp)).defaultVendor).toBe("pollinations");
+    });
+
+    it("lets a diverging legacy key win during the deprecation window", async () => {
+      writeOmaConfig("image:\n  default_vendor: pollinations\n");
+      writeLegacy("default_vendor: codex\n");
+      expect((await loadConfig(tmp)).defaultVendor).toBe("codex");
+    });
+
+    it("keeps env above both config tiers", async () => {
+      process.env.OMA_IMAGE_DEFAULT_VENDOR = "antigravity";
+      writeOmaConfig("image:\n  default_vendor: pollinations\n");
+      writeLegacy("default_vendor: codex\n");
+      expect((await loadConfig(tmp)).defaultVendor).toBe("antigravity");
+    });
+
+    it("falls back to defaults when oma-config.yaml is malformed", async () => {
+      mkdirSync(path.join(tmp, ".agents"), { recursive: true });
+      writeFileSync(
+        path.join(tmp, ".agents/oma-config.yaml"),
+        "image:\n  default_vendor: [unclosed\n",
+        "utf8",
+      );
+      expect((await loadConfig(tmp)).defaultVendor).toBe("auto");
+    });
   });
 });

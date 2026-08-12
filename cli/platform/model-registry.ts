@@ -5,7 +5,7 @@
 import { RAW_REGISTRY } from "./model-registry/raw-registry.js";
 import { ModelSpecSchema } from "./model-registry/schema.js";
 import type { ModelSpec, RuntimeId } from "./model-registry/types.js";
-import { loadUserModels } from "./model-registry/user-models.js";
+import { mergeUserModels } from "./model-registry/user-models.js";
 
 export type {
   EffortLevel,
@@ -16,8 +16,11 @@ export type {
 } from "./model-registry/types.js";
 
 export {
+  loadInlineUserModelSpecs,
   loadInlineUserModels,
   loadUserModels,
+  mergeUserModels,
+  resetModelsYamlWarnings,
 } from "./model-registry/user-models.js";
 
 // ---------------------------------------------------------------------------
@@ -47,8 +50,9 @@ function getMergedRegistry(): ReadonlyMap<string, ModelSpec> {
 
 /**
  * (Re)initialize the merged registry by merging CORE_REGISTRY with user entries
- * from .agents/config/models.yaml. Call with a cwd to target a specific directory
- * (useful in tests). Without cwd, uses process.cwd().
+ * from oma-config's `models:` block and the deprecated .agents/config/models.yaml.
+ * Call with a cwd to target a specific directory (useful in tests). Without cwd,
+ * uses process.cwd().
  *
  * User entries with the same slug as a core entry win (full override).
  * Call this before each test case that needs a fresh registry.
@@ -56,7 +60,7 @@ function getMergedRegistry(): ReadonlyMap<string, ModelSpec> {
 export function reloadRegistry(cwd?: string): ReadonlyMap<string, ModelSpec> {
   const merged = new Map<string, ModelSpec>(_coreRegistry);
 
-  const userModels = loadUserModels(cwd);
+  const userModels = mergeUserModels(cwd);
   for (const [slug, spec] of userModels) {
     if (_coreRegistry.has(slug)) {
       console.warn(`[model-registry] User override for slug "${slug}"`);

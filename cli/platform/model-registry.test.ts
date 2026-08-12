@@ -652,3 +652,108 @@ models:
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// Design 024: inline oma-config `models:` + the deprecated models.yaml
+// ---------------------------------------------------------------------------
+
+const INLINE_SPUD_YAML = `language: en
+model_preset: claude
+models:
+  "openai/gpt-5.5-spud":
+    cli: "codex"
+    cli_model: "inline-spud"
+    supports:
+      effort:
+        type: "granular"
+        levels: ["none", "low", "medium", "high", "xhigh"]
+      apply_patch: true
+      task_budget: false
+      prompt_cache: false
+      computer_use: true
+      native_dispatch_from: ["codex"]
+      api_only: false
+    auth_hint: "ChatGPT Plus/Pro subscription"
+`;
+
+/** Temp project with an inline `models:` block, and optionally models.yaml. */
+function makeInlineProjectDir(omaConfig: string, modelsYaml?: string): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-inline-models-"));
+  const agentsDir = path.join(dir, ".agents");
+  fs.mkdirSync(agentsDir, { recursive: true });
+  fs.writeFileSync(path.join(agentsDir, "oma-config.yaml"), omaConfig, "utf-8");
+  if (modelsYaml !== undefined) {
+    const configDir = path.join(agentsDir, "config");
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(path.join(configDir, "models.yaml"), modelsYaml, "utf-8");
+  }
+  return dir;
+}
+
+describe("design 024: models.yaml folded into oma-config models:", () => {
+  afterEach(async () => {
+    const { reloadRegistry, resetModelsYamlWarnings } = await import(
+      "./model-registry.js"
+    );
+    resetModelsYamlWarnings();
+    reloadRegistry(os.tmpdir());
+  });
+
+  it("registers a slug declared inline in oma-config", async () => {
+    const { reloadRegistry, getModelSpec } = await import(
+      "./model-registry.js"
+    );
+    const dir = makeInlineProjectDir(INLINE_SPUD_YAML);
+    try {
+      reloadRegistry(dir);
+      expect(getModelSpec("openai/gpt-5.5-spud")?.cli_model).toBe(
+        "inline-spud",
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("lets models.yaml win over the inline block during the window", async () => {
+    const { reloadRegistry, getModelSpec } = await import(
+      "./model-registry.js"
+    );
+    const dir = makeInlineProjectDir(INLINE_SPUD_YAML, VALID_SPUD_YAML);
+    try {
+      reloadRegistry(dir);
+      // A user mid-migration must not see a slug resolve differently under them.
+      expect(getModelSpec("openai/gpt-5.5-spud")?.cli_model).toBe(
+        "gpt-5.5-spud",
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("warns once per slug still living in models.yaml", async () => {
+    const { reloadRegistry, resetModelsYamlWarnings } = await import(
+      "./model-registry.js"
+    );
+    resetModelsYamlWarnings();
+    const dir = makeInlineProjectDir(INLINE_SPUD_YAML, VALID_SPUD_YAML);
+    const written: string[] = [];
+    const spy = vi
+      .spyOn(process.stderr, "write")
+      .mockImplementation((chunk: unknown) => {
+        written.push(String(chunk));
+        return true;
+      });
+    try {
+      reloadRegistry(dir);
+      reloadRegistry(dir);
+    } finally {
+      spy.mockRestore();
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+    const hits = written.filter((line) =>
+      line.includes(".agents/config/models.yaml"),
+    );
+    expect(hits).toHaveLength(1);
+    expect(hits[0]).toContain("models.openai/gpt-5.5-spud");
+  });
+});

@@ -1,7 +1,13 @@
-# oma-video skill configuration.
-# Mirrors cli/commands/video/config/video-config.yaml (the CLI is the source of
-# truth; keep these in sync). Precedence at runtime: this config -> env vars ->
-# CLI flags (lowest to highest).
+# oma-video skill configuration — DEPRECATED, and overwritten by `oma update`.
+#
+# Set overrides under `video:` in .agents/oma-config.yaml instead; that file is
+# preserved across updates, this one is not. Keys here that still differ from
+# the shipped defaults below keep winning for one release (with a stderr
+# warning) and are ignored after that. `oma update` runs migration 022, which
+# moves anything you changed into oma-config for you.
+#
+# These values mirror DEFAULT_VIDEO_CONFIG in cli/commands/video/config.ts,
+# which is the source of truth.
 default_output_dir: .agents/results/videos
 default_mode: shorts
 default_aspect: auto
@@ -28,6 +34,10 @@ providers:
   # informational only — the orchestrator does not walk it as a chain.
   capture:
     order: [playwright-web, cap]
+  # Strudel renders the BGM bed offline (headless Chrome + OfflineAudioContext).
+  # Deps are AGPL and opt-in: `oma video doctor --install-strudel`.
+  music:
+    order: [strudel]
   compositor:
     order: [remotion, mpt]
   # Paid providers — auto-enabled only when their env key is present (backend

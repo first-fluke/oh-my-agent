@@ -3,9 +3,10 @@
 # Claude roles omit effort (cli-session managed).
 #
 # This file is a single source of truth (SSOT) shipped with oh-my-agent.
-# Do NOT edit it directly. To customize behavior, use one of:
-#   - .agents/oma-config.yaml                (agent_cli_mapping, session.quota_cap)
-#   - .agents/config/models.yaml             (add or override model slugs)
+# Do NOT edit it directly — and note that `oma uninstall` removes this whole
+# directory. All customization belongs in .agents/oma-config.yaml, the one
+# user-owned file: `agents:` for per-agent models, `models:` for custom model
+# slugs, `custom_presets:`, `session.quota_cap`, and the rest.
 # To receive newer Profile B defaults in future releases, run:
 #   oma install --update-defaults
 

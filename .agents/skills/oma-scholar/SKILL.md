@@ -250,7 +250,7 @@ curl -s "https://knows.academy/api/proxy/jobs/stats"   # platform health
 
 ### Configuration
 
-Project-specific settings: `config/scholar-config.yaml`
+Project-specific settings: `config/scholar-config.yaml`. One key is user-tunable and lives elsewhere — read `scholar.base_url` from `.agents/oma-config.yaml` first and fall back to `api.base_url` in the skill config. Everything else there (endpoint paths, timeouts, id prefixes, lint rules) is protocol shape, not preference.
 
 ### Troubleshooting
 

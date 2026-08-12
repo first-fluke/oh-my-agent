@@ -163,6 +163,6 @@ bunx kordoc@latest "{input_pattern}" -d "{output_dir}"
 ## References
 - Execution protocol: `resources/execution-protocol.md`
 - Troubleshooting: `resources/troubleshooting.md`
-- Configuration: `config/hwp-config.yaml`
+- Configuration: read the `hwp:` section of `.agents/oma-config.yaml` first, then fall back to `config/hwp-config.yaml` for any key it does not set (`supported_formats` lives only in the skill config). User overrides belong in `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
 - Upstream: https://github.com/chrisryugj/kordoc
 - Related: `../oma-pdf/SKILL.md` (use for `.pdf` inputs)

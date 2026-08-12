@@ -1,9 +1,16 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import YAML from "yaml";
 import type { z } from "zod";
 import { AGENTS_RESULTS_DIR } from "../../constants/paths.js";
+import {
+  deepMerge,
+  readRootOmaConfig,
+  skillSectionFrom,
+  sparseDiff,
+  warnLegacySection,
+} from "../../platform/agent-config/skill-sections.js";
 import {
   type CaptionStyleSchema,
   type CompositorNameSchema,
@@ -94,75 +101,68 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
   language: "en",
 };
 
-const PROJECT_CONFIG_PATH = ".agents/skills/oma-video/config/video-config.yaml";
+/**
+ * Superseded by the `video:` section of `.agents/oma-config.yaml` (design 024).
+ * Still read for one release, and only for keys that diverge from the shipped
+ * default, so a user who has not migrated keeps their behaviour byte for byte.
+ */
+const LEGACY_CONFIG_PATH = ".agents/skills/oma-video/config/video-config.yaml";
 
 export async function loadVideoConfig(
   cwd = process.cwd(),
 ): Promise<VideoConfig> {
-  const full = path.join(cwd, PROJECT_CONFIG_PATH);
-  let fileConfig: Partial<VideoConfig> = {};
-  if (existsSync(full)) {
-    const raw = await readFile(full, "utf8");
-    fileConfig = normalizeKeys(YAML.parse(raw) ?? {});
-  }
+  const root = readRootOmaConfig(cwd);
+  // structuredClone, not a reference: applyEnvOverrides mutates the result, and
+  // sharing nested objects would write those mutations into the module default.
+  let raw = structuredClone(DEFAULT_VIDEO_CONFIG) as unknown as Record<
+    string,
+    unknown
+  >;
 
-  const merged = mergeConfig(DEFAULT_VIDEO_CONFIG, fileConfig);
+  const section = skillSectionFrom(root, "video");
+  if (section) raw = deepMerge(raw, normalizeKeys(section));
+
+  const legacy = await readLegacyOverrides(cwd);
+  if (legacy) raw = deepMerge(raw, legacy);
+
+  const merged = raw as unknown as VideoConfig;
   applyEnvOverrides(merged);
-  applyRootLanguage(merged, cwd);
+  // `language` is a root key, never a per-skill one — one read serves both.
+  const language = root?.language;
+  if (typeof language === "string" && language) merged.language = language;
   return merged;
 }
 
-function mergeConfig(
-  defaults: VideoConfig,
-  fileConfig: Partial<VideoConfig>,
-): VideoConfig {
-  return {
-    ...defaults,
-    ...fileConfig,
-    providers: {
-      ...defaults.providers,
-      ...(fileConfig.providers ?? {}),
-      script: {
-        ...defaults.providers.script,
-        ...(fileConfig.providers?.script ?? {}),
-      },
-      voice: {
-        ...defaults.providers.voice,
-        ...(fileConfig.providers?.voice ?? {}),
-      },
-      visual: {
-        ...defaults.providers.visual,
-        ...(fileConfig.providers?.visual ?? {}),
-      },
-      caption: {
-        ...defaults.providers.caption,
-        ...(fileConfig.providers?.caption ?? {}),
-      },
-      capture: {
-        ...defaults.providers.capture,
-        ...(fileConfig.providers?.capture ?? {}),
-      },
-      music: {
-        ...defaults.providers.music,
-        ...(fileConfig.providers?.music ?? {}),
-      },
-      compositor: {
-        ...defaults.providers.compositor,
-        ...(fileConfig.providers?.compositor ?? {}),
-      },
-      pexels: {
-        ...defaults.providers.pexels,
-        ...(fileConfig.providers?.pexels ?? {}),
-      },
-      pixelle: {
-        ...defaults.providers.pixelle,
-        ...(fileConfig.providers?.pixelle ?? {}),
-      },
-    },
-    cost: { ...defaults.cost, ...(fileConfig.cost ?? {}) },
-    limits: { ...defaults.limits, ...(fileConfig.limits ?? {}) },
-    naming: { ...defaults.naming, ...(fileConfig.naming ?? {}) },
-  };
+/**
+ * Legacy-file keys the user actually changed, or undefined when the file is
+ * absent or still pristine. Diffing against the shipped default is what keeps a
+ * never-edited file from silently outranking the user's oma-config section.
+ */
+async function readLegacyOverrides(
+  cwd: string,
+): Promise<Record<string, unknown> | undefined> {
+  const full = path.join(cwd, LEGACY_CONFIG_PATH);
+  if (!existsSync(full)) return undefined;
+
+  let parsed: unknown;
+  try {
+    parsed = YAML.parse(await readFile(full, "utf8"));
+  } catch {
+    return undefined;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return undefined;
+  }
+
+  const normalized = normalizeKeys(parsed as Record<string, unknown>);
+  const overrides = sparseDiff(
+    normalized as Record<string, unknown>,
+    DEFAULT_VIDEO_CONFIG as unknown as Record<string, unknown>,
+  );
+  if (Object.keys(overrides).length === 0) return undefined;
+
+  warnLegacySection(overrides, LEGACY_CONFIG_PATH, "video");
+  return overrides;
 }
 
 function normalizeKeys(raw: Record<string, unknown>): Partial<VideoConfig> {
@@ -209,11 +209,33 @@ function normalizeKeys(raw: Record<string, unknown>): Partial<VideoConfig> {
           (naming.singleFolderPattern as string) ??
           DEFAULT_VIDEO_CONFIG.naming.singleFolderPattern,
       };
+    } else if (mapped === "providers" && value && typeof value === "object") {
+      out.providers = normalizeProviders(value as Record<string, unknown>);
     } else {
       (out as Record<string, unknown>)[mapped] = value;
     }
   }
   return out;
+}
+
+/**
+ * Pass provider entries through untouched except for `env_var`, which oma-config
+ * spells snake_case like every other key it holds while the type (and the legacy
+ * YAML) use `envVar`.
+ */
+function normalizeProviders(
+  raw: Record<string, unknown>,
+): VideoConfig["providers"] {
+  const out: Record<string, unknown> = {};
+  for (const [name, entry] of Object.entries(raw)) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      out[name] = entry;
+      continue;
+    }
+    const { env_var: envVar, ...rest } = entry as Record<string, unknown>;
+    out[name] = envVar === undefined ? rest : { ...rest, envVar };
+  }
+  return out as VideoConfig["providers"];
 }
 
 function applyEnvOverrides(cfg: VideoConfig): void {
@@ -229,17 +251,4 @@ function applyEnvOverrides(cfg: VideoConfig): void {
   }
   cfg.providers.pexels.enabled = Boolean(process.env.PEXELS_API_KEY);
   cfg.providers.pixelle.enabled = Boolean(process.env.RUNNINGHUB_API_KEY);
-}
-
-function applyRootLanguage(cfg: VideoConfig, cwd: string): void {
-  const rootConfigPath = path.join(cwd, ".agents/oma-config.yaml");
-  if (!existsSync(rootConfigPath)) return;
-  try {
-    const raw = YAML.parse(readFileSync(rootConfigPath, "utf8")) as {
-      language?: string;
-    } | null;
-    if (raw?.language) cfg.language = raw.language;
-  } catch {
-    // ignore malformed root config; callers still get defaults
-  }
 }

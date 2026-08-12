@@ -12,6 +12,7 @@ import {
   readCliConfig,
 } from "./config-io.js";
 import type { AgentSpec } from "./schemas.js";
+import { warnLegacySkillConfig } from "./skill-sections.js";
 import type {
   AgentId,
   BuiltInPresetKey,
@@ -145,12 +146,23 @@ export function resolveVendor(
       )
     : undefined;
 
+  // `active_vendor` is the deprecated tier (design 024 §4.6): it fires only when
+  // oma-config resolves nothing, and differs from the "claude" floor only when
+  // the user edited a file `oma update` overwrites. Kept for one release, and
+  // warned about only when it actually decides the vendor.
+  const legacyVendor = cliConfig?.active_vendor;
+  const resolvedByLegacy =
+    !vendorOverride && !mappedVendor && !defaultCli && Boolean(legacyVendor);
+  if (resolvedByLegacy && legacyVendor !== "claude") {
+    warnLegacySkillConfig(
+      ".agents/skills/oma-orchestrator/config/cli-config.yaml",
+      "active_vendor",
+      "default_cli",
+    );
+  }
+
   const vendor =
-    vendorOverride ||
-    mappedVendor ||
-    defaultCli ||
-    cliConfig?.active_vendor ||
-    "claude";
+    vendorOverride || mappedVendor || defaultCli || legacyVendor || "claude";
 
   return { vendor: vendor.toLowerCase(), config: cliConfig };
 }

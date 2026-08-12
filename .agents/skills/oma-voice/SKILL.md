@@ -228,7 +228,7 @@ Other skills can request audio output by calling the same MCP tools directly, or
 - Prompt writing rules: `resources/prompt-tips.md`
 - Execution protocol: `resources/execution-protocol.md`
 - Pre-flight checklist: `resources/checklist.md`
-- Configuration: `config/voice-config.yaml`
+- Configuration: read the `voice:` section of `.agents/oma-config.yaml` first, then fall back to `config/voice-config.yaml` for any key it does not set. Both profiles ship as `null` and must be set per machine — write them to `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
 - Design reference: `../../../docs/plans/designs/012-oma-voice.md` (source repo only; absent in global-mode installs)

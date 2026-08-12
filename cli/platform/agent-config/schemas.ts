@@ -71,6 +71,9 @@ const OmaDocsConfigSchema = z
   })
   .strict();
 
+/** One sparse skill override section — see design 024 §4. */
+const SkillSectionSchema = z.record(z.string(), z.unknown()).optional();
+
 export const OmaConfigSchema = z
   .object({
     language: z.string().default("en"),
@@ -85,6 +88,15 @@ export const OmaConfigSchema = z
     vendors: z.record(z.string(), z.unknown()).optional(),
     session: z.unknown().optional(),
     docs: OmaDocsConfigSchema.optional(),
+    // Sparse per-skill overrides (design 024). Deliberately unvalidated shapes:
+    // each skill owns its own key set, and a strict mirror here would reject a
+    // key the day a skill adds one, taking the whole config down with it.
+    video: SkillSectionSchema,
+    image: SkillSectionSchema,
+    voice: SkillSectionSchema,
+    hwp: SkillSectionSchema,
+    pdf: SkillSectionSchema,
+    scholar: SkillSectionSchema,
     default_cli: z.string().optional(),
   })
   .passthrough();

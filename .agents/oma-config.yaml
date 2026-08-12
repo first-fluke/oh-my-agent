@@ -1,8 +1,30 @@
 # oh-my-agent — project config
+#
+# The single user-owned file: `oma update` preserves it byte for byte and only
+# appends top-level keys new releases introduce. Every other file under
+# `.agents/` is replaced wholesale on update, so this is the only place edits
+# survive.
+#
+# Every key is optional except `language` and `model_preset`. Commented-out
+# blocks below show a key's default — uncomment only what you want to change.
+#
+# Contents
+#   1. Global preferences        language, date/time, telemetry
+#   2. Model selection           model_preset, default_cli, agents, models, custom_presets
+#   3. pi transport runtime      vendors.pi
+#   4. Agent spawn budget        session.quota_cap
+#   5. Memory garbage collection memory.gc
+#   6. Serena MCP transport      serena
+#   7. Serena memory reaper      serena_reaper
+#   8. Browser DevTools MCP      mcp.devtools_browsers
+#   9. Documentation drift       docs
+#  10. SCM & commit rules        scm
+#  11. Skill overrides           video, image, voice, hwp, pdf, scholar
+#
 # Full schema: web/docs/guide/per-agent-models.md
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Global preferences
+# 1. Global preferences
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Response language (ko, en, ja, zh, ...)
@@ -41,7 +63,127 @@ auto_update_cli: true
 telemetry: false
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Serena MCP transport
+# 2. Model selection
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Resolution order when an agent runs:
+#   1. agents.<id>            — explicit per-agent override
+#   2. model_preset entry     — built-in or custom_presets[model_preset]
+#   3. preset.orchestrator    — fallback when an agent is missing from the preset
+#   4. default_cli            — vendor-only fallback when none of the above resolve
+
+# Built-in: antigravity | claude | codex | qwen | cursor | mixed
+# (custom_presets entries are also valid)
+model_preset: antigravity
+
+# Fallback CLI vendor for `oma agent:spawn`, used only when steps 1-3 above
+# resolve nothing. Replaces the legacy `active_vendor:` key in
+# .agents/skills/oma-orchestrator/config/cli-config.yaml. Omit for "claude".
+# default_cli: claude
+
+# Per-agent override (optional) — shallow-merged on top of the preset entry.
+# Agent ids: orchestrator, architecture, qa, pm, backend, frontend, mobile,
+#            db, debug, refactor, docs, tf-infra, explore, eval
+# Each AgentSpec accepts:
+#   model:    "<owner>/<slug>"  required.  Slugs follow OpenRouter convention
+#             (https://openrouter.ai/models). Only models whose owning vendor
+#             ships a forkable CLI (antigravity, claude, codex, qwen) are usable —
+#             API-only entries (api_only: true) are skipped. Custom slugs go
+#             in `models:` below.
+#   effort:   none | low | medium | high | xhigh   (ignored for cli-session models like Claude)
+#   thinking: true | false                          (vendor-dependent)
+#   memory:   user | project | local                (per-agent memory tier)
+#
+# `eval` below pins skill-eval dispatch (`oma skills eval --live`) to claude:
+# antigravity external dispatch is unreliable in this environment (prompts do
+# not reach the model; see spawn artifact guard notes). Add your own entries
+# alongside it, e.g.
+#   backend: { model: openai/gpt-5.5, effort: high }
+agents:
+  eval:
+    model: anthropic/claude-sonnet-4-6
+
+# Inline custom model slugs (optional) — the home for any slug not in the
+# built-in registry. `cli_model` must be the exact id the CLI itself accepts:
+# for antigravity that is an `agy models` display name, not a slug
+# (`gemini-3.6-flash` is rejected).
+#
+# Supersedes `.agents/config/models.yaml`, which `oma uninstall` deletes along
+# with the rest of `.agents/config/`. That file still wins for one release and
+# `oma update` folds its entries in here automatically (migration 022).
+# Example:
+# models:
+#   my-fast:
+#     cli: antigravity
+#     cli_model: "Gemini 3.6 Flash (Medium)"
+#     supports:
+#       native_dispatch_from: [antigravity]
+
+# User-defined presets (optional). Use `extends:` to partially inherit a built-in.
+# Example:
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     description: "Team A — sonnet base, codex backend"
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. pi (Earendil) transport runtime
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# pi is a multi-provider proxy runtime. Dispatch any agent through it with
+# `oma agent:spawn <agent> "<prompt>" <session> -m pi`. The per-agent model
+# resolved from `model_preset` / `agents:` is translated to pi's `--model`
+# (provider/id slug) and effort to pi's `--thinking` level — so per-subagent
+# models work on pi too. pi only runs real-provider models (anthropic, openai,
+# google); CLI-proprietary presets (cursor/kiro/qwen/antigravity) are rejected.
+#
+# The `vendors.pi` block below is the FALLBACK model path, used only when no
+# resolved plan applies (e.g. no model_preset). Normal runs do not need it.
+#
+# vendors:
+#   pi:
+#     command: pi
+#     prompt_flag: "-p"
+#     model_flag: "--model"
+#     default_model: anthropic/claude-sonnet-4-6
+#     thinking_flag: "--thinking"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. Agent spawn budget
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# When set, `oma agent:spawn` records token usage per agent and blocks the
+# next spawn once any cap is exceeded. Records persist to
+# .agents/state/memories/session-cost-{sessionId}.md. Omit to disable.
+#
+# All keys optional. Omitting a key leaves that dimension uncapped.
+# Schema source: cli/io/session-cost.ts (loadQuotaCap / normalizeQuotaCap).
+#
+# session:
+#   quota_cap:
+#     tokens: 2000000          # total token budget across all vendors
+#     spawn_count: 30          # max agent spawns per session
+#     per_vendor:              # per-vendor token budgets
+#       claude: 1500000
+#       codex: 500000
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. Memory garbage collection (`oma memory:gc` defaults)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Tunes the project-local memory sweep. CLI flags (--keep / --max-age-days)
+# override these; these override the built-in defaults. Schema source:
+# cli/commands/memory/memory/gc.ts (loadMemoryGcConfig).
+#
+# memory:
+#   gc:
+#     keep_sessions: 100   # L1 .agents/state/sessions retained, most-recent (default 100)
+#     max_age_days: 50     # Serena run artifacts older than N days pruned; 0 disables (default 50)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. Serena MCP transport
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # Each vendor's serena MCP entry is regenerated by `oma link`.
@@ -75,25 +217,7 @@ telemetry: false
 # still overrides this — agents should omit it unless they need a hard cap.
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Browser DevTools MCP
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# A browser DevTools MCP server is only useful while an agent is actually
-# driving a browser, but it is paid for continuously: chrome-devtools-mcp costs
-# three processes per agent session (`npm exec` → server → telemetry watchdog),
-# and every concurrent session spawns its own set.
-#
-# Opt in per project. Fresh installs wire up no browser at all.
-#
-# Leaving the key unset means "don't touch what's already configured" — `oma
-# update` only rewrites the browser entries when `devtools_browsers` is present,
-# so an existing setup is never silently stripped. Set it to `[]` to remove them.
-#
-# mcp:
-#   devtools_browsers: [chrome]     # chrome | firefox | both | []
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Serena memory reaper
+# 7. Serena memory reaper
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # Serena spawns a language-server stack (tsserver, pyright, …) per open project
@@ -118,7 +242,25 @@ telemetry: false
 #   graceSeconds: 90      # in-flight protection; SIGTERM→SIGKILL window
 
 # ─────────────────────────────────────────────────────────────────────────────
-# oma-docs documentation drift detection
+# 8. Browser DevTools MCP
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# A browser DevTools MCP server is only useful while an agent is actually
+# driving a browser, but it is paid for continuously: chrome-devtools-mcp costs
+# three processes per agent session (`npm exec` → server → telemetry watchdog),
+# and every concurrent session spawns its own set.
+#
+# Opt in per project. Fresh installs wire up no browser at all.
+#
+# Leaving the key unset means "don't touch what's already configured" — `oma
+# update` only rewrites the browser entries when `devtools_browsers` is present,
+# so an existing setup is never silently stripped. Set it to `[]` to remove them.
+#
+# mcp:
+#   devtools_browsers: [chrome]     # chrome | firefox | both | []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. Documentation drift detection (oma-docs)
 # ─────────────────────────────────────────────────────────────────────────────
 
 docs:
@@ -145,114 +287,7 @@ docs:
     - "web/i18n/**" # translation mirrors — validated by `oma docs i18n` instead
 
 # ─────────────────────────────────────────────────────────────────────────────
-#
-# When set, `oma agent:spawn` records token usage per agent and blocks the
-# next spawn once any cap is exceeded. Records persist to
-# .agents/state/memories/session-cost-{sessionId}.md. Omit to disable.
-#
-# All keys optional. Omitting a key leaves that dimension uncapped.
-# Schema source: cli/io/session-cost.ts (loadQuotaCap / normalizeQuotaCap).
-#
-# session:
-#   quota_cap:
-#     tokens: 2000000          # total token budget across all vendors
-#     spawn_count: 30          # max agent spawns per session
-#     per_vendor:              # per-vendor token budgets
-#       claude: 1500000
-#       codex: 500000
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Memory garbage collection (`oma memory:gc` defaults)
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# Tunes the project-local memory sweep. CLI flags (--keep / --max-age-days)
-# override these; these override the built-in defaults. Schema source:
-# cli/commands/memory/memory/gc.ts (loadMemoryGcConfig).
-#
-# memory:
-#   gc:
-#     keep_sessions: 100   # L1 .agents/state/sessions retained, most-recent (default 100)
-#     max_age_days: 50     # Serena run artifacts older than N days pruned; 0 disables (default 50)
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Model selection
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Built-in: antigravity | claude | codex | qwen | cursor | mixed
-# (custom_presets entries are also valid)
-model_preset: antigravity
-
-# Per-agent override (optional) — shallow-merged on top of the preset entry.
-# Agent ids: orchestrator, architecture, qa, pm, backend, frontend, mobile,
-#            db, debug, refactor, docs, tf-infra, explore
-# Each AgentSpec accepts:
-#   model:    "<owner>/<slug>"  required.  Slugs follow OpenRouter convention
-#             (https://openrouter.ai/models). Only models whose owning vendor
-#             ships a forkable CLI (antigravity, claude, codex, qwen) are usable —
-#             API-only entries (api_only: true) are skipped. Custom slugs go
-#             in `models:` below.
-#   effort:   none | low | medium | high | xhigh   (ignored for cli-session models like Claude)
-#   thinking: true | false                          (vendor-dependent)
-#   memory:   user | project | local                (per-agent memory tier)
-# Example:
-# agents:
-#   backend:
-#     model: openai/gpt-5.5
-#     effort: high
-#   qa:
-#     model: anthropic/claude-sonnet-4-6
-
-# Inline custom model slugs (optional; replaces the legacy models.yaml file).
-# `cli_model` must be the exact id the CLI itself accepts — for antigravity that
-# is an `agy models` display name, not a slug (`gemini-3.6-flash` is rejected).
-# Example:
-# models:
-#   my-fast:
-#     cli: antigravity
-#     cli_model: "Gemini 3.6 Flash (Medium)"
-#     supports:
-#       native_dispatch_from: [antigravity]
-
-# User-defined presets (optional). Use `extends:` to partially inherit a built-in.
-# Example:
-# custom_presets:
-#   my-team:
-#     extends: claude
-#     description: "Team A — sonnet base, codex backend"
-#     agent_defaults:
-#       backend: { model: openai/gpt-5.5, effort: high }
-
-# ─────────────────────────────────────────────────────────────────────────────
-# pi (Earendil) transport runtime
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# pi is a multi-provider proxy runtime. Dispatch any agent through it with
-# `oma agent:spawn <agent> "<prompt>" <session> -m pi`. The per-agent model
-# resolved from `model_preset` / `agents:` is translated to pi's `--model`
-# (provider/id slug) and effort to pi's `--thinking` level — so per-subagent
-# models work on pi too. pi only runs real-provider models (anthropic, openai,
-# google); CLI-proprietary presets (cursor/kiro/qwen/antigravity) are rejected.
-#
-# The `vendors.pi` block below is the FALLBACK model path, used only when no
-# resolved plan applies (e.g. no model_preset). Normal runs do not need it.
-#
-# vendors:
-#   pi:
-#     command: pi
-#     prompt_flag: "-p"
-#     model_flag: "--model"
-#     default_model: anthropic/claude-sonnet-4-6
-#     thinking_flag: "--thinking"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Resolution order (when an agent runs):
-#   1. agents.<id>            — explicit per-agent override
-#   2. model_preset entry     — built-in or custom_presets[model_preset]
-#   3. preset.orchestrator    — fallback when an agent is missing from the preset
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ─────────────────────────────────────────────────────────────────────────────
-# SCM & Commit Rules (oma-scm)
+# 10. SCM & commit rules (oma-scm)
 # ─────────────────────────────────────────────────────────────────────────────
 scm:
   conventional_commits: true
@@ -288,10 +323,125 @@ scm:
     - "*.sample"
     - "*.template"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. Skill overrides
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Six skills read their user settings from here. Each section is OPTIONAL and
+# SPARSE: write only the keys you want to change, because an absent key means
+# "use the shipped default" — so defaults keep improving with each release
+# instead of freezing the day you copied them. The values shown commented out
+# below ARE the current defaults; uncomment a line only to change it.
+#
+# These supersede the per-skill `.agents/skills/*/config/*.yaml` files, which
+# `oma update` overwrites wholesale — anything set there is lost on the next
+# update. A legacy file that still differs from its shipped default keeps
+# winning for one release (with a stderr warning naming the key), and `oma
+# update` moves your changed keys up here automatically (migration 022).
+#
+# Precedence: shipped defaults < this file < legacy skill config < env < flags
 
-# Per-agent vendor overrides. `eval` pins skill-eval dispatch (`oma skills
-# eval --live`) to claude: antigravity external dispatch is unreliable in this
-# environment (prompts do not reach the model; see spawn artifact guard notes).
-agents:
-  eval:
-    model: anthropic/claude-sonnet-4-6
+# ── video (oma-video) ────────────────────────────────────────────────────────
+# Brief → script → assets → render. Defaults: DEFAULT_VIDEO_CONFIG in
+# cli/commands/video/config.ts.
+# video:
+#   default_output_dir: .agents/results/videos
+#   default_mode: shorts            # shorts | explainer | demo
+#   default_aspect: auto
+#   default_locale: en
+#   default_captions: tiktok
+#   default_visual: auto
+#   default_voice: none
+#   default_music: none
+#   default_compositor: remotion
+#   default_timeout_sec: 600
+#   yes: false                      # skip interactive confirmations
+#   providers:
+#     script:     { order: [agent-script] }
+#     voice:      { order: [oma-voice] }
+#     visual:     { order: [oma-image, pexels, pixelle] }
+#     caption:    { order: [oma-captions] }
+#     capture:    { order: [playwright-web, cap] }
+#     music:      { order: [strudel] }
+#     compositor: { order: [remotion, mpt] }
+#     # Paid providers turn themselves on when their key is in the environment;
+#     # only the variable name is configurable.
+#     pexels:     { env_var: PEXELS_API_KEY }
+#     pixelle:    { env_var: RUNNINGHUB_API_KEY }
+#   cost:
+#     guardrail_usd: 0.20
+#   limits:
+#     max_duration_sec: 180
+#     max_scenes: 40
+#   naming:
+#     single_folder_pattern: "{timestamp}-{shortid}-{mode}"
+
+# ── image (oma-image) ────────────────────────────────────────────────────────
+# Image generation across codex / antigravity / pollinations. Defaults:
+# DEFAULTS in cli/commands/image/config.ts.
+# image:
+#   default_output_dir: .agents/results/images
+#   default_vendor: auto            # auto | codex | antigravity | pollinations
+#   default_size: 1024x1024
+#   default_quality: auto
+#   default_count: 1
+#   default_timeout_sec: 180
+#   vendors:
+#     pollinations: { enabled: true, model: flux }
+#   cost_guardrail:
+#     estimate_threshold_usd: 0.20
+#     # Override only the prices you disagree with — untouched entries keep
+#     # tracking vendor pricing changes.
+#     per_image_usd:
+#       codex:
+#         gpt-image-2: { high: 0.04 }
+#   compare:
+#     folder_pattern: "{timestamp}-{shortid}-compare"
+#     manifest: true
+#   naming:
+#     single_folder_pattern: "{timestamp}-{shortid}"
+
+# ── voice (oma-voice) ────────────────────────────────────────────────────────
+# Local TTS / STT via the Voicebox MCP server. Profile names come from
+# `voicebox_list_profiles`; both ship as null and must be set per machine, so
+# this is the section most worth filling in.
+# voice:
+#   notification_profile: null
+#   asset_profile: null
+#   output_dir: .agents/results/voice
+#   auto_notify_after_sec: 60       # null disables auto-notification
+#   max_tts_chars: 5000
+#   max_stt_minutes: 30
+
+# ── hwp (oma-hwp) ────────────────────────────────────────────────────────────
+# HWP / HWPX / HWPML → Markdown via kordoc. The advertised input formats stay
+# in the skill config; they are scope, not preference.
+# hwp:
+#   format: markdown                # markdown | json | chunks
+#   version:
+#     channel: latest               # latest | pinned
+#     pinned: "4.1.0"
+#   output:
+#     default_location: same_dir    # same_dir | cwd
+
+# ── pdf (oma-pdf) ────────────────────────────────────────────────────────────
+# PDF → Markdown via opendataloader-pdf.
+# pdf:
+#   format: markdown
+#   image_output: "off"             # off | embedded | external
+#   image_format: png               # png | jpeg
+#   use_struct_tree: false
+#   ocr:
+#     enabled: false
+#     languages: "en"               # comma-separated, e.g. "ko,en"
+#     hybrid_port: 5002
+#   output:
+#     default_location: same_dir    # same_dir | cwd
+#     overwrite: false
+
+# ── scholar (oma-scholar) ────────────────────────────────────────────────────
+# Knows sidecar research companion. Only the endpoint host is a preference —
+# point it at a self-hosted knows. Endpoint paths, timeouts, id prefixes and
+# lint rules are protocol shape and stay in the skill config.
+# scholar:
+#   base_url: https://knows.academy

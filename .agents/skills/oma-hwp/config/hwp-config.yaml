@@ -1,5 +1,11 @@
 # oma-hwp configuration
 # HWP / HWPX / HWPML to Markdown conversion settings
+#
+# DEPRECATED as a place to put your settings: `oma update` overwrites this
+# file. Put overrides under `hwp:` in .agents/oma-config.yaml, which is
+# preserved. Keys here that still differ from the shipped defaults keep
+# winning for one release; migration 022 moves them for you.
+#
 
 format: markdown              # "markdown" (default), "json", or "chunks" (RAG structural chunks)
 

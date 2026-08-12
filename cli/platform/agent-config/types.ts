@@ -117,6 +117,14 @@ export interface OmaDocsConfig {
   exclude?: string[];
 }
 
+/**
+ * Sparse per-skill override sections. Absent key = code default, so every
+ * level is a partial record rather than a typed mirror of the skill's config —
+ * copying a shipped default into the user's file would pin it and freeze
+ * upstream tuning. See `skill-sections.ts` and design 024.
+ */
+export type SkillOverrideSection = Record<string, unknown>;
+
 export interface OmaConfig {
   language: string;
   /** Built-in preset key or custom_presets key */
@@ -140,6 +148,14 @@ export interface OmaConfig {
   session?: { quota_cap?: Record<string, unknown> };
   /** oma-docs skill configuration */
   docs?: OmaDocsConfig;
+  /** Sparse skill overrides — see {@link SkillOverrideSection} */
+  video?: SkillOverrideSection;
+  image?: SkillOverrideSection;
+  voice?: SkillOverrideSection;
+  hwp?: SkillOverrideSection;
+  pdf?: SkillOverrideSection;
+  /** `base_url` only; the rest of scholar-config.yaml is protocol shape. */
+  scholar?: SkillOverrideSection;
   // Legacy fields for backward-compat during migration grace window
   default_cli?: string;
 }

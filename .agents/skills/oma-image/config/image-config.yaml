@@ -1,3 +1,13 @@
+# oma-image skill configuration — DEPRECATED, and overwritten by `oma update`.
+#
+# Set overrides under `image:` in .agents/oma-config.yaml instead; that file is
+# preserved across updates, this one is not. Keys here that still differ from
+# the shipped defaults keep winning for one release (with a stderr warning) and
+# are ignored after that. `oma update` runs migration 022, which moves anything
+# you changed into oma-config for you.
+#
+# These values mirror DEFAULTS in cli/commands/image/config.ts, the source of truth.
+
 default_output_dir: .agents/results/images
 default_vendor: auto
 default_size: 1024x1024
