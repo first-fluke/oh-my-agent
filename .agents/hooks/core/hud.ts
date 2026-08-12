@@ -79,19 +79,56 @@ interface StatuslineStdin {
   terminal_width?: number;
 }
 
-function readStdin(): StatuslineStdin {
-  const raw = (() => {
+async function readStdin(
+  timeoutMs = STDIN_TIMEOUT_MS,
+): Promise<StatuslineStdin> {
+  // Some vendors (notably agy) spawn the statusline without closing the stdin
+  // pipe; a synchronous readFileSync(0) then blocks until the vendor's
+  // statusline timeout SIGKILLs the process. Read asynchronously and give up
+  // after timeoutMs, letting main() fall back to the cached line.
+  const read = (async () => {
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) {
+      chunks.push(chunk as Buffer);
+    }
+    const raw = Buffer.concat(chunks).toString("utf-8");
+    maybeDumpDebugPayload(raw);
     try {
-      return readFileSync(0, "utf-8");
+      return JSON.parse(raw) as StatuslineStdin;
     } catch {
-      return "";
+      return {};
     }
   })();
-  maybeDumpDebugPayload(raw);
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("stdin timeout")), timeoutMs);
+  });
+
   try {
-    return JSON.parse(raw);
+    return await Promise.race([read, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Max time to wait for the vendor to deliver (and close) the stdin payload. */
+const STDIN_TIMEOUT_MS = 800;
+
+/** Sibling file holding the last successfully rendered statusline. */
+function cachePath(): string {
+  return join(
+    import.meta.dirname ?? process.cwd(),
+    "..",
+    "last-hud-output.txt",
+  );
+}
+
+function readCachedLine(): string | null {
+  try {
+    return readFileSync(cachePath(), "utf-8") || null;
   } catch {
-    return {};
+    return null;
   }
 }
 
@@ -292,8 +329,22 @@ export function buildClaudeStatusline(input: StatuslineStdin): string {
 
 // ── Main ──────────────────────────────────────────────────────
 
-function main() {
-  process.stdout.write(buildClaudeStatusline(readStdin()));
+async function main() {
+  let out: string;
+  try {
+    out = buildClaudeStatusline(await readStdin());
+    try {
+      writeFileSync(cachePath(), out, "utf-8");
+    } catch {
+      // best-effort cache
+    }
+  } catch {
+    // stdin timed out — a stale line beats a killed statusline
+    out = readCachedLine() ?? buildClaudeStatusline({});
+  }
+  // Exit explicitly: after a timeout the pending stdin read would otherwise
+  // keep the event loop (and the process) alive.
+  process.stdout.write(out, () => process.exit(0));
 }
 
-main();
+void main();

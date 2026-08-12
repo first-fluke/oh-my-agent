@@ -401,4 +401,35 @@ describe("hud.ts", () => {
       expect(result.split("│").length).toBe(1);
     });
   });
+
+  describe("stdin robustness", () => {
+    // Regression: agy spawns the statusline without closing the stdin pipe;
+    // the old synchronous readFileSync(0) blocked until the vendor timeout
+    // SIGKILLed the process ("command failed: signal: killed").
+    it("exits with a fallback line when stdin never closes", async () => {
+      const { spawn } = await import("node:child_process");
+      const child = spawn("bun", [HUD_PATH], {
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env, CLAUDE_PROJECT_DIR: HUD_PROJECT_DIR },
+      });
+      // Intentionally never write to or close child.stdin.
+      let stdout = "";
+      child.stdout.on("data", (d: Buffer) => {
+        stdout += d.toString();
+      });
+      const exited = new Promise<number | null>((resolve) => {
+        child.on("close", resolve);
+      });
+      const result = await Promise.race([
+        exited,
+        new Promise<"hang">((resolve) =>
+          setTimeout(() => resolve("hang"), 5000),
+        ),
+      ]);
+      if (result === "hang") child.kill("SIGKILL");
+
+      expect(result).toBe(0);
+      expect(stripAnsi(stdout)).toContain("[OMA]");
+    }, 10_000);
+  });
 });
