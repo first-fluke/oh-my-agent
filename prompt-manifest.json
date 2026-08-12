@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "11.11.1",
-  "releaseDate": "2026-08-12T03:20:49.020Z",
+  "releaseDate": "2026-08-12T04:38:57.265Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -106,8 +106,8 @@
     },
     {
       "path": ".agents/config/defaults.yaml",
-      "sha256": "1e956d7796327fbeb6ed9f12cf81a96da2ab86e7f71e47e4b18106ed3a41b2c9",
-      "size": 6206
+      "sha256": "68a2d02a8ad33df3398c4155eef23ee6cc0ae97a11904c098ee22d02a2ecdab8",
+      "size": 6280
     },
     {
       "path": ".agents/hooks/core/agentmemory-client.ts",
@@ -301,8 +301,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "49c467b0ed0b17e81653c7ab7251b39dc692b5afd3a23436edca1bd9cf66f3b9",
-      "size": 16521
+      "sha256": "9b2f8b158d008b0bbc3a58a3268b096c0d1966df9117cf9b337cbe98913ab4c2",
+      "size": 23904
     },
     {
       "path": ".agents/rules/backend.md",
@@ -1026,13 +1026,13 @@
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
-      "sha256": "5b0096a33cf75202fd9b7f708e981e5d7a75dec54cb1bcbfabd47be07138a0d4",
-      "size": 8761
+      "sha256": "8dc66c216d638d8eaad2d344c880be0aed741ac280a995a5e0b37077073090b2",
+      "size": 9021
     },
     {
       "path": ".agents/skills/oma-hwp/config/hwp-config.yaml",
-      "sha256": "af6a7e792504ace9131711e7f7068ab31e9a19eec77b4a4bc5ac144228c380c1",
-      "size": 1033
+      "sha256": "4e1f675096c542c1d01242e0480e8e03b2cf77dae49758030f1ba410940092eb",
+      "size": 1317
     },
     {
       "path": ".agents/skills/oma-hwp/resources/balanced-tables.ts",
@@ -1081,8 +1081,8 @@
     },
     {
       "path": ".agents/skills/oma-image/config/image-config.yaml",
-      "sha256": "a15444d96cb5dc271cb5fbf2a759d2a68519833c174b17053760fa044364695a",
-      "size": 1807
+      "sha256": "24f1dc914d3750e89cfc070e404229e853f002d20a448da9daf35895088ca085",
+      "size": 2335
     },
     {
       "path": ".agents/skills/oma-image/resources/checklist.md",
@@ -1521,13 +1521,13 @@
     },
     {
       "path": ".agents/skills/oma-pdf/SKILL.md",
-      "sha256": "3d21aae7e3ddd427b2e0f33f67a418cebd3d50e5e76eeab5c3db7ac649bb3caa",
-      "size": 8765
+      "sha256": "97f2b0d0ebae4b52d1d7bebef4b7bbfc187095b8db48c2ac46ca99da4e23ff0f",
+      "size": 9052
     },
     {
       "path": ".agents/skills/oma-pdf/config/pdf-config.yaml",
-      "sha256": "368b86c8943dff721c80d258ee8b70736dd35051595075c8bf0d66c352ebdd97",
-      "size": 666
+      "sha256": "437f3a70b0bb99edcf4ac3e0e8306ba34f32f05e7b6f59bb2e57c14421438f9a",
+      "size": 950
     },
     {
       "path": ".agents/skills/oma-pdf/resources/execution-protocol.md",
@@ -1631,13 +1631,13 @@
     },
     {
       "path": ".agents/skills/oma-scholar/SKILL.md",
-      "sha256": "d73688570ef8ed8dd83444fd96bc88699906450ce7575c6f632a39174911aea7",
-      "size": 14500
+      "sha256": "f8012634c7064906ffe5d4ecf9317d6b9ddd418a3835c545674bc7ef2f435aa6",
+      "size": 14772
     },
     {
       "path": ".agents/skills/oma-scholar/config/scholar-config.yaml",
-      "sha256": "0d8ff585e81d804d63f07b16656d468f61046fddcb8f8f8b0f7b92fbb999b89b",
-      "size": 2426
+      "sha256": "d7ff820f0514208124e518d5b5d40b0c5065b15d87fba23e32aa3afe32b058f3",
+      "size": 2643
     },
     {
       "path": ".agents/skills/oma-scholar/resources/api-endpoints.md",
@@ -1866,8 +1866,8 @@
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
-      "sha256": "75021bcbcfe3d72f01b40a2f70cdd4d497dba92a48b41b4e2880d4be57e14d5b",
-      "size": 1421
+      "sha256": "76645c3e32355a057f1afaffa6b93b01bde45c2ac68d29e96e3178060acda61a",
+      "size": 1930
     },
     {
       "path": ".agents/skills/oma-video/resources/checklist.md",
@@ -2001,13 +2001,13 @@
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
-      "sha256": "093692c613857a1ea418d2fe768d448ddb0f312da3c846fd1a53786e569209c1",
-      "size": 12975
+      "sha256": "d6664c583d86d0df84e441a3b9eefa459d0b2e4f9621b2bfc043ce3978da6801",
+      "size": 13234
     },
     {
       "path": ".agents/skills/oma-voice/config/voice-config.yaml",
-      "sha256": "3439d9cedc5412f64b5af987670b5a43e16381dbeeefce0c54a779378372b52e",
-      "size": 880
+      "sha256": "c1a123b22b98be5f409853ddd1911d44918f82f503d0ea08bbff9b03a17727fd",
+      "size": 1166
     },
     {
       "path": ".agents/skills/oma-voice/resources/checklist.md",
