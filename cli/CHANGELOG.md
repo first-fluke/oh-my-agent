@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.11.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.11.0...cli-v11.11.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* **hooks:** prevent hud statusline hang when stdin never closes ([0147f34](https://github.com/first-fluke/oh-my-agent/commit/0147f347fa644f5ab4c7c5ae059823b532f6c19c))
+
 ## [11.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.3...cli-v11.11.0) (2026-08-12)
 
 
