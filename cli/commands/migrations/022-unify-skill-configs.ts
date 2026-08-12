@@ -20,11 +20,11 @@
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { appendMissingConfigKeys } from "../../platform/agent-config/config-merge.js";
 import {
   omitPaths,
   sparseDiff,
 } from "../../platform/agent-config/skill-sections.js";
-import { appendMissingConfigKeys } from "../update/config-merge.js";
 import type { Migration } from "./index.js";
 
 const APPEND_HEADER =

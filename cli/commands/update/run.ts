@@ -19,6 +19,7 @@ import {
 } from "../../io/serena.js";
 import { downloadAndExtract } from "../../io/tarball.js";
 import pkg from "../../package.json";
+import { appendMissingConfigKeys } from "../../platform/agent-config/config-merge.js";
 import {
   getInstallMode,
   getInstallRoot,
@@ -64,7 +65,6 @@ import {
   captureBackendStackBeforeCopy,
   restoreBackendStackAfterCopy,
 } from "./backend-stack.js";
-import { appendMissingConfigKeys } from "./config-merge.js";
 import { maybePromptGitHubStar } from "./github-star.js";
 import {
   classifyUpdateTarget,

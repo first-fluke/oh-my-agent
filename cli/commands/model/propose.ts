@@ -10,9 +10,9 @@
 
 import fs from "node:fs";
 import { parse as yamlParse, stringify as yamlStringify } from "yaml";
+import { appendSectionEntries } from "../../platform/agent-config/config-merge.js";
 import { OMA_CONFIG_RELATIVE_PATH } from "../../platform/agent-config/skill-sections.js";
 import { findFileUpwards } from "../../utils/fs-utils.js";
-import { appendSectionEntries } from "../update/config-merge.js";
 import type { ProbeResult } from "./probe.js";
 
 // ---------------------------------------------------------------------------
