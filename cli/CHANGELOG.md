@@ -1,5 +1,28 @@
 # Changelog
 
+## [12.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.11.1...cli-v12.0.0) (2026-08-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** .agents/skills/*/config/*.yaml, .agents/config/models.yaml, and cli-config.yaml active_vendor are no longer read by the CLI. Run `oma update` (migration 022) to move user-modified keys into .agents/oma-config.yaml; keys left in legacy files have no effect.
+
+### Features
+
+* **cli:** drop legacy skill config files from the read path ([3a15d43](https://github.com/first-fluke/oh-my-agent/commit/3a15d436f7a221698b980ce64b854aff491f822d))
+* **cli:** unify skill configs into oma-config.yaml ([fd24190](https://github.com/first-fluke/oh-my-agent/commit/fd24190d60aea525ea9899e97d5bb4ff9acaea5a))
+
+
+### Bug Fixes
+
+* **cli:** move config-merge to the platform layer ([efddcd5](https://github.com/first-fluke/oh-my-agent/commit/efddcd5420cac40840532f6e968d7a20b614335c))
+
+
+### Documentation
+
+* add skill config unification design (024) ([e74f61d](https://github.com/first-fluke/oh-my-agent/commit/e74f61d64f27746a02b02e1248f50fa6b220568b))
+* remove emit export subsection from quick start ([14876ce](https://github.com/first-fluke/oh-my-agent/commit/14876ce6c0c6f5a673ba91594f656b2bf1f0e77a))
+
 ## [11.11.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.11.0...cli-v11.11.1) (2026-08-12)
 
 
