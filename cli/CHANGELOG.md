@@ -1,5 +1,26 @@
 # Changelog
 
+## [11.11.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.3...cli-v11.11.0) (2026-08-12)
+
+
+### Features
+
+* **cli:** add --dry-run preview to oma link ([c1016e7](https://github.com/first-fluke/oh-my-agent/commit/c1016e755d9c26e9cfa517d8852b74002f34c247))
+
+
+### Bug Fixes
+
+* **cli:** make generated-file writes atomic ([9f9fab3](https://github.com/first-fluke/oh-my-agent/commit/9f9fab3c3673185f69ca0f1027dd59fb034baa4a))
+* **cli:** remove home-consent vendor symlinks on uninstall ([e48d15c](https://github.com/first-fluke/oh-my-agent/commit/e48d15cb11895ad09503b6646e0634f52c3544d7))
+* **cli:** sync generated package readme with new title ([8811a04](https://github.com/first-fluke/oh-my-agent/commit/8811a046caef07d9c9ff3ad40d7d643020909659))
+
+
+### Documentation
+
+* add ownership manifest design (023) ([5b9097e](https://github.com/first-fluke/oh-my-agent/commit/5b9097e08df02d3eae2be836f3fb7bf7ff05fd03))
+* reposition readme around mechanical verification ([1894e3a](https://github.com/first-fluke/oh-my-agent/commit/1894e3a7359506e17c42498056fb33278794efbe))
+* sync translated readmes with verification-first structure ([6ca2f25](https://github.com/first-fluke/oh-my-agent/commit/6ca2f259bf75930bc389c609cd7e909d929a51d9))
+
 ## [11.10.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.10.2...cli-v11.10.3) (2026-08-10)
 
 
