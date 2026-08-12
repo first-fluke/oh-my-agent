@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.1...web-v4.1.2) (2026-08-12)
+
+
+### Documentation
+
+* reposition readme around mechanical verification ([1894e3a](https://github.com/first-fluke/oh-my-agent/commit/1894e3a7359506e17c42498056fb33278794efbe))
+
 ## [4.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.0...web-v4.1.1) (2026-08-06)
 
 
