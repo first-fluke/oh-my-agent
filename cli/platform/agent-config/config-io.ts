@@ -69,10 +69,7 @@ function parseCliConfig(content: string, filePath?: string): CliConfig {
   const result = CliConfigSchema.safeParse(parsed);
   if (!result.success) return { vendors: {} };
 
-  return {
-    active_vendor: result.data.active_vendor,
-    vendors: result.data.vendors as Record<string, VendorConfig>,
-  };
+  return { vendors: result.data.vendors as Record<string, VendorConfig> };
 }
 
 import { findFileUpwards } from "../../utils/fs-utils.js";
@@ -80,12 +77,11 @@ import { findFileUpwards } from "../../utils/fs-utils.js";
 export const findConfigFileUp = findFileUpwards;
 
 /**
- * Read `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
- *
- * The `vendors:` half is a shipped capability registry (command names, flag
- * spellings, `response_jq`) and stays here permanently. The `active_vendor:`
- * half is deprecated in favour of oma-config's `default_cli` and survives one
- * release only — see design 024 §4.6 and the warning in `resolveVendor`.
+ * Read the `vendors:` capability registry from
+ * `.agents/skills/oma-orchestrator/config/cli-config.yaml` — command names, flag
+ * spellings, `response_jq`. That half is shipped data and stays here
+ * permanently. The file's `active_vendor:` key is no longer read at all: design
+ * 024 §4.6 replaced it with oma-config's `default_cli`.
  */
 export function readCliConfig(cwd: string): CliConfig | null {
   const configPath = findConfigFileUp(

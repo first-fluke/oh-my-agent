@@ -3,8 +3,9 @@
 
 # Remote API
 # `base_url` is the one user-tunable key here (self-hosted knows instances).
-# Set it as `scholar.base_url` in .agents/oma-config.yaml — `oma update`
-# overwrites this file. Everything else below is protocol shape.
+# Set it as `scholar.base_url` in .agents/oma-config.yaml, which wins and which
+# `oma update` preserves — this file is overwritten and supplies only the
+# shipped default. Everything else below is protocol shape.
 api:
   base_url: https://knows.academy
   endpoints:

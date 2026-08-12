@@ -69,7 +69,7 @@ outputs:
 - `oma video generate` CLI + central error module (exit codes aligned with `oma search fetch`)
 - oma-voice (Voicebox MCP), oma-image, oma-slide as key-free fallback providers
 - Vendored Remotion project at `resources/remotion/` (compositor)
-- `resources/vendor-matrix.md`, `resources/execution-protocol.md`, `resources/prompt-tips.md`, `config/video-config.yaml`
+- `resources/vendor-matrix.md`, `resources/execution-protocol.md`, `resources/prompt-tips.md`, and the `video:` section of `.agents/oma-config.yaml`
 
 ### Control-flow features
 - Branches by mode (shorts / explainer / demo), aspect, visual strategy, provider availability, cost threshold, capture requirement, and path safety
@@ -82,7 +82,7 @@ outputs:
 ### Entry
 1. Validate that the brief carries enough mode/topic signal (or infer the mode from keywords).
 2. For `demo`, confirm a capture path exists (or Cap is available); otherwise enter the guided protocol.
-3. Resolve defaults from `config/video-config.yaml` -> env vars -> CLI flags; check output path safety and limits.
+3. Resolve defaults from shipped code defaults -> the `video:` section of `.agents/oma-config.yaml` -> env vars -> CLI flags; check output path safety and limits.
 
 ### Scenes
 1. **PREPARE**: Resolve mode/aspect/locale, clarify or amplify the brief, choose the visual + compositor strategy.
@@ -319,7 +319,7 @@ The MPT fallback compositor driver lives at `resources/mpt/driver.py` (consumed 
 
 ### Configuration
 
-Project-specific settings: `config/video-config.yaml`.
+Project-specific settings: the `video:` section of `.agents/oma-config.yaml`, which `oma update` preserves. Shipped defaults live in the CLI (`DEFAULT_VIDEO_CONFIG` in `cli/commands/video/config.ts`) — write only the keys you change. The legacy `config/video-config.yaml` is no longer read by the CLI; migration 022 moves anything you had changed there into oma-config (and deletes the file when it was never edited).
 Env vars: `OMA_VIDEO_DEFAULT_MODE`, `OMA_VIDEO_DEFAULT_OUT`, `OMA_VIDEO_YES`, `PEXELS_API_KEY`, `RUNNINGHUB_API_KEY` (+ `POLLINATIONS_API_KEY` via oma-image), `OMA_VIDEO_MOCK`, `OMA_VIDEO_PLAYWRIGHT_DIR` (web-capture Playwright override), `OMA_VIDEO_PWTEST` (opt-in web-capture e2e).
 
 - Execution steps: `resources/execution-protocol.md`

@@ -3,7 +3,8 @@
 > Design for moving user-tunable keys out of the seven per-skill `config/*.yaml` files and into
 > `.agents/oma-config.yaml`, the one file install/update/uninstall already treat as user-owned.
 
-- Status: **Implemented** (§8 amended during implementation — see the note there)
+- Status: **Implemented**, as a **breaking change** (§5, §7 and §8 amended — the one-release
+  deprecation window was cancelled by user decision before release; see §7)
 - Date: 2026-08-12
 - Scope: `.agents/skills/*/config/*.yaml` (7 files) + the `.agents/config/models.yaml` preservation gap.
 - Related: `023-ownership-manifest.md` (the `seeded` ownership class this design leans on),
@@ -223,31 +224,49 @@ skill file. `base_url` is the one key a user with a self-hosted knows instance m
 
 ## 5. Precedence
 
-Unchanged, and now uniform across all six sections:
+> **Amended after implementation — the deprecation window was cancelled by user decision.**
+> The legacy tier described below was built, then removed before release; the shipped precedence
+> is the four-tier chain, and migration 022 is the only compatibility path. See §7.
+
+Shipped precedence, uniform across all six sections:
+
+```
+built-in defaults  <  .agents/oma-config.yaml  <  env vars  <  CLI flags
+```
+
+The legacy skill configs are not a tier — no reader consults them. Env and flag handling
+(`applyEnvOverrides`, `video/config.ts`, `image/config.ts`) is untouched.
+
+<details>
+<summary>Original design (superseded)</summary>
 
 ```
 built-in defaults  <  .agents/oma-config.yaml  <  legacy skill config (deprecated, §7)  <  env vars  <  CLI flags
 ```
 
-The legacy tier sits above oma-config only during the deprecation window, so a user who has *not*
-migrated keeps their current behaviour byte for byte. Env and flag handling
-(`applyEnvOverrides`, `video/config.ts:219-232`, `image/config.ts:167-174`) is untouched.
+The legacy tier was to sit above oma-config during a one-release window, so a user who had *not*
+migrated kept their current behaviour byte for byte.
+
+</details>
 
 ## 6. Readers to Update
 
 **CLI-read** — code change required:
 
-- `cli/commands/video/config.ts` — replace `PROJECT_CONFIG_PATH` (`:97`) with an oma-config section
-  read; keep `normalizeKeys` (`:168-217`) for the legacy fallback tier. `applyRootLanguage`
-  (`:234-245`) collapses into the same single read.
-- `cli/commands/image/config.ts` — same for `CONFIG_PATH` (`:91`); `applyRootLanguage` (`:176-187`)
-  additionally drops its stray `require("node:fs")` inside an ESM module.
-- `cli/platform/agent-config/vendor-resolution.ts:148-153` — drop the `cliConfig?.active_vendor`
-  tier after the window. `readCliConfig` (`config-io.ts:82`) survives for the `vendors:` registry.
+- `cli/commands/video/config.ts` — replace `PROJECT_CONFIG_PATH` with an oma-config section read;
+  keep `normalizeKeys`, which now maps the section's snake_case keys. `applyRootLanguage` collapses
+  into the same single read.
+- `cli/commands/image/config.ts` — same for `CONFIG_PATH`; `applyRootLanguage` additionally drops
+  its stray `require("node:fs")` inside an ESM module.
+- `cli/platform/agent-config/vendor-resolution.ts` — drop the `cliConfig?.active_vendor` tier.
+  `readCliConfig` (`config-io.ts`) survives for the `vendors:` registry.
+- `cli/platform/model-registry/user-models.ts` — `loadUserModels` / `mergeUserModels` deleted;
+  `loadInlineUserModelSpecs` is what `reloadRegistry` reads.
 - Delete `cli/commands/video/config/video-config.yaml` (dead, §1.2).
 
-A shared `loadSkillSection<T>(cwd, section)` helper — one YAML read, one deep-merge, one
-legacy-fallback warning path — avoids a third copy of the merge logic.
+A shared `loadSkillSection<T>(cwd, section)` helper — one YAML read, one deep-merge — avoids a
+third copy of the merge logic. `sparseDiff` / `omitPaths` live alongside it for migration 022,
+which is now their only consumer.
 
 **Agent-read** — `SKILL.md` change required, no code:
 
@@ -297,15 +316,42 @@ Writes reuse the append-only path of `appendMissingConfigKeys`
 (`cli/commands/update/config-merge.ts`) so user comments and ordering survive; the migration never
 rewrites an existing user key.
 
-**Deprecation window — one release:**
+**Deprecation window — cancelled.**
+
+> **Amended after implementation, by user decision.** The one-release window below was built and
+> then removed in the same release, before shipping. This is a **breaking change**: the legacy
+> read tiers are gone at N, not N+1.
+
+What ships at N:
+
+| Surface | Behaviour |
+|---|---|
+| `video:` / `image:` readers | oma-config section only. `.agents/skills/*/config/*.yaml` is never read; no stderr warning, because there is no tier left to warn about |
+| `models:` | oma-config's inline block only. `.agents/config/models.yaml` is not read by the registry |
+| `active_vendor` | not read. `vendorOverride \|\| mappedVendor \|\| default_cli \|\| "claude"` |
+| Migration 022 | unchanged, and now the **sole** compatibility path — it still reads every legacy file and its shipped-default snapshot to move the user's diverged keys into oma-config |
+
+The consequence a user sees: a legacy file that migration 022 has not yet folded in stops taking
+effect the moment they upgrade. `oma update` runs the migration, so the ordinary upgrade path
+carries their keys across; a user who copies an old `.agents/` in by hand and never runs a
+migration falls back to shipped defaults. That was the failure mode the window existed to soften,
+and accepting it is what makes this a major bump.
+
+The `023-remove-legacy-skill-configs` follow-up migration is no longer needed for reader
+correctness — the files are inert. Deleting them remains optional cleanup.
+
+<details>
+<summary>Original window (superseded)</summary>
 
 | Release | Reader behaviour | Migration behaviour |
 |---|---|---|
 | N (this change) | oma-config first; on legacy hit, use it and emit a one-line stderr warning naming the file, the key, and the oma-config path to move it to | runs; migrates modified keys; deletes unmodified legacy files |
 | N+1 | legacy tier removed; a surviving legacy file is ignored | `023-remove-legacy-skill-configs` deletes the remaining files |
 
-The warning goes to stderr only, once per key per process, so it cannot corrupt the JSON-on-stdout
-contract that `oma video` / `oma image` share with the market pipeline convention.
+The warning went to stderr only, once per key per process, so it could not corrupt the
+JSON-on-stdout contract that `oma video` / `oma image` share with the market pipeline convention.
+
+</details>
 
 ## 8. `models.yaml` — Resolved: fold into `oma-config`, no uninstall classifier
 
@@ -326,32 +372,34 @@ So the fix is not to teach uninstall about a second location — it is to have o
 - **Migration 022 also folds it in.** Entries in `.agents/config/models.yaml` are appended to
   oma-config's `models:` block, subject to the same append-only rule: if the user already has a
   `models:` key, the migration reports the conflict and changes nothing.
-- **Same one-release deprecation window.** `reloadRegistry` now merges both sources with the file
-  winning (`mergeUserModels`, `user-models.ts`), so a user mid-migration sees no slug resolve
-  differently. Each surviving slug warns once on stderr, naming `models.<slug>` in oma-config.
-- **The file is not deleted** by the migration, for the same reason the modified skill configs are
-  not: it is still the winning tier during the window.
+- **The file is no longer read.** *(Amended — the draft gave it the same one-release window, with
+  `mergeUserModels` merging both sources and the file winning. That window was cancelled with the
+  rest of §7.)* `reloadRegistry` reads `loadInlineUserModelSpecs` only; `loadUserModels` and
+  `mergeUserModels` are deleted. A slug that lives only in `models.yaml` does not resolve.
+- **The file is not deleted** by the migration. It is inert, and deleting a user's file to no
+  purpose is worse than leaving it.
 - **No uninstall change.** `.agents/config/` stays `omaOwned`. Once the user's slugs live in
   oma-config, removing the directory is correct — it holds only shipped `defaults.yaml`. The
   data-loss bug of §1.5 is fixed by moving the data, not by reclassifying its old home.
 
-This also settles §1.5's inconsistency in favour of the changelog's *intent*: after the window,
+This also settles §1.5's inconsistency in favour of the changelog's *intent*:
 `.agents/config/models.yaml` genuinely no longer participates.
 
-One follow-up left open: `model/propose.ts` still writes proposals to `models.yaml`. It should
-target oma-config's `models:` block before the window closes, otherwise `oma model propose` keeps
-writing into the deprecated file. Out of scope here — it is a write path, not a read path, and
-migration 022 folds whatever it produces on the next update.
+**Resolved:** `model/propose.ts` used to write proposals into `models.yaml`. It now appends them to
+oma-config's `models:` block via the same append-only merge the migration uses
+(`appendSectionEntries`, `update/config-merge.ts`), so no key the user already wrote is rewritten.
+Duplicate detection reads the `models:` block only — a slug surviving in the old file resolves
+nowhere, so proposing it is the useful answer.
 
 ## 9. Failure Modes
 
 | Failure | Behaviour |
 |---|---|
-| `oma-config.yaml` malformed | section read fails → fall back to legacy file, then defaults; never throw. Matches the existing `try/catch` in `applyRootLanguage` (`video/config.ts:241-244`) |
-| Both oma-config section and legacy file present | oma-config wins per §5 during the window? **No** — legacy wins, with a warning. Chosen deliberately: a user mid-migration must not see behaviour flip under them. Reversed at N+1 |
+| `oma-config.yaml` malformed | section read fails → shipped defaults; never throw. Matches the existing `try/catch` in `applyRootLanguage` |
+| Both oma-config section and legacy file present | oma-config wins; the legacy file is not read at all. *(Amended — the draft had legacy winning for one release, §7.)* |
 | Migration run twice | idempotent — step 4/5 finds no legacy file, or finds keys already present in oma-config and skips them |
 | Migration on a repo where the user edited *and* upstream changed the same default | user value is migrated (diff is against the *shipped* default of the version being upgraded from, read via manifest `sha256`); if that pristine copy is unavailable, the migration migrates the whole file and reports it as a coarse migration rather than guessing |
-| User never runs the migration (fresh clone of an old `.agents/`) | legacy tier still reads their file at release N; at N+1 the file is ignored and defaults apply. This is the one real data-loss window — the N-release warning is what mitigates it, so it must name the exact oma-config path |
+| User never runs the migration (fresh clone of an old `.agents/`) | their legacy file is ignored and shipped defaults apply. The accepted cost of cancelling the window (§7); `oma update` runs the migration, so only a hand-copied `.agents/` hits this |
 | Global + project install both present | unchanged; `findConfigFileUp` (`config-io.ts:80`) already walks upward and finds the nearest `.agents/` |
 | `.agents/config/models.yaml` present but empty | classified `userOwned`, preserved, no-op |
 
@@ -360,9 +408,10 @@ migration 022 folds whatever it produces on the next update.
 | Test | Covers |
 |---|---|
 | `022-unify-skill-configs.test.ts` | per-skill: unmodified file deleted; modified file yields exactly the changed keys; idempotent rerun |
-| `video/config.test.ts` (extend `:42`) | oma-config `video:` read; legacy fallback + warning; env still overrides both |
-| `image/config.test.ts` (extend `:30`) | same for `image:` |
-| `vendor-resolution.test.ts` | `default_cli` beats legacy `active_vendor`; removal of the tier keeps the `"claude"` floor |
+| `video/config.test.ts` | oma-config `video:` read; a legacy file present is ignored; env still overrides the section |
+| `image/config.test.ts` | same for `image:` |
+| `model-registry.test.ts` | slugs resolve from the inline `models:` block; a slug living only in `models.yaml` does not resolve, and nothing is written to stderr about it |
+| `vendor-resolution.test.ts` | `default_cli` decides when no preset or override does; the `"claude"` floor survives the tier removal |
 | `update-preserves-skill-overrides.test.ts` | **regression for §1.1** — write an override, run update, assert it survives |
 | `uninstall-models-yaml.test.ts` | **regression for §1.5** — `models.yaml` preserved, `defaults.yaml` removed |
 | `skill-config-sections.test.ts` | every key in the §4 tables resolves to a real default; guards the tables against drift |

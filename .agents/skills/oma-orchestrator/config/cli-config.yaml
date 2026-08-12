@@ -1,8 +1,9 @@
 # SubAgent CLI Configuration
 # Select your preferred CLI vendor for sub-agent execution
 
-# Default CLI vendor (used as fallback when oma-config.yaml is not configured)
-# For per-agent CLI mapping, see: .agents/oma-config.yaml
+# NO LONGER READ. Set `default_cli:` in .agents/oma-config.yaml instead — this
+# file is overwritten by `oma update`, and migration 022 moves a non-default
+# value across for you. For per-agent CLI mapping, see .agents/oma-config.yaml.
 active_vendor: claude
 
 # Vendor configurations

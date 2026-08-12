@@ -2,7 +2,6 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { resetLegacyWarnings } from "../../platform/agent-config/skill-sections.js";
 import { loadConfig } from "./config.js";
 
 describe("loadConfig", () => {
@@ -27,28 +26,28 @@ describe("loadConfig", () => {
     expect(cfg.vendors.antigravity?.enabled).toBe(true);
   });
 
-  it("reads YAML snake_case keys into camelCase", async () => {
-    const cfgDir = path.join(tmp, ".agents/skills/oma-image/config");
-    mkdirSync(cfgDir, { recursive: true });
+  it("reads snake_case section keys into camelCase", async () => {
+    mkdirSync(path.join(tmp, ".agents"), { recursive: true });
     writeFileSync(
-      path.join(cfgDir, "image-config.yaml"),
+      path.join(tmp, ".agents/oma-config.yaml"),
       `
-default_output_dir: out/
-default_vendor: codex
-default_size: 1024x1536
-default_quality: high
-default_count: 2
-cost_guardrail:
-  estimate_threshold_usd: 0.5
-  per_image_usd:
-    codex:
-      gpt-image-2:
-        high: 0.1
-compare:
-  folder_pattern: custom-{shortid}
-  manifest: false
-naming:
-  single_folder_pattern: s-{shortid}
+image:
+  default_output_dir: out/
+  default_vendor: codex
+  default_size: 1024x1536
+  default_quality: high
+  default_count: 2
+  cost_guardrail:
+    estimate_threshold_usd: 0.5
+    per_image_usd:
+      codex:
+        gpt-image-2:
+          high: 0.1
+  compare:
+    folder_pattern: custom-{shortid}
+    manifest: false
+  naming:
+    single_folder_pattern: s-{shortid}
 `,
       "utf8",
     );
@@ -88,10 +87,6 @@ naming:
       writeFileSync(path.join(dir, "image-config.yaml"), body, "utf8");
     }
 
-    beforeEach(() => {
-      resetLegacyWarnings();
-    });
-
     it("reads overrides from the oma-config section", async () => {
       writeOmaConfig("image:\n  default_vendor: pollinations\n");
       const cfg = await loadConfig(tmp);
@@ -115,22 +110,22 @@ naming:
       expect(cfg.costGuardrail.perImageUsd.pollinations?.flux).toBeDefined();
     });
 
-    it("ignores a legacy file that still matches the shipped defaults", async () => {
+    it("ignores the legacy skill config entirely", async () => {
       writeOmaConfig("image:\n  default_vendor: pollinations\n");
-      writeLegacy("default_vendor: auto\ndefault_size: 1024x1024\n");
-      expect((await loadConfig(tmp)).defaultVendor).toBe("pollinations");
+      writeLegacy("default_vendor: codex\ndefault_size: 512x512\n");
+      const cfg = await loadConfig(tmp);
+      expect(cfg.defaultVendor).toBe("pollinations");
+      expect(cfg.defaultSize).toBe("1024x1024");
     });
 
-    it("lets a diverging legacy key win during the deprecation window", async () => {
-      writeOmaConfig("image:\n  default_vendor: pollinations\n");
+    it("falls back to shipped defaults when only the legacy file exists", async () => {
       writeLegacy("default_vendor: codex\n");
-      expect((await loadConfig(tmp)).defaultVendor).toBe("codex");
+      expect((await loadConfig(tmp)).defaultVendor).toBe("auto");
     });
 
-    it("keeps env above both config tiers", async () => {
+    it("keeps env above the oma-config section", async () => {
       process.env.OMA_IMAGE_DEFAULT_VENDOR = "antigravity";
       writeOmaConfig("image:\n  default_vendor: pollinations\n");
-      writeLegacy("default_vendor: codex\n");
       expect((await loadConfig(tmp)).defaultVendor).toBe("antigravity");
     });
 

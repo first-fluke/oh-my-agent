@@ -13,6 +13,10 @@ export interface ConfigMergeResult {
   addedKeys: string[];
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -62,4 +66,106 @@ export function appendMissingConfigKeys(
     userRaw.length === 0 || userRaw.endsWith("\n") ? userRaw : `${userRaw}\n`;
   const block = `\n# ${headerComment}\n${stringifyYaml(missing)}`;
   return { content: base + block, addedKeys };
+}
+
+/**
+ * Append child entries under one top-level section, creating the section when
+ * the user does not have it yet.
+ *
+ * `appendMissingConfigKeys` works at the top level only: a user who already has
+ * `models:` gets nothing, and a second `models:` block appended at the bottom
+ * would be a duplicate key that fails to parse. This walks to the end of the
+ * existing block and splices the new entries in, so everything the user already
+ * wrote — keys, comments, ordering, blank lines — stays byte-identical.
+ *
+ * `addedKeys` is the list of entry keys written, not the section name.
+ * Returns a no-op result when the file is malformed, when the section holds
+ * something other than a mapping, or when the splice would not parse back.
+ */
+export function appendSectionEntries(
+  userRaw: string,
+  section: string,
+  entries: Record<string, unknown>,
+  headerComment: string = UPDATE_HEADER,
+): ConfigMergeResult {
+  const noop: ConfigMergeResult = { content: userRaw, addedKeys: [] };
+  const entryKeys = Object.keys(entries);
+  if (entryKeys.length === 0) return noop;
+
+  let user: Record<string, unknown>;
+  try {
+    const parsed = parseYaml(userRaw);
+    if (parsed === null || parsed === undefined) user = {};
+    else if (isPlainObject(parsed)) user = parsed;
+    else return noop;
+  } catch {
+    return noop;
+  }
+
+  if (!(section in user)) {
+    const created = appendMissingConfigKeys(
+      userRaw,
+      stringifyYaml({ [section]: entries }),
+      headerComment,
+    );
+    if (created.addedKeys.length === 0) return noop;
+    return { content: created.content, addedKeys: entryKeys };
+  }
+
+  const existing = user[section];
+  // A null section is an empty mapping waiting to be filled; a scalar or a
+  // sequence is something else entirely and is not ours to rewrite.
+  if (existing !== null && !isPlainObject(existing)) return noop;
+
+  const spliced = spliceIntoSection(userRaw, section, entries, headerComment);
+  if (spliced === null) return noop;
+
+  // The splice is line arithmetic, so prove the result still parses and still
+  // carries every entry before handing it back to be written.
+  try {
+    const reparsed = parseYaml(spliced);
+    if (!isPlainObject(reparsed)) return noop;
+    const merged = reparsed[section];
+    if (!isPlainObject(merged)) return noop;
+    if (!entryKeys.every((key) => key in merged)) return noop;
+  } catch {
+    return noop;
+  }
+
+  return { content: spliced, addedKeys: entryKeys };
+}
+
+/**
+ * Insert `entries` after the last line belonging to `section`'s block.
+ * Returns null when the section header is not a plain `key:` line — an inline
+ * flow mapping (`models: {}`) has no block to append to.
+ */
+function spliceIntoSection(
+  userRaw: string,
+  section: string,
+  entries: Record<string, unknown>,
+  headerComment: string,
+): string | null {
+  const lines = userRaw.split("\n");
+  const headerPattern = new RegExp(`^${escapeRegExp(section)}:[ \t]*(#.*)?$`);
+
+  const sectionIndex = lines.findIndex((line) => headerPattern.test(line));
+  if (sectionIndex === -1) return null;
+
+  let insertAfter = sectionIndex;
+  for (let i = sectionIndex + 1; i < lines.length; i++) {
+    const line = lines[i] ?? "";
+    if (line.trim() === "") continue;
+    // The first line back at column 0 ends the block.
+    if (!/^[ \t]/.test(line)) break;
+    insertAfter = i;
+  }
+
+  const body = stringifyYaml(entries, { indent: 2, lineWidth: 0 })
+    .replace(/\n+$/, "")
+    .split("\n")
+    .map((line) => (line === "" ? line : `  ${line}`));
+
+  lines.splice(insertAfter + 1, 0, `  # ${headerComment}`, ...body);
+  return lines.join("\n");
 }

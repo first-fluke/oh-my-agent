@@ -14,11 +14,12 @@
  *
  * Precedence (§5 of the design):
  *
- *   built-in defaults < oma-config section < legacy skill config < env < flags
+ *   built-in defaults < oma-config section < env < flags
  *
- * The legacy tier outranks oma-config for one release only, and only for keys
- * where the legacy file diverges from the shipped default — a user mid-migration
- * must not see behaviour flip under them. Removed at N+1.
+ * The legacy skill configs are not a tier: the CLI does not read them at all.
+ * Migration 022 is the sole compatibility path — it moves a user's diverged keys
+ * into oma-config, and the diff helpers below (`sparseDiff`, `omitPaths`) exist
+ * for it rather than for any reader.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -44,7 +45,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * Parse `.agents/oma-config.yaml`, walking up from `cwd` so a project nested
  * under a global install still resolves. Returns undefined when the file is
  * missing, unreadable, or malformed — a broken root config must degrade to the
- * legacy file and then to defaults, never throw.
+ * shipped defaults, never throw.
  */
 export function readRootOmaConfig(
   cwd: string,
@@ -101,6 +102,7 @@ function leavesEqual(a: unknown, b: unknown): boolean {
 
 /**
  * Leaves of `actual` that differ from `defaults`, as a sparse nested object.
+ * Used by migration 022 to decide which legacy keys are the user's own.
  *
  * Keys absent from `actual` are omitted rather than treated as changes: the
  * whole point of a sparse section is that "absent" means "default". A key
@@ -168,79 +170,6 @@ export function omitPaths(
         segments[i - 1] as string
       ];
     }
-  }
-  return out;
-}
-
-// ---------------------------------------------------------------------------
-// Deprecation warning — stderr only, once per key per process
-// ---------------------------------------------------------------------------
-
-const warned = new Set<string>();
-
-/**
- * Warn that a legacy skill config still decides a key.
- *
- * stderr only, and at most once per (file, key) per process, so it cannot
- * corrupt the JSON-on-stdout contract `oma video` / `oma image` share with the
- * market pipeline convention. The message names the exact oma-config path to
- * move the key to — for a user who never runs the migration, this warning is
- * the only thing standing between them and a silent reset at N+1.
- */
-export function warnLegacySkillConfig(
-  legacyFile: string,
-  key: string,
-  omaConfigPath: string,
-): void {
-  const token = `${legacyFile}::${key}`;
-  if (warned.has(token)) return;
-  warned.add(token);
-  process.stderr.write(
-    `[oma] deprecated: ${legacyFile} still sets \`${key}\`. ` +
-      `Move it to \`${omaConfigPath}\` in .agents/oma-config.yaml — ` +
-      `the legacy file is ignored from the next release and is overwritten by \`oma update\`.\n`,
-  );
-}
-
-/** Test-only: forget which deprecation warnings have already been emitted. */
-export function resetLegacyWarnings(): void {
-  warned.clear();
-}
-
-/**
- * Emit one deprecation warning per diverging leaf in a sparse override set.
- *
- * Paths arrive in the reader's internal camelCase but are reported snake_case,
- * because that is how the key is spelled in both the file being deprecated and
- * the oma-config section replacing it. A warning naming `defaultOutputDir` when
- * the user must write `default_output_dir` is a warning they cannot act on.
- */
-export function warnLegacySection(
-  overrides: Record<string, unknown>,
-  legacyFile: string,
-  section: SkillSectionName,
-): void {
-  for (const dotted of flattenKeys(overrides)) {
-    const key = dotted.split(".").map(toSnakeCase).join(".");
-    warnLegacySkillConfig(legacyFile, key, `${section}.${key}`);
-  }
-}
-
-/** `defaultOutputDir` → `default_output_dir`. Leaves lowercase names alone. */
-function toSnakeCase(segment: string): string {
-  return segment.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
-}
-
-/** Dot-separated paths to every leaf of a sparse object. */
-export function flattenKeys(
-  source: Record<string, unknown>,
-  prefix = "",
-): string[] {
-  const out: string[] = [];
-  for (const [key, value] of Object.entries(source)) {
-    const dotted = prefix ? `${prefix}.${key}` : key;
-    if (isPlainObject(value)) out.push(...flattenKeys(value, dotted));
-    else out.push(dotted);
   }
   return out;
 }

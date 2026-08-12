@@ -139,13 +139,13 @@ const VendorConfigSchema = z
     prompt_flag: value.prompt_flag ?? undefined,
   }));
 
+// `active_vendor` is deliberately absent: design 024 §4.6 removed it as a
+// resolution tier. `.passthrough()` still tolerates it in a user's file.
 export const CliConfigSchema = z
   .object({
-    active_vendor: z.string().optional(),
     vendors: z.record(z.string(), VendorConfigSchema).optional(),
   })
   .passthrough()
   .transform((value) => ({
-    active_vendor: value.active_vendor,
     vendors: value.vendors ?? {},
   }));

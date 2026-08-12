@@ -252,7 +252,7 @@ export function registerModelCommands(program: Command): void {
   program
     .command("model:propose")
     .description(
-      "Run model:check --probe internally and generate a models.yaml patch for accepted candidates",
+      "Run model:check --probe internally and generate an oma-config `models:` patch for accepted candidates",
     )
     .option("--json", "Output as JSON")
     .option(
@@ -261,7 +261,7 @@ export function registerModelCommands(program: Command): void {
     )
     .option(
       "--write",
-      "Append accepted entries to .agents/config/models.yaml in place",
+      "Append accepted entries to the `models:` block of .agents/oma-config.yaml in place",
     )
     .option(
       "--timeout <ms>",
@@ -371,11 +371,12 @@ export function registerModelCommands(program: Command): void {
           }
 
           if (options.write) {
-            const { written, skipped } = writeProposalToFile(probedModels);
+            const { written, skipped, configPath, error } =
+              writeProposalToFile(probedModels);
             if (written.length > 0) {
               process.stderr.write(
                 pc.green(
-                  `Written ${written.length} entries to .agents/config/models.yaml\n`,
+                  `Written ${written.length} entries to the \`models:\` block of ${configPath}\n`,
                 ),
               );
             }
@@ -384,7 +385,9 @@ export function registerModelCommands(program: Command): void {
                 pc.yellow(`[warn] Skipped duplicate slug: ${slug}\n`),
               );
             }
-            if (written.length === 0 && skipped.length === 0) {
+            if (error) {
+              process.stderr.write(pc.red(`[error] ${error}\n`));
+            } else if (written.length === 0 && skipped.length === 0) {
               process.stderr.write("No accepted candidates to write.\n");
             }
           } else {

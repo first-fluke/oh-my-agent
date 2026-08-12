@@ -1,10 +1,10 @@
 # oma-voice configuration
 # Design reference: docs/plans/designs/012-oma-voice.md
 #
-# DEPRECATED as a place to put your settings: `oma update` overwrites this
-# file. Put overrides under `voice:` in .agents/oma-config.yaml, which is
-# preserved. Keys here that still differ from the shipped defaults keep
-# winning for one release; migration 022 moves them for you.
+# NOT the place to put your settings: `oma update` overwrites this file. Put
+# overrides under `voice:` in .agents/oma-config.yaml, which is preserved —
+# that section wins, and this file supplies only the shipped defaults the skill
+# falls back to. Migration 022 moves anything you changed here for you.
 #
 
 # Profile names returned by `voicebox_list_profiles`. Set after creating a

@@ -60,7 +60,6 @@ describe("agent/spawn-status.ts — read-only flag", () => {
 
     const OMA_CONFIG_YAML = ["language: en", "model_preset: codex"].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: codex",
       "vendors:",
       "  codex:",
       "    command: codex",
@@ -122,7 +121,6 @@ describe("agent/spawn-status.ts — read-only flag", () => {
 
     const OMA_CONFIG_YAML = ["language: en", "model_preset: claude"].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: claude",
       "vendors:",
       "  claude:",
       "    command: claude",
@@ -184,7 +182,6 @@ describe("agent/spawn-status.ts — read-only flag", () => {
 
     const OMA_CONFIG_YAML = ["language: en", "model_preset: codex"].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: codex",
       "vendors:",
       "  codex:",
       "    command: codex",
@@ -242,9 +239,14 @@ describe("agent/spawn-status.ts — read-only flag", () => {
   it("read-only for gemini (no read_only_flag): emits warning and omits auto-approve", async () => {
     vi.stubEnv("OMA_RUNTIME_VENDOR", "gemini");
 
-    const OMA_CONFIG_YAML = ["language: en", "default_cli: gemini"].join("\n");
+    // `model_preset: none` resolves no preset, so `default_cli` is the tier that
+    // decides the vendor — no registry slug maps to the gemini CLI.
+    const OMA_CONFIG_YAML = [
+      "language: en",
+      "model_preset: none",
+      "default_cli: gemini",
+    ].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: gemini",
       "vendors:",
       "  gemini:",
       "    command: gemini",
@@ -315,7 +317,6 @@ describe("agent/spawn-status.ts — read-only flag", () => {
 
     const OMA_CONFIG_YAML = ["language: en", "model_preset: codex"].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: codex",
       "vendors:",
       "  codex:",
       "    command: codex",

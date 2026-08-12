@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { parse as parseYaml } from "yaml";
 import type { ProbedSourceModel } from "./propose.js";
 import { proposeMissingSlugs, writeProposalToFile } from "./propose.js";
 
@@ -66,6 +67,15 @@ describe("proposeMissingSlugs", () => {
     );
     expect(output).toContain("models:");
     expect(output).toContain("anthropic/claude-opus-5-0");
+  });
+
+  it("points at oma-config.yaml, not the deprecated models.yaml", () => {
+    const output = proposeMissingSlugs(
+      [makeProbed("anthropic/claude-opus-5-0")],
+      "2026-05-09",
+    );
+    expect(output).toContain(".agents/oma-config.yaml");
+    expect(output).not.toContain("models.yaml");
   });
 
   it("includes cli and cli_model in generated YAML", () => {
@@ -169,21 +179,44 @@ describe("proposeMissingSlugs", () => {
 
 describe("writeProposalToFile", () => {
   let tmpDir: string;
+  let configPath: string;
+
+  const BASE_CONFIG = [
+    "# oh-my-agent — project config",
+    "language: ko",
+    "model_preset: claude",
+    "",
+    "agents:",
+    "  eval:",
+    "    model: anthropic/claude-sonnet-4-6",
+    "",
+  ].join("\n");
+
+  function readConfig(): string {
+    return fs.readFileSync(configPath, "utf-8");
+  }
+
+  function writeLegacyModelsYaml(content: string): string {
+    const legacyPath = path.join(tmpDir, ".agents", "config", "models.yaml");
+    fs.mkdirSync(path.dirname(legacyPath), { recursive: true });
+    fs.writeFileSync(legacyPath, content, "utf-8");
+    return legacyPath;
+  }
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-propose-test-"));
-    // Create .agents/config/ structure
-    fs.mkdirSync(path.join(tmpDir, ".agents", "config"), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, ".agents"), { recursive: true });
+    configPath = path.join(tmpDir, ".agents", "oma-config.yaml");
+    fs.writeFileSync(configPath, BASE_CONFIG, "utf-8");
   });
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("creates models.yaml when it does not exist", () => {
-    const models = [makeProbed("cursor/composer-3")];
+  it("creates the models: block when oma-config has none", () => {
     const { written, skipped } = writeProposalToFile(
-      models,
+      [makeProbed("cursor/composer-3")],
       tmpDir,
       "2026-05-09",
     );
@@ -191,40 +224,76 @@ describe("writeProposalToFile", () => {
     expect(written).toContain("cursor/composer-3");
     expect(skipped).toHaveLength(0);
 
-    const filePath = path.join(tmpDir, ".agents", "config", "models.yaml");
-    expect(fs.existsSync(filePath)).toBe(true);
-    const content = fs.readFileSync(filePath, "utf-8");
-    expect(content).toContain("cursor/composer-3");
+    const parsed = parseYaml(readConfig()) as Record<string, unknown>;
+    const models = parsed.models as Record<string, unknown>;
+    expect(models["cursor/composer-3"]).toMatchObject({
+      cli: "cursor",
+      cli_model: "composer-3",
+    });
   });
 
-  it("appends to existing models.yaml", () => {
-    const filePath = path.join(tmpDir, ".agents", "config", "models.yaml");
+  it("appends into an existing models: block", () => {
     fs.writeFileSync(
-      filePath,
-      "# existing file\nmodels:\n  cursor/auto:\n    cli: cursor\n    cli_model: auto\n",
+      configPath,
+      `${BASE_CONFIG}models:\n  cursor/auto:\n    cli: cursor\n    cli_model: auto\n\n# trailing user comment\ntelemetry: false\n`,
       "utf-8",
     );
 
-    const models = [makeProbed("cursor/composer-3")];
-    const { written } = writeProposalToFile(models, tmpDir, "2026-05-09");
+    const { written } = writeProposalToFile(
+      [makeProbed("cursor/composer-3")],
+      tmpDir,
+      "2026-05-09",
+    );
 
     expect(written).toContain("cursor/composer-3");
-    const content = fs.readFileSync(filePath, "utf-8");
-    expect(content).toContain("cursor/auto:");
-    expect(content).toContain("cursor/composer-3");
+    const parsed = parseYaml(readConfig()) as Record<string, unknown>;
+    const models = parsed.models as Record<string, unknown>;
+    expect(Object.keys(models)).toEqual(["cursor/auto", "cursor/composer-3"]);
+    expect(models["cursor/auto"]).toEqual({ cli: "cursor", cli_model: "auto" });
+    expect(parsed.telemetry).toBe(false);
+    expect(readConfig()).toContain("# trailing user comment");
   });
 
-  it("skips duplicate slugs and reports them", () => {
-    const filePath = path.join(tmpDir, ".agents", "config", "models.yaml");
+  it("fills a models: key the user left empty", () => {
+    fs.writeFileSync(configPath, `${BASE_CONFIG}models:\n`, "utf-8");
+
+    const { written } = writeProposalToFile(
+      [makeProbed("cursor/composer-3")],
+      tmpDir,
+      "2026-05-09",
+    );
+
+    expect(written).toContain("cursor/composer-3");
+    const parsed = parseYaml(readConfig()) as Record<string, unknown>;
+    expect(parsed.models).toHaveProperty("cursor/composer-3");
+  });
+
+  it("never rewrites the keys the user already had", () => {
+    writeProposalToFile(
+      [makeProbed("cursor/composer-3")],
+      tmpDir,
+      "2026-05-09",
+    );
+
+    const content = readConfig();
+    expect(content.startsWith(BASE_CONFIG)).toBe(true);
+    const parsed = parseYaml(content) as Record<string, unknown>;
+    expect(parsed.language).toBe("ko");
+    expect(parsed.model_preset).toBe("claude");
+    expect(parsed.agents).toEqual({
+      eval: { model: "anthropic/claude-sonnet-4-6" },
+    });
+  });
+
+  it("skips slugs already in oma-config and reports them", () => {
     fs.writeFileSync(
-      filePath,
-      "models:\n  cursor/composer-3:\n    cli: cursor\n    cli_model: composer-3\n",
+      configPath,
+      `${BASE_CONFIG}models:\n  cursor/composer-3:\n    cli: cursor\n    cli_model: composer-3\n`,
       "utf-8",
     );
 
-    const models = [makeProbed("cursor/composer-3")];
     const { written, skipped } = writeProposalToFile(
-      models,
+      [makeProbed("cursor/composer-3")],
       tmpDir,
       "2026-05-09",
     );
@@ -233,13 +302,42 @@ describe("writeProposalToFile", () => {
     expect(skipped).toContain("cursor/composer-3");
   });
 
-  it("filters out non-accepted models before writing", () => {
-    const models = [
-      makeProbed("cursor/good-model", "accepted"),
-      makeProbed("cursor/bad-model", "rejected"),
-    ];
+  it("proposes a slug that survives only in the deprecated models.yaml", () => {
+    writeLegacyModelsYaml(
+      "models:\n  cursor/composer-3:\n    cli: cursor\n    cli_model: composer-3\n",
+    );
+
     const { written, skipped } = writeProposalToFile(
-      models,
+      [makeProbed("cursor/composer-3")],
+      tmpDir,
+      "2026-05-09",
+    );
+
+    // That file is no longer read, so the slug resolves nowhere until it lands
+    // in oma-config — skipping it would strand the user.
+    expect(skipped).toHaveLength(0);
+    expect(written).toEqual(["cursor/composer-3"]);
+  });
+
+  it("leaves the deprecated models.yaml untouched", () => {
+    const legacyRaw = "models:\n  cursor/auto:\n    cli: cursor\n";
+    const legacyPath = writeLegacyModelsYaml(legacyRaw);
+
+    writeProposalToFile(
+      [makeProbed("cursor/composer-3")],
+      tmpDir,
+      "2026-05-09",
+    );
+
+    expect(fs.readFileSync(legacyPath, "utf-8")).toBe(legacyRaw);
+  });
+
+  it("filters out non-accepted models before writing", () => {
+    const { written, skipped } = writeProposalToFile(
+      [
+        makeProbed("cursor/good-model", "accepted"),
+        makeProbed("cursor/bad-model", "rejected"),
+      ],
       tmpDir,
       "2026-05-09",
     );
@@ -247,21 +345,47 @@ describe("writeProposalToFile", () => {
     expect(written).toContain("cursor/good-model");
     expect(written).not.toContain("cursor/bad-model");
     expect(skipped).toHaveLength(0);
-
-    const filePath = path.join(tmpDir, ".agents", "config", "models.yaml");
-    const content = fs.readFileSync(filePath, "utf-8");
-    expect(content).not.toContain("cursor/bad-model");
+    expect(readConfig()).not.toContain("cursor/bad-model");
   });
 
   it("returns empty written array when no accepted models", () => {
-    const models = [makeProbed("cursor/bad-model", "rejected")];
     const { written, skipped } = writeProposalToFile(
-      models,
+      [makeProbed("cursor/bad-model", "rejected")],
       tmpDir,
       "2026-05-09",
     );
 
     expect(written).toHaveLength(0);
     expect(skipped).toHaveLength(0);
+    expect(readConfig()).toBe(BASE_CONFIG);
+  });
+
+  it("reports an error when no oma-config.yaml exists", () => {
+    fs.rmSync(configPath);
+
+    const {
+      written,
+      configPath: resolved,
+      error,
+    } = writeProposalToFile(
+      [makeProbed("cursor/composer-3")],
+      tmpDir,
+      "2026-05-09",
+    );
+
+    expect(written).toHaveLength(0);
+    expect(resolved).toBeNull();
+    expect(error).toContain("oma-config.yaml");
+  });
+
+  it("is idempotent across repeated runs", () => {
+    const models = [makeProbed("cursor/composer-3")];
+    writeProposalToFile(models, tmpDir, "2026-05-09");
+    const afterFirst = readConfig();
+
+    const second = writeProposalToFile(models, tmpDir, "2026-05-09");
+    expect(second.written).toHaveLength(0);
+    expect(second.skipped).toContain("cursor/composer-3");
+    expect(readConfig()).toBe(afterFirst);
   });
 });

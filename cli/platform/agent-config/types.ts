@@ -160,7 +160,7 @@ export interface OmaConfig {
   default_cli?: string;
 }
 
+/** The `vendors:` capability registry of cli-config.yaml. See config-io.ts. */
 export type CliConfig = {
-  active_vendor?: string;
   vendors: Record<string, VendorConfig>;
 };

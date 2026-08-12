@@ -519,8 +519,13 @@ describe("agent/spawn-status.ts", () => {
   it("does not inject CODEX_HOME isolation env for codex fallback", async () => {
     const originalCodexHome = process.env.CODEX_HOME;
     delete process.env.CODEX_HOME;
+    // `model_preset: none` resolves no preset, leaving `default_cli` to decide.
+    const OMA_CONFIG_YAML = [
+      "language: en",
+      "model_preset: none",
+      "default_cli: codex",
+    ].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: codex",
       "vendors:",
       "  codex:",
       "    command: codex",
@@ -531,6 +536,7 @@ describe("agent/spawn-status.ts", () => {
 
     mockFsFunctions.existsSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
+      if (n(target).includes("oma-config.yaml")) return true;
       if (n(target).includes("cli-config.yaml")) return true;
       if (n(target).includes("user-preferences.yaml")) return false;
       if (n(target).endsWith("/workspace")) return true;
@@ -538,6 +544,7 @@ describe("agent/spawn-status.ts", () => {
     });
     mockFsFunctions.readFileSync.mockImplementation((pathArg: fs.PathLike) => {
       const target = pathArg.toString();
+      if (n(target).includes("oma-config.yaml")) return OMA_CONFIG_YAML;
       if (n(target).includes("cli-config.yaml")) return CLI_CONFIG_YAML;
       return "";
     });
@@ -572,7 +579,6 @@ describe("agent/spawn-status.ts", () => {
     // claude preset: pm → claude
     const OMA_CONFIG_YAML = ["language: en", "model_preset: claude"].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: gemini",
       "vendors:",
       "  claude:",
       "    command: claude",
@@ -630,7 +636,6 @@ describe("agent/spawn-status.ts", () => {
     // codex preset: backend → codex
     const OMA_CONFIG_YAML = ["language: en", "model_preset: codex"].join("\n");
     const CLI_CONFIG_YAML = [
-      "active_vendor: gemini",
       "vendors:",
       "  codex:",
       "    command: codex",

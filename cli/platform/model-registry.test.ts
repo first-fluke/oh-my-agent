@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // ---------------------------------------------------------------------------
 // model-registry.test.ts
 // Tests for CORE_REGISTRY, getModelSpec, hasModelSpec, api_only guard,
-// and T14: user models.yaml merge / override / validation.
+// and T14: inline user model merge / override / validation.
 // ---------------------------------------------------------------------------
 
 describe("CORE_REGISTRY", () => {
@@ -213,19 +213,22 @@ describe("ModelSpec shape validation", () => {
 });
 
 // ---------------------------------------------------------------------------
-// T14: User models.yaml — loadUserModels + reloadRegistry
+// T14: user models — the oma-config `models:` block + reloadRegistry
 // ---------------------------------------------------------------------------
 
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-/** Write a temporary models.yaml under a temp dir and return the dir path. */
+/**
+ * Write a temporary `.agents/oma-config.yaml` holding a `models:` block and
+ * return the dir path. That block is the only user-model source (design 024).
+ */
 function makeTempProjectDir(content: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-model-registry-"));
-  const configDir = path.join(dir, ".agents", "config");
-  fs.mkdirSync(configDir, { recursive: true });
-  fs.writeFileSync(path.join(configDir, "models.yaml"), content, "utf-8");
+  const agentsDir = path.join(dir, ".agents");
+  fs.mkdirSync(agentsDir, { recursive: true });
+  fs.writeFileSync(path.join(agentsDir, "oma-config.yaml"), content, "utf-8");
   return dir;
 }
 
@@ -315,100 +318,6 @@ const MALFORMED_YAML = `
 models: {unclosed bracket
 `;
 
-describe("T14: loadUserModels", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("returns empty Map when models.yaml does not exist (no crash)", async () => {
-    const { loadUserModels } = await import("./model-registry.js");
-    const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-no-config-"));
-    try {
-      const result = loadUserModels(emptyDir);
-      expect(result.size).toBe(0);
-    } finally {
-      fs.rmSync(emptyDir, { recursive: true, force: true });
-    }
-  });
-
-  it("loads a valid user-only slug from models.yaml", async () => {
-    const { loadUserModels } = await import("./model-registry.js");
-    const dir = makeTempProjectDir(VALID_SPUD_YAML);
-    try {
-      const result = loadUserModels(dir);
-      expect(result.has("openai/gpt-5.5-spud")).toBe(true);
-      const spec = result.get("openai/gpt-5.5-spud");
-      expect(spec?.cli_model).toBe("gpt-5.5-spud");
-      expect(spec?.supports.computer_use).toBe(true);
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it("loads an override entry for an existing core slug", async () => {
-    const { loadUserModels } = await import("./model-registry.js");
-    const dir = makeTempProjectDir(OVERRIDE_OPUS_YAML);
-    try {
-      const result = loadUserModels(dir);
-      expect(result.has("anthropic/claude-opus-4-7")).toBe(true);
-      expect(result.get("anthropic/claude-opus-4-7")?.cli_model).toBe(
-        "claude-opus-4-7-OVERRIDDEN",
-      );
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it("rejects user entry with api_only: true — warns and excludes", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { loadUserModels } = await import("./model-registry.js");
-    const dir = makeTempProjectDir(API_ONLY_YAML);
-    try {
-      const result = loadUserModels(dir);
-      expect(result.has("openai/user-api-only-model")).toBe(false);
-      expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining("openai/user-api-only-model"),
-      );
-      expect(console.warn).toHaveBeenCalledWith(
-        expect.stringContaining("api_only=true"),
-      );
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it("skips invalid Zod entry with error log; valid sibling entry still loads", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    const { loadUserModels } = await import("./model-registry.js");
-    const dir = makeTempProjectDir(INVALID_SCHEMA_YAML);
-    try {
-      const result = loadUserModels(dir);
-      expect(result.has("openai/bad-entry")).toBe(false);
-      expect(result.has("openai/gpt-5.5-spud")).toBe(true);
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("openai/bad-entry"),
-      );
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it("handles malformed YAML gracefully — logs error, returns empty Map", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    const { loadUserModels } = await import("./model-registry.js");
-    const dir = makeTempProjectDir(MALFORMED_YAML);
-    try {
-      const result = loadUserModels(dir);
-      expect(result.size).toBe(0);
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining("models.yaml"),
-      );
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-});
-
 describe("T14: reloadRegistry — merged registry behavior", () => {
   beforeEach(() => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -470,7 +379,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     }
   });
 
-  it("missing models.yaml: core registry still fully accessible after reload", async () => {
+  it("missing oma-config: core registry still fully accessible after reload", async () => {
     const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "oma-no-models-"));
     const { reloadRegistry, getModelSpec, CORE_REGISTRY } = await import(
       "./model-registry.js"
@@ -654,7 +563,7 @@ models:
 });
 
 // ---------------------------------------------------------------------------
-// Design 024: inline oma-config `models:` + the deprecated models.yaml
+// Design 024: the inline oma-config `models:` block is the only user source
 // ---------------------------------------------------------------------------
 
 const INLINE_SPUD_YAML = `language: en
@@ -692,10 +601,7 @@ function makeInlineProjectDir(omaConfig: string, modelsYaml?: string): string {
 
 describe("design 024: models.yaml folded into oma-config models:", () => {
   afterEach(async () => {
-    const { reloadRegistry, resetModelsYamlWarnings } = await import(
-      "./model-registry.js"
-    );
-    resetModelsYamlWarnings();
+    const { reloadRegistry } = await import("./model-registry.js");
     reloadRegistry(os.tmpdir());
   });
 
@@ -714,27 +620,41 @@ describe("design 024: models.yaml folded into oma-config models:", () => {
     }
   });
 
-  it("lets models.yaml win over the inline block during the window", async () => {
+  it("ignores .agents/config/models.yaml entirely", async () => {
     const { reloadRegistry, getModelSpec } = await import(
       "./model-registry.js"
     );
     const dir = makeInlineProjectDir(INLINE_SPUD_YAML, VALID_SPUD_YAML);
     try {
       reloadRegistry(dir);
-      // A user mid-migration must not see a slug resolve differently under them.
+      // The file declares the same slug with cli_model "gpt-5.5-spud"; the
+      // inline block is the only source, so the inline value stands.
       expect(getModelSpec("openai/gpt-5.5-spud")?.cli_model).toBe(
-        "gpt-5.5-spud",
+        "inline-spud",
       );
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it("warns once per slug still living in models.yaml", async () => {
-    const { reloadRegistry, resetModelsYamlWarnings } = await import(
+  it("does not register a slug that lives only in models.yaml", async () => {
+    const { reloadRegistry, hasModelSpec } = await import(
       "./model-registry.js"
     );
-    resetModelsYamlWarnings();
+    const dir = makeInlineProjectDir(
+      "language: en\nmodel_preset: claude\n",
+      VALID_SPUD_YAML,
+    );
+    try {
+      reloadRegistry(dir);
+      expect(hasModelSpec("openai/gpt-5.5-spud")).toBe(false);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("says nothing on stderr about the ignored models.yaml", async () => {
+    const { reloadRegistry } = await import("./model-registry.js");
     const dir = makeInlineProjectDir(INLINE_SPUD_YAML, VALID_SPUD_YAML);
     const written: string[] = [];
     const spy = vi
@@ -745,15 +665,10 @@ describe("design 024: models.yaml folded into oma-config models:", () => {
       });
     try {
       reloadRegistry(dir);
-      reloadRegistry(dir);
     } finally {
       spy.mockRestore();
       fs.rmSync(dir, { recursive: true, force: true });
     }
-    const hits = written.filter((line) =>
-      line.includes(".agents/config/models.yaml"),
-    );
-    expect(hits).toHaveLength(1);
-    expect(hits[0]).toContain("models.openai/gpt-5.5-spud");
+    expect(written.join("")).not.toContain("models.yaml");
   });
 });

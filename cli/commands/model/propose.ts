@@ -1,9 +1,18 @@
 // cli/commands/model/propose.ts
-// Generates a models.yaml patch draft for accepted new model candidates.
+// Generates an oma-config `models:` patch draft for accepted new model
+// candidates.
+//
+// The patch targets the inline `models:` block of `.agents/oma-config.yaml`,
+// the only user-model source the registry reads (design 024).
+// `.agents/config/models.yaml` — the old target — is gone: `oma uninstall`
+// removes `.agents/config/` wholesale, so slugs written there were never
+// durable.
 
 import fs from "node:fs";
-import path from "node:path";
 import { parse as yamlParse, stringify as yamlStringify } from "yaml";
+import { OMA_CONFIG_RELATIVE_PATH } from "../../platform/agent-config/skill-sections.js";
+import { findFileUpwards } from "../../utils/fs-utils.js";
+import { appendSectionEntries } from "../update/config-merge.js";
 import type { ProbeResult } from "./probe.js";
 
 // ---------------------------------------------------------------------------
@@ -15,7 +24,19 @@ export type ProbedSourceModel = {
   probeResult: ProbeResult;
 };
 
-type ModelYamlEntry = {
+/** Result of a `--write` run against `.agents/oma-config.yaml`. */
+export type ProposalWriteResult = {
+  /** Slugs appended to the `models:` block. */
+  written: string[];
+  /** Slugs the `models:` block already declares. */
+  skipped: string[];
+  /** The oma-config that was written, or null when none was found. */
+  configPath: string | null;
+  /** Set when nothing could be written for a reason other than duplicates. */
+  error?: string;
+};
+
+type ProposedModelEntry = {
   cli: string;
   cli_model: string;
   supports: {
@@ -47,7 +68,7 @@ function buildDefaultTemplate(
   owner: string,
   cli: string,
   cliModel: string,
-): ModelYamlEntry {
+): ProposedModelEntry {
   switch (owner) {
     case "anthropic":
       return {
@@ -156,8 +177,9 @@ function buildDefaultTemplate(
 // ---------------------------------------------------------------------------
 
 /**
- * Generate a models.yaml patch for accepted probe results.
- * Returns the YAML text as a string.
+ * Generate an oma-config `models:` patch for accepted probe results.
+ * Returns the YAML text as a string, ready to paste into
+ * `.agents/oma-config.yaml`.
  */
 export function proposeMissingSlugs(
   probedNewModels: ProbedSourceModel[],
@@ -188,7 +210,7 @@ export function proposeMissingSlugs(
     { indent: 2, lineWidth: 0 },
   );
 
-  const header = `# auto-proposed by model:propose on ${dateStr}\n# Capability flags (effort, apply_patch, task_budget, prompt_cache, computer_use)\n# and auth_hint are conservative defaults — verify against vendor docs before committing.\n`;
+  const header = `# auto-proposed by model:propose on ${dateStr}\n# Add to .agents/oma-config.yaml — merge under its \`models:\` block if you already have one.\n# Capability flags (effort, apply_patch, task_budget, prompt_cache, computer_use)\n# and auth_hint are conservative defaults — verify against vendor docs before committing.\n`;
   return `${header}${yamlBody}`;
 }
 
@@ -197,122 +219,123 @@ export function proposeMissingSlugs(
 // ---------------------------------------------------------------------------
 
 /**
- * Walk up from startDir looking for `.agents/config/models.yaml`.
- * Returns the path if found, or a default path under the first `.agents/config/` found.
+ * Slugs the user has already registered.
+ *
+ * oma-config's `models:` block is the whole set: `.agents/config/models.yaml` is
+ * not read by the registry, so a slug surviving there resolves nowhere and is
+ * worth proposing rather than skipping.
  */
-function resolveModelsYamlPath(startDir: string): string {
-  let current = path.resolve(startDir);
-  const root = path.parse(current).root;
-  while (current !== root) {
-    const candidate = path.join(current, ".agents", "config", "models.yaml");
-    if (fs.existsSync(candidate)) return candidate;
-    current = path.dirname(current);
+function readRegisteredSlugs(startDir: string): Set<string> {
+  const slugs = new Set<string>();
+
+  const filePath = findFileUpwards(startDir, OMA_CONFIG_RELATIVE_PATH);
+  if (!filePath) return slugs;
+
+  let parsed: unknown;
+  try {
+    parsed = yamlParse(fs.readFileSync(filePath, "utf-8"));
+  } catch {
+    return slugs;
   }
-  // Fall back: first `.agents/config` found upward
-  current = path.resolve(startDir);
-  while (current !== root) {
-    const configDir = path.join(current, ".agents", "config");
-    if (fs.existsSync(configDir)) {
-      return path.join(configDir, "models.yaml");
-    }
-    current = path.dirname(current);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return slugs;
   }
-  // Last resort: use cwd
-  return path.join(startDir, ".agents", "config", "models.yaml");
+  const models = (parsed as Record<string, unknown>).models;
+  if (!models || typeof models !== "object" || Array.isArray(models)) {
+    return slugs;
+  }
+  for (const slug of Object.keys(models)) slugs.add(slug);
+
+  return slugs;
 }
 
 /**
- * Append accepted model entries to `.agents/config/models.yaml`.
- * Skips duplicate slugs and emits a warning for each.
+ * Append accepted model entries to the `models:` block of
+ * `.agents/oma-config.yaml`, creating the block when the user has none.
  *
- * @returns Array of slugs that were skipped (already exist in the file).
+ * Writes go through {@link appendSectionEntries}, the append-only merge
+ * migration 022 uses, so no key the user already wrote is ever rewritten.
+ * Slugs already present in the `models:` block are reported as skipped.
  */
 export function writeProposalToFile(
   probedNewModels: ProbedSourceModel[],
   cwd?: string,
   proposedDate?: string,
-): { written: string[]; skipped: string[] } {
+): ProposalWriteResult {
   const dateStr = proposedDate ?? new Date().toISOString().slice(0, 10);
+  const startDir = cwd ?? process.cwd();
   const accepted = probedNewModels.filter(
     (m) => m.probeResult.status === "accepted",
   );
 
-  const filePath = resolveModelsYamlPath(cwd ?? process.cwd());
-
-  // Ensure directory exists
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  const configPath = findFileUpwards(startDir, OMA_CONFIG_RELATIVE_PATH);
+  if (!configPath) {
+    return {
+      written: [],
+      skipped: [],
+      configPath: null,
+      error:
+        "no .agents/oma-config.yaml found — run `oma install` before writing proposals",
+    };
   }
 
-  // Parse existing content
-  let existingDoc: Record<string, unknown> = {};
-  let existingContent = "";
-  if (fs.existsSync(filePath)) {
-    existingContent = fs.readFileSync(filePath, "utf-8");
-    try {
-      const parsed = yamlParse(existingContent);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        existingDoc = parsed as Record<string, unknown>;
-      }
-    } catch {
-      // If parse fails, we'll just append
-    }
+  let userRaw: string;
+  try {
+    userRaw = fs.readFileSync(configPath, "utf-8");
+  } catch {
+    return {
+      written: [],
+      skipped: [],
+      configPath,
+      error: `${configPath} is unreadable`,
+    };
   }
 
-  const existingModels =
-    existingDoc.models &&
-    typeof existingDoc.models === "object" &&
-    !Array.isArray(existingDoc.models)
-      ? (existingDoc.models as Record<string, unknown>)
-      : {};
-
+  const registered = readRegisteredSlugs(startDir);
+  const entries: Record<string, unknown> = {};
   const written: string[] = [];
   const skipped: string[] = [];
-  const newEntries: string[] = [];
 
   for (const { slug, probeResult } of accepted) {
-    if (Object.hasOwn(existingModels, slug)) {
+    if (registered.has(slug)) {
       skipped.push(slug);
       continue;
     }
-
     const slashIndex = slug.indexOf("/");
     const owner = slashIndex >= 0 ? slug.slice(0, slashIndex) : "";
     const cliModel = slashIndex >= 0 ? slug.slice(slashIndex + 1) : slug;
-    const cli = probeResult.cli;
 
-    const template = buildDefaultTemplate(owner, cli, cliModel);
-    const entryYaml = yamlStringify(
-      { [slug]: template },
-      { indent: 2, lineWidth: 0 },
-    );
-    newEntries.push(entryYaml);
+    entries[slug] = buildDefaultTemplate(owner, probeResult.cli, cliModel);
     written.push(slug);
   }
 
-  if (newEntries.length > 0) {
-    const appendBlock = [
-      `\n# auto-proposed by model:propose on ${dateStr}`,
-      "# Capability flags and auth_hint are conservative defaults — verify against vendor docs before committing.",
-      ...newEntries,
-    ].join("\n");
+  if (written.length === 0) return { written, skipped, configPath };
 
-    if (!existingContent) {
-      fs.writeFileSync(
-        filePath,
-        `# .agents/config/models.yaml — user model overrides\nmodels:${appendBlock}\n`,
-        "utf-8",
-      );
-    } else {
-      // Ensure file has models: key
-      if (!existingContent.includes("models:")) {
-        fs.appendFileSync(filePath, `\nmodels:${appendBlock}\n`, "utf-8");
-      } else {
-        fs.appendFileSync(filePath, `${appendBlock}\n`, "utf-8");
-      }
-    }
+  const { content, addedKeys } = appendSectionEntries(
+    userRaw,
+    "models",
+    entries,
+    `auto-proposed by model:propose on ${dateStr} — capability flags and auth_hint are conservative defaults, verify against vendor docs`,
+  );
+  if (addedKeys.length === 0) {
+    return {
+      written: [],
+      skipped,
+      configPath,
+      error: `could not merge into the \`models:\` block of ${configPath} — add the entries manually with \`oma model:propose\` (no --write)`,
+    };
   }
 
-  return { written, skipped };
+  try {
+    fs.writeFileSync(configPath, content, "utf-8");
+  } catch {
+    return {
+      written: [],
+      skipped,
+      configPath,
+      error: `${configPath} is not writable`,
+    };
+  }
+
+  return { written, skipped, configPath };
 }

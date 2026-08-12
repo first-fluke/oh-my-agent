@@ -1,15 +1,9 @@
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import YAML from "yaml";
 import type { z } from "zod";
 import { AGENTS_RESULTS_DIR } from "../../constants/paths.js";
 import {
   deepMerge,
   readRootOmaConfig,
   skillSectionFrom,
-  sparseDiff,
-  warnLegacySection,
 } from "../../platform/agent-config/skill-sections.js";
 import {
   type CaptionStyleSchema,
@@ -102,12 +96,13 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
 };
 
 /**
- * Superseded by the `video:` section of `.agents/oma-config.yaml` (design 024).
- * Still read for one release, and only for keys that diverge from the shipped
- * default, so a user who has not migrated keeps their behaviour byte for byte.
+ * Resolve the effective config: shipped defaults < the `video:` section of
+ * `.agents/oma-config.yaml` < env vars < CLI flags (design 024).
+ *
+ * `.agents/skills/oma-video/config/video-config.yaml` is not consulted. It was
+ * the pre-024 home for these settings; migration 022 moves a user's diverged
+ * keys into oma-config.
  */
-const LEGACY_CONFIG_PATH = ".agents/skills/oma-video/config/video-config.yaml";
-
 export async function loadVideoConfig(
   cwd = process.cwd(),
 ): Promise<VideoConfig> {
@@ -122,9 +117,6 @@ export async function loadVideoConfig(
   const section = skillSectionFrom(root, "video");
   if (section) raw = deepMerge(raw, normalizeKeys(section));
 
-  const legacy = await readLegacyOverrides(cwd);
-  if (legacy) raw = deepMerge(raw, legacy);
-
   const merged = raw as unknown as VideoConfig;
   applyEnvOverrides(merged);
   // `language` is a root key, never a per-skill one — one read serves both.
@@ -133,38 +125,7 @@ export async function loadVideoConfig(
   return merged;
 }
 
-/**
- * Legacy-file keys the user actually changed, or undefined when the file is
- * absent or still pristine. Diffing against the shipped default is what keeps a
- * never-edited file from silently outranking the user's oma-config section.
- */
-async function readLegacyOverrides(
-  cwd: string,
-): Promise<Record<string, unknown> | undefined> {
-  const full = path.join(cwd, LEGACY_CONFIG_PATH);
-  if (!existsSync(full)) return undefined;
-
-  let parsed: unknown;
-  try {
-    parsed = YAML.parse(await readFile(full, "utf8"));
-  } catch {
-    return undefined;
-  }
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return undefined;
-  }
-
-  const normalized = normalizeKeys(parsed as Record<string, unknown>);
-  const overrides = sparseDiff(
-    normalized as Record<string, unknown>,
-    DEFAULT_VIDEO_CONFIG as unknown as Record<string, unknown>,
-  );
-  if (Object.keys(overrides).length === 0) return undefined;
-
-  warnLegacySection(overrides, LEGACY_CONFIG_PATH, "video");
-  return overrides;
-}
-
+/** Map the section's snake_case keys onto the internal camelCase shape. */
 function normalizeKeys(raw: Record<string, unknown>): Partial<VideoConfig> {
   const out: Partial<VideoConfig> & Record<string, unknown> = {};
   const map: Record<string, string> = {
@@ -220,8 +181,7 @@ function normalizeKeys(raw: Record<string, unknown>): Partial<VideoConfig> {
 
 /**
  * Pass provider entries through untouched except for `env_var`, which oma-config
- * spells snake_case like every other key it holds while the type (and the legacy
- * YAML) use `envVar`.
+ * spells snake_case like every other key it holds while the type uses `envVar`.
  */
 function normalizeProviders(
   raw: Record<string, unknown>,

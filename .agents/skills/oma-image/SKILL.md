@@ -42,7 +42,7 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 ### Dependencies
 - `oma image generate` CLI and vendor authentication
 - Codex image generation, Pollinations API, or Gemini API/CLI strategy
-- `resources/vendor-matrix.md`, `resources/prompt-tips.md`, and `config/image-config.yaml`
+- `resources/vendor-matrix.md`, `resources/prompt-tips.md`, and the `image:` section of `.agents/oma-config.yaml`
 
 ### Control-flow features
 - Branches by prompt ambiguity, vendor auth, cost threshold, reference-image support, path safety, and safety/timeout exit codes
@@ -272,7 +272,7 @@ Before submitting, run `resources/checklist.md`.
 
 ### Configuration
 
-Project-specific settings: `config/image-config.yaml`.
+Project-specific settings: the `image:` section of `.agents/oma-config.yaml`, which `oma update` preserves. Shipped defaults live in the CLI (`DEFAULTS` in `cli/commands/image/config.ts`) — write only the keys you change. The legacy `config/image-config.yaml` is no longer read by the CLI; migration 022 moves anything you had changed there into oma-config (and deletes the file when it was never edited).
 Env vars: `OMA_IMAGE_DEFAULT_VENDOR`, `OMA_IMAGE_DEFAULT_OUT`, `OMA_IMAGE_YES`, `POLLINATIONS_API_KEY`.
 
 - Execution steps: `resources/execution-protocol.md`

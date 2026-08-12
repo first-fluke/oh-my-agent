@@ -5,7 +5,7 @@
 import { RAW_REGISTRY } from "./model-registry/raw-registry.js";
 import { ModelSpecSchema } from "./model-registry/schema.js";
 import type { ModelSpec, RuntimeId } from "./model-registry/types.js";
-import { mergeUserModels } from "./model-registry/user-models.js";
+import { loadInlineUserModelSpecs } from "./model-registry/user-models.js";
 
 export type {
   EffortLevel,
@@ -18,9 +18,6 @@ export type {
 export {
   loadInlineUserModelSpecs,
   loadInlineUserModels,
-  loadUserModels,
-  mergeUserModels,
-  resetModelsYamlWarnings,
 } from "./model-registry/user-models.js";
 
 // ---------------------------------------------------------------------------
@@ -49,10 +46,9 @@ function getMergedRegistry(): ReadonlyMap<string, ModelSpec> {
 }
 
 /**
- * (Re)initialize the merged registry by merging CORE_REGISTRY with user entries
- * from oma-config's `models:` block and the deprecated .agents/config/models.yaml.
- * Call with a cwd to target a specific directory (useful in tests). Without cwd,
- * uses process.cwd().
+ * (Re)initialize the merged registry by merging CORE_REGISTRY with the user
+ * entries in oma-config's `models:` block. Call with a cwd to target a specific
+ * directory (useful in tests). Without cwd, uses process.cwd().
  *
  * User entries with the same slug as a core entry win (full override).
  * Call this before each test case that needs a fresh registry.
@@ -60,7 +56,7 @@ function getMergedRegistry(): ReadonlyMap<string, ModelSpec> {
 export function reloadRegistry(cwd?: string): ReadonlyMap<string, ModelSpec> {
   const merged = new Map<string, ModelSpec>(_coreRegistry);
 
-  const userModels = mergeUserModels(cwd);
+  const userModels = loadInlineUserModelSpecs(cwd);
   for (const [slug, spec] of userModels) {
     if (_coreRegistry.has(slug)) {
       console.warn(`[model-registry] User override for slug "${slug}"`);
@@ -74,11 +70,11 @@ export function reloadRegistry(cwd?: string): ReadonlyMap<string, ModelSpec> {
 
 /**
  * Core model registry. Contains exactly 14 CLI-compatible slugs from the
- * built-in RAW_REGISTRY, merged with any user entries from models.yaml.
- * Entries with api_only:true are excluded at initialization.
+ * built-in RAW_REGISTRY, merged with any user entries from oma-config's
+ * `models:` block. Entries with api_only:true are excluded at initialization.
  *
  * NOTE: This is a lazy-initialized merged registry. Access triggers a one-time
- * load from .agents/config/models.yaml. Use reloadRegistry(cwd) in tests for
+ * load from .agents/oma-config.yaml. Use reloadRegistry(cwd) in tests for
  * isolation.
  */
 export const CORE_REGISTRY: ReadonlyMap<string, ModelSpec> = new Proxy(
@@ -111,7 +107,7 @@ export const CORE_REGISTRY: ReadonlyMap<string, ModelSpec> = new Proxy(
  *   first. A user slug that collides with a core registry slug wins (user
  *   override) and emits a console.warn.
  *
- * Searches: userModels → merged registry (core + models.yaml on disk).
+ * Searches: userModels → merged registry (core + oma-config `models:` on disk).
  * Never throws — callers are responsible for handling undefined.
  *
  * NOTE: T18 (debug agent, Phase 3) will audit all call sites to pass

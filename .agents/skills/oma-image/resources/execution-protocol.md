@@ -7,7 +7,7 @@ Run the **Clarification Protocol** in `SKILL.md` before shelling out.
 ## Step 0: Parse Request
 
 1. Extract prompt and flags from the invocation.
-2. Resolve defaults from `config/image-config.yaml` → env vars → CLI flags (lowest to highest precedence).
+2. Resolve defaults from shipped code defaults → the `image:` section of `.agents/oma-config.yaml` → env vars → CLI flags (lowest to highest precedence). `config/image-config.yaml` is not consulted.
 3. Validate:
    - `count` ∈ [1, 5]
    - `size` is `auto` or any `WxH` passing `size-guard.ts` (each edge ∈ [16, 3840], multiples of 16, aspect ratio 1:3..3:1).

@@ -10,7 +10,7 @@ plan when the brief is a one-liner.
 ## Step 0: Parse Request
 
 1. Extract the brief and flags from the invocation.
-2. Resolve defaults from `config/video-config.yaml` -> env vars -> CLI flags (lowest to highest precedence).
+2. Resolve defaults from shipped code defaults -> the `video:` section of `.agents/oma-config.yaml` -> env vars -> CLI flags (lowest to highest precedence). `config/video-config.yaml` is not consulted.
 3. Validate:
    - `mode` ∈ {`shorts`, `explainer`, `demo`}.
    - `aspect` ∈ {`9:16`, `16:9`, `1:1`, `auto`} (`auto` snaps to the mode default: shorts -> 9:16, explainer/demo -> 16:9).

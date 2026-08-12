@@ -77,8 +77,8 @@ telemetry: false
 model_preset: antigravity
 
 # Fallback CLI vendor for `oma agent:spawn`, used only when steps 1-3 above
-# resolve nothing. Replaces the legacy `active_vendor:` key in
-# .agents/skills/oma-orchestrator/config/cli-config.yaml. Omit for "claude".
+# resolve nothing. This is the only place it can be set — cli-config.yaml's
+# `active_vendor:` is no longer read. Omit for "claude".
 # default_cli: claude
 
 # Per-agent override (optional) — shallow-merged on top of the preset entry.
@@ -108,9 +108,9 @@ agents:
 # for antigravity that is an `agy models` display name, not a slug
 # (`gemini-3.6-flash` is rejected).
 #
-# Supersedes `.agents/config/models.yaml`, which `oma uninstall` deletes along
-# with the rest of `.agents/config/`. That file still wins for one release and
-# `oma update` folds its entries in here automatically (migration 022).
+# Replaces `.agents/config/models.yaml`, which `oma uninstall` deletes along
+# with the rest of `.agents/config/`. That file is no longer read; `oma update`
+# folds its entries in here automatically (migration 022).
 # Example:
 # models:
 #   my-fast:
@@ -333,13 +333,12 @@ scm:
 # instead of freezing the day you copied them. The values shown commented out
 # below ARE the current defaults; uncomment a line only to change it.
 #
-# These supersede the per-skill `.agents/skills/*/config/*.yaml` files, which
+# These replace the per-skill `.agents/skills/*/config/*.yaml` files, which
 # `oma update` overwrites wholesale — anything set there is lost on the next
-# update. A legacy file that still differs from its shipped default keeps
-# winning for one release (with a stderr warning naming the key), and `oma
-# update` moves your changed keys up here automatically (migration 022).
+# update. The CLI no longer reads those files at all; `oma update` moves your
+# changed keys up here automatically (migration 022).
 #
-# Precedence: shipped defaults < this file < legacy skill config < env < flags
+# Precedence: shipped defaults < this file < env < flags
 
 # ── video (oma-video) ────────────────────────────────────────────────────────
 # Brief → script → assets → render. Defaults: DEFAULT_VIDEO_CONFIG in

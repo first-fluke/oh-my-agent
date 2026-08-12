@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
-import { appendMissingConfigKeys } from "./config-merge.js";
+import {
+  appendMissingConfigKeys,
+  appendSectionEntries,
+} from "./config-merge.js";
 
 const TEMPLATE = [
   "# oh-my-agent — project config",
@@ -73,5 +76,143 @@ describe("appendMissingConfigKeys", () => {
     const merged = parseYaml(content) as Record<string, unknown>;
     expect(merged.language).toBe("ko");
     expect(merged.model_preset).toBe("antigravity");
+  });
+});
+
+describe("appendSectionEntries", () => {
+  const ENTRY = { cli: "cursor", cli_model: "composer-3" };
+
+  it("creates the section when the user does not have it", () => {
+    const user = "language: ko\n";
+    const { content, addedKeys } = appendSectionEntries(
+      user,
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+
+    expect(addedKeys).toEqual(["cursor/composer-3"]);
+    expect(content.startsWith(user)).toBe(true);
+    const merged = parseYaml(content) as Record<string, unknown>;
+    expect(merged.models).toEqual({ "cursor/composer-3": ENTRY });
+  });
+
+  it("appends into an existing section without a duplicate key", () => {
+    const user =
+      "language: ko\nmodels:\n  cursor/auto:\n    cli: cursor\n    cli_model: auto\n";
+    const { content, addedKeys } = appendSectionEntries(
+      user,
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+
+    expect(addedKeys).toEqual(["cursor/composer-3"]);
+    expect(content.match(/^models:/gm)).toHaveLength(1);
+    const merged = parseYaml(content) as Record<string, unknown>;
+    expect(merged.models).toEqual({
+      "cursor/auto": { cli: "cursor", cli_model: "auto" },
+      "cursor/composer-3": ENTRY,
+    });
+  });
+
+  it("keeps the keys that follow the section intact", () => {
+    const user = [
+      "models:",
+      "  cursor/auto:",
+      "    cli: cursor",
+      "",
+      "# a user comment",
+      "telemetry: false",
+      "",
+    ].join("\n");
+    const { content } = appendSectionEntries(
+      user,
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+
+    expect(content).toContain("# a user comment");
+    const merged = parseYaml(content) as Record<string, unknown>;
+    expect(merged.telemetry).toBe(false);
+    expect(Object.keys(merged.models as object)).toEqual([
+      "cursor/auto",
+      "cursor/composer-3",
+    ]);
+  });
+
+  it("fills a section the user left empty", () => {
+    const { content } = appendSectionEntries(
+      "models:\nlanguage: ko\n",
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+
+    const merged = parseYaml(content) as Record<string, unknown>;
+    expect(merged.models).toEqual({ "cursor/composer-3": ENTRY });
+    expect(merged.language).toBe("ko");
+  });
+
+  it("writes the header comment above the appended entries", () => {
+    const { content } = appendSectionEntries(
+      "models:\n  cursor/auto:\n    cli: cursor\n",
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed by model:propose",
+    );
+    expect(content).toContain("  # proposed by model:propose");
+  });
+
+  it("ignores a commented-out section header", () => {
+    const user = "# models:\n#   cursor/auto:\nlanguage: ko\n";
+    const { content, addedKeys } = appendSectionEntries(
+      user,
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+
+    expect(addedKeys).toEqual(["cursor/composer-3"]);
+    expect(content).toContain("# models:");
+    const merged = parseYaml(content) as Record<string, unknown>;
+    expect(merged.models).toEqual({ "cursor/composer-3": ENTRY });
+  });
+
+  it("refuses to touch a section that is not a mapping", () => {
+    const user = "models: [a, b]\n";
+    const { content, addedKeys } = appendSectionEntries(
+      user,
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+    expect(addedKeys).toEqual([]);
+    expect(content).toBe(user);
+  });
+
+  it("leaves malformed user YAML untouched", () => {
+    const broken = "models: [unclosed\n  nope";
+    const { content, addedKeys } = appendSectionEntries(
+      broken,
+      "models",
+      { "cursor/composer-3": ENTRY },
+      "proposed",
+    );
+    expect(addedKeys).toEqual([]);
+    expect(content).toBe(broken);
+  });
+
+  it("is a no-op for an empty entry set", () => {
+    const user = "models:\n  cursor/auto:\n    cli: cursor\n";
+    const { content, addedKeys } = appendSectionEntries(
+      user,
+      "models",
+      {},
+      "proposed",
+    );
+    expect(addedKeys).toEqual([]);
+    expect(content).toBe(user);
   });
 });

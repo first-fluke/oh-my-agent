@@ -1,14 +1,8 @@
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import YAML from "yaml";
 import { AGENTS_RESULTS_DIR } from "../../constants/paths.js";
 import {
   deepMerge,
   readRootOmaConfig,
   skillSectionFrom,
-  sparseDiff,
-  warnLegacySection,
 } from "../../platform/agent-config/skill-sections.js";
 
 export type VendorConfig = {
@@ -96,12 +90,13 @@ const DEFAULTS: ImageConfig = {
 };
 
 /**
- * Superseded by the `image:` section of `.agents/oma-config.yaml` (design 024).
- * Still read for one release, and only for keys that diverge from the shipped
- * default, so a user who has not migrated keeps their behaviour byte for byte.
+ * Resolve the effective config: shipped defaults < the `image:` section of
+ * `.agents/oma-config.yaml` < env vars < CLI flags (design 024).
+ *
+ * `.agents/skills/oma-image/config/image-config.yaml` is not consulted. It was
+ * the pre-024 home for these settings; migration 022 moves a user's diverged
+ * keys into oma-config.
  */
-const LEGACY_CONFIG_PATH = ".agents/skills/oma-image/config/image-config.yaml";
-
 export async function loadConfig(cwd = process.cwd()): Promise<ImageConfig> {
   const root = readRootOmaConfig(cwd);
   // structuredClone, not a reference: applyEnvOverrides mutates the result, and
@@ -111,9 +106,6 @@ export async function loadConfig(cwd = process.cwd()): Promise<ImageConfig> {
   const section = skillSectionFrom(root, "image");
   if (section) raw = deepMerge(raw, normalizeKeys(section));
 
-  const legacy = await readLegacyOverrides(cwd);
-  if (legacy) raw = deepMerge(raw, legacy);
-
   const merged = raw as unknown as ImageConfig;
   applyEnvOverrides(merged);
   // `language` is a root key, never a per-skill one — one read serves both.
@@ -122,38 +114,7 @@ export async function loadConfig(cwd = process.cwd()): Promise<ImageConfig> {
   return merged;
 }
 
-/**
- * Legacy-file keys the user actually changed, or undefined when the file is
- * absent or still pristine. Diffing against the shipped default is what keeps a
- * never-edited file from silently outranking the user's oma-config section.
- */
-async function readLegacyOverrides(
-  cwd: string,
-): Promise<Record<string, unknown> | undefined> {
-  const full = path.join(cwd, LEGACY_CONFIG_PATH);
-  if (!existsSync(full)) return undefined;
-
-  let parsed: unknown;
-  try {
-    parsed = YAML.parse(await readFile(full, "utf8"));
-  } catch {
-    return undefined;
-  }
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return undefined;
-  }
-
-  const normalized = normalizeKeys(parsed as Record<string, unknown>);
-  const overrides = sparseDiff(
-    normalized as Record<string, unknown>,
-    DEFAULTS as unknown as Record<string, unknown>,
-  );
-  if (Object.keys(overrides).length === 0) return undefined;
-
-  warnLegacySection(overrides, LEGACY_CONFIG_PATH, "image");
-  return overrides;
-}
-
+/** Map the section's snake_case keys onto the internal camelCase shape. */
 function normalizeKeys(raw: Record<string, unknown>): Partial<ImageConfig> {
   const out: Partial<ImageConfig> & Record<string, unknown> = {};
   const map: Record<string, string> = {
