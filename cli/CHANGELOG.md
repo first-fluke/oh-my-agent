@@ -1,5 +1,19 @@
 # Changelog
 
+## [12.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.0.0...cli-v12.0.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* **cli:** disable ken burns zoom on video scenes by default ([d5c142e](https://github.com/first-fluke/oh-my-agent/commit/d5c142e66208558984859c7cd2fb71928c49e511))
+
+
+### Documentation
+
+* clarify explainer video link label ([cbd1399](https://github.com/first-fluke/oh-my-agent/commit/cbd139921fde6dc8a416c524e184e571874933d9))
+* embed explainer video in readmes ([efc510d](https://github.com/first-fluke/oh-my-agent/commit/efc510d212aeccf333488f96ae046454d74bbafe))
+* use standard full-video link wording ([faef495](https://github.com/first-fluke/oh-my-agent/commit/faef4957a06165b0b9bce111729d692f33068d47))
+
 ## [12.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v11.11.1...cli-v12.0.0) (2026-08-12)
 
 
