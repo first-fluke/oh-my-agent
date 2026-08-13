@@ -269,6 +269,11 @@ function rememberContentForEvent(
 
   if (event.kind === "decision.made") {
     const subject = str("subject");
+    // scm.* decisions (commit splits, merges, pushes) are durably recorded in
+    // git history already; remembering each one as a fact crowds real
+    // cross-session decisions out of the bounded boundary recall window. They
+    // still reach `observe`, so the session timeline keeps the full record.
+    if (subject.startsWith("scm.")) return null;
     const decision = str("decision");
     const rationale = str("rationale");
     if (!subject && !decision) return null;

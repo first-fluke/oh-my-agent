@@ -322,6 +322,40 @@ describe("L1 state events", () => {
     ]);
   });
 
+  it("observes but does not remember scm.* decisions", async () => {
+    let rememberCalls = 0;
+    const observed: unknown[] = [];
+    await emitEventWithMemory(
+      projectDir,
+      "oma-scm",
+      {
+        kind: "decision.made",
+        payload: {
+          subject: "scm.commit-split",
+          decision: "Split into two commits.",
+          rationale: "Independent scopes.",
+        },
+      },
+      {
+        name: "agentmemory",
+        async status() {
+          return { provider: "agentmemory", reachable: true };
+        },
+        async observe(payload) {
+          observed.push(payload);
+          return true;
+        },
+        async remember() {
+          rememberCalls += 1;
+          return true;
+        },
+      },
+    );
+
+    expect(observed).toHaveLength(1);
+    expect(rememberCalls).toBe(0);
+  });
+
   it("does not remember non-decision/blocker semantic events", async () => {
     let rememberCalls = 0;
     await emitEventWithMemory(
