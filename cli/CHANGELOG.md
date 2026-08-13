@@ -1,5 +1,18 @@
 # Changelog
 
+## [12.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.1.0...cli-v12.1.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* **state:** stop remembering scm.* decisions as durable facts ([8769143](https://github.com/first-fluke/oh-my-agent/commit/876914317b22b06b669fe8f64051e32c5be3d465))
+
+
+### Documentation
+
+* **skills:** point the loading policy at resources that exist ([74e0aac](https://github.com/first-fluke/oh-my-agent/commit/74e0aac464222ee63d5e21a621d94d7994abb670))
+* **skills:** replace unreachable context budget with measured costs ([87e77ee](https://github.com/first-fluke/oh-my-agent/commit/87e77ee08e233eac7ffa8a294a018fc2d3b6ba34))
+
 ## [12.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.0.2...cli-v12.1.0) (2026-08-13)
 
 
