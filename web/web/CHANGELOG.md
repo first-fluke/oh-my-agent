@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.2...web-v4.1.3) (2026-08-13)
+
+
+### Bug Fixes
+
+* **skills:** reject stale rollout replay in skill eval ([0356e5d](https://github.com/first-fluke/oh-my-agent/commit/0356e5df21fb0502270e4f5706268037c682c41d))
+
+
+### Documentation
+
+* replace the token-savings claim with measured, reproducible numbers ([1661967](https://github.com/first-fluke/oh-my-agent/commit/166196759c01d2591141e67c5fb9c83dcd95a78f))
+* **skills:** point the loading policy at resources that exist ([74e0aac](https://github.com/first-fluke/oh-my-agent/commit/74e0aac464222ee63d5e21a621d94d7994abb670))
+* **skills:** replace unreachable context budget with measured costs ([87e77ee](https://github.com/first-fluke/oh-my-agent/commit/87e77ee08e233eac7ffa8a294a018fc2d3b6ba34))
+* state token savings as overhead reduction, not total tokens ([62de0cf](https://github.com/first-fluke/oh-my-agent/commit/62de0cfb02a660d8e8a7162f33e988dacae84612))
+
 ## [4.1.2](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.1...web-v4.1.2) (2026-08-12)
 
 
