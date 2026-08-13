@@ -372,7 +372,8 @@ describe("installVendorAdaptations", () => {
           return JSON.stringify({
             vendor: "codex",
             destDir: ".codex/agents",
-            modelDefault: "gpt-5.4",
+            modelDefault: "gpt-5.6-terra",
+            effortDefault: "high",
             toolsDefault: [],
             protocolPath:
               ".agents/skills/_shared/runtime/execution-protocols/codex.md",
@@ -432,6 +433,14 @@ describe("installVendorAdaptations", () => {
     expectAtomicWrite(
       join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
       expect.stringContaining("execution-protocols/codex.md"),
+    );
+    expectAtomicWrite(
+      join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
+      expect.stringContaining('model = "gpt-5.6-terra"'),
+    );
+    expectAtomicWrite(
+      join(mockTargetDir, ".codex", "agents", "tf-infra-engineer.toml"),
+      expect.stringContaining('model_reasoning_effort = "high"'),
     );
   });
 });

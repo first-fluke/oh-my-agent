@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   installVendorAgents,
@@ -474,6 +475,37 @@ describe("installVendorAgents — protocolPath validation", () => {
       expect(existsSync(join(targetDir, ".claude", "agents"))).toBe(false);
     } finally {
       warn.mockRestore();
+    }
+  });
+});
+
+describe("installVendorAgents — real Codex variant SSOT", () => {
+  it("generates Terra/high defaults and Luna/max fast-role overrides", () => {
+    const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-codex-agent-dst-"));
+
+    try {
+      expect(
+        installVendorAgents(sourceDir, targetDir, "codex"),
+      ).toBeGreaterThan(0);
+
+      const backend = readFileSync(
+        join(targetDir, ".codex", "agents", "backend-engineer.toml"),
+        "utf-8",
+      );
+      expect(backend).toContain('model = "gpt-5.6-terra"');
+      expect(backend).toContain('model_reasoning_effort = "high"');
+
+      for (const agent of ["docs-curator", "research-explorer"]) {
+        const content = readFileSync(
+          join(targetDir, ".codex", "agents", `${agent}.toml`),
+          "utf-8",
+        );
+        expect(content).toContain('model = "gpt-5.6-luna"');
+        expect(content).toContain('model_reasoning_effort = "max"');
+      }
+    } finally {
+      rmSync(targetDir, { recursive: true, force: true });
     }
   });
 });

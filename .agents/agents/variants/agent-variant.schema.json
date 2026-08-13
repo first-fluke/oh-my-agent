@@ -27,6 +27,11 @@
       "type": "string",
       "description": "The default AI model to use for this vendor's agents"
     },
+    "effortDefault": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "xhigh", "max", "ultra"],
+      "description": "The default reasoning effort for this vendor's agents"
+    },
     "maxTurnsDefault": {
       "type": "integer",
       "description": "The default maximum number of turns allowed for agents"
@@ -72,7 +77,7 @@
           },
           "effort": {
             "type": "string",
-            "enum": ["low", "medium", "high"]
+            "enum": ["low", "medium", "high", "xhigh", "max", "ultra"]
           },
           "extra": {
             "type": "object",
