@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.0.2",
-  "releaseDate": "2026-08-13T06:12:50.264Z",
+  "releaseDate": "2026-08-13T06:47:13.445Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -26,8 +26,8 @@
     },
     {
       "path": ".agents/agents/docs-curator.md",
-      "sha256": "cefbd76340331b6cb2d59d5488c66b53f9df721e4ec3bd5a1801baf761ed0dff",
-      "size": 3995
+      "sha256": "732ab0e496154d54aa0d1f7a1a17a44c5d73ff4822d4c271f3edde795961b70c",
+      "size": 4099
     },
     {
       "path": ".agents/agents/frontend-engineer.md",
@@ -966,8 +966,8 @@
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
-      "sha256": "6bc59428f92df1846d60514ec29d35bf84083a49f0b3fb3ce9bcc669c941b07f",
-      "size": 20824
+      "sha256": "417a56d6be65a95f7abdf080c16a61a8d658d49db9688d18448d3adfebb36b7f",
+      "size": 21100
     },
     {
       "path": ".agents/skills/oma-explainer/SKILL.md",
@@ -2066,13 +2066,13 @@
     },
     {
       "path": ".agents/workflows/docs.md",
-      "sha256": "e97b3341a8f67baba1e3558d5cf0b043f7e99a2b5bd84fd6b36fdf6363e7891c",
-      "size": 8978
+      "sha256": "d7becc533ef540530ea7effbd56bc83ba5041c380945217ad0e38a165da7dc0f",
+      "size": 9161
     },
     {
       "path": ".agents/workflows/explain.md",
-      "sha256": "e9633141e2606e70973c4a6ff2a0b5438e5e5292500c95e3c7998f662360eb53",
-      "size": 4021
+      "sha256": "bf8c0913755d0bbedd67072bbfce3ba969baad013adab4a2996e073ab98415a5",
+      "size": 4214
     },
     {
       "path": ".agents/workflows/orchestrate.md",
@@ -2096,8 +2096,8 @@
     },
     {
       "path": ".agents/workflows/recap.md",
-      "sha256": "9eb88bd6020e855272c331c2c6ee868078a982ebb606531a2ecd017f8d6309c1",
-      "size": 5438
+      "sha256": "169c2cdf6b677b0c24d952a677915d13cdcc6c490e283c79a965c84fce2ad6f8",
+      "size": 5629
     },
     {
       "path": ".agents/workflows/review.md",
