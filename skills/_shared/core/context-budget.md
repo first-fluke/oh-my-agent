@@ -41,28 +41,55 @@ Good: Check first 50 lines (imports + class definitions) → read additional fun
 
 ---
 
-## Resource Loading Budget
+## What Loading Actually Costs
 
-### Flash-tier Models (128K context)
+Measured from the installed skill tree, not estimated. Re-derive with:
 
-| Category | Budget | Notes |
-|----------|--------|-------|
-| SKILL.md | ~800 tokens | Auto-loaded |
-| execution-protocol.md | ~500 tokens | Always loaded |
-| Task resource 1 | ~500 tokens | Selected by difficulty |
-| Task resource 2 | ~500 tokens | Complex only |
-| error-playbook.md | ~800 tokens | On error only |
-| **Total resource budget** | **~3,100 tokens** | ~2.4% of total |
-| **Working budget** | **~125K tokens** | Everything else |
+```bash
+bun scripts/measure-skill-context.ts
+```
 
-### Pro-tier Models (1M+ context)
+Token figures are approximations (bytes ÷ 4 for English markdown) and read
+slightly low for tables and code fences.
 
-| Category | Budget | Notes |
-|----------|--------|-------|
-| Resource budget | ~5,000 tokens | Can load generously |
-| Working budget | ~1M tokens | Large files possible |
+| File | Median | Range | Present in |
+|------|-------:|-------|-----------:|
+| `SKILL.md` | ~3,150 | 1,540-7,580 | 33/33 |
+| `execution-protocol.md` | ~1,560 | 650-3,650 | 19/33 |
+| `snippets.md` | ~3,120 | 2,960-7,950 | 3/33 |
+| `examples.md` | ~1,320 | 380-4,010 | 6/33 |
+| `error-playbook.md` | ~920 | 700-2,730 | 11/33 |
+| `checklist.md` | ~560 | 280-3,830 | 17/33 |
+| `tech-stack.md` | ~960 | 300-1,940 | 3/33 |
 
-Pro has less budget pressure, but unnecessary loading still diverts attention.
+Typical loads for one agent:
+
+| Task difficulty | Files | Median cost |
+|-----------------|-------|------------:|
+| Simple | `SKILL.md` + `execution-protocol.md` | ~4,000 |
+| Complex | + `tech-stack.md` + `snippets.md` | ~9,000 |
+
+On a 128K-context model a Simple load is ~3% of the window and leaves ~124K to
+work in; a Complex load is ~7% and leaves ~119K. On 1M-context models the
+pressure is negligible, but unnecessary loading still diverts attention.
+
+**`SKILL.md` is the floor and the largest single item.** It is loaded whenever
+the skill is routed to, so it dominates every tier — trimming it beats trimming
+any resource. The enforced ceiling is `oma skills audit`'s focus check:
+
+> `SKILL.md` body > **25,000 characters** (~6,250 tokens) → `[WARN] bundle`
+> (`FOCUS_BODY_WARN_THRESHOLD` in `cli/commands/skills/audit.ts`)
+
+Run `oma skills audit` after editing a `SKILL.md`. Two skills currently exceed
+it (`oma-video`, `oma-translator`); the fix is splitting the skill or pushing
+detail into `resources/`, not raising the threshold.
+
+> Earlier revisions of this file listed a "~3,100 token total resource budget"
+> with `SKILL.md` at ~800 tokens. No skill has ever met that: the smallest
+> `SKILL.md` is 1,540 tokens and every one of the 33 exceeded the 800 figure.
+> Budgets that nothing can satisfy get ignored, so the numbers above describe
+> what loading costs, and the audit threshold is the limit that is actually
+> checked.
 
 ---
 

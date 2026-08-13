@@ -7,19 +7,30 @@ This saves context window and prevents confusion from irrelevant information.
 
 ## Loading Order (Common to All Agents)
 
+**Every item below loads only if that file exists in the skill.** Resource sets
+differ per skill by design — `execution-protocol.md` is in 19 of 33 skills,
+`checklist.md` in 17, `error-playbook.md` in 11. A missing file is not an error
+and is not something to create on the fly; skip it and move on.
+
 ### Always Load (Required)
-1. `SKILL.md`: Auto-loaded (provided by Antigravity)
-2. `resources/execution-protocol.md`: Execution protocol
+1. `SKILL.md`: read when the skill is routed to (the injector hook supplies the
+   path, not the body)
+2. `resources/execution-protocol.md`: execution protocol
 
 ### Load at Task Start
 3. `difficulty-guide.md`: Difficulty assessment (Step 0)
 
 ### Load Based on Difficulty
 4. **Simple**: Proceed to implementation without additional loading
-5. **Medium**: `resources/examples.md` (reference similar examples)
+5. **Medium**: the task's mapped resource from the table below
 <!-- oma-docs:ignore-start -->
-6. **Complex**: `resources/examples.md` + `stack/tech-stack.md` + `stack/snippets.md`
+6. **Complex**: the mapped resource + `stack/tech-stack.md` + `stack/snippets.md`
 <!-- oma-docs:ignore-end -->
+
+> `stack/` is **generated per project by `/stack-set`**, adapted to the detected
+> stack. It is absent until that runs — the shipped `variants/{language}/` files
+> are seeds for generation, not a substitute to load. In a fresh checkout the
+> Complex tier therefore costs no more than Medium.
 
 ### Load During Execution as Needed
 7. `resources/checklist.md`: Load at Step 4 (Verify)
@@ -43,18 +54,18 @@ This saves context window and prevents confusion from irrelevant information.
 | CRUD API creation             | stack/snippets.md (route, schema, model, test)    |
 | Authentication implementation | stack/snippets.md (JWT, password) + stack/tech-stack.md |
 | DB migration                  | stack/snippets.md (migration)                     |
-| Performance optimization      | examples.md (N+1 example)                   |
-| Existing code modification    | examples.md + Serena MCP                    |
+| Performance optimization      | resources/orm-reference.md (N+1, eager loading)   |
+| Existing code modification    | Serena MCP (`find_symbol`, `find_referencing_symbols`) |
 
 ### Frontend Agent
 
 | Task Type           | Required Resources                                     |
 | ------------------- | ------------------------------------------------------ |
-| Component creation  | snippets.md (component, test) + component-template.tsx |
+| Component creation  | snippets.md (component, test)                          |
 | Form implementation | snippets.md (form + Zod)                               |
 | API integration     | snippets.md (TanStack Query)                           |
 | Styling             | tailwind-rules.md                                      |
-| Page layout         | snippets.md (grid) + examples.md                       |
+| Page layout         | snippets.md (grid)                                     |
 
 ### Mobile Agent
 
@@ -63,7 +74,7 @@ This saves context window and prevents confusion from irrelevant information.
 | Screen creation  | snippets.md (screen, provider) + screen-template.dart |
 | API integration  | snippets.md (repository, Dio)                         |
 | Navigation       | snippets.md (GoRouter)                                |
-| Offline features | examples.md (offline example)                         |
+| Offline features | resources/tech-stack.md (response cache, durable storage) |
 | State management | snippets.md (Riverpod)                                |
 
 ### Debug Agent
@@ -83,7 +94,7 @@ This saves context window and prevents confusion from irrelevant information.
 | Security review      | checklist.md (Security section)                     |
 | Performance review   | checklist.md (Performance section)                  |
 | Accessibility review | checklist.md (Accessibility section)                |
-| Full audit           | checklist.md (full) + self-check.md                 |
+| Full audit           | checklist.md (full) + common-checklist.md (shared)  |
 | Quality scoring      | quality-score.md (measurement protocol via Bash)    |
 
 ### Architecture Agent
@@ -92,7 +103,7 @@ This saves context window and prevents confusion from irrelevant information.
 | ---------------------------- | -------------------------------------------------------------------------- |
 | Architecture recommendation  | methodology-selection.md + output-templates.md                             |
 | Design review                | methodology-selection.md + checklist.md + stakeholder-synthesis.md         |
-| Design-twice comparison      | methodology-selection.md + stakeholder-synthesis.md + examples.md          |
+| Design-twice comparison      | methodology-selection.md + stakeholder-synthesis.md + output-templates.md  |
 | ATAM-style analysis          | methodology-selection.md + stakeholder-synthesis.md + output-templates.md  |
 | CBAM-style prioritization    | methodology-selection.md + output-templates.md                             |
 | ADR generation               | output-templates.md                                                        |
@@ -164,4 +175,5 @@ The following protocols are **NOT** loaded at Phase 0 / Step 0. They are loaded 
 | `exploration-loop.md` | Same gate fails twice on same issue | Orchestrator (inline, before spawning hypothesis agents) |
 
 **Budget impact**: ~750 tokens total if all 3 loaded, but since loading is conditional, typical sessions load 1-2 only.
-Flash-tier budget remains within ~3,100 token allocation for most sessions.
+That is minor next to the ~4,000 tokens a Simple load already costs (`SKILL.md` +
+`execution-protocol.md`) — see `context-budget.md` for measured per-file costs.
