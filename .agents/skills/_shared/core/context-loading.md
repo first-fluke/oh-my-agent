@@ -164,4 +164,5 @@ The following protocols are **NOT** loaded at Phase 0 / Step 0. They are loaded 
 | `exploration-loop.md` | Same gate fails twice on same issue | Orchestrator (inline, before spawning hypothesis agents) |
 
 **Budget impact**: ~750 tokens total if all 3 loaded, but since loading is conditional, typical sessions load 1-2 only.
-Flash-tier budget remains within ~3,100 token allocation for most sessions.
+That is minor next to the ~4,000 tokens a Simple load already costs (`SKILL.md` +
+`execution-protocol.md`) — see `context-budget.md` for measured per-file costs.
