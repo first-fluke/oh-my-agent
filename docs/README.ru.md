@@ -12,7 +12,7 @@ oh-my-agent делает это утверждение фальсифициру�
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## Проверка, а не рассказ
 

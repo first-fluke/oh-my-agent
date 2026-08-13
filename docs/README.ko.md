@@ -12,7 +12,7 @@ oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프�
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## 서술이 아니라 검증
 

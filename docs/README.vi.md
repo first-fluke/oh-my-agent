@@ -12,7 +12,7 @@ oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook 
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## Kiểm chứng, không phải kể chuyện
 

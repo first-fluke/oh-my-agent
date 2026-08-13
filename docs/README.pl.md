@@ -12,7 +12,7 @@ oh-my-agent czyni tę deklarację falsyfikowalną. Hook Stop odmawia zakończeni
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## Weryfikacja zamiast narracji
 

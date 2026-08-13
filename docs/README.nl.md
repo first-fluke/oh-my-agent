@@ -12,7 +12,7 @@ oh-my-agent maakt die bewering falsifieerbaar. Een Stop-hook weigert je sessie t
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## Verificatie, geen narratief
 

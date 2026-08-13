@@ -12,7 +12,7 @@ oh-my-agent hace que esa afirmación sea falsable. Un Stop hook se niega a termi
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## Verificación, No Narración
 

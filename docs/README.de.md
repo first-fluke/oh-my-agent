@@ -12,7 +12,7 @@ oh-my-agent macht diese Behauptung falsifizierbar. Ein Stop-Hook weigert sich, d
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## Verifikation statt Narration
 

@@ -12,7 +12,7 @@ oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session
 
 ![oh-my-agent explainer](https://github.com/first-fluke/oh-my-agent/raw/main/docs/assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](https://github.com/first-fluke/oh-my-agent/blob/main/docs/assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](https://github.com/first-fluke/oh-my-agent/blob/main/docs/assets/video/oh-my-agent-explainer.mp4)
 
 ## Verification, Not Narration
 

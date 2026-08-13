@@ -12,7 +12,7 @@ oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，�
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
+[Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## 只看验证，不听自述
 
