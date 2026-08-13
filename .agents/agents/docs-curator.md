@@ -24,7 +24,7 @@ CHARTER_CHECK:
 - Clarification level: {LOW | MEDIUM | HIGH}
 - Task domain: docs-curation
 - Diff range: {git range or staged}
-- Must NOT do: modify code, modify .agents/, auto-apply patches that contradict acceptance criteria
+- Must NOT do: modify code, modify .agents/ definitions (run outputs under .agents/results/ and .agents/state/memories/ are the standing exception), auto-apply patches that contradict acceptance criteria
 - Success criteria: {docs reflect the diff, broken refs in scope are resolved}
 - Assumptions: {defaults applied}
 ```

@@ -9,7 +9,7 @@ disable-model-invocation: true
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - **NEVER skip steps.** Execute from Step 1 in order.
 - **Never auto-apply sync patches.** Sync mode is always interactive: `[y]` confirm required per doc.
-- **Never modify `.agents/`.** SSOT protection applies in all modes.
+- **Never modify `.agents/` definitions.** SSOT protection covers skills, workflows, rules, agents, and config, in all modes. Generated artifacts under `.agents/results/` and `.agents/state/` are not SSOT — never delete them to "restore" protection.
 - **Follow the host-LLM contract** in `.agents/skills/oma-docs/SKILL.md`: the CLI emits structured data; this workflow performs natural-language synthesis, severity grouping, and patch drafting on top of the JSON output.
 
 ---

@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 - **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
 - **NEVER skip steps.** Execute from Step 1 in order.
-- **Never modify `.agents/`.** SSOT protection applies.
+- **Never modify `.agents/` definitions.** SSOT protection covers skills, workflows, rules, agents, and config. It does NOT cover this workflow's own output at `.agents/results/recap/` — writing there is the expected behaviour, not a violation.
 - **Follow the host-LLM contract** in `.agents/skills/oma-recap/SKILL.md`: theme analysis, grouping rules, and Markdown output format are owned by the skill. This workflow only resolves intent, runs the CLI, and reports.
 - **Never auto-translate technical terms** in the saved recap (project names, tool names, CLI flags).
 

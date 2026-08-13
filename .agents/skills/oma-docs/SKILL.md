@@ -260,11 +260,11 @@ oma docs verify --json
 - sync: modifies docs files only on user approval; regenerates `doc-refs.json` after applies.
 - i18n / lint: stdout report only; no file writes.
 - All modes: stdout output (summary or full report).
-- No `.agents/` files are ever modified.
+- No `.agents/` definition files are ever modified (run outputs under `.agents/results/` and `.agents/state/` are not definitions).
 
 ### Guardrails
 
-1. **Never modify `.agents/`**: CLAUDE.md SSOT protection applies in all modes.
+1. **Never modify `.agents/` definitions**: CLAUDE.md SSOT protection covers skills, workflows, rules, agents, and config, in all modes. Generated artifacts under `.agents/results/` and `.agents/state/` are not SSOT and must not be deleted to "restore" protection.
 2. **Never auto-apply sync patches**: sync is always interactive; `[y]` confirm required per doc.
 3. **LLM unavailable → graceful degradation**: verify falls back to raw JSON; sync falls back to candidate-list-only (no proposals). Neither mode blocks on LLM availability.
 4. **Response language follows `oma-config.yaml` `language`**: user-facing report text is localized; code, paths, JSON keys, and CLI commands stay in English.
