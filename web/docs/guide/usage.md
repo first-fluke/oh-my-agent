@@ -369,7 +369,7 @@ Use 3 terminals:
 
 ### Progressive disclosure
 
-Skills load in two layers to save tokens. Layer 1 (SKILL.md, ~800 bytes) is always present. Layer 2 (resources/) loads only when the agent is working, and only the resources matching the task difficulty. Across a 5-agent session this cuts skill-loading overhead by about 72% — roughly 5.5K tokens instead of 20K — leaving approximately 122.5K of a 128K context free for actual work instead of 108K. See [token savings math](../core-concepts/skills.md#token-savings-math) for the derivation.
+Skills load in two layers to save tokens. Layer 1 (`SKILL.md`, ~3,100 tokens median) enters context when the skill is routed to — the injector passes a path, not the body. Layer 2 (`resources/`) is read only as the task needs it, per the difficulty tiers. Measured across a 5-agent session, a Simple or Medium task holds ~17-19K tokens of skill context against a 72K ceiling, leaving roughly 110K of a 128K context for actual work; a Complex task holds ~38K, leaving ~90K. See [token savings math](../core-concepts/skills.md#token-savings-math) for the table and the script that reproduces it.
 
 ### Token optimization
 

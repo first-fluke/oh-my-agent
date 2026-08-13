@@ -131,13 +131,13 @@ oh-my-agent solves this with specialization:
 
 oh-my-agent uses a two-layer skill architecture to prevent context window exhaustion:
 
-**Layer 1: SKILL.md (~800 bytes, always loaded)**
+**Layer 1: SKILL.md (~3,100 tokens median, loaded when the skill is routed)**
 Contains the agent's identity, routing conditions, core rules, and "when to use / when NOT to use" guidance. This is all that is loaded when the agent is not actively working.
 
 **Layer 2: resources/ (loaded on-demand)**
 Contains execution protocols, tech stack references, code snippets, error playbooks, checklists, and examples. These are loaded only when the agent is invoked for a task, and even then, only the resources relevant to the specific task type are loaded (based on the difficulty assessment and task-resource mapping in `context-loading.md`).
 
-This design cuts skill-loading overhead by about 72% compared to loading everything upfront — roughly 5.5K tokens instead of 20K across a 5-agent session, or about 4% of a 128K context instead of 16%. See [token savings math](../core-concepts/skills.md#token-savings-math) for the derivation.
+Measured across a 5-agent session, this holds roughly 17-19K tokens of skill context for a Simple or Medium task against a 72K ceiling — about 75% of the maximum avoided, falling to ~47% for Complex tasks that pull in stack references. See [token savings math](../core-concepts/skills.md#token-savings-math) for the measured table and the script that reproduces it.
 
 ---
 

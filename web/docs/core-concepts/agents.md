@@ -832,7 +832,7 @@ In subagent mode (CLI-spawned), agents cannot ask users directly. LOW proceeds, 
 
 Each agent's knowledge is split across two layers:
 
-**Layer 1: SKILL.md (~800 bytes)**
+**Layer 1: SKILL.md (~3,100 tokens median)**
 Always loaded. Contains frontmatter (name, description), when to use / not use, core rules, architecture overview, library list, and references to Layer 2 resources.
 
 **Layer 2: resources/ (loaded on-demand)**

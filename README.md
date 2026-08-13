@@ -267,7 +267,7 @@ agents:
 ## Why oh-my-agent?
 
 - **Role-based** — agents modeled like a real engineering team, not a pile of prompts
-- **Token-efficient** — skills load in two layers, cutting skill-context overhead ~72%: a 5-agent session spends ~5.5K tokens on skill loading instead of ~20K ([the math](./web/docs/core-concepts/skills.md#token-savings-math))
+- **Token-efficient** — skills load in two layers, so a 5-agent session holds ~17-19K tokens of skill context on ordinary tasks instead of the 72K it would take to load every resource ([measured, with the script](./web/docs/core-concepts/skills.md#token-savings-math))
 - **Recoverable** — after 2 failed retries, `orchestrate` spawns hypothesis variants in parallel and keeps the highest-scoring result instead of retrying a wrong approach forever
 - **Monorepo-aware** — `detectWorkspace` reads pnpm / nx / turbo / lerna and routes each agent to its workspace
 - **Multi-vendor** — mix Antigravity, Claude, Codex, Cursor, Kiro, and Qwen per agent type

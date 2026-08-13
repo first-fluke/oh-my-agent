@@ -11,9 +11,9 @@ Skills are structured knowledge packages that give each agent its domain experti
 
 ## The two-layer design
 
-### Layer 1: SKILL.md (~800 bytes, always loaded)
+### Layer 1: SKILL.md (~3,100 tokens median, loaded when the skill is routed)
 
-Every skill has a `SKILL.md` file at its root. This is always loaded into the context window when the skill is referenced. It contains:
+Every skill has a `SKILL.md` file at its root. It enters the context window when the skill is routed to — the injector hook passes a **path reference**, not the body, so an unrouted skill costs nothing beyond its `description`. It contains:
 
 - **YAML frontmatter** with `name` and `description` (used for routing and display)
 - **When to use / When NOT to use**: explicit activation conditions
@@ -47,7 +47,7 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 ```
 .agents/skills/oma-frontend/
-├── SKILL.md                          ← Layer 1: always loaded (~800 bytes)
+├── SKILL.md                          ← Layer 1: loaded when routed (~3.1K tokens)
 └── resources/
     ├── execution-protocol.md         ← Layer 2: step-by-step workflow
     ├── tech-stack.md                 ← Layer 2: detailed technology specs
@@ -218,20 +218,59 @@ Multi-domain requests follow established execution orders:
 
 ## Token savings math
 
-Consider a 5-agent orchestration session (pm, backend, frontend, mobile, qa):
+These figures are measured from the skill tree, not estimated by hand. Re-derive
+them at any time:
 
-**Without progressive disclosure:**
-- Each agent loads all resources: ~4,000 tokens per agent
-- Total: 5 x 4,000 = 20,000 tokens consumed before any work
+```bash
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+```
 
-**With progressive disclosure:**
-- Layer 1 only for all agents: 5 x 800 = 4,000 tokens
-- Layer 2 loaded only for active agents (typically 1-2 at a time): +1,500 tokens
-- Total: ~5,500 tokens
+Token counts are **approximations** (bytes ÷ 4, the rough ratio for English
+markdown). Tables and code fences tokenize somewhat worse, so these read
+slightly low; use a real tokenizer against your target model if you need exact
+numbers.
 
-**Savings: approximately 72-75%**
+### Loading tiers
 
-On flash-tier models (128K context), this is the difference between having 108K tokens available for work versus 125K tokens, a significant margin for complex tasks.
+Each tier is a state an agent actually reaches, per
+[`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md):
+
+| Tier | What is in context |
+|------|--------------------|
+| `routed` | `SKILL.md` alone |
+| `simple` | + `execution-protocol.md` |
+| `medium` | + `examples.md` |
+| `complex` | + `tech-stack.md`, `snippets.md` |
+| `all` | `SKILL.md` + every resource file — the **ceiling**, not a selectable mode |
+
+### A 5-agent session (pm, backend, frontend, mobile, qa)
+
+| Tier | Tokens | Share of ceiling | Avoided |
+|------|-------:|-----------------:|--------:|
+| `routed` | 11,724 | 16.3% | 83.7% |
+| `simple` | 17,350 | 24.1% | 75.9% |
+| `medium` | 18,552 | 25.7% | 74.3% |
+| `complex` | 38,417 | 53.3% | 46.7% |
+| `all` | 72,127 | 100% | — |
+
+So a Simple or Medium task across five agents holds roughly **17-19K tokens** of
+skill context rather than the 72K ceiling, and a Complex task holds about
+**38K** — the saving is ~74-76% for ordinary work and drops to ~47% when a task
+pulls in stack references. On a 128K-context model that is about 110K free for
+Simple/Medium work and 90K for Complex.
+
+:::note Read `all` as a bound, not an alternative
+No runtime loads every resource upfront: skills are surfaced by `description`,
+their body is read when routed, and resources are read as the task needs them.
+`all` is the upper bound of what a skill *could* cost, which is why the
+percentages above are stated as "avoided", not as a comparison against a real
+configuration.
+:::
+
+Layer 1 is the floor, and it is not small: across the 33 installed skills
+`SKILL.md` runs 1,542-7,580 tokens (median ~3,100). That floor caps how much
+progressive disclosure can save — with all five agents routed, the `routed` tier
+alone is already 16% of the ceiling.
 
 ---
 
