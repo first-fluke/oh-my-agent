@@ -12,7 +12,7 @@ oh-my-agent ทำให้คำกล่าวอ้างนั้นพิ�
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch as MP4](./assets/video/oh-my-agent-explainer.mp4)
+[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## ตรวจสอบ ไม่ใช่เล่าเรื่อง
 

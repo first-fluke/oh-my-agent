@@ -12,7 +12,7 @@ oh-my-agent はその主張を反証可能にします。Stop hook は、プロ�
 
 ![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
 
-[Watch as MP4](./assets/video/oh-my-agent-explainer.mp4)
+[Watch in full quality (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
 ## ナレーションではなく検証
 

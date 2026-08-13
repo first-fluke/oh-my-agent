@@ -12,7 +12,7 @@ oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session
 
 ![oh-my-agent explainer](./docs/assets/video/oh-my-agent-explainer.gif)
 
-[Watch as MP4](./docs/assets/video/oh-my-agent-explainer.mp4)
+[Watch in full quality (35s)](./docs/assets/video/oh-my-agent-explainer.mp4)
 
 ## Verification, Not Narration
 
