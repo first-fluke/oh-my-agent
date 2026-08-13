@@ -1,0 +1,60 @@
+# oma-video skill configuration — NO LONGER READ BY THE CLI.
+#
+# Editing this file has no effect. Put your overrides under `video:` in
+# .agents/oma-config.yaml, which `oma update` preserves; this file is
+# overwritten. `oma update` runs migration 022, which moves anything you had
+# changed here into oma-config for you.
+#
+# The values below mirror DEFAULT_VIDEO_CONFIG in cli/commands/video/config.ts,
+# which is the source of truth. They are kept only so migration 022 can tell an
+# edited file from a pristine one.
+default_output_dir: .agents/results/videos
+default_mode: shorts
+default_aspect: auto
+default_locale: en
+default_captions: tiktok
+default_visual: auto
+default_voice: none
+default_music: none
+default_compositor: remotion
+default_timeout_sec: 600
+
+providers:
+  script:
+    order: [agent-script]
+  voice:
+    order: [oma-voice]
+  visual:
+    order: [oma-image, pexels, pixelle]
+  caption:
+    order: [oma-captions]
+  # Capture dispatch is currently driven by --source directly
+  # (cli/commands/video/orchestrator/capture.ts): --source web -> playwright-web,
+  # --source file -> guided/cap. This key mirrors the code default and is
+  # informational only — the orchestrator does not walk it as a chain.
+  capture:
+    order: [playwright-web, cap]
+  # Strudel renders the BGM bed offline (headless Chrome + OfflineAudioContext).
+  # Deps are AGPL and opt-in: `oma video doctor --install-strudel`.
+  music:
+    order: [strudel]
+  compositor:
+    order: [remotion, mpt]
+  # Paid providers — auto-enabled only when their env key is present (backend
+  # rule 11: real path gated on key, key-free fallback otherwise).
+  pexels:
+    enabled: false
+    envVar: PEXELS_API_KEY
+  pixelle:
+    enabled: false
+    envVar: RUNNINGHUB_API_KEY
+
+cost:
+  guardrail_usd: 0.20
+
+limits:
+  max_duration_sec: 180
+  max_scenes: 40
+
+naming:
+  single_folder_pattern: "{timestamp}-{shortid}-{mode}"

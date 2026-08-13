@@ -1,0 +1,41 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "grok",
+  "destDir": ".grok/agents",
+  "modelDefault": "grok-build",
+  "maxTurnsDefault": 30,
+  "toolsDefault": "run_terminal_cmd, read_file, search_replace, list_dir, grep",
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
+  "agents": {
+    "backend-engineer": {
+      "maxTurns": 40
+    },
+    "frontend-engineer": {
+      "maxTurns": 40
+    },
+    "db-engineer": {
+      "maxTurns": 25
+    },
+    "debug-investigator": {
+      "maxTurns": 25
+    },
+    "architecture-reviewer": {
+      "maxTurns": 15
+    },
+    "tf-infra-engineer": {
+      "maxTurns": 30
+    },
+    "mobile-engineer": {
+      "maxTurns": 40
+    },
+    "pm-planner": {
+      "maxTurns": 10
+    },
+    "qa-reviewer": {
+      "maxTurns": 15
+    },
+    "docs-curator": {
+      "maxTurns": 15
+    }
+  }
+}

@@ -260,14 +260,25 @@ export function buildPluginManifest(
  *   ├── mcp.json                  portable transport config, when SSOT has one
  *   └── com.firstfluke.oma/       agents / workflows / rules / oma-config.yaml
  *
- * The out dir is fully rebuilt on every run so removed SSOT entries cannot
- * linger in the package.
+ * The out dir is the repo root in the canonical layout (Agent Plugins clients
+ * discover `plugin.json` and `skills/` at the package root, and a git clone
+ * of this repo IS the package), so the out dir itself is never removed — only
+ * the package-owned artifacts above are rebuilt on every run, so removed SSOT
+ * entries cannot linger while sibling files stay untouched.
  */
 export function emitAgentPlugin(
   repoRoot: string,
   outDir: string,
 ): AgentPluginEmitReport {
-  rmSync(outDir, { recursive: true, force: true });
+  const ownedArtifacts = [
+    "plugin.json",
+    "skills",
+    "mcp.json",
+    OMA_EXTENSION_NAMESPACE,
+  ];
+  for (const artifact of ownedArtifacts) {
+    rmSync(join(outDir, artifact), { recursive: true, force: true });
+  }
   mkdirSync(outDir, { recursive: true });
 
   const skills: SkillEmitResult[] = emitAgentSkills(

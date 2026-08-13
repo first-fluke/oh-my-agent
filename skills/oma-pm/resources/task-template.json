@@ -1,0 +1,80 @@
+{
+  "project_name": "",
+  "description": "",
+  "session_id": "{YYYYMMDD}-{HHMMSS}",
+  "created": "",
+  "tech_stack": {
+    "frontend": "",
+    "backend": "",
+    "mobile": "",
+    "database": "",
+    "infrastructure": ""
+  },
+  "architecture_decisions": [
+    {
+      "decision": "",
+      "rationale": "",
+      "alternatives_considered": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-1",
+      "agent": "backend|frontend|mobile|db|qa|debug|pm|architecture|refactor|tf-infra|docs",
+      "title": "",
+      "description": "",
+      "priority": 1,
+      "dependencies": [],
+      "estimated_complexity": "low|medium|high|very-high",
+      "acceptance_criteria": [],
+      "artifacts_expected": [],
+      "scope": [],
+      "test_approach": "tdd|test_after|not_applicable",
+      "test_scope": [],
+      "tdd_evidence_required": true,
+      "test_approach_rationale": "",
+      "alternative_verification": ""
+    }
+  ],
+  "api_contracts": [
+    {
+      "endpoint": "",
+      "method": "GET|POST|PUT|DELETE|PATCH",
+      "request": {},
+      "response": {},
+      "headers": {}
+    }
+  ],
+  "data_models": [
+    {
+      "entity": "",
+      "fields": {}
+    }
+  ],
+  "non_functional_requirements": {
+    "security": [],
+    "performance": [],
+    "scalability": []
+  },
+  "testing_strategy": {
+    "unit_tests": "",
+    "integration_tests": "",
+    "e2e_tests": "",
+    "performance_tests": ""
+  },
+  "project_controls": {
+    "iso_21500": {
+      "scope_defined": false,
+      "stakeholders_identified": [],
+      "dependencies_mapped": false
+    },
+    "iso_31000": {
+      "top_risks": [],
+      "treatments": []
+    },
+    "iso_38500": {
+      "decision_owner": "",
+      "approval_required_for": []
+    }
+  }
+}

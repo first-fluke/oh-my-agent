@@ -1,0 +1,248 @@
+---
+name: orchestrate
+description: Automated parallel agent execution that spawns CLI subagents via native dispatch or `oma agent:spawn`, coordinates through MCP Memory, monitors progress, and runs verification
+disable-model-invocation: true
+---
+
+# MANDATORY RULES: VIOLATION IS FORBIDDEN
+
+- **Response language follows `language` setting in `.agents/oma-config.yaml` if configured.**
+- **NEVER skip steps.** Execute from Step 0 in order. Explicitly report completion of each step before proceeding.
+- **You MUST use MCP tools throughout the entire workflow.** This is NOT optional.
+  - Use code analysis tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `search_for_pattern`) for code exploration.
+  - Use memory tools (read/write/edit) for progress tracking.
+  - Memory path: configurable via `memoryConfig.basePath` (default: `.agents/state/memories`)
+  - Tool names: configurable via `memoryConfig.tools` in `.agents/mcp.json`
+  - Do NOT use raw file reads or grep as substitutes. MCP tools are the primary interface.
+- **Read required documents BEFORE starting.**
+
+---
+
+## Vendor Detection
+
+Before starting, determine your runtime environment by following `.agents/skills/_shared/core/vendor-detection.md`.
+The detected runtime vendor and each agent's target vendor determine how agents are spawned (Step 3) and monitored (Step 4).
+
+---
+
+## Step 0: Preparation (DO NOT SKIP)
+
+1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
+2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
+3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
+4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
+5. Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+
+---
+
+## Step 1: Load or Create Plan
+
+### 1a. Load
+
+Look for a plan file:
+
+1. Check `.agents/results/plan-{sessionId}.json` (current session's plan).
+2. If not found: find the most recent `.agents/results/plan-*.json` file.
+3. A plan is **usable** only when every task carries an agent assignment, a priority tier, its dependencies, and acceptance criteria. A plan missing any of these is not execution-ready — fall through to 1b rather than fanning out against it.
+
+### 1b. Create (no usable plan)
+
+A missing plan is not a stop condition. `/orchestrate` creates the plan itself instead of handing the request back to the user:
+
+1. Generate the session ID now (format: `session-YYYYMMDD-HHMMSS`). Step 2 reuses this id verbatim — do not generate a second one.
+2. Read and follow `.agents/workflows/plan.md` step by step, passing this session ID as its `{sessionId}` so the artifact lands at `.agents/results/plan-{sessionId}.json`.
+3. **Do NOT skip `plan.md` Step 6 (Review Plan with User).** It is this run's approval gate — the Step 3 fan-out is authorized by it. Delegation never removes a user gate.
+4. Once the plan is saved and approved, load it and continue to Step 2 with the same session ID.
+
+Stop and report only when the plan cannot be produced: the user declines to plan, or `plan.md` blocks because the request is too underspecified to decompose.
+
+- **Do NOT spawn agents without a usable plan.**
+
+---
+
+## Step 2: Initialize Session
+
+// turbo
+
+1. Load configuration:
+   - `.agents/oma-config.yaml` (`language`, `model_preset`, and per-agent `agents:` overrides)
+2. Display the resolved agent-to-model mapping:
+
+   ```
+   Resolved agent models (model_preset + overrides)
+   ┌──────────┬───────────────────┐
+   │ Agent    │ Vendor / Model    │
+   ├──────────┼───────────────────┤
+   │ frontend │ (resolved value)  │
+   │ backend  │ (resolved value)  │
+   │ mobile   │ (resolved value)  │
+   │ pm       │ (resolved value)  │
+   └──────────┴───────────────────┘
+   ```
+
+3. Session ID: reuse the id generated in Step 1b when the plan was created in this run; otherwise generate one now (format: `session-YYYYMMDD-HHMMSS`).
+4. **Domain gate**: for each planned task, classify it into `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`, and derive `exposed_skill_set` (skills whose name is in `domain_tags`). If fewer than 2 skills match confidently, fall back to the full installed set and mark `exposure_fallback: true`. See `.agents/skills/oma-orchestrator/SKILL.md` (PHASE 1.5) for the full rules.
+5. Use memory write tool to create `orchestrator-session.md` and `task-board.md` in the memory base path. Record `Exposed Skills` and `Exposure Fallback` per task in `task-board.md`.
+6. Set session status to RUNNING.
+
+---
+
+## Step 3: Spawn Agents by Priority Tier
+
+// turbo
+Before spawning agents, emit and verify the required fan-out decision:
+
+```bash
+oma state:emit "decision.made" '{"subject":"orchestrate.fanout-strategy","decision":"Spawn agents by priority tier using the loaded plan.","rationale":"The plan is available and determines which agents run in parallel."}'
+oma state:verify --workflow orchestrate --checkpoint fanout-strategy
+```
+
+For each priority tier (lowest first: tier 1, then tier 2, etc.):
+
+- Each agent gets: task description, API contracts, relevant context from `_shared/core/context-loading.md`, and only its task's `exposed_skill_set` as the available specialist list (see `.agents/skills/oma-orchestrator/resources/subagent-prompt-template.md` `{EXPOSED_SKILL_SET}`).
+- Use memory edit tool to update `task-board.md` with agent status.
+- If a failed task's review history indicates a specialist outside its `exposed_skill_set` was needed, re-classify the task and re-dispatch with the expanded set instead of retrying against the original narrow set.
+
+### Per-Agent Dispatch
+
+For each planned agent, first resolve the target vendor from `.agents/oma-config.yaml`.
+
+- If `target_vendor === current_runtime_vendor` and that runtime has a verified native role-subagent path, use the native vendor variant agent definition.
+- Otherwise, use `oma agent:spawn` for that agent only.
+
+### If Claude Code and target vendor is Claude
+
+Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
+
+- **Multiple Agent tool calls in same message** = true parallel execution
+- Agent mapping:
+
+| Domain | Subagent File |
+|:------|:---------------|
+| backend | `.claude/agents/backend-engineer.md` |
+| frontend | `.claude/agents/frontend-engineer.md` |
+| mobile | `.claude/agents/mobile-engineer.md` |
+| db | `.claude/agents/db-engineer.md` |
+| qa | `.claude/agents/qa-reviewer.md` |
+| debug | `.claude/agents/debug-investigator.md` |
+| refactor | `.claude/agents/refactor-engineer.md` |
+| pm | `.claude/agents/pm-planner.md` |
+| architecture | `.claude/agents/architecture-reviewer.md` |
+| tf-infra | `.claude/agents/tf-infra-engineer.md` |
+| docs | `.claude/agents/docs-curator.md` |
+
+- Include API contracts from `.agents/results/api-contracts/` (run artifacts) or `docs/plans/contracts/` (durable specs) if they exist
+- Load only task-relevant context (check codebase structure around affected domains)
+
+### If OpenCode and target vendor is OpenCode
+
+Spawn same-session subagents with the native `task` tool and `subagent_type: {agent-id}`. Do not use `oma agent:spawn` for same-session OpenCode tasks; that external fallback does not appear as a native child task in the active UI/TUI.
+
+### If Codex CLI and target vendor is Codex
+
+Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
+Pass each agent its task description, API contracts, and relevant context.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
+
+### If Gemini CLI and target vendor is Gemini
+
+Spawn native Gemini subagents using `.gemini/agents/{agent}.md` when available.
+If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
+
+### If target vendor differs from current runtime, or native dispatch is unavailable
+
+Spawn agents using `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}` only (custom subagents not available).
+
+---
+
+## Step 4: Monitor Progress
+
+Use `oma agent:status {session_id} {agent_id}` to check process health.
+Also use memory read tool to poll `progress-{agent}[-{sessionId}].md` for logic updates.
+
+- Use memory edit tool to update `task-board.md` with turn counts and status changes.
+- Watch for: completion, failures, crashes.
+- A `no-artifact` status (or `oma agent:spawn` exit code 3) means the vendor exited 0 but wrote no result artifact under the workspace — a silent misdirected write. Treat it as a failed spawn: do NOT collect it as completed; re-dispatch (natively if the external vendor is unreliable) and check the session trail for the `blocker.raised` event.
+
+### Context Anxiety Check (per polling cycle)
+
+At each poll, evaluate for every in-progress agent:
+
+1. **Turn budget ratio**: `turns_used / expected_turns` from difficulty guide
+2. **Progress ratio**: `completed_criteria / total_criteria` from task-board
+
+| Turn Budget | Progress | Action |
+|-------------|----------|--------|
+| < 80% | any | Continue monitoring |
+| >= 80% | >= 50% | Continue (agent is on track to finish) |
+| >= 80% | < 50% | **Context Reset**: Checkpoint + re-spawn (see `_shared/core/context-budget.md`) |
+| 100% (max turns) | < 100% | **Context Reset**: Force checkpoint + re-spawn with remaining items |
+
+Record reset events in `task-board.md`:
+```
+| Agent | Status | Note |
+| backend | reset-1 | Turn budget 80%, progress 40%, checkpoint saved |
+```
+
+> **Claude Code note**: Agent tool returns results synchronously, so no polling is needed. Check status, files changed, and issues directly in each agent's return value.
+
+---
+
+## Step 5: Verify Completed Agents
+
+// turbo
+For each completed agent, execute the complete review loop:
+
+1. **Mechanical self-check**: require the implementation agent to run applicable lint, typecheck, tests, and diff-scope checks. Feed failures back for correction, up to 3 cycles.
+2. **Automated verify**: run the command below only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`. For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record `SKIP (unsupported agent type)` and continue.
+
+```
+bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
+```
+
+- PASS (exit 0) or documented unsupported-type SKIP: continue to cross-review.
+- FAIL (exit 1): Before re-spawning, apply the Review Loop termination check:
+
+  > **Review Loop termination conditions** (OR, whichever fires first wins):
+  > 1. Retry count for this agent has reached the configured maximum (default: 2 retries). Do not start another retry cycle.
+  > 2. Session cost cap exceeded: if `loadQuotaCap()` from `cli/io/session-cost.ts` returns non-null, call `checkCap(sessionId, cap)` (no cap configured → skip this condition). If `exceeded === true`, print `formatPromptMessage(result)` to the user and stop the loop immediately. Save the current agent's partial results before stopping, then report early termination due to quota. Do not spawn the next retry or any remaining agents in the tier.
+  >
+  > If neither condition is met, re-spawn the agent with error context and increment the retry counter.
+
+- FAIL (after 2 retries, and cost cap not yet exceeded): Activate **Exploration Loop** (load `exploration-loop.md` per `context-loading.md`):
+  1. Generate 2-3 alternative hypotheses for the failing task
+  2. Spawn the **same agent type** with different hypothesis prompts (parallel, separate workspaces)
+  3. Score each result with Quality Score (if available)
+  4. Keep the highest-scoring approach, discard others
+  5. Record all experiments in Experiment Ledger
+
+3. **QA cross-review**: spawn a QA agent with the completed agent's diff, acceptance criteria, mechanical-check evidence, and automated-verify result/SKIP reason. The QA agent returns PASS or FAIL with file-and-line findings. On FAIL, send the findings back to the implementation agent and restart at mechanical self-check. Allow at most 2 QA rejections and 5 total review-loop iterations; after either limit, report the review history and force-complete only with an explicit quality warning.
+
+---
+
+## Step 6: Collect Results
+
+// turbo
+After all agents complete, use memory read tool to read all `result-{agent}-{sessionId}.md` files.
+Compile summary: completed tasks, failed tasks, files changed, remaining issues.
+
+Emit and verify the required QA verdict decision before the final report:
+
+```bash
+oma state:emit "decision.made" '{"subject":"orchestrate.qa-verdict","decision":"Accept completed agents or record change requests.","rationale":"Agent verification results have been collected and classified."}'
+oma state:verify --workflow orchestrate --checkpoint qa-verdict
+```
+
+---
+
+## Step 7: Final Report
+
+Present session summary to the user.
+
+- If any tasks failed after retries, list them with error details.
+- Suggest next steps: manual fix, re-run specific agents, or run `/review` for QA.
+- Use memory write tool to record final results.
+- If Quality Score was measured during this session:
+  - Generate Experiment Ledger summary (total experiments, keep rate, net delta)
+  - Auto-generate lessons from discarded experiments (delta <= -5) into `lessons-learned.md`
+  - Include agent effectiveness ranking in the report

@@ -26,10 +26,13 @@ type EmitCliTarget = (typeof EMIT_TARGETS)[number];
 
 // Default emit base, relative to the repo root. Each target is written to its
 // canonical repo-relative path under this base: agent-skills and agents-md
-// land in `generated/`, while the Claude plugin marketplace lands at the
-// repo-root `.claude-plugin/` (the path Claude Code auto-discovers). A base of
-// "." therefore writes every artifact to its committed location; the drift
-// check passes a scratch base to emit read-only.
+// land in `generated/`, the Claude plugin marketplace lands at the repo-root
+// `.claude-plugin/` (the path Claude Code auto-discovers), and the Agent
+// Plugins package (plugin.json, skills/, mcp.json, com.firstfluke.oma/) lands
+// at the base itself (Agent Plugins clients discover those files at the
+// package root, and a git clone of this repo is the package). A base of "."
+// therefore writes every artifact to its committed location; the drift check
+// passes a scratch base to emit read-only.
 export const DEFAULT_OUT_DIR = ".";
 
 function buildAgentSkillsReport(
@@ -65,10 +68,7 @@ export function runEmit(options: RunEmitOptions): EmitRunReport {
     );
   }
   if (target === "agent-plugin" || target === "all") {
-    report.agentPlugin = emitAgentPlugin(
-      repoRoot,
-      join(outDir, "generated", "agent-plugin"),
-    );
+    report.agentPlugin = emitAgentPlugin(repoRoot, outDir);
   }
   if (target === "claude-plugin" || target === "all") {
     report.claudePlugin = emitClaudePlugin(
@@ -106,7 +106,8 @@ export function registerEmitCommand(program: Command): void {
       .option(
         "--out <dir>",
         "Output base directory; artifacts are written to their repo-relative " +
-          "paths under it (generated/ and .claude-plugin/). Default: repo root.",
+          "paths under it (generated/, .claude-plugin/, and the Agent " +
+          "Plugins package at the base root). Default: repo root.",
         DEFAULT_OUT_DIR,
       ),
   ).action(

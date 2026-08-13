@@ -1,0 +1,52 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "kiro",
+  "destDir": ".kiro/agents",
+  "modelDefault": "inherit",
+  "maxTurnsDefault": 30,
+  "toolsDefault": [
+    "read",
+    "write",
+    "shell",
+    "grep",
+    "glob",
+    "code",
+    "subagent"
+  ],
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/kiro.md",
+  "agents": {
+    "backend-engineer": {
+      "maxTurns": 40
+    },
+    "frontend-engineer": {
+      "maxTurns": 40
+    },
+    "db-engineer": {
+      "maxTurns": 25
+    },
+    "debug-investigator": {
+      "maxTurns": 25
+    },
+    "architecture-reviewer": {
+      "tools": ["read", "grep", "glob", "code"],
+      "maxTurns": 15
+    },
+    "tf-infra-engineer": {
+      "maxTurns": 30
+    },
+    "mobile-engineer": {
+      "maxTurns": 40
+    },
+    "pm-planner": {
+      "tools": ["read", "grep", "glob", "shell"],
+      "maxTurns": 10
+    },
+    "qa-reviewer": {
+      "tools": ["read", "grep", "glob", "shell"],
+      "maxTurns": 15
+    },
+    "docs-curator": {
+      "maxTurns": 15
+    }
+  }
+}

@@ -174,11 +174,29 @@ describe("emitAgentPlugin", () => {
     expect(existsSync(path.join(extDir, "oma-config.yaml"))).toBe(true);
   });
 
-  it("rebuilds the out dir so removed SSOT entries cannot linger", () => {
+  it("rebuilds owned artifacts so removed SSOT entries cannot linger", () => {
     const report = emit();
-    const staleFile = path.join(report.outDir, "stale.txt");
-    writeFileSync(staleFile, "stale");
+    const staleSkill = path.join(report.outDir, "skills", "stale.txt");
+    const staleExtension = path.join(
+      report.outDir,
+      OMA_EXTENSION_NAMESPACE,
+      "stale.txt",
+    );
+    writeFileSync(staleSkill, "stale");
+    writeFileSync(staleExtension, "stale");
     emitAgentPlugin(FIXTURES_REPO, report.outDir);
-    expect(existsSync(staleFile)).toBe(false);
+    expect(existsSync(staleSkill)).toBe(false);
+    expect(existsSync(staleExtension)).toBe(false);
+  });
+
+  it("never removes the out dir itself — sibling files survive re-emit", () => {
+    // The canonical out dir is the repo root; a whole-dir rm here would
+    // delete the repository.
+    const report = emit();
+    const sibling = path.join(report.outDir, "README.md");
+    writeFileSync(sibling, "not part of the package");
+    emitAgentPlugin(FIXTURES_REPO, report.outDir);
+    expect(existsSync(sibling)).toBe(true);
+    expect(readFileSync(sibling, "utf-8")).toBe("not part of the package");
   });
 });

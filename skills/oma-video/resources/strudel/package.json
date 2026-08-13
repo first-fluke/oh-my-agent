@@ -1,0 +1,11 @@
+{
+  "name": "oma-video-strudel",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vendored Strudel BGM renderer for oma-video. Deps are installed on demand by `oma video doctor --install-strudel`. @strudel/* is AGPL-3.0-or-later and is NEVER imported by the MIT-licensed oma CLI — render.mjs runs as a subprocess (same boundary as the Remotion / Playwright projects).",
+  "license": "MIT",
+  "dependencies": {
+    "@strudel/web": "^1.3.0"
+  }
+}

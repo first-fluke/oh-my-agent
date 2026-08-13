@@ -1,0 +1,46 @@
+{
+  "$schema": "./agent-variant.schema.json",
+  "vendor": "commandcode",
+  "destDir": ".commandcode/agents",
+  "modelDefault": "inherit",
+  "maxTurnsDefault": 30,
+  "toolsDefault": "Read, Write, Edit, Bash, Grep, Glob",
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
+  "agents": {
+    "backend-engineer": {
+      "maxTurns": 40
+    },
+    "frontend-engineer": {
+      "maxTurns": 40
+    },
+    "db-engineer": {
+      "maxTurns": 25
+    },
+    "debug-investigator": {
+      "maxTurns": 25
+    },
+    "architecture-reviewer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob",
+      "maxTurns": 15
+    },
+    "tf-infra-engineer": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob",
+      "maxTurns": 30
+    },
+    "mobile-engineer": {
+      "maxTurns": 40
+    },
+    "pm-planner": {
+      "tools": "Read, Write, Grep, Glob, Bash",
+      "maxTurns": 10
+    },
+    "qa-reviewer": {
+      "tools": "Read, Grep, Glob, Bash",
+      "maxTurns": 15
+    },
+    "docs-curator": {
+      "tools": "Read, Write, Edit, Bash, Grep, Glob",
+      "maxTurns": 15
+    }
+  }
+}
