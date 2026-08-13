@@ -40,6 +40,11 @@
           "jsonpath": "$.version"
         },
         {
+          "type": "json",
+          "path": ".claude-plugin/marketplace.json",
+          "jsonpath": "$.metadata.version"
+        },
+        {
           "type": "generic",
           "path": "CITATION.cff"
         }
