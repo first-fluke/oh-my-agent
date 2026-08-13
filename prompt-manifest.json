@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.1.0",
-  "releaseDate": "2026-08-13T06:51:27.496Z",
+  "releaseDate": "2026-08-13T07:09:08.475Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -411,13 +411,13 @@
     },
     {
       "path": ".agents/skills/_shared/core/context-budget.md",
-      "sha256": "84c7e85ae98696a159b2a888bd6239bff51c7d0faf186024b4df8662bfc5c9f3",
-      "size": 6390
+      "sha256": "c2277026ab8b47fb02ba07729fe32decebcf44d2db93f728bfad6b5f404e75f5",
+      "size": 7727
     },
     {
       "path": ".agents/skills/_shared/core/context-loading.md",
-      "sha256": "bad3b7906b3b408c6b0d9db3826c07c8d8b902bc5e290f7690170493a1dac383",
-      "size": 9174
+      "sha256": "873804e00731689eab23455efc6ca1f56772b4c91765cbf5b9fb88f2e2478ef1",
+      "size": 9922
     },
     {
       "path": ".agents/skills/_shared/core/difficulty-guide.md",
