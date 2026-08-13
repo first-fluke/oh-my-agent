@@ -46,13 +46,14 @@ kordoc sanitizes links (XSS defense). If a legitimate link is stripped, verify t
 
 ### 9. Reproducibility vs freshness tradeoff
 - `bunx kordoc@latest` always pulls latest. Fixes land fast, but outputs may drift. A bare `bunx kordoc` reuses the bunx cache and can be arbitrarily old; always include `@latest` or a pinned version.
-- For long-running projects, pin a version: edit `config/hwp-config.yaml`:
+- For long-running projects, pin a version under `hwp:` in `.agents/oma-config.yaml` (not `config/hwp-config.yaml` — `oma update` overwrites the skill file):
   ```yaml
-  version:
-    channel: pinned
-    pinned: "4.1.0"
+  hwp:
+    version:
+      channel: pinned
+      pinned: "4.7.3"
   ```
-  Then invoke via `bunx kordoc@4.1.0 ...` in commands. Check the current release with `npm view kordoc version` before pinning — the example above may itself be stale.
+  Then invoke via `bunx kordoc@4.7.3 ...` in commands. Check the current release with `npm view kordoc version` before pinning — the example above may itself be stale.
 
 ## kordoc limitations (upstream-owned)
 - Inline password entry for encrypted HWP: not yet supported.

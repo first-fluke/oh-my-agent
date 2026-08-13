@@ -120,7 +120,7 @@ Tell the user:
 ## Pin vs Latest
 
 - **Default**: `bunx kordoc@latest` (always latest). Gets upstream fixes automatically. `@latest` is required because a bare `bunx kordoc` can reuse a stale cached version indefinitely.
-- **Reproducibility**: pin with `bunx kordoc@2.4.0 ...` or similar. Record the pinned version in `config/hwp-config.yaml` under `version.pinned` and set `version.channel: pinned`.
+- **Reproducibility**: pin with `bunx kordoc@4.7.3 ...` or similar. Record the pinned version under `hwp.version` in `.agents/oma-config.yaml` (`channel: pinned`, `pinned: "4.7.3"`). Do not edit `config/hwp-config.yaml` — `oma update` overwrites it.
 
 ## Scope Reminder
 

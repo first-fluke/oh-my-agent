@@ -138,7 +138,7 @@ const VOICE_SHIPPED: Record<string, unknown> = {
 
 const HWP_SHIPPED: Record<string, unknown> = {
   format: "markdown",
-  version: { channel: "latest", pinned: "4.1.0" },
+  version: { channel: "latest", pinned: "4.7.3" },
   output: { default_location: "same_dir" },
   supported_formats: ["hwp", "hwpx", "hwpml"],
 };

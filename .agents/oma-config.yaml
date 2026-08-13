@@ -419,7 +419,7 @@ scm:
 #   format: markdown                # markdown | json | chunks
 #   version:
 #     channel: latest               # latest | pinned
-#     pinned: "4.1.0"
+#     pinned: "4.7.3"
 #   output:
 #     default_location: same_dir    # same_dir | cwd
 

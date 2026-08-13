@@ -15,7 +15,7 @@ format: markdown              # "markdown" (default), "json", or "chunks" (RAG s
 #   (verify with `npm view kordoc version` before pinning; the example below may be stale)
 version:
   channel: latest
-  pinned: "4.1.0"
+  pinned: "4.7.3"
 
 # Output behavior
 output:
