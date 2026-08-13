@@ -48,11 +48,16 @@ const JUNK = new Set([".DS_Store", "Thumbs.db"]);
 
 /**
  * Tier definitions. Each entry adds one logical document, given as candidate
- * paths because the real tree does not match `context-loading.md` verbatim:
- * oma-frontend keeps tech-stack/snippets flat under `resources/`, while
- * oma-backend keeps them per stack under `variants/<stack>/`. The first
- * candidate that exists wins; `{variant}` resolves to the representative
- * variant (stacks are mutually exclusive, so only one is ever loaded).
+ * paths because a skill's stack references can live in three places:
+ *
+ *   stack/            generated per project by `/stack-set` — the real load path
+ *   resources/        flat, for skills whose stack is not generated (oma-frontend)
+ *   {variant}/        shipped seeds `/stack-set` adapts from (oma-backend/mobile)
+ *
+ * First match wins, so an installed project measures its generated `stack/`. A
+ * fresh checkout of this repo has no `stack/`, so the variant seed stands in as a
+ * size proxy — the Complex tier there is an estimate of what generation would
+ * produce, not a file any agent loads yet.
  *
  * A logical document with no matching candidate is reported as missing rather
  * than silently contributing 0 — that asymmetry is what makes tiers collapse
@@ -82,16 +87,16 @@ const TIERS: Array<{
       {
         doc: "tech-stack",
         at: [
+          join("stack", "tech-stack.md"),
           join("resources", "tech-stack.md"),
-          join("resources", "stack", "tech-stack.md"),
           join("{variant}", "tech-stack.md"),
         ],
       },
       {
         doc: "snippets",
         at: [
+          join("stack", "snippets.md"),
           join("resources", "snippets.md"),
-          join("resources", "stack", "snippets.md"),
           join("{variant}", "snippets.md"),
         ],
       },

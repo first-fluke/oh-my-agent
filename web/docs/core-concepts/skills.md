@@ -243,6 +243,11 @@ Each tier is a state an agent actually reaches, per
 | `complex` | + `tech-stack.md`, `snippets.md` |
 | `all` | `SKILL.md` + every resource file — the **ceiling**, not a selectable mode |
 
+For backend and mobile skills those stack references live in `stack/`, which
+`/stack-set` generates per project. A fresh checkout has none, so the `complex`
+row below is measured against the shipped `variants/` seeds that generation
+adapts from — a size proxy, not a file an agent loads yet.
+
 ### A 5-agent session (pm, backend, frontend, mobile, qa)
 
 | Tier | Tokens | Share of ceiling | Avoided |
