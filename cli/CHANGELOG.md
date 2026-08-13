@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.0.1...cli-v12.0.2) (2026-08-13)
+
+
+### Documentation
+
+* **hwp:** bump kordoc pin example to 4.7.3 ([3d8b34a](https://github.com/first-fluke/oh-my-agent/commit/3d8b34aeebd2915500c4fb0455d50a245594a82a))
+
 ## [12.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.0.0...cli-v12.0.1) (2026-08-13)
 
 
