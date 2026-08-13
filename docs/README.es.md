@@ -10,6 +10,10 @@ Lanzar agentes en paralelo es la parte fácil. La difícil es saber si de verdad
 
 oh-my-agent hace que esa afirmación sea falsable. Un Stop hook se niega a terminar tu sesión hasta que el script `typecheck` / `test` / `lint` de tu propio proyecto sale con código 0. Un comando de gate decide si un workflow se ejecutó de verdad buscando los artefactos que debió dejar atrás, y su veredicto en JSON —no el resumen del agente— es el resultado. Un juez independiente, con contexto nuevo, vuelve a verificar cada criterio en cada ronda, incluidos los que ya habían pasado. Cada decisión de gate queda registrada en un event log de solo anexado que puedes leer después. Y luego aplica esa misma disciplina en una docena de runtimes de agentes desde un único directorio `.agents/` portable.
 
+![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
+
+[Watch as MP4](./assets/video/oh-my-agent-explainer.mp4)
+
 ## Verificación, No Narración
 
 Cada mecanismo de abajo es mecánico: un comando sale con código 0 o no sale, un archivo está en disco o no está. A ningún LLM se le pregunta si el trabajo "parece correcto".

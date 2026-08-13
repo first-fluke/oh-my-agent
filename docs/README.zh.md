@@ -10,6 +10,10 @@
 
 oh-my-agent 让这类说法变得可证伪。Stop hook 会拒绝结束会话，直到项目自己的 `typecheck` / `test` / `lint` 脚本以 0 退出为止。门禁命令判断某个工作流是否真的跑过，靠的是它跑过就必然留下的产出物；最终结果以这条命令给出的 JSON 判定为准，而不是 agent 的自述。独立的 judge 每一轮都会在全新上下文里重新校验每一条标准，包括那些已经通过的。每一次门禁判定都会落到一份只追加的事件日志上，事后可以逐条翻看。同一套纪律，再从一个可移植的 `.agents/` 目录铺到十几种 agent 运行时上。
 
+![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
+
+[Watch as MP4](./assets/video/oh-my-agent-explainer.mp4)
+
 ## 只看验证，不听自述
 
 下面这些机制都是机械的：命令要么以 0 退出，要么没有；文件要么在磁盘上，要么不在。没有任何一步会去问 LLM 这活儿“看起来对不对”。

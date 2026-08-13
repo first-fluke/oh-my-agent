@@ -10,6 +10,10 @@ Spawning parallel agents is the easy part. The hard part is knowing whether they
 
 oh-my-agent makes the claim falsifiable. A Stop hook refuses to end your session until your project's own `typecheck` / `test` / `lint` script exits 0. A gate command decides whether a workflow really ran by looking for the artifacts it must have left behind — and its JSON verdict, not the agent's summary, is the result. An independent judge with a fresh context re-verifies every criterion each round, including the ones that already passed. Every gate decision lands on an append-only event log you can read after the fact. Then it runs that same discipline across a dozen agent runtimes from one portable `.agents/` directory.
 
+![oh-my-agent explainer](./docs/assets/video/oh-my-agent-explainer.gif)
+
+[Watch as MP4](./docs/assets/video/oh-my-agent-explainer.mp4)
+
 ## Verification, Not Narration
 
 Each mechanism below is mechanical: a command exits 0 or it doesn't, a file is on disk or it isn't. No LLM is asked whether the work "looks correct."

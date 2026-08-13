@@ -10,6 +10,10 @@ Parallele Agenten zu spawnen ist der einfache Teil. Schwierig wird die Frage, ob
 
 oh-my-agent macht diese Behauptung falsifizierbar. Ein Stop-Hook weigert sich, deine Session zu beenden, solange das projekteigene `typecheck`- / `test`- / `lint`-Skript nicht mit Exit-Code 0 durchläuft. Ein Gate-Command entscheidet anhand der Artefakte, die ein Workflow hinterlassen haben muss, ob er wirklich gelaufen ist — und maßgeblich ist sein JSON-Verdikt, nicht die Zusammenfassung des Agenten. Ein unabhängiger Judge mit frischem Kontext verifiziert in jeder Runde jedes Kriterium neu, auch die bereits bestandenen. Jede Gate-Entscheidung landet in einem Append-only-Event-Log, das du im Nachhinein lesen kannst. Und dieselbe Disziplin läuft über ein Dutzend Agenten-Runtimes hinweg, aus einem einzigen portablen `.agents/`-Verzeichnis.
 
+![oh-my-agent explainer](./assets/video/oh-my-agent-explainer.gif)
+
+[Watch as MP4](./assets/video/oh-my-agent-explainer.mp4)
+
 ## Verifikation statt Narration
 
 Jeder Mechanismus unten ist mechanisch: Ein Command endet mit Exit-Code 0 oder eben nicht, eine Datei liegt auf der Platte oder eben nicht. Kein LLM wird gefragt, ob die Arbeit „korrekt aussieht".
