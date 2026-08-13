@@ -137,7 +137,7 @@ Contains the agent's identity, routing conditions, core rules, and "when to use 
 **Layer 2: resources/ (loaded on-demand)**
 Contains execution protocols, tech stack references, code snippets, error playbooks, checklists, and examples. These are loaded only when the agent is invoked for a task, and even then, only the resources relevant to the specific task type are loaded (based on the difficulty assessment and task-resource mapping in `context-loading.md`).
 
-This design saves approximately 75% of tokens compared to loading everything upfront. For flash-tier models (128K context), the total resource budget is approximately 3,100 tokens, just 2.4% of the context window.
+This design cuts skill-loading overhead by about 72% compared to loading everything upfront — roughly 5.5K tokens instead of 20K across a 5-agent session, or about 4% of a 128K context instead of 16%. See [token savings math](../core-concepts/skills.md#token-savings-math) for the derivation.
 
 ---
 

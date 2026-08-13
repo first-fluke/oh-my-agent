@@ -369,7 +369,7 @@ Use 3 terminals:
 
 ### Progressive disclosure
 
-Skills load in two layers to save tokens. Layer 1 (SKILL.md, ~800 bytes) is always present. Layer 2 (resources/) loads only when the agent is working, and only the resources matching the task difficulty. This saves approximately 75% of tokens compared to loading everything upfront. On flash-tier models (128K context), this means approximately 125K tokens available for actual work instead of 108K.
+Skills load in two layers to save tokens. Layer 1 (SKILL.md, ~800 bytes) is always present. Layer 2 (resources/) loads only when the agent is working, and only the resources matching the task difficulty. Across a 5-agent session this cuts skill-loading overhead by about 72% — roughly 5.5K tokens instead of 20K — leaving approximately 122.5K of a 128K context free for actual work instead of 108K. See [token savings math](../core-concepts/skills.md#token-savings-math) for the derivation.
 
 ### Token optimization
 
