@@ -10,9 +10,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  assessRolloutStaleness,
+  buildRolloutExpectation,
   collectLiveRollouts,
   computeNegativeTransfer,
   computeUtility,
+  contentHash,
   discoverNeighborTasks,
   type IsolationStatus,
   JUDGE_DEFAULT_RUBRIC,
@@ -112,14 +115,37 @@ function writeTaskCheckerNoType(
   writeFileSync(join(dir, `${id}.yaml`), lines.join("\n"), "utf-8");
 }
 
-function writeRollout(dir: string, entries: RolloutEntry[]): void {
+/**
+ * Write rollout entries to `<dir>/_rollouts/`, stamping the same provenance
+ * `--live --record` would: `promptHash` from the task YAML already on disk in
+ * `dir`, and `skillBodyHash` on treatment arms from `skillMdBody`.
+ *
+ * Must be called AFTER the task YAMLs are written, since prompts are read back
+ * from disk. Entries that already carry a provenance field keep it — that is how
+ * staleness tests inject a deliberate mismatch.
+ */
+function writeRollout(
+  dir: string,
+  entries: RolloutEntry[],
+  skillMdBody = "",
+): void {
   const rolloutsDir = join(dir, "_rollouts");
   mkdirSync(rolloutsDir, { recursive: true });
+  const { fixtures } = loadTaskFixtures(dir);
+  const promptById = new Map(fixtures.map((f) => [f.id, f.prompt]));
   // Write each entry as its own file to mirror real fixture layout
   for (const entry of entries) {
+    const prompt = promptById.get(entry.taskId);
+    const stamped: RolloutEntry = {
+      ...(prompt === undefined ? {} : { promptHash: contentHash(prompt) }),
+      ...(entry.arm === "treatment"
+        ? { skillBodyHash: contentHash(skillMdBody) }
+        : {}),
+      ...entry,
+    };
     writeFileSync(
       join(rolloutsDir, `${entry.taskId}-${entry.arm}.json`),
-      JSON.stringify(entry),
+      JSON.stringify(stamped),
       "utf-8",
     );
   }
@@ -395,6 +421,313 @@ describe("loadRolloutEntries", () => {
   });
 });
 
+// --- Rollout staleness (provenance) ---
+
+describe("assessRolloutStaleness", () => {
+  const BODY = "# SKILL\nbody v1";
+  const PROMPT = "do the thing";
+  const freshExpect = () => ({
+    skillBodyHash: contentHash(BODY),
+    promptHashes: new Map([["t1", contentHash(PROMPT)]]),
+  });
+
+  const treatment = (over: Partial<RolloutEntry> = {}): RolloutEntry => ({
+    taskId: "t1",
+    arm: "treatment",
+    output: "out",
+    skillBodyHash: contentHash(BODY),
+    promptHash: contentHash(PROMPT),
+    ...over,
+  });
+
+  const baseline = (over: Partial<RolloutEntry> = {}): RolloutEntry => ({
+    taskId: "t1",
+    arm: "baseline",
+    output: "out",
+    promptHash: contentHash(PROMPT),
+    ...over,
+  });
+
+  it("accepts a treatment entry recorded under the same body and prompt", () => {
+    expect(assessRolloutStaleness(treatment(), freshExpect())).toBeNull();
+  });
+
+  it("rejects a treatment entry recorded under a different SKILL.md body", () => {
+    const entry = treatment({ skillBodyHash: contentHash("# SKILL\nbody v2") });
+    expect(assessRolloutStaleness(entry, freshExpect())).toBe(
+      "skill-body-changed",
+    );
+  });
+
+  it("rejects a treatment entry with no body provenance as unverifiable", () => {
+    const entry = treatment({ skillBodyHash: undefined });
+    expect(assessRolloutStaleness(entry, freshExpect())).toBe(
+      "missing-provenance",
+    );
+  });
+
+  it("does NOT invalidate the baseline arm when the body changes", () => {
+    // The baseline withholds the skill, so its output cannot depend on the body.
+    const expected = {
+      skillBodyHash: contentHash("# SKILL\ntotally different"),
+      promptHashes: new Map([["t1", contentHash(PROMPT)]]),
+    };
+    expect(assessRolloutStaleness(baseline(), expected)).toBeNull();
+  });
+
+  it("rejects either arm when the fixture prompt changed", () => {
+    const expected = {
+      skillBodyHash: contentHash(BODY),
+      promptHashes: new Map([["t1", contentHash("a different prompt")]]),
+    };
+    expect(assessRolloutStaleness(baseline(), expected)).toBe("prompt-changed");
+    expect(assessRolloutStaleness(treatment(), expected)).toBe(
+      "prompt-changed",
+    );
+  });
+
+  it("rejects an entry with no prompt provenance as unverifiable", () => {
+    const entry = baseline({ promptHash: undefined });
+    expect(assessRolloutStaleness(entry, freshExpect())).toBe(
+      "missing-provenance",
+    );
+  });
+
+  it("skips a dimension the caller left undefined", () => {
+    // No skillBodyHash supplied (e.g. the `_all` aggregate): a treatment entry
+    // without body provenance is not rejected on that basis.
+    const entry = treatment({ skillBodyHash: undefined });
+    expect(
+      assessRolloutStaleness(entry, {
+        promptHashes: new Map([["t1", contentHash(PROMPT)]]),
+      }),
+    ).toBeNull();
+    // Empty expectation validates nothing.
+    expect(assessRolloutStaleness(entry, {})).toBeNull();
+  });
+
+  it("does not prompt-validate a taskId absent from the expectation map", () => {
+    const entry = treatment({ taskId: "unknown", promptHash: undefined });
+    expect(assessRolloutStaleness(entry, freshExpect())).toBeNull();
+  });
+});
+
+describe("loadRolloutEntries — staleness validation", () => {
+  let dir: string;
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "oma-eval-stale-"));
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("returns every well-formed entry when no expectation is supplied", () => {
+    const task = makeTaskFixture("t1");
+    writeTask(dir, task);
+    writeRollout(dir, makeRolloutPair("t1", "b", "t"), "# body");
+    expect(loadRolloutEntries(dir)).toHaveLength(2);
+  });
+
+  it("discards the treatment arm recorded under a stale body, keeps the baseline", () => {
+    const task = makeTaskFixture("t1");
+    writeTask(dir, task);
+    writeRollout(dir, makeRolloutPair("t1", "b", "t"), "# body v1");
+
+    const loaded = loadRolloutEntries(
+      dir,
+      buildRolloutExpectation([task], "# body v2"),
+    );
+
+    expect(loaded).toHaveLength(1);
+    expect(loaded[0]?.arm).toBe("baseline");
+  });
+
+  it("warns once per file with the discarded count and reason", () => {
+    const tasks = [makeTaskFixture("t1"), makeTaskFixture("t2")];
+    for (const t of tasks) writeTask(dir, t);
+    // One file holding both arms of both tasks — a single warning is expected.
+    const rolloutsDir = join(dir, "_rollouts");
+    mkdirSync(rolloutsDir, { recursive: true });
+    writeFileSync(
+      join(rolloutsDir, "batch.json"),
+      JSON.stringify(
+        tasks.flatMap((t) => [
+          {
+            taskId: t.id,
+            arm: "baseline",
+            output: "b",
+            promptHash: contentHash(t.prompt),
+          },
+          {
+            taskId: t.id,
+            arm: "treatment",
+            output: "t",
+            promptHash: contentHash(t.prompt),
+            skillBodyHash: contentHash("# old"),
+          },
+        ]),
+      ),
+      "utf-8",
+    );
+
+    const loaded = loadRolloutEntries(
+      dir,
+      buildRolloutExpectation(tasks, "# new"),
+    );
+
+    expect(loaded).toHaveLength(2); // both baselines survive
+    const warnings = warnSpy.mock.calls.map((c: unknown[]) => String(c[0]));
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("discarded 2 stale rollout entries");
+    expect(warnings[0]).toContain("batch.json");
+    expect(warnings[0]).toContain("different SKILL.md body");
+    expect(warnings[0]).toContain("--live --record");
+  });
+
+  it("discards pre-provenance recordings rather than trusting them", () => {
+    const task = makeTaskFixture("t1");
+    writeTask(dir, task);
+    // A recording made before provenance existed: no hashes at all.
+    const rolloutsDir = join(dir, "_rollouts");
+    mkdirSync(rolloutsDir, { recursive: true });
+    writeFileSync(
+      join(rolloutsDir, "legacy.json"),
+      JSON.stringify([
+        { taskId: "t1", arm: "baseline", output: "b" },
+        { taskId: "t1", arm: "treatment", output: "t" },
+      ]),
+      "utf-8",
+    );
+
+    const loaded = loadRolloutEntries(
+      dir,
+      buildRolloutExpectation([task], "# body"),
+    );
+
+    expect(loaded).toHaveLength(0);
+    expect(String(warnSpy.mock.calls[0]?.[0])).toContain("cannot be verified");
+  });
+
+  it("rejects entries whose provenance fields are not strings", () => {
+    const rolloutsDir = join(dir, "_rollouts");
+    mkdirSync(rolloutsDir, { recursive: true });
+    writeFileSync(
+      join(rolloutsDir, "bad-types.json"),
+      JSON.stringify({
+        taskId: "t1",
+        arm: "baseline",
+        output: "b",
+        promptHash: 42,
+      }),
+      "utf-8",
+    );
+    expect(loadRolloutEntries(dir)).toHaveLength(0);
+  });
+
+  it("round-trips: recorded rollouts replay against the body they were recorded from", () => {
+    const tasks = [makeTaskFixture("rt-1"), makeTaskFixture("rt-2")];
+    for (const t of tasks) writeTask(dir, t);
+    const body = "# SKILL\nrecorded body";
+
+    const { rollouts, cleanupTmp } = collectLiveRollouts(
+      tasks,
+      body,
+      (arm) => (arm === "treatment" ? "EXPECTED" : "no match"),
+      dir,
+    );
+    try {
+      writeRolloutRecord(dir, rollouts);
+    } finally {
+      cleanupTmp();
+    }
+
+    // Same body → every arm survives replay.
+    expect(
+      loadRolloutEntries(dir, buildRolloutExpectation(tasks, body)),
+    ).toHaveLength(4);
+
+    // Edited body → treatment arms are dropped, baselines remain.
+    const afterEdit = loadRolloutEntries(
+      dir,
+      buildRolloutExpectation(tasks, `${body}\n\nnew section`),
+    );
+    expect(afterEdit).toHaveLength(2);
+    expect(afterEdit.every((e) => e.arm === "baseline")).toBe(true);
+  });
+});
+
+describe("runSkillsEval — mock replay refuses a stale SKILL.md body", () => {
+  let rootDir: string;
+  let logSpy: ReturnType<typeof vi.spyOn>;
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    rootDir = mkdtempSync(join(tmpdir(), "oma-eval-stale-int-"));
+    logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
+    warnSpy.mockRestore();
+    rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  /** Install a SKILL.md where loadSkillMdBody looks for it. */
+  function writeInstalledSkill(skillId: string, body: string): void {
+    const skillDir = join(rootDir, ".agents", "skills", skillId);
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(join(skillDir, "SKILL.md"), body, "utf-8");
+  }
+
+  function runAndParse(taskDir: string, skill: string) {
+    logSpy.mockClear();
+    return runSkillsEval(true, {
+      skill,
+      taskDir,
+      _workspace: rootDir,
+    }).then(() => {
+      const jsonOutput = logSpy.mock.calls
+        .map((c: unknown[]) => String(c[0]))
+        .find((s: string) => s.trimStart().startsWith("{"));
+      return JSON.parse(jsonOutput ?? "{}") as SkillUtilityReport;
+    });
+  }
+
+  it("reports the recorded lift while SKILL.md is unchanged, then insufficient coverage after an edit", async () => {
+    const skill = "oma-stale";
+    const taskDir = join(rootDir, ".agents", "eval", skill);
+    const body = "# SKILL\nversion one";
+    writeInstalledSkill(skill, body);
+
+    const { tasks, rollouts } = makePassingScenario();
+    for (const t of tasks) writeTask(taskDir, t);
+    writeRollout(taskDir, rollouts, body);
+
+    // Recorded against the installed body → replay is valid.
+    const before = await runAndParse(taskDir, skill);
+    expect(before.coverage).toBe("ok");
+    expect(before.utilityLift).toBeGreaterThan(0);
+
+    // Edit SKILL.md without re-recording. The old treatment scores must NOT be
+    // reported as a measurement of the new body.
+    writeInstalledSkill(skill, `${body}\n\n## New section\nmore guidance`);
+
+    const after = await runAndParse(taskDir, skill);
+    expect(after.coverage).toBe("insufficient");
+    expect(
+      warnSpy.mock.calls
+        .map((c: unknown[]) => String(c[0]))
+        .some((w: string) => w.includes("different SKILL.md body")),
+    ).toBe(true);
+  });
+});
+
 describe("computeUtility", () => {
   it("returns coverage:insufficient and decision:insufficient when taskCount < MIN_TASKS", () => {
     const tasks = [makeTaskFixture("t1")]; // only 1 task
@@ -493,15 +826,59 @@ describe("computeUtility", () => {
     expect(reportCapped.decision).toBe("pass");
   });
 
-  it("handles missing rollouts (empty output) without throwing", () => {
+  it("reports insufficient coverage when rollouts are missing entirely", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
-    // No rollouts — all outputs default to empty string
+    // No rollouts at all. This is absent data, not a skill that failed to help:
+    // scoring the arms 0 would yield lift 0 and a `fail` verdict (exit 1) for a
+    // task set that was never run.
     const report = computeUtility("oma-test", { tasks, rollouts: [] });
+    expect(report.coverage).toBe("insufficient");
+    expect(report.decision).toBe("insufficient");
+    expect(report.findings).toHaveLength(0);
+    expect(
+      warnSpy.mock.calls
+        .map((c) => String(c[0]))
+        .some((w) => w.includes("no recorded baseline + treatment rollout")),
+    ).toBe(true);
+    warnSpy.mockRestore();
+  });
+
+  it("excludes a task missing only one arm, keeping fully-recorded tasks", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`),
+    );
+    const rollouts: RolloutEntry[] = tasks.flatMap((t) =>
+      makeRolloutPair(t.id, "NO MATCH", "EXPECTED"),
+    );
+    // Drop one treatment arm — that task alone becomes unscoreable.
+    const partial = rollouts.filter(
+      (r) => !(r.taskId === "task-0" && r.arm === "treatment"),
+    );
+    const report = computeUtility("oma-test", { tasks, rollouts: partial });
+    expect(report.findings).toHaveLength(MIN_TASKS - 1);
+    expect(report.findings.some((f) => f.taskId === "task-0")).toBe(false);
+    // Below MIN_TASKS scored → no verdict is claimed.
+    expect(report.coverage).toBe("insufficient");
+    warnSpy.mockRestore();
+  });
+
+  it("still scores an arm that genuinely produced an empty output", () => {
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`),
+    );
+    // Empty string is a real recorded output, distinct from an absent arm.
+    const rollouts: RolloutEntry[] = tasks.flatMap((t) =>
+      makeRolloutPair(t.id, "", "EXPECTED"),
+    );
+    const report = computeUtility("oma-test", { tasks, rollouts });
     expect(report.coverage).toBe("ok");
-    expect(report.decision).toBe("fail"); // empty string fails assert checker
     expect(report.findings).toHaveLength(MIN_TASKS);
+    expect(report.baselineScore).toBe(0);
+    expect(report.decision).toBe("pass");
   });
 
   it("reports utilityStdDev = 0 when all lifts are equal", () => {
@@ -2432,14 +2809,16 @@ describe("scoreSkillBody", () => {
 
   it("override body == disk body yields same utilityLift (parity)", async () => {
     const taskDir = join(rootDir, "skill-parity");
+    const body = "# SKILL BODY\nsome content";
     const { tasks, rollouts } = makePassingScenario();
     for (const t of tasks) writeTask(taskDir, t);
-    writeRollout(taskDir, rollouts);
+    // Record under the same body that will be scored — mock replay only stands in
+    // for a live run of the body it was recorded from.
+    writeRollout(taskDir, rollouts, body);
 
-    // Score via scoreSkillBody (mock mode, any body string — body is unused in mock)
     const opts: ScoreSkillBodyOptions = {
       skill: "oma-parity",
-      body: "# SKILL BODY\nsome content",
+      body,
       taskDir,
       mode: "mock",
     };

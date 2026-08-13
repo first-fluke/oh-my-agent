@@ -112,6 +112,10 @@ export interface ComputeUtilityOptions {
  * used directly (set by `--live --record`). If a judge task has NO recorded
  * score on an arm, that task is EXCLUDED from scoring with a console.warn.
  * This keeps --mock strictly offline/deterministic.
+ *
+ * Any task missing an arm entirely is likewise excluded rather than scored 0 —
+ * absent data must not read as a failed answer. When exclusions drop the scored
+ * count below MIN_TASKS the report is `coverage: "insufficient"`.
  */
 export function computeUtility(
   skill: string,
@@ -182,8 +186,28 @@ export function computeUtility(
 
   for (const task of tasks) {
     const arms = rolloutMap.get(task.id) ?? {};
-    const baselineOutput = arms.baseline ?? "";
-    const treatmentOutput = arms.treatment ?? "";
+
+    // An absent arm is missing DATA, not a failing answer. Scoring it 0 would
+    // report "the skill did not help" for a task that was never run — and since
+    // both arms then score 0, the lift is 0 and the verdict is `fail`. Exclude
+    // the task instead, which surfaces as insufficient coverage.
+    // (Note: an arm that genuinely produced an empty string is still scored —
+    // this checks for the entry's absence, not for falsiness.)
+    if (arms.baseline === undefined || arms.treatment === undefined) {
+      const missing = [
+        arms.baseline === undefined ? "baseline" : undefined,
+        arms.treatment === undefined ? "treatment" : undefined,
+      ]
+        .filter(Boolean)
+        .join(" + ");
+      console.warn(
+        `[oma skills eval] task ${task.id} has no recorded ${missing} rollout; run --live --record to populate. Excluding from report.`,
+      );
+      continue;
+    }
+
+    const baselineOutput = arms.baseline;
+    const treatmentOutput = arms.treatment;
 
     let baselineScore: number;
     let treatmentScore: number;

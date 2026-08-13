@@ -1,13 +1,18 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
-import { judgeScore } from "./rollouts.js";
+import {
+  buildRolloutExpectation,
+  judgeScore,
+  loadSkillMdBody,
+} from "./rollouts.js";
 import { scoreChecker } from "./scoring.js";
 import {
   JUDGE_DEFAULT_RUBRIC,
   type JudgeDispatchFn,
   type LiveDispatchFn,
   type NegativeTransfer,
+  type RolloutExpectation,
   type TaskCheckerJudge,
   type TaskFixture,
 } from "./types.js";
@@ -81,8 +86,9 @@ export function discoverNeighborTasks(
 export function scoreNeighborInMock(
   task: TaskFixture,
   neighborTaskDir: string,
+  expect?: RolloutExpectation,
 ): { scoreWithoutX: number; scoreWithX: number } | null {
-  const rollouts = loadRolloutEntries(neighborTaskDir);
+  const rollouts = loadRolloutEntries(neighborTaskDir, expect);
   // Find rollout entries for this specific task
   const baselineEntry = rollouts.find(
     (r) => r.taskId === task.id && r.arm === "baseline",
@@ -148,8 +154,9 @@ export function scoreNeighborInLive(
   dispatchFn: LiveDispatchFn,
   judgeDispatchFn: JudgeDispatchFn | undefined,
   tmpBase: string,
+  expect?: RolloutExpectation,
 ): { scoreWithoutX: number; scoreWithX: number } | null {
-  const rollouts = loadRolloutEntries(neighborTaskDir);
+  const rollouts = loadRolloutEntries(neighborTaskDir, expect);
   const baselineEntry = rollouts.find(
     (r) => r.taskId === task.id && r.arm === "baseline",
   );
@@ -235,6 +242,9 @@ export function scoreNeighborInLive(
  * @param dispatchFn     - Live dispatch function (for live mode).
  * @param judgeDispatchFn - Judge dispatch function (for live mode + judge tasks).
  * @param tmpBase        - Temp directory for live dispatch.
+ * @param workspace      - Workspace root, used to load each neighbour's own
+ *   SKILL.md so its recorded treatment arm can be checked for staleness. When
+ *   omitted, neighbour rollouts are validated for prompt drift only.
  */
 export function computeNegativeTransfer(
   skillId: string,
@@ -246,6 +256,7 @@ export function computeNegativeTransfer(
   dispatchFn: LiveDispatchFn | undefined,
   judgeDispatchFn: JudgeDispatchFn | undefined,
   tmpBase: string,
+  workspace?: string,
 ): NegativeTransfer[] {
   const allNeighbors = discoverNeighborTasks(skillId, skillDomains, evalRoot);
 
@@ -268,9 +279,18 @@ export function computeNegativeTransfer(
   for (const { otherSkill, task } of sampledNeighbors) {
     const neighborTaskDir = join(evalRoot, otherSkill);
 
+    // The neighbour's recorded treatment arm was produced by the neighbour's OWN
+    // SKILL.md, so that is the body its provenance must match — not skillXBody.
+    const neighborExpect: RolloutExpectation = buildRolloutExpectation(
+      [task],
+      workspace === undefined
+        ? undefined
+        : loadSkillMdBody(otherSkill, workspace),
+    );
+
     let scored: { scoreWithoutX: number; scoreWithX: number } | null;
     if (mode === "mock") {
-      scored = scoreNeighborInMock(task, neighborTaskDir);
+      scored = scoreNeighborInMock(task, neighborTaskDir, neighborExpect);
     } else {
       if (!dispatchFn) {
         console.warn(
@@ -285,6 +305,7 @@ export function computeNegativeTransfer(
         dispatchFn,
         judgeDispatchFn,
         tmpBase,
+        neighborExpect,
       );
     }
 

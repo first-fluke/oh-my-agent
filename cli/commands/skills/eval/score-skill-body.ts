@@ -5,7 +5,7 @@ import {
   resolveSkillIsolation,
 } from "./dispatch.js";
 import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
-import { collectLiveRollouts } from "./rollouts.js";
+import { buildRolloutExpectation, collectLiveRollouts } from "./rollouts.js";
 import { computeUtility } from "./scoring.js";
 import type {
   IsolationStatus,
@@ -153,9 +153,21 @@ export async function scoreSkillBody(
     }
   }
 
-  // Mock mode: load recorded rollouts from taskDir
+  // Mock mode: load recorded rollouts from taskDir.
+  //
+  // Validated against `body` — the candidate being scored. A recording made
+  // against a different body cannot stand in for this one, so it is discarded
+  // and the candidate reports as uncovered rather than borrowing another body's
+  // score. In practice this means `oma skills opt --mock` can only score the
+  // exact body its rollouts were recorded from; scoring fresh candidates needs
+  // `--live`.
   const rollouts =
-    options.taskDir !== undefined ? loadRolloutEntries(options.taskDir) : [];
+    options.taskDir !== undefined
+      ? loadRolloutEntries(
+          options.taskDir,
+          buildRolloutExpectation(tasks, body),
+        )
+      : [];
 
   return computeUtility(skill, {
     tasks,

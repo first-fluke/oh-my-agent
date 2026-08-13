@@ -99,6 +99,8 @@ weight: 1
 
 **Important:** In `--mock` mode, judge tasks require a previously recorded verdict in `_rollouts/`. If no recorded verdict exists for a task, that task is excluded from the report with a warning. Run `--live --record` to populate the rollouts first.
 
+The same holds for any checker type when an arm is missing entirely: the task is excluded rather than scored 0. Absent data is not a failed answer — scoring it would make both arms 0, and a zero lift reads as `decision: "fail"`. Exclusions that drop the scored count below `MIN_TASKS` surface as `coverage: "insufficient"`.
+
 #### assert (opt-in)
 
 Deterministic substring check. Use for contract / format / tool-call verification where the expected output is exact.
@@ -137,6 +139,12 @@ Replays recorded rollouts from `_rollouts/`. Fully deterministic and offline —
 - For `judge` checkers: replays the `score` field recorded by `--live --record`.
 
 If a judge task has no recorded score in `_rollouts/`, it is excluded from the report (with a console warning). This keeps mock mode strictly offline.
+
+Recordings are also checked for staleness before use. A treatment entry recorded under a different SKILL.md body, an entry whose fixture `prompt` has changed, and any entry predating provenance tracking are all discarded with a warning naming the file and the count. When that leaves fewer than `MIN_TASKS` scoreable tasks the run reports `coverage: "insufficient"` instead of a verdict — so an edited skill never inherits its previous score.
+
+:::note `oma skills opt --mock`
+The optimizer scores candidate SKILL.md bodies. Because a recording is only valid for the body it was made from, candidate bodies have no matching rollouts and report as uncovered. Use `--live` to score candidates.
+:::
 
 Safe for CI. Set `OMA_SKILLEVAL_MOCK=1` to force this mode.
 
@@ -189,7 +197,24 @@ select a preset whose default vendor is cwd-relative.
 
 Runs live arms and writes the captured outputs (including judge verdicts for judge-checker tasks) to `_rollouts/<hash>.json`. The filename is a deterministic SHA-256 hash of the task ID set — not date or random-based.
 
-Use this to seed `--mock` runs so CI can replay the eval offline.
+Use this to seed `--mock` runs on your own machine so repeat runs stay offline.
+
+Each entry carries provenance so a later replay can tell whether it still applies:
+
+| Field | Recorded on | Compared against |
+|---|---|---|
+| `skillBodyHash` | `treatment` only | the SKILL.md body being evaluated |
+| `promptHash` | both arms | the fixture's current `prompt` |
+
+The baseline arm withholds the skill, so editing SKILL.md does not invalidate it —
+only the treatment arm is re-recorded.
+
+:::caution `_rollouts/` is local-only — do not commit it
+A recording replays only for the exact SKILL.md body it was made from. Edit a
+skill and its treatment recordings are discarded on the next `--mock` run, so a
+committed recording would go stale on the next SKILL.md change and emit warnings
+for everyone who pulls. The directory is gitignored; record locally instead.
+:::
 
 ```bash
 oma skills eval --skill oma-scholar --live --record --yes
@@ -224,10 +249,10 @@ weight: 1
 Repeat for at least three more tasks. Then run:
 
 ```bash
-# Seed rollouts
+# Seed rollouts (local only — re-run after any SKILL.md edit)
 oma skills eval --skill oma-scholar --live --record --yes
 
-# CI replay
+# Offline replay
 oma skills eval --skill oma-scholar --json
 ```
 

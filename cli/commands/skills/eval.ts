@@ -15,6 +15,7 @@ import {
   serializeSkillUtilityReport,
 } from "./eval/report.js";
 import {
+  buildRolloutExpectation,
   collectLiveRollouts,
   loadSkillMdBody,
   promptConfirm,
@@ -37,7 +38,11 @@ export {
   runEvalDispatch,
   setupIsolatedSkillsDir,
 } from "./eval/dispatch.js";
-export { loadRolloutEntries, loadTaskFixtures } from "./eval/fixtures.js";
+export {
+  assessRolloutStaleness,
+  loadRolloutEntries,
+  loadTaskFixtures,
+} from "./eval/fixtures.js";
 export {
   computeNegativeTransfer,
   discoverNeighborTasks,
@@ -49,7 +54,9 @@ export {
   serializeSkillUtilityReport,
 } from "./eval/report.js";
 export {
+  buildRolloutExpectation,
   collectLiveRollouts,
+  contentHash,
   judgeScore,
   loadSkillMdBody,
   promptConfirm,
@@ -67,6 +74,8 @@ export type {
   LoadTaskFixturesResult,
   NegativeTransfer,
   RolloutEntry,
+  RolloutExpectation,
+  RolloutStaleReason,
   SkillsEvalOptions,
   SkillUtilityFinding,
   SkillUtilityReport,
@@ -285,6 +294,7 @@ export async function runSkillsEval(
             dispatchFn,
             judgeDispatchFn,
             neighborTmpBase,
+            workspace,
           );
         } finally {
           try {
@@ -332,7 +342,19 @@ export async function runSkillsEval(
   // --- --mock path (default) ---
   // Judge tasks replay recorded scores from _rollouts/; no LLM dispatch.
 
-  const rollouts = loadRolloutEntries(taskDir);
+  // Replay is only sound while the recorded inputs still match what is on disk.
+  // `_all` has no single SKILL.md body, so body validation is skipped there and
+  // only prompt drift is checked.
+  const mockSkillMdBody =
+    options.skillMdOverride !== undefined
+      ? options.skillMdOverride
+      : skillId !== "_all"
+        ? loadSkillMdBody(skillId, workspace)
+        : undefined;
+  const rollouts = loadRolloutEntries(
+    taskDir,
+    buildRolloutExpectation(tasks, mockSkillMdBody),
+  );
 
   // Negative-transfer sampling (--neg-transfer, mock mode)
   // Uses recorded neighbor rollout scores — no LLM dispatch; fully deterministic.
@@ -348,6 +370,7 @@ export async function runSkillsEval(
       /* dispatchFn */ undefined,
       /* judgeDispatchFn */ undefined,
       /* tmpBase */ "",
+      workspace,
     );
   }
 

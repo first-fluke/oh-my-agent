@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  contentHash,
   MIN_TASKS,
   NEG_TRANSFER_FAIL,
   type RolloutEntry,
@@ -1290,12 +1291,27 @@ describe("runOptEpochLoop with rollout-based mock scoring (no LLM)", () => {
     const evalTaskDir = join(tmpDir, "eval", "oma-rollout-mock");
     const fixtures = writeNTasks(evalTaskDir, MIN_TASKS * 2);
 
-    // Write rollouts: treatment has "EXPECTED" (pass), baseline does not
+    const body = makeValidSkillBody();
+
+    // Write rollouts: treatment has "EXPECTED" (pass), baseline does not.
+    // Provenance must name `body` — mock replay is only valid for the body the
+    // rollouts were recorded from, so a candidate body would be discarded here.
     const rolloutsDir = join(evalTaskDir, "_rollouts");
     mkdirSync(rolloutsDir, { recursive: true });
     const rollouts: RolloutEntry[] = fixtures.flatMap((f) => [
-      { taskId: f.id, arm: "baseline" as const, output: "no match" },
-      { taskId: f.id, arm: "treatment" as const, output: "EXPECTED" },
+      {
+        taskId: f.id,
+        arm: "baseline" as const,
+        output: "no match",
+        promptHash: contentHash(f.prompt),
+      },
+      {
+        taskId: f.id,
+        arm: "treatment" as const,
+        output: "EXPECTED",
+        promptHash: contentHash(f.prompt),
+        skillBodyHash: contentHash(body),
+      },
     ]);
     writeFileSync(
       join(rolloutsDir, "test.json"),
@@ -1309,8 +1325,6 @@ describe("runOptEpochLoop with rollout-based mock scoring (no LLM)", () => {
     // Use the real scoreSkillBody as the scoring fn — this is mock mode (rollouts on disk)
     const scoringFn: ScoringFn = (opts) =>
       realScoreSkillBody({ ...opts, taskDir: evalTaskDir, mode: "mock" });
-
-    const body = makeValidSkillBody();
     const optimizerFn: OptimizerFn = () => [];
 
     const result = await runOptEpochLoop({

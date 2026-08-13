@@ -129,7 +129,53 @@ export interface RolloutEntry {
    * deterministic and fully offline (design 016 amendment 2026-06-04).
    */
   score?: 0 | 1;
+  /**
+   * Provenance: `contentHash` of the SKILL.md body prepended to the treatment
+   * prompt at record time. Recorded on `arm: "treatment"` only — the baseline
+   * arm withholds the skill, so its output cannot depend on the body.
+   *
+   * `--mock` compares this against the current body and discards the entry on
+   * mismatch. Without it, editing SKILL.md silently replays the previous body's
+   * score as if it measured the current one.
+   */
+  skillBodyHash?: string;
+  /**
+   * Provenance: `contentHash` of `task.prompt` at record time. Recorded on both
+   * arms — both embed the prompt. Lets `--mock` discard entries whose fixture
+   * prompt has since been edited.
+   */
+  promptHash?: string;
 }
+
+/**
+ * Expected provenance for a rollout replay, supplied by the caller that knows
+ * what is currently on disk. Passed to `loadRolloutEntries` to reject stale
+ * recordings.
+ *
+ * Each field is independently optional: omit one to skip that dimension when
+ * the caller genuinely cannot know it (e.g. the `_all` aggregate has no single
+ * SKILL.md body). Omitting BOTH disables validation entirely and restores the
+ * pre-provenance load behaviour.
+ */
+export interface RolloutExpectation {
+  /**
+   * `contentHash` of the SKILL.md body being evaluated. Treatment entries
+   * recorded under a different body are discarded.
+   */
+  skillBodyHash?: string;
+  /**
+   * taskId → `contentHash` of the current fixture prompt. Entries whose taskId
+   * is absent from the map are not prompt-validated (the caller did not load
+   * that fixture, so it has nothing to compare against).
+   */
+  promptHashes?: Map<string, string>;
+}
+
+/** Why a recorded rollout entry was rejected during replay. */
+export type RolloutStaleReason =
+  | "missing-provenance"
+  | "skill-body-changed"
+  | "prompt-changed";
 
 // --- Load result ---
 

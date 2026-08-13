@@ -16,6 +16,7 @@ import {
   type JudgeDispatchFn,
   type LiveDispatchFn,
   type RolloutEntry,
+  type RolloutExpectation,
   type TaskCheckerJudge,
   type TaskFixture,
 } from "./types.js";
@@ -39,6 +40,34 @@ export function loadSkillMdBody(skillId: string, workspace: string): string {
   } catch {
     return "";
   }
+}
+
+/**
+ * Deterministic short content hash (sha256, first 16 hex chars).
+ * Used for rollout provenance (SKILL.md body, task prompt) so `--mock` can tell
+ * a recording apart from one made against different inputs.
+ */
+export function contentHash(text: string): string {
+  return createHash("sha256").update(text).digest("hex").slice(0, 16);
+}
+
+/**
+ * Build the {@link RolloutExpectation} describing the inputs currently on disk,
+ * for `loadRolloutEntries` to validate recorded rollouts against.
+ *
+ * Pass `skillMdBody: undefined` when there is no single body to compare — the
+ * `_all` aggregate spans many skills — which skips body validation while still
+ * checking prompt drift.
+ */
+export function buildRolloutExpectation(
+  tasks: TaskFixture[],
+  skillMdBody: string | undefined,
+): RolloutExpectation {
+  return {
+    skillBodyHash:
+      skillMdBody === undefined ? undefined : contentHash(skillMdBody),
+    promptHashes: new Map(tasks.map((t) => [t.id, contentHash(t.prompt)])),
+  };
 }
 
 /**
@@ -132,7 +161,12 @@ export function collectLiveRollouts(
 
   const rollouts: RolloutEntry[] = [];
 
+  // Provenance for staleness detection at replay time. The body hash is fixed
+  // for the whole run; the prompt hash is per task.
+  const bodyHash = contentHash(skillMdBody);
+
   for (const task of tasks) {
+    const promptHash = contentHash(task.prompt);
     const isJudgeTask = task.checker.type === "judge";
     const rubric = isJudgeTask
       ? ((task.checker as TaskCheckerJudge).rubric ?? JUDGE_DEFAULT_RUBRIC)
@@ -144,6 +178,9 @@ export function collectLiveRollouts(
       taskId: task.id,
       arm: "baseline",
       output: baselineOutput,
+      // No skillBodyHash: the baseline withholds the skill, so editing SKILL.md
+      // does not invalidate this arm and re-recording it would waste a dispatch.
+      promptHash,
     };
     if (isJudgeTask && judgeDispatchFn) {
       baselineEntry.score = judgeScore(
@@ -167,6 +204,8 @@ export function collectLiveRollouts(
       taskId: task.id,
       arm: "treatment",
       output: treatmentOutput,
+      skillBodyHash: bodyHash,
+      promptHash,
     };
     if (isJudgeTask && judgeDispatchFn) {
       treatmentEntry.score = judgeScore(
@@ -190,6 +229,10 @@ export function collectLiveRollouts(
  * Filename is a deterministic hash of the task ID set — no Date.now/random.
  * Entries are sorted by (taskId, arm) for byte-identical output on repeated runs.
  * Judge verdicts (entry.score) are included so --mock replay is fully offline.
+ *
+ * Entries carry provenance (`skillBodyHash` on treatment, `promptHash` on both)
+ * so a later `--mock` run can detect that SKILL.md or the fixture prompt changed
+ * since recording. See `loadRolloutEntries`.
  */
 export function writeRolloutRecord(
   taskDir: string,
