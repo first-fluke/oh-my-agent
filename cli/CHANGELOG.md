@@ -1,5 +1,24 @@
 # Changelog
 
+## [12.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.0.2...cli-v12.1.0) (2026-08-13)
+
+
+### Features
+
+* **cli:** emit agent-plugins package at the repo root ([f0fe354](https://github.com/first-fluke/oh-my-agent/commit/f0fe354250eb45446f0bbc885a867cebcd75aa68))
+
+
+### Bug Fixes
+
+* **skills:** reject stale rollout replay in skill eval ([0356e5d](https://github.com/first-fluke/oh-my-agent/commit/0356e5df21fb0502270e4f5706268037c682c41d))
+
+
+### Documentation
+
+* replace the token-savings claim with measured, reproducible numbers ([1661967](https://github.com/first-fluke/oh-my-agent/commit/166196759c01d2591141e67c5fb9c83dcd95a78f))
+* **ssot:** scope SSOT protection to definitions, exempt run outputs ([1b946aa](https://github.com/first-fluke/oh-my-agent/commit/1b946aa7f79e60bab11c2ad9bd0761ee15d659d3))
+* state token savings as overhead reduction, not total tokens ([62de0cf](https://github.com/first-fluke/oh-my-agent/commit/62de0cfb02a660d8e8a7162f33e988dacae84612))
+
 ## [12.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.0.1...cli-v12.0.2) (2026-08-13)
 
 
