@@ -70,7 +70,21 @@ web/.serena/
 # OMA runtime state (hook persistent mode)
 .agents/state/
 .agents/results/
-# .agents/eval/ fixtures are tracked SSOT (skill eval/opt coverage — design-prime-agent-adoption-202608)
+# .agents/eval/*.yaml task fixtures are tracked SSOT — hand-authored eval inputs
+# for `oma skills eval` / `opt` (design-prime-agent-adoption-202608). Do not add
+# an ignore rule for the directory itself. They are not shipped to users:
+# excluded in cli/generate-manifest.ts, removed from user projects by migration
+# 021-remove-eval-artifacts.
+#
+# _rollouts/ is NOT tracked, for two reasons that outlive any one run:
+#   1. Content is a one-off execution log — session ids, per-run cost, cache
+#      token counts, the model that happened to answer.
+#   2. A recording only replays for the exact SKILL.md body it was made from
+#      (RolloutEntry.skillBodyHash, enforced in loadRolloutEntries). Editing a
+#      skill invalidates its recordings, so a committed one would go stale on
+#      the next SKILL.md change and only emit warnings for everyone who pulls.
+# Recording locally and replaying with `--mock` is the supported workflow.
+.agents/eval/**/_rollouts/
 
 # oma backups — single gitignored root for migration snapshots, stack copies,
 # and safe-write siblings (see cli/io/backup.ts)
