@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.1.1",
-  "releaseDate": "2026-08-13T07:58:50.399Z",
+  "releaseDate": "2026-08-13T10:30:11.366Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -66,8 +66,8 @@
     },
     {
       "path": ".agents/agents/variants/agent-variant.schema.json",
-      "sha256": "0d0f400db864493ea61cdf616cf781e4343210ecc466675da479e9d2a98778f2",
-      "size": 2271
+      "sha256": "eb20051ab2e882ebe206549b28333df9e576cf8c7d35222a90be0117b8248fd0",
+      "size": 2493
     },
     {
       "path": ".agents/agents/variants/claude.json",
@@ -76,8 +76,8 @@
     },
     {
       "path": ".agents/agents/variants/codex.json",
-      "sha256": "fd00a6a6429d9746d33bcc3411942c116ca6601592c153b46d79e64b67c93cb7",
-      "size": 1394
+      "sha256": "d447ea382b9baf3112bc0abae4894ec697ab09ae9b414d2f46080958de16c824",
+      "size": 1526
     },
     {
       "path": ".agents/agents/variants/commandcode.json",
