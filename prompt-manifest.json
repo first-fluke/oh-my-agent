@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.0.1",
-  "releaseDate": "2026-08-13T04:47:16.326Z",
+  "releaseDate": "2026-08-13T05:20:16.353Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -301,7 +301,7 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "a82d72c07eb7c834370cd5684f3d20ed33f84370eb5bb480f64390dc300a9dcd",
+      "sha256": "7a24bb85382682e6e41120280423dff7e14b47e8f71d4bfd55ff230b4e44c703",
       "size": 23771
     },
     {
@@ -1031,7 +1031,7 @@
     },
     {
       "path": ".agents/skills/oma-hwp/config/hwp-config.yaml",
-      "sha256": "00e797d1707f818b9ae2af4132acb4113099dacc6d0958cfb230560b1f1d032a",
+      "sha256": "3fcd19d0065e1440a688b52f9058349746a949486c8848bf98c1201baefea8fe",
       "size": 1342
     },
     {
@@ -1046,8 +1046,8 @@
     },
     {
       "path": ".agents/skills/oma-hwp/resources/execution-protocol.md",
-      "sha256": "c56e2f9d94a8e52952f9e8ad0adc8fe28dc66f5c370719f22338f25b5ee59004",
-      "size": 7275
+      "sha256": "fa4ebfe0463de8759f0271aec15e69d51c0b8f02b6f4153f5f06b93a36ad8f9a",
+      "size": 7347
     },
     {
       "path": ".agents/skills/oma-hwp/resources/flatten-tables.ts",
@@ -1061,8 +1061,8 @@
     },
     {
       "path": ".agents/skills/oma-hwp/resources/troubleshooting.md",
-      "sha256": "cd70a5c96c6dc567402f5f8a6dcab1c763dba697fdb8eaabf1b2f69433730780",
-      "size": 4371
+      "sha256": "02e64fdbe33865ee106a73110f037520f29721239a9db711e4e9d6c42ba85764",
+      "size": 4469
     },
     {
       "path": ".agents/skills/oma-hwp/resources/tsconfig.json",
