@@ -61,6 +61,7 @@ export interface AgentVariant {
   vendor: string;
   destDir: string;
   modelDefault: string;
+  effortDefault?: string;
   maxTurnsDefault?: number;
   toolsDefault: string[] | string;
   protocolPath: string;
@@ -264,7 +265,7 @@ function buildCodexAgentFile(
   const model = String(
     config.model || frontmatter.model || variant.modelDefault,
   );
-  const reasoningEffort = config.effort || "medium";
+  const reasoningEffort = config.effort || variant.effortDefault || "medium";
   const sandboxMode =
     typeof config.extra?.sandbox_mode === "string"
       ? config.extra.sandbox_mode
