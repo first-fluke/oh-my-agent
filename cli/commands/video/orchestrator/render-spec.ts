@@ -63,7 +63,9 @@ export function buildRenderSpec(args: {
       visual: {
         type: visual?.type ?? "placeholder",
         src: visual?.path ?? "",
-        kenBurns: (visual?.type ?? "image") === "image",
+        // Stills stay static. The slow zoom read as generated-video filler on
+        // diagram-style visuals, where a drifting crop also clips labels.
+        kenBurns: false,
       },
       onScreenText: scene.onScreenText,
       transitionOut: scene.transition,
