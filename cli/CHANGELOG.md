@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.1.1...cli-v12.2.0) (2026-08-13)
+
+
+### Features
+
+* **codex:** route custom agents to terra and luna ([5db3310](https://github.com/first-fluke/oh-my-agent/commit/5db331017b40540e950709f2b3730a5c70ee274d))
+* **codex:** route custom agents to terra and luna ([a78d4bd](https://github.com/first-fluke/oh-my-agent/commit/a78d4bd04662f95577d77358945444fd17fe0a2c))
+
 ## [12.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.1.0...cli-v12.1.1) (2026-08-13)
 
 
