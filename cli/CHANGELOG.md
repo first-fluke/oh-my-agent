@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.2.1...cli-v12.3.0) (2026-08-14)
+
+
+### Features
+
+* **harness:** add isolated harness evaluation ([f3f4393](https://github.com/first-fluke/oh-my-agent/commit/f3f43930917cbf2f103108af0a903133a88c81b8))
+
 ## [12.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.2.0...cli-v12.2.1) (2026-08-14)
 
 
