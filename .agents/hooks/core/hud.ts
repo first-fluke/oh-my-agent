@@ -85,7 +85,7 @@ async function readStdin(
   // Some vendors (notably agy) spawn the statusline without closing the stdin
   // pipe; a synchronous readFileSync(0) then blocks until the vendor's
   // statusline timeout SIGKILLs the process. Read asynchronously and give up
-  // after timeoutMs, letting main() fall back to the cached line.
+  // after timeoutMs, letting main() fall back to a payload-less line.
   const read = (async () => {
     const chunks: Buffer[] = [];
     for await (const chunk of process.stdin) {
@@ -114,23 +114,6 @@ async function readStdin(
 
 /** Max time to wait for the vendor to deliver (and close) the stdin payload. */
 const STDIN_TIMEOUT_MS = 800;
-
-/** Sibling file holding the last successfully rendered statusline. */
-function cachePath(): string {
-  return join(
-    import.meta.dirname ?? process.cwd(),
-    "..",
-    "last-hud-output.txt",
-  );
-}
-
-function readCachedLine(): string | null {
-  try {
-    return readFileSync(cachePath(), "utf-8") || null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * When `OMA_HUD_DEBUG=1`, capture the raw stdin payload to a sibling file so
@@ -333,14 +316,9 @@ async function main() {
   let out: string;
   try {
     out = buildClaudeStatusline(await readStdin());
-    try {
-      writeFileSync(cachePath(), out, "utf-8");
-    } catch {
-      // best-effort cache
-    }
   } catch {
-    // stdin timed out — a stale line beats a killed statusline
-    out = readCachedLine() ?? buildClaudeStatusline({});
+    // stdin timed out — a payload-less line beats a killed statusline
+    out = buildClaudeStatusline({});
   }
   // Exit explicitly: after a timeout the pending stdin read would otherwise
   // keep the event loop (and the process) alive.
