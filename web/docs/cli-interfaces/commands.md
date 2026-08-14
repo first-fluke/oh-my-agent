@@ -1577,6 +1577,47 @@ See the [Skill Optimization guide](../guide/skill-opt.md) for the full end-to-en
 
 ---
 
+### harness eval
+
+Compare a candidate `.agents/` overlay with the current OMA harness on paired, isolated repository tasks. The target agent and vendor route stay fixed; deterministic checks score the files and output produced by each arm.
+
+```
+oma harness eval --suite <path> --candidate <path> [--mock | --live]
+                 [--record] [--record-file <path>] [--yes]
+                 [--timeout-minutes <n>] [--require-coverage]
+                 [--json] [--output <format>]
+```
+
+| Flag | Description |
+|:-----|:------------|
+| `--suite <path>` | Required suite YAML. The suite and fixture workspaces must be inside the project root. |
+| `--candidate <path>` | Required candidate root containing a scoped `.agents/` overlay. |
+| `--mock` | Replay a hash-matching recorded run (default; deterministic and offline). |
+| `--live` | Run baseline and candidate arms through the suite's target agent. |
+| `--record` | Persist a live run for later mock replay. Requires `--live`. |
+| `--record-file <path>` | Override the recording path; it must remain inside the project root. |
+| `--yes` | Skip the live-run cost confirmation. |
+| `--timeout-minutes <n>` | Per-arm timeout, identical for baseline and candidate. Default: `15`. |
+| `--require-coverage` | Exit non-zero when fewer than five paired tasks are scoreable. |
+| `--json` | Output the full evaluation as JSON. |
+| `--output <format>` | Output format (`text` or `json`). |
+
+**Decision gate:** pass requires at least 5 paired tasks, lift of at least 5 percentage points, and zero regressions. A regression always fails. Below-minimum coverage is `insufficient` and exits non-zero only with `--require-coverage`.
+
+**Isolation:** candidate files can replace only `.agents/agents`, `.agents/rules`, `.agents/skills`, and `.agents/workflows` content in the temporary candidate arm. Hooks, config, state, eval fixtures, symlinks, vendor variants, protected agent execution frontmatter changes, and fixture-owned vendor harness files are rejected. An arm fails if it mutates protected definitions during execution. HOME-based vendor discovery is refused for live evaluation. The primary agent route is fixed; nested subagent model pinning is not yet enforced.
+
+```bash
+# Generate a live measurement and recording
+oma harness eval --suite harness-eval/suite.yaml --candidate candidate --live --record
+
+# Replay the same measurement in CI
+oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --require-coverage --json
+```
+
+See the [Harness Evaluation guide](../guide/harness-eval.md) for the suite schema, supported checks, isolation model, and current limitations.
+
+---
+
 ### help
 
 Show help information.

@@ -107,6 +107,9 @@ async function registerFullCli(): Promise<void> {
     import("./commands/visualize/command.js").then((m) => m.registerVisualize),
     import("./commands/search/index.js").then((m) => m.registerSearchCommand),
     import("./commands/skills/command.js").then((m) => m.registerSkillsCommand),
+    import("./commands/harness/command.js").then(
+      (m) => m.registerHarnessCommand,
+    ),
     import("./commands/slide/index.js").then((m) => m.registerSlideCommand),
     import("./commands/scholar/index.js").then((m) => m.registerScholarCommand),
     import("./commands/image/index.js").then((m) => m.registerImageCommand),
