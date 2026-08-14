@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.2.0",
-  "releaseDate": "2026-08-13T10:50:53.064Z",
+  "releaseDate": "2026-08-14T09:14:53.686Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -146,8 +146,8 @@
     },
     {
       "path": ".agents/hooks/core/hud.ts",
-      "sha256": "90b57ec011a2684044a84441fd837a1d74b8e474f966e0924d8a0ae043c5f327",
-      "size": 12049
+      "sha256": "974d440ca19f7fa226d299f80ddd6135579b397c68a6ac1eaec3bf039bb5734f",
+      "size": 11589
     },
     {
       "path": ".agents/hooks/core/inject-log.ts",
