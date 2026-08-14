@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.2.0...cli-v12.2.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **hud:** stop writing last-hud-output.txt cache ([de3c4d5](https://github.com/first-fluke/oh-my-agent/commit/de3c4d58bd31f9716c99dee9703a77b4f593c551))
+* **hud:** stop writing last-hud-output.txt cache ([aafad64](https://github.com/first-fluke/oh-my-agent/commit/aafad6426bfd1a62268b62802ff6f1567b0cb9c4))
+
 ## [12.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.1.1...cli-v12.2.0) (2026-08-13)
 
 
