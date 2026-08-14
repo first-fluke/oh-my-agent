@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.3...web-v4.2.0) (2026-08-14)
+
+
+### Features
+
+* **harness:** add isolated harness evaluation ([f3f4393](https://github.com/first-fluke/oh-my-agent/commit/f3f43930917cbf2f103108af0a903133a88c81b8))
+
 ## [4.1.3](https://github.com/first-fluke/oh-my-agent/compare/web-v4.1.2...web-v4.1.3) (2026-08-13)
 
 
