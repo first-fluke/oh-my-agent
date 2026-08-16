@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.3.2",
-  "releaseDate": "2026-08-16T05:44:37.031Z",
+  "releaseDate": "2026-08-16T09:50:19.958Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -141,8 +141,8 @@
     },
     {
       "path": ".agents/hooks/core/hook-output.ts",
-      "sha256": "6fc30a8a3fb091eece662862a59bc901ea01887a8f9bdf71d6da3fefb45e4a20",
-      "size": 10217
+      "sha256": "f31e14e85c03cf33692b6b15e29020b60ebf8eb7ed3aa1fe0243af78fc3333db",
+      "size": 12098
     },
     {
       "path": ".agents/hooks/core/hud.ts",
@@ -168,6 +168,11 @@
       "path": ".agents/hooks/core/prompt-input.ts",
       "sha256": "9ac55ce2763d1368c48cb238240d7c14ebd5ff8da5f0f73f483de06f09c90cf2",
       "size": 1961
+    },
+    {
+      "path": ".agents/hooks/core/refactor-guard.ts",
+      "sha256": "4bf3522c0616eeabe10dc944d5ce039ac97e4fc8621f750cf2c0cf04557dd5a3",
+      "size": 19411
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
@@ -211,8 +216,8 @@
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "721328d3a53f726f69364f719922bd2bb691bd979e85fc3ba87c273530d9373e",
-      "size": 5211
+      "sha256": "fc4da7c2c31907eef72295a945223cf756505379e2567ad04c724771cedc8f6c",
+      "size": 5461
     },
     {
       "path": ".agents/hooks/core/vendor-detect.ts",
@@ -226,33 +231,33 @@
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
-      "sha256": "e39c570e133e68ba2cfd6d26acd6b863c63ff4ee5464f23ee24710cbcf738487",
-      "size": 681
+      "sha256": "273de190764131f26d8a18d730ad94473668f3f4e1b629100590d2f58d129ac6",
+      "size": 949
     },
     {
       "path": ".agents/hooks/variants/claude.json",
-      "sha256": "99d105d7fa19c24e7bf7343da89e4486e2bb0c3983dc5717aa80050bb9898d00",
-      "size": 1249
+      "sha256": "3d155318cc4131ede878ed01112a1ad8e246bbc69b3b4ac445f521cd8b05a479",
+      "size": 1492
     },
     {
       "path": ".agents/hooks/variants/codex.json",
-      "sha256": "dddc0cca851225df271b148538cacde899e093a47985a2fb445e750a3d21bb6f",
-      "size": 829
+      "sha256": "0eaccacf8565bf2af8ebf699dae9d147fcc09b5a6a2a3976f3ad10c22047317d",
+      "size": 1071
     },
     {
       "path": ".agents/hooks/variants/commandcode.json",
-      "sha256": "b3657e9a6273f6adc45529f134eb6f1a9ed5ed44fd7af35f8a7088fa4ddeda1b",
-      "size": 472
+      "sha256": "658e23a403848152ecf55788d0a9c827d97811c9207af4504520910c25ba7e8c",
+      "size": 702
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "e60db4f0d6071681eeef55434764837415403b18563b8bbb7841b0abdc6de117",
-      "size": 1100
+      "sha256": "a3a62725c1e5d85656aa65a235ccdb3f746b6d980b72487b22b5c159d2ad21e3",
+      "size": 1301
     },
     {
       "path": ".agents/hooks/variants/grok.json",
-      "sha256": "03f1b8f833588da26c6213150b45eed70e807fe22a6be622e0e41ec7b5a5498a",
-      "size": 853
+      "sha256": "d9bf43ca2af1659bb84e266ed3ee1352f70c827a1b8f1fd41b222987b2ef9a22",
+      "size": 1143
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
@@ -261,13 +266,13 @@
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
-      "sha256": "a837452029ced3070d0680afbbdfff5e41baf0d63b9776b65b16aee59476fcee",
-      "size": 859
+      "sha256": "b79c75e63f1f5ac6aab0e13eab4c161e2193a103216e01cdc4e0e4a6299967e9",
+      "size": 1103
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
-      "sha256": "5f0d9c61b277251bf3195de332403f484e02993dc18291c99d86dfad69e41521",
-      "size": 864
+      "sha256": "968e6c5c13ffe0f6ba1171a880f6eba03e15529c8c8d19aeb57b36e6ccabfbe5",
+      "size": 1092
     },
     {
       "path": ".agents/hooks/variants/opencode/oma.ts",
@@ -286,8 +291,8 @@
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "fb0cc9f2410aee613e9b8194892370855041ba5982edeb1445fca9bb78b28c7d",
-      "size": 1005
+      "sha256": "5b9aabf764a95554cd6fc172941e00c233955af00811e50b0a37edda081dcfbd",
+      "size": 1243
     },
     {
       "path": ".agents/mcp.json",
@@ -301,8 +306,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "7a24bb85382682e6e41120280423dff7e14b47e8f71d4bfd55ff230b4e44c703",
-      "size": 23771
+      "sha256": "0cb7bb4132d5f6a3686929991131858605102aac3af29dfe7fe070a5c2fa4923",
+      "size": 25248
     },
     {
       "path": ".agents/rules/backend.md",
@@ -2156,6 +2161,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 429
+    "totalFiles": 430
   }
 }
