@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.4.1",
-  "releaseDate": "2026-08-16T11:03:27.858Z",
+  "releaseDate": "2026-08-16T15:32:57.561Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -171,8 +171,8 @@
     },
     {
       "path": ".agents/hooks/core/refactor-guard.ts",
-      "sha256": "4bf3522c0616eeabe10dc944d5ce039ac97e4fc8621f750cf2c0cf04557dd5a3",
-      "size": 19411
+      "sha256": "91d41bde6fa090dc17bb7c46eb660c0d33a62ec7460ec1e932db33449fb16210",
+      "size": 20201
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
@@ -306,8 +306,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "0cb7bb4132d5f6a3686929991131858605102aac3af29dfe7fe070a5c2fa4923",
-      "size": 25248
+      "sha256": "722d60c34934aba49c2138c345d979c2f586bbfa4d7a1b999514d3deeb430a34",
+      "size": 25300
     },
     {
       "path": ".agents/rules/backend.md",
