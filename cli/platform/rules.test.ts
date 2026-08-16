@@ -361,6 +361,64 @@ describe("mergeRulesIndexForVendor", () => {
     expect(writeCall).toBeDefined();
   });
 
+  it("describes every vendor sharing AGENTS.md, in a trigger-independent order", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (typeof p === "string" && p.endsWith("AGENTS.md")) return false;
+        return p.includes(".agents/rules");
+      },
+    );
+    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+      "frontend.md",
+    ]);
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      "---\ndescription: test\n---\n\n# Test",
+    );
+
+    // `oma link cursor` on a project that also has codex configured.
+    mergeRulesIndexForVendor(mockTargetDir, "cursor", ["codex", "claude"]);
+    const viaCursor = findAtomicWrite("AGENTS.md")?.content as string;
+
+    expect(viaCursor).toContain("- codex: ");
+    expect(viaCursor).toContain(".codex/agents/{name}.toml");
+    expect(viaCursor).toContain("- cursor: ");
+    expect(viaCursor).toContain("`@agent-name`");
+    expect(viaCursor).toContain("Hooks (codex):");
+    expect(viaCursor).toContain("Hooks (cursor):");
+    // claude writes CLAUDE.md — it must not leak into the shared AGENTS.md.
+    expect(viaCursor).not.toContain("- claude: ");
+
+    // The unfiltered run starts from codex instead; same file, same bytes.
+    vi.clearAllMocks();
+    mergeRulesIndexForVendor(mockTargetDir, "codex", ["cursor", "claude"]);
+    const viaCodex = findAtomicWrite("AGENTS.md")?.content as string;
+    expect(viaCodex).toBe(viaCursor);
+  });
+
+  it("keeps the single-vendor block flat when no vendor shares the doc", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        if (typeof p === "string" && p.endsWith("AGENTS.md")) return false;
+        return p.includes(".agents/rules");
+      },
+    );
+    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+      "frontend.md",
+    ]);
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      "---\ndescription: test\n---\n\n# Test",
+    );
+
+    mergeRulesIndexForVendor(mockTargetDir, "cursor", ["claude", "kimi"]);
+
+    const content = findAtomicWrite("AGENTS.md")?.content as string;
+    expect(content).toContain("- **Subagents**: `@agent-name`");
+    expect(content).toContain(
+      "Hooks: `UserPromptSubmit` / `beforeSubmitPrompt`",
+    );
+    expect(content).not.toContain("Hooks (cursor):");
+  });
+
   it("should replace existing OMA block on update", () => {
     const omaStart = "<!-- OMA:START";
     const omaEnd = "<!-- OMA:END -->";

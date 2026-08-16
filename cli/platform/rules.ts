@@ -189,10 +189,61 @@ const VENDOR_HOOKS: Record<string, string> = {
   pi: "Extension bridge: `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts",
 };
 
+/** The doc a vendor's OMA block is merged into, if it has one. */
+export function vendorDocFile(vendor: string): string | undefined {
+  return VENDOR_FILES[vendor];
+}
+
 /**
- * Build a combined OMA block (usage guide + rules index) for a vendor.
+ * Order vendors by their `VENDOR_FILES` declaration order, so a doc shared by
+ * several vendors renders identically no matter which vendor triggered the
+ * merge (`oma link` vs `oma link cursor`). Unknown vendors are dropped.
  */
-function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
+function orderedDocVendors(vendors: readonly string[]): string[] {
+  const order = Object.keys(VENDOR_FILES);
+  return Array.from(new Set(vendors))
+    .filter((v) => v in VENDOR_FILES)
+    .sort((a, b) => order.indexOf(a) - order.indexOf(b));
+}
+
+/**
+ * Label a vendor's hook line when several vendors share one doc:
+ * `Hooks: …` → `Hooks (cursor): …`. Falls back to a plain prefix for entries
+ * that don't lead with a label (pi's extension bridge).
+ */
+function labelHookLine(vendor: string, line: string): string {
+  const idx = line.indexOf(":");
+  if (idx === -1) return `${vendor}: ${line}`;
+  return `${line.slice(0, idx)} (${vendor})${line.slice(idx)}`;
+}
+
+/**
+ * Build a combined OMA block (usage guide + rules index) for the vendors that
+ * share one doc. `AGENTS.md` is read by codex, cursor, qwen and pi alike, and
+ * the block carries vendor-specific subagent/hook wiring — so every vendor
+ * sharing the file is described, rather than the last one to be linked
+ * overwriting the others.
+ */
+function buildVendorBlock(vendors: string[], rules: ParsedRule[]): string {
+  const primary = vendors[0] ?? "";
+  const multi = vendors.length > 1;
+  const spawnLines = multi
+    ? [
+        "- **Subagents**:",
+        ...vendors.map(
+          (v) => `  - ${v}: ${VENDOR_SPAWN[v] || "`oma agent:spawn`"}`,
+        ),
+      ]
+    : [`- **Subagents**: ${VENDOR_SPAWN[primary] || "`oma agent:spawn`"}`];
+  const hookLines = multi
+    ? vendors
+        .map((v) => {
+          const hooks = VENDOR_HOOKS[v];
+          return hooks ? labelHookLine(v, hooks) : "";
+        })
+        .filter(Boolean)
+    : [VENDOR_HOOKS[primary] || ""];
+
   const lines = [
     OMA_START,
     "",
@@ -206,7 +257,7 @@ function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
     "- **Response language**: Follows `language` in `.agents/oma-config.yaml`",
     "- **Skills**: `.agents/skills/` (domain specialists)",
     "- **Workflows**: `.agents/workflows/` (multi-step orchestration)",
-    `- **Subagents**: ${VENDOR_SPAWN[vendor] || "`oma agent:spawn`"}`,
+    ...spawnLines,
     "",
     "## Per-Agent Dispatch",
     "",
@@ -261,7 +312,7 @@ function buildVendorBlock(vendor: string, rules: ParsedRule[]): string {
     "",
     "## Auto-Detection",
     "",
-    VENDOR_HOOKS[vendor] || "",
+    ...hookLines,
     "Keywords defined in `.agents/hooks/core/triggers.json` (multi-language).",
     "Persistent workflows (orchestrate, ultrawork, work, ralph) block termination until complete.",
     'Deactivate: say "workflow done".',
@@ -331,12 +382,21 @@ function mergeOmaBlock(filePath: string, block: string): void {
 export function mergeRulesIndexForVendor(
   targetDir: string,
   vendor: string,
+  coVendors: readonly string[] = [],
 ): boolean {
   const fileName = VENDOR_FILES[vendor];
   if (!fileName) return false;
 
+  // Co-vendors that write a different doc are irrelevant here; the ones sharing
+  // this file must stay described in it, or linking a single vendor silently
+  // replaces the others' subagent/hook instructions.
+  const vendors = orderedDocVendors([
+    vendor,
+    ...coVendors.filter((v) => VENDOR_FILES[v] === fileName),
+  ]);
+
   const rules = readRules(targetDir);
-  const block = buildVendorBlock(vendor, rules);
+  const block = buildVendorBlock(vendors, rules);
   mergeOmaBlock(join(targetDir, fileName), block);
   return true;
 }
@@ -353,7 +413,7 @@ export function renderCliVendorDoc(
   vendor: string,
   existingContent: string | null,
 ): string {
-  const block = buildVendorBlock(vendor, []);
+  const block = buildVendorBlock([vendor], []);
   if (existingContent) {
     const startIdx = existingContent.indexOf(OMA_START_PREFIX);
     const endIdx = existingContent.indexOf(OMA_END);

@@ -21,6 +21,13 @@ let agyInstalledResult: { installed: boolean; reason?: string } = {
 vi.mock("../../../platform/rules.js", () => ({
   applyCursorRules: vi.fn(() => []),
   mergeRulesIndexForVendor: vi.fn(() => true),
+  vendorDocFile: vi.fn((vendor: string) =>
+    vendor === "claude"
+      ? "CLAUDE.md"
+      : ["codex", "cursor", "qwen", "pi"].includes(vendor)
+        ? "AGENTS.md"
+        : undefined,
+  ),
 }));
 
 vi.mock("../../../platform/pi-extension-composer.js", () => ({
@@ -247,6 +254,7 @@ describe("link kernel", () => {
       expect(rules.mergeRulesIndexForVendor).toHaveBeenCalledWith(
         expect.stringContaining("oma-link-test-"),
         "pi",
+        ["pi"],
       );
       expect(skills.installVendorAdaptations).not.toHaveBeenCalled();
       expect(result.vendors).toEqual([]);

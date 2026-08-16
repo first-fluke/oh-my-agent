@@ -19,6 +19,7 @@ import { installPiPromptTemplates } from "../../platform/pi-prompts.js";
 import {
   applyCursorRules,
   mergeRulesIndexForVendor,
+  vendorDocFile,
 } from "../../platform/rules.js";
 import {
   applyCursorMcpConfig,
@@ -221,6 +222,14 @@ export function link(opts: LinkOptions = {}): LinkResult {
     opts.vendorFilter !== undefined
       ? (opts.vendorFilter as CliVendor[])
       : readVendorsFromConfig(root);
+  // AGENTS.md is shared by codex/cursor/qwen/pi and its OMA block carries
+  // vendor-specific subagent/hook wiring. A vendor-filtered run
+  // (`oma link cursor`) must therefore still render every vendor recorded in
+  // oma-config, or it would overwrite the other vendors' instructions with its
+  // own flavor and flip the file back on the next unfiltered `oma link`.
+  const docVendors = Array.from(
+    new Set<string>([...readVendorsFromConfig(root), ...configuredVendors]),
+  );
   const hookVendors = configuredVendors.filter(isHookVendor);
   // Extension-model vendors (pi) install via a forked path, not the
   // settings-file hook flow. Match through the extension-vendor guard so they
@@ -262,7 +271,9 @@ export function link(opts: LinkOptions = {}): LinkResult {
     }
     if (hookVendors.length === 0) {
       record(join(root, "AGENTS.md"), "write", "mergeRulesIndexForVendor (pi)");
-      piMergedDocs = dryRun ? false : mergeRulesIndexForVendor(root, "pi");
+      piMergedDocs = dryRun
+        ? false
+        : mergeRulesIndexForVendor(root, "pi", docVendors);
     }
     if (!quiet && !dryRun) {
       console.log(`${pc.green("✓")} pi (.pi/extensions/oma/, .pi/prompts/)`);
@@ -687,15 +698,16 @@ export function link(opts: LinkOptions = {}): LinkResult {
   // rather than claiming a merge it cannot evaluate without writing.
   const plannedDocs = new Set<string>();
   for (const v of VENDORS) {
-    if (!configuredVendors.includes(v)) continue;
-    const target = v === "claude" ? "CLAUDE.md" : "AGENTS.md";
+    if (!docVendors.includes(v)) continue;
+    const target = vendorDocFile(v);
+    if (!target) continue;
     if (mergedDocsSet.has(target) || plannedDocs.has(target)) continue;
     if (dryRun) {
       plannedDocs.add(target);
       record(join(root, target), "write", "mergeRulesIndexForVendor");
       continue;
     }
-    if (mergeRulesIndexForVendor(root, v)) {
+    if (mergeRulesIndexForVendor(root, v, docVendors)) {
       mergedDocsSet.add(target);
       mergedDocs.push(target);
       record(join(root, target), "write", "mergeRulesIndexForVendor");
@@ -711,7 +723,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
           "mergeRulesIndexForVendor (pi)",
         );
       }
-    } else if (mergeRulesIndexForVendor(root, "pi")) {
+    } else if (mergeRulesIndexForVendor(root, "pi", docVendors)) {
       mergedDocsSet.add("AGENTS.md");
       mergedDocs.push("AGENTS.md");
       record(join(root, "AGENTS.md"), "write", "mergeRulesIndexForVendor (pi)");

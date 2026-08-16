@@ -59,6 +59,13 @@ vi.mock("../commands/migrations/index.js", () => ({
 vi.mock("../../platform/rules.js", () => ({
   applyCursorRules: vi.fn(() => []),
   mergeRulesIndexForVendor: vi.fn(() => true),
+  vendorDocFile: vi.fn((vendor: string) =>
+    vendor === "claude"
+      ? "CLAUDE.md"
+      : ["codex", "cursor", "qwen", "pi"].includes(vendor)
+        ? "AGENTS.md"
+        : undefined,
+  ),
 }));
 
 vi.mock("../../platform/skills-installer.js", () => ({
