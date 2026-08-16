@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "oma",
-  "version": "12.3.2",
+  "version": "12.4.0",
   "description": "Portable multi-agent harness for .agents-based skills and workflows",
   "author": {
     "name": "First Fluke"
