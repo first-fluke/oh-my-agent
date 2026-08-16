@@ -180,12 +180,12 @@ const VENDOR_SPAWN: Record<string, string> = {
 /** Vendor-specific hook info. */
 const VENDOR_HOOKS: Record<string, string> = {
   claude:
-    "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)",
+    "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)",
   codex:
-    "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)",
+    "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)",
   cursor:
-    "Hooks: `UserPromptSubmit` / `beforeSubmitPrompt` (keyword detection)",
-  qwen: "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)",
+    "Hooks: `UserPromptSubmit` / `beforeSubmitPrompt` (keyword detection), `afterFileEdit` (refactor-guard recorder, opt-in), `stop` (persistent mode + refactor guard)",
+  qwen: "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)",
   pi: "Extension bridge: `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts",
 };
 

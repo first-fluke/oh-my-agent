@@ -60,7 +60,12 @@ describe("installKimiHooks", () => {
 
     const hooks = readHooks(configPath);
     const events = hooks.map((h) => h.event).sort();
-    expect(events).toEqual(["PreToolUse", "Stop", "UserPromptSubmit"]);
+    expect(events).toEqual([
+      "PostToolUse",
+      "PreToolUse",
+      "Stop",
+      "UserPromptSubmit",
+    ]);
     // Every entry routes through the oma-hook wrapper with --vendor kimi.
     for (const h of hooks) {
       expect(h.command).toContain("oma-hook.sh");
@@ -72,6 +77,9 @@ describe("installKimiHooks", () => {
     // PreToolUse carries the Bash matcher (test-filter scope).
     const preTool = hooks.find((h) => h.event === "PreToolUse");
     expect(preTool?.matcher).toBe("Bash");
+    // PostToolUse carries the kimi file-edit tool matcher (refactor-guard).
+    const postTool = hooks.find((h) => h.event === "PostToolUse");
+    expect(postTool?.matcher).toBe("WriteFile|StrReplaceFile");
   });
 
   it("is idempotent — re-running does not duplicate oma-managed hooks", () => {
@@ -80,7 +88,7 @@ describe("installKimiHooks", () => {
     const omaHooks = readHooks(configPath).filter((h) =>
       h.command.includes("oma-hook.sh"),
     );
-    expect(omaHooks).toHaveLength(3);
+    expect(omaHooks).toHaveLength(4);
   });
 
   it("preserves the user's own hooks and other config", () => {

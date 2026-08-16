@@ -25,10 +25,23 @@
         "timeout": 3
       }
     ],
-    "Stop": {
-      "hook": "persistent-mode.ts",
-      "timeout": 5
-    }
+    "PostToolUse": [
+      {
+        "hook": "refactor-guard.ts",
+        "matcher": "write_to_file|replace_file_content|notebook_edit",
+        "timeout": 5
+      }
+    ],
+    "Stop": [
+      {
+        "hook": "persistent-mode.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "refactor-guard.ts",
+        "timeout": 5
+      }
+    ]
   },
   "statusLine": {
     "hook": "hud.ts"

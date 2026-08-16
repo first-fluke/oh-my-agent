@@ -65,7 +65,7 @@ To execute: read and follow `.agents/workflows/{name}.md` step by step.
 
 ## Auto-Detection
 
-Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `Stop` (persistent mode)
+Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)
 Keywords defined in `.agents/hooks/core/triggers.json` (multi-language).
 Persistent workflows (orchestrate, ultrawork, work, ralph) block termination until complete.
 Deactivate: say "workflow done".

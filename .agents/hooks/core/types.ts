@@ -107,6 +107,14 @@ export type HookInput =
       cwd: string;
     }
   | {
+      kind: "post_tool";
+      toolName: string;
+      toolInput: Record<string, unknown>;
+      /** Vendor tool result payload (claude: `tool_response`), when provided. */
+      toolResponse?: Record<string, unknown>;
+      cwd: string;
+    }
+  | {
       kind: "stop";
       cwd: string;
       /**

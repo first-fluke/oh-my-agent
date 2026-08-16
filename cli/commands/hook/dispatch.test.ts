@@ -229,6 +229,47 @@ describe("runChain — pre_tool: mutate last-wins", () => {
 // stop merge — block
 // ---------------------------------------------------------------------------
 
+describe("runChain — post_tool: block short-circuits, contexts concat", () => {
+  const input: HookInput = {
+    kind: "post_tool",
+    toolName: "Edit",
+    toolInput: { file_path: "/tmp/big.ts" },
+    cwd: "/tmp",
+  };
+
+  it("returns null when no handler produces a result", async () => {
+    const result = await runChain([h("a", makeNullHandler())], input, ctx);
+    expect(result).toBeNull();
+  });
+
+  it("returns block immediately and skips later handlers", async () => {
+    const later = vi.fn(makeContextHandler("late"));
+    const result = await runChain(
+      [h("a", makeBlockHandler("too long")), h("b", later)],
+      input,
+      ctx,
+    );
+    expect(result).toEqual({ type: "block", reason: "too long" });
+    expect(later).not.toHaveBeenCalled();
+  });
+
+  it("concatenates context results with \\n\\n when nothing blocks", async () => {
+    const result = await runChain(
+      [
+        h("a", makeContextHandler("first")),
+        h("b", makeNullHandler()),
+        h("c", makeContextHandler("second")),
+      ],
+      input,
+      ctx,
+    );
+    expect(result).toEqual({
+      type: "context",
+      additionalContext: "first\n\nsecond",
+    });
+  });
+});
+
 describe("runChain — stop: any block returns block", () => {
   const input: HookInput = { kind: "stop", cwd: "/tmp" };
 
@@ -380,6 +421,7 @@ describe("nativeEventToKind", () => {
     ["PreToolUse", "pre_tool"],
     ["BeforeTool", "pre_tool"],
     ["preToolUse", "pre_tool"],
+    ["PostToolUse", "post_tool"],
     ["Stop", "stop"],
     ["AfterAgent", "stop"],
     ["AfterTool", null],

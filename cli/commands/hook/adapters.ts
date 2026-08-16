@@ -83,6 +83,20 @@ export function nativeEventToKind(
     case "preToolUse":
       return "pre_tool";
 
+    // post_tool events — refactor-guard (claude PostToolUse; other vendors
+    // opt in by registering the event in their variant JSON). gemini's
+    // AfterTool stays null: it is HUD-only (see adapters.test NULL_ALLOWLIST).
+    // "postToolUse" is kiro's lowercase-camel spelling (mirrors preToolUse).
+    case "PostToolUse":
+    case "postToolUse":
+      return "post_tool";
+
+    // cursor's file-edit event — preferred over its generic postToolUse for
+    // the refactor-guard recorder because the payload carries a documented
+    // top-level `file_path` (postToolUse tool_input shape is tool-specific).
+    case "afterFileEdit":
+      return vendor === "cursor" ? "post_tool" : null;
+
     // stop events — "stop" (lowercase) is kiro's native event name (kiro.json)
     case "Stop":
     case "stop":
@@ -152,6 +166,43 @@ export function normalizeInput(
       const toolName = resolveToolName(vendor, payload);
       const toolInput = resolveToolInput(vendor, payload);
       return { kind: "pre_tool", toolName, toolInput, cwd };
+    }
+    case "post_tool": {
+      // cursor afterFileEdit carries no tool_name and a TOP-LEVEL file_path
+      // (cursor.com/docs/hooks); synthesize the canonical edit-tool shape so
+      // handlers stay payload-agnostic.
+      if (nativeEvent === "afterFileEdit") {
+        const filePath =
+          typeof payload.file_path === "string" ? payload.file_path : "";
+        return {
+          kind: "post_tool",
+          toolName: "Edit",
+          toolInput: filePath ? { file_path: filePath } : {},
+          cwd,
+        };
+      }
+      // antigravity nests the tool call: {toolCall: {name, args}} (camelCase,
+      // verified against the agy 1.1.13 binary's embedded hook docs).
+      const toolCall = payload.toolCall as
+        | { name?: unknown; args?: unknown }
+        | undefined;
+      if (toolCall && typeof toolCall.name === "string") {
+        return {
+          kind: "post_tool",
+          toolName: toolCall.name,
+          toolInput:
+            (toolCall.args as Record<string, unknown> | undefined) ?? {},
+          cwd,
+        };
+      }
+      const toolName = resolveToolName(vendor, payload);
+      const toolInput = resolveToolInput(vendor, payload);
+      const toolResponse =
+        (payload.tool_response as Record<string, unknown> | undefined) ??
+        (payload.toolResponse as Record<string, unknown> | undefined);
+      return toolResponse
+        ? { kind: "post_tool", toolName, toolInput, toolResponse, cwd }
+        : { kind: "post_tool", toolName, toolInput, cwd };
     }
     case "stop": {
       // Gather assistant/response/transcript text so persistent-mode can honor

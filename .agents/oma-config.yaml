@@ -20,6 +20,7 @@
 #   9. Documentation drift       docs
 #  10. SCM & commit rules        scm
 #  11. Skill overrides           video, image, voice, hwp, pdf, scholar
+#  12. Refactor guard hook       refactor_guard
 #
 # Full schema: web/docs/guide/per-agent-models.md
 
@@ -444,3 +445,23 @@ scm:
 # lint rules are protocol shape and stay in the skill config.
 # scholar:
 #   base_url: https://knows.academy
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. Refactor guard hook (refactor-guard)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Two-phase hook: PostToolUse silently RECORDS code files touched by
+# Edit/Write tools (never interrupts mid-turn); when the turn tries to end,
+# the Stop hook re-counts recorded files and blocks the stop while any
+# exceeds `max_lines`, instructing the agent to dispatch the
+# `refactor-engineer` subagent first. Bounded per file (2 stop blocks) so a
+# turn can always terminate. Code-file extensions only (generated /
+# dependency trees are skipped). Wired for every hook vendor: claude / codex /
+# qwen / commandcode / kimi / cursor (afterFileEdit) / grok / antigravity /
+# kiro. kiro's Stop output is ignored by its host, so there the enforcer
+# directly spawns `oma agent:spawn refactor-engineer` (detached) instead.
+# Handler: `.agents/hooks/core/refactor-guard.ts`.
+#
+# refactor_guard:
+#   enabled: false      # opt-in — forced refactoring is off by default
+#   max_lines: 500      # line budget per file

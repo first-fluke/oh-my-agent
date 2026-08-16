@@ -4,12 +4,14 @@
 import { resolveGitRoot } from "../../../.agents/hooks/core/fs-utils.js";
 import {
   makeBlockOutput,
+  makePostToolBlockOutput,
   makePreToolDenyOutput,
   makePreToolOutput,
   makePromptOutput,
 } from "../../../.agents/hooks/core/hook-output.js";
 import * as keywordDetector from "../../../.agents/hooks/core/keyword-detector.js";
 import * as persistentMode from "../../../.agents/hooks/core/persistent-mode.js";
+import * as refactorGuard from "../../../.agents/hooks/core/refactor-guard.js";
 import * as scmGuard from "../../../.agents/hooks/core/scm-guard.js";
 import * as serenaPrimer from "../../../.agents/hooks/core/serena-primer.js";
 import * as skillInjector from "../../../.agents/hooks/core/skill-injector.js";
@@ -72,6 +74,7 @@ const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
   "serena-primer": serenaPrimer.run,
   "state-boundary": stateBoundary.run,
   "scm-guard": scmGuard.run,
+  "refactor-guard": refactorGuard.run,
   "test-filter": testFilter.run,
   "persistent-mode": persistentMode.run,
 };
@@ -270,6 +273,22 @@ export async function runChain(
     return lastMutate;
   }
 
+  if (kind === "post_tool") {
+    // First block short-circuits (mirrors pre_tool); otherwise concat any
+    // context results (claude PostToolUse supports additionalContext).
+    const contextParts: string[] = [];
+    for (const handler of handlers) {
+      const result = await runWithTimeout(handler, input, ctx);
+      if (!result) continue;
+      if (result.type === "block") return result; // short-circuit
+      if (result.type === "context") {
+        contextParts.push(result.additionalContext);
+      }
+    }
+    if (contextParts.length === 0) return null;
+    return { type: "context", additionalContext: contextParts.join("\n\n") };
+  }
+
   if (kind === "stop") {
     for (const handler of handlers) {
       const result = await runWithTimeout(handler, input, ctx);
@@ -324,29 +343,40 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
   // JSON (or plain-text for kiro prompts) envelope; centralizing the translation
   // here keeps individual handlers vendor-agnostic.
   if (!merged) {
+    // agy's PostToolUse contract expects a literal `{}` on stdout (verified
+    // from the agy 1.1.13 binary's embedded hook docs); whether truly empty
+    // stdout is tolerated is undocumented, so emit the contract shape.
+    if (kind === "post_tool" && vendor === "antigravity") {
+      return { output: "{}" };
+    }
     return { output: "" };
   }
 
   let output: string;
   switch (merged.type) {
     case "context":
+      // post_tool context injects under the native PostToolUse event name;
+      // prompt-kind context keeps the prompt-submit / session-start naming.
       output = makePromptOutput(
         vendor,
         merged.additionalContext,
-        promptHookEventName(nativeEvent),
+        kind === "post_tool" ? nativeEvent : promptHookEventName(nativeEvent),
       );
       break;
     case "mutate":
       output = makePreToolOutput(vendor, merged.updatedInput);
       break;
     case "block":
-      // Pre-tool blocks use the deny dialect; makeBlockOutput's dialects are
-      // Stop-shaped (cursor's followup_message would re-submit a turn instead
-      // of denying the tool call).
+      // Pre-tool blocks use the deny dialect; post-tool blocks use the
+      // feedback dialect (decision:block + additionalContext — the tool
+      // already ran); makeBlockOutput's dialects are Stop-shaped (cursor's
+      // followup_message would re-submit a turn instead of denying).
       output =
         kind === "pre_tool"
           ? makePreToolDenyOutput(vendor, merged.reason)
-          : makeBlockOutput(vendor, merged.reason);
+          : kind === "post_tool"
+            ? makePostToolBlockOutput(vendor, merged.reason)
+            : makeBlockOutput(vendor, merged.reason);
       break;
   }
 

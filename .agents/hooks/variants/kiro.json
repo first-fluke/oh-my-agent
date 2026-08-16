@@ -37,9 +37,22 @@
         "timeout": 5
       }
     ],
-    "stop": {
-      "hook": "persistent-mode.ts",
-      "timeout": 5
-    }
+    "postToolUse": [
+      {
+        "hook": "refactor-guard.ts",
+        "matcher": "fs_write",
+        "timeout": 5
+      }
+    ],
+    "stop": [
+      {
+        "hook": "persistent-mode.ts",
+        "timeout": 5
+      },
+      {
+        "hook": "refactor-guard.ts",
+        "timeout": 5
+      }
+    ]
   }
 }

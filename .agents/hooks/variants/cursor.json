@@ -37,11 +37,23 @@
         "timeout": 5
       }
     ],
-    "stop": {
-      "hook": "persistent-mode.ts",
-      "timeout": 5,
-      "loopLimit": null
-    },
+    "afterFileEdit": [
+      {
+        "hook": "refactor-guard.ts",
+        "timeout": 5
+      }
+    ],
+    "stop": [
+      {
+        "hook": "persistent-mode.ts",
+        "timeout": 5,
+        "loopLimit": null
+      },
+      {
+        "hook": "refactor-guard.ts",
+        "timeout": 5
+      }
+    ],
     "sessionStart": [
       {
         "hook": "serena-primer.ts",
