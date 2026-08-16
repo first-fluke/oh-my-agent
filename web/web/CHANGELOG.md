@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.2](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.1...web-v4.2.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* **vendors:** treat opencode as authed when any provider has a credential ([0ac6762](https://github.com/first-fluke/oh-my-agent/commit/0ac6762448c19131a23dda307c9eff78ee83946c))
+
 ## [4.2.1](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.0...web-v4.2.1) (2026-08-16)
 
 
