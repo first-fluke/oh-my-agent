@@ -302,8 +302,8 @@ exige login ou uma assinatura.
 
 - **Auth:** `opencode auth login` armazena credenciais em
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` reportam
-  a auth do opencode junto com as outras CLIs no nível do vendor (verificação de provider
-  padrão: `opencode-go`). Já o `oma doctor --profile` considera o provider: cada
+  a auth do opencode junto com as outras CLIs no nível do vendor (autenticado quando qualquer
+  provider tem credencial). Já o `oma doctor --profile` considera o provider: cada
   linha é verificada com o prefixo de provider do seu `cli_model` registrado,
   então um modelo com `cli_model: zai-coding-plan/glm-5.3` é verificado com a
   credencial `zai-coding-plan`. Uma linha cujo modelo não tem `cli_model`

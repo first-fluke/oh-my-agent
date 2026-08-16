@@ -301,8 +301,8 @@ opencode models opencode-go                            # list everything your pl
 
 - **인증:** `opencode auth login`은 자격 증명을
   `~/.local/share/opencode/auth.json`에 프로바이더별로 하나씩 저장합니다.
-  `oma auth:status` / `oma doctor`는 벤더 수준에서 다른 CLI와 함께 opencode 인증
-  상태를 보고합니다(기본 프로바이더 확인 대상: `opencode-go`). 반면
+  `oma auth:status` / `oma doctor`는 프로바이더 중 하나라도 자격 증명이 있으면
+  opencode를 인증됨으로 보고합니다. 반면
   `oma doctor --profile`은 프로바이더를 구분합니다. 각 행은 등록된 `cli_model`의
   프로바이더 접두사로 확인하므로 `cli_model: zai-coding-plan/glm-5.3` 모델은
   `zai-coding-plan` 자격 증명으로 확인합니다. 등록된 `provider/model` 형식의

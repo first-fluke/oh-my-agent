@@ -111,7 +111,7 @@ describe("isOpencodeAuthenticated", () => {
     expect(isOpencodeAuthenticated()).toBe(false);
   });
 
-  it("returns false when the provider key is missing from auth.json", () => {
+  it("returns false when the requested provider key is missing from auth.json", () => {
     mockFsFunctions.existsSync.mockImplementation(
       (p: string) => p === AUTH_JSON_PATH,
     );
@@ -119,6 +119,58 @@ describe("isOpencodeAuthenticated", () => {
       JSON.stringify({
         "other-provider": { type: "api", key: "sk-other" },
       }),
+    );
+
+    expect(isOpencodeAuthenticated("opencode-go")).toBe(false);
+  });
+
+  it("returns false with no argument when every entry is invalid", () => {
+    mockFsFunctions.existsSync.mockImplementation(
+      (p: string) => p === AUTH_JSON_PATH,
+    );
+    mockFsFunctions.readFileSync.mockReturnValue(
+      JSON.stringify({
+        "opencode-go": { type: "api" },
+        "zai-coding-plan": { type: "oauth" },
+      }),
+    );
+
+    expect(isOpencodeAuthenticated()).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // Vendor-level check: no argument means "is opencode usable at all"
+  // (regression — issue #699 follow-up)
+  // -------------------------------------------------------------------------
+
+  it("returns true with no argument when any provider has a credential", () => {
+    mockFsFunctions.existsSync.mockImplementation(
+      (p: string) => p === AUTH_JSON_PATH,
+    );
+    mockFsFunctions.readFileSync.mockReturnValue(
+      JSON.stringify({
+        "zai-coding-plan": { type: "api", key: "sk-zai" },
+      }),
+    );
+
+    expect(isOpencodeAuthenticated()).toBe(true);
+  });
+
+  it("returns false with no argument when auth.json has no entries", () => {
+    mockFsFunctions.existsSync.mockImplementation(
+      (p: string) => p === AUTH_JSON_PATH,
+    );
+    mockFsFunctions.readFileSync.mockReturnValue(JSON.stringify({}));
+
+    expect(isOpencodeAuthenticated()).toBe(false);
+  });
+
+  it("returns false with no argument when auth.json root is a non-empty array", () => {
+    mockFsFunctions.existsSync.mockImplementation(
+      (p: string) => p === AUTH_JSON_PATH,
+    );
+    mockFsFunctions.readFileSync.mockReturnValue(
+      JSON.stringify([{ type: "api", key: "sk-abc123" }]),
     );
 
     expect(isOpencodeAuthenticated()).toBe(false);

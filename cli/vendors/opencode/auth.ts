@@ -15,27 +15,13 @@ interface OpencodeAuthEntry {
 }
 
 /**
- * Checks whether the user is authenticated for opencode (Sst opencode).
- *
- * opencode stores provider credentials in `~/.local/share/opencode/auth.json`
- * as a map from provider name to an entry object with a `type` discriminant:
+ * Whether a single auth.json entry carries a usable credential. The `type`
+ * discriminant decides which field must be present:
  *   - `"api"`:       API-key based auth; valid when `key` is present.
  *   - `"oauth"`:     OAuth token; valid when `access` is present.
  *   - `"wellknown"`: Well-known / ambient credential; always valid when present.
- *
- * Returns `false` when the file is absent, contains malformed JSON, or the
- * requested provider key does not exist or has an unrecognised type.
  */
-export function isOpencodeAuthenticated(provider = "opencode-go"): boolean {
-  const auth = safeReadJson<Record<string, OpencodeAuthEntry>>(
-    join(homedir(), ".local", "share", "opencode", "auth.json"),
-  );
-
-  if (!auth || typeof auth !== "object") {
-    return false;
-  }
-
-  const entry = auth[provider];
+function hasCredential(entry: OpencodeAuthEntry | undefined): boolean {
   if (!entry || typeof entry !== "object") {
     return false;
   }
@@ -50,4 +36,39 @@ export function isOpencodeAuthenticated(provider = "opencode-go"): boolean {
     default:
       return false;
   }
+}
+
+/**
+ * Checks whether the user is authenticated for opencode (Sst opencode).
+ *
+ * opencode stores provider credentials in `~/.local/share/opencode/auth.json`
+ * as a map from provider name (`opencode-go`, `openai`, `zai-coding-plan`, …)
+ * to a credential entry, and it can run models from any provider the user has
+ * logged into. The check therefore has two modes:
+ *   - **provider given** — is *this* provider authenticated? Used by
+ *     `oma doctor --profile`, where each row's provider comes from the
+ *     registered model's `cli_model` prefix.
+ *   - **no argument** — is opencode usable at all? True when *any* provider
+ *     has a credential. Used by the vendor-level surfaces (`oma doctor`,
+ *     `oma auth:status`), which have no model row to derive a provider from.
+ *     Checking only `opencode-go` there reported a user authenticated solely
+ *     with, say, `zai-coding-plan` as logged out (issue #699).
+ *
+ * Returns `false` when the file is absent, contains malformed JSON, or no
+ * matching entry carries a usable credential.
+ */
+export function isOpencodeAuthenticated(provider?: string): boolean {
+  const auth = safeReadJson<Record<string, OpencodeAuthEntry>>(
+    join(homedir(), ".local", "share", "opencode", "auth.json"),
+  );
+
+  if (!auth || typeof auth !== "object" || Array.isArray(auth)) {
+    return false;
+  }
+
+  if (provider !== undefined) {
+    return hasCredential(auth[provider]);
+  }
+
+  return Object.values(auth).some(hasCredential);
 }

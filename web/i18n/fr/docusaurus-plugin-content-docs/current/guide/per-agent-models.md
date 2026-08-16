@@ -303,8 +303,8 @@ une connexion ou un abonnement.
 
 - **Authentification :** `opencode auth login` stocke les identifiants dans
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` rapportent
-  l'authentification opencode aux côtés des autres CLI au niveau du vendor (vérification du fournisseur
-  par défaut : `opencode-go`). En revanche, `oma doctor --profile` tient compte
+  l'authentification opencode aux côtés des autres CLI au niveau du vendor (authentifié dès qu'un
+  fournisseur possède des identifiants). En revanche, `oma doctor --profile` tient compte
   du fournisseur : chaque ligne est vérifiée avec le préfixe de fournisseur de
   son `cli_model` enregistré, donc un modèle avec
   `cli_model: zai-coding-plan/glm-5.3` est vérifié avec l'identifiant
