@@ -140,6 +140,19 @@ export interface GuardConfig {
 }
 
 /**
+ * Strip a trailing `# comment` and surrounding whitespace/quotes from a scalar.
+ * The config template documents every key with an inline comment, so a value
+ * copied straight out of it (`enabled: true      # opt-in`) must still parse —
+ * a mismatch here fails silently back to "off", which reads as a broken flag.
+ */
+function scalarValue(raw: string): string {
+  return raw
+    .replace(/\s+#.*$/, "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
+}
+
+/**
  * Extract `enabled` / `max_lines` from the `refactor_guard:` block of
  * oma-config.yaml without a yaml dependency — core handlers stay standalone.
  */
@@ -152,17 +165,25 @@ export function loadGuardConfig(projectDir: string): GuardConfig {
   try {
     const content = readFileSync(configPath, "utf-8");
     const lines = content.split(/\r?\n/);
-    const start = lines.findIndex((l) => /^refactor_guard:\s*$/.test(l));
+    const start = lines.findIndex((l) => /^refactor_guard:\s*(#.*)?$/.test(l));
     if (start === -1) return defaults;
     const config = { ...defaults };
     for (let i = start + 1; i < lines.length; i++) {
       const line = lines[i] ?? "";
       if (/^\s*(#|$)/.test(line)) continue; // comments / blanks inside block
       if (!/^\s/.test(line)) break; // end of the indented block
-      const enabled = line.match(/^\s+enabled:\s*(true|false)\s*$/)?.[1];
-      if (enabled) config.enabled = enabled === "true";
-      const maxLines = line.match(/^\s+max_lines:\s*(\d+)\s*$/)?.[1];
-      if (maxLines) config.maxLines = Number.parseInt(maxLines, 10);
+      const enabled = line.match(/^\s+enabled:\s*(\S.*)$/)?.[1];
+      if (enabled) {
+        // YAML 1.1 booleans, since that is what the surrounding config uses.
+        const value = scalarValue(enabled).toLowerCase();
+        if (/^(true|yes|on)$/.test(value)) config.enabled = true;
+        else if (/^(false|no|off)$/.test(value)) config.enabled = false;
+      }
+      const maxLines = line.match(/^\s+max_lines:\s*(\S.*)$/)?.[1];
+      if (maxLines) {
+        const value = scalarValue(maxLines);
+        if (/^\d+$/.test(value)) config.maxLines = Number.parseInt(value, 10);
+      }
     }
     return config;
   } catch {

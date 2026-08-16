@@ -462,6 +462,8 @@ scm:
 # directly spawns `oma agent:spawn refactor-engineer` (detached) instead.
 # Handler: `.agents/hooks/core/refactor-guard.ts`.
 #
+# Opt-in — forced refactoring is off by default. `max_lines` is the per-file
+# line budget. Note the key is `enabled`, not `enable`.
 # refactor_guard:
-#   enabled: false      # opt-in — forced refactoring is off by default
-#   max_lines: 500      # line budget per file
+#   enabled: false
+#   max_lines: 500

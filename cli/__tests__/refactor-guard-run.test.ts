@@ -271,4 +271,41 @@ describe("refactor-guard helpers", () => {
       maxLines: 500,
     });
   });
+
+  it("loadGuardConfig accepts the values the config template documents", () => {
+    // The template annotates every key with a trailing comment; uncommenting
+    // those lines verbatim used to parse as "off", so the flag looked broken.
+    writeConfig(
+      "refactor_guard:  # forced refactor\n  enabled: true      # opt-in — off by default\n  max_lines: 300      # line budget per file\n",
+    );
+    expect(loadGuardConfig(projectDir)).toEqual({
+      enabled: true,
+      maxLines: 300,
+    });
+
+    // YAML 1.1 booleans and quoted scalars, matching the rest of oma-config.
+    for (const truthy of ["True", "yes", "on", '"true"']) {
+      writeConfig(`refactor_guard:\n  enabled: ${truthy}\n`);
+      expect(loadGuardConfig(projectDir).enabled).toBe(true);
+    }
+    for (const falsy of ["False", "no", "off", "'false'"]) {
+      writeConfig(`refactor_guard:\n  enabled: ${falsy}\n`);
+      expect(loadGuardConfig(projectDir).enabled).toBe(false);
+    }
+  });
+
+  it("loadGuardConfig keeps defaults for unparseable values", () => {
+    // Fail closed: a typo'd key or junk value must not silently enable forced
+    // refactoring, nor blow up the hook.
+    writeConfig("refactor_guard:\n  enable: true\n");
+    expect(loadGuardConfig(projectDir)).toEqual({
+      enabled: false,
+      maxLines: 500,
+    });
+    writeConfig("refactor_guard:\n  enabled: maybe\n  max_lines: lots\n");
+    expect(loadGuardConfig(projectDir)).toEqual({
+      enabled: false,
+      maxLines: 500,
+    });
+  });
 });
