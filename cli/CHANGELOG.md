@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.0...cli-v12.4.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* **cursor:** preserve user-added servers in .cursor/mcp.json ([8d4fd20](https://github.com/first-fluke/oh-my-agent/commit/8d4fd205227ad9f63f49c6df89187aaf8d57c97a))
+* **link:** describe every vendor sharing AGENTS.md ([4a33eea](https://github.com/first-fluke/oh-my-agent/commit/4a33eeaf1fca49e4b951036cb19770a6f954b4e9))
+
 ## [12.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.3.2...cli-v12.4.0) (2026-08-16)
 
 
