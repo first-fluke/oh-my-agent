@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.4.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.3.2...cli-v12.4.0) (2026-08-16)
+
+
+### Features
+
+* **hooks:** add opt-in refactor-guard with cross-vendor wiring ([f81c5ea](https://github.com/first-fluke/oh-my-agent/commit/f81c5ea634c0530f40b26388cfa4bc346fc13276))
+
 ## [12.3.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.3.1...cli-v12.3.2) (2026-08-16)
 
 
