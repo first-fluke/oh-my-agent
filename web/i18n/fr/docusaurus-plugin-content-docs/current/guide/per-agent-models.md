@@ -303,8 +303,14 @@ une connexion ou un abonnement.
 
 - **Authentification :** `opencode auth login` stocke les identifiants dans
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` rapportent
-  l'authentification opencode aux côtés des autres CLI (vérification du fournisseur par
-  défaut : `opencode-go`).
+  l'authentification opencode aux côtés des autres CLI au niveau du vendor (vérification du fournisseur
+  par défaut : `opencode-go`). En revanche, `oma doctor --profile` tient compte
+  du fournisseur : chaque ligne est vérifiée avec le préfixe de fournisseur de
+  son `cli_model` enregistré, donc un modèle avec
+  `cli_model: zai-coding-plan/glm-5.3` est vérifié avec l'identifiant
+  `zai-coding-plan`. Une ligne dont le modèle n'a pas de `cli_model` enregistré
+  sous la forme `provider/model` affiche `? unknown` plutôt qu'un échec
+  d'authentification certain.
 - **Fichiers générés :** `oma link` (ou `oma link opencode`) écrit une persona
   `.opencode/agents/<id>.md` par agent, ainsi que le pont `.opencode/plugins/oma/`.
   Ceux-ci sont générés à partir de la SSOT `.agents/` — ne les modifiez pas

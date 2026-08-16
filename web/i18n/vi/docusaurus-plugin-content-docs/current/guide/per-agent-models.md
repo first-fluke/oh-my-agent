@@ -299,8 +299,12 @@ opencode models opencode-go                            # list everything your pl
 
 - **Xác thực:** `opencode auth login` lưu thông tin đăng nhập trong
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` báo cáo
-  trạng thái xác thực opencode bên cạnh các CLI khác (provider kiểm tra mặc định:
-  `opencode-go`).
+  trạng thái xác thực opencode bên cạnh các CLI khác ở cấp vendor (provider kiểm tra mặc định:
+  `opencode-go`). Ngược lại, `oma doctor --profile` phân biệt provider: mỗi dòng
+  được kiểm tra theo tiền tố provider trong `cli_model` đã đăng ký, nên model có
+  `cli_model: zai-coding-plan/glm-5.3` sẽ được kiểm tra bằng thông tin xác thực
+  `zai-coding-plan`. Dòng có model không đăng ký `cli_model` dạng
+  `provider/model` sẽ báo `? unknown` thay vì khẳng định xác thực thất bại.
 - **File được sinh ra:** `oma link` (hoặc `oma link opencode`) ghi một file persona
   `.opencode/agents/<id>.md` cho mỗi agent cùng với cầu nối `.opencode/plugins/oma/`.
   Chúng được sinh ra từ SSOT `.agents/` — không chỉnh sửa trực tiếp; hãy chạy lại

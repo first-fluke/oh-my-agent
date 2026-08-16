@@ -26,7 +26,8 @@ vi.mock("../../vendors/index.js", () => {
   const isGrokAuthenticated = vi.fn(() => false);
   const isKimiAuthenticated = vi.fn(() => false);
   const isKiroAuthenticated = vi.fn(() => false);
-  const isOpencodeAuthenticated = vi.fn(() => false);
+  // Mirrors the real signature: opencode credentials are keyed per provider.
+  const isOpencodeAuthenticated = vi.fn((_provider?: string) => false);
   const isPiAuthenticated = vi.fn(() => false);
   const isQwenAuthenticated = vi.fn(() => false);
   return {
@@ -111,6 +112,8 @@ beforeEach(() => {
   vi.mocked(vendorsMock.isClaudeAuthenticated).mockReturnValue(false);
   vi.mocked(vendorsMock.isCodexAuthenticated).mockReturnValue(false);
   vi.mocked(vendorsMock.isQwenAuthenticated).mockReturnValue(false);
+  vi.mocked(vendorsMock.isOpencodeAuthenticated).mockReset();
+  vi.mocked(vendorsMock.isOpencodeAuthenticated).mockReturnValue(false);
   vi.mocked(qwenAuthMock.detectDeprecatedOAuthSession).mockReturnValue({
     hasLegacySession: false,
     migrationNeeded: false,
@@ -422,6 +425,124 @@ custom_presets:
     const orchestrator = report.rows.find((r) => r.role === "orchestrator");
 
     expect(orchestrator?.cli).toBe("unknown");
+    expect(orchestrator?.authStatus).toBe("unknown");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: OpenCode provider-aware auth (regression — issue #699)
+// ---------------------------------------------------------------------------
+
+describe("collectProfileReport — OpenCode provider-aware auth", () => {
+  const OPENCODE_YAML = `
+language: en
+model_preset: opencode-local
+models:
+  opencode-zai-coding-plan/glm-5.3:
+    cli: opencode
+    cli_model: zai-coding-plan/glm-5.3
+    auth_hint: "Z.AI Coding Plan — run: opencode auth login"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [opencode]
+      api_only: false
+  opencode-go/deepseek-v4-flash:
+    cli: opencode
+    cli_model: opencode-go/deepseek-v4-flash
+    auth_hint: "OpenCode Go subscription — run: opencode auth login"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [opencode]
+      api_only: false
+custom_presets:
+  opencode-local:
+    description: opencode local
+    agent_defaults:
+      orchestrator:
+        model: opencode-zai-coding-plan/glm-5.3
+      pm:
+        model: opencode-go/deepseek-v4-flash
+`.trim();
+
+  beforeEach(() => {
+    // Only oma-config.yaml exists — the inline `models:` block is the sole
+    // registry source.
+    vi.mocked(fsMock.existsSync).mockImplementation((p) =>
+      String(p).endsWith("/.agents/oma-config.yaml"),
+    );
+    vi.mocked(fsMock.readFileSync).mockReturnValue(OPENCODE_YAML);
+    // Only the Z.AI Coding Plan credential exists (mirrors `opencode auth list`
+    // in the report: no opencode-go entry).
+    vi.mocked(vendorsMock.isOpencodeAuthenticated).mockImplementation(
+      (provider?: string) => provider === "zai-coding-plan",
+    );
+  });
+
+  it("checks the provider from the registered cli_model, not opencode-go", async () => {
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const orchestrator = report.rows.find((r) => r.role === "orchestrator");
+
+    expect(orchestrator?.cli).toBe("opencode");
+    expect(orchestrator?.authStatus).toBe("logged_in");
+    expect(vendorsMock.isOpencodeAuthenticated).toHaveBeenCalledWith(
+      "zai-coding-plan",
+    );
+  });
+
+  it("reports not_logged_in when the row's provider has no credential", async () => {
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const pm = report.rows.find((r) => r.role === "pm");
+
+    expect(pm?.model).toBe("opencode-go/deepseek-v4-flash");
+    expect(pm?.authStatus).toBe("not_logged_in");
+    expect(vendorsMock.isOpencodeAuthenticated).toHaveBeenCalledWith(
+      "opencode-go",
+    );
+  });
+
+  it("leaves opencode-go/ rows unchanged when that credential exists", async () => {
+    vi.mocked(vendorsMock.isOpencodeAuthenticated).mockImplementation(
+      (provider?: string) => provider === "opencode-go",
+    );
+
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+
+    expect(report.rows.find((r) => r.role === "pm")?.authStatus).toBe(
+      "logged_in",
+    );
+    expect(report.rows.find((r) => r.role === "orchestrator")?.authStatus).toBe(
+      "not_logged_in",
+    );
+  });
+
+  it("reports unknown when the opencode provider cannot be derived", async () => {
+    // Unregistered `opencode-*` slug: ownerToVendor resolves the CLI, but no
+    // ModelSpec means no cli_model to read the provider from.
+    vi.mocked(fsMock.readFileSync).mockReturnValue(
+      `
+language: en
+model_preset: opencode-local
+custom_presets:
+  opencode-local:
+    description: opencode local
+    agent_defaults:
+      orchestrator:
+        model: opencode-mystery/some-model
+`.trim(),
+    );
+
+    const report = await profileModule.collectProfileReport("/fake/cwd");
+    const orchestrator = report.rows.find((r) => r.role === "orchestrator");
+
+    expect(orchestrator?.cli).toBe("opencode");
     expect(orchestrator?.authStatus).toBe("unknown");
   });
 });

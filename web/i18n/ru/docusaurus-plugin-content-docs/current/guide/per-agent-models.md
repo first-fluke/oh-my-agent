@@ -301,8 +301,13 @@ opencode models opencode-go                            # list everything your pl
 
 - **Аутентификация:** `opencode auth login` сохраняет учётные данные в
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` сообщают о
-  статусе аутентификации opencode наряду с другими CLI (провайдер для проверки по
-  умолчанию: `opencode-go`).
+  статусе аутентификации opencode наряду с другими CLI на уровне вендора (провайдер для проверки по
+  умолчанию: `opencode-go`). А `oma doctor --profile` учитывает провайдера:
+  каждая строка проверяется по префиксу провайдера из зарегистрированного
+  `cli_model`, поэтому модель с `cli_model: zai-coding-plan/glm-5.3` проверяется
+  по учётным данным `zai-coding-plan`. Строка, у модели которой нет
+  зарегистрированного `cli_model` вида `provider/model`, сообщает `? unknown`
+  вместо однозначной ошибки аутентификации.
 - **Сгенерированные файлы:** `oma link` (или `oma link opencode`) записывает по
   одной персоне `.opencode/agents/<id>.md` на каждого агента плюс мост
   `.opencode/plugins/oma/`. Они генерируются из SSOT `.agents/` — не редактируйте их

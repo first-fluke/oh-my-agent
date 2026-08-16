@@ -278,7 +278,7 @@ opencode models opencode-go                            # list everything your pl
 
 ### 認証と生成ファイル
 
-- **認証：** `opencode auth login`は資格情報を`~/.local/share/opencode/auth.json`に保存します。`oma auth:status` / `oma doctor`は、他のCLIと並べてopencodeの認証を報告します（デフォルトのプロバイダーチェック：`opencode-go`）。
+- **認証：** `opencode auth login`は資格情報を`~/.local/share/opencode/auth.json`に保存します。`oma auth:status` / `oma doctor`は、他のCLIと並べてopencodeの認証を報告します（ベンダーレベルでのデフォルトのプロバイダーチェック：`opencode-go`）。一方、`oma doctor --profile`はプロバイダーを区別し、各行を登録済み`cli_model`のプロバイダー接頭辞で確認します。そのため`cli_model: zai-coding-plan/glm-5.3`のモデルは`zai-coding-plan`の資格情報で確認されます。登録済みの`provider/model`形式の`cli_model`を持たない行は、認証失敗と断定せず`? unknown`と報告します。
 - **生成ファイル：** `oma link`（または`oma link opencode`）は、エージェントごとに1つの`.opencode/agents/<id>.md`ペルソナと、`.opencode/plugins/oma/`ブリッジを書き出します。これらは`.agents/` SSOTから生成されるため、直接編集せず、`oma link`を再実行して再生成してください。
 
 > **永続ワークフローに関する注意：** opencodeの`session.idle`イベント（Claudeの`Stop`フックに最も近い対応物）は通知専用であり、セッションの終了をブロックできません。そのため、永続ワークフロー（orchestrate / work / ultrawork）はopencode下では**Stopセマンティクスが低下した状態**で動作します。ワークフローの補強は、セッションを開いたまま保持するのではなく、次のメッセージ時に行われます。

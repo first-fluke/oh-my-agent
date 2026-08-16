@@ -300,9 +300,13 @@ opencode models opencode-go                            # list everything your pl
 ### 인증 및 생성된 파일
 
 - **인증:** `opencode auth login`은 자격 증명을
-  `~/.local/share/opencode/auth.json`에 저장합니다. `oma auth:status` /
-  `oma doctor`는 다른 CLI와 함께 opencode 인증 상태를 보고합니다(기본 프로바이더
-  확인 대상: `opencode-go`).
+  `~/.local/share/opencode/auth.json`에 프로바이더별로 하나씩 저장합니다.
+  `oma auth:status` / `oma doctor`는 벤더 수준에서 다른 CLI와 함께 opencode 인증
+  상태를 보고합니다(기본 프로바이더 확인 대상: `opencode-go`). 반면
+  `oma doctor --profile`은 프로바이더를 구분합니다. 각 행은 등록된 `cli_model`의
+  프로바이더 접두사로 확인하므로 `cli_model: zai-coding-plan/glm-5.3` 모델은
+  `zai-coding-plan` 자격 증명으로 확인합니다. 등록된 `provider/model` 형식의
+  `cli_model`이 없는 행은 인증 실패로 단정하지 않고 `? unknown`으로 보고합니다.
 - **생성된 파일:** `oma link`(또는 `oma link opencode`)는 에이전트마다
   `.opencode/agents/<id>.md` 페르소나 하나와 `.opencode/plugins/oma/` 브릿지를
   작성합니다. 이 파일들은 `.agents/` SSOT에서 생성되므로 직접 편집하지 마시고,

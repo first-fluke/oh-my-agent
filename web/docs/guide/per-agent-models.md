@@ -400,8 +400,14 @@ provider needs login or a subscription.
 ### Auth and generated files
 
 - **Auth:** `opencode auth login` stores credentials in
-  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` report
-  opencode auth alongside the other CLIs (default provider check: `opencode-go`).
+  `~/.local/share/opencode/auth.json`, one entry per provider. `oma auth:status`
+  / `oma doctor` report opencode auth alongside the other CLIs at the vendor
+  level (default provider check: `opencode-go`). `oma doctor --profile` is
+  provider-aware instead: each row is checked against the provider prefix of its
+  registered `cli_model`, so a model with `cli_model: zai-coding-plan/glm-5.3`
+  is checked against the `zai-coding-plan` credential. A row whose model has no
+  registered `provider/model` `cli_model` reports `? unknown` rather than a
+  definite auth failure.
 - **Generated files:** `oma link` (or `oma link opencode`) writes one
   `.opencode/agents/<id>.md` persona per agent plus the `.opencode/plugins/oma/`
   bridge. These are generated from the `.agents/` SSOT — do not edit them

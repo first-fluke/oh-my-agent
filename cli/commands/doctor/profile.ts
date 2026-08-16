@@ -24,7 +24,7 @@ import {
   type ModelSpec,
   ownerToVendor,
 } from "../../platform/model-registry.js";
-import { AUTH_CHECKERS } from "../../vendors/index.js";
+import { AUTH_CHECKERS, isOpencodeAuthenticated } from "../../vendors/index.js";
 import {
   type DeprecatedOAuthSessionResult,
   detectDeprecatedOAuthSession,
@@ -74,10 +74,33 @@ const IMPL_ROLES: readonly string[] = [
 
 export type AuthStatus = "logged_in" | "not_logged_in" | "unknown";
 
-function checkAuthStatus(cli: string): AuthStatus {
-  const checker = AUTH_CHECKERS[cli];
-  if (!checker) return "unknown";
+/**
+ * opencode stores one credential per *provider* (`opencode-go`, `openai`,
+ * `zai-coding-plan`, …), and a model's provider is the prefix of its
+ * `cli_model` (`zai-coding-plan/glm-5.3` → `zai-coding-plan`). The registry
+ * slug's owner is not a reliable source: users prefix it with `opencode-` so
+ * `ownerToVendor` resolves the CLI, which yields `opencode-zai-coding-plan`
+ * rather than the provider opencode actually authenticates.
+ *
+ * Returns undefined when no registered spec supplies a `provider/model`
+ * cli_model — the caller then reports `unknown` instead of asserting a
+ * definite auth failure against opencode's `opencode-go` default (issue #699).
+ */
+function opencodeProvider(spec: ModelSpec | undefined): string | undefined {
+  const cliModel = spec?.cli_model ?? "";
+  const provider = cliModel.includes("/") ? cliModel.split("/")[0] : "";
+  return provider || undefined;
+}
+
+function checkAuthStatus(cli: string, spec: ModelSpec | undefined): AuthStatus {
   try {
+    if (cli === "opencode") {
+      const provider = opencodeProvider(spec);
+      if (!provider) return "unknown";
+      return isOpencodeAuthenticated(provider) ? "logged_in" : "not_logged_in";
+    }
+    const checker = AUTH_CHECKERS[cli];
+    if (!checker) return "unknown";
     return checker() ? "logged_in" : "not_logged_in";
   } catch {
     return "unknown";
@@ -269,7 +292,8 @@ export async function collectProfileReport(
       config?.models as Record<string, unknown> | undefined,
     );
     const cli = cliFromModelSpec(registrySpec, model);
-    const authStatus = cli !== "unknown" ? checkAuthStatus(cli) : "unknown";
+    const authStatus =
+      cli !== "unknown" ? checkAuthStatus(cli, registrySpec) : "unknown";
     const authHint = registrySpec?.auth_hint;
 
     return { role, model, cli, authStatus, authHint, source };

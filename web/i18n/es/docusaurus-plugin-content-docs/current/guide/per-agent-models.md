@@ -299,7 +299,14 @@ proveedor necesita inicio de sesión o una suscripción.
 
 - **Autenticación:** `opencode auth login` almacena las credenciales en
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` informan
-  la autenticación de opencode junto con las demás CLIs (comprobación del proveedor por defecto: `opencode-go`).
+  la autenticación de opencode junto con las demás CLIs a nivel de vendor (comprobación del proveedor por
+  defecto: `opencode-go`). En cambio, `oma doctor --profile` sí distingue el
+  proveedor: cada fila se comprueba con el prefijo de proveedor de su
+  `cli_model` registrado, de modo que un modelo con
+  `cli_model: zai-coding-plan/glm-5.3` se comprueba con la credencial
+  `zai-coding-plan`. Una fila cuyo modelo no tenga un `cli_model` registrado en
+  forma `provider/model` informa `? unknown` en lugar de un fallo de
+  autenticación definitivo.
 - **Archivos generados:** `oma link` (u `oma link opencode`) escribe una
   persona `.opencode/agents/<id>.md` por agente más el puente `.opencode/plugins/oma/`.
   Estos se generan a partir del SSOT de `.agents/`: no los edites

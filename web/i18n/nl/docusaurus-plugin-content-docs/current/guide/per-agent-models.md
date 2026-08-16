@@ -299,7 +299,13 @@ provider login of een abonnement vereist.
 
 - **Auth:** `opencode auth login` slaat credentials op in
   `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` rapporteren
-  opencode-auth naast de andere CLI's (standaard provider-check: `opencode-go`).
+  opencode-auth naast de andere CLI's op vendorniveau (standaard provider-check:
+  `opencode-go`). `oma doctor --profile` is wél provider-bewust: elke rij wordt
+  gecontroleerd tegen het providerprefix van zijn geregistreerde `cli_model`,
+  dus een model met `cli_model: zai-coding-plan/glm-5.3` wordt tegen de
+  `zai-coding-plan`-credential gecontroleerd. Een rij waarvan het model geen
+  geregistreerde `cli_model` in de vorm `provider/model` heeft, rapporteert
+  `? unknown` in plaats van een definitieve authenticatiefout.
 - **Gegenereerde bestanden:** `oma link` (of `oma link opencode`) schrijft één
   `.opencode/agents/<id>.md`-persona per agent plus de `.opencode/plugins/oma/`-bridge.
   Deze worden gegenereerd uit de `.agents/`-SSOT — bewerk ze niet

@@ -280,7 +280,7 @@ opencode models opencode-go                            # list everything your pl
 ### 认证与生成的文件
 
 - **认证：** `opencode auth login` 会将凭据存储在
-  `~/.local/share/opencode/auth.json`。`oma auth:status` / `oma doctor` 会在其他 CLI 之外一并报告 opencode 的认证状态（默认 provider 检查：`opencode-go`）。
+  `~/.local/share/opencode/auth.json`。`oma auth:status` / `oma doctor` 会在其他 CLI 之外一并报告 opencode 的认证状态（vendor 层的默认 provider 检查：`opencode-go`）。而 `oma doctor --profile` 会区分 provider：每一行都按其已注册 `cli_model` 的 provider 前缀检查，因此 `cli_model: zai-coding-plan/glm-5.3` 的模型会用 `zai-coding-plan` 凭据检查。若某一行的模型没有注册为 `provider/model` 形式的 `cli_model`，则报告 `? unknown`，而不是断定认证失败。
 - **生成的文件：** `oma link`（或 `oma link opencode`）会为每个智能体写入一个
   `.opencode/agents/<id>.md` persona，外加 `.opencode/plugins/oma/` 桥接。这些文件由 `.agents/` SSOT 生成——请勿直接编辑；重新运行 `oma link` 即可重新生成。
 
