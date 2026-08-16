@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.3.0...cli-v12.3.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* **doctor:** check the row's opencode provider in --profile ([1f3bd1b](https://github.com/first-fluke/oh-my-agent/commit/1f3bd1b25d538a2d513e04c9a2cd66029fd60910)), closes [#699](https://github.com/first-fluke/oh-my-agent/issues/699)
+
 ## [12.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.2.1...cli-v12.3.0) (2026-08-14)
 
 
