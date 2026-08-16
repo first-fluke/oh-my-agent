@@ -112,4 +112,52 @@ describe("applyCursorMcpConfig", () => {
     );
     expect(parsed.mcpServers.serena.args).toContain("ide");
   });
+
+  it("preserves user-added servers and top-level keys already in .cursor/mcp.json", () => {
+    const root = projectRoot();
+    mkdirSync(join(root, ".agents"), { recursive: true });
+    writeFileSync(
+      join(root, ".agents", "mcp.json"),
+      `${JSON.stringify({
+        mcpServers: {
+          "chrome-devtools": { command: "npx", args: ["-y", "x"] },
+          serena: { command: "serena", args: ["start-mcp-server"] },
+        },
+        memoryConfig: { provider: "serena" },
+      })}\n`,
+      "utf-8",
+    );
+    mkdirSync(join(root, ".cursor"), { recursive: true });
+    writeFileSync(
+      join(root, ".cursor", "mcp.json"),
+      `${JSON.stringify({
+        mcpServers: {
+          "firefox-devtools": {
+            command: "npx",
+            args: ["-y", "firefox-devtools-mcp@latest"],
+          },
+        },
+        inputs: [{ id: "token", type: "promptString" }],
+      })}\n`,
+      "utf-8",
+    );
+
+    applyCursorMcpConfig(root);
+
+    const parsed = JSON.parse(
+      readFileSync(join(root, ".cursor", "mcp.json"), "utf-8"),
+    );
+    expect(parsed.mcpServers["firefox-devtools"]).toEqual({
+      command: "npx",
+      args: ["-y", "firefox-devtools-mcp@latest"],
+    });
+    expect(parsed.inputs).toEqual([{ id: "token", type: "promptString" }]);
+    // oma-managed entries still land, and oma-only SSOT keys stay out.
+    expect(parsed.mcpServers["chrome-devtools"]).toEqual({
+      command: "npx",
+      args: ["-y", "x"],
+    });
+    expectOmaSerenaEntry(parsed.mcpServers.serena, "ide");
+    expect(parsed.memoryConfig).toBeUndefined();
+  });
 });
