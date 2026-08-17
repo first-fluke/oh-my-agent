@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.4.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.1...cli-v12.4.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* **hooks:** parse refactor_guard values as documented ([499738e](https://github.com/first-fluke/oh-my-agent/commit/499738ed18765ac1a15fdbcf30b8918c80d7813b))
+
 ## [12.4.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.0...cli-v12.4.1) (2026-08-16)
 
 
