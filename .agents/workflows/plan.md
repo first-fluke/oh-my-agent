@@ -70,7 +70,6 @@ Ask the user to describe what they want to build. Clarify:
 
 ## Step 2: Analyze Technical Feasibility
 
-// turbo
 If an existing codebase exists, use MCP code analysis tools to scan:
 - `get_symbols_overview` for project structure and architecture patterns.
 - `find_symbol` and `search_for_pattern` to identify reusable code and what needs to be built.
@@ -93,7 +92,6 @@ Report scope assessment to the user. Get confirmation before proceeding.
 
 ## Step 4: Define API Contracts
 
-// turbo
 If the plan involves cross-boundary work (frontend ↔ backend, service ↔ service):
 
 1. Design API contracts using `.agents/skills/_shared/core/api-contracts/template.md` (definition/template only — SSOT). Per endpoint:
@@ -111,7 +109,6 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
 
 ## Step 5: Decompose into Tasks
 
-// turbo
 Break down the project into actionable tasks. Each task must have:
 - Assigned agent (backend/frontend/mobile/db/qa/debug/architecture/refactor/tf-infra/docs — see the agent mapping in `orchestrate.md`)
 - Title, acceptance criteria
@@ -130,7 +127,6 @@ Present the full plan: task list, priority tiers, dependency graph, agent assign
 
 ## Step 7: Save Plan Artifacts
 
-// turbo
 Generate both artifacts.
 
 ### 7a. Machine-readable plan

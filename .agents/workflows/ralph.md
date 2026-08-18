@@ -74,8 +74,6 @@ criteria:
 
 ## Phase 1: EXEC
 
-// turbo
-
 ### Step 1.1: Prepare Ultrawork Input
 
 Compose the ultrawork input based on current iteration:
@@ -270,8 +268,6 @@ If `current_iteration >= max_iterations`:
 ---
 
 ## Phase 3: REPLAN
-
-// turbo
 
 ### Step 3.1: Extract Remaining Work
 

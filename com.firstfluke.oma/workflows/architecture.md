@@ -49,7 +49,6 @@ If the problem is vague, start in Diagnostic Mode.
 
 ## Step 2: Analyze the Existing System
 
-// turbo
 Read prior decisions in `.agents/results/architecture/` first — new decisions supersede old ones explicitly (update the old ADR's `Status`), never contradict them silently.
 
 Use MCP code analysis tools to understand the current architecture:
@@ -130,7 +129,6 @@ If the decision remains user-owned, present the options with clear tradeoffs rat
 
 ## Step 7: Save the Artifact and Hand Off
 
-// turbo
 Save the architecture artifact to `.agents/results/architecture/`.
 
 Suggested filenames (kebab-case topic, no sequence numbers):

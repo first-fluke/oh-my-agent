@@ -61,7 +61,6 @@ Capture optional arguments from the prompt:
 
 ## Step 3A: Verify Mode
 
-// turbo
 Run the deterministic drift check and capture JSON for downstream synthesis:
 
 ```bash

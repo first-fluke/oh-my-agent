@@ -53,7 +53,6 @@ Analyze the user's request and identify involved domains (frontend, backend, mob
 
 ## Step 2: Run PM Agent for Task Decomposition
 
-// turbo
 Activate PM Agent to:
 
 1. Analyze requirements.
@@ -77,7 +76,6 @@ Present the PM Agent's task breakdown to the user:
 
 ## Step 4: Spawn Agents by Priority Tier
 
-// turbo
 Spawn agents for each task by priority tier (lowest first: tier 1, then tier 2, etc.).
 Spawn all same-priority tasks in parallel. Assign separate workspaces to avoid file conflicts.
 

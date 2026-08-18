@@ -90,7 +90,6 @@ If already detailed: skip to Phase 4.
 
 ## Phase 4: PROPOSE (Multi-Concept)
 
-// turbo
 Start with a one-line Design Read: `Reading this as: <page kind> for <audience>, with a <vibe> language.` If that reading is genuinely ambiguous, ask exactly one clarifying question before proposing directions.
 
 Default (no vendor seed): present 2-3 distinct design directions. Each
@@ -113,7 +112,6 @@ require the dimension-level selection dialog from
 
 ## Phase 5: GENERATE
 
-// turbo
 Based on the chosen direction:
 1. Write `DESIGN.md` following `.agents/skills/oma-design/resources/design-md-spec.md` (9 sections,
    including the mandatory Agent Prompt Guide in Section 9)

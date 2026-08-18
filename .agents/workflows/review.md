@@ -37,7 +37,6 @@ If a PR or branch is provided, diff against the base branch to scope the review.
 
 ## Step 2: Run Automated Security Checks
 
-// turbo
 Run available security tools: `npm audit` (Node.js), `bandit` (Python), or equivalent.
 Check for known vulnerabilities in dependencies. Flag any CRITICAL or HIGH findings.
 

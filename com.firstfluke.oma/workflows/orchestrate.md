@@ -62,8 +62,6 @@ Stop and report only when the plan cannot be produced: the user declines to plan
 
 ## Step 2: Initialize Session
 
-// turbo
-
 1. Load configuration:
    - `.agents/oma-config.yaml` (`language`, `model_preset`, and per-agent `agents:` overrides)
 2. Display the resolved agent-to-model mapping:
@@ -89,7 +87,6 @@ Stop and report only when the plan cannot be produced: the user declines to plan
 
 ## Step 3: Spawn Agents by Priority Tier
 
-// turbo
 Before spawning agents, emit and verify the required fan-out decision:
 
 ```bash
@@ -190,7 +187,6 @@ Record reset events in `task-board.md`:
 
 ## Step 5: Verify Completed Agents
 
-// turbo
 For each completed agent, execute the complete review loop:
 
 1. **Mechanical self-check**: require the implementation agent to run applicable lint, typecheck, tests, and diff-scope checks. Feed failures back for correction, up to 3 cycles.
@@ -222,7 +218,6 @@ bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
 
 ## Step 6: Collect Results
 
-// turbo
 After all agents complete, use memory read tool to read all `result-{agent}-{sessionId}.md` files.
 Compile summary: completed tasks, failed tasks, files changed, remaining issues.
 

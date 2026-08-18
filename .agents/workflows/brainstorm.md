@@ -30,7 +30,6 @@ Emit required L1 decisions by calling `oma state:emit` directly, as documented i
 
 ## Step 1: Explore Project Context
 
-// turbo
 Use MCP code analysis tools to understand the current codebase:
 - `get_symbols_overview` for project structure and existing architecture.
 - `find_symbol` and `search_for_pattern` to identify relevant modules, patterns, and conventions.
@@ -181,7 +180,6 @@ Skip only if the design is trivially small (1-2 files, low stakes). Otherwise th
 
 ## Step 6: Save Design Document
 
-// turbo
 Save the approved design:
 1. Write to `docs/plans/designs/<NNN>-<feature-name>.md` where `<NNN>` is the next zero-padded 3-digit number (`ls docs/plans/designs/ | grep -E '^[0-9]{3}-' | tail -1`). Run the listing immediately before writing — not earlier in the session — and if `<NNN>` is already taken (concurrent sessions have produced duplicate numbers), take max+1. Do not append `-design` to the filename; the folder already encodes type.
 2. Use memory write tool to record design summary for future reference.

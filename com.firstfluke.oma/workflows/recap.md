@@ -51,7 +51,6 @@ If the user supplies multiple conflicting signals (e.g., "지난주 어제"), pi
 
 ## Step 3A: Daily Recap
 
-// turbo
 Use one of:
 
 ```bash
@@ -69,7 +68,6 @@ oma recap --date 2026-05-11 --tool claude,codex --json
 
 ## Step 3B: Period Recap
 
-// turbo
 Use one of:
 
 ```bash

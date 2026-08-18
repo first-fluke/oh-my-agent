@@ -71,8 +71,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
    ```
    What is the video about? Give me a one-line brief, and a mode if you have one (shorts / explainer / demo).
    ```
-2. // turbo
-   Run the readiness check and surface gaps before spending any time on assets:
+2. Run the readiness check and surface gaps before spending any time on assets:
    ```bash
    oma video doctor --format json
    ```
@@ -108,8 +107,7 @@ The agent writes the script — this is the start of the determinism boundary. D
    - `explainer`: ground scenes in the README / code / data the user pointed to; mark scenes that should become oma-slide frames vs oma-image diagrams.
    - `demo`: narration + on-screen callouts over the captured footage; visual refs point at the ingested capture segments.
 4. Translate narration / on-screen text via oma-translator when `locale` differs from the source language (key-free). If oma-translator is absent, keep the source text and let the run warn.
-5. // turbo
-   Write the agent-authored script to a file and hand it to the CLI via `--script <path>` so it validates against the schema. **`--script` is mandatory for the agent-as-key path: without it the CLI builds its own skeleton script from the brief and your authored script is never used.** Use `--dry-run` for the first pass so the pipeline emits `script.json` + `render-spec.json` + `manifest.json` **without rendering**:
+5. Write the agent-authored script to a file and hand it to the CLI via `--script <path>` so it validates against the schema. **`--script` is mandatory for the agent-as-key path: without it the CLI builds its own skeleton script from the brief and your authored script is never used.** Use `--dry-run` for the first pass so the pipeline emits `script.json` + `render-spec.json` + `manifest.json` **without rendering**:
    ```bash
    oma video generate "<brief>" --mode <mode> --aspect <aspect> --locale <lang> \
      --captions <tiktok|lower-third|none> --visual <auto|generate|stock|aigc|slide> \
@@ -175,8 +173,7 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
    - **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alt): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs.
    - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output (no compositor over-processing). `--polish` overlays the Remotion `Demo` composition (intro / captions / zoom) with the captured `capture.mp4` as the full-frame background.
 2. If Remotion bootstrap fails (`CompositorBootstrapError`), the doctor remediation is the fix path — run `oma video doctor --install` once, then re-render. Do not attempt an ad-hoc install mid-run.
-3. // turbo
-   To reproduce or re-render an existing run without regenerating assets (deterministic from the spec):
+3. To reproduce or re-render an existing run without regenerating assets (deterministic from the spec):
    ```bash
    oma video render <runDir> --format json
    ```

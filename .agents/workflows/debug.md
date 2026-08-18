@@ -75,7 +75,6 @@ If an error message is provided, proceed immediately.
 
 ## Step 2: Reproduce the Bug
 
-// turbo
 Run the smallest available failing test, runtime command, or log query that exercises the reported behavior and capture the observed failure signal. If the environment cannot reproduce it, follow `.agents/skills/oma-debug/resources/error-playbook.md` § "Cannot Reproduce the Bug" and record that limitation before continuing.
 
 Use MCP `search_for_pattern` with the error message or stack trace to locate the error in the codebase.
@@ -113,7 +112,6 @@ Present the root cause and proposed fix to the user.
 
 ## Step 5: Apply Fix and Write Regression Test
 
-// turbo
 1. Implement the minimal fix.
 2. Write a regression test that reproduces the original bug and verifies the fix.
 3. The test must fail without the fix and pass with it.
@@ -122,7 +120,6 @@ Present the root cause and proposed fix to the user.
 
 ## Step 6: Scan for Similar Patterns
 
-// turbo
 Use MCP `search_for_pattern` to search the codebase for the same pattern that caused the bug.
 Report any other locations that may have the same vulnerability. Fix them if confirmed.
 
