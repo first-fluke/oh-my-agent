@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.4.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.3...cli-v12.4.4) (2026-08-18)
+
+
+### Documentation
+
+* **workflows:** drop antigravity turbo annotations ([a2a3155](https://github.com/first-fluke/oh-my-agent/commit/a2a31556d99cf4d57a8719096d465957ecee0378))
+
 ## [12.4.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.2...cli-v12.4.3) (2026-08-17)
 
 
