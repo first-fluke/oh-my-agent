@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.4.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.4...cli-v12.4.5) (2026-08-19)
+
+
+### Documentation
+
+* **readme:** restore broken star history charts ([d37c3ee](https://github.com/first-fluke/oh-my-agent/commit/d37c3ee557e6685cb0acb1f3d9692a43e89ca909))
+* **readme:** restore star history charts ([04b0ef4](https://github.com/first-fluke/oh-my-agent/commit/04b0ef417dcfffdc8ab4a0638152e9a811d79c77))
+
 ## [12.4.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.3...cli-v12.4.4) (2026-08-18)
 
 
