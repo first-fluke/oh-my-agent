@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.2.3](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.2...web-v4.2.3) (2026-08-20)
+
+
+### Documentation
+
+* **i18n:** fix corrupted model_preset key across locales ([0b9e53e](https://github.com/first-fluke/oh-my-agent/commit/0b9e53e763c7616ef56d4ce225fad74c878c61e5))
+* **i18n:** review korean docs and sync with english source ([8a93dd8](https://github.com/first-fluke/oh-my-agent/commit/8a93dd8d451668aea897e1ba467e238a678946b6))
+* reference oma-translator language profiles ([d5063fe](https://github.com/first-fluke/oh-my-agent/commit/d5063feb895b89df3168457312ba45cf11a9aa63))
+
 ## [4.2.2](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.1...web-v4.2.2) (2026-08-16)
 
 
