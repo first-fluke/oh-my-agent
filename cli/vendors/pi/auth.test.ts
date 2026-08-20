@@ -34,6 +34,9 @@ describe("isPiAuthenticated", () => {
     expect(isPiAuthenticated(isolatedEnv({ GEMINI_API_KEY: "g-x" }))).toBe(
       true,
     );
+    expect(
+      isPiAuthenticated(isolatedEnv({ ORCAROUTER_API_KEY: "sk-orca-x" })),
+    ).toBe(true);
   });
 
   it("ignores blank/whitespace-only API keys", () => {

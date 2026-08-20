@@ -484,3 +484,71 @@ Each routed agent dispatches `kimi --model kimi-code/kimi-for-coding -p "<prompt
 > 2 / stderr, but the `oma hook` router always exits 0 and emits a stdout dialect.
 > oma emits a best-effort `permissionDecision: "deny"` (plus Claude-style
 > `decision: "block"`) so persistent workflows degrade gracefully under Kimi.
+
+---
+
+## Dispatching through OrcaRouter
+
+[OrcaRouter](https://www.orcarouter.ai) is an OpenAI-compatible gateway that
+routes to 200+ models under one key (`sk-orca-…`). It exposes its own gateway
+aliases (`orcarouter/auto`, `orcarouter/fusion`, …) alongside vendor-qualified
+models (`anthropic/*`, `openai/*`, `deepseek/*`, …), so oma treats it as a
+real-provider owner: `orcarouter/*` slugs dispatch through the **opencode** CLI
+and can route through the **pi** BYOK transport, exactly like anthropic/openai.
+
+### Explicit dispatch
+
+Route any agent through OrcaRouter with the `-m opencode` override and an
+`orcarouter/*` model:
+
+```bash
+ORCAROUTER_API_KEY=sk-orca-… oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+```
+
+### Per-agent OrcaRouter models
+
+Register an OrcaRouter model under `models:` and reference it from `agents:`.
+The slug must be in `owner/model` form (`orcarouter/auto`, `orcarouter/fusion`).
+
+```yaml
+# .agents/oma-config.yaml
+language: en
+model_preset: mixed
+
+models:
+  orcarouter/auto:
+    cli: opencode
+    cli_model: orcarouter/auto
+    auth_hint: "OrcaRouter API key — https://www.orcarouter.ai"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: [opencode]
+      api_only: false
+
+agents:
+  pm:      { model: orcarouter/auto }
+  qa:      { model: orcarouter/auto }
+  docs:    { model: orcarouter/auto }
+  explore: { model: orcarouter/auto }
+```
+
+Each routed agent dispatches `opencode run -m orcarouter/auto --agent <id>
+--dir <workspace> "<prompt>"`. Validate the slug against your installed opencode
+catalog with:
+
+```bash
+oma model:probe orcarouter/auto --json
+```
+
+It also runs gateway-level, zero-trust security for AI agents on the same
+endpoint — screening every prompt/response and governing every tool call on a
+default-deny basis, with no application code changes.
+
+> **Auth:** oma recognizes `ORCAROUTER_API_KEY` as a valid provider key for the
+> pi BYOK transport (`oma auth:status` / `oma doctor`), and `orcarouter/*` model
+> slugs pass through pi's `--model` unchanged.
+

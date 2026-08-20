@@ -14,6 +14,11 @@ describe("toPiModel", () => {
     );
   });
 
+  it("passes orcarouter gateway slugs through unchanged", () => {
+    expect(toPiModel("orcarouter/auto")).toBe("orcarouter/auto");
+    expect(toPiModel("orcarouter/fusion")).toBe("orcarouter/fusion");
+  });
+
   it("passes a bare id (no owner) through for fuzzy matching", () => {
     expect(toPiModel("claude-sonnet-4-6")).toBe("claude-sonnet-4-6");
   });
