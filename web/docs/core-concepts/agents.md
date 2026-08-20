@@ -396,7 +396,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 - Never mix registers within a piece
 - Preserve domain-specific terminology as-is
 
-**Resources:** `translation-rubric.md`, `anti-ai-patterns.md`.
+**Resources:** `translation-rubric.md`, `anti-ai-patterns.md` (both language-neutral), plus a per-target language profile under `resources/lang/` (`ko`, `ja`, `zh`, `en`; `_template.md` to add more).
 
 ---
 

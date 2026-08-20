@@ -171,7 +171,13 @@ your-project/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
-│   │   │       └── anti-ai-patterns.md
+│   │   │       ├── anti-ai-patterns.md
+│   │   │       └── lang/
+│   │   │           ├── _template.md
+│   │   │           ├── en.md
+│   │   │           ├── ja.md
+│   │   │           ├── ko.md
+│   │   │           └── zh.md
 │   │   │
 │   │   ├── oma-orchestrator/
 │   │   │   ├── SKILL.md
