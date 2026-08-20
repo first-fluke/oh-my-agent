@@ -1,11 +1,11 @@
 ---
 title: "가이드: 글로벌 설치"
-description: 프로젝트마다 설치하는 대신 사용자 HOME(~/.agents/)에 oh-my-agent를 설치하여, 동일한 skill, workflow, rule을 모든 프로젝트에 적용합니다. oma install --global, oma update --global, oma uninstall --global, OMA_HOME 오버라이드, oma doctor를 통한 이중 설치 감지, 그리고 플랫폼별 주의사항(sudo 거부, CI, WSL, cwd=HOME 가드)을 다룹니다.
+description: 프로젝트마다 설치하는 대신 사용자 HOME(~/.agents/)에 oh-my-agent을 설치하여, 동일한 skill, workflow, rule을 모든 프로젝트에 적용합니다. oma install --global, oma update --global, oma uninstall --global, OMA_HOME 오버라이드, oma doctor를 통한 이중 설치 감지, 그리고 플랫폼별 주의사항(sudo 거부, CI, WSL, cwd=HOME 가드)을 다룹니다.
 ---
 
 ## 글로벌 설치란?
 
-기본적으로 `oma install`은 모든 항목을 현재 프로젝트 디렉토리에 한정해 설치합니다. SSOT는 `<cwd>/.agents/`에 위치하고, 벤더 설정은 `<cwd>/.claude/`, `<cwd>/.codex/` 등에 기록됩니다. **글로벌 설치**(`oma install --global`)는 oh-my-agent를 사용자 HOME에 설치하므로, 새로운 프로젝트를 열 때마다 설치 단계를 반복하지 않아도 동일한 skill, workflow, rule을 모든 프로젝트에서 사용할 수 있습니다. SSOT는 `~/.agents/`에, 벤더 설정은 `~/.claude/`, `~/.codex/` 등에 위치합니다.
+기본적으로 `oma install`은 모든 항목을 현재 프로젝트 디렉토리에 한정해 설치합니다. SSOT는 `<cwd>/.agents/`에 위치하고, 벤더 설정은 `<cwd>/.claude/`, `<cwd>/.codex/` 등에 기록됩니다. **글로벌 설치**(`oma install --global`)는 oh-my-agent을 사용자 HOME에 설치하므로, 새로운 프로젝트를 열 때마다 설치 단계를 반복하지 않아도 동일한 skill, workflow, rule을 모든 프로젝트에서 사용할 수 있습니다. SSOT는 `~/.agents/`에, 벤더 설정은 `~/.claude/`, `~/.codex/` 등에 위치합니다.
 
 ## 프로젝트 vs 글로벌 비교
 
@@ -22,7 +22,7 @@ description: 프로젝트마다 설치하는 대신 사용자 HOME(~/.agents/)�
 
 ## 최초 실행 설정
 
-머신에서 `oma install --global`을 처음 실행하면, 설치를 진행하기 전에 다음과 같은 설명 안내가 출력됩니다.
+머신에서 `oma install --global`을 처음 실행하면, 설치하기 전에 다음과 같은 설명 안내가 출력됩니다.
 
 ```
 This is your first global install of oh-my-agent.
@@ -35,7 +35,7 @@ Existing per-project installs are not affected.
 ? Proceed with the global install? (y/N)
 ```
 
-확인하면 진행됩니다. 이후의 설치 흐름은 프로젝트 설치와 동일한 인터랙티브 단계(언어, 모델 프리셋, 프로젝트 유형, 벤더 선택)를 따릅니다.
+확인하면 설치가 이어집니다. 이후 설치 흐름은 프로젝트 설치와 동일한 인터랙티브 단계(언어, 모델 프리셋, 프로젝트 유형, 벤더 선택)를 따릅니다.
 
 설치가 성공하면 다음 단계가 안내됩니다.
 
@@ -55,7 +55,7 @@ Existing per-project installs are not affected.
 Refusing to install under sudo. Re-run as the target user (without sudo) — oma writes to your HOME and runs as your user.
 ```
 
-`sudo` 없이 일반 사용자 계정으로 명령을 실행하시기 바랍니다.
+`sudo` 없이 일반 사용자 계정으로 명령을 실행하세요.
 
 ### CI 환경
 
@@ -77,7 +77,7 @@ from your Windows %USERPROFILE%. oma will install only to the WSL HOME.
 If you want a Windows-side install, re-run this command from PowerShell.
 ```
 
-WSL 설치와 PowerShell 설치는 서로 독립적입니다. 양쪽 모두에서 글로벌 설치 효과를 얻으려면 WSL에서 한 번, PowerShell에서 한 번 각각 `oma install --global`을 실행하시기 바랍니다.
+WSL 설치와 PowerShell 설치는 서로 독립적입니다. 양쪽 모두에서 글로벌 설치 효과를 얻으려면 WSL에서 한 번, PowerShell에서 한 번 각각 `oma install --global`을 실행하세요.
 
 ### cwd = HOME 경고 (프로젝트 모드)
 
@@ -88,7 +88,21 @@ You're running oma in your HOME directory without --global. This will scatter
 files in ~/. Are you sure?
 ```
 
-비대화형 또는 CI 모드에서는 자동으로 중단됩니다. 사용자 전체 설치가 의도라면 `--global`을 사용하시기 바랍니다.
+비대화형 또는 CI 모드에서는 자동으로 중단됩니다. 사용자 전체 설치가 의도라면 `--global`을 사용하세요.
+
+## 글로벌 설치 다시 링크하기
+
+`oma link`는 다시 설치하지 않고 SSOT에서 벤더 네이티브 파일만 재생성합니다. `install`, `update`와 마찬가지로 설치 컨텍스트에서 대상을 해석하므로, `~/.agents/`를 정리하려면 `--global`을 전달하세요. `$HOME`뿐 아니라 어느 디렉토리에서 실행해도 동작합니다.
+
+```bash
+# 글로벌 설치에 설정된 모든 벤더를 재생성
+oma link --global
+
+# opencode만 재생성 (예: ~/.agents/oma-config.yaml에서 에이전트별 모델을 수정한 뒤)
+oma link opencode --global
+```
+
+`--global`이 없으면 `oma link`는 `<cwd>/.agents/`를 대상으로 삼습니다. 그래서 설치가 글로벌인 상태에서 프로젝트 안에서 실행하면 거기에 `.agents/` 디렉토리가 없다고 보고합니다.
 
 ## 제거
 

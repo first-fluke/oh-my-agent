@@ -1,13 +1,13 @@
 ---
 title: 벤치마크
-description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어린이용 3D 학습 플랫폼 MVP를 구축했습니다. oh-my-agent는 functional, spec, visual, engineering, efficiency 5개 축에서 80.6/100점으로 1위를 기록했습니다.
+description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어린이용 3D 학습 플랫폼 MVP를 구축했습니다. oh-my-agent은 functional, spec, visual, engineering, efficiency 5개 축에서 80.6/100점으로 1위를 기록했습니다.
 ---
 
 # 벤치마크
 
-5개의 Claude Code harness가 동일한 raw 프롬프트로 같은 어린이용 3D 창의 학습 플랫폼 MVP를 구축했습니다. **oh-my-agent는 80.6/100점으로 1위에 올랐습니다.** 평가 기준은 5축 rubric(functional, spec, visual, engineering, efficiency)입니다.
+5개의 Claude Code harness가 동일한 raw 프롬프트로 같은 어린이용 3D 창의 학습 플랫폼 MVP를 구축했습니다. **oh-my-agent은 80.6/100점으로 1위에 올랐습니다.** 평가 기준은 5축 rubric(functional, spec, visual, engineering, efficiency)입니다.
 
-> 실행 조건: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. 사용자의 로그인된 `claude` CLI를 통한 OAuth 사용(`ANTHROPIC_API_KEY` 미사용).
+> 실행 조건: `claude-opus-4-6`, effort `max`, `--max-budget-usd 20`, `--no-session-persistence`, `--setting-sources project,local`. 사용자가 로그인한 `claude` CLI의 OAuth 사용(`ANTHROPIC_API_KEY` 미사용).
 
 ---
 
@@ -16,10 +16,10 @@ description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어
 | Harness | 동작 방식 |
 |---|---|
 | `vanilla` | 순정 Claude Code, 플러그인/스킬 없음 (baseline) |
-| `oma` | `oh-my-agent` 소스 시드 적용 (`.agents/` + `.claude/`) |
-| `omc` | `--plugin-dir`을 통한 `oh-my-claudecode` |
+| `oma` | `oh-my-agent` 소스를 프로젝트에 심음 (`.agents/` + `.claude/`) |
+| `omc` | `--plugin-dir`로 불러온 `oh-my-claudecode` |
 | `ecc` | `~/.claude/`에 설치된 `everything-claude-code` |
-| `superpowers` | `--plugin-dir`을 통한 `superpowers` |
+| `superpowers` | `--plugin-dir`로 불러온 `superpowers` |
 
 ---
 
@@ -65,14 +65,14 @@ description: 동일한 프롬프트로 5개의 Claude Code harness가 같은 어
 | **Engineering** | 20 | 코드 범위, TS strict, 최대 파일 크기 + 폴더 깊이, deferred-stub 마커, 하드코딩된 키 없음 | 정적 분석 (jq + grep + find) |
 | **Efficiency** | 10 | 완료까지 turns, wall-clock duration, 파일당 비용 | `claude -p` 결과 JSON |
 
-Spec과 visual judge는 `judge-multi.sh`를 통해 harness당 3회 실행되며, 항목별 점수는 라운드 전체에 걸쳐 평균을 냅니다. 구현체는 [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis)에 있습니다.
+Spec과 visual judge는 `judge-multi.sh`를 통해 harness당 3회 실행되며, 항목별 점수는 세 라운드를 평균 냅니다. 구현체는 [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis)에 있습니다.
 
 ---
 
 ## 유의 사항
 
 1. **superpowers 프롬프트 오버라이드**: 비대화형 모드에서 harness가 동작하기 위해 필요한 조치였습니다(해당 harness의 `<HARD-GATE>` brainstorming 스킬이 단발성 실행을 차단합니다). 결과는 "게이트를 우회한 후 superpowers가 발휘할 수 있는 성능"을 반영하며, 순수한 동일 조건 비교는 아닙니다.
-2. **spec과 visual은 다중 judge 평균, journey는 단일 실행**: journey 평가는 라이브 dev server가 필요하므로 단일 실행을 유지합니다. journey 점수 차이가 약 2점 미만일 경우 노이즈로 간주하시기 바랍니다. 표본 크기는 harness당 빌드 1회입니다.
+2. **spec과 visual은 다중 judge 평균, journey는 단일 실행**: journey 평가는 라이브 dev server가 필요하므로 단일 실행을 유지합니다. journey 점수 차이가 약 2점 미만이면 노이즈로 보아야 합니다. 표본 크기는 harness당 빌드 1회입니다.
 3. **비용 정규화**: efficiency 축은 파일당 비용을 사용하며, 절대 비용(5개 harness에서 $1.28~$8.19 범위)은 점수에 반영되지 않습니다.
 4. **oma의 `lint-clean` 감점은 의도된 결과**: oma는 ESLint 전용 규칙을 에이전트 스킬에 내장하는 대신, lint/typecheck 강제는 git hook(husky + lint-staged)과 CI에 위임하도록 의도적으로 설계되어 있습니다. 단발성 벤치마크에서는 이 부분이 `lint-clean`에서 -5점으로 감점되지만, 실제 워크플로우에서는 동일한 이슈가 pre-push 단계에서 차단되어 원격 저장소에 도달하지 않습니다.
 
@@ -99,4 +99,4 @@ done
   $(pwd)
 ```
 
-harness별 전체 서술, raw 점수, 스크린샷은 [`benchmarks/README.md`](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)에서 관리됩니다. 이 파일은 각 실행의 `multiaxis/*.json`으로부터 `build-report.sh`가 생성하므로, 항상 최신 scoring artifact와 동기화 상태를 유지합니다.
+harness별 전체 서술, raw 점수, 스크린샷은 [`benchmarks/README.md`](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)에서 관리됩니다. 이 파일은 각 실행의 `multiaxis/*.json`을 바탕으로 `build-report.sh`가 생성하므로, 항상 최신 scoring artifact와 동기화된 상태를 유지합니다.

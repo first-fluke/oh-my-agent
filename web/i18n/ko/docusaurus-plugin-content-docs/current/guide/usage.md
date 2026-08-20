@@ -9,7 +9,7 @@ description: oh-my-agent 종합 사용 가이드입니다. 빠른 시작, 단일
 
 1. AI 기반 IDE에서 프로젝트를 엽니다 (Claude Code, Gemini CLI, Cursor, Antigravity 등)
 2. `.agents/skills/`에서 스킬이 자동 감지됩니다
-3. 원하는 것을 자연어로 설명하면, oh-my-agent가 적절한 에이전트로 라우팅합니다
+3. 원하는 것을 자연어로 설명하면, oh-my-agent이 적절한 에이전트로 라우팅합니다
 4. 멀티 에이전트 작업에는 `/work` 또는 `/orchestrate`를 사용합니다
 
 단일 도메인 태스크에는 특별한 구문이 필요 없습니다.
@@ -61,7 +61,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **진행 과정:**
 
 1. 키워드 감지가 이것을 멀티 도메인으로 식별 (frontend + backend + mobile)
-2. 워크플로우 명령을 사용하지 않았다면 oh-my-agent가 `/work` 또는 `/orchestrate`를 제안
+2. 워크플로우 명령을 사용하지 않았다면 oh-my-agent이 `/work` 또는 `/orchestrate`를 제안
 
 **`/work` 사용 (단계별 사용자 제어):**
 
@@ -187,6 +187,12 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 oma stats
 ```
 
+현재 런타임이 `.agents/oma-config.yaml`의 대상 벤더와 일치하면, 워크플로우는 네이티브 서브에이전트를 우선 써야 합니다.
+
+- Claude Code -> `.claude/agents/*.md`
+- Codex CLI -> `.codex/agents/*.toml`
+- Gemini CLI -> `.gemini/agents/*.md`
+
 ---
 
 ## 예제 6: Ultrawork (최대 품질)
@@ -256,7 +262,7 @@ oma stats
 
 ## 자동 감지 예제
 
-oh-my-agent는 11개 언어에서 워크플로우 키워드를 감지합니다. 자연어가 워크플로우를 트리거하는 예제:
+oh-my-agent은 11개 언어에서 워크플로우 키워드를 감지합니다. 자연어가 워크플로우를 트리거하는 예제:
 
 | 입력 | 감지된 워크플로우 | 언어 |
 |----------|------------------|----------|
@@ -338,7 +344,7 @@ oma dashboard:web
 - WebSocket을 통한 실시간 업데이트 (수동 새로고침 불필요)
 - 연결 끊김 시 자동 재연결
 - 에이전트 상태를 색상으로 구분하는 세션 표시 (초록=완료, 노랑=실행 중, 빨강=실패)
-- 진행 및 결과 파일에서의 활동 로그 스트리밍
+- 진행 파일과 결과 파일에서 활동 로그 스트리밍
 - 과거 세션 데이터
 
 ### 권장 레이아웃
@@ -358,7 +364,7 @@ oma dashboard:web
 
 ### 토큰 최적화
 
-점진적 공개 외에도 oh-my-agent는 다음을 통해 토큰을 최적화합니다:
+점진적 공개 외에도 oh-my-agent은 다음을 통해 토큰을 최적화합니다:
 - **컨텍스트 예산 관리**: 전체 파일 읽기 없음. `read_file` 대신 `find_symbol` 사용
 - **지연 리소스 로딩**: 에러 플레이북은 에러 시에만, 체크리스트는 검증 시에만 로딩
 - **난이도 기반 분기**: Simple 태스크는 분석을 건너뛰고 최소 체크리스트 사용
@@ -400,7 +406,7 @@ oma dashboard:web
 
 7. **모호한 아이디어에는 `/plan` 전에 `/brainstorm`을 사용하세요.** 브레인스토밍이 PM 에이전트가 태스크로 분해하기 전에 의도와 접근 방식을 명확히 합니다.
 
-8. **새 코드베이스에서 `/deepinit`을 실행하세요.** 모든 에이전트가 프로젝트 구조를 이해하는 데 도움되는 AGENTS.md와 ARCHITECTURE.md를 생성합니다.
+8. **새 코드베이스에서 `/deepinit`을 실행하세요.** 모든 에이전트가 프로젝트 구조를 이해하는 데 도움이 되는 AGENTS.md와 ARCHITECTURE.md를 생성합니다.
 
 9. **에이전트-CLI 매핑을 설정하세요.** 복잡한 추론 태스크(qa, debug, frontend)는 Claude로, 빠른 생성 태스크(backend, pm)는 Gemini로 라우팅하세요.
 
@@ -423,7 +429,7 @@ oma dashboard:web
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 너무 모호 | 에이전트가 요청한 구체적인 답변 제공 후 재실행 |
 | MCP 도구가 작동하지 않음 | Serena가 설정되지 않았거나 실행 중이지 않음 | `oma doctor`로 MCP 설정 확인 |
 | 에이전트가 턴 제한 초과 | 태스크가 기본 턴에 비해 너무 복잡 | `-t 30` 플래그로 턴 증가, 또는 더 작은 태스크로 분해 |
-| 에이전트에 잘못된 CLI 사용 | model_preset (per-agent overrides via `agents:`) 미설정 | `oma install`로 설정, 또는 `oma-config.yaml` 직접 편집 |
+| 에이전트에 잘못된 CLI 사용 | `model_preset`이나 `agents:` 오버라이드 미설정 | `oma install`로 설정, 또는 `oma-config.yaml` 직접 편집 |
 
 ---
 

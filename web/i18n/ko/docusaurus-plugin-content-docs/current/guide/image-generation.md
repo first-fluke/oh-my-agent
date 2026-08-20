@@ -5,9 +5,9 @@ description: oh-my-agent 이미지 생성 종합 가이드입니다. Codex(gpt-i
 
 # 이미지 생성
 
-`oma-image`는 oh-my-agent의 멀티 벤더 이미지 라우터입니다. 자연어 프롬프트로부터 이미지를 생성하고, 인증된 벤더 CLI 중 어느 것으로든 디스패치하며, 출력물 옆에 결정적인 매니페스트를 작성하여 모든 실행을 재현할 수 있게 합니다.
+`oma-image`는 oh-my-agent의 멀티 벤더 이미지 라우터입니다. 자연어 프롬프트로 이미지를 생성하고, 인증된 벤더 CLI 중 어느 것으로든 디스패치하며, 출력물 옆에 결정적인 매니페스트를 작성하여 모든 실행을 재현할 수 있게 합니다.
 
-이 스킬은 *image*, *illustration*, *visual asset*, *concept art* 같은 키워드 또는 다른 스킬이 부수 효과로 이미지를 필요로 할 때(히어로 샷, 썸네일, 제품 사진) 자동 활성화됩니다.
+이 스킬은 *image*, *illustration*, *visual asset*, *concept art* 같은 키워드 또는 다른 스킬에 부수적으로 이미지가 필요할 때(히어로 샷, 썸네일, 제품 사진) 자동 활성화됩니다.
 
 ---
 
@@ -22,7 +22,7 @@ description: oh-my-agent 이미지 생성 종합 가이드입니다. Codex(gpt-i
 
 - 기존 이미지 편집 또는 보정 (범위 밖. 전용 도구 사용)
 - 비디오 또는 오디오 생성 (범위 밖)
-- 구조화된 데이터로부터 인라인 SVG / 벡터 합성 (템플릿 스킬 사용)
+- 구조화된 데이터로 인라인 SVG / 벡터 합성 (템플릿 스킬 사용)
 - 단순 리사이즈 / 포맷 변환 (생성 파이프라인이 아닌 이미지 라이브러리 사용)
 
 ---
@@ -33,11 +33,11 @@ description: oh-my-agent 이미지 생성 종합 가이드입니다. Codex(gpt-i
 
 | 벤더 | 전략 | 모델 | 트리거 | 비용 |
 |---|---|---|---|---|
-| `pollinations` | 직접 HTTP | 무료: `flux`, `zimage`. 크레딧 필요: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` 설정 (https://enter.pollinations.ai 에서 무료 가입) | `flux` / `zimage`는 무료 |
+| `pollinations` | 직접 HTTP | 무료: `flux`, `zimage`. 크레딧 필요: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` 설정 (https://enter.pollinations.ai에서 무료 가입) | `flux` / `zimage`는 무료 |
 | `codex` | CLI 우선 (ChatGPT OAuth로 `codex exec`) | `gpt-image-2` | `codex login` (API 키 불필요) | ChatGPT 플랜에 청구 |
 | `gemini` | CLI 우선 → 직접 API 폴백 | `gemini-2.5-flash-image`, `gemini-3.1-flash-image-preview` | `gemini auth login` 또는 `GEMINI_API_KEY` + 결제 | 기본 비활성화; 결제 필요 |
 
-`flux` / `zimage`가 무료이므로 키워드 자동 트리거가 안전한 `pollinations`가 기본 벤더입니다.
+`flux`와 `zimage`가 무료라서, 키워드로 자동 트리거해도 안전한 `pollinations`를 기본 벤더로 씁니다.
 
 ---
 
@@ -140,7 +140,7 @@ oma image list-vendors
 | 플래그 | 용도 |
 |---|---|
 | `--vendor <name>` | `auto`, `pollinations`, `codex`, `antigravity`, 또는 `all`. `all` 사용 시 요청한 모든 벤더가 인증되어 있어야 함 (엄격 모드). |
-| `-n, --count <n>` | 벤더당 이미지 개수, 1–5 (월 타임 제한). |
+| `-n, --count <n>` | 벤더당 이미지 개수, 1–5 (wall-clock 시간 제한). |
 | `--size <size>` | 비율: `1024x1024` (정사각형), `1024x1536` (세로형), `1536x1024` (가로형), 또는 `auto`. |
 | `--quality <level>` | `low`, `medium`, `high`, 또는 `auto` (벤더 기본값). |
 | `--out <dir>` | 출력 디렉토리. 기본값은 `.agents/results/images/{timestamp}/`. `$PWD` 외부 경로는 `--allow-external-out`이 필요. |
@@ -175,7 +175,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 - **Antigravity**: 워크스페이스 업로드 디렉토리 (IDE가 정확한 경로 표시)
 - **호스트로서의 Codex CLI**: 명시적으로 전달해야 함. 대화 내 첨부는 전달되지 않음
 
-사용자가 이미지를 첨부하고 그것을 기반으로 생성 또는 편집을 요청하면, 호출하는 에이전트는 **반드시** 산문으로 묘사하지 말고 `--reference <path>`로 전달해야 합니다. 로컬 CLI가 너무 오래되어 `--reference`를 지원하지 않으면 `oma update`를 실행한 뒤 재시도합니다.
+사용자가 이미지를 첨부하고 그것을 기반으로 생성 또는 편집을 요청하면, 호출하는 에이전트는 **반드시** 말로 풀어 설명하지 말고 `--reference <path>`로 전달해야 합니다. 로컬 CLI가 너무 오래되어 `--reference`를 지원하지 않으면 `oma update`를 실행한 뒤 재시도합니다.
 
 ---
 
@@ -194,7 +194,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
     └── manifest.json
 ```
 
-`manifest.json`은 벤더, 모델, 프롬프트(또는 그것의 SHA-256), 사이즈, 품질, 비용을 기록하므로, 매니페스트 하나만으로도 모든 실행을 재현할 수 있습니다.
+`manifest.json`은 벤더, 모델, 프롬프트(또는 그 SHA-256), 사이즈, 품질, 비용을 기록하므로, 매니페스트 하나만으로도 모든 실행을 재현할 수 있습니다.
 
 ---
 
@@ -204,7 +204,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 2. **경로 안전성**: `$PWD` 외부의 출력 경로는 예기치 않은 쓰기를 피하기 위해 `--allow-external-out`이 필요합니다.
 3. **취소 가능**: `Ctrl+C` (SIGINT/SIGTERM)는 진행 중인 모든 프로바이더 호출과 오케스트레이터를 함께 중단시킵니다.
 4. **결정적 출력**: `manifest.json`은 항상 이미지 옆에 작성됩니다.
-5. **최대 `n` = 5**: 쿼터가 아닌 월 타임 제한입니다.
+5. **최대 `n` = 5**: 쿼터가 아니라 wall-clock 시간 제한입니다.
 6. **Exit code**: `oma search fetch`와 정렬됨. `0` ok, `1` general, `2` safety, `3` not-found, `4` invalid-input, `5` auth-required, `6` timeout.
 
 ---
@@ -230,7 +230,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 
 사용자가 완전한 크리에이티브 브리프(피사체 + 스타일 + 조명 + 구도 중 2개 이상)를 작성한 경우, 그 프롬프트는 그대로 존중됩니다(명확화도, 보강도 없음).
 
-**출력 언어.** 생성 프롬프트는 영어로 프로바이더에 전송됩니다 (이미지 모델은 주로 영어 캡션으로 학습됨). 사용자가 다른 언어로 작성한 경우, 에이전트는 번역하여 보강 단계에서 보여주어 사용자가 잘못 읽은 부분을 수정할 수 있도록 합니다.
+**출력 언어.** 생성 프롬프트는 영어로 프로바이더에 전송됩니다 (이미지 모델은 주로 영어 캡션으로 학습됨). 사용자가 다른 언어로 작성한 경우, 에이전트는 번역한 프롬프트를 보강 단계에서 보여주어, 잘못 옮긴 부분이 있으면 사용자가 바로잡을 수 있게 합니다.
 
 ---
 
@@ -253,7 +253,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor gemini
 |---|---|---|
 | Exit code `5` (auth-required) | 선택한 벤더가 인증되지 않음 | `oma image doctor`를 실행하여 어떤 벤더가 로그인이 필요한지 확인. 그 후 `codex login` / `POLLINATIONS_API_KEY` 설정 / `gemini auth login`. |
 | `--reference`에서 Exit code `4` | `pollinations`가 참조를 거부했거나, 파일이 너무 크거나 포맷이 잘못됨 | `--vendor codex` 또는 `--vendor gemini`로 전환. 각 참조는 ≤ 5 MB이고 PNG/JPEG/GIF/WebP여야 함. |
-| `--reference`가 인식되지 않음 | 로컬 CLI가 오래됨 | `oma update`를 실행하고 재시도. 산문 묘사로 폴백하지 말 것. |
+| `--reference`가 인식되지 않음 | 로컬 CLI가 오래됨 | `oma update`를 실행하고 재시도. 말로 풀어 설명하는 방식으로 되돌아가지 말 것. |
 | 비용 확인이 자동화를 차단 | 실행이 `$0.20` 이상으로 추정됨 | `-y`를 전달하거나 `OMA_IMAGE_YES=1` 설정. 더 나은 방법: 무료 `pollinations`로 전환. |
 | `--vendor all`이 즉시 중단됨 | 요청한 벤더 중 하나가 인증되지 않음 (엄격 모드) | 누락된 벤더를 인증하거나, 특정 `--vendor`를 선택. |
 | 출력이 예상치 못한 디렉토리에 작성됨 | 기본값은 `.agents/results/images/{timestamp}/` | `--out <dir>` 전달. `$PWD` 외부 경로는 `--allow-external-out` 필요. |

@@ -1,13 +1,13 @@
 ---
 title: "가이드: 기존 프로젝트 통합"
-description: 기존 프로젝트에 oh-my-agent를 추가하는 완전 가이드입니다. CLI 경로, 수동 경로, 검증, SSOT 심볼릭 링크 구조, 설치 프로그램의 내부 동작을 다룹니다.
+description: 기존 프로젝트에 oh-my-agent을 추가하는 완전 가이드입니다. CLI 경로, 수동 경로, 검증, SSOT 심볼릭 링크 구조, 설치 프로그램의 내부 동작을 다룹니다.
 ---
 
 # 가이드: 기존 프로젝트 통합
 
 ## 두 가지 통합 경로
 
-기존 프로젝트에 oh-my-agent를 추가하는 방법은 두 가지입니다:
+기존 프로젝트에 oh-my-agent을 추가하는 방법은 두 가지입니다:
 
 1. **CLI 경로**: `oma` (또는 `npx oh-my-agent`)를 실행하고 대화형 프롬프트를 따릅니다. 대부분의 사용자에게 권장됩니다.
 2. **수동 경로**: 파일을 직접 복사하고 심볼릭 링크를 설정합니다. 제한된 환경이나 커스텀 설정에 유용합니다.
@@ -83,7 +83,7 @@ Also create symlinks for GitHub Copilot? (.github/skills/)
 
 | 키 | 권장 값 | 이유 |
 |:---|:--------|:-----|
-| `rerere.enabled` | `true` | 기록된 해결 재사용 — 멀티 에이전트 머지에서 같은 충돌이 반복될 때 이전 해결을 자동 적용 |
+| `rerere.enabled` | `true` | 기록해 둔 해결을 재사용합니다. 멀티 에이전트 머지에서 같은 충돌이 반복될 때 이전 해결을 자동으로 적용합니다 |
 | `init.defaultBranch` | `main` | 새 저장소의 기본 브랜치 이름을 일관되게 유지 |
 
 값이 없거나 다르면 대화형 confirm을 제안합니다(기본값 **yes**):
@@ -207,15 +207,7 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-default_cli: gemini
-
-model_preset (per-agent overrides via `agents:`):
-  frontend: gemini
-  backend: gemini
-  mobile: gemini
-  qa: gemini
-  debug: gemini
-  pm: gemini
+model_preset: antigravity
 EOF
 ```
 
@@ -276,7 +268,7 @@ cat .agents/skills/_version.json 2>/dev/null
 
 ## 멀티 IDE 심볼릭 링크 구조 (SSOT 개념)
 
-oh-my-agent는 단일 진실 원천(SSOT) 아키텍처를 사용합니다. `.agents/` 디렉토리가 스킬, 워크플로우, 설정, 에이전트 정의가 존재하는 유일한 장소입니다. 모든 IDE별 디렉토리에는 `.agents/`를 가리키는 심볼릭 링크만 포함됩니다.
+oh-my-agent은 단일 진실 원천(SSOT) 아키텍처를 사용합니다. `.agents/` 디렉토리가 스킬, 워크플로우, 설정, 에이전트 정의가 존재하는 유일한 장소입니다. 모든 IDE별 디렉토리에는 `.agents/`를 가리키는 심볼릭 링크만 포함됩니다.
 
 ### 디렉토리 레이아웃
 
@@ -320,10 +312,7 @@ your-project/
 
 ### 심볼릭 링크를 사용하는 이유
 
-- **한 번 업데이트하면 모든 IDE에 적용됩니다.** `oma update`가 `.agents/`를 갱신하면 모든 IDE가 변경 사항을 자동으로 반영합니다.
-- **중복 없음.** 스킬은 한 번만 저장되며 IDE별로 복사되지 않습니다.
-- **안전한 제거.** `.claude/`를 삭제해도 스킬이 파괴되지 않습니다. `.agents/`의 SSOT는 그대로 유지됩니다.
-- **Git 친화적.** 심볼릭 링크는 크기가 작고 diff가 깔끔합니다.
+`oma update`가 `.agents/`를 갱신하면 그곳을 가리키는 모든 IDE가 변경 사항을 함께 반영합니다. 스킬은 IDE마다 복사되지 않고 한 번만 저장됩니다. `.claude/`를 삭제해도 스킬은 사라지지 않고 `.agents/`의 SSOT가 그대로 남습니다. 심볼릭 링크는 크기가 작고 git에서 diff도 깔끔합니다.
 
 ---
 
@@ -348,7 +337,7 @@ your-project/
 
 ### 롤백
 
-프로젝트에서 oh-my-agent를 완전히 제거하려면:
+프로젝트에서 oh-my-agent을 완전히 제거하려면:
 
 ```bash
 # SSOT 디렉토리 제거
@@ -417,7 +406,7 @@ oma dashboard:web
 
 ### 6. 설정 설치
 
-`installConfigs()`가 기본 설정 파일을 `.agents/config/`에 복사합니다. `oma-config.yaml`과 `mcp.json`을 포함합니다. 이 파일들이 이미 존재하면 `--force`를 사용하지 않는 한 보존됩니다(덮어쓰지 않음).
+`installConfigs()`가 기본 설정 파일을 `.agents/config/`에 복사합니다. `oma-config.yaml`과 `mcp.json`을 포함합니다. 이 파일이 이미 있으면 `--force`를 사용하지 않는 한 보존됩니다(덮어쓰지 않음).
 
 ### 7. 스킬 설치
 
@@ -427,10 +416,11 @@ oma dashboard:web
 
 `installVendorAdaptations()`가 지원되는 모든 벤더(Antigravity, Claude, Codex, Qwen)에 대한 IDE별 파일을 설치합니다:
 
-- 에이전트 정의 (`.claude/agents/*.md`)
-- 훅 설정 (`.claude/hooks/`)
-- 설정 파일
-- CLAUDE.md 프로젝트 지시사항
+- 에이전트 정의 (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.gemini/agents/*.md`)
+- 훅 설정 (`.claude/hooks/`, `.codex/hooks.json`)
+- 설정 파일과 벤더 통합 문서 (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
+
+Codex는 훅을 일회성 신뢰 단계 뒤에 두기 때문에, Codex의 `/hooks` 브라우저에서 한 번 검토하기 전까지 `.codex/hooks.json`이 실행되지 않습니다. 자세한 내용은 [Codex 훅 신뢰](/docs/guide/codex-hook-trust)를 참고하세요.
 
 ### 9. CLI 심볼릭 링크
 
@@ -438,8 +428,9 @@ oma dashboard:web
 
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
 - `.claude/skills/{workflow}.md` -> `../../.agents/workflows/{workflow}.md`
-- `.claude/agents/{agent}.md` -> `../../.agents/agents/{agent}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (Copilot 활성화 시)
+
+벤더 네이티브 에이전트 파일은 심볼릭 링크가 아니라 `oma link`, `oma install`, `oma update`가 `.agents/agents/`에서 생성합니다.
 
 ### 10. 전역 워크플로우
 

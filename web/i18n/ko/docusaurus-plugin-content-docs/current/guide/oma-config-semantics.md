@@ -10,7 +10,7 @@ description: 프로젝트 설치와 글로벌 설치가 모두 존재할 때 oma
 - **프로젝트**: `<cwd>/.agents/oma-config.yaml`
 - **글로벌**: `~/.agents/oma-config.yaml`
 
-두 파일이 모두 존재하면 모든 키에 대해 프로젝트 파일이 우선합니다. 이는 의도된 동작입니다. 프로젝트별 커스터마이징은 더 구체적인 신호이므로, 사용자 전체에 적용되는 기본값으로 덮어써져서는 안 되기 때문입니다.
+두 파일이 모두 존재하면 모든 키에서 프로젝트 파일이 우선합니다. 이는 의도된 동작입니다. 프로젝트별 커스터마이징은 더 구체적인 신호이므로, 사용자 전체에 적용되는 기본값이 이를 덮어써서는 안 되기 때문입니다.
 
 ## 우선순위 표
 
@@ -42,12 +42,14 @@ description: 프로젝트 설치와 글로벌 설치가 모두 존재할 때 oma
 
 ## 읽기 순서의 근거
 
-프로젝트 설정을 먼저 읽는 이유는 더 구체적인 컨텍스트(개발자가 실제로 작업 중인 저장소)를 표현하기 때문입니다. 팀이 프로젝트에 대해 `language: ko`나 `model_preset: mixed`를 강제하는 경우, 개인의 글로벌 `oma-config.yaml`이 그 선택을 조용히 덮어써서는 안 됩니다.
+프로젝트 설정을 먼저 읽는 이유는 더 구체적인 컨텍스트(개발자가 실제로 작업 중인 저장소)를 표현하기 때문입니다. 팀이 프로젝트에 `language: ko`나 `model_preset: mixed`를 강제하는 경우, 개인의 글로벌 `oma-config.yaml`이 그 선택을 조용히 덮어써서는 안 됩니다.
 
-글로벌 파일은 사용자 전체에 적용되는 기준값을 제공합니다. 프로젝트가 설정하지 않은 키는 글로벌 값으로 폴백되고, 글로벌 값도 없으면 다시 하드코딩된 기본값으로 폴백됩니다.
+글로벌 파일은 사용자 전체에 적용되는 기준값을 제공합니다. 프로젝트가 설정하지 않은 키는 글로벌 값으로 폴백하고, 글로벌 값도 없으면 하드코딩된 기본값으로 폴백합니다.
 
 ## 참고 사항
 
 - `oma-config.yaml`의 `language`는 에이전트 응답 언어를 제어합니다. 설치 및 업데이트 경고 메시지를 결정하는 데는 사용되지 **않습니다**. 설치 시점에는 `oma-config.yaml`이 아직 로드되지 않으므로, 그 메시지는 시스템 로케일(`$LANG`)을 기준으로 합니다.
 - `auto_update_cli` 우선순위는 update 명령에 명시적으로 구현되어 있습니다. 프로젝트 설치와 글로벌 설치가 모두 존재할 때, 프로젝트의 `oma-config.yaml`이 먼저 참조됩니다.
+- `telemetry`(기본값 `false`)는 각 벤더 자체의 opt-out으로 연결되며, `oma install` / `oma update` / `oma link`가 값을 씁니다. Claude는 `DISABLE_TELEMETRY`와 `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`, Gemini와 Qwen은 `privacy.usageStatisticsEnabled`, Codex는 `analytics.enabled`와 `feedback.enabled`, Grok은 `[features] telemetry`, Antigravity(agy)는 `~/.gemini/antigravity-cli/settings.json`의 `enableTelemetry`를 씁니다. `telemetry: true`로 두면 해당 벤더에 대한 oma의 opt-out을 제거해 다시 수집에 동의합니다.
 - `oma-config.yaml`을 직접 편집하는 것은 안전합니다. `oma install`과 `oma update`는 정규식 수준의 필드 치환을 사용하며, 자신이 관리하지 않는 사용자 편집 키(예: 커스텀 `agents:` 오버라이드, `session.quota_cap`)는 그대로 보존합니다.
+- `oma update`는 배포 템플릿에는 있는데 사용자 파일에는 없는 최상위 키를 `# Added by oma update` 마커 아래에 템플릿 기본값으로 덧붙입니다. 이미 있는 키는 절대 건드리지 않으므로 기존 내용은 바이트 단위로 그대로 유지됩니다. 일부러 지운 키는 템플릿 기본값으로 다시 나타나므로, 빼고 싶다면 키를 지우는 대신 값을 명시적으로 지정하세요.

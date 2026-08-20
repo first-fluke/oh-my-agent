@@ -7,10 +7,11 @@ description: 모든 CLI 옵션의 종합 레퍼런스입니다. 전역 플래그
 
 ## 전역 옵션
 
-이 옵션들은 루트 `oma` / `oh-my-agent` 명령에서 사용할 수 있습니다:
+이 옵션은 루트 `oma` / `oh-my-agent` 명령에서 사용할 수 있습니다:
 
 | 플래그 | 설명 |
 |:-------|:-----|
+| `-g, --global` | `<cwd>/.agents/` 대신 HOME 설치(`~/.agents/`)를 대상으로 동작 |
 | `-V, --version` | 버전 번호를 출력하고 종료 |
 | `-h, --help` | 명령에 대한 도움말 표시 |
 
@@ -70,7 +71,6 @@ oma retro    # JSON 출력
 | `visualize` | 예 | 예 | JSON 형태의 의존성 그래프 |
 | `describe` | 항상 JSON | 해당 없음 | 항상 JSON 출력 (인트로스펙션 명령) |
 | `recap` | 예 | 예 | 도구/세션별 대화 이력 |
-| `export` | 예 | 예 | 내보내기 상태와 대상 경로 |
 | `image generate` / `image doctor` / `image list-vendors` | `--format json` | 해당 없음 | `--json` 대신 `--format json`을 사용합니다 |
 | `search ...` | 항상 JSON | 해당 없음 | 모든 `search` 서브커맨드는 JSON으로 스트리밍합니다. 사람이 읽기 좋게 보려면 `--pretty`를 사용하세요 |
 
@@ -108,6 +108,9 @@ oma update [-f | --force] [--ci]
 |:-------|:-----|:-----|:-------|
 | `--force` | `-f` | 업데이트 중 사용자가 커스터마이즈한 설정 파일을 덮어씁니다. 대상: `oma-config.yaml`, `mcp.json`, `stack/` 디렉토리. 이 플래그가 없으면 해당 파일은 업데이트 전에 백업되었다가 이후 복원됩니다. | `false` |
 | `--ci` | | 비대화형 CI 모드로 실행합니다. 모든 확인 프롬프트를 건너뛰고, 스피너와 애니메이션 대신 일반 콘솔 출력을 사용합니다. stdin을 사용할 수 없는 CI/CD 파이프라인에 필요합니다. | `false` |
+| `--yes` | `-y` | 안내를 건너뜁니다. `--all`이나 `--vendor`와 함께 쓰지 않으면 없는 벤더 디렉토리를 만들지 않습니다. | `false` |
+| `--all` | | 지원하는 모든 프로젝트 범위 벤더를 만들거나 업데이트합니다. | `false` |
+| `--vendor <vendors>` | | 쉼표로 구분한 벤더 목록을 만들거나 업데이트합니다. 예: `claude,qwen`. | 이미 있는 벤더 디렉토리만 |
 
 **--force 사용 시 동작:**
 - `oma-config.yaml`이 레지스트리 기본값으로 대체됩니다.
@@ -120,6 +123,12 @@ oma update [-f | --force] [--ci]
 - `@clack/prompts`가 일반 `console.log`로 대체됨.
 - 경쟁 도구 감지 안내 건너뛰기.
 - `process.exit(1)` 호출 대신 오류를 throw.
+
+**벤더 범위:**
+- `oma update`는 이미 존재하는 벤더 디렉토리만 업데이트합니다.
+- `oma update --yes`는 같은 벤더 범위를 쓰며 안내만 건너뜁니다.
+- `oma update --all`은 지원하는 모든 프로젝트 범위 벤더를 만들거나 업데이트합니다.
+- `oma update --vendor claude,qwen`은 나열한 벤더만 만들거나 업데이트합니다.
 
 ### stats
 
@@ -249,18 +258,6 @@ oma recap [--window <period>] [--date <date>] [--tool <tools>] [--top <n>] [--so
 | `--sort <metric>` | 세션을 `count` 또는 `duration` 기준으로 정렬합니다. | `count` |
 | `--mermaid` | 기본 요약 대신 Mermaid Gantt 차트를 출력합니다. | `false` |
 | `--graph` | 브라우저에서 인터랙티브 그래프를 엽니다. `--mermaid`와 상호 배타적입니다. | `false` |
-
-### export
-
-```
-oma export <format> [-d <path>] [--json] [--output <format>]
-```
-
-| 플래그 | 축약 | 설명 | 기본값 |
-|:-------|:-----|:-----|:-------|
-| `--dir <path>` | `-d` | 내보낸 규칙을 기록할 대상 디렉토리. | `process.cwd()` |
-
-**지원 형식:** `cursor` (설치된 스킬에서 파생된 `.cursor/rules` 파일을 기록합니다).
 
 ### search
 

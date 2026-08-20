@@ -7,9 +7,10 @@ description: oh-my-agent 설치 가이드입니다. 세 가지 설치 방법, �
 
 ## 사전 요구사항
 
-- **AI 기반 IDE 또는 CLI**: 다음 중 하나 이상 (Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor, 또는 OpenCode)
+- **AI 기반 IDE 또는 CLI**: 다음 중 하나 이상 (Claude Code, Gemini CLI, Codex CLI, Qwen CLI, Antigravity CLI (`agy`), Antigravity IDE, Cursor, OpenCode, Kimi Code CLI)
 - **bun**: JavaScript 런타임 및 패키지 매니저 (설치 스크립트에서 없으면 자동 설치)
-- **uv**: Serena MCP용 Python 패키지 매니저 (없으면 자동 설치)
+- **uv**: Python 패키지 매니저 (없으면 자동 설치)
+- **serena-agent**: Serena MCP 바이너리로, `uv tool install -p 3.13 serena-agent@latest --prerelease=allow`로 전역 설치합니다 (없으면 설치 스크립트가 자동 설치)
 
 ---
 
@@ -104,7 +105,7 @@ bunx oh-my-agent@latest
 
 ## 방법 3: 전역 설치
 
-CLI에서 직접 사용하려면(대시보드, 에이전트 스폰, 진단 등) oh-my-agent를 전역으로 설치하세요:
+CLI에서 직접 사용하려면(대시보드, 에이전트 스폰, 진단 등) oh-my-agent을 전역으로 설치하세요:
 
 ### Homebrew (macOS/Linux)
 
@@ -148,7 +149,7 @@ oma star                # 리포지토리 스타
 
 ## AI CLI 도구 설치
 
-AI CLI 도구가 하나 이상 설치되어 있어야 합니다. oh-my-agent는 다섯 가지 벤더를 지원하며, 에이전트-CLI 매핑을 통해 에이전트마다 다른 CLI를 지정할 수 있습니다.
+AI CLI 도구가 하나 이상 설치되어 있어야 합니다. oh-my-agent은 다섯 가지 벤더를 지원하며, 에이전트-CLI 매핑을 통해 에이전트마다 다른 CLI를 지정할 수 있습니다.
 
 ### Gemini CLI
 
@@ -243,15 +244,9 @@ agents:
 | `models` | map | 선택 | 사용자 정의 모델 슬러그 (이전의 `models.yaml`에서 이동). |
 | `custom_presets` | map | 선택 | 사용자 정의 프리셋. 빌트인 프리셋을 부분 상속하는 `extends:`를 지원합니다. |
 
-### 벤더 해석 우선순위
+### 벤더 해석
 
-에이전트를 스폰할 때 CLI 벤더는 다음 우선순위 순서로 결정됩니다(높은 것이 우선):
-
-1. `oma agent:spawn`에 전달된 `--model` 플래그
-2. `oma-config.yaml`의 해당 에이전트에 대한 `model_preset (per-agent overrides via `agents:`)` 항목
-3. `oma-config.yaml`의 `default_cli` 설정
-4. `cli-config.yaml`의 `active_vendor` (레거시 폴백)
-5. `gemini` (하드코딩된 최종 폴백)
+에이전트를 스폰할 때 CLI 벤더는 활성 `model_preset`(그리고 `agents:` 오버라이드가 있으면 그것까지)에서 결정됩니다. 자세한 내용은 [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요.
 
 ---
 
@@ -266,13 +261,21 @@ oma doctor
 이 명령은 다음을 확인합니다:
 - 필요한 모든 CLI 도구가 설치되어 있고 접근 가능한지
 - MCP 서버 설정이 유효한지
-- 유효한 SKILL.md 프론트매터를 가진 스킬 파일이 존재하는지
+- SKILL.md 프론트매터가 유효한 스킬 파일이 있는지
 - `.claude/skills/`의 심볼릭 링크가 유효한 대상을 가리키는지
 - `.claude/settings.json`에 훅이 올바르게 설정되어 있는지
 - 메모리 프로바이더에 연결 가능한지 (Serena MCP)
 - `oma-config.yaml`이 필수 필드를 갖춘 유효한 YAML인지
 
-문제가 발견되면 `oma doctor`가 수정 방법을 복사해서 바로 쓸 수 있는 명령어와 함께 알려줍니다.
+문제가 발견되면 `oma doctor`가 바로 복사해 쓸 수 있는 명령어와 함께 해결 방법을 알려줍니다.
+
+에이전트마다 해석된 모델과 CLI를 확인하려면 다음을 실행하세요.
+
+```bash
+oma doctor --profile
+```
+
+전체 매트릭스와 마이그레이션 세부 사항은 [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요.
 
 ---
 
@@ -300,7 +303,7 @@ bunx oh-my-agent@latest
 
 ## 다음 단계
 
-AI IDE에서 프로젝트를 열고 oh-my-agent를 사용해 보세요. 스킬은 자동 감지됩니다. 다음을 시도해 보세요:
+AI IDE에서 프로젝트를 열고 oh-my-agent을 사용해 보세요. 스킬은 자동 감지됩니다. 다음을 시도해 보세요:
 
 ```
 "Tailwind CSS를 사용하여 이메일 유효성 검사가 포함된 로그인 폼을 만들어줘"

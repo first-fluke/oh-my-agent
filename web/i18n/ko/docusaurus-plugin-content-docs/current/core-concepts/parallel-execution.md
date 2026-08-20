@@ -31,7 +31,8 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | 플래그 | 단축 | 설명 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | 에이전트의 작업 디렉토리. 에이전트는 이 디렉토리 내의 파일만 수정합니다. |
-| `--model <name>` | `-m` | 이 스폰에 대한 CLI 벤더 오버라이드. 옵션: `antigravity`, `claude`, `codex`, `qwen`. |
+| `--model <name>` | `-m` | 이 스폰에만 적용되는 CLI 벤더 오버라이드. 옵션: `antigravity`, `claude`, `codex`, `qwen`. |
+| `--isolation <mode>` | | 스폰별 격리입니다. `worktree`는 `${tmpdir}/oma-worktrees/{sessionId}/{agentId}`에 `oma/{sessionId}/{agentId}` 브랜치로 새 git 워크트리를 만들고 거기서 에이전트를 실행합니다. 가설 스폰이나 병렬 에이전트가 공유 파일을 건드릴 때 유용합니다. 종료 후에도 워크트리는 남으며, 수동 검토용 머지·폐기 명령을 출력합니다. |
 | `--max-turns <n>` | `-t` | 이 에이전트의 기본 턴 제한 오버라이드. |
 | `--json` | | 결과를 JSON으로 출력 (스크립팅에 유용). |
 | `--no-wait` | | 완료를 기다리지 않고 즉시 반환. |
@@ -120,55 +121,34 @@ oma agent:parallel -i \
 
 ## 멀티 CLI 설정
 
-모든 AI CLI가 모든 도메인에서 동일한 성능을 보이는 것은 아닙니다. oh-my-agent를 사용하면 에이전트를 해당 도메인을 가장 잘 처리하는 CLI로 라우팅할 수 있습니다.
+oh-my-agent은 `.agents/oma-config.yaml`의 `model_preset`을 보고 각 에이전트를 알맞은 CLI로 라우팅합니다. 쓰는 벤더에 맞는 빌트인 프리셋을 고르고, 필요하면 에이전트별로 따로 오버라이드하면 됩니다.
 
-### 전체 설정 예시
+### 설정 예시
 
 ```yaml
 # .agents/oma-config.yaml
-
-# 응답 언어
 language: en
+model_preset: mixed   # mixed: QA/PM은 Claude, 구현은 Codex, 탐색은 Gemini
 
-# 리포트용 날짜 형식
-date_format: "YYYY-MM-DD"
-
-# 타임스탬프 시간대
-timezone: "Asia/Seoul"
-
-# 기본 CLI (에이전트별 매핑이 없을 때 사용)
-default_cli: gemini
-
-# 에이전트별 CLI 라우팅
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # 복잡한 UI 추론, 컴포넌트 구성
-  backend: gemini        # 빠른 API 스캐폴딩, CRUD 생성
-  mobile: gemini         # 빠른 Flutter 코드 생성
-  db: gemini             # 빠른 스키마 설계
-  pm: gemini             # 빠른 태스크 분해
-  qa: claude             # 철저한 보안 및 접근성 리뷰
-  debug: claude          # 깊은 근본 원인 분석, 심볼 추적
-  design: claude         # 세밀한 디자인 결정, 안티 패턴 감지
-  tf-infra: gemini       # HCL 생성
-  dev-workflow: gemini   # 태스크 러너 설정
-  translator: claude     # 문화적 민감성을 갖춘 세밀한 번역
-  orchestrator: gemini   # 빠른 조율
-  commit: gemini         # 간단한 커밋 메시지 생성
+# 프리셋 위에 특정 에이전트만 오버라이드
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
+  backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-### 벤더 해석 우선순위
+빌트인 프리셋은 `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`입니다. 자세한 내용은 [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요.
 
-`oma agent:spawn`이 어떤 CLI를 사용할지 결정할 때 다음 우선순위를 따릅니다(높은 것이 우선):
+### 벤더 해석
+
+`oma agent:spawn`이 어떤 CLI를 쓸지 결정하는 순서입니다:
 
 | 우선순위 | 소스 | 예시 |
 |----------|--------|---------|
 | 1 (최고) | `--model` 플래그 | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `model_preset (per-agent overrides via `agents:`)` | oma-config.yaml의 `model_preset (per-agent overrides via `agents:`).backend: gemini` |
-| 3 | `default_cli` | oma-config.yaml의 `default_cli: gemini` |
-| 4 | `active_vendor` | 레거시 `cli-config.yaml` 설정 |
-| 5 (최저) | 하드코딩된 폴백 | `gemini` |
+| 2 | `oma-config.yaml`의 `agents:` 오버라이드 | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 3 | 활성 `model_preset`의 에이전트 기본값 | 에이전트 역할로 프리셋 조회 |
 
-`--model` 플래그가 항상 우선합니다. 플래그가 없으면 에이전트별 매핑, 기본값, 레거시 설정, Gemini 폴백 순으로 확인합니다.
+`--model` 플래그가 항상 우선합니다. 플래그가 없으면 `agents:` 오버라이드를 보고, 그다음 프리셋 기본값을 씁니다.
 
 ---
 
@@ -178,9 +158,9 @@ model_preset (per-agent overrides via `agents:`):
 
 | 벤더 | 에이전트 스폰 방법 | 결과 처리 |
 |--------|----------------------|-----------------|
-| **Claude Code** | `.claude/agents/{name}.md` 정의를 사용하는 `Agent` 도구. 같은 메시지에서 여러 Agent 호출 = 진정한 병렬. | 동기 반환 |
-| **Codex CLI** | 모델 중재 병렬 서브에이전트 요청 | JSON 출력 |
-| **Gemini CLI** | `oma agent:spawn` CLI 명령 | MCP 메모리 폴링 |
+| **Claude Code** | 같은 벤더 태스크는 `.claude/agents/{name}.md`와 함께 `Agent` 도구를 쓰고, 다른 벤더 태스크는 `oma agent:spawn`으로 폴백합니다. | 동기 반환 |
+| **Codex CLI** | 같은 벤더 태스크는 `.codex/agents/{name}.toml`의 네이티브 커스텀 에이전트를 쓰고, 다른 벤더 태스크는 `oma agent:spawn`으로 폴백합니다. | JSON 출력 |
+| **Gemini CLI** | 같은 벤더 태스크는 `.gemini/agents/{name}.md`가 있으면 그것을 쓰고, 다른 벤더 태스크는 `oma agent:spawn`으로 폴백합니다. | MCP 메모리 폴링 |
 | **Antigravity IDE** | `oma agent:spawn`만 (커스텀 서브에이전트 사용 불가) | MCP 메모리 폴링 |
 | **CLI 폴백** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | 결과 파일 폴링 |
 
@@ -191,6 +171,10 @@ Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ```
 
 같은 메시지에서 여러 Agent 도구를 호출하면 진정한 병렬로 실행됩니다(순차적 대기 없음).
+
+1. `.agents/oma-config.yaml`에서 `target_vendor_for_agent`를 해석합니다
+2. 현재 런타임 벤더와 일치하면 그 벤더의 네이티브 에이전트 파일을 씁니다
+3. 일치하지 않으면 해당 에이전트에 한해 `oma agent:spawn`을 씁니다
 
 ---
 
@@ -222,7 +206,7 @@ oma dashboard:web
 - WebSocket을 통한 실시간 업데이트
 - 연결 끊김 시 자동 재연결
 - 색상 코딩된 에이전트 상태 표시기
-- 진행 및 결과 파일에서의 활동 로그 스트리밍
+- 진행 파일과 결과 파일에서 활동 로그 스트리밍
 - 세션 히스토리
 
 ### 권장 터미널 레이아웃
@@ -250,7 +234,7 @@ oma dashboard:web
 oma agent:status <session-id> <agent-id>
 ```
 
-특정 에이전트의 현재 상태를 반환: 실행 중, 완료, 또는 실패와 함께 턴 수 및 마지막 활동.
+특정 에이전트의 현재 상태를 반환합니다. 실행 중 / 완료 / 실패 상태와 함께 턴 수와 마지막 활동을 보여줍니다.
 
 ---
 
@@ -258,7 +242,7 @@ oma agent:status <session-id> <agent-id>
 
 세션 ID는 같은 기능을 작업하는 에이전트를 그룹화합니다. 모범 사례:
 
-- **기능당 하나의 세션:** "사용자 인증" 작업 에이전트 모두 `session-auth-01` 공유
+- **기능당 하나의 세션:** "사용자 인증"을 작업하는 에이전트가 모두 `session-auth-01`을 공유
 - **형식:** 설명적 ID 사용: `session-auth-01`, `session-payment-v2`, `session-20260324-143000`
 - **자동 생성:** 오케스트레이터가 `session-YYYYMMDD-HHMMSS` 형식으로 ID 생성
 - **반복에 재사용:** 수정과 함께 에이전트를 재스폰할 때 같은 세션 ID 사용
@@ -304,7 +288,7 @@ oma agent:status <session-id> <agent-id>
 
 2. **MAX_PARALLEL(기본 3)을 초과하지 마세요.** 동시 에이전트 수가 많다고 항상 더 빠른 결과를 얻는 것은 아닙니다. 각 에이전트는 메모리와 CPU 리소스가 필요합니다. 기본값 3은 대부분의 시스템에 맞게 조정되어 있습니다.
 
-3. **계획 단계를 건너뛰지 마세요.** 계획 없이 에이전트를 스폰하면 구현이 불일치합니다. 예를 들어 프론트엔드는 하나의 API 형태를 기반으로 구축하고 백엔드는 다른 형태를 구축합니다.
+3. **계획 단계를 건너뛰지 마세요.** 계획 없이 에이전트를 스폰하면 구현이 서로 어긋납니다. 예를 들어 프론트엔드는 하나의 API 형태를 기반으로 구축하고 백엔드는 다른 형태를 구축합니다.
 
 4. **실패한 에이전트를 무시하지 마세요.** 실패한 에이전트의 작업은 불완전합니다. 실패 이유를 `result-{agent}.md`에서 확인하고, 프롬프트를 수정하여 재스폰하세요.
 

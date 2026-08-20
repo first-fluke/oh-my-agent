@@ -1,6 +1,6 @@
 ---
 title: "가이드: 에이전트별 모델 설정"
-description: oma-config.yaml의 model_preset으로 각 에이전트가 사용할 AI 모델을 설정합니다. 빌트인 프리셋, 에이전트별 오버라이드, 인라인 모델 정의, extends 기반 커스텀 프리셋, oma doctor --profile, 그리고 레거시 agent_cli_mapping에서의 마이그레이션을 다룹니다.
+description: oma-config.yaml의 model_preset으로 각 에이전트가 사용할 AI 모델을 설정합니다. 빌트인 프리셋, 에이전트별 오버라이드, 인라인 모델 정의, extends 기반 커스텀 프리셋, oma doctor --profile, 그리고 레거시 agent_cli_mapping에서 넘어오는 마이그레이션을 다룹니다.
 ---
 
 # 가이드: 에이전트별 모델 설정
@@ -42,7 +42,7 @@ model_preset: antigravity
 | `cursor` | 모든 에이전트가 Cursor `composer-2.5` 사용 (orchestrator/qa/pm/docs/explore은 `composer-2.5-fast`) | Cursor Pro / Pro Student 사용자 |
 | `mixed` | 혼합 구성: 구현 역할은 Codex, architecture/qa/pm은 Claude, explore은 Gemini | 에이전트별 설정 부담 없이 벤더별 강점을 활용하고 싶을 때 |
 
-빌트인 프리셋은 CLI 패키지에 포함되어 제공되며, `oh-my-agent`를 업그레이드하면 자동으로 갱신됩니다. 별도로 관리할 로컬 파일이 없습니다.
+빌트인 프리셋은 CLI 패키지에 포함되어 제공되며, `oh-my-agent`을 업그레이드하면 자동으로 갱신됩니다. 별도로 관리할 로컬 파일이 없습니다.
 
 ---
 
@@ -82,13 +82,28 @@ agents:
 ```yaml
 # .agents/oma-config.yaml
 models:
-  my-fast-model:
+  google/gemini-3-flash-fast:
     cli: gemini
     cli_model: gemini-3-flash
+    auth_hint: "Google AI Pro"
     supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
       native_dispatch_from: [gemini]
-      thinking: true
+      api_only: false
 ```
+
+`agents:`에서 참조하는 등록 슬러그에는 두 가지 규칙이 적용됩니다.
+
+1. **키는 `owner/model` 형식이어야 합니다.** `agents.<id>.model`이 `owner/model`
+   패턴으로 검증하므로 `my-fast-model` 같은 단순 키는 거부됩니다. `google/gemini-3-flash-fast`
+   처럼 슬래시가 들어간 키(또는 벤더 자체의 `provider/model` 슬러그)를 쓰세요.
+2. **스펙은 완전해야 합니다.** 해석 시점에 `cli`, `cli_model`, `auth_hint`, 그리고 모든
+   `supports` 불리언이 필요합니다. 불완전한 스펙은 설정 파서는 통과하지만 모델 레지스트리
+   검증에서 실패하고 조용히 코어 레지스트리로 폴백합니다.
 
 > 사용자 정의 슬러그가 빌트인 슬러그와 충돌하면 사용자 정의가 우선 적용되며 경고가 출력됩니다.
 
@@ -141,7 +156,7 @@ oh-my-agent — Profile Health (preset=mixed)
 └──────────────┴──────────────────────────────┴──────────┴──────────────────┴──────────┘
 ```
 
-각 행은 해석된 모델 슬러그와 그 값을 적용한 출처(`(preset)` 또는 `(override)`)를 보여줍니다. 서브에이전트가 예상치 못한 벤더를 선택할 때마다 이 명령으로 확인하시기 바랍니다.
+각 행은 해석된 모델 슬러그와 그 값을 적용한 출처(`(preset)` 또는 `(override)`)를 보여줍니다. 서브에이전트가 예상치 못한 벤더를 선택할 때마다 이 명령으로 확인하세요.
 
 ---
 
@@ -212,7 +227,81 @@ session:
     spawn_count: 40
 ```
 
-`oma doctor --profile`로 해석 결과를 확인한 뒤, 평소처럼 워크플로우를 시작하시기 바랍니다.
+`oma doctor --profile`로 해석 결과를 확인한 뒤, 평소처럼 워크플로우를 시작하세요.
+
+---
+
+## pi(전송 런타임)를 통한 디스패치
+
+[pi](https://github.com/earendil-works/pi)(Earendil)는 모델 소유자가 아니라
+여러 프로바이더를 중계하는 프록시 런타임입니다. 실제 프로바이더 모델
+(Anthropic, OpenAI, Google)을 하나의 CLI에서 모두 돌릴 수 있습니다. oma는 pi를
+**전송 오버레이**로 다룹니다. `model_preset`과 `agents:` 오버라이드는 그대로
+두고, 특정 에이전트를 실행하는 CLI만 pi로 바뀝니다.
+
+`-m pi` 오버라이드로 어떤 에이전트든 pi를 통해 디스패치합니다.
+
+```bash
+oma agent:spawn backend "Implement the export endpoint" <session> -m pi
+```
+
+이때 일어나는 일은 다음과 같습니다.
+
+- 프리셋과 오버라이드에서 해석된 에이전트별 모델(예: `openai/gpt-5.5`)이 pi의
+  `--model <provider/id>` 형식으로 변환되고, `effort`는 pi의 `--thinking`
+  수준으로 변환됩니다. **서브에이전트별 모델은 pi에서도 네이티브와 똑같이
+  동작합니다.** 에이전트마다 다른 모델을 쓸 수 있습니다.
+- pi에는 참조할 벤더 측 에이전트 파일이 없으므로, 에이전트의 페르소나(시스템
+  프롬프트)는 `.agents/agents/<id>.md`에서 인라인으로 삽입됩니다.
+- 인증은 pi 자체 설정을 그대로 따릅니다(`~/.pi/agent/auth.json` 또는 환경의
+  프로바이더 API 키). `oma doctor`는 다른 CLI와 함께 pi의 설치 및 인증 상태를
+  보고합니다.
+
+**제약:** pi는 실제 프로바이더 모델만 실행합니다. CLI 전용 프리셋(`cursor`,
+`kiro`, `qwen`, `antigravity`)은 각자의 CLI 안에서만 존재하는 모델을 가리키므로,
+pi를 통한 디스패치는 명확한 오류와 함께 거부됩니다. 에이전트를 pi로 라우팅할
+때는 실제 프로바이더 프리셋(`claude`, `codex`, `gemini`, `mixed`)을 쓰세요.
+
+> pi의 모델 카탈로그는 릴리스에 묶여 있고 인증으로 게이트됩니다. 해석된 슬러그가
+> 설치된 pi가 노출하는 것과 맞지 않으면 `pi --list-models`를 확인하세요. pi의
+> `--model` 매칭은 퍼지 방식이라 대부분의 프로바이더 슬러그는 그대로 해석됩니다.
+
+### pi 내장 레지스트리 밖의 모델 (예: Z.ai GLM)
+
+pi는 `--model`을 **내장 모델 레지스트리**와 대조해 해석하며, `defaultProvider`
+설정은 모델을 아예 전달하지 않았을 때만 참조합니다. Z.ai의 경우 pi는 GLM id의
+일부만 제공하므로(pi 0.80.x 기준 `glm-4.7`, `glm-4.5-air`, `glm-5-turbo`,
+`glm-5.1`, `glm-5v-turbo`), 그 밖의 GLM id를 가리키는 프리셋은 해석에
+실패합니다.
+
+처리 방법은 두 가지입니다.
+
+1. **레지스트리 id 사용**: 프리셋을 레지스트리 모델 id로 제한합니다.
+   `provider/id` 형식(예: `zai/glm-4.7`)을 쓰면 프로바이더를 명시적으로 고정할
+   수 있고, oma는 이를 pi의 `--model`로 그대로 전달합니다.
+2. **미등록 id 등록**: pi 확장으로 직접 등록합니다. `api` 필드에는 pi의 **api
+   어댑터 id**(`openai-completions`, `anthropic-messages` 등)를 적어야 하며,
+   프로바이더 이름이 아닙니다. `"zai"` 같은 프로바이더 이름이나 `"openai"` 같은
+   축약형은 어댑터 id가 아니어서 디스패치 시점에
+   `No API provider registered for api: …`로 실패합니다.
+
+```typescript
+// ~/.pi/agent/extensions/zai-glm-models/index.ts  (or <project>/.pi/extensions/)
+export default function (pi: ExtensionAPI) {
+  pi.registerProvider("zai", {
+    baseUrl: "https://api.z.ai/api/coding/paas/v4",
+    api: "openai-completions", // adapter id, NOT "zai"
+    apiKey: "$ZAI_API_KEY",
+    models: [
+      { id: "glm-4.7-flash", api: "openai-completions", /* … */ },
+      // NOTE: `models` replaces ALL existing models for the provider —
+      // re-declare the built-in ids here if you still want them.
+    ],
+  });
+}
+```
+
+id를 프리셋에 연결하기 전에 `pi --list-models`로 확인하세요.
 
 ---
 
@@ -249,7 +338,7 @@ oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
    거부됩니다.
 2. **스펙은 완전해야 합니다.** `cli`, `cli_model`, `auth_hint`, 그리고 모든
    `supports` 불리언이 필요합니다. 불완전한 스펙은 검증에 실패하고 조용히 코어
-   레지스트리로 폴백되므로(따라서 해당 에이전트는 opencode로 라우팅되지 않습니다).
+   레지스트리로 폴백합니다. 따라서 해당 에이전트는 opencode로 라우팅되지 않습니다.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -286,7 +375,7 @@ Codex/Claude 등에 그대로 둘 수 있습니다.
 
 opencode의 카탈로그는 구독 및 로그인으로 게이트되어 있어, oma는 opencode 모델
 슬러그를 하드코딩하지 **않습니다**. 설치된 카탈로그를 기준으로 슬러그를
-검증하시기 바랍니다.
+검증하세요.
 
 ```bash
 oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
@@ -309,11 +398,79 @@ opencode models opencode-go                            # list everything your pl
   `cli_model`이 없는 행은 인증 실패로 단정하지 않고 `? unknown`으로 보고합니다.
 - **생성된 파일:** `oma link`(또는 `oma link opencode`)는 에이전트마다
   `.opencode/agents/<id>.md` 페르소나 하나와 `.opencode/plugins/oma/` 브릿지를
-  작성합니다. 이 파일들은 `.agents/` SSOT에서 생성되므로 직접 편집하지 마시고,
-  재생성하려면 `oma link`를 다시 실행하시기 바랍니다.
+  작성합니다. 이 파일은 `.agents/` SSOT에서 생성되므로 직접 편집하지 마시고,
+  재생성하려면 `oma link`를 다시 실행하세요.
 
 > **지속적 워크플로우 참고:** opencode의 `session.idle` 이벤트(Claude의 `Stop`
 > 훅에 가장 가까운 대응물)는 알림 전용이며 세션 종료를 막을 수 없습니다. 따라서
 > 지속적 워크플로우(orchestrate / work / ultrawork)는 opencode에서 **저하된 Stop
 > 시맨틱**으로 동작합니다. 워크플로우 보강이 세션을 열어 둔 채 이루어지는 대신
 > 다음 메시지 시점에 일어납니다.
+
+
+---
+
+## Kimi Code CLI를 통한 디스패치
+
+[Kimi Code CLI](https://www.kimi.com/code)는 **훅**을 글로벌 설정
+(`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`)에서만 읽습니다. 그래서
+`oma install`과 `oma link`는 Antigravity와 마찬가지로 명시적 동의를 받은 뒤 Kimi
+훅 체인과 스킬 심볼릭 링크를 HOME에 씁니다. Kimi는 oma의 SSOT `.agents/skills/`도
+직접 스캔하므로 스킬은 어느 쪽이든 프로젝트 전역에서 해석됩니다. **MCP**는 HOME에
+쓸 필요가 없고 프로젝트 범위로 동작하며, 모드에 따라
+`<cwd>/.kimi-code/mcp.json`(프로젝트) 또는 `~/.kimi-code/mcp.json`(글로벌)에
+기록됩니다.
+
+### 명시적 디스패치
+
+`-m kimi` 오버라이드로 어떤 에이전트든 Kimi를 통해 라우팅합니다.
+
+```bash
+oma agent:spawn pm "Draft the rollout plan" <session> -m kimi
+```
+
+이 명령은 `kimi -p "<prompt>"`를 실행합니다. Kimi의 `-p`(비대화형) 모드는 `auto`
+권한 정책에서 일반 도구 호출을 자동 승인하므로, oma는 `--yolo`나 `--auto`를 붙이지
+**않습니다**(둘은 `-p`와 함께 쓸 수 없습니다).
+
+### 에이전트별 Kimi 모델
+
+opencode와 마찬가지로 oma는 Kimi 모델 카탈로그를 하드코딩하지 **않습니다**(Kimi의
+라인업은 프로바이더와 구독에 따라 달라집니다). 특정 에이전트를 Kimi 모델로
+라우팅하려면 `models:` 아래에 `cli: kimi`로 완전한 스펙을 등록하고 `agents:`에서
+참조합니다.
+
+레지스트리 키는 `owner/model` 형식이어야 하며(단순 이름은 `agents.<id>.model`
+스키마에서 거부됩니다), `cli_model`은 `kimi --model`에 그대로 전달되는 별칭입니다.
+Kimi가 문서로 안내하는 코딩 별칭은 `kimi-code/kimi-for-coding`입니다. 확정하기
+전에 `kimi --model <alias>`로 구독이 노출하는 별칭을 확인하세요.
+
+```yaml
+# .agents/oma-config.yaml
+models:
+  kimi-code/kimi-for-coding:
+    cli: kimi
+    cli_model: kimi-code/kimi-for-coding
+    auth_hint: "Kimi subscription — run: kimi login"
+    supports:
+      effort: null
+      apply_patch: false
+      task_budget: false
+      prompt_cache: false
+      computer_use: false
+      native_dispatch_from: []
+      api_only: false
+
+agents:
+  pm:   { model: kimi-code/kimi-for-coding }
+  docs: { model: kimi-code/kimi-for-coding }
+```
+
+라우팅된 각 에이전트는 `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`를
+디스패치합니다.
+
+> **지속적 워크플로우 참고:** Kimi가 문서로 안내하는 Stop 차단 경로는 종료 코드 2와
+> stderr이지만, `oma hook` 라우터는 항상 0으로 종료하고 stdout으로 방언을
+> 내보냅니다. oma는 최선의 노력으로 `permissionDecision: "deny"`(그리고 Claude
+> 스타일의 `decision: "block"`)를 내보내므로, Kimi에서 지속적 워크플로우는 완만하게
+> 저하된 형태로 동작합니다.

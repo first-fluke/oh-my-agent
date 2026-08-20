@@ -5,15 +5,15 @@ description: oh-my-agent 2계층 스킬 아키텍처 완전 가이드입니다. 
 
 # 스킬
 
-스킬은 각 에이전트에 도메인 전문성을 부여하는 구조화된 지식 패키지입니다. 단순한 프롬프트가 아닌 실행 프로토콜, 기술 스택 레퍼런스, 코드 템플릿, 에러 플레이북, 품질 체크리스트, few-shot 예제를 포함하며, 토큰 효율성을 위해 설계된 2계층 아키텍처로 구성되어 있습니다.
+스킬은 각 에이전트에 도메인 전문성을 부여하는 구조화된 지식 패키지입니다. 단순한 프롬프트가 아니라 실행 프로토콜, 기술 스택 레퍼런스, 코드 템플릿, 에러 플레이북, 품질 체크리스트, few-shot 예제를 담고 있으며, 토큰 효율성을 위해 설계된 2계층 아키텍처로 구성되어 있습니다.
 
 ---
 
 ## 2계층 설계
 
-### Layer 1: SKILL.md (~800바이트, 항상 로딩됨)
+### Layer 1: SKILL.md (중앙값 약 3,100토큰, 스킬이 라우팅될 때 로딩됨)
 
-모든 스킬의 루트에는 `SKILL.md` 파일이 있습니다. 스킬이 참조될 때 항상 컨텍스트 윈도우에 로딩됩니다. 포함 내용:
+모든 스킬의 루트에는 `SKILL.md` 파일이 있습니다. 스킬로 라우팅될 때 컨텍스트 윈도우에 들어옵니다. 주입 훅은 본문이 아니라 **경로 참조**만 전달하므로, 라우팅되지 않은 스킬은 `description` 말고는 비용이 들지 않습니다. 포함 내용:
 
 - **YAML 프론트매터**: `name`과 `description` (라우팅과 표시에 사용)
 - **사용 시기 / 사용하지 말아야 할 때**: 명시적 활성화 조건
@@ -127,7 +127,6 @@ description 필드는 매우 중요합니다. 스킬 라우팅 시스템이 태�
 | **`clarification-protocol.md`** | 불확실성 수준(LOW/MEDIUM/HIGH)과 각각에 대한 조치를 정의합니다. 불확실성 트리거, 에스컬레이션 템플릿, 에이전트 유형별 필수 검증 항목, 서브에이전트 모드 동작이 포함됩니다. | 요구사항이 모호할 때 |
 | **`context-budget.md`** | 토큰 예산 관리. 파일 읽기 전략(`read_file`이 아닌 `find_symbol` 사용), 모델 티어별 리소스 로딩 예산(Flash: ~3,100 토큰 / Pro: ~5,000 토큰), 대용량 파일 처리, 컨텍스트 오버플로 증상을 정의합니다. | 워크플로우 시작 시 |
 | **`difficulty-guide.md`** | Simple/Medium/Complex 태스크 분류 기준. 예상 턴 수, 프로토콜 분기(Fast Track / Standard / Extended), 오판 복구를 정의합니다. | 태스크 시작 시 (Step 0) |
-| **`reasoning-templates.md`** | 일반적인 의사결정 패턴을 위한 구조화된 추론 빈칸 채우기 템플릿(예: Exploration Loop에서 사용하는 Exploration Decision 템플릿 #6). | 복잡한 의사결정 시 |
 | **`quality-principles.md`** | 모든 에이전트에 적용되는 4가지 보편적 품질 원칙. | 품질 중심 워크플로우(ultrawork) 시작 시 |
 | **`vendor-detection.md`** | 현재 런타임 환경(Claude Code, Codex CLI, Gemini CLI, Antigravity, CLI Fallback) 감지 프로토콜. 마커 확인 사용: Agent 도구 = Claude Code, apply_patch = Codex, @-syntax = Gemini. | 워크플로우 시작 시 |
 | **`session-metrics.md`** | Clarification Debt (CD) 점수 및 세션 메트릭 추적. 이벤트 유형(clarify +10, correct +25, redo +40), 임계값(CD >= 50 = RCA, CD >= 80 = 일시 중지), 통합 포인트를 정의합니다. | 오케스트레이션 세션 중 |
@@ -140,7 +139,7 @@ description 필드는 매우 중요합니다. 스킬 라우팅 시스템이 태�
 | 리소스 | 목적 |
 |----------|---------|
 | **`memory-protocol.md`** | CLI 서브에이전트용 메모리 파일 형식과 연산. On Start, During Execution, On Completion 프로토콜을 설정 가능한 메모리 도구(read/write/edit)로 정의합니다. 실험 추적 확장 포함. |
-| **`execution-protocols/claude.md`** | Claude Code 전용 실행 패턴. 벤더가 claude일 때 `oma agent:spawn`에 의해 주입됩니다. |
+| **`execution-protocols/claude.md`** | Claude Code 전용 실행 패턴. 벤더가 claude일 때 `oma agent:spawn`이 주입합니다. |
 | **`execution-protocols/gemini.md`** | Gemini CLI 전용 실행 패턴. |
 | **`execution-protocols/codex.md`** | Codex CLI 전용 실행 패턴. |
 | **`execution-protocols/qwen.md`** | Qwen CLI 전용 실행 패턴. |
@@ -180,7 +179,7 @@ description 필드는 매우 중요합니다. 스킬 라우팅 시스템이 태�
 | "버그 수정하고 리뷰해줘" | oma-debug -> oma-qa |
 | "랜딩 페이지 디자인하고 구현해줘" | oma-design -> oma-frontend |
 | "기능 아이디어가 있어" | oma-brainstorm -> oma-pm -> 관련 에이전트 -> oma-qa |
-| "자동으로 전부 해줘" | oma-orchestrator (내부: oma-pm -> 에이전트들 -> oma-qa) |
+| "자동으로 전부 해줘" | oma-orchestrator (내부: oma-pm -> 각 에이전트 -> oma-qa) |
 
 ### 에이전트 간 의존성 규칙
 
@@ -201,20 +200,62 @@ description 필드는 매우 중요합니다. 스킬 라우팅 시스템이 태�
 
 ## 토큰 절약 계산
 
-5개 에이전트 오케스트레이션 세션(pm, backend, frontend, mobile, qa)을 고려합니다:
+아래 수치는 손으로 추정한 값이 아니라 스킬 트리에서 측정한 값입니다. 언제든 다시
+계산할 수 있습니다.
 
-**점진적 공개 없이:**
-- 각 에이전트가 모든 리소스를 로딩: 에이전트당 ~4,000 토큰
-- 합계: 5 x 4,000 = 작업 전 20,000 토큰 소비
+```bash
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+```
 
-**점진적 공개 적용:**
-- 모든 에이전트의 Layer 1만: 5 x 800 = 4,000 토큰
-- 활성 에이전트(보통 한 번에 1-2개)에만 Layer 2 로딩: +1,500 토큰
-- 합계: ~5,500 토큰
+토큰 수는 **근사치**입니다(바이트를 4로 나눈 값으로, 영어 마크다운의 대략적인
+비율입니다). 표와 코드 펜스는 토크나이징 효율이 조금 떨어지므로 실제보다 낮게
+읽힙니다. 정확한 값이 필요하면 대상 모델의 실제 토크나이저를 쓰세요.
 
-**절약: 약 72-75%**
+### 로딩 티어
 
-Flash 티어 모델에서 작업에 사용할 수 있는 토큰이 108K인 것과 125K인 것의 차이입니다. 복잡한 태스크에서는 상당한 차이입니다.
+각 티어는 [`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md)
+기준으로 에이전트가 실제로 도달하는 상태입니다.
+
+| 티어 | 컨텍스트에 들어 있는 것 |
+|------|--------------------|
+| `routed` | `SKILL.md`만 |
+| `simple` | + `execution-protocol.md` |
+| `medium` | + `examples.md` |
+| `complex` | + `tech-stack.md`, `snippets.md` |
+| `all` | `SKILL.md` + 모든 리소스 파일. 선택할 수 있는 모드가 아니라 **상한**입니다 |
+
+backend와 mobile 스킬에서 이 스택 참조는 `stack/`에 있으며, `/stack-set`이
+프로젝트마다 생성합니다. 새로 받은 체크아웃에는 없으므로, 아래 `complex` 행은
+생성이 참고하는 배포판 `variants/` 시드를 기준으로 측정했습니다. 크기를 가늠하는
+대리 지표일 뿐, 에이전트가 아직 로딩하는 파일은 아닙니다.
+
+### 5개 에이전트 세션 (pm, backend, frontend, mobile, qa)
+
+| 티어 | 토큰 | 상한 대비 비중 | 절약분 |
+|------|-------:|-----------------:|--------:|
+| `routed` | 11,724 | 16.3% | 83.7% |
+| `simple` | 17,350 | 24.1% | 75.9% |
+| `medium` | 18,552 | 25.7% | 74.3% |
+| `complex` | 38,417 | 53.3% | 46.7% |
+| `all` | 72,127 | 100% | 없음 |
+
+즉 다섯 에이전트에 걸친 Simple이나 Medium 태스크는 상한인 72K가 아니라 대략
+**17~19K 토큰**의 스킬 컨텍스트만 유지하고, Complex 태스크는 약 **38K**를
+유지합니다. 일반적인 작업에서는 약 74~76%를 절약하고, 태스크가 스택 참조를 끌어
+쓰면 약 47%까지 내려갑니다. 128K 컨텍스트 모델이라면 Simple과 Medium 작업에서는
+약 110K, Complex에서는 약 90K가 남습니다.
+
+:::note `all`은 대안이 아니라 상한으로 읽으세요
+어떤 런타임도 모든 리소스를 미리 로딩하지 않습니다. 스킬은 `description`으로
+드러나고, 본문은 라우팅될 때 읽히며, 리소스는 태스크에 필요할 때 읽힙니다. `all`은
+스킬이 *들 수 있는* 비용의 상한이며, 그래서 위 비율을 실제 구성과의 비교가 아니라
+"절약분"으로 적었습니다.
+:::
+
+Layer 1은 바닥값이고, 결코 작지 않습니다. 설치된 33개 스킬에서 `SKILL.md`는
+1,542~7,580토큰(중앙값 약 3,100)입니다. 이 바닥값이 점진적 공개로 절약할 수 있는
+한계를 정합니다. 다섯 에이전트를 모두 라우팅하면 `routed` 티어만으로도 이미 상한의
+16%를 씁니다.
 
 ---
 
@@ -226,7 +267,7 @@ Flash 티어 모델에서 작업에 사용할 수 있는 토큰이 108K인 것�
 
 단일 파일 변경, 명확한 요구사항, 기존 패턴 반복.
 
-로딩: `execution-protocol.md`만. 분석을 건너뛰고 최소 체크리스트로 구현 직접 진행.
+로딩: `execution-protocol.md`만 로딩합니다. 분석을 건너뛰고 최소 체크리스트로 곧장 구현합니다.
 
 ### Medium (예상 8-15턴)
 
@@ -299,7 +340,7 @@ Flash 티어 모델에서 작업에 사용할 수 있는 토큰이 108K인 것�
 4. `error-playbook.md` (항상 포함합니다. 복구가 필수적이기 때문입니다)
 5. Serena Memory Protocol (CLI 모드)
 
-이 타겟팅된 구성은 불필요한 리소스 로딩을 방지하여, 실제 작업에 사용할 수 있는 서브에이전트의 컨텍스트를 극대화합니다.
+이렇게 대상을 좁힌 구성은 불필요한 리소스 로딩을 방지하여, 실제 작업에 사용할 수 있는 서브에이전트의 컨텍스트를 극대화합니다.
 
 ---
 
@@ -337,7 +378,7 @@ QA 에이전트는 추적된 판단 오류를 통해 개선됩니다. CD(실시�
 | `false_negative` | +30 | 다음 세션 또는 프로덕션 (QA가 놓친 버그) |
 | `false_positive` | +15 | 세션 중 (구현 에이전트가 QA 소견에 성공적으로 이의 제기) |
 | `severity_mismatch` | +10 | 세션 중 또는 다음 세션 리뷰 (잘못된 심각도 할당) |
-| `missed_stub` | +20 | 런타임 검증이 표시 전용 기능 포착 |
+| `missed_stub` | +20 | 런타임 검증이 표시 전용 기능을 포착 |
 | `good_catch` | -10 | QA가 비명백한 버그 포착 (긍정적 보상 신호) |
 
 **EA는 3세션 롤링 윈도우로 계산됩니다.** 임계값:
@@ -367,7 +408,7 @@ QA 에이전트는 추적된 판단 오류를 통해 개선됩니다. CD(실시�
 - 스프린트 2: CRUD 엔드포인트 + 유효성 검사
 - 스프린트 3: 테스트 + 에러 처리
 
-**난이도 오판 복구:** Simple로 시작했지만 더 복잡하면, 실행 중간에 Medium 또는 Complex 프로토콜로 업그레이드하고 progress에 변경 기록.
+**난이도 오판 복구:** Simple로 시작했는데 더 복잡해지면, 실행 중간에 Medium이나 Complex 프로토콜로 올리고 progress에 변경 사항을 기록합니다.
 
 ---
 

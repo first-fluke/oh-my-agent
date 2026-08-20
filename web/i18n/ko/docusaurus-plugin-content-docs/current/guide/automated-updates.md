@@ -46,7 +46,7 @@ jobs:
 |:-----|:-----|:-----|:-------|:-----|
 | `mode` | string | 아니요 | `"pr"` | 변경 적용 방법. `"pr"`은 풀 리퀘스트를 생성합니다. `"commit"`은 베이스 브랜치에 직접 푸시합니다. |
 | `base-branch` | string | 아니요 | `"main"` | PR의 베이스 브랜치(`pr` 모드) 또는 직접 커밋의 대상 브랜치(`commit` 모드). |
-| `force` | string | 아니요 | `"false"` | `oma update`에 `--force`를 전달합니다. `"true"`이면 사용자가 커스터마이즈한 설정 파일(`oma-config.yaml`, `mcp.json`)과 `stack/` 디렉토리를 덮어씁니다. 일반적으로 이들은 보존됩니다. |
+| `force` | string | 아니요 | `"false"` | `oma update`에 `--force`를 전달합니다. `"true"`이면 사용자가 커스터마이즈한 설정 파일(`oma-config.yaml`, `mcp.json`)과 `stack/` 디렉토리를 덮어씁니다. 평소에는 그대로 보존합니다. |
 | `pr-title` | string | 아니요 | `"chore(deps): update oh-my-agent skills"` | 풀 리퀘스트의 커스텀 제목. `pr` 모드에서만 사용됩니다. |
 | `pr-labels` | string | 아니요 | `"dependencies,automated"` | PR에 추가할 쉼표로 구분된 라벨. `pr` 모드에서만 사용됩니다. |
 | `commit-message` | string | 아니요 | `"chore(deps): update oh-my-agent skills"` | 커스텀 커밋 메시지. 두 모드 모두에서 사용됩니다(PR 커밋 메시지 또는 직접 커밋 메시지). |
@@ -101,7 +101,7 @@ jobs:
 
 **수행 과정:**
 - 리포지토리를 체크아웃합니다.
-- Bun을 설치한 후 oh-my-agent를 전역으로 설치합니다.
+- Bun을 설치한 후 oh-my-agent을 전역으로 설치합니다.
 - `oma update --ci`를 실행합니다.
 - `.agents/` 또는 `.claude/`에 변경이 있는지 확인합니다.
 - 변경이 있으면 `peter-evans/create-pull-request@v8`을 사용하여 `chore/update-oh-my-agent` 브랜치에 PR을 생성합니다.
@@ -142,7 +142,7 @@ jobs:
 - PAT를 사용하여 `develop` 브랜치를 체크아웃합니다.
 - `oma update --ci`를 실행합니다.
 - 변경이 있으면 `github-actions[bot]`으로 git을 설정하고 `develop`에 직접 커밋합니다.
-- PAT를 사용하면 커밋이 `develop` 브랜치에 대한 푸시 이벤트를 감지하는 모든 워크플로우를 트리거할 수 있습니다.
+- PAT를 사용하면 커밋이 `develop` 브랜치의 푸시 이벤트를 감지하는 모든 워크플로우를 트리거할 수 있습니다.
 
 **중요:** `github.token` 대신 `secrets.OH_MY_AGENT_PAT`(Contents: Write 권한이 있는 Fine-Grained PAT)를 사용하세요. 기본 `GITHUB_TOKEN`은 다른 워크플로우를 트리거하지 않는 커밋을 생성하므로, 푸시 이벤트를 기대하는 CI 파이프라인이 중단될 수 있습니다.
 
