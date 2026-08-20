@@ -7,8 +7,17 @@ import type { AgentPlan } from "./types.js";
  * genuine provider are dispatchable. CLI-proprietary owners (cursor, kiro,
  * qwen, antigravity) name models that exist only inside their own CLIs and
  * cannot be addressed through pi's `--model`.
+ *
+ * `orcarouter` (https://www.orcarouter.ai) is an OpenAI-compatible gateway
+ * proxy — like anthropic/openai/google it is a real LLM provider pi can route
+ * to via BYOK, not a CLI-proprietary owner.
  */
-const PI_RUNNABLE_PROVIDERS = new Set(["anthropic", "openai", "google"]);
+const PI_RUNNABLE_PROVIDERS = new Set([
+  "anthropic",
+  "openai",
+  "google",
+  "orcarouter",
+]);
 
 /**
  * Translate an oma registry slug (`owner/slug`) into pi's `--model` argument

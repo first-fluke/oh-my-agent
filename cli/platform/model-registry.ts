@@ -165,6 +165,11 @@ export const OWNER_TO_CLI: Record<string, RuntimeId> = {
   qwen: "qwen",
   kiro: "kiro",
   opencode: "opencode",
+  // OrcaRouter (https://www.orcarouter.ai) is an OpenAI-compatible gateway
+  // that exposes its own catalog (`orcarouter/*` aliases plus vendor-qualified
+  // models). Unregistered `orcarouter/*` slugs dispatch through the opencode
+  // CLI, mirroring the `opencode-*` provider-tier rule below.
+  orcarouter: "opencode",
 };
 
 /**
@@ -210,6 +215,37 @@ export function buildUnknownSlugError(slug: string, agentId?: string): string {
 
   if (cli && cliModel) {
     const builtIn = listBuiltInSlugsByOwner(owner);
+    // Gateway owners (OpenRouter / OrcaRouter) resolve to a CLI but expose
+    // their own catalog — tailor the hint so the user is pointed at the right
+    // gateway rather than a vendor-native model.
+    if (owner === "orcarouter") {
+      lines.push(
+        `This looks like an OrcaRouter model for ${owner} (CLI: ${cli}).`,
+        `OrcaRouter (https://www.orcarouter.ai) is an OpenAI-compatible gateway — its ` +
+          `\`orcarouter/*\` aliases and vendor-qualified models dispatch through the ` +
+          `${cli} CLI. Register it in .agents/oma-config.yaml:`,
+        "",
+        "models:",
+        `  ${slug}:`,
+        `    cli: ${cli}`,
+        `    cli_model: ${cliModel}            # confirm via \`${cli} --help\``,
+        "    supports:",
+        `      native_dispatch_from: [${cli}]`,
+        "",
+      );
+      if (builtIn.length > 0) {
+        lines.push(
+          `Built-in ${owner} slugs you can use without a models: block:`,
+          ...builtIn.map((s) => `  - ${s}`),
+          "",
+        );
+      }
+      lines.push(
+        "Browse OrcaRouter models: https://api.orcarouter.ai/v1/models",
+      );
+      return lines.join("\n");
+    }
+
     lines.push(
       `This looks like an OpenRouter slug for ${owner} (CLI: ${cli}).`,
       `If your ${cli} CLI accepts this model, register it in .agents/oma-config.yaml:`,

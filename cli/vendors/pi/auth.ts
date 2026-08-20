@@ -16,6 +16,7 @@ const PI_PROVIDER_ENV_KEYS = [
   "XAI_API_KEY",
   "MISTRAL_API_KEY",
   "AZURE_OPENAI_API_KEY",
+  "ORCAROUTER_API_KEY",
 ] as const;
 
 /**

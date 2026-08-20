@@ -448,6 +448,19 @@ describe("buildUnknownSlugError", () => {
     expect(msg).toContain("cli_model: gpt-99-future");
   });
 
+  it("scaffolds an OrcaRouter gateway model via the opencode CLI", async () => {
+    const { buildUnknownSlugError } = await import("./model-registry.js");
+    const msg = buildUnknownSlugError("orcarouter/auto", "pm");
+    expect(msg).toContain('Unknown model slug "orcarouter/auto"');
+    expect(msg).toContain('for agent "pm"');
+    expect(msg).toContain("OrcaRouter");
+    expect(msg).toContain("orcarouter (CLI: opencode)");
+    expect(msg).toMatch(/models:\n\s+orcarouter\/auto:/);
+    expect(msg).toContain("cli: opencode");
+    expect(msg).toContain("native_dispatch_from: [opencode]");
+    expect(msg).toContain("https://api.orcarouter.ai/v1/models");
+  });
+
   it("scaffolds for qwen pairing", async () => {
     const { buildUnknownSlugError } = await import("./model-registry.js");
     const msg = buildUnknownSlugError("qwen/qwen99-plus");
