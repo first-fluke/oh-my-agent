@@ -376,7 +376,7 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 - 一つの文章内でレジスターを混在させない
 - ドメイン固有の用語はそのまま保持
 
-**リソース：** `translation-rubric.md`、`anti-ai-patterns.md`。
+**リソース：** `translation-rubric.md`、`anti-ai-patterns.md`（いずれも言語非依存）と、`resources/lang/` 配下のターゲット言語別プロファイル（`ko`、`ja`、`zh`、`en`。追加は `_template.md` から）。
 
 ---
 

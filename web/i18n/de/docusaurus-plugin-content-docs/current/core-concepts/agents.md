@@ -376,7 +376,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 - Niemals Register innerhalb eines Textes mischen
 - Domänenspezifische Terminologie unverändert beibehalten
 
-**Ressourcen:** `translation-rubric.md`, `anti-ai-patterns.md`.
+**Ressourcen:** `translation-rubric.md`, `anti-ai-patterns.md` (beide sprachneutral) sowie ein zielsprachenspezifisches Profil unter `resources/lang/` (`ko`, `ja`, `zh`, `en`; weitere lassen sich über `_template.md` anlegen).
 
 ---
 

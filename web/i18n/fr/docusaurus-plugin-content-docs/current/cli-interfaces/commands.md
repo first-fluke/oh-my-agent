@@ -284,7 +284,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | Fournisseur CLI à utiliser : `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Répertoire de travail de l'agent. Détecté automatiquement depuis la config monorepo si omis. |
 
-**Ordre de résolution du fournisseur :** flag `--model` > `model_preset (per-agent overrides via `agents:`)` dans oma-config.yaml > `default_cli` > `active_vendor` dans cli-config.yaml > `gemini`.
+**Ordre de résolution du fournisseur :** flag `--model` > surcharge `agents:` dans `oma-config.yaml` > valeurs par défaut de l'agent du `model_preset` actif.
 
 
 

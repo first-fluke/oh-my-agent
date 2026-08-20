@@ -120,55 +120,34 @@ oma agent:parallel -i \
 
 ## 多 CLI 配置
 
-并非所有 AI CLI 在各领域都表现一致。oh-my-agent 允许你将智能体路由到最适合其领域的 CLI。
+oh-my-agent 通过 `.agents/oma-config.yaml` 中的 `model_preset` 把每个智能体路由到合适的 CLI。选择与所用供应商匹配的内置预设，必要时再单独覆盖个别智能体。
 
-### 完整配置示例
+### 配置示例
 
 ```yaml
 # .agents/oma-config.yaml
-
-# 响应语言
 language: en
+model_preset: mixed   # mixed：QA/PM 用 Claude，实现用 Codex，探索用 Gemini
 
-# 报告日期格式
-date_format: "YYYY-MM-DD"
-
-# 时间戳时区
-timezone: "Asia/Seoul"
-
-# 默认 CLI（无智能体特定映射时使用）
-default_cli: gemini
-
-# 每智能体 CLI 路由
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # 复杂 UI 推理、组件组合
-  backend: gemini        # 快速 API 脚手架、CRUD 生成
-  mobile: gemini         # 快速 Flutter 代码生成
-  db: gemini             # 快速 schema 设计
-  pm: gemini             # 快速任务分解
-  qa: claude             # 彻底的安全和无障碍审查
-  debug: claude          # 深度根因分析、符号追踪
-  design: claude         # 细致的设计决策、反模式检测
-  tf-infra: gemini       # HCL 生成
-  dev-workflow: gemini   # 任务运行器配置
-  translator: claude     # 具有文化敏感性的细致翻译
-  orchestrator: gemini   # 快速协调
-  commit: gemini         # 简单提交消息生成
+# 在预设之上覆盖特定智能体
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
+  backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-### 供应商解析优先级
+内置预设：`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`mixed`。详见[按智能体的模型](../guide/per-agent-models.md)。
 
-当 `oma agent:spawn` 确定使用哪个 CLI 时，遵循以下优先级（最高优先）：
+### 供应商解析
+
+`oma agent:spawn` 确定使用哪个 CLI 时的顺序：
 
 | 优先级 | 来源 | 示例 |
-|--------|------|------|
+|----------|--------|---------|
 | 1（最高） | `--model` 标志 | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `model_preset (per-agent overrides via `agents:`)` | oma-config.yaml 中的 `model_preset (per-agent overrides via `agents:`).backend: gemini` |
-| 3 | `default_cli` | oma-config.yaml 中的 `default_cli: gemini` |
-| 4 | `active_vendor` | 旧版 `cli-config.yaml` 设置 |
-| 5（最低） | 硬编码回退 | `gemini` |
+| 2 | `oma-config.yaml` 中的 `agents:` 覆盖 | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 3 | 活动 `model_preset` 的智能体默认值 | 按智能体角色查找预设 |
 
-这意味着 `--model` 标志始终优先。如果未提供标志，系统依次检查智能体特定映射、默认值、旧版配置，最后回退到 Gemini。
+`--model` 标志始终优先。没有该标志时，系统先看 `agents:` 覆盖，再用预设默认值。
 
 ---
 

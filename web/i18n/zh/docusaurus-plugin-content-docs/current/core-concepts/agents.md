@@ -376,7 +376,7 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 - 同一篇文章中不混合语域
 - 保留领域特定术语原文
 
-**资源：** `translation-rubric.md`、`anti-ai-patterns.md`。
+**资源：** `translation-rubric.md`、`anti-ai-patterns.md`（均与语言无关），以及 `resources/lang/` 下按目标语言划分的配置文件（`ko`、`ja`、`zh`、`en`；新增语言可复制 `_template.md`）。
 
 ---
 

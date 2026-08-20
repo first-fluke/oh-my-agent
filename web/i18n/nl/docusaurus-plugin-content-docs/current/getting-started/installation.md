@@ -203,34 +203,32 @@ Authenticatie wordt afgehandeld door `agy` bij de eerste uitvoering. Het binaire
 Het `oma install`-commando maakt `.agents/oma-config.yaml` aan. Dit is het centrale configuratiebestand voor al het oh-my-agent gedrag:
 
 ```yaml
-# Antwoordtaal voor alle agenten en workflows
+# Vereist
 language: en
+model_preset: antigravity   # ingebouwd: antigravity, claude, codex, qwen, cursor, mixed
 
-# Datumnotatie gebruikt in rapporten en geheugenbestanden
-date_format: "YYYY-MM-DD"
+# Optioneel — datum-/tijdvoorkeuren
+date_format: ISO
+timezone: UTC
 
-# Tijdzone voor tijdstempels
-timezone: "UTC"
+# Optioneel — CLI automatisch bijwerken op de achtergrond
+auto_update_cli: true
 
-# Standaard CLI-tool voor agent-spawning
-# Opties: antigravity, claude, codex, qwen
-default_cli: gemini
+# Optioneel — gedeeltelijke overschrijving per agent (alleen objecten, ondiepe merge)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# Per-agent CLI-mapping (overschrijft default_cli)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Complexe UI-redenering
-  backend: gemini        # Snelle API-generatie
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Snelle decompositie
-  qa: claude             # Grondige beveiligingsreview
-  debug: claude          # Diepgaande oorzaakanalyse
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# Optioneel — door de gebruiker gedefinieerde modelslugs
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# Optioneel — door de gebruiker gedefinieerde presets
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### Veldreferentie
@@ -240,18 +238,14 @@ model_preset (per-agent overrides via `agents:`):
 | `language` | string | `en` | Antwoordtaalcode. Alle agentuitvoer, workflowberichten en rapporten gebruiken deze taal. Ondersteunt 11 talen (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
 | `date_format` | string | `YYYY-MM-DD` | Datumnotatiestring voor tijdstempels in plannen, geheugenbestanden en rapporten. |
 | `timezone` | string | `UTC` | Tijdzone voor alle tijdstempels. Gebruikt standaard tijdzone-identificatoren (bijv. `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | Fallback-CLI wanneer er geen agentspecifieke mapping bestaat. Gebruikt als niveau 3 in leveranciersresolutieprioriteit. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (leeg) | Mapt agent-ID's naar specifieke CLI-leveranciers. Heeft voorrang op `default_cli`. |
+| `model_preset` | string | `claude` | Actieve presetsleutel. Een van de ingebouwde sleutels (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) of een `custom_presets`-sleutel. Zie [Modellen per agent](../guide/per-agent-models.md). |
+| `agents` | map | (leeg) | Gedeeltelijke overschrijvingen per agent (alleen object-`AgentSpec`). Ondiep samengevoegd boven op de presetwaarden. |
+| `models` | map | (leeg) | Door de gebruiker gedefinieerde modelslugs. |
+| `custom_presets` | map | (leeg) | Door de gebruiker gedefinieerde presets. Ondersteunt `extends:` om gedeeltelijk van een ingebouwd preset te erven. |
 
-### Leveranciersresolutieprioriteit
+### Leveranciersresolutie
 
-Bij het spawnen van een agent wordt de CLI-leverancier bepaald door deze prioriteitsvolgorde (hoogste eerst):
-
-1. `--model`-vlag meegegeven aan `oma agent:spawn`
-2. `model_preset (per-agent overrides via `agents:`)`-vermelding voor die specifieke agent in `oma-config.yaml`
-3. `default_cli`-instelling in `oma-config.yaml`
-4. `active_vendor` in `cli-config.yaml` (legacy fallback)
-5. `gemini` (hardgecodeerde laatste fallback)
+Bij het spawnen van een agent wordt de CLI-leverancier afgeleid uit het actieve `model_preset` (plus eventuele `agents:`-overschrijvingen). Zie [Modellen per agent](../guide/per-agent-models.md) voor alle details.
 
 ---
 

@@ -73,7 +73,7 @@ oh-my-agent giải quyết vấn đề này bằng chuyên biệt hóa:
 
 | Agent | Vai trò | Khả năng chính |
 |-------|------|-----------------|
-| **oma-translator** | Dịch thuật nhận biết ngữ cảnh | Phương pháp dịch 4 bước: Phân tích nguồn, Trích xuất ý nghĩa, Tái tạo bằng ngôn ngữ đích, Xác minh. Bảo toàn giọng điệu, phong cách và thuật ngữ chuyên ngành. Phát hiện anti-pattern AI. Hỗ trợ dịch hàng loạt (file i18n). Chế độ tinh chỉnh 7 bước tùy chọn cho chất lượng xuất bản. Tài nguyên: `translation-rubric.md`, `anti-ai-patterns.md`. |
+| **oma-translator** | Dịch thuật nhận biết ngữ cảnh | Phương pháp dịch 4 bước: Phân tích nguồn, Trích xuất ý nghĩa, Tái tạo bằng ngôn ngữ đích, Xác minh. Bảo toàn giọng điệu, phong cách và thuật ngữ chuyên ngành. Phát hiện anti-pattern AI. Hỗ trợ dịch hàng loạt (file i18n). Chế độ tinh chỉnh 7 bước tùy chọn cho chất lượng xuất bản. Hồ sơ theo từng ngôn ngữ đích (`resources/lang/{code}.md`) chứa hệ thống ngữ vực, quy tắc trình bày và các quy tắc chống văn dịch riêng của từng ngôn ngữ. Tài nguyên: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestrator** | Điều phối đa agent tự động | Spawn subagent CLI song song, điều phối qua MCP memory, theo dõi tiến trình, chạy vòng lặp xác minh. Cấu hình: MAX_PARALLEL (mặc định 3), MAX_RETRIES (mặc định 2), POLL_INTERVAL (mặc định 30s). Bao gồm vòng lặp review giữa các agent và giám sát Clarification Debt. Tài nguyên: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventional Commits | Phân tích thay đổi, xác định type/scope, tách theo tính năng khi phù hợp, tạo commit message theo định dạng Conventional Commits. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 

@@ -109,40 +109,34 @@ oma agent:parallel -i \
 
 ## Мульти-CLI конфигурация
 
-### Полный пример
+oh-my-agent направляет каждого агента в подходящий CLI через `model_preset` в `.agents/oma-config.yaml`. Выберите встроенный пресет для своего вендора и при необходимости переопределите отдельных агентов.
+
+### Пример конфигурации
 
 ```yaml
 # .agents/oma-config.yaml
 language: en
-date_format: "YYYY-MM-DD"
-timezone: "Asia/Seoul"
-default_cli: gemini
+model_preset: mixed   # mixed: Claude для QA/PM, Codex для реализации, Gemini для исследования
 
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Сложные UI-рассуждения
-  backend: gemini        # Быстрая генерация API
-  mobile: gemini         # Быстрая генерация Flutter
-  db: gemini             # Быстрое проектирование схем
-  pm: gemini             # Быстрая декомпозиция
-  qa: claude             # Тщательный аудит безопасности
-  debug: claude          # Глубокий анализ корневых причин
-  design: claude         # Нюансированные дизайн-решения
-  tf-infra: gemini       # Генерация HCL
-  dev-workflow: gemini   # Конфигурация таск-раннера
-  translator: claude     # Нюансированный перевод
-  orchestrator: gemini   # Быстрая координация
-  commit: gemini         # Генерация сообщений коммитов
+# Переопределить отдельных агентов поверх пресета
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
+  backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-### Приоритет определения вендора
+Встроенные пресеты: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Подробности — [Модели по агентам](../guide/per-agent-models.md).
+
+### Определение вендора
+
+Когда `oma agent:spawn` определяет, какой CLI использовать:
 
 | Приоритет | Источник | Пример |
-|-----------|---------|--------|
-| 1 (высший) | Флаг `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `model_preset (per-agent overrides via `agents:`)` | `model_preset (per-agent overrides via `agents:`).backend: gemini` |
-| 3 | `default_cli` | `default_cli: gemini` |
-| 4 | `active_vendor` | Устаревшая `cli-config.yaml` |
-| 5 (низший) | Жёстко закодированный | `gemini` |
+|----------|--------|---------|
+| 1 (высший) | флаг `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
+| 2 | переопределение `agents:` в `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 3 | значения агента из активного `model_preset` | поиск роли агента в пресете |
+
+Флаг `--model` всегда побеждает. Если флага нет, система смотрит переопределения `agents:`, затем значения пресета.
 
 ---
 

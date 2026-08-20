@@ -367,7 +367,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 - Không trộn phong cách trong một bài
 - Bảo toàn thuật ngữ đặc thù lĩnh vực nguyên trạng
 
-**Tài nguyên:** `translation-rubric.md`, `anti-ai-patterns.md`.
+**Tài nguyên:** `translation-rubric.md`, `anti-ai-patterns.md` (cả hai đều trung lập về ngôn ngữ), cùng hồ sơ riêng cho từng ngôn ngữ đích trong `resources/lang/` (`ko`, `ja`, `zh`, `en`; dùng `_template.md` để thêm ngôn ngữ mới).
 
 ---
 

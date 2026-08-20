@@ -379,7 +379,7 @@ Agentes no oh-my-agent são papéis especializados de engenharia. Cada agente po
 - Nunca misturar registros dentro de um texto
 - Preservar terminologia específica de domínio como está
 
-**Recursos:** `translation-rubric.md`, `anti-ai-patterns.md`.
+**Recursos:** `translation-rubric.md`, `anti-ai-patterns.md` (ambos neutros em relação ao idioma), além de um perfil por idioma de destino em `resources/lang/` (`ko`, `ja`, `zh`, `en`; use `_template.md` para adicionar outros).
 
 ---
 

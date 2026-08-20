@@ -120,55 +120,34 @@ Flaga `-i` (inline) pozwala określić pary agent-prompt bezpośrednio w polecen
 
 ## Konfiguracja wielu CLI
 
-Nie wszystkie CLI AI działają jednakowo dobrze we wszystkich domenach. oh-my-agent pozwala kierować agentów do CLI, które najlepiej obsługuje ich domenę.
+oh-my-agent kieruje każdego agenta do właściwego CLI na podstawie `model_preset` w `.agents/oma-config.yaml`. Wybierz wbudowany preset dla używanego dostawcy i opcjonalnie nadpisz pojedynczych agentów.
 
-### Pełny przykład konfiguracji
+### Przykład konfiguracji
 
 ```yaml
 # .agents/oma-config.yaml
-
-# Język odpowiedzi
 language: en
+model_preset: mixed   # mixed: Claude dla QA/PM, Codex dla implementacji, Gemini dla eksploracji
 
-# Format daty dla raportów
-date_format: "YYYY-MM-DD"
-
-# Strefa czasowa dla znaczników czasu
-timezone: "Asia/Seoul"
-
-# Domyślne CLI (używane gdy brak mapowania per agent)
-default_cli: gemini
-
-# Routing CLI per agent
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Złożone wnioskowanie UI, kompozycja komponentów
-  backend: gemini        # Szybkie scaffolding API, generowanie CRUD
-  mobile: gemini         # Szybkie generowanie kodu Flutter
-  db: gemini             # Szybkie projektowanie schematu
-  pm: gemini             # Szybka dekompozycja zadań
-  qa: claude             # Dokładny przegląd bezpieczeństwa i dostępności
-  debug: claude          # Głęboka analiza przyczyn źródłowych, śledzenie symboli
-  design: claude         # Niuansowane decyzje projektowe, wykrywanie anty-wzorców
-  tf-infra: gemini       # Generowanie HCL
-  dev-workflow: gemini   # Konfiguracja menedżera zadań
-  translator: claude     # Niuansowane tłumaczenie z wrażliwością kulturową
-  orchestrator: gemini   # Szybka koordynacja
-  commit: gemini         # Proste generowanie wiadomości commitów
+# Nadpisz wybranych agentów na wierzchu presetu
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
+  backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-### Priorytet rozwiązywania dostawcy
+Wbudowane presety: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Szczegóły w [Modele per-agent](../guide/per-agent-models.md).
 
-Gdy `oma agent:spawn` określa którego CLI użyć, podąża za tym priorytetem (najwyższy wygrywa):
+### Rozwiązywanie dostawcy
+
+Gdy `oma agent:spawn` ustala, którego CLI użyć:
 
 | Priorytet | Źródło | Przykład |
 |----------|--------|---------|
-| 1 (najwyższy) | Flaga `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `model_preset (per-agent overrides via `agents:`)` | `model_preset (per-agent overrides via `agents:`).backend: gemini` w oma-config.yaml |
-| 3 | `default_cli` | `default_cli: gemini` w oma-config.yaml |
-| 4 | `active_vendor` | Stare ustawienie z `cli-config.yaml` |
-| 5 (najniższy) | Zakodowany fallback | `gemini` |
+| 1 (najwyższy) | flaga `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
+| 2 | nadpisanie `agents:` w `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 3 | domyślne wartości agenta z aktywnego `model_preset` | wyszukanie roli agenta w presecie |
 
-Oznacza to, że flaga `--model` zawsze wygrywa. Jeśli flaga nie jest podana, system sprawdza mapowanie per agent, potem domyślne, potem starszą konfigurację, a na końcu fallback do Gemini.
+Flaga `--model` zawsze wygrywa. Bez flagi system sprawdza nadpisania `agents:`, a następnie wartości domyślne presetu.
 
 ---
 

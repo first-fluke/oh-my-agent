@@ -203,34 +203,32 @@ Uwierzytelnianie odbywa się przez `agy` przy pierwszym uruchomieniu. Binarka to
 Polecenie `oma install` tworzy plik `.agents/oma-config.yaml`. To centralny plik konfiguracyjny dla całego zachowania oh-my-agent:
 
 ```yaml
-# Język odpowiedzi dla wszystkich agentów i workflow
+# Wymagane
 language: en
+model_preset: antigravity   # wbudowane: antigravity, claude, codex, qwen, cursor, mixed
 
-# Format daty używany w raportach i plikach pamięci
-date_format: "YYYY-MM-DD"
+# Opcjonalne — preferencje daty/godziny
+date_format: ISO
+timezone: UTC
 
-# Strefa czasowa dla znaczników czasu
-timezone: "UTC"
+# Opcjonalne — automatyczna aktualizacja CLI w tle
+auto_update_cli: true
 
-# Domyślne narzędzie CLI do uruchamiania agentów
-# Opcje: antigravity, claude, codex, qwen
-default_cli: gemini
+# Opcjonalne — częściowe nadpisanie per agent (tylko obiekty, płytkie scalanie)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# Mapowanie CLI per agent (nadpisuje default_cli)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Złożone wnioskowanie UI
-  backend: gemini        # Szybkie generowanie API
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Szybki rozkład zadań
-  qa: claude             # Dokładny przegląd bezpieczeństwa
-  debug: claude          # Głęboka analiza przyczyn źródłowych
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# Opcjonalne — slugi modeli zdefiniowane przez użytkownika
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# Opcjonalne — presety zdefiniowane przez użytkownika
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### Referencja pól
@@ -240,18 +238,14 @@ model_preset (per-agent overrides via `agents:`):
 | `language` | string | `en` | Kod języka odpowiedzi. Wszystkie wyjścia agentów, komunikaty workflow i raporty używają tego języka. Obsługuje 11 języków (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
 | `date_format` | string | `YYYY-MM-DD` | Format daty dla znaczników czasu w planach, plikach pamięci i raportach. |
 | `timezone` | string | `UTC` | Strefa czasowa dla wszystkich znaczników czasu. Używa standardowych identyfikatorów stref (np. `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | Awaryjne CLI gdy nie istnieje mapowanie specyficzne dla agenta. Używane jako poziom 3 w priorytecie rozwiązywania dostawcy. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (pusty) | Mapuje identyfikatory agentów na konkretnych dostawców CLI. Ma pierwszeństwo przed `default_cli`. |
+| `model_preset` | string | `claude` | Klucz aktywnego presetu. Jeden z kluczy wbudowanych (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) albo klucz z `custom_presets`. Zobacz [Modele per-agent](../guide/per-agent-models.md). |
+| `agents` | map | (pusty) | Częściowe nadpisania per agent (`AgentSpec` tylko jako obiekt). Scalane płytko na wartościach presetu. |
+| `models` | map | (pusty) | Slugi modeli zdefiniowane przez użytkownika. |
+| `custom_presets` | map | (pusty) | Presety zdefiniowane przez użytkownika. Obsługuje `extends:` do częściowego dziedziczenia z presetu wbudowanego. |
 
-### Priorytet rozwiązywania dostawcy
+### Rozwiązywanie dostawcy
 
-Przy uruchamianiu agenta, dostawca CLI jest określany według tego priorytetu (od najwyższego):
-
-1. Flaga `--model` przekazana do `oma agent:spawn`
-2. Wpis `model_preset (per-agent overrides via `agents:`)` dla konkretnego agenta w `oma-config.yaml`
-3. Ustawienie `default_cli` w `oma-config.yaml`
-4. `active_vendor` w `cli-config.yaml` (awaryjne zachowanie wsteczne)
-5. `gemini` (zakodowany na stałe ostateczny fallback)
+Przy uruchamianiu agenta dostawca CLI jest wyznaczany na podstawie aktywnego `model_preset` (oraz ewentualnych nadpisań `agents:`). Pełne szczegóły w [Modele per-agent](../guide/per-agent-models.md).
 
 ---
 

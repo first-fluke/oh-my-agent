@@ -112,38 +112,34 @@ oma agent:parallel -i \
 
 ## Multi-CLI configuratie
 
+oh-my-agent routeert elke agent naar de juiste CLI via `model_preset` in `.agents/oma-config.yaml`. Kies een ingebouwd preset voor je leverancier en overschrijf desgewenst afzonderlijke agents.
+
+### Configuratievoorbeeld
+
 ```yaml
 # .agents/oma-config.yaml
 language: en
-date_format: "YYYY-MM-DD"
-timezone: "Asia/Seoul"
-default_cli: gemini
+model_preset: mixed   # mixed: Claude voor QA/PM, Codex voor implementatie, Gemini voor verkenning
 
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Complexe UI-redenering
-  backend: gemini        # Snelle API-scaffolding
-  mobile: gemini         # Snelle Flutter codegeneratie
-  db: gemini             # Snel schemaontwerp
-  pm: gemini             # Snelle taakdecompositie
-  qa: claude             # Grondige beveiliging en toegankelijkheidsreview
-  debug: claude          # Diepgaande oorzaakanalyse
-  design: claude         # Genuanceerde ontwerpbeslissingen
-  tf-infra: gemini       # HCL-generatie
-  dev-workflow: gemini   # Task runner-configuratie
-  translator: claude     # Genuanceerde vertaling
-  orchestrator: gemini   # Snelle coordinatie
-  commit: gemini         # Eenvoudige commitberichtgeneratie
+# Overschrijf specifieke agents boven op het preset
+agents:
+  frontend: { model: anthropic/claude-sonnet-4-6 }
+  backend:  { model: openai/gpt-5.5, effort: high }
 ```
 
-### Leveranciersresolutieprioriteit
+Ingebouwde presets: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Zie [Modellen per agent](../guide/per-agent-models.md) voor details.
+
+### Leveranciersresolutie
+
+Wanneer `oma agent:spawn` bepaalt welke CLI wordt gebruikt:
 
 | Prioriteit | Bron | Voorbeeld |
-|------------|------|---------|
-| 1 (hoogste) | `--model` vlag | `oma agent:spawn backend "task" session-01 -m claude` |
-| 2 | `model_preset (per-agent overrides via `agents:`)` | `model_preset (per-agent overrides via `agents:`).backend: gemini` in oma-config.yaml |
-| 3 | `default_cli` | `default_cli: gemini` in oma-config.yaml |
-| 4 | `active_vendor` | Legacy `cli-config.yaml` instelling |
-| 5 (laagste) | Hardgecodeerde fallback | `gemini` |
+|----------|--------|---------|
+| 1 (hoogste) | `--model`-vlag | `oma agent:spawn backend "task" session-01 -m claude` |
+| 2 | `agents:`-overschrijving in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
+| 3 | agentstandaarden van het actieve `model_preset` | presetopzoeking voor de agentrol |
+
+De `--model`-vlag wint altijd. Zonder vlag kijkt het systeem naar `agents:`-overschrijvingen en daarna naar de presetstandaarden.
 
 ---
 

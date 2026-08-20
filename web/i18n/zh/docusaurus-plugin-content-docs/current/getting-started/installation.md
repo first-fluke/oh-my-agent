@@ -204,34 +204,32 @@ curl -fsSL https://antigravity.google/cli/install.sh | bash
 `oma install` 命令创建 `.agents/oma-config.yaml`。这是控制所有 oh-my-agent 行为的中心配置文件：
 
 ```yaml
-# 所有智能体和工作流的响应语言
-language: en
-
-# 报告和内存文件中使用的日期格式
-date_format: "YYYY-MM-DD"
-
-# 时间戳时区
-timezone: "UTC"
-
 # 必填
 language: en
-model_preset: antigravity   # 内置选项：antigravity、claude、codex、qwen、cursor、mixed
+model_preset: antigravity   # 内置: antigravity, claude, codex, qwen, cursor, mixed
 
-# 每个智能体的 CLI 映射（覆盖 default_cli）
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # 复杂 UI 推理
-  backend: gemini        # 快速 API 生成
-  mobile: gemini
-  db: gemini
-  pm: gemini             # 快速分解
-  qa: claude             # 深入安全审查
-  debug: claude          # 深度根因分析
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# 可选 — 日期/时间偏好
+date_format: ISO
+timezone: UTC
+
+# 可选 — 后台自动更新 CLI
+auto_update_cli: true
+
+# 可选 — 按智能体的部分覆盖（仅对象，浅合并）
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
+
+# 可选 — 用户自定义模型 slug
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# 可选 — 用户自定义预设
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### 字段参考
@@ -241,18 +239,14 @@ model_preset (per-agent overrides via `agents:`):
 | `language` | string | `en` | 响应语言代码。所有智能体输出、工作流消息和报告使用此语言。支持 11 种语言（en、ko、ja、zh、es、fr、de、pt、ru、nl、pl）。 |
 | `date_format` | string | `YYYY-MM-DD` | 计划、内存文件和报告中时间戳的日期格式字符串。 |
 | `timezone` | string | `UTC` | 所有时间戳的时区。使用标准时区标识符（例如 `Asia/Seoul`、`America/New_York`）。 |
-| `default_cli` | string | `gemini` | 无智能体特定映射时的回退 CLI。在供应商解析优先级中为第 3 级。 |
-| `model_preset (per-agent overrides via `agents:`)` | map | （空） | 将智能体 ID 映射到特定 CLI 供应商。优先级高于 `default_cli`。 |
+| `model_preset` | string | `claude` | 活动预设键。可以是内置键（`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`mixed`）之一，或 `custom_presets` 中的键。参见[按智能体的模型](../guide/per-agent-models.md)。 |
+| `agents` | map | （空） | 按智能体的部分覆盖（仅对象形式的 `AgentSpec`）。在预设值之上做浅合并。 |
+| `models` | map | （空） | 用户自定义模型 slug。 |
+| `custom_presets` | map | （空） | 用户自定义预设。支持 `extends:` 以部分继承内置预设。 |
 
-### 供应商解析优先级
+### 供应商解析
 
-启动智能体时，CLI 供应商按以下优先级顺序确定（从高到低）：
-
-1. 传递给 `oma agent:spawn` 的 `--model` 参数
-2. `oma-config.yaml` 中该特定智能体的 `model_preset (per-agent overrides via `agents:`)` 条目
-3. `oma-config.yaml` 中的 `default_cli` 设置
-4. `cli-config.yaml` 中的 `active_vendor`（旧版回退）
-5. `gemini`（硬编码的最终回退）
+启动智能体时，CLI 供应商由活动的 `model_preset`（以及可能存在的 `agents:` 覆盖）解析得出。完整细节参见[按智能体的模型](../guide/per-agent-models.md)。
 
 ---
 

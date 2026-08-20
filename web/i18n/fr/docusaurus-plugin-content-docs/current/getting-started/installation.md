@@ -203,34 +203,32 @@ L'authentification est gérée par `agy` au premier lancement. Le binaire est `a
 La commande `oma install` crée `.agents/oma-config.yaml`. C'est le fichier de configuration central pour tout le comportement d'oh-my-agent :
 
 ```yaml
-# Langue de réponse pour tous les agents et workflows
+# Requis
 language: en
+model_preset: antigravity   # intégrés: antigravity, claude, codex, qwen, cursor, mixed
 
-# Format de date utilisé dans les rapports et fichiers mémoire
-date_format: "YYYY-MM-DD"
+# Optionnel — préférences de date/heure
+date_format: ISO
+timezone: UTC
 
-# Fuseau horaire pour les horodatages
-timezone: "UTC"
+# Optionnel — mise à jour auto de la CLI en arrière-plan
+auto_update_cli: true
 
-# CLI par défaut pour le lancement des agents
-# Options : antigravity, claude, codex, qwen
-default_cli: gemini
+# Optionnel — surcharge partielle par agent (objets uniquement, fusion superficielle)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# Mapping CLI par agent (remplace default_cli)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Raisonnement UI complexe
-  backend: gemini        # Génération rapide d'API
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Décomposition rapide
-  qa: claude             # Revue de sécurité approfondie
-  debug: claude          # Analyse de cause profonde
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# Optionnel — slugs de modèles définis par l'utilisateur
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# Optionnel — presets définis par l'utilisateur
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### Référence des champs
@@ -240,18 +238,14 @@ model_preset (per-agent overrides via `agents:`):
 | `language` | string | `en` | Code de langue de réponse. Toute sortie d'agent, message de workflow et rapport utilise cette langue. Prend en charge 11 langues (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
 | `date_format` | string | `YYYY-MM-DD` | Chaîne de format de date pour les horodatages des plans, fichiers mémoire et rapports. |
 | `timezone` | string | `UTC` | Fuseau horaire de tous les horodatages. Utilise les identifiants standard (par exemple `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | CLI de repli lorsqu'aucun mapping spécifique à l'agent n'existe. Utilisé comme niveau 3 dans la priorité de résolution du fournisseur. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (vide) | Associe les identifiants d'agent à des fournisseurs CLI spécifiques. Prioritaire sur `default_cli`. |
+| `model_preset` | string | `claude` | Clé du preset actif. Une des clés intégrées (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) ou une clé de `custom_presets`. Voir [Modèles par agent](../guide/per-agent-models.md). |
+| `agents` | map | (vide) | Surcharges partielles par agent (`AgentSpec` objet uniquement). Fusionnées superficiellement par-dessus les valeurs du preset. |
+| `models` | map | (vide) | Slugs de modèles définis par l'utilisateur. |
+| `custom_presets` | map | (vide) | Presets définis par l'utilisateur. Prend en charge `extends:` pour hériter partiellement d'un preset intégré. |
 
-### Priorité de résolution du fournisseur
+### Résolution du fournisseur
 
-Lors du lancement d'un agent, le fournisseur CLI est déterminé par cet ordre de priorité (le plus élevé en premier) :
-
-1. Flag `--model` passé à `oma agent:spawn`
-2. Entrée `model_preset (per-agent overrides via `agents:`)` pour cet agent spécifique dans `oma-config.yaml`
-3. Paramètre `default_cli` dans `oma-config.yaml`
-4. `active_vendor` dans `cli-config.yaml` (repli hérité)
-5. `gemini` (repli final codé en dur)
+Lors du lancement d'un agent, le fournisseur CLI est résolu à partir du `model_preset` actif (et des éventuelles surcharges `agents:`). Voir [Modèles par agent](../guide/per-agent-models.md) pour tous les détails.
 
 ---
 

@@ -209,34 +209,32 @@ curl -fsSL https://antigravity.google/cli/install.sh | bash
 Команда `oma install` создаёт `.agents/oma-config.yaml`. Это центральный файл конфигурации для всего поведения oh-my-agent:
 
 ```yaml
-# Язык ответов для всех агентов и рабочих процессов
+# Обязательно
 language: en
+model_preset: antigravity   # встроенные: antigravity, claude, codex, qwen, cursor, mixed
 
-# Формат даты в отчётах и файлах памяти
-date_format: "YYYY-MM-DD"
+# Необязательно — настройки даты и времени
+date_format: ISO
+timezone: UTC
 
-# Часовой пояс для временных меток
-timezone: "UTC"
+# Необязательно — автообновление CLI в фоне
+auto_update_cli: true
 
-# CLI-инструмент по умолчанию для запуска агентов
-# Варианты: antigravity, claude, codex, qwen
-default_cli: gemini
+# Необязательно — частичное переопределение по агенту (только объекты, поверхностное слияние)
+agents:
+  backend: { model: openai/gpt-5.5, effort: high }
+  qa:      { model: anthropic/claude-sonnet-4-6 }
 
-# Маппинг CLI по агентам (переопределяет default_cli)
-model_preset (per-agent overrides via `agents:`):
-  frontend: claude       # Сложные UI-рассуждения
-  backend: gemini        # Быстрая генерация API
-  mobile: gemini
-  db: gemini
-  pm: gemini             # Быстрая декомпозиция
-  qa: claude             # Тщательный аудит безопасности
-  debug: claude          # Глубокий анализ корневых причин
-  design: claude
-  tf-infra: gemini
-  dev-workflow: gemini
-  translator: claude
-  orchestrator: gemini
-  commit: gemini
+# Необязательно — пользовательские слаги моделей
+# models:
+#   my-model: { cli: gemini, cli_model: gemini-3-flash, supports: { thinking: true } }
+
+# Необязательно — пользовательские пресеты
+# custom_presets:
+#   my-team:
+#     extends: claude
+#     agent_defaults:
+#       backend: { model: openai/gpt-5.5, effort: high }
 ```
 
 ### Справочник по полям
@@ -246,18 +244,14 @@ model_preset (per-agent overrides via `agents:`):
 | `language` | string | `en` | Код языка ответов. Весь вывод агентов, сообщения рабочих процессов и отчёты используют этот язык. Поддерживает 11 языков (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl). |
 | `date_format` | string | `YYYY-MM-DD` | Строка формата даты для временных меток в планах, файлах памяти и отчётах. |
 | `timezone` | string | `UTC` | Часовой пояс для всех временных меток. Используются стандартные идентификаторы (например, `Asia/Seoul`, `America/New_York`). |
-| `default_cli` | string | `gemini` | Резервный CLI, когда нет агенто-специфичного маппинга. Используется как уровень 3 в приоритете определения вендора. |
-| `model_preset (per-agent overrides via `agents:`)` | map | (пустой) | Сопоставляет ID агентов с конкретными CLI-вендорами. Имеет приоритет над `default_cli`. Встроенные ключи: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. |
+| `model_preset` | string | `claude` | Ключ активного пресета. Один из встроенных ключей (`antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`) либо ключ из `custom_presets`. См. [Модели по агентам](../guide/per-agent-models.md). |
+| `agents` | map | (пустой) | Частичные переопределения по агентам (`AgentSpec` только как объект). Поверхностно сливаются поверх значений пресета. |
+| `models` | map | (пустой) | Пользовательские слаги моделей. |
+| `custom_presets` | map | (пустой) | Пользовательские пресеты. Поддерживают `extends:` для частичного наследования от встроенного пресета. |
 
-### Приоритет определения вендора
+### Определение вендора
 
-При запуске агента CLI-вендор определяется по следующему приоритету (от высшего):
-
-1. Флаг `--model`, переданный в `oma agent:spawn`
-2. Запись `model_preset (per-agent overrides via `agents:`)` для конкретного агента в `oma-config.yaml`
-3. Настройка `default_cli` в `oma-config.yaml`
-4. `active_vendor` в `cli-config.yaml` (устаревший запасной вариант)
-5. `gemini` (жёстко закодированный финальный запасной вариант)
+При запуске агента CLI-вендор определяется по активному `model_preset` (и переопределениям `agents:`, если они есть). Подробности — [Модели по агентам](../guide/per-agent-models.md).
 
 ---
 

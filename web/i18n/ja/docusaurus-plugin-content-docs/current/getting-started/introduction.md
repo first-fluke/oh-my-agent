@@ -73,7 +73,7 @@ oh-my-agentは専門化によってこれを解決します：
 
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
-| **oma-translator** | コンテキスト対応翻訳 | 4段階翻訳法：原文分析、意味抽出、ターゲット言語での再構成、検証。トーン、レジスター、ドメイン用語を保持。アンチAIパターン検出。バッチ翻訳（i18nファイル）をサポート。出版品質向けのオプション7段階精密モード。リソース：`translation-rubric.md`、`anti-ai-patterns.md`。 |
+| **oma-translator** | コンテキスト対応翻訳 | 4段階翻訳法：原文分析、意味抽出、ターゲット言語での再構成、検証。トーン、レジスター、ドメイン用語を保持。アンチAIパターン検出。バッチ翻訳（i18nファイル）をサポート。出版品質向けのオプション7段階精密モード。ターゲット言語ごとのプロファイル（`resources/lang/{code}.md`）にレジスター体系、約物、言語固有の翻訳調ルールを収録。リソース：`translation-rubric.md`、`anti-ai-patterns.md`、`lang/{ko,ja,zh,en}.md`。 |
 | **oma-orchestrator** | 自動マルチエージェントコーディネーター | CLIサブエージェントを並列で起動し、MCPメモリで調整、進捗を監視、検証ループを実行。設定可能：MAX_PARALLEL（デフォルト3）、MAX_RETRIES（デフォルト2）、POLL_INTERVAL（デフォルト30秒）。エージェント間レビューループとClarification Debtモニタリングを含む。リソース：`subagent-prompt-template.md`、`memory-schema.md`。 |
 | **oma-scm** | Conventional Commits | 変更を分析し、タイプ/スコープを決定し、適切な場合は機能ごとに分割し、Conventional Commits形式でコミットメッセージを生成。Co-Author：`First Fluke <our.first.fluke@gmail.com>`。 |
 

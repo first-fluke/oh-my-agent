@@ -140,7 +140,7 @@ Dies ist das Kernverzeichnis. Alles, was Agenten benötigen, lebt hier. Es ist d
 - `date_format`: Zeitstempelformat (Standard: `YYYY-MM-DD`)
 - `timezone`: Zeitzonen-Bezeichner (Standard: `UTC`)
 - `default_cli`: Fallback-CLI-Vendor (antigravity, claude, codex, qwen)
-- `model_preset (per-agent overrides via `agents:`)`: Pro-Agent-CLI-Routing-Überschreibungen
+- `model_preset`: Pro-Agent-CLI-Routing-Überschreibungen
 
 ### skills/
 

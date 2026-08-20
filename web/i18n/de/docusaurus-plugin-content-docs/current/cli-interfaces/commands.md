@@ -284,7 +284,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `-m, --model <vendor>` | CLI-Vendor-Überschreibung: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Arbeitsverzeichnis für den Agenten. Wird automatisch aus der Monorepo-Konfiguration erkannt, wenn nicht angegeben. |
 
-**Reihenfolge der Vendor-Auflösung:** `--model`-Flag > `model_preset (per-agent overrides via `agents:`)` in oma-config.yaml > `default_cli` > `active_vendor` in cli-config.yaml > `gemini`.
+**Reihenfolge der Vendor-Auflösung:** `--model`-Flag > `agents:`-Überschreibung in `oma-config.yaml` > Agenten-Standardwerte des aktiven `model_preset`.
 
 **Prompt-Auflösung:** Ist das Prompt-Argument ein Pfad zu einer vorhandenen Datei, wird deren Inhalt als Prompt verwendet. Andernfalls wird das Argument als Inline-Text verwendet. Vendor-spezifische Ausführungsprotokolle werden automatisch angehängt.
 

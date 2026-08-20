@@ -173,7 +173,13 @@ your-project/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
-│   │   │       └── anti-ai-patterns.md
+│   │   │       ├── anti-ai-patterns.md
+│   │   │       └── lang/
+│   │   │           ├── _template.md
+│   │   │           ├── en.md
+│   │   │           ├── ja.md
+│   │   │           ├── ko.md
+│   │   │           └── zh.md
 │   │   │
 │   │   ├── oma-orchestrator/
 │   │   │   ├── SKILL.md
@@ -280,7 +286,7 @@ your-project/
 - `date_format`：时间戳格式字符串（默认：`YYYY-MM-DD`）
 - `timezone`：时区标识符（默认：`UTC`）
 - `default_cli`：回退 CLI 供应商（antigravity、claude、codex、qwen）
-- `model_preset (per-agent overrides via `agents:`)`：每智能体 CLI 路由覆盖
+- `model_preset`：每智能体 CLI 路由覆盖
 
 ### skills/
 

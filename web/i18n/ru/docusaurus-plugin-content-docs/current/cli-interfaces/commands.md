@@ -94,7 +94,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 `agent-id`: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
-Флаг `-m, --model <vendor>`: `antigravity`, `claude`, `codex`, `qwen`. Определение вендора: `--model` > `model_preset (per-agent overrides via `agents:`)` > `default_cli` > `active_vendor` > `gemini`.
+Флаг `-m, --model <vendor>`: `antigravity`, `claude`, `codex`, `qwen`. Определение вендора: `--model` > переопределение `agents:` в `oma-config.yaml` > значения агента из активного `model_preset`.
 
 Промпт: инлайн-текст или путь к файлу. Вендор-протоколы добавляются автоматически.
 

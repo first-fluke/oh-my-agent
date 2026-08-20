@@ -94,7 +94,7 @@ your-project/
 - `date_format`: Формат временных меток (по умолчанию: `YYYY-MM-DD`)
 - `timezone`: Часовой пояс (по умолчанию: `UTC`)
 - `default_cli`: Резервный CLI-вендор
-- `model_preset (per-agent overrides via `agents:`)`: Переопределения CLI по агентам
+- `model_preset`: Переопределения CLI по агентам
 
 ### skills/
 

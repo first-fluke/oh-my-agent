@@ -104,10 +104,7 @@ cat > /path/to/your/project/.agents/oma-config.yaml << 'EOF'
 language: en
 date_format: ISO
 timezone: UTC
-default_cli: gemini
-model_preset (per-agent overrides via `agents:`):
-  frontend: gemini
-  backend: gemini
+model_preset: antigravity
 EOF
 ```
 

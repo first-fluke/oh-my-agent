@@ -173,7 +173,13 @@ your-project/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
-│   │   │       └── anti-ai-patterns.md
+│   │   │       ├── anti-ai-patterns.md
+│   │   │       └── lang/
+│   │   │           ├── _template.md
+│   │   │           ├── en.md
+│   │   │           ├── ja.md
+│   │   │           ├── ko.md
+│   │   │           └── zh.md
 │   │   │
 │   │   ├── oma-orchestrator/
 │   │   │   ├── SKILL.md
@@ -280,7 +286,7 @@ Este es el directorio principal. Todo lo que los agentes necesitan reside aqui. 
 - `date_format`: Cadena de formato de marca de tiempo (predeterminado: `YYYY-MM-DD`)
 - `timezone`: Identificador de zona horaria (predeterminado: `UTC`)
 - `default_cli`: Proveedor CLI de respaldo (antigravity, claude, codex, qwen)
-- `model_preset (per-agent overrides via `agents:`)`: Sobrescrituras de enrutamiento CLI por agente
+- `model_preset`: Sobrescrituras de enrutamiento CLI por agente
 
 ### skills/
 
