@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.4.5",
-  "releaseDate": "2026-08-19T15:42:12.405Z",
+  "releaseDate": "2026-08-20T01:31:43.115Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1851,18 +1851,43 @@
     },
     {
       "path": ".agents/skills/oma-translator/SKILL.md",
-      "sha256": "ec54f1efa82913d25d19a5191d831419d92f60df94ebcd5bde8b63867751453d",
-      "size": 30319
+      "sha256": "95792167124e72ee864020b71df15615bd53b3646e53171861ef74c388843904",
+      "size": 34447
     },
     {
       "path": ".agents/skills/oma-translator/resources/anti-ai-patterns.md",
-      "sha256": "5a9093b49dc86ce4a89022218a344d18617f2cf1daca9f3c299eb9cf3ff1060a",
-      "size": 20853
+      "sha256": "4cb5d347457777c949d65c1ed430b02ee49e5a58d9cdd573a4295c5fa3198eee",
+      "size": 15620
+    },
+    {
+      "path": ".agents/skills/oma-translator/resources/lang/_template.md",
+      "sha256": "4c4514bb98ca25baeb3aa6670fbad9ba25742bcf9bd964da026414b72bc1d54d",
+      "size": 2912
+    },
+    {
+      "path": ".agents/skills/oma-translator/resources/lang/en.md",
+      "sha256": "3d6b2c7266cf63554e5742e4aa70626783f8151be5bd813f8f495f6048cb3302",
+      "size": 7831
+    },
+    {
+      "path": ".agents/skills/oma-translator/resources/lang/ja.md",
+      "sha256": "fa3c8ce4a13e4ca02e8296a05a37ac7c6738a7d95ff000067871204be86a2c20",
+      "size": 9059
+    },
+    {
+      "path": ".agents/skills/oma-translator/resources/lang/ko.md",
+      "sha256": "eceb036ffd0061d4f1d838ebf288f48894d7a3ae1cedd180162b4533539200b6",
+      "size": 14237
+    },
+    {
+      "path": ".agents/skills/oma-translator/resources/lang/zh.md",
+      "sha256": "9a3fa6dd075d38990f2c1cc1afa928122386b00ca85f7f5595e0039d86121270",
+      "size": 8247
     },
     {
       "path": ".agents/skills/oma-translator/resources/translation-rubric.md",
-      "sha256": "b53229f653d7f62ee62934ce07b198f377e744f4150ad7f17261e60de04c6ba6",
-      "size": 4096
+      "sha256": "94d7e25fefa6751a04f23c1070db6702bfefe23b89cc23288b108bd727bba3ae",
+      "size": 4891
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
@@ -2161,6 +2186,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 430
+    "totalFiles": 435
   }
 }
