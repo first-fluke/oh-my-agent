@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.5...cli-v12.5.0) (2026-08-20)
+
+
+### Features
+
+* **oma-translator:** split translation rules into per-language profiles ([3e5553b](https://github.com/first-fluke/oh-my-agent/commit/3e5553b7ae724377174d8dfb90817effe70f8117))
+
 ## [12.4.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.4...cli-v12.4.5) (2026-08-19)
 
 
