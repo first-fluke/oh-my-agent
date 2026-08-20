@@ -2,6 +2,11 @@
 
 5 criteria, each scored on a 10-point scale. Total 50 points.
 
+**This file is language-neutral.** Criterion 1 (Naturalness) and criterion 3
+(Register) can only be scored against the target language's own conventions, so
+score them with `lang/{code}.md` open. A draft that passes every red flag here
+and fails its language profile's self-check is not a passing translation.
+
 ## Criteria
 
 ### 1. Naturalness (10 pts)
@@ -19,8 +24,9 @@ Red flags:
 - Source language word order leaking through
 - Unnatural particles or prepositions
 - Overly long sentences that should be split
-- Forced subjects where omission is natural
-- Europeanized patterns: unnecessary connectives (따라서/그러나/또한), passive voice abuse, noun pile-up, over-nominalization, cleft sentence calques
+- Pronouns handled against the target's pro-drop behavior
+- Europeanized patterns: unnecessary connectives, passive voice abuse, noun pile-up, over-nominalization, cleft sentence calques (shared rules `19`–`24`)
+- Any rule in the target's language profile marked as a block-level failure
 
 ### 2. Accuracy (10 pts)
 Is the meaning fully preserved?
@@ -38,11 +44,15 @@ Red flags:
 - Omitted important qualifiers
 - Reversed logic (negation errors)
 - Hallucinated content
-- Emotional connotations flattened (e.g., "alarming" → neutral "놀라운" instead of urgent "우려되는")
+- Emotional connotations flattened (e.g., "alarming" rendered as a neutral "surprising" rather than something that carries concern)
 - Figurative language translated literally when the image doesn't work in target language
 
 ### 3. Register Consistency (10 pts)
 Does the tone match the configured register throughout?
+
+The register system itself is language-specific (sentence endings, T-V
+distinction, honorific paradigms, or none of these). Read the "Register" section
+of `lang/{code}.md` before scoring this criterion.
 
 | Score | Description |
 |-------|-------------|
@@ -53,9 +63,10 @@ Does the tone match the configured register throughout?
 | 1-2 | Wrong register entirely |
 
 Red flags:
-- Mixing 합니다체 and 해요체 in Korean
-- Switching between です/ます and 普通体 in Japanese
+- Register drift between the opening and the closing of a document
+- Mixing two register systems that the target treats as mutually exclusive
 - Formal vocabulary in casual context or vice versa
+- Honorific or politeness level that the source does not support
 
 ### 4. Terminology (10 pts)
 Are domain terms consistent and correct?
@@ -112,3 +123,4 @@ Before submitting, verify:
 - [ ] Figurative language handled naturally (interpret/substitute/retain, not literal calques)
 - [ ] No Europeanized patterns (passive voice, noun pile-up, forced pronouns, unnecessary connectives)
 - [ ] Translator's notes are concise, accurate, and calibrated to target audience
+- [ ] The target language's own self-check in `lang/{code}.md` passed

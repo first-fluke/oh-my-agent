@@ -43,12 +43,14 @@ Translate, review, or adapt multilingual content while preserving meaning, regis
 
 ### Dependencies
 - Existing translations and surrounding code for register and terminology
-- `resources/translation-rubric.md` and `resources/anti-ai-patterns.md`
+- `resources/translation-rubric.md` and `resources/anti-ai-patterns.md` (language-neutral)
+- `resources/lang/{code}.md` for the target language (required when a profile exists)
 - Project locale files when translating UI strings
 - User-provided voice samples when the task asks to preserve or match a specific author's style
 
 ### Control-flow features
 - Branches by content type, target language, batch size, register uncertainty, and placeholder/structure requirements
+- Branches by whether a language profile exists for the target, and by locale variant when the profile declares variants
 - Branches by whether style-sample calibration is available and appropriate for the content type
 - Reads locale files and source context; may write translated content only when explicitly editing files
 - Blocks output until mechanical verification passes
@@ -57,11 +59,12 @@ Translate, review, or adapt multilingual content while preserving meaning, regis
 
 ### Entry
 1. Confirm source text, target language, content type, and output mode.
-2. Load existing translations, glossary, file context, or code context when available.
-3. Identify placeholders, formatting constraints, and ambiguity.
+2. Load `resources/lang/{code}.md` for the target language (see "Language Profile Loading").
+3. Load existing translations, glossary, file context, or code context when available.
+4. Identify placeholders, formatting constraints, and ambiguity.
 
 ### Scenes
-1. **PREPARE**: Determine language, register, domain, and structure constraints.
+1. **PREPARE**: Load the target language profile, then determine register, domain, and structure constraints.
 2. **ACQUIRE**: Read existing translations and surrounding context.
 3. **REASON**: Analyze source meaning, connotations, figurative language, and terminology.
 4. **ACT**: Reconstruct natural target-language output.
@@ -70,8 +73,10 @@ Translate, review, or adapt multilingual content while preserving meaning, regis
 
 ### Transitions
 - If context is insufficient, ask one targeted question.
+- If the target language has a profile and it was not loaded, stop and load it before drafting.
+- If the profile declares locale variants and none was resolved, resolve the variant before translating any string.
 - If batch size is greater than 10 strings, verification is mandatory before output.
-- If CJK output contains em dashes or source-language artifacts, rewrite before final output.
+- If the output violates a typography or sentence-completion rule in the profile, rewrite before final output.
 - If placeholders or structure do not match, revise and rerun verification.
 
 ### Failure and recovery
@@ -93,6 +98,32 @@ No config file required. Instead, infer translation context from:
 4. **Source text itself**: register, formality, sentence structure reveal intent
 
 If context is insufficient to make a confident decision, ask the user. Prefer one targeted question over a batch of questions.
+
+### Language Profile Loading
+
+Translation quality rules split into two layers. Load both; neither is sufficient alone.
+
+| Layer | File | Holds |
+|---|---|---|
+| Shared | `resources/anti-ai-patterns.md` | AI writing pattern taxonomy, rules `1`–`25`, source-side examples |
+| Shared | `resources/translation-rubric.md` | 5-criterion scoring |
+| Per-language | `resources/lang/{code}.md` | Register system, language-only rules, localizations of shared rules, typography, self-check |
+
+**Routing**: resolve the target to a BCP 47 primary subtag and read `resources/lang/{code}.md`.
+
+| Target | Profile | Notes |
+|---|---|---|
+| Korean | `lang/ko.md` | rules `KO-1`–`KO-12` |
+| Japanese | `lang/ja.md` | rules `JA-1`–`JA-9` |
+| Chinese | `lang/zh.md` | rules `ZH-1`–`ZH-9`; **variant resolution is mandatory** before translating |
+| English | `lang/en.md` | rules `EN-1`–`EN-8`; written for CJK → EN direction |
+| Anything else | none yet | fall back to shared files only |
+
+**Fallback rule**: when no profile exists for the target, use the shared files, apply shared rules `19`–`24` by reasoning from the target's actual grammar, and state once in the output notes that no profile was available. Do not silently borrow another language's profile: `ko.md` rules are wrong for German, and applying them produces confident errors.
+
+**Adding a profile**: copy `resources/lang/_template.md` to `resources/lang/{code}.md` and add the row to the routing table above. An empty profile beats an invented one.
+
+**Precedence**: the profile wins over the shared file when they appear to conflict, because the shared file describes the pattern and the profile describes the target. A profile may declare that a shared rule does not apply to its language (`en.md` does this for the em-dash restructuring requirement, which exists only for CJK targets).
 
 ### Translation Method
 
@@ -190,10 +221,11 @@ Guardrail: Voice matching may adjust rhythm, diction, and sentence shape. It mus
 
 Rebuild from meaning **as the assigned persona**, following target language norms:
 
-**Word order**: Follow target language's natural structure.
+**Word order**: Follow the target language's natural structure. Quick orientation; the profile is authoritative.
 - EN → KO: SVO → SOV, move verb to end, particles replace prepositions
 - EN → JA: Similar SOV restructuring, honorific system alignment
 - EN → ZH: Maintain SVO but restructure modifiers (pre-nominal in ZH)
+- CJK → EN: topic-comment → subject-predicate, supply articles and number marking
 
 **Register matching**:
 - Infer from existing translations in the project, or from source text tone
@@ -213,8 +245,9 @@ Run the mechanical checks first, then the rubric.
 
 **A. Mechanical checks (run before rubric, must all pass):**
 
-- **CJK em dash scan**: For Korean, Japanese, or Chinese targets, search the draft output for `—`. Every occurrence must be **structurally restructured**, never simply substituted with `:` / `(` / `,`. Em dash usually signals a definitional `X — Y` pattern that maps to coordinated noun phrases, relative clauses, or separate sentences in CJK. Zero em dashes AND zero mechanical-substitution survivors in the emitted output. (See anti-AI rules 14 and 14a.)
-- **Curly quote scan**: Search the draft output for `“`, `”`, `‘`, `’`. Replace with straight quotes (`"`, `'`) unless the source explicitly uses curly quotes, the target language convention requires them (e.g., Japanese 「」/『』, French «»), or the surrounding file format mandates them.
+- **Profile self-check**: Run the self-check list at the end of `resources/lang/{code}.md` in full. Every unchecked item blocks output. This is the first check, not the last, because it is the one that catches target-language failures the shared list cannot see.
+- **Em dash scan**: Search the draft output for `—`. Handling is profile-defined. For targets whose profile forbids it (Korean, Japanese, Chinese), every occurrence must be **structurally restructured**, never simply substituted with `:` / `(` / `,`; zero em dashes AND zero mechanical-substitution survivors in the emitted output. For targets that permit it (English), enforce the shared ceiling of one per paragraph. (See anti-AI rules `14` and `14a`.)
+- **Quote-mark scan**: Search for `“`, `”`, `‘`, `’`. Replace with straight quotes (`"`, `'`) **unless** the profile's typography section requires otherwise (`zh-CN` uses `“”`; Japanese uses 「」/『』; French uses «»), the source explicitly uses curly quotes, or the file format mandates them. Check the profile before stripping anything.
 - **Placeholder integrity**: Every `{name}`, `{{count}}`, `%s`, `<tag>`, and `` `code` `` from the source appears unchanged in the target.
 - **Structure parity**: Headings, list bullets, table rows, code blocks, and links match the source count and nesting.
 - **Register consistency**: One sentence-ending style throughout (don't mix `-ㅂ니다` with `-다`, formal with casual).
@@ -230,7 +263,7 @@ If any mechanical check fails, revise and re-run. Do not proceed to the rubric u
 5. Are cultural references adapted appropriately?
 6. Are emotional connotations preserved (not flattened into neutral descriptions)?
 
-**C. Anti-AI patterns (see `resources/anti-ai-patterns.md`):**
+**C. Anti-AI patterns (see `resources/anti-ai-patterns.md` for the shared taxonomy and `resources/lang/{code}.md` for how each item manifests in the target):**
 7. No AI vocabulary clustering or inflated significance
 8. No promotional tone upgrade beyond the source
 9. No synonym cycling; use consistent terminology
@@ -247,7 +280,7 @@ If any mechanical check fails, revise and re-run. Do not proceed to the rubric u
 
 When adding explanatory notes for terms, cultural references, or concepts that target readers may struggle with:
 
-**Format**: `번역어(원어, 쉬운 설명)` or `번역어(원어)` for well-known terms that just need the original. Use halfwidth parentheses for Korean; use fullwidth `（）` only when the target language convention calls for them (Japanese, Chinese)
+**Format**: `translated term (original term, plain-language gloss)`, or `translated term (original term)` for well-known terms that only need the original. Bracket style follows the target's typography section in `resources/lang/{code}.md`: halfwidth `()` for Korean and English, fullwidth `（）` for Japanese and Chinese around non-ASCII content
 
 **Calibration by audience**:
 - **Technical readers**: Skip annotation on common tech terms (API, deploy, refactor). Only annotate domain-specific or coined terms
@@ -298,7 +331,7 @@ Re-read the translation against the source with fresh eyes. Produce a diagnostic
 Start the review by explicitly answering this question first: **"What makes the draft below still feel obviously machine-translated or AI-generated?"** Write 3–7 short bullets naming the remaining tells (e.g., "register suddenly shifts to formal in the final paragraph", "the same connective construction repeats three times", "noun-ending fragments survive in body text outside label/cell positions", "a metaphor was kept literal where the target language would interpret it"). Then continue with the structured checklist:
 
 - **Accuracy**: Compare paragraph by paragraph. Any facts, numbers, or qualifiers altered?
-- **Europeanized language**: Scan for unnecessary connectives, passive voice, noun pile-up, over-nominalization, forced pronouns (see `resources/anti-ai-patterns.md`)
+- **Europeanized language**: Scan for unnecessary connectives, passive voice, noun pile-up, over-nominalization, forced pronouns (shared rules `19`–`24`), using the worked examples in `resources/lang/{code}.md`
 - **Figurative language fidelity**: Cross-check metaphor mapping from Stage 1. Were all handled per the classify decision? Any literal calques that sound unnatural?
 - **Emotional fidelity**: Were subjective/emotional word choices flattened into neutral descriptions?
 - **Tone drift**: Does the register stay consistent from start to finish, or does it shift mid-document (e.g., formal intro drifting into casual explanation)?
@@ -355,7 +388,7 @@ Use when the English source has changed and one or more existing target-language
    - *Removed text*: delete the target equivalent
    - *Touched-but-cosmetic* (whitespace, formatting): skip; don't churn translation
 4. **ACT**: Apply patches via Edit tool. Match the existing translation's register, terminology, and voice (re-read at least 3 sibling sections in the target file before writing).
-5. **VERIFY**: Run Stage 4 mechanical checks (em-dash, placeholder integrity, structure parity) AND ensure no untouched sections were modified.
+5. **VERIFY**: Run Stage 4 mechanical checks (profile self-check, em-dash, placeholder integrity, structure parity) AND ensure no untouched sections were modified. Scope the profile self-check to the patched sections only, so pre-existing drift elsewhere is flagged rather than silently rewritten.
 
 **Hard rules for diff-sync**:
 - **Touch only what the diff touched.** Other sections of the target file must remain byte-identical. If you find drift outside the diff, flag it but do NOT auto-fix in the same patch.
@@ -425,6 +458,7 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 ### Actions
 | Action | SSL primitive | Evidence |
 |--------|---------------|----------|
+| Load target language profile | `READ` | `resources/lang/{code}.md` |
 | Read source and context | `READ` | Text, locale files, code context |
 | Select register and terminology | `SELECT` | Existing translations and domain terms |
 | Infer intended meaning | `INFER` | Meaning extraction stage |
@@ -440,10 +474,11 @@ Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 ### Canonical workflow path
 ```text
-1. Analyze source register, intent, domain terms, placeholders, and structure.
-2. Reconstruct meaning in the target language, not word-for-word.
-3. Run mechanical checks and `resources/translation-rubric.md` before emitting output.
-4. For non-trivial prose, run Stage 5 humanization review before final polish; apply voice-sample calibration only when provided and appropriate.
+1. Load `resources/lang/{code}.md` for the target language; resolve the locale variant if the profile declares any.
+2. Analyze source register, intent, domain terms, placeholders, and structure.
+3. Reconstruct meaning in the target language, not word-for-word.
+4. Run mechanical checks, the profile self-check, and `resources/translation-rubric.md` before emitting output.
+5. For non-trivial prose, run Stage 5 humanization review before final polish; apply voice-sample calibration only when provided and appropriate.
 ```
 
 For UI files, scan sibling locale files first:
@@ -461,6 +496,7 @@ rg "<source-key-or-term>" .
 
 ### Preconditions
 - Source text and target language are known.
+- The target language profile is loaded, or its absence is acknowledged in the output notes.
 - Placeholder and structure constraints are identifiable.
 - Ambiguities are resolved or explicitly flagged.
 
@@ -486,13 +522,24 @@ rg "<source-key-or-term>" .
 13. Never change the meaning to "sound better"
 14. Never skip verification stage for batches > 10 strings
 15. Never modify source file structure (keys, nesting, comments)
-16. Never preserve source-language formatting artifacts that are unnatural in the target language. For CJK targets (Korean, Japanese, Chinese), em dashes (—), title case in headings, and trailing "-ing" participle clauses must be restructured, even when the source uses them. See `resources/anti-ai-patterns.md` rules 2 (-ing phrases), 14–15 (em dash, title case), and 25 (CJK typography & fragments).
+16. Never preserve source-language formatting artifacts that are unnatural in the target language. See `resources/anti-ai-patterns.md` rules `2` (-ing phrases), `14`–`15` (em dash, title case), and `25` (typography, which defers entirely to the language profile). For CJK targets, em dashes (`—`), title case in headings, and trailing "-ing" participle clauses must be restructured even when the source uses them; the exact typography rules are in `resources/lang/{code}.md`.
 17. Never "humanize" by inventing personality. Do not add first person, jokes, opinions, examples, facts, citations, stronger emotion, or messiness unless the source or user explicitly calls for adaptation.
 18. When a voice sample is provided, match observable style traits only: rhythm, diction level, punctuation habits, transitions, and paragraph shape. Preserve source meaning and target-language naturalness above mimicry.
+19. Never translate into a language whose profile exists without reading it, and never substitute a different language's profile when none exists for the target. Fall back to the shared files and say so once in the output notes.
 
 ## References
 
+Shared, language-neutral:
+
 - Translation rubric: `resources/translation-rubric.md` (5-criterion scoring: naturalness, accuracy, register, terminology, technical integrity)
-- Anti-AI patterns: `resources/anti-ai-patterns.md` (AI output patterns + Europeanized/translation-ese patterns to avoid)
+- Anti-AI patterns: `resources/anti-ai-patterns.md` (AI writing pattern taxonomy, rules `1`–`25`)
+
+Per target language (load the one matching the target):
+
+- Korean: `resources/lang/ko.md`
+- Japanese: `resources/lang/ja.md`
+- Chinese: `resources/lang/zh.md`
+- English: `resources/lang/en.md`
+- New profile skeleton: `resources/lang/_template.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
