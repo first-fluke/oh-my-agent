@@ -13,14 +13,11 @@
       "serverUrl": "https://mcp.context7.com/mcp"
     },
     "serena": {
-      "command": "serena",
+      "command": "oma",
       "args": [
-        "start-mcp-server",
+        "bridge",
         "--context",
-        "antigravity",
-        "--project-from-cwd",
-        "--open-web-dashboard",
-        "false"
+        "antigravity"
       ],
       "env": {
         "SERENA_LOG_LEVEL": "info"

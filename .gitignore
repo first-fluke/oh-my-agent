@@ -151,3 +151,5 @@ __pycache__/
 # survive the copy, so the drop-in-distribution purpose never held. The command
 # still works for users emitting into their own projects.
 /generated/
+
+.qwen/tmp/
