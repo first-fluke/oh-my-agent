@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import pc from "picocolors";
 import { VENDORS } from "../../constants/vendors.js";
+import { ensureCoAuthorGuardHook, OMA_HOOKS_DIR } from "../../io/git-hooks.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
 import { installVendorAgents } from "../../platform/agent-composer.js";
 import {
@@ -784,13 +785,44 @@ export function link(opts: LinkOptions = {}): LinkResult {
       ensureOmaProjectGitignore(root);
     }
   };
+
+  // 7b. Co-author guard. oma tells agents to append a `Co-authored-by:` trailer
+  //     and agents type it as literal text, so a wrong address is a plain typo
+  //     the model can produce from memory. GitHub resolves that address against
+  //     verified account emails and credits an unrelated person as a
+  //     contributor, and refs/pull/* keeps the commit reachable permanently —
+  //     a history rewrite does not undo it. Only a hook below the agent can
+  //     stop it, and it covers every vendor at once. Project mode only: a
+  //     global install has no repository to attach hooks to.
+  const coAuthorGuardStep = (): void => {
+    record(
+      join(root, OMA_HOOKS_DIR, "commit-msg"),
+      "write",
+      "ensureCoAuthorGuardHook",
+    );
+    if (dryRun) return;
+    const guard = ensureCoAuthorGuardHook(root);
+    if (!quiet && guard.status === "written") {
+      console.log(
+        `${pc.green("✓")} git: co-author guard (${OMA_HOOKS_DIR}/commit-msg)`,
+      );
+    }
+    // Printed even in quiet mode: an installed-but-inert hook reads as
+    // protection the user does not actually have.
+    if (guard.warning) {
+      console.log(`${pc.yellow("⚠")} co-author guard: ${guard.warning}`);
+    }
+  };
+
   try {
     if (getInstallMode() === "project") {
       gitignoreStep();
+      coAuthorGuardStep();
     }
   } catch {
     // Default to project-scoped hygiene when install context is unset (tests).
     gitignoreStep();
+    coAuthorGuardStep();
   }
 
   // 8. Summary (suppressed in quiet mode — callers render their own UX).

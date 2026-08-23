@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# Managed by oh-my-agent. Rejects commits whose Co-authored-by trailer carries
+# an address that is not on the allowlist.
+#
+# GitHub resolves a co-author address against verified account emails and
+# credits that account as a contributor. A wrong address therefore attributes
+# your work to an unrelated person, and refs/pull/* keeps the commit reachable
+# permanently, so rewriting history does not undo it.
+#
+# Allowlist: .githooks/co-authors.allow, plus scm.co_author.email
+# from .agents/oma-config.yaml.
+
+set -eu
+
+msg_file="$1"
+repo_root=$(git rev-parse --show-toplevel)
+allow_file="$repo_root/.githooks/co-authors.allow"
+oma_config="$repo_root/.agents/oma-config.yaml"
+
+allowed=$(
+	{
+		if [ -f "$allow_file" ]; then
+			sed -e 's/#.*$//' "$allow_file" |
+				grep -oE '<[^>]+>' |
+				tr -d '<>'
+		fi
+
+		# The `email:` key inside the co_author block. Scoped to the lines
+		# following `co_author:` so an unrelated `email:` is not picked up.
+		if [ -f "$oma_config" ]; then
+			grep -A 3 '^[[:space:]]*co_author:' "$oma_config" |
+				grep -E '^[[:space:]]*email:' |
+				sed -e 's/.*email:[[:space:]]*//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'\$//"
+		fi
+	} | tr '[:upper:]' '[:lower:]' | sed '/^[[:space:]]*$/d' | sort -u
+)
+
+found=$(
+	grep -iE '^[[:space:]]*co-authored-by:' "$msg_file" 2>/dev/null |
+		grep -oE '<[^>]+>' |
+		tr -d '<>' |
+		tr '[:upper:]' '[:lower:]' |
+		sed '/^[[:space:]]*$/d' |
+		sort -u || true
+)
+
+[ -n "$found" ] || exit 0
+
+bad=""
+for email in $found; do
+	if ! printf '%s\n' "$allowed" | grep -qxF "$email"; then
+		bad="$bad $email"
+	fi
+done
+
+[ -n "$bad" ] || exit 0
+
+exec >&2
+echo
+echo "commit-msg: Co-authored-by address is not on the allowlist."
+echo
+for email in $bad; do
+	echo "  rejected: $email"
+done
+echo
+echo "allowed:"
+if [ -n "$allowed" ]; then
+	printf '  %s\n' $allowed
+else
+	echo "  (none — check .githooks/co-authors.allow)"
+fi
+echo
+echo "GitHub matches co-author addresses against verified account emails and"
+echo "credits that account as a contributor. A wrong address attributes your"
+echo "work to an unrelated person, and refs/pull/* makes it permanent."
+echo
+echo "For a real collaborator, add them to .githooks/co-authors.allow."
+echo
+exit 1

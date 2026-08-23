@@ -1,1 +1,6 @@
+# oma installs the co-author guard at .githooks/commit-msg but does not claim
+# core.hooksPath while husky owns it, so it is invoked explicitly from here.
+# `|| exit 1` is load-bearing: husky runs this file without `set -e`, so without
+# it a rejection is printed and then discarded by the next command's exit code.
+sh .githooks/commit-msg "$1" || exit 1
 npx commitlint --edit "$1"

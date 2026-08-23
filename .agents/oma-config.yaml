@@ -298,6 +298,12 @@ scm:
     enabled: true
     name: "First Fluke"
     email: "our.first.fluke@gmail.com"
+    # Install a commit-msg hook that rejects any Co-authored-by address not on
+    # the allowlist (.githooks/co-authors.allow plus the email above). Agents
+    # type this trailer as literal text, and GitHub credits whoever owns a
+    # mistyped address as a contributor — permanently, since refs/pull/* keeps
+    # the commit reachable. Set false to opt out of oma managing git hooks.
+    enforce_hook: true
   forbidden_patterns:
     - "*.env"
     - "*.env.*"

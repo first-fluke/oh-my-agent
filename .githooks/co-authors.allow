@@ -1,0 +1,11 @@
+# Allowed Co-authored-by identities, one "Name <email>" per line.
+# Enforced by .githooks/commit-msg. Only the address inside <> is compared.
+#
+# Add a line here only for a real collaborator. A wrong address silently
+# credits whoever has it verified on GitHub, and refs/pull/* makes that
+# permanent.
+#
+# scm.co_author.email from .agents/oma-config.yaml is allowed automatically
+# and does not need an entry here.
+
+Eunkwang Shin <gracefullight.dev@gmail.com>

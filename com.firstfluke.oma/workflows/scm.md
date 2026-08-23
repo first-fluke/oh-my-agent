@@ -215,4 +215,8 @@ Failure handling and rollback:
 - Do NOT use `git add -A` / `git add .`; always specify files
 - Do NOT commit secrets files (.env, credentials)
 - For multi-line commit messages, use HEREDOC by default; if unstable or very long, use `git commit -F <message-file>`
-- Co-Author: `First Fluke <our.first.fluke@gmail.com>`
+- Co-Author: `First Fluke <our.first.fluke@gmail.com>` — copy this address, never
+  type it from memory. GitHub credits whoever has a co-author address verified
+  on their account, so a slip attributes the work to an unrelated person and
+  `refs/pull/*` makes it permanent. `.githooks/commit-msg` rejects any address
+  outside `scm.co_author` / `.githooks/co-authors.allow`.

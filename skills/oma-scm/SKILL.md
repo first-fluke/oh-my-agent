@@ -119,6 +119,15 @@ EOF
 )"
 ```
 
+> **Copy the co-author address, never recall it.** Read it from
+> `scm.co_author` in `.agents/oma-config.yaml` rather than from memory.
+> GitHub matches a `Co-authored-by:` address against verified account emails
+> and credits whoever owns it as a contributor, so a one-character slip
+> attributes the work to a real, unrelated person — and `refs/pull/*` keeps
+> the commit reachable permanently, so rewriting history does not undo it.
+> A `commit-msg` hook at `.githooks/commit-msg` enforces this; a rejected
+> commit means the address is wrong, not that the hook is.
+
 ### Resource scope
 | Scope | Resource target |
 |-------|-----------------|
