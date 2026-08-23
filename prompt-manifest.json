@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.7.0",
-  "releaseDate": "2026-08-23T15:04:43.810Z",
+  "releaseDate": "2026-08-23T15:09:24.398Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1940,11 +1940,6 @@
       "size": 805
     },
     {
-      "path": ".agents/skills/oma-video/resources/remotion/public/fonts/PretendardVariable.woff2",
-      "sha256": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
-      "size": 2057688
-    },
-    {
       "path": ".agents/skills/oma-video/resources/remotion/public/fonts/README.md",
       "sha256": "a1a2f59dc5655766f52d8dc3a0c5e06521388832f34037f6aef30868ad7a7d76",
       "size": 1332
@@ -2191,6 +2186,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 436
+    "totalFiles": 435
   }
 }
