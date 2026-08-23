@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.5.0...cli-v12.6.0) (2026-08-23)
+
+
+### Features
+
+* **scm:** enforce the co-author address with a commit-msg hook ([54aad3c](https://github.com/first-fluke/oh-my-agent/commit/54aad3ce7d36236f42c0020a5cc54965bf7ca632))
+
 ## [12.5.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.4.5...cli-v12.5.0) (2026-08-20)
 
 
