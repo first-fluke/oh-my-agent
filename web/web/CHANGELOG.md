@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.4](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.3...web-v4.2.4) (2026-08-23)
+
+
+### Refactoring
+
+* **skills:** standardize capability-based skill names ([b35d07c](https://github.com/first-fluke/oh-my-agent/commit/b35d07c403e191fa8b933807dda75ce2bf38ef85))
+
 ## [4.2.3](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.2...web-v4.2.3) (2026-08-20)
 
 
