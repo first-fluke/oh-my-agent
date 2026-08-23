@@ -53,6 +53,10 @@ const DEFAULTS: ImageConfig = {
       enabled: true,
       model: "flux",
     },
+    minimax: {
+      enabled: true,
+      model: "image-01",
+    },
   },
   costGuardrail: {
     estimateThresholdUsd: 0.2,
@@ -76,6 +80,10 @@ const DEFAULTS: ImageConfig = {
         "gpt-image-2": { low: 0, medium: 0, high: 0, auto: 0 },
         klein: { low: 0, medium: 0, high: 0, auto: 0 },
         kontext: { low: 0, medium: 0, high: 0, auto: 0 },
+      },
+      minimax: {
+        "image-01": { low: 0, medium: 0, high: 0, auto: 0 },
+        "image-01-live": { low: 0, medium: 0, high: 0, auto: 0 },
       },
     },
   },

@@ -1,6 +1,7 @@
 import type { ImageConfig } from "./config.js";
 import { AntigravityProvider } from "./providers/antigravity.js";
 import { CodexProvider } from "./providers/codex.js";
+import { MiniMaxProvider } from "./providers/minimax.js";
 import { PollinationsProvider } from "./providers/pollinations.js";
 import type { HealthResult, VendorProvider } from "./types.js";
 
@@ -49,6 +50,7 @@ export function defaultRegistry(config?: ImageConfig): Registry {
   if (enabled("antigravity")) cached.register(new AntigravityProvider());
   if (enabled("pollinations"))
     cached.register(new PollinationsProvider(config));
+  if (enabled("minimax")) cached.register(new MiniMaxProvider(config));
   return cached;
 }
 
