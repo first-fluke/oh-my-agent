@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.0...cli-v12.7.1) (2026-08-23)
+
+
+### Refactoring
+
+* **skills:** standardize capability-based skill names ([b35d07c](https://github.com/first-fluke/oh-my-agent/commit/b35d07c403e191fa8b933807dda75ce2bf38ef85))
+
 ## [12.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.6.0...cli-v12.7.0) (2026-08-23)
 
 
