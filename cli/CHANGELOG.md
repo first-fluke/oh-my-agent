@@ -1,5 +1,18 @@
 # Changelog
 
+## [12.7.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.6.0...cli-v12.7.0) (2026-08-23)
+
+
+### Features
+
+* **hooks:** allow ls and oma in the claude and qwen permission lists ([df73371](https://github.com/first-fluke/oh-my-agent/commit/df733717826600fa09587f8dc88fb3ccd97f1c3d))
+
+
+### Bug Fixes
+
+* **mcp:** point the committed serena entries at the shared bridge ([058b677](https://github.com/first-fluke/oh-my-agent/commit/058b677b13d12895191efc34509dd2d8c557145e))
+* **vendors:** include extension vendors in ALL_CLI_VENDORS ([39062a0](https://github.com/first-fluke/oh-my-agent/commit/39062a0585975a7ad75c82feebb743b113ad6387))
+
 ## [12.6.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.5.0...cli-v12.6.0) (2026-08-23)
 
 
