@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.5.0",
-  "releaseDate": "2026-08-20T01:52:50.062Z",
+  "releaseDate": "2026-08-23T07:23:14.553Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -306,8 +306,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "722d60c34934aba49c2138c345d979c2f586bbfa4d7a1b999514d3deeb430a34",
-      "size": 25300
+      "sha256": "3f41b2578b5f387a9ee812c3ede073c3a469aedb8807f0c38a32b9849259dee6",
+      "size": 25712
     },
     {
       "path": ".agents/rules/backend.md",
@@ -1681,8 +1681,8 @@
     },
     {
       "path": ".agents/skills/oma-scm/SKILL.md",
-      "sha256": "e66a1615b3523097ee09d6d615af190383137c41bc8b0b68063e0442c42ac64d",
-      "size": 17079
+      "sha256": "00443374cc2857bc4ff84a587cb2820c03d83e1317421d67fc8e1301853155cc",
+      "size": 17651
     },
     {
       "path": ".agents/skills/oma-scm/resources/codeowners-playbook.md",
@@ -2141,8 +2141,8 @@
     },
     {
       "path": ".agents/workflows/scm.md",
-      "sha256": "e407a2aa85b0d3bd00a8048df1dbfaa5b2b6c2f7b4ed7bc25f6c7db540871755",
-      "size": 8411
+      "sha256": "d97d7654d3b00f7dbfa0d9c2d34f42aab38687b2d9789749c177a2befbaa6a23",
+      "size": 8733
     },
     {
       "path": ".agents/workflows/stack-set.md",
