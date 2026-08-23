@@ -73,6 +73,8 @@
         "Bash(bun run:*)",
         "Bash(bunx tsx:*)",
         "Bash(git add:*)",
+        "Bash(ls *)",
+        "Bash(oma *)",
         "mcp__serena__*"
       ]
     }
