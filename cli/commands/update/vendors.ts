@@ -3,7 +3,6 @@ import { join } from "node:path";
 import {
   ALL_CLI_VENDORS,
   CLI_SKILLS_DIR,
-  EXTENSION_VENDORS,
   vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
@@ -33,7 +32,10 @@ const VENDOR_ROOTS: Record<CliVendor, string[]> = {
   zcode: [".zcode"],
 };
 
-const UPDATE_VENDORS = [...ALL_CLI_VENDORS, ...EXTENSION_VENDORS].sort();
+// ALL_CLI_VENDORS now enumerates every CliVendor arm, extension vendors
+// included; this used to union EXTENSION_VENDORS back in to work around their
+// omission there.
+const UPDATE_VENDORS = [...ALL_CLI_VENDORS];
 
 function isCliTool(vendor: CliVendor): vendor is CliTool {
   return vendor in CLI_SKILLS_DIR;

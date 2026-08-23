@@ -34,42 +34,35 @@ describe("readVendorsFromConfig", () => {
     tempDirs.length = 0;
   });
 
+  // The fallback must list every vendor oma can link, extension vendors (pi,
+  // opencode) included. They were absent until ALL_CLI_VENDORS was corrected,
+  // which meant a config with no `vendors:` block never linked them and
+  // AGENTS.md — shared by codex/cursor/qwen/pi — silently lost pi's section.
+  const ALL = [
+    "antigravity",
+    "claude",
+    "codex",
+    "commandcode",
+    "copilot",
+    "cursor",
+    "grok",
+    "hermes",
+    "kimi",
+    "kiro",
+    "opencode",
+    "pi",
+    "qwen",
+    "zcode",
+  ];
+
   it("returns all vendors when config does not exist", () => {
     const dir = createTemp();
-    const vendors = readVendorsFromConfig(dir);
-    expect(vendors).toEqual([
-      "antigravity",
-      "claude",
-      "codex",
-      "commandcode",
-      "copilot",
-      "cursor",
-      "grok",
-      "hermes",
-      "kimi",
-      "kiro",
-      "qwen",
-      "zcode",
-    ]);
+    expect(readVendorsFromConfig(dir)).toEqual(ALL);
   });
 
   it("returns all vendors when no vendors field in config", () => {
     const dir = createTemp("language: en\ntimezone: Asia/Seoul\n");
-    const vendors = readVendorsFromConfig(dir);
-    expect(vendors).toEqual([
-      "antigravity",
-      "claude",
-      "codex",
-      "commandcode",
-      "copilot",
-      "cursor",
-      "grok",
-      "hermes",
-      "kimi",
-      "kiro",
-      "qwen",
-      "zcode",
-    ]);
+    expect(readVendorsFromConfig(dir)).toEqual(ALL);
   });
 
   it("reads vendors from config", () => {

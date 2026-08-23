@@ -10,7 +10,11 @@
 - **Response language**: Follows `language` in `.agents/oma-config.yaml`
 - **Skills**: `.agents/skills/` (domain specialists)
 - **Workflows**: `.agents/workflows/` (multi-step orchestration)
-- **Subagents**: pi has no native subagent API; use `oma agent:spawn {agent} {prompt} {sessionId} -m pi` for CLI subprocess dispatch
+- **Subagents**:
+  - codex: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent:spawn`
+  - cursor: `@agent-name` (defined in `.cursor/agents/`)
+  - qwen: `oma agent:spawn {agent} {prompt} {sessionId}`
+  - pi: pi has no native subagent API; use `oma agent:spawn {agent} {prompt} {sessionId} -m pi` for CLI subprocess dispatch
 
 ## Per-Agent Dispatch
 
@@ -65,7 +69,10 @@ To execute: read and follow `.agents/workflows/{name}.md` step by step.
 
 ## Auto-Detection
 
-Extension bridge: `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts
+Hooks (codex): `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)
+Hooks (cursor): `UserPromptSubmit` / `beforeSubmitPrompt` (keyword detection), `afterFileEdit` (refactor-guard recorder, opt-in), `stop` (persistent mode + refactor guard)
+Hooks (qwen): `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)
+Extension bridge (pi): `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts
 Keywords defined in `.agents/hooks/core/triggers.json` (multi-language).
 Persistent workflows (orchestrate, ultrawork, work, ralph) block termination until complete.
 Deactivate: say "workflow done".

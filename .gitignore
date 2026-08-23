@@ -41,6 +41,9 @@ docs/generated/
 # pi (Earendil pi-coding-agent) extension bridge (generated)
 .pi/
 
+# opencode extension bridge (generated) — the other extension vendor alongside pi
+.opencode/
+
 # Cursor/Gemini integration layer (generated)
 .cursor/*
 .gemini/*

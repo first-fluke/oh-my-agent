@@ -8,7 +8,14 @@
  */
 import { describe, expect, it } from "vitest";
 import type { ExtensionVendorType, VendorType } from "../types/vendors.js";
-import { CLI_SKILLS_DIR, EXTENSION_VENDORS, VENDORS } from "./vendors.js";
+import {
+  ALL_CLI_VENDORS,
+  CLI_SKILLS_DIR,
+  EXTENSION_VENDORS,
+  INSTALL_ONLY_VENDORS,
+  VENDORS,
+  WORKFLOW_ONLY_VENDORS,
+} from "./vendors.js";
 
 // ---------------------------------------------------------------------------
 // Runtime assertions
@@ -55,6 +62,36 @@ describe("CLI_SKILLS_DIR", () => {
 
   it("does not set requiresHomeConsent for opencode", () => {
     expect(CLI_SKILLS_DIR.opencode.requiresHomeConsent).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ALL_CLI_VENDORS must enumerate every CliVendor arm
+// ---------------------------------------------------------------------------
+
+describe("ALL_CLI_VENDORS", () => {
+  // readVendorsFromConfig falls back to this list when oma-config.yaml has no
+  // `vendors:` block. Dropping an arm therefore does not fail loudly — those
+  // vendors are simply never linked, and any doc they share (AGENTS.md) silently
+  // loses their section. EXTENSION_VENDORS went missing exactly this way.
+  it("covers every arm of CliVendor", () => {
+    const arms = [
+      ...VENDORS,
+      ...EXTENSION_VENDORS,
+      ...INSTALL_ONLY_VENDORS,
+      ...WORKFLOW_ONLY_VENDORS,
+    ];
+    expect([...ALL_CLI_VENDORS].sort()).toEqual([...new Set(arms)].sort());
+  });
+
+  it("includes the extension vendors", () => {
+    expect(ALL_CLI_VENDORS).toContain("pi");
+    expect(ALL_CLI_VENDORS).toContain("opencode");
+  });
+
+  it("is sorted and free of duplicates", () => {
+    expect([...ALL_CLI_VENDORS]).toEqual([...ALL_CLI_VENDORS].sort());
+    expect(new Set(ALL_CLI_VENDORS).size).toBe(ALL_CLI_VENDORS.length);
   });
 });
 

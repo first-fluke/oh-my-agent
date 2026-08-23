@@ -73,12 +73,18 @@ export type WorkflowOnlyVendor = (typeof WORKFLOW_ONLY_VENDORS)[number];
 export const NO_SKILL_VENDORS = ["grok"] as const;
 
 /**
- * All CLI tools including non-hook vendors (skill-install only).
- * Derived from VENDORS plus the install-only targets, sorted alphabetically
- * for deterministic output where consumers iterate.
+ * Every vendor oma can link — the runtime enumeration of {@link CliVendor}.
+ * Sorted alphabetically for deterministic output where consumers iterate.
+ *
+ * This must cover all four arms of `CliVendor`. `EXTENSION_VENDORS` is kept out
+ * of `VENDORS` because its install is forked to a dedicated composer, not
+ * because it is optional — omitting it here silently dropped pi and opencode
+ * from `readVendorsFromConfig`'s fallback, so a config with no `vendors:` block
+ * never linked them and `AGENTS.md` lost pi's subagent and hook instructions.
  */
 export const ALL_CLI_VENDORS: CliVendor[] = [
   ...VENDORS,
+  ...EXTENSION_VENDORS,
   ...INSTALL_ONLY_VENDORS,
   ...WORKFLOW_ONLY_VENDORS,
 ].sort() as CliVendor[];
