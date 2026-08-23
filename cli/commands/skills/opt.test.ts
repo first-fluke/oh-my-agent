@@ -1366,7 +1366,7 @@ function writeSkillMd(skillMdPath: string, content: string): void {
 describe("isOmaOwnedSkill", () => {
   it("returns true for skills prefixed with oma-", () => {
     expect(isOmaOwnedSkill("oma-backend")).toBe(true);
-    expect(isOmaOwnedSkill("oma-translator")).toBe(true);
+    expect(isOmaOwnedSkill("oma-translation")).toBe(true);
     expect(isOmaOwnedSkill("oma-")).toBe(true);
   });
 

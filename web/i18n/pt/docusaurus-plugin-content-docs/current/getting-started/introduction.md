@@ -73,8 +73,8 @@ oh-my-agent resolve isso com especialização:
 
 | Agente | Função | Capacidades Principais |
 |--------|--------|----------------------|
-| **oma-translator** | Tradução com consciência de contexto | Método de tradução em 4 estágios: Analisar Fonte, Extrair Significado, Reconstruir no Idioma Alvo, Verificar. Preserva tom, registro e terminologia de domínio. Detecção de padrões anti-IA. Suporta tradução em lote (arquivos i18n). Modo refinado opcional de 7 estágios para qualidade de publicação. Os perfis por idioma de destino (`resources/lang/{code}.md`) trazem os sistemas de registro, a tipografia e as regras contra o tradutês específicas de cada idioma. Recursos: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestrator** | Coordenador multi-agente automatizado | Inicia subagentes CLI em paralelo, coordena via memória MCP, monitora progresso, executa loops de verificação. Configurável: MAX_PARALLEL (padrão 3), MAX_RETRIES (padrão 2), POLL_INTERVAL (padrão 30s). Inclui loop de revisão agente-para-agente e monitoramento de Dívida de Clarificação. Recursos: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-translation** | Tradução com consciência de contexto | Método de tradução em 4 estágios: Analisar Fonte, Extrair Significado, Reconstruir no Idioma Alvo, Verificar. Preserva tom, registro e terminologia de domínio. Detecção de padrões anti-IA. Suporta tradução em lote (arquivos i18n). Modo refinado opcional de 7 estágios para qualidade de publicação. Os perfis por idioma de destino (`resources/lang/{code}.md`) trazem os sistemas de registro, a tipografia e as regras contra o tradutês específicas de cada idioma. Recursos: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | Coordenador multi-agente automatizado | Inicia subagentes CLI em paralelo, coordena via memória MCP, monitora progresso, executa loops de verificação. Configurável: MAX_PARALLEL (padrão 3), MAX_RETRIES (padrão 2), POLL_INTERVAL (padrão 30s). Inclui loop de revisão agente-para-agente e monitoramento de Dívida de Clarificação. Recursos: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Lida com estratégias de branching, fluxos de merge/rebase/conflito, worktrees, baselines e rastreamento de estado de release. Também gera mensagens de Conventional Commit com staging seguro. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ### Busca, retrospectiva e processamento de documentos
@@ -162,7 +162,7 @@ Quando você envia um prompt, oh-my-agent determina qual agente o trata usando o
 | UI design, design system, landing page, DESIGN.md | oma-design |
 | brainstorm, ideate, explore, idea | oma-brainstorm |
 | plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestrator |
+| automatic, parallel, orchestrate | oma-orchestration |
 
 Para requisições complexas que abrangem múltiplos domínios, o roteamento segue ordens de execução estabelecidas. Por exemplo, "Crie um app fullstack" é roteado para: oma-pm (plano) depois oma-backend + oma-frontend (implementação paralela) depois oma-qa (revisão).
 

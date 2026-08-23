@@ -31,7 +31,7 @@ Generate finished `.mp4` videos through a key-optional, 3-tier (CLI-first / MCP 
 - Generating speech audio only (no video) -> use `oma-voice`
 - Non-linear video editing of an existing finished mp4 -> out of scope (OpenCut-MCP deferred)
 - Supervised headed web capture is in-scope (`--source web`); live streaming is out of scope
-- Interactive HTML explainer document (not a video) -> use `oma-explainer`
+- Interactive HTML explainer document (not a video) -> use `oma-explanation`
 
 ### Expected inputs
 - A brief (topic / README path / data) plus optional mode, aspect, locale, captions, visual, voice, music, duration, compositor, capture path, seed
@@ -102,7 +102,7 @@ outputs:
 - If a provider is unavailable, try the next provider in the capability's `order`; only chain exhaustion is a stage failure.
 - If the Remotion toolchain is not bootstrapped, point the user to `oma video doctor --install` (one-time: deps + headless shell + Pretendard font); fall back to the MPT compositor where applicable (MPT itself needs a one-time `oma video doctor --install-mpt`).
 - If Voicebox MCP is down, fall back to estimated timing (still produces captions). A whisper.cpp hop between the two is reserved but not yet wired (`TODO(oma-deferred): whisper-cpp`).
-- If the brief locale is non-source, translate via oma-translator (key-free); if absent, warn and keep source text.
+- If the brief locale is non-source, translate via oma-translation (key-free); if absent, warn and keep source text.
 
 ### Exit
 - Success: `<mode>-<slug>.mp4` and `manifest.json` exist in the run directory; all schemas validate.
@@ -200,7 +200,7 @@ Before invoking `oma video generate`, the calling agent runs this checklist. **I
 
 **Strongly recommended (ask if absent AND not inferable):**
 - [ ] **Aspect**: `9:16` (shorts/reels), `16:9` (explainer/demo), `1:1`, or `auto` (snaps to the mode default).
-- [ ] **Locale**: narration + caption language (default from config; translated via oma-translator when non-source).
+- [ ] **Locale**: narration + caption language (default from config; translated via oma-translation when non-source).
 - [ ] **Captions**: `tiktok` (centered, static windowed cues), `lower-third`, or `none`.
 - [ ] **Duration**: target seconds (<= 180) or `auto` (derived from the script).
 - [ ] **Voice / music**: voice profile or `none`; music `upbeat` / `calm` / `none`. **The default voice is `none` → a silent video with estimated caption timing.** Pass `--voice <profile>` (a Voicebox profile) whenever narration is expected. Music is rendered offline by Strudel and mixed at −18 dB; it needs a one-time `oma video doctor --install-strudel` and degrades to no music without it.

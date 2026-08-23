@@ -215,7 +215,7 @@ export class VideoOrchestrator {
           captions.pathTaken === "fallback"
         ) {
           ctx.warnings.push(
-            `caption provider ${captionProvider.id} kept source locale ${script.locale} (oma-translator unavailable for ${normalized.locale})`,
+            `caption provider ${captionProvider.id} kept source locale ${script.locale} (oma-translation unavailable for ${normalized.locale})`,
           );
         }
       }

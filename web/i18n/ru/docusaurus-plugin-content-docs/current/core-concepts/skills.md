@@ -174,7 +174,7 @@ description: Frontend specialist for React, Next.js, TypeScript with FSD-lite ar
 | «Fix bug and review» | oma-debug -> oma-qa |
 | «Design and build a landing page» | oma-design -> oma-frontend |
 | «I have an idea for a feature» | oma-brainstorm -> oma-pm -> агенты -> oma-qa |
-| «Do everything automatically» | oma-orchestrator (внутри: oma-pm -> агенты -> oma-qa) |
+| «Do everything automatically» | oma-orchestration (внутри: oma-pm -> агенты -> oma-qa) |
 
 ### Правила межагентных зависимостей
 

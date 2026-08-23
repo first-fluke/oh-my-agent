@@ -76,10 +76,10 @@ oh-my-agent solves this with specialization:
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-translator** | Context-aware translation | 4-stage translation method: Analyze Source, Extract Meaning, Reconstruct in Target Language, Verify. Preserves tone, register, and domain terminology. Anti-AI pattern detection. Supports batch translation (i18n files). Optional 7-stage refined mode for publication quality. Per-target language profiles (`resources/lang/{code}.md`) carry register systems, typography, and language-specific translation-ese rules. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestrator** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-translation** | Context-aware translation | 4-stage translation method: Analyze Source, Extract Meaning, Reconstruct in Target Language, Verify. Preserves tone, register, and domain terminology. Anti-AI pattern detection. Supports batch translation (i18n files). Optional 7-stage refined mode for publication quality. Per-target language profiles (`resources/lang/{code}.md`) carry register systems, typography, and language-specific translation-ese rules. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Handles branching strategies, merge/rebase/conflict workflows, worktrees, baselines, and release-state tracking. Also generates Conventional Commit messages with safe staging. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
-| **oma-coordination** | Manual multi-agent workflow guide | Step-by-step coordination of PM, Frontend, Backend, Mobile, and QA agents via CLI `oma agent:spawn`. Always starts with PM decomposition, spawns same-priority tasks in parallel with separate workspaces, monitors `progress-{agent}.md`, aligns API/data contracts before frontend/mobile work, ends with QA review. The manual counterpart to `oma-orchestrator`. |
+| **oma-coordination** | Manual multi-agent workflow guide | Step-by-step coordination of PM, Frontend, Backend, Mobile, and QA agents via CLI `oma agent:spawn`. Always starts with PM decomposition, spawns same-priority tasks in parallel with separate workspaces, monitors `progress-{agent}.md`, aligns API/data contracts before frontend/mobile work, ends with QA review. The manual counterpart to `oma-orchestration`. |
 
 ### Search, retrospective, and document processing
 
@@ -94,7 +94,7 @@ oh-my-agent solves this with specialization:
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-academic-writer** | Publication-grade English prose | Drafts, revises, and audits essays, reports, executive summaries, conclusions, and literature reviews. Enforces four protocols simultaneously: Sentence Structure (4 types, varied length/openers), Verb (banned generic verbs replaced from a tiered academic corpus), Hedging (strength matched to evidence), and Anti-AI compliance. Quote-before-judgment rubric gate, Claim-Evidence Map, reverse outlining. Modes: `draft` / `revise` / `review`. |
+| **oma-academic-writing** | Publication-grade English prose | Drafts, revises, and audits essays, reports, executive summaries, conclusions, and literature reviews. Enforces four protocols simultaneously: Sentence Structure (4 types, varied length/openers), Verb (banned generic verbs replaced from a tiered academic corpus), Hedging (strength matched to evidence), and Anti-AI compliance. Quote-before-judgment rubric gate, Claim-Evidence Map, reverse outlining. Modes: `draft` / `revise` / `review`. |
 | **oma-scholar** | Research paper sidecar companion | Searches, generates, validates, reviews, and compares scholarly papers via the Knows `.knows.yaml` sidecar spec (v0.9.0 / `paper@1`). Token-efficient claim/evidence/relation access (~700 tokens for claims-only vs ~10K full PDF). `oma scholar search/resolve/get/lint` over knows.academy with automatic OpenAlex fallback for pre-2026 papers. Anti-fabrication: omits unknown fields rather than guessing. |
 
 ### Security
@@ -108,7 +108,7 @@ oh-my-agent solves this with specialization:
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-docs** | Documentation drift detector | `verify` mode deterministically checks `docs/**/*.md` for broken refs (file paths, CLI commands, config keys, env vars, scripts) and exits 0/1; `sync` mode correlates a git diff to candidate docs and drafts host-LLM patch proposals confirmed per-doc (never auto-applies). URL checking delegated to `lychee`; CLI emits structured JSON, host LLM does all synthesis (no vendor SDK calls). Never modifies `.agents/`. |
-| **oma-skill-creator** | SSL-lite skill authoring specialist | Creates, updates, and audits OMA skills in the SSL-lite format with the four mandatory sections (Scheduling / Structural Flow / Logical Operations / References). Classifies skill type, inserts exactly one inline canonical path, enforces `When NOT to use` cross-routes, and runs `oma skills audit` to catch description collisions (warn ≥ 60%, fail ≥ 75% TF-IDF cosine). Pushes long variant detail into `resources/`. |
+| **oma-skill-creation** | SSL-lite skill authoring specialist | Creates, updates, and audits OMA skills in the SSL-lite format with the four mandatory sections (Scheduling / Structural Flow / Logical Operations / References). Classifies skill type, inserts exactly one inline canonical path, enforces `When NOT to use` cross-routes, and runs `oma skills audit` to catch description collisions (warn ≥ 60%, fail ≥ 75% TF-IDF cosine). Pushes long variant detail into `resources/`. |
 
 ### Market research
 
@@ -202,7 +202,7 @@ When you send a prompt, oh-my-agent determines which agent handles it using the 
 | UI design, design system, landing page, DESIGN.md | oma-design |
 | brainstorm, ideate, explore, idea | oma-brainstorm |
 | plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestrator |
+| automatic, parallel, orchestrate | oma-orchestration |
 
 For complex requests that span multiple domains, routing follows established execution orders. For example, "Create a fullstack app" routes to: oma-pm (plan) then oma-backend + oma-frontend (parallel implementation) then oma-qa (review).
 

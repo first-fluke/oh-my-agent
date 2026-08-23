@@ -5,7 +5,7 @@
  * web/i18n/{lang}/docusaurus-plugin-content-docs/current/{rel-path}.
  *
  * Emits structural drift signals (line count, heading count, last-modified
- * timestamp) so the host LLM (oma-translator runtime) can decide which
+ * timestamp) so the host LLM (oma-translation runtime) can decide which
  * translations need a diff-sync patch.
  *
  * The CLI never edits translations itself — it only reports candidate pairs.

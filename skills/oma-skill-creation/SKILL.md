@@ -1,5 +1,5 @@
 ---
-name: oma-skill-creator
+name: oma-skill-creation
 description: Create or update OMA skills in the SSL-lite human-readable format.
   Use when adding a new `.agents/skills/{skill-name}/SKILL.md`, converting an
   existing skill to the standardized Scheduling / Structural Flow / Logical
@@ -7,7 +7,7 @@ description: Create or update OMA skills in the SSL-lite human-readable format.
   routing, execution, resource, and safety detail.
 ---
 
-# Skill Creator - SSL-lite Skill Authoring Specialist
+# Skill Creation - SSL-lite Skill Authoring
 
 ## Scheduling
 

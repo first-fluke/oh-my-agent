@@ -1,4 +1,4 @@
-# Document Structure — oma-explainer
+# Document Structure — oma-explanation
 
 > The structural and rhetorical contract for all generated HTML explainer documents.
 > Read this document to understand WHAT content is generated and in what tone.

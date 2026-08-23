@@ -209,7 +209,7 @@ describe("TimedCaptionProvider", () => {
       { path: "" },
       { runDir: tmp, style: "lower-third", locale: "ko", sourceLocale: "en" },
     );
-    // oma-translator is deferred, so the caption stays in the source locale.
+    // oma-translation is deferred, so the caption stays in the source locale.
     expect(captions.locale).toBe("en");
     expect(captions.pathTaken).toBe("fallback");
   });

@@ -57,7 +57,7 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 | convert | `convert.md` | File format conversion by category: documents→Markdown (oma-pdf/oma-hwp), image/video/audio transcode (ffmpeg) |
 | video | `video.md` | Brief → script → assets → render-spec → Remotion (oma-video) |
 | schedule | `schedule.md` | Register & manage time-based agent jobs via `oma schedule:*` |
-| explain | `explain.md` | Diff/PR/branch → self-contained interactive HTML explainer via oma-explainer |
+| explain | `explain.md` | Diff/PR/branch → self-contained interactive HTML explainer via oma-explanation |
 
 (`tools` and `stack-set` are slash-invoked utilities, `schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs), `convert` is slash-invoked to avoid false positives on "convert this code" phrasing, and `explain` is slash-invoked because "explain" is everyday vocabulary, excluded from keyword detection to avoid false positives; all are intentionally excluded from keyword detection.)
 

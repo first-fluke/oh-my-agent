@@ -1,4 +1,4 @@
-# Japanese Translation Review — oma-translator Stage 5–7
+# Japanese Translation Review — oma-translation Stage 5–7
 
 Post-draft review pass for Qiita posts. **Weekly mode** compares the Japanese draft against git context (source of truth). **Sync mode** (`--sync`) compares against the English dev.to article. `SOUL.md` is the voice reference in both cases.
 

@@ -172,11 +172,11 @@ In plaats van een enkele AI die alles doet (en halverwege de draad kwijtraakt), 
 | **oma-design** | Bouwt design systems met tokens, toegankelijkheid en responsive layouts |
 | **oma-dev-workflow** | Automatiseert je CI/CD, releases en monorepo-taken |
 | **oma-docs** | Controleert je docs op gebroken verwijzingen en markeert wat een codewijziging heeft geraakt |
-| **oma-explainer** | Zet een diff, PR of branch om in een zelfstandige interactieve HTML-uitleg met quiz |
+| **oma-explanation** | Zet een diff, PR of branch om in een zelfstandige interactieve HTML-uitleg met quiz |
 | **oma-frontend** | Bouwt je UI met React/Next.js, TypeScript, Tailwind CSS v4 en shadcn/ui |
 | **oma-mobile** | Bouwt cross-platform mobiele apps met Flutter |
 | **oma-observability** | Routeert observability-werk over metrics, logs, traces, SLO's en incident forensics |
-| **oma-orchestrator** | Draait meerdere agents parallel via de CLI |
+| **oma-orchestration** | Draait meerdere agents parallel via de CLI |
 | **oma-pm** | Plant taken, splitst requirements op en definieert API-contracten |
 | **oma-qa** | Reviewt je code op OWASP-beveiliging, performance en toegankelijkheid |
 | **oma-refactor** | Refactort code zonder gedragsverandering met hotspot-targeting, karakterisatietests als vangnet en refactor-only commits |
@@ -190,7 +190,7 @@ In plaats van een enkele AI die alles doet (en halverwege de draad kwijtraakt), 
 | Agent | Wat ze doen |
 |-------|-------------|
 | **oma-coordination** | Begeleidt stap voor stap de handmatige coördinatie van PM-, frontend-, backend-, mobile- en QA-agents |
-| **oma-skill-creator** | Schrijft en auditeert nieuwe OMA-skills in het SSL-lite-formaat |
+| **oma-skill-creation** | Schrijft en auditeert nieuwe OMA-skills in het SSL-lite-formaat |
 
 </details>
 
@@ -200,7 +200,7 @@ Los van het engineeringteam levert oma content- en researchpijplijnen die volgen
 
 | Agent | Wat ze doen |
 |-------|-------------|
-| **oma-academic-writer** | Schrijft, herziet en auditeert academisch proza tot publicatiekwaliteit |
+| **oma-academic-writing** | Schrijft, herziet en auditeert academisch proza tot publicatiekwaliteit |
 | **oma-hwp** | Converteert HWP-, HWPX- en HWPML-bestanden naar Markdown |
 | **oma-image** | Genereert afbeeldingen via meerdere AI-providers tegelijk |
 | **oma-market** | Onderzoekt je markt op basis van community-signalen en structureert dit met SWOT, Porter's 5F en PESTEL |
@@ -208,7 +208,7 @@ Los van het engineeringteam levert oma content- en researchpijplijnen die volgen
 | **oma-recap** | Vat je gespreksgeschiedenis samen in thematische werkoverviews |
 | **oma-scholar** | Doorzoekt academische literatuur en helpt je bij peer review |
 | **oma-slide** | Genereert onderscheidende, animatierijke HTML-presentatiedecks en exporteert naar PDF/PNG/PPTX |
-| **oma-translator** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
+| **oma-translation** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
 | **oma-video** | Genereert korte video's, uitlegvideo's en demo's via een Remotion-pijplijn die ook zonder sleutels werkt |
 | **oma-voice** | Genereert voice-overs en transcribeert audio lokaal, zonder cloud |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["Domain Agents"]

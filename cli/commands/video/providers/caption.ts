@@ -3,7 +3,7 @@
 //
 // Key-optional, two-branch contract (backend rule 11):
 //   real     : when the requested locale differs from the source locale and an
-//              oma-translator path is available, translate the caption text
+//              oma-translation path is available, translate the caption text
 //              first (still key-free — agent-as-key). The live translator call
 //              is deferred (agent-runtime concern); the gating + fallback are
 //              real.
@@ -72,7 +72,7 @@ export class TimedCaptionProvider implements CaptionProvider {
   }
 
   /**
-   * Translate caption lines for a non-source locale. The actual oma-translator
+   * Translate caption lines for a non-source locale. The actual oma-translation
    * invocation is an agent-runtime concern that cannot be exercised here, so it
    * is deferred; returning null triggers the source-locale fallback.
    */
@@ -82,7 +82,7 @@ export class TimedCaptionProvider implements CaptionProvider {
   ): Promise<string[] | null> {
     void _text;
     void _opts;
-    // TODO(oma-deferred): oma-translator — translate each caption line to
+    // TODO(oma-deferred): oma-translation — translate each caption line to
     // opts.locale before writing srt/vtt (still key-free / agent-as-key). Until
     // the translator surface is wired, fall back to the source locale.
     return null;

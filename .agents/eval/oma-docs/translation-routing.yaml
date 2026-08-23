@@ -8,5 +8,5 @@ prompt: |
 checker:
   type: assert
   expect_contains:
-    - "oma-translator"
+    - "oma-translation"
 weight: 1

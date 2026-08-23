@@ -47,6 +47,7 @@ import { migrateMcpProcessCost } from "./019-mcp-process-cost.js";
 import { migrateSerenaHomeProject } from "./020-serena-home-project.js";
 import { migrateRemoveEvalArtifacts } from "./021-remove-eval-artifacts.js";
 import { migrateUnifySkillConfigs } from "./022-unify-skill-configs.js";
+import { migrateCapabilitySkillNames } from "./023-capability-skill-names.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -70,6 +71,7 @@ const migrations: Migration[] = [
   migrateSerenaHomeProject,
   migrateRemoveEvalArtifacts,
   migrateUnifySkillConfigs,
+  migrateCapabilitySkillNames,
 ];
 
 export function runMigrations(

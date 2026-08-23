@@ -119,7 +119,7 @@ oma docs i18n --json --min-severity MEDIUM
 oma docs lint --json
 ```
 
-Host-LLM contract: prioritize CRITICAL/HIGH drift pairs and hand each to `oma-translator` in diff-sync mode; for lint issues, restructure flagged sentences via `oma-translator` with per-file user confirmation. Never bulk-retranslate.
+Host-LLM contract: prioritize CRITICAL/HIGH drift pairs and hand each to `oma-translation` in diff-sync mode; for lint issues, restructure flagged sentences via `oma-translation` with per-file user confirmation. Never bulk-retranslate.
 
 ---
 

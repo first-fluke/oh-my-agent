@@ -67,8 +67,8 @@ your-project/
 │   │   ├── oma-debug/
 │   │   ├── oma-tf-infra/
 │   │   ├── oma-dev-workflow/
-│   │   ├── oma-translator/
-│   │   ├── oma-orchestrator/
+│   │   ├── oma-translation/
+│   │   ├── oma-orchestration/
 │   │   │   ├── SKILL.md
 │   │   │   ├── resources/
 │   │   │   ├── scripts/

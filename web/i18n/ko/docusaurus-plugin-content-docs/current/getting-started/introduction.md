@@ -74,9 +74,9 @@ oh-my-agent은 전문화로 이를 해결합니다:
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-translator** | 컨텍스트 인식 번역 | 4단계 번역 방법: 원문 분석, 의미 추출, 대상 언어로 재구성, 검증. 톤, 레지스터, 도메인 용어를 유지합니다. 안티 AI 패턴 감지. 배치 번역(i18n 파일) 지원. 출판 품질을 위한 선택적 7단계 정제 모드. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터 체계, 타이포그래피, 언어별 번역체 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestrator** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, MCP 메모리를 통해 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 Clarification Debt 모니터링 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-coordination** | 수동 멀티 에이전트 워크플로우 가이드 | CLI `oma agent:spawn`으로 PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 조율합니다. 항상 PM 분해로 시작하고, 같은 우선순위 태스크를 별도 워크스페이스에서 병렬로 스폰하고, `progress-{agent}.md`를 모니터링하고, 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞추고, QA 리뷰로 마무리합니다. `oma-orchestrator`의 수동 대응물입니다. |
+| **oma-translation** | 컨텍스트 인식 번역 | 4단계 번역 방법: 원문 분석, 의미 추출, 대상 언어로 재구성, 검증. 톤, 레지스터, 도메인 용어를 유지합니다. 안티 AI 패턴 감지. 배치 번역(i18n 파일) 지원. 출판 품질을 위한 선택적 7단계 정제 모드. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터 체계, 타이포그래피, 언어별 번역체 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, MCP 메모리를 통해 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 Clarification Debt 모니터링 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-coordination** | 수동 멀티 에이전트 워크플로우 가이드 | CLI `oma agent:spawn`으로 PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 조율합니다. 항상 PM 분해로 시작하고, 같은 우선순위 태스크를 별도 워크스페이스에서 병렬로 스폰하고, `progress-{agent}.md`를 모니터링하고, 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞추고, QA 리뷰로 마무리합니다. `oma-orchestration`의 수동 대응물입니다. |
 | **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 또한 안전한 스테이징과 Conventional Commit 메시지 생성도 지원합니다. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ### 검색, 회고 및 문서 처리
@@ -92,7 +92,7 @@ oh-my-agent은 전문화로 이를 해결합니다:
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-academic-writer** | 출판 수준 영어 산문 | 에세이, 보고서, 요약문, 결론, 문헌 검토를 작성하고 수정하고 감사합니다. 네 가지 프로토콜을 동시에 강제합니다. 문장 구조(4가지 유형, 길이와 도입부 변화), 동사(일반 동사를 금지하고 등급화된 학술 코퍼스에서 대체), 헤징(근거의 강도에 맞춘 표현), 안티 AI 준수입니다. 판단에 앞서 인용을 요구하는 루브릭 게이트, 주장-근거 맵, 역방향 아웃라이닝을 지원합니다. 모드: `draft` / `revise` / `review`. |
+| **oma-academic-writing** | 출판 수준 영어 산문 | 에세이, 보고서, 요약문, 결론, 문헌 검토를 작성하고 수정하고 감사합니다. 네 가지 프로토콜을 동시에 강제합니다. 문장 구조(4가지 유형, 길이와 도입부 변화), 동사(일반 동사를 금지하고 등급화된 학술 코퍼스에서 대체), 헤징(근거의 강도에 맞춘 표현), 안티 AI 준수입니다. 판단에 앞서 인용을 요구하는 루브릭 게이트, 주장-근거 맵, 역방향 아웃라이닝을 지원합니다. 모드: `draft` / `revise` / `review`. |
 | **oma-scholar** | 연구 논문 사이드카 도우미 | Knows `.knows.yaml` 사이드카 스펙(v0.9.0 / `paper@1`)으로 학술 논문을 검색하고, 생성하고, 검증하고, 리뷰하고, 비교합니다. 주장·근거·관계에 토큰 효율적으로 접근합니다(주장만 볼 때 약 700토큰, 전체 PDF는 약 10K). knows.academy를 대상으로 `oma scholar search/resolve/get/lint`를 제공하며, 2026년 이전 논문은 OpenAlex로 자동 폴백합니다. 날조 방지 원칙에 따라 모르는 필드는 추측하지 않고 생략합니다. |
 
 ### 보안
@@ -106,7 +106,7 @@ oh-my-agent은 전문화로 이를 해결합니다:
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-docs** | 문서 드리프트 탐지기 | `verify` 모드는 `docs/**/*.md`에서 깨진 참조(파일 경로, CLI 명령, 설정 키, 환경 변수, 스크립트)를 결정론적으로 검사하고 0 또는 1로 종료합니다. `sync` 모드는 git diff를 후보 문서와 연결해 호스트 LLM이 적용할 패치 제안을 문서별 확인과 함께 작성합니다(절대 자동 적용하지 않습니다). URL 검사는 `lychee`에 위임하고, CLI는 구조화된 JSON을 내보내며, 종합은 전부 호스트 LLM이 합니다(벤더 SDK를 호출하지 않습니다). `.agents/`는 절대 수정하지 않습니다. |
-| **oma-skill-creator** | SSL-lite 스킬 작성 전문가 | 네 가지 필수 섹션(Scheduling / Structural Flow / Logical Operations / References)을 갖춘 SSL-lite 형식으로 OMA 스킬을 만들고, 갱신하고, 감사합니다. 스킬 유형을 분류하고, 인라인 정규 경로를 정확히 하나만 넣고, `When NOT to use`의 교차 라우팅을 강제하며, `oma skills audit`으로 설명 충돌을 잡습니다(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패). 긴 변형 설명은 `resources/`로 밀어냅니다. |
+| **oma-skill-creation** | SSL-lite 스킬 작성 전문가 | 네 가지 필수 섹션(Scheduling / Structural Flow / Logical Operations / References)을 갖춘 SSL-lite 형식으로 OMA 스킬을 만들고, 갱신하고, 감사합니다. 스킬 유형을 분류하고, 인라인 정규 경로를 정확히 하나만 넣고, `When NOT to use`의 교차 라우팅을 강제하며, `oma skills audit`으로 설명 충돌을 잡습니다(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패). 긴 변형 설명은 `resources/`로 밀어냅니다. |
 
 ### 시장 조사
 
@@ -200,7 +200,7 @@ oh-my-agent은 스킬/프롬프트 로딩을 지원하는 모든 AI 기반 IDE �
 | UI design, design system, landing page, DESIGN.md | oma-design |
 | brainstorm, ideate, explore, idea | oma-brainstorm |
 | plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestrator |
+| automatic, parallel, orchestrate | oma-orchestration |
 
 여러 도메인에 걸친 복잡한 요청의 경우, 라우팅은 정해진 실행 순서를 따릅니다. 예를 들어, "풀스택 앱을 만들어줘"는 oma-pm (계획) -> oma-backend + oma-frontend (병렬 구현) -> oma-qa (리뷰) 순서로 라우팅됩니다.
 

@@ -179,7 +179,7 @@ description 필드는 매우 중요합니다. 스킬 라우팅 시스템이 태�
 | "버그 수정하고 리뷰해줘" | oma-debug -> oma-qa |
 | "랜딩 페이지 디자인하고 구현해줘" | oma-design -> oma-frontend |
 | "기능 아이디어가 있어" | oma-brainstorm -> oma-pm -> 관련 에이전트 -> oma-qa |
-| "자동으로 전부 해줘" | oma-orchestrator (내부: oma-pm -> 각 에이전트 -> oma-qa) |
+| "자동으로 전부 해줘" | oma-orchestration (내부: oma-pm -> 각 에이전트 -> oma-qa) |
 
 ### 에이전트 간 의존성 규칙
 

@@ -23,7 +23,7 @@ language: ko  # ko, en, ja, zh, ...
 
 ## Translation Voice
 
-When translating user-facing content, the `translation_voice` field in `.agents/oma-config.yaml` controls global rhythm and formality. It is applied on top of `oma-translator` content-type persona routing.
+When translating user-facing content, the `translation_voice` field in `.agents/oma-config.yaml` controls global rhythm and formality. It is applied on top of `oma-translation` content-type persona routing.
 
 | Value | Effect |
 |---|---|
@@ -31,7 +31,7 @@ When translating user-facing content, the `translation_voice` field in `.agents/
 | `balanced` (default) | content-type defaults — fragments only in label/cell positions |
 | `interpreter` | punchy, audience-first, spoken cadence; fragments allowed when natural |
 
-Workflows that translate user-facing content should respect this setting via the `oma-translator` skill rather than hardcoding a tone.
+Workflows that translate user-facing content should respect this setting via the `oma-translation` skill rather than hardcoding a tone.
 
 ## What to Localize
 
@@ -64,7 +64,7 @@ Workflows that translate user-facing content should respect this setting via the
 3. **Inline code (`backtick`) is never translated**
 4. **Parenthetical supplement allowed** — for unfamiliar terms, use `translated(original)` format once
 5. **Register consistency** — match the target language's appropriate register for the context
-6. **Translation tasks** — for translating UI strings, docs, or marketing copy, use the `/oma-translator` skill
+6. **Translation tasks** — for translating UI strings, docs, or marketing copy, use the `/oma-translation` skill
 
 ## Workflow Integration
 

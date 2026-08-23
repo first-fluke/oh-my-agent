@@ -180,7 +180,7 @@ Les requêtes multi-domaines suivent des ordres d'exécution établis :
 | « Fix bug and review » | oma-debug -> oma-qa |
 | « Design and build a landing page » | oma-design -> oma-frontend |
 | « I have an idea for a feature » | oma-brainstorm -> oma-pm -> agents concernés -> oma-qa |
-| « Do everything automatically » | oma-orchestrator (en interne : oma-pm -> agents -> oma-qa) |
+| « Do everything automatically » | oma-orchestration (en interne : oma-pm -> agents -> oma-qa) |
 
 ### Règles de dépendance inter-agents
 

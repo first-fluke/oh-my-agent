@@ -73,8 +73,8 @@ oh-my-agent résout cela par la spécialisation :
 
 | Agent | Rôle | Capacités clés |
 |-------|------|-----------------|
-| **oma-translator** | Traduction contextuelle | Méthode de traduction en 4 étapes : Analyser la source, Extraire le sens, Reconstruire dans la langue cible, Vérifier. Préserve le ton, le registre et la terminologie de domaine. Détection d'anti-patterns IA. Prend en charge la traduction par lots (fichiers i18n). Mode affiné en 7 étapes optionnel pour la qualité de publication. Les profils par langue cible (`resources/lang/{code}.md`) contiennent les systèmes de registre, la typographie et les règles anti-calques propres à chaque langue. Ressources : `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestrator** | Coordinateur multi-agents automatisé | Lance des sous-agents CLI en parallèle, coordonne via la mémoire MCP, surveille la progression, exécute des boucles de vérification. Configurable : MAX_PARALLEL (3 par défaut), MAX_RETRIES (2 par défaut), POLL_INTERVAL (30 s par défaut). Inclut une boucle de revue inter-agents et la surveillance de la Dette de clarification. Ressources : `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-translation** | Traduction contextuelle | Méthode de traduction en 4 étapes : Analyser la source, Extraire le sens, Reconstruire dans la langue cible, Vérifier. Préserve le ton, le registre et la terminologie de domaine. Détection d'anti-patterns IA. Prend en charge la traduction par lots (fichiers i18n). Mode affiné en 7 étapes optionnel pour la qualité de publication. Les profils par langue cible (`resources/lang/{code}.md`) contiennent les systèmes de registre, la typographie et les règles anti-calques propres à chaque langue. Ressources : `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | Coordinateur multi-agents automatisé | Lance des sous-agents CLI en parallèle, coordonne via la mémoire MCP, surveille la progression, exécute des boucles de vérification. Configurable : MAX_PARALLEL (3 par défaut), MAX_RETRIES (2 par défaut), POLL_INTERVAL (30 s par défaut). Inclut une boucle de revue inter-agents et la surveillance de la Dette de clarification. Ressources : `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventional commits | Analyse les modifications, détermine le type et le périmètre, découpe par fonctionnalité au besoin, génère des messages de commit au format Conventional Commits. Co-Author : `First Fluke <our.first.fluke@gmail.com>`. |
 
 ### Recherche, rétrospective et traitement de documents
@@ -162,7 +162,7 @@ Lorsque vous envoyez un prompt, oh-my-agent détermine quel agent le traite grâ
 | UI design, design system, landing page, DESIGN.md | oma-design |
 | brainstorm, ideate, explore, idea | oma-brainstorm |
 | plan, breakdown, task, sprint | oma-pm |
-| automatic, parallel, orchestrate | oma-orchestrator |
+| automatic, parallel, orchestrate | oma-orchestration |
 
 Pour les requêtes complexes qui couvrent plusieurs domaines, le routage suit des ordres d'exécution établis. Par exemple, « Create a fullstack app » est acheminé vers : oma-pm (planification), puis oma-backend + oma-frontend (implémentation parallèle), puis oma-qa (revue).
 

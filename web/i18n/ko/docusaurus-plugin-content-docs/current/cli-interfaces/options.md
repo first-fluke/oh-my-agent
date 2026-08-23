@@ -199,7 +199,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | codex | `codex` | `--full-auto` | (없음, 프롬프트는 위치 인자) |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-이 기본값은 `.agents/skills/oma-orchestrator/config/cli-config.yaml`에서 오버라이드할 수 있습니다.
+이 기본값은 `.agents/skills/oma-orchestration/config/cli-config.yaml`에서 오버라이드할 수 있습니다.
 
 ### agent:status
 

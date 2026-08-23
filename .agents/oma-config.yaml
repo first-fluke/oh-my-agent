@@ -31,13 +31,13 @@
 # Response language (ko, en, ja, zh, ...)
 language: en
 
-# Translation voice preference for oma-translator skill.
+# Translation voice preference for oma-translation skill.
 #   formal      — technical writer / reporter style, complete sentences, no fragments,
 #                 strict 합니다체 / です・ます (best for legal, official docs)
 #   balanced    — content-type-based persona routing (default)
 #   interpreter — interpreter mindset across all content types: punchy, audience-first,
 #                 spoken cadence, fragments allowed when natural, drops formal padding
-# Affects persona resolution in `.agents/skills/oma-translator/SKILL.md` Stage 2.5.
+# Affects persona resolution in `.agents/skills/oma-translation/SKILL.md` Stage 2.5.
 translation_voice: balanced
 
 # Date / time

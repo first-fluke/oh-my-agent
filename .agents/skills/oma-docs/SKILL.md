@@ -26,10 +26,10 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 
 ### When NOT to use
 - Generating docs from scratch for undocumented features → v2 create mode.
-- Actually translating or restructuring docs → use `oma-translator` (`oma docs i18n` / `oma docs lint` only detect; they never edit translations).
+- Actually translating or restructuring docs → use `oma-translation` (`oma docs i18n` / `oma docs lint` only detect; they never edit translations).
 - Symbol-level semantic drift (function signature changes not reflected in prose) → v2 L3 mode.
 - CI-blocking enforcement → v2 block mode (v1 is warn-only).
-- Explaining a code change as an educational document → use `oma-explainer` (this skill detects drift; it does not author explainers).
+- Explaining a code change as an educational document → use `oma-explanation` (this skill detects drift; it does not author explainers).
 
 ### Expected inputs
 
@@ -52,10 +52,10 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 - Docs modified only on explicit user approval; `doc-refs.json` regenerated after applies.
 
 **i18n mode**:
-- Per-pair structural drift signals (line count, heading count, EN-newer recency flag) with severity, as markdown summary or `--json`. Report-only: drifting pairs are handed to `oma-translator` in diff-sync mode.
+- Per-pair structural drift signals (line count, heading count, EN-newer recency flag) with severity, as markdown summary or `--json`. Report-only: drifting pairs are handed to `oma-translation` in diff-sync mode.
 
 **lint mode**:
-- Style issues grouped by rule / language / file, as markdown summary or `--json`. Report-only: restructuring goes through `oma-translator`.
+- Style issues grouped by rule / language / file, as markdown summary or `--json`. Report-only: restructuring goes through `oma-translation`.
 
 ### Dependencies
 - `cli/commands/docs/extract.ts`: markdown AST + L2 pattern extractor.
@@ -73,7 +73,7 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 - Mode is selected from the first argument: `verify`, `sync`, `i18n`, or `lint`.
 - verify: extract → resolve → report (fully deterministic CLI; host LLM adds narrative summary on top of the JSON/markdown output).
 - sync: git diff → reverse lookup → candidate list (CLI) → host-LLM patch proposals → interactive accept/reject.
-- i18n / lint: fully deterministic CLI reports; host LLM routes drifting pairs / style issues to `oma-translator`.
+- i18n / lint: fully deterministic CLI reports; host LLM routes drifting pairs / style issues to `oma-translation`.
 - Branches on `--json`, `--report-file`, LLM availability, and network reachability.
 - Never blocks workflow completion in v1 (warn-only hook policy).
 
@@ -134,8 +134,8 @@ Detect broken references in repo markdown — default glob `**/*.md` (verify mod
 - `cli/commands/docs/resolve.ts`: case-sensitive file existence, `which` for CLI tokens, `package.json` scripts lookup, ripgrep/git grep for env vars, `oma-config.yaml` deep-path check. URL kind is filtered out by the verify command and delegated to lychee. (Internal caching strategy: see design doc.)
 - `cli/commands/docs/reporter.ts`: deterministic markdown + JSON renderer. **No LLM call.** Friendly summary, severity tagging, fix prioritization are the host LLM's responsibility.
 - `cli/commands/docs/sync-propose.ts`: git diff intake, reverse index build, secret-pattern + gitignore file exclusion. Returns candidate docs with matched refs only. **No LLM call.** Patch synthesis is the host LLM's responsibility.
-- `cli/commands/docs/i18n-drift.ts`: pairs `web/docs` English sources with `web/i18n/{lang}/...` translations, emits line/heading/recency drift signals with severity. **No LLM call.** Translation patching is `oma-translator`'s responsibility.
-- `cli/commands/docs/lint-i18n.ts`: content-level linter with `cjk-em-dash` for selected CJK locales and `wrong-language` placeholder detection across all locales. **No LLM call, no auto-fix.** Restructuring is the host LLM's responsibility via `oma-translator`.
+- `cli/commands/docs/i18n-drift.ts`: pairs `web/docs` English sources with `web/i18n/{lang}/...` translations, emits line/heading/recency drift signals with severity. **No LLM call.** Translation patching is `oma-translation`'s responsibility.
+- `cli/commands/docs/lint-i18n.ts`: content-level linter with `cjk-em-dash` for selected CJK locales and `wrong-language` placeholder detection across all locales. **No LLM call, no auto-fix.** Restructuring is the host LLM's responsibility via `oma-translation`.
 - External: [`lychee`](https://github.com/lycheeverse/lychee) (background URL link checking; install via `brew install lychee`).
 
 ### Host-LLM contract
@@ -156,12 +156,12 @@ After `oma docs sync <range> --json`:
 
 After `oma docs i18n --json`:
 1. Read the drift pairs (severity, line/heading diff, EN-newer flag per translation).
-2. Prioritize CRITICAL/HIGH pairs; pass each to `oma-translator` in diff-sync mode (see that skill's § Diff-Sync Mode).
+2. Prioritize CRITICAL/HIGH pairs; pass each to `oma-translation` in diff-sync mode (see that skill's § Diff-Sync Mode).
 3. Never bulk-retranslate; patch only the drifted sections, with user confirmation.
 
 After `oma docs lint --json`:
 1. Read the style issues grouped by rule / language / file.
-2. Restructure flagged sentences via `oma-translator` (e.g. § Stage 4-A em-dash rule); confirm edits with the user before writing.
+2. Restructure flagged sentences via `oma-translation` (e.g. § Stage 4-A em-dash rule); confirm edits with the user before writing.
 
 ### Canonical command path
 
@@ -221,7 +221,7 @@ oma docs i18n
 oma docs i18n --json --min-severity HIGH
 
 # Output: per-pair drift signals (line/heading diff, EN-newer flag).
-# Hand CRITICAL/HIGH pairs to `oma-translator` diff-sync mode.
+# Hand CRITICAL/HIGH pairs to `oma-translation` diff-sync mode.
 ```
 
 **lint mode** checks translated docs for content-level style anti-patterns (report-only, no auto-fix):
@@ -275,7 +275,7 @@ oma docs verify --json
 9. **Escape hatch respected**: `<!-- oma-docs:ignore-start -->` / `<!-- oma-docs:ignore-end -->` blocks and frontmatter `oma-docs: skip` are honored; no ref extraction from ignored regions. Use this for illustrative example paths in tutorials (hypothetical project files in inline code) that intentionally do not resolve.
 10. **Gitignored targets are generated, not broken**: a `file` ref whose target does not exist but matches the project's gitignore rules (`git check-ignore`) is classified as `skipped` (a documented runtime/generated output such as `.agents/results/result-*.md`, `.agents/state/memories/*`, `.serena/memories/*`, `.agents/state/*.json`), never as `broken`. gitignore is the single source of truth for "produced at runtime" — gitignore an output path and it stops being flagged. The `skipped` count is surfaced (markdown summary + JSON `skippedCount`) so nothing is silently dropped.
 11. **Non-prose trees excluded via `docs.exclude`**: committed-but-non-prose markdown (benchmark run artifacts, translation mirrors validated separately by `oma docs i18n`) is dropped from the scan by the `docs.exclude` globs rather than producing unactionable broken refs. An explicit single-file path argument bypasses `docs.exclude`.
-12. **i18n / lint modes never write**: both emit reports only. Translation patches go through `oma-translator` with per-file user confirmation; the CLI never edits translations.
+12. **i18n / lint modes never write**: both emit reports only. Translation patches go through `oma-translation` with per-file user confirmation; the CLI never edits translations.
 
 ### v1 scope note
 v1 covers `verify`, `sync` (broken-only classification, L2 ref extraction), `i18n` (structural translation drift), and `lint` (CJK style anti-patterns). The following are explicitly deferred to v2: `create` mode (generate missing docs), semantic (content-level) translation drift, L3 symbol-level extraction (Tree-sitter/LSP), GitHub Action wrapper, `block` hook mode.
@@ -285,4 +285,4 @@ v1 covers `verify`, `sync` (broken-only classification, L2 ref extraction), `i18
 - Schema spec: `doc-refs.json` v1 schema defined in design doc § doc-refs.json Schema.
 - Workflow hook integration: design doc § Workflow Hook Integration.
 - Migration: `deepinit` Step 6 retirement, design doc § Migration: deepinit Step 6.
-- Adjacent skills: `oma-translator` (v2 multilingual), `oma-skill-creator` (SSL-lite validation).
+- Adjacent skills: `oma-translation` (v2 multilingual), `oma-skill-creation` (SSL-lite validation).

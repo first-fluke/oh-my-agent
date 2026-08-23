@@ -73,8 +73,8 @@ oh-my-agent löst dies durch Spezialisierung:
 
 | Agent | Rolle | Kernfähigkeiten |
 |-------|------|-----------------|
-| **oma-translator** | Kontextbewusste Übersetzung | 4-Stufen-Übersetzungsmethode: Quelle analysieren, Bedeutung extrahieren, in Zielsprache rekonstruieren, Verifizieren. Bewahrt Ton, Register und Fachterminologie. Anti-KI-Mustererkennung. Unterstützt Stapelübersetzung (i18n-Dateien). Optionaler 7-Stufen-verfeinerter Modus für Publikationsqualität. Zielsprachenspezifische Profile (`resources/lang/{code}.md`) enthalten Registersysteme, Typografie und sprachspezifische Regeln gegen Übersetzungssprache. Ressourcen: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestrator** | Automatisierter Multi-Agenten-Koordinator | Startet CLI-Subagenten parallel, koordiniert über MCP-Memory, überwacht Fortschritt, führt Verifikationsschleifen durch. Konfigurierbar: MAX_PARALLEL (Standard 3), MAX_RETRIES (Standard 2), POLL_INTERVAL (Standard 30 s). Enthält Agenten-zu-Agenten-Review-Schleife und Clarification-Debt-Überwachung. Ressourcen: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-translation** | Kontextbewusste Übersetzung | 4-Stufen-Übersetzungsmethode: Quelle analysieren, Bedeutung extrahieren, in Zielsprache rekonstruieren, Verifizieren. Bewahrt Ton, Register und Fachterminologie. Anti-KI-Mustererkennung. Unterstützt Stapelübersetzung (i18n-Dateien). Optionaler 7-Stufen-verfeinerter Modus für Publikationsqualität. Zielsprachenspezifische Profile (`resources/lang/{code}.md`) enthalten Registersysteme, Typografie und sprachspezifische Regeln gegen Übersetzungssprache. Ressourcen: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | Automatisierter Multi-Agenten-Koordinator | Startet CLI-Subagenten parallel, koordiniert über MCP-Memory, überwacht Fortschritt, führt Verifikationsschleifen durch. Konfigurierbar: MAX_PARALLEL (Standard 3), MAX_RETRIES (Standard 2), POLL_INTERVAL (Standard 30 s). Enthält Agenten-zu-Agenten-Review-Schleife und Clarification-Debt-Überwachung. Ressourcen: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Conventional Commits | Analysiert Änderungen, bestimmt Typ/Scope, teilt nach Feature auf wenn angemessen, generiert Commit-Nachrichten im Conventional-Commits-Format. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ### Suche, Retrospektive und Dokumentenverarbeitung
@@ -162,7 +162,7 @@ Wenn Sie einen Prompt senden, bestimmt oh-my-agent mithilfe der Skill-Routing-Ka
 | UI-Design, Design-System, Landingpage, DESIGN.md | oma-design |
 | Brainstorm, Ideenfindung, Erkunden, Idee | oma-brainstorm |
 | Plan, Aufschlüsselung, Aufgabe, Sprint | oma-pm |
-| Automatisch, Parallel, Orchestrieren | oma-orchestrator |
+| Automatisch, Parallel, Orchestrieren | oma-orchestration |
 
 Bei komplexen Anfragen, die mehrere Domänen umfassen, folgt das Routing etablierten Ausführungsreihenfolgen. Zum Beispiel wird "Erstelle eine Fullstack-App" weitergeleitet an: oma-pm (Plan), dann oma-backend + oma-frontend (parallele Implementierung), dann oma-qa (Review).
 

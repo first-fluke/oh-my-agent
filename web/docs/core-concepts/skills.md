@@ -197,7 +197,7 @@ Multi-domain requests follow established execution orders:
 | "Fix bug and review" | oma-debug -> oma-qa |
 | "Design and build a landing page" | oma-design -> oma-frontend |
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> relevant agents -> oma-qa |
-| "Do everything automatically" | oma-orchestrator (internally: oma-pm -> agents -> oma-qa) |
+| "Do everything automatically" | oma-orchestration (internally: oma-pm -> agents -> oma-qa) |
 
 ### Inter-agent dependency rules
 

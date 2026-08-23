@@ -64,7 +64,7 @@ Scene/backdrop → Subject → Details → Constraints
 
 ## Localization
 
-- Narration + on-screen text are authored in `--locale`. For a non-source locale, oma-translator translates the script text before TTS/captions (key-free). If the translator is absent, the source text is kept and a warning is recorded.
+- Narration + on-screen text are authored in `--locale`. For a non-source locale, oma-translation translates the script text before TTS/captions (key-free). If the translator is absent, the source text is kept and a warning is recorded.
 - oma-image prompts are sent in **English** regardless of `--locale`; translate the user's subject and show the translated prompt during amplification.
 
 ## Determinism

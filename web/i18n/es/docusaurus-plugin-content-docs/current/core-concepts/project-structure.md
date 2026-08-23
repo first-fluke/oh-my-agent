@@ -169,7 +169,7 @@ your-project/
 │   │   │       ├── release-coordination.md
 │   │   │       └── troubleshooting.md
 │   │   │
-│   │   ├── oma-translator/
+│   │   ├── oma-translation/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
@@ -181,7 +181,7 @@ your-project/
 │   │   │           ├── ko.md
 │   │   │           └── zh.md
 │   │   │
-│   │   ├── oma-orchestrator/
+│   │   ├── oma-orchestration/
 │   │   │   ├── SKILL.md
 │   │   │   ├── resources/
 │   │   │   │   ├── subagent-prompt-template.md
@@ -300,7 +300,7 @@ Donde reside la experiencia de los agentes. 22 directorios en total: 21 habilida
 **`oma-{agent}/`** — Directorios de habilidades por agente. Cada uno contiene:
 - `SKILL.md` (~800 bytes) — Capa 1: siempre cargada. Identidad, enrutamiento, reglas principales.
 - `resources/` — Capa 2: bajo demanda. Protocolos de ejecucion, ejemplos, listas de verificacion, guias de errores, stacks tecnologicos, snippets, plantillas.
-- Algunos agentes tienen subdirectorios adicionales: `stack/` (oma-backend, generado por /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
+- Algunos agentes tienen subdirectorios adicionales: `stack/` (oma-backend, generado por /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestration), `config/` (oma-orchestration, oma-scm).
 
 ### workflows/
 

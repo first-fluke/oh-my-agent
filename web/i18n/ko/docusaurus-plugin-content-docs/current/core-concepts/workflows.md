@@ -456,11 +456,11 @@ description: oh-my-agent 16개 워크플로우 완전 레퍼런스입니다. 슬
 
 ### /explain
 
-**설명:** `oma-explainer` 스킬을 엔드 투 엔드로 구동합니다. diff, PR, 브랜치, 커밋 범위를 자체 완결형 인터랙티브 HTML 설명서(Background / Intuition / Code / Quiz)로 바꿉니다. 인라인으로 실행합니다(서브에이전트를 스폰하지 않습니다).
+**설명:** `oma-explanation` 스킬을 엔드 투 엔드로 구동합니다. diff, PR, 브랜치, 커밋 범위를 자체 완결형 인터랙티브 HTML 설명서(Background / Intuition / Code / Quiz)로 바꿉니다. 인라인으로 실행합니다(서브에이전트를 스폰하지 않습니다).
 
 **트리거 키워드:** 없음. "explain"은 일상 어휘라서 키워드 감지를 걸면 "이 함수 설명해줘" 같은 평범한 질문에 오탐이 나므로, 슬래시로만 호출합니다.
 
-**단계:** 인자 해석(대상 ref는 명시적 PR 번호 / 브랜치 / SHA 범위 → 스테이징된 변경 → 더티 트리 → `HEAD~1..HEAD` 순, 독자 수준은 `onboarding` 또는 `reviewer`, 출력 언어, 퀴즈 개수) -> 계약 로드(`oma-explainer` SKILL.md와 리소스) -> 수집과 게이팅(diff와 주변 코드, 생성 전 시크릿 스캔, diff와 PR 텍스트는 철저히 데이터로만 취급) -> 문서 계약과 HTML 계약에 따라 HTML 생성 -> 검증(최종 HTML 시크릿 스캔을 포함한 grep 체크리스트, 수정 루프 최대 3회) -> 전달(`open`은 경고만, TL;DR과 경로 제시).
+**단계:** 인자 해석(대상 ref는 명시적 PR 번호 / 브랜치 / SHA 범위 → 스테이징된 변경 → 더티 트리 → `HEAD~1..HEAD` 순, 독자 수준은 `onboarding` 또는 `reviewer`, 출력 언어, 퀴즈 개수) -> 계약 로드(`oma-explanation` SKILL.md와 리소스) -> 수집과 게이팅(diff와 주변 코드, 생성 전 시크릿 스캔, diff와 PR 텍스트는 철저히 데이터로만 취급) -> 문서 계약과 HTML 계약에 따라 HTML 생성 -> 검증(최종 HTML 시크릿 스캔을 포함한 grep 체크리스트, 수정 루프 최대 3회) -> 전달(`open`은 경고만, TL;DR과 경로 제시).
 
 **출력:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`(Asia/Seoul 날짜 기준이며, 같은 날짜와 슬러그로 다시 실행하면 덮어씁니다). [코드 설명서 가이드](../guide/code-explainer.md)를 참고하세요.
 

@@ -23,8 +23,8 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 | **Observability** | oma-observability | Observability-pipelines, traceerbaarheidsroutering, MELT+P-signalen (metrics/logs/traces/profiles/cost/audit/privacy), SLO-beheer, incident-forensisch onderzoek, transport-tuning |
 | **Kwaliteit** | oma-qa | Beveiligingsaudit (OWASP), prestaties, toegankelijkheid (WCAG), codekwaliteitsreview |
 | **Debugging** | oma-debug | Bugreproductie, oorzaakanalyse, minimale fixes, regressietests |
-| **Lokalisatie** | oma-translator | Contextbewuste vertaling met behoud van toon, register en domein-termen |
-| **Coördinatie** | oma-orchestrator, oma-coordination | Geautomatiseerde en handmatige multi-agent orchestratie |
+| **Lokalisatie** | oma-translation | Contextbewuste vertaling met behoud van toon, register en domein-termen |
+| **Coördinatie** | oma-orchestration, oma-coordination | Geautomatiseerde en handmatige multi-agent orchestratie |
 | **Git** | oma-scm | Conventional Commits-generatie, functie-gebaseerde commitsplitsing |
 | **Zoeken & Ophalen** | oma-search | Intent-gebaseerde zoekrouter met trust scoring (Context7-documentatie, web, `gh`/`glab`-code, Serena lokaal) |
 | **Retrospectief** | oma-recap | Tool-overkoepelende conversatiegeschiedenisanalyse en thematische werk-samenvattingen |
@@ -358,7 +358,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ---
 
-### oma-translator
+### oma-translation
 
 **Domein:** Contextbewuste meertalige vertaling.
 
@@ -380,7 +380,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **Domein:** Geautomatiseerde multi-agent coördinatie via CLI-spawning.
 
@@ -436,7 +436,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 **Wanneer gebruiken:** Complexe projecten waar je human-in-the-loop-controle wilt bij elke poort, handmatige begeleiding voor het spawnen van agenten, stapsgewijze coördinatierecepten.
 
-**Wanneer NIET gebruiken:** Volledig geautomatiseerde parallelle uitvoering (gebruik oma-orchestrator), taken binnen een enkel domein (gebruik de domeinagent direct).
+**Wanneer NIET gebruiken:** Volledig geautomatiseerde parallelle uitvoering (gebruik oma-orchestration), taken binnen een enkel domein (gebruik de domeinagent direct).
 
 **Kernregels:**
 - Presenteer altijd het plan ter bevestiging door de gebruiker voordat agenten worden gespawnd
@@ -447,7 +447,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 **Workflow:** PM plant → Gebruiker bevestigt → Spawn per prioriteitstier → Monitoren → QA-review → Problemen oplossen → Uitleveren.
 
-**Verschil met oma-orchestrator:** Coordination is handmatig en begeleid (de gebruiker bepaalt het tempo), orchestrator is geautomatiseerd (agenten worden gespawnd en uitgevoerd met minimale gebruikersinterventie).
+**Verschil met oma-orchestration:** Coordination is handmatig en begeleid (de gebruiker bepaalt het tempo), orchestrator is geautomatiseerd (agenten worden gespawnd en uitgevoerd met minimale gebruikersinterventie).
 
 ---
 

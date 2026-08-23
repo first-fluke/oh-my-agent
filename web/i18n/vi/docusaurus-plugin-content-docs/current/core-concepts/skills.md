@@ -100,7 +100,7 @@ Yêu cầu đa lĩnh vực theo thứ tự thực thi đã thiết lập:
 | "Create a mobile app" | oma-pm -> (oma-backend + oma-mobile) song song -> oma-qa |
 | "Fix bug and review" | oma-debug -> oma-qa |
 | "Design and build a landing page" | oma-design -> oma-frontend |
-| "Do everything automatically" | oma-orchestrator (nội bộ: oma-pm -> agent -> oma-qa) |
+| "Do everything automatically" | oma-orchestration (nội bộ: oma-pm -> agent -> oma-qa) |
 
 ### Quy tắc phụ thuộc giữa agent
 

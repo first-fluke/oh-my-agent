@@ -160,7 +160,7 @@ Use isso após editar `.agents/agents/`, `.agents/workflows/`, `.agents/rules/` 
 
 **Comportamento de modelo:**
 - O dispatch nativo same-vendor usa o modelo definido no arquivo de agente do vendor gerado.
-- O dispatch de fallback externo usa o `default_model` de cada vendor a partir de `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+- O dispatch de fallback externo usa o `default_model` de cada vendor a partir de `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
 **Comportamento de dispatch:**
 - Se o vendor de destino corresponder ao runtime atual e esse runtime suportar agentes nativos de role, o OMA usa dispatch nativo.

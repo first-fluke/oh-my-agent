@@ -172,11 +172,11 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 | **oma-design** | 토큰, 접근성, 반응형 레이아웃을 갖춘 디자인 시스템 구축 |
 | **oma-dev-workflow** | CI/CD, 릴리스, monorepo 작업을 자동화 |
 | **oma-docs** | 문서의 깨진 참조를 확인하고 코드 변경에 영향받은 문서를 식별 |
-| **oma-explainer** | diff/PR/브랜치를 퀴즈가 포함된 self-contained 인터랙티브 HTML 설명서로 생성 |
+| **oma-explanation** | diff/PR/브랜치를 퀴즈가 포함된 self-contained 인터랙티브 HTML 설명서로 생성 |
 | **oma-frontend** | React/Next.js, TypeScript, Tailwind CSS v4, shadcn/ui로 UI 구축 |
 | **oma-mobile** | Flutter로 크로스플랫폼 모바일 앱 구축 |
 | **oma-observability** | 메트릭, 로그, 트레이스, SLO, 인시던트 포렌식까지 아우르는 관측성 작업을 라우팅 |
-| **oma-orchestrator** | CLI에서 여러 에이전트를 병렬로 실행 |
+| **oma-orchestration** | CLI에서 여러 에이전트를 병렬로 실행 |
 | **oma-pm** | 태스크를 계획하고 요구사항을 분해하며 API 계약을 정의 |
 | **oma-qa** | OWASP 보안, 성능, 접근성 관점에서 코드를 리뷰 |
 | **oma-refactor** | 핫스팟 우선순위와 특성화 테스트 안전망으로 동작을 보존하면서 코드를 리팩토링 |
@@ -190,7 +190,7 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 | 에이전트 | 하는 일 |
 |----------|------|
 | **oma-coordination** | PM, Frontend, Backend, Mobile, QA 에이전트의 단계별 수동 조율을 안내 |
-| **oma-skill-creator** | SSL-lite 포맷으로 새로운 OMA 스킬을 작성하고 검증 |
+| **oma-skill-creation** | SSL-lite 포맷으로 새로운 OMA 스킬을 작성하고 검증 |
 
 </details>
 
@@ -200,7 +200,7 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 
 | 에이전트 | 하는 일 |
 |----------|------|
-| **oma-academic-writer** | 학술 문장을 출판 수준으로 작성·수정하고 감사 |
+| **oma-academic-writing** | 학술 문장을 출판 수준으로 작성·수정하고 감사 |
 | **oma-hwp** | HWP, HWPX, HWPML 파일을 Markdown으로 변환 |
 | **oma-image** | 여러 AI 공급업체로 이미지를 동시에 생성 |
 | **oma-market** | 커뮤니티 시그널로 시장을 조사하고 SWOT, Porter's 5F, PESTEL로 프레임화 |
@@ -208,7 +208,7 @@ AI 하나에 모든 걸 맡기면 중간에 헤매기 쉽지만, oh-my-agent는 
 | **oma-recap** | 대화 이력을 주제별 작업 요약으로 정리 |
 | **oma-scholar** | 학술 문헌을 검색하고 동료 평가를 지원 |
 | **oma-slide** | 애니메이션이 풍부한 HTML 프레젠테이션 덱을 생성하고 PDF/PNG/PPTX로 내보냄 |
-| **oma-translator** | 원어민이 쓴 것처럼 자연스럽게 언어 간 번역 |
+| **oma-translation** | 원어민이 쓴 것처럼 자연스럽게 언어 간 번역 |
 | **oma-video** | 키 없이도 동작하는 Remotion 파이프라인으로 숏폼, 설명 영상, 데모 영상을 생성 |
 | **oma-voice** | 클라우드 없이 온디바이스로 보이스오버를 생성하고 오디오를 텍스트로 변환 |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["Domain Agents"]

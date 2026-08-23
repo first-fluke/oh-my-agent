@@ -185,8 +185,8 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | **oma-debug** | Bugonderzoek, oorzaakanalyse | Gefixte code + regressietests |
 | **oma-tf-infra** | Cloud infrastructuurprovisioning | Terraform-modules, IAM-policies |
 | **oma-dev-workflow** | CI/CD, monorepo-taken | mise.toml configs, pipelinedefinities |
-| **oma-translator** | Meertalige content, i18n-bestanden | Vertaalde tekst met behoud van toon |
-| **oma-orchestrator** | Geautomatiseerde parallelle agentuitvoering | Georkestreerde resultaten |
+| **oma-translation** | Meertalige content, i18n-bestanden | Vertaalde tekst met behoud van toon |
+| **oma-orchestration** | Geautomatiseerde parallelle agentuitvoering | Georkestreerde resultaten |
 | **oma-scm** | Git-commits | Conventional Commits met type/scope |
 
 ---

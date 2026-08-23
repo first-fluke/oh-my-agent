@@ -1,16 +1,16 @@
 ---
-name: oma-academic-writer
-description: Academic writing specialist for publication-grade English prose.
-  Drafts, revises, and audits essays, reports, analysis sections, executive
-  summaries, conclusions, and literature reviews while enforcing
-  sentence-structure variation, high-frequency academic verbs, calibrated
-  hedging, and anti-AI stylistic compliance. USE for academic writing, essay
-  polish, paragraph rewrite, prose revision against any rubric tier (HD/D/C,
-  A/B/C, top-band/mid-band, etc.), anti-AI audit, reverse outlining,
-  claim-evidence mapping, and rubric enforcement on assignments.
+name: oma-academic-writing
+description: >
+  Academic writing capability for publication-grade English prose. Drafts, revises, and
+  audits essays, reports, analysis sections, executive summaries, conclusions, and
+  literature reviews while enforcing sentence-structure variation, high-frequency
+  academic verbs, calibrated hedging, and anti-AI stylistic compliance. USE for
+  academic writing, essay polish, paragraph rewrite, prose revision against any
+  rubric tier (HD/D/C, A/B/C, top-band/mid-band, etc.), anti-AI audit, reverse
+  outlining, claim-evidence mapping, and rubric enforcement on assignments.
 ---
 
-# Academic Writer: Publication-Grade English Prose Specialist
+# Academic Writing: Publication-Grade English Prose
 
 ## Scheduling
 
@@ -35,12 +35,12 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - Any task requiring formal academic English output bound by a rubric
 
 ### When NOT to use
-- Translation tasks → use `oma-translator`
+- Translation tasks → use `oma-translation`
 - Source discovery, citation gathering, or scholarly literature search → use `oma-scholar`
 - Rubric / assignment-spec parsing and task decomposition → use `oma-pm`
 - Code documentation, README, or API reference text → use the relevant domain skill (`oma-frontend`, `oma-backend`, `oma-mobile`, `oma-db`, etc.)
 - Informal communication, chat, or marketing copy → no skill needed
-- Non-English academic writing → call `oma-translator` for the target language after drafting in English
+- Non-English academic writing → call `oma-translation` for the target language after drafting in English
 
 ### Expected inputs
 - `mode`: one of `draft` | `revise` | `review`
@@ -66,7 +66,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - Mode branching: `draft` vs `revise` vs `review` produce different output formats and pass sequences
 - Rubric-quote gate: refuses to apply a rule until the literal constraint text is quoted from the source
 - Citation gap branch: when a claim lacks evidence, weaken or remove rather than fabricate; optionally hand off to `oma-scholar`
-- Language branch: non-English target hands off to `oma-translator` after the English pass
+- Language branch: non-English target hands off to `oma-translation` after the English pass
 - Iterative AUDIT: every fix loops back through the anti-AI checklist before emit
 
 ## Structural Flow
@@ -87,7 +87,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 ### Transitions
 - If a rubric line is ambiguous → quote it back to the user and ask for interpretation; do not infer combined rules.
 - If a claim cannot be supported by available evidence → weaken with hedging or remove; if a citation gap is structural, NOTIFY `oma-scholar`.
-- If the target language is non-English → finish the English pass, then hand off to `oma-translator`.
+- If the target language is non-English → finish the English pass, then hand off to `oma-translation`.
 - If the same anti-AI flag survives one fix attempt → restructure the surrounding two sentences instead of word-substitution alone.
 - If an output mode mismatch is detected (e.g., user asked for review but supplied a fresh prompt) → confirm the mode before producing output.
 
@@ -122,7 +122,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 | Reverse outline + build Claim-Evidence Map | `VALIDATE` | Mapping table |
 | Weaken or remove unsupported claims | `WRITE` | Revised claim line |
 | Compare original vs revised (revise mode) | `COMPARE` | Diff block |
-| Hand off non-English target | `NOTIFY` | `oma-translator` |
+| Hand off non-English target | `NOTIFY` | `oma-translation` |
 | Hand off citation gap | `NOTIFY` | `oma-scholar` |
 | Hand off ambiguous rubric / spec | `NOTIFY` | `oma-pm` |
 | Emit per mode output format | `WRITE` | Final artifact |
@@ -152,7 +152,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Preconditions
 - A rubric / constraint or an existing draft (or both) is provided.
-- The target register is academic English. If the final deliverable is non-English, the user has agreed to a downstream `oma-translator` handoff.
+- The target register is academic English. If the final deliverable is non-English, the user has agreed to a downstream `oma-translation` handoff.
 - The source data needed to support claims is available, or unsupported claims are explicitly allowed to be weakened or removed.
 
 ### Effects and side effects

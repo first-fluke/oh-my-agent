@@ -2384,7 +2384,7 @@
         ]
       }
     },
-    "oma-orchestrator": {
+    "oma-orchestration": {
       "keywords": {
         "*": ["MCP Memory"],
         "en": [
@@ -2659,7 +2659,7 @@
         ]
       }
     },
-    "oma-translator": {
+    "oma-translation": {
       "keywords": {
         "*": ["arb", "i18n"],
         "en": [

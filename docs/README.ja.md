@@ -172,11 +172,11 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 | **oma-design** | トークン、アクセシビリティ、レスポンシブレイアウトを備えたデザインシステムを構築する |
 | **oma-dev-workflow** | CI/CD、リリース、monorepoタスクを自動化する |
 | **oma-docs** | ドキュメントの参照切れを検出し、コード変更の影響を受けた箇所を特定する |
-| **oma-explainer** | diff/PR/ブランチをクイズ付きの自己完結型インタラクティブHTML解説書に変換する |
+| **oma-explanation** | diff/PR/ブランチをクイズ付きの自己完結型インタラクティブHTML解説書に変換する |
 | **oma-frontend** | React/Next.js、TypeScript、Tailwind CSS v4、shadcn/uiでUIを構築する |
 | **oma-mobile** | Flutterでクロスプラットフォームモバイルアプリを構築する |
 | **oma-observability** | メトリクス、ログ、トレース、SLO、インシデント調査にまたがるオブザーバビリティ作業をルーティングする |
-| **oma-orchestrator** | CLIから複数のエージェントを並列で起動・管理する |
+| **oma-orchestration** | CLIから複数のエージェントを並列で起動・管理する |
 | **oma-pm** | タスクを計画し、要件を分解し、APIコントラクトを定義する |
 | **oma-qa** | OWASPセキュリティ、パフォーマンス、アクセシビリティの観点でコードをレビューする |
 | **oma-refactor** | ホットスポット選定と特性化テストの安全網で挙動を変えずにコードをリファクタリング |
@@ -190,7 +190,7 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 | エージェント | 役割 |
 |-------------|------|
 | **oma-coordination** | PM・フロントエンド・バックエンド・モバイル・QA エージェントの手動連携を段階的にガイド |
-| **oma-skill-creator** | 新しいOMAスキルをSSL-liteフォーマットで作成・監査する |
+| **oma-skill-creation** | 新しいOMAスキルをSSL-liteフォーマットで作成・監査する |
 
 </details>
 
@@ -200,7 +200,7 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 
 | エージェント | 役割 |
 |-------------|------|
-| **oma-academic-writer** | アカデミック文章の起草・改稿・監査を通じ、出版品質に仕上げる |
+| **oma-academic-writing** | アカデミック文章の起草・改稿・監査を通じ、出版品質に仕上げる |
 | **oma-hwp** | HWP、HWPX、HWPMLファイルをMarkdownに変換する |
 | **oma-image** | 複数のAIプロバイダーに並列で画像生成をリクエストする |
 | **oma-market** | コミュニティシグナルから市場を調査し、SWOT/Porter's 5F/PESTELで整理する |
@@ -208,7 +208,7 @@ APM が配るのはスキル一式だけです。ワークフロー、ルール�
 | **oma-recap** | 会話履歴をテーマ別の作業サマリーにまとめる |
 | **oma-scholar** | 学術文献を検索し、ピアレビューを支援する |
 | **oma-slide** | 特徴的でアニメーション豊かなHTMLプレゼンテーションデッキを生成し、PDF/PNG/PPTXへエクスポートする |
-| **oma-translator** | ネイティブが書いたように自然な多言語翻訳を行う |
+| **oma-translation** | ネイティブが書いたように自然な多言語翻訳を行う |
 | **oma-video** | キー不要でも動く Remotion パイプラインでショート動画・解説動画・デモ動画を生成 |
 | **oma-voice** | クラウド不要のオンデバイスでボイスオーバーを生成し、音声を文字起こしする |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["Domain Agents"]

@@ -172,11 +172,11 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-design** | 构建含 token、无障碍支持与响应式布局的设计系统 |
 | **oma-dev-workflow** | 自动化 CI/CD、发布流程与 monorepo 任务 |
 | **oma-docs** | 检查文档中的失效引用，并标出被代码变更波及的内容 |
-| **oma-explainer** | 将 diff/PR/分支转换为带测验的自包含交互式 HTML 讲解文档 |
+| **oma-explanation** | 将 diff/PR/分支转换为带测验的自包含交互式 HTML 讲解文档 |
 | **oma-frontend** | 用 React/Next.js、TypeScript、Tailwind CSS v4 与 shadcn/ui 构建 UI |
 | **oma-mobile** | 用 Flutter 构建跨平台移动应用 |
 | **oma-observability** | 统一路由可观测性工作，覆盖指标、日志、追踪、SLO 与事故取证 |
-| **oma-orchestrator** | 通过 CLI 并行调度多个 agent |
+| **oma-orchestration** | 通过 CLI 并行调度多个 agent |
 | **oma-pm** | 规划任务、拆解需求、定义 API 契约 |
 | **oma-qa** | 审查代码的 OWASP 安全性、性能与无障碍合规 |
 | **oma-refactor** | 借助热点定位与特性化测试安全网，在不改变行为的前提下重构代码 |
@@ -190,7 +190,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | Agent | 职责 |
 |-------|------|
 | **oma-coordination** | 指导你逐步手动协调 PM、前端、后端、移动端与 QA 代理 |
-| **oma-skill-creator** | 以 SSL-lite 格式编写和审计 OMA skill |
+| **oma-skill-creation** | 以 SSL-lite 格式编写和审计 OMA skill |
 
 </details>
 
@@ -200,7 +200,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 
 | Agent | 职责 |
 |-------|------|
-| **oma-academic-writer** | 将学术文章写到发表级别，涵盖起草、修订与审稿 |
+| **oma-academic-writing** | 将学术文章写到发表级别，涵盖起草、修订与审稿 |
 | **oma-hwp** | 将 HWP、HWPX 和 HWPML 文件转换为 Markdown |
 | **oma-image** | 同时调用多家 AI 供应商生成图像 |
 | **oma-market** | 从社区信号中挖掘市场洞察，并套用 SWOT、Porter's 5F 和 PESTEL 框架呈现结论 |
@@ -208,7 +208,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-recap** | 将会话历史整理成有主题分类的工作摘要 |
 | **oma-scholar** | 检索学术文献，协助开展同行评审 |
 | **oma-slide** | 生成特色鲜明、动画丰富的 HTML 演示文稿卡片，并导出至 PDF/PNG/PPTX |
-| **oma-translator** | 将内容翻译成目标语言，读来如同母语写就 |
+| **oma-translation** | 将内容翻译成目标语言，读来如同母语写就 |
 | **oma-video** | 通过可免密钥的 Remotion 流水线生成短视频、讲解视频和演示视频 |
 | **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["Domain Agents"]

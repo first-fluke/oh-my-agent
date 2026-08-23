@@ -39,8 +39,8 @@ your-project/
 │   │   ├── oma-debug/                <- SKILL.md + resources/
 │   │   ├── oma-tf-infra/             <- SKILL.md + resources/
 │   │   ├── oma-dev-workflow/         <- SKILL.md + resources/
-│   │   ├── oma-translator/           <- SKILL.md + resources/
-│   │   ├── oma-orchestrator/         <- SKILL.md + resources/ + scripts/ + config/
+│   │   ├── oma-translation/           <- SKILL.md + resources/
+│   │   ├── oma-orchestration/         <- SKILL.md + resources/ + scripts/ + config/
 │   │   ├── oma-brainstorm/           <- SKILL.md
 │   │   ├── oma-coordination/         <- SKILL.md + resources/
 │   │   └── oma-scm/               <- SKILL.md + config/ + resources/
@@ -108,7 +108,7 @@ your-project/
 **`oma-{agent}/`** содержит:
 - `SKILL.md` (~800 байт) — Уровень 1: всегда загружен
 - `resources/` — Уровень 2: по требованию
-- Дополнительно: `stack/` (oma-backend), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm)
+- Дополнительно: `stack/` (oma-backend), `reference/` (oma-design), `scripts/` (oma-orchestration), `config/` (oma-orchestration, oma-scm)
 
 ### workflows/
 

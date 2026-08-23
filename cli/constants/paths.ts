@@ -9,7 +9,7 @@ import { join } from "node:path";
  *
  * Hooks under `.agents/hooks/` cannot import from `cli/`; mirror any
  * `AGENTS_*` / `ANTIGRAVITYCLI_*` values in hook scripts when they change.
- * Orchestrator YAML (`oma-orchestrator/config/cli-config.yaml`) uses the
+ * Orchestrator YAML (`oma-orchestration/config/cli-config.yaml`) uses the
  * same `results_dir` string — keep in sync manually.
  */
 

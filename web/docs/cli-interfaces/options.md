@@ -201,7 +201,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | codex | `codex` | `--full-auto` | (none; prompt is positional) |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-These defaults can be overridden in `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+These defaults can be overridden in `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
 ### agent:status
 

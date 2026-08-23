@@ -33,18 +33,18 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 | **관측성** | oma-observability | 관측성 파이프라인, 추적 라우팅, MELT+P 시그널(metrics/logs/traces/profiles/cost/audit/privacy), SLO 관리, 인시던트 포렌식, 전송 계층 튜닝 |
 | **품질** | oma-qa | 보안 감사 (OWASP), 성능, 접근성 (WCAG), 코드 품질 리뷰 |
 | **디버깅** | oma-debug | 버그 재현, 근본 원인 분석, 최소 수정, 회귀 테스트 |
-| **현지화** | oma-translator | 톤, 레지스터, 도메인 용어를 유지하는 컨텍스트 인식 번역 |
-| **조율** | oma-orchestrator, oma-coordination | 자동화 및 수동 멀티 에이전트 오케스트레이션 |
+| **현지화** | oma-translation | 톤, 레지스터, 도메인 용어를 유지하는 컨텍스트 인식 번역 |
+| **조율** | oma-orchestration, oma-coordination | 자동화 및 수동 멀티 에이전트 오케스트레이션 |
 | **Git** | oma-scm | Conventional Commits 생성, 기능별 커밋 분할 |
 | **검색 및 탐색** | oma-search | 신뢰도 점수가 있는 의도 기반 검색 라우터 (Context7 문서, 웹, `gh`/`glab` 코드, Serena 로컬) |
 | **회고** | oma-recap | 크로스 도구 대화 이력 분석 및 주제별 작업 요약 |
 | **문서 처리** | oma-hwp, oma-pdf | LLM/RAG 수집을 위한 HWP/HWPX/HWPML 및 PDF → Markdown 변환 |
 | **문서화** | oma-docs | 문서 드리프트 탐지 (깨진 참조 검증, diff 영향 문서에 대한 동기화 패치 제안) |
-| **학술 글쓰기** | oma-academic-writer, oma-scholar | 출판 수준 학술 산문 작성과 감사, Knows 사이드카 기반 학술 연구·검색·동료 검토 |
+| **학술 글쓰기** | oma-academic-writing, oma-scholar | 출판 수준 학술 산문 작성과 감사, Knows 사이드카 기반 학술 연구·검색·동료 검토 |
 | **보안** | oma-deepsec | Vercel의 deepsec 에이전트 기반 취약점 스캐너를 비용을 의식하며 운용 (스캔, PR 게이트, 매처, 트리아지) |
 | **리팩터링** | oma-refactor | 동작을 보존하는 점진적 구조 개선. 핫스팟 타기팅, 특성화 테스트 안전망, 리팩터링만 담는 커밋 |
 | **시장 조사** | oma-market | 커뮤니티 신호 기반 페인·트렌드·경쟁·발견 조사. 의도에 따라 SWOT / Porter's 5F / PESTEL 자동 선택 |
-| **스킬 작성** | oma-skill-creator | SSL-lite 형식으로 OMA 스킬을 만들고 검증 |
+| **스킬 작성** | oma-skill-creation | SSL-lite 형식으로 OMA 스킬을 만들고 검증 |
 | **미디어 생성** | oma-image, oma-slide, oma-video, oma-voice | AI 이미지 생성, HTML 발표 덱, 숏폼·설명·데모 영상, 로컬 TTS/STT |
 
 ---
@@ -378,7 +378,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 ---
 
-### oma-translator
+### oma-translation
 
 **도메인:** 컨텍스트 인식 다국어 번역.
 
@@ -400,7 +400,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **도메인:** CLI 스폰을 통한 자동화된 멀티 에이전트 조율.
 
@@ -456,7 +456,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **사용 시기:** 모든 게이트에서 사람의 확인이 필요한 복잡한 프로젝트, 수동 에이전트 스폰 가이드, 단계별 조율 레시피.
 
-**사용하지 말아야 할 때:** 완전 자동 병렬 실행(oma-orchestrator 사용), 단일 도메인 작업(해당 도메인 에이전트 직접 사용).
+**사용하지 말아야 할 때:** 완전 자동 병렬 실행(oma-orchestration 사용), 단일 도메인 작업(해당 도메인 에이전트 직접 사용).
 
 **핵심 규칙:**
 - 에이전트 스폰 전 반드시 계획을 사용자에게 확인
@@ -467,7 +467,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **워크플로우:** PM 계획 → 사용자 확인 → 우선순위별 스폰 → 모니터링 → QA 리뷰 → 이슈 수정 → 배포.
 
-**oma-orchestrator와 차이:** coordination은 수동 가이드(사용자가 속도 제어), orchestrator는 자동(최소 사용자 개입으로 에이전트가 스폰·실행).
+**oma-orchestration와 차이:** coordination은 수동 가이드(사용자가 속도 제어), orchestrator는 자동(최소 사용자 개입으로 에이전트가 스폰·실행).
 
 ---
 
@@ -555,13 +555,13 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 ---
 
-### oma-academic-writer
+### oma-academic-writing
 
 **도메인:** 출판 수준의 학술 영어 산문. 에세이, 보고서, 분석 절, 요약문, 결론, 문헌 검토를 작성하고 수정하고 감사합니다.
 
 **사용 시기:** 학술 보고서·에세이·분석 절을 작성하거나 수정할 때, 요약문이나 결론이나 문헌 검토를 쓸 때, AI 티가 나는 산문을 자연스러운 학술 영어로 다시 쓸 때, 초안을 최상위 루브릭 수준(HD, A, top-band)까지 다듬을 때, 문장 다양성·동사 품질·헤징·안티 AI 준수를 기준으로 산문을 검토할 때.
 
-**사용하지 말아야 할 때:** 번역(oma-translator 사용), 출처 발굴·인용 수집·문헌 검색(oma-scholar 사용), 루브릭 해석과 태스크 분해(oma-pm 사용), 코드 문서·README·API 레퍼런스 텍스트(해당 도메인 스킬 사용), 비격식 문체나 마케팅 카피, 영어가 아닌 학술 글쓰기(영어로 먼저 쓰고 oma-translator에 넘기기).
+**사용하지 말아야 할 때:** 번역(oma-translation 사용), 출처 발굴·인용 수집·문헌 검색(oma-scholar 사용), 루브릭 해석과 태스크 분해(oma-pm 사용), 코드 문서·README·API 레퍼런스 텍스트(해당 도메인 스킬 사용), 비격식 문체나 마케팅 카피, 영어가 아닌 학술 글쓰기(영어로 먼저 쓰고 oma-translation에 넘기기).
 
 **모드:** `draft`(헤딩 + 산문 + Writing Notes + 주장-근거 맵), `revise`(원문 + 수정본 + 변경 목록), `review`(문장 구조, 동사 품질, 안티 AI, 구체성, 헤징, 문단 명료성, 리듬, 주장-근거 정합성에 대한 PASS/FAIL 준수 보고서).
 
@@ -607,7 +607,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **사용 시기:** 리팩터링·이름 변경·파일 삭제 후 문서에 남은 낡은 참조를 찾을 때, 릴리스 전에 CLI 명령·파일 경로·설정 키가 아직 존재하는지 확인할 때, 큰 git diff 후 어떤 문서가 변경된 파일을 참조하는지 찾을 때, 문서가 많은 저장소에서 정기적으로 드리프트를 점검할 때.
 
-**사용하지 말아야 할 때:** 문서화되지 않은 기능의 문서를 처음부터 만들 때, 문서를 다국어로 번역할 때(oma-translator 사용), 심볼 수준의 의미 드리프트, CI 차단 강제(v1은 경고만 합니다).
+**사용하지 말아야 할 때:** 문서화되지 않은 기능의 문서를 처음부터 만들 때, 문서를 다국어로 번역할 때(oma-translation 사용), 심볼 수준의 의미 드리프트, CI 차단 강제(v1은 경고만 합니다).
 
 **핵심 규칙:**
 - 어떤 모드에서도 `.agents/`를 절대 수정하지 않음 (SSOT 보호)
@@ -695,7 +695,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **사용 시기:** 사이드카로 논문을 토큰 효율적으로 읽을 때(주장만 볼 때 약 700토큰, 전체 PDF는 약 10K), 초안·LaTeX·노트에서 `.knows.yaml`을 생성할 때, 공유 전에 사이드카 구조를 검증할 때, 동료 검토를 사이드카로 작성할 때, 기존 사이드카를 조회하거나 요약할 때, 두 논문을 구조적으로 비교할 때, knows.academy에서 검색하거나 가져올 때.
 
-**사용하지 말아야 할 때:** 일반 웹 검색이나 비학술 콘텐츠(oma-search 사용), 논문 번역(oma-translator 사용), 사이드카 없이 PDF만 파싱할 때(oma-pdf 사용), 편집 시스템까지 포함한 전체 동료 검토 워크플로우.
+**사용하지 말아야 할 때:** 일반 웹 검색이나 비학술 콘텐츠(oma-search 사용), 논문 번역(oma-translation 사용), 사이드카 없이 PDF만 파싱할 때(oma-pdf 사용), 편집 시스템까지 포함한 전체 동료 검토 워크플로우.
 
 **모드:** Generate, Validate, Review, Analyze, Compare, Remote(검색·가져오기).
 
@@ -713,7 +713,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 ---
 
-### oma-skill-creator
+### oma-skill-creation
 
 **도메인:** SSL-lite 마크다운 형식(Scheduling / Structural Flow / Logical Operations / References)으로 OMA 스킬을 작성하고 검증합니다.
 

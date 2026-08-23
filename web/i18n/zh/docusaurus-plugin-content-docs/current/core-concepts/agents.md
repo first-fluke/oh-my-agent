@@ -23,8 +23,8 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 | **可观测性** | oma-observability | 可观测性管道、可追溯性路由、MELT+P 信号（metrics/logs/traces/profiles/cost/audit/privacy）、SLO 管理、事件取证、传输层调优 |
 | **质量** | oma-qa | 安全审计（OWASP）、性能、无障碍（WCAG）、代码质量审查 |
 | **调试** | oma-debug | Bug 复现、根因分析、最小修复、回归测试 |
-| **本地化** | oma-translator | 保留语气、语域和领域术语的上下文感知翻译 |
-| **协调** | oma-orchestrator、oma-coordination | 自动化和手动多智能体编排 |
+| **本地化** | oma-translation | 保留语气、语域和领域术语的上下文感知翻译 |
+| **协调** | oma-orchestration、oma-coordination | 自动化和手动多智能体编排 |
 | **Git** | oma-scm | 约定式提交生成、按功能拆分提交 |
 | **搜索与检索** | oma-search | 带信任度评分的意图驱动搜索路由（Context7 文档、网络、`gh`/`glab` 代码、Serena 本地） |
 | **回顾** | oma-recap | 跨工具对话历史分析与主题化工作摘要 |
@@ -358,7 +358,7 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 
 ---
 
-### oma-translator
+### oma-translation
 
 **领域：** 上下文感知的多语言翻译。
 
@@ -380,7 +380,7 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **领域：** 通过 CLI 启动的自动化多智能体协调。
 
@@ -436,7 +436,7 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 
 **何时使用：** 希望在每个关卡都有人类介入控制的复杂项目、手动智能体启动指导、逐步协调配方。
 
-**何时不使用：** 完全自动化的并行执行（使用 oma-orchestrator）、单一领域的任务（直接使用对应领域的智能体）。
+**何时不使用：** 完全自动化的并行执行（使用 oma-orchestration）、单一领域的任务（直接使用对应领域的智能体）。
 
 **核心规则：**
 - 在启动智能体之前，始终向用户呈现计划以获得确认
@@ -447,7 +447,7 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 
 **工作流：** PM 规划 → 用户确认 → 按优先级层启动 → 监控 → QA 审查 → 修复问题 → 交付。
 
-**与 oma-orchestrator 的区别：** coordination 是手动且有引导的（用户控制节奏），orchestrator 是自动化的（智能体以最少的用户干预启动并运行）。
+**与 oma-orchestration 的区别：** coordination 是手动且有引导的（用户控制节奏），orchestrator 是自动化的（智能体以最少的用户干预启动并运行）。
 
 ---
 

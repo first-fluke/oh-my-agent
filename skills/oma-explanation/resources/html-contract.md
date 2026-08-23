@@ -47,7 +47,7 @@ font-family: Pretendard, 'Pretendard Variable', 'Apple SD Gothic Neo', 'Noto San
 - The entire quiz must be fully keyboard-navigable.
 
 ## 6. Validation Checklist (Post-generation)
-Execute the following grep-based checks on the generated HTML. 
+Execute the following grep-based checks on the generated HTML.
 Loop: fix and re-validate at most **3 iterations**, then STOP and surface the failing items to the user.
 
 **Known false positives — do not "fix" example code.** A hit located inside a `<pre>` block that merely *quotes* a matching pattern as illustrative text (a commented-out `@import` in a "what not to do" snippet, an example `api_key` in a config walkthrough) is not a live resource load or a real secret. Log such hits as reviewed false positives in the provenance footer instead of mangling the example, and do not count them against the 3-iteration budget. Live `<head>` / `<script src>` references and actual secret values must still be fixed or gated. (Related: this contract's own §3 comment legitimately contains the literal `@font-face` — the §6 greps do not match it, and a stricter v2 validator must not flag it either.)

@@ -180,7 +180,7 @@ description 字段至关重要，它包含技能路由系统用于将任务匹�
 | "Fix bug and review" | oma-debug -> oma-qa |
 | "Design and build a landing page" | oma-design -> oma-frontend |
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> 相关智能体 -> oma-qa |
-| "Do everything automatically" | oma-orchestrator（内部：oma-pm -> 智能体 -> oma-qa） |
+| "Do everything automatically" | oma-orchestration（内部：oma-pm -> 智能体 -> oma-qa） |
 
 ### 智能体间依赖规则
 

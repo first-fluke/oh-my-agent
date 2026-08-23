@@ -73,8 +73,8 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 核心能力 |
 |-------|------|---------|
-| **oma-translator** | 上下文感知翻译 | 4 阶段翻译方法：分析原文、提取含义、在目标语言中重构、验证。保留语气、语域和领域术语。反 AI 模式检测。支持批量翻译（i18n 文件）。可选的 7 阶段精炼模式适用于出版级品质。按目标语言划分的配置文件（`resources/lang/{code}.md`）收录语域体系、标点排版和各语言特有的翻译腔规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`lang/{ko,ja,zh,en}.md`。 |
-| **oma-orchestrator** | 自动化多智能体协调器 | 通过 CLI 并行启动子智能体，通过 MCP 内存协调，监控进度，运行验证循环。可配置：MAX_PARALLEL（默认 3）、MAX_RETRIES（默认 2）、POLL_INTERVAL（默认 30 秒）。包含智能体间审查循环和澄清债务监控。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
+| **oma-translation** | 上下文感知翻译 | 4 阶段翻译方法：分析原文、提取含义、在目标语言中重构、验证。保留语气、语域和领域术语。反 AI 模式检测。支持批量翻译（i18n 文件）。可选的 7 阶段精炼模式适用于出版级品质。按目标语言划分的配置文件（`resources/lang/{code}.md`）收录语域体系、标点排版和各语言特有的翻译腔规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`lang/{ko,ja,zh,en}.md`。 |
+| **oma-orchestration** | 自动化多智能体协调器 | 通过 CLI 并行启动子智能体，通过 MCP 内存协调，监控进度，运行验证循环。可配置：MAX_PARALLEL（默认 3）、MAX_RETRIES（默认 2）、POLL_INTERVAL（默认 30 秒）。包含智能体间审查循环和澄清债务监控。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
 | **oma-scm** | 约定式提交 | 分析变更，确定类型/范围，在适当时按功能拆分，生成约定式提交格式的提交消息。Co-Author：`First Fluke <our.first.fluke@gmail.com>`。 |
 
 ### 搜索、回顾与文档处理
@@ -162,7 +162,7 @@ oh-my-agent 可与任何支持技能/提示加载的 AI 驱动 IDE 或 CLI 配�
 | UI design、design system、landing page、DESIGN.md | oma-design |
 | brainstorm、ideate、explore、idea | oma-brainstorm |
 | plan、breakdown、task、sprint | oma-pm |
-| automatic、parallel、orchestrate | oma-orchestrator |
+| automatic、parallel、orchestrate | oma-orchestration |
 
 对于跨越多个领域的复杂请求，路由遵循既定的执行顺序。例如，"创建一个全栈应用"路由至：oma-pm（规划）然后 oma-backend + oma-frontend（并行实现）然后 oma-qa（审查）。
 

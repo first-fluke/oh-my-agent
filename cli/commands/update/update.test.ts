@@ -62,7 +62,7 @@ describe("whitelist-based skill filtering", () => {
       "oma-pm",
       "oma-qa",
       "oma-coordination",
-      "oma-orchestrator",
+      "oma-orchestration",
       "oma-debug",
       "oma-scm",
     ];

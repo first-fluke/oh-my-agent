@@ -124,7 +124,7 @@
       "oma-mobile",
       "oma-qa",
       "oma-debug",
-      "oma-orchestrator",
+      "oma-orchestration",
       "oma-dev-workflow",
       "oma-tf-infra",
       "oma-scm",

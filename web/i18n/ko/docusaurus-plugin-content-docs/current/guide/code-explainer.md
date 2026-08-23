@@ -1,6 +1,6 @@
 ---
 title: "가이드: 코드 설명서"
-description: oh-my-agent의 /explain 워크플로우와 oma-explainer 스킬을 다루는 완전 가이드입니다. diff, PR, 브랜치, 커밋 범위를 Background / Intuition / Code / Quiz 절을 갖춘 자체 완결형 인터랙티브 HTML 문서로 바꾸며, ref 해석, 독자 수준, 시크릿 게이트, 검증 체크리스트, 엣지 케이스를 설명합니다.
+description: oh-my-agent의 /explain 워크플로우와 oma-explanation 스킬을 다루는 완전 가이드입니다. diff, PR, 브랜치, 커밋 범위를 Background / Intuition / Code / Quiz 절을 갖춘 자체 완결형 인터랙티브 HTML 문서로 바꾸며, ref 해석, 독자 수준, 시크릿 게이트, 검증 체크리스트, 엣지 케이스를 설명합니다.
 ---
 
 # 코드 설명서
@@ -79,7 +79,7 @@ diff가 비었거나 ref를 해석할 수 없으면 워크플로우를 멈춥니
 3. **Code**: 알파벳순이나 diff 순서가 아니라 사람이 이해하기 좋은 순서로 묶은 워크스루입니다. 코드는 `file:line` 형식으로 참조합니다
 4. **Quiz**: 기본 5문항(조정 가능)이며, 각 문항이 변경의 서로 다른 측면을 겨냥합니다. 그럴듯한 오답 선택지를 두고, 정답과 오답 모두에 피드백 문구를 붙입니다
 
-산문과 퀴즈 내용은 요청한 출력 언어로 씁니다(프롬프트 언어 → `.agents/oma-config.yaml`의 `language` → 영어 순). 코드, 식별자, 인라인 코드는 i18n 규칙에 따라 영어로 유지합니다. 전체 콘텐츠 계약은 `.agents/skills/oma-explainer/resources/document-structure.md`에 있습니다.
+산문과 퀴즈 내용은 요청한 출력 언어로 씁니다(프롬프트 언어 → `.agents/oma-config.yaml`의 `language` → 영어 순). 코드, 식별자, 인라인 코드는 i18n 규칙에 따라 영어로 유지합니다. 전체 콘텐츠 계약은 `.agents/skills/oma-explanation/resources/document-structure.md`에 있습니다.
 
 ---
 
@@ -92,7 +92,7 @@ diff가 비었거나 ref를 해석할 수 없으면 워크플로우를 멈춥니
 - 375px부터 반응형이고, 라이트와 다크 테마 모두에서 WCAG AA 대비를 지키며, `prefers-color-scheme: dark`를 지원하고 `prefers-reduced-motion`을 존중합니다.
 - 퀴즈는 바닐라 JS입니다. 선택지는 `<button>` 요소로 만들고, 정답과 오답 피드백을 `aria-live="polite"` 영역으로 즉시 알리며, 정답 위치를 무작위로 분산하고, 마지막에 점수 요약을 보여주며, 키보드로 전부 조작할 수 있어야 합니다.
 
-전체 동작 명세는 `.agents/skills/oma-explainer/resources/html-contract.md`에 있습니다.
+전체 동작 명세는 `.agents/skills/oma-explanation/resources/html-contract.md`에 있습니다.
 
 ---
 

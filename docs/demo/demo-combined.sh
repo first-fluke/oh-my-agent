@@ -39,7 +39,7 @@ sleep 0.3
 
 echo -e "  ${CYAN}◇${RESET} Installing skills..."
 echo ""
-skills=("oma-coordination" "oma-pm" "oma-frontend" "oma-backend" "oma-mobile" "oma-qa" "oma-debug" "oma-orchestrator" "oma-scm")
+skills=("oma-coordination" "oma-pm" "oma-frontend" "oma-backend" "oma-mobile" "oma-qa" "oma-debug" "oma-orchestration" "oma-scm")
 for skill in "${skills[@]}"; do
   echo -e "    ${GREEN}✓${RESET} ${skill}"
   sleep 0.12

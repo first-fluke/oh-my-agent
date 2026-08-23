@@ -1,13 +1,13 @@
 ---
-name: oma-explainer
-description: Turn a code change (diff, PR, branch, commit range) into a rich,
-  self-contained interactive HTML explainer with Background / Intuition / Code /
-  Quiz sections. Use for explain, walkthrough, code-change explanation,
-  diff/PR/branch explainer requests — 설명서, 해설, コード解説, 代码讲解. Produces a single
-  offline-capable HTML file with diagrams, callouts, and an accessible quiz.
+name: oma-explanation
+description: >
+  Turn a code change (diff, PR, branch, commit range) into a rich, self-contained interactive
+  HTML explainer with Background / Intuition / Code / Quiz sections. Use for explain, walkthrough,
+  code-change explanation, diff/PR/branch explainer requests — 설명서, 해설, コード解説, 代码讲解.
+  Produces a single offline-capable HTML file with diagrams, callouts, and an accessible quiz.
 ---
 
-# oma-explainer — Interactive HTML Code-Change Explainer
+# oma-explanation — Interactive HTML Code-Change Explainer
 
 ## Scheduling
 

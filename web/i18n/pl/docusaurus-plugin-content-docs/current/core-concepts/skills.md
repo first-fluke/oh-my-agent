@@ -180,7 +180,7 @@ Prompt zawierający "Build a login form with Tailwind CSS" dopasowuje słowa klu
 | "Fix bug and review" | oma-debug -> oma-qa |
 | "Design and build a landing page" | oma-design -> oma-frontend |
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> odpowiedni agenci -> oma-qa |
-| "Do everything automatically" | oma-orchestrator (wewnętrznie: oma-pm -> agenci -> oma-qa) |
+| "Do everything automatically" | oma-orchestration (wewnętrznie: oma-pm -> agenci -> oma-qa) |
 
 ### Reguły zależności między agentami
 

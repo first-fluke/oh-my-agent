@@ -155,8 +155,8 @@ Preguntas como "que es orchestrate?" se filtran — no activaran workflows accid
 | oma-debug | Bugs, errores, crashes | Codigo corregido + tests de regresion |
 | oma-tf-infra | Infraestructura cloud | Modulos Terraform |
 | oma-dev-workflow | CI/CD, automatizacion | Configs de pipeline |
-| oma-translator | Traduccion | Contenido multilingue natural |
-| oma-orchestrator | Ejecucion paralela | Resultados de agentes |
+| oma-translation | Traduccion | Contenido multilingue natural |
+| oma-orchestration | Ejecucion paralela | Resultados de agentes |
 | oma-scm | Commits Git | Commits convencionales |
 
 ---

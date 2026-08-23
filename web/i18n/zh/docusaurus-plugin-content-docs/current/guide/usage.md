@@ -304,8 +304,8 @@ oh-my-agent 在 11 种语言中检测工作流关键词。以下示例展示自�
 | **oma-debug** | Bug 调查、根因分析 | 修复的代码 + 回归测试 + 类似模式修复 |
 | **oma-tf-infra** | 云基础设施供应 | Terraform 模块、IAM 策略、成本估算 |
 | **oma-dev-workflow** | CI/CD、monorepo 任务、发布自动化 | mise.toml 配置、流水线定义 |
-| **oma-translator** | 多语言内容、i18n 文件 | 保持语气和语域的翻译文本 |
-| **oma-orchestrator** | 自动并行智能体执行 | 来自多个智能体的编排结果 |
+| **oma-translation** | 多语言内容、i18n 文件 | 保持语气和语域的翻译文本 |
+| **oma-orchestration** | 自动并行智能体执行 | 来自多个智能体的编排结果 |
 | **oma-scm** | Git 提交 | 具有正确类型/范围的 Conventional Commits |
 
 ---

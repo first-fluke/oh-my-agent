@@ -106,7 +106,7 @@ The agent writes the script — this is the start of the determinism boundary. D
    - `shorts`: a hook-first synthetic script from the topic; each scene gets a `visual.prompt` for oma-image.
    - `explainer`: ground scenes in the README / code / data the user pointed to; mark scenes that should become oma-slide frames vs oma-image diagrams.
    - `demo`: narration + on-screen callouts over the captured footage; visual refs point at the ingested capture segments.
-4. Translate narration / on-screen text via oma-translator when `locale` differs from the source language (key-free). If oma-translator is absent, keep the source text and let the run warn.
+4. Translate narration / on-screen text via oma-translation when `locale` differs from the source language (key-free). If oma-translation is absent, keep the source text and let the run warn.
 5. Write the agent-authored script to a file and hand it to the CLI via `--script <path>` so it validates against the schema. **`--script` is mandatory for the agent-as-key path: without it the CLI builds its own skeleton script from the brief and your authored script is never used.** Use `--dry-run` for the first pass so the pipeline emits `script.json` + `render-spec.json` + `manifest.json` **without rendering**:
    ```bash
    oma video generate "<brief>" --mode <mode> --aspect <aspect> --locale <lang> \
@@ -131,7 +131,7 @@ The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution prot
 
 - **Voice** (oma-voice / Voicebox MCP) → a **single** `audio/narration-01.wav` (all scene lines joined into one track — not per-scene files) + `timing.json`. Timing source: `voicebox-stt` (MCP `voicebox_transcribe`, REST `/transcribe` fallback, on the generated wav) → `estimated` (the `tts-native` / `whisper-cpp` source values are reserved but deferred). **The default voice is `none` → a silent video with estimated timing; pass `--voice <profile>` for narration.** If oma-voice is down, the run falls back to silent + estimated timing and warns — it does not hard-fail.
 - **Visual** (per-scene, fallback chain `oma-image → pexels → pixelle`) → `visuals/scene-NN.*`. Default is key-free oma-image stills (aspect snapped to the nearest 16-multiple; Remotion crops to exact frame). `--visual stock` engages Pexels only when `PEXELS_API_KEY` is set; `--visual aigc` engages Pixelle only after consent + cost gate. Each scene that falls back is recorded with `pathTaken: fallback`.
-- **Caption** (key-free) → `captions.srt` / `.vtt`, aligned to `timing.json`, styled `tiktok` or `lower-third`, with platform safe-area presets. Non-source locales translate via oma-translator; if absent, captions keep the source locale and warn.
+- **Caption** (key-free) → `captions.srt` / `.vtt`, aligned to `timing.json`, styled `tiktok` or `lower-third`, with platform safe-area presets. Non-source locales translate via oma-translation; if absent, captions keep the source locale and warn.
 
 Report which path each track took (real vs fallback) and surface any warnings.
 
@@ -196,7 +196,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - audio/timing → **Step 4** voice track (check oma-voice, re-synthesize).
    - wrong/placeholder visual → **Step 4** visual track (adjust prompt or `--visual` mode).
    - missing/incomplete demo capture → **Step 4** demo capture track (re-run the web capture; adjust `--ready-selector`/`--capture-timeout`, or fall back to `--source file`).
-   - caption sync/wrap/locale → **Step 4** caption track (or oma-translator).
+   - caption sync/wrap/locale → **Step 4** caption track (or oma-translation).
    - layout/transition/crop → **Step 6** render-spec → re-render (for `demo`, toggle `--polish`).
 3. **Determinism guard:** when validating reproducibility, run the golden harness — render-spec and assets must be byte-identical:
    ```bash

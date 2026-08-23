@@ -54,7 +54,7 @@ Follow these steps in order (adjust depth by difficulty).
   - Human-readable trackers (`docs/plans/work/{NNN}-{name}.md`) use the same numeric tier in their Priority column. Do not use a separate P0/P1-style scale.
 - Complexity: Low / Medium / High / Very High
 - Save to `.agents/results/plan-{sessionId}.json` and `.agents/results/result-pm.md`
-- `{sessionId}` = `{YYYYMMDD}-{HHMMSS}` at plan creation, matching the orchestrator session convention (`oma-orchestrator/resources/memory-schema.md`); also record it in the plan JSON `session_id` field
+- `{sessionId}` = `{YYYYMMDD}-{HHMMSS}` at plan creation, matching the orchestrator session convention (`oma-orchestration/resources/memory-schema.md`); also record it in the plan JSON `session_id` field
 
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?

@@ -155,8 +155,8 @@ Fragen wie "was ist orchestrate?" werden herausgefiltert — sie loesen keine Wo
 | oma-debug | Bugs, Fehler, Abstuerze | Behobener Code + Regressionstests |
 | oma-tf-infra | Cloud-Infrastruktur | Terraform-Module |
 | oma-dev-workflow | CI/CD, Automatisierung | Pipeline-Konfigurationen |
-| oma-translator | Uebersetzung | Natuerlicher mehrsprachiger Inhalt |
-| oma-orchestrator | Parallele Ausfuehrung | Agenten-Ergebnisse |
+| oma-translation | Uebersetzung | Natuerlicher mehrsprachiger Inhalt |
+| oma-orchestration | Parallele Ausfuehrung | Agenten-Ergebnisse |
 | oma-scm | Git-Commits | Konventionelle Commits |
 
 ---

@@ -1,11 +1,11 @@
 ---
-name: oma-orchestrator
-description: Automated multi-agent orchestrator that spawns CLI subagents in
+name: oma-orchestration
+description: Automated multi-agent orchestration that spawns CLI subagents in
   parallel, coordinates via MCP Memory, and monitors progress. Use for
   orchestration, parallel execution, and automated multi-agent workflows.
 ---
 
-# Orchestrator - Automated Multi-Agent Coordinator
+# Orchestration - Automated Multi-Agent Coordination
 
 ## Scheduling
 

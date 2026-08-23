@@ -23,8 +23,8 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 | **Observability** | oma-observability | Observability-Pipelines, Traceability-Routing, MELT+P-Signale (metrics/logs/traces/profiles/cost/audit/privacy), SLO-Management, Incident-Forensik, Transport-Tuning |
 | **Qualität** | oma-qa | Sicherheitsaudit (OWASP), Performance, Barrierefreiheit (WCAG), Code-Qualitäts-Review |
 | **Debugging** | oma-debug | Bug-Reproduktion, Grundursachenanalyse, minimale Korrekturen, Regressionstests |
-| **Lokalisierung** | oma-translator | Kontextbewusste Übersetzung unter Bewahrung von Ton, Register und Fachbegriffen |
-| **Koordination** | oma-orchestrator, oma-coordination | Automatisierte und manuelle Multi-Agenten-Orchestrierung |
+| **Lokalisierung** | oma-translation | Kontextbewusste Übersetzung unter Bewahrung von Ton, Register und Fachbegriffen |
+| **Koordination** | oma-orchestration, oma-coordination | Automatisierte und manuelle Multi-Agenten-Orchestrierung |
 | **Git** | oma-scm | Conventional-Commits-Generierung, Feature-basierte Commit-Aufteilung |
 | **Suche & Retrieval** | oma-search | Intent-basierter Such-Router mit Trust-Scoring (Context7-Dokumente, Web, `gh`/`glab`-Code, Serena lokal) |
 | **Retrospektive** | oma-recap | Werkzeug-übergreifende Konversationshistorie-Analyse und themenbezogene Arbeitszusammenfassungen |
@@ -358,7 +358,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 
 ---
 
-### oma-translator
+### oma-translation
 
 **Domäne:** Kontextbewusste mehrsprachige Übersetzung.
 
@@ -380,7 +380,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **Domäne:** Automatisierte Multi-Agenten-Koordination via CLI-Spawning.
 
@@ -436,7 +436,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 
 **Einsatzbereich:** Komplexe Projekte, bei denen Sie an jedem Gate Human-in-the-Loop-Kontrolle wünschen, manuelle Anleitung zum Spawnen von Agenten, schrittweise Koordinationsrezepte.
 
-**Nicht einsetzen:** Vollautomatische parallele Ausführung (oma-orchestrator verwenden), Aufgaben in einer einzelnen Domäne (den Domänenagenten direkt verwenden).
+**Nicht einsetzen:** Vollautomatische parallele Ausführung (oma-orchestration verwenden), Aufgaben in einer einzelnen Domäne (den Domänenagenten direkt verwenden).
 
 **Kernregeln:**
 - Den Plan vor dem Spawnen von Agenten stets zur Bestätigung durch den Benutzer vorlegen
@@ -447,7 +447,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 
 **Workflow:** PM plant → Benutzer bestätigt → Spawn nach Prioritätsstufe → Überwachen → QA-Review → Probleme beheben → Ausliefern.
 
-**Unterschied zu oma-orchestrator:** Coordination ist manuell und geführt (der Benutzer steuert das Tempo), Orchestrator ist automatisiert (Agenten werden mit minimaler Benutzerintervention gespawnt und ausgeführt).
+**Unterschied zu oma-orchestration:** Coordination ist manuell und geführt (der Benutzer steuert das Tempo), Orchestrator ist automatisiert (Agenten werden mit minimaler Benutzerintervention gespawnt und ausgeführt).
 
 ---
 

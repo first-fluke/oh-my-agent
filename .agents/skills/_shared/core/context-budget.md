@@ -81,7 +81,7 @@ any resource. The enforced ceiling is `oma skills audit`'s focus check:
 > (`FOCUS_BODY_WARN_THRESHOLD` in `cli/commands/skills/audit.ts`)
 
 Run `oma skills audit` after editing a `SKILL.md`. Two skills currently exceed
-it (`oma-video`, `oma-translator`); the fix is splitting the skill or pushing
+it (`oma-video`, `oma-translation`); the fix is splitting the skill or pushing
 detail into `resources/`, not raising the threshold.
 
 > Earlier revisions of this file listed a "~3,100 token total resource budget"

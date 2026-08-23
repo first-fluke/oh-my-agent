@@ -32,7 +32,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 ### When NOT to use
 
 - General web search or non-academic content -> use `oma-search`
-- Translating papers -> use `oma-translator`
+- Translating papers -> use `oma-translation`
 - PDF parsing only (no sidecar) -> use `oma-pdf`
 - Submitting sidecars back to knows.academy -> out of scope (host LLM only consumes/produces locally)
 - Full peer-review workflow with editor system -> out of scope

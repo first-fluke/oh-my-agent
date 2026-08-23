@@ -473,11 +473,11 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ### /explain
 
-**Description:** Drive the `oma-explainer` skill end-to-end: turn a diff, PR, branch, or commit range into a self-contained interactive HTML explainer (Background / Intuition / Code / Quiz). Executes inline (no subagent spawning).
+**Description:** Drive the `oma-explanation` skill end-to-end: turn a diff, PR, branch, or commit range into a self-contained interactive HTML explainer (Background / Intuition / Code / Quiz). Executes inline (no subagent spawning).
 
 **Trigger keywords:** None ("explain" is everyday vocabulary — keyword detection would false-positive on ordinary "explain this function" questions, so the workflow is slash-only).
 
-**Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explainer` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate the HTML per the document and HTML contracts -> Validate (grep checklist including a final-HTML secret scan, max 3 fix loops) -> Deliver (`open` warn-only, TL;DR + path).
+**Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explanation` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate the HTML per the document and HTML contracts -> Validate (grep checklist including a final-HTML secret scan, max 3 fix loops) -> Deliver (`open` warn-only, TL;DR + path).
 
 **Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (Asia/Seoul date; rerunning the same date + slug overwrites). See the [Code Explainer guide](../guide/code-explainer.md).
 

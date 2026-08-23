@@ -1,6 +1,6 @@
 # Skill Routing Map
 
-Routing rules for oma-orchestrator and oma-coordination to assign tasks to the correct agent.
+Routing rules for oma-orchestration and oma-coordination to assign tasks to the correct agent.
 
 ## Progressive Disclosure
 
@@ -30,7 +30,7 @@ Skills are explicitly loaded via /command invocation or agent skills field. Load
 | UI design, design system, landing page, DESIGN.md, color palette, typography, glassmorphism, responsive design | **oma-design** | |
 | brainstorm, ideate, design, explore, idea, concept | **oma-brainstorm** | Run before oma-pm |
 | plan, breakdown, task, sprint | **oma-pm** | |
-| automatic, parallel, orchestrate | **oma-orchestrator** | |
+| automatic, parallel, orchestrate | **oma-orchestration** | |
 | workflow, guide, manual, step-by-step | **oma-coordination** | |
 | configuration management, SCM, CM, git, commit, gitflow, GitHub Flow, GitLab Flow, trunk-based branching, merge conflict, rebase, worktree, baseline, tag, release branch, signed commits, merge queue, conventional commits | **oma-scm** | SCM + Conventional Commits in one skill |
 
@@ -49,7 +49,7 @@ Skills are explicitly loaded via /command invocation or agent skills field. Load
 | "Add feature and test" | oma-pm → relevant agent → oma-qa |
 | "I have an idea for a feature" | oma-brainstorm → oma-pm → relevant agents → oma-qa |
 | "Let's design something new" | oma-brainstorm → oma-pm → relevant agents → oma-qa |
-| "Do everything automatically" | oma-orchestrator (internally oma-pm → agents → oma-qa) |
+| "Do everything automatically" | oma-orchestration (internally oma-pm → agents → oma-qa) |
 | "I'll manage manually" | oma-coordination |
 | "Design and build a landing page" | oma-design → oma-frontend |
 | "Design, build, and review" | oma-design → oma-frontend → oma-qa |
@@ -86,7 +86,7 @@ Skills are explicitly loaded via /command invocation or agent skills field. Load
 | QA finds CRITICAL issue | Re-run relevant domain agent |
 | Architecture change needed | oma-architecture → oma-pm |
 | Performance issue found (during implementation) | Current agent fixes, oma-debug if severe |
-| API contract mismatch | oma-orchestrator re-runs oma-backend |
+| API contract mismatch | oma-orchestration re-runs oma-backend |
 
 ---
 

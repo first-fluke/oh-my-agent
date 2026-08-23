@@ -304,8 +304,8 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 | **oma-debug** | Investigação de bugs, análise de causa raiz | Código corrigido + testes de regressão + correções de padrões similares |
 | **oma-tf-infra** | Provisionamento de infraestrutura cloud | Módulos Terraform, políticas IAM, estimativas de custo |
 | **oma-dev-workflow** | CI/CD, tarefas monorepo, automação de releases | Configs mise.toml, definições de pipeline |
-| **oma-translator** | Conteúdo multilingual, arquivos i18n | Texto traduzido preservando tom e registro |
-| **oma-orchestrator** | Execução paralela automatizada de agentes | Resultados orquestrados de múltiplos agentes |
+| **oma-translation** | Conteúdo multilingual, arquivos i18n | Texto traduzido preservando tom e registro |
+| **oma-orchestration** | Execução paralela automatizada de agentes | Resultados orquestrados de múltiplos agentes |
 | **oma-scm** | Commits Git | Conventional Commits com tipo/escopo adequado |
 
 ---

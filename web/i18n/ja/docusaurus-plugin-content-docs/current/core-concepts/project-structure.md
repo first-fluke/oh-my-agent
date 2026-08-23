@@ -168,7 +168,7 @@ your-project/
 │   │   │       ├── release-coordination.md
 │   │   │       └── troubleshooting.md
 │   │   │
-│   │   ├── oma-translator/
+│   │   ├── oma-translation/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
@@ -180,7 +180,7 @@ your-project/
 │   │   │           ├── ko.md
 │   │   │           └── zh.md
 │   │   │
-│   │   ├── oma-orchestrator/
+│   │   ├── oma-orchestration/
 │   │   │   ├── SKILL.md
 │   │   │   ├── resources/
 │   │   │   │   ├── subagent-prompt-template.md
@@ -300,7 +300,7 @@ your-project/
 **`oma-{agent}/`**: エージェントごとのスキルディレクトリ。
 - `SKILL.md`（約800バイト）: レイヤー1、常にロード
 - `resources/`: レイヤー2、オンデマンド
-- 一部エージェントに追加ディレクトリ：`stack/`（oma-backend）、`reference/`（oma-design）、`scripts/`（oma-orchestrator）
+- 一部エージェントに追加ディレクトリ：`stack/`（oma-backend）、`reference/`（oma-design）、`scripts/`（oma-orchestration）
 
 ### workflows/
 

@@ -41,8 +41,8 @@ export const SKILLS: SkillsRegistry = {
       desc: `Guide for coordinating PM, Frontend, Backend, Mobile, and QA agents on complex projects via CLI. Use for manual step-by-step coordination and workflow guidance.`,
     },
     {
-      name: "oma-orchestrator",
-      desc: `Automated multi-agent orchestrator that spawns CLI subagents in parallel, coordinates via MCP Memory, and monitors progress. Use for orchestration, parallel execution, and automated multi-agent workflows.`,
+      name: "oma-orchestration",
+      desc: `Automated multi-agent orchestration that spawns CLI subagents in parallel, coordinates via MCP Memory, and monitors progress. Use for orchestration, parallel execution, and automated multi-agent workflows.`,
     },
     {
       name: "oma-pm",
@@ -55,8 +55,8 @@ export const SKILLS: SkillsRegistry = {
   ],
   utility: [
     {
-      name: "oma-academic-writer",
-      desc: `Academic writing specialist for publication-grade English prose. Drafts, revises, and audits essays, reports, analysis sections, executive summaries, conclusions, and literature reviews while enforcing sentence-structure variation, high-frequency academic verbs, calibrated hedging, and anti-AI stylistic compliance. USE for academic writing, essay polish, paragraph rewrite, prose revision against any rubric tier (HD/D/C, A/B/C, top-band/mid-band, etc.), anti-AI audit, reverse outlining, claim-evidence mapping, and rubric enforcement on assignments.`,
+      name: "oma-academic-writing",
+      desc: `Academic writing capability for publication-grade English prose. Drafts, revises, and audits essays, reports, analysis sections, executive summaries, conclusions, and literature reviews while enforcing sentence-structure variation, high-frequency academic verbs, calibrated hedging, and anti-AI stylistic compliance. USE for academic writing, essay polish, paragraph rewrite, prose revision against any rubric tier (HD/D/C, A/B/C, top-band/mid-band, etc.), anti-AI audit, reverse outlining, claim-evidence mapping, and rubric enforcement on assignments.`,
     },
     {
       name: "oma-debug",
@@ -71,7 +71,7 @@ export const SKILLS: SkillsRegistry = {
       desc: `Verify documentation references against the current codebase, propose updates for diff-affected docs, detect i18n translation drift, and lint translated docs for CJK style issues. Use to check if docs still match reality (broken file paths, CLI commands, config keys, env vars, scripts), to surface docs that may need updating after code changes, or to find stale or style-broken translations.`,
     },
     {
-      name: "oma-explainer",
+      name: "oma-explanation",
       desc: `Turn a code change (diff, PR, branch, commit range) into a rich, self-contained interactive HTML explainer with Background / Intuition / Code / Quiz sections. Use for explain, walkthrough, code-change explanation, diff/PR/branch explainer requests — 설명서, 해설, コード解説, 代码讲解. Produces a single offline-capable HTML file with diagrams, callouts, and an accessible quiz.`,
     },
     {
@@ -111,7 +111,7 @@ export const SKILLS: SkillsRegistry = {
       desc: `Intent-based search router with trust scoring. Routes queries to optimal channels (Context7 docs, native web search, gh/glab code search, Serena local) and attaches domain trust labels. Use for search, find, lookup, reference, docs, code search, and web research.`,
     },
     {
-      name: "oma-skill-creator",
+      name: "oma-skill-creation",
       desc: `Create or update OMA skills in the SSL-lite human-readable format. Use when adding a new \`.agents/skills/{skill-name}/SKILL.md\`, converting an existing skill to the standardized Scheduling / Structural Flow / Logical Operations / References structure, or validating whether a skill has enough routing, execution, resource, and safety detail.`,
     },
     {
@@ -119,7 +119,7 @@ export const SKILLS: SkillsRegistry = {
       desc: `HTML presentation deck generator and multi-format exporter. Generates distinctive, animation-rich HTML decks at a fixed 1920×1080 stage, then deterministically validates, bundles, and exports them to PDF/PNG/PPTX via the \`oma slide\` CLI. Use for slide, deck, presentation, slides, pptx, keynote, 슬라이드, 발표자료, プレゼン, 幻灯片 requests. Produces self-contained single-file HTML with keyboard/touch nav, speaker notes, and print-to-PDF support.`,
     },
     {
-      name: "oma-translator",
+      name: "oma-translation",
       desc: `Context-aware translation that preserves tone, style, and natural word order. Use when translating UI strings, documentation, marketing copy, or any multilingual content. Infers register, domain, and style from the source text and surrounding codebase context.`,
     },
     {
@@ -235,17 +235,17 @@ export const PRESETS: Record<string, string[]> = {
     "oma-market",
     "oma-pdf",
     "oma-hwp",
-    "oma-academic-writer",
+    "oma-academic-writing",
     "oma-search",
-    "oma-translator",
+    "oma-translation",
     "oma-scm",
   ],
   content: [
     "oma-design",
     "oma-image",
     "oma-voice",
-    "oma-academic-writer",
-    "oma-translator",
+    "oma-academic-writing",
+    "oma-translation",
     "oma-scm",
   ],
   all: [

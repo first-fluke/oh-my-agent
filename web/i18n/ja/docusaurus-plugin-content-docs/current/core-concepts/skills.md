@@ -174,7 +174,7 @@ descriptionフィールドは非常に重要です。スキルルーティング
 | 「バグを修正してレビュー」 | oma-debug -> oma-qa |
 | 「ランディングページをデザインして構築」 | oma-design -> oma-frontend |
 | 「機能のアイデアがある」 | oma-brainstorm -> oma-pm -> 関連エージェント -> oma-qa |
-| 「すべて自動でやって」 | oma-orchestrator（内部：oma-pm -> エージェント群 -> oma-qa） |
+| 「すべて自動でやって」 | oma-orchestration（内部：oma-pm -> エージェント群 -> oma-qa） |
 
 ### エージェント間依存ルール
 

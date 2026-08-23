@@ -33,18 +33,18 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 | **Observability** | oma-observability | Observability pipelines, traceability routing, MELT+P signals (metrics/logs/traces/profiles/cost/audit/privacy), SLO management, incident forensics, transport tuning |
 | **Quality** | oma-qa | Security audit (OWASP), performance, accessibility (WCAG), code quality review |
 | **Debugging** | oma-debug | Bug reproduction, root cause analysis, minimal fixes, regression tests |
-| **Localization** | oma-translator | Context-aware translation preserving tone, register, and domain terms |
-| **Coordination** | oma-orchestrator, oma-coordination | Automated and manual multi-agent orchestration |
+| **Localization** | oma-translation | Context-aware translation preserving tone, register, and domain terms |
+| **Coordination** | oma-orchestration, oma-coordination | Automated and manual multi-agent orchestration |
 | **Git** | oma-scm | Conventional Commits generation, feature-based commit splitting |
 | **Search & Retrieval** | oma-search | Intent-based search router with trust scoring (Context7 docs, web, `gh`/`glab` code, Serena local) |
 | **Retrospective** | oma-recap | Cross-tool conversation history analysis and themed work summaries |
 | **Document Processing** | oma-hwp, oma-pdf | HWP/HWPX/HWPML and PDF to Markdown conversion for LLM/RAG ingestion |
 | **Documentation** | oma-docs | Documentation drift detection (verify broken refs, propose sync patches for diff-affected docs) |
-| **Academic Writing** | oma-academic-writer, oma-scholar | Publication-grade academic prose drafting/audit and Knows-sidecar scholarly research, search, and peer review |
+| **Academic Writing** | oma-academic-writing, oma-scholar | Publication-grade academic prose drafting/audit and Knows-sidecar scholarly research, search, and peer review |
 | **Security** | oma-deepsec | Driving Vercel's deepsec agent-powered vulnerability scanner (scan, PR gate, matchers, triage) cost-consciously |
 | **Refactoring** | oma-refactor | Behavior-preserving incremental restructuring with hotspot targeting, characterization-test safety nets, refactor-only commits |
 | **Market Research** | oma-market | Community-signal pain/trend/competitor/discovery research with intent-auto SWOT/Porter's 5F/PESTEL frameworks |
-| **Skill Authoring** | oma-skill-creator | Creating and validating OMA skills in the SSL-lite format |
+| **Skill Authoring** | oma-skill-creation | Creating and validating OMA skills in the SSL-lite format |
 | **Media Generation** | oma-image, oma-slide, oma-video, oma-voice | AI image generation, HTML presentation decks, short-form/explainer/demo video, and local TTS/STT |
 
 ---
@@ -378,7 +378,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-### oma-translator
+### oma-translation
 
 **Domain:** Context-aware multilingual translation.
 
@@ -400,7 +400,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **Domain:** Automated multi-agent coordination via CLI spawning.
 
@@ -456,7 +456,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **When to use:** Complex projects where you want human-in-the-loop control at every gate, manual agent spawning guidance, step-by-step coordination recipes.
 
-**When NOT to use:** Fully automated parallel execution (use oma-orchestrator), single-domain tasks (use the domain agent directly).
+**When NOT to use:** Fully automated parallel execution (use oma-orchestration), single-domain tasks (use the domain agent directly).
 
 **Core rules:**
 - Always present the plan for user confirmation before spawning agents
@@ -467,7 +467,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **Workflow:** PM plans → User confirms → Spawn by priority tier → Monitor → QA review → Fix issues → Ship.
 
-**Difference from oma-orchestrator:** Coordination is manual and guided (user controls pace), orchestrator is automated (agents spawn and run with minimal user intervention).
+**Difference from oma-orchestration:** Coordination is manual and guided (user controls pace), orchestrator is automated (agents spawn and run with minimal user intervention).
 
 ---
 
@@ -555,13 +555,13 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-### oma-academic-writer
+### oma-academic-writing
 
 **Domain:** Publication-grade academic English prose: drafting, revising, and auditing essays, reports, analysis sections, executive summaries, conclusions, and literature reviews.
 
 **When to use:** Drafting or revising academic reports/essays/analysis sections, writing executive summaries or conclusions or literature reviews, rewriting AI-sounding prose into natural academic English, polishing a draft to top-band rubric quality (HD, A, top-band), reviewing prose for sentence variety / verb quality / hedging / anti-AI compliance.
 
-**When NOT to use:** Translation (use oma-translator), source discovery / citation gathering / literature search (use oma-scholar), rubric parsing and task decomposition (use oma-pm), code documentation / README / API reference text (use the relevant domain skill), informal or marketing copy, non-English academic writing (draft in English, then hand off to oma-translator).
+**When NOT to use:** Translation (use oma-translation), source discovery / citation gathering / literature search (use oma-scholar), rubric parsing and task decomposition (use oma-pm), code documentation / README / API reference text (use the relevant domain skill), informal or marketing copy, non-English academic writing (draft in English, then hand off to oma-translation).
 
 **Modes:** `draft` (heading + prose + Writing Notes + Claim-Evidence Map), `revise` (original + revised + change list), `review` (PASS/FAIL compliance report across sentence structure, verb quality, anti-AI, specificity, hedging, paragraph clarity, rhythm, claim-evidence alignment).
 
@@ -607,7 +607,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **When to use:** After a refactor/rename/file deletion to find stale references in docs, before a release to confirm CLI commands / file paths / config keys still exist, after a significant git diff to find which docs reference changed files, routine drift checks on a docs-heavy repo.
 
-**When NOT to use:** Generating docs from scratch for undocumented features, multilingual translation of docs (use oma-translator), symbol-level semantic drift, CI-blocking enforcement (v1 is warn-only).
+**When NOT to use:** Generating docs from scratch for undocumented features, multilingual translation of docs (use oma-translation), symbol-level semantic drift, CI-blocking enforcement (v1 is warn-only).
 
 **Core rules:**
 - Never modify `.agents/` (SSOT protection) in any mode
@@ -695,7 +695,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **When to use:** Token-efficient paper reading via sidecars (~700 tokens claims-only vs ~10K full PDF), generating `.knows.yaml` from drafts/LaTeX/notes, validating sidecar structure before sharing, producing peer reviews as sidecars, querying or summarizing existing sidecars, structurally comparing two papers, searching/fetching from knows.academy.
 
-**When NOT to use:** General web search or non-academic content (use oma-search), translating papers (use oma-translator), PDF parsing only without a sidecar (use oma-pdf), full peer-review workflow with editor system.
+**When NOT to use:** General web search or non-academic content (use oma-search), translating papers (use oma-translation), PDF parsing only without a sidecar (use oma-pdf), full peer-review workflow with editor system.
 
 **Modes:** Generate, Validate, Review, Analyze, Compare, Remote (search/fetch).
 
@@ -713,7 +713,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ---
 
-### oma-skill-creator
+### oma-skill-creation
 
 **Domain:** Authoring and validating OMA skills in the SSL-lite Markdown format (Scheduling / Structural Flow / Logical Operations / References).
 

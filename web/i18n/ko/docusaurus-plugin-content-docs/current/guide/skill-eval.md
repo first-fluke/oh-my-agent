@@ -317,4 +317,4 @@ mock의 결정성은 `--live --record` 도중 judge의 이진 판정(PASS/FAIL)�
 
 ## 스킬과 함께 평가 태스크 배포하기
 
-스킬은 `.agents/eval/<skill>/`에 픽스처를 두는 방식으로 평가 태스크 세트를 함께 배포할 수 있습니다. 이 파일은 스킬 디렉토리 밖에 있는 사용자 작성 파일이므로 `oma update`에도 살아남습니다. `oma-skill-creator`로 새 스킬을 만들 때 대응하는 `eval/` 픽스처 세트를 함께 추가하면, 이후 작성자가 스킬의 효과를 검증할 수단을 갖게 됩니다. 스킬 작성 워크플로우는 `.agents/skills/oma-skill-creator/SKILL.md`를 참고하세요.
+스킬은 `.agents/eval/<skill>/`에 픽스처를 두는 방식으로 평가 태스크 세트를 함께 배포할 수 있습니다. 이 파일은 스킬 디렉토리 밖에 있는 사용자 작성 파일이므로 `oma update`에도 살아남습니다. `oma-skill-creation`로 새 스킬을 만들 때 대응하는 `eval/` 픽스처 세트를 함께 추가하면, 이후 작성자가 스킬의 효과를 검증할 수단을 갖게 됩니다. 스킬 작성 워크플로우는 `.agents/skills/oma-skill-creation/SKILL.md`를 참고하세요.

@@ -180,7 +180,7 @@ Multi-domein verzoeken volgen vastgestelde uitvoeringsvolgorden:
 | "Fix bug en review" | oma-debug -> oma-qa |
 | "Ontwerp en bouw een landingspagina" | oma-design -> oma-frontend |
 | "Ik heb een idee voor een functie" | oma-brainstorm -> oma-pm -> relevante agenten -> oma-qa |
-| "Doe alles automatisch" | oma-orchestrator (intern: oma-pm -> agenten -> oma-qa) |
+| "Doe alles automatisch" | oma-orchestration (intern: oma-pm -> agenten -> oma-qa) |
 
 ### Inter-agent afhankelijkheidsregels
 

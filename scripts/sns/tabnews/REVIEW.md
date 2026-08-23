@@ -1,4 +1,4 @@
-# Portuguese Translation Review — oma-translator Stage 5–7
+# Portuguese Translation Review — oma-translation Stage 5–7
 
 Post-draft review pass for TabNews posts. **Sync mode** (`--sync`) compares the Brazilian Portuguese draft against the English dev.to article (source of truth). `SOUL.md` is the voice reference.
 

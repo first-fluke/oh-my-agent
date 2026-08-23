@@ -169,7 +169,7 @@ your-project/
 │   │   │       ├── release-coordination.md
 │   │   │       └── troubleshooting.md
 │   │   │
-│   │   ├── oma-translator/
+│   │   ├── oma-translation/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
@@ -181,7 +181,7 @@ your-project/
 │   │   │           ├── ko.md
 │   │   │           └── zh.md
 │   │   │
-│   │   ├── oma-orchestrator/
+│   │   ├── oma-orchestration/
 │   │   │   ├── SKILL.md
 │   │   │   ├── resources/
 │   │   │   │   ├── subagent-prompt-template.md
@@ -300,7 +300,7 @@ L'expertise des agents y réside. 22 répertoires au total : 21 compétences d'a
 **`oma-{agent}/`** — Répertoires de compétences par agent. Chacun contient :
 - `SKILL.md` (~800 octets) — Couche 1 : toujours chargée. Identité, routage, règles fondamentales.
 - `resources/` — Couche 2 : à la demande. Protocoles d'exécution, exemples, checklists, error playbooks, stacks techniques, snippets, templates.
-- Certains agents disposent de sous-répertoires additionnels : `stack/` (oma-backend, généré par /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestrator), `config/` (oma-orchestrator, oma-scm).
+- Certains agents disposent de sous-répertoires additionnels : `stack/` (oma-backend, généré par /stack-set), `reference/` (oma-design), `scripts/` (oma-orchestration), `config/` (oma-orchestration, oma-scm).
 
 ### workflows/
 

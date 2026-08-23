@@ -172,11 +172,11 @@ En vez de que una sola IA haga todo (y se pierda a mitad de camino), oh-my-agent
 | **oma-design** | Construye sistemas de diseño con tokens, accesibilidad y layouts responsive |
 | **oma-dev-workflow** | Automatiza tu CI/CD, releases y tareas de monorepo |
 | **oma-docs** | Detecta referencias rotas en tu documentación y señala los docs afectados por cambios en el código |
-| **oma-explainer** | Convierte un diff, PR o rama en un explicador HTML interactivo autónomo con cuestionario |
+| **oma-explanation** | Convierte un diff, PR o rama en un explicador HTML interactivo autónomo con cuestionario |
 | **oma-frontend** | Construye tu UI con React/Next.js, TypeScript, Tailwind CSS v4 y shadcn/ui |
 | **oma-mobile** | Construye apps móviles multiplataforma con Flutter |
 | **oma-observability** | Enruta el trabajo de observabilidad entre métricas, logs, trazas, SLOs y forense de incidentes |
-| **oma-orchestrator** | Ejecuta múltiples agentes en paralelo desde el CLI |
+| **oma-orchestration** | Ejecuta múltiples agentes en paralelo desde el CLI |
 | **oma-pm** | Planifica tareas, desglosa requisitos y define contratos de API |
 | **oma-qa** | Revisa tu código en busca de problemas de seguridad OWASP, rendimiento y accesibilidad |
 | **oma-refactor** | Refactoriza el código sin cambiar su comportamiento usando hotspots, pruebas de caracterización y commits solo de refactor |
@@ -190,7 +190,7 @@ En vez de que una sola IA haga todo (y se pierda a mitad de camino), oh-my-agent
 | Agente | Qué Hace |
 |-------|-------------|
 | **oma-coordination** | Guía la coordinación manual paso a paso de los agentes PM, frontend, backend, móvil y QA |
-| **oma-skill-creator** | Escribe y audita nuevos skills OMA en formato SSL-lite |
+| **oma-skill-creation** | Escribe y audita nuevos skills OMA en formato SSL-lite |
 
 </details>
 
@@ -200,7 +200,7 @@ Aparte del equipo de ingeniería, oma trae pipelines de contenido e investigaci�
 
 | Agente | Qué Hace |
 |-------|-------------|
-| **oma-academic-writer** | Redacta, revisa y audita prosa académica hasta alcanzar calidad de publicación |
+| **oma-academic-writing** | Redacta, revisa y audita prosa académica hasta alcanzar calidad de publicación |
 | **oma-hwp** | Convierte archivos HWP, HWPX y HWPML a Markdown |
 | **oma-image** | Genera imágenes a través de varios proveedores de IA a la vez |
 | **oma-market** | Investiga tu mercado a partir de señales de comunidad y lo encuadra con SWOT, Porter's 5F y PESTEL |
@@ -208,7 +208,7 @@ Aparte del equipo de ingeniería, oma trae pipelines de contenido e investigaci�
 | **oma-recap** | Convierte tu historial de conversaciones en resúmenes de trabajo organizados por tema |
 | **oma-scholar** | Busca literatura académica y te ayuda a llevar a cabo revisiones por pares |
 | **oma-slide** | Genera decks de presentaciones HTML distintivos y ricos en animaciones, y exporta a PDF/PNG/PPTX |
-| **oma-translator** | Traduce entre idiomas de forma que parezca escrito por un hablante nativo |
+| **oma-translation** | Traduce entre idiomas de forma que parezca escrito por un hablante nativo |
 | **oma-video** | Genera videos cortos, explicativos y demos mediante un pipeline de Remotion que funciona sin claves |
 | **oma-voice** | Genera voiceovers y transcribe audio en el dispositivo, sin necesidad de nube |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["Domain Agents"]

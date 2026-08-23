@@ -155,8 +155,8 @@ Les questions comme "qu'est-ce qu'orchestrate ?" sont filtrees — elles ne decl
 | oma-debug | Bugs, erreurs, crashes | Code corrige + tests de regression |
 | oma-tf-infra | Infrastructure cloud | Modules Terraform |
 | oma-dev-workflow | CI/CD, automatisation | Configs de pipeline |
-| oma-translator | Traduction | Contenu multilingue naturel |
-| oma-orchestrator | Execution parallele | Resultats d'agents |
+| oma-translation | Traduction | Contenu multilingue naturel |
+| oma-orchestration | Execution parallele | Resultats d'agents |
 | oma-scm | Commits Git | Commits conventionnels |
 
 ---

@@ -333,4 +333,4 @@ Mock determinism is preserved by recording the judge's binary verdict (PASS/FAIL
 
 ## Shipping eval tasks with a skill
 
-Skills can include an eval task set by placing fixtures at `.agents/eval/<skill>/`. These are user-authored files outside the skill directory, so they survive `oma update`. When creating a new skill with `oma-skill-creator`, add a matching `eval/` fixture set to give future authors a way to verify the skill's effect. See `.agents/skills/oma-skill-creator/SKILL.md` for the skill authoring workflow.
+Skills can include an eval task set by placing fixtures at `.agents/eval/<skill>/`. These are user-authored files outside the skill directory, so they survive `oma update`. When creating a new skill with `oma-skill-creation`, add a matching `eval/` fixture set to give future authors a way to verify the skill's effect. See `.agents/skills/oma-skill-creation/SKILL.md` for the skill authoring workflow.

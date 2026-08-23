@@ -190,7 +190,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | codex | `codex` | `--full-auto` | (không — prompt là positional) |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-Các mặc định này có thể ghi đè trong `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+Các mặc định này có thể ghi đè trong `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
 ### agent:status
 

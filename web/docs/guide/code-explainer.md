@@ -1,6 +1,6 @@
 ---
 title: "Guide: Code Explainer"
-description: Complete guide to oh-my-agent's /explain workflow and oma-explainer skill — turns a diff, PR, branch, or commit range into a self-contained interactive HTML document with Background, Intuition, Code, and Quiz sections, covering ref resolution, reader levels, the secret gates, the validation checklist, and edge cases.
+description: Complete guide to oh-my-agent's /explain workflow and oma-explanation skill — turns a diff, PR, branch, or commit range into a self-contained interactive HTML document with Background, Intuition, Code, and Quiz sections, covering ref resolution, reader levels, the secret gates, the validation checklist, and edge cases.
 ---
 
 # Code Explainer
@@ -79,7 +79,7 @@ Every explainer is a single long scrolling page (no tabs, no multi-page navigati
 3. **Code** — a walkthrough grouped for human comprehension (not alphabetical or diff order), referencing code via `file:line`
 4. **Quiz** — 5 questions by default (parameterizable), each targeting a distinct aspect of the change, with plausible distractors and feedback text on every option (right and wrong)
 
-Prose and quiz content are written in the requested output language (prompt language → `.agents/oma-config.yaml` `language` → English); code, identifiers, and inline code stay in English per the i18n rules. The full content contract lives in `.agents/skills/oma-explainer/resources/document-structure.md`.
+Prose and quiz content are written in the requested output language (prompt language → `.agents/oma-config.yaml` `language` → English); code, identifiers, and inline code stay in English per the i18n rules. The full content contract lives in `.agents/skills/oma-explanation/resources/document-structure.md`.
 
 ---
 
@@ -92,7 +92,7 @@ The generated file must open correctly offline via `file://` with **zero externa
 - Responsive from 375px up, WCAG AA contrast in both light and dark themes, `prefers-color-scheme: dark` support, and `prefers-reduced-motion` respected.
 - The quiz is vanilla JS: options as `<button>` elements, instant right/wrong feedback announced via an `aria-live="polite"` region, correct answers randomly distributed across positions, a final score summary, and full keyboard navigability.
 
-Full behavioral spec: `.agents/skills/oma-explainer/resources/html-contract.md`.
+Full behavioral spec: `.agents/skills/oma-explanation/resources/html-contract.md`.
 
 ---
 

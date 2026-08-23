@@ -180,7 +180,7 @@ Multi-Domänen-Anfragen folgen etablierten Ausführungsreihenfolgen:
 | "Fix bug and review" | oma-debug -> oma-qa |
 | "Design and build a landing page" | oma-design -> oma-frontend |
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> relevante Agenten -> oma-qa |
-| "Do everything automatically" | oma-orchestrator (intern: oma-pm -> Agenten -> oma-qa) |
+| "Do everything automatically" | oma-orchestration (intern: oma-pm -> Agenten -> oma-qa) |
 
 ### Inter-Agent-Abhängigkeitsregeln
 

@@ -170,7 +170,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | codex | `codex` | `--full-auto` | （无，提示词是位置参数） |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-这些默认值可在 `.agents/skills/oma-orchestrator/config/cli-config.yaml` 中覆盖。
+这些默认值可在 `.agents/skills/oma-orchestration/config/cli-config.yaml` 中覆盖。
 
 ### agent:status
 

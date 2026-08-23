@@ -13,7 +13,7 @@ otherwise the chain falls through to a key-free default.
 | script | `[agent-script]` | agent-authored script (agent-as-key) | — | — |
 | voice | `[oma-voice]` | Voicebox MCP TTS + STT timing | estimated timing (no wav) | — |
 | visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
-| caption | `[oma-captions]` | oma-translator for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translator` |
+| caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
 | capture | `[playwright-web, cap]` (informational — dispatch is by `--source`) | Playwright headed web capture (`--source web`) · Cap CLI trigger | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
 | compositor | `[remotion, mpt]` | Remotion live render (wired, default) · MPT custom-script | deterministic placeholder mp4 (toolchain missing / render failed) | — |
 

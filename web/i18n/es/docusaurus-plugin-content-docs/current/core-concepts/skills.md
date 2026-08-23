@@ -145,7 +145,7 @@ Las solicitudes multi-dominio siguen órdenes de ejecución establecidos:
 | "Fix bug and review" | oma-debug -> oma-qa |
 | "Design and build a landing page" | oma-design -> oma-frontend |
 | "I have an idea for a feature" | oma-brainstorm -> oma-pm -> agentes relevantes -> oma-qa |
-| "Do everything automatically" | oma-orchestrator (internamente: oma-pm -> agentes -> oma-qa) |
+| "Do everything automatically" | oma-orchestration (internamente: oma-pm -> agentes -> oma-qa) |
 
 ### Reglas de dependencia entre agentes
 

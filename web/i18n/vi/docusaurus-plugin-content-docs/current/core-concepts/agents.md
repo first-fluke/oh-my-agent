@@ -23,8 +23,8 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 | **Observability** | oma-observability | Pipeline observability, định tuyến truy vết, tín hiệu MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), quản lý SLO, điều tra pháp y sự cố, tinh chỉnh transport |
 | **Chất lượng** | oma-qa | Kiểm tra bảo mật (OWASP), hiệu suất, accessibility (WCAG), đánh giá chất lượng mã |
 | **Gỡ lỗi** | oma-debug | Tái hiện lỗi, phân tích nguyên nhân gốc, sửa tối thiểu, test hồi quy |
-| **Bản địa hóa** | oma-translator | Dịch thuật nhận biết ngữ cảnh bảo toàn giọng điệu, phong cách và thuật ngữ lĩnh vực |
-| **Điều phối** | oma-orchestrator, oma-coordination | Điều phối đa agent tự động và thủ công |
+| **Bản địa hóa** | oma-translation | Dịch thuật nhận biết ngữ cảnh bảo toàn giọng điệu, phong cách và thuật ngữ lĩnh vực |
+| **Điều phối** | oma-orchestration, oma-coordination | Điều phối đa agent tự động và thủ công |
 | **Git** | oma-scm | Tạo Conventional Commits, tách commit theo tính năng |
 | **Tìm kiếm & Truy xuất** | oma-search | Bộ định tuyến tìm kiếm dựa trên ý định với chấm điểm độ tin cậy (tài liệu Context7, web, mã `gh`/`glab`, Serena cục bộ) |
 | **Hồi tưởng** | oma-recap | Phân tích lịch sử hội thoại đa công cụ và tóm tắt công việc theo chủ đề |
@@ -349,7 +349,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 ---
 
-### oma-translator
+### oma-translation
 
 **Lĩnh vực:** Dịch thuật đa ngôn ngữ nhận biết ngữ cảnh.
 
@@ -371,7 +371,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **Lĩnh vực:** Điều phối đa agent tự động qua spawn CLI.
 
@@ -427,7 +427,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 **Khi nào sử dụng:** Dự án phức tạp muốn kiểm soát con người ở mỗi cổng, hướng dẫn spawn agent thủ công, công thức điều phối từng bước.
 
-**Khi nào KHÔNG sử dụng:** Thực thi song song tự động hoàn toàn (dùng oma-orchestrator), task đơn lĩnh vực (dùng agent lĩnh vực trực tiếp).
+**Khi nào KHÔNG sử dụng:** Thực thi song song tự động hoàn toàn (dùng oma-orchestration), task đơn lĩnh vực (dùng agent lĩnh vực trực tiếp).
 
 **Quy tắc cốt lõi:**
 - Luôn trình bày kế hoạch để người dùng xác nhận trước khi spawn agent
@@ -438,7 +438,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 **Quy trình:** PM lập kế hoạch -> Người dùng xác nhận -> Spawn theo tier ưu tiên -> Giám sát -> QA review -> Sửa vấn đề -> Phát hành.
 
-**Khác biệt với oma-orchestrator:** Coordination là thủ công và có hướng dẫn (người dùng kiểm soát nhịp độ), orchestrator là tự động (agent spawn và chạy với can thiệp tối thiểu từ người dùng).
+**Khác biệt với oma-orchestration:** Coordination là thủ công và có hướng dẫn (người dùng kiểm soát nhịp độ), orchestrator là tự động (agent spawn và chạy với can thiệp tối thiểu từ người dùng).
 
 ---
 

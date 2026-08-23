@@ -78,7 +78,7 @@ export const findConfigFileUp = findFileUpwards;
 
 /**
  * Read the `vendors:` capability registry from
- * `.agents/skills/oma-orchestrator/config/cli-config.yaml` — command names, flag
+ * `.agents/skills/oma-orchestration/config/cli-config.yaml` — command names, flag
  * spellings, `response_jq`. That half is shipped data and stays here
  * permanently. The file's `active_vendor:` key is no longer read at all: design
  * 024 §4.6 replaced it with oma-config's `default_cli`.
@@ -89,7 +89,7 @@ export function readCliConfig(cwd: string): CliConfig | null {
     path.join(
       ".agents",
       "skills",
-      "oma-orchestrator",
+      "oma-orchestration",
       "config",
       "cli-config.yaml",
     ),

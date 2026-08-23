@@ -141,8 +141,8 @@ oma stats
 | **oma-debug** | Điều tra lỗi, phân tích nguyên nhân gốc | Mã đã sửa + test hồi quy + sửa mẫu tương tự |
 | **oma-tf-infra** | Cung cấp hạ tầng cloud | Module Terraform, chính sách IAM, ước tính chi phí |
 | **oma-dev-workflow** | CI/CD, task monorepo, tự động hóa release | Config mise.toml, định nghĩa pipeline |
-| **oma-translator** | Nội dung đa ngôn ngữ, file i18n | Văn bản dịch bảo toàn giọng điệu và phong cách |
-| **oma-orchestrator** | Thực thi agent song song tự động | Kết quả điều phối từ nhiều agent |
+| **oma-translation** | Nội dung đa ngôn ngữ, file i18n | Văn bản dịch bảo toàn giọng điệu và phong cách |
+| **oma-orchestration** | Thực thi agent song song tự động | Kết quả điều phối từ nhiều agent |
 | **oma-scm** | Commit Git | Conventional Commits với type/scope phù hợp |
 
 ---

@@ -164,8 +164,8 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 | **oma-debug** | バグ調査 | 修正コード + 回帰テスト + 類似パターン修正 |
 | **oma-tf-infra** | クラウドインフラ | Terraformモジュール、IAMポリシー |
 | **oma-dev-workflow** | CI/CD、モノレポタスク | mise.toml設定、パイプライン定義 |
-| **oma-translator** | 多言語コンテンツ | トーン・レジスター保持の翻訳テキスト |
-| **oma-orchestrator** | 自動並列エージェント実行 | 複数エージェントのオーケストレーション結果 |
+| **oma-translation** | 多言語コンテンツ | トーン・レジスター保持の翻訳テキスト |
+| **oma-orchestration** | 自動並列エージェント実行 | 複数エージェントのオーケストレーション結果 |
 | **oma-scm** | Gitコミット | 適切なtype/scopeのConventional Commits |
 
 ---

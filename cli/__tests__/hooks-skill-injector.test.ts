@@ -84,9 +84,9 @@ describe("skill-injector", () => {
       relPath: ".agents/skills/oma-search/SKILL.md",
     };
     const skillB = {
-      name: "oma-translator",
-      absolutePath: "/repo/.agents/skills/oma-translator/SKILL.md",
-      relPath: ".agents/skills/oma-translator/SKILL.md",
+      name: "oma-translation",
+      absolutePath: "/repo/.agents/skills/oma-translation/SKILL.md",
+      relPath: ".agents/skills/oma-translation/SKILL.md",
     };
 
     it("matches English triggers and scores by hit count", () => {
@@ -95,7 +95,7 @@ describe("skill-injector", () => {
           "oma-search": {
             keywords: { en: ["search docs", "find library"] },
           },
-          "oma-translator": {
+          "oma-translation": {
             keywords: { en: ["translate strings"] },
           },
         },
@@ -118,7 +118,7 @@ describe("skill-injector", () => {
     it("merges multilingual triggers from triggers.json by language", () => {
       const config = {
         skills: {
-          "oma-translator": {
+          "oma-translation": {
             keywords: {
               "*": [],
               en: [],
@@ -137,7 +137,7 @@ describe("skill-injector", () => {
       // prompt in a `language: en` project never matched its own ko keywords.
       const config = {
         skills: {
-          "oma-translator": {
+          "oma-translation": {
             keywords: { "*": [], en: ["translate strings"], ko: ["번역해줘"] },
           },
         },
@@ -153,7 +153,7 @@ describe("skill-injector", () => {
           "oma-search": {
             keywords: { en: ["search docs", "find library"] },
           },
-          "oma-translator": {
+          "oma-translation": {
             keywords: { en: ["translate strings"] },
           },
         },
@@ -167,7 +167,7 @@ describe("skill-injector", () => {
       );
       expect(matches.map((m) => m.name)).toEqual([
         "oma-search",
-        "oma-translator",
+        "oma-translation",
       ]);
       const [first, second] = matches;
       if (!first || !second) throw new Error("expected two matches");
@@ -385,14 +385,14 @@ describe("skill-injector", () => {
           return (
             norm.endsWith("/skills") ||
             norm.endsWith("/oma-search/SKILL.md") ||
-            norm.endsWith("/oma-translator/SKILL.md")
+            norm.endsWith("/oma-translation/SKILL.md")
           );
         },
       );
       (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
         { name: "_shared", isDirectory: () => true },
         { name: "oma-search", isDirectory: () => true },
-        { name: "oma-translator", isDirectory: () => true },
+        { name: "oma-translation", isDirectory: () => true },
         { name: "stray.txt", isDirectory: () => false },
       ]);
       (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
@@ -401,7 +401,7 @@ describe("skill-injector", () => {
       const skills = discoverSkills("/repo");
       expect(skills.map((s) => s.name).sort()).toEqual([
         "oma-search",
-        "oma-translator",
+        "oma-translation",
       ]);
     });
 

@@ -167,7 +167,7 @@ oma link opencode --global
 
 **모델 동작:**
 - 같은 벤더 네이티브 디스패치는 생성된 벤더 에이전트 파일에 정의된 모델을 씁니다.
-- 외부 폴백 디스패치는 `.agents/skills/oma-orchestrator/config/cli-config.yaml`의 벤더별 `default_model`을 씁니다.
+- 외부 폴백 디스패치는 `.agents/skills/oma-orchestration/config/cli-config.yaml`의 벤더별 `default_model`을 씁니다.
 
 **디스패치 동작:**
 - 대상 벤더가 현재 런타임과 같고 그 런타임이 네이티브 역할 에이전트를 지원하면 OMA는 네이티브 디스패치를 씁니다.

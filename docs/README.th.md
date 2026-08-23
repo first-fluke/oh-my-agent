@@ -172,11 +172,11 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-design** | สร้างระบบการออกแบบพร้อม tokens, accessibility และ responsive layouts |
 | **oma-dev-workflow** | ทำให้ CI/CD, releases และงานใน monorepo เป็นระบบอัตโนมัติ |
 | **oma-docs** | ตรวจสอบเอกสารว่ามีการอ้างอิงที่ผิดหรือไม่ และระบุส่วนที่ได้รับผลกระทบจากการเปลี่ยนแปลงโค้ด |
-| **oma-explainer** | แปลง diff/PR/สาขาเป็นเอกสารอธิบาย HTML แบบอินเทอร์แอกทีฟพร้อมแบบทดสอบในไฟล์เดียว |
+| **oma-explanation** | แปลง diff/PR/สาขาเป็นเอกสารอธิบาย HTML แบบอินเทอร์แอกทีฟพร้อมแบบทดสอบในไฟล์เดียว |
 | **oma-frontend** | สร้าง UI ด้วย React/Next.js, TypeScript, Tailwind CSS v4 และ shadcn/ui |
 | **oma-mobile** | สร้างแอปพลิเคชัน cross-platform ด้วย Flutter |
 | **oma-observability** | กระจายงานด้าน observability ครอบคลุม metrics, logs, traces, SLOs และการวิเคราะห์เหตุการณ์ |
-| **oma-orchestrator** | รันเอเจนต์หลายตัวพร้อมกันแบบ parallel ผ่าน CLI |
+| **oma-orchestration** | รันเอเจนต์หลายตัวพร้อมกันแบบ parallel ผ่าน CLI |
 | **oma-pm** | วางแผนงาน ย่อย requirements และกำหนด API contracts |
 | **oma-qa** | ตรวจสอบโค้ดตามมาตรฐาน OWASP ด้านความปลอดภัย ประสิทธิภาพ และ accessibility |
 | **oma-refactor** | รีแฟกเตอร์โค้ดโดยไม่เปลี่ยนพฤติกรรม ด้วยการเลือก hotspot ใช้ characterization test เป็นตาข่ายนิรภัย และคอมมิตเฉพาะ refactor |
@@ -190,7 +190,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | Agent | หน้าที่ |
 |-------|-------------|
 | **oma-coordination** | แนะนำการประสานงานเอเจนต์ PM, frontend, backend, mobile และ QA ทีละขั้นตอนแบบแมนวล |
-| **oma-skill-creator** | เขียนและตรวจสอบ OMA skills ใหม่ในรูปแบบ SSL-lite |
+| **oma-skill-creation** | เขียนและตรวจสอบ OMA skills ใหม่ในรูปแบบ SSL-lite |
 
 </details>
 
@@ -200,7 +200,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 
 | Agent | หน้าที่ |
 |-------|-------------|
-| **oma-academic-writer** | ร่าง แก้ไข และตรวจสอบงานเขียนเชิงวิชาการให้ได้มาตรฐานระดับตีพิมพ์ |
+| **oma-academic-writing** | ร่าง แก้ไข และตรวจสอบงานเขียนเชิงวิชาการให้ได้มาตรฐานระดับตีพิมพ์ |
 | **oma-hwp** | แปลงไฟล์ HWP, HWPX และ HWPML ให้เป็น Markdown |
 | **oma-image** | สร้างภาพผ่าน AI หลายผู้ให้บริการพร้อมกันในคราวเดียว |
 | **oma-market** | วิจัยตลาดจากสัญญาณคอมมิวนิตี้ และวิเคราะห์ด้วยกรอบ SWOT, Porter's 5F และ PESTEL |
@@ -208,7 +208,7 @@ APM แจกแค่ skill เท่านั้น ส่วน workflow, rul
 | **oma-recap** | สรุปประวัติการสนทนาของคุณออกมาเป็น work summaries ตามธีม |
 | **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และช่วยดำเนินการทบทวนโดยผู้เชี่ยวชาญ |
 | **oma-slide** | สร้าง HTML presentation deck ที่มีเอกลักษณ์และแอนิเมชันสมบูรณ์ รวมถึงส่งออกเป็น PDF/PNG/PPTX |
-| **oma-translator** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
+| **oma-translation** | แปลระหว่างภาษาต่างๆ ให้อ่านแล้วรู้สึกเหมือนเจ้าของภาษาเขียนเอง |
 | **oma-video** | สร้างวิดีโอสั้น วิดีโออธิบาย และวิดีโอเดโมผ่านไปป์ไลน์ Remotion ที่ใช้ได้แม้ไม่มีคีย์ |
 | **oma-voice** | สร้างเสียงพากย์และถอดเสียงบนเครื่อง โดยไม่ต้องพึ่ง cloud |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["การประสานงาน (Orchestration)"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["เอเจนต์ตามโดเมน (Domain Agents)"]

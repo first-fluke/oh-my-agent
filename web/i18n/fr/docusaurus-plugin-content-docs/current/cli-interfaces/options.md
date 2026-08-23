@@ -190,7 +190,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | codex | `codex` | `--full-auto` | (aucun, le prompt est positionnel) |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-Ces valeurs par défaut peuvent être surchargées dans `.agents/skills/oma-orchestrator/config/cli-config.yaml`.
+Ces valeurs par défaut peuvent être surchargées dans `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
 ### agent:status
 

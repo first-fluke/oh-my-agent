@@ -69,7 +69,7 @@ oma link claude codex
 
 **モデル動作：**
 - 同一ベンダーのネイティブディスパッチは、生成されたベンダーエージェントファイルで定義されたモデルを使用します。
-- 外部フォールバックディスパッチは、`.agents/skills/oma-orchestrator/config/cli-config.yaml`の各ベンダーの`default_model`を使用します。
+- 外部フォールバックディスパッチは、`.agents/skills/oma-orchestration/config/cli-config.yaml`の各ベンダーの`default_model`を使用します。
 
 **ディスパッチ動作：**
 - ターゲットベンダーが現在のランタイムと一致し、そのランタイムがネイティブのロールエージェントをサポートする場合、OMAはネイティブディスパッチを使用します。

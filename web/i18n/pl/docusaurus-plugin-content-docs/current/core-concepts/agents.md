@@ -23,8 +23,8 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 | **Obserwowalność** | oma-observability | Potoki obserwowalności, routing śledzenia, sygnały MELT+P (metrics/logs/traces/profiles/cost/audit/privacy), zarządzanie SLO, analiza śledcza incydentów, strojenie transportu |
 | **Jakość** | oma-qa | Audyt bezpieczeństwa (OWASP), wydajność, dostępność (WCAG), przegląd jakości kodu |
 | **Debugowanie** | oma-debug | Reprodukcja błędów, analiza przyczyn źródłowych, minimalne poprawki, testy regresji |
-| **Lokalizacja** | oma-translator | Tłumaczenie uwzględniające kontekst z zachowaniem tonu, rejestru i terminów domenowych |
-| **Koordynacja** | oma-orchestrator, oma-coordination | Automatyczna i ręczna orkiestracja wieloagentowa |
+| **Lokalizacja** | oma-translation | Tłumaczenie uwzględniające kontekst z zachowaniem tonu, rejestru i terminów domenowych |
+| **Koordynacja** | oma-orchestration, oma-coordination | Automatyczna i ręczna orkiestracja wieloagentowa |
 | **Git** | oma-scm | Generowanie Conventional Commits, dzielenie commitów według funkcjonalności |
 | **Wyszukiwanie i Pobieranie** | oma-search | Router wyszukiwania oparty na intencji z oceną zaufania (dokumenty Context7, web, kod `gh`/`glab`, Serena lokalnie) |
 | **Retrospektywa** | oma-recap | Analiza historii konwersacji między narzędziami i tematyczne podsumowania pracy |
@@ -358,7 +358,7 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 
 ---
 
-### oma-translator
+### oma-translation
 
 **Domena:** Wielojęzyczne tłumaczenie uwzględniające kontekst.
 
@@ -380,7 +380,7 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 
 ---
 
-### oma-orchestrator
+### oma-orchestration
 
 **Domena:** Automatyczna koordynacja wieloagentowa przez uruchamianie CLI.
 
@@ -436,7 +436,7 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 
 **Kiedy używać:** Złożone projekty, w których chcesz mieć kontrolę człowieka w pętli przy każdej bramce, ręczne wskazówki dotyczące uruchamiania agentów, krokowe przepisy koordynacji.
 
-**Kiedy NIE używać:** W pełni zautomatyzowane wykonanie równoległe (użyj oma-orchestrator), zadania jednodomenowe (użyj agenta domenowego bezpośrednio).
+**Kiedy NIE używać:** W pełni zautomatyzowane wykonanie równoległe (użyj oma-orchestration), zadania jednodomenowe (użyj agenta domenowego bezpośrednio).
 
 **Zasady główne:**
 - Zawsze prezentuj plan do potwierdzenia przez użytkownika przed uruchomieniem agentów
@@ -447,7 +447,7 @@ Agenci w oh-my-agent to wyspecjalizowane role inżynierskie. Każdy agent ma zde
 
 **Workflow:** PM planuje → Użytkownik potwierdza → Uruchomienie według poziomu priorytetu → Monitorowanie → Przegląd QA → Naprawa problemów → Dostarczenie.
 
-**Różnica względem oma-orchestrator:** Coordination jest ręczna i prowadzona (użytkownik kontroluje tempo), orchestrator jest zautomatyzowany (agenci uruchamiają się i działają przy minimalnej interwencji użytkownika).
+**Różnica względem oma-orchestration:** Coordination jest ręczna i prowadzona (użytkownik kontroluje tempo), orchestrator jest zautomatyzowany (agenci uruchamiają się i działają przy minimalnej interwencji użytkownika).
 
 ---
 

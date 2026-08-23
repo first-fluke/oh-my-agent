@@ -2,11 +2,11 @@
  * i18n style linter for translated docs.
  *
  * Detects content-level anti-patterns (not structural drift — see i18n-drift.ts
- * for that) that violate the oma-translator skill's mechanical-checks rules.
+ * for that) that violate the oma-translation skill's mechanical-checks rules.
  *
  * Currently checks:
  * - cjk-em-dash: em-dash (—) usage in CJK targets (ko/ja/zh) outside code
- *   blocks. Per oma-translator/SKILL.md § Stage 4-A, em-dashes in CJK should
+ *   blocks. Per oma-translation/SKILL.md § Stage 4-A, em-dashes in CJK should
  *   be structurally restructured into separate clauses, parentheses, or
  *   coordinated noun phrases — never used as direct substitution from English.
  * - wrong-language: file lives under web/i18n/<lang>/... but the detected
@@ -14,7 +14,7 @@
  *   placeholder copies (most common: EN copied as bootstrap for every locale
  *   and the translator never came back to fill it in).
  *
- * The CLI never auto-fixes; it only reports. The host LLM (oma-translator
+ * The CLI never auto-fixes; it only reports. The host LLM (oma-translation
  * runtime) consumes the issue list and applies restructuring or translation.
  */
 

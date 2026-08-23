@@ -172,11 +172,11 @@ Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa 
 | **oma-design** | Xây dựng hệ thống thiết kế với token, accessibility và responsive layout |
 | **oma-dev-workflow** | Tự động hóa CI/CD, release và các tác vụ monorepo |
 | **oma-docs** | Kiểm tra tài liệu có tham chiếu bị hỏng và đánh dấu những tài liệu bị ảnh hưởng bởi thay đổi code |
-| **oma-explainer** | Chuyển diff, PR hoặc nhánh thành tài liệu giải thích HTML tương tác độc lập kèm quiz |
+| **oma-explanation** | Chuyển diff, PR hoặc nhánh thành tài liệu giải thích HTML tương tác độc lập kèm quiz |
 | **oma-frontend** | Xây dựng giao diện với React/Next.js, TypeScript, Tailwind CSS v4 và shadcn/ui |
 | **oma-mobile** | Xây dựng ứng dụng di động đa nền tảng với Flutter |
 | **oma-observability** | Định tuyến công việc observability qua metrics, logs, traces, SLO và điều tra sự cố |
-| **oma-orchestrator** | Chạy nhiều agent song song từ CLI |
+| **oma-orchestration** | Chạy nhiều agent song song từ CLI |
 | **oma-pm** | Lập kế hoạch tác vụ, phân tích yêu cầu và định nghĩa API contract |
 | **oma-qa** | Rà soát code theo tiêu chuẩn bảo mật OWASP, hiệu suất và accessibility |
 | **oma-refactor** | Tái cấu trúc mã mà không đổi hành vi, dùng hotspot, characterization test làm lưới an toàn và commit chỉ chứa refactor |
@@ -190,7 +190,7 @@ Thay vì một AI làm tất cả mọi thứ (rồi bị lạc hướng giữa 
 | Agent | Chức năng |
 |-------|----------|
 | **oma-coordination** | Hướng dẫn phối hợp thủ công từng bước các agent PM, frontend, backend, mobile và QA |
-| **oma-skill-creator** | Soạn và kiểm tra skill OMA mới theo định dạng SSL-lite |
+| **oma-skill-creation** | Soạn và kiểm tra skill OMA mới theo định dạng SSL-lite |
 
 </details>
 
@@ -200,7 +200,7 @@ Tách khỏi đội ngũ kỹ thuật, oma còn cung cấp các pipeline nội d
 
 | Agent | Chức năng |
 |-------|----------|
-| **oma-academic-writer** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật đạt chuẩn xuất bản |
+| **oma-academic-writing** | Soạn, chỉnh sửa và kiểm tra văn xuôi học thuật đạt chuẩn xuất bản |
 | **oma-hwp** | Chuyển đổi file HWP, HWPX và HWPML sang Markdown |
 | **oma-image** | Tạo ảnh qua nhiều nhà cung cấp AI cùng lúc |
 | **oma-market** | Nghiên cứu thị trường từ tín hiệu cộng đồng và trình bày theo khung SWOT, Porter's 5F và PESTEL |
@@ -208,7 +208,7 @@ Tách khỏi đội ngũ kỹ thuật, oma còn cung cấp các pipeline nội d
 | **oma-recap** | Tóm tắt lịch sử hội thoại thành báo cáo công việc theo chủ đề |
 | **oma-scholar** | Tìm kiếm tài liệu học thuật và hỗ trợ bình duyệt khoa học |
 | **oma-slide** | Tạo các deck trình bày HTML đặc trưng giàu hoạt hình và xuất sang PDF/PNG/PPTX |
-| **oma-translator** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
+| **oma-translation** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
 | **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline Remotion dùng được cả khi không có khóa |
 | **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
 
@@ -294,7 +294,7 @@ flowchart TD
     subgraph Orchestration["Orchestration"]
         direction TB
         PM[oma-pm]
-        ORC[oma-orchestrator]
+        ORC[oma-orchestration]
     end
 
     subgraph Domain["Domain Agents"]

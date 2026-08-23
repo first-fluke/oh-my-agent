@@ -79,7 +79,7 @@ Stop and report only when the plan cannot be produced: the user declines to plan
    ```
 
 3. Session ID: reuse the id generated in Step 1b when the plan was created in this run; otherwise generate one now (format: `session-YYYYMMDD-HHMMSS`).
-4. **Domain gate**: for each planned task, classify it into `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`, and derive `exposed_skill_set` (skills whose name is in `domain_tags`). If fewer than 2 skills match confidently, fall back to the full installed set and mark `exposure_fallback: true`. See `.agents/skills/oma-orchestrator/SKILL.md` (PHASE 1.5) for the full rules.
+4. **Domain gate**: for each planned task, classify it into `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`, and derive `exposed_skill_set` (skills whose name is in `domain_tags`). If fewer than 2 skills match confidently, fall back to the full installed set and mark `exposure_fallback: true`. See `.agents/skills/oma-orchestration/SKILL.md` (PHASE 1.5) for the full rules.
 5. Use memory write tool to create `orchestrator-session.md` and `task-board.md` in the memory base path. Record `Exposed Skills` and `Exposure Fallback` per task in `task-board.md`.
 6. Set session status to RUNNING.
 
@@ -96,7 +96,7 @@ oma state:verify --workflow orchestrate --checkpoint fanout-strategy
 
 For each priority tier (lowest first: tier 1, then tier 2, etc.):
 
-- Each agent gets: task description, API contracts, relevant context from `_shared/core/context-loading.md`, and only its task's `exposed_skill_set` as the available specialist list (see `.agents/skills/oma-orchestrator/resources/subagent-prompt-template.md` `{EXPOSED_SKILL_SET}`).
+- Each agent gets: task description, API contracts, relevant context from `_shared/core/context-loading.md`, and only its task's `exposed_skill_set` as the available specialist list (see `.agents/skills/oma-orchestration/resources/subagent-prompt-template.md` `{EXPOSED_SKILL_SET}`).
 - Use memory edit tool to update `task-board.md` with agent status.
 - If a failed task's review history indicates a specialist outside its `exposed_skill_set` was needed, re-classify the task and re-dispatch with the expanded set instead of retrying against the original narrow set.
 
@@ -193,7 +193,7 @@ For each completed agent, execute the complete review loop:
 2. **Automated verify**: run the command below only for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm`. For `db`, `refactor`, `architecture`, `tf-infra`, and `docs`, record `SKIP (unsupported agent type)` and continue.
 
 ```
-bash .agents/skills/oma-orchestrator/scripts/verify.sh {agent-type} {workspace}
+bash .agents/skills/oma-orchestration/scripts/verify.sh {agent-type} {workspace}
 ```
 
 - PASS (exit 0) or documented unsupported-type SKIP: continue to cross-review.
