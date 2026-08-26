@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.7.1",
-  "releaseDate": "2026-08-23T22:54:00.021Z",
+  "releaseDate": "2026-08-26T08:06:19.528Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -211,8 +211,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "a325a2d620a55204189fcead2b09f01285ba1ef7b3516897f8c6e18d959704b2",
-      "size": 84085
+      "sha256": "0f843ca54ef6fdb37f6e807f60ffa81f49f1a0189630c7ee5fae6cd7c1272bad",
+      "size": 84111
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -2121,8 +2121,8 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "8f547c9dfdb1516d8799035a6045803757ca67fddbf03c95c0be84da44084ded",
-      "size": 19385
+      "sha256": "9ab36561a038e342289aafbceb539328c1f03c9856b6aef3c4c99f37f4fc5e4d",
+      "size": 19514
     },
     {
       "path": ".agents/workflows/recap.md",
