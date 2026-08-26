@@ -54,8 +54,8 @@ criteria:
 
 **Rules:**
 - Every criterion must be mechanically verifiable (test pass, build success, file exists, command output)
-- Reject subjective criteria ("looks good", "feels right"). Ask the user to rephrase.
-- Present criteria to the user for confirmation before proceeding
+- Ground subjective expectations into concrete, mechanically verifiable checks (test assertions, build status, exit code, file existence)
+- Lock criteria directly into session memory and output them in the execution trace; proceed immediately to Step 0.3 and Phase 1 without halting for interactive confirmation (Ralph is an autonomous persistent execution loop)
 
 ### Step 0.3: Initialize Session
 
@@ -65,7 +65,7 @@ criteria:
 4. **Load prior-session context** (cross-session memory):
    1. Use the memory list tool to find previous `session-ralph-*.md` files. If any exist, read the most recent one and extract: final criteria statuses, BLOCKED items with their failure evidences, and any safeguard trigger.
    2. If `lessons-learned.md` exists in the memory base path, read it.
-   3. If any current criterion overlaps a previously BLOCKED item, re-confirm with the user before proceeding: present the prior failure evidence and ask whether to retry it (carrying that evidence as context for EXEC) or pre-mark it BLOCKED for this session.
+   3. If any current criterion overlaps a previously BLOCKED item, carry the prior failure evidence as context for EXEC and retry unless explicitly excluded by the user request.
 5. Record session start using memory write tool:
    - Create `session-ralph-{sessionId}.md` in the memory base path
    - Include: session start time, user request summary, completion criteria, max_iterations, and prior-session findings loaded in step 4 (or `none`)
