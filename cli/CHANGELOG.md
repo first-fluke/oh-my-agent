@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.1...cli-v12.7.2) (2026-08-26)
+
+
+### Bug Fixes
+
+* **hooks:** clarify memory routing and enhance question trigger suppression ([b39dbb8](https://github.com/first-fluke/oh-my-agent/commit/b39dbb81c59e80f119136e60d0afde764ca26526))
+* **ralph:** resolve continue trigger conflict and autonomous criteria lock ([b9d0f85](https://github.com/first-fluke/oh-my-agent/commit/b9d0f85e7aa0e2e63d352b2697256a9dfcc059c4))
+
 ## [12.7.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.0...cli-v12.7.1) (2026-08-23)
 
 
