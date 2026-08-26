@@ -485,7 +485,14 @@ export function isInformationalContext(
 ): boolean {
   const windowStart = Math.max(0, matchIndex - 60);
   const window = prompt.slice(windowStart, matchIndex + 60);
-  return infoPatterns.some((p) => p.test(window));
+  if (infoPatterns.some((p) => p.test(window))) return true;
+  if (
+    /\?\s*$/.test(prompt.trim()) &&
+    infoPatterns.some((p) => p.test(prompt))
+  ) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -528,18 +535,46 @@ export function isTechnicalReference(
 ): boolean {
   // buildPatterns boundaries capture one non-word char on each side of the
   // keyword (unless the match touches ^ or $) — peel them off to locate the
-  // keyword span itself. CJK keywords compile without boundaries (lead/trail
-  // stay 0).
-  const lead = /^[^\w-]/.test(matchText) ? 1 : 0;
-  const trail = /[^\w-]$/.test(matchText) ? 1 : 0;
-  const kStart = matchIndex + lead;
-  const kEnd = matchIndex + matchText.length - trail;
-  const prev = kStart > 0 ? (text[kStart - 1] ?? "") : "";
-  const prev2 = kStart > 1 ? (text[kStart - 2] ?? "") : "";
-  const next = text[kEnd] ?? "";
-  const next2 = text[kEnd + 1] ?? "";
-  if ((next === ":" || next === ".") && /\w/.test(next2)) return true;
-  if (prev === "/" && /\w/.test(prev2)) return true;
+  // keyword token itself.
+  const m = matchText.match(/^([^\w-]?)(.*?)([^\w-]?)$/);
+  const leadingNonWord = m?.[1]?.length ?? 0;
+  const token = m?.[2] ?? matchText;
+  const tokenStart = matchIndex + leadingNonWord;
+  const tokenEnd = tokenStart + token.length;
+
+  const charBefore = tokenStart > 0 ? text[tokenStart - 1] : "";
+  const charAfter = tokenEnd < text.length ? text[tokenEnd] : "";
+
+  // 1. Path segment: preceded by '/' AND a word char before that slash
+  //    (excludes leading-slash invocations like "/ralph" where charBefore-1 is start or space).
+  if (
+    charBefore === "/" &&
+    tokenStart >= 2 &&
+    /[\w-]/.test(text[tokenStart - 2] ?? "")
+  ) {
+    return true;
+  }
+
+  // 2. CLI subcommand: followed by ':' AND a word char after that colon
+  //    (excludes prose colons like "ralph: do this" where charAfter+1 is space).
+  if (
+    charAfter === ":" &&
+    tokenEnd + 1 < text.length &&
+    /[\w-]/.test(text[tokenEnd + 1] ?? "")
+  ) {
+    return true;
+  }
+
+  // 3. File extension or property: followed by '.' AND a word char after that dot
+  //    (excludes sentence-ending periods like "run ralph." where charAfter+1 is space/end).
+  if (
+    charAfter === "." &&
+    tokenEnd + 1 < text.length &&
+    /[\w-]/.test(text[tokenEnd + 1] ?? "")
+  ) {
+    return true;
+  }
+
   return false;
 }
 
@@ -562,6 +597,8 @@ const QUESTION_PATTERNS: RegExp[] = [
   /^.*뭐가\s*있/,
   /^.*어떤\s*(게|것|거)\s*있/,
   /^.*차이가?\s*뭐/,
+  /^.*(버그|문제|오류|에러)\s*(임|인가|인가요|야|이야|인지|\?)/,
+  /^.*(이거|이것|그거|그것)(도|는)?\s*(버그|문제|오류|에러)/,
   // Korean meta-continuation patterns (referring to prior discussion)
   /^.*그것도/,
   /^.*보강할/,
@@ -571,10 +608,11 @@ const QUESTION_PATTERNS: RegExp[] = [
   /^.*\banything worth\b/i,
   /^.*\bwhat.*(feature|difference|reference)/i,
   /^.*\bcompare\b/i,
+  /^.*\b(is this|is it|is that)\s+(a\s+)?(bug|issue|problem|error)\b/i,
 ];
 
 /**
- * Content-agnostic interrogative test. A first line that BOTH leads with an
+ * Content-agnostic interrogative test. A line that BOTH leads with an
  * interrogative word AND ends with '?' is a question *about* something, not a
  * command — regardless of the topic. This generalises to any subject
  * (including workflow names) without enumerating topic words, unlike
@@ -584,17 +622,23 @@ const QUESTION_PATTERNS: RegExp[] = [
 // loose contains — suppressing a question that merely contains a workflow name
 // is exactly the desired behaviour.
 const INTERROGATIVE_WORD =
-  /(?:왜|어째서|어떻게|무슨|무엇|뭐|뭔|뭣|어디|언제|누가|누구|어느|\bwhy\b|\bwhats?\b|\bhow\b|\bwhen\b|\bwhere\b|\bwhich\b|\bwhose\b)/i;
+  /(?:왜|어째서|어떻게|무슨|무엇|뭐|뭔|뭣|어디|언제|누가|누구|어느|버그|문제|에러|맞나|인가|인지|맞아|인가요|\bwhy\b|\bwhats?\b|\bhow\b|\bwhen\b|\bwhere\b|\bwhich\b|\bwhose\b|\bbug\b|\bissue\b|\bproblem\b|\berror\b)/i;
 
 function isInterrogativeSentence(line: string): boolean {
   return /\?\s*$/.test(line) && INTERROGATIVE_WORD.test(line);
 }
 
 export function isAnalyticalQuestion(prompt: string): boolean {
-  const firstLine = (prompt.split("\n")[0] ?? "").trim();
+  const lines = prompt
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const firstLine = lines[0] ?? "";
+  const lastLine = lines[lines.length - 1] ?? "";
   return (
     isInterrogativeSentence(firstLine) ||
-    QUESTION_PATTERNS.some((p) => p.test(firstLine))
+    isInterrogativeSentence(lastLine) ||
+    QUESTION_PATTERNS.some((p) => p.test(firstLine) || p.test(lastLine))
   );
 }
 

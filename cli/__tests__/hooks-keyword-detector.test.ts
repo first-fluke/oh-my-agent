@@ -2127,5 +2127,21 @@ describe("keyword-detector", () => {
         isInformationalContext(promptB, promptB.indexOf("할까요"), patterns),
       ).toBe(true);
     });
+
+    it("suppresses workflow trigger on multiline log paste ending with bug inquiry ('이거도 버그임?')", async () => {
+      const prompt = `Both reviews found the plan itself complete
+and appropriately simple, but correctly failed the gate because the Ralph session
+memory was written by Serena into its internal store.
+이거도 버그임?`;
+      const result = await run(
+        {
+          kind: "prompt",
+          prompt,
+          cwd: "/tmp",
+        },
+        { vendor: "claude", cwd: "/tmp", sid: "test-session" },
+      );
+      expect(result).toBeNull();
+    });
   });
 });

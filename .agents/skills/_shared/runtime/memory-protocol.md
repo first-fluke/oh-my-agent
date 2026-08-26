@@ -16,6 +16,8 @@ Tool names remain configurable via `mcp.json → memoryConfig.tools`:
 
 Memory base path is configurable via `memoryConfig.basePath` (default: `.agents/state/memories`). Create the directory if it does not yet exist.
 
+> **CRITICAL**: Do NOT use Serena's MCP `write_memory` / `read_memory` for workflow session/progress/result state. Verification gates (e.g. `oma ralph:verify`, CCR reviewers) check durable files on disk under `.agents/state/memories/`. Use file tools (`Read`/`Write`/`Edit`) to persist them directly to `{memoryConfig.basePath}/`.
+
 ---
 
 ## Path Resolution (CRITICAL)

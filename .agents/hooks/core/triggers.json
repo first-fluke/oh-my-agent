@@ -3077,7 +3077,13 @@
       "why build",
       "why create",
       "why make",
-      "artifact"
+      "artifact",
+      "is this a bug",
+      "is it a bug",
+      "is that a bug",
+      "is this an error",
+      "why did it",
+      "why does it"
     ],
     "ko": [
       "뭐야",
@@ -3114,7 +3120,15 @@
       "이 워크플로우",
       "워크플로우 자체",
       "고도화",
-      "아티팩트"
+      "아티팩트",
+      "버그임",
+      "버그인가",
+      "버그인가요",
+      "버그야",
+      "버그인지",
+      "문제인가",
+      "문제임",
+      "에러인가"
     ],
     "ja": [
       "とは",
