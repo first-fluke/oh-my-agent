@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.7.1",
-  "releaseDate": "2026-08-26T08:06:19.528Z",
+  "releaseDate": "2026-08-26T08:25:26.921Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -156,8 +156,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "fca10b472dee40fc712e43fefbd20003ea32ea600fba67ed9fa7e1e802df4093",
-      "size": 41275
+      "sha256": "985a07618897ce221e9d53cc38d664f0eb96593da90a43bba7f2571236818c09",
+      "size": 42625
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
@@ -211,8 +211,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "0f843ca54ef6fdb37f6e807f60ffa81f49f1a0189630c7ee5fae6cd7c1272bad",
-      "size": 84111
+      "sha256": "6b38403a74bd99b8255895c7c0b812e9650e64166b7dc4afb538cb5519d6dea4",
+      "size": 84415
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -526,8 +526,8 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/memory-protocol.md",
-      "sha256": "c75c63d28c1b0ccabc7ea6f00c3cd3f2c8810b3850fa2beba25f398fea4399ed",
-      "size": 3953
+      "sha256": "136a9a24b916e78720bc187dcc044c327ce276760fe76e547282cd9fdfd320f2",
+      "size": 4285
     },
     {
       "path": ".agents/skills/_version.json",
@@ -2106,8 +2106,8 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "29926999284223f7aa6ee8aba8b3f64e2b7ad46e2d2293fdc943bfdb353e68c2",
-      "size": 13631
+      "sha256": "e360610901b3668abdd1f586452b08a89fa29993c31cdfdb8c2dc8403e05d7cb",
+      "size": 13785
     },
     {
       "path": ".agents/workflows/plan.md",
@@ -2121,8 +2121,8 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "9ab36561a038e342289aafbceb539328c1f03c9856b6aef3c4c99f37f4fc5e4d",
-      "size": 19514
+      "sha256": "3eeec07d0ca2c0a648868159d1deedfcbd42dd8ff3a5bb5f3c549146ecac46e5",
+      "size": 19637
     },
     {
       "path": ".agents/workflows/recap.md",
@@ -2166,8 +2166,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "e35044d95b99d7e9bef643f53b28fbb474dd9c380832ad347d67504c1fdf4d41",
-      "size": 31570
+      "sha256": "db0199de247b0d7971019ee48a9ab3e43a789d1775778855b71faf8f6a89ae8e",
+      "size": 31693
     },
     {
       "path": ".agents/workflows/video.md",
@@ -2176,8 +2176,8 @@
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "5b7acc0e67fbf0b5a9e79f04c980301cad0c0f4ebf9531a1291625590e284a3a",
-      "size": 9365
+      "sha256": "dd017895e81da17c2ca1e67c01d5c8a5364feac434c5a486daeb6000f3480353",
+      "size": 9488
     }
   ],
   "checksums": {
