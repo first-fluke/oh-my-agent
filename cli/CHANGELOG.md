@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.7.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.2...cli-v12.7.3) (2026-08-27)
+
+
+### Bug Fixes
+
+* **hooks:** stop writing Grok state rules files ([37bf25d](https://github.com/first-fluke/oh-my-agent/commit/37bf25d644e6bb44cfc4e982d0bc6f1985e52be4))
+
 ## [12.7.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.1...cli-v12.7.2) (2026-08-26)
 
 
