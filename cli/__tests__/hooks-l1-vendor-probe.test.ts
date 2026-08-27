@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 const repoRoot = join(__dirname, "../..");
 const hooksRoot = join(repoRoot, ".agents", "hooks", "core");
 
-type Vendor = "antigravity" | "claude" | "codex" | "cursor" | "qwen";
+type Vendor = "antigravity" | "claude" | "codex" | "cursor" | "grok" | "qwen";
 type CloseReopenVendor = Extract<
   Vendor,
   "claude" | "codex" | "cursor" | "qwen"
@@ -62,6 +62,13 @@ function expectPromptOutput(vendor: Vendor, raw: string): void {
   if (vendor === "cursor") {
     expect(parsed.additionalContext).toEqual(expect.any(String));
     expect(parsed.additional_context).toEqual(expect.any(String));
+    return;
+  }
+
+  // Grok ignores passive prompt-hook stdout. Its hook still records the L1
+  // state events asserted below, but it has no additional-context envelope.
+  if (vendor === "grok") {
+    expect(parsed.hookSpecificOutput).toBeUndefined();
     return;
   }
 
@@ -179,6 +186,15 @@ describe("L1 hook vendor probe", () => {
           },
           env: {},
         };
+      case "grok":
+        return {
+          input: {
+            hook_event_name: "UserPromptSubmit",
+            sessionId: "grok-session-1",
+            prompt,
+          },
+          env: { GROK_WORKSPACE_ROOT: projectDir },
+        };
       case "qwen":
         return {
           input: {
@@ -191,7 +207,7 @@ describe("L1 hook vendor probe", () => {
     }
   }
 
-  it.each<Vendor>(["antigravity", "claude", "codex", "cursor", "qwen"])(
+  it.each<Vendor>(["antigravity", "claude", "codex", "cursor", "grok", "qwen"])(
     "%s runs keyword-detector -> state-boundary and records L1 events",
     (vendor) => {
       const { input, env } = makeCase(vendor);

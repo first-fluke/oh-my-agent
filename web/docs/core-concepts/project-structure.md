@@ -430,7 +430,7 @@ hooks/
 ├── serena-primer.ts       ← dead copy
 ├── triggers.json          ← dead copy (inlined into the oma binary)
 ├── types.ts, constants.ts, fs-utils.ts, hook-output.ts,
-│   agentmemory-client.ts, agy-input.ts, grok-context.ts,
+│   agentmemory-client.ts, agy-input.ts,
 │   inject-log.ts, state-emit.ts, state-marker.ts,
 │   vendor-renderer.ts     ← dead copies (handler-chain internals)
 └── …

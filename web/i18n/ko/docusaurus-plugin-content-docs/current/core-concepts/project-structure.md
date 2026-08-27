@@ -427,7 +427,7 @@ hooks/
 ├── serena-primer.ts       ← 죽은 사본
 ├── triggers.json          ← 죽은 사본 (oma 바이너리에 인라인됨)
 ├── types.ts, constants.ts, fs-utils.ts, hook-output.ts,
-│   agentmemory-client.ts, agy-input.ts, grok-context.ts,
+│   agentmemory-client.ts, agy-input.ts,
 │   inject-log.ts, state-emit.ts, state-marker.ts,
 │   vendor-renderer.ts     ← 죽은 사본 (핸들러 체인 내부 구현)
 └── …

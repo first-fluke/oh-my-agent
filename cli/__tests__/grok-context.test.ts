@@ -1,11 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import {
-  clearGrokContext,
-  syncGrokContext,
-} from "../../.agents/hooks/core/grok-context.ts";
+import { run as runKeywordDetector } from "../../.agents/hooks/core/keyword-detector.ts";
+import { run as runStateBoundary } from "../../.agents/hooks/core/state-boundary.ts";
+import type { HandlerCtx } from "../../.agents/hooks/core/types.ts";
 
 const REL = join(".grok", "rules", "oma-state.md");
 
@@ -14,35 +13,25 @@ describe("grok-context", () => {
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), "oma-grok-ctx-"));
+    mkdirSync(join(dir, ".git"), { recursive: true });
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("writes the OMA context to a dedicated .grok/rules file (not a user instruction file)", () => {
-    syncGrokContext(dir, "[OMA STATE SNAPSHOT]\nsid: oma-1");
-    const path = join(dir, REL);
-    expect(existsSync(path)).toBe(true);
-    expect(readFileSync(path, "utf-8")).toContain("[OMA STATE SNAPSHOT]");
-    // never touches AGENTS.md-family user instruction files
-    expect(existsSync(join(dir, "CLAUDE.local.md"))).toBe(false);
-    expect(existsSync(join(dir, "AGENTS.md"))).toBe(false);
-  });
+  it("tracks a Grok session boundary without creating a rules-file mirror", async () => {
+    const ctx: HandlerCtx = { vendor: "grok", cwd: dir, sid: "grok-1" };
 
-  it("overwrites on resync (single managed file)", () => {
-    syncGrokContext(dir, "first");
-    syncGrokContext(dir, "second");
-    expect(readFileSync(join(dir, REL), "utf-8").trim()).toBe("second");
-  });
+    await runKeywordDetector({ kind: "prompt", prompt: "work", cwd: dir }, ctx);
+    const boundary = await runStateBoundary(
+      { kind: "prompt", prompt: "continue", cwd: dir },
+      ctx,
+    );
 
-  it("clearGrokContext removes the file", () => {
-    syncGrokContext(dir, "x");
-    expect(existsSync(join(dir, REL))).toBe(true);
-    clearGrokContext(dir);
+    expect(boundary).toMatchObject({ type: "context" });
+    expect(
+      existsSync(join(dir, ".agents", "state", "sessions", "_index.json")),
+    ).toBe(true);
     expect(existsSync(join(dir, REL))).toBe(false);
-  });
-
-  it("clear is a no-op when the file is absent", () => {
-    expect(() => clearGrokContext(dir)).not.toThrow();
   });
 });

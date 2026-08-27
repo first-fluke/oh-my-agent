@@ -23,7 +23,6 @@ import {
 import { join } from "node:path";
 import { agyConversationId, isAgyInput, readAgyPrompt } from "./agy-input.ts";
 import { UNKNOWN_SESSION_ID, VENDORS } from "./constants.ts";
-import { clearGrokContext } from "./grok-context.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { isRelayedAgentMessage, normalizePromptInput } from "./prompt-input.ts";
 // triggers.json is imported statically: the bundler inlines it into the oma
@@ -987,8 +986,6 @@ export async function run(
   // Check for deactivation request before workflow detection
   if (isDeactivationRequest(prompt)) {
     deactivateAllPersistentModes(projectDir, sessionId);
-    // Grok's resume context lives in a session-start file, not L1 stdout — clear it.
-    if (vendor === "grok") clearGrokContext(projectDir);
     return null;
   }
 
