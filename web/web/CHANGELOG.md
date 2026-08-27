@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.5](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.4...web-v4.2.5) (2026-08-27)
+
+
+### Bug Fixes
+
+* **hooks:** stop writing Grok state rules files ([37bf25d](https://github.com/first-fluke/oh-my-agent/commit/37bf25d644e6bb44cfc4e982d0bc6f1985e52be4))
+
 ## [4.2.4](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.3...web-v4.2.4) (2026-08-23)
 
 
