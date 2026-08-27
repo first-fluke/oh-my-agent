@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.7.2",
-  "releaseDate": "2026-08-26T08:28:29.039Z",
+  "releaseDate": "2026-08-27T06:59:13.368Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -135,11 +135,6 @@
       "size": 932
     },
     {
-      "path": ".agents/hooks/core/grok-context.ts",
-      "sha256": "d8a10213bcafa908a895ab709c9a219ccd6f8d7917d77c184b8d37e0f40ccc35",
-      "size": 2835
-    },
-    {
       "path": ".agents/hooks/core/hook-output.ts",
       "sha256": "f31e14e85c03cf33692b6b15e29020b60ebf8eb7ed3aa1fe0243af78fc3333db",
       "size": 12098
@@ -156,8 +151,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "985a07618897ce221e9d53cc38d664f0eb96593da90a43bba7f2571236818c09",
-      "size": 42625
+      "sha256": "9724b33449e634ce7692f032223696ac2fa56971d8349568d0c32bb22539f844",
+      "size": 42426
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
@@ -191,8 +186,8 @@
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "fb7b0f8356e8e97ca84d6e5c4d7e343d06d0767313021828d59e2d4d5aae8b20",
-      "size": 8578
+      "sha256": "d5bce3a92b45d73439af6a1099c4078014191a319c17615b7fdf76bd1ce809dd",
+      "size": 8233
     },
     {
       "path": ".agents/hooks/core/state-emit.ts",
@@ -2186,6 +2181,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 435
+    "totalFiles": 434
   }
 }
