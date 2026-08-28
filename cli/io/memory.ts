@@ -46,18 +46,9 @@ export const CANONICAL_MEMORIES_REL = COORDINATION_STORE_REL;
 /** @deprecated Use LEGACY_SERENA_MEMORY_REL. */
 export const LEGACY_MEMORIES_REL = LEGACY_SERENA_MEMORY_REL;
 
-/**
- * Resolve the coordination-memory dir: canonical when present, else an
- * existing legacy dir (projects created before the move), else canonical
- * so new projects start on the oma-owned path. Migration 017 moves legacy
- * coordination artifacts across, after which canonical always wins.
- */
+/** Resolve the only writable OMA coordination store. */
 export function getCoordinationStorePath(cwd: string): string {
-  const canonical = join(cwd, COORDINATION_STORE_REL);
-  if (existsSync(canonical)) return canonical;
-  const legacy = join(cwd, LEGACY_SERENA_MEMORY_REL);
-  if (existsSync(legacy)) return legacy;
-  return canonical;
+  return join(cwd, COORDINATION_STORE_REL);
 }
 
 /** @deprecated Use getCoordinationStorePath. */
@@ -425,8 +416,6 @@ export function ensureMemorySchema(
   const skipped: string[] = [];
 
   const ensureFile = (filename: string, content: string) => {
-    // Respect a file that already lives in the legacy dir — rewrite it in
-    // place rather than forking a second copy in the canonical dir.
     const existingPath = resolveCoordinationFile(cwd, filename);
     if (!existingPath) {
       writeFileSync(join(coordinationDir, filename), content, "utf-8");
@@ -436,7 +425,9 @@ export function ensureMemorySchema(
 
     const current = readFileSafe(existingPath);
     if (options.force || isTrivialContent(current)) {
-      writeFileSync(existingPath, content, "utf-8");
+      // Legacy Serena memory remains readable for compatibility, but all
+      // writes are routed to OMA's canonical coordination store.
+      writeFileSync(join(coordinationDir, filename), content, "utf-8");
       updated.push(filename);
       return;
     }

@@ -237,7 +237,12 @@ describe("bridge command", () => {
 
       expect(child_process.spawn).toHaveBeenCalledWith(
         "serena",
-        expect.arrayContaining(["start-mcp-server", "--project-from-cwd"]),
+        expect.arrayContaining([
+          "start-mcp-server",
+          "--project-from-cwd",
+          "--add-mode",
+          "no-memories",
+        ]),
         expect.objectContaining({ stdio: "inherit" }),
       );
       expect(consoleErrorSpy).toHaveBeenCalledWith(

@@ -5,6 +5,7 @@ import {
   hasStaleSerenaTransport,
   isBridgeSerenaEntry,
   isLegacyUvxSerena,
+  omaSerenaContext,
   type SerenaMcpEntry,
   serenaMcpEntry,
 } from "../serena.js";
@@ -56,7 +57,7 @@ function hasStaleContext(server: ClaudeMcpServer | undefined): boolean {
   if (!Array.isArray(server.args)) return false;
   const idx = server.args.indexOf("--context");
   if (idx === -1) return true;
-  return server.args[idx + 1] !== "claude-code";
+  return server.args[idx + 1] !== omaSerenaContext("claude-code");
 }
 
 /**

@@ -72,6 +72,7 @@ const lockState = vi.hoisted(() => ({
 
 const serenaState = vi.hoisted(() => ({
   ensureSerenaProject: vi.fn(() => ({ configured: false, registered: false })),
+  ensureOmaSerenaContexts: vi.fn(() => ({ changed: [], failed: [] })),
   inferSerenaLanguages: vi.fn(() => ["typescript"]),
   // Detection is exercised in io/serena.test.ts; here it passes the
   // skill-derived set straight through.

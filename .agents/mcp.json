@@ -18,8 +18,10 @@
       "args": [
         "start-mcp-server",
         "--context",
-        "claude-code",
-        "--project-from-cwd"
+        "oma-claude-code",
+        "--project-from-cwd",
+        "--add-mode",
+        "no-memories"
       ],
       "env": {
         "SERENA_LOG_LEVEL": "info"
@@ -37,13 +39,6 @@
     }
   },
   "toolGroups": {
-    "memory": [
-      "read_memory",
-      "write_memory",
-      "edit_memory",
-      "list_memories",
-      "delete_memory"
-    ],
     "code-analysis": [
       "get_symbols_overview",
       "find_symbol",
@@ -70,13 +65,17 @@
       "performance_stop_trace",
       "performance_analyze_insight"
     ],
-    "docs-search": ["resolve-library-id", "query-docs"],
-    "file-ops": ["list_dir", "find_file"],
+    "docs-search": [
+      "resolve-library-id",
+      "query-docs"
+    ],
+    "file-ops": [
+      "list_dir",
+      "find_file"
+    ],
     "project": [
       "activate_project",
-      "get_current_config",
-      "check_onboarding_performed",
-      "onboarding"
+      "get_current_config"
     ],
     "thinking": [
       "think_about_collected_information",

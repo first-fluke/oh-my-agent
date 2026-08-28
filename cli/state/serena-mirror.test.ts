@@ -110,6 +110,29 @@ describe("session-summary", () => {
       expect(readFileSync(expectedPath, "utf-8")).toContain("**JWT expiry**");
     });
 
+    it("never writes a summary into Serena's legacy memory store", async () => {
+      const legacyDir = join(projectDir, ".serena", "memories");
+      mkdirSync(legacyDir, { recursive: true });
+
+      const result = await exportSessionSummary({ projectDir, sid });
+
+      expect(result.path).toBe(
+        join(
+          projectDir,
+          ".agents",
+          "state",
+          "memories",
+          `${sessionSummaryName("ultrawork", sid)}.md`,
+        ),
+      );
+      expect(existsSync(result.path)).toBe(true);
+      expect(
+        existsSync(
+          join(legacyDir, `${sessionSummaryName("ultrawork", sid)}.md`),
+        ),
+      ).toBe(false);
+    });
+
     it("prefers an explicitly supplied external writer when it succeeds", async () => {
       const calls: Array<{ name: string; content: string }> = [];
       const result = await exportSessionSummary({
@@ -160,9 +183,8 @@ describe("session-summary", () => {
     });
 
     it("emits a warning event and never throws when both paths fail", async () => {
-      // Route the mirror at the legacy store (the resolver picks it when the
-      // canonical dir is absent), then make it read-only so the write fails.
-      const memoriesDir = join(projectDir, ".serena", "memories");
+      // Make the canonical coordination store read-only so the write fails.
+      const memoriesDir = join(projectDir, ".agents", "state", "memories");
       mkdirSync(memoriesDir, { recursive: true });
       chmodSync(memoriesDir, 0o400);
 

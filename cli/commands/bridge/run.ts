@@ -8,6 +8,7 @@ import {
   resolveProjectRoot,
   STARTUP_PROBE_TIMEOUT_MS,
 } from "../../io/serena-daemon.js";
+import { serenaStartMcpArgs } from "../../vendors/serena.js";
 import { validateSerenaConfigs } from "./serena-config.js";
 import { parseSSEStream } from "./sse.js";
 
@@ -61,18 +62,9 @@ async function runStdioFallback(context: string): Promise<void> {
   console.error("[Bridge] Falling back to a session-local serena (stdio).");
 
   await new Promise<void>((done) => {
-    const child = spawn(
-      "serena",
-      [
-        "start-mcp-server",
-        "--context",
-        context,
-        "--project-from-cwd",
-        "--open-web-dashboard",
-        "false",
-      ],
-      { stdio: "inherit" },
-    );
+    const child = spawn("serena", serenaStartMcpArgs(context), {
+      stdio: "inherit",
+    });
     child.on("error", (err: Error) => {
       console.error(`[Bridge] serena is not runnable: ${err.message}`);
       done();

@@ -81,13 +81,56 @@ export function isLegacyUvxSerena(
 }
 
 const DISABLE_DASHBOARD_OPEN_ARGS = ["--open-web-dashboard", "false"] as const;
+export const SERENA_NO_MEMORY_MODE_ARGS = [
+  "--add-mode",
+  "no-memories",
+] as const;
+
+/** Built-in Serena contexts for which OMA installs state-safe counterparts. */
+export const OMA_SERENA_BASE_CONTEXTS = [
+  "codex",
+  "ide",
+  "claude-code",
+  "antigravity",
+] as const;
+
+const OMA_SERENA_BASE_CONTEXT_SET = new Set<string>(OMA_SERENA_BASE_CONTEXTS);
+
+/** Resolve a built-in context to OMA's hard-exclusion context. */
+export function omaSerenaContext(context: string): string {
+  if (context.startsWith("oma-")) return context;
+  return OMA_SERENA_BASE_CONTEXT_SET.has(context) ? `oma-${context}` : context;
+}
 
 export function serenaStartMcpArgs(context: string): string[] {
   return [
     "start-mcp-server",
     "--context",
-    context,
+    omaSerenaContext(context),
     "--project-from-cwd",
+    ...SERENA_NO_MEMORY_MODE_ARGS,
+    ...DISABLE_DASHBOARD_OPEN_ARGS,
+  ];
+}
+
+export function serenaDaemonMcpArgs(
+  context: string,
+  root: string,
+  port: number,
+): string[] {
+  return [
+    "start-mcp-server",
+    "--transport",
+    "streamable-http",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    String(port),
+    "--project",
+    root,
+    "--context",
+    omaSerenaContext(context),
+    ...SERENA_NO_MEMORY_MODE_ARGS,
     ...DISABLE_DASHBOARD_OPEN_ARGS,
   ];
 }
@@ -134,7 +177,7 @@ export function serenaMcpEntry(
   // bare `serena` these entries have always shipped with.
   return {
     command: "oma",
-    args: ["bridge", "--context", context],
+    args: ["bridge", "--context", omaSerenaContext(context)],
     env: { SERENA_LOG_LEVEL: "info" },
   };
 }
@@ -194,10 +237,25 @@ export function hasStaleSerenaTransport(
 ): boolean {
   if (!isSerenaLauncherEntry(server)) return false;
   if ((mode === "bridge") !== isBridgeSerenaEntry(server)) return true;
+  if (!hasOmaSerenaContext(server)) return true;
+  if (mode === "stdio" && !hasSerenaNoMemories(server)) return true;
   // 11.0.0 briefly wrote bridge entries as `<abs node> <abs script> bridge …`.
   // Those are machine-specific (and committed, for Claude's .mcp.json), so any
   // bridge entry not invoking the bare `oma` binary is due for a rewrite.
   return isBridgeSerenaEntry(server) && server?.command !== "oma";
+}
+
+/** True when a managed launcher selects an OMA state-safe context. */
+export function hasOmaSerenaContext(
+  server: SerenaMcpServerLike | undefined,
+): boolean {
+  if (!server || !Array.isArray(server.args)) return false;
+  const idx = server.args.indexOf("--context");
+  if (idx === -1 || typeof server.args[idx + 1] !== "string") return false;
+  const context = server.args[idx + 1] as string;
+  // Unknown custom contexts remain user-owned. Only OMA's known built-ins are
+  // stale when they have not been mapped to the corresponding `oma-*` file.
+  return !OMA_SERENA_BASE_CONTEXT_SET.has(context);
 }
 
 export function hasSerenaDashboardOpenDisabled(
@@ -208,6 +266,32 @@ export function hasSerenaDashboardOpenDisabled(
   }
   const idx = server.args.indexOf("--open-web-dashboard");
   return idx !== -1 && String(server.args[idx + 1]).toLowerCase() === "false";
+}
+
+export function hasSerenaNoMemories(
+  server: SerenaMcpServerLike | undefined,
+): boolean {
+  if (server?.command !== "serena" || !Array.isArray(server.args)) {
+    return true;
+  }
+  const args = server.args;
+  return args.some(
+    (arg, index) =>
+      (arg === "--add-mode" || arg === "--mode") &&
+      args[index + 1] === "no-memories",
+  );
+}
+
+/** Restrict direct Serena launches to code intelligence only. */
+export function withSerenaNoMemories<T extends SerenaMcpServerLike>(
+  server: T,
+): T {
+  if (server.command !== "serena" || !Array.isArray(server.args)) return server;
+  if (hasSerenaNoMemories(server)) return server;
+  return {
+    ...server,
+    args: [...server.args, ...SERENA_NO_MEMORY_MODE_ARGS],
+  } as T;
 }
 
 export function withSerenaDashboardOpenDisabled<T extends SerenaMcpServerLike>(
@@ -247,14 +331,18 @@ export function withSerenaContext<T extends SerenaMcpServerLike>(
   const isManaged = server.command === "serena" || isBridgeSerenaEntry(server);
   if (!isManaged || !Array.isArray(server.args)) return server;
 
+  const resolvedContext = omaSerenaContext(context);
   const idx = server.args.indexOf("--context");
   if (idx === -1) {
-    return { ...server, args: [...server.args, "--context", context] } as T;
+    return {
+      ...server,
+      args: [...server.args, "--context", resolvedContext],
+    } as T;
   }
-  if (server.args[idx + 1] === context) return server;
+  if (server.args[idx + 1] === resolvedContext) return server;
 
   const nextArgs = [...server.args];
-  nextArgs[idx + 1] = context;
+  nextArgs[idx + 1] = resolvedContext;
   return { ...server, args: nextArgs } as T;
 }
 

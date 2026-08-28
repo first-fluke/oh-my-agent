@@ -21,8 +21,10 @@
       "args": [
         "start-mcp-server",
         "--context",
-        "claude-code",
-        "--project-from-cwd"
+        "oma-claude-code",
+        "--project-from-cwd",
+        "--add-mode",
+        "no-memories"
       ],
       "env": {
         "SERENA_LOG_LEVEL": "info"

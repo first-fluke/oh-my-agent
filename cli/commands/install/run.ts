@@ -6,6 +6,7 @@ import pc from "picocolors";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
 import {
   deriveSerenaLanguages,
+  ensureOmaSerenaContexts,
   ensureSerenaBinary,
   ensureSerenaProject,
   resolveSerenaLanguages,
@@ -491,6 +492,20 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           p.log.warn(
             `serena not found and uv is unavailable — install uv, then run \`${SERENA_INSTALL_HINT}\`.`,
           );
+        }
+        if (
+          serenaBinary.status === "present" ||
+          serenaBinary.status === "installed"
+        ) {
+          const contexts = ensureOmaSerenaContexts();
+          if (contexts.changed.length > 0) {
+            p.log.success(pc.green("Serena state tools disabled"));
+          }
+          if (contexts.failed.length > 0) {
+            p.log.warn(
+              `Could not install Serena state-safe contexts: ${contexts.failed.join(", ")}`,
+            );
+          }
         }
       }
 

@@ -99,7 +99,7 @@ draw_dashboard() {
   clear
   echo ""
   echo -e "  ${BG_MAGENTA}${WHITE}${BOLD}                                                              ${RESET}"
-  echo -e "  ${BG_MAGENTA}${WHITE}${BOLD}   🛸 Serena Memory Dashboard                                 ${RESET}"
+  echo -e "  ${BG_MAGENTA}${WHITE}${BOLD}   🛸 OMA Session Dashboard                                   ${RESET}"
   echo -e "  ${BG_MAGENTA}${WHITE}${BOLD}   Session: session-20260208-143022  [RUNNING]                 ${RESET}"
   echo -e "  ${BG_MAGENTA}${WHITE}${BOLD}                                                              ${RESET}"
   echo ""

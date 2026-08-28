@@ -48,6 +48,7 @@ import { migrateSerenaHomeProject } from "./020-serena-home-project.js";
 import { migrateRemoveEvalArtifacts } from "./021-remove-eval-artifacts.js";
 import { migrateUnifySkillConfigs } from "./022-unify-skill-configs.js";
 import { migrateCapabilitySkillNames } from "./023-capability-skill-names.js";
+import { migrateSerenaNoMemories } from "./024-serena-no-memories.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -72,6 +73,7 @@ const migrations: Migration[] = [
   migrateRemoveEvalArtifacts,
   migrateUnifySkillConfigs,
   migrateCapabilitySkillNames,
+  migrateSerenaNoMemories,
 ];
 
 export function runMigrations(

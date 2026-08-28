@@ -2,6 +2,7 @@ import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   advisoryHeavyLanguages,
+  ensureOmaSerenaContexts,
   ensureSerenaDefaultMaxAnswerChars,
   ensureSerenaProject,
   ensureSerenaProjectConfig,
@@ -11,8 +12,10 @@ import {
   parseProjectYmlLanguages,
   reconcileSerenaLanguages,
   reconcileSerenaProjectConfig,
+  reconcileSerenaToolExclusions,
   resolveSerenaLanguages,
   SERENA_DEFAULT_MAX_TOOL_ANSWER_CHARS,
+  SERENA_STATE_TOOLS,
   unregisterSerenaProject,
 } from "./serena.js";
 
@@ -21,6 +24,7 @@ const MY_PROJECT = resolve("/my/project");
 const OTHER_PROJECT = resolve("/other/project");
 /** Matches the mocked node:os homedir() below. */
 const HOME_DIR = resolve("/mock/home");
+const HARD_EXCLUSIONS = `excluded_tools:\n${SERENA_STATE_TOOLS.map((tool) => `- ${tool}`).join("\n")}\n`;
 
 // Mock fs
 const mockFs = vi.hoisted(() => ({
@@ -28,6 +32,12 @@ const mockFs = vi.hoisted(() => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
+}));
+
+const mockExecFileSync = vi.hoisted(() => vi.fn());
+
+vi.mock("node:child_process", () => ({
+  execFileSync: mockExecFileSync,
 }));
 
 vi.mock("node:fs", async (importOriginal) => {
@@ -48,6 +58,89 @@ vi.mock("node:os", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+describe("reconcileSerenaToolExclusions", () => {
+  it("hard-excludes Serena memory and onboarding tools", () => {
+    const yml = [
+      "languages:",
+      "- typescript",
+      "excluded_tools: []",
+      'project_name: "test"',
+      "",
+    ].join("\n");
+
+    const result = reconcileSerenaToolExclusions(yml) ?? "";
+
+    expect(result).toContain("- write_memory");
+    expect(result).toContain("- read_memory");
+    expect(result).toContain("- onboarding");
+  });
+
+  it("preserves user exclusions and is idempotent", () => {
+    const yml = [
+      "languages:",
+      "- typescript",
+      "excluded_tools:",
+      "- execute_shell_command",
+      "- write_memory",
+      'project_name: "test"',
+      "",
+    ].join("\n");
+
+    const once = reconcileSerenaToolExclusions(yml) ?? yml;
+    expect(once).toContain("- execute_shell_command");
+    expect(reconcileSerenaToolExclusions(once)).toBeNull();
+  });
+
+  it("leaves malformed YAML untouched", () => {
+    expect(
+      reconcileSerenaToolExclusions("excluded_tools:\n- [unclosed\n"),
+    ).toBeNull();
+  });
+});
+
+describe("ensureOmaSerenaContexts", () => {
+  it("copies built-in contexts and hard-excludes Serena state tools", () => {
+    const existing = new Set<string>();
+    mockFs.existsSync.mockImplementation((path: string) =>
+      existing.has(String(path)),
+    );
+    mockExecFileSync.mockImplementation((_command, args: string[]) => {
+      const name = args[args.indexOf("-n") + 1];
+      existing.add(join("/mock/home", ".serena", "contexts", `${name}.yml`));
+    });
+    mockFs.readFileSync.mockReturnValue(
+      "description: test\nprompt: test\nexcluded_tools: []\n",
+    );
+
+    const result = ensureOmaSerenaContexts();
+
+    expect(result.failed).toEqual([]);
+    expect(result.changed).toEqual([
+      "oma-codex",
+      "oma-ide",
+      "oma-claude-code",
+      "oma-antigravity",
+    ]);
+    expect(mockExecFileSync).toHaveBeenCalledTimes(4);
+    for (const call of mockFs.writeFileSync.mock.calls) {
+      const written = String(call[1]);
+      expect(written).toContain("- write_memory");
+      expect(written).toContain("- onboarding");
+    }
+  });
+
+  it("is idempotent for already-isolated contexts", () => {
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue(
+      `description: test\nprompt: test\n${HARD_EXCLUSIONS}`,
+    );
+
+    expect(ensureOmaSerenaContexts()).toEqual({ changed: [], failed: [] });
+    expect(mockExecFileSync).not.toHaveBeenCalled();
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+  });
 });
 
 describe("resolveSerenaLanguages", () => {
@@ -540,7 +633,7 @@ describe("reconcileSerenaProjectConfig", () => {
   it("should return false when no languages to add (already up-to-date)", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(
-      'languages:\n- typescript\n\nproject_name: "p"\n',
+      `languages:\n- typescript\n\n${HARD_EXCLUSIONS}project_name: "p"\n`,
     );
     const result = reconcileSerenaProjectConfig(projectPath, ["typescript"]);
     expect(result).toBe(false);
@@ -550,7 +643,7 @@ describe("reconcileSerenaProjectConfig", () => {
   it("should write updated file when languages are added", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(
-      'languages:\n- typescript\n\nproject_name: "p"\n',
+      `languages:\n- typescript\n\n${HARD_EXCLUSIONS}project_name: "p"\n`,
     );
     const result = reconcileSerenaProjectConfig(projectPath, [
       "typescript",
@@ -572,7 +665,7 @@ describe("ensureSerenaProjectConfig", () => {
   it("should return 'unchanged' when project.yml exists and has all derived languages", () => {
     mockFs.existsSync.mockReturnValue(true);
     mockFs.readFileSync.mockReturnValue(
-      'languages:\n- typescript\n\nproject_name: "p"\n',
+      `languages:\n- typescript\n\n${HARD_EXCLUSIONS}project_name: "p"\n`,
     );
     const result = ensureSerenaProjectConfig("/my/project", ["typescript"]);
     expect(result).toBe("unchanged");
@@ -662,7 +755,7 @@ describe("ensureSerenaProject", () => {
     });
     mockFs.readFileSync.mockImplementation((p: string) => {
       if ((p as string).includes("project.yml")) {
-        return 'languages:\n- typescript\n\nproject_name: "p"\n';
+        return `languages:\n- typescript\n\n${HARD_EXCLUSIONS}project_name: "p"\n`;
       }
       return `projects:\n- ${MY_PROJECT}\ndefault_max_tool_answer_chars: 150000\n`;
     });

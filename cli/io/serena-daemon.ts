@@ -12,6 +12,7 @@ import {
 import http from "node:http";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { serenaDaemonMcpArgs } from "../vendors/serena.js";
 
 /** Poll interval while waiting for a starting daemon to answer. */
 export const STARTUP_CHECK_INTERVAL_MS = 1000;
@@ -278,32 +279,14 @@ function spawnDaemonProcess(
 
   // Detached on purpose: the daemon outlives the session that happened to start
   // it, so one client exiting does not tear serena out from under its peers.
-  const child = spawn(
-    "serena",
-    [
-      "start-mcp-server",
-      "--transport",
-      "streamable-http",
-      "--host",
-      "127.0.0.1",
-      "--port",
-      String(port),
-      "--project",
-      root,
-      "--context",
-      context,
-      "--open-web-dashboard",
-      "false",
-    ],
-    {
-      detached: true,
-      stdio: ["ignore", log, log],
-      // On Windows a detached console app pops open its own console window;
-      // this suppresses it. No-op elsewhere. (Windows behaviour is untested —
-      // these are the standard flags, but the detach semantics differ.)
-      windowsHide: true,
-    },
-  );
+  const child = spawn("serena", serenaDaemonMcpArgs(context, root, port), {
+    detached: true,
+    stdio: ["ignore", log, log],
+    // On Windows a detached console app pops open its own console window;
+    // this suppresses it. No-op elsewhere. (Windows behaviour is untested —
+    // these are the standard flags, but the detach semantics differ.)
+    windowsHide: true,
+  });
 
   // A missing executable reports failure asynchronously through `error`.
   // Always consume it: pid is undefined in that case, so the caller can return

@@ -42,6 +42,7 @@ import {
 } from "../../vendors/codex/settings.js";
 import {
   hasSerenaDashboardOpenDisabled,
+  omaSerenaContext,
   serenaStartMcpArgs,
   withSerenaDashboardOpenDisabled,
 } from "../../vendors/serena.js";
@@ -81,7 +82,7 @@ function hasStaleContext(
   if (!Array.isArray(entry.args)) return false;
   const idx = entry.args.indexOf("--context");
   if (idx === -1) return true;
-  return entry.args[idx + 1] !== expectedContext;
+  return entry.args[idx + 1] !== omaSerenaContext(expectedContext);
 }
 
 /**
@@ -107,9 +108,9 @@ function migrateEntry(
   if (contextOverride) {
     const idx = finalArgs.indexOf("--context");
     if (idx !== -1 && idx + 1 < finalArgs.length) {
-      finalArgs[idx + 1] = contextOverride;
+      finalArgs[idx + 1] = omaSerenaContext(contextOverride);
     } else {
-      finalArgs.push("--context", contextOverride);
+      finalArgs.push("--context", omaSerenaContext(contextOverride));
     }
   }
   return {

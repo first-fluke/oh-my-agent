@@ -22,8 +22,6 @@ import { COORDINATION_STORE_REL, LEGACY_SERENA_MEMORY_REL } from "./memory.js";
 
 /** Resolved store base relative to the working directory (canonical-first). */
 export function coordinationBase(): string {
-  if (existsSync(COORDINATION_STORE_REL)) return COORDINATION_STORE_REL;
-  if (existsSync(LEGACY_SERENA_MEMORY_REL)) return LEGACY_SERENA_MEMORY_REL;
   return COORDINATION_STORE_REL;
 }
 
@@ -117,17 +115,25 @@ export function createMarkdownRecordStore<T>(options: {
   return {
     filePath,
     append(sessionId: string, record: T): void {
-      // filePath prefers an existing session file (possibly in the legacy
-      // base), so appends never fork a second copy across bases.
-      const target = filePath(sessionId);
+      assertSafeSessionId(sessionId);
+      const target = join(
+        coordinationBase(),
+        `${options.filePrefix}-${sessionId}.md`,
+      );
       const targetDir = dirname(target);
       if (!existsSync(targetDir)) {
         mkdirSync(targetDir, { recursive: true });
       }
       const block = `\`\`\`json\n${JSON.stringify(record)}\n\`\`\`\n\n`;
+      const legacy = candidatePaths(sessionId).find(
+        (candidate) => candidate !== target && existsSync(candidate),
+      );
+      const initial = legacy
+        ? readFileContent(legacy)
+        : buildFrontmatter(sessionId);
       appendFileSync(
         target,
-        existsSync(target) ? block : buildFrontmatter(sessionId) + block,
+        existsSync(target) ? block : initial + block,
         "utf-8",
       );
     },

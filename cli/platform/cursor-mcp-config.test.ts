@@ -110,7 +110,7 @@ describe("applyCursorMcpConfig", () => {
     const parsed = JSON.parse(
       readFileSync(join(root, ".cursor", "mcp.json"), "utf-8"),
     );
-    expect(parsed.mcpServers.serena.args).toContain("ide");
+    expect(parsed.mcpServers.serena.args).toContain("oma-ide");
   });
 
   it("preserves user-added servers and top-level keys already in .cursor/mcp.json", () => {

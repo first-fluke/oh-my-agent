@@ -14,6 +14,7 @@ import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
 import {
   deriveSerenaLanguages,
+  ensureOmaSerenaContexts,
   ensureSerenaProject,
   inferSerenaLanguages,
 } from "../../io/serena.js";
@@ -397,6 +398,14 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
               "Serena",
             );
           }
+        }
+
+        const serenaContexts = ensureOmaSerenaContexts();
+        if (serenaContexts.failed.length > 0) {
+          ui.note(
+            `Could not install Serena state-safe contexts: ${serenaContexts.failed.join(", ")}`,
+            "Serena",
+          );
         }
 
         // Stamp the new version AND the install mode into _version.json

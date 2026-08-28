@@ -1,4 +1,5 @@
 import type { Mock } from "vitest";
+import { omaSerenaContext } from "../vendors/serena.js";
 
 export function assertDefined<T>(
   value: T,
@@ -52,9 +53,10 @@ export function expectOmaSerenaEntry(
     );
   }
   const idx = entry.args.indexOf("--context");
-  if (idx === -1 || entry.args[idx + 1] !== context) {
+  const expectedContext = omaSerenaContext(context);
+  if (idx === -1 || entry.args[idx + 1] !== expectedContext) {
     throw new Error(
-      `expected serena entry with --context ${context}, got ${JSON.stringify(entry.args)}`,
+      `expected serena entry with --context ${expectedContext}, got ${JSON.stringify(entry.args)}`,
     );
   }
   const isBridge = entry.args.includes("bridge");

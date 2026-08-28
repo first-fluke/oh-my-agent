@@ -116,7 +116,7 @@ describe("applyAntigravityMcpConfig", () => {
     const written = JSON.parse(readFileSync(expectPath(out), "utf-8"));
 
     const args: string[] = written.mcpServers.serena.args;
-    expect(args[args.indexOf("--context") + 1]).toBe("antigravity");
+    expect(args[args.indexOf("--context") + 1]).toBe("oma-antigravity");
     expect(args).not.toContain("claude-code");
     // No --project-from-cwd assertion: the bridge form has no such flag. It
     // resolves the project root from cwd itself and pins it on the daemon.
@@ -132,7 +132,7 @@ describe("applyAntigravityMcpConfig", () => {
     const written = JSON.parse(readFileSync(expectPath(out), "utf-8"));
     const args: string[] = written.mcpServers.serena.args;
     expect(args).toContain("--context");
-    expect(args[args.indexOf("--context") + 1]).toBe("antigravity");
+    expect(args[args.indexOf("--context") + 1]).toBe("oma-antigravity");
   });
 
   it("renames remote MCP `url` to `serverUrl` (Antigravity field rename)", () => {

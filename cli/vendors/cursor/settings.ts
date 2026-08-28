@@ -7,6 +7,7 @@ import { isRecord } from "../../utils/type-guards.js";
 import {
   hasSerenaDashboardOpenDisabled,
   isLegacyUvxSerena,
+  omaSerenaContext,
   RECOMMENDED_CHROME_DEVTOOLS_MCP,
   type SerenaMcpEntry,
   serenaMcpEntry,
@@ -109,7 +110,7 @@ function isWrongContextSerena(server: CursorMcpServer | undefined): boolean {
   const contextIdx = server.args.indexOf("--context");
   if (contextIdx === -1) return false;
   const value = server.args[contextIdx + 1];
-  return value !== "ide";
+  return value !== omaSerenaContext("ide");
 }
 
 export function needsCursorSettingsUpdate(rawSettings: unknown): boolean {

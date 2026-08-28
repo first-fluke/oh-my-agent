@@ -113,7 +113,7 @@ SERENA_LOG_LEVEL = "info"
     expect(codexToml).not.toContain("git+https://github.com/oraios/serena");
     expect(codexToml).toContain('"start-mcp-server"');
     expect(codexToml).toContain('"--context"');
-    expect(codexToml).toContain('"codex"');
+    expect(codexToml).toContain('"oma-codex"');
 
     const qwen = JSON.parse(
       readFileSync(join(root, ".qwen", "settings.json"), "utf-8"),
@@ -122,7 +122,7 @@ SERENA_LOG_LEVEL = "info"
     expect(qwen.mcpServers.serena.args).toEqual([
       "start-mcp-server",
       "--context",
-      "ide",
+      "oma-ide",
       "--project",
       ".",
       "--open-web-dashboard",
@@ -204,7 +204,7 @@ SERENA_LOG_LEVEL = "info"
     expect(parsed.mcpServers.serena.args).toEqual([
       "start-mcp-server",
       "--context",
-      "ide",
+      "oma-ide",
       "--project",
       ".",
       "--open-web-dashboard",
@@ -212,7 +212,7 @@ SERENA_LOG_LEVEL = "info"
     ]);
   });
 
-  it("does not touch unrelated uvx commands (e.g. other MCP servers)", () => {
+  it("preserves unrelated uvx commands while isolating Serena", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-migrate-009-"));
     tempRoots.push(root);
 
@@ -245,6 +245,16 @@ SERENA_LOG_LEVEL = "info"
     );
 
     const actions = migrateSerenaUvTool.up(root);
-    expect(actions).toHaveLength(0);
+    expect(actions).toEqual([
+      ".qwen/settings.json (Serena uvx → uv tool install)",
+    ]);
+    const parsed = JSON.parse(
+      readFileSync(join(root, ".qwen", "settings.json"), "utf-8"),
+    );
+    expect(parsed.mcpServers.other).toEqual({
+      command: "uvx",
+      args: ["--from", "git+https://github.com/foo/bar", "bar"],
+    });
+    expect(parsed.mcpServers.serena.args).toContain("oma-ide");
   });
 });

@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  hasSerenaNoMemories,
   hasStaleSerenaTransport,
+  omaSerenaContext,
+  serenaDaemonMcpArgs,
   serenaMcpEntry,
   serenaStartMcpArgs,
   withSerenaContext,
+  withSerenaNoMemories,
   withSerenaProjectFromCwd,
 } from "./serena.js";
 
@@ -15,11 +19,85 @@ describe("serenaStartMcpArgs", () => {
     expect(args).toEqual([
       "start-mcp-server",
       "--context",
-      "claude-code",
+      "oma-claude-code",
       "--project-from-cwd",
+      "--add-mode",
+      "no-memories",
       "--open-web-dashboard",
       "false",
     ]);
+  });
+});
+
+describe("serenaDaemonMcpArgs", () => {
+  it("disables memory tools for shared HTTP daemons", () => {
+    expect(serenaDaemonMcpArgs("ide", "/project", 8765)).toEqual([
+      "start-mcp-server",
+      "--transport",
+      "streamable-http",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "8765",
+      "--project",
+      "/project",
+      "--context",
+      "oma-ide",
+      "--add-mode",
+      "no-memories",
+      "--open-web-dashboard",
+      "false",
+    ]);
+  });
+});
+
+describe("omaSerenaContext", () => {
+  it("maps OMA-managed built-in contexts to hard-exclusion contexts", () => {
+    expect(omaSerenaContext("codex")).toBe("oma-codex");
+    expect(omaSerenaContext("ide")).toBe("oma-ide");
+    expect(omaSerenaContext("claude-code")).toBe("oma-claude-code");
+    expect(omaSerenaContext("antigravity")).toBe("oma-antigravity");
+  });
+
+  it("is idempotent and preserves unknown custom contexts", () => {
+    expect(omaSerenaContext("oma-codex")).toBe("oma-codex");
+    expect(omaSerenaContext("my-team-context")).toBe("my-team-context");
+  });
+});
+
+describe("withSerenaNoMemories", () => {
+  it("adds the built-in mode once to direct Serena entries", () => {
+    const entry = {
+      command: "serena",
+      args: ["start-mcp-server", "--context", "ide"],
+    };
+    const migrated = withSerenaNoMemories(entry);
+
+    expect(migrated.args.slice(-2)).toEqual(["--add-mode", "no-memories"]);
+    expect(hasSerenaNoMemories(migrated)).toBe(true);
+    expect(withSerenaNoMemories(migrated)).toBe(migrated);
+  });
+
+  it("marks direct entries without the mode as stale", () => {
+    const stale = {
+      command: "serena",
+      args: ["start-mcp-server", "--context", "ide"],
+    };
+    expect(hasStaleSerenaTransport(stale, "stdio")).toBe(true);
+    expect(
+      hasStaleSerenaTransport(
+        withSerenaContext(withSerenaNoMemories(stale), "ide"),
+        "stdio",
+      ),
+    ).toBe(false);
+  });
+
+  it("does not append Serena-only flags to bridge entries", () => {
+    const entry = {
+      command: "oma",
+      args: ["bridge", "--context", "ide"],
+    };
+    expect(withSerenaNoMemories(entry)).toBe(entry);
   });
 });
 
@@ -88,7 +166,11 @@ describe("withSerenaContext", () => {
       },
       "antigravity",
     );
-    expect(out.args).toEqual(["start-mcp-server", "--context", "antigravity"]);
+    expect(out.args).toEqual([
+      "start-mcp-server",
+      "--context",
+      "oma-antigravity",
+    ]);
   });
 
   it("appends --context when absent", () => {
@@ -96,13 +178,17 @@ describe("withSerenaContext", () => {
       { command: "serena", args: ["start-mcp-server"] },
       "antigravity",
     );
-    expect(out.args).toEqual(["start-mcp-server", "--context", "antigravity"]);
+    expect(out.args).toEqual([
+      "start-mcp-server",
+      "--context",
+      "oma-antigravity",
+    ]);
   });
 
   it("is idempotent when the context already matches", () => {
     const server = {
       command: "serena",
-      args: ["start-mcp-server", "--context", "antigravity"],
+      args: ["start-mcp-server", "--context", "oma-antigravity"],
     };
     const out = withSerenaContext(server, "antigravity");
     expect(out).toBe(server);
@@ -158,7 +244,7 @@ describe("serenaMcpEntry — machine portability", () => {
     // /Users/<name>/... into version control and broke every other checkout.
     const entry = serenaMcpEntry("claude-code", "bridge");
     expect(entry.command).toBe("oma");
-    expect(entry.args).toEqual(["bridge", "--context", "claude-code"]);
+    expect(entry.args).toEqual(["bridge", "--context", "oma-claude-code"]);
   });
 
   it("stdio entries keep the bare serena binary", () => {
@@ -181,5 +267,23 @@ describe("hasStaleSerenaTransport — absolute-path bridge repair", () => {
     expect(
       hasStaleSerenaTransport(serenaMcpEntry("ide", "bridge"), "bridge"),
     ).toBe(false);
+  });
+
+  it("flags a legacy built-in context even when no-memories is present", () => {
+    expect(
+      hasStaleSerenaTransport(
+        {
+          command: "serena",
+          args: [
+            "start-mcp-server",
+            "--context",
+            "codex",
+            "--add-mode",
+            "no-memories",
+          ],
+        },
+        "stdio",
+      ),
+    ).toBe(true);
   });
 });

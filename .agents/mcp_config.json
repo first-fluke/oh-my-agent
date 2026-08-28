@@ -17,7 +17,7 @@
       "args": [
         "bridge",
         "--context",
-        "antigravity"
+        "oma-antigravity"
       ],
       "env": {
         "SERENA_LOG_LEVEL": "info"

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { type Document, isMap, isScalar, isSeq, parseDocument } from "yaml";
+import { OMA_SERENA_BASE_CONTEXTS } from "../vendors/serena.js";
 import {
   detectableLanguages,
   detectProjectLanguages,
@@ -328,8 +329,8 @@ interface LanguageEntry {
  * hundreds of unrelated lines in a real project.yml.
  */
 interface LanguageList {
-  /** Which of {@link LANGUAGE_KEYS} this list belongs to. */
-  key: (typeof LANGUAGE_KEYS)[number];
+  /** Top-level YAML key this list belongs to. */
+  key: string;
   entries: LanguageEntry[];
   /** Flow style (`["ts"]`) vs block style (`- ts`). */
   flow: boolean;
@@ -382,7 +383,8 @@ function findKeyOffset(doc: Document, key: string): number | null {
 function readLanguageList(
   yml: string,
   doc: Document,
-  key: (typeof LANGUAGE_KEYS)[number],
+  key: string,
+  allowEmpty = false,
 ): LanguageList | null {
   const seq = doc.get(key, true);
   if (!isSeq(seq) || !seq.range) return null;
@@ -412,7 +414,7 @@ function readLanguageList(
     lastValueEnd = item.range[1];
   }
 
-  if (entries.length === 0) return null;
+  if (entries.length === 0 && !allowEmpty) return null;
 
   if (seq.flow) {
     const [start, end] = seq.range;
@@ -431,6 +433,124 @@ function readLanguageList(
   const end = lineBreak === -1 ? yml.length : lineBreak;
 
   return { key, entries, flow: false, indent, keyLineStart, start, end };
+}
+
+/** Serena tools that belong to its memory/onboarding state plane. */
+export const SERENA_STATE_TOOLS = [
+  "write_memory",
+  "read_memory",
+  "list_memories",
+  "delete_memory",
+  "rename_memory",
+  "edit_memory",
+  "onboarding",
+  "check_onboarding_performed",
+] as const;
+
+export type SerenaContextsOutcome = {
+  changed: string[];
+  failed: string[];
+};
+
+/**
+ * Install OMA-owned copies of Serena's built-in client contexts and add the
+ * state-tool exclusions to their MCP registration layer.
+ *
+ * Serena 1.7.0 still advertises memory tools when only `no-memories` or a
+ * project exclusion is used. Context exclusions are the earliest and
+ * authoritative filter used to construct MCP `tools/list`.
+ */
+export function ensureOmaSerenaContexts(): SerenaContextsOutcome {
+  const changed: string[] = [];
+  const failed: string[] = [];
+  const serenaHome =
+    process.env.SERENA_HOME?.trim() || join(homedir(), ".serena");
+  const contextsDir = join(serenaHome, "contexts");
+
+  for (const baseContext of OMA_SERENA_BASE_CONTEXTS) {
+    const context = `oma-${baseContext}`;
+    const contextPath = join(contextsDir, `${context}.yml`);
+    let created = false;
+
+    if (!existsSync(contextPath)) {
+      try {
+        execFileSync(
+          "serena",
+          ["context", "create", "-n", context, "--from-internal", baseContext],
+          { stdio: "ignore", timeout: PROBE_TIMEOUT_MS },
+        );
+        created = true;
+      } catch {
+        failed.push(context);
+        continue;
+      }
+    }
+
+    if (!existsSync(contextPath)) {
+      failed.push(context);
+      continue;
+    }
+
+    try {
+      const existing = readFileSync(contextPath, "utf-8");
+      const updated = reconcileSerenaToolExclusions(existing);
+      if (updated !== null) {
+        writeFileSync(contextPath, updated, "utf-8");
+      }
+      const isolated = SERENA_STATE_TOOLS.every((tool) =>
+        (updated ?? existing).includes(`- ${tool}`),
+      );
+      if (!isolated) {
+        failed.push(context);
+      } else if (created || updated !== null) {
+        changed.push(context);
+      }
+    } catch {
+      failed.push(context);
+    }
+  }
+
+  return { changed, failed };
+}
+
+/**
+ * Hard-exclude Serena's state tools in a Serena YAML configuration.
+ *
+ * Serena 1.7.0's `no-memories` mode updates its internal active-tool list but
+ * still advertises the memory tools through MCP `tools/list`. OMA applies this
+ * reconciler to its client contexts (the authoritative registration layer)
+ * and to project.yml as defense in depth.
+ */
+export function reconcileSerenaToolExclusions(
+  existingYml: string,
+): string | null {
+  const yml = existingYml.replace(
+    /^excluded_tools:[ \t]+$/m,
+    "excluded_tools:",
+  );
+  const doc = parseDocument(yml);
+  if (doc.errors.length > 0) return null;
+
+  if (!doc.has("excluded_tools")) {
+    const block = `excluded_tools:\n${SERENA_STATE_TOOLS.map((tool) => `- ${tool}`).join("\n")}\n`;
+    return `${block}\n${yml}`;
+  }
+
+  const list = readLanguageList(yml, doc, "excluded_tools", true);
+  if (!list) return null;
+  const names = new Set(list.entries.map((entry) => entry.name));
+  const missing: LanguageEntry[] = SERENA_STATE_TOOLS.filter(
+    (tool) => !names.has(tool),
+  ).map((tool) => ({ name: tool, raw: tool }));
+  if (missing.length === 0) return yml === existingYml ? null : yml;
+
+  const next = [...list.entries, ...missing];
+  const replacement =
+    list.flow && list.entries.length === 0
+      ? `\n${next.map((entry) => `- ${entry.raw}`).join("\n")}`
+      : renderLanguageList(list, next);
+  const updated = yml.slice(0, list.start) + replacement + yml.slice(list.end);
+  return updated === existingYml ? null : updated;
 }
 
 /** Render a language list back to source text in its original style. */
@@ -568,9 +688,12 @@ export function reconcileSerenaProjectConfig(
   if (!existsSync(projectYml)) return false;
 
   const existing = readFileSync(projectYml, "utf-8");
-  const updated = reconcileSerenaLanguages(existing, derivedLanguages, opts);
+  const languageUpdated =
+    reconcileSerenaLanguages(existing, derivedLanguages, opts) ?? existing;
+  const updated =
+    reconcileSerenaToolExclusions(languageUpdated) ?? languageUpdated;
 
-  if (updated === null) return false;
+  if (updated === existing) return false;
 
   writeFileSync(projectYml, updated);
   return true;
@@ -817,7 +940,8 @@ ignore_all_files_in_gitignore: true
 ignored_paths:
 - .serena/cache
 read_only: false
-excluded_tools: []
+excluded_tools:
+${SERENA_STATE_TOOLS.map((tool) => `- ${tool}`).join("\n")}
 initial_prompt: ""
 project_name: "${projectName}"
 included_optional_tools: []

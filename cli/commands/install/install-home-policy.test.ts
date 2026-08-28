@@ -116,6 +116,7 @@ const miscState = vi.hoisted(() => ({
   applyCursorRules: vi.fn(() => []),
   mergeRulesIndexForVendor: vi.fn(() => false),
   ensureSerenaProject: vi.fn(() => ({ configured: false, registered: false })),
+  ensureOmaSerenaContexts: vi.fn(() => ({ changed: [], failed: [] })),
   resolveSerenaLanguages: vi.fn(() => ["typescript"]),
   ensureSerenaBinary: vi.fn(() => ({ status: "present" })),
 }));
@@ -164,6 +165,7 @@ vi.mock("../../io/git-recommended.js", () => ({
 
 vi.mock("../../io/serena.js", () => ({
   ensureSerenaProject: miscState.ensureSerenaProject,
+  ensureOmaSerenaContexts: miscState.ensureOmaSerenaContexts,
   resolveSerenaLanguages: miscState.resolveSerenaLanguages,
   // Detection is exercised in io/serena.test.ts; here it passes the
   // skill-derived set straight through.
