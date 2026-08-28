@@ -113,7 +113,7 @@ SERENA_LOG_LEVEL = "info"
     expect(codexToml).not.toContain("git+https://github.com/oraios/serena");
     expect(codexToml).toContain('"start-mcp-server"');
     expect(codexToml).toContain('"--context"');
-    expect(codexToml).toContain('"oma-codex"');
+    expect(codexToml).toContain('"oma"');
 
     const qwen = JSON.parse(
       readFileSync(join(root, ".qwen", "settings.json"), "utf-8"),
@@ -122,7 +122,7 @@ SERENA_LOG_LEVEL = "info"
     expect(qwen.mcpServers.serena.args).toEqual([
       "start-mcp-server",
       "--context",
-      "oma-ide",
+      "oma",
       "--project",
       ".",
       "--open-web-dashboard",
@@ -204,7 +204,7 @@ SERENA_LOG_LEVEL = "info"
     expect(parsed.mcpServers.serena.args).toEqual([
       "start-mcp-server",
       "--context",
-      "oma-ide",
+      "oma",
       "--project",
       ".",
       "--open-web-dashboard",
@@ -255,6 +255,6 @@ SERENA_LOG_LEVEL = "info"
       command: "uvx",
       args: ["--from", "git+https://github.com/foo/bar", "bar"],
     });
-    expect(parsed.mcpServers.serena.args).toContain("oma-ide");
+    expect(parsed.mcpServers.serena.args).toContain("oma");
   });
 });

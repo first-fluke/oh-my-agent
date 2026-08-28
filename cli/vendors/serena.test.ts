@@ -19,7 +19,7 @@ describe("serenaStartMcpArgs", () => {
     expect(args).toEqual([
       "start-mcp-server",
       "--context",
-      "oma-claude-code",
+      "oma",
       "--project-from-cwd",
       "--add-mode",
       "no-memories",
@@ -42,7 +42,7 @@ describe("serenaDaemonMcpArgs", () => {
       "--project",
       "/project",
       "--context",
-      "oma-ide",
+      "oma",
       "--add-mode",
       "no-memories",
       "--open-web-dashboard",
@@ -52,15 +52,17 @@ describe("serenaDaemonMcpArgs", () => {
 });
 
 describe("omaSerenaContext", () => {
-  it("maps OMA-managed built-in contexts to hard-exclusion contexts", () => {
-    expect(omaSerenaContext("codex")).toBe("oma-codex");
-    expect(omaSerenaContext("ide")).toBe("oma-ide");
-    expect(omaSerenaContext("claude-code")).toBe("oma-claude-code");
-    expect(omaSerenaContext("antigravity")).toBe("oma-antigravity");
+  it("maps every OMA-managed client to one shared context", () => {
+    expect(omaSerenaContext("codex")).toBe("oma");
+    expect(omaSerenaContext("ide")).toBe("oma");
+    expect(omaSerenaContext("claude-code")).toBe("oma");
+    expect(omaSerenaContext("antigravity")).toBe("oma");
   });
 
-  it("is idempotent and preserves unknown custom contexts", () => {
-    expect(omaSerenaContext("oma-codex")).toBe("oma-codex");
+  it("migrates legacy OMA contexts and preserves unknown custom contexts", () => {
+    expect(omaSerenaContext("oma")).toBe("oma");
+    expect(omaSerenaContext("oma-codex")).toBe("oma");
+    expect(omaSerenaContext("oma-ide")).toBe("oma");
     expect(omaSerenaContext("my-team-context")).toBe("my-team-context");
   });
 });
@@ -166,11 +168,7 @@ describe("withSerenaContext", () => {
       },
       "antigravity",
     );
-    expect(out.args).toEqual([
-      "start-mcp-server",
-      "--context",
-      "oma-antigravity",
-    ]);
+    expect(out.args).toEqual(["start-mcp-server", "--context", "oma"]);
   });
 
   it("appends --context when absent", () => {
@@ -178,17 +176,13 @@ describe("withSerenaContext", () => {
       { command: "serena", args: ["start-mcp-server"] },
       "antigravity",
     );
-    expect(out.args).toEqual([
-      "start-mcp-server",
-      "--context",
-      "oma-antigravity",
-    ]);
+    expect(out.args).toEqual(["start-mcp-server", "--context", "oma"]);
   });
 
   it("is idempotent when the context already matches", () => {
     const server = {
       command: "serena",
-      args: ["start-mcp-server", "--context", "oma-antigravity"],
+      args: ["start-mcp-server", "--context", "oma"],
     };
     const out = withSerenaContext(server, "antigravity");
     expect(out).toBe(server);
@@ -244,7 +238,7 @@ describe("serenaMcpEntry — machine portability", () => {
     // /Users/<name>/... into version control and broke every other checkout.
     const entry = serenaMcpEntry("claude-code", "bridge");
     expect(entry.command).toBe("oma");
-    expect(entry.args).toEqual(["bridge", "--context", "oma-claude-code"]);
+    expect(entry.args).toEqual(["bridge", "--context", "oma"]);
   });
 
   it("stdio entries keep the bare serena binary", () => {
@@ -283,6 +277,15 @@ describe("hasStaleSerenaTransport — absolute-path bridge repair", () => {
           ],
         },
         "stdio",
+      ),
+    ).toBe(true);
+  });
+
+  it("flags the superseded vendor-specific OMA contexts", () => {
+    expect(
+      hasStaleSerenaTransport(
+        { command: "oma", args: ["bridge", "--context", "oma-codex"] },
+        "bridge",
       ),
     ).toBe(true);
   });

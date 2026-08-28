@@ -273,6 +273,7 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain("<!-- OMA:END -->");
     expect(content).toContain("# oh-my-agent");
     expect(content).toContain("## Code Search");
+    expect(content).toContain("Use **serena MCP** tools for code search");
     expect(content).toContain("max_answer_chars");
     expect(content).toContain("default_max_tool_answer_chars");
     expect(content).toContain("## Workflows");

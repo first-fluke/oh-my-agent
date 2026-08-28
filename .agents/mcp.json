@@ -18,7 +18,7 @@
       "args": [
         "start-mcp-server",
         "--context",
-        "oma-claude-code",
+        "oma",
         "--project-from-cwd",
         "--add-mode",
         "no-memories"
@@ -26,7 +26,24 @@
       "env": {
         "SERENA_LOG_LEVEL": "info"
       },
-      "available_tools": null
+      "available_tools": [
+        "list_dir",
+        "find_file",
+        "search_for_pattern",
+        "get_symbols_overview",
+        "find_symbol",
+        "find_referencing_symbols",
+        "find_implementations",
+        "find_declaration",
+        "get_diagnostics_for_file",
+        "replace_symbol_body",
+        "insert_after_symbol",
+        "insert_before_symbol",
+        "rename_symbol",
+        "safe_delete_symbol",
+        "replace_in_files",
+        "initial_instructions"
+      ]
     }
   },
   "memoryConfig": {
@@ -43,13 +60,17 @@
       "get_symbols_overview",
       "find_symbol",
       "find_referencing_symbols",
+      "find_implementations",
+      "find_declaration",
       "search_for_pattern"
     ],
     "code-edit": [
       "replace_symbol_body",
       "insert_after_symbol",
       "insert_before_symbol",
-      "rename_symbol"
+      "rename_symbol",
+      "safe_delete_symbol",
+      "replace_in_files"
     ],
     "browser": [
       "navigate_page",
@@ -73,15 +94,12 @@
       "list_dir",
       "find_file"
     ],
-    "project": [
-      "activate_project",
-      "get_current_config"
+    "all": null,
+    "code-diagnostics": [
+      "get_diagnostics_for_file"
     ],
-    "thinking": [
-      "think_about_collected_information",
-      "think_about_task_adherence",
-      "think_about_whether_you_are_done"
-    ],
-    "all": null
+    "serena-support": [
+      "initial_instructions"
+    ]
   }
 }

@@ -267,7 +267,7 @@ function buildVendorBlock(vendors: string[], rules: ParsedRule[]): string {
     "",
     "## Code Search",
     "",
-    "Prefer **serena MCP** tools over native find/grep when locating code — they are symbol-aware and faster on large repos. Fall back to native Read / Glob / Grep only when serena is unavailable or for plain file content reads.",
+    "Use **serena MCP** tools for code search and discovery — they are symbol-aware and faster on large repos. Native Read / Glob / Grep is a fallback only when serena is unavailable or times out, or for plain non-code content reads. Serena's symbol-aware edit and diagnostic tools remain available after discovery.",
     "",
     "| Task | Preferred tool |",
     "|------|----------------|",

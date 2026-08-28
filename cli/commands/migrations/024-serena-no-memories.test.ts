@@ -58,7 +58,7 @@ describe("migrateSerenaNoMemories (024)", () => {
     const args = migrated.mcpServers.serena.args as string[];
     expect(args).toContain("--add-mode");
     expect(args).toContain("no-memories");
-    expect(args).toContain("oma-ide");
+    expect(args).toContain("oma");
     expect(migrated.toolGroups.memory).toBeUndefined();
     expect(migrated.toolGroups.code).toEqual(["find_symbol"]);
     expect(migrated.toolGroups.project).toEqual(["activate_project"]);
@@ -86,7 +86,7 @@ describe("migrateSerenaNoMemories (024)", () => {
       ".codex/config.toml (serena memory tools disabled)",
     ]);
     expect(afterFirst).toContain("no-memories");
-    expect(afterFirst).toContain("oma-codex");
+    expect(afterFirst).toContain('"oma"');
     expect(second).toHaveLength(0);
     expect(readFileSync(path, "utf-8")).toBe(afterFirst);
   });
@@ -107,7 +107,7 @@ describe("migrateSerenaNoMemories (024)", () => {
     ]);
     expect(
       JSON.parse(readFileSync(path, "utf-8")).mcpServers.serena.args,
-    ).toEqual(["bridge", "--context", "oma-ide"]);
+    ).toEqual(["bridge", "--context", "oma"]);
   });
 
   it("hard-excludes memory tools in Serena's project config", () => {

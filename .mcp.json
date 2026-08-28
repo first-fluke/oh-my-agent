@@ -18,7 +18,7 @@
       "args": [
         "bridge",
         "--context",
-        "oma-claude-code"
+        "oma"
       ],
       "env": {
         "SERENA_LOG_LEVEL": "info"

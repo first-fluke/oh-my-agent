@@ -21,7 +21,7 @@
       "args": [
         "start-mcp-server",
         "--context",
-        "oma-claude-code",
+        "oma",
         "--project-from-cwd",
         "--add-mode",
         "no-memories"

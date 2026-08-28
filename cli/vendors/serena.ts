@@ -86,7 +86,7 @@ export const SERENA_NO_MEMORY_MODE_ARGS = [
   "no-memories",
 ] as const;
 
-/** Built-in Serena contexts for which OMA installs state-safe counterparts. */
+/** Built-in client contexts that OMA maps to its shared Serena context. */
 export const OMA_SERENA_BASE_CONTEXTS = [
   "codex",
   "ide",
@@ -95,11 +95,48 @@ export const OMA_SERENA_BASE_CONTEXTS = [
 ] as const;
 
 const OMA_SERENA_BASE_CONTEXT_SET = new Set<string>(OMA_SERENA_BASE_CONTEXTS);
+export const OMA_SERENA_CONTEXT = "oma" as const;
 
-/** Resolve a built-in context to OMA's hard-exclusion context. */
+/**
+ * Serena capabilities exposed by OMA's shared code-intelligence context.
+ *
+ * The allowlist deliberately retains search, diagnostics, and symbol-aware
+ * edits. Memory and onboarding are absent because OMA owns session/workflow
+ * state under `.agents/`.
+ */
+export const OMA_SERENA_FIXED_TOOLS = [
+  "list_dir",
+  "find_file",
+  "search_for_pattern",
+  "get_symbols_overview",
+  "find_symbol",
+  "find_referencing_symbols",
+  "find_implementations",
+  "find_declaration",
+  "get_diagnostics_for_file",
+  "replace_symbol_body",
+  "insert_after_symbol",
+  "insert_before_symbol",
+  "rename_symbol",
+  "safe_delete_symbol",
+  "replace_in_files",
+  "initial_instructions",
+] as const;
+
+const OMA_SERENA_LEGACY_CONTEXT_SET = new Set<string>(
+  OMA_SERENA_BASE_CONTEXTS.map((context) => `oma-${context}`),
+);
+
+/** Resolve every OMA-managed client context to the shared OMA context. */
 export function omaSerenaContext(context: string): string {
-  if (context.startsWith("oma-")) return context;
-  return OMA_SERENA_BASE_CONTEXT_SET.has(context) ? `oma-${context}` : context;
+  if (
+    context === OMA_SERENA_CONTEXT ||
+    OMA_SERENA_BASE_CONTEXT_SET.has(context) ||
+    OMA_SERENA_LEGACY_CONTEXT_SET.has(context)
+  ) {
+    return OMA_SERENA_CONTEXT;
+  }
+  return context;
 }
 
 export function serenaStartMcpArgs(context: string): string[] {
@@ -245,7 +282,7 @@ export function hasStaleSerenaTransport(
   return isBridgeSerenaEntry(server) && server?.command !== "oma";
 }
 
-/** True when a managed launcher selects an OMA state-safe context. */
+/** True when a managed launcher selects OMA's shared context. */
 export function hasOmaSerenaContext(
   server: SerenaMcpServerLike | undefined,
 ): boolean {
@@ -253,9 +290,13 @@ export function hasOmaSerenaContext(
   const idx = server.args.indexOf("--context");
   if (idx === -1 || typeof server.args[idx + 1] !== "string") return false;
   const context = server.args[idx + 1] as string;
-  // Unknown custom contexts remain user-owned. Only OMA's known built-ins are
-  // stale when they have not been mapped to the corresponding `oma-*` file.
-  return !OMA_SERENA_BASE_CONTEXT_SET.has(context);
+  // Unknown custom contexts remain user-owned. Built-ins and OMA's superseded
+  // per-client contexts are stale; only the shared `oma` context is current.
+  return (
+    context === OMA_SERENA_CONTEXT ||
+    (!OMA_SERENA_BASE_CONTEXT_SET.has(context) &&
+      !OMA_SERENA_LEGACY_CONTEXT_SET.has(context))
+  );
 }
 
 export function hasSerenaDashboardOpenDisabled(
@@ -314,21 +355,21 @@ export function withSerenaDashboardOpenDisabled<T extends SerenaMcpServerLike>(
 }
 
 /**
- * Force a serena entry's `--context` to `context`, inserting the flag when
- * absent. No-op for non-serena entries (guarded on `command === "serena"`).
- *
- * Vendors that derive their MCP config by copying the SSOT `.agents/mcp.json`
- * (Claude Code's template, which carries `--context claude-code`) must re-stamp
- * their own context so Claude's value does not leak — every vendor that builds
- * its serena entry from scratch already does this via `serenaStartMcpArgs`.
+ * Resolve and stamp a managed Serena entry's `--context`, inserting the flag
+ * when absent. OMA's known client and legacy contexts converge on `oma`;
+ * unknown custom contexts remain unchanged.
  */
 export function withSerenaContext<T extends SerenaMcpServerLike>(
   server: T,
   context: string,
 ): T {
   // Applies to both entry shapes: `serena … --context X` and the bridge's
-  // `oma bridge --context X`, which is likewise stamped per vendor.
-  const isManaged = server.command === "serena" || isBridgeSerenaEntry(server);
+  // `oma bridge --context X`.
+  const isManaged =
+    server.command === "serena" ||
+    (server.command === "oma" &&
+      Array.isArray(server.args) &&
+      server.args.includes("bridge"));
   if (!isManaged || !Array.isArray(server.args)) return server;
 
   const resolvedContext = omaSerenaContext(context);

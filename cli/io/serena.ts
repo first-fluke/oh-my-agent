@@ -1,9 +1,19 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { type Document, isMap, isScalar, isSeq, parseDocument } from "yaml";
-import { OMA_SERENA_BASE_CONTEXTS } from "../vendors/serena.js";
+import {
+  OMA_SERENA_BASE_CONTEXTS,
+  OMA_SERENA_CONTEXT,
+  OMA_SERENA_FIXED_TOOLS,
+} from "../vendors/serena.js";
 import {
   detectableLanguages,
   detectProjectLanguages,
@@ -452,13 +462,28 @@ export type SerenaContextsOutcome = {
   failed: string[];
 };
 
+export const OMA_SERENA_CONTEXT_YML = [
+  "description: Shared OMA code-intelligence context",
+  "prompt: |",
+  "  Serena is OMA's code-intelligence layer.",
+  "  Always use Serena for code discovery and search. Use native search only",
+  "  when Serena is unavailable or times out, or for plain non-code reads.",
+  "  Use Serena's symbol-aware editing tools after locating code when appropriate.",
+  "  OMA owns workflow and coordination state; do not request memory or onboarding tools.",
+  "excluded_tools: []",
+  "included_optional_tools: []",
+  "fixed_tools:",
+  ...OMA_SERENA_FIXED_TOOLS.map((tool) => `- ${tool}`),
+  "tool_description_overrides: {}",
+  "single_project: true",
+  "structured_tool_output: false",
+  "",
+].join("\n");
+
 /**
- * Install OMA-owned copies of Serena's built-in client contexts and add the
- * state-tool exclusions to their MCP registration layer.
- *
- * Serena 1.7.0 still advertises memory tools when only `no-memories` or a
- * project exclusion is used. Context exclusions are the earliest and
- * authoritative filter used to construct MCP `tools/list`.
+ * Install one deterministic OMA-owned Serena context for every supported
+ * client. Its fixed allowlist retains code search, diagnostics, and symbolic
+ * editing while removing memory/onboarding from MCP registration entirely.
  */
 export function ensureOmaSerenaContexts(): SerenaContextsOutcome {
   const changed: string[] = [];
@@ -466,47 +491,33 @@ export function ensureOmaSerenaContexts(): SerenaContextsOutcome {
   const serenaHome =
     process.env.SERENA_HOME?.trim() || join(homedir(), ".serena");
   const contextsDir = join(serenaHome, "contexts");
+  const contextPath = join(contextsDir, `${OMA_SERENA_CONTEXT}.yml`);
+  let contextReady = false;
 
-  for (const baseContext of OMA_SERENA_BASE_CONTEXTS) {
-    const context = `oma-${baseContext}`;
-    const contextPath = join(contextsDir, `${context}.yml`);
-    let created = false;
-
-    if (!existsSync(contextPath)) {
-      try {
-        execFileSync(
-          "serena",
-          ["context", "create", "-n", context, "--from-internal", baseContext],
-          { stdio: "ignore", timeout: PROBE_TIMEOUT_MS },
-        );
-        created = true;
-      } catch {
-        failed.push(context);
-        continue;
-      }
+  try {
+    mkdirSync(contextsDir, { recursive: true });
+    const current = existsSync(contextPath)
+      ? readFileSync(contextPath, "utf-8")
+      : null;
+    if (current !== OMA_SERENA_CONTEXT_YML) {
+      writeFileSync(contextPath, OMA_SERENA_CONTEXT_YML, "utf-8");
+      changed.push(OMA_SERENA_CONTEXT);
     }
+    contextReady = true;
+  } catch {
+    failed.push(OMA_SERENA_CONTEXT);
+  }
 
-    if (!existsSync(contextPath)) {
-      failed.push(context);
-      continue;
-    }
-
+  for (const baseContext of contextReady ? OMA_SERENA_BASE_CONTEXTS : []) {
+    const legacyPath = join(contextsDir, `oma-${baseContext}.yml`);
+    if (!existsSync(legacyPath)) continue;
     try {
-      const existing = readFileSync(contextPath, "utf-8");
-      const updated = reconcileSerenaToolExclusions(existing);
-      if (updated !== null) {
-        writeFileSync(contextPath, updated, "utf-8");
-      }
-      const isolated = SERENA_STATE_TOOLS.every((tool) =>
-        (updated ?? existing).includes(`- ${tool}`),
-      );
-      if (!isolated) {
-        failed.push(context);
-      } else if (created || updated !== null) {
-        changed.push(context);
+      rmSync(legacyPath);
+      if (!changed.includes(OMA_SERENA_CONTEXT)) {
+        changed.push(OMA_SERENA_CONTEXT);
       }
     } catch {
-      failed.push(context);
+      failed.push(`oma-${baseContext}`);
     }
   }
 

@@ -40,8 +40,9 @@ export const STARTUP_PROBE_TIMEOUT_MS = Number.parseInt(
  * 22 tools with it pinned vs 24 without, and `activate_project` answers
  * "Unknown tool"), which makes concurrent sessions safe.
  *
- * Daemons are keyed by (project root, serena context) because the context
- * decides the tool set and prompts, and vendors ask for different ones.
+ * Daemons remain keyed by (project root, Serena context) so user-owned custom
+ * contexts cannot collide with OMA's shared `oma` context. OMA-managed vendors
+ * all converge on the latter.
  *
  * Cold-start numbers (measured, serena 1.6.1, this repo): the HTTP port binds
  * ~8s after spawn — Python interpreter + imports — while language-server init

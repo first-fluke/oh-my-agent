@@ -1,6 +1,10 @@
 import { join, resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  OMA_SERENA_CONTEXT,
+  OMA_SERENA_FIXED_TOOLS,
+} from "../vendors/serena.js";
+import {
   advisoryHeavyLanguages,
   ensureOmaSerenaContexts,
   ensureSerenaDefaultMaxAnswerChars,
@@ -9,6 +13,7 @@ import {
   ensureSerenaRegistered,
   inferSerenaLanguages,
   isForbiddenSerenaProjectRoot,
+  OMA_SERENA_CONTEXT_YML,
   parseProjectYmlLanguages,
   reconcileSerenaLanguages,
   reconcileSerenaProjectConfig,
@@ -32,6 +37,7 @@ const mockFs = vi.hoisted(() => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
+  rmSync: vi.fn(),
 }));
 
 const mockExecFileSync = vi.hoisted(() => vi.fn());
@@ -48,6 +54,7 @@ vi.mock("node:fs", async (importOriginal) => {
     readFileSync: mockFs.readFileSync,
     writeFileSync: mockFs.writeFileSync,
     mkdirSync: mockFs.mkdirSync,
+    rmSync: mockFs.rmSync,
   };
 });
 
@@ -101,45 +108,60 @@ describe("reconcileSerenaToolExclusions", () => {
 });
 
 describe("ensureOmaSerenaContexts", () => {
-  it("copies built-in contexts and hard-excludes Serena state tools", () => {
-    const existing = new Set<string>();
+  it("writes one fixed-tool context and removes superseded variants", () => {
     mockFs.existsSync.mockImplementation((path: string) =>
-      existing.has(String(path)),
-    );
-    mockExecFileSync.mockImplementation((_command, args: string[]) => {
-      const name = args[args.indexOf("-n") + 1];
-      existing.add(join("/mock/home", ".serena", "contexts", `${name}.yml`));
-    });
-    mockFs.readFileSync.mockReturnValue(
-      "description: test\nprompt: test\nexcluded_tools: []\n",
+      String(path).endsWith("oma-codex.yml"),
     );
 
     const result = ensureOmaSerenaContexts();
 
     expect(result.failed).toEqual([]);
-    expect(result.changed).toEqual([
-      "oma-codex",
-      "oma-ide",
-      "oma-claude-code",
-      "oma-antigravity",
-    ]);
-    expect(mockExecFileSync).toHaveBeenCalledTimes(4);
-    for (const call of mockFs.writeFileSync.mock.calls) {
-      const written = String(call[1]);
-      expect(written).toContain("- write_memory");
-      expect(written).toContain("- onboarding");
+    expect(result.changed).toEqual([OMA_SERENA_CONTEXT]);
+    expect(mockExecFileSync).not.toHaveBeenCalled();
+    expect(mockFs.mkdirSync).toHaveBeenCalledWith(
+      join("/mock/home", ".serena", "contexts"),
+      { recursive: true },
+    );
+    const [path, content] = mockFs.writeFileSync.mock.calls.at(0) ?? [];
+    expect(path).toBe(join("/mock/home", ".serena", "contexts", "oma.yml"));
+    const written = String(content);
+    expect(written).toContain("fixed_tools:");
+    for (const tool of OMA_SERENA_FIXED_TOOLS) {
+      expect(written).toContain(`- ${tool}`);
     }
+    expect(written).not.toContain("write_memory");
+    expect(written).not.toContain("- onboarding");
+    expect(mockFs.rmSync).toHaveBeenCalledWith(
+      join("/mock/home", ".serena", "contexts", "oma-codex.yml"),
+    );
   });
 
-  it("is idempotent for already-isolated contexts", () => {
-    mockFs.existsSync.mockReturnValue(true);
-    mockFs.readFileSync.mockReturnValue(
-      `description: test\nprompt: test\n${HARD_EXCLUSIONS}`,
+  it("is idempotent when the shared fixed-tool context matches", () => {
+    mockFs.existsSync.mockImplementation((path: string) =>
+      String(path).endsWith("oma.yml"),
     );
+    mockFs.readFileSync.mockReturnValue(OMA_SERENA_CONTEXT_YML);
 
-    expect(ensureOmaSerenaContexts()).toEqual({ changed: [], failed: [] });
+    const result = ensureOmaSerenaContexts();
+    expect(result.failed).toEqual([]);
+    expect(result.changed).toEqual([]);
     expect(mockExecFileSync).not.toHaveBeenCalled();
     expect(mockFs.writeFileSync).not.toHaveBeenCalled();
+    expect(mockFs.rmSync).not.toHaveBeenCalled();
+  });
+
+  it("preserves legacy contexts if the shared context cannot be written", () => {
+    mockFs.existsSync.mockImplementation((path: string) =>
+      String(path).endsWith("oma-codex.yml"),
+    );
+    mockFs.writeFileSync.mockImplementationOnce(() => {
+      throw new Error("read-only home");
+    });
+
+    const result = ensureOmaSerenaContexts();
+
+    expect(result.failed).toEqual([OMA_SERENA_CONTEXT]);
+    expect(mockFs.rmSync).not.toHaveBeenCalled();
   });
 });
 

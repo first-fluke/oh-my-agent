@@ -403,7 +403,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         const serenaContexts = ensureOmaSerenaContexts();
         if (serenaContexts.failed.length > 0) {
           ui.note(
-            `Could not install Serena state-safe contexts: ${serenaContexts.failed.join(", ")}`,
+            `Could not install Serena's OMA context: ${serenaContexts.failed.join(", ")}`,
             "Serena",
           );
         }

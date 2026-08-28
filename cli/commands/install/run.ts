@@ -493,19 +493,16 @@ export async function install(options: InstallOptions = {}): Promise<void> {
             `serena not found and uv is unavailable — install uv, then run \`${SERENA_INSTALL_HINT}\`.`,
           );
         }
-        if (
-          serenaBinary.status === "present" ||
-          serenaBinary.status === "installed"
-        ) {
-          const contexts = ensureOmaSerenaContexts();
-          if (contexts.changed.length > 0) {
-            p.log.success(pc.green("Serena state tools disabled"));
-          }
-          if (contexts.failed.length > 0) {
-            p.log.warn(
-              `Could not install Serena state-safe contexts: ${contexts.failed.join(", ")}`,
-            );
-          }
+        const contexts = ensureOmaSerenaContexts();
+        if (contexts.changed.length > 0) {
+          p.log.success(
+            pc.green("Serena code-intelligence context configured"),
+          );
+        }
+        if (contexts.failed.length > 0) {
+          p.log.warn(
+            `Could not install Serena's OMA context: ${contexts.failed.join(", ")}`,
+          );
         }
       }
 
