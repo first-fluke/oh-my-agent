@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "12.7.3",
-  "releaseDate": "2026-08-27T07:06:49.921Z",
+  "releaseDate": "2026-08-28T02:37:08.576Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -291,13 +291,13 @@
     },
     {
       "path": ".agents/mcp.json",
-      "sha256": "fe8f9b304edc195ee723130ad180fad614ce76a3fc356ab5f23cb54fd9f15027",
-      "size": 1907
+      "sha256": "1eda0ccd3a9f62709255e9b2deffd514134bb4a9c0f58eceef8aaf3e3ccc6b11",
+      "size": 1804
     },
     {
       "path": ".agents/mcp_config.json",
-      "sha256": "e44dae18a6c15eb2c36ee4bec1480d86d7c5567a1811ebc7f675d3001750ec3b",
-      "size": 477
+      "sha256": "827e85aa5f5ba2c17dacb68553f60f94ea8430948a44576554f9da4676a5022e",
+      "size": 481
     },
     {
       "path": ".agents/oma-config.yaml",
