@@ -1,5 +1,22 @@
 # Changelog
 
+## [12.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.3...cli-v12.8.0) (2026-08-28)
+
+
+### Features
+
+* **serena:** unify code-intelligence context ([2c8651d](https://github.com/first-fluke/oh-my-agent/commit/2c8651d29c1983167b1a9b39b22f736687055f0d))
+
+
+### Bug Fixes
+
+* **serena:** disable memory tools at MCP boundary ([b487343](https://github.com/first-fluke/oh-my-agent/commit/b4873437fae07d3e411e7dbb54cc41077d3e74a6))
+
+
+### Refactoring
+
+* **state:** decouple coordination state from Serena ([4a3d837](https://github.com/first-fluke/oh-my-agent/commit/4a3d837b1eda2e5b2bf241054675d6de0a7b45d2))
+
 ## [12.7.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.2...cli-v12.7.3) (2026-08-27)
 
 
