@@ -8,8 +8,8 @@ import {
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
-  CANONICAL_MEMORIES_REL,
-  LEGACY_MEMORIES_REL,
+  COORDINATION_STORE_REL,
+  LEGACY_SERENA_MEMORY_REL,
 } from "../../io/memory.js";
 import type {
   MemoryGcConfig,
@@ -22,7 +22,7 @@ import { findFileUpwards, resolveProjectRoot } from "../../utils/fs-utils.js";
 const SESSIONS_REL = join(".agents", "state", "sessions");
 // Memory-store dirs swept for ephemeral artifacts: the canonical oma store
 // plus the legacy Serena dir (pre-move projects and leftover legacy files).
-const MEMORY_STORE_RELS = [CANONICAL_MEMORIES_REL, LEGACY_MEMORIES_REL];
+const MEMORY_STORE_RELS = [COORDINATION_STORE_REL, LEGACY_SERENA_MEMORY_REL];
 
 const DEFAULT_KEEP = 100;
 const DEFAULT_MAX_AGE_DAYS = 50;
@@ -33,8 +33,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // kept — only ephemeral run/cost artifacts are swept.
 //   - ALWAYS: per-session cost records — pure ephemeral, age-independent.
 //   - AGED:   workflow run artifacts — pruned only when older than maxAgeDays.
-const SERENA_ALWAYS = [/^session-cost-.*\.md$/];
-const SERENA_AGED = [
+const RUN_ARTIFACT_ALWAYS = [/^session-cost-.*\.md$/];
+const RUN_ARTIFACT_AGED = [
   /^progress-.*\.md$/,
   /^result-.*\.md$/,
   /^orchestrator-session.*\.md$/,
@@ -136,7 +136,7 @@ function gcSessions(
   return { pruned, kept: entries.length - pruned.length };
 }
 
-function gcSerena(
+function gcCoordinationArtifacts(
   baseDir: string,
   maxAgeMs: number | null,
   nowMs: number,
@@ -151,8 +151,8 @@ function gcSerena(
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       // Directories (decisions/, designs/, plans/, …) are curated — always kept.
       if (!e.isFile()) continue;
-      const always = SERENA_ALWAYS.some((re) => re.test(e.name));
-      const aged = SERENA_AGED.some((re) => re.test(e.name));
+      const always = RUN_ARTIFACT_ALWAYS.some((re) => re.test(e.name));
+      const aged = RUN_ARTIFACT_AGED.some((re) => re.test(e.name));
       if (!always && !aged) continue; // curated / unknown file — keep
 
       considered += 1;
@@ -202,17 +202,17 @@ export function garbageCollectLocalState(
     scope === "serena"
       ? { pruned: [], kept: 0 }
       : gcSessions(baseDir, keep, dryRun);
-  const serena =
+  const coordination =
     scope === "sessions"
       ? { pruned: [], kept: 0 }
-      : gcSerena(baseDir, maxAgeMs, nowMs, dryRun);
+      : gcCoordinationArtifacts(baseDir, maxAgeMs, nowMs, dryRun);
 
-  const total = sessions.pruned.length + serena.pruned.length;
+  const total = sessions.pruned.length + coordination.pruned.length;
   const verb = dryRun ? "would prune" : "pruned";
   const message =
     total === 0
       ? "Nothing to prune"
-      : `${verb} ${sessions.pruned.length} session(s) and ${serena.pruned.length} Serena file(s)`;
+      : `${verb} ${sessions.pruned.length} session(s) and ${coordination.pruned.length} coordination file(s)`;
 
   return {
     baseDir,
@@ -222,8 +222,9 @@ export function garbageCollectLocalState(
     dryRun,
     prunedSessions: sessions.pruned,
     keptSessions: sessions.kept,
-    prunedSerena: serena.pruned,
-    keptSerena: serena.kept,
+    // Public result keys remain for CLI/API compatibility.
+    prunedSerena: coordination.pruned,
+    keptSerena: coordination.kept,
     message,
   };
 }

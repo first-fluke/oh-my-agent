@@ -9,13 +9,14 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getMemoriesPath } from "../io/memory.js";
+import { getCoordinationStorePath } from "../io/memory.js";
 import { activateWorkflowSession, emitEvent, readEvents } from "./events.js";
+import { mirrorSessionToSerena } from "./serena-mirror.js";
 import {
-  buildSessionMirror,
-  mirrorMemoryName,
-  mirrorSessionToSerena,
-} from "./serena-mirror.js";
+  buildSessionSummary,
+  exportSessionSummary,
+  sessionSummaryName,
+} from "./session-summary.js";
 
 function seedSession(projectDir: string, sid: string): void {
   activateWorkflowSession({
@@ -43,12 +44,12 @@ function seedSession(projectDir: string, sid: string): void {
   });
 }
 
-describe("serena-mirror", () => {
+describe("session-summary", () => {
   let projectDir: string;
   const sid = "01HXZKTESTSID";
 
   beforeEach(() => {
-    projectDir = mkdtempSync(join(tmpdir(), "oma-serena-mirror-"));
+    projectDir = mkdtempSync(join(tmpdir(), "oma-session-summary-"));
     seedSession(projectDir, sid);
   });
 
@@ -56,21 +57,21 @@ describe("serena-mirror", () => {
     rmSync(projectDir, { recursive: true, force: true });
   });
 
-  describe("mirrorMemoryName", () => {
-    it("builds a sanitized session memory name", () => {
-      expect(mirrorMemoryName("ultrawork", sid)).toBe(
+  describe("sessionSummaryName", () => {
+    it("builds a sanitized session summary name", () => {
+      expect(sessionSummaryName("ultrawork", sid)).toBe(
         `session-ultrawork-${sid.toLowerCase()}`,
       );
-      expect(mirrorMemoryName("Deep Sec!", "AB/CD")).toBe(
+      expect(sessionSummaryName("Deep Sec!", "AB/CD")).toBe(
         "session-deep-sec-ab-cd",
       );
     });
   });
 
-  describe("buildSessionMirror", () => {
+  describe("buildSessionSummary", () => {
     it("includes decisions, gates, and recent events", () => {
       const events = readEvents(projectDir, sid);
-      const content = buildSessionMirror(
+      const content = buildSessionSummary(
         sid,
         {
           sid,
@@ -83,7 +84,7 @@ describe("serena-mirror", () => {
         },
         events,
       );
-      expect(content).toContain(`# OMA Session Mirror: ultrawork ${sid}`);
+      expect(content).toContain(`# OMA Session Summary: ultrawork ${sid}`);
       expect(content).toContain("**JWT expiry** → 24h");
       expect(content).toContain("mobile-first");
       expect(content).toContain("phase-1-design by architecture-reviewer-01");
@@ -91,9 +92,9 @@ describe("serena-mirror", () => {
     });
   });
 
-  describe("mirrorSessionToSerena", () => {
-    it("writes a direct-fs mirror when no MCP writer is supplied", async () => {
-      const result = await mirrorSessionToSerena({ projectDir, sid });
+  describe("exportSessionSummary", () => {
+    it("writes a direct-fs summary when no external writer is supplied", async () => {
+      const result = await exportSessionSummary({ projectDir, sid });
       expect(result).toMatchObject({
         sid,
         workflow: "ultrawork",
@@ -101,17 +102,17 @@ describe("serena-mirror", () => {
         written: true,
       });
       const expectedPath = join(
-        getMemoriesPath(projectDir),
-        `${mirrorMemoryName("ultrawork", sid)}.md`,
+        getCoordinationStorePath(projectDir),
+        `${sessionSummaryName("ultrawork", sid)}.md`,
       );
       expect(result.path).toBe(expectedPath);
       expect(existsSync(expectedPath)).toBe(true);
       expect(readFileSync(expectedPath, "utf-8")).toContain("**JWT expiry**");
     });
 
-    it("prefers the Serena MCP writer when it succeeds", async () => {
+    it("prefers an explicitly supplied external writer when it succeeds", async () => {
       const calls: Array<{ name: string; content: string }> = [];
-      const result = await mirrorSessionToSerena({
+      const result = await exportSessionSummary({
         projectDir,
         sid,
         writer: {
@@ -121,16 +122,16 @@ describe("serena-mirror", () => {
           },
         },
       });
-      expect(result.method).toBe("serena-mcp");
+      expect(result.method).toBe("external-writer");
       expect(result.written).toBe(true);
       expect(calls).toHaveLength(1);
-      expect(calls[0]?.name).toBe(mirrorMemoryName("ultrawork", sid));
-      // MCP succeeded, so no direct-fs file is written.
+      expect(calls[0]?.name).toBe(sessionSummaryName("ultrawork", sid));
+      // The external writer succeeded, so no direct-fs file is written.
       expect(existsSync(result.path)).toBe(false);
     });
 
-    it("falls back to direct-fs when the MCP writer returns false", async () => {
-      const result = await mirrorSessionToSerena({
+    it("falls back to direct-fs when the external writer returns false", async () => {
+      const result = await exportSessionSummary({
         projectDir,
         sid,
         writer: {
@@ -144,8 +145,8 @@ describe("serena-mirror", () => {
       expect(existsSync(result.path)).toBe(true);
     });
 
-    it("falls back to direct-fs when the MCP writer throws", async () => {
-      const result = await mirrorSessionToSerena({
+    it("falls back to direct-fs when the external writer throws", async () => {
+      const result = await exportSessionSummary({
         projectDir,
         sid,
         writer: {
@@ -165,9 +166,9 @@ describe("serena-mirror", () => {
       mkdirSync(memoriesDir, { recursive: true });
       chmodSync(memoriesDir, 0o400);
 
-      let result: Awaited<ReturnType<typeof mirrorSessionToSerena>>;
+      let result: Awaited<ReturnType<typeof exportSessionSummary>>;
       try {
-        result = await mirrorSessionToSerena({ projectDir, sid });
+        result = await exportSessionSummary({ projectDir, sid });
       } finally {
         chmodSync(memoriesDir, 0o700);
       }
@@ -180,9 +181,15 @@ describe("serena-mirror", () => {
         (event) => event.kind === "mirror.warning",
       );
       expect(warnings).toHaveLength(1);
-      expect(warnings[0]?.payload?.memoryName).toBe(
-        mirrorMemoryName("ultrawork", sid),
+      expect(warnings[0]?.payload?.summaryName).toBe(
+        sessionSummaryName("ultrawork", sid),
       );
     });
+  });
+
+  it("keeps the deprecated Serena facade compatible", async () => {
+    const result = await mirrorSessionToSerena({ projectDir, sid });
+    expect(result.memoryName).toBe(sessionSummaryName("ultrawork", sid));
+    expect(result.method).toBe("direct-fs");
   });
 });

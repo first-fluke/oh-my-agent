@@ -47,7 +47,7 @@ export function registerMemory(program: Command): void {
     program
       .command("memory:init")
       .description(
-        "Initialize the coordination memory schema in .agents/state/memories",
+        "Initialize the coordination store in .agents/state/memories",
       )
       .option("--force", "Overwrite empty or existing schema files"),
   ).action(

@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { inspectRecommendedGitConfig } from "../../io/git-recommended.js";
-import { getMemoriesPath } from "../../io/memory.js";
+import { getCoordinationStorePath } from "../../io/memory.js";
 import { SERENA_INSTALL_HINT } from "../../io/serena.js";
 import { downloadAndExtract } from "../../io/tarball.js";
 import { safeGetInstallRoot } from "../../platform/install-context.js";
@@ -124,14 +124,23 @@ export async function collectDoctorReport(
 
   const vendorDocs = collectVendorDocChecks(root, clis);
 
-  // Coordination memory store (canonical .agents/state/memories, legacy
-  // .serena/memories fallback) — the dir the dashboards watch.
-  const memoriesDir = getMemoriesPath(root);
-  const hasSerena = existsSync(memoriesDir);
-  let serenaFileCount = 0;
-  if (hasSerena) {
+  // OMA coordination state and Serena activation are independent concerns.
+  const coordinationDir = getCoordinationStorePath(root);
+  const hasCoordinationStore = existsSync(coordinationDir);
+  let coordinationFileCount = 0;
+  if (hasCoordinationStore) {
     try {
-      serenaFileCount = readdirSync(memoriesDir).length;
+      coordinationFileCount = readdirSync(coordinationDir).length;
+    } catch {}
+  }
+
+  const serenaProjectFile = join(root, ".serena", "project.yml");
+  const serenaMemoryDir = join(root, ".serena", "memories");
+  const hasSerena = existsSync(serenaProjectFile);
+  let serenaFileCount = 0;
+  if (existsSync(serenaMemoryDir)) {
+    try {
+      serenaFileCount = readdirSync(serenaMemoryDir).length;
     } catch {}
   }
 
@@ -163,7 +172,8 @@ export async function collectDoctorReport(
     (d) => d.required && !d.hasOmaBlock,
   ).length;
   const selfHealingIssues = selfHealing && !selfHealing.ok ? 1 : 0;
-  // Only an issue when the project is Serena-activated — don't flag plain dirs.
+  // Only an issue when Serena's project config exists; OMA coordination state
+  // alone must not create a Serena dependency.
   const serenaBinaryIssues = hasSerena && !serenaBinary.installed ? 1 : 0;
 
   const gitStatus = inspectRecommendedGitConfig();
@@ -200,6 +210,8 @@ export async function collectDoctorReport(
     missingCLIs,
     missingSkills,
     vendorDocs,
+    hasCoordinationStore,
+    coordinationFileCount,
     hasSerena,
     serenaFileCount,
     serenaBinary,

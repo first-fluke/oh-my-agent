@@ -12,7 +12,7 @@ import { AGENTS_STATE_DIR, agentsPathFromRoot } from "../../constants/paths.js";
 import { getGitStats } from "../../io/git.js";
 import {
   getCompletedTasksCount,
-  getMemoryDirs,
+  getCoordinationStoreDirs,
   getSessionMeta,
 } from "../../io/memory.js";
 import { estimateUsd, listAllSessionUsage } from "../../io/session-cost.js";
@@ -117,11 +117,11 @@ function detectSkillsFromMemories(cwd: string): Record<string, number> {
   const skillsUsed: Record<string, number> = {};
   const seen = new Set<string>();
 
-  for (const memoriesDir of getMemoryDirs(cwd)) {
-    if (!existsSync(memoriesDir)) continue;
+  for (const coordinationDir of getCoordinationStoreDirs(cwd)) {
+    if (!existsSync(coordinationDir)) continue;
 
     try {
-      const files = readdirSync(memoriesDir);
+      const files = readdirSync(coordinationDir);
       for (const file of files) {
         if (seen.has(file)) continue;
         seen.add(file);

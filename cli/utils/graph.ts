@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import pc from "picocolors";
-import { getMemoriesPath } from "../io/memory.js";
+import { getCoordinationStorePath } from "../io/memory.js";
 import { SKILLS } from "../platform/skills-installer.js";
 
 // ── Types ───────────────────────────────────────────────────────
@@ -198,8 +198,8 @@ export function buildGraph(root: string): Graph {
     if (skill) edge(id, `skill:${skill}`, "implements");
   }
 
-  // Project memory store (canonical .agents/state/memories, legacy fallback)
-  const memDir = getMemoriesPath(root);
+  // Project coordination store (canonical path with a legacy fallback)
+  const memDir = getCoordinationStorePath(root);
   for (const f of tryDir(memDir).filter((f) => f.endsWith(".md"))) {
     nodes.push({
       id: `memory:${f.replace(".md", "")}`,
@@ -435,7 +435,7 @@ export function renderAscii(graph: Graph): string {
   }
   o.push("");
 
-  // Detail: project memory store
+  // Detail: project coordination store
   const mems = graph.nodes.filter((n) => n.category === "memory");
   o.push(pc.bold(`Memories (${mems.length})`));
   if (!mems.length) {

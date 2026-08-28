@@ -36,10 +36,15 @@ export interface MemoryInitResult {
   skipped: string[];
 }
 
-/** Canonical oma-owned coordination-memory dir (progress/result/session artifacts). */
-export const CANONICAL_MEMORIES_REL = join(".agents", "state", "memories");
-/** Pre-move location — Serena's memory dir doubled as the coordination bus. */
-export const LEGACY_MEMORIES_REL = join(".serena", "memories");
+/** Canonical OMA-owned coordination store (progress/result/session artifacts). */
+export const COORDINATION_STORE_REL = join(".agents", "state", "memories");
+/** Pre-move location where Serena's knowledge store doubled as coordination. */
+export const LEGACY_SERENA_MEMORY_REL = join(".serena", "memories");
+
+/** @deprecated Use COORDINATION_STORE_REL. */
+export const CANONICAL_MEMORIES_REL = COORDINATION_STORE_REL;
+/** @deprecated Use LEGACY_SERENA_MEMORY_REL. */
+export const LEGACY_MEMORIES_REL = LEGACY_SERENA_MEMORY_REL;
 
 /**
  * Resolve the coordination-memory dir: canonical when present, else an
@@ -47,34 +52,43 @@ export const LEGACY_MEMORIES_REL = join(".serena", "memories");
  * so new projects start on the oma-owned path. Migration 017 moves legacy
  * coordination artifacts across, after which canonical always wins.
  */
-export function getMemoriesPath(cwd: string): string {
-  const canonical = join(cwd, CANONICAL_MEMORIES_REL);
+export function getCoordinationStorePath(cwd: string): string {
+  const canonical = join(cwd, COORDINATION_STORE_REL);
   if (existsSync(canonical)) return canonical;
-  const legacy = join(cwd, LEGACY_MEMORIES_REL);
+  const legacy = join(cwd, LEGACY_SERENA_MEMORY_REL);
   if (existsSync(legacy)) return legacy;
   return canonical;
 }
 
+/** @deprecated Use getCoordinationStorePath. */
+export const getMemoriesPath = getCoordinationStorePath;
+
 /** Existing memory dirs, canonical first — union reads while legacy files remain. */
-export function getMemoryDirs(cwd: string): string[] {
+export function getCoordinationStoreDirs(cwd: string): string[] {
   const dirs = [
-    join(cwd, CANONICAL_MEMORIES_REL),
-    join(cwd, LEGACY_MEMORIES_REL),
+    join(cwd, COORDINATION_STORE_REL),
+    join(cwd, LEGACY_SERENA_MEMORY_REL),
   ].filter((dir) => existsSync(dir));
-  return dirs.length > 0 ? dirs : [join(cwd, CANONICAL_MEMORIES_REL)];
+  return dirs.length > 0 ? dirs : [join(cwd, COORDINATION_STORE_REL)];
 }
 
+/** @deprecated Use getCoordinationStoreDirs. */
+export const getMemoryDirs = getCoordinationStoreDirs;
+
 /** Locate an existing memory file across canonical + legacy dirs. */
-export function resolveMemoryFile(
+export function resolveCoordinationFile(
   cwd: string,
   filename: string,
 ): string | null {
-  for (const dir of getMemoryDirs(cwd)) {
+  for (const dir of getCoordinationStoreDirs(cwd)) {
     const candidate = join(dir, filename);
     if (existsSync(candidate)) return candidate;
   }
   return null;
 }
+
+/** @deprecated Use resolveCoordinationFile. */
+export const resolveMemoryFile = resolveCoordinationFile;
 
 function readFileSafe(filePath: string): string {
   try {
@@ -151,7 +165,7 @@ interface MemoryFileEntry {
 /** Union of memory files across dirs; canonical shadows legacy on name clash. */
 function listMemoryFileEntries(cwd: string): MemoryFileEntry[] {
   const seen = new Map<string, string>();
-  for (const dir of getMemoryDirs(cwd)) {
+  for (const dir of getCoordinationStoreDirs(cwd)) {
     let names: string[] = [];
     try {
       names = readdirSync(dir);
@@ -254,7 +268,7 @@ export function getSessionSummary(cwd: string): SessionSummary {
 }
 
 export function getSessionMeta(cwd: string): SessionMeta {
-  const sessionFile = resolveMemoryFile(cwd, "orchestrator-session.md");
+  const sessionFile = resolveCoordinationFile(cwd, "orchestrator-session.md");
   if (!sessionFile) return {};
 
   const content = readFileSafe(sessionFile);
@@ -297,7 +311,9 @@ export function getCompletedTasksCount(cwd: string): number {
     }
   }
 
-  const taskBoard = readFileSafe(resolveMemoryFile(cwd, "task-board.md") ?? "");
+  const taskBoard = readFileSafe(
+    resolveCoordinationFile(cwd, "task-board.md") ?? "",
+  );
   if (taskBoard) {
     const taskBoardCompleted = taskBoard
       .split("\n")
@@ -312,7 +328,7 @@ export function getCompletedTasksCount(cwd: string): number {
   }
 
   const sessionFile = readFileSafe(
-    resolveMemoryFile(cwd, "orchestrator-session.md") ?? "",
+    resolveCoordinationFile(cwd, "orchestrator-session.md") ?? "",
   );
   if (sessionFile) {
     const summaryCompleted = sessionFile.match(/Completed:\s*(\d+)/i);
@@ -381,16 +397,16 @@ export function ensureMemorySchema(
   cwd: string,
   options: { force?: boolean } = {},
 ): MemoryInitResult {
-  const memoriesDir = getMemoriesPath(cwd);
-  if (!existsSync(memoriesDir)) {
-    mkdirSync(memoriesDir, { recursive: true });
+  const coordinationDir = getCoordinationStorePath(cwd);
+  if (!existsSync(coordinationDir)) {
+    mkdirSync(coordinationDir, { recursive: true });
   }
 
   const existingSession = readFileSafe(
-    resolveMemoryFile(cwd, "orchestrator-session.md") ?? "",
+    resolveCoordinationFile(cwd, "orchestrator-session.md") ?? "",
   );
   const existingTaskBoard = readFileSafe(
-    resolveMemoryFile(cwd, "task-board.md") ?? "",
+    resolveCoordinationFile(cwd, "task-board.md") ?? "",
   );
   const detectedSessionId =
     extractSessionId(existingSession) ||
@@ -411,9 +427,9 @@ export function ensureMemorySchema(
   const ensureFile = (filename: string, content: string) => {
     // Respect a file that already lives in the legacy dir — rewrite it in
     // place rather than forking a second copy in the canonical dir.
-    const existingPath = resolveMemoryFile(cwd, filename);
+    const existingPath = resolveCoordinationFile(cwd, filename);
     if (!existingPath) {
-      writeFileSync(join(memoriesDir, filename), content, "utf-8");
+      writeFileSync(join(coordinationDir, filename), content, "utf-8");
       created.push(filename);
       return;
     }
@@ -433,7 +449,7 @@ export function ensureMemorySchema(
   ensureFile(".gitkeep", "");
 
   return {
-    memoriesDir,
+    memoriesDir: coordinationDir,
     sessionId: detectedSessionId,
     created,
     updated,

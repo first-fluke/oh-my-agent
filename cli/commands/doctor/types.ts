@@ -146,7 +146,11 @@ export interface DoctorReport {
   missingCLIs: CLICheck[];
   missingSkills: SkillCheck[];
   vendorDocs: VendorDocCheck[];
+  hasCoordinationStore: boolean;
+  coordinationFileCount: number;
+  /** Whether this project has Serena's project configuration. */
   hasSerena: boolean;
+  /** Files in Serena's legacy/knowledge memory directory. */
   serenaFileCount: number;
   /** Whether the `serena` binary (the MCP transport command) is on PATH. */
   serenaBinary: CLICheck;

@@ -18,7 +18,7 @@ import {
   writeInjectLog,
 } from "../../.agents/hooks/core/inject-log.ts";
 import { activateWorkflowSession, emitEvent } from "../state/events.js";
-import { mirrorSessionToSerena } from "../state/serena-mirror.js";
+import { exportSessionSummary } from "../state/session-summary.js";
 
 const isPosix = process.platform !== "win32";
 
@@ -152,8 +152,8 @@ describe("inject-log privacy (D52/D57)", () => {
     );
   });
 
-  describe("Serena mirror never includes inject logs (D57)", () => {
-    it("excludes inject-log content from the mirror", async () => {
+  describe("session summary never includes inject logs (D57)", () => {
+    it("excludes inject-log content from the summary", async () => {
       activateWorkflowSession({ projectDir, sid, workflow: "ultrawork" });
       emitEvent(projectDir, sid, {
         kind: "session.ended",
@@ -167,10 +167,10 @@ describe("inject-log privacy (D52/D57)", () => {
         baseEntry({ rendered: `snapshot ${marker}` }),
       );
 
-      const result = await mirrorSessionToSerena({ projectDir, sid });
+      const result = await exportSessionSummary({ projectDir, sid });
       expect(result.written).toBe(true);
-      const mirror = readFileSync(result.path, "utf-8");
-      expect(mirror).not.toContain(marker);
+      const summary = readFileSync(result.path, "utf-8");
+      expect(summary).not.toContain(marker);
 
       // Sanity: the inject log itself does contain the marker.
       const logs = readdirSync(injectLogDir(projectDir, sid));
@@ -180,7 +180,7 @@ describe("inject-log privacy (D52/D57)", () => {
         "utf-8",
       );
       expect(logContent).toContain(marker);
-      // Mirror lives in the memory store, not inside the inject-log tree.
+      // Summary lives in the coordination store, outside the inject-log tree.
       expect(existsSync(result.path)).toBe(true);
       expect(result.path).toContain(join(".agents", "state", "memories"));
       expect(result.path.startsWith(injectLogDir(projectDir, sid))).toBe(false);

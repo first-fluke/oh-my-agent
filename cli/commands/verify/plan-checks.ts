@@ -5,7 +5,7 @@ import {
   AGENTS_RESULTS_DIR,
   agentsPathFromRoot,
 } from "../../constants/paths.js";
-import { getMemoryDirs } from "../../io/memory.js";
+import { getCoordinationStoreDirs } from "../../io/memory.js";
 import type { VerifyCheck } from "../../types/index.js";
 import { checkClosure } from "../../utils/skill-outputs.js";
 import type { AgentType } from "./agent-types.js";
@@ -27,16 +27,16 @@ export interface PlanTask {
 
 function findResultFile(workspace: string, agentType: string): string | null {
   const pattern = new RegExp(`^result-${agentType}(?:-[\\w-]+)?\\.md$`);
-  for (const memoriesDir of getMemoryDirs(workspace)) {
-    if (!existsSync(memoriesDir)) continue;
+  for (const coordinationDir of getCoordinationStoreDirs(workspace)) {
+    if (!existsSync(coordinationDir)) continue;
 
-    const matches = readdirSync(memoriesDir)
+    const matches = readdirSync(coordinationDir)
       .filter((f) => pattern.test(f))
       .sort()
       .reverse();
 
     if (matches.length > 0 && matches[0]) {
-      return join(memoriesDir, matches[0]);
+      return join(coordinationDir, matches[0]);
     }
   }
   return null;

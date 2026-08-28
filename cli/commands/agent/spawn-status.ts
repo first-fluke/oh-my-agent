@@ -4,7 +4,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import color from "picocolors";
 import { lookupFinding, recordFinding } from "../../io/findings-cache.js";
-import { getMemoriesPath, resolveMemoryFile } from "../../io/memory.js";
+import {
+  getCoordinationStorePath,
+  resolveCoordinationFile,
+} from "../../io/memory.js";
 import {
   createOpencodeSpawnWrapper,
   type OpencodeWrapper,
@@ -79,22 +82,27 @@ export function classifySpawnDifficulty(
 // ---------------------------------------------------------------------------
 
 /**
- * Ensure the session memories directory exists for the given sessionId.
+ * Ensure the session coordination directory exists before dispatch.
  * Called before spawn so agent processes can write to it immediately.
  * Non-fatal: logs a warning on failure rather than aborting spawn.
  */
-export function ensureSessionMemoriesDir(cwd: string = process.cwd()): void {
-  const memoriesDir = getMemoriesPath(cwd);
+export function ensureSessionCoordinationDir(
+  cwd: string = process.cwd(),
+): void {
+  const coordinationDir = getCoordinationStorePath(cwd);
   try {
-    if (!fs.existsSync(memoriesDir)) {
-      fs.mkdirSync(memoriesDir, { recursive: true });
+    if (!fs.existsSync(coordinationDir)) {
+      fs.mkdirSync(coordinationDir, { recursive: true });
     }
   } catch (err) {
     console.warn(
-      `[spawn] Could not pre-create memories dir ${memoriesDir}: ${String(err)}`,
+      `[spawn] Could not pre-create coordination dir ${coordinationDir}: ${String(err)}`,
     );
   }
 }
+
+/** @deprecated Use ensureSessionCoordinationDir. */
+export const ensureSessionMemoriesDir = ensureSessionCoordinationDir;
 
 /**
  * Returns a findings cache handle bound to the given sessionId.
@@ -131,7 +139,7 @@ export function getFindingsHandle(sessionId: string) {
 
 /**
  * True when a `result-*` memory artifact naming this session and modified at
- * or after `sinceMs` exists under the workspace (memories dir or legacy
+ * or after `sinceMs` exists under the workspace (coordination store or legacy
  * `.agents/results`). Used to detect agy runs that exited 0 but wrote their
  * artifacts outside the workspace (tech-debt #7).
  */
@@ -141,7 +149,7 @@ export function hasSessionResultArtifact(
   sinceMs: number,
 ): boolean {
   const dirs = [
-    getMemoriesPath(workspace),
+    getCoordinationStorePath(workspace),
     path.join(workspace, ".agents", "results"),
   ];
   for (const dir of dirs) {
@@ -216,9 +224,9 @@ export async function spawnAgent(
     `subagent-${sessionId}-${agentId}.status`,
   );
 
-  // T11: Pre-create the memory store dir so agent subprocesses can write
+  // T11: Pre-create the coordination store so agent subprocesses can write
   // findings immediately without having to create the directory themselves.
-  ensureSessionMemoriesDir(process.cwd());
+  ensureSessionCoordinationDir(process.cwd());
 
   const rawPromptContent = resolvePromptContent(prompt);
 
@@ -526,8 +534,8 @@ export async function checkStatus(
 
   for (const agent of agentIds) {
     const resultFile =
-      resolveMemoryFile(rootPath, `result-${agent}.md`) ??
-      path.join(getMemoriesPath(rootPath), `result-${agent}.md`);
+      resolveCoordinationFile(rootPath, `result-${agent}.md`) ??
+      path.join(getCoordinationStorePath(rootPath), `result-${agent}.md`);
     const pidFile = path.join(tmpdir(), `subagent-${sessionId}-${agent}.pid`);
     const statusFile = path.join(
       tmpdir(),

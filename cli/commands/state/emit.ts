@@ -5,9 +5,9 @@ import {
   readIndex,
 } from "../../state/events.js";
 import {
-  mirrorSessionToSerena,
-  type SerenaMirrorResult,
-} from "../../state/serena-mirror.js";
+  exportSessionSummary,
+  type SessionSummaryExportResult,
+} from "../../state/session-summary.js";
 import {
   addOutputOptions,
   resolveJsonMode,
@@ -64,7 +64,7 @@ export function registerEmit(program: Command): void {
       .option("--ts <iso>", "Override event timestamp")
       .option(
         "--no-mirror",
-        "Skip the Serena mirror on session.ended (D25/D67)",
+        "Skip the session summary export on session.ended",
       ),
   ).action(
     runAction(
@@ -86,25 +86,28 @@ export function registerEmit(program: Command): void {
           payload: parsePayload(payloadRaw),
         });
 
-        // D25: a terminal session is mirrored to Serena post-completion.
-        // Best-effort; mirror failures are surfaced but never block the emit.
-        let mirror: SerenaMirrorResult | undefined;
+        // A terminal session gets a best-effort human-readable summary. The
+        // authoritative L1 event write above never depends on this export.
+        let summary: SessionSummaryExportResult | undefined;
         if (kind === "session.ended" && options.mirror !== false) {
-          mirror = await mirrorSessionToSerena({
+          summary = await exportSessionSummary({
             projectDir,
             sid,
           });
         }
 
         if (jsonMode) {
-          console.log(JSON.stringify({ event, mirror }, null, 2));
+          const mirror = summary
+            ? { ...summary, memoryName: summary.summaryName }
+            : undefined;
+          console.log(JSON.stringify({ event, summary, mirror }, null, 2));
         } else {
           console.log(`Emitted ${event.kind} ${event.eventId} -> ${sid}`);
-          if (mirror) {
+          if (summary) {
             console.log(
-              mirror.written
-                ? `Mirrored to ${mirror.memoryName} (${mirror.method})`
-                : `Serena mirror skipped: ${mirror.warning ?? "unknown error"}`,
+              summary.written
+                ? `Exported summary to ${summary.summaryName} (${summary.method})`
+                : `Session summary skipped: ${summary.warning ?? "unknown error"}`,
             );
           }
         }

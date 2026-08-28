@@ -25,6 +25,10 @@ export function serializeReportAsJson(report: DoctorReport): string {
           }))
         : [],
     missingSkills: report.missingSkills.map((s) => s.name),
+    coordination: {
+      exists: report.hasCoordinationStore,
+      fileCount: report.coordinationFileCount,
+    },
     serena: {
       exists: report.hasSerena,
       fileCount: report.serenaFileCount,

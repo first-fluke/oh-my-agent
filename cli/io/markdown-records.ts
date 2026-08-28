@@ -1,8 +1,8 @@
 /**
  * markdown-records.ts
  *
- * Shared session-scoped record store used by findings-cache and
- * session-cost. One `.md` file per session under the project memory store
+ * Shared session-scoped record store used by findings-cache and session-cost.
+ * One `.md` file per session under the project coordination store
  * (`.agents/state/memories/`, with a `.serena/memories/` legacy fallback):
  * YAML frontmatter header + one fenced JSON code block per record.
  *
@@ -18,14 +18,17 @@ import {
   unlinkSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import { CANONICAL_MEMORIES_REL, LEGACY_MEMORIES_REL } from "./memory.js";
+import { COORDINATION_STORE_REL, LEGACY_SERENA_MEMORY_REL } from "./memory.js";
 
 /** Resolved store base relative to the working directory (canonical-first). */
-export function memoriesBase(): string {
-  if (existsSync(CANONICAL_MEMORIES_REL)) return CANONICAL_MEMORIES_REL;
-  if (existsSync(LEGACY_MEMORIES_REL)) return LEGACY_MEMORIES_REL;
-  return CANONICAL_MEMORIES_REL;
+export function coordinationBase(): string {
+  if (existsSync(COORDINATION_STORE_REL)) return COORDINATION_STORE_REL;
+  if (existsSync(LEGACY_SERENA_MEMORY_REL)) return LEGACY_SERENA_MEMORY_REL;
+  return COORDINATION_STORE_REL;
 }
+
+/** @deprecated Use coordinationBase. */
+export const memoriesBase = coordinationBase;
 
 // Session IDs are safe filename components. Reject anything that could
 // traverse out of MEMORIES_BASE or embed shell/path metacharacters. The
@@ -76,7 +79,11 @@ export function createMarkdownRecordStore<T>(options: {
   const candidatePaths = (sessionId: string): string[] => {
     assertSafeSessionId(sessionId);
     const name = `${options.filePrefix}-${sessionId}.md`;
-    const bases = [memoriesBase(), CANONICAL_MEMORIES_REL, LEGACY_MEMORIES_REL];
+    const bases = [
+      coordinationBase(),
+      COORDINATION_STORE_REL,
+      LEGACY_SERENA_MEMORY_REL,
+    ];
     return [...new Set(bases)].map((base) => join(base, name));
   };
 
@@ -85,7 +92,7 @@ export function createMarkdownRecordStore<T>(options: {
     const candidates = candidatePaths(sessionId);
     return (
       candidates.find((path) => existsSync(path)) ??
-      join(memoriesBase(), `${options.filePrefix}-${sessionId}.md`)
+      join(coordinationBase(), `${options.filePrefix}-${sessionId}.md`)
     );
   };
 

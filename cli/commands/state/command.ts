@@ -9,9 +9,9 @@ import {
   renderSelfHealingGateResult,
 } from "../../state/self-healing.js";
 import {
-  mirrorSessionToSerena,
-  renderSerenaMirrorResult,
-} from "../../state/serena-mirror.js";
+  exportSessionSummary,
+  renderSessionSummaryResult,
+} from "../../state/session-summary.js";
 import {
   addOutputOptions,
   resolveJsonMode,
@@ -330,10 +330,9 @@ export function registerState(program: Command): void {
 
   addOutputOptions(
     program
-      .command("state:mirror [sid]")
-      .description(
-        "Mirror a session summary to the project memory store (post-completion)",
-      )
+      .command("state:summary [sid]")
+      .alias("state:mirror")
+      .description("Export a session summary to the coordination store")
       .option("--category <category>", "Active category lookup", "main"),
   ).action(
     runAction(
@@ -343,14 +342,14 @@ export function registerState(program: Command): void {
           sid,
           category: options.category as string | undefined,
         });
-        const result = await mirrorSessionToSerena({
+        const result = await exportSessionSummary({
           projectDir: resolveProjectRoot(),
           sid: resolvedSid,
         });
         if (resolveJsonMode(options)) {
           console.log(JSON.stringify(result, null, 2));
         } else {
-          console.log(renderSerenaMirrorResult(result));
+          console.log(renderSessionSummaryResult(result));
         }
         if (!result.written) {
           process.exitCode = 1;

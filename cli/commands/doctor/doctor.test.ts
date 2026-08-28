@@ -353,7 +353,7 @@ describe("serena binary doctor check", () => {
     spawnState.execFileSyncFn.mockReturnValue("");
     // Mark the project as Serena-activated so a missing binary counts as an issue.
     vi.mocked(existsSync).mockImplementation((p) =>
-      String(p).endsWith("memories"),
+      String(p).endsWith(".serena/project.yml"),
     );
     vi.mocked(readFileSync).mockReturnValue("");
   });
@@ -385,6 +385,21 @@ describe("serena binary doctor check", () => {
 
     expect(report.serenaBinary.installed).toBe(true);
     expect(report.serenaBinary.version).toBe("Serena 1.3.0");
+  });
+
+  it("does not infer Serena activation from the OMA coordination store", async () => {
+    vi.mocked(existsSync).mockImplementation((p) =>
+      String(p).endsWith(".agents/state/memories"),
+    );
+
+    const reportPromise = collectDoctorReport();
+    await vi.advanceTimersByTimeAsync(0);
+    settleProcs(1);
+    await vi.advanceTimersByTimeAsync(0);
+
+    const report = await reportPromise;
+    expect(report.hasCoordinationStore).toBe(true);
+    expect(report.hasSerena).toBe(false);
   });
 });
 

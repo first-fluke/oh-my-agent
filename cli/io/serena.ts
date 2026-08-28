@@ -871,7 +871,7 @@ export function ensureSerenaProjectConfig(
     writeFileSync(gitignorePath, "/cache\n");
   }
 
-  // Ensure memories directory
+  // Serena-owned project knowledge (not OMA workflow coordination state).
   const memoriesDir = join(serenaDir, "memories");
   mkdirSync(memoriesDir, { recursive: true });
   const gitkeep = join(memoriesDir, ".gitkeep");

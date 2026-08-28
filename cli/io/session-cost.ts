@@ -23,7 +23,7 @@ import {
   createMarkdownRecordStore,
   readFileContent,
 } from "./markdown-records.js";
-import { getMemoryDirs } from "./memory.js";
+import { getCoordinationStoreDirs } from "./memory.js";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -210,7 +210,7 @@ export function estimateUsd(
 
 /**
  * Load usage records from every session-cost-*.md file in the project
- * memory store (canonical + legacy dirs). Used by `oma stats` to surface
+ * coordination store (canonical + legacy dirs). Used by `oma stats` to surface
  * cumulative cost telemetry. Missing directory or unreadable files are
  * skipped silently.
  */
@@ -219,7 +219,7 @@ export function listAllSessionUsage(
 ): UsageRecord[] {
   const all: UsageRecord[] = [];
   const seen = new Set<string>();
-  for (const baseDir of getMemoryDirs(cwd)) {
+  for (const baseDir of getCoordinationStoreDirs(cwd)) {
     if (!existsSync(baseDir)) continue;
     let entries: string[];
     try {

@@ -7,15 +7,15 @@ import type { DoctorReport } from "../types.js";
 export async function renderFooter(report: DoctorReport): Promise<void> {
   await renderGitRecommended(report);
 
-  if (report.hasSerena) {
+  if (report.hasCoordinationStore) {
     p.note(
-      `${pc.green("✅")} Memory store directory exists\n${pc.dim(`${report.serenaFileCount} memory files found`)}`,
-      "Memory Store",
+      `${pc.green("✅")} Coordination store directory exists\n${pc.dim(`${report.coordinationFileCount} coordination files found`)}`,
+      "Coordination Store",
     );
   } else {
     p.note(
-      `${pc.yellow("⚠️")} Memory store directory not found\n${pc.dim("Dashboard will show 'No agents detected'")}`,
-      "Memory Store",
+      `${pc.yellow("⚠️")} Coordination store directory not found\n${pc.dim("Dashboard will show 'No agents detected'")}`,
+      "Coordination Store",
     );
   }
 

@@ -1,7 +1,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { AGENTS_RESULTS_DIR } from "../constants/paths.js";
-import { CANONICAL_MEMORIES_REL, LEGACY_MEMORIES_REL } from "../io/memory.js";
+import {
+  COORDINATION_STORE_REL,
+  LEGACY_SERENA_MEMORY_REL,
+} from "../io/memory.js";
 import { emitEventWithMemory, getActiveSid, readIndex } from "./events.js";
 
 /**
@@ -42,7 +45,7 @@ const REMEDIATION =
  * canonical store `.agents/state/memories`, falling back to an existing
  * legacy `.serena/memories` for projects created before the move.
  */
-export function resolveMemoryBasePath(projectDir: string): string {
+export function resolveCoordinationBasePath(projectDir: string): string {
   try {
     const parsed = JSON.parse(
       readFileSync(join(projectDir, ".agents", "mcp.json"), "utf-8"),
@@ -52,14 +55,17 @@ export function resolveMemoryBasePath(projectDir: string): string {
   } catch {
     // missing or malformed mcp.json falls back to the default base path
   }
-  if (existsSync(join(projectDir, CANONICAL_MEMORIES_REL))) {
-    return CANONICAL_MEMORIES_REL;
+  if (existsSync(join(projectDir, COORDINATION_STORE_REL))) {
+    return COORDINATION_STORE_REL;
   }
-  if (existsSync(join(projectDir, LEGACY_MEMORIES_REL))) {
-    return LEGACY_MEMORIES_REL;
+  if (existsSync(join(projectDir, LEGACY_SERENA_MEMORY_REL))) {
+    return LEGACY_SERENA_MEMORY_REL;
   }
-  return CANONICAL_MEMORIES_REL;
+  return COORDINATION_STORE_REL;
 }
+
+/** @deprecated Use resolveCoordinationBasePath. */
+export const resolveMemoryBasePath = resolveCoordinationBasePath;
 
 function listMatches(
   dir: string,
@@ -138,7 +144,7 @@ export async function verifyRalphExecArtifacts(args: {
     }
   }
 
-  const memBase = resolveMemoryBasePath(projectDir);
+  const memBase = resolveCoordinationBasePath(projectDir);
   const memDir = join(projectDir, memBase);
   const resultsDir = join(projectDir, AGENTS_RESULTS_DIR);
   const sidPattern = sid ? escapeRegExp(sid) : ".+";
