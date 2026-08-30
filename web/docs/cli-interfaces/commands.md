@@ -1487,7 +1487,7 @@ For each task fixture in `.agents/eval/<skill>/`:
 | `fail` | `utilityLift ≤ 0%` (exit code 1) |
 | `insufficient` | Fewer than 5 scoreable tasks (exit code 1 only with `--require-coverage`) |
 
-**Honesty note:** `--mock` without recorded judge verdicts is a *measurement substrate*, not a trustworthy utility score. A meaningful number requires `--live` with judge checkers (the judge calls the LLM to grade each arm output against a rubric, then records the verdict so `--mock` replay is fully deterministic and offline). This mirrors how the academic benchmarks behind this feature score utility (SkillOpt arXiv:2605.23904, SkillLens arXiv:2605.23899).
+**Recommended mode:** Use `--live` with judge checkers to measure actual skill utility. Use `--mock` to replay recorded judge verdicts offline or to run deterministic `assert`/`regex` contract checks.
 
 **Environment variable:** `OMA_SKILLEVAL_MOCK=1` forces mock mode regardless of flags.
 
@@ -1520,7 +1520,7 @@ See the [Skill Utility Eval guide](../guide/skill-eval.md) for the `.agents/eval
 
 ### skills opt
 
-Optimize a skill's `SKILL.md` to maximize its measured held-out utility lift. An optimizer LLM proposes bounded add/delete/replace edits; each edit is applied to a candidate copy, re-scored by `skills eval` on the held-out validation split, and accepted only when the validation lift strictly improves. Research basis: SkillOpt (arXiv:2605.23904).
+Optimize a skill's `SKILL.md` with WikiSkill-style persistent evolution. A Maintainer consolidates observable rollout evidence into scoped knowledge, a Proposer emits bounded add/delete/replace edits, and rejected outcomes persist across runs. Candidates must strictly improve the held-out validation split; `--apply` additionally requires strict improvement on a runner-owned final-test split. Research basis: WikiSkill (arXiv:2608.27454).
 
 ```
 oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
@@ -1533,8 +1533,8 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 | Flag | Default | Description |
 |:-----|:--------|:-----------|
 | `--skill <id>` | `_all` | Skill ID to optimize (simple name, no path separators). |
-| `--dry-run` | **yes (default)** | Propose edits and print the diff; write nothing. |
-| `--apply` | — | Apply accepted edits; backs up the original as `SKILL.md.bak` and writes only a validated improvement. |
+| `--dry-run` | **yes (default)** | Propose edits and print the diff without changing `SKILL.md`; generated evolution evidence is still recorded. |
+| `--apply` | — | Apply accepted edits; backs up the original before an atomic write and writes only a validated improvement. |
 | `--mock` | **yes (default)** | Replay recorded optimizer edits and eval verdicts (deterministic, offline). Safe for CI. |
 | `--live` | — | Live LLM optimizer dispatch — incurs real model calls per epoch. Prints a cost preview and prompts for confirmation unless `--yes`. |
 | `--max-epochs <n>` | `8` | Maximum optimization epochs. |
@@ -1546,7 +1546,7 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 
 **Hard dependency:** Requires at least 5 task fixtures in `.agents/eval/<skill>/`. Errors with a clear message when fewer are found. See the [Skill Utility Eval guide](../guide/skill-eval.md) for authoring them.
 
-**Train/val split:** The optimizer sees only the TRAIN tasks' findings when proposing edits; the accept gate scores on the held-out VALIDATION split (`OPT_TRAIN_VAL_SPLIT = 0.5`, 50/50 default). An edit that regresses on the validation split is always rejected.
+**Train/validation/test split:** Fixtures are partitioned deterministically 60/20/20. The Maintainer and Proposer see only TRAIN evidence, candidate selection uses held-out VALIDATION tasks, and the runner-owned TEST split stays hidden until evolution finishes. `--apply` writes only when both validation and final-test lift strictly improve.
 
 **SSOT caveat:** Skills whose ID starts with `oma-` are overwritten by `oma update`. For those skills, `--apply` is discouraged — use the default `--dry-run` and upstream the proposed diff. User-authored skills apply freely.
 
@@ -1554,10 +1554,10 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 
 **Examples:**
 ```bash
-# Propose edits (dry-run, mock — writes nothing, fully offline)
+# Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
 oma skills opt --skill oma-scholar --mock --dry-run
 
-# Apply accepted edits (backs up original first)
+# Apply accepted edits (backs up the original first)
 oma skills opt --skill oma-scholar --mock --apply
 
 # Live optimizer with cost preview

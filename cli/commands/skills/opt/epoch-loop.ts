@@ -11,12 +11,15 @@ import {
   validateCandidate,
 } from "./edits.js";
 import {
+  type MaintainerFn,
   OPT_EARLY_STOP_PATIENCE,
   type OptEpoch,
   type OptimizerFn,
   type ScoringFn,
   type SkillEdit,
+  type SkillEvolutionRecorder,
   type SkillOptResult,
+  type SkillProposalGateRecord,
 } from "./types.js";
 
 // --- Epoch loop core (T5) ---
@@ -32,6 +35,7 @@ async function scoreOnSplit(
   taskDir: string,
   mode: "mock" | "live",
   scoringFn: ScoringFn,
+  includeEvidence = false,
 ): Promise<{ lift: number; report: SkillUtilityReport }> {
   const report = await scoringFn({
     skill,
@@ -39,6 +43,8 @@ async function scoreOnSplit(
     tasks,
     taskDir,
     mode,
+    includeEvidence,
+    minimumCoverage: 1,
   });
   return {
     lift: report.coverage === "ok" ? report.utilityLift : 0,
@@ -68,24 +74,30 @@ export async function runOptEpochLoop(options: {
   originalBody: string;
   trainTasks: TaskFixture[];
   valTasks: TaskFixture[];
+  testTasks?: TaskFixture[];
   taskDir: string;
   mode: "mock" | "live";
   maxEpochs: number;
   lrMaxChars: number;
   optimizerFn: OptimizerFn;
   scoringFn: ScoringFn;
+  maintainerFn?: MaintainerFn;
+  evolutionRecorder?: SkillEvolutionRecorder;
 }): Promise<SkillOptResult> {
   const {
     skillId,
     originalBody,
     trainTasks,
     valTasks,
+    testTasks,
     taskDir,
     mode,
     maxEpochs,
     lrMaxChars,
     optimizerFn,
     scoringFn,
+    maintainerFn,
+    evolutionRecorder,
   } = options;
 
   // Baseline: score the original body on the VAL split
@@ -103,7 +115,9 @@ export async function runOptEpochLoop(options: {
 
   const epochs: OptEpoch[] = [];
   const acceptedEdits: SkillEdit[] = [];
-  const rejectedBuffer = new Set<string>();
+  const rejectedBuffer = new Set<string>(
+    evolutionRecorder?.knowledge.rejectedEditKeys ?? [],
+  );
   let totalRejected = 0;
   let patience = 0;
 
@@ -121,10 +135,37 @@ export async function runOptEpochLoop(options: {
       taskDir,
       mode,
       scoringFn,
+      true,
     );
 
+    await evolutionRecorder?.recordEvidence(epochIdx, trainReport);
+    const patterns = maintainerFn
+      ? await maintainerFn(
+          trainReport,
+          evolutionRecorder?.knowledge ?? {
+            skillId,
+            suiteHash: "unscoped",
+            patterns: [],
+            rejectedEditKeys: [...rejectedBuffer],
+            acceptedEditKeys: [],
+          },
+          epochIdx,
+        )
+      : [];
+    await evolutionRecorder?.recordPatterns(epochIdx, patterns);
+
     // 2. Optimizer proposes K edits, filtered by rejected buffer
-    const rawEdits = await optimizerFn(bestBody, trainReport);
+    const rawEdits = await optimizerFn(bestBody, trainReport, {
+      epoch: epochIdx,
+      knowledge: evolutionRecorder?.knowledge ?? {
+        skillId,
+        suiteHash: "unscoped",
+        patterns: patterns.map((pattern) => pattern.summary),
+        rejectedEditKeys: [...rejectedBuffer],
+        acceptedEditKeys: [],
+      },
+      patterns,
+    });
     const candidateEdits = rawEdits.filter(
       (e) => !rejectedBuffer.has(editKey(e)),
     );
@@ -134,6 +175,12 @@ export async function runOptEpochLoop(options: {
     let bestCandidateEdit: SkillEdit | undefined;
     let bestCandidateBody: string | undefined;
     let bestCandidateReport: SkillUtilityReport | undefined;
+    const evaluatedCandidates: Array<{
+      edit: SkillEdit;
+      key: string;
+      deltaLift: number;
+      report: SkillUtilityReport;
+    }> = [];
 
     const allProposedKeys: string[] = [];
 
@@ -145,6 +192,14 @@ export async function runOptEpochLoop(options: {
       if (netChange > lrMaxChars) {
         totalRejected++;
         rejectedBuffer.add(editKey(edit));
+        await evolutionRecorder?.recordProposal({
+          epoch: epochIdx,
+          edit,
+          editKey: editKey(edit),
+          outcome: "rejected",
+          reason: "learning-rate",
+          deltaLift: 0,
+        });
         continue;
       }
 
@@ -156,6 +211,14 @@ export async function runOptEpochLoop(options: {
       if (!validation.ok) {
         totalRejected++;
         rejectedBuffer.add(editKey(edit));
+        await evolutionRecorder?.recordProposal({
+          epoch: epochIdx,
+          edit,
+          editKey: editKey(edit),
+          outcome: "rejected",
+          reason: "invalid-candidate",
+          deltaLift: 0,
+        });
         continue;
       }
 
@@ -170,6 +233,12 @@ export async function runOptEpochLoop(options: {
       );
 
       const deltaLift = candValLift - curValLift;
+      evaluatedCandidates.push({
+        edit,
+        key: editKey(edit),
+        deltaLift,
+        report: candReport,
+      });
 
       if (deltaLift > bestCandidateDeltaLift) {
         bestCandidateDeltaLift = deltaLift;
@@ -203,6 +272,7 @@ export async function runOptEpochLoop(options: {
           accepted: bestCandidateEdit,
           lift: newValLift,
           deltaLift: bestCandidateDeltaLift,
+          patterns,
         };
         epochs.push(epochRecord);
         acceptedEdits.push(bestCandidateEdit);
@@ -229,9 +299,35 @@ export async function runOptEpochLoop(options: {
         proposed: epochProposed,
         lift: curValLift,
         deltaLift: 0,
+        patterns,
       };
       epochs.push(epochRecord);
       patience++;
+    }
+
+    const acceptedKey =
+      accepted && bestCandidateEdit ? editKey(bestCandidateEdit) : undefined;
+    for (const candidate of evaluatedCandidates) {
+      const tripsNegativeTransfer = candidate.report.negativeTransfer.some(
+        (entry) => entry.delta <= NEG_TRANSFER_FAIL,
+      );
+      let reason: SkillProposalGateRecord["reason"];
+      if (candidate.key === acceptedKey) reason = "accepted";
+      else if (tripsNegativeTransfer) reason = "negative-transfer";
+      else if (candidate.deltaLift <= 0) reason = "no-validation-lift";
+      else reason = "not-best-candidate";
+      if (candidate.key !== acceptedKey && !rejectedBuffer.has(candidate.key)) {
+        rejectedBuffer.add(candidate.key);
+        totalRejected++;
+      }
+      await evolutionRecorder?.recordProposal({
+        epoch: epochIdx,
+        edit: candidate.edit,
+        editKey: candidate.key,
+        outcome: candidate.key === acceptedKey ? "accepted" : "rejected",
+        reason,
+        deltaLift: candidate.deltaLift,
+      });
     }
 
     // Suppress unused variable warning
@@ -240,8 +336,40 @@ export async function runOptEpochLoop(options: {
 
   // Final diff: original → bestBody
   const diff = unifiedDiff(originalBody, bestBody);
+  let finalTest: SkillOptResult["finalTest"];
+  if (testTasks && testTasks.length > 0) {
+    if (bestBody === originalBody) {
+      const { lift } = await scoreOnSplit(
+        originalBody,
+        skillId,
+        testTasks,
+        taskDir,
+        mode,
+        scoringFn,
+      );
+      finalTest = { baselineLift: lift, candidateLift: lift, passed: false };
+    } else {
+      const [{ lift: finalTestBaseline }, { lift: finalTestCandidate }] =
+        await Promise.all([
+          scoreOnSplit(
+            originalBody,
+            skillId,
+            testTasks,
+            taskDir,
+            mode,
+            scoringFn,
+          ),
+          scoreOnSplit(bestBody, skillId, testTasks, taskDir, mode, scoringFn),
+        ]);
+      finalTest = {
+        baselineLift: finalTestBaseline,
+        candidateLift: finalTestCandidate,
+        passed: finalTestCandidate > finalTestBaseline,
+      };
+    }
+  }
 
-  return {
+  const result: SkillOptResult = {
     skill: skillId,
     baselineLift,
     finalLift: curValLift,
@@ -251,5 +379,17 @@ export async function runOptEpochLoop(options: {
     finalSkillMd: bestBody,
     diff,
     applied: false,
+    finalTest,
+    ...(evolutionRecorder
+      ? {
+          evolution: {
+            suiteHash: evolutionRecorder.knowledge.suiteHash,
+            persistentPatterns: evolutionRecorder.knowledge.patterns.length,
+            persistentRejectedEdits:
+              evolutionRecorder.knowledge.rejectedEditKeys.length,
+          },
+        }
+      : {}),
   };
+  return result;
 }

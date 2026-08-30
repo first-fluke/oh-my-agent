@@ -1,13 +1,13 @@
 ---
 title: "Skill Optimization"
-description: How to use oma skills opt to maximize a skill's measured utility lift by iteratively proposing and accepting SKILL.md edits against a held-out validation split.
+description: How to use oma skills opt for persistent, evidence-driven skill evolution with train, validation, and runner-owned final-test gates.
 ---
 
 # Skill Optimization
 
-`oma skills opt` optimizes a skill's `SKILL.md` to maximize its measured `utilityLift` as produced by `oma skills eval`. It treats the skill document as the trainable "external state" of a frozen agent: an optimizer LLM proposes bounded add/delete/replace edits, each edit is applied to a candidate copy, re-scored by the eval harness, and **accepted only when the held-out validation lift strictly improves** — guarded against negative-transfer regression. At deployment there is zero inference-time cost: the output is a better `SKILL.md`.
+`oma skills opt` evolves a skill's `SKILL.md` to maximize its measured `utilityLift` as produced by `oma skills eval`. It separates raw rollout evidence, persistent scoped knowledge, and the executable skill. A Wiki Maintainer consolidates observable successes and failures; a Proposer uses that knowledge to emit bounded add/delete/replace edits. Candidates must improve held-out validation utility, and `--apply` additionally requires improvement on a runner-owned final-test split. At deployment there is no extra inference-time wiki lookup: the output remains a `SKILL.md`.
 
-Research basis: SkillOpt — *Executive Strategy for Self-Evolving Agent Skills* (arXiv:2605.23904, MSRA).
+Research basis: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C., & Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
 
 ---
 
@@ -25,19 +25,21 @@ See the [Skill Utility Eval guide](/docs/guide/skill-eval) for the `.agents/eval
 
 ## How it works
 
-Fixtures are split deterministically into a **train set** and a **held-out validation set** (default 50/50, controlled by `OPT_TRAIN_VAL_SPLIT = 0.5`). The split is stable across runs — tasks are sorted by ID before splitting, so no randomness is involved.
+Fixtures are split deterministically into **train**, **held-out validation**, and **runner-owned final-test** sets (60/20/20). The split is stable across runs — tasks are sorted by ID before splitting, so no randomness is involved.
 
 For each epoch (up to `--max-epochs`, default 8):
 
-1. **Score current best `SKILL.md` on the TRAIN split** — `oma skills eval` returns findings including per-task lift.
-2. **Optimizer LLM proposes K candidate edits** (up to `--edits-per-epoch`, default 4). Edits already in the rejected-edit buffer are skipped.
-3. **For each candidate edit:**
+1. **Score current best `SKILL.md` on the TRAIN split** — `oma skills eval` returns observable per-task prompts, outputs, and lift.
+2. **Wiki Maintainer consolidates evidence** — up to five failures and three successes become evidence-linked patterns. Scoped patterns and prior gate outcomes are recalled from OMA's L1/L2/L3 memory system.
+3. **Proposer emits K candidate edits** (up to `--edits-per-epoch`, default 4). Exact edits already in persistent rejection history are skipped.
+4. **For each candidate edit:**
    - Apply the edit to an in-memory copy of `SKILL.md`.
    - Validate the candidate (frontmatter `name`/`description` must survive; body must parse).
    - Enforce the textual learning-rate budget: discard edits whose net character change exceeds `--lr` (default 600 chars).
    - Re-score the candidate on the **held-out validation split**.
-4. **Accept the best candidate IFF** the validation lift strictly improves (`Δlift > 0`) AND no negative-transfer entry breaches the regression floor (`NEG_TRANSFER_FAIL = -0.1`). All proposed edits from a rejected epoch are added to the rejected-edit buffer.
-5. **Early stop** after 2 consecutive epochs with no accepted edit (`OPT_EARLY_STOP_PATIENCE = 2`).
+5. **Accept the best validation candidate IFF** the validation lift strictly improves (`Δlift > 0`) AND no negative-transfer entry breaches the regression floor (`NEG_TRANSFER_FAIL = -0.1`). Every proposal gate is persisted.
+6. **Early stop** after 2 consecutive epochs with no accepted edit (`OPT_EARLY_STOP_PATIENCE = 2`).
+7. **Run the hidden final test after evolution.** The Maintainer and Proposer never see these tasks. A failed final test prevents `--apply` and records the validation winner as rejected knowledge.
 
 The optimizer never edits the live `SKILL.md` during the loop — it always works on an in-memory candidate copy.
 
@@ -59,8 +61,8 @@ oma skills opt --skill <id>
 | Flag | Default | Description |
 |:-----|:--------|:-----------|
 | `--skill <id>` | `_all` | Skill ID to optimize (simple name, no path separators). |
-| `--dry-run` | **yes (default)** | Propose edits and print the diff; write nothing. |
-| `--apply` | — | Apply accepted edits to `SKILL.md` — backs up the original as `SKILL.md.bak` before writing. Only runs when a validated improvement exists. |
+| `--dry-run` | **yes (default)** | Propose edits and print the diff without changing `SKILL.md`; generated evidence and evolution events still persist. |
+| `--apply` | — | Apply accepted edits to `SKILL.md` — backs up the original before an atomic write. Only runs when validation and final-test gates pass. |
 | `--mock` | **yes (default)** | Replay recorded optimizer edits and eval verdicts from `_rollouts/`. Deterministic, offline. Safe for CI. |
 | `--live` | — | Live LLM optimizer dispatch — incurs real model calls per epoch. Prints a cost preview and asks for confirmation unless `--yes`. |
 | `--max-epochs <n>` | `8` | Maximum optimization epochs. |
@@ -75,7 +77,7 @@ oma skills opt --skill <id>
 ## Minimal end-to-end example
 
 ```bash
-# Propose edits (dry-run, mock mode — writes nothing, fully offline)
+# Propose edits (dry-run, mock mode — does not change SKILL.md, fully offline)
 oma skills opt --skill oma-scholar --mock --dry-run
 ```
 
@@ -99,7 +101,7 @@ Skill opt  (skill: oma-scholar)
  - User wants citations or sources for a factual statement.
 ```
 
-The diff shows what the optimizer would write; nothing is persisted with `--dry-run`.
+The diff shows what the optimizer would write. `SKILL.md` is unchanged, while generated evolution evidence and scoped gate outcomes are persisted for future runs.
 
 ---
 
@@ -108,17 +110,17 @@ The diff shows what the optimizer would write; nothing is persisted with `--dry-
 When you are satisfied with the proposed diff, re-run with `--apply`:
 
 ```bash
-# Apply accepted edits (backs up original as SKILL.md.bak)
+# Apply accepted edits (backs up the original first)
 oma skills opt --skill oma-scholar --mock --apply
 ```
 
-`--apply` writes only when the optimization found a strictly positive improvement on the held-out validation split. A `.bak` backup of the original `SKILL.md` is created before writing. The diff is always printed so you can review what changed.
+`--apply` writes only when the optimization found a strictly positive improvement on both the held-out validation and runner-owned final-test splits. A backup of the original `SKILL.md` is created before the atomic write. The diff is always printed so you can review what changed.
 
 ---
 
 ## Live mode
 
-Live mode calls the real optimizer LLM and re-runs live eval arms per epoch. It is expensive — each epoch runs two eval arms (baseline and treatment) per validation task, plus the optimizer LLM call.
+Live mode calls the real Maintainer and Proposer and re-runs live eval arms per epoch. It is expensive: every scored task has baseline and treatment calls, judge fixtures add grading calls, and the final test scores the original and candidate bodies. The preview reports an upper bound of underlying model calls from the actual split. Each call has a 120-second timeout; Claude eval arms run restricted with ambient tools, skills, MCP, and AgentMemory disabled.
 
 ```bash
 # Cost preview + confirm
@@ -131,7 +133,7 @@ oma skills opt --skill oma-scholar --live --yes
 oma skills opt --skill oma-scholar --live --apply --yes
 ```
 
-The cost preview lists the number of tasks, epochs, estimated arm dispatches, and the resolved vendor before any LLM call is made.
+The cost preview lists the upper bound of underlying model calls before any LLM call is made.
 
 ---
 
@@ -155,11 +157,12 @@ oma skills opt --skill oma-scholar --json
   "applied": false,
   "diff": "--- a/SKILL.md\n+++ b/SKILL.md\n...",
   "_dryRun": true,
-  "_split": { "trainCount": 4, "valCount": 4 }
+  "finalTest": { "baselineLift": 0.10, "candidateLift": 0.25, "passed": true },
+  "_split": { "trainCount": 4, "valCount": 1, "testCount": 3 }
 }
 ```
 
-`ok` is `true` when the final lift exceeds the baseline or `applied` is `true`.
+`ok` is `true` only when validation improves and the runner-owned final test does not fail (or the candidate was applied).
 
 ---
 
@@ -177,7 +180,7 @@ The command prints a warning when the target skill is oma-owned:
 
 ## Overfitting guard
 
-The optimizer sees only the TRAIN split's rollout findings when proposing edits. The **accept gate always uses the held-out VALIDATION split**. An edit that improves training-set lift but regresses on the held-out set is rejected. Both train and validation lift are reported so overfit is visible.
+The Maintainer and Proposer see only TRAIN rollout evidence. Candidate selection uses the held-out VALIDATION split, while the runner-owned TEST split remains hidden until evolution ends. A validation winner that fails to improve the final test is not applied and is added to persistent rejection history.
 
 ---
 

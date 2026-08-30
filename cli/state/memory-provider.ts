@@ -6,6 +6,7 @@ import type {
   AgentMemoryProviderOptions,
   MemoryProvider,
   MemoryProviderStatus,
+  MemoryRecallResult,
   MemoryRememberPayload,
 } from "../types/memory.js";
 
@@ -33,6 +34,52 @@ function inspectHealthBody(data: unknown): {
     body.status === "ok";
   const version = typeof body.version === "string" ? body.version : undefined;
   return { isAgentMemory, version };
+}
+
+export function parseMemoryRecallResults(
+  data: unknown,
+  limit: number,
+): MemoryRecallResult[] {
+  if (!data || typeof data !== "object") return [];
+  const raw = (data as { results?: unknown }).results;
+  if (!Array.isArray(raw)) return [];
+
+  const results: MemoryRecallResult[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const entry = item as {
+      score?: unknown;
+      observation?: {
+        narrative?: unknown;
+        facts?: unknown;
+        title?: unknown;
+        type?: unknown;
+      };
+    };
+    const observation = entry.observation ?? {};
+    const narrative =
+      typeof observation.narrative === "string"
+        ? observation.narrative.trim()
+        : "";
+    const facts = Array.isArray(observation.facts)
+      ? observation.facts
+          .filter((fact): fact is string => typeof fact === "string")
+          .join("; ")
+          .trim()
+      : "";
+    const title =
+      typeof observation.title === "string" ? observation.title.trim() : "";
+    const text = narrative || facts || title;
+    if (!text) continue;
+    results.push({
+      text,
+      score: typeof entry.score === "number" ? entry.score : 0,
+      source:
+        typeof observation.type === "string" ? observation.type : undefined,
+    });
+    if (results.length >= limit) break;
+  }
+  return results;
 }
 
 export function resolveAgentMemoryEndpoint(options: {
@@ -79,6 +126,9 @@ export function createNoneMemoryProvider(): MemoryProvider {
     },
     async remember() {
       return false;
+    },
+    async recall() {
+      return [];
     },
   };
 }
@@ -214,6 +264,28 @@ export function createAgentMemoryProvider(
         return response.status >= 200 && response.status < 300;
       } catch {
         return false;
+      }
+    },
+    async recall(payload) {
+      const query = payload.query.trim();
+      if (!query) return [];
+      const current = await status();
+      if (!current.reachable || !current.endpoint) return [];
+      const limit = Math.max(1, Math.min(payload.limit ?? 8, 50));
+      try {
+        const response = await http.post(
+          `${current.endpoint}/agentmemory/search`,
+          { query, limit },
+          {
+            headers: { "content-type": "application/json" },
+            timeout: options.recallTimeoutMs ?? 2000,
+            validateStatus: () => true,
+          },
+        );
+        if (response.status < 200 || response.status >= 300) return [];
+        return parseMemoryRecallResults(response.data, limit);
+      } catch {
+        return [];
       }
     },
   };

@@ -1,6 +1,11 @@
 import { parseFrontmatter } from "../../../utils/frontmatter.js";
 import type { TaskFixture } from "../eval.js";
-import { OPT_TRAIN_VAL_SPLIT, type SkillEdit } from "./types.js";
+import {
+  OPT_TRAIN_SPLIT,
+  OPT_TRAIN_VAL_SPLIT,
+  OPT_VALIDATION_SPLIT,
+  type SkillEdit,
+} from "./types.js";
 
 // --- Train/val split ---
 
@@ -24,6 +29,30 @@ export function splitTrainVal(
   return {
     train: sorted.slice(0, splitAt),
     val: sorted.slice(splitAt),
+  };
+}
+
+/**
+ * Deterministically partition optimization fixtures into compiler-visible
+ * training/validation sets and a runner-owned final test set. With the command's
+ * MIN_TASKS precondition every partition contains at least one fixture.
+ */
+export function splitTrainValTest(tasks: TaskFixture[]): {
+  train: TaskFixture[];
+  val: TaskFixture[];
+  test: TaskFixture[];
+} {
+  const sorted = [...tasks].sort((a, b) => a.id.localeCompare(b.id));
+  if (sorted.length < 3) {
+    return { train: sorted, val: [], test: [] };
+  }
+  const trainEnd = Math.max(1, Math.floor(sorted.length * OPT_TRAIN_SPLIT));
+  const valSize = Math.max(1, Math.floor(sorted.length * OPT_VALIDATION_SPLIT));
+  const valEnd = Math.min(sorted.length - 1, trainEnd + valSize);
+  return {
+    train: sorted.slice(0, trainEnd),
+    val: sorted.slice(trainEnd, valEnd),
+    test: sorted.slice(valEnd),
   };
 }
 

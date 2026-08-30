@@ -356,7 +356,63 @@ describe("L1 state events", () => {
     expect(rememberCalls).toBe(0);
   });
 
-  it("does not remember non-decision/blocker semantic events", async () => {
+  it("remembers evidence-linked skill evolution patterns and gate outcomes", async () => {
+    const remembered: string[] = [];
+    const provider = {
+      name: "agentmemory" as const,
+      async status() {
+        return { provider: "agentmemory" as const, reachable: true };
+      },
+      async observe() {
+        return true;
+      },
+      async remember(payload: { content: string }) {
+        remembered.push(payload.content);
+        return true;
+      },
+    };
+
+    await emitEventWithMemory(
+      projectDir,
+      "oma-skill-evolution",
+      {
+        kind: "skill.pattern.consolidated",
+        payload: {
+          skillId: "oma-test",
+          suiteHash: "suite-1",
+          summary: "Use the structured fallback after a timeout.",
+          evidenceIds: "task-1,task-2",
+        },
+      },
+      provider,
+    );
+    await emitEventWithMemory(
+      projectDir,
+      "oma-skill-evolution",
+      {
+        kind: "skill.proposal.gated",
+        payload: {
+          skillId: "oma-test",
+          suiteHash: "suite-1",
+          edit: { op: "add", anchor: "## Rules", after: "fallback" },
+          outcome: "rejected",
+          reason: "no-validation-lift",
+          deltaLift: 0,
+        },
+      },
+      provider,
+    );
+
+    expect(remembered).toHaveLength(2);
+    expect(remembered[0]).toContain(
+      "[skill-evolution:oma-test:suite-1] Pattern:",
+    );
+    expect(remembered[0]).toContain("Evidence: task-1,task-2");
+    expect(remembered[1]).toContain("Proposal rejected:");
+    expect(remembered[1]).toContain("Reason: no-validation-lift");
+  });
+
+  it("does not remember gate-only semantic events", async () => {
     let rememberCalls = 0;
     await emitEventWithMemory(
       projectDir,

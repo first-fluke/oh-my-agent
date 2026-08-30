@@ -12,6 +12,18 @@ export interface MemoryRememberPayload {
   importance?: number;
 }
 
+export interface MemoryRecallPayload {
+  query: string;
+  /** Maximum enriched facts to return. */
+  limit?: number;
+}
+
+export interface MemoryRecallResult {
+  text: string;
+  score: number;
+  source?: string;
+}
+
 export interface MemoryProviderStatus {
   provider: "agentmemory" | "none";
   reachable: boolean;
@@ -29,6 +41,11 @@ export interface MemoryProvider {
    * so existing provider stubs/mocks remain valid; callers must feature-detect.
    */
   remember?(payload: MemoryRememberPayload): Promise<boolean>;
+  /**
+   * Recall enriched facts. Optional so providers that only mirror L1 events
+   * remain valid and callers can deterministically fall back to local history.
+   */
+  recall?(payload: MemoryRecallPayload): Promise<MemoryRecallResult[]>;
 }
 
 export interface MemoryCommandStatus {
@@ -44,6 +61,7 @@ export interface AgentMemoryProviderOptions {
   healthTimeoutMs?: number;
   observeTimeoutMs?: number;
   rememberTimeoutMs?: number;
+  recallTimeoutMs?: number;
 }
 
 export interface AgentMemoryEndpointConfig {

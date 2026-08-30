@@ -24,6 +24,18 @@ import type {
   LiveDispatchFn,
 } from "./types.js";
 
+export const EVAL_DISPATCH_TIMEOUT_MS = 120_000;
+
+function evalDispatchTimeoutMs(): number {
+  const configured = Number.parseInt(
+    process.env.OMA_SKILL_EVAL_TIMEOUT_MS ?? "",
+    10,
+  );
+  return Number.isFinite(configured) && configured >= 1_000
+    ? configured
+    : EVAL_DISPATCH_TIMEOUT_MS;
+}
+
 /**
  * Run a built dispatch invocation and capture stdout.
  *
@@ -72,7 +84,7 @@ export function runEvalDispatch(
       // Generous buffer: agent JSON transcripts can be large; default 1 MB can
       // overflow (ENOBUFS) and look like an empty answer.
       maxBuffer: 64 * 1024 * 1024,
-      // No timeout here — caller controls task-level time budgets.
+      timeout: evalDispatchTimeoutMs(),
     });
     const text = typeof output === "string" ? output : "";
     warnOnErrorEnvelope(text);
@@ -91,6 +103,31 @@ export function runEvalDispatch(
     // Return captured stdout so checkers can still score it (likely 0).
     return typeof e.stdout === "string" ? e.stdout : "";
   }
+}
+
+/**
+ * Prevent an evaluated Claude arm from escaping its throwaway workspace or
+ * discovering the withheld skill through HOME tools, slash commands, or MCP.
+ * The skill under test is supplied only through the treatment prompt.
+ */
+export function isolateEvalRuntime(
+  invocation: { command: string; args: string[]; env: NodeJS.ProcessEnv },
+  vendor: string,
+): { command: string; args: string[]; env: NodeJS.ProcessEnv } {
+  const memoryIsolated = isolateEvalMemory(invocation);
+  if (vendor !== "claude") return memoryIsolated;
+
+  const requiredArgs = [
+    "--restricted",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--tools",
+    "",
+  ];
+  return {
+    ...memoryIsolated,
+    args: [...memoryIsolated.args, ...requiredArgs],
+  };
 }
 
 /**
@@ -237,6 +274,22 @@ export function stripUndefinedEvalAgentFlag(
 }
 
 /**
+ * Evaluation arms must not receive persistent optimization knowledge. The OMA
+ * boundary hook honors this environment variable and degrades to local L1-only
+ * context, preserving WikiSkill's compiler/runtime separation.
+ */
+export function isolateEvalMemory(invocation: {
+  command: string;
+  args: string[];
+  env: NodeJS.ProcessEnv;
+}): { command: string; args: string[]; env: NodeJS.ProcessEnv } {
+  return {
+    ...invocation,
+    env: { ...invocation.env, OMA_NO_AGENTMEMORY: "1" },
+  };
+}
+
+/**
  * Build the real live-dispatch function that spawns a subprocess via planDispatch
  * and captures its stdout. Uses execFileSync so the call blocks until the agent
  * exits and stdout is fully captured.
@@ -286,10 +339,9 @@ export function buildLiveDispatchFn(
       process.env,
       { readOnly: true },
     );
-    const invocation = stripUndefinedEvalAgentFlag(
-      dispatch.invocation,
+    const invocation = isolateEvalRuntime(
+      stripUndefinedEvalAgentFlag(dispatch.invocation, vendor, workspace),
       vendor,
-      workspace,
     );
 
     return runEvalDispatch(invocation, cwd, prompt, promptFlag);
@@ -331,10 +383,8 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
       process.env,
       { readOnly: true },
     );
-    const invocation = stripUndefinedEvalAgentFlag(
-      dispatch.invocation,
-      vendor,
-      process.cwd(),
+    const invocation = isolateEvalMemory(
+      stripUndefinedEvalAgentFlag(dispatch.invocation, vendor, process.cwd()),
     );
 
     return runEvalDispatch(

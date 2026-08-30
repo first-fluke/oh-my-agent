@@ -1,12 +1,25 @@
 import { createInterface } from "node:readline";
+import type { TaskFixture } from "../eval.js";
+
+export interface LiveDispatchProfile {
+  train: TaskFixture[];
+  val: TaskFixture[];
+  test: TaskFixture[];
+}
+
+function scoreDispatchCalls(tasks: TaskFixture[]): number {
+  const judgeTasks = tasks.filter((task) => task.checker.type === "judge");
+  return tasks.length * 2 + judgeTasks.length * 2;
+}
 
 // --- Live cost preview + confirmation ---
 
 /**
  * Estimate the total number of LLM dispatch calls for a live run.
  *
- * Per epoch: 1 train-score + K candidate-score-on-val + 1 optimizer-call
- *   = editsPerEpoch + 2 scoring calls
+ * Per epoch: 1 train-score + K candidate-score-on-val + 1 maintainer-call
+ * + 1 optimizer-call = editsPerEpoch + 3 dispatch groups, plus two runner-owned
+ * final-test scores after evolution.
  *
  * This is a rough upper-bound; actual calls may be fewer if edits are
  * rejected early (LR budget, validation) or early-stop fires.
@@ -16,9 +29,20 @@ import { createInterface } from "node:readline";
 export function estimateLiveDispatchCalls(
   maxEpochs: number,
   editsPerEpoch: number,
+  profile?: LiveDispatchProfile,
 ): number {
-  // Per epoch: 1 optimizer call + 1 train-score + editsPerEpoch val-scores
-  return maxEpochs * (1 + 1 + editsPerEpoch);
+  if (!profile) {
+    // Score/maintenance groups when task cardinality is not available.
+    return maxEpochs * (editsPerEpoch + 3) + 3;
+  }
+  const trainCalls = scoreDispatchCalls(profile.train);
+  const valCalls = scoreDispatchCalls(profile.val);
+  const testCalls = scoreDispatchCalls(profile.test);
+  return (
+    valCalls +
+    maxEpochs * (trainCalls + 2 + editsPerEpoch * valCalls) +
+    2 * testCalls
+  );
 }
 
 /**
@@ -36,11 +60,14 @@ export async function confirmLiveRun(
   editsPerEpoch: number,
   yes: boolean,
   _readline?: (prompt: string) => Promise<string>,
+  profile?: LiveDispatchProfile,
 ): Promise<boolean> {
-  const calls = estimateLiveDispatchCalls(maxEpochs, editsPerEpoch);
+  const calls = estimateLiveDispatchCalls(maxEpochs, editsPerEpoch, profile);
+  const callUnit = profile ? "underlying model calls" : "dispatch groups";
   console.log(
-    `[oma skills opt] --live cost preview: up to ${calls} model dispatch calls` +
-      ` (${maxEpochs} epochs × (1 optimizer + 1 train-score + ${editsPerEpoch} val-scores)).` +
+    `[oma skills opt] --live cost preview: up to ${calls} ${callUnit}` +
+      ` (${maxEpochs} epochs; two arms per task, plus judge calls where configured).` +
+      " Includes the initial validation baseline and 2 runner-owned final-test scores." +
       ` This incurs real model cost.`,
   );
 

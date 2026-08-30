@@ -31,6 +31,17 @@ export interface SkillUtilityFinding {
   baseline: number;
   treatment: number;
   lift: number;
+  /**
+   * Observable evidence for skill evolution. Present only when the scorer is
+   * explicitly asked for it; public eval serialization intentionally omits it.
+   */
+  evidence?: {
+    domain: string;
+    prompt: string;
+    checker: TaskChecker;
+    baselineOutput: string;
+    treatmentOutput: string;
+  };
 }
 
 export interface NegativeTransfer {

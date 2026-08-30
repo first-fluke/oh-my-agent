@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   createAgentMemoryProvider,
+  parseMemoryRecallResults,
   resolveAgentMemoryEndpoint,
 } from "./memory-provider.js";
 
@@ -16,6 +17,9 @@ async function startServer(args: {
   onObserve?: (body: string) => void;
   rememberStatus?: number;
   onRemember?: (body: string) => void;
+  searchStatus?: number;
+  searchBody?: unknown;
+  onSearch?: (body: string) => void;
 }): Promise<{ server: Server; url: string }> {
   const server = createServer((req, res) => {
     if (req.url === "/agentmemory/health") {
@@ -52,6 +56,20 @@ async function startServer(args: {
         args.onRemember?.(body);
         res.statusCode = args.rememberStatus ?? 200;
         res.end(JSON.stringify({ success: true }));
+      });
+      return;
+    }
+    if (req.url === "/agentmemory/search" && req.method === "POST") {
+      let body = "";
+      req.setEncoding("utf-8");
+      req.on("data", (chunk) => {
+        body += chunk;
+      });
+      req.on("end", () => {
+        args.onSearch?.(body);
+        res.statusCode = args.searchStatus ?? 200;
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify(args.searchBody ?? { results: [] }));
       });
       return;
     }
@@ -226,5 +244,58 @@ describe("AgentMemory provider", () => {
     await expect(
       provider.remember?.({ sessionId: "oma-test", content: "x" }),
     ).resolves.toBe(false);
+  });
+
+  it("recalls enriched facts through the provider search contract", async () => {
+    let searchRequest = "";
+    const { server, url } = await startServer({
+      version: "0.9.24",
+      onSearch: (body) => {
+        searchRequest = body;
+      },
+      searchBody: {
+        results: [
+          {
+            score: 8.5,
+            observation: {
+              type: "fact",
+              narrative: "[skill-evolution:test:suite] successful pattern",
+            },
+          },
+        ],
+      },
+    });
+    cleanup.push(() => server.close());
+    const provider = createAgentMemoryProvider({
+      env: { AGENTMEMORY_URL: url },
+    });
+
+    await expect(
+      provider.recall?.({ query: "skill evolution test", limit: 3 }),
+    ).resolves.toEqual([
+      {
+        text: "[skill-evolution:test:suite] successful pattern",
+        score: 8.5,
+        source: "fact",
+      },
+    ]);
+    expect(JSON.parse(searchRequest)).toEqual({
+      query: "skill evolution test",
+      limit: 3,
+    });
+  });
+
+  it("parses fact arrays when a narrative is absent", () => {
+    expect(
+      parseMemoryRecallResults(
+        {
+          results: [
+            { score: 2, observation: { facts: ["one", "two"] } },
+            { score: 1, observation: {} },
+          ],
+        },
+        5,
+      ),
+    ).toEqual([{ text: "one; two", score: 2, source: undefined }]);
   });
 });

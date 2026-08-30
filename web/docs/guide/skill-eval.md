@@ -7,7 +7,7 @@ description: How to write eval task fixtures for oma skills eval, the .agents/ev
 
 `oma skills eval` measures whether loading a skill actually improves agent task outcomes. It answers a different question than `oma skills audit` (which asks "are two skills redundant?"): it asks "does this skill help?".
 
-The design follows two research findings: SkillOpt (arXiv:2605.23904) uses a held-out utility score as the gate for accepting skill edits; SkillLens (arXiv:2605.23899) shows that skill utility is independent of description distinctiveness — a distinct skill can still be useless, and an overlapping skill can still be helpful.
+The design follows two research findings: WikiSkill (arXiv:2608.27454) separates raw experience, persistent knowledge, and executable skills while retaining held-out gates for evolution; SkillLens (arXiv:2605.23899) shows that skill utility is independent of description distinctiveness — a distinct skill can still be useless, and an overlapping skill can still be helpful.
 
 ---
 
@@ -321,9 +321,9 @@ Exit codes:
 
 ---
 
-## Honesty note on mock vs live scores
+## Choosing live or mock
 
-`--mock` with `assert`/`regex` checkers is a deterministic *substrate* — useful for contract checks (does the output contain the right tool call?) but not a trustworthy utility number for open-ended skills. A meaningful score requires `--live` with judge checkers, which is how the academic benchmarks behind this feature measure utility (SkillOpt measures benchmark accuracy; SkillLens uses utility-grounded task-success eval).
+Use `--live` with judge checkers to measure actual utility on open-ended tasks. Use `--mock` to replay previously recorded judge verdicts offline or to run deterministic `assert`/`regex` contract checks.
 
 Mock determinism is preserved by recording the judge's binary verdict (PASS/FAIL) into the rollout entry during `--live --record`, then replaying that recorded score in subsequent `--mock` runs — no re-calling the LLM.
 

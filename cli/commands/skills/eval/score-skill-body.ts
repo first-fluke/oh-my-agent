@@ -60,6 +60,10 @@ export interface ScoreSkillBodyOptions {
    * resolution. Defaults to `process.cwd()`.
    */
   workspace?: string;
+  /** Attach observable task prompts and arm outputs for skill evolution. */
+  includeEvidence?: boolean;
+  /** Override the public MIN_TASKS gate for an internal deterministic split. */
+  minimumCoverage?: number;
 }
 
 /**
@@ -147,6 +151,8 @@ export async function scoreSkillBody(
         maxTasks,
         isolation,
         isolationVendor,
+        includeEvidence: options.includeEvidence,
+        minimumCoverage: options.minimumCoverage,
       });
     } finally {
       cleanupTmp();
@@ -174,5 +180,7 @@ export async function scoreSkillBody(
     rollouts,
     skippedFiles,
     maxTasks,
+    includeEvidence: options.includeEvidence,
+    minimumCoverage: options.minimumCoverage,
   });
 }
