@@ -1,5 +1,18 @@
 # Changelog
 
+## [13.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.8.0...cli-v13.0.0) (2026-08-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **market:** `oma market harvest|score|fuse|cluster|render| discover-competitors` and OMA_MARKET_MOCK fixture replay are removed; use `oma market run` (last30days flags, `--mock` for offline runs).
+
+### Features
+
+* **diagram:** add archify diagram engine with always-latest managed install ([5da4b9e](https://github.com/first-fluke/oh-my-agent/commit/5da4b9e3be800c98931a00a3adfb3def3733f1ff))
+* **market:** run research on the always-latest last30days engine ([8bc9e91](https://github.com/first-fluke/oh-my-agent/commit/8bc9e91fe9d9d40b78c20c8435891fe5690f2741))
+* **video:** author Remotion compositions per run on the latest Remotion ([88eb9b0](https://github.com/first-fluke/oh-my-agent/commit/88eb9b0d81773aa34992e383b8f49bc4c6825bd0))
+
 ## [12.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v12.7.3...cli-v12.8.0) (2026-08-28)
 
 
