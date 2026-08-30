@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v5.0.0...web-v5.1.0) (2026-08-30)
+
+
+### Features
+
+* **skills:** add persistent WikiSkill evolution ([f437140](https://github.com/first-fluke/oh-my-agent/commit/f437140ef8491270edabb63692dd49743c20f46d))
+
+
+### Documentation
+
+* **skills:** document WikiSkill evolution ([9f2c331](https://github.com/first-fluke/oh-my-agent/commit/9f2c331b388a387f11d4047c55a2b260df00a4c6))
+
 ## [5.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v4.2.5...web-v5.0.0) (2026-08-30)
 
 
