@@ -52,6 +52,9 @@ validated against a deterministic checklist.
 - One self-contained HTML file at `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`
   (date in Asia/Seoul; same date + slug rerun overwrites).
 - TL;DR summary and file path reported to the user; `open <path>` attempted (warn-only).
+- Opt-in archify sidecar `{YYYY-MM-DD}-{slug}.archify.html` (+ `.archify.json`) linked from the
+  explainer by a plain anchor, when `diagram.explain_sidecar` is on or the user asks and
+  `oma diagram resolve` reports `engine: archify`. Never embedded — the self-contained contract holds.
 
 ```yaml
 outputs:
@@ -59,6 +62,10 @@ outputs:
     description: Self-contained interactive HTML explainer (Background/Intuition/Code/Quiz)
     artifact: ".agents/results/explain/*.html"
     required: true
+  - name: explainer-archify-sidecar
+    description: Optional archify interactive diagram sidecar next to the explainer
+    artifact: ".agents/results/explain/*.archify.html"
+    required: false
 ```
 
 ### Dependencies
@@ -66,6 +73,7 @@ outputs:
 - `resources/html-contract.md` — HOW the HTML behaves and is validated (self-contained rules,
   quiz JS, grep checklist, secret gates)
 - `git`; optional `gh` CLI for PR refs
+- `_shared/conditional/diagram-engine.md` + `oma diagram resolve` for the opt-in archify sidecar
 - Serena MCP for surrounding-code exploration (native search fallback when unavailable)
 
 ### Control-flow features
@@ -97,7 +105,9 @@ outputs:
 5. **VALIDATE**: Run the grep checklist from `html-contract.md` (including the final-HTML secret
    scan). Fix → re-validate, max 3 iterations; then surface failures and stop.
 6. **DELIVER**: Save to `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, attempt
-   `open <path>` (warn-only), report TL;DR + path.
+   `open <path>` (warn-only), report TL;DR + path. If the archify sidecar is requested and
+   resolves, derive it from the primary flow diagram, validate/deliver it (no iteration cap),
+   anchor-link it, and re-run the checklist once; a sidecar failure never blocks delivery.
 
 ### Transitions
 - Explicit ref argument present → skip auto-detection, use it verbatim.

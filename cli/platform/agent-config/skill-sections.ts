@@ -33,7 +33,9 @@ export type SkillSectionName =
   | "voice"
   | "hwp"
   | "pdf"
-  | "scholar";
+  | "scholar"
+  | "diagram"
+  | "market";
 
 export const OMA_CONFIG_RELATIVE_PATH = path.join(".agents", "oma-config.yaml");
 

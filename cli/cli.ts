@@ -121,6 +121,9 @@ async function registerFullCli(): Promise<void> {
     import("./commands/explain/command.js").then(
       (m) => m.registerExplainCommand,
     ),
+    import("./commands/diagram/command.js").then(
+      (m) => m.registerDiagramCommand,
+    ),
   ]);
   for (const register of registrars) {
     register(program);

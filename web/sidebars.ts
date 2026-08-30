@@ -41,6 +41,8 @@ const sidebars: SidebarsConfig = {
         "guide/video-generation",
         "guide/scheduled-agents",
         "guide/code-explainer",
+        "guide/diagram-engine",
+        "guide/market-research",
       ],
     },
     {

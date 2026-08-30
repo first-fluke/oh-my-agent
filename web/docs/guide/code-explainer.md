@@ -127,6 +127,10 @@ The date is localized to Asia/Seoul. Rerunning the same date + slug overwrites t
 
 ---
 
+## Optional archify sidecar
+
+When either `diagram.explain_sidecar: true` is set in `oma-config.yaml` or you ask for it (`/explain 640 with archify`), `/explain` also derives an interactive `{date}-{slug}.archify.html` from the explainer's primary flow diagram and links it with a plain anchor. It is never embedded — the explainer stays a single self-contained file — and a sidecar failure never blocks delivery. See [Diagram Engine](/docs/guide/diagram-engine).
+
 ## Edge cases
 
 | Situation | Behavior |

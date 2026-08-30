@@ -42,6 +42,7 @@ Analyze, compare, and document software architecture decisions with explicit tra
 - Architecture diagnosis, recommendation, comparison, prioritization, or ADR
 - Assumptions, tradeoffs, risks, and validation steps
 - A Mermaid context/container diagram when the decision changes structure (boundaries, dependencies, data flow)
+- When `oma diagram resolve` reports `engine: archify` (the normal case — oma auto-fetches the latest archify release), an interactive sibling `<artifact-stem>.archify.json` + `.archify.html` derived from that Mermaid (see `_shared/conditional/diagram-engine.md`)
 - Saved architecture artifacts under `.agents/results/architecture/` when producing durable outputs
 
 ```yaml
@@ -49,6 +50,10 @@ outputs:
   - name: architecture-artifact
     description: ADR, comparison, or recommendation written to durable storage when the run is meant to persist
     artifact: ".agents/results/architecture/*.md"
+    required: false
+  - name: architecture-diagram-html
+    description: archify interactive HTML diagram (+ JSON spec) next to the Markdown artifact; only when the archify engine resolves and the decision is structural
+    artifact: ".agents/results/architecture/*.archify.html"
     required: false
 ```
 
@@ -59,6 +64,7 @@ outputs:
 - `resources/output-templates.md` for final artifact shapes
 - `resources/api-evolution.md` for published-contract versioning/deprecation decisions (MAP evolution patterns)
 - `resources/migration-patterns.md` for transition plans when the chosen architecture requires restructuring a live system
+- `_shared/conditional/diagram-engine.md` (+ `oma diagram resolve`) when a structural diagram is emitted — chooses archify vs Mermaid and owns the validate/deliver loop
 
 ### Control-flow features
 - Branches by request clarity, decision materiality, risk level, and need for stakeholder consultation
