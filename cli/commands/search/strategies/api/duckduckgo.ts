@@ -3,7 +3,7 @@
  *
  * Requires `uv` on PATH (one-line install: `curl -LsSf https://astral.sh/uv/install.sh | sh`).
  * `uvx ddgs` is invoked per query — supply `site:<host>` operators inside
- * the query string; consumers (e.g. `oma market harvest --sites`) fan-out
+ * the query string; consumers (e.g. `oma search` site-scoped fan-out)
  * one query per site.
  *
  * No regex/HTML scraping. If uv is missing or ddgs fails, the handler

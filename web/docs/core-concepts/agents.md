@@ -647,23 +647,24 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 ### oma-market
 
-**Domain:** Community-signal market research: pain-point extraction, trend detection, competitor positioning, and discovery across Reddit, HN, Bluesky, Mastodon, GitHub Issues, and web.
+**Domain:** Community-signal market research: pain-point extraction, trend detection, competitor positioning, and discovery. Research runs on the upstream [`last30days`](https://github.com/mvanhorn/last30days-skill) engine (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web and more), which oma keeps at the latest release automatically.
 
-**When to use:** Extracting real user pain points from community posts, detecting trends in a category over a 7d/30d/90d/180d window, competitor sentiment analysis and SWOT positioning, open-ended discovery research across multiple sources.
+**When to use:** Extracting real user pain points from community posts, detecting trends in a category over a 7/30/90/180-day window, competitor sentiment analysis and SWOT / Porter's 5F positioning, open-ended discovery (`--discover`), person / company / ticker research, hiring signals, follow-up drills.
 
-**When NOT to use:** General web research without market framing (use oma-search directly), single-source queries (use `oma search fetch` standalone), live dashboards or scheduled monitoring (v1 is one-shot).
+**When NOT to use:** General web research without market framing (use oma-search directly), academic literature (use oma-scholar), live dashboards or scheduled monitoring (wrap this skill with `oma schedule:*`).
 
 **Core rules:**
-- detect-trap first: never harvest without preflight (`--force` bypasses only in test mode)
-- Delegate all fetches: `harvest` calls `oma search fetch --only api`; no direct platform HTTP
-- Trust labels read-only: no re-scoring; Trust Registry ownership stays with oma-search
-- Paid sources (X, TikTok, Instagram, YouTube, Perplexity) auto-skip silently when their env key is absent
-- LAW self-check mandatory before file write; no raw evidence dump in the markdown body
+- detect-trap first: never run the engine without preflight (`--force` only on explicit user reconfirmation)
+- One engine, always latest: `oma market resolve` refreshes the managed copy (`~/.cache/oma-market/last30days/<tag>/`) before use; a stale user-installed copy is only a fallback when nothing is cached offline
+- Follow the resolved engine's `SKILL.md` verbatim; the only substitution is `oma market run <args>` in place of the raw `python3 scripts/last30days.py` call
+- Never WebSearch-only: no engine, no Python 3.12+, or a non-zero exit → stop and report
+- Keyed sources are enabled only through the upstream setup wizard with user consent; skipped sources stay visible in the footer
+- Frameworks cite only engine clusters; badge first line and upstream LAWs enforced before the file is written
 - Single brief per run at `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`; framework auto-toggles by intent (pain/trend → SWOT, competitor → SWOT + Porter's 5F, discovery → SWOT + PESTEL)
 
-**Workflow:** PREPARE (parse topic/flags, detect-trap, resolve intent/pack/window) → ACT (build per-source fetch URLs) → ACQUIRE (parallel harvest) → VERIFY (score, fuse, cluster) → FINALIZE (render LAW-compliant brief, self-check, write).
+**Workflow:** detect-trap → `oma market resolve` → read upstream SKILL.md → upstream pre-research steps (setup wizard, handle/subreddit resolution, query plan) → `oma market run … --emit=compact` → synthesize per upstream OUTPUT CONTRACT → append frameworks → self-check → write.
 
-**Resources:** `intent-rules.md`, `output-laws.md`, `execution-protocol.md`, `checklist.md`, `error-playbook.md`, `examples.md`, plus `frameworks/` (swot, porters-5f, pestel) and `operator-packs/` (pain, positive, competitor, discovery).
+**Resources:** `intent-rules.md`, `output-laws.md`, `execution-protocol.md`, `checklist.md`, `error-playbook.md`, plus `frameworks/` (swot, porters-5f, pestel). CLI: `oma market detect-trap | resolve | update | run`.
 
 ---
 

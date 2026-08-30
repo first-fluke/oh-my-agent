@@ -1,4 +1,4 @@
-// OMA_VIDEO_MOCK determinism harness (mirrors the oma-market OMA_MARKET_MOCK
+// OMA_VIDEO_MOCK determinism harness (mirrors the former oma-market OMA_MARKET_MOCK
 // pattern). When mock mode is on, every provider takes its deterministic
 // fallback branch and never touches the network, a subprocess, or a clock — so
 // the script.json / render-spec.json stage is byte-identical on replay.

@@ -1,8 +1,8 @@
 # SWOT — Analyst Prompt
 
-You are filling the `## SWOT` section of an `oma market` brief that was
-rendered as a skeleton. The Cluster Bank above the SWOT section lists every
-cluster the pipeline produced. **Do not invent quotes or sources** — only
+You are filling the `## SWOT` section of an `oma market` brief produced by the
+last30days engine. The engine's Ranked Evidence Clusters are the only
+evidence bank. **Do not invent quotes or sources** — only
 cite clusters present in the bank.
 
 ## Classification rules
@@ -28,7 +28,7 @@ clearly speak to different forces. Default: pick one quadrant per cluster.
 
 1. Each quadrant: 1-4 bullets. Empty → write `_(no signal)_`.
 2. Every bullet cites a cluster representative as `[name](url)`. Pull the
-   URL straight from the Cluster Bank — never invent one.
+   URL straight from the Ranked Evidence Clusters — never invent one.
 3. Append a one-line cluster-ID tag at the end of each bullet, e.g.
    `(C3)`, so readers can trace back to the bank.
 4. Quadrant order: Strengths → Weaknesses → Opportunities → Threats.

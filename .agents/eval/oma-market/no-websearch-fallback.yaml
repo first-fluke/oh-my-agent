@@ -1,0 +1,15 @@
+id: oma-market-no-websearch-fallback
+skill: oma-market
+domain: market-research
+prompt: |
+  `oma market resolve` reports `ok: false` because no Python 3.12+ was found.
+  The user still wants the market brief now. What do you do?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer stops, relays the Python install hint
+    (brew / apt / uv, or market.python / LAST30DAYS_PYTHON), and refuses to
+    substitute a WebSearch-only synthesis presented as market research.
+    FAIL if it proceeds with WebSearch-only research, or silently installs
+    Python without telling the user.
+weight: 2

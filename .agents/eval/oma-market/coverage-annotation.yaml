@@ -2,11 +2,11 @@ id: oma-market-coverage-annotation
 skill: oma-market
 domain: market-research
 prompt: |
-  During an oma market harvest fan-out, 2 of 6 sources fail (they land in
-  `sources_failed`) but the rest succeed. Does the pipeline abort? And what
-  must the rendered brief disclose about this run, where?
+  During an oma market run, the last30days engine footer reports that 2 of 6
+  sources were skipped (no API key / cookies). Does the run abort? And what
+  must the delivered brief and your chat summary disclose about this?
 checker:
   type: assert
   expect_contains:
-    - "coverage:"
+    - "skip"
 weight: 1

@@ -1,120 +1,58 @@
 # Step-by-step execution protocol for oma-market
 
-The CLI handles deterministic compute (search, score, fuse, cluster, render
-skeleton + cluster bank). The HOST LLM (Claude / Codex / Gemini reading
-this skill) handles semantic work (intent detection, framework synthesis).
-Steps below alternate between the two responsibilities.
+oma owns the gate, the engine lifecycle, and the framework layer. The upstream
+`last30days` SKILL.md owns everything about the research itself. Never
+improvise a research flow that the upstream contract already specifies.
 
-## Step 0 — Trap Detection (CLI)
+## Step 0 — Trap detection (CLI)
 
-Run `oma market detect-trap "<topic>"`. On exit 2, return the REFUSE
-message to the user and STOP.
+`oma market detect-trap "<topic>"`. Exit 2 → return the REFUSE message and
+reframe suggestion, STOP. Exit 4 → invalid topic, STOP.
 
-## Step 1 — Intent Classification (LLM)
+## Step 1 — Resolve the engine (CLI)
 
-Read the user's prompt and classify intent into one of
-`pain | trend | competitor | discovery` per `intent-rules.md`.
+`oma market resolve --json` → `{ ok, engine: { root, script, skillMd, version, source, status, note }, python, saveDir, reason }`.
 
-Mapping cues (non-exhaustive — read the prompt, do not pattern-match
-blindly):
+- `ok: false` → report `reason` and STOP. Missing engine: `oma market update`.
+  Missing Python: relay the hint (brew / apt / `uv python install 3.12`).
+- `status: stale` → note it; research still runs on the cached engine.
 
-- "X 페인 / X 불편 / X 이탈 이유 / why do users leave X" → `pain`
-- "X 트렌드 / X 부상 / hot in X / what's hot in X" → `trend`
-- "X vs Y / X 대 Y / X와 Y 비교" → `competitor` (set `--vs Y`)
-- "X 시장 / X 카테고리 / opportunities in X / unmet needs around X"
-  → `discovery`
+## Step 2 — Read the upstream contract (LLM)
 
-Explicit `--intent` flag from the user always wins. Record result as
-`$INTENT`. Also derive `$LOCALE` (`ko` if topic contains Hangul, else
-`en`) and `$SITES` (Naver / tistory / brunch domains for `ko`, none
-otherwise).
+Read `engine.skillMd` top to bottom. `engine.root` is the upstream `SKILL_DIR`.
+Everything it says about Step 0 (setup wizard), intent parsing, Step 0.45,
+Step 0.5 / 0.55 (pre-research resolution), Step 0.75 (query plan), the
+PRECONDITION GATE, and the OUTPUT CONTRACT applies verbatim, with exactly two
+substitutions:
 
-## Step 2 — Operator Pack Selection (LLM)
-
-| Intent | Pack |
+| Upstream says | Do instead |
 |---|---|
-| pain | `operator-packs/pain.md` |
-| trend | none |
-| competitor | `operator-packs/competitor.md` |
-| discovery | `operator-packs/discovery.md` |
+| Runtime Preflight Python-hunt block | skip — `oma market run` already resolved `LAST30DAYS_PYTHON` |
+| `"${LAST30DAYS_PYTHON}" "${SKILL_DIR}/scripts/last30days.py" <args>` | `oma market run <args>` (same args; `--save-dir` auto-added) |
 
-## Step 3 — Harvest (CLI)
+## Step 3 — Intent and frameworks (LLM)
 
-```bash
-oma market harvest "<topic>" \
-  --sources <list> \
-  --window <window> \
-  --operator-pack <pain|positive|competitor|discovery|none> \
-  --locale $LOCALE \
-  [--vs <competitor>] \
-  [--sites $SITES] \
-  [--per-source-limit <n>] \
-  [--query-strict] \
-  [--no-cache]
-```
+Classify per `intent-rules.md`; pick the engine flags and framework set from
+its table. Combine with the upstream-resolved flags (`--plan`, `--subreddits`,
+`--x-handle`, …) — do not drop any of them.
 
-Default `--sources reddit,hn,bluesky,mastodon,github,grounding` (paid sources
-auto-added when env keys present). Default `--window 30d`.
+## Step 4 — Run the engine (CLI, foreground)
 
-## Step 4 — Score, Fuse, Cluster (CLI)
+`oma market run "<topic>" <upstream flags> <intent flags> --emit=compact --save-suffix=v3`
 
-```bash
-oma market score --intent $INTENT \
-  | oma market fuse \
-  | oma market cluster --overlap-threshold 0.2
-```
+Foreground, 5-minute timeout, read the whole output. Non-zero exit → report
+stderr verbatim; do not synthesize from nothing.
 
-Tune `--overlap-threshold` if clusters are over-fragmented for KR
-queries (default 0.4 is too strict for n-gram tokens).
+## Step 5 — Synthesize (LLM)
 
-## Step 5 — Render Skeleton (CLI)
+Follow the upstream OUTPUT CONTRACT (badge first line, Ranked Evidence
+Clusters, LAWs, engine footer). Then append the framework sections for the
+intent (`frameworks/*.md`), citing only clusters that appear in the engine
+output. Comparison intent uses the upstream COMPARISON template.
 
-```bash
-oma market render --format md --intent $INTENT --frameworks auto \
-  --topic "<user-facing title>" \
-  [--vs <competitor>]
-```
+## Step 6 — Self-check and write (LLM)
 
-This writes a skeleton brief: badge → body → KEY PATTERNS →
-**Cluster Bank** → empty SWOT/5F/PESTEL slots.
-
-## Step 6 — Analyst Synthesis (LLM)
-
-Read the skeleton brief. For each framework section present:
-
-1. Open the corresponding prompt under
-   `.agents/skills/oma-market/resources/frameworks/<name>.md`.
-2. Map clusters from the Cluster Bank into the framework slots per the
-   classification rules in that prompt.
-3. Replace every `_(fill from cluster bank)_` placeholder with concrete
-   bullets, each citing a cluster representative as `[name](url)` and
-   tagged with its cluster ID `(C#)`.
-4. Apply the output LAWs (`output-laws.md`): no em-dash, no invented
-   titles, inline `[name](url)` only, no trailing `Sources:` block.
-5. Korean briefs: bullet text in Korean; structural labels stay as
-   written in the framework prompt.
-
-If a framework axis genuinely has no signal in the Cluster Bank, write
-`_(no signal)_`. Do not invent quotes.
-
-## Step 7 — Self-Check and Finalize (LLM)
-
-1. Run mental checks from `checklist.md`.
-2. Save the synthesized brief at
-   `.agents/results/market/{slug}-{YYYYMMDD}.md` (render's default
-   output path — overwrite the skeleton from Step 5).
-3. Return the first 20 lines + file path to the user.
-
-## Responsibility split
-
-| Step | Owner | Why |
-|---|---|---|
-| 0 | CLI | Deterministic regex preflight |
-| 1, 2 | LLM | Semantic understanding of user intent |
-| 3, 4, 5 | CLI | Deterministic search + scoring + rendering |
-| 6 | LLM | Semantic classification + writing |
-| 7 | LLM | Self-check on final prose |
-
-The CLI never auto-classifies clusters into SWOT/5F/PESTEL — keyword
-classifiers do not generalize across domains and languages. The LLM
-hosting this skill performs all semantic mapping.
+Run the checks in `output-laws.md`. Write
+`.agents/results/market/{topic-slug}-{YYYYMMDD}.md` (same day + slug
+overwrites). Preview the first 50 lines and report the path. State skipped
+sources and the engine version.

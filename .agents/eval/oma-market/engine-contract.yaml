@@ -1,0 +1,15 @@
+id: oma-market-engine-contract
+skill: oma-market
+domain: market-research
+prompt: |
+  `oma market resolve --json` returned `ok: true` with
+  `engine.skillMd = ~/.cache/oma-market/last30days/v3.21.1/SKILL.md`.
+  Before running the engine, what must you read, and when that file tells
+  you to run `"${LAST30DAYS_PYTHON}" "${SKILL_DIR}/scripts/last30days.py" <args>`,
+  what command do you actually run?
+checker:
+  type: assert
+  expect_contains:
+    - "SKILL.md"
+    - "oma market run"
+weight: 2
