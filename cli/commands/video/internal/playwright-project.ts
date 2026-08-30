@@ -1,5 +1,5 @@
 // Resolve a usable Playwright install + report its readiness, and drive a
-// one-time cache install. Mirrors `remotion-project.ts` / `mpt-project.ts`.
+// one-time cache install. Mirrors `mpt-project.ts`.
 //
 // Boundary: the live web-capture driver (`resources/playwright/record.mjs`) runs
 // as a SUBPROCESS under the resolved Playwright (its node_modules on NODE_PATH,

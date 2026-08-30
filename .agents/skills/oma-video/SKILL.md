@@ -1,6 +1,6 @@
 ---
 name: oma-video
-description: Short-form, explainer, and demo video generation via a key-optional 3-tier router. Composes scripts, oma-voice narration, oma-image/oma-slide/stock visuals, key-free captions, and a vendored Remotion compositor into reproducible run directories. Routes three modes — shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough (screen capture, incl. supervised headed web-app capture of any URL). Use for video, shorts, reels, short-form, demo, explainer, walkthrough, screencast, web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.
+description: Short-form, explainer, and demo video generation via a key-optional 3-tier router. Composes scripts, oma-voice narration, oma-image/oma-slide/stock visuals, key-free captions, and a per-run agent-authored Remotion composition (always-latest Remotion + remotion-dev/skills) into reproducible run directories. Routes three modes — shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough (screen capture, incl. supervised headed web-app capture of any URL). Use for video, shorts, reels, short-form, demo, explainer, walkthrough, screencast, web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.
 ---
 
 # Video Agent - Short-form, Explainer & Demo Router
@@ -68,7 +68,7 @@ outputs:
 ### Dependencies
 - `oma video generate` CLI + central error module (exit codes aligned with `oma search fetch`)
 - oma-voice (Voicebox MCP), oma-image, oma-slide as key-free fallback providers
-- Vendored Remotion project at `resources/remotion/` (compositor)
+- Per-run Remotion project at `<runDir>/remotion/` scaffolded by `oma video compose` on the always-latest toolchain (`~/.cache/oma-video/remotion/<ver>/`); the composition is agent-authored per run following remotion-dev/skills (`resources/remotion-authoring/`)
 - `resources/vendor-matrix.md`, `resources/execution-protocol.md`, `resources/prompt-tips.md`, and the `video:` section of `.agents/oma-config.yaml`
 
 ### Control-flow features
@@ -100,7 +100,8 @@ outputs:
 
 ### Failure and recovery
 - If a provider is unavailable, try the next provider in the capability's `order`; only chain exhaustion is a stage failure.
-- If the Remotion toolchain is not bootstrapped, point the user to `oma video doctor --install` (one-time: deps + headless shell + Pretendard font); fall back to the MPT compositor where applicable (MPT itself needs a one-time `oma video doctor --install-mpt`).
+- Remotion is always the latest npm release and oma owns NO composition code: `oma video compose <runDir>` refreshes the toolchain + remotion-dev/skills (throttled) and scaffolds `<runDir>/remotion/`; you author `src/Root.tsx` per its `AUTHORING.md` and `resources/remotion-authoring/<mode>.md`, then `oma video render <runDir>`. A tsc/render failure is a composition bug: re-read the skills, fix, re-render (no fixed cap; stop only after two consecutive attempts without progress and report).
+- If the toolchain cannot be fetched (offline, nothing cached), point the user to `oma video doctor --install` once online; fall back to the MPT compositor where applicable (MPT itself needs a one-time `oma video doctor --install-mpt`).
 - If Voicebox MCP is down, fall back to estimated timing (still produces captions). A whisper.cpp hop between the two is reserved but not yet wired (`TODO(oma-deferred): whisper-cpp`).
 - If the brief locale is non-source, translate via oma-translation (key-free); if absent, warn and keep source text.
 
@@ -129,7 +130,7 @@ outputs:
 ### Tools and instruments
 - `oma video generate`, `oma video doctor`, `oma video list-providers`, `oma video render`
 - Provider adapters: AgentScript, oma-voice, oma-image, oma-slide, Pexels, Pixelle, oma-captions, Cap, Remotion, MPT
-- Vendored Remotion project (`resources/remotion/`), prompt tips, vendor matrix, video config
+- Remotion authoring specs (`resources/remotion-authoring/`), prompt tips, vendor matrix, video config
 
 ### Canonical command path
 ```bash
@@ -264,8 +265,10 @@ oma video generate "<brief>" [--mode shorts|explainer|demo] \
 # A human drives the on-screen flow; press ENTER to stop. NO credential automation. --url/tokens masked.
 # Non-interactive (CI / -y / no TTY) or unresolvable Playwright -> falls back to the guided protocol (no hang).
 # --capture-stop gives CI a non-interactive stop (duration / selector) in place of the ENTER prompt.
-oma video doctor          # readiness report only (no install): Node/Chromium/FFmpeg · Remotion project · Pretendard font · MPT · Playwright · Voicebox MCP · oma-image vendors · Pixelle-MCP · Cap
-oma video doctor --install             # one-time: vendored Remotion deps + Chrome Headless Shell + Pretendard font fetch (offline -> warn, system-font fallback)
+oma video doctor          # readiness report only (no install): Node/Chromium/FFmpeg · Remotion toolchain · remotion-dev/skills · Pretendard font · MPT · Playwright · Voicebox MCP · oma-image vendors · Pixelle-MCP · Cap
+oma video doctor --install             # warm the latest Remotion toolchain (deps + Chrome Headless Shell + Pretendard) and remotion-dev/skills into ~/.cache/oma-video
+oma video doctor --upgrade             # force a latest check now
+oma video compose <runDir> [--format json]   # scaffold/refresh the run's Remotion project + print the authoring contract
 oma video doctor --install-mpt         # one-time: MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
 oma video doctor --install-playwright  # one-time: npm i playwright + chromium (web capture)
 oma video list-providers  # availability + key/fallback status
@@ -313,7 +316,7 @@ See `resources/vendor-matrix.md` for provider precheck + fallback-chain rules.
 Author `--script` files against `resources/script-schema.md` (full field reference + example; `schemaVersion: "1.0"` is required).
 Use `resources/prompt-tips.md` for writing effective briefs per mode.
 Before submitting, run `resources/checklist.md`.
-The vendored Remotion compositor lives at `resources/remotion/` (see its `README.md`).
+Remotion compositions are agent-authored per run — see `resources/remotion-authoring/README.md`.
 The web-capture driver lives at `resources/playwright/record.mjs` (runs as a subprocess under the resolved Playwright; never imported into the CLI).
 The MPT fallback compositor driver lives at `resources/mpt/driver.py` (consumed by the CLI's mpt-project internals).
 
@@ -326,5 +329,5 @@ Env vars: `OMA_VIDEO_DEFAULT_MODE`, `OMA_VIDEO_DEFAULT_OUT`, `OMA_VIDEO_YES`, `P
 - Vendor matrix: `resources/vendor-matrix.md`
 - Prompt tips: `resources/prompt-tips.md`
 - Checklist: `resources/checklist.md`
-- Remotion compositor: `resources/remotion/README.md`
+- Remotion authoring: `resources/remotion-authoring/README.md` (+ `shorts.md`, `explainer.md`, `demo.md`)
 - Context loading: `../_shared/core/context-loading.md`

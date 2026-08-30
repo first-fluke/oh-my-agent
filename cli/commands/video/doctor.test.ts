@@ -5,12 +5,10 @@ import {
   checkNode,
   checkPixelle,
   checkPretendardFont,
-  checkRemotionProject,
+  checkRemotionSkills,
+  checkRemotionToolchain,
 } from "./internal/readiness.js";
-import {
-  getRemotionProjectStatus,
-  isPretendardFontPresent,
-} from "./internal/remotion-project.js";
+import { describeToolchain } from "./internal/remotion-workspace.js";
 
 // The subprocess/network checks (ffmpeg, voicebox, oma-image, cap) are exercised
 // end-to-end by the doctor command; here we cover the pure/synchronous checks
@@ -47,42 +45,35 @@ describe("video readiness checks (pure)", () => {
     expect(pixelle.detail).toContain("RUNNINGHUB_API_KEY present");
   });
 
-  it("reports the remotion project readiness consistently", () => {
-    // ok reflects deps installed AND the Chrome Headless Shell downloaded (the
-    // real render needs both); a not-ready case must carry the --install
-    // remediation (which provisions deps + headless shell).
-    const status = getRemotionProjectStatus();
-    const check = checkRemotionProject();
-    expect(check.name).toBe("remotion-project");
-    expect(check.ok).toBe(status.installed && status.browserReady);
-    if (!check.ok) {
-      expect(check.remediation).toBeDefined();
-      if (status.dir) {
-        expect(check.remediation).toContain("--install");
-      }
-    } else {
-      expect(check.detail).toContain("ready");
-    }
+  it("reports the remotion toolchain cache consistently", () => {
+    // ok = a cached toolchain with its Chrome Headless Shell; anything else
+    // must point at `doctor --install`. Reads the cache only — no network.
+    const tc = describeToolchain();
+    const check = checkRemotionToolchain();
+    expect(check.name).toBe("remotion-toolchain");
+    expect(check.ok).toBe(Boolean(tc.version) && tc.browserReady);
+    if (check.ok) expect(check.detail).toContain(`remotion ${tc.version}`);
+    else expect(check.remediation).toContain("--install");
+  });
+
+  it("reports remotion-dev/skills cache state without network", () => {
+    const check = checkRemotionSkills();
+    expect(check.name).toBe("remotion-skills");
+    if (!check.ok) expect(check.remediation).toContain("--install");
+    else expect(check.detail).toContain("remotion-dev/skills");
   });
 
   it("reports the pretendard font status consistently", () => {
-    // The font is optional (graceful system-font fallback), so ok must simply
-    // mirror the woff2's presence in the resolved project dir, and a missing
-    // font must point at the one-time `doctor --install` fetch. No network.
-    const status = getRemotionProjectStatus();
+    const tc = describeToolchain();
     const check = checkPretendardFont();
     expect(check.name).toBe("pretendard-font");
-    if (!status.dir) {
+    if (!tc.version) {
       expect(check.ok).toBe(false);
       return;
     }
-    expect(check.ok).toBe(isPretendardFontPresent(status.dir));
-    if (check.ok) {
-      expect(check.detail).toContain("embedded");
-    } else {
-      expect(check.detail).toContain("system-font fallback");
-      expect(check.remediation).toContain("--install");
-    }
+    expect(check.ok).toBe(tc.fontReady);
+    if (check.ok) expect(check.detail).toContain("embedded");
+    else expect(check.remediation).toContain("--install");
   });
 
   it("reports the mpt project readiness consistently", () => {

@@ -166,17 +166,16 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 
 ---
 
-## Step 6: Composite (Remotion → MPT fallback)
+## Step 6: Composite (Remotion — you author the composition → MPT fallback)
 
-1. The orchestrator renders via the selected compositor:
-   - **Remotion** (default, all modes): renders the vendored `Shorts` / `Explainer` / `Demo` composition from `render-spec.json` props, with embedded Pretendard for cross-machine identical output. Long renders are SIGINT-abortable.
-   - **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alt): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs.
-   - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output (no compositor over-processing). `--polish` overlays the Remotion `Demo` composition (intro / captions / zoom) with the captured `capture.mp4` as the full-frame background.
-2. If Remotion bootstrap fails (`CompositorBootstrapError`), the doctor remediation is the fix path — run `oma video doctor --install` once, then re-render. Do not attempt an ad-hoc install mid-run.
-3. To reproduce or re-render an existing run without regenerating assets (deterministic from the spec):
-   ```bash
-   oma video render <runDir> --format json
-   ```
+1. **Remotion** (default, all modes) — oma ships no composition code; you write it per run on the always-latest Remotion:
+   1. `oma video generate` already scaffolded `<runDir>/remotion/` (warning `composition pending`). If not, or to refresh: `oma video compose <runDir> --format json`.
+   2. Read, in order: `<runDir>/remotion/AUTHORING.md` (contract for this spec), the `remotion-best-practices` and `remotion-markup` SKILL.md paths it lists (remotion-dev/skills at HEAD; `remotion-captions` when `captions.style !== "none"`, `remotion-multimedia` for video/audio), and `.agents/skills/oma-video/resources/remotion-authoring/<mode>.md`.
+   3. Write `<runDir>/remotion/src/Root.tsx` (+ `src/components/*`): one `<Composition id={composition}>` consuming `render-spec.json`, `calculateMetadata` from props, deterministic (no network/randomness), Pretendard via `staticFile("fonts/PretendardVariable.woff2")`. Never edit the generated files.
+   4. `oma video render <runDir> --format json` — typecheck → `npx remotion render` → ffprobe. **Non-zero exit is a composition bug**: read the diagnostics, consult the skills again (`remotion-upgrade` for API moves), fix, re-render. No fixed cap; stop only after two consecutive attempts without progress and report the diagnostics.
+   - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output. `--polish` means you author the `Demo` composition (intro / callouts / zoom over the capture as `background`).
+2. **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alt): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs. Needs `oma video doctor --install-mpt` once.
+3. If the toolchain cannot be fetched (offline, nothing cached): `oma video doctor --install` once online. Do not pin or hand-install Remotion.
 4. Confirm the output MP4 exists in the run directory and matches the expected `<mode>-<slug>.mp4` name.
 
 ---
@@ -197,7 +196,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - wrong/placeholder visual → **Step 4** visual track (adjust prompt or `--visual` mode).
    - missing/incomplete demo capture → **Step 4** demo capture track (re-run the web capture; adjust `--ready-selector`/`--capture-timeout`, or fall back to `--source file`).
    - caption sync/wrap/locale → **Step 4** caption track (or oma-translation).
-   - layout/transition/crop → **Step 6** render-spec → re-render (for `demo`, toggle `--polish`).
+   - layout/transition/crop → **Step 6** edit the composition (`<runDir>/remotion/src`) or the render-spec → `oma video render` (for `demo`, toggle `--polish`).
 3. **Determinism guard:** when validating reproducibility, run the golden harness — render-spec and assets must be byte-identical:
    ```bash
    OMA_VIDEO_MOCK=1 oma video generate "<brief>" --mode <mode> --seed <n> --dry-run --format json

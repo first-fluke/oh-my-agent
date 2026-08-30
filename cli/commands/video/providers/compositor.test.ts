@@ -1,4 +1,5 @@
 import {
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -7,11 +8,10 @@ import {
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { findChromeExecutable } from "@cli/io/chrome";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { binaryAvailable } from "../internal/exec.js";
 import { getMptProjectStatus } from "../internal/mpt-project.js";
-import { getRemotionProjectStatus } from "../internal/remotion-project.js";
+import { runProjectDir, STUB_MARKER } from "../internal/remotion-workspace.js";
 import type { RenderSpec } from "../types.js";
 import { RemotionLikeCompositor } from "./compositor.js";
 
@@ -126,82 +126,30 @@ describe("RemotionLikeCompositor", () => {
     }
   });
 
-  // Branch-selection coverage (deterministic, no real render): when the
-  // toolchain/project gate fails — here forced by pointing the project resolver
-  // at a non-existent dir — the compositor must take the deterministic
-  // placeholder even though mock mode is OFF. This proves the real branch is
-  // gated on project availability, and runs everywhere (CI included).
-  it("falls back to the placeholder when the remotion project is absent (real branch gated)", async () => {
+  // Real branch, no composition: outside mock mode the compositor must NOT
+  // paper over a missing/stub composition with a placeholder — it throws with
+  // the remediation so the agent authors src/Root.tsx and re-renders.
+  it("throws (no placeholder) when the run has no authored composition", async () => {
     delete process.env.OMA_VIDEO_MOCK;
-    const original = process.env.OMA_VIDEO_REMOTION_DIR;
-    process.env.OMA_VIDEO_REMOTION_DIR = "/nonexistent/remotion/project";
-    try {
-      writeFileSync(
-        path.join(tmp, "render-spec.json"),
-        JSON.stringify(SPEC),
-        "utf8",
-      );
-      const artifact = await new RemotionLikeCompositor("remotion").render(
-        SPEC,
-      );
-      expect(artifact.pathTaken).toBe("fallback");
-      const body = readFileSync(path.join(tmp, artifact.path), "utf8");
-      expect(body).toContain("oma-video placeholder render");
-    } finally {
-      if (original === undefined) delete process.env.OMA_VIDEO_REMOTION_DIR;
-      else process.env.OMA_VIDEO_REMOTION_DIR = original;
-    }
+    writeFileSync(
+      path.join(tmp, "render-spec.json"),
+      JSON.stringify(SPEC),
+      "utf8",
+    );
+    const ffmpeg = await binaryAvailable("ffmpeg", ["-version"]);
+    await expect(
+      new RemotionLikeCompositor("remotion").render(SPEC),
+    ).rejects.toThrow(ffmpeg.ok ? /oma video compose/ : /ffmpeg not found/);
+    if (!ffmpeg.ok) return;
+    // Scaffold present but Root.tsx is still the stub → still an error, named.
+    const project = runProjectDir(tmp);
+    mkdirSync(path.join(project, "src"), { recursive: true });
+    writeFileSync(path.join(project, "src", "index.ts"), "// entry\n");
+    writeFileSync(path.join(project, "src", "Root.tsx"), `// ${STUB_MARKER}\n`);
+    await expect(
+      new RemotionLikeCompositor("remotion").render(SPEC),
+    ).rejects.toThrow(/composition not authored/);
   });
-
-  // Real-render coverage (opt-in, OMA_VIDEO_E2E=1): exercises the full real
-  // branch end-to-end against the installed Remotion project. Skipped by default
-  // (and in CI) so the parallel suite stays fast and deterministic; the live
-  // render is verified out-of-band by `oma video generate`.
-  //
-  // When the toolchain or installed project is missing, the run MUST fall back.
-  // When everything is present, the real branch is exercised: on success we
-  // verify a genuine ISO-Media mp4; on a transient render-server hiccup the
-  // documented graceful fallback (placeholder + warning) is the correct result.
-  // Either way the real branch was selected — never a silent no-op.
-  const e2e = process.env.OMA_VIDEO_E2E === "1" ? it : it.skip;
-  e2e(
-    "exercises the real branch end-to-end when toolchain + project are present",
-    async () => {
-      delete process.env.OMA_VIDEO_MOCK;
-      const chrome = findChromeExecutable();
-      const ffmpeg = (await binaryAvailable("ffmpeg", ["-version"])).ok;
-      const project = getRemotionProjectStatus();
-      writeFileSync(
-        path.join(tmp, "render-spec.json"),
-        JSON.stringify(SPEC),
-        "utf8",
-      );
-      const artifact = await new RemotionLikeCompositor("remotion").render(
-        SPEC,
-      );
-
-      if (!(chrome && ffmpeg && project.installed)) {
-        expect(artifact.pathTaken).toBe("fallback");
-        return;
-      }
-
-      if (artifact.pathTaken === "real") {
-        const outPath = path.join(tmp, artifact.path);
-        // A real mp4 is a binary container, not the small ASCII placeholder.
-        expect(statSync(outPath).size).toBeGreaterThan(1000);
-        const head = readFileSync(outPath).subarray(4, 8).toString("ascii");
-        expect(head).toBe("ftyp"); // ISO Media / MP4 box signature
-        expect(artifact.durationSec).toBeGreaterThan(0);
-      } else {
-        // Transient render hiccup -> graceful fallback is the documented path.
-        expect(artifact.pathTaken).toBe("fallback");
-        expect(artifact.warnings?.join(" ")).toContain(
-          "remotion render failed",
-        );
-      }
-    },
-    600_000,
-  );
 
   // Real-render coverage for MPT (opt-in, OMA_VIDEO_MPT_E2E=1): exercises the
   // full MPT real branch end-to-end against the cloned + installed checkout.

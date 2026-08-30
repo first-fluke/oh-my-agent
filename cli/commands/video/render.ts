@@ -5,10 +5,11 @@ import { RemotionLikeCompositor } from "./providers/compositor.js";
 import { parseVideoSchema, RenderSpecSchema } from "./types.js";
 
 /**
- * `oma video render <runDir>` — re-render from render-spec.json (design §4.2).
- * The render-spec is the deterministic boundary, so this reproduces the same
- * output from the same spec. Live Remotion/MPT execution is F3-owned; the
- * compositor here keeps a deterministic boundary (real branch deferred).
+ * `oma video render <runDir>` — render the run's agent-authored Remotion
+ * composition (`<runDir>/remotion/`) from render-spec.json, or the MPT branch.
+ * The same run dir (spec + authored src + toolchain version in package.json)
+ * reproduces the same output. Failures exit 1 with the diagnostics — never a
+ * silent placeholder outside OMA_VIDEO_MOCK=1.
  */
 export async function runVideoRender({
   runDir,
@@ -38,6 +39,21 @@ export async function runVideoRender({
     artifactPath = path.join(resolvedDir, artifact.path);
     durationSec = artifact.durationSec;
     warnings = artifact.warnings ?? [];
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (formatMode === "json") {
+      console.log(
+        JSON.stringify({
+          exitCode: 1,
+          runDir: resolvedDir,
+          renderSpecPath,
+          error: message,
+        }),
+      );
+    } else {
+      console.error(color.red(`oma video render failed: ${message}`));
+    }
+    return 1;
   } finally {
     process.chdir(previousCwd);
   }

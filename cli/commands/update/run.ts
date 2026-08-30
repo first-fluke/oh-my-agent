@@ -400,6 +400,44 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
           }
         }
 
+        // --- Always-latest Remotion toolchain + remotion-dev/skills (oma-video) ---
+        // Only refreshes a cache that already exists; a first `oma video compose`
+        // fetches it on demand. Warn-only.
+        try {
+          const [
+            { describeToolchain, ensureLatestToolchain, ensureRemotionSkills },
+            { loadVideoConfig },
+          ] = await Promise.all([
+            import("../video/internal/remotion-workspace.js"),
+            import("../video/config.js"),
+          ]);
+          if (describeToolchain().version) {
+            const policy = (await loadVideoConfig(cwd)).remotion;
+            const tc = await ensureLatestToolchain({
+              checkIntervalMin: policy.checkIntervalMin,
+              force: true,
+            });
+            const skills = await ensureRemotionSkills({
+              checkIntervalMin: policy.checkIntervalMin,
+              force: true,
+            });
+            const parts = [
+              tc
+                ? `remotion ${tc.version} (${tc.status})`
+                : "remotion: check failed",
+              skills
+                ? `skills ${skills.ref} (${skills.status})`
+                : "skills: check failed",
+            ];
+            ui.note(parts.join(", "), "Remotion");
+          }
+        } catch (err) {
+          ui.note(
+            `Skipped remotion refresh (${err instanceof Error ? err.message : String(err)}).`,
+            "Remotion",
+          );
+        }
+
         const serenaContexts = ensureOmaSerenaContexts();
         if (serenaContexts.failed.length > 0) {
           ui.note(

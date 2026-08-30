@@ -1,23 +1,20 @@
 // Compositor — Remotion / MPT (design §3.2, §5). Two deterministic branches:
 //
-//   real     : when (not mock) AND FFmpeg is present AND the vendored Remotion
-//              project is installed with its Chrome Headless Shell, spawn
-//              `npx remotion render` as a SUBPROCESS in the project dir (Remotion
-//              uses its headless shell by default — reliable; a system Chrome is
-//              only forced via the OMA_VIDEO_CHROME override). Never imported
-//              (boundary-safe): the render-spec.json + run-dir assets are passed
-//              in via `--props` + `--public-dir`. Returns the real mp4 + its
-//              actual duration (probed via ffprobe).
-//   fallback : when the toolchain or installed project is absent (or in
-//              OMA_VIDEO_MOCK=1), or when the real render fails for any reason,
-//              write a deterministic placeholder mp4 derived from the render-spec
-//              and record a manifest warning. `oma video generate` (non-dry-run)
-//              still yields a well-formed run dir + manifest with zero external
-//              toolchain.
+//   real     : (not mock) — the AGENT-AUTHORED per-run project at
+//              `<runDir>/remotion/` (scaffolded by `oma video compose` on the
+//              always-latest Remotion toolchain) is typechecked and rendered via
+//              `npx remotion render` as a SUBPROCESS. Never imported. Assets are
+//              passed via `--props` + `--public-dir=<runDir>`. Any failure —
+//              missing/stub composition, tsc error, render error — THROWS with
+//              the diagnostics: a broken render on the latest Remotion is the
+//              composition's bug to fix, never something to paper over.
+//   fallback : OMA_VIDEO_MOCK=1 only — deterministic placeholder mp4 derived
+//              from the render-spec so tests and dry runs stay toolchain-free.
 //
 // The render OUTPUT is not part of the determinism boundary (render-spec.json +
 // assets are). The placeholder stays a pure function of the spec so it is
 // reproducible from the same render-spec.
+import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { binaryAvailable, runCapture } from "../internal/exec.js";
@@ -28,9 +25,10 @@ import {
   resolveMptDriverPath,
 } from "../internal/mpt-project.js";
 import {
-  getRemotionProjectStatus,
-  type RemotionProjectStatus,
-} from "../internal/remotion-project.js";
+  describeToolchain,
+  isStubRoot,
+  runProjectDir,
+} from "../internal/remotion-workspace.js";
 import type { Availability, Compositor, CostEstimate } from "../providers.js";
 import {
   outputFileName,
@@ -67,32 +65,18 @@ export class RemotionLikeCompositor implements Compositor {
       return this.renderMptOrPlaceholder({ spec, file, runDir, durationSec });
     }
 
-    const gate = await this.realBranchGate();
-    if (!gate.ok) {
-      // Toolchain/project absent or mock mode — deterministic placeholder.
-      return this.placeholder(file, spec, durationSec);
-    }
+    if (isMockMode()) return this.placeholder(file, spec, durationSec);
 
-    try {
-      return await this.renderWithRemotion({
-        spec,
-        file,
-        runDir,
-        projectDir: gate.projectDir,
-        chromeOverride: gate.chromeOverride,
-        fallbackDurationSec: durationSec,
-      });
-    } catch (err) {
-      // Any failure (render error, timeout, bad output) degrades to the
-      // placeholder so the run still completes; the manifest records why.
-      const reason = err instanceof Error ? err.message : String(err);
-      const artifact = await this.placeholder(file, spec, durationSec);
-      artifact.warnings = [
-        ...(artifact.warnings ?? []),
-        `remotion render failed, used placeholder: ${reason}`,
-      ];
-      return artifact;
-    }
+    const gate = await this.realBranchGate(runDir);
+    if (!gate.ok) throw new Error(gate.reason);
+    return await this.renderWithRemotion({
+      spec,
+      file,
+      runDir,
+      projectDir: gate.projectDir,
+      chromeOverride: gate.chromeOverride,
+      fallbackDurationSec: durationSec,
+    });
   }
 
   /**
@@ -301,37 +285,65 @@ export class RemotionLikeCompositor implements Compositor {
   }
 
   /**
-   * Decide whether the real Remotion branch is eligible. Real only when NOT in
-   * mock mode AND ffmpeg + system Chrome are present AND the vendored project is
-   * installed. Returns the resolved chrome path + project dir on success.
+   * The real Remotion branch needs: ffmpeg (ffprobe), the per-run project with
+   * an agent-authored Root.tsx (not the stub), and a toolchain with its
+   * headless shell. Every miss is an error with the remediation in the reason.
    */
-  private async realBranchGate(): Promise<
+  private async realBranchGate(
+    runDir: string,
+  ): Promise<
     | { ok: true; projectDir: string; chromeOverride?: string }
     | { ok: false; reason: string }
   > {
-    if (isMockMode()) return { ok: false, reason: "mock mode" };
-
     const ffmpeg = await binaryAvailable("ffmpeg", ["-version"]);
     if (!ffmpeg.ok) return { ok: false, reason: "ffmpeg not found" };
 
-    const project: RemotionProjectStatus = getRemotionProjectStatus();
-    if (!project.dir)
-      return { ok: false, reason: "remotion project not found" };
-    if (!project.installed) {
-      return { ok: false, reason: "remotion project not installed" };
-    }
-
-    // Default to Remotion's Chrome Headless Shell (reliable). OMA_VIDEO_CHROME
-    // lets an advanced user force a system Chrome instead.
-    const chromeOverride = process.env.OMA_VIDEO_CHROME?.trim() || undefined;
-    if (!project.browserReady && !chromeOverride) {
+    const projectDir = runProjectDir(runDir);
+    if (!existsSync(path.join(projectDir, "src", "index.ts"))) {
       return {
         ok: false,
-        reason: "remotion browser not ready (run `oma video doctor --install`)",
+        reason: `no Remotion project at ${projectDir} — run \`oma video compose ${runDir}\` and author src/Root.tsx`,
+      };
+    }
+    if (isStubRoot(projectDir)) {
+      return {
+        ok: false,
+        reason: `composition not authored: ${path.join(projectDir, "src", "Root.tsx")} is still the scaffold stub — author it per ${path.join(projectDir, "AUTHORING.md")}`,
+      };
+    }
+    if (!existsSync(path.join(projectDir, "node_modules", "remotion"))) {
+      return {
+        ok: false,
+        reason: `toolchain link missing under ${projectDir}/node_modules — re-run \`oma video compose ${runDir}\``,
       };
     }
 
-    return { ok: true, projectDir: project.dir, chromeOverride };
+    const chromeOverride = process.env.OMA_VIDEO_CHROME?.trim() || undefined;
+    if (!describeToolchain().browserReady && !chromeOverride) {
+      return {
+        ok: false,
+        reason:
+          "remotion headless shell not ready (run `oma video doctor --install`)",
+      };
+    }
+
+    const tsc = await runCapture("npx", ["tsc", "--noEmit"], {
+      cwd: projectDir,
+      timeoutMs: 300_000,
+    });
+    if (tsc.code !== 0) {
+      const tail = (tsc.stdout || tsc.stderr)
+        .trim()
+        .split("\n")
+        .slice(-8)
+        .join("\n");
+      return {
+        ok: false,
+        reason: `composition does not typecheck against remotion ${describeToolchain().version ?? "?"} — fix ${projectDir}/src (consult remotion-dev/skills):\n${tail}`,
+      };
+    }
+
+    return { ok: true, projectDir, chromeOverride };
   }
 
   /**
@@ -365,7 +377,7 @@ export class RemotionLikeCompositor implements Compositor {
 
     // The render server can transiently fail to bind/serve on the first attempt
     // when many Chrome processes start at once ("got no response"). Retry once
-    // with a fresh port before giving up to the placeholder.
+    // with a fresh port before failing.
     let lastError = "";
     for (let attempt = 0; attempt < 2; attempt++) {
       const res = await this.spawnRemotionRender({
@@ -388,8 +400,8 @@ export class RemotionLikeCompositor implements Compositor {
           pathTaken: "real",
         };
       }
-      const tail = (res.stderr || res.stdout).trim().split("\n").slice(-3);
-      lastError = `exit ${res.code}: ${tail.join(" | ") || "no output"}`;
+      const tail = (res.stderr || res.stdout).trim().split("\n").slice(-12);
+      lastError = `remotion render exit ${res.code}:\n${tail.join("\n") || "no output"}`;
       const transient = /got no response|Target closed|net::ERR/i.test(
         res.stderr + res.stdout,
       );
@@ -439,8 +451,8 @@ export class RemotionLikeCompositor implements Compositor {
     return runCapture("npx", renderArgs, {
       cwd: projectDir,
       timeoutMs: RENDER_TIMEOUT_MS,
-      // Don't auto-download at render time; the headless shell is provisioned
-      // ahead of time by `oma video doctor --install`.
+      // Don't auto-download at render time; the headless shell lives in the
+      // toolchain cache (`oma video compose` / `oma video doctor --install`).
       env: { ...process.env, REMOTION_SKIP_BROWSER_DOWNLOAD: "1" },
     });
   }

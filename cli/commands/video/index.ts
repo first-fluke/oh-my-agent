@@ -90,7 +90,11 @@ export function registerVideoCommand(program: Command): void {
     .option("--format <format>", "Output format: text | json", "text")
     .option(
       "--install",
-      "One-time install of the vendored Remotion project dependencies",
+      "Install the latest Remotion toolchain (deps + headless shell + Pretendard) and remotion-dev/skills into ~/.cache/oma-video",
+    )
+    .option(
+      "--upgrade",
+      "Re-check and download the latest remotion toolchain + remotion-dev/skills now",
     )
     .option(
       "--install-mpt",
@@ -125,6 +129,26 @@ export function registerVideoCommand(program: Command): void {
         process.exitCode = 1;
       }
     });
+
+  video
+    .command("compose <runDir>")
+    .description(
+      "Scaffold the run's Remotion project on the latest toolchain + remotion-dev/skills; prints the authoring contract",
+    )
+    .option("--format <format>", "Output format: text | json", "text")
+    .option("--refresh", "Re-check the latest remotion / skills now")
+    .option("--offline", "Use cached toolchain and skills only")
+    .action(
+      async (runDir: string, opts: Record<string, unknown>): Promise<void> => {
+        try {
+          const { runVideoCompose } = await import("./compose.js");
+          process.exitCode = await runVideoCompose({ runDir, opts });
+        } catch (err) {
+          console.error(color.red((err as Error).message));
+          process.exitCode = 1;
+        }
+      },
+    );
 
   video
     .command("render <runDir>")

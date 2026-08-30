@@ -4,13 +4,11 @@
 // can gate real-vs-fallback branches off the same source of truth.
 import { findChromeExecutable } from "@cli/io/chrome";
 import { http } from "@cli/io/http";
+import { readManagedState } from "../../../platform/managed-skill.js";
 import { binaryAvailable, resolveOmaInvocation, runCapture } from "./exec.js";
 import { getMptProjectStatus } from "./mpt-project.js";
 import { getPlaywrightStatus } from "./playwright-project.js";
-import {
-  getRemotionProjectStatus,
-  isPretendardFontPresent,
-} from "./remotion-project.js";
+import { describeToolchain, skillsCacheRoot } from "./remotion-workspace.js";
 import { getStrudelProjectStatus } from "./strudel-project.js";
 
 export interface ReadinessCheck {
@@ -146,63 +144,75 @@ export function checkPixelle(): ReadinessCheck {
 }
 
 /**
- * Vendored Remotion compositor project — found on disk + dependencies installed.
- * The compositor's real branch only fires when this is installed; otherwise the
- * deterministic placeholder is used. `oma video doctor --install` installs it.
+ * Always-latest Remotion toolchain cache (`~/.cache/oma-video/remotion/<ver>/`):
+ * deps + Chrome Headless Shell. `oma video compose` refreshes it per run;
+ * `oma video doctor --install` warms it.
  */
-export function checkRemotionProject(): ReadinessCheck {
-  const status = getRemotionProjectStatus();
-  if (!status.dir) {
+export function checkRemotionToolchain(): ReadinessCheck {
+  const tc = describeToolchain();
+  if (!tc.version) {
     return {
-      name: "remotion-project",
+      name: "remotion-toolchain",
       ok: false,
-      detail: "not found",
+      detail: "not cached",
       remediation:
-        "Set OMA_VIDEO_REMOTION_DIR, or ensure the oma-video skill is installed.",
+        "Run `oma video doctor --install` (or any `oma video compose`) once online to fetch the latest remotion.",
     };
   }
-  const ready = status.installed && status.browserReady;
-  let detail: string;
-  if (ready) detail = `ready (${status.dir})`;
-  else if (status.installed)
-    detail = `installed, headless shell missing (${status.dir})`;
-  else detail = `not installed (${status.dir})`;
   return {
-    name: "remotion-project",
-    ok: ready,
-    detail,
-    remediation: ready
+    name: "remotion-toolchain",
+    ok: tc.browserReady,
+    detail: tc.browserReady
+      ? `remotion ${tc.version} (${tc.dir})`
+      : `remotion ${tc.version}, headless shell missing (${tc.dir})`,
+    remediation: tc.browserReady
       ? undefined
-      : "Run `oma video doctor --install` to install Remotion deps + headless shell (one-time).",
+      : "Run `oma video doctor --install` to fetch Remotion's Chrome Headless Shell.",
   };
 }
 
 /**
- * Embedded Pretendard font — part of the determinism boundary (render-spec +
- * assets + seed + embedded Pretendard). `oma video doctor --install` fetches it
- * once into the vendored project's `public/fonts/`. A missing font degrades
- * gracefully: the render still succeeds on the system font stack, but is not
- * guaranteed byte-identical across machines until the font is present.
+ * remotion-dev/skills at HEAD — what the agent reads to author compositions.
+ * Optional (offline authoring still works) but strongly recommended.
+ */
+export function checkRemotionSkills(): ReadinessCheck {
+  const state = readManagedState(skillsCacheRoot());
+  return state
+    ? {
+        name: "remotion-skills",
+        ok: true,
+        detail: `remotion-dev/skills @ ${state.ref} (checked ${state.lastCheck.slice(0, 10)})`,
+      }
+    : {
+        name: "remotion-skills",
+        ok: false,
+        detail: "not cached",
+        remediation:
+          "Run `oma video doctor --install` once online to fetch remotion-dev/skills.",
+      };
+}
+
+/**
+ * Embedded Pretendard in the toolchain cache — copied into each run dir so
+ * renders are glyph-identical across machines. Optional (system-font fallback).
  */
 export function checkPretendardFont(): ReadinessCheck {
-  const status = getRemotionProjectStatus();
-  if (!status.dir) {
+  const tc = describeToolchain();
+  if (!tc.version) {
     return {
       name: "pretendard-font",
       ok: false,
-      detail: "remotion project not found",
-      remediation:
-        "Install the oma-video skill, then run `oma video doctor --install`.",
+      detail: "toolchain not cached",
+      remediation: "Run `oma video doctor --install` first.",
     };
   }
-  const present = isPretendardFontPresent(status.dir);
   return {
     name: "pretendard-font",
-    ok: present,
-    detail: present
-      ? "embedded (byte-identical renders)"
-      : "missing (system-font fallback; renders not byte-identical)",
-    remediation: present
+    ok: tc.fontReady,
+    detail: tc.fontReady
+      ? "embedded (toolchain cache)"
+      : "missing — system-font fallback (renders not byte-identical across machines)",
+    remediation: tc.fontReady
       ? undefined
       : "Run `oma video doctor --install` to fetch Pretendard once (network required).",
   };
@@ -324,7 +334,8 @@ export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
     checkNode(),
     checkChromium(),
     ffmpeg,
-    checkRemotionProject(),
+    checkRemotionToolchain(),
+    checkRemotionSkills(),
     checkPretendardFont(),
     checkMptProject(),
     checkPlaywright(),

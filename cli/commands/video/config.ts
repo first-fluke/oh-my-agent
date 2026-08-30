@@ -63,6 +63,11 @@ export interface VideoConfig {
   naming: {
     singleFolderPattern: string;
   };
+  /** Always-latest Remotion toolchain + remotion-dev/skills refresh policy. */
+  remotion: {
+    /** Minutes between latest-version checks (npm + GitHub); 0 = every compose. */
+    checkIntervalMin: number;
+  };
   language: string;
 }
 
@@ -92,6 +97,7 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
   cost: { guardrailUsd: 0.2 },
   limits: { maxDurationSec: 180, maxScenes: 40 },
   naming: { singleFolderPattern: "{timestamp}-{shortid}-{mode}" },
+  remotion: { checkIntervalMin: 60 },
   language: "en",
 };
 
@@ -169,6 +175,15 @@ function normalizeKeys(raw: Record<string, unknown>): Partial<VideoConfig> {
           (naming.single_folder_pattern as string) ??
           (naming.singleFolderPattern as string) ??
           DEFAULT_VIDEO_CONFIG.naming.singleFolderPattern,
+      };
+    } else if (mapped === "remotion" && value && typeof value === "object") {
+      const r = value as Record<string, unknown>;
+      const interval = r.check_interval_min ?? r.checkIntervalMin;
+      out.remotion = {
+        checkIntervalMin:
+          typeof interval === "number" && interval >= 0
+            ? interval
+            : DEFAULT_VIDEO_CONFIG.remotion.checkIntervalMin,
       };
     } else if (mapped === "providers" && value && typeof value === "object") {
       out.providers = normalizeProviders(value as Record<string, unknown>);

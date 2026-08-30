@@ -1,5 +1,5 @@
 // Resolve the cloned MoneyPrinterTurbo (MPT) checkout + report its install
-// status, and drive its one-time install. Mirrors `remotion-project.ts` for the
+// status, and drive its one-time install. Mirrors the toolchain cache for the
 // alternative shorts compositor (design 013 §5).
 //
 // Boundary: the compositor invokes MPT as a SUBPROCESS — the MPT venv's python

@@ -4,13 +4,14 @@
 // remediation. Exit 0 when the key-free baseline (Node + Chromium + FFmpeg +
 // oma-image) is ready; exit 1 otherwise so callers can gate.
 import color from "picocolors";
+import { loadVideoConfig } from "./config.js";
 import { installMptProject } from "./internal/mpt-project.js";
 import { installPlaywright } from "./internal/playwright-project.js";
 import { runReadinessChecks } from "./internal/readiness.js";
 import {
-  installPretendardFont,
-  installRemotionProject,
-} from "./internal/remotion-project.js";
+  ensureLatestToolchain,
+  ensureRemotionSkills,
+} from "./internal/remotion-workspace.js";
 import { installStrudelProject } from "./internal/strudel-project.js";
 
 const BASELINE = new Set(["node", "chromium", "ffmpeg", "oma-image"]);
@@ -22,24 +23,39 @@ export async function runVideoDoctor({
 }): Promise<number> {
   const formatMode = (opts.format as string | undefined) ?? "text";
 
-  // Opt-in, one-time install of the vendored Remotion project's deps. Runs
-  // before the readiness table so the report reflects the post-install state.
-  if (opts.install === true) {
-    const result = await installRemotionProject();
+  // Always-latest Remotion toolchain + remotion-dev/skills. `--install` warms
+  // the cache (fresh machines); `--upgrade` forces a latest check now. Both
+  // are idempotent — `oma video compose` does the same per run.
+  if (opts.install === true || opts.upgrade === true) {
+    const policy = (await loadVideoConfig()).remotion;
+    const tc = await ensureLatestToolchain({
+      checkIntervalMin: policy.checkIntervalMin,
+      force: opts.upgrade === true,
+    });
+    const skills = await ensureRemotionSkills({
+      checkIntervalMin: policy.checkIntervalMin,
+      force: opts.upgrade === true,
+    });
     if (formatMode !== "json") {
-      const mark = result.ok ? color.green("✓") : color.yellow("!");
-      console.log(`${mark} remotion-project install: ${result.detail}`);
-      if (result.dir) console.log(color.dim(`    ${result.dir}`));
-    }
-    // Fetch the embedded Pretendard font once (determinism boundary). Graceful
-    // degrade: on network failure, warn and continue — the render falls back to
-    // system fonts and is not byte-identical until the font is present.
-    if (result.dir) {
-      const font = await installPretendardFont(result.dir);
-      if (formatMode !== "json") {
-        const mark = font.ok ? color.green("✓") : color.yellow("!");
-        console.log(`${mark} pretendard-font: ${font.detail}`);
-        console.log(color.dim(`    ${font.path}`));
+      if (tc) {
+        const mark = tc.browserReady ? color.green("✓") : color.yellow("!");
+        console.log(
+          `${mark} remotion-toolchain: ${tc.version} (${tc.status}${tc.note ? `, ${tc.note}` : ""})${tc.browserReady ? "" : " — headless shell missing"}${tc.fontReady ? "" : " — font missing"}`,
+        );
+        console.log(color.dim(`    ${tc.dir}`));
+      } else {
+        console.log(
+          `${color.yellow("!")} remotion-toolchain: could not fetch the latest remotion (offline?) and nothing is cached`,
+        );
+      }
+      if (skills) {
+        console.log(
+          `${color.green("✓")} remotion-skills: ${skills.ref} (${skills.status}${skills.note ? `, ${skills.note}` : ""}), ${Object.keys(skills.skills).length} skills`,
+        );
+      } else {
+        console.log(
+          `${color.yellow("!")} remotion-skills: could not fetch remotion-dev/skills and nothing is cached`,
+        );
       }
     }
   }

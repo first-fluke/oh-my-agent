@@ -9,6 +9,7 @@ import {
   VIDEO_EXIT_CODES,
 } from "./errors.js";
 import { isMockMode } from "./internal/mock.js";
+import { prepareRemotionRun } from "./internal/remotion-workspace.js";
 import { collectAssetRecord, writeManifest } from "./manifest.js";
 import { makeVideoRunId } from "./naming.js";
 import { emitRawDemoOutput, handleCapture } from "./orchestrator/capture.js";
@@ -267,6 +268,24 @@ export class VideoOrchestrator {
         !normalized.polish;
       if (rawDemoOutput && ctx.capturedFootage) {
         await emitRawDemoOutput(runDir, ctx, renderSpec.slug);
+      } else if (
+        !normalized.dryRun &&
+        normalized.compositor === "remotion" &&
+        !isMockMode()
+      ) {
+        // Remotion: the composition is agent-authored per run. Scaffold the
+        // project on the always-latest toolchain and stop; `oma video render`
+        // renders once src/Root.tsx is authored. The manifest records the
+        // pending state instead of a placeholder mp4.
+        ctx.providers.compositor = "remotion";
+        const prepared = await prepareRemotionRun({
+          runDir,
+          spec: renderSpec,
+          checkIntervalMin: this.config.remotion.checkIntervalMin,
+        });
+        ctx.warnings.push(
+          `compositor remotion: composition pending — author ${prepared.project.rootTsx} per ${prepared.project.authoringGuide} (remotion ${prepared.toolchain.version}), then run \`oma video render ${runDir}\``,
+        );
       } else if (!normalized.dryRun) {
         const compositor = await this.pickProvider<Compositor>(
           "compositor",

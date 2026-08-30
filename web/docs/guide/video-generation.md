@@ -115,12 +115,13 @@ The heavy toolchain (the vendored Remotion project's `node_modules`, the embedde
 oma video doctor
 ```
 
-It reports `node`, `chromium`, `ffmpeg`, `remotion-project`, `pretendard-font`, `mpt-project`, `playwright`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. The key-free baseline (Node + Chromium + FFmpeg + `oma-image`) is enough to produce a real `.mp4`.
+It reports `node`, `chromium`, `ffmpeg`, `remotion-toolchain`, `remotion-skills`, `pretendard-font`, `mpt-project`, `playwright`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. The key-free baseline (Node + Chromium + FFmpeg + `oma-image`) is enough to produce a real `.mp4`.
 
 Use the install flags to provision the toolchain:
 
 ```bash
-oma video doctor --install             # vendored Remotion deps + Chrome Headless Shell + Pretendard font fetch
+oma video doctor --install             # warm the latest Remotion toolchain + Chrome Headless Shell + Pretendard + remotion-dev/skills
+oma video doctor --upgrade             # force a latest-version check now
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
 oma video doctor --install-playwright  # Playwright + Chromium for web capture
 ```
@@ -157,6 +158,27 @@ The `render-spec.json` + assets are the determinism boundary; live capture is re
 | Render is slow on the first run | The Remotion browser / MPT checkout is being provisioned once; subsequent runs reuse the cache. |
 
 ---
+
+## Always-latest Remotion — you author the composition
+
+oh-my-agent ships **no Remotion composition code**. Each run gets its own project at `<runDir>/remotion/`, scaffolded by `oma video compose` on the latest npm Remotion (toolchain cache `~/.cache/oma-video/remotion/<version>/`, shared via a `node_modules` symlink) with [remotion-dev/skills](https://github.com/remotion-dev/skills) at HEAD (`~/.cache/oma-video/remotion-skills/`). The agent authors `src/Root.tsx` for that run following the scaffold's `AUTHORING.md`, the skills, and the mode spec in `.agents/skills/oma-video/resources/remotion-authoring/`.
+
+```bash
+oma video generate "…"                     # → render-spec.json + <runDir>/remotion/ (composition pending)
+oma video compose <runDir> --format json   # refresh scaffold / print the contract (idempotent)
+#   author <runDir>/remotion/src/Root.tsx
+oma video render <runDir> --format json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
+```
+
+- Latest-version checks (npm + GitHub) are throttled by `video.remotion.check_interval_min` (default 60; `0` = every compose). `oma update` and `oma video doctor --upgrade` force them; offline runs use the cached toolchain and report `stale`.
+- Reproducibility lives in the run dir: `render-spec.json` + the authored `src/` + the toolchain version recorded in `remotion/package.json` (`omaVideo.remotion`). Re-rendering the same run reproduces the same output; a new run uses the latest Remotion.
+- A typecheck or render failure is **not** hidden behind a placeholder (that exists only for `OMA_VIDEO_MOCK=1`): `oma video render` exits 1 with the diagnostics and the agent fixes the composition using the latest skills. Breakage on a new Remotion release is a composition bug, never a reason to pin.
+
+```yaml
+video:
+  remotion:
+    check_interval_min: 60    # 0 = check on every compose
+```
 
 ## Related
 
