@@ -7,11 +7,24 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
+import { resolveVendor } from "../../platform/agent-config.js";
+import {
+  createAgentMemoryProvider,
+  createNoneMemoryProvider,
+} from "../../state/memory-provider.js";
 import { loadTaskFixtures, MIN_TASKS, scoreSkillBody } from "./eval.js";
 import { confirmLiveRun } from "./opt/cost-preview.js";
-import { splitTrainVal, validateCandidate } from "./opt/edits.js";
+import { editKey, splitTrainValTest, validateCandidate } from "./opt/edits.js";
 import { runOptEpochLoop } from "./opt/epoch-loop.js";
+import {
+  createSkillEvolutionRecorder,
+  skillEvolutionEnvironmentHash,
+} from "./opt/evolution-memory.js";
 import { buildLlmOptimizerFn } from "./opt/llm-optimizer.js";
+import {
+  buildHeuristicMaintainerFn,
+  buildLlmMaintainerFn,
+} from "./opt/maintainer.js";
 import { renderSkillOptResult, serializeSkillOptResult } from "./opt/render.js";
 import {
   assertSafeSkillId,
@@ -37,12 +50,31 @@ export {
   estimateLiveDispatchCalls,
 } from "./opt/cost-preview.js";
 export { unifiedDiff } from "./opt/diff.js";
-export { applyEdit, splitTrainVal, validateCandidate } from "./opt/edits.js";
+export {
+  applyEdit,
+  splitTrainVal,
+  splitTrainValTest,
+  validateCandidate,
+} from "./opt/edits.js";
 export { runOptEpochLoop } from "./opt/epoch-loop.js";
+export {
+  createSkillEvolutionRecorder,
+  loadLocalSkillEvolutionKnowledge,
+  redactEvolutionText,
+  skillEvolutionEnvironmentHash,
+  skillEvolutionScopeTag,
+  skillEvolutionSuiteHash,
+} from "./opt/evolution-memory.js";
 export {
   buildLlmOptimizerFn,
   parseOptimizerEdits,
 } from "./opt/llm-optimizer.js";
+export {
+  buildHeuristicMaintainerFn,
+  buildLlmMaintainerFn,
+  parseMaintainerPatterns,
+  selectMaintainerEvidence,
+} from "./opt/maintainer.js";
 export {
   renderSkillOptResult,
   serializeSkillOptResult,
@@ -53,16 +85,24 @@ export {
   resolveSkillMdPath,
 } from "./opt/skill-files.js";
 export {
+  type MaintainerFn,
   OPT_EARLY_STOP_PATIENCE,
   OPT_EDITS_PER_EPOCH,
   OPT_LR_MAX_CHARS,
   OPT_MAX_EPOCHS,
+  OPT_TRAIN_SPLIT,
   OPT_TRAIN_VAL_SPLIT,
+  OPT_VALIDATION_SPLIT,
   type OptEpoch,
   type OptimizerFn,
   type ScoringFn,
   type SkillEdit,
+  type SkillEvolutionKnowledge,
+  type SkillEvolutionPattern,
+  type SkillEvolutionRecorder,
+  type SkillOptimizerContext,
   type SkillOptResult,
+  type SkillProposalGateRecord,
   type SkillsOptOptions,
 } from "./opt/types.js";
 
@@ -79,7 +119,8 @@ import { backupSkillMd } from "./opt/skill-files.js";
  * - Splits fixtures into train/val sets.
  * - --live: prints cost preview + requires confirmation unless --yes.
  * - Runs the optimization epoch loop using injectable optimizer + scoring functions.
- * - --dry-run (default): prints diff + lift change, writes nothing.
+ * - --dry-run (default): prints diff + lift change and never writes SKILL.md;
+ *   evolution evidence still persists under generated state/results surfaces.
  * - --apply: backs up original SKILL.md to .bak, writes finalSkillMd only when
  *   finalLift > baselineLift AND validateCandidate passes.
  *   - oma-owned skills (oma-*): requires --yes to proceed, otherwise warns + refuses.
@@ -123,7 +164,7 @@ export async function runSkillsOpt(
   }
 
   // Split train/val deterministically
-  const { train, val } = splitTrainVal(fixtures);
+  const { train, val, test } = splitTrainValTest(fixtures);
 
   // Resolve effective options (--dry-run is the default when neither flag is set)
   const apply = options.apply === true;
@@ -143,6 +184,7 @@ export async function runSkillsOpt(
       editsPerEpoch,
       yes,
       options._readline,
+      { train, val, test },
     );
     if (!proceed) {
       if (!jsonMode) {
@@ -164,6 +206,9 @@ export async function runSkillsOpt(
   const optimizerFn: OptimizerFn =
     options._optimizerFn ?? buildLlmOptimizerFn(editsPerEpoch);
   const scoringFn: ScoringFn = options._scoringFn ?? scoreSkillBody;
+  const maintainerFn =
+    options._maintainerFn ??
+    (isLive ? buildLlmMaintainerFn() : buildHeuristicMaintainerFn());
 
   // Load original SKILL.md body (for diff and baseline).
   // When _skillMdPath is injected (tests), read from there; otherwise use
@@ -178,29 +223,94 @@ export async function runSkillsOpt(
     originalBody = loadSkillMdBody(skillId, workspace);
   }
 
+  // Internal test workspaces stay hermetic unless a provider/recorder is
+  // explicitly injected. Normal CLI runs always persist evolution through L1
+  // and use AgentMemory for best-effort L2/L3 enrichment.
+  const memoryProvider =
+    options._memoryProvider ??
+    (options._workspace
+      ? createNoneMemoryProvider()
+      : createAgentMemoryProvider());
+  const evolutionRecorder =
+    options._evolutionRecorder ??
+    (!options._workspace || options._memoryProvider
+      ? await createSkillEvolutionRecorder({
+          workspace,
+          skillId,
+          tasks: fixtures,
+          provider: memoryProvider,
+          sourceRuntime: resolveVendor("opt-agent").vendor,
+          targetRuntime: resolveVendor("eval-agent").vendor,
+          environmentHash: skillEvolutionEnvironmentHash(mode),
+        })
+      : undefined);
+
   // Run the optimization epoch loop
-  const loopResult = await runOptEpochLoop({
-    skillId,
-    originalBody,
-    trainTasks: train,
-    valTasks: val,
-    taskDir,
-    mode,
-    maxEpochs,
-    lrMaxChars,
-    optimizerFn,
-    scoringFn,
-  });
+  let loopResult: SkillOptResult;
+  try {
+    loopResult = await runOptEpochLoop({
+      skillId,
+      originalBody,
+      trainTasks: train,
+      valTasks: val,
+      testTasks: test,
+      taskDir,
+      mode,
+      maxEpochs,
+      lrMaxChars,
+      optimizerFn,
+      scoringFn,
+      maintainerFn,
+      evolutionRecorder,
+    });
+  } catch (error) {
+    await evolutionRecorder?.fail?.(error);
+    throw error;
+  }
 
   // --- Output layer (T7): --dry-run vs --apply ---
 
   let finalResult: SkillOptResult = { ...loopResult, applied: false };
+  if (
+    loopResult.finalTest?.passed === false &&
+    loopResult.acceptedEdits.length > 0
+  ) {
+    const finalDelta =
+      loopResult.finalTest.candidateLift - loopResult.finalTest.baselineLift;
+    for (const edit of loopResult.acceptedEdits) {
+      await evolutionRecorder?.recordProposal({
+        epoch: loopResult.epochs.length,
+        edit,
+        editKey: editKey(edit),
+        outcome: "rejected",
+        reason: "final-test",
+        deltaLift: finalDelta,
+      });
+    }
+    finalResult = {
+      ...finalResult,
+      rejectedCount:
+        finalResult.rejectedCount + loopResult.acceptedEdits.length,
+      ...(finalResult.evolution
+        ? {
+            evolution: {
+              ...finalResult.evolution,
+              persistentRejectedEdits:
+                evolutionRecorder?.knowledge.rejectedEditKeys.length ??
+                finalResult.evolution.persistentRejectedEdits,
+            },
+          }
+        : {}),
+    };
+  }
 
   if (apply) {
     const hasImprovement = loopResult.finalLift > loopResult.baselineLift;
+    const passesFinalTest = loopResult.finalTest?.passed !== false;
     const validation = validateCandidate(loopResult.finalSkillMd);
 
     if (!hasImprovement) {
+      await evolutionRecorder?.complete(finalResult);
       // No real improvement — write nothing
       const noImpMsg = `[oma skills opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} <= baselineLift ${loopResult.baselineLift.toFixed(4)}); nothing written.`;
       if (!jsonMode) {
@@ -213,7 +323,38 @@ export async function runSkillsOpt(
               ...JSON.parse(serializeSkillOptResult(finalResult)),
               _dryRun: false,
               _noImprovement: true,
-              _split: { trainCount: train.length, valCount: val.length },
+              _split: {
+                trainCount: train.length,
+                valCount: val.length,
+                testCount: test.length,
+              },
+            },
+            null,
+            2,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!passesFinalTest) {
+      await evolutionRecorder?.complete(finalResult);
+      const finalTestMsg = `[oma skills opt] candidate failed runner-owned final test (${loopResult.finalTest?.candidateLift.toFixed(4)} <= ${loopResult.finalTest?.baselineLift.toFixed(4)}); nothing written.`;
+      if (!jsonMode) {
+        console.log(finalTestMsg);
+        renderSkillOptResult(finalResult);
+      } else {
+        console.log(
+          JSON.stringify(
+            {
+              ...JSON.parse(serializeSkillOptResult(finalResult)),
+              _dryRun: false,
+              _finalTestFailed: true,
+              _split: {
+                trainCount: train.length,
+                valCount: val.length,
+                testCount: test.length,
+              },
             },
             null,
             2,
@@ -224,6 +365,7 @@ export async function runSkillsOpt(
     }
 
     if (!validation.ok) {
+      await evolutionRecorder?.complete(finalResult);
       // Candidate failed validation — write nothing
       const validMsg = `[oma skills opt] candidate failed validation (${validation.reason}); nothing written.`;
       if (!jsonMode) {
@@ -237,7 +379,11 @@ export async function runSkillsOpt(
               _dryRun: false,
               _validationFailed: true,
               _validationReason: validation.reason,
-              _split: { trainCount: train.length, valCount: val.length },
+              _split: {
+                trainCount: train.length,
+                valCount: val.length,
+                testCount: test.length,
+              },
             },
             null,
             2,
@@ -249,6 +395,7 @@ export async function runSkillsOpt(
 
     // --- oma-owned guard ---
     if (isOmaOwnedSkill(skillId) && !yes) {
+      await evolutionRecorder?.complete(finalResult);
       const warnMsg =
         `[oma skills opt] WARNING: "${skillId}" is an oma-owned skill. ` +
         `oma-owned skills are overwritten by \`oma update\` — applying edits here may be lost. ` +
@@ -262,7 +409,11 @@ export async function runSkillsOpt(
               ...JSON.parse(serializeSkillOptResult(finalResult)),
               _dryRun: false,
               _omaOwnedRefused: true,
-              _split: { trainCount: train.length, valCount: val.length },
+              _split: {
+                trainCount: train.length,
+                valCount: val.length,
+                testCount: test.length,
+              },
             },
             null,
             2,
@@ -294,6 +445,7 @@ export async function runSkillsOpt(
     renameSync(tmpPath, skillMdPath);
 
     finalResult = { ...loopResult, applied: true };
+    await evolutionRecorder?.complete(finalResult);
 
     if (!jsonMode) {
       console.log(
@@ -306,7 +458,11 @@ export async function runSkillsOpt(
           {
             ...JSON.parse(serializeSkillOptResult(finalResult)),
             _dryRun: false,
-            _split: { trainCount: train.length, valCount: val.length },
+            _split: {
+              trainCount: train.length,
+              valCount: val.length,
+              testCount: test.length,
+            },
           },
           null,
           2,
@@ -317,13 +473,18 @@ export async function runSkillsOpt(
   }
 
   // --- dry-run (default): print diff + lift, write nothing ---
+  await evolutionRecorder?.complete(finalResult);
   if (jsonMode) {
     console.log(
       JSON.stringify(
         {
           ...JSON.parse(serializeSkillOptResult(finalResult)),
           _dryRun: dryRun,
-          _split: { trainCount: train.length, valCount: val.length },
+          _split: {
+            trainCount: train.length,
+            valCount: val.length,
+            testCount: test.length,
+          },
         },
         null,
         2,
@@ -331,7 +492,7 @@ export async function runSkillsOpt(
     );
   } else {
     console.log(
-      `[oma skills opt] skill: ${skillId}, tasks: ${fixtures.length} (train: ${train.length}, val: ${val.length}), dry-run: ${dryRun}`,
+      `[oma skills opt] skill: ${skillId}, tasks: ${fixtures.length} (train: ${train.length}, val: ${val.length}, test: ${test.length}), dry-run: ${dryRun}`,
     );
     renderSkillOptResult(finalResult);
   }

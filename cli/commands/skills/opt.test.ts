@@ -28,7 +28,9 @@ import {
   runSkillsOpt,
   type ScoringFn,
   type SkillEdit,
+  type SkillEvolutionRecorder,
   splitTrainVal,
+  splitTrainValTest,
   unifiedDiff,
   validateCandidate,
 } from "./opt.js";
@@ -271,6 +273,33 @@ describe("splitTrainVal", () => {
     const { train, val } = splitTrainVal([]);
     expect(train).toHaveLength(0);
     expect(val).toHaveLength(0);
+  });
+});
+
+describe("splitTrainValTest", () => {
+  it("creates deterministic train, validation, and hidden test partitions", () => {
+    const tasks = Array.from({ length: 10 }, (_, index) =>
+      makeTaskFixture(`t-${index}`),
+    );
+    const first = splitTrainValTest(tasks);
+    const second = splitTrainValTest([...tasks].reverse());
+    expect(first).toEqual(second);
+    expect(first.train).toHaveLength(6);
+    expect(first.val).toHaveLength(2);
+    expect(first.test).toHaveLength(2);
+    const ids = [
+      ...first.train.map((task) => task.id),
+      ...first.val.map((task) => task.id),
+      ...first.test.map((task) => task.id),
+    ];
+    expect(new Set(ids).size).toBe(tasks.length);
+  });
+
+  it("keeps all three partitions non-empty at the five-fixture minimum", () => {
+    const split = splitTrainValTest(makeNTasks(MIN_TASKS));
+    expect(split.train).toHaveLength(3);
+    expect(split.val).toHaveLength(1);
+    expect(split.test).toHaveLength(1);
   });
 });
 
@@ -1182,7 +1211,7 @@ describe("runSkillsOpt", () => {
     expect(parsed._dryRun).toBe(false);
   });
 
-  it("splits train/val and includes counts in JSON output", async () => {
+  it("splits train/val/test and includes counts in JSON output", async () => {
     const count = MIN_TASKS + 4;
     const taskDir = join(tmpDir, "eval", "oma-split");
     writeNTasks(taskDir, count);
@@ -1206,10 +1235,15 @@ describe("runSkillsOpt", () => {
       .map((args: unknown[]) => String(args[0]))
       .join("\n");
     const parsed = JSON.parse(logOutput) as Record<string, unknown>;
-    const split = parsed._split as { trainCount: number; valCount: number };
-    expect(split.trainCount + split.valCount).toBe(count);
+    const split = parsed._split as {
+      trainCount: number;
+      valCount: number;
+      testCount: number;
+    };
+    expect(split.trainCount + split.valCount + split.testCount).toBe(count);
     expect(split.trainCount).toBeGreaterThan(0);
     expect(split.valCount).toBeGreaterThan(0);
+    expect(split.testCount).toBeGreaterThan(0);
   });
 
   it("rejects skill IDs with path traversal characters", async () => {
@@ -1442,10 +1476,25 @@ describe("backupSkillMd", () => {
 // --- estimateLiveDispatchCalls ---
 
 describe("estimateLiveDispatchCalls", () => {
-  it("returns maxEpochs * (2 + editsPerEpoch)", () => {
-    expect(estimateLiveDispatchCalls(4, 3)).toBe(4 * (1 + 1 + 3));
-    expect(estimateLiveDispatchCalls(8, 4)).toBe(8 * (1 + 1 + 4));
-    expect(estimateLiveDispatchCalls(1, 0)).toBe(1 * 2);
+  it("includes the initial validation score in the group-only fallback", () => {
+    expect(estimateLiveDispatchCalls(4, 3)).toBe(4 * (3 + 3) + 3);
+    expect(estimateLiveDispatchCalls(8, 4)).toBe(8 * (4 + 3) + 3);
+    expect(estimateLiveDispatchCalls(1, 0)).toBe(6);
+  });
+
+  it("counts underlying arms and judge calls from the actual split", () => {
+    const assertTask = makeTaskFixture("assert-task");
+    const judgeTask: TaskFixture = {
+      ...makeTaskFixture("judge-task"),
+      checker: { type: "judge", rubric: "judge it" },
+    };
+    expect(
+      estimateLiveDispatchCalls(1, 1, {
+        train: [assertTask, judgeTask, assertTask],
+        val: [assertTask],
+        test: [assertTask, judgeTask],
+      }),
+    ).toBe(26);
   });
 });
 
@@ -1470,7 +1519,7 @@ describe("confirmLiveRun", () => {
     // Preview line was printed
     const combined = logs.join(" ");
     expect(combined).toContain("cost preview");
-    expect(combined).toContain("model dispatch calls");
+    expect(combined).toContain("dispatch groups");
 
     consoleSpy.mockRestore();
   });
@@ -1672,6 +1721,71 @@ describe("runSkillsOpt OUTPUT layer: --apply with improving result", () => {
     expect(parsed.applied).toBe(true);
     expect(parsed._dryRun).toBe(false);
 
+    consoleSpy.mockRestore();
+  });
+
+  it("does not write a validation winner that regresses on the hidden final test", async () => {
+    const skillId = "user-final-test-regression";
+    const taskDir = join(tmpDir, "eval", skillId);
+    writeNTasks(taskDir, MIN_TASKS * 2);
+    const originalContent = makeValidSkillBody("## Overview\n\nOriginal.");
+    const skillMdPath = join(tmpDir, "skills", skillId, "SKILL.md");
+    writeSkillMd(skillMdPath, originalContent);
+    const edit: SkillEdit = {
+      op: "add",
+      anchor: "## Overview",
+      after: "\n\n- Overfit rule.",
+    };
+    const candidateBody = applyEdit(originalContent, edit);
+    const scoringFn: ScoringFn = async (options) => {
+      const firstTask = options.tasks?.[0]?.id ?? "";
+      const isFinalTest = firstTask >= "task-008";
+      const isCandidate = options.body === candidateBody;
+      return makeMockReport(isCandidate ? (isFinalTest ? -0.2 : 0.2) : 0);
+    };
+    const logs: string[] = [];
+    const recordProposal = vi.fn();
+    const evolutionRecorder: SkillEvolutionRecorder = {
+      knowledge: {
+        skillId,
+        suiteHash: "suite",
+        patterns: [],
+        rejectedEditKeys: [],
+        acceptedEditKeys: [],
+      },
+      recordEvidence: vi.fn(),
+      recordPatterns: vi.fn(),
+      recordProposal,
+      complete: vi.fn(),
+    };
+    const consoleSpy = vi
+      .spyOn(console, "log")
+      .mockImplementation((...args: unknown[]) => logs.push(String(args[0])));
+
+    await runSkillsOpt(true, {
+      skill: skillId,
+      apply: true,
+      _workspace: tmpDir,
+      _taskDir: taskDir,
+      _skillMdPath: skillMdPath,
+      _optimizerFn: makeMockOptimizerFn([[edit]]),
+      _scoringFn: scoringFn,
+      _evolutionRecorder: evolutionRecorder,
+    });
+
+    expect(readFileSync(skillMdPath, "utf-8")).toBe(originalContent);
+    expect(existsSync(`${skillMdPath}.bak`)).toBe(false);
+    const output = JSON.parse(logs.join("\n")) as {
+      _finalTestFailed?: boolean;
+    };
+    expect(output._finalTestFailed).toBe(true);
+    expect(recordProposal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        edit,
+        outcome: "rejected",
+        reason: "final-test",
+      }),
+    );
     consoleSpy.mockRestore();
   });
 });
@@ -1945,8 +2059,8 @@ describe("runSkillsOpt OUTPUT layer: --live cost preview", () => {
 
     const combined = logs.join(" ");
     expect(combined).toContain("cost preview");
-    expect(combined).toContain("model dispatch calls");
-    expect(combined).toMatch(/\d+ model dispatch calls/);
+    expect(combined).toContain("underlying model calls");
+    expect(combined).toMatch(/\d+ underlying model calls/);
 
     consoleSpy.mockRestore();
   });

@@ -130,7 +130,7 @@ export function registerSkillsCommand(program: Command): void {
       .option("--skill <id>", "Skill ID to optimize")
       .option(
         "--dry-run",
-        "Propose edits only; do not write anything (default)",
+        "Propose edits without modifying SKILL.md; evolution evidence is still recorded (default)",
       )
       .option("--apply", "Apply accepted edits (backs up original first)")
       .option(

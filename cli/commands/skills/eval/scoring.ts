@@ -101,6 +101,10 @@ export interface ComputeUtilityOptions {
   isolation?: IsolationStatus;
   /** Vendor resolved for live dispatch. */
   isolationVendor?: string;
+  /** Include observable prompts/outputs in findings for the optimizer only. */
+  includeEvidence?: boolean;
+  /** Minimum scored tasks required for coverage; public eval defaults to MIN_TASKS. */
+  minimumCoverage?: number;
 }
 
 /**
@@ -134,8 +138,9 @@ export function computeUtility(
   }
 
   const taskCount = tasks.length;
+  const minimumCoverage = Math.max(1, options.minimumCoverage ?? MIN_TASKS);
 
-  if (taskCount < MIN_TASKS) {
+  if (taskCount < minimumCoverage) {
     return {
       skill,
       taskCount,
@@ -251,12 +256,23 @@ export function computeUtility(
       baseline: baselineScore,
       treatment: treatmentScore,
       lift,
+      ...(options.includeEvidence
+        ? {
+            evidence: {
+              domain: task.domain,
+              prompt: task.prompt,
+              checker: task.checker,
+              baselineOutput,
+              treatmentOutput,
+            },
+          }
+        : {}),
     });
   }
 
   // If all judge tasks were excluded (no recorded verdicts) the scored count
   // may drop below MIN_TASKS — treat as insufficient coverage.
-  if (findings.length < MIN_TASKS) {
+  if (findings.length < minimumCoverage) {
     return {
       skill,
       taskCount,

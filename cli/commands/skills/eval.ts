@@ -34,6 +34,8 @@ import type {
 export {
   buildJudgeDispatchFn,
   buildLiveDispatchFn,
+  isolateEvalMemory,
+  isolateEvalRuntime,
   resolveSkillIsolation,
   runEvalDispatch,
   setupIsolatedSkillsDir,

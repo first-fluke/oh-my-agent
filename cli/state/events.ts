@@ -29,6 +29,12 @@ export const SEMANTIC_EVENT_KINDS = new Set([
   "session.ended",
   "decision.made",
   "decision.missing",
+  "skill.evolution.started",
+  "skill.rollout.recorded",
+  "skill.pattern.consolidated",
+  "skill.proposal.created",
+  "skill.proposal.gated",
+  "skill.evolution.completed",
 ]);
 
 export type EventKind =
@@ -40,6 +46,12 @@ export type EventKind =
   | "blocker.raised"
   | "decision.made"
   | "decision.missing"
+  | "skill.evolution.started"
+  | "skill.rollout.recorded"
+  | "skill.pattern.consolidated"
+  | "skill.proposal.created"
+  | "skill.proposal.gated"
+  | "skill.evolution.completed"
   | "session.ended";
 
 export interface LastSessionMarker {
@@ -300,6 +312,60 @@ function rememberContentForEvent(
       .filter(Boolean)
       .join(" ");
     return { content, importance: 7 };
+  }
+
+  if (event.kind === "skill.pattern.consolidated") {
+    const skillId = str("skillId");
+    const suiteHash = str("suiteHash");
+    const summary = str("summary");
+    if (!skillId || !suiteHash || !summary) return null;
+    const scope = [
+      skillId,
+      suiteHash,
+      str("sourceRuntime"),
+      str("targetRuntime"),
+      str("environmentHash"),
+    ]
+      .filter(Boolean)
+      .join(":");
+    const content = [
+      `[skill-evolution:${scope}]`,
+      "Pattern:",
+      summary,
+      str("evidenceIds") ? `Evidence: ${str("evidenceIds")}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { content, importance: 7 };
+  }
+
+  if (event.kind === "skill.proposal.gated") {
+    const skillId = str("skillId");
+    const suiteHash = str("suiteHash");
+    const edit = payload.edit;
+    const outcome = str("outcome");
+    if (!skillId || !suiteHash || !outcome || !edit) return null;
+    const scope = [
+      skillId,
+      suiteHash,
+      str("sourceRuntime"),
+      str("targetRuntime"),
+      str("environmentHash"),
+    ]
+      .filter(Boolean)
+      .join(":");
+    const delta = payload.deltaLift;
+    const reason = str("reason");
+    const content = [
+      `[skill-evolution:${scope}]`,
+      `Proposal ${outcome}:`,
+      JSON.stringify(edit),
+      typeof delta === "number" ? `deltaLift=${delta}` : "",
+      reason ? `Reason: ${reason}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { content, importance: outcome === "accepted" ? 8 : 6 };
   }
 
   return null;
