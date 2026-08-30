@@ -76,6 +76,7 @@ Choose from the following conceptual families:
 - **Theme-Aware Colors**: All diagram elements (borders, text, arrows, node backgrounds) MUST use CSS variables (e.g. `var(--border-color)`, `var(--text-primary)`) or `currentColor` rather than hardcoded hex colors, ensuring seamless adaptation to Dark/Light theme toggling.
 - **Accessibility (a11y)**: Diagrams must include `role="img"` and a descriptive `aria-label` or `<title>` element summarizing the diagram flow for assistive technologies.
 - Use semantic HTML lists (`<ul>`, `<ol>`, `<dl>`) for textual lists.
+- **archify sidecar (optional)**: an interactive archify diagram is a *separate* `.archify.html` file linked by a plain `<a href>` — it is never embedded (no `<iframe>` / `<object>` / `<script src>`), and the inline SVG/CSS diagram above stays in place so the explainer remains complete offline. See `_shared/conditional/diagram-engine.md`.
 
 ---
 

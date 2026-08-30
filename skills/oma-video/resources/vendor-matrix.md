@@ -87,7 +87,7 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Real | **wired (default)** — the CLI adapter spawns `npx remotion render src/index.ts <CompId> out.mp4 --props=render-spec.json` in the vendored `resources/remotion/` |
+| Real | **wired (default)** — agent-authored `<runDir>/remotion/` (scaffolded by `oma video compose` on the latest Remotion + remotion-dev/skills); `oma video render` typechecks and spawns `npx remotion render src/index.ts <CompId> out.mp4 --props=render-spec.json --public-dir=<runDir>` |
 | Requires | Node + Chrome Headless Shell + FFmpeg (bootstrapped once via `oma video doctor --install`) |
 | Fallback | deterministic placeholder mp4 derived from the render-spec, used only when the toolchain is missing or the render fails (well-formed run dir + manifest, zero toolchain) |
 | Determinism | render-spec + assets + seed + embedded Pretendard (fetched once by `oma video doctor --install`; system-font fallback when absent); re-render is byte-stable |

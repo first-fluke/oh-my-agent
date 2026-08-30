@@ -75,7 +75,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 
 ## Step 5: Compositor Render
 
-- **Remotion (default, live)**: when the toolchain (FFmpeg + the vendored project installed via `oma video doctor --install`) is present, the CLI adapter spawns `npx remotion render src/index.ts <CompId> <mode>-<slug>.mp4 --props=render-spec.json` from `resources/remotion/` — this is the wired, real render path.
+- **Remotion (default, live)**: `oma video generate` stops after `render-spec.json` with `composition pending` and a scaffolded `<runDir>/remotion/` (latest Remotion toolchain, remotion-dev/skills at HEAD). Read `<runDir>/remotion/AUTHORING.md` + the listed skills + `resources/remotion-authoring/<mode>.md`, author `src/Root.tsx`, then `oma video render <runDir> --format json` — it typechecks, spawns `npx remotion render src/index.ts <CompId> <mode>-<slug>.mp4 --props=render-spec.json --public-dir=<runDir>`, and ffprobes the output. Non-zero exit = fix the composition and re-render.
 - **Fallback**: only when the toolchain is missing or the render fails, write a deterministic placeholder mp4 derived from the render-spec so the run dir + manifest are still well-formed with zero toolchain.
 - **MPT (`--compositor mpt`)**: inject the agent-written script (custom-script mode); keys env-only + log masking.
 

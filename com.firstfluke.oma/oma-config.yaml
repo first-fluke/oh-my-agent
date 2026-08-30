@@ -19,7 +19,7 @@
 #   8. Browser DevTools MCP      mcp.devtools_browsers
 #   9. Documentation drift       docs
 #  10. SCM & commit rules        scm
-#  11. Skill overrides           video, image, voice, hwp, pdf, scholar
+#  11. Skill overrides           video, image, voice, hwp, pdf, scholar, diagram, market
 #  12. Refactor guard hook       refactor_guard
 #
 # Full schema: web/docs/guide/per-agent-models.md
@@ -334,7 +334,7 @@ scm:
 # 11. Skill overrides
 # ─────────────────────────────────────────────────────────────────────────────
 #
-# Six skills read their user settings from here. Each section is OPTIONAL and
+# Eight skills read their user settings from here. Each section is OPTIONAL and
 # SPARSE: write only the keys you want to change, because an absent key means
 # "use the shipped default" — so defaults keep improving with each release
 # instead of freezing the day you copied them. The values shown commented out
@@ -381,6 +381,13 @@ scm:
 #     max_scenes: 40
 #   naming:
 #     single_folder_pattern: "{timestamp}-{shortid}-{mode}"
+#   # Always-latest Remotion. oma ships no composition code: `oma video compose`
+#   # scaffolds <runDir>/remotion/ on the latest npm remotion (cache
+#   # ~/.cache/oma-video/remotion/<ver>/) with remotion-dev/skills at HEAD, and
+#   # the agent authors the composition per run. Latest checks are throttled by
+#   # check_interval_min; `oma update` / `oma video doctor --upgrade` force one.
+#   remotion:
+#     check_interval_min: 60        # 0 = check on every compose
 
 # ── image (oma-image) ────────────────────────────────────────────────────────
 # Image generation across codex / antigravity / pollinations. Defaults:
@@ -451,6 +458,51 @@ scm:
 # lint rules are protocol shape and stay in the skill config.
 # scholar:
 #   base_url: https://knows.academy
+
+# ── diagram (oma-architecture / oma-explanation) ─────────────────────────────
+# Which engine renders architecture / sequence / data-flow diagrams.
+#   auto     — archify (tt-a1i/archify) whenever it can be resolved, else Mermaid
+#   archify  — require archify; `oma diagram resolve` exits 1 when unresolvable
+#   mermaid  — never call archify
+# archify is ALWAYS the latest release: oma keeps its own copy under
+# ~/.cache/oma-diagram/archify/<tag>/ and re-checks GitHub before use (throttled
+# by check_interval_min; a failed check falls back to the cached copy, never to
+# Mermaid). Resolution order: archify.path → ARCHIFY_HOME → managed latest →
+# user-installed skill dirs (.agents/.claude/.codex/.cursor/.qwen/.kiro/skills).
+# Mermaid stays the text SSOT inside ADR / recommendation Markdown either way;
+# archify adds a sibling `<name>.archify.json` + `<name>.archify.html`.
+# Inspect with `oma diagram resolve --json`; force a refresh with
+# `oma diagram update`. Defaults: DEFAULT_DIAGRAM_CONFIG in
+# cli/commands/diagram/resolve.ts.
+# diagram:
+#   engine: auto
+#   explain_sidecar: false          # /explain also writes an archify sidecar
+#   archify:
+#     managed: true                 # false = only use path / ARCHIFY_HOME / skill dirs
+#     channel: stable               # stable (latest GitHub Release) | main (HEAD)
+#     check_interval_min: 60        # minutes between remote checks; 0 = every call
+#     path: null                    # explicit install dir (pin; disables auto-latest)
+#     quality: showcase             # showcase | standard (validate/deliver --quality)
+#     open: false                   # pass --open to deliver for a local preview
+
+# ── market (oma-market) ──────────────────────────────────────────────────────
+# Community-signal research runs on the upstream mvanhorn/last30days engine.
+# oma keeps an ALWAYS-LATEST managed copy under ~/.cache/oma-market/last30days/
+# <tag>/ and re-checks GitHub Releases before use (throttled; cached copy on
+# network failure). Resolution order: market.path → LAST30DAYS_HOME → managed
+# latest → user-installed skill dirs / Claude plugin cache. Engine config and
+# API keys live in ~/.config/last30days/ (owned by the upstream setup wizard).
+# Inspect with `oma market resolve --json`; force a refresh with
+# `oma market update`. Defaults: DEFAULT_MARKET_CONFIG in
+# cli/commands/market/resolve.ts.
+# market:
+#   managed: true                   # false = only use path / LAST30DAYS_HOME / skill dirs
+#   channel: stable                 # stable (latest GitHub Release) | main (HEAD)
+#   check_interval_min: 60          # minutes between remote checks; 0 = every call
+#   path: null                      # explicit engine dir (pin; disables auto-latest)
+#   python: null                    # Python ≥ 3.12 interpreter; else LAST30DAYS_PYTHON,
+#                                   # PATH ladder (python3.14…python3), then `uv python find`
+#   save_dir: .agents/results/market/raw   # engine --save-dir default
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 12. Refactor guard hook (refactor-guard)

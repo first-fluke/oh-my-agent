@@ -9,7 +9,7 @@
   - Examples: context loading, clarification, difficulty, reasoning, lessons learned.
 - `conditional/`
   - Load only when the workflow reaches a specific trigger.
-  - Examples: quality score, experiment ledger, exploration loop.
+  - Examples: quality score, experiment ledger, exploration loop, diagram engine (archify ↔ Mermaid).
 - `runtime/`
   - Runtime-injected or CLI-specific protocols.
   - Examples: memory protocol, vendor execution protocols.
