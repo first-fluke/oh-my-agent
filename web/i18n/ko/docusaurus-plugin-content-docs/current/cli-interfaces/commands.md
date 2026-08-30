@@ -1444,7 +1444,7 @@ oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
 | `fail` | `utilityLift ≤ 0%` (종료 코드 1) |
 | `insufficient` | 채점 가능한 태스크가 5개 미만 (`--require-coverage`일 때만 종료 코드 1) |
 
-**솔직한 참고:** judge 판정을 기록하지 않은 `--mock`은 *측정 기반*일 뿐 믿을 만한 유용성 점수가 아닙니다. 의미 있는 수치를 얻으려면 judge 체커와 함께 `--live`로 돌려야 합니다(judge가 LLM을 호출해 각 갈래의 출력을 루브릭으로 채점하고 판정을 기록하므로, `--mock` 재생이 완전히 결정론적이고 오프라인으로 동작합니다). 이 기능의 바탕이 된 학술 벤치마크가 유용성을 채점하는 방식과 같습니다(SkillOpt arXiv:2605.23904, SkillLens arXiv:2605.23899).
+**권장 모드:** 실제 스킬 유용성은 judge 체커와 함께 `--live`로 측정하세요. `--mock`은 기록된 judge 판정을 오프라인으로 재생하거나 결정론적 `assert`/`regex` 계약 검사를 실행할 때 사용합니다.
 
 **환경 변수:** `OMA_SKILLEVAL_MOCK=1`은 플래그와 무관하게 mock 모드를 강제합니다.
 
@@ -1477,7 +1477,7 @@ oma skills eval --skill oma-scholar --max-tasks 10
 
 ### skills opt
 
-측정된 held-out 유용성 향상을 최대화하도록 스킬의 `SKILL.md`를 최적화합니다. 최적화 LLM이 범위가 제한된 추가·삭제·교체 편집을 제안하면, 각 편집을 후보 사본에 적용하고 held-out 검증 분할에서 `skills eval`로 다시 채점한 뒤, 검증 향상이 확실히 커질 때만 수락합니다. 연구 근거는 SkillOpt(arXiv:2605.23904)입니다.
+WikiSkill 방식의 영속 진화로 스킬의 `SKILL.md`를 최적화합니다. Maintainer가 관측 가능한 롤아웃 근거를 범위가 지정된 지식으로 통합하고, Proposer가 제한된 추가·삭제·교체 편집을 제안하며, 거부 결과는 다음 실행에도 남습니다. 후보는 held-out 검증 분할에서 엄격히 향상되어야 하고, `--apply`에는 실행기 전용 최종 테스트의 엄격한 향상도 필요합니다. 연구 근거는 WikiSkill(arXiv:2608.27454)입니다.
 
 ```
 oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
@@ -1490,8 +1490,8 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 | 플래그 | 기본값 | 설명 |
 |:-----|:--------|:-----------|
 | `--skill <id>` | `_all` | 최적화할 스킬 ID(단순 이름이며 경로 구분자를 쓰지 않습니다). |
-| `--dry-run` | **기본값** | 편집을 제안하고 diff를 출력하며, 아무것도 쓰지 않습니다. |
-| `--apply` | 없음 | 수락된 편집을 적용합니다. 원본을 `SKILL.md.bak`으로 백업하고, 검증된 개선만 씁니다. |
+| `--dry-run` | **기본값** | 편집과 diff를 제안하되 `SKILL.md`는 바꾸지 않습니다. 생성된 진화 근거는 기록합니다. |
+| `--apply` | 없음 | 수락된 편집을 적용합니다. 원본을 백업한 뒤 원자적으로 쓰며, 검증된 개선만 반영합니다. |
 | `--mock` | **기본값** | 기록된 최적화 편집과 평가 판정을 재생합니다(결정론적, 오프라인). CI에서 안전합니다. |
 | `--live` | 없음 | 실제 LLM 최적화를 디스패치합니다. 에폭마다 실제 모델 호출이 발생합니다. 비용 미리보기를 출력하고 `--yes`가 없으면 확인을 받습니다. |
 | `--max-epochs <n>` | `8` | 최대 최적화 에폭 수. |
@@ -1503,7 +1503,7 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 
 **필수 의존성:** `.agents/eval/<skill>/`에 태스크 픽스처가 최소 5개 있어야 합니다. 그보다 적으면 명확한 메시지와 함께 오류를 냅니다. 작성 방법은 [스킬 유용성 평가 가이드](../guide/skill-eval.md)를 참고하세요.
 
-**학습·검증 분할:** 최적화기는 편집을 제안할 때 TRAIN 태스크의 결과만 봅니다. 수락 게이트는 held-out VALIDATION 분할에서 채점합니다(`OPT_TRAIN_VAL_SPLIT = 0.5`, 기본 50대 50). 검증 분할에서 성능이 떨어지는 편집은 항상 거부합니다.
+**학습·검증·테스트 분할:** 픽스처는 결정론적으로 60/20/20으로 나뉩니다. Maintainer와 Proposer는 TRAIN 근거만 보고, 후보 선택은 held-out VALIDATION 태스크를 사용합니다. 실행기 전용 TEST 분할은 진화가 끝날 때까지 숨겨집니다. `--apply`는 검증과 최종 테스트가 모두 엄격히 향상될 때만 파일을 씁니다.
 
 **SSOT 유의 사항:** ID가 `oma-`로 시작하는 스킬은 `oma update`가 덮어씁니다. 이런 스킬에는 `--apply`를 권장하지 않습니다. 기본값인 `--dry-run`으로 제안된 diff를 확인하고 업스트림에 반영하세요. 사용자가 직접 만든 스킬에는 자유롭게 적용해도 됩니다.
 
@@ -1511,7 +1511,7 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 
 **예제:**
 ```bash
-# Propose edits (dry-run, mock — writes nothing, fully offline)
+# Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
 oma skills opt --skill oma-scholar --mock --dry-run
 
 # Apply accepted edits (backs up original first)

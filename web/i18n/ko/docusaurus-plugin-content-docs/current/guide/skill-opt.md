@@ -1,13 +1,13 @@
 ---
 title: "스킬 최적화"
-description: oma skills opt로 SKILL.md 편집을 반복 제안하고 held-out 검증 분할에서 수락하며, 측정된 유용성 향상을 최대화하는 방법을 다룹니다.
+description: oma skills opt로 train, validation, 실행기 전용 final-test 게이트를 거치는 영속적 근거 기반 스킬 진화를 수행하는 방법을 다룹니다.
 ---
 
 # 스킬 최적화
 
-`oma skills opt`는 `oma skills eval`이 산출하는 `utilityLift`를 최대화하도록 스킬의 `SKILL.md`를 최적화합니다. 이 명령은 스킬 문서를 얼어붙은 에이전트의 학습 가능한 "외부 상태"로 다룹니다. 최적화 LLM이 범위가 제한된 추가·삭제·교체 편집을 제안하면, 각 편집을 후보 사본에 적용하고 평가 하네스로 다시 채점한 뒤, **held-out 검증 향상이 확실히 커질 때만 수락**해 음의 전이로 인한 퇴행을 막습니다. 배포 시점에는 추론 비용이 전혀 들지 않습니다. 결과물은 더 나은 `SKILL.md` 하나뿐입니다.
+`oma skills opt`는 `oma skills eval`이 산출하는 `utilityLift`를 최대화하도록 스킬의 `SKILL.md`를 진화시킵니다. 원시 롤아웃 근거, 범위가 지정된 영속 지식, 실행 가능한 스킬을 분리합니다. Wiki Maintainer가 관측 가능한 성공과 실패를 통합하고, Proposer가 그 지식으로 제한된 추가·삭제·교체 편집을 제안합니다. 후보는 held-out 검증 유용성을 높여야 하며, `--apply`에는 실행기 전용 최종 테스트의 향상도 필요합니다. 배포 시에는 별도의 wiki 조회 비용 없이 결과가 `SKILL.md`에 남습니다.
 
-연구 근거는 SkillOpt, *Executive Strategy for Self-Evolving Agent Skills*(arXiv:2605.23904, MSRA)입니다.
+연구 근거: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C., & Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
 
 ---
 
@@ -25,19 +25,21 @@ description: oma skills opt로 SKILL.md 편집을 반복 제안하고 held-out �
 
 ## 동작 방식
 
-픽스처는 **train 세트**와 **held-out 검증 세트**로 결정론적으로 나뉩니다(기본 50대 50, `OPT_TRAIN_VAL_SPLIT = 0.5`로 조절). 분할은 실행할 때마다 동일합니다. 나누기 전에 태스크를 ID로 정렬하므로 무작위성이 개입하지 않습니다.
+픽스처는 **train**, **held-out validation**, **실행기 전용 final-test** 세트로 결정론적으로 나뉩니다(60/20/20). 나누기 전에 태스크를 ID로 정렬하므로 실행할 때마다 분할이 같고 무작위성이 개입하지 않습니다.
 
 에폭마다(`--max-epochs`까지, 기본 8회) 다음을 수행합니다.
 
-1. **현재 최선의 `SKILL.md`를 TRAIN 분할에서 채점합니다.** `oma skills eval`이 태스크별 향상을 포함한 결과를 반환합니다.
-2. **최적화 LLM이 후보 편집을 K개 제안합니다**(`--edits-per-epoch`까지, 기본 4개). 이미 거부된 편집 버퍼에 있는 편집은 건너뜁니다.
-3. **각 후보 편집에 대해:**
+1. **현재 최선의 `SKILL.md`를 TRAIN 분할에서 채점합니다.** `oma skills eval`이 관측 가능한 태스크별 프롬프트, 출력, 향상을 반환합니다.
+2. **Wiki Maintainer가 근거를 통합합니다.** 실패는 최대 5개, 성공은 최대 3개까지 근거가 연결된 패턴이 되며, OMA L1/L2/L3 메모리에서 범위가 맞는 패턴과 이전 게이트 결과를 회수합니다.
+3. **Proposer가 후보 편집을 K개 냅니다**(`--edits-per-epoch`까지, 기본 4개). 영속 거부 이력의 동일 편집은 건너뜁니다.
+4. **각 후보 편집에 대해:**
    - 편집을 메모리상의 `SKILL.md` 사본에 적용합니다.
    - 후보를 검증합니다(프론트매터의 `name`과 `description`이 살아 있어야 하고, 본문이 파싱돼야 합니다).
    - 텍스트 학습률 예산을 강제합니다. 순 문자 변화가 `--lr`(기본 600자)를 넘는 편집은 버립니다.
    - 후보를 **held-out 검증 분할**에서 다시 채점합니다.
-4. **최선의 후보를 수락하는 조건은** 검증 향상이 확실히 커지고(`Δlift > 0`) 음의 전이 항목이 퇴행 하한(`NEG_TRANSFER_FAIL = -0.1`)을 넘지 않는 경우뿐입니다. 거부된 에폭에서 제안된 편집은 모두 거부 버퍼에 들어갑니다.
-5. **수락된 편집이 없는 에폭이 2회 연속되면 조기 종료합니다**(`OPT_EARLY_STOP_PATIENCE = 2`).
+5. **최선의 검증 후보를 수락하는 조건은** 검증 향상이 확실히 커지고(`Δlift > 0`) 음의 전이 항목이 퇴행 하한(`NEG_TRANSFER_FAIL = -0.1`)을 넘지 않는 경우뿐입니다. 모든 제안 게이트는 영속화됩니다.
+6. **수락된 편집이 없는 에폭이 2회 연속되면 조기 종료합니다**(`OPT_EARLY_STOP_PATIENCE = 2`).
+7. **진화가 끝난 뒤 숨겨진 최종 테스트를 실행합니다.** Maintainer와 Proposer는 이 태스크를 볼 수 없습니다. 최종 테스트가 실패하면 `--apply`를 막고 검증 승자를 거부 지식으로 기록합니다.
 
 최적화기는 루프 도중 실제 `SKILL.md`를 절대 건드리지 않습니다. 항상 메모리상의 후보 사본에서만 작업합니다.
 
@@ -59,8 +61,8 @@ oma skills opt --skill <id>
 | 플래그 | 기본값 | 설명 |
 |:-----|:--------|:-----------|
 | `--skill <id>` | `_all` | 최적화할 스킬 ID(단순 이름이며 경로 구분자를 쓰지 않습니다). |
-| `--dry-run` | **기본값** | 편집을 제안하고 diff를 출력하며, 아무것도 쓰지 않습니다. |
-| `--apply` | 없음 | 수락된 편집을 `SKILL.md`에 적용합니다. 쓰기 전에 원본을 `SKILL.md.bak`으로 백업합니다. 검증된 개선이 있을 때만 실행됩니다. |
+| `--dry-run` | **기본값** | 편집과 diff를 제안하되 `SKILL.md`는 바꾸지 않습니다. 생성된 근거와 진화 이벤트는 영속화합니다. |
+| `--apply` | 없음 | 수락된 편집을 `SKILL.md`에 적용합니다. 원본을 백업한 뒤 원자적으로 쓰며, 검증과 최종 테스트 게이트가 모두 통과할 때만 실행됩니다. |
 | `--mock` | **기본값** | `_rollouts/`에 기록된 최적화 편집과 평가 판정을 재생합니다. 결정론적이고 오프라인이며 CI에서 안전합니다. |
 | `--live` | 없음 | 실제 LLM 최적화를 디스패치합니다. 에폭마다 실제 모델 호출이 발생합니다. 비용 미리보기를 출력하고 `--yes`가 없으면 확인을 받습니다. |
 | `--max-epochs <n>` | `8` | 최대 최적화 에폭 수. |
@@ -75,7 +77,7 @@ oma skills opt --skill <id>
 ## 최소 실행 예제
 
 ```bash
-# Propose edits (dry-run, mock mode — writes nothing, fully offline)
+# Propose edits (dry-run, mock mode — does not change SKILL.md, fully offline)
 oma skills opt --skill oma-scholar --mock --dry-run
 ```
 
@@ -99,7 +101,7 @@ Skill opt  (skill: oma-scholar)
  - User wants citations or sources for a factual statement.
 ```
 
-diff는 최적화기가 쓰려는 내용을 보여줍니다. `--dry-run`에서는 아무것도 저장하지 않습니다.
+diff는 최적화기가 쓰려는 내용을 보여줍니다. `--dry-run`에서는 `SKILL.md`를 바꾸지 않지만, 다음 실행을 위한 진화 근거와 게이트 결과는 저장합니다.
 
 ---
 
@@ -112,13 +114,13 @@ diff는 최적화기가 쓰려는 내용을 보여줍니다. `--dry-run`에서�
 oma skills opt --skill oma-scholar --mock --apply
 ```
 
-`--apply`는 최적화가 held-out 검증 분할에서 확실한 양의 개선을 찾았을 때만 파일을 씁니다. 쓰기 전에 원본 `SKILL.md`를 `.bak`으로 백업합니다. 무엇이 바뀌었는지 검토할 수 있도록 diff는 항상 출력합니다.
+`--apply`는 held-out 검증과 실행기 전용 최종 테스트에서 모두 확실한 양의 개선을 찾았을 때만 파일을 씁니다. 원본을 백업한 뒤 원자적으로 쓰며, 무엇이 바뀌었는지 검토할 수 있도록 diff를 항상 출력합니다.
 
 ---
 
 ## 라이브 모드
 
-라이브 모드는 실제 최적화 LLM을 호출하고 에폭마다 라이브 평가 갈래를 다시 돌립니다. 비용이 큽니다. 에폭마다 검증 태스크별로 평가 갈래 두 개(baseline과 treatment)를 돌리고, 여기에 최적화 LLM 호출이 더해집니다.
+라이브 모드는 실제 Maintainer와 Proposer를 호출하고 에폭마다 라이브 평가 갈래를 다시 돌립니다. 채점 태스크마다 baseline과 treatment 호출이 있고, judge 픽스처에는 채점 호출이 추가되며, 최종 테스트는 원본과 후보를 각각 채점합니다. 비용 미리보기는 실제 분할을 바탕으로 하위 모델 호출 상한을 보여줍니다. 각 호출의 제한 시간은 120초이며, Claude 평가 갈래에서는 주변 도구, 스킬, MCP, AgentMemory를 차단합니다.
 
 ```bash
 # Cost preview + confirm
@@ -131,7 +133,7 @@ oma skills opt --skill oma-scholar --live --yes
 oma skills opt --skill oma-scholar --live --apply --yes
 ```
 
-비용 미리보기는 LLM을 호출하기 전에 태스크 수, 에폭 수, 예상 갈래 디스패치 수, 해석된 벤더를 나열합니다.
+비용 미리보기는 LLM을 호출하기 전에 하위 모델 호출 수의 상한을 표시합니다.
 
 ---
 
@@ -155,11 +157,12 @@ oma skills opt --skill oma-scholar --json
   "applied": false,
   "diff": "--- a/SKILL.md\n+++ b/SKILL.md\n...",
   "_dryRun": true,
-  "_split": { "trainCount": 4, "valCount": 4 }
+  "finalTest": { "baselineLift": 0.10, "candidateLift": 0.25, "passed": true },
+  "_split": { "trainCount": 4, "valCount": 1, "testCount": 3 }
 }
 ```
 
-최종 향상이 baseline을 넘거나 `applied`가 `true`이면 `ok`가 `true`입니다.
+검증 향상이 있고 실행기 전용 최종 테스트가 실패하지 않았을 때만(또는 후보가 적용됐을 때) `ok`가 `true`입니다.
 
 ---
 
@@ -177,7 +180,7 @@ ID가 `oma-`로 시작하는 스킬은 oh-my-agent가 소유하며 **`oma update
 
 ## 과적합 방지
 
-최적화기는 편집을 제안할 때 TRAIN 분할의 롤아웃 결과만 봅니다. **수락 게이트는 항상 held-out VALIDATION 분할을 씁니다.** 학습 세트의 향상은 키우지만 held-out 세트에서 퇴행하는 편집은 거부합니다. train과 validation 향상을 모두 보고하므로 과적합이 눈에 보입니다.
+Maintainer와 Proposer는 TRAIN 롤아웃 근거만 봅니다. 후보 선택은 held-out VALIDATION 분할을 쓰고, 실행기 전용 TEST 분할은 진화가 끝날 때까지 숨깁니다. 검증 승자가 최종 테스트를 개선하지 못하면 적용하지 않고 영속 거부 이력에 추가합니다.
 
 ---
 
