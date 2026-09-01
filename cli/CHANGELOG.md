@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.1.0...cli-v13.1.1) (2026-09-01)
+
+
+### Documentation
+
+* **readme:** clarify the agent control boundary ([902845a](https://github.com/first-fluke/oh-my-agent/commit/902845ae37391d5ec664f10492c167d933782df5))
+
 ## [13.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.0.0...cli-v13.1.0) (2026-08-30)
 
 
