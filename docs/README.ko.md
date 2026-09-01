@@ -29,6 +29,12 @@ oh-my-agent는 그 주장을 반증 가능하게 만듭니다. Stop hook은 프�
 
 예산도 같은 방식으로 강제됩니다. `session.quota_cap`은 토큰, spawn 횟수, 벤더별 지출에 상한을 걸고, 한 축이라도 넘어서면 오케스트레이터가 다음 spawn을 거부합니다. 실행 시간 예산이 바닥나면 Stop hook은 완료한 척하는 대신 부분 상태를 이벤트 로그에 남기고 정직하게 멈춥니다.
 
+### 제어 경계
+
+oh-my-agent는 개방형 planning과 다음 action 선택을 host LLM에 맡깁니다. 그 판단을 범용 workflow graph나 policy engine으로 대체하지 않습니다. 대신 모델과 무관하게 지켜야 하는 invariant, 즉 tool guardrail, permission, budget, retry와 stop 한도, durable event, 기계적으로 검증되는 완료 조건을 외부화합니다. Structured event는 decision과 gate 결과를 기록하지만 별도의 planner처럼 동작하지 않습니다.
+
+따라서 deterministic SLM 실행은 현재 harness에 빠진 infrastructure가 아니라, 필요가 입증될 때 별도로 선택할 수 있는 product direction입니다.
+
 ## 빠른 시작
 
 ```bash

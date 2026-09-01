@@ -29,6 +29,12 @@ Each mechanism below is mechanical: a command exits 0 or it doesn't, a file is o
 
 Budgets are enforced the same way. `session.quota_cap` caps tokens, spawn count, and per-vendor spend; the orchestrator refuses the next spawn when a dimension is exceeded. When the wall-clock budget runs out, the Stop hook stops honestly with partial status recorded on the event log, rather than pretending completion.
 
+### Control Boundary
+
+oh-my-agent leaves open-ended planning and next-action selection to the host LLM. It does not replace that judgment with a universal workflow graph or policy engine. Instead, it externalizes the invariants that must hold regardless of the model: tool guardrails, permissions, budgets, retry and stop limits, durable events, and mechanically verified completion. Structured events record decisions and gate outcomes; they do not act as a second planner.
+
+Deterministic SLM execution is therefore a separate, optional product direction rather than missing infrastructure in the current harness.
+
 ## Quick Start
 
 The install scripts below auto-install bun, uv, and serena if they're missing.
