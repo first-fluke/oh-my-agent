@@ -14,21 +14,6 @@ oh-my-agent ทำให้คำกล่าวอ้างนั้นพิ�
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
-## ตรวจสอบ ไม่ใช่เล่าเรื่อง
-
-กลไกทุกข้อด้านล่างเป็นเชิงกลไกล้วน: คำสั่งจบด้วย exit code 0 หรือไม่ก็ไม่จบ ไฟล์อยู่บนดิสก์หรือไม่ก็ไม่มี ไม่มีการถาม LLM ว่างาน "ดูถูกต้องแล้วหรือยัง"
-
-| กลไก | ตรวจสอบอะไรเชิงกลไก | อยู่ที่ไหน |
-|------|---------------------|-----------|
-| **Stop-hook gate** | บล็อกการจบเซสชันขณะที่ persistent workflow ยังทำงานอยู่ และรัน gate script ที่ตั้งค่าไว้ก่อนจะอนุญาตให้หยุด มีเพียง `typecheck`, `test` และ `lint` เท่านั้นที่รันได้ — สิ่งอื่นที่เอเจนต์เขียนลงไฟล์สถานะจะถูกเพิกเฉย ไม่มีวันถูกรัน จำกัดการย้ำเตือนไว้ที่ 5 ครั้ง เพื่อไม่ให้ gate ที่แดงถาวรกักคุณไว้ | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` ตรวจอาร์ติแฟกต์ 4 อย่างที่การลัดขั้นตอนปลอมไม่ได้ ได้แก่ บันทึกเฟสของ ultrawork, ไฟล์ JSON ของแผน, ไฟล์ผลลัพธ์จาก **QA agent คนละตัว** และไฟล์ผลลัพธ์จาก **refactor agent คนละตัว** อาร์ติแฟกต์ที่หายไปหมายความว่าเฟสนั้นไม่ได้รันจริง ไม่ว่าจะเล่ามาอย่างไรก็ตาม | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **ผู้ตัดสินอิสระ** | ถูก spawn เป็นเอเจนต์แยกที่มีคอนเท็กซ์ใหม่หมด รับรู้เพียงเกณฑ์เท่านั้น — ไม่เคยรู้ว่าฝ่ายลงมือทำอ้างว่าแก้อะไรไปบ้าง ตรวจสอบซ้ำ **ทุก** เกณฑ์ในทุก iteration รวมถึงเกณฑ์ที่ PASS ไปแล้ว เพราะการแก้ C2 คือวิธีที่ C1 พังแบบเงียบๆ | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **สถานะแบบ event-sourced** | ทุกครั้งที่ gate ผ่าน gate ไม่ผ่าน และทุกการตัดสินใจ จะเพิ่ม JSON หนึ่งบรรทัดลงใน `.agents/state/sessions/{sid}/events.jsonl` พร้อมประทับ vendor และ session id ของ runtime เพิ่มได้อย่างเดียว ข้ามผู้ให้บริการได้ และตรวจสอบย้อนหลังได้หลังรันเสร็จ | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **ชุดตรวจสอบรายเอเจนต์** | `oma verify <agent>` รัน core ที่ใช้ร่วมกัน (scope violation, charter alignment, secret ที่ hardcode, สแกน TODO, declared outputs) บวกกับการตรวจสอบเฉพาะประเภท (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles) | `oma verify <agent>` |
-| **ชุดวัดผล skill** | `oma skills eval` วัดว่า skill ช่วยเพิ่มประโยชน์ได้จริงแค่ไหนบนงานที่กันไว้ — treatment เทียบกับ baseline — แทนที่จะเดาเอาว่า skill นั้นช่วยได้ ส่วน `oma skills opt` จะเก็บไว้เฉพาะการแก้ไขที่ทำให้ค่าที่วัดได้ดีขึ้น | [คู่มือ skill-eval](../web/docs/guide/skill-eval.md) |
-
-งบประมาณก็บังคับใช้ด้วยวิธีเดียวกัน `session.quota_cap` จำกัดจำนวน token, จำนวน spawn และค่าใช้จ่ายต่อผู้ให้บริการ ออร์เคสเตรเตอร์จะปฏิเสธการ spawn ครั้งถัดไปทันทีที่มิติใดมิติหนึ่งเกินเพดาน และเมื่องบประมาณเวลาหมดลง Stop hook จะหยุดอย่างตรงไปตรงมาพร้อมบันทึกสถานะที่ทำได้บางส่วนลง event log แทนที่จะแกล้งทำเป็นว่างานเสร็จแล้ว
-
 ## Quick Start
 
 ```bash
@@ -263,6 +248,21 @@ agents:
 
 - `oma doctor --profile` — แสดงเมทริกซ์โมเดลที่ resolve แล้วตามแต่ละ role
 - คู่มือฉบับเต็ม: [`web/docs/guide/per-agent-models.md`](../web/docs/guide/per-agent-models.md)
+
+## ตรวจสอบ ไม่ใช่เล่าเรื่อง
+
+กลไกทุกข้อด้านล่างเป็นเชิงกลไกล้วน: คำสั่งจบด้วย exit code 0 หรือไม่ก็ไม่จบ ไฟล์อยู่บนดิสก์หรือไม่ก็ไม่มี ไม่มีการถาม LLM ว่างาน "ดูถูกต้องแล้วหรือยัง"
+
+| กลไก | ตรวจสอบอะไรเชิงกลไก | อยู่ที่ไหน |
+|------|---------------------|-----------|
+| **Stop-hook gate** | บล็อกการจบเซสชันขณะที่ persistent workflow ยังทำงานอยู่ และรัน gate script ที่ตั้งค่าไว้ก่อนจะอนุญาตให้หยุด มีเพียง `typecheck`, `test` และ `lint` เท่านั้นที่รันได้ — สิ่งอื่นที่เอเจนต์เขียนลงไฟล์สถานะจะถูกเพิกเฉย ไม่มีวันถูกรัน จำกัดการย้ำเตือนไว้ที่ 5 ครั้ง เพื่อไม่ให้ gate ที่แดงถาวรกักคุณไว้ | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` ตรวจอาร์ติแฟกต์ 4 อย่างที่การลัดขั้นตอนปลอมไม่ได้ ได้แก่ บันทึกเฟสของ ultrawork, ไฟล์ JSON ของแผน, ไฟล์ผลลัพธ์จาก **QA agent คนละตัว** และไฟล์ผลลัพธ์จาก **refactor agent คนละตัว** อาร์ติแฟกต์ที่หายไปหมายความว่าเฟสนั้นไม่ได้รันจริง ไม่ว่าจะเล่ามาอย่างไรก็ตาม | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **ผู้ตัดสินอิสระ** | ถูก spawn เป็นเอเจนต์แยกที่มีคอนเท็กซ์ใหม่หมด รับรู้เพียงเกณฑ์เท่านั้น — ไม่เคยรู้ว่าฝ่ายลงมือทำอ้างว่าแก้อะไรไปบ้าง ตรวจสอบซ้ำ **ทุก** เกณฑ์ในทุก iteration รวมถึงเกณฑ์ที่ PASS ไปแล้ว เพราะการแก้ C2 คือวิธีที่ C1 พังแบบเงียบๆ | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **สถานะแบบ event-sourced** | ทุกครั้งที่ gate ผ่าน gate ไม่ผ่าน และทุกการตัดสินใจ จะเพิ่ม JSON หนึ่งบรรทัดลงใน `.agents/state/sessions/{sid}/events.jsonl` พร้อมประทับ vendor และ session id ของ runtime เพิ่มได้อย่างเดียว ข้ามผู้ให้บริการได้ และตรวจสอบย้อนหลังได้หลังรันเสร็จ | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **ชุดตรวจสอบรายเอเจนต์** | `oma verify <agent>` รัน core ที่ใช้ร่วมกัน (scope violation, charter alignment, secret ที่ hardcode, สแกน TODO, declared outputs) บวกกับการตรวจสอบเฉพาะประเภท (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles) | `oma verify <agent>` |
+| **ชุดวัดผล skill** | `oma skills eval` วัดว่า skill ช่วยเพิ่มประโยชน์ได้จริงแค่ไหนบนงานที่กันไว้ — treatment เทียบกับ baseline — แทนที่จะเดาเอาว่า skill นั้นช่วยได้ ส่วน `oma skills opt` จะเก็บไว้เฉพาะการแก้ไขที่ทำให้ค่าที่วัดได้ดีขึ้น | [คู่มือ skill-eval](../web/docs/guide/skill-eval.md) |
+
+งบประมาณก็บังคับใช้ด้วยวิธีเดียวกัน `session.quota_cap` จำกัดจำนวน token, จำนวน spawn และค่าใช้จ่ายต่อผู้ให้บริการ ออร์เคสเตรเตอร์จะปฏิเสธการ spawn ครั้งถัดไปทันทีที่มิติใดมิติหนึ่งเกินเพดาน และเมื่องบประมาณเวลาหมดลง Stop hook จะหยุดอย่างตรงไปตรงมาพร้อมบันทึกสถานะที่ทำได้บางส่วนลง event log แทนที่จะแกล้งทำเป็นว่างานเสร็จแล้ว
 
 ## ทำไมต้อง oh-my-agent?
 

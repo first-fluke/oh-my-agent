@@ -14,21 +14,6 @@ oh-my-agent rend l'affirmation falsifiable. Un Stop hook refuse de terminer ta s
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
-## Vérification, Pas Narration
-
-Chaque mécanisme ci-dessous est mécanique : une commande sort avec le code 0 ou non, un fichier est sur le disque ou non. On ne demande à aucun LLM si le travail « a l'air correct ».
-
-| Mécanisme | Ce qu'il vérifie mécaniquement | Où ça vit |
-|-----------|------------------------------|----------------|
-| **Stop-hook gate** | Bloque la fin de session tant qu'un workflow persistant est actif, et exécute le script de gate configuré avant d'autoriser l'arrêt. Seuls `typecheck`, `test` et `lint` sont exécutables : si un agent écrit autre chose dans le fichier d'état, c'est ignoré, jamais exécuté. Plafonné à 5 relances pour qu'un gate durablement rouge ne puisse pas te piéger. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` vérifie quatre artefacts qu'un raccourci ne peut pas falsifier : les enregistrements de phase d'ultrawork, le JSON du plan, le fichier de résultat d'un **agent QA distinct** et celui d'un **agent refactor distinct**. Des artefacts manquants signifient que la phase ne s'est pas exécutée, quoi qu'en dise la narration. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Juge indépendant** | Lancé comme un agent séparé avec un contexte neuf, briefé sur les seuls critères — jamais sur ce que l'implémenteur prétend avoir corrigé. Revérifie **chaque** critère à chaque itération, y compris les PASS précédents, parce que corriger C2 est précisément la façon dont C1 régresse en silence. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **État event-sourced** | Chaque gate passé, chaque gate échoué et chaque décision ajoutent une ligne JSON à `.agents/state/sessions/{sid}/events.jsonl`, estampillée avec le vendor et l'id de session du runtime. En ajout seul, cross-vendor, auditable après coup. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Batterie de vérifications par agent** | `oma verify <agent>` exécute un socle commun (scope violation, charter alignment, secrets hardcodés, scan des TODO, declared outputs) plus des vérifications propres au type (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
-| **Harnais d'éval des skills** | `oma skills eval` mesure le gain d'utilité sur des tâches held-out — traitement contre baseline — au lieu de supposer qu'un skill aide. `oma skills opt` ne garde que les modifications qui améliorent ce gain mesuré. | [guide skill-eval](../web/docs/guide/skill-eval.md) |
-
-Les budgets sont appliqués de la même façon. `session.quota_cap` plafonne les tokens, le nombre de spawns et la dépense par vendor ; l'orchestrateur refuse le spawn suivant dès qu'une dimension est dépassée. Quand le budget de temps réel est épuisé, le Stop hook s'arrête honnêtement en consignant un statut partiel dans l'event log, plutôt que de faire semblant d'avoir terminé.
-
 ## Démarrage Rapide
 
 ```bash
@@ -263,6 +248,21 @@ agents:
 
 - `oma doctor --profile` — affiche la matrice de modèles résolue par rôle
 - Guide complet : [`web/docs/guide/per-agent-models.md`](../web/docs/guide/per-agent-models.md)
+
+## Vérification, Pas Narration
+
+Chaque mécanisme ci-dessous est mécanique : une commande sort avec le code 0 ou non, un fichier est sur le disque ou non. On ne demande à aucun LLM si le travail « a l'air correct ».
+
+| Mécanisme | Ce qu'il vérifie mécaniquement | Où ça vit |
+|-----------|------------------------------|----------------|
+| **Stop-hook gate** | Bloque la fin de session tant qu'un workflow persistant est actif, et exécute le script de gate configuré avant d'autoriser l'arrêt. Seuls `typecheck`, `test` et `lint` sont exécutables : si un agent écrit autre chose dans le fichier d'état, c'est ignoré, jamais exécuté. Plafonné à 5 relances pour qu'un gate durablement rouge ne puisse pas te piéger. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` vérifie quatre artefacts qu'un raccourci ne peut pas falsifier : les enregistrements de phase d'ultrawork, le JSON du plan, le fichier de résultat d'un **agent QA distinct** et celui d'un **agent refactor distinct**. Des artefacts manquants signifient que la phase ne s'est pas exécutée, quoi qu'en dise la narration. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Juge indépendant** | Lancé comme un agent séparé avec un contexte neuf, briefé sur les seuls critères — jamais sur ce que l'implémenteur prétend avoir corrigé. Revérifie **chaque** critère à chaque itération, y compris les PASS précédents, parce que corriger C2 est précisément la façon dont C1 régresse en silence. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **État event-sourced** | Chaque gate passé, chaque gate échoué et chaque décision ajoutent une ligne JSON à `.agents/state/sessions/{sid}/events.jsonl`, estampillée avec le vendor et l'id de session du runtime. En ajout seul, cross-vendor, auditable après coup. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Batterie de vérifications par agent** | `oma verify <agent>` exécute un socle commun (scope violation, charter alignment, secrets hardcodés, scan des TODO, declared outputs) plus des vérifications propres au type (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
+| **Harnais d'éval des skills** | `oma skills eval` mesure le gain d'utilité sur des tâches held-out — traitement contre baseline — au lieu de supposer qu'un skill aide. `oma skills opt` ne garde que les modifications qui améliorent ce gain mesuré. | [guide skill-eval](../web/docs/guide/skill-eval.md) |
+
+Les budgets sont appliqués de la même façon. `session.quota_cap` plafonne les tokens, le nombre de spawns et la dépense par vendor ; l'orchestrateur refuse le spawn suivant dès qu'une dimension est dépassée. Quand le budget de temps réel est épuisé, le Stop hook s'arrête honnêtement en consignant un statut partiel dans l'event log, plutôt que de faire semblant d'avoir terminé.
 
 ## Pourquoi oh-my-agent ?
 

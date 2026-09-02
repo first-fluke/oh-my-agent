@@ -14,21 +14,6 @@ oh-my-agent làm cho tuyên bố ấy có thể bị bác bỏ. Một Stop hook 
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
-## Kiểm chứng, không phải kể chuyện
-
-Mọi cơ chế dưới đây đều mang tính máy móc: một lệnh hoặc thoát với mã 0 hoặc không, một file hoặc có trên đĩa hoặc không. Không LLM nào bị hỏi rằng công việc "trông có vẻ đúng" hay chưa.
-
-| Cơ chế | Kiểm tra máy móc điều gì | Nằm ở đâu |
-|--------|--------------------------|-----------|
-| **Stop-hook gate** | Chặn việc kết thúc phiên khi còn một persistent workflow đang chạy, và chạy gate script đã cấu hình trước khi cho phép dừng. Chỉ `typecheck`, `test` và `lint` mới được thực thi — agent ghi bất cứ thứ gì khác vào file trạng thái thì thứ đó bị bỏ qua, không bao giờ được chạy. Giới hạn 5 lần nhắc lại để một gate đỏ vĩnh viễn không giam bạn lại. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` kiểm tra bốn artifact mà việc đi tắt không thể giả mạo: bản ghi các phase của ultrawork, file JSON kế hoạch, file kết quả của **một QA agent riêng biệt** và file kết quả của **một refactor agent riêng biệt**. Thiếu artifact nghĩa là phase đó không hề chạy, bất kể lời kể ra sao. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Trọng tài độc lập** | Được spawn như một agent riêng với ngữ cảnh mới tinh, chỉ biết các tiêu chí — không bao giờ biết bên thực thi tuyên bố đã sửa những gì. Kiểm chứng lại **mọi** tiêu chí ở từng iteration, kể cả những tiêu chí đã PASS, vì sửa C2 chính là cách C1 âm thầm regression. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Trạng thái event-sourced** | Mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `.agents/state/sessions/{sid}/events.jsonl`, kèm dấu vendor và session id của runtime. Chỉ-thêm, xuyên vendor, kiểm toán được sau khi chạy xong. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Bộ kiểm tra theo từng agent** | `oma verify <agent>` chạy phần core dùng chung (scope violation, charter alignment, secret hardcode, quét TODO, declared outputs) cộng thêm các kiểm tra theo loại (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
-| **Bộ đo hiệu quả skill** | `oma skills eval` đo mức cải thiện hữu ích trên các task giữ riêng — treatment so với baseline — thay vì mặc định tin rằng một skill có ích. `oma skills opt` chỉ giữ lại những chỉnh sửa làm tăng mức cải thiện đo được. | [hướng dẫn skill-eval](../web/docs/guide/skill-eval.md) |
-
-Ngân sách cũng được thực thi theo đúng cách đó. `session.quota_cap` giới hạn token, số lần spawn và chi phí theo từng vendor; orchestrator từ chối lần spawn kế tiếp khi một chiều vượt hạn mức. Khi hết ngân sách thời gian thực, Stop hook dừng một cách trung thực và ghi trạng thái dở dang vào nhật ký sự kiện, thay vì giả vờ đã hoàn thành.
-
 ## Bắt đầu nhanh
 
 ```bash
@@ -263,6 +248,21 @@ agents:
 
 - `oma doctor --profile` — in ra ma trận model đã resolve theo từng vai trò
 - Hướng dẫn đầy đủ: [`web/docs/guide/per-agent-models.md`](../web/docs/guide/per-agent-models.md)
+
+## Kiểm chứng, không phải kể chuyện
+
+Mọi cơ chế dưới đây đều mang tính máy móc: một lệnh hoặc thoát với mã 0 hoặc không, một file hoặc có trên đĩa hoặc không. Không LLM nào bị hỏi rằng công việc "trông có vẻ đúng" hay chưa.
+
+| Cơ chế | Kiểm tra máy móc điều gì | Nằm ở đâu |
+|--------|--------------------------|-----------|
+| **Stop-hook gate** | Chặn việc kết thúc phiên khi còn một persistent workflow đang chạy, và chạy gate script đã cấu hình trước khi cho phép dừng. Chỉ `typecheck`, `test` và `lint` mới được thực thi — agent ghi bất cứ thứ gì khác vào file trạng thái thì thứ đó bị bỏ qua, không bao giờ được chạy. Giới hạn 5 lần nhắc lại để một gate đỏ vĩnh viễn không giam bạn lại. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` kiểm tra bốn artifact mà việc đi tắt không thể giả mạo: bản ghi các phase của ultrawork, file JSON kế hoạch, file kết quả của **một QA agent riêng biệt** và file kết quả của **một refactor agent riêng biệt**. Thiếu artifact nghĩa là phase đó không hề chạy, bất kể lời kể ra sao. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Trọng tài độc lập** | Được spawn như một agent riêng với ngữ cảnh mới tinh, chỉ biết các tiêu chí — không bao giờ biết bên thực thi tuyên bố đã sửa những gì. Kiểm chứng lại **mọi** tiêu chí ở từng iteration, kể cả những tiêu chí đã PASS, vì sửa C2 chính là cách C1 âm thầm regression. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Trạng thái event-sourced** | Mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `.agents/state/sessions/{sid}/events.jsonl`, kèm dấu vendor và session id của runtime. Chỉ-thêm, xuyên vendor, kiểm toán được sau khi chạy xong. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Bộ kiểm tra theo từng agent** | `oma verify <agent>` chạy phần core dùng chung (scope violation, charter alignment, secret hardcode, quét TODO, declared outputs) cộng thêm các kiểm tra theo loại (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
+| **Bộ đo hiệu quả skill** | `oma skills eval` đo mức cải thiện hữu ích trên các task giữ riêng — treatment so với baseline — thay vì mặc định tin rằng một skill có ích. `oma skills opt` chỉ giữ lại những chỉnh sửa làm tăng mức cải thiện đo được. | [hướng dẫn skill-eval](../web/docs/guide/skill-eval.md) |
+
+Ngân sách cũng được thực thi theo đúng cách đó. `session.quota_cap` giới hạn token, số lần spawn và chi phí theo từng vendor; orchestrator từ chối lần spawn kế tiếp khi một chiều vượt hạn mức. Khi hết ngân sách thời gian thực, Stop hook dừng một cách trung thực và ghi trạng thái dở dang vào nhật ký sự kiện, thay vì giả vờ đã hoàn thành.
 
 ## Tại sao chọn oh-my-agent?
 

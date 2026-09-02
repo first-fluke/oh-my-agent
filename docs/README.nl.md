@@ -14,21 +14,6 @@ oh-my-agent maakt die bewering falsifieerbaar. Een Stop-hook weigert je sessie t
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
-## Verificatie, geen narratief
-
-Elk mechanisme hieronder is mechanisch: een commando eindigt met exitcode 0 of niet, een bestand staat op schijf of niet. Geen enkele LLM wordt gevraagd of het werk er "correct uitziet".
-
-| Mechanisme | Wat er mechanisch wordt gecontroleerd | Waar het zit |
-|------------|----------------------------------------|--------------|
-| **Stop-hook-gate** | Blokkeert het beëindigen van de sessie zolang een persistente workflow actief is, en draait het geconfigureerde gate-script voordat stoppen wordt toegestaan. Alleen `typecheck`, `test` en `lint` zijn uitvoerbaar — schrijft een agent iets anders in het state-bestand, dan wordt dat genegeerd en nooit uitgevoerd. Begrensd op 5 reinforcements, zodat een permanent rode gate je niet gevangen houdt. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` controleert vier artefacten die met een shortcut niet te faken zijn: de fase-records van ultrawork, de plan-JSON, het resultaatbestand van een **aparte QA-agent** en dat van een **aparte refactor-agent**. Ontbrekende artefacten betekenen dat de fase niet heeft gedraaid, wat het verhaal ook beweert. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Onafhankelijke judge** | Draait als aparte agent met verse context, uitsluitend gebriefd op de criteria — nooit op wat de implementator beweert te hebben opgelost. Verifieert elke iteratie **elk** criterium opnieuw, ook eerdere PASSes, want C2 repareren is precies hoe C1 stilletjes regresseert. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Event-sourced state** | Elke geslaagde gate, elke gefaalde gate en elke beslissing voegt één JSON-regel toe aan `.agents/state/sessions/{sid}/events.jsonl`, gestempeld met vendor en runtime-sessie-id. Append-only, vendoroverstijgend, achteraf auditeerbaar. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Check-batterij per agent** | `oma verify <agent>` draait een gedeelde kern (scope violation, charter alignment, hardcoded secrets, TODO-scan, declared outputs) plus type-specifieke checks (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
-| **Skill-eval-harnas** | `oma skills eval` meet de utility lift op achtergehouden taken — treatment tegenover baseline — in plaats van aan te nemen dat een skill helpt. `oma skills opt` behoudt alleen wijzigingen die de gemeten lift verbeteren. | [skill-eval-gids](../web/docs/guide/skill-eval.md) |
-
-Budgetten worden op dezelfde manier afgedwongen. `session.quota_cap` begrenst tokens, het aantal spawns en de uitgaven per vendor; de orchestrator weigert de volgende spawn zodra een dimensie wordt overschreden. Loopt het tijdbudget af, dan stopt de Stop-hook eerlijk en legt de deelstatus vast in het event log, in plaats van voltooiing voor te wenden.
-
 ## Snel starten
 
 ```bash
@@ -263,6 +248,21 @@ agents:
 
 - `oma doctor --profile` — print de per rol opgeloste modelmatrix
 - Volledige gids: [`web/docs/guide/per-agent-models.md`](../web/docs/guide/per-agent-models.md)
+
+## Verificatie, geen narratief
+
+Elk mechanisme hieronder is mechanisch: een commando eindigt met exitcode 0 of niet, een bestand staat op schijf of niet. Geen enkele LLM wordt gevraagd of het werk er "correct uitziet".
+
+| Mechanisme | Wat er mechanisch wordt gecontroleerd | Waar het zit |
+|------------|----------------------------------------|--------------|
+| **Stop-hook-gate** | Blokkeert het beëindigen van de sessie zolang een persistente workflow actief is, en draait het geconfigureerde gate-script voordat stoppen wordt toegestaan. Alleen `typecheck`, `test` en `lint` zijn uitvoerbaar — schrijft een agent iets anders in het state-bestand, dan wordt dat genegeerd en nooit uitgevoerd. Begrensd op 5 reinforcements, zodat een permanent rode gate je niet gevangen houdt. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` controleert vier artefacten die met een shortcut niet te faken zijn: de fase-records van ultrawork, de plan-JSON, het resultaatbestand van een **aparte QA-agent** en dat van een **aparte refactor-agent**. Ontbrekende artefacten betekenen dat de fase niet heeft gedraaid, wat het verhaal ook beweert. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Onafhankelijke judge** | Draait als aparte agent met verse context, uitsluitend gebriefd op de criteria — nooit op wat de implementator beweert te hebben opgelost. Verifieert elke iteratie **elk** criterium opnieuw, ook eerdere PASSes, want C2 repareren is precies hoe C1 stilletjes regresseert. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Event-sourced state** | Elke geslaagde gate, elke gefaalde gate en elke beslissing voegt één JSON-regel toe aan `.agents/state/sessions/{sid}/events.jsonl`, gestempeld met vendor en runtime-sessie-id. Append-only, vendoroverstijgend, achteraf auditeerbaar. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Check-batterij per agent** | `oma verify <agent>` draait een gedeelde kern (scope violation, charter alignment, hardcoded secrets, TODO-scan, declared outputs) plus type-specifieke checks (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
+| **Skill-eval-harnas** | `oma skills eval` meet de utility lift op achtergehouden taken — treatment tegenover baseline — in plaats van aan te nemen dat een skill helpt. `oma skills opt` behoudt alleen wijzigingen die de gemeten lift verbeteren. | [skill-eval-gids](../web/docs/guide/skill-eval.md) |
+
+Budgetten worden op dezelfde manier afgedwongen. `session.quota_cap` begrenst tokens, het aantal spawns en de uitgaven per vendor; de orchestrator weigert de volgende spawn zodra een dimensie wordt overschreden. Loopt het tijdbudget af, dan stopt de Stop-hook eerlijk en legt de deelstatus vast in het event log, in plaats van voltooiing voor te wenden.
 
 ## Waarom oh-my-agent?
 

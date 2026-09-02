@@ -14,21 +14,6 @@ O oh-my-agent torna essa afirmação falseável. Um Stop hook se recusa a encerr
 
 [Watch the full video (35s)](./assets/video/oh-my-agent-explainer.mp4)
 
-## Verificação, Não Narração
-
-Cada mecanismo abaixo é mecânico: um comando sai com código 0 ou não sai, um arquivo está no disco ou não está. Nenhum LLM é consultado sobre se o trabalho "parece correto".
-
-| Mecanismo | O que ele confere mecanicamente | Onde fica |
-|-----------|------------------------------|----------------|
-| **Stop-hook gate** | Bloqueia o encerramento da sessão enquanto um workflow persistente estiver ativo e roda o script de gate configurado antes de liberar a parada. Só `typecheck`, `test` e `lint` são executáveis — se um agente escrever qualquer outra coisa no arquivo de estado, aquilo é ignorado e nunca roda. Limitado a 5 reforços, para que um gate permanentemente vermelho não deixe você preso. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` confere quatro artefatos que um atalho não consegue forjar: os registros de fase do ultrawork, o JSON do plano, o arquivo de resultado de um **agente de QA distinto** e o arquivo de resultado de um **agente de refactor distinto**. Artefato faltando significa que a fase não rodou, não importa o que a narração diga. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
-| **Juiz independente** | Sobe como um agente separado com contexto novo, briefado só nos critérios — nunca no que o implementador alega ter corrigido. Reverifica **cada** critério a cada iteração, inclusive os PASS anteriores, porque corrigir o C2 é exatamente como o C1 regride em silêncio. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Estado event-sourced** | Todo gate aprovado, todo gate reprovado e toda decisão acrescentam uma linha JSON em `.agents/state/sessions/{sid}/events.jsonl`, carimbada com o vendor e o id de sessão do runtime. Somente-append, cross-vendor e auditável depois da execução. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Bateria de checagens por agente** | `oma verify <agent>` roda um núcleo comum (scope violation, charter alignment, segredos hardcoded, varredura de TODOs, declared outputs) mais checagens específicas por tipo (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
-| **Harness de eval de skills** | `oma skills eval` mede o ganho de utilidade em tarefas held-out — tratamento contra baseline — em vez de presumir que um skill ajuda. `oma skills opt` mantém só as edições que melhoram esse ganho medido. | [guia de skill-eval](../web/docs/guide/skill-eval.md) |
-
-Orçamentos são aplicados do mesmo jeito. `session.quota_cap` limita tokens, número de spawns e gasto por vendor; o orquestrador recusa o próximo spawn quando alguma dimensão estoura. Quando o orçamento de tempo real acaba, o Stop hook para com honestidade e registra o status parcial no event log, em vez de fingir que concluiu.
-
 ## Inicio Rapido
 
 ```bash
@@ -263,6 +248,21 @@ agents:
 
 - `oma doctor --profile` — imprime a matriz de modelos resolvida por papel
 - Guia completo: [`web/docs/guide/per-agent-models.md`](../web/docs/guide/per-agent-models.md)
+
+## Verificação, Não Narração
+
+Cada mecanismo abaixo é mecânico: um comando sai com código 0 ou não sai, um arquivo está no disco ou não está. Nenhum LLM é consultado sobre se o trabalho "parece correto".
+
+| Mecanismo | O que ele confere mecanicamente | Onde fica |
+|-----------|------------------------------|----------------|
+| **Stop-hook gate** | Bloqueia o encerramento da sessão enquanto um workflow persistente estiver ativo e roda o script de gate configurado antes de liberar a parada. Só `typecheck`, `test` e `lint` são executáveis — se um agente escrever qualquer outra coisa no arquivo de estado, aquilo é ignorado e nunca roda. Limitado a 5 reforços, para que um gate permanentemente vermelho não deixe você preso. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
+| **Anti-Circumvention Gate** | `oma ralph:verify --json` confere quatro artefatos que um atalho não consegue forjar: os registros de fase do ultrawork, o JSON do plano, o arquivo de resultado de um **agente de QA distinto** e o arquivo de resultado de um **agente de refactor distinto**. Artefato faltando significa que a fase não rodou, não importa o que a narração diga. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Juiz independente** | Sobe como um agente separado com contexto novo, briefado só nos critérios — nunca no que o implementador alega ter corrigido. Reverifica **cada** critério a cada iteração, inclusive os PASS anteriores, porque corrigir o C2 é exatamente como o C1 regride em silêncio. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
+| **Estado event-sourced** | Todo gate aprovado, todo gate reprovado e toda decisão acrescentam uma linha JSON em `.agents/state/sessions/{sid}/events.jsonl`, carimbada com o vendor e o id de sessão do runtime. Somente-append, cross-vendor e auditável depois da execução. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
+| **Bateria de checagens por agente** | `oma verify <agent>` roda um núcleo comum (scope violation, charter alignment, segredos hardcoded, varredura de TODOs, declared outputs) mais checagens específicas por tipo (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
+| **Harness de eval de skills** | `oma skills eval` mede o ganho de utilidade em tarefas held-out — tratamento contra baseline — em vez de presumir que um skill ajuda. `oma skills opt` mantém só as edições que melhoram esse ganho medido. | [guia de skill-eval](../web/docs/guide/skill-eval.md) |
+
+Orçamentos são aplicados do mesmo jeito. `session.quota_cap` limita tokens, número de spawns e gasto por vendor; o orquestrador recusa o próximo spawn quando alguma dimensão estoura. Quando o orçamento de tempo real acaba, o Stop hook para com honestidade e registra o status parcial no event log, em vez de fingir que concluiu.
 
 ## Por Que oh-my-agent?
 
