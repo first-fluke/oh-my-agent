@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.1.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.1.1...cli-v13.1.2) (2026-09-02)
+
+
+### Documentation
+
+* **readme:** move quick start above verification and control boundary ([ea0a572](https://github.com/first-fluke/oh-my-agent/commit/ea0a5723d47cfdc39ee6b947866d7dffad0c3a8a))
+
 ## [13.1.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.1.0...cli-v13.1.1) (2026-09-01)
 
 
