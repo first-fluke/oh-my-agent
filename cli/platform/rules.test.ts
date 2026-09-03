@@ -280,6 +280,9 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain("| frontend |");
     expect(content).toContain("| backend |");
     expect(content).toContain(".agents/rules/");
+    expect(content).toContain(
+      "4. Always write Korean (and other non-ASCII) strings in tool-call parameters as literal UTF-8; never as \\uXXXX unicode escape style.",
+    );
   });
 
   it("should create AGENTS.md for codex vendor", () => {
@@ -388,6 +391,7 @@ describe("mergeRulesIndexForVendor", () => {
     expect(viaCursor).toContain("Hooks (cursor):");
     // claude writes CLAUDE.md — it must not leak into the shared AGENTS.md.
     expect(viaCursor).not.toContain("- claude: ");
+    expect(viaCursor).not.toContain("Always write Korean");
 
     // The unfiltered run starts from codex instead; same file, same bytes.
     vi.clearAllMocks();

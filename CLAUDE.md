@@ -72,9 +72,10 @@ Deactivate: say "workflow done".
 
 ## Rules
 
-1. **Do not modify `.agents/` definition files** (SSOT protection: skills, workflows, rules, agents, config). Writing run outputs under `.agents/results/` and `.agents/state/` is expected — they are gitignored artifacts that workflows produce and read back, so never treat writing there as a violation or delete them to "restore" SSOT.
+1. **Do not modify `.agents/` definition files** (SSOT protection: skills, workflows, rules, agents, config). Writing run outputs under `.agents/results/` and `.agents/state/` are generated artifacts, not SSOT.
 2. Workflows execute via keyword detection or explicit naming, never self-initiated.
 3. Response language follows `.agents/oma-config.yaml`
+4. Always write Korean (and other non-ASCII) strings in tool-call parameters as literal UTF-8; never as \uXXXX unicode escape style.
 
 ## Project Rules
 
