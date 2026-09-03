@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.1.2...cli-v13.2.0) (2026-09-03)
+
+
+### Features
+
+* **rules:** enforce literal UTF-8 for Claude tool-call parameters ([5abaec4](https://github.com/first-fluke/oh-my-agent/commit/5abaec441bc55eccc10775fbc9d5100fdbd8c68c))
+
 ## [13.1.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.1.1...cli-v13.1.2) (2026-09-02)
 
 
