@@ -3,6 +3,7 @@ import { expectOmaSerenaEntry } from "../../__tests__/helpers.js";
 import type { EffortLevel } from "../../platform/model-registry.js";
 import {
   applyCodexSettings,
+  migrateLegacyCodexSerena,
   needsCodexSettingsUpdate,
   parseCodexConfig,
   RECOMMENDED_CODEX_FEATURES,
@@ -310,6 +311,45 @@ describe("codex settings", () => {
 
     const result = applyCodexSettings(settings);
     expectOmaSerenaEntry(result.mcp_servers?.serena, "codex");
+  });
+
+  it("migrates only the legacy Serena entry without changing other settings", () => {
+    const settings = {
+      features: { user_flag: true },
+      mcp_servers: {
+        custom: { command: "npx", args: ["custom-mcp"] },
+        serena: {
+          command: "uvx",
+          args: [
+            "--from",
+            "git+https://github.com/oraios/serena",
+            "serena",
+            "start-mcp-server",
+            "--context",
+            "ide",
+          ],
+        },
+      },
+    };
+
+    const result = migrateLegacyCodexSerena(settings, "bridge");
+
+    expect(result?.features).toEqual({ user_flag: true });
+    expect(result?.mcp_servers?.custom).toEqual({
+      command: "npx",
+      args: ["custom-mcp"],
+    });
+    expectOmaSerenaEntry(result?.mcp_servers?.serena, "codex");
+  });
+
+  it("leaves non-legacy Serena launchers outside the narrow global migration", () => {
+    const settings = {
+      mcp_servers: {
+        serena: { command: "my-serena-wrapper", args: ["--flag"] },
+      },
+    };
+
+    expect(migrateLegacyCodexSerena(settings, "bridge")).toBeNull();
   });
 
   it("preserves a serena entry oma does not recognize", () => {

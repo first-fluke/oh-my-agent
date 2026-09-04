@@ -170,6 +170,38 @@ function withSerenaStartupTimeout<T extends CodexMcpServer>(server: T): T {
   };
 }
 
+/**
+ * Upgrade only OMA's former `uvx --from git+…/serena` launcher.
+ *
+ * This is deliberately narrower than {@link applyCodexSettings}: a project
+ * update may encounter the user-global Codex config, where changing telemetry,
+ * feature flags, or unrelated MCP servers would be an unexpected side effect.
+ * The legacy launcher is an OMA-owned shape, however, and must move to the
+ * shared bridge so it cannot start a separate Serena stack outside projects
+ * that have their own `.codex/config.toml`.
+ */
+export function migrateLegacyCodexSerena(
+  settings: unknown,
+  mode: "bridge" | "stdio" = serenaTransportMode(),
+): CodexSettings | null {
+  if (!isRecord(settings)) return null;
+  const base = settings as CodexSettings;
+  const currentMcp = isRecord(base.mcp_servers) ? base.mcp_servers : undefined;
+  const currentSerena = currentMcp?.serena as CodexMcpServer | undefined;
+  if (!isLegacyUvxSerena(currentSerena)) return null;
+
+  return {
+    ...base,
+    mcp_servers: {
+      ...currentMcp,
+      serena: withSerenaStartupTimeout({
+        ...currentSerena,
+        ...serenaMcpEntry("codex", mode),
+      }),
+    },
+  };
+}
+
 export function applyCodexSettings(
   settings: unknown,
   options: CodexSettingsOptions = {},

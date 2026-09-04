@@ -50,6 +50,8 @@ import { migrateUnifySkillConfigs } from "./022-unify-skill-configs.js";
 import { migrateCapabilitySkillNames } from "./023-capability-skill-names.js";
 import { migrateSerenaNoMemories } from "./024-serena-no-memories.js";
 import { migrateUnifiedSerenaContext } from "./025-unify-serena-context.js";
+import { migrateGlobalCodexSerenaTransport } from "./026-global-codex-serena-transport.js";
+import { migrateAntigravityDesktopSerenaBridge } from "./027-antigravity-desktop-serena-bridge.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -76,6 +78,8 @@ const migrations: Migration[] = [
   migrateCapabilitySkillNames,
   migrateSerenaNoMemories,
   migrateUnifiedSerenaContext,
+  migrateGlobalCodexSerenaTransport,
+  migrateAntigravityDesktopSerenaBridge,
 ];
 
 export function runMigrations(
