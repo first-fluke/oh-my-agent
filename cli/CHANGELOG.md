@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.2.0...cli-v13.2.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **serena:** reconcile legacy global bridge entries ([18724d8](https://github.com/first-fluke/oh-my-agent/commit/18724d8b0650bc1ef14d342a718b576084607b7a))
+
 ## [13.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.1.2...cli-v13.2.0) (2026-09-03)
 
 
