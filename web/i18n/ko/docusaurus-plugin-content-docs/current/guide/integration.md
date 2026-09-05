@@ -214,7 +214,7 @@ EOF
 ### 4단계: 메모리 디렉토리 초기화
 
 ```bash
-oma memory:init
+oma memory init
 # 또는 수동으로:
 mkdir -p /path/to/your/project/.serena/memories
 ```
@@ -368,10 +368,10 @@ git clean -fd .agents/ .claude/ .serena/
 
 ```bash
 # 터미널 대시보드 (.serena/memories/ 변경 감시)
-oma dashboard
+oma dashboard terminal
 
 # 웹 대시보드 (브라우저 기반, http://localhost:9847)
-oma dashboard:web
+oma dashboard web
 ```
 
 ---

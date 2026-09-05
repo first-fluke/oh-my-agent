@@ -1,6 +1,6 @@
 ---
 title: 并行执行
-description: 同时运行多个 oh-my-agent 智能体的完整指南。agent:spawn 语法及所有选项、agent:parallel 内联模式、工作区感知模式、多 CLI 配置、供应商解析优先级、仪表盘监控、会话 ID 策略以及应避免的反模式。
+description: 同时运行多个 oh-my-agent 智能体的完整指南。agent spawn 语法及所有选项、agent parallel 内联模式、工作区感知模式、多 CLI 配置、供应商解析优先级、仪表盘监控、会话 ID 策略以及应避免的反模式。
 ---
 
 # 并行执行
@@ -14,7 +14,7 @@ oh-my-agent 的核心优势在于同时运行多个专业化智能体。当 back
 ### 基本语法
 
 ```bash
-oma agent:spawn <agent-id> <prompt> <session-id> [options]
+oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
 ### 参数
@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | 标志 | 缩写 | 说明 |
 |------|------|------|
 | `--workspace <path>` | `-w` | 智能体的工作目录。智能体只修改此目录内的文件。 |
-| `--model <name>` | `-m` | 覆盖此次启动的 CLI 供应商。选项：`antigravity`、`claude`、`codex`、`qwen`。 |
+| `--vendor <name>` | — | 覆盖此次启动的 CLI 供应商。选项：`antigravity`、`claude`、`codex`、`qwen`。 |
 | `--max-turns <n>` | `-t` | 覆盖此智能体的默认轮次限制。 |
 | `--json` | | 以 JSON 格式输出结果（适用于脚本化场景）。 |
 | `--no-wait` | | 即发即忘：立即返回，不等待完成。 |
@@ -40,19 +40,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 
 ```bash
 # 使用默认供应商启动 backend 智能体
-oma agent:spawn backend "Implement JWT authentication API with refresh tokens" session-01
+oma agent spawn backend "Implement JWT authentication API with refresh tokens" session-01
 
 # 使用工作区隔离启动
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # 为此特定智能体覆盖供应商
-oma agent:spawn frontend "Build login form" session-01 -m claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # 为复杂任务设置更高的轮次限制
-oma agent:spawn backend "Implement payment gateway integration" session-01 -t 30
+oma agent spawn backend "Implement payment gateway integration" session-01 -t 30
 
 # 使用提示词文件而非内联文本
-oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
+oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 ```
 
 ---
@@ -63,9 +63,9 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ```bash
 # 并行启动 3 个智能体
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api &
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api &
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
 wait  # 阻塞直到所有智能体完成
 ```
 
@@ -77,13 +77,13 @@ wait  # 阻塞直到所有智能体完成
 
 ```bash
 # 全栈并行执行
-oma agent:spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
-oma agent:spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
+oma agent spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
+oma agent spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
+oma agent spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
 
 # 实现完成后，运行 QA（顺序执行 —— 依赖于实现结果）
-oma agent:spawn qa "Review all implementations for security and accessibility" session-02
+oma agent spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
 ---
@@ -95,20 +95,20 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 ### 语法
 
 ```bash
-oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
+oma agent parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
 ### 示例
 
 ```bash
 # 基本并行执行
-oma agent:parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
+oma agent parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
 
 # 使用 no-wait（即发即忘）
-oma agent:parallel -i backend:"Auth API" frontend:"Login form" --no-wait
+oma agent parallel -i backend:"Auth API" frontend:"Login form" --no-wait
 
 # 所有智能体自动共享同一会话
-oma agent:parallel -i \
+oma agent parallel -i \
   backend:"JWT auth with refresh tokens" \
   frontend:"Login form with email validation" \
   db:"User schema with soft delete and audit trail"
@@ -139,15 +139,15 @@ agents:
 
 ### 供应商解析
 
-`oma agent:spawn` 确定使用哪个 CLI 时的顺序：
+`oma agent spawn` 确定使用哪个 CLI 时的顺序：
 
 | 优先级 | 来源 | 示例 |
 |----------|--------|---------|
-| 1（最高） | `--model` 标志 | `oma agent:spawn backend "task" session-01 -m claude` |
+| 1（最高） | `--vendor` 标志 | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `oma-config.yaml` 中的 `agents:` 覆盖 | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | 活动 `model_preset` 的智能体默认值 | 按智能体角色查找预设 |
 
-`--model` 标志始终优先。没有该标志时，系统先看 `agents:` 覆盖，再用预设默认值。
+`--vendor` 标志始终优先。没有该标志时，系统先看 `agents:` 覆盖，再用预设默认值。
 
 ---
 
@@ -159,9 +159,9 @@ agents:
 |--------|-------------|---------|
 | **Claude Code** | 使用 `.claude/agents/{name}.md` 定义的 `Agent` 工具。同一消息中多个 Agent 调用 = 真正并行。 | 同步返回 |
 | **Codex CLI** | 模型协调的并行子智能体请求 | JSON 输出 |
-| **Gemini CLI** | `oma agent:spawn` CLI 命令 | MCP 内存轮询 |
-| **Antigravity IDE** | 仅 `oma agent:spawn`（自定义子智能体不可用） | MCP 内存轮询 |
-| **CLI 回退** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | 结果文件轮询 |
+| **Gemini CLI** | `oma agent spawn` CLI 命令 | MCP 内存轮询 |
+| **Antigravity IDE** | 仅 `oma agent spawn`（自定义子智能体不可用） | MCP 内存轮询 |
+| **CLI 回退** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | 结果文件轮询 |
 
 在 Claude Code 中运行时，工作流直接使用 `Agent` 工具：
 ```
@@ -178,7 +178,7 @@ Agent(subagent_type="frontend-engineer", prompt="...", run_in_background=true)
 ### 终端仪表盘
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 显示实时表格，包含：
@@ -193,7 +193,7 @@ oma dashboard
 ### Web 仪表盘
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # 打开 http://localhost:9847
 ```
 
@@ -212,7 +212,7 @@ oma dashboard:web
 ┌─────────────────────────┬──────────────────────┐
 │                         │                      │
 │   终端 1：              │   终端 2：           │
-│   oma dashboard         │   智能体启动         │
+│   oma dashboard terminal         │   智能体启动         │
 │   （实时监控）          │   命令               │
 │                         │                      │
 ├─────────────────────────┴──────────────────────┤
@@ -226,7 +226,7 @@ oma dashboard:web
 ### 检查单个智能体状态
 
 ```bash
-oma agent:status <session-id> <agent-id>
+oma agent status <session-id> <agent-id>
 ```
 
 返回特定智能体的当前状态：running、completed 或 failed，以及轮次计数和最后活动。
@@ -259,18 +259,18 @@ oma agent:status <session-id> <agent-id>
 
 3. **分配独立工作区。** 始终使用 `-w` 隔离智能体：
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    ```
 
 4. **主动监控。** 打开仪表盘终端尽早发现问题：失败的智能体如果不能及时发现会浪费轮次。
 
 5. **实现后运行 QA。** 在所有实现智能体完成后顺序启动 QA 智能体：
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    wait
-   oma agent:spawn qa "Review all changes" session-01
+   oma agent spawn qa "Review all changes" session-01
    ```
 
 6. **通过重启迭代。** 如果智能体的输出需要改进，带上原始任务和修正上下文重新启动。不要开启新会话。
@@ -301,23 +301,23 @@ oma agent:status <session-id> <agent-id>
 # 这会创建包含任务分解的 .agents/results/plan-{sessionId}.json
 
 # 步骤 2：并行启动实现智能体
-oma agent:spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
-oma agent:spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
-oma agent:spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
+oma agent spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
+oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
+oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
 # 步骤 3：在另一个终端中监控
 # 终端 2：
-oma dashboard
+oma dashboard terminal
 
 # 步骤 4：等待所有实现智能体完成
 wait
 
 # 步骤 5：运行 QA 审查
-oma agent:spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
+oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
 # 步骤 6：如果 QA 发现问题，重新启动特定智能体进行修复
-oma agent:spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
+oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
 # 步骤 7：重新运行 QA 验证修复
-oma agent:spawn qa "Re-review backend auth after fixes." session-auth-01
+oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```

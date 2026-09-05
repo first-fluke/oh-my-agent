@@ -87,19 +87,19 @@ B2B SaaS分析製品のダークプレミアムランディングページをデ
 
 ```bash
 # 単一エージェント
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # 3エージェント並列
-oma agent:spawn backend "Implement notification API with WebSocket" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens" session-notif-01 -w ./apps/mobile &
 wait
 
 # モニタリング（別ターミナル）
-oma dashboard
+oma dashboard terminal
 
 # QA
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 ```
 
 ---
@@ -175,7 +175,7 @@ oma agent:spawn qa "Review notification feature across all platforms" session-no
 ### ターミナルダッシュボード
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 ターミナル内にライブ更新されるテーブルを表示します。
@@ -186,7 +186,7 @@ oma dashboard
 ### Webダッシュボード
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # http://localhost:9847 を開きます
 ```
 
@@ -200,7 +200,7 @@ oma dashboard:web
 ### 推奨レイアウト
 
 3つのターミナルを使います。
-1. **ダッシュボード端末：** `oma dashboard`（継続モニタリング）
+1. **ダッシュボード端末：** `oma dashboard terminal`（継続モニタリング）
 2. **コマンド端末：** エージェントスポーン、ワークフローコマンド
 3. **ビルド端末：** テスト実行、ビルドログ、Git操作
 
@@ -222,7 +222,7 @@ oma dashboard:web
 
 ### CLIスポーン
 
-`oma agent:spawn`を実行すると、CLIは次のように動作します。
+`oma agent spawn`を実行すると、CLIは次のように動作します。
 1. ベンダーを解決（5レベルの優先順位を使用）
 2. `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`からベンダー固有の実行プロトコルを注入
 3. SKILL.mdのコアルール、実行プロトコル、タスク関連リソースを使ってエージェントプロンプトを構成
@@ -236,7 +236,7 @@ oma dashboard:web
 
 ### ワークスペース
 
-`agent:spawn`の`-w`フラグは、エージェントを特定のディレクトリに分離します。これは並列実行で重要です。ワークスペース分離なしでは、2つのエージェントが同じファイルを同時に変更し、競合を生む可能性があります。標準的なワークスペース構成は`./apps/api`（バックエンド）、`./apps/web`（フロントエンド）、`./apps/mobile`（モバイル）です。
+`agent spawn`の`-w`フラグは、エージェントを特定のディレクトリに分離します。これは並列実行で重要です。ワークスペース分離なしでは、2つのエージェントが同じファイルを同時に変更し、競合を生む可能性があります。標準的なワークスペース構成は`./apps/api`（バックエンド）、`./apps/web`（フロントエンド）、`./apps/mobile`（モバイル）です。
 
 ---
 

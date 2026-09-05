@@ -23,16 +23,16 @@ Veel commando's ondersteunen machineleesbare uitvoer voor CI/CD-pipelines en aut
 ### 1. --json vlag
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 ```
 
-Beschikbaar op: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+Beschikbaar op: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. --output vlag
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -42,7 +42,7 @@ Accepteert `text` of `json`.
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # levert JSON
+oma stats get    # levert JSON
 ```
 
 **Resolutievolgorde:** `--json` vlag > `--output` vlag > `OH_MY_AG_OUTPUT_FORMAT` env var > `text` (standaard).
@@ -55,8 +55,8 @@ oma stats    # levert JSON
 | `stats` | Ja | Ja | Volledig metriekenobject |
 | `retro` | Ja | Ja | Snapshot met metrieken, auteurs, committypes |
 | `cleanup` | Ja | Ja | Lijst van opgeruimde items |
-| `auth:status` | Ja | Ja | Authenticatiestatus per CLI |
-| `memory:init` | Ja | Ja | Initialisatieresultaat |
+| `auth status` | Ja | Ja | Authenticatiestatus per CLI |
+| `memory init` | Ja | Ja | Initialisatieresultaat |
 | `verify` | Ja | Ja | Verificatieresultaten per controle |
 | `visualize` | Ja | Ja | Afhankelijkheidsgrafiek als JSON |
 | `describe` | Altijd JSON | N/B | Altijd JSON (introspectiecommando) |
@@ -127,11 +127,11 @@ oma update [-f | --force] [--ci]
 2. Verlaten logbestanden: `/tmp/subagent-*.log` die overeenkomen met dode PID's.
 3. Gemini Antigravity-mappen: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/`. Deze verzamelen in de loop van de tijd state en kunnen groot worden.
 
-### agent:spawn
+### agent spawn
 
 | Vlag | Beschrijving | Standaard |
 |:-----|:-----------|:--------|
-| `--model` / `-m` | CLI-leverancier: `antigravity`, `claude`, `codex`, `qwen` | Uit config |
+| `--vendor` / `-m` | CLI-leverancier: `antigravity`, `claude`, `codex`, `qwen` | Uit config |
 | `--workspace` / `-w` | Werkdirectory. Auto-gedetecteerd uit monorepo-config indien weggelaten. | Auto of `.` |
 
 **Validatie:**
@@ -149,7 +149,7 @@ oma update [-f | --force] [--ci]
 | codex | `codex` | `--full-auto` | (positioneel) |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-### agent:status
+### agent status
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
@@ -157,11 +157,11 @@ oma update [-f | --force] [--ci]
 
 **Statuswaarden:** `completed`, `running`, `crashed`.
 
-### agent:parallel
+### agent parallel
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `--model` / `-m` | CLI-leverancier voor alle agenten |
+| `--vendor` / `-m` | CLI-leverancier voor alle agenten |
 | `--inline` / `-i` | Inline modus: `agent:task[:workspace]` |
 | `--no-wait` | Achtergrondmodus — start en keer onmiddellijk terug |
 
@@ -234,7 +234,7 @@ Het uitvoerformaat wordt per subcommando bestuurd via `--format <text|json>` (ni
 | `--count <n>` | `-n` | Aantal afbeeldingen, 1..5. | `1` |
 | `--out <dir>` | | Uitvoerdirectory. Moet binnen `$PWD` zijn tenzij `--allow-external-out` is gezet. | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | Sta `--out` paden buiten `$PWD` toe. | `false` |
-| `--model <name>` | | Leverancierspecifieke modeloverride (bijv. `gpt-image-2`, `flux`, `imagen-4`). | leverancier-standaard |
+| `--vendor <name>` | | Leverancierspecifieke modeloverride (bijv. `gpt-image-2`, `flux`, `imagen-4`). | leverancier-standaard |
 | `--strategy <list>` | | Gemini fallback-volgorde, komma-gescheiden van `mcp`, `stream`, `api`. | leverancier-standaard |
 | `--timeout <seconds>` | | Timeout per afbeelding. | leverancier-standaard |
 | `--reference <path>` | `-r` | Referentieafbeelding voor stijl-/onderwerpoverdracht. Herhaalbaar (`-r a.png -r b.png`) of komma-gescheiden. Gevalideerd op grootte (≤5MB), formaat (PNG/JPEG/GIF/WebP via magic bytes) en aantal (≤10). Ondersteund op `codex` (geeft `-i` door aan `codex exec`) en `gemini` (inlines base64 `inlineData`). Geweigerd met exit 4 op `pollinations`. | |
@@ -260,15 +260,15 @@ oma doctor --json | jq '.healthy'
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### Batch agentuitvoering met statusmonitoring
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### Opruimen in CI na tests
@@ -300,8 +300,8 @@ set -e
 
 echo "=== oh-my-agent Gezondheidscontrole ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "ONTBREEKT" end)"'
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
-oma stats --json | jq -r '"Sessies: \(.sessions), Taken: \(.tasksCompleted)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma stats get --json | jq -r '"Sessies: \(.sessions), Taken: \(.tasksCompleted)"'
 echo "=== Klaar ==="
 ```
 
@@ -309,5 +309,5 @@ echo "=== Klaar ==="
 
 ```bash
 oma describe | jq '.command.subcommands[] | {name, description}'
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

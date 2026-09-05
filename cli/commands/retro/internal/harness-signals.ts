@@ -93,7 +93,7 @@ function suggestFor(
   return {
     target: `.agents/workflows/${wf}.md`,
     action:
-      "a required decision was not emitted — re-check the workflow's `oma state:emit` steps and its required-decisions list",
+      "a required decision was not emitted — re-check the workflow's `oma state emit` steps and its required-decisions list",
   };
 }
 
@@ -218,7 +218,7 @@ export function fmtHarnessSignals(signals: HarnessSignal[]): string {
   lines.push(
     "",
     pc.dim(
-      "  Proposals are evidence-backed suggestions from the L1 event trail — draft the actual edit, verify with `oma skills eval`, then apply.",
+      "  Proposals are evidence-backed suggestions from the L1 event trail — draft the actual edit, verify with `oma skill eval`, then apply.",
     ),
   );
   return lines.join("\n");

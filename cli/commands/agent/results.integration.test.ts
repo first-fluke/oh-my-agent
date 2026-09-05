@@ -63,19 +63,21 @@ describe("agent result CLI lifecycle", () => {
         timeout: 20_000,
       });
     const begun = call(
-      "agent:begin",
+      "agent",
+      "begin",
       "qa-reviewer",
       "T1",
       "s1",
-      "--root",
+      "--project-root",
       root,
     );
     expect(begun.status, begun.stderr).toBe(0);
     const { runId } = JSON.parse(begun.stdout);
     const checked = call(
-      "agent:verify",
+      "agent",
+      "verify",
       runId,
-      "--root",
+      "--project-root",
       root,
       "--affected",
       ".agents/skills/fixture/SKILL.md",
@@ -86,7 +88,14 @@ describe("agent result CLI lifecycle", () => {
       command,
       exitCode: 0,
     });
-    const required = call("agent:verify", runId, "--root", root, "--required");
+    const required = call(
+      "agent",
+      "verify",
+      runId,
+      "--project-root",
+      root,
+      "--required",
+    );
     expect(required.status, required.stderr).toBe(0);
   }, 60_000);
 
@@ -102,7 +111,7 @@ const fs=require("node:fs"), path=require("node:path"), cp=require("node:child_p
 const dir=path.join(process.cwd(),".agents/state/agent-runs");
 const run=fs.readdirSync(dir).filter(f=>f.endsWith(".json")&&!f.endsWith(".claim.json")&&f!=="_sequence.json").map(f=>JSON.parse(fs.readFileSync(path.join(dir,f),"utf8"))).find(r=>r.status==="running");
 if(!run) process.exit(2);
-const check=cp.spawnSync("bun",[${JSON.stringify(cli)},"agent:verify",run.runId,"--required","--root",process.cwd()],{stdio:"inherit"});
+const check=cp.spawnSync("bun",[${JSON.stringify(cli)},"agent", "verify",run.runId,"--required","--project-root",process.cwd()],{stdio:"inherit"});
 if(check.status!==0) process.exit(3);
 fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"completed",changedFiles:[],unresolved:[],artifacts:[]}));
 `,
@@ -132,7 +141,7 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
     symlinkSync(bun, join(bin, "bun"));
     const result = spawnSync(
       "bun",
-      [cli, "agent:resume", "s1", "--root", root],
+      [cli, "agent", "resume", "s1", "--project-root", root],
       {
         cwd: root,
         encoding: "utf8",
@@ -143,7 +152,7 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
     expect(result.status, result.stderr.slice(-2000)).toBe(0);
     const dry = spawnSync(
       "bun",
-      [cli, "agent:resume", "s1", "--root", root, "--dry-run"],
+      [cli, "agent", "resume", "s1", "--project-root", root, "--dry-run"],
       { cwd: root, encoding: "utf8", timeout: 20_000 },
     );
     expect(dry.status, dry.stderr).toBe(0);
@@ -164,19 +173,21 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
         timeout: 20_000,
       });
     const begin = call(
-      "agent:begin",
+      "agent",
+      "begin",
       "qa-reviewer",
       "T1",
       "s1",
-      "--root",
+      "--project-root",
       root,
     );
     expect(begin.status, begin.stderr).toBe(0);
     const { runId } = JSON.parse(begin.stdout);
     const verified = call(
-      "agent:verify",
+      "agent",
+      "verify",
       runId,
-      "--root",
+      "--project-root",
       root,
       "--",
       process.execPath,
@@ -194,7 +205,14 @@ fs.writeFileSync(path.join(dir,run.runId+".claim.json"),JSON.stringify({status:"
         artifacts: [],
       }),
     );
-    const finished = call("agent:finish", runId, file, "--root", root);
+    const finished = call(
+      "agent",
+      "finish",
+      runId,
+      file,
+      "--project-root",
+      root,
+    );
     expect(finished.status, finished.stderr).toBe(0);
     expect(resultEvidenceValid(readAgentRun(root, runId))).toBe(true);
     writeFileSync(join(root, "changed.ts"), "new behavior");

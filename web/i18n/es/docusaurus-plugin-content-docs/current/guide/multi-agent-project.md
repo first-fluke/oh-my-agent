@@ -83,12 +83,12 @@ Tienes dos caminos de ejecución:
 6. Verifica cada agente completado vía `verify.sh` — PASS (exit 0) acepta, FAIL (exit 1) regenera con contexto de error (máximo 2 reintentos), y fallo persistente activa el Bucle de Exploración.
 7. Recopila todos los archivos `result-{agent}.md` y compila un informe final.
 
-### Paso 3: agent:spawn — gestión de agentes a nivel CLI
+### Paso 3: agent spawn — gestión de agentes a nivel CLI
 
-El comando `agent:spawn` es el mecanismo de bajo nivel que los flujos llaman internamente. También puedes usarlo directamente:
+El comando `agent spawn` es el mecanismo de bajo nivel que los flujos llaman internamente. También puedes usarlo directamente:
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 ### Paso 4: /review — verificación QA
@@ -161,7 +161,7 @@ No quedan hallazgos CRITICAL o HIGH de la revisión del agente QA.
 4. **Ignorar Hallazgos QA** — Tratar la revisión QA como opcional.
 5. **Coordinación Manual de Archivos** — Intentar fusionar manualmente las salidas de agentes.
 6. **Sobre-Paralelización** — Ejecutar tareas P1 antes de que completen las tareas P0.
-7. **Saltarse Verificación** — Usar `agent:spawn` directamente sin ejecutar el script de verificación después.
+7. **Saltarse Verificación** — Usar `agent spawn` directamente sin ejecutar el script de verificación después.
 
 ---
 

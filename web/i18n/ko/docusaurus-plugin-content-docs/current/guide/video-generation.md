@@ -52,7 +52,7 @@ oma video generate "product walkthrough" --mode demo --source web --url http://l
 
 실행할 때마다 실행 디렉토리를 출력합니다. 같은 `--seed`로 다시 돌리면 같은 스크립트와 render-spec이 재현됩니다.
 
-`oma video generate --format json`을 셸로 호출하는 다른 도구는 stdout에서 JSON 봉투를 파싱합니다: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. `outputs` 키는 없습니다. 출력과 에셋 경로는 `manifestPath`의 매니페스트에서 읽으세요.
+`oma video generate --output json`을 셸로 호출하는 다른 도구는 stdout에서 JSON 봉투를 파싱합니다: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. `outputs` 키는 없습니다. 출력과 에셋 경로는 `manifestPath`의 매니페스트에서 읽으세요.
 
 ---
 
@@ -62,7 +62,7 @@ oma video generate "product walkthrough" --mode demo --source web --url http://l
 oma video generate <brief...> [options]
 oma video doctor [--install|--install-mpt]  # toolchain readiness / provisioning
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
-oma video list-providers         # provider availability + key/fallback status
+oma video provider list         # provider availability + key/fallback status
 ```
 
 ### 주요 플래그

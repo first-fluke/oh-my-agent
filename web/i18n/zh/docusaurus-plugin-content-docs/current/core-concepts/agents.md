@@ -479,7 +479,7 @@ oh-my-agent 中的智能体是专业化的工程角色。每个智能体都有�
 
 **何时使用：** 总结某一天或一段时间的工作活动，理解跨多个 AI 工具的工作流，分析会话间的工具切换模式，准备每日站会/周回顾/工作日志。
 
-**何时不使用：** 基于 Git 提交的代码变更回顾（使用 `oma retro`），实时智能体监控（使用 `oma dashboard`），生产力指标（使用 `oma stats`）。
+**何时不使用：** 基于 Git 提交的代码变更回顾（使用 `oma retro`），实时智能体监控（使用 `oma dashboard terminal`），生产力指标（使用 `oma stats get`）。
 
 **流程：**
 1. 从自然语言输入（today、yesterday、last Monday、显式日期）解析日期或时间窗口
@@ -612,8 +612,8 @@ CHARTER_CHECK:
 启动智能体时通过 `-w` 参数指定工作空间：
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -681,4 +681,4 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 }
 ```
 
-仪表板（`oma dashboard` 和 `oma dashboard:web`）监控这些内存文件以实现实时监控。
+仪表板（`oma dashboard terminal` 和 `oma dashboard web`）监控这些内存文件以实现实时监控。

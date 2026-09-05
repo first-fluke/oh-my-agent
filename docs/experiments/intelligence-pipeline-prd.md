@@ -11,9 +11,9 @@ Add an OMA command that runs a repeatable intelligence pipeline: gather market a
 Recommended command surface:
 
 ```bash
-oma intel run --config oma-intel.yaml --since 30d
-oma intel run --config oma-intel.yaml --last-commits 50 --output docs/plans/prds/
-oma intel run --topic "agent harness developer workflows" --target first-fluke/oh-my-agent --since 30d
+oma intel suggest --config oma-intel.yaml --since 30d
+oma intel suggest --config oma-intel.yaml --last-commits 50 --output docs/plans/prds/
+oma intel suggest --topic "agent harness developer workflows" --target first-fluke/oh-my-agent --since 30d
 ```
 
 The feature should be implemented as a CLI command, not as a loose script. A script can prototype the analysis pipeline, but the product value is repeatable, configurable, and CI-friendly product intelligence.
@@ -127,7 +127,7 @@ Alternative approaches:
 ### Minimal run
 
 ```bash
-oma intel run --config oma-intel.yaml --since 30d
+oma intel suggest --config oma-intel.yaml --since 30d
 ```
 
 Outputs:
@@ -139,13 +139,13 @@ Outputs:
 ### Commit-window run
 
 ```bash
-oma intel run --config oma-intel.yaml --last-commits 40
+oma intel suggest --config oma-intel.yaml --last-commits 40
 ```
 
 ### Issue creation
 
 ```bash
-oma intel run --config oma-intel.yaml --since 14d --create-issue --repo first-fluke/oh-my-agent
+oma intel suggest --config oma-intel.yaml --since 14d --create-issue --repo first-fluke/oh-my-agent
 ```
 
 Creates a GitHub issue with:
@@ -290,7 +290,7 @@ Tier 3:
 
 ### Include
 
-- `oma intel run` command.
+- `oma intel suggest` command.
 - `--repos`, `--config`, `--since`, `--last-commits`, `--base-repo`, `--output-dir`, `--create-issue`.
 - GitHub public repo metadata and commit retrieval.
 - README/release/issue summary collection when available.
@@ -343,4 +343,4 @@ Tier 3:
 
 ## Recommendation
 
-Build `oma intel run` as a CLI-first feature with report-only defaults and explicit `--create-issue`. This is a strong fit for OMA because it composes existing strengths instead of copying source-specific workflows. The most valuable first release is not "track sources"; it is "convert market and code intelligence into evidence-backed, adversarially reviewed product decisions."
+Build `oma intel suggest` as a CLI-first feature with report-only defaults and explicit `--create-issue`. This is a strong fit for OMA because it composes existing strengths instead of copying source-specific workflows. The most valuable first release is not "track sources"; it is "convert market and code intelligence into evidence-backed, adversarially reviewed product decisions."

@@ -51,15 +51,15 @@ oma update [-f | --force] [--ci]
 ### dashboard
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 Terminal-dashboard voor realtime agentmonitoring. Bewaakt `.serena/memories/`. `MEMORIES_DIR` omgevingsvariabele om pad te overschrijven.
 
-### dashboard:web
+### dashboard web
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 Webdashboard op `http://localhost:9847`. Omgevingsvariabelen: `DASHBOARD_PORT` (standaard 9847), `MEMORIES_DIR`.
@@ -67,7 +67,8 @@ Webdashboard op `http://localhost:9847`. Omgevingsvariabelen: `DASHBOARD_PORT` (
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 Productiviteitsmetrieken: sessieaantal, gebruikte skills, voltooide taken, sessietijd, bestandswijzigingen.
@@ -115,10 +116,10 @@ Engineering retrospectief. Vensterformaat: `7d`, `2w`, `1m`. Toont samenvatting,
 
 ## Agentbeheer
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | Argument | Vereist | Beschrijving |
@@ -129,38 +130,38 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `-m, --model` | CLI-leverancier: `antigravity`, `claude`, `codex`, `qwen` |
+| `--vendor` | CLI-leverancier: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace` | Werkdirectory (auto-gedetecteerd uit monorepo-config indien weggelaten) |
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 Uitvoerformaat: een regel per agent: `{agent-id}:{status}` (completed/running/crashed).
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 YAML-takenbestand of inline modus (`agent:task[:workspace]`).
 
-### agent:review
+### agent review
 
 Voer een codereview uit met een externe AI CLI (antigravity, codex, claude of qwen).
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **Opties:**
 
 | Vlag | Beschrijving |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Te gebruiken CLI-leverancier: `antigravity`, `codex`, `claude`, `qwen`. Standaard de geconfigureerde leverancier. |
+| `--vendor <vendor>` | Te gebruiken CLI-leverancier: `antigravity`, `codex`, `claude`, `qwen`. Standaard de geconfigureerde leverancier. |
 | `-p, --prompt <prompt>` | Aangepaste reviewprompt. Indien weggelaten wordt een standaard codereview-prompt gebruikt. |
 | `-w, --workspace <path>` | Pad om te reviewen. Standaard de huidige werkdirectory. |
 | `--no-uncommitted` | Sla review van niet-gecommitte wijzigingen over. Alleen gecommitte wijzigingen in de sessie worden gereviewed. |
@@ -175,32 +176,32 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Voorbeelden:**
 ```bash
 # Review niet-gecommitte wijzigingen met standaardleverancier
-oma agent:review
+oma agent review
 
 # Review met codex (gebruikt native codex review-commando)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # Review met claude met een aangepaste prompt
-oma agent:review -m claude -p "Focus op beveiligingskwetsbaarheden en invoervalidatie"
+oma agent review --vendor claude -p "Focus op beveiligingskwetsbaarheden en invoervalidatie"
 
 # Review een specifiek pad
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # Review alleen gecommitte wijzigingen (sla werkboom over)
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # Review gecommitte wijzigingen in een specifieke werkruimte met gemini
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
 ## Geheugenbeheer
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 Initialiseert de `.serena/memories/`-directorystructuur.
@@ -209,9 +210,9 @@ Initialiseert de `.serena/memories/`-directorystructuur.
 
 ## Integratie & hulpmiddelen
 
-### auth:status
+### auth status
 ```
-oma auth:status [--json]
+oma auth status [--json]
 ```
 Authenticatiestatus van alle ondersteunde CLI's.
 
@@ -312,7 +313,7 @@ oma search fetch https://example.com/article --pretty
 oma search fetch https://example.com --only browser
 
 # Cross-platform trefwoordzoekopdracht via API-handlers
-oma search api:search "RAG patterns" --platforms hackernews,reddit
+oma search api search "RAG patterns" --platforms hackernews,reddit
 
 # Vind de trust-score van een repo
 oma search trust github.com
@@ -351,7 +352,7 @@ oma img <subcommand> ...
 | `-n, --count <n>` | Aantal afbeeldingen (1..5) | `1` |
 | `--out <dir>` | Uitvoerdirectory | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | Sta `--out` paden buiten `$PWD` toe | `false` |
-| `--model <name>` | Leverancierspecifieke modeloverride | |
+| `--vendor <name>` | Leverancierspecifieke modeloverride | |
 | `--strategy <list>` | Gemini fallback-volgorde, komma-gescheiden (`mcp,stream,api`) | |
 | `--timeout <seconds>` | Timeout per afbeelding | leverancier-standaard |
 | `-r, --reference <path>` | Referentieafbeelding(en); herhaalbaar (`-r a.png -r b.png`) of komma-gescheiden. Ondersteund op `codex` en `gemini`; geweigerd op `pollinations`. Elk ≤5MB PNG/JPEG/GIF/WebP (magic-byte gevalideerd), max 10. | |
@@ -385,7 +386,7 @@ oma image generate "blend these styles" --vendor gemini -r a.png -r b.png
 oma image generate "blend these styles" --vendor gemini -r a.png,b.png
 
 # Doctor-check per leverancier
-oma image doctor --format json
+oma image doctor --output json
 ```
 
 ### star
@@ -413,8 +414,8 @@ oma version
 | Variabele | Beschrijving | Gebruikt Door |
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | Zet op `json` voor JSON-uitvoer | Alle commando's met `--json` |
-| `DASHBOARD_PORT` | Poort voor webdashboard | `dashboard:web` |
-| `MEMORIES_DIR` | Overschrijf memories-directorypad | `dashboard`, `dashboard:web` |
+| `DASHBOARD_PORT` | Poort voor webdashboard | `dashboard web` |
+| `MEMORIES_DIR` | Overschrijf memories-directorypad | `dashboard`, `dashboard web` |
 
 ---
 

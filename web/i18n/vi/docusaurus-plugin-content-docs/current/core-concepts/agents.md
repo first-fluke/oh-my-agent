@@ -470,7 +470,7 @@ Agent trong oh-my-agent là các vai trò kỹ sư chuyên biệt. Mỗi agent c
 
 **Khi nào sử dụng:** Tóm tắt một ngày hoặc kỳ hoạt động làm việc, hiểu luồng công việc qua nhiều công cụ AI, phân tích mẫu chuyển đổi công cụ giữa các phiên, chuẩn bị standup hàng ngày / retro hàng tuần / nhật ký công việc.
 
-**Khi nào KHÔNG sử dụng:** Hồi tưởng thay đổi mã dựa trên commit Git (dùng `oma retro`), giám sát agent theo thời gian thực (dùng `oma dashboard`), chỉ số năng suất (dùng `oma stats`).
+**Khi nào KHÔNG sử dụng:** Hồi tưởng thay đổi mã dựa trên commit Git (dùng `oma retro`), giám sát agent theo thời gian thực (dùng `oma dashboard terminal`), chỉ số năng suất (dùng `oma stats get`).
 
 **Quy trình:**
 1. Giải quyết ngày hoặc cửa sổ thời gian từ đầu vào ngôn ngữ tự nhiên (today, yesterday, last Monday, ngày rõ ràng)
@@ -603,8 +603,8 @@ Cho dự án đa agent, workspace riêng biệt ngăn xung đột file:
 Workspace được chỉ định bằng flag `-w` khi spawn agent:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -672,4 +672,4 @@ Công cụ bộ nhớ có thể cấu hình. Mặc định dùng Serena MCP (`re
 }
 ```
 
-Dashboard (`oma dashboard` và `oma dashboard:web`) theo dõi các file bộ nhớ này cho giám sát thời gian thực.
+Dashboard (`oma dashboard terminal` và `oma dashboard web`) theo dõi các file bộ nhớ này cho giám sát thời gian thực.

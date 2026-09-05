@@ -137,7 +137,7 @@ oma update --ci --force
 Khởi động dashboard terminal cho giám sát agent thời gian thực.
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 Không có tùy chọn. Theo dõi `.serena/memories/` trong thư mục hiện tại. Hiển thị giao diện box-drawing với trạng thái phiên, bảng agent và luồng hoạt động. Cập nhật theo mỗi thay đổi file. Nhấn `Ctrl+C` để thoát.
@@ -147,18 +147,18 @@ Thư mục memories có thể ghi đè bằng biến môi trường `MEMORIES_DI
 **Ví dụ:**
 ```bash
 # Sử dụng chuẩn
-oma dashboard
+oma dashboard terminal
 
 # Thư mục memories tùy chỉnh
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal
 ```
 
-### dashboard:web
+### dashboard web
 
 Khởi động dashboard web.
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 Khởi động HTTP server tại `http://localhost:9847` với kết nối WebSocket cho cập nhật trực tiếp. Mở URL trong trình duyệt để xem dashboard.
@@ -173,10 +173,10 @@ Khởi động HTTP server tại `http://localhost:9847` với kết nối WebSo
 **Ví dụ:**
 ```bash
 # Sử dụng chuẩn
-oma dashboard:web
+oma dashboard web
 
 # Cổng tùy chỉnh
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 ### stats
@@ -184,7 +184,8 @@ DASHBOARD_PORT=8080 oma dashboard:web
 Xem số liệu năng suất.
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 **Tùy chọn:**
@@ -208,13 +209,13 @@ Số liệu được lưu trong `.serena/metrics.json`. Dữ liệu được thu
 **Ví dụ:**
 ```bash
 # Xem số liệu hiện tại
-oma stats
+oma stats get
 
 # Đầu ra JSON
-oma stats --json
+oma stats get --json
 
 # Đặt lại tất cả số liệu
-oma stats --reset
+oma stats reset
 ```
 
 ### retro
@@ -275,12 +276,12 @@ oma retro 7d --json
 
 ## Quản lý agent
 
-### agent:spawn
+### agent spawn
 
 Spawn một tiến trình subagent.
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 **Đối số:**
@@ -295,34 +296,34 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Mô tả |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Ghi đè vendor CLI: `antigravity`, `claude`, `codex`, `qwen` |
+| `--vendor <vendor>` | Ghi đè vendor CLI: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Thư mục làm việc cho agent. Tự phát hiện từ config monorepo nếu bỏ qua. |
 
-**Thứ tự phân giải vendor:** Flag `--model` > ghi đè `agents:` trong `oma-config.yaml` > giá trị mặc định của agent theo `model_preset` đang dùng.
+**Thứ tự phân giải vendor:** Flag `--vendor` > ghi đè `agents:` trong `oma-config.yaml` > giá trị mặc định của agent theo `model_preset` đang dùng.
 
 **Phân giải prompt:** Nếu đối số prompt là đường dẫn đến file tồn tại, nội dung file được dùng làm prompt. Ngược lại, đối số được dùng làm text trực tiếp. Quy trình thực thi đặc thù vendor được tự động thêm vào.
 
 **Ví dụ:**
 ```bash
 # Prompt trực tiếp, tự phát hiện workspace
-oma agent:spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
 
 # Prompt từ file, workspace tường minh
-oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
+oma agent spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
 
 # Ghi đè vendor sang Claude
-oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
+oma agent spawn backend "Implement auth" session-20260324-143000 --vendor claude -w ./api
 
 # Agent mobile với workspace tự phát hiện
-oma agent:spawn mobile "Add biometric login" session-20260324-143000
+oma agent spawn mobile "Add biometric login" session-20260324-143000
 ```
 
-### agent:status
+### agent status
 
 Kiểm tra trạng thái của một hoặc nhiều subagent.
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 **Đối số:**
@@ -348,22 +349,22 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 **Ví dụ:**
 ```bash
 # Kiểm tra agent cụ thể
-oma agent:status session-20260324-143000 backend frontend
+oma agent status session-20260324-143000 backend frontend
 
 # Đầu ra:
 # backend:running
 # frontend:completed
 
 # Kiểm tra với root tùy chỉnh
-oma agent:status session-20260324-143000 qa -r /path/to/project
+oma agent status session-20260324-143000 qa -r /path/to/project
 ```
 
-### agent:parallel
+### agent parallel
 
 Chạy nhiều subagent song song.
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Đối số:**
@@ -376,7 +377,7 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 | Flag | Mô tả |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Ghi đè vendor CLI cho tất cả agent |
+| `--vendor <vendor>` | Ghi đè vendor CLI cho tất cả agent |
 | `-i, --inline` | Chế độ inline: chỉ định task dạng đối số `agent:task[:workspace]` |
 | `--no-wait` | Chế độ nền — khởi động agent và trả về ngay |
 
@@ -398,31 +399,31 @@ tasks:
 **Ví dụ:**
 ```bash
 # Từ file YAML
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 
 # Chế độ inline
-oma agent:parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
+oma agent parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
 
 # Chế độ nền (không đợi)
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Ghi đè vendor cho tất cả agent
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
-### agent:review
+### agent review
 
 Chạy đánh giá mã sử dụng AI CLI bên ngoài (codex, claude, hoặc qwen).
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **Tùy chọn:**
 
 | Flag | Mô tả |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Vendor CLI sử dụng: `antigravity`, `codex`, `claude`, `qwen`. Mặc định là vendor đã phân giải từ config. |
+| `--vendor <vendor>` | Vendor CLI sử dụng: `antigravity`, `codex`, `claude`, `qwen`. Mặc định là vendor đã phân giải từ config. |
 | `-p, --prompt <prompt>` | Prompt đánh giá tùy chỉnh. Nếu bỏ qua, prompt đánh giá mã mặc định được dùng. |
 | `-w, --workspace <path>` | Đường dẫn cần đánh giá. Mặc định là thư mục làm việc hiện tại. |
 | `--no-uncommitted` | Bỏ qua đánh giá thay đổi chưa commit. Khi đặt, chỉ đánh giá thay đổi đã commit trong phiên. |
@@ -437,34 +438,34 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Ví dụ:**
 ```bash
 # Đánh giá thay đổi chưa commit với vendor mặc định
-oma agent:review
+oma agent review
 
 # Đánh giá với codex (dùng lệnh codex review native)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # Đánh giá với claude sử dụng prompt tùy chỉnh
-oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+oma agent review --vendor claude -p "Focus on security vulnerabilities and input validation"
 
 # Đánh giá đường dẫn cụ thể
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # Chỉ đánh giá thay đổi đã commit (bỏ qua working tree)
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # Đánh giá thay đổi đã commit trong workspace cụ thể với gemini
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
 ## Quản lý bộ nhớ
 
-### memory:init
+### memory init
 
 Khởi tạo schema bộ nhớ Serena.
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 **Tùy chọn:**
@@ -480,22 +481,22 @@ oma memory:init [--json] [--output <format>] [--force]
 **Ví dụ:**
 ```bash
 # Khởi tạo bộ nhớ
-oma memory:init
+oma memory init
 
 # Ghi đè bắt buộc schema hiện có
-oma memory:init --force
+oma memory init --force
 ```
 
 ---
 
 ## Tích hợp và tiện ích
 
-### auth:status
+### auth status
 
 Kiểm tra trạng thái xác thực của tất cả CLI được hỗ trợ.
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 
 **Tùy chọn:**
@@ -509,8 +510,8 @@ oma auth:status [--json] [--output <format>]
 
 **Ví dụ:**
 ```bash
-oma auth:status
-oma auth:status --json
+oma auth status
+oma auth status --json
 ```
 
 ### bridge
@@ -696,7 +697,7 @@ oma describe [command-path]
 oma describe
 
 # Mô tả lệnh cụ thể
-oma describe agent:spawn
+oma describe agent spawn
 
 # Mô tả lệnh con
 oma describe "agent:parallel"
@@ -729,8 +730,8 @@ Xuất phiên bản CLI hiện tại và thoát.
 | Biến | Mô tả | Dùng bởi |
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | Đặt thành `json` để buộc đầu ra JSON trên tất cả lệnh hỗ trợ | Tất cả lệnh có flag `--json` |
-| `DASHBOARD_PORT` | Cổng cho dashboard web | `dashboard:web` |
-| `MEMORIES_DIR` | Ghi đè đường dẫn thư mục memories | `dashboard`, `dashboard:web` |
+| `DASHBOARD_PORT` | Cổng cho dashboard web | `dashboard web` |
+| `MEMORIES_DIR` | Ghi đè đường dẫn thư mục memories | `dashboard`, `dashboard web` |
 
 ---
 

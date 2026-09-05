@@ -124,13 +124,13 @@ npm install --global oh-my-agent
 
 ```bash
 oma doctor              # Проверка состояния
-oma dashboard           # Мониторинг в терминале
-oma dashboard:web       # Веб-дашборд на http://localhost:9847
-oma agent:spawn         # Запуск агентов из терминала
-oma agent:parallel      # Параллельный запуск агентов
-oma agent:status        # Проверка статуса агентов
-oma agent:review        # Ревью кода через внешний CLI (codex/claude/gemini/qwen)
-oma stats               # Статистика сессий
+oma dashboard terminal           # Мониторинг в терминале
+oma dashboard web       # Веб-дашборд на http://localhost:9847
+oma agent spawn         # Запуск агентов из терминала
+oma agent parallel      # Параллельный запуск агентов
+oma agent status        # Проверка статуса агентов
+oma agent review        # Ревью кода через внешний CLI (codex/claude/gemini/qwen)
+oma stats get               # Статистика сессий
 oma retro               # Ретроспектива разработки (коммиты, горячие точки, тренды)
 oma recap               # История разговоров с ИИ-инструментами
 oma cleanup             # Очистка артефактов сессий
@@ -140,8 +140,8 @@ oma verify              # Верификация вывода агентов
 oma visualize           # Визуализация зависимостей (псевдоним: `oma viz`)
 oma describe            # Просмотр CLI-команд в формате JSON
 oma bridge              # MCP stdio ↔ Streamable HTTP мост
-oma memory:init         # Инициализация схемы памяти Serena
-oma auth:status         # Проверка статуса аутентификации CLI (gh/claude/codex/cursor/qwen)
+oma memory init         # Инициализация схемы памяти Serena
+oma auth status         # Проверка статуса аутентификации CLI (gh/claude/codex/cursor/qwen)
 oma search              # Механические примитивы поиска (псевдоним: `oma s`)
 oma image               # Генерация изображений через ИИ (псевдоним: `oma img`)
 oma export              # Экспорт навыков для внешних IDE (например, cursor)

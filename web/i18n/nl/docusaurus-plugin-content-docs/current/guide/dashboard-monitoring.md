@@ -9,15 +9,15 @@ description: Uitgebreide dashboardgids met terminal- en webdashboards, databronn
 
 | Commando | Interface | URL | Technologie |
 |:---------|:---------|:----|:-----------|
-| `oma dashboard` | Terminal (TUI) | N/B — rendert in je terminal | chokidar file watcher, picocolors rendering |
-| `oma dashboard:web` | Browser | `http://localhost:9847` | HTTP-server, WebSocket, chokidar file watcher |
+| `oma dashboard terminal` | Terminal (TUI) | N/B — rendert in je terminal | chokidar file watcher, picocolors rendering |
+| `oma dashboard web` | Browser | `http://localhost:9847` | HTTP-server, WebSocket, chokidar file watcher |
 
 Beide dashboards bewaken dezelfde databron: `.serena/memories/`-directory.
 
 ### Terminal dashboard
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Rendert een box-drawing UI direct in de terminal. Wordt automatisch bijgewerkt bij geheugenbestandswijzigingen. Druk `Ctrl+C` om af te sluiten.
@@ -27,14 +27,14 @@ Rendert een box-drawing UI direct in de terminal. Wordt automatisch bijgewerkt b
 ### Webdashboard
 
 ```bash
-oma dashboard:web
+oma dashboard web
 ```
 
 Opent een webserver op poort 9847 (configureerbaar via `DASHBOARD_PORT`). De browser-UI verbindt via WebSocket en ontvangt live updates.
 
 ```bash
-DASHBOARD_PORT=8080 oma dashboard:web
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard web
 ```
 
 ---
@@ -44,11 +44,11 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 ```
 ┌────────────────────────────────┬────────────────────────────────┐
 │   Terminal 1: Hoofdagent       │   Terminal 2: Dashboard        │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 ├────────────────────────────────┴────────────────────────────────┤
 │   Terminal 3: Ad-hoc commando's                                 │
-│   $ oma agent:status session-id backend frontend                │
+│   $ oma agent status session-id backend frontend                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -69,16 +69,16 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 ## Probleemoplossing
 
 ### Signaal 1: agent toont "draaiend" maar geen beurtvoortgang
-**Acties:** Controleer logbestand: `cat /tmp/subagent-{session-id}-{agent-id}.log`. Controleer of proces draait: `oma agent:status`. Herspawn indien gecrasht.
+**Acties:** Controleer logbestand: `cat /tmp/subagent-{session-id}-{agent-id}.log`. Controleer of proces draait: `oma agent status`. Herspawn indien gecrasht.
 
 ### Signaal 2: agent toont "gecrasht"
-**Acties:** Controleer logbestand, verifieer CLI-installatie met `oma doctor`, controleer authenticatie met `oma auth:status`, herspawn.
+**Acties:** Controleer logbestand, verifieer CLI-installatie met `oma doctor`, controleer authenticatie met `oma auth status`, herspawn.
 
 ### Signaal 3: dashboard toont "geen agenten gedetecteerd"
 **Acties:** Verifieer memories-directory: `ls -la .serena/memories/`, controleer of workflow nog in planningsfase is.
 
 ### Signaal 4: webdashboard toont "verbinding verbroken"
-**Acties:** Controleer of dashboardproces draait, probeer andere poort: `DASHBOARD_PORT=8080 oma dashboard:web`. Auto-reconnect met exponential backoff (1s initieel, max 10s).
+**Acties:** Controleer of dashboardproces draait, probeer andere poort: `DASHBOARD_PORT=8080 oma dashboard web`. Auto-reconnect met exponential backoff (1s initieel, max 10s).
 
 ---
 

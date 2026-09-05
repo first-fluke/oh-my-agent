@@ -136,7 +136,7 @@ Then run the smallest reproduction command first, add a regression test, and re-
 ## References
 Follow `resources/execution-protocol.md` step by step.
 Before submitting, run `resources/checklist.md`.
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Checklist (pre-submit self-verification): `resources/checklist.md`

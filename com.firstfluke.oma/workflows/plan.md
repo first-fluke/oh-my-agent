@@ -23,7 +23,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -101,8 +101,8 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
 3. Reference from the markdown tracker generated in Step 6.
 4. Emit and verify the required API contract decision:
    ```bash
-   oma state:emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
-   oma state:verify --workflow plan --checkpoint api-contract
+   oma state emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
+   oma state verify --workflow plan --checkpoint api-contract
    ```
 
 ---
@@ -139,7 +139,7 @@ Use `.agents/skills/oma-pm/resources/task-template.json`. For executable accepta
 - Preserve the canonical `dependencies` task-ID array and a self-contained `task` prompt. `retry_policy` defaults to `manual`; choose `safe` only for repeatable work without duplicate external effects.
 - Optional `inputs` lists concrete project-relative source, test, configuration and dependency files/directories that completely determine the task's behavior. Omit it for whole-tree verification. Do not guess a narrow input scope to make evidence reusable.
 - Keep the JSON plan fixed after dispatch starts. Record progress in the Markdown tracker and run records. Contract changes require a new run.
-- Use `oma agent:verify RUN_ID --required` to execute pinned checks and `oma agent:resume SESSION_ID --dry-run` to inspect recovery decisions.
+- Use `oma agent verify RUN_ID --required` to execute pinned checks and `oma agent resume SESSION_ID --dry-run` to inspect recovery decisions.
 
 ### 7b. Human-readable tracker (Medium/Complex only)
 

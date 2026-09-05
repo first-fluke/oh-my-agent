@@ -1,5 +1,5 @@
 /**
- * fetch-video.ts — oma slide fetch-video <url> --dir [--output-name]
+ * fetch-video.ts — oma slide asset fetch-video <url> --dir [--output-name]
  *
  * Downloads a video via yt-dlp into <dir>/assets/ and prints the
  * ./assets/<file> reference for the user to embed in their slide HTML.

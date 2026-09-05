@@ -48,10 +48,10 @@ description: フロントエンド、バックエンド、データベース、�
 ### Step 3（agent:spawn）: CLIレベルのエージェント管理
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
-**ベンダー解決順序：** `--model`フラグ > `oma-config.yaml`の`agents:`オーバーライド > アクティブな`model_preset`のエージェントデフォルト
+**ベンダー解決順序：** `--vendor`フラグ > `oma-config.yaml`の`agents:`オーバーライド > アクティブな`model_preset`のエージェントデフォルト
 
 **ワークスペース自動検出：** モノレポ設定ファイル（pnpm-workspace.yaml、package.json、lerna.json、nx.json、turbo.json、mise.toml）をスキャンし、エージェントタイプのキーワードでスコアリング。
 
@@ -88,8 +88,8 @@ OWASP Top 10セキュリティ、パフォーマンス、アクセシビリテ�
 `-w`フラグでワークスペースを直接指定できます。自動検出を信頼できない場合や、モノレポ外のディレクトリにルーティングしたい場合に使います。
 
 ```bash
-oma agent:spawn backend "task" session-01 -w ./services/api
-oma agent:spawn frontend "task" session-01 -w ./packages/web-app
+oma agent spawn backend "task" session-01 -w ./services/api
+oma agent spawn frontend "task" session-01 -w ./packages/web-app
 ```
 
 `-w`が指定された場合、自動検出はスキップされます。
@@ -133,19 +133,19 @@ CRITICALとHIGHの指摘がゼロであること。MEDIUM/LOWはバックログ�
 
 ```bash
 # Geminiでバックエンドエージェントをスポーン（デフォルト）
-oma agent:spawn backend "Implement /api/tasks CRUD" session-01 -w ./apps/api
+oma agent spawn backend "Implement /api/tasks CRUD" session-01 -w ./apps/api
 
 # 明示的なワークスペース指定でClaudeを使ってフロントエンドエージェントを起動
-oma agent:spawn frontend "Build tasks dashboard" session-01 -w ./apps/web -m claude
+oma agent spawn frontend "Build tasks dashboard" session-01 -w ./apps/web --vendor claude
 
 # プロンプトファイルから起動
-oma agent:spawn backend --prompt-file ./prompts/auth.md session-01 -w ./apps/api
+oma agent spawn backend --prompt-file ./prompts/auth.md session-01 -w ./apps/api
 ```
 
 ### agent:parallelによる並列実行
 
 ```bash
-oma agent:parallel ./tasks.yaml --session session-01
+oma agent parallel ./tasks.yaml --session-id session-01
 ```
 
 ```yaml

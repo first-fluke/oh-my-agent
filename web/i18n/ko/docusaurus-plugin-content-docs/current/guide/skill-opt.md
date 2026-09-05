@@ -1,11 +1,11 @@
 ---
 title: "스킬 최적화"
-description: oma skills opt로 train, validation, 실행기 전용 final-test 게이트를 거치는 영속적 근거 기반 스킬 진화를 수행하는 방법을 다룹니다.
+description: oma skill opt로 train, validation, 실행기 전용 final-test 게이트를 거치는 영속적 근거 기반 스킬 진화를 수행하는 방법을 다룹니다.
 ---
 
 # 스킬 최적화
 
-`oma skills opt`는 `oma skills eval`이 산출하는 `utilityLift`를 최대화하도록 스킬의 `SKILL.md`를 진화시킵니다. 원시 롤아웃 근거, 범위가 지정된 영속 지식, 실행 가능한 스킬을 분리합니다. Wiki Maintainer가 관측 가능한 성공과 실패를 통합하고, Proposer가 그 지식으로 제한된 추가·삭제·교체 편집을 제안합니다. 후보는 held-out 검증 유용성을 높여야 하며, `--apply`에는 실행기 전용 최종 테스트의 향상도 필요합니다. 배포 시에는 별도의 wiki 조회 비용 없이 결과가 `SKILL.md`에 남습니다.
+`oma skill optimize`는 `oma skill eval`이 산출하는 `utilityLift`를 최대화하도록 스킬의 `SKILL.md`를 진화시킵니다. 원시 롤아웃 근거, 범위가 지정된 영속 지식, 실행 가능한 스킬을 분리합니다. Wiki Maintainer가 관측 가능한 성공과 실패를 통합하고, Proposer가 그 지식으로 제한된 추가·삭제·교체 편집을 제안합니다. 후보는 held-out 검증 유용성을 높여야 하며, `--apply`에는 실행기 전용 최종 테스트의 향상도 필요합니다. 배포 시에는 별도의 wiki 조회 비용 없이 결과가 `SKILL.md`에 남습니다.
 
 연구 근거: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C., & Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
 
@@ -13,10 +13,10 @@ description: oma skills opt로 train, validation, 실행기 전용 final-test �
 
 ## 필수 의존성: 평가 태스크 픽스처
 
-`oma skills opt`는 평가 태스크 픽스처 없이는 돌지 않습니다. `.agents/eval/<skill>/`에 **태스크 픽스처가 최소 5개**(`MIN_TASKS = 5`) 있어야 합니다. 그보다 적으면 즉시 오류를 냅니다.
+`oma skill optimize`는 평가 태스크 픽스처 없이는 돌지 않습니다. `.agents/eval/<skill>/`에 **태스크 픽스처가 최소 5개**(`MIN_TASKS = 5`) 있어야 합니다. 그보다 적으면 즉시 오류를 냅니다.
 
 ```
-[oma skills opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
+[oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
 `.agents/eval/<skill>/` 디렉토리 규칙, 픽스처 스키마, 체커 종류, mock 재생을 위한 롤아웃 준비 방법은 [스킬 유용성 평가 가이드](/docs/guide/skill-eval)를 참고하세요.
@@ -29,7 +29,7 @@ description: oma skills opt로 train, validation, 실행기 전용 final-test �
 
 에폭마다(`--max-epochs`까지, 기본 8회) 다음을 수행합니다.
 
-1. **현재 최선의 `SKILL.md`를 TRAIN 분할에서 채점합니다.** `oma skills eval`이 관측 가능한 태스크별 프롬프트, 출력, 향상을 반환합니다.
+1. **현재 최선의 `SKILL.md`를 TRAIN 분할에서 채점합니다.** `oma skill eval`이 관측 가능한 태스크별 프롬프트, 출력, 향상을 반환합니다.
 2. **Wiki Maintainer가 근거를 통합합니다.** 실패는 최대 5개, 성공은 최대 3개까지 근거가 연결된 패턴이 되며, OMA L1/L2/L3 메모리에서 범위가 맞는 패턴과 이전 게이트 결과를 회수합니다.
 3. **Proposer가 후보 편집을 K개 냅니다**(`--edits-per-epoch`까지, 기본 4개). 영속 거부 이력의 동일 편집은 건너뜁니다.
 4. **각 후보 편집에 대해:**
@@ -48,7 +48,7 @@ description: oma skills opt로 train, validation, 실행기 전용 final-test �
 ## 사용법
 
 ```
-oma skills opt --skill <id>
+oma skill optimize --skill <id>
                [--dry-run | --apply]
                [--mock | --live]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
@@ -78,13 +78,13 @@ oma skills opt --skill <id>
 
 ```bash
 # Propose edits (dry-run, mock mode — does not change SKILL.md, fully offline)
-oma skills opt --skill oma-scholar --mock --dry-run
+oma skill optimize --skill oma-scholar --mock --dry-run
 ```
 
 출력 예시입니다.
 
 ```
-[oma skills opt] skill: oma-scholar, tasks: 8 (train: 4, val: 4), dry-run: true
+[oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 4), dry-run: true
 
 Skill opt  (skill: oma-scholar)
   applied: false
@@ -111,7 +111,7 @@ diff는 최적화기가 쓰려는 내용을 보여줍니다. `--dry-run`에서�
 
 ```bash
 # Apply accepted edits (backs up original as SKILL.md.bak)
-oma skills opt --skill oma-scholar --mock --apply
+oma skill optimize --skill oma-scholar --mock --apply
 ```
 
 `--apply`는 held-out 검증과 실행기 전용 최종 테스트에서 모두 확실한 양의 개선을 찾았을 때만 파일을 씁니다. 원본을 백업한 뒤 원자적으로 쓰며, 무엇이 바뀌었는지 검토할 수 있도록 diff를 항상 출력합니다.
@@ -124,13 +124,13 @@ oma skills opt --skill oma-scholar --mock --apply
 
 ```bash
 # Cost preview + confirm
-oma skills opt --skill oma-scholar --live
+oma skill optimize --skill oma-scholar --live
 
 # Skip confirmation
-oma skills opt --skill oma-scholar --live --yes
+oma skill optimize --skill oma-scholar --live --yes
 
 # Live opt, then apply if improved
-oma skills opt --skill oma-scholar --live --apply --yes
+oma skill optimize --skill oma-scholar --live --apply --yes
 ```
 
 비용 미리보기는 LLM을 호출하기 전에 하위 모델 호출 수의 상한을 표시합니다.
@@ -140,7 +140,7 @@ oma skills opt --skill oma-scholar --live --apply --yes
 ## JSON 출력
 
 ```bash
-oma skills opt --skill oma-scholar --json
+oma skill optimize --skill oma-scholar --json
 ```
 
 ```json
@@ -173,7 +173,7 @@ ID가 `oma-`로 시작하는 스킬은 oh-my-agent가 소유하며 **`oma update
 대상 스킬이 oma 소유일 때는 다음과 같이 경고를 출력합니다.
 
 ```
-[oma skills opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
+[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
 ```
 
 ---
@@ -186,10 +186,10 @@ Maintainer와 Proposer는 TRAIN 롤아웃 근거만 봅니다. 후보 선택은 
 
 ## CI 통합
 
-`--mock` 모드에서 `oma skills opt`는 완전히 결정론적이고 오프라인이며 LLM을 호출하지 않습니다. 제안된 스킬 diff가 기록된 롤아웃 대비 여전히 향상을 보이는지 CI에서 확인할 때 쓰세요.
+`--mock` 모드에서 `oma skill optimize`는 완전히 결정론적이고 오프라인이며 LLM을 호출하지 않습니다. 제안된 스킬 diff가 기록된 롤아웃 대비 여전히 향상을 보이는지 CI에서 확인할 때 쓰세요.
 
 ```bash
-oma skills opt --skill oma-scholar --mock --json
+oma skill optimize --skill oma-scholar --mock --json
 ```
 
 종료 코드:

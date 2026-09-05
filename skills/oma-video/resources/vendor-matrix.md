@@ -41,7 +41,7 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Transport | `oma image generate "<prompt>" --vendor auto --size <16-multiple> --format json --out <runDir>/visuals` |
+| Transport | `oma image generate "<prompt>" --vendor auto --size <16-multiple> --output json --output-dir <runDir>/visuals` |
 | Aspect -> size | snapped to nearest 16-multiple: 9:16 -> 1088×1920, 16:9 -> 1920×1088, 1:1 -> 1088×1088 |
 | Crop | Remotion crops the still to the exact frame; Ken Burns adds motion |
 | Cost | free defaults (pollinations / antigravity); codex per-image per oma-image config |
@@ -50,7 +50,7 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Transport | `oma slide` generate deck -> `oma slide png --dir <deck> --out-dir <runDir>/visuals` -> 1920×1080 frames |
+| Transport | `oma slide` generate deck -> `oma slide export png --dir <deck> --out-dir <runDir>/visuals` -> 1920×1080 frames |
 | Layering | oma-slide internally calls oma-image (same key-free chain) |
 | Use | explainer code/diagram frames |
 

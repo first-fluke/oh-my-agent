@@ -309,7 +309,7 @@ export function agentResultInstructions(
     return `## Read-only result contract\nRun ${run.runId}, task ${run.taskId}, session ${run.sessionId}. Do not write coordination or result files. Return one final line: OMA_RESULT_JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"verificationSkipped":"specific explanation of the read-only inspection performed"}. The parent records this inspection; it does not count as executable verification.\n`;
   return (
     `## Execution result contract\nRun: ${run.runId}\nTask: ${run.taskId}\nSession: ${run.sessionId}\n` +
-    `Execute the pinned required checks with: oma agent:verify ${run.runId} --required (from ${JSON.stringify(root)}).\nRequired checks: ${JSON.stringify(run.contract?.required_checks ?? [])}. A missing contract cannot prove acceptance criteria; define it in the session plan before starting a new run.\n` +
+    `Execute the pinned required checks with: oma agent verify ${run.runId} --required (from ${JSON.stringify(root)}).\nRequired checks: ${JSON.stringify(run.contract?.required_checks ?? [])}. A missing contract cannot prove acceptance criteria; define it in the session plan before starting a new run.\n` +
     `Write ${claimPath(root, run.runId)} as JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[]}.
 Paths are relative to ${run.artifactRoot}. Include the report and relevant plan/phase artifacts. A completed result requires no unresolved items and successful current verification receipts, or an explicit verificationSkipped reason for work that needs no executable check. Do not invent checks. Never run a build unless the user explicitly requested it.\n`
   );

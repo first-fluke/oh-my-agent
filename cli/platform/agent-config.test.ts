@@ -286,7 +286,7 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
     (vendor) => {
       const protocol = loadExecutionProtocol(vendor, repoRoot);
       expect(protocol).toContain("# Agent Result Contract");
-      expect(protocol).toContain("agent:verify");
+      expect(protocol).toContain("agent verify");
       expect(protocol).toContain("partial");
     },
   );

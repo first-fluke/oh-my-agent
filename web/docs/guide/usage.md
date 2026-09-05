@@ -85,13 +85,13 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 5. **Step 3, Agents spawn by priority:**
    ```bash
    # P0 tier (parallel)
-   oma agent:spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent:spawn db "User and task schema design" session-todo-01 &
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 &
    wait
 
    # P1 tier (parallel, after P0 completes)
-   oma agent:spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent:spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
    wait
    ```
 
@@ -172,26 +172,26 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ```bash
 # Single agent for a simple task
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # Three agents in parallel for a full-stack feature
-oma agent:spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
 # After editing .agents/agents/ or workflows, regenerate vendor-native files
 oma link claude codex antigravity
 
 # Monitor while agents work (separate terminal)
-oma dashboard        # Terminal UI with live table
-oma dashboard:web    # Web UI at http://localhost:9847
+oma dashboard terminal        # Terminal UI with live table
+oma dashboard web    # Web UI at http://localhost:9847
 
 # After implementation, run QA
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 
 # Check session statistics after completion
-oma stats
+oma stats get
 ```
 
 If your current runtime matches the target vendor in `.agents/oma-config.yaml`, workflows should prefer native subagents:
@@ -200,7 +200,7 @@ If your current runtime matches the target vendor in `.agents/oma-config.yaml`, 
 - Codex CLI -> `.codex/agents/*.toml`
 - Gemini CLI -> `.gemini/agents/*.md`
 
-Cross-vendor tasks still use `oma agent:spawn`.
+Cross-vendor tasks still use `oma agent spawn`.
 
 ---
 
@@ -334,7 +334,7 @@ oh-my-agent detects workflow keywords in 11 languages. Here are examples showing
 ### Terminal dashboard
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Displays a live-updating table in your terminal:
@@ -345,7 +345,7 @@ Displays a live-updating table in your terminal:
 ### Web dashboard
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Opens http://localhost:9847
 ```
 
@@ -359,7 +359,7 @@ Features:
 ### Recommended layout
 
 Use 3 terminals:
-1. **Dashboard terminal:** `oma dashboard` for continuous monitoring
+1. **Dashboard terminal:** `oma dashboard terminal` for continuous monitoring
 2. **Command terminal:** Agent spawn commands, workflow commands
 3. **Build terminal:** Test runs, build logs, git operations
 
@@ -381,7 +381,7 @@ Beyond progressive disclosure, oh-my-agent optimizes tokens through:
 
 ### CLI spawning
 
-When you run `oma agent:spawn`, the CLI:
+When you run `oma agent spawn`, the CLI:
 1. Resolves the vendor (using the 5-level priority)
 2. Injects the vendor-specific execution protocol from `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`
 3. Composes the agent prompt using the SKILL.md core rules, execution protocol, and task-relevant resources
@@ -396,7 +396,7 @@ Agents coordinate through shared memory files at `.agents/state/memories/` (olde
 ### Workspaces
 
 <!-- oma-docs:ignore-start -->
-The `-w` flag on `agent:spawn` isolates an agent to a specific directory. This is critical for parallel execution. Without workspace isolation, two agents might modify the same file simultaneously, creating conflicts. Standard workspace layout: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
+The `-w` flag on `agent spawn` isolates an agent to a specific directory. This is critical for parallel execution. Without workspace isolation, two agents might modify the same file simultaneously, creating conflicts. Standard workspace layout: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
 <!-- oma-docs:ignore-end -->
 
 ---

@@ -9,14 +9,14 @@ description: Kompleksowy przewodnik po panelu kontrolnym obejmujący panele term
 
 | Polecenie | Interfejs | URL | Technologia |
 |:--------|:---------|:----|:-----------|
-| `oma dashboard` | Terminal (TUI) | N/A — renderuje w terminalu | chokidar file watcher, picocolors |
-| `oma dashboard:web` | Przeglądarka | `http://localhost:9847` | Serwer HTTP, WebSocket, chokidar |
+| `oma dashboard terminal` | Terminal (TUI) | N/A — renderuje w terminalu | chokidar file watcher, picocolors |
+| `oma dashboard web` | Przeglądarka | `http://localhost:9847` | Serwer HTTP, WebSocket, chokidar |
 
 Oba panele obserwują to samo źródło danych: katalog `.serena/memories/`.
 
 ### Panel w terminalu
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 Renderuje UI z rysowaniem ramek bezpośrednio w terminalu. Aktualizuje się automatycznie przy zmianach plików pamięci. `Ctrl+C` aby wyjść.
 
@@ -24,9 +24,9 @@ Renderuje UI z rysowaniem ramek bezpośrednio w terminalu. Aktualizuje się auto
 
 ### Panel webowy
 ```bash
-oma dashboard:web
+oma dashboard web
 # Lub z niestandardowym portem:
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 Ciemny motyw z: znacznikiem stanu połączenia, tabelą statusu agentów, kanałem aktywności i automatycznym odświeżaniem.
@@ -38,11 +38,11 @@ Ciemny motyw z: znacznikiem stanu połączenia, tabelą statusu agentów, kanał
 ```
 ┌────────────────────────────────┬────────────────────────────────┐
 │   Terminal 1: Główny agent     │   Terminal 2: Panel kontrolny  │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 ├────────────────────────────────┴────────────────────────────────┤
 │   Terminal 3: Polecenia ad-hoc                                  │
-│   $ oma agent:status session-id backend frontend                │
+│   $ oma agent status session-id backend frontend                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -63,10 +63,10 @@ Ciemny motyw z: znacznikiem stanu połączenia, tabelą statusu agentów, kanał
 ## Rozwiązywanie problemów
 
 ### Sygnał 1: Agent "running" ale brak postępu tur
-Sprawdź log: `cat /tmp/subagent-{session-id}-{agent-id}.log`. Sprawdź czy proces żyje: `oma agent:status`.
+Sprawdź log: `cat /tmp/subagent-{session-id}-{agent-id}.log`. Sprawdź czy proces żyje: `oma agent status`.
 
 ### Sygnał 2: Agent "crashed"
-Sprawdź log po szczegóły, zweryfikuj CLI: `oma doctor`, sprawdź auth: `oma auth:status`. Uruchom ponownie.
+Sprawdź log po szczegóły, zweryfikuj CLI: `oma doctor`, sprawdź auth: `oma auth status`. Uruchom ponownie.
 
 ### Sygnał 3: "No agents detected yet"
 Workflow może być jeszcze w fazie planowania. Zweryfikuj katalog pamięci: `ls -la .serena/memories/`.

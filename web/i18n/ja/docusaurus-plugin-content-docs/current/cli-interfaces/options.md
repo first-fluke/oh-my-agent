@@ -21,16 +21,16 @@ description: oh-my-agent CLIの全オプション網羅的リファレンス。�
 ### 1. --jsonフラグ
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 ```
 
-対応コマンド：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`memory:init`、`verify`、`visualize`。
+対応コマンド：`doctor`、`stats`、`retro`、`cleanup`、`auth status`、`memory init`、`verify`、`visualize`。
 
 ### 2. --outputフラグ
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -40,7 +40,7 @@ oma doctor --output text
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # JSON出力
+oma stats get    # JSON出力
 ```
 
 **解決順序：** `--json` > `--output` > 環境変数 > `text`（デフォルト）。
@@ -53,8 +53,8 @@ oma stats    # JSON出力
 | `stats` | はい | はい | フルメトリクスオブジェクト |
 | `retro` | はい | はい | メトリクス、作者、コミットタイプを含むスナップショット |
 | `cleanup` | はい | はい | クリーンアップされた項目のリスト |
-| `auth:status` | はい | はい | CLIごとの認証ステータス |
-| `memory:init` | はい | はい | 初期化結果 |
+| `auth status` | はい | はい | CLIごとの認証ステータス |
+| `memory init` | はい | はい | 初期化結果 |
 | `verify` | はい | はい | チェックごとの検証結果 |
 | `visualize` | はい | はい | JSONとしての依存グラフ |
 | `describe` | 常にJSON | N/A | 常にJSONを出力（イントロスペクションコマンド） |
@@ -122,11 +122,11 @@ oma update [-f | --force] [--ci]
 
 クリーンアップ対象：孤立PIDファイル（`/tmp/subagent-*.pid`）、孤立ログファイル、Gemini Antigravityディレクトリ。
 
-### agent:spawn
+### agent spawn
 
 | フラグ | 説明 | デフォルト |
 |:-----|:-----------|:--------|
-| `--model` / `-m` | CLIベンダーオーバーライド。`antigravity`、`claude`、`codex`、`qwen`。 | 設定から解決 |
+| `--vendor` / `-m` | CLIベンダーオーバーライド。`antigravity`、`claude`、`codex`、`qwen`。 | 設定から解決 |
 | `--workspace` / `-w` | エージェントの作業ディレクトリ。省略時はモノレポ設定から自動検出。 | 自動検出または`.` |
 
 **バリデーション：** `agent-id`は`backend`/`frontend`/`mobile`/`qa`/`debug`/`pm`のいずれか。`session-id`に`..`、`?`、`#`、`%`、制御文字は使用不可。`vendor`は`antigravity`、`claude`、`codex`、`qwen`のいずれか。
@@ -141,7 +141,7 @@ oma update [-f | --force] [--ci]
 | codex | `codex` | `--full-auto` | （位置引数） |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-### agent:status
+### agent status
 
 | フラグ | 説明 |
 |:-----|:-----------|
@@ -149,11 +149,11 @@ oma update [-f | --force] [--ci]
 
 ステータス判定：`result-{agent}.md`存在→`completed`、PIDファイル存在+プロセス生存→`running`、それ以外→`crashed`。
 
-### agent:parallel
+### agent parallel
 
 | フラグ | 説明 |
 |:-----|:-----------|
-| `--model` / `-m` | 全エージェントに適用するベンダーオーバーライド |
+| `--vendor` / `-m` | 全エージェントに適用するベンダーオーバーライド |
 | `--inline` / `-i` | `agent:task[:workspace]`形式のインラインタスク指定 |
 | `--no-wait` | バックグラウンドモード |
 
@@ -226,7 +226,7 @@ oma image <subcommand> [...]
 | `--count <n>` | `-n` | 画像数、1..5。 | `1` |
 | `--out <dir>` | | 出力ディレクトリ。`--allow-external-out`が指定されない限り`$PWD`内である必要があります。 | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | `--out`に`$PWD`外のパスを許可。 | `false` |
-| `--model <name>` | | ベンダー固有のモデルオーバーライド（例：`gpt-image-2`、`flux`、`imagen-4`）。 | ベンダーデフォルト |
+| `--vendor <name>` | | ベンダー固有のモデルオーバーライド（例：`gpt-image-2`、`flux`、`imagen-4`）。 | ベンダーデフォルト |
 | `--strategy <list>` | | Geminiのフォールバック順、カンマ区切りで`mcp`、`stream`、`api`を指定。 | ベンダーデフォルト |
 | `--timeout <seconds>` | | 画像ごとのタイムアウト。 | ベンダーデフォルト |
 | `--reference <path>` | `-r` | スタイル/サブジェクト転送用のリファレンス画像。複数指定可（`-r a.png -r b.png`）またはカンマ区切り。サイズ（≤5MB）、フォーマット（PNG/JPEG/GIF/WebP、マジックバイトで判定）、件数（≤10）が検証されます。`codex`（`codex exec`に`-i`を渡す）と`gemini`（base64の`inlineData`としてインライン化）でサポート。`pollinations`では終了コード4で拒否。 | |
@@ -237,7 +237,7 @@ oma image <subcommand> [...]
 
 `image doctor`と`image list-vendors`は`--format <text|json>`のみを受け付けます。
 
-### memory:init
+### memory init
 
 | フラグ | 説明 |
 |:-----|:-----------|
@@ -266,15 +266,15 @@ oma doctor --json | jq '.healthy'
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### バッチエージェント実行とステータスモニタリング
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### CI後のクリーンアップ
@@ -305,8 +305,8 @@ oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 set -e
 echo "=== oh-my-agent Health Check ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
-oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 echo "=== Done ==="
 ```
 
@@ -314,5 +314,5 @@ echo "=== Done ==="
 
 ```bash
 oma describe | jq '.command.subcommands[] | {name, description}'
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

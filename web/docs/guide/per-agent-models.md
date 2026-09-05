@@ -254,7 +254,7 @@ and pi becomes the executing CLI for a given agent.
 Dispatch any agent through pi with the `-m pi` override:
 
 ```bash
-oma agent:spawn backend "Implement the export endpoint" <session> -m pi
+oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 ```
 
 What happens:
@@ -333,7 +333,7 @@ files.
 Route any agent through opencode with the `-m opencode` override:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 This runs `opencode run --agent pm --dir <workspace> "<prompt>"`. The prompt is a
@@ -389,18 +389,18 @@ opencode's catalog is subscription- and login-gated, so oma does **not** hardcod
 opencode model slugs. Validate one against your installed catalog:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` reports `accepted` when the slug is listed by
+`oma model probe` reports `accepted` when the slug is listed by
 `opencode models`, `rejected` when it is not, and `auth_required` when the
 provider needs login or a subscription.
 
 ### Auth and generated files
 
 - **Auth:** `opencode auth login` stores credentials in
-  `~/.local/share/opencode/auth.json`, one entry per provider. `oma auth:status`
+  `~/.local/share/opencode/auth.json`, one entry per provider. `oma auth status`
   / `oma doctor` report opencode as authenticated when *any* provider has
   a credential. `oma doctor --profile` is
   provider-aware instead: each row is checked against the provider prefix of its
@@ -437,7 +437,7 @@ project-scoped — written mode-aware to `<cwd>/.kimi-code/mcp.json` (project) o
 Route any agent through Kimi with the `-m kimi` override:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m kimi
+oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
 This runs `kimi -p "<prompt>"`. Kimi's `-p` (non-interactive) mode auto-approves
@@ -481,6 +481,6 @@ agents:
 Each routed agent dispatches `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`.
 
 > **Persistent-workflow note:** Kimi's documented Stop-blocking path is exit-code
-> 2 / stderr, but the `oma hook` router always exits 0 and emits a stdout dialect.
+> 2 / stderr, but the `oma hook run` router always exits 0 and emits a stdout dialect.
 > oma emits a best-effort `permissionDecision: "deny"` (plus Claude-style
 > `decision: "block"`) so persistent workflows degrade gracefully under Kimi.

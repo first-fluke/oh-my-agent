@@ -108,8 +108,8 @@ describe("required decision verifier", () => {
       "utf-8",
     );
 
-    expect(eventSpec).toContain('oma state:emit "decision.made"');
-    expect(eventSpec).toContain("oma state:verify --workflow");
+    expect(eventSpec).toContain('oma state emit "decision.made"');
+    expect(eventSpec).toContain("oma state verify --workflow");
 
     for (const [workflow, checkpoints] of Object.entries(table)) {
       const body = readFileSync(
@@ -126,7 +126,7 @@ describe("required decision verifier", () => {
           body,
           `${workflow} should verify checkpoint ${checkpoint}`,
         ).toContain(
-          `oma state:verify --workflow ${workflow} --checkpoint ${checkpoint}`,
+          `oma state verify --workflow ${workflow} --checkpoint ${checkpoint}`,
         );
 
         for (const decision of decisions) {

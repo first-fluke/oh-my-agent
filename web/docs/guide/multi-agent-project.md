@@ -83,24 +83,24 @@ You have two execution paths:
 6. Verifies each completed agent via `verify.sh`. PASS (exit 0) accepts; FAIL (exit 1) re-spawns with error context (max 2 retries); persistent failure triggers the Exploration Loop.
 7. Collects all `result-{agent}.md` files and compiles a final report.
 
-### Step 3: agent:spawn for CLI-Level agent management
+### Step 3: agent spawn for CLI-Level agent management
 
-The `agent:spawn` command is the low-level mechanism that workflows call internally. You can also use it directly:
+The `agent spawn` command is the low-level mechanism that workflows call internally. You can also use it directly:
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 **All flags:**
 
 | Flag | Description |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor override (antigravity/claude/codex/qwen). Overrides all config. |
+| `--vendor <vendor>` | CLI vendor override (antigravity/claude/codex/qwen). Overrides all config. |
 | `-w, --workspace <path>` | Working directory for the agent. Auto-detected from monorepo config if omitted. |
 
 **Vendor resolution order** (first match wins):
 
-1. `--model` flag on the command line
+1. `--vendor` flag on the command line
 2. `agents:` override in `oma-config.yaml` for this agent
 3. Active `model_preset` agent defaults
 
@@ -187,7 +187,7 @@ If nothing matches, the agent runs in the current directory (`.`).
 Always available:
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -245,16 +245,16 @@ In the ultrawork workflow, these translate into explicit **phase gates** (PLAN_G
 
 ```bash
 # Spawn backend agent with Gemini (default)
-oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawn frontend agent with Claude, explicit workspace
-oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
 # Spawn from a prompt file
-oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Parallel execution via agent:parallel
+### Parallel execution via agent parallel
 
 Using a YAML tasks file:
 
@@ -273,13 +273,13 @@ tasks:
 ```
 
 ```bash
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 ```
 
 Using inline mode:
 
 ```bash
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
@@ -288,14 +288,14 @@ oma agent:parallel --inline \
 Background mode (no wait):
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 # Returns immediately, results written to .agents/results/parallel-{timestamp}/
 ```
 
 With vendor override:
 
 ```bash
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
 ---
@@ -328,7 +328,7 @@ Running P1 tasks before P0 tasks complete. Priority tiers exist because P1 tasks
 
 ### 7. Skipping verification
 
-Using `agent:spawn` directly without running the verification script afterward. The verification step catches build failures, test regressions, and scope violations that would otherwise propagate.
+Using `agent spawn` directly without running the verification script afterward. The verification step catches build failures, test regressions, and scope violations that would otherwise propagate.
 
 ---
 

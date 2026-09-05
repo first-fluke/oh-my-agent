@@ -39,7 +39,7 @@ Zware verificaties (langer dan dertig seconden) worden gecached tegen de getroff
 
 ### Quota caps die blokkeren voor de schade
 
-Elke `oma agent:spawn` aanroep registreert de token-schatting van die spawn in `.serena/memories/session-cost-{sessionId}.md`. Voor de volgende spawn raadpleegt `checkCap` de geconfigureerde quota cap en weigert hij te starten als één dimensie overschreden is. Drie dimensies worden afgedwongen: totaal tokens, totaal spawns, per-vendor token budget.
+Elke `oma agent spawn` aanroep registreert de token-schatting van die spawn in `.serena/memories/session-cost-{sessionId}.md`. Voor de volgende spawn raadpleegt `checkCap` de geconfigureerde quota cap en weigert hij te starten als één dimensie overschreden is. Drie dimensies worden afgedwongen: totaal tokens, totaal spawns, per-vendor token budget.
 
 Dat is het verschil tussen achteraf horen dat je veertigduizend dollar hebt uitgegeven en bij spawn vijftien te horen krijgen dat er nog één spawn in je budget zit. Zie `cli/io/session-cost.ts` en configureer onder `session.quota_cap` in `.agents/oma-config.yaml`.
 

@@ -44,8 +44,8 @@ Pas besoin de commandes slash. Decrivez juste ce que vous voulez.
 2. **Agent PM** planifie le travail : API d'auth, schema de base de donnees, UI frontend, perimetre QA
 3. **Vous lancez les agents :**
    ```bash
-   oma agent:spawn backend "JWT authentication API" session-01 -w ./apps/api &
-   oma agent:spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
+   oma agent spawn backend "JWT authentication API" session-01 -w ./apps/api &
+   oma agent spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
    wait
    ```
 4. **Les agents travaillent en parallele** — chacun dans son propre workspace
@@ -87,17 +87,17 @@ Pas besoin de commandes slash. Decrivez juste ce que vous voulez.
 
 ```bash
 # Agent unique
-oma agent:spawn backend "Implement JWT auth API" session-01
+oma agent spawn backend "Implement JWT auth API" session-01
 
 # Agents multiples en parallele
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
-oma agent:spawn frontend "Login form + error states" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
+oma agent spawn frontend "Login form + error states" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
 wait
 
 # Surveiller en temps reel
-oma dashboard        # UI terminal
-oma dashboard:web    # UI web a http://localhost:9847
+oma dashboard terminal        # UI terminal
+oma dashboard web    # UI web a http://localhost:9847
 ```
 
 ---
@@ -166,7 +166,7 @@ Les questions comme "qu'est-ce qu'orchestrate ?" sont filtrees — elles ne decl
 ### Dashboard Terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Tableau en direct affichant le statut de session, etats des agents, tours et derniere activite. Surveille `.serena/memories/` pour les mises a jour en temps reel.
@@ -174,7 +174,7 @@ Tableau en direct affichant le statut de session, etats des agents, tours et der
 ### Dashboard Web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # → http://localhost:9847
 ```
 
@@ -187,7 +187,7 @@ Fonctionnalites :
 ### Disposition Recommandee
 
 Utilisez 3 terminaux :
-1. Dashboard (`oma dashboard`)
+1. Dashboard (`oma dashboard terminal`)
 2. Commandes de spawn d'agents
 3. Logs de test/build
 

@@ -184,8 +184,8 @@ description: 全面的调试指南，涵盖结构化的 5 步调试循环、严�
 |:-------|:---------|
 | Claude Code | 使用 `.claude/agents/debug-investigator.md` 的 Agent 工具 |
 | Codex CLI | 模型协调的子智能体请求，结果为 JSON |
-| Gemini CLI | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
-| Antigravity / 回退 | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Antigravity / 回退 | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 所有类似的脆弱位置都会被报告。确认的实例作为同一会话的一部分修复。
 

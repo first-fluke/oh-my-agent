@@ -111,7 +111,7 @@ EOF
 ### Шаг 4: Инициализация памяти
 
 ```bash
-oma memory:init
+oma memory init
 # Или вручную: mkdir -p /path/to/your/project/.serena/memories
 ```
 
@@ -169,8 +169,8 @@ rm -rf .agents/ .claude/skills/ .claude/agents/ .serena/
 ## Настройка дашборда
 
 ```bash
-oma dashboard        # Терминальный
-oma dashboard:web    # Веб на http://localhost:9847
+oma dashboard terminal        # Терминальный
+oma dashboard web    # Веб на http://localhost:9847
 ```
 
 ---

@@ -136,19 +136,19 @@ outputs:
 | Report output | `NOTIFY` | Run-dir + mp4 path summary |
 
 ### Tools and instruments
-- `oma video generate`, `oma video doctor`, `oma video list-providers`, `oma video render`
+- `oma video generate`, `oma video doctor`, `oma video provider list`, `oma video render`
 - Provider adapters: AgentScript, oma-voice, oma-image, oma-slide, Pexels, Pixelle, oma-captions, Cap, Remotion, MPT
 - Remotion authoring specs (`resources/remotion-authoring/`), prompt tips, vendor matrix, video config
 
 ### Canonical command path
 ```bash
 oma video doctor
-oma video generate "<brief>" --mode shorts --aspect auto --captions tiktok --format json
+oma video generate "<brief>" --mode shorts --aspect auto --captions tiktok --output json
 ```
 
 Explainer from a README, with a deterministic seed:
 ```bash
-oma video generate "explain this project" --mode explainer --aspect 16:9 --seed 42 --out ./out
+oma video generate "explain this project" --mode explainer --aspect 16:9 --seed 42 --output-dir ./out
 ```
 
 Demo from a screen capture:
@@ -262,10 +262,10 @@ oma video generate "<brief>" [--mode shorts|explainer|demo] \
                              [--source file|web] [--url <url>] [--device <name>] \
                              [--ready-selector <css>] [--show-cursor] [--polish] \
                              [--capture-timeout <sec>] [--capture-stop duration:<sec>|selector:<css>] \
-                             [--out <dir>] [--allow-external-out] \
+                             [--output-dir <dir>] [--allow-external-output] \
                              [--max-usd <n>] [--seed <n>] [--timeout 600] [-y] \
                              [--dry-run] [--script <path>] \
-                             [--format text|json] [--no-brief-in-manifest]
+                             [--output text|json] [--no-brief-in-manifest]
 # --script: inject the agent-authored script.json (agent-as-key). Without it the
 #   CLI builds its own skeleton script from the brief — always pass the script
 #   the agent wrote so narration/on-screen text/visual prompts are honored.
@@ -276,14 +276,14 @@ oma video generate "<brief>" [--mode shorts|explainer|demo] \
 oma video doctor          # readiness report only (no install): Node/Chromium/FFmpeg · Remotion toolchain · remotion-dev/skills · Pretendard font · MPT · Voicebox MCP · oma-image vendors · Pixelle-MCP · Cap
 oma video doctor --install             # warm the latest Remotion toolchain (deps + Chrome Headless Shell + Pretendard) and remotion-dev/skills into ~/.cache/oma-video
 oma video doctor --upgrade             # force a latest check now
-oma video compose <runDir> [--format json]   # scaffold/refresh the run's Remotion project + print the authoring contract
+oma video compose <runDir> [--output json]   # scaffold/refresh the run's Remotion project + print the authoring contract
 oma video doctor --install-mpt         # one-time: MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
-oma video list-providers  # availability + key/fallback status
+oma video provider list  # availability + key/fallback status
 oma video render <runDir>  # re-render from render-spec.json (deterministic)
 ```
 
 #### Shared Infrastructure (from other skills)
-Other skills call `oma video generate --format json` and parse the JSON envelope (`{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`) from stdout. There is no `outputs` key — read output/asset paths from the manifest at `manifestPath`. The deterministic boundary is `render-spec.json` + assets, so a downstream consumer can re-render via `oma video render <runDir>` without re-running script/voice/visual generation.
+Other skills call `oma video generate --output json` and parse the JSON envelope (`{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`) from stdout. There is no `outputs` key — read output/asset paths from the manifest at `manifestPath`. The deterministic boundary is `render-spec.json` + assets, so a downstream consumer can re-render via `oma video render <runDir>` without re-running script/voice/visual generation.
 
 ### Output Layout
 

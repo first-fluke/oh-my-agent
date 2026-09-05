@@ -24,7 +24,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -152,8 +152,8 @@ Only when the decision changes structure (boundaries, dependencies, data flow) a
 Emit and verify the required ADR/architecture completion decision:
 
 ```bash
-oma state:emit "decision.made" '{"subject":"architecture.adr-complete","decision":"Use the completed architecture recommendation or ADR as the handoff basis.","rationale":"The architecture artifact captures the selected option, tradeoffs, risks, and validation steps."}'
-oma state:verify --workflow architecture --checkpoint adr-complete
+oma state emit "decision.made" '{"subject":"architecture.adr-complete","decision":"Use the completed architecture recommendation or ADR as the handoff basis.","rationale":"The architecture artifact captures the selected option, tradeoffs, risks, and validation steps."}'
+oma state verify --workflow architecture --checkpoint adr-complete
 ```
 
 Then guide the next step:

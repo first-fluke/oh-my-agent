@@ -232,7 +232,7 @@ paramètres, et résout la persona de chaque agent à partir de fichiers
 Acheminez n'importe quel agent via opencode avec la surcharge `-m opencode` :
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Cela exécute `opencode run --agent pm --dir <workspace> "<prompt>"`. Le prompt est un
@@ -291,18 +291,18 @@ Le catalogue d'opencode est soumis à abonnement et à connexion ; oma ne code d
 catalogue installé :
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` renvoie `accepted` lorsque le slug est listé par `opencode models`,
+`oma model probe` renvoie `accepted` lorsque le slug est listé par `opencode models`,
 `rejected` lorsqu'il ne l'est pas, et `auth_required` lorsque le fournisseur requiert
 une connexion ou un abonnement.
 
 ### Authentification et fichiers générés
 
 - **Authentification :** `opencode auth login` stocke les identifiants dans
-  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` rapportent
+  `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` rapportent
   l'authentification opencode aux côtés des autres CLI au niveau du vendor (authentifié dès qu'un
   fournisseur possède des identifiants). En revanche, `oma doctor --profile` tient compte
   du fournisseur : chaque ligne est vérifiée avec le préfixe de fournisseur de

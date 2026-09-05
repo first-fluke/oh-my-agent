@@ -39,7 +39,7 @@ oh-my-agent 优化的是另一条轴。出发假设是：在足够强的模型�
 
 ### 在损失发生前阻断的 quota cap
 
-每次 `oma agent:spawn` 都会把这次 spawn 的 token 估算写入 `.serena/memories/session-cost-{sessionId}.md`。下一次 spawn 之前，`checkCap` 会查询已配置的 quota cap，任意维度超限就拒绝启动。强制三个维度：总 token、总 spawn 数、按厂商的 token 预算。
+每次 `oma agent spawn` 都会把这次 spawn 的 token 估算写入 `.serena/memories/session-cost-{sessionId}.md`。下一次 spawn 之前，`checkCap` 会查询已配置的 quota cap，任意维度超限就拒绝启动。强制三个维度：总 token、总 spawn 数、按厂商的 token 预算。
 
 这就是事后才知道烧了四万美元，与第 15 次 spawn 时被告知预算还剩 1 次的差别。详见 `cli/io/session-cost.ts`，在 `.agents/oma-config.yaml` 的 `session.quota_cap` 下配置。
 

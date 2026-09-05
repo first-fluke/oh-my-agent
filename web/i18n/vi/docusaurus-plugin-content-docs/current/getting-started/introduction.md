@@ -136,11 +136,11 @@ oh-my-agent hoạt động với bất kỳ IDE hoặc CLI hỗ trợ AI nào c�
 | Công cụ | Phương thức tích hợp | Agent song song |
 |------|-------------------|----------------|
 | **Claude Code** | Skill native + Agent tool | Task tool cho song song thực sự |
-| **Gemini CLI** | Tự động tải skill từ `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Tự động tải skill từ `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Tự động tải skill | Yêu cầu song song qua mô hình trung gian |
-| **Antigravity IDE** | Tự động tải skill | `oma agent:spawn` |
+| **Antigravity IDE** | Tự động tải skill | `oma agent spawn` |
 | **Cursor** | Skill qua tích hợp `.cursor/` | Spawn thủ công |
-| **OpenCode** | Skill + cầu nối plugin in-process + subagent được sinh ra (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
+| **OpenCode** | Skill + cầu nối plugin in-process + subagent được sinh ra (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 
 Spawn agent tự động thích ứng với từng vendor thông qua giao thức phát hiện vendor, kiểm tra các marker đặc thù vendor (ví dụ: `Agent` tool cho Claude Code, `apply_patch` cho Codex CLI).
 
@@ -197,7 +197,7 @@ oh-my-agent không giới hạn ở Claude Code. Hệ thống hook hỗ trợ:
 | Vendor | Tích hợp |
 |--------|------------|
 | **Claude Code** | Hook native (`UserPromptSubmit`, `Notification`, statusLine) |
-| **Gemini CLI** | Tự động tải skill từ `.agents/skills/`, spawn agent qua `oma agent:spawn` |
+| **Gemini CLI** | Tự động tải skill từ `.agents/skills/`, spawn agent qua `oma agent spawn` |
 | **Codex CLI** | Tự động tải skill, yêu cầu song song qua mô hình trung gian |
 | **Qwen Code** | Hỗ trợ hook cho phát hiện workflow |
 

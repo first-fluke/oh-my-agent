@@ -32,10 +32,10 @@ De `/plan`-workflow draait inline en produceert een gestructureerd plan: require
 | **Persistent mode** | Ja | Ja |
 | **Geschikt voor** | Eerste gebruik, complex projecten met toezicht | Herhaalde runs, goed gedefinieerde taken |
 
-### Stap 3: agent:spawn — CLI-Niveau agentbeheer
+### Stap 3: agent spawn — CLI-Niveau agentbeheer
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 ### Stap 4: /review — QA verificatie

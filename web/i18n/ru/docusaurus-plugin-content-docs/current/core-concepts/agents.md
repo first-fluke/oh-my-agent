@@ -482,7 +482,7 @@ description: Полный справочник по всем 21 агентам o
 
 **Когда использовать:** Суммирование дня или периода рабочей активности, понимание потока работы между несколькими AI-инструментами, анализ паттернов переключения инструментов между сессиями, подготовка ежедневных стендапов / еженедельных ретро / рабочих логов.
 
-**Когда НЕ использовать:** Ретроспектива изменений кода на основе Git-коммитов (используйте `oma retro`), мониторинг агентов в реальном времени (используйте `oma dashboard`), метрики продуктивности (используйте `oma stats`).
+**Когда НЕ использовать:** Ретроспектива изменений кода на основе Git-коммитов (используйте `oma retro`), мониторинг агентов в реальном времени (используйте `oma dashboard terminal`), метрики продуктивности (используйте `oma stats get`).
 
 **Процесс:**
 1. Разрешить дату или временной диапазон из ввода на естественном языке (today, yesterday, last Monday, явная дата)
@@ -615,8 +615,8 @@ CHARTER_CHECK:
 Рабочие пространства указываются флагом `-w` при запуске агентов:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -684,4 +684,4 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 }
 ```
 
-Дашборды (`oma dashboard` и `oma dashboard:web`) наблюдают за этими файлами памяти для мониторинга в реальном времени.
+Дашборды (`oma dashboard terminal` и `oma dashboard web`) наблюдают за этими файлами памяти для мониторинга в реальном времени.

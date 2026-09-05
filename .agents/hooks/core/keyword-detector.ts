@@ -26,7 +26,7 @@ import { UNKNOWN_SESSION_ID, VENDORS } from "./constants.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { isRelayedAgentMessage, normalizePromptInput } from "./prompt-input.ts";
 // triggers.json is imported statically: the bundler inlines it into the oma
-// binary (bundled `oma hook` path needs no file on disk), while a standalone
+// binary (bundled `oma hook run` path needs no file on disk), while a standalone
 // bun run resolves the sibling file next to this module (pi / direct run).
 import embeddedTriggers from "./triggers.json" with { type: "json" };
 import type {
@@ -78,6 +78,8 @@ const CLI_INVOCATION_SIGNALS = [
 
 const BRANDS_RE_SOURCE = CLI_INVOCATION_BRANDS.join("|");
 const SIGNALS_RE_SOURCE = CLI_INVOCATION_SIGNALS.join("|");
+// Require a resource and action so conversational mentions of OMA still trigger.
+const OMA_RESOURCE_ACTION = String.raw`oma\s+(?:schedule|memory|model|state|goal|ralph|auth|dashboard|hook|skill|slide|image|video|vault|search|serena)\s+(?:create|list|delete|run|sync|daemon|service|retry|maintain|init|setup|status|import|gc|upgrade|check|probe|propose|get|activate|archive|purge|repair|verify|emit|decisions|inject-log|summary|heal-check|set|terminal|web|audit|lint|eval|optimize|preview|export|asset|style|vendor|provider|api|rss|reaper)(?=\s|$)`;
 
 /**
  * Matches CLI invocations at the start of the prompt.
@@ -97,11 +99,11 @@ const SIGNALS_RE_SOURCE = CLI_INVOCATION_SIGNALS.join("|");
  *   2. Bare form: '<brand>\s+<signal>' where <signal> is one of the
  *      enumerated subcommand verbs (agent / auto / exec / run / spawn),
  *      a --flag, or a colon-namespaced subcommand ('agent:spawn').
- *      Examples: 'oma agent:spawn brainstorm', 'claude --help',
+ *      Examples: 'oma agent spawn brainstorm', 'claude --help',
  *      'codex exec --workflow ralph', 'cursor agent', 'qwen run'.
  */
 export const CLI_INVOCATION_AT_START = new RegExp(
-  `^\\s*(?:\\/(?:${BRANDS_RE_SOURCE}):|(?:${BRANDS_RE_SOURCE})\\s+(?:${SIGNALS_RE_SOURCE}))`,
+  `^\\s*(?:${OMA_RESOURCE_ACTION}|\\/(?:${BRANDS_RE_SOURCE}):|(?:${BRANDS_RE_SOURCE})\\s+(?:${SIGNALS_RE_SOURCE}))`,
   "i",
 );
 
@@ -516,7 +518,7 @@ export function isPastedContent(
  * compound technical token is a reference to an ARTIFACT (CLI subcommand,
  * file, property, path segment), not a request to run the workflow:
  *
- *   `oma ralph:verify`            keyword + ':' + word  (CLI subcommand)
+ *   `oma ralph verify`            keyword + ':' + word  (CLI subcommand)
  *   `ralph.md`, `ralph.exec-tier` keyword + '.' + word  (file / property)
  *   `.agents/workflows/ralph`     word + '/' + keyword  (path segment)
  *
@@ -955,7 +957,7 @@ export function pickWinningCandidate(
 /**
  * Pure decision function — the single logic source for keyword detection.
  *
- * Called in-process by `oma hook` dispatch (Task 3+) and by the standalone
+ * Called in-process by `oma hook run` dispatch (Task 3+) and by the standalone
  * `main()` entry below (pi subprocess path). Both paths share exactly this
  * code; no business logic is duplicated.
  *

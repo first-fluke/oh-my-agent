@@ -25,17 +25,17 @@ Muchos comandos soportan salida legible por máquina para pipelines de CI/CD y a
 ### 1. Flag --json
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-El flag `--json` es la forma más sencilla de obtener salida JSON. Disponible en: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+El flag `--json` es la forma más sencilla de obtener salida JSON. Disponible en: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. Flag --output
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -47,7 +47,7 @@ El flag `--output` acepta `text` o `json`. Proporciona la misma funcionalidad qu
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # salida JSON
+oma stats get    # salida JSON
 oma doctor   # salida JSON
 oma retro    # salida JSON
 ```
@@ -64,8 +64,8 @@ Establece esta variable de entorno como `json` para forzar salida JSON en todos 
 | `stats` | Sí | Sí | Objeto completo de métricas |
 | `retro` | Sí | Sí | Snapshot con métricas, autores, tipos de commit |
 | `cleanup` | Sí | Sí | Lista de elementos limpiados |
-| `auth:status` | Sí | Sí | Estado de autenticación por CLI |
-| `memory:init` | Sí | Sí | Resultado de inicialización |
+| `auth status` | Sí | Sí | Estado de autenticación por CLI |
+| `memory init` | Sí | Sí | Resultado de inicialización |
 | `verify` | Sí | Sí | Resultados de verificación por chequeo |
 | `visualize` | Sí | Sí | Grafo de dependencias como JSON |
 | `describe` | Siempre JSON | N/A | Siempre genera JSON (comando de introspección) |
@@ -104,7 +104,8 @@ oma update [-f | --force] [--ci]
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 | Flag | Descripción | Predeterminado |
@@ -144,15 +145,15 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Archivos de log huérfanos: `/tmp/subagent-*.log` que coinciden con PIDs muertos.
 3. Directorios de Gemini Antigravity: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — estos acumulan estado con el tiempo y pueden crecer mucho.
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | Flag | Corto | Descripción | Predeterminado |
 |:-----|:------|:-----------|:---------------|
-| `--model` | `-m` | Proveedor CLI. Debe ser uno de: `antigravity`, `claude`, `codex`, `qwen`. Sobrescribe toda la resolución de proveedor basada en configuración. | Resuelto desde config |
+| `--vendor` | — | Proveedor CLI. Debe ser uno de: `antigravity`, `claude`, `codex`, `qwen`. Sobrescribe toda la resolución de proveedor basada en configuración. | Resuelto desde config |
 | `--workspace` | `-w` | Directorio de trabajo del agente. Si se omite o se establece como `.`, el CLI auto-detecta el workspace desde archivos de configuración del monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detectado o `.` |
 
 **Validación:**
@@ -172,10 +173,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 Estos valores por defecto se pueden sobrescribir en `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 | Flag | Corto | Descripción | Predeterminado |
@@ -187,15 +188,15 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 2. Si existe archivo PID en `/tmp/subagent-{session-id}-{agent}.pid`: verifica si el PID está activo. Reporta `running` si está activo, `crashed` si está muerto.
 3. Si no existe ningún archivo: reporta `crashed`.
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Corto | Descripción | Predeterminado |
 |:-----|:------|:-----------|:---------------|
-| `--model` | `-m` | Proveedor CLI aplicado a todos los agentes generados. | Resuelto por agente desde config |
+| `--vendor` | — | Proveedor CLI aplicado a todos los agentes generados. | Resuelto por agente desde config |
 | `--inline` | `-i` | Interpretar argumentos de tareas como cadenas `agent:task[:workspace]` en lugar de una ruta de archivo. | `false` |
 | `--no-wait` | | Modo en segundo plano. Inicia todos los agentes y retorna inmediatamente sin esperar a que terminen. La lista de PIDs y logs se guardan en `.agents/results/parallel-{timestamp}/`. | `false` (espera a que terminen) |
 
@@ -281,7 +282,7 @@ El formato de salida se controla por subcomando vía `--format <text|json>` (no 
 | `--count <n>` | `-n` | Número de imágenes, 1..5. | `1` |
 | `--out <dir>` | | Directorio de salida. Debe estar dentro de `$PWD` salvo que se establezca `--allow-external-out`. | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | Permitir rutas `--out` fuera de `$PWD`. | `false` |
-| `--model <name>` | | Sobrescritura de modelo específica del proveedor (ej. `gpt-image-2`, `flux`, `imagen-4`). | predeterminado del proveedor |
+| `--vendor <name>` | | Sobrescritura de modelo específica del proveedor (ej. `gpt-image-2`, `flux`, `imagen-4`). | predeterminado del proveedor |
 | `--strategy <list>` | | Orden de fallback de Gemini, separado por comas entre `mcp`, `stream`, `api`. | predeterminado del proveedor |
 | `--timeout <seconds>` | | Timeout por imagen. | predeterminado del proveedor |
 | `--reference <path>` | `-r` | Imagen de referencia para transferencia de estilo/sujeto. Repetible (`-r a.png -r b.png`) o separada por comas. Validada por tamaño (≤5MB), formato (PNG/JPEG/GIF/WebP vía magic bytes) y cantidad (≤10). Soportada en `codex` (pasa `-i` a `codex exec`) y `gemini` (incluye base64 `inlineData`). Rechazada con exit 4 en `pollinations`. | |
@@ -292,10 +293,10 @@ El formato de salida se controla por subcomando vía `--format <text|json>` (no 
 
 `image doctor` y `image list-vendors` solo aceptan `--format <text|json>`.
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 | Flag | Descripción | Predeterminado |
@@ -331,18 +332,18 @@ oma doctor --json | jq '.healthy'
 ```bash
 # Recopilar métricas como JSON y enviar a un sistema de monitoreo
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### Ejecución por lotes de agentes con monitoreo de estado
 
 ```bash
 # Iniciar agentes en segundo plano
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Verificar estado periódicamente
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### Limpieza en CI después de pruebas
@@ -383,10 +384,10 @@ echo "=== oh-my-agent Health Check ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
 
 # Verificar estado de autenticación
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
 
 # Verificar métricas
-oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 
 echo "=== Done ==="
 ```
@@ -398,5 +399,5 @@ echo "=== Done ==="
 oma describe | jq '.command.subcommands[] | {name, description}'
 
 # Obtener detalles sobre un comando específico
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

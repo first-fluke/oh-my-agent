@@ -175,7 +175,7 @@ This data is sourced from the Experiment Ledger at session end (see `experiment-
 - **Active session**: `.agents/state/memories/session-metrics.md`
 - **Completed sessions**: Archived to `.agents/state/memories/archive/metrics-{date}.md`
 - **Retention**: 30 days (configurable)
-- **Aggregation**: `oma stats` command summarizes trends
+- **Aggregation**: `oma stats get` command summarizes trends
 
 ---
 
@@ -256,7 +256,7 @@ Use proxy metrics that are always measurable.
 - **Turn count**: Always available (count progress file updates)
 - **Wall-clock time**: Bash timestamps at spawn and completion
 - **Sprint resets**: Count checkpoint files per agent
-- **Precise tokens**: Available only via `oma stats` post-hoc (parses CLI logs when supported)
+- **Precise tokens**: Available only via `oma stats get` post-hoc (parses CLI logs when supported)
 
 ### Usage
 

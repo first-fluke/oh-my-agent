@@ -39,7 +39,7 @@ Ciezkie weryfikacje (ponad trzydziesci sekund) sa cachowane wzgledem dotknietych
 
 ### Quota cap blokujace przed szkoda
 
-Kazde wywolanie `oma agent:spawn` zapisuje szacunek tokenow tego spawnu do `.serena/memories/session-cost-{sessionId}.md`. Przed nastepnym spawnem `checkCap` konsultuje skonfigurowany quota cap i odmawia uruchomienia, jesli ktorykolwiek wymiar zostal przekroczony. Wymuszane sa trzy wymiary: lacznie tokeny, lacznie spawny, budzet tokenow per vendor.
+Kazde wywolanie `oma agent spawn` zapisuje szacunek tokenow tego spawnu do `.serena/memories/session-cost-{sessionId}.md`. Przed nastepnym spawnem `checkCap` konsultuje skonfigurowany quota cap i odmawia uruchomienia, jesli ktorykolwiek wymiar zostal przekroczony. Wymuszane sa trzy wymiary: lacznie tokeny, lacznie spawny, budzet tokenow per vendor.
 
 To roznica miedzy dowiedzeniem sie po fakcie, ze wydano czterdziesci tysiecy dolarow, a otrzymaniem przy spawnie pietnastym informacji, ze w budzecie zostal jeden spawn. Zobacz `cli/io/session-cost.ts` i skonfiguruj pod `session.quota_cap` w `.agents/oma-config.yaml`.
 

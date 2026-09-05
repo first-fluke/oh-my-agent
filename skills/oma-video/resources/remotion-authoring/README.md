@@ -14,11 +14,11 @@ Remotion is fixed by re-authoring with the latest skills, never by pinning.
 ## Flow
 
 ```bash
-oma video compose <runDir> --format json   # toolchain + skills + scaffold; prints the contract
+oma video compose <runDir> --output json   # toolchain + skills + scaffold; prints the contract
 #  → read <runDir>/remotion/AUTHORING.md and the skill files it lists
 #  → write <runDir>/remotion/src/Root.tsx (+ src/components/*)
 #  → cd <runDir>/remotion && npx tsc --noEmit
-oma video render <runDir> --format json    # typecheck + npx remotion render + ffprobe
+oma video render <runDir> --output json    # typecheck + npx remotion render + ffprobe
 ```
 
 `oma video generate` (non-mock, `--compositor remotion`) stops after the

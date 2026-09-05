@@ -111,7 +111,7 @@ import { backupSkillMd } from "./opt/skill-files.js";
 // --- Main entry point ---
 
 /**
- * CLI entry point for `oma skills opt`.
+ * CLI entry point for `oma skill optimize`.
  *
  * M3 scope: full OUTPUT layer (tasks 7–8).
  * - Resolves skill's eval task directory and loads fixtures.
@@ -154,7 +154,7 @@ export async function runSkillsOpt(
 
   // Hard check: need at least MIN_TASKS fixtures for a meaningful train/val split
   if (fixtures.length < MIN_TASKS) {
-    const message = `[oma skills opt] no eval coverage for skill "${skillId}": found ${fixtures.length} task fixture(s), need at least ${MIN_TASKS}. Author tasks first — see web/docs/guide/skill-eval.md`;
+    const message = `[oma skill opt] no eval coverage for skill "${skillId}": found ${fixtures.length} task fixture(s), need at least ${MIN_TASKS}. Author tasks first — see web/docs/guide/skill-eval.md`;
     if (jsonMode) {
       console.log(JSON.stringify({ error: message }, null, 2));
     } else {
@@ -188,7 +188,7 @@ export async function runSkillsOpt(
     );
     if (!proceed) {
       if (!jsonMode) {
-        console.log("[oma skills opt] aborted: user declined live run.");
+        console.log("[oma skill opt] aborted: user declined live run.");
       } else {
         console.log(
           JSON.stringify(
@@ -312,7 +312,7 @@ export async function runSkillsOpt(
     if (!hasImprovement) {
       await evolutionRecorder?.complete(finalResult);
       // No real improvement — write nothing
-      const noImpMsg = `[oma skills opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} <= baselineLift ${loopResult.baselineLift.toFixed(4)}); nothing written.`;
+      const noImpMsg = `[oma skill opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} <= baselineLift ${loopResult.baselineLift.toFixed(4)}); nothing written.`;
       if (!jsonMode) {
         console.log(noImpMsg);
         renderSkillOptResult(finalResult);
@@ -339,7 +339,7 @@ export async function runSkillsOpt(
 
     if (!passesFinalTest) {
       await evolutionRecorder?.complete(finalResult);
-      const finalTestMsg = `[oma skills opt] candidate failed runner-owned final test (${loopResult.finalTest?.candidateLift.toFixed(4)} <= ${loopResult.finalTest?.baselineLift.toFixed(4)}); nothing written.`;
+      const finalTestMsg = `[oma skill opt] candidate failed runner-owned final test (${loopResult.finalTest?.candidateLift.toFixed(4)} <= ${loopResult.finalTest?.baselineLift.toFixed(4)}); nothing written.`;
       if (!jsonMode) {
         console.log(finalTestMsg);
         renderSkillOptResult(finalResult);
@@ -367,7 +367,7 @@ export async function runSkillsOpt(
     if (!validation.ok) {
       await evolutionRecorder?.complete(finalResult);
       // Candidate failed validation — write nothing
-      const validMsg = `[oma skills opt] candidate failed validation (${validation.reason}); nothing written.`;
+      const validMsg = `[oma skill opt] candidate failed validation (${validation.reason}); nothing written.`;
       if (!jsonMode) {
         console.error(validMsg);
         renderSkillOptResult(finalResult);
@@ -397,7 +397,7 @@ export async function runSkillsOpt(
     if (isOmaOwnedSkill(skillId) && !yes) {
       await evolutionRecorder?.complete(finalResult);
       const warnMsg =
-        `[oma skills opt] WARNING: "${skillId}" is an oma-owned skill. ` +
+        `[oma skill opt] WARNING: "${skillId}" is an oma-owned skill. ` +
         `oma-owned skills are overwritten by \`oma update\` — applying edits here may be lost. ` +
         `Re-run with --yes to proceed, or use --dry-run to review the proposed diff.`;
       if (!jsonMode) {
@@ -449,7 +449,7 @@ export async function runSkillsOpt(
 
     if (!jsonMode) {
       console.log(
-        `[oma skills opt] applied: wrote ${skillMdPath} (backup created).`,
+        `[oma skill opt] applied: wrote ${skillMdPath} (backup created).`,
       );
       renderSkillOptResult(finalResult);
     } else {
@@ -492,7 +492,7 @@ export async function runSkillsOpt(
     );
   } else {
     console.log(
-      `[oma skills opt] skill: ${skillId}, tasks: ${fixtures.length} (train: ${train.length}, val: ${val.length}, test: ${test.length}), dry-run: ${dryRun}`,
+      `[oma skill opt] skill: ${skillId}, tasks: ${fixtures.length} (train: ${train.length}, val: ${val.length}, test: ${test.length}), dry-run: ${dryRun}`,
     );
     renderSkillOptResult(finalResult);
   }

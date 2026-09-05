@@ -2,7 +2,7 @@
  * Direct-dispatch path of the refactor-guard enforcer — kiro's Stop hook
  * output is not processed by the host (aws/amazon-q lineage), so on the first
  * block of each offending file the enforcer spawns a detached
- * `oma agent:spawn refactor-engineer` instead of relying on the (ignored)
+ * `oma agent spawn refactor-engineer` instead of relying on the (ignored)
  * block reason. child_process is mocked; no real process is spawned.
  */
 
@@ -59,7 +59,7 @@ function stop(vendor: "kiro" | "claude") {
 }
 
 describe("refactor-guard direct dispatch (non-blocking-stop vendors)", () => {
-  it("spawns a detached oma agent:spawn on kiro's first stop block only", async () => {
+  it("spawns a detached oma agent spawn on kiro's first stop block only", async () => {
     await record("kiro");
     expect((await stop("kiro"))?.type).toBe("block");
     expect(spawnMock).toHaveBeenCalledTimes(1);
@@ -69,8 +69,8 @@ describe("refactor-guard direct dispatch (non-blocking-stop vendors)", () => {
       Record<string, unknown>,
     ];
     expect(cmd).toBe("oma");
-    expect(args[0]).toBe("agent:spawn");
-    expect(args[1]).toBe("refactor-engineer");
+    expect(args.slice(0, 2)).toEqual(["agent", "spawn"]);
+    expect(args[2]).toBe("refactor-engineer");
     expect(args).toContain("sid-1");
     expect(opts.detached).toBe(true);
 

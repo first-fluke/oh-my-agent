@@ -60,7 +60,7 @@ oma image generate "test prompt" --dry-run
 oma image doctor
 
 # Список зарегистрированных вендоров и поддерживаемых ими моделей
-oma image list-vendors
+oma image vendor list
 ```
 
 `oma img` — алиас для `oma image`.
@@ -111,7 +111,7 @@ oma image list-vendors
 Другие навыки (дизайн, маркетинг, документация) вызывают конвейер как общую инфраструктуру с JSON-выводом:
 
 ```bash
-oma image generate "<prompt>" --format json
+oma image generate "<prompt>" --output json
 ```
 
 Манифест, записанный в stdout, содержит пути к выходным файлам, вендора, модель и стоимость — легко парсится и связывается в цепочки.
@@ -132,7 +132,7 @@ oma image generate "<prompt>"
   [--dry-run] [--format text|json]
 
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 ### Ключевые флаги

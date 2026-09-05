@@ -17,7 +17,8 @@ function dispatchResume(
     throw new Error("Cannot locate the CLI entry or replay prompt");
   const args = [
     resolve(entry),
-    "agent:spawn",
+    "agent",
+    "spawn",
     task.agentId,
     task.prompt,
     sessionId,
@@ -26,7 +27,7 @@ function dispatchResume(
     "--task-id",
     task.taskId,
   ];
-  if (task.vendor) args.push("--model", task.vendor);
+  if (task.vendor) args.push("--vendor", task.vendor);
   if (task.readOnly) args.push("--read-only");
   if (task.previousRunId) args.push("--resumed-from", task.previousRunId);
   return new Promise((resolve) => {

@@ -25,17 +25,17 @@ Viele Befehle unterstützen maschinenlesbare Ausgabe für CI/CD-Pipelines und Au
 ### 1. --json-Flag
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-Das `--json`-Flag ist der einfachste Weg zur JSON-Ausgabe. Verfügbar bei: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+Das `--json`-Flag ist der einfachste Weg zur JSON-Ausgabe. Verfügbar bei: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. --output-Flag
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -47,7 +47,7 @@ Das `--output`-Flag akzeptiert `text` oder `json`. Es bietet dieselbe Funktional
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # gibt JSON aus
+oma stats get    # gibt JSON aus
 oma doctor   # gibt JSON aus
 oma retro    # gibt JSON aus
 ```
@@ -64,8 +64,8 @@ Setzen Sie diese Umgebungsvariable auf `json`, um JSON-Ausgabe bei allen Befehle
 | `stats` | Ja | Ja | Vollständiges Metrik-Objekt |
 | `retro` | Ja | Ja | Snapshot mit Metriken, Autoren, Commit-Typen |
 | `cleanup` | Ja | Ja | Liste der bereinigten Elemente |
-| `auth:status` | Ja | Ja | Authentifizierungsstatus pro CLI |
-| `memory:init` | Ja | Ja | Initialisierungsergebnis |
+| `auth status` | Ja | Ja | Authentifizierungsstatus pro CLI |
+| `memory init` | Ja | Ja | Initialisierungsergebnis |
 | `verify` | Ja | Ja | Verifikationsergebnisse pro Prüfung |
 | `visualize` | Ja | Ja | Abhängigkeitsgraph als JSON |
 | `describe` | Immer JSON | N/A | Gibt immer JSON aus (Introspektionsbefehl) |
@@ -104,7 +104,8 @@ oma update [-f | --force] [--ci]
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 | Flag | Beschreibung | Standard |
@@ -144,15 +145,15 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Verwaiste Logdateien: `/tmp/subagent-*.log`, die zu beendeten PIDs gehören.
 3. Gemini-Antigravity-Verzeichnisse: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — diese sammeln über die Zeit Zustand an und können groß werden.
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | Flag | Kurz | Beschreibung | Standard |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI-Vendor-Überschreibung. Muss einer der folgenden sein: `antigravity`, `claude`, `codex`, `qwen`. Überschreibt alle konfigurationsbasierten Vendor-Auflösungen. | Aus Konfiguration aufgelöst |
+| `--vendor` | — | CLI-Vendor-Überschreibung. Muss einer der folgenden sein: `antigravity`, `claude`, `codex`, `qwen`. Überschreibt alle konfigurationsbasierten Vendor-Auflösungen. | Aus Konfiguration aufgelöst |
 | `--workspace` | `-w` | Arbeitsverzeichnis für den Agenten. Bei Weglassen oder Angabe von `.` erkennt die CLI den Workspace automatisch aus Monorepo-Konfigurationsdateien (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Automatisch erkannt oder `.` |
 
 **Validierung:**
@@ -172,10 +173,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 Diese Standards können in `.agents/skills/oma-orchestration/config/cli-config.yaml` überschrieben werden.
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 | Flag | Kurz | Beschreibung | Standard |
@@ -187,15 +188,15 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 2. Falls PID-Datei unter `/tmp/subagent-{session-id}-{agent}.pid` existiert: prüft, ob der PID aktiv ist. Meldet `running` bei aktivem, `crashed` bei beendetem Prozess.
 3. Falls keine der Dateien existiert: meldet `crashed`.
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Kurz | Beschreibung | Standard |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI-Vendor-Überschreibung, die auf alle gestarteten Agenten angewendet wird. | Pro Agent aus Konfiguration aufgelöst |
+| `--vendor` | — | CLI-Vendor-Überschreibung, die auf alle gestarteten Agenten angewendet wird. | Pro Agent aus Konfiguration aufgelöst |
 | `--inline` | `-i` | Aufgabenargumente als `agent:task[:workspace]`-Zeichenketten statt als Dateipfad interpretieren. | `false` |
 | `--no-wait` | | Hintergrundmodus. Startet alle Agenten und kehrt sofort zurück, ohne auf den Abschluss zu warten. PID-Liste und Logs werden in `.agents/results/parallel-{timestamp}/` gespeichert. | `false` (wartet auf Abschluss) |
 
@@ -214,10 +215,10 @@ tasks:
     task: "Build user dashboard"
 ```
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 | Flag | Beschreibung | Standard |
@@ -253,18 +254,18 @@ oma doctor --json | jq '.healthy'
 ```bash
 # Metriken als JSON erfassen und an ein Überwachungssystem weiterleiten
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### Stapelweise Agentenausführung mit Statusüberwachung
 
 ```bash
 # Agenten im Hintergrund starten
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Status regelmäßig prüfen
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### Bereinigung in CI nach Tests
@@ -305,10 +306,10 @@ echo "=== oh-my-agent Gesundheitscheck ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "FEHLT" end)"'
 
 # Authentifizierungsstatus prüfen
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
 
 # Metriken prüfen
-oma stats --json | jq -r '"Sitzungen: \(.sessions), Aufgaben: \(.tasksCompleted)"'
+oma stats get --json | jq -r '"Sitzungen: \(.sessions), Aufgaben: \(.tasksCompleted)"'
 
 echo "=== Fertig ==="
 ```
@@ -320,5 +321,5 @@ echo "=== Fertig ==="
 oma describe | jq '.command.subcommands[] | {name, description}'
 
 # Details zu einem bestimmten Befehl abrufen
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

@@ -83,24 +83,24 @@ Você tem dois caminhos de execução:
 6. Verifica cada agente completado via `verify.sh` — PASS (exit 0) aceita, FAIL (exit 1) re-spawna com contexto do erro (máximo 2 retries), e falha persistente aciona o Exploration Loop.
 7. Coleta todos os arquivos `result-{agent}.md` e compila relatório final.
 
-### Step 3: agent:spawn — gerenciamento de agentes via CLI
+### Step 3: agent spawn — gerenciamento de agentes via CLI
 
-O comando `agent:spawn` é o mecanismo de baixo nível que workflows chamam internamente. Você também pode usá-lo diretamente:
+O comando `agent spawn` é o mecanismo de baixo nível que workflows chamam internamente. Você também pode usá-lo diretamente:
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 **Todas as flags:**
 
 | Flag | Descrição |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Sobrescrita de vendor CLI (antigravity/claude/codex/qwen). Sobrescreve toda config. |
+| `--vendor <vendor>` | Sobrescrita de vendor CLI (antigravity/claude/codex/qwen). Sobrescreve toda config. |
 | `-w, --workspace <path>` | Diretório de trabalho para o agente. Auto-detectado da config monorepo se omitido. |
 
 **Ordem de resolução de vendor** (primeira correspondência vence):
 
-1. Flag `--model` na linha de comando
+1. Flag `--vendor` na linha de comando
 2. `model_preset` em `oma-config.yaml` para este tipo específico de agente
 3. `default_cli` em `oma-config.yaml`
 4. `active_vendor` em `cli-config.yaml`
@@ -183,7 +183,7 @@ Se nada corresponde, o agente executa no diretório atual (`.`).
 Sempre disponível:
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -241,16 +241,16 @@ No workflow ultrawork, esses se traduzem em **portões de fase** explícitos (PL
 
 ```bash
 # Spawnar agente backend com Gemini (padrão)
-oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Spawnar agente frontend com Claude, workspace explícito
-oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
 # Spawnar de arquivo de prompt
-oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Execução paralela via agent:parallel
+### Execução paralela via agent parallel
 
 Usando arquivo YAML de tarefas:
 
@@ -269,13 +269,13 @@ tasks:
 ```
 
 ```bash
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 ```
 
 Usando modo inline:
 
 ```bash
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
@@ -284,14 +284,14 @@ oma agent:parallel --inline \
 Modo background (sem espera):
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 # Retorna imediatamente, resultados escritos em .agents/results/parallel-{timestamp}/
 ```
 
 Com sobrescrita de vendor:
 
 ```bash
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
 ---
@@ -324,7 +324,7 @@ Executar tarefas P1 antes das tarefas P0 completarem. Tiers de prioridade existe
 
 ### 7. Pular verificação
 
-Usar `agent:spawn` diretamente sem executar o script de verificação depois. A etapa de verificação detecta falhas de build, regressões de testes e violações de escopo que de outra forma se propagariam.
+Usar `agent spawn` diretamente sem executar o script de verificação depois. A etapa de verificação detecta falhas de build, regressões de testes e violações de escopo que de outra forma se propagariam.
 
 ---
 

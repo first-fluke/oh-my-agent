@@ -306,7 +306,7 @@ Surveillez ces signaux qui indiquent qu'il faut passer du mode compétence uniqu
 | Le CHARTER_CHECK de l'agent fait apparaître des éléments « Must NOT do » qui sont en réalité nécessaires | Le périmètre dépasse un seul domaine | Planifier la fonctionnalité complète avec `/plan` d'abord |
 | Une correction se propage à 3 fichiers ou plus à travers différentes couches | Une seule correction affecte plusieurs domaines | Utiliser `/debug` avec un périmètre plus large, ou `/work` |
 | L'agent découvre une incohérence de contrat d'API | Désaccord frontend/backend | Exécuter `/plan` pour définir les contrats, puis relancer les deux agents |
-| La porte de qualité échoue sur les points d'intégration | Les composants ne se connectent pas correctement | Ajouter une étape de revue QA : `oma agent:spawn qa "Review integration"` |
+| La porte de qualité échoue sur les points d'intégration | Les composants ne se connectent pas correctement | Ajouter une étape de revue QA : `oma agent spawn qa "Review integration"` |
 | La tâche passe de « un composant » à « trois composants + nouvelle route + API » | Glissement de périmètre en cours d'exécution | Arrêter, exécuter `/plan` pour décomposer, puis `/orchestrate` |
 | L'agent bloque avec une clarification HIGH | Exigences fondamentalement ambiguës | Répondre aux questions de l'agent ou exécuter `/brainstorm` pour clarifier l'approche |
 

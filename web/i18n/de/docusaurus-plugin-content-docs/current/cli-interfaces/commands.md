@@ -123,7 +123,7 @@ oma update --ci --force
 Startet das Terminal-Dashboard zur Echtzeit-Agentenüberwachung.
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 Keine Optionen. Überwacht `.serena/memories/` im aktuellen Verzeichnis. Rendert eine Rahmenzeichnungs-Oberfläche mit Sitzungsstatus, Agententabelle und Aktivitäts-Feed. Aktualisiert bei jeder Dateiänderung. Mit `Strg+C` beenden.
@@ -133,18 +133,18 @@ Das Memories-Verzeichnis kann über die Umgebungsvariable `MEMORIES_DIR` übersc
 **Beispiel:**
 ```bash
 # Standardverwendung
-oma dashboard
+oma dashboard terminal
 
 # Benutzerdefiniertes Memories-Verzeichnis
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal
 ```
 
-### dashboard:web
+### dashboard web
 
 Startet das Web-Dashboard.
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 Startet einen HTTP-Server auf `http://localhost:9847` mit einer WebSocket-Verbindung für Live-Updates. Die URL im Browser öffnen, um das Dashboard anzuzeigen.
@@ -159,10 +159,10 @@ Startet einen HTTP-Server auf `http://localhost:9847` mit einer WebSocket-Verbin
 **Beispiel:**
 ```bash
 # Standardverwendung
-oma dashboard:web
+oma dashboard web
 
 # Benutzerdefinierter Port
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 ### stats
@@ -170,7 +170,8 @@ DASHBOARD_PORT=8080 oma dashboard:web
 Produktivitätsmetriken anzeigen.
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 **Optionen:**
@@ -194,13 +195,13 @@ Metriken werden in `.serena/metrics.json` gespeichert. Die Daten werden aus Git-
 **Beispiele:**
 ```bash
 # Aktuelle Metriken anzeigen
-oma stats
+oma stats get
 
 # JSON-Ausgabe
-oma stats --json
+oma stats get --json
 
 # Alle Metriken zurücksetzen
-oma stats --reset
+oma stats reset
 ```
 
 ### retro
@@ -261,12 +262,12 @@ oma retro 7d --json
 
 ## Agenten-Verwaltung
 
-### agent:spawn
+### agent spawn
 
 Einen Subagenten-Prozess starten.
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 **Argumente:**
@@ -281,34 +282,34 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI-Vendor-Überschreibung: `antigravity`, `claude`, `codex`, `qwen` |
+| `--vendor <vendor>` | CLI-Vendor-Überschreibung: `antigravity`, `claude`, `codex`, `qwen` |
 | `-w, --workspace <path>` | Arbeitsverzeichnis für den Agenten. Wird automatisch aus der Monorepo-Konfiguration erkannt, wenn nicht angegeben. |
 
-**Reihenfolge der Vendor-Auflösung:** `--model`-Flag > `agents:`-Überschreibung in `oma-config.yaml` > Agenten-Standardwerte des aktiven `model_preset`.
+**Reihenfolge der Vendor-Auflösung:** `--vendor`-Flag > `agents:`-Überschreibung in `oma-config.yaml` > Agenten-Standardwerte des aktiven `model_preset`.
 
 **Prompt-Auflösung:** Ist das Prompt-Argument ein Pfad zu einer vorhandenen Datei, wird deren Inhalt als Prompt verwendet. Andernfalls wird das Argument als Inline-Text verwendet. Vendor-spezifische Ausführungsprotokolle werden automatisch angehängt.
 
 **Beispiele:**
 ```bash
 # Inline-Prompt, Workspace automatisch erkennen
-oma agent:spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
 
 # Prompt aus Datei, expliziter Workspace
-oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
+oma agent spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
 
 # Vendor auf Claude überschreiben
-oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
+oma agent spawn backend "Implement auth" session-20260324-143000 --vendor claude -w ./api
 
 # Mobile-Agent mit automatisch erkanntem Workspace
-oma agent:spawn mobile "Add biometric login" session-20260324-143000
+oma agent spawn mobile "Add biometric login" session-20260324-143000
 ```
 
-### agent:status
+### agent status
 
 Status eines oder mehrerer Subagenten prüfen.
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 **Argumente:**
@@ -334,22 +335,22 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 **Beispiele:**
 ```bash
 # Bestimmte Agenten prüfen
-oma agent:status session-20260324-143000 backend frontend
+oma agent status session-20260324-143000 backend frontend
 
 # Ausgabe:
 # backend:running
 # frontend:completed
 
 # Prüfung mit benutzerdefiniertem Stammpfad
-oma agent:status session-20260324-143000 qa -r /path/to/project
+oma agent status session-20260324-143000 qa -r /path/to/project
 ```
 
-### agent:parallel
+### agent parallel
 
 Mehrere Subagenten parallel ausführen.
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Argumente:**
@@ -362,7 +363,7 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 | Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI-Vendor-Überschreibung für alle Agenten |
+| `--vendor <vendor>` | CLI-Vendor-Überschreibung für alle Agenten |
 | `-i, --inline` | Inline-Modus: Aufgaben als `agent:task[:workspace]`-Argumente angeben |
 | `--no-wait` | Hintergrundmodus — Agenten starten und sofort zurückkehren |
 
@@ -384,31 +385,31 @@ tasks:
 **Beispiele:**
 ```bash
 # Aus YAML-Datei
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 
 # Inline-Modus
-oma agent:parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
+oma agent parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
 
 # Hintergrundmodus (kein Warten)
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Vendor für alle Agenten überschreiben
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
-### agent:review
+### agent review
 
 Führt ein Code-Review mit einer externen KI-CLI durch (codex, claude oder qwen).
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **Optionen:**
 
 | Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Zu verwendende CLI: `antigravity`, `codex`, `claude`, `qwen`. Standardmäßig wird der aus der Konfiguration aufgelöste Vendor verwendet. |
+| `--vendor <vendor>` | Zu verwendende CLI: `antigravity`, `codex`, `claude`, `qwen`. Standardmäßig wird der aus der Konfiguration aufgelöste Vendor verwendet. |
 | `-p, --prompt <prompt>` | Benutzerdefinierter Review-Prompt. Wird ein Standard-Code-Review-Prompt verwendet, wenn nicht angegeben. |
 | `-w, --workspace <path>` | Zu prüfender Pfad. Standardmäßig das aktuelle Arbeitsverzeichnis. |
 | `--no-uncommitted` | Review von nicht-committeten Änderungen überspringen. Wenn gesetzt, werden nur committete Änderungen der Sitzung geprüft. |
@@ -423,34 +424,34 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Beispiele:**
 ```bash
 # Nicht-committete Änderungen mit Standard-Vendor prüfen
-oma agent:review
+oma agent review
 
 # Review mit codex (verwendet nativen codex-review-Befehl)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # Review mit claude und benutzerdefiniertem Prompt
-oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+oma agent review --vendor claude -p "Focus on security vulnerabilities and input validation"
 
 # Bestimmten Pfad prüfen
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # Nur committete Änderungen prüfen (Arbeitsverzeichnis überspringen)
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # Committete Änderungen in bestimmtem Workspace mit gemini prüfen
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
 ## Speicher-Verwaltung
 
-### memory:init
+### memory init
 
 Das Serena-Memory-Schema initialisieren.
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 **Optionen:**
@@ -466,22 +467,22 @@ oma memory:init [--json] [--output <format>] [--force]
 **Beispiele:**
 ```bash
 # Memory initialisieren
-oma memory:init
+oma memory init
 
 # Erzwungenes Überschreiben vorhandener Schemata
-oma memory:init --force
+oma memory init --force
 ```
 
 ---
 
 ## Integration und Hilfsprogramme
 
-### auth:status
+### auth status
 
 Authentifizierungsstatus aller unterstützten CLIs prüfen.
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 
 **Optionen:**
@@ -495,8 +496,8 @@ oma auth:status [--json] [--output <format>]
 
 **Beispiele:**
 ```bash
-oma auth:status
-oma auth:status --json
+oma auth status
+oma auth status --json
 ```
 
 ### bridge
@@ -662,7 +663,7 @@ oma describe [command-path]
 oma describe
 
 # Bestimmten Befehl beschreiben
-oma describe agent:spawn
+oma describe agent spawn
 
 # Unterbefehl beschreiben
 oma describe "agent:parallel"
@@ -695,8 +696,8 @@ Gibt die aktuelle CLI-Version aus und beendet sich.
 | Variable | Beschreibung | Verwendet von |
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | Auf `json` setzen, um JSON-Ausgabe bei allen Befehlen zu erzwingen, die dies unterstützen | Alle Befehle mit `--json`-Flag |
-| `DASHBOARD_PORT` | Port für das Web-Dashboard | `dashboard:web` |
-| `MEMORIES_DIR` | Pfad zum Memories-Verzeichnis überschreiben | `dashboard`, `dashboard:web` |
+| `DASHBOARD_PORT` | Port für das Web-Dashboard | `dashboard web` |
+| `MEMORIES_DIR` | Pfad zum Memories-Verzeichnis überschreiben | `dashboard`, `dashboard web` |
 
 ---
 

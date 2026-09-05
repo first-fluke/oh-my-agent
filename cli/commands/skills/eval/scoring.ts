@@ -206,7 +206,7 @@ export function computeUtility(
         .filter(Boolean)
         .join(" + ");
       console.warn(
-        `[oma skills eval] task ${task.id} has no recorded ${missing} rollout; run --live --record to populate. Excluding from report.`,
+        `[oma skill eval] task ${task.id} has no recorded ${missing} rollout; run --live --record to populate. Excluding from report.`,
       );
       continue;
     }
@@ -226,7 +226,7 @@ export function computeUtility(
         arms.treatmentScore === undefined
       ) {
         console.warn(
-          `[oma skills eval] judge task ${task.id} has no recorded verdict; run --live --record to populate scores. Excluding from report.`,
+          `[oma skill eval] judge task ${task.id} has no recorded verdict; run --live --record to populate scores. Excluding from report.`,
         );
         continue;
       }

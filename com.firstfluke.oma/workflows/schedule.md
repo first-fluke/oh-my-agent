@@ -1,6 +1,6 @@
 ---
 name: schedule
-description: Register a scheduled agent job from a natural-language schedule request — parse the interval, resolve agent-id + prompt + workspace, call oma schedule:add, then confirm with oma schedule:list
+description: Register a scheduled agent job from a natural-language schedule request — parse the interval, resolve agent-id + prompt + workspace, call oma schedule create, then confirm with oma schedule list
 disable-model-invocation: true
 ---
 
@@ -22,7 +22,7 @@ Ask the user for the following if not already provided in the prompt:
 | Prompt | Instruction the agent will receive | `"review the latest diff"` |
 | Interval / cron | When to run | `"every 2 hours"`, `"5m"`, `"0 9 * * *"` |
 | Workspace (optional) | Absolute path to the project directory | `/home/user/myproject` (default: cwd) |
-| Vendor (optional) | CLI vendor override (passed to `oma agent:spawn -m`) | `claude`, `codex`, `antigravity`, `cursor`, `qwen`, `grok`, `opencode`, `pi` |
+| Vendor (optional) | CLI vendor override (passed to `oma agent spawn --vendor`) | `claude`, `codex`, `antigravity`, `cursor`, `qwen`, `grok`, `opencode`, `pi` |
 
 If all required fields are already in the user's prompt, proceed directly to Step 2.
 
@@ -41,19 +41,19 @@ If the phrase is ambiguous (e.g. "twice a day", "weekdays at 9am"), ask the user
 
 ## Step 3: Register the Job
 
-Run the appropriate `oma schedule:add` command:
+Run the appropriate `oma schedule create` command:
 
 ```bash
 # Natural-language interval
-oma schedule:add <agent-id> "<prompt>" --every "<phrase>" [--model <vendor>] [--workspace <path>] [--once]
+oma schedule create <agent-id> "<prompt>" --every "<phrase>" [--vendor <vendor>] [--workspace <path>] [--once]
 
 # Explicit cron expression
-oma schedule:add <agent-id> "<prompt>" --cron "<expr>" [--model <vendor>] [--workspace <path>] [--once]
+oma schedule create <agent-id> "<prompt>" --cron "<expr>" [--vendor <vendor>] [--workspace <path>] [--once]
 ```
 
 Additional options when the user asks for them:
 
-- `--max-age-days <n>` — auto-expire a recurring job after N days (`0` = indefinite)
+- `--expires-after <duration>` — auto-expire a recurring job after a duration such as 30d (`0` = indefinite)
 - `--env <keys>` — comma-separated env var **names** to capture for the run (e.g. `OPENAI_API_KEY,FOO`)
 
 If the interval was rounded (the CLI prints a "Note:" line), surface that note to the user and ask for confirmation before continuing.
@@ -62,15 +62,15 @@ If the interval was rounded (the CLI prints a "Note:" line), surface that note t
 
 ## Step 4: Confirm Registration
 
-Run `oma schedule:list` to display all registered jobs and confirm the new job appears:
+Run `oma schedule list` to display all registered jobs and confirm the new job appears:
 
 ```bash
-oma schedule:list
+oma schedule list
 ```
 
 Show the output to the user. Verify the new job is listed with drift state `synced`.
 
-If `missing-in-os` is shown, suggest running `oma schedule:sync`. If `orphan-in-os` entries appear (OS jobs with no manifest entry), suggest `oma schedule:sync --prune`.
+If `missing-in-os` is shown, suggest running `oma schedule sync`. If `orphan-in-os` entries appear (OS jobs with no manifest entry), suggest `oma schedule sync --prune`.
 
 ---
 
@@ -83,4 +83,4 @@ Report to the user:
 - Workspace and vendor
 - Whether the job is recurring or one-shot (`--once`)
 - Next suggested action if the job did not sync
-- How to manage the job later: `oma schedule:remove <id>` to delete, `oma schedule:run <id>` to fire it manually once
+- How to manage the job later: `oma schedule delete <id>` to delete, `oma schedule run <id>` to fire it manually once

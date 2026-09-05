@@ -11,15 +11,15 @@ oh-my-agent fornece dois dashboards em tempo real para monitorar atividade de ag
 
 | Comando | Interface | URL | Tecnologia |
 |:--------|:---------|:----|:-----------|
-| `oma dashboard` | Terminal (TUI) | N/A — renderiza no seu terminal | chokidar file watcher, picocolors rendering |
-| `oma dashboard:web` | Browser | `http://localhost:9847` | HTTP server, WebSocket, chokidar file watcher |
+| `oma dashboard terminal` | Terminal (TUI) | N/A — renderiza no seu terminal | chokidar file watcher, picocolors rendering |
+| `oma dashboard web` | Browser | `http://localhost:9847` | HTTP server, WebSocket, chokidar file watcher |
 
 Ambos os dashboards observam a mesma fonte de dados: diretório `.serena/memories/`.
 
 ### Dashboard no terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Renderiza uma UI com box-drawing diretamente no terminal. Atualiza automaticamente quando arquivos de memória mudam. Pressione `Ctrl+C` para sair.
@@ -55,17 +55,17 @@ Renderiza uma UI com box-drawing diretamente no terminal. Atualiza automaticamen
 ### Dashboard web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 ```
 
 Abre um servidor web na porta 9847 (configurável via variável de ambiente `DASHBOARD_PORT`). A UI do browser conecta via WebSocket e recebe atualizações ao vivo.
 
 ```bash
 # Porta customizada
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 
 # Diretório de memories customizado
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard web
 ```
 
 O dashboard web mostra a mesma informação que o dashboard de terminal mas com UI estilizada em tema escuro apresentando:
@@ -86,7 +86,7 @@ Para workflows multi-agente, o setup recomendado usa três painéis de terminal:
 │                                │                                │
 │   Terminal 1: Agente Principal │   Terminal 2: Dashboard        │
 │                                │                                │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 │   ...                          │   ╔═══════════════════════╗    │
 │                                │   ║ Serena Dashboard      ║    │
@@ -97,8 +97,8 @@ Para workflows multi-agente, o setup recomendado usa três painéis de terminal:
 │                                                                 │
 │   Terminal 3: Comandos ad-hoc                                   │
 │                                                                 │
-│   $ oma agent:status session-20260324-143052 backend frontend   │
-│   $ oma stats                                                   │
+│   $ oma agent status session-20260324-143052 backend frontend   │
+│   $ oma stats get                                                   │
 │   $ oma verify backend -w ./api                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -184,17 +184,17 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 
 **Ações:**
 1. Verificar arquivo de log do agente: `cat /tmp/subagent-{session-id}-{agent-id}.log`
-2. Verificar se o processo está realmente executando: `oma agent:status {session-id} {agent-id}`
+2. Verificar se o processo está realmente executando: `oma agent status {session-id} {agent-id}`
 3. Se o processo não está executando mas status mostra "running", o agente crashou. Re-spawne com contexto do erro.
 
 ### Sinal 2: agente mostra "crashed"
 
-**Sintoma:** `oma agent:status` retorna `crashed` para um agente.
+**Sintoma:** `oma agent status` retorna `crashed` para um agente.
 
 **Ações:**
 1. Verificar arquivo de log para detalhes do erro.
 2. Verificar instalação do CLI: `oma doctor`
-3. Verificar autenticação: `oma auth:status`
+3. Verificar autenticação: `oma auth status`
 4. Re-spawnar o agente com a mesma tarefa.
 
 ### Sinal 3: dashboard mostra "no agents detected yet"
@@ -210,7 +210,7 @@ Quando um agente completa, escreve `result-{agent}.md` com:
 
 **Ações:**
 1. Verificar se o processo do dashboard está executando.
-2. Tentar porta diferente: `DASHBOARD_PORT=8080 oma dashboard:web`
+2. Tentar porta diferente: `DASHBOARD_PORT=8080 oma dashboard web`
 3. O dashboard web faz auto-reconnect com backoff exponencial (1s inicial, 1.5x multiplicador, 10s máximo).
 
 ---
@@ -230,14 +230,14 @@ Antes de considerar uma sessão multi-agente completa, verifique através do das
 
 ## Detalhes técnicos
 
-### Dashboard de terminal (oma dashboard)
+### Dashboard de terminal (oma dashboard terminal)
 
 - **Observação de arquivos:** Usa [chokidar](https://github.com/paulmillr/chokidar) com `awaitWriteFinish` (limiar de estabilidade de 200ms, intervalo de poll de 50ms) para evitar renderizar escritas parciais de arquivo.
 - **Renderização:** Limpa e redesenha o terminal inteiro em cada evento de mudança de arquivo. Usa `picocolors` para saída de cor ANSI e caracteres Unicode box-drawing para a borda.
 - **Diretório de memória:** Resolvido de variável env `MEMORIES_DIR`, argumento CLI, ou `{cwd}/.serena/memories`.
 - **Shutdown gracioso:** Captura `SIGINT` e `SIGTERM`, fecha o watcher chokidar e sai limpo.
 
-### Dashboard web (oma dashboard:web)
+### Dashboard web (oma dashboard web)
 
 - **Servidor HTTP:** Node.js `createServer` serve a página HTML em `/` e o estado JSON em `/api/state`.
 - **WebSocket:** Usa a biblioteca `ws`. Um `WebSocketServer` é anexado ao servidor HTTP. Na conexão, o cliente recebe o estado completo imediatamente. Atualizações subsequentes são enviadas como mensagens `{ type: "update", event, file, data }`.

@@ -83,13 +83,13 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 5. **Step 3 — Agentes spawnados por prioridade:**
    ```bash
    # Tier P0 (paralelo)
-   oma agent:spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent:spawn db "User and task schema design" session-todo-01 &
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 &
    wait
 
    # Tier P1 (paralelo, após P0 completar)
-   oma agent:spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent:spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
    wait
    ```
 
@@ -168,23 +168,23 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ```bash
 # Agente único — tarefa simples
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # Três agentes em paralelo — funcionalidade full-stack
-oma agent:spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
 # Monitorar enquanto agentes trabalham (terminal separado)
-oma dashboard        # TUI no terminal
-oma dashboard:web    # UI web em http://localhost:9847
+oma dashboard terminal        # TUI no terminal
+oma dashboard web    # UI web em http://localhost:9847
 
 # Após implementação, executar QA
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 
 # Verificar estatísticas da sessão após conclusão
-oma stats
+oma stats get
 ```
 
 ---
@@ -315,7 +315,7 @@ oh-my-agent detecta palavras-chave de workflow em 11 idiomas. Aqui estão exempl
 ### Dashboard no terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Exibe tabela com atualização ao vivo no seu terminal:
@@ -326,7 +326,7 @@ Exibe tabela com atualização ao vivo no seu terminal:
 ### Dashboard web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Abre http://localhost:9847
 ```
 
@@ -340,7 +340,7 @@ Recursos:
 ### Layout recomendado
 
 Use 3 terminais:
-1. **Terminal de dashboard:** `oma dashboard` — monitoramento contínuo
+1. **Terminal de dashboard:** `oma dashboard terminal` — monitoramento contínuo
 2. **Terminal de comandos:** Comandos de spawn de agentes, comandos de workflow
 3. **Terminal de build:** Execuções de teste, logs de build, operações git
 
@@ -362,7 +362,7 @@ Além da divulgação progressiva, oh-my-agent otimiza tokens através de:
 
 ### Spawning via CLI
 
-Quando você executa `oma agent:spawn`, o CLI:
+Quando você executa `oma agent spawn`, o CLI:
 1. Resolve o vendor (usando a prioridade de 5 níveis)
 2. Injeta o protocolo de execução específico do vendor de `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`
 3. Compõe o prompt do agente usando as regras principais do SKILL.md, protocolo de execução e recursos relevantes à tarefa
@@ -376,7 +376,7 @@ Agentes coordenam através de arquivos de memória compartilhados em `.serena/me
 
 ### Workspaces
 
-A flag `-w` em `agent:spawn` isola um agente em um diretório específico. Isso é crítico para execução paralela — sem isolamento de workspace, dois agentes podem modificar o mesmo arquivo simultaneamente, criando conflitos. Layout padrão de workspace: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
+A flag `-w` em `agent spawn` isola um agente em um diretório específico. Isso é crítico para execução paralela — sem isolamento de workspace, dois agentes podem modificar o mesmo arquivo simultaneamente, criando conflitos. Layout padrão de workspace: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
 
 ---
 

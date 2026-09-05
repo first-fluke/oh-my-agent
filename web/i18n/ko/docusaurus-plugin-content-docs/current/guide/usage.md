@@ -83,13 +83,13 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 5. **Step 3 (우선순위별 에이전트 스폰):**
    ```bash
    # P0 티어 (병렬)
-   oma agent:spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent:spawn db "User and task schema design" session-todo-01 &
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 &
    wait
 
    # P1 티어 (P0 완료 후 병렬)
-   oma agent:spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent:spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
    wait
    ```
 
@@ -168,23 +168,23 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ```bash
 # 단일 에이전트 — 단순 태스크
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # 3개 에이전트 병렬 — 풀스택 기능
-oma agent:spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
 # 에이전트 작업 중 모니터링 (별도 터미널)
-oma dashboard        # 실시간 테이블이 있는 터미널 UI
-oma dashboard:web    # http://localhost:9847의 웹 UI
+oma dashboard terminal        # 실시간 테이블이 있는 터미널 UI
+oma dashboard web    # http://localhost:9847의 웹 UI
 
 # 구현 후 QA 실행
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 
 # 완료 후 세션 통계 확인
-oma stats
+oma stats get
 ```
 
 현재 런타임이 `.agents/oma-config.yaml`의 대상 벤더와 일치하면, 워크플로우는 네이티브 서브에이전트를 우선 써야 합니다.
@@ -325,7 +325,7 @@ oh-my-agent은 11개 언어에서 워크플로우 키워드를 감지합니다. 
 ### 터미널 대시보드
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 터미널에서 실시간 업데이트 테이블 표시:
@@ -336,7 +336,7 @@ oma dashboard
 ### 웹 대시보드
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # http://localhost:9847 열림
 ```
 
@@ -350,7 +350,7 @@ oma dashboard:web
 ### 권장 레이아웃
 
 3개 터미널 사용:
-1. **대시보드 터미널:** `oma dashboard`로 지속적 모니터링
+1. **대시보드 터미널:** `oma dashboard terminal`로 지속적 모니터링
 2. **명령 터미널:** 에이전트 스폰 명령, 워크플로우 명령
 3. **빌드 터미널:** 테스트 실행, 빌드 로그, git 작업
 
@@ -372,7 +372,7 @@ oma dashboard:web
 
 ### CLI 스폰
 
-`oma agent:spawn`을 실행하면 CLI가:
+`oma agent spawn`을 실행하면 CLI가:
 1. 벤더를 해석 (5단계 우선순위 사용)
 2. `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`에서 벤더별 실행 프로토콜 주입
 3. SKILL.md 핵심 규칙, 실행 프로토콜, 태스크 관련 리소스를 사용하여 에이전트 프롬프트 구성
@@ -386,7 +386,7 @@ oma dashboard:web
 
 ### 워크스페이스
 
-`agent:spawn`의 `-w` 플래그는 에이전트를 특정 디렉토리로 격리합니다. 이는 병렬 실행에서 매우 중요합니다. 워크스페이스 격리 없이 두 에이전트가 동시에 같은 파일을 수정하여 충돌이 발생할 수 있습니다. 표준 워크스페이스 레이아웃: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
+`agent spawn`의 `-w` 플래그는 에이전트를 특정 디렉토리로 격리합니다. 이는 병렬 실행에서 매우 중요합니다. 워크스페이스 격리 없이 두 에이전트가 동시에 같은 파일을 수정하여 충돌이 발생할 수 있습니다. 표준 워크스페이스 레이아웃: `./apps/api` (backend), `./apps/web` (frontend), `./apps/mobile` (mobile).
 
 ---
 

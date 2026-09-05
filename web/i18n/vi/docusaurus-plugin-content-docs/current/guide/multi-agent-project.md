@@ -31,9 +31,9 @@ Workflow `/plan` chạy inline và tạo kế hoạch có cấu trúc: thu thậ
 | **Lập kế hoạch PM** | Tích hợp sẵn | Cần plan từ /plan |
 | **Phù hợp nhất** | Lần đầu, dự án phức tạp cần giám sát | Chạy lặp, task rõ ràng |
 
-### Bước 3: agent:spawn — quản lý agent cấp CLI
+### Bước 3: agent spawn — quản lý agent cấp CLI
 
-Lệnh `agent:spawn` là cơ chế cấp thấp mà workflow gọi nội bộ. Bạn cũng có thể dùng trực tiếp.
+Lệnh `agent spawn` là cơ chế cấp thấp mà workflow gọi nội bộ. Bạn cũng có thể dùng trực tiếp.
 
 ### Bước 4: /review — xác minh QA
 

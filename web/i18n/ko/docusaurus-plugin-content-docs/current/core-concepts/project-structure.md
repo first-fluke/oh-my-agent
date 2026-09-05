@@ -352,7 +352,7 @@ Task 도구(Claude Code) 또는 CLI를 통해 에이전트를 스폰할 때 사�
 
 ### settings.json
 
-Claude Code용 훅과 권한을 등록합니다. 이제 각 이벤트 훅 항목은 `oma hook` 정규 ABI를 씁니다.
+Claude Code용 훅과 권한을 등록합니다. 이제 각 이벤트 훅 항목은 `oma hook run` 정규 ABI를 씁니다.
 
 ```json
 {
@@ -371,21 +371,21 @@ Claude Code용 훅과 권한을 등록합니다. 이제 각 이벤트 훅 항목
 }
 ```
 
-`statusLine` 항목은 `oma hook`을 거치지 않고 `bun`을 직접 호출하는 경로로 남아 있습니다(표시 경로라 지연을 아낍니다).
+`statusLine` 항목은 `oma hook run`을 거치지 않고 `bun`을 직접 호출하는 경로로 남아 있습니다(표시 경로라 지연을 아낍니다).
 
 ### hooks/
 
-벤더의 `hooks/` 디렉토리에는 **런타임에 그 디렉토리에서 실제로 실행되거나 읽히는 파일만** 들어갑니다. 핸들러 체인 자체(키워드 감지, 영구 모드, 스킬 주입 등)는 `oma hook`을 통해 `oma` 바이너리 안에서 인프로세스로 동작합니다. 핸들러 `.ts` 파일은 빌드 시점에 CLI로 번들되며, 벤더 디렉토리에는 실체화되지 않습니다.
+벤더의 `hooks/` 디렉토리에는 **런타임에 그 디렉토리에서 실제로 실행되거나 읽히는 파일만** 들어갑니다. 핸들러 체인 자체(키워드 감지, 영구 모드, 스킬 주입 등)는 `oma hook run`을 통해 `oma` 바이너리 안에서 인프로세스로 동작합니다. 핸들러 `.ts` 파일은 빌드 시점에 CLI로 번들되며, 벤더 디렉토리에는 실체화되지 않습니다.
 
-**`oma-hook.sh`**: `oma link` / `oma install` / `oma update`가 작성하는 생성 래퍼 스크립트입니다. 모든 벤더 훅 이벤트가 이 파일을 거쳐 라우팅됩니다. 런타임 해석 순서는 `$OMA_BIN`(명시적 오버라이드), `command -v oma`(PATH), `$HOME/.bun/bin`이나 `$HOME/.local/share/mise/shims` 같은 알려진 설치 디렉토리(GUI로 실행된 에이전트는 최소한의 PATH만 물려받습니다), 그리고 `exit 0`(fail-open, 에이전트를 절대 막지 않음) 순입니다. 머신에 종속된 값을 스크립트에 쓰지 않으므로 파일은 모든 개발자에게 바이트 단위로 동일하며 커밋해도 안전합니다. `"$@"`를 그대로 전달하기 때문에 `--vendor`, `--event`, `--matcher` 인자가 `oma hook`까지 변형 없이 도달합니다. 프로젝트 설치와 글로벌 설치가 같은 이벤트를 등록했을 때 이중 발동을 막는 자체 중복 제거 프리앰블도 포함합니다.
+**`oma-hook.sh`**: `oma link` / `oma install` / `oma update`가 작성하는 생성 래퍼 스크립트입니다. 모든 벤더 훅 이벤트가 이 파일을 거쳐 라우팅됩니다. 런타임 해석 순서는 `$OMA_BIN`(명시적 오버라이드), `command -v oma`(PATH), `$HOME/.bun/bin`이나 `$HOME/.local/share/mise/shims` 같은 알려진 설치 디렉토리(GUI로 실행된 에이전트는 최소한의 PATH만 물려받습니다), 그리고 `exit 0`(fail-open, 에이전트를 절대 막지 않음) 순입니다. 머신에 종속된 값을 스크립트에 쓰지 않으므로 파일은 모든 개발자에게 바이트 단위로 동일하며 커밋해도 안전합니다. `"$@"`를 그대로 전달하기 때문에 `--vendor`, `--event`, `--matcher` 인자가 `oma hook run`까지 변형 없이 도달합니다. 프로젝트 설치와 글로벌 설치가 같은 이벤트를 등록했을 때 이중 발동을 막는 자체 중복 제거 프리앰블도 포함합니다.
 
-**`hud.ts`**: 상태 바에 `[OMA]` 인디케이터를 렌더링해 모델명, 컨텍스트 사용량(색상 코드: 녹색/노란색/빨간색), 활성 워크플로우 상태를 표시합니다. 렌더링 지연을 아끼려고 `oma hook`을 거치지 않고 `statusLine` 아래에 직접 등록됩니다. 변형(variant)이 `statusLine`이나 hud 전용 이벤트를 등록하는 벤더(claude, antigravity, qwen, gemini)에만 실체화됩니다. 자기 설치 경로를 보고 벤더 방언을 판단하므로, 벤더별 사본이 실제로 필요합니다.
+**`hud.ts`**: 상태 바에 `[OMA]` 인디케이터를 렌더링해 모델명, 컨텍스트 사용량(색상 코드: 녹색/노란색/빨간색), 활성 워크플로우 상태를 표시합니다. 렌더링 지연을 아끼려고 `oma hook run`을 거치지 않고 `statusLine` 아래에 직접 등록됩니다. 변형(variant)이 `statusLine`이나 hud 전용 이벤트를 등록하는 벤더(claude, antigravity, qwen, gemini)에만 실체화됩니다. 자기 설치 경로를 보고 벤더 방언을 판단하므로, 벤더별 사본이 실제로 필요합니다.
 
 **`filter-test-output.sh`**: 시끄러운 테스트 러너 출력을 다듬는 셸 필터입니다. 인프로세스 test-filter 핸들러가 감지한 Bash 테스트 명령을 `<hookDir>/filter-test-output.sh`로 파이프하도록 다시 쓰므로, `test-filter.ts`를 등록하는 모든 벤더(cursor를 제외한 전부)에 이 파일이 실체화됩니다.
 
 #### 핸들러 로직이 실제로 있는 곳
 
-핸들러 소스의 SSOT는 `.agents/hooks/core/`이며, `oma hook`을 통해 인프로세스로 동작합니다.
+핸들러 소스의 SSOT는 `.agents/hooks/core/`이며, `oma hook run`을 통해 인프로세스로 동작합니다.
 
 **`keyword-detector.ts`**: 키워드 감지를 담당하는 순수 핸들러(`run(input, ctx): HandlerResult | null`)입니다. 동작은 다음과 같습니다.
 1. 입력을 정제합니다 (코드 블록, 인용 문자열, 붙여넣은 시스템 에코 블록 제거)
@@ -394,7 +394,7 @@ Claude Code용 훅과 권한을 등록합니다. 이제 각 이벤트 훅 항목
 4. 강화 가드를 적용합니다 (동일 워크플로우가 60초 안에 2회 이상 트리거되면 억제)
 5. `[OMA WORKFLOW: ...]` 또는 `[OMA PERSISTENT MODE: ...]`를 주입하는 `context` 결과를 반환합니다
 
-**`persistent-mode.ts`**: `.agents/state/`의 활성 상태 파일을 확인하고 영구 워크플로우 실행을 강제하는 순수 핸들러(`run()`)입니다. `Stop` 이벤트에서 `oma hook`을 통해 인프로세스로 호출됩니다.
+**`persistent-mode.ts`**: `.agents/state/`의 활성 상태 파일을 확인하고 영구 워크플로우 실행을 강제하는 순수 핸들러(`run()`)입니다. `Stop` 이벤트에서 `oma hook run`을 통해 인프로세스로 호출됩니다.
 
 **`scm-guard.ts`**: `PreToolUse`(Bash/셸 도구)에서 동작하는 순수 핸들러(`run()`)로, 시크릿일 가능성이 있는 파일의 `git add`를 거부합니다. `.agents/skills/oma-scm/config/commit-config.yaml`의 `forbidden_patterns`에서 `allowed_exceptions`를 뺀 목록을 강제합니다(설정이 없으면 내장 기본값을 씁니다). claude, codex, cursor, grok, kimi, kiro, qwen에서는 체인상 `test-filter`보다 먼저 실행되고, opencode 브릿지에서는 `tool.execute.before`가 예외를 던져 차단하며, pi 브릿지에서는 `tool_call`이 `{ block: true, reason }`을 반환합니다. 사용자가 명시적으로 승인한 뒤 명령 앞에 `OMA_SCM_ALLOW_SECRETS=1`을 붙이면 가드를 우회합니다. 광범위 스테이징(`git add -A` / `git add .`)은 의도적으로 막지 않는데, 이 규칙은 훅이 관찰할 수 없는 사용자 동의에 달려 있기 때문입니다.
 
@@ -465,18 +465,18 @@ hooks/
 ```bash
 # 주어진 프롬프트에 keyword-detector가 무엇을 주입하는지 확인
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event UserPromptSubmit
+  | oma hook run --vendor claude --event UserPromptSubmit
 
 # pre_tool 차단 테스트 (Bash 도구)
 echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event PreToolUse --matcher Bash
+  | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # persistent-mode의 Stop 강제 테스트
 echo '{"cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event Stop
+  | oma hook run --vendor claude --event Stop
 ```
 
-`oma hook`은 항상 0으로 종료합니다(fail-open). stdout이 비어 있으면 해당 이벤트에서 체인이 아무 일도 하지 않았다는 뜻입니다. 핸들러가 발동하면 벤더 방언 JSON(kiro 프롬프트의 경우에는 일반 텍스트)이 stdout으로 출력됩니다.
+`oma hook run`은 항상 0으로 종료합니다(fail-open). stdout이 비어 있으면 해당 이벤트에서 체인이 아무 일도 하지 않았다는 뜻입니다. 핸들러가 발동하면 벤더 방언 JSON(kiro 프롬프트의 경우에는 일반 텍스트)이 stdout으로 출력됩니다.
 
 #### 019 이전 설치에서 마이그레이션
 

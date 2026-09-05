@@ -124,12 +124,12 @@ Dit installeert het `oma`-commando globaal, waardoor je toegang hebt tot alle CL
 
 ```bash
 oma doctor              # Gezondheidscontrole
-oma dashboard           # Terminal-monitoring
-oma dashboard:web       # Webdashboard op http://localhost:9847
-oma agent:spawn         # Agenten spawnen vanaf terminal
-oma agent:parallel      # Parallelle agentuitvoering
-oma agent:status        # Agentstatus controleren
-oma stats               # Sessiestatistieken
+oma dashboard terminal           # Terminal-monitoring
+oma dashboard web       # Webdashboard op http://localhost:9847
+oma agent spawn         # Agenten spawnen vanaf terminal
+oma agent parallel      # Parallelle agentuitvoering
+oma agent status        # Agentstatus controleren
+oma stats get               # Sessiestatistieken
 oma retro               # Retrospectieve analyse
 oma cleanup             # Sessieartefacten opruimen
 oma update              # oh-my-agent bijwerken
@@ -137,8 +137,8 @@ oma verify              # Agentuitvoer verifieren
 oma visualize           # Afhankelijkheidsvisualisatie
 oma describe            # Projectstructuur beschrijven
 oma bridge              # SSE-naar-stdio bridge voor Antigravity
-oma memory:init         # Geheugenprovider initialiseren
-oma auth:status         # CLI-authenticatiestatus controleren
+oma memory init         # Geheugenprovider initialiseren
+oma auth status         # CLI-authenticatiestatus controleren
 oma star                # Repository een ster geven
 ```
 

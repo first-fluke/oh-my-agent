@@ -225,7 +225,7 @@ Führen Sie `oma doctor --profile` aus, um die Auflösung zu bestätigen, und st
 Leiten Sie einen beliebigen Agenten über die Überschreibung `-m opencode` durch opencode:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Dies führt `opencode run --agent pm --dir <workspace> "<prompt>"` aus. Der Prompt ist ein **nachgestelltes Positionsargument** — das `-p`-Flag von opencode bedeutet `--password`, nicht den Prompt.
@@ -270,15 +270,15 @@ Jeder geleitete Agent setzt `opencode run -m opencode-go/deepseek-v4-flash --age
 Der Katalog von opencode ist abonnement- und login-gebunden, daher hardcodiert oma **keine** opencode-Modell-Slugs. Validieren Sie einen Slug gegen Ihren installierten Katalog:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` meldet `accepted`, wenn der Slug von `opencode models` aufgeführt wird, `rejected`, wenn nicht, und `auth_required`, wenn der Provider Login oder ein Abonnement benötigt.
+`oma model probe` meldet `accepted`, wenn der Slug von `opencode models` aufgeführt wird, `rejected`, wenn nicht, und `auth_required`, wenn der Provider Login oder ein Abonnement benötigt.
 
 ### Auth und generierte Dateien
 
-- **Auth:** `opencode auth login` speichert die Anmeldedaten in `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` melden die opencode-Auth zusammen mit den übrigen CLIs auf Vendor-Ebene (authentifiziert, sobald irgendein Provider Anmeldedaten hat). `oma doctor --profile` prüft dagegen providerbezogen: Jede Zeile wird gegen das Provider-Präfix ihres registrierten `cli_model` geprüft, ein Modell mit `cli_model: zai-coding-plan/glm-5.3` also gegen die `zai-coding-plan`-Anmeldedaten. Eine Zeile, deren Modell kein registriertes `cli_model` in der Form `provider/model` hat, meldet `? unknown` statt eines definitiven Auth-Fehlers.
+- **Auth:** `opencode auth login` speichert die Anmeldedaten in `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` melden die opencode-Auth zusammen mit den übrigen CLIs auf Vendor-Ebene (authentifiziert, sobald irgendein Provider Anmeldedaten hat). `oma doctor --profile` prüft dagegen providerbezogen: Jede Zeile wird gegen das Provider-Präfix ihres registrierten `cli_model` geprüft, ein Modell mit `cli_model: zai-coding-plan/glm-5.3` also gegen die `zai-coding-plan`-Anmeldedaten. Eine Zeile, deren Modell kein registriertes `cli_model` in der Form `provider/model` hat, meldet `? unknown` statt eines definitiven Auth-Fehlers.
 - **Generierte Dateien:** `oma link` (oder `oma link opencode`) schreibt pro Agent eine `.opencode/agents/<id>.md`-Persona sowie die `.opencode/plugins/oma/`-Bridge. Diese werden aus dem `.agents/`-SSOT generiert — bearbeiten Sie sie nicht direkt; führen Sie `oma link` erneut aus, um sie neu zu generieren.
 
 > **Hinweis zu persistenten Workflows:** Das `session.idle`-Event von opencode (sein nächstes Analogon zum Claude-`Stop`-Hook) ist rein benachrichtigend und kann das Beenden der Sitzung nicht blockieren. Persistente Workflows (orchestrate / work / ultrawork) laufen unter opencode daher mit **eingeschränkter Stop-Semantik** — die Workflow-Verstärkung erfolgt bei der nächsten Nachricht, statt die Sitzung offen zu halten.

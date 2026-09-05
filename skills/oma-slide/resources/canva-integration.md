@@ -57,7 +57,7 @@ All config files use the same `{ "url": "https://mcp.canva.com/mcp" }` shape
 | Upload slide images | `upload_asset` | push | Accepts PNG/JPG; returns `asset_id` |
 | Create Canva presentation | `create_design` | push | Type: `Presentation`; attach uploaded assets as pages |
 | Export from Canva to file | `export_design` | pull | Formats: PDF, PNG, JPG, PPTX, MP4, GIF |
-| Import a Canva design | `list_designs` → `export_design` | pull | Export as PPTX → `oma slide import-pptx` |
+| Import a Canva design | `list_designs` → `export_design` | pull | Export as PPTX → `oma slide import pptx` |
 | Browse Canva library | `list_designs` | read | Filter by query or folder |
 | Get design metadata | `get_design` | read | Title, pages, dimensions, timestamps |
 
@@ -71,7 +71,7 @@ All config files use the same `{ "url": "https://mcp.canva.com/mcp" }` shape
 
 ```
 1. PROBE        → list_designs (verify Canva MCP is connected + authenticated)
-2. RENDER       → oma slide png --dir <slug> --out-dir <slug>/out/png/ --resolution 2160p
+2. RENDER       → oma slide export png --workspace <slug> --output-dir <slug>/out/png/ --resolution 2160p
 3. UPLOAD       → upload_asset for each slide PNG → collect asset_ids[]
 4. CREATE       → create_design (type: "Presentation", assets: asset_ids[])
 5. REPORT       → include Canva design URL in delivery summary
@@ -86,7 +86,7 @@ Call `list_designs` with a minimal query. If it errors (401/403/timeout), notify
 Do NOT retry or prompt for credentials — the OAuth flow is handled externally.
 
 **Step 2 — Render PNGs:**
-Use `oma slide png --resolution 2160p` to produce high-resolution per-slide images (3840×2160).
+Use `oma slide export png --resolution 2160p` to produce high-resolution per-slide images (3840×2160).
 These become the raster backing for each Canva presentation page.
 
 **Step 3 — Upload Assets:**
@@ -111,7 +111,7 @@ Include in the Phase 6c delivery summary:
 > [!IMPORTANT]
 > Canva export via this pipeline produces **raster-backed slides** (PNG images per page).
 > Text is NOT editable in Canva. For editable Canva presentations, export PPTX first
-> (`oma slide pptx`) and use Canva's native PPTX import UI manually.
+> (`oma slide export pptx`) and use Canva's native PPTX import UI manually.
 
 ---
 
@@ -126,7 +126,7 @@ Detected in Phase 0 as `import-canva` mode.
 1. PROBE        → list_designs (verify connectivity)
 2. IDENTIFY     → parse design ID from user input (URL or raw ID)
 3. EXPORT       → export_design (format: PPTX) → download to workdir
-4. IMPORT       → oma slide import-pptx <downloaded.pptx> --dir <slug>
+4. IMPORT       → oma slide import pptx <downloaded.pptx> --workspace <slug>
 5. CONTINUE     → proceed to Phase 3 (generate/enhance with style overlay)
 ```
 
@@ -144,7 +144,7 @@ the Canva MCP may return a job ID; poll or await completion per MCP protocol.
 Download the exported file to `<workdir>/imports/`.
 
 **Step 4 — Import via CLI:**
-Run `oma slide import-pptx <file> --dir <slug>` to extract slide fragments
+Run `oma slide import pptx <file> --workspace <slug>` to extract slide fragments
 into the working directory.
 
 **Step 5 — Continue:**

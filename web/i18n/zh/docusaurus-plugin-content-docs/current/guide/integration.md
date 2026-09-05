@@ -197,7 +197,7 @@ EOF
 ### 步骤 4：初始化内存目录
 
 ```bash
-oma memory:init
+oma memory init
 # 或手动：
 mkdir -p /path/to/your/project/.serena/memories
 ```
@@ -354,10 +354,10 @@ git clean -fd .agents/ .claude/ .serena/
 
 ```bash
 # 终端仪表盘（监视 .serena/memories/ 的变化）
-oma dashboard
+oma dashboard terminal
 
 # Web 仪表盘（基于浏览器，http://localhost:9847）
-oma dashboard:web
+oma dashboard web
 ```
 
 ---

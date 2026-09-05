@@ -231,7 +231,7 @@ cada agente a partir de arquivos `.opencode/agents/<id>.md` gerados.
 Roteie qualquer agente através do opencode com o override `-m opencode`:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Isso executa `opencode run --agent pm --dir <workspace> "<prompt>"`. O prompt é um
@@ -290,18 +290,18 @@ fixa slugs de modelo do opencode no código. Valide um contra o seu catálogo
 instalado:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` reporta `accepted` quando o slug é listado por
+`oma model probe` reporta `accepted` quando o slug é listado por
 `opencode models`, `rejected` quando não é, e `auth_required` quando o provider
 exige login ou uma assinatura.
 
 ### Auth e arquivos gerados
 
 - **Auth:** `opencode auth login` armazena credenciais em
-  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` reportam
+  `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` reportam
   a auth do opencode junto com as outras CLIs no nível do vendor (autenticado quando qualquer
   provider tem credencial). Já o `oma doctor --profile` considera o provider: cada
   linha é verificada com o prefixo de provider do seu `cli_model` registrado,

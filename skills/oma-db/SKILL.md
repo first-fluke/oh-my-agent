@@ -187,7 +187,7 @@ Use `resources/iso-controls.md` when the user needs security-control, continuity
 Use `resources/migration-playbook.md` when a schema or data change targets live tables (expand-contract, lock-aware DDL, batched backfill, cutover).
 Use `resources/query-tuning.md` when the task involves slow queries, execution plans, or index design.
 Before submitting, run `resources/checklist.md`.
-Vendor-specific execution protocols are injected automatically by `oh-my-agent agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oh-my-agent agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Self-check: `resources/checklist.md`

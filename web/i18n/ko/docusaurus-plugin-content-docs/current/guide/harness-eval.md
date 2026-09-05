@@ -7,11 +7,11 @@ description: 짝지어진 격리 저장소 태스크와 결정론적 아티팩�
 
 `oma harness eval`은 대상 에이전트의 모델을 바꾸지 않은 채, 후보 OMA 하네스가 그 에이전트를 개선하는지 측정합니다. [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307)의 테스트 타임 평가 패턴을 따릅니다. 대상 모델은 고정하고, 하네스만 바꾸고, 같은 태스크에서 결과를 비교하는 방식입니다.
 
-이 명령은 `oma skills eval`보다 큰 단위를 평가합니다.
+이 명령은 `oma skill eval`보다 큰 단위를 평가합니다.
 
 | 명령 | 처치 대상 | 채점 대상 |
 |:--------|:----------|:-------------|
-| `oma skills eval` | `SKILL.md` 본문 하나 | 에이전트 출력 |
+| `oma skill eval` | `SKILL.md` 본문 하나 | 에이전트 출력 |
 | `oma harness eval` | 범위가 지정된 `.agents/` 오버레이 | 저장소 워크스페이스에 만들어진 파일과 출력 |
 
 스킬 평가는 "이 스킬이 도움이 되는가?"에 답합니다. 하네스 평가는 "이 스킬·워크플로우·규칙·에이전트 지시의 조합이 고정된 에이전트를 더 안정적으로 저장소 태스크를 끝내게 만드는가?"에 답합니다.

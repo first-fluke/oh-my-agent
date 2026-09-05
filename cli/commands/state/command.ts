@@ -149,6 +149,28 @@ function registerDecisionVerifyCommand(
 }
 
 export function registerState(program: Command): void {
+  // Explicit lookup avoids the legacy `state repair` reserved-word dispatch.
+  addOutputOptions(
+    program
+      .command("state:get <sid>", { hidden: true })
+      .description("Inspect one OMA L1 session by ID"),
+  ).action(
+    runAction(
+      async (sid: string, options) => {
+        const result = viewSession(sid);
+        if (resolveJsonMode(options))
+          console.log(JSON.stringify(result, null, 2));
+        else
+          console.log(
+            renderSessionView(sid, result.meta, result.events, {
+              archived: result.archived,
+              archivePath: result.archivePath,
+            }),
+          );
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
   addOutputOptions(
     program
       .command("state [sid]")

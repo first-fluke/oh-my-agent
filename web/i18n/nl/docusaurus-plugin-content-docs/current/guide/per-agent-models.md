@@ -231,7 +231,7 @@ settings-bestand te registreren, en lost de persona van elke agent op uit gegene
 Route elke agent via opencode met de `-m opencode`-override:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Dit draait `opencode run --agent pm --dir <workspace> "<prompt>"`. De prompt is een
@@ -287,18 +287,18 @@ De catalogus van opencode is afgeschermd per abonnement en login, dus oma hardco
 opencode-model slugs **niet**. Valideer er een tegen je geïnstalleerde catalogus:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` rapporteert `accepted` wanneer de slug wordt vermeld door
+`oma model probe` rapporteert `accepted` wanneer de slug wordt vermeld door
 `opencode models`, `rejected` wanneer dat niet zo is, en `auth_required` wanneer de
 provider login of een abonnement vereist.
 
 ### Auth en gegenereerde bestanden
 
 - **Auth:** `opencode auth login` slaat credentials op in
-  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` rapporteren
+  `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` rapporteren
   opencode-auth naast de andere CLI's op vendorniveau (geauthenticeerd zodra een provider
   een credential heeft). `oma doctor --profile` is wél provider-bewust: elke rij wordt
   gecontroleerd tegen het providerprefix van zijn geregistreerde `cli_model`,

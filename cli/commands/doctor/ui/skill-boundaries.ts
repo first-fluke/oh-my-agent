@@ -7,11 +7,11 @@ function evalCoverageLine(report: DoctorReport): string {
   if (totalSkills === 0) return "";
   if (skillsWithEval === 0) {
     return pc.dim(
-      `eval coverage: 0/${totalSkills} skills have eval fixtures — run: oma skills eval`,
+      `eval coverage: 0/${totalSkills} skills have eval fixtures — run: oma skill eval`,
     );
   }
   return pc.dim(
-    `eval coverage: ${skillsWithEval}/${totalSkills} skills have eval fixtures (oma skills eval)`,
+    `eval coverage: ${skillsWithEval}/${totalSkills} skills have eval fixtures (oma skill eval)`,
   );
 }
 
@@ -79,7 +79,7 @@ export function renderSkillBoundaries(report: DoctorReport): void {
       pc.dim(
         "Rewrite frontmatter `description:` to differentiate triggers, domains, or boundaries.",
       ),
-      pc.dim("Run: oma skills audit --json"),
+      pc.dim("Run: oma skill audit --json"),
       ...(coverageLine ? [coverageLine] : []),
     ].join("\n"),
     "Skill Boundaries",

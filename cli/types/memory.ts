@@ -164,7 +164,7 @@ export interface MemoryUpgradeOptions {
   runner?: MemoryServiceCommandRunner;
 }
 
-/** Which project-local stores `oma memory:gc` sweeps. */
+/** Which project-local stores `oma memory gc` sweeps. */
 export type MemoryGcScope = "all" | "sessions" | "serena";
 
 /** `memory.gc` defaults resolved from oma-config.yaml (normalized keys). */

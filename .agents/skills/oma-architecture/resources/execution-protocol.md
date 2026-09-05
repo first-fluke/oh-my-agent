@@ -112,8 +112,8 @@
 - Emit and verify the completion decision event:
 
 ```bash
-oma state:emit "decision.made" '{"subject":"architecture.adr-complete","decision":"<one-line decision>","rationale":"<one-line rationale>"}'
-oma state:verify --workflow architecture --checkpoint adr-complete
+oma state emit "decision.made" '{"subject":"architecture.adr-complete","decision":"<one-line decision>","rationale":"<one-line rationale>"}'
+oma state verify --workflow architecture --checkpoint adr-complete
 ```
 
 ## Escalation

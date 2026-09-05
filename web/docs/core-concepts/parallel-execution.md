@@ -1,6 +1,6 @@
 ---
 title: Parallel Execution
-description: Complete guide to running multiple oh-my-agent agents simultaneously, covering agent:spawn syntax with all options, agent:parallel inline mode, workspace-aware patterns, multi-CLI configuration, vendor resolution priority, monitoring with dashboards, session ID strategy, and anti-patterns to avoid.
+description: Complete guide to running multiple oh-my-agent agents simultaneously, covering agent spawn syntax with all options, agent parallel inline mode, workspace-aware patterns, multi-CLI configuration, vendor resolution priority, monitoring with dashboards, session ID strategy, and anti-patterns to avoid.
 ---
 
 # Parallel Execution
@@ -14,7 +14,7 @@ The core advantage of oh-my-agent is running multiple specialized agents simulta
 ### Basic syntax
 
 ```bash
-oma agent:spawn <agent-id> <prompt> <session-id> [options]
+oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
 ### Parameters
@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Short | Description |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Working directory for the agent. Agents only modify files within this directory. |
-| `--model <name>` | `-m` | Override CLI vendor for this specific spawn. Options: `antigravity`, `claude`, `codex`, `qwen`. |
+| `--vendor <name>` | — | Override CLI vendor for this specific spawn. Options: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--isolation <mode>` | | Per-spawn isolation. `worktree` creates a fresh git worktree at `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` on branch `oma/{sessionId}/{agentId}` and runs the agent there. Useful for hypothesis spawns or when parallel agents touch shared files. Worktree is retained after exit; merge / discard commands are printed for manual review. |
 | `--max-turns <n>` | `-t` | Override default turn limit for this agent. |
 | `--json` | | Output result as JSON (useful for scripting). |
@@ -41,22 +41,22 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 
 ```bash
 # Spawn a backend agent with default vendor
-oma agent:spawn backend "Implement JWT authentication API with refresh tokens" session-01
+oma agent spawn backend "Implement JWT authentication API with refresh tokens" session-01
 
 # Spawn with workspace isolation
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Override vendor for this specific agent
-oma agent:spawn frontend "Build login form" session-01 -m claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Set a higher turn limit for a complex task
-oma agent:spawn backend "Implement payment gateway integration" session-01 -t 30
+oma agent spawn backend "Implement payment gateway integration" session-01 -t 30
 
 # Use a prompt file instead of inline text
-oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
+oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 # Run inside an isolated git worktree (hypothesis spawn pattern)
-oma agent:spawn backend "Try a Drizzle-based rewrite" session-01 --isolation worktree
+oma agent spawn backend "Try a Drizzle-based rewrite" session-01 --isolation worktree
 ```
 
 ---
@@ -67,9 +67,9 @@ To run multiple agents simultaneously, use shell background processes:
 
 ```bash
 # Spawn 3 agents in parallel
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api &
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api &
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
 wait  # Block until all agents complete
 ```
 
@@ -81,13 +81,13 @@ Always assign separate workspaces when running agents in parallel to prevent fil
 
 ```bash
 # Full-stack parallel execution
-oma agent:spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
-oma agent:spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
+oma agent spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
+oma agent spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
+oma agent spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
 
 # After implementation, run QA (sequential; depends on implementation)
-oma agent:spawn qa "Review all implementations for security and accessibility" session-02
+oma agent spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
 ---
@@ -99,20 +99,20 @@ For a cleaner syntax that handles background process management automatically:
 ### Syntax
 
 ```bash
-oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
+oma agent parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
 ### Examples
 
 ```bash
 # Basic parallel execution
-oma agent:parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
+oma agent parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
 
 # With no-wait (fire and forget)
-oma agent:parallel -i backend:"Auth API" frontend:"Login form" --no-wait
+oma agent parallel -i backend:"Auth API" frontend:"Login form" --no-wait
 
 # All agents share the same session automatically
-oma agent:parallel -i \
+oma agent parallel -i \
   backend:"JWT auth with refresh tokens" \
   frontend:"Login form with email validation" \
   db:"User schema with soft delete and audit trail"
@@ -143,15 +143,15 @@ Built-in presets: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. S
 
 ### Vendor resolution
 
-When `oma agent:spawn` determines which CLI to use:
+When `oma agent spawn` determines which CLI to use:
 
 | Priority | Source | Example |
 |----------|--------|---------|
-| 1 (highest) | `--model` flag | `oma agent:spawn backend "task" session-01 -m claude` |
+| 1 (highest) | `--vendor` flag | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `agents:` override in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Active `model_preset` agent defaults | preset lookup for the agent role |
 
-The `--model` flag always wins. If no flag is provided, the system checks `agents:` overrides, then the preset defaults.
+The `--vendor` flag always wins. If no flag is provided, the system checks `agents:` overrides, then the preset defaults.
 
 ---
 
@@ -161,11 +161,11 @@ The spawn mechanism varies by IDE/CLI:
 
 | Vendor | How Agents Are Spawned | Result Handling |
 |--------|----------------------|-----------------|
-| **Claude Code** | Same-vendor tasks use the Agent tool with `.claude/agents/{name}.md`; cross-vendor tasks fall back to `oma agent:spawn`. | Synchronous return |
-| **Codex CLI** | Same-vendor tasks use native custom agents from `.codex/agents/{name}.toml`; cross-vendor tasks fall back to `oma agent:spawn`. | JSON output |
-| **Gemini CLI** | Same-vendor tasks use `.gemini/agents/{name}.md` when available; cross-vendor tasks fall back to `oma agent:spawn`. | MCP memory poll |
-| **Antigravity IDE** | `oma agent:spawn` only (custom subagents not available) | MCP memory poll |
-| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
+| **Claude Code** | Same-vendor tasks use the Agent tool with `.claude/agents/{name}.md`; cross-vendor tasks fall back to `oma agent spawn`. | Synchronous return |
+| **Codex CLI** | Same-vendor tasks use native custom agents from `.codex/agents/{name}.toml`; cross-vendor tasks fall back to `oma agent spawn`. | JSON output |
+| **Gemini CLI** | Same-vendor tasks use `.gemini/agents/{name}.md` when available; cross-vendor tasks fall back to `oma agent spawn`. | MCP memory poll |
+| **Antigravity IDE** | `oma agent spawn` only (custom subagents not available) | MCP memory poll |
+| **CLI Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 
 When running inside Claude Code, the workflow uses the `Agent` tool directly:
 ```
@@ -179,7 +179,7 @@ The same dispatch rule applies across vendors:
 
 1. Resolve `target_vendor_for_agent` from `.agents/oma-config.yaml`
 2. If it matches the current runtime vendor, use that vendor's native agent file
-3. If it does not match, use `oma agent:spawn` only for that agent
+3. If it does not match, use `oma agent spawn` only for that agent
 
 ---
 
@@ -188,7 +188,7 @@ The same dispatch rule applies across vendors:
 ### Terminal dashboard
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Displays a live table with:
@@ -203,7 +203,7 @@ The dashboard watches `.agents/state/memories/` for real-time updates. It refres
 ### Web dashboard
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Opens http://localhost:9847
 ```
 
@@ -222,7 +222,7 @@ Use 3 terminals for optimal visibility:
 ┌─────────────────────────┬──────────────────────┐
 │                         │                      │
 │   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard         │   Agent spawn        │
+│   oma dashboard terminal         │   Agent spawn        │
 │   (live monitoring)     │   commands           │
 │                         │                      │
 ├─────────────────────────┴──────────────────────┤
@@ -236,7 +236,7 @@ Use 3 terminals for optimal visibility:
 ### Checking individual agent status
 
 ```bash
-oma agent:status <session-id> <agent-id>
+oma agent status <session-id> <agent-id>
 ```
 
 Returns the current status of a specific agent: running, completed, or failed, along with turn count and last activity.
@@ -269,18 +269,18 @@ Session IDs determine:
 
 3. **Assign separate workspaces.** Always use `-w` to isolate agents:
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    ```
 
 4. **Monitor actively.** Open a dashboard terminal to catch issues early. A failing agent wastes turns if not caught quickly.
 
 5. **Run QA after implementation.** Spawn the QA agent sequentially after all implementation agents complete:
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    wait
-   oma agent:spawn qa "Review all changes" session-01
+   oma agent spawn qa "Review all changes" session-01
    ```
 
 6. **Iterate with re-spawns.** If an agent's output needs refinement, re-spawn it with the original task plus correction context. Do not start a new session.
@@ -311,23 +311,23 @@ A complete parallel execution workflow for building a user authentication featur
 # This creates .agents/results/plan-{sessionId}.json with task breakdown
 
 # Step 2: Spawn implementation agents in parallel
-oma agent:spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/results/api-contracts/" session-auth-01 -w ./apps/api &
-oma agent:spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
-oma agent:spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
+oma agent spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/results/api-contracts/" session-auth-01 -w ./apps/api &
+oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
+oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
 # Step 3: Monitor in a separate terminal
 # Terminal 2:
-oma dashboard
+oma dashboard terminal
 
 # Step 4: Wait for all implementation agents
 wait
 
 # Step 5: Run QA review
-oma agent:spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
+oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
 # Step 6: If QA finds issues, re-spawn specific agents with fixes
-oma agent:spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
+oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
 # Step 7: Re-run QA to verify fixes
-oma agent:spawn qa "Re-review backend auth after fixes." session-auth-01
+oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```

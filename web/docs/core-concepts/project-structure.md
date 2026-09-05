@@ -355,7 +355,7 @@ This directory connects oh-my-agent to Claude Code and other IDEs.
 
 ### settings.json
 
-Registers hooks and permissions for Claude Code. Each event hook entry now uses the `oma hook` canonical ABI:
+Registers hooks and permissions for Claude Code. Each event hook entry now uses the `oma hook run` canonical ABI:
 
 ```json
 {
@@ -374,21 +374,21 @@ Registers hooks and permissions for Claude Code. Each event hook entry now uses 
 }
 ```
 
-The `statusLine` entry stays on a direct `bun` path (hot-path display, not routed through `oma hook`).
+The `statusLine` entry stays on a direct `bun` path (hot-path display, not routed through `oma hook run`).
 
 ### hooks/
 
-A vendor's `hooks/` directory contains **only the files that something executes or reads from that directory at runtime**. The handler chain itself (keyword detection, persistent mode, skill injection, …) runs in-process inside the `oma` binary via `oma hook` — handler `.ts` files are bundled into the CLI at build time and are NOT materialized into vendor directories.
+A vendor's `hooks/` directory contains **only the files that something executes or reads from that directory at runtime**. The handler chain itself (keyword detection, persistent mode, skill injection, …) runs in-process inside the `oma` binary via `oma hook run` — handler `.ts` files are bundled into the CLI at build time and are NOT materialized into vendor directories.
 
-**`oma-hook.sh`**: Generated wrapper script written by `oma link`/`oma install`/`oma update`. Every vendor hook event routes through this file. Resolution order at runtime: `$OMA_BIN` (explicit override) → `command -v oma` (PATH) → well-known install dirs such as `$HOME/.bun/bin` and `$HOME/.local/share/mise/shims` (GUI-launched agents inherit a minimal PATH) → `exit 0` (fail-open, never blocks the agent). Nothing machine-specific is written into the script, so the file is byte-identical for every developer and safe to commit. Passes `"$@"` verbatim so `--vendor`, `--event`, and `--matcher` args reach `oma hook` unchanged. Includes the self-dedup preamble that suppresses double-fire when both a project and a global install register the same event.
+**`oma-hook.sh`**: Generated wrapper script written by `oma link`/`oma install`/`oma update`. Every vendor hook event routes through this file. Resolution order at runtime: `$OMA_BIN` (explicit override) → `command -v oma` (PATH) → well-known install dirs such as `$HOME/.bun/bin` and `$HOME/.local/share/mise/shims` (GUI-launched agents inherit a minimal PATH) → `exit 0` (fail-open, never blocks the agent). Nothing machine-specific is written into the script, so the file is byte-identical for every developer and safe to commit. Passes `"$@"` verbatim so `--vendor`, `--event`, and `--matcher` args reach `oma hook run` unchanged. Includes the self-dedup preamble that suppresses double-fire when both a project and a global install register the same event.
 
-**`hud.ts`**: Renders the `[OMA]` indicator in the status bar showing model name, context usage (color-coded: green/yellow/red), and active workflow state. Registered directly under `statusLine` (not routed through `oma hook`) to preserve hot-path render latency. Materialized only for vendors whose variant registers a `statusLine` or hud-only event (claude, antigravity, qwen, gemini). It infers its vendor dialect from its own installed path, so the per-vendor copy is load-bearing.
+**`hud.ts`**: Renders the `[OMA]` indicator in the status bar showing model name, context usage (color-coded: green/yellow/red), and active workflow state. Registered directly under `statusLine` (not routed through `oma hook run`) to preserve hot-path render latency. Materialized only for vendors whose variant registers a `statusLine` or hud-only event (claude, antigravity, qwen, gemini). It infers its vendor dialect from its own installed path, so the per-vendor copy is load-bearing.
 
 **`filter-test-output.sh`**: Shell filter that trims noisy test-runner output. The in-process test-filter handler rewrites detected Bash test commands to pipe through `<hookDir>/filter-test-output.sh`, so this file is materialized for every vendor whose variant registers `test-filter.ts` (all except cursor).
 
 #### Where the handler logic actually lives
 
-The handler sources are the SSOT at `.agents/hooks/core/` and run in-process via `oma hook`:
+The handler sources are the SSOT at `.agents/hooks/core/` and run in-process via `oma hook run`:
 
 **`keyword-detector.ts`**: Pure handler (`run(input, ctx): HandlerResult | null`) for keyword detection. Logic:
 1. Sanitizes input (strips code blocks, quoted strings, pasted system-echo blocks)
@@ -397,7 +397,7 @@ The handler sources are the SSOT at `.agents/hooks/core/` and run in-process via
 4. Applies reinforcement guard (suppresses if same workflow triggered 2+ times in 60s)
 5. Returns a `context` result injecting `[OMA WORKFLOW: ...]` or `[OMA PERSISTENT MODE: ...]`
 
-**`persistent-mode.ts`**: Pure handler (`run()`) that checks for active state files in `.agents/state/` and reinforces persistent workflow execution. Called in-process via `oma hook` on `Stop` events.
+**`persistent-mode.ts`**: Pure handler (`run()`) that checks for active state files in `.agents/state/` and reinforces persistent workflow execution. Called in-process via `oma hook run` on `Stop` events.
 
 **`scm-guard.ts`**: Pure handler (`run()`) on `PreToolUse` (Bash/shell tools) that denies `git add` of likely-secret files. Enforces `forbidden_patterns` minus `allowed_exceptions` from `.agents/skills/oma-scm/config/commit-config.yaml` (embedded defaults when the config is absent). Runs before `test-filter` in the chain for claude, codex, cursor, grok, kimi, kiro, and qwen, and in the opencode bridge (`tool.execute.before` throws to block) and pi bridge (`tool_call` returns `{ block: true, reason }`); a command prefixed with `OMA_SCM_ALLOW_SECRETS=1` bypasses the guard after explicit user approval. Broad staging (`git add -A` / `git add .`) is intentionally not blocked — that rule depends on user consent the hook cannot observe.
 
@@ -468,18 +468,18 @@ You can run any handler chain against a real payload without triggering the live
 ```bash
 # Inspect what keyword-detector injects for a given prompt
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event UserPromptSubmit
+  | oma hook run --vendor claude --event UserPromptSubmit
 
 # Test a pre_tool block (Bash tool)
 echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event PreToolUse --matcher Bash
+  | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # Test persistent-mode Stop enforcement
 echo '{"cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event Stop
+  | oma hook run --vendor claude --event Stop
 ```
 
-`oma hook` always exits 0 (fail-open). Empty stdout means the chain produced no-op for that event. The vendor-dialect JSON (or plain text for kiro prompts) is written to stdout when a handler fires.
+`oma hook run` always exits 0 (fail-open). Empty stdout means the chain produced no-op for that event. The vendor-dialect JSON (or plain text for kiro prompts) is written to stdout when a handler fires.
 
 #### Migration from pre-019 installs
 

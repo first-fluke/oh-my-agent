@@ -125,12 +125,12 @@ npm install --global oh-my-agent
 
 ```bash
 oma doctor              # 健康检查
-oma dashboard           # 终端监控
-oma dashboard:web       # Web 仪表板 http://localhost:9847
-oma agent:spawn         # 从终端启动智能体
-oma agent:parallel      # 并行执行智能体
-oma agent:status        # 检查智能体状态
-oma stats               # 会话统计
+oma dashboard terminal           # 终端监控
+oma dashboard web       # Web 仪表板 http://localhost:9847
+oma agent spawn         # 从终端启动智能体
+oma agent parallel      # 并行执行智能体
+oma agent status        # 检查智能体状态
+oma stats get               # 会话统计
 oma retro               # 回顾分析
 oma cleanup             # 清理会话产物
 oma update              # 更新 oh-my-agent
@@ -138,8 +138,8 @@ oma verify              # 验证智能体输出
 oma visualize           # 依赖可视化
 oma describe            # 描述项目结构
 oma bridge              # Antigravity 的 SSE-to-stdio 桥接
-oma memory:init         # 初始化内存提供者
-oma auth:status         # 检查 CLI 认证状态
+oma memory init         # 初始化内存提供者
+oma auth status         # 检查 CLI 认证状态
 oma star                # 为仓库加星
 ```
 

@@ -1,7 +1,7 @@
 // VisualProvider:slide — oma-slide png frames for explainer mode (design §5).
 //
 // Key-optional, two-branch contract (backend rule 11):
-//   real     : `oma slide png --dir <deck> --out-dir <runDir>/visuals` → ingest
+//   real     : `oma slide export png --dir <deck> --out-dir <runDir>/visuals` → ingest
 //              the exported 1920×1080 frame for the scene.
 //   fallback : deterministic placeholder asset.
 //

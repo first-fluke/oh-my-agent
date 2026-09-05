@@ -78,6 +78,6 @@ export function backupSkillMd(skillMdPath: string): string {
     if (!existsSync(candidate)) return write(candidate);
   }
   throw new Error(
-    `[oma skills opt] cannot create backup: all suffix slots (.bak through .bak.99) are taken for ${base}`,
+    `[oma skill opt] cannot create backup: all suffix slots (.bak through .bak.99) are taken for ${base}`,
   );
 }

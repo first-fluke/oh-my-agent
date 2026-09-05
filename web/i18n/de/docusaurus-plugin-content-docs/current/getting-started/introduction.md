@@ -136,11 +136,11 @@ oh-my-agent funktioniert mit jeder KI-gestützten IDE oder CLI, die Skill-/Promp
 | Tool | Integrationsmethode | Parallele Agenten |
 |------|-------------------|----------------|
 | **Claude Code** | Native Skills + Agent-Tool | Task-Tool für echte Parallelität |
-| **Gemini CLI** | Skills automatisch geladen aus `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Skills automatisch geladen aus `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Skills automatisch geladen | Modellvermittelte parallele Anfragen |
-| **Antigravity IDE** | Skills automatisch geladen | `oma agent:spawn` |
+| **Antigravity IDE** | Skills automatisch geladen | `oma agent spawn` |
 | **Cursor** | Skills über `.cursor/`-Integration | Manuelles Starten |
-| **OpenCode** | Skills + In-Process-Plugin-Bridge + generierte Subagenten (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
+| **OpenCode** | Skills + In-Process-Plugin-Bridge + generierte Subagenten (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 
 Die Agentenstart-Mechanik passt sich automatisch an jeden Vendor über das Vendor-Erkennungsprotokoll an, das vendor-spezifische Marker prüft (z. B. das `Agent`-Tool für Claude Code, `apply_patch` für Codex CLI).
 

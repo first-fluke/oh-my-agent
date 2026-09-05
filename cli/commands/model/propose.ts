@@ -322,7 +322,7 @@ export function writeProposalToFile(
       written: [],
       skipped,
       configPath,
-      error: `could not merge into the \`models:\` block of ${configPath} — add the entries manually with \`oma model:propose\` (no --write)`,
+      error: `could not merge into the \`models:\` block of ${configPath} — add the entries manually with \`oma model propose\` (no --write)`,
     };
   }
 

@@ -33,10 +33,10 @@ description: Полное руководство по координации н�
 | **Постоянный** | Да | Да |
 | **Лучше для** | Первое использование, сложные проекты | Повторные запуски, чёткие задачи |
 
-### Шаг 3: agent:spawn — CLI-управление агентами
+### Шаг 3: agent spawn — CLI-управление агентами
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 ### Шаг 4: /review — QA-верификация
@@ -66,7 +66,7 @@ CLI сканирует конфигурации монорепозитория (
 ### Явное переопределение
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -94,16 +94,16 @@ oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 ```bash
 # Параллельный запуск из YAML
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 
 # Инлайн-режим
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
 
 # Фоновый режим
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 ```
 
 ---
@@ -116,7 +116,7 @@ oma agent:parallel tasks.yaml --no-wait
 4. **Игнорирование QA** — CRITICAL/HIGH замечания = реальные баги в продакшене.
 5. **Ручная координация файлов** — автоматический пайплайн надёжнее.
 6. **Преждевременный параллелизм** — P1 до завершения P0 нарушает зависимости.
-7. **Пропуск верификации** — `agent:spawn` без verify.sh пропускает сбои сборки.
+7. **Пропуск верификации** — `agent spawn` без verify.sh пропускает сбои сборки.
 
 ---
 

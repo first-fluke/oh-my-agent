@@ -24,7 +24,7 @@ The detected vendor determines how the QA agent is spawned (Step 7).
 
 ### L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -100,8 +100,8 @@ Use memory write tool to record the final report.
 After severity classification is complete, emit and verify the required review decision:
 
 ```bash
-oma state:emit "decision.made" '{"subject":"review.severity-classification","decision":"Use the classified finding severities for the QA report and follow-up routing.","rationale":"Findings have been reviewed and assigned CRITICAL/HIGH/MEDIUM/LOW severity with remediation context."}'
-oma state:verify --workflow review --checkpoint severity-classification
+oma state emit "decision.made" '{"subject":"review.severity-classification","decision":"Use the classified finding severities for the QA report and follow-up routing.","rationale":"Findings have been reviewed and assigned CRITICAL/HIGH/MEDIUM/LOW severity with remediation context."}'
+oma state verify --workflow review --checkpoint severity-classification
 ```
 
 ---
@@ -119,7 +119,7 @@ Request parallel subagent execution with the review scope and standards.
 
 ### If Gemini CLI or Antigravity or CLI Fallback
 ```bash
-oma agent:spawn qa-agent "Review files for security, performance, accessibility, and code quality. Follow .agents/skills/oma-qa/SKILL.md standards. Report as CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation." session-id -w {workspace}
+oma agent spawn qa-agent "Review files for security, performance, accessibility, and code quality. Follow .agents/skills/oma-qa/SKILL.md standards. Report as CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation." session-id -w {workspace}
 ```
 
 **Wait for the QA agent to complete and collect its findings before compiling the Step 7 report.** On the Claude-native path the background agent notifies on completion (or spawn synchronously); on the CLI path poll `result-qa*[-{sessionId}].md` in the memory base path.
@@ -143,8 +143,8 @@ When user wants fixes too, execute review then fix then re-review loop:
 
 ### If Gemini CLI or Antigravity or CLI Fallback
      ```bash
-     oma agent:spawn backend "Fix issues: [issues]" session-id -w ./backend &
-     oma agent:spawn frontend "Fix issues: [issues]" session-id -w ./frontend &
+     oma agent spawn backend "Fix issues: [issues]" session-id -w ./backend &
+     oma agent spawn frontend "Fix issues: [issues]" session-id -w ./frontend &
      wait
      ```
 

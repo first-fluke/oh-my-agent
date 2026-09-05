@@ -23,7 +23,7 @@ import {
  * `mixed` is intentionally excluded — it is a cross-vendor meta-preset, not a
  * single vendor. A vendor in this set has a matching preset; a vendor outside
  * it (OpenCode, grok, kiro, copilot, pi, …) relies on native subagent dispatch
- * and only needs `model_preset` for the cross-vendor `oma agent:spawn` fallback.
+ * and only needs `model_preset` for the cross-vendor `oma agent spawn` fallback.
  */
 export const PRESET_BACKED_VENDORS = [
   "claude",
@@ -143,13 +143,13 @@ export async function promptModelPreset(
 
   // When the user selected only native-dispatch vendors (e.g. OpenCode) that
   // have no matching single-vendor preset, model_preset only affects the
-  // cross-vendor `oma agent:spawn` fallback. Make the step optional so these
+  // cross-vendor `oma agent spawn` fallback. Make the step optional so these
   // users aren't forced into a misleading single-vendor preset (#580).
   if (selectedPresetVendors(vendors).length === 0) {
     p.log.info(
       pc.dim(
         "Selected CLI(s) use native subagent dispatch. model_preset only " +
-          "affects the cross-vendor 'oma agent:spawn' fallback.",
+          "affects the cross-vendor 'oma agent spawn' fallback.",
       ),
     );
     const configure = await p.confirm({

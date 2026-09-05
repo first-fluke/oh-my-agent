@@ -39,7 +39,7 @@ Les verifications lourdes (plus de trente secondes) sont cachees contre les chem
 
 ### Quota caps qui bloquent avant le degat
 
-Chaque appel a `oma agent:spawn` enregistre l'estimation de tokens de ce spawn dans `.serena/memories/session-cost-{sessionId}.md`. Avant le prochain spawn, `checkCap` consulte le quota cap configure et refuse le lancement si une dimension est depassee. Trois dimensions sont appliquees : total tokens, total spawns, budget tokens par vendor.
+Chaque appel a `oma agent spawn` enregistre l'estimation de tokens de ce spawn dans `.serena/memories/session-cost-{sessionId}.md`. Avant le prochain spawn, `checkCap` consulte le quota cap configure et refuse le lancement si une dimension est depassee. Trois dimensions sont appliquees : total tokens, total spawns, budget tokens par vendor.
 
 C'est la difference entre apprendre apres coup que tu as depense quarante mille dollars et etre averti au spawn quinze qu'il te reste un spawn dans ton budget. Voir `cli/io/session-cost.ts` et configurer sous `session.quota_cap` dans `.agents/oma-config.yaml`.
 

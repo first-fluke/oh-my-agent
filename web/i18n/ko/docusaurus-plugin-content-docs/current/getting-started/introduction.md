@@ -76,7 +76,7 @@ oh-my-agent은 전문화로 이를 해결합니다:
 |-------|------|-----------------|
 | **oma-translation** | 컨텍스트 인식 번역 | 4단계 번역 방법: 원문 분석, 의미 추출, 대상 언어로 재구성, 검증. 톤, 레지스터, 도메인 용어를 유지합니다. 안티 AI 패턴 감지. 배치 번역(i18n 파일) 지원. 출판 품질을 위한 선택적 7단계 정제 모드. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터 체계, 타이포그래피, 언어별 번역체 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, MCP 메모리를 통해 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 Clarification Debt 모니터링 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-coordination** | 수동 멀티 에이전트 워크플로우 가이드 | CLI `oma agent:spawn`으로 PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 조율합니다. 항상 PM 분해로 시작하고, 같은 우선순위 태스크를 별도 워크스페이스에서 병렬로 스폰하고, `progress-{agent}.md`를 모니터링하고, 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞추고, QA 리뷰로 마무리합니다. `oma-orchestration`의 수동 대응물입니다. |
+| **oma-coordination** | 수동 멀티 에이전트 워크플로우 가이드 | CLI `oma agent spawn`으로 PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 조율합니다. 항상 PM 분해로 시작하고, 같은 우선순위 태스크를 별도 워크스페이스에서 병렬로 스폰하고, `progress-{agent}.md`를 모니터링하고, 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞추고, QA 리뷰로 마무리합니다. `oma-orchestration`의 수동 대응물입니다. |
 | **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 또한 안전한 스테이징과 Conventional Commit 메시지 생성도 지원합니다. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
 
 ### 검색, 회고 및 문서 처리
@@ -106,7 +106,7 @@ oh-my-agent은 전문화로 이를 해결합니다:
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-docs** | 문서 드리프트 탐지기 | `verify` 모드는 `docs/**/*.md`에서 깨진 참조(파일 경로, CLI 명령, 설정 키, 환경 변수, 스크립트)를 결정론적으로 검사하고 0 또는 1로 종료합니다. `sync` 모드는 git diff를 후보 문서와 연결해 호스트 LLM이 적용할 패치 제안을 문서별 확인과 함께 작성합니다(절대 자동 적용하지 않습니다). URL 검사는 `lychee`에 위임하고, CLI는 구조화된 JSON을 내보내며, 종합은 전부 호스트 LLM이 합니다(벤더 SDK를 호출하지 않습니다). `.agents/`는 절대 수정하지 않습니다. |
-| **oma-skill-creation** | SSL-lite 스킬 작성 전문가 | 네 가지 필수 섹션(Scheduling / Structural Flow / Logical Operations / References)을 갖춘 SSL-lite 형식으로 OMA 스킬을 만들고, 갱신하고, 감사합니다. 스킬 유형을 분류하고, 인라인 정규 경로를 정확히 하나만 넣고, `When NOT to use`의 교차 라우팅을 강제하며, `oma skills audit`으로 설명 충돌을 잡습니다(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패). 긴 변형 설명은 `resources/`로 밀어냅니다. |
+| **oma-skill-creation** | SSL-lite 스킬 작성 전문가 | 네 가지 필수 섹션(Scheduling / Structural Flow / Logical Operations / References)을 갖춘 SSL-lite 형식으로 OMA 스킬을 만들고, 갱신하고, 감사합니다. 스킬 유형을 분류하고, 인라인 정규 경로를 정확히 하나만 넣고, `When NOT to use`의 교차 라우팅을 강제하며, `oma skill audit`으로 설명 충돌을 잡습니다(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패). 긴 변형 설명은 `resources/`로 밀어냅니다. |
 
 ### 시장 조사
 
@@ -173,12 +173,12 @@ oh-my-agent은 스킬/프롬프트 로딩을 지원하는 모든 AI 기반 IDE �
 | 도구 | 통합 방식 | 병렬 에이전트 |
 |------|-------------------|----------------|
 | **Claude Code** | 네이티브 스킬 + Agent 도구 | Task 도구를 통한 완전한 병렬 처리 |
-| **Gemini CLI** | `.agents/skills/`에서 스킬 자동 로딩 | `oma agent:spawn` |
+| **Gemini CLI** | `.agents/skills/`에서 스킬 자동 로딩 | `oma agent spawn` |
 | **Codex CLI** | 스킬 자동 로딩 | 모델 중재 병렬 요청 |
-| **Antigravity IDE** | 스킬 자동 로딩 | `oma agent:spawn` |
+| **Antigravity IDE** | 스킬 자동 로딩 | `oma agent spawn` |
 | **Cursor** | `.cursor/` 통합을 통한 스킬 | 수동 스폰 |
-| **OpenCode** | 스킬 + 인프로세스 플러그인 브릿지 + 생성된 서브에이전트 (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
-| **Kimi Code CLI** | `~/.kimi-code/`의 훅과 스킬(동의를 받아 HOME에 기록하며, SSOT `.agents/skills/`도 네이티브로 읽습니다), 프로젝트 범위 Serena MCP | `oma agent:spawn -m kimi` |
+| **OpenCode** | 스킬 + 인프로세스 플러그인 브릿지 + 생성된 서브에이전트 (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
+| **Kimi Code CLI** | `~/.kimi-code/`의 훅과 스킬(동의를 받아 HOME에 기록하며, SSOT `.agents/skills/`도 네이티브로 읽습니다), 프로젝트 범위 Serena MCP | `oma agent spawn --vendor kimi` |
 
 에이전트 스폰은 벤더 감지 프로토콜을 통해 각 벤더에 자동으로 적응합니다. 이 프로토콜은 벤더별 마커를 확인합니다(예: Claude Code의 `Agent` 도구, Codex CLI의 `apply_patch`).
 
@@ -230,7 +230,7 @@ HUD는 `.claude/hooks/hud.ts`에서 Claude Code의 `statusLine` 훅 기능을 �
 
 ## 크로스 벤더 지원
 
-oh-my-agent은 Claude Code에 한정되지 않습니다. 훅 모델을 쓰는 모든 벤더가 동일한 `oma hook` ABI를 공유합니다.
+oh-my-agent은 Claude Code에 한정되지 않습니다. 훅 모델을 쓰는 모든 벤더가 동일한 `oma hook run` ABI를 공유합니다.
 
 | 벤더 | 훅 전달 방식 | StatusLine |
 |--------|--------------|------------|
@@ -243,7 +243,7 @@ oh-my-agent은 Claude Code에 한정되지 않습니다. 훅 모델을 쓰는 �
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | 없음 |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop` (`~/.kimi-code/config.toml`의 글로벌 전용 TOML `[[hooks]]`) | 없음 |
 | **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | 없음 |
-| **pi** | 인프로세스 브릿지(`installPiExtension`)를 쓰며 `oma hook`을 거치지 않습니다 | 없음 |
+| **pi** | 인프로세스 브릿지(`installPiExtension`)를 쓰며 `oma hook run`을 거치지 않습니다 | 없음 |
 
 스킬과 워크플로우는 모든 벤더에서 `.agents/`를 통해 자동 로드됩니다. 벤더 감지는 자동으로 이루어지며, 에이전트는 감지된 런타임 환경에 맞춰 스폰 방식을 바꿉니다.
 

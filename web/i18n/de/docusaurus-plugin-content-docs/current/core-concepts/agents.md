@@ -479,7 +479,7 @@ Agenten in oh-my-agent sind spezialisierte Engineering-Rollen. Jeder Agent verf�
 
 **Einsatzbereich:** Zusammenfassung eines Tages oder Zeitraums von Arbeitsaktivität, Verständnis des Arbeitsflusses über mehrere KI-Tools hinweg, Analyse von Tool-Wechselmustern zwischen Sitzungen, Vorbereitung täglicher Standups/wöchentlicher Retros/Arbeitsprotokolle.
 
-**Nicht verwenden bei:** Git-Commit-basierter Code-Änderungsretrospektive (`oma retro` verwenden), Echtzeit-Agenten-Überwachung (`oma dashboard` verwenden), Produktivitätsmetriken (`oma stats` verwenden).
+**Nicht verwenden bei:** Git-Commit-basierter Code-Änderungsretrospektive (`oma retro` verwenden), Echtzeit-Agenten-Überwachung (`oma dashboard terminal` verwenden), Produktivitätsmetriken (`oma stats get` verwenden).
 
 **Prozess:**
 1. Datum oder Zeitfenster aus natürlichsprachiger Eingabe auflösen (today, yesterday, last Monday, explizites Datum)
@@ -612,8 +612,8 @@ Für Multi-Agenten-Projekte verhindern separate Workspaces Dateikonflikte:
 Workspaces werden mit dem `-w`-Flag beim Starten von Agenten angegeben:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -681,4 +681,4 @@ Memory-Tools sind konfigurierbar. Standard ist Serena MCP (`read_memory`, `write
 }
 ```
 
-Dashboards (`oma dashboard` und `oma dashboard:web`) überwachen diese Memory-Dateien für Echtzeit-Monitoring.
+Dashboards (`oma dashboard terminal` und `oma dashboard web`) überwachen diese Memory-Dateien für Echtzeit-Monitoring.

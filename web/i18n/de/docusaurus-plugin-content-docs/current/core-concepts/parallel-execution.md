@@ -1,6 +1,6 @@
 ---
 title: Parallele Ausführung
-description: Vollständige Anleitung zum gleichzeitigen Ausführen mehrerer oh-my-agent-Agenten — agent:spawn-Syntax mit allen Optionen, Inline-Modus agent:parallel, Workspace-Muster, Multi-CLI-Konfiguration, Anbieter-Auflösungspriorität, Dashboard-Überwachung, Session-ID-Strategie und zu vermeidende Anti-Patterns.
+description: Vollständige Anleitung zum gleichzeitigen Ausführen mehrerer oh-my-agent-Agenten — agent:spawn-Syntax mit allen Optionen, Inline-Modus agent parallel, Workspace-Muster, Multi-CLI-Konfiguration, Anbieter-Auflösungspriorität, Dashboard-Überwachung, Session-ID-Strategie und zu vermeidende Anti-Patterns.
 ---
 
 # Parallele Ausführung
@@ -9,12 +9,12 @@ Der Kernvorteil von oh-my-agent ist das gleichzeitige Ausführen mehrerer spezia
 
 ---
 
-## agent:spawn — Einzelnes Agenten-Spawning
+## agent spawn — Einzelnes Agenten-Spawning
 
 ### Grundsyntax
 
 ```bash
-oma agent:spawn <agent-id> <prompt> <session-id> [options]
+oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
 ### Parameter
@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Kurz | Beschreibung |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Arbeitsverzeichnis für den Agenten. Agenten modifizieren nur Dateien innerhalb dieses Verzeichnisses. |
-| `--model <name>` | `-m` | CLI-Vendor für diesen speziellen Spawn überschreiben. Optionen: `antigravity`, `claude`, `codex`, `qwen`. |
+| `--vendor <name>` | — | CLI-Vendor für diesen speziellen Spawn überschreiben. Optionen: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Standard-Zug-Limit für diesen Agenten überschreiben. |
 | `--json` | | Ergebnis als JSON ausgeben (nützlich für Skripte). |
 | `--no-wait` | | Starten und vergessen — sofort zurückkehren, ohne auf den Abschluss zu warten. |
@@ -40,19 +40,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 
 ```bash
 # Backend-Agent mit Standard-Vendor starten
-oma agent:spawn backend "Implement JWT authentication API with refresh tokens" session-01
+oma agent spawn backend "Implement JWT authentication API with refresh tokens" session-01
 
 # Mit Workspace-Isolation starten
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Vendor für diesen speziellen Agenten überschreiben
-oma agent:spawn frontend "Build login form" session-01 -m claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Höheres Zug-Limit für eine komplexe Aufgabe setzen
-oma agent:spawn backend "Implement payment gateway integration" session-01 -t 30
+oma agent spawn backend "Implement payment gateway integration" session-01 -t 30
 
 # Prompt-Datei statt Inline-Text verwenden
-oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
+oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 ```
 
 ---
@@ -63,9 +63,9 @@ Um mehrere Agenten gleichzeitig auszuführen, verwenden Sie Shell-Hintergrundpro
 
 ```bash
 # 3 Agenten parallel starten
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api &
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api &
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
 wait  # Blockiert, bis alle Agenten fertig sind
 ```
 
@@ -77,38 +77,38 @@ Weisen Sie beim parallelen Ausführen immer separate Workspaces zu, um Dateikonf
 
 ```bash
 # Full-Stack-Parallelausführung
-oma agent:spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
-oma agent:spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
+oma agent spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
+oma agent spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
+oma agent spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
 
 # Nach der Implementierung QA ausführen (sequenziell — hängt von Implementierung ab)
-oma agent:spawn qa "Review all implementations for security and accessibility" session-02
+oma agent spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
 ---
 
-## agent:parallel — Inline-Parallelmodus
+## agent parallel — Inline-Parallelmodus
 
 Für eine sauberere Syntax, die die Hintergrundprozessverwaltung automatisch übernimmt:
 
 ### Syntax
 
 ```bash
-oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
+oma agent parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
 ### Beispiele
 
 ```bash
 # Grundlegende Parallelausführung
-oma agent:parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
+oma agent parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
 
 # Mit no-wait (starten und vergessen)
-oma agent:parallel -i backend:"Auth API" frontend:"Login form" --no-wait
+oma agent parallel -i backend:"Auth API" frontend:"Login form" --no-wait
 
 # Alle Agenten teilen automatisch dieselbe Sitzung
-oma agent:parallel -i \
+oma agent parallel -i \
   backend:"JWT auth with refresh tokens" \
   frontend:"Login form with email validation" \
   db:"User schema with soft delete and audit trail"
@@ -139,15 +139,15 @@ Eingebaute Presets: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`.
 
 ### Vendor-Auflösung
 
-Wenn `oma agent:spawn` ermittelt, welche CLI verwendet wird:
+Wenn `oma agent spawn` ermittelt, welche CLI verwendet wird:
 
 | Priorität | Quelle | Beispiel |
 |----------|--------|---------|
-| 1 (höchste) | `--model`-Flag | `oma agent:spawn backend "task" session-01 -m claude` |
+| 1 (höchste) | `--vendor`-Flag | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `agents:`-Überschreibung in `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Agenten-Standardwerte des aktiven `model_preset` | Preset-Nachschlag für die Agentenrolle |
 
-Das `--model`-Flag gewinnt immer. Ohne Flag prüft das System zuerst `agents:`-Überschreibungen und danach die Preset-Standardwerte.
+Das `--vendor`-Flag gewinnt immer. Ohne Flag prüft das System zuerst `agents:`-Überschreibungen und danach die Preset-Standardwerte.
 
 ---
 
@@ -159,9 +159,9 @@ Der Startmechanismus variiert je nach IDE/CLI:
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent`-Tool mit `.claude/agents/{name}.md`-Definitionen. Mehrere Agent-Aufrufe in derselben Nachricht = echte Parallelität. | Synchrone Rückgabe |
 | **Codex CLI** | Modellvermittelte parallele Subagenten-Anfrage | JSON-Ausgabe |
-| **Gemini CLI** | `oma agent:spawn`-CLI-Befehl | MCP-Memory-Abfrage |
-| **Antigravity IDE** | Nur `oma agent:spawn` (benutzerdefinierte Subagenten nicht verfügbar) | MCP-Memory-Abfrage |
-| **CLI-Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Ergebnisdatei-Abfrage |
+| **Gemini CLI** | `oma agent spawn`-CLI-Befehl | MCP-Memory-Abfrage |
+| **Antigravity IDE** | Nur `oma agent spawn` (benutzerdefinierte Subagenten nicht verfügbar) | MCP-Memory-Abfrage |
+| **CLI-Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Ergebnisdatei-Abfrage |
 
 Innerhalb von Claude Code verwendet der Workflow das `Agent`-Tool direkt:
 ```
@@ -178,7 +178,7 @@ Mehrere Agent-Tool-Aufrufe in derselben Nachricht werden als echte Parallelität
 ### Terminal-Dashboard
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Zeigt eine Live-Tabelle mit:
@@ -193,7 +193,7 @@ Das Dashboard überwacht `.serena/memories/` für Echtzeit-Updates. Es aktualisi
 ### Web-Dashboard
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Öffnet http://localhost:9847
 ```
 
@@ -212,7 +212,7 @@ Verwenden Sie 3 Terminals für optimale Sichtbarkeit:
 ┌─────────────────────────┬──────────────────────┐
 │                         │                      │
 │   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard         │   Agent-Spawn-       │
+│   oma dashboard terminal         │   Agent-Spawn-       │
 │   (Live-Überwachung)    │   Befehle            │
 │                         │                      │
 ├─────────────────────────┴──────────────────────┤
@@ -226,7 +226,7 @@ Verwenden Sie 3 Terminals für optimale Sichtbarkeit:
 ### Einzelnen Agentenstatus prüfen
 
 ```bash
-oma agent:status <session-id> <agent-id>
+oma agent status <session-id> <agent-id>
 ```
 
 Gibt den aktuellen Status eines bestimmten Agenten zurück: laufend, abgeschlossen oder fehlgeschlagen, zusammen mit Zugzähler und letzter Aktivität.
@@ -259,18 +259,18 @@ Sitzungs-IDs bestimmen:
 
 3. **Separate Workspaces zuweisen.** Immer `-w` verwenden, um Agenten zu isolieren:
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    ```
 
 4. **Aktiv überwachen.** Ein Dashboard-Terminal öffnen, um Probleme frühzeitig zu erkennen — ein fehlgeschlagener Agent verschwendet Züge, wenn er nicht schnell erkannt wird.
 
 5. **QA nach der Implementierung ausführen.** Den QA-Agenten sequenziell nach Abschluss aller Implementierungsagenten starten:
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    wait
-   oma agent:spawn qa "Review all changes" session-01
+   oma agent spawn qa "Review all changes" session-01
    ```
 
 6. **Mit Re-Spawns iterieren.** Wenn die Ausgabe eines Agenten Verfeinerung braucht, den Agenten mit der ursprünglichen Aufgabe plus Korrekturkontext erneut starten. Keine neue Sitzung beginnen.
@@ -301,23 +301,23 @@ Ein vollständiger paralleler Ausführungsworkflow zum Erstellen eines Benutzera
 # Dies erstellt .agents/results/plan-{sessionId}.json mit Aufgabenaufschlüsselung
 
 # Schritt 2: Implementierungsagenten parallel starten
-oma agent:spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
-oma agent:spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
-oma agent:spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
+oma agent spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
+oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
+oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
 # Schritt 3: In einem separaten Terminal überwachen
 # Terminal 2:
-oma dashboard
+oma dashboard terminal
 
 # Schritt 4: Auf alle Implementierungsagenten warten
 wait
 
 # Schritt 5: QA-Review ausführen
-oma agent:spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
+oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
 # Schritt 6: Falls QA Probleme findet, spezifische Agenten mit Korrekturen erneut starten
-oma agent:spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
+oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
 # Schritt 7: QA erneut zur Verifikation ausführen
-oma agent:spawn qa "Re-review backend auth after fixes." session-auth-01
+oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```

@@ -41,7 +41,7 @@ interface KimiTomlHook {
  * Build the Kimi `[[hooks]]` entries for the oma handler chain.
  *
  * Kimi runs a single shell `command` per (event, matcher); we route the whole
- * handler chain through the oma-hook wrapper (`oma hook --vendor kimi ...`),
+ * handler chain through the oma-hook wrapper (`oma hook run --vendor kimi ...`),
  * mirroring `installHooksFromVariant`. The wrapper path is absolute (HOME-local)
  * because Kimi exposes no project-dir env var and runs the command with cwd set
  * to the user's project, not the config dir.
@@ -98,7 +98,7 @@ export function installKimiHooks(sourceDir: string): KimiHookInstallResult {
   mkdirSync(hooksDir, { recursive: true });
 
   // 1. Materialize only the runtime-required scripts (filter-test-output.sh for
-  //    the test-filter handler). Handler .ts files run in-process via `oma hook`.
+  //    the test-filter handler). Handler .ts files run in-process via `oma hook run`.
   copyHookScripts(sourceDir, hooksDir, requiredVariantScripts(VARIANT));
 
   // 2. Write the oma-hook wrapper that resolves oma and execs `oma hook "$@"`.

@@ -60,7 +60,7 @@ oma image generate "test prompt" --dry-run
 oma image doctor
 
 # List registered vendors and the models each one supports
-oma image list-vendors
+oma image vendor list
 ```
 
 `oma img`は`oma image`のエイリアスです。
@@ -111,7 +111,7 @@ CLIフラグを覚える必要はありません。普通の言葉で伝えれ�
 他のスキル（design、marketing、docs）はこのパイプラインを共有インフラとして、JSON出力で呼び出します：
 
 ```bash
-oma image generate "<prompt>" --format json
+oma image generate "<prompt>" --output json
 ```
 
 stdoutに書き出されるマニフェストには出力パス、ベンダー、モデル、コストが含まれており、パースとチェーンが容易です。
@@ -132,7 +132,7 @@ oma image generate "<prompt>"
   [--dry-run] [--format text|json]
 
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 ### 主要フラグ

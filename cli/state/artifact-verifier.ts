@@ -44,7 +44,7 @@ const REMEDIATION =
   "Treat EXEC as NOT performed: record the violation in session memory, then " +
   "repair the missing or stale evidence within the authorized scope and re-run the gate. " +
   "Ask only if proceeding needs missing information or new authorization. " +
-  "Record runs with agent:begin, checks with agent:verify, and results with agent:finish.";
+  "Record runs with oma agent begin, checks with oma agent verify, and results with oma agent finish.";
 
 /**
  * Resolve memoryConfig.basePath from .agents/mcp.json. Default is the
@@ -116,7 +116,7 @@ function escapeRegExp(value: string): string {
 
 /**
  * Agent result files have two naming/location schemes depending on dispatch
- * path: CLI fallback (`oma agent:spawn qa-agent`) writes
+ * path: CLI fallback (`oma agent spawn qa-agent`) writes
  * `{memBase}/result-qa-agent*.md`, while Claude-native subagents
  * (qa-reviewer / refactor-engineer) write `.agents/results/result-qa*.md`.
  * Scan both so a fully executed native run is not falsely gated.

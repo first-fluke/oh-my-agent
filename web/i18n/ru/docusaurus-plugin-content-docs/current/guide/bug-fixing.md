@@ -158,8 +158,8 @@ description: Подробное руководство по отладке — �
 |:-------|:-------------|
 | Claude Code | Agent tool с `.claude/agents/debug-investigator.md` |
 | Codex CLI | Запрос субагента через модель, результаты в JSON |
-| Gemini CLI | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
-| Antigravity / Fallback | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Antigravity / Fallback | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 Все обнаруженные уязвимые места включаются в отчёт. Подтверждённые экземпляры исправляются в рамках той же сессии.
 

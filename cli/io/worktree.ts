@@ -1,7 +1,7 @@
 /**
  * worktree.ts
  *
- * Git worktree isolation for `oma agent:spawn --isolation=worktree`.
+ * Git worktree isolation for `oma agent spawn --isolation=worktree`.
  *
  * Creates a fresh worktree + branch per spawn so parallel agents do not
  * step on each other's working tree. Cleanup is intentionally manual:

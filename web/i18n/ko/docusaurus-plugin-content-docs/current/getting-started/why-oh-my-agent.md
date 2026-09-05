@@ -39,7 +39,7 @@ oh-my-agent은 다른 축을 최적화합니다. 충분히 강한 모델 환경�
 
 ### 손해 발생 전에 차단하는 quota cap
 
-모든 `oma agent:spawn` 호출은 토큰 추정치를 `.serena/memories/session-cost-{sessionId}.md`에 기록합니다. 다음 spawn 전에 `checkCap`이 설정된 quota cap을 조회해 어느 차원이라도 초과되면 실행을 거부합니다. 강제하는 차원은 총 토큰, 총 spawn 수, vendor별 토큰 예산 세 가지입니다.
+모든 `oma agent spawn` 호출은 토큰 추정치를 `.serena/memories/session-cost-{sessionId}.md`에 기록합니다. 다음 spawn 전에 `checkCap`이 설정된 quota cap을 조회해 어느 차원이라도 초과되면 실행을 거부합니다. 강제하는 차원은 총 토큰, 총 spawn 수, vendor별 토큰 예산 세 가지입니다.
 
 cap이 없으면 월말이 되어서야 4만 달러를 썼다는 사실을 알게 됩니다. cap이 있으면 15번째 spawn에서 남은 예산이 한 번뿐이라고 오케스트레이터가 알려줍니다. `cli/io/session-cost.ts`를 보고 `.agents/oma-config.yaml`의 `session.quota_cap`에서 설정하세요.
 

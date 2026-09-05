@@ -210,7 +210,7 @@ export function estimateUsd(
 
 /**
  * Load usage records from every session-cost-*.md file in the project
- * coordination store (canonical + legacy dirs). Used by `oma stats` to surface
+ * coordination store (canonical + legacy dirs). Used by `oma stats get` to surface
  * cumulative cost telemetry. Missing directory or unreadable files are
  * skipped silently.
  */

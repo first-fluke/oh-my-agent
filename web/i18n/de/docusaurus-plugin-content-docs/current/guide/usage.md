@@ -44,8 +44,8 @@ Keine Slash-Befehle noetig. Beschreib einfach, was du willst.
 2. **PM-Agent** plant die Arbeit: Auth-API, Datenbankschema, Frontend-UI, QA-Umfang
 3. **Du startest Agenten:**
    ```bash
-   oma agent:spawn backend "JWT authentication API" session-01 -w ./apps/api &
-   oma agent:spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
+   oma agent spawn backend "JWT authentication API" session-01 -w ./apps/api &
+   oma agent spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
    wait
    ```
 4. **Agenten arbeiten parallel** — jeder in seinem eigenen Workspace
@@ -87,17 +87,17 @@ Keine Slash-Befehle noetig. Beschreib einfach, was du willst.
 
 ```bash
 # Einzelner Agent
-oma agent:spawn backend "Implement JWT auth API" session-01
+oma agent spawn backend "Implement JWT auth API" session-01
 
 # Mehrere Agenten parallel
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
-oma agent:spawn frontend "Login form + error states" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
+oma agent spawn frontend "Login form + error states" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
 wait
 
 # Echtzeit ueberwachen
-oma dashboard        # Terminal-UI
-oma dashboard:web    # Web-UI unter http://localhost:9847
+oma dashboard terminal        # Terminal-UI
+oma dashboard web    # Web-UI unter http://localhost:9847
 ```
 
 ---
@@ -166,7 +166,7 @@ Fragen wie "was ist orchestrate?" werden herausgefiltert — sie loesen keine Wo
 ### Terminal-Dashboard
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Live-Tabelle mit Sitzungsstatus, Agentenzustaenden, Zuegen und letzter Aktivitaet. Ueberwacht `.serena/memories/` fuer Echtzeit-Updates.
@@ -174,7 +174,7 @@ Live-Tabelle mit Sitzungsstatus, Agentenzustaenden, Zuegen und letzter Aktivitae
 ### Web-Dashboard
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # → http://localhost:9847
 ```
 
@@ -187,7 +187,7 @@ Features:
 ### Empfohlenes Layout
 
 Verwende 3 Terminals:
-1. Dashboard (`oma dashboard`)
+1. Dashboard (`oma dashboard terminal`)
 2. Agenten-Spawn-Befehle
 3. Test-/Build-Logs
 

@@ -151,6 +151,19 @@ describe("keyword-detector", () => {
   // ── Task 3 — CLI Invocation Guard ───────────────────────────
 
   describe("CLI_INVOCATION_AT_START", () => {
+    it("recognizes canonical resource actions without treating prose as a command", () => {
+      for (const prompt of [
+        'oma schedule create qa "brainstorm a feature"',
+        "oma state emit decision.made",
+        "oma model probe review-model",
+        "oma skill eval --help",
+        "oma hook run --vendor codex --event Stop",
+      ])
+        expect(CLI_INVOCATION_AT_START.test(prompt)).toBe(true);
+      expect(
+        CLI_INVOCATION_AT_START.test("oma schedule 설명을 brainstorm 해줘"),
+      ).toBe(false);
+    });
     // Positive cases — these prompts ARE CLI invocations and must match the regex
     it("matches: oma agent:spawn brainstorm", () => {
       expect(

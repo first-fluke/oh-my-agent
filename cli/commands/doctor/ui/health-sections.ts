@@ -86,7 +86,7 @@ export function renderStateHealth(report: DoctorReport): void {
     `Hook order: ${hookSummary}`,
     state.issues.length > 0 ? "" : null,
     ...state.issues.map((issue) => `${pc.yellow("⚠️")} ${issue}`),
-    state.issues.length > 0 ? pc.dim("Run: oma state:repair --dry-run") : null,
+    state.issues.length > 0 ? pc.dim("Run: oma state repair --dry-run") : null,
   ].filter((line): line is string => line !== null);
 
   p.note(lines.join("\n"), "State & Hooks");

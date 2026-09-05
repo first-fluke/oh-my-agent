@@ -136,11 +136,11 @@ oh-my-agent współpracuje z każdym IDE lub CLI zasilanym AI, które obsługuje
 | Narzędzie | Metoda integracji | Agenci równolegli |
 |------|-------------------|----------------|
 | **Claude Code** | Natywne umiejętności + narzędzie Agent | Narzędzie Task do prawdziwego równoległego wykonania |
-| **Gemini CLI** | Umiejętności automatycznie ładowane z `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Umiejętności automatycznie ładowane z `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Umiejętności automatycznie ładowane | Równoległe żądania mediowane przez model |
-| **Antigravity IDE** | Umiejętności automatycznie ładowane | `oma agent:spawn` |
+| **Antigravity IDE** | Umiejętności automatycznie ładowane | `oma agent spawn` |
 | **Cursor** | Umiejętności przez integrację `.cursor/` | Ręczne uruchamianie |
-| **OpenCode** | Umiejętności + mostek wtyczki w procesie + wygenerowani subagenci (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
+| **OpenCode** | Umiejętności + mostek wtyczki w procesie + wygenerowani subagenci (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 
 Uruchamianie agentów automatycznie dostosowuje się do każdego dostawcy dzięki protokołowi wykrywania dostawcy, który sprawdza znaczniki specyficzne dla dostawcy (np. narzędzie `Agent` dla Claude Code, `apply_patch` dla Codex CLI).
 

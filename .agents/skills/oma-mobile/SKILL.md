@@ -135,7 +135,7 @@ Then run the project's mobile verification commands, typically unit/widget tests
 ## References
 Follow `resources/execution-protocol.md` step by step.
 Before submitting, run `resources/checklist.md`.
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Code snippets (Swift): `variants/swift-ios/snippets.md`

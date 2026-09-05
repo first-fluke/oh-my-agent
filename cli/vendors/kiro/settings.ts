@@ -37,7 +37,7 @@ const OMA_KIRO_HOOKS_AGENT = {
   prompt:
     "You are Kiro CLI running in an oh-my-agent workspace. Follow project instructions and use hook-provided context when present.",
   includeMcpJson: true,
-  // Hooks route through oma-hook.sh → `oma hook` (design 019): handler .ts
+  // Hooks route through oma-hook.sh → `oma hook run` (design 019): handler .ts
   // files are no longer materialized in .kiro/hooks/, so per-script `bun`
   // commands would point at missing files. One wrapper call runs the whole
   // in-process chain for the event.

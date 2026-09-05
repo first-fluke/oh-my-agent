@@ -40,7 +40,7 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 
 ### Dependencies
 - PM, frontend, backend, mobile, QA, and orchestrator skills
-- CLI `oma agent:spawn` and progress/result memory conventions
+- CLI `oma agent spawn` and progress/result memory conventions
 
 ### Control-flow features
 - Branches by task complexity, priority tiers, dependency ordering, and whether automation is desired
@@ -81,27 +81,27 @@ Guide manual multi-agent coordination for complex work that spans PM, frontend, 
 |--------|---------------|----------|
 | Read request and domains | `READ` | User prompt and project context |
 | Select agent plan | `SELECT` | PM decomposition and priority tiers |
-| Spawn agents | `CALL_TOOL` | `oma agent:spawn` |
+| Spawn agents | `CALL_TOOL` | `oma agent spawn` |
 | Monitor progress | `READ` | `progress-{agent}[-{sessionId}].md` |
 | Validate contracts | `VALIDATE` | API/data model alignment |
 | Notify coordination status | `NOTIFY` | Final coordination summary |
 
 ### Tools and instruments
-- `oma agent:spawn`, PM/frontend/backend/mobile/QA agents
+- `oma agent spawn`, PM/frontend/backend/mobile/QA agents
 - Memory/progress/result files
 - Serena MCP for exploration and modification when used by specialists
 
 ### Canonical command path
 ```bash
-oma agent:spawn pm "<planning task>" <session-id> -w ./pm
-oma agent:spawn backend "<backend task>" <session-id> -w ./backend &
-oma agent:spawn frontend "<frontend task>" <session-id> -w ./frontend &
+oma agent spawn pm "<planning task>" <session-id> -w ./pm
+oma agent spawn backend "<backend task>" <session-id> -w ./backend &
+oma agent spawn frontend "<frontend task>" <session-id> -w ./frontend &
 wait
 ```
 
-When native runtime dispatch is available (per-agent target vendor equals the current runtime vendor), prefer the runtime's native subagent path and use `oma agent:spawn` as the cross-vendor fallback — same resolution rule as oma-orchestration.
+When native runtime dispatch is available (per-agent target vendor equals the current runtime vendor), prefer the runtime's native subagent path and use `oma agent spawn` as the cross-vendor fallback — same resolution rule as oma-orchestration.
 
-Useful `agent:spawn` options: `-m/--model <vendor>` (CLI vendor override), `--isolation worktree` (git worktree per spawn, prevents file conflicts), `--read-only` (non-destructive tools only, e.g. for review/QA passes).
+Useful `agent spawn` options: `-m/--model <vendor>` (CLI vendor override), `--isolation worktree` (git worktree per spawn, prevents file conflicts), `--read-only` (non-destructive tools only, e.g. for review/QA passes).
 
 ### Resource scope
 | Scope | Resource target |
@@ -141,13 +141,13 @@ Resolve the dispatch path per agent, then spawn:
 
 1. Resolve the per-agent target vendor from oma-config.yaml (`agents:` override, else `model_preset`)
 2. If the target vendor equals the current runtime vendor and a native subagent path exists, use native dispatch
-3. Otherwise use `oma agent:spawn` for that agent
+3. Otherwise use `oma agent spawn` for that agent
 4. Spawn all same-priority tasks in parallel using background processes
 
 ```bash
 # Example: spawn backend and frontend in parallel
-oma agent:spawn backend "task description" session-id -w ./backend &
-oma agent:spawn frontend "task description" session-id -w ./frontend &
+oma agent spawn backend "task description" session-id -w ./backend &
+oma agent spawn frontend "task description" session-id -w ./frontend &
 wait
 ```
 

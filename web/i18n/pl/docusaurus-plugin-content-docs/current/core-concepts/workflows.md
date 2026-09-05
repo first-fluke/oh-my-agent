@@ -50,7 +50,7 @@ Lista dozwolonych rzeczowników (15): app, api, service, server, cli, tool, webs
 1. **Krok 0 — Przygotowanie:** Odczytaj skill koordynacji, przewodnik ładowania kontekstu, protokół pamięci. Wykryj dostawcę.
 2. **Krok 1 — Załaduj/Utwórz plan:** Sprawdź `.agents/results/plan-{sessionId}.json`. Jeśli brak, poproś użytkownika o uruchomienie `/plan` najpierw.
 3. **Krok 2 — Inicjalizacja sesji:** Załaduj `oma-config.yaml`, wyświetl tabelę mapowania CLI, wygeneruj ID sesji (`session-YYYYMMDD-HHMMSS`), utwórz `orchestrator-session.md` i `task-board.md` w pamięci.
-4. **Krok 3 — Uruchom agentów:** Dla każdego poziomu priorytetów (najpierw P0, potem P1...), uruchom agentów używając metody właściwej dla dostawcy (narzędzie Agent dla Claude Code, `oma agent:spawn` dla Gemini/Antigravity, mediowane przez model dla Codex). Nigdy nie przekraczaj MAX_PARALLEL.
+4. **Krok 3 — Uruchom agentów:** Dla każdego poziomu priorytetów (najpierw P0, potem P1...), uruchom agentów używając metody właściwej dla dostawcy (narzędzie Agent dla Claude Code, `oma agent spawn` dla Gemini/Antigravity, mediowane przez model dla Codex). Nigdy nie przekraczaj MAX_PARALLEL.
 5. **Krok 4 — Monitoruj:** Odpytuj pliki `progress-{agent}.md`, aktualizuj `task-board.md`. Obserwuj zakończenia, niepowodzenia, awarie.
 6. **Krok 5 — Weryfikuj:** Uruchom `verify.sh {agent-type} {workspace}` per zakończony agent. Przy niepowodzeniu, ponownie uruchom z kontekstem błędu (maks. 2 ponowienia). Po 2 ponowieniach, aktywuj Pętlę eksploracji: wygeneruj 2-3 hipotezy, uruchom równoległe eksperymenty, oceń, zachowaj najlepszy.
 7. **Krok 6 — Zbierz:** Odczytaj wszystkie pliki `result-{agent}.md`, skompiluj podsumowanie.

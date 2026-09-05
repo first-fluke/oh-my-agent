@@ -300,7 +300,7 @@ function incrementReinforcement(
  * `response`, `content` etc. from raw stdin) is not representable in the
  * canonical `HookInput { kind: "stop"; cwd }` shape — those fields are absent.
  * That check stays in the standalone `main()` path. When dispatched via
- * `oma hook`, the dispatch layer is responsible for passing a pre-checked input
+ * `oma hook run`, the dispatch layer is responsible for passing a pre-checked input
  * (or extending HookInput in a future revision).
  *
  * `ctx.cwd` must be the resolved git-root project directory;
@@ -325,7 +325,7 @@ export async function run(
 
   // Honor "workflow done" deactivation carried in the stop payload's response
   // text (parity with the standalone main() path). Without this, persistent
-  // mode could not be deactivated via the central `oma hook` dispatch.
+  // mode could not be deactivated via the central `oma hook run` dispatch.
   if (input.responseText) {
     if (isDeactivationRequest(input.responseText)) {
       deactivateAllForSession(projectDir, sessionId);

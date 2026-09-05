@@ -306,7 +306,7 @@ Auf diese Signale achten, die anzeigen, dass von Einzelner-Skill- zu Multi-Agent
 | CHARTER_CHECK des Agenten zeigt "Must NOT do"-Elemente, die tatsächlich benötigt werden | Umfang überschreitet eine Domäne | Das vollständige Feature zuerst mit `/plan` planen |
 | Korrektur kaskadiert in 3+ Dateien über verschiedene Schichten | Eine Korrektur betrifft mehrere Domänen | `/debug` mit breiterem Umfang verwenden, oder `/work` |
 | Agent entdeckt eine API-Vertrags-Diskrepanz | Frontend-/Backend-Unstimmigkeit | `/plan` zur Vertragsdefinition ausführen, dann beide Agenten erneut starten |
-| Qualitäts-Gate scheitert an Integrationspunkten | Komponenten passen nicht richtig zusammen | QA-Review-Schritt hinzufügen: `oma agent:spawn qa "Review integration"` |
+| Qualitäts-Gate scheitert an Integrationspunkten | Komponenten passen nicht richtig zusammen | QA-Review-Schritt hinzufügen: `oma agent spawn qa "Review integration"` |
 | Aufgabe wächst von "eine Komponente" zu "drei Komponenten + neue Route + API" | Scope-Creep während der Ausführung | Stoppen, `/plan` zur Zerlegung ausführen, dann `/orchestrate` |
 | Agent blockiert mit HIGH-Klärung | Anforderungen grundlegend mehrdeutig | Die Fragen des Agenten beantworten oder `/brainstorm` zur Klärung des Ansatzes ausführen |
 

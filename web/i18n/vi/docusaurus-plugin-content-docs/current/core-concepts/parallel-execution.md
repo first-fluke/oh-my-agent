@@ -1,6 +1,6 @@
 ---
 title: Thực thi song song
-description: Hướng dẫn đầy đủ về chạy nhiều agent oh-my-agent đồng thời — cú pháp agent:spawn với tất cả tùy chọn, chế độ inline agent:parallel, mẫu nhận biết workspace, cấu hình đa CLI, ưu tiên phân giải vendor, giám sát bằng dashboard, chiến lược session ID và anti-pattern cần tránh.
+description: Hướng dẫn đầy đủ về chạy nhiều agent oh-my-agent đồng thời — cú pháp agent spawn với tất cả tùy chọn, chế độ inline agent parallel, mẫu nhận biết workspace, cấu hình đa CLI, ưu tiên phân giải vendor, giám sát bằng dashboard, chiến lược session ID và anti-pattern cần tránh.
 ---
 
 # Thực thi song song
@@ -9,12 +9,12 @@ description: Hướng dẫn đầy đủ về chạy nhiều agent oh-my-agent �
 
 ---
 
-## agent:spawn — spawn agent đơn lẻ
+## agent spawn — spawn agent đơn lẻ
 
 ### Cú pháp cơ bản
 
 ```bash
-oma agent:spawn <agent-id> <prompt> <session-id> [options]
+oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
 ### Tham số
@@ -31,7 +31,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | Flag | Viết tắt | Mô tả |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | Thư mục làm việc cho agent. Agent chỉ sửa file trong thư mục này. |
-| `--model <name>` | `-m` | Ghi đè vendor CLI cho spawn cụ thể này. Tùy chọn: `antigravity`, `claude`, `codex`, `qwen`. |
+| `--vendor <name>` | — | Ghi đè vendor CLI cho spawn cụ thể này. Tùy chọn: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--max-turns <n>` | `-t` | Ghi đè giới hạn lượt mặc định cho agent này. |
 | `--json` | | Xuất kết quả dạng JSON (hữu ích cho scripting). |
 | `--no-wait` | | Fire and forget — trả về ngay không đợi hoàn thành. |
@@ -40,19 +40,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 
 ```bash
 # Spawn agent backend với vendor mặc định
-oma agent:spawn backend "Implement JWT authentication API with refresh tokens" session-01
+oma agent spawn backend "Implement JWT authentication API with refresh tokens" session-01
 
 # Spawn với cô lập workspace
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # Ghi đè vendor cho agent cụ thể này
-oma agent:spawn frontend "Build login form" session-01 -m claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # Đặt giới hạn lượt cao hơn cho task phức tạp
-oma agent:spawn backend "Implement payment gateway integration" session-01 -t 30
+oma agent spawn backend "Implement payment gateway integration" session-01 -t 30
 
 # Dùng file prompt thay vì text trực tiếp
-oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
+oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 ```
 
 ---
@@ -63,9 +63,9 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ```bash
 # Spawn 3 agent song song
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api &
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api &
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
 wait  # Chặn cho đến khi tất cả agent hoàn thành
 ```
 
@@ -77,38 +77,38 @@ Luôn gán workspace riêng biệt khi chạy agent song song để ngăn xung �
 
 ```bash
 # Thực thi song song fullstack
-oma agent:spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
-oma agent:spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
+oma agent spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
+oma agent spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
+oma agent spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
 
 # Sau triển khai, chạy QA (tuần tự — phụ thuộc vào triển khai)
-oma agent:spawn qa "Review all implementations for security and accessibility" session-02
+oma agent spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
 ---
 
-## agent:parallel — chế độ song song inline
+## agent parallel — chế độ song song inline
 
 Cú pháp gọn hơn tự động quản lý tiến trình nền:
 
 ### Cú pháp
 
 ```bash
-oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
+oma agent parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
 ### Ví dụ
 
 ```bash
 # Thực thi song song cơ bản
-oma agent:parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
+oma agent parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
 
 # Với no-wait (fire and forget)
-oma agent:parallel -i backend:"Auth API" frontend:"Login form" --no-wait
+oma agent parallel -i backend:"Auth API" frontend:"Login form" --no-wait
 
 # Tất cả agent chia sẻ cùng session tự động
-oma agent:parallel -i \
+oma agent parallel -i \
   backend:"JWT auth with refresh tokens" \
   frontend:"Login form with email validation" \
   db:"User schema with soft delete and audit trail"
@@ -139,15 +139,15 @@ Preset built-in: `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `mixed`. Xe
 
 ### Ưu tiên phân giải vendor
 
-Khi `oma agent:spawn` xác định CLI nào sử dụng:
+Khi `oma agent spawn` xác định CLI nào sử dụng:
 
 | Ưu tiên | Nguồn | Ví dụ |
 |----------|--------|---------|
-| 1 (cao nhất) | Flag `--model` | `oma agent:spawn backend "task" session-01 -m claude` |
+| 1 (cao nhất) | Flag `--vendor` | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | Ghi đè `agents:` trong `oma-config.yaml` | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | Mặc định agent của `model_preset` đang dùng | Tra cứu preset cho vai trò agent |
 
-Flag `--model` luôn thắng. Nếu không có flag, hệ thống kiểm tra ghi đè `agents:` trước, rồi đến mặc định của preset.
+Flag `--vendor` luôn thắng. Nếu không có flag, hệ thống kiểm tra ghi đè `agents:` trước, rồi đến mặc định của preset.
 
 ---
 
@@ -159,9 +159,9 @@ Cơ chế spawn thay đổi theo IDE/CLI:
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent` tool với định nghĩa `.claude/agents/{name}.md`. Nhiều lệnh Agent trong cùng message = song song thực sự. | Trả về đồng bộ |
 | **Codex CLI** | Yêu cầu subagent song song qua mô hình trung gian | Đầu ra JSON |
-| **Gemini CLI** | Lệnh CLI `oma agent:spawn` | Poll MCP memory |
-| **Antigravity IDE** | Chỉ `oma agent:spawn` (subagent tùy chỉnh không có sẵn) | Poll MCP memory |
-| **CLI Fallback** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | Poll file kết quả |
+| **Gemini CLI** | Lệnh CLI `oma agent spawn` | Poll MCP memory |
+| **Antigravity IDE** | Chỉ `oma agent spawn` (subagent tùy chỉnh không có sẵn) | Poll MCP memory |
+| **CLI Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Poll file kết quả |
 
 Khi chạy trong Claude Code, workflow dùng `Agent` tool trực tiếp:
 ```
@@ -178,7 +178,7 @@ Nhiều lệnh Agent tool trong cùng message thực thi như song song thực s
 ### Dashboard terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Hiển thị bảng trực tiếp với:
@@ -193,7 +193,7 @@ Dashboard theo dõi `.serena/memories/` cho cập nhật thời gian thực. Nó
 ### Dashboard web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Mở http://localhost:9847
 ```
 
@@ -212,7 +212,7 @@ Dùng 3 terminal cho khả năng quan sát tối ưu:
 ┌─────────────────────────┬──────────────────────┐
 │                         │                      │
 │   Terminal 1:           │   Terminal 2:        │
-│   oma dashboard         │   Lệnh spawn        │
+│   oma dashboard terminal         │   Lệnh spawn        │
 │   (giám sát trực tiếp)  │   agent              │
 │                         │                      │
 ├─────────────────────────┴──────────────────────┤
@@ -226,7 +226,7 @@ Dùng 3 terminal cho khả năng quan sát tối ưu:
 ### Kiểm tra trạng thái agent cá nhân
 
 ```bash
-oma agent:status <session-id> <agent-id>
+oma agent status <session-id> <agent-id>
 ```
 
 Trả về trạng thái hiện tại của agent cụ thể: running, completed hoặc failed, cùng số lượt và hoạt động cuối.
@@ -259,18 +259,18 @@ Session ID quyết định:
 
 3. **Gán workspace riêng biệt.** Luôn dùng `-w` để cô lập agent:
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    ```
 
 4. **Giám sát tích cực.** Mở terminal dashboard để phát hiện vấn đề sớm — agent thất bại lãng phí lượt nếu không được phát hiện nhanh.
 
 5. **Chạy QA sau triển khai.** Spawn agent QA tuần tự sau khi tất cả agent triển khai hoàn thành:
    ```bash
-   oma agent:spawn backend "task" session-01 -w ./apps/api &
-   oma agent:spawn frontend "task" session-01 -w ./apps/web &
+   oma agent spawn backend "task" session-01 -w ./apps/api &
+   oma agent spawn frontend "task" session-01 -w ./apps/web &
    wait
-   oma agent:spawn qa "Review all changes" session-01
+   oma agent spawn qa "Review all changes" session-01
    ```
 
 6. **Lặp lại bằng re-spawn.** Nếu đầu ra agent cần tinh chỉnh, re-spawn với task gốc cộng ngữ cảnh sửa. Không bắt đầu session mới.
@@ -301,23 +301,23 @@ Quy trình thực thi song song hoàn chỉnh cho xây dựng tính năng xác t
 # Tạo .agents/results/plan-{sessionId}.json với phân tách task
 
 # Bước 2: Spawn agent triển khai song song
-oma agent:spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
-oma agent:spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
-oma agent:spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
+oma agent spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints. Use Argon2id for password hashing. Follow the API contract in .agents/skills/_shared/core/api-contracts/" session-auth-01 -w ./apps/api &
+oma agent spawn frontend "Build login and registration forms with email validation, password strength indicator, and error handling. Use the API contract for endpoint integration." session-auth-01 -w ./apps/web &
+oma agent spawn mobile "Create auth screens (login, register, forgot password) with biometric login support and secure token storage." session-auth-01 -w ./apps/mobile &
 
 # Bước 3: Giám sát trong terminal riêng
 # Terminal 2:
-oma dashboard
+oma dashboard terminal
 
 # Bước 4: Đợi tất cả agent triển khai
 wait
 
 # Bước 5: Chạy đánh giá QA
-oma agent:spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
+oma agent spawn qa "Review all auth implementations across backend, frontend, and mobile for OWASP Top 10 compliance, accessibility, and cross-domain consistency." session-auth-01
 
 # Bước 6: Nếu QA tìm thấy vấn đề, re-spawn agent cụ thể với bản sửa
-oma agent:spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
+oma agent spawn backend "Fix: QA found missing rate limiting on login endpoint and SQL injection risk in user search. Apply fixes per QA report." session-auth-01 -w ./apps/api
 
 # Bước 7: Chạy lại QA để xác minh bản sửa
-oma agent:spawn qa "Re-review backend auth after fixes." session-auth-01
+oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```

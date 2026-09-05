@@ -1,5 +1,5 @@
 /**
- * import-pptx.ts — oma slide import-pptx <file.pptx> --dir
+ * import-pptx.ts — oma slide import pptx <file.pptx> --dir
  *
  * Best-effort .pptx → per-slide HTML scaffolds, in pure TypeScript.
  *
@@ -316,7 +316,7 @@ export async function runSlideImportPptx(
   if (!copyStageAssets(outDir)) {
     console.warn(
       color.yellow(
-        "  Stage assets not found — run `oma slide new --dir <dir> --force` to add viewport-base.css / deck-stage.js.",
+        "  Stage assets not found — run `oma slide create --dir <dir> --force` to add viewport-base.css / deck-stage.js.",
       ),
     );
   }
@@ -361,7 +361,7 @@ export async function runSlideImportPptx(
     `  2. Validate: ${color.cyan(`oma slide validate --dir ${outDir}`)}`,
   );
   console.log(
-    `  3. Preview: ${color.cyan(`oma slide viewer --dir ${outDir}`)}`,
+    `  3. Preview: ${color.cyan(`oma slide preview --dir ${outDir}`)}`,
   );
   return 0;
 }

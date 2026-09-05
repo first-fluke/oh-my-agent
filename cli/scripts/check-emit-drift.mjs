@@ -190,7 +190,15 @@ try {
   // `.agents/` (e.g. agent scratch state) that would shadow the real SSOT.
   execFileSync(
     "bun",
-    ["cli/cli.ts", "emit", "--target", "all", "--out", scratchDir, "--json"],
+    [
+      "cli/cli.ts",
+      "emit",
+      "--target",
+      "all",
+      "--output-dir",
+      scratchDir,
+      "--json",
+    ],
     { cwd: REPO_ROOT, stdio: ["ignore", "ignore", "inherit"] },
   );
 

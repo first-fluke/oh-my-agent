@@ -47,7 +47,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM solo trae los skills. Para workflows, reglas, `oma-config.yaml`, hooks de detección de palabras clave y el CLI `oma agent:spawn`, usa `bunx oh-my-agent@latest`. Elige una sola forma de distribución por proyecto para no acabar con todo desincronizado.
+APM solo trae los skills. Para workflows, reglas, `oma-config.yaml`, hooks de detección de palabras clave y el CLI `oma agent spawn`, usa `bunx oh-my-agent@latest`. Elige una sola forma de distribución por proyecto para no acabar con todo desincronizado.
 
 </details>
 
@@ -256,11 +256,11 @@ Cada mecanismo de abajo es mecánico: un comando sale con código 0 o no sale, u
 | Mecanismo | Qué comprueba mecánicamente | Dónde vive |
 |-----------|------------------------------|----------------|
 | **Stop-hook gate** | Bloquea la terminación de la sesión mientras hay un workflow persistente activo, y ejecuta el script de gate configurado antes de permitir la parada. Solo `typecheck`, `test` y `lint` son ejecutables: si un agente escribe cualquier otra cosa en el archivo de estado, se ignora y nunca se ejecuta. Limitado a 5 refuerzos, para que un gate permanentemente en rojo no te deje atrapado. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` comprueba cuatro artefactos que un atajo no puede falsificar: los registros de fase de ultrawork, el JSON del plan, el archivo de resultado de un **agente QA distinto** y el archivo de resultado de un **agente refactor distinto**. Si faltan artefactos, la fase no se ejecutó, diga lo que diga la narración. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Anti-Circumvention Gate** | `oma ralph verify --json` comprueba cuatro artefactos que un atajo no puede falsificar: los registros de fase de ultrawork, el JSON del plan, el archivo de resultado de un **agente QA distinto** y el archivo de resultado de un **agente refactor distinto**. Si faltan artefactos, la fase no se ejecutó, diga lo que diga la narración. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
 | **Juez independiente** | Se lanza como un agente aparte con contexto nuevo, informado solo de los criterios, nunca de lo que el implementador dice haber arreglado. Vuelve a verificar **cada** criterio en cada iteración, incluidos los PASS previos, porque arreglar C2 es justo la forma en que C1 sufre una regresión silenciosa. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Estado event-sourced** | Cada gate superado, cada gate fallido y cada decisión añaden una línea JSON a `.agents/state/sessions/{sid}/events.jsonl`, sellada con el vendor y el id de sesión del runtime. De solo anexado, cross-vendor y auditable después de la ejecución. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **Batería de chequeos por agente** | `oma verify <agent>` ejecuta un núcleo común (scope violation, charter alignment, secretos hardcoded, escaneo de TODOs, declared outputs) más chequeos específicos por tipo (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
-| **Harness de evaluación de skills** | `oma skills eval` mide la ganancia de utilidad en tareas held-out —tratamiento frente a baseline— en lugar de dar por hecho que un skill ayuda. `oma skills opt` conserva solo las ediciones que mejoran esa ganancia medida. | [guía de skill-eval](../web/docs/guide/skill-eval.md) |
+| **Harness de evaluación de skills** | `oma skill eval` mide la ganancia de utilidad en tareas held-out —tratamiento frente a baseline— en lugar de dar por hecho que un skill ayuda. `oma skill optimize` conserva solo las ediciones que mejoran esa ganancia medida. | [guía de skill-eval](../web/docs/guide/skill-eval.md) |
 
 Los presupuestos se aplican igual. `session.quota_cap` limita tokens, número de spawns y gasto por vendor; el orquestador rechaza el siguiente spawn cuando se excede alguna dimensión. Cuando se agota el presupuesto de tiempo real, el Stop hook se detiene honestamente y deja el estado parcial registrado en el event log, en vez de fingir que terminó.
 

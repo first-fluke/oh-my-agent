@@ -1,5 +1,5 @@
 /**
- * export/pptx.ts — oma slide pptx --dir --out
+ * export/pptx.ts — oma slide export pptx --dir --out
  *
  * [EXPERIMENTAL] Exports a slide deck to PPTX via pptxgenjs.
  *

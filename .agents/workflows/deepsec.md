@@ -21,7 +21,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -178,8 +178,8 @@ Pipeline per `resources/triage.md`:
 4. Note recurring FP shapes for the next `INFO.md` revision; bias matchers toward `precise` if the FP is regex-level.
 5. For each triaged finding, emit and verify the required triage decision:
    ```bash
-   oma state:emit "decision.made" '{"subject":"deepsec.triage-outcome","decision":"Use the triage verdict for the current deepsec finding.","rationale":"The finding has a true-positive, false-positive, fixed, or uncertain verdict with a recorded reason."}'
-   oma state:verify --workflow deepsec --checkpoint triage-outcome
+   oma state emit "decision.made" '{"subject":"deepsec.triage-outcome","decision":"Use the triage verdict for the current deepsec finding.","rationale":"The finding has a true-positive, false-positive, fixed, or uncertain verdict with a recorded reason."}'
+   oma state verify --workflow deepsec --checkpoint triage-outcome
    ```
 
 ### Step 4F: `config` / `troubleshoot`

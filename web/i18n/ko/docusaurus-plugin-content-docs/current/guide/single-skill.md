@@ -306,7 +306,7 @@ Add deliverables: data standards table, glossary, migration script.
 | 에이전트의 CHARTER_CHECK가 실제로는 필요한 항목을 "Must NOT do"로 분류함 | 범위가 하나의 도메인을 초과 | 먼저 `/plan`으로 전체 기능을 계획 |
 | 수정이 다른 레이어의 3개 이상 파일로 연쇄됨 | 하나의 수정이 여러 도메인에 영향 | 더 넓은 범위의 `/debug` 사용 또는 `/work` |
 | 에이전트가 API 컨트랙트 불일치를 발견 | 프론트엔드/백엔드 불일치 | `/plan`으로 컨트랙트를 정의한 후 두 에이전트를 재생성 |
-| 통합 지점에서 품질 게이트 실패 | 컴포넌트가 제대로 연결되지 않음 | QA 리뷰 단계 추가: `oma agent:spawn qa "Review integration"` |
+| 통합 지점에서 품질 게이트 실패 | 컴포넌트가 제대로 연결되지 않음 | QA 리뷰 단계 추가: `oma agent spawn qa "Review integration"` |
 | 태스크가 "컴포넌트 하나"에서 "컴포넌트 세 개 + 새 라우트 + API"로 성장 | 실행 중 범위 확대 | 중단, `/plan`으로 분해 후 `/orchestrate` |
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 근본적으로 모호함 | 에이전트의 질문에 답변하거나 `/brainstorm`으로 접근 방식을 명확히 |
 

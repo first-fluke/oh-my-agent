@@ -60,7 +60,7 @@ oma image generate "test prompt" --dry-run
 oma image doctor
 
 # List registered vendors and the models each one supports
-oma image list-vendors
+oma image vendor list
 ```
 
 `oma img`는 `oma image`의 별칭입니다.
@@ -111,7 +111,7 @@ CLI 플래그를 외울 필요가 없습니다. 자연어로 말하면 스킬이
 다른 스킬(디자인, 마케팅, 문서)은 공유 인프라로 이 파이프라인을 JSON 출력과 함께 호출합니다:
 
 ```bash
-oma image generate "<prompt>" --format json
+oma image generate "<prompt>" --output json
 ```
 
 stdout으로 작성되는 매니페스트에는 출력 경로, 벤더, 모델, 비용이 포함되어 파싱과 체이닝이 쉽습니다.
@@ -132,7 +132,7 @@ oma image generate "<prompt>"
   [--dry-run] [--format text|json]
 
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 ### 주요 플래그

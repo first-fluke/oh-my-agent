@@ -36,7 +36,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 - Review history and retry/remediation status when loops fail
 
 ### Dependencies
-- `.agents/oma-config.yaml`, `.codex/agents/*.toml`, `.gemini/agents/*.md`, or fallback `oma agent:spawn`
+- `.agents/oma-config.yaml`, `.codex/agents/*.toml`, `.gemini/agents/*.md`, or fallback `oma agent spawn`
 - Memory provider config, subagent prompt template, scripts, task templates, verify script, and session metrics
 
 ### Control-flow features
@@ -86,7 +86,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 | Compute exposed skill set | `SELECT` | intersection of domain tags and installed skills |
 | Select dispatch path | `SELECT` | Native vs fallback |
 | Write session state | `WRITE` | task board and memory files |
-| Spawn agents | `CALL_TOOL` | native CLI or `oma agent:spawn` |
+| Spawn agents | `CALL_TOOL` | native CLI or `oma agent spawn` |
 | Poll progress | `READ` | progress/result files |
 | Run verification | `CALL_TOOL` | `oma verify`, tests, QA |
 | Update retry state | `UPDATE_STATE` | loop counters and CD metrics |
@@ -98,11 +98,11 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 
 ### Canonical command path
 ```bash
-oma agent:spawn <agent-type> "<task>" <session-id> -w <workspace>
+oma agent spawn <agent-type> "<task>" <session-id> -w <workspace>
 oma verify <agent-type> --workspace <workspace> --json
 ```
 
-When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent:spawn`.
+When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent spawn`.
 
 ### Resource scope
 | Scope | Resource target |
@@ -124,14 +124,14 @@ When native runtime dispatch is available, prefer the runtime-specific native pa
 ### Guardrails
 1. Orchestrate per-agent dispatch from the project configuration before spawning any agent.
 2. If `target_vendor === current_runtime_vendor` and the runtime has a verified native path, use native dispatch.
-3. Otherwise fall back to `oma agent:spawn`.
+3. Otherwise fall back to `oma agent spawn`.
 4. Never exceed the configured parallelism or retry limits.
 5. Keep session state, task-board state, progress files, and result files aligned throughout the run.
 6. Domain gating must be soft: prefer a narrower `exposed_skill_set`, but fall back to flat exposure when classification confidence is low rather than starving a task of a required specialist.
 
 Current native executor paths:
 - Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
-- OpenCode: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent:spawn` for same-session OpenCode work because it will not appear as a native child task
+- OpenCode: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent spawn` for same-session OpenCode work because it will not appear as a native child task
 - Codex CLI: `codex exec "@agent ..."` using `.codex/agents/*.toml`
 - Gemini CLI: `gemini -p "@agent ..."` using `.gemini/agents/*.md`
 

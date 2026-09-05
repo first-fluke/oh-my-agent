@@ -104,7 +104,7 @@ export function scoreNeighborInMock(
       treatmentEntry?.score === undefined
     ) {
       console.warn(
-        `[oma skills eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded judge score; run --live --record on ${task.skill} to populate.`,
+        `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded judge score; run --live --record on ${task.skill} to populate.`,
       );
       return null;
     }
@@ -125,7 +125,7 @@ export function scoreNeighborInMock(
   // assert / regex: score deterministically from output
   if (!baselineEntry || !treatmentEntry) {
     console.warn(
-      `[oma skills eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded rollout arms.`,
+      `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded rollout arms.`,
     );
     return null;
   }
@@ -164,7 +164,7 @@ export function scoreNeighborInLive(
   // We need a recorded baseline to establish the "without-X" score
   if (!baselineEntry) {
     console.warn(
-      `[oma skills eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded baseline; run --live --record on ${task.skill} first.`,
+      `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded baseline; run --live --record on ${task.skill} first.`,
     );
     return null;
   }
@@ -174,7 +174,7 @@ export function scoreNeighborInLive(
   if (task.checker.type === "judge") {
     if (baselineEntry.score === undefined) {
       console.warn(
-        `[oma skills eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): baseline has no recorded judge score.`,
+        `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): baseline has no recorded judge score.`,
       );
       return null;
     }
@@ -203,7 +203,7 @@ export function scoreNeighborInLive(
   if (task.checker.type === "judge") {
     if (!judgeDispatchFn) {
       console.warn(
-        `[oma skills eval] neg-transfer: skipping judge neighbor task ${task.id}: no judge dispatch function.`,
+        `[oma skill eval] neg-transfer: skipping judge neighbor task ${task.id}: no judge dispatch function.`,
       );
       return null;
     }
@@ -269,7 +269,7 @@ export function computeNegativeTransfer(
   ) {
     const dropped = allNeighbors.length - maxTasks;
     console.warn(
-      `[oma skills eval] neg-transfer: ${allNeighbors.length} neighbor tasks found; capping at --max-tasks=${maxTasks} (${dropped} dropped).`,
+      `[oma skill eval] neg-transfer: ${allNeighbors.length} neighbor tasks found; capping at --max-tasks=${maxTasks} (${dropped} dropped).`,
     );
     sampledNeighbors = allNeighbors.slice(0, maxTasks);
   }
@@ -294,7 +294,7 @@ export function computeNegativeTransfer(
     } else {
       if (!dispatchFn) {
         console.warn(
-          `[oma skills eval] neg-transfer: skipping neighbor task ${task.id}: no live dispatch function.`,
+          `[oma skill eval] neg-transfer: skipping neighbor task ${task.id}: no live dispatch function.`,
         );
         continue;
       }

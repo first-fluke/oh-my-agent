@@ -70,7 +70,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 2. **ACQUIRE**: Read analogous skills, existing resources, project conventions, and any user-provided source material.
 3. **REASON**: Decide what belongs inline in `SKILL.md` and what belongs in `resources/`, `config/`, `scripts/`, or `assets/`.
 4. **ACT**: Create or update the skill using the SSL-lite template.
-5. **VERIFY**: Run `oma skills lint --skill {name}`, then the remaining routing, execution, resource, utility-content, and formatting checks.
+5. **VERIFY**: Run `oma skill lint --skill {name}`, then the remaining routing, execution, resource, utility-content, and formatting checks.
 6. **FINALIZE**: Report created/changed files, validation result, and any remaining assumptions.
 
 ### Transitions
@@ -86,7 +86,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 | Skill scope overlaps heavily with another skill | Add a clear `When NOT to use` boundary and cross-route |
 | Execution path is vague | Add canonical command or workflow path inline |
 | `SKILL.md` becomes too long | Move detailed examples to `resources/` and keep navigation in `References` |
-| `oma skills lint` is unavailable (CLI not installed) | Fall back to structural grep/awk checks and manual checklist validation |
+| `oma skill lint` is unavailable (CLI not installed) | Fall back to structural grep/awk checks and manual checklist validation |
 | User input is underspecified | Make conservative assumptions and list them, unless the target behavior would be unsafe |
 
 ### Exit
@@ -104,11 +104,11 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 | Infer boundaries | `INFER` | Trigger intents and adjacent skill overlap |
 | Write skill file | `WRITE` | New or updated `SKILL.md` |
 | Add resources | `WRITE` | `resources/`, `config/`, `scripts/`, or `assets/` |
-| Validate structure | `VALIDATE` | `oma skills lint` smell report; heading and canonical-path checks |
+| Validate structure | `VALIDATE` | `oma skill lint` smell report; heading and canonical-path checks |
 | Report result | `NOTIFY` | Changed files and validation summary |
 
 ### Tools and instruments
-- `oma skills lint --skill <id>` for automated smell detection (frontmatter, structure, canonical path, broken references, boundaries)
+- `oma skill lint --skill <id>` for automated smell detection (frontmatter, structure, canonical path, broken references, boundaries)
 - `rg`, `find`, `awk`, `sed`, `git diff --check`
 - The runtime's native file-edit tool for manual edits
 - Existing OMA skills as examples
@@ -123,7 +123,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
    - `### Canonical command path` for fragile or repeatable commands
    - `### Canonical workflow path` for decision, review, design, or research flow
 5. Move long examples, provider-specific details, or optional protocols into `resources/`.
-6. Validate with `oma skills lint --skill <name>` (frontmatter, headings, canonical path, broken references, boundaries), then `git diff --check` for whitespace. If the CLI is unavailable, fall back to the structural grep/awk checks in `resources/validation-checklist.md`.
+6. Validate with `oma skill lint --skill <name>` (frontmatter, headings, canonical path, broken references, boundaries), then `git diff --check` for whitespace. If the CLI is unavailable, fall back to the structural grep/awk checks in `resources/validation-checklist.md`.
 
 ### Resource scope
 | Scope | Resource target |
@@ -145,7 +145,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 
 ### Guardrails
 1. Keep the four top-level sections exactly: `Scheduling`, `Structural Flow`, `Logical Operations`, `References`.
-2. Keep YAML frontmatter with clear `name` and `description`; routing depends on description quality. Run `oma skills audit` after editing description to confirm the new wording does not collide with adjacent skills (warn ≥ 60%, fail ≥ 75% TF-IDF cosine).
+2. Keep YAML frontmatter with clear `name` and `description`; routing depends on description quality. Run `oma skill audit` after editing description to confirm the new wording does not collide with adjacent skills (warn ≥ 60%, fail ≥ 75% TF-IDF cosine).
 3. Include concrete `When NOT to use` boundaries and cross-routes to adjacent skills.
 4. Include expected inputs, expected outputs, dependencies, and control-flow features. Prefer the structured `outputs:` block when artifacts can be globbed so `oma verify` can perform a closure check.
 5. Include structural scenes using SSL scene vocabulary where practical: `PREPARE`, `ACQUIRE`, `REASON`, `ACT`, `VERIFY`, `RECOVER`, `FINALIZE`.
@@ -153,7 +153,7 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 7. Include resource scope and resource targets for filesystem, codebase, process, credentials, network, user data, or memory.
 8. Include effects and side effects, especially for commands, network calls, credentials, destructive actions, generated files, and long-running processes.
 9. Add one canonical path inline so an agent can execute or reason without loading every resource file.
-10. Put long variant-specific details in `resources/`, not in the main skill body. Keep the SKILL.md body under 500 lines; `oma skills lint` warns as `body-too-long` past that.
+10. Put long variant-specific details in `resources/`, not in the main skill body. Keep the SKILL.md body under 500 lines; `oma skill lint` warns as `body-too-long` past that.
 10a. Write examples only when the output format is a contract someone parses — a CLI's result block, a schema, a LAW-validated document. Worked input/output pairs that merely show "what a good report looks like" narrow the model's exploration space to the example's shape, so state the requirement instead and let the model choose the form. Per-task shape belongs in the task, not the skill.
 10b. Do not add instructions to double-check, re-verify, or self-review before answering — current models already do this, and the instruction compounds into over-verification. Deterministic validators the skill can actually run (`oma verify`, a lint script, a schema check) are the exception and should stay: they are feedback loops, not re-reading.
 11. Do not create extra README, changelog, or installation docs inside a skill.
@@ -166,5 +166,5 @@ Create, revise, and validate OMA skills using the SSL-lite Markdown structure de
 - Validation checklist: `resources/validation-checklist.md`
 - Shared context loading: `../_shared/core/context-loading.md`
 - Shared quality principles: `../_shared/core/quality-principles.md`
-- Skill utility eval: when creating a new skill, consider adding held-out task fixtures under `.agents/eval/<skill>/` so `oma skills eval` can measure whether the skill improves task outcomes. See `web/docs/guide/skill-eval.md` for the fixture schema and checker types.
-- Skill optimization: once eval fixtures exist, `oma skills opt --skill <id>` proposes SKILL.md edits and keeps only those that improve measured held-out utility lift — use it after authoring instead of hand-tuning prose.
+- Skill utility eval: when creating a new skill, consider adding held-out task fixtures under `.agents/eval/<skill>/` so `oma skill eval` can measure whether the skill improves task outcomes. See `web/docs/guide/skill-eval.md` for the fixture schema and checker types.
+- Skill optimization: once eval fixtures exist, `oma skill optimize --skill <id>` proposes SKILL.md edits and keeps only those that improve measured held-out utility lift — use it after authoring instead of hand-tuning prose.

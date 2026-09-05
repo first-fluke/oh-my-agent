@@ -8,7 +8,7 @@
  * listLabels : glob ~/Library/LaunchAgents/dev.oma.*.plist
  * isAvailable : process.platform === "darwin"
  *
- * plist ProgramArguments is always ["oma","schedule:run","<id>"]
+ * plist ProgramArguments is always ["oma","schedule","run","<id>"]
  * cron → StartCalendarInterval conversion included.
  *
  * Per docs/plans/contracts/schedule-scheduler-port.md §2
@@ -193,7 +193,7 @@ function buildPlistXml(spec: ScheduledJobSpec): string {
       ? dictXml(firstInterval)
       : `<array>\n${intervals.map((d) => `      ${dictXml(d)}`).join("\n")}\n    </array>`;
 
-  // The logical command is ["oma","schedule:run","<id>"]; resolve the bare "oma"
+  // The logical command is ["oma","schedule","run","<id>"]; resolve the bare "oma"
   // entry point to an absolute path so launchd (minimal PATH, no shell) can run it.
   const resolvedCommand =
     spec.command[0] === "oma"

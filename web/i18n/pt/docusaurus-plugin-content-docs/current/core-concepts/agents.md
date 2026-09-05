@@ -482,7 +482,7 @@ Agentes no oh-my-agent são papéis especializados de engenharia. Cada agente po
 
 **Quando usar:** Resumir um dia ou período de atividade de trabalho, compreender o fluxo de trabalho em várias ferramentas de IA, analisar padrões de troca de ferramentas entre sessões, preparar standups diários / retros semanais / registros de trabalho.
 
-**Quando NÃO usar:** Retrospectiva de mudanças de código baseada em commits Git (use `oma retro`), monitoramento de agentes em tempo real (use `oma dashboard`), métricas de produtividade (use `oma stats`).
+**Quando NÃO usar:** Retrospectiva de mudanças de código baseada em commits Git (use `oma retro`), monitoramento de agentes em tempo real (use `oma dashboard terminal`), métricas de produtividade (use `oma stats get`).
 
 **Processo:**
 1. Resolver data ou janela de tempo a partir de entrada em linguagem natural (today, yesterday, last Monday, data explícita)
@@ -615,8 +615,8 @@ Para projetos multi-agente, workspaces separados previnem conflitos de arquivo:
 Workspaces são especificados com a flag `-w` ao spawnar agentes:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -684,4 +684,4 @@ Ferramentas de memória são configuráveis. O padrão usa Serena MCP (`read_mem
 }
 ```
 
-Dashboards (`oma dashboard` e `oma dashboard:web`) observam esses arquivos de memória para monitoramento em tempo real.
+Dashboards (`oma dashboard terminal` e `oma dashboard web`) observam esses arquivos de memória para monitoramento em tempo real.

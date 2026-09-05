@@ -44,8 +44,8 @@ description: Реальные примеры использования oh-my-ag
 2. **PM-агент** планирует работу: API авторизации, схема БД, фронтенд UI, скоуп QA
 3. **Вы запускаете агентов:**
    ```bash
-   oma agent:spawn backend "JWT authentication API" session-01 -w ./apps/api &
-   oma agent:spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
+   oma agent spawn backend "JWT authentication API" session-01 -w ./apps/api &
+   oma agent spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
    wait
    ```
 4. **Агенты работают параллельно** — каждый в своём workspace
@@ -87,17 +87,17 @@ description: Реальные примеры использования oh-my-ag
 
 ```bash
 # Один агент
-oma agent:spawn backend "Implement JWT auth API" session-01
+oma agent spawn backend "Implement JWT auth API" session-01
 
 # Несколько агентов параллельно
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
-oma agent:spawn frontend "Login form + error states" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
+oma agent spawn frontend "Login form + error states" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
 wait
 
 # Мониторинг в реальном времени
-oma dashboard        # UI в терминале
-oma dashboard:web    # веб UI на http://localhost:9847
+oma dashboard terminal        # UI в терминале
+oma dashboard web    # веб UI на http://localhost:9847
 ```
 
 ---
@@ -166,7 +166,7 @@ oh-my-agent определяет ключевые слова на 11 языка�
 ### Дашборд в Терминале
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Живая таблица со статусом сессии, состояниями агентов, ходами и последней активностью. Отслеживает `.serena/memories/` для обновлений в реальном времени.
@@ -174,7 +174,7 @@ oma dashboard
 ### Веб-Дашборд
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # → http://localhost:9847
 ```
 
@@ -187,7 +187,7 @@ oma dashboard:web
 ### Рекомендуемая Расстановка
 
 Используйте 3 терминала:
-1. Дашборд (`oma dashboard`)
+1. Дашборд (`oma dashboard terminal`)
 2. Команды запуска агентов
 3. Логи тестов/сборки
 

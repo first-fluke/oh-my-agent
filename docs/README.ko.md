@@ -47,7 +47,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM은 스킬만 제공합니다. 워크플로우, 규칙, `oma-config.yaml`, 키워드 감지 훅, `oma agent:spawn` CLI는 `bunx oh-my-agent@latest`를 쓰세요. 드리프트를 피하려면 프로젝트당 한 가지 배포 방식만 고르는 게 좋습니다.
+APM은 스킬만 제공합니다. 워크플로우, 규칙, `oma-config.yaml`, 키워드 감지 훅, `oma agent spawn` CLI는 `bunx oh-my-agent@latest`를 쓰세요. 드리프트를 피하려면 프로젝트당 한 가지 배포 방식만 고르는 게 좋습니다.
 
 </details>
 
@@ -256,11 +256,11 @@ agents:
 | 메커니즘 | 기계적으로 확인하는 것 | 위치 |
 |----------|------------------------|------|
 | **Stop hook 게이트** | persistent workflow가 활성인 동안 세션 종료를 막고, 종료를 허용하기 전에 설정된 게이트 스크립트를 실행합니다. 실행할 수 있는 건 `typecheck`, `test`, `lint` 셋뿐입니다. 에이전트가 상태 파일에 그 밖의 것을 써 넣어도 무시될 뿐 절대 실행되지 않습니다. 재강제는 5회로 제한되어 계속 빨간 게이트에 발이 묶이는 일은 없습니다. | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention 게이트** | `oma ralph:verify --json`은 지름길로 위조할 수 없는 네 가지 산출물을 확인합니다. ultrawork의 phase 기록, plan JSON, **별개의 QA 에이전트**가 남긴 result 파일, **별개의 refactor 에이전트**가 남긴 result 파일입니다. 산출물이 없다면 서술이 무엇이라 말하든 그 phase는 실행되지 않은 것입니다. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Anti-Circumvention 게이트** | `oma ralph verify --json`은 지름길로 위조할 수 없는 네 가지 산출물을 확인합니다. ultrawork의 phase 기록, plan JSON, **별개의 QA 에이전트**가 남긴 result 파일, **별개의 refactor 에이전트**가 남긴 result 파일입니다. 산출물이 없다면 서술이 무엇이라 말하든 그 phase는 실행되지 않은 것입니다. | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
 | **독립 judge** | 새 컨텍스트를 가진 별도 에이전트로 띄우고 기준만 브리핑합니다. 구현자가 무엇을 고쳤다고 주장하는지는 알려주지 않습니다. 매 iteration마다 이미 PASS한 것까지 포함해 **모든** 기준을 다시 검증합니다. C2를 고치다가 C1이 조용히 깨지는 게 바로 그런 식이기 때문입니다. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **이벤트 소싱 상태** | 게이트 통과, 게이트 실패, 판정 하나하나가 `.agents/state/sessions/{sid}/events.jsonl`에 JSON 한 줄로 추가되고 벤더와 런타임 세션 id가 함께 찍힙니다. append-only, 크로스 벤더, 실행이 끝난 뒤에도 감사 가능합니다. | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **에이전트별 체크 배터리** | `oma verify <agent>`는 공통 코어(스코프 위반, charter alignment, 하드코딩 시크릿, TODO 스캔, declared outputs)에 유형별 체크(TypeScript strict, 테스트, raw SQL, Flutter analyze, 인라인 스타일)를 더해 실행합니다. | `oma verify <agent>` |
-| **스킬 eval 하네스** | `oma skills eval`은 스킬이 도움이 된다고 가정하는 대신, 홀드아웃 태스크에서 treatment와 baseline을 비교해 유용성 향상폭을 측정합니다. `oma skills opt`는 측정된 향상폭을 높이는 수정만 남깁니다. | [skill-eval 가이드](../web/docs/guide/skill-eval.md) |
+| **스킬 eval 하네스** | `oma skill eval`은 스킬이 도움이 된다고 가정하는 대신, 홀드아웃 태스크에서 treatment와 baseline을 비교해 유용성 향상폭을 측정합니다. `oma skill optimize`는 측정된 향상폭을 높이는 수정만 남깁니다. | [skill-eval 가이드](../web/docs/guide/skill-eval.md) |
 
 예산도 같은 방식으로 강제됩니다. `session.quota_cap`은 토큰, spawn 횟수, 벤더별 지출에 상한을 걸고, 한 축이라도 넘어서면 오케스트레이터가 다음 spawn을 거부합니다. 실행 시간 예산이 바닥나면 Stop hook은 완료한 척하는 대신 부분 상태를 이벤트 로그에 남기고 정직하게 멈춥니다.
 

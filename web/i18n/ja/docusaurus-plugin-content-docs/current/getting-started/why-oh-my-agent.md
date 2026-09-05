@@ -39,7 +39,7 @@ oh-my-agent は別の軸を最適化します。出発点となる仮定は、�
 
 ### 損害が発生する前に止める quota cap
 
-すべての `oma agent:spawn` 呼び出しは、その spawn の token 推定値を `.serena/memories/session-cost-{sessionId}.md` に記録します。次の spawn 前に `checkCap` が設定された quota cap を照会し、いずれかの次元が超過していれば起動を拒否します。3 つの次元を強制します: 総 token、総 spawn 数、ベンダー別 token 予算。
+すべての `oma agent spawn` 呼び出しは、その spawn の token 推定値を `.serena/memories/session-cost-{sessionId}.md` に記録します。次の spawn 前に `checkCap` が設定された quota cap を照会し、いずれかの次元が超過していれば起動を拒否します。3 つの次元を強制します: 総 token、総 spawn 数、ベンダー別 token 予算。
 
 これは、事後に 4 万ドル使ったと知ることと、spawn 15 回目に予算が残り 1 回と教えてもらうことの違いです。`cli/io/session-cost.ts` を参照し、`.agents/oma-config.yaml` の `session.quota_cap` で設定します。
 

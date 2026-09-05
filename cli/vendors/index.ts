@@ -22,7 +22,7 @@ export interface Vendor {
   id: VendorId;
   label: string;
   isAuthenticated(): boolean;
-  /** CLI login command shown by `oma auth:status` when not authenticated.
+  /** CLI login command shown by `oma auth status` when not authenticated.
    * Omit for vendors with no interactive login surface. */
   authHint?: string;
 }

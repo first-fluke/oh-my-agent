@@ -4,7 +4,7 @@
  * dispatchEdit():
  *   1. Builds a structured edit prompt that includes the slide HTML, the bbox region,
  *      the user instruction, and a reference to the design doctrine.
- *   2. Dispatches to oma's vendor-resolved agent runner (oma agent:spawn) with
+ *   2. Dispatches to oma's vendor-resolved agent runner (oma agent spawn) with
  *      -w <workDir> to enforce the workdir sandbox.
  *   3. Streams stdout back to a provided sink (SSE channel or console).
  *   4. The agent MAY ONLY edit <workDir>/<slideFile> — the prompt enforces this.
@@ -12,7 +12,7 @@
  * Security:
  *   - workDir and slideFile are validated (no path traversal) before use.
  *   - The spawned agent runs with cwd=workDir, constraining its FS access.
- *   - No hardcoded vendor: dispatches via `oma agent:spawn` which resolves
+ *   - No hardcoded vendor: dispatches via `oma agent spawn` which resolves
  *     target vendor from .agents/oma-config.yaml at runtime.
  */
 
@@ -157,7 +157,7 @@ function resolveOmaBin(): string {
 /**
  * Dispatch an edit to the oma vendor-resolved agent runner.
  *
- * Uses `oma agent:spawn frontend <prompt> <sessionId> -w <workDir>` which:
+ * Uses `oma agent spawn frontend <prompt> <sessionId> -w <workDir>` which:
  *   - Resolves the target vendor from .agents/oma-config.yaml at runtime.
  *   - Runs the agent with cwd=workDir (sandbox enforcement).
  *   - Streams stdout/stderr to the provided onProgress sink.
@@ -212,16 +212,17 @@ export function dispatchEdit(opts: DispatchEditOptions): void {
   // Agent: configurable, default "frontend"
   const agentId = process.env.OMA_SLIDE_EDIT_AGENT ?? "frontend";
 
-  // oma agent:spawn <agentId> <prompt> <sessionId> -w <workDir>
+  // oma agent spawn <agentId> <prompt> <sessionId> -w <workDir>
   // The prompt is passed via a temp-file approach to avoid shell escaping issues.
   // We embed the prompt inline as-is — agent:spawn accepts inline text.
   const omaBin = resolveOmaBin();
   const args = [
-    "agent:spawn",
+    "agent",
+    "spawn",
     agentId,
     editPrompt,
     sessionId,
-    "-w",
+    "--workspace",
     resolvedWorkDir,
   ];
 
@@ -242,7 +243,7 @@ export function dispatchEdit(opts: DispatchEditOptions): void {
   }
 
   if (!child.pid) {
-    onError(new Error(`Failed to spawn oma agent:spawn (no pid)`));
+    onError(new Error(`Failed to spawn oma agent spawn (no pid)`));
     return;
   }
 

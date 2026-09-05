@@ -11,15 +11,15 @@ oh-my-agent cung cấp hai dashboard thời gian thực để giám sát hoạt 
 
 | Lệnh | Giao diện | URL | Công nghệ |
 |:--------|:---------|:----|:-----------|
-| `oma dashboard` | Terminal (TUI) | N/A — render trong terminal | chokidar file watcher, picocolors rendering |
-| `oma dashboard:web` | Trình duyệt | `http://localhost:9847` | HTTP server, WebSocket, chokidar file watcher |
+| `oma dashboard terminal` | Terminal (TUI) | N/A — render trong terminal | chokidar file watcher, picocolors rendering |
+| `oma dashboard web` | Trình duyệt | `http://localhost:9847` | HTTP server, WebSocket, chokidar file watcher |
 
 Cả hai dashboard theo dõi cùng nguồn dữ liệu: thư mục `.serena/memories/`.
 
 ### Dashboard terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Render giao diện box-drawing trực tiếp trong terminal. Tự động cập nhật khi file bộ nhớ thay đổi. Nhấn `Ctrl+C` để thoát.
@@ -34,7 +34,7 @@ Render giao diện box-drawing trực tiếp trong terminal. Tự động cập 
 ### Dashboard web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 ```
 
 Mở web server trên cổng 9847 (có thể cấu hình qua biến môi trường `DASHBOARD_PORT`). Giao diện trình duyệt kết nối qua WebSocket và nhận cập nhật trực tiếp với giao diện dark-theme.
@@ -47,14 +47,14 @@ Mở web server trên cổng 9847 (có thể cấu hình qua biến môi trườ
 ┌────────────────────────────────┬────────────────────────────────┐
 │                                │                                │
 │   Terminal 1: Agent chính      │   Terminal 2: Dashboard        │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 │                                │                                │
 ├────────────────────────────────┴────────────────────────────────┤
 │                                                                 │
 │   Terminal 3: Lệnh ad-hoc                                      │
-│   $ oma agent:status session-id backend frontend                │
-│   $ oma stats                                                   │
+│   $ oma agent status session-id backend frontend                │
+│   $ oma stats get                                                   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -78,12 +78,12 @@ Mở web server trên cổng 9847 (có thể cấu hình qua biến môi trườ
 
 **Hành động:**
 1. Kiểm tra file log agent: `cat /tmp/subagent-{session-id}-{agent-id}.log`
-2. Kiểm tra tiến trình: `oma agent:status {session-id} {agent-id}`
+2. Kiểm tra tiến trình: `oma agent status {session-id} {agent-id}`
 3. Nếu tiến trình không chạy, agent đã crash. Re-spawn với ngữ cảnh lỗi.
 
 ### Tín hiệu 2: agent hiện "crashed"
 
-**Hành động:** Kiểm tra log, xác minh cài đặt CLI (`oma doctor`), kiểm tra xác thực (`oma auth:status`), re-spawn agent.
+**Hành động:** Kiểm tra log, xác minh cài đặt CLI (`oma doctor`), kiểm tra xác thực (`oma auth status`), re-spawn agent.
 
 ### Tín hiệu 3: dashboard hiện "no agents detected yet"
 

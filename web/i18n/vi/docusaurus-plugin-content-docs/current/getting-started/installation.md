@@ -124,13 +124,13 @@ Lệnh này cài đặt lệnh `oma` toàn cục, cho bạn truy cập tất c�
 
 ```bash
 oma doctor              # Kiểm tra sức khỏe
-oma dashboard           # Giám sát terminal
-oma dashboard:web       # Dashboard web tại http://localhost:9847
-oma agent:spawn         # Spawn agent từ terminal
-oma agent:parallel      # Thực thi agent song song
-oma agent:status        # Kiểm tra trạng thái agent
-oma agent:review        # Đánh giá code qua CLI bên ngoài (codex/claude/gemini/qwen)
-oma stats               # Thống kê phiên làm việc
+oma dashboard terminal           # Giám sát terminal
+oma dashboard web       # Dashboard web tại http://localhost:9847
+oma agent spawn         # Spawn agent từ terminal
+oma agent parallel      # Thực thi agent song song
+oma agent status        # Kiểm tra trạng thái agent
+oma agent review        # Đánh giá code qua CLI bên ngoài (codex/claude/gemini/qwen)
+oma stats get               # Thống kê phiên làm việc
 oma retro               # Hồi cứu kỹ thuật (commit, hotspot, xu hướng)
 oma recap               # Tổng kết lịch sử hội thoại trên các công cụ AI
 oma cleanup             # Dọn dẹp artifact phiên
@@ -140,8 +140,8 @@ oma verify              # Xác minh đầu ra agent (build/test/scope/secret)
 oma visualize           # Trực quan hóa phụ thuộc (alias: `oma viz`)
 oma describe            # Nội quan các lệnh CLI dưới dạng JSON
 oma bridge              # Bridge MCP stdio ↔ Streamable HTTP
-oma memory:init         # Khởi tạo schema bộ nhớ Serena
-oma auth:status         # Kiểm tra trạng thái xác thực CLI (gh/antigravity/claude/codex/qwen)
+oma memory init         # Khởi tạo schema bộ nhớ Serena
+oma auth status         # Kiểm tra trạng thái xác thực CLI (gh/antigravity/claude/codex/qwen)
 oma search              # Primitive tìm kiếm cơ học (alias: `oma s`)
 oma image               # Sinh ảnh AI đa vendor (alias: `oma img`)
 oma export              # Xuất skill cho IDE bên ngoài (ví dụ: cursor)

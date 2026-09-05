@@ -47,7 +47,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM が配るのはスキル一式だけです。ワークフロー、ルール、`oma-config.yaml`、キーワード検出フック、`oma agent:spawn` CLI には `bunx oh-my-agent@latest` を使ってください。プロジェクトごとに配布方式は 1 つに絞り、ずれが出ないようにしましょう。
+APM が配るのはスキル一式だけです。ワークフロー、ルール、`oma-config.yaml`、キーワード検出フック、`oma agent spawn` CLI には `bunx oh-my-agent@latest` を使ってください。プロジェクトごとに配布方式は 1 つに絞り、ずれが出ないようにしましょう。
 
 </details>
 
@@ -256,11 +256,11 @@ agents:
 | メカニズム | 機械的に確認する内容 | 場所 |
 |-----------|--------------------|------|
 | **Stop hook ゲート** | persistent workflow が有効な間はセッションの終了をブロックし、終了を許可する前に設定されたゲートスクリプトを実行します。実行できるのは `typecheck`、`test`、`lint` の 3 つだけ。エージェントがそれ以外を状態ファイルに書き込んでも無視されるだけで、実行されることはありません。再強制は 5 回までなので、赤のままのゲートに閉じ込められることもありません。 | [`.agents/hooks/core/persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention ゲート** | `oma ralph:verify --json` は、近道では偽装できない 4 つの成果物を確認します。ultrawork の phase 記録、plan JSON、**別個の QA エージェント**が残した result ファイル、**別個の refactor エージェント**が残した result ファイルです。成果物がなければ、ナレーションが何と言おうとその phase は実行されていません。 | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
+| **Anti-Circumvention ゲート** | `oma ralph verify --json` は、近道では偽装できない 4 つの成果物を確認します。ultrawork の phase 記録、plan JSON、**別個の QA エージェント**が残した result ファイル、**別個の refactor エージェント**が残した result ファイルです。成果物がなければ、ナレーションが何と言おうとその phase は実行されていません。 | [`.agents/workflows/ralph.md`](../.agents/workflows/ralph.md) |
 | **独立した judge** | まっさらなコンテキストを持つ別エージェントとして起動し、基準だけを伝えます。実装側が何を直したと主張しているかは知らせません。毎 iteration、すでに PASS したものも含めて**すべての**基準を検証し直します。C2 を直した拍子に C1 が静かに壊れるのは、まさにそういう経路だからです。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **イベントソースの状態管理** | ゲートの通過、ゲートの失敗、判定のひとつひとつが `.agents/state/sessions/{sid}/events.jsonl` に JSON 1 行として追記され、ベンダーとランタイムのセッション id が刻まれます。append-only、クロスベンダー、実行後も監査できます。 | [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
 | **エージェント別チェックバッテリー** | `oma verify <agent>` は共通コア（スコープ違反、charter alignment、ハードコードされたシークレット、TODO スキャン、declared outputs）に、タイプ別チェック（TypeScript strict、テスト、raw SQL、Flutter analyze、インラインスタイル）を加えて実行します。 | `oma verify <agent>` |
-| **スキル eval ハーネス** | `oma skills eval` は、スキルが役に立つと決めつける代わりに、ホールドアウトタスクで treatment と baseline を比較して有用性の向上幅を測定します。`oma skills opt` は測定された向上幅を高める編集だけを残します。 | [skill-eval ガイド](../web/docs/guide/skill-eval.md) |
+| **スキル eval ハーネス** | `oma skill eval` は、スキルが役に立つと決めつける代わりに、ホールドアウトタスクで treatment と baseline を比較して有用性の向上幅を測定します。`oma skill optimize` は測定された向上幅を高める編集だけを残します。 | [skill-eval ガイド](../web/docs/guide/skill-eval.md) |
 
 予算も同じやり方で強制されます。`session.quota_cap` はトークン、spawn 回数、ベンダー別の支出に上限をかけ、どれか 1 つでも超えればオーケストレーターが次の spawn を拒否します。実時間の予算が尽きたときも、Stop hook は完了したふりをせず、途中経過をイベントログに記録して正直に停止します。
 

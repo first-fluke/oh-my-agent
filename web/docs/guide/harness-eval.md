@@ -7,11 +7,11 @@ description: Evaluate a complete OMA harness overlay with paired, isolated repos
 
 `oma harness eval` measures whether a candidate OMA harness improves a fixed target agent without changing that agent's model. It adapts the test-time evaluation pattern from [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): keep the target model fixed, change the harness, and compare outcomes on the same tasks.
 
-This command evaluates a larger unit than `oma skills eval`:
+This command evaluates a larger unit than `oma skill eval`:
 
 | Command | Treatment | Score target |
 |:--------|:----------|:-------------|
-| `oma skills eval` | One `SKILL.md` body | Agent output |
+| `oma skill eval` | One `SKILL.md` body | Agent output |
 | `oma harness eval` | A scoped `.agents/` overlay | Files and output produced in a repository workspace |
 
 Use skill eval to answer “does this skill help?” Use harness eval to answer “does this combination of skills, workflows, rules, and agent instructions make the fixed agent complete repository tasks more reliably?”

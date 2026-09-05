@@ -83,24 +83,24 @@ description: 프론트엔드, 백엔드, 데이터베이스, 모바일, QA 전�
 6. `verify.sh`를 통해 완료된 각 에이전트를 검증합니다. PASS (종료 코드 0)이면 수락, FAIL (종료 코드 1)이면 오류 컨텍스트와 함께 재생성 (최대 2회 재시도), 지속적 실패 시 탐색 루프를 트리거합니다.
 7. 모든 `result-{agent}.md` 파일을 수집하고 최종 보고서를 작성합니다.
 
-### 3단계: agent:spawn (CLI 수준 에이전트 관리)
+### 3단계: agent spawn (CLI 수준 에이전트 관리)
 
-`agent:spawn` 명령어는 워크플로우가 내부적으로 호출하는 저수준 메커니즘입니다. 직접 사용할 수도 있습니다:
+`agent spawn` 명령어는 워크플로우가 내부적으로 호출하는 저수준 메커니즘입니다. 직접 사용할 수도 있습니다:
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 **모든 플래그:**
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | CLI 벤더 오버라이드 (antigravity/claude/codex/qwen). 모든 설정을 오버라이드. |
+| `--vendor <vendor>` | CLI 벤더 오버라이드 (antigravity/claude/codex/qwen). 모든 설정을 오버라이드. |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략 시 모노레포 설정에서 자동 감지. |
 
 **벤더 해석 순서** (첫 번째 매치 사용):
 
-1. 커맨드 라인의 `--model` 플래그
+1. 커맨드 라인의 `--vendor` 플래그
 2. `oma-config.yaml`에서 해당 에이전트에 지정한 `agents:` 오버라이드
 3. 활성 `model_preset`의 에이전트 기본값
 
@@ -187,7 +187,7 @@ session-YYYYMMDD-HHMMSS
 항상 사용 가능합니다:
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -245,13 +245,13 @@ ultrawork 워크플로우에서 이러한 조건은 진행 전 모든 항목이 
 
 ```bash
 # Gemini(기본)로 백엔드 에이전트 생성
-oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Claude로 프론트엔드 에이전트 생성, 명시적 워크스페이스
-oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
 # 프롬프트 파일에서 생성
-oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
 ### agent:parallel을 통한 병렬 실행
@@ -273,13 +273,13 @@ tasks:
 ```
 
 ```bash
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 ```
 
 인라인 모드 사용:
 
 ```bash
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
@@ -288,14 +288,14 @@ oma agent:parallel --inline \
 백그라운드 모드 (대기 없음):
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 # 즉시 반환, 결과는 .agents/results/parallel-{timestamp}/에 기록
 ```
 
 벤더 오버라이드:
 
 ```bash
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
 ---
@@ -328,7 +328,7 @@ P0 태스크가 완료되기 전에 P1 태스크를 실행하는 것. 우선순�
 
 ### 7. 검증 건너뛰기
 
-이후 검증 스크립트를 실행하지 않고 `agent:spawn`을 직접 사용하는 것. 검증 단계는 그렇지 않으면 전파될 빌드 실패, 테스트 회귀, 범위 위반을 잡아냅니다.
+이후 검증 스크립트를 실행하지 않고 `agent spawn`을 직접 사용하는 것. 검증 단계는 그렇지 않으면 전파될 빌드 실패, 테스트 회귀, 범위 위반을 잡아냅니다.
 
 ---
 

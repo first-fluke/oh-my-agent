@@ -14,7 +14,7 @@ import path from "node:path";
  *   agent "<id>" is a subagent, not a primary agent. Falling back to default agent
  *
  * and runs the *default* agent instead. The process still exits 0, so the
- * external `oma agent:spawn` fallback silently runs the WRONG agent.
+ * external `oma agent spawn` fallback silently runs the WRONG agent.
  *
  * Fix: for the external fallback only, generate a throwaway PRIMARY wrapper
  * agent that immediately delegates to the real subagent via the `task` tool,

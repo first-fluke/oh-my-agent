@@ -83,24 +83,24 @@ Es gibt zwei Ausführungspfade:
 6. Verifiziert jeden abgeschlossenen Agenten über `verify.sh` — PASS (Exit-Code 0) akzeptiert, FAIL (Exit-Code 1) startet mit Fehlerkontext erneut (max. 2 Wiederholungen), dauerhaftes Scheitern löst die Explorationsschleife aus.
 7. Sammelt alle `result-{agent}.md`-Dateien und erstellt einen Abschlussbericht.
 
-### Schritt 3: agent:spawn — CLI-Agenten-Verwaltung
+### Schritt 3: agent spawn — CLI-Agenten-Verwaltung
 
-Der `agent:spawn`-Befehl ist der Low-Level-Mechanismus, den Workflows intern aufrufen. Sie können ihn auch direkt verwenden:
+Der `agent spawn`-Befehl ist der Low-Level-Mechanismus, den Workflows intern aufrufen. Sie können ihn auch direkt verwenden:
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 **Alle Flags:**
 
 | Flag | Beschreibung |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI-Vendor-Überschreibung (antigravity/claude/codex/qwen). Überschreibt alle Konfiguration. |
+| `--vendor <vendor>` | CLI-Vendor-Überschreibung (antigravity/claude/codex/qwen). Überschreibt alle Konfiguration. |
 | `-w, --workspace <path>` | Arbeitsverzeichnis für den Agenten. Automatisch aus Monorepo-Konfiguration erkannt, wenn nicht angegeben. |
 
 **Vendor-Auflösungsreihenfolge** (erster Treffer gewinnt):
 
-1. `--model`-Flag auf der Kommandozeile
+1. `--vendor`-Flag auf der Kommandozeile
 2. `model_preset` in `oma-config.yaml` für diesen spezifischen Agententyp
 3. `default_cli` in `oma-config.yaml`
 4. `active_vendor` in `cli-config.yaml`
@@ -187,7 +187,7 @@ Ohne Treffer läuft der Agent im aktuellen Verzeichnis (`.`).
 Immer verfügbar:
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -245,16 +245,16 @@ Im ultrawork-Workflow übersetzen sich diese in explizite **Phasen-Gates** (PLAN
 
 ```bash
 # Backend-Agent mit Gemini (Standard) starten
-oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Frontend-Agent mit Claude, expliziter Workspace
-oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
 # Aus einer Prompt-Datei starten
-oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Parallele Ausführung über agent:parallel
+### Parallele Ausführung über agent parallel
 
 Mit einer YAML-Aufgabendatei:
 
@@ -273,13 +273,13 @@ tasks:
 ```
 
 ```bash
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 ```
 
 Im Inline-Modus:
 
 ```bash
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
@@ -288,14 +288,14 @@ oma agent:parallel --inline \
 Hintergrundmodus (kein Warten):
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 # Kehrt sofort zurück, Ergebnisse werden nach .agents/results/parallel-{timestamp}/ geschrieben
 ```
 
 Mit Vendor-Überschreibung:
 
 ```bash
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
 ---
@@ -328,7 +328,7 @@ P1-Aufgaben vor Abschluss der P0-Aufgaben ausführen. Prioritätsstufen existier
 
 ### 7. Verifikation überspringen
 
-`agent:spawn` direkt verwenden, ohne danach das Verifikationsskript auszuführen. Der Verifikationsschritt erkennt Build-Fehler, Test-Regressionen und Scope-Verletzungen, die sich sonst ausbreiten würden.
+`agent spawn` direkt verwenden, ohne danach das Verifikationsskript auszuführen. Der Verifikationsschritt erkennt Build-Fehler, Test-Regressionen und Scope-Verletzungen, die sich sonst ausbreiten würden.
 
 ---
 

@@ -9,15 +9,15 @@ description: Полное руководство по дашбордам — т�
 
 | Команда | Интерфейс | URL | Технология |
 |---------|----------|-----|-----------|
-| `oma dashboard` | Терминал (TUI) | N/A | chokidar + picocolors |
-| `oma dashboard:web` | Браузер | `http://localhost:9847` | HTTP + WebSocket + chokidar |
+| `oma dashboard terminal` | Терминал (TUI) | N/A | chokidar + picocolors |
+| `oma dashboard web` | Браузер | `http://localhost:9847` | HTTP + WebSocket + chokidar |
 
 Оба наблюдают за `.serena/memories/`.
 
 ### Терминальный дашборд
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Box-drawing UI в терминале. Автообновление при изменении файлов памяти. `Ctrl+C` для выхода.
@@ -32,9 +32,9 @@ Box-drawing UI в терминале. Автообновление при изм
 ### Веб-дашборд
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Порт по умолчанию: 9847
-DASHBOARD_PORT=8080 oma dashboard:web  # Настраиваемый порт
+DASHBOARD_PORT=8080 oma dashboard web  # Настраиваемый порт
 ```
 
 Тёмная тема, WebSocket для живых обновлений, автопереподключение, цветные индикаторы, журнал активности, история сессий.
@@ -46,14 +46,14 @@ DASHBOARD_PORT=8080 oma dashboard:web  # Настраиваемый порт
 ```
 ┌────────────────────────────────┬────────────────────────────────┐
 │ Терминал 1: Основной агент     │ Терминал 2: Дашборд            │
-│ $ gemini                       │ $ oma dashboard                │
+│ $ gemini                       │ $ oma dashboard terminal                │
 │ > /orchestrate                 │ ╔═══════════════════════╗      │
 │ ...                            │ ║ Serena Dashboard      ║      │
 │                                │ ╚═══════════════════════╝      │
 ├────────────────────────────────┴────────────────────────────────┤
 │ Терминал 3: Ad-hoc команды                                      │
-│ $ oma agent:status session-... backend frontend                  │
-│ $ oma stats                                                      │
+│ $ oma agent status session-... backend frontend                  │
+│ $ oma stats get                                                      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -90,24 +90,24 @@ DASHBOARD_PORT=8080 oma dashboard:web  # Настраиваемый порт
 
 **Действия:**
 1. Проверьте лог: `cat /tmp/subagent-{session-id}-{agent-id}.log`
-2. Проверьте статус: `oma agent:status {session-id} {agent-id}`
+2. Проверьте статус: `oma agent status {session-id} {agent-id}`
 3. Если процесс мёртв — перезапустите с контекстом ошибки
 
 ### Агент «crashed»
 
 **Причины:** Недостаток памяти, превышение квоты API, таймаут сети, отсутствие CLI/аутентификации.
 
-**Действия:** Проверьте лог, `oma doctor`, `oma auth:status`, перезапустите.
+**Действия:** Проверьте лог, `oma doctor`, `oma auth status`, перезапустите.
 
 ### «No agents detected yet»
 
 **Причины:** Рабочий процесс ещё на этапе планирования, `.serena/memories/` пуст, дашборд наблюдает не ту директорию.
 
-**Действия:** `ls -la .serena/memories/`, подождите запуска агентов, или `MEMORIES_DIR=/path oma dashboard`.
+**Действия:** `ls -la .serena/memories/`, подождите запуска агентов, или `MEMORIES_DIR=/path oma dashboard terminal`.
 
 ### Веб-дашборд «Disconnected»
 
-**Причины:** Процесс `oma dashboard:web` завершён, порт занят.
+**Причины:** Процесс `oma dashboard web` завершён, порт занят.
 
 **Действия:** `ps aux | grep dashboard`, попробуйте `DASHBOARD_PORT=8080`, `lsof -i :9847`. Автопереподключение: 1 сек начальная, 1.5x множитель, макс. 10 сек.
 

@@ -99,14 +99,14 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 | Report output | `NOTIFY` | Final path summary |
 
 ### Tools and instruments
-- `oma image generate`, `oma image doctor`, `oma image list-vendors`
+- `oma image generate`, `oma image doctor`, `oma image vendor list`
 - Codex, Pollinations, and Gemini provider paths
 - Prompt tips, vendor matrix, and image config
 
 ### Canonical command path
 ```bash
 oma image doctor
-oma image generate "<prompt>" --vendor auto --size auto --quality auto --format json
+oma image generate "<prompt>" --vendor auto --size auto --quality auto --output json
 ```
 
 With reference images:
@@ -197,12 +197,12 @@ oma image generate "<prompt>" [--vendor auto|codex|pollinations|antigravity|all]
                              [--size WxH|auto] \
                              [--quality low|medium|high|auto] \
                              [--model <name>] \
-                             [--out <dir>] [--allow-external-out] \
+                             [--output-dir <dir>] [--allow-external-output] \
                              [-r <path>]... \
                              [--timeout 180] [-y] [--no-prompt-in-manifest] \
-                             [--dry-run] [--format text|json]
+                             [--dry-run] [--output text|json]
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 `--model <name>` overrides the vendor's default model for this run — e.g. `--vendor pollinations --model zimage`, or a credit-gated Pollinations model like `gpt-image-2`. It applies to every vendor in the run set, so combine it with an explicit `--vendor`; `antigravity` ignores it (agy picks its model internally).
@@ -249,7 +249,7 @@ When ALL of the following are true, the calling agent MUST pass the attached ima
 
 #### Shared Infrastructure (from other skills)
 
-Other skills call `oma image generate --format json` and parse the JSON manifest from stdout.
+Other skills call `oma image generate --output json` and parse the JSON manifest from stdout.
 
 ### Output Layout
 

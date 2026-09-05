@@ -42,7 +42,7 @@ const OMA_BIN_CANDIDATES = [
  * install register the same event (existing dedup strategy, kept intact).
  *
  * Passes `"$@"` verbatim so `--vendor`, `--event`, `--matcher` args that
- * the settings entry emits reach `oma hook` unchanged (no shell injection).
+ * the settings entry emits reach `oma hook run` unchanged (no shell injection).
  */
 export function generateOmaHookWrapper(): string {
   // Authored directly (NOT via generateHookShellWrapper, whose `exec ${cmd} "$@"`
@@ -67,7 +67,7 @@ else
 fi
 if [ -n "$__oma_bin" ]; then
   # Run oma hook; swallow a non-zero exit so the wrapper is always fail-open.
-  "$__oma_bin" hook "$@" || true
+  "$__oma_bin" hook run "$@" || true
 fi
 exit 0
 `;

@@ -8,14 +8,14 @@ Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clar
 - **Response language**: Follow `language` in `.agents/oma-config.yaml`.
 - **Skills**: Read the relevant `.agents/skills/{name}/SKILL.md` when needed.
 - **Subagents**:
-  - codex: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent:spawn`
+  - codex: Same-vendor native dispatch via Codex custom agents in `.codex/agents/{name}.toml`; cross-vendor fallback via `oma agent spawn`
   - cursor: `@agent-name` (defined in `.cursor/agents/`)
-  - qwen: `oma agent:spawn {agent} {prompt} {sessionId}`
-  - pi: pi has no native subagent API; use `oma agent:spawn {agent} {prompt} {sessionId} -m pi` for CLI subprocess dispatch
+  - qwen: `oma agent spawn {agent} {prompt} {sessionId}`
+  - pi: pi has no native subagent API; use `oma agent spawn {agent} {prompt} {sessionId} --vendor pi` for CLI subprocess dispatch
 
 ## Per-Agent Dispatch
 
-Resolve the target vendor for each agent from `.agents/oma-config.yaml`. Use native subagents when it matches the current runtime; otherwise, or when native dispatch is unavailable, use `oma agent:spawn` for that agent.
+Resolve the target vendor for each agent from `.agents/oma-config.yaml`. Use native subagents when it matches the current runtime; otherwise, or when native dispatch is unavailable, use `oma agent spawn` for that agent.
 
 ## Code Search
 

@@ -444,11 +444,11 @@ description: oh-my-agent 16개 워크플로우 완전 레퍼런스입니다. 슬
 
 ### /schedule
 
-**설명:** `oma schedule:*` 명령으로 시간 기반 에이전트 작업을 등록하고 관리합니다. 작업은 글로벌 레지스트리(`~/.agents/schedule/`)에 저장되고 OS 네이티브 스케줄러(macOS는 launchd, Linux는 systemd 사용자 타이머, Windows는 schtasks, POSIX 폴백은 crontab)로 발동하며, 실행할 때마다 `oma agent:spawn`으로 하네스에 다시 진입합니다.
+**설명:** `oma schedule <action>` 명령으로 시간 기반 에이전트 작업을 등록하고 관리합니다. 작업은 글로벌 레지스트리(`~/.agents/schedule/`)에 저장되고 OS 네이티브 스케줄러(macOS는 launchd, Linux는 systemd 사용자 타이머, Windows는 schtasks, POSIX 폴백은 crontab)로 발동하며, 실행할 때마다 `oma agent spawn`으로 하네스에 다시 진입합니다.
 
-**트리거 키워드:** 없음 (`oma schedule:*` 시간 기반 작업을 다루는 슬래시 호출 전용 워크플로우).
+**트리거 키워드:** 없음 (`oma schedule <action>` 시간 기반 작업을 다루는 슬래시 호출 전용 워크플로우).
 
-**단계:** 의도 해석(add / list / remove / sync) -> 일정 파싱(명시적 `--cron` 또는 `--every`로 받는 자연어) -> `oma schedule:add`로 등록(이름을 지정한 환경 변수만 캡처, 파일 권한 0600) -> `oma schedule:list`로 검증(매니페스트와 OS 사이의 드리프트를 프로젝트별로 묶어 확인) -> 작업 id와 다음 발동 시각 보고.
+**단계:** 의도 해석(add / list / remove / sync) -> 일정 파싱(명시적 `--cron` 또는 `--every`로 받는 자연어) -> `oma schedule create`로 등록(이름을 지정한 환경 변수만 캡처, 파일 권한 0600) -> `oma schedule list`로 검증(매니페스트와 OS 사이의 드리프트를 프로젝트별로 묶어 확인) -> 작업 id와 다음 발동 시각 보고.
 
 **사용 시기:** 반복되는 에이전트 작업, 예를 들어 야간 회고, 예약 스캔, 주기적 정리처럼 대화형 세션이 열려 있지 않아도 발동해야 하는 작업.
 
@@ -563,7 +563,7 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 제외된 워크플로우
 
-다음 워크플로우는 키워드로 트리거되지 않으며 명시적 `/command`로 호출해야 합니다. `/tools`와 `/stack-set`은 `excludedWorkflows`에 들어 있고(키워드 감지에서 의도적으로 뺐습니다), `/convert`는 트리거 키워드를 아예 배포하지 않으며(`oma-pdf`와 `oma-hwp` 스킬이 각자 키워드 감지를 갖고 있습니다), `/schedule`은 `oma schedule:*` 시간 기반 작업을 다루는 슬래시 호출 워크플로우이고, `/explain`은 "explain"이 일상 어휘라서 키워드 감지를 걸면 오탐이 끊이지 않기 때문에 트리거 키워드를 배포하지 않습니다.
+다음 워크플로우는 키워드로 트리거되지 않으며 명시적 `/command`로 호출해야 합니다. `/tools`와 `/stack-set`은 `excludedWorkflows`에 들어 있고(키워드 감지에서 의도적으로 뺐습니다), `/convert`는 트리거 키워드를 아예 배포하지 않으며(`oma-pdf`와 `oma-hwp` 스킬이 각자 키워드 감지를 갖고 있습니다), `/schedule`은 `oma schedule <action>` 시간 기반 작업을 다루는 슬래시 호출 워크플로우이고, `/explain`은 "explain"이 일상 어휘라서 키워드 감지를 걸면 오탐이 끊이지 않기 때문에 트리거 키워드를 배포하지 않습니다.
 - `/tools`
 - `/stack-set`
 - `/convert`
@@ -594,12 +594,12 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 ### 목표 계약 (선택적 정지 게이트와 예산)
 
-`oma goal:set`은 활성 영구 워크플로우에 기계적으로 확인 가능한 완료 계약을 붙입니다.
+`oma goal set`은 활성 영구 워크플로우에 기계적으로 확인 가능한 완료 계약을 붙입니다.
 
 - `--gate typecheck|test|lint`: Stop 훅은 **해당 package.json 스크립트가 통과할 때만** 세션 종료를 허용합니다(셸 없이 argv 배열로 실행하며, 자유 형식 명령은 설계상 거부합니다). 실패하면 출력 끝부분과 함께 차단하고, 실패와 타임아웃은 강화 한도에 반영되므로 빨간 게이트가 영원히 막을 수는 없습니다.
 - `--budget-minutes <n>`: 활성화 시점부터의 wall-clock 예산입니다. 이를 넘기면 워크플로우를 비활성화하고 솔직하게 부분 완료로 멈추도록 허용하며, 세션 이벤트 기록에 남깁니다.
 
-계약이 없으면 영구 모드는 위에서 설명한 대로 동작합니다. 계약은 선택 사항입니다. [CLI 명령 레퍼런스](../cli-interfaces/commands.md#goalset)의 `goal:set`을 참고하세요.
+계약이 없으면 영구 모드는 위에서 설명한 대로 동작합니다. 계약은 선택 사항입니다. [CLI 명령 레퍼런스](../cli-interfaces/commands.md#goal-set)의 `goal set`을 참고하세요.
 
 ### 비활성화
 

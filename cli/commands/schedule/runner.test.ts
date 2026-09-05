@@ -169,12 +169,12 @@ describe("schedule/runner.ts — runScheduledJob", () => {
       expect(new Date(ts).toISOString()).toBe(ts);
     });
 
-    it("invokes spawnSync with correct oma agent:spawn args", async () => {
+    it("invokes spawnSync with correct oma agent spawn args", async () => {
       await runScheduledJob(JOB_ID);
 
       expect(mockSpawnSync).toHaveBeenCalledWith(
         expect.any(String), // oma binary path
-        expect.arrayContaining(["agent:spawn", "qa-reviewer"]),
+        expect.arrayContaining(["agent", "spawn", "qa-reviewer"]),
         expect.objectContaining({ encoding: "utf-8" }),
       );
 
@@ -184,14 +184,14 @@ describe("schedule/runner.ts — runScheduledJob", () => {
         object,
       ];
       const spawnArgv = callArgs[1];
-      expect(spawnArgv[0]).toBe("agent:spawn");
-      expect(spawnArgv[1]).toBe("qa-reviewer");
-      expect(spawnArgv[2]).toBe("Run a review"); // inline prompt
+      expect(spawnArgv.slice(0, 2)).toEqual(["agent", "spawn"]);
+      expect(spawnArgv[2]).toBe("qa-reviewer");
+      expect(spawnArgv[3]).toBe("Run a review"); // inline prompt
       // vendor flag
-      expect(spawnArgv).toContain("-m");
+      expect(spawnArgv).toContain("--vendor");
       expect(spawnArgv).toContain("codex");
       // workspace flag
-      expect(spawnArgv).toContain("-w");
+      expect(spawnArgv).toContain("--workspace");
       expect(spawnArgv).toContain("/projects/my-app");
     });
 
@@ -216,7 +216,7 @@ describe("schedule/runner.ts — runScheduledJob", () => {
         object,
       ];
       const spawnArgv = callArgs[1];
-      expect(spawnArgv[2]).toBe(`@${promptPath}`);
+      expect(spawnArgv[3]).toBe(`@${promptPath}`);
     });
 
     it("does not pass -m flag when vendor is null", async () => {
@@ -230,7 +230,7 @@ describe("schedule/runner.ts — runScheduledJob", () => {
         object,
       ];
       const spawnArgv = callArgs[1];
-      expect(spawnArgv).not.toContain("-m");
+      expect(spawnArgv).not.toContain("--vendor");
     });
   });
 

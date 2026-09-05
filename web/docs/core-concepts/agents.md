@@ -13,7 +13,7 @@ The agent definitions under `.agents/agents/` are the source of truth. OMA proje
 - `.codex/agents/*.toml`
 - `.gemini/agents/*.md`
 
-When a workflow maps an agent to the same vendor as the current runtime, it should use that runtime's native agent file first. Cross-vendor tasks fall back to `oma agent:spawn`.
+When a workflow maps an agent to the same vendor as the current runtime, it should use that runtime's native agent file first. Cross-vendor tasks fall back to `oma agent spawn`.
 
 > **Per-agent model dispatch:** each agent resolves to a specific model slug, CLI vendor, and reasoning effort through `model_preset` (and optional `agents:` overrides) in `.agents/oma-config.yaml`. See [Per-Agent Models](../guide/per-agent-models.md) for configuration details and [`oma doctor --profile`](../cli-interfaces/commands.md#doctor) to inspect the live matrix.
 
@@ -499,7 +499,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **When to use:** Summarizing a day or period of work activity, understanding the flow of work across multiple AI tools, analyzing tool-switching patterns between sessions, preparing daily standups / weekly retros / work logs.
 
-**When NOT to use:** Git commit-based code change retrospective (use `oma retro`), real-time agent monitoring (use `oma dashboard`), productivity metrics (use `oma stats`).
+**When NOT to use:** Git commit-based code change retrospective (use `oma retro`), real-time agent monitoring (use `oma dashboard terminal`), productivity metrics (use `oma stats get`).
 
 **Process:**
 1. Resolve date or time window from natural-language input (today, yesterday, last Monday, explicit date)
@@ -651,7 +651,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **When to use:** Extracting real user pain points from community posts, detecting trends in a category over a 7/30/90/180-day window, competitor sentiment analysis and SWOT / Porter's 5F positioning, open-ended discovery (`--discover`), person / company / ticker research, hiring signals, follow-up drills.
 
-**When NOT to use:** General web research without market framing (use oma-search directly), academic literature (use oma-scholar), live dashboards or scheduled monitoring (wrap this skill with `oma schedule:*`).
+**When NOT to use:** General web research without market framing (use oma-search directly), academic literature (use oma-scholar), live dashboards or scheduled monitoring (wrap this skill with `oma schedule <action>`).
 
 **Core rules:**
 - detect-trap first: never run the engine without preflight (`--force` only on explicit user reconfirmation)
@@ -724,7 +724,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **Core rules:**
 - Keep the four top-level sections exactly: Scheduling, Structural Flow, Logical Operations, References
-- Keep YAML frontmatter with clear `name` and `description`; run `oma skills audit` after editing the description (warn ≥ 60%, fail ≥ 75% TF-IDF cosine collision)
+- Keep YAML frontmatter with clear `name` and `description`; run `oma skill audit` after editing the description (warn ≥ 60%, fail ≥ 75% TF-IDF cosine collision)
 - Include concrete `When NOT to use` boundaries with cross-routes to adjacent skills
 - Add exactly one inline canonical path (`Canonical command path` for fragile/repeatable commands, `Canonical workflow path` for judgment/research flow)
 - Put long variant-specific detail in `resources/`, not the main body; do not create README/changelog/install docs inside a skill
@@ -878,8 +878,8 @@ For multi-agent projects, separate workspaces prevent file conflicts:
 Workspaces are specified with the `-w` flag when spawning agents:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -953,4 +953,4 @@ Memory tools are configurable. By default agents read and write these coordinati
 }
 ```
 
-Dashboards (`oma dashboard` and `oma dashboard:web`) watch these memory files for real-time monitoring.
+Dashboards (`oma dashboard terminal` and `oma dashboard web`) watch these memory files for real-time monitoring.

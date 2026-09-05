@@ -50,7 +50,7 @@ function hasCredential(entry: OpencodeAuthEntry | undefined): boolean {
  *     registered model's `cli_model` prefix.
  *   - **no argument** — is opencode usable at all? True when *any* provider
  *     has a credential. Used by the vendor-level surfaces (`oma doctor`,
- *     `oma auth:status`), which have no model row to derive a provider from.
+ *     `oma auth status`), which have no model row to derive a provider from.
  *     Checking only `opencode-go` there reported a user authenticated solely
  *     with, say, `zai-coding-plan` as logged out (issue #699).
  *

@@ -52,7 +52,7 @@ oma video generate "product walkthrough" --mode demo --source web --url http://l
 
 Each run prints its run directory. Re-running with the same `--seed` reproduces the same script and render-spec.
 
-Other tools that shell out to `oma video generate --format json` parse a JSON envelope from stdout: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. There is no `outputs` key — read output/asset paths from the manifest at `manifestPath`.
+Other tools that shell out to `oma video generate --output json` parse a JSON envelope from stdout: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. There is no `outputs` key — read output/asset paths from the manifest at `manifestPath`.
 
 ---
 
@@ -62,7 +62,7 @@ Other tools that shell out to `oma video generate --format json` parse a JSON en
 oma video generate <brief...> [options]
 oma video doctor [--install|--install-mpt]  # toolchain readiness / provisioning
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
-oma video list-providers         # provider availability + key/fallback status
+oma video provider list         # provider availability + key/fallback status
 ```
 
 ### Key flags
@@ -164,9 +164,9 @@ oh-my-agent ships **no Remotion composition code**. Each run gets its own projec
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/remotion/ (composition pending)
-oma video compose <runDir> --format json   # refresh scaffold / print the contract (idempotent)
+oma video compose <runDir> --output json   # refresh scaffold / print the contract (idempotent)
 #   author <runDir>/remotion/src/Root.tsx
-oma video render <runDir> --format json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
+oma video render <runDir> --output json    # tsc → npx remotion render → ffprobe; exit 1 on any failure
 ```
 
 - Latest-version checks (npm + GitHub) are throttled by `video.remotion.check_interval_min` (default 60; `0` = every compose). `oma update` and `oma video doctor --upgrade` force them; offline runs use the cached toolchain and report `stale`.

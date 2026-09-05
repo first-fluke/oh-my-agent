@@ -71,7 +71,7 @@ export function registerEmit(program: Command): void {
       async (kind: string, payloadRaw: string | undefined, options) => {
         const jsonMode = resolveJsonMode(options);
         const emitOptions = options as EmitOptions;
-        // Normalize cwd to the OMA project root so running `oma state:emit`
+        // Normalize cwd to the OMA project root so running `oma state emit`
         // from a monorepo sub-package writes to the repo-level `.agents/`
         // instead of materializing a stray `<sub-package>/.agents/`.
         const projectDir = resolveProjectRoot();

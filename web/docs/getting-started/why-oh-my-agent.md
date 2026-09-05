@@ -39,7 +39,7 @@ Heavy verifications (greater than thirty seconds) are cached against affected fi
 
 ### Quota caps that block before damage
 
-Every `oma agent:spawn` call records the spawn's token estimate to `.agents/state/memories/session-cost-{sessionId}.md`. Before the next spawn, `checkCap` consults the configured quota cap and refuses to launch if any dimension is exceeded. Three dimensions are enforced: total tokens, total spawn count, and per-vendor token budget.
+Every `oma agent spawn` call records the spawn's token estimate to `.agents/state/memories/session-cost-{sessionId}.md`. Before the next spawn, `checkCap` consults the configured quota cap and refuses to launch if any dimension is exceeded. Three dimensions are enforced: total tokens, total spawn count, and per-vendor token budget.
 
 Without the cap you discover at the end of the month that you spent $40,000. With it, the orchestrator tells you at spawn fifteen that one spawn remains. See `cli/io/session-cost.ts` and configure under `session.quota_cap` in `.agents/oma-config.yaml`.
 

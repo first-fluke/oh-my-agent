@@ -25,7 +25,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 This workflow has two required checkpoints: **mode-selection** (Step 2) and **cost-confirmation** (Step 5). Do not skip either emit/verify pair.
 
@@ -73,7 +73,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
    ```
 2. Run the readiness check and surface gaps before spending any time on assets:
    ```bash
-   oma video doctor --format json
+   oma video doctor --output json
    ```
    This reports Node / Chromium / FFmpeg, the vendored Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Browser web-capture readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. The MPT fallback compositor needs a one-time `oma video doctor --install-mpt` (clone + venv + deps).
 3. If doctor reports a hard blocker for the chosen mode (e.g. no compositor for `shorts`/`explainer`), report the remediation and stop. If only an optional provider is missing (Pexels, Pixelle, Cap), note it and continue on the fallback.
@@ -90,8 +90,8 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
 3. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 4. After the user confirms, emit and verify the mode-selection decision:
    ```bash
-   oma state:emit "decision.made" '{"subject":"video.mode-selection","decision":"Proceed with the confirmed mode and pipeline plan.","rationale":"The user confirmed mode, aspect, visual track, and compositor before asset generation."}'
-   oma state:verify --workflow video --checkpoint mode-selection
+   oma state emit "decision.made" '{"subject":"video.mode-selection","decision":"Proceed with the confirmed mode and pipeline plan.","rationale":"The user confirmed mode, aspect, visual track, and compositor before asset generation."}'
+   oma state verify --workflow video --checkpoint mode-selection
    ```
 
 ---
@@ -113,7 +113,7 @@ The agent writes the script — this is the start of the determinism boundary. D
      --captions <tiktok|lower-third|none> --visual <auto|generate|stock|aigc|slide> \
      --voice <profile|none> --music <upbeat|calm|cinematic|lofi|piano|none> --duration <sec|auto> \
      --compositor <remotion|mpt> --seed <n> \
-     --script <path-to-agent-authored-script.json> --dry-run --format json
+     --script <path-to-agent-authored-script.json> --dry-run --output json
    ```
 6. Review the emitted `script.json` for scene count, durations, and narration quality. Iterate here — fixing the script is cheap; fixing a render is not.
 
@@ -124,7 +124,7 @@ The agent writes the script — this is the start of the determinism boundary. D
 The CLI orchestrator fans out the asset tracks per the asset bus. Trigger the full (non-dry) run; the orchestrator runs the tracks and writes them into the run directory. **Do not author assets by hand.**
 
 ```bash
-oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script <path>, without --dry-run] --format json
+oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script <path>, without --dry-run] --output json
 ```
 
 The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution protocol):
@@ -157,8 +157,8 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 1. Inspect the cost estimate the orchestrator computed across providers (`cost.usd` + breakdown in the manifest/JSON output).
 2. **If the estimate meets or exceeds the guardrail** (default $0.20, or `--max-usd`), pause and present the breakdown. **You MUST get user confirmation before the paid render proceeds.** Then emit and verify:
    ```bash
-   oma state:emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
-   oma state:verify --workflow video --checkpoint cost-confirmation
+   oma state emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
+   oma state verify --workflow video --checkpoint cost-confirmation
    ```
    If the user declines, re-run with the key-free providers (drop `--visual stock|aigc`) — the fallback chain keeps the run alive.
 3. If the estimate is under the guardrail, note "cost under guardrail ($X.XX < $0.20)" and continue without a confirmation prompt.
@@ -169,10 +169,10 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 ## Step 6: Composite (Remotion — you author the composition → MPT fallback)
 
 1. **Remotion** (default, all modes) — oma ships no composition code; you write it per run on the always-latest Remotion:
-   1. `oma video generate` already scaffolded `<runDir>/remotion/` (warning `composition pending`). If not, or to refresh: `oma video compose <runDir> --format json`.
+   1. `oma video generate` already scaffolded `<runDir>/remotion/` (warning `composition pending`). If not, or to refresh: `oma video compose <runDir> --output json`.
    2. Read, in order: `<runDir>/remotion/AUTHORING.md` (contract for this spec), the `remotion-best-practices` and `remotion-markup` SKILL.md paths it lists (remotion-dev/skills at HEAD; `remotion-captions` when `captions.style !== "none"`, `remotion-multimedia` for video/audio), and `.agents/skills/oma-video/resources/remotion-authoring/<mode>.md`.
    3. Write `<runDir>/remotion/src/Root.tsx` (+ `src/components/*`): one `<Composition id={composition}>` consuming `render-spec.json`, `calculateMetadata` from props, deterministic (no network/randomness), Pretendard via `staticFile("fonts/PretendardVariable.woff2")`. Never edit the generated files.
-   4. `oma video render <runDir> --format json` — typecheck → `npx remotion render` → ffprobe. **Non-zero exit is a composition bug**: read the diagnostics, consult the skills again (`remotion-upgrade` for API moves), fix, re-render. No fixed cap; stop only after two consecutive attempts without progress and report the diagnostics.
+   4. `oma video render <runDir> --output json` — typecheck → `npx remotion render` → ffprobe. **Non-zero exit is a composition bug**: read the diagnostics, consult the skills again (`remotion-upgrade` for API moves), fix, re-render. No fixed cap; stop only after two consecutive attempts without progress and report the diagnostics.
    - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output. `--polish` means you author the `Demo` composition (intro / callouts / zoom over the capture as `background`).
 2. **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alt): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs. Needs `oma video doctor --install-mpt` once.
 3. If the toolchain cannot be fetched (offline, nothing cached): `oma video doctor --install` once online. Do not pin or hand-install Remotion.
@@ -199,7 +199,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - layout/transition/crop → **Step 6** edit the composition (`<runDir>/remotion/src`) or the render-spec → `oma video render` (for `demo`, toggle `--polish`).
 3. **Determinism guard:** when validating reproducibility, run the golden harness — render-spec and assets must be byte-identical:
    ```bash
-   OMA_VIDEO_MOCK=1 oma video generate "<brief>" --mode <mode> --seed <n> --dry-run --format json
+   OMA_VIDEO_MOCK=1 oma video generate "<brief>" --mode <mode> --seed <n> --dry-run --output json
    ```
 4. **If the same defect persists after 2 fix attempts**, stop iterating blindly: present 2-3 alternative approaches (different visual track, different mode framing, different compositor) and get the user to choose before the next attempt. Record discarded attempts.
 5. Repeat until the checklist passes or the user accepts the result.

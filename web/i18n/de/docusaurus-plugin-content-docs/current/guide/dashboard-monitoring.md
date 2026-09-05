@@ -11,15 +11,15 @@ oh-my-agent bietet zwei Echtzeit-Dashboards zur Überwachung der Agentenaktivit�
 
 | Befehl | Oberfläche | URL | Technologie |
 |:--------|:---------|:----|:-----------|
-| `oma dashboard` | Terminal (TUI) | N/A — rendert in Ihrem Terminal | chokidar Dateiüberwachung, picocolors Rendering |
-| `oma dashboard:web` | Browser | `http://localhost:9847` | HTTP-Server, WebSocket, chokidar Dateiüberwachung |
+| `oma dashboard terminal` | Terminal (TUI) | N/A — rendert in Ihrem Terminal | chokidar Dateiüberwachung, picocolors Rendering |
+| `oma dashboard web` | Browser | `http://localhost:9847` | HTTP-Server, WebSocket, chokidar Dateiüberwachung |
 
 Beide Dashboards überwachen dieselbe Datenquelle: das `.serena/memories/`-Verzeichnis.
 
 ### Terminal-Dashboard
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Rendert eine Rahmenzeichnungs-Oberfläche direkt im Terminal. Aktualisiert sich automatisch bei Änderungen an Memory-Dateien. Mit `Strg+C` beenden.
@@ -56,17 +56,17 @@ Rendert eine Rahmenzeichnungs-Oberfläche direkt im Terminal. Aktualisiert sich 
 ### Web-Dashboard
 
 ```bash
-oma dashboard:web
+oma dashboard web
 ```
 
 Öffnet einen Webserver auf Port 9847 (konfigurierbar über die Umgebungsvariable `DASHBOARD_PORT`). Die Browser-Oberfläche verbindet sich über WebSocket und empfängt Live-Updates.
 
 ```bash
 # Benutzerdefinierter Port
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 
 # Benutzerdefiniertes Memories-Verzeichnis
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard web
 ```
 
 Das Web-Dashboard zeigt dieselben Informationen wie das Terminal-Dashboard, aber mit einer gestylten Dark-Theme-Oberfläche mit:
@@ -87,7 +87,7 @@ Für Multi-Agenten-Workflows wird folgendes Setup mit drei Terminal-Fenstern emp
 │                                │                                │
 │   Terminal 1: Haupt-Agent      │   Terminal 2: Dashboard        │
 │                                │                                │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 │   ...                          │   ╔═══════════════════════╗    │
 │                                │   ║ Serena Dashboard      ║    │
@@ -98,8 +98,8 @@ Für Multi-Agenten-Workflows wird folgendes Setup mit drei Terminal-Fenstern emp
 │                                                                 │
 │   Terminal 3: Ad-hoc-Befehle                                    │
 │                                                                 │
-│   $ oma agent:status session-20260324-143052 backend frontend   │
-│   $ oma stats                                                   │
+│   $ oma agent status session-20260324-143052 backend frontend   │
+│   $ oma stats get                                                   │
 │   $ oma verify backend -w ./api                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -194,12 +194,12 @@ Das Dashboard erkennt den Abschluss durch das Vorhandensein dieser Datei und akt
 
 **Maßnahmen:**
 1. Logdatei des Agenten prüfen: `cat /tmp/subagent-{session-id}-{agent-id}.log`
-2. Prüfen, ob der Prozess tatsächlich läuft: `oma agent:status {session-id} {agent-id}`
+2. Prüfen, ob der Prozess tatsächlich läuft: `oma agent status {session-id} {agent-id}`
 3. Falls der Prozess nicht läuft, aber der Status "läuft" zeigt, ist der Agent abgestürzt. Mit Fehlerkontext erneut starten.
 
 ### Signal 2: Agent zeigt "abgestürzt"
 
-**Symptom:** `oma agent:status` gibt `crashed` für einen Agenten zurück.
+**Symptom:** `oma agent status` gibt `crashed` für einen Agenten zurück.
 
 **Mögliche Ursachen:**
 - Der CLI-Vendor-Prozess wurde unerwartet beendet (Speichermangel, API-Kontingent überschritten, Netzwerk-Timeout).
@@ -209,8 +209,8 @@ Das Dashboard erkennt den Abschluss durch das Vorhandensein dieser Datei und akt
 **Maßnahmen:**
 1. Logdatei auf Fehlerdetails prüfen: `cat /tmp/subagent-{session-id}-{agent-id}.log`
 2. CLI-Installation verifizieren: `oma doctor`
-3. Authentifizierung prüfen: `oma auth:status`
-4. Agenten mit derselben Aufgabe erneut starten: `oma agent:spawn {agent-id} "{task}" {session-id} -w {workspace}`
+3. Authentifizierung prüfen: `oma auth status`
+4. Agenten mit derselben Aufgabe erneut starten: `oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`
 
 ### Signal 3: Dashboard zeigt "Noch keine Agenten erkannt"
 
@@ -225,20 +225,20 @@ Das Dashboard erkennt den Abschluss durch das Vorhandensein dieser Datei und akt
 1. Memories-Verzeichnis verifizieren: `ls -la .serena/memories/`
 2. Prüfen, ob der Workflow noch in der Planungsphase ist (Agenten wurden noch nicht gestartet).
 3. Sicherstellen, dass das Dashboard das richtige Projektverzeichnis überwacht: Das Dashboard löst den Memories-Pfad vom aktuellen Arbeitsverzeichnis auf.
-4. Bei benutzerdefiniertem Pfad: `MEMORIES_DIR=/path/to/.serena/memories oma dashboard`
+4. Bei benutzerdefiniertem Pfad: `MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal`
 
 ### Signal 4: Web-Dashboard zeigt "Getrennt"
 
 **Symptom:** Das Verbindungsbadge des Web-Dashboards zeigt "Disconnected" in Rot.
 
 **Mögliche Ursachen:**
-- Der `oma dashboard:web`-Prozess wurde beendet.
+- Der `oma dashboard web`-Prozess wurde beendet.
 - Ein Netzwerkproblem zwischen Browser und localhost.
 - Der Port wird von einem anderen Prozess verwendet.
 
 **Maßnahmen:**
 1. Prüfen, ob der Dashboard-Prozess läuft: `ps aux | grep dashboard`
-2. Einen anderen Port versuchen: `DASHBOARD_PORT=8080 oma dashboard:web`
+2. Einen anderen Port versuchen: `DASHBOARD_PORT=8080 oma dashboard web`
 3. Port-Verfügbarkeit prüfen: `lsof -i :9847`
 4. Das Web-Dashboard verbindet sich automatisch mit exponentiellem Backoff (Start bei 1 s, 1,5x-Multiplikator, max. 10 s). Einige Sekunden auf Wiederverbindung warten.
 
@@ -269,14 +269,14 @@ Die Dashboard-Überwachung ist abgeschlossen, wenn:
 
 ## Technische Details
 
-### Terminal-Dashboard (oma dashboard)
+### Terminal-Dashboard (oma dashboard terminal)
 
 - **Dateiüberwachung:** Verwendet [chokidar](https://github.com/paulmillr/chokidar) mit `awaitWriteFinish` (200 ms Stabilitätsschwelle, 50 ms Abfrageintervall), um das Rendern unvollständiger Dateischreibvorgänge zu vermeiden.
 - **Rendering:** Löscht und zeichnet das gesamte Terminal bei jedem Dateiänderungsereignis neu. Verwendet `picocolors` für ANSI-Farbausgabe und Unicode-Rahmenzeichnungszeichen für den Rand.
 - **Memory-Verzeichnis:** Aufgelöst aus der Umgebungsvariable `MEMORIES_DIR`, einem CLI-Argument oder `{cwd}/.serena/memories`.
 - **Sauberes Beenden:** Fängt `SIGINT` und `SIGTERM`, schließt den chokidar-Watcher und beendet sich ordnungsgemäß.
 
-### Web-Dashboard (oma dashboard:web)
+### Web-Dashboard (oma dashboard web)
 
 - **HTTP-Server:** Node.js `createServer` liefert die HTML-Seite unter `/` und den JSON-Zustand unter `/api/state`.
 - **WebSocket:** Verwendet die `ws`-Bibliothek. Ein `WebSocketServer` wird an den HTTP-Server angehängt. Bei Verbindung erhält der Client sofort den vollständigen Zustand. Nachfolgende Updates werden als `{ type: "update", event, file, data }`-Nachrichten gepusht.

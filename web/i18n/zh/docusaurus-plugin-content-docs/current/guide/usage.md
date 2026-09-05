@@ -83,13 +83,13 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 5. **步骤 3：按优先级启动智能体**
    ```bash
    # P0 层（并行）
-   oma agent:spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
-   oma agent:spawn db "User and task schema design" session-todo-01 &
+   oma agent spawn backend "JWT auth API + task CRUD endpoints" session-todo-01 -w ./apps/api &
+   oma agent spawn db "User and task schema design" session-todo-01 &
    wait
 
    # P1 层（并行，在 P0 完成后）
-   oma agent:spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
-   oma agent:spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
+   oma agent spawn frontend "Login, register, task list UI" session-todo-01 -w ./apps/web &
+   oma agent spawn mobile "Auth and task screens" session-todo-01 -w ./apps/mobile &
    wait
    ```
 
@@ -168,23 +168,23 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ```bash
 # 单智能体 —— 简单任务
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # 三个智能体并行 —— 全栈功能
-oma agent:spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
 # 在智能体工作时监控（另一个终端）
-oma dashboard        # 终端 UI，实时表格
-oma dashboard:web    # Web UI，http://localhost:9847
+oma dashboard terminal        # 终端 UI，实时表格
+oma dashboard web    # Web UI，http://localhost:9847
 
 # 实现完成后，运行 QA
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 
 # 完成后查看会话统计
-oma stats
+oma stats get
 ```
 
 ---
@@ -315,7 +315,7 @@ oh-my-agent 在 11 种语言中检测工作流关键词。以下示例展示自�
 ### 终端仪表盘
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 在终端中显示实时更新的表格：
@@ -326,7 +326,7 @@ oma dashboard
 ### Web 仪表盘
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # 打开 http://localhost:9847
 ```
 
@@ -340,7 +340,7 @@ oma dashboard:web
 ### 推荐布局
 
 使用 3 个终端：
-1. **仪表盘终端：** `oma dashboard`，持续监控
+1. **仪表盘终端：** `oma dashboard terminal`，持续监控
 2. **命令终端：** 智能体启动命令、工作流命令
 3. **构建终端：** 测试运行、构建日志、git 操作
 
@@ -362,7 +362,7 @@ oma dashboard:web
 
 ### CLI 启动
 
-运行 `oma agent:spawn` 时，CLI：
+运行 `oma agent spawn` 时，CLI：
 1. 解析供应商（使用 5 级优先级）
 2. 从 `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md` 注入供应商特定的执行协议
 3. 使用 SKILL.md 核心规则、执行协议和任务相关资源组合智能体提示词
@@ -376,7 +376,7 @@ oma dashboard:web
 
 ### 工作区
 
-`agent:spawn` 上的 `-w` 标志将智能体隔离到特定目录。这对并行执行至关重要，没有工作区隔离，两个智能体可能同时修改同一文件，产生冲突。标准工作区布局：`./apps/api`（backend）、`./apps/web`（frontend）、`./apps/mobile`（mobile）。
+`agent spawn` 上的 `-w` 标志将智能体隔离到特定目录。这对并行执行至关重要，没有工作区隔离，两个智能体可能同时修改同一文件，产生冲突。标准工作区布局：`./apps/api`（backend）、`./apps/web`（frontend）、`./apps/mobile`（mobile）。
 
 ---
 

@@ -139,12 +139,12 @@ description 필드는 매우 중요합니다. 스킬 라우팅 시스템이 태�
 | 리소스 | 목적 |
 |----------|---------|
 | **`memory-protocol.md`** | CLI 서브에이전트용 메모리 파일 형식과 연산. On Start, During Execution, On Completion 프로토콜을 설정 가능한 메모리 도구(read/write/edit)로 정의합니다. 실험 추적 확장 포함. |
-| **`execution-protocols/claude.md`** | Claude Code 전용 실행 패턴. 벤더가 claude일 때 `oma agent:spawn`이 주입합니다. |
+| **`execution-protocols/claude.md`** | Claude Code 전용 실행 패턴. 벤더가 claude일 때 `oma agent spawn`이 주입합니다. |
 | **`execution-protocols/gemini.md`** | Gemini CLI 전용 실행 패턴. |
 | **`execution-protocols/codex.md`** | Codex CLI 전용 실행 패턴. |
 | **`execution-protocols/qwen.md`** | Qwen CLI 전용 실행 패턴. |
 
-벤더별 실행 프로토콜은 `oma agent:spawn`이 자동으로 주입하므로, 에이전트가 수동으로 로딩할 필요가 없습니다.
+벤더별 실행 프로토콜은 `oma agent spawn`이 자동으로 주입하므로, 에이전트가 수동으로 로딩할 필요가 없습니다.
 
 ### 조건부 리소스 (`.agents/skills/_shared/conditional/`)
 

@@ -19,7 +19,7 @@ export interface ScheduledJobSpec {
   id: string;
   /** 5-field cron expression */
   cron: string;
-  /** argv for the OS job — always ["oma","schedule:run","<id>"] */
+  /** argv for the OS job — always ["oma","schedule","run","<id>"] */
   command: string[];
   /** osJobLabel */
   label: string;

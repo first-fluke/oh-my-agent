@@ -125,13 +125,13 @@ This installs the `oma` command globally, giving you access to all CLI commands 
 
 ```bash
 oma doctor # Health check
-oma dashboard # Terminal monitoring
-oma dashboard:web # Web dashboard at http://localhost:9847
-oma agent:spawn # Spawn agents from terminal
-oma agent:parallel # Parallel agent execution
-oma agent:status # Check agent status
-oma agent:review # Code review via external CLI (codex/claude/gemini/qwen)
-oma stats # Session statistics
+oma dashboard terminal # Terminal monitoring
+oma dashboard web # Web dashboard at http://localhost:9847
+oma agent spawn # Spawn agents from terminal
+oma agent parallel # Parallel agent execution
+oma agent status # Check agent status
+oma agent review # Code review via external CLI (codex/claude/gemini/qwen)
+oma stats get # Session statistics
 oma retro # Engineering retrospective (commits, hotspots, trends)
 oma recap # Conversation history recap across AI tools
 oma cleanup # Clean up session artifacts
@@ -141,8 +141,8 @@ oma verify # Verify agent output (build/test/scope/secrets)
 oma visualize # Dependency visualization (alias: `oma viz`)
 oma describe # Introspect CLI commands as JSON
 oma bridge # MCP stdio ↔ Streamable HTTP bridge
-oma memory:init # Initialize coordination memory schema
-oma auth:status # Check CLI auth status (gh/claude/codex/cursor/qwen)
+oma memory init # Initialize coordination memory schema
+oma auth status # Check CLI auth status (gh/claude/codex/cursor/qwen)
 oma search # Mechanical search primitives (alias: `oma s`)
 oma image # Multi-vendor AI image generation (alias: `oma img`)
 oma export # Export skills for external IDEs (e.g. cursor)

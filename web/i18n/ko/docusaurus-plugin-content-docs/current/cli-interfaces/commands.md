@@ -171,7 +171,7 @@ oma link opencode --global
 
 **디스패치 동작:**
 - 대상 벤더가 현재 런타임과 같고 그 런타임이 네이티브 역할 에이전트를 지원하면 OMA는 네이티브 디스패치를 씁니다.
-- 그렇지 않으면 `oma agent:spawn`으로 폴백합니다.
+- 그렇지 않으면 `oma agent spawn`으로 폴백합니다.
 
 ### setup (워크플로우)
 
@@ -186,7 +186,7 @@ oma link opencode --global
 실시간 에이전트 모니터링을 위한 터미널 대시보드를 시작합니다.
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 옵션 없음. 현재 디렉토리의 `.serena/memories/`를 감시합니다. 세션 상태, 에이전트 테이블, 활동 피드가 포함된 박스 드로잉 UI를 표시합니다. 모든 파일 변경 시 업데이트됩니다. `Ctrl+C`를 눌러 종료합니다.
@@ -196,18 +196,18 @@ oma dashboard
 **예시:**
 ```bash
 # 표준 사용
-oma dashboard
+oma dashboard terminal
 
 # 커스텀 메모리 디렉토리
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal
 ```
 
-### dashboard:web
+### dashboard web
 
 웹 대시보드를 시작합니다.
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 `http://localhost:9847`에서 실시간 업데이트를 위한 WebSocket 연결이 있는 HTTP 서버를 시작합니다. 브라우저에서 URL을 열어 대시보드를 확인합니다.
@@ -222,10 +222,10 @@ oma dashboard:web
 **예시:**
 ```bash
 # 표준 사용
-oma dashboard:web
+oma dashboard web
 
 # 커스텀 포트
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 ### stats
@@ -233,7 +233,8 @@ DASHBOARD_PORT=8080 oma dashboard:web
 생산성 메트릭을 확인합니다.
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 **옵션:**
@@ -261,13 +262,13 @@ oma stats [--json] [--output <format>] [--reset]
 **예시:**
 ```bash
 # 현재 메트릭 확인
-oma stats
+oma stats get
 
 # JSON 출력
-oma stats --json
+oma stats get --json
 
 # 모든 메트릭 리셋
-oma stats --reset
+oma stats reset
 ```
 
 ### recap
@@ -359,12 +360,12 @@ oma retro 7d --json
 
 ## 에이전트 관리
 
-### agent:spawn
+### agent spawn
 
 서브에이전트 프로세스를 생성합니다.
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 **인자:**
@@ -379,44 +380,44 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | CLI 벤더 오버라이드: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
+| `--vendor <vendor>` | CLI 벤더 오버라이드: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리. 생략하면 모노레포 설정에서 자동 감지. |
 | `--isolation <mode>` | 스폰별 격리 모드입니다. 현재 `worktree`를 지원하며, `${tmpdir}/oma-worktrees/{sessionId}/{agentId}`에 `oma/{sessionId}/{agentId}` 브랜치로 새 git 워크트리를 만들고 거기서 에이전트를 실행합니다. 종료 후에도 워크트리는 남으며, 수동 검토용 머지·폐기 명령을 출력합니다(자동 머지는 하지 않습니다). |
-| `--read-only` | 스폰된 에이전트를 비파괴 도구로 제한합니다(자동 승인 플래그를 억제합니다). `oma skills eval --live`가 두 평가 갈래 모두에 내부적으로 씁니다. |
+| `--read-only` | 스폰된 에이전트를 비파괴 도구로 제한합니다(자동 승인 플래그를 억제합니다). `oma skill eval --live`가 두 평가 갈래 모두에 내부적으로 씁니다. |
 
 **종료 코드:**
 
 | 코드 | 의미 |
 |:-----|:--------|
 | `0` | 벤더 프로세스가 0으로 종료했고 워크스페이스 아래에 세션 결과 아티팩트가 있습니다. |
-| `3` | 벤더 프로세스는 0으로 종료했지만 워크스페이스 아래에 **세션 결과 아티팩트를 남기지 않았습니다**(예: agy가 `-w` 대신 자기 신뢰 루트에 쓴 경우). 세션 기록에 `blocker.raised` 이벤트가 추가되고 `agent:status`는 `no-artifact`로 보고합니다. 스폰이 완료된 것으로 취급하지 마세요. |
+| `3` | 벤더 프로세스는 0으로 종료했지만 워크스페이스 아래에 **세션 결과 아티팩트를 남기지 않았습니다**(예: agy가 `-w` 대신 자기 신뢰 루트에 쓴 경우). 세션 기록에 `blocker.raised` 이벤트가 추가되고 `agent status`는 `no-artifact`로 보고합니다. 스폰이 완료된 것으로 취급하지 마세요. |
 | 그 외 | 벤더 프로세스 자체가 실패했으며, 그 종료 코드를 그대로 전달합니다. |
 
-**벤더 해석 순서:** `--model` 플래그 > `oma-config.yaml`의 `agents:` 오버라이드 > 활성 `model_preset`의 에이전트 기본값.
+**벤더 해석 순서:** `--vendor` 플래그 > `oma-config.yaml`의 `agents:` 오버라이드 > 활성 `model_preset`의 에이전트 기본값.
 
 **프롬프트 해석:** 프롬프트 인자가 기존 파일의 경로이면 파일 내용이 프롬프트로 사용됩니다. 그렇지 않으면 인자가 인라인 텍스트로 사용됩니다. 벤더별 실행 프로토콜이 자동으로 추가됩니다.
 
 **예시:**
 ```bash
 # 인라인 프롬프트, 워크스페이스 자동 감지
-oma agent:spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
 
 # 파일에서 프롬프트, 명시적 워크스페이스
-oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
+oma agent spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
 
 # 벤더를 Claude로 오버라이드
-oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
+oma agent spawn backend "Implement auth" session-20260324-143000 --vendor claude -w ./api
 
 # 워크스페이스 자동 감지 모바일 에이전트
-oma agent:spawn mobile "Add biometric login" session-20260324-143000
+oma agent spawn mobile "Add biometric login" session-20260324-143000
 ```
 
-### agent:status
+### agent status
 
 하나 이상의 서브에이전트 상태를 확인합니다.
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 **인자:**
@@ -436,29 +437,29 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 - `completed`: 결과 파일이 존재합니다(선택적 상태 헤더 포함).
 - `running`: PID 파일이 존재하고 프로세스가 살아 있습니다.
 - `crashed`: PID 파일이 존재하지만 프로세스가 죽었거나, PID/결과 파일이 없습니다.
-- `no-artifact`: 벤더 프로세스가 0으로 종료했지만 워크스페이스 아래에 세션 결과 아티팩트를 남기지 않았습니다(엉뚱한 곳에 조용히 쓴 경우로, `agent:spawn`의 종료 코드 `3`을 참고하세요). 실패한 스폰으로 취급하세요.
+- `no-artifact`: 벤더 프로세스가 0으로 종료했지만 워크스페이스 아래에 세션 결과 아티팩트를 남기지 않았습니다(엉뚱한 곳에 조용히 쓴 경우로, `agent spawn`의 종료 코드 `3`을 참고하세요). 실패한 스폰으로 취급하세요.
 
 **출력 형식:** 에이전트당 한 줄: `{agent-id}:{status}`
 
 **예시:**
 ```bash
 # 특정 에이전트 확인
-oma agent:status session-20260324-143000 backend frontend
+oma agent status session-20260324-143000 backend frontend
 
 # 출력:
 # backend:running
 # frontend:completed
 
 # 커스텀 루트로 확인
-oma agent:status session-20260324-143000 qa -r /path/to/project
+oma agent status session-20260324-143000 qa -r /path/to/project
 ```
 
-### agent:parallel
+### agent parallel
 
 여러 서브에이전트를 병렬로 실행합니다.
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **인자:**
@@ -471,7 +472,7 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | 모든 에이전트에 대한 CLI 벤더 오버라이드 |
+| `--vendor <vendor>` | 모든 에이전트에 대한 CLI 벤더 오버라이드 |
 | `-i, --inline` | 인라인 모드: 태스크를 `agent:task[:workspace]` 인자로 지정 |
 | `--no-wait` | 백그라운드 모드(에이전트를 시작하고 즉시 반환) |
 
@@ -493,31 +494,31 @@ tasks:
 **예시:**
 ```bash
 # YAML 파일에서
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 
 # 인라인 모드
-oma agent:parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
+oma agent parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
 
 # 백그라운드 모드 (대기 없음)
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # 모든 에이전트에 벤더 오버라이드
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
-### agent:review
+### agent review
 
 외부 AI CLI(codex, claude 또는 qwen)를 사용하여 코드 리뷰를 실행합니다.
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **옵션:**
 
 | 플래그 | 설명 |
 |:-------|:-----|
-| `-m, --model <vendor>` | 사용할 CLI 벤더: `antigravity`, `codex`, `claude`, `qwen`. 기본값은 설정에서 해석된 벤더. |
+| `--vendor <vendor>` | 사용할 CLI 벤더: `antigravity`, `codex`, `claude`, `qwen`. 기본값은 설정에서 해석된 벤더. |
 | `-p, --prompt <prompt>` | 사용자 정의 리뷰 프롬프트. 생략하면 기본 코드 리뷰 프롬프트가 사용됩니다. |
 | `-w, --workspace <path>` | 리뷰할 경로. 기본값은 현재 작업 디렉토리. |
 | `--no-uncommitted` | 커밋되지 않은 변경 사항 리뷰를 건너뜁니다. 설정 시 세션 내 커밋된 변경 사항만 리뷰합니다. |
@@ -532,32 +533,32 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **예시:**
 ```bash
 # 기본 벤더로 커밋되지 않은 변경 사항 리뷰
-oma agent:review
+oma agent review
 
 # codex로 리뷰 (네이티브 codex review 명령 사용)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # claude로 사용자 정의 프롬프트를 사용하여 리뷰
-oma agent:review -m claude -p "보안 취약점과 입력 유효성 검사에 집중"
+oma agent review --vendor claude -p "보안 취약점과 입력 유효성 검사에 집중"
 
 # 특정 경로 리뷰
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # 커밋된 변경 사항만 리뷰 (작업 트리 건너뛰기)
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # gemini로 특정 워크스페이스의 커밋된 변경 사항 리뷰
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
-### goal:set
+### goal set
 
 활성 영구 워크플로우(orchestrate, ultrawork, work, ralph)에 목표 계약을 붙입니다. 이 계약은 영구 모드 Stop 훅이 기계적으로 강제하므로, 완료 여부가 더 이상 모델의 판단에 달려 있지 않습니다.
 
 ```
-oma goal:set [--workflow <name>] [--session <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
+oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
 ```
 
 **옵션:**
@@ -578,22 +579,22 @@ oma goal:set [--workflow <name>] [--session <id>] [--gate <keyword>] [--budget-m
 **예제:**
 ```bash
 # After starting /ultrawork: require typecheck to pass before the session may end
-oma goal:set --gate typecheck
+oma goal set --gate typecheck
 
 # Bound an autonomous run: stop honestly after 2 hours even if incomplete
-oma goal:set --workflow ultrawork --gate test --budget-minutes 120
+oma goal set --workflow ultrawork --gate test --budget-minutes 120
 ```
 
 ---
 
 ## 예약 에이전트
 
-### schedule:add
+### schedule create
 
 예약 에이전트 작업을 등록합니다. `--cron`과 `--every` 중 정확히 하나가 필요합니다.
 
 ```
-oma schedule:add <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--max-age-days <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **인자:**
@@ -609,40 +610,40 @@ oma schedule:add <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m
 |:-----|:-----------|
 | `--cron "<expr>"` | 5필드 cron 표현식(예: `"0 9 * * *"`). `--every`와 함께 쓸 수 없습니다. |
 | `--every "<phrase>"` | 자연어 간격: `5m`, `2h`, `1d`, `every 20m`, `every 5 minutes`. cron으로 표현할 수 있는 가장 가까운 단위로 반올림하고 안내를 출력합니다. `--cron`과 함께 쓸 수 없습니다. |
-| `-m, --model <vendor>` | `oma agent:spawn`에 전달할 CLI 벤더 오버라이드: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. 기본값은 자동 감지입니다. |
+| `--vendor <vendor>` | `oma agent spawn`에 전달할 CLI 벤더 오버라이드: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. 기본값은 자동 감지입니다. |
 | `-w, --workspace <path>` | 에이전트의 작업 디렉토리입니다. 기본값은 등록 시점의 현재 디렉토리입니다. |
 | `--once` | 일회성 모드입니다. 한 번 발동한 뒤 스스로 제거됩니다. |
-| `--max-age-days <n>` | 반복 작업을 N일 뒤 자동 만료시킵니다(`0`은 무기한). |
+| `--expires-after <duration>` | 반복 작업을 N일 뒤 자동 만료시킵니다(`0`은 무기한). |
 | `--env <KEY1,KEY2>` | 지정한 환경 변수를 `~/.agents/schedule/env/<id>`(권한 0600)에 캡처해 실행 시점에 주입합니다. 나열한 키만 캡처하며, 환경 전체를 덤프하지 않습니다. |
 
 **수행 내용:**
 1. cron 표현식을 파싱하고 검증합니다(또는 `--every` 표현을 cron으로 변환합니다).
 2. 작업을 `~/.agents/schedule/schedules.json`(글로벌 매니페스트, 권한 0600)에 씁니다.
-3. OS 스케줄러(launchd / systemd --user / schtasks)에 작업을 등록합니다. OS 작업은 설정된 간격마다 `oma schedule:run <id>`를 호출합니다.
+3. OS 스케줄러(launchd / systemd --user / schtasks)에 작업을 등록합니다. OS 작업은 설정된 간격마다 `oma schedule run <id>`를 호출합니다.
 
 **예제:**
 ```bash
 # Exact cron: weekdays at 9 AM
-oma schedule:add qa-reviewer "Run QA review on latest changes" --cron "0 9 * * 1-5"
+oma schedule create qa-reviewer "Run QA review on latest changes" --cron "0 9 * * 1-5"
 
 # Natural language: every 2 hours
-oma schedule:add backend "Check for slow queries" --every "2h"
+oma schedule create backend "Check for slow queries" --every "2h"
 
 # One-shot, pinned vendor and workspace
-oma schedule:add pm "Generate sprint plan" --cron "0 9 * * 1" --once -m claude -w /path/to/project
+oma schedule create pm "Generate sprint plan" --cron "0 9 * * 1" --once --vendor claude -w /path/to/project
 
 # Capture specific env vars for the job
-oma schedule:add backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
+oma schedule create backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
 ```
 
 전체 흐름은 [예약 에이전트 가이드](../guide/scheduled-agents.md)를 참고하세요.
 
-### schedule:list
+### schedule list
 
 모든 프로젝트의 예약 작업을 프로젝트별로 묶어 나열하고 OS 드리프트 상태를 함께 보여줍니다.
 
 ```
-oma schedule:list [--json]
+oma schedule list [--json]
 ```
 
 **옵션:**
@@ -651,45 +652,45 @@ oma schedule:list [--json]
 |:-----|:-----------|
 | `--json` | JSON으로 출력 |
 
-**드리프트 상태:** `synced`(매니페스트와 OS가 일치), `missing-in-os`(`schedule:sync`로 복구), `orphan-in-os`(매니페스트에 없는 작업이 OS에 있음. `schedule:sync --prune`으로 제거).
+**드리프트 상태:** `synced`(매니페스트와 OS가 일치), `missing-in-os`(`schedule sync`로 복구), `orphan-in-os`(매니페스트에 없는 작업이 OS에 있음. `schedule sync --prune`으로 제거).
 
 **예제:**
 ```bash
-oma schedule:list
-oma schedule:list --json | jq '.jobs[] | select(.drift != "synced")'
+oma schedule list
+oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 ```
 
-### schedule:remove
+### schedule delete
 
 예약 작업을 매니페스트와 OS 스케줄러 양쪽에서 제거합니다.
 
 ```
-oma schedule:remove <id>
+oma schedule delete <id>
 ```
 
 **인자:**
 
 | 인자 | 필수 | 설명 |
 |:---------|:---------|:-----------|
-| `id` | 예 | `schedule:list`에서 얻은 작업 ID(형식: `sch_<base32-12>`) |
+| `id` | 예 | `schedule list`에서 얻은 작업 ID(형식: `sch_<base32-12>`) |
 
 **예제:**
 ```bash
-oma schedule:remove sch_abc123def456
+oma schedule delete sch_abc123def456
 ```
 
-### schedule:run
+### schedule run
 
 ID로 예약 작업을 실행합니다. 발동 시점에 OS 스케줄러가 호출하는 진입점입니다. 보통 직접 실행하지 않지만 작업을 디버깅할 때 쓸 수 있습니다.
 
 ```
-oma schedule:run <id>
+oma schedule run <id>
 ```
 
 **수행 내용:**
 1. 매니페스트에서 `<id>`를 찾습니다(없으면 0이 아닌 코드로 종료합니다).
 2. `~/.agents/schedule/env/<id>`에서 캡처한 환경 변수를 읽어 주입합니다.
-3. `oma agent:spawn <agentId> <prompt> <sessionId> -m <vendor> -w <workspace>`를 호출합니다.
+3. `oma agent spawn <agentId> <prompt> <sessionId> --vendor <vendor> -w <workspace>`를 호출합니다.
 4. 결과를 `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`에 씁니다.
 5. 매니페스트의 `lastFiredAt`을 갱신하고, `--once` 작업이면 스스로 제거합니다.
 6. 인증이 만료되면 요란하게 실패합니다. 0이 아닌 코드로 종료하고 stderr에 `re-auth required: <vendor>`를 출력합니다. 조용히 성공한 척하지 않습니다.
@@ -697,15 +698,15 @@ oma schedule:run <id>
 **예제:**
 ```bash
 # Invoke manually to debug a job
-oma schedule:run sch_abc123def456
+oma schedule run sch_abc123def456
 ```
 
-### schedule:sync
+### schedule sync
 
 매니페스트를 OS 스케줄러와 다시 동기화합니다. 시스템 마이그레이션이나 OS 스케줄러 초기화 후 드리프트를 복구합니다.
 
 ```
-oma schedule:sync [--prune]
+oma schedule sync [--prune]
 ```
 
 **옵션:**
@@ -717,22 +718,22 @@ oma schedule:sync [--prune]
 **예제:**
 ```bash
 # Repair missing-in-os jobs
-oma schedule:sync
+oma schedule sync
 
 # Repair missing-in-os AND remove orphans
-oma schedule:sync --prune
+oma schedule sync --prune
 ```
 
 ---
 
 ## 메모리 관리
 
-### memory:init
+### memory init
 
 Serena 메모리 스키마를 초기화합니다.
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 **옵션:**
@@ -748,22 +749,22 @@ oma memory:init [--json] [--output <format>] [--force]
 **예시:**
 ```bash
 # 메모리 초기화
-oma memory:init
+oma memory init
 
 # 기존 스키마 강제 덮어쓰기
-oma memory:init --force
+oma memory init --force
 ```
 
 ---
 
 ## 통합 및 유틸리티
 
-### auth:status
+### auth status
 
 지원되는 모든 CLI의 인증 상태를 확인합니다.
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 
 **옵션:**
@@ -778,8 +779,8 @@ oma auth:status [--json] [--output <format>]
 
 **예시:**
 ```bash
-oma auth:status
-oma auth:status --json
+oma auth status
+oma auth status --json
 ```
 
 ### bridge
@@ -871,14 +872,14 @@ oma verify backend --json
 중앙 집중식 oma 훅 라우터(design 019)를 통해 벤더 훅 이벤트를 디스패치합니다. 모든 벤더가 생성한 `oma-hook.sh` 래퍼가 호출하는 정규 ABI입니다. 핸들러 체인을 따로 떼어 디버깅하거나 테스트할 때 직접 쓸 수도 있습니다.
 
 ```
-oma hook --vendor <v> --event <nativeEvent> [--matcher <tool>]
+oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 ```
 
 **옵션:**
 
 | 플래그 | 필수 | 설명 |
 |:-----|:---------|:-----------|
-| `--vendor <v>` | 예 | 벤더 식별자: `claude`, `codex`, `cursor`, `gemini`, `grok`, `kiro`, `qwen`, `antigravity` 중 하나입니다. (`pi` 벤더는 여기서 **유효하지 않습니다**. `oma hook` 대신 인프로세스 `installPiExtension` 브릿지를 씁니다.) |
+| `--vendor <v>` | 예 | 벤더 식별자: `claude`, `codex`, `cursor`, `gemini`, `grok`, `kiro`, `qwen`, `antigravity` 중 하나입니다. (`pi` 벤더는 여기서 **유효하지 않습니다**. `oma hook run` 대신 인프로세스 `installPiExtension` 브릿지를 씁니다.) |
 | `--event <e>` | 예 | 벤더 설정에 등록된 네이티브 훅 이벤트 이름(예: `UserPromptSubmit`, `PreToolUse`, `Stop`) |
 | `--matcher <m>` | 아니오 | 훅 등록에서 넘어온 선택적 도구 이름이나 매처(예: `Bash`) |
 
@@ -903,26 +904,26 @@ vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
 ```bash
 # Test what keyword-detector injects for a given prompt (Claude)
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event UserPromptSubmit
+  | oma hook run --vendor claude --event UserPromptSubmit
 
 # Test a Bash pre_tool block (Claude)
 echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event PreToolUse --matcher Bash
+  | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # Test persistent-mode Stop enforcement (Codex)
 echo '{"cwd":"/path/to/project"}' \
-  | oma hook --vendor codex --event Stop
+  | oma hook run --vendor codex --event Stop
 
 # Test a Gemini BeforeTool event
 echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"},"cwd":"/path/to/project"}' \
-  | oma hook --vendor gemini --event BeforeTool
+  | oma hook run --vendor gemini --event BeforeTool
 ```
 
 stdout이 비어 있으면 해당 이벤트에서 체인이 아무 일도 하지 않았다는 뜻입니다. stdout에 나온 JSON 객체는 에이전트 세션이 받게 될 벤더 방언입니다.
 
 **범위 참고:**
-- `statusLine`과 hud 항목은 `oma hook`을 거치지 않습니다(표시 경로는 지연을 아끼려고 `bun`을 직접 호출합니다).
-- pi 벤더는 `oma hook`이 아니라 인프로세스 `installPiExtension` 브릿지를 씁니다.
+- `statusLine`과 hud 항목은 `oma hook run`을 거치지 않습니다(표시 경로는 지연을 아끼려고 `bun`을 직접 호출합니다).
+- pi 벤더는 `oma hook run`이 아니라 인프로세스 `installPiExtension` 브릿지를 씁니다.
 - 데몬 소켓 경로(`SocketTransport`)는 이후 단계이며, 현재 전송은 항상 인프로세스입니다.
 
 라우터 구현은 `cli/commands/hook/command.ts`(내부적으로 "design 019"라고 부릅니다)를, 벤더별 호환성 매트릭스는 `cli/commands/hook/probe/`를 참고하세요.
@@ -931,24 +932,24 @@ stdout이 비어 있으면 해당 이벤트에서 체인이 아무 일도 하지
 ```bash
 # Inspect Claude keyword-detection output for a real prompt
 echo '{"prompt":"plan the new checkout feature","cwd":"'$(pwd)'"}' \
-  | oma hook --vendor claude --event UserPromptSubmit
+  | oma hook run --vendor claude --event UserPromptSubmit
 
 # Verify a Qwen Stop event fires the persistent-mode block
-echo '{"cwd":"'$(pwd)'"}' | oma hook --vendor qwen --event Stop
+echo '{"cwd":"'$(pwd)'"}' | oma hook run --vendor qwen --event Stop
 
 # Check Gemini hook output format
 echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
-  | oma hook --vendor gemini --event BeforeAgent
+  | oma hook run --vendor gemini --event BeforeAgent
 ```
 
 ---
 
-### hook:probe
+### hook probe
 
 벤더별 훅 호환성을 확인하고 커버리지 매트릭스를 출력합니다.
 
 ```
-oma hook:probe [--vendor <list>] [--format <fmt>] [--hooks-dir <dir>]
+oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 ```
 
 **옵션:**
@@ -964,16 +965,16 @@ oma hook:probe [--vendor <list>] [--format <fmt>] [--hooks-dir <dir>]
 **예제:**
 ```bash
 # Text matrix for all vendors
-oma hook:probe
+oma hook probe
 
 # Markdown matrix (useful in CI PR comments)
-oma hook:probe --format md
+oma hook probe --output md
 
 # JSON for programmatic consumption
-oma hook:probe --format json | jq '.results[] | select(.status == "failed")'
+oma hook probe --output json | jq '.results[] | select(.status == "failed")'
 
 # Probe a subset of vendors
-oma hook:probe --vendor claude,codex,gemini
+oma hook probe --vendor claude,codex,gemini
 ```
 
 ---
@@ -986,7 +987,7 @@ API 키를 비롯한 시크릿을 OS 키체인(macOS Keychain, Linux Secret Serv
 oma vault store <name> [--value <value>]
 oma vault get <name>
 oma vault list [--json]
-oma vault rm <name>
+oma vault delete <name>
 ```
 
 **서브커맨드:**
@@ -1012,13 +1013,13 @@ oma vault store openai --value sk-test-...
 
 # Use in a shell pipeline
 export ANTHROPIC_API_KEY=$(oma vault get anthropic)
-oma agent:spawn backend "Refactor /api/auth" session-20260517-150000
+oma agent spawn backend "Refactor /api/auth" session-20260517-150000
 
 # List entries (names only)
 oma vault list
 
 # Remove
-oma vault rm anthropic
+oma vault delete anthropic
 ```
 
 ---
@@ -1067,8 +1068,8 @@ Serena의 프로젝트별 언어 서버가 잡고 있는 메모리를 회수합�
 
 ```
 oma serena reap [--dry-run] [--quiet]
-oma serena reaper:enable [--dry-run]
-oma serena reaper:disable [--dry-run]
+oma serena reaper enable [--dry-run]
+oma serena reaper disable [--dry-run]
 ```
 
 **서브커맨드:**
@@ -1077,8 +1078,8 @@ oma serena reaper:disable [--dry-run]
 |:--------|:-----------|
 | `serena reap` | 지금 한 번 유휴 LSP를 회수합니다. 대화형 실행은 항상 수행하고, 예약 경로인 `--quiet`는 `enabled` 옵트인을 따릅니다. |
 | `serena reap --dry-run` | 회수 대상과 예상 확보 메모리를 미리 보여주며, 절대 종료하지 않습니다. |
-| `serena reaper:enable` | 5분마다 `serena reap --quiet`를 실행하는 백그라운드 작업을 설치합니다(launchd / systemd 타이머 / Windows 작업 스케줄러). |
-| `serena reaper:disable` | 백그라운드 작업을 제거합니다. |
+| `serena reaper enable` | 5분마다 `serena reap --quiet`를 실행하는 백그라운드 작업을 설치합니다(launchd / systemd 타이머 / Windows 작업 스케줄러). |
+| `serena reaper disable` | 백그라운드 작업을 제거합니다. |
 
 **정책:** `lru`(기본값)는 최근에 활동한 프로젝트를 `keepWarm`개만큼 살려 두고 나머지를 회수합니다. `idle`은 `idleMinutes`를 넘겨 놀고 있는 프로젝트를 회수합니다. `graceSeconds` 구간이 진행 중인 도구 호출을 보호합니다.
 
@@ -1105,10 +1106,10 @@ oma serena reap
 
 # Turn on automatic 5-minute background reaping
 #   (set serena_reaper.enabled: true in oma-config.yaml first)
-oma serena reaper:enable
+oma serena reaper enable
 
 # Turn it back off
-oma serena reaper:disable
+oma serena reaper disable
 ```
 
 ### visualize
@@ -1207,7 +1208,7 @@ oma search fetch https://example.com/article --pretty
 oma search fetch https://example.com --only browser
 
 # Cross-platform keyword search via API handlers
-oma search api:search "RAG patterns" --platforms hackernews,reddit
+oma search api search "RAG patterns" --platforms hackernews,reddit
 
 # Find a repo's trust score
 oma search trust github.com
@@ -1246,7 +1247,7 @@ oma img <subcommand> ...
 | `-n, --count <n>` | 이미지 개수 (1~5) | `1` |
 | `--out <dir>` | 출력 디렉토리 | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | `$PWD` 밖의 `--out` 경로 허용 | `false` |
-| `--model <name>` | 벤더별 모델 오버라이드 | |
+| `--vendor <name>` | 벤더별 모델 오버라이드 | |
 | `--strategy <list>` | Gemini 폴백 순서를 쉼표로 구분 (`mcp,stream,api`) | |
 | `--timeout <seconds>` | 이미지당 타임아웃 | 벤더 기본값 |
 | `-r, --reference <path>` | 참조 이미지입니다. 반복(`-r a.png -r b.png`)하거나 쉼표로 구분합니다. `codex`와 `gemini`에서 지원하고 `pollinations`에서는 거부합니다. 각 5MB 이하 PNG/JPEG/GIF/WebP(매직 바이트 검증), 최대 10개. | |
@@ -1280,7 +1281,7 @@ oma image generate "blend these styles" --vendor gemini -r a.png -r b.png
 oma image generate "blend these styles" --vendor gemini -r a.png,b.png
 
 # Per-vendor doctor check
-oma image doctor --format json
+oma image doctor --output json
 ```
 
 ### star
@@ -1320,7 +1321,7 @@ oma describe [command-path]
 oma describe
 
 # 특정 명령 설명
-oma describe agent:spawn
+oma describe agent spawn
 
 # 서브커맨드 설명
 oma describe "agent:parallel"
@@ -1333,7 +1334,7 @@ oma describe "agent:parallel"
 설치된 스킬에서 설명이 겹치는지, 지나치게 일반적인 블랙홀 스킬이 있는지, 라이브러리 크기에 따른 라우팅 저하가 있는지 검사합니다.
 
 ```
-oma skills audit [--json] [--output <format>]
+oma skill audit [--json] [--output <format>]
 ```
 
 **옵션:**
@@ -1353,8 +1354,8 @@ oma skills audit [--json] [--output <format>]
 
 **예제:**
 ```bash
-oma skills audit
-oma skills audit --json | jq '.findings'
+oma skill audit
+oma skill audit --json | jq '.findings'
 ```
 
 ### skills lint
@@ -1362,7 +1363,7 @@ oma skills audit --json | jq '.findings'
 스킬 하나하나의 작성 스멜을 탐지합니다. 스킬 *사이의* 관계를 보는 `skills audit`과 달리, 단일 `SKILL.md` 안의 품질 결함을 봅니다. arXiv:2607.01456의 스킬 스멜 분류를 따릅니다(실제로 쓰이는 SKILL.md의 99% 이상이 스멜을 최소 하나 갖고 있습니다).
 
 ```
-oma skills lint [--skill <id>] [--json] [--output <format>]
+oma skill lint [--skill <id>] [--json] [--output <format>]
 ```
 
 **옵션:**
@@ -1397,9 +1398,9 @@ oma skills lint [--skill <id>] [--json] [--output <format>]
 
 **예제:**
 ```bash
-oma skills lint
-oma skills lint --skill oma-scholar
-oma skills lint --json | jq '.smells'
+oma skill lint
+oma skill lint --skill oma-scholar
+oma skill lint --json | jq '.smells'
 ```
 
 ### skills eval
@@ -1407,7 +1408,7 @@ oma skills lint --json | jq '.smells'
 스킬별 유용성을 측정합니다. 스킬을 로딩하면 held-out 태스크 결과가 실제로 좋아지는지 봅니다. 설명 경계의 중복을 재는 `skills audit`의 *유용성* 측 대응물입니다. `audit`이 "두 스킬이 중복인가?"를 묻는다면, `eval`은 "이 스킬이 도움이 되는가?"를 묻습니다.
 
 ```
-oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
+oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
                 [--task-dir <path>] [--max-tasks <n>] [--require-coverage]
                 [--json] [--output <format>]
 ```
@@ -1418,7 +1419,7 @@ oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
 |:-----|:-----------|
 | `--skill <id>` | 평가할 스킬 ID(단순 이름이며 경로 구분자를 쓰지 않습니다). 기본값은 `_all`입니다. |
 | `--mock` | `_rollouts/`에 기록된 롤아웃을 재생합니다(기본값. 결정론적이며 LLM을 호출하지 않습니다). CI에서 안전합니다. |
-| `--live` | 실제 에이전트를 디스패치합니다. 태스크마다 `oma agent:spawn --read-only`로 baseline과 treatment 두 갈래를 스폰합니다. 비용 미리보기를 출력하고 `--yes`가 없으면 확인을 받습니다. |
+| `--live` | 실제 에이전트를 디스패치합니다. 태스크마다 `oma agent spawn --read-only`로 baseline과 treatment 두 갈래를 스폰합니다. 비용 미리보기를 출력하고 `--yes`가 없으면 확인을 받습니다. |
 | `--record` | 캡처한 라이브 롤아웃(judge 판정 포함)을 `_rollouts/`에 저장해 이후 `--mock` 재생에 씁니다. `--live`와 함께일 때만 의미가 있습니다. |
 | `--yes` | 비용 미리보기 확인을 생략합니다. `--live`와 함께일 때만 의미가 있습니다. |
 | `--task-dir <path>` | 태스크 픽스처 디렉토리를 오버라이드합니다(워크스페이스 루트 안이어야 합니다). 기본값은 `.agents/eval/<skill>/`입니다. |
@@ -1453,22 +1454,22 @@ oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
 **예제:**
 ```bash
 # Dry-run on recorded rollouts (CI-safe)
-oma skills eval --skill oma-scholar
+oma skill eval --skill oma-scholar
 
 # Live run with cost preview
-oma skills eval --skill oma-scholar --live
+oma skill eval --skill oma-scholar --live
 
 # Live run, record results for future mock replay, skip prompt
-oma skills eval --skill oma-scholar --live --record --yes
+oma skill eval --skill oma-scholar --live --record --yes
 
 # JSON output for CI
-oma skills eval --skill oma-scholar --json
+oma skill eval --skill oma-scholar --json
 
 # Fail CI when no tasks exist
-oma skills eval --skill oma-scholar --require-coverage
+oma skill eval --skill oma-scholar --require-coverage
 
 # Limit to 10 tasks
-oma skills eval --skill oma-scholar --max-tasks 10
+oma skill eval --skill oma-scholar --max-tasks 10
 ```
 
 `.agents/eval/` 픽스처 형식과 체커 종류는 [스킬 유용성 평가 가이드](../guide/skill-eval.md)를 참고하세요.
@@ -1480,7 +1481,7 @@ oma skills eval --skill oma-scholar --max-tasks 10
 WikiSkill 방식의 영속 진화로 스킬의 `SKILL.md`를 최적화합니다. Maintainer가 관측 가능한 롤아웃 근거를 범위가 지정된 지식으로 통합하고, Proposer가 제한된 추가·삭제·교체 편집을 제안하며, 거부 결과는 다음 실행에도 남습니다. 후보는 held-out 검증 분할에서 엄격히 향상되어야 하고, `--apply`에는 실행기 전용 최종 테스트의 엄격한 향상도 필요합니다. 연구 근거는 WikiSkill(arXiv:2608.27454)입니다.
 
 ```
-oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
+oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
                [--yes] [--json] [--output <format>]
 ```
@@ -1512,22 +1513,22 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 **예제:**
 ```bash
 # Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
-oma skills opt --skill oma-scholar --mock --dry-run
+oma skill optimize --skill oma-scholar --mock --dry-run
 
 # Apply accepted edits (backs up original first)
-oma skills opt --skill oma-scholar --mock --apply
+oma skill optimize --skill oma-scholar --mock --apply
 
 # Live optimizer with cost preview
-oma skills opt --skill oma-scholar --live
+oma skill optimize --skill oma-scholar --live
 
 # Live optimizer, skip confirmation, apply if improved
-oma skills opt --skill oma-scholar --live --apply --yes
+oma skill optimize --skill oma-scholar --live --apply --yes
 
 # JSON output for CI
-oma skills opt --skill oma-scholar --json
+oma skill optimize --skill oma-scholar --json
 
 # Tune epochs and edits budget
-oma skills opt --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
+oma skill optimize --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
 ```
 
 전체 흐름과 SSOT·과적합 방지 세부 사항은 [스킬 최적화 가이드](../guide/skill-opt.md)를 참고하세요.
@@ -1602,9 +1603,9 @@ oma version
 | 변수 | 설명 | 사용처 |
 |:-----|:-----|:-------|
 | `OH_MY_AG_OUTPUT_FORMAT` | `json`으로 설정하면 지원하는 모든 명령에서 JSON 출력을 강제 | `--json` 플래그가 있는 모든 명령 |
-| `DASHBOARD_PORT` | 웹 대시보드의 포트 | `dashboard:web` |
-| `MEMORIES_DIR` | 메모리 디렉토리 경로 오버라이드 | `dashboard`, `dashboard:web` |
-| `OMA_SKILLEVAL_MOCK` | `1`로 설정하면 플래그와 무관하게 `oma skills eval`이 mock 모드로 동작 | `skills eval` |
+| `DASHBOARD_PORT` | 웹 대시보드의 포트 | `dashboard web` |
+| `MEMORIES_DIR` | 메모리 디렉토리 경로 오버라이드 | `dashboard`, `dashboard web` |
+| `OMA_SKILLEVAL_MOCK` | `1`로 설정하면 플래그와 무관하게 `oma skill eval`이 mock 모드로 동작 | `skills eval` |
 | `OMA_HOOK_SOCKET` | `selectTransport`가 탐색하는 프로젝트별 데몬 소켓 경로를 오버라이드(기본값: `<cwd>/.agents/.run/oma-hook.sock`). 현재는 항상 인프로세스 전송으로 폴백하며, 이후 데몬 단계를 위해 예약되어 있습니다. | `hook` |
 
 ---

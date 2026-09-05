@@ -225,7 +225,7 @@ Uruchom `oma doctor --profile`, aby potwierdzić rozwiązanie konfiguracji, a na
 Skieruj dowolnego agenta przez opencode za pomocą nadpisania `-m opencode`:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Uruchamia to `opencode run --agent pm --dir <workspace> "<prompt>"`. Prompt jest **końcowym argumentem pozycyjnym** — flaga `-p` w opencode oznacza `--password`, a nie prompt.
@@ -270,15 +270,15 @@ Każdy skierowany agent uruchamia `opencode run -m opencode-go/deepseek-v4-flash
 Katalog opencode jest objęty bramkami subskrypcji i logowania, dlatego oma **nie** zaszywa slugów modeli opencode na stałe. Zwaliduj slug względem swojego zainstalowanego katalogu:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` zgłasza `accepted`, gdy slug jest wymieniony przez `opencode models`, `rejected`, gdy go nie ma, oraz `auth_required`, gdy dostawca wymaga logowania lub subskrypcji.
+`oma model probe` zgłasza `accepted`, gdy slug jest wymieniony przez `opencode models`, `rejected`, gdy go nie ma, oraz `auth_required`, gdy dostawca wymaga logowania lub subskrypcji.
 
 ### Uwierzytelnianie i wygenerowane pliki
 
-- **Uwierzytelnianie:** `opencode auth login` zapisuje poświadczenia w `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` raportują uwierzytelnianie opencode obok pozostałych CLI na poziomie vendora (uwierzytelniony, gdy dowolny dostawca ma poświadczenia). Z kolei `oma doctor --profile` rozróżnia dostawców: każdy wiersz jest sprawdzany według prefiksu dostawcy z zarejestrowanego `cli_model`, więc model z `cli_model: zai-coding-plan/glm-5.3` jest sprawdzany względem poświadczeń `zai-coding-plan`. Wiersz, którego model nie ma zarejestrowanego `cli_model` w formie `provider/model`, raportuje `? unknown` zamiast jednoznacznego błędu uwierzytelniania.
+- **Uwierzytelnianie:** `opencode auth login` zapisuje poświadczenia w `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` raportują uwierzytelnianie opencode obok pozostałych CLI na poziomie vendora (uwierzytelniony, gdy dowolny dostawca ma poświadczenia). Z kolei `oma doctor --profile` rozróżnia dostawców: każdy wiersz jest sprawdzany według prefiksu dostawcy z zarejestrowanego `cli_model`, więc model z `cli_model: zai-coding-plan/glm-5.3` jest sprawdzany względem poświadczeń `zai-coding-plan`. Wiersz, którego model nie ma zarejestrowanego `cli_model` w formie `provider/model`, raportuje `? unknown` zamiast jednoznacznego błędu uwierzytelniania.
 - **Wygenerowane pliki:** `oma link` (lub `oma link opencode`) zapisuje jedną personę `.opencode/agents/<id>.md` na agenta oraz mostek `.opencode/plugins/oma/`. Są one generowane z SSOT `.agents/` — nie edytuj ich bezpośrednio; uruchom ponownie `oma link`, aby je odtworzyć.
 
 > **Uwaga o workflow trwałych:** zdarzenie `session.idle` w opencode (jego najbliższy odpowiednik hooka `Stop` z Claude) służy wyłącznie do powiadamiania i nie może zablokować zakończenia sesji. Workflow trwałe (orchestrate / work / ultrawork) działają zatem pod opencode z **osłabioną semantyką Stop** — wzmocnienie workflow następuje przy kolejnej wiadomości, a nie poprzez utrzymywanie otwartej sesji.

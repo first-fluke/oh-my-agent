@@ -58,21 +58,22 @@ oma update [-f | --force] [--ci]
 ### dashboard
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 Obserwuje `.serena/memories/`. Renderuje UI z rysowaniem ramek. `Ctrl+C` aby wyjść. Nadpisz katalog: `MEMORIES_DIR=...`.
 
-### dashboard:web
+### dashboard web
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 Serwer HTTP na `http://localhost:9847` z WebSocket na żywo. Port: `DASHBOARD_PORT`. Katalog: `MEMORIES_DIR`.
 
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 Metryki: sesje, użyte umiejętności, wykonane zadania, czas sesji, zmienione pliki.
 
@@ -92,10 +93,10 @@ Opcje: `--interactive` (ręczne wpisy), `--compare` (porównanie z poprzednim ok
 
 ## Zarządzanie agentami
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | Argument | Wymagany | Opis |
@@ -104,35 +105,35 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 | `prompt` | Tak | Opis zadania. Tekst inline lub ścieżka do pliku. |
 | `session-id` | Tak | Identyfikator sesji (format: `session-YYYYMMDD-HHMMSS`) |
 
-Opcje: `-m, --model <vendor>` (nadpisanie dostawcy CLI: `antigravity`, `claude`, `codex`, `qwen`), `-w, --workspace` (katalog roboczy, auto-wykrywany z konfiguracji monorepo).
+Opcje: `--vendor <vendor>` (nadpisanie dostawcy CLI: `antigravity`, `claude`, `codex`, `qwen`), `-w, --workspace` (katalog roboczy, auto-wykrywany z konfiguracji monorepo).
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 Statusy: `completed`, `running`, `crashed`. Wyjście: `{agent-id}:{status}` per linia.
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 Tryb inline: `agent:task[:workspace]`. Tryb YAML: plik z kluczem `tasks`. Tryb `--no-wait`: uruchom i powróć natychmiast.
 
-### agent:review
+### agent review
 
 Uruchamia przegląd kodu przy użyciu zewnętrznego CLI AI (codex, claude lub qwen).
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 | Flaga | Opis |
 |:-----|:-----------|
-| `-m, --model <vendor>` | Dostawca CLI: `antigravity`, `codex`, `claude`, `qwen`. Domyślnie rozwiązany dostawca z konfiguracji. |
+| `--vendor <vendor>` | Dostawca CLI: `antigravity`, `codex`, `claude`, `qwen`. Domyślnie rozwiązany dostawca z konfiguracji. |
 | `-p, --prompt <prompt>` | Niestandardowy prompt przeglądu. Jeśli pominięty, używany jest domyślny prompt przeglądu kodu. |
 | `-w, --workspace <path>` | Ścieżka do przeglądu. Domyślnie bieżący katalog roboczy. |
 | `--no-uncommitted` | Pomiń przegląd niezacommitowanych zmian. Gdy ustawione, przeglądane są tylko zmiany zacommitowane w sesji. |
@@ -147,32 +148,32 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Przykłady:**
 ```bash
 # Przegląd niezacommitowanych zmian z domyślnym dostawcą
-oma agent:review
+oma agent review
 
 # Przegląd z codex (używa natywnego polecenia codex review)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # Przegląd z claude z niestandardowym promptem
-oma agent:review -m claude -p "Skup się na podatnościach bezpieczeństwa i walidacji danych wejściowych"
+oma agent review --vendor claude -p "Skup się na podatnościach bezpieczeństwa i walidacji danych wejściowych"
 
 # Przegląd konkretnej ścieżki
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # Przegląd tylko zacommitowanych zmian (pomiń drzewo robocze)
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # Przegląd zacommitowanych zmian w określonej przestrzeni roboczej z gemini
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
 ## Zarządzanie pamięcią
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 Tworzy strukturę `.serena/memories/` z początkowymi plikami schematu.
@@ -181,10 +182,10 @@ Tworzy strukturę `.serena/memories/` z początkowymi plikami schematu.
 
 ## Integracja i narzędzia
 
-### auth:status
+### auth status
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 **Sprawdza:** GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
 
@@ -245,8 +246,8 @@ oma version
 | Zmienna | Opis | Używane przez |
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | Ustaw na `json` aby wymusić wyjście JSON | Wszystkie polecenia z `--json` |
-| `DASHBOARD_PORT` | Port panelu webowego | `dashboard:web` |
-| `MEMORIES_DIR` | Nadpisanie ścieżki katalogu pamięci | `dashboard`, `dashboard:web` |
+| `DASHBOARD_PORT` | Port panelu webowego | `dashboard web` |
+| `MEMORIES_DIR` | Nadpisanie ścieżki katalogu pamięci | `dashboard`, `dashboard web` |
 
 ---
 

@@ -25,17 +25,17 @@ Nhiều lệnh hỗ trợ đầu ra machine-readable cho pipeline CI/CD và tự
 ### 1. Flag --json
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-Flag `--json` là cách đơn giản nhất để lấy đầu ra JSON. Có sẵn trên: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+Flag `--json` là cách đơn giản nhất để lấy đầu ra JSON. Có sẵn trên: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. Flag --output
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -47,7 +47,7 @@ Flag `--output` chấp nhận `text` hoặc `json`. Cung cấp cùng chức năn
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # xuất JSON
+oma stats get    # xuất JSON
 oma doctor   # xuất JSON
 oma retro    # xuất JSON
 ```
@@ -64,8 +64,8 @@ oma retro    # xuất JSON
 | `stats` | Có | Có | Đối tượng số liệu đầy đủ |
 | `retro` | Có | Có | Snapshot với số liệu, tác giả, loại commit |
 | `cleanup` | Có | Có | Danh sách item đã dọn |
-| `auth:status` | Có | Có | Trạng thái xác thực theo CLI |
-| `memory:init` | Có | Có | Kết quả khởi tạo |
+| `auth status` | Có | Có | Trạng thái xác thực theo CLI |
+| `memory init` | Có | Có | Kết quả khởi tạo |
 | `verify` | Có | Có | Kết quả xác minh theo từng kiểm tra |
 | `visualize` | Có | Có | Đồ thị phụ thuộc dạng JSON |
 | `describe` | Luôn JSON | N/A | Luôn xuất JSON (lệnh introspection) |
@@ -124,7 +124,8 @@ oma update [-f | --force] [--ci]
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 | Flag | Mô tả | Mặc định |
@@ -164,15 +165,15 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. File log mồ côi: `/tmp/subagent-*.log` khớp PID chết.
 3. Thư mục Gemini Antigravity: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/` — tích lũy trạng thái theo thời gian và có thể phình to.
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | Flag | Viết tắt | Mô tả | Mặc định |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | Ghi đè vendor CLI. Phải là một trong: `antigravity`, `claude`, `codex`, `qwen`. Ghi đè tất cả phân giải vendor từ config. | Phân giải từ config |
+| `--vendor` | — | Ghi đè vendor CLI. Phải là một trong: `antigravity`, `claude`, `codex`, `qwen`. Ghi đè tất cả phân giải vendor từ config. | Phân giải từ config |
 | `--workspace` | `-w` | Thư mục làm việc cho agent. Nếu bỏ qua hoặc đặt thành `.`, CLI tự phát hiện workspace từ file cấu hình monorepo (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Tự phát hiện hoặc `.` |
 
 **Xác thực:**
@@ -192,10 +193,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 Các mặc định này có thể ghi đè trong `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 | Flag | Viết tắt | Mô tả | Mặc định |
@@ -207,15 +208,15 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 2. Nếu file PID tồn tại tại `/tmp/subagent-{session-id}-{agent}.pid`: kiểm tra PID còn sống. Báo `running` nếu sống, `crashed` nếu chết.
 3. Nếu không tìm thấy file nào: báo `crashed`.
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Viết tắt | Mô tả | Mặc định |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | Ghi đè vendor CLI áp dụng cho tất cả agent được spawn. | Phân giải theo agent từ config |
+| `--vendor` | — | Ghi đè vendor CLI áp dụng cho tất cả agent được spawn. | Phân giải theo agent từ config |
 | `--inline` | `-i` | Diễn giải đối số task dạng chuỗi `agent:task[:workspace]` thay vì đường dẫn file. | `false` |
 | `--no-wait` | | Chế độ nền. Khởi động tất cả agent và trả về ngay không đợi hoàn thành. Danh sách PID và log được lưu vào `.agents/results/parallel-{timestamp}/`. | `false` (đợi hoàn thành) |
 
@@ -301,7 +302,7 @@ oma image <subcommand> [...]
 | `--count <n>` | `-n` | Số lượng ảnh, 1..5. | `1` |
 | `--out <dir>` | | Thư mục đầu ra. Phải nằm trong `$PWD` trừ khi đặt `--allow-external-out`. | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | Cho phép `--out` nằm ngoài `$PWD`. | `false` |
-| `--model <name>` | | Ghi đè model theo vendor (ví dụ: `gpt-image-2`, `flux`, `imagen-4`). | mặc định của vendor |
+| `--vendor <name>` | | Ghi đè model theo vendor (ví dụ: `gpt-image-2`, `flux`, `imagen-4`). | mặc định của vendor |
 | `--strategy <list>` | | Thứ tự fallback của Gemini, phân tách bằng dấu phẩy gồm `mcp`, `stream`, `api`. | mặc định của vendor |
 | `--timeout <seconds>` | | Timeout cho từng ảnh. | mặc định của vendor |
 | `--reference <path>` | `-r` | Ảnh tham chiếu để chuyển style/subject. Có thể lặp (`-r a.png -r b.png`) hoặc phân tách bằng dấu phẩy. Được kiểm tra kích thước (≤5MB), định dạng (PNG/JPEG/GIF/WebP qua magic bytes) và số lượng (≤10). Hỗ trợ trên `codex` (truyền `-i` cho `codex exec`) và `gemini` (inline base64 `inlineData`). Bị từ chối với exit 4 trên `pollinations`. | |
@@ -312,10 +313,10 @@ oma image <subcommand> [...]
 
 `image doctor` và `image list-vendors` chỉ chấp nhận `--format <text|json>`.
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 | Flag | Mô tả | Mặc định |
@@ -351,18 +352,18 @@ oma doctor --json | jq '.healthy'
 ```bash
 # Thu thập số liệu dạng JSON và pipe đến hệ thống giám sát
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### Thực thi agent hàng loạt với giám sát trạng thái
 
 ```bash
 # Khởi động agent ở nền
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Kiểm tra trạng thái định kỳ
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### Dọn dẹp trong CI sau test
@@ -403,10 +404,10 @@ echo "=== Kiểm tra sức khỏe oh-my-agent ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
 
 # Kiểm tra trạng thái xác thực
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
 
 # Kiểm tra số liệu
-oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 
 echo "=== Hoàn tất ==="
 ```
@@ -418,5 +419,5 @@ echo "=== Hoàn tất ==="
 oma describe | jq '.command.subcommands[] | {name, description}'
 
 # Lấy chi tiết về lệnh cụ thể
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

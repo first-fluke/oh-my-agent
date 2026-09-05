@@ -204,7 +204,7 @@ To extend: add `resources/<name>.md` and append a row above.
 
 1. Follow `resources/execution-protocol.md` step by step.
 2. Before submitting, run `resources/checklist.md`.
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 - Project frontend rules (MUST load before review/implementation): `../../rules/frontend.md`

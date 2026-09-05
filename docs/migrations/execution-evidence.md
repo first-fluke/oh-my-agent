@@ -4,17 +4,17 @@ OMA now separates process termination from task completion. A successful process
 
 ## Agent results
 
-`oma agent:spawn` and `oma agent:parallel` create unique runs, inject the result contract, and finalize results when the child exits. For planned work, pass `--task-id T1` to `agent:spawn`. The result record identifies the session, task, run, vendor, workspace, changed files, unresolved items, checks, and artifact hashes. `agent:status` prefers these records over legacy Markdown; a completed record whose code/artifacts changed is reported as `stale`.
+`oma agent spawn` and `oma agent parallel` create unique runs, inject the result contract, and finalize results when the child exits. For planned work, pass `--task-id T1` to `agent spawn`. The result record identifies the session, task, run, vendor, workspace, changed files, unresolved items, checks, and artifact hashes. `agent status` prefers these records over legacy Markdown; a completed record whose code/artifacts changed is reported as `stale`.
 
 Native agents register the same evidence explicitly:
 
 ```sh
 # First define T1 acceptance_criteria and required_checks in the session plan.
-oma agent:begin qa-reviewer T1 session-1
-oma agent:context qa-reviewer --difficulty Medium
+oma agent begin qa-reviewer T1 session-1
+oma agent context qa-reviewer --difficulty Medium
 # Use runId returned by agent:begin:
-oma agent:verify RUN_ID --required
-oma agent:finish RUN_ID .agents/state/claim.json
+oma agent verify RUN_ID --required
+oma agent finish RUN_ID .agents/state/claim.json
 ```
 
 Commands following `--` are executable/argument arrays, not shell expressions. `--root` locates the project storing receipts; individual checks default to the run workspace, while declared checks use project-relative `cwd`. Checks run serially per run. Only declare build commands when a build is authorized.
@@ -43,7 +43,7 @@ Receipts are local under `.agents/state/agent-runs/`. Hashes cover HEAD, tracked
 Existing Markdown reports remain readable as `legacy-*` or `unverified`, but do not prove completion. Reverify an old result instead of renaming or touching it. Supply a session and iteration start:
 
 ```sh
-oma ralph:verify --json --session session-1 --newer-than 2026-09-05T00:00:00Z
+oma ralph verify --json --session-id session-1 --newer-than 2026-09-05T00:00:00Z
 ```
 
 The plan must contain nonempty tasks with unique IDs and descriptions, titles, or scopes. QA and REFINE runs must match those task IDs and the selected session. Their receipts need current successful checks and hashes of the report, plan, and phase log. The latest attempt for a task supersedes earlier attempts, including when the latest one failed. A documented `REFINE skipped: <specific reason>` may satisfy REFINE after the QA receipt binds that phase log.
@@ -93,10 +93,10 @@ Replace the example command with the repository's actual check. OMA matches exec
 
 Spawn and parallel dispatch load actual skill/resource contents selected by graph reachability. Approximate resource budgets are 1,500/4,000/8,000 tokens for Simple/Medium/Complex tasks. Deferred reference paths remain visible for on-demand reading. Common policy and vendor transport are injected separately. Unknown agents do not receive an unrelated full skill collection.
 
-Native dispatch can retrieve the same selected contents through `oma agent:context AGENT_ID --difficulty Medium`; this reports an error when the agent has no matching context.
+Native dispatch can retrieve the same selected contents through `oma agent context AGENT_ID --difficulty Medium`; this reports an error when the agent has no matching context.
 
 ```sh
-oma agent:verify RUN_ID --affected .agents/skills/oma-backend/SKILL.md
+oma agent verify RUN_ID --affected .agents/skills/oma-backend/SKILL.md
 ```
 
 This executes graph-selected tests and records outcomes. Unmatched paths and empty selections fail explicitly. Selected commands satisfy acceptance criteria only when matching the pinned task checks. Use `--required` for the entire declared check set.
@@ -104,8 +104,8 @@ This executes graph-selected tests and records outcomes. Unmatched paths and emp
 ## Interrupted-session recovery
 
 ```sh
-oma agent:resume session-1 --dry-run
-oma agent:resume session-1 --max-attempts 3
+oma agent resume session-1 --dry-run
+oma agent resume session-1 --max-attempts 3
 ```
 
 Recovery reuses current acceptance evidence and orders retries by `dependencies`. It retries stale/failed/missing tasks only when `retry_policy` is `safe`; the default is `manual`. A replayable `task` prompt and `agent` can come from the plan or saved dispatch. Pending tasks can start even when interruption preceded their first dispatch.

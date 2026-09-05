@@ -70,7 +70,7 @@ export interface ScoreSkillBodyOptions {
  * Score an arbitrary SKILL.md body string on a task set and return its
  * {@link SkillUtilityReport} (including `utilityLift`).
  *
- * This is the primitive that `oma skills opt` uses to score candidate bodies
+ * This is the primitive that `oma skill optimize` uses to score candidate bodies
  * without writing them to disk.
  *
  * - **Mock mode** (default): replays recorded rollouts from `taskDir/_rollouts/`;
@@ -129,7 +129,7 @@ export async function scoreSkillBody(
         : "n/a";
     if (isolation !== "enforced" && isolation !== "n/a") {
       console.warn(
-        `[oma skills eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
+        `[oma skill eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
       );
     }
     const resolvedDispatchFn =
@@ -164,7 +164,7 @@ export async function scoreSkillBody(
   // Validated against `body` — the candidate being scored. A recording made
   // against a different body cannot stand in for this one, so it is discarded
   // and the candidate reports as uncovered rather than borrowing another body's
-  // score. In practice this means `oma skills opt --mock` can only score the
+  // score. In practice this means `oma skill optimize --mock` can only score the
   // exact body its rollouts were recorded from; scoring fresh candidates needs
   // `--live`.
   const rollouts =

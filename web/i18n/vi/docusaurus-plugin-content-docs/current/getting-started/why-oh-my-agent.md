@@ -39,7 +39,7 @@ Verification nặng (hơn ba mươi giây) được cache theo đường dẫn f
 
 ### Quota cap chặn trước khi tổn hại
 
-Mỗi lần gọi `oma agent:spawn` ghi lại ước tính token của spawn đó vào `.serena/memories/session-cost-{sessionId}.md`. Trước spawn tiếp theo, `checkCap` tham vấn quota cap đã cấu hình và từ chối khởi chạy nếu bất kỳ chiều nào vượt quá. Ba chiều được áp dụng: tổng token, tổng số spawn, ngân sách token theo vendor.
+Mỗi lần gọi `oma agent spawn` ghi lại ước tính token của spawn đó vào `.serena/memories/session-cost-{sessionId}.md`. Trước spawn tiếp theo, `checkCap` tham vấn quota cap đã cấu hình và từ chối khởi chạy nếu bất kỳ chiều nào vượt quá. Ba chiều được áp dụng: tổng token, tổng số spawn, ngân sách token theo vendor.
 
 Đây là sự khác biệt giữa biết sau khi đã tiêu bốn mươi nghìn đô và được báo ở spawn thứ mười lăm rằng còn một spawn trong ngân sách. Xem `cli/io/session-cost.ts` và cấu hình dưới `session.quota_cap` trong `.agents/oma-config.yaml`.
 

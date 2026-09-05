@@ -125,12 +125,12 @@ npm install --global oh-my-agent
 
 ```bash
 oma doctor              # 상태 확인
-oma dashboard           # 터미널 모니터링
-oma dashboard:web       # 웹 대시보드 http://localhost:9847
-oma agent:spawn         # 터미널에서 에이전트 스폰
-oma agent:parallel      # 병렬 에이전트 실행
-oma agent:status        # 에이전트 상태 확인
-oma stats               # 세션 통계
+oma dashboard terminal           # 터미널 모니터링
+oma dashboard web       # 웹 대시보드 http://localhost:9847
+oma agent spawn         # 터미널에서 에이전트 스폰
+oma agent parallel      # 병렬 에이전트 실행
+oma agent status        # 에이전트 상태 확인
+oma stats get               # 세션 통계
 oma retro               # 회고 분석
 oma cleanup             # 세션 아티팩트 정리
 oma update              # oh-my-agent 업데이트
@@ -138,8 +138,8 @@ oma verify              # 에이전트 출력 검증
 oma visualize           # 의존성 시각화
 oma describe            # 프로젝트 구조 설명
 oma bridge              # Antigravity용 SSE-to-stdio 브릿지
-oma memory:init         # 메모리 프로바이더 초기화
-oma auth:status         # CLI 인증 상태 확인
+oma memory init         # 메모리 프로바이더 초기화
+oma auth status         # CLI 인증 상태 확인
 oma star                # 리포지토리 스타
 ```
 

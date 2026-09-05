@@ -124,12 +124,12 @@ Isso instala o comando `oma` globalmente, dando acesso a todos os comandos CLI d
 
 ```bash
 oma doctor              # Verificação de saúde
-oma dashboard           # Monitoramento no terminal
-oma dashboard:web       # Dashboard web em http://localhost:9847
-oma agent:spawn         # Executar agentes pelo terminal
-oma agent:parallel      # Execução paralela de agentes
-oma agent:status        # Verificar status do agente
-oma stats               # Estatísticas de sessão
+oma dashboard terminal           # Monitoramento no terminal
+oma dashboard web       # Dashboard web em http://localhost:9847
+oma agent spawn         # Executar agentes pelo terminal
+oma agent parallel      # Execução paralela de agentes
+oma agent status        # Verificar status do agente
+oma stats get               # Estatísticas de sessão
 oma retro               # Análise retrospectiva
 oma cleanup             # Limpar artefatos de sessão
 oma update              # Atualizar oh-my-agent
@@ -137,8 +137,8 @@ oma verify              # Verificar saída de agente
 oma visualize           # Visualização de dependências
 oma describe            # Descrever estrutura do projeto
 oma bridge              # Bridge SSE-para-stdio para Antigravity
-oma memory:init         # Inicializar provedor de memória
-oma auth:status         # Verificar status de autenticação CLI
+oma memory init         # Inicializar provedor de memória
+oma auth status         # Verificar status de autenticação CLI
 oma star                # Dar estrela no repositório
 ```
 

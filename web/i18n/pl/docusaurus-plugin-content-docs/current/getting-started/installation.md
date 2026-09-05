@@ -124,12 +124,12 @@ To instaluje polecenie `oma` globalnie, dając dostęp do wszystkich poleceń CL
 
 ```bash
 oma doctor              # Kontrola zdrowia
-oma dashboard           # Monitoring w terminalu
-oma dashboard:web       # Panel webowy pod http://localhost:9847
-oma agent:spawn         # Uruchamianie agentów z terminala
-oma agent:parallel      # Równoległe wykonywanie agentów
-oma agent:status        # Sprawdzanie stanu agenta
-oma stats               # Statystyki sesji
+oma dashboard terminal           # Monitoring w terminalu
+oma dashboard web       # Panel webowy pod http://localhost:9847
+oma agent spawn         # Uruchamianie agentów z terminala
+oma agent parallel      # Równoległe wykonywanie agentów
+oma agent status        # Sprawdzanie stanu agenta
+oma stats get               # Statystyki sesji
 oma retro               # Analiza retrospektywna
 oma cleanup             # Czyszczenie artefaktów sesji
 oma update              # Aktualizacja oh-my-agent
@@ -137,8 +137,8 @@ oma verify              # Weryfikacja wyjścia agenta
 oma visualize           # Wizualizacja zależności
 oma describe            # Opis struktury projektu
 oma bridge              # Most SSE-to-stdio dla Antigravity
-oma memory:init         # Inicjalizacja dostawcy pamięci
-oma auth:status         # Sprawdzanie stanu uwierzytelniania CLI
+oma memory init         # Inicjalizacja dostawcy pamięci
+oma auth status         # Sprawdzanie stanu uwierzytelniania CLI
 oma star                # Dodanie gwiazdki do repozytorium
 ```
 

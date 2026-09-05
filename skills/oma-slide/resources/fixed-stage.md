@@ -9,7 +9,7 @@ All slides are authored at exactly **1920 × 1080 px**. This is non-negotiable:
 
 - The validator (`oma slide validate`) renders at 1920×1080 and checks geometry at that size;
   it reports px→pt at 0.75 (1920×1080 px → 1440×810 pt at 96 dpi / 72 pt-per-inch).
-- The exporter (`oma slide pdf|png`) captures at 1920×1080 before any post-processing.
+- The exporter (`oma slide export pdf|png`) captures at 1920×1080 before any post-processing.
 - PPTX export places each rasterized slide full-bleed on a LAYOUT_WIDE canvas
   (13.333 in × 7.5 in = 960×540 pt) — pixel authoring only, no pt in HTML.
 - Do **not** author in percentages, `vw/vh`, or responsive units that reflow the layout.
@@ -49,7 +49,7 @@ the background color of `.deck-viewport` in a theme without breaking the scale m
 
 ## 3. Embedding into a Deck
 
-Paste or link the two shared assets into every deck's `<head>`. The `oma slide new` command
+Paste or link the two shared assets into every deck's `<head>`. The `oma slide create` command
 copies them into the workdir automatically; `oma slide bundle` inlines them into the single-file
 output.
 
@@ -216,7 +216,7 @@ Or equivalently, use the `.motion-safe` utility class provided by `viewport-base
 
 ## 9. Print / Save-as-PDF
 
-Trigger with `Ctrl+P` / `Cmd+P` in the browser, or use `oma slide pdf --mode print`.
+Trigger with `Ctrl+P` / `Cmd+P` in the browser, or use `oma slide export pdf --mode print`.
 
 `deck-stage.js` removes the CSS transform before the print layout renders, so the browser
 sees the true 1920×1080 px layout. `viewport-base.css` `@media print` rules:

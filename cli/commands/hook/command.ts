@@ -70,7 +70,7 @@ async function readAllStdin(): Promise<string> {
 export function registerHook(program: Command): void {
   // ---------------------------------------------------------------------------
   // oma hook — canonical ABI for vendor hook dispatch (design 019).
-  // Each vendor hook event invokes: oma hook --vendor <v> --event <e> [--matcher <m>]
+  // Each vendor hook event invokes: oma hook run --vendor <v> --event <e> [--matcher <m>]
   // stdin = vendor raw payload; stdout = vendor dialect or empty; exit always 0.
   // ---------------------------------------------------------------------------
   program
