@@ -4,7 +4,7 @@
 // AGPL-3.0-or-later, the oma CLI is MIT. The CLI therefore NEVER imports
 // Strudel and never ships it — it locates `resources/strudel/` on disk, whose
 // deps are installed on demand, and spawns `render.mjs` as a SUBPROCESS. Same
-// boundary `mpt-project.ts` / `playwright-project.ts` use.
+// boundary `mpt-project.ts` uses.
 //
 // Resolution order mirrors `mpt-project.ts`:
 //   1. OMA_VIDEO_STRUDEL_DIR      — explicit override wins

@@ -36,7 +36,7 @@ providers:
   caption:
     order: [oma-captions]
   capture:
-    order: [playwright-web, cap]
+    order: [cap]
   music:
     order: [strudel]
   compositor:

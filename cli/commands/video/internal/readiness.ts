@@ -7,7 +7,6 @@ import { http } from "@cli/io/http";
 import { readManagedState } from "../../../platform/managed-skill.js";
 import { binaryAvailable, resolveOmaInvocation, runCapture } from "./exec.js";
 import { getMptProjectStatus } from "./mpt-project.js";
-import { getPlaywrightStatus } from "./playwright-project.js";
 import { describeToolchain, skillsCacheRoot } from "./remotion-workspace.js";
 import { getStrudelProjectStatus } from "./strudel-project.js";
 
@@ -249,41 +248,6 @@ export function checkMptProject(): ReadinessCheck {
 }
 
 /**
- * Playwright — required by the live web-capture branch of demo mode
- * (`--source web`). Real only when a Playwright install is resolvable (reuse or
- * cache) with a chromium browser; otherwise the guided protocol is the fallback
- * (key-optional). `oma video doctor --install-playwright` provisions the cache.
- */
-export function checkPlaywright(): ReadinessCheck {
-  const status = getPlaywrightStatus();
-  if (!status.dir) {
-    return {
-      name: "playwright",
-      ok: false,
-      detail: "not found (guided capture available)",
-      remediation:
-        "Run `oma video doctor --install-playwright` (npm i playwright + chromium), or set OMA_VIDEO_PLAYWRIGHT_DIR.",
-    };
-  }
-  const ready = status.browserReady;
-  const where = status.source === "reuse" ? "reuse" : "cache";
-  let detail: string;
-  if (ready) {
-    detail = `ready (${where}: ${status.dir}${status.version ? `, v${status.version}` : ""})`;
-  } else {
-    detail = `${where} install found, chromium missing (${status.dir})`;
-  }
-  return {
-    name: "playwright",
-    ok: ready,
-    detail,
-    remediation: ready
-      ? undefined
-      : "Run `oma video doctor --install-playwright` to download the chromium browser.",
-  };
-}
-
-/**
  * Strudel BGM renderer — optional; a missing install just means no music track.
  * Its deps are AGPL-3.0-or-later, so they are installed only on explicit
  * request (`oma video doctor --install-strudel`) and never bundled with the CLI.
@@ -338,7 +302,6 @@ export async function runReadinessChecks(): Promise<ReadinessCheck[]> {
     checkRemotionSkills(),
     checkPretendardFont(),
     checkMptProject(),
-    checkPlaywright(),
     checkStrudel(),
     voicebox,
     omaImage,

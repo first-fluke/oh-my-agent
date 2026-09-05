@@ -251,14 +251,15 @@ agents:
 # three processes per agent session (`npm exec` → server → telemetry watchdog),
 # and every concurrent session spawns its own set.
 #
-# Opt in per project. Fresh installs wire up no browser at all.
+# Fresh installs offer multiple browser MCPs with Aside selected by default.
+# Use `oma update mcp` to change the selection; missing Aside is installed automatically.
 #
 # Leaving the key unset means "don't touch what's already configured" — `oma
 # update` only rewrites the browser entries when `devtools_browsers` is present,
 # so an existing setup is never silently stripped. Set it to `[]` to remove them.
 #
 # mcp:
-#   devtools_browsers: [chrome]     # chrome | firefox | both | []
+#   devtools_browsers: [aside]      # aside | chrome | firefox; multiple or []
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 9. Documentation drift detection (oma-docs)
@@ -367,7 +368,7 @@ scm:
 #     voice:      { order: [oma-voice] }
 #     visual:     { order: [oma-image, pexels, pixelle] }
 #     caption:    { order: [oma-captions] }
-#     capture:    { order: [playwright-web, cap] }
+#     capture:    { order: [cap] }
 #     music:      { order: [strudel] }
 #     compositor: { order: [remotion, mpt] }
 #     # Paid providers turn themselves on when their key is in the environment;

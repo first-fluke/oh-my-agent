@@ -101,10 +101,6 @@ export function registerVideoCommand(program: Command): void {
       "One-time install of the MoneyPrinterTurbo checkout (clone + venv + deps)",
     )
     .option(
-      "--install-playwright",
-      "One-time install of Playwright (npm i playwright + chromium) for web capture",
-    )
-    .option(
       "--install-strudel",
       "One-time install of the Strudel BGM renderer (AGPL-3.0-or-later deps)",
     )

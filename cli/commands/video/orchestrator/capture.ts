@@ -1,100 +1,21 @@
 import { realpathSync } from "node:fs";
 import { copyFile } from "node:fs/promises";
 import path from "node:path";
-import { CaptureRequiredError, messageForError } from "../errors.js";
+import { CaptureRequiredError } from "../errors.js";
 import { runCapture } from "../internal/exec.js";
 import { collectAssetRecord } from "../manifest.js";
 import { GuidedCaptureProvider } from "../providers/capture.js";
-import { PlaywrightCaptureProvider } from "../providers/capture-playwright.js";
 import { outputFileName } from "../types.js";
-import { dimensionsForAspect } from "./render-spec.js";
 import type { RunContext } from "./run-context.js";
 
-/**
- * Demo-mode capture handling, dispatched on --source.
- *
- * `web` + `--url`: live, human-supervised headed capture via
- * PlaywrightCaptureProvider.record(). Real branch only when Playwright is
- * ready AND a stop mode exists — i.e. an interactive TTY for the ENTER prompt,
- * or a non-interactive `--capture-stop`. When neither holds (no TTY / CI /
- * Playwright unresolvable), we fall back to the guided protocol WITHOUT
- * hanging (key-optional, design §7).
- *
- * `file` (default): the guided provider absolutizes + $PWD-guards +
- * format-validates a --capture path, or surfaces the guided protocol.
- */
+/** Demo recordings use guided capture and validated file ingestion. */
 export async function handleCapture(
   cwd: string,
   ctx: RunContext,
 ): Promise<void> {
-  const n = ctx.normalized;
-  if (n.source === "web" && n.url) {
-    await handleWebCapture(cwd, ctx);
-    return;
-  }
-  await handleFileCapture(n.capture, cwd, ctx);
+  await handleFileCapture(ctx.normalized.capture, cwd, ctx);
 }
 
-/** Live web capture branch with a non-hanging guided fallback. */
-async function handleWebCapture(cwd: string, ctx: RunContext): Promise<void> {
-  const n = ctx.normalized;
-  const web = new PlaywrightCaptureProvider(cwd);
-
-  // Non-interactive stop is provided OR we have an interactive TTY for ENTER.
-  // Without either, the driver's interactive prompt could hang — so we refuse
-  // the real branch and fall back to guided (no hang).
-  const hasStop = Boolean(n.captureStop);
-  const hasTty = Boolean(process.stdin.isTTY) && !n.yes;
-  const availability = await web.available();
-
-  if (!availability.ok || (!hasStop && !hasTty)) {
-    const reason = !availability.ok
-      ? (availability.reason ?? "Playwright unavailable")
-      : "no interactive TTY for the ENTER stop (and no --capture-stop)";
-    ctx.providers.capture = "cap";
-    const guided = new GuidedCaptureProvider(cwd);
-    const guide = await guided.guide({ mode: "demo" });
-    const message = `web capture unavailable (${reason}); ${guide.message}`;
-    ctx.warnings.push(`capture: ${message}`);
-    throw new CaptureRequiredError(message);
-  }
-
-  ctx.providers.capture = web.id;
-  // Live capture is nondeterministic — outside the render-spec determinism
-  // boundary; recorded in the manifest.
-  ctx.nondeterministic = true;
-  const size = captureSizeForAspect(n.aspect, n.device);
-  try {
-    const footage = await web.record({
-      mode: "demo",
-      source: "web",
-      url: n.url,
-      size,
-      readySelector: n.readySelector,
-      showCursor: n.showCursor,
-      timeoutMs: n.captureTimeoutSec ? n.captureTimeoutSec * 1000 : undefined,
-      runDir: ctx.runDir,
-      stop: n.captureStop,
-    });
-    // Confine + record run-dir-relative; mask the URL in the warning. The
-    // footage path may be canonicalized (e.g. /var → /private/var on macOS),
-    // so relativize against the canonicalized run dir for a stable rel path.
-    ctx.capturedFootage = runRelative(ctx.runDir, footage.path);
-    ctx.warnings.push(
-      `capture: recorded live web flow from ${maskUrl(n.url ?? "")} → ${ctx.capturedFootage} (capture is performed by a human; URL/tokens masked)`,
-    );
-  } catch (err) {
-    // Empty/failed capture → guided fallback (key-optional, no hard fail).
-    ctx.providers.capture = "cap";
-    const guided = new GuidedCaptureProvider(cwd);
-    const guide = await guided.guide({ mode: "demo" });
-    const message = `live web capture failed (${messageForError(err)}); ${guide.message}`;
-    ctx.warnings.push(`capture: ${message}`);
-    throw new CaptureRequiredError(message);
-  }
-}
-
-/** File-source capture: ingest a --capture path, or surface the guided protocol. */
 async function handleFileCapture(
   capturePath: string | undefined,
   cwd: string,
@@ -181,35 +102,6 @@ async function probeDurationSec(absPath: string): Promise<number | null> {
   const seconds = Number.parseFloat(res.stdout.trim());
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
-
-/**
- * Capture frame size for live web recording — DERIVED, never a magic constant.
- * A named `--device` profile wins (a small, general set of common device frames,
- * not platform-specific); otherwise the size follows the render dimensions for
- * the chosen aspect. This keeps the recorded frame consistent with the output.
- */
-function captureSizeForAspect(
-  aspect: "9:16" | "16:9" | "1:1",
-  device?: string,
-): { width: number; height: number } {
-  if (device) {
-    const profile = DEVICE_PROFILES[device.toLowerCase()];
-    if (profile) return profile;
-  }
-  return dimensionsForAspect(aspect);
-}
-
-/**
- * A small, general set of device frame sizes (CSS pixels). General-purpose, not
- * tied to any platform/app — just common viewport shapes a flow might target.
- * Unknown names fall through to the aspect-derived size.
- */
-const DEVICE_PROFILES: Record<string, { width: number; height: number }> = {
-  desktop: { width: 1920, height: 1080 },
-  laptop: { width: 1440, height: 900 },
-  tablet: { width: 1024, height: 1366 },
-  mobile: { width: 390, height: 844 },
-};
 
 /** Mask a URL for warnings/manifest: keep scheme+host+path, drop query/hash. */
 export function maskUrl(value: string): string {

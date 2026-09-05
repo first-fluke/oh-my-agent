@@ -121,10 +121,7 @@ export class VideoOrchestrator {
       const scriptPath = path.join(runDir, "script.json");
       await writeValidatedJson("script.json", ScriptSchema, scriptPath, script);
 
-      // Demo mode: dispatch capture on --source. `web` + `url` drives a live
-      // headed web capture (PlaywrightCaptureProvider.record); `file` (default)
-      // validates / ingests a human-performed recording. Both confine + guard
-      // the resulting path (design §5, §7 Tier-1 capture-path safety).
+      // Demo mode validates an existing recording or provides guided capture.
       if (normalized.mode === "demo") {
         await handleCapture(cwd, ctx);
       }

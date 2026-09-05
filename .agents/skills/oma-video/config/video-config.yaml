@@ -29,11 +29,11 @@ providers:
   caption:
     order: [oma-captions]
   # Capture dispatch is currently driven by --source directly
-  # (cli/commands/video/orchestrator/capture.ts): --source web -> playwright-web,
+  # (cli/commands/video/orchestrator/capture.ts): --source web -> guided/cap,
   # --source file -> guided/cap. This key mirrors the code default and is
   # informational only — the orchestrator does not walk it as a chain.
   capture:
-    order: [playwright-web, cap]
+    order: [cap]
   # Strudel renders the BGM bed offline (headless Chrome + OfflineAudioContext).
   # Deps are AGPL and opt-in: `oma video doctor --install-strudel`.
   music:

@@ -14,7 +14,7 @@ otherwise the chain falls through to a key-free default.
 | voice | `[oma-voice]` | Voicebox MCP TTS + STT timing | estimated timing (no wav) | — |
 | visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
 | caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
-| capture | Web capture or Cap (dispatch is by `--source`) | Headed web capture (`--source web`) · Cap CLI trigger | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
+| capture | Cap / guided capture | Human-recorded video ingestion | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
 | compositor | `[remotion, mpt]` | Remotion live render (wired, default) · MPT custom-script | deterministic placeholder mp4 (toolchain missing / render failed) | — |
 
 ## Tier model
@@ -23,7 +23,7 @@ otherwise the chain falls through to a key-free default.
 |:---:|---------|-----------|-------|
 | 1 | CLI-first (subprocess) | Remotion, MPT, oma-image, oma-slide, oma-voice (REST) | deterministic; preferred whenever a CLI can drive the work |
 | 2 | MCP | Voicebox MCP, Pixelle-MCP | localhost MCP; Pixelle off by default, community-MCP consent + key |
-| 3 | Guided (human) | Headed web capture (human drives the flow), Cap | `demo` capture is performed by a human |
+| 3 | Guided (human) | Cap / human-recorded video | `demo` capture is performed by a human |
 
 ## oma-voice (VoiceProvider + timing)
 

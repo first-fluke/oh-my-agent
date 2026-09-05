@@ -311,8 +311,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "fb0c87f1bff0b287a060693e6f287b33b0bb867f3b913ccc018d5e0ecfdcdd27",
-      "size": 29389
+      "sha256": "027c203d4ba18dc68eeae359dc1f9d529690eb596ca6bb825db01cb5ec7cbaa8",
+      "size": 29488
     },
     {
       "path": ".agents/rules/backend.md",
@@ -801,8 +801,8 @@
     },
     {
       "path": ".agents/skills/oma-debug/resources/debugging-checklist.md",
-      "sha256": "56600438058a1f1de6e8fe3a7b79184dc96c34fc5c8d8bcba1c89a50088a3395",
-      "size": 10122
+      "sha256": "c86d94f3b2c58f5ad972ab8676fa0148ed785aef876ee3122a73fbfb60ceebbe",
+      "size": 10488
     },
     {
       "path": ".agents/skills/oma-debug/resources/error-playbook.md",
@@ -1046,8 +1046,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "ce333d92e1267d8b8d20ff344871514bc22dfb8b6d04ca0a6b494085bb383f6d",
-      "size": 7730
+      "sha256": "b48c87b2d842263ae5253768409adccf71850bc61697c459b0dc7b31eb79269b",
+      "size": 8205
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
@@ -1576,8 +1576,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/checklist.md",
-      "sha256": "77f5e5c5a691e6f4d52a547022a5231f06d83f0b454ec0e1349f27f1dd541439",
-      "size": 11216
+      "sha256": "e2b9b409d2e0087c9fddd721f5634e6a7ad531198c1120ef9168c224415b6361",
+      "size": 11554
     },
     {
       "path": ".agents/skills/oma-qa/resources/error-playbook.md",
@@ -1586,8 +1586,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/execution-protocol.md",
-      "sha256": "4d4b5816e94c64d35158103bca4507dd994d6d3c09cb3f30de8de07c94d1d0d6",
-      "size": 8223
+      "sha256": "5032d82749a249a6a829b87c4fd99dc391ebe84cbba3820a47df5b9053dfe9ed",
+      "size": 9036
     },
     {
       "path": ".agents/skills/oma-qa/resources/iso-quality.md",
@@ -1886,13 +1886,13 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "1b62d9548d96bcef13e543a914ff4c7bea0e943167c11ee7bcacabb1c68b9e6e",
-      "size": 28238
+      "sha256": "f7c8d67f3d81c666d92d16933e2ea1e97fa226ee68a32f9ba4db3a674427ce39",
+      "size": 26648
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
-      "sha256": "ab1eb53dc44717f76cf72ec86ac89ee438c6375c17c16716a81c7e3da6e5fca2",
-      "size": 1895
+      "sha256": "8d4533c33ae03f46efb3ed6f04e002dc05e908ea0152a0955ce0f04c470ef84c",
+      "size": 1875
     },
     {
       "path": ".agents/skills/oma-video/resources/checklist.md",
@@ -1908,11 +1908,6 @@
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
       "sha256": "e02735d100ab2222e23c9a051164cb5129abaae5ee29c2999939496379970828",
       "size": 12049
-    },
-    {
-      "path": ".agents/skills/oma-video/resources/playwright/record.mjs",
-      "sha256": "86fd50c93aa7f08648fe606751204e296e6bd05a5e5e71356ffbc3ac1029ed51",
-      "size": 17728
     },
     {
       "path": ".agents/skills/oma-video/resources/prompt-tips.md",
@@ -1946,8 +1941,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/strudel/package.json",
-      "sha256": "95609e33d153f5bf37e47b8d825f759bad1c2d849baeae2676b5852ab3c32bd2",
-      "size": 477
+      "sha256": "33b4fed588442a4b9b51c35c4ed1a6192cca919c4c5315a37dd3db3fdea7a259",
+      "size": 464
     },
     {
       "path": ".agents/skills/oma-video/resources/strudel/page.html",
@@ -1956,13 +1951,13 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/strudel/render.mjs",
-      "sha256": "07eeed318a47be38204c2068374bddbd6acf17521f91557acfd6a2f45c58caf4",
-      "size": 10017
+      "sha256": "2636bcea88e90ac9d53d6e3c0e13c4c4411da2c40c84ba4ac96f17d0b879ac0d",
+      "size": 10004
     },
     {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
-      "sha256": "2883ff1f14622142de112027cb1a4af7a6fefcb08015f8d6f1da805f40098347",
-      "size": 6485
+      "sha256": "e7394b6a60ca763c73031becf2f9867868180c8f660bc6b088c63bb8551e44b8",
+      "size": 6414
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",

@@ -4,7 +4,7 @@
 // oma-video NEVER imports Strudel. @strudel/* is AGPL-3.0-or-later while the
 // oma CLI is MIT, so the TypeScript provider (`providers/music-strudel.ts` +
 // `internal/strudel-project.ts`) only ever LOCATES this project on disk and
-// spawns *this* script. Same boundary the Remotion / Playwright projects use.
+// spawns *this* script. Same boundary the Remotion projects use.
 //
 // MECHANISM: `@strudel/webaudio.renderPatternAudio()` renders a pattern through
 // an OfflineAudioContext — faster than realtime, no audio device, no autoplay

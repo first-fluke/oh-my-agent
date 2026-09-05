@@ -2,7 +2,6 @@ import type { VideoConfig } from "./config.js";
 import { ProviderUnavailableError } from "./errors.js";
 import { TimedCaptionProvider } from "./providers/caption.js";
 import { GuidedCaptureProvider } from "./providers/capture.js";
-import { PlaywrightCaptureProvider } from "./providers/capture-playwright.js";
 import { RemotionLikeCompositor } from "./providers/compositor.js";
 import { StrudelMusicProvider } from "./providers/music-strudel.js";
 import {
@@ -90,7 +89,6 @@ export function defaultVideoRegistry(
     .register("visual", new PexelsVisualProvider())
     .register("visual", new PixelleVisualProvider())
     .register("caption", new TimedCaptionProvider())
-    .register("capture", new PlaywrightCaptureProvider(options.cwd))
     .register("capture", new GuidedCaptureProvider(options.cwd))
     .register("music", new StrudelMusicProvider())
     .register("compositor", new RemotionLikeCompositor("remotion"))
