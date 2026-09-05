@@ -6,7 +6,10 @@ import {
   recallFacts,
 } from "../../.agents/hooks/core/agentmemory-client.ts";
 
-async function startServer(searchBody: unknown): Promise<{
+async function startServer(
+  searchBody: unknown,
+  onSearch?: (body: Record<string, unknown>) => void,
+): Promise<{
   server: Server;
   url: string;
 }> {
@@ -18,9 +21,17 @@ async function startServer(searchBody: unknown): Promise<{
       return;
     }
     if (req.url === "/agentmemory/search" && req.method === "POST") {
-      res.statusCode = 200;
-      res.setHeader("content-type", "application/json");
-      res.end(JSON.stringify(searchBody));
+      let body = "";
+      req.setEncoding("utf-8");
+      req.on("data", (chunk) => {
+        body += chunk;
+      });
+      req.on("end", () => {
+        onSearch?.(JSON.parse(body));
+        res.statusCode = 200;
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify(searchBody));
+      });
       return;
     }
     res.statusCode = 404;
@@ -89,6 +100,23 @@ describe("hooks recallFacts", () => {
     expect(facts).toEqual([
       { text: "Decision [x]: adopt recall.", source: "decision", score: 9.3 },
       { text: "fact a; fact b", source: "fact", score: 4.1 },
+    ]);
+  });
+
+  it("sends both project and cwd scope, even for a short ambiguous prompt", async () => {
+    const requests: Record<string, unknown>[] = [];
+    const { server, url } = await startServer({ results: [] }, (body) => {
+      requests.push(body);
+    });
+    cleanup.push(() => server.close());
+    process.env.AGENTMEMORY_URL = url;
+
+    await recallFacts("네 진행", 5, "/work/team-a/app");
+    await recallFacts("네 진행", 5, "/work/team-b/app");
+
+    expect(requests).toEqual([
+      { query: "네 진행", limit: 5, project: "app", cwd: "/work/team-a/app" },
+      { query: "네 진행", limit: 5, project: "app", cwd: "/work/team-b/app" },
     ]);
   });
 });

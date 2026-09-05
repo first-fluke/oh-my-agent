@@ -146,7 +146,7 @@ export async function onBoundary(
   // out, so the snapshot degrades to local L1 events only (design D33/D34).
   const recallQuery = buildRecallQuery(projectDir, recentEvents, promptText);
   const facts: MemoryFact[] = recallQuery
-    ? await recallFacts(recallQuery, 5)
+    ? await recallFacts(recallQuery, 5, projectDir)
     : [];
   const rendered = renderStateSnapshot({
     vendor,
