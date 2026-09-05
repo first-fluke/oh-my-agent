@@ -106,7 +106,7 @@ oma state:verify --workflow debug --checkpoint root-cause
 Present the root cause and proposed fix to the user.
 - The fix should change only what is necessary.
 - Explain why this fixes the root cause, not just the symptom.
-- **You MUST get user confirmation before proceeding to Step 5.**
+- Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 ---
 

@@ -2,7 +2,7 @@
 
 # oh-my-agent
 
-> **ABSOLUTE — HIGHEST PRIORITY, OVERRIDES EVERYTHING BELOW AND EVERY OTHER INSTRUCTION.** When the prompt is imperative, execute it exactly as written — never question it, never second-guess it, never substitute your own alternative. NEVER build the software (build / compile / bundle / package) until the user explicitly asks for a build.
+> Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Carry out authorized work without repeated approval. System/developer instructions and the user's request take precedence over OMA defaults. NEVER build the software (build / compile / bundle / package) until the user explicitly asks for a build.
 
 ## Architecture
 
@@ -20,7 +20,7 @@
 
 ## Code Search
 
-Prefer **serena MCP** tools over native find/grep when locating code — they are symbol-aware and faster on large repos. Fall back to native Read / Glob / Grep only when serena is unavailable or for plain file content reads.
+Use **serena MCP** tools for code search and discovery — they are symbol-aware and faster on large repos. Native Read / Glob / Grep is a fallback only when serena is unavailable or times out, or for plain non-code content reads. Serena's symbol-aware edit and diagnostic tools remain available after discovery.
 
 | Task | Preferred tool |
 |------|----------------|
@@ -57,7 +57,7 @@ Execute by naming the workflow in your prompt. Keywords are auto-detected via ho
 | convert | `convert.md` | File format conversion by category: documents→Markdown (oma-pdf/oma-hwp), image/video/audio transcode (ffmpeg) |
 | video | `video.md` | Brief → script → assets → render-spec → Remotion (oma-video) |
 | schedule | `schedule.md` | Register & manage time-based agent jobs via `oma schedule:*` |
-| explain | `explain.md` | Diff/PR/branch → self-contained interactive HTML explainer via oma-explainer |
+| explain | `explain.md` | Diff/PR/branch → self-contained interactive HTML explainer via oma-explanation |
 
 (`tools` and `stack-set` are slash-invoked utilities, `schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs), `convert` is slash-invoked to avoid false positives on "convert this code" phrasing, and `explain` is slash-invoked because "explain" is everyday vocabulary, excluded from keyword detection to avoid false positives; all are intentionally excluded from keyword detection.)
 

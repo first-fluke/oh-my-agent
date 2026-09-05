@@ -1,6 +1,6 @@
 # Oh-My-AG Quality Principles
 
-4 principles to follow across all development phases.
+4 principles to follow across all development phases. Apply [Execution Policy](execution-policy.md) for authorization and verification scope.
 
 ---
 
@@ -11,7 +11,7 @@
 ### Application
 - List assumptions explicitly
 - Present 2+ alternatives for architecture decisions
-- Stop and clarify when confused
+- Resolve uncertainty from existing context; ask when a missing fact changes the outcome
 - Push back on unclear requirements
 
 ### Anti-patterns
@@ -63,7 +63,7 @@
 - Transform tasks into verifiable goals
 - "Add validation" → "Write failing tests, then pass them"
 - "Fix bug" → "Create reproducing test, then pass it"
-- Run automated verification at each checkpoint
+- Run checks relevant to the change; reuse still-current evidence under Execution Policy
 
 ### Anti-patterns
 - Declaring victory without testing

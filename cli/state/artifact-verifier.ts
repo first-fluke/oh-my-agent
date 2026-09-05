@@ -5,6 +5,11 @@ import {
   COORDINATION_STORE_REL,
   LEGACY_SERENA_MEMORY_REL,
 } from "../io/memory.js";
+import {
+  listAgentRuns,
+  resultEvidenceValid,
+  workspaceFingerprint,
+} from "./agent-results.js";
 import { emitEventWithMemory, getActiveSid, readIndex } from "./events.js";
 
 /**
@@ -37,8 +42,9 @@ export interface RalphArtifactVerificationResult {
 
 const REMEDIATION =
   "Treat EXEC as NOT performed: record the violation in session memory, then " +
-  "STOP and ask the user whether to re-run the iteration with ultrawork in " +
-  "full or to explicitly authorize a reduced-scope run (ralph.md Step 1.3).";
+  "repair the missing or stale evidence within the authorized scope and re-run the gate. " +
+  "Ask only if proceeding needs missing information or new authorization. " +
+  "Record runs with agent:begin, checks with agent:verify, and results with agent:finish.";
 
 /**
  * Resolve memoryConfig.basePath from .agents/mcp.json. Default is the
@@ -92,7 +98,7 @@ function listMatches(
 }
 
 // Capture the full line so the verdict carries the recorded reason as evidence.
-const REFINE_SKIP_PATTERN = /^.*(?:refine.*skip|skip.*refine).*$/im;
+const REFINE_SKIP_PATTERN = /^.*REFINE skipped:\s*(\S.{9,})$/im;
 
 function readRefineSkipRecord(memDir: string): string | null {
   try {
@@ -132,7 +138,13 @@ export async function verifyRalphExecArtifacts(args: {
   emitOnFail?: boolean;
 }): Promise<RalphArtifactVerificationResult> {
   const { projectDir } = args;
-  const sid = args.sid ?? null;
+  const allRuns = listAgentRuns(projectDir);
+  const sessions = [...new Set(allRuns.map((run) => run.sessionId))];
+  const sid =
+    args.sid ??
+    getActiveSid(readIndex(projectDir)) ??
+    (sessions.length === 1 ? sessions[0] : null) ??
+    null;
   const newerThan = args.newerThan ?? null;
   let newerThanMs: number | null = null;
   if (newerThan !== null) {
@@ -149,7 +161,7 @@ export async function verifyRalphExecArtifacts(args: {
   const resultsDir = join(projectDir, AGENTS_RESULTS_DIR);
   const sidPattern = sid ? escapeRegExp(sid) : ".+";
 
-  const checks: ArtifactCheck[] = [
+  const checks: [ArtifactCheck, ArtifactCheck, ArtifactCheck, ArtifactCheck] = [
     {
       id: "A1",
       description:
@@ -201,6 +213,84 @@ export async function verifyRalphExecArtifacts(args: {
     },
   ];
 
+  // Presence and timestamps are discovery filters, not proof. Reject empty
+  // phase logs and plans; bind reports to validated task/run identities.
+  const phase = checks[0];
+  phase.matches = phase.matches.filter((name) => {
+    try {
+      return /PLAN[^\n]*(?:done|complete|passed)/i.test(
+        readFileSync(join(memDir, name), "utf8"),
+      );
+    } catch {
+      return false;
+    }
+  });
+  const plan = checks[1];
+  const taskIds = new Set<string>();
+  plan.matches = plan.matches.filter((name) => {
+    try {
+      const data = JSON.parse(readFileSync(join(resultsDir, name), "utf8")) as {
+        tasks?: Array<{
+          id?: string;
+          description?: string;
+          title?: string;
+          scope?: string[];
+        }>;
+      };
+      if (!Array.isArray(data.tasks) || data.tasks.length === 0) return false;
+      const ids = data.tasks.map((task) => task.id);
+      if (
+        new Set(ids).size !== ids.length ||
+        !data.tasks.every(
+          (task) =>
+            typeof task.id === "string" &&
+            task.id.trim() &&
+            (task.description?.trim() ||
+              task.title?.trim() ||
+              (Array.isArray(task.scope) && task.scope.length > 0)),
+        )
+      )
+        return false;
+      for (const task of data.tasks) {
+        if (task.id) taskIds.add(task.id);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  });
+  const latestTasks = new Map(
+    allRuns
+      .filter((run) => run.sessionId === sid)
+      .map((run) => [run.taskId, run]),
+  );
+  const runs = [...latestTasks.values()].filter(
+    (run) =>
+      run.after === workspaceFingerprint(projectDir, run.contract?.inputs) &&
+      taskIds.has(run.taskId) &&
+      (newerThanMs === null || Date.parse(run.startedAt) >= newerThanMs) &&
+      resultEvidenceValid(run),
+  );
+  for (const check of checks.slice(2)) {
+    const role =
+      check.id === "A3"
+        ? /(?:^|-)qa(?:-|$)/
+        : /(?:^|-)(?:refactor|debug)(?:-|$)/;
+    check.matches = check.matches.filter(
+      (name) =>
+        readFileSync(join(projectDir, name), "utf8").trim().length > 0 &&
+        runs.some(
+          (run) =>
+            role.test(run.agentId) &&
+            run.artifacts[name] &&
+            phase.matches.some((file) => run.artifacts[`${memBase}/${file}`]) &&
+            plan.matches.some(
+              (file) => run.artifacts[`${AGENTS_RESULTS_DIR}/${file}`],
+            ),
+        ),
+    );
+  }
+
   for (const check of checks) {
     if (check.matches.length > 0) check.status = "present";
   }
@@ -210,7 +300,11 @@ export async function verifyRalphExecArtifacts(args: {
   const a4 = checks.find((check) => check.id === "A4");
   if (a4 && a4.status === "missing") {
     const skipRecord = readRefineSkipRecord(memDir);
-    if (skipRecord !== null) {
+    if (
+      skipRecord !== null &&
+      phase.status === "present" &&
+      checks[2].status === "present"
+    ) {
       a4.status = "skip-recorded";
       a4.matches = [skipRecord];
     }

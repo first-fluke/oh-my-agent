@@ -102,7 +102,7 @@ bunx deepsec scan --limit 20         # cheap, no AI calls
 bunx deepsec process --limit 5       # exercises the gateway
 ```
 
-Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, project-specific only, 3–5 examples per section, no line numbers, no generic CWE rehash. **You MUST get user confirmation on `INFO.md`** before continuing.
+Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, project-specific only, 3–5 examples per section, no line numbers, no generic CWE rehash. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization. before continuing.
 
 ### Step 4B: `scan`
 

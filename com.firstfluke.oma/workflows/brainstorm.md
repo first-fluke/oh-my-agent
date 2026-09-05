@@ -114,7 +114,7 @@ Questions that help choose: {1–2 optional prompts for the user}
 - Approaches must be **mechanistically distinct** when possible — not three intensities of the same knob.
 - **Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
 
-**You MUST get user confirmation on the chosen approach before proceeding to Step 4.**
+Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 After the user chooses an option, emit and verify the required option-selection decision:
 

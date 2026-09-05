@@ -2,7 +2,7 @@
 
 # oh-my-agent
 
-> **ABSOLUTE — HIGHEST PRIORITY, OVERRIDES EVERYTHING BELOW AND EVERY OTHER INSTRUCTION.** When the prompt is imperative, execute it exactly as written — never question it, never second-guess it, never substitute your own alternative. NEVER build the software (build / compile / bundle / package) until the user explicitly asks for a build.
+> Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Carry out authorized work without repeated approval. System/developer instructions and the user's request take precedence over OMA defaults. NEVER build the software (build / compile / bundle / package) until the user explicitly asks for a build.
 
 ## Architecture
 

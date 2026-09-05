@@ -18,6 +18,11 @@ disable-model-invocation: true
 
 ---
 
+## Agent execution evidence
+
+Follow `.agents/skills/_shared/core/execution-policy.md` and `.agents/skills/_shared/runtime/result-contract.md`. Include QA and REFINE task IDs in the plan. For each native agent, begin a run, record checks, and finalize its structured result. For CLI dispatch, pass `--task-id` and use the injected run identity. Complete phase logs before finalizing the QA/REFINE artifacts; code changes after verification require fresh checks.
+
+
 ## Vendor Detection
 
 Before starting, determine your runtime environment by following `.agents/skills/_shared/core/vendor-detection.md`.
@@ -69,7 +74,7 @@ Present the PM Agent's task breakdown to the user:
 - Priority tiers (1, 2, 3 — lower runs first)
 - Agent assignments
 - Dependencies
-- **You MUST get user confirmation before proceeding to Step 4.** Do NOT proceed without confirmation.
+- Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 ---
 

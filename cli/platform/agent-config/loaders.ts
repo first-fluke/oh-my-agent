@@ -13,6 +13,21 @@ export function resolvePromptContent(prompt: string): string {
 }
 
 export function loadExecutionProtocol(vendor: string, cwd: string): string {
+  const shared = [
+    "core/execution-policy.md",
+    "runtime/result-contract.md",
+  ].flatMap((file) => {
+    const found = findConfigFileUp(
+      cwd,
+      path.join(".agents/skills/_shared", file),
+    );
+    if (!found) return [];
+    try {
+      return [fs.readFileSync(found, "utf8")];
+    } catch {
+      return [];
+    }
+  });
   const protocolPath = findConfigFileUp(
     cwd,
     path.join(
@@ -24,11 +39,11 @@ export function loadExecutionProtocol(vendor: string, cwd: string): string {
       `${vendor}.md`,
     ),
   );
-  if (!protocolPath) return "";
+  if (!protocolPath) return shared.join("\n\n");
   try {
-    return fs.readFileSync(protocolPath, "utf-8");
+    return [...shared, fs.readFileSync(protocolPath, "utf-8")].join("\n\n");
   } catch {
-    return "";
+    return shared.join("\n\n");
   }
 }
 

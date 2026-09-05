@@ -167,7 +167,7 @@ the dimension-level selection dialog from
 `resources/getdesign-fetcher.md` ("Multi-Vendor Merge Policy") before
 presenting variations A/B/C.
 
-**MUST get user confirmation on the chosen direction before proceeding.**
+Apply `_shared/core/execution-policy.md`: reuse an already chosen direction; ask only when a material design decision remains unresolved.
 
 ---
 

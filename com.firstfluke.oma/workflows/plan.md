@@ -86,7 +86,7 @@ Use `.agents/skills/_shared/core/difficulty-guide.md` to classify:
 - **Medium** → produce both JSON and a lightweight markdown tracker (skip Step 4 API contracts if not cross-boundary).
 - **Complex** → produce both artifacts with all sections plus API contracts.
 
-Report scope assessment to the user. Get confirmation before proceeding.
+Report scope assessment and apply `.agents/skills/_shared/core/execution-policy.md`; reuse existing authorization.
 
 ---
 
@@ -121,7 +121,7 @@ Break down the project into actionable tasks. Each task must have:
 ## Step 6: Review Plan with User
 
 Present the full plan: task list, priority tiers, dependency graph, agent assignments, completion criteria.
-**You MUST get user confirmation before proceeding to Step 7.**
+Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 ---
 
@@ -132,6 +132,14 @@ Generate both artifacts.
 ### 7a. Machine-readable plan
 
 Save `.agents/results/plan-{sessionId}.json` and write a memory summary via the configured memory tool.
+
+Use `.agents/skills/oma-pm/resources/task-template.json`. For executable acceptance gates:
+
+- Declare `acceptance_criteria` as `{id, description}` objects and `required_checks` as `{id, criteria, command, cwd}` objects. Cover every criterion with a relevant check. `command` is exact executable/argv and `cwd` is project-relative. Never insert builds unless explicitly requested.
+- Preserve the canonical `dependencies` task-ID array and a self-contained `task` prompt. `retry_policy` defaults to `manual`; choose `safe` only for repeatable work without duplicate external effects.
+- Optional `inputs` lists concrete project-relative source, test, configuration and dependency files/directories that completely determine the task's behavior. Omit it for whole-tree verification. Do not guess a narrow input scope to make evidence reusable.
+- Keep the JSON plan fixed after dispatch starts. Record progress in the Markdown tracker and run records. Contract changes require a new run.
+- Use `oma agent:verify RUN_ID --required` to execute pinned checks and `oma agent:resume SESSION_ID --dry-run` to inspect recovery decisions.
 
 ### 7b. Human-readable tracker (Medium/Complex only)
 

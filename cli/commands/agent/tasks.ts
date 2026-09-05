@@ -3,12 +3,14 @@ import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 
 export type TaskDefinition = {
+  id?: string;
   agent: string;
   task: string;
   workspace?: string;
 };
 
 const TaskDefinitionSchema = z.object({
+  id: z.string().min(1).optional(),
   agent: z.string(),
   task: z.string(),
   workspace: z.string().optional(),

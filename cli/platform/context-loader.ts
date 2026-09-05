@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { buildGraph, selectGraph } from "../utils/graph.js";
+import { normalizeAgentId } from "./agent-config/agent-ids.js";
 
 // =============================================================================
 // context-loader.ts
@@ -202,11 +204,65 @@ function buildResourceLists(difficulty: Difficulty): {
  *                    estimation. Defaults to process.cwd().
  */
 export function resolveContextBundle(
-  _agentId: string,
+  agentId: string,
   difficulty: Difficulty,
   cwd: string = process.cwd(),
+  options: { graph?: boolean; vendor?: string; maxTokens?: number } = {},
 ): ContextBundle {
-  const { resources, skipped } = buildResourceLists(difficulty);
+  let { resources, skipped } = buildResourceLists(difficulty);
+  if (options.graph) {
+    const graph = buildGraph(cwd, { includeChecks: false });
+    const candidates = [
+      `agent:${agentId}`,
+      `skill:oma-${normalizeAgentId(agentId) ?? agentId}`,
+      `skill:${agentId}`,
+    ];
+    const seed = candidates.find((id) =>
+      graph.nodes.some((node) => node.id === id),
+    );
+    if (!seed)
+      return {
+        difficulty,
+        resources: [],
+        skipped: resources,
+        estimatedTokens: 0,
+      };
+    const selected = selectGraph(graph, [seed], "dependencies");
+    const paths = [
+      ...new Set(
+        selected.nodes
+          .filter((node) =>
+            ["skill", "resource", "shared"].includes(node.category),
+          )
+          .flatMap((node) => node.paths ?? []),
+      ),
+    ];
+    // Transport and common policy are injected separately, exactly once.
+    const relevant = paths.filter(
+      (file) =>
+        file.endsWith(".md") &&
+        !file.includes("/execution-protocols/") &&
+        !file.endsWith("/execution-policy.md") &&
+        !file.endsWith("/result-contract.md"),
+    );
+    const budget =
+      options.maxTokens ??
+      { Simple: 1500, Medium: 4000, Complex: 8000 }[difficulty];
+    resources = [];
+    skipped = [];
+    let tokens = 0;
+    for (const file of relevant.sort(
+      (a, b) =>
+        Number(b.endsWith("/SKILL.md")) - Number(a.endsWith("/SKILL.md")) ||
+        a.localeCompare(b),
+    )) {
+      const cost = estimateFileTokens(path.resolve(cwd, file));
+      if (cost > 0 && tokens + cost <= budget) {
+        resources.push(file);
+        tokens += cost;
+      } else skipped.push(file);
+    }
+  }
 
   const estimatedTokens = resources.reduce((total, relPath) => {
     const absolutePath = path.resolve(cwd, relPath);
@@ -219,4 +275,20 @@ export function resolveContextBundle(
     skipped,
     estimatedTokens,
   };
+}
+
+export function loadGraphContext(
+  agentId: string,
+  difficulty: Difficulty,
+  root: string,
+): string {
+  const bundle = resolveContextBundle(agentId, difficulty, root, {
+    graph: true,
+  });
+  if (!bundle.resources.length) return "";
+  const files = bundle.resources.map(
+    (file) =>
+      `### ${file}\n${fs.readFileSync(path.resolve(root, file), "utf8")}`,
+  );
+  return `## Task context (graph-selected, approximately ${bundle.estimatedTokens} tokens)\n${files.join("\n\n")}\nDeferred references (read if needed): ${bundle.skipped.join(", ") || "none"}`;
 }

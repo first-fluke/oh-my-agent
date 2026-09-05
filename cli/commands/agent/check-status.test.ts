@@ -44,7 +44,7 @@ describe("agent/check-status.ts", () => {
 
     await checkStatus("session1", ["agent1"]);
 
-    expect(consoleSpy).toHaveBeenCalledWith("agent1:completed");
+    expect(consoleSpy).toHaveBeenCalledWith("agent1:legacy-completed");
   });
 
   it("falls back to PID check if result file missing", async () => {
@@ -93,7 +93,7 @@ describe("agent/check-status.ts", () => {
 
     await checkStatus("session1", ["agent1"]);
 
-    expect(consoleSpy).toHaveBeenCalledWith("agent1:completed");
+    expect(consoleSpy).toHaveBeenCalledWith("agent1:legacy-completed");
   });
 
   it("reports crashed from session-specific status file on non-zero exit", async () => {
@@ -128,7 +128,7 @@ describe("agent/check-status.ts", () => {
 
     await checkStatus("session1", ["agent1"]);
 
-    expect(consoleSpy).toHaveBeenCalledWith("agent1:blocked");
+    expect(consoleSpy).toHaveBeenCalledWith("agent1:legacy-blocked");
   });
 
   // The status file ranks above a stale/cleaned-up PID file: once a terminal
@@ -148,6 +148,6 @@ describe("agent/check-status.ts", () => {
     await checkStatus("session1", ["agent1"]);
 
     expect(processKillSpy).not.toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith("agent1:completed");
+    expect(consoleSpy).toHaveBeenCalledWith("agent1:legacy-completed");
   });
 });

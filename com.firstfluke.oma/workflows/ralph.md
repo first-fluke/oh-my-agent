@@ -110,10 +110,11 @@ Run the deterministic verifier from the repo root:
 oma ralph:verify --json --session {sessionId} --newer-than {iteration_start_iso}
 ```
 
-- `--session` scopes the plan artifact to this iteration's session id; `--newer-than` (this iteration's EXEC start time, ISO-8601) excludes stale artifacts from earlier iterations. Omit either when unknown.
+- `--session` scopes the plan artifact to this iteration's session id; `--newer-than` (this iteration's EXEC start time, ISO-8601) excludes stale artifacts from earlier iterations. Supply both for repeated iterations; missing identity cannot prove an iteration.
 - The command checks the artifact table below, prints a structured result (`ok`, `checks`, `missing`, `remediation`), and exits non-zero on failure. On failure it also appends a `gate.failed` L1 event automatically.
 - **The JSON verdict IS the gate result.** Do NOT substitute your own narration for it, and do NOT proceed on a non-zero exit.
-- **Manual fallback** (only when the `oma` CLI is unavailable): check, using memory read / file existence tools, that the just-completed iteration produced ALL of the artifacts below. Resolve `{memBase}` from `memoryConfig.basePath` (default `.agents/state/memories`).
+- If the CLI is unavailable, report the gate as unverified. File existence cannot substitute for execution evidence. Resolve `{memBase}` from `memoryConfig.basePath` (default `.agents/state/memories`).
+- Follow `.agents/skills/_shared/runtime/result-contract.md`: QA and REFINE receipts must match this session and a task ID in the plan, include successful checks for the current working tree, and bind the report, plan and phase log by content hash.
 
 | # | Artifact | Proves phase ran |
 |---|----------|------------------|
@@ -124,14 +125,14 @@ oma ralph:verify --json --session {sessionId} --newer-than {iteration_start_iso}
 
 **Decision:**
 
-- **`ok: true` (exit 0)** → ultrawork ran in full. Proceed to Step 1.4.
+- **`ok: true` (exit 0)** → the required local execution evidence is current. Proceed to Step 1.4.
 - **`ok: false` (exit 1, `missing` non-empty)** → treat EXEC as **NOT performed** (the iteration was abridged to implementation-only, regardless of what the EXEC narration claims). Do NOT advance to JUDGE as if work completed. Instead:
   1. Record the violation in `session-ralph-{sessionId}.md`: `exec-circumvention detected at iteration {N}: missing {artifact}`.
   2. Emit the audit event:
      ```bash
      oma state:emit "decision.made" '{"subject":"ralph.exec-circumvention","decision":"EXEC artifacts incomplete — ultrawork did not run in full.","rationale":"Required VERIFY/REFINE agent result files are absent; the iteration was abridged."}'
      ```
-  3. STOP and report to the user that ultrawork was not executed in full, citing the missing artifact. Ask whether to re-run the iteration in full or to explicitly authorize a reduced-scope run. Do NOT silently retry with the same abridged approach.
+  3. Report the missing or stale evidence, repair the authorized work, and retry the gate. Apply `.agents/skills/_shared/core/execution-policy.md`; ask only when repair needs a material missing decision or new authorization. Do NOT retry with the same missing evidence.
 
 > **REFINE skip exception**: ultrawork permits skipping REFINE for trivial tasks (< 50 lines, see ultrawork `REFINE_GATE` skip conditions). If REFINE was legitimately skipped, A4 may be absent — but `session-ultrawork.md` MUST record the documented skip reason. "No A4 and no recorded skip reason" is a circumvention, not a skip. `oma ralph:verify` implements this rule: a recorded skip reason reports A4 as `skip-recorded` (passing), an unrecorded absence reports `missing` (failing).
 
