@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v5.1.0...web-v5.1.1) (2026-09-05)
+
+
+### Documentation
+
+* remove playwright references from markdown guidance ([2ffa537](https://github.com/first-fluke/oh-my-agent/commit/2ffa5374f726f58ce81aa588d8252001f27eea26))
+
 ## [5.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v5.0.0...web-v5.1.0) (2026-08-30)
 
 
