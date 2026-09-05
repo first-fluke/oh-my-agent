@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "13.3.1",
-  "releaseDate": "2026-09-05T12:15:47.876Z",
+  "releaseDate": "2026-09-05T12:42:04.600Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1571,8 +1571,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/SKILL.md",
-      "sha256": "4eeada694dc414455d4b317880de3c32bcde5fbf96fc53ec969ef8f5b14ffec5",
-      "size": 6484
+      "sha256": "26619b023e545cafdac4b5bd72610b0fccf2607754433909659f274742ceeb3b",
+      "size": 6770
     },
     {
       "path": ".agents/skills/oma-qa/resources/checklist.md",
@@ -1586,8 +1586,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/execution-protocol.md",
-      "sha256": "5032d82749a249a6a829b87c4fd99dc391ebe84cbba3820a47df5b9053dfe9ed",
-      "size": 9036
+      "sha256": "667e42e414dc7be980fabbddf9d354b9cc6f73d930e9ffa4bc95caa1c7b6fd40",
+      "size": 10224
     },
     {
       "path": ".agents/skills/oma-qa/resources/iso-quality.md",
