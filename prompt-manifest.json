@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "13.3.1",
-  "releaseDate": "2026-09-05T10:02:23.598Z",
+  "releaseDate": "2026-09-05T12:15:47.876Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -151,13 +151,13 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "149e6d0bfc2dbdf3dd52f59dd9877b6ec59abeaa13930986a514a098628e184d",
-      "size": 42395
+      "sha256": "2752d63e93986c8618f0272767613d1c9c9b763b21f425c1cb7a7cc8f5667a9f",
+      "size": 42976
     },
     {
       "path": ".agents/hooks/core/persistent-mode.ts",
-      "sha256": "62f79af7a129c7cea46a85f0485723006e1cde707f1ec7e867279f3dcfa78fd6",
-      "size": 16513
+      "sha256": "3bb3eb9702d2e38c4e385dbecfa5e15e180a9096c55da3fcf2ce54cc7d53d2e7",
+      "size": 16521
     },
     {
       "path": ".agents/hooks/core/prompt-input.ts",
@@ -166,8 +166,8 @@
     },
     {
       "path": ".agents/hooks/core/refactor-guard.ts",
-      "sha256": "91d41bde6fa090dc17bb7c46eb660c0d33a62ec7460ec1e932db33449fb16210",
-      "size": 20201
+      "sha256": "c8f62e1310c1c3b2b01a0077f91ee5c8ed8c87e5d898b932a27554c2cdc101a8",
+      "size": 20282
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
@@ -221,8 +221,8 @@
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "fc4da7c2c31907eef72295a945223cf756505379e2567ad04c724771cedc8f6c",
-      "size": 5461
+      "sha256": "029dd5a15f3cb447baa3667c9acc17354acea31e5b724e0919a6edacdd0a5ebe",
+      "size": 5465
     },
     {
       "path": ".agents/hooks/core/vendor-detect.ts",
@@ -311,8 +311,8 @@
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "027c203d4ba18dc68eeae359dc1f9d529690eb596ca6bb825db01cb5ec7cbaa8",
-      "size": 29488
+      "sha256": "67357d3d7226abd0b8f6bb03b8a2b22a5e73dd8fe8afe357a205222cf4fd7da3",
+      "size": 29493
     },
     {
       "path": ".agents/rules/backend.md",
@@ -426,8 +426,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/context-budget.md",
-      "sha256": "9277ff19a37e7534b80c9d2952be3db8f18dd9cd458234c25c8efbe00c142ec7",
-      "size": 7728
+      "sha256": "beb497072f24ecba439b6eb51a401c4dfed1458593f1574e57d02d237ae35455",
+      "size": 7726
     },
     {
       "path": ".agents/skills/_shared/core/context-loading.md",
@@ -461,8 +461,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/session-metrics.md",
-      "sha256": "2780b56d08f79076ce31af85e99dc1c5ecb519d97b7a4e73bc2abe07063af1da",
-      "size": 8816
+      "sha256": "482e7796e8df53daa8f437759ea3d3e128a8c5aa9db6789bf29797e6160a7600",
+      "size": 8824
     },
     {
       "path": ".agents/skills/_shared/core/skill-routing.md",
@@ -481,12 +481,12 @@
     },
     {
       "path": ".agents/skills/_shared/core/vendor-detection.md",
-      "sha256": "43845f556d70bb98abb47e8108143c27eb0728ed8a9c3b0170387e1567c07414",
+      "sha256": "5ae02fd6091334035fb67f874ddd38a0d2cac3775be85c89631859ef00be7cbb",
       "size": 4318
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
-      "sha256": "ef6de9f860a193905dcdb2fb6ad83c49aa7d187bfcb82b9dd70e1d970e17bb58",
+      "sha256": "9d0fb53d8876cd3062d1efee8ba992bece176e5bebc7ba9d4e1b7cc612142147",
       "size": 5561
     },
     {
@@ -541,12 +541,12 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/memory-protocol.md",
-      "sha256": "136a9a24b916e78720bc187dcc044c327ce276760fe76e547282cd9fdfd320f2",
+      "sha256": "5a8b23bac5066004d509e27d4f78dac8ee18f2246b2f49774291646e23db6543",
       "size": 4285
     },
     {
       "path": ".agents/skills/_shared/runtime/result-contract.md",
-      "sha256": "e251e8e2d6d8ced5565aa2050224f0c846f8784357cdf4f95d88b94e2dd8e3b1",
+      "sha256": "87f11ce61557a2b2aeacce113dc342d32a3856a8db1656cbc2dd155c325bdbdf",
       "size": 5325
     },
     {
@@ -596,7 +596,7 @@
     },
     {
       "path": ".agents/skills/oma-architecture/resources/execution-protocol.md",
-      "sha256": "1b82ff323cbdeabe098d901c6e39beefdaa6842acb85775ad3420db0d4205116",
+      "sha256": "d373400fcbc2b6a34e5a98506b7d64da565362c6469a7e60211c751fb5dd3e1d",
       "size": 5349
     },
     {
@@ -616,12 +616,12 @@
     },
     {
       "path": ".agents/skills/oma-architecture/resources/stakeholder-synthesis.md",
-      "sha256": "4f51a74082b807980a5c0d99dd7bec0d13c97fa92ac022c8d6c6266fa4236dfe",
+      "sha256": "1b32e9f4dd43bd62a3b173088748ee46ebbe237d0ac1f69a4b79b638189f134f",
       "size": 2457
     },
     {
       "path": ".agents/skills/oma-backend/SKILL.md",
-      "sha256": "23a51b126bc1597616228a41a79d7302997ba11ea8851f3072901b0fcad78a44",
+      "sha256": "0214188cd86c92f61c5810231752d9d1e290ca125d9ff229e509a7bb40230387",
       "size": 10230
     },
     {
@@ -711,7 +711,7 @@
     },
     {
       "path": ".agents/skills/oma-brainstorm/SKILL.md",
-      "sha256": "c509c805475d8dac8fbf04aa6be3414277d24d059fc0dac45cfad45789348eca",
+      "sha256": "3d52bf5d0a9809c84299458846037be414b17462c4df4598ac6bb7f55f08fa31",
       "size": 10428
     },
     {
@@ -721,12 +721,12 @@
     },
     {
       "path": ".agents/skills/oma-coordination/SKILL.md",
-      "sha256": "bd5f413f067ce0b6c90a9421d0a1bbc4715bf05be3b29a92d27d10674b1860e5",
+      "sha256": "f8f2c29661716916c8d7eab0d15cd1a2c40e551e6eb689221b114913e664e058",
       "size": 6458
     },
     {
       "path": ".agents/skills/oma-db/SKILL.md",
-      "sha256": "480be5c534d3293041e0af682c0efa1cd77ff66ff79b6bd9142839e4280c76f4",
+      "sha256": "51bf84680917ed5a59c993643194ef6abf2896092ad4d63b53598ea1e464591d",
       "size": 13084
     },
     {
@@ -781,7 +781,7 @@
     },
     {
       "path": ".agents/skills/oma-debug/SKILL.md",
-      "sha256": "079e3a4c58746cf016cd38969595d652a0f57b63943af040ddbe01741d4f339f",
+      "sha256": "58a2ba9c275d125e8f02589fdb4aa643677ce35de9fe7e0ddbe73275725d8e76",
       "size": 6167
     },
     {
@@ -956,7 +956,7 @@
     },
     {
       "path": ".agents/skills/oma-dev-workflow/SKILL.md",
-      "sha256": "d9dd40a1f330c84c3936b552fbfa5895306537eac4a4710c7451c2627b2bf986",
+      "sha256": "f72ad273e15d376a38fc4be4143194ee8abf0ef54922c25f868f7f92e91b0469",
       "size": 13331
     },
     {
@@ -1011,7 +1011,7 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "1573f1c4c076f054fb0b648c51e671aabcc6d7ae73564fea79140a454dcd116a",
+      "sha256": "1fa365fa06b714e8352992644dd920f2d2fe9667e17a37a497dcc09ca0ee6f9c",
       "size": 13435
     },
     {
@@ -1101,8 +1101,8 @@
     },
     {
       "path": ".agents/skills/oma-image/SKILL.md",
-      "sha256": "5239ab60860d676d500e806838f92c94245f77e630cf27e8c4ae4fbe6b766882",
-      "size": 16875
+      "sha256": "222aba0e9b8459a01bc6f6a09e94e2f9b1bf7716e8846ed4865d5b10a3a97100",
+      "size": 16883
     },
     {
       "path": ".agents/skills/oma-image/config/image-config.yaml",
@@ -1131,8 +1131,8 @@
     },
     {
       "path": ".agents/skills/oma-market/SKILL.md",
-      "sha256": "195597515e00d6d66600271e074ea825e75e5efc24af1a9df999ca05e0426106",
-      "size": 9114
+      "sha256": "fbac88f7012357f64db34c2494f5ad5be37b0cc277c8c71ed36403e9699a4e35",
+      "size": 9121
     },
     {
       "path": ".agents/skills/oma-market/resources/checklist.md",
@@ -1176,7 +1176,7 @@
     },
     {
       "path": ".agents/skills/oma-mobile/SKILL.md",
-      "sha256": "105fe4c1731c08ffa33ddfffa7b758f2bd9a0a22c8dee74ab140a8f9783b5604",
+      "sha256": "2b8ac6ff334862a8661a947f916d346d6ddc76cc46a23a0e51079be0bfb6be87",
       "size": 9148
     },
     {
@@ -1456,7 +1456,7 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "98e846deae96a47581a72519510e43a67e2d2cf8c7618dc531f709a1899cb7ab",
+      "sha256": "449f08343e213d26a7590dbc6fbf0816e02a5f78d356c5d4764dc0c79b6a53d3",
       "size": 15993
     },
     {
@@ -1471,18 +1471,18 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/resources/subagent-prompt-template.md",
-      "sha256": "83b7b9ab8703648f2cd54e02d3bbeda04c1388657930c753b5a31d6c3c86e5bb",
+      "sha256": "89a550f72d02d7e5107af5515a7604f494c1154ec79af47606a40c156eeef74b",
       "size": 4129
     },
     {
       "path": ".agents/skills/oma-orchestration/scripts/parallel-run.sh",
-      "sha256": "a09625b620da15ac46fd795ec0295a5cb60d84acadea75c57f34ca626f384ca4",
-      "size": 224
+      "sha256": "9e17df502471e7e3b12f480086fe7c0ced57712e045ec34d95a2d2d0b42ff584",
+      "size": 231
     },
     {
       "path": ".agents/skills/oma-orchestration/scripts/spawn-agent.sh",
-      "sha256": "00872e7717f1c87aefa826e52e51db5117a81689fa3ca07734fc4fc0d36136aa",
-      "size": 171
+      "sha256": "ccbbad58626931c53ff5503b92e917493fe22757d5629389a783dc8a5f0a0a2d",
+      "size": 178
     },
     {
       "path": ".agents/skills/oma-orchestration/scripts/verify.sh",
@@ -1536,7 +1536,7 @@
     },
     {
       "path": ".agents/skills/oma-pm/SKILL.md",
-      "sha256": "4271a4796e7a7f42334a5fc10f71d158072d49c7ccc1b5a1574f6410229fd5fa",
+      "sha256": "5386819540192a69dcc4bf139bfd11e213efb1ce1989e4298df256ae94cc4ba1",
       "size": 7600
     },
     {
@@ -1571,7 +1571,7 @@
     },
     {
       "path": ".agents/skills/oma-qa/SKILL.md",
-      "sha256": "cb08c82ea8c25a4521673108c839523458cf6ca3671a97f94b58ac0de54da096",
+      "sha256": "4eeada694dc414455d4b317880de3c32bcde5fbf96fc53ec969ef8f5b14ffec5",
       "size": 6484
     },
     {
@@ -1601,8 +1601,8 @@
     },
     {
       "path": ".agents/skills/oma-recap/SKILL.md",
-      "sha256": "c5e2e5f297fa90b1132c0495a84f2eb25e9aa10a106b59fad113b6619fe17aaa",
-      "size": 9549
+      "sha256": "fe2cf7a4abadea984003041964443c58b0848431d68567a5ed38396db99245ea",
+      "size": 9562
     },
     {
       "path": ".agents/skills/oma-recap/resources/output-formats.md",
@@ -1696,7 +1696,7 @@
     },
     {
       "path": ".agents/skills/oma-search/SKILL.md",
-      "sha256": "2d9fc15e17bb0df1f0bb980389c1b0a91c23ae7cd36151743d14f24c64bf2af6",
+      "sha256": "d3f42ef089f8cce2334a5f78e7749cab2636bdfa1636ddff4bdff975a525bc3c",
       "size": 8045
     },
     {
@@ -1731,8 +1731,8 @@
     },
     {
       "path": ".agents/skills/oma-skill-creation/SKILL.md",
-      "sha256": "ad0525de3ff65693e7c157fc0fe1ccb18cf7c8fcfbbe126fa8ce54e8c5c0bde4",
-      "size": 12270
+      "sha256": "41983fe1d86531badea02bb0aa41d27225924f2377df03268de4b505e62fdfad",
+      "size": 12266
     },
     {
       "path": ".agents/skills/oma-skill-creation/resources/ssl-lite-template.md",
@@ -1741,13 +1741,13 @@
     },
     {
       "path": ".agents/skills/oma-skill-creation/resources/validation-checklist.md",
-      "sha256": "9eec52aea92f4ce7b1654af2dc9c63ab3e2940ff4fb6bc2355be8c87dc279629",
-      "size": 5059
+      "sha256": "022bea50b7f986d6791722ff6f468735a3920d40ea2012d001448a6a65ba157e",
+      "size": 5053
     },
     {
       "path": ".agents/skills/oma-slide/SKILL.md",
-      "sha256": "557d9c0f0666713644afb7cc0558ecc6b9b74e96b59a0d18e35733159a28331f",
-      "size": 17631
+      "sha256": "87399f64d037f4976da013ff469a4b4fb884fbac757db01f396e76434e806097",
+      "size": 17809
     },
     {
       "path": ".agents/skills/oma-slide/resources/animation-patterns.md",
@@ -1766,13 +1766,13 @@
     },
     {
       "path": ".agents/skills/oma-slide/resources/canva-integration.md",
-      "sha256": "dc81484ba2566733a1ae8c1cbd6bbb45b224a8c479c9499078d9a1ab4c0d1f05",
-      "size": 11370
+      "sha256": "0df91f198dc38cc05779a3b729d7cf9c3a02bb40986b7e467b34d272bdd140ec",
+      "size": 11412
     },
     {
       "path": ".agents/skills/oma-slide/resources/checklist.md",
-      "sha256": "238e48598202500094a7f4ddd4c4a94a789f5427fdee8e3434da392c8893e947",
-      "size": 1737
+      "sha256": "666ad3316e9626b47a025d301f413c4ec75ea2d04eaa31f57014ca286e73b256",
+      "size": 1749
     },
     {
       "path": ".agents/skills/oma-slide/resources/design-doctrine.md",
@@ -1781,18 +1781,18 @@
     },
     {
       "path": ".agents/skills/oma-slide/resources/fixed-stage.md",
-      "sha256": "39d779864d8a8f20e47f13ef61c34ec0eb2bb903d2016baa7c0f4968cdda75bc",
-      "size": 9179
+      "sha256": "ad6d84b08ab4f1b30ed3b8db6f79d73b03b4a9359e6c30cde1a7dbcecfbc0cf5",
+      "size": 9196
     },
     {
       "path": ".agents/skills/oma-slide/resources/generation-protocol.md",
-      "sha256": "b0a23806c76395d5d4d2408f5682a79e0a0658c6b92656591414d7f570bb4d13",
-      "size": 18535
+      "sha256": "3573decdb04b91adae08d1d2b3f1cd08cf91182d3abc5836f27e60b5fdaab9ce",
+      "size": 18783
     },
     {
       "path": ".agents/skills/oma-slide/resources/selection-index.json",
-      "sha256": "9325a284b8e61f62f4943c1a6882789a43e7fbcf902737492277c0066ff92a8c",
-      "size": 25877
+      "sha256": "cc266ee92f3dcddb05d1b29c3063c1629d16be7dab6e7c09bcc9603a36ee1764",
+      "size": 25876
     },
     {
       "path": ".agents/skills/oma-slide/resources/style-presets.md",
@@ -1801,7 +1801,7 @@
     },
     {
       "path": ".agents/skills/oma-tf-infra/SKILL.md",
-      "sha256": "c0a8943f42f501e094d9519b2a636ee4a85b2171479333c773f6ebd0ee7a2981",
+      "sha256": "ddc15ea9a4c18193af890fb0d7940c067d3727a7d6df1494dbb9a2d1deb1473c",
       "size": 12025
     },
     {
@@ -1846,7 +1846,7 @@
     },
     {
       "path": ".agents/skills/oma-translation/SKILL.md",
-      "sha256": "73a3b471c1d7a88ed3ce2f9431444f491cb268996e169a5382964708c36c25ad",
+      "sha256": "e6fb75cf9da7820a8d41be0ecfeb0e15c3b79d1c83e71560d6c42f66663a3dff",
       "size": 34450
     },
     {
@@ -1886,8 +1886,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "f7c8d67f3d81c666d92d16933e2ea1e97fa226ee68a32f9ba4db3a674427ce39",
-      "size": 26648
+      "sha256": "13bc4cc6d89536ed7de7bfea0b58200e497ea23c972a0352630f905b1ea72b28",
+      "size": 26663
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -1901,8 +1901,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "7fd73ebce3a6f414cbf8fbd4d156d40968262a036dd4142cc28f331e05195fad",
-      "size": 7749
+      "sha256": "2b037ef93754e7d1a79cb74772ccaea052fbfde72c968e1c079edd2c156c90b1",
+      "size": 7748
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -1916,7 +1916,7 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion-authoring/README.md",
-      "sha256": "38966b29a1d17c74193b521bf46dc70bc0bfe44f6869dc22c42e78f2ee1c24f8",
+      "sha256": "606f08d1ae04fb2fed5855d9d0a70845feffd0f430af9a60b7f47427ea4f94a0",
       "size": 2966
     },
     {
@@ -1956,8 +1956,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
-      "sha256": "e7394b6a60ca763c73031becf2f9867868180c8f660bc6b088c63bb8551e44b8",
-      "size": 6414
+      "sha256": "33b01c4239a107bb9b7c22901105e13ee569c30bcea2e152a01c7a1b9ce3ba46",
+      "size": 6428
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
@@ -1991,12 +1991,12 @@
     },
     {
       "path": ".agents/workflows/architecture.md",
-      "sha256": "458a46676c77a184bf19bc4ef66100bd4f6f8fc615f8192e7d3f8e0abdf06359",
+      "sha256": "71312c21470cb298b87ff766b295cdc76ecfd5e75945464e80ec873828a4d754",
       "size": 6477
     },
     {
       "path": ".agents/workflows/brainstorm.md",
-      "sha256": "650821df885063646ad346fb748b2bad19988ab67e1f778875f5bc40f1ec4d55",
+      "sha256": "9f37d8ec80e50f084bcf31d6f11fbe32223a463a064ba957b14a58baf528aac2",
       "size": 10122
     },
     {
@@ -2006,7 +2006,7 @@
     },
     {
       "path": ".agents/workflows/debug.md",
-      "sha256": "6289f8959dc6684f3b76ac04f4f37f72c9d1bc62c1c5c191e7688728229c5de1",
+      "sha256": "e5c9c1cf23a7b155f8da95a5a30eb734c6e2a3eec53641781f41d0e6684055f6",
       "size": 4904
     },
     {
@@ -2016,7 +2016,7 @@
     },
     {
       "path": ".agents/workflows/deepsec.md",
-      "sha256": "838d5fb63b6de2a7a5c6d420662c7a732adb09fee77298ce49e9ea777425da19",
+      "sha256": "0dda5c95b515da7147c16cf230dd13163e5e5c997016f11fa8f09fb0da4df8c7",
       "size": 12996
     },
     {
@@ -2026,7 +2026,7 @@
     },
     {
       "path": ".agents/workflows/docs.md",
-      "sha256": "d7bb5f0c8cabc6afec25bae9b04b9e89cae02d6044c6a97e3af5be265024afe4",
+      "sha256": "1522b3677385a84c8f7e0d8facad963ef5fcbff1be35ad9ef66e145b1520a0c8",
       "size": 9154
     },
     {
@@ -2036,12 +2036,12 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "c7fb5305e59c86d302e4e17bf256d50dd7f668e2afd7aa928094ff26dcea677a",
+      "sha256": "4d39a2c004bf30ec89ac5a25705e7f84e98c507186626e1d10d89c696207d042",
       "size": 14248
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "8f2614fb5e04f8af7082f87df4d22c0ff148b88e5511fe4b17af3bc88fcaaf23",
+      "sha256": "27c2ea6b8e9ea6a592033f1c02c08893b5d9f3e00f6394bfe3fc2e6d899227c7",
       "size": 10730
     },
     {
@@ -2051,8 +2051,8 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "df6264a90a3a99d7e63e29bca71e597b57e7c37c06ebb15da7266ca3d94469e9",
-      "size": 19921
+      "sha256": "8a932b8a5f9f37c364e4e90d4ca57e4073ce5cc1526608e807a2b725c3170c3d",
+      "size": 19927
     },
     {
       "path": ".agents/workflows/recap.md",
@@ -2061,17 +2061,17 @@
     },
     {
       "path": ".agents/workflows/review.md",
-      "sha256": "bcf19165268907864ede7082defaf04cf552fb7966f1fb3cef2bf8e4dacc7581",
+      "sha256": "51ef190241fd5ba17de592ba706293699ce0c45a943e3de9d2c5e9e1efb3f1a6",
       "size": 5752
     },
     {
       "path": ".agents/workflows/schedule.md",
-      "sha256": "4a68669aa063c9f16ffe6e0ca2007bf69c7f18d3d6f21a1807dbcfed3d8b7558",
-      "size": 3335
+      "sha256": "efb8b7d2d8348e270a11b23bc0b1c6d6b6e4acd2857ecd7606344cb9b44aa8f7",
+      "size": 3379
     },
     {
       "path": ".agents/workflows/scm.md",
-      "sha256": "d97d7654d3b00f7dbfa0d9c2d34f42aab38687b2d9789749c177a2befbaa6a23",
+      "sha256": "ca1a09911665c669550e66972c066f794d1d232206ad4fbb4aeb06dfd02dcef2",
       "size": 8733
     },
     {
@@ -2086,7 +2086,7 @@
     },
     {
       "path": ".agents/workflows/ultrawork/resources/multi-review-protocol.md",
-      "sha256": "964684472fc03e340edbd9a0fa3e2335979361842f0852e4caf95368671b5f10",
+      "sha256": "d23219f7c5bdbf6bbce0893233a45d9337f9e3dc70c7c65cad91b4cd10fca08e",
       "size": 5007
     },
     {
@@ -2096,17 +2096,17 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "01e2351955c805402d518832d347b58597512d0a964f67ee82b9dc94f980f5bd",
-      "size": 32156
+      "sha256": "eae421eb8f143277222db8d145617eb3956be107e236c0d5413497987b06709c",
+      "size": 32159
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "bb5dd1b4ab93ddf4ed87110a67e929c652d723e016a81f65bb601564447630f4",
+      "sha256": "b177d15b8285926ebdeccf25d5c67c46a82d67ea9e85d4f93d9bd46d191b053a",
       "size": 23552
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "403a1b757eef8376d3a8665eb0fcef265f8475422b4264f5d842964529d408b0",
+      "sha256": "9e57d1bc6089a04fe717441588becaa4838da80ca46baf098a0985529fc81686",
       "size": 10037
     }
   ],
