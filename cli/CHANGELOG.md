@@ -1,5 +1,17 @@
 # Changelog
 
+## [13.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.3.0...cli-v13.3.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **memory:** scope hook recall to the current project ([1090ce6](https://github.com/first-fluke/oh-my-agent/commit/1090ce6e6180b158527f6de963e6f29729cbe03f))
+
+
+### Performance
+
+* **prompts:** trim hook context and generated agent instructions ([d2c690a](https://github.com/first-fluke/oh-my-agent/commit/d2c690aa9943c759b89f94e6f65ccf0979937b7d))
+
 ## [13.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.2.1...cli-v13.3.0) (2026-09-05)
 
 
