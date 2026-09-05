@@ -1,5 +1,23 @@
 # Changelog
 
+## [14.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.3.1...cli-v14.0.0) (2026-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** Colon commands, former command aliases and renamed option spellings are removed. Use the command mapping in docs/cli-command-standardization.md. The describe command reports canonical paths only. After upgrading, run oma schedule sync to rewrite OS jobs and oma link or oma update to refresh project hook wrappers.
+
+### Features
+
+* **cli:** standardize command paths and remove legacy syntax ([43b3fc7](https://github.com/first-fluke/oh-my-agent/commit/43b3fc71c15ddbc2228e85df1e1a977fb2cd44ca))
+* **orca:** add native OMA plugin integration ([c178cac](https://github.com/first-fluke/oh-my-agent/commit/c178cac1d609d60d7a8ff2b2f003bafbb4720f8c))
+
+
+### Bug Fixes
+
+* **hooks:** isolate git environment during pre-push checks ([7818774](https://github.com/first-fluke/oh-my-agent/commit/78187747bbe476d0d36ada9082095a1cd9ab867d))
+* **verify:** require successful process outcomes for passing checks ([c5c2c29](https://github.com/first-fluke/oh-my-agent/commit/c5c2c2971d602bdbcb8847e8565bc11a0cb046db))
+
 ## [13.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.3.0...cli-v13.3.1) (2026-09-05)
 
 
