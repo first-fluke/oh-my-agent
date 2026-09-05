@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.0.1...cli-v14.0.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **cli:** restore default update and same-version skill installation ([f3aec86](https://github.com/first-fluke/oh-my-agent/commit/f3aec864736e89fb9850e8eda2f05af1d0695e60))
+
 ## [14.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.0.0...cli-v14.0.1) (2026-09-05)
 
 
