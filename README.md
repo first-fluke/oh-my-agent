@@ -196,6 +196,7 @@ Separate from the engineering team, oma ships content and research pipelines bui
 | **oma-translation** | Translates between languages so it reads like a native wrote it. |
 | **oma-video** | Generates short-form, explainer, and demo videos through a key-optional Remotion pipeline. |
 | **oma-voice** | Generates voiceovers and transcribes audio on-device, no cloud needed. |
+| **oma-web-research** | Web research with cited sources via the You.com MCP server, with a keyless free profile and a native-search fallback. |
 
 ## How It Works
 

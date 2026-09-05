@@ -84,7 +84,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-market",
-      desc: `Market research skill for pain-point extraction, trend detection, competitor positioning, and discovery across community sources (Reddit, HN, Bluesky, Mastodon, GitHub Issues, web). Built-in harvest fetchers, deterministic CLI compute, intent-auto SWOT/Porter's 5F/PESTEL frameworks. Use for market research, pain point analysis, trend detection, competitor research, user complaints, voice-of-customer, 시장조사, 사용자 페인, 트렌드, 경쟁구도.`,
+      desc: `Market research skill for pain-point extraction, trend detection, competitor positioning, and discovery across community sources (Reddit, X, YouTube, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web and more). Delegates research to the always-latest mvanhorn/last30days engine via \`oma market run\`, adds oma's detect-trap preflight, intent-auto SWOT / Porter's 5F / PESTEL framing, and a single LAW-compliant brief. Use for market research, pain point analysis, trend detection, competitor research, user complaints, voice-of-customer, 시장조사, 사용자 페인, 트렌드, 경쟁구도.`,
     },
     {
       name: "oma-pdf",
@@ -124,11 +124,15 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-video",
-      desc: `Short-form, explainer, and demo video generation via a key-optional 3-tier router. Composes scripts, oma-voice narration, oma-image/oma-slide/stock visuals, key-free captions, and a vendored Remotion compositor into reproducible run directories. Routes three modes — shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough (screen capture, incl. supervised headed web-app capture of any URL). Use for video, shorts, reels, short-form, demo, explainer, walkthrough, screencast, web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.`,
+      desc: `Short-form, explainer, and demo video generation via a key-optional 3-tier router. Composes scripts, oma-voice narration, oma-image/oma-slide/stock visuals, key-free captions, and a per-run agent-authored Remotion composition (always-latest Remotion + remotion-dev/skills) into reproducible run directories. Routes three modes — shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough (screen capture, incl. supervised headed web-app capture of any URL). Use for video, shorts, reels, short-form, demo, explainer, walkthrough, screencast, web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.`,
     },
     {
       name: "oma-voice",
       desc: `Local-first text-to-speech and speech-to-text via the Voicebox MCP server. Generates speech from cloned or preset voice profiles for agent notifications, content voiceovers, and audio asset creation, and transcribes audio files for meeting notes or memos. Runs entirely on-device with no cloud, no API keys, no per-call cost. Use for voice generation, TTS, STT, transcription, voiceover, narration, dictation, audio asset work.`,
+    },
+    {
+      name: "oma-web-research",
+      desc: `Web research with cited sources via the You.com MCP server. Searches the current web, reads URLs into clean text, and produces one-shot cited synthesis through \`you-search\`, \`you-contents\`, and \`you-research\` MCP tools. Works keyless (\`profile=free\`, basic search) or with \`YDC_API_KEY\` for the full tool set. Falls back to runtime-native search when the server is not connected. Use for web research, current-events questions, URL reading, cited synthesis, and source-grounded answers on runtimes without native web search.`,
     },
   ],
   infrastructure: [
@@ -237,6 +241,7 @@ export const PRESETS: Record<string, string[]> = {
     "oma-hwp",
     "oma-academic-writing",
     "oma-search",
+    "oma-web-research",
     "oma-translation",
     "oma-scm",
   ],

@@ -196,6 +196,7 @@ Separado do time de engenharia, o oma traz pipelines de conteúdo e pesquisa con
 | **oma-translation** | Traduz entre idiomas de forma que parece escrito por um falante nativo |
 | **oma-video** | Gera videos curtos, explicativos e demos por um pipeline Remotion que funciona mesmo sem chaves |
 | **oma-voice** | Gera voiceovers e transcreve audio localmente, sem precisar de nuvem |
+| **oma-web-research** | Pesquisa na web com fontes citadas via servidor MCP do You.com, com perfil gratuito sem chave e fallback para busca nativa |
 
 ## Como Funciona
 

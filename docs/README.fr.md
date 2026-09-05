@@ -196,6 +196,7 @@ En marge de l'équipe d'ingénierie, oma embarque des pipelines de contenu et de
 | **oma-translation** | Traduit entre les langues comme si un natif avait écrit le texte |
 | **oma-video** | Génère des vidéos courtes, explicatives et de démo via un pipeline Remotion utilisable sans clés |
 | **oma-voice** | Génère des voix off et transcrit de l'audio en local, sans cloud |
+| **oma-web-research** | Recherche web avec sources citées via le serveur MCP You.com, avec profil gratuit sans clé et repli sur la recherche native |
 
 ## Comment Ça Marche
 

@@ -123,6 +123,7 @@ const PRESETS = {
     "oma-hwp",
     "oma-academic-writing",
     "oma-search",
+    "oma-web-research",
     "oma-translation",
     "oma-scm",
   ],

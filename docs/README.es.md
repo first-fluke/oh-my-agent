@@ -196,6 +196,7 @@ Aparte del equipo de ingeniería, oma trae pipelines de contenido e investigaci�
 | **oma-translation** | Traduce entre idiomas de forma que parezca escrito por un hablante nativo |
 | **oma-video** | Genera videos cortos, explicativos y demos mediante un pipeline de Remotion que funciona sin claves |
 | **oma-voice** | Genera voiceovers y transcribe audio en el dispositivo, sin necesidad de nube |
+| **oma-web-research** | Investigación web con fuentes citadas vía el servidor MCP de You.com, con perfil gratuito sin clave y alternativa de búsqueda nativa |
 
 ## Cómo Funciona
 
