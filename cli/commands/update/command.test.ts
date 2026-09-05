@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createCommandSurface } from "../../utils/command-surface.js";
 import { registerUpdate } from "./command.js";
 
 const updateMock = vi.hoisted(() => vi.fn(async () => {}));
@@ -22,6 +23,21 @@ describe("update command vendor flags", () => {
   beforeEach(() => {
     updateMock.mockClear();
     updateMcpMock.mockClear();
+  });
+
+  it.each([
+    { argv: ["update"], global: undefined },
+    { argv: ["--global", "update"], global: true },
+  ])("runs the default update through the CLI surface: $argv", async (test) => {
+    const program = makeProgram();
+    const surface = createCommandSurface(program);
+    expect(surface.showHelp(test.argv)).toBe(false);
+    await program.parseAsync(surface.normalize(test.argv), { from: "user" });
+    expect(updateMock).toHaveBeenCalledOnce();
+    expect(updateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ global: test.global }),
+    );
+    expect(updateMcpMock).not.toHaveBeenCalled();
   });
 
   it("routes update mcp to browser selection without a registry update", async () => {

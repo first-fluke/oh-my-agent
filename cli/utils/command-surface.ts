@@ -378,8 +378,15 @@ export function createCommandSurface(program: Command): CommandSurface {
         .filter((t) => t !== "--help" && t !== "-h")
         .join(" ");
       const groupHelp = tokens.at(-1) === "--help" && nodes.has(groupPath);
+      // Commander exposes no public action-presence query. Inspect the original
+      // command, since the discovery tree intentionally has no action handlers.
+      const source = canonicalRoutes.get(groupPath)?.source as
+        | (Command & { _actionHandler?: unknown })
+        | undefined;
       const bareGroup =
-        groupPath.length > 0 && nodes.get(groupPath)?.commands.length;
+        groupPath.length > 0 &&
+        nodes.get(groupPath)?.commands.length &&
+        !source?._actionHandler;
       if (!wantsHelp && !groupHelp && !bareGroup) return false;
       const path = helpCommand
         ? tokens.join(" ")

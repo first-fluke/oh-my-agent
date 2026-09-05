@@ -190,7 +190,11 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
 
       const remoteManifest = await fetchRemoteManifest();
 
-      if (localVersion === remoteManifest.version && !needsReconcile) {
+      if (
+        localVersion === remoteManifest.version &&
+        !needsReconcile &&
+        !withNewSkills
+      ) {
         spinner.stop(pc.green("Already up to date!"));
         ui.outro(`Current version: ${pc.cyan(localVersion)}`);
         await maybeSelfUpdate({
