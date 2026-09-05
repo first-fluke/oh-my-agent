@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "13.2.1",
-  "releaseDate": "2026-09-05T09:17:59.209Z",
+  "releaseDate": "2026-09-05T09:30:38.114Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -801,8 +801,8 @@
     },
     {
       "path": ".agents/skills/oma-debug/resources/debugging-checklist.md",
-      "sha256": "7714f2c4c1d8ed06c8ab0fa234779754ddf3599a5bfa1f8804042a9cfe2cd912",
-      "size": 10135
+      "sha256": "56600438058a1f1de6e8fe3a7b79184dc96c34fc5c8d8bcba1c89a50088a3395",
+      "size": 10122
     },
     {
       "path": ".agents/skills/oma-debug/resources/error-playbook.md",
@@ -1046,8 +1046,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "c743ce9adc9bfda080747c9cd3fe4225123089aa994640f7e97f188afe10eeaa",
-      "size": 7742
+      "sha256": "ce333d92e1267d8b8d20ff344871514bc22dfb8b6d04ca0a6b494085bb383f6d",
+      "size": 7730
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
@@ -1366,8 +1366,8 @@
     },
     {
       "path": ".agents/skills/oma-observability/resources/layers/L7-application/web-rum.md",
-      "sha256": "c35c9e5e46350908ea484e40b56043f527f7b2d333b78d3a7ca19c47034ccc5d",
-      "size": 17780
+      "sha256": "72f369f815977e039d35116e5170128c54833843ae8c0bf919a11312b028d508",
+      "size": 17763
     },
     {
       "path": ".agents/skills/oma-observability/resources/layers/mesh.md",
@@ -1886,8 +1886,8 @@
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
-      "sha256": "e85e5cc1aca34862f825a9f3227a5e0f3e24c6187321ec963b5f87e63eb63710",
-      "size": 28573
+      "sha256": "1b62d9548d96bcef13e543a914ff4c7bea0e943167c11ee7bcacabb1c68b9e6e",
+      "size": 28238
     },
     {
       "path": ".agents/skills/oma-video/config/video-config.yaml",
@@ -1961,8 +1961,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/vendor-matrix.md",
-      "sha256": "56fac069256ddf0b4a84e61538345b1ed72e0e1b2cf249aba44fec42ef78c541",
-      "size": 6535
+      "sha256": "2883ff1f14622142de112027cb1a4af7a6fefcb08015f8d6f1da805f40098347",
+      "size": 6485
     },
     {
       "path": ".agents/skills/oma-voice/SKILL.md",
@@ -2051,8 +2051,8 @@
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
-      "sha256": "2c3b5135605389d1770e5a4b9c407fd53523f588901cf548ec32063f16a56c7d",
-      "size": 9597
+      "sha256": "bde2de7ff70de24c419368a6ff17dee88dd479c7a40d44f1ec824cdc1632b9f0",
+      "size": 9577
     },
     {
       "path": ".agents/workflows/ralph.md",
@@ -2106,8 +2106,8 @@
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "b425a2417522954d53e9ff3f8a21b670bc438b2eac6fb3a312111391c37531fb",
-      "size": 23686
+      "sha256": "bb5dd1b4ab93ddf4ed87110a67e929c652d723e016a81f65bb601564447630f4",
+      "size": 23552
     },
     {
       "path": ".agents/workflows/work.md",
