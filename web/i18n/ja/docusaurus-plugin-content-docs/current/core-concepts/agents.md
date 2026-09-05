@@ -479,7 +479,7 @@ oh-my-agentのエージェントは、専門化されたエンジニアリング
 
 **使用すべき場合：** 1日または期間の作業活動の要約、複数のAIツールにまたがる作業の流れの把握、セッション間のツール切り替えパターンの分析、デイリースタンドアップ／週次レトロ／作業ログの準備。
 
-**使用すべきでない場合：** Gitコミットベースのコード変更レトロスペクティブ（`oma retro`を使用）、リアルタイムエージェントモニタリング（`oma dashboard`を使用）、生産性メトリクス（`oma stats`を使用）。
+**使用すべきでない場合：** Gitコミットベースのコード変更レトロスペクティブ（`oma retro`を使用）、リアルタイムエージェントモニタリング（`oma dashboard terminal`を使用）、生産性メトリクス（`oma stats get`を使用）。
 
 **プロセス：**
 1. 自然言語入力（today、yesterday、last Monday、明示的な日付）から日付または時間範囲を解決
@@ -612,8 +612,8 @@ CHARTER_CHECK:
 ワークスペースはエージェントスポーン時に`-w`フラグで指定します：
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -681,4 +681,4 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 }
 ```
 
-ダッシュボード（`oma dashboard`および`oma dashboard:web`）はリアルタイムモニタリングのためにこれらのメモリファイルを監視します。
+ダッシュボード（`oma dashboard terminal`および`oma dashboard web`）はリアルタイムモニタリングのためにこれらのメモリファイルを監視します。

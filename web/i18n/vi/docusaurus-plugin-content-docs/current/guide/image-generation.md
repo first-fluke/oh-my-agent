@@ -60,7 +60,7 @@ oma image generate "test prompt" --dry-run
 oma image doctor
 
 # List registered vendors and the models each one supports
-oma image list-vendors
+oma image vendor list
 ```
 
 `oma img` là alias cho `oma image`.
@@ -111,7 +111,7 @@ Mọi flag CLI (`--vendor`, `-n`, `--size`, `-r`, `--dry-run`, …) đều hoạ
 Các skill khác (design, marketing, docs) gọi pipeline như hạ tầng dùng chung với đầu ra JSON:
 
 ```bash
-oma image generate "<prompt>" --format json
+oma image generate "<prompt>" --output json
 ```
 
 Manifest ghi ra stdout bao gồm output path, vendor, model và chi phí — dễ parse và chain.
@@ -132,7 +132,7 @@ oma image generate "<prompt>"
   [--dry-run] [--format text|json]
 
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 ### Flag chính

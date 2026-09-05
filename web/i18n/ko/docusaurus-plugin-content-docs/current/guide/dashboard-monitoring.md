@@ -11,15 +11,15 @@ oh-my-agent은 멀티 에이전트 워크플로우 중 에이전트 활동을 �
 
 | 명령 | 인터페이스 | URL | 기술 |
 |:-----|:---------|:----|:-----|
-| `oma dashboard` | 터미널 (TUI) | 해당 없음 (터미널에서 렌더링) | chokidar 파일 감시자, picocolors 렌더링 |
-| `oma dashboard:web` | 브라우저 | `http://localhost:9847` | HTTP 서버, WebSocket, chokidar 파일 감시자 |
+| `oma dashboard terminal` | 터미널 (TUI) | 해당 없음 (터미널에서 렌더링) | chokidar 파일 감시자, picocolors 렌더링 |
+| `oma dashboard web` | 브라우저 | `http://localhost:9847` | HTTP 서버, WebSocket, chokidar 파일 감시자 |
 
 두 대시보드 모두 동일한 데이터 소스를 감시합니다: `.serena/memories/` 디렉토리.
 
 ### 터미널 대시보드
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 터미널에서 직접 박스 그리기 UI를 렌더링합니다. 메모리 파일이 변경되면 자동으로 업데이트됩니다. `Ctrl+C`를 눌러 종료합니다.
@@ -55,17 +55,17 @@ oma dashboard
 ### 웹 대시보드
 
 ```bash
-oma dashboard:web
+oma dashboard web
 ```
 
 포트 9847에서 웹 서버를 엽니다(`DASHBOARD_PORT` 환경 변수로 설정 가능). 브라우저 UI가 WebSocket으로 연결되어 실시간 업데이트를 수신합니다.
 
 ```bash
 # 커스텀 포트
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 
 # 커스텀 메모리 디렉토리
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard web
 ```
 
 웹 대시보드는 터미널 대시보드와 같은 정보를 보여주면서, 다크 테마 UI에 다음 기능을 더합니다:
@@ -86,7 +86,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 │                                │                                │
 │   터미널 1: 메인 에이전트      │   터미널 2: 대시보드            │
 │                                │                                │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 │   ...                          │   ╔═══════════════════════╗    │
 │                                │   ║ Serena Dashboard      ║    │
@@ -97,8 +97,8 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 │                                                                 │
 │   터미널 3: 임시 명령                                            │
 │                                                                 │
-│   $ oma agent:status session-20260324-143052 backend frontend   │
-│   $ oma stats                                                   │
+│   $ oma agent status session-20260324-143052 backend frontend   │
+│   $ oma stats get                                                   │
 │   $ oma verify backend -w ./api                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -193,12 +193,12 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 **조치:**
 1. 에이전트의 로그 파일 확인: `cat /tmp/subagent-{session-id}-{agent-id}.log`
-2. 프로세스가 실제로 실행 중인지 확인: `oma agent:status {session-id} {agent-id}`
+2. 프로세스가 실제로 실행 중인지 확인: `oma agent status {session-id} {agent-id}`
 3. 프로세스가 실행 중이 아닌데 상태가 "running"이면 에이전트가 비정상 종료된 것입니다. 오류 정보와 함께 다시 생성하세요.
 
 ### 신호 2: 에이전트가 "crashed"로 표시
 
-**증상:** `oma agent:status`가 에이전트에 대해 `crashed`를 반환.
+**증상:** `oma agent status`가 에이전트에 대해 `crashed`를 반환.
 
 **가능한 원인:**
 - CLI 벤더 프로세스가 예기치 않게 종료 (메모리 부족, API 할당량 초과, 네트워크 타임아웃).
@@ -208,8 +208,8 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 **조치:**
 1. 로그 파일에서 오류 세부사항 확인: `cat /tmp/subagent-{session-id}-{agent-id}.log`
 2. CLI 설치 확인: `oma doctor`
-3. 인증 확인: `oma auth:status`
-4. 같은 태스크로 에이전트 재생성: `oma agent:spawn {agent-id} "{task}" {session-id} -w {workspace}`
+3. 인증 확인: `oma auth status`
+4. 같은 태스크로 에이전트 재생성: `oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`
 
 ### 신호 3: 대시보드에 "No agents detected yet" 표시
 
@@ -224,20 +224,20 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 1. 메모리 디렉토리 확인: `ls -la .serena/memories/`
 2. 워크플로우가 아직 기획 단계에 있는지 확인 (에이전트가 아직 생성되지 않음).
 3. 대시보드가 올바른 프로젝트 디렉토리를 감시하고 있는지 확인: 대시보드는 현재 작업 디렉토리에서 메모리 경로를 해석합니다.
-4. 커스텀 경로를 사용하는 경우: `MEMORIES_DIR=/path/to/.serena/memories oma dashboard`
+4. 커스텀 경로를 사용하는 경우: `MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal`
 
 ### 신호 4: 웹 대시보드에 "Disconnected" 표시
 
 **증상:** 웹 대시보드의 연결 뱃지가 빨간색 "Disconnected"를 표시.
 
 **가능한 원인:**
-- `oma dashboard:web` 프로세스가 종료됨.
+- `oma dashboard web` 프로세스가 종료됨.
 - 브라우저와 localhost 간의 네트워크 문제.
 - 다른 프로세스가 포트를 사용 중.
 
 **조치:**
 1. 대시보드 프로세스가 실행 중인지 확인: `ps aux | grep dashboard`
-2. 다른 포트 시도: `DASHBOARD_PORT=8080 oma dashboard:web`
+2. 다른 포트 시도: `DASHBOARD_PORT=8080 oma dashboard web`
 3. 포트 가용성 확인: `lsof -i :9847`
 4. 웹 대시보드는 지수 백오프(1초 초기, 1.5배 승수, 10초 최대)로 자동 재연결합니다. 재연결을 위해 몇 초 기다리세요.
 
@@ -268,14 +268,14 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 ## 기술 세부사항
 
-### 터미널 대시보드 (oma dashboard)
+### 터미널 대시보드 (oma dashboard terminal)
 
 - **파일 감시:** [chokidar](https://github.com/paulmillr/chokidar)를 `awaitWriteFinish` (200ms 안정성 임계값, 50ms 폴링 간격)와 함께 사용하여 파일이 다 쓰이기 전에 렌더링되는 것을 방지합니다.
 - **렌더링:** 모든 파일 변경 이벤트에서 전체 터미널을 지우고 다시 그립니다. ANSI 색상 출력에 `picocolors`를 사용하고 테두리에 유니코드 박스 그리기 문자를 사용합니다.
 - **메모리 디렉토리:** `MEMORIES_DIR` 환경 변수, CLI 인자, 또는 `{cwd}/.serena/memories`에서 해석됩니다.
 - **안전 종료:** `SIGINT`와 `SIGTERM` 시그널을 수신하면 chokidar 감시자를 닫고 깔끔하게 종료합니다.
 
-### 웹 대시보드 (oma dashboard:web)
+### 웹 대시보드 (oma dashboard web)
 
 - **HTTP 서버:** Node.js `createServer`가 `/`에서 HTML 페이지를, `/api/state`에서 JSON 상태를 제공합니다.
 - **WebSocket:** `ws` 라이브러리를 사용합니다. `WebSocketServer`가 HTTP 서버에 연결됩니다. 연결 시 클라이언트가 즉시 전체 상태를 수신합니다. 이후 업데이트는 `{ type: "update", event, file, data }` 메시지로 푸시됩니다.

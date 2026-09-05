@@ -39,6 +39,9 @@ Follow these steps in order (adjust depth by difficulty).
 ## Step 3: Decompose Tasks
 - Break into tasks completable by a single agent
 - Each task has: agent, title, description, acceptance criteria, priority, dependencies, **scope**
+- For executable acceptance gates, `acceptance_criteria` contains `{id, description}` objects; `required_checks` contains unique `{id, criteria, command, cwd}` objects. Cover every criterion with relevant exact argv and a project-relative cwd. See `task-template.json` and `../../_shared/runtime/result-contract.md`.
+- Preserve canonical `dependencies` task IDs and a self-contained `task` prompt for replay. `retry_policy` defaults to `manual`; use `safe` only when repetition cannot duplicate external effects.
+- Optional `inputs` declares a complete set of concrete source, test, configuration and dependency inputs for reusable evidence. Omit it for whole-tree verification. `scope` remains the allowed edit boundary and is not an evidence-input list.
 - `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `refactor`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
 - `scope`: array of directory prefixes this agent is allowed to modify (e.g., `["src/api/", "migrations/"]`). Used by `verify` to detect cross-agent boundary violations in parallel execution.
 - **Test approach (opt-in, per task)**: set `test_approach` where a test strategy matters

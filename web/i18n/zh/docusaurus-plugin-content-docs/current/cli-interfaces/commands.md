@@ -123,7 +123,7 @@ oma update --ci --force
 启动终端仪表盘进行实时智能体监控。
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 无选项。监视当前目录中的 `.serena/memories/`。渲染方框绘制 UI，包含会话状态、智能体表格和活动信息流。每次文件变化时更新。按 `Ctrl+C` 退出。
@@ -133,18 +133,18 @@ oma dashboard
 **示例：**
 ```bash
 # 标准使用
-oma dashboard
+oma dashboard terminal
 
 # 自定义内存目录
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal
 ```
 
-### dashboard:web
+### dashboard web
 
 启动 Web 仪表盘。
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 在 `http://localhost:9847` 启动 HTTP 服务器，带 WebSocket 连接进行实时更新。在浏览器中打开 URL 查看仪表盘。
@@ -159,10 +159,10 @@ oma dashboard:web
 **示例：**
 ```bash
 # 标准使用
-oma dashboard:web
+oma dashboard web
 
 # 自定义端口
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 ### stats
@@ -170,7 +170,8 @@ DASHBOARD_PORT=8080 oma dashboard:web
 查看生产力指标。
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 **选项：**
@@ -194,13 +195,13 @@ oma stats [--json] [--output <format>] [--reset]
 **示例：**
 ```bash
 # 查看当前指标
-oma stats
+oma stats get
 
 # JSON 输出
-oma stats --json
+oma stats get --json
 
 # 重置所有指标
-oma stats --reset
+oma stats reset
 ```
 
 ### retro
@@ -261,12 +262,12 @@ oma retro 7d --json
 
 ## 智能体管理
 
-### agent:spawn
+### agent spawn
 
 启动子智能体进程。
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 **参数：**
@@ -281,34 +282,34 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | CLI 供应商覆盖：`antigravity`、`claude`、`codex`、`qwen` |
+| `--vendor <vendor>` | CLI 供应商覆盖：`antigravity`、`claude`、`codex`、`qwen` |
 | `-w, --workspace <path>` | 智能体的工作目录。如省略，从 monorepo 配置自动检测。 |
 
-**供应商解析顺序：** `--model` 标志 > `oma-config.yaml` 中的 `agents:` 覆盖 > 活动 `model_preset` 的智能体默认值。
+**供应商解析顺序：** `--vendor` 标志 > `oma-config.yaml` 中的 `agents:` 覆盖 > 活动 `model_preset` 的智能体默认值。
 
 **提示词解析：** 如果提示词参数是现有文件的路径，则使用文件内容作为提示词。否则，参数作为内联文本使用。供应商特定的执行协议会自动追加。
 
 **示例：**
 ```bash
 # 内联提示词，自动检测工作区
-oma agent:spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
 
 # 从文件读取提示词，显式工作区
-oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
+oma agent spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
 
 # 覆盖供应商为 Claude
-oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
+oma agent spawn backend "Implement auth" session-20260324-143000 --vendor claude -w ./api
 
 # Mobile 智能体，自动检测工作区
-oma agent:spawn mobile "Add biometric login" session-20260324-143000
+oma agent spawn mobile "Add biometric login" session-20260324-143000
 ```
 
-### agent:status
+### agent status
 
 检查一个或多个子智能体的状态。
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 **参数：**
@@ -334,22 +335,22 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 **示例：**
 ```bash
 # 检查特定智能体
-oma agent:status session-20260324-143000 backend frontend
+oma agent status session-20260324-143000 backend frontend
 
 # 输出：
 # backend:running
 # frontend:completed
 
 # 使用自定义根路径检查
-oma agent:status session-20260324-143000 qa -r /path/to/project
+oma agent status session-20260324-143000 qa -r /path/to/project
 ```
 
-### agent:parallel
+### agent parallel
 
 并行运行多个子智能体。
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **参数：**
@@ -362,7 +363,7 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | 所有智能体的 CLI 供应商覆盖 |
+| `--vendor <vendor>` | 所有智能体的 CLI 供应商覆盖 |
 | `-i, --inline` | 内联模式：将任务指定为 `agent:task[:workspace]` 参数 |
 | `--no-wait` | 后台模式：启动智能体后立即返回 |
 
@@ -384,31 +385,31 @@ tasks:
 **示例：**
 ```bash
 # 从 YAML 文件
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 
 # 内联模式
-oma agent:parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
+oma agent parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
 
 # 后台模式（不等待）
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # 覆盖所有智能体的供应商
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
-### agent:review
+### agent review
 
 使用外部 AI CLI（codex、claude、gemini 或 qwen）运行代码审查。
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **选项：**
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | 使用的 CLI 供应商：`antigravity`、`codex`、`claude`、`qwen`。默认为配置中解析的供应商。 |
+| `--vendor <vendor>` | 使用的 CLI 供应商：`antigravity`、`codex`、`claude`、`qwen`。默认为配置中解析的供应商。 |
 | `-p, --prompt <prompt>` | 自定义审查提示词。如省略，使用默认的代码审查提示词。 |
 | `-w, --workspace <path>` | 审查路径。默认为当前工作目录。 |
 | `--no-uncommitted` | 跳过未提交变更的审查。设置后仅审查会话中已提交的变更。 |
@@ -423,34 +424,34 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **示例：**
 ```bash
 # 使用默认供应商审查未提交变更
-oma agent:review
+oma agent review
 
 # 使用 codex 审查（使用原生 codex review 命令）
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # 使用 claude 进行自定义提示词审查
-oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+oma agent review --vendor claude -p "Focus on security vulnerabilities and input validation"
 
 # 审查特定路径
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # 仅审查已提交变更（跳过工作区）
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # 使用 gemini 审查特定工作区中的已提交变更
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
 ## 内存管理
 
-### memory:init
+### memory init
 
 初始化 Serena 内存 schema。
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 **选项：**
@@ -466,22 +467,22 @@ oma memory:init [--json] [--output <format>] [--force]
 **示例：**
 ```bash
 # 初始化内存
-oma memory:init
+oma memory init
 
 # 强制覆盖现有 schema
-oma memory:init --force
+oma memory init --force
 ```
 
 ---
 
 ## 集成与工具
 
-### auth:status
+### auth status
 
 检查所有支持 CLI 的认证状态。
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 
 **选项：**
@@ -495,8 +496,8 @@ oma auth:status [--json] [--output <format>]
 
 **示例：**
 ```bash
-oma auth:status
-oma auth:status --json
+oma auth status
+oma auth status --json
 ```
 
 ### bridge
@@ -662,7 +663,7 @@ oma describe [command-path]
 oma describe
 
 # 描述特定命令
-oma describe agent:spawn
+oma describe agent spawn
 
 # 描述子命令
 oma describe "agent:parallel"
@@ -695,8 +696,8 @@ oma version
 | 变量 | 说明 | 使用者 |
 |:-----|:-----|:-------|
 | `OH_MY_AG_OUTPUT_FORMAT` | 设为 `json` 对所有支持的命令强制 JSON 输出 | 所有带 `--json` 标志的命令 |
-| `DASHBOARD_PORT` | Web 仪表盘端口 | `dashboard:web` |
-| `MEMORIES_DIR` | 覆盖内存目录路径 | `dashboard`、`dashboard:web` |
+| `DASHBOARD_PORT` | Web 仪表盘端口 | `dashboard web` |
+| `MEMORIES_DIR` | 覆盖内存目录路径 | `dashboard`、`dashboard web` |
 
 ---
 

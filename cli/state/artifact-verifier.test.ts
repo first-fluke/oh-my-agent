@@ -1,6 +1,7 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   rmSync,
   utimesSync,
   writeFileSync,
@@ -8,6 +9,12 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { testTask } from "./__fixtures__/task-contract.js";
+import {
+  beginAgentRun,
+  finishAgentRun,
+  verifyAgentRun,
+} from "./agent-results.js";
 import {
   resolveMemoryBasePath,
   verifyRalphExecArtifacts,
@@ -23,15 +30,56 @@ function writeArtifact(projectDir: string, relPath: string, content = "x") {
   return fullPath;
 }
 
+function recordEvidence(projectDir: string, sid = "s1") {
+  for (const [agentId, role] of [
+    ["qa-reviewer", "qa"],
+    ["refactor-engineer", "refactor|debug"],
+  ] as const) {
+    const artifacts = [
+      `${MEM_BASE}/session-ultrawork.md`,
+      `.agents/results/plan-${sid}.json`,
+    ];
+    for (const dir of [MEM_BASE, ".agents/results"]) {
+      for (const file of readdirSync(join(projectDir, dir))) {
+        if (new RegExp(`^result-(${role}).*\\.md$`).test(file))
+          artifacts.push(`${dir}/${file}`);
+      }
+    }
+    const run = beginAgentRun({
+      root: projectDir,
+      workspace: projectDir,
+      sessionId: sid,
+      taskId: agentId,
+      agentId: agentId,
+      vendor: "test",
+    });
+    verifyAgentRun(projectDir, run.runId, [
+      process.execPath,
+      "-e",
+      "process.exit(0)",
+    ]);
+    finishAgentRun(projectDir, run.runId, 0, {
+      status: "completed",
+      changedFiles: [],
+      unresolved: [],
+      artifacts,
+    });
+  }
+}
+const planContent = JSON.stringify({
+  tasks: [testTask("qa-reviewer"), testTask("refactor-engineer")],
+});
+
 function writeFullArtifactSet(projectDir: string, sid = "s1") {
   writeArtifact(
     projectDir,
     `${MEM_BASE}/session-ultrawork.md`,
     "## Phase completion: PLAN done",
   );
-  writeArtifact(projectDir, `.agents/results/plan-${sid}.json`, "{}");
+  writeArtifact(projectDir, `.agents/results/plan-${sid}.json`, planContent);
   writeArtifact(projectDir, `${MEM_BASE}/result-qa-agent-${sid}.md`);
   writeArtifact(projectDir, `${MEM_BASE}/result-refactor-engineer-${sid}.md`);
+  recordEvidence(projectDir, sid);
 }
 
 describe("resolveMemoryBasePath", () => {
@@ -88,6 +136,45 @@ describe("verifyRalphExecArtifacts", () => {
     rmSync(projectDir, { recursive: true, force: true });
   });
 
+  it("rejects empty artifacts and an empty-object plan", async () => {
+    writeArtifact(projectDir, `${MEM_BASE}/session-ultrawork.md`, "");
+    writeArtifact(projectDir, ".agents/results/plan-s1.json", "{}");
+    writeArtifact(projectDir, `${MEM_BASE}/result-qa-s1.md`, "");
+    writeArtifact(projectDir, `${MEM_BASE}/result-refactor-s1.md`, "");
+    expect(
+      (await verifyRalphExecArtifacts({ projectDir, emitOnFail: false })).ok,
+    ).toBe(false);
+  });
+
+  it("rejects fresh-looking reports when source changes after checks", async () => {
+    writeFullArtifactSet(projectDir);
+    writeArtifact(projectDir, "source.ts", "changed since verification");
+    const result = await verifyRalphExecArtifacts({
+      projectDir,
+      emitOnFail: false,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.missing.map((check) => check.id)).toEqual(["A3", "A4"]);
+  });
+
+  it("a later failed task attempt supersedes an earlier passing receipt", async () => {
+    writeFullArtifactSet(projectDir);
+    const run = beginAgentRun({
+      root: projectDir,
+      workspace: projectDir,
+      sessionId: "s1",
+      taskId: "qa-reviewer",
+      agentId: "qa-reviewer",
+      vendor: "test",
+    });
+    finishAgentRun(projectDir, run.runId, 1);
+    const result = await verifyRalphExecArtifacts({
+      projectDir,
+      emitOnFail: false,
+    });
+    expect(result.missing.map((check) => check.id)).toEqual(["A3"]);
+  });
+
   it("passes when all four artifacts are present", async () => {
     writeFullArtifactSet(projectDir);
 
@@ -110,9 +197,10 @@ describe("verifyRalphExecArtifacts", () => {
       `${MEM_BASE}/session-ultrawork.md`,
       "## Phase completion: PLAN done",
     );
-    writeArtifact(projectDir, ".agents/results/plan-s1.json", "{}");
+    writeArtifact(projectDir, ".agents/results/plan-s1.json", planContent);
     writeArtifact(projectDir, ".agents/results/result-qa-s1.md");
     writeArtifact(projectDir, ".agents/results/result-refactor-s1.md");
+    recordEvidence(projectDir);
 
     const result = await verifyRalphExecArtifacts({
       projectDir,
@@ -128,6 +216,7 @@ describe("verifyRalphExecArtifacts", () => {
     writeFullArtifactSet(projectDir);
     rmSync(join(projectDir, `${MEM_BASE}/result-refactor-engineer-s1.md`));
     writeArtifact(projectDir, `${MEM_BASE}/result-debug-agent-s1.md`);
+    recordEvidence(projectDir);
 
     const result = await verifyRalphExecArtifacts({
       projectDir,
@@ -159,9 +248,10 @@ describe("verifyRalphExecArtifacts", () => {
     writeArtifact(
       projectDir,
       `${MEM_BASE}/session-ultrawork.md`,
-      "## REFINE skipped: trivial task (< 50 lines)",
+      "## Phase completion: PLAN done\n## REFINE skipped: trivial task (< 50 lines)",
     );
 
+    recordEvidence(projectDir);
     const result = await verifyRalphExecArtifacts({ projectDir });
 
     expect(result.ok).toBe(true);
@@ -193,7 +283,7 @@ describe("verifyRalphExecArtifacts", () => {
     });
 
     expect(scoped.ok).toBe(false);
-    expect(scoped.missing.map((check) => check.id)).toEqual(["A2"]);
+    expect(scoped.missing.map((check) => check.id)).toEqual(["A2", "A3", "A4"]);
   });
 
   it("ignores artifacts older than --newer-than", async () => {

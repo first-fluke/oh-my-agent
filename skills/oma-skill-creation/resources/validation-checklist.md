@@ -1,6 +1,6 @@
 # SSL-lite Skill Validation Checklist
 
-Use this checklist after creating or updating a skill. `oma skills lint --skill {skill-name}` automates the Required Structure checks plus broken-reference and boundary detection — run it first and use this checklist to interpret findings and cover what lint cannot judge (content quality, routing wording, utility dimensions).
+Use this checklist after creating or updating a skill. `oma skill lint --skill {skill-name}` automates the Required Structure checks plus broken-reference and boundary detection — run it first and use this checklist to interpret findings and cover what lint cannot judge (content quality, routing wording, utility dimensions).
 
 ## Required Structure
 
@@ -28,7 +28,7 @@ Use this checklist after creating or updating a skill. `oma skills lint --skill 
 
 ## Cross-Skill Boundary Check
 
-- Run `oma skills audit` (or `oma doctor`) after editing frontmatter `description`.
+- Run `oma skill audit` (or `oma doctor`) after editing frontmatter `description`.
 - Resolve any `FAIL` (≥ 75% similarity) pair by rewriting one description to highlight distinct triggers, domains, or boundaries.
 - `WARN` (≥ 60%) pairs are acceptable when descriptions cover genuinely related domains; document the distinction in `When NOT to use` cross-routes.
 
@@ -36,7 +36,7 @@ Use this checklist after creating or updating a skill. `oma skills lint --skill 
 
 Three content dimensions predict whether a skill measurably improves task outcomes
 (SkillLens, arXiv:2605.23899). Section structure, formatting, and prose fluency alone do
-not — a well-written skill can still fail `oma skills eval`.
+not — a well-written skill can still fail `oma skill eval`.
 
 - **Failure mechanism encoding**: `Failure and recovery` (and guardrails) explain *why* the
   agent fails in this domain and give an executable remedy. Reject generic advice
@@ -48,7 +48,7 @@ not — a well-written skill can still fail `oma skills eval`.
 - **High-risk action blacklist**: guardrails name and forbid the domain's specific harmful
   action patterns (e.g. "never run `terraform apply` without a reviewed plan"), not only
   positive instructions.
-- When in doubt, verify with `oma skills eval` fixtures instead of judging by prose quality —
+- When in doubt, verify with `oma skill eval` fixtures instead of judging by prose quality —
   textual plausibility does not predict utility.
 
 ## Structural Checks
@@ -82,7 +82,7 @@ not — a well-written skill can still fail `oma skills eval`.
 Primary — automated smell detection (frontmatter, top-level headings, canonical path, broken references, boundaries, empty failure/recovery):
 
 ```bash
-oma skills lint --skill {skill-name}
+oma skill lint --skill {skill-name}
 ```
 
 Resolve every `fail`-severity smell before finishing; `warn` smells need either a fix or a stated reason.
@@ -95,7 +95,7 @@ awk 'BEGIN{c=0} /^```/{c=!c; next} !c && /^## /{print $0}' "$f"
 rg -n '^### Canonical (command|workflow) path$' "$f"
 ```
 
-Check formatting whitespace (not covered by `oma skills lint`):
+Check formatting whitespace (not covered by `oma skill lint`):
 
 ```bash
 git diff --check -- ".agents/skills/{skill-name}"

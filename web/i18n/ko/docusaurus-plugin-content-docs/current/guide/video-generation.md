@@ -52,7 +52,7 @@ oma video generate "product walkthrough" --mode demo --source web --url http://l
 
 실행할 때마다 실행 디렉토리를 출력합니다. 같은 `--seed`로 다시 돌리면 같은 스크립트와 render-spec이 재현됩니다.
 
-`oma video generate --format json`을 셸로 호출하는 다른 도구는 stdout에서 JSON 봉투를 파싱합니다: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. `outputs` 키는 없습니다. 출력과 에셋 경로는 `manifestPath`의 매니페스트에서 읽으세요.
+`oma video generate --output json`을 셸로 호출하는 다른 도구는 stdout에서 JSON 봉투를 파싱합니다: `{exitCode, runDir, manifestPath, scriptPath, renderSpecPath, warnings, error}`. `outputs` 키는 없습니다. 출력과 에셋 경로는 `manifestPath`의 매니페스트에서 읽으세요.
 
 ---
 
@@ -60,9 +60,9 @@ oma video generate "product walkthrough" --mode demo --source web --url http://l
 
 ```
 oma video generate <brief...> [options]
-oma video doctor [--install|--install-mpt|--install-playwright]  # toolchain readiness / provisioning
+oma video doctor [--install|--install-mpt]  # toolchain readiness / provisioning
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
-oma video list-providers         # provider availability + key/fallback status
+oma video provider list         # provider availability + key/fallback status
 ```
 
 ### 주요 플래그
@@ -98,7 +98,7 @@ oma video list-providers         # provider availability + key/fallback status
 | 음성 | `oma-voice` (Voicebox, 로컬) | 타이밍 추정, 오디오 없음 |
 | 비주얼 | `oma-image` / `oma-slide` / 스톡 | 플레이스홀더 에셋 |
 | 자막 | 키가 필요 없는 강제 정렬 | 단어 타이밍 추정 |
-| 캡처 | 감독하의 Playwright 웹 캡처(`--source web`) 또는 Cap(`--source file`) | "직접 녹화하세요" 안내 프로토콜 |
+| 캡처 | 감독하의 브라우저 웹 캡처(`--source web`) 또는 Cap(`--source file`) | "직접 녹화하세요" 안내 프로토콜 |
 | 컴포지터 | Remotion(벤더링) 또는 MoneyPrinterTurbo | 결정론적 플레이스홀더 mp4 |
 
 자격 증명을 자동화하지 않습니다. 캡처 중 화면 로그인은 사람이 직접 하며, URL과 쿼리 토큰은 로그와 매니페스트에서 마스킹합니다.
@@ -109,20 +109,19 @@ oma video list-providers         # provider availability + key/fallback status
 
 ## 툴체인과 `doctor`
 
-무거운 툴체인(벤더링된 Remotion 프로젝트의 `node_modules`, 임베드된 Pretendard 폰트, MoneyPrinterTurbo 체크아웃, Playwright 브라우저, Chrome Headless Shell)은 **필요할 때 프로비저닝**하며 패키지에 담아 배포하지 않습니다. 옵션 없는 `doctor`는 보고만 하고 아무것도 설치하지 않습니다.
+무거운 툴체인(벤더링된 Remotion 프로젝트의 `node_modules`, 임베드된 Pretendard 폰트, MoneyPrinterTurbo 체크아웃, 캡처용 브라우저, Chrome Headless Shell)은 **필요할 때 프로비저닝**하며 패키지에 담아 배포하지 않습니다. 옵션 없는 `doctor`는 보고만 하고 아무것도 설치하지 않습니다.
 
 ```bash
 oma video doctor
 ```
 
-`node`, `chromium`, `ffmpeg`, `remotion-project`, `pretendard-font`, `mpt-project`, `playwright`, `voicebox`, `oma-image`, `pixelle`, `cap` 상태를 보고하고, 빠진 항목의 설치 힌트를 출력합니다. 키가 필요 없는 기본 구성(Node + Chromium + FFmpeg + `oma-image`)만으로도 실제 `.mp4`를 만들 수 있습니다.
+`node`, `chromium`, `ffmpeg`, `remotion-project`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle`, `cap` 상태를 보고하고, 빠진 항목의 설치 힌트를 출력합니다. 키가 필요 없는 기본 구성(Node + Chromium + FFmpeg + `oma-image`)만으로도 실제 `.mp4`를 만들 수 있습니다.
 
 툴체인을 준비하려면 설치 플래그를 쓰세요.
 
 ```bash
 oma video doctor --install             # vendored Remotion deps + Chrome Headless Shell + Pretendard font fetch
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
-oma video doctor --install-playwright  # Playwright + Chromium for web capture
 ```
 
 `--install`은 임베드된 Pretendard 폰트(고정 릴리스)도 벤더링된 프로젝트로 내려받습니다. 이 폰트는 결정성 경계의 일부입니다. 네트워크가 실패하면 경고하고 렌더링은 시스템 폰트로 폴백하는데, 머신 간 바이트 단위로 동일한 출력은 폰트가 있을 때만 보장됩니다.
@@ -153,7 +152,7 @@ oma video doctor --install-playwright  # Playwright + Chromium for web capture
 |---------|-------------|
 | 출력이 mp4가 아니라 아주 작은 텍스트 파일 | 컴포지터가 플레이스홀더로 폴백했습니다. `oma video doctor`를 실행해 표시된 도구를 준비하세요. |
 | 내레이션이 무음(`source: estimated`) | Voicebox에 접근할 수 없습니다. `oma-voice` 서버를 켜거나 추정 타이밍을 그대로 받아들이세요. |
-| `--source web`이 녹화 대신 안내 프로토콜을 출력 | TTY가 없거나(CI) Playwright가 없어서 안내 폴백으로 넘어갔습니다. `oma video doctor --install-playwright`로 설치하세요. |
+| `--source web`이 녹화 대신 안내 프로토콜을 출력 | TTY가 없거나(CI) 브라우저 캡처 런타임이 없어 안내 폴백으로 넘어갔습니다. 캡처 런타임이 준비된 대화형 터미널을 사용하거나 `--capture`로 녹화 파일을 전달하세요. |
 | 첫 실행이 느림 | Remotion 브라우저나 MPT 체크아웃을 한 번 준비하는 중입니다. 이후 실행은 캐시를 재사용합니다. |
 
 ---

@@ -1,9 +1,15 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { VerifyCheck } from "../../types/index.js";
-import { createCheck, runCommand } from "./check-utils.js";
+import {
+  type CommandResult,
+  checkCommandResult,
+  createCheck,
+  runCheckCommand,
+  runCommand,
+} from "./check-utils.js";
 
 type CommandCheck = {
   cmd: string;
@@ -73,19 +79,14 @@ function shellSingleQuote(value: string): string {
  * whitespace (honouring simple quoted tokens) and call spawnSync with an argv
  * array so the command is passed verbatim to the OS without shell interpretation.
  *
- * stdout and stderr are MERGED into the returned string. This preserves the
- * old `${cmd} 2>&1` behaviour the check logic relies on: toolchains like
- * `cargo`, `swift`, `python -m compileall`, and `bun test` emit their
- * diagnostics on stderr, so dropping stderr would make a real failure look
- * like empty output (a false "pass"). Returns `null` only when the binary
- * cannot be spawned at all (e.g. ENOENT); a non-zero exit still returns the
- * captured output so the caller can inspect it.
+ * Preserve both output streams, exit code, signal, and spawn error. Output
+ * is additional evidence; it must never override a failed process outcome.
  *
  * Limitations: the splitter is intentionally minimal (no nested quotes, no
  * env-var expansion). Stack manifests are expected to contain simple commands;
  * shell pipelines / redirects are not supported by design (no shell runs).
  */
-export function runManifestCmd(cmd: string, cwd: string): string | null {
+export function runManifestCmd(cmd: string, cwd: string): CommandResult {
   // Tokenise on whitespace — handles simple `"quoted arg"` and `'quoted arg'`
   // tokens by stripping the outer quotes but NOT expanding anything.
   const tokens: string[] = [];
@@ -96,15 +97,7 @@ export function runManifestCmd(cmd: string, cwd: string): string | null {
     m = tokenRe.exec(cmd);
   }
   const [bin, ...args] = tokens;
-  if (!bin) return null;
-  const res = spawnSync(bin, args, {
-    encoding: "utf-8",
-    cwd,
-    maxBuffer: 10 * 1024 * 1024,
-  });
-  // Could not spawn the binary at all (missing/permission) — signal "no output".
-  if (res.error) return null;
-  return `${res.stdout ?? ""}${res.stderr ?? ""}`.trim();
+  return runCheckCommand(bin ?? "", args, cwd);
 }
 
 /**
@@ -142,16 +135,12 @@ export function checkBackendSyntax(
   if (cfg.skip_if_missing && !hasBinary(cfg.skip_if_missing, workspace)) {
     return createCheck(name, "skip", `${cfg.skip_if_missing} not available`);
   }
-  // Use runManifestCmd (execFileSync-based) instead of runCommand (execSync
-  // shell-based) so manifest-controlled cmd cannot inject shell commands.
-  const output = runManifestCmd(cfg.cmd, workspace);
-  if (output === null || output === "") {
-    return createCheck(name, "pass", "Valid");
-  }
-  if (/error/i.test(output)) {
-    return createCheck(name, "fail", "Syntax errors found");
-  }
-  return createCheck(name, "pass", "Valid");
+  return checkCommandResult(
+    name,
+    runManifestCmd(cfg.cmd, workspace),
+    "Valid",
+    "Syntax check failed",
+  );
 }
 
 export function checkBackendTests(
@@ -164,23 +153,15 @@ export function checkBackendTests(
   if (cfg.skip_if_missing && !hasBinary(cfg.skip_if_missing, workspace)) {
     return createCheck(name, "skip", `${cfg.skip_if_missing} not available`);
   }
-  // Use runManifestCmd (execFileSync-based) instead of runCommand (execSync
-  // shell-based) so manifest-controlled cmd cannot inject shell commands.
-  const output = runManifestCmd(cfg.cmd, workspace);
-  if (output === null) {
-    return createCheck(name, "fail", "Tests failing");
-  }
+  const result = runManifestCmd(cfg.cmd, workspace);
+  const check = checkCommandResult(name, result, "Tests pass", "Tests failed");
+  if (check.status !== "pass") return check;
+  const output = `${result.stdout}\n${result.stderr}`;
   const signal = cfg.pass_signal;
-  if (signal && output.includes(signal)) {
-    return createCheck(name, "pass", "Tests pass");
+  if (signal && !output.includes(signal)) {
+    return createCheck(name, "fail", "Expected test pass signal not found");
   }
-  if (!signal && (output.includes("passed") || output.includes("ok"))) {
-    return createCheck(name, "pass", "Tests pass");
-  }
-  if (output.includes("no tests ran") || output.includes("0 tests")) {
-    return createCheck(name, "pass", "No tests to run");
-  }
-  return createCheck(name, "fail", "Tests failing");
+  return check;
 }
 
 export function checkBackendRawSql(

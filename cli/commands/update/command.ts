@@ -1,11 +1,12 @@
 import type { Command } from "commander";
 import { runAction } from "../../utils/cli-framework.js";
+import { updateMcp } from "./mcp.js";
 import { update } from "./run.js";
 
 export { update } from "./run.js";
 
 export function registerUpdate(program: Command): void {
-  program
+  const command = program
     .command("update")
     .description("Update skills to latest version from registry")
     .option("-f, --force", "Overwrite user-customized config files")
@@ -42,5 +43,20 @@ export function registerUpdate(program: Command): void {
           });
         },
       ),
+    );
+
+  command
+    .command("mcp")
+    .description(
+      "Choose browser MCP servers (Aside, Chrome DevTools, Firefox DevTools)",
+    )
+    .option("-y, --yes", "Keep saved selection, or use Aside by default")
+    .option("--ci", "Run without prompts")
+    .option("--all", "Update all supported project-scoped vendors")
+    .option("--vendor <vendors>", "Update specific vendors (comma-separated)")
+    .action(
+      runAction(async (_options, subcommand: Command) => {
+        await updateMcp(subcommand.optsWithGlobals());
+      }),
     );
 }

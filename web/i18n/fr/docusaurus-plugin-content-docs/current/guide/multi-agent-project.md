@@ -83,24 +83,24 @@ Deux voies d'exécution sont possibles :
 6. Vérifie chaque agent terminé via `verify.sh` : PASS (exit 0) accepte, FAIL (exit 1) relance avec le contexte d'erreur (2 tentatives max), et un échec persistant déclenche la boucle d'exploration.
 7. Collecte tous les fichiers `result-{agent}.md` et compile un rapport final.
 
-### Étape 3 : agent:spawn — gestion d'agents au niveau CLI
+### Étape 3 : agent spawn — gestion d'agents au niveau CLI
 
-La commande `agent:spawn` est le mécanisme bas niveau que les workflows appellent en interne. Vous pouvez aussi l'utiliser directement :
+La commande `agent spawn` est le mécanisme bas niveau que les workflows appellent en interne. Vous pouvez aussi l'utiliser directement :
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 **Tous les flags :**
 
 | Option | Description |
 |:-------|:------------|
-| `-m, --model <vendor>` | Remplacement du fournisseur CLI (antigravity/claude/codex/qwen). Prioritaire sur toute la config. |
+| `--vendor <vendor>` | Remplacement du fournisseur CLI (antigravity/claude/codex/qwen). Prioritaire sur toute la config. |
 | `-w, --workspace <path>` | Répertoire de travail de l'agent. Auto-détecté depuis la config monorepo si omis. |
 
 **Ordre de résolution du fournisseur** (la première correspondance l'emporte) :
 
-1. Flag `--model` sur la ligne de commande
+1. Flag `--vendor` sur la ligne de commande
 2. `model_preset` dans `oma-config.yaml` pour ce type d'agent spécifique
 3. `default_cli` dans `oma-config.yaml`
 4. `active_vendor` dans `cli-config.yaml`
@@ -187,7 +187,7 @@ Si rien ne correspond, l'agent s'exécute dans le répertoire courant (`.`).
 Toujours disponible :
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -245,16 +245,16 @@ Dans le workflow ultrawork, ces conditions se traduisent par des **portes de pha
 
 ```bash
 # Lance un agent backend avec Gemini (par défaut)
-oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # Lance un agent frontend avec Claude, workspace explicite
-oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
 # Lance depuis un fichier de prompt
-oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### Exécution parallèle via agent:parallel
+### Exécution parallèle via agent parallel
 
 À partir d'un fichier de tâches YAML :
 
@@ -273,13 +273,13 @@ tasks:
 ```
 
 ```bash
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 ```
 
 En mode inline :
 
 ```bash
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
@@ -288,14 +288,14 @@ oma agent:parallel --inline \
 Mode arrière-plan (no wait) :
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 # Retourne immédiatement, résultats écrits dans .agents/results/parallel-{timestamp}/
 ```
 
 Avec remplacement du fournisseur :
 
 ```bash
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
 ---
@@ -328,7 +328,7 @@ Exécuter les tâches P1 avant la fin des tâches P0. Les niveaux de priorité e
 
 ### 7. Sauter la vérification
 
-Utiliser directement `agent:spawn` sans exécuter ensuite le script de vérification. L'étape de vérification attrape les échecs de build, les régressions de tests et les violations de périmètre qui se propageraient autrement.
+Utiliser directement `agent spawn` sans exécuter ensuite le script de vérification. L'étape de vérification attrape les échecs de build, les régressions de tests et les violations de périmètre qui se propageraient autrement.
 
 ---
 

@@ -373,7 +373,7 @@ describe("skill-injector", () => {
       ]);
       expect(ctx).toContain("[OMA SKILLS DETECTED: oma-search]");
       expect(ctx).toContain(".agents/skills/oma-search/SKILL.md");
-      expect(ctx).toContain("search docs");
+      expect(ctx).not.toContain("search docs");
     });
   });
 
@@ -542,16 +542,16 @@ describe("skill-injector", () => {
   });
 
   describe("formatClaudeSlashSkillContext", () => {
-    it("emits the OMA CLAUDE SLASH SKILL INVOKED header and the SKILL.md body", () => {
+    it("emits the OMA SLASH SKILL INVOKED header and the SKILL.md body", () => {
       const ctx = formatClaudeSlashSkillContext({
         name: "ralph",
         skillRelPath: ".claude/skills/ralph/SKILL.md",
         body: "# /ralph\nRead and follow `.agents/workflows/ralph.md`.",
       });
-      expect(ctx).toContain("[OMA CLAUDE SLASH SKILL INVOKED: ralph]");
+      expect(ctx).toContain("[OMA SLASH SKILL INVOKED: ralph]");
       expect(ctx).toContain(".claude/skills/ralph/SKILL.md");
       expect(ctx).toContain("Read and follow `.agents/workflows/ralph.md`");
-      expect(ctx).toContain("Do NOT respond that the skill is unavailable.");
+      expect(ctx).toContain("The user explicitly invoked /ralph.");
     });
   });
 
@@ -630,7 +630,7 @@ describe("skill-injector", () => {
         throw new Error("expected a context result");
       }
       expect(viaArray.additionalContext).toContain(
-        "[OMA CLAUDE SLASH SKILL INVOKED: ralph]",
+        "[OMA SLASH SKILL INVOKED: ralph]",
       );
       expect(viaArray).toEqual(viaString);
     });

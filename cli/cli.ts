@@ -5,10 +5,12 @@ import {
   resolveInstallContext,
   setInstallContext,
 } from "./platform/install-context.js";
+import type { CommandSurface } from "./utils/command-surface.js";
 
 const VERSION = pkg.version;
 
 const program = new Command();
+let commandSurface: CommandSurface | undefined;
 
 program
   .name("oh-my-agent")
@@ -30,7 +32,7 @@ program.hook("preAction", () => {
 
 /**
  * Register the full command tree. Every command module is imported lazily so
- * the `oma hook` fast path below never pays their module-evaluation cost.
+ * the `oma hook run` fast path below never pays their module-evaluation cost.
  * `Promise.all` order determines `--help` listing order.
  */
 async function registerFullCli(): Promise<void> {
@@ -48,7 +50,10 @@ async function registerFullCli(): Promise<void> {
     .action(
       runAction(
         (commandPath) => {
-          printDescribe(program, commandPath);
+          printDescribe(
+            commandSurface?.help ?? program,
+            commandSurface?.describePath(commandPath) ?? commandPath,
+          );
         },
         { supportsJsonOutput: true },
       ),
@@ -152,11 +157,20 @@ async function registerFullCli(): Promise<void> {
 // wrappers (oma-hook.sh), so it must not pay the full command tree's
 // module-evaluation cost (~0.4s). Register only the hook slice; any other
 // argv shape (including `oma -g hook`) falls through to the full CLI.
-if (process.argv[2] === "hook") {
+if (process.argv[2] === "hook" && process.argv[3] !== "probe") {
   const { registerHook } = await import("./commands/hook/command.js");
   registerHook(program);
 } else {
   await registerFullCli();
 }
 
-program.parse();
+const { createCommandSurface } = await import("./utils/command-surface.js");
+commandSurface = createCommandSurface(program);
+try {
+  const argv = process.argv.slice(2);
+  if (!commandSurface.showHelp(argv))
+    await program.parseAsync(commandSurface.normalize(argv), { from: "user" });
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+}

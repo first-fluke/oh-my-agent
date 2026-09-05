@@ -168,7 +168,7 @@ See `resources/examples.md` for input/output examples.
 Use `resources/intent-rules.md` for intent classification reference.
 Use `resources/trust-registry.md` for domain trust scoring reference.
 Before submitting, run `resources/checklist.md`.
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Intent classification: `resources/intent-rules.md`

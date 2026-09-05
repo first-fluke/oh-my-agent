@@ -230,7 +230,7 @@ quyết persona của từng agent từ các file `.opencode/agents/<id>.md` đ�
 Định tuyến bất kỳ agent nào qua opencode bằng override `-m opencode`:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Lệnh này chạy `opencode run --agent pm --dir <workspace> "<prompt>"`. Prompt là
@@ -287,18 +287,18 @@ hardcode các slug model của opencode. Hãy kiểm tra một slug dựa trên 
 cài đặt của bạn:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` báo `accepted` khi slug có trong danh sách của
+`oma model probe` báo `accepted` khi slug có trong danh sách của
 `opencode models`, `rejected` khi không có, và `auth_required` khi provider cần
 đăng nhập hoặc thuê bao.
 
 ### Xác thực và file được sinh ra
 
 - **Xác thực:** `opencode auth login` lưu thông tin đăng nhập trong
-  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` báo cáo
+  `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` báo cáo
   trạng thái xác thực opencode bên cạnh các CLI khác ở cấp vendor (được coi là đã xác thực khi bất kỳ
   provider nào có thông tin xác thực). Ngược lại, `oma doctor --profile` phân biệt provider: mỗi dòng
   được kiểm tra theo tiền tố provider trong `cli_model` đã đăng ký, nên model có

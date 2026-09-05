@@ -233,6 +233,7 @@ export function parseSearchResults(
 export async function recallFacts(
   query: string,
   k = 5,
+  projectDir: string = process.cwd(),
 ): Promise<RecalledFact[]> {
   if (!query.trim()) return [];
   // The whole body is guarded so this honors its "never throws" contract: the
@@ -246,7 +247,14 @@ export async function recallFacts(
     const response = await requestAgentMemory(url, "/agentmemory/search", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query, limit: k }),
+      // Match the project identity used by observeWithTimeout. The query's
+      // project-name term is a relevance hint, not a scope restriction.
+      body: JSON.stringify({
+        query,
+        limit: k,
+        project: basename(projectDir),
+        cwd: projectDir,
+      }),
       timeoutMs: 2000,
     });
     if (response.statusCode < 200 || response.statusCode >= 300) return [];

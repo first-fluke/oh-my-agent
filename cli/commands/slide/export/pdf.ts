@@ -1,5 +1,5 @@
 /**
- * export/pdf.ts — oma slide pdf --dir --out [--mode capture|print]
+ * export/pdf.ts — oma slide export pdf --dir --out [--mode capture|print]
  *
  * Exports a slide deck to PDF via puppeteer-core.
  *

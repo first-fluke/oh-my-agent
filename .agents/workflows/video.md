@@ -25,7 +25,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 This workflow has two required checkpoints: **mode-selection** (Step 2) and **cost-confirmation** (Step 5). Do not skip either emit/verify pair.
 
@@ -73,9 +73,9 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
    ```
 2. Run the readiness check and surface gaps before spending any time on assets:
    ```bash
-   oma video doctor --format json
+   oma video doctor --output json
    ```
-   This reports Node / Chromium / FFmpeg, the vendored Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Playwright web-capture readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. The MPT fallback compositor needs a one-time `oma video doctor --install-mpt` (clone + venv + deps). For web capture, `oma video doctor --install-playwright` is the one-time install (`npm i playwright` + chromium); it reuses the project's Playwright when present.
+   This reports Node / Chromium / FFmpeg, the vendored Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Browser web-capture readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. The MPT fallback compositor needs a one-time `oma video doctor --install-mpt` (clone + venv + deps).
 3. If doctor reports a hard blocker for the chosen mode (e.g. no compositor for `shorts`/`explainer`), report the remediation and stop. If only an optional provider is missing (Pexels, Pixelle, Cap), note it and continue on the fallback.
 4. Record run start with the memory write tool: brief summary, requested mode, doctor result.
 
@@ -86,12 +86,12 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
 1. State the resolved **mode**, **aspect**, **locale**, **caption style**, **visual track**, and **compositor** you intend to use, and the expected output name.
 2. For `demo` mode, state up front: **"Capture is performed by a human."** Resolve the **source**:
    - `--source file`: if no `--capture <path>` is available and Cap CLI is not present, ask the user to record and provide the file path before proceeding.
-   - `--source web --url <url>` (any URL — local/staging/prod): state that the tool opens a **headed browser** and records while the **human drives the entire on-screen flow** and presses ENTER to stop; **no login is ever automated**, and the `--url` plus any query tokens are masked in logs and the manifest. The capture size is derived from `--aspect`/`--device` (no hardcoded size). If Playwright is unresolvable, or the session has no interactive TTY (CI / `-y` / no stdin), say so and fall back to the guided protocol — never hang. (`--capture-stop duration:<sec>|selector:<css>` supplies a non-interactive stop for CI.)
-3. **You MUST get user confirmation on the mode/plan before Step 3.**
+   - `--source web --url <url>` (any URL — local/staging/prod): state that the tool opens a **headed browser** and records while the **human drives the entire on-screen flow** and presses ENTER to stop; **no login is ever automated**, and the `--url` plus any query tokens are masked in logs and the manifest. The capture size is derived from `--aspect`/`--device` (no hardcoded size). If the browser capture runtime is unavailable, or the session has no interactive TTY (CI / `-y` / no stdin), say so and fall back to the guided protocol — never hang. (`--capture-stop duration:<sec>|selector:<css>` supplies a non-interactive stop for CI.)
+3. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 4. After the user confirms, emit and verify the mode-selection decision:
    ```bash
-   oma state:emit "decision.made" '{"subject":"video.mode-selection","decision":"Proceed with the confirmed mode and pipeline plan.","rationale":"The user confirmed mode, aspect, visual track, and compositor before asset generation."}'
-   oma state:verify --workflow video --checkpoint mode-selection
+   oma state emit "decision.made" '{"subject":"video.mode-selection","decision":"Proceed with the confirmed mode and pipeline plan.","rationale":"The user confirmed mode, aspect, visual track, and compositor before asset generation."}'
+   oma state verify --workflow video --checkpoint mode-selection
    ```
 
 ---
@@ -113,7 +113,7 @@ The agent writes the script — this is the start of the determinism boundary. D
      --captions <tiktok|lower-third|none> --visual <auto|generate|stock|aigc|slide> \
      --voice <profile|none> --music <upbeat|calm|cinematic|lofi|piano|none> --duration <sec|auto> \
      --compositor <remotion|mpt> --seed <n> \
-     --script <path-to-agent-authored-script.json> --dry-run --format json
+     --script <path-to-agent-authored-script.json> --dry-run --output json
    ```
 6. Review the emitted `script.json` for scene count, durations, and narration quality. Iterate here — fixing the script is cheap; fixing a render is not.
 
@@ -124,7 +124,7 @@ The agent writes the script — this is the start of the determinism boundary. D
 The CLI orchestrator fans out the asset tracks per the asset bus. Trigger the full (non-dry) run; the orchestrator runs the tracks and writes them into the run directory. **Do not author assets by hand.**
 
 ```bash
-oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script <path>, without --dry-run] --format json
+oma video generate "<brief>" --mode <mode> [same flags as Step 3, incl. --script <path>, without --dry-run] --output json
 ```
 
 The three tracks (per `.agents/skills/oma-video/SKILL.md` and its execution protocol):
@@ -144,11 +144,11 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
   1. Opens a real browser at `--url`, waits for load/hydration (`networkidle`, optional `--ready-selector <css>`), at a size derived from `--aspect`/`--device` (no hardcoded size).
   2. Prompts on the terminal: the **human performs the entire on-screen flow** (whatever it is — multi-page popups / new tabs / redirects are all recorded generically) and presses **ENTER** to stop. The tool **never automates a login**; if the flow needs one, the human does it.
   3. Records to a real `capture.mp4` in the run dir, validated with ffprobe. The `--url` and any query tokens are **masked** in logs and `manifest.json`; outputs stay in the run dir.
-  4. **Fallback (key-optional, non-blocking):** if Playwright is unresolvable, or there is no interactive TTY (CI / `-y` / no stdin), the orchestrator falls back to the **guided protocol** and warns — it never hangs. `--capture-stop duration:<sec>|selector:<css>` gives CI a non-interactive stop instead of the ENTER prompt.
+  4. **Fallback (key-optional, non-blocking):** if the browser capture runtime is unavailable, or there is no interactive TTY (CI / `-y` / no stdin), the orchestrator falls back to the **guided protocol** and warns — it never hangs. `--capture-stop duration:<sec>|selector:<css>` gives CI a non-interactive stop instead of the ENTER prompt.
   5. **Display caveat:** the capture launches a **headed** Chromium, which needs a display. On display-less hosts (CI / Linux without X), pass `--capture-stop …` — the driver then runs headless (`record.mjs --headless 1`) — or expect a capture error / guided fallback.
   6. Live capture is **outside** the determinism boundary, so the manifest records `nondeterministic: true`.
 
-> **Optional fast-path (agent sessions only):** when an agent session has a Playwright/Chrome MCP available, it may drive the headed flow through that MCP as a complement. This is **not** the primary path — the CLI web-capture subprocess remains canonical, and the same rules hold (human drives any login, URL/tokens masked, run-dir-only).
+> **Optional fast-path (agent sessions only):** when an agent session has a Chrome DevTools MCP available, it may drive the headed flow through that MCP as a complement. This is **not** the primary path — the CLI web-capture subprocess remains canonical, and the same rules hold (human drives any login, URL/tokens masked, run-dir-only).
 
 ---
 
@@ -157,8 +157,8 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 1. Inspect the cost estimate the orchestrator computed across providers (`cost.usd` + breakdown in the manifest/JSON output).
 2. **If the estimate meets or exceeds the guardrail** (default $0.20, or `--max-usd`), pause and present the breakdown. **You MUST get user confirmation before the paid render proceeds.** Then emit and verify:
    ```bash
-   oma state:emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
-   oma state:verify --workflow video --checkpoint cost-confirmation
+   oma state emit "decision.made" '{"subject":"video.cost-confirmation","decision":"Proceed with the estimated paid cost or fall back to the key-free path.","rationale":"Estimated cost crossed the guardrail; the user confirmed spend or chose the fallback."}'
+   oma state verify --workflow video --checkpoint cost-confirmation
    ```
    If the user declines, re-run with the key-free providers (drop `--visual stock|aigc`) — the fallback chain keeps the run alive.
 3. If the estimate is under the guardrail, note "cost under guardrail ($X.XX < $0.20)" and continue without a confirmation prompt.
@@ -169,10 +169,10 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
 ## Step 6: Composite (Remotion — you author the composition → MPT fallback)
 
 1. **Remotion** (default, all modes) — oma ships no composition code; you write it per run on the always-latest Remotion:
-   1. `oma video generate` already scaffolded `<runDir>/remotion/` (warning `composition pending`). If not, or to refresh: `oma video compose <runDir> --format json`.
+   1. `oma video generate` already scaffolded `<runDir>/remotion/` (warning `composition pending`). If not, or to refresh: `oma video compose <runDir> --output json`.
    2. Read, in order: `<runDir>/remotion/AUTHORING.md` (contract for this spec), the `remotion-best-practices` and `remotion-markup` SKILL.md paths it lists (remotion-dev/skills at HEAD; `remotion-captions` when `captions.style !== "none"`, `remotion-multimedia` for video/audio), and `.agents/skills/oma-video/resources/remotion-authoring/<mode>.md`.
    3. Write `<runDir>/remotion/src/Root.tsx` (+ `src/components/*`): one `<Composition id={composition}>` consuming `render-spec.json`, `calculateMetadata` from props, deterministic (no network/randomness), Pretendard via `staticFile("fonts/PretendardVariable.woff2")`. Never edit the generated files.
-   4. `oma video render <runDir> --format json` — typecheck → `npx remotion render` → ffprobe. **Non-zero exit is a composition bug**: read the diagnostics, consult the skills again (`remotion-upgrade` for API moves), fix, re-render. No fixed cap; stop only after two consecutive attempts without progress and report the diagnostics.
+   4. `oma video render <runDir> --output json` — typecheck → `npx remotion render` → ffprobe. **Non-zero exit is a composition bug**: read the diagnostics, consult the skills again (`remotion-upgrade` for API moves), fix, re-render. No fixed cap; stop only after two consecutive attempts without progress and report the diagnostics.
    - **Demo raw vs `--polish`**: for `demo`, the **default** is the raw captured footage copied through as the output. `--polish` means you author the `Demo` composition (intro / callouts / zoom over the capture as `background`).
 2. **MoneyPrinterTurbo** (`--compositor mpt`, shorts e2e alt): the agent-written script is injected in custom-script mode; provider keys are env-only and masked in logs. Needs `oma video doctor --install-mpt` once.
 3. If the toolchain cannot be fetched (offline, nothing cached): `oma video doctor --install` once online. Do not pin or hand-install Remotion.
@@ -199,7 +199,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    - layout/transition/crop → **Step 6** edit the composition (`<runDir>/remotion/src`) or the render-spec → `oma video render` (for `demo`, toggle `--polish`).
 3. **Determinism guard:** when validating reproducibility, run the golden harness — render-spec and assets must be byte-identical:
    ```bash
-   OMA_VIDEO_MOCK=1 oma video generate "<brief>" --mode <mode> --seed <n> --dry-run --format json
+   OMA_VIDEO_MOCK=1 oma video generate "<brief>" --mode <mode> --seed <n> --dry-run --output json
    ```
 4. **If the same defect persists after 2 fix attempts**, stop iterating blindly: present 2-3 alternative approaches (different visual track, different mode framing, different compositor) and get the user to choose before the next attempt. Record discarded attempts.
 5. Repeat until the checklist passes or the user accepts the result.
@@ -218,7 +218,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    <mode>-<slug>.mp4
    manifest.json
    ```
-2. Verify `manifest.json` is the reproducibility record: `runId, mode, providers{...}, assets[{path,sha256,bytes,seed}], outputs{video,durationSec,sha256}, cost{usd,breakdown}, warnings[], exitCode`. All external assets are copied into the run dir and hashed — no URL refs. For `demo --source web`, the manifest carries `nondeterministic: true`, the capture provider id (`playwright-web`), and a **masked** `--url` (query tokens stripped) — never the raw URL or any credential.
+2. Verify `manifest.json` is the reproducibility record: `runId, mode, providers{...}, assets[{path,sha256,bytes,seed}], outputs{video,durationSec,sha256}, cost{usd,breakdown}, warnings[], exitCode`. All external assets are copied into the run dir and hashed — no URL refs. For `demo --source web`, the manifest carries `nondeterministic: true`, the selected capture provider id, and a **masked** `--url` (query tokens stripped) — never the raw URL or any credential.
 3. Report to the user:
    - Output MP4 path (absolute) and duration.
    - Providers used per track, and which tracks took the **fallback** path.
@@ -240,5 +240,5 @@ Common error → action map:
 | `ProviderUnavailableError` | 5 | a required provider is down → run `oma video doctor`, fix or fall back |
 | `CompositorBootstrapError` | 1 | Remotion not installed → `oma video doctor` install-once, then re-render |
 | `CostGuardrailError` | confirm | estimate crossed guardrail → Step 5 confirmation or drop paid providers |
-| `CaptureRequiredError` | guided | demo needs footage → `--source file`: ask user to record + pass `--capture <path>`. `--source web`: Playwright unresolvable / no TTY / empty recording → fall back to the guided protocol (no hang) |
+| `CaptureRequiredError` | guided | demo needs footage → `--source file`: ask user to record + pass `--capture <path>`. `--source web`: Browser capture runtime unavailable / no TTY / empty recording → fall back to the guided protocol (no hang) |
 | `SchemaValidationError` | 4 | script/render-spec invalid, or `--source web` without `--url` → fix in Step 3 (or supply `--url`), re-validate with `--dry-run` |

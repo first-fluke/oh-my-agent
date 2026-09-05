@@ -25,7 +25,7 @@ Run the upstream `last30days` research engine (always the latest release, manage
 ### When NOT to use
 - General web research without market framing -> use oma-search directly
 - Academic literature -> use oma-scholar
-- Live dashboards or scheduled monitoring -> `oma schedule:*` wrapping this skill
+- Live dashboards or scheduled monitoring -> `oma schedule <action>` wrapping this skill
 
 ### Expected inputs
 - Topic string; optional `--intent pain|trend|competitor|discovery` (else classified per `resources/intent-rules.md`)

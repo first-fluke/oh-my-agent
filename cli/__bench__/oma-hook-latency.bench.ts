@@ -1,7 +1,7 @@
 /**
  * oma hook latency benchmark — design 019 §T2 (one-shot SLO).
  *
- * Measures wall-clock time for a single `oma hook --vendor claude --event
+ * Measures wall-clock time for a single `oma hook run --vendor claude --event
  * UserPromptSubmit` invocation with a representative stdin payload.
  * Each run is an independent child process — this is the realistic cost
  * paid by a vendor's hook system on every user prompt.
@@ -65,7 +65,15 @@ function runOnce(): bigint {
 
   spawnSync(
     process.execPath, // node
-    [CLI_JS, "hook", "--vendor", "claude", "--event", "UserPromptSubmit"],
+    [
+      CLI_JS,
+      "hook",
+      "run",
+      "--vendor",
+      "claude",
+      "--event",
+      "UserPromptSubmit",
+    ],
     {
       input: STDIN_PAYLOAD,
       encoding: "utf-8",
@@ -123,7 +131,7 @@ const max = sorted[sorted.length - 1] ?? 0;
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
-console.log("\n[bench] oma hook --vendor claude --event UserPromptSubmit");
+console.log("\n[bench] oma hook run --vendor claude --event UserPromptSubmit");
 console.log(`  runs  : ${measured} (${WARMUP_RUNS} warmup discarded)`);
 console.log(`  p50   : ${p50.toFixed(1)} ms`);
 console.log(`  p95   : ${p95.toFixed(1)} ms`);

@@ -11,11 +11,23 @@ export function registerVisualize(program: Command): void {
     program
       .command("visualize")
       .alias("viz")
-      .description("Visualize project structure as a dependency graph"),
+      .description("Visualize project structure as a dependency graph")
+      .option(
+        "--focus <node-or-path>",
+        "Select only required references (transitive)",
+      )
+      .option(
+        "--affected <paths...>",
+        "Find definitions, workflows and checks affected by changes",
+      ),
   ).action(
     runAction(
       async (options) => {
-        await visualize({ json: resolveJsonMode(options) });
+        await visualize({
+          json: resolveJsonMode(options),
+          focus: options.focus,
+          affected: options.affected,
+        });
       },
       { supportsJsonOutput: true },
     ),

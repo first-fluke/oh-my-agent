@@ -1,15 +1,24 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, normalize } from "node:path";
 import pc from "picocolors";
+import { SKILLS } from "../constants/index.js";
 import { getCoordinationStorePath } from "../io/memory.js";
-import { SKILLS } from "../platform/skills-installer.js";
 
 // ── Types ───────────────────────────────────────────────────────
 
 export interface GraphNode {
   id: string;
   label: string;
-  category: "root" | "skill" | "workflow" | "shared" | "agent" | "memory";
+  category:
+    | "root"
+    | "skill"
+    | "workflow"
+    | "shared"
+    | "agent"
+    | "memory"
+    | "resource"
+    | "check";
+  paths?: string[];
   group?: string;
   subgroup?: string;
 }
@@ -117,7 +126,10 @@ function listSharedEntries(dir: string, prefix = ""): SharedEntry[] {
 
 // ── Graph Builder ───────────────────────────────────────────────
 
-export function buildGraph(root: string): Graph {
+export function buildGraph(
+  root: string,
+  options: { includeChecks?: boolean } = {},
+): Graph {
   const nodes: GraphNode[] = [
     { id: "root", label: "oh-my-agent", category: "root" },
   ];
@@ -133,7 +145,15 @@ export function buildGraph(root: string): Graph {
 
   // Skills
   const skillsBase = join(root, ".agents", "skills");
-  for (const [cat, names] of Object.entries(SKILL_CATS)) {
+  const categories = {
+    ...SKILL_CATS,
+    Custom: tryDir(skillsBase).filter(
+      (name) =>
+        !Object.values(SKILL_CATS).flat().includes(name) &&
+        existsSync(join(skillsBase, name, "SKILL.md")),
+    ),
+  };
+  for (const [cat, names] of Object.entries(categories)) {
     for (const name of names) {
       const dir = join(skillsBase, name);
       if (!existsSync(dir)) continue;
@@ -144,6 +164,7 @@ export function buildGraph(root: string): Graph {
         category: "skill",
         group: "Skills",
         subgroup: cat,
+        paths: [`.agents/skills/${name}/SKILL.md`],
       });
       const content = [
         tryRead(join(dir, "SKILL.md")),
@@ -159,7 +180,13 @@ export function buildGraph(root: string): Graph {
   for (const f of tryDir(wfDir).filter((f) => f.endsWith(".md"))) {
     const name = f.replace(".md", "");
     const id = `workflow:${name}`;
-    nodes.push({ id, label: name, category: "workflow", group: "Workflows" });
+    nodes.push({
+      id,
+      label: name,
+      category: "workflow",
+      group: "Workflows",
+      paths: [`.agents/workflows/${f}`],
+    });
     for (const ref of findSharedRefs(tryRead(join(wfDir, f))))
       edge(id, `shared:${ref}`, "references");
   }
@@ -173,6 +200,9 @@ export function buildGraph(root: string): Graph {
       label: entry.path,
       category: "shared",
       group: "Shared",
+      paths: [
+        `.agents/skills/_shared/${entry.path}${entry.isDirectory ? "" : ".md"}`,
+      ],
     });
     if (!entry.isDirectory) {
       for (const ref of findSharedRefs(
@@ -183,19 +213,115 @@ export function buildGraph(root: string): Graph {
     }
   }
 
-  // Claude Agents
-  const claudeDir = join(root, ".claude", "agents");
-  for (const f of tryDir(claudeDir).filter((f) => f.endsWith(".md"))) {
-    const name = f.replace(".md", "");
-    const id = `agent:${name}`;
-    nodes.push({
-      id,
-      label: name,
-      category: "agent",
-      group: "Claude Agents",
+  // Discover installed agents from the SSOT and every supported vendor.
+  for (const vendor of [
+    "agents",
+    "claude",
+    "codex",
+    "cursor",
+    "qwen",
+    "opencode",
+    "pi",
+  ]) {
+    const agentDir = `.${vendor}/agents`;
+    for (const file of tryDir(join(root, agentDir)).filter((f) =>
+      /\.(md|toml)$/.test(f),
+    )) {
+      const name = file.replace(/\.(md|toml)$/, "");
+      const id = `agent:${name}`;
+      const existing = nodes.find((node) => node.id === id);
+      if (existing) existing.paths?.push(`${agentDir}/${file}`);
+      else
+        nodes.push({
+          id,
+          label: name,
+          category: "agent",
+          group: "Agents",
+          paths: [`${agentDir}/${file}`],
+        });
+      const skill = AGENT_SKILL_MAP[name];
+      if (skill) edge(id, `skill:${skill}`, "implements");
+    }
+  }
+
+  // Model resource files as dependencies, including custom skill resources.
+  const walkFiles = (dir: string): string[] =>
+    tryDirEntries(join(root, dir)).flatMap((entry) => {
+      if (["node_modules", "dist"].includes(entry.name)) return [];
+      const file = `${dir}/${entry.name}`;
+      return entry.isDirectory() ? walkFiles(file) : [file];
     });
-    const skill = AGENT_SKILL_MAP[name];
-    if (skill) edge(id, `skill:${skill}`, "implements");
+  for (const skill of nodes.filter((node) => node.category === "skill")) {
+    for (const file of walkFiles(`.agents/skills/${skill.label}`)) {
+      if (!file.endsWith(".md") || file.endsWith("/SKILL.md")) continue;
+      const id = `resource:${file.slice(".agents/skills/".length)}`;
+      nodes.push({
+        id,
+        label: file.slice(".agents/skills/".length),
+        category: "resource",
+        paths: [file],
+      });
+    }
+  }
+  const pathNodes = new Map(
+    nodes.flatMap((node) =>
+      (node.paths ?? []).map((file) => [file, node.id] as const),
+    ),
+  );
+  for (const node of nodes) {
+    for (const file of node.paths ?? []) {
+      const content = tryRead(join(root, file));
+      for (const ref of findSharedRefs(content))
+        edge(node.id, `shared:${ref}`, "references");
+      // Role/workflow directives name skills. Mentions in shared guidance or
+      // example prose are not dependencies and would expand every context.
+      for (const other of nodes.filter(
+        (candidate) =>
+          candidate.category === "skill" &&
+          ["agent", "workflow"].includes(node.category),
+      )) {
+        if (
+          other.id !== node.id &&
+          new RegExp(`(?<![\\w-])${other.label}(?![\\w-])`).test(content)
+        )
+          edge(node.id, other.id, "references");
+      }
+      // Relative Markdown links and literal paths in backticks.
+      for (const match of content.matchAll(/\]\(([^)\s]+)\)|`([^`\s]+)`/g)) {
+        const ref = (match[1] ?? match[2] ?? "").split("#")[0] ?? "";
+        if (/^[a-z]+:\/\//i.test(ref)) continue;
+        const target =
+          pathNodes.get(
+            normalize(join(dirname(file), ref)).replaceAll("\\", "/"),
+          ) ?? pathNodes.get(ref);
+        if (target && target !== node.id) edge(node.id, target, "references");
+        if (
+          options.includeChecks !== false &&
+          /^cli\/.+\.test\.[cm]?tsx?$/.test(ref) &&
+          existsSync(join(root, ref))
+        ) {
+          const id = `check:${ref}`;
+          if (!nodes.some((node) => node.id === id))
+            nodes.push({ id, label: ref, category: "check", paths: [ref] });
+          edge(id, node.id, "references");
+        }
+      }
+    }
+  }
+  // A check edge is only emitted when a test names an actual definition path.
+  for (const file of (options.includeChecks === false
+    ? []
+    : walkFiles("cli")
+  ).filter((file) => /\.test\.[cm]?tsx?$/.test(file))) {
+    const content = tryRead(join(root, file));
+    const targets = [...pathNodes.entries()].filter(([definition]) =>
+      content.includes(definition),
+    );
+    if (!targets.length) continue;
+    const id = `check:${file}`;
+    if (!nodes.some((node) => node.id === id))
+      nodes.push({ id, label: file, category: "check", paths: [file] });
+    for (const [, target] of targets) edge(id, target, "references");
   }
 
   // Project coordination store (canonical path with a legacy fallback)
@@ -217,6 +343,70 @@ export function buildGraph(root: string): Graph {
 }
 
 // ── ASCII Renderer ──────────────────────────────────────────────
+
+export interface GraphSelection extends Graph {
+  direction: "dependencies" | "dependents";
+  seeds: string[];
+  unmatched: string[];
+  checks: string[][];
+}
+
+/** Cycle-safe reachability. A path can name a definition or a directory. */
+export function selectGraph(
+  graph: Graph,
+  inputs: string[],
+  direction: GraphSelection["direction"],
+): GraphSelection {
+  const seeds = new Set<string>();
+  const unmatched: string[] = [];
+  for (const raw of inputs) {
+    const input = raw
+      .replaceAll("\\", "/")
+      .replace(/^\.\//, "")
+      .replace(/\/$/, "");
+    const matches = graph.nodes.filter(
+      (node) =>
+        node.id === input ||
+        node.label === input ||
+        node.paths?.some(
+          (file) => file === input || file.startsWith(`${input}/`),
+        ),
+    );
+    if (!matches.length) unmatched.push(raw);
+    for (const node of matches) seeds.add(node.id);
+  }
+  const selected = new Set(seeds);
+  const queue = [...seeds];
+  for (let index = 0; index < queue.length; index++) {
+    for (const edge of graph.edges) {
+      const from = direction === "dependencies" ? edge.from : edge.to;
+      const to = direction === "dependencies" ? edge.to : edge.from;
+      if (from !== queue[index] || selected.has(to)) continue;
+      selected.add(to);
+      queue.push(to);
+    }
+  }
+  const nodes = graph.nodes.filter((node) => selected.has(node.id));
+  return {
+    direction,
+    seeds: [...seeds],
+    unmatched,
+    nodes,
+    edges: graph.edges.filter(
+      (edge) => selected.has(edge.from) && selected.has(edge.to),
+    ),
+    checks: nodes
+      .filter((node) => node.category === "check")
+      .map((node) => [
+        "bun",
+        "run",
+        "--cwd",
+        "cli",
+        "test",
+        node.label.replace(/^cli\//, ""),
+      ]),
+  };
+}
 
 const CC: Record<string, (s: string) => string> = {
   root: (s) => pc.bold(pc.white(s)),
@@ -382,14 +572,14 @@ export function renderAscii(graph: Graph): string {
 
   // Detail: Skills
   const skills = graph.nodes.filter((n) => n.category === "skill");
-  const subs = Object.keys(SKILL_CATS);
+  const subs = [...new Set(skills.map((skill) => skill.subgroup))];
   o.push(pc.bold(`Skills (${skills.length})`));
   for (let gi = 0; gi < subs.length; gi++) {
     const sg = subs[gi];
     const items = skills.filter((s) => s.subgroup === sg);
     if (!items.length) continue;
     const last = gi === subs.length - 1;
-    o.push(`${last ? "└─" : "├─"} ${pc.dim(sg)}`);
+    o.push(`${last ? "└─" : "├─"} ${pc.dim(sg ?? "Custom")}`);
     const pre = last ? "   " : "│  ";
     for (const item of items) {
       const c = item === items.at(-1) ? "└─" : "├─";
@@ -422,7 +612,7 @@ export function renderAscii(graph: Graph): string {
 
   // Detail: Claude Agents
   const ags = graph.nodes.filter((n) => n.category === "agent");
-  o.push(pc.bold(`Claude Agents (${ags.length})`));
+  o.push(pc.bold(`Agents (${ags.length})`));
   for (const ag of ags) {
     const c = ag === ags.at(-1) ? "└─" : "├─";
     const impl = graph.edges.find(

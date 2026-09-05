@@ -33,7 +33,7 @@ findings: [ { severity: CRITICAL|HIGH|MEDIUM|LOW, file:line, description, fix } 
 evidence: <artifact paths the reviewer actually read>
 ```
 
-The phase coordinator collects these verdicts and folds them into the phase's `result-*.md` and `session-ultrawork.md` records. Dispatch mechanics (native subagent vs `oma agent:spawn`) are defined once in the **Cross-Context Review (CCR) Dispatch** section of `ultrawork.md`.
+The phase coordinator collects these verdicts and folds them into the phase's `result-*.md` and `session-ultrawork.md` records. Dispatch mechanics (native subagent vs `oma agent spawn`) are defined once in the **Cross-Context Review (CCR) Dispatch** section of `ultrawork.md`.
 
 ---
 

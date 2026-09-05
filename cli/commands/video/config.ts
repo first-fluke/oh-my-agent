@@ -88,7 +88,7 @@ export const DEFAULT_VIDEO_CONFIG: VideoConfig = {
     voice: { order: ["oma-voice"] },
     visual: { order: ["oma-image", "pexels", "pixelle"] },
     caption: { order: ["oma-captions"] },
-    capture: { order: ["playwright-web", "cap"] },
+    capture: { order: ["cap"] },
     music: { order: ["strudel"] },
     compositor: { order: ["remotion", "mpt"] },
     pexels: { enabled: false, envVar: "PEXELS_API_KEY" },

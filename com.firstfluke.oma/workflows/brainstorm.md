@@ -24,7 +24,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -114,13 +114,13 @@ Questions that help choose: {1–2 optional prompts for the user}
 - Approaches must be **mechanistically distinct** when possible — not three intensities of the same knob.
 - **Engineering-first default:** the recommended approach MUST be `structural` — addressing the root cause with proper engineering. Deadline pressure, effort delta, and "we'll fix it properly later" are NOT valid grounds for recommending tactical. Recommending `tactical` is only allowed when the problem itself is genuinely throwaway scope (e.g., one-line config flip, deprecated module being removed). The tighter the deadline, the more important it is to do it right the first time.
 
-**You MUST get user confirmation on the chosen approach before proceeding to Step 4.**
+Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 After the user chooses an option, emit and verify the required option-selection decision:
 
 ```bash
-oma state:emit "decision.made" '{"subject":"brainstorm.option-selection","decision":"Proceed with the user-selected approach.","rationale":"The user selected one option after comparing alternatives and tradeoffs."}'
-oma state:verify --workflow brainstorm --checkpoint option-selection
+oma state emit "decision.made" '{"subject":"brainstorm.option-selection","decision":"Proceed with the user-selected approach.","rationale":"The user selected one option after comparing alternatives and tradeoffs."}'
+oma state verify --workflow brainstorm --checkpoint option-selection
 ```
 
 ---
@@ -169,7 +169,7 @@ The default inline lenses run in *this* session, so the model that authored the 
 
 **Escalation (high-stakes designs only):** when the design is architecturally significant, hard to reverse, or security-/compliance-sensitive, delegate the critique to **fresh-context reviewer subagents** instead of inline lenses, so each reviewer sees only the design artifact — not the conversation history, rationale, or approval flow that carries the author's bias.
 
-- Resolve `target_vendor_for_agent` per agent, then dispatch each reviewer lens using the standard per-agent path: native subagent when `target_vendor_for_agent === current_runtime_vendor`, otherwise `oma agent:spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
+- Resolve `target_vendor_for_agent` per agent, then dispatch each reviewer lens using the standard per-agent path: native subagent when `target_vendor_for_agent === current_runtime_vendor`, otherwise `oma agent spawn {agent_id} {prompt_file} {session_id} -w {workspace}`.
 - Pass **only the Step 4 design document** (and minimal domain constraints) in the prompt file. Do **not** include the clarification Q&A, prior reservations or accepted compromises, or user approvals — that context is exactly what a blind reviewer must not see.
 - Suggested reviewer agents: `qa-reviewer`, `architecture-reviewer`, plus domain lenses from the stakeholder map in point 1.
 - Consolidate their findings back through points 3-6 above.

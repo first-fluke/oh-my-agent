@@ -141,7 +141,7 @@ Follow `resources/execution-protocol.md` step by step.
 See `resources/examples.md` for input/output examples.
 Use `resources/iso-planning.md` when the user needs standards-based planning, risk framing, or governance-oriented recommendations.
 Save plan to `.agents/results/plan-{sessionId}.json` and `.agents/results/result-pm.md`.
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 - Execution steps: `resources/execution-protocol.md`
 - Plan examples: `resources/examples.md`

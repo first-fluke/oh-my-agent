@@ -253,7 +253,7 @@ export async function runSkillsEval(
         : "n/a";
     if (isolation !== "enforced" && isolation !== "n/a") {
       console.warn(
-        `[oma skills eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
+        `[oma skill eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
       );
     }
 

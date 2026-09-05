@@ -44,7 +44,7 @@ Codex hooks installed/updated — run codex and use /hooks to trust them (untrus
 
 ## oh-my-agent가 자동으로 처리하는 것
 
-oh-my-agent가 직접 Codex 서브프로세스를 스폰할 때는, 예를 들어 `oma agent:spawn`으로 다른 벤더 에이전트를 디스패치할 때는 `--dangerously-bypass-hook-trust`를 자동으로 붙입니다. 덕분에 자체 검증한 훅이 업데이트를 건너면서도 수동 재신뢰 없이 동작합니다.
+oh-my-agent가 직접 Codex 서브프로세스를 스폰할 때는, 예를 들어 `oma agent spawn`으로 다른 벤더 에이전트를 디스패치할 때는 `--dangerously-bypass-hook-trust`를 자동으로 붙입니다. 덕분에 자체 검증한 훅이 업데이트를 건너면서도 수동 재신뢰 없이 동작합니다.
 
 이 플래그는 oh-my-agent가 스폰하는 Codex 프로세스에**만** 적용됩니다. `~/.codex/config.toml`이나 프로젝트 설정에는 절대 기록되지 않으므로, 사용자가 직접 시작한 Codex 세션에는 영향을 주지 않습니다.
 

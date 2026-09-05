@@ -1,11 +1,11 @@
 ---
 title: "Skill Utility Eval"
-description: How to write eval task fixtures for oma skills eval, the .agents/eval/ directory convention, checker types, and the mock/live execution modes.
+description: How to write eval task fixtures for oma skill eval, the .agents/eval/ directory convention, checker types, and the mock/live execution modes.
 ---
 
 # Skill Utility Eval
 
-`oma skills eval` measures whether loading a skill actually improves agent task outcomes. It answers a different question than `oma skills audit` (which asks "are two skills redundant?"): it asks "does this skill help?".
+`oma skill eval` measures whether loading a skill actually improves agent task outcomes. It answers a different question than `oma skill audit` (which asks "are two skills redundant?"): it asks "does this skill help?".
 
 The design follows two research findings: WikiSkill (arXiv:2608.27454) separates raw experience, persistent knowledge, and executable skills while retaining held-out gates for evolution; SkillLens (arXiv:2605.23899) shows that skill utility is independent of description distinctiveness — a distinct skill can still be useless, and an overlapping skill can still be helpful.
 
@@ -142,28 +142,28 @@ If a judge task has no recorded score in `_rollouts/`, it is excluded from the r
 
 Recordings are also checked for staleness before use. A treatment entry recorded under a different SKILL.md body, an entry whose fixture `prompt` has changed, and any entry predating provenance tracking are all discarded with a warning naming the file and the count. When that leaves fewer than `MIN_TASKS` scoreable tasks the run reports `coverage: "insufficient"` instead of a verdict — so an edited skill never inherits its previous score.
 
-:::note `oma skills opt --mock`
+:::note `oma skill optimize --mock`
 The optimizer scores candidate SKILL.md bodies. Because a recording is only valid for the body it was made from, candidate bodies have no matching rollouts and report as uncovered. Use `--live` to score candidates.
 :::
 
 Safe for CI. Set `OMA_SKILLEVAL_MOCK=1` to force this mode.
 
 ```bash
-oma skills eval --skill oma-scholar
+oma skill eval --skill oma-scholar
 ```
 
 ### --live
 
-Spawns real agent arms via `oma agent:spawn --read-only`. Both arms run in a temporary workspace to prevent project file modification.
+Spawns real agent arms via `oma agent spawn --read-only`. Both arms run in a temporary workspace to prevent project file modification.
 
 Before dispatching, the command prints a cost preview listing the number of tasks, arm dispatches, judge dispatches, and the resolved vendor. Confirm with `y` or skip with `--yes`.
 
 ```bash
 # Preview and confirm
-oma skills eval --skill oma-scholar --live
+oma skill eval --skill oma-scholar --live
 
 # Skip confirmation
-oma skills eval --skill oma-scholar --live --yes
+oma skill eval --skill oma-scholar --live --yes
 ```
 
 #### Skill isolation (keeping the baseline honest)
@@ -217,7 +217,7 @@ for everyone who pulls. The directory is gitignored; record locally instead.
 :::
 
 ```bash
-oma skills eval --skill oma-scholar --live --record --yes
+oma skill eval --skill oma-scholar --live --record --yes
 ```
 
 ---
@@ -250,10 +250,10 @@ Repeat for at least three more tasks. Then run:
 
 ```bash
 # Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skills eval --skill oma-scholar --live --record --yes
+oma skill eval --skill oma-scholar --live --record --yes
 
 # Offline replay
-oma skills eval --skill oma-scholar --json
+oma skill eval --skill oma-scholar --json
 ```
 
 ---
@@ -312,7 +312,7 @@ baseline arm was genuinely run without the target skill (see [Skill isolation](#
 
 ```bash
 # Fail the build if the skill regresses or has insufficient coverage
-oma skills eval --skill oma-scholar --json --require-coverage
+oma skill eval --skill oma-scholar --json --require-coverage
 ```
 
 Exit codes:

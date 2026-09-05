@@ -1,5 +1,5 @@
 /**
- * styles.ts — oma slide styles list|preview|get
+ * styles.ts — oma slide style list|preview|get
  *
  * T10: Style/template library commands.
  *
@@ -257,7 +257,7 @@ export async function runStylesList(): Promise<number> {
     }
     console.log(
       color.dim(
-        `\n  Run 'oma slide styles get <slug>' to fetch a template's design.md`,
+        `\n  Run 'oma slide style get <slug>' to fetch a template's design.md`,
       ),
     );
   } else {
@@ -310,7 +310,7 @@ export async function runStylesPreview(slug: string): Promise<number> {
       console.log(`  Source:    ${color.dim(template.source)}`);
       console.log(
         color.dim(
-          `\n  To fetch the full design.md: oma slide styles get ${slug}`,
+          `\n  To fetch the full design.md: oma slide style get ${slug}`,
         ),
       );
       console.log();
@@ -343,7 +343,7 @@ export async function runStylesPreview(slug: string): Promise<number> {
 
   console.error(
     color.red(
-      `Style slug "${slug}" not found. Run 'oma slide styles list' to see all available styles.`,
+      `Style slug "${slug}" not found. Run 'oma slide style list' to see all available styles.`,
     ),
   );
   return 4;
@@ -382,7 +382,7 @@ export async function runStylesGet(opts: StylesGetOptions): Promise<number> {
   if (!template && !preset) {
     console.error(
       color.red(
-        `Style slug "${slug}" not found. Run 'oma slide styles list' to see all available styles.`,
+        `Style slug "${slug}" not found. Run 'oma slide style list' to see all available styles.`,
       ),
     );
     return 4;

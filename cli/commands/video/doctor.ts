@@ -6,7 +6,6 @@
 import color from "picocolors";
 import { loadVideoConfig } from "./config.js";
 import { installMptProject } from "./internal/mpt-project.js";
-import { installPlaywright } from "./internal/playwright-project.js";
 import { runReadinessChecks } from "./internal/readiness.js";
 import {
   ensureLatestToolchain,
@@ -67,17 +66,6 @@ export async function runVideoDoctor({
     if (formatMode !== "json") {
       const mark = result.ok ? color.green("✓") : color.yellow("!");
       console.log(`${mark} mpt-project install: ${result.detail}`);
-      if (result.dir) console.log(color.dim(`    ${result.dir}`));
-    }
-  }
-
-  // Opt-in, one-time install of Playwright (npm i playwright + chromium) into
-  // the cache dir OUTSIDE the repo, for the live web-capture branch of demo mode.
-  if (opts.installPlaywright === true) {
-    const result = await installPlaywright();
-    if (formatMode !== "json") {
-      const mark = result.ok ? color.green("✓") : color.yellow("!");
-      console.log(`${mark} playwright install: ${result.detail}`);
       if (result.dir) console.log(color.dim(`    ${result.dir}`));
     }
   }

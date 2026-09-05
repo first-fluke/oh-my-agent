@@ -9,6 +9,7 @@
     "ignoreUnknown": false,
     "includes": [
       "cli/**",
+      "integrations/orca/**",
       "bin/**",
       "scripts/**",
       "web/src/**",

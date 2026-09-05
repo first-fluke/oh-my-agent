@@ -143,7 +143,7 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 | **`context-loading.md`** | Defines which resources to load for which task type and difficulty. Contains per-agent task-type-to-resource mapping tables and conditional protocol loading triggers. | At workflow start (Step 0 / Phase 0) |
 | **`prompt-structure.md`** | Defines the four elements every task prompt must contain: Goal, Context, Constraints, Done When. Includes templates for PM, implementation, and QA agents. Lists anti-patterns (starting with only a Goal). | Referenced by PM agent and all workflows |
 | **`clarification-protocol.md`** | Defines uncertainty levels (LOW/MEDIUM/HIGH) with actions for each. Contains uncertainty triggers, escalation templates, required verification items per agent type, and subagent-mode behavior. | When requirements are ambiguous |
-| **`context-budget.md`** | Token budget management. Defines file reading strategy (use `find_symbol` not `read_file`), the measured cost of each resource file and of a Simple (~4,000 tokens) vs Complex (~9,000 tokens) load, the enforced `SKILL.md` ceiling (25,000 characters, checked by `oma skills audit`), large file handling, and context overflow symptoms. | At workflow start |
+| **`context-budget.md`** | Token budget management. Defines file reading strategy (use `find_symbol` not `read_file`), the measured cost of each resource file and of a Simple (~4,000 tokens) vs Complex (~9,000 tokens) load, the enforced `SKILL.md` ceiling (25,000 characters, checked by `oma skill audit`), large file handling, and context overflow symptoms. | At workflow start |
 | **`difficulty-guide.md`** | Criteria for classifying tasks as Simple/Medium/Complex. Defines expected turn counts, protocol branching (Fast Track / Standard / Extended), and misjudgment recovery. | At task start (Step 0) |
 | **`quality-principles.md`** | 4 universal quality principles applied across all agents. | At workflow start for quality-focused workflows (ultrawork) |
 | **`vendor-detection.md`** | Protocol for detecting the current runtime environment (Claude Code, Codex CLI, Gemini CLI, Antigravity, CLI Fallback). Uses marker checks: Agent tool = Claude Code, apply_patch = Codex, @-syntax = Gemini. | At workflow start |
@@ -157,12 +157,12 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 | Resource | Purpose |
 |----------|---------|
 | **`memory-protocol.md`** | Memory file format and operations for CLI subagents. Defines On Start, During Execution, and On Completion protocols using configurable memory tools (read/write/edit). Includes experiment tracking extension. |
-| **`execution-protocols/claude.md`** | Claude Code-specific execution patterns. Injected by `oma agent:spawn` when vendor is claude. |
+| **`execution-protocols/claude.md`** | Claude Code-specific execution patterns. Injected by `oma agent spawn` when vendor is claude. |
 | **`execution-protocols/gemini.md`** | Gemini CLI-specific execution patterns. |
 | **`execution-protocols/codex.md`** | Codex CLI-specific execution patterns. |
 | **`execution-protocols/qwen.md`** | Qwen CLI-specific execution patterns. |
 
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`. Agents do not need to manually load them.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`. Agents do not need to manually load them.
 
 ### Conditional resources (`.agents/skills/_shared/conditional/`)
 

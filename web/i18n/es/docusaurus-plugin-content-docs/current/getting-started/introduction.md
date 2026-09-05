@@ -136,11 +136,11 @@ oh-my-agent funciona con cualquier IDE o CLI potenciado por IA que soporte carga
 | Herramienta | Método de Integración | Agentes Paralelos |
 |-------------|----------------------|-------------------|
 | **Claude Code** | Habilidades nativas + herramienta Agent | Herramienta Task para paralelismo real |
-| **Gemini CLI** | Habilidades auto-cargadas desde `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Habilidades auto-cargadas desde `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Habilidades auto-cargadas | Peticiones paralelas mediadas por modelo |
-| **Antigravity IDE** | Habilidades auto-cargadas | `oma agent:spawn` |
+| **Antigravity IDE** | Habilidades auto-cargadas | `oma agent spawn` |
 | **Cursor** | Habilidades vía integración `.cursor/` | Generación manual |
-| **OpenCode** | Habilidades + puente de plugin en proceso + subagentes generados (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
+| **OpenCode** | Habilidades + puente de plugin en proceso + subagentes generados (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 
 La generación de agentes se adapta automáticamente a cada proveedor mediante el protocolo de detección de proveedor, que verifica marcadores específicos (por ejemplo, la herramienta `Agent` para Claude Code, `apply_patch` para Codex CLI).
 

@@ -74,7 +74,7 @@ web/.serena/
 .agents/state/
 .agents/results/
 # .agents/eval/*.yaml task fixtures are tracked SSOT — hand-authored eval inputs
-# for `oma skills eval` / `opt` (design-prime-agent-adoption-202608). Do not add
+# for `oma skill eval` / `opt` (design-prime-agent-adoption-202608). Do not add
 # an ignore rule for the directory itself. They are not shipped to users:
 # excluded in cli/generate-manifest.ts, removed from user projects by migration
 # 021-remove-eval-artifacts.

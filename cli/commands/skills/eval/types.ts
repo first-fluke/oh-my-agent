@@ -244,7 +244,7 @@ export interface SkillsEvalOptions {
   /**
    * In-memory SKILL.md body to use as the treatment arm instead of reading from disk.
    * When provided, `loadSkillMdBody` is NOT called; the disk file is never accessed.
-   * Intended for the `oma skills opt` optimizer, which scores candidate bodies without
+   * Intended for the `oma skill optimize` optimizer, which scores candidate bodies without
    * writing them to disk. Only meaningful with --live.
    */
   skillMdOverride?: string;

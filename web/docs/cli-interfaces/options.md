@@ -28,17 +28,17 @@ Many commands support machine-readable output for CI/CD pipelines and automation
 ### 1. --json flag
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+The `--json` flag is the simplest way to get JSON output. Available on: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. --output flag
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -50,7 +50,7 @@ The `--output` flag accepts `text` or `json`. It provides the same functionality
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats # outputs JSON
+oma stats get # outputs JSON
 oma doctor # outputs JSON
 oma retro # outputs JSON
 ```
@@ -67,8 +67,8 @@ Set this environment variable to `json` to force JSON output on all commands tha
 | `stats` | Yes | Yes | Full metrics object |
 | `retro` | Yes | Yes | Snapshot with metrics, authors, commit types |
 | `cleanup` | Yes | Yes | List of cleaned items |
-| `auth:status` | Yes | Yes | Authentication status per CLI |
-| `memory:init` | Yes | Yes | Initialization result |
+| `auth status` | Yes | Yes | Authentication status per CLI |
+| `memory init` | Yes | Yes | Initialization result |
 | `verify` | Yes | Yes | Verification results per check |
 | `visualize` | Yes | Yes | Dependency graph as JSON |
 | `describe` | Always JSON | N/A | Always outputs JSON (introspection command) |
@@ -135,7 +135,8 @@ oma update [-f | --force] [--ci] [-y | --yes] [--all] [--vendor <vendors>]
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 | Flag | Description | Default |
@@ -175,15 +176,15 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. Orphaned log files: `/tmp/subagent-*.log` matching dead PIDs.
 3. Gemini Antigravity directories: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/`. These accumulate state over time and can grow large.
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | Flag | Short | Description | Default |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI vendor override. Must be one of: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi`. Overrides all config-based vendor resolution. | Resolved from config |
+| `--vendor` | — | CLI vendor override. Must be one of: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi`. Overrides all config-based vendor resolution. | Resolved from config |
 | `--workspace` | `-w` | Working directory for the agent. If omitted or set to `.`, the CLI auto-detects the workspace from monorepo configuration files (pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml). | Auto-detected or `.` |
 
 **Validation:**
@@ -203,10 +204,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 These defaults can be overridden in `.agents/skills/oma-orchestration/config/cli-config.yaml`.
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 | Flag | Short | Description | Default |
@@ -218,15 +219,15 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 2. If PID file exists at `/tmp/subagent-{session-id}-{agent}.pid`: checks if the PID is alive. Reports `running` if alive, `crashed` if dead.
 3. If neither file exists: reports `crashed`.
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | Flag | Short | Description | Default |
 |:-----|:------|:-----------|:--------|
-| `--model` | `-m` | CLI vendor override applied to all spawned agents. | Resolved per-agent from config |
+| `--vendor` | — | CLI vendor override applied to all spawned agents. | Resolved per-agent from config |
 | `--inline` | `-i` | Interpret task arguments as `agent:task[:workspace]` strings instead of a file path. | `false` |
 | `--no-wait` | | Background mode. Starts all agents and returns immediately without waiting for completion. PID list and logs are saved to `.agents/results/parallel-{timestamp}/`. | `false` (waits for completion) |
 
@@ -302,7 +303,7 @@ Output format is controlled per subcommand via `--format <text|json>` (not the s
 | `--count <n>` | `-n` | Number of images, 1..5. | `1` |
 | `--out <dir>` | | Output directory. Must be inside `$PWD` unless `--allow-external-out` is set. | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | Allow `--out` paths outside `$PWD`. | `false` |
-| `--model <name>` | | Vendor-specific model override (e.g. `gpt-image-2`, `flux`, `imagen-4`). | vendor default |
+| `--vendor <name>` | | Vendor-specific model override (e.g. `gpt-image-2`, `flux`, `imagen-4`). | vendor default |
 | `--strategy <list>` | | Gemini fallback order, comma-separated of `mcp`, `stream`, `api`. | vendor default |
 | `--timeout <seconds>` | | Per-image timeout. | vendor default |
 | `--reference <path>` | `-r` | Reference image for style/subject transfer. Repeatable (`-r a.png -r b.png`) or comma-separated. Validated for size (≤5MB), format (PNG/JPEG/GIF/WebP via magic bytes), and count (≤10). Supported on `codex` (passes `-i` to `codex exec`) and `gemini` (inlines base64 `inlineData`). Rejected with exit 4 on `pollinations`. | |
@@ -313,10 +314,10 @@ Output format is controlled per subcommand via `--format <text|json>` (not the s
 
 `image doctor` and `image list-vendors` only accept `--format <text|json>`.
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 | Flag | Description | Default |
@@ -352,18 +353,18 @@ oma doctor --json | jq '.healthy'
 ```bash
 # Collect metrics as JSON and pipe to a monitoring system
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### Batch agent execution with status monitoring
 
 ```bash
 # Start agents in background
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Check status periodically
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### Cleanup in CI after tests
@@ -404,10 +405,10 @@ echo "=== oh-my-agent Health Check ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
 
 # Check auth status
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
 
 # Check metrics
-oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 
 echo "=== Done ==="
 ```
@@ -419,5 +420,5 @@ echo "=== Done ==="
 oma describe | jq '.command.subcommands[] | {name, description}'
 
 # Get details about a specific command
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

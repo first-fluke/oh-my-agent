@@ -18,6 +18,11 @@ disable-model-invocation: true
 
 ---
 
+## Agent execution evidence
+
+Follow `.agents/skills/_shared/core/execution-policy.md` and `.agents/skills/_shared/runtime/result-contract.md`. Include QA and REFINE task IDs in the plan. For each native agent, begin a run, record checks, and finalize its structured result. For CLI dispatch, pass `--task-id` and use the injected run identity. Complete phase logs before finalizing the QA/REFINE artifacts; code changes after verification require fresh checks.
+
+
 ## Vendor Detection
 
 Before starting, determine your runtime environment by following `.agents/skills/_shared/core/vendor-detection.md`.
@@ -31,7 +36,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+5. Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 6. Generate a session ID (format: `YYYYMMDD-HHmmss`). It keys `plan-{sessionId}.json` and all session-scoped memory artifacts (`progress-*-{sessionId}.md`, `result-*-{sessionId}.md`).
 7. Record session start using memory write tool:
    - Create `session-work.md` in the memory base path
@@ -69,7 +74,7 @@ Present the PM Agent's task breakdown to the user:
 - Priority tiers (1, 2, 3 — lower runs first)
 - Agent assignments
 - Dependencies
-- **You MUST get user confirmation before proceeding to Step 4.** Do NOT proceed without confirmation.
+- Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 ---
 
@@ -81,7 +86,7 @@ Spawn all same-priority tasks in parallel. Assign separate workspaces to avoid f
 ### Per-Agent Dispatch
 Resolve the target vendor for each agent from `.agents/oma-config.yaml`.
 Use native subagents only when `target_vendor === current_runtime_vendor` and that runtime supports the vendor's role-subagent path.
-Otherwise use `oma agent:spawn` for that agent.
+Otherwise use `oma agent spawn` for that agent.
 
 ### If Claude Code and target vendor is Claude
 Use the Agent tool to spawn subagents:
@@ -94,16 +99,16 @@ Use the Agent tool to spawn subagents:
 Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
 Native CLI executor path: `codex exec "@{agent} ..."` using the generated agent file.
 Pass each agent its task description, API contracts, and relevant context.
-If native dispatch is not verified in the current runtime, fall back to `oma agent:spawn`.
+If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
 
 ### If Gemini CLI and target vendor is Gemini
-Use native Gemini subagents when available, otherwise fall back to `oma agent:spawn`.
+Use native Gemini subagents when available, otherwise fall back to `oma agent spawn`.
 Native CLI executor path: `gemini -p "@{agent} ..."` using `.gemini/agents/{agent}.md`.
 
 ### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash
-oma agent:spawn backend "task description" session-id -w ./backend &
-oma agent:spawn frontend "task description" session-id -w ./frontend &
+oma agent spawn backend "task description" session-id -w ./backend &
+oma agent spawn frontend "task description" session-id -w ./frontend &
 wait
 ```
 
@@ -146,8 +151,8 @@ If QA finds CRITICAL or HIGH issues:
 1. Re-spawn the responsible agent with QA findings. **The fix prompt MUST instruct root-cause remediation, not symptom suppression.** Forbid tactical patches (try/catch swallowing, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent can explicitly justify why a structural fix is out of scope for this iteration (e.g., upstream library bug, deprecated path, hotfix window). Bias toward the orthodox engineering fix even when it costs more lines or touches more files.
 2. Emit and verify the remediation decision before accepting any fix/ignore choice:
    ```bash
-   oma state:emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
-   oma state:verify --workflow work --checkpoint remediation-choice
+   oma state emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
+   oma state verify --workflow work --checkpoint remediation-choice
    ```
 3. If Quality Score is active: measure after fix, apply Keep/Discard rule, record in Experiment Ledger.
 4. Before each new fix cycle, apply the loop termination check:

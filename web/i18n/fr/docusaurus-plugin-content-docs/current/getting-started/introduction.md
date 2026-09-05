@@ -136,11 +136,11 @@ oh-my-agent fonctionne avec tout IDE ou CLI propulsé par l'IA qui supporte le c
 | Outil | Méthode d'intégration | Agents parallèles |
 |------|-------------------|----------------|
 | **Claude Code** | Compétences natives + outil Agent | Outil Task pour un parallélisme réel |
-| **Gemini CLI** | Compétences chargées automatiquement depuis `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Compétences chargées automatiquement depuis `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Compétences chargées automatiquement | Requêtes parallèles arbitrées par le modèle |
-| **Antigravity IDE** | Compétences chargées automatiquement | `oma agent:spawn` |
+| **Antigravity IDE** | Compétences chargées automatiquement | `oma agent spawn` |
 | **Cursor** | Compétences via l'intégration `.cursor/` | Lancement manuel |
-| **OpenCode** | Compétences + pont à plugin in-process + sous-agents générés (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
+| **OpenCode** | Compétences + pont à plugin in-process + sous-agents générés (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 
 Le lancement d'agents s'adapte automatiquement à chaque fournisseur via le protocole de détection du fournisseur, qui vérifie les marqueurs spécifiques au fournisseur (ex. : l'outil `Agent` pour Claude Code, `apply_patch` pour Codex CLI).
 
@@ -197,7 +197,7 @@ oh-my-agent ne se limite pas à Claude Code. Le système de hooks prend en charg
 | Fournisseur | Intégration |
 |-------------|-------------|
 | **Claude Code** | Hooks natifs (`UserPromptSubmit`, `Notification`, `statusLine`) |
-| **Gemini CLI** | Compétences chargées automatiquement depuis `.agents/skills/`, spawn d'agents via `oma agent:spawn` |
+| **Gemini CLI** | Compétences chargées automatiquement depuis `.agents/skills/`, spawn d'agents via `oma agent spawn` |
 | **Codex CLI** | Compétences chargées automatiquement, requêtes parallèles arbitrées par le modèle |
 | **Qwen Code** | Hooks pris en charge pour la détection de workflows |
 

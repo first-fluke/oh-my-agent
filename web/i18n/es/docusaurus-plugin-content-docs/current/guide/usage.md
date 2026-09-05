@@ -44,8 +44,8 @@ Sin comandos slash necesarios. Solo describe lo que quieres.
 2. **Agente PM** planifica el trabajo: API de auth, esquema de base de datos, UI frontend, alcance de QA
 3. **Lanzas agentes:**
    ```bash
-   oma agent:spawn backend "JWT authentication API" session-01 -w ./apps/api &
-   oma agent:spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
+   oma agent spawn backend "JWT authentication API" session-01 -w ./apps/api &
+   oma agent spawn frontend "Login and TODO UI" session-01 -w ./apps/web &
    wait
    ```
 4. **Agentes trabajan en paralelo** — cada uno en su propio workspace
@@ -87,17 +87,17 @@ Sin comandos slash necesarios. Solo describe lo que quieres.
 
 ```bash
 # Agente unico
-oma agent:spawn backend "Implement JWT auth API" session-01
+oma agent spawn backend "Implement JWT auth API" session-01
 
 # Multiples agentes en paralelo
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
-oma agent:spawn frontend "Login form + error states" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api &
+oma agent spawn frontend "Login form + error states" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens + biometrics" session-01 -w ./apps/mobile &
 wait
 
 # Monitorear en tiempo real
-oma dashboard        # UI de terminal
-oma dashboard:web    # UI web en http://localhost:9847
+oma dashboard terminal        # UI de terminal
+oma dashboard web    # UI web en http://localhost:9847
 ```
 
 ---
@@ -166,7 +166,7 @@ Preguntas como "que es orchestrate?" se filtran — no activaran workflows accid
 ### Dashboard de terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Tabla en vivo mostrando estado de sesion, estados de agentes, turnos y actividad reciente. Observa `.serena/memories/` para actualizaciones en tiempo real.
@@ -174,7 +174,7 @@ Tabla en vivo mostrando estado de sesion, estados de agentes, turnos y actividad
 ### Dashboard web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # → http://localhost:9847
 ```
 
@@ -187,7 +187,7 @@ Caracteristicas:
 ### Layout recomendado
 
 Usa 3 terminales:
-1. Dashboard (`oma dashboard`)
+1. Dashboard (`oma dashboard terminal`)
 2. Comandos de spawn de agentes
 3. Logs de test/build
 

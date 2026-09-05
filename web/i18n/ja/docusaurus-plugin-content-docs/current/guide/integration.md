@@ -92,7 +92,7 @@ cd /path/to/your/project && oma link
 ### Step 4：メモリディレクトリの初期化
 
 ```bash
-oma memory:init
+oma memory init
 # あるいは手動で:
 mkdir -p /path/to/your/project/.serena/memories
 ```
@@ -173,7 +173,7 @@ git checkout -- .agents/ .claude/
 
 ## ダッシュボードのセットアップ
 
-インストール完了後は`oma dashboard`または`oma dashboard:web`で実行中のエージェントセッションを観察できます。詳細は[ダッシュボード監視ガイド](./dashboard-monitoring.md)を参照してください。
+インストール完了後は`oma dashboard terminal`または`oma dashboard web`で実行中のエージェントセッションを観察できます。詳細は[ダッシュボード監視ガイド](./dashboard-monitoring.md)を参照してください。
 
 ---
 

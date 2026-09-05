@@ -31,7 +31,7 @@ export async function initMemory(
   }
 
   console.clear();
-  p.intro(pc.bgMagenta(pc.white(" 🧠 oh-my-agent memory:init ")));
+  p.intro(pc.bgMagenta(pc.white(" 🧠 oh-my-agent memory init ")));
 
   const summaryLines = [
     `Memories dir: ${pc.cyan(result.memoriesDir)}`,

@@ -1,5 +1,69 @@
 # Changelog
 
+## [14.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.0.1...cli-v14.0.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **cli:** restore default update and same-version skill installation ([f3aec86](https://github.com/first-fluke/oh-my-agent/commit/f3aec864736e89fb9850e8eda2f05af1d0695e60))
+
+## [14.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.0.0...cli-v14.0.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **cli:** prevent jsonc-parser bundle startup crash ([e0eb26a](https://github.com/first-fluke/oh-my-agent/commit/e0eb26a10ff4e5ef6042d2e1a3f9664bdf97756b))
+
+## [14.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.3.1...cli-v14.0.0) (2026-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** Colon commands, former command aliases and renamed option spellings are removed. Use the command mapping in docs/cli-command-standardization.md. The describe command reports canonical paths only. After upgrading, run oma schedule sync to rewrite OS jobs and oma link or oma update to refresh project hook wrappers.
+
+### Features
+
+* **cli:** standardize command paths and remove legacy syntax ([43b3fc7](https://github.com/first-fluke/oh-my-agent/commit/43b3fc71c15ddbc2228e85df1e1a977fb2cd44ca))
+* **orca:** add native OMA plugin integration ([c178cac](https://github.com/first-fluke/oh-my-agent/commit/c178cac1d609d60d7a8ff2b2f003bafbb4720f8c))
+
+
+### Bug Fixes
+
+* **hooks:** isolate git environment during pre-push checks ([7818774](https://github.com/first-fluke/oh-my-agent/commit/78187747bbe476d0d36ada9082095a1cd9ab867d))
+* **verify:** require successful process outcomes for passing checks ([c5c2c29](https://github.com/first-fluke/oh-my-agent/commit/c5c2c2971d602bdbcb8847e8565bc11a0cb046db))
+
+## [13.3.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.3.0...cli-v13.3.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **memory:** scope hook recall to the current project ([1090ce6](https://github.com/first-fluke/oh-my-agent/commit/1090ce6e6180b158527f6de963e6f29729cbe03f))
+
+
+### Performance
+
+* **prompts:** trim hook context and generated agent instructions ([d2c690a](https://github.com/first-fluke/oh-my-agent/commit/d2c690aa9943c759b89f94e6f65ccf0979937b7d))
+
+## [13.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.2.1...cli-v13.3.0) (2026-09-05)
+
+
+### Features
+
+* **agent:** verify task contracts and resume dependency-aware runs ([3d6e8d8](https://github.com/first-fluke/oh-my-agent/commit/3d6e8d8d3329798ff620239bba795271cbf56699))
+* **mcp:** configure browser servers and install missing aside ([3ed0fb1](https://github.com/first-fluke/oh-my-agent/commit/3ed0fb1c3418d437cffd704c35eaf2f3e1c71825))
+
+
+### Bug Fixes
+
+* **hooks:** simplify explicit slash skill context ([00c59dd](https://github.com/first-fluke/oh-my-agent/commit/00c59dd502395b0305c87f42a58d09021ddeb932))
+* **state:** serialize shared CLI and hook index mutations ([59cc08f](https://github.com/first-fluke/oh-my-agent/commit/59cc08f54b0b99c641ad4e4ba54f56d3ef6e0edc))
+* **video:** use guided capture and remove obsolete browser recorder ([6c916c9](https://github.com/first-fluke/oh-my-agent/commit/6c916c90d70517a74b71caf2a0977155682873f9))
+
+
+### Documentation
+
+* remove playwright references from markdown guidance ([2ffa537](https://github.com/first-fluke/oh-my-agent/commit/2ffa5374f726f58ce81aa588d8252001f27eea26))
+
 ## [13.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.2.0...cli-v13.2.1) (2026-09-04)
 
 

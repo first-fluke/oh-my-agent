@@ -388,4 +388,37 @@ describe("update --global: _install.json lifecycle", () => {
       selfUpdateState.maybeSelfUpdate.mock.invocationCallOrder[0] ?? Infinity,
     );
   });
+
+  it("installs missing skills at the current version when explicitly requested", async () => {
+    manifestState.getLocalVersion.mockResolvedValue("8.1.0");
+    const { dir: repoDir } = await tarballState.downloadAndExtract();
+    tarballState.downloadAndExtract.mockClear();
+    const skillPath = path.join(
+      ".agents",
+      "skills",
+      "oma-explanation",
+      "SKILL.md",
+    );
+    fs.mkdirSync(path.dirname(path.join(repoDir, skillPath)), {
+      recursive: true,
+    });
+    fs.writeFileSync(path.join(repoDir, skillPath), "# Explanation\n");
+
+    await update({ global: true, ci: true, withNewSkills: true });
+
+    expect(tarballState.downloadAndExtract).toHaveBeenCalledOnce();
+    expect(fs.readFileSync(path.join(tmpDir, skillPath), "utf8")).toBe(
+      "# Explanation\n",
+    );
+    expect(linkState.link).toHaveBeenCalled();
+  });
+
+  it("skips the download at the current version without an explicit skill request", async () => {
+    manifestState.getLocalVersion.mockResolvedValue("8.1.0");
+
+    await update({ global: true, ci: true });
+
+    expect(tarballState.downloadAndExtract).not.toHaveBeenCalled();
+    expect(linkState.link).not.toHaveBeenCalled();
+  });
 });

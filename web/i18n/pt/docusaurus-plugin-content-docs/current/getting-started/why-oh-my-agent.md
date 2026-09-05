@@ -39,7 +39,7 @@ Verificacoes pesadas (mais de trinta segundos) sao cacheadas contra os caminhos 
 
 ### Quota caps que bloqueiam antes do dano
 
-Cada chamada de `oma agent:spawn` registra a estimativa de tokens daquele spawn em `.serena/memories/session-cost-{sessionId}.md`. Antes do proximo spawn, `checkCap` consulta o quota cap configurado e recusa o lancamento se qualquer dimensao for excedida. Tres dimensoes sao impostas: total de tokens, total de spawns, orcamento de tokens por vendor.
+Cada chamada de `oma agent spawn` registra a estimativa de tokens daquele spawn em `.serena/memories/session-cost-{sessionId}.md`. Antes do proximo spawn, `checkCap` consulta o quota cap configurado e recusa o lancamento se qualquer dimensao for excedida. Tres dimensoes sao impostas: total de tokens, total de spawns, orcamento de tokens por vendor.
 
 Essa e a diferenca entre descobrir depois que gastou quarenta mil dolares e ser avisado no spawn quinze de que sobra um spawn no orcamento. Ver `cli/io/session-cost.ts` e configurar sob `session.quota_cap` em `.agents/oma-config.yaml`.
 

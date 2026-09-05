@@ -34,7 +34,7 @@ Abstract agent definitions in `.agents/agents/` are vendor-neutral (name, descri
 | Gemini CLI | `.gemini/agents/*.md` | Markdown | Native |
 | Antigravity | (reads `.agents/agents/` directly) | YAML | Not supported (no custom subagents) |
 | Grok Build | `.grok/agents/` (generated) + `.grok/hooks/` | Markdown + JSON | Supported via variant |
-| pi | `.pi/prompts/*.md` + `.pi/extensions/oma/` | Prompt templates + TypeScript extension | External via `oma agent:spawn -m pi` |
+| pi | `.pi/prompts/*.md` + `.pi/extensions/oma/` | Prompt templates + TypeScript extension | External via `oma agent spawn --vendor pi` |
 
 ## What “First-class” Means
 
@@ -74,7 +74,7 @@ For each planned agent:
 
 1. Resolve the target vendor from `.agents/oma-config.yaml`
 2. If `target_vendor === current_runtime_vendor`, use the runtime's native agent file (`.claude/agents`, `.codex/agents`, `.gemini/agents`)
-3. Otherwise, fall back to `oma agent:spawn`
+3. Otherwise, fall back to `oma agent spawn`
 
 ## Related Docs
 

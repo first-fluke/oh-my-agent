@@ -32,8 +32,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 // ---------------------------------------------------------------------------
 
 const REPO_ROOT = join(__dirname, "..", "..");
-const CLI_BIN = join(REPO_ROOT, "cli", "bin", "cli.js");
-const NODE = process.execPath;
+const CLI_BIN = join(REPO_ROOT, "cli", "cli.ts");
+const NODE = "bun";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -50,7 +50,7 @@ function runHook(
   stdinPayload: string,
   cwd = REPO_ROOT,
 ): RunResult {
-  const result = spawnSync(NODE, [CLI_BIN, "hook", ...args], {
+  const result = spawnSync(NODE, [CLI_BIN, "hook", "run", ...args], {
     input: stdinPayload,
     encoding: "utf-8",
     cwd,
@@ -199,6 +199,7 @@ describe("oma hook fail-open guarantees", () => {
     const child = spawn(NODE, [
       CLI_BIN,
       "hook",
+      "run",
       "--vendor",
       "codex",
       "--event",

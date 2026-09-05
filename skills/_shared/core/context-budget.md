@@ -75,12 +75,12 @@ pressure is negligible, but unnecessary loading still diverts attention.
 
 **`SKILL.md` is the floor and the largest single item.** It is loaded whenever
 the skill is routed to, so it dominates every tier — trimming it beats trimming
-any resource. The enforced ceiling is `oma skills audit`'s focus check:
+any resource. The enforced ceiling is `oma skill audit`'s focus check:
 
 > `SKILL.md` body > **25,000 characters** (~6,250 tokens) → `[WARN] bundle`
 > (`FOCUS_BODY_WARN_THRESHOLD` in `cli/commands/skills/audit.ts`)
 
-Run `oma skills audit` after editing a `SKILL.md`. Two skills currently exceed
+Run `oma skill audit` after editing a `SKILL.md`. Two skills currently exceed
 it (`oma-video`, `oma-translation`); the fix is splitting the skill or pushing
 detail into `resources/`, not raising the threshold.
 
@@ -191,7 +191,7 @@ When a trigger fires, the Orchestrator executes:
 
 3. **Re-spawn**: Start a fresh agent with the checkpoint as context
    - **Claude Code**: New Agent tool call with checkpoint in prompt
-   - **CLI agents**: write the checkpoint to a file and pass that file through the required prompt operand: `oma agent:spawn {agent-id} {checkpoint-file} {session-id} -w {workspace}`
+   - **CLI agents**: write the checkpoint to a file and pass that file through the required prompt operand: `oma agent spawn {agent-id} {checkpoint-file} {session-id} -w {workspace}`
 
 4. **Resume**: New agent reads checkpoint, continues from remaining items only
 

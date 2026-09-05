@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent-workspace",
-  "version": "13.2.1",
+  "version": "14.0.2",
   "private": true,
   "homepage": "https://firstfluke.com/oh-my-agent",
   "repository": {
@@ -24,6 +24,7 @@
     "sns:devto": "bun scripts/sns/devto/index.ts",
     "sns:qiita": "bun scripts/sns/qiita/index.ts",
     "test": "bun run --cwd cli test",
+    "test:orca": "node --test integrations/orca/plugin.test.mjs",
     "typecheck": "bunx tsc --noEmit -p tsconfig.json && bunx tsc --noEmit -p web/tsconfig.json",
     "bench:oma-hook": "bun run cli/__bench__/oma-hook-latency.bench.ts",
     "web:dev": "bun run --cwd web dev",

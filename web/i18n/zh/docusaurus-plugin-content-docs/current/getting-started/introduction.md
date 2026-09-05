@@ -136,11 +136,11 @@ oh-my-agent 可与任何支持技能/提示加载的 AI 驱动 IDE 或 CLI 配�
 | 工具 | 集成方式 | 并行智能体 |
 |------|---------|----------|
 | **Claude Code** | 原生技能 + Agent 工具 | Task 工具实现真正并行 |
-| **Gemini CLI** | 从 `.agents/skills/` 自动加载技能 | `oma agent:spawn` |
+| **Gemini CLI** | 从 `.agents/skills/` 自动加载技能 | `oma agent spawn` |
 | **Codex CLI** | 自动加载技能 | 模型协调的并行请求 |
-| **Antigravity IDE** | 自动加载技能 | `oma agent:spawn` |
+| **Antigravity IDE** | 自动加载技能 | `oma agent spawn` |
 | **Cursor** | 通过 `.cursor/` 集成技能 | 手动启动 |
-| **OpenCode** | 技能 + 进程内插件桥接 + 生成的子智能体（`.opencode/agents/`） | `oma agent:spawn -m opencode` |
+| **OpenCode** | 技能 + 进程内插件桥接 + 生成的子智能体（`.opencode/agents/`） | `oma agent spawn --vendor opencode` |
 
 智能体启动会通过供应商检测协议自动适配每个供应商，该协议检查供应商特定标记（例如 Claude Code 的 `Agent` 工具，Codex CLI 的 `apply_patch`）。
 

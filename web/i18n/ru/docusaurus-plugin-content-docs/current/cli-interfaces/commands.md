@@ -51,17 +51,17 @@ oma update [-f | --force] [--ci]
 ### dashboard
 
 ```bash
-oma dashboard
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard
+oma dashboard terminal
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal
 ```
 
 Box-drawing TUI. Наблюдает за `.serena/memories/`. `Ctrl+C` для выхода.
 
-### dashboard:web
+### dashboard web
 
 ```bash
-oma dashboard:web
-DASHBOARD_PORT=8080 oma dashboard:web
+oma dashboard web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 HTTP + WebSocket на `http://localhost:9847`.
@@ -69,7 +69,8 @@ HTTP + WebSocket на `http://localhost:9847`.
 ### stats
 
 ```bash
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 Метрики: сессии, использованные навыки, задачи, время, файлы, строки. Данные в `.serena/metrics.json`.
@@ -86,47 +87,47 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 
 ## Управление агентами
 
-### agent:spawn
+### agent spawn
 
 ```bash
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 `agent-id`: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 
-Флаг `-m, --model <vendor>`: `antigravity`, `claude`, `codex`, `qwen`. Определение вендора: `--model` > переопределение `agents:` в `oma-config.yaml` > значения агента из активного `model_preset`.
+Флаг `--vendor <vendor>`: `antigravity`, `claude`, `codex`, `qwen`. Определение вендора: `--vendor` > переопределение `agents:` в `oma-config.yaml` > значения агента из активного `model_preset`.
 
 Промпт: инлайн-текст или путь к файлу. Вендор-протоколы добавляются автоматически.
 
-### agent:status
+### agent status
 
 ```bash
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 Вывод: `{agent-id}:{status}` (completed/running/crashed).
 
-### agent:parallel
+### agent parallel
 
 ```bash
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 YAML-файл задач или инлайн `agent:task[:workspace]`. Результаты: `.agents/results/parallel-{timestamp}/`.
 
-### agent:review
+### agent review
 
 Запуск код-ревью с помощью внешнего AI CLI (codex, claude или qwen).
 
 ```bash
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **Опции:**
 
 | Флаг | Описание |
 |:-----|:---------|
-| `-m, --model <vendor>` | CLI-вендор: `antigravity`, `codex`, `claude`, `qwen`. По умолчанию — из конфигурации. |
+| `--vendor <vendor>` | CLI-вендор: `antigravity`, `codex`, `claude`, `qwen`. По умолчанию — из конфигурации. |
 | `-p, --prompt <prompt>` | Пользовательский промпт ревью. Если не указан, используется промпт по умолчанию. |
 | `-w, --workspace <path>` | Путь для ревью. По умолчанию — текущая директория. |
 | `--no-uncommitted` | Пропустить незакоммиченные изменения. Ревью только закоммиченных изменений в рамках сессии. |
@@ -141,32 +142,32 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Примеры:**
 ```bash
 # Ревью незакоммиченных изменений с вендором по умолчанию
-oma agent:review
+oma agent review
 
 # Ревью через codex (встроенная команда codex review)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # Ревью через claude с пользовательским промптом
-oma agent:review -m claude -p "Фокус на уязвимостях безопасности и валидации входных данных"
+oma agent review --vendor claude -p "Фокус на уязвимостях безопасности и валидации входных данных"
 
 # Ревью определённого пути
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # Ревью только закоммиченных изменений
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # Ревью закоммиченных изменений в определённом рабочем пространстве через gemini
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
 ---
 
 ## Управление памятью
 
-### memory:init
+### memory init
 
 ```bash
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 Создаёт структуру `.serena/memories/` с начальными файлами схемы.
@@ -175,10 +176,10 @@ oma memory:init [--json] [--output <format>] [--force]
 
 ## Интеграция и утилиты
 
-### auth:status
+### auth status
 
 ```bash
-oma auth:status [--json]
+oma auth status [--json]
 ```
 
 Проверяет: GitHub CLI (`gh`), Antigravity CLI (`agy`), Gemini CLI, Claude CLI, Codex CLI, Cursor CLI, Qwen CLI.
@@ -246,8 +247,8 @@ oma version
 | Переменная | Описание | Используется |
 |-----------|---------|-------------|
 | `OH_MY_AG_OUTPUT_FORMAT` | `json` — принудительный JSON | Все с `--json` |
-| `DASHBOARD_PORT` | Порт веб-дашборда | `dashboard:web` |
-| `MEMORIES_DIR` | Путь к директории памяти | `dashboard`, `dashboard:web` |
+| `DASHBOARD_PORT` | Порт веб-дашборда | `dashboard web` |
+| `MEMORIES_DIR` | Путь к директории памяти | `dashboard`, `dashboard web` |
 
 ---
 

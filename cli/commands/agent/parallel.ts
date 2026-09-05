@@ -1,4 +1,5 @@
 import { spawn as spawnProcess } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import color from "picocolors";
@@ -18,6 +19,15 @@ import {
   resolvePromptFlag,
   resolveVendor,
 } from "../../platform/agent-config.js";
+import {
+  classifyDifficulty,
+  loadGraphContext,
+} from "../../platform/context-loader.js";
+import {
+  agentResultInstructions,
+  beginAgentRun,
+  finishAgentRun,
+} from "../../state/agent-results.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { registerSignalCleanup } from "../../utils/process-signals.js";
 import { isProcessRunning } from "./common.js";
@@ -33,6 +43,7 @@ export async function parallelRun(
     vendor?: string;
     inline?: boolean;
     noWait?: boolean;
+    session?: string;
   } = {},
 ) {
   const cwd = process.cwd();
@@ -44,7 +55,10 @@ export async function parallelRun(
     AGENTS_RESULTS_DIR,
   );
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const runDir = path.join(resultsDir, `parallel-${timestamp}`);
+  const runDir = path.join(
+    resultsDir,
+    `parallel-${timestamp}-${randomUUID().slice(0, 8)}`,
+  );
   const pidListFile = path.join(runDir, "pids.txt");
 
   let tasks: TaskDefinition[];
@@ -53,7 +67,7 @@ export async function parallelRun(
       if (tasksOrFile.length === 0) {
         console.error(color.red("Error: No tasks specified"));
         console.log(
-          'Usage: oh-my-ag agent:parallel --inline "agent:task" "agent:task" ...',
+          'Usage: oh-my-ag agent parallel --inline "agent:task" "agent:task" ...',
         );
         process.exit(1);
       }
@@ -61,7 +75,7 @@ export async function parallelRun(
     } else {
       if (tasksOrFile.length === 0) {
         console.error(color.red("Error: No tasks file specified"));
-        console.log("Usage: oh-my-ag agent:parallel <tasks-file.yaml>");
+        console.log("Usage: oh-my-ag agent parallel <tasks-file.yaml>");
         process.exit(1);
       }
       const tasksFile = tasksOrFile[0];
@@ -119,9 +133,26 @@ export async function parallelRun(
     const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
     const rawPromptContent = resolvePromptContent(task);
     const executionProtocol = loadExecutionProtocol(vendor, cwd);
-    const promptContent = executionProtocol
+    const runRoot = resolveProjectRoot(resolvedWorkspace);
+    const run = beginAgentRun({
+      root: runRoot,
+      workspace: resolvedWorkspace,
+      agentId: agent,
+      sessionId: options.session ?? path.basename(runDir),
+      taskId: taskDef.id ?? `${agent}-${idx}`,
+      vendor,
+      managed: true,
+      dispatch: { prompt: rawPromptContent },
+    });
+    const taskPrompt = executionProtocol
       ? `${rawPromptContent}\n\n${executionProtocol}`
       : rawPromptContent;
+    const taskContext = loadGraphContext(
+      agent,
+      classifyDifficulty(rawPromptContent, 3, 2),
+      runRoot,
+    );
+    const promptContent = `${taskPrompt}\n\n${agentResultInstructions(runRoot, run)}${taskContext ? `\n\n${taskContext}` : ""}`;
 
     const dispatch = planDispatch(
       agent,
@@ -160,30 +191,27 @@ export async function parallelRun(
       env,
     });
 
-    if (!child.pid) {
-      fs.closeSync(logStream);
-      console.error(color.red(`[${idx}] Failed to spawn ${agent} process`));
-      continue;
-    }
-
-    fs.appendFileSync(pidListFile, `${child.pid}:${agent}\n`);
-
     const exitPromise = new Promise<number | null>((resolve) => {
-      (child as unknown as NodeJS.EventEmitter).on(
-        "exit",
-        (code: number | null) => {
-          fs.closeSync(logStream);
-          resolve(code);
-        },
-      );
-      (child as unknown as NodeJS.EventEmitter).on("error", () => {
+      let settled = false;
+      const finish = (code: number | null) => {
+        if (settled) return;
+        settled = true;
         fs.closeSync(logStream);
-        resolve(null);
+        const result = finishAgentRun(runRoot, run.runId, code);
+        resolve(result.status === "completed" ? 0 : code || 3);
+      };
+      (child as unknown as NodeJS.EventEmitter).on("exit", finish);
+      (child as unknown as NodeJS.EventEmitter).on("error", () => {
+        finish(null);
       });
+      if (!child.pid) finish(null);
     });
 
+    if (child.pid) fs.appendFileSync(pidListFile, `${child.pid}:${agent}\n`);
+    else console.error(color.red(`[${idx}] Failed to spawn ${agent} process`));
+
     childProcesses.push({
-      pid: child.pid,
+      pid: child.pid ?? 0,
       agent,
       idx,
       promise: exitPromise,
@@ -210,6 +238,7 @@ export async function parallelRun(
     console.log("");
     console.log(`${color.yellow("[Parallel]")} Cleaning up child processes...`);
     for (const { pid, agent } of childProcesses) {
+      if (!pid) continue;
       if (!isProcessRunning(pid)) continue;
       try {
         process.kill(pid, "SIGTERM");

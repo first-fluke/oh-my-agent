@@ -15,7 +15,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -30,8 +30,8 @@ import {
 // ---------------------------------------------------------------------------
 
 const REPO_ROOT = join(__dirname, "..", "..");
-const CLI_BIN = join(REPO_ROOT, "cli", "bin", "cli.js");
-const NODE = process.execPath;
+const CLI_BIN = join(REPO_ROOT, "cli", "cli.ts");
+const NODE = "bun";
 
 // ---------------------------------------------------------------------------
 // Part 1 — Per-vendor dialect golden (unit-level)
@@ -332,20 +332,6 @@ describe("Task-3b regression — bundled triggers.json resolves via projectDir (
     const dstHooks = join(tmpRoot, ".agents", "hooks");
     mkdirSync(join(tmpRoot, ".agents"), { recursive: true });
     cpSync(srcHooks, dstHooks, { recursive: true });
-
-    // 4. Ensure the CLI bundle exists; build once if missing
-    if (!existsSync(CLI_BIN)) {
-      const buildResult = spawnSync("bun", ["run", "build"], {
-        cwd: join(REPO_ROOT, "cli"),
-        encoding: "utf-8",
-        timeout: 120_000,
-      });
-      if (buildResult.status !== 0) {
-        throw new Error(
-          `bun run build failed:\nstdout: ${buildResult.stdout}\nstderr: ${buildResult.stderr}`,
-        );
-      }
-    }
   });
 
   afterAll(() => {
@@ -362,7 +348,15 @@ describe("Task-3b regression — bundled triggers.json resolves via projectDir (
 
     const result = spawnSync(
       NODE,
-      [CLI_BIN, "hook", "--vendor", "claude", "--event", "UserPromptSubmit"],
+      [
+        CLI_BIN,
+        "hook",
+        "run",
+        "--vendor",
+        "claude",
+        "--event",
+        "UserPromptSubmit",
+      ],
       {
         input: payload,
         encoding: "utf-8",

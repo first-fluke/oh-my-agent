@@ -21,7 +21,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -102,7 +102,7 @@ bunx deepsec scan --limit 20         # cheap, no AI calls
 bunx deepsec process --limit 5       # exercises the gateway
 ```
 
-Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, project-specific only, 3–5 examples per section, no line numbers, no generic CWE rehash. **You MUST get user confirmation on `INFO.md`** before continuing.
+Then write `data/<id>/INFO.md` per `resources/setup.md` § 4: 50–100 lines, project-specific only, 3–5 examples per section, no line numbers, no generic CWE rehash. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization. before continuing.
 
 ### Step 4B: `scan`
 
@@ -178,8 +178,8 @@ Pipeline per `resources/triage.md`:
 4. Note recurring FP shapes for the next `INFO.md` revision; bias matchers toward `precise` if the FP is regex-level.
 5. For each triaged finding, emit and verify the required triage decision:
    ```bash
-   oma state:emit "decision.made" '{"subject":"deepsec.triage-outcome","decision":"Use the triage verdict for the current deepsec finding.","rationale":"The finding has a true-positive, false-positive, fixed, or uncertain verdict with a recorded reason."}'
-   oma state:verify --workflow deepsec --checkpoint triage-outcome
+   oma state emit "decision.made" '{"subject":"deepsec.triage-outcome","decision":"Use the triage verdict for the current deepsec finding.","rationale":"The finding has a true-positive, false-positive, fixed, or uncertain verdict with a recorded reason."}'
+   oma state verify --workflow deepsec --checkpoint triage-outcome
    ```
 
 ### Step 4F: `config` / `troubleshoot`

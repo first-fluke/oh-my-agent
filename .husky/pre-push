@@ -1,3 +1,9 @@
+# Git exports repository-local variables in hooks. Tests create their own
+# repositories; inheriting these variables redirects their Git operations here.
+for oma_git_env in $(git rev-parse --local-env-vars); do
+  unset "$oma_git_env"
+done
+
 bun run typecheck
 # Mirror GitHub Actions, which sets CI=true automatically. Catches tests
 # that behave differently under non-interactive yes-mode (install.ts).

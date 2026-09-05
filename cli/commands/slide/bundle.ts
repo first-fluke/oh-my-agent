@@ -149,7 +149,7 @@ export async function runSlideBundle(opts: BundleOptions): Promise<number> {
   if (!existsSync(cssPath)) {
     console.error(
       color.red(
-        `viewport-base.css not found in "${dir}". Run "oma slide new --dir ${opts.dir}" first.`,
+        `viewport-base.css not found in "${dir}". Run "oma slide create --dir ${opts.dir}" first.`,
       ),
     );
     return 4;
@@ -157,7 +157,7 @@ export async function runSlideBundle(opts: BundleOptions): Promise<number> {
   if (!existsSync(jsPath)) {
     console.error(
       color.red(
-        `deck-stage.js not found in "${dir}". Run "oma slide new --dir ${opts.dir}" first.`,
+        `deck-stage.js not found in "${dir}". Run "oma slide create --dir ${opts.dir}" first.`,
       ),
     );
     return 4;

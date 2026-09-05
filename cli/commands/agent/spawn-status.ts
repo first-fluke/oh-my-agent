@@ -41,8 +41,18 @@ import {
 import {
   classifyDifficulty,
   type Difficulty,
+  loadGraphContext,
 } from "../../platform/context-loader.js";
+import {
+  agentResultInstructions,
+  beginAgentRun,
+  finishAgentRun,
+  listAgentRuns,
+  readOnlyClaim,
+  resultEvidenceValid,
+} from "../../state/agent-results.js";
 import { emitEvent } from "../../state/events.js";
+import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { registerSignalCleanup } from "../../utils/process-signals.js";
 import { isProcessRunning } from "./common.js";
 
@@ -181,6 +191,8 @@ export async function spawnAgent(
   taskHints?: TaskHints,
   isolation?: string,
   readOnly?: boolean,
+  taskId?: string,
+  resumedFrom?: string,
 ) {
   let worktreeHandle: WorktreeHandle | null = null;
   if (isolation === "worktree") {
@@ -265,10 +277,27 @@ export async function spawnAgent(
   }
 
   const { vendor, config } = resolveVendor(agentId, vendorOverride);
+  const runRoot = resolveProjectRoot(resolvedWorkspace);
+  const run = beginAgentRun({
+    root: runRoot,
+    workspace: resolvedWorkspace,
+    agentId,
+    sessionId,
+    taskId: taskId ?? agentId,
+    vendor,
+    managed: true,
+    dispatch: { prompt: rawPromptContent, readOnly },
+    resumedFrom,
+  });
   const executionProtocol = loadExecutionProtocol(vendor, process.cwd());
   let promptContent = executionProtocol
     ? `${rawPromptContent}\n\n${executionProtocol}`
     : rawPromptContent;
+
+  const resultInstructions = agentResultInstructions(runRoot, run, readOnly);
+  if (resultInstructions) promptContent += `\n\n${resultInstructions}`;
+  const taskContext = loadGraphContext(agentId, difficulty, runRoot);
+  if (taskContext) promptContent += `\n\n${taskContext}`;
 
   // pi has no vendor-side agent file to resolve via `@<agentId>` mention, so the
   // agent's persona (system prompt) must be inlined ahead of the task. Other
@@ -360,7 +389,6 @@ export async function spawnAgent(
   }
   const { command, args, env } = invocation;
 
-  const spawnStartMs = Date.now();
   const child = spawnProcess(command, args, {
     cwd: resolvedWorkspace,
     stdio: ["ignore", logStream, logStream],
@@ -369,6 +397,7 @@ export async function spawnAgent(
   });
 
   if (!child.pid) {
+    finishAgentRun(runRoot, run.runId, null);
     fs.closeSync(logStream);
     if (worktreeHandle) {
       console.log(
@@ -393,6 +422,7 @@ export async function spawnAgent(
   // Remove the PID file but preserve the log for post-run inspection (#583).
   // Also drop the temporary OpenCode wrapper agent, if one was created.
   const cleanup = () => {
+    fs.closeSync(logStream);
     try {
       if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile);
     } catch {
@@ -406,8 +436,9 @@ export async function spawnAgent(
       process.kill(child.pid, "SIGTERM");
     }
     unregisterSignalCleanup();
+    finishAgentRun(runRoot, run.runId, null);
     cleanup();
-    process.exit();
+    process.exit(130);
   };
 
   const unregisterSignalCleanup = registerSignalCleanup(
@@ -421,68 +452,24 @@ export async function spawnAgent(
       unregisterSignalCleanup();
       console.log(color.blue(`[${agentId}] Exited with code ${code}`));
 
-      // Persist a durable, session-specific terminal status BEFORE cleanup
-      // removes the PID file (#583). A clean exit (code 0) is "completed"; any
-      // other code is "crashed". `agent:status` reads this when the agent left
-      // no result memory, so a successful short-lived run is no longer
-      // indistinguishable from a crash.
-      try {
-        fs.writeFileSync(
-          statusFile,
-          `${code === 0 ? "completed" : "crashed"}\n`,
-        );
-      } catch (err) {
-        console.warn(
-          `[${agentId}] could not persist terminal status (non-fatal): ${String(err)}`,
-        );
-      }
-
-      // An external agent can exit 0 having written its artifacts outside the
-      // workspace (agy writes into its own trusted root — tech-debt #7 — but
-      // the check itself is vendor-agnostic: exit 0 + no workspace artifact is
-      // a silent failure whoever the vendor is). Fail loudly: distinct status
-      // for `agent:status` consumers, a blocker.raised event on the session
-      // trail, and a non-zero exit code for the spawning caller.
-      let missingArtifact = false;
-      if (
-        code === 0 &&
-        dispatch.mode === "external" &&
-        !hasSessionResultArtifact(
-          resolvedWorkspace,
-          sessionId,
-          spawnStartMs - 2_000,
-        )
-      ) {
-        missingArtifact = true;
-        const summary = `agent ${agentId} (vendor ${dispatch.targetVendor}) exited 0 but wrote no session result artifact under the workspace`;
-        console.warn(
-          color.yellow(
-            `[${agentId}] ${summary} — the vendor may have written to its own trusted root (agy: ~/.gemini/antigravity-cli). Verify workspace trust / --add-dir support.`,
-          ),
-        );
-        try {
-          fs.writeFileSync(statusFile, "no-artifact\n");
-        } catch {
-          // best-effort: the exit code below still carries the signal
-        }
-        try {
-          emitEvent(resolvedWorkspace, sessionId, {
-            kind: "blocker.raised",
-            vendor: dispatch.targetVendor,
-            payload: {
-              summary,
-              severity: "high",
-              remediation:
-                "Verify the vendor writes into the -w workspace (workspace trust / --add-dir); do not treat this spawn as completed.",
-              code: "spawn.no-workspace-artifact",
-              agentId,
-            },
-          });
-        } catch (err) {
-          console.warn(
-            `[${agentId}] blocker.raised emit failed (non-fatal): ${String(err)}`,
-          );
-        }
+      const claim =
+        readOnly && fs.existsSync(logFile)
+          ? readOnlyClaim(fs.readFileSync(logFile, "utf8"))
+          : undefined;
+      const result = finishAgentRun(runRoot, run.runId, code, claim);
+      fs.writeFileSync(statusFile, `${result.status}\n`);
+      if (result.status !== "completed") {
+        emitEvent(runRoot, sessionId, {
+          kind: "blocker.raised",
+          vendor,
+          payload: {
+            code: "spawn.incomplete-result",
+            agentId,
+            runId: run.runId,
+            status: result.status,
+            unresolved: result.unresolved,
+          },
+        });
       }
 
       if (code !== 0 && fs.existsSync(logFile)) {
@@ -518,9 +505,8 @@ export async function spawnAgent(
       }
 
       cleanup();
-      // Exit 3 marks "vendor exited 0 but produced no workspace artifact" so
-      // spawning callers cannot mistake a silent misdirected write for success.
-      process.exit(missingArtifact ? 3 : (code ?? 0));
+      // A clean process exit is insufficient when the task result is incomplete.
+      process.exit(result.status === "completed" ? 0 : code || 3);
     },
   );
 }
@@ -532,6 +518,9 @@ export async function checkStatus(
 ) {
   const results: Record<string, string> = {};
 
+  const runs = listAgentRuns(resolveProjectRoot(rootPath)).filter(
+    (run) => run.sessionId === sessionId,
+  );
   for (const agent of agentIds) {
     const resultFile =
       resolveCoordinationFile(rootPath, `result-${agent}.md`) ??
@@ -542,16 +531,27 @@ export async function checkStatus(
       `subagent-${sessionId}-${agent}.status`,
     );
 
-    if (fs.existsSync(resultFile)) {
+    const latest = runs.filter((run) => run.agentId === agent).at(-1);
+    if (latest) {
+      results[agent] =
+        latest.status === "running" &&
+        latest.runnerPid &&
+        !isProcessRunning(latest.runnerPid)
+          ? "failed"
+          : latest.status === "completed" && !resultEvidenceValid(latest, false)
+            ? "stale"
+            : latest.status;
+    } else if (fs.existsSync(resultFile)) {
       const content = fs.readFileSync(resultFile, "utf-8");
       const match = content.match(/^## Status:\s*(\S+)/m);
-      results[agent] = match?.[1] ? match[1] : "completed";
+      results[agent] = match?.[1] ? `legacy-${match[1]}` : "unverified";
     } else if (fs.existsSync(statusFile)) {
       // Session-specific terminal status written by spawnAgent on child exit
       // (#583). Ranks above the PID check: once a terminal status exists the
       // process has exited, even if its PID file was not yet cleaned up.
       const status = fs.readFileSync(statusFile, "utf-8").trim();
-      results[agent] = status || "crashed";
+      results[agent] =
+        status === "completed" ? "legacy-completed" : status || "crashed";
     } else if (fs.existsSync(pidFile)) {
       const pidContent = fs.readFileSync(pidFile, "utf-8").trim();
       const pid = Number.parseInt(pidContent, 10);

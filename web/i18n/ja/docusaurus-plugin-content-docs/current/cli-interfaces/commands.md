@@ -73,7 +73,7 @@ oma link claude codex
 
 **ディスパッチ動作：**
 - ターゲットベンダーが現在のランタイムと一致し、そのランタイムがネイティブのロールエージェントをサポートする場合、OMAはネイティブディスパッチを使用します。
-- それ以外の場合、OMAは`oma agent:spawn`にフォールバックします。
+- それ以外の場合、OMAは`oma agent spawn`にフォールバックします。
 
 ### setup（workflow）
 
@@ -86,15 +86,15 @@ oma link claude codex
 ### dashboard
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 `.serena/memories/`を監視するリアルタイムターミナルダッシュボード。`MEMORIES_DIR`環境変数でパス変更可能。
 
-### dashboard:web
+### dashboard web
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 `http://localhost:9847`でWebダッシュボード起動。`DASHBOARD_PORT`でポート変更可能。
@@ -102,7 +102,8 @@ oma dashboard:web
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 セッション数、使用スキル、完了タスク、セッション時間、ファイル変更統計。`--reset`でリセット。
@@ -156,10 +157,10 @@ oma retro [window] [--json] [--output <format>] [--interactive] [--compare]
 
 ## エージェント管理
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | 引数 | 必須 | 説明 |
@@ -170,36 +171,36 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 | フラグ | 説明 |
 |:-----|:-----------|
-| `-m, --model` | CLIベンダーオーバーライド |
+| `--vendor` | CLIベンダーオーバーライド |
 | `-w, --workspace` | 作業ディレクトリ |
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 ステータス値：`completed`、`running`、`crashed`。出力形式：`{agent-id}:{status}`（1行ごと）。
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 YAML形式またはインライン（`agent:task[:workspace]`）でタスク指定。`--no-wait`でバックグラウンド実行。
 
-### agent:review
+### agent review
 
 外部AI CLI（agy、codex、claude、またはqwen）を使用してコードレビューを実行。
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 | フラグ | 説明 |
 |:-----|:-----------|
-| `-m, --model <vendor>` | 使用するCLIベンダー：`antigravity`、`codex`、`claude`、`qwen`。デフォルトは設定から解決されたベンダー。 |
+| `--vendor <vendor>` | 使用するCLIベンダー：`antigravity`、`codex`、`claude`、`qwen`。デフォルトは設定から解決されたベンダー。 |
 | `-p, --prompt <prompt>` | カスタムレビュープロンプト。省略時はデフォルトのコードレビュープロンプトを使用。 |
 | `-w, --workspace <path>` | レビュー対象パス。デフォルトはカレントディレクトリ。 |
 | `--no-uncommitted` | 未コミット変更のレビューをスキップ。セッション内のコミット済み変更のみをレビュー。 |
@@ -214,29 +215,29 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **例：**
 ```bash
 # デフォルトベンダーで未コミット変更をレビュー
-oma agent:review
+oma agent review
 
 # codexでレビュー（ネイティブcodex reviewコマンドを使用）
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # claudeでカスタムプロンプトを使用してレビュー
-oma agent:review -m claude -p "セキュリティ脆弱性と入力バリデーションに焦点を当てて"
+oma agent review --vendor claude -p "セキュリティ脆弱性と入力バリデーションに焦点を当てて"
 
 # 特定パスをレビュー
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # コミット済み変更のみをレビュー（作業ツリーをスキップ）
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 ```
 
 ---
 
 ## メモリ管理
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 `.serena/memories/`ディレクトリとスキーマファイルを初期化。
@@ -245,10 +246,10 @@ oma memory:init [--json] [--output <format>] [--force]
 
 ## 統合とユーティリティ
 
-### auth:status
+### auth status
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 
 全CLI（GitHub CLI（`gh`）、Antigravity CLI（`agy`）、Gemini、Claude、Codex、Cursor、Qwen）の認証状態を確認。
@@ -356,7 +357,7 @@ oma search fetch https://example.com/article --pretty
 oma search fetch https://example.com --only browser
 
 # APIハンドラ経由のクロスプラットフォームキーワード検索
-oma search api:search "RAG patterns" --platforms hackernews,reddit
+oma search api search "RAG patterns" --platforms hackernews,reddit
 
 # リポジトリの信頼スコアを取得
 oma search trust github.com
@@ -395,7 +396,7 @@ oma img <subcommand> ...
 | `-n, --count <n>` | 画像数（1..5） | `1` |
 | `--out <dir>` | 出力ディレクトリ | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | `--out`に`$PWD`外のパスを許可 | `false` |
-| `--model <name>` | ベンダー固有のモデルオーバーライド | |
+| `--vendor <name>` | ベンダー固有のモデルオーバーライド | |
 | `--strategy <list>` | Geminiのフォールバック順、カンマ区切り（`mcp,stream,api`） | |
 | `--timeout <seconds>` | 画像ごとのタイムアウト | ベンダーデフォルト |
 | `-r, --reference <path>` | リファレンス画像。複数指定可（`-r a.png -r b.png`）またはカンマ区切り。`codex`と`gemini`でサポート、`pollinations`では拒否。各≤5MB、PNG/JPEG/GIF/WebP（マジックバイトで検証）、最大10件。 | |
@@ -429,7 +430,7 @@ oma image generate "blend these styles" --vendor gemini -r a.png -r b.png
 oma image generate "blend these styles" --vendor gemini -r a.png,b.png
 
 # ベンダーごとのdoctorチェック
-oma image doctor --format json
+oma image doctor --output json
 ```
 
 ### star
@@ -462,8 +463,8 @@ oma version
 | 変数 | 説明 | 使用コマンド |
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | `json`でJSON出力を強制 | 全`--json`対応コマンド |
-| `DASHBOARD_PORT` | Webダッシュボードのポート | `dashboard:web` |
-| `MEMORIES_DIR` | メモリディレクトリパスの上書き | `dashboard`、`dashboard:web` |
+| `DASHBOARD_PORT` | Webダッシュボードのポート | `dashboard web` |
+| `MEMORIES_DIR` | メモリディレクトリパスの上書き | `dashboard`、`dashboard web` |
 
 ## エイリアス
 

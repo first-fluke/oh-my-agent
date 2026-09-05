@@ -22,10 +22,8 @@ describe("hook vendor renderer", () => {
 
     expect(rendered).toContain("[OMA STATE SNAPSHOT]");
     expect(rendered).toContain("sid: oma-test");
-    expect(rendered).toContain(
-      "recent events:\n- 2026-05-27T00:00:00.000Z boundary",
-    );
-    expect(rendered).toContain("memory facts:\n- none");
+    expect(rendered).toContain("recent events:\n- boundary");
+    expect(rendered).not.toContain("memory facts:");
   });
 
   it.each([

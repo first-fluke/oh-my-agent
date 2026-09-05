@@ -150,13 +150,13 @@ export function loadTaskFixtures(taskDir: string): LoadTaskFixturesResult {
         fixtures.push(parsed);
       } else {
         console.warn(
-          `[oma skills eval] skipped ${entry}: does not match TaskFixture schema`,
+          `[oma skill eval] skipped ${entry}: does not match TaskFixture schema`,
         );
         skippedFiles.push(entry);
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      console.warn(`[oma skills eval] skipped ${entry}: ${reason}`);
+      console.warn(`[oma skill eval] skipped ${entry}: ${reason}`);
       skippedFiles.push(entry);
     }
   }
@@ -231,7 +231,7 @@ export function loadRolloutEntries(
     if (discarded > 0) {
       const why = [...reasons].map((r) => STALE_REASON_TEXT[r]).join("; ");
       console.warn(
-        `[oma skills eval] discarded ${discarded} stale rollout ${
+        `[oma skill eval] discarded ${discarded} stale rollout ${
           discarded === 1 ? "entry" : "entries"
         } from _rollouts/${entry}: ${why}. Re-run --live --record to refresh.`,
       );

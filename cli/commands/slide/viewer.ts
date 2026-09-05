@@ -1,5 +1,5 @@
 /**
- * viewer.ts — oma slide viewer --dir
+ * viewer.ts — oma slide preview --dir
  *
  * Builds <dir>/viewer.html: a single page that:
  *   1. Extracts the <section class="slide"> elements from each slide-NN.html
@@ -152,7 +152,7 @@ export async function runSlideViewer(opts: ViewerOptions): Promise<number> {
   if (!existsSync(cssPath)) {
     console.error(
       color.red(
-        `viewport-base.css not found in "${dir}". Run "oma slide new --dir ${opts.dir}" first.`,
+        `viewport-base.css not found in "${dir}". Run "oma slide create --dir ${opts.dir}" first.`,
       ),
     );
     return 4;
@@ -160,7 +160,7 @@ export async function runSlideViewer(opts: ViewerOptions): Promise<number> {
   if (!existsSync(jsPath)) {
     console.error(
       color.red(
-        `deck-stage.js not found in "${dir}". Run "oma slide new --dir ${opts.dir}" first.`,
+        `deck-stage.js not found in "${dir}". Run "oma slide create --dir ${opts.dir}" first.`,
       ),
     );
     return 4;

@@ -60,7 +60,7 @@ oma image generate "test prompt" --dry-run
 oma image doctor
 
 # List registered vendors and the models each one supports
-oma image list-vendors
+oma image vendor list
 ```
 
 `oma img` jest aliasem dla `oma image`.
@@ -111,7 +111,7 @@ Każda flaga CLI (`--vendor`, `-n`, `--size`, `-r`, `--dry-run`, …) działa w 
 Inne umiejętności (design, marketing, dokumentacja) wywołują pipeline jako wspólną infrastrukturę z wyjściem JSON:
 
 ```bash
-oma image generate "<prompt>" --format json
+oma image generate "<prompt>" --output json
 ```
 
 Manifest zapisywany na stdout zawiera ścieżki wyjściowe, vendora, model i koszt — łatwy do parsowania i łańcuchowania.
@@ -132,7 +132,7 @@ oma image generate "<prompt>"
   [--dry-run] [--format text|json]
 
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 ### Kluczowe flagi

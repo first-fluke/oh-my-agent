@@ -5,23 +5,23 @@ description: Run any agent on a recurring or one-shot schedule using the OS sche
 
 # Scheduled Agents
 
-`oma schedule` lets you run any agent on a time-based schedule, independent of which AI vendor runtime (Claude Code, Codex, Antigravity, Cursor, Qwen, Grok, opencode) is currently open. The OS scheduler fires the job, and the job calls `oma agent:spawn` headlessly using the vendor credentials already cached on disk.
+`oma schedule` lets you run any agent on a time-based schedule, independent of which AI vendor runtime (Claude Code, Codex, Antigravity, Cursor, Qwen, Grok, opencode) is currently open. The OS scheduler fires the job, and the job calls `oma agent spawn` headlessly using the vendor credentials already cached on disk.
 
 ---
 
 ## How it works
 
-When you run `oma schedule:add`, oma:
+When you run `oma schedule create`, oma:
 
 1. Writes a job record to the global manifest at `~/.agents/schedule/schedules.json`.
-2. Registers the job with the OS scheduler (macOS launchd, Linux systemd --user, or Windows Task Scheduler). The OS job calls `oma schedule:run <id>` at the configured cron interval.
-3. At fire time, `oma schedule:run` looks up the job, injects any captured environment variables, calls `oma agent:spawn`, and writes the run log to `~/.agents/schedule/runs/<id>/<timestamp>.md`.
+2. Registers the job with the OS scheduler (macOS launchd, Linux systemd --user, or Windows Task Scheduler). The OS job calls `oma schedule run <id>` at the configured cron interval.
+3. At fire time, `oma schedule run` looks up the job, injects any captured environment variables, calls `oma agent spawn`, and writes the run log to `~/.agents/schedule/runs/<id>/<timestamp>.md`.
 
 The manifest is the single source of truth (SSOT). The OS scheduler is just an executor. All state — job definitions, run logs, last-fired timestamps — lives under `~/.agents/schedule/`.
 
 ### Global-only by design
 
-`oma schedule` is intentionally user-global, not per-project. Because the OS scheduler runs jobs independently of the current working directory, a single central registry is the only practical SSOT. Each job records the project it belongs to via `workspace` and `projectLabel`, so `schedule:list` can group jobs by project even though the registry is shared.
+`oma schedule` is intentionally user-global, not per-project. Because the OS scheduler runs jobs independently of the current working directory, a single central registry is the only practical SSOT. Each job records the project it belongs to via `workspace` and `projectLabel`, so `schedule list` can group jobs by project even though the registry is shared.
 
 There is no `--global` flag; schedule commands always read and write `~/.agents/schedule/`.
 
@@ -55,31 +55,31 @@ Use `schedule` when you want a job to run at 9 AM every weekday. Use `ralph` whe
 
 ```bash
 # Run the qa-reviewer agent every weekday at 9 AM
-oma schedule:add qa-reviewer "Run QA review on the latest changes" --cron "0 9 * * 1-5"
+oma schedule create qa-reviewer "Run QA review on the latest changes" --cron "0 9 * * 1-5"
 
 # Run a backend agent every 2 hours using natural-language syntax
-oma schedule:add backend "Check for slow queries in the API logs" --every "2h"
+oma schedule create backend "Check for slow queries in the API logs" --every "2h"
 
 # One-shot: run once at 3 PM today (cron syntax) and self-remove
-oma schedule:add pm "Generate weekly plan" --cron "0 15 * * *" --once
+oma schedule create pm "Generate weekly plan" --cron "0 15 * * *" --once
 
 # Check what is scheduled
-oma schedule:list
+oma schedule list
 
 # Remove a job
-oma schedule:remove sch_abc123def456
+oma schedule delete sch_abc123def456
 ```
 
 ---
 
 ## Commands
 
-### schedule:add
+### schedule create
 
 Register a scheduled agent job.
 
 ```
-oma schedule:add <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--max-age-days <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **Arguments:**
@@ -95,10 +95,10 @@ oma schedule:add <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m
 |---|---|
 | `--cron "<expr>"` | 5-field cron expression (e.g. `"0 9 * * *"` for 9 AM daily). Mutually exclusive with `--every`. |
 | `--every "<phrase>"` | Natural-language interval (see table below). Mutually exclusive with `--cron`. |
-| `-m, --model <vendor>` | CLI vendor override passed to `oma agent:spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Defaults to auto-detect from `oma-config.yaml`. |
+| `--vendor <vendor>` | CLI vendor override passed to `oma agent spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Defaults to auto-detect from `oma-config.yaml`. |
 | `-w, --workspace <path>` | Working directory for the agent at run time. Defaults to the current working directory at registration time. |
 | `--once` | One-shot mode: the job fires once and self-removes. Default is recurring. |
-| `--max-age-days <n>` | Auto-expire a recurring job after N days. `0` means indefinite (default). |
+| `--expires-after <duration>` | Auto-expire a recurring job after a duration such as 30d. `0` means indefinite (default). |
 | `--env <KEY1,KEY2>` | Capture the named environment variables (only those listed) into `~/.agents/schedule/env/<id>` (permissions 0600) for injection at run time. Secrets are never written to the manifest itself. |
 
 Exactly one of `--cron` or `--every` is required.
@@ -120,30 +120,30 @@ Non-divisible intervals are rounded to the nearest clean step and a note is prin
 
 ```bash
 # Exact cron expression (full control)
-oma schedule:add backend "Optimize slow queries" --cron "0 */4 * * *"
+oma schedule create backend "Optimize slow queries" --cron "0 */4 * * *"
 
 # Natural language (oma converts to cron)
-oma schedule:add frontend "Run lighthouse audit" --every "every 6 hours"
+oma schedule create frontend "Run lighthouse audit" --every "every 6 hours"
 # Converts to 0 */6 * * * (6 divides 24 cleanly, so no rounding note)
 
 # Pin to a vendor and a workspace
-oma schedule:add qa "Run security scan" --cron "0 2 * * 0" -m claude -w /home/user/myproject
+oma schedule create qa "Run security scan" --cron "0 2 * * 0" --vendor claude -w /home/user/myproject
 
 # One-shot job
-oma schedule:add pm "Generate sprint retrospective" --cron "0 17 * * 5" --once
+oma schedule create pm "Generate sprint retrospective" --cron "0 17 * * 5" --once
 
 # Capture specific env vars for the job
-oma schedule:add backend "Sync external API data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
+oma schedule create backend "Sync external API data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
 ```
 
 ---
 
-### schedule:list
+### schedule list
 
 List all scheduled jobs across all projects, grouped by project, with OS drift state.
 
 ```
-oma schedule:list [--json]
+oma schedule list [--json]
 ```
 
 **Options:**
@@ -157,8 +157,8 @@ oma schedule:list [--json]
 | State | Meaning |
 |---|---|
 | `synced` | Job exists in both manifest and OS scheduler |
-| `missing-in-os` | Job is in manifest but missing from OS scheduler. Run `schedule:sync` to repair. |
-| `orphan-in-os` | Job exists in OS scheduler but not in manifest. Run `schedule:sync --prune` to remove. |
+| `missing-in-os` | Job is in manifest but missing from OS scheduler. Run `schedule sync` to repair. |
+| `orphan-in-os` | Job exists in OS scheduler but not in manifest. Run `schedule sync --prune` to remove. |
 
 **Output (text):**
 
@@ -178,68 +178,68 @@ sch_xyz789ghi012   */30 * * * *   backend            claude   launchd  true   mi
 **Examples:**
 
 ```bash
-oma schedule:list
-oma schedule:list --json | jq '.jobs[] | select(.drift != "synced")'
+oma schedule list
+oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 ```
 
 ---
 
-### schedule:remove
+### schedule delete
 
 Remove a scheduled job from both the manifest and the OS scheduler.
 
 ```
-oma schedule:remove <id>
+oma schedule delete <id>
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |---|---|---|
-| `id` | Yes | Job ID from `schedule:list` (format: `sch_<base32-12>`) |
+| `id` | Yes | Job ID from `schedule list` (format: `sch_<base32-12>`) |
 
 If the OS scheduler removal fails (e.g. the backend is temporarily unavailable), a warning is printed but the manifest entry is still removed.
 
 **Example:**
 
 ```bash
-oma schedule:remove sch_abc123def456
+oma schedule delete sch_abc123def456
 ```
 
 ---
 
-### schedule:run
+### schedule run
 
 Execute a scheduled job by ID. This is invoked by the OS scheduler at fire time and is not normally called by hand.
 
 ```
-oma schedule:run <id>
+oma schedule run <id>
 ```
 
 The wrapper:
 1. Looks up the job ID in the manifest. Exits non-zero if not found.
 2. Loads captured environment variables from `~/.agents/schedule/env/<id>` (if present) and injects them into the spawned process.
-3. Calls `oma agent:spawn <agentId> <prompt> <generatedSessionId> -m <vendor> -w <workspace>`.
+3. Calls `oma agent spawn <agentId> <prompt> <generatedSessionId> --vendor <vendor> -w <workspace>`.
 4. Writes the run result to `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Updates `lastFiredAt` in the manifest.
 6. If `--once` was set, self-removes the job (manifest + OS scheduler).
 
 **Authentication failures are loud:** if vendor credentials are expired, the job exits with a non-zero code and prints `re-auth required: <vendor>` to stderr. It does not silently succeed. An optional `oma-voice` notification can be configured.
 
-You can invoke `schedule:run` manually for debugging:
+You can invoke `schedule run` manually for debugging:
 
 ```bash
-oma schedule:run sch_abc123def456
+oma schedule run sch_abc123def456
 ```
 
 ---
 
-### schedule:sync
+### schedule sync
 
 Re-synchronize the manifest to the OS scheduler. Use after system migrations, OS scheduler resets, or to repair drift.
 
 ```
-oma schedule:sync [--prune]
+oma schedule sync [--prune]
 ```
 
 **Options:**
@@ -252,10 +252,10 @@ oma schedule:sync [--prune]
 
 ```bash
 # Repair missing-in-os jobs (does not remove orphans)
-oma schedule:sync
+oma schedule sync
 
 # Repair missing-in-os jobs AND remove orphans
-oma schedule:sync --prune
+oma schedule sync --prune
 ```
 
 ---
@@ -284,8 +284,8 @@ Permissions:
 
 ## Security notes
 
-- `schedule:add` is a trusted-path operation: only the authenticated user can register jobs. Do not expose `schedule:add` to external or untrusted inputs. A scheduled prompt is arbitrary code that runs at a future time.
-- `schedule:run` executes only jobs whose ID exists in the manifest. Arbitrary argv injection is not possible.
+- `schedule create` is a trusted-path operation: only the authenticated user can register jobs. Do not expose `schedule create` to external or untrusted inputs. A scheduled prompt is arbitrary code that runs at a future time.
+- `schedule run` executes only jobs whose ID exists in the manifest. Arbitrary argv injection is not possible.
 - Vendor disk credentials (e.g. `~/.codex/auth.json`, `~/.grok/auth.json`) are used as-is for headless dispatch. No additional authentication gating is applied. If credentials expire, the job loud-fails.
 
 ---
@@ -301,11 +301,11 @@ cat ~/.agents/schedule/runs/sch_abc123def456/2026-06-16T090000Z.md
 
 **Job shows `missing-in-os` after a system restart:**
 
-Run `oma schedule:sync` to re-register all manifest jobs with the OS scheduler.
+Run `oma schedule sync` to re-register all manifest jobs with the OS scheduler.
 
 **Job fired but vendor credentials were expired:**
 
-Check the run log for `re-auth required: <vendor>`. Re-authenticate with the vendor CLI (e.g. `claude login`, `codex login`) and run `oma schedule:run <id>` manually to verify before the next scheduled fire.
+Check the run log for `re-auth required: <vendor>`. Re-authenticate with the vendor CLI (e.g. `claude login`, `codex login`) and run `oma schedule run <id>` manually to verify before the next scheduled fire.
 
 **`--every` rounded my interval:**
 
@@ -315,12 +315,12 @@ When oma rounds your interval, it prints a note explaining the change. If you ne
 
 ```bash
 # List jobs for a specific project, then remove each
-oma schedule:list --json | jq -r '.jobs[] | select(.projectLabel == "my-project") | .id' \
-  | xargs -I{} oma schedule:remove {}
+oma schedule list --json | jq -r '.jobs[] | select(.projectLabel == "my-project") | .id' \
+  | xargs -I{} oma schedule delete {}
 ```
 
 **Windows support:**
 
-On Windows, oma uses `schtasks` to register jobs. The `schedule:list` drift detection and `schedule:sync` commands work the same way across all platforms.
+On Windows, oma uses `schtasks` to register jobs. The `schedule list` drift detection and `schedule sync` commands work the same way across all platforms.
 
-Note that `schtasks` cannot express every cron shape. Supported shapes are: `*/N * * * *` (every N minutes), `M * * * *` (hourly at :M), `M H * * *` (daily), `M H * * D` (weekly; `D` may be a single day, a range like `1-5`, or a comma list like `1,3,5`), and `M H D * *` (monthly). Other expressions (e.g. a comma list in the minute field) are rejected at `schedule:add` time on Windows.
+Note that `schtasks` cannot express every cron shape. Supported shapes are: `*/N * * * *` (every N minutes), `M * * * *` (hourly at :M), `M H * * *` (daily), `M H * * D` (weekly; `D` may be a single day, a range like `1-5`, or a comma list like `1,3,5`), and `M H D * *` (monthly). Other expressions (e.g. a comma list in the minute field) are rejected at `schedule create` time on Windows.

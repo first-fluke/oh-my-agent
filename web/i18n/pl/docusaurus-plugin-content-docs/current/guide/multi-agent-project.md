@@ -31,7 +31,7 @@ Workflow `/plan` działa inline i produkuje ustrukturyzowany plan zapisywany do 
 | **Tryb trwały** | Tak | Tak |
 | **Najlepsze dla** | Pierwsze użycie, złożone projekty | Powtarzane uruchomienia, dobrze zdefiniowane zadania |
 
-### Krok 3: agent:spawn — Zarządzanie agentami na poziomie CLI
+### Krok 3: agent spawn — Zarządzanie agentami na poziomie CLI
 Niskopoziomowy mechanizm wywoływany wewnętrznie przez workflow, dostępny też bezpośrednio.
 
 ### Krok 4: /review — Weryfikacja QA

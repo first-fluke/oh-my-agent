@@ -136,7 +136,7 @@ describe("Codex hook variant contract", () => {
       const wrapperContent = readFileSync(wrapperPath, "utf-8");
       expect(wrapperContent).toContain("__oma_dedup_lock");
       expect(wrapperContent).toContain("command -v oma");
-      expect(wrapperContent).toContain('"$__oma_bin" hook "$@" || true');
+      expect(wrapperContent).toContain('"$__oma_bin" hook run "$@" || true');
       // Always fail-open: the wrapper must force exit 0 even if oma errors.
       expect(wrapperContent).toContain("exit 0");
     } finally {
@@ -390,7 +390,7 @@ describe("generateOmaHookWrapper machine independence", () => {
         // $OMA_BIN wins.
         const found = run({ OMA_BIN: fakeOma, OMA_SESSION_ID: "wrap-found" });
         expect(found.status).toBe(0);
-        expect(found.stdout).toContain("ran: hook --vendor claude");
+        expect(found.stdout).toContain("ran: hook run --vendor claude");
 
         // No oma anywhere it looks → still exit 0, no output.
         const missing = run({

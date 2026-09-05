@@ -6,6 +6,7 @@ import {
   agentsPathFromRoot,
 } from "../../constants/paths.js";
 import { getCoordinationStoreDirs } from "../../io/memory.js";
+import { TaskContractSchema } from "../../state/task-contract.js";
 import type { VerifyCheck } from "../../types/index.js";
 import { checkClosure } from "../../utils/skill-outputs.js";
 import type { AgentType } from "./agent-types.js";
@@ -15,6 +16,7 @@ export const TEST_APPROACHES = ["tdd", "test_after", "not_applicable"] as const;
 export type TestApproach = (typeof TEST_APPROACHES)[number];
 
 export interface PlanTask {
+  required_checks?: unknown;
   id?: string;
   agent?: string;
   scope?: string[];
@@ -191,6 +193,14 @@ export function checkPmPlan(workspace: string): VerifyCheck {
     return createCheck("PM Plan", "fail", "Invalid JSON");
   }
   const errors = validateTestApproach(plan.tasks ?? []);
+  for (const task of plan.tasks ?? []) {
+    if (task.required_checks === undefined) continue;
+    const contract = TaskContractSchema.safeParse(task);
+    if (!contract.success)
+      errors.push(
+        `acceptance contract for ${task.id ?? "unknown task"}: ${contract.error.issues[0]?.message}`,
+      );
+  }
   if (errors.length > 0) {
     return createCheck(
       "PM Plan",

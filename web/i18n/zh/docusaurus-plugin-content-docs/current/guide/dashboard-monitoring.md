@@ -11,15 +11,15 @@ oh-my-agent 提供两个实时仪表盘，用于在多智能体工作流期间�
 
 | 命令 | 界面 | URL | 技术 |
 |:-----|:-----|:----|:-----|
-| `oma dashboard` | 终端（TUI） | 无：在终端中渲染 | chokidar 文件监视器、picocolors 渲染 |
-| `oma dashboard:web` | 浏览器 | `http://localhost:9847` | HTTP 服务器、WebSocket、chokidar 文件监视器 |
+| `oma dashboard terminal` | 终端（TUI） | 无：在终端中渲染 | chokidar 文件监视器、picocolors 渲染 |
+| `oma dashboard web` | 浏览器 | `http://localhost:9847` | HTTP 服务器、WebSocket、chokidar 文件监视器 |
 
 两个仪表盘监视相同的数据源：`.serena/memories/` 目录。
 
 ### 终端仪表盘
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 直接在终端中渲染方框绘制 UI。内存文件变化时自动更新。按 `Ctrl+C` 退出。
@@ -55,17 +55,17 @@ oma dashboard
 ### Web 仪表盘
 
 ```bash
-oma dashboard:web
+oma dashboard web
 ```
 
 在端口 9847 上启动 web 服务器（可通过 `DASHBOARD_PORT` 环境变量配置）。浏览器 UI 通过 WebSocket 连接并接收实时更新。
 
 ```bash
 # 自定义端口
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 
 # 自定义内存目录
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard web
 ```
 
 Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的样式化 UI，包含：
@@ -86,7 +86,7 @@ Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的�
 │                                │                                │
 │   终端 1：主智能体             │   终端 2：仪表盘               │
 │                                │                                │
-│   $ gemini                     │   $ oma dashboard              │
+│   $ gemini                     │   $ oma dashboard terminal              │
 │   > /orchestrate               │                                │
 │   ...                          │   ╔═══════════════════════╗    │
 │                                │   ║ Serena Dashboard      ║    │
@@ -97,8 +97,8 @@ Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的�
 │                                                                 │
 │   终端 3：临时命令                                              │
 │                                                                 │
-│   $ oma agent:status session-20260324-143052 backend frontend   │
-│   $ oma stats                                                   │
+│   $ oma agent status session-20260324-143052 backend frontend   │
+│   $ oma stats get                                                   │
 │   $ oma verify backend -w ./api                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -193,12 +193,12 @@ Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的�
 
 **操作：**
 1. 检查智能体的日志文件：`cat /tmp/subagent-{session-id}-{agent-id}.log`
-2. 检查进程是否实际在运行：`oma agent:status {session-id} {agent-id}`
+2. 检查进程是否实际在运行：`oma agent status {session-id} {agent-id}`
 3. 如果进程未运行但状态显示 "running"，智能体已崩溃。带错误上下文重新启动。
 
 ### 信号 2：智能体显示 "crashed"
 
-**症状：** `oma agent:status` 对智能体返回 `crashed`。
+**症状：** `oma agent status` 对智能体返回 `crashed`。
 
 **可能原因：**
 - CLI 供应商进程意外退出（内存不足、API 配额用尽、网络超时）。
@@ -208,8 +208,8 @@ Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的�
 **操作：**
 1. 检查日志文件了解错误详情：`cat /tmp/subagent-{session-id}-{agent-id}.log`
 2. 验证 CLI 安装：`oma doctor`
-3. 检查认证：`oma auth:status`
-4. 使用相同任务重新启动智能体：`oma agent:spawn {agent-id} "{task}" {session-id} -w {workspace}`
+3. 检查认证：`oma auth status`
+4. 使用相同任务重新启动智能体：`oma agent spawn {agent-id} "{task}" {session-id} -w {workspace}`
 
 ### 信号 3：仪表盘显示 "No agents detected yet"
 
@@ -224,20 +224,20 @@ Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的�
 1. 验证内存目录：`ls -la .serena/memories/`
 2. 检查工作流是否仍在规划阶段（智能体尚未启动）。
 3. 确保仪表盘监视正确的项目目录：仪表盘从当前工作目录解析内存路径。
-4. 如果使用自定义路径：`MEMORIES_DIR=/path/to/.serena/memories oma dashboard`
+4. 如果使用自定义路径：`MEMORIES_DIR=/path/to/.serena/memories oma dashboard terminal`
 
 ### 信号 4：Web 仪表盘显示 "Disconnected"
 
 **症状：** Web 仪表盘的连接徽章显示红色的 "Disconnected"。
 
 **可能原因：**
-- `oma dashboard:web` 进程被终止。
+- `oma dashboard web` 进程被终止。
 - 浏览器和 localhost 之间的网络问题。
 - 端口被其他进程占用。
 
 **操作：**
 1. 检查仪表盘进程是否在运行：`ps aux | grep dashboard`
-2. 尝试不同的端口：`DASHBOARD_PORT=8080 oma dashboard:web`
+2. 尝试不同的端口：`DASHBOARD_PORT=8080 oma dashboard web`
 3. 检查端口可用性：`lsof -i :9847`
 4. Web 仪表盘使用指数退避自动重连（初始 1 秒，最大 10 秒）。等待几秒钟让它重连。
 
@@ -268,14 +268,14 @@ Web 仪表盘显示与终端仪表盘相同的信息，但具有深色主题的�
 
 ## 技术细节
 
-### 终端仪表盘（oma dashboard）
+### 终端仪表盘（oma dashboard terminal）
 
 - **文件监视：** 使用 [chokidar](https://github.com/paulmillr/chokidar)，配置 `awaitWriteFinish`（200ms 稳定阈值、50ms 轮询间隔）以避免渲染部分写入的文件。
 - **渲染：** 在每次文件变更事件时清除并重新绘制整个终端。使用 `picocolors` 进行 ANSI 颜色输出，使用 Unicode 方框绘制字符作为边框。
 - **内存目录：** 从 `MEMORIES_DIR` 环境变量、CLI 参数或 `{cwd}/.serena/memories` 解析。
 - **优雅关闭：** 捕获 `SIGINT` 和 `SIGTERM`，关闭 chokidar 监视器，干净退出。
 
-### Web 仪表盘（oma dashboard:web）
+### Web 仪表盘（oma dashboard web）
 
 - **HTTP 服务器：** Node.js `createServer` 在 `/` 提供 HTML 页面，在 `/api/state` 提供 JSON 状态。
 - **WebSocket：** 使用 `ws` 库。`WebSocketServer` 附加到 HTTP 服务器。连接时，客户端立即收到完整状态。后续更新作为 `{ type: "update", event, file, data }` 消息推送。

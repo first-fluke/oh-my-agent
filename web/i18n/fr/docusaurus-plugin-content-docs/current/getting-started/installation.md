@@ -124,12 +124,12 @@ Cela installe la commande `oma` globalement, vous donnant accès à toutes les c
 
 ```bash
 oma doctor              # Vérification de santé
-oma dashboard           # Surveillance terminal
-oma dashboard:web       # Tableau de bord web sur http://localhost:9847
-oma agent:spawn         # Lance des agents depuis le terminal
-oma agent:parallel      # Exécution parallèle d'agents
-oma agent:status        # Vérifie le statut d'un agent
-oma stats               # Statistiques de session
+oma dashboard terminal           # Surveillance terminal
+oma dashboard web       # Tableau de bord web sur http://localhost:9847
+oma agent spawn         # Lance des agents depuis le terminal
+oma agent parallel      # Exécution parallèle d'agents
+oma agent status        # Vérifie le statut d'un agent
+oma stats get               # Statistiques de session
 oma retro               # Analyse rétrospective
 oma cleanup             # Nettoyage des artefacts de session
 oma update              # Met à jour oh-my-agent
@@ -137,8 +137,8 @@ oma verify              # Vérifie la sortie d'un agent
 oma visualize           # Visualisation des dépendances
 oma describe            # Décrit la structure du projet
 oma bridge              # Pont SSE vers stdio pour Antigravity
-oma memory:init         # Initialise le fournisseur de mémoire
-oma auth:status         # Vérifie le statut d'authentification des CLI
+oma memory init         # Initialise le fournisseur de mémoire
+oma auth status         # Vérifie le statut d'authentification des CLI
 oma star                # Ajoute une étoile au dépôt
 ```
 

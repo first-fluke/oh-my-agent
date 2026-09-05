@@ -124,13 +124,13 @@ npm install --global oh-my-agent
 
 ```bash
 oma doctor              # ヘルスチェック
-oma dashboard           # ターミナルモニタリング
-oma dashboard:web       # Webダッシュボード http://localhost:9847
-oma agent:spawn         # ターミナルからエージェントをスポーン
-oma agent:parallel      # 並列エージェント実行
-oma agent:status        # エージェント状態確認
-oma agent:review        # 外部CLI（codex/claude/gemini/qwen）経由のコードレビュー
-oma stats               # セッション統計
+oma dashboard terminal           # ターミナルモニタリング
+oma dashboard web       # Webダッシュボード http://localhost:9847
+oma agent spawn         # ターミナルからエージェントをスポーン
+oma agent parallel      # 並列エージェント実行
+oma agent status        # エージェント状態確認
+oma agent review        # 外部CLI（codex/claude/gemini/qwen）経由のコードレビュー
+oma stats get               # セッション統計
 oma retro               # エンジニアリング振り返り（コミット、ホットスポット、トレンド）
 oma recap               # AIツールを横断する会話履歴サマリ
 oma cleanup             # セッションアーティファクトのクリーンアップ
@@ -140,8 +140,8 @@ oma verify              # エージェント出力の検証（ビルド/テス�
 oma visualize           # 依存関係の可視化（エイリアス：`oma viz`）
 oma describe            # CLIコマンドをJSONとしてイントロスペクト
 oma bridge              # MCP stdio ↔ Streamable HTTPブリッジ
-oma memory:init         # Serenaメモリスキーマの初期化
-oma auth:status         # CLI認証状態の確認（gh/antigravity/claude/codex/qwen）
+oma memory init         # Serenaメモリスキーマの初期化
+oma auth status         # CLI認証状態の確認（gh/antigravity/claude/codex/qwen）
 oma search              # メカニカル検索プリミティブ（エイリアス：`oma s`）
 oma image               # マルチベンダーAI画像生成（エイリアス：`oma img`）
 oma export              # 外部IDE向けスキルエクスポート（例：cursor）

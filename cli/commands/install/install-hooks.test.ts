@@ -426,7 +426,7 @@ describe("installHooksFromVariant", () => {
     // Always fail-open: force exit 0 even if oma errors / lacks the hook command.
     expect(wrapperContent).toContain("exit 0");
     // Delegates to oma hook with verbatim args, swallowing a non-zero exit.
-    expect(wrapperContent).toContain('"$__oma_bin" hook "$@" || true');
+    expect(wrapperContent).toContain('"$__oma_bin" hook run "$@" || true');
 
     // hook-output.ts patching is intentionally NOT performed (vendor is --vendor arg now).
     const hookOutputWrite = (

@@ -9,15 +9,15 @@ description: ターミナルとWebダッシュボードの包括的ガイド。�
 
 | コマンド | インターフェース | URL | 技術 |
 |:--------|:---------|:----|:-----------|
-| `oma dashboard` | ターミナル（TUI） | N/A | chokidarファイルウォッチャー、picocolorsレンダリング |
-| `oma dashboard:web` | ブラウザ | `http://localhost:9847` | HTTPサーバー、WebSocket、chokidar |
+| `oma dashboard terminal` | ターミナル（TUI） | N/A | chokidarファイルウォッチャー、picocolorsレンダリング |
+| `oma dashboard web` | ブラウザ | `http://localhost:9847` | HTTPサーバー、WebSocket、chokidar |
 
 両ダッシュボードとも同じデータソースを監視：`.serena/memories/`ディレクトリ。
 
 ### ターミナルダッシュボード
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 ターミナル内にボックス描画UIをレンダリング。メモリファイル変更で自動更新。`Ctrl+C`で終了。
@@ -27,11 +27,11 @@ oma dashboard
 ### Webダッシュボード
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # カスタムポート
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 # カスタムメモリディレクトリ
-MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
+MEMORIES_DIR=/path/to/.serena/memories oma dashboard web
 ```
 
 ダークテーマUI、接続ステータスバッジ、自動再接続、アニメーションステータスドット。
@@ -42,7 +42,7 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 
 **ターミナル1：** メインエージェントセッション（Gemini CLI、Claude Codeなどで`/orchestrate`実行）
 
-**ターミナル2：** `oma dashboard`でパッシブモニタリング
+**ターミナル2：** `oma dashboard terminal`でパッシブモニタリング
 
 **ターミナル3：** エージェントステータス確認、検証実行、統計表示などのアドホックコマンド
 
@@ -109,12 +109,12 @@ MEMORIES_DIR=/path/to/.serena/memories oma dashboard:web
 ### エージェントが「running」だがターン進捗なし
 
 原因：長時間操作中、クラッシュしたがPIDファイル残存、ユーザー入力待ち。
-対処：ログ確認、`oma agent:status`でプロセス生存確認、再スポーン。
+対処：ログ確認、`oma agent status`でプロセス生存確認、再スポーン。
 
 ### エージェントが「crashed」
 
 原因：CLIプロセス異常終了（メモリ不足、APIクォータ超過）、ワークスペース削除、CLIの未インストール/未認証。
-対処：ログ確認、`oma doctor`、`oma auth:status`、再スポーン。
+対処：ログ確認、`oma doctor`、`oma auth status`、再スポーン。
 
 ### 「エージェント未検出」
 

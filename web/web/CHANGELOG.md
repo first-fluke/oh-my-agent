@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v5.1.1...web-v6.0.0) (2026-09-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** Colon commands, former command aliases and renamed option spellings are removed. Use the command mapping in docs/cli-command-standardization.md. The describe command reports canonical paths only. After upgrading, run oma schedule sync to rewrite OS jobs and oma link or oma update to refresh project hook wrappers.
+
+### Features
+
+* **cli:** standardize command paths and remove legacy syntax ([43b3fc7](https://github.com/first-fluke/oh-my-agent/commit/43b3fc71c15ddbc2228e85df1e1a977fb2cd44ca))
+
+## [5.1.1](https://github.com/first-fluke/oh-my-agent/compare/web-v5.1.0...web-v5.1.1) (2026-09-05)
+
+
+### Documentation
+
+* remove playwright references from markdown guidance ([2ffa537](https://github.com/first-fluke/oh-my-agent/commit/2ffa5374f726f58ce81aa588d8252001f27eea26))
+
 ## [5.1.0](https://github.com/first-fluke/oh-my-agent/compare/web-v5.0.0...web-v5.1.0) (2026-08-30)
 
 

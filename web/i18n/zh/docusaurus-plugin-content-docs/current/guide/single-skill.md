@@ -306,7 +306,7 @@ Add deliverables: data standards table, glossary, migration script.
 | 智能体的 CHARTER_CHECK 显示的 "Must NOT do" 项实际上是需要的 | 范围超出单一领域 | 先用 `/plan` 规划完整功能 |
 | 修复级联到 3+ 个不同层的文件 | 一个修复影响多个领域 | 使用更广范围的 `/debug`，或 `/work` |
 | 智能体发现 API 契约不匹配 | 前端/后端不一致 | 运行 `/plan` 定义契约，然后重新启动两个智能体 |
-| 质量关卡在集成点失败 | 组件未正确连接 | 添加 QA 审查步骤：`oma agent:spawn qa "Review integration"` |
+| 质量关卡在集成点失败 | 组件未正确连接 | 添加 QA 审查步骤：`oma agent spawn qa "Review integration"` |
 | 任务从"一个组件"增长为"三个组件 + 新路由 + API" | 执行期间范围蔓延 | 停止，运行 `/plan` 分解，然后 `/orchestrate` |
 | 智能体以 HIGH 澄清阻塞 | 需求根本性模糊 | 回答智能体的问题或运行 `/brainstorm` 澄清方案 |
 

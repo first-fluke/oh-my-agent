@@ -1,11 +1,11 @@
 ---
 title: "스킬 유용성 평가"
-description: oma skills eval용 평가 태스크 픽스처를 작성하는 방법, .agents/eval/ 디렉토리 규칙, 체커 종류, mock과 live 실행 모드를 다룹니다.
+description: oma skill eval용 평가 태스크 픽스처를 작성하는 방법, .agents/eval/ 디렉토리 규칙, 체커 종류, mock과 live 실행 모드를 다룹니다.
 ---
 
 # 스킬 유용성 평가
 
-`oma skills eval`은 스킬을 로딩했을 때 에이전트의 태스크 결과가 실제로 좋아지는지 측정합니다. "두 스킬이 중복인가?"를 묻는 `oma skills audit`과는 다른 질문, 곧 "이 스킬이 도움이 되는가?"에 답합니다.
+`oma skill eval`은 스킬을 로딩했을 때 에이전트의 태스크 결과가 실제로 좋아지는지 측정합니다. "두 스킬이 중복인가?"를 묻는 `oma skill audit`과는 다른 질문, 곧 "이 스킬이 도움이 되는가?"에 답합니다.
 
 설계는 두 연구 결과를 따릅니다. WikiSkill(arXiv:2608.27454)은 원시 경험, 영속 지식, 실행 가능한 스킬을 분리하면서 진화에 held-out 게이트를 둡니다. SkillLens(arXiv:2605.23899)는 스킬 유용성이 설명의 구별성과 무관함을 보여줍니다. 구별되는 스킬도 쓸모없을 수 있고, 겹치는 스킬도 도움이 될 수 있습니다.
 
@@ -142,28 +142,28 @@ judge 태스크에 `_rollouts/`의 기록 점수가 없으면 콘솔 경고와 �
 
 기록은 쓰기 전에 낡았는지도 확인합니다. 다른 SKILL.md 본문에서 기록된 treatment 항목, 픽스처의 `prompt`가 바뀐 항목, 출처 추적이 도입되기 전의 항목은 모두 파일명과 개수를 밝히는 경고와 함께 버립니다. 그 결과 채점 가능한 태스크가 `MIN_TASKS`보다 적어지면 판정 대신 `coverage: "insufficient"`를 보고합니다. 편집된 스킬이 예전 점수를 물려받는 일은 없습니다.
 
-:::note `oma skills opt --mock`
+:::note `oma skill optimize --mock`
 최적화기는 후보 SKILL.md 본문을 채점합니다. 기록은 그것이 만들어진 본문에만 유효하므로, 후보 본문에는 맞는 롤아웃이 없어 커버리지 없음으로 보고됩니다. 후보를 채점하려면 `--live`를 쓰세요.
 :::
 
 CI에서 안전합니다. `OMA_SKILLEVAL_MOCK=1`을 설정하면 이 모드를 강제합니다.
 
 ```bash
-oma skills eval --skill oma-scholar
+oma skill eval --skill oma-scholar
 ```
 
 ### --live
 
-`oma agent:spawn --read-only`로 실제 에이전트 갈래를 스폰합니다. 프로젝트 파일이 수정되지 않도록 두 갈래 모두 임시 워크스페이스에서 돌립니다.
+`oma agent spawn --read-only`로 실제 에이전트 갈래를 스폰합니다. 프로젝트 파일이 수정되지 않도록 두 갈래 모두 임시 워크스페이스에서 돌립니다.
 
 디스패치 전에 태스크 수, 갈래 디스패치 수, judge 디스패치 수, 해석된 벤더를 나열한 비용 미리보기를 출력합니다. `y`로 확인하거나 `--yes`로 건너뛰세요.
 
 ```bash
 # Preview and confirm
-oma skills eval --skill oma-scholar --live
+oma skill eval --skill oma-scholar --live
 
 # Skip confirmation
-oma skills eval --skill oma-scholar --live --yes
+oma skill eval --skill oma-scholar --live --yes
 ```
 
 #### 스킬 격리 (baseline을 정직하게 유지하기) {#skill-isolation-keeping-the-baseline-honest}
@@ -203,7 +203,7 @@ baseline 갈래는 스킬을 빼고 돌리므로 SKILL.md를 고쳐도 무효화
 :::
 
 ```bash
-oma skills eval --skill oma-scholar --live --record --yes
+oma skill eval --skill oma-scholar --live --record --yes
 ```
 
 ---
@@ -236,10 +236,10 @@ weight: 1
 
 ```bash
 # Seed rollouts (local only — re-run after any SKILL.md edit)
-oma skills eval --skill oma-scholar --live --record --yes
+oma skill eval --skill oma-scholar --live --record --yes
 
 # Offline replay
-oma skills eval --skill oma-scholar --json
+oma skill eval --skill oma-scholar --json
 ```
 
 ---
@@ -296,7 +296,7 @@ Skill utility eval  (skill: oma-scholar)
 
 ```bash
 # Fail the build if the skill regresses or has insufficient coverage
-oma skills eval --skill oma-scholar --json --require-coverage
+oma skill eval --skill oma-scholar --json --require-coverage
 ```
 
 종료 코드:

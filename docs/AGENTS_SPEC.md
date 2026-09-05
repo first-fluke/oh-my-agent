@@ -188,7 +188,7 @@ Workflows resolve a target vendor per agent from `.agents/oma-config.yaml`.
   - Claude Code -> `.claude/agents/*.md`
   - Codex CLI -> `.codex/agents/*.toml`
   - Gemini CLI -> `.gemini/agents/*.md`
-- If the task targets a different vendor, or the native path is unavailable, OMA falls back to `oma agent:spawn`.
+- If the task targets a different vendor, or the native path is unavailable, OMA falls back to `oma agent spawn`.
 
 ## Packaging Rules
 

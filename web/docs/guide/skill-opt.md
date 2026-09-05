@@ -1,11 +1,11 @@
 ---
 title: "Skill Optimization"
-description: How to use oma skills opt for persistent, evidence-driven skill evolution with train, validation, and runner-owned final-test gates.
+description: How to use oma skill optimize for persistent, evidence-driven skill evolution with train, validation, and runner-owned final-test gates.
 ---
 
 # Skill Optimization
 
-`oma skills opt` evolves a skill's `SKILL.md` to maximize its measured `utilityLift` as produced by `oma skills eval`. It separates raw rollout evidence, persistent scoped knowledge, and the executable skill. A Wiki Maintainer consolidates observable successes and failures; a Proposer uses that knowledge to emit bounded add/delete/replace edits. Candidates must improve held-out validation utility, and `--apply` additionally requires improvement on a runner-owned final-test split. At deployment there is no extra inference-time wiki lookup: the output remains a `SKILL.md`.
+`oma skill optimize` evolves a skill's `SKILL.md` to maximize its measured `utilityLift` as produced by `oma skill eval`. It separates raw rollout evidence, persistent scoped knowledge, and the executable skill. A Wiki Maintainer consolidates observable successes and failures; a Proposer uses that knowledge to emit bounded add/delete/replace edits. Candidates must improve held-out validation utility, and `--apply` additionally requires improvement on a runner-owned final-test split. At deployment there is no extra inference-time wiki lookup: the output remains a `SKILL.md`.
 
 Research basis: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C., & Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
 
@@ -13,10 +13,10 @@ Research basis: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C.
 
 ## Hard dependency: eval task fixtures
 
-`oma skills opt` cannot run without eval task fixtures. It requires at least **5 task fixtures** (`MIN_TASKS = 5`) in `.agents/eval/<skill>/`. If fewer are found, the command errors immediately:
+`oma skill optimize` cannot run without eval task fixtures. It requires at least **5 task fixtures** (`MIN_TASKS = 5`) in `.agents/eval/<skill>/`. If fewer are found, the command errors immediately:
 
 ```
-[oma skills opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
+[oma skill opt] no eval coverage for skill "oma-scholar": found 2 task fixture(s), need at least 5. Author tasks first — see web/docs/guide/skill-eval.md
 ```
 
 See the [Skill Utility Eval guide](/docs/guide/skill-eval) for the `.agents/eval/<skill>/` directory convention, fixture schema, checker types, and how to seed rollouts for mock replay.
@@ -29,7 +29,7 @@ Fixtures are split deterministically into **train**, **held-out validation**, an
 
 For each epoch (up to `--max-epochs`, default 8):
 
-1. **Score current best `SKILL.md` on the TRAIN split** — `oma skills eval` returns observable per-task prompts, outputs, and lift.
+1. **Score current best `SKILL.md` on the TRAIN split** — `oma skill eval` returns observable per-task prompts, outputs, and lift.
 2. **Wiki Maintainer consolidates evidence** — up to five failures and three successes become evidence-linked patterns. Scoped patterns and prior gate outcomes are recalled from OMA's L1/L2/L3 memory system.
 3. **Proposer emits K candidate edits** (up to `--edits-per-epoch`, default 4). Exact edits already in persistent rejection history are skipped.
 4. **For each candidate edit:**
@@ -48,7 +48,7 @@ The optimizer never edits the live `SKILL.md` during the loop — it always work
 ## Usage
 
 ```
-oma skills opt --skill <id>
+oma skill optimize --skill <id>
                [--dry-run | --apply]
                [--mock | --live]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
@@ -78,13 +78,13 @@ oma skills opt --skill <id>
 
 ```bash
 # Propose edits (dry-run, mock mode — does not change SKILL.md, fully offline)
-oma skills opt --skill oma-scholar --mock --dry-run
+oma skill optimize --skill oma-scholar --mock --dry-run
 ```
 
 Example output:
 
 ```
-[oma skills opt] skill: oma-scholar, tasks: 8 (train: 4, val: 4), dry-run: true
+[oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 4), dry-run: true
 
 Skill opt  (skill: oma-scholar)
   applied: false
@@ -111,7 +111,7 @@ When you are satisfied with the proposed diff, re-run with `--apply`:
 
 ```bash
 # Apply accepted edits (backs up the original first)
-oma skills opt --skill oma-scholar --mock --apply
+oma skill optimize --skill oma-scholar --mock --apply
 ```
 
 `--apply` writes only when the optimization found a strictly positive improvement on both the held-out validation and runner-owned final-test splits. A backup of the original `SKILL.md` is created before the atomic write. The diff is always printed so you can review what changed.
@@ -124,13 +124,13 @@ Live mode calls the real Maintainer and Proposer and re-runs live eval arms per 
 
 ```bash
 # Cost preview + confirm
-oma skills opt --skill oma-scholar --live
+oma skill optimize --skill oma-scholar --live
 
 # Skip confirmation
-oma skills opt --skill oma-scholar --live --yes
+oma skill optimize --skill oma-scholar --live --yes
 
 # Live opt, then apply if improved
-oma skills opt --skill oma-scholar --live --apply --yes
+oma skill optimize --skill oma-scholar --live --apply --yes
 ```
 
 The cost preview lists the upper bound of underlying model calls before any LLM call is made.
@@ -140,7 +140,7 @@ The cost preview lists the upper bound of underlying model calls before any LLM 
 ## JSON output
 
 ```bash
-oma skills opt --skill oma-scholar --json
+oma skill optimize --skill oma-scholar --json
 ```
 
 ```json
@@ -173,7 +173,7 @@ Skills whose ID starts with `oma-` are owned by oh-my-agent and are **overwritte
 The command prints a warning when the target skill is oma-owned:
 
 ```
-[oma skills opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
+[oma skill opt] warning: "oma-scholar" is an oma-owned skill. --apply output will be overwritten by oma update. Consider using --dry-run and upstreaming the diff instead.
 ```
 
 ---
@@ -186,10 +186,10 @@ The Maintainer and Proposer see only TRAIN rollout evidence. Candidate selection
 
 ## CI integration
 
-In `--mock` mode, `oma skills opt` is fully deterministic and offline — no LLM is called. Use it in CI to verify that a proposed skill diff still shows lift over the recorded rollouts:
+In `--mock` mode, `oma skill optimize` is fully deterministic and offline — no LLM is called. Use it in CI to verify that a proposed skill diff still shows lift over the recorded rollouts:
 
 ```bash
-oma skills opt --skill oma-scholar --mock --json
+oma skill optimize --skill oma-scholar --mock --json
 ```
 
 Exit codes:

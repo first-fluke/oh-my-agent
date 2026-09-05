@@ -242,7 +242,7 @@ session:
 `-m pi` 오버라이드로 어떤 에이전트든 pi를 통해 디스패치합니다.
 
 ```bash
-oma agent:spawn backend "Implement the export endpoint" <session> -m pi
+oma agent spawn backend "Implement the export endpoint" <session> --vendor pi
 ```
 
 이때 일어나는 일은 다음과 같습니다.
@@ -320,7 +320,7 @@ opencode는 설정 파일 기반 훅을 등록하는 대신 `.opencode/plugins/o
 `-m opencode` 오버라이드로 어떤 에이전트든 opencode를 통해 라우팅합니다.
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 이 명령은 `opencode run --agent pm --dir <workspace> "<prompt>"`를 실행합니다.
@@ -378,11 +378,11 @@ opencode의 카탈로그는 구독 및 로그인으로 게이트되어 있어, o
 검증하세요.
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe`는 슬러그가 `opencode models`에 나열되어 있으면 `accepted`,
+`oma model probe`는 슬러그가 `opencode models`에 나열되어 있으면 `accepted`,
 나열되어 있지 않으면 `rejected`, 프로바이더에 로그인이나 구독이 필요하면
 `auth_required`를 보고합니다.
 
@@ -390,7 +390,7 @@ opencode models opencode-go                            # list everything your pl
 
 - **인증:** `opencode auth login`은 자격 증명을
   `~/.local/share/opencode/auth.json`에 프로바이더별로 하나씩 저장합니다.
-  `oma auth:status` / `oma doctor`는 프로바이더 중 하나라도 자격 증명이 있으면
+  `oma auth status` / `oma doctor`는 프로바이더 중 하나라도 자격 증명이 있으면
   opencode를 인증됨으로 보고합니다. 반면
   `oma doctor --profile`은 프로바이더를 구분합니다. 각 행은 등록된 `cli_model`의
   프로바이더 접두사로 확인하므로 `cli_model: zai-coding-plan/glm-5.3` 모델은
@@ -426,7 +426,7 @@ opencode models opencode-go                            # list everything your pl
 `-m kimi` 오버라이드로 어떤 에이전트든 Kimi를 통해 라우팅합니다.
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m kimi
+oma agent spawn pm "Draft the rollout plan" <session> --vendor kimi
 ```
 
 이 명령은 `kimi -p "<prompt>"`를 실행합니다. Kimi의 `-p`(비대화형) 모드는 `auto`
@@ -470,7 +470,7 @@ agents:
 디스패치합니다.
 
 > **지속적 워크플로우 참고:** Kimi가 문서로 안내하는 Stop 차단 경로는 종료 코드 2와
-> stderr이지만, `oma hook` 라우터는 항상 0으로 종료하고 stdout으로 방언을
+> stderr이지만, `oma hook run` 라우터는 항상 0으로 종료하고 stdout으로 방언을
 > 내보냅니다. oma는 최선의 노력으로 `permissionDecision: "deny"`(그리고 Claude
 > 스타일의 `decision: "block"`)를 내보내므로, Kimi에서 지속적 워크플로우는 완만하게
 > 저하된 형태로 동작합니다.

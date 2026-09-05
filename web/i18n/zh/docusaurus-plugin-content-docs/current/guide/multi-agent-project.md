@@ -85,22 +85,22 @@ description: 协调跨前端、后端、数据库、移动端和 QA 的多个领
 
 ### 步骤 3：agent:spawn，CLI 级别的智能体管理
 
-`agent:spawn` 命令是工作流内部调用的底层机制。你也可以直接使用：
+`agent spawn` 命令是工作流内部调用的底层机制。你也可以直接使用：
 
 ```bash
-oma agent:spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
+oma agent spawn backend "Implement user auth API with JWT" session-20260324-143000 -w ./api
 ```
 
 **所有标志：**
 
 | 标志 | 说明 |
 |:-----|:-----|
-| `-m, --model <vendor>` | CLI 供应商覆盖（antigravity/claude/codex/qwen）。覆盖所有配置。 |
+| `--vendor <vendor>` | CLI 供应商覆盖（antigravity/claude/codex/qwen）。覆盖所有配置。 |
 | `-w, --workspace <path>` | 智能体的工作目录。如果省略，从 monorepo 配置自动检测。 |
 
 **供应商解析顺序**（首次匹配优先）：
 
-1. 命令行上的 `--model` 标志
+1. 命令行上的 `--vendor` 标志
 2. `oma-config.yaml` 中此特定智能体类型的 `model_preset`
 3. `oma-config.yaml` 中的 `default_cli`
 4. `cli-config.yaml` 中的 `active_vendor`
@@ -187,7 +187,7 @@ session-YYYYMMDD-HHMMSS
 始终可用：
 
 ```bash
-oma agent:spawn frontend "Build landing page" session-id -w ./packages/web-app
+oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 ```
 
 ---
@@ -245,16 +245,16 @@ QA 智能体审查中没有剩余的 CRITICAL 或 HIGH 发现。MEDIUM 和 LOW �
 
 ```bash
 # 使用 Gemini（默认）启动 backend 智能体
-oma agent:spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint per API contract" session-20260324-143000
 
 # 使用 Claude 启动 frontend 智能体，显式工作区
-oma agent:spawn frontend "Build user dashboard with React" session-20260324-143000 -m claude -w ./apps/web
+oma agent spawn frontend "Build user dashboard with React" session-20260324-143000 --vendor claude -w ./apps/web
 
 # 从提示词文件启动
-oma agent:spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
+oma agent spawn backend ./prompts/auth-api.md session-20260324-143000 -w ./api
 ```
 
-### 通过 agent:parallel 并行执行
+### 通过 agent parallel 并行执行
 
 使用 YAML 任务文件：
 
@@ -273,13 +273,13 @@ tasks:
 ```
 
 ```bash
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 ```
 
 使用内联模式：
 
 ```bash
-oma agent:parallel --inline \
+oma agent parallel --inline \
   "backend:Implement user auth API:./api" \
   "frontend:Build login page:./web" \
   "mobile:Implement auth screens:./mobile"
@@ -288,14 +288,14 @@ oma agent:parallel --inline \
 后台模式（不等待）：
 
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 # 立即返回，结果写入 .agents/results/parallel-{timestamp}/
 ```
 
 覆盖供应商：
 
 ```bash
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
 ---
@@ -328,7 +328,7 @@ oma agent:parallel tasks.yaml -m claude
 
 ### 7. 跳过验证
 
-直接使用 `agent:spawn` 而不在之后运行验证脚本。验证步骤捕获构建失败、测试回归和范围违反，否则这些问题会传播。
+直接使用 `agent spawn` 而不在之后运行验证脚本。验证步骤捕获构建失败、测试回归和范围违反，否则这些问题会传播。
 
 ---
 

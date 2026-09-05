@@ -37,7 +37,7 @@ export interface RawHookInput {
 
 /**
  * Optional goal contract for a persistent workflow (design-prime-agent-adoption
- * Track B). Written by `oma goal:set`; read by the persistent-mode Stop hook.
+ * Track B). Written by `oma goal set`; read by the persistent-mode Stop hook.
  */
 export interface ModeGoal {
   /** Human description of the objective. Informational only. */
@@ -120,7 +120,7 @@ export type HookInput =
       /**
        * Assistant response / transcript text from the stop payload, if any.
        * Carries deactivation phrases ("workflow done") so persistent-mode can
-       * deactivate via the central `oma hook` path, matching the standalone path.
+       * deactivate via the central `oma hook run` path, matching the standalone path.
        */
       responseText?: string;
     };

@@ -44,7 +44,7 @@ So the review step is only required the first time, and again after any release 
 
 ## What oh-my-agent automates for you
 
-When oh-my-agent spawns a Codex subprocess itself — for example, a cross-vendor agent dispatched through `oma agent:spawn` — it passes `--dangerously-bypass-hook-trust` automatically. This lets its own vetted hooks run across updates without asking you to re-trust them manually.
+When oh-my-agent spawns a Codex subprocess itself — for example, a cross-vendor agent dispatched through `oma agent spawn` — it passes `--dangerously-bypass-hook-trust` automatically. This lets its own vetted hooks run across updates without asking you to re-trust them manually.
 
 This flag is applied **only** to Codex processes that oh-my-agent spawns. It is never written into your `~/.codex/config.toml` or project config, so it does not affect Codex sessions you start yourself.
 

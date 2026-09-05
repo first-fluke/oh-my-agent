@@ -1,5 +1,5 @@
 /**
- * export/png.ts — oma slide png --dir --out-dir [--resolution 720p|1080p|1440p|2160p|4k]
+ * export/png.ts — oma slide export png --dir --out-dir [--resolution 720p|1080p|1440p|2160p|4k]
  *
  * Exports each slide as a PNG via puppeteer-core screenshot.
  * - Resolution is achieved natively via the viewport `deviceScaleFactor`

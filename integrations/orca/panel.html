@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OMA for Orca</title>
+  <style>
+    :root { color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; font: 13px/1.5 system-ui, sans-serif; color: var(--foreground, #e4e4e7); background: var(--background, #18181b); }
+    h1 { margin: 0; font-size: 18px; letter-spacing: -.4px; }
+    h2 { font-size: 13px; margin: 18px 0 8px; }
+    p { margin: 8px 0; }
+    .muted { color: var(--muted-foreground, #a1a1aa); }
+    .workspace { border: 1px solid var(--border, #3f3f46); border-radius: 8px; padding: 12px; margin: 16px 0; overflow-wrap: anywhere; }
+    label { display: block; margin: 12px 0 5px; font-weight: 600; }
+    button, select, textarea { font: inherit; color: inherit; border: 1px solid var(--border, #52525b); border-radius: 6px; background: var(--secondary, #27272a); }
+    button { padding: 8px 10px; cursor: pointer; text-align: left; }
+    button:hover:not(:disabled) { background: var(--accent, #3f3f46); }
+    button:disabled { opacity: .5; cursor: default; }
+    :focus-visible { outline: 2px solid var(--ring, #a5b4fc); outline-offset: 2px; }
+    select, textarea { width: 100%; padding: 8px; }
+    textarea { resize: vertical; min-height: 160px; }
+    .actions { display: grid; gap: 6px; }
+    .actions button[aria-pressed="true"] { border-color: var(--ring, #a5b4fc); background: var(--accent, #3f3f46); }
+    #insert { width: 100%; margin-top: 12px; text-align: center; background: var(--primary, #e4e4e7); color: var(--primary-foreground, #18181b); font-weight: 600; }
+    #status { min-height: 3em; overflow-wrap: anywhere; }
+    small { display: block; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <h1>OMA for Orca</h1>
+  <p class="muted">Project skills, review and verification in your agent terminal.</p>
+  <div class="workspace">
+    <strong id="workspace">Reading workspace…</strong>
+    <div id="branch" class="muted"></div>
+    <button id="refresh" type="button">Refresh workspace</button>
+    <label for="terminal">Agent terminal</label>
+    <select id="terminal"><option value="">Select a terminal</option></select>
+    <small class="muted">Select a terminal running your coding agent. Orca exposes terminal IDs here.</small>
+  </div>
+  <h2>Choose a task</h2>
+  <div id="actions" class="actions"></div>
+  <label for="prompt">Request preview</label>
+  <textarea id="prompt" readonly aria-describedby="submission-note"></textarea>
+  <button id="insert" type="button" disabled>Insert into agent terminal</button>
+  <small id="submission-note" class="muted">Review the request in the terminal, then press Enter to start.</small>
+  <p id="status" role="status" aria-live="polite"></p>
+  <script id="oma-catalog" type="application/json">
+{
+  "preamble": "Use OMA in the current project. Follow the project's AGENTS.md and existing user instructions; preserve user changes and configuration. Never build, compile, bundle, publish, push or create a PR unless explicitly requested. Use the existing Orca agent session; do not start a second orchestrator. When Orca-managed worktrees or terminals are needed, resolve its CLI and read `orca skills get orca-cli` first, then use supported commands. Report outcomes from evidence, distinguishing passed, failed and not assessed checks.",
+  "actions": [
+    {
+      "id": "connect",
+      "label": "Connect project",
+      "prompt": "Connect this project to OMA: inspect the existing .agents/oma-config.yaml, project instructions and OMA installation. If already installed, retain its configuration and explain how this session will use its skills. If project OMA is missing and the oma CLI is available, run the supported project installer `oma install` in this workspace, respecting its choices; do not overwrite unrelated instructions. If the CLI is missing, report that setup is incomplete and provide `npx oh-my-agent` as the interactive setup command for a separate shell terminal. Identify any necessary agent restart. Do not claim OMA is enabled in all conversations."
+    },
+    {
+      "id": "review",
+      "label": "Review changes",
+      "prompt": "Review the current uncommitted changes using the project's .agents/skills/oma-qa/SKILL.md. If OMA is missing, explain that Connect project is needed and stop this action. Inspect the diff, report only actionable findings with file locations and evidence, and state which checks were not assessed. Do not modify code during this review."
+    },
+    {
+      "id": "debug",
+      "label": "Diagnose and fix",
+      "prompt": "Use the project's .agents/skills/oma-debug/SKILL.md to diagnose and fix the error already identified in this conversation. If OMA is missing, explain that Connect project is needed and stop this action. If the error is not identifiable, ask for the error or reproduction before changing code. Reproduce it, make a focused fix, run relevant checks, and report the result."
+    },
+    {
+      "id": "verify",
+      "label": "Verify changes",
+      "prompt": "Verify the current changes using the project's OMA configuration. If OMA is missing, explain that Connect project is needed and stop this action. Inspect `oma verify --help`, choose the supported agent type matching the changed stack, and run `oma verify <agent-type> --json` in this workspace only when its checks comply with the no-build instruction. Otherwise run the relevant non-build checks directly and explain the limitation. Record actual exit codes and checks; do not treat skipped, missing or unassessed checks as passed."
+    },
+    {
+      "id": "results",
+      "label": "Show results",
+      "prompt": "Summarize this session's OMA work from the current diff, command results and relevant local .agents/results reports. Report changed files, completed checks, failures and remaining work; distinguish stale reports from current evidence. If no results exist, say so. Open the relevant local report or diff using supported Orca file commands when available. A terminal finishing or a request being inserted is not proof that verification passed."
+    }
+  ]
+}
+  </script>
+  <script>
+    "use strict";
+    const catalog = JSON.parse(document.getElementById("oma-catalog").textContent);
+    const workspaceEl = document.getElementById("workspace");
+    const branchEl = document.getElementById("branch");
+    const terminalEl = document.getElementById("terminal");
+    const promptEl = document.getElementById("prompt");
+    const insertEl = document.getElementById("insert");
+    const refreshEl = document.getElementById("refresh");
+    const statusEl = document.getElementById("status");
+    const pending = new Map();
+    let seq = 0;
+    let context = null;
+    let busy = false;
+
+    function callHost(action, params) {
+      return new Promise((resolve, reject) => {
+        const requestId = `oma-${++seq}`;
+        const timer = setTimeout(() => {
+          pending.delete(requestId);
+          reject(new Error("Orca did not respond. Check the terminal before retrying; the request may have been inserted."));
+        }, 10000);
+        pending.set(requestId, { resolve, reject, timer });
+        window.parent.postMessage({ type: "orca-panel-action", requestId, action, params }, "*");
+      });
+    }
+
+    window.addEventListener("message", (event) => {
+      if (event.source !== window.parent) return;
+      const data = event.data;
+      if (!data || data.type !== "orca-panel-action-result") return;
+      const request = pending.get(data.requestId);
+      if (!request) return;
+      pending.delete(data.requestId);
+      clearTimeout(request.timer);
+      if (data.ok === true) request.resolve(data.value);
+      else request.reject(new Error(data.error || "Orca rejected the request."));
+    });
+
+    function updateControls() {
+      insertEl.disabled = busy || !context || !terminalEl.value;
+      refreshEl.disabled = busy;
+      terminalEl.disabled = busy || !context;
+    }
+
+    async function refresh() {
+      if (busy) return;
+      busy = true;
+      context = null;
+      terminalEl.replaceChildren(new Option("Select a terminal", ""));
+      updateControls();
+      try {
+        context = await callHost("workspace.readContext", {});
+        workspaceEl.textContent = context ? context.displayName : "No project worktree open";
+        branchEl.textContent = context ? context.branch : "";
+        for (const terminal of context?.terminals || []) {
+          terminalEl.add(new Option(terminal.id, terminal.id));
+        }
+        statusEl.textContent = !context ? "Open a project worktree, then refresh." : context.terminals.length === 0 ? "Start a coding agent in this worktree, then refresh." : "Select an agent terminal to continue.";
+      } catch (error) {
+        context = null;
+        workspaceEl.textContent = "Workspace unavailable";
+        branchEl.textContent = "";
+        statusEl.textContent = error.message;
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    }
+
+    for (const action of catalog.actions) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = action.label;
+      button.setAttribute("aria-pressed", "false");
+      button.addEventListener("click", () => {
+        for (const sibling of document.getElementById("actions").children) sibling.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-pressed", "true");
+        promptEl.value = `${catalog.preamble} ${action.prompt}`;
+      });
+      document.getElementById("actions").append(button);
+      if (action.id === "connect") button.click();
+    }
+
+    terminalEl.addEventListener("change", updateControls);
+    refreshEl.addEventListener("click", refresh);
+    insertEl.addEventListener("click", async () => {
+      if (busy || !context || !terminalEl.value) return;
+      const terminalId = terminalEl.value;
+      const previousContext = context;
+      const text = promptEl.value;
+      busy = true;
+      updateControls();
+      try {
+        const current = await callHost("workspace.readContext", {});
+        if (!current || current.branch !== previousContext.branch || current.displayName !== previousContext.displayName || !current.terminals.some((terminal) => terminal.id === terminalId)) {
+          context = null;
+          throw new Error("The workspace or terminal changed. Refresh and select the target again.");
+        }
+        const result = await callHost("terminal.sendText", { terminalId, text, enter: false });
+        if (result?.accepted !== true) throw new Error("Orca did not accept the request. Check the terminal before trying again.");
+        statusEl.textContent = "Request inserted. Review it in the agent terminal and press Enter to start. No task result has been received.";
+      } catch (error) {
+        statusEl.textContent = error.message;
+      } finally {
+        busy = false;
+        updateControls();
+      }
+    });
+    window.addEventListener("pagehide", () => {
+      for (const request of pending.values()) {
+        clearTimeout(request.timer);
+        request.reject(new Error("OMA panel closed."));
+      }
+      pending.clear();
+    });
+    refresh();
+  </script>
+</body>
+</html>

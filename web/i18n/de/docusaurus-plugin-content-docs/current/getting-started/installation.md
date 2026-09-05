@@ -124,12 +124,12 @@ Dies installiert den Befehl `oma` global und gibt Ihnen Zugang zu allen CLI-Befe
 
 ```bash
 oma doctor              # Gesundheitscheck
-oma dashboard           # Terminal-Überwachung
-oma dashboard:web       # Web-Dashboard unter http://localhost:9847
-oma agent:spawn         # Agenten vom Terminal starten
-oma agent:parallel      # Parallele Agentenausführung
-oma agent:status        # Agentenstatus prüfen
-oma stats               # Sitzungsstatistiken
+oma dashboard terminal           # Terminal-Überwachung
+oma dashboard web       # Web-Dashboard unter http://localhost:9847
+oma agent spawn         # Agenten vom Terminal starten
+oma agent parallel      # Parallele Agentenausführung
+oma agent status        # Agentenstatus prüfen
+oma stats get               # Sitzungsstatistiken
 oma retro               # Retrospektiven-Analyse
 oma cleanup             # Sitzungsartefakte bereinigen
 oma update              # oh-my-agent aktualisieren
@@ -137,8 +137,8 @@ oma verify              # Agentenausgabe verifizieren
 oma visualize           # Abh��ngigkeitsvisualisierung
 oma describe            # Projektstruktur beschreiben
 oma bridge              # SSE-zu-stdio-Brücke für Antigravity
-oma memory:init         # Memory-Provider initialisieren
-oma auth:status         # CLI-Authentifizierungsstatus prüfen
+oma memory init         # Memory-Provider initialisieren
+oma auth status         # CLI-Authentifizierungsstatus prüfen
 oma star                # Repository mit Stern markieren
 ```
 

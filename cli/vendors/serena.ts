@@ -20,7 +20,12 @@ export const RECOMMENDED_FIREFOX_DEVTOOLS_MCP = {
   ] as string[],
 } as const;
 
-export type DevToolsBrowser = "chrome" | "firefox";
+export const RECOMMENDED_ASIDE_MCP = {
+  command: "aside",
+  args: ["mcp"] as string[],
+} as const;
+
+export type DevToolsBrowser = "aside" | "chrome" | "firefox";
 
 export function syncDevToolsMcp(
   installRoot: string,
@@ -41,6 +46,12 @@ export function syncDevToolsMcp(
       if (!data || typeof data !== "object" || !data.mcpServers) continue;
 
       const mcpServers = data.mcpServers as Record<string, unknown>;
+
+      if (browserList.includes("aside")) {
+        mcpServers.aside = { ...RECOMMENDED_ASIDE_MCP };
+      } else {
+        delete mcpServers.aside;
+      }
 
       if (browserList.includes("chrome")) {
         mcpServers["chrome-devtools"] = { ...RECOMMENDED_CHROME_DEVTOOLS_MCP };

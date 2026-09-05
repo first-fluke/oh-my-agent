@@ -13,7 +13,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 - `.codex/agents/*.toml`
 - `.gemini/agents/*.md`
 
-워크플로우가 어떤 에이전트를 현재 런타임과 같은 벤더로 매핑하면, 그 런타임의 네이티브 에이전트 파일을 먼저 써야 합니다. 다른 벤더로 가는 태스크는 `oma agent:spawn`으로 폴백합니다.
+워크플로우가 어떤 에이전트를 현재 런타임과 같은 벤더로 매핑하면, 그 런타임의 네이티브 에이전트 파일을 먼저 써야 합니다. 다른 벤더로 가는 태스크는 `oma agent spawn`으로 폴백합니다.
 
 > **에이전트별 모델 디스패치:** 각 에이전트는 `.agents/oma-config.yaml`의 `model_preset`(그리고 선택적인 `agents:` 오버라이드)을 통해 특정 모델 슬러그, CLI 벤더, 추론 강도로 해석됩니다. 설정 방법은 [에이전트별 모델](../guide/per-agent-models.md)을, 실제 매트릭스 확인은 [`oma doctor --profile`](../cli-interfaces/commands.md#doctor)을 참고하세요.
 
@@ -499,7 +499,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **사용 시기:** 하루 또는 기간의 작업 활동 요약, 여러 AI 도구에 걸친 작업 흐름 파악, 세션 간 도구 전환 패턴 분석, 데일리 스탠드업/주간 회고/작업 로그 준비.
 
-**사용하지 말아야 할 때:** Git 커밋 기반의 코드 변경 회고(`oma retro` 사용), 실시간 에이전트 모니터링(`oma dashboard` 사용), 생산성 지표(`oma stats` 사용).
+**사용하지 말아야 할 때:** Git 커밋 기반의 코드 변경 회고(`oma retro` 사용), 실시간 에이전트 모니터링(`oma dashboard terminal` 사용), 생산성 지표(`oma stats get` 사용).
 
 **프로세스:**
 1. 자연어 입력(today, yesterday, last Monday, 명시적 날짜)에서 날짜 또는 시간 범위 해석
@@ -723,7 +723,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **핵심 규칙:**
 - 최상위 네 섹션을 그대로 유지: Scheduling, Structural Flow, Logical Operations, References
-- YAML 프론트매터에 명확한 `name`과 `description`을 두고, description을 수정한 뒤에는 `oma skills audit`을 실행(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패)
+- YAML 프론트매터에 명확한 `name`과 `description`을 두고, description을 수정한 뒤에는 `oma skill audit`을 실행(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패)
 - 인접 스킬로 연결되는 구체적인 `When NOT to use` 경계를 포함
 - 인라인 정규 경로를 정확히 하나만 추가(깨지기 쉽고 반복되는 명령에는 `Canonical command path`, 판단과 조사 흐름에는 `Canonical workflow path`)
 - 변형별 긴 설명은 본문이 아니라 `resources/`에 두고, 스킬 안에 README·체인지로그·설치 문서를 만들지 않음
@@ -774,7 +774,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **워크플로우:** PREPARE(모드·화면비·로케일, 브리프 명확화와 보강) → ACQUIRE(프로바이더 가용성 확인, 캡처 경로 검증, 비용 확인) → ACT(스크립트 → 음성과 비주얼과 자막 → render-spec → 렌더) → VERIFY(스키마, 매니페스트 해시, 종료 코드, mp4) → FINALIZE(실행 디렉토리, mp4 경로, 커버리지 경고).
 
-**리소스:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, 그리고 벤더링된 `remotion/` 컴포지터, `playwright/` 웹 캡처 드라이버, `mpt/` 폴백 컴포지터, `config/video-config.yaml`.
+**리소스:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, 그리고 벤더링된 `remotion/` 컴포지터, 웹 캡처 드라이버, `mpt/` 폴백 컴포지터, `config/video-config.yaml`.
 
 ---
 
@@ -877,8 +877,8 @@ CHARTER_CHECK:
 워크스페이스는 에이전트를 스폰할 때 `-w` 플래그로 지정합니다:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -953,4 +953,4 @@ oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
 }
 ```
 
-대시보드(`oma dashboard` 및 `oma dashboard:web`)는 실시간 모니터링을 위해 이 메모리 파일을 감시합니다.
+대시보드(`oma dashboard terminal` 및 `oma dashboard web`)는 실시간 모니터링을 위해 이 메모리 파일을 감시합니다.

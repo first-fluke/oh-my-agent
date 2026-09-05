@@ -23,7 +23,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state:emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -86,7 +86,7 @@ Use `.agents/skills/_shared/core/difficulty-guide.md` to classify:
 - **Medium** → produce both JSON and a lightweight markdown tracker (skip Step 4 API contracts if not cross-boundary).
 - **Complex** → produce both artifacts with all sections plus API contracts.
 
-Report scope assessment to the user. Get confirmation before proceeding.
+Report scope assessment and apply `.agents/skills/_shared/core/execution-policy.md`; reuse existing authorization.
 
 ---
 
@@ -101,8 +101,8 @@ If the plan involves cross-boundary work (frontend ↔ backend, service ↔ serv
 3. Reference from the markdown tracker generated in Step 6.
 4. Emit and verify the required API contract decision:
    ```bash
-   oma state:emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
-   oma state:verify --workflow plan --checkpoint api-contract
+   oma state emit "decision.made" '{"subject":"plan.api-contract","decision":"Use the approved endpoint and contract shape for this plan.","rationale":"The cross-boundary API contract has been reviewed and accepted before task decomposition."}'
+   oma state verify --workflow plan --checkpoint api-contract
    ```
 
 ---
@@ -121,7 +121,7 @@ Break down the project into actionable tasks. Each task must have:
 ## Step 6: Review Plan with User
 
 Present the full plan: task list, priority tiers, dependency graph, agent assignments, completion criteria.
-**You MUST get user confirmation before proceeding to Step 7.**
+Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 ---
 
@@ -132,6 +132,14 @@ Generate both artifacts.
 ### 7a. Machine-readable plan
 
 Save `.agents/results/plan-{sessionId}.json` and write a memory summary via the configured memory tool.
+
+Use `.agents/skills/oma-pm/resources/task-template.json`. For executable acceptance gates:
+
+- Declare `acceptance_criteria` as `{id, description}` objects and `required_checks` as `{id, criteria, command, cwd}` objects. Cover every criterion with a relevant check. `command` is exact executable/argv and `cwd` is project-relative. Never insert builds unless explicitly requested.
+- Preserve the canonical `dependencies` task-ID array and a self-contained `task` prompt. `retry_policy` defaults to `manual`; choose `safe` only for repeatable work without duplicate external effects.
+- Optional `inputs` lists concrete project-relative source, test, configuration and dependency files/directories that completely determine the task's behavior. Omit it for whole-tree verification. Do not guess a narrow input scope to make evidence reusable.
+- Keep the JSON plan fixed after dispatch starts. Record progress in the Markdown tracker and run records. Contract changes require a new run.
+- Use `oma agent verify RUN_ID --required` to execute pinned checks and `oma agent resume SESSION_ID --dry-run` to inspect recovery decisions.
 
 ### 7b. Human-readable tracker (Medium/Complex only)
 

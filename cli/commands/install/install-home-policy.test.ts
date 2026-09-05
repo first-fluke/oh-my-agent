@@ -192,6 +192,8 @@ describe("install home policy", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    promptState.select.mockReset();
+    promptState.multiselect.mockReset();
 
     _resetInstallContext();
     setInstallContext({ installRoot: process.cwd(), mode: "project" });
@@ -208,9 +210,10 @@ describe("install home policy", () => {
       .mockResolvedValueOnce("en")
       .mockResolvedValueOnce("claude")
       .mockResolvedValueOnce("custom");
-    // 2 multiselect prompts: vendors (after preset), skills (after project type)
+    // Multiselect prompts: vendors, browsers, then skills
     promptState.multiselect
       .mockResolvedValueOnce(["gemini"])
+      .mockResolvedValueOnce(["aside"])
       .mockResolvedValueOnce(["oma-frontend"]);
     // Default: any consent prompt receives "false"
     promptState.confirm.mockResolvedValue(false);
@@ -263,6 +266,7 @@ describe("install home policy", () => {
     promptState.multiselect.mockReset();
     promptState.multiselect
       .mockResolvedValueOnce(["hermes"])
+      .mockResolvedValueOnce(["aside"])
       .mockResolvedValueOnce(["oma-frontend"]);
     promptState.confirm.mockResolvedValue(false); // consent denied
 
@@ -281,6 +285,7 @@ describe("install home policy", () => {
     promptState.multiselect.mockReset();
     promptState.multiselect
       .mockResolvedValueOnce(["hermes"])
+      .mockResolvedValueOnce(["aside"])
       .mockResolvedValueOnce(["oma-frontend"]);
     promptState.confirm.mockResolvedValue(true); // consent granted
 
@@ -295,6 +300,7 @@ describe("install home policy", () => {
     promptState.multiselect.mockReset();
     promptState.multiselect
       .mockResolvedValueOnce(["claude", "hermes"])
+      .mockResolvedValueOnce(["aside"])
       .mockResolvedValueOnce(["oma-frontend"]);
     promptState.confirm.mockResolvedValue(true); // hermes consent granted
 
@@ -312,6 +318,7 @@ describe("install home policy", () => {
     promptState.multiselect.mockReset();
     promptState.multiselect
       .mockResolvedValueOnce(["gemini", "hermes"])
+      .mockResolvedValueOnce(["aside"])
       .mockResolvedValueOnce(["oma-frontend"]);
     promptState.confirm.mockResolvedValue(true); // hermes consent granted
 
@@ -507,3 +514,8 @@ describe("install EC-12 — cwd equals homedir guard", () => {
     expect(exitSpy).not.toHaveBeenCalledWith(1);
   });
 });
+
+vi.mock("../../vendors/aside.js", () => ({
+  ensureAsideInstalled: vi.fn(),
+  resolveAsideCommand: () => "aside",
+}));

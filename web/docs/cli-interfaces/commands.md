@@ -182,7 +182,7 @@ Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`
 
 **Dispatch behavior:**
 - If the target vendor matches the current runtime and that runtime supports native role agents, OMA uses native dispatch.
-- Otherwise OMA falls back to `oma agent:spawn`.
+- Otherwise OMA falls back to `oma agent spawn`.
 
 ### setup (workflow)
 
@@ -196,7 +196,7 @@ The `/setup` workflow (invoked inside an agent session) provides interactive con
 Start the terminal dashboard for real-time agent monitoring.
 
 ```
-oma dashboard
+oma dashboard terminal
 ```
 
 No options. Watches `.agents/state/memories/` in the current directory (older projects fall back to the legacy `.serena/memories/` path). Renders a box-drawing UI with session status, agent table, and activity feed. Updates on every file change. Press `Ctrl+C` to exit.
@@ -206,18 +206,18 @@ The memories directory can be overridden with the `MEMORIES_DIR` environment var
 **Example:**
 ```bash
 # Standard usage
-oma dashboard
+oma dashboard terminal
 
 # Custom memories directory
-MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard
+MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal
 ```
 
-### dashboard:web
+### dashboard web
 
 Start the web dashboard.
 
 ```
-oma dashboard:web
+oma dashboard web
 ```
 
 Starts an HTTP server on `http://localhost:9847` with a WebSocket connection for live updates. Open the URL in a browser to see the dashboard.
@@ -232,10 +232,10 @@ Starts an HTTP server on `http://localhost:9847` with a WebSocket connection for
 **Example:**
 ```bash
 # Standard usage
-oma dashboard:web
+oma dashboard web
 
 # Custom port
-DASHBOARD_PORT=8080 oma dashboard:web
+DASHBOARD_PORT=8080 oma dashboard web
 ```
 
 ### stats
@@ -243,7 +243,8 @@ DASHBOARD_PORT=8080 oma dashboard:web
 View productivity metrics.
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 **Options:**
@@ -275,13 +276,13 @@ Metrics are stored in `.serena/metrics.json`. Data is collected from git stats a
 **Examples:**
 ```bash
 # View current metrics
-oma stats
+oma stats get
 
 # JSON output
-oma stats --json
+oma stats get --json
 
 # Reset all metrics
-oma stats --reset
+oma stats reset
 ```
 
 ### recap
@@ -373,12 +374,12 @@ oma retro 7d --json
 
 ## Agent management
 
-### agent:spawn
+### agent spawn
 
 Spawn a subagent process.
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] [--isolation <mode>]
 ```
 
 **Arguments:**
@@ -393,12 +394,12 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] 
 
 | Flag | Description |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor override: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
+| `--vendor <vendor>` | CLI vendor override: `antigravity`, `claude`, `codex`, `cursor`, `qwen`, `grok`, `pi` |
 | `-w, --workspace <path>` | Working directory for the agent. Auto-detected from monorepo config if omitted. |
 | `--isolation <mode>` | Per-spawn isolation mode. Currently supports `worktree`: creates a fresh git worktree at `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` on branch `oma/{sessionId}/{agentId}` and runs the agent there. The worktree is retained after exit; merge or discard commands are printed for manual review (no auto-merge). |
-| `--read-only` | Restrict the spawned agent to non-destructive tools (suppresses auto-approve flags). Used internally by `oma skills eval --live` for both eval arms. |
+| `--read-only` | Restrict the spawned agent to non-destructive tools (suppresses auto-approve flags). Used internally by `oma skill eval --live` for both eval arms. |
 
-**Vendor resolution order:** `--model` flag > `agents:` override in `oma-config.yaml` > active `model_preset` agent defaults.
+**Vendor resolution order:** `--vendor` flag > `agents:` override in `oma-config.yaml` > active `model_preset` agent defaults.
 
 **Prompt resolution:** If the prompt argument is a path to an existing file, the file contents are used as the prompt. Otherwise, the argument is used as inline text. Vendor-specific execution protocols are appended automatically.
 
@@ -407,34 +408,34 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>] 
 | Code | Meaning |
 |:-----|:--------|
 | `0` | Vendor process exited 0 and a session result artifact exists under the workspace. |
-| `3` | Vendor process exited 0 but wrote **no session result artifact** under the workspace (e.g. agy writing into its own trusted root instead of `-w`). A `blocker.raised` event is appended to the session trail and `agent:status` reports `no-artifact`. Do not treat the spawn as completed. |
+| `3` | Vendor process exited 0 but wrote **no session result artifact** under the workspace (e.g. agy writing into its own trusted root instead of `-w`). A `blocker.raised` event is appended to the session trail and `agent status` reports `no-artifact`. Do not treat the spawn as completed. |
 | other | The vendor process itself failed; its exit code is passed through. |
 
 **Examples:**
 ```bash
 # Inline prompt, auto-detect workspace
-oma agent:spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
+oma agent spawn backend "Implement /api/users CRUD endpoint" session-20260324-143000
 
 # Prompt from file, explicit workspace
-oma agent:spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
+oma agent spawn frontend ./prompts/dashboard.md session-20260324-143000 -w ./apps/web
 
 # Override vendor to Claude
-oma agent:spawn backend "Implement auth" session-20260324-143000 -m claude -w ./api
+oma agent spawn backend "Implement auth" session-20260324-143000 --vendor claude -w ./api
 
 # Mobile agent with auto-detected workspace
-oma agent:spawn mobile "Add biometric login" session-20260324-143000
+oma agent spawn mobile "Add biometric login" session-20260324-143000
 
 # Run inside an isolated git worktree (useful for hypothesis spawns or
 # when parallel agents would touch shared files)
-oma agent:spawn backend "Try a Drizzle-based rewrite" session-20260324-143000 --isolation worktree
+oma agent spawn backend "Try a Drizzle-based rewrite" session-20260324-143000 --isolation worktree
 ```
 
-### agent:status
+### agent status
 
 Check the status of one or more subagents.
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 **Arguments:**
@@ -454,29 +455,29 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 - `completed`: Result file exists (with optional status header).
 - `running`: PID file exists and process is alive.
 - `crashed`: PID file exists but process is dead, or no PID/result file found.
-- `no-artifact`: Vendor process exited 0 but wrote no session result artifact under the workspace (silent misdirected write — see `agent:spawn` exit code `3`). Treat as a failed spawn.
+- `no-artifact`: Vendor process exited 0 but wrote no session result artifact under the workspace (silent misdirected write — see `agent spawn` exit code `3`). Treat as a failed spawn.
 
 **Output format:** One line per agent: `{agent-id}:{status}`
 
 **Examples:**
 ```bash
 # Check specific agents
-oma agent:status session-20260324-143000 backend frontend
+oma agent status session-20260324-143000 backend frontend
 
 # Output:
 # backend:running
 # frontend:completed
 
 # Check with custom root
-oma agent:status session-20260324-143000 qa -r /path/to/project
+oma agent status session-20260324-143000 qa -r /path/to/project
 ```
 
-### agent:parallel
+### agent parallel
 
 Run multiple subagents in parallel.
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 **Arguments:**
@@ -489,7 +490,7 @@ oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 
 | Flag | Description |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor override for all agents |
+| `--vendor <vendor>` | CLI vendor override for all agents |
 | `-i, --inline` | Inline mode: specify tasks as `agent:task[:workspace]` arguments |
 | `--no-wait` | Background mode (start agents and return immediately) |
 
@@ -511,31 +512,31 @@ workspace: ./web
 **Examples:**
 ```bash
 # From YAML file
-oma agent:parallel tasks.yaml
+oma agent parallel tasks.yaml
 
 # Inline mode
-oma agent:parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
+oma agent parallel --inline "backend:Implement auth API:./api" "frontend:Build login:./web"
 
 # Background mode (no wait)
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # Override vendor for all agents
-oma agent:parallel tasks.yaml -m claude
+oma agent parallel tasks.yaml --vendor claude
 ```
 
-### agent:review
+### agent review
 
 Run a code review using an external AI CLI (codex, claude, or qwen).
 
 ```
-oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
+oma agent review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 ```
 
 **Options:**
 
 | Flag | Description |
 |:-----|:-----------|
-| `-m, --model <vendor>` | CLI vendor to use: `codex`, `claude`, `gemini`, `qwen`, `grok`. Defaults to `codex` when the resolved config vendor is unsupported. |
+| `--vendor <vendor>` | CLI vendor to use: `codex`, `claude`, `gemini`, `qwen`, `grok`. Defaults to `codex` when the resolved config vendor is unsupported. |
 | `-p, --prompt <prompt>` | Custom review prompt. If omitted, a default code review prompt is used. |
 | `-w, --workspace <path>` | Path to review. Defaults to the current working directory. |
 | `--no-uncommitted` | Skip uncommitted changes review. When set, only committed changes in the session are reviewed. |
@@ -550,30 +551,30 @@ oma agent:review [-m <vendor>] [-p <prompt>] [-w <path>] [--no-uncommitted]
 **Examples:**
 ```bash
 # Review uncommitted changes with default vendor
-oma agent:review
+oma agent review
 
 # Review with codex (uses native codex review command)
-oma agent:review -m codex
+oma agent review --vendor codex
 
 # Review with claude using a custom prompt
-oma agent:review -m claude -p "Focus on security vulnerabilities and input validation"
+oma agent review --vendor claude -p "Focus on security vulnerabilities and input validation"
 
 # Review a specific path
-oma agent:review -w ./apps/api
+oma agent review -w ./apps/api
 
 # Review only committed changes (skip working tree)
-oma agent:review --no-uncommitted
+oma agent review --no-uncommitted
 
 # Review committed changes in a specific workspace with gemini
-oma agent:review -m gemini -w ./apps/web --no-uncommitted
+oma agent review --vendor gemini -w ./apps/web --no-uncommitted
 ```
 
-### goal:set
+### goal set
 
 Attach a goal contract to an active persistent workflow (orchestrate, ultrawork, work, ralph). The contract is enforced mechanically by the persistent-mode Stop hook — completion stops being a model judgment call.
 
 ```
-oma goal:set [--workflow <name>] [--session <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
+oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
 ```
 
 **Options:**
@@ -594,22 +595,22 @@ oma goal:set [--workflow <name>] [--session <id>] [--gate <keyword>] [--budget-m
 **Examples:**
 ```bash
 # After starting /ultrawork: require typecheck to pass before the session may end
-oma goal:set --gate typecheck
+oma goal set --gate typecheck
 
 # Bound an autonomous run: stop honestly after 2 hours even if incomplete
-oma goal:set --workflow ultrawork --gate test --budget-minutes 120
+oma goal set --workflow ultrawork --gate test --budget-minutes 120
 ```
 
 ---
 
 ## Scheduled agents
 
-### schedule:add
+### schedule create
 
 Register a scheduled agent job. Exactly one of `--cron` or `--every` is required.
 
 ```
-oma schedule:add <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--max-age-days <n>] [--env <KEY1,KEY2>]
+oma schedule create <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m <vendor>] [-w <path>] [--once] [--expires-after <n>] [--env <KEY1,KEY2>]
 ```
 
 **Arguments:**
@@ -625,40 +626,40 @@ oma schedule:add <agent-id> <prompt> --cron "<5-field>" | --every "<phrase>" [-m
 |:-----|:-----------|
 | `--cron "<expr>"` | 5-field cron expression (e.g. `"0 9 * * *"`). Mutually exclusive with `--every`. |
 | `--every "<phrase>"` | Natural-language interval: `5m`, `2h`, `1d`, `every 20m`, `every 5 minutes`. Rounds to nearest cron-expressible step and prints a note. Mutually exclusive with `--cron`. |
-| `-m, --model <vendor>` | CLI vendor override passed to `oma agent:spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Defaults to auto-detect. |
+| `--vendor <vendor>` | CLI vendor override passed to `oma agent spawn`: `antigravity`, `claude`, `codex`, `cursor`, `opencode`, `qwen`, `grok`, `pi`. Defaults to auto-detect. |
 | `-w, --workspace <path>` | Working directory for the agent. Defaults to current directory at registration time. |
 | `--once` | One-shot mode: fires once, then self-removes. |
-| `--max-age-days <n>` | Auto-expire recurring job after N days (`0` = indefinite). |
+| `--expires-after <duration>` | Auto-expire recurring job after N days (`0` = indefinite). |
 | `--env <KEY1,KEY2>` | Capture named env vars into `~/.agents/schedule/env/<id>` (0600) for injection at run time. Only listed keys are captured; never a full env dump. |
 
 **What it does:**
 1. Parses and validates the cron expression (or converts the `--every` phrase to cron).
 2. Writes the job to `~/.agents/schedule/schedules.json` (global manifest, permissions 0600).
-3. Registers the job with the OS scheduler (launchd / systemd --user / schtasks). The OS job calls `oma schedule:run <id>` at the configured interval.
+3. Registers the job with the OS scheduler (launchd / systemd --user / schtasks). The OS job calls `oma schedule run <id>` at the configured interval.
 
 **Examples:**
 ```bash
 # Exact cron: weekdays at 9 AM
-oma schedule:add qa-reviewer "Run QA review on latest changes" --cron "0 9 * * 1-5"
+oma schedule create qa-reviewer "Run QA review on latest changes" --cron "0 9 * * 1-5"
 
 # Natural language: every 2 hours
-oma schedule:add backend "Check for slow queries" --every "2h"
+oma schedule create backend "Check for slow queries" --every "2h"
 
 # One-shot, pinned vendor and workspace
-oma schedule:add pm "Generate sprint plan" --cron "0 9 * * 1" --once -m claude -w /path/to/project
+oma schedule create pm "Generate sprint plan" --cron "0 9 * * 1" --once --vendor claude -w /path/to/project
 
 # Capture specific env vars for the job
-oma schedule:add backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
+oma schedule create backend "Sync external data" --cron "0 * * * *" --env SYNC_API_KEY,SYNC_TARGET_URL
 ```
 
 See the [Scheduled Agents guide](../guide/scheduled-agents.md) for a full walkthrough.
 
-### schedule:list
+### schedule list
 
 List all scheduled jobs across all projects, grouped by project, with OS drift state.
 
 ```
-oma schedule:list [--json]
+oma schedule list [--json]
 ```
 
 **Options:**
@@ -667,45 +668,45 @@ oma schedule:list [--json]
 |:-----|:-----------|
 | `--json` | Output as JSON |
 
-**Drift states:** `synced` (manifest + OS agree), `missing-in-os` (run `schedule:sync` to repair), `orphan-in-os` (OS has a job not in manifest; run `schedule:sync --prune` to remove).
+**Drift states:** `synced` (manifest + OS agree), `missing-in-os` (run `schedule sync` to repair), `orphan-in-os` (OS has a job not in manifest; run `schedule sync --prune` to remove).
 
 **Examples:**
 ```bash
-oma schedule:list
-oma schedule:list --json | jq '.jobs[] | select(.drift != "synced")'
+oma schedule list
+oma schedule list --json | jq '.jobs[] | select(.drift != "synced")'
 ```
 
-### schedule:remove
+### schedule delete
 
 Remove a scheduled job from both the manifest and the OS scheduler.
 
 ```
-oma schedule:remove <id>
+oma schedule delete <id>
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |:---------|:---------|:-----------|
-| `id` | Yes | Job ID from `schedule:list` (format: `sch_<base32-12>`) |
+| `id` | Yes | Job ID from `schedule list` (format: `sch_<base32-12>`) |
 
 **Example:**
 ```bash
-oma schedule:remove sch_abc123def456
+oma schedule delete sch_abc123def456
 ```
 
-### schedule:run
+### schedule run
 
 Execute a scheduled job by ID. This is the entry point called by the OS scheduler at fire time. Not normally invoked by hand, but can be used to debug a job.
 
 ```
-oma schedule:run <id>
+oma schedule run <id>
 ```
 
 **What it does:**
 1. Looks up `<id>` in the manifest (exits non-zero if not found).
 2. Loads captured env vars from `~/.agents/schedule/env/<id>` and injects them.
-3. Calls `oma agent:spawn <agentId> <prompt> <sessionId> -m <vendor> -w <workspace>`.
+3. Calls `oma agent spawn <agentId> <prompt> <sessionId> --vendor <vendor> -w <workspace>`.
 4. Writes the result to `~/.agents/schedule/runs/<id>/<ISO-timestamp>.md`.
 5. Updates `lastFiredAt` in the manifest; self-removes if job is `--once`.
 6. Loud-fails on auth expiry: exits non-zero and prints `re-auth required: <vendor>` to stderr. Never silently succeeds.
@@ -713,15 +714,15 @@ oma schedule:run <id>
 **Example:**
 ```bash
 # Invoke manually to debug a job
-oma schedule:run sch_abc123def456
+oma schedule run sch_abc123def456
 ```
 
-### schedule:sync
+### schedule sync
 
 Re-synchronize the manifest to the OS scheduler. Repairs drift after system migrations or OS scheduler resets.
 
 ```
-oma schedule:sync [--prune]
+oma schedule sync [--prune]
 ```
 
 **Options:**
@@ -733,22 +734,22 @@ oma schedule:sync [--prune]
 **Examples:**
 ```bash
 # Repair missing-in-os jobs
-oma schedule:sync
+oma schedule sync
 
 # Repair missing-in-os AND remove orphans
-oma schedule:sync --prune
+oma schedule sync --prune
 ```
 
 ---
 
 ## Memory management
 
-### memory:init
+### memory init
 
 Initialize the coordination memory store schema.
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 **Options:**
@@ -764,22 +765,22 @@ oma memory:init [--json] [--output <format>] [--force]
 **Examples:**
 ```bash
 # Initialize memory
-oma memory:init
+oma memory init
 
 # Force overwrite existing schema
-oma memory:init --force
+oma memory init --force
 ```
 
 ---
 
 ## Integration & utilities
 
-### auth:status
+### auth status
 
 Check authentication status of all supported CLIs.
 
 ```
-oma auth:status [--json] [--output <format>]
+oma auth status [--json] [--output <format>]
 ```
 
 **Options:**
@@ -793,8 +794,8 @@ oma auth:status [--json] [--output <format>]
 
 **Examples:**
 ```bash
-oma auth:status
-oma auth:status --json
+oma auth status
+oma auth status --json
 ```
 
 ### bridge
@@ -906,14 +907,14 @@ oma verify backend --json
 Dispatch a vendor hook event through the centralised oma hook router (design 019). This is the canonical ABI invoked by every vendor's generated `oma-hook.sh` wrapper. It can also be used directly to debug or test handler chains in isolation.
 
 ```
-oma hook --vendor <v> --event <nativeEvent> [--matcher <tool>]
+oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
 ```
 
 **Options:**
 
 | Flag | Required | Description |
 |:-----|:---------|:-----------|
-| `--vendor <v>` | Yes | Vendor identity. One of: `claude`, `codex`, `cursor`, `gemini`, `grok`, `kiro`, `qwen`, `antigravity`. (The `pi` vendor is **not** valid here — it uses the in-process `installPiExtension` bridge instead of `oma hook`.) |
+| `--vendor <v>` | Yes | Vendor identity. One of: `claude`, `codex`, `cursor`, `gemini`, `grok`, `kiro`, `qwen`, `antigravity`. (The `pi` vendor is **not** valid here — it uses the in-process `installPiExtension` bridge instead of `oma hook run`.) |
 | `--event <e>` | Yes | Native hook event name as registered in the vendor settings (e.g. `UserPromptSubmit`, `PreToolUse`, `Stop`) |
 | `--matcher <m>` | No | Optional tool name / matcher forwarded from the hook registration (e.g. `Bash`) |
 
@@ -938,26 +939,26 @@ vendor fires: oma-hook.sh --vendor claude --event UserPromptSubmit
 ```bash
 # Test what keyword-detector injects for a given prompt (Claude)
 echo '{"prompt":"orchestrate the auth feature","cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event UserPromptSubmit
+  | oma hook run --vendor claude --event UserPromptSubmit
 
 # Test a Bash pre_tool block (Claude)
 echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"},"cwd":"/path/to/project"}' \
-  | oma hook --vendor claude --event PreToolUse --matcher Bash
+  | oma hook run --vendor claude --event PreToolUse --matcher Bash
 
 # Test persistent-mode Stop enforcement (Codex)
 echo '{"cwd":"/path/to/project"}' \
-  | oma hook --vendor codex --event Stop
+  | oma hook run --vendor codex --event Stop
 
 # Test a Gemini BeforeTool event
 echo '{"tool_name":"run_shell_command","tool_input":{"command":"cat /etc/passwd"},"cwd":"/path/to/project"}' \
-  | oma hook --vendor gemini --event BeforeTool
+  | oma hook run --vendor gemini --event BeforeTool
 ```
 
 Empty stdout means the chain produced a no-op for that event. A JSON object on stdout is the vendor dialect the agent session would receive.
 
 **Scope notes:**
-- `statusLine`/hud entries are not routed through `oma hook` (hot-path display stays on a direct `bun` path).
-- The pi vendor uses its in-process `installPiExtension` bridge, not `oma hook`.
+- `statusLine`/hud entries are not routed through `oma hook run` (hot-path display stays on a direct `bun` path).
+- The pi vendor uses its in-process `installPiExtension` bridge, not `oma hook run`.
 - The daemon socket path (`SocketTransport`) is a future phase; the current transport is always in-process.
 
 See `cli/commands/hook/command.ts` for the router implementation (internally referred to as "design 019") and `cli/commands/hook/probe/` for the per-vendor compatibility matrix.
@@ -966,24 +967,24 @@ See `cli/commands/hook/command.ts` for the router implementation (internally ref
 ```bash
 # Inspect Claude keyword-detection output for a real prompt
 echo '{"prompt":"plan the new checkout feature","cwd":"'$(pwd)'"}' \
-  | oma hook --vendor claude --event UserPromptSubmit
+  | oma hook run --vendor claude --event UserPromptSubmit
 
 # Verify a Qwen Stop event fires the persistent-mode block
-echo '{"cwd":"'$(pwd)'"}' | oma hook --vendor qwen --event Stop
+echo '{"cwd":"'$(pwd)'"}' | oma hook run --vendor qwen --event Stop
 
 # Check Gemini hook output format
 echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
-  | oma hook --vendor gemini --event BeforeAgent
+  | oma hook run --vendor gemini --event BeforeAgent
 ```
 
 ---
 
-### hook:probe
+### hook probe
 
 Probe per-vendor hook compatibility and print a coverage matrix.
 
 ```
-oma hook:probe [--vendor <list>] [--format <fmt>] [--hooks-dir <dir>]
+oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 ```
 
 **Options:**
@@ -999,16 +1000,16 @@ oma hook:probe [--vendor <list>] [--format <fmt>] [--hooks-dir <dir>]
 **Examples:**
 ```bash
 # Text matrix for all vendors
-oma hook:probe
+oma hook probe
 
 # Markdown matrix (useful in CI PR comments)
-oma hook:probe --format md
+oma hook probe --output md
 
 # JSON for programmatic consumption
-oma hook:probe --format json | jq '.results[] | select(.status == "failed")'
+oma hook probe --output json | jq '.results[] | select(.status == "failed")'
 
 # Probe a subset of vendors
-oma hook:probe --vendor claude,codex,gemini
+oma hook probe --vendor claude,codex,gemini
 ```
 
 ---
@@ -1021,7 +1022,7 @@ Manage API keys and other secrets in the OS keychain (macOS Keychain, Linux Secr
 oma vault store <name> [--value <value>]
 oma vault get <name>
 oma vault list [--json]
-oma vault rm <name>
+oma vault delete <name>
 ```
 
 **Sub-commands:**
@@ -1047,13 +1048,13 @@ oma vault store openai --value sk-test-...
 
 # Use in a shell pipeline
 export ANTHROPIC_API_KEY=$(oma vault get anthropic)
-oma agent:spawn backend "Refactor /api/auth" session-20260517-150000
+oma agent spawn backend "Refactor /api/auth" session-20260517-150000
 
 # List entries (names only)
 oma vault list
 
 # Remove
-oma vault rm anthropic
+oma vault delete anthropic
 ```
 
 ### cleanup
@@ -1104,8 +1105,8 @@ restart needed).
 
 ```
 oma serena reap [--dry-run] [--quiet]
-oma serena reaper:enable [--dry-run]
-oma serena reaper:disable [--dry-run]
+oma serena reaper enable [--dry-run]
+oma serena reaper disable [--dry-run]
 ```
 
 **Subcommands:**
@@ -1114,8 +1115,8 @@ oma serena reaper:disable [--dry-run]
 |:--------|:-----------|
 | `serena reap` | Reap idle LSPs once now. Interactive runs always execute; `--quiet` (the scheduled path) honors the `enabled` opt-in. |
 | `serena reap --dry-run` | Preview reap targets and projected freed memory — never kills. |
-| `serena reaper:enable` | Install a background task that runs `serena reap --quiet` every 5 minutes (launchd / systemd timer / Windows Task Scheduler). |
-| `serena reaper:disable` | Remove the background task. |
+| `serena reaper enable` | Install a background task that runs `serena reap --quiet` every 5 minutes (launchd / systemd timer / Windows Task Scheduler). |
+| `serena reaper disable` | Remove the background task. |
 
 **Policy:** `lru` (default) keeps the `keepWarm` most-recently-active projects
 warm and reaps the rest; `idle` reaps any project idle past `idleMinutes`. A
@@ -1146,10 +1147,10 @@ oma serena reap
 
 # Turn on automatic 5-minute background reaping
 #   (set serena_reaper.enabled: true in oma-config.yaml first)
-oma serena reaper:enable
+oma serena reaper enable
 
 # Turn it back off
-oma serena reaper:disable
+oma serena reaper disable
 ```
 
 ### visualize
@@ -1248,7 +1249,7 @@ oma search fetch https://example.com/article --pretty
 oma search fetch https://example.com --only browser
 
 # Cross-platform keyword search via API handlers
-oma search api:search "RAG patterns" --platforms hackernews,reddit
+oma search api search "RAG patterns" --platforms hackernews,reddit
 
 # Find a repo's trust score
 oma search trust github.com
@@ -1287,7 +1288,7 @@ oma img <subcommand> ...
 | `-n, --count <n>` | Number of images (1..5) | `1` |
 | `--out <dir>` | Output directory | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | Allow `--out` paths outside `$PWD` | `false` |
-| `--model <name>` | Vendor-specific model override | |
+| `--vendor <name>` | Vendor-specific model override | |
 | `--strategy <list>` | Gemini fallback order, comma-separated (`mcp,stream,api`) | |
 | `--timeout <seconds>` | Per-image timeout | vendor default |
 | `-r, --reference <path>` | Reference image(s); repeatable (`-r a.png -r b.png`) or comma-separated. Supported on `codex` and `gemini`; rejected on `pollinations`. Each ≤5MB PNG/JPEG/GIF/WebP (magic-byte validated), max 10. | |
@@ -1321,7 +1322,7 @@ oma image generate "blend these styles" --vendor gemini -r a.png -r b.png
 oma image generate "blend these styles" --vendor gemini -r a.png,b.png
 
 # Per-vendor doctor check
-oma image doctor --format json
+oma image doctor --output json
 ```
 
 ### star
@@ -1361,7 +1362,7 @@ oma describe [command-path]
 oma describe
 
 # Describe a specific command
-oma describe agent:spawn
+oma describe agent spawn
 
 # Describe a subcommand
 oma describe "agent:parallel"
@@ -1376,7 +1377,7 @@ oma describe "agent:parallel"
 Check installed skills for overlapping descriptions, black-hole generalism, and library-size routing decay.
 
 ```
-oma skills audit [--json] [--output <format>]
+oma skill audit [--json] [--output <format>]
 ```
 
 **Options:**
@@ -1396,8 +1397,8 @@ oma skills audit [--json] [--output <format>]
 
 **Examples:**
 ```bash
-oma skills audit
-oma skills audit --json | jq '.findings'
+oma skill audit
+oma skill audit --json | jq '.findings'
 ```
 
 ### skills lint
@@ -1405,7 +1406,7 @@ oma skills audit --json | jq '.findings'
 Detect per-skill authoring smells: quality defects inside a single `SKILL.md`, as opposed to `skills audit` which checks relations *between* skills. Based on the skill-smell taxonomy of arXiv:2607.01456 (over 99% of in-the-wild SKILL.md files carry at least one smell).
 
 ```
-oma skills lint [--skill <id>] [--json] [--output <format>]
+oma skill lint [--skill <id>] [--json] [--output <format>]
 ```
 
 **Options:**
@@ -1440,9 +1441,9 @@ oma skills lint [--skill <id>] [--json] [--output <format>]
 
 **Examples:**
 ```bash
-oma skills lint
-oma skills lint --skill oma-scholar
-oma skills lint --json | jq '.smells'
+oma skill lint
+oma skill lint --skill oma-scholar
+oma skill lint --json | jq '.smells'
 ```
 
 ### skills eval
@@ -1450,7 +1451,7 @@ oma skills lint --json | jq '.smells'
 Measure per-skill utility: does loading a skill actually improve held-out task outcomes? This is the *utility* counterpart to `skills audit` (which measures description-boundary overlap). Where `audit` asks "are two skills redundant?", `eval` asks "does this skill help?"
 
 ```
-oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
+oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
                 [--task-dir <path>] [--max-tasks <n>] [--require-coverage]
                 [--json] [--output <format>]
 ```
@@ -1461,7 +1462,7 @@ oma skills eval [--skill <id>] [--mock | --live] [--record] [--yes]
 |:-----|:-----------|
 | `--skill <id>` | Skill ID to evaluate (simple name, no path separators). Defaults to `_all`. |
 | `--mock` | Replay recorded rollouts from `_rollouts/` (default; deterministic, no LLM dispatch). Safe for CI. |
-| `--live` | Live agent dispatch — spawns two arms (baseline and treatment) per task via `oma agent:spawn --read-only`. Prints a cost preview and asks for confirmation unless `--yes`. |
+| `--live` | Live agent dispatch — spawns two arms (baseline and treatment) per task via `oma agent spawn --read-only`. Prints a cost preview and asks for confirmation unless `--yes`. |
 | `--record` | Write captured live rollouts (including judge verdicts) to `_rollouts/` for future `--mock` replay. Only meaningful with `--live`. |
 | `--yes` | Skip the cost-preview confirmation prompt. Only meaningful with `--live`. |
 | `--task-dir <path>` | Override the task fixture directory (must be inside the workspace root). Default: `.agents/eval/<skill>/`. |
@@ -1496,22 +1497,22 @@ For each task fixture in `.agents/eval/<skill>/`:
 **Examples:**
 ```bash
 # Dry-run on recorded rollouts (CI-safe)
-oma skills eval --skill oma-scholar
+oma skill eval --skill oma-scholar
 
 # Live run with cost preview
-oma skills eval --skill oma-scholar --live
+oma skill eval --skill oma-scholar --live
 
 # Live run, record results for future mock replay, skip prompt
-oma skills eval --skill oma-scholar --live --record --yes
+oma skill eval --skill oma-scholar --live --record --yes
 
 # JSON output for CI
-oma skills eval --skill oma-scholar --json
+oma skill eval --skill oma-scholar --json
 
 # Fail CI when no tasks exist
-oma skills eval --skill oma-scholar --require-coverage
+oma skill eval --skill oma-scholar --require-coverage
 
 # Limit to 10 tasks
-oma skills eval --skill oma-scholar --max-tasks 10
+oma skill eval --skill oma-scholar --max-tasks 10
 ```
 
 See the [Skill Utility Eval guide](../guide/skill-eval.md) for the `.agents/eval/` fixture format and checker types.
@@ -1523,7 +1524,7 @@ See the [Skill Utility Eval guide](../guide/skill-eval.md) for the `.agents/eval
 Optimize a skill's `SKILL.md` with WikiSkill-style persistent evolution. A Maintainer consolidates observable rollout evidence into scoped knowledge, a Proposer emits bounded add/delete/replace edits, and rejected outcomes persist across runs. Candidates must strictly improve the held-out validation split; `--apply` additionally requires strict improvement on a runner-owned final-test split. Research basis: WikiSkill (arXiv:2608.27454).
 
 ```
-oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
+oma skill optimize [--skill <id>] [--dry-run | --apply] [--mock | --live]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
                [--yes] [--json] [--output <format>]
 ```
@@ -1555,22 +1556,22 @@ oma skills opt [--skill <id>] [--dry-run | --apply] [--mock | --live]
 **Examples:**
 ```bash
 # Propose edits (dry-run, mock — does not change SKILL.md, fully offline)
-oma skills opt --skill oma-scholar --mock --dry-run
+oma skill optimize --skill oma-scholar --mock --dry-run
 
 # Apply accepted edits (backs up the original first)
-oma skills opt --skill oma-scholar --mock --apply
+oma skill optimize --skill oma-scholar --mock --apply
 
 # Live optimizer with cost preview
-oma skills opt --skill oma-scholar --live
+oma skill optimize --skill oma-scholar --live
 
 # Live optimizer, skip confirmation, apply if improved
-oma skills opt --skill oma-scholar --live --apply --yes
+oma skill optimize --skill oma-scholar --live --apply --yes
 
 # JSON output for CI
-oma skills opt --skill oma-scholar --json
+oma skill optimize --skill oma-scholar --json
 
 # Tune epochs and edits budget
-oma skills opt --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
+oma skill optimize --skill oma-scholar --max-epochs 4 --edits-per-epoch 2 --lr 300
 ```
 
 See the [Skill Optimization guide](../guide/skill-opt.md) for the full end-to-end walkthrough and SSOT / overfitting guard details.
@@ -1645,9 +1646,9 @@ Outputs the current CLI version and exits.
 | Variable | Description | Used By |
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | Set to `json` to force JSON output on all commands that support it | All commands with `--json` flag |
-| `DASHBOARD_PORT` | Port for the web dashboard | `dashboard:web` |
-| `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard:web` |
-| `OMA_SKILLEVAL_MOCK` | Set to `1` to force mock mode in `oma skills eval` regardless of flags | `skills eval` |
+| `DASHBOARD_PORT` | Port for the web dashboard | `dashboard web` |
+| `MEMORIES_DIR` | Override the memories directory path | `dashboard`, `dashboard web` |
+| `OMA_SKILLEVAL_MOCK` | Set to `1` to force mock mode in `oma skill eval` regardless of flags | `skills eval` |
 | `OMA_HOOK_SOCKET` | Override the per-project daemon socket path probed by `selectTransport` (default: `<cwd>/.agents/.run/oma-hook.sock`). Currently always falls back to in-process transport; reserved for the future daemon phase. | `hook` |
 
 ---

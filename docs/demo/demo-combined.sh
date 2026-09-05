@@ -65,9 +65,9 @@ sleep 1.5
 
 clear
 echo ""
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn backend \"Implement JWT auth\" session-01 &${RESET}"
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn frontend \"Create login UI\" session-01 &${RESET}"
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn qa \"Security review\" session-01 &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn backend \"Implement JWT auth\" session-01 &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn frontend \"Create login UI\" session-01 &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn qa \"Security review\" session-01 &${RESET}"
 echo ""
 sleep 1
 

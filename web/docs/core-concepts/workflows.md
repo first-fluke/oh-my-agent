@@ -50,7 +50,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 1. **Step 0, Preparation:** Read coordination skill, context-loading guide, memory protocol. Detect vendor.
 2. **Step 1, Load/Create Plan:** Check for `.agents/results/plan-{sessionId}.json`, then the most recent `plan-*.json`. If none is found — or the plan is not execution-ready (a task missing its agent, priority tier, dependencies, or acceptance criteria) — delegate to `/plan` inline to create one, keeping the same session ID. `/plan`'s user-review gate still applies; it is what authorizes the Step 3 fan-out.
 3. **Step 2, Initialize Session:** Load `oma-config.yaml`, display CLI mapping table, generate session ID (`session-YYYYMMDD-HHMMSS`), create `orchestrator-session.md` and `task-board.md` in memory.
-4. **Step 3, Spawn Agents:** For each priority tier (P0 first, then P1...), spawn agents using vendor-appropriate method (Agent tool for Claude Code, `oma agent:spawn` for Gemini/Antigravity, model-mediated for Codex). Never exceed MAX_PARALLEL.
+4. **Step 3, Spawn Agents:** For each priority tier (P0 first, then P1...), spawn agents using vendor-appropriate method (Agent tool for Claude Code, `oma agent spawn` for Gemini/Antigravity, model-mediated for Codex). Never exceed MAX_PARALLEL.
 5. **Step 4, Monitor:** Poll `progress-{agent}.md` files, update `task-board.md`. Watch for completions, failures, crashes.
 6. **Step 5, Verify:** Run `verify.sh {agent-type} {workspace}` per completed agent. On failure, re-spawn with error context (max 2 retries). After 2 retries, activate Exploration Loop: generate 2-3 hypotheses, spawn parallel experiments, score, keep best.
 7. **Step 6, Collect:** Read all `result-{agent}.md` files, compile summary.
@@ -451,7 +451,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Steps:**
 1. **Resolve the brief and mode:** Pick `shorts` (9:16), `explainer` (16:9), or `demo` (screen/web capture); apply mode defaults, overridable by flags.
 2. **Compose the script:** Generate scenes + narration (LLM when a key is present, else a deterministic outline from the brief).
-3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised Playwright web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
+3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised browser web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
 4. **Build the render-spec:** Write `render-spec.json` (the determinism boundary) plus assets into the run directory.
 5. **Render:** Spawn the vendored Remotion project (or MoneyPrinterTurbo) as a subprocess; on any failure, emit a deterministic placeholder so the run still completes. Live capture is recorded as `nondeterministic` in the manifest.
 
@@ -461,11 +461,11 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ### /schedule
 
-**Description:** Register and manage time-based agent jobs via the `oma schedule:*` commands. Jobs live in a global registry (`~/.agents/schedule/`) and fire through the OS-native scheduler (launchd on macOS, systemd user timers on Linux, schtasks on Windows, crontab as POSIX fallback), each run re-entering the harness via `oma agent:spawn`.
+**Description:** Register and manage time-based agent jobs via the `oma schedule <action>` commands. Jobs live in a global registry (`~/.agents/schedule/`) and fire through the OS-native scheduler (launchd on macOS, systemd user timers on Linux, schtasks on Windows, crontab as POSIX fallback), each run re-entering the harness via `oma agent spawn`.
 
-**Trigger keywords:** None (slash-invoked workflow for `oma schedule:*` time-based jobs).
+**Trigger keywords:** None (slash-invoked workflow for `oma schedule <action>` time-based jobs).
 
-**Steps:** Resolve intent (add / list / remove / sync) -> Parse the schedule (explicit `--cron`, or natural language via `--every`) -> Register with `oma schedule:add` (named-only env capture, files 0600) -> Verify with `oma schedule:list` (manifest × OS drift, grouped by project) -> Report the job id and next fire time.
+**Steps:** Resolve intent (add / list / remove / sync) -> Parse the schedule (explicit `--cron`, or natural language via `--every`) -> Register with `oma schedule create` (named-only env capture, files 0600) -> Verify with `oma schedule list` (manifest × OS drift, grouped by project) -> Report the job id and next fire time.
 
 **When to use:** Recurring agent tasks — nightly recaps, scheduled scans, periodic housekeeping — that must fire even when no interactive session is open.
 
@@ -499,7 +499,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 ### The hook system
 
-oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is processed. The vendor's settings register a single `<hookDir>/oma-hook.sh --vendor <v> --event <e>` entry that routes into `oma hook`, where the handler chain runs in-process. The chain consists of:
+oh-my-agent uses a `UserPromptSubmit` hook that runs before each user message is processed. The vendor's settings register a single `<hookDir>/oma-hook.sh --vendor <v> --event <e>` entry that routes into `oma hook run`, where the handler chain runs in-process. The chain consists of:
 
 1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inlined into the `oma` binary): Defines keyword-to-workflow mappings for all 11 supported languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
 
@@ -570,7 +570,7 @@ If the input matches both a workflow trigger and an informational pattern, the i
 
 ### Excluded workflows
 
-The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/convert` simply ships no trigger keywords (the `oma-pdf` and `oma-hwp` skills carry their own keyword detection); `/schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs); `/explain` ships no trigger keywords because "explain" is everyday vocabulary and keyword detection would constantly false-positive:
+The following workflows are not keyword-triggered and must be invoked with an explicit `/command`. `/tools` and `/stack-set` are in `excludedWorkflows` (deliberately removed from keyword detection); `/convert` simply ships no trigger keywords (the `oma-pdf` and `oma-hwp` skills carry their own keyword detection); `/schedule` is a slash-invoked workflow (`oma schedule <action>` time-based jobs); `/explain` ships no trigger keywords because "explain" is everyday vocabulary and keyword detection would constantly false-positive:
 - `/tools`
 - `/stack-set`
 - `/convert`
@@ -601,12 +601,12 @@ While a persistent workflow is active, the `persistent-mode.ts` hook injects `[O
 
 ### Goal contract (optional stop gate + budget)
 
-`oma goal:set` attaches a mechanical completion contract to an active persistent workflow:
+`oma goal set` attaches a mechanical completion contract to an active persistent workflow:
 
 - `--gate typecheck|test|lint`: the Stop hook allows the session to end **only when that package.json script passes** (run as an argv array, no shell; free-form commands are rejected by design). On failure it blocks with the output tail; failures and timeouts count toward the reinforcement limit so a red gate cannot block forever.
 - `--budget-minutes <n>`: wall-clock budget from activation. Exceeding it deactivates the workflow and allows an honest partial stop, recorded on the session event trail.
 
-Without a contract, persistent mode behaves as described above — the contract is opt-in. See `goal:set` in the [CLI commands reference](../cli-interfaces/commands.md#goalset).
+Without a contract, persistent mode behaves as described above — the contract is opt-in. See `goal set` in the [CLI commands reference](../cli-interfaces/commands.md#goal-set).
 
 ### Deactivation
 
@@ -615,7 +615,7 @@ To deactivate a persistent workflow, the user says "workflow done" (or equivalen
 2. Stops injecting the persistent mode context
 3. Returns to normal operation
 
-The workflow can also end naturally when all steps are completed and the final gate passes. When a `goal:set` gate is configured, passing that gate deactivates the workflow automatically.
+The workflow can also end naturally when all steps are completed and the final gate passes. When a `goal set` gate is configured, passing that gate deactivates the workflow automatically.
 
 ---
 

@@ -107,20 +107,20 @@ Aktywuje się `oma-design`, przechodzi przez 7 faz: SETUP (kontekst), ENHANCE (s
 
 ```bash
 # Pojedynczy agent — proste zadanie
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # Trzech agentów równolegle — funkcjonalność full-stack
-oma agent:spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
 # Monitoruj podczas pracy agentów (oddzielny terminal)
-oma dashboard        # TUI z żywą tabelą
-oma dashboard:web    # Web UI pod http://localhost:9847
+oma dashboard terminal        # TUI z żywą tabelą
+oma dashboard web    # Web UI pod http://localhost:9847
 
 # Po implementacji, uruchom QA
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 ```
 
 ---

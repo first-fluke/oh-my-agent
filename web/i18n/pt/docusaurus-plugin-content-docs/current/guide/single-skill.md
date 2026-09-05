@@ -306,7 +306,7 @@ Observe estes sinais que indicam que você deve mudar de skill única para execu
 | CHARTER_CHECK do agente mostra itens "Must NOT do" que são realmente necessários | Escopo excede um domínio | Planeje a funcionalidade completa com `/plan` primeiro |
 | Correção se propaga em 3+ arquivos em diferentes camadas | Uma correção afeta múltiplos domínios | Use `/debug` com escopo mais amplo, ou `/work` |
 | Agente descobre incompatibilidade de contrato de API | Desacordo frontend/backend | Execute `/plan` para definir contratos, depois re-spawne ambos os agentes |
-| Portão de qualidade falha em pontos de integração | Componentes não conectam corretamente | Adicione etapa de revisão QA: `oma agent:spawn qa "Review integration"` |
+| Portão de qualidade falha em pontos de integração | Componentes não conectam corretamente | Adicione etapa de revisão QA: `oma agent spawn qa "Review integration"` |
 | Tarefa cresce de "um componente" para "três componentes + nova rota + API" | Desvio de escopo durante execução | Pare, execute `/plan` para decompor, depois `/orchestrate` |
 | Agente bloqueia com HIGH clarification | Requisitos fundamentalmente ambíguos | Responda as perguntas do agente ou execute `/brainstorm` para clarificar abordagem |
 

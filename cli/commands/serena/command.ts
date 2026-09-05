@@ -121,7 +121,7 @@ export function registerSerenaCommands(program: Command): void {
     );
 
   // ---------------------------------------------------------------------------
-  // oma serena reaper:enable
+  // oma serena reaper enable
   // ---------------------------------------------------------------------------
   serena
     .command("reaper:enable")
@@ -192,7 +192,7 @@ export function registerSerenaCommands(program: Command): void {
     );
 
   // ---------------------------------------------------------------------------
-  // oma serena reaper:disable
+  // oma serena reaper disable
   // ---------------------------------------------------------------------------
   serena
     .command("reaper:disable")

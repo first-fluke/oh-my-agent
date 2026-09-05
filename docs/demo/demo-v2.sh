@@ -75,13 +75,13 @@ sleep 1.5
 
 clear
 echo ""
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn backend \"Implement JWT auth\" session-01 -v gemini &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn backend \"Implement JWT auth\" session-01 -v gemini &${RESET}"
 sleep 0.3
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn frontend \"Create login UI\" session-01 -v claude &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn frontend \"Create login UI\" session-01 -v claude &${RESET}"
 sleep 0.3
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn qa \"Security review\" session-01 -v codex &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn qa \"Security review\" session-01 -v codex &${RESET}"
 sleep 0.3
-echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent:spawn db \"Design auth schema\" session-01 -v qwen &${RESET}"
+echo -e "  ${DIM}\$${RESET} ${BOLD}oma agent spawn db \"Design auth schema\" session-01 -v qwen &${RESET}"
 echo ""
 sleep 0.8
 

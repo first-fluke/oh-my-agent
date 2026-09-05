@@ -97,15 +97,15 @@ export function loadTimezone(cwd?: string): string {
  */
 export function loadDevToolsBrowsers(
   cwd?: string,
-): ("chrome" | "firefox")[] | undefined {
+): ("aside" | "chrome" | "firefox")[] | undefined {
   const config = loadOmaConfig(cwd) as unknown as {
     mcp?: { devtools_browsers?: unknown };
   } | null;
   const raw = isRecord(config?.mcp) ? config.mcp.devtools_browsers : undefined;
   if (!Array.isArray(raw)) return undefined;
   return raw.filter(
-    (entry): entry is "chrome" | "firefox" =>
-      entry === "chrome" || entry === "firefox",
+    (entry): entry is "aside" | "chrome" | "firefox" =>
+      entry === "aside" || entry === "chrome" || entry === "firefox",
   );
 }
 

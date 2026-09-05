@@ -231,7 +231,7 @@ session:
 Направьте любого агента через opencode с помощью переопределения `-m opencode`:
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 Эта команда выполняет `opencode run --agent pm --dir <workspace> "<prompt>"`. Промпт
@@ -289,18 +289,18 @@ agents:
 слаги моделей opencode. Проверьте слаг по вашему установленному каталогу:
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe` возвращает `accepted`, когда слаг присутствует в списке
+`oma model probe` возвращает `accepted`, когда слаг присутствует в списке
 `opencode models`, `rejected` — когда его там нет, и `auth_required` — когда
 провайдеру требуется логин или подписка.
 
 ### Аутентификация и сгенерированные файлы
 
 - **Аутентификация:** `opencode auth login` сохраняет учётные данные в
-  `~/.local/share/opencode/auth.json`. `oma auth:status` / `oma doctor` сообщают о
+  `~/.local/share/opencode/auth.json`. `oma auth status` / `oma doctor` сообщают о
   статусе аутентификации opencode наряду с другими CLI на уровне вендора (аутентифицирован, если учётные
   данные есть у любого провайдера). А `oma doctor --profile` учитывает провайдера:
   каждая строка проверяется по префиксу провайдера из зарегистрированного

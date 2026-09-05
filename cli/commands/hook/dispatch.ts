@@ -103,11 +103,11 @@ interface VariantJson {
 /**
  * Vendor → embedded variant config. Self-contained; no filesystem read.
  *
- * Exported as the canonical table of hook-model vendors `oma hook` can
+ * Exported as the canonical table of hook-model vendors `oma hook run` can
  * dispatch for. Consumers (doctor wrapper checks, contract tests) derive
  * vendor/hookDir lists from this table instead of keeping their own copies.
  * A variant JSON without an entry here is dead config — the installer would
- * register its hooks but `oma hook` would dispatch an empty chain (this is
+ * register its hooks but `oma hook run` would dispatch an empty chain (this is
  * exactly how commandcode shipped broken). `vendor-wiring.test.ts` fails
  * when this table and `.agents/hooks/variants/*.json` drift.
  */

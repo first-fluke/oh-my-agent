@@ -22,7 +22,7 @@
 // followup_message, grok via {decision:"block"} (verified from the grok
 // binary's embedded docs — Stop/SubagentStop CAN block), agy via
 // {decision:"continue"}. kiro's Stop output is not processed by the host,
-// so there the enforcer direct-dispatches `oma agent:spawn
+// so there the enforcer direct-dispatches `oma agent spawn
 // refactor-engineer` (detached) instead of relying on the block reason.
 //
 // OFF by default (opt-in). The guard only fires when the project enables it:
@@ -53,7 +53,7 @@ export const MAX_STOP_BLOCKS = 2;
  * Vendors whose Stop hook output cannot block the stop (kiro: hook output is
  * not processed — aws/amazon-q lineage; verified 2026-08). A blocking reason
  * cannot force the model there, so the enforcer dispatches the refactor agent
- * DIRECTLY via a detached `oma agent:spawn refactor-engineer` on the first
+ * DIRECTLY via a detached `oma agent spawn refactor-engineer` on the first
  * block of each offending file.
  */
 const DIRECT_DISPATCH_VENDORS = new Set<string>(["kiro"]);
@@ -432,7 +432,7 @@ function enforceOnStop(
       `budget: ${fileList}. Before ending this turn, dispatch the ` +
       `\`refactor-engineer\` subagent to split each file into smaller, ` +
       `cohesive modules (native Agent tool when the runtime supports it, ` +
-      `otherwise \`oma agent:spawn refactor-engineer\`). The refactor must be ` +
+      `otherwise \`oma agent spawn refactor-engineer\`). The refactor must be ` +
       `behavior-preserving and land as refactor-only changes. Adjust via ` +
       `\`refactor_guard.max_lines\` / \`refactor_guard.enabled\` in ` +
       `.agents/oma-config.yaml.`,
@@ -461,7 +461,15 @@ function spawnRefactorAgent(
       `behavior-preserving and land as refactor-only changes: ${files}`;
     const child = spawn(
       "oma",
-      ["agent:spawn", "refactor-engineer", prompt, sid, "-w", projectDir],
+      [
+        "agent",
+        "spawn",
+        "refactor-engineer",
+        prompt,
+        sid,
+        "--workspace",
+        projectDir,
+      ],
       { detached: true, stdio: "ignore" },
     );
     // ENOENT (oma not on PATH) surfaces as an async 'error' event, not a
@@ -494,7 +502,7 @@ function main() {
 
   const parsed: StandaloneInput = JSON.parse(raw);
 
-  // agy runs core hooks standalone (no `oma hook` router): its envelope is
+  // agy runs core hooks standalone (no `oma hook run` router): its envelope is
   // camelCase with a nested toolCall (verified against the agy 1.1.13 binary).
   const toolCall = parsed.toolCall as
     | { name?: unknown; args?: unknown }

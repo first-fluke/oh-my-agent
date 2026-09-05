@@ -21,39 +21,8 @@ All result, progress, and state files MUST be written to the **project root** me
   - `progress-{agent-id}-{sessionId}.md`
 - **Manual (non-orchestrated) runs**: no suffix, `result-{agent-id}.md`
 
-## On Start
+## Lifecycle and results
 
-1. `[READ]("task-board.md")` to confirm your assigned task
-2. `[WRITE]("progress-{agent-id}[-{sessionId}].md", initial progress entry)` with Turn 1 status
+Follow [Execution Policy](../../core/execution-policy.md) and [Agent Result Contract](../result-contract.md). The task-specific injected run ID and result path are authoritative for this dispatch. Keep coordination notes in the project-root memory store; the structured receipt determines completion.
 
-## During Execution
-
-- Every 3-5 turns: `[EDIT]("progress-{agent-id}[-{sessionId}].md")` to append a new turn entry
-- Include: action taken, current status, files created/modified
-
-## On Completion
-
-- `[WRITE]("result-{agent-id}[-{sessionId}].md")` with final result including:
-  - A status line — see **Status line format** below (REQUIRED)
-  - Summary of work done
-  - Files created/modified
-  - Acceptance criteria checklist
-
-## On Failure
-
-- Still create `result-{agent-id}[-{sessionId}].md` with the status line set to `failed`
-- Include detailed error description and what remains incomplete
-
-## Status line format (REQUIRED)
-
-The orchestrator parses the status with the regex `^## Status:\s*(\S+)`. The result file
-MUST contain a single line in exactly this shape — heading marker, colon on the same line,
-plain word, no backticks, no quotes:
-
-```
-## Status: completed
-```
-
-Use `## Status: failed` on failure. Do NOT split it across lines or render it as a
-sub-bullet (e.g. `- Status: completed`) — that fails to parse and a failed run would be
-silently misreported as completed.
+Read an existing task board when assigned one. Report progress for long tasks. Include unresolved work even on failure. For read-only dispatch, return the injected stdout JSON contract instead of writing files.

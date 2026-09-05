@@ -12,7 +12,7 @@ export type { HookTransport };
 
 // ---------------------------------------------------------------------------
 // InProcessTransport — calls runHookDispatch in the same process.
-// This is the only transport used in the one-shot `oma hook` path today.
+// This is the only transport used in the one-shot `oma hook run` path today.
 // ---------------------------------------------------------------------------
 
 export class InProcessTransport implements HookTransport {

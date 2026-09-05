@@ -5,7 +5,7 @@ import type { HookVariant } from "./variant-types.js";
 
 /**
  * Compute the set of core scripts that must be materialized in a vendor's
- * hookDir for a given variant. Everything else runs in-process via `oma hook`
+ * hookDir for a given variant. Everything else runs in-process via `oma hook run`
  * (design 019) and must NOT be copied — stale copies are dead files that make
  * vendor directories look hand-rolled.
  *
@@ -19,7 +19,7 @@ import type { HookVariant } from "./variant-types.js";
  *    so that shell script must exist wherever test-filter.ts is registered.
  *
  * triggers.json is statically inlined into the oma binary and handler chains
- * run inside `oma hook`, so neither it nor the handler .ts files are needed.
+ * run inside `oma hook run`, so neither it nor the handler .ts files are needed.
  */
 export function requiredVariantScripts(variant: HookVariant): Set<string> {
   const required = new Set<string>();

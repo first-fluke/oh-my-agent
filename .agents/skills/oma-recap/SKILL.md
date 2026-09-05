@@ -24,8 +24,8 @@ Collect AI tool conversation history for a date or window and synthesize it into
 
 ### When NOT to use
 - Git commit-based code change retrospective -> use `oma retro`
-- Real-time agent monitoring -> use `oma dashboard`
-- Productivity metrics -> use `oma stats`
+- Real-time agent monitoring -> use `oma dashboard terminal`
+- Productivity metrics -> use `oma stats get`
 
 ### Expected inputs
 - Date, relative date, time window, or tool filter

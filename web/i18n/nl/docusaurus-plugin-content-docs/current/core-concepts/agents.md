@@ -479,7 +479,7 @@ Agenten in oh-my-agent zijn gespecialiseerde engineeringrollen. Elke agent heeft
 
 **Wanneer gebruiken:** Samenvatten van een dag of periode van werkactiviteit, begrijpen van de werkstroom over meerdere AI-tools, analyseren van tool-switching-patronen tussen sessies, voorbereiden van dagelijkse standups / wekelijkse retro's / werklogboeken.
 
-**Wanneer NIET gebruiken:** Git-commit-gebaseerde code-wijzigingsretrospective (gebruik `oma retro`), realtime agentmonitoring (gebruik `oma dashboard`), productiviteitsmetrieken (gebruik `oma stats`).
+**Wanneer NIET gebruiken:** Git-commit-gebaseerde code-wijzigingsretrospective (gebruik `oma retro`), realtime agentmonitoring (gebruik `oma dashboard terminal`), productiviteitsmetrieken (gebruik `oma stats get`).
 
 **Proces:**
 1. Datum of tijdvenster oplossen uit natuurlijke-taalinvoer (today, yesterday, last Monday, expliciete datum)
@@ -612,8 +612,8 @@ Voor multi-agent projecten voorkomen gescheiden werkruimten bestandsconflicten:
 Werkruimten worden gespecificeerd met de `-w`-vlag bij het spawnen van agenten:
 
 ```bash
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web
 ```
 
 ---
@@ -681,4 +681,4 @@ Geheugentools zijn configureerbaar. Standaard gebruikt Serena MCP (`read_memory`
 }
 ```
 
-Dashboards (`oma dashboard` en `oma dashboard:web`) bewaken deze geheugenbestanden voor realtime monitoring.
+Dashboards (`oma dashboard terminal` en `oma dashboard web`) bewaken deze geheugenbestanden voor realtime monitoring.

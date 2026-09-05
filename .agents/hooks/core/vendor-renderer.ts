@@ -17,8 +17,17 @@ export interface StateSnapshotRenderInput {
 }
 
 function renderRecentEvents(events: OmaEvent[]): string[] {
-  if (events.length === 0) return ["- none"];
-  return events.map((event) => `- ${event.ts} ${event.kind}`);
+  const seen = new Set<string>();
+  return events
+    .filter((event) => {
+      if (event.kind !== "boundary") return true;
+      if (seen.has(event.kind)) return false;
+      seen.add(event.kind);
+      return true;
+    })
+    .map((event) =>
+      event.kind === "boundary" ? "- boundary" : `- ${event.ts} ${event.kind}`,
+    );
 }
 
 function renderMemoryFacts(facts: MemoryFact[]): string[] {
@@ -31,14 +40,13 @@ function renderMemoryFacts(facts: MemoryFact[]): string[] {
 
 function renderClaudeSnapshot(input: StateSnapshotRenderInput): string {
   const facts = input.facts ?? [];
+  const events = renderRecentEvents(input.recentEvents);
   return [
     "[OMA STATE SNAPSHOT]",
     `sid: ${input.sid}`,
     `reason: ${input.reason}`,
-    "recent events:",
-    ...renderRecentEvents(input.recentEvents),
-    "memory facts:",
-    ...renderMemoryFacts(facts),
+    ...(events.length ? ["recent events:", ...events] : []),
+    ...(facts.length ? ["memory facts:", ...renderMemoryFacts(facts)] : []),
   ].join("\n");
 }
 

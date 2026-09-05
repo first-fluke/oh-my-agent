@@ -312,7 +312,7 @@ Watch for these signals that indicate you should switch from single-skill to mul
 | Agent's CHARTER_CHECK shows "Must NOT do" items that are actually needed | Scope exceeds one domain | Plan the full feature with `/plan` first |
 | Fix cascades into 3+ files across different layers | One fix affects multiple domains | Use `/debug` with broader scope, or `/work` |
 | Agent discovers an API contract mismatch | Frontend/backend disagreement | Run `/plan` to define contracts, then re-spawn both agents |
-| Quality gate fails on integration points | Components do not connect properly | Add QA review step: `oma agent:spawn qa "Review integration"` |
+| Quality gate fails on integration points | Components do not connect properly | Add QA review step: `oma agent spawn qa "Review integration"` |
 | Task grows from "one component" to "three components + new route + API" | Scope creep during execution | Stop, run `/plan` to decompose, then `/orchestrate` |
 | Agent blocks with HIGH clarification | Requirements fundamentally ambiguous | Answer the agent's questions or run `/brainstorm` to clarify approach |
 

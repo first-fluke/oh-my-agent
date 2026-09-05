@@ -65,7 +65,7 @@ export async function confirmLiveRun(
   const calls = estimateLiveDispatchCalls(maxEpochs, editsPerEpoch, profile);
   const callUnit = profile ? "underlying model calls" : "dispatch groups";
   console.log(
-    `[oma skills opt] --live cost preview: up to ${calls} ${callUnit}` +
+    `[oma skill opt] --live cost preview: up to ${calls} ${callUnit}` +
       ` (${maxEpochs} epochs; two arms per task, plus judge calls where configured).` +
       " Includes the initial validation baseline and 2 runner-owned final-test scores." +
       ` This incurs real model cost.`,

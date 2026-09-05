@@ -132,7 +132,7 @@ function agentMemoryIssues(args: {
   ) {
     issues.push(
       "AgentMemory recall inactive: endpoint not configured " +
-        "(~/.agentmemory/endpoint.json missing) — run `oma memory:setup`",
+        "(~/.agentmemory/endpoint.json missing) — run `oma memory setup`",
     );
   }
   if (!args.binary.available && args.service.installed) {

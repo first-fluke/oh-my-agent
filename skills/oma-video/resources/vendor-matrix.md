@@ -14,7 +14,7 @@ otherwise the chain falls through to a key-free default.
 | voice | `[oma-voice]` | Voicebox MCP TTS + STT timing | estimated timing (no wav) | — |
 | visual | `[oma-image, pexels, pixelle]` | Pexels stock · Pixelle AIGC | oma-image stills + Ken Burns | `TODO(oma-deferred): pexels` / `pixelle` |
 | caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
-| capture | `[playwright-web, cap]` (informational — dispatch is by `--source`) | Playwright headed web capture (`--source web`) · Cap CLI trigger | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
+| capture | Cap / guided capture | Human-recorded video ingestion | guided protocol + `--capture <path>` | `TODO(oma-deferred): cap` |
 | compositor | `[remotion, mpt]` | Remotion live render (wired, default) · MPT custom-script | deterministic placeholder mp4 (toolchain missing / render failed) | — |
 
 ## Tier model
@@ -23,7 +23,7 @@ otherwise the chain falls through to a key-free default.
 |:---:|---------|-----------|-------|
 | 1 | CLI-first (subprocess) | Remotion, MPT, oma-image, oma-slide, oma-voice (REST) | deterministic; preferred whenever a CLI can drive the work |
 | 2 | MCP | Voicebox MCP, Pixelle-MCP | localhost MCP; Pixelle off by default, community-MCP consent + key |
-| 3 | Guided (human) | playwright-web (headed web capture, human drives the flow), Cap | `demo` capture is performed by a human |
+| 3 | Guided (human) | Cap / human-recorded video | `demo` capture is performed by a human |
 
 ## oma-voice (VoiceProvider + timing)
 
@@ -41,7 +41,7 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Transport | `oma image generate "<prompt>" --vendor auto --size <16-multiple> --format json --out <runDir>/visuals` |
+| Transport | `oma image generate "<prompt>" --vendor auto --size <16-multiple> --output json --output-dir <runDir>/visuals` |
 | Aspect -> size | snapped to nearest 16-multiple: 9:16 -> 1088×1920, 16:9 -> 1920×1088, 1:1 -> 1088×1088 |
 | Crop | Remotion crops the still to the exact frame; Ken Burns adds motion |
 | Cost | free defaults (pollinations / antigravity); codex per-image per oma-image config |
@@ -50,7 +50,7 @@ otherwise the chain falls through to a key-free default.
 
 | Field | Value |
 |-------|-------|
-| Transport | `oma slide` generate deck -> `oma slide png --dir <deck> --out-dir <runDir>/visuals` -> 1920×1080 frames |
+| Transport | `oma slide` generate deck -> `oma slide export png --dir <deck> --out-dir <runDir>/visuals` -> 1920×1080 frames |
 | Layering | oma-slide internally calls oma-image (same key-free chain) |
 | Use | explainer code/diagram frames |
 

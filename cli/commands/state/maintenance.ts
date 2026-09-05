@@ -11,10 +11,8 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import {
-  atomicWriteJson,
   deriveMeta,
   eventsPath,
-  indexPath,
   metaPath,
   type OmaEvent,
   readEvents,
@@ -22,6 +20,7 @@ import {
   refreshMeta,
   type SessionMeta,
   sessionsDir,
+  updateIndex,
 } from "../../state/events.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import {
@@ -175,7 +174,15 @@ export function repairStateSessions(
     !dryRun &&
     (result.removedActive.length > 0 || result.reassignedActive.length > 0)
   ) {
-    atomicWriteJson(indexPath(projectDir), view.index);
+    updateIndex(projectDir, (index) => {
+      for (const { category, sid } of result.removedActive) {
+        // A hook may have replaced this pointer since repair inspected it.
+        if (index.active[category] !== sid) continue;
+        const replacement = view.index.active[category];
+        if (replacement) index.active[category] = replacement;
+        else delete index.active[category];
+      }
+    });
   }
 
   result.unchanged =
@@ -223,13 +230,8 @@ export function purgeStateSessions(args: {
     }
   }
 
-  if (!result.dryRun && result.purged.length > 0) {
-    const purged = new Set(result.purged);
-    for (const [category, sid] of Object.entries(view.index.active)) {
-      if (purged.has(sid)) delete view.index.active[category];
-    }
-    atomicWriteJson(indexPath(projectDir), view.index);
-  }
+  // Active sessions were excluded above; there is no index mutation to save.
+  // Rewriting the snapshot here would overwrite newer hook/CLI updates.
 
   return result;
 }
@@ -290,13 +292,7 @@ export function archiveStateSessions(args: {
     }
   }
 
-  if (!result.dryRun && result.archived.length > 0) {
-    const archived = new Set(result.archived.map((entry) => entry.sid));
-    for (const [category, sid] of Object.entries(view.index.active)) {
-      if (archived.has(sid)) delete view.index.active[category];
-    }
-    atomicWriteJson(indexPath(projectDir), view.index);
-  }
+  // Active sessions were excluded above; preserve concurrent index updates.
 
   return result;
 }

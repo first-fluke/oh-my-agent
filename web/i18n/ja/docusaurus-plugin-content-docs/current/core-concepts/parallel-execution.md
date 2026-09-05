@@ -14,7 +14,7 @@ oh-my-agentの核心的な利点は、複数の専門エージェントを同時
 ### 基本構文
 
 ```bash
-oma agent:spawn <agent-id> <prompt> <session-id> [options]
+oma agent spawn <agent-id> <prompt> <session-id> [options]
 ```
 
 ### パラメータ
@@ -30,7 +30,7 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 | フラグ | 短縮形 | 説明 |
 |------|-------|-------------|
 | `--workspace <path>` | `-w` | エージェントの作業ディレクトリ。このディレクトリ内のファイルのみ変更。 |
-| `--model <name>` | `-m` | CLIベンダーオーバーライド。選択肢：`antigravity`、`claude`、`codex`、`qwen`。 |
+| `--vendor <name>` | — | CLIベンダーオーバーライド。選択肢：`antigravity`、`claude`、`codex`、`qwen`。 |
 | `--max-turns <n>` | `-t` | デフォルトターン制限をオーバーライド。 |
 | `--json` | | 結果をJSONで出力。 |
 | `--no-wait` | | 完了を待たずに即座にリターン。 |
@@ -39,19 +39,19 @@ oma agent:spawn <agent-id> <prompt> <session-id> [options]
 
 ```bash
 # デフォルトベンダーでバックエンドエージェントをスポーン
-oma agent:spawn backend "Implement JWT authentication API with refresh tokens" session-01
+oma agent spawn backend "Implement JWT authentication API with refresh tokens" session-01
 
 # ワークスペース分離付き
-oma agent:spawn backend "Auth API + DB migration" session-01 -w ./apps/api
+oma agent spawn backend "Auth API + DB migration" session-01 -w ./apps/api
 
 # ベンダーオーバーライド
-oma agent:spawn frontend "Build login form" session-01 -m claude -w ./apps/web
+oma agent spawn frontend "Build login form" session-01 --vendor claude -w ./apps/web
 
 # 高いターン制限
-oma agent:spawn backend "Implement payment gateway integration" session-01 -t 30
+oma agent spawn backend "Implement payment gateway integration" session-01 -t 30
 
 # プロンプトファイルを使用
-oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
+oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 ```
 
 ---
@@ -60,9 +60,9 @@ oma agent:spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 ```bash
 # 3つのエージェントを並列でスポーン
-oma agent:spawn backend "Implement auth API" session-01 -w ./apps/api &
-oma agent:spawn frontend "Build login form" session-01 -w ./apps/web &
-oma agent:spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
+oma agent spawn backend "Implement auth API" session-01 -w ./apps/api &
+oma agent spawn frontend "Build login form" session-01 -w ./apps/web &
+oma agent spawn mobile "Auth screens with biometrics" session-01 -w ./apps/mobile &
 wait  # すべてのエージェントが完了するまでブロック
 ```
 
@@ -71,13 +71,13 @@ wait  # すべてのエージェントが完了するまでブロック
 並列実行時は常に個別のワークスペースを割り当てて、ファイル競合を防止します：
 
 ```bash
-oma agent:spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
-oma agent:spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
-oma agent:spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
+oma agent spawn backend "JWT auth + DB migration" session-02 -w ./apps/api &
+oma agent spawn frontend "Login + token refresh + dashboard" session-02 -w ./apps/web &
+oma agent spawn mobile "Auth screens + offline token storage" session-02 -w ./apps/mobile &
 wait
 
 # 実装後にQAを実行（順次）
-oma agent:spawn qa "Review all implementations for security and accessibility" session-02
+oma agent spawn qa "Review all implementations for security and accessibility" session-02
 ```
 
 ---
@@ -85,18 +85,18 @@ oma agent:spawn qa "Review all implementations for security and accessibility" s
 ## agent:parallel: インライン並列モード
 
 ```bash
-oma agent:parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
+oma agent parallel -i <agent1>:<prompt1> <agent2>:<prompt2> [options]
 ```
 
 ```bash
 # 基本的な並列実行
-oma agent:parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
+oma agent parallel -i backend:"Implement auth API" frontend:"Build login form" mobile:"Auth screens"
 
 # no-wait付き
-oma agent:parallel -i backend:"Auth API" frontend:"Login form" --no-wait
+oma agent parallel -i backend:"Auth API" frontend:"Login form" --no-wait
 
 # すべてのエージェントが同じセッションを自動共有
-oma agent:parallel -i \
+oma agent parallel -i \
   backend:"JWT auth with refresh tokens" \
   frontend:"Login form with email validation" \
   db:"User schema with soft delete and audit trail"
@@ -125,15 +125,15 @@ agents:
 
 ### ベンダー解決の優先順位
 
-`oma agent:spawn`がどのCLIを使うかを決定する際の優先順位は以下のとおりです。
+`oma agent spawn`がどのCLIを使うかを決定する際の優先順位は以下のとおりです。
 
 | 優先度 | ソース | 例 |
 |----------|--------|---------|
-| 1（最高） | `--model`フラグ | `oma agent:spawn backend "task" session-01 -m claude` |
+| 1（最高） | `--vendor`フラグ | `oma agent spawn backend "task" session-01 --vendor claude` |
 | 2 | `oma-config.yaml`の`agents:`オーバーライド | `agents: { backend: { model: openai/gpt-5.5 } }` |
 | 3 | アクティブな`model_preset`のエージェントデフォルト | エージェントロールに対するプリセット参照 |
 
-`--model`フラグが常に優先されます。フラグが指定されない場合は、`agents:`オーバーライド、続いてプリセットデフォルトの順に確認します。
+`--vendor`フラグが常に優先されます。フラグが指定されない場合は、`agents:`オーバーライド、続いてプリセットデフォルトの順に確認します。
 
 ---
 
@@ -143,9 +143,9 @@ agents:
 |--------|----------------------|-----------------|
 | **Claude Code** | `Agent` tool。同一メッセージ内の複数呼び出し = 真の並列。 | 同期リターン |
 | **Codex CLI** | モデル仲介並列サブエージェントリクエスト | JSON出力 |
-| **Gemini CLI** | `oma agent:spawn` CLIコマンド | MCPメモリポーリング |
-| **Antigravity IDE** | `oma agent:spawn`のみ | MCPメモリポーリング |
-| **CLIフォールバック** | `oma agent:spawn {agent} {prompt} {session} -w {workspace}` | 結果ファイルポーリング |
+| **Gemini CLI** | `oma agent spawn` CLIコマンド | MCPメモリポーリング |
+| **Antigravity IDE** | `oma agent spawn`のみ | MCPメモリポーリング |
+| **CLIフォールバック** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | 結果ファイルポーリング |
 
 ---
 
@@ -154,7 +154,7 @@ agents:
 ### ターミナルダッシュボード
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 ライブテーブル表示：セッションID、エージェントごとのステータス、ターン数、最新アクティビティ、経過時間。
@@ -162,7 +162,7 @@ oma dashboard
 ### Webダッシュボード
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # http://localhost:9847
 ```
 
@@ -173,7 +173,7 @@ WebSocketリアルタイム更新、自動再接続、色分けステータス�
 ```
 ┌─────────────────────────┬──────────────────────┐
 │   ターミナル1:          │   ターミナル2:       │
-│   oma dashboard         │   エージェントスポーン│
+│   oma dashboard terminal         │   エージェントスポーン│
 ├─────────────────────────┴──────────────────────┤
 │   ターミナル3: テスト/ビルドログ、Git操作       │
 └────────────────────────────────────────────────┘
@@ -218,22 +218,22 @@ WebSocketリアルタイム更新、自動再接続、色分けステータス�
 # Step 1: 機能を計画（AI IDEで/planを実行）
 
 # Step 2: 実装エージェントを並列でスポーン
-oma agent:spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints." session-auth-01 -w ./apps/api &
-oma agent:spawn frontend "Build login and registration forms with email validation." session-auth-01 -w ./apps/web &
-oma agent:spawn mobile "Create auth screens with biometric login support." session-auth-01 -w ./apps/mobile &
+oma agent spawn backend "Implement JWT auth API with registration, login, refresh, and logout endpoints." session-auth-01 -w ./apps/api &
+oma agent spawn frontend "Build login and registration forms with email validation." session-auth-01 -w ./apps/web &
+oma agent spawn mobile "Create auth screens with biometric login support." session-auth-01 -w ./apps/mobile &
 
 # Step 3: 別ターミナルでモニタリング
-oma dashboard
+oma dashboard terminal
 
 # Step 4: 全実装エージェントを待機
 wait
 
 # Step 5: QAレビュー
-oma agent:spawn qa "Review all auth implementations for OWASP Top 10." session-auth-01
+oma agent spawn qa "Review all auth implementations for OWASP Top 10." session-auth-01
 
 # Step 6: QA課題があれば修正を再スポーン
-oma agent:spawn backend "Fix: QA found missing rate limiting." session-auth-01 -w ./apps/api
+oma agent spawn backend "Fix: QA found missing rate limiting." session-auth-01 -w ./apps/api
 
 # Step 7: 修正検証のためQA再実行
-oma agent:spawn qa "Re-review backend auth after fixes." session-auth-01
+oma agent spawn qa "Re-review backend auth after fixes." session-auth-01
 ```

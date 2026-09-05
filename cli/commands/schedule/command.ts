@@ -1,7 +1,7 @@
 /**
  * schedule/command.ts
  *
- * CLI surface for `oma schedule:*` commands.
+ * CLI surface for `oma schedule <action>` commands.
  *
  * Commands: schedule:add, schedule:list, schedule:remove, schedule:run, schedule:sync
  * No --global flag — schedule is always user-global by design.
@@ -71,7 +71,7 @@ function captureEnv(id: string, keysCsv: string): string | null {
   return path.join("env", id);
 }
 
-/** Vendors accepted by `--model`; mirrors the `oma agent:spawn -m` surface. */
+/** Vendors accepted by `--model`; mirrors the `oma agent spawn -m` surface. */
 const SCHEDULE_VENDORS = [
   "antigravity",
   "claude",
@@ -173,7 +173,7 @@ async function scheduleAdd(
   await port.upsert({
     id,
     cron: cronExpr,
-    command: ["oma", "schedule:run", id],
+    command: ["oma", "schedule", "run", id],
     label: osJobLabel,
     workspace,
   });
@@ -362,7 +362,7 @@ async function scheduleSync(options: { prune?: boolean }): Promise<void> {
       await port.upsert({
         id: job.id,
         cron: job.cron,
-        command: ["oma", "schedule:run", job.id],
+        command: ["oma", "schedule", "run", job.id],
         label: job.osJobLabel,
         workspace: job.workspace,
       });

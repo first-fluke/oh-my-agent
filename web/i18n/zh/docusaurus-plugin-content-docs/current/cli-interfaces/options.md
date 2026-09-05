@@ -25,17 +25,17 @@ description: 所有 CLI 选项的详尽参考。全局标志、输出控制、�
 ### 1. --json 标志
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-`--json` 标志是获取 JSON 输出最简单的方式。可用于：`doctor`、`stats`、`retro`、`cleanup`、`auth:status`、`memory:init`、`verify`、`visualize`。
+`--json` 标志是获取 JSON 输出最简单的方式。可用于：`doctor`、`stats`、`retro`、`cleanup`、`auth status`、`memory init`、`verify`、`visualize`。
 
 ### 2. --output 标志
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -47,7 +47,7 @@ oma doctor --output text
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # 输出 JSON
+oma stats get    # 输出 JSON
 oma doctor   # 输出 JSON
 oma retro    # 输出 JSON
 ```
@@ -64,8 +64,8 @@ oma retro    # 输出 JSON
 | `stats` | 是 | 是 | 完整指标对象 |
 | `retro` | 是 | 是 | 包含指标、作者、提交类型的快照 |
 | `cleanup` | 是 | 是 | 已清理项目列表 |
-| `auth:status` | 是 | 是 | 每个 CLI 的认证状态 |
-| `memory:init` | 是 | 是 | 初始化结果 |
+| `auth status` | 是 | 是 | 每个 CLI 的认证状态 |
+| `memory init` | 是 | 是 | 初始化结果 |
 | `verify` | 是 | 是 | 每项检查的验证结果 |
 | `visualize` | 是 | 是 | 依赖图的 JSON 表示 |
 | `describe` | 始终 JSON | 不适用 | 始终输出 JSON（自省命令） |
@@ -104,7 +104,8 @@ oma update [-f | --force] [--ci]
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 | 标志 | 说明 | 默认值 |
@@ -144,15 +145,15 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. 孤立日志文件：`/tmp/subagent-*.log`，匹配已死亡 PID。
 3. Gemini Antigravity 目录：`.gemini/antigravity/brain/`、`.gemini/antigravity/implicit/`、`.gemini/antigravity/knowledge/`，这些会随时间积累状态并变得很大。
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | 标志 | 缩写 | 说明 | 默认值 |
 |:-----|:-----|:-----|:-------|
-| `--model` | `-m` | CLI 供应商覆盖。必须是：`antigravity`、`claude`、`codex`、`qwen` 之一。覆盖所有基于配置的供应商解析。 | 从配置解析 |
+| `--vendor` | — | CLI 供应商覆盖。必须是：`antigravity`、`claude`、`codex`、`qwen` 之一。覆盖所有基于配置的供应商解析。 | 从配置解析 |
 | `--workspace` | `-w` | 智能体的工作目录。如果省略或设为 `.`，CLI 从 monorepo 配置文件自动检测工作区（pnpm-workspace.yaml、package.json、lerna.json、nx.json、turbo.json、mise.toml）。 | 自动检测或 `.` |
 
 **验证：**
@@ -172,10 +173,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 这些默认值可在 `.agents/skills/oma-orchestration/config/cli-config.yaml` 中覆盖。
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 | 标志 | 缩写 | 说明 | 默认值 |
@@ -187,15 +188,15 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 2. 如果 PID 文件存在于 `/tmp/subagent-{session-id}-{agent}.pid`：检查 PID 是否存活。存活报告 `running`，死亡报告 `crashed`。
 3. 如果两个文件都不存在：报告 `crashed`。
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | 标志 | 缩写 | 说明 | 默认值 |
 |:-----|:-----|:-----|:-------|
-| `--model` | `-m` | 应用于所有启动智能体的 CLI 供应商覆盖。 | 按智能体从配置解析 |
+| `--vendor` | — | 应用于所有启动智能体的 CLI 供应商覆盖。 | 按智能体从配置解析 |
 | `--inline` | `-i` | 将任务参数解释为 `agent:task[:workspace]` 字符串而非文件路径。 | `false` |
 | `--no-wait` | | 后台模式。启动所有智能体后立即返回，不等待完成。PID 列表和日志保存到 `.agents/results/parallel-{timestamp}/`。 | `false`（等待完成） |
 
@@ -281,7 +282,7 @@ oma image <subcommand> [...]
 | `--count <n>` | `-n` | 图片数量，1..5。 | `1` |
 | `--out <dir>` | | 输出目录。除非设置 `--allow-external-out`，否则必须位于 `$PWD` 内部。 | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | 允许 `--out` 路径位于 `$PWD` 外部。 | `false` |
-| `--model <name>` | | 供应商特定的模型覆盖（如 `gpt-image-2`、`flux`、`imagen-4`）。 | 供应商默认 |
+| `--vendor <name>` | | 供应商特定的模型覆盖（如 `gpt-image-2`、`flux`、`imagen-4`）。 | 供应商默认 |
 | `--strategy <list>` | | Gemini 回退顺序，逗号分隔，可选 `mcp`、`stream`、`api`。 | 供应商默认 |
 | `--timeout <seconds>` | | 单张图片超时。 | 供应商默认 |
 | `--reference <path>` | `-r` | 用于风格/主题迁移的参考图。可重复（`-r a.png -r b.png`）或逗号分隔。校验大小（≤5MB）、格式（通过魔数识别 PNG/JPEG/GIF/WebP）和数量（≤10）。`codex`（向 `codex exec` 传 `-i`）和 `gemini`（内联 base64 `inlineData`）支持，`pollinations` 拒绝并以退出码 4 结束。 | |
@@ -292,10 +293,10 @@ oma image <subcommand> [...]
 
 `image doctor` 与 `image list-vendors` 仅接受 `--format <text|json>`。
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 | 标志 | 说明 | 默认值 |
@@ -331,18 +332,18 @@ oma doctor --json | jq '.healthy'
 ```bash
 # 收集 JSON 指标并推送到监控系统
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### 批量智能体执行与状态监控
 
 ```bash
 # 后台启动智能体
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # 定期检查状态
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### 测试后的 CI 清理
@@ -383,10 +384,10 @@ echo "=== oh-my-agent Health Check ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
 
 # 检查认证状态
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
 
 # 检查指标
-oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 
 echo "=== Done ==="
 ```
@@ -398,5 +399,5 @@ echo "=== Done ==="
 oma describe | jq '.command.subcommands[] | {name, description}'
 
 # 获取特定命令的详情
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

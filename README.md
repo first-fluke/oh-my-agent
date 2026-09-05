@@ -47,7 +47,7 @@ apm install first-fluke/oh-my-agent
 apm install first-fluke/oh-my-agent/.agents/skills/oma-frontend
 ```
 
-APM ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent:spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
+APM ships skills only. For workflows, rules, `oma-config.yaml`, keyword-detection hooks, and the `oma agent spawn` CLI, use `bunx oh-my-agent@latest`. Pick one distribution per project to avoid drift.
 
 </details>
 
@@ -198,6 +198,13 @@ Separate from the engineering team, oma ships content and research pipelines bui
 | **oma-voice** | Generates voiceovers and transcribes audio on-device, no cloud needed. |
 | **oma-web-research** | Web research with cited sources via the You.com MCP server, with a keyless free profile and a native-search fallback. |
 
+### Orca IDE
+
+[OMA for Orca](integrations/orca/README.md) adds a sidebar panel and command-palette
+actions for project setup, review, debugging, verification, and local results.
+It uses your existing Orca agent terminal and project OMA installation. Requires
+Orca 1.4.197+ with experimental plugins enabled.
+
 ## How It Works
 
 Just chat. Describe what you want and oh-my-agent figures out which agents to use.
@@ -257,11 +264,11 @@ Each mechanism below is mechanical: a command exits 0 or it doesn't, a file is o
 | Mechanism | What it mechanically checks | Where it lives |
 |-----------|------------------------------|----------------|
 | **Stop-hook gate** | Blocks session termination while a persistent workflow is active, and runs the configured gate script before allowing a stop. Only `typecheck`, `test`, and `lint` are executable — an agent that writes anything else into the state file gets it ignored, never run. Capped at 5 reinforcements so a permanently red gate can't trap you. | [`.agents/hooks/core/persistent-mode.ts`](./.agents/hooks/core/persistent-mode.ts) |
-| **Anti-Circumvention Gate** | `oma ralph:verify --json` checks four artifacts a shortcut can't fake: ultrawork's phase records, the plan JSON, a **distinct QA agent's** result file, and a **distinct refactor agent's** result file. Missing artifacts mean the phase did not run, whatever the narration says. | [`.agents/workflows/ralph.md`](./.agents/workflows/ralph.md) |
+| **Anti-Circumvention Gate** | `oma ralph verify --json` checks four artifacts a shortcut can't fake: ultrawork's phase records, the plan JSON, a **distinct QA agent's** result file, and a **distinct refactor agent's** result file. Missing artifacts mean the phase did not run, whatever the narration says. | [`.agents/workflows/ralph.md`](./.agents/workflows/ralph.md) |
 | **Independent judge** | Spawned as a separate agent with fresh context, briefed on the criteria only — never on what the implementer claims it fixed. Re-verifies **every** criterion each iteration, including prior PASSes, because fixing C2 is how C1 silently regresses. | [`judge-protocol.md`](./.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Event-sourced state** | Every gate pass, gate failure, and decision appends one JSON line to `.agents/state/sessions/{sid}/events.jsonl`, stamped with vendor and runtime session id. Append-only, cross-vendor, auditable after the run. | [`event-spec.md`](./.agents/skills/_shared/runtime/event-spec.md) |
 | **Per-agent check battery** | `oma verify <agent>` runs a shared core (scope violation, charter alignment, hardcoded secrets, TODO scan, declared outputs) plus type-specific checks (TypeScript strict, tests, raw SQL, Flutter analyze, inline styles). | `oma verify <agent>` |
-| **Skill eval harness** | `oma skills eval` measures utility lift on held-out tasks — treatment vs. baseline — instead of assuming a skill helps. `oma skills opt` keeps only edits that improve the measured lift. | [skill-eval guide](./web/docs/guide/skill-eval.md) |
+| **Skill eval harness** | `oma skill eval` measures utility lift on held-out tasks — treatment vs. baseline — instead of assuming a skill helps. `oma skill optimize` keeps only edits that improve the measured lift. | [skill-eval guide](./web/docs/guide/skill-eval.md) |
 
 Budgets are enforced the same way. `session.quota_cap` caps tokens, spawn count, and per-vendor spend; the orchestrator refuses the next spawn when a dimension is exceeded. When the wall-clock budget runs out, the Stop hook stops honestly with partial status recorded on the event log, rather than pretending completion.
 

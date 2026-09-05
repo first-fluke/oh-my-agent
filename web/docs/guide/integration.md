@@ -177,7 +177,7 @@ cp -r .agents/ /path/to/your/project/.agents/
 oma link
 ```
 
-`oma link` rebuilds `.claude/`, `.codex/`, `.gemini/`, and related vendor-native files from `.agents/agents/`. At runtime, OMA uses native dispatch only when the current runtime vendor matches the target vendor for that agent. Mixed-vendor setups still work, but non-matching agents fall back to external `oma agent:spawn`.
+`oma link` rebuilds `.claude/`, `.codex/`, `.gemini/`, and related vendor-native files from `.agents/agents/`. At runtime, OMA uses native dispatch only when the current runtime vendor matches the target vendor for that agent. Mixed-vendor setups still work, but non-matching agents fall back to external `oma agent spawn`.
 
 ### Step 3: configure user preferences
 
@@ -194,7 +194,7 @@ EOF
 ### Step 4: initialize memory directory
 
 ```bash
-oma memory:init
+oma memory init
 # Or manually:
 mkdir -p /path/to/your/project/.agents/state/memories
 ```
@@ -350,10 +350,10 @@ Quick setup:
 
 ```bash
 # Terminal dashboard (watches .agents/state/memories/ for changes)
-oma dashboard
+oma dashboard terminal
 
 # Web dashboard (browser-based, http://localhost:9847)
-oma dashboard:web
+oma dashboard web
 ```
 
 ---

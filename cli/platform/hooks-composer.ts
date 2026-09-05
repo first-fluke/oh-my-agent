@@ -59,7 +59,7 @@ export type {
  * `copyHookScripts` materializes just what the hookDir executes or reads at
  * runtime (hud.ts for statusLine/hud-only events, filter-test-output.sh for
  * test-filter — see requiredVariantScripts). Handler .ts files run in-process
- * inside `oma hook` and are NOT copied; the pi bridge, which spawns them as
+ * inside `oma hook run` and are NOT copied; the pi bridge, which spawns them as
  * subprocesses, gets the full set via its own composer (pi-extension-composer).
  * We no longer call `patchVendorHookTypes` or `patchVendorDetection` because
  * vendor identity is now a `--vendor` CLI argument, not a runtime detection.

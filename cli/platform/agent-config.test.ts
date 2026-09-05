@@ -282,20 +282,12 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
   );
 
   it.each(REQUIRED_PROTOCOL_VENDORS)(
-    "%s protocol prescribes a status line that checkStatus's regex can parse",
+    "%s protocol uses the common structured result contract",
     (vendor) => {
-      // Systemic defect found during repro: protocols documented Status as a
-      // sub-bullet (`- Status: completed`), which checkStatus's
-      // `^## Status:\s*(\S+)` regex never matches — so a failed run silently
-      // falls back to the "completed" default. Every external-dispatch protocol
-      // must prescribe the exact heading shape the parser actually reads.
       const protocol = loadExecutionProtocol(vendor, repoRoot);
-      // The status-parsing regex used by checkStatus (spawn-status.ts).
-      const statusRegex = /^## Status:\s*(\S+)/m;
-      // The example the protocol prescribes must itself match that regex.
-      expect(protocol).toMatch(/^## Status: completed$/m);
-      const match = protocol.match(statusRegex);
-      expect(match?.[1]).toBe("completed");
+      expect(protocol).toContain("# Agent Result Contract");
+      expect(protocol).toContain("agent verify");
+      expect(protocol).toContain("partial");
     },
   );
 
@@ -313,7 +305,7 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
       // (that dir is for human-facing deliverables: plans, bug reports, etc.),
       // nor to Serena's own memory dir (pinned to `.serena/memories`, which is
       // now knowledge-only).
-      expect(protocol).not.toContain(".agents/results/result-");
+      expect(protocol).toContain(".agents/state/agent-runs/");
       expect(protocol).not.toContain(".agents/results/progress-");
       expect(protocol).not.toContain(".agents/results/task-board");
       expect(protocol).not.toContain(".serena/memories/result-");
@@ -327,8 +319,8 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
     // contract applies to the native flow.
     const protocol = loadExecutionProtocol("claude", repoRoot);
     expect(protocol).toContain(".agents/state/memories");
-    expect(protocol).not.toContain(".agents/results/result-");
-    expect(protocol).toMatch(/^## Status: completed$/m);
+    expect(protocol).toContain(".agents/state/agent-runs/");
+    expect(protocol).toContain("# Agent Result Contract");
   });
 
   it("every exempt vendor is still a real VENDOR (no stale exemptions)", () => {
@@ -339,8 +331,10 @@ describe("loadExecutionProtocol — execution-protocol parity", () => {
     }
   });
 
-  it("returns empty string for an unknown vendor", () => {
-    expect(loadExecutionProtocol("does-not-exist", repoRoot)).toBe("");
+  it("loads the common policy even for a vendor without a transport protocol", () => {
+    expect(loadExecutionProtocol("does-not-exist", repoRoot)).toContain(
+      "# Execution Policy",
+    );
   });
 });
 

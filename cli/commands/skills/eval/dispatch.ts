@@ -96,7 +96,7 @@ export function runEvalDispatch(
         ? e.stderr.replace(/\s+/g, " ").trim().slice(0, 200)
         : "";
     console.warn(
-      `[oma skills eval] dispatch failed (exit ${e.status ?? "?"})${
+      `[oma skill eval] dispatch failed (exit ${e.status ?? "?"})${
         stderrSnippet ? `: ${stderrSnippet}` : ""
       }`,
     );
@@ -156,7 +156,7 @@ export function warnOnErrorEnvelope(output: string): boolean {
         ? `: ${parsed.result.replace(/\s+/g, " ").trim().slice(0, 160)}`
         : "";
     console.warn(
-      `[oma skills eval] dispatch returned an API error envelope${status}${reason} — this arm will score 0; do not trust or --record this run.`,
+      `[oma skill eval] dispatch returned an API error envelope${status}${reason} — this arm will score 0; do not trust or --record this run.`,
     );
     return true;
   } catch {
@@ -365,7 +365,7 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
   return (gradingPrompt: string) => {
     if (!judgeEgressWarned) {
       console.warn(
-        "[oma skills eval] DATA-EGRESS: candidate output is sent to the judge vendor for grading.",
+        "[oma skill eval] DATA-EGRESS: candidate output is sent to the judge vendor for grading.",
       );
       judgeEgressWarned = true;
     }

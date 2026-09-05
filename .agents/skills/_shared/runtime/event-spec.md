@@ -195,7 +195,7 @@ Optional payload fields:
 - `alternatives`
 - `evidence`
 
-> **Substitute real content.** Workflow files show `oma state:emit` commands as templates. When emitting, fill `decision` and `rationale` with the *actual* decision made in this run — the chosen option, the target file, the approve/skip outcome — never the literal template sentence. Only `subject` is a fixed key (the verifier matches on it); an audit log of identical boilerplate strings records that decisions happened but not what they were.
+> **Substitute real content.** Workflow files show `oma state emit` commands as templates. When emitting, fill `decision` and `rationale` with the *actual* decision made in this run — the chosen option, the target file, the approve/skip outcome — never the literal template sentence. Only `subject` is a fixed key (the verifier matches on it); an audit log of identical boilerplate strings records that decisions happened but not what they were.
 
 ### `decision.missing`
 
@@ -218,13 +218,13 @@ Required payload fields:
 
 ## Emitting Decisions
 
-Call `oma state:emit` **directly** at each required checkpoint — do not wrap it in a shell helper.
+Call `oma state emit` **directly** at each required checkpoint — do not wrap it in a shell helper.
 
 Every Bash tool call runs in a fresh shell, so a shell function defined in one call (such as the historical `oma_emit`) does not exist in the next call. The wrapper saved nothing over the underlying command and only produced "command not found" fallbacks, so it has been removed.
 
 Required decision example:
 
 ```bash
-oma state:emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved plan.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
-oma state:verify --workflow ultrawork --checkpoint plan-approved
+oma state emit "decision.made" '{"subject":"ultrawork.plan-approved","decision":"Proceed with the approved plan.","rationale":"PLAN_GATE passed and the user confirmed scope."}'
+oma state verify --workflow ultrawork --checkpoint plan-approved
 ```

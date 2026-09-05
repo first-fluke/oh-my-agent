@@ -93,4 +93,4 @@ Stop the dev server before exiting.
 - Do NOT modify the project source code.
 - Do NOT install missing dependencies beyond `npm install`.
 - If the build fails or the dev server cannot start, score everything 0 and explain in `overall_impression`.
-- Use the Chrome DevTools MCP tools (`navigate_page`, `take_screenshot`, etc.) — not Playwright or Puppeteer.
+- Use the Chrome DevTools MCP tools (`navigate_page`, `take_screenshot`, etc.).

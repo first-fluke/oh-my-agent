@@ -136,11 +136,11 @@ oh-my-agentはスキル/プロンプトローディングをサポートする�
 | ツール | 統合方法 | 並列エージェント |
 |------|-------------------|----------------|
 | **Claude Code** | ネイティブスキル + Agent tool | 真の並列処理にTask tool |
-| **Gemini CLI** | `.agents/skills/`からスキル自動ロード | `oma agent:spawn` |
+| **Gemini CLI** | `.agents/skills/`からスキル自動ロード | `oma agent spawn` |
 | **Codex CLI** | スキル自動ロード | モデル仲介並列リクエスト |
-| **Antigravity IDE** | スキル自動ロード | `oma agent:spawn` |
+| **Antigravity IDE** | スキル自動ロード | `oma agent spawn` |
 | **Cursor** | `.cursor/`統合によるスキル | 手動スポーン |
-| **OpenCode** | スキル + インプロセスプラグインブリッジ + 生成されたサブエージェント（`.opencode/agents/`） | `oma agent:spawn -m opencode` |
+| **OpenCode** | スキル + インプロセスプラグインブリッジ + 生成されたサブエージェント（`.opencode/agents/`） | `oma agent spawn --vendor opencode` |
 
 エージェントスポーンはベンダー検出プロトコルにより各ベンダーに自動適応します。これはベンダー固有のマーカーをチェックします（例：Claude CodeのAgent tool、Codex CLIの`apply_patch`）。
 
@@ -198,7 +198,7 @@ oh-my-agentはClaude Codeに限定されません。フックシステムは以�
 | ベンダー | 統合 |
 |--------|------------|
 | **Claude Code** | ネイティブフック（`UserPromptSubmit`、`Notification`、statusLine） |
-| **Gemini CLI** | `.agents/skills/`からスキル自動ロード、`oma agent:spawn`でエージェントスポーン |
+| **Gemini CLI** | `.agents/skills/`からスキル自動ロード、`oma agent spawn`でエージェントスポーン |
 | **Codex CLI** | スキル自動ロード、モデル仲介の並列リクエスト |
 | **Qwen Code** | ワークフロー検出のためのフックサポート |
 

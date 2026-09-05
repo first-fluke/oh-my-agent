@@ -111,7 +111,7 @@ const DEFAULT_SLIDE_HTML = `<!DOCTYPE html>
 const PLACEHOLDER_VIEWPORT_BASE_CSS = `/* viewport-base.css — minimal fallback
  * The canonical asset from .agents/skills/oma-slide/resources/assets/
  * could not be found. Reinstall or repair the oma-slide skill assets,
- * then re-run \`oma slide new --force\` to replace this fallback.
+ * then re-run \`oma slide create --force\` to replace this fallback.
  */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -129,7 +129,7 @@ html, body {
 const PLACEHOLDER_DECK_STAGE_JS = `/* deck-stage.js — minimal fallback
  * The canonical asset from .agents/skills/oma-slide/resources/assets/
  * could not be found. Reinstall or repair the oma-slide skill assets,
- * then re-run \`oma slide new --force\` to replace this fallback.
+ * then re-run \`oma slide create --force\` to replace this fallback.
  */
 (function () {
   var stage = document.querySelector('.deck-stage');
@@ -305,7 +305,7 @@ export async function runSlideNew(opts: {
     );
     console.log(
       color.yellow(
-        "           then re-run `oma slide new --force` to replace the fallbacks.",
+        "           then re-run `oma slide create --force` to replace the fallbacks.",
       ),
     );
   }
@@ -396,7 +396,7 @@ export function resolveWorkspace(dir: string): SlideWorkspace {
   const workDir = resolve(process.cwd(), dir);
   if (!existsSync(workDir)) {
     throw new Error(
-      `Slide workspace not found: "${workDir}". Run "oma slide new --dir ${dir}" first.`,
+      `Slide workspace not found: "${workDir}". Run "oma slide create --dir ${dir}" first.`,
     );
   }
   const metaPath = join(workDir, "meta.json");

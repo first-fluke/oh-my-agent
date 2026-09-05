@@ -182,8 +182,8 @@ description: 구조화된 5단계 디버그 루프, 심각도 분류, 에스컬�
 |:-------|:------------|
 | Claude Code | `.claude/agents/debug-investigator.md`를 쓰는 Agent 도구 |
 | Codex CLI | 모델이 중재하는 서브에이전트 요청, 결과는 JSON |
-| Gemini CLI | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
-| Antigravity / 폴백 | `oma agent:spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Gemini CLI | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
+| Antigravity / 폴백 | `oma agent spawn debug "scan prompt" {session_id} -w {workspace}` |
 
 유사한 취약 위치는 모두 보고합니다. 확인된 인스턴스는 같은 세션 안에서 함께 수정합니다.
 

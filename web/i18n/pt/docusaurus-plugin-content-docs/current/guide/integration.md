@@ -172,7 +172,7 @@ EOF
 ### Step 4: inicializar diretório de memória
 
 ```bash
-oma memory:init
+oma memory init
 # Ou manualmente:
 mkdir -p /path/to/your/project/.serena/memories
 ```
@@ -310,10 +310,10 @@ Setup rápido:
 
 ```bash
 # Dashboard no terminal (observa .serena/memories/ para mudanças)
-oma dashboard
+oma dashboard terminal
 
 # Dashboard web (baseado em browser, http://localhost:9847)
-oma dashboard:web
+oma dashboard web
 ```
 
 ---

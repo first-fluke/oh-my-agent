@@ -1,13 +1,13 @@
 /**
  * schedule/runner.ts
  *
- * `oma schedule:run <id>` wrapper.
+ * `oma schedule run <id>` wrapper.
  *
  * Responsibility chain per contract §3:
  * 1. Manifest lookup (missing → exit≠0 + stderr)
  * 1b. maxAgeDays expiry: a recurring job past its window self-removes instead of firing
  * 2. Load capturedEnvRef env if present
- * 3. Run: oma agent:spawn <agentId> <prompt|@promptPath> <sessionId> -m <vendor> -w <workspace>
+ * 3. Run: oma agent spawn <agentId> <prompt|@promptPath> <sessionId> -m <vendor> -w <workspace>
  * 4. Write result to ~/.agents/schedule/runs/<id>/<ISO-ts>.md
  * 5. Update lastFiredAt; if recurring=false self-remove (port.remove + manifest delete)
  * 6. On spawn auth-expiry failure: LOUD-FAIL (exit≠0, stderr "re-auth required: <vendor>")
@@ -163,7 +163,7 @@ export async function runScheduledJob(id: string): Promise<void> {
     }
   }
 
-  // 3. Build oma agent:spawn invocation
+  // 3. Build oma agent spawn invocation
   const sessionId = `schedule-${id}-${Date.now()}`;
 
   // prompt or @promptPath
@@ -174,11 +174,11 @@ export async function runScheduledJob(id: string): Promise<void> {
     promptArg = job.prompt ?? "";
   }
 
-  const spawnArgs = ["agent:spawn", job.agentId, promptArg, sessionId];
+  const spawnArgs = ["agent", "spawn", job.agentId, promptArg, sessionId];
   if (job.vendor) {
-    spawnArgs.push("-m", job.vendor);
+    spawnArgs.push("--vendor", job.vendor);
   }
-  spawnArgs.push("-w", job.workspace);
+  spawnArgs.push("--workspace", job.workspace);
 
   const mergedEnv: NodeJS.ProcessEnv = { ...process.env, ...extraEnv };
 

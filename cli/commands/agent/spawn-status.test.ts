@@ -3,6 +3,29 @@ import type * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { spawnAgent } from "./spawn-status.js";
 
+// Dispatch tests isolate the evidence store; real filesystem behavior is covered
+// in state/agent-results.test.ts and agent/results.integration.test.ts.
+vi.mock("../../state/agent-results.js", () => ({
+  beginAgentRun: vi.fn(() => ({
+    runId: "test-run",
+    taskId: "task",
+    sessionId: "session1",
+  })),
+  agentResultInstructions: vi.fn(() => ""),
+  finishAgentRun: vi.fn((_root, _id, code) => ({
+    status: code === 0 ? "completed" : "failed",
+    unresolved: [],
+  })),
+  listAgentRuns: vi.fn(() => []),
+  resultEvidenceValid: vi.fn(() => true),
+}));
+vi.mock("../../state/events.js", () => ({ emitEvent: vi.fn() }));
+
+vi.mock("../../platform/context-loader.js", async (original) => ({
+  ...(await original<typeof import("../../platform/context-loader.js")>()),
+  loadGraphContext: () => "",
+}));
+
 // Normalize Windows backslashes for cross-platform path string checks.
 const n = (s: string) => s.replace(/\\/g, "/");
 

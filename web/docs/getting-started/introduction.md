@@ -7,7 +7,7 @@ description: A comprehensive overview of oh-my-agent, the multi-agent orchestrat
 
 oh-my-agent is a multi-agent orchestration framework for AI-powered IDEs and CLI tools. Instead of relying on a single AI assistant for everything, oh-my-agent decomposes work across 21 specialized agents, each modeled after a real engineering team role with its own tech stack knowledge, execution protocols, error playbooks, and quality checklists.
 
-What separates it from a faster spawner is that agent work is checked mechanically rather than taken on trust. A Stop hook holds the session open until your project's own `typecheck` / `test` / `lint` script exits 0; `oma ralph:verify` decides whether a workflow really ran from the artifacts it left on disk; an independently spawned judge re-verifies every criterion — including ones that already passed — against silent regressions. Every gate decision is appended to a durable event log.
+What separates it from a faster spawner is that agent work is checked mechanically rather than taken on trust. A Stop hook holds the session open until your project's own `typecheck` / `test` / `lint` script exits 0; `oma ralph verify` decides whether a workflow really ran from the artifacts it left on disk; an independently spawned judge re-verifies every criterion — including ones that already passed — against silent regressions. Every gate decision is appended to a durable event log.
 
 The entire system lives in a portable `.agents/` directory inside your project. Switch between Claude Code, Gemini CLI, Codex CLI, Antigravity IDE, Cursor, or any other supported tool, and your agent configuration travels with your code.
 
@@ -79,7 +79,7 @@ oh-my-agent solves this with specialization:
 | **oma-translation** | Context-aware translation | 4-stage translation method: Analyze Source, Extract Meaning, Reconstruct in Target Language, Verify. Preserves tone, register, and domain terminology. Anti-AI pattern detection. Supports batch translation (i18n files). Optional 7-stage refined mode for publication quality. Per-target language profiles (`resources/lang/{code}.md`) carry register systems, typography, and language-specific translation-ese rules. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates via MCP memory, monitors progress, runs verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and Clarification Debt monitoring. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Handles branching strategies, merge/rebase/conflict workflows, worktrees, baselines, and release-state tracking. Also generates Conventional Commit messages with safe staging. Co-Author: `First Fluke <our.first.fluke@gmail.com>`. |
-| **oma-coordination** | Manual multi-agent workflow guide | Step-by-step coordination of PM, Frontend, Backend, Mobile, and QA agents via CLI `oma agent:spawn`. Always starts with PM decomposition, spawns same-priority tasks in parallel with separate workspaces, monitors `progress-{agent}.md`, aligns API/data contracts before frontend/mobile work, ends with QA review. The manual counterpart to `oma-orchestration`. |
+| **oma-coordination** | Manual multi-agent workflow guide | Step-by-step coordination of PM, Frontend, Backend, Mobile, and QA agents via CLI `oma agent spawn`. Always starts with PM decomposition, spawns same-priority tasks in parallel with separate workspaces, monitors `progress-{agent}.md`, aligns API/data contracts before frontend/mobile work, ends with QA review. The manual counterpart to `oma-orchestration`. |
 
 ### Search, retrospective, and document processing
 
@@ -108,7 +108,7 @@ oh-my-agent solves this with specialization:
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-docs** | Documentation drift detector | `verify` mode deterministically checks `docs/**/*.md` for broken refs (file paths, CLI commands, config keys, env vars, scripts) and exits 0/1; `sync` mode correlates a git diff to candidate docs and drafts host-LLM patch proposals confirmed per-doc (never auto-applies). URL checking delegated to `lychee`; CLI emits structured JSON, host LLM does all synthesis (no vendor SDK calls). Never modifies `.agents/`. |
-| **oma-skill-creation** | SSL-lite skill authoring specialist | Creates, updates, and audits OMA skills in the SSL-lite format with the four mandatory sections (Scheduling / Structural Flow / Logical Operations / References). Classifies skill type, inserts exactly one inline canonical path, enforces `When NOT to use` cross-routes, and runs `oma skills audit` to catch description collisions (warn ≥ 60%, fail ≥ 75% TF-IDF cosine). Pushes long variant detail into `resources/`. |
+| **oma-skill-creation** | SSL-lite skill authoring specialist | Creates, updates, and audits OMA skills in the SSL-lite format with the four mandatory sections (Scheduling / Structural Flow / Logical Operations / References). Classifies skill type, inserts exactly one inline canonical path, enforces `When NOT to use` cross-routes, and runs `oma skill audit` to catch description collisions (warn ≥ 60%, fail ≥ 75% TF-IDF cosine). Pushes long variant detail into `resources/`. |
 
 ### Market research
 
@@ -175,12 +175,12 @@ oh-my-agent works with any AI-powered IDE or CLI that supports skill/prompt load
 | Tool | Integration Method | Parallel Agents |
 |------|-------------------|----------------|
 | **Claude Code** | Native skills + Agent tool | Task tool for true parallelism |
-| **Gemini CLI** | Skills auto-loaded from `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Skills auto-loaded from `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Skills auto-loaded | Model-mediated parallel requests |
-| **Antigravity IDE** | Skills auto-loaded | `oma agent:spawn` |
+| **Antigravity IDE** | Skills auto-loaded | `oma agent spawn` |
 | **Cursor** | Skills via `.cursor/` integration | Manual spawning |
-| **OpenCode** | Skills + in-process plugin bridge + generated subagents (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
-| **Kimi Code CLI** | Hooks + skills in `~/.kimi-code/` (consent-gated HOME write; also reads SSOT `.agents/skills/` natively); project-scoped Serena MCP | `oma agent:spawn -m kimi` |
+| **OpenCode** | Skills + in-process plugin bridge + generated subagents (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
+| **Kimi Code CLI** | Hooks + skills in `~/.kimi-code/` (consent-gated HOME write; also reads SSOT `.agents/skills/` natively); project-scoped Serena MCP | `oma agent spawn --vendor kimi` |
 
 Agent spawning adapts to each vendor automatically via the vendor detection protocol, which checks for vendor-specific markers (e.g., the `Agent` tool for Claude Code, `apply_patch` for Codex CLI).
 
@@ -228,13 +228,13 @@ You do not need to type `/command` to trigger workflows. oh-my-agent's hook syst
 - **Explicit `/command`** → hook skips detection to avoid duplication
 - **Persistent workflows** reinject context on every message until you say "workflow done"
 
-Every hook event is delivered through the `oma hook` canonical ABI: the vendor fires `oma-hook.sh --vendor <v> --event <nativeEvent>`, which routes to the in-process handler chain and emits the vendor-specific dialect on stdout (always exit 0, fail-open).
+Every hook event is delivered through the `oma hook run` canonical ABI: the vendor fires `oma-hook.sh --vendor <v> --event <nativeEvent>`, which routes to the in-process handler chain and emits the vendor-specific dialect on stdout (always exit 0, fail-open).
 
 ---
 
 ## Cross-vendor support
 
-oh-my-agent is not limited to Claude Code. All hook-model vendors share the same `oma hook` ABI:
+oh-my-agent is not limited to Claude Code. All hook-model vendors share the same `oma hook run` ABI:
 
 | Vendor | Hook delivery | StatusLine |
 |--------|--------------|------------|
@@ -247,7 +247,7 @@ oh-my-agent is not limited to Claude Code. All hook-model vendors share the same
 | **Kiro** | `oma-hook.sh --vendor kiro --event userPromptSubmit` / `preToolUse` / `stop` | — |
 | **Kimi Code** | `oma-hook.sh --vendor kimi --event UserPromptSubmit` / `PreToolUse` / `Stop` (global-only TOML `[[hooks]]` in `~/.kimi-code/config.toml`) | — |
 | **Antigravity** | `oma-hook.sh --vendor antigravity --event PreInvocation` / `PreToolUse` / `Stop` | — |
-| **pi** | In-process bridge (`installPiExtension`) — not routed through `oma hook` | — |
+| **pi** | In-process bridge (`installPiExtension`) — not routed through `oma hook run` | — |
 
 Skills and workflows are auto-loaded from `.agents/` for all vendors. Vendor detection happens automatically. Agents adapt their spawning method based on the detected runtime environment.
 

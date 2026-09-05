@@ -136,11 +136,11 @@ oh-my-agent funciona com qualquer IDE ou CLI com IA que suporte carregamento de 
 | Ferramenta | Método de Integração | Agentes Paralelos |
 |------------|-------------------------|-------------------|
 | **Claude Code** | Habilidades nativas + Agent tool | Task tool para paralelismo real |
-| **Gemini CLI** | Habilidades auto-carregadas de `.agents/skills/` | `oma agent:spawn` |
+| **Gemini CLI** | Habilidades auto-carregadas de `.agents/skills/` | `oma agent spawn` |
 | **Codex CLI** | Habilidades auto-carregadas | Requisições paralelas mediadas por modelo |
-| **Antigravity IDE** | Habilidades auto-carregadas | `oma agent:spawn` |
+| **Antigravity IDE** | Habilidades auto-carregadas | `oma agent spawn` |
 | **Cursor** | Habilidades via integração `.cursor/` | Execução manual |
-| **OpenCode** | Habilidades + bridge de plugin in-process + subagentes gerados (`.opencode/agents/`) | `oma agent:spawn -m opencode` |
+| **OpenCode** | Habilidades + bridge de plugin in-process + subagentes gerados (`.opencode/agents/`) | `oma agent spawn --vendor opencode` |
 
 A execução de agentes se adapta automaticamente a cada fornecedor via protocolo de detecção de vendor, que verifica marcadores específicos (ex: a ferramenta `Agent` para Claude Code, `apply_patch` para Codex CLI).
 
@@ -197,7 +197,7 @@ oh-my-agent não está limitado ao Claude Code. O sistema de hooks suporta:
 | Vendor | Integração |
 |--------|------------|
 | **Claude Code** | Hooks nativos (`UserPromptSubmit`, `Notification`, statusLine) |
-| **Gemini CLI** | Skills auto-carregadas de `.agents/skills/`, spawning de agentes via `oma agent:spawn` |
+| **Gemini CLI** | Skills auto-carregadas de `.agents/skills/`, spawning de agentes via `oma agent spawn` |
 | **Codex CLI** | Skills auto-carregadas, requisições paralelas mediadas pelo modelo |
 | **Qwen Code** | Suporte a hooks para detecção de workflow |
 

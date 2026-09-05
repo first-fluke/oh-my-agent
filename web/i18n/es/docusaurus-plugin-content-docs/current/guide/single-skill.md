@@ -306,7 +306,7 @@ Observa estas senales que indican que deberias cambiar de skill individual a eje
 | El CHARTER_CHECK del agente muestra elementos "Must NOT do" que realmente se necesitan | El alcance excede un dominio | Planificar la funcionalidad completa con `/plan` primero |
 | La correccion se propaga a 3+ archivos en diferentes capas | Una correccion afecta multiples dominios | Usar `/debug` con alcance mas amplio, o `/work` |
 | El agente descubre un desajuste en el contrato API | Desacuerdo frontend/backend | Ejecutar `/plan` para definir contratos, luego regenerar ambos agentes |
-| La puerta de calidad falla en puntos de integracion | Los componentes no se conectan correctamente | Agregar paso de revision QA: `oma agent:spawn qa "Review integration"` |
+| La puerta de calidad falla en puntos de integracion | Los componentes no se conectan correctamente | Agregar paso de revision QA: `oma agent spawn qa "Review integration"` |
 | La tarea crece de "un componente" a "tres componentes + nueva ruta + API" | Ampliacion del alcance durante la ejecucion | Detener, ejecutar `/plan` para descomponer, luego `/orchestrate` |
 | El agente se bloquea con clarificacion HIGH | Requisitos fundamentalmente ambiguos | Responder las preguntas del agente o ejecutar `/brainstorm` para clarificar el enfoque |
 

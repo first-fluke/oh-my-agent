@@ -60,7 +60,7 @@ oma image generate "test prompt" --dry-run
 oma image doctor
 
 # 列出已注册的供应商及其支持的模型
-oma image list-vendors
+oma image vendor list
 ```
 
 `oma img` 是 `oma image` 的别名。
@@ -111,7 +111,7 @@ oma image list-vendors
 其他技能（设计、营销、文档）将该管线作为共享基础设施调用，并使用 JSON 输出：
 
 ```bash
-oma image generate "<prompt>" --format json
+oma image generate "<prompt>" --output json
 ```
 
 写入 stdout 的 manifest 包含输出路径、供应商、模型和成本，便于解析与串联。
@@ -132,7 +132,7 @@ oma image generate "<prompt>"
   [--dry-run] [--format text|json]
 
 oma image doctor
-oma image list-vendors
+oma image vendor list
 ```
 
 ### 关键 Flag

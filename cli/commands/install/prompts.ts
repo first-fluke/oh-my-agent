@@ -11,7 +11,6 @@ import {
   vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
-import type { DevToolsBrowser } from "../../vendors/serena.js";
 import {
   getExistingLanguage,
   getExistingPreset,
@@ -23,7 +22,7 @@ import {
  * `mixed` is intentionally excluded — it is a cross-vendor meta-preset, not a
  * single vendor. A vendor in this set has a matching preset; a vendor outside
  * it (OpenCode, grok, kiro, copilot, pi, …) relies on native subagent dispatch
- * and only needs `model_preset` for the cross-vendor `oma agent:spawn` fallback.
+ * and only needs `model_preset` for the cross-vendor `oma agent spawn` fallback.
  */
 export const PRESET_BACKED_VENDORS = [
   "claude",
@@ -143,13 +142,13 @@ export async function promptModelPreset(
 
   // When the user selected only native-dispatch vendors (e.g. OpenCode) that
   // have no matching single-vendor preset, model_preset only affects the
-  // cross-vendor `oma agent:spawn` fallback. Make the step optional so these
+  // cross-vendor `oma agent spawn` fallback. Make the step optional so these
   // users aren't forced into a misleading single-vendor preset (#580).
   if (selectedPresetVendors(vendors).length === 0) {
     p.log.info(
       pc.dim(
         "Selected CLI(s) use native subagent dispatch. model_preset only " +
-          "affects the cross-vendor 'oma agent:spawn' fallback.",
+          "affects the cross-vendor 'oma agent spawn' fallback.",
       ),
     );
     const configure = await p.confirm({
@@ -246,7 +245,7 @@ export async function promptVendors(
     {
       value: "pi",
       label: "pi (Earendil)",
-      hint: "in-process extension bridge — .pi/extensions/oma/",
+      hint: "extension bridge + browser MCP via pi-mcp-adapter",
     },
     ...(allowHomeWriteVendors
       ? [
@@ -258,7 +257,7 @@ export async function promptVendors(
           {
             value: "hermes" as const,
             label: "Hermes Agent",
-            hint: "skills only — workflows N/A, HOME-shared (no per-project isolation)",
+            hint: "skills + browser MCP — HOME-shared (no per-project isolation)",
           },
           {
             value: "kimi" as const,
@@ -271,7 +270,7 @@ export async function promptVendors(
     {
       value: "zcode",
       label: "ZCode",
-      hint: "workflow slash-commands",
+      hint: "workflow slash-commands + browser MCP",
     },
   ];
 
@@ -495,39 +494,4 @@ export async function selectClisWithConsent(
   return selectedClis;
 }
 
-export async function promptDevToolsBrowsers(
-  nonInteractive: boolean,
-  cleanup: () => void,
-): Promise<DevToolsBrowser[]> {
-  const defaultBrowsers: DevToolsBrowser[] = ["chrome"];
-
-  if (nonInteractive) {
-    return defaultBrowsers;
-  }
-
-  const selected = await p.multiselect({
-    message: "Select Browser DevTools MCP servers to enable:",
-    options: [
-      {
-        value: "chrome",
-        label: "Chrome DevTools MCP",
-        hint: "npx -y chrome-devtools-mcp@latest --no-usage-statistics --isolated",
-      },
-      {
-        value: "firefox",
-        label: "Firefox DevTools MCP",
-        hint: "npx -y @mozilla/firefox-devtools-mcp@latest --autoProfile",
-      },
-    ],
-    initialValues: defaultBrowsers,
-    required: false,
-  });
-
-  if (p.isCancel(selected)) {
-    cleanup();
-    p.cancel("Cancelled.");
-    process.exit(0);
-  }
-
-  return (selected as DevToolsBrowser[]) ?? defaultBrowsers;
-}
+export { promptDevToolsBrowsers } from "../../platform/browser-prompts.js";

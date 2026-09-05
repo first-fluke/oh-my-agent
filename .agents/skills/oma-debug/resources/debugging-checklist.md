@@ -358,7 +358,7 @@ this condensed form is sufficient:
 
 - **Browser DevTools**: F12 (Console, Network, React DevTools)
 - **Serena MCP**: find_symbol, search_for_pattern, find_referencing_symbols
-- **Browser automation** (Playwright, Chrome DevTools MCP, or vendor browser tools): Automated testing and reproduction
+- **Browser automation**: Browser verification uses the installed MCPs selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; use `oma update mcp` to change them. Discover the selected server’s actual tools before use; tool names and capabilities differ between servers. An empty selection disables browser MCP verification; report any unverified UI checks.
 - **React Profiler**: Performance analysis
 - **Lighthouse**: Performance audit
 - **Git bisect**: Find when bug was introduced

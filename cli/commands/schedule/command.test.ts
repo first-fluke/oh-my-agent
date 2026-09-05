@@ -94,7 +94,12 @@ describe("schedule:add", () => {
     );
     expect(upsertSpy).toHaveBeenCalledTimes(1);
     const spec = upsertSpy.mock.calls[0]?.[0];
-    expect(spec?.command).toEqual(["oma", "schedule:run", "sch_testid01234"]);
+    expect(spec?.command).toEqual([
+      "oma",
+      "schedule",
+      "run",
+      "sch_testid01234",
+    ]);
     expect(spec?.label).toBe("dev.oma.sch_testid01234");
 
     expect(manifestMock.addJob).toHaveBeenCalledTimes(1);

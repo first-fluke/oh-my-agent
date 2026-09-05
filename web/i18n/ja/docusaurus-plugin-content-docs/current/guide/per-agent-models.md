@@ -225,7 +225,7 @@ session:
 `-m opencode`オーバーライドで、任意のエージェントをopencode経由でルーティングします。
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 これは`opencode run --agent pm --dir <workspace> "<prompt>"`を実行します。プロンプトは**末尾の位置引数**です。opencodeの`-p`フラグはプロンプトではなく`--password`を意味します。
@@ -270,15 +270,15 @@ agents:
 opencodeのカタログはサブスクリプションおよびログインによってゲートされるため、omaはopencodeのモデルslugをハードコード**しません**。インストール済みカタログに対して検証してください。
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-`oma model:probe`は、slugが`opencode models`によって列挙されている場合は`accepted`を、列挙されていない場合は`rejected`を、プロバイダーがログインまたはサブスクリプションを必要とする場合は`auth_required`を報告します。
+`oma model probe`は、slugが`opencode models`によって列挙されている場合は`accepted`を、列挙されていない場合は`rejected`を、プロバイダーがログインまたはサブスクリプションを必要とする場合は`auth_required`を報告します。
 
 ### 認証と生成ファイル
 
-- **認証：** `opencode auth login`は資格情報を`~/.local/share/opencode/auth.json`に保存します。`oma auth:status` / `oma doctor`は、他のCLIと並べてopencodeの認証を報告します（ベンダーレベルでは、いずれかのプロバイダーに資格情報があれば認証済みと報告します）。一方、`oma doctor --profile`はプロバイダーを区別し、各行を登録済み`cli_model`のプロバイダー接頭辞で確認します。そのため`cli_model: zai-coding-plan/glm-5.3`のモデルは`zai-coding-plan`の資格情報で確認されます。登録済みの`provider/model`形式の`cli_model`を持たない行は、認証失敗と断定せず`? unknown`と報告します。
+- **認証：** `opencode auth login`は資格情報を`~/.local/share/opencode/auth.json`に保存します。`oma auth status` / `oma doctor`は、他のCLIと並べてopencodeの認証を報告します（ベンダーレベルでは、いずれかのプロバイダーに資格情報があれば認証済みと報告します）。一方、`oma doctor --profile`はプロバイダーを区別し、各行を登録済み`cli_model`のプロバイダー接頭辞で確認します。そのため`cli_model: zai-coding-plan/glm-5.3`のモデルは`zai-coding-plan`の資格情報で確認されます。登録済みの`provider/model`形式の`cli_model`を持たない行は、認証失敗と断定せず`? unknown`と報告します。
 - **生成ファイル：** `oma link`（または`oma link opencode`）は、エージェントごとに1つの`.opencode/agents/<id>.md`ペルソナと、`.opencode/plugins/oma/`ブリッジを書き出します。これらは`.agents/` SSOTから生成されるため、直接編集せず、`oma link`を再実行して再生成してください。
 
 > **永続ワークフローに関する注意：** opencodeの`session.idle`イベント（Claudeの`Stop`フックに最も近い対応物）は通知専用であり、セッションの終了をブロックできません。そのため、永続ワークフロー（orchestrate / work / ultrawork）はopencode下では**Stopセマンティクスが低下した状態**で動作します。ワークフローの補強は、セッションを開いたまま保持するのではなく、次のメッセージ時に行われます。

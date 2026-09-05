@@ -25,17 +25,17 @@ Wiele poleceń obsługuje wyjście maszynowe dla pipeline CI/CD i automatyzacji.
 ### 1. Flaga --json
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-Dostępna na: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+Dostępna na: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. Flaga --output
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -45,7 +45,7 @@ Akceptuje `text` lub `json`. Pozwala jawnie zażądać tekstu gdy zmienna środo
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # wyjście JSON
+oma stats get    # wyjście JSON
 oma doctor   # wyjście JSON
 ```
 
@@ -86,11 +86,11 @@ Format argumentu window: `7d` (7 dni), `2w` (2 tygodnie), `1m` (1 miesiąc).
 
 **Co jest czyszczone:** Osierocone pliki PID (`/tmp/subagent-*.pid`), logi (`/tmp/subagent-*.log`), katalogi Gemini Antigravity.
 
-### agent:spawn
+### agent spawn
 
 | Flaga | Skrót | Opis |
 |:-----|:------|:-----------|
-| `--model` | `-m` | Nadpisanie dostawcy CLI. Musi być: `antigravity`, `claude`, `codex`, `qwen`. |
+| `--vendor` | — | Nadpisanie dostawcy CLI. Musi być: `antigravity`, `claude`, `codex`, `qwen`. |
 | `--workspace` | `-w` | Katalog roboczy. Auto-wykrywany z konfiguracji monorepo jeśli pominięty. |
 
 **Zachowanie specyficzne dla dostawcy:**
@@ -103,23 +103,23 @@ Format argumentu window: `7d` (7 dni), `2w` (2 tygodnie), `1m` (1 miesiąc).
 | codex | `codex` | `--full-auto` | (brak — prompt pozycyjny) |
 | qwen | `qwen` | `--yolo` | `-p` |
 
-### agent:status
+### agent status
 
 | Flaga | Skrót | Opis |
 |:-----|:------|:-----------|
 | `--root` | `-r` | Ścieżka główna do lokalizacji plików pamięci i PID. |
 
-### agent:parallel
+### agent parallel
 
 | Flaga | Skrót | Opis |
 |:-----|:------|:-----------|
-| `--model` | `-m` | Nadpisanie dostawcy dla wszystkich agentów. |
+| `--vendor` | — | Nadpisanie dostawcy dla wszystkich agentów. |
 | `--inline` | `-i` | Interpretuj argumenty jako ciągi `agent:task[:workspace]`. |
 | `--no-wait` | | Tryb w tle. Uruchom i powróć natychmiast. |
 
 Format inline: `agent:task` lub `agent:task:workspace`. Workspace wykrywany gdy ostatni segment zaczyna się od `./` lub `/`.
 
-### memory:init
+### memory init
 
 | Flaga | Opis |
 |:-----|:-----------|
@@ -144,14 +144,14 @@ oma doctor --json | jq '.healthy'
 ### Automatyczne zbieranie metryk
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### Wsadowe wykonanie agentów z monitoringiem statusu
 ```bash
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### Czyszczenie w CI po testach
@@ -178,13 +178,13 @@ oma retro 2w --json > sprint-retro-$(date +%Y%m%d).json
 set -e
 echo "=== Kontrola zdrowia oh-my-agent ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "BRAK" end)"'
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
-oma stats --json | jq -r '"Sesje: \(.sessions), Zadania: \(.tasksCompleted)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma stats get --json | jq -r '"Sesje: \(.sessions), Zadania: \(.tasksCompleted)"'
 echo "=== Gotowe ==="
 ```
 
 ### Describe do introspekcji agentów
 ```bash
 oma describe | jq '.command.subcommands[] | {name, description}'
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

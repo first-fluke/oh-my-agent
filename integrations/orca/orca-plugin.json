@@ -1,0 +1,51 @@
+{
+  "manifestVersion": 1,
+  "id": "oma",
+  "publisher": "first-fluke",
+  "name": "OMA for Orca",
+  "version": "0.1.0",
+  "description": "Use OMA project skills, review, debugging and verification in your existing Orca agent terminals.",
+  "author": { "name": "First Fluke", "url": "https://github.com/first-fluke" },
+  "repository": "https://github.com/first-fluke/oh-my-agent",
+  "engines": { "orca": ">=1.4.197" },
+  "pluginApi": 1,
+  "main": "main.mjs",
+  "contributes": {
+    "panels": [
+      {
+        "id": "oma",
+        "title": "OMA",
+        "icon": "workflow",
+        "entry": "panel.html"
+      }
+    ],
+    "commands": [
+      {
+        "id": "oma.connect",
+        "title": "OMA: Connect project",
+        "context": "worktree"
+      },
+      {
+        "id": "oma.review",
+        "title": "OMA: Review changes",
+        "context": "worktree"
+      },
+      {
+        "id": "oma.debug",
+        "title": "OMA: Diagnose and fix",
+        "context": "worktree"
+      },
+      {
+        "id": "oma.verify",
+        "title": "OMA: Verify changes",
+        "context": "worktree"
+      },
+      {
+        "id": "oma.results",
+        "title": "OMA: Show results",
+        "context": "worktree"
+      }
+    ]
+  },
+  "capabilities": [{ "kind": "workspace:read" }, { "kind": "terminal:send" }]
+}

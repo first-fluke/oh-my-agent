@@ -19,6 +19,7 @@ cli/
     settings.ts
     index.ts                     Vendor registry (cli/vendors/index.ts)
   platform/                      SSOT installer: writes vendor files from .agents/
+  state/                         agent execution evidence, memory adapter, state API compatibility exports
   io/                            external I/O adapters (github, tarball, serena, mcp-bridge, http, git)
   utils/                         shared helpers (cli-framework, process-signals, frontmatter, time-window, competitors, graph, config, fs)
   types/  constants/              shared primitives
@@ -34,6 +35,10 @@ cli/
 4. `vendors/<vendor>/` owns everything vendor-specific. Other packages iterate via the `Vendor` registry in `vendors/index.ts`.
 5. `platform/` is the only package that writes vendor files from `.agents/` SSOT.
 6. Tests colocate with the unit under test (`<slice>/<name>.test.ts`).
+
+The canonical event envelope, durable writes, session index operations, and metadata reducer live in `.agents/hooks/core/state-core.ts`. CLI `state/events.ts` adds the asynchronous memory adapter; standalone hooks use the same core through compatibility exports. `state-index-lock.ts` serializes index updates across CLI and hook processes. Keep the core dependency-free so installed standalone hooks can load it.
+
+Agent runs use `state/agent-results.ts` for structured claims, actual verification receipts, and content hashes. See [execution evidence and graph queries](../docs/migrations/execution-evidence.md) for usage and migration from Markdown-only completion.
 
 ## Path alias
 

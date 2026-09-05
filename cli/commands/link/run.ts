@@ -39,10 +39,14 @@ import {
   vendorSkillsDir,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
-import { isTelemetryEnabled } from "../../utils/config.js";
+import {
+  isTelemetryEnabled,
+  loadDevToolsBrowsers,
+} from "../../utils/config.js";
 import { safeWriteJson } from "../../utils/safe-write.js";
 import { installAntigravityHud } from "../../vendors/antigravity/hud.js";
 import { applyAntigravityMcpConfig } from "../../vendors/antigravity/mcp.js";
+import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
 import type { ClaudeMcpServer } from "../../vendors/claude/mcp.js";
 import {
   applyClaudeMcp,
@@ -232,6 +236,16 @@ export function link(opts: LinkOptions = {}): LinkResult {
     new Set<string>([...readVendorsFromConfig(root), ...configuredVendors]),
   );
   const hookVendors = configuredVendors.filter(isHookVendor);
+  const syncBrowsers = (): void => {
+    const browsers = loadDevToolsBrowsers(root);
+    if (browsers === undefined) return;
+    for (const path of syncBrowserMcp(root, browsers, configuredVendors, {
+      global: safeGetInstallMode() === "global",
+      dryRun,
+    })) {
+      record(path, "write", "browser MCP selection");
+    }
+  };
   // Extension-model vendors (pi) install via a forked path, not the
   // settings-file hook flow. Match through the extension-vendor guard so they
   // stay out of the hook-vendor pipeline.
@@ -251,6 +265,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     if (!quiet) {
       console.log(`${pc.yellow("⚠")} No vendors to link.`);
     }
+    syncBrowsers();
     return empty;
   }
 
@@ -343,6 +358,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
   if (hookVendors.length === 0) {
     // Only extension / workflow-only vendors were configured; their
     // bridge / prompts / commands are installed above.
+    syncBrowsers();
     if (dryRun && !quiet) {
       renderLinkPlan(plan, root);
     }
@@ -690,6 +706,8 @@ export function link(opts: LinkOptions = {}): LinkResult {
       disableCursorAgentAttribution();
     }
   }
+
+  syncBrowsers();
 
   // 6. Merge vendor documentation (CLAUDE.md, AGENTS.md)
   const mergedDocs: string[] = [];

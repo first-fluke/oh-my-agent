@@ -26,17 +26,17 @@ description: 모든 CLI 옵션의 종합 레퍼런스입니다. 전역 플래그
 ### 1. --json 플래그
 
 ```bash
-oma stats --json
+oma stats get --json
 oma doctor --json
 oma cleanup --json
 ```
 
-`--json` 플래그는 JSON 출력을 얻는 가장 간단한 방법입니다. 사용 가능한 명령: `doctor`, `stats`, `retro`, `cleanup`, `auth:status`, `memory:init`, `verify`, `visualize`.
+`--json` 플래그는 JSON 출력을 얻는 가장 간단한 방법입니다. 사용 가능한 명령: `doctor`, `stats`, `retro`, `cleanup`, `auth status`, `memory init`, `verify`, `visualize`.
 
 ### 2. --output 플래그
 
 ```bash
-oma stats --output json
+oma stats get --output json
 oma doctor --output text
 ```
 
@@ -48,7 +48,7 @@ oma doctor --output text
 
 ```bash
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats    # JSON 출력
+oma stats get    # JSON 출력
 oma doctor   # JSON 출력
 oma retro    # JSON 출력
 ```
@@ -65,8 +65,8 @@ oma retro    # JSON 출력
 | `stats` | 예 | 예 | 전체 메트릭 객체 |
 | `retro` | 예 | 예 | 메트릭, 작성자, 커밋 타입이 포함된 스냅샷 |
 | `cleanup` | 예 | 예 | 정리된 항목 목록 |
-| `auth:status` | 예 | 예 | CLI별 인증 상태 |
-| `memory:init` | 예 | 예 | 초기화 결과 |
+| `auth status` | 예 | 예 | CLI별 인증 상태 |
+| `memory init` | 예 | 예 | 초기화 결과 |
 | `verify` | 예 | 예 | 검사별 검증 결과 |
 | `visualize` | 예 | 예 | JSON 형태의 의존성 그래프 |
 | `describe` | 항상 JSON | 해당 없음 | 항상 JSON 출력 (인트로스펙션 명령) |
@@ -133,7 +133,8 @@ oma update [-f | --force] [--ci]
 ### stats
 
 ```
-oma stats [--json] [--output <format>] [--reset]
+oma stats get [--json] [--output <format>]
+oma stats reset
 ```
 
 | 플래그 | 설명 | 기본값 |
@@ -173,15 +174,15 @@ oma cleanup [--dry-run] [-y | --yes] [--json] [--output <format>]
 2. 고아 로그 파일: 죽은 PID에 매칭되는 `/tmp/subagent-*.log`.
 3. Gemini Antigravity 디렉토리: `.gemini/antigravity/brain/`, `.gemini/antigravity/implicit/`, `.gemini/antigravity/knowledge/`. 이 디렉토리는 시간이 지남에 따라 상태가 누적되어 커질 수 있습니다.
 
-### agent:spawn
+### agent spawn
 
 ```
-oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
+oma agent spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 ```
 
 | 플래그 | 축약 | 설명 | 기본값 |
 |:-------|:-----|:-----|:-------|
-| `--model` | `-m` | CLI 벤더 오버라이드. `antigravity`, `claude`, `codex`, `qwen` 중 하나여야 합니다. 모든 설정 기반 벤더 해석을 오버라이드합니다. | 설정에서 해석 |
+| `--vendor` | — | CLI 벤더 오버라이드. `antigravity`, `claude`, `codex`, `qwen` 중 하나여야 합니다. 모든 설정 기반 벤더 해석을 오버라이드합니다. | 설정에서 해석 |
 | `--workspace` | `-w` | 에이전트의 작업 디렉토리. 생략하거나 `.`로 설정하면 CLI가 모노레포 설정 파일(pnpm-workspace.yaml, package.json, lerna.json, nx.json, turbo.json, mise.toml)에서 워크스페이스를 자동 감지합니다. | 자동 감지 또는 `.` |
 
 **유효성 검사:**
@@ -201,10 +202,10 @@ oma agent:spawn <agent-id> <prompt> <session-id> [-m <vendor>] [-w <workspace>]
 
 이 기본값은 `.agents/skills/oma-orchestration/config/cli-config.yaml`에서 오버라이드할 수 있습니다.
 
-### agent:status
+### agent status
 
 ```
-oma agent:status <session-id> [agent-ids...] [-r <root>]
+oma agent status <session-id> [agent-ids...] [-r <root>]
 ```
 
 | 플래그 | 축약 | 설명 | 기본값 |
@@ -216,15 +217,15 @@ oma agent:status <session-id> [agent-ids...] [-r <root>]
 2. `/tmp/subagent-{session-id}-{agent}.pid`에 PID 파일이 존재하면: PID가 살아 있는지 확인합니다. 살아 있으면 `running`, 죽었으면 `crashed`로 보고합니다.
 3. 어느 파일도 존재하지 않으면: `crashed`로 보고합니다.
 
-### agent:parallel
+### agent parallel
 
 ```
-oma agent:parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
+oma agent parallel [tasks...] [-m <vendor>] [-i | --inline] [--no-wait]
 ```
 
 | 플래그 | 축약 | 설명 | 기본값 |
 |:-------|:-----|:-----|:-------|
-| `--model` | `-m` | 모든 생성된 에이전트에 적용되는 CLI 벤더 오버라이드. | 설정에서 에이전트별로 해석 |
+| `--vendor` | — | 모든 생성된 에이전트에 적용되는 CLI 벤더 오버라이드. | 설정에서 에이전트별로 해석 |
 | `--inline` | `-i` | 태스크 인자를 파일 경로가 아닌 `agent:task[:workspace]` 문자열로 해석합니다. | `false` |
 | `--no-wait` | | 백그라운드 모드. 모든 에이전트를 시작하고 완료를 기다리지 않고 즉시 반환합니다. PID 목록과 로그는 `.agents/results/parallel-{timestamp}/`에 저장됩니다. | `false` (완료 대기) |
 
@@ -298,7 +299,7 @@ oma image <subcommand> [...]
 | `--count <n>` | `-n` | 이미지 개수, 1..5. | `1` |
 | `--out <dir>` | | 출력 디렉토리. `--allow-external-out`이 설정되지 않으면 `$PWD` 내부에 있어야 합니다. | `.agents/results/images/{timestamp}/` |
 | `--allow-external-out` | | `--out` 경로가 `$PWD` 외부에 있는 것을 허용합니다. | `false` |
-| `--model <name>` | | 벤더별 모델 오버라이드 (예: `gpt-image-2`, `flux`, `imagen-4`). | 벤더 기본값 |
+| `--vendor <name>` | | 벤더별 모델 오버라이드 (예: `gpt-image-2`, `flux`, `imagen-4`). | 벤더 기본값 |
 | `--strategy <list>` | | Gemini 폴백 순서. `mcp`, `stream`, `api`를 쉼표로 구분합니다. | 벤더 기본값 |
 | `--timeout <seconds>` | | 이미지당 타임아웃. | 벤더 기본값 |
 | `--reference <path>` | `-r` | 스타일/주제 전이를 위한 레퍼런스 이미지. 반복 지정(`-r a.png -r b.png`) 또는 쉼표 구분이 가능합니다. 크기(≤5MB), 형식(매직 바이트로 PNG/JPEG/GIF/WebP 검증), 개수(≤10)를 검증합니다. `codex`(`codex exec`에 `-i` 전달)와 `gemini`(`inlineData`로 base64 인라인)에서 지원하며, `pollinations`에서는 종료 코드 4로 거부됩니다. | |
@@ -309,10 +310,10 @@ oma image <subcommand> [...]
 
 `image doctor`와 `image list-vendors`는 `--format <text|json>`만 받습니다.
 
-### memory:init
+### memory init
 
 ```
-oma memory:init [--json] [--output <format>] [--force]
+oma memory init [--json] [--output <format>] [--force]
 ```
 
 | 플래그 | 설명 | 기본값 |
@@ -348,18 +349,18 @@ oma doctor --json | jq '.healthy'
 ```bash
 # 메트릭을 JSON으로 수집하여 모니터링 시스템에 파이프
 export OH_MY_AG_OUTPUT_FORMAT=json
-oma stats | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
+oma stats get | curl -X POST -H "Content-Type: application/json" -d @- https://metrics.example.com/api/v1/push
 ```
 
 ### 상태 모니터링을 활용한 배치 에이전트 실행
 
 ```bash
 # 백그라운드에서 에이전트 시작
-oma agent:parallel tasks.yaml --no-wait
+oma agent parallel tasks.yaml --no-wait
 
 # 주기적으로 상태 확인
 SESSION_ID="session-$(date +%Y%m%d-%H%M%S)"
-watch -n 5 "oma agent:status $SESSION_ID backend frontend mobile"
+watch -n 5 "oma agent status $SESSION_ID backend frontend mobile"
 ```
 
 ### 테스트 후 CI에서 정리
@@ -400,10 +401,10 @@ echo "=== oh-my-agent Health Check ==="
 oma doctor --json | jq -r '.clis[] | "\(.name): \(if .installed then "OK (\(.version))" else "MISSING" end)"'
 
 # 인증 상태 확인
-oma auth:status --json | jq -r '.[] | "\(.name): \(.status)"'
+oma auth status --json | jq -r '.[] | "\(.name): \(.status)"'
 
 # 메트릭 확인
-oma stats --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
+oma stats get --json | jq -r '"Sessions: \(.sessions), Tasks: \(.tasksCompleted)"'
 
 echo "=== Done ==="
 ```
@@ -415,5 +416,5 @@ echo "=== Done ==="
 oma describe | jq '.command.subcommands[] | {name, description}'
 
 # 특정 명령의 세부사항 가져오기
-oma describe agent:spawn | jq '.command.options[] | {flags, description}'
+oma describe agent spawn | jq '.command.options[] | {flags, description}'
 ```

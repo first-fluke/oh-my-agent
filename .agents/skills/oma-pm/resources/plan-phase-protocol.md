@@ -57,10 +57,11 @@ Execution guide for PLAN Phase (Steps 1-4) in ultrawork workflow.
 ## PLAN_GATE Checklist
 
 Final verification before completing plan:
-- [ ] Acceptance criteria defined
+- [ ] Acceptance criteria have stable IDs and all are covered by relevant `required_checks` argv/cwd declarations
+- [ ] Dependencies, replay prompts and retry safety are explicit; any narrowed `inputs` set covers all behavioral dependencies
 - [ ] Assumptions documented
 - [ ] Alternatives considered (min 2 for major decisions)
 - [ ] Over-engineering review completed
-- [ ] Ready for user confirmation
+- [ ] Execution policy applied; existing authorization reused
 
 **Gate failure → Return to Step 1 to revise plan**

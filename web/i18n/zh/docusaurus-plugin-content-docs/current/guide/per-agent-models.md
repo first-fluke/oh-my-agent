@@ -225,7 +225,7 @@ session:
 使用 `-m opencode` 覆盖，可将任意智能体通过 opencode 路由：
 
 ```bash
-oma agent:spawn pm "Draft the rollout plan" <session> -m opencode
+oma agent spawn pm "Draft the rollout plan" <session> --vendor opencode
 ```
 
 这会运行 `opencode run --agent pm --dir <workspace> "<prompt>"`。提示词是一个**末尾位置参数**——opencode 的 `-p` 参数表示 `--password`，而非提示词。
@@ -271,16 +271,16 @@ agents:
 opencode 的目录受订阅和登录限制，因此 oma **不会**硬编码 opencode 模型 slug。可针对你已安装的目录校验某个 slug：
 
 ```bash
-oma model:probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
+oma model probe opencode-go/deepseek-v4-flash --json   # accepted | rejected | auth_required
 opencode models opencode-go                            # list everything your plan exposes
 ```
 
-当 slug 被 `opencode models` 列出时，`oma model:probe` 报告 `accepted`；未列出时报告 `rejected`；当 provider 需要登录或订阅时报告 `auth_required`。
+当 slug 被 `opencode models` 列出时，`oma model probe` 报告 `accepted`；未列出时报告 `rejected`；当 provider 需要登录或订阅时报告 `auth_required`。
 
 ### 认证与生成的文件
 
 - **认证：** `opencode auth login` 会将凭据存储在
-  `~/.local/share/opencode/auth.json`。`oma auth:status` / `oma doctor` 会在其他 CLI 之外一并报告 opencode 的认证状态（vendor 层：只要任一 provider 拥有凭据即报告为已认证）。而 `oma doctor --profile` 会区分 provider：每一行都按其已注册 `cli_model` 的 provider 前缀检查，因此 `cli_model: zai-coding-plan/glm-5.3` 的模型会用 `zai-coding-plan` 凭据检查。若某一行的模型没有注册为 `provider/model` 形式的 `cli_model`，则报告 `? unknown`，而不是断定认证失败。
+  `~/.local/share/opencode/auth.json`。`oma auth status` / `oma doctor` 会在其他 CLI 之外一并报告 opencode 的认证状态（vendor 层：只要任一 provider 拥有凭据即报告为已认证）。而 `oma doctor --profile` 会区分 provider：每一行都按其已注册 `cli_model` 的 provider 前缀检查，因此 `cli_model: zai-coding-plan/glm-5.3` 的模型会用 `zai-coding-plan` 凭据检查。若某一行的模型没有注册为 `provider/model` 形式的 `cli_model`，则报告 `? unknown`，而不是断定认证失败。
 - **生成的文件：** `oma link`（或 `oma link opencode`）会为每个智能体写入一个
   `.opencode/agents/<id>.md` persona，外加 `.opencode/plugins/oma/` 桥接。这些文件由 `.agents/` SSOT 生成——请勿直接编辑；重新运行 `oma link` 即可重新生成。
 

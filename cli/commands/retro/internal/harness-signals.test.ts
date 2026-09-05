@@ -110,6 +110,6 @@ describe("collectHarnessSignals", () => {
     const out = fmtHarnessSignals(collectHarnessSignals(ws, 7));
     expect(out).toContain("budget");
     expect(out).toContain("propose:");
-    expect(out).toContain("oma skills eval");
+    expect(out).toContain("oma skill eval");
   });
 });

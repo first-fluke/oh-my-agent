@@ -106,7 +106,7 @@ anti-patterns flagged in the Phase 2 pre-audit. Multi-vendor merges
 require the dimension-level selection dialog from
 `.agents/skills/oma-design/resources/getdesign-fetcher.md`.
 
-**You MUST get user confirmation on the chosen direction before proceeding.**
+Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 
 ---
 

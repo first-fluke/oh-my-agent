@@ -193,7 +193,7 @@ Use `resources/cost-optimization.md` for cost reduction strategies.
 Use `resources/policy-testing-examples.md` for OPA, Sentinel, and Terratest patterns.
 Use `resources/iso-42001-infra.md` for AI governance, continuity, and architecture controls.
 Before submitting, run `resources/checklist.md`.
-Vendor-specific execution protocols are injected automatically by `oma agent:spawn`.
+Vendor-specific execution protocols are injected automatically by `oma agent spawn`.
 Source files live under `../_shared/runtime/execution-protocols/{vendor}.md`.
 
 - Execution steps: `resources/execution-protocol.md`

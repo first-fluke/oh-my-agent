@@ -75,23 +75,23 @@ Design a dark premium landing page for my B2B SaaS analytics product
 
 ```bash
 # Agent đơn — task đơn giản
-oma agent:spawn frontend "Add dark mode toggle to the header" session-ui-01
+oma agent spawn frontend "Add dark mode toggle to the header" session-ui-01
 
 # Ba agent song song — tính năng fullstack
-oma agent:spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
-oma agent:spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
-oma agent:spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
+oma agent spawn backend "Implement notification API with WebSocket support" session-notif-01 -w ./apps/api &
+oma agent spawn frontend "Build notification center with real-time updates" session-notif-01 -w ./apps/web &
+oma agent spawn mobile "Add push notification screens and in-app notification list" session-notif-01 -w ./apps/mobile &
 wait
 
 # Giám sát khi agent làm việc (terminal riêng)
-oma dashboard        # UI terminal với bảng trực tiếp
-oma dashboard:web    # UI web tại http://localhost:9847
+oma dashboard terminal        # UI terminal với bảng trực tiếp
+oma dashboard web    # UI web tại http://localhost:9847
 
 # Sau triển khai, chạy QA
-oma agent:spawn qa "Review notification feature across all platforms" session-notif-01
+oma agent spawn qa "Review notification feature across all platforms" session-notif-01
 
 # Kiểm tra thống kê phiên sau hoàn thành
-oma stats
+oma stats get
 ```
 
 ---
@@ -152,7 +152,7 @@ oma stats
 ### Dashboard terminal
 
 ```bash
-oma dashboard
+oma dashboard terminal
 ```
 
 Hiển thị bảng cập nhật trực tiếp trong terminal với trạng thái phiên, hàng agent và luồng hoạt động.
@@ -160,7 +160,7 @@ Hiển thị bảng cập nhật trực tiếp trong terminal với trạng thá
 ### Dashboard web
 
 ```bash
-oma dashboard:web
+oma dashboard web
 # Mở http://localhost:9847
 ```
 
@@ -169,7 +169,7 @@ Cập nhật thời gian thực qua WebSocket, tự kết nối lại, chỉ bá
 ### Bố cục khuyến nghị
 
 3 terminal:
-1. **Terminal dashboard:** `oma dashboard` — giám sát liên tục
+1. **Terminal dashboard:** `oma dashboard terminal` — giám sát liên tục
 2. **Terminal lệnh:** Lệnh spawn agent, lệnh workflow
 3. **Terminal build:** Chạy test, log build, thao tác git
 
