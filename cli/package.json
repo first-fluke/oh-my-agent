@@ -56,11 +56,12 @@
   "scripts": {
     "sync:readme": "node ./scripts/sync-readme.mjs",
     "generate:skill-data": "node ./scripts/generate-skill-data.mjs",
-    "build": "bun run generate:skill-data && bun run sync:readme && bun build cli.ts --outfile bin/cli.js --target node --minify --external @napi-rs/keyring",
+    "build": "bun run generate:skill-data && bun run sync:readme && bun build cli.ts --outfile bin/cli.js --target node --minify --external @napi-rs/keyring --external jsonc-parser && bun run check:bundle",
     "dev": "bun run generate:skill-data && bun run cli.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write --unsafe .",
     "check:boundaries": "node ./scripts/check-boundaries.mjs",
+    "check:bundle": "node ./scripts/check-bundle.mjs",
     "check:emit-drift": "node ./scripts/check-emit-drift.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
