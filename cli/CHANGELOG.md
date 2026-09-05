@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.0.0...cli-v14.0.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* **cli:** prevent jsonc-parser bundle startup crash ([e0eb26a](https://github.com/first-fluke/oh-my-agent/commit/e0eb26a10ff4e5ef6042d2e1a3f9664bdf97756b))
+
 ## [14.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.3.1...cli-v14.0.0) (2026-09-05)
 
 
