@@ -1,5 +1,25 @@
 # Changelog
 
+## [13.3.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.2.1...cli-v13.3.0) (2026-09-05)
+
+
+### Features
+
+* **agent:** verify task contracts and resume dependency-aware runs ([3d6e8d8](https://github.com/first-fluke/oh-my-agent/commit/3d6e8d8d3329798ff620239bba795271cbf56699))
+* **mcp:** configure browser servers and install missing aside ([3ed0fb1](https://github.com/first-fluke/oh-my-agent/commit/3ed0fb1c3418d437cffd704c35eaf2f3e1c71825))
+
+
+### Bug Fixes
+
+* **hooks:** simplify explicit slash skill context ([00c59dd](https://github.com/first-fluke/oh-my-agent/commit/00c59dd502395b0305c87f42a58d09021ddeb932))
+* **state:** serialize shared CLI and hook index mutations ([59cc08f](https://github.com/first-fluke/oh-my-agent/commit/59cc08f54b0b99c641ad4e4ba54f56d3ef6e0edc))
+* **video:** use guided capture and remove obsolete browser recorder ([6c916c9](https://github.com/first-fluke/oh-my-agent/commit/6c916c90d70517a74b71caf2a0977155682873f9))
+
+
+### Documentation
+
+* remove playwright references from markdown guidance ([2ffa537](https://github.com/first-fluke/oh-my-agent/commit/2ffa5374f726f58ce81aa588d8252001f27eea26))
+
 ## [13.2.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v13.2.0...cli-v13.2.1) (2026-09-04)
 
 
