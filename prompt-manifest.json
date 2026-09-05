@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "13.2.1",
-  "releaseDate": "2026-09-05T09:30:38.114Z",
+  "releaseDate": "2026-09-05T09:46:38.122Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -2116,6 +2116,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 422
+    "totalFiles": 421
   }
 }
