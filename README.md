@@ -197,6 +197,13 @@ Separate from the engineering team, oma ships content and research pipelines bui
 | **oma-video** | Generates short-form, explainer, and demo videos through a key-optional Remotion pipeline. |
 | **oma-voice** | Generates voiceovers and transcribes audio on-device, no cloud needed. |
 
+### Orca IDE
+
+[OMA for Orca](integrations/orca/README.md) adds a sidebar panel and command-palette
+actions for project setup, review, debugging, verification, and local results.
+It uses your existing Orca agent terminal and project OMA installation. Requires
+Orca 1.4.197+ with experimental plugins enabled.
+
 ## How It Works
 
 Just chat. Describe what you want and oh-my-agent figures out which agents to use.

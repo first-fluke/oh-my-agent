@@ -46,6 +46,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Test Orca plugin (no build)
+        run: bun run test:orca
+
       # Windows hangs indefinitely inside vitest (root cause TBD — likely a
       # spawn/stdin test that never closes the loop). Skip until fixed; Lint,
       # Typecheck, Build, and install.ps1 smoke still validate Windows.
