@@ -196,6 +196,7 @@ APM 只分发 skill。workflow、规则、`oma-config.yaml`、关键词检测 ho
 | **oma-translation** | 将内容翻译成目标语言，读来如同母语写就 |
 | **oma-video** | 通过可免密钥的 Remotion 流水线生成短视频、讲解视频和演示视频 |
 | **oma-voice** | 在本地完成语音合成与转写，无需任何云服务 |
+| **oma-web-research** | 通过 You.com MCP 服务器进行带引用来源的网络调研，支持免密钥的免费配置，并可回退到原生搜索 |
 
 ## 工作原理
 

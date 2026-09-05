@@ -196,6 +196,7 @@ Getrennt vom Engineering-Team liefert oma Content- und Research-Pipelines, die n
 | **oma-translation** | Übersetzt zwischen Sprachen so, als hätte ein Muttersprachler geschrieben |
 | **oma-video** | Erzeugt Kurzvideos, Erklärvideos und Demos über eine auch ohne Schlüssel nutzbare Remotion-Pipeline |
 | **oma-voice** | Generiert Voiceovers und transkribiert Audio lokal — ganz ohne Cloud |
+| **oma-web-research** | Websuche mit Quellenangaben über den You.com MCP-Server — mit schlüssellosem Free-Profil und Fallback auf native Suche |
 
 ## So Funktioniert's
 

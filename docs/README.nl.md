@@ -196,6 +196,7 @@ Los van het engineeringteam levert oma content- en researchpijplijnen die volgen
 | **oma-translation** | Vertaalt tussen talen zodat het klinkt alsof een native het heeft geschreven |
 | **oma-video** | Genereert korte video's, uitlegvideo's en demo's via een Remotion-pijplijn die ook zonder sleutels werkt |
 | **oma-voice** | Genereert voice-overs en transcribeert audio lokaal, zonder cloud |
+| **oma-web-research** | Webonderzoek met bronvermelding via de You.com MCP-server, met een keyless gratis profiel en een fallback naar native zoekfuncties |
 
 ## Hoe het werkt
 

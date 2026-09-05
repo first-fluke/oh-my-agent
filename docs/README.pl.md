@@ -196,6 +196,7 @@ Niezależnie od zespołu inżynierskiego oma dostarcza pipeline'y contentowe i b
 | **oma-translation** | Tłumaczy między językami tak, jakby tekst napisał native speaker |
 | **oma-video** | Generuje krótkie filmy, materiały objaśniające i dema przez pipeline Remotion działający także bez kluczy |
 | **oma-voice** | Generuje voiceover i transkrybuje audio lokalnie — bez chmury |
+| **oma-web-research** | Badania w sieci z cytowanymi źródłami przez serwer MCP You.com, z darmowym profilem bez klucza i fallbackiem na natywne wyszukiwanie |
 
 ## Jak to dziala
 

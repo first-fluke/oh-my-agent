@@ -196,6 +196,7 @@ Tách khỏi đội ngũ kỹ thuật, oma còn cung cấp các pipeline nội d
 | **oma-translation** | Dịch giữa các ngôn ngữ tự nhiên như thể bản ngữ viết |
 | **oma-video** | Tạo video ngắn, video giải thích và video demo qua pipeline Remotion dùng được cả khi không có khóa |
 | **oma-voice** | Tạo lồng tiếng và gỡ băng âm thanh ngay trên thiết bị, không cần đám mây |
+| **oma-web-research** | Nghiên cứu web có trích nguồn qua máy chủ MCP You.com, kèm hồ sơ miễn phí không cần khóa và phương án dự phòng bằng tìm kiếm gốc |
 
 ## Cách hoạt động
 

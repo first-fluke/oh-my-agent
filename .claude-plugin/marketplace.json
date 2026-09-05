@@ -48,7 +48,8 @@
         "./.agents/skills/oma-tf-infra",
         "./.agents/skills/oma-translation",
         "./.agents/skills/oma-video",
-        "./.agents/skills/oma-voice"
+        "./.agents/skills/oma-voice",
+        "./.agents/skills/oma-web-research"
       ],
       "agents": [
         "./.agents/agents/architecture-reviewer.md",
