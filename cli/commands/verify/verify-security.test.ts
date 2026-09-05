@@ -26,19 +26,22 @@ describe("runManifestCmd (no shell interpretation of stack.yaml cmd)", () => {
   });
 
   it("runs a plain command and returns its stdout", () => {
-    expect(runManifestCmd("echo hello", workspace)).toBe("hello");
+    const result = runManifestCmd("echo hello", workspace);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout.trim()).toBe("hello");
   });
 
-  it("merges stderr into the output (2>&1 semantics)", () => {
+  it("preserves stderr and exit code for failed commands", () => {
     // Regression: cargo/swift/compileall/bun emit diagnostics on stderr. The
     // execFileSync rewrite dropped stderr, so a real failure produced empty
-    // output and the syntax check reported a false "pass". spawnSync merges
-    // both streams so stderr-only diagnostics stay visible.
+    // output and the syntax check reported a false "pass". Both streams and
+    // the failed exit must remain available to the checker.
     const out = runManifestCmd(
       `${process.execPath} -e "process.stderr.write('SYNTAX_ERR');process.exit(1)"`,
       workspace,
     );
-    expect(out).toContain("SYNTAX_ERR");
+    expect(out.stderr).toContain("SYNTAX_ERR");
+    expect(out.exitCode).toBe(1);
   });
 });
 

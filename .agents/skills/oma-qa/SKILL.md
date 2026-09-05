@@ -61,6 +61,7 @@ Review and verify software quality with priority on security, performance, acces
 ### Transitions
 - If security issues exist, prioritize them before performance/accessibility/code quality.
 - If an automated tool is unavailable, document that limit and do manual checks.
+- Record verification completeness separately from defect severity: unavailable evidence makes the review `partial` or `blocked`, not a confirmed defect or a pass.
 - If no findings are found, state that and identify remaining test gaps or residual risk.
 - If standards-based review is requested, use `resources/iso-quality.md`.
 
@@ -121,7 +122,7 @@ Run only the tools that match the detected stack and available target. Add proje
 2. Every finding must include file:line, description, and fix
 3. Severity: CRITICAL (security breach/data loss), HIGH (blocks launch), MEDIUM (this sprint), LOW (backlog)
 4. Run automated tools first: `npm audit`, `bandit`, `lighthouse`
-5. No false positives - every finding must be reproducible
+5. Every defect finding must be reproducible. Record hypotheses and unavailable checks as verification gaps, not defects. Do not issue PASS while required checks remain unverified.
 6. Provide remediation code, not just descriptions
 7. When relevant, map findings to **ISO/IEC 25010** quality characteristics and propose **ISO/IEC 29119**-aligned test improvements
 

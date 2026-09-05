@@ -149,22 +149,26 @@ Specifically check for these patterns that static review cannot catch:
 
 ---
 
-## Evaluator Posture: SKEPTICAL by default
+## Evaluator Posture: Evidence-based
 
 Apply this posture when making verdict decisions in Step 3 and Step 4:
-- Assume code has bugs until you prove otherwise with concrete evidence.
+- Base defect findings on reproducible evidence; track unconfirmed hypotheses separately.
 - "Probably works" or "should be fine" is NOT valid evidence. Run it, show output, prove it.
-- If a feature exists in the plan but you cannot verify it works at runtime: FAIL.
+- If a required feature cannot be verified at runtime, record the missing check, reason, and next action. Mark review completeness `partial`, or `blocked` when no independent verification can proceed, following the shared execution policy and host rules.
+- A skipped check, missing tool, or interrupted command is not evidence that the product works or that it contains a defect. A failed verification command must not count as a passing check; diagnose whether it demonstrates a product defect or an environment/configuration problem.
 - Never downgrade a real bug to "non-critical" just to pass a gate.
 - Use WARNING when all remaining issues are MEDIUM or lower and none block deployment.
-- When in doubt between PASS and FAIL, choose FAIL and explain why.
+- When evidence is insufficient, report the verification gap and continue available checks. Do not invent a defect or issue PASS to force a binary verdict.
 
 ## Step 3: Report
 Generate structured report with:
-- Overall status:
-  - PASS: no CRITICAL, no HIGH, and no MEDIUM issues
-  - WARNING: no CRITICAL and no HIGH, but MEDIUM issues exist
-  - FAIL: any CRITICAL or HIGH issue found
+- Report both quality verdict and verification completeness:
+  - PASS: required checks completed; no CRITICAL, HIGH, or MEDIUM issues
+  - WARNING: required checks completed; no CRITICAL or HIGH issues, but MEDIUM issues exist
+  - FAIL: a reproducible CRITICAL or HIGH issue exists, even if other checks remain unavailable
+  - NOT_ASSESSED: required evidence is missing and no confirmed defect warrants FAIL; list any confirmed lower-severity findings separately
+  - Completeness: `completed` when required verification is finished, `partial` when evidence remains missing, or `blocked` when independent work cannot proceed under the shared execution policy and host rules
+- Verification gaps: missing check, cause, completed alternative checks, and concrete next action; keep these separate from defect findings
 - Findings grouped by severity (CRITICAL > HIGH > MEDIUM > LOW)
 - Each finding: file:line, description, remediation code
 - Performance metrics vs. targets

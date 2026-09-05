@@ -1,7 +1,13 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { join, resolve } from "node:path";
 import type { VerifyCheck } from "../../types/index.js";
-import { createCheck, runCommand } from "./check-utils.js";
+import {
+  checkCommandResult,
+  createCheck,
+  runCheckCommand,
+  runCommand,
+} from "./check-utils.js";
 
 export function checkHardcodedSecrets(workspace: string): VerifyCheck {
   const patterns = ["*.py", "*.ts", "*.tsx", "*.js", "*.dart"];
@@ -46,25 +52,24 @@ export function checkPythonTests(workspace: string): VerifyCheck {
       !hasUv ? "uv not available" : "pyproject.toml not found",
     );
   }
-  const result = runCommand("uv run pytest -q --tb=no 2>&1", workspace);
-  if (result?.includes("passed") || result?.includes("no tests ran")) {
-    return createCheck("Python Tests", "pass", "Tests pass");
-  }
-  return createCheck("Python Tests", "fail", "Tests failing");
+  return checkCommandResult(
+    "Python Tests",
+    runCheckCommand("uv", ["run", "pytest", "-q", "--tb=no"], workspace),
+    "Tests pass",
+    "Tests failed",
+  );
 }
 
 export function checkTypeScript(workspace: string): VerifyCheck {
   if (!existsSync(join(workspace, "tsconfig.json"))) {
     return createCheck("TypeScript", "skip", "Not configured");
   }
-  const result = runCommand("npx tsc --noEmit 2>&1", workspace);
-  if (result === null || result === "") {
-    return createCheck("TypeScript", "pass", "Compilation clean");
-  }
-  if (result.includes("error")) {
-    return createCheck("TypeScript", "fail", "Type errors found");
-  }
-  return createCheck("TypeScript", "pass", "Compilation clean");
+  return checkCommandResult(
+    "TypeScript",
+    runCheckCommand("npx", ["--no-install", "tsc", "--noEmit"], workspace),
+    "Type check clean",
+    "Type check failed",
+  );
 }
 
 export function checkInlineStyles(workspace: string): VerifyCheck {
@@ -99,18 +104,48 @@ export function checkFrontendTests(workspace: string): VerifyCheck {
   if (!existsSync(join(workspace, "package.json"))) {
     return createCheck("Frontend Tests", "skip", "No package.json");
   }
-  const result = runCommand(
-    "npx vitest run --reporter=verbose 2>&1",
-    workspace,
-  );
-  if (result?.includes("passed") || result?.includes("✓")) {
-    return createCheck("Frontend Tests", "pass", "Tests pass");
+  try {
+    if (!hasVitest(workspace)) {
+      return createCheck("Frontend Tests", "skip", "Vitest not configured");
+    }
+  } catch {
+    return createCheck("Frontend Tests", "fail", "Could not read package.json");
   }
-  return createCheck(
+  return checkCommandResult(
     "Frontend Tests",
-    "warn",
-    "Tests failed or vitest not configured",
+    runCheckCommand(
+      "npx",
+      ["--no-install", "vitest", "run", "--reporter=verbose"],
+      workspace,
+    ),
+    "Tests pass",
+    "Tests failed",
   );
+}
+
+function hasVitest(workspace: string): boolean {
+  const packagePath = join(workspace, "package.json");
+  const pkg = JSON.parse(readFileSync(packagePath, "utf8"));
+  if (
+    pkg?.dependencies?.vitest ||
+    pkg?.devDependencies?.vitest ||
+    Object.values(pkg?.scripts ?? {}).some(
+      (script) => typeof script === "string" && /\bvitest\b/.test(script),
+    )
+  )
+    return true;
+  if (
+    ["ts", "mts", "cts", "js", "mjs", "cjs"].some((ext) =>
+      existsSync(join(workspace, `vitest.config.${ext}`)),
+    )
+  )
+    return true;
+  try {
+    createRequire(resolve(packagePath)).resolve("vitest/package.json");
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function checkFlutterAnalysis(workspace: string): VerifyCheck {
@@ -120,26 +155,29 @@ export function checkFlutterAnalysis(workspace: string): VerifyCheck {
     if (!hasDart) {
       return createCheck("Flutter/Dart Analysis", "skip", "Not available");
     }
-    const result = runCommand("dart analyze 2>&1", workspace);
-    if (result?.includes("No issues found")) {
-      return createCheck("Dart Analysis", "pass", "Clean");
-    }
-    return createCheck("Dart Analysis", "fail", "Issues found");
+    return checkCommandResult(
+      "Dart Analysis",
+      runCheckCommand("dart", ["analyze"], workspace),
+      "Clean",
+      "Analysis failed",
+    );
   }
-  const result = runCommand("flutter analyze 2>&1", workspace);
-  if (result?.includes("No issues found")) {
-    return createCheck("Flutter Analysis", "pass", "Clean");
-  }
-  return createCheck("Flutter Analysis", "fail", "Issues found");
+  return checkCommandResult(
+    "Flutter Analysis",
+    runCheckCommand("flutter", ["analyze"], workspace),
+    "Clean",
+    "Analysis failed",
+  );
 }
 
 export function checkFlutterTests(workspace: string): VerifyCheck {
   const hasFlutter = runCommand("which flutter", workspace);
   if (!hasFlutter)
     return createCheck("Flutter Tests", "skip", "Flutter not available");
-  const result = runCommand("flutter test 2>&1", workspace);
-  if (result?.includes("All tests passed")) {
-    return createCheck("Flutter Tests", "pass", "All tests pass");
-  }
-  return createCheck("Flutter Tests", "fail", "Tests failed");
+  return checkCommandResult(
+    "Flutter Tests",
+    runCheckCommand("flutter", ["test"], workspace),
+    "All tests pass",
+    "Tests failed",
+  );
 }
