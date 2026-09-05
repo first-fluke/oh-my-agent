@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "13.2.1",
-  "releaseDate": "2026-09-04T23:24:54.711Z",
+  "releaseDate": "2026-09-05T09:17:59.209Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -190,14 +190,24 @@
       "size": 8233
     },
     {
+      "path": ".agents/hooks/core/state-core.ts",
+      "sha256": "af27653d29a199a06c2008f85bace67d37d445bb65dd4ee412a664854bf3ef3e",
+      "size": 9854
+    },
+    {
       "path": ".agents/hooks/core/state-emit.ts",
-      "sha256": "f160d9797f91c85471825016db62b299532da721f51fbdaed3633906eb50665e",
-      "size": 5177
+      "sha256": "38ea836d4bb4e86869fe4262268ac1599d30453ad4da691d47d2cb19052f4c8e",
+      "size": 1047
+    },
+    {
+      "path": ".agents/hooks/core/state-index-lock.ts",
+      "sha256": "014f695a93e2c6d55666def70257e551661588809d2e62f528d8946f8c5db8dc",
+      "size": 3526
     },
     {
       "path": ".agents/hooks/core/state-marker.ts",
-      "sha256": "74b07aea74cdedd5b271b2a2354483006eee4ac57c05d47b43119c38d629d9da",
-      "size": 3825
+      "sha256": "d42a12d1c4cd79f4cbc09308eb9b7786586996fe406d719df6a4fab0b3fd4369",
+      "size": 308
     },
     {
       "path": ".agents/hooks/core/test-filter.ts",
@@ -406,8 +416,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/clarification-protocol.md",
-      "sha256": "1ae8b62f9b34efb30cd29e2019ab444c71d49851fcd890baaabadc0fff869786",
-      "size": 6587
+      "sha256": "16b9487b58264fc3d351228febbae39b017d94dd5549ad89f87b223ab3e3020b",
+      "size": 1152
     },
     {
       "path": ".agents/skills/_shared/core/common-checklist.md",
@@ -430,6 +440,11 @@
       "size": 2486
     },
     {
+      "path": ".agents/skills/_shared/core/execution-policy.md",
+      "sha256": "1edb3e610840675a8fde5614b9e12a585f34eadaa08fb4a37be9cbe231cc51ec",
+      "size": 2237
+    },
+    {
       "path": ".agents/skills/_shared/core/lessons-learned.md",
       "sha256": "9c0422f8bfd93f4f3047b04a0f0cd8b48a4ed6b5d04be8c5e79dc6cc4675ba4b",
       "size": 7860
@@ -441,8 +456,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/quality-principles.md",
-      "sha256": "db9c7bcf8550a6f3a51cf7c72c37f0f966a9a2723d8b4abb2e50322ca1936bd3",
-      "size": 2031
+      "sha256": "30654d56d7ad71764829333106130dadc9b50d77a6076a3a201d6c7833b4c547",
+      "size": 2216
     },
     {
       "path": ".agents/skills/_shared/core/session-metrics.md",
@@ -476,58 +491,63 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/antigravity.md",
-      "sha256": "cbf3d09812d484ef20b1888fb63896ba9e6bca4e8efe66e3a0da1133a64ce154",
-      "size": 2631
+      "sha256": "9d3e18eb14674ce2ce49c5a25879ca8a48b24a01c7a2f3317d70d8308028d43f",
+      "size": 1922
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/claude.md",
-      "sha256": "32c385f6c0646bc2ec732e753e6e846b4c2983d11d5e1cb3fea38c864e4ebbc6",
-      "size": 2673
+      "sha256": "73f863ddbe55877025bd22a85cf205052b39faecb5758295a2404087aee75c18",
+      "size": 1686
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/codex.md",
-      "sha256": "325248926830aca6b33bee0d706500c41e3169b705d63fa988fe891215f3610d",
-      "size": 2508
+      "sha256": "313317e2c4b46e6dbc9058cd812883bef4810bec0b4592b095974c79860be908",
+      "size": 1521
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
-      "sha256": "d617ca4a911d25a6ce5695447c5cda5d57a4721bfc9f09e8a6348b1ed9bfe1f1",
-      "size": 2515
+      "sha256": "37b3f7232f96e2bae2fb7a77bf7707bea7326eca19c83ea8ef875b58e08d7b96",
+      "size": 1528
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
-      "sha256": "4b7ccbac56f93bce344fc0e953787a57f60a6bf527a8c25604ffdf80827528ec",
-      "size": 2795
+      "sha256": "8df8e37fd3c69aff3e60c45ca9f8a4b690a43c3be30f143033cc73281ae661a6",
+      "size": 1753
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/kimi.md",
-      "sha256": "1e1adfa61c500f455bc8e9abeb6e4c85487f3ac4596acf57df858cabce0010e6",
-      "size": 2588
+      "sha256": "899e43c7776388770e1da0f6cde92c3c33c8f0fb9284eedcce80e7beaa06974a",
+      "size": 1865
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/kiro.md",
-      "sha256": "a0ad4612b7ea88ba9e740cabe398f586032d7d3d48dd74db2a1e170a77679aae",
-      "size": 2652
+      "sha256": "3441bc7659caf39dad7d2b0884ea7a2aec5725142778e308af768347e4cc73b1",
+      "size": 1929
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/opencode.md",
-      "sha256": "2c7f65dfd98acedbe558bd914e03cd2b02750a1fa62c5511d8576bbb756eea3f",
-      "size": 3904
+      "sha256": "6787a36791958cbf2751c11e08969805e2d40ca0a0b7ef1435c37bd464505ba4",
+      "size": 2742
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/pi.md",
-      "sha256": "477a1bcf1b419956688d6cad629b708da0f379f2b631b9dfb1f54743ac6af43a",
-      "size": 2934
+      "sha256": "4a2f8dc999c245d9a710c53cd9229bb2063621e88b90c3f3281f77b8647e5035",
+      "size": 1772
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/qwen.md",
-      "sha256": "cd4e44e3874d49f419bbc0f68b97ba72583830f17994801638c7b5c2f88d8c64",
-      "size": 2265
+      "sha256": "cddd00f2b1475cbf6ac61826a59362fe38148dafc50d6e13c594a26294caea4a",
+      "size": 1542
     },
     {
       "path": ".agents/skills/_shared/runtime/memory-protocol.md",
       "sha256": "136a9a24b916e78720bc187dcc044c327ce276760fe76e547282cd9fdfd320f2",
       "size": 4285
+    },
+    {
+      "path": ".agents/skills/_shared/runtime/result-contract.md",
+      "sha256": "e251e8e2d6d8ced5565aa2050224f0c846f8784357cdf4f95d88b94e2dd8e3b1",
+      "size": 5325
     },
     {
       "path": ".agents/skills/_version.json",
@@ -911,8 +931,8 @@
     },
     {
       "path": ".agents/skills/oma-design/resources/execution-protocol.md",
-      "sha256": "cf2c1d959dd649c669cb865e6bd7b7121e6ff4c6331be1b924fd7045d1359b5f",
-      "size": 14600
+      "sha256": "3452d83891f77490a501a098832cf08e0f34a67acba4d137fbfef7e3ea25425a",
+      "size": 14664
     },
     {
       "path": ".agents/skills/oma-design/resources/getdesign-fetcher.md",
@@ -1531,8 +1551,8 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/execution-protocol.md",
-      "sha256": "9cb0a29e4e66817e329903031717d6c6a89158186e2cb900ce3362d80672720e",
-      "size": 4912
+      "sha256": "2cd998a3a30a11a71c49fcbf32684ffc67e929670815135a907df4a967fac508",
+      "size": 5668
     },
     {
       "path": ".agents/skills/oma-pm/resources/iso-planning.md",
@@ -1541,13 +1561,13 @@
     },
     {
       "path": ".agents/skills/oma-pm/resources/plan-phase-protocol.md",
-      "sha256": "e809ef98aad44cae319fb1cf4b0413c676a5b5bc307d89569de5d0425cb715e6",
-      "size": 1354
+      "sha256": "cd3b05169ae75659f7046e36443b13e3c6cf7fa07135dfb884f4d155cde28563",
+      "size": 1589
     },
     {
       "path": ".agents/skills/oma-pm/resources/task-template.json",
-      "sha256": "41a69db9143425f08318d634d07df5882798ac02a583842f5883c818b6fc0c75",
-      "size": 1718
+      "sha256": "8bee455349122e3d85cbc92f901bfe59b17a6aeb8ba94fe18db6c8b2572d3270",
+      "size": 2032
     },
     {
       "path": ".agents/skills/oma-qa/SKILL.md",
@@ -1981,8 +2001,8 @@
     },
     {
       "path": ".agents/workflows/brainstorm.md",
-      "sha256": "b4d0270b7010daae7a382552c25b4cee375096cdba648e8f9c27640031ef7816",
-      "size": 10022
+      "sha256": "650821df885063646ad346fb748b2bad19988ab67e1f778875f5bc40f1ec4d55",
+      "size": 10122
     },
     {
       "path": ".agents/workflows/convert.md",
@@ -1991,8 +2011,8 @@
     },
     {
       "path": ".agents/workflows/debug.md",
-      "sha256": "f787d0c58af4ad109b8a4b261d7f550ddca5594d77427a345fe929f08e07a88d",
-      "size": 4781
+      "sha256": "6289f8959dc6684f3b76ac04f4f37f72c9d1bc62c1c5c191e7688728229c5de1",
+      "size": 4904
     },
     {
       "path": ".agents/workflows/deepinit.md",
@@ -2001,13 +2021,13 @@
     },
     {
       "path": ".agents/workflows/deepsec.md",
-      "sha256": "a0f3e75691edbfa50596e812df57b99ab6b71e4eff2f54af8e567e666d65d530",
-      "size": 12857
+      "sha256": "838d5fb63b6de2a7a5c6d420662c7a732adb09fee77298ce49e9ea777425da19",
+      "size": 12996
     },
     {
       "path": ".agents/workflows/design.md",
-      "sha256": "1d9b37b1fb929aa44191550c29ad1be34adeba57424e1f6b6bc8b6eaffae7605",
-      "size": 7057
+      "sha256": "07389c6501bce52d45665b488277c70463dbc65b8f097ecd4a6e421ee2cb2818",
+      "size": 7166
     },
     {
       "path": ".agents/workflows/docs.md",
@@ -2021,13 +2041,13 @@
     },
     {
       "path": ".agents/workflows/orchestrate.md",
-      "sha256": "e360610901b3668abdd1f586452b08a89fa29993c31cdfdb8c2dc8403e05d7cb",
-      "size": 13785
+      "sha256": "c7fb5305e59c86d302e4e17bf256d50dd7f668e2afd7aa928094ff26dcea677a",
+      "size": 14248
     },
     {
       "path": ".agents/workflows/plan.md",
-      "sha256": "f8ff24b783e90fe21e0ac33ebd6236a898e62bc61bf37aceae8ab0300ce4f333",
-      "size": 9438
+      "sha256": "8f2614fb5e04f8af7082f87df4d22c0ff148b88e5511fe4b17af3bc88fcaaf23",
+      "size": 10730
     },
     {
       "path": ".agents/workflows/ralph/resources/judge-protocol.md",
@@ -2036,8 +2056,8 @@
     },
     {
       "path": ".agents/workflows/ralph.md",
-      "sha256": "3eeec07d0ca2c0a648868159d1deedfcbd42dd8ff3a5bb5f3c549146ecac46e5",
-      "size": 19637
+      "sha256": "df6264a90a3a99d7e63e29bca71e597b57e7c37c06ebb15da7266ca3d94469e9",
+      "size": 19921
     },
     {
       "path": ".agents/workflows/recap.md",
@@ -2081,18 +2101,18 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "db0199de247b0d7971019ee48a9ab3e43a789d1775778855b71faf8f6a89ae8e",
-      "size": 31693
+      "sha256": "01e2351955c805402d518832d347b58597512d0a964f67ee82b9dc94f980f5bd",
+      "size": 32156
     },
     {
       "path": ".agents/workflows/video.md",
-      "sha256": "b3f44d1dd74b57b1b28071af06dd8ee956e466a129de278c3471ea880ebbdbd9",
-      "size": 23566
+      "sha256": "b425a2417522954d53e9ff3f8a21b670bc438b2eac6fb3a312111391c37531fb",
+      "size": 23686
     },
     {
       "path": ".agents/workflows/work.md",
-      "sha256": "dd017895e81da17c2ca1e67c01d5c8a5364feac434c5a486daeb6000f3480353",
-      "size": 9488
+      "sha256": "403a1b757eef8376d3a8665eb0fcef265f8475422b4264f5d842964529d408b0",
+      "size": 10037
     }
   ],
   "checksums": {
@@ -2101,6 +2121,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 418
+    "totalFiles": 422
   }
 }
