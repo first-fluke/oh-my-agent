@@ -412,14 +412,12 @@ export function formatClaudeSlashSkillContext(
   entry: ClaudeSlashSkillEntry,
 ): string {
   return [
-    `[OMA CLAUDE SLASH SKILL INVOKED: ${entry.name}]`,
-    `User explicitly typed /${entry.name}. Claude Code deprecated \`.claude/commands/\`, so this slash-only workflow lives in SKILL.md with \`disable-model-invocation: true\` — it is NOT in the available-skills list and is NOT callable via the Skill tool.`,
-    "",
-    `Honor the user's explicit invocation by reading \`${entry.skillRelPath}\` and following its instructions:`,
+    `[OMA SLASH SKILL INVOKED: ${entry.name}]`,
+    `The user explicitly invoked /${entry.name}. Follow the skill content below.`,
+    `Source: ${entry.skillRelPath}`,
+    "Read referenced workflow / resource files as needed.",
     "",
     entry.body,
-    "",
-    "Read any referenced workflow / resource files and proceed step by step. Do NOT respond that the skill is unavailable.",
   ].join("\n");
 }
 
