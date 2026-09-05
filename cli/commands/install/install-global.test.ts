@@ -351,3 +351,8 @@ describe("install --global: _install.json schema and meta", () => {
     expect(writtenContent).toContain("custom_user_field: my_value");
   });
 });
+
+vi.mock("../../vendors/aside.js", () => ({
+  ensureAsideInstalled: vi.fn(),
+  resolveAsideCommand: () => "aside",
+}));

@@ -246,7 +246,7 @@ export async function promptVendors(
     {
       value: "pi",
       label: "pi (Earendil)",
-      hint: "in-process extension bridge — .pi/extensions/oma/",
+      hint: "extension bridge + browser MCP via pi-mcp-adapter",
     },
     ...(allowHomeWriteVendors
       ? [
@@ -258,7 +258,7 @@ export async function promptVendors(
           {
             value: "hermes" as const,
             label: "Hermes Agent",
-            hint: "skills only — workflows N/A, HOME-shared (no per-project isolation)",
+            hint: "skills + browser MCP — HOME-shared (no per-project isolation)",
           },
           {
             value: "kimi" as const,
@@ -271,7 +271,7 @@ export async function promptVendors(
     {
       value: "zcode",
       label: "ZCode",
-      hint: "workflow slash-commands",
+      hint: "workflow slash-commands + browser MCP",
     },
   ];
 
@@ -498,16 +498,20 @@ export async function selectClisWithConsent(
 export async function promptDevToolsBrowsers(
   nonInteractive: boolean,
   cleanup: () => void,
+  defaultBrowsers: DevToolsBrowser[] = ["aside"],
 ): Promise<DevToolsBrowser[]> {
-  const defaultBrowsers: DevToolsBrowser[] = ["chrome"];
-
   if (nonInteractive) {
     return defaultBrowsers;
   }
 
   const selected = await p.multiselect({
-    message: "Select Browser DevTools MCP servers to enable:",
+    message: "Select browser MCP servers (Space to select, Enter to continue):",
     options: [
+      {
+        value: "aside",
+        label: "Aside",
+        hint: "aside mcp (automatically installs Aside if missing)",
+      },
       {
         value: "chrome",
         label: "Chrome DevTools MCP",

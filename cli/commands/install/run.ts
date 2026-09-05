@@ -46,9 +46,10 @@ import {
   DEAD_PID_GRACE_MS,
   lockPath,
 } from "../../utils/install-lock.js";
-import { type DevToolsBrowser, syncDevToolsMcp } from "../../vendors/serena.js";
+import { ensureAsideInstalled } from "../../vendors/aside.js";
 import { link } from "../link/run.js";
 import { runMigrations } from "../migrations/index.js";
+import { saveDevToolsBrowsers } from "./browser-preferences.js";
 import {
   detectWsl,
   type InstallOptions,
@@ -59,6 +60,7 @@ import { maybePromptGithubStar } from "./github-star.js";
 import { patchUserConfig } from "./preferences.js";
 import {
   promptBackendVariant,
+  promptDevToolsBrowsers,
   promptLanguage,
   promptModelPreset,
   promptProjectSkills,
@@ -246,11 +248,13 @@ export async function install(options: InstallOptions = {}): Promise<void> {
 
     const vendors = await promptVendors(installRoot, nonInteractive);
 
-    // Opt-in: a fresh install wires up no browser DevTools server. Each one
-    // costs processes in every concurrent agent session regardless of whether a
-    // browser is ever driven — see `mcp.devtools_browsers` in oma-config.yaml.
-    const devToolsBrowsers: DevToolsBrowser[] =
-      loadDevToolsBrowsers(installRoot) ?? [];
+    const devToolsBrowsers = await promptDevToolsBrowsers(
+      nonInteractive,
+      cleanup,
+      loadDevToolsBrowsers(installRoot) ?? ["aside"],
+    );
+
+    await ensureAsideInstalled(devToolsBrowsers);
 
     const modelPreset = await promptModelPreset(
       installRoot,
@@ -270,6 +274,11 @@ export async function install(options: InstallOptions = {}): Promise<void> {
       vendors,
       nonInteractive,
       cleanup,
+    );
+    // Hermes has no project MCP scope. A declined HOME export must also
+    // exclude its config writer and must not become recorded consent.
+    const configuredVendors = vendors.filter(
+      (vendor) => vendor !== "hermes" || selectedClis.includes("hermes"),
     );
 
     spinner.start("Installing skills...");
@@ -315,12 +324,12 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           rmSync(evalDir, { recursive: true, force: true });
         }
 
-        // Sync DevTools MCP servers (Chrome / Firefox) into .agents/mcp.json etc.
-        syncDevToolsMcp(installRoot, devToolsBrowsers);
+        // Persist the selection before linking vendor MCP configurations.
+        saveDevToolsBrowsers(installRoot, devToolsBrowsers);
 
         // Patch oma-config.yaml with selected language, model_preset, and vendors.
         // Uses regex-level replacement to preserve user-edited fields (timezone, etc.).
-        patchUserConfig(installRoot, language, modelPreset, vendors);
+        patchUserConfig(installRoot, language, modelPreset, configuredVendors);
 
         // Reconcile all vendor adaptations via the link kernel. agy HUD,
         // Claude .mcp.json seeding, vendor settings (Claude / Gemini / Qwen /
@@ -331,7 +340,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
         spinner.start("Installing vendor adaptations...");
         linkResult = link({
           root: installRoot,
-          vendorFilter: vendors,
+          vendorFilter: configuredVendors,
           quiet: true,
           telemetry: isTelemetryEnabled(installRoot),
           refreshSymlinks: false,

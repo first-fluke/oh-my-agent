@@ -6,6 +6,7 @@ import {
   vendorRequiresHomeConsent,
 } from "../../platform/skills-installer.js";
 import type { CliTool, CliVendor } from "../../types/index.js";
+import { loadOmaConfig } from "../../utils/config.js";
 import type { UpdateOptions } from "./types.js";
 
 const VENDOR_ROOTS: Record<CliVendor, string[]> = {
@@ -78,7 +79,13 @@ export function resolveUpdateVendors(
   if (options.vendor) return parseVendorList(options.vendor);
   if (options.all) return supportedProjectVendors();
 
-  return UPDATE_VENDORS.filter((vendor) => hasExistingVendorRoot(cwd, vendor));
+  // Include recorded HOME-only vendors (notably Hermes) which have no
+  // project directory. Only an explicit YAML list counts as a selection.
+  const configured: unknown = loadOmaConfig(cwd)?.vendors;
+  const recorded = Array.isArray(configured) ? configured : [];
+  return UPDATE_VENDORS.filter(
+    (vendor) => recorded.includes(vendor) || hasExistingVendorRoot(cwd, vendor),
+  );
 }
 
 export function toCliTools(vendors: CliVendor[]): CliTool[] {

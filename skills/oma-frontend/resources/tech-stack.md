@@ -4,6 +4,7 @@
 - **Framework**: Next.js 16+ (App Router), React 19+
 - **Language**: TypeScript (strict mode)
 - **Testing**: Vitest, React Testing Library
+- **Browser verification**: Browser verification uses the installed MCPs selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; use `oma update mcp` to change them. Discover the selected server’s actual tools before use; tool names and capabilities differ between servers. An empty selection disables browser MCP verification; report any unverified UI checks.
 - **UI**: `shadcn/ui` on the **Base UI** engine (see below)
 
 ## shadcn/ui Primitive Engine — Base UI vs Radix

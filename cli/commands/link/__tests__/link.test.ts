@@ -65,6 +65,7 @@ vi.mock("../../../platform/skills-installer.js", () => ({
 
 vi.mock("../../../utils/config.js", () => ({
   isTelemetryEnabled: vi.fn(() => false),
+  loadDevToolsBrowsers: vi.fn(() => undefined),
   loadSerenaConfig: vi.fn(() => ({ mode: "stdio" })),
 }));
 

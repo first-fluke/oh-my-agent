@@ -315,7 +315,7 @@
 
 - Run automated tools FIRST: `npm audit`, `bandit`, `lighthouse`
 - Use Serena MCP for code analysis patterns
-- Use Chrome DevTools MCP (`new_page` with `isolatedContext: "qa-test"`) for runtime verification and E2E testing
+- Browser verification follows `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; change them with `oma update mcp`. Discover the selected server’s tools before use. Chrome-specific calls below are examples only; use supported equivalents for Aside and Firefox. An empty selection disables browser MCP verification; report unverified UI checks.
 - Document all findings with file:line references
 - Provide remediation code examples
 - Estimate fix time for each issue

@@ -44,7 +44,6 @@ import {
 import { promptUninstallCompetitors } from "../../utils/competitors.js";
 import {
   isTelemetryEnabled,
-  loadDevToolsBrowsers,
   loadOmaConfig,
   loadSerenaConfig,
 } from "../../utils/config.js";
@@ -58,7 +57,6 @@ import {
   DEAD_PID_GRACE_MS,
   lockPath,
 } from "../../utils/install-lock.js";
-import { syncDevToolsMcp } from "../../vendors/serena.js";
 import { link } from "../link/run.js";
 import { runMigrations } from "../migrations/index.js";
 import { resolveAutoUpdateCli } from "./auto-update-config.js";
@@ -349,15 +347,6 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         ];
         for (const dir of backupCleanupDirs) {
           if (existsSync(dir)) rmSync(dir, { recursive: true, force: true });
-        }
-
-        // --- Browser DevTools MCP ---
-        // Only acts when the user has stated a preference. An unset key means
-        // "leave it as is": removing a server someone may be using is their
-        // call, not an update's side effect.
-        {
-          const browsers = loadDevToolsBrowsers(cwd);
-          if (browsers) syncDevToolsMcp(cwd, browsers);
         }
 
         // --- Serena Project Setup ---

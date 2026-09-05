@@ -51,7 +51,11 @@ at runtime. This step requires interacting with the running application.
 
 ### Execution by App Type
 
-#### Web Applications (Chrome DevTools MCP: Isolated Mode)
+#### Web Applications
+
+Browser verification uses the installed MCPs selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; use `oma update mcp` to change them. Discover the selected server’s actual tools before use; tool names and capabilities differ between servers. An empty selection disables browser MCP verification; report any unverified UI checks.
+
+Run the following checks with a selected, available server. Prefer a separate test context when supported. The tool calls below are Chrome DevTools MCP examples only; for Aside and Firefox DevTools MCP, discover and use their supported equivalents. Record missing capabilities instead of silently changing servers.
 
 1. Start the application (`bun run dev`, `uv run manage.py runserver`, etc.)
 2. Open the app in an **isolated browser context** to avoid contaminating the user's session:
@@ -60,7 +64,7 @@ at runtime. This step requires interacting with the running application.
    ```
    - Pages in the same `isolatedContext` share cookies/storage
    - Pages in different contexts are fully isolated
-   - Always use `isolatedContext: "qa-test"` for QA verification
+   - When using Chrome DevTools MCP, use `isolatedContext: "qa-test"` for QA verification
 3. Navigate and inspect:
    ```
    navigate_page(url)            → navigate within the isolated context (SPA routes, sub-pages)
@@ -94,9 +98,9 @@ at runtime. This step requires interacting with the running application.
    ```
    close_page(pageId)  → close isolated test pages after verification
    ```
-9. **Fallback** (no Chrome DevTools MCP available):
+9. **Fallback** (no selected browser MCP available):
    - Use curl/httpie to hit rendered endpoints
-   - Verify HTTP status codes and response bodies
+   - Verify HTTP status codes and response bodies; record that HTTP checks do not verify browser interactions
    - Check redirects, auth flows, and error pages
 
 #### API Endpoints
