@@ -16,7 +16,9 @@ import { ensureAsideInstalled } from "../../vendors/aside.js";
 import { updateMcp } from "./mcp.js";
 
 const prompt = vi.hoisted(() => vi.fn());
-vi.mock("../install/prompts.js", () => ({ promptDevToolsBrowsers: prompt }));
+vi.mock("../../platform/browser-prompts.js", () => ({
+  promptDevToolsBrowsers: prompt,
+}));
 vi.mock("@clack/prompts", () => ({ log: { success: vi.fn() } }));
 let root: string;
 beforeEach(() => {

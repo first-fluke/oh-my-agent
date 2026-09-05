@@ -1,4 +1,6 @@
 import * as p from "@clack/prompts";
+import { saveDevToolsBrowsers } from "../../platform/browser-preferences.js";
+import { promptDevToolsBrowsers } from "../../platform/browser-prompts.js";
 import {
   getInstallMode,
   getInstallRoot,
@@ -11,8 +13,6 @@ import {
 } from "../../utils/install-lock.js";
 import { ensureAsideInstalled } from "../../vendors/aside.js";
 import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
-import { saveDevToolsBrowsers } from "../install/browser-preferences.js";
-import { promptDevToolsBrowsers } from "../install/prompts.js";
 import type { UpdateOptions } from "./types.js";
 import { resolveUpdateVendors } from "./vendors.js";
 
