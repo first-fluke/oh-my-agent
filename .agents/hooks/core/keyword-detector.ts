@@ -1110,7 +1110,6 @@ export async function run(
     `[OMA WORKFLOW: ${workflow.toUpperCase()}]`,
     `User intent matches the /${workflow} workflow.`,
     `Read and follow \`.agents/workflows/${workflow}.md\` step by step.`,
-    `User request: ${prompt}`,
     `IMPORTANT: Start the workflow IMMEDIATELY. Do not ask for confirmation.`,
   ];
 

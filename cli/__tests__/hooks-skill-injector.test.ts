@@ -373,7 +373,7 @@ describe("skill-injector", () => {
       ]);
       expect(ctx).toContain("[OMA SKILLS DETECTED: oma-search]");
       expect(ctx).toContain(".agents/skills/oma-search/SKILL.md");
-      expect(ctx).toContain("search docs");
+      expect(ctx).not.toContain("search docs");
     });
   });
 

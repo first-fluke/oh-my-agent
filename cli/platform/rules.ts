@@ -177,18 +177,6 @@ const VENDOR_SPAWN: Record<string, string> = {
   pi: "pi has no native subagent API; use `oma agent:spawn {agent} {prompt} {sessionId} -m pi` for CLI subprocess dispatch",
 };
 
-/** Vendor-specific hook info. */
-const VENDOR_HOOKS: Record<string, string> = {
-  claude:
-    "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)",
-  codex:
-    "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)",
-  cursor:
-    "Hooks: `UserPromptSubmit` / `beforeSubmitPrompt` (keyword detection), `afterFileEdit` (refactor-guard recorder, opt-in), `stop` (persistent mode + refactor guard)",
-  qwen: "Hooks: `UserPromptSubmit` (keyword detection), `PreToolUse`, `PostToolUse` (refactor-guard recorder, opt-in), `Stop` (persistent mode + refactor guard)",
-  pi: "Extension bridge: `.pi/extensions/oma/index.ts` maps `before_agent_start` and `tool_call` to OMA hook scripts",
-};
-
 /** The doc a vendor's OMA block is merged into, if it has one. */
 export function vendorDocFile(vendor: string): string | undefined {
   return VENDOR_FILES[vendor];
@@ -207,130 +195,55 @@ function orderedDocVendors(vendors: readonly string[]): string[] {
 }
 
 /**
- * Label a vendor's hook line when several vendors share one doc:
- * `Hooks: …` → `Hooks (cursor): …`. Falls back to a plain prefix for entries
- * that don't lead with a label (pi's extension bridge).
- */
-function labelHookLine(vendor: string, line: string): string {
-  const idx = line.indexOf(":");
-  if (idx === -1) return `${vendor}: ${line}`;
-  return `${line.slice(0, idx)} (${vendor})${line.slice(idx)}`;
-}
-
-/**
  * Build a combined OMA block (usage guide + rules index) for the vendors that
  * share one doc. `AGENTS.md` is read by codex, cursor, qwen and pi alike, and
- * the block carries vendor-specific subagent/hook wiring — so every vendor
+ * the block carries vendor-specific subagent wiring — so every vendor
  * sharing the file is described, rather than the last one to be linked
  * overwriting the others.
  */
 function buildVendorBlock(vendors: string[], rules: ParsedRule[]): string {
   const primary = vendors[0] ?? "";
-  const multi = vendors.length > 1;
-  const spawnLines = multi
-    ? [
-        "- **Subagents**:",
-        ...vendors.map(
-          (v) => `  - ${v}: ${VENDOR_SPAWN[v] || "`oma agent:spawn`"}`,
-        ),
-      ]
-    : [`- **Subagents**: ${VENDOR_SPAWN[primary] || "`oma agent:spawn`"}`];
-  const hookLines = multi
-    ? vendors
-        .map((v) => {
-          const hooks = VENDOR_HOOKS[v];
-          return hooks ? labelHookLine(v, hooks) : "";
-        })
-        .filter(Boolean)
-    : [VENDOR_HOOKS[primary] || ""];
+  const spawnLines =
+    vendors.length > 1
+      ? [
+          "- **Subagents**:",
+          ...vendors.map(
+            (v) => `  - ${v}: ${VENDOR_SPAWN[v] || "`oma agent:spawn`"}`,
+          ),
+        ]
+      : [`- **Subagents**: ${VENDOR_SPAWN[primary] || "`oma agent:spawn`"}`];
 
   const lines = [
     OMA_START,
     "",
     "# oh-my-agent",
     "",
-    "> Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Carry out authorized work without repeated approval. System/developer instructions and the user's request take precedence over OMA defaults. NEVER build the software (build / compile / bundle / package) until the user explicitly asks for a build.",
+    "Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. System/developer instructions and the user's request take precedence over OMA defaults. Never build, compile, bundle, or package software unless the user explicitly requests a build.",
     "",
-    "## Architecture",
-    "",
-    "- **SSOT**: `.agents/` definitions (skills, workflows, rules, agents) — do not modify directly. Run outputs under `.agents/results/` and `.agents/state/` are generated artifacts, not SSOT.",
-    "- **Response language**: Follows `language` in `.agents/oma-config.yaml`",
-    "- **Skills**: `.agents/skills/` (domain specialists)",
-    "- **Workflows**: `.agents/workflows/` (multi-step orchestration)",
+    "- **SSOT**: Do not modify `.agents/` definitions (skills, workflows, rules, agents, config) directly. Run outputs under `.agents/results/` and `.agents/state/` are generated artifacts and may be written.",
+    "- **Response language**: Follow `language` in `.agents/oma-config.yaml`.",
+    "- **Skills**: Read the relevant `.agents/skills/{name}/SKILL.md` when needed.",
     ...spawnLines,
-    "",
-    "## Per-Agent Dispatch",
-    "",
-    "1. Resolve `target_vendor_for_agent` from `.agents/oma-config.yaml`.",
-    "2. If `target_vendor_for_agent === current_runtime_vendor`, use the runtime's native subagent path.",
-    "3. If vendors differ, or native subagents are unavailable, use `oma agent:spawn` for that agent only.",
-    "",
-    "## Code Search",
-    "",
-    "Use **serena MCP** tools for code search and discovery — they are symbol-aware and faster on large repos. Native Read / Glob / Grep is a fallback only when serena is unavailable or times out, or for plain non-code content reads. Serena's symbol-aware edit and diagnostic tools remain available after discovery.",
-    "",
-    "| Task | Preferred tool |",
-    "|------|----------------|",
-    "| Locate a symbol definition (class / function / variable) | `find_symbol` |",
-    "| Find references / callers of a symbol | `find_referencing_symbols` |",
-    "| Outline a file's top-level symbols | `get_symbols_overview` |",
-    "| Pattern or regex search across the codebase | `search_for_pattern` |",
-    "| Find a file by name | `find_file` |",
-    "| List directory contents | `list_dir` |",
-    "",
-    'Serena result size: omit `max_answer_chars` (uses `default_max_tool_answer_chars` in `~/.serena/serena_config.yml`, typically 150000) unless you need a hard cap. Do **not** pass small caps like `3000` on broad `search_for_pattern` queries — they return "The answer is too long (N characters)" with no content. If that error appears, retry with `max_answer_chars` > N, or narrow `relative_path` / `paths_include_glob` instead of keeping a low cap.',
-    "",
-    "## Workflows",
-    "",
-    "Execute by naming the workflow in your prompt. Keywords are auto-detected via hooks.",
-    "",
-    "| Workflow | File | Description |",
-    "|----------|------|-------------|",
-    "| orchestrate | `orchestrate.md` | Parallel subagents + Review Loop |",
-    "| work | `work.md` | Step-by-step with remediation loop |",
-    "| ultrawork | `ultrawork.md` | 5-Phase Gate Loop with cross-context reviews |",
-    "| ralph | `ralph.md` | Persistent loop wrapping ultrawork with an independent judge |",
-    "| plan | `plan.md` | PM task breakdown |",
-    "| brainstorm | `brainstorm.md` | Design-first ideation |",
-    "| architecture | `architecture.md` | Architecture diagnosis, comparison, ADR |",
-    "| design | `design.md` | Design system + DESIGN.md with anti-pattern enforcement |",
-    "| review | `review.md` | QA audit |",
-    "| debug | `debug.md` | Root cause + minimal fix |",
-    "| deepsec | `deepsec.md` | Drive `oma-deepsec` end-to-end (setup / scan / pr-review / matchers / triage / config / troubleshoot) |",
-    "| scm | `scm.md` | SCM + Git operations + Conventional Commits |",
-    "| docs | `docs.md` | Documentation drift verify + sync |",
-    "| recap | `recap.md` | Daily / period AI conversation recap |",
-    "| deepinit | `deepinit.md` | Project harness init (AGENTS.md / ARCHITECTURE.md / docs/) |",
-    "| convert | `convert.md` | File format conversion by category: documents→Markdown (oma-pdf/oma-hwp), image/video/audio transcode (ffmpeg) |",
-    "| video | `video.md` | Brief → script → assets → render-spec → Remotion (oma-video) |",
-    "| schedule | `schedule.md` | Register & manage time-based agent jobs via `oma schedule:*` |",
-    "| explain | `explain.md` | Diff/PR/branch → self-contained interactive HTML explainer via oma-explanation |",
-    "",
-    '(`tools` and `stack-set` are slash-invoked utilities, `schedule` is a slash-invoked workflow (`oma schedule:*` time-based jobs), `convert` is slash-invoked to avoid false positives on "convert this code" phrasing, and `explain` is slash-invoked because "explain" is everyday vocabulary, excluded from keyword detection to avoid false positives; all are intentionally excluded from keyword detection.)',
-    "",
-    `To execute: read and follow \`.agents/workflows/{name}.md\` step by step.`,
-    "",
-    "## Auto-Detection",
-    "",
-    ...hookLines,
-    "Keywords defined in `.agents/hooks/core/triggers.json` (multi-language).",
-    "Persistent workflows (orchestrate, ultrawork, work, ralph) block termination until complete.",
-    'Deactivate: say "workflow done".',
-    "",
-    "## Rules",
-    "",
-    "1. **Do not modify `.agents/` definition files** (SSOT protection: skills, workflows, rules, agents, config). Writing run outputs under `.agents/results/` and `.agents/state/` are generated artifacts, not SSOT.",
-    "2. Workflows execute via keyword detection or explicit naming, never self-initiated.",
-    "3. Response language follows `.agents/oma-config.yaml`",
     ...(vendors.includes("claude")
       ? [
-          "4. Always write Korean (and other non-ASCII) strings in tool-call parameters as literal UTF-8; never as \\uXXXX unicode escape style.",
+          "- Write non-ASCII tool-call parameters as literal UTF-8, not Unicode escapes.",
         ]
       : []),
     "",
+    "## Per-Agent Dispatch",
+    "",
+    "Resolve the target vendor for each agent from `.agents/oma-config.yaml`. Use native subagents when it matches the current runtime; otherwise, or when native dispatch is unavailable, use `oma agent:spawn` for that agent.",
+    "",
+    "## Code Search",
+    "",
+    "Serena MCP is required for code search and discovery. Load deferred tools before use. Use native search/read only when Serena is unavailable or times out, or for plain non-code content.",
+    "",
+    "## Workflows",
+    "",
+    "Run workflows only when explicitly requested or detected by a hook; never self-initiate. Read and follow `.agents/workflows/{name}.md`. Continue active workflows until complete or explicitly cancelled.",
+    "",
   ];
 
-  // Rules index
   if (rules.length > 0) {
     lines.push(
       "## Project Rules",
@@ -340,14 +253,12 @@ function buildVendorBlock(vendors: string[], rules: ParsedRule[]): string {
       "| Rule | File | Scope |",
       "|------|------|-------|",
     );
-
     for (const rule of rules) {
       const scope = rule.globs || (rule.alwaysApply ? "always" : "on request");
       lines.push(
         `| ${rule.name} | \`${RULES_DIR}/${rule.name}.md\` | ${scope} |`,
       );
     }
-
     lines.push("");
   }
 
@@ -394,7 +305,7 @@ export function mergeRulesIndexForVendor(
 
   // Co-vendors that write a different doc are irrelevant here; the ones sharing
   // this file must stay described in it, or linking a single vendor silently
-  // replaces the others' subagent/hook instructions.
+  // replaces the others' subagent instructions.
   const vendors = orderedDocVendors([
     vendor,
     ...coVendors.filter((v) => VENDOR_FILES[v] === fileName),

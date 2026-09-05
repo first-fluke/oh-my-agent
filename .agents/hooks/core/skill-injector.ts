@@ -440,7 +440,6 @@ export function formatContext(matches: SkillMatch[]): string {
   ];
   for (const m of matches) {
     lines.push(`- **${m.name}** — \`${m.relPath}\``);
-    lines.push(`  Matched triggers: ${m.matchedTriggers.join(", ")}`);
   }
   lines.push("");
   lines.push(

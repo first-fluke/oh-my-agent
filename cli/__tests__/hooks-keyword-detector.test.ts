@@ -1767,6 +1767,8 @@ describe("keyword-detector", () => {
         throw new Error("expected a context result");
       }
       expect(result.additionalContext).toContain("REVIEW");
+      expect(result.additionalContext).toContain(".agents/workflows/review.md");
+      expect(result.additionalContext).not.toContain("please review this");
     });
   });
 

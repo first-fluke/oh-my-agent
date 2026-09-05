@@ -30,10 +30,14 @@ describe("renderCliVendorDoc", () => {
     );
   });
 
-  it("includes the workflows table from the rules SSOT", () => {
+  it("routes to workflow instructions without embedding the workflow catalog", () => {
     const doc = renderCliVendorDoc("claude", null);
-    expect(doc).toContain("| explain | `explain.md` |");
-    expect(doc).toContain("5-Phase Gate Loop with cross-context reviews");
+    expect(doc).toContain("`.agents/workflows/{name}.md`");
+    expect(doc).toContain(
+      "only when explicitly requested or detected by a hook; never self-initiate",
+    );
+    expect(doc).not.toContain("| Workflow | File | Description |");
+    expect(doc).not.toContain("## Auto-Detection");
   });
 
   it("splices into existing OMA markers, preserving outside content", () => {

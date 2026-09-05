@@ -111,14 +111,9 @@ export function claimSession(
 export function primerContext(): string {
   return [
     "[OMA SERENA PRIMER]",
-    "This project is Serena-activated. Prefer Serena's symbol-aware code-intelligence tools over plain grep/Read for code work.",
-    "",
-    "- If Serena's tools are not yet visible (some runtimes defer MCP tools), load them first, then call `initial_instructions` once to read Serena's manual — unless your runtime context already injected it.",
-    "- Code discovery / reading: `get_symbols_overview`, `find_symbol`, `find_referencing_symbols`, `search_for_pattern`.",
-    "- Code edits: `replace_symbol_body`, `insert_after_symbol`, `insert_before_symbol`, `replace_content`.",
-    "- Native grep/glob: only for initial filename/path discovery. Do not fall back to grep + Read for code navigation just because Serena's tools aren't loaded yet — load them.",
-    '- Result size: omit `max_answer_chars` on Serena tools (uses the configured default, typically 150000). Never pass small caps like `3000` on broad searches. If a call returns "The answer is too long (N characters)", retry with `max_answer_chars` > N or narrow path/glob — do not keep the low cap.',
-    "- Exception — MCP timeout: if a Serena MCP call times out or hangs (seen mainly in OpenCode Desktop's long-lived sidecar), stop retrying MCP for this session: use native search/read for code, and access `.serena/memories/` files directly (or `serena memories read|write` when Serena CLI ≥ 1.5 is installed) for memory work. A full app relaunch restores Serena MCP.",
+    "For code work, load deferred Serena tools if needed and read `initial_instructions` once unless already provided.",
+    "Omit `max_answer_chars`; narrow the query if results exceed the limit.",
+    "If Serena is unavailable or times out, use native tools. Do not retry timed-out MCP calls this session.",
   ].join("\n");
 }
 

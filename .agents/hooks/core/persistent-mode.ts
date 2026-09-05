@@ -408,7 +408,6 @@ export async function run(
       `The /${workflow} workflow is still active (reinforcement ${state.reinforcementCount}/${MAX_REINFORCEMENTS}).`,
       `Continue executing the workflow. If all tasks are genuinely complete:`,
       `  1. Delete the state file: Bash \`rm ${stateFile}\``,
-      `  2. Or ask the user to say "워크플로우 완료" / "workflow done"`,
       ignoredGateNote,
     ]
       .filter(Boolean)

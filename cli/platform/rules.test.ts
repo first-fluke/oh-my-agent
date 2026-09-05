@@ -273,15 +273,23 @@ describe("mergeRulesIndexForVendor", () => {
     expect(content).toContain("<!-- OMA:END -->");
     expect(content).toContain("# oh-my-agent");
     expect(content).toContain("## Code Search");
-    expect(content).toContain("Use **serena MCP** tools for code search");
-    expect(content).toContain("max_answer_chars");
-    expect(content).toContain("default_max_tool_answer_chars");
+    expect(content).toContain(
+      "Serena MCP is required for code search and discovery.",
+    );
+    expect(content).toContain("only when Serena is unavailable or times out");
+    expect(content).toContain("execution-policy.md");
+    expect(content).toContain("unless the user explicitly requests a build");
+    expect(content).toContain("Do not modify `.agents/` definitions");
+    expect(content).toContain("`.agents/results/` and `.agents/state/`");
+    expect(content).not.toContain("max_answer_chars");
+    expect(content).not.toContain("| Task | Preferred tool |");
+    expect(content).not.toContain("## Auto-Detection");
     expect(content).toContain("## Workflows");
     expect(content).toContain("| frontend |");
     expect(content).toContain("| backend |");
     expect(content).toContain(".agents/rules/");
     expect(content).toContain(
-      "4. Always write Korean (and other non-ASCII) strings in tool-call parameters as literal UTF-8; never as \\uXXXX unicode escape style.",
+      "Write non-ASCII tool-call parameters as literal UTF-8, not Unicode escapes.",
     );
   });
 
@@ -387,11 +395,11 @@ describe("mergeRulesIndexForVendor", () => {
     expect(viaCursor).toContain(".codex/agents/{name}.toml");
     expect(viaCursor).toContain("- cursor: ");
     expect(viaCursor).toContain("`@agent-name`");
-    expect(viaCursor).toContain("Hooks (codex):");
-    expect(viaCursor).toContain("Hooks (cursor):");
+    expect(viaCursor).not.toContain("Hooks (codex):");
+    expect(viaCursor).not.toContain("Hooks (cursor):");
     // claude writes CLAUDE.md — it must not leak into the shared AGENTS.md.
     expect(viaCursor).not.toContain("- claude: ");
-    expect(viaCursor).not.toContain("Always write Korean");
+    expect(viaCursor).not.toContain("Write non-ASCII");
 
     // The unfiltered run starts from codex instead; same file, same bytes.
     vi.clearAllMocks();
@@ -418,9 +426,7 @@ describe("mergeRulesIndexForVendor", () => {
 
     const content = findAtomicWrite("AGENTS.md")?.content as string;
     expect(content).toContain("- **Subagents**: `@agent-name`");
-    expect(content).toContain(
-      "Hooks: `UserPromptSubmit` / `beforeSubmitPrompt`",
-    );
+    expect(content).not.toContain("UserPromptSubmit");
     expect(content).not.toContain("Hooks (cursor):");
   });
 
