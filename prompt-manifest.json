@@ -181,8 +181,8 @@
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "97723082e49a89c691a6b9c58114f4da90dba279c32da5cb3dfaee2121abd0ce",
-      "size": 18237
+      "sha256": "2d10ee230956847cb88d2e4b93d787a2caf432359885031c82927e7e45b1d4c1",
+      "size": 17896
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",

@@ -6,9 +6,9 @@ description: Short-form, explainer, and demo video generation via a key-optional
   agent-authored Remotion composition (always-latest Remotion +
   remotion-dev/skills) into reproducible run directories. Routes three modes —
   shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough
-  (screen capture from human-recorded video). Use for
-  video, shorts, reels, short-form, demo, explainer, walkthrough, screencast,
-  web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.
+  (screen capture from human-recorded video). Use for video, shorts, reels,
+  short-form, demo, explainer, walkthrough, screencast, web capture, video
+  generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.
 ---
 
 # Video Agent - Short-form, Explainer & Demo Router
