@@ -1,0 +1,16 @@
+{
+  "name": "OMA Plugins",
+  "owner": "first-fluke",
+  "plugins": [
+    {
+      "id": "first-fluke.oma",
+      "source": {
+        "kind": "git",
+        "url": "https://github.com/first-fluke/oh-my-agent.git",
+        "ref": "orca-v0.1.0"
+      },
+      "description": "OMA project skills, review, debugging and verification in existing Orca agent terminals.",
+      "categories": ["productivity"]
+    }
+  ]
+}
