@@ -60,7 +60,7 @@ Other tools that shell out to `oma video generate --format json` parse a JSON en
 
 ```
 oma video generate <brief...> [options]
-oma video doctor [--install|--install-mpt|--install-playwright]  # toolchain readiness / provisioning
+oma video doctor [--install|--install-mpt]  # toolchain readiness / provisioning
 oma video render <runDir>        # re-render from render-spec.json (deterministic)
 oma video list-providers         # provider availability + key/fallback status
 ```
@@ -98,7 +98,7 @@ Every capability resolves to a provider with a **real branch** and a **determini
 | voice | `oma-voice` (Voicebox, local) | estimated timing, no audio |
 | visual | `oma-image` / `oma-slide` / stock | placeholder asset |
 | caption | key-free forced alignment | estimated word timing |
-| capture | supervised Playwright web capture (`--source web`) or Cap (`--source file`) | guided "record it yourself" protocol |
+| capture | supervised browser web capture (`--source web`) or Cap (`--source file`) | guided "record it yourself" protocol |
 | compositor | Remotion (vendored) or MoneyPrinterTurbo | deterministic placeholder mp4 |
 
 No credential automation: a human performs any on-screen login during capture; URLs and query tokens are masked in logs and the manifest.
@@ -109,13 +109,13 @@ Captions render as **static windowed cues** — the single caption line active a
 
 ## Toolchain and `doctor`
 
-The heavy toolchain (the vendored Remotion project's `node_modules`, the embedded Pretendard font, the MoneyPrinterTurbo checkout, Playwright browsers, Chrome Headless Shell) is **provisioned on demand**, never shipped in the package. Plain `doctor` is report-only — it never installs anything:
+The heavy toolchain (the vendored Remotion project's `node_modules`, the embedded Pretendard font, the MoneyPrinterTurbo checkout, capture browsers, Chrome Headless Shell) is **provisioned on demand**, never shipped in the package. Plain `doctor` is report-only — it never installs anything:
 
 ```bash
 oma video doctor
 ```
 
-It reports `node`, `chromium`, `ffmpeg`, `remotion-toolchain`, `remotion-skills`, `pretendard-font`, `mpt-project`, `playwright`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. The key-free baseline (Node + Chromium + FFmpeg + `oma-image`) is enough to produce a real `.mp4`.
+It reports `node`, `chromium`, `ffmpeg`, `remotion-toolchain`, `remotion-skills`, `pretendard-font`, `mpt-project`, `voicebox`, `oma-image`, `pixelle`, and `cap`, and prints the install hint for anything missing. The key-free baseline (Node + Chromium + FFmpeg + `oma-image`) is enough to produce a real `.mp4`.
 
 Use the install flags to provision the toolchain:
 
@@ -123,7 +123,6 @@ Use the install flags to provision the toolchain:
 oma video doctor --install             # warm the latest Remotion toolchain + Chrome Headless Shell + Pretendard + remotion-dev/skills
 oma video doctor --upgrade             # force a latest-version check now
 oma video doctor --install-mpt         # MoneyPrinterTurbo checkout (clone + venv + deps) for --compositor mpt
-oma video doctor --install-playwright  # Playwright + Chromium for web capture
 ```
 
 `--install` also fetches the embedded Pretendard font (pinned release) into the vendored project — this is part of the determinism boundary. On a network failure it warns and the render falls back to system fonts; byte-identical output across machines is only guaranteed once the font is present.
@@ -154,7 +153,7 @@ The `render-spec.json` + assets are the determinism boundary; live capture is re
 |---------|-------------|
 | Output is a tiny text file, not an mp4 | The compositor fell back to the placeholder — run `oma video doctor` and provision the flagged tool. |
 | Narration is silent (`source: estimated`) | Voicebox is unreachable; start the `oma-voice` server, or accept estimated timing. |
-| `--source web` prints a guided protocol instead of recording | No TTY (CI) or Playwright absent → guided fallback. Install with `oma video doctor --install-playwright`. |
+| `--source web` prints a guided protocol instead of recording | No TTY (CI) or browser capture runtime unavailable → guided fallback. Use an interactive terminal with a provisioned capture runtime, or pass a recorded file with `--capture`. |
 | Render is slow on the first run | The Remotion browser / MPT checkout is being provisioned once; subsequent runs reuse the cache. |
 
 ---

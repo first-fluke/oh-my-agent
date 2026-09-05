@@ -169,11 +169,11 @@ verification_cache:
   - id: C5
     cached_status: PASS
     cached_at_iteration: 3
-    cached_evidence: "playwright admin.spec.ts: 8/8 passed in 4m12s"
+    cached_evidence: "Browser E2E: 8/8 passed in 4m12s"
     affected_paths:
       - "src/admin/**"
       - "src/auth/**"
-      - "playwright/admin.spec.ts"
+      - "e2e/admin.spec.ts"
     last_verified_iteration: 3
 ```
 

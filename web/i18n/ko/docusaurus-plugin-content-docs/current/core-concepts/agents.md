@@ -774,7 +774,7 @@ oh-my-agent의 에이전트는 전문화된 엔지니어링 역할입니다. 각
 
 **워크플로우:** PREPARE(모드·화면비·로케일, 브리프 명확화와 보강) → ACQUIRE(프로바이더 가용성 확인, 캡처 경로 검증, 비용 확인) → ACT(스크립트 → 음성과 비주얼과 자막 → render-spec → 렌더) → VERIFY(스키마, 매니페스트 해시, 종료 코드, mp4) → FINALIZE(실행 디렉토리, mp4 경로, 커버리지 경고).
 
-**리소스:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, 그리고 벤더링된 `remotion/` 컴포지터, `playwright/` 웹 캡처 드라이버, `mpt/` 폴백 컴포지터, `config/video-config.yaml`.
+**리소스:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, 그리고 벤더링된 `remotion/` 컴포지터, 웹 캡처 드라이버, `mpt/` 폴백 컴포지터, `config/video-config.yaml`.
 
 ---
 

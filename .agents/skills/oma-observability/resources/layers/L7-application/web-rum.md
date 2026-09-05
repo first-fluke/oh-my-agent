@@ -218,7 +218,7 @@ Synthetic monitoring provides an "outside-in" view that complements RUM. RUM sho
 
 | Tool | Type | Best for |
 |------|------|---------|
-| **Checkly** | Playwright-based browser checks | Full user-journey verification; integrates with CI/CD |
+| **Checkly** | Browser checks | Full user-journey verification; integrates with CI/CD |
 | **Grafana k6** | Script-based load + synthetic | Load testing + baseline synthetic probes in one tool |
 | **Prometheus Blackbox Exporter** | HTTP/TCP/ICMP probe | Lightweight availability checks; PromQL-native alerting |
 | **Datadog Synthetics** | Browser + API | Unified with Datadog RUM; managed SaaS |

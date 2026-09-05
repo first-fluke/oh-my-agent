@@ -75,7 +75,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
    ```bash
    oma video doctor --format json
    ```
-   This reports Node / Chromium / FFmpeg, the vendored Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Playwright web-capture readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. The MPT fallback compositor needs a one-time `oma video doctor --install-mpt` (clone + venv + deps). For web capture, `oma video doctor --install-playwright` is the one-time install (`npm i playwright` + chromium); it reuses the project's Playwright when present.
+   This reports Node / Chromium / FFmpeg, the vendored Remotion project, the embedded Pretendard font, Voicebox MCP (oma-voice), oma-image vendors, optional Pixelle-MCP, Cap, and (for `demo --source web`) Browser web-capture readiness. **Doctor does NOT auto-bootstrap** — plain `oma video doctor` only reports. If Remotion is not yet installed, run `oma video doctor --install` (one-time: deps + Chrome Headless Shell + Pretendard font fetch) — do not install during a run. The MPT fallback compositor needs a one-time `oma video doctor --install-mpt` (clone + venv + deps).
 3. If doctor reports a hard blocker for the chosen mode (e.g. no compositor for `shorts`/`explainer`), report the remediation and stop. If only an optional provider is missing (Pexels, Pixelle, Cap), note it and continue on the fallback.
 4. Record run start with the memory write tool: brief summary, requested mode, doctor result.
 
@@ -86,7 +86,7 @@ For `demo`, also resolve the **source**: a recorded file or Cap → `--source fi
 1. State the resolved **mode**, **aspect**, **locale**, **caption style**, **visual track**, and **compositor** you intend to use, and the expected output name.
 2. For `demo` mode, state up front: **"Capture is performed by a human."** Resolve the **source**:
    - `--source file`: if no `--capture <path>` is available and Cap CLI is not present, ask the user to record and provide the file path before proceeding.
-   - `--source web --url <url>` (any URL — local/staging/prod): state that the tool opens a **headed browser** and records while the **human drives the entire on-screen flow** and presses ENTER to stop; **no login is ever automated**, and the `--url` plus any query tokens are masked in logs and the manifest. The capture size is derived from `--aspect`/`--device` (no hardcoded size). If Playwright is unresolvable, or the session has no interactive TTY (CI / `-y` / no stdin), say so and fall back to the guided protocol — never hang. (`--capture-stop duration:<sec>|selector:<css>` supplies a non-interactive stop for CI.)
+   - `--source web --url <url>` (any URL — local/staging/prod): state that the tool opens a **headed browser** and records while the **human drives the entire on-screen flow** and presses ENTER to stop; **no login is ever automated**, and the `--url` plus any query tokens are masked in logs and the manifest. The capture size is derived from `--aspect`/`--device` (no hardcoded size). If the browser capture runtime is unavailable, or the session has no interactive TTY (CI / `-y` / no stdin), say so and fall back to the guided protocol — never hang. (`--capture-stop duration:<sec>|selector:<css>` supplies a non-interactive stop for CI.)
 3. Apply `.agents/skills/_shared/core/execution-policy.md`: proceed when the requested work or decision is already authorized; ask only for a material missing decision or new authorization.
 4. After the user confirms, emit and verify the mode-selection decision:
    ```bash
@@ -144,11 +144,11 @@ For `demo`, the orchestrator produces the footage in place of synthetic visuals,
   1. Opens a real browser at `--url`, waits for load/hydration (`networkidle`, optional `--ready-selector <css>`), at a size derived from `--aspect`/`--device` (no hardcoded size).
   2. Prompts on the terminal: the **human performs the entire on-screen flow** (whatever it is — multi-page popups / new tabs / redirects are all recorded generically) and presses **ENTER** to stop. The tool **never automates a login**; if the flow needs one, the human does it.
   3. Records to a real `capture.mp4` in the run dir, validated with ffprobe. The `--url` and any query tokens are **masked** in logs and `manifest.json`; outputs stay in the run dir.
-  4. **Fallback (key-optional, non-blocking):** if Playwright is unresolvable, or there is no interactive TTY (CI / `-y` / no stdin), the orchestrator falls back to the **guided protocol** and warns — it never hangs. `--capture-stop duration:<sec>|selector:<css>` gives CI a non-interactive stop instead of the ENTER prompt.
+  4. **Fallback (key-optional, non-blocking):** if the browser capture runtime is unavailable, or there is no interactive TTY (CI / `-y` / no stdin), the orchestrator falls back to the **guided protocol** and warns — it never hangs. `--capture-stop duration:<sec>|selector:<css>` gives CI a non-interactive stop instead of the ENTER prompt.
   5. **Display caveat:** the capture launches a **headed** Chromium, which needs a display. On display-less hosts (CI / Linux without X), pass `--capture-stop …` — the driver then runs headless (`record.mjs --headless 1`) — or expect a capture error / guided fallback.
   6. Live capture is **outside** the determinism boundary, so the manifest records `nondeterministic: true`.
 
-> **Optional fast-path (agent sessions only):** when an agent session has a Playwright/Chrome MCP available, it may drive the headed flow through that MCP as a complement. This is **not** the primary path — the CLI web-capture subprocess remains canonical, and the same rules hold (human drives any login, URL/tokens masked, run-dir-only).
+> **Optional fast-path (agent sessions only):** when an agent session has a Chrome DevTools MCP available, it may drive the headed flow through that MCP as a complement. This is **not** the primary path — the CLI web-capture subprocess remains canonical, and the same rules hold (human drives any login, URL/tokens masked, run-dir-only).
 
 ---
 
@@ -218,7 +218,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
    <mode>-<slug>.mp4
    manifest.json
    ```
-2. Verify `manifest.json` is the reproducibility record: `runId, mode, providers{...}, assets[{path,sha256,bytes,seed}], outputs{video,durationSec,sha256}, cost{usd,breakdown}, warnings[], exitCode`. All external assets are copied into the run dir and hashed — no URL refs. For `demo --source web`, the manifest carries `nondeterministic: true`, the capture provider id (`playwright-web`), and a **masked** `--url` (query tokens stripped) — never the raw URL or any credential.
+2. Verify `manifest.json` is the reproducibility record: `runId, mode, providers{...}, assets[{path,sha256,bytes,seed}], outputs{video,durationSec,sha256}, cost{usd,breakdown}, warnings[], exitCode`. All external assets are copied into the run dir and hashed — no URL refs. For `demo --source web`, the manifest carries `nondeterministic: true`, the selected capture provider id, and a **masked** `--url` (query tokens stripped) — never the raw URL or any credential.
 3. Report to the user:
    - Output MP4 path (absolute) and duration.
    - Providers used per track, and which tracks took the **fallback** path.
@@ -240,5 +240,5 @@ Common error → action map:
 | `ProviderUnavailableError` | 5 | a required provider is down → run `oma video doctor`, fix or fall back |
 | `CompositorBootstrapError` | 1 | Remotion not installed → `oma video doctor` install-once, then re-render |
 | `CostGuardrailError` | confirm | estimate crossed guardrail → Step 5 confirmation or drop paid providers |
-| `CaptureRequiredError` | guided | demo needs footage → `--source file`: ask user to record + pass `--capture <path>`. `--source web`: Playwright unresolvable / no TTY / empty recording → fall back to the guided protocol (no hang) |
+| `CaptureRequiredError` | guided | demo needs footage → `--source file`: ask user to record + pass `--capture <path>`. `--source web`: Browser capture runtime unavailable / no TTY / empty recording → fall back to the guided protocol (no hang) |
 | `SchemaValidationError` | 4 | script/render-spec invalid, or `--source web` without `--url` → fix in Step 3 (or supply `--url`), re-validate with `--dry-run` |

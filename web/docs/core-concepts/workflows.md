@@ -451,7 +451,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 **Steps:**
 1. **Resolve the brief and mode:** Pick `shorts` (9:16), `explainer` (16:9), or `demo` (screen/web capture); apply mode defaults, overridable by flags.
 2. **Compose the script:** Generate scenes + narration (LLM when a key is present, else a deterministic outline from the brief).
-3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised Playwright web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
+3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised browser web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
 4. **Build the render-spec:** Write `render-spec.json` (the determinism boundary) plus assets into the run directory.
 5. **Render:** Spawn the vendored Remotion project (or MoneyPrinterTurbo) as a subprocess; on any failure, emit a deterministic placeholder so the run still completes. Live capture is recorded as `nondeterministic` in the manifest.
 

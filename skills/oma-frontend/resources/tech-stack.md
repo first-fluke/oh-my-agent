@@ -3,7 +3,7 @@
 ## Core Framework
 - **Framework**: Next.js 16+ (App Router), React 19+
 - **Language**: TypeScript (strict mode)
-- **Testing**: Vitest, React Testing Library, Playwright
+- **Testing**: Vitest, React Testing Library
 - **UI**: `shadcn/ui` on the **Base UI** engine (see below)
 
 ## shadcn/ui Primitive Engine — Base UI vs Radix

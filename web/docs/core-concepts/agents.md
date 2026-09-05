@@ -775,7 +775,7 @@ When a workflow maps an agent to the same vendor as the current runtime, it shou
 
 **Workflow:** PREPARE (mode/aspect/locale, clarify/amplify brief) → ACQUIRE (probe provider availability, validate capture path, check cost) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, manifest hashes, exit code, mp4) → FINALIZE (run-dir + mp4 path + coverage warnings).
 
-**Resources:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, plus the vendored `remotion/` compositor, the `playwright/` web-capture driver, and the `mpt/` fallback compositor; `config/video-config.yaml`.
+**Resources:** `execution-protocol.md`, `vendor-matrix.md`, `prompt-tips.md`, `checklist.md`, plus the vendored `remotion/` compositor, the web-capture driver, and the `mpt/` fallback compositor; `config/video-config.yaml`.
 
 ---
 
