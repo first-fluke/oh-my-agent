@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.6](https://github.com/first-fluke/oh-my-agent/compare/web-v6.3.5...web-v6.3.6) (2026-09-12)
+
+
+### Bug Fixes
+
+* **skills:** simplify prompts and context loading ([7e4c0d1](https://github.com/first-fluke/oh-my-agent/commit/7e4c0d1960c5b050ea239e0dc342ba40a219fcd6))
+
 ## [6.3.5](https://github.com/first-fluke/oh-my-agent/compare/web-v6.3.4...web-v6.3.5) (2026-09-10)
 
 
