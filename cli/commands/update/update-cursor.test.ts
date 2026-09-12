@@ -39,6 +39,16 @@ vi.mock("../../io/serena.js", async (original) => ({
   ...serenaState,
 }));
 
+const gortexState = vi.hoisted(() => ({
+  ensureGortexProject: vi.fn(() => ({
+    binaryAvailable: true,
+    tracked: "already",
+    excludes: { status: "unchanged", added: [] },
+  })),
+}));
+
+vi.mock("../../io/gortex.js", () => gortexState);
+
 const providerState = vi.hoisted(() => ({
   loadProviders: vi.fn(() => ({
     docs: "context7",
@@ -356,6 +366,26 @@ describe("update cursor vendor adaptations", () => {
 
     expect(serenaState.ensureSerenaProject).not.toHaveBeenCalled();
     expect(serenaState.ensureOmaSerenaContexts).not.toHaveBeenCalled();
+    // Gortex gets the same per-update project maintenance Serena gets:
+    // excludes reconciled and the root (re-)registered with the daemon.
+    expect(gortexState.ensureGortexProject).toHaveBeenCalledWith(
+      expect.stringContaining("oma-update-gortex-project-"),
+    );
+  });
+
+  it("does not run Gortex project setup when Serena is selected", async () => {
+    const projectDir = makeTempRoot("oma-update-serena-project-");
+    const repoDir = makeTempRoot("oma-update-serena-repo-");
+    extractedRepoDir = repoDir;
+    mockInstallRoot = projectDir;
+    writeRepoConfig(repoDir, ["codex"]);
+    createExistingVendorRoots(projectDir, ["codex"]);
+
+    process.chdir(projectDir);
+    await update({ ci: true });
+
+    expect(serenaState.ensureSerenaProject).toHaveBeenCalled();
+    expect(gortexState.ensureGortexProject).not.toHaveBeenCalled();
   });
 
   it("reconciles Gortex MCP drift when the installed version is current", async () => {

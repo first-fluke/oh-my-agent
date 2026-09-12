@@ -4,6 +4,7 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
+import { ensureGortexProject } from "../../io/gortex.js";
 import {
   deriveSerenaLanguages,
   ensureOmaSerenaContexts,
@@ -547,6 +548,49 @@ export async function install(options: InstallOptions = {}): Promise<void> {
           p.log.warn(
             `Could not install Serena's OMA context: ${contexts.failed.join(", ")}`,
           );
+        }
+      } else if (providerSelection.providers.code_intelligence === "gortex") {
+        // --- Gortex Project Setup ---
+        // Same gating as Serena: a global install's root is $HOME, which is
+        // not a codebase — tracking it would crawl the whole home directory.
+        if (getInstallMode() === "global") {
+          p.log.info(
+            pc.dim(
+              "Gortex project setup skipped (global install) — run `oma update` inside a project to track it.",
+            ),
+          );
+        } else {
+          const gortex = ensureGortexProject(installRoot);
+          if (gortex.excludes.added.length > 0) {
+            p.log.success(
+              pc.green(
+                `Gortex excludes configured for this project (${gortex.excludes.added.join(", ")})`,
+              ),
+            );
+          }
+          if (!gortex.binaryAvailable) {
+            p.log.warn(
+              "gortex not found on PATH — install Gortex, then run `oma update` to track this project.",
+            );
+          } else if (gortex.tracked === "tracked") {
+            p.log.success(
+              pc.green(
+                "Project registered in Gortex (initial indexing continues in the background)",
+              ),
+            );
+          } else if (gortex.tracked === "started") {
+            p.log.info(
+              "Gortex tracking requested; confirm with `gortex repos` once the daemon settles.",
+            );
+          } else if (gortex.tracked === "failed") {
+            p.log.warn(
+              `Could not register the project in Gortex — run \`gortex track ${installRoot}\` manually.`,
+            );
+          } else if (gortex.tracked === "unknown") {
+            p.log.warn(
+              "Could not read Gortex's tracked repositories (daemon unresponsive?) — run `oma update` later to retry.",
+            );
+          }
         }
       }
 

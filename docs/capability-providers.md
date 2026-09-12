@@ -184,8 +184,7 @@ should be cited.
 
 ## Gortex
 
-Install [Gortex](https://github.com/zzet/gortex) separately and explicitly choose
-which repositories to track. OMA projects `gortex mcp --tools compact` into the selected runtimes'
+Install [Gortex](https://github.com/zzet/gortex) separately. OMA projects `gortex mcp --tools compact` into the selected runtimes'
 native MCP files and removes their Serena entry while Gortex is selected. Existing
 custom Gortex commands are retained. Pi also receives the `pi-mcp-adapter` package
 registration, even when no browser MCP is selected.
@@ -198,8 +197,37 @@ Existing custom Gortex entries keep their chosen preset. An inherited
 Generated agent instructions route code-intelligence work to Gortex and override
 Serena-specific skill routing. The `code-intelligence-primer` hook detects the active
 code-intelligence provider and injects Gortex primer guidance (`[OMA GORTEX PRIMER]`)
-into sessions, replacing the Serena primer. OMA does not run `gortex install`,
-`gortex init`, or `gortex track`.
+into sessions, replacing the Serena primer.
+
+### Project setup (install and update)
+
+Selecting Gortex in the installer is the consent to track the project. In
+project mode, `oma install` and `oma update` both run the same idempotent
+setup, mirroring Serena's `project.yml` maintenance:
+
+1. **Tracking** — when `gortex repos --json` does not list the project root,
+   `oma` runs `gortex track <root>`. The initial index continues in the daemon
+   after the command returns. An already tracked root is never re-tracked
+   (that call blocks on the daemon's control budget without effect).
+2. **Excludes** — the project's tracked entry gains OMA's generated directories
+   (`.agents/results/`, `.agents/state/`, `.agents/backup/`) and tool caches
+   missing from Gortex's builtin baseline (`.ruff_cache/`, `.pytest_cache/`,
+   `.turbo/`, `coverage/`) through `gortex config exclude add --repo <name>`.
+   Only missing patterns are added; user patterns and the rest of Gortex's
+   config stay untouched, and the Gortex CLI reloads the daemon itself. Without
+   these excludes, every write to those directories becomes a watcher patch
+   that holds the daemon's writer gate, and a saturated gate makes graph
+   queries time out for every tracked repository.
+
+Nothing is written into the project tree: both steps live in Gortex's own
+user-level configuration (`~/.gortex/config.yaml`), which OMA only ever edits
+through the Gortex CLI. Users do not need to know these settings exist;
+re-running `oma update` on another machine converges it again.
+
+Global installs skip both steps: their root is `$HOME`, which is not a
+codebase. A missing binary or an unresponsive daemon degrades to a warning; the
+install never fails on Gortex. OMA still does not run `gortex install` or
+`gortex init`, and agent sessions must never track additional repositories.
 
 Previous native Serena/Gortex entries are saved in
 `.agents/state/provider-mcp.json`. Switching back to Serena restores these entries
@@ -209,8 +237,10 @@ owner-only permissions. User-managed servers outside the projected native files
 are outside this reconciliation scope. The shared `.agents/mcp.json` template
 is not changed by provider projection.
 
-`oma doctor` reports Gortex binary availability. It does not validate that a graph
-has been indexed or run a graph query. If Gortex is unavailable, use native search;
+`oma doctor` reports Gortex binary availability and whether the current project is
+in the daemon's tracked set (`gortex repos --json`); an untracked project is an
+issue with `oma update` as the fix. It does not validate that a graph has been
+indexed or run a graph query. If Gortex is unavailable, use native search;
 OMA does not silently activate Serena as a second provider.
 
 ## Honcho

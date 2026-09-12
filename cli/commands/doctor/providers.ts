@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { isGortexTracked } from "../../io/gortex.js";
 import { createSearchContext } from "../../platform/search-context.js";
 import { createSearchProviderRegistry } from "../../platform/search-providers.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
@@ -25,6 +26,11 @@ export interface ProviderDoctorCheck {
     provider: "serena" | "gortex";
     experimental: boolean;
     binaryAvailable?: boolean;
+    /**
+     * Gortex only: whether `root` is in the daemon's tracked set. `undefined`
+     * when the binary is missing or the tracked set could not be read.
+     */
+    tracked?: boolean;
     fallback: string;
   };
   semanticMemory: MemoryProviderStatus;
@@ -92,6 +98,14 @@ export async function collectProviderCheck(
     issues.push(
       "Selected Gortex binary is unavailable; native search fallback applies",
     );
+  // A present binary is not enough: an untracked root makes every Gortex
+  // graph tool answer `repo_not_tracked`. Unknown (daemon unresponsive) is
+  // reported as neither tracked nor an issue — no false positives.
+  const tracked = binary?.installed ? isGortexTracked(root) : null;
+  if (tracked === false)
+    issues.push(
+      "Gortex does not track this project; run `oma update` (or `gortex track <root>`) so graph tools can answer",
+    );
   const headers =
     isRecord(context7) && isRecord(context7.headers) ? context7.headers : {};
   const env = isRecord(context7) && isRecord(context7.env) ? context7.env : {};
@@ -113,6 +127,7 @@ export async function collectProviderCheck(
       provider: providers.code_intelligence,
       experimental: providers.code_intelligence === "gortex",
       ...(binary ? { binaryAvailable: binary.installed } : {}),
+      ...(tracked === null ? {} : { tracked }),
       fallback: "native search/read; no automatic provider switch",
     },
     semanticMemory,

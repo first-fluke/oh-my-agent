@@ -44,7 +44,7 @@ export async function renderDoctorReport(report: DoctorReport): Promise<void> {
                 `Web search: ${providers.web.provider} (${providers.web.status}; reachability ${providers.web.reachability}${providers.web.credentialConfigured === undefined ? "" : `; credential ${providers.web.credentialConfigured ? "configured" : "missing"}`})`,
               ]
             : []),
-          `Code intelligence: ${providers.codeIntelligence.provider}${providers.codeIntelligence.experimental ? " (experimental)" : ""}`,
+          `Code intelligence: ${providers.codeIntelligence.provider}${providers.codeIntelligence.experimental ? " (experimental)" : ""}${providers.codeIntelligence.tracked === undefined ? "" : `; project ${providers.codeIntelligence.tracked ? "tracked" : "not tracked"}`}`,
           `Semantic memory: ${providers.semanticMemory.provider} (${providers.semanticMemory.reachable ? "reachable" : (providers.semanticMemory.reason ?? "offline")})`,
           ...providers.issues,
         ].join("\n"),

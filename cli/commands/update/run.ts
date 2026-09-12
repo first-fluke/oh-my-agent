@@ -11,6 +11,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { backupRoot } from "../../io/backup.js";
 import { maybeApplyRecommendedGitConfig } from "../../io/git-recommended.js";
+import { ensureGortexProject } from "../../io/gortex.js";
 import { maybeSelfUpdate } from "../../io/self-update.js";
 import {
   deriveSerenaLanguages,
@@ -450,6 +451,44 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
               "Serena",
             );
           }
+        } else if (
+          loadProviders(cwd).code_intelligence === "gortex" &&
+          mode !== "global"
+        ) {
+          // --- Gortex Project Setup ---
+          // Reconciled on every update like Serena's project.yml: re-adds the
+          // OMA exclude patterns and re-registers the root if it was
+          // untracked. Global mode is skipped for the same reason as Serena
+          // (cwd is $HOME there). Warn-only.
+          const gortex = ensureGortexProject(cwd);
+          const lines: string[] = [];
+          if (gortex.excludes.added.length > 0) {
+            lines.push(
+              `Excludes configured for this project: ${gortex.excludes.added.join(", ")}`,
+            );
+          }
+          if (!gortex.binaryAvailable) {
+            lines.push(
+              "gortex not found on PATH — install Gortex, then rerun `oma update` to track this project.",
+            );
+          } else if (gortex.tracked === "tracked") {
+            lines.push(
+              "Project registered in Gortex (initial indexing continues in the background).",
+            );
+          } else if (gortex.tracked === "started") {
+            lines.push(
+              "Gortex tracking requested; confirm with `gortex repos` once the daemon settles.",
+            );
+          } else if (gortex.tracked === "failed") {
+            lines.push(
+              `Could not register the project in Gortex — run \`gortex track ${cwd}\` manually.`,
+            );
+          } else if (gortex.tracked === "unknown") {
+            lines.push(
+              "Could not read Gortex's tracked repositories (daemon unresponsive?); rerun `oma update` later.",
+            );
+          }
+          if (lines.length > 0) ui.note(lines.join("\n"), "Gortex");
         }
 
         // --- Always-latest Remotion toolchain + remotion-dev/skills (oma-video) ---

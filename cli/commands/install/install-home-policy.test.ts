@@ -174,6 +174,14 @@ vi.mock("../../io/serena.js", () => ({
   SERENA_INSTALL_HINT:
     "uv tool install -p 3.13 serena-agent@latest --prerelease=allow",
 }));
+const gortexState = vi.hoisted(() => ({
+  ensureGortexProject: vi.fn(() => ({
+    binaryAvailable: true,
+    tracked: "tracked",
+    excludes: { status: "reconciled", added: [".agents/results/"] },
+  })),
+}));
+vi.mock("../../io/gortex.js", () => gortexState);
 vi.mock("../../utils/install-lock.js", () => ({
   acquireLock: vi.fn(() => ({ ok: true, release: () => {} })),
   bindInstallLockRelease: vi.fn((release: () => void) => release),
@@ -258,6 +266,24 @@ describe("install home policy", () => {
     expect(execCalls.some((cmd) => cmd.includes("git config --global"))).toBe(
       false,
     );
+  });
+
+  // --- Gortex project setup: project mode tracks the install root ---
+
+  it("runs Gortex project setup against the install root in project mode", async () => {
+    await install({ yes: true, codeIntelligence: "gortex" });
+
+    expect(gortexState.ensureGortexProject).toHaveBeenCalledTimes(1);
+    expect(gortexState.ensureGortexProject).toHaveBeenCalledWith(process.cwd());
+    expect(miscState.ensureSerenaProject).not.toHaveBeenCalled();
+    expect(miscState.ensureSerenaBinary).not.toHaveBeenCalled();
+  });
+
+  it("does not run Gortex project setup when Serena is selected", async () => {
+    await install({ yes: true, codeIntelligence: "serena" });
+
+    expect(gortexState.ensureGortexProject).not.toHaveBeenCalled();
+    expect(miscState.ensureSerenaProject).toHaveBeenCalled();
   });
 
   // --- Hermes consent gate: explicit opt-in required ---

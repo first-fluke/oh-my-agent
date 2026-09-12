@@ -8,7 +8,10 @@ requirement in a workflow or skill.
 
 1. Read the project configuration and discover the provider's actual tools.
 2. Use the configured provider when its tools are available for this repository.
-3. Do not install, initialize, track, or register a repository automatically.
+3. Do not install, initialize, track, or register a repository from an agent
+   session. Project-root tracking and exclude maintenance belong to
+   `oma install` / `oma update`; if the provider reports the repository as
+   untracked, tell the user to run `oma update`.
 4. If the provider is unavailable, has no applicable tool, or times out, use
    native search and scoped file reads. Record the fallback and its limits in
    the result.

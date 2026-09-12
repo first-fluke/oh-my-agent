@@ -188,6 +188,10 @@ vi.mock("../../io/serena.js", () => ({
   SERENA_INSTALL_HINT:
     "uv tool install -p 3.13 serena-agent@latest --prerelease=allow",
 }));
+const gortexState = vi.hoisted(() => ({
+  ensureGortexProject: vi.fn(),
+}));
+vi.mock("../../io/gortex.js", () => gortexState);
 vi.mock("../../utils/install-lock.js", () => ({
   acquireLock: miscState.acquireLock,
   bindInstallLockRelease: miscState.bindInstallLockRelease,
@@ -314,6 +318,8 @@ describe("install --global: _install.json schema and meta", () => {
     expect(miscState.ensureSerenaBinary).not.toHaveBeenCalled();
     expect(miscState.ensureSerenaProject).not.toHaveBeenCalled();
     expect(miscState.ensureOmaSerenaContexts).not.toHaveBeenCalled();
+    // Global root is $HOME, not a codebase: never tracked in Gortex either.
+    expect(gortexState.ensureGortexProject).not.toHaveBeenCalled();
     expect(syncProviderMcp).toHaveBeenCalledWith(tmpDir, expect.any(Array), {
       global: true,
     });

@@ -10,7 +10,7 @@ description: Install oh-my-agent, choose skills and providers, understand the ge
 - **An AI-powered IDE or CLI**: at least one supported host such as Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot, or Hermes
 - **bun**: JavaScript runtime and package manager (auto-installed by the install script if missing)
 - **uv**: Python package manager (the bootstrap script offers to install it when missing)
-- **Code intelligence provider**: Serena is the default provider. Gortex is also supported when selected in provider configuration. The installer can bootstrap Serena with `uv tool install`; it continues with a warning when an optional dependency is unavailable.
+- **Code intelligence provider**: Serena is the default provider. Gortex is also supported when selected in provider configuration. The installer can bootstrap Serena with `uv tool install`; it continues with a warning when an optional dependency is unavailable. With Gortex selected, project-mode `oma install` and `oma update` register the project with the Gortex daemon (`gortex track`) when it is not tracked yet and add OMA's generated directories to that project's exclude list through the Gortex CLI; nothing is written into the project tree. Gortex itself must be installed separately.
 
 The installer groups integrations by capability. Hook vendors include Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro, and Qwen; OpenCode and pi use extension bridges; GitHub Copilot and Hermes receive skill links; and ZCode receives workflow commands. You can select more than one vendor, but the first task only needs the host you plan to use.
 
@@ -291,7 +291,7 @@ This command checks:
 - Skill files exist with valid SKILL.md frontmatter
 - Symlinks and hook scripts point to valid targets
 - Hooks are properly configured in vendor settings files
-- Selected code-intelligence and memory providers are reachable
+- Selected code-intelligence and memory providers are reachable (with Gortex, also whether the current project is in the daemon's tracked set)
 - `oma-config.cue` / `oma-config.yaml` is valid with required fields
 
 If anything is wrong, `oma doctor` identifies the missing or invalid item and separates first-task blockers from optional integration warnings.
