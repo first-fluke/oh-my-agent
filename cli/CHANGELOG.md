@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.7.11](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.10...cli-v14.7.11) (2026-09-12)
+
+
+### Bug Fixes
+
+* **skills:** simplify prompts and context loading ([7e4c0d1](https://github.com/first-fluke/oh-my-agent/commit/7e4c0d1960c5b050ea239e0dc342ba40a219fcd6))
+
 ## [14.7.10](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.9...cli-v14.7.10) (2026-09-10)
 
 
