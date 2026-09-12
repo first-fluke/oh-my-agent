@@ -1,7 +1,7 @@
 # Frontend Agent - Error Recovery Playbook
 
 When you encounter a failure, find the matching scenario and follow the recovery steps.
-Do NOT stop or ask for help until you have exhausted the playbook.
+Use the relevant recovery steps. If required information or authority is missing, pause the dependent action and continue independent work.
 
 ---
 
@@ -11,12 +11,11 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 **Symptoms**: Reviewer claims `src/proxy.ts` won't be picked up, demands rename to `src/middleware.ts`, or flags the auth gate as not wired.
 <!-- oma-docs:ignore-end -->
 
-1. **STOP. This is a fatal self-error.** Next.js 16+ renamed `middleware.ts` → `proxy.ts`.
-2. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function.
-3. `middleware.ts` is BANNED in this project, not "deprecated", BANNED. Touch it and you die.
-4. Verify by checking `package.json` for `next@16+`; `proxy.ts` is the only correct answer.
+1. Check the installed Next.js version and the project's request interception convention.
+2. For a project using the Next.js 16+ proxy convention, inspect `proxy.ts` in the root or `src/` and its `proxy` export.
+3. Verify location, configuration, and relevant tests. A framework entry point need not have application imports.
+4. Correct a finding based only on an outdated filename assumption; retain any wiring or authorization defect supported by evidence.
 5. Reference: https://nextjs.org/docs/messages/middleware-to-proxy
-6. **Retract the finding.** Do NOT raise this as critical / security / medium / low at any severity.
 
 ---
 
@@ -41,7 +40,7 @@ Do NOT stop or ask for help until you have exhausted the playbook.
 2. If missing dependency: note in result as "requires `npm install X`"; do NOT install yourself
 3. If import path wrong: use `search_for_pattern("export.*ComponentName")` to find actual path
 4. If dynamic import issue: ensure component is client-side (`'use client'`)
-5. Re-run build after fix to confirm
+5. Re-run the build only if the user explicitly requested a build; otherwise use relevant non-build checks and report the verification limit.
 
 ---
 

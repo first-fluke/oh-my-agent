@@ -1,10 +1,6 @@
 ---
 name: oma-video
-description: Create short-form, explainer, and human-recorded demo videos
-  through the oma video CLI. Routes script, narration, visuals, captions, and an
-  agent-authored Remotion composition into a reproducible run directory. Use for
-  video, shorts, reels, demo, explainer, walkthrough, screencast, video
-  generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.
+description: "Create short, explainer, or recorded-demo videos through the OMA video CLI. Use for scripts, narration, assets, composition, and video delivery."
 ---
 
 # Video Router

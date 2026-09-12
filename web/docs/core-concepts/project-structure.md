@@ -220,7 +220,7 @@ your-project/
 │   │       ├── task-board-{sessionId}.md          ← Task assignments and status
 │   │       ├── progress-{agentId}-{taskId}-{runId}-{sessionId}.md ← Run-scoped progress updates
 │   │       ├── result-{agentId}-{taskId}-{runId}-{sessionId}.md   ← Run-scoped final outputs
-│   │       ├── session-metrics.md         ← Clarification Debt and Quality Score tracking
+│   │       ├── session-metrics.md         ← Session evidence and experiment results
 │   │       ├── experiment-ledger.md       ← Experiment tracking (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
@@ -486,8 +486,8 @@ Where agents write their progress during orchestration sessions. This is the can
 | `task-board-{sessionId}.md` | Orchestrator | Task assignments: agent, task, priority, status, dependencies |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | That run | Turn-by-turn updates: actions taken, files read/modified, current status |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | That run | Final output: completion status, summary, files changed, acceptance criteria |
-| `session-metrics.md` | Orchestrator | Clarification Debt events, Quality Score progression |
-| `experiment-ledger.md` | Orchestrator/QA | Experiment rows when Quality Score is active |
+| `session-metrics.md` | Orchestrator | Material corrections and experiment evidence |
+| `experiment-ledger.md` | Orchestrator/QA | Evidence rows for actual experiments |
 | `session-work.md` | Work workflow | Work-specific session state |
 | `session-ultrawork.md` | Ultrawork workflow | Ultrawork-specific phase tracking |
 | `session-cost-{sessionId}.md` | System | Per-session spawn cost telemetry |

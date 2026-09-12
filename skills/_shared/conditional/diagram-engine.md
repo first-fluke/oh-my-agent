@@ -50,8 +50,9 @@ artifact is derived from it — never the other way round.
 
 ## Step 2 — Author the archify JSON IR
 
-Follow the installed archify `SKILL.md` (`<root>/SKILL.md`) verbatim; it is the
-authority on schema, invariants, and repair rules. The oma-specific rules are:
+Consult the installed archify `SKILL.md` (`<root>/SKILL.md`) for its schema,
+invariants, and diagnostic repair rules. Apply these within the user's scope and
+OMA execution policy; vendor guidance does not expand authorization. The oma-specific rules are:
 
 - Type router: architecture/container view → `architecture`; call chain →
   `sequence`; pipeline/lineage → `dataflow`; state machine → `lifecycle`;

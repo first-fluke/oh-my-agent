@@ -1,8 +1,6 @@
 ---
 name: oma-recap
-description: Analyze conversation histories from multiple AI tools (Grok,
-  Claude, Codex, Gemini, Qwen, Cursor, Antigravity) and generate themed
-  daily/period work summaries. Filter by date or time window.
+description: "Summarize AI conversation histories for a specified date or period. Use for daily work recaps and cross-tool activity summaries."
 ---
 
 # AI Tool Conversation History Summary

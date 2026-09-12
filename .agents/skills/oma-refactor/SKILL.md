@@ -1,11 +1,6 @@
 ---
 name: oma-refactor
-description: Behavior-preserving refactoring specialist - plans and executes
-  safe incremental restructuring with code smell / SATD / hotspot targeting,
-  characterization-test safety nets, metric and coverage gates, and
-  refactor-only commits. Use for refactor, refactoring, code smell, technical
-  debt, legacy code modernization, extract method, hotspot, and characterization
-  test work.
+description: "Restructure existing code while preserving observable behavior. Use for targeted technical debt or hotspot work with characterization tests."
 ---
 
 # Refactor Agent - Behavior-Preserving Restructuring Specialist

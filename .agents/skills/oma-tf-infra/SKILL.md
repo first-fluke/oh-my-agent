@@ -1,11 +1,6 @@
 ---
 name: oma-tf-infra
-description: Infrastructure-as-code specialist for multi-cloud provisioning
-  using Terraform across any provider (AWS, GCP, Azure, Oracle Cloud). Use for
-  terraform plan/apply, state management, compute, databases, storage,
-  networking, IAM, OIDC, cost optimization, policy-as-code, ISO/IEC 42001 AI
-  controls, ISO 22301 continuity, and ISO/IEC/IEEE 42010 architecture
-  documentation.
+description: "Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes."
 ---
 
 # TF Infra Agent - Infrastructure-as-Code Specialist
@@ -197,8 +192,8 @@ trivy config .   # tfsec is in maintenance mode; Trivy is its successor
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Difficulty assessment: `../_shared/core/difficulty-guide.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — Collector topology, transport tuning, release metadata
 
 ### Knowledge Reference

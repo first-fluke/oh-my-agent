@@ -1,8 +1,6 @@
 ---
 name: oma-brainstorm
-description: Design-first ideation that explores user intent, constraints, and
-  approaches before any planning or implementation. Use for brainstorming,
-  ideation, exploring concepts, and evaluating approaches.
+description: "Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration."
 ---
 
 # Brainstorm - Design-First Ideation

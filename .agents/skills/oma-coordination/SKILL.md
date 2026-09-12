@@ -1,8 +1,6 @@
 ---
 name: oma-coordination
-description: Guide for coordinating PM, Frontend, Backend, Mobile, and QA agents
-  on complex projects via CLI. Use for manual step-by-step coordination and
-  workflow guidance.
+description: "Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step."
 ---
 
 # Multi-Agent Workflow Guide

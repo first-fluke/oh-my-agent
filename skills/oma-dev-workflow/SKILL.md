@@ -1,9 +1,7 @@
 ---
 name: oma-dev-workflow
-description: Use when setting up or optimizing developer workflows in a
-  monorepo, managing mise tasks, git hooks, CI/CD pipelines, database
-  migrations, or release automation. Invoke for development environment setup,
-  build automation, testing workflows, and release coordination.
+description: Configure development tasks, git hooks, CI/CD, or release
+  automation. Use when creating or fixing a repository development workflow.
 ---
 
 # Dev Workflow - Monorepo Task Automation Specialist
@@ -354,7 +352,7 @@ Follow the core workflow step by step:
 ## References
 
 - Clarification: `../_shared/core/clarification-protocol.md`
-- Difficulty assessment: `../_shared/core/difficulty-guide.md`
+- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
 
 ### Knowledge Reference
 

@@ -1,8 +1,6 @@
 ---
 name: oma-translation
-description: Context-aware translation and localization for UI strings,
-  documentation, marketing copy, and prose. Preserves meaning, register,
-  terminology, placeholders, structure, and natural target-language phrasing.
+description: "Translate or revise localized UI strings and prose while preserving meaning, terminology, placeholders, and structure."
 ---
 
 # Translation - Context-Aware Localization

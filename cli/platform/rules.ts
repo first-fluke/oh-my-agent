@@ -350,7 +350,23 @@ export function renderCliVendorDoc(
   vendor: string,
   existingContent: string | null,
 ): string {
-  const block = buildVendorBlock([vendor], []);
+  const block = [
+    OMA_START,
+    "",
+    "# CLI instructions",
+    "",
+    "Follow the repository-root instructions for authorization, completion, provider selection, and project rules. Paths below are relative to the repository root.",
+    "Use `.agents/skills/_shared/core/code-intelligence.md` for the configured provider and native fallback; this directory does not select a separate provider.",
+    "",
+    `- **Subagents**: ${VENDOR_SPAWN[vendor] || "`oma agent spawn`"}; use the root dispatch configuration.`,
+    "- Select tests from the affected CLI behavior. Run builds only when explicitly requested.",
+    "",
+    "## Workflows",
+    "",
+    "Run workflows only when explicitly requested or detected by a hook; never self-initiate. Read `.agents/workflows/{name}.md` for the selected workflow.",
+    "",
+    OMA_END,
+  ].join("\n");
   if (existingContent) {
     const startIdx = existingContent.indexOf(OMA_START_PREFIX);
     const endIdx = existingContent.indexOf(OMA_END);

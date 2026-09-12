@@ -1,82 +1,11 @@
-# Oh-My-AG Quality Principles
+# Quality Principles
 
-4 principles to follow across all development phases. Apply [Execution Policy](execution-policy.md) for authorization and verification scope.
+Use these principles for implementation and review decisions. Authorization, clarification, verification, and completion follow `execution-policy.md`.
 
----
+- Establish the requested behavior from the task, repository, and relevant tests. State material assumptions; compare alternatives when an unresolved design choice changes the outcome.
+- Prefer an implementation that solves the current problem without speculative features. Preserve useful existing abstractions and project conventions; line count alone is not a reason to rewrite working code.
+- Keep edits within the requested scope. Preserve unrelated work and avoid turning an adjacent issue into an unrequested refactor.
+- Verify the affected behavior with meaningful evidence. Reproduce bugs before fixing where feasible; use characterization tests for behavior-preserving refactors. Use the project's test approach and relevant static or manual checks when appropriate.
+- Report what the evidence supports and what remains unverified. Re-run checks after relevant changes or failures, not to fill a fixed review count.
 
-## 1. Think Before Coding
-
-**Core**: Surface assumptions, ask when uncertain, present alternatives.
-
-### Application
-- List assumptions explicitly
-- Present 2+ alternatives for architecture decisions
-- Resolve uncertainty from existing context; ask when a missing fact changes the outcome
-- Push back on unclear requirements
-
-### Anti-patterns
-- Starting without understanding
-- Silently choosing one interpretation
-- Hiding confusion
-
----
-
-## 2. Simplicity First
-
-**Core**: Minimum code that solves the problem. Nothing speculative.
-
-### Application
-- Implement exactly what's specified
-- No "while I'm here" additions
-- Skip abstractions for single-use code
-- Rewrite if 200 lines could be 50
-
-### Anti-patterns
-- Feature creep
-- "Might need later" code
-- Unrequested flexibility
-
----
-
-## 3. Surgical Changes
-
-**Core**: Touch only what you must. Clean up only your own mess.
-
-### Application
-- Modify only task-related files
-- Match existing style
-- Remove only orphans YOUR changes created
-- Flag unrelated issues without fixing
-
-### Anti-patterns
-- Drive-by refactoring
-- Improving adjacent code
-- Cleaning pre-existing debt
-
----
-
-## 4. Verify Until Done
-
-**Core**: Define success criteria. Loop until verified.
-
-### Application
-- Transform tasks into verifiable goals
-- "Add validation" → "Write failing tests, then pass them"
-- "Fix bug" → "Create reproducing test, then pass it"
-- Run checks relevant to the change; reuse still-current evidence under Execution Policy
-
-### Anti-patterns
-- Declaring victory without testing
-- Assuming correctness
-- Skipping verification steps
-
----
-
-## Quick Reference
-
-| Principle | One-liner | Question to Ask |
-|-----------|-----------|-----------------|
-| Think Before Coding | "What could go wrong?" | "Did I list my assumptions?" |
-| Simplicity First | "Do we need this?" | "Would a senior call this overcomplicated?" |
-| Surgical Changes | "Is this in scope?" | "Does every line trace to the request?" |
-| Verify Until Done | "How do I prove it works?" | "What's my success criteria?" |
+`test-approach.md` defines the plan's test evidence contract. `common-checklist.md` provides optional cross-domain review prompts.

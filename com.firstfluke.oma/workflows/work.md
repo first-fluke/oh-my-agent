@@ -130,12 +130,12 @@ After all implementation agents complete, spawn QA Agent to review all deliverab
 
 ---
 
-## Step 6.1: Measure Quality Score (Conditional)
+## Step 6.1: Measure Relevant Baseline (Conditional)
 
-If automated measurement is available:
-1. Load `quality-score.md` (conditional, per `context-loading.md`)
-2. Measure Quality Score based on QA findings
-3. Record as baseline in Experiment Ledger via memory tools
+If the task needs a baseline or experiment comparison with defined metrics:
+1. Load `.agents/skills/_shared/conditional/quality-score.md`.
+2. Reuse current evidence or measure the relevant behavior with project commands. Preserve independent acceptance checks.
+3. For an actual experiment, record comparable evidence in the ledger; ordinary QA does not require scoring.
 
 ---
 
@@ -151,7 +151,7 @@ Apply the shared per-task attempt and cost budget in `.agents/skills/oma-orchest
    oma state emit "decision.made" '{"subject":"work.remediation-choice","decision":"Fix the responsible QA finding with root-cause remediation or explicitly defer it.","rationale":"QA identified a CRITICAL/HIGH issue requiring a recorded remediation choice."}'
    oma state verify --workflow work --checkpoint remediation-choice
    ```
-3. If Quality Score is active: measure after fix, apply Keep/Discard rule, record in Experiment Ledger.
+3. If a defined comparison is active, refresh affected measurements after the fix and verify required checks. Record actual experiment decisions with evidence.
 4. Before each new fix cycle, apply the loop termination check:
 
    > **Fix Loop termination conditions** (OR, whichever fires first wins):
@@ -163,12 +163,12 @@ Apply the shared per-task attempt and cost budget in `.agents/skills/oma-orchest
 5. **If reactive recovery has failed and budget remains**: choose an exploration round using `exploration-loop.md`; reserve all 2–3 hypothesis attempts before dispatch. If there is insufficient budget, preserve the remaining issues and report `partial` or `failed`.
    - Generate the reserved alternative approaches via Exploration Decision template
    - Re-spawn the same agent type with different hypothesis prompts, the same plan task ID, unique run IDs, and separate workspaces
-   - QA scores each result
+   - QA checks each result against required behavior and comparable measurements
    - Best result adopted, others discarded
    - All experiments recorded in Experiment Ledger
 6. Continue until all critical issues are resolved or a termination condition fires.
 7. Use memory write tool to record final results.
-8. If Quality Score was measured: generate Experiment Ledger summary and write lessons from discarded experiments to the session state under the memory protocol; do not edit managed skill definitions.
+8. If experiments were run, summarize their evidence and decisions. Record a lesson only when a reusable cause and prevention method are supported; do not edit installed skill definitions.
 
 ---
 

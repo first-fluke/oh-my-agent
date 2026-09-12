@@ -1,267 +1,35 @@
-# Session Metrics & Clarification Debt Tracking
+# Session Evidence
 
-Tracks per-session agent performance metrics, with emphasis on **Clarification Debt (CD)**, the cost of unclear requirements, scope creep, and charter violations.
+Consult this guide for a requested retrospective, a substantive correction, or a review finding worth preserving. Routine work does not need a second log alongside existing progress and result artifacts.
 
----
+## Record observations, not penalty scores
 
-## Why Track This?
+Do not assign points to questions, corrections, or review judgments. The former Clarification Debt (CD) and Evaluator Accuracy (EA) weights and thresholds are retired; they were prompt instructions, not CLI-computed metrics. Necessary clarification is not a failure, a user changing scope is not an agent error, and a disputed QA finding is not an established false positive.
 
-Agents that frequently require re-direction consume more tokens and user time than agents that "get it right" the first time. CD tracking enables:
+When useful, record an event with session/task/run identity, an evidence path, observed impact, cause if known, and the action taken. Reuse the existing result or progress artifact. For a separate session summary, use the configured coordination store's `session-metrics-{sessionId}.md` (default `.agents/state/memories/`). Distinguish:
 
-1. **Pattern Detection**: Identify which agents/task-types cause the most re-work
-2. **Prompt Improvement**: Data-driven refinement of task descriptions
-3. **Escalation Triggers**: Automatic RCA requirements when thresholds exceeded
+| Observation | Evidence to retain |
+|---|---|
+| Material clarification | Missing decision and how the answer changed dependent work |
+| User scope change | New request and affected acceptance criteria |
+| Agent mistake or rework | Requirement missed, affected behavior, correction, and verification |
+| Blocked action | Exact missing input or authority and independent work completed |
+| Review error or useful finding | Finding, reproduction or counterexample, adjudicated outcome, and impact |
 
----
+A disputed finding stays unresolved until code, tests, or other evidence settle it. Judge severity by impact and exposure, not diff size. Keep useful catches, false positives, and missed defects separate; do not net them into an agent score or claim an accuracy rate without a defined labeled evaluation set.
 
-## Clarification Debt (CD) Scoring
+## Respond to the cause
 
-| Event Type | Points | Description |
-|------------|--------|-------------|
-| `clarify` | +10 | Simple clarification question (expected for MEDIUM uncertainty) |
-| `correct` | +25 | Intent misunderstanding requiring direction change |
-| `redo` | +40 | Scope/charter violation requiring rollback and restart |
-| `blocked` | +0 | Agent correctly stopped and asked (this is GOOD behavior) |
+Correct the affected work and verify it. Pause only actions dependent on unresolved information or authorization, under `execution-policy.md`. Do not stop a session, trigger another agent, or require an RCA because a counter crossed a threshold.
 
-### Scoring Modifiers
+For repeated failures, a consequential incident, or a user-requested retrospective, record the known cause and prevention evidence using `lessons-learned.md`. An ordinary failed check, including an expected RED test, does not require a separate RCA. Propose durable instruction changes only when evidence supports them; edit canonical definitions within an authorized source-maintenance task.
 
-| Condition | Modifier |
-|-----------|----------|
-| Charter not read before action | +15 |
-| Allowlist violation (file outside scope) | +20 |
-| Same error type repeated in session | x1.5 |
+## Measurements and tooling
 
----
+- Prefer observed task outcomes, relevant check results, retries, elapsed time, and recorded usage over inferred scores. State the measurement source and limits; progress updates are not a reliable turn counter, and checkpoint counts are not reset counts.
+- `oma stats` reports the CLI's productivity and recorded usage/cost summaries. It does not parse this Markdown into CD or EA scores. Cost estimates are not billing receipts.
+- `oma retro` groups recorded `gate.failed`, `blocker.raised`, and `decision.missing` events into harness suggestions. Those suggestions still need causal review; they do not automatically modify prompts.
+- If the active workflow uses quality measurement or experiments, link the actual artifacts from `../conditional/quality-score.md` and `../conditional/experiment-ledger.md`. Do not fabricate missing measurements or mix them with conversational event counts.
+- For model or prompt comparisons, use `../../oma-skill-creation/resources/prompt-evaluation.md`. Compare equivalent tasks and report correctness, interruptions, latency, and measured cost separately.
 
-## Thresholds & Actions
-
-| Threshold | Scope | Action |
-|-----------|-------|--------|
-| CD >= 50 | Single session | Write an RCA to the session-scoped lessons artifact |
-| CD >= 30 | Same agent, 3 consecutive sessions | **REVIEW**: Examine agent prompt template |
-| CD >= 80 | Single session | Record the uncertainty and continue independent work; ask only for a material missing decision |
-| `redo` count >= 2 | Single session | Narrow work to the confirmed scope and request direction only for the disputed dependent work |
-
----
-
-## Session Log Format
-
-Orchestrator maintains this log in `.agents/state/memories/session-metrics-{sessionId}.md` during execution.
-
-```markdown
-## Session: {SESSION_ID}
-Started: {ISO timestamp}
-Request: "{original user request, first 100 chars}..."
-
-### Events
-
-| Turn | Agent | Event | Points | Detail |
-|------|-------|-------|--------|--------|
-| 5 | backend | correct | 25 | Changed from REST to GraphQL per user correction |
-| 12 | frontend | clarify | 10 | Asked about dark mode preference |
-| 18 | backend | redo | 40 | Auth approach rejected, restarting with OAuth |
-
-### Summary
-- Total CD: 75
-- Agents: backend (65), frontend (10)
-- Threshold breached: YES (CD >= 50)
-- RCA Required: YES
-```
-
----
-
-## Event Recording Protocol
-
-### For Orchestrator
-
-When user sends a correction/clarification during session:
-
-1. **Classify** the event type:
-   - Is user answering a question agent asked? → `clarify`
-   - Is user correcting a misunderstanding? → `correct`
-   - Is user rejecting work and asking for restart? → `redo`
-
-2. **Record** via MCP memory:
-   ```
-   [EDIT]("session-metrics-{sessionId}.md", append event row)
-   ```
-
-3. **Check threshold** after each event:
-   - If CD >= 80: Record an RCA candidate and continue independent work
-   - If `redo` >= 2: Pause only the disputed dependent work
-
-### For QA Agent (Post-Session)
-
-At session end, if total CD >= 50:
-
-1. **Generate RCA** with this format:
-   ```markdown
-   ### {date}: {agent} - CD threshold breach ({score} points)
-   - **Problem**: {what triggered the corrections}
-   - **Root Cause**: {why the misunderstanding occurred}
-   - **Fix Applied**: {how it was resolved}
-   - **Prevention**: {prompt/process change to prevent recurrence}
-   ```
-
-2. **Write** to `.agents/state/memories/lessons-{sessionId}.md`.
-   Promote a durable rule to a canonical skill only through a separate reviewed
-   source change; never edit installed definitions during a run.
-
----
-
-## Integration Points
-
-| Component | How It Uses Session Metrics |
-|-----------|----------------------------|
-| **Orchestrator** | Records events, checks thresholds, triggers pauses |
-| **QA Agent** | Reviews session metrics, generates RCA if needed |
-| **Dashboard** | Displays real-time CD score (optional) |
-| **Retro Command** | Aggregates CD across sessions for trend analysis |
-
----
-
-## Example: Healthy vs Unhealthy Session
-
-### Healthy Session (CD = 10)
-```
-Turn 3: frontend asked about icon library preference → clarify (+10)
-Turn 15: All tasks completed successfully
-Total CD: 10
-```
-
-### Unhealthy Session (CD = 95)
-```
-Turn 2: backend assumed REST, user wanted GraphQL → correct (+25)
-Turn 8: backend used wrong auth method → correct (+25)
-Turn 12: frontend built wrong layout → redo (+40)
-Turn 14: Charter not checked before redo → modifier (+15, but capped)
-Total CD: 95 → RCA REQUIRED
-```
-
----
-
-## Quality Score Tracking (Extension)
-
-When Quality Score measurement is active (see `quality-score.md`), the session log includes score progression.
-
-### Score Progression (appended to session log)
-
-```markdown
-### Quality Score Progression
-
-| Checkpoint | Phase | Composite | Grade | Delta |
-|-----------|-------|-----------|-------|-------|
-| Baseline | IMPL end | 72 | C | n/a |
-| Post-VERIFY | VERIFY end | 78 | B | +6 |
-| Post-REFINE | REFINE end | 84 | B | +6 |
-| Final | SHIP | 86 | B | +2 |
-```
-
-### Experiment Summary (appended to session log)
-
-```markdown
-### Experiment Summary
-- Total experiments: {N}
-- Kept: {N} ({%})
-- Discarded: {N} ({%})
-- Exploration rounds: {N} (max 2 per session)
-- Net score improvement: {start} → {final} (delta: {+N})
-```
-
-This data is sourced from the Experiment Ledger at session end (see `experiment-ledger.md`).
-
----
-
-## Metrics Retention
-
-- **Active session**: `.agents/state/memories/session-metrics-{sessionId}.md`
-- **Completed sessions**: `.agents/state/memories/session-metrics-{sessionId}.md`
-- **Retention**: 30 days (configurable)
-- **Aggregation**: `oma stats get` command summarizes trends
-
----
-
-## Evaluator Accuracy Tracking
-
-QA agents improve only when their judgment errors are tracked.
-Unlike CD (tracked in real-time), Evaluator Accuracy (EA) is a
-**retrospective metric**; most errors are discovered after the session ends.
-
-### Accuracy Events
-
-| Event | Points | When Discovered |
-|-------|--------|-----------------|
-| `false_negative` | +30 | Next session or production: bug that QA missed |
-| `false_positive` | +15 | During session: impl agent disputes QA finding successfully |
-| `severity_mismatch` | +10 | During session or next-session review: wrong severity assigned |
-| `missed_stub` | +20 | During session: runtime verification catches display-only feature |
-| `good_catch` | -10 | During session: QA caught non-obvious bug (reward signal) |
-
-### Recording
-
-- `false_positive`, `missed_stub`, `good_catch`: Recorded during session by Orchestrator
-- `false_negative`, `severity_mismatch`: Recorded retroactively on next-session discovery
-
-### Evaluator Accuracy Score (EA)
-
-Calculated on a **rolling 3-session window**, not per single session:
-
-```
-EA = sum(accuracy_event_points across last 3 sessions)
-```
-
-| Threshold | Action |
-|-----------|--------|
-| EA >= 30 | **TUNING SUGGESTED**: Review accumulated EA events for recurring QA judgment errors |
-| EA >= 50 | **TUNING REQUIRED**: Review and update QA execution-protocol.md |
-| `false_negative` >= 3 across window | **CHECKLIST UPDATE**: Add detection pattern to QA checklist.md |
-| `good_catch` >= 5 across window | **PROPAGATE**: Generalize the successful pattern into `common-checklist.md` |
-
-### Accuracy Log Format
-
-Separate from CD events. Appended to session log:
-
-```markdown
-### Evaluator Accuracy Events
-
-| Session | Event | Detail | QA Prompt Gap |
-|---------|-------|--------|---------------|
-| current | false_positive | QA flagged unused import that was actually used in test | Over-aggressive dead code rule |
-| current | missed_stub | File upload button rendered but no handler | Runtime verification not performed |
-| prev-session | false_negative | Auth bypass via token reuse not caught | No token lifecycle check in checklist |
-| current | good_catch | Caught N+1 in nested serializer | SQL logging pattern worked |
-```
-
----
-
-## Cost & Token Tracking
-
-Precise token counts are unavailable on most platforms.
-Use proxy metrics that are always measurable.
-
-### Per-Agent Session Log
-
-```markdown
-### Resource Usage
-
-| Agent | Turns | Wall-Clock (min) | Sprint Resets | Retries |
-|-------|-------|-------------------|---------------|---------|
-| pm | 6 | 2.1 | 0 | 0 |
-| backend | 18 | 8.4 | 1 | 0 |
-| frontend | 15 | 6.7 | 0 | 0 |
-| qa | 10 | 4.2 | 0 | 0 |
-| **Total** | **49** | **21.4** | **1** | **0** |
-```
-
-### How to Record
-
-- **Turn count**: Always available (count progress file updates)
-- **Wall-clock time**: Bash timestamps at spawn and completion
-- **Sprint resets**: Count checkpoint files per agent
-- **Precise tokens**: Available only via `oma stats get` post-hoc (parses CLI logs when supported)
-
-### Usage
-
-- Compare turns/time across sessions for similar tasks → detect efficiency regression
-- Agents using 2x+ average turns → candidate for prompt or skill refinement
-- Track cost delta when scaffold changes are made (supports future harness audits)
+Keep existing historical logs as evidence. This guide neither schedules deletion nor imposes a retention deadline.

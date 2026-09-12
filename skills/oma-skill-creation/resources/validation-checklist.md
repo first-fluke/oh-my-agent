@@ -28,6 +28,10 @@ Use this checklist after creating or updating a skill. `oma skill lint --skill {
 
 ## Cross-Skill Boundary Check
 
+- Keep the description to the capability, concrete trigger, and material exclusion. Move supplier lists, method catalogs, cost detail, and output decoration into the relevant reference. The exclusion must be visible before the skill is loaded.
+- Audit nested resources for unconditional preloads, repeated approval, conflicting coverage targets, and obsolete result paths. Generated mirrors are checked through their emit path.
+- Use `prompt-evaluation.md` for behavioral changes; a clean lint result does not establish utility or savings on a named model.
+
 - Run `oma skill audit` (or `oma doctor`) after editing frontmatter `description`.
 - Resolve any `FAIL` (≥ 75% similarity) pair by rewriting one description to highlight distinct triggers, domains, or boundaries.
 - `WARN` (≥ 60%) pairs are acceptable when descriptions cover genuinely related domains; document the distinction in `When NOT to use` cross-routes.

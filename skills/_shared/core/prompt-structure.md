@@ -1,68 +1,18 @@
-# Prompt Structure
+# Task Handoffs
 
-## Core Principle
+Use this guide when composing a task for another agent or when the requested outcome is unclear. A simple direct request does not need to be rewritten into a template.
 
-Every task prompt benefits from four elements. Infer missing context and
-completion criteria from the request, repository conventions, and relevant
-tests when that is safe. Ask only when missing information changes correctness,
-authorization, or the requested outcome; continue independent work while a
-dependent question is pending.
+Include the information the recipient needs:
 
-## The Four Elements
+| Element | Content |
+|---|---|
+| Goal | Observable behavior or artifact to change |
+| Context | Relevant paths, existing patterns, errors, and prior decisions |
+| Constraints | Actual scope, compatibility, ownership, and authorization boundaries |
+| Done when | Acceptance criteria and proportionate verification |
 
-### 1. Goal
-What to build, change, or fix.
+Infer routine details from the request and repository. Do not invent constraints or ask the user to fill headings. Ask only about a missing fact that materially changes the result; follow `execution-policy.md` and `clarification-protocol.md`.
 
-- "Add user authentication to the API"
-- "Fix the 500 error on /api/users"
-- "Refactor the payment module to use the new gateway"
+For implementation, include affected tests or examples when they clarify the contract. For a bug, describe the failure and expected behavior. For verification, name applicable project checks; a build is included only when explicitly requested by the user.
 
-### 2. Context
-Relevant files, folders, documentation, errors, or examples.
-
-- "See `src/auth/` for existing auth patterns"
-- "Error log: `TypeError: Cannot read property 'id' of undefined`"
-- "Similar implementation exists in `services/orders/`"
-
-### 3. Constraints
-Standards, architecture rules, safety requirements, or project conventions.
-
-- "Must follow the existing Repository → Service → Router pattern"
-- "No new external dependencies"
-- "Must be backward-compatible with v2 API"
-
-### 4. Done When
-How to verify the task is complete using testable, observable criteria.
-
-- "All existing tests pass + new tests for auth endpoints"
-- "The 500 error no longer occurs and returns 200"
-- "Lint, type-check, and build pass"
-
-## Usage
-
-### For PM Agent / Orchestrator
-When receiving a user request, decompose it into these four elements. If the user's prompt is missing any element:
-
-| Missing | Action |
-|---------|--------|
-| Goal | Ask: "What specifically should change?" |
-| Context | Search codebase for relevant files and patterns |
-| Constraints | Check AGENTS.md, docs/constraints/, taste.yaml for project rules |
-| Done When | Propose proportionate verification criteria from the task and repository; ask only if the choice materially changes the outcome |
-
-### For Implementation Agents
-Before starting work, fill gaps from available evidence. Check:
-1. `docs/` knowledge base for constraints and conventions
-2. Existing tests and patterns for implicit criteria
-3. AGENTS.md for project-level rules
-
-### For QA / Review Agents
-Use "Done When" criteria as the primary review checklist. If a required check
-cannot run, report a partial or blocked result with the missing evidence; do
-not claim completion.
-
-## Anti-patterns
-
-- Starting implementation with only a Goal (no constraints or done-when)
-- Inventing constraints the user didn't specify
-- Accepting vague done-when like "it works"; push for testable criteria
+For dispatched tasks, preserve injected task/run/claim identity and required artifact paths from `../runtime/result-contract.md`. Reference the owning skill rather than pasting instructions already supplied by the runtime. Ownership and dependencies matter more than a decorative report format.

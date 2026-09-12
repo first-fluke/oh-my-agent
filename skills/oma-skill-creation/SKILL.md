@@ -1,10 +1,7 @@
 ---
 name: oma-skill-creation
-description: Create or update OMA skills in the SSL-lite human-readable format.
-  Use when adding a new `.agents/skills/{skill-name}/SKILL.md`, converting an
-  existing skill to the standardized Scheduling / Structural Flow / Logical
-  Operations / References structure, or validating whether a skill has enough
-  routing, execution, resource, and safety detail.
+description: Create or revise OMA skills and their references. Use for skill
+  routing, execution contracts, conditional loading, and authoring validation.
 ---
 
 # OMA Skill Authoring
@@ -79,6 +76,7 @@ Skill work reads and may change local definitions/resources and generated vendor
 7. Preserve unrelated user edits. Apply the shared execution policy to clarification, authorization, and verification.
 
 ## References
+- Prompt behavior and model comparisons: `resources/prompt-evaluation.md` (routing, injection, authorization, or review-contract changes)
 - Skeleton and optional sections: `resources/ssl-lite-template.md` (authoring or restructuring)
 - Acceptance criteria: `resources/validation-checklist.md` (validation)
 - Context loading: `../_shared/core/context-loading.md` (resource/injection decisions)

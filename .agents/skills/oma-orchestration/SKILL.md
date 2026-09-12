@@ -1,8 +1,6 @@
 ---
 name: oma-orchestration
-description: Automated multi-agent orchestration that spawns CLI subagents in
-  parallel, coordinates through durable file state, and monitors progress. Use
-  for orchestration, parallel execution, and automated multi-agent workflows.
+description: "Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested."
 ---
 
 # Orchestration - Automated Multi-Agent Coordination
@@ -42,7 +40,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 - Memory provider config, subagent prompt template, scripts, task templates, verify script, and session metrics
 
 ### Control-flow features
-- Branches by vendor/native dispatch availability, priority tiers, agent completion/failure, verification status, QA verdict, retry limits, and clarification debt
+- Branches by vendor/native dispatch availability, priority tiers, agent completion/failure, verification status, QA verdict, retry limits, and unresolved decisions
 - Spawns processes/agents and reads/writes memory/result files
 - Preserves unresolved evidence when bounded recovery stops
 
@@ -72,11 +70,11 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 ### Failure and recovery
 - Retry failed agents up to configured limits.
 - Re-spawn with review history when review loop is exhausted.
-- Continue independent work after recording clarification debt; ask only for a material missing decision.
+- Continue independent work after recording material corrections; ask only for a material missing decision.
 
 ### Exit
 - Success: all tasks complete, verify/review pass, and results are summarized.
-- Partial success: failed agents, exhausted review loops, or clarification debt are explicit.
+- Partial success: failed agents, exhausted review loops, or missing verification are explicit.
 
 ## Logical Operations
 
@@ -111,7 +109,7 @@ When native runtime dispatch is available, prefer the runtime-specific native pa
 |-------|-----------------|
 | `LOCAL_FS` | Session, task-board, progress, result, config files |
 | `PROCESS` | Agent CLI processes and verify scripts |
-| `MEMORY` | Session state and clarification debt |
+| `MEMORY` | Session state and unresolved decisions |
 | `CODEBASE` | Workspaces owned by spawned agents |
 
 ### Preconditions
@@ -258,7 +256,7 @@ When feeding review results back to the implementation agent:
 ```
 
 This replaces single-pass verification. Most "nitpicking" should happen agent-to-agent.
-Human review is reserved for final approval, not catching lint errors.
+Resolve relevant automated checks before handoff. Ask for approval only when the next action is outside existing authorization.
 
 ### Recovery Budget (after review loop exhaustion)
 
@@ -274,33 +272,9 @@ exploration round.
 - On cap exhaustion, preserve all checks, review findings, and unresolved work.
   The task is `partial` or `failed`, never `completed`.
 
-### Clarification Debt (CD) Monitoring
+### Session evidence
 
-Track user corrections during session execution. See `../_shared/core/session-metrics.md` for full protocol.
-
-### Event Classification
-When user sends feedback during session:
-- **clarify** (+10): User answering agent's question
-- **correct** (+25): User correcting agent's misunderstanding
-- **redo** (+40): User rejecting work, requesting restart
-
-### Threshold Actions
-| CD Score | Action |
-|----------|--------|
-| CD >= 50 | QA writes a session-scoped RCA/lesson artifact |
-| CD >= 80 | Continue independent work; ask only for a material missing decision |
-| `redo` >= 2 | Pause only disputed dependent work and record the boundary |
-
-### Recording
-After each user correction event:
-```
-[EDIT]("session-metrics-{sessionId}.md", append event to Events table)
-```
-
-At session end, if CD >= 50:
-1. Include CD summary in final report
-2. Trigger QA agent RCA generation
-3. Write `lessons-{sessionId}.md` with prevention measures
+For material corrections or review findings, retain the cause, impact, and evidence in existing task artifacts. Use `../_shared/core/session-metrics.md` when a retrospective or separate session summary is useful. Do not score clarification questions or require an RCA based on counters. Resolve the affected work and ask only for a material missing decision.
 
 ## References
 - Prompt template: `resources/subagent-prompt-template.md`
@@ -312,8 +286,8 @@ At session end, if CD >= 50:
 - Session metrics: `../_shared/core/session-metrics.md`
 - API contract template (SSOT): `../_shared/core/api-contracts/template.md`; read generated contracts from `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
 - Context loading: `../_shared/core/context-loading.md`
-- Difficulty guide: `../_shared/core/difficulty-guide.md`
+- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
 - Clarification protocol: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Code intelligence: `../_shared/core/code-intelligence.md`
-- Runtime lessons: `../_shared/core/session-metrics.md`
+- Runtime lessons: `../_shared/core/lessons-learned.md` (recurring failure or requested retrospective)

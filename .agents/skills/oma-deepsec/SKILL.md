@@ -1,18 +1,6 @@
 ---
 name: oma-deepsec
-description: >
-  Drive Vercel's `deepsec` agent-powered vulnerability scanner end-to-end:
-  installing the `.deepsec/` workspace, bootstrapping `INFO.md`, running
-  cost-aware `scan` / `process` / `triage` / `revalidate` / `export` passes,
-  gating PRs with `process --diff`, writing custom matchers, and triaging
-  findings. Use whenever the user mentions deepsec, asks an agent to scan a
-  repo for vulnerabilities, runs into `pnpm deepsec` / `bunx deepsec`
-  commands, wants a CI-based PR security review, sees a `.deepsec/`
-  directory, or asks about `INFO.md` / matchers / `process --diff` /
-  `revalidate`, even when the tool name is not spoken. Deepsec scans are
-  expensive (a single full scan can cost hundreds to tens of thousands of
-  dollars) so the skill exists in part to keep the user from getting
-  surprised.
+description: "Set up and run Deepsec vulnerability scans, triage, and CI gates. Use for Deepsec work or an explicitly requested agent-powered vulnerability scan."
 ---
 
 # Deepsec: Agent-Powered Vulnerability Scanner Driver
@@ -87,14 +75,6 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 4. Check for an AI credential in `.env.local` or shell env; if none, route to credential setup before any `process` / `revalidate` / `triage` call.
 5. **Confirm agent choice with the user before the first paid call.** If `agent_choice` is not already in the prompt and `deepsec.config.ts` does not pin a `defaultAgent`, ask whether to run `codex` (`gpt-5.5`, the upstream default; runs in a strict sandbox, cheaper, grep-heavy) or `claude` (`claude-opus-4-8`; strongest reasoning, most expensive). The two backends can be mixed via `--reinvestigate` and findings dedupe across agents. Skip the question if the user has already named an agent or has explicitly delegated the decision ("just pick reasonable defaults").
 
-### Scenes
-1. **PREPARE**: Resolve intent, repo root, credential, budget cap, severity floor, agent choice. Refuse to run blind on a repo of unknown scale.
-2. **ACQUIRE**: Read `.deepsec/deepsec.config.ts`, `data/<id>/project.json`, `INFO.md`, last `runs/` entries, and target-repo signals (`README`, `AGENTS.md`/`CLAUDE.md`, framework configs, route directories) needed to author or verify `INFO.md`.
-3. **REASON**: Pick the smallest pass that answers the user's question. Options include `scan` only, a `--limit 50` calibration, a full `process`, `process --diff`, a matcher-authoring loop, or troubleshoot-only. Always state cost forecast and stopping condition before AI passes.
-4. **ACT**: Run the planned commands from inside `.deepsec/`. For matchers, write per-slug files and wire the inline plugin. For PR mode, scaffold the two-job CI workflow.
-5. **VERIFY**: Use `deepsec status`, the run's `RunMeta`, exit code (`0` clean, `1` findings produced, other = error), candidate counts, and (when present) the `--comment-out` markdown to confirm output.
-6. **FINALIZE**: Summarize findings by severity and verdict, list dollar cost and wall time, name files written, and call out follow-ups (revalidate `HIGH+`, write matchers for missed entry points, persist `data/` between CI runs).
-
 ### Transitions
 - If `.deepsec/` is missing and intent involves scanning → run `bunx deepsec init` (or `npx deepsec init`) and follow the printed prompt to populate `INFO.md` before any AI pass.
 - If `INFO.md` is empty or template-shaped → write it (50-100 lines, project-specific, 3-5 examples per section, no line numbers, no generic CWE enumeration).
@@ -123,24 +103,6 @@ Operate Vercel's `deepsec` security scanner inside a target repository safely an
 - **Failure**: nothing destructive happened, the user has the exact next command to unblock the work.
 
 ## Logical Operations
-
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Detect existing workspace and credentials | `READ` | `.deepsec/`, `.env.local`, env vars |
-| Estimate repo scale | `INFER` | `rg --files | wc -l` |
-| Choose pass plan (calibrate vs full vs diff) | `SELECT` | File count, intent, budget cap |
-| Init workspace | `CALL_TOOL` | `bunx deepsec init` |
-| Write `INFO.md` | `WRITE` | `data/<id>/INFO.md` |
-| Run scan | `CALL_TOOL` | `bunx deepsec scan` |
-| Run AI investigation | `CALL_TOOL` | `bunx deepsec process` (`--limit`, `--concurrency`) |
-| Triage / revalidate | `CALL_TOOL` | `bunx deepsec triage` / `revalidate --min-severity HIGH` |
-| Export findings | `CALL_TOOL` | `bunx deepsec export --format md-dir|json` |
-| PR-mode review | `CALL_TOOL` | `bunx deepsec process --diff <base> --comment-out comment.md` |
-| Author custom matcher | `WRITE` | `.deepsec/matchers/<slug>.ts` + inline plugin in `deepsec.config.ts` |
-| Validate matcher hit rate | `VALIDATE` | `bunx deepsec scan --matchers <slug>` candidate count |
-| Verify and report | `NOTIFY` | `RunMeta`, severity counts, dollar cost, FP rate |
-| Stop on budget breach | `TERMINATE` | Refuse unbounded `process` without calibration |
 
 ### Tools and instruments
 - **Package manager**: `bun` / `bunx` (preferred), `pnpm`, `npm`, `yarn` are interchangeable.

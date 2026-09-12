@@ -1,7 +1,7 @@
 # Backend Agent - Error Recovery Playbook
 
 When you encounter a failure, find the matching scenario and follow the recovery steps.
-Do NOT stop or ask for help until you have exhausted the playbook.
+Use the relevant recovery steps. If required information or authority is missing, pause the dependent action and continue independent work.
 
 ---
 
@@ -27,7 +27,7 @@ Do NOT stop or ask for help until you have exhausted the playbook.
    - Test expects old behavior → update test
    - Implementation has a bug → fix implementation
 4. Run the specific failing test with verbose output
-5. After fix, run full test suite to check for regressions
+5. After the fix, run affected regression tests; run a broader suite only when impact or project requirements justify it
 6. **After 3 failures**: Try a different approach. Record current attempt in progress and implement alternative
 
 ---

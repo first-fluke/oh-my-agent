@@ -1,31 +1,28 @@
 # Common Code Quality Checklist
 
-Apply these checks to ALL code before submitting, regardless of domain.
+Use applicable sections for a cross-domain review. Check the changed behavior and affected boundaries; this list does not expand the task or override project checks. Authorization and verification scope follow `execution-policy.md`.
 
-## Code Quality
-- [ ] No hardcoded secrets (API keys, passwords, tokens)
-- [ ] No `TODO`/`FIXME` left unresolved
-- [ ] Meaningful variable and function names
-- [ ] Functions < 50 lines, files < 500 lines
-- [ ] Cyclomatic complexity < 10 per function
-- [ ] No deeply nested code (< 4 levels)
+## Correctness and maintenance
+- [ ] Behavior matches acceptance criteria and existing contracts.
+- [ ] Names and structure follow the project; complexity does not obscure the changed behavior.
+- [ ] No required behavior is left as a stub or unresolved task-created TODO. Existing tracked debt does not block unrelated work.
+- [ ] Generated artifacts are updated through the project's generator when required.
 
-## Error Handling
-- [ ] All async operations have try/catch or error boundaries
-- [ ] User-facing error messages are clear and actionable
-- [ ] No silent failures (errors logged or surfaced)
+## Error handling
+- [ ] Failure paths propagate to an appropriate handler or error boundary; no swallowed rejection or silent data loss.
+- [ ] User-facing errors are actionable without exposing internal or sensitive data.
+- [ ] Recovery, cancellation, and cleanup work where the change depends on them.
 
 ## Security
-- [ ] No user input directly in SQL/shell/HTML
-- [ ] Authentication checked on protected endpoints
-- [ ] Sensitive data not in logs or error messages
+- [ ] No secrets in code, logs, error messages, or staged files.
+- [ ] Untrusted input is validated and handled safely at SQL, shell, and HTML boundaries.
+- [ ] Protected operations enforce authentication and authorization at the relevant trust boundary.
 
-## Testing
-- [ ] Unit tests for new business logic
-- [ ] Edge cases covered (empty, null, boundary values)
-- [ ] Tests actually assert meaningful behavior
+## Verification
+- [ ] Tests assert affected behavior and relevant failure or boundary cases.
+- [ ] Required project checks pass, or missing evidence and its impact are reported.
+- [ ] For changes where automated tests add little value, applicable inspection or static checks support the result.
 
-## Git Hygiene
-- [ ] Commit message describes the "why", not the "what"
-- [ ] No unrelated changes bundled
-- [ ] No generated files or secrets committed
+## Change hygiene
+- [ ] Changes stay within scope and preserve unrelated work.
+- [ ] When committing is requested, staging follows repository rules, including whether generated artifacts are tracked.

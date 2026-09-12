@@ -1,124 +1,28 @@
 # Experiment Ledger
 
-An automatic record of every significant change attempt and its measurable outcome.
-Inspired by autoresearch's git-commit-as-experiment-log pattern.
+Load when comparing an actual hypothesis with a baseline or another approach. Routine implementation, formatting, and every failed check do not require experiment bookkeeping.
 
----
+## Location and ownership
 
-## Ledger Location
+Use `../runtime/memory-protocol.md` for the configured coordination store. The default is `.agents/state/memories/experiment-ledger-{sessionId}.md`. The coordinator maintains the shared ledger; parallel agents write task/run-scoped results for the coordinator to merge, avoiding concurrent edits to the same table. Reuse an existing experiment artifact when it already carries the evidence.
 
-The ledger follows the **memory protocol** (see `memory-protocol.md`):
+## Record a comparison
 
-- `[WRITE]("experiment-ledger-{sessionId}.md", ...)` →
-  `{memoryConfig.basePath}/experiment-ledger-{sessionId}.md`
+1. State the hypothesis, affected scope, baseline revision, and success criteria before changing behavior.
+2. Capture comparable baseline and candidate measurements as described in `quality-score.md`. Preserve required binary checks and raw evidence paths.
+3. Record the decision and reason: retain, repair, discard, or inconclusive. A missing or noisy measurement is not a loss. Do not rank unrelated tasks or agents by average score delta.
+4. If discarding, remove only changes owned by that experiment after inspecting the diff. Preserve user edits, other agents' work, and useful failure evidence.
 
-The orchestrator creates the ledger; agents append through file memory.
+Suggested fields, not a parsed schema:
 
----
+| Experiment / task / run | Hypothesis | Baseline evidence | Candidate evidence | Required checks | Decision and reason | Changed paths |
+|---|---|---|---|---|---|---|
+| IDs from active run | Specific mechanism | Revision and report | Revision and report | pass / fail / missing | retain / repair / discard / inconclusive | Owned files |
 
-## Ledger Format
+Keep units and comparison criteria beside metric deltas. A scalar composite is optional only when the project already defines and computes it; there is no OMA default formula.
 
-```markdown
-# Experiment Ledger — Session {SESSION_ID}
-Started: {ISO timestamp}
-Request: "{original user request, first 100 chars}..."
+## End of an experiment
 
-## Experiments
+Summarize the selected approach, unresolved limits, and evidence. A discarded attempt becomes a lesson only when its cause and reusable prevention are understood (`../core/lessons-learned.md`). Do not generate lessons or modify canonical skills from a numeric threshold.
 
-| # | Phase | Agent | Hypothesis | Score Before | Score After | Delta | Decision | Files Changed |
-|---|-------|-------|-----------|-------------|------------|-------|----------|---------------|
-| 1 | IMPL | backend | REST API with pagination | — | 72 | — | BASELINE | 3 |
-| 2 | VERIFY | qa | Add input validation | 72 | 78 | +6 | KEEP | 2 |
-| 3 | REFINE | debug | Extract shared util | 78 | 80 | +2 | KEEP | 4 |
-| 4 | REFINE | debug | Redis caching layer | 80 | 76 | -4 | DISCARD | 3 |
-| 5 | REFINE | backend | Simpler in-memory cache | 80 | 84 | +4 | KEEP | 1 |
-
-## Summary
-- Total experiments: 5
-- Kept: 3 (60%)
-- Discarded: 1 (20%)
-- Baseline: 1 (20%)
-- Net score improvement: +12 (72 → 84)
-- Most effective agent: backend (+4 avg delta)
-```
-
----
-
-## Recording Protocol
-
-### What Constitutes an "Experiment"
-
-An experiment is recorded when:
-1. A discrete logical change is applied (not individual line edits)
-2. A quality score can be measured before and after
-3. A keep/discard decision is made per `quality-score.md`
-
-Do NOT record: trivial formatting, changes with no measurable impact, PLAN phase.
-
-### Recording Steps
-
-1. Note current quality score (or `—` for first baseline)
-2. Apply change
-3. Measure new quality score
-4. Calculate delta: `score_after - score_before`
-5. Apply Keep/Discard rule from `quality-score.md`
-6. Append row via file memory: `[EDIT]("experiment-ledger-{sessionId}.md", append row)`
-
-### Who Records
-
-See `memory-protocol.md` → "Experiment Tracking" section for recorder assignments.
-
----
-
-## Session-End Analysis
-
-At session completion, the orchestrator generates a summary:
-
-```markdown
-## Ledger Analysis
-
-### Score Trajectory
-IMPL: {score} → VERIFY: {score} → REFINE: {score} → Final: {score}
-
-### Top Improvements (by delta)
-1. Experiment #{N}: {hypothesis} → +{delta}
-
-### Failed Experiments (learning opportunities)
-1. Experiment #{N}: {hypothesis} → {delta} — Root Cause: {why it failed}
-
-### Agent Effectiveness
-| Agent | Experiments | Avg Delta | Keep Rate |
-|-------|------------|-----------|-----------|
-| backend | 3 | +4.0 | 67% |
-```
-
----
-
-## Integration with Lessons Learned
-
-Discarded experiments with **delta <= -5** auto-generate lesson candidates at session end.
-
-Format for the session-scoped lessons artifact:
-
-```markdown
-### {YYYY-MM-DD}: {agent-type} - {hypothesis} (DISCARDED, delta: {delta})
-- **Problem**: {what was attempted}
-- **Root Cause**: {why score decreased — which dimension regressed and why}
-- **Lesson**: {what to avoid or do differently next time}
-- **Source**: Experiment Ledger #{experiment_number}, Session {session_id}
-```
-
-The orchestrator writes these to `lessons-{sessionId}.md`. A durable
-skill rule requires a separate reviewed source change.
-
----
-
-## Integration Points
-
-| Component | How It Uses Experiment Ledger |
-|-----------|------------------------------|
-| **Quality Score** | Provides score measurements for delta calculation |
-| **Exploration Loop** | Records parallel experiments and winner selection |
-| **Session Metrics** | Experiment count and keep rate in session summary |
-| **Lessons Learned** | DISCARD experiments (delta <= -5) auto-generate lessons |
-| **Memory Protocol** | Ledger uses same read/write tools as other memory files |
+The ledger records work; it does not grant more retries, spending, commits, or permission to remove workspaces. Those follow the active task budget and `../core/execution-policy.md`.

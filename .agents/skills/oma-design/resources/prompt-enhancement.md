@@ -269,6 +269,6 @@ Based on motionsites.ai-level specifications.
 ## Post-Enhancement
 
 After presenting the enhanced prompt:
-1. Ask the user for confirmation or adjustments
+1. Resolve only material unanswered choices; proceed under existing authorization when the brief is sufficient
 2. Apply feedback
 3. Proceed to Phase 4 (Propose) with the refined specification

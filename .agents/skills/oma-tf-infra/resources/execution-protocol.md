@@ -1,18 +1,7 @@
 # TF Infra Agent: Execution Protocol
 
-## Step 0: Prepare
-
-1. **Assess difficulty**: see `../../_shared/core/difficulty-guide.md`
-   - **Simple**: Skip to Step 3 | **Medium**: All 4 steps | **Complex**: All steps + checkpoints
-2. **Check lessons**: read the infrastructure section in `../../_shared/core/lessons-learned.md` for past Terraform pitfalls
-3. **Clarify requirements**: follow `../../_shared/core/clarification-protocol.md`
-   - Check **Uncertainty Triggers**: IAM/security, compliance (PII, residency, audit), cost/sizing, existing-resource or state conflicts, provider/region ambiguity?
-   - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
-4. **Budget context**: follow `../../_shared/core/context-budget.md` (read symbols and file overviews, not whole files)
-
-**Intelligent Escalation**: When uncertain, escalate early. Provisioning on wrong assumptions costs more than asking. Don't blindly proceed.
-
-Follow these steps in order (adjust depth by difficulty).
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Analyze
 
@@ -109,7 +98,7 @@ See `policy-testing-examples.md` for native `terraform test`, Terratest, and CI/
 ## Step 4: Verify
 
 1. Run `checklist.md` self-verification
-2. Run `../../_shared/core/common-checklist.md` common checks
+2. Use applicable `../../_shared/core/common-checklist.md` sections for cross-domain checks
 3. Confirm:
    - `terraform validate` passes
    - `terraform plan` shows expected changes only

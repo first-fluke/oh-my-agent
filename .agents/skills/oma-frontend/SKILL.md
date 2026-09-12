@@ -1,8 +1,6 @@
 ---
 name: oma-frontend
-description: Frontend specialist for React, Next.js, Angular, TypeScript with
-  FSD-lite architecture, shadcn/ui, and design system alignment. Use for UI,
-  component, page, layout, CSS, Tailwind, shadcn, Angular, and RxJS work.
+description: "Implement or modify web UI in React, Next.js, or Angular. Use for components, pages, styles, forms, and frontend state or data flows."
 ---
 
 # Frontend Agent - UI/UX Specialist
@@ -124,13 +122,14 @@ Then run the project's frontend verification commands, typically lint, typecheck
 - Does not edit `components/ui/*` directly.
 
 ### Guardrails
+Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.
 1. Follow the existing React, Next.js, TypeScript, and FSD-lite architecture in the target project.
 2. Use `shadcn/ui` primitives and wrappers for UI work; treat `components/ui/*` as read-only.
 3. Keep server/client boundaries explicit: Server Components for static/layout work, Client Components for interaction and hooks.
 4. Use project sources of truth for design tokens, i18n strings, and shared utilities before adding local alternatives.
 5. Run the execution checklist before handoff and include relevant verification results.
 6. **Self-describing file names**: every new file follows the File Naming convention in `../../rules/frontend.md` §Naming Conventions — domain + role readable from the basename alone (`order-summary-card.tsx`, `use-order-polling.ts`, `cart.atoms.ts`). Grab-bag names (`utils.ts`, `helpers.ts`, `misc.ts`) and version suffixes (`*-v2`, `*-final`) are banned.
-7. **Next.js 16 `proxy.ts` is mandatory; `middleware.ts` is BANNED**: this project is Next.js 16+. `middleware.ts` is NOT "deprecated"; it is forbidden, touch it and you die. The canonical request-proxy / auth-gate file is `proxy.ts` (root or `src/`) exporting a `proxy` function. NEVER create, recommend, suggest, or "restore" `middleware.ts`. NEVER flag `proxy.ts` as dead code, unused, or not-wired. Any such finding is a fatal self-error: retract it immediately and write `proxy.ts`.
+7. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
 8. **`next/link` defaults to `prefetch={false}`**: every `<Link>` MUST pass `prefetch={false}` unless there is a stated reason not to. Next.js's default prefetching fires a request per link entering the viewport, which hammers container CPU/memory and origin bandwidth on list-heavy or nav-heavy pages. Opt back in (`prefetch` omitted, or `prefetch` / `prefetch="unstable_forceStale"`) ONLY for a small, deliberate set of high-intent targets (primary CTA, next step in a funnel), and note the reason inline. A `<Link>` without an explicit prefetch decision fails review.
 9. **Angular projects follow `resources/angular-rules.md`**: standalone components + `OnPush` + signals-first, `inject()` DI, lazy routes, new control flow. **Any non-trivial RxJS pipeline MUST ship with a marble test (`TestScheduler` from `rxjs/testing`)** — a stream without a marble test fails review. React/Next.js-specific rules (shadcn workflow, `proxy.ts`, Libraries table below) do not apply in Angular projects.
 
@@ -140,7 +139,7 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 
 | Category | Library |
 |----------|---------|
-| Framework | `next@16+` (App Router) + `react@19+`; `next < 16` is BANNED |
+| Framework | New-project default: `next@16+` (App Router) + `react@19+`; preserve existing project versions |
 | Date | `luxon` |
 | Styling | `TailwindCSS v4` + `shadcn/ui` (Base UI engine; see `resources/tech-stack.md`) |
 | Hooks | `ahooks` (default) or `@mantine/hooks` (standalone, SSR-safe; no Mantine UI required); pre-made hooks preferred; pick one per project, don't mix |
@@ -149,9 +148,9 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 | State (URL) | `nuqs` |
 | State (Server) | `TanStack Query`; default is `orval`-generated hooks from the OpenAPI spec (`client: react-query`); hand-write hooks only for spec-less endpoints (see `resources/tech-stack.md` §Server State) |
 | State (Client) | `Jotai` or `Zustand` (intent-based, no default; minimize use — see `resources/tech-stack.md`) |
-| Forms | `@tanstack/react-form` (v1+; pass zod schemas directly via Standard Schema; `@tanstack/zod-form-adapter` is v0-only and BANNED) + `zod` (v4) |
-| Auth | `better-auth` (client SDK only; never import server library or database adapters) |
-| Animation | `motion`; import from `motion/react`. `framer-motion` (legacy package name) is BANNED. |
+| Forms | `@tanstack/react-form` (v1+; pass zod schemas directly via Standard Schema; do not add the v0-only `@tanstack/zod-form-adapter` to v1 projects) + `zod` (v4) |
+| Auth | `better-auth`; client code imports only the client SDK, never server libraries or database adapters |
+| Animation | New-project default: `motion` with imports from `motion/react`; preserve an existing animation library for scoped edits |
 
 ### Shadcn Workflow
 
@@ -182,7 +181,7 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 - **DESIGN.md** (project root): visual system source of truth; read Section 9 (Agent Prompt Guide) verbatim for component prompts when present
 - **Design Tokens**: `packages/design-tokens` (OKLCH); never hardcode colors
 - **i18n strings**: `packages/i18n`; never hardcode UI text
-- **Custom utilities**: check `es-toolkit` first; if implementing custom logic, >90% unit test coverage is mandatory
+- **Custom utilities**: check `es-toolkit` first; if implementing custom logic, use the project or task coverage target and risk-relevant tests
 
 ### Designer Collaboration
 
@@ -212,5 +211,5 @@ To extend: add `resources/<name>.md` and append a row above.
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — Core Web Vitals, SSR→client trace propagation, INP profiling

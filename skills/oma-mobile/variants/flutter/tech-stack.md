@@ -1,5 +1,7 @@
 # Mobile Agent - Tech Stack Reference (Flutter)
 
+Starter reference for the selected platform. Preserve existing project choices. The caching implementation below applies only when caching is required; do not add it for an unrelated screen or widget change.
+
 ## Framework + State Management
 
 - **Language**: Dart 3.10+
@@ -34,7 +36,7 @@ RemoteDataSource  (Dio)  ──HTTP──►  Backend REST API
 
 ## Response Cache: Offline-First Repository (Drift)
 
-Read-through caching of API responses is **mandatory at the Repository (data) layer**, using a Drift database table as the local cache. The cache stores **decoded domain entities** — never raw HTTP bytes or JSON strings. The Dio client and its interceptors are never cache-aware.
+When response caching is required, implement it at the Repository (data) layer, using a Drift database table as the local cache. The cache stores **decoded domain entities** — never raw HTTP bytes or JSON strings. The Dio client and its interceptors are never cache-aware.
 
 **Placement rule — Repository layer, not transport.** Do **not** add a Dio cache interceptor (e.g. `dio_http_cache`, `dio_cache_interceptor`) as the system of record for domain reads. Such interceptors operate on raw bytes, making them invisible to the domain and untestable at the business-logic level. Cache the typed result *after* decoding instead.
 

@@ -1,11 +1,7 @@
 ---
 name: oma-slide
-description: HTML presentation deck generator and multi-format exporter.
-  Generates distinctive, animation-rich HTML decks at a fixed 1920×1080 stage,
-  then deterministically validates, bundles, and exports them to PDF/PNG/PPTX
-  via the `oma slide` CLI. Use for slide, deck, presentation, slides, pptx,
-  keynote, 슬라이드, 발표자료, プレゼン, 幻灯片 requests. Produces self-contained single-file
-  HTML with keyboard/touch nav, speaker notes, and print-to-PDF support.
+description: Create, import, revise, or export presentation decks through the
+  OMA slide CLI. Use for HTML slides and PDF, PNG, or PPTX deck delivery.
 ---
 
 # Slide Agent — Animation-Rich HTML Deck Generator
@@ -103,25 +99,6 @@ outputs:
 2. Run one `AskUserQuestion` clarifying: purpose, audience, slide count, content density, existing assets.
 3. Load `resources/generation-protocol.md` and the relevant style reference before writing any HTML.
 
-### Scenes
-1. **DETECT** (Phase 0): Identify mode (new / import / enhance). Resolve the session output
-   directory as `.agents/results/slides/<session-id>/`, then scaffold workdir via `oma slide create`.
-2. **DISCOVER** (Phase 1): Clarify purpose, length, content, density. Evaluate user-provided assets
-   (multimodal-Read each image; `oma slide asset fetch-video` for video → `./assets/`). Co-design outline
-   around text AND curated assets.
-3. **STYLE** (Phase 2): Generate 3 live HTML style previews (safe preset, bold template, wildcard).
-   Present to user; await selection. Read chosen `design.md` via `oma slide style get <slug>` if bold.
-4. **GENERATE** (Phase 3): Write `slide-NN.html` fragments into the workdir at 1920×1080 px.
-   New imagery requests → oma-image → `./assets/`. Apply `data-om-validate` on each slide.
-5. **VALIDATE** (Phase 4): Run `oma slide validate --workspace --output json`. If findings exist,
-   auto-fix the reported slides and re-validate. Max 3 iterations; surface diff to user on failure.
-6. **REVIEW** (Phase 5): Run `oma slide preview --workspace` (in the viewer, press `n` to toggle the
-   on-screen speaker-notes panel). Optionally open `oma slide edit --workspace`
-   for bbox visual edits. Optional aesthetic review using chrome-devtools MCP screenshots (judgment,
-   not the pass/fail gate).
-7. **DELIVER** (Phase 6): Run `oma slide bundle --workspace "$DECK_DIR"` (`--workspace` is required; the default output is `$DECK_DIR/out/deck.html`). Optionally export
-   PDF / PNG / PPTX on user request. PPTX is image-backed and has no editable text or shape layers. Warn if deck contains video (bundle is not fully self-contained).
-
 ### Transitions
 - If `import-pptx` or `import-canva` is requested, skip Phase 1 (Discovery), run Phase 2 (Style), then proceed from Phase 3 with extracted fragments.
 - If validate auto-fix loop exceeds 3 iterations, surface the JSON diff to the user and wait.
@@ -143,30 +120,6 @@ outputs:
 - Partial success: generated slides present but exports skipped (missing dependencies) — explicit notice.
 
 ## Logical Operations
-
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Detect mode and clarify intent | `READ` | User input, existing workdir |
-| Evaluate user-provided assets | `READ` | Multimodal image read + `fetch-video` |
-| Select style / design doctrine | `SELECT` | style-presets.md, selection-index.json |
-| Scaffold workdir | `CALL_TOOL` | `oma slide create` |
-| Write slide HTML fragments | `WRITE` | slide-NN.html at 1920×1080 |
-| Write meta.json | `WRITE` | { title, order[], style, density, speakerNotes } |
-| Validate geometry | `CALL_TOOL` | `oma slide validate --output json` |
-| Auto-fix validation findings | `WRITE` | Rewrite affected slide HTML |
-| Generate images | `CALL_TOOL` | oma-image skill |
-| Build viewer | `CALL_TOOL` | `oma slide preview` |
-| Bundle deck | `CALL_TOOL` | `oma slide bundle` |
-| Export PDF / PNG / PPTX | `CALL_TOOL` | `oma slide export pdf|png|pptx` |
-| Probe Canva MCP availability | `CALL_TOOL` | `list_designs` (Canva MCP) |
-| Auto-provision Canva MCP config | `WRITE` | project: `.agents/mcp.json`, `.agents/mcp_config.json` (agy), `.mcp.json` (Claude), `.gemini/settings.json` (Gemini Extension); global: `~/.gemini/antigravity-cli/mcp_config.json` (agy global) |
-| Upload slide PNGs to Canva | `CALL_TOOL` | `upload_asset` (Canva MCP) |
-| Create Canva presentation | `CALL_TOOL` | `create_design` (Canva MCP) |
-| Export design from Canva | `CALL_TOOL` | `export_design` (Canva MCP) |
-| Import design from Canva | `CALL_TOOL` | `import_design` + `list_designs` (Canva MCP) |
-| Open visual editor | `CALL_TOOL` | `oma slide edit` |
-| Report result | `NOTIFY` | Final summary + file paths |
 
 ### Tools and instruments
 - `oma slide` CLI (all deterministic ops)

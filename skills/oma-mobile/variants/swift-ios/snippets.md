@@ -688,7 +688,7 @@ NewPostView()
 
 ## 10. Repository-layer response cache (hyperoslo/Cache)
 
-Read-through caching is **mandatory at the Repository (Service) layer**. Cache the
+When response caching is required, implement it at the Repository (Service) layer. Cache the
 **decoded** `Components.Schemas.*` models returned by the generated `Client` — never
 intercept `HTTPBody` in a middleware (it is a single-consumption stream). `hyperoslo/Cache`'s
 `Storage` is not `Sendable`, so it is always owned by an `actor`.

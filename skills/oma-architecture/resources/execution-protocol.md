@@ -1,16 +1,7 @@
 # Architecture Agent - Execution Protocol
 
-## Step 0: Prepare
-1. Assess difficulty using `../../_shared/core/difficulty-guide.md`
-2. Clarify the decision:
-   - What is being decided?
-   - What constraints already exist?
-   - What would make this decision successful?
-3. Identify scope:
-   - single component/module
-   - subsystem
-   - cross-cutting system architecture
-4. Choose the lightest fitting methodology via `methodology-selection.md`
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Frame the Problem
 - Separate symptoms from decisions

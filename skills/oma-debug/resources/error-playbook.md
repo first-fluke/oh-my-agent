@@ -1,7 +1,7 @@
 # Debug Agent - Error Recovery Playbook
 
 When you encounter a failure during debugging, follow these recovery steps.
-Do NOT stop or ask for help until you have exhausted the playbook.
+Use the relevant recovery steps. If required information or authority is missing, pause the dependent action and continue independent work.
 
 ---
 

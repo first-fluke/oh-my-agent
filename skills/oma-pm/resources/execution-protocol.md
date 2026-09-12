@@ -1,17 +1,7 @@
 # PM Agent - Execution Protocol
 
-## Step 0: Prepare
-1. **Assess difficulty**: see `../../_shared/core/difficulty-guide.md`
-   - **Simple**: Lightweight plan, 3-5 tasks | **Medium**: Full 4 steps | **Complex**: Full + API contracts
-2. **Clarify requirements**: follow `../../_shared/core/clarification-protocol.md` (critical for PM)
-   - Check **Uncertainty Triggers**: business logic, security/auth, existing code conflicts?
-   - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
-3. **Check lessons**: read cross-domain section in `../../_shared/core/lessons-learned.md`
-4. **If governance, risk, or formal planning matters**: read `resources/iso-planning.md`
-
-**Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
-
-Follow these steps in order (adjust depth by difficulty).
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Analyze Requirements
 - Parse user request into concrete requirements
@@ -27,7 +17,7 @@ Follow these steps in order (adjust depth by difficulty).
 
 ## Step 2: Design Architecture
 - Select tech stack (frontend, backend, mobile, database, infra)
-- Define API contracts (method, path, request/response schema)
+- Reuse or update API contracts for changed cross-boundary work (method, path, request/response schema)
 - Design data models (tables, relationships, indexes)
 - Identify security requirements (auth, validation, encryption)
 - Plan infrastructure (hosting, caching, CDN, monitoring)
@@ -64,7 +54,7 @@ Follow these steps in order (adjust depth by difficulty).
 - Check: Are acceptance criteria measurable and testable?
 - Check: Is `test_approach` valid where set (`tdd|test_after|not_applicable`), with rationale + alternative verification for every `not_applicable`? (`oma verify pm` enforces this contract)
 - Check: Is security considered from the start (not deferred)?
-- Check: Are API contracts defined before frontend/mobile tasks?
+- Check: Are affected API boundaries settled by an existing or updated contract before dependent frontend/mobile work?
 - Check: Are major risks, owners, and approval points explicit when needed?
 - Output task-board.md format for orchestrator compatibility
 

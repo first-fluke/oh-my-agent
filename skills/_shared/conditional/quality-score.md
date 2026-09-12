@@ -1,147 +1,31 @@
-# Quality Score Continuum
+# Quality Measurements
 
-Replaces binary PASS/FAIL gate evaluation with a **continuous quantitative score** (0-100).
-Inspired by autoresearch's val_bpb metric: objective, comparable, and trackable over time.
+Load when the task or active workflow needs a measured baseline or experiment comparison with defined metrics. The mere presence of tests or lint does not activate a scoring phase. Ordinary verification uses the applicable checks directly.
 
----
+## Preserve independent acceptance gates
 
-## Score Dimensions
+Tests, authorization/security requirements, and project acceptance criteria remain independent gates. A performance improvement cannot offset a correctness or security failure. Do not assign default weights, convert checklist completion into a security score, or trigger rollback from an arbitrary grade.
 
-| Dimension | Weight | Measurement Method | Measurer |
-|-----------|--------|--------------------|----------|
-| **Correctness** | 0.30 | Structured test result pass rate | Agent runs the project test command |
-| **Security** | 0.25 | OWASP checklist completion rate | QA Agent review |
-| **Performance** | 0.15 | No regression vs baseline (estimate) | Agent or QA estimate |
-| **Coverage** | 0.15 | Structured coverage result when configured | Agent runs configured coverage command |
-| **Consistency** | 0.15 | Structured lint/type diagnostics when available | Agent runs configured checks |
+OMA does not implement a loader for `.agents/config/quality-score.yaml` or a universal composite scorer. If a project already provides a scoring command, record its formula, inputs, applicability, and output; do not infer configuration support from a sample path. A project composite may supplement the evidence but cannot waive mandatory checks.
 
-### Composite Score Formula
+## Measure a comparable baseline
 
-```
-composite = (correctness * 0.30) + (security * 0.25) + (performance * 0.15)
-          + (coverage * 0.15) + (consistency * 0.15)
-```
+1. Define the behavior, metric, units, direction, scope, and acceptance threshold from the task or project. Use the same command, dataset, environment, and measurement method before and after.
+2. Reuse still-current verification artifacts. When new measurements are needed, capture the command's exit status and structured output (JSON, JUnit, SARIF, LCOV, or project equivalent). Do not infer totals from truncated console text.
+3. Record the artifact path and revision/run identity with the result. Mark unavailable measurements as missing with a reason; estimates are labeled and excluded from measured comparisons.
+4. Compare each applicable measure and check result. For noisy metrics, use the project's sampling/tolerance method; a single timing sample does not prove a regression.
+5. Keep a change when it meets required behavior and comparison criteria. Investigate a regression before deciding whether to repair or discard the experiment; preserve unrelated work. Record a material tradeoff when requirements permit it.
 
----
+For an actual experiment, use `experiment-ledger.md`. Ordinary test passes do not require a ledger row or a new measurement at every phase. Re-measure only affected metrics after relevant changes, failures, or uncertainty.
 
-## Measurement Protocol
+## Evidence record
 
-### How to Measure (Practical)
+Use existing result artifacts or a compact table such as:
 
-Use a project-provided JSON, JUnit, SARIF, or LCOV output when available. Keep
-the original command's exit status and capture the result artifact before
-summarizing it. Do not infer an error count from a truncated console line.
+| Measure | Baseline | Candidate | Method / evidence | Verdict |
+|---|---|---|---|---|
+| Required tests | pass | pass | exact command, exit status, report paths | pass |
+| Request p95 latency | measured ms | measured ms | same workload, environment, sample method | within target / regression / inconclusive |
+| Security finding | finding ID | remediation status | reproduction and verification paths | resolved / unresolved |
 
-```bash
-test_command --reporter=json > test-results.json
-test_status=$?
-# Read totals from test-results.json; retain test_status as the check result.
-
-coverage_command --json > coverage.json
-coverage_status=$?
-# Read coverage.json or lcov.info; retain coverage_status.
-
-lint_command --format json > lint.json
-lint_status=$?
-# Count structured diagnostics; retain lint_status.
-```
-
-When a structured measurement cannot be produced, mark the dimension
-`missing`, state why, and use the applicable binary check or manual evidence.
-An estimate may be shown as commentary but is excluded from the composite and
-from score comparisons. Publish a composite only when every configured,
-applicable dimension is measured. Otherwise set `Composite: unavailable` and
-compare only dimensions measured with the same method at both checkpoints.
-
-### When to Measure
-
-Quality Score is measured **on demand**, not at every step. Load `quality-score.md` only at these checkpoints:
-
-| Checkpoint | Trigger | Measurer |
-|-----------|---------|----------|
-| IMPL baseline | After implementation complete, before VERIFY | Orchestrator (inline) or impl agent |
-| Post-VERIFY | After QA verification complete | QA Agent |
-| Post-REFINE | After refinement complete | Debug Agent or Orchestrator |
-| Final | Before SHIP_GATE | QA Agent |
-
----
-
-## Score Thresholds
-
-| Range | Grade | Gate Decision |
-|-------|-------|---------------|
-| 90-100 | A | PASS, proceed immediately |
-| 75-89 | B | CONDITIONAL PASS, proceed with noted improvements |
-| 60-74 | C | FAIL, must improve before proceeding |
-| 0-59 | D | HARD FAIL, rollback and re-plan required |
-
----
-
-## Keep/Discard Rule
-
-Changes are evaluated by their **impact on the score**, not just by whether they pass review.
-
-```
-IF score_after >= score_before:
-    KEEP change
-ELSE IF (score_before - score_after) < 5:
-    REVIEW (minor regression, justify in experiment ledger)
-ELSE:
-    DISCARD change (revert and try alternative)
-```
-
-### Delta Recording
-
-Every scored change is recorded in the Experiment Ledger (see `experiment-ledger.md`).
-Record via memory protocol: `[EDIT]("experiment-ledger.md", append row)`.
-
----
-
-## Score Record Format
-
-```markdown
-### Quality Score @ {PHASE}_{checkpoint}
-| Dimension | Score | Detail |
-|-----------|-------|--------|
-| Correctness | 100 | `test-results.json`, 20/20; command exit 0 |
-| Security | 90 | No CRITICAL/HIGH, 1 MEDIUM |
-| Performance | missing | no target or measurement available |
-| Coverage | 70 | `coverage.json`, 70% line coverage; command exit 0 |
-| Consistency | 95 | `lint.json`, 0 errors, 1 warning; command exit 0 |
-| **Composite** | **unavailable** | performance is missing; no partial-weight normalization |
-| **Comparability** | **comparable dimensions only** | method and scope recorded |
-```
-
----
-
-## Dimension Customization (Optional)
-
-<!-- oma-docs:ignore-start -->
-Projects can override weights in `.agents/config/quality-score.yaml`:
-
-```yaml
-weights:
-  correctness: 0.25
-  security: 0.35
-  performance: 0.10
-  coverage: 0.15
-  consistency: 0.15
-thresholds:
-  pass: 85
-  hard_fail: 60
-```
-<!-- oma-docs:ignore-end -->
-
-If config file is absent, use the defaults defined in this document.
-
----
-
-## Integration Points
-
-| Component | How It Uses Quality Score |
-|-----------|--------------------------|
-| **Phase Gates** | Gate criteria reference composite score threshold |
-| **Experiment Ledger** | Records score delta per experiment |
-| **Exploration Loop** | Compares scores across alternative approaches |
-| **Session Metrics** | Tracks score progression through session |
-| **Lessons Learned** | Discarded experiments (delta <= -5) auto-feed lessons |
+Report missing evidence without inventing a score. Authorization, builds, verification, and completion follow `../core/execution-policy.md`.

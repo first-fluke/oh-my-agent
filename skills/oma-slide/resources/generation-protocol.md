@@ -51,9 +51,9 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
 
 **Goal:** arrive at a concrete, agreed-upon outline before writing a single slide.
 
-### 1a. Single AskUserQuestion (mandatory for `new` mode)
+### 1a. Resolve missing content choices
 
-Ask **exactly one** clarifying question covering all four dimensions at once. Do not split into multiple rounds.
+Reuse the purpose, length, content, and density already supplied. Ask one bundled question only for missing choices that materially affect the deck; otherwise select reasonable defaults and continue.
 
 Required dimensions:
 - **Purpose** — What is the deck for? (Pitch / report / talk / explainer / internal / external)
@@ -82,7 +82,7 @@ If the user has supplied images or video before or after the question:
 
 ### 1c. Output: Agreed Outline
 
-Produce a numbered outline: `slide N — [type] [title] [key content]`. Include which assets (if any) anchor which slides. Confirm with the user before proceeding to Phase 2.
+Produce a numbered outline: `slide N — [type] [title] [key content]`. Include which assets (if any) anchor which slides. Proceed under the existing deck-creation authorization; ask only if the outline introduces a material scope decision.
 
 ---
 
@@ -94,9 +94,9 @@ Produce a numbered outline: `slide N — [type] [title] [key content]`. Include 
 
 Read `resources/style-presets.md` for the 12 vendored presets and `resources/selection-index.json` for the 34 bold template metadata. Use mood/tone/formality/density/scheme to shortlist candidates based on the deck's purpose and density.
 
-### 2b. Generate 3 Live Single-Slide Previews
+### 2b. Style previews (when choosing a direction)
 
-Write three self-contained `preview-*.html` files (cover slide only, 1920×1080, canonical DOM structure) — **do not** use `oma slide create` for these; write them inline as quick previews:
+When previews are needed, write three self-contained `preview-*.html` files (cover slide only, 1920×1080, canonical DOM structure) — **do not** use `oma slide create` for these; write them inline as quick previews:
 
 | Preview | Source | Guidance |
 |---|---|---|
@@ -112,7 +112,7 @@ Each preview must:
 
 ### 2c. Present Previews to User
 
-Show the three previews (inline HTML or screenshots via chrome-devtools MCP). Ask the user to pick one. Offer to iterate on any preview before committing.
+If style exploration was requested or the direction remains a material unresolved choice, show previews and request a selection. Otherwise use the supplied style, existing deck conventions, or a suitable preset and proceed without a preview round.
 
 ### 2d. Fetch Chosen Bold Template Design (if applicable)
 

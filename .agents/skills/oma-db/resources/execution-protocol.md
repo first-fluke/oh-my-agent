@@ -1,18 +1,7 @@
 # DB Agent - Execution Protocol
 
-## Step 0: Prepare
-1. **Assess difficulty**: see `../../_shared/core/difficulty-guide.md`
-   - **Simple**: small schema adjustment or index review
-   - **Medium**: new bounded context, migration, or backup/capacity update
-   - **Complex**: engine selection, major redesign, multi-tenant or high-scale workload
-2. **Clarify workload**
-   - Functional flows, critical queries, write/read ratio, peak TPS, retention, RPO, RTO
-   - Compliance or audit constraints, PII, multi-region, reporting needs
-3. **Budget context**: follow `../../_shared/core/context-budget.md`
-4. **If vector search is involved**, read `resources/vector-db.md`
-5. **If security, audit, backup, or resilience requirements are central**, read `resources/iso-controls.md`
-6. **If a schema or data change targets live tables**, read `resources/migration-playbook.md`
-7. **If slow queries, execution plans, or index selection are in scope**, read `resources/query-tuning.md`
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Explore
 - Identify actors and external views that need data

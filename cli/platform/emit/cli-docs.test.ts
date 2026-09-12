@@ -16,6 +16,12 @@ const OMA_START =
 const OMA_END = "<!-- OMA:END -->";
 
 describe("renderCliVendorDoc", () => {
+  it("inherits provider selection instead of overriding the root with Serena", () => {
+    const doc = renderCliVendorDoc("codex", null);
+    expect(doc).toContain("code-intelligence.md");
+    expect(doc).toContain("does not select a separate provider");
+    expect(doc).not.toContain("Serena MCP is required");
+  });
   it("renders the vendor-specific Subagents line", () => {
     const claude = renderCliVendorDoc("claude", null);
     const codex = renderCliVendorDoc("codex", null);

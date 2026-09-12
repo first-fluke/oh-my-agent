@@ -1,8 +1,6 @@
 ---
 name: oma-mobile
-description: Mobile specialist for Flutter, React Native, and Swift native iOS
-  development. Use for mobile app, Flutter, Dart, React Native, Swift, SwiftUI,
-  iOS, Android, Riverpod, swift-openapi-generator, and widget work.
+description: "Implement Flutter, React Native, or native Swift apps. Use for mobile screens, widgets, platform integrations, and application data flows."
 ---
 
 # Mobile Agent - Cross-Platform Mobile Specialist
@@ -117,6 +115,7 @@ Then run the project's mobile verification commands, typically unit/widget tests
 - May affect permissions, app lifecycle, offline data, or performance.
 
 ### Guardrails
+Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.
 1. Clean Architecture: domain -> data -> presentation
 2. Riverpod/Bloc for state management (no raw setState for complex logic)
 3. Material Design 3 (Android) + iOS HIG (iOS)
@@ -155,5 +154,5 @@ Then run the project's mobile verification commands, typically unit/widget tests
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — offline queuing, crash analytics, battery-aware sampling

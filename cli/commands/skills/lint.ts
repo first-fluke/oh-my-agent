@@ -13,6 +13,8 @@ import { parseFrontmatter } from "../../utils/frontmatter.js";
 // are not held to a format they never adopted.
 
 export const LINT_MIN_DESCRIPTION_CHARS = 40;
+// Routing diagnostic, not a format limit or a model context-window guarantee.
+export const LINT_DESCRIPTION_WARN_CHARS = 350;
 
 // Anthropic's skill authoring guide caps the SKILL.md body at 500 lines; past
 // that, content belongs in `resources/` behind progressive disclosure. The body
@@ -128,6 +130,15 @@ function lintGeneric(
       smell: "weak-description",
       severity: "warn",
       detail: `frontmatter \`description\` is ${description.trim().length} chars (< ${LINT_MIN_DESCRIPTION_CHARS}) — too thin to route on`,
+    });
+  }
+
+  if (description.trim().length > LINT_DESCRIPTION_WARN_CHARS) {
+    smells.push({
+      skill,
+      smell: "verbose-description",
+      severity: "warn",
+      detail: `description is ${description.trim().length} chars; keep routing triggers and exclusions here, and move operation details to references`,
     });
   }
 

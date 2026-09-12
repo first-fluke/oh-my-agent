@@ -28,14 +28,14 @@ project-specific `stack/` from the matching variant baseline. The variant
 | Navigation | NavigationStack | GoRouter 17 | React Navigation v7 |
 | HTTP transport | URLSession | Dio | Axios |
 | API/data layer | swift-openapi-generator | Repository (Dio) | TanStack Query + `api/` |
-| Response cache (mandatory, repo layer) | hyperoslo/Cache | Drift offline-first repo | TanStack Query |
+| Response cache (when required) | hyperoslo/Cache | Drift offline-first repo | TanStack Query |
 | Durable storage | SwiftData / Keychain | Drift / flutter_secure_storage | MMKV / secure-store |
 | Unit test | XCTest / Swift Testing | flutter_test + mocktail | jest + RNTL (matchers built in ≥12.4) |
 | E2E | XCUITest | Maestro | Maestro |
 
-## Mandatory: repository-layer response cache
+## Repository-layer response cache when required
 
-Every variant **mandates a response cache at the Repository / data layer** — the
+When offline behavior, latency, or repeated reads justify caching, use the selected variant's Repository / data-layer cache — the
 same philosophy across platforms, different idiomatic tooling:
 
 - Cache **decoded domain models**, never raw transport bytes / `HTTPBody` /

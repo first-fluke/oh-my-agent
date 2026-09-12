@@ -1,9 +1,6 @@
 ---
 name: oma-design
-description: AI design specialist skill with DESIGN.md management, anti-pattern
-  enforcement, optional Stitch MCP integration, and component library guidance.
-  Covers typography, color systems, motion design (motion/react, GSAP,
-  Three.js), responsive-first layouts, and accessibility (WCAG 2.2).
+description: "Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions."
 ---
 
 # oma-design
@@ -62,25 +59,17 @@ outputs:
 ### Control-flow features
 - Branches by missing context, CJK language support, vendor seed availability, and anti-pattern audit results
 - May read/write design docs and call optional design/vendor tooling
-- Requires user confirmation before generation when multiple directions exist
+- Asks about a direction only when a material choice is unresolved; otherwise follows the supplied brief
 
 ## Structural Flow
 
 ### Entry
-1. Check `.design-context.md`; if missing, run setup before design work.
+1. Read relevant existing design context; gather missing context only when needed for the requested decision.
 2. Identify target audience, platform, content language, and design artifact.
 3. Decide whether vendor inspiration or Stitch integration is relevant.
 
-### Scenes
-1. **PREPARE**: Load design context and constraints.
-2. **ACQUIRE**: Extract existing design signals, references, and anti-pattern risks.
-3. **REASON**: Propose directions, typography, color, layout, motion, and accessibility choices.
-4. **ACT**: Generate or revise `DESIGN.md` and related guidance.
-5. **VERIFY**: Audit responsive behavior, WCAG, Nielsen heuristics, and AI-slop patterns.
-6. **FINALIZE**: Handoff design decisions and attribution where required.
-
 ### Transitions
-- If `.design-context.md` is missing, create it before continuing.
+- Create `.design-context.md` when a discovery pass materially informs a design-system decision.
 - If the target is an existing site/app, load `resources/redesign-protocol.md` and classify Preserve vs Overhaul before proposing.
 - If CJK support is needed, prioritize CJK-ready fonts.
 - If vendor seed fetch fails, choose retry, continue without seed, or abort.
@@ -97,25 +86,14 @@ outputs:
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read design context | `READ` | `.design-context.md`, `DESIGN.md`, references |
-| Select design direction | `SELECT` | 2-3 directions and recommended option |
-| Infer visual system | `INFER` | Typography, color, layout, motion |
-| Call optional tooling | `CALL_TOOL` | Stitch/getdesign/shadcn when relevant |
-| Write design artifact | `WRITE` | `DESIGN.md` or audit output |
-| Validate design quality | `VALIDATE` | Checklist, WCAG, anti-patterns |
-| Report handoff | `NOTIFY` | Final design summary |
-
 ### Tools and instruments
 - Design references, anti-pattern catalog, checklist, Stitch integration, getdesign fetcher
 - shadcn CLI recommendations when component guidance is needed
 
 ### Canonical workflow path
 ```text
-1. Check `.design-context.md`; create it if missing.
-2. Produce 2-3 design directions and get confirmation.
+1. Inspect relevant existing context; create `.design-context.md` only when substantive discovery is needed.
+2. Use the chosen direction. Offer alternatives only for requested exploration or a material unresolved design decision.
 3. Generate or revise `DESIGN.md`, then run the design checklist.
 ```
 
@@ -142,7 +120,7 @@ bunx getdesign@latest list
 - Does not implement frontend code directly.
 
 ### Guardrails
-1. Check `.design-context.md` before any design work. If missing, run Phase 1 (Setup) to create it.
+1. Inspect relevant existing context and tokens. Create `.design-context.md` for substantive discovery, not every visual edit.
 2. System font stack as default (`system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`). Add custom fonts only with project justification.
 3. If the service supports CJK languages (ko/ja/zh): prioritize CJK-ready fonts (Pretendard Variable > Noto Sans CJK > system-ui fallback). If latin-only: choose fonts appropriate for the target audience.
 4. Enforce anti-patterns strictly; reject AI slop. See `resources/anti-patterns.md`.
@@ -151,117 +129,24 @@ bunx getdesign@latest list
 7. ALL output must be responsive-first (mobile layout as default, enhance upward).
 8. WCAG AA minimum for all designs. Respect `prefers-reduced-motion`.
 9. Stitch MCP is optional; all phases work without it.
-10. Present 2-3 design directions and get user confirmation before generating.
-11. Declare a one-line Design Read before proposing: "Reading this as: \<page kind> for \<audience>, with a \<vibe> language." If genuinely ambiguous, ask exactly ONE clarifying question — never guess, never a question dump.
+10. Present directions when design exploration is requested or a material direction is unresolved; reuse an already chosen direction.
+11. State a material design assumption when it affects the outcome. Ask only about unresolved choices; no fixed opening phrase is required.
 12. Redesigns follow `resources/redesign-protocol.md`: detect Preserve vs Overhaul, audit before touching, never silently change URLs, nav labels, form field names, or brand marks.
 13. Visual assets follow `resources/asset-strategy.md`: image generation (oma-image) first, picsum seed second, labeled placeholder last. Div-based fake screenshots are banned.
 14. Consistency locks: one accent color, one corner-radius system, one theme per page. Lock them early, audit against them in Phase 6 (checklist section 6 mechanical checks).
 
-### Anti-Pattern Quick Reference
-
-#### Typography
-- DON'T: Default to custom Google Fonts when system fonts suffice
-- DON'T: Reach for Inter as the default custom sans (LLM signature); override only on explicit neutral/Linear-style ask or public-sector/a11y-first brief
-- DON'T: Load 3+ font families without justification
-- DON'T: Body text below 16px on mobile
-- DO: System font stack first, custom fonts for brand identity only
-- DO: Test CJK at every size (line-height 1.7-1.8)
-
-#### Color & Gradient
-- DON'T: Purple-to-blue gradient backgrounds (strongest AI slop signal)
-- DON'T: Gradient orbs/blobs as hero decoration ("AI SaaS look")
-- DON'T: Gradient + glassmorphism + blur combo (triple slop)
-- DON'T: Mesh gradient backgrounds as primary visual
-- DON'T: Pure white (#fff) on pure black (#000); too harsh
-- DO: Solid colors or subtle single-hue gradients
-- DO: Texture (noise, grain, dither) over plain gradients
-- DO: Derive gradients from brand colors with clear purpose
-
-#### Layout
-- DON'T: Nested cards inside nested cards
-- DON'T: Desktop-only fixed-width layouts
-- DON'T: Hero with identical 3-metric stats layout (AI pattern)
-- DO: 8px grid, consistent section rhythm
-- DO: Responsive-first, works at 375px minimum
-- DO: Mix layout patterns (chess, grid, bento, full-bleed)
-
-#### Motion
-- DON'T: Bounce easing on everything
-- DON'T: Animation duration > 800ms for UI transitions
-- DON'T: Ignore prefers-reduced-motion
-- DO: transform + opacity only for 60fps
-- DO: 150ms micro-interactions, 200-500ms transitions
-
-#### Components
-- DON'T: Glassmorphism everywhere; use sparingly
-- DON'T: Hover-only interactions without touch/keyboard alternatives
-- DON'T: Default to lucide-react or hand-rolled SVG icons; pick one family deliberately (Phosphor > HugeIcons > Radix > Tabler; lucide on explicit ask or existing dependency)
-- DO: shadcn/ui for base, Aceternity UI / React Bits for accent effects
-- DO: All interactive elements must have visible focus states
-
-#### Content & Copy
-- DON'T: "John Doe" personas, "Acme/Nexus" brand names, Lorem Ipsum, fake-perfect numbers (99.99%)
-- DON'T: Filler verbs ("Elevate", "Seamless", "Unleash") or performative labels ("Quietly trusted by")
-- DON'T: Em-dash (`—`) anywhere in visible output — zero tolerance, no "sparingly" allowance; en-dash as separator also banned (hyphen only)
-- DO: Copy self-audit before handoff — re-read every visible string, rewrite anything broken or AI-cute
-- DO: One label per CTA intent per page
-
-#### Assets
-- DON'T: Div-based fake screenshots; text wordmark logo walls; hand-rolled SVG icons
-- DO: oma-image generation first → picsum seed → labeled placeholder + report
-
-### Workflow Summary
-7 phases: Setup → Extract → Enhance → Propose → Generate → Audit → Handoff.
-
-### Vendor Inspiration (getdesign)
-
-Phase 2 can optionally seed from the community
-[getdesign](https://getdesign.md) catalog
-([VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md),
-MIT). Trigger it by listing a supported vendor domain in the
-`## Reference Sites` section of your `.design-context.md`:
-
-```markdown
-## Reference Sites
-- [linear.app](https://linear.app): clean dark UI, minimal, professional
-- [stripe.com](https://stripe.com): strong hierarchy, purposeful animation
-```
-
-Any domain that matches a brand in the getdesign manifest triggers an
-automatic fetch + hash-verify + load during Phase 2. No new fields, no
-extra config. Full vendor list: see `bunx getdesign@latest list`
-(telemetry is always disabled by oma-design).
-
-**Seed, not final.** oma-design treats vendor templates as inspiration
-and synthesizes a project-specific DESIGN.md around them. Importantly:
-- **Typography is never adopted from the seed.** Rule #2 (system font
-  stack default) and Rule #3 (Pretendard Variable / Noto Sans CJK for
-  ko/ja/zh) always win over the vendor's latin-only fonts.
-- **Anti-patterns are pre-audited** before synthesis. If a vendor uses
-  heavy glassmorphism or purple gradients, Phase 4 will surface the
-  choice explicitly rather than copy the pattern silently.
-- **Offline is fine.** If the fetch fails, you get a 3-option dialog
-  (retry / continue without seed / abort). Default: continue.
-
-Attribution is appended to the generated `DESIGN.md` in Phase 7 as a
-required MIT compliance footer. Full fetcher rules, matching algorithm,
-injection defenses, and multi-vendor merge policy live in
-`resources/getdesign-fetcher.md`.
-
-### Resources
-- `resources/execution-protocol.md`: 7-phase workflow + example `.design-context.md` appendix
-- `resources/anti-patterns.md`: Full DO/DON'T catalog
-- `resources/checklist.md`: Audit checklist (Responsive + WCAG + Nielsen + Slop + Mechanical counts)
-- `resources/design-md-spec.md`: DESIGN.md generation guide (9 sections)
-- `resources/design-tokens.md`: CSS/Tailwind/shadcn export templates
-- `resources/prompt-enhancement.md`: Vague request to detailed spec + worked landing-page example
-- `resources/stitch-integration.md`: Stitch MCP tool mapping (optional)
-- `resources/getdesign-fetcher.md`: Vendor seed fetch, hash verify, seed rules
-- `resources/redesign-protocol.md`: Preserve/Overhaul modes, audit-first, modernization levers
-- `resources/asset-strategy.md`: Image sourcing priority, logo walls, fake-screenshot ban
-- `resources/error-playbook.md`: Design error recovery
-
 ## References
+- `resources/execution-protocol.md`: selected design operation and its phases
+- `resources/redesign-protocol.md`: existing-site redesign
+- `resources/design-md-spec.md`: creating or changing DESIGN.md
+- `resources/checklist.md`: applicable visual verification checks
+- `resources/anti-patterns.md`: affected visual or copy category
+- `resources/getdesign-fetcher.md`: explicitly relevant vendor inspiration
+- `resources/stitch-integration.md`: requested Stitch operation
+- `resources/asset-strategy.md`: selecting visual assets
+- `resources/design-tokens.md`: token export
+- `resources/prompt-enhancement.md`: incomplete design brief
+- `resources/error-playbook.md`: observed design-tool failure
 - `reference/visual-hierarchy.md`: 7 hierarchy principles (Alignment, Color, Contrast, Proximity, Size, Texture, Time)
 - `reference/typography.md`: Font selection, type scale, CJK
 - `reference/color-and-contrast.md`: Color psychology, WCAG contrast

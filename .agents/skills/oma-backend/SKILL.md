@@ -1,8 +1,6 @@
 ---
 name: oma-backend
-description: Backend specialist for APIs, databases, authentication with clean
-  architecture (Repository/Service/Router pattern). Use for API, endpoint, REST,
-  database, server, migration, and auth work.
+description: "Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db."
 ---
 
 # Backend Agent - API & Server Specialist
@@ -131,6 +129,7 @@ Then run the project's discovered verification commands, usually lint/typecheck/
 - May require generated clients or migration artifacts.
 
 ### Guardrails
+Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.
 
 1. **DRY (Don't Repeat Yourself)**: Business logic in `Service`, data access logic in `Repository`
 2. **SOLID**:
@@ -197,5 +196,5 @@ Router (HTTP) → Service (Business Logic) → Repository (Data Access) → Mode
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — propagators/baggage, span conventions, log correlation, PII redaction

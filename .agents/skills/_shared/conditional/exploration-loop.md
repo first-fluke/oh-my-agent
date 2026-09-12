@@ -1,165 +1,22 @@
-# Exploration Loop (Hypothesis-Driven)
+# Hypothesis Exploration
 
-Transforms the reactive "fix what's broken" pattern into a proactive "explore alternatives, pick the best."
-Inspired by autoresearch's continuous hypothesis → experiment → evaluate → keep/discard loop.
+Load when the user requests alternative approaches, or when the same issue persists after repeated relevant recovery and a different mechanism is worth testing. A failed check count is a prompt to reassess the cause, not an unconditional launch signal. Do not activate for an obvious fix or a noisy metric delta.
 
----
+## Scope and budget
 
-## When to Activate
+Use the task's existing aggregate attempt and cost budget. Each hypothesis consumes an attempt; exploration never replenishes retries. For a comparison round, reserve all intended attempts before starting. If the existing workflow requires a multi-candidate round and fewer than two attempts remain, preserve evidence and report the unresolved result instead of starting a partial round. Explicit user, runtime, and workflow limits take precedence; this guide does not add turn quotas or file-count caps.
 
-The Exploration Loop activates only when reactive fixing has failed and shared
-recovery budget remains. A hypothesis run consumes the same attempt and cost
-budget as an ordinary retry; it never extends a task indefinitely.
+## Procedure
 
-| Condition | Example |
-|-----------|---------|
-| **Any gate fails twice** on the same issue | VERIFY_GATE, IMPL_GATE, REFINE_GATE, or SHIP_GATE |
-| **Quality Score delta is negative** after a fix attempt | Fixing performance regresses correctness |
-| **User explicitly requests** exploration | "Try a few approaches and pick the best" |
+1. Inspect prior failure evidence. State distinct causal hypotheses and the smallest experiment that distinguishes them. Use only as many alternatives as the uncertainty and budget justify; the active workflow may specify the candidate count.
+2. Identify ownership, baseline revision, required checks, comparison metrics, and artifact paths before editing. Include tests and related files needed to evaluate the mechanism; a fixed file limit must not hide impact.
+3. Isolate alternatives. In authorized multi-agent work, use separate prepared workspaces and preserve the plan task ID and unique run ID in each result. In sequential work, preserve a baseline and apply only the experiment's scoped diff. Do not use a blanket stash, reset, checkout, or cleanup against a workspace with unrelated changes.
+4. Run relevant checks and comparable measurements under `quality-score.md`. Missing evidence remains missing; a candidate with failing required checks cannot win through a higher aggregate score.
+5. Select a candidate only when it satisfies the required behavior and comparison criteria. Apply its owned changes to the target, then refresh affected verification on the integrated result. Preserve diagnostic evidence from other candidates; do not delete unrelated work or an active workspace.
+6. Record the comparison and decision in `experiment-ledger.md`. If no candidate resolves the issue, report the evidence and remaining limitation. Continue only within the existing recovery budget and authorized scope.
 
-Do NOT activate for:
-- First-attempt implementations (try the standard approach first)
-- Simple bug fixes with obvious solutions
-- Trivial changes (formatting, naming)
+## Workflow integration
 
----
+`/work`, `/orchestrate`, and `/ultrawork` retain their dispatch, required review, and recovery limits. They call this procedure after reassessing a repeated failure, then re-evaluate the failed gate using actual acceptance evidence. This guide does not start a workflow or delegate work by itself.
 
-## Exploration Protocol
-
-### Step 1: Hypothesize
-
-Generate 2-3 alternative approaches that differ in mechanism, not just in wording — if two hypotheses would touch the same code the same way, they are one hypothesis. For each, state the approach, which score dimensions it is expected to move, and the files it would touch. Keep the scope of each experiment to at most 3 files so failures stay attributable.
-
-### Step 2: Experiment
-
-Execute each hypothesis **in isolation**.
-
-**In multi-agent mode** (`/orchestrate`, `/work`):
-- Spawn the **same agent type** (e.g., `backend-engineer`) multiple times with different prompts
-- Each spawn includes the hypothesis context in the task description:
-  ```
-  Task: "Fix input validation using Hypothesis A: Zod schema at router level.
-         Context: Previous attempt (raw regex) failed QA twice."
-  ```
-- Agents use existing IDs; no new agent definitions needed
-- Each agent works in a separate workspace (`-w ./hyp-a`, `-w ./hyp-b`)
-- Every spawn carries the plan task ID and receives a unique run ID. Store its
-  report as `result-{agentId}-{taskId}-{runId}-{sessionId}.md`; workspace names
-  are not artifact identity.
-
-**In single-agent mode** (`/ultrawork` inline):
-- Execute sequentially: try A → measure → stash/revert → try B → measure → stash/revert
-- Use `git stash` or branch per experiment
-- Keep all measurements for comparison
-
-### Step 3: Measure
-
-Score each experiment using Quality Score protocol (load `quality-score.md` if not already loaded):
-
-```markdown
-### Exploration Results
-
-| Hypothesis | Composite | Correctness | Security | Performance | Coverage | Consistency |
-|-----------|-----------|-------------|----------|-------------|----------|-------------|
-| A | 82 | 85 | 90 | 70 | 75 | 90 |
-| B | 87 | 90 | 85 | 85 | 80 | 95 |
-
-Winner: Hypothesis B (score: 87, delta from current: +15)
-```
-
-### Step 4: Select
-
-```
-best = max(hypothesis_scores)
-
-IF best.score > current_score:
-    KEEP best → merge from workspace or apply stash
-    DISCARD others → clean up workspaces
-    Record ALL experiments in Experiment Ledger (kept and discarded)
-ELSE:
-    KEEP current approach (exploration found no improvement)
-    Record as "exploration inconclusive"
-    preserve the partial result and stop this recovery path
-```
-
-### Step 5: Record
-
-Log all experiments in the Experiment Ledger (see `experiment-ledger.md`), including discarded ones:
-
-```markdown
-| # | Phase | Agent | Hypothesis | Score Before | Score After | Delta | Decision |
-|---|-------|-------|-----------|-------------|------------|-------|----------|
-| 4 | EXPLORE | backend | Zod schema validation | 68 | 82 | +14 | DISCARD (not best) |
-| 5 | EXPLORE | backend | Middleware sanitization | 68 | 87 | +19 | KEEP (winner) |
-```
-
----
-
-## Constraints
-
-| Constraint | Value | Rationale |
-|-----------|-------|-----------|
-| Max hypotheses per round | 3 | Diminishing returns; keeps within turn budget |
-| Max exploration rounds per session | 2 | Prevents infinite exploration |
-| Max turns per hypothesis experiment | 10 | Scoped to focused changes |
-| Min score gap to justify exploration | 5 points | Don't explore if current is close to threshold |
-
-Before spawning, reserve each hypothesis from the task's remaining aggregate
-attempt and cost budget. Do not start a partial round: if fewer than two
-attempts remain, preserve the unresolved evidence and report `partial` or
-`failed`. A session-wide cap may stop all remaining recovery. Record the
-budget before and after each attempt in the task state.
-
----
-
-## Integration with Workflows
-
-### In `/ultrawork`
-
-Triggered at VERIFY or REFINE phase when the same gate fails twice:
-
-```
-VERIFY_GATE fails (2nd time, same issue)
-  → Load exploration-loop.md (conditional, per context-loading.md)
-  → Generate hypotheses (Exploration Decision template)
-  → Experiment sequentially (inline, git stash per attempt)
-  → Score each, select winner
-  → Resume gate evaluation with winning approach
-```
-
-### In `/orchestrate`
-
-Triggered when agent verification fails after max retries:
-
-```
-Agent fails after repeated attempts while aggregate budget remains
-  → Load exploration-loop.md
-  → Reserve 2–3 attempts, then spawn the same agent type with different
-    hypothesis prompts, plan `--task-id`, and separate workspaces
-  → Collect results, score each
-  → Keep winner workspace, discard others
-```
-
-### In `/work`
-
-Triggered when Issue Remediation Loop stalls (same issue persists after fix):
-
-```
-Same CRITICAL/HIGH issue persists after fix attempt
-  → Load exploration-loop.md
-  → Re-spawn agent with alternative hypothesis prompts
-  → QA scores each result
-  → Best result adopted
-```
-
----
-
-## Integration Points
-
-| Component | How It Uses Exploration Loop |
-|-----------|----------------------------|
-| **Quality Score** | Provides measurement for hypothesis comparison |
-| **Experiment Ledger** | Records all hypotheses (kept and discarded) |
-| **Phase Gates** | Repeated gate failure triggers exploration |
-| **Context Loading** | Loaded conditionally, only when triggered |
-| **Memory Protocol** | Uses same memory tools for experiment recording |
+Use `../runtime/result-contract.md` for task/run/claim identity and `../core/execution-policy.md` for authorization, clarification, and completion.

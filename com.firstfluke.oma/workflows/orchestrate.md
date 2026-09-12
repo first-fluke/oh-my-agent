@@ -160,25 +160,11 @@ Also poll `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` for logic updates
 - Watch for: completion, failures, crashes.
 - A `no-artifact` status (or `oma agent spawn` exit code 3) means the vendor exited 0 but wrote no result artifact under the workspace — a silent misdirected write. Treat it as a failed spawn: do NOT collect it as completed; re-dispatch (natively if the external vendor is unreliable) and check the session trail for the `blocker.raised` event.
 
-### Context Anxiety Check (per polling cycle)
+### Check stalled progress
 
-At each poll, evaluate for every in-progress agent:
+Use observed failures, missing artifacts, and unmet acceptance criteria to diagnose a stalled agent. Progress-file updates are not reliable turn counts. Do not restart from a fixed turn/progress ratio.
 
-1. **Turn budget ratio**: `turns_used / expected_turns` from difficulty guide
-2. **Progress ratio**: `completed_criteria / total_criteria` from task-board
-
-| Turn Budget | Progress | Action |
-|-------------|----------|--------|
-| < 80% | any | Continue monitoring |
-| >= 80% | >= 50% | Continue (agent is on track to finish) |
-| >= 80% | < 50% | **Context Reset**: Checkpoint + re-spawn (see `_shared/core/context-budget.md`) |
-| 100% (guidance) | < 100% | **Context Reset**: checkpoint and continue or re-spawn with remaining items |
-
-Record reset events in `task-board-{sessionId}.md`:
-```
-| Agent | Status | Note |
-| backend | reset-1 | Turn budget 80%, progress 40%, checkpoint saved |
-```
+If useful context is lost or progress remains stalled, save completed work, remaining criteria, verification, and artifact paths before resuming or re-dispatching. Preserve partial results and avoid duplicating a live attempt. Follow `.agents/skills/_shared/core/context-budget.md` and the existing retry/cost limits.
 
 > **Claude Code note**: Agent tool returns results synchronously, so no polling is needed. Check status, files changed, and issues directly in each agent's return value.
 
@@ -228,7 +214,7 @@ Present session summary to the user.
 - If any tasks failed after retries, list them with error details.
 - Suggest next steps: manual fix, re-run specific agents, or run `/review` for QA.
 - Use memory write tool to record final results.
-- If Quality Score was measured during this session:
-  - Generate Experiment Ledger summary (total experiments, keep rate, net delta)
-  - Write lessons from discarded experiments to `lessons-{sessionId}.md`
-  - Include agent effectiveness ranking in the report
+- If actual experiments were run during this session:
+  - Summarize experiment decisions and comparable measurement evidence
+  - Record lessons in `lessons-{sessionId}.md` when experiment evidence supports a reusable cause and prevention action
+  - Include the selected approach, comparison evidence, and remaining limits

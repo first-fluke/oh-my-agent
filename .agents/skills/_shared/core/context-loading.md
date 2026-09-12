@@ -1,179 +1,34 @@
-# Dynamic Context Loading Guide
+# Context Loading
 
-Agents should not read all resources at once. Instead, load only necessary resources based on task type.
-This saves context window and prevents confusion from irrelevant information.
+Read the routed skill once. Its references are an index, not a preload list.
 
----
+## Selecting context
 
-## Loading Order (Common to All Agents)
+- Start with the task, acceptance criteria, and the owning skill's SKILL.md.
+- Read a supporting document only when its stated trigger applies. Existing project conventions take precedence over starter examples.
+- Load execution-protocol.md when its selected operation needs command, schema, or recovery detail; its existence alone is not a trigger.
+- Load only the selected framework or platform reference. Generated stack/ files describe the project; variants/ are starter material for /stack-set, not mandatory reading for existing-code edits.
+- Consult relevant checklist sections for unresolved verification requirements. Read an error playbook only for the observed failure.
+- Read difficulty-guide.md for decomposition decisions, not before every task. Difficulty does not activate extra skills or full checklists.
+- Runtime transport, authorization, and result contracts are injected once by CLI dispatch. Native agents read those contracts if not already supplied.
 
-**Every item below loads only if that file exists in the skill.** Resource sets
-differ per skill by design — `execution-protocol.md` is in 19 of 33 skills,
-`checklist.md` in 17, `error-playbook.md` in 11. A missing file is not an error
-and is not something to create on the fly; skip it and move on.
+## Conditional shared resources
 
-### Always Load (Required)
-1. `SKILL.md`: read when the skill is routed to (the injector hook supplies the
-   path, not the body)
-2. `resources/execution-protocol.md`: execution protocol
+| Resource | Load when |
+|---|---|
+| `../conditional/quality-score.md` | The task needs a defined baseline or experiment comparison |
+| `../conditional/experiment-ledger.md` | Recording an actual experiment |
+| `../conditional/exploration-loop.md` | Repeated recovery fails on the same issue and alternative mechanisms merit testing within budget, or the user requests exploration |
+| `common-checklist.md` | A broad cross-domain review needs its applicable checks |
+| `context-budget.md` | Managing a long task or diagnosing context overhead |
+| `../runtime/memory-protocol.md` | Coordinating agents or resuming durable task state |
 
-### Load at Task Start
-3. `difficulty-guide.md`: Difficulty assessment (Step 0)
+## Runtime selection
 
-### Load Based on Difficulty
-4. **Simple**: Proceed to implementation without additional loading
-5. **Medium**: the task's mapped resource from the table below
-<!-- oma-docs:ignore-start -->
-6. **Complex**: the mapped resource + `stack/tech-stack.md` + `stack/snippets.md`
-<!-- oma-docs:ignore-end -->
+The graph records references, not permission to load them. The context loader injects the owning entry skill and defers its supporting references. Cross-routes to another specialist do not inject that specialist's body.
 
-> `stack/` is **generated per project by `/stack-set`**, adapted to the detected
-> stack. It is absent until that runs — the shipped `variants/{language}/` files
-> are seeds for generation, not a substitute to load. In a fresh checkout the
-> Complex tier therefore costs no more than Medium.
+Difficulty selects a soft size budget. If the entry skill exceeds it, retain the entry and report the overrun. Do not replace it with smaller unrelated documents. Explicitly requested supporting references are checked against the graph and loaded within the remaining budget; deferred paths remain available for scoped reads.
 
-### Load During Execution as Needed
-7. `resources/checklist.md`: Load at Step 4 (Verify)
-8. `resources/error-playbook.md`: Load only when errors occur
-9. `common-checklist.md`: For final verification of Complex tasks
-10. `../runtime/memory-protocol.md`: CLI mode only
+## Subagent prompts
 
-### Load on Measurement / Exploration (Conditional)
-11. `../conditional/quality-score.md`: Load when Quality Score measurement is needed (VERIFY/SHIP gates)
-12. `../conditional/experiment-ledger.md`: Load when recording experiment results (after implementation changes)
-13. `../conditional/exploration-loop.md`: Load only when a gate fails twice on the same issue
-
----
-
-## Task Type → Resource Mapping by Agent
-
-### Backend Agent
-
-| Task Type                     | Required Resources                          |
-| ----------------------------- | ------------------------------------------- |
-| CRUD API creation             | stack/snippets.md (route, schema, model, test)    |
-| Authentication implementation | stack/snippets.md (JWT, password) + stack/tech-stack.md |
-| DB migration                  | stack/snippets.md (migration)                     |
-| Performance optimization      | resources/orm-reference.md (N+1, eager loading)   |
-| Existing code modification    | Configured code intelligence; native scoped-search fallback per `code-intelligence.md` |
-
-### Frontend Agent
-
-| Task Type           | Required Resources                                     |
-| ------------------- | ------------------------------------------------------ |
-| Component creation  | snippets.md (component, test)                          |
-| Form implementation | snippets.md (form + Zod)                               |
-| API integration     | snippets.md (TanStack Query)                           |
-| Styling             | tailwind-rules.md                                      |
-| Page layout         | snippets.md (grid)                                     |
-
-### Mobile Agent
-
-| Task Type        | Required Resources                                    |
-| ---------------- | ----------------------------------------------------- |
-| Screen creation  | snippets.md (screen, provider) + screen-template.dart |
-| API integration  | snippets.md (repository, Dio)                         |
-| Navigation       | snippets.md (GoRouter)                                |
-| Offline features | resources/tech-stack.md (response cache, durable storage) |
-| State management | snippets.md (Riverpod)                                |
-
-### Debug Agent
-
-| Task Type       | Required Resources                                                |
-| --------------- | ----------------------------------------------------------------- |
-| Frontend bug    | common-patterns.md (Frontend section)                             |
-| Backend bug     | common-patterns.md (Backend section)                              |
-| Mobile bug      | common-patterns.md (Mobile section)                               |
-| Performance bug | common-patterns.md (Performance section) + debugging-checklist.md |
-| Security bug    | common-patterns.md (Security section)                             |
-
-### QA Agent
-
-| Task Type            | Required Resources                                  |
-| -------------------- | --------------------------------------------------- |
-| Security review      | checklist.md (Security section)                     |
-| Performance review   | checklist.md (Performance section)                  |
-| Accessibility review | checklist.md (Accessibility section)                |
-| Full audit           | checklist.md (full) + common-checklist.md (shared)  |
-| Quality scoring      | quality-score.md (measurement protocol via Bash)    |
-
-### Architecture Agent
-
-| Task Type                    | Required Resources                                                         |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| Architecture recommendation  | methodology-selection.md + output-templates.md                             |
-| Design review                | methodology-selection.md + checklist.md + stakeholder-synthesis.md         |
-| Design-twice comparison      | methodology-selection.md + stakeholder-synthesis.md + output-templates.md  |
-| ATAM-style analysis          | methodology-selection.md + stakeholder-synthesis.md + output-templates.md  |
-| CBAM-style prioritization    | methodology-selection.md + output-templates.md                             |
-| ADR generation               | output-templates.md                                                        |
-
-### Developer Workflow Expert
-
-| Task Type                   | Required Resources                                            |
-| --------------------------- | ------------------------------------------------------------- |
-| API Workflow Setup          | resources/api-workflows.md + resources/validation-pipeline.md |
-| Database Migration Workflow | resources/database-patterns.md                                |
-| Release Coordination        | resources/release-coordination.md                             |
-| Troubleshooting             | resources/troubleshooting.md                                  |
-
-### TF Infra Agent
-
-| Task Type                   | Required Resources                                                       |
-| --------------------------- | ------------------------------------------------------------------------ |
-| Infrastructure Provisioning | resources/multi-cloud-examples.md + resources/policy-testing-examples.md |
-| Cost Analysis               | resources/cost-optimization.md                                           |
-
-### PM Agent
-
-| Task Type                 | Required Resources                                           |
-| ------------------------- | ------------------------------------------------------------ |
-| New project planning      | examples.md + task-template.json + api-contracts/template.md |
-| Feature addition planning | examples.md + configured code intelligence or native fallback |
-| Refactoring planning      | configured code intelligence or native fallback               |
-
-### Design Agent
-
-| Task Type                   | Required Resources                                                       |
-| --------------------------- | ------------------------------------------------------------------------ |
-| Design system creation      | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Landing page design         | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
-| Design audit                | checklist.md + anti-patterns.md                                          |
-| Design token export         | design-tokens.md                                                         |
-| Stitch MCP integration      | stitch-integration.md                                                    |
-| 3D / shader effects         | reference/shader-and-3d.md + reference/motion-design.md                  |
-| Accessibility review        | reference/accessibility.md + checklist.md                                |
-
----
-
-## Orchestrator Only: Composing Subagent Prompts
-
-When the Orchestrator composes subagent prompts, reference the mapping above
-to include only resource paths matching the task type in the prompt.
-
-```
-Prompt composition:
-1. Agent SKILL.md's Core Rules section
-2. execution-protocol.md
-3. Resources matching task type (see tables above)
-4. error-playbook.md (always include; recovery is essential)
-5. Memory Protocol (CLI mode)
-```
-
-This approach avoids loading unnecessary resources, maximizing subagent context efficiency.
-
----
-
-## Conditional Protocol Loading (Measurement & Exploration)
-
-The following protocols are **NOT** loaded at Phase 0 / Step 0. They are loaded on-demand:
-
-| Protocol | Trigger | Loaded By |
-|----------|---------|-----------|
-| `quality-score.md` | VERIFY or SHIP phase begins | Orchestrator (passes to QA agent prompt) |
-| `experiment-ledger.md` | First experiment recorded | Orchestrator (inline, after IMPL baseline) |
-| `exploration-loop.md` | Same gate fails twice on same issue | Orchestrator (inline, before spawning hypothesis agents) |
-
-**Budget impact**: ~750 tokens total if all 3 loaded, but since loading is conditional, typical sessions load 1-2 only.
-That is minor next to the ~4,000 tokens a Simple load already costs (`SKILL.md` +
-`execution-protocol.md`) — see `context-budget.md` for measured per-file costs.
+Pass the task ID, scope, acceptance criteria, material constraints, and relevant artifact paths. Identify the owning skill by path; do not paste its body if the runtime injects it. Pass a reference or guide section only when this task needs it. Preserve injected run/claim identity. Use `prompt-structure.md` when composing an unfamiliar handoff, not as another mandatory preload.

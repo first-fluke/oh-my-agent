@@ -68,7 +68,7 @@ Agents should prefer user-supplied explicit paths (e.g., `~/Downloads/otter.jpeg
 2. If `--dry-run`: print the plan (vendors, counts, outDir, cost) and exit 0.
 3. If estimate ≥ `cost_guardrail.estimate_threshold_usd` and not `--yes`/`OMA_IMAGE_YES=1`:
    - Interactive terminal (stdin is a TTY): prompt user on stderr: `Estimated cost $X.XX. Proceed? (y/N)`. Decline → exit 1.
-   - Non-interactive (no TTY — agents, CI): no prompt is possible; exit 1 with a message naming `--yes`/`OMA_IMAGE_YES=1`. **Calling agents**: confirm the cost with the user in-conversation (`--dry-run` prints the estimate), then re-run with `-y`. Never pass `-y` preemptively without user confirmation.
+   - Non-interactive (no TTY — agents, CI): no prompt is possible; exit 1 with a message naming `--yes`/`OMA_IMAGE_YES=1`. **Calling agents**: confirm the cost with the user in-conversation (`--dry-run` prints the estimate), then re-run with `-y`. Pass `-y` only when the run fits an existing budget authorization or newly approved spend.
 
 ## Step 3: Cancellation Setup
 

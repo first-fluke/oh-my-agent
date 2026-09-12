@@ -1,5 +1,7 @@
 # Frontend Agent - Tech Stack Reference
 
+These are defaults for new projects without an established stack. Preserve the target project's installed versions and conventions; a scoped feature or fix does not authorize a stack migration.
+
 ## Core Framework
 - **Framework**: Next.js 16+ (App Router), React 19+
 - **Language**: TypeScript (strict mode)
@@ -55,7 +57,7 @@ Bootstrap with `npx shadcn create` (prompts for the engine) or `npx shadcn init`
 
 ### Proxy replaces Middleware
 
-`middleware.ts` is **BANNED** in this project. It is NOT merely deprecated; touch it and you die. No exceptions.
+For projects using the Next.js 16+ proxy convention, preserve `proxy.ts`. Check the installed framework version and existing routing before proposing a migration.
 
 - File: `middleware.ts` → `proxy.ts` (root or `src/`)
 - Exported function: `middleware` → `proxy`
@@ -64,11 +66,7 @@ Bootstrap with `npx shadcn create` (prompts for the engine) or `npx shadcn init`
 - `src/proxy.ts` is the canonical request-proxy / auth-gate location
 <!-- oma-docs:ignore-end -->
 
-Forbidden actions (any of these is a fatal self-error; retract immediately):
-
-- Creating a new `middleware.ts`
-- Suggesting a rename of `proxy.ts` back to `middleware.ts`
-- Flagging `proxy.ts` as dead code, unused, or not-wired
+Do not infer that a framework entry point is unused from missing imports alone. Verify its location, exports, configuration, and relevant tests before reporting a wiring defect.
 
 Reference: https://nextjs.org/docs/messages/middleware-to-proxy
 

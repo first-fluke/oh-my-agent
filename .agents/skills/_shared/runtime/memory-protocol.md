@@ -69,34 +69,9 @@ existing structured schema.
 
 ## Experiment Tracking (Optional Extension)
 
-When a workflow activates Quality Score measurement (see `../conditional/quality-score.md`), agents record experiments using the same memory tools.
+When a task compares an actual experiment, use `../conditional/experiment-ledger.md` for recording and `../conditional/quality-score.md` for comparable measurements. Routine verification does not require a ledger.
 
-### Experiment Ledger Location
-
-The ledger follows the same path convention as other memory files:
-- `[WRITE]("experiment-ledger-{sessionId}.md", ...)` → stored under the
-  memory base for every runtime.
-
-### Recording an Experiment
-
-After each measurable change, append a row:
-
-```
-[EDIT]("experiment-ledger-{sessionId}.md", append experiment row)
-```
-
-Row format: `| # | Phase | Agent | Hypothesis | Score Before | Score After | Delta | Decision |`
-
-### Who Records
-
-| Situation | Recorder |
-|-----------|----------|
-| IMPL baseline | Orchestrator (inline) |
-| Post-VERIFY / Post-REFINE | QA or Debug agent (via memory tools) |
-| Exploration experiments | Orchestrator (inline, after scoring) |
-| Final summary | Orchestrator (at session end) |
-
-See `../conditional/experiment-ledger.md` for full format and analysis protocol.
+Use `experiment-ledger-{sessionId}.md` under the configured coordination store. The coordinator merges task/run-scoped agent results into this shared artifact; parallel workers do not append concurrently. Link baseline and candidate evidence, required check results, the decision and reason, and owned paths. No composite score, fixed row layout, or agent ranking is required.
 
 ---
 

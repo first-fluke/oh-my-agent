@@ -22,7 +22,7 @@ Each `variants/{platform}/` directory contains:
   conflict).
 - **`snippets.md`** — copy-paste-ready, numbered code patterns.
 - **`api-template.{swift,dart,ts}`** — the canonical data/repository template,
-  including the mandatory repository-layer response cache.
+  including the repository-layer response cache when required.
 
 `stack.schema.json` is the shared schema for all variants.
 

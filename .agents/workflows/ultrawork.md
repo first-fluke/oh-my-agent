@@ -50,7 +50,7 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
 4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
 5. Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
 6. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (12 review guides)
-7. Read `.agents/skills/_shared/core/quality-principles.md` (4 principles)
+7. Read `.agents/skills/_shared/core/quality-principles.md` (scope and verification guidance)
 8. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
 9. Resolve the session ID:
    - If a caller workflow (e.g. `/ralph`) delegated to ultrawork with an existing `sessionId`, **reuse it verbatim** — plan tasks, claims, and receipts must carry that session/task/run identity so artifact verification matches.
@@ -158,16 +158,15 @@ wait
 
 **Continue polling until all agents report completion or failure.**
 
-### Step 5.2: Measure Baseline Quality Score (Conditional)
+### Step 5.2: Measure Baseline (Conditional)
 
-If automated measurement is available (tests, lint exist):
+If the task needs a measured baseline or experiment comparison with defined metrics:
 
-1. Load `quality-score.md` (conditional, per `context-loading.md`)
-2. Run tests, lint, type-check via Bash to measure baseline
-3. Create Experiment Ledger via file memory: `[WRITE]("experiment-ledger-{sessionId}.md", initial ledger with baseline row)`
-4. Record composite score as the IMPL baseline
+1. Load `.agents/skills/_shared/conditional/quality-score.md`.
+2. Reuse still-current check artifacts or run the relevant measurement commands.
+3. For an actual experiment, record baseline evidence in `experiment-ledger-{sessionId}.md` through the configured coordination store.
 
-If no measurement tools: skip; gates fall back to binary checklist.
+Tests or lint being available does not require a composite score or a ledger. Required gates below apply independently.
 
 ### IMPL_GATE
 
@@ -223,12 +222,12 @@ oma agent spawn qa-agent step-8-prompt.md {sessionId} --task-id {qa_regression_t
 ### Step 8: Improvement Review (Regression Prevention)
 - **Executed by a fresh isolated reviewer subagent (CCR)**: Run regression tests.
 
-### Step 8.1: Measure Post-VERIFY Quality Score (Conditional)
+### Step 8.1: Check Post-VERIFY Measurements (Conditional)
 
-If baseline was measured at Step 5.2:
-1. Measure Quality Score incorporating QA findings
-2. Calculate delta from IMPL baseline
-3. Record as experiment in Experiment Ledger via memory tools
+If a comparable baseline was recorded at Step 5.2 and subsequent changes affect it:
+1. Refresh only measurements affected by changes since the baseline; preserve QA findings as independent evidence
+2. Compare each applicable metric with the IMPL baseline using the same method
+3. For an actual experiment, record the comparison and decision in the Experiment Ledger
 
 ### VERIFY_GATE
 
@@ -246,14 +245,13 @@ Evaluate [the canonical VERIFY_GATE](ultrawork/resources/phase-gates.md#verify_g
 
 **Root-cause-first fix mandate:** when re-spawning implementation agents to address QA findings, the fix prompt MUST require root-cause remediation. Forbid tactical patches (try/catch swallowing the error, validation bypass, hardcoded values, feature flags hiding the bug, silencing the failing test) unless the agent explicitly justifies why a structural fix is out of scope (upstream library bug, deprecated path, hotfix window).
 
-**Gate failure (2nd time on same issue, and termination conditions not yet met)** → Activate **Exploration Loop**:
-1. Load `exploration-loop.md` (conditional, per `context-loading.md`)
-2. Generate 2-3 alternative hypotheses that differ in mechanism, each scoped to at most 3 files
-3. Experiment each approach sequentially (git stash per attempt)
-4. Measure Quality Score for each
-5. Select the highest-scoring approach
-6. Record all experiments in Experiment Ledger
-7. Resume VERIFY with winning approach
+**Gate failure (2nd time on same issue, and termination conditions not yet met)** → Reassess the cause. If a different mechanism needs testing and the shared recovery budget can cover the round, use `.agents/skills/_shared/conditional/exploration-loop.md`:
+1. Reserve the 2-3 distinct hypothesis attempts within the existing aggregate attempt and cost budget.
+2. Preserve the baseline and isolate each experiment's owned changes.
+3. Compare required checks and defined measurements; no composite score is required.
+4. Record the evidence and decision, integrate a qualifying candidate, and re-run affected verification before resuming the gate.
+
+If exploration cannot resolve the issue within budget, preserve partial results and report the unresolved criteria.
 
 ---
 
@@ -315,13 +313,13 @@ oma agent spawn refactor-engineer refine-prompt.md {sessionId} --task-id {refine
 ### Step 13: Clean Up Unused Code
 - **Executed by Refactor Agent (action)**: Remove newly created dead code.
 
-### Step 13.1: Measure Post-REFINE Quality Score (Conditional)
+### Step 13.1: Check Post-REFINE Measurements (Conditional)
 
-If baseline was measured at Step 5.2:
-1. Measure Quality Score after refinement
-2. Calculate delta from Post-VERIFY score
-3. Apply the score recovery rule in [REFINE_GATE](ultrawork/resources/phase-gates.md#refine_gate).
-4. Record kept experiments in Experiment Ledger
+If a comparable baseline was recorded at Step 5.2 and subsequent changes affect it:
+1. Refresh measurements affected by refinement
+2. Compare applicable metrics with Post-VERIFY evidence
+3. Apply the measurement recovery rule in [REFINE_GATE](ultrawork/resources/phase-gates.md#refine_gate).
+4. Record actual experiment decisions and evidence, including discarded or inconclusive attempts
 
 ### REFINE_GATE
 
@@ -395,22 +393,15 @@ oma agent spawn qa-agent step-17-prompt.md {sessionId} --task-id {qa_ship_task.i
 ### Step 17: Deployment Readiness Review (Final)
 - **Executed by a fresh isolated reviewer subagent (CCR)**: Secrets, Migrations, checklist.
 
-### Step 17.1: Final Quality Score & Session Summary (Conditional)
+### Step 17.1: Final Measurements & Session Summary (Conditional)
 
-If Quality Score was measured during this session:
-1. Measure final Quality Score
-2. Generate Experiment Ledger summary (total experiments, keep rate, net delta)
-3. Write lessons from discarded experiments to `lessons-{sessionId}.md`
-4. Append Quality Score Progression and Experiment Summary to session metrics
+If a defined measurement comparison was active during this session:
+1. Refresh affected final measurements only if existing evidence is stale
+2. Summarize actual experiments, comparison evidence, and decisions if a ledger exists
+3. Record a lesson in `lessons-{sessionId}.md` only when experiment evidence establishes a reusable cause and prevention action
+4. Link measurement and experiment artifacts in the session result
 
-**Always** (regardless of Quality Score availability):
-5. Record Evaluator Accuracy events for this session:
-   - Review all QA findings: any disputed by impl agents? → `false_positive`
-   - Review runtime verification results: any stubs caught that static review missed? → `missed_stub`
-   - Review impl agent self-check results: any bugs caught by QA that self-check missed? → `good_catch`
-6. Append EA events to `session-metrics-{sessionId}.md`
-7. If rolling 3-session EA >= 30: Flag in final report
-   → "QA tuning suggested. Run `oma retro` to review."
+When review findings expose a reusable success or failure pattern, link the finding and its adjudicating evidence in the existing result artifact. A disputed finding is unresolved until evidence settles it; do not classify every disagreement as a false positive. Use `.agents/skills/_shared/core/session-metrics.md` for a requested retrospective or separate session summary. No weighted evaluator score or rolling-session threshold is required.
 
 ### SHIP_GATE
 
@@ -446,7 +437,7 @@ This hook is opt-in; the default `auto_verify: false` skips this step entirely.
 | REFINE | 9-13  | Refactor Agent + CCR reviewers | Action + CCR review | Reusability, Cascade, Consistency |
 | SHIP   | 14-17 | CCR reviewers                | CCR isolated review  | Quality, UX, Cascade 2nd, Deploy  |
 
-**Total 12 review steps, each run in a fresh isolated reviewer (Cross-Context Review), + conditional Quality Score checkpoints → High quality guaranteed**
+The workflow retains 12 review steps with fresh isolated reviewers and conditional measurement checkpoints. Review count alone does not establish correctness.
 
 Every review runs in its own fresh context (never inline, never batched) per the **Cross-Context Review (CCR) Dispatch** section and the CCR Mandate in `multi-review-protocol.md`.
 
@@ -458,9 +449,9 @@ This workflow conditionally incorporates patterns from autoresearch:
 
 | Pattern | When Active | Reference |
 |---------|-------------|-----------|
-| **Continuous metrics** | When measurement tools available | `quality-score.md` (loaded at VERIFY/SHIP) |
-| **Keep/Discard** | When quality score is measured | `quality-score.md` delta rules |
-| **Experiment logging** | When baseline is established | `experiment-ledger.md` (via memory protocol) |
+| **Continuous metrics** | When a defined metric comparison is needed | `quality-score.md` (loaded at VERIFY/SHIP) |
+| **Keep/Discard** | When comparing actual experiments | `quality-score.md` acceptance and comparison criteria |
+| **Experiment logging** | When an actual experiment is run | `experiment-ledger.md` (via memory protocol) |
 | **Hypothesis exploration** | On repeated gate failures | `exploration-loop.md` (loaded on trigger) |
 | **Runtime learning** | At session end, if experiments exist | `{sessionId}/lessons-{sessionId}.md` |
 

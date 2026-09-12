@@ -1,11 +1,6 @@
 ---
 name: oma-voice
-description: Local-first text-to-speech and speech-to-text via the Voicebox MCP
-  server. Generates speech from cloned or preset voice profiles for agent
-  notifications, content voiceovers, and audio asset creation, and transcribes
-  audio files for meeting notes or memos. Runs entirely on-device with no cloud,
-  no API keys, no per-call cost. Use for voice generation, TTS, STT,
-  transcription, voiceover, narration, dictation, audio asset work.
+description: "Generate speech or transcribe audio locally with Voicebox. Use for narration, voice assets, dictation, and meeting transcription."
 ---
 
 # Voice Skill - Local TTS and STT via Voicebox
@@ -85,9 +80,9 @@ Drive the Voicebox local app through its MCP server so any MCP-aware agent can s
 | Voicebox app not running | Print install/launch hint, exit code 5 |
 | No voice profile for TTS | Print "create a profile in Voicebox" hint, exit code 3 |
 | Engine model missing | Ask before triggering download |
-| Output path outside `$PWD` | Warn the user, require explicit confirmation |
+| Output path outside `$PWD` | Use an explicitly requested path; ask only if the destination is ambiguous or overwrites unrelated data |
 | TTS over 5000 chars | Ask the user to split or truncate |
-| STT over 30 minutes | Ask the user to confirm |
+| STT over 30 minutes | Confirm only if the requested duration or resource cost is unresolved |
 | MCP tool name drift | Re-run `tools/list` and update the cache |
 | SIGINT | Abort the MCP call, write no partial output |
 
@@ -185,7 +180,7 @@ Tools not exposed via MCP (REST only): model status (`GET /models/status`), audi
 3. **Tool-name discovery**: on first invocation, call MCP `tools/list` and cache the resolved names. Reuse the cache for subsequent calls in the same session.
 4. **Length limits**: TTS calls cap at 5000 chars per call; warn at 2000. STT inputs cap at 30 minutes. v1 does not auto-chunk or auto-split.
 5. **Auto-invocation transparency**: notifications fire automatically only when the active task exceeds `auto_notify_after_sec` (default 60s). This threshold is agent-enforced guidance — no hook measures task duration — so apply it by judgment when a long task completes or blocks. Always announce intent in one short line before generating audio.
-6. **Path safety**: when the user requests an output path outside `$PWD`, warn once and require explicit confirmation.
+6. **Path safety**: an explicitly requested output path authorizes writing there. Resolve ambiguity or unrelated-data replacement before the dependent write; preserve required CLI path flags.
 7. **Cancellation**: SIGINT aborts the MCP call and writes no partial output.
 8. **Manifest required for persisted output**: asset TTS and transcription modes write `manifest.json` with at minimum: `skill`, `mode`, `voicebox_generation_id`, `text` (or `transcript_preview`), `profile`, `engine`, `language`, `format` (TTS only), `created_at`. Notification mode is exempt because Voicebox Captures is its system of record and no disk output is written by default.
 9. **Out of scope**: voice cloning UI, captures archive, stories editor, microphone dictation loop, and cloud vendors are intentionally not exposed.

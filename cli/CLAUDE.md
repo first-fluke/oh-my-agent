@@ -1,25 +1,15 @@
 <!-- OMA:START — managed by oh-my-agent. Do not edit this block manually. -->
 
-# oh-my-agent
+# CLI instructions
 
-Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. System/developer instructions and the user's request take precedence over OMA defaults. Never build, compile, bundle, or package software unless the user explicitly requests a build.
+Follow the repository-root instructions for authorization, completion, provider selection, and project rules. Paths below are relative to the repository root.
+Use `.agents/skills/_shared/core/code-intelligence.md` for the configured provider and native fallback; this directory does not select a separate provider.
 
-- **SSOT**: Do not modify `.agents/` definitions (skills, workflows, rules, agents, config) directly. Run outputs under `.agents/results/` and `.agents/state/` are generated artifacts and may be written.
-- **Response language**: Follow `language` in `.agents/oma-config.yaml`.
-- **Skills**: Read the relevant `.agents/skills/{name}/SKILL.md` when needed.
-- **Subagents**: Same-vendor native dispatch via Claude Code Agent tool with `.claude/agents/{name}.md`; cross-vendor fallback via `oma agent spawn`
-- Write non-ASCII tool-call parameters as literal UTF-8, not Unicode escapes.
-
-## Per-Agent Dispatch
-
-Resolve each agent from `.agents/oma-config.cue` or `.agents/oma-config.yaml`, overlaid by `.agents/oma-config.local.cue` or `.agents/oma-config.local.yaml` when present. With `model_preset: free`, always use `oma agent spawn` so the subprocess receives the FreeLLMAPI route; `free.model` replaces per-agent model pins. Otherwise, explicit `agents:` overrides take priority. With `model_preset: auto`, follow the current vendor's native agent/model settings; use `default_cli` only when the runtime is unknown. Use native subagents when the target matches the current runtime; otherwise, or when native dispatch is unavailable, use `oma agent spawn`.
-
-## Code Search
-
-Serena MCP is required for code search and discovery. Load deferred tools before use. Use native search/read only when Serena is unavailable or times out, or for plain non-code content.
+- **Subagents**: Same-vendor native dispatch via Claude Code Agent tool with `.claude/agents/{name}.md`; cross-vendor fallback via `oma agent spawn`; use the root dispatch configuration.
+- Select tests from the affected CLI behavior. Run builds only when explicitly requested.
 
 ## Workflows
 
-Run workflows only when explicitly requested or detected by a hook; never self-initiate. Read and follow `.agents/workflows/{name}.md`. Continue active workflows until complete or explicitly cancelled.
+Run workflows only when explicitly requested or detected by a hook; never self-initiate. Read `.agents/workflows/{name}.md` for the selected workflow.
 
 <!-- OMA:END -->

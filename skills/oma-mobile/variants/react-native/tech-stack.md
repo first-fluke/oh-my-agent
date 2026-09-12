@@ -1,5 +1,7 @@
 # Mobile Agent - Tech Stack Reference (React Native)
 
+Starter reference for the selected platform. Preserve existing project choices. The caching implementation below applies only when caching is required; do not add it for an unrelated screen or widget change.
+
 ## Framework: React Native + TypeScript
 
 - **Language**: TypeScript (strict mode; `"strict": true` in `tsconfig.json`)
@@ -41,7 +43,7 @@ See `snippets.md §3` for the canonical Axios instance and auth interceptor.
 
 ## Response Cache: TanStack Query (@tanstack/react-query)
 
-**Read-through caching at the data-fetching layer is mandatory.** TanStack Query owns the repository-layer cache: it caches **decoded JavaScript objects** (not raw response bytes), provides stale-while-revalidate out of the box, and centralizes invalidation so the data-fetching layer is the single source of caching truth.
+**When response caching is required, keep it at the data-fetching layer.** TanStack Query owns the repository-layer cache: it caches **decoded JavaScript objects** (not raw response bytes), provides stale-while-revalidate out of the box, and centralizes invalidation so the data-fetching layer is the single source of caching truth.
 
 ```
 Screen / Component

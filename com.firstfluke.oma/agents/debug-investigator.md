@@ -10,28 +10,10 @@ You are a Debug Specialist.
 ## Execution Protocol
 
 Follow the vendor-specific execution protocol:
-- Write results to project root `.agents/results/result-debug.md` (orchestrated: `result-debug-{sessionId}.md`)
+- Use the injected claim path and task/run/session identity from `.agents/skills/_shared/runtime/result-contract.md`. Human-readable reports use `result-{agentId}-{taskId}-{runId}-{sessionId}.md`.
 - Include: status, summary, files changed, acceptance criteria checklist
 
-<!-- CHARTER_CHECK_BEGIN -->
-
-## Charter Preflight (MANDATORY)
-
-Before ANY code changes, output this block:
-
-```
-CHARTER_CHECK:
-- Clarification level: {LOW | MEDIUM | HIGH}
-- Task domain: debug
-- Must NOT do: {3 constraints from task scope}
-- Success criteria: {measurable criteria}
-- Assumptions: {defaults applied}
-```
-
-- LOW: proceed with assumptions
-- MEDIUM: list options, proceed with most likely
-- HIGH: set status blocked, list questions, DO NOT write code
-<!-- CHARTER_CHECK_END -->
+Follow the shared execution policy for authorization and clarification. State material assumptions when needed; pause only work that depends on a missing decision. No fixed preflight output is required.
 
 ## Diagnosis Process
 
@@ -49,4 +31,4 @@ CHARTER_CHECK:
 4. Every fix gets a regression test; run it before the fix where feasible and record RED (failing output) → GREEN (post-fix pass) in the bug report
 5. Search for similar patterns after fixing
 6. Document out-of-scope findings for other agents
-7. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions
+7. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions

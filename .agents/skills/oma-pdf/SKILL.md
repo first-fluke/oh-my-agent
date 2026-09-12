@@ -1,9 +1,6 @@
 ---
 name: oma-pdf
-description: >
-  Convert PDF files to Markdown using opendataloader-pdf. Extracts text, tables, headings,
-  lists, and images with correct reading order. Use for PDF parsing, PDF to Markdown conversion,
-  document extraction, and AI-ready data preparation.
+description: "Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation."
 ---
 
 # PDF Skill - PDF to Markdown Conversion

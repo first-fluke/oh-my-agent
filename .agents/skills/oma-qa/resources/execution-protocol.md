@@ -1,23 +1,7 @@
 # QA Agent - Execution Protocol
 
-## Step 0: Prepare
-1. **Assess difficulty**: see `../../_shared/core/difficulty-guide.md`
-   - **Simple**: Quick security + quality check | **Medium**: Full 4 steps | **Complex**: Full + prioritized scope
-2. **Check prior runtime lessons**: read the relevant session-scoped
-   `.agents/state/memories/lessons-{sessionId}.md` when supplied;
-   canonical skills are not run-time memory.
-3. **Clarify requirements**: follow `../../_shared/core/clarification-protocol.md`
-   - Check **Uncertainty Triggers**: security/auth concerns, existing code conflict potential?
-   - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
-4. **Budget context**: follow `../../_shared/core/context-budget.md` (prioritize high-risk files)
-5. **After review**: write recurring issues to
-   `.agents/state/memories/lessons-{sessionId}.md`. Promote a
-   reusable rule only through a separately reviewed source change.
-6. **If standards matter**: read `resources/iso-quality.md`
-
-**Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
-
-Follow these steps in order (adjust depth by difficulty).
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Scope
 - Identify what to review: new feature, full audit, or specific concern
@@ -179,7 +163,7 @@ Generate structured report with:
   - missing test design / traceability / exit criteria
 
 ## Step 4: Verify
-- Run `../../_shared/core/common-checklist.md` for general quality
+- Use applicable sections of `../../_shared/core/common-checklist.md` when the review crosses domains
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

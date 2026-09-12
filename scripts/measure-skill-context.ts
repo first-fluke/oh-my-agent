@@ -9,13 +9,13 @@
  *   bun scripts/measure-skill-context.ts
  *   bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend --json
  *
- * Tiers mirror `.agents/skills/_shared/core/context-loading.md`, which is the
- * policy an agent actually follows. They are real states, not hypotheticals:
+ * Tiers are file-size comparison scenarios. The runtime now injects the owning
+ * entry and defers references; these scenarios are NOT actual preload policies:
  *
  *   routed    SKILL.md alone — what reading the routed skill costs
- *   simple    + execution-protocol.md          (Simple task)
- *   medium    + examples.md                    (Medium task)
- *   complex   + tech-stack.md, snippets.md    (Complex task; path varies by
+ *   simple    + execution-protocol.md          (optional protocol scenario)
+ *   medium    + examples.md                    (optional examples scenario)
+ *   complex   + tech-stack.md, snippets.md    (optional stack scenario; path varies by
  *             skill — see TIERS for the candidates tried)
  *   all       SKILL.md + every file under resources/ — the ceiling progressive
  *             disclosure avoids. Not a configuration anyone can select; it is
@@ -273,7 +273,7 @@ function main(): void {
 
   const pad = Math.max(...measured.map((m) => m.skill.length), 5);
   console.log(
-    `Estimated tokens per loading tier (bytes / ${BYTES_PER_TOKEN}). Cumulative.\n`,
+    `Estimated tokens per file-size scenario (bytes / ${BYTES_PER_TOKEN}). Cumulative; not runtime loading.\n`,
   );
   console.log(
     `${"skill".padEnd(pad)}  ${tierNames

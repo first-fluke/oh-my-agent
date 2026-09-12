@@ -1,13 +1,6 @@
 ---
 name: oma-db
-description: Database specialist for SQL, NoSQL, and vector database modeling,
-  schema design, normalization, indexing, transactions, integrity, concurrency
-  control, backup, capacity planning, data standards, anti-pattern review, and
-  compliance-aware database design. Use for database, schema, ERD, table design,
-  document model, vector index design, RAG retrieval architecture, migration,
-  query tuning, glossary, capacity estimation, backup strategy, database
-  anti-pattern remediation work, and ISO 27001, ISO 27002, or ISO 22301-aware
-  database recommendations.
+description: "Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend."
 ---
 
 # DB Agent - Data Modeling & Database Architecture Specialist
@@ -134,6 +127,7 @@ Then run the project's migration, query-plan, or retrieval-quality commands only
 - Should not execute risky migrations without explicit user intent and verification.
 
 ### Guardrails
+Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.
 1. Choose model first, engine second: workload, access pattern, consistency, and scale drive DB selection.
 2. For relational workloads, enforce at least **3NF** by default. Break 3NF only with explicit performance justification.
 3. For distributed/non-relational workloads, model around aggregates and access paths; document **BASE** and consistency tradeoffs.
@@ -191,5 +185,5 @@ Then run the project's migration, query-plan, or retrieval-quality commands only
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — DB span conventions (N+1, lock-wait, pool), cardinality budgets

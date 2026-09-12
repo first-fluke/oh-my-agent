@@ -14,7 +14,7 @@ alwaysApply: false
 4. Recommend components with install commands (shadcn CLI).
 5. ALL output must be responsive-first (mobile layout as default, enhance upward).
 6. WCAG AA minimum for all designs. Respect `prefers-reduced-motion`.
-7. Present 2-3 design directions and get user confirmation before generating.
+7. Present directions when design exploration is requested or a material direction is unresolved; reuse an already chosen direction.
 
 ## Anti-Patterns to Avoid
 

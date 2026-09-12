@@ -1,18 +1,7 @@
 # Debug Agent - Execution Protocol
 
-## Step 0: Prepare
-1. **Assess difficulty**: see `../../_shared/core/difficulty-guide.md`
-   - **Simple**: Condense Steps 1-2 to a minimal reproduction check, then Step 3 | **Medium**: All 4 steps | **Complex**: All steps + checkpoints
-   - Never skip reproduction entirely, even for Simple bugs (Guardrail 1: reproduce first, never guess)
-2. **Check lessons**: read your domain section in `../../_shared/core/lessons-learned.md`
-3. **Clarify requirements**: follow `../../_shared/core/clarification-protocol.md`
-   - Check **Uncertainty Triggers**: security/auth related bugs, existing code conflict potential?
-   - Determine level: LOW → proceed | MEDIUM → present options | HIGH → ask immediately
-4. **Budget context**: follow `../../_shared/core/context-budget.md` (prefer relevant symbols or scoped file reads)
-
-**Intelligent Escalation**: When uncertain, escalate early. Don't blindly proceed.
-
-Follow these steps in order (adjust depth by difficulty).
+## Preparation
+Use the task's scope, existing project conventions, and acceptance criteria. Follow `../../_shared/core/execution-policy.md` when it has not already been supplied. Read only references needed by the selected operation; consult lessons or recovery guides for an observed issue. Expand planning depth only when the change requires it.
 
 ## Step 1: Understand
 - Gather: What happened? What was expected? Error messages? Steps to reproduce?
@@ -40,7 +29,7 @@ Follow these steps in order (adjust depth by difficulty).
 - If found, fix proactively or report them
 
 ## Step 4: Document & Verify
-- Run `resources/checklist.md` items
+- Check applicable items in `resources/checklist.md`
 - Save bug report to `.agents/results/bugs/` using `resources/bug-report-template.md` (full template for Complex/CRITICAL/HIGH; condensed form in `resources/debugging-checklist.md` §Documentation Template for Simple/Medium)
 - Include: root cause, fix, prevention advice
 - Verify no regressions in related functionality

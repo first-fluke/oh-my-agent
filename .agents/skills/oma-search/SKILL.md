@@ -1,9 +1,6 @@
 ---
 name: oma-search
-description: Intent-based search router with trust scoring. Routes queries to
-  optimal channels (Context7 docs, native web search, gh/glab code search,
-  configured local code intelligence) and attaches domain trust labels. Use for
-  search, find, lookup, reference, docs, code search, and web research.
+description: "Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools."
 ---
 
 # Search Router

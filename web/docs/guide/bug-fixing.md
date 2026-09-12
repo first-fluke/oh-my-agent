@@ -247,11 +247,11 @@ These signals indicate the bug requires escalation beyond the standard debug loo
 
 ### Signal 1: same fix attempted twice
 
-If the workflow proposes a fix, applies it, and the same error recurs, the problem is deeper than the initial diagnosis. This triggers the **Exploration Loop** in workflows that support it (ultrawork, orchestrate, work):
+If the workflow proposes a fix, applies it, and the same error recurs, the problem is deeper than the initial diagnosis. Reassess the cause. If alternatives merit testing and the existing recovery budget permits it, use the **Exploration Loop** in the active workflow (ultrawork, orchestrate, work):
 
 - Generate 2-3 alternative hypotheses for the root cause.
-- Test each hypothesis in a separate workspace (git stash per attempt).
-- Score results and adopt the best approach.
+- Isolate each experiment and preserve its baseline, evidence, and unrelated work.
+- Select an approach that meets required behavior and comparable measurement criteria, then verify the integrated result.
 
 ### Signal 2: multi-domain root cause
 

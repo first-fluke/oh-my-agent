@@ -4,13 +4,13 @@
 
 Check for `.design-context.md` in the project root.
 
-If it does not exist:
+If it does not exist and the task needs a new design direction:
 1. Scan codebase for existing design signals:
    - `package.json`: font packages, UI libraries, CSS framework
    - Tailwind config: existing theme, colors, fonts
    - Existing CSS/SCSS: design tokens, custom properties
    - `DESIGN.md`: if already present, use as starting point
-2. Ask the user (one question at a time, prefer multiple-choice):
+2. Reuse the brief and existing design signals. Ask only for material unresolved choices among:
    - What languages does the service support? (determines font strategy)
    - Who is the target audience? (B2B/B2C, age range, tech level)
    - What is the brand personality? (professional / casual / premium / playful)
@@ -19,7 +19,7 @@ If it does not exist:
    - Accessibility requirements? (WCAG AA / AAA / none specified)
 3. Save answers to `.design-context.md`
 
-**MUST complete before proceeding. Never skip context gathering.**
+For a scoped visual correction, inspect the affected component and its existing tokens; a full discovery pass is unnecessary.
 
 ### Redesign Mode Detection
 If the target is an existing site or app (not greenfield), load
@@ -28,7 +28,7 @@ Greenfield / Redesign-Preserve / Redesign-Overhaul. If ambiguous, ask
 once: "Preserve the existing brand, or start visually from scratch?"
 For Preserve mode, run the redesign audit (brand tokens, IA, SEO
 baseline, patterns to preserve/retire) and record it in
-`.design-context.md` before any proposal.
+`.design-context.md` when performing a substantive redesign.
 
 ### Vendor Inspiration Detection
 After `.design-context.md` exists (either newly created or already present):
@@ -106,8 +106,8 @@ details):
 1. Load `resources/prompt-enhancement.md`
 2. Transform the request into a section-by-section specification:
    - For each section specify: layout, background, typography, components, motion, responsive behavior
-3. Present the enhanced prompt to the user for confirmation
-4. Adjust based on feedback
+3. Preserve the supplied scope and proceed with reasonable details; ask only about a material unresolved design choice
+4. Incorporate any user feedback
 
 If the request is already detailed: skip to Phase 4.
 
@@ -115,19 +115,11 @@ If the request is already detailed: skip to Phase 4.
 
 ## Phase 4: PROPOSE (Multi-Concept)
 
-### Design Read (declare before proposing)
-Open Phase 4 with a one-line Design Read so the direction is inferred
-from the brief, not from a default aesthetic:
-
-> "Reading this as: \<page kind> for \<audience>, with a \<vibe>
-> language, leaning toward \<aesthetic family or design system>."
-
-If the read genuinely diverges into two directions, ask exactly ONE
-clarifying question (e.g. "closer to Linear-clean or Awwwards-
-experimental?"). If it can be inferred, declare it and proceed.
+### Resolve the direction
+Use the requested purpose, audience, and existing visual system. State a material assumption only when it affects the result. Ask about an unresolved direction; do not require a fixed opening phrase or a new approval when the direction is already chosen.
 
 ### Default: No vendor seed
-Present 2-3 distinct design directions. Each direction must include:
+When exploration is requested or the direction remains unresolved, present 2-3 distinct directions. Otherwise continue with the supplied or existing direction. For proposed alternatives include:
 
 1. **Color palette**: 5-7 colors with semantic names and functional roles
 2. **Typography pairing**: system fonts or custom fonts with justification

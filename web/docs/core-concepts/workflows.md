@@ -74,9 +74,9 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 3. **Step 2, Initialize Session:** Load `oma-config.yaml`, display the CLI mapping table, reuse the session ID from plan creation or generate one (`session-YYYYMMDD-HHMMSS`), and create `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the configured memory store.
 4. **Step 3, Spawn Agents:** For each priority tier (P0 first, then P1...), spawn agents using the vendor-appropriate method (native subagents when the current runtime and target vendor match; `oma agent spawn` for external or cross-vendor work). Never exceed MAX_PARALLEL.
 5. **Step 4, Monitor:** Poll run-scoped `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files and structured receipts, then update the task board. Watch for completions, failures, and crashes.
-6. **Step 5, Verify:** Run `verify.sh {agent-type} {workspace}` per completed agent. On failure, re-spawn with error context (max 2 retries). After 2 retries, activate Exploration Loop: generate 2-3 hypotheses, spawn parallel experiments, score, keep best.
+6. **Step 5, Verify:** Run `verify.sh {agent-type} {workspace}` per completed agent. On failure, re-spawn with error context (max 2 retries). Repeated failures may justify alternative hypotheses, but all attempts consume the same aggregate recovery budget. Preserve unresolved evidence if the budget cannot cover a comparison round.
 7. **Step 6, Collect:** Read run-scoped result files and structured claims, then compile the summary.
-8. **Step 7, Final Report:** Present session summary. If Quality Score was measured, include Experiment Ledger summary and auto-generate lessons.
+8. **Step 7, Final Report:** Present session summary. If experiments were run, summarize evidence and decisions; capture lessons only when a reusable cause is established.
 
 **Files read:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, run-scoped progress/result files, and structured run receipts.
 **Files written:** run-scoped session/task-board state in the configured memory store, structured receipts and claims, and the final report.
@@ -110,7 +110,7 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 5. **Step 4, Spawn Agents:** Spawn by priority tier, parallel within same tier, separate workspaces.
 6. **Step 5, Monitor:** Poll progress files, verify API contract alignment between agents.
 7. **Step 6, QA Review:** Spawn QA agent for security (OWASP), performance, accessibility, code quality.
-8. **Step 6.1, Quality Score** (conditional): Measure and record baseline.
+8. **Step 6.1, Measurements** (conditional): Record a baseline when a defined comparison is needed.
 9. **Step 7, Iterate:** If CRITICAL/HIGH issues found, re-spawn responsible agents. If same issue persists after 2 attempts, activate Exploration Loop.
 
 **When to use:** Features spanning multiple domains where you want step-by-step coordination of planning, implementation, and QA.
@@ -140,16 +140,16 @@ Noun whitelist (15): app, api, service, server, cli, tool, website, dashboard, s
 
 **Gate definitions:**
 - **PLAN_GATE:** Plan documented, assumptions listed, alternatives considered, over-engineering review done, scope authorized.
-- **IMPL_GATE:** Applicable non-emitting checks and tests pass, only planned files modified, baseline Quality Score recorded (if measured). Build checks run only when explicitly requested.
-- **VERIFY_GATE:** Implementation matches requirements, zero CRITICAL, zero HIGH, no regressions, Quality Score >= 75 (if measured).
-- **REFINE_GATE:** No large files/functions (> 500 lines / > 50 lines), integration opportunities captured, side effects verified, code cleaned, Quality Score non-regressed.
-- **SHIP_GATE:** Quality checks pass, UX verified, related issues resolved, deployment checklist complete, final Quality Score >= 75 with non-negative delta (if measured). Reuse existing authorization; publishing or deployment requires authorization for that action.
+- **IMPL_GATE:** Applicable non-emitting checks and tests pass, only planned files modified, baseline evidence recorded for actual experiments. Build checks run only when explicitly requested.
+- **VERIFY_GATE:** Implementation matches requirements, zero CRITICAL, zero HIGH, no regressions, applicable project measurement targets met.
+- **REFINE_GATE:** Project maintainability rules followed, integration opportunities captured, side effects verified, code cleaned, no unresolved regression.
+- **SHIP_GATE:** Quality checks pass, UX verified, related issues resolved, deployment checklist complete, applicable project measurement targets met with current evidence. Reuse existing authorization; publishing or deployment requires authorization for that action.
 
 **Gate failure behavior:**
 - First failure: return to the relevant step, fix, and retry.
-- Second failure on the same issue: activate Exploration Loop (generate 2-3 hypotheses, experiment each, score, keep best).
+- Second failure on the same issue: reassess the cause; if alternatives merit testing within the remaining budget, compare isolated experiments against required behavior and defined metrics.
 
-**Conditional enhancements:** Quality Score measurement, Keep/Discard decisions, Experiment Ledger, Hypothesis Exploration, Auto-learning (lessons from discarded experiments).
+**Conditional enhancements:** Defined metric comparisons, experiment decisions and evidence, budgeted hypothesis exploration, and lessons supported by reusable causes.
 
 **REFINE skip condition:** Simple tasks under 50 lines.
 

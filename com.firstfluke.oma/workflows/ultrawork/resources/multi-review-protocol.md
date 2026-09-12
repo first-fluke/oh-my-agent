@@ -9,9 +9,10 @@
 
 **Every review below runs in a fresh, context-isolated reviewer subagent — never inline in the main session, and never batched with implementation work or another review.**
 
-### Why isolation is mandatory
-- Same-session review is degraded by anchoring and sycophancy: a reviewer that shares the author's context tends to ratify the author's choices instead of independently re-deriving them. Cross-Context Review measurably outperforms repeated same-session review (F1 28.6% cross-context vs 21.7% same-session repeated) — arXiv 2603.12123, "Cross-Context Review".
-- Adding more same-session review rounds does not recover the gap and can amplify shared-context error — arXiv 2603.16244, "More Rounds, More Noise". The fix is a fresh context per review, not more passes in the same one.
+### Scope of this review contract
+Ultrawork is an explicitly selected review workflow. Fresh reviewer contexts separate evaluation from the implementer's reasoning. The twelve review steps remain its current execution contract; ordinary tasks do not activate them automatically.
+
+Do not infer that this review count is optimal for every model or task. Before changing the default contract, compare additional verified findings, completion, latency, and cost across the supported models and task risks using the evaluation guidance in `../../../skills/oma-skill-creation/resources/prompt-evaluation.md`. Keep current evidence and isolation requirements until a revised contract is validated.
 
 ### Isolation contract (per review)
 Each reviewer subagent's prompt MUST contain ONLY:

@@ -1,13 +1,8 @@
 ---
 name: oma-academic-writing
-description: Academic writing capability for publication-grade English prose.
-  Drafts, revises, and audits essays, reports, analysis sections, executive
-  summaries, conclusions, and literature reviews while enforcing
-  sentence-structure variation, precise verb choice, calibrated hedging, and
-  anti-AI stylistic compliance. USE for academic writing, essay polish,
-  paragraph rewrite, prose revision against any rubric tier (HD/D/C, A/B/C,
-  top-band/mid-band, etc.), anti-AI audit, reverse outlining, claim-evidence
-  mapping, and rubric enforcement on assignments.
+description: Draft and revise academic prose against a rubric, evidence, and
+  citation requirements. Use for essays, reports, literature reviews, or
+  academic style audits.
 ---
 
 # Academic Writing: Publication-Grade English Prose

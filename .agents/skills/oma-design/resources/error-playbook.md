@@ -28,7 +28,7 @@
 6. Replace Inter/Geist with system fonts or project-specific fonts
 7. Remove gratuitous glassmorphism; reserve for 1-2 accent elements
 
-**Prevention**: Always run Phase 1 (Setup) to establish project context before designing.
+**Prevention**: Use relevant existing context; perform discovery when a new design decision requires it.
 
 ---
 

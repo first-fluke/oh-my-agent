@@ -8,16 +8,18 @@ alwaysApply: false
 
 ## Core Rules
 
+Apply framework-specific rules only to that framework. Existing project choices take precedence over starter defaults; scoped changes do not authorize migrations.
+
 1. **Component Reuse**: Use `shadcn/ui` components first. Extend via `cva` variants or composition. Avoid custom CSS.
 2. **Design Fidelity**: Code must map 1:1 to `DESIGN.md` (Section 9 — Agent Prompt Guide) and Design Tokens. Resolve discrepancies before implementation.
 3. **Rendering Strategy**: Default to Server Components for performance. Use Client Components only for interactivity and API integration.
 4. **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation, and screen reader compatibility are mandatory.
 5. **Tool First**: Check for existing solutions and tools before coding.
-6. **Proxy over Middleware (BANNED)**: Next.js 16+ uses `proxy.ts` for request proxying. `middleware.ts` is NOT "deprecated" — it is forbidden in this project, touch it and you die. Do NOT create, recommend, suggest, or "restore" `middleware.ts`. Do NOT flag `proxy.ts` as dead code, unused, or not-wired. Do NOT demand a rename to `middleware.ts`. Any such finding is a fatal self-error — retract it immediately and write `proxy.ts`.
+7. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
 7. **No Prop Drilling**: Avoid passing props beyond 3 levels. Use the project's client-state library (Jotai atoms or a Zustand store — see oma-frontend `resources/tech-stack.md`) instead. Avoid React Context.
-8. **Auth Boundary**: Frontend handles auth UI and token storage only. Never import database adapters, ORMs, or server-side auth libraries.
-9. **Animation Library**: Use `motion` (import from `motion/react`). `framer-motion` is the legacy package name and is BANNED — never `import { motion } from 'framer-motion'`, never add `framer-motion` to `package.json`. Add the `motion` package via the project's package manager — detect from the lockfile (`bun.lock` → bun, `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm); default to `bun` when no lockfile exists. Import as `import { motion, AnimatePresence } from 'motion/react'`. Respect `prefers-reduced-motion` via `useReducedMotion` from `motion/react`.
-10. **Framework Version**: `next@16+` and `react@19+` are MANDATORY. When scaffolding or pinning `package.json`, set `"next": "^16"` (or higher) and `"react": "^19"`/`"react-dom": "^19"` — never pin `next` to `^15`, `~15`, or any range whose floor is below `16.0.0`. If `create-next-app` (or any scaffold tool) produces `next < 16`, immediately bump it before committing. This rule is paired with Core Rule #6 (`proxy.ts`), which assumes Next.js 16+.
+8. **Auth Boundary**: Client code must not import database adapters or server-only auth code. Keep server-side application logic in the project's existing server boundary.
+9. **Animation library**: preserve the project's existing animation library for scoped edits. For new motion-based implementations, use the `motion` package and `motion/react` imports. Respect reduced-motion preferences.
+10. **Framework version**: preserve the installed framework and dependency ranges for scoped changes. Select versions when scaffolding or when an upgrade is explicitly requested; do not upgrade an existing app to satisfy a starter default.
 
 ## Architecture (FSD-lite)
 

@@ -224,14 +224,14 @@ Cross-vendor tasks still use `oma agent spawn`.
 **Phase 2, IMPL (Step 5, Dev Agents spawned):**
 - Backend agent implements Stripe integration (webhooks, idempotency, error handling)
 - Frontend agent builds checkout flow and payment status UI
-- Step 5.2: Measure baseline Quality Score (tests, lint, typecheck)
+- Step 5.2: Record a baseline only when a defined measurement comparison is needed
 - IMPL_GATE: Applicable non-emitting checks and tests pass, only planned files modified; build checks run only when explicitly requested
 
 **Phase 3, VERIFY (Steps 6-8, QA Agent spawned):**
 - Step 6: Alignment Review (does implementation match the plan?)
 - Step 7: Security/Bug Review (OWASP, npm audit, Stripe security best practices)
 - Step 8: Improvement/Regression Review (no regressions introduced)
-- VERIFY_GATE: Zero CRITICAL, zero HIGH, Quality Score >= 75
+- VERIFY_GATE: Zero CRITICAL, zero HIGH, applicable project measurement targets met
 
 **Phase 4, REFINE (Steps 9-13, Refactor Agent spawned):**
 - Step 9: Split large files (> 500 lines) and functions (> 50 lines)
@@ -239,7 +239,7 @@ Cross-vendor tasks still use `oma agent spawn`.
 - Step 11: Side Effect Review (trace cascade impact with `find_referencing_symbols`)
 - Step 12: Full Change Review (naming consistency, style alignment)
 - Step 13: Clean up dead code
-- REFINE_GATE: Quality Score non-regressed, code clean
+- REFINE_GATE: no unresolved measured regression, code clean
 
 **Phase 5, SHIP (Steps 14-17, QA Agent spawned):**
 - Step 14: Code Quality Review (lint, types, coverage)

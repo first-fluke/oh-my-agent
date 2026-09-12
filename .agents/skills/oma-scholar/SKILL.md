@@ -1,10 +1,6 @@
 ---
 name: oma-scholar
-description: Scholarly research companion using Knows sidecar spec
-  (.knows.yaml). Generates, validates, reviews, queries, and compares structured
-  research-paper sidecars, and fetches them from knows.academy. Use for academic
-  literature search, survey synthesis, paper authoring assistance, and peer
-  review with token-efficient claim/evidence/relation access.
+description: "Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis."
 ---
 
 # Scholar - Research Paper Sidecar Companion

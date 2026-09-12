@@ -1,9 +1,6 @@
 ---
 name: oma-pm
-description: Product manager that decomposes requirements into actionable tasks
-  with priorities and dependencies. Use for planning, requirements,
-  specification, scope, prioritization, task breakdown, and ISO 21500, ISO
-  31000, or ISO 38500-aligned planning recommendations.
+description: "Turn product requirements into scoped tasks with dependencies and acceptance criteria. Use for implementation planning and prioritization."
 ---
 
 # PM Agent - Product Manager
@@ -156,4 +153,4 @@ Save plan to `.agents/results/plan-{sessionId}.json` and `.agents/results/result
 - Reasoning templates: `../_shared/core/reasoning-templates.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)

@@ -74,11 +74,11 @@ Also search `docs/plans/work/` for related past or in-progress plans, and `docs/
 
 ## Step 3: Assess Complexity
 
-Use `.agents/skills/_shared/core/difficulty-guide.md` to classify:
+Use `.agents/skills/_shared/core/difficulty-guide.md` when scope or dependencies need decomposition. Select plan artifacts for the caller and task:
 
 - **Simple** → for a standalone planning request, report the direct approach and matching domain skill, then end this workflow without entering `/work`. If implementation is already authorized, continue directly with that skill. If the caller requires an executable plan (e.g. `/orchestrate`), continue through Steps 4-7 and produce a minimal JSON plan; no Markdown tracker is required.
 - **Medium** → produce both JSON and a lightweight markdown tracker (skip Step 4 API contracts if not cross-boundary).
-- **Complex** → produce both artifacts with all sections plus API contracts.
+- **Complex** → produce both artifacts with applicable sections; include API contracts only when a changed boundary needs one.
 
 Report scope assessment and apply `.agents/skills/_shared/core/execution-policy.md`; reuse existing authorization.
 
@@ -88,10 +88,10 @@ Report scope assessment and apply `.agents/skills/_shared/core/execution-policy.
 
 If the plan involves cross-boundary work (frontend ↔ backend, service ↔ service):
 
-1. Design API contracts using `.agents/skills/_shared/core/api-contracts/template.md` (definition/template only — SSOT). Per endpoint:
+1. Reuse the authoritative project contract when it settles the boundary. If a new or updated contract is needed, use `.agents/skills/_shared/core/api-contracts/template.md` (definition/template only — SSOT). Per endpoint:
    - Method, path, request/response schemas
    - Auth requirements, error responses
-2. Save the generated contract to `.agents/results/api-contracts/{contract-name}.md` (run artifact; gitignored). If the contract must be versioned as a durable spec, promote it to `docs/plans/contracts/{contract-name}.md` when committing the feature.
+2. When creating a separate artifact, save the generated contract to `.agents/results/api-contracts/{contract-name}.md` (run artifact; gitignored). If the contract must be versioned as a durable spec, promote it to `docs/plans/contracts/{contract-name}.md` when committing the feature.
 3. Reference from the markdown tracker generated in Step 6.
 4. Emit and verify the required API contract decision:
    ```bash

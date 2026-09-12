@@ -428,7 +428,7 @@ Project-specific `stack/stack.yaml`, `stack/tech-stack.md`, snippets, and API te
 3. Cross-review: QA agent reviews changes
 4. On failure: issues fed back for fixing (max 5 total loop iterations)
 
-**Clarification Debt monitoring:** Tracks user corrections during sessions. Events scored as clarify (+10), correct (+25), redo (+40). CD >= 50 triggers mandatory RCA. CD >= 80 pauses session.
+**Session evidence:** Records material corrections and adjudicated review findings when useful, with cause, impact, and verification. No penalty score or score-triggered pause applies.
 
 **Resources:** `subagent-prompt-template.md`, `memory-schema.md`.
 
@@ -957,8 +957,8 @@ During orchestration sessions, agents coordinate through shared memory files in 
 | `task-board-{sessionId}.md` | Orchestrator | Task assignments, priorities, status updates | Read-only |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | That run | Turn-by-turn progress: actions taken, files read/modified, current status | Orchestrator reads |
 | `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | That run | Final output: status (completed/failed), summary, files changed, acceptance criteria checklist | Orchestrator reads |
-| `session-metrics.md` | Orchestrator | Clarification Debt tracking, Quality Score progression | QA reads |
-| `experiment-ledger.md` | Orchestrator/QA | Experiment tracking when Quality Score is active | All read |
+| `session-metrics.md` | Orchestrator | Optional session evidence and measured experiment results | QA reads |
+| `experiment-ledger.md` | Orchestrator/QA | Evidence for actual experiments | All read |
 
 Memory tools are configurable. By default agents read and write these coordination files directly with their native file tools (`Read`, `Write`, `Edit`), but custom tools and a custom base path can be configured in `mcp.json`:
 

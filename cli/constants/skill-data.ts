@@ -6,143 +6,143 @@ export const SKILLS: SkillsRegistry = {
   domain: [
     {
       name: "oma-architecture",
-      desc: `Architecture specialist for software/system design, module and service boundaries, tradeoff analysis, and stakeholder synthesis. Uses context-aware methods such as diagnostic routing, design-twice comparison, ATAM-style risk analysis, CBAM-style prioritization, and ADR-style decision records.`,
+      desc: `Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs.`,
     },
     {
       name: "oma-backend",
-      desc: `Backend specialist for APIs, databases, authentication with clean architecture (Repository/Service/Router pattern). Use for API, endpoint, REST, database, server, migration, and auth work.`,
+      desc: `Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db.`,
     },
     {
       name: "oma-db",
-      desc: `Database specialist for SQL, NoSQL, and vector database modeling, schema design, normalization, indexing, transactions, integrity, concurrency control, backup, capacity planning, data standards, anti-pattern review, and compliance-aware database design. Use for database, schema, ERD, table design, document model, vector index design, RAG retrieval architecture, migration, query tuning, glossary, capacity estimation, backup strategy, database anti-pattern remediation work, and ISO 27001, ISO 27002, or ISO 22301-aware database recommendations.`,
+      desc: `Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend.`,
     },
     {
       name: "oma-frontend",
-      desc: `Frontend specialist for React, Next.js, Angular, TypeScript with FSD-lite architecture, shadcn/ui, and design system alignment. Use for UI, component, page, layout, CSS, Tailwind, shadcn, Angular, and RxJS work.`,
+      desc: `Implement or modify web UI in React, Next.js, or Angular. Use for components, pages, styles, forms, and frontend state or data flows.`,
     },
     {
       name: "oma-mobile",
-      desc: `Mobile specialist for Flutter, React Native, and Swift native iOS development. Use for mobile app, Flutter, Dart, React Native, Swift, SwiftUI, iOS, Android, Riverpod, swift-openapi-generator, and widget work.`,
+      desc: `Implement Flutter, React Native, or native Swift apps. Use for mobile screens, widgets, platform integrations, and application data flows.`,
     },
   ],
   design: [
     {
       name: "oma-design",
-      desc: `AI design specialist skill with DESIGN.md management, anti-pattern enforcement, optional Stitch MCP integration, and component library guidance. Covers typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, and accessibility (WCAG 2.2).`,
+      desc: `Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions.`,
     },
   ],
   coordination: [
     {
       name: "oma-brainstorm",
-      desc: `Design-first ideation that explores user intent, constraints, and approaches before any planning or implementation. Use for brainstorming, ideation, exploring concepts, and evaluating approaches.`,
+      desc: `Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration.`,
     },
     {
       name: "oma-coordination",
-      desc: `Guide for coordinating PM, Frontend, Backend, Mobile, and QA agents on complex projects via CLI. Use for manual step-by-step coordination and workflow guidance.`,
+      desc: `Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step.`,
     },
     {
       name: "oma-orchestration",
-      desc: `Automated multi-agent orchestration that spawns CLI subagents in parallel, coordinates via MCP Memory, and monitors progress. Use for orchestration, parallel execution, and automated multi-agent workflows.`,
+      desc: `Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested.`,
     },
     {
       name: "oma-pm",
-      desc: `Product manager that decomposes requirements into actionable tasks with priorities and dependencies. Use for planning, requirements, specification, scope, prioritization, task breakdown, and ISO 21500, ISO 31000, or ISO 38500-aligned planning recommendations.`,
+      desc: `Turn product requirements into scoped tasks with dependencies and acceptance criteria. Use for implementation planning and prioritization.`,
     },
     {
       name: "oma-qa",
-      desc: `Quality assurance specialist for security, performance, accessibility, comprehensive testing, and quality standard alignment. Use for test, review, security audit, OWASP, coverage, lint work, and ISO/IEC 25010 or ISO/IEC 29119-aligned QA recommendations.`,
+      desc: `Review changes for correctness, security, accessibility, and performance. Use for scoped quality reviews or verification plans; bug fixes use oma-debug.`,
     },
   ],
   utility: [
     {
       name: "oma-academic-writing",
-      desc: `Academic writing capability for publication-grade English prose. Drafts, revises, and audits essays, reports, analysis sections, executive summaries, conclusions, and literature reviews while enforcing sentence-structure variation, high-frequency academic verbs, calibrated hedging, and anti-AI stylistic compliance. USE for academic writing, essay polish, paragraph rewrite, prose revision against any rubric tier (HD/D/C, A/B/C, top-band/mid-band, etc.), anti-AI audit, reverse outlining, claim-evidence mapping, and rubric enforcement on assignments.`,
+      desc: `Draft and revise academic prose against a rubric, evidence, and citation requirements. Use for essays, reports, literature reviews, or academic style audits.`,
     },
     {
       name: "oma-debug",
-      desc: `Bug diagnosis and fixing specialist - analyzes errors, identifies root causes, provides fixes, and writes regression tests. Use for bug, debug, error, crash, traceback, exception, and regression work.`,
+      desc: `Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests.`,
     },
     {
       name: "oma-deepsec",
-      desc: `Drive Vercel's \`deepsec\` agent-powered vulnerability scanner end-to-end: installing the \`.deepsec/\` workspace, bootstrapping \`INFO.md\`, running cost-aware \`scan\` / \`process\` / \`triage\` / \`revalidate\` / \`export\` passes, gating PRs with \`process --diff\`, writing custom matchers, and triaging findings. Use whenever the user mentions deepsec, asks an agent to scan a repo for vulnerabilities, runs into \`pnpm deepsec\` / \`bunx deepsec\` commands, wants a CI-based PR security review, sees a \`.deepsec/\` directory, or asks about \`INFO.md\` / matchers / \`process --diff\` / \`revalidate\`, even when the tool name is not spoken. Deepsec scans are expensive (a single full scan can cost hundreds to tens of thousands of dollars) so the skill exists in part to keep the user from getting surprised.`,
+      desc: `Set up and run Deepsec vulnerability scans, triage, and CI gates. Use for Deepsec work or an explicitly requested agent-powered vulnerability scan.`,
     },
     {
       name: "oma-docs",
-      desc: `Verify documentation references against the current codebase, propose updates for diff-affected docs, detect i18n translation drift, and lint translated docs for CJK style issues. Use to check if docs still match reality (broken file paths, CLI commands, config keys, env vars, scripts), to surface docs that may need updating after code changes, or to find stale or style-broken translations.`,
+      desc: `Check documentation references, sync docs to code changes, and detect translation drift. Use for documentation maintenance in a repository.`,
     },
     {
       name: "oma-explanation",
-      desc: `Turn a code change (diff, PR, branch, commit range) into a rich, self-contained interactive HTML explainer with Background / Intuition / Code / Quiz sections. Use for explain, walkthrough, code-change explanation, diff/PR/branch explainer requests — 설명서, 해설, コード解説, 代码讲解. Produces a single offline-capable HTML file with diagrams, callouts, and an accessible quiz.`,
+      desc: `Create an offline HTML explanation of a code diff, PR, or branch. Use when an interactive code-change walkthrough is requested.`,
     },
     {
       name: "oma-hwp",
-      desc: `Convert HWP / HWPX / HWPML files to Markdown using kordoc. Extracts text, headings, tables, lists, images, footnotes, and hyperlinks. Use for Korean word processor files (Hangul), government documents, and AI-ready data preparation.`,
+      desc: `Convert Hangul HWP, HWPX, or HWPML documents to Markdown with kordoc. Use for text, table, and image extraction from these formats.`,
     },
     {
       name: "oma-image",
-      desc: `Multi-vendor AI image generation with authentication-aware parallel dispatch. Routes to Codex (gpt-image-2 via ChatGPT OAuth), Antigravity (Gemini-family "nano-banana" image models via \`agy\` CLI + Gemini Code Assist; exact model chosen internally by agy), and Pollinations (flux/zimage, free with signup). Use for image generation, image creation, visual asset generation, and AI art.`,
+      desc: `Generate raster images or reference-guided variations through the OMA image CLI. Use for image assets or explicit vendor comparisons; pixel editing uses an editor.`,
     },
     {
       name: "oma-market",
-      desc: `Market research skill for pain-point extraction, trend detection, competitor positioning, and discovery across community sources (Reddit, HN, Bluesky, Mastodon, GitHub Issues, web). Built-in harvest fetchers, deterministic CLI compute, intent-auto SWOT/Porter's 5F/PESTEL frameworks. Use for market research, pain point analysis, trend detection, competitor research, user complaints, voice-of-customer, 시장조사, 사용자 페인, 트렌드, 경쟁구도.`,
+      desc: `Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis.`,
     },
     {
       name: "oma-pdf",
-      desc: `Convert PDF files to Markdown using opendataloader-pdf. Extracts text, tables, headings, lists, and images with correct reading order. Use for PDF parsing, PDF to Markdown conversion, document extraction, and AI-ready data preparation.`,
+      desc: `Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation.`,
     },
     {
       name: "oma-recap",
-      desc: `Analyze conversation histories from multiple AI tools (Grok, Claude, Codex, Gemini, Qwen, Cursor, Antigravity) and generate themed daily/period work summaries. Filter by date or time window.`,
+      desc: `Summarize AI conversation histories for a specified date or period. Use for daily work recaps and cross-tool activity summaries.`,
     },
     {
       name: "oma-refactor",
-      desc: `Behavior-preserving refactoring specialist - plans and executes safe incremental restructuring with code smell / SATD / hotspot targeting, characterization-test safety nets, metric and coverage gates, and refactor-only commits. Use for refactor, refactoring, code smell, technical debt, legacy code modernization, extract method, hotspot, and characterization test work.`,
+      desc: `Restructure existing code while preserving observable behavior. Use for targeted technical debt or hotspot work with characterization tests.`,
     },
     {
       name: "oma-scholar",
-      desc: `Scholarly research companion using Knows sidecar spec (.knows.yaml). Generates, validates, reviews, queries, and compares structured research-paper sidecars, and fetches them from knows.academy. Use for academic literature search, survey synthesis, paper authoring assistance, and peer review with token-efficient claim/evidence/relation access.`,
+      desc: `Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis.`,
     },
     {
       name: "oma-scm",
-      desc: `SCM (software configuration management) and Git: branching, merges, conflicts, worktrees, baselines, audit readiness, plus Conventional Commits and safe staging.`,
+      desc: `Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations.`,
     },
     {
       name: "oma-search",
-      desc: `Intent-based search router with trust scoring. Routes queries to optimal channels (Context7 docs, native web search, gh/glab code search, Serena local) and attaches domain trust labels. Use for search, find, lookup, reference, docs, code search, and web research.`,
+      desc: `Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools.`,
     },
     {
       name: "oma-skill-creation",
-      desc: `Create or update OMA skills in the SSL-lite human-readable format. Use when adding a new \`.agents/skills/{skill-name}/SKILL.md\`, converting an existing skill to the standardized Scheduling / Structural Flow / Logical Operations / References structure, or validating whether a skill has enough routing, execution, resource, and safety detail.`,
+      desc: `Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation.`,
     },
     {
       name: "oma-slide",
-      desc: `HTML presentation deck generator and multi-format exporter. Generates distinctive, animation-rich HTML decks at a fixed 1920×1080 stage, then deterministically validates, bundles, and exports them to PDF/PNG/PPTX via the \`oma slide\` CLI. Use for slide, deck, presentation, slides, pptx, keynote, 슬라이드, 발표자료, プレゼン, 幻灯片 requests. Produces self-contained single-file HTML with keyboard/touch nav, speaker notes, and print-to-PDF support.`,
+      desc: `Create, import, revise, or export presentation decks through the OMA slide CLI. Use for HTML slides and PDF, PNG, or PPTX deck delivery.`,
     },
     {
       name: "oma-translation",
-      desc: `Context-aware translation that preserves tone, style, and natural word order. Use when translating UI strings, documentation, marketing copy, or any multilingual content. Infers register, domain, and style from the source text and surrounding codebase context.`,
+      desc: `Translate or revise localized UI strings and prose while preserving meaning, terminology, placeholders, and structure.`,
     },
     {
       name: "oma-video",
-      desc: `Short-form, explainer, and demo video generation via a key-optional 3-tier router. Composes scripts, oma-voice narration, oma-image/oma-slide/stock visuals, key-free captions, and a vendored Remotion compositor into reproducible run directories. Routes three modes — shorts/reels (9:16), explainer (16:9 README/code/data), and demo/walkthrough (screen capture, incl. supervised headed web-app capture of any URL). Use for video, shorts, reels, short-form, demo, explainer, walkthrough, screencast, web capture, video generation, 영상, 숏폼, 쇼츠, 릴스, 데모, 설명 영상.`,
+      desc: `Create short, explainer, or recorded-demo videos through the OMA video CLI. Use for scripts, narration, assets, composition, and video delivery.`,
     },
     {
       name: "oma-voice",
-      desc: `Local-first text-to-speech and speech-to-text via the Voicebox MCP server. Generates speech from cloned or preset voice profiles for agent notifications, content voiceovers, and audio asset creation, and transcribes audio files for meeting notes or memos. Runs entirely on-device with no cloud, no API keys, no per-call cost. Use for voice generation, TTS, STT, transcription, voiceover, narration, dictation, audio asset work.`,
+      desc: `Generate speech or transcribe audio locally with Voicebox. Use for narration, voice assets, dictation, and meeting transcription.`,
     },
   ],
   infrastructure: [
     {
       name: "oma-dev-workflow",
-      desc: `Use when setting up or optimizing developer workflows in a monorepo, managing mise tasks, git hooks, CI/CD pipelines, database migrations, or release automation. Invoke for development environment setup, build automation, testing workflows, and release coordination.`,
+      desc: `Configure development tasks, git hooks, CI/CD, or release automation. Use when creating or fixing a repository development workflow.`,
     },
     {
       name: "oma-observability",
-      desc: `Intent-based observability + traceability router across layers, boundaries, and signals. Routes to vendor-specific skills via category taxonomy; owns transport tuning, meta-observability, incident forensics. Use for observability, traceability, telemetry, APM, RUM, metrics, logs, traces, profiles, SLO, incident forensics, tracing architecture work.`,
+      desc: `Design or troubleshoot telemetry, SLOs, and incident diagnostics. Route to the relevant signal, system boundary, or vendor guide.`,
     },
     {
       name: "oma-tf-infra",
-      desc: `Infrastructure-as-code specialist for multi-cloud provisioning using Terraform across any provider (AWS, GCP, Azure, Oracle Cloud). Use for terraform plan/apply, state management, compute, databases, storage, networking, IAM, OIDC, cost optimization, policy-as-code, ISO/IEC 42001 AI controls, ISO 22301 continuity, and ISO/IEC/IEEE 42010 architecture documentation.`,
+      desc: `Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes.`,
     },
   ],
 };

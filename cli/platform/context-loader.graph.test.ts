@@ -21,23 +21,62 @@ describe("graph-backed runtime context", () => {
     }
   });
   afterEach(() => rmSync(root, { recursive: true, force: true }));
-  it("loads actual referenced content while excluding unrelated skills", () => {
+  it("loads the entry skill once and defers supporting content", () => {
     const context = loadGraphContext("custom-agent", "Simple", root);
-    expect(context).toContain("REFERENCE_DETAILS");
+    expect(context).not.toContain("REFERENCE_DETAILS");
+    expect(context).toContain("resources/details.md");
     expect(context).not.toContain("UNRELATED_CONTENT");
     expect(
       context.match(/### .agents\/skills\/custom-skill\/SKILL.md/g),
     ).toHaveLength(1);
   });
-  it("reports deferred references instead of exceeding the resource budget", () => {
+  it("preserves the required entry skill and reports a soft budget overrun", () => {
     const bundle = resolveContextBundle("custom-agent", "Simple", root, {
       graph: true,
       maxTokens: 1,
     });
-    expect(bundle.resources).toHaveLength(0);
-    expect(bundle.skipped).toHaveLength(2);
+    expect(bundle.resources).toEqual([".agents/skills/custom-skill/SKILL.md"]);
+    expect(bundle.budgetExceeded).toBe(true);
+    expect(bundle.skipped).toContain(
+      ".agents/skills/custom-skill/resources/details.md",
+    );
   });
   it("does not load all shared resources for an unknown agent", () => {
     expect(loadGraphContext("missing", "Complex", root)).toBe("");
+  });
+  it("does not inject a referenced specialist or conditional protocol at any difficulty", () => {
+    mkdirSync(join(root, ".agents/skills/_shared/conditional"), {
+      recursive: true,
+    });
+    writeFileSync(
+      join(root, ".agents/skills/_shared/conditional/experiment-ledger.md"),
+      "EXPERIMENT_BODY",
+    );
+    writeFileSync(
+      join(root, ".agents/skills/custom-skill/SKILL.md"),
+      "# Custom\n[ledger](../_shared/conditional/experiment-ledger.md)\n[other](../unrelated/SKILL.md)",
+    );
+    for (const difficulty of ["Simple", "Medium", "Complex"] as const) {
+      const context = loadGraphContext("custom-agent", difficulty, root);
+      expect(context).not.toContain("EXPERIMENT_BODY");
+      expect(context).not.toContain("UNRELATED_CONTENT");
+      expect(context).toContain("# Custom");
+    }
+  });
+  it("loads an explicitly selected supporting reference once", () => {
+    const file = ".agents/skills/custom-skill/resources/details.md";
+    const bundle = resolveContextBundle("custom-agent", "Medium", root, {
+      graph: true,
+      requestedResources: [file, file],
+    });
+    expect(bundle.resources).toEqual([
+      ".agents/skills/custom-skill/SKILL.md",
+      file,
+    ]);
+    expect(() =>
+      resolveContextBundle("custom-agent", "Medium", root, {
+        requestedResources: ["../../secret.md"],
+      }),
+    ).toThrow(/not a reference/);
   });
 });

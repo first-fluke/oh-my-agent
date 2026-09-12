@@ -1,5 +1,7 @@
 # Mobile Agent - Tech Stack Reference (Swift iOS Native)
 
+Starter reference for the selected platform. Preserve existing project choices. The caching implementation below applies only when caching is required; do not add it for an unrelated screen or widget change.
+
 ## Framework: SwiftUI + Observation
 
 - **Language**: Swift 6.0+ floor, strict-concurrency clean (current stable is Swift 6.3, July 2026)
@@ -54,7 +56,7 @@ changes surface as Swift compile errors after regeneration, not at runtime.
 |-----------|---------|
 | Hybrid (memory + disk) cache | `hyperoslo/Cache` |
 
-Read-through caching of API responses is **mandatory at the Repository (Service) layer**, backed by `hyperoslo/Cache`. The generated `Components.Schemas.*` types are `Codable`, so they are cached directly through `Cache`'s `Storage<Key, Value>` with `TransformerFactory.forCodable`. This memoizes **decoded models**, not raw bytes — the cache sits between the `@Observable` view model and the generated `Client`, never inside a `ClientMiddleware`.
+When response caching is required, implement it at the Repository (Service) layer, backed by `hyperoslo/Cache`. The generated `Components.Schemas.*` types are `Codable`, so they are cached directly through `Cache`'s `Storage<Key, Value>` with `TransformerFactory.forCodable`. This memoizes **decoded models**, not raw bytes — the cache sits between the `@Observable` view model and the generated `Client`, never inside a `ClientMiddleware`.
 
 **Placement rule — Repository layer, not transport.** Do **not** intercept `HTTPBody` in a `ClientMiddleware` to cache responses: `HTTPBody` is a single-consumption async stream, so capturing it for replay corrupts the request/response lifecycle. Cache the typed result *after* the generated `Client` call returns instead.
 

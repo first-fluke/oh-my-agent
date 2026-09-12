@@ -1,13 +1,6 @@
 ---
 name: oma-market
-description: Market research skill for pain-point extraction, trend detection,
-  competitor positioning, and discovery across community sources (Reddit, X,
-  YouTube, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web and
-  more). Delegates research to the always-latest mvanhorn/last30days engine via
-  `oma market run`, adds oma's detect-trap preflight, intent-auto SWOT /
-  Porter's 5F / PESTEL framing, and a single LAW-compliant brief. Use for market
-  research, pain point analysis, trend detection, competitor research, user
-  complaints, voice-of-customer, 시장조사, 사용자 페인, 트렌드, 경쟁구도.
+description: "Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis."
 ---
 
 # Market Research Agent - Community Signal Intelligence

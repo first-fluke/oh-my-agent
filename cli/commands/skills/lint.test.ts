@@ -106,6 +106,24 @@ describe("lintSkillPath", () => {
     rmSync(workspace, { recursive: true, force: true });
   });
 
+  it("warns on an operation-heavy description without rejecting the skill", () => {
+    const skillDir = writeExternalSkill(workspace, "verbose", "verbose");
+    writeFileSync(
+      join(skillDir, "SKILL.md"),
+      `---\nname: verbose\ndescription: ${"Configure providers and run every mode. ".repeat(12)}\n---\n${SSL_LITE_BODY}`,
+    );
+    const report = lintSkillPath(skillDir);
+    expect(report.smells).toContainEqual(
+      expect.objectContaining({
+        smell: "verbose-description",
+        severity: "warn",
+      }),
+    );
+    expect(report.smells.some((smell) => smell.severity === "fail")).toBe(
+      false,
+    );
+  });
+
   it("uses a prefixed declared name even when its exposed name is unprefixed", () => {
     const skillDir = writeExternalSkill(
       workspace,

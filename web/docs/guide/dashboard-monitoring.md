@@ -129,8 +129,8 @@ The dashboards read from the `.agents/state/memories/` directory. This directory
 | `progress-{agent}.md` | Each spawned agent | Current turn number, what the agent is working on, intermediate results |
 | `result-{agent}.md` | Each completed agent | Final status (COMPLETED/FAILED), files changed, issues found, deliverables |
 | `debug-{id}.md` | `/debug` workflow | Bug diagnosis, root cause, fix applied, regression test location |
-| `experiment-ledger.md` | Quality Score system | Experiment tracking: baseline scores, deltas, keep/discard decisions |
-| `lessons-learned.md` | Auto-generated at session end | Lessons from discarded experiments (delta <= -5) |
+| `experiment-ledger-{sessionId}.md` | Actual experiments | Comparable baseline/candidate evidence, required checks, and decisions |
+| `lessons-{sessionId}.md` | When a reusable cause is supported by evidence | Session-scoped lessons; no score-triggered generation |
 
 ### How the dashboard reads them
 

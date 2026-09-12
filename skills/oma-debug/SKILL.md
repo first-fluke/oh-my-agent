@@ -1,8 +1,7 @@
 ---
 name: oma-debug
-description: Bug diagnosis and fixing specialist - analyzes errors, identifies
-  root causes, provides fixes, and writes regression tests. Use for bug, debug,
-  error, crash, traceback, exception, and regression work.
+description: Diagnose a reproducible failure, fix its cause, and verify the
+  regression. Use for crashes, incorrect behavior, and failing tests.
 ---
 
 # Debug Agent - Bug Fixing Specialist
@@ -142,5 +141,5 @@ Use the configured provider to locate the failing function, find callers, and se
 - Debugging checklist (investigation guide, used during Steps 1-2): `resources/debugging-checklist.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Context budget: `../_shared/core/context-budget.md`
-- Lessons learned: `../_shared/core/lessons-learned.md`
+- Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
 - Observability handoff: `../oma-observability/SKILL.md` §Integrations — traces/logs by `trace_id`, 6-dim forensics

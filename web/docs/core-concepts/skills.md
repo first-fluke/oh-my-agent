@@ -11,7 +11,7 @@ Skills are structured knowledge packages that give a dispatch role its domain gu
 
 ## The two-layer design
 
-### Layer 1: SKILL.md (~2,631 tokens median, loaded when the skill is routed)
+### Layer 1: SKILL.md (loaded when the skill is routed)
 
 Every skill has a `SKILL.md` file at its root. It enters the context window when the skill is routed to — the injector hook passes a **path reference**, not the body, so an unrouted skill costs nothing beyond its `description`. It contains:
 
@@ -37,9 +37,9 @@ The description field is critical because it contains the routing keywords that 
 
 The `resources/` directory contains deep execution knowledge. These files are loaded only when:
 1. The host or workflow has selected the skill (for example, through a native skill match or an explicit command)
-2. The specific resource is needed for the current task type and difficulty
+2. The current task meets the reference's loading condition
 
-This on-demand loading is governed by the context-loading guide (`.agents/skills/_shared/core/context-loading.md`), which maps task types to required resources per agent.
+This on-demand loading is governed by the context-loading guide (`.agents/skills/_shared/core/context-loading.md`), which distinguishes entry instructions from task-selected references.
 
 ---
 
@@ -110,12 +110,12 @@ This on-demand loading is governed by the context-loading guide (`.agents/skills
 
 | Resource Type | Filename Pattern | Purpose | When Loaded |
 |--------------|-----------------|---------|-------------|
-| **Execution Protocol** | `execution-protocol.md` | Step-by-step workflow: Analyze -> Plan -> Implement -> Verify | Always (with SKILL.md) |
-| **Tech Stack** | `tech-stack.md` | Detailed technology specs, versions, configuration | Complex tasks |
+| **Execution Protocol** | `execution-protocol.md` | Step-by-step workflow: Analyze -> Plan -> Implement -> Verify | Selected operation needs its command or contract details |
+| **Tech Stack** | `tech-stack.md` | Detailed technology specs, versions, configuration | Selected framework or stack decision |
 | **Error Playbook** | `error-playbook.md` | Recovery procedures with "3 strikes" escalation | On error only |
 | **Checklist** | `checklist.md` | Domain-specific quality verification | At Verify step |
-| **Snippets** | `snippets.md` | Copy-paste ready code patterns | Medium/Complex tasks |
-| **Examples** | `examples.md` or `examples/` | Few-shot input/output examples for the LLM | Medium/Complex tasks |
+| **Snippets** | `snippets.md` | Copy-paste ready code patterns | Unfamiliar implementation or output shape |
+| **Examples** | `examples.md` or `examples/` | Few-shot input/output examples for the LLM | Unfamiliar implementation or output shape |
 | **Variants** | `variants/` directory | Language/framework-specific references. Backend ships `node`, `python`, and `rust` seeds; mobile ships a schema and can receive generated platform references. | When a matching stack exists |
 | **Templates** | `component-template.tsx`, `screen-template.dart` | Boilerplate file templates | On component creation |
 | **Domain Reference** | `orm-reference.md`, `anti-patterns.md`, etc. | Deep domain knowledge for specific subtasks | Task-type specific |
@@ -130,18 +130,18 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 
 | Resource | Purpose | When Loaded |
 |----------|---------|-------------|
-| **`skill-routing.md`** | Maps task keywords to the correct agent. Contains the Skill-Agent Mapping table, Complex Request Routing patterns, Inter-Agent Dependency Rules, Escalation Rules, and Turn Limit Guide. | Referenced by orchestrator and coordination skills |
-| **`context-loading.md`** | Defines which resources to load for which task type and difficulty. Contains per-agent task-type-to-resource mapping tables and conditional protocol loading triggers. | At workflow start (Step 0 / Phase 0) |
-| **`prompt-structure.md`** | Defines the four elements every task prompt must contain: Goal, Context, Constraints, Done When. Includes templates for PM, implementation, and QA agents. Lists anti-patterns (starting with only a Goal). | Referenced by PM agent and all workflows |
-| **`clarification-protocol.md`** | Defines uncertainty levels (LOW/MEDIUM/HIGH) with actions for each. Contains uncertainty triggers, escalation templates, required verification items per agent type, and subagent-mode behavior. | When requirements are ambiguous |
-| **`context-budget.md`** | Token budget management. Defines file reading strategy (use `find_symbol` not `read_file`), the measured cost of each resource file and of a Simple (~4,000 tokens) vs Complex (~9,000 tokens) load, the enforced `SKILL.md` ceiling (25,000 characters, checked by `oma skill audit`), large file handling, and context overflow symptoms. | At workflow start |
-| **`difficulty-guide.md`** | Criteria for classifying tasks as Simple/Medium/Complex. Defines expected turn counts, protocol branching (Fast Track / Standard / Extended), and misjudgment recovery. | At task start (Step 0) |
-| **`quality-principles.md`** | 4 universal quality principles applied across all agents. | At workflow start for quality-focused workflows (ultrawork) |
+| **`skill-routing.md`** | Routes by task outcome, ownership, and actual dependencies; no compulsory agent chain or turn quota. | Referenced by orchestrator and coordination skills |
+| **`context-loading.md`** | Owning entry, conditional references, and runtime loading boundaries. | When composing context |
+| **`prompt-structure.md`** | Guides unfamiliar task handoffs with goal, context, real constraints, and acceptance evidence; no mandatory template for direct tasks. | Referenced by PM agent and all workflows |
+| **`clarification-protocol.md`** | Resolves routine details from context and asks only for material missing information or authorization. | When requirements are ambiguous |
+| **`context-budget.md`** | File-size estimates, actual prompt measurement, scoped reads, and checkpoints. | Long tasks or context overhead diagnosis |
+| **`difficulty-guide.md`** | Chooses planning depth and deliverables from dependencies and verification needs. | When decomposition needs a difficulty estimate |
+| **`quality-principles.md`** | Scope, maintainability, evidence, and proportionate verification guidance. | At workflow start for quality-focused workflows (ultrawork) |
 | **`vendor-detection.md`** | Protocol for detecting the current runtime environment (Claude Code, Codex CLI, Antigravity, Cursor, Kiro, Qwen, and CLI fallback). Uses host markers and configured vendor state. | At workflow start |
-| **`session-metrics.md`** | Clarification Debt (CD) scoring and session metrics tracking. Defines event types (clarify +10, correct +25, redo +40), thresholds (CD >= 50 = RCA, CD >= 80 = pause), and integration points. | During orchestration sessions |
-| **`common-checklist.md`** | Universal quality checklist applied at final verification of Complex tasks (in addition to agent-specific checklists). | Verify step of Complex tasks |
-| **`lessons-learned.md`** | Repository of past session learnings, auto-generated from Clarification Debt breaches and discarded experiments. Organized by domain section. Includes QA Evaluation Lessons for tracking evaluator blind spots. | Referenced after errors and at session end |
-| **`api-contracts/`** | Directory containing API contract template and generated contracts. `template.md` defines the per-endpoint format (method, path, request/response schemas, auth, errors). | When cross-boundary work is planned |
+| **`session-metrics.md`** | Optional session evidence without conversational or evaluator penalty scores. | Requested retrospective or material correction |
+| **`common-checklist.md`** | Applicable cross-domain checks; no global line-count limits or blanket catch requirement. | Cross-domain review when relevant |
+| **`lessons-learned.md`** | Capture and apply evidence-backed lessons with version/trigger conditions; no automatic RCA threshold. | Referenced after errors and at session end |
+| **`api-contracts/`** | Optional contract template. Reuse project schemas; generated contracts live outside the skill source. | When cross-boundary work is planned |
 
 ### Runtime resources (`.agents/skills/_shared/runtime/`)
 
@@ -165,13 +165,13 @@ Vendor-specific execution protocols are injected automatically for CLI-spawned a
 
 These are loaded only when specific conditions are met during execution:
 
-| Resource | Trigger Condition | Loaded By | Approx. Tokens |
-|----------|-------------------|-----------|----------------|
-| **`quality-score.md`** | VERIFY or SHIP phase begins in a workflow that supports quality measurement | Orchestrator (passes to QA agent prompt) | ~250 |
-| **`experiment-ledger.md`** | First experiment is recorded after establishing an IMPL baseline | Orchestrator (inline, after baseline measurement) | ~250 |
-| **`exploration-loop.md`** | Same gate fails twice on the same issue | Orchestrator (inline, before spawning hypothesis agents) | ~250 |
+| Resource | Trigger Condition | Loaded By |
+|----------|-------------------|-----------|
+| **`quality-score.md`** | A defined baseline or experiment comparison is needed | Orchestrator (passes to QA agent prompt) |
+| **`experiment-ledger.md`** | First experiment is recorded after establishing an IMPL baseline | Orchestrator (inline, after baseline measurement) |
+| **`exploration-loop.md`** | Repeated recovery fails and alternatives merit testing within budget | Orchestrator (inline, before spawning hypothesis agents) |
 
-Budget impact: approximately 750 tokens total if all 3 are loaded. Since loading is conditional, typical sessions load 1-2 of these — negligible next to the ~4,000 tokens a Simple task already spends on `SKILL.md` plus `execution-protocol.md`.
+These resources are deferred until their individual triggers apply. Difficulty alone does not inject them.
 
 ---
 
@@ -215,94 +215,29 @@ Multi-domain requests follow established execution orders:
 
 ## Token savings math
 
-These figures are measured from the skill tree, not estimated by hand. Re-derive
-them at any time:
+Measure before claiming savings:
 
 ```bash
-bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend,oma-mobile,oma-qa
+bun scripts/measure-skill-context.ts
+bun scripts/measure-skill-context.ts --skills oma-pm,oma-backend,oma-frontend --json
+oma agent context backend --difficulty Simple
 ```
 
-Token counts are **approximations** (bytes ÷ 4, the rough ratio for English
-markdown). Tables and code fences tokenize somewhat worse, so these read
-slightly low; use a real tokenizer against your target model if you need exact
-numbers.
+The script reports UTF-8 bytes / 4 estimates for file-size scenarios. `routed` is the entry alone; `simple`, `medium`, and `complex` add hypothetical protocol, example, and stack files for comparison. Their names are retained for script compatibility, not as preload instructions. `all` is a resource-size ceiling, not a runtime configuration. A fresh checkout may use one platform seed as a size proxy; it does not load every platform.
 
-### Loading tiers
+The context command displays the actual task-context injection. It does not include the rest of the conversation or every host/runtime instruction. Use an assembled prompt or usage telemetry to measure total input tokens, latency, and cost on a named model. Do not infer those from repository size or generated mirror counts.
 
-Each tier is a state an agent actually reaches, per
-[`context-loading.md`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/_shared/core/context-loading.md):
+## Resource loading by task
 
-| Tier | What is in context |
-|------|--------------------|
-| `routed` | `SKILL.md` alone |
-| `simple` | + `execution-protocol.md` |
-| `medium` | + the mapped resource for the task, when that file exists |
-| `complex` | + the mapped resource and stack references when the project provides them |
-| `all` | `SKILL.md` + every resource file — the **ceiling**, not a selectable mode |
+Every difficulty level starts with the owning skill. The graph is a reference index; adjacency does not authorize loading another specialist, an error playbook, or a conditional experiment workflow.
 
-For backend and mobile skills, `/stack-set` can generate project-specific
-references under `stack/`. A fresh checkout has no generated stack directory,
-so the `complex` row below is measured against the shipped `variants/` seeds
-that generation adapts from — a size proxy, not a file an agent loads yet.
+The loader uses soft budgets of 1,500 / 4,000 / 8,000 estimated tokens for Simple / Medium / Complex. An entry that exceeds the budget is retained and the overrun is reported. Supporting references remain deferred unless explicitly selected after their task trigger is resolved. A required entry is never replaced with smaller unrelated documents.
 
-### A 5-agent session (pm, backend, frontend, mobile, qa)
-
-| Tier | Tokens | Share of ceiling | Avoided |
-|------|-------:|-----------------:|--------:|
-| `routed` | 11,497 | 15.7% | 84.3% |
-| `simple` | 17,923 | 24.4% | 75.6% |
-| `medium` | 19,125 | 26.1% | 73.9% |
-| `complex` | 39,156 | 53.4% | 46.6% |
-| `all` | 73,355 | 100% | — |
-
-So a Simple or Medium task across five agents holds roughly **17-19K tokens** of
-skill context rather than the 73K ceiling, and a Complex task holds about
-**38K** — the saving is ~74-76% for ordinary work and drops to ~47% when a task
-pulls in stack references. On a 128K-context model that is about 110K free for
-Simple/Medium work and 90K for Complex.
-
-:::note Read `all` as a bound, not an alternative
-No runtime loads every resource upfront: skills are surfaced by `description`,
-their body is read when routed, and resources are read as the task needs them.
-`all` is the upper bound of what a skill *could* cost, which is why the
-percentages above are stated as "avoided", not as a comparison against a real
-configuration.
-:::
-
-Layer 1 is the floor, and it is not small: across the 33 installed skills
-`SKILL.md` runs about 1,275-5,489 tokens (median ~2,631). That floor caps how much
-progressive disclosure can save — with all five agents routed, the `routed` tier
-alone is already 15% of the ceiling.
-
----
-
-## Resource loading by task difficulty
-
-The difficulty guide classifies tasks into three levels, which determine how much of Layer 2 is loaded:
-
-### Simple (3-5 turns expected)
-
-Single file change, clear requirements, repeating existing patterns.
-
-Loads: `execution-protocol.md` only. Skip analysis, proceed directly to implementation with minimal checklist.
-
-### Medium (8-15 turns expected)
-
-2-3 file changes, some design decisions needed, applying patterns to new domains.
-
-Loads: `execution-protocol.md` plus the mapped Medium resource when that file exists. Standard protocol with brief analysis and full verification.
-
-### Complex (15-25 turns expected)
-
-4+ file changes, architecture decisions required, introducing new patterns, dependencies on other agents.
-
-Loads: `execution-protocol.md` plus the mapped resource and available `tech-stack.md` / `snippets.md` references. Extended protocol with checkpoints, mid-execution progress recording, and full verification including `common-checklist.md`.
-
----
+Verification follows the task's risk and project requirements. A difficulty label does not require a full test suite, a fixed preflight response, or a second approval of already authorized work.
 
 ## Context-loading task maps (per agent)
 
-The context-loading guide provides detailed task-type-to-resource mappings. Here are the key mappings:
+These are examples of references to consult when the task needs them. Use the owning skill's current index and select only applicable sections:
 
 ### Backend agent
 
@@ -343,7 +278,7 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 | Performance review | checklist.md (Performance section) |
 | Accessibility review | checklist.md (Accessibility section) |
 | Full audit | checklist.md (full) + self-check.md |
-| Quality scoring | quality-score.md (conditional) |
+| Defined metric comparison | quality-score.md (conditional) |
 
 ---
 
@@ -351,100 +286,32 @@ The context-loading guide provides detailed task-type-to-resource mappings. Here
 
 When the orchestrator composes prompts for subagents, it includes only task-relevant resources:
 
-1. Agent SKILL.md's Core Rules section
-2. `execution-protocol.md`
+1. Owning SKILL.md path (CLI dispatch already injects the body)
+2. A selected operation's execution-protocol section when needed
 3. Resources matching the specific task type (from the maps above)
-4. `error-playbook.md` (always included; recovery is essential)
+4. The relevant error-playbook section only after an observed failure
 5. Memory Protocol (CLI mode)
 
 This targeted composition avoids loading unnecessary resources, maximizing the subagent's available context for actual work.
 
 ---
 
-## Clarification debt & session metrics (deep dive)
+## Session evidence and retrospective review
 
-Clarification Debt (CD) measures the cost of unclear requirements during a session. The orchestrator tracks every user correction and scores it:
+Session records capture material corrections, scope changes, rework, and adjudicated review findings with evidence. Necessary clarification carries no penalty. The former CD and EA weighted scores and threshold-triggered RCA rules have been removed; they were prompt instructions, not CLI-computed metrics.
 
-| Event Type | Points | Description |
-|------------|--------|-------------|
-| `clarify` | +10 | Simple clarification question (expected for MEDIUM uncertainty) |
-| `correct` | +25 | Intent misunderstanding requiring direction change |
-| `redo` | +40 | Scope/charter violation requiring rollback and restart |
-| `blocked` | +0 | Agent correctly stopped and asked (good behavior, not penalized) |
+Use existing task results where possible. A separate `session-metrics-{sessionId}.md` is optional under the configured coordination store. A repeated failure or requested retrospective may justify a lesson, but an ordinary failing check or a disputed finding does not automatically establish one. Keep historical logs; do not rewrite them into the new format.
 
-**Modifiers:** Charter not read (+15), allowlist violation (+20), same error repeated (x1.5).
+`oma stats` reports productivity and recorded usage/cost summaries. `oma retro` groups actual gate, blocker, and missing-decision events into suggestions. Neither computes CD/EA scores from these Markdown artifacts.
 
-**Thresholds and enforcement:**
-- **CD >= 50** → Mandatory RCA entry added to `lessons-learned.md`
-- **CD >= 80** → Session halted, user must re-specify requirements
-- **`redo` >= 2** → Orchestrator pauses and requests explicit scope confirmation
-- **CD >= 30 across 3 consecutive sessions for the same agent** → Agent prompt template review
+## Task decomposition and context recovery
 
-The session log is maintained in `.agents/state/memories/session-metrics.md` with per-event rows (turn, agent, event type, points, detail) and a summary section.
+Plan around dependencies and independently verifiable behavior. Fixed sprint counts, file counts, and turn estimates do not determine review depth or completion. Keep tests and error handling with the behavior they verify.
 
----
+For an observed stall or loss of useful context, save completed work, remaining criteria, relevant paths, and verification evidence before resuming or re-dispatching. Preserve existing work and avoid duplicating a live attempt. A turn/progress ratio alone does not require a reset.
 
-## Evaluator accuracy & QA tuning
+## Conditional measurement and exploration
 
-QA agents improve through tracked judgment errors. Unlike CD (real-time), Evaluator Accuracy (EA) is retrospective. Most errors are discovered after the session ends.
+A defined baseline or experiment comparison activates measurement guidance; simply having tests or lint does not. Record comparable metrics with units, method, revision, and evidence. Required correctness and security checks remain independent. OMA has no default composite formula, letter-grade gate, or score-triggered rollback.
 
-**EA event types:**
-
-| Event | Points | When Discovered |
-|-------|--------|-----------------|
-| `false_negative` | +30 | Next session or production (bug that QA missed) |
-| `false_positive` | +15 | During session (impl agent successfully disputes QA finding) |
-| `severity_mismatch` | +10 | During session or next-session review (wrong severity assigned) |
-| `missed_stub` | +20 | Runtime verification catches display-only feature |
-| `good_catch` | -10 | QA caught a non-obvious bug (positive reward signal) |
-
-**EA is calculated on a rolling 3-session window.** Thresholds:
-- **EA >= 30** → Tuning suggested: review accumulated EA events for recurring QA judgment errors
-- **EA >= 50** → Tuning required: update QA execution-protocol.md
-- **`false_negative` >= 3** across window → Add detection pattern to QA checklist.md
-- **`good_catch` >= 5** across window → Generalize the successful pattern into `common-checklist.md`
-
-When a threshold is breached, review the accumulated EA events, categorize the errors, patch the QA checklist/execution protocol accordingly, and validate over the next 3 sessions.
-
----
-
-## Sprint decomposition for complex tasks
-
-Complex tasks (4+ files, architecture decisions) use sprint-based execution rather than a single long run:
-
-1. **Decompose** into 2-4 feature-focused sprints, each independently testable
-2. **Target** 5-8 turns per sprint
-3. **Sprint Gate** after each sprint:
-   - Sprint deliverable complete?
-   - Lint/test pass?
-   - If sprint took 2x expected turns → write checkpoint, inform user
-4. **Continue** to next sprint on gate pass
-
-**Example:** Task "JWT auth + CRUD API + tests" decomposes into:
-- Sprint 1: User model + auth endpoints (register/login)
-- Sprint 2: CRUD endpoints + validation
-- Sprint 3: Tests + error handling
-
-**Difficulty misjudgment recovery:** If a task started as Simple but proves more complex, the agent upgrades to Medium or Complex protocol mid-execution and records the change in progress.
-
----
-
-## Context reset protocol
-
-Long-running agents degrade in quality as context fills up. The Orchestrator (not the agent itself) monitors for this and triggers resets.
-
-**Trigger conditions (Orchestrator checks during monitoring):**
-
-| Condition | Detection | Action |
-|-----------|-----------|--------|
-| Turn budget exhaustion | Agent consumed >= 80% of expected turns AND acceptance criteria < 50% complete | Context Reset |
-| Progress stall | No progress file update for 3+ consecutive monitoring cycles | Context Reset |
-| Shallow output | Result file contains stub markers or TODO placeholders | Re-spawn with explicit instruction |
-
-**Reset procedure:**
-1. **Checkpoint**: Save agent's current state (completed items, remaining items, key decisions)
-2. **Terminate**: Stop the current agent run
-3. **Re-spawn**: Start a fresh agent with the checkpoint as context
-4. **Resume**: New agent reads checkpoint, continues from remaining items only
-
-For standalone agents (no Orchestrator), the Sprint Gate in `difficulty-guide.md` serves as the safety net. If a sprint takes 2x expected turns, the agent writes a checkpoint and informs the user.
+An actual experiment records its hypothesis, baseline and candidate evidence, required checks, decision, and owned files. Repeated failures may justify testing another mechanism within the existing recovery budget. Isolate experiment changes, preserve unrelated edits, and verify the integrated candidate before resuming the gate.

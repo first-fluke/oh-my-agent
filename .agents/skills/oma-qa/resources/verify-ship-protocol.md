@@ -44,7 +44,7 @@ Execution guide for VERIFY Phase (Steps 6-8) and SHIP Phase (Steps 14-17) in ult
 
 **Review Question**: "Did improvements break anything?"
 
-- [ ] All existing tests pass
+- [ ] Affected regression checks pass; broaden only for identified impact
 - [ ] Existing features work normally
 - [ ] New code matches existing patterns
 
@@ -70,7 +70,7 @@ Execution guide for VERIFY Phase (Steps 6-8) and SHIP Phase (Steps 14-17) in ult
 - [ ] lint passes
 - [ ] type check passes
 - [ ] applicable project or task-defined coverage target met, or alternative verification recorded
-- [ ] `_shared/core/common-checklist.md` passes
+- [ ] Applicable cross-domain checks from `_shared/core/common-checklist.md` pass
 
 ---
 
@@ -111,6 +111,6 @@ Execution guide for VERIFY Phase (Steps 6-8) and SHIP Phase (Steps 14-17) in ult
 - [ ] UX verified
 - [ ] Related issues resolved
 - [ ] Deployment checklist complete
-- [ ] **User final approval**
+- [ ] Scope and any external action are authorized under the shared execution policy; reuse existing authorization
 
 **Gate failure → Return to appropriate phase based on failure type**

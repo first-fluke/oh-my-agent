@@ -1,10 +1,7 @@
 ---
 name: oma-architecture
-description: Architecture specialist for software/system design, module and
-  service boundaries, tradeoff analysis, and stakeholder synthesis. Uses
-  context-aware methods such as diagnostic routing, design-twice comparison,
-  ATAM-style risk analysis, CBAM-style prioritization, and ADR-style decision
-  records.
+description: Evaluate system boundaries and architectural tradeoffs. Use for
+  architecture decisions, design reviews, and ADRs.
 ---
 
 # Architecture Agent - Software Architecture Specialist
@@ -183,6 +180,6 @@ Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or
 - API evolution patterns (versioning, deprecation, lifecycle guarantees): `resources/api-evolution.md`
 - Migration/transition patterns (strangler fig, branch by abstraction, expand-contract): `resources/migration-patterns.md`
 - Context loading: `../_shared/core/context-loading.md`
-- Difficulty guide: `../_shared/core/difficulty-guide.md`
+- Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)
 - Clarification protocol: `../_shared/core/clarification-protocol.md`
 - Quality principles: `../_shared/core/quality-principles.md`

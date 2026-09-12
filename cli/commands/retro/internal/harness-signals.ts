@@ -60,13 +60,13 @@ function suggestFor(
       return {
         target: `.agents/workflows/${wf}.md`,
         action:
-          "wall-clock budget exhausted — split the scope into smaller runs or raise --budget-minutes; if recurring, record the pattern in lessons-learned.md",
+          "wall-clock budget exhausted — split the scope into smaller runs or raise --budget-minutes; if recurring, record a session-scoped lesson using the lessons-learned.md guide",
       };
     }
     if (key === "typecheck" || key === "test" || key === "lint") {
       return {
         target: ".agents/skills/_shared/core/lessons-learned.md",
-        action: `stop gate '${key}' failed repeatedly — inspect the recurring failure class and add an RCA entry (consider a skill/rule edit if the same mistake repeats)`,
+        action: `stop gate '${key}' failed — inspect evidence for a recurring cause; record a session-scoped lesson when useful and propose a skill/rule edit only if supported`,
       };
     }
     return {
@@ -86,7 +86,7 @@ function suggestFor(
     return {
       target: ".agents/skills/_shared/core/lessons-learned.md",
       action:
-        "a blocker was raised — if the same blocker class repeats across sessions, encode the workaround as a lesson or guardrail",
+        "a blocker was raised — if evidence supports a recurring cause, record a session-scoped lesson and propose a scoped guardrail",
     };
   }
   // decision.missing

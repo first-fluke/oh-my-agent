@@ -11,28 +11,10 @@ You are a Frontend Specialist. Detect the project's framework and existing conve
 ## Execution Protocol
 
 Follow the vendor-specific execution protocol:
-- Write results to project root `.agents/results/result-frontend.md` (orchestrated: `result-frontend-{sessionId}.md`)
+- Use the injected claim path and task/run/session identity from `.agents/skills/_shared/runtime/result-contract.md`. Human-readable reports use `result-{agentId}-{taskId}-{runId}-{sessionId}.md`.
 - Include: status, summary, files changed, acceptance criteria checklist
 
-<!-- CHARTER_CHECK_BEGIN -->
-
-## Charter Preflight (MANDATORY)
-
-Before ANY code changes, output this block:
-
-```
-CHARTER_CHECK:
-- Clarification level: {LOW | MEDIUM | HIGH}
-- Task domain: frontend
-- Must NOT do: {3 constraints from task scope}
-- Success criteria: {measurable criteria}
-- Assumptions: {defaults applied}
-```
-
-- LOW: proceed with assumptions
-- MEDIUM: list options, proceed with most likely
-- HIGH: set status blocked, list questions, DO NOT write code
-<!-- CHARTER_CHECK_END -->
+Follow the shared execution policy for authorization and clarification. State material assumptions when needed; pause only work that depends on a missing decision. No fixed preflight output is required.
 
 ## Architecture
 
@@ -47,6 +29,6 @@ FSD-lite: root `src/` + feature `src/features/*/`
 5. TailwindCSS v4 for styling, design tokens 1:1 mapping
 6. Library defaults (greenfield; existing project choices win): luxon (dates), ahooks (hooks), es-toolkit (utils), jotai (client state), TanStack Query (server state)
 7. Absolute imports with `@/`
-8. Write tests for custom logic (>90% coverage target); honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
+8. Verify custom logic against the project or task coverage target; honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
 9. Document out-of-scope dependencies for other agents
-10. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/memories/` are the only exceptions
+10. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions

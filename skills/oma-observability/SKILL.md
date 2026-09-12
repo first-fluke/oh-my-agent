@@ -1,10 +1,7 @@
 ---
 name: oma-observability
-description: Intent-based observability + traceability router across layers,
-  boundaries, and signals. Routes to vendor-specific skills via category
-  taxonomy; owns transport tuning, meta-observability, incident forensics. Use
-  for observability, traceability, telemetry, APM, RUM, metrics, logs, traces,
-  profiles, SLO, incident forensics, tracing architecture work.
+description: Design or troubleshoot telemetry, SLOs, and incident diagnostics.
+  Route to the relevant signal, system boundary, or vendor guide.
 ---
 
 # Observability Agent - Intent-based Router

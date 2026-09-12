@@ -1,9 +1,7 @@
 ---
 name: oma-hwp
-description: Convert HWP / HWPX / HWPML files to Markdown using kordoc. Extracts
-  text, headings, tables, lists, images, footnotes, and hyperlinks. Use for
-  Korean word processor files (Hangul), government documents, and AI-ready data
-  preparation.
+description: Convert Hangul HWP, HWPX, or HWPML documents to Markdown with
+  kordoc. Use for text, table, and image extraction from these formats.
 ---
 
 # HWP Skill - HWP / HWPX / HWPML to Markdown Conversion

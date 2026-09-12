@@ -280,7 +280,7 @@ Deterministic SLM execution is therefore a separate, optional product direction 
 ## Why oh-my-agent?
 
 - **Role-based** — agents modeled like a real engineering team, not a pile of prompts
-- **Token-efficient** — skills load in two layers, so a 5-agent session holds ~17-19K tokens of skill context on ordinary tasks instead of the 72K it would take to load every resource ([measured, with the script](./web/docs/core-concepts/skills.md#token-savings-math))
+- **Conditional context** — dispatch loads the owning skill and defers supporting references until the task needs them. File-size scenarios and runtime loading are reported separately ([measurement guidance](./web/docs/core-concepts/skills.md#token-savings-math)).
 - **Recoverable** — after 2 failed retries, `orchestrate` spawns hypothesis variants in parallel and keeps the highest-scoring result instead of retrying a wrong approach forever
 - **Monorepo-aware** — `detectWorkspace` reads pnpm / nx / turbo / lerna and routes each agent to its workspace
 - **Multi-vendor** — mix Antigravity, Claude, Codex, Cursor, Kiro, and Qwen per agent type
