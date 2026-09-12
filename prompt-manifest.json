@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.7.12",
-  "releaseDate": "2026-09-12T07:31:40.322Z",
+  "releaseDate": "2026-09-12T12:38:18.155Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -441,8 +441,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/code-intelligence.md",
-      "sha256": "2b59b9f85c714a219b4596d98b24220df198493399d487a9ede074493434172b",
-      "size": 1354
+      "sha256": "955a666ae618c92211ee877792b75eb55439968d60d4e44730a4961f555130dd",
+      "size": 1545
     },
     {
       "path": ".agents/skills/_shared/core/common-checklist.md",
