@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { loadProviders } from "../../utils/providers.js";
 import {
   applyCodexSettings,
   needsCodexSettingsUpdate,
@@ -27,6 +28,8 @@ export const migrateCodexQwenSerena: Migration = {
   name: "007-codex-qwen-serena",
   up(cwd: string, ctx?: MigrationContext): string[] {
     const actions: string[] = [];
+
+    if (loadProviders(cwd).code_intelligence !== "serena") return actions;
 
     const qwenSettingsPath = join(cwd, ".qwen", "settings.json");
     if (allowsVendor(ctx, "qwen") && existsSync(qwenSettingsPath)) {

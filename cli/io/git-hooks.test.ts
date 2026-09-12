@@ -155,6 +155,22 @@ describe("ensureCoAuthorGuardHook", () => {
     );
   });
 
+  it("accepts an absolute core.hooksPath pointing at the oma hooks directory", () => {
+    const repo = makeRepo();
+    writeConfig(repo, { enabled: true, email: "bot@example.com" });
+    execFileSync(
+      "git",
+      ["config", "core.hooksPath", join(repo, OMA_HOOKS_DIR)],
+      {
+        cwd: repo,
+      },
+    );
+
+    const result = ensureCoAuthorGuardHook(repo);
+
+    expect(result.warning).toBeUndefined();
+  });
+
   it("warns instead of hijacking a core.hooksPath owned by another tool", () => {
     const repo = makeRepo();
     writeConfig(repo, { enabled: true, email: "bot@example.com" });

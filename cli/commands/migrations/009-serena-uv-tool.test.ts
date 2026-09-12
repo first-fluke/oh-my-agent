@@ -21,6 +21,22 @@ describe("migrateSerenaUvTool (009)", () => {
     tempRoots.length = 0;
   });
 
+  it("does not register Serena in a Claude MCP file that has no Serena entry", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-migrate-009-"));
+    tempRoots.push(root);
+    writeFileSync(
+      join(root, ".mcp.json"),
+      `${JSON.stringify({ mcpServers: { context7: { url: "https://example.com" } } }, null, 2)}\n`,
+    );
+
+    const actions = migrateSerenaUvTool.up(root, { vendors: ["claude"] });
+
+    expect(actions).toEqual([]);
+    expect(readFileSync(join(root, ".mcp.json"), "utf-8")).not.toContain(
+      "serena",
+    );
+  });
+
   it("rewrites legacy uvx --from git+ serena entries to direct serena command across vendors", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-migrate-009-"));
     tempRoots.push(root);

@@ -281,7 +281,7 @@ export function ensureCoAuthorGuardHook(repoRoot: string): CoAuthorGuardResult {
     } else if (!setGitConfig(repoRoot, "core.hooksPath", OMA_HOOKS_DIR)) {
       warning = `Could not set core.hooksPath to ${OMA_HOOKS_DIR}.`;
     }
-  } else if (configured !== OMA_HOOKS_DIR) {
+  } else if (resolve(repoRoot, configured) !== hooksDir) {
     // husky points core.hooksPath at `.husky/_`, a directory of generated shims
     // that it rewrites on install. The hook a user edits lives one level up, so
     // naming the shim here would send them to a file their next `husky` run

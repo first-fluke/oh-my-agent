@@ -89,6 +89,23 @@ export {
 export type { UpdateOptions } from "./types.js";
 export { resolveUpdateVendors } from "./vendors.js";
 
+const UPDATE_COPY_EXCLUSIONS = [
+  "/.agents/skills/_version.json",
+  "/.agents/skills/oma-video/config/video-config.yaml",
+  "/.agents/skills/oma-image/config/image-config.yaml",
+] as const;
+
+export function shouldCopyProjectAsset(src: string): boolean {
+  const normalized = src.replace(/\\/g, "/");
+  return (
+    !normalized.includes(".agents/eval") &&
+    !LOCAL_CONFIG_NAMES.some((name) =>
+      normalized.endsWith(`/.agents/${name}`),
+    ) &&
+    !UPDATE_COPY_EXCLUSIONS.some((suffix) => normalized.endsWith(suffix))
+  );
+}
+
 export async function update(options: UpdateOptions = {}): Promise<void> {
   const {
     force = false,
@@ -264,15 +281,7 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         cpSync(join(repoDir, ".agents"), join(cwd, ".agents"), {
           recursive: true,
           force: true,
-          filter: (src) => {
-            const normalized = src.replace(/\\/g, "/");
-            return (
-              !normalized.includes(".agents/eval") &&
-              !LOCAL_CONFIG_NAMES.some((name) =>
-                normalized.endsWith(`/.agents/${name}`),
-              )
-            );
-          },
+          filter: shouldCopyProjectAsset,
         });
 
         const evalDir = join(cwd, ".agents", "eval");

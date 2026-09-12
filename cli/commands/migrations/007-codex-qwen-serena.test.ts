@@ -101,4 +101,22 @@ describe("migrateCodexQwenSerena (007) — vendor gating", () => {
     expect(first).toHaveLength(1);
     expect(second).toEqual([]);
   });
+
+  it("does not register Serena when another code intelligence provider is selected", () => {
+    const codex = seedCodex();
+    const qwen = seedQwen();
+    mkdirSync(join(cwd, ".agents"), { recursive: true });
+    writeFileSync(
+      join(cwd, ".agents", "oma-config.yaml"),
+      "providers:\n  code_intelligence: gortex\n",
+    );
+
+    const actions = migrateCodexQwenSerena.up(cwd, {
+      vendors: ["codex", "qwen"],
+    });
+
+    expect(actions).toEqual([]);
+    expect(readFileSync(codex, "utf-8")).toBe(FOREIGN_CODEX_TOML);
+    expect(readFileSync(qwen, "utf-8")).not.toContain("serena");
+  });
 });

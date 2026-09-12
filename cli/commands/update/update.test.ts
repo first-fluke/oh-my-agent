@@ -1,4 +1,5 @@
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -21,7 +22,108 @@ import {
   collectAgentRequiredSkills,
   resolveUpdateVendors,
   selectSkillsToPrune,
+  shouldCopyProjectAsset,
 } from "../update/run.js";
+
+describe("project asset copy filter", () => {
+  it.each([
+    "/tmp/release/.agents/skills/_version.json",
+    "/tmp/release/.agents/skills/oma-video/config/video-config.yaml",
+    "/tmp/release/.agents/skills/oma-image/config/image-config.yaml",
+  ])("does not recreate migrated state from %s", (path) => {
+    expect(shouldCopyProjectAsset(path)).toBe(false);
+  });
+
+  it("copies ordinary managed assets", () => {
+    expect(
+      shouldCopyProjectAsset("/tmp/release/.agents/skills/oma-video/SKILL.md"),
+    ).toBe(true);
+  });
+
+  it("preserves install metadata and does not recreate retired configs", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-update-copy-target-"));
+    const release = mkdtempSync(join(tmpdir(), "oma-update-copy-release-"));
+
+    try {
+      mkdirSync(join(root, ".agents", "skills"), { recursive: true });
+      writeFileSync(
+        join(root, ".agents", "skills", "_version.json"),
+        `${JSON.stringify({ version: "14.7.11", schemaVersion: 2, mode: "project" })}\n`,
+      );
+
+      mkdirSync(join(release, ".agents", "skills", "oma-video", "config"), {
+        recursive: true,
+      });
+      mkdirSync(join(release, ".agents", "skills", "oma-image", "config"), {
+        recursive: true,
+      });
+      writeFileSync(
+        join(release, ".agents", "skills", "_version.json"),
+        '{"version":"14.7.11"}\n',
+      );
+      writeFileSync(
+        join(
+          release,
+          ".agents",
+          "skills",
+          "oma-video",
+          "config",
+          "video-config.yaml",
+        ),
+        "legacy: true\n",
+      );
+      writeFileSync(
+        join(
+          release,
+          ".agents",
+          "skills",
+          "oma-image",
+          "config",
+          "image-config.yaml",
+        ),
+        "legacy: true\n",
+      );
+
+      cpSync(join(release, ".agents"), join(root, ".agents"), {
+        recursive: true,
+        force: true,
+        filter: shouldCopyProjectAsset,
+      });
+
+      const metadata = JSON.parse(
+        readFileSync(join(root, ".agents", "skills", "_version.json"), "utf-8"),
+      );
+      expect(metadata).toMatchObject({ schemaVersion: 2, mode: "project" });
+      expect(
+        existsSync(
+          join(
+            root,
+            ".agents",
+            "skills",
+            "oma-video",
+            "config",
+            "video-config.yaml",
+          ),
+        ),
+      ).toBe(false);
+      expect(
+        existsSync(
+          join(
+            root,
+            ".agents",
+            "skills",
+            "oma-image",
+            "config",
+            "image-config.yaml",
+          ),
+        ),
+      ).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+      rmSync(release, { recursive: true, force: true });
+    }
+  });
+});
 
 describe("whitelist-based skill filtering", () => {
   it("getAllSkills should return only registered skills", () => {

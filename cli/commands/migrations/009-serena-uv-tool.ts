@@ -272,7 +272,14 @@ export const migrateSerenaUvTool: Migration = {
       } catch {
         claudeMcp = {};
       }
-      if (needsClaudeMcpUpdate(claudeMcp)) {
+      const claudeServers = isRecord(claudeMcp)
+        ? claudeMcp.mcpServers
+        : undefined;
+      if (
+        isRecord(claudeServers) &&
+        isRecord(claudeServers.serena) &&
+        needsClaudeMcpUpdate(claudeMcp)
+      ) {
         writeFileSync(
           claudeMcpPath,
           `${JSON.stringify(applyClaudeMcp(claudeMcp), null, 2)}\n`,
