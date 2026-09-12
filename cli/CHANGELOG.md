@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.7.12](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.11...cli-v14.7.12) (2026-09-12)
+
+
+### Bug Fixes
+
+* **update:** stop recurring migration and guard notices ([9c9f926](https://github.com/first-fluke/oh-my-agent/commit/9c9f92647a5f681c4de5aaf2ce82d7c94d34dc13))
+
 ## [14.7.11](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.10...cli-v14.7.11) (2026-09-12)
 
 
