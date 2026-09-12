@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.3.6...web-v6.4.0) (2026-09-12)
+
+
+### Features
+
+* **providers:** register gortex project and excludes on install/update ([0963c30](https://github.com/first-fluke/oh-my-agent/commit/0963c307ecd9878ba5f97fb6051dcbe398024fdf))
+
 ## [6.3.6](https://github.com/first-fluke/oh-my-agent/compare/web-v6.3.5...web-v6.3.6) (2026-09-12)
 
 
