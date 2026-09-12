@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.12...cli-v14.8.0) (2026-09-12)
+
+
+### Features
+
+* **providers:** register gortex project and excludes on install/update ([0963c30](https://github.com/first-fluke/oh-my-agent/commit/0963c307ecd9878ba5f97fb6051dcbe398024fdf))
+
 ## [14.7.12](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.11...cli-v14.7.12) (2026-09-12)
 
 
