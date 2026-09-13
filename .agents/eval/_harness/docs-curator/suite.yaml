@@ -1,0 +1,67 @@
+schema_version: 2
+id: docs-curator-smoke
+agent: docs-curator
+tasks:
+  - id: stale-api-doc
+    partition: validation
+    prompt: Update docs/api.md so it matches the exports in src/session.ts. Edit the file directly.
+    workspace: fixtures/stale-api-doc
+    checks:
+      - type: file_contains
+        path: docs/api.md
+        value: openSession
+      - type: file_not_contains
+        path: docs/api.md
+        value: createSession
+  - id: missing-cache-doc
+    partition: validation
+    prompt: docs/cache.md is missing an export from src/cache.ts. Update the doc to cover it. Edit the file directly.
+    workspace: fixtures/missing-cache-doc
+    checks:
+      - type: file_contains
+        path: docs/cache.md
+        value: invalidateCache
+  - id: renamed-cli-flag
+    partition: validation
+    prompt: docs/cli.md documents a flag that src/cli.ts no longer accepts. Fix the doc. Edit the file directly.
+    workspace: fixtures/renamed-cli-flag
+    checks:
+      - type: file_contains
+        path: docs/cli.md
+        value: "--quick"
+      - type: file_not_contains
+        path: docs/cli.md
+        value: "--fast"
+  - id: wrong-default-port
+    partition: validation
+    prompt: docs/config.md states a default that disagrees with src/config.ts. Correct the doc. Edit the file directly.
+    workspace: fixtures/wrong-default-port
+    checks:
+      - type: file_contains
+        path: docs/config.md
+        value: "8080"
+      - type: file_not_contains
+        path: docs/config.md
+        value: "3000"
+  - id: removed-helper
+    partition: validation
+    prompt: docs/utils.md documents a function that no longer exists in src/utils.ts. Remove the stale entry. Edit the file directly.
+    workspace: fixtures/removed-helper
+    checks:
+      - type: file_not_contains
+        path: docs/utils.md
+        value: legacyFormat
+      - type: file_contains
+        path: docs/utils.md
+        value: formatValue
+  - id: changelog-entry
+    partition: final-test
+    prompt: Add the missing changelog entry for the version in src/package.json, describing the change in src/index.ts. Edit docs/CHANGELOG.md directly.
+    workspace: fixtures/changelog-entry
+    checks:
+      - type: file_contains
+        path: docs/CHANGELOG.md
+        value: "1.4.0"
+      - type: file_contains
+        path: docs/CHANGELOG.md
+        value: retr
