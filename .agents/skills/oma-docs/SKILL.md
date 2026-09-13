@@ -41,7 +41,7 @@ The `oma docs` CLI, Git for diff-based work, and repository docs. `lychee` is op
 ### Failure and recovery
 | Failure | Recovery |
 |---|---|
-| Missing CLI | Report unavailable automated checks; continue useful scoped inspection without presenting it as a CLI verification |
+| Missing CLI | State up front that the automated check is unavailable, then inspect manually anyway: list the target markdown files, extract `[text](path)`, `![alt](path)`, and `href`/`src` targets, resolve each relative to its containing file, and report which resolved paths are missing. Skip http(s) URLs and note them as unverified scope. Label the result "manual inspection — `oma docs verify` did not run"; never present it as CLI output and never make installing the CLI a prerequisite |
 | Missing lychee or incomplete URL scan | Report core results and the unverified URL scope |
 | One document cannot be parsed | Record the skipped file and continue other documents |
 | Patch does not apply | Re-read the affected current content and make the equivalent authorized correction |
