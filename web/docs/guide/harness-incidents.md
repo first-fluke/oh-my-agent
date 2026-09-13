@@ -64,6 +64,28 @@ The captured manifest lives at `.agents/results/incidents/<id>/incident.json`. I
 
 The optional `cause` object has `category`, `hypothesis`, `confidence`, and `evidence`. Categories are `model`, `tool`, `config`, `context`, `application`, `evaluator`, and `unknown`. Omission leaves the cause `unknown`.
 
+## Promote to a skill fixture
+
+```bash
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] --json
+```
+
+A captured incident becomes a regression fixture for the skill the failing agent exercised, so `oma skill optimize` can repair the skill against it. The skill is the first `skills:` entry of the agent definition under `.agents/agents/<agent>.md`, else the installed skill named `oma-<agent>`; `--skill` overrides. The fixture is written to `.agents/eval/<skill>/incident-<id>.yaml` with `group: incident-<id>` so it never straddles the train/validation/test split, and the promotion is recorded next to the incident as `promotion.json`. An incident is promoted once.
+
+The checker comes from the acceptance checks. When every check is `output_contains`, the fixture is a deterministic `assert`. Otherwise the checks cannot run in a skill evaluation (there are no files or commands), so `--draft` asks the opt-agent for a judge rubric that starts with `PASS only if` and names the observed failure. Either way the fixture is admitted only when the recorded failing output fails it: an assert the observed output already satisfies, or a drafted rubric the judge passes on that output, is refused because it is not a regression case. An incident without observed output cannot be validated and needs `--force`, which is recorded as a limitation.
+
+## Close the loop
+
+```bash
+oma harness feedback                 # promote every unpromoted incident, report what changed
+oma harness feedback --live          # also run one optimization epoch per affected skill (dry-run)
+oma harness feedback --apply --json  # write edits that pass every gate
+```
+
+`feedback` is the deployment feedback loop in one command: every captured incident without a fixture is promoted (drafting rubrics when needed), affected skills are grouped, and with `--live` each is optimized once against its enlarged suite under the normal gates (held-in/held-out acceptance, confirmed negative transfer, runner-owned final test). The report under `.agents/results/feedback/feedback-<ts>.json` lists promotions, skipped incidents with reasons, and each skill's outcome with the diff, so the chain from an observed failure to a candidate edit is one auditable record. Run it after failed agent runs have been captured, from a scheduler or a post-run hook.
+
+What it does not do yet: failed runs under `.agents/state/agent-runs/` are not captured automatically. They lack the agent's output, and `expected_checks` remain a human decision; `incident scan` lists them and `--skeleton` drafts the specification.
+
 ## Export and evaluate
 
 ```bash

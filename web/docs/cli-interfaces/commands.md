@@ -1978,6 +1978,24 @@ oma harness eval --suite harness-eval/suite.yaml --candidate candidate --mock --
 
 See the [Harness Evaluation guide](../guide/harness-eval.md) for the suite schema, supported checks, isolation model, and current limitations.
 
+### harness incident promote
+
+Turn a captured incident into a regression fixture for the skill the failing agent exercised.
+
+```
+oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
+```
+
+### harness feedback
+
+Promote every unpromoted incident and, with `--live` or `--apply`, optimize each affected skill against its enlarged suite.
+
+```
+oma harness feedback [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+```
+
+See the [Incident Regression Cases guide](../guide/harness-incidents.md).
+
 ---
 
 ### help

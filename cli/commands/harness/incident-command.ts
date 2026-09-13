@@ -8,12 +8,18 @@ import {
   runAction,
 } from "../../utils/cli-framework.js";
 import {
+  buildLiveFeedbackOptimizer,
+  renderFeedbackReport,
+  runHarnessFeedback,
+} from "./feedback.js";
+import {
   assertIncidentFixtureDependencies,
   captureHarnessIncident,
   exportHarnessIncident,
   type HarnessIncident,
   readHarnessIncident,
 } from "./incident.js";
+import { promoteHarnessIncident } from "./incident-promote.js";
 import { incidentSpecSkeleton, scanHarnessIncidents } from "./incident-scan.js";
 import { assertExistingPathInside } from "./paths.js";
 import { loadHarnessFixtureTranscripts } from "./replay.js";
@@ -195,6 +201,99 @@ export function registerHarnessIncidentCommands(harness: Command): void {
           console.log(
             "  Next: oma harness incident scan --skeleton <run-id> > incident.json, fill expected_checks, then oma harness incident capture --spec incident.json --run <run-id>",
           );
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+  addOutputOptions(
+    incident
+      .command("promote")
+      .argument("<id>", "Captured incident ID")
+      .option(
+        "--skill <id>",
+        "Skill the fixture belongs to (default: from the agent definition)",
+      )
+      .option(
+        "--draft",
+        "Draft a judge rubric with the opt-agent when checks are not output assertions",
+      )
+      .option(
+        "--force",
+        "Admit a fixture that cannot be validated against the observed output",
+      ),
+    "Output the promotion record as JSON",
+  ).action(
+    runAction(
+      async (id: string, raw: Record<string, unknown>) => {
+        const options = raw as {
+          skill?: string;
+          draft?: boolean;
+          force?: boolean;
+          json?: boolean;
+        };
+        const { runEvolutionPrompt } = await import(
+          "../skills/opt/execution.js"
+        );
+        const { buildJudgeDispatchFn } = await import("../skills/eval.js");
+        const { promotion } = await promoteHarnessIncident({
+          root: process.cwd(),
+          id,
+          skill: options.skill,
+          drafter: options.draft ? runEvolutionPrompt : undefined,
+          judge: options.draft ? buildJudgeDispatchFn() : undefined,
+          force: options.force,
+        });
+        print({ ...promotion }, resolveJsonMode(options));
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+  addOutputOptions(
+    harness
+      .command("feedback")
+      .description(
+        "Promote captured incidents to skill fixtures and optimize the affected skills",
+      )
+      .option(
+        "--live",
+        "Run the optimization loop for each affected skill (model calls)",
+      )
+      .option(
+        "--apply",
+        "Write accepted edits that pass every gate (implies --live)",
+      )
+      .option("--max-epochs <n>", "Optimization epochs per skill", parseInt, 1)
+      .option("--incident <ids...>", "Only these incident IDs"),
+    "Output the feedback report as JSON",
+  ).action(
+    runAction(
+      async (raw: Record<string, unknown>) => {
+        const options = raw as {
+          live?: boolean;
+          apply?: boolean;
+          maxEpochs?: number;
+          incident?: string[];
+          json?: boolean;
+        };
+        const json = resolveJsonMode(options);
+        const optimize = Boolean(options.live || options.apply);
+        const report = await runHarnessFeedback({
+          root: process.cwd(),
+          optimize,
+          optimizer: optimize
+            ? buildLiveFeedbackOptimizer({
+                apply: Boolean(options.apply),
+                maxEpochs: options.maxEpochs ?? 1,
+              })
+            : undefined,
+          incidentIds: options.incident,
+          onProgress: (message) => {
+            if (json) console.error(message);
+            else console.log(message);
+          },
+        });
+        if (json) console.log(JSON.stringify(report, null, 2));
+        else renderFeedbackReport(report);
       },
       { supportsJsonOutput: true },
     ),
