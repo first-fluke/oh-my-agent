@@ -245,20 +245,37 @@ export async function createSkillEvolutionRecorder(args: {
   sourceRuntime?: string;
   targetRuntime?: string;
   environmentHash?: string;
+  /** false: start from empty knowledge (memory ablation); events still record. */
+  recall?: boolean;
+  procedureHash?: string;
 }): Promise<SkillEvolutionRecorder> {
   const suiteHash = skillEvolutionSuiteHash(args.tasks);
   const sid = createSessionId();
-  const local = loadLocalSkillEvolutionKnowledge(
-    args.workspace,
-    args.skillId,
-    suiteHash,
-    {
-      sourceRuntime: args.sourceRuntime,
-      targetRuntime: args.targetRuntime,
-      environmentHash: args.environmentHash,
-    },
-  );
-  const knowledge = await enrichWithSemanticRecall(args.provider, local);
+  const recall = args.recall !== false;
+  const scope = {
+    sourceRuntime: args.sourceRuntime,
+    targetRuntime: args.targetRuntime,
+    environmentHash: args.environmentHash,
+  };
+  const local: SkillEvolutionKnowledge = recall
+    ? loadLocalSkillEvolutionKnowledge(
+        args.workspace,
+        args.skillId,
+        suiteHash,
+        scope,
+      )
+    : {
+        skillId: args.skillId,
+        suiteHash,
+        ...scope,
+        patterns: [],
+        rejectedEditKeys: [],
+        acceptedEditKeys: [],
+      };
+  const knowledge = recall
+    ? await enrichWithSemanticRecall(args.provider, local)
+    : local;
+  const memoryMode: "recall" | "none" = recall ? "recall" : "none";
   const artifactDir = agentsPathFromRoot(
     args.workspace,
     `${AGENTS_RESULTS_DIR}/skill-evolution/${args.skillId}`,
@@ -301,6 +318,8 @@ export async function createSkillEvolutionRecorder(args: {
   await emit("skill.evolution.started", {
     ...scopePayload,
     artifact: artifactRelative,
+    memory: memoryMode,
+    procedureHash: args.procedureHash,
     recalledPatterns: knowledge.patterns.length,
     recalledRejectedEdits: knowledge.rejectedEditKeys.length,
   });
@@ -377,6 +396,22 @@ export async function createSkillEvolutionRecorder(args: {
       );
     },
     async complete(result: SkillOptResult) {
+      appendFileSync(
+        artifactPath,
+        `${JSON.stringify({
+          type: "run-summary",
+          ts: new Date().toISOString(),
+          status: "completed",
+          memory: memoryMode,
+          procedureHash: args.procedureHash,
+          baselineLift: result.baselineLift,
+          finalLift: result.finalLift,
+          finalTestPassed: result.finalTest?.passed,
+          promotionEligible: result.promotion?.eligible,
+          applied: result.applied,
+        })}\n`,
+        "utf-8",
+      );
       await emit("skill.evolution.completed", {
         ...scopePayload,
         baselineLift: result.baselineLift,
@@ -397,6 +432,17 @@ export async function createSkillEvolutionRecorder(args: {
       });
     },
     async fail(error: unknown) {
+      appendFileSync(
+        artifactPath,
+        `${JSON.stringify({
+          type: "run-summary",
+          ts: new Date().toISOString(),
+          status: "failed",
+          memory: memoryMode,
+          procedureHash: args.procedureHash,
+        })}\n`,
+        "utf-8",
+      );
       await emit("skill.evolution.completed", {
         ...scopePayload,
         status: "failed",

@@ -48,6 +48,8 @@ export interface SkillPromotionRecord {
     sourceRuntime?: string;
     targetRuntime?: string;
     sessionId?: string;
+    procedureHash?: string;
+    memory?: "recall" | "none";
   };
   /** For a rollback: the apply record it reverses. */
   reverses?: string;

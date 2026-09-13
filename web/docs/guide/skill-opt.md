@@ -123,6 +123,26 @@ When you are satisfied with the proposed diff, re-run with `--apply`:
 oma skill optimize --skill oma-scholar --live --apply --yes
 ```
 
+### The procedure as an artifact
+
+The optimizer and maintainer prompts are the improvement procedure. They ship as built-in defaults and can be overridden by files under `.agents/eval/_evolution/` (preserved by `oma update`):
+
+| File | Role | Required placeholders |
+|---|---|---|
+| `optimizer.md` | Proposes SKILL.md edits from training evidence and persistent knowledge | `{{body}}`, `{{findings}}`, `{{editsPerEpoch}}` (also `{{knowledge}}`) |
+| `maintainer.md` | Consolidates evidence into reusable patterns | `{{evidence}}`, `{{priorFacts}}` (also `{{skillId}}`, `{{suiteHash}}`, `{{epoch}}`) |
+| `constitution.yaml` | Surfaces the loop must never write, which procedure parts a meta-optimization may change, and a dispatch budget | must list itself under `immutable` |
+
+`oma skill procedure` prints the active sources and hashes; `--export` writes the defaults for editing without overwriting existing files. A template that drops a required placeholder is refused rather than silently degraded. Every run records `procedure` (hash per part plus a combined hash) and `memory` in its result, its run summary, and the promotion lineage, so evidence produced under one procedure is never confused with another.
+
+The optimizer's reply is read leniently for formatting only: code fences and blank lines are ignored, but any content line that is not a valid `EDIT:` line (or a lone `NO_ACTION`) is a `parse-error`, and the diagnostic now includes the first offending line so the failure can be traced.
+
+### Memory ablation and long-run statistics
+
+`--memory none` starts a run from empty knowledge (no recalled patterns or gate history) while still recording it. Comparing runs under `--memory recall` (default) and `--memory none` at the same budget is the test of whether persistent knowledge helps; a claim that the loop learns from experience needs that comparison, not the presence of a memory.
+
+`oma skill evolution-stats --skill <id>` aggregates every recorded run for a skill from `.agents/results/skill-evolution/<id>/*.jsonl`: runs by status, proposals by gate outcome and the acceptance rate, verified improvements (final test passed and promotion eligible), applies and rollbacks, mean final lift, and the same figures split by memory mode and by procedure hash.
+
 ### Promotion lineage
 
 Every `--apply` write appends a record to `.agents/results/skill-evolution/<skill>/promotions.jsonl` and writes a reviewable unified diff to `promotions/<candidate-hash>.patch` beside it. The record names the parent and candidate body hashes, the installed path, the backup path, and the evidence behind the write: validation and final-test lifts, the promotion decision, the fixture suite hash, the evaluator protocol revision, and the source/target runtimes. `oma skill promotions --skill <id>` lists the log.

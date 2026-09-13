@@ -350,3 +350,73 @@ describe("skill evolution memory", () => {
     ).toEqual([]);
   });
 });
+
+describe("memory ablation", () => {
+  it("starts from empty knowledge with recall off while still recording the run", async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } =
+      await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { createNoneMemoryProvider } = await import(
+      "../../../state/memory-provider.js"
+    );
+    const workspace = mkdtempSync(join(tmpdir(), "oma-memory-ablation-"));
+    const tasks = [
+      {
+        id: "t1",
+        skill: "demo",
+        domain: "d",
+        prompt: "p",
+        checker: { type: "assert" as const, expect_contains: ["x"] },
+        weight: 1,
+      },
+    ];
+    const artifactDir = join(
+      workspace,
+      ".agents",
+      "results",
+      "skill-evolution",
+      "demo",
+    );
+    mkdirSync(artifactDir, { recursive: true });
+    const recorder = await createSkillEvolutionRecorder({
+      workspace,
+      skillId: "demo",
+      tasks,
+      provider: createNoneMemoryProvider(),
+      recall: false,
+      procedureHash: "proc-1",
+    });
+    expect(recorder.knowledge.patterns).toEqual([]);
+    expect(recorder.knowledge.rejectedEditKeys).toEqual([]);
+    await recorder.complete({
+      skill: "demo",
+      baselineLift: 0,
+      finalLift: 0.2,
+      epochs: [],
+      acceptedEdits: [],
+      rejectedCount: 0,
+      finalSkillMd: "",
+      diff: "",
+      applied: false,
+      promotion: { eligible: false, reasons: ["x"] },
+      finalTest: { baselineLift: 0, candidateLift: 0.1, passed: true },
+    });
+    const artifact = readdirSync(artifactDir).find((f) => f.endsWith(".jsonl"));
+    const lines = readFileSync(join(artifactDir, artifact ?? ""), "utf-8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line) as Record<string, unknown>);
+    expect(lines.at(-1)).toMatchObject({
+      type: "run-summary",
+      status: "completed",
+      memory: "none",
+      procedureHash: "proc-1",
+      finalLift: 0.2,
+      finalTestPassed: true,
+      promotionEligible: false,
+      applied: false,
+    });
+    writeFileSync(join(workspace, "keep"), "");
+  });
+});

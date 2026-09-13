@@ -13,6 +13,10 @@ import {
 } from "./eval.js";
 import { readSkillPromotions, rollbackSkillPromotion } from "./opt/lineage.js";
 import {
+  optimizerContentLines,
+  optimizerResponseExcerpt,
+} from "./opt/llm-optimizer.js";
+import {
   applyEdit,
   backupSkillMd,
   confirmLiveRun,
@@ -2501,5 +2505,19 @@ describe("runSkillsOpt — promotion lineage on --apply", () => {
     expect(rollback.record.action).toBe("rollback");
     expect(readFileSync(skillMdPath, "utf-8")).toBe(originalContent);
     expect(readSkillPromotions(tmpDir, skillId)).toHaveLength(2);
+  });
+});
+
+describe("optimizer response parsing tolerance", () => {
+  it("ignores code fences and blank lines but reports the first offending line", () => {
+    expect(
+      optimizerContentLines(
+        '```json\nEDIT: {"op":"add","anchor":"a","after":"b"}\n\n```\n',
+      ),
+    ).toEqual(['EDIT: {"op":"add","anchor":"a","after":"b"}']);
+    expect(optimizerContentLines("\n  NO_ACTION \n")).toEqual(["NO_ACTION"]);
+    expect(optimizerResponseExcerpt("Here are my edits:\n\nEDIT: {}\n")).toBe(
+      "Here are my edits: EDIT: {}",
+    );
   });
 });

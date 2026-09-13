@@ -31,6 +31,7 @@ import {
   buildHeuristicMaintainerFn,
   buildLlmMaintainerFn,
 } from "./opt/maintainer.js";
+import { loadEvolutionProcedure } from "./opt/procedure.js";
 import { renderSkillOptResult, serializeSkillOptResult } from "./opt/render.js";
 import {
   assertSafeSkillId,
@@ -237,13 +238,22 @@ export async function runSkillsOpt(
     }
   }
 
+  // The procedure (optimizer/maintainer prompts, constitution) is an artifact
+  // with a hash, so every run records what shaped its proposals.
+  const procedure = loadEvolutionProcedure(workspace);
+  const memoryMode: "recall" | "none" =
+    options.memory === "none" ? "none" : "recall";
+
   // Resolve injectable functions (for test / mock determinism)
   const optimizerFn: OptimizerFn =
-    options._optimizerFn ?? buildLlmOptimizerFn(editsPerEpoch);
+    options._optimizerFn ??
+    buildLlmOptimizerFn(editsPerEpoch, procedure.optimizer.template);
   const scoringFn: ScoringFn = options._scoringFn ?? scoreSkillBody;
   const maintainerFn =
     options._maintainerFn ??
-    (isLive ? buildLlmMaintainerFn() : buildHeuristicMaintainerFn());
+    (isLive
+      ? buildLlmMaintainerFn(procedure.maintainer.template)
+      : buildHeuristicMaintainerFn());
 
   // Load original SKILL.md body (for diff and baseline).
   // When _skillMdPath is injected (tests), read from there; otherwise use
@@ -277,28 +287,51 @@ export async function runSkillsOpt(
           sourceRuntime: resolveVendor("opt-agent").vendor,
           targetRuntime: resolveVendor("eval-agent").vendor,
           environmentHash: skillEvolutionEnvironmentHash(mode),
+          recall: memoryMode === "recall",
+          procedureHash: procedure.procedureHash,
         })
       : undefined);
 
   // Run the optimization epoch loop
   let loopResult: SkillOptResult;
+  const provenance = {
+    procedure: {
+      hash: procedure.procedureHash,
+      optimizer: {
+        source: procedure.optimizer.source,
+        hash: procedure.optimizer.hash,
+      },
+      maintainer: {
+        source: procedure.maintainer.source,
+        hash: procedure.maintainer.hash,
+      },
+      constitution: {
+        source: procedure.constitution.source,
+        hash: procedure.constitution.hash,
+      },
+    },
+    memory: memoryMode,
+  };
   try {
-    loopResult = await runOptEpochLoop({
-      skillId,
-      originalBody,
-      trainTasks: train,
-      valTasks: val,
-      testTasks: test,
-      taskDir,
-      mode,
-      maxEpochs,
-      lrMaxChars,
-      optimizerFn,
-      scoringFn,
-      maintainerFn,
-      evolutionRecorder,
-      workspace,
-    });
+    loopResult = {
+      ...(await runOptEpochLoop({
+        skillId,
+        originalBody,
+        trainTasks: train,
+        valTasks: val,
+        testTasks: test,
+        taskDir,
+        mode,
+        maxEpochs,
+        lrMaxChars,
+        optimizerFn,
+        scoringFn,
+        maintainerFn,
+        evolutionRecorder,
+        workspace,
+      })),
+      ...provenance,
+    };
   } catch (error) {
     await evolutionRecorder?.fail?.(error);
     throw error;
@@ -534,6 +567,8 @@ export async function runSkillsOpt(
         protocolRevision: SKILL_EVAL_PROTOCOL_REVISION,
         sourceRuntime: evolutionRecorder?.knowledge.sourceRuntime,
         targetRuntime: evolutionRecorder?.knowledge.targetRuntime,
+        procedureHash: procedure.procedureHash,
+        memory: memoryMode,
       },
     });
 

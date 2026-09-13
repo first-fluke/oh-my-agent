@@ -9,6 +9,11 @@ import { runSkillsEval } from "./eval.js";
 import { runSkillsLint } from "./lint.js";
 import { readSkillPromotions, rollbackSkillPromotion } from "./opt/lineage.js";
 import {
+  exportEvolutionProcedure,
+  loadEvolutionProcedure,
+} from "./opt/procedure.js";
+import { computeEvolutionStats, renderEvolutionStats } from "./opt/stats.js";
+import {
   OPT_EDITS_PER_EPOCH,
   OPT_LR_MAX_CHARS,
   OPT_MAX_EPOCHS,
@@ -173,7 +178,12 @@ export function registerSkillsCommand(program: Command): void {
         parseInt,
         OPT_LR_MAX_CHARS,
       )
-      .option("--yes", "Skip cost-preview confirmation (only with --live)"),
+      .option("--yes", "Skip cost-preview confirmation (only with --live)")
+      .option(
+        "--memory <mode>",
+        "recall (default) reuses persistent evolution knowledge; none starts from an empty memory for a same-budget comparison",
+        "recall",
+      ),
     "Output as JSON for CI/CD",
   ).action(
     runAction(
@@ -182,6 +192,7 @@ export function registerSkillsCommand(program: Command): void {
           json?: boolean;
           output?: string;
           skill?: string;
+          memory?: string;
           dryRun?: boolean;
           apply?: boolean;
           mock?: boolean;
@@ -201,8 +212,109 @@ export function registerSkillsCommand(program: Command): void {
           editsPerEpoch: opts.editsPerEpoch,
           lr: opts.lr,
           yes: opts.yes,
+          memory: opts.memory === "none" ? "none" : "recall",
         };
+        if (opts.memory && opts.memory !== "none" && opts.memory !== "recall")
+          throw new Error("--memory must be recall or none");
         await runSkillsOpt(resolveJsonMode(opts), optOptions);
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    skills
+      .command("procedure")
+      .description(
+        "Show the evolution procedure (optimizer/maintainer prompts, constitution) and its hashes; --export writes editable defaults",
+      )
+      .option(
+        "--export",
+        "Write default procedure files under .agents/eval/_evolution/ (existing files are kept)",
+      ),
+    "Output as JSON",
+  ).action(
+    runAction(
+      async (options) => {
+        const opts = options as {
+          json?: boolean;
+          output?: string;
+          export?: boolean;
+        };
+        const workspace = process.cwd();
+        const exported = opts.export
+          ? exportEvolutionProcedure(workspace)
+          : undefined;
+        const procedure = loadEvolutionProcedure(workspace);
+        const summary = {
+          procedureHash: procedure.procedureHash,
+          optimizer: {
+            source: procedure.optimizer.source,
+            hash: procedure.optimizer.hash,
+          },
+          maintainer: {
+            source: procedure.maintainer.source,
+            hash: procedure.maintainer.hash,
+          },
+          constitution: {
+            source: procedure.constitution.source,
+            hash: procedure.constitution.hash,
+            immutable: procedure.constitution.immutable,
+            metaTargets: procedure.constitution.meta_targets,
+            budget: procedure.constitution.budget,
+          },
+          ...(exported ? { exported } : {}),
+        };
+        if (resolveJsonMode(opts)) {
+          console.log(JSON.stringify(summary, null, 2));
+          return;
+        }
+        console.log(`procedure: ${summary.procedureHash}`);
+        console.log(
+          `  optimizer: ${summary.optimizer.source} (${summary.optimizer.hash})`,
+        );
+        console.log(
+          `  maintainer: ${summary.maintainer.source} (${summary.maintainer.hash})`,
+        );
+        console.log(
+          `  constitution: ${summary.constitution.source} (${summary.constitution.hash})`,
+        );
+        for (const path of summary.constitution.immutable)
+          console.log(`    immutable: ${path}`);
+        console.log(
+          `    meta targets: ${summary.constitution.metaTargets.join(", ")}`,
+        );
+        if (exported) {
+          for (const path of exported.written) console.log(`  wrote ${path}`);
+          for (const path of exported.kept) console.log(`  kept ${path}`);
+        }
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    skills
+      .command("evolution-stats")
+      .description(
+        "Aggregate recorded optimization runs: proposals, acceptance, verified improvements, rollbacks, by memory mode and procedure",
+      )
+      .requiredOption("--skill <id>", "Skill ID"),
+    "Output as JSON",
+  ).action(
+    runAction(
+      async (options) => {
+        const opts = options as {
+          json?: boolean;
+          output?: string;
+          skill: string;
+        };
+        const stats = computeEvolutionStats(process.cwd(), opts.skill);
+        if (resolveJsonMode(opts)) {
+          console.log(JSON.stringify(stats, null, 2));
+          return;
+        }
+        renderEvolutionStats(stats);
       },
       { supportsJsonOutput: true },
     ),

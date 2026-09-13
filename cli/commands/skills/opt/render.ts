@@ -19,6 +19,8 @@ export function serializeSkillOptResult(result: SkillOptResult): string {
       finalTest: result.finalTest,
       promotion: result.promotion,
       diagnostics: result.diagnostics,
+      procedure: result.procedure,
+      memory: result.memory,
       applied: result.applied,
       diff: result.diff,
     },
@@ -44,6 +46,11 @@ export function renderSkillOptResult(result: SkillOptResult): void {
   console.log(
     `  epochs: ${result.epochs.length}  acceptedEdits: ${result.acceptedEdits.length}  rejected: ${result.rejectedCount}`,
   );
+  if (result.procedure) {
+    console.log(
+      `  procedure: ${result.procedure.hash} (optimizer ${result.procedure.optimizer.source}, maintainer ${result.procedure.maintainer.source}, constitution ${result.procedure.constitution.source})  memory: ${result.memory ?? "recall"}`,
+    );
+  }
   if (result.evolution) {
     console.log(
       `  evolution: suite=${result.evolution.suiteHash} patterns=${result.evolution.persistentPatterns} rejectedHistory=${result.evolution.persistentRejectedEdits}`,

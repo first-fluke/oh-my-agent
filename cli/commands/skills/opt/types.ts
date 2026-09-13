@@ -130,6 +130,15 @@ export interface SkillOptResult {
     passed: boolean;
     blocker?: string;
   };
+  /** Which procedure files and constitution shaped this run. */
+  procedure?: {
+    hash: string;
+    optimizer: { source: string; hash: string };
+    maintainer: { source: string; hash: string };
+    constitution: { source: string; hash: string };
+  };
+  /** `recall` reuses persistent knowledge; `none` starts from an empty memory. */
+  memory?: "recall" | "none";
 }
 
 // --- Optimizer function type (T4) ---
@@ -178,6 +187,12 @@ export interface SkillsOptOptions {
   editsPerEpoch?: number;
   lr?: number;
   yes?: boolean;
+  /**
+   * `recall` (default) loads persistent patterns and past gate outcomes;
+   * `none` runs with an empty memory so the two can be compared under the
+   * same budget. Events and artifacts are recorded either way.
+   */
+  memory?: "recall" | "none";
   /** Override task directory (for testing). */
   _taskDir?: string;
   /** Override workspace root (for testing). */
