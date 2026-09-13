@@ -398,4 +398,3 @@ describe("inner-run cost summary", () => {
     ).toBe(40);
   });
 });
-
