@@ -18,6 +18,8 @@ export const COMMAND_PATHS: Record<string, string> = {
   "skills lint": "skill lint",
   "skills eval": "skill eval",
   "skills opt": "skill optimize",
+  "skills promotions": "skill promotions",
+  "skills rollback": "skill rollback",
   "slide new": "slide create",
   "slide viewer": "slide preview",
   "slide pdf": "slide export pdf",
