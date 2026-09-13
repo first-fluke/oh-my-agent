@@ -173,11 +173,14 @@ describe("WikiSkill epoch integration", () => {
     });
 
     expect(result.acceptedEdits).toEqual([edit]);
-    expect(result.finalTest).toEqual({
+    expect(result.finalTest).toMatchObject({
       baselineLift: 0,
       candidateLift: -0.2,
       passed: false,
     });
+    expect(result.finalTest?.findings?.map((f) => f.taskId)).toEqual(
+      result.finalTest?.findings?.map((f) => f.taskId).sort(),
+    );
     expect(optimizerTaskIds.flat().some((id) => id.startsWith("hidden"))).toBe(
       false,
     );

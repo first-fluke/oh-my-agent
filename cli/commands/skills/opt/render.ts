@@ -75,7 +75,10 @@ export function renderSkillOptResult(result: SkillOptResult): void {
   }
   if (result.finalTest) {
     console.log(
-      `  finalTest: ${result.finalTest.passed ? "pass" : "fail"} baseline=${result.finalTest.baselineLift.toFixed(4)} candidate=${result.finalTest.candidateLift.toFixed(4)}`,
+      `  finalTest: ${result.finalTest.passed ? "pass" : "fail"} baseline=${result.finalTest.baselineLift.toFixed(4)} candidate=${result.finalTest.candidateLift.toFixed(4)}` +
+        (result.finalTest.findings
+          ? `  [${result.finalTest.findings.map((f) => `${f.taskId} ${f.original}→${f.candidate}`).join(", ")}]`
+          : ""),
     );
   }
   if (result.diff) {

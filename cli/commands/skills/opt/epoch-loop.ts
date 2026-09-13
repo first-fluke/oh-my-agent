@@ -425,12 +425,10 @@ export async function runOptEpochLoop(options: {
         let reason: SkillProposalGateRecord["reason"];
         if (candidate.key === acceptedKey) reason = "accepted";
         else if (blocker) reason = blocker;
+        else if (candidate.deltaLift < 0 || candidate.deltaTrainLift < 0)
+          reason = "split-regression";
         else if (candidate.deltaLift <= 0 && candidate.deltaTrainLift <= 0)
           reason = "no-validation-lift";
-        else if (
-          !candidateAcceptable(candidate.deltaLift, candidate.deltaTrainLift)
-        )
-          reason = "split-regression";
         else reason = "not-best-candidate";
         const inconclusive =
           blocker !== undefined && blocker !== "negative-transfer";
@@ -547,11 +545,25 @@ export async function runOptEpochLoop(options: {
         const finalBlocker =
           evaluationBlocker(finalBaselineReport, mode) ??
           evaluationBlocker(finalCandidateReport, mode, true);
+        const candidateByTask = new Map(
+          finalCandidateReport.findings.map((finding) => [
+            finding.taskId,
+            finding.lift,
+          ]),
+        );
+        // The final test is frozen ground truth: the candidate must not lose
+        // there. The gain it was accepted for was already shown on the
+        // development splits, so a strict test gain is not required.
         finalTest = {
           baselineLift: finalTestBaseline,
           candidateLift: finalTestCandidate,
-          passed: finalTestCandidate > finalTestBaseline && !finalBlocker,
+          passed: finalTestCandidate >= finalTestBaseline && !finalBlocker,
           ...(finalBlocker ? { blocker: finalBlocker } : {}),
+          findings: finalBaselineReport.findings.map((finding) => ({
+            taskId: finding.taskId,
+            original: finding.lift,
+            candidate: candidateByTask.get(finding.taskId) ?? Number.NaN,
+          })),
         };
       }
     }

@@ -392,6 +392,9 @@ async function runSkillsOptInner(
         outcome: "rejected",
         reason: "final-test",
         deltaLift: finalDelta,
+        ...(loopResult.finalTest.findings
+          ? { finalTestFindings: loopResult.finalTest.findings }
+          : {}),
       });
     }
     finalResult = {

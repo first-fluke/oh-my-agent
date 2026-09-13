@@ -46,7 +46,7 @@ For each epoch (up to `--max-epochs`, default 8):
    - Re-score every task in the **held-out validation split** (with paired baseline/candidate comparisons on neighbor tasks) and every task in the **held-in training split** (no neighbor comparisons).
 5. **Accept the best valid candidate** by the held-in/held-out rule: the candidate loses nothing on either split (`Δval ≥ 0` and `Δtrain ≥ 0`) and gains on at least one of them. Candidates are ranked by `Δval + Δtrain`. A strict validation gain is not required, because a body that already passes every validation task can still be repaired on a training failure without losing held-out ground; the final test decides whether that repair generalizes. Task coverage must be complete, the nonempty negative-transfer sample must be fully measured, and no neighbor may show a confirmed regression at or below `NEG_TRANSFER_FAIL = -0.1`. In live runs a neighbor that regresses on its first paired comparison is re-measured once; the recorded delta is the mean of both comparisons, and only a reproduced regression (`confirmed: true`) rejects the candidate. Mock replays cannot re-measure, so a single-trial regression stands. Live reports must declare `isolation: "enforced"`. Proposal gate outcomes are recorded with `deltaLift` (validation), `deltaTrainLift`, and the neighbor deltas behind the verdict.
 6. **Early stop** after 2 consecutive epochs with no accepted edit (`OPT_EARLY_STOP_PATIENCE = 2`).
-7. **Run the runner-owned final test after evolution.** Both the original body and the validation winner must cover every final-test task. The candidate must improve final-test lift and pass another complete, candidate-specific negative-transfer check. Missing, incomplete, or failed final tests prevent promotion. Measured final failures remain audit records and do not become rejection knowledge for later optimization.
+7. **Run the runner-owned final test after evolution.** Both the original body and the validation winner must cover every final-test task. The candidate must not lose final-test lift (`candidateLift >= baselineLift`; the gain it was accepted for was already shown on the development splits, and a strict gain on a small frozen test would make most repairs unpromotable) and must pass another complete, candidate-specific negative-transfer check. `finalTest.findings` lists the per-task lift of the original body and the candidate so a failed test can be read as a real regression or a single noisy task. Missing, incomplete, or failed final tests prevent promotion. Measured final failures remain audit records and do not become rejection knowledge for later optimization.
 
 The optimizer works on an in-memory candidate copy during the loop.
 
@@ -162,7 +162,7 @@ Every `--apply` write appends a record to `.agents/results/skill-evolution/<skil
 
 `oma skill rollback --skill <id>` restores the body the most recent apply replaced. It refuses when the installed file no longer matches that apply's candidate (a later hand edit would be discarded), when the backup does not match the recorded parent, or when that apply was already rolled back; a successful rollback is appended to the same log with `reverses` pointing at the apply. For an OMA-owned skill the patch is the artifact to carry into the source repository or a user overlay, because `oma update` overwrites the installed copy; the record marks `omaOwned: true` so a later update is not mistaken for a regression.
 
-`--apply` requires a strictly positive validation improvement, `finalTest.passed: true`, and `promotion.eligible: true`. These gates require complete internal task coverage, a nonempty and fully measured candidate-specific negative-transfer sample, and enforced live isolation. A missing final test, incomplete measurements, or degraded compiler diagnostics prevent the write. A backup of the original `SKILL.md` is created before the atomic write, and the diff is printed for review.
+`--apply` requires at least one accepted edit with no validation loss, `finalTest.passed: true`, and `promotion.eligible: true`. These gates require complete internal task coverage, a nonempty and fully measured candidate-specific negative-transfer sample, and enforced live isolation. A missing final test, incomplete measurements, or degraded compiler diagnostics prevent the write. A backup of the original `SKILL.md` is created before the atomic write, and the diff is printed for review.
 
 Live evaluation can satisfy the isolation gate through the protected Claude or native Codex profile. Claude retains the HOME/target checks. Codex verifies that the ephemeral app-server thread has no instruction sources or tool environments before submitting the prompt. Other runtime profiles remain exploratory.
 
@@ -213,7 +213,16 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
   "applied": false,
   "diff": "--- a/SKILL.md\n+++ b/SKILL.md\n...",
   "_dryRun": true,
-  "finalTest": { "baselineLift": 0.0, "candidateLift": 0.3333, "passed": true },
+  "finalTest": {
+    "baselineLift": 0.0,
+    "candidateLift": 0.3333,
+    "passed": true,
+    "findings": [
+      { "taskId": "oma-scholar-doi-summary", "original": 0, "candidate": 1 },
+      { "taskId": "oma-scholar-citation-format", "original": 0, "candidate": 0 },
+      { "taskId": "oma-scholar-claim-check", "original": 0, "candidate": 0 }
+    ]
+  },
   "promotion": { "eligible": true, "reasons": [] },
   "diagnostics": [],
   "budget": { "limit": null, "used": 42 },

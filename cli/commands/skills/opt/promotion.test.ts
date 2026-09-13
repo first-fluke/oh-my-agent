@@ -316,6 +316,25 @@ describe("held-in/held-out acceptance", () => {
     });
   });
 
+  it("passes a final test the candidate holds and fails one it loses", async () => {
+    const held = await run(
+      splitScorer({ train: 0.5, validation: 0, final: 0 }),
+    );
+    expect(held.acceptedEdits).toEqual([edit]);
+    expect(held.finalTest).toMatchObject({
+      baselineLift: 0,
+      candidateLift: 0,
+      passed: true,
+    });
+    expect(held.promotion?.eligible).toBe(true);
+
+    const lost = await run(
+      splitScorer({ train: 0.5, validation: 0, final: -0.5 }),
+    );
+    expect(lost.finalTest).toMatchObject({ passed: false });
+    expect(lost.promotion?.reasons).toContain("final-test-failed");
+  });
+
   it("rejects a candidate that trades a training loss for a validation gain", async () => {
     const { records, recorder } = gateRecorder();
     const result = await run(

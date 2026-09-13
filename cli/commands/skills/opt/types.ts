@@ -94,6 +94,12 @@ export interface SkillProposalGateRecord {
   deltaLift: number;
   /** Held-in training delta against the current best body (candidates only). */
   deltaTrainLift?: number;
+  /** Final-test per-task lifts behind a final-test verdict. */
+  finalTestFindings?: Array<{
+    taskId: string;
+    original: number;
+    candidate: number;
+  }>;
   /** Paired neighbor deltas behind a negative-transfer verdict. */
   negativeTransfer?: Array<{
     taskId?: string;
@@ -149,6 +155,8 @@ export interface SkillOptResult {
     candidateLift: number;
     passed: boolean;
     blocker?: string;
+    /** Per-task lift of the original body and the candidate on the test split. */
+    findings?: Array<{ taskId: string; original: number; candidate: number }>;
   };
   /** Which procedure files and constitution shaped this run. */
   procedure?: {
