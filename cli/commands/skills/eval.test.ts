@@ -2057,7 +2057,7 @@ describe("candidate-specific negative transfer", () => {
     expect(scoreNeighborInMock(task, neighborDir)).toBeNull();
     const result = measure("mock");
     expect(result.entries).toEqual([]);
-    expect(result.coverage).toEqual({
+    expect(result.coverage).toMatchObject({
       status: "insufficient",
       expected: 1,
       scored: 0,
@@ -2121,7 +2121,7 @@ describe("candidate-specific negative transfer", () => {
 
   it("records and replays only the same candidate, task and matched comparison", () => {
     const live = measure("live", { record: true });
-    expect(live.coverage).toEqual({
+    expect(live.coverage).toMatchObject({
       status: "measured",
       expected: 1,
       scored: 1,
@@ -2180,7 +2180,7 @@ describe("candidate-specific negative transfer", () => {
           checker: { type: "assert", expect_contains: ["new-check"] },
         });
       writeRolloutRecord(recordDir, entries);
-      expect(measure("mock").coverage).toEqual({
+      expect(measure("mock").coverage).toMatchObject({
         status: "insufficient",
         expected: 1,
         scored: 0,
@@ -2201,7 +2201,7 @@ describe("candidate-specific negative transfer", () => {
           ? "EXPECTED"
           : "wrong",
     });
-    expect(live.coverage).toEqual({
+    expect(live.coverage).toMatchObject({
       status: "measured",
       expected: 2,
       scored: 2,
@@ -2224,7 +2224,7 @@ describe("candidate-specific negative transfer", () => {
         return "EXPECTED";
       },
     });
-    expect(result.coverage).toEqual({
+    expect(result.coverage).toMatchObject({
       status: "insufficient",
       expected: 2,
       scored: 1,
@@ -2244,12 +2244,26 @@ describe("candidate-specific negative transfer", () => {
   });
 
   it("reports zero neighbors as insufficient and applies the explicit sample cap", () => {
+    // A domain with no neighbor falls back to a cross-domain sample, which in
+    // mock mode has no recording yet and therefore stays insufficient.
+    expect(
+      measure("mock", { domains: new Set(["other-domain"]) }).coverage,
+    ).toMatchObject({
+      status: "insufficient",
+      expected: 1,
+      scored: 0,
+      scope: "cross-domain",
+    });
+    rmSync(evalRoot, { recursive: true, force: true });
+    mkdirSync(join(evalRoot, "skill-x"), { recursive: true });
     expect(
       measure("mock", { domains: new Set(["other-domain"]) }).coverage,
     ).toEqual({ status: "insufficient", expected: 0, scored: 0 });
+    mkdirSync(join(evalRoot, "skill-y"), { recursive: true });
+    writeTask(join(evalRoot, "skill-y"), task);
     writeTask(join(evalRoot, "skill-y"), { ...task, id: "second" });
     const result = measure("live", { maxTasks: 1 });
-    expect(result.coverage).toEqual({
+    expect(result.coverage).toMatchObject({
       status: "measured",
       expected: 1,
       scored: 1,
@@ -2301,7 +2315,7 @@ describe("candidate-specific negative transfer", () => {
     });
     expect(report.utilityLift).toBe(1);
     expect(report.negativeTransfer[0]?.delta).toBe(-1);
-    expect(report.negativeTransferCoverage).toEqual({
+    expect(report.negativeTransferCoverage).toMatchObject({
       status: "measured",
       expected: 1,
       scored: 1,
@@ -2322,7 +2336,7 @@ describe("candidate-specific negative transfer", () => {
       ...options,
       negativeTransfer: true,
     });
-    expect(unmeasured.negativeTransferCoverage).toEqual({
+    expect(unmeasured.negativeTransferCoverage).toMatchObject({
       status: "insufficient",
       expected: 1,
       scored: 0,
@@ -2338,7 +2352,7 @@ describe("candidate-specific negative transfer", () => {
       negativeTransfer: true,
       evalRoot: join(rootDir, "empty"),
     });
-    expect(override.negativeTransferCoverage).toEqual({
+    expect(override.negativeTransferCoverage).toMatchObject({
       status: "insufficient",
       expected: 0,
       scored: 0,
@@ -3460,5 +3474,52 @@ describe("usage accounting", () => {
     cleanupTmp();
     expect(rollouts.map((r) => r.usage?.costUsd)).toEqual([0.002, 0.002]);
     expect(rollouts[1]?.output).toBe("EXPECTED");
+  });
+});
+
+describe("discoverNeighborTasks — cross-domain fallback", () => {
+  it("uses a bounded cross-domain sample only when no same-domain neighbor exists", () => {
+    const evalRoot = mkdtempSync(join(tmpdir(), "oma-eval-neighbors-"));
+    const write = (skill: string, domain: string, count: number): void => {
+      const dir = join(evalRoot, skill);
+      mkdirSync(dir, { recursive: true });
+      for (let i = 0; i < count; i += 1)
+        writeTask(dir, makeTaskFixture(`${skill}-${i}`, { skill, domain }));
+    };
+    write("skill-x", "alpha", 3);
+    write("skill-y", "beta", 5);
+    write("skill-z", "gamma", 5);
+    mkdirSync(join(evalRoot, "_harness"), { recursive: true });
+
+    const cross = discoverNeighborTasks(
+      "skill-x",
+      new Set(["alpha"]),
+      evalRoot,
+    );
+    expect(cross).toHaveLength(6);
+    expect(cross.every((n) => n.scope === "cross-domain")).toBe(true);
+    expect(cross.map((n) => n.otherSkill)).toEqual([
+      "skill-y",
+      "skill-z",
+      "skill-y",
+      "skill-z",
+      "skill-y",
+      "skill-z",
+    ]);
+
+    write("skill-w", "alpha", 2);
+    const same = discoverNeighborTasks("skill-x", new Set(["alpha"]), evalRoot);
+    expect(same.map((n) => [n.otherSkill, n.scope])).toEqual([
+      ["skill-w", "same-domain"],
+      ["skill-w", "same-domain"],
+    ]);
+    expect(
+      discoverNeighborTasks(
+        "skill-x",
+        new Set(["alpha"]),
+        join(evalRoot, "missing"),
+      ),
+    ).toEqual([]);
+    rmSync(evalRoot, { recursive: true, force: true });
   });
 });

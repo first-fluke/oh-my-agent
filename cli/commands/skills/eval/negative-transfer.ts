@@ -30,11 +30,30 @@ import {
 } from "./types.js";
 
 /** Find tasks belonging to other skills in the selected domains. */
+/** Cross-domain fallback sample size when no same-domain neighbor exists. */
+export const CROSS_DOMAIN_NEIGHBOR_LIMIT = 6;
+
+export type NeighborScope = "same-domain" | "cross-domain";
+
+export interface NeighborTask {
+  otherSkill: string;
+  task: TaskFixture;
+  scope: NeighborScope;
+}
+
+/**
+ * Neighbor tasks for negative-transfer measurement. Same-domain tasks of other
+ * skills come first. When a skill's domain has no neighbor at all, a bounded
+ * cross-domain sample (round-robin over the other skills) is used instead:
+ * interference by an injected body is not limited to its own domain, and a
+ * unique domain must not make promotion impossible. The scope is reported so
+ * the two samples are never mistaken for each other.
+ */
 export function discoverNeighborTasks(
   skillId: string,
   domains: Set<string>,
   evalRoot: string,
-): Array<{ otherSkill: string; task: TaskFixture }> {
+): NeighborTask[] {
   if (!existsSync(evalRoot)) return [];
   let entries: string[];
   try {
@@ -43,28 +62,43 @@ export function discoverNeighborTasks(
     return [];
   }
 
-  const neighbors: Array<{ otherSkill: string; task: TaskFixture }> = [];
-
+  const sameDomain: NeighborTask[] = [];
+  const perSkill: Array<{ otherSkill: string; tasks: TaskFixture[] }> = [];
   for (const entry of entries.sort()) {
-    if (entry === skillId) continue; // skip self
+    if (entry === skillId || entry.startsWith("_")) continue;
     const otherDir = join(evalRoot, entry);
-    // Only scan directories
     try {
-      const stat = readdirSync(otherDir);
-      void stat; // confirm it's a directory (readdirSync throws on files)
+      readdirSync(otherDir);
     } catch {
       continue;
     }
-
     const { fixtures } = loadTaskFixtures(otherDir);
+    if (fixtures.length === 0) continue;
+    perSkill.push({ otherSkill: entry, tasks: fixtures });
     for (const task of fixtures) {
-      if (domains.has(task.domain)) {
-        neighbors.push({ otherSkill: entry, task });
-      }
+      if (domains.has(task.domain))
+        sameDomain.push({ otherSkill: entry, task, scope: "same-domain" });
     }
   }
+  if (sameDomain.length > 0) return sameDomain;
 
-  return neighbors;
+  const crossDomain: NeighborTask[] = [];
+  for (
+    let index = 0;
+    crossDomain.length < CROSS_DOMAIN_NEIGHBOR_LIMIT;
+    index += 1
+  ) {
+    let added = false;
+    for (const { otherSkill, tasks } of perSkill) {
+      const task = tasks[index];
+      if (!task) continue;
+      crossDomain.push({ otherSkill, task, scope: "cross-domain" });
+      added = true;
+      if (crossDomain.length >= CROSS_DOMAIN_NEIGHBOR_LIMIT) break;
+    }
+    if (!added) break;
+  }
+  return crossDomain;
 }
 
 type NeighborScores = { scoreWithoutX: number; scoreWithX: number };
@@ -328,6 +362,7 @@ export function measureNegativeTransfer(
           : "insufficient",
       expected: sampled.length,
       scored: entries.length,
+      ...(sampled[0] ? { scope: sampled[0].scope } : {}),
     },
   };
 }

@@ -87,7 +87,7 @@ export function renderSkillUtilityReport(report: SkillUtilityReport): void {
   const transferCoverage = report.negativeTransferCoverage;
   if (transferCoverage && transferCoverage.status !== "not-requested") {
     console.log(
-      `  negative-transfer coverage: ${transferCoverage.status} (${transferCoverage.scored}/${transferCoverage.expected})`,
+      `  negative-transfer coverage: ${transferCoverage.status} (${transferCoverage.scored}/${transferCoverage.expected})${transferCoverage.scope ? ` [${transferCoverage.scope}]` : ""}`,
     );
   }
   if (report.isolation && report.isolation !== "n/a") {

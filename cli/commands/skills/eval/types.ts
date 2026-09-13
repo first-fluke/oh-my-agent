@@ -69,6 +69,8 @@ export interface NegativeTransferCoverage {
   status: "measured" | "insufficient" | "not-requested";
   expected: number;
   scored: number;
+  /** `cross-domain` means no same-domain neighbor existed and a bounded sample of other domains was used. */
+  scope?: "same-domain" | "cross-domain";
 }
 
 /**
