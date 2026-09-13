@@ -56,6 +56,11 @@ export {
   setupIsolatedSkillsDir,
 } from "./eval/dispatch.js";
 export {
+  parseVendorUsage,
+  resolveDispatchResult,
+  unwrapVendorEnvelope,
+} from "./eval/envelope.js";
+export {
   assessRolloutStaleness,
   loadRolloutEntries,
   loadTaskFixtures,

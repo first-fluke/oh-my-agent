@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolveVendor } from "../../../platform/agent-config.js";
 import { buildJudgeDispatchFn } from "./dispatch.js";
+import { resolveDispatchResult } from "./envelope.js";
 
 vi.mock("../../../io/runtime-dispatch/resolve-plan.js", () => ({
   resolveAgentPlan: vi.fn(() => ({ effort: "high" })),
@@ -42,12 +43,16 @@ describe("judge isolation", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.mocked(resolveVendor).mockClear();
     const judge = buildJudgeDispatchFn();
-    const first = JSON.parse(judge("Grade this answer")) as {
+    const first = JSON.parse(
+      resolveDispatchResult(judge("Grade this answer")).output,
+    ) as {
       cwd: string;
       args: string[];
       isolatedMemory: string;
     };
-    const second = JSON.parse(judge("Grade another answer")) as { cwd: string };
+    const second = JSON.parse(
+      resolveDispatchResult(judge("Grade another answer")).output,
+    ) as { cwd: string };
     expect(resolveVendor).toHaveBeenCalledTimes(1);
     expect(first.cwd).not.toBe(process.cwd());
     expect(second.cwd).not.toBe(first.cwd);

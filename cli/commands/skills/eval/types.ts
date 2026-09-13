@@ -1,3 +1,4 @@
+import type { DispatchResult, DispatchUsage } from "./envelope.js";
 import type { RoutingOutcome, SkillRoutingSummary } from "./routing.js";
 // --- Constants (design 016, T1-a) ---
 
@@ -112,6 +113,21 @@ export interface SkillRepeatability {
   status: "single-trial" | "stable" | "unstable" | "unavailable";
 }
 
+export interface SkillUsageSummary {
+  status: "actual" | "partial" | "unknown";
+  dispatches: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  judge: {
+    status: "actual" | "partial" | "unknown";
+    dispatches: number;
+    inputTokens: number;
+    outputTokens: number;
+    costUsd: number;
+  };
+}
+
 export interface SkillUtilityReport {
   skill: string;
   taskCount: number;
@@ -124,6 +140,11 @@ export interface SkillUtilityReport {
   repeatability?: SkillRepeatability;
   /** Description-level activation measurement; absent unless --routing. */
   routing?: SkillRoutingSummary;
+  /**
+   * Tokens and cost behind the scored arms and their judge calls, summed from
+   * what the vendor reported. `partial` means some dispatches reported nothing.
+   */
+  usage?: SkillUsageSummary;
   findings: SkillUtilityFinding[];
   negativeTransfer: NegativeTransfer[];
   /** A requested check is measured only when every selected neighbor was scored. */
@@ -194,6 +215,10 @@ export interface RolloutEntry {
   score?: 0 | 1;
   /** Judge text behind `score`, unwrapped and bounded; absent for non-judge tasks. */
   judgeResponse?: string;
+  /** Tokens and cost of this arm's dispatch, when the vendor reported them. */
+  usage?: DispatchUsage;
+  /** Tokens and cost of the judge call behind `score`. */
+  judgeUsage?: DispatchUsage;
   /**
    * Provenance: `contentHash` of the SKILL.md body prepended to the treatment
    * prompt at record time. Recorded on `arm: "treatment"` only — the baseline
@@ -265,13 +290,13 @@ export type LiveDispatchFn = (
   arm: "baseline" | "treatment",
   prompt: string,
   workspace: string,
-) => string;
+) => DispatchResult;
 
 /**
  * Judge dispatch function type — injectable for tests.
  * Accepts a complete grading prompt and returns the raw LLM response string.
  */
-export type JudgeDispatchFn = (gradingPrompt: string) => string;
+export type JudgeDispatchFn = (gradingPrompt: string) => DispatchResult;
 
 // --- Options for runSkillsEval ---
 

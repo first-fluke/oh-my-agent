@@ -33,6 +33,7 @@ import {
   negativeTransferRecordDir,
   pairedLiftInterval,
   parseJudgeVerdict,
+  parseVendorUsage,
   REGEX_OUTPUT_MAX_LEN,
   REGEX_PATTERN_MAX_LEN,
   type RolloutEntry,
@@ -1544,7 +1545,8 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
       result: "One commit, grounded in the logical-change rule.",
     });
     const verdict = judgeVerdict("task", candidate, "rubric", dispatch);
-    expect(verdict).toEqual({ score: 1, response: "PASS" });
+    expect(verdict).toMatchObject({ score: 1, response: "PASS" });
+    expect(verdict.usage.status).toBe("unknown");
     expect(seen[0]).toContain(
       "One commit, grounded in the logical-change rule.",
     );
@@ -3355,5 +3357,108 @@ describe("runSkillsEval — routing (activation) measurement", () => {
         .find((s) => s.trimStart().startsWith("{")) ?? "{}",
     ) as { routing?: { status: string; measured: number } };
     expect(staleJson.routing).toMatchObject({ status: "stale", measured: 0 });
+  });
+});
+
+describe("usage accounting", () => {
+  it("parses tokens, cost, and the dominant model from a Claude envelope", () => {
+    const usage = parseVendorUsage(
+      JSON.stringify({
+        type: "result",
+        result: "x",
+        total_cost_usd: 0.5,
+        duration_ms: 20,
+        usage: {
+          input_tokens: 1,
+          cache_creation_input_tokens: 2,
+          cache_read_input_tokens: 3,
+          output_tokens: 4,
+        },
+        modelUsage: { a: { outputTokens: 1 }, b: { outputTokens: 3 } },
+      }),
+    );
+    expect(usage).toEqual({
+      status: "actual",
+      inputTokens: 6,
+      outputTokens: 4,
+      costUsd: 0.5,
+      durationMs: 20,
+      model: "b",
+    });
+    expect(parseVendorUsage("plain").status).toBe("unknown");
+    expect(parseVendorUsage(JSON.stringify({ type: "other" })).status).toBe(
+      "unknown",
+    );
+  });
+
+  it("sums arm and judge usage over scored entries and marks missing reports partial", () => {
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`, { checker: { type: "judge", rubric: "r" } }),
+    );
+    const actual = (cost: number) => ({
+      status: "actual" as const,
+      inputTokens: 10,
+      outputTokens: 5,
+      costUsd: cost,
+      durationMs: 1,
+      model: "m",
+    });
+    const rollouts: RolloutEntry[] = tasks.flatMap((t, i) => [
+      {
+        taskId: t.id,
+        arm: "baseline",
+        output: "a",
+        score: 0,
+        usage: actual(0.1),
+        judgeUsage: actual(0.01),
+      },
+      {
+        taskId: t.id,
+        arm: "treatment",
+        output: "b",
+        score: 1,
+        ...(i === 0 ? {} : { usage: actual(0.1) }),
+        judgeUsage: actual(0.01),
+      },
+    ]);
+    const report = computeUtility("oma-test", { tasks, rollouts });
+    expect(report.usage).toEqual({
+      status: "partial",
+      dispatches: MIN_TASKS * 2,
+      inputTokens: (MIN_TASKS * 2 - 1) * 10,
+      outputTokens: (MIN_TASKS * 2 - 1) * 5,
+      costUsd: expect.closeTo((MIN_TASKS * 2 - 1) * 0.1, 6),
+      judge: {
+        status: "actual",
+        dispatches: MIN_TASKS * 2,
+        inputTokens: MIN_TASKS * 2 * 10,
+        outputTokens: MIN_TASKS * 2 * 5,
+        costUsd: expect.closeTo(MIN_TASKS * 2 * 0.01, 6),
+      },
+    });
+  });
+
+  it("keeps usage returned by a live dispatch on the recorded entries", () => {
+    const task = makeTaskFixture("t1");
+    const dispatch: LiveDispatchFn = (arm) => ({
+      output: arm === "treatment" ? "EXPECTED" : "no",
+      usage: {
+        status: "actual",
+        inputTokens: 7,
+        outputTokens: 2,
+        costUsd: 0.002,
+        durationMs: 9,
+        model: "m",
+      },
+    });
+    const { rollouts, cleanupTmp } = collectLiveRollouts(
+      [task],
+      "body",
+      dispatch,
+      tmpdir(),
+    );
+    cleanupTmp();
+    expect(rollouts.map((r) => r.usage?.costUsd)).toEqual([0.002, 0.002]);
+    expect(rollouts[1]?.output).toBe("EXPECTED");
   });
 });

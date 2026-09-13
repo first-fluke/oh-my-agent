@@ -1,6 +1,10 @@
 import { tmpdir } from "node:os";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { runEvalDispatch, warnOnErrorEnvelope } from "./dispatch.js";
+import {
+  runEvalDispatch,
+  runEvalDispatchDetailed,
+  warnOnErrorEnvelope,
+} from "./dispatch.js";
 import { collectLiveRollouts } from "./rollouts.js";
 import { scoreSkillBody } from "./score-skill-body.js";
 import type { LiveDispatchFn, TaskFixture } from "./types.js";
@@ -61,6 +65,31 @@ describe("warnOnErrorEnvelope", () => {
       null,
     );
     expect(output).toBe("the answer");
+    const detailed = runEvalDispatchDetailed(
+      {
+        command: process.execPath,
+        args: [
+          "-e",
+          "process.stdout.write(JSON.stringify({type:'result',is_error:false,result:'the answer',total_cost_usd:0.02,usage:{input_tokens:5,output_tokens:6}}))",
+        ],
+        env: process.env,
+        outputKind: "vendor-envelope",
+      },
+      tmpdir(),
+      "prompt",
+      null,
+    );
+    expect(detailed).toEqual({
+      output: "the answer",
+      usage: {
+        status: "actual",
+        inputTokens: 5,
+        outputTokens: 6,
+        costUsd: 0.02,
+        durationMs: null,
+        model: null,
+      },
+    });
   });
 
   it("rejects an API error envelope even when the process exits successfully", () => {

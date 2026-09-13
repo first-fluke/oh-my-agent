@@ -1,4 +1,9 @@
-import { unwrapVendorEnvelope } from "./envelope.js";
+import {
+  type DispatchUsage,
+  sumUsage,
+  UNKNOWN_USAGE,
+  unwrapVendorEnvelope,
+} from "./envelope.js";
 import {
   type IsolationStatus,
   MIN_TASKS,
@@ -225,6 +230,8 @@ export function computeUtility(
   const findings: SkillUtilityFinding[] = [];
   const withinTaskStdDevs: number[] = [];
   let commonTrials = Number.POSITIVE_INFINITY;
+  const armUsage: DispatchUsage[] = [];
+  const judgeUsage: DispatchUsage[] = [];
 
   const scoreEntry = (
     task: TaskFixture,
@@ -281,6 +288,11 @@ export function computeUtility(
       }
       perTrialBaseline.push(bs);
       perTrialTreatment.push(ts);
+      for (const entry of [b, t]) {
+        armUsage.push(entry.usage ?? UNKNOWN_USAGE);
+        if (task.checker.type === "judge")
+          judgeUsage.push(entry.judgeUsage ?? UNKNOWN_USAGE);
+      }
     }
     if (verdictMissing) {
       // If either arm is missing its recorded verdict, exclude the task
@@ -401,6 +413,7 @@ export function computeUtility(
   if (repeatability.status === "unstable" && decision === "pass") {
     decision = "warn";
   }
+  const usage = { ...sumUsage(armUsage), judge: sumUsage(judgeUsage) };
 
   return {
     skill,
@@ -411,6 +424,7 @@ export function computeUtility(
     utilityLift,
     utilityStdDev,
     repeatability,
+    usage,
     findings,
     negativeTransfer: negativeTransferInput,
     negativeTransferCoverage: options.negativeTransferCoverage,

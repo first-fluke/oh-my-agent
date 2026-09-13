@@ -102,7 +102,7 @@ describe("runHarnessInvocation", () => {
     }
   });
 
-  it("returns stdout for a successful process", () => {
+  it("returns stdout for a successful process with unknown usage", () => {
     expect(
       runHarnessInvocation(
         nodeInvocation('process.stdout.write("done")'),
@@ -111,6 +111,57 @@ describe("runHarnessInvocation", () => {
         null,
         10_000,
       ),
-    ).toBe("done");
+    ).toEqual({
+      output: "done",
+      usage: {
+        status: "unknown",
+        inputTokens: 0,
+        outputTokens: 0,
+        costUsd: null,
+        durationMs: null,
+        model: null,
+      },
+    });
+  });
+
+  it("unwraps a vendor result envelope and keeps its usage", () => {
+    const envelope = JSON.stringify({
+      type: "result",
+      is_error: false,
+      subagent_stats: { failed: 0 },
+      result: "the edit is done",
+      total_cost_usd: 0.0421,
+      duration_ms: 1234,
+      usage: {
+        input_tokens: 10,
+        cache_creation_input_tokens: 200,
+        cache_read_input_tokens: 300,
+        output_tokens: 45,
+      },
+      modelUsage: {
+        "claude-haiku-4-5": { outputTokens: 3 },
+        "claude-sonnet-4-6": { outputTokens: 42 },
+      },
+    });
+    const script = `process.stdout.write(${JSON.stringify(envelope)})`;
+    expect(
+      runHarnessInvocation(
+        nodeInvocation(script),
+        workspace(),
+        "prompt",
+        null,
+        10_000,
+      ),
+    ).toEqual({
+      output: "the edit is done",
+      usage: {
+        status: "actual",
+        inputTokens: 510,
+        outputTokens: 45,
+        costUsd: 0.0421,
+        durationMs: 1234,
+        model: "claude-sonnet-4-6",
+      },
+    });
   });
 });

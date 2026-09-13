@@ -49,6 +49,18 @@ export function serializeSkillUtilityReport(
         liftStdDev: Number((f.liftStdDev ?? 0).toFixed(4)),
         ...(f.routing ? { routing: f.routing } : {}),
       })),
+      ...(report.usage
+        ? {
+            usage: {
+              ...report.usage,
+              costUsd: Number(report.usage.costUsd.toFixed(4)),
+              judge: {
+                ...report.usage.judge,
+                costUsd: Number(report.usage.judge.costUsd.toFixed(4)),
+              },
+            },
+          }
+        : {}),
       ...(report.routing
         ? {
             routing: {
@@ -128,6 +140,17 @@ export function renderSkillUtilityReport(report: SkillUtilityReport): void {
   console.log(
     `  repeatability: ${rep.status}  trials: ${rep.trials}  lift 95% CI: ${ci}  within-task stddev: ${within}`,
   );
+  if (report.usage) {
+    const u = report.usage;
+    const cost = (value: number, status: string): string =>
+      status === "unknown"
+        ? "unknown"
+        : `$${value.toFixed(4)}${status === "partial" ? "+" : ""}`;
+    console.log(
+      `  usage: arms ${u.dispatches} dispatches, ${u.inputTokens} in / ${u.outputTokens} out, ${cost(u.costUsd, u.status)}` +
+        `; judge ${u.judge.dispatches} dispatches, ${cost(u.judge.costUsd, u.judge.status)}`,
+    );
+  }
   if (report.routing) {
     const r = report.routing;
     const misrouted = Object.entries(r.misroutedTo)

@@ -39,6 +39,15 @@ export function renderHarnessEvaluation(evaluation: HarnessEvaluation): void {
   }
   if (evaluation.traceSession)
     console.log(`  trace session: ${evaluation.traceSession}`);
+  if (evaluation.usage) {
+    const u = evaluation.usage;
+    console.log(
+      `  usage: ${u.dispatches} dispatches, ${u.inputTokens} in / ${u.outputTokens} out, ` +
+        (u.status === "unknown"
+          ? "cost unknown"
+          : `$${u.costUsd.toFixed(4)}${u.status === "partial" ? "+ (partial)" : ""}`),
+    );
+  }
   console.log(`  tasks: ${score.scoredTaskCount}/${score.taskCount}`);
   console.log(`  baseline: ${percentage(score.baselineScore)}`);
   console.log(`  candidate: ${percentage(score.candidateScore)}`);

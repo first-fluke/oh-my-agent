@@ -68,6 +68,16 @@ const armRunSchema = z.object({
   dispatchError: z.string().optional(),
   incident: incidentSchema.optional(),
   evidence: evidenceSchema.optional(),
+  usage: z
+    .object({
+      status: z.enum(["actual", "unknown"]),
+      inputTokens: z.number().nonnegative(),
+      outputTokens: z.number().nonnegative(),
+      costUsd: z.number().nullable(),
+      durationMs: z.number().nullable(),
+      model: z.string().nullable(),
+    })
+    .optional(),
   diagnostics: z
     .object({
       exitCode: z.number().int().nullable(),

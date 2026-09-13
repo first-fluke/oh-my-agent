@@ -26,7 +26,12 @@ import {
   resolvePromptFlag,
   resolveVendor,
 } from "../../../platform/agent-config.js";
-import { unwrapVendorEnvelope } from "./envelope.js";
+import {
+  type DispatchUsage,
+  parseVendorUsage,
+  UNKNOWN_USAGE,
+  unwrapVendorEnvelope,
+} from "./envelope.js";
 import type {
   IsolationStatus,
   JudgeDispatchFn,
@@ -71,6 +76,16 @@ function evalDispatchTimeoutMs(): number {
  * data on the error and must never be scored or recorded as a completed answer.
  */
 export function runEvalDispatch(
+  invocation: Parameters<typeof runEvalDispatchDetailed>[0],
+  cwd: string,
+  prompt: string,
+  promptFlag: string | null,
+): string {
+  return runEvalDispatchDetailed(invocation, cwd, prompt, promptFlag).output;
+}
+
+/** Like runEvalDispatch, also returning the usage the vendor reported. */
+export function runEvalDispatchDetailed(
   invocation: {
     command: string;
     args: string[];
@@ -82,7 +97,7 @@ export function runEvalDispatch(
   cwd: string,
   prompt: string,
   promptFlag: string | null,
-): string {
+): { output: string; usage: DispatchUsage } {
   const { command, args } = invocation;
   // Locate the prompt VALUE: the arg immediately after `promptFlag` (e.g. `-p`).
   // It is NOT always the trailing arg — plan-derived flags (e.g. `--model sonnet`)
@@ -126,8 +141,14 @@ export function runEvalDispatch(
         text,
       );
     }
-    // Record and score the answer, not the vendor's JSON bookkeeping.
-    return invocation.outputKind === "text" ? text : unwrapVendorEnvelope(text);
+    // Record and score the answer, not the vendor's JSON bookkeeping; keep
+    // the bookkeeping that matters (tokens, cost) beside it.
+    if (invocation.outputKind === "text")
+      return { output: text, usage: UNKNOWN_USAGE };
+    return {
+      output: unwrapVendorEnvelope(text),
+      usage: parseVendorUsage(text),
+    };
   } catch (err) {
     if (err instanceof EvalDispatchError) throw err;
     const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
@@ -400,7 +421,7 @@ export function buildLiveDispatchFn(
           vendor,
         );
 
-    return runEvalDispatch(invocation, cwd, prompt, promptFlag);
+    return runEvalDispatchDetailed(invocation, cwd, prompt, promptFlag);
   };
 }
 
@@ -456,7 +477,7 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
         );
     const judgeWorkspace = mkdtempSync(join(tmpdir(), "oma-eval-judge-"));
     try {
-      return runEvalDispatch(
+      return runEvalDispatchDetailed(
         invocation,
         judgeWorkspace,
         gradingPrompt,

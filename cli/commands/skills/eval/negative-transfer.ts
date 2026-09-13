@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { resolveDispatchResult } from "./envelope.js";
 import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
 import {
   buildRolloutExpectation,
@@ -184,11 +185,14 @@ function collectNeighborPair(
         arm === "treatment" && body
           ? `${body}\n\n---\n\n${task.prompt}`
           : task.prompt;
-      const output = dispatchFn(arm, prompt, armDir);
+      const { output, usage } = resolveDispatchResult(
+        dispatchFn(arm, prompt, armDir),
+      );
       const entry: RolloutEntry = {
         taskId: task.id,
         arm,
         output,
+        ...(usage.status === "actual" ? { usage } : {}),
         candidateSkill,
         comparisonId,
         skillBodyHash: contentHash(body),
@@ -204,6 +208,7 @@ function collectNeighborPair(
         );
         entry.score = verdict.score;
         entry.judgeResponse = verdict.response;
+        if (verdict.usage.status === "actual") entry.judgeUsage = verdict.usage;
       }
       rollouts.push(entry);
     }

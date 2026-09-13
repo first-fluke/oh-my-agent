@@ -2,6 +2,11 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256Hex } from "../../utils/hash.js";
+import {
+  resolveDispatchResult,
+  sumUsage,
+  UNKNOWN_USAGE,
+} from "../skills/eval/envelope.js";
 import { evaluateChecks } from "./checks.js";
 import { HARNESS_STDERR_LIMIT } from "./dispatch.js";
 import {
@@ -199,13 +204,18 @@ function runArm(
       stderrStatus: "unavailable",
     };
     let outputStatus: HarnessArmTrace["output"] = "complete";
+    let usage = UNKNOWN_USAGE;
     try {
-      output = options.dispatch({
-        agent: options.suite.agent,
-        arm,
-        prompt: task.prompt,
-        workspace,
-      });
+      const result = resolveDispatchResult(
+        options.dispatch({
+          agent: options.suite.agent,
+          arm,
+          prompt: task.prompt,
+          workspace,
+        }),
+      );
+      output = result.output;
+      usage = result.usage;
     } catch (error) {
       dispatchError = error instanceof Error ? error.message : String(error);
       output = diagnosticOutput(error);
@@ -271,6 +281,7 @@ function runArm(
       checks,
       dispatchError,
       diagnostics,
+      ...(usage.status === "actual" ? { usage } : {}),
       trace: {
         schemaVersion: 1,
         causalityKey,
@@ -389,6 +400,7 @@ function executeHarnessLive(options: RunHarnessLiveOptions): HarnessEvaluation {
     ],
     runs,
     score: scoreHarnessRuns(tasks, runs),
+    usage: sumUsage(runs.map((run) => run.usage ?? UNKNOWN_USAGE)),
     ...harnessEvaluationTrust(frozenSuite, options.partition, evaluatorHash),
   };
 }

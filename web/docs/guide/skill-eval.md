@@ -337,6 +337,7 @@ Skill utility eval  (skill: oma-scholar)
   "findings": [
     { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0, "trials": 1, "liftStdDev": 0, "routing": "target" }
   ],
+  "usage": { "status": "actual", "dispatches": 14, "inputTokens": 61234, "outputTokens": 9876, "costUsd": 0.8123, "judge": { "status": "actual", "dispatches": 6, "inputTokens": 12000, "outputTokens": 30, "costUsd": 0.1401 } },
   "routing": { "status": "measured", "measured": 7, "activated": 6, "misrouted": 1, "none": 0, "unparsed": 0, "activationRate": 0.8571, "misroutedTo": { "oma-search": 1 }, "catalogSize": 33 },
   "negativeTransfer": [],
   "negativeTransferCoverage": { "status": "not-requested", "expected": 0, "scored": 0 },
@@ -344,6 +345,8 @@ Skill utility eval  (skill: oma-scholar)
   "isolationVendor": "claude"
 }
 ```
+
+`usage` sums what the vendor reported for the scored arms and, separately, for their judge calls: dispatch count, input and output tokens (including cache reads and writes), and cost in USD. `status` is `actual` when every dispatch reported usage, `partial` when some did not, and `unknown` when none did (a text-only transport such as the Codex bridge reports nothing). Recorded rollouts carry `usage` and `judgeUsage` per entry, so a mock replay reports the cost of the recording it reuses rather than zero.
 
 `repeatability` separates task-level variation from rerun variation. `liftCi95` is a paired 95% t-interval over the per-task lifts (null below two scored tasks). With `--trials` of two or more, `withinTaskStdDev` is the mean per-task standard deviation of the per-trial lift, and `status` is `stable` only when the interval excludes zero on the lift's side; otherwise it is `unstable` and a `pass` is downgraded to `warn`. A single-trial run reports `single-trial`: it can show lift, but it cannot show that the lift repeats.
 

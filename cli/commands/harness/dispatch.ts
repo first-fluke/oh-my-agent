@@ -2,6 +2,11 @@ import { execFileSync } from "node:child_process";
 import { planDispatch } from "../../io/runtime-dispatch.js";
 import type { VendorConfig } from "../../platform/agent-config.js";
 import { resolvePromptFlag } from "../../platform/agent-config.js";
+import {
+  type DispatchUsage,
+  parseVendorUsage,
+  unwrapVendorEnvelope,
+} from "../skills/eval/envelope.js";
 import { buildHarnessEnvironment } from "./execution.js";
 import type { HarnessDispatchFn } from "./types.js";
 
@@ -62,7 +67,7 @@ export function runHarnessInvocation(
   prompt: string,
   promptFlag: string | null,
   timeoutMs: number,
-): string {
+): { output: string; usage: DispatchUsage } {
   let promptIndex = -1;
   if (promptFlag !== null) {
     for (let index = 0; index < invocation.args.length - 1; index += 1) {
@@ -114,7 +119,12 @@ export function runHarnessInvocation(
         },
       );
     }
-    return text;
+    // Record the agent's answer, not the vendor's JSON bookkeeping; keep the
+    // usage the envelope reports beside it.
+    return {
+      output: unwrapVendorEnvelope(text),
+      usage: parseVendorUsage(text),
+    };
   } catch (error) {
     if (error instanceof HarnessDispatchError) throw error;
     const failure = error as {

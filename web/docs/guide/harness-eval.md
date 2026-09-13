@@ -286,6 +286,10 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 
 The CLI version is probed on replay only when the record itself carries a probed version; an unprobed pair is reported as not comparable rather than as equal. Recorded verdicts stay viewable under their original conditions. They are not evidence for the candidate under the current conditions until a live or rerun evaluation produces a record whose manifest matches.
 
+### Usage
+
+Each arm stores `usage` when the vendor reported it: input and output tokens, cost in USD, wall time, and the model that produced most output. The evaluation sums them as `usage` with `status` `actual`, `partial` (some arms reported nothing), or `unknown`. Vendor result envelopes are unwrapped before checks run and before the output is recorded, so `output_contains` and `output_json_equals` see the agent's answer rather than the JSON bookkeeping around it; the usage inside the envelope is what feeds this field.
+
 ### Report labels
 
 Reports include `executionMode`, `evidenceStatus` (`complete`, `insufficient`, or `legacy`), `replayLimitations`, and a `sourceRecordHash` when available. Live and rerun reports add `manifest`, `conditions: "current"`, and `traceSession`. Evidence completeness describes what the current action can inspect or evaluate. Inherited incident limitations remain visible even when the current file capture is complete. `promotionReady` remains `false` in every mode.

@@ -6,6 +6,7 @@ import {
   buildLiveDispatchFn,
   EvalDispatchError,
 } from "./dispatch.js";
+import { resolveDispatchResult } from "./envelope.js";
 
 const { cleanupProtectedWorkspace } = vi.hoisted(() => ({
   cleanupProtectedWorkspace: vi.fn(),
@@ -46,13 +47,17 @@ describe("Codex protected evaluation dispatch", () => {
   it("routes both live arms and judges through native protected text with the same model", () => {
     vi.mocked(execFileSync).mockReturnValue("completed answer");
     const live = buildLiveDispatchFn("/project");
-    expect(live("baseline", "baseline prompt", "/project")).toBe(
-      "completed answer",
-    );
-    expect(live("treatment", "treatment prompt", "/project")).toBe(
-      "completed answer",
-    );
-    expect(buildJudgeDispatchFn()("grading prompt")).toBe("completed answer");
+    expect(
+      resolveDispatchResult(live("baseline", "baseline prompt", "/project"))
+        .output,
+    ).toBe("completed answer");
+    expect(
+      resolveDispatchResult(live("treatment", "treatment prompt", "/project"))
+        .output,
+    ).toBe("completed answer");
+    expect(
+      resolveDispatchResult(buildJudgeDispatchFn()("grading prompt")).output,
+    ).toBe("completed answer");
     expect(planDispatch).toHaveBeenCalledTimes(3);
     const requests = vi
       .mocked(execFileSync)
@@ -79,7 +84,9 @@ describe("Codex protected evaluation dispatch", () => {
     const output = '{"is_error":true,"result":"domain data"}';
     vi.mocked(execFileSync).mockReturnValue(output);
     expect(
-      buildLiveDispatchFn("/project")("baseline", "prompt", "/project"),
+      resolveDispatchResult(
+        buildLiveDispatchFn("/project")("baseline", "prompt", "/project"),
+      ).output,
     ).toBe(output);
   });
 

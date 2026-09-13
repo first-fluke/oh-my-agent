@@ -8,7 +8,7 @@ import {
 import { join } from "node:path";
 import { INSTALLED_SKILLS_DIR } from "../../../constants/vendors.js";
 import { parseFrontmatter } from "../../../utils/frontmatter.js";
-import { unwrapVendorEnvelope } from "./envelope.js";
+import { resolveDispatchResult, unwrapVendorEnvelope } from "./envelope.js";
 import { contentHash, taskFixtureHash, taskSetHash } from "./rollouts.js";
 import type { LiveDispatchFn, TaskFixture } from "./types.js";
 
@@ -148,7 +148,9 @@ export function measureRouting(args: {
     let output: string;
     try {
       // The routing arm withholds the target body exactly like the baseline.
-      output = args.dispatchFn("baseline", prompt, dir);
+      output = resolveDispatchResult(
+        args.dispatchFn("baseline", prompt, dir),
+      ).output;
     } catch (error) {
       console.warn(
         `[oma skill eval] routing for task ${task.id} could not be measured: ${error instanceof Error ? error.message : String(error)}.`,

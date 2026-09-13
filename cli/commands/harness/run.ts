@@ -476,6 +476,7 @@ export async function runHarnessEval(
           dispatchError: run.dispatchError,
           exitCode: run.diagnostics?.exitCode ?? null,
           timedOut: run.diagnostics?.timedOut ?? false,
+          usage: run.usage,
           trace: run.trace
             ? {
                 output: run.trace.output,
@@ -503,6 +504,7 @@ export async function runHarnessEval(
       decision: evaluation.score.decision,
       lift: evaluation.score.lift,
       evidenceStatus: evaluation.evidenceStatus,
+      usage: evaluation.usage,
       recordPath: options.record
         ? relative(projectRoot, destinationRecordPath)
         : undefined,

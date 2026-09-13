@@ -521,3 +521,65 @@ describe("harness execution provenance and trace", () => {
     expect(different?.promotionBlockers).toContain(limitation);
   });
 });
+
+describe("harness usage accounting", () => {
+  it("sums vendor-reported usage over arms and stores it in the record", async () => {
+    const project = makeProject();
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const result = await runHarnessEval(true, {
+      suite: project.suitePath,
+      candidate: project.candidateRoot,
+      live: true,
+      record: true,
+      yes: true,
+      _projectRoot: project.root,
+      _vendor: "codex",
+      _materializeVendor: () => undefined,
+      _dispatch: ({ arm }) => ({
+        output: "done",
+        usage:
+          arm === "candidate"
+            ? {
+                status: "actual",
+                inputTokens: 100,
+                outputTokens: 10,
+                costUsd: 0.01,
+                durationMs: 500,
+                model: "m",
+              }
+            : undefined,
+      }),
+    });
+    expect(result?.usage).toEqual({
+      status: "partial",
+      dispatches: 10,
+      inputTokens: 500,
+      outputTokens: 50,
+      costUsd: expect.closeTo(0.05, 6),
+    });
+    const candidateRun = result?.runs.find((run) => run.arm === "candidate");
+    expect(candidateRun?.usage?.costUsd).toBe(0.01);
+    expect(
+      result?.runs.find((run) => run.arm === "baseline")?.usage,
+    ).toBeUndefined();
+    const recordFile = readdirSync(join(project.root, "eval", "_runs"))[0];
+    const record = JSON.parse(
+      readFileSync(
+        join(project.root, "eval", "_runs", recordFile ?? ""),
+        "utf-8",
+      ),
+    ) as { runs: Array<{ usage?: { costUsd: number } }> };
+    expect(record.runs.filter((run) => run.usage)).toHaveLength(5);
+    const replay = await runHarnessEval(true, {
+      suite: project.suitePath,
+      candidate: project.candidateRoot,
+      mock: true,
+      _projectRoot: project.root,
+      _vendor: "codex",
+    });
+    expect(
+      replay?.runs.find((run) => run.arm === "candidate")?.usage?.costUsd,
+    ).toBe(0.01);
+  });
+});

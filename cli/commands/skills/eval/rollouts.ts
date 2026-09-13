@@ -11,7 +11,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { INSTALLED_SKILLS_DIR } from "../../../constants/vendors.js";
-import { unwrapVendorEnvelope } from "./envelope.js";
+import {
+  type DispatchUsage,
+  resolveDispatchResult,
+  unwrapVendorEnvelope,
+} from "./envelope.js";
 import {
   JUDGE_DEFAULT_RUBRIC,
   type JudgeDispatchFn,
@@ -111,6 +115,7 @@ export interface JudgeVerdict {
   score: 0 | 1;
   /** Unwrapped judge text, bounded to JUDGE_RESPONSE_LIMIT characters. */
   response: string;
+  usage: DispatchUsage;
 }
 
 /**
@@ -159,10 +164,12 @@ export function judgeVerdict(
     "Answer with exactly PASS or FAIL (no other text).",
   ].join("\n");
 
-  const response = unwrapVendorEnvelope(dispatchFn(gradingPrompt));
+  const result = resolveDispatchResult(dispatchFn(gradingPrompt));
+  const response = unwrapVendorEnvelope(result.output);
   return {
     score: parseJudgeVerdict(response),
     response: response.slice(0, JUDGE_RESPONSE_LIMIT),
+    usage: result.usage,
   };
 }
 
@@ -240,15 +247,18 @@ export function collectLiveRollouts(
         trial: number,
       ): RolloutEntry => {
         const armDir = mkdtempSync(join(tmpBase, `${arm}-`));
-        const output = dispatchFn(
-          arm,
-          arm === "baseline" ? task.prompt : treatmentPrompt,
-          armDir,
+        const { output, usage } = resolveDispatchResult(
+          dispatchFn(
+            arm,
+            arm === "baseline" ? task.prompt : treatmentPrompt,
+            armDir,
+          ),
         );
         const entry: RolloutEntry = {
           taskId: task.id,
           arm,
           output,
+          ...(usage.status === "actual" ? { usage } : {}),
           // No skillBodyHash on the baseline: it withholds the skill, so editing
           // SKILL.md does not invalidate that arm.
           ...(arm === "treatment" ? { skillBodyHash: bodyHash } : {}),
@@ -265,6 +275,8 @@ export function collectLiveRollouts(
           );
           entry.score = verdict.score;
           entry.judgeResponse = verdict.response;
+          if (verdict.usage.status === "actual")
+            entry.judgeUsage = verdict.usage;
         }
         return entry;
       };

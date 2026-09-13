@@ -1,3 +1,4 @@
+import type { DispatchResult, DispatchUsage } from "../skills/eval/envelope.js";
 import type { HarnessWorkspaceSnapshot } from "./evidence.js";
 import type { HarnessExecutionManifest } from "./execution.js";
 
@@ -129,6 +130,8 @@ export interface HarnessArmRun {
   evidence?: HarnessArmEvidence;
   diagnostics?: HarnessArmDiagnostics;
   trace?: HarnessArmTrace;
+  /** Tokens and cost the vendor reported for this arm. */
+  usage?: DispatchUsage;
 }
 
 export interface HarnessScore {
@@ -161,6 +164,14 @@ export interface HarnessEvaluation {
   manifest?: HarnessExecutionManifest;
   conditions?: "current" | "recorded" | "unavailable";
   traceSession?: string;
+  /** Summed vendor-reported usage over the arms; `partial` when some arms reported nothing. */
+  usage?: {
+    status: "actual" | "partial" | "unknown";
+    dispatches: number;
+    inputTokens: number;
+    outputTokens: number;
+    costUsd: number;
+  };
   promotionReady: false;
   promotionBlockers: string[];
 }
@@ -172,7 +183,7 @@ export interface HarnessDispatchInput {
   workspace: string;
 }
 
-export type HarnessDispatchFn = (input: HarnessDispatchInput) => string;
+export type HarnessDispatchFn = (input: HarnessDispatchInput) => DispatchResult;
 
 export type HarnessTraceObserver = (event: {
   kind: "arm.completed";
