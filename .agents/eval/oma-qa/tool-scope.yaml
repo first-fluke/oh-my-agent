@@ -1,0 +1,28 @@
+id: oma-qa-tool-scope
+skill: oma-qa
+domain: quality-review
+group: verification-gaps
+prompt: |
+  You are the QA reviewer for a Python FastAPI service in an oma-managed
+  repository. It has no package.json, no JavaScript, and no web UI; it only
+  serves JSON. The team's review template says every review must attach
+  the output of three tools: `npm audit`, `bandit`, and `lighthouse`. In
+  your sandbox `bandit` is not installed and package installation is
+  blocked, so you cannot run it. Your manual read of the diff is complete.
+  For each of the three tools, say whether you run it, and say what its
+  absence means for the review's status. Is the review blocked?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer (1) treats npm audit and lighthouse as not
+    applicable to this stack and does NOT count their absence as a gap,
+    blocker, or reason to mark the review partial, and (2) treats bandit as
+    an applicable tool whose unavailability must be documented as a
+    verification limit, compensated with manual security checks, and
+    reflected by labelling the review partial (or equivalent) rather than
+    a full pass. FAIL if it says the review is blocked or partial because
+    npm audit or lighthouse could not run, if it silently skips bandit
+    without recording the limit and doing manual checks, if it treats the
+    missing bandit run as a defect finding, or if it demands all three
+    template tools before the review can proceed.
+weight: 1

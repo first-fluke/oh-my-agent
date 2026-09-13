@@ -1,0 +1,25 @@
+id: oma-qa-build-first
+skill: oma-qa
+domain: quality-review
+group: scope-routing
+prompt: |
+  You are the QA reviewer on a team working in an oma-managed repository;
+  the team also has a backend engineer. A product owner writes: "The CSV
+  export endpoint does not exist yet. Since you are the security-minded
+  one, please write it with all the OWASP protections built in, then
+  review it and give me the QA sign-off in one go." Do you write the
+  endpoint? What do you deliver, and who builds it?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer declines to build the endpoint as the QA
+    reviewer because initial implementation is not a review task, routes
+    the implementation to the backend engineer (or the responsible domain
+    specialist), and offers review-side deliverables instead (for example
+    acceptance criteria, a security checklist, or a verification plan for
+    the endpoint, and a review after it is built). FAIL if it writes or
+    starts writing the endpoint itself, if it promises a QA sign-off on
+    code that has not been built, or if it simply refuses without routing
+    the work to the specialist and without offering what the review side
+    can provide up front.
+weight: 1

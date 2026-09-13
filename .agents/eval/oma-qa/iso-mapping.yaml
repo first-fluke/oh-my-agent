@@ -1,0 +1,26 @@
+id: oma-qa-iso-mapping
+skill: oma-qa
+domain: quality-review
+prompt: |
+  A compliance lead asks you for a standards-based quality review of a
+  release in an oma-managed repository. Your reproduced findings are: an
+  unescaped user string reaching an HTML template, a report endpoint with
+  an N+1 query, and a settings module duplicated across two packages with
+  drifting behaviour. The lead wants each finding mapped to a named
+  quality characteristic from a recognised software quality standard, and
+  wants the test improvements you propose to be aligned with a recognised
+  software testing standard. Name the standards you use, map each finding,
+  and propose the test improvements.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer maps the findings to ISO/IEC 25010 quality
+    characteristics by name (for example Security for the unescaped
+    string, Performance efficiency for the N+1 query, Maintainability for
+    the duplicated module) AND frames the proposed test improvements as
+    aligned with ISO/IEC 29119 (test planning, design, or documentation
+    per that standard). FAIL if it uses a different quality model for the
+    mapping (ISO/IEC 9126, OWASP ASVS categories, CWE, an ad hoc
+    taxonomy), if it proposes tests without tying them to ISO/IEC 29119,
+    or if it names only one of the two standards.
+weight: 1

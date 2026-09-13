@@ -1,0 +1,15 @@
+id: oma-market-badge-first-line
+skill: oma-market
+domain: market-research
+group: brief-contract
+prompt: |
+  You just completed an oma market-research run on "Raycast vs Alfred". The
+  engine that produced the output identifies itself as last30days version
+  3.21.1, synced 2026-09-13. You are about to write the markdown brief. Quote
+  the exact first line of that brief, character for character, before any
+  heading or cluster content.
+checker:
+  type: assert
+  expect_contains:
+    - "🌐 last30days v3.21.1"
+weight: 1

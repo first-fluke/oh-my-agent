@@ -1,0 +1,15 @@
+id: oma-scm-commit-from-file
+skill: oma-scm
+domain: scm
+prompt: |
+  In an oma-managed repository the user asks you to commit `src/auth/session.ts`
+  and `src/auth/session.test.ts` with a Conventional Commit that has a subject,
+  a two-paragraph body, and a `Refs: #482` footer. Nothing is staged yet.
+  Show the exact shell commands you run, in order, from staging through the
+  commit itself, including how the multi-line message is passed to git.
+checker:
+  type: assert
+  expect_contains:
+    - "git diff --cached --check"
+    - "git commit -F"
+weight: 1

@@ -94,8 +94,8 @@ describe("incident scan", () => {
     const a = "11111111-1111-4111-8111-111111111111";
     run(root, a, "failed", { exitCode: 2, unresolved: ["boom"] });
     const candidate = scanHarnessIncidents(root).candidates[0];
-    expect(candidate).toBeDefined();
-    const skeleton = incidentSpecSkeleton(candidate!);
+    if (!candidate) throw new Error("expected one candidate");
+    const skeleton = incidentSpecSkeleton(candidate);
     expect(skeleton).toMatchObject({
       schema_version: 1,
       id: "task-a-11111111",

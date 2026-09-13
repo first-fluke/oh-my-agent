@@ -1,0 +1,19 @@
+id: oma-market-run-invocation-flags
+skill: oma-market
+domain: market-research
+group: engine-run
+prompt: |
+  In an oma-enabled workspace you are running the market-research flow for
+  "Tailwind v4 migration pain points". Preflight and engine resolution both
+  succeeded, you followed the upstream pre-research steps, and the query plan
+  is saved at `plan.json`. The user asks two things: (1) the exact command
+  you invoke to run the engine with that plan, including the output-emission
+  mode flag, and (2) whether you must explicitly pass `--save-dir` for the raw
+  engine artifacts, and if not, which config setting supplies the default.
+checker:
+  type: assert
+  expect_contains:
+    - "oma market run"
+    - "--emit=compact"
+    - "market.save_dir"
+weight: 2

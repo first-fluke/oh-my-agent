@@ -1,0 +1,15 @@
+id: oma-docs-sync-range-fallback
+skill: oma-docs
+domain: docs-drift
+prompt: |
+  You are asked to "sync the docs with what I just changed" in a git
+  repository. The request gives no commit range, no branch name, and no
+  file list. Describe, in order, how you determine the diff range to feed
+  to the docs sync command, including the exact fallback range when the
+  earlier options yield nothing.
+checker:
+  type: assert
+  expect_contains:
+    - "staged"
+    - "HEAD~1..HEAD"
+weight: 2

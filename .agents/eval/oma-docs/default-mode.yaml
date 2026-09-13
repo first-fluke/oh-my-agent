@@ -1,0 +1,20 @@
+id: oma-docs-default-mode
+skill: oma-docs
+domain: docs-drift
+group: mode-selection
+prompt: |
+  A teammate leaves this note in the task queue: "please run the docs
+  maintenance pass on this repo before the release". No mode is named,
+  no diff range is given, and no edit permission is mentioned. Which
+  documentation operation do you run first, with what exact command, and
+  why that one rather than the others available?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer selects the `verify` mode (reference
+    verification, e.g. `oma docs verify --json`) as the operation to run
+    when no mode is specified, and justifies it as the default for an
+    unspecified request. FAIL if it selects sync, i18n, or lint as the
+    first operation, runs all modes indiscriminately as the default, or
+    refuses to proceed until the requester names a mode.
+weight: 1

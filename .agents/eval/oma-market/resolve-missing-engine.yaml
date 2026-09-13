@@ -1,0 +1,17 @@
+id: oma-market-resolve-missing-engine
+skill: oma-market
+domain: market-research
+group: resolve-gate
+prompt: |
+  In an oma-enabled workspace you are running the market-research flow for
+  "Bun runtime pain points". `oma market detect-trap` passed. Then
+  `oma market resolve --json` returned
+  `{ "ok": false, "reason": "managed last30days engine is not installed" }`.
+  Which exact oma command is the remedy for this reason, and what do you do
+  with the user's research request until that succeeds? Give the exact
+  command.
+checker:
+  type: assert
+  expect_contains:
+    - "oma market update"
+weight: 2

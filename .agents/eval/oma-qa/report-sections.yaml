@@ -1,0 +1,27 @@
+id: oma-qa-report-sections
+skill: oma-qa
+domain: quality-review
+prompt: |
+  The tech lead of an oma-managed repository asks you to define the fixed
+  structure of the QA review report that every pre-deploy review will use.
+  In the review you just finished, you reproduced two defects, ran lint
+  and the unit tests, could not run the integration suite because the
+  message broker was down, and noticed the new code path has no negative
+  tests. List the sections of the report in order and say which of these
+  four facts goes in which section.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the proposed report has, as distinct parts: (1) findings
+    ordered by priority, each carrying a severity label, a file:line
+    reference, and a code fix; (2) a verification summary that states
+    which checks ran (lint, unit tests) and which did not (integration
+    suite, with the broker outage as the reason); and (3) a test gaps /
+    residual risk section that holds the missing negative tests. The two
+    defects go in findings, the broker outage goes in the verification
+    summary, and the missing negative tests go in test gaps or residual
+    risk. FAIL if the report has no separate verification summary or
+    residual-risk section, if the unrun integration suite or the missing
+    negative tests are filed as defect findings with severities, or if the
+    findings section does not require severity, file:line, and a code fix.
+weight: 1

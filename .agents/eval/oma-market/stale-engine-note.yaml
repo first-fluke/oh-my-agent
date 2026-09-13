@@ -1,0 +1,23 @@
+id: oma-market-stale-engine-note
+skill: oma-market
+domain: market-research
+group: resolve-gate
+prompt: |
+  In an oma-enabled workspace you are running the market-research flow for
+  "Obsidian plugin ecosystem trends". `oma market resolve --json` returned
+  `ok: true`, `engine.status: "stale"`, and
+  `note: "GitHub release check failed; using cached v3.20.0 (latest is v3.21.1)"`.
+  The user is waiting for the brief. Do you proceed with the research, and
+  what, if anything, changes in what you deliver?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer (a) proceeds with the research on the cached
+    engine version rather than halting (a stale status with ok: true is a
+    valid engine, not a failure), and (b) states that the resolve `note`
+    (research ran on the cached engine version) is included in the delivered
+    report / brief so the user knows which engine version produced it.
+    FAIL if it refuses or stops the run because the engine is stale, makes a
+    successful `oma market update` a hard precondition before any research,
+    or proceeds without carrying the stale note into the delivered output.
+weight: 1

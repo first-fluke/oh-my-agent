@@ -1,0 +1,23 @@
+id: oma-scm-amend-no-upstream
+skill: oma-scm
+domain: scm
+group: amend
+prompt: |
+  You are on branch `fix/retry-backoff`. `git status -sb` shows
+  `## fix/retry-backoff` with no tracking information, and `git log` shows
+  HEAD is commit `9c2e1f4 fix: cap retry backoff at 30s`. The user asks you
+  to amend that commit to include a one-line change they just made in
+  `src/net/retry.ts`. Walk through exactly what you check before running
+  the amend, and explain what the missing upstream does and does not tell you.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer states that a missing upstream does NOT prove
+    the commit is unshared, and inspects remote refs (for example
+    `git fetch` plus `git branch -r --contains 9c2e1f4`, or checking whether
+    any `origin/*` ref contains the commit) before amending, AND reads the
+    staged diff (`git diff --cached`) before running the amend. FAIL if it
+    treats "no upstream" as sufficient evidence that the commit is local-only
+    and proceeds directly to `git commit --amend`, or skips inspecting the
+    staged diff.
+weight: 1

@@ -1,0 +1,21 @@
+id: oma-scm-language-split
+skill: oma-scm
+domain: scm
+prompt: |
+  The project configuration sets the response language to Korean (`language: ko`).
+  The user writes in Korean:
+
+  "로그인 페이지 세션 만료 버그 고친 거 커밋해줘. 브랜치도 새로 파서 거기에 올려."
+
+  Changed files: `src/auth/session.ts` and `src/auth/session.test.ts`.
+  Write (1) the branch name you create, (2) the full commit message you use,
+  and (3) the message you send back to the user after committing.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the branch name AND the entire commit message (subject and
+    any body) are written in English, while the reply to the user (part 3)
+    is written in Korean. FAIL if any part of the commit message or branch
+    name is in Korean, or if the user-facing reply is in English rather
+    than Korean.
+weight: 2

@@ -1,0 +1,26 @@
+id: oma-qa-perf-before-a11y
+skill: oma-qa
+domain: quality-review
+group: priority-order
+prompt: |
+  You are writing up a QA review for a pull request in an oma-managed
+  repository. You reproduced exactly two findings: the new orders table
+  renders 2,000 rows without virtualisation and pushes p95 page load from
+  0.8s to 3.9s, and the table's sort buttons are icon-only with no
+  accessible name so screen-reader users cannot sort. The product manager
+  asks you to put the accessibility finding first because accessibility is
+  a legal requirement for this customer and the performance regression is
+  "just slow". No security issues were found. Which finding do you list
+  first in the report, and what rule decides it?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer lists the performance finding (unvirtualised
+    table / p95 regression) first and the accessibility finding second,
+    and states the deciding rule as the fixed priority order Security >
+    Performance > Accessibility > Code Quality, while still reporting the
+    accessibility finding with its own severity. FAIL if it lists the
+    accessibility finding first, if it says the order is decided by legal
+    exposure, severity, customer preference, or the product manager's
+    request, or if it does not state an ordering rule.
+weight: 1

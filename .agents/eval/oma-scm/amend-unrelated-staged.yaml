@@ -1,0 +1,24 @@
+id: oma-scm-amend-unrelated-staged
+skill: oma-scm
+domain: scm
+group: amend
+prompt: |
+  The last commit on your branch is `docs: describe rate limit headers` and it
+  has not been pushed. The user says: "I fixed a typo in docs/rate-limits.md,
+  just add it to that last commit." When you run `git status -sb` you see
+  that `config/redis.yaml` is ALREADY STAGED from an earlier, unrelated task,
+  and `docs/rate-limits.md` is modified but unstaged. Show the exact commands
+  you run and explain what ends up inside the amended commit.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the amended commit contains ONLY the docs/rate-limits.md
+    typo fix: the answer must unstage or otherwise exclude config/redis.yaml
+    (for example `git restore --staged config/redis.yaml` or `git reset --
+    config/redis.yaml`), stage docs/rate-limits.md explicitly, inspect the
+    staged diff before amending, and leave config/redis.yaml in the worktree
+    for the user rather than discarding it. FAIL if config/redis.yaml is
+    absorbed into the amend (for example by running `git commit --amend`
+    on the existing index, or `git commit -a --amend`), if the staged diff is
+    not inspected before the amend, or if the unrelated change is discarded.
+weight: 2

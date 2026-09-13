@@ -1,0 +1,15 @@
+id: oma-scm-amend-shared-check
+skill: oma-scm
+domain: scm
+group: amend
+prompt: |
+  You are on branch `feat/export-csv`, which tracks `origin/feat/export-csv`.
+  The user asks you to fold the last two commits ("fix typo in header" and
+  "add csv export") into one before review. Before you touch history, what
+  exact git command do you run to determine whether those commits have
+  already been pushed, and what do you do if they have?
+checker:
+  type: assert
+  expect_contains:
+    - "@{u}..HEAD"
+weight: 1

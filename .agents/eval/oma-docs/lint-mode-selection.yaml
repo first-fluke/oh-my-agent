@@ -1,0 +1,15 @@
+id: oma-docs-lint-mode-selection
+skill: oma-docs
+domain: docs-drift
+group: mode-selection
+prompt: |
+  The Japanese docs under `docs/ja/` are not out of sync with the English
+  sources, but reviewers complain about inconsistent register and style
+  across the localized prose. You have the repository docs tooling
+  available and are asked to produce a report only. Which mode and exact
+  CLI invocation do you use to surface these style issues?
+checker:
+  type: assert
+  expect_contains:
+    - "oma docs lint"
+weight: 1
