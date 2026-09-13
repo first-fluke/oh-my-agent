@@ -7,7 +7,8 @@ import { awaitDispatchResult } from "./envelope.js";
 vi.mock("../../../io/runtime-dispatch/resolve-plan.js", () => ({
   resolveAgentPlan: vi.fn(() => ({ effort: "high" })),
 }));
-vi.mock("node:child_process", () => {
+vi.mock("node:child_process", async () => {
+  const { existsSync } = await import("node:fs");
   const execFileSync = vi.fn(
     (
       _command: string,
@@ -20,6 +21,7 @@ vi.mock("node:child_process", () => {
     ) =>
       JSON.stringify({
         cwd: options.cwd,
+        cwdExisted: existsSync(options.cwd ?? ""),
         args,
         isolatedMemory: options.env?.OMA_NO_AGENTMEMORY,
       }),
@@ -107,5 +109,16 @@ describe("judge isolation", () => {
     );
     const toolsIndex = first.args.indexOf("--tools");
     expect(first.args[toolsIndex + 1]).toBe("");
+  });
+
+  it("keeps the judge workspace alive until the asynchronous dispatch settles", async () => {
+    const judge = buildJudgeDispatchFn();
+    const { cwd, cwdExisted } = JSON.parse(
+      (await awaitDispatchResult(judge("Grade this answer"))).output,
+    ) as { cwd: string; cwdExisted: boolean };
+    // A synchronous cleanup removed the directory before the subprocess ran.
+    expect(cwd).toContain("oma-eval-judge-");
+    expect(cwdExisted).toBe(true);
+    expect(existsSync(cwd)).toBe(false);
   });
 });

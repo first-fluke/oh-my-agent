@@ -626,15 +626,15 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
           vendor,
         );
     const judgeWorkspace = mkdtempSync(join(tmpdir(), "oma-eval-judge-"));
-    try {
-      return runEvalDispatchDetailedAsync(
-        invocation,
-        judgeWorkspace,
-        gradingPrompt,
-        promptFlag,
-      );
-    } finally {
+    // The workspace must outlive the subprocess; removing it in a synchronous
+    // finally would delete the judge's cwd while it is still running.
+    return runEvalDispatchDetailedAsync(
+      invocation,
+      judgeWorkspace,
+      gradingPrompt,
+      promptFlag,
+    ).finally(() => {
       rmSync(judgeWorkspace, { recursive: true, force: true });
-    }
+    });
   };
 }
