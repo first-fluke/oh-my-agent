@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.8.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.8.0...cli-v14.8.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* **mcp:** migrate per-project direct serena launchers to the shared bridge ([2db39a9](https://github.com/first-fluke/oh-my-agent/commit/2db39a9f4f1e8a292fa5d34bdee9a13492985093))
+
 ## [14.8.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.7.12...cli-v14.8.0) (2026-09-12)
 
 
