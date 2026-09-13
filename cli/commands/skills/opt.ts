@@ -670,4 +670,5 @@ async function runSkillsOptInner(
     );
     renderSkillOptResult(finalResult);
   }
+  return finalResult;
 }

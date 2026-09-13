@@ -1203,6 +1203,26 @@ describe("runSkillsOpt", () => {
     });
   });
 
+  it("returns the dry-run result to programmatic callers, quietly", async () => {
+    // The meta-runner and harness feedback consume this return value; the
+    // dry-run branch used to print and fall through with undefined.
+    const taskDir = join(tmpDir, "eval", "oma-quiet");
+    writeNTasks(taskDir, MIN_TASKS);
+    const consoleLogSpy = vi
+      .spyOn(console, "log")
+      .mockImplementation(() => undefined);
+    const result = await runSkillsOpt(true, {
+      skill: "oma-quiet",
+      _workspace: tmpDir,
+      _taskDir: taskDir,
+      _optimizerFn: makeMockOptimizerFn([[]]),
+      _scoringFn: makeMockScoringFn(new Map(), 0),
+      _quiet: true,
+    });
+    expect(result).toMatchObject({ skill: "oma-quiet", applied: false });
+    expect(consoleLogSpy).not.toHaveBeenCalled();
+  });
+
   it("dry-run is the default: _dryRun is true in JSON output", async () => {
     const taskDir = join(tmpDir, "eval", "oma-dryrun");
     writeNTasks(taskDir, MIN_TASKS);
