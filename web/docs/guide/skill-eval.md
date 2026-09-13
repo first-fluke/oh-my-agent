@@ -245,6 +245,10 @@ After a successful live run, the report includes baseline and treatment counts, 
 
 ---
 
+### Dispatch timeouts
+
+Each live arm and judge call is killed after `OMA_SKILL_EVAL_TIMEOUT_MS` (default 120000). A timed-out dispatch is retried once before the task is excluded from the report, because one slow response is a transport failure rather than an answer; a second timeout excludes the task (and, in optimization, fails the split's coverage). Raise the limit for fixtures that legitimately need long answers.
+
 ## Routing: does the skill get selected?
 
 Utility lift measures what the body does once it is loaded. Vendors decide whether to load a skill from its frontmatter `description`, so a better body that is never selected is not an improvement. `--routing` sends each task prompt, together with the name and description of every installed skill, to the same protected model and asks for the single skill it would load (or `NONE`). The target being chosen is an activation; another skill is a misroute; `NONE` is a miss.

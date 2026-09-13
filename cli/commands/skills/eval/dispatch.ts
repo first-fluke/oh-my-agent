@@ -45,13 +45,15 @@ export class EvalDispatchError extends Error {
   constructor(
     message: string,
     readonly output: string = "",
+    /** The process was killed by the dispatch timeout rather than failing. */
+    readonly timedOut: boolean = false,
   ) {
     super(message);
     this.name = "EvalDispatchError";
   }
 }
 
-function evalDispatchTimeoutMs(): number {
+export function evalDispatchTimeoutMs(): number {
   const configured = Number.parseInt(
     process.env.OMA_SKILL_EVAL_TIMEOUT_MS ?? "",
     10,
@@ -114,6 +116,47 @@ export function runEvalDispatchDetailed(
   const viaStdin = promptIdx >= 0 && prompt.startsWith("-");
   // Drop only the prompt VALUE, keeping the bare flag (claude `-p` then reads stdin).
   const execArgs = viaStdin ? args.filter((_, idx) => idx !== promptIdx) : args;
+  // A timed-out dispatch is a transport failure, not an answer; one retry
+  // keeps a single slow response from voiding a whole task (and, in
+  // optimization, a whole run's coverage).
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return runEvalDispatchOnce(invocation, cwd, prompt, viaStdin, execArgs);
+    } catch (err) {
+      if (attempt === 0 && err instanceof EvalDispatchError && err.timedOut) {
+        console.warn("[oma skill eval] retrying the timed-out dispatch once.");
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+function isDispatchTimeout(err: unknown): boolean {
+  const e = err as {
+    status?: number | null;
+    signal?: string | null;
+    killed?: boolean;
+    code?: string;
+  };
+  // execFileSync's own timeout kills with SIGTERM (status null); the
+  // protected text wrapper reports its internal timeout as exit 143.
+  return (
+    e.signal === "SIGTERM" ||
+    e.killed === true ||
+    e.status === 143 ||
+    e.code === "ETIMEDOUT"
+  );
+}
+
+function runEvalDispatchOnce(
+  invocation: Parameters<typeof runEvalDispatchDetailed>[0],
+  cwd: string,
+  prompt: string,
+  viaStdin: boolean,
+  execArgs: string[],
+): { output: string; usage: DispatchUsage } {
+  const { command } = invocation;
   let cleanup = () => {};
   try {
     const prepared = prepareProtectedTextWorkspace(invocation);
@@ -152,6 +195,16 @@ export function runEvalDispatchDetailed(
   } catch (err) {
     if (err instanceof EvalDispatchError) throw err;
     const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
+    const stdout = typeof e.stdout === "string" ? e.stdout : "";
+    if (isDispatchTimeout(err)) {
+      const seconds = Math.round(evalDispatchTimeoutMs() / 1000);
+      console.warn(`[oma skill eval] dispatch timed out after ${seconds}s.`);
+      throw new EvalDispatchError(
+        `Evaluation dispatch timed out after ${seconds}s`,
+        stdout,
+        true,
+      );
+    }
     const stderrSnippet =
       typeof e.stderr === "string"
         ? e.stderr.replace(/\s+/g, " ").trim().slice(0, 200)
@@ -163,7 +216,7 @@ export function runEvalDispatchDetailed(
     );
     throw new EvalDispatchError(
       `Evaluation dispatch failed (exit ${e.status ?? "?"})`,
-      typeof e.stdout === "string" ? e.stdout : "",
+      stdout,
     );
   } finally {
     cleanup();

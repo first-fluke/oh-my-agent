@@ -2966,6 +2966,47 @@ describe("runEvalDispatch (dash-leading prompt handling)", () => {
     expect(out).toBe(`STDIN[]ARGV[-p,${prompt}]`);
   });
 
+  it("retries a timed-out dispatch once and surfaces the second timeout", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("OMA_SKILL_EVAL_TIMEOUT_MS", "1000");
+    const marker = join(dir, "first-attempt");
+    const slowOnce = join(dir, "slow-once.cjs");
+    // First invocation hangs past the 2s kill; the second answers at once.
+    writeFileSync(
+      slowOnce,
+      `const fs=require('fs');const m=${JSON.stringify(marker)};` +
+        "if(!fs.existsSync(m)){fs.writeFileSync(m,'1');setTimeout(()=>{},10000);}" +
+        "else{process.stdout.write('answer');}",
+    );
+    try {
+      const out = runEvalDispatch(
+        { command: process.execPath, args: [slowOnce], env: process.env },
+        dir,
+        "x",
+        null,
+      );
+      expect(out).toBe("answer");
+      expect(warnSpy.mock.calls.map((call) => String(call[0]))).toEqual([
+        "[oma skill eval] dispatch timed out after 1s.",
+        "[oma skill eval] retrying the timed-out dispatch once.",
+      ]);
+
+      const alwaysSlow = join(dir, "always-slow.cjs");
+      writeFileSync(alwaysSlow, "setTimeout(()=>{},10000);");
+      expect(() =>
+        runEvalDispatch(
+          { command: process.execPath, args: [alwaysSlow], env: process.env },
+          dir,
+          "x",
+          null,
+        ),
+      ).toThrow("Evaluation dispatch timed out after 1s");
+    } finally {
+      vi.unstubAllEnvs();
+      warnSpy.mockRestore();
+    }
+  }, 20_000);
+
   it("rejects captured stdout from a failed process instead of scoring it", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const failer = join(dir, "fail.cjs");

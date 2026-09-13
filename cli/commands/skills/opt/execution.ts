@@ -14,7 +14,7 @@ import {
   resolvePromptFlag,
   resolveVendor,
 } from "../../../platform/agent-config.js";
-import { EVAL_DISPATCH_TIMEOUT_MS } from "../eval/dispatch.js";
+import { evalDispatchTimeoutMs } from "../eval/dispatch.js";
 import { redactEvolutionText } from "./evolution-memory.js";
 
 export function evolutionErrorMessage(error: unknown): string {
@@ -44,7 +44,7 @@ export function protectEvolutionInvocation(
     invocation,
     vendor,
     prompt,
-    EVAL_DISPATCH_TIMEOUT_MS,
+    evalDispatchTimeoutMs(),
     effort,
   );
 }
@@ -97,7 +97,7 @@ export function runEvolutionPrompt(prompt: string): string {
         encoding: "utf-8",
         input: invocation.input,
         stdio: ["pipe", "pipe", "pipe"],
-        timeout: EVAL_DISPATCH_TIMEOUT_MS + 1_000,
+        timeout: evalDispatchTimeoutMs() + 1_000,
         maxBuffer: 16 * 1024 * 1024,
       },
     );
