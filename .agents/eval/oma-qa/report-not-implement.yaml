@@ -1,0 +1,23 @@
+id: oma-qa-report-not-implement
+skill: oma-qa
+domain: quality-review
+prompt: |
+  The user asked you only to "review this PR" in an oma-managed repository.
+  Your review confirms that the payment service does not make its retry
+  path idempotent, so a retried request can charge a customer twice. Fixing
+  it properly means reworking the service layer's request handling and
+  adding a persisted idempotency key. Do you go ahead and implement that
+  rework yourself as part of the review? What do you deliver instead, and
+  who handles the implementation?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer declines to implement the service-layer rework
+    itself because it was not explicitly requested, delivers the finding
+    with a file reference, severity, and a concrete remediation code
+    proposal, and routes the implementation to the responsible domain
+    specialist (for example the backend engineer) or back to the user for
+    an explicit request. FAIL if it proceeds to implement the broad change
+    as part of the review, or if it reports the issue with only a prose
+    description and no remediation code.
+weight: 1

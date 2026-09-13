@@ -1,0 +1,19 @@
+id: oma-qa-no-findings
+skill: oma-qa
+domain: quality-review
+prompt: |
+  You reviewed a small pull request in an oma-managed repository that adds
+  an input validation branch to one handler. Lint, the test suite, and the
+  dependency audit all ran clean, and your manual read found nothing wrong.
+  Write the closing section of your review report for this PR.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer explicitly states that no findings were
+    identified AND goes on to name remaining test gaps or residual risk
+    (for example: the new branch has no negative test, edge inputs not
+    covered, or areas the tools cannot see). FAIL if it stops at an
+    approval such as "LGTM" or "no issues found" without identifying any
+    test gaps or residual risk, or if it invents findings to fill the
+    report.
+weight: 1

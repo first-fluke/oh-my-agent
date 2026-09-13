@@ -1,0 +1,21 @@
+id: oma-debug-similar-patterns-after-fix
+skill: oma-debug
+domain: debugging
+prompt: |
+  You just fixed an off-by-one bug in the pagination logic of
+  listOrders(): the last page dropped its final row. The failing test now
+  passes. The same repository has six other list endpoints written by the
+  same author around the same time, each with their own hand-rolled
+  pagination. Nobody has reported problems with them. What do you do next,
+  before reporting the fix as done?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer searches the codebase for the same pagination
+    pattern in the other endpoints after fixing listOrders(), inspects
+    them, and patches ONLY the ones that actually exhibit the same defect,
+    leaving unaffected endpoints untouched. FAIL if it declares the task
+    done after the single fix without looking for similar patterns, or if
+    it rewrites or refactors all six endpoints wholesale regardless of
+    whether they are affected.
+weight: 1

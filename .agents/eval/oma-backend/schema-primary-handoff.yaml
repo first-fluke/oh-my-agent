@@ -1,0 +1,15 @@
+id: oma-backend-schema-primary-handoff
+skill: oma-backend
+domain: backend
+prompt: |
+  A ticket asks for a `GET /reports/revenue` endpoint. On inspection, the
+  endpoint itself is a thin read, but delivering it requires splitting the
+  `orders` table into monthly partitions, adding two composite indexes, and
+  backfilling a materialized view. Per the oma backend flow, how do you
+  scope this work and which other oma specialist do you coordinate with for
+  the schema part?
+checker:
+  type: assert
+  expect_contains:
+    - "oma-db"
+weight: 1

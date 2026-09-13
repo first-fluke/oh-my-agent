@@ -1,0 +1,23 @@
+id: oma-qa-priority-order
+skill: oma-qa
+domain: quality-review
+group: priority-order
+prompt: |
+  You are the QA reviewer for a pull request in an oma-managed repository.
+  Your pass turned up four issues: a form field with no accessible label, a
+  list endpoint that issues one query per row, a template that interpolates
+  user input into HTML without escaping, and a helper with an inconsistent
+  naming style. The author asks you to write up the review. In what order do
+  you present these four findings, and what rule decides that order?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer orders the findings Security first (the
+    unescaped HTML interpolation), then Performance (the per-row query),
+    then Accessibility (the unlabeled field), then Code Quality (naming),
+    and states that this fixed priority order (Security > Performance >
+    Accessibility > Code Quality) is the deciding rule. FAIL if
+    accessibility is placed above performance, if security is not first,
+    if the order is by file, effort, or author preference, or if no
+    ordering rule is stated.
+weight: 2

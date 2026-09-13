@@ -1,0 +1,21 @@
+id: oma-refactor-tests-fail-mikado-revert
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  You moved `SessionStore` from `auth/` into a new `core/session/` package.
+  After the move, 14 tests fail because three other modules reach into
+  `SessionStore` internals through a legacy `auth.internals` re-export. You
+  tried two quick patches to keep the tests green and they still fail. It is
+  late in the day. What is your next step with the working tree, and how
+  do you proceed with the move afterwards?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer reverts the move completely (a clean tree, not
+    a partially patched one), records the discovered prerequisite (the
+    modules that depend on the `auth.internals` re-export must be untangled
+    first), and attacks that prerequisite as its own verified step before
+    retrying the move. FAIL if it keeps patching forward on the broken
+    tree, commits with failing tests, skips or modifies the failing tests
+    to get green, or leaves the half-done move in place overnight.
+weight: 1

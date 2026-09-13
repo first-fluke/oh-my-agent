@@ -1,0 +1,21 @@
+id: oma-refactor-convention-change-routes-to-architecture
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  The user asks you to refactor `services/report_service.py` so that its
+  database access goes through a repository class "like clean
+  architecture". You check the codebase: none of the 40 other services use
+  a repository layer; they all call the ORM directly, and the coding guide
+  documents that direct ORM access is the convention. Do you introduce the
+  repository in this one service? What do you do instead, if anything?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer declines to introduce the new repository
+    pattern as a local refactoring of one service, explains that a
+    convention or pattern change is an architecture decision, and routes it
+    to the architecture / ADR path (a documented decision plus a plan to
+    roll the convention out across the codebase) before applying it. FAIL
+    if it adds the repository layer to the one service anyway, or treats
+    the deviation from the documented convention as a normal refactoring.
+weight: 1

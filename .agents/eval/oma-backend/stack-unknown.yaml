@@ -1,0 +1,15 @@
+id: oma-backend-stack-unknown
+skill: oma-backend
+domain: backend
+prompt: |
+  You are asked to "add a health-check endpoint" in a freshly cloned
+  repository. The tree contains only a README, a LICENSE, an empty `src/`
+  folder, and no package manifest of any kind (no package.json,
+  pyproject.toml, go.mod, Cargo.toml, or pom.xml) and no `stack/`
+  directory. Per the oma backend flow, what is your first step, and what
+  exactly do you suggest to the user before writing any code?
+checker:
+  type: assert
+  expect_contains:
+    - "/stack-set"
+weight: 1

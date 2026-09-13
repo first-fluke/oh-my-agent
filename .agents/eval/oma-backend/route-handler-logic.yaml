@@ -1,0 +1,24 @@
+id: oma-backend-route-handler-logic
+skill: oma-backend
+domain: backend
+group: layering
+prompt: |
+  You are adding `POST /orders/:id/cancel` to an existing Express + TypeScript
+  API that already has `routes/`, `services/`, and `repositories/` folders.
+  Cancelling is allowed only when the order is still `pending` or `paid`; a
+  `paid` order must also get a refund record created and an email queued.
+  A teammate suggests putting the status check, refund creation, and email
+  enqueue directly in the route handler "since it's only a few lines".
+  Describe exactly where each piece of that logic goes and what the route
+  handler itself is left doing.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer keeps ALL business decisions (the status check,
+    refund creation, email enqueue) out of the route handler and places them
+    in a service method, with the handler reduced to receiving the request,
+    validating input, calling the injected service, and returning the
+    response. FAIL if it accepts the teammate's suggestion, leaves any
+    business rule (status transition, refund, enqueue decision) in the
+    handler, or puts business decisions in the repository.
+weight: 2

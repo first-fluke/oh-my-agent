@@ -1,0 +1,20 @@
+id: oma-refactor-mechanical-split-is-not-a-win
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  `handlers.ts` is 520 lines and the lint rule `max-lines: 500` now fails
+  CI. A teammate proposes cutting the file at a convenient point into
+  `handlers.ts` (260 lines) and `handlers2.ts` (260 lines) with a re-export,
+  which makes lint pass and touches nothing else. Do you accept this
+  refactoring? Explain your verdict and what you would do instead.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer rejects the mechanical split as a failure
+    rather than a win, on the grounds that the line-count metric is only a
+    proxy and readability is the real success criterion, and proposes a
+    restructuring driven by responsibility or cohesion (for example
+    grouping handlers by domain or extracting shared helpers). FAIL if it
+    accepts the two-file split because lint passes, or judges success by
+    the metric alone.
+weight: 1

@@ -1,0 +1,21 @@
+id: oma-refactor-bug-found-mid-refactor
+skill: oma-refactor
+domain: refactoring
+group: two-hats
+prompt: |
+  Halfway through extracting `computeDiscount()` out of a 300-line checkout
+  function, you notice the original code applies a percentage discount
+  before the fixed-amount coupon, which contradicts the pricing spec in the
+  README. The existing tests do not cover that branch. It is a one-line
+  swap to fix. What do you do about the bug right now, and what does your
+  refactor commit contain?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer does NOT fix the ordering bug inside the
+    refactor commit, records or reports the bug so it is handled through
+    the separate bug-fix / debug path, and keeps the extraction commit
+    behavior-preserving (the extracted code reproduces the current, buggy
+    ordering). FAIL if it swaps the order as part of the refactoring, fixes
+    it "while it's there", or leaves the bug unreported.
+weight: 1

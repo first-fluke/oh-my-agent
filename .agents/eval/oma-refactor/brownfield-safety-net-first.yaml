@@ -1,0 +1,21 @@
+id: oma-refactor-brownfield-safety-net-first
+skill: oma-refactor
+domain: refactoring
+group: safety-net
+prompt: |
+  You are asked to break up a 700-line `OrderProcessor` class in a legacy
+  Python service into smaller collaborators. The module has zero unit tests
+  and coverage on those lines is 0%. There is a working staging environment
+  and a CLI entry point that runs the processor against sample orders.
+  Describe the first thing you deliver and commit, and when you first touch
+  the production code.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer writes characterization / golden-master tests
+    that capture the CURRENT behavior of OrderProcessor FIRST, commits them
+    separately, and only then starts restructuring production code. FAIL if
+    it begins extracting classes or methods before a safety net exists,
+    writes tests and the restructuring in the same commit, or relies on
+    manual staging checks in place of tests.
+weight: 2

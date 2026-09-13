@@ -1,0 +1,21 @@
+id: oma-debug-environment-missing
+skill: oma-debug
+domain: debugging
+group: reproduce-first
+prompt: |
+  You are asked to fix a crash in a payment webhook handler. The crash only
+  happens against the vendor's sandbox, which needs credentials you do not
+  have, and there is no local emulator. You have the handler source, the
+  vendor's error log excerpt, and the existing unit tests. What do you
+  deliver in this situation, and what do you say about the reproduction?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer explicitly documents the reproduction blocker
+    (missing sandbox credentials / environment) AND still delivers the
+    closest static diagnosis from the source, log excerpt, and tests,
+    presented as a partial result with the blocker stated. FAIL if it
+    stops and only asks for credentials with no diagnosis, or if it
+    presents a fix as verified without acknowledging that reproduction
+    was not possible.
+weight: 1

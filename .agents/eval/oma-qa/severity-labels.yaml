@@ -1,0 +1,24 @@
+id: oma-qa-severity-labels
+skill: oma-qa
+domain: quality-review
+group: finding-format
+prompt: |
+  You are reviewing a release candidate in an oma-managed repository and
+  have confirmed four defects: (a) the login handler builds its SQL by
+  string concatenation with the submitted username, (b) the checkout
+  button does nothing on the supported Safari version so nobody can buy,
+  (c) the admin report page takes eight seconds because of an N+1 query but
+  does return correct data, (d) two modules use different casing for the
+  same config key. Which severity label do you assign to each, and what is
+  the scale you are using?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer uses the four-level scale CRITICAL / HIGH /
+    MEDIUM / LOW with these meanings: CRITICAL = security breach or data
+    loss, HIGH = blocks launch, MEDIUM = fix this sprint, LOW = backlog,
+    and assigns (a) CRITICAL, (b) HIGH, (c) MEDIUM, (d) LOW. FAIL if it
+    uses a different scale (P0-P3, Blocker/Major/Minor, CVSS numbers, a
+    three-level scale), rates the SQL injection below CRITICAL, or rates
+    the broken checkout as anything other than HIGH.
+weight: 1

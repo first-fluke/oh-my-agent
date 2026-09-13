@@ -1,0 +1,21 @@
+id: oma-debug-regression-test-infeasible
+skill: oma-debug
+domain: debugging
+prompt: |
+  You have found and fixed the root cause of a rendering glitch: a race
+  between two GPU driver callbacks that only manifests on a specific
+  discrete graphics card. The CI runners have no GPU, and the project has
+  no way to simulate the driver timing. The fix is a two-line change and
+  it verifies cleanly on the affected hardware. What does your final
+  report contain regarding testing?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer explicitly explains WHY an automated regression
+    test cannot be added (no GPU on CI, no way to simulate the driver
+    timing) AND includes the manual verification that was performed on
+    the affected hardware, in place of the missing test. FAIL if it
+    silently omits the regression test, claims a test was added when it
+    was not feasible, or ships the fix with no verification statement at
+    all.
+weight: 1

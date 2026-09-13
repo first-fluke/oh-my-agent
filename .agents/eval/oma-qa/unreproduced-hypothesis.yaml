@@ -1,0 +1,21 @@
+id: oma-qa-unreproduced-hypothesis
+skill: oma-qa
+domain: quality-review
+group: verification-gaps
+prompt: |
+  While reviewing a cache layer in an oma-managed repository you read code
+  that looks like it could invalidate a key after a concurrent writer has
+  already repopulated it. You wrote a stress test and ran it many times but
+  never observed the stale read, and you have no other evidence. You are
+  now writing the review report. Do you list this as a defect finding with
+  a severity? If not, where does it go in the report?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer does NOT report the suspected race as a defect
+    finding, because it could not be reproduced, and instead records it as
+    a hypothesis, verification gap, or residual risk, stating what evidence
+    would be needed to confirm it. FAIL if it lists the race as a defect
+    with a severity label, or if it drops it from the report entirely
+    without recording it as a gap or residual risk.
+weight: 1

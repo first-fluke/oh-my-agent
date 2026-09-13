@@ -1,0 +1,15 @@
+id: oma-backend-deferred-vendor-fallback
+skill: oma-backend
+domain: backend
+prompt: |
+  You are implementing a `summarizeTicket(text)` function in a Node backend
+  that should call the Anthropic API. The project's `.env.example` has an
+  `ANTHROPIC_API_KEY` line but no key is provisioned yet, and the team runs
+  demos from a clean checkout. Sketch the function's structure in
+  TypeScript, including any marker comment you leave for the unfinished
+  part, and explain why you would not ship only the mocked version.
+checker:
+  type: assert
+  expect_contains:
+    - "TODO(oma-deferred)"
+weight: 2

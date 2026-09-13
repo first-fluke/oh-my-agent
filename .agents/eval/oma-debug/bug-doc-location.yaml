@@ -1,0 +1,15 @@
+id: oma-debug-bug-doc-location
+skill: oma-debug
+domain: debugging
+prompt: |
+  You have finished a debugging task in an oma-managed repository: the
+  root cause is identified, a minimal fix is in place, the regression
+  test passes, and related checks are green. You now want to leave a
+  written record of the root cause, the fix, and the residual risk for
+  future readers. Give the exact directory path where that bug
+  documentation belongs.
+checker:
+  type: assert
+  expect_contains:
+    - ".agents/results/bugs/"
+weight: 1

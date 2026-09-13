@@ -1,0 +1,21 @@
+id: oma-backend-shared-orm-session
+skill: oma-backend
+domain: backend
+prompt: |
+  A FastAPI service uses SQLAlchemy. To speed up a bulk import endpoint, a
+  colleague opens one `AsyncSession` at the top of the handler and passes
+  it into `asyncio.gather()` across twenty concurrent `import_row()`
+  coroutines, each of which adds objects and calls `flush()`. Tests pass
+  locally. Do you approve this, and if not, what do you change and why?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer rejects sharing a single mutable ORM session
+    across concurrent work, explains that the session is not safe to share
+    across concurrently running coroutines unless the ORM explicitly
+    supports it, and proposes a per-task session (or serializing the work
+    within one session) with a clear transaction boundary. FAIL if it
+    approves the shared session, treats passing tests as sufficient
+    evidence, or only suggests adding a lock without addressing session
+    ownership.
+weight: 1

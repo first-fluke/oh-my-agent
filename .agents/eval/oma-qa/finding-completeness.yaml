@@ -1,0 +1,26 @@
+id: oma-qa-finding-completeness
+skill: oma-qa
+domain: quality-review
+group: finding-format
+prompt: |
+  A teammate drafted this entry for the QA report of an oma-managed
+  repository and asks you to approve it as written:
+
+    "Finding: the auth module keeps a hardcoded signing secret. Recommend
+    moving it to environment configuration."
+
+  You know the secret is the constant on line 14 of src/auth/token.ts. Is
+  the entry acceptable to ship? If not, list exactly what must be added
+  before it can go in the report.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer rejects the entry as incomplete and requires all
+    of: an explicit file:line reference (src/auth/token.ts:14), a severity
+    label, and remediation in the form of actual code (for example a
+    snippet reading the secret from process.env or a config loader), not
+    just the sentence "move it to environment configuration". FAIL if it
+    approves the entry as written, asks only for the file path without
+    requiring remediation code, or treats a prose recommendation as a
+    sufficient fix.
+weight: 1

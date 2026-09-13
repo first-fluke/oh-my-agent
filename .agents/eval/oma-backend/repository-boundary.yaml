@@ -1,0 +1,23 @@
+id: oma-backend-repository-boundary
+skill: oma-backend
+domain: backend
+group: layering
+prompt: |
+  In a NestJS project you find `UserRepository.findActiveForBilling()` which
+  loads users, then filters out those whose trial has expired, applies a
+  regional discount rate, and returns plain DTOs with a computed `amountDue`
+  field. You are asked to add one more billing rule (skip users flagged for
+  manual review). Do you add it inside the repository method, and if not,
+  how do you restructure the responsibilities between repository and
+  service?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer refuses to add the new rule to the repository
+    and moves the existing business decisions (trial expiry, discount rate,
+    amountDue, manual-review skip) into a service, leaving the repository
+    responsible only for data access that returns ORM entities. FAIL if it
+    adds the rule inside the repository, keeps the pricing/eligibility
+    decisions in the repository, or has the repository keep returning
+    computed DTOs as its contract.
+weight: 1
