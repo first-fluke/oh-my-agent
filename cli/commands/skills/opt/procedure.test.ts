@@ -107,6 +107,23 @@ describe("evolution procedure", () => {
     expect(() => loadEvolutionProcedure(root)).toThrow(/invalid constitution/);
   });
 
+  it("defaults anchors and budget and reads them when declared", () => {
+    const root = workspace();
+    expect(loadEvolutionProcedure(root).constitution).toMatchObject({
+      anchors: [],
+      budget: { max_dispatches_per_run: null },
+    });
+    mkdirSync(join(root, EVOLUTION_DIR), { recursive: true });
+    writeFileSync(
+      join(root, EVOLUTION_DIR, CONSTITUTION_FILE),
+      `schema_version: 1\nimmutable: ["${EVOLUTION_DIR}/${CONSTITUTION_FILE}"]\nmeta_targets: [optimizer]\nanchors: [oma-scm, oma-qa]\nbudget:\n  max_dispatches_per_run: 250\n`,
+    );
+    expect(loadEvolutionProcedure(root).constitution).toMatchObject({
+      anchors: ["oma-scm", "oma-qa"],
+      budget: { max_dispatches_per_run: 250 },
+    });
+  });
+
   it("treats immutable paths as globs relative to the workspace", () => {
     const root = workspace();
     const { constitution } = loadEvolutionProcedure(root);

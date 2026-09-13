@@ -313,7 +313,7 @@ export function registerSkillsCommand(program: Command): void {
         };
         const repeats = opts.repeats ?? 3;
         const candidates = opts.candidates ?? 2;
-        const anchors = opts.anchor ?? [];
+        const anchors = opts.anchor ?? procedure.constitution.anchors;
         const innerRuns =
           opts.skill.length * repeats * (1 + candidates) + anchors.length * 2;
         const perRun = estimateLiveDispatchCalls(

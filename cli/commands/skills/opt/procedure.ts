@@ -101,6 +101,12 @@ const constitutionSchema = z.object({
   immutable: z.array(z.string().min(1)),
   /** Procedure parts a meta-loop may propose changes to. */
   meta_targets: z.array(z.enum(["optimizer", "maintainer"])),
+  /**
+   * Ground-truth skills a meta-optimization never selects on; they are run
+   * under the current and winning procedure so drift is always reported.
+   * `--anchor` overrides this list for one run.
+   */
+  anchors: z.array(z.string().min(1)).default([]),
   budget: z
     .object({
       /** Upper bound on model dispatches one optimization run may issue. */
@@ -123,6 +129,7 @@ export const DEFAULT_CONSTITUTION: z.infer<typeof constitutionSchema> = {
     "cli/commands/skills/opt/**",
   ],
   meta_targets: ["optimizer", "maintainer"],
+  anchors: [],
   budget: { max_dispatches_per_run: null },
 };
 
@@ -256,6 +263,9 @@ export function exportEvolutionProcedure(workspace: string): {
         "# Procedure parts a meta-optimization may propose changes to.",
         "meta_targets:",
         ...DEFAULT_CONSTITUTION.meta_targets.map((entry) => `  - ${entry}`),
+        "# Ground-truth skills never used for meta selection; reported for drift on every meta run.",
+        "anchors: []",
+        "# Upper bound on model calls one optimization run may issue (null = unlimited).",
         "budget:",
         "  max_dispatches_per_run: null",
         "",
