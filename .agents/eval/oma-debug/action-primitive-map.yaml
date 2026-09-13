@@ -1,0 +1,21 @@
+# expected baseline: fail — a model without the skill cannot know the SSL primitive vocabulary (CALL_TOOL, READ, COMPARE, INFER, WRITE, VALIDATE, NOTIFY) or which debug action maps to which
+id: oma-debug-action-primitive-map
+skill: oma-debug
+domain: debugging
+group: ssl-primitives
+prompt: |
+  You are the OMA debugging agent. The debug skill maps each of its
+  actions to an SSL primitive. State the primitive for each of these
+  three actions: (1) reproducing the failure, (2) verifying the fixed
+  behaviour, (3) reporting the result. Also say what evidence the
+  reporting action carries.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer maps reproducing the failure to `CALL_TOOL`,
+    verifying behaviour to `VALIDATE`, and reporting the result to
+    `NOTIFY`, and says the report carries a root-cause summary. FAIL if
+    any of the three primitives is wrong or missing, if it invents
+    different primitive names, or if it says it does not know the
+    mapping.
+weight: 1

@@ -1,20 +1,21 @@
+# expected baseline: likely pass — recognising feature work is generic; the discriminator is routing to the Frontend/Backend/Mobile implementation agents rather than to a PM/product backlog
 id: oma-debug-feature-request-routing
 skill: oma-debug
 domain: debugging
+group: routing
 prompt: |
-  A ticket titled "BUG: CSV export is broken" lands on you. After reading
-  the code you find that the export endpoint has never supported CSV at
-  all; it only ever emitted JSON, and there is no CSV code path, test, or
-  spec anywhere in the repository. The reporter expected CSV because a
-  competitor product has it. As the debugging agent, what do you do with
-  this ticket?
+  You are the OMA debugging agent. A ticket titled "BUG: CSV export is
+  broken" arrives. Reading the code shows the export endpoint has never
+  supported CSV; it only ever emitted JSON and there is no CSV code
+  path, test, or spec. Which OMA agent(s) should this go to instead of
+  you, and why? Name the agent type(s).
 checker:
   type: judge
   rubric: |
-    PASS only if the answer recognizes that this is feature work rather
-    than a bug, and routes or hands it off to the relevant implementation
-    skill/agent (for example backend) instead of building the CSV export
-    itself, while stating why it is not a debugging task. FAIL if it
-    proceeds to implement CSV export as a "fix", or treats the missing
-    feature as a regression to be patched.
+    PASS only if the answer recognises this as feature work rather than
+    a bug and routes it to the relevant implementation agent, naming the
+    Backend agent (or the Frontend/Backend/Mobile implementation agents
+    as the class) as the destination. FAIL if it implements CSV export
+    itself as a "fix", routes it to a PM/product/planning agent, to QA,
+    or to coordination, or does not name an implementation agent.
 weight: 1

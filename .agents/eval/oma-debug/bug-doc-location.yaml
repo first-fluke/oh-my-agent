@@ -1,15 +1,20 @@
+# expected baseline: fail — a model without the skill will name docs/, CHANGELOG, an ADR folder, or an issue tracker; it does not know the OMA `.agents/results/bugs/` directory
 id: oma-debug-bug-doc-location
 skill: oma-debug
 domain: debugging
+group: output-contract
 prompt: |
-  You have finished a debugging task in an oma-managed repository: the
-  root cause is identified, a minimal fix is in place, the regression
-  test passes, and related checks are green. You now want to leave a
-  written record of the root cause, the fix, and the residual risk for
-  future readers. Give the exact directory path where that bug
-  documentation belongs.
+  You are the OMA debugging agent. You have finished a fix: root cause
+  identified, minimal change applied, regression test green. You want to
+  leave a written record of the root cause, fix, and residual risk for
+  future readers. Answer in prose: what is the exact relative directory
+  path where that bug documentation belongs?
 checker:
-  type: assert
-  expect_contains:
-    - ".agents/results/bugs/"
+  type: judge
+  rubric: |
+    PASS only if the answer names the directory `.agents/results/bugs/`
+    (or `.agents/results/bugs`) as the location for the bug
+    documentation. FAIL if it names any other location (docs/, a
+    CHANGELOG, an ADR folder, a wiki, an issue tracker, the test file, a
+    commit message) or gives no concrete path.
 weight: 1

@@ -1,0 +1,20 @@
+# expected baseline: fail — a model without the skill cannot know the four named resource scopes (CODEBASE, LOCAL_FS, PROCESS, MEMORY) or what each one holds
+id: oma-debug-resource-scope
+skill: oma-debug
+domain: debugging
+group: ssl-primitives
+prompt: |
+  You are the OMA debugging agent. The debug skill declares a small set
+  of named resource scopes and says what belongs to each. Under which
+  scope do (1) the bug report and result artifacts fall, (2) your
+  working hypotheses and root-cause notes, and (3) the reproduction and
+  verification commands? Give the scope names.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer assigns bug reports/result artifacts to
+    `LOCAL_FS`, hypotheses/root-cause notes to `MEMORY`, and
+    reproduction/verification commands to `PROCESS`. FAIL if any of the
+    three is assigned differently, if it uses different scope names, or
+    if it says the mapping is unknown.
+weight: 1

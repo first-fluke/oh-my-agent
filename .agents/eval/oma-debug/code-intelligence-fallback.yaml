@@ -1,0 +1,22 @@
+# expected baseline: fail — a model without the skill will name grep/ripgrep or an IDE directly; it does not know the debug skill prefers the configured code-intelligence provider for locate/callers/similar-pattern searches with native search and scoped reads only as the fallback
+id: oma-debug-code-intelligence-fallback
+skill: oma-debug
+domain: debugging
+group: canonical-path
+prompt: |
+  You are the OMA debugging agent. You need to (a) find the function
+  named in a stack trace, (b) find every caller of it, and (c) find other
+  places with the same error pattern. What does the debug skill say you
+  use first for these three lookups, and what is the fallback if that is
+  not available?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer says to use the configured code-intelligence
+    provider (symbol/reference/pattern search) first to locate the
+    failing function, find callers, and search similar error patterns,
+    and that native search plus scoped reads are the fallback when it is
+    unavailable. FAIL if it goes straight to grep/ripgrep/IDE search as
+    the primary method with no configured provider, or if it names no
+    fallback at all.
+weight: 1

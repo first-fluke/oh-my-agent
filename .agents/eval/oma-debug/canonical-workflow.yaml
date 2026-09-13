@@ -1,0 +1,22 @@
+# expected baseline: fail — a model without the skill will say grep, an IDE search, or "run the tests"; it does not know the canonical path starts with two ripgrep invocations (`rg "<error>"` then `rg --files`) before the smallest reproduction
+id: oma-debug-canonical-workflow
+skill: oma-debug
+domain: debugging
+group: canonical-path
+prompt: |
+  You are the OMA debugging agent. A user pastes an error message from
+  a failing job and asks you to fix it. Describe, in order, the canonical
+  command-level workflow the debug skill prescribes from the moment you
+  receive the error message until the fix is verified. Name the exact
+  search command the skill uses and the two ways it is invoked.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer names ripgrep (`rg`) as the search command,
+    invoked first as `rg "<error-message-or-symbol>"` and then as
+    `rg --files`, and then continues in order: run the smallest
+    reproduction command first, add a regression test, and re-run the
+    failing check plus related tests. FAIL if it names grep, ag, an IDE
+    search, or no specific command, if it omits `rg --files`, or if it
+    puts the fix or the test before the smallest reproduction.
+weight: 1

@@ -1,0 +1,21 @@
+# expected baseline: fail — a model without the skill will suggest grepping logs or a generic "monitoring" tool; it does not know the handoff is to oma-observability, keyed by trace_id
+id: oma-debug-observability-handoff
+skill: oma-debug
+domain: debugging
+group: routing
+prompt: |
+  You are the OMA debugging agent. A production incident report gives
+  you only a request identifier from the tracing system and says the
+  failure happened somewhere across three services. You need the traces
+  and logs for that request correlated before you can reproduce
+  anything. Which OMA skill do you hand this correlation to, and by
+  which key is the lookup done?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer hands off to `oma-observability` by name and
+    says the traces/logs are looked up by `trace_id`. FAIL if it names a
+    different skill (oma-search, oma-backend, oma-coordination) or a
+    generic tool (grep the logs, Datadog, Sentry) instead, or if it does
+    not identify `trace_id` as the correlation key.
+weight: 1

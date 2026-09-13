@@ -1,0 +1,22 @@
+# expected baseline: fail — a model without the skill will invent its own phase names (Triage, Investigate, Fix, Test...); it cannot know the six named scenes PREPARE, ACQUIRE, REASON, ACT, VERIFY, FINALIZE
+id: oma-debug-scene-order
+skill: oma-debug
+domain: debugging
+group: scenes
+prompt: |
+  You are the OMA debugging agent. The debug skill structures every bug
+  task as a fixed sequence of named scenes. List those scene names in
+  order, exactly as the skill names them, with one line describing what
+  each one does.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer lists exactly these six scene names in this
+    order: PREPARE, ACQUIRE, REASON, ACT, VERIFY, FINALIZE (case may
+    vary), with PREPARE gathering symptoms/logs/repro path, ACQUIRE
+    reading code/tests/patterns, REASON isolating root cause, ACT
+    applying minimal fix plus regression test, VERIFY re-running checks,
+    and FINALIZE documenting. FAIL if any name is different, missing, or
+    out of order, or if the answer substitutes generic phase names
+    (Triage, Investigate, Diagnose, Fix, Test, Report).
+weight: 1

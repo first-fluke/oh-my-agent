@@ -1,0 +1,20 @@
+# expected baseline: fail — a model without the skill will either do the review or hand it to a "reviewer"/refactor/architecture role; it does not know the debug skill sends general code review to the QA Agent
+id: oma-debug-code-review-routing
+skill: oma-debug
+domain: debugging
+group: routing
+prompt: |
+  You are the OMA debugging agent. A user asks: "Nothing is broken, but
+  can you go over the new payments module and tell me if the code is
+  any good?" Is this in your scope? If not, which OMA agent handles it?
+  Name it.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer says this is out of the debug agent's scope
+    because it is a general code review with no failing behaviour, and
+    routes it to the QA Agent (oma-qa / qa-reviewer) by name. FAIL if it
+    performs the review itself, or routes it to any other destination
+    (refactor, architecture, backend, PM, coordination, a human
+    reviewer) instead of QA.
+weight: 1

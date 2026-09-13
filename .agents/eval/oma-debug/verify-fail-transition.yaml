@@ -1,0 +1,21 @@
+# expected baseline: likely pass — "re-diagnose rather than tweak the patch" is common sense; the discriminator is returning to the root-cause analysis scene rather than iterating on the patch
+id: oma-debug-verify-fail-transition
+skill: oma-debug
+domain: debugging
+group: scenes
+prompt: |
+  You are the OMA debugging agent. You applied what you believed was
+  the minimal fix and wrote a regression test, but on re-running the
+  checks the original failure still occurs. According to the debug
+  skill's transition rules, what is the next step, and which earlier
+  stage of the flow do you go back to?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer says to return to root-cause analysis (the
+    REASON scene / re-isolating the root cause and rejecting the
+    unsupported hypothesis) before attempting another change. FAIL if it
+    proposes tweaking or adding to the patch until the test passes,
+    weakening the test, or skipping straight to another fix without
+    revisiting the root-cause analysis.
+weight: 1

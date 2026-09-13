@@ -1,0 +1,20 @@
+# expected baseline: fail — a model without the skill will list root cause, fix, and tests but typically omit "residual risk" as a required item of the closing documentation
+id: oma-debug-finalize-contents
+skill: oma-debug
+domain: debugging
+group: scenes
+prompt: |
+  You are the OMA debugging agent in the last scene of a bug task: the
+  fix is verified and you are writing the closing documentation. The
+  debug skill defines exactly which four things this final scene must
+  document. Name all four.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer names all four of: root cause, the fix, the
+    (regression) test, and residual risk. FAIL if "residual risk" (or an
+    unmistakable synonym such as remaining/known risk) is missing, if
+    fewer than four items are given, or if the list is padded with
+    different items in place of one of the four (for example timeline,
+    reviewers, metrics).
+weight: 1

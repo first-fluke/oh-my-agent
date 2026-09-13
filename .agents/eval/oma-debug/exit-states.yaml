@@ -1,0 +1,22 @@
+# expected baseline: likely pass — most models will call this a partial result, but the discriminator is labelling it "partial success" with the verification blocker made explicit rather than "failed" or "done"
+id: oma-debug-exit-states
+skill: oma-debug
+domain: debugging
+group: output-contract
+prompt: |
+  You are the OMA debugging agent. You traced a crash to its root cause
+  and applied a minimal fix, but the only way to run the verifying test
+  is against a staging cluster you cannot reach from this session, so
+  the fix is unverified. According to the debug skill's exit criteria,
+  how do you classify this outcome when you report, and what must the
+  report state for that classification to be valid?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer classifies the outcome as a PARTIAL SUCCESS
+    (not success, not failure) and states that the verification blocker
+    (unreachable staging cluster) must be made explicit in the report,
+    together with the root cause. FAIL if it reports the task as a
+    success/done, as a failure, or as blocked with no diagnosis, or if
+    it does not require the blocker to be stated explicitly.
+weight: 1
