@@ -643,8 +643,10 @@ The following matrix is generated from the checked-in public command registry. I
 | `skill` | `—` | Inspect and audit installed skills |
 | `skill audit` | `--json, --output <format>` | Check frontmatter description similarity between installed skills |
 | `skill lint` | `--skill <id>, --json, --output <format>` | Detect per-skill authoring smells (frontmatter, structure, broken refs) |
-| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --require-coverage, --neg-transfer, --json, --output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks) |
+| `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks) |
 | `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --json, --output <format>` | Optimize a skill's SKILL.md to maximize measured held-out utility lift |
+| `skill promotions` | `--skill <id>, --json, --output <format>` | List recorded SKILL.md promotions and rollbacks for a skill |
+| `skill rollback` | `--skill <id>, --json, --output <format>` | Restore the SKILL.md body replaced by the most recent recorded promotion |
 | `schedule` | `—` |  |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Register a scheduled agent job |
 | `schedule list` | `--json, --output <format>` | List scheduled jobs with OS drift state (synced/missing-in-os/orphan-in-os), grouped by project |
