@@ -68,7 +68,7 @@ export type MaintainerOutcome =
     };
 
 export interface EvolutionDiagnostic {
-  stage: "optimizer" | "maintainer" | "validation";
+  stage: "optimizer" | "maintainer" | "validation" | "budget";
   status: string;
   message: string;
 }
@@ -129,6 +129,8 @@ export interface SkillOptResult {
   baselineTrainLift?: number;
   /** Held-in training lift of the final body. */
   finalTrainLift?: number;
+  /** Model calls charged against the constitution budget (live runs). */
+  budget?: { limit: number | null; used: number };
   epochs: OptEpoch[];
   acceptedEdits: SkillEdit[];
   rejectedCount: number;

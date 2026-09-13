@@ -13,11 +13,18 @@ import { createNoneMemoryProvider } from "../../state/memory-provider.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
 import { SKILL_EVAL_PROTOCOL_REVISION } from "./eval/types.js";
 import {
+  buildJudgeDispatchFn,
+  buildLiveDispatchFn,
   discoverNeighborTasks,
   loadTaskFixtures,
   MIN_TASKS,
   scoreSkillBody,
 } from "./eval.js";
+import {
+  createDispatchMeter,
+  meterCall,
+  meterScoringFn,
+} from "./opt/budget.js";
 import { confirmLiveRun } from "./opt/cost-preview.js";
 import { editKey, splitTrainValTest, validateCandidate } from "./opt/edits.js";
 import { runOptEpochLoop } from "./opt/epoch-loop.js";
@@ -261,16 +268,33 @@ async function runSkillsOptInner(
   const memoryMode: "recall" | "none" =
     options.memory === "none" ? "none" : "recall";
 
-  // Resolve injectable functions (for test / mock determinism)
-  const optimizerFn: OptimizerFn =
+  // Resolve injectable functions (for test / mock determinism). Live runs
+  // meter every model call against the constitution budget; injected
+  // functions are metered too so the limit means the same thing in tests.
+  const dispatchMeter = isLive
+    ? createDispatchMeter(procedure.constitution.budget.max_dispatches_per_run)
+    : undefined;
+  const meterFn = <Args extends unknown[], Result>(
+    fn: (...args: Args) => Result,
+  ) => (dispatchMeter ? meterCall(fn, dispatchMeter) : fn);
+  const optimizerFn: OptimizerFn = meterFn(
     options._optimizerFn ??
-    buildLlmOptimizerFn(editsPerEpoch, procedure.optimizer.template);
-  const scoringFn: ScoringFn = options._scoringFn ?? scoreSkillBody;
-  const maintainerFn =
+      buildLlmOptimizerFn(editsPerEpoch, procedure.optimizer.template),
+  );
+  const baseScoringFn: ScoringFn = options._scoringFn ?? scoreSkillBody;
+  const scoringFn: ScoringFn =
+    dispatchMeter && !options._scoringFn
+      ? meterScoringFn(baseScoringFn, dispatchMeter, {
+          dispatchFn: buildLiveDispatchFn(workspace, skillId),
+          judgeFn: buildJudgeDispatchFn(),
+        })
+      : baseScoringFn;
+  const maintainerFn = meterFn(
     options._maintainerFn ??
-    (isLive
-      ? buildLlmMaintainerFn(procedure.maintainer.template)
-      : buildHeuristicMaintainerFn());
+      (isLive
+        ? buildLlmMaintainerFn(procedure.maintainer.template)
+        : buildHeuristicMaintainerFn()),
+  );
 
   // Load original SKILL.md body (for diff and baseline).
   // When _skillMdPath is injected (tests), read from there; otherwise use
@@ -346,6 +370,7 @@ async function runSkillsOptInner(
         maintainerFn,
         evolutionRecorder,
         workspace,
+        dispatchMeter,
       })),
       ...provenance,
     };

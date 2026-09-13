@@ -98,6 +98,7 @@ Skill opt  (skill: oma-scholar)
   applied: false
   baselineLift: 0.0%  finalLift: 100.0%  (train 50.0% → 100.0%)
   epochs: 1  acceptedEdits: 1  rejected: 0
+  budget: 42 model calls used (no limit)
   finalTest: pass baseline=0.0000 candidate=0.3333
 
   diff:
@@ -132,6 +133,8 @@ The optimizer and maintainer prompts are the improvement procedure. They ship as
 | `optimizer.md` | Proposes SKILL.md edits from training evidence and persistent knowledge | `{{body}}`, `{{findings}}`, `{{editsPerEpoch}}` (also `{{knowledge}}`) |
 | `maintainer.md` | Consolidates evidence into reusable patterns | `{{evidence}}`, `{{priorFacts}}` (also `{{skillId}}`, `{{suiteHash}}`, `{{epoch}}`) |
 | `constitution.yaml` | Surfaces the loop must never write, which procedure parts a meta-optimization may change, and a dispatch budget | must list itself under `immutable` |
+
+`budget.max_dispatches_per_run` (default `null`, unlimited) is enforced in live runs: every underlying model call (task arm, neighbor arm, judge, optimizer, maintainer) charges one unit, and the call that would exceed the limit is refused before it is made. The loop then stops with a `budget:exhausted` diagnostic, the final test is skipped, promotion is blocked, and the result reports `budget: { limit, used }`. Usage is recorded in the run summary either way, so procedures can be compared on cost as well as gain.
 
 `oma skill procedure` prints the active sources and hashes; `--export` writes the defaults for editing without overwriting existing files. A template that drops a required placeholder is refused rather than silently degraded. Every run records `procedure` (hash per part plus a combined hash) and `memory` in its result, its run summary, and the promotion lineage, so evidence produced under one procedure is never confused with another.
 
@@ -213,6 +216,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
   "finalTest": { "baselineLift": 0.0, "candidateLift": 0.3333, "passed": true },
   "promotion": { "eligible": true, "reasons": [] },
   "diagnostics": [],
+  "budget": { "limit": null, "used": 42 },
   "_split": { "trainCount": 4, "valCount": 1, "testCount": 3 }
 }
 ```

@@ -409,6 +409,7 @@ export async function createSkillEvolutionRecorder(args: {
           finalTestPassed: result.finalTest?.passed,
           promotionEligible: result.promotion?.eligible,
           applied: result.applied,
+          budget: result.budget,
         })}\n`,
         "utf-8",
       );

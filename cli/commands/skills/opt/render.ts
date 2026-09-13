@@ -26,6 +26,7 @@ export function serializeSkillOptResult(result: SkillOptResult): string {
       finalTest: result.finalTest,
       promotion: result.promotion,
       diagnostics: result.diagnostics,
+      budget: result.budget,
       procedure: result.procedure,
       memory: result.memory,
       applied: result.applied,
@@ -65,6 +66,11 @@ export function renderSkillOptResult(result: SkillOptResult): void {
   if (result.evolution) {
     console.log(
       `  evolution: suite=${result.evolution.suiteHash} patterns=${result.evolution.persistentPatterns} rejectedHistory=${result.evolution.persistentRejectedEdits}`,
+    );
+  }
+  if (result.budget) {
+    console.log(
+      `  budget: ${result.budget.used} model calls used${result.budget.limit === null ? " (no limit)" : ` of ${result.budget.limit}`}`,
     );
   }
   if (result.finalTest) {

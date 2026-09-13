@@ -1,4 +1,5 @@
 import type { SkillUtilityReport, TaskFixture } from "../eval.js";
+import { DispatchBudgetExceededError, type DispatchMeter } from "./budget.js";
 import { unifiedDiff } from "./diff.js";
 import {
   applyEdit,
@@ -103,6 +104,8 @@ export async function runOptEpochLoop(options: {
   maintainerFn?: MaintainerFn;
   evolutionRecorder?: SkillEvolutionRecorder;
   workspace?: string;
+  /** Run-level dispatch budget; exhaustion stops the loop with a diagnostic. */
+  dispatchMeter?: DispatchMeter;
 }): Promise<SkillOptResult> {
   const {
     skillId,
@@ -119,7 +122,23 @@ export async function runOptEpochLoop(options: {
     maintainerFn,
     evolutionRecorder,
     workspace,
+    dispatchMeter,
   } = options;
+
+  let budgetExhausted = false;
+  const budgetDiagnostic = (
+    error: unknown,
+    where: string,
+  ): error is DispatchBudgetExceededError => {
+    if (!(error instanceof DispatchBudgetExceededError)) return false;
+    budgetExhausted = true;
+    diagnostics.push({
+      stage: "budget",
+      status: "exhausted",
+      message: `${error.used} of ${error.limit} model calls used; ${where}.`,
+    });
+    return true;
+  };
 
   const developmentIds = new Set(
     [...trainTasks, ...valTasks].map((task) => task.id),
@@ -169,328 +188,323 @@ export async function runOptEpochLoop(options: {
   let totalRejected = 0;
   let patience = 0;
 
-  for (let epochIdx = 0; epochIdx < maxEpochs && !baselineBlocker; epochIdx++) {
-    // Early-stop check
-    if (patience >= OPT_EARLY_STOP_PATIENCE) {
-      break;
-    }
-
-    // 1. Score current best on TRAIN to get findings for optimizer
-    const { report: trainReport, lift: trainLift } = await scoreOnSplit(
-      bestBody,
-      skillId,
-      trainTasks,
-      taskDir,
-      mode,
-      scoringFn,
-      true,
-      false,
-      workspace,
-    );
-
-    baselineTrainLift ??= trainLift;
-    curTrainLift = trainLift;
-
-    const trainBlocker = evaluationBlocker(trainReport, mode);
-    if (trainBlocker) {
-      diagnostics.push({
-        stage: "validation",
-        status: trainBlocker,
-        message: "Training evaluation failed; optimization stopped.",
-      });
-      break;
-    }
-
-    await evolutionRecorder?.recordEvidence(epochIdx, trainReport);
-    const maintained = maintainerFn
-      ? await maintainerFn(
-          trainReport,
-          evolutionRecorder?.knowledge ?? {
-            skillId,
-            suiteHash: "unscoped",
-            patterns: [],
-            rejectedEditKeys: [...rejectedBuffer],
-            acceptedEditKeys: [],
-          },
-          epochIdx,
-        )
-      : [];
-    const degraded =
-      !Array.isArray(maintained) && maintained.status === "degraded";
-    const patterns = Array.isArray(maintained)
-      ? maintained
-      : degraded
-        ? []
-        : maintained.patterns;
-    if (degraded)
-      diagnostics.push({
-        stage: "maintainer",
-        status: maintained.reason,
-        message: maintained.message,
-      });
-    await evolutionRecorder?.recordPatterns(epochIdx, patterns);
-
-    // 2. Optimizer proposes K edits, filtered by rejected buffer
-    const optimized = await optimizerFn(bestBody, trainReport, {
-      epoch: epochIdx,
-      knowledge: evolutionRecorder?.knowledge ?? {
-        skillId,
-        suiteHash: "unscoped",
-        patterns: patterns.map((pattern) => pattern.summary),
-        rejectedEditKeys: [...rejectedBuffer],
-        acceptedEditKeys: [],
-      },
-      patterns,
-    });
-    if (!Array.isArray(optimized) && !("edits" in optimized)) {
-      throw new Error(
-        `[oma skill opt] optimizer ${optimized.status}: ${optimized.message}`,
-      );
-    }
-    const rawEdits = Array.isArray(optimized) ? optimized : optimized.edits;
-    const candidateEdits = rawEdits.filter(
-      (e) => !rejectedBuffer.has(editKey(e)),
-    );
-
-    // 3. Score each candidate on the HELD-OUT VAL split (with neighbor checks)
-    //    and on the HELD-IN TRAIN split (no neighbor checks).
-    let bestCandidateGain = -Infinity;
-    let bestCandidateDeltaLift = 0;
-    let bestCandidateDeltaTrainLift = 0;
-    let bestCandidateEdit: SkillEdit | undefined;
-    let bestCandidateBody: string | undefined;
-    const evaluatedCandidates: Array<{
-      edit: SkillEdit;
-      key: string;
-      deltaLift: number;
-      deltaTrainLift: number;
-      report: SkillUtilityReport;
-      trainReport: SkillUtilityReport;
-    }> = [];
-
-    for (const edit of candidateEdits) {
-      // LR budget check
-      const netChange = editNetChange(bestBody, edit);
-      if (netChange > lrMaxChars) {
-        totalRejected++;
-        rejectedBuffer.add(editKey(edit));
-        await evolutionRecorder?.recordProposal({
-          epoch: epochIdx,
-          edit,
-          editKey: editKey(edit),
-          outcome: "rejected",
-          reason: "learning-rate",
-          deltaLift: 0,
-        });
-        continue;
+  try {
+    for (
+      let epochIdx = 0;
+      epochIdx < maxEpochs && !baselineBlocker;
+      epochIdx++
+    ) {
+      // Early-stop check
+      if (patience >= OPT_EARLY_STOP_PATIENCE) {
+        break;
       }
 
-      // Apply edit
-      const candidateBody = applyEdit(bestBody, edit);
-
-      // Candidate validation
-      const validation = validateCandidate(candidateBody);
-      if (!validation.ok) {
-        totalRejected++;
-        rejectedBuffer.add(editKey(edit));
-        await evolutionRecorder?.recordProposal({
-          epoch: epochIdx,
-          edit,
-          editKey: editKey(edit),
-          outcome: "rejected",
-          reason: "invalid-candidate",
-          deltaLift: 0,
-        });
-        continue;
-      }
-
-      // Score on VAL split
-      const { lift: candValLift, report: candReport } = await scoreOnSplit(
-        candidateBody,
+      // 1. Score current best on TRAIN to get findings for optimizer
+      const { report: trainReport, lift: trainLift } = await scoreOnSplit(
+        bestBody,
         skillId,
-        valTasks,
+        trainTasks,
         taskDir,
         mode,
         scoringFn,
-        false,
         true,
+        false,
         workspace,
       );
-      // Score on TRAIN split
-      const { lift: candTrainLift, report: candTrainReport } =
-        await scoreOnSplit(
+
+      baselineTrainLift ??= trainLift;
+      curTrainLift = trainLift;
+
+      const trainBlocker = evaluationBlocker(trainReport, mode);
+      if (trainBlocker) {
+        diagnostics.push({
+          stage: "validation",
+          status: trainBlocker,
+          message: "Training evaluation failed; optimization stopped.",
+        });
+        break;
+      }
+
+      await evolutionRecorder?.recordEvidence(epochIdx, trainReport);
+      const maintained = maintainerFn
+        ? await maintainerFn(
+            trainReport,
+            evolutionRecorder?.knowledge ?? {
+              skillId,
+              suiteHash: "unscoped",
+              patterns: [],
+              rejectedEditKeys: [...rejectedBuffer],
+              acceptedEditKeys: [],
+            },
+            epochIdx,
+          )
+        : [];
+      const degraded =
+        !Array.isArray(maintained) && maintained.status === "degraded";
+      const patterns = Array.isArray(maintained)
+        ? maintained
+        : degraded
+          ? []
+          : maintained.patterns;
+      if (degraded)
+        diagnostics.push({
+          stage: "maintainer",
+          status: maintained.reason,
+          message: maintained.message,
+        });
+      await evolutionRecorder?.recordPatterns(epochIdx, patterns);
+
+      // 2. Optimizer proposes K edits, filtered by rejected buffer
+      const optimized = await optimizerFn(bestBody, trainReport, {
+        epoch: epochIdx,
+        knowledge: evolutionRecorder?.knowledge ?? {
+          skillId,
+          suiteHash: "unscoped",
+          patterns: patterns.map((pattern) => pattern.summary),
+          rejectedEditKeys: [...rejectedBuffer],
+          acceptedEditKeys: [],
+        },
+        patterns,
+      });
+      if (!Array.isArray(optimized) && !("edits" in optimized)) {
+        throw new Error(
+          `[oma skill opt] optimizer ${optimized.status}: ${optimized.message}`,
+        );
+      }
+      const rawEdits = Array.isArray(optimized) ? optimized : optimized.edits;
+      const candidateEdits = rawEdits.filter(
+        (e) => !rejectedBuffer.has(editKey(e)),
+      );
+
+      // 3. Score each candidate on the HELD-OUT VAL split (with neighbor checks)
+      //    and on the HELD-IN TRAIN split (no neighbor checks).
+      let bestCandidateGain = -Infinity;
+      let bestCandidateDeltaLift = 0;
+      let bestCandidateDeltaTrainLift = 0;
+      let bestCandidateEdit: SkillEdit | undefined;
+      let bestCandidateBody: string | undefined;
+      const evaluatedCandidates: Array<{
+        edit: SkillEdit;
+        key: string;
+        deltaLift: number;
+        deltaTrainLift: number;
+        report: SkillUtilityReport;
+        trainReport: SkillUtilityReport;
+      }> = [];
+
+      for (const edit of candidateEdits) {
+        // LR budget check
+        const netChange = editNetChange(bestBody, edit);
+        if (netChange > lrMaxChars) {
+          totalRejected++;
+          rejectedBuffer.add(editKey(edit));
+          await evolutionRecorder?.recordProposal({
+            epoch: epochIdx,
+            edit,
+            editKey: editKey(edit),
+            outcome: "rejected",
+            reason: "learning-rate",
+            deltaLift: 0,
+          });
+          continue;
+        }
+
+        // Apply edit
+        const candidateBody = applyEdit(bestBody, edit);
+
+        // Candidate validation
+        const validation = validateCandidate(candidateBody);
+        if (!validation.ok) {
+          totalRejected++;
+          rejectedBuffer.add(editKey(edit));
+          await evolutionRecorder?.recordProposal({
+            epoch: epochIdx,
+            edit,
+            editKey: editKey(edit),
+            outcome: "rejected",
+            reason: "invalid-candidate",
+            deltaLift: 0,
+          });
+          continue;
+        }
+
+        // Score on VAL split
+        const { lift: candValLift, report: candReport } = await scoreOnSplit(
           candidateBody,
           skillId,
-          trainTasks,
+          valTasks,
           taskDir,
           mode,
           scoringFn,
           false,
-          false,
+          true,
           workspace,
         );
+        // Score on TRAIN split
+        const { lift: candTrainLift, report: candTrainReport } =
+          await scoreOnSplit(
+            candidateBody,
+            skillId,
+            trainTasks,
+            taskDir,
+            mode,
+            scoringFn,
+            false,
+            false,
+            workspace,
+          );
 
-      const deltaLift = candValLift - curValLift;
-      const deltaTrainLift = candTrainLift - trainLift;
-      evaluatedCandidates.push({
-        edit,
-        key: editKey(edit),
-        deltaLift,
-        deltaTrainLift,
-        report: candReport,
-        trainReport: candTrainReport,
-      });
+        const deltaLift = candValLift - curValLift;
+        const deltaTrainLift = candTrainLift - trainLift;
+        evaluatedCandidates.push({
+          edit,
+          key: editKey(edit),
+          deltaLift,
+          deltaTrainLift,
+          report: candReport,
+          trainReport: candTrainReport,
+        });
 
-      const gain = deltaLift + deltaTrainLift;
-      if (
-        candidateAcceptable(deltaLift, deltaTrainLift) &&
-        !evaluationBlocker(candReport, mode, true) &&
-        !evaluationBlocker(candTrainReport, mode) &&
-        gain > bestCandidateGain
-      ) {
-        bestCandidateGain = gain;
-        bestCandidateDeltaLift = deltaLift;
-        bestCandidateDeltaTrainLift = deltaTrainLift;
-        bestCandidateEdit = edit;
-        bestCandidateBody = candidateBody;
+        const gain = deltaLift + deltaTrainLift;
+        if (
+          candidateAcceptable(deltaLift, deltaTrainLift) &&
+          !evaluationBlocker(candReport, mode, true) &&
+          !evaluationBlocker(candTrainReport, mode) &&
+          gain > bestCandidateGain
+        ) {
+          bestCandidateGain = gain;
+          bestCandidateDeltaLift = deltaLift;
+          bestCandidateDeltaTrainLift = deltaTrainLift;
+          bestCandidateEdit = edit;
+          bestCandidateBody = candidateBody;
+        }
       }
-    }
 
-    // 4. Accept the best candidate that lost nothing on either split and
-    //    gained on at least one, with no confirmed negative transfer.
-    const epochProposed = candidateEdits.length;
-    let accepted = false;
+      // 4. Accept the best candidate that lost nothing on either split and
+      //    gained on at least one, with no confirmed negative transfer.
+      const epochProposed = candidateEdits.length;
+      let accepted = false;
 
-    if (bestCandidateEdit !== undefined && bestCandidateBody !== undefined) {
-      const newValLift = curValLift + bestCandidateDeltaLift;
-      const epochRecord: OptEpoch = {
-        epoch: epochIdx,
-        proposed: epochProposed,
-        accepted: bestCandidateEdit,
-        lift: newValLift,
-        deltaLift: bestCandidateDeltaLift,
-        patterns,
-      };
-      epochs.push(epochRecord);
-      acceptedEdits.push(bestCandidateEdit);
-      bestBody = bestCandidateBody;
-      curValLift = newValLift;
-      curTrainLift = trainLift + bestCandidateDeltaTrainLift;
-      patience = 0;
-      accepted = true;
-    }
-
-    if (!accepted) {
-      const epochRecord: OptEpoch = {
-        epoch: epochIdx,
-        proposed: epochProposed,
-        lift: curValLift,
-        deltaLift: 0,
-        patterns,
-      };
-      epochs.push(epochRecord);
-      patience++;
-    }
-
-    const acceptedKey =
-      accepted && bestCandidateEdit ? editKey(bestCandidateEdit) : undefined;
-    for (const candidate of evaluatedCandidates) {
-      const blocker =
-        evaluationBlocker(candidate.report, mode, true) ??
-        evaluationBlocker(candidate.trainReport, mode);
-      let reason: SkillProposalGateRecord["reason"];
-      if (candidate.key === acceptedKey) reason = "accepted";
-      else if (blocker) reason = blocker;
-      else if (candidate.deltaLift <= 0 && candidate.deltaTrainLift <= 0)
-        reason = "no-validation-lift";
-      else if (
-        !candidateAcceptable(candidate.deltaLift, candidate.deltaTrainLift)
-      )
-        reason = "split-regression";
-      else reason = "not-best-candidate";
-      const inconclusive =
-        blocker !== undefined && blocker !== "negative-transfer";
-      if (
-        candidate.key !== acceptedKey &&
-        !inconclusive &&
-        !rejectedBuffer.has(candidate.key)
-      ) {
-        rejectedBuffer.add(candidate.key);
-        totalRejected++;
+      if (bestCandidateEdit !== undefined && bestCandidateBody !== undefined) {
+        const newValLift = curValLift + bestCandidateDeltaLift;
+        const epochRecord: OptEpoch = {
+          epoch: epochIdx,
+          proposed: epochProposed,
+          accepted: bestCandidateEdit,
+          lift: newValLift,
+          deltaLift: bestCandidateDeltaLift,
+          patterns,
+        };
+        epochs.push(epochRecord);
+        acceptedEdits.push(bestCandidateEdit);
+        bestBody = bestCandidateBody;
+        curValLift = newValLift;
+        curTrainLift = trainLift + bestCandidateDeltaTrainLift;
+        patience = 0;
+        accepted = true;
       }
-      await evolutionRecorder?.recordProposal({
-        epoch: epochIdx,
-        edit: candidate.edit,
-        editKey: candidate.key,
-        outcome:
-          candidate.key === acceptedKey
-            ? "accepted"
-            : inconclusive
-              ? "inconclusive"
-              : "rejected",
-        reason,
-        deltaLift: candidate.deltaLift,
-        deltaTrainLift: candidate.deltaTrainLift,
-        ...(candidate.report.negativeTransfer.length > 0
-          ? {
-              negativeTransfer: candidate.report.negativeTransfer.map(
-                (entry) => ({
-                  taskId: entry.taskId,
-                  otherSkill: entry.otherSkill,
-                  delta: entry.delta,
-                  trials: entry.trials,
-                  confirmed: entry.confirmed,
-                }),
-              ),
-            }
-          : {}),
-      });
-    }
 
-    if (
-      !accepted &&
-      evaluatedCandidates.some((candidate) => {
+      if (!accepted) {
+        const epochRecord: OptEpoch = {
+          epoch: epochIdx,
+          proposed: epochProposed,
+          lift: curValLift,
+          deltaLift: 0,
+          patterns,
+        };
+        epochs.push(epochRecord);
+        patience++;
+      }
+
+      const acceptedKey =
+        accepted && bestCandidateEdit ? editKey(bestCandidateEdit) : undefined;
+      for (const candidate of evaluatedCandidates) {
         const blocker =
           evaluationBlocker(candidate.report, mode, true) ??
           evaluationBlocker(candidate.trainReport, mode);
-        return blocker && blocker !== "negative-transfer";
-      })
-    ) {
-      diagnostics.push({
-        stage: "validation",
-        status: "inconclusive",
-        message:
-          "Candidate evaluation is incomplete; retry after repairing the evaluation conditions.",
-      });
-      break;
+        let reason: SkillProposalGateRecord["reason"];
+        if (candidate.key === acceptedKey) reason = "accepted";
+        else if (blocker) reason = blocker;
+        else if (candidate.deltaLift <= 0 && candidate.deltaTrainLift <= 0)
+          reason = "no-validation-lift";
+        else if (
+          !candidateAcceptable(candidate.deltaLift, candidate.deltaTrainLift)
+        )
+          reason = "split-regression";
+        else reason = "not-best-candidate";
+        const inconclusive =
+          blocker !== undefined && blocker !== "negative-transfer";
+        if (
+          candidate.key !== acceptedKey &&
+          !inconclusive &&
+          !rejectedBuffer.has(candidate.key)
+        ) {
+          rejectedBuffer.add(candidate.key);
+          totalRejected++;
+        }
+        await evolutionRecorder?.recordProposal({
+          epoch: epochIdx,
+          edit: candidate.edit,
+          editKey: candidate.key,
+          outcome:
+            candidate.key === acceptedKey
+              ? "accepted"
+              : inconclusive
+                ? "inconclusive"
+                : "rejected",
+          reason,
+          deltaLift: candidate.deltaLift,
+          deltaTrainLift: candidate.deltaTrainLift,
+          ...(candidate.report.negativeTransfer.length > 0
+            ? {
+                negativeTransfer: candidate.report.negativeTransfer.map(
+                  (entry) => ({
+                    taskId: entry.taskId,
+                    otherSkill: entry.otherSkill,
+                    delta: entry.delta,
+                    trials: entry.trials,
+                    confirmed: entry.confirmed,
+                  }),
+                ),
+              }
+            : {}),
+        });
+      }
+
+      if (
+        !accepted &&
+        evaluatedCandidates.some((candidate) => {
+          const blocker =
+            evaluationBlocker(candidate.report, mode, true) ??
+            evaluationBlocker(candidate.trainReport, mode);
+          return blocker && blocker !== "negative-transfer";
+        })
+      ) {
+        diagnostics.push({
+          stage: "validation",
+          status: "inconclusive",
+          message:
+            "Candidate evaluation is incomplete; retry after repairing the evaluation conditions.",
+        });
+        break;
+      }
     }
+  } catch (error) {
+    if (!budgetDiagnostic(error, "optimization stopped")) throw error;
   }
 
   // Final diff: original → bestBody
   const diff = unifiedDiff(originalBody, bestBody);
   let finalTest: SkillOptResult["finalTest"];
-  if (baselineBlocker) {
-    finalTest = { baselineLift: 0, candidateLift: 0, passed: false };
-  } else if (testTasks && testTasks.length > 0) {
-    if (bestBody === originalBody) {
-      const { lift } = await scoreOnSplit(
-        originalBody,
-        skillId,
-        testTasks,
-        taskDir,
-        mode,
-        scoringFn,
-        false,
-        false,
-        workspace,
-      );
-      finalTest = { baselineLift: lift, candidateLift: lift, passed: false };
-    } else {
-      const [
-        { lift: finalTestBaseline, report: finalBaselineReport },
-        { lift: finalTestCandidate, report: finalCandidateReport },
-      ] = await Promise.all([
-        scoreOnSplit(
+  try {
+    if (budgetExhausted) {
+      // The loop already reported the exhausted budget; nothing is left for a final test.
+      finalTest = undefined;
+    } else if (baselineBlocker) {
+      finalTest = { baselineLift: 0, candidateLift: 0, passed: false };
+    } else if (testTasks && testTasks.length > 0) {
+      if (bestBody === originalBody) {
+        const { lift } = await scoreOnSplit(
           originalBody,
           skillId,
           testTasks,
@@ -500,29 +514,50 @@ export async function runOptEpochLoop(options: {
           false,
           false,
           workspace,
-        ),
-        scoreOnSplit(
-          bestBody,
-          skillId,
-          testTasks,
-          taskDir,
-          mode,
-          scoringFn,
-          false,
-          true,
-          workspace,
-        ),
-      ]);
-      const finalBlocker =
-        evaluationBlocker(finalBaselineReport, mode) ??
-        evaluationBlocker(finalCandidateReport, mode, true);
-      finalTest = {
-        baselineLift: finalTestBaseline,
-        candidateLift: finalTestCandidate,
-        passed: finalTestCandidate > finalTestBaseline && !finalBlocker,
-        ...(finalBlocker ? { blocker: finalBlocker } : {}),
-      };
+        );
+        finalTest = { baselineLift: lift, candidateLift: lift, passed: false };
+      } else {
+        const [
+          { lift: finalTestBaseline, report: finalBaselineReport },
+          { lift: finalTestCandidate, report: finalCandidateReport },
+        ] = await Promise.all([
+          scoreOnSplit(
+            originalBody,
+            skillId,
+            testTasks,
+            taskDir,
+            mode,
+            scoringFn,
+            false,
+            false,
+            workspace,
+          ),
+          scoreOnSplit(
+            bestBody,
+            skillId,
+            testTasks,
+            taskDir,
+            mode,
+            scoringFn,
+            false,
+            true,
+            workspace,
+          ),
+        ]);
+        const finalBlocker =
+          evaluationBlocker(finalBaselineReport, mode) ??
+          evaluationBlocker(finalCandidateReport, mode, true);
+        finalTest = {
+          baselineLift: finalTestBaseline,
+          candidateLift: finalTestCandidate,
+          passed: finalTestCandidate > finalTestBaseline && !finalBlocker,
+          ...(finalBlocker ? { blocker: finalBlocker } : {}),
+        };
+      }
     }
+  } catch (error) {
+    if (!budgetDiagnostic(error, "final test not run")) throw error;
+    finalTest = undefined;
   }
 
   const reasons = diagnostics.map(
@@ -546,6 +581,7 @@ export async function runOptEpochLoop(options: {
     applied: false,
     finalTest,
     diagnostics,
+    ...(dispatchMeter ? { budget: dispatchMeter.snapshot() } : {}),
     promotion: { eligible: reasons.length === 0, reasons },
     ...(evolutionRecorder
       ? {
