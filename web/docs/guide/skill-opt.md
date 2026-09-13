@@ -43,14 +43,14 @@ For each epoch (up to `--max-epochs`, default 8):
    - Apply the edit to an in-memory copy of `SKILL.md`.
    - Validate the candidate (frontmatter `name`/`description` must survive; body must parse).
    - Enforce the textual learning-rate budget: discard edits whose net character change exceeds `--lr` (default 600 chars).
-   - Re-score every task in the **held-out validation split**, and run paired baseline/candidate comparisons on same-domain neighbor tasks.
-5. **Accept the best valid candidate** only when validation lift strictly improves (`Δlift > 0`), task coverage is complete, the nonempty negative-transfer sample is fully measured, and every neighbor delta is greater than `NEG_TRANSFER_FAIL = -0.1`. Live reports must declare `isolation: "enforced"`. Proposal gate outcomes are recorded.
+   - Re-score every task in the **held-out validation split** (with paired baseline/candidate comparisons on neighbor tasks) and every task in the **held-in training split** (no neighbor comparisons).
+5. **Accept the best valid candidate** by the held-in/held-out rule: the candidate loses nothing on either split (`Δval ≥ 0` and `Δtrain ≥ 0`) and gains on at least one of them. Candidates are ranked by `Δval + Δtrain`. A strict validation gain is not required, because a body that already passes every validation task can still be repaired on a training failure without losing held-out ground; the final test decides whether that repair generalizes. Task coverage must be complete, the nonempty negative-transfer sample must be fully measured, and no neighbor may show a confirmed regression at or below `NEG_TRANSFER_FAIL = -0.1`. In live runs a neighbor that regresses on its first paired comparison is re-measured once; the recorded delta is the mean of both comparisons, and only a reproduced regression (`confirmed: true`) rejects the candidate. Mock replays cannot re-measure, so a single-trial regression stands. Live reports must declare `isolation: "enforced"`. Proposal gate outcomes are recorded with `deltaLift` (validation), `deltaTrainLift`, and the neighbor deltas behind the verdict.
 6. **Early stop** after 2 consecutive epochs with no accepted edit (`OPT_EARLY_STOP_PATIENCE = 2`).
 7. **Run the runner-owned final test after evolution.** Both the original body and the validation winner must cover every final-test task. The candidate must improve final-test lift and pass another complete, candidate-specific negative-transfer check. Missing, incomplete, or failed final tests prevent promotion. Measured final failures remain audit records and do not become rejection knowledge for later optimization.
 
 The optimizer works on an in-memory candidate copy during the loop.
 
-Unmeasured candidates are recorded as `inconclusive`, with reasons such as `insufficient-coverage`, `negative-transfer-unmeasured`, or `unverified-isolation`. They are excluded from learned rejection history and remain eligible for a retry after the evaluation conditions are repaired. A measured regression or lack of validation improvement is a rejection. Diagnostics that indicate incomplete evaluation or degraded maintenance block promotion.
+Unmeasured candidates are recorded as `inconclusive`, with reasons such as `insufficient-coverage`, `negative-transfer-unmeasured`, or `unverified-isolation`. They are excluded from learned rejection history and remain eligible for a retry after the evaluation conditions are repaired. A confirmed neighbor regression, a loss on either split (`split-regression`), or no gain on either split (`no-validation-lift`) is a rejection. Diagnostics that indicate incomplete evaluation or degraded maintenance block promotion.
 
 ---
 
@@ -96,7 +96,7 @@ Illustrative output for eight fixtures and a candidate that passes all promotion
 
 Skill opt  (skill: oma-scholar)
   applied: false
-  baselineLift: 0.0%  finalLift: 100.0%
+  baselineLift: 0.0%  finalLift: 100.0%  (train 50.0% → 100.0%)
   epochs: 1  acceptedEdits: 1  rejected: 0
   finalTest: pass baseline=0.0000 candidate=0.3333
 
@@ -200,6 +200,8 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
   "skill": "oma-scholar",
   "baselineLift": 0.0,
   "finalLift": 1.0,
+  "baselineTrainLift": 0.5,
+  "finalTrainLift": 1.0,
   "epochCount": 1,
   "acceptedEdits": [
     { "op": "add", "anchor": "### When to use", "after": "\n- User asks for a summary of arxiv abstracts or DOI-linked documents." }
@@ -215,7 +217,7 @@ oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
 }
 ```
 
-`ok` requires `(applied || finalLift > baselineLift)`, `finalTest.passed === true`, and `promotion.eligible === true`. A missing final test or promotion object cannot produce `ok: true`. The `_split` counts show the actual local fixture partition used for the run.
+`ok` requires `(applied || (acceptedEdits.length > 0 && finalLift >= baselineLift))`, `finalTest.passed === true`, and `promotion.eligible === true`. `baselineTrainLift` and `finalTrainLift` report the held-in split alongside the validation lifts. The same condition gates `--apply`: an edit accepted for a training repair alone is written only when the final test also passes. A missing final test or promotion object cannot produce `ok: true`. The `_split` counts show the actual local fixture partition used for the run.
 
 For example, an unmeasured candidate may produce this report excerpt:
 

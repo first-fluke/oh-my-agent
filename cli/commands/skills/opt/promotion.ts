@@ -21,8 +21,10 @@ export function evaluationBlocker(
   ) {
     return "negative-transfer-unmeasured";
   }
+  // A single-trial regression is taken at face value (mock replays cannot
+  // re-measure); a re-measured one rejects only when the repeat agreed.
   return report.negativeTransfer.some(
-    (entry) => entry.delta <= NEG_TRANSFER_FAIL,
+    (entry) => entry.delta <= NEG_TRANSFER_FAIL && entry.confirmed !== false,
   )
     ? "negative-transfer"
     : undefined;

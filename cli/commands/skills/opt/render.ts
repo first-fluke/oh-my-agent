@@ -3,7 +3,8 @@ import type { SkillOptResult } from "./types.js";
 // --- Serialization ---
 
 export function serializeSkillOptResult(result: SkillOptResult): string {
-  const improved = result.finalLift > result.baselineLift;
+  const improved =
+    result.acceptedEdits.length > 0 && result.finalLift >= result.baselineLift;
   const passedFinalTest =
     result.finalTest?.passed === true && result.promotion?.eligible === true;
   return JSON.stringify(
@@ -12,6 +13,12 @@ export function serializeSkillOptResult(result: SkillOptResult): string {
       skill: result.skill,
       baselineLift: Number(result.baselineLift.toFixed(4)),
       finalLift: Number(result.finalLift.toFixed(4)),
+      ...(result.baselineTrainLift === undefined
+        ? {}
+        : { baselineTrainLift: Number(result.baselineTrainLift.toFixed(4)) }),
+      ...(result.finalTrainLift === undefined
+        ? {}
+        : { finalTrainLift: Number(result.finalTrainLift.toFixed(4)) }),
       epochCount: result.epochs.length,
       acceptedEdits: result.acceptedEdits,
       rejectedCount: result.rejectedCount,
@@ -41,7 +48,11 @@ export function renderSkillOptResult(result: SkillOptResult): void {
       `  ${diagnostic.stage} ${diagnostic.status}: ${diagnostic.message}`,
     );
   console.log(
-    `  baselineLift: ${(result.baselineLift * 100).toFixed(1)}%  finalLift: ${(result.finalLift * 100).toFixed(1)}%`,
+    `  baselineLift: ${(result.baselineLift * 100).toFixed(1)}%  finalLift: ${(result.finalLift * 100).toFixed(1)}%` +
+      (result.baselineTrainLift !== undefined &&
+      result.finalTrainLift !== undefined
+        ? `  (train ${(result.baselineTrainLift * 100).toFixed(1)}% → ${(result.finalTrainLift * 100).toFixed(1)}%)`
+        : ""),
   );
   console.log(
     `  epochs: ${result.epochs.length}  acceptedEdits: ${result.acceptedEdits.length}  rejected: ${result.rejectedCount}`,

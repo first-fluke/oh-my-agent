@@ -22,6 +22,7 @@ import {
   JUDGE_DEFAULT_RUBRIC,
   type JudgeDispatchFn,
   type LiveDispatchFn,
+  NEG_TRANSFER_FAIL,
   type NegativeTransfer,
   type NegativeTransferCoverage,
   type RolloutEntry,
@@ -284,6 +285,12 @@ export interface MeasureNegativeTransferOptions {
   dispatchFn?: LiveDispatchFn;
   judgeFn?: JudgeDispatchFn;
   record?: boolean;
+  /**
+   * Live only: re-run a neighbor whose first paired delta is at or below
+   * NEG_TRANSFER_FAIL and report the mean; a regression counts as confirmed
+   * only when the repeat also regresses.
+   */
+  confirmRegressions?: boolean;
 }
 
 /** Explicit coverage prevents an empty or partial result from meaning no regression. */
@@ -322,6 +329,8 @@ export function measureNegativeTransfer(
       body,
     );
     let scored: NeighborScores | null;
+    let trials = 1;
+    let confirmed: boolean | undefined;
     if (mode === "mock") {
       scored = scoreNeighborInMock(
         task,
@@ -340,6 +349,33 @@ export function measureNegativeTransfer(
       scored = comparison?.scores ?? null;
       if (comparison && options.record)
         writeRolloutRecord(recordDir, comparison.rollouts);
+      if (
+        scored &&
+        options.confirmRegressions &&
+        scored.scoreWithX - scored.scoreWithoutX <= NEG_TRANSFER_FAIL
+      ) {
+        // One binary neighbor flip is indistinguishable from sampling noise;
+        // only a reproduced regression rejects a candidate.
+        const repeat = collectNeighborPair(
+          task,
+          body,
+          dispatchFn,
+          judgeFn,
+          skill,
+        );
+        if (repeat) {
+          if (options.record) writeRolloutRecord(recordDir, repeat.rollouts);
+          const repeatDelta =
+            repeat.scores.scoreWithX - repeat.scores.scoreWithoutX;
+          confirmed = repeatDelta <= NEG_TRANSFER_FAIL;
+          trials = 2;
+          scored = {
+            scoreWithX: (scored.scoreWithX + repeat.scores.scoreWithX) / 2,
+            scoreWithoutX:
+              (scored.scoreWithoutX + repeat.scores.scoreWithoutX) / 2,
+          };
+        }
+      }
     } else {
       scored = null;
     }
@@ -351,6 +387,8 @@ export function measureNegativeTransfer(
       candidateSkill: skill,
       skillBodyHash: contentHash(body),
       delta: scored.scoreWithX - scored.scoreWithoutX,
+      trials,
+      ...(confirmed === undefined ? {} : { confirmed }),
     });
   }
   return {

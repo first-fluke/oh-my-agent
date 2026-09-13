@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SkillUtilityReport, TaskFixture } from "../eval.js";
 import { runOptEpochLoop } from "./epoch-loop.js";
-import type { OptimizerFn, ScoringFn, SkillEdit } from "./types.js";
+import type {
+  OptimizerFn,
+  ScoringFn,
+  SkillEdit,
+  SkillEvolutionRecorder,
+  SkillProposalGateRecord,
+} from "./types.js";
 
 const original = "---\nname: test\ndescription: test skill\n---\n\n## Rules\n";
 const edit: SkillEdit = {
@@ -70,9 +76,22 @@ describe("skill promotion evidence", () => {
     const candidates = scorer.mock.calls
       .map(([options]) => options)
       .filter((options) => options.body !== original);
+    const onValidation = candidates.filter((options) =>
+      (options.tasks ?? []).some((task) => task.id === "validation"),
+    );
+    const onTrain = candidates.filter((options) =>
+      (options.tasks ?? []).some((task) => task.id === "train"),
+    );
+    expect(onValidation.length).toBeGreaterThan(0);
+    expect(onTrain.length).toBeGreaterThan(0);
     expect(
-      candidates.every((options) => options.negativeTransfer === true),
+      onValidation.every(
+        (options) =>
+          options.negativeTransfer === true &&
+          options.confirmNegativeTransfer === true,
+      ),
     ).toBe(true);
+    expect(onTrain.every((options) => !options.negativeTransfer)).toBe(true);
   });
 
   it("does not accept a candidate with missing negative-transfer measurements", async () => {
@@ -241,5 +260,109 @@ describe("skill promotion evidence", () => {
       eligible: false,
       reasons: ["maintainer:parse-error"],
     });
+  });
+});
+
+describe("held-in/held-out acceptance", () => {
+  function splitScorer(lifts: {
+    train: number;
+    validation: number;
+    final: number;
+  }): ScoringFn {
+    return async (options) => {
+      if (options.body === original) return report(0);
+      const id = options.tasks?.[0]?.id as keyof typeof lifts;
+      return report(lifts[id]);
+    };
+  }
+
+  function gateRecorder() {
+    const records: SkillProposalGateRecord[] = [];
+    const recorder: SkillEvolutionRecorder = {
+      knowledge: {
+        skillId: "test",
+        suiteHash: "s",
+        patterns: [],
+        rejectedEditKeys: [],
+        acceptedEditKeys: [],
+      },
+      recordEvidence() {},
+      recordPatterns() {},
+      recordProposal(record) {
+        records.push(record);
+      },
+      complete() {},
+    };
+    return { records, recorder };
+  }
+
+  it("accepts a candidate that repairs training while validation holds", async () => {
+    const { records, recorder } = gateRecorder();
+    const result = await run(
+      splitScorer({ train: 0.5, validation: 0, final: 0.3 }),
+      { evolutionRecorder: recorder },
+    );
+    expect(result.acceptedEdits).toEqual([edit]);
+    expect(result.finalLift).toBe(0);
+    expect(result.baselineTrainLift).toBe(0);
+    expect(result.finalTrainLift).toBe(0.5);
+    expect(result.finalTest?.passed).toBe(true);
+    expect(result.promotion).toEqual({ eligible: true, reasons: [] });
+    expect(records[0]).toMatchObject({
+      reason: "accepted",
+      deltaLift: 0,
+      deltaTrainLift: 0.5,
+      negativeTransfer: [{ otherSkill: "neighbor", delta: 0 }],
+    });
+  });
+
+  it("rejects a candidate that trades a training loss for a validation gain", async () => {
+    const { records, recorder } = gateRecorder();
+    const result = await run(
+      splitScorer({ train: -0.5, validation: 0.5, final: 0.3 }),
+      { evolutionRecorder: recorder },
+    );
+    expect(result.acceptedEdits).toEqual([]);
+    expect(result.rejectedCount).toBe(1);
+    expect(records[0]).toMatchObject({
+      outcome: "rejected",
+      reason: "split-regression",
+      deltaLift: 0.5,
+      deltaTrainLift: -0.5,
+    });
+  });
+
+  it("rejects a candidate that changes nothing on either split", async () => {
+    const { records, recorder } = gateRecorder();
+    const result = await run(
+      splitScorer({ train: 0, validation: 0, final: 0.3 }),
+      { evolutionRecorder: recorder },
+    );
+    expect(result.acceptedEdits).toEqual([]);
+    expect(records[0]).toMatchObject({ reason: "no-validation-lift" });
+  });
+
+  it("ignores a neighbor regression the repeat measurement did not reproduce", async () => {
+    const neighbor = (confirmed: boolean | undefined) => [
+      {
+        otherSkill: "neighbor",
+        domain: "test",
+        delta: -0.5,
+        trials: confirmed === undefined ? 1 : 2,
+        ...(confirmed === undefined ? {} : { confirmed }),
+      },
+    ];
+    const scorerFor =
+      (confirmed: boolean | undefined): ScoringFn =>
+      async (options) =>
+        report(options.body === original ? 0 : 0.3, {
+          negativeTransfer: neighbor(confirmed),
+        });
+    const unconfirmed = await run(scorerFor(false));
+    expect(unconfirmed.acceptedEdits).toEqual([edit]);
+    const confirmedRun = await run(scorerFor(true));
+    expect(confirmedRun.acceptedEdits).toEqual([]);
+    const singleTrial = await run(scorerFor(undefined));
+    expect(singleTrial.acceptedEdits).toEqual([]);
   });
 });

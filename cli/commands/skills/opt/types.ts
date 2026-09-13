@@ -83,13 +83,25 @@ export interface SkillProposalGateRecord {
     | "learning-rate"
     | "invalid-candidate"
     | "no-validation-lift"
+    | "split-regression"
     | "not-best-candidate"
     | "negative-transfer"
     | "negative-transfer-unmeasured"
     | "insufficient-coverage"
     | "unverified-isolation"
     | "final-test";
+  /** Held-out validation delta against the current best body. */
   deltaLift: number;
+  /** Held-in training delta against the current best body (candidates only). */
+  deltaTrainLift?: number;
+  /** Paired neighbor deltas behind a negative-transfer verdict. */
+  negativeTransfer?: Array<{
+    taskId?: string;
+    otherSkill: string;
+    delta: number;
+    trials?: number;
+    confirmed?: boolean;
+  }>;
 }
 
 export interface SkillEvolutionRecorder {
@@ -109,8 +121,14 @@ export interface SkillEvolutionRecorder {
 
 export interface SkillOptResult {
   skill: string;
+  /** Held-out validation lift of the original body. */
   baselineLift: number;
+  /** Held-out validation lift of the final body. */
   finalLift: number;
+  /** Held-in training lift of the original body (absent when the loop never scored it). */
+  baselineTrainLift?: number;
+  /** Held-in training lift of the final body. */
+  finalTrainLift?: number;
   epochs: OptEpoch[];
   acceptedEdits: SkillEdit[];
   rejectedCount: number;

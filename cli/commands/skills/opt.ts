@@ -132,7 +132,8 @@ import { backupSkillMd } from "./opt/skill-files.js";
  * - --dry-run (default): prints diff + lift change and never writes SKILL.md;
  *   evolution evidence still persists under generated state/results surfaces.
  * - --apply: backs up original SKILL.md to .bak, writes finalSkillMd only when
- *   finalLift > baselineLift AND validateCandidate passes.
+ *   at least one edit passed the held-in/held-out gate, finalLift >= baselineLift,
+ *   the final test passes, AND validateCandidate passes.
  *   - oma-owned skills (oma-*): requires --yes to proceed, otherwise warns + refuses.
  */
 export async function runSkillsOpt(
@@ -392,7 +393,11 @@ async function runSkillsOptInner(
   }
 
   if (apply) {
-    const hasImprovement = loopResult.finalLift > loopResult.baselineLift;
+    // Every accepted edit passed the held-in/held-out gate, so an accepted
+    // edit that only repaired training tasks still counts as an improvement.
+    const hasImprovement =
+      loopResult.acceptedEdits.length > 0 &&
+      loopResult.finalLift >= loopResult.baselineLift;
     const passesFinalTest = loopResult.finalTest?.passed === true;
     const validation = validateCandidate(loopResult.finalSkillMd);
 
@@ -401,7 +406,7 @@ async function runSkillsOptInner(
       const evaluationBlocked = (loopResult.diagnostics?.length ?? 0) > 0;
       const noImpMsg = evaluationBlocked
         ? "[oma skill opt] evaluation was incomplete or degraded; no improvement decision could be made; nothing written."
-        : `[oma skill opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} <= baselineLift ${loopResult.baselineLift.toFixed(4)}); nothing written.`;
+        : `[oma skill opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} vs baselineLift ${loopResult.baselineLift.toFixed(4)}, ${loopResult.acceptedEdits.length} accepted); nothing written.`;
       if (!jsonMode) {
         console.log(noImpMsg);
         renderSkillOptResult(finalResult);

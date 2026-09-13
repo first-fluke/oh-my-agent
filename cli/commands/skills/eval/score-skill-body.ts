@@ -70,6 +70,8 @@ export interface ScoreSkillBodyOptions {
   minimumCoverage?: number;
   /** Measure candidate interference on same-domain tasks belonging to other skills. */
   negativeTransfer?: boolean;
+  /** Live only: re-measure a regressed neighbor once before it can reject a candidate. */
+  confirmNegativeTransfer?: boolean;
   /** Neighbor fixtures and candidate recordings. Defaults to workspace/.agents/eval. */
   evalRoot?: string;
 }
@@ -170,6 +172,7 @@ export async function scoreSkillBody(
             body,
             dispatchFn: resolvedDispatchFn,
             judgeFn: resolvedJudgeFn,
+            confirmRegressions: options.confirmNegativeTransfer,
           })
         : { entries: [], coverage: notRequested };
       return computeUtility(skill, {

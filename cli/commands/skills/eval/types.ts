@@ -59,10 +59,18 @@ export interface SkillUtilityFinding {
 export interface NegativeTransfer {
   otherSkill: string;
   domain: string;
+  /** Mean paired delta over `trials` comparisons (1 unless a regression was re-measured). */
   delta: number;
   taskId?: string;
   candidateSkill?: string;
   skillBodyHash?: string;
+  /** Number of paired comparisons behind `delta`. */
+  trials?: number;
+  /**
+   * Set only when the first comparison regressed and was re-measured:
+   * `true` when the repeat also regressed, `false` when it did not.
+   */
+  confirmed?: boolean;
 }
 
 export interface NegativeTransferCoverage {

@@ -38,7 +38,13 @@ export function buildLiveInnerRunner(options: {
       status: "completed",
       baselineLift: result.baselineLift,
       finalLift: result.finalLift,
-      gain: Math.max(0, result.finalLift - result.baselineLift),
+      // Same quantity the inner gate ranks on: held-out plus held-in delta.
+      gain: Math.max(
+        0,
+        result.finalLift -
+          result.baselineLift +
+          ((result.finalTrainLift ?? 0) - (result.baselineTrainLift ?? 0)),
+      ),
       promotionEligible: result.promotion?.eligible === true,
       acceptedEdits: result.acceptedEdits.length,
     };

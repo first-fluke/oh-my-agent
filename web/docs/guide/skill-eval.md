@@ -185,7 +185,7 @@ With `--neg-transfer`, each selected neighbor task runs twice: a fresh baseline 
 
 Use `--live --neg-transfer --record` to save candidate-specific comparisons under `.agents/eval/<candidate>/_negative-transfer/<neighbor>/<body-hash>/_rollouts/`. Mock replay requires matching candidate identity, body hash, full task/checker hash, and a shared comparison ID for both arms. A neighbor's ordinary evaluation recordings cannot substitute for this measurement.
 
-The report includes `negativeTransferCoverage` with `status`, `expected`, and `scored`. Status is `not-requested` when the flag is absent, `measured` when every selected neighbor has a valid paired result and the sample is nonempty, and `insufficient` for zero neighbors or any missing comparison. An empty `negativeTransfer` array therefore does not establish absence of regressions. JSON `ok` is false when requested negative-transfer coverage is insufficient.
+Each `negativeTransfer` entry carries `trials` (paired comparisons behind `delta`). Optimization re-measures a regressed neighbor once before rejecting a candidate and adds `confirmed` (`true` when the repeat also regressed, `false` when it did not); `oma skill eval --neg-transfer` reports the single comparison. The report includes `negativeTransferCoverage` with `status`, `expected`, and `scored`. Status is `not-requested` when the flag is absent, `measured` when every selected neighbor has a valid paired result and the sample is nonempty, and `insufficient` for zero neighbors or any missing comparison. An empty `negativeTransfer` array therefore does not establish absence of regressions. JSON `ok` is false when requested negative-transfer coverage is insufficient.
 
 #### Skill isolation (keeping the baseline honest)
 

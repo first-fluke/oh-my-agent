@@ -23,6 +23,16 @@ import {
 // --- Epoch loop core (T5) ---
 
 /**
+ * Held-in/held-out acceptance: lose nothing on either split, gain on one.
+ */
+export function candidateAcceptable(
+  deltaVal: number,
+  deltaTrain: number,
+): boolean {
+  return deltaVal >= 0 && deltaTrain >= 0 && Math.max(deltaVal, deltaTrain) > 0;
+}
+
+/**
  * Score a body on a given task split using the injectable scoring function.
  * Returns the utilityLift from the report (0 if coverage is insufficient).
  */
@@ -46,6 +56,7 @@ async function scoreOnSplit(
     includeEvidence,
     minimumCoverage: Math.max(1, tasks.length),
     negativeTransfer,
+    confirmNegativeTransfer: negativeTransfer,
     workspace,
   });
   return {
@@ -63,8 +74,14 @@ async function scoreOnSplit(
  * 3. For each candidate edit:
  *    a. applyEdit → validateCandidate (skip if invalid)
  *    b. enforce LR budget (skip if net change > lrMaxChars)
- *    c. score candidate on the HELD-OUT VAL split → deltaLift
- * 4. Accept the BEST candidate IFF deltaLift > 0 AND no negativeTransfer entry <= NEG_TRANSFER_FAIL.
+ *    c. score candidate on the HELD-OUT VAL split → deltaLift, and on the
+ *       HELD-IN TRAIN split → deltaTrainLift
+ * 4. Accept the BEST candidate (by deltaLift + deltaTrainLift) IFF
+ *    deltaTrainLift >= 0 AND deltaLift >= 0 AND one of them > 0, AND no
+ *    confirmed negativeTransfer entry <= NEG_TRANSFER_FAIL. A strict
+ *    validation gain is not required: when the current body already passes
+ *    every validation task, an edit that repairs a training failure without
+ *    losing held-out ground is still an improvement.
  *    Record incomplete evaluations separately from rejected edits.
  * 5. On accept: update best body + record OptEpoch; on no-accept: increment patience.
  * 6. Early-stop after OPT_EARLY_STOP_PATIENCE consecutive no-accept epochs.
@@ -141,6 +158,8 @@ export async function runOptEpochLoop(options: {
 
   let bestBody = originalBody;
   let curValLift = baselineLift;
+  let baselineTrainLift: number | undefined;
+  let curTrainLift: number | undefined;
 
   const epochs: OptEpoch[] = [];
   const acceptedEdits: SkillEdit[] = [];
@@ -168,6 +187,9 @@ export async function runOptEpochLoop(options: {
       false,
       workspace,
     );
+
+    baselineTrainLift ??= trainLift;
+    curTrainLift = trainLift;
 
     const trainBlocker = evaluationBlocker(trainReport, mode);
     if (trainBlocker) {
@@ -230,16 +252,20 @@ export async function runOptEpochLoop(options: {
       (e) => !rejectedBuffer.has(editKey(e)),
     );
 
-    // 3. Score each candidate on the HELD-OUT VAL split
-    let bestCandidateDeltaLift = -Infinity;
+    // 3. Score each candidate on the HELD-OUT VAL split (with neighbor checks)
+    //    and on the HELD-IN TRAIN split (no neighbor checks).
+    let bestCandidateGain = -Infinity;
+    let bestCandidateDeltaLift = 0;
+    let bestCandidateDeltaTrainLift = 0;
     let bestCandidateEdit: SkillEdit | undefined;
     let bestCandidateBody: string | undefined;
-    let bestCandidateReport: SkillUtilityReport | undefined;
     const evaluatedCandidates: Array<{
       edit: SkillEdit;
       key: string;
       deltaLift: number;
+      deltaTrainLift: number;
       report: SkillUtilityReport;
+      trainReport: SkillUtilityReport;
     }> = [];
 
     for (const edit of candidateEdits) {
@@ -290,57 +316,68 @@ export async function runOptEpochLoop(options: {
         true,
         workspace,
       );
+      // Score on TRAIN split
+      const { lift: candTrainLift, report: candTrainReport } =
+        await scoreOnSplit(
+          candidateBody,
+          skillId,
+          trainTasks,
+          taskDir,
+          mode,
+          scoringFn,
+          false,
+          false,
+          workspace,
+        );
 
       const deltaLift = candValLift - curValLift;
+      const deltaTrainLift = candTrainLift - trainLift;
       evaluatedCandidates.push({
         edit,
         key: editKey(edit),
         deltaLift,
+        deltaTrainLift,
         report: candReport,
+        trainReport: candTrainReport,
       });
 
+      const gain = deltaLift + deltaTrainLift;
       if (
+        candidateAcceptable(deltaLift, deltaTrainLift) &&
         !evaluationBlocker(candReport, mode, true) &&
-        deltaLift > bestCandidateDeltaLift
+        !evaluationBlocker(candTrainReport, mode) &&
+        gain > bestCandidateGain
       ) {
+        bestCandidateGain = gain;
         bestCandidateDeltaLift = deltaLift;
+        bestCandidateDeltaTrainLift = deltaTrainLift;
         bestCandidateEdit = edit;
         bestCandidateBody = candidateBody;
-        bestCandidateReport = candReport;
       }
     }
 
-    // 4. Accept the best candidate IFF deltaLift > 0 AND no negativeTransfer <= NEG_TRANSFER_FAIL
+    // 4. Accept the best candidate that lost nothing on either split and
+    //    gained on at least one, with no confirmed negative transfer.
     const epochProposed = candidateEdits.length;
     let accepted = false;
 
-    if (
-      bestCandidateEdit !== undefined &&
-      bestCandidateBody !== undefined &&
-      bestCandidateDeltaLift > 0
-    ) {
-      // Check negative transfer gate
-      if (
-        bestCandidateReport &&
-        !evaluationBlocker(bestCandidateReport, mode, true)
-      ) {
-        // Accept
-        const newValLift = curValLift + bestCandidateDeltaLift;
-        const epochRecord: OptEpoch = {
-          epoch: epochIdx,
-          proposed: epochProposed,
-          accepted: bestCandidateEdit,
-          lift: newValLift,
-          deltaLift: bestCandidateDeltaLift,
-          patterns,
-        };
-        epochs.push(epochRecord);
-        acceptedEdits.push(bestCandidateEdit);
-        bestBody = bestCandidateBody;
-        curValLift = newValLift;
-        patience = 0;
-        accepted = true;
-      }
+    if (bestCandidateEdit !== undefined && bestCandidateBody !== undefined) {
+      const newValLift = curValLift + bestCandidateDeltaLift;
+      const epochRecord: OptEpoch = {
+        epoch: epochIdx,
+        proposed: epochProposed,
+        accepted: bestCandidateEdit,
+        lift: newValLift,
+        deltaLift: bestCandidateDeltaLift,
+        patterns,
+      };
+      epochs.push(epochRecord);
+      acceptedEdits.push(bestCandidateEdit);
+      bestBody = bestCandidateBody;
+      curValLift = newValLift;
+      curTrainLift = trainLift + bestCandidateDeltaTrainLift;
+      patience = 0;
+      accepted = true;
     }
 
     if (!accepted) {
@@ -358,11 +395,18 @@ export async function runOptEpochLoop(options: {
     const acceptedKey =
       accepted && bestCandidateEdit ? editKey(bestCandidateEdit) : undefined;
     for (const candidate of evaluatedCandidates) {
-      const blocker = evaluationBlocker(candidate.report, mode, true);
+      const blocker =
+        evaluationBlocker(candidate.report, mode, true) ??
+        evaluationBlocker(candidate.trainReport, mode);
       let reason: SkillProposalGateRecord["reason"];
       if (candidate.key === acceptedKey) reason = "accepted";
       else if (blocker) reason = blocker;
-      else if (candidate.deltaLift <= 0) reason = "no-validation-lift";
+      else if (candidate.deltaLift <= 0 && candidate.deltaTrainLift <= 0)
+        reason = "no-validation-lift";
+      else if (
+        !candidateAcceptable(candidate.deltaLift, candidate.deltaTrainLift)
+      )
+        reason = "split-regression";
       else reason = "not-best-candidate";
       const inconclusive =
         blocker !== undefined && blocker !== "negative-transfer";
@@ -386,13 +430,29 @@ export async function runOptEpochLoop(options: {
               : "rejected",
         reason,
         deltaLift: candidate.deltaLift,
+        deltaTrainLift: candidate.deltaTrainLift,
+        ...(candidate.report.negativeTransfer.length > 0
+          ? {
+              negativeTransfer: candidate.report.negativeTransfer.map(
+                (entry) => ({
+                  taskId: entry.taskId,
+                  otherSkill: entry.otherSkill,
+                  delta: entry.delta,
+                  trials: entry.trials,
+                  confirmed: entry.confirmed,
+                }),
+              ),
+            }
+          : {}),
       });
     }
 
     if (
       !accepted &&
       evaluatedCandidates.some((candidate) => {
-        const blocker = evaluationBlocker(candidate.report, mode, true);
+        const blocker =
+          evaluationBlocker(candidate.report, mode, true) ??
+          evaluationBlocker(candidate.trainReport, mode);
         return blocker && blocker !== "negative-transfer";
       })
     ) {
@@ -404,9 +464,6 @@ export async function runOptEpochLoop(options: {
       });
       break;
     }
-
-    // Suppress unused variable warning
-    void trainLift;
   }
 
   // Final diff: original → bestBody
@@ -479,6 +536,8 @@ export async function runOptEpochLoop(options: {
     skill: skillId,
     baselineLift,
     finalLift: curValLift,
+    ...(baselineTrainLift === undefined ? {} : { baselineTrainLift }),
+    ...(curTrainLift === undefined ? {} : { finalTrainLift: curTrainLift }),
     epochs,
     acceptedEdits,
     rejectedCount: totalRejected,

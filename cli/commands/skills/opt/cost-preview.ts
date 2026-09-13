@@ -18,9 +18,10 @@ function scoreDispatchCalls(tasks: TaskFixture[]): number {
 /**
  * Estimate the total number of LLM dispatch calls for a live run.
  *
- * Per epoch: 1 train-score + K candidate-score-on-val + 1 maintainer-call
- * + 1 optimizer-call = editsPerEpoch + 3 dispatch groups, plus two runner-owned
- * final-test scores after evolution.
+ * Per epoch: 1 train-score + K candidate scores (val + train) + 1
+ * maintainer-call + 1 optimizer-call, plus two runner-owned final-test scores
+ * after evolution. Neighbor checks are counted twice per candidate because a
+ * regressed neighbor is re-measured once before it can reject.
  *
  * This is a rough upper-bound; actual calls may be fewer if edits are
  * rejected early (LR budget, validation) or early-stop fires.
@@ -42,9 +43,9 @@ export function estimateLiveDispatchCalls(
   const neighborCalls = scoreDispatchCalls(profile.neighbors ?? []);
   return (
     valCalls +
-    maxEpochs * (trainCalls + 2 + editsPerEpoch * valCalls) +
+    maxEpochs * (trainCalls + 2 + editsPerEpoch * (valCalls + trainCalls)) +
     2 * testCalls +
-    (maxEpochs * editsPerEpoch + 1) * neighborCalls
+    (2 * maxEpochs * editsPerEpoch + 1) * neighborCalls
   );
 }
 
@@ -71,7 +72,7 @@ export async function confirmLiveRun(
     `[oma skill opt] --live cost preview: up to ${calls} ${callUnit}` +
       ` (${maxEpochs} epochs; two arms per task, plus judge calls where configured).` +
       " Includes the initial validation baseline and 2 runner-owned final-test scores." +
-      " Candidate scores also include paired neighbor-task checks." +
+      " Candidates are scored on both splits, plus paired neighbor-task checks (regressions re-measured once)." +
       ` This incurs real model cost.`,
   );
 

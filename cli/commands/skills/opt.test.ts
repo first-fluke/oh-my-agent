@@ -826,7 +826,7 @@ describe("runOptEpochLoop rejected-edit buffer", () => {
     const scoringFn: ScoringFn = async (
       options,
     ): Promise<SkillUtilityReport> => {
-      if (options.body === candidateBody) {
+      if (options.body === candidateBody && options.negativeTransfer) {
         candidateValScoringCount.count++;
       }
       const lift = options.body === originalBody ? 0 : -0.1; // Always regress val
@@ -1542,7 +1542,9 @@ describe("estimateLiveDispatchCalls", () => {
         val: [assertTask],
         test: [assertTask, judgeTask],
       }),
-    ).toBe(26);
+      // val 2 + epoch (train 8 + 2 + candidate val 2 + candidate train 8)
+      // + final test 2 × 6
+    ).toBe(34);
   });
 });
 

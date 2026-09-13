@@ -2044,6 +2044,35 @@ describe("candidate-specific negative transfer", () => {
     });
   }
 
+  it("re-measures a regressed neighbor once and reports whether it reproduced", () => {
+    // Treatment fails on the first comparison only: the flip is noise.
+    let treatmentCalls = 0;
+    const flaky = measure("live", {
+      confirmRegressions: true,
+      dispatchFn: (arm) => {
+        if (arm === "baseline") return "EXPECTED";
+        treatmentCalls++;
+        return treatmentCalls === 1 ? "wrong" : "EXPECTED";
+      },
+    });
+    expect(treatmentCalls).toBe(2);
+    expect(flaky.entries).toMatchObject([
+      { taskId: task.id, delta: -0.5, trials: 2, confirmed: false },
+    ]);
+    expect(flaky.coverage).toMatchObject({ status: "measured", scored: 1 });
+
+    // Treatment fails both times: the regression is confirmed.
+    const real = measure("live", { confirmRegressions: true });
+    expect(real.entries).toMatchObject([
+      { taskId: task.id, delta: -1, trials: 2, confirmed: true },
+    ]);
+
+    // Without confirmation the single comparison stands as-is.
+    const single = measure("live");
+    expect(single.entries).toMatchObject([{ delta: -1, trials: 1 }]);
+    expect(single.entries[0]).not.toHaveProperty("confirmed");
+  });
+
   it("never treats a neighbor's own treatment as candidate-X evidence", () => {
     const neighborDir = join(evalRoot, "skill-y");
     writeRollout(
