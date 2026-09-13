@@ -48,6 +48,7 @@ function isTaskFixture(value: unknown): value is TaskFixture {
   ) {
     return false;
   }
+  if (obj.group !== undefined && typeof obj.group !== "string") return false;
   // Apply judge default before type-checking the checker shape
   applyCheckerDefaults(obj);
   const checker = obj.checker as Record<string, unknown>;
@@ -66,6 +67,14 @@ function isRolloutEntry(value: unknown): value is RolloutEntry {
   }
   // score is optional; when present it must be exactly 0 or 1
   if (obj.score !== undefined && obj.score !== 0 && obj.score !== 1) {
+    return false;
+  }
+  if (
+    obj.trial !== undefined &&
+    (typeof obj.trial !== "number" ||
+      !Number.isInteger(obj.trial) ||
+      obj.trial < 0)
+  ) {
     return false;
   }
   // Provenance fields are optional (absent in pre-provenance recordings) but

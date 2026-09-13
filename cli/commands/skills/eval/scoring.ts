@@ -1,3 +1,4 @@
+import { unwrapVendorEnvelope } from "./envelope.js";
 import {
   type IsolationStatus,
   MIN_TASKS,
@@ -7,6 +8,7 @@ import {
   REGEX_OUTPUT_MAX_LEN,
   REGEX_PATTERN_MAX_LEN,
   type RolloutEntry,
+  type SkillRepeatability,
   type SkillUtilityFinding,
   type SkillUtilityReport,
   type TaskChecker,
@@ -31,9 +33,10 @@ import {
  */
 export function scoreChecker(
   checker: TaskChecker,
-  output: string,
+  rawOutput: string,
   recordedScore?: 0 | 1,
 ): number {
+  const output = unwrapVendorEnvelope(rawOutput);
   switch (checker.type) {
     case "assert": {
       const allPresent = checker.expect_contains.every((expected) =>
@@ -87,6 +90,42 @@ function weightedStdDev(
     values.reduce((s, v, i) => s + (weights[i] ?? 1) * (v - avg) ** 2, 0) /
     totalWeight;
   return Math.sqrt(variance);
+}
+
+/** Two-sided 97.5% Student t quantiles by degrees of freedom (1-30); 1.96 beyond. */
+const T_975 = [
+  12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201,
+  2.179, 2.16, 2.145, 2.131, 2.12, 2.11, 2.101, 2.093, 2.086, 2.08, 2.074,
+  2.069, 2.064, 2.06, 2.056, 2.052, 2.048, 2.045, 2.042,
+];
+
+function sampleStdDev(values: number[]): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((s, v) => s + v, 0) / values.length;
+  const variance =
+    values.reduce((s, v) => s + (v - mean) ** 2, 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+
+/** Paired 95% t-interval over per-task lifts; null below two tasks. */
+export function pairedLiftInterval(
+  lifts: number[],
+): { lower: number; upper: number } | null {
+  const n = lifts.length;
+  if (n < 2) return null;
+  const mean = lifts.reduce((s, v) => s + v, 0) / n;
+  const halfWidth =
+    ((T_975[n - 2] ?? 1.96) * sampleStdDev(lifts)) / Math.sqrt(n);
+  return { lower: mean - halfWidth, upper: mean + halfWidth };
+}
+
+function unavailableRepeatability(): SkillRepeatability {
+  return {
+    trials: 0,
+    liftCi95: null,
+    withinTaskStdDev: null,
+    status: "unavailable",
+  };
 }
 
 // --- Core computation ---
@@ -151,6 +190,7 @@ export function computeUtility(
       treatmentScore: 0,
       utilityLift: 0,
       utilityStdDev: 0,
+      repeatability: unavailableRepeatability(),
       findings: [],
       negativeTransfer: negativeTransferInput,
       negativeTransferCoverage: options.negativeTransferCoverage,
@@ -161,29 +201,21 @@ export function computeUtility(
     };
   }
 
-  // Build rollout lookup: taskId → { baseline?, treatment? }
-  // For judge tasks, also carry the recorded score per arm.
+  // Build rollout lookup: taskId → per-arm trial entries (trial index → entry).
+  // A single-trial recording has no trial field and occupies index 0.
+  type ArmTrials = Map<number, RolloutEntry>;
   const rolloutMap = new Map<
     string,
-    {
-      baseline?: string;
-      treatment?: string;
-      baselineScore?: 0 | 1;
-      treatmentScore?: 0 | 1;
-    }
-  >(tasks.map((t) => [t.id, {}]));
-
+    { baseline: ArmTrials; treatment: ArmTrials }
+  >(tasks.map((t) => [t.id, { baseline: new Map(), treatment: new Map() }]));
   for (const entry of rollouts) {
     const existing = rolloutMap.get(entry.taskId);
-    if (existing) {
-      if (entry.arm === "baseline") {
-        existing.baseline = entry.output;
-        if (entry.score !== undefined) existing.baselineScore = entry.score;
-      } else {
-        existing.treatment = entry.output;
-        if (entry.score !== undefined) existing.treatmentScore = entry.score;
-      }
-    }
+    if (!existing) continue;
+    const arm =
+      entry.arm === "baseline" ? existing.baseline : existing.treatment;
+    const trial = entry.trial ?? 0;
+    // Keep the first entry per (task, arm, trial); later files cannot overwrite.
+    if (!arm.has(trial)) arm.set(trial, entry);
   }
 
   const baselineScores: number[] = [];
@@ -191,63 +223,89 @@ export function computeUtility(
   const liftValues: number[] = [];
   const taskWeights: number[] = [];
   const findings: SkillUtilityFinding[] = [];
+  const withinTaskStdDevs: number[] = [];
+  let commonTrials = Number.POSITIVE_INFINITY;
+
+  const scoreEntry = (
+    task: TaskFixture,
+    entry: RolloutEntry,
+  ): number | null => {
+    if (task.checker.type === "judge") return entry.score ?? null;
+    try {
+      return scoreChecker(task.checker, entry.output);
+    } catch {
+      // broken checker — deterministic 0 (kept from the single-trial contract)
+      return 0;
+    }
+  };
 
   for (const task of tasks) {
-    const arms = rolloutMap.get(task.id) ?? {};
+    const arms = rolloutMap.get(task.id) ?? {
+      baseline: new Map<number, RolloutEntry>(),
+      treatment: new Map<number, RolloutEntry>(),
+    };
 
     // An absent arm is missing DATA, not a failing answer. Scoring it 0 would
     // report "the skill did not help" for a task that was never run — and since
     // both arms then score 0, the lift is 0 and the verdict is `fail`. Exclude
     // the task instead, which surfaces as insufficient coverage.
-    // (Note: an arm that genuinely produced an empty string is still scored —
-    // this checks for the entry's absence, not for falsiness.)
-    if (arms.baseline === undefined || arms.treatment === undefined) {
+    // Trials pair by index; only trials with both arms count.
+    const pairedTrials = [...arms.baseline.keys()]
+      .filter((trial) => arms.treatment.has(trial))
+      .sort((a, b) => a - b);
+    if (pairedTrials.length === 0) {
       const missing = [
-        arms.baseline === undefined ? "baseline" : undefined,
-        arms.treatment === undefined ? "treatment" : undefined,
+        arms.baseline.size === 0 ? "baseline" : undefined,
+        arms.treatment.size === 0 ? "treatment" : undefined,
       ]
         .filter(Boolean)
         .join(" + ");
       console.warn(
-        `[oma skill eval] task ${task.id} has no recorded ${missing} rollout; run --live --record to populate. Excluding from report.`,
+        `[oma skill eval] task ${task.id} has no recorded ${missing || "paired"} rollout; run --live --record to populate. Excluding from report.`,
       );
       continue;
     }
 
-    const baselineOutput = arms.baseline;
-    const treatmentOutput = arms.treatment;
-
-    let baselineScore: number;
-    let treatmentScore: number;
-
-    if (task.checker.type === "judge") {
-      // Judge tasks: use recorded score from rollout entry.
+    const perTrialBaseline: number[] = [];
+    const perTrialTreatment: number[] = [];
+    let verdictMissing = false;
+    for (const trial of pairedTrials) {
+      const b = arms.baseline.get(trial);
+      const t = arms.treatment.get(trial);
+      if (!b || !t) continue;
+      const bs = scoreEntry(task, b);
+      const ts = scoreEntry(task, t);
+      if (bs === null || ts === null) {
+        verdictMissing = true;
+        break;
+      }
+      perTrialBaseline.push(bs);
+      perTrialTreatment.push(ts);
+    }
+    if (verdictMissing) {
       // If either arm is missing its recorded verdict, exclude the task
       // from scoring — warn and skip rather than silently score 0.
-      if (
-        arms.baselineScore === undefined ||
-        arms.treatmentScore === undefined
-      ) {
-        console.warn(
-          `[oma skill eval] judge task ${task.id} has no recorded verdict; run --live --record to populate scores. Excluding from report.`,
-        );
-        continue;
-      }
-      baselineScore = arms.baselineScore;
-      treatmentScore = arms.treatmentScore;
-    } else {
-      // assert / regex: compute deterministically from output
-      try {
-        baselineScore = scoreChecker(task.checker, baselineOutput);
-        treatmentScore = scoreChecker(task.checker, treatmentOutput);
-      } catch {
-        // broken checker — score as 0 for both (deterministic fallback)
-        baselineScore = 0;
-        treatmentScore = 0;
-      }
+      console.warn(
+        `[oma skill eval] judge task ${task.id} has no recorded verdict; run --live --record to populate scores. Excluding from report.`,
+      );
+      continue;
     }
 
+    const trialsForTask = perTrialBaseline.length;
+    commonTrials = Math.min(commonTrials, trialsForTask);
+    const baselineScore =
+      perTrialBaseline.reduce((s, v) => s + v, 0) / trialsForTask;
+    const treatmentScore =
+      perTrialTreatment.reduce((s, v) => s + v, 0) / trialsForTask;
+    const perTrialLift = perTrialBaseline.map(
+      (b, i) => (perTrialTreatment[i] ?? 0) - b,
+    );
+    const liftStdDev = sampleStdDev(perTrialLift);
+    if (trialsForTask > 1) withinTaskStdDevs.push(liftStdDev);
     const lift = treatmentScore - baselineScore;
+    const first = pairedTrials[0] ?? 0;
+    const baselineOutput = arms.baseline.get(first)?.output ?? "";
+    const treatmentOutput = arms.treatment.get(first)?.output ?? "";
     const w = task.weight;
     baselineScores.push(baselineScore);
     treatmentScores.push(treatmentScore);
@@ -259,6 +317,8 @@ export function computeUtility(
       baseline: baselineScore,
       treatment: treatmentScore,
       lift,
+      trials: trialsForTask,
+      liftStdDev,
       ...(options.includeEvidence
         ? {
             evidence: {
@@ -284,6 +344,7 @@ export function computeUtility(
       treatmentScore: 0,
       utilityLift: 0,
       utilityStdDev: 0,
+      repeatability: unavailableRepeatability(),
       findings,
       negativeTransfer: negativeTransferInput,
       negativeTransferCoverage: options.negativeTransferCoverage,
@@ -317,6 +378,30 @@ export function computeUtility(
     decision = "warn";
   }
 
+  // Repeatability: a single lucky run is not a repeatable improvement. With
+  // repeated trials, a pass requires the paired interval to exclude zero.
+  const trials = Number.isFinite(commonTrials) ? commonTrials : 0;
+  const liftCi95 = pairedLiftInterval(liftValues);
+  const withinTaskStdDev =
+    withinTaskStdDevs.length > 0
+      ? withinTaskStdDevs.reduce((s, v) => s + v, 0) / withinTaskStdDevs.length
+      : null;
+  const repeatability: SkillRepeatability = {
+    trials,
+    liftCi95,
+    withinTaskStdDev,
+    status:
+      trials < 2
+        ? "single-trial"
+        : liftCi95 &&
+            (utilityLift > 0 ? liftCi95.lower > 0 : liftCi95.upper < 0)
+          ? "stable"
+          : "unstable",
+  };
+  if (repeatability.status === "unstable" && decision === "pass") {
+    decision = "warn";
+  }
+
   return {
     skill,
     taskCount,
@@ -325,6 +410,7 @@ export function computeUtility(
     treatmentScore,
     utilityLift,
     utilityStdDev,
+    repeatability,
     findings,
     negativeTransfer: negativeTransferInput,
     negativeTransferCoverage: options.negativeTransferCoverage,

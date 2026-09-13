@@ -45,6 +45,24 @@ describe("warnOnErrorEnvelope", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
+  it("returns the answer text from a successful vendor envelope", () => {
+    const output = runEvalDispatch(
+      {
+        command: process.execPath,
+        args: [
+          "-e",
+          "process.stdout.write(JSON.stringify({type:'result',is_error:false,subagent_stats:{failed:0},result:'the answer'}))",
+        ],
+        env: process.env,
+        outputKind: "vendor-envelope",
+      },
+      tmpdir(),
+      "prompt",
+      null,
+    );
+    expect(output).toBe("the answer");
+  });
+
   it("rejects an API error envelope even when the process exits successfully", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     expect(() =>

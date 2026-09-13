@@ -159,7 +159,13 @@ export function resolveAgentPlanFromConfig(
   // Step 2: Spec selection with shallow merge (override over preset).
   // Normalize semantic aliases ("backend-engineer" → "backend") so callers
   // using subagent file names still resolve to the correct preset entry.
-  const typedAgentId = (normalizeAgentId(agentId) ?? agentId) as AgentId;
+  // Dispatch ids such as "eval-agent" / "opt-agent" are configured under their
+  // bare key ("eval", "opt"), matching resolveVendor's lookup.
+  const bareAgentId = agentId.replace(/-agent$/i, "");
+  const typedAgentId = (normalizeAgentId(agentId) ??
+    (config.agents?.[bareAgentId as AgentId]
+      ? bareAgentId
+      : agentId)) as AgentId;
   const presetSpec =
     preset.agent_defaults[typedAgentId] ?? preset.agent_defaults.orchestrator;
   const override = config.agents?.[typedAgentId];

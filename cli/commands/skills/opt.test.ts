@@ -2383,3 +2383,58 @@ describe("dirname fix: skillDir derived from dirname(skillMdPath), not string-sl
     consoleSpy.mockRestore();
   });
 });
+
+describe("splitTrainValTest — fixture groups", () => {
+  it("never splits a group across partitions and stays deterministic", () => {
+    const tasks = [
+      makeTaskFixture("a1", { group: "alpha" }),
+      makeTaskFixture("a2", { group: "alpha" }),
+      makeTaskFixture("b1", { group: "beta" }),
+      makeTaskFixture("c1", { group: "gamma" }),
+      makeTaskFixture("c2", { group: "gamma" }),
+      makeTaskFixture("d1"),
+      makeTaskFixture("e1", { group: "epsilon" }),
+      makeTaskFixture("e2", { group: "epsilon" }),
+      makeTaskFixture("f1"),
+      makeTaskFixture("g1"),
+    ];
+    const split = splitTrainValTest(tasks);
+    const again = splitTrainValTest([...tasks].reverse());
+    expect(again).toEqual(split);
+    const partitionOf = new Map<string, string>();
+    for (const [name, members] of Object.entries(split))
+      for (const task of members) partitionOf.set(task.id, name);
+    expect(partitionOf.size).toBe(tasks.length);
+    for (const task of tasks) {
+      const siblings = tasks.filter((t) => t.group && t.group === task.group);
+      for (const sibling of siblings)
+        expect(partitionOf.get(sibling.id)).toBe(partitionOf.get(task.id));
+    }
+    expect(split.train.length).toBeGreaterThan(0);
+    expect(split.val.length).toBeGreaterThan(0);
+    expect(split.test.length).toBeGreaterThan(0);
+  });
+
+  it("falls back to the id split when fewer than three groups exist", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const tasks = makeNTasks(6).map((t, i) => ({
+      ...t,
+      group: i < 3 ? "x" : "y",
+    }));
+    const split = splitTrainValTest(tasks);
+    expect(split.train).toHaveLength(3);
+    expect(split.val).toHaveLength(1);
+    expect(split.test).toHaveLength(2);
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("fewer than three"),
+    );
+    warn.mockRestore();
+  });
+
+  it("matches the ungrouped split when no fixture declares a group", () => {
+    const split = splitTrainValTest(makeNTasks(10));
+    expect(split.train).toHaveLength(6);
+    expect(split.val).toHaveLength(2);
+    expect(split.test).toHaveLength(2);
+  });
+});

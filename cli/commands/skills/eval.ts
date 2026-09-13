@@ -19,6 +19,7 @@ import {
   buildRolloutExpectation,
   collectLiveRollouts,
   loadSkillMdBody,
+  MAX_TRIALS,
   promptConfirm,
   writeRolloutRecord,
 } from "./eval/rollouts.js";
@@ -64,7 +65,9 @@ export {
   collectLiveRollouts,
   contentHash,
   judgeScore,
+  judgeVerdict,
   loadSkillMdBody,
+  parseJudgeVerdict,
   promptConfirm,
   taskFixtureHash,
   taskSetHash,
@@ -73,7 +76,11 @@ export {
 export type { ScoreSkillBodyOptions } from "./eval/score-skill-body.js";
 export { scoreSkillBody } from "./eval/score-skill-body.js";
 export type { ComputeUtilityOptions } from "./eval/scoring.js";
-export { computeUtility, scoreChecker } from "./eval/scoring.js";
+export {
+  computeUtility,
+  pairedLiftInterval,
+  scoreChecker,
+} from "./eval/scoring.js";
 export type {
   IsolationStatus,
   JudgeDispatchFn,
@@ -217,18 +224,29 @@ export async function runSkillsEval(
       ...tasks,
       ...sampledNeighbors.map((neighbor) => neighbor.task),
     ];
-    const armCount = previewTasks.length * 2;
+    const trials = options.trials ?? 1;
+    if (!Number.isInteger(trials) || trials < 1 || trials > MAX_TRIALS) {
+      throw new Error(
+        `--trials must be an integer between 1 and ${MAX_TRIALS}`,
+      );
+    }
+    // Neighbor (negative-transfer) tasks run once; only target tasks repeat.
+    const armCount = tasks.length * 2 * trials + sampledNeighbors.length * 2;
     const judgeTaskCount = previewTasks.filter(
       (t) => t.checker.type === "judge",
     ).length;
-    const judgeDispatchCount = judgeTaskCount * 2;
+    const judgeDispatchCount =
+      tasks.filter((t) => t.checker.type === "judge").length * 2 * trials +
+      (judgeTaskCount -
+        tasks.filter((t) => t.checker.type === "judge").length) *
+        2;
     const totalDispatches = armCount + judgeDispatchCount;
 
     // Cost preview (task 7)
     console.log("\nSkill eval live run preview:");
     console.log(`  skill: ${skillId}`);
     console.log(
-      `  tasks: ${tasks.length}  spawns: ${armCount} arm + ${judgeDispatchCount} judge = ${totalDispatches} dispatches`,
+      `  tasks: ${tasks.length}  trials: ${trials}  spawns: ${armCount} arm + ${judgeDispatchCount} judge = ${totalDispatches} dispatches`,
     );
     console.log(`  vendor/model: ${vendor}`);
     console.log(`  read-only: enforced (all spawns use readOnly: true)`);
@@ -294,6 +312,7 @@ export async function runSkillsEval(
       dispatchFn,
       workspace,
       judgeDispatchFn,
+      trials,
     );
     let report: SkillUtilityReport;
     try {

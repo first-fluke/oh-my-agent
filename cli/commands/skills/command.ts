@@ -81,6 +81,11 @@ export function registerSkillsCommand(program: Command): void {
       .option("--task-dir <path>", "Override task fixture directory")
       .option("--max-tasks <n>", "Cap number of tasks evaluated", parseInt)
       .option(
+        "--trials <n>",
+        "Repeat every arm n times with alternating order (only with --live; 1-10)",
+        parseInt,
+      )
+      .option(
         "--require-coverage",
         "Exit non-zero when task coverage is insufficient",
       )
@@ -104,6 +109,7 @@ export function registerSkillsCommand(program: Command): void {
           maxTasks?: number;
           requireCoverage?: boolean;
           negTransfer?: boolean;
+          trials?: number;
         };
         await runSkillsEval(resolveJsonMode(opts), {
           skill: opts.skill,
@@ -115,6 +121,7 @@ export function registerSkillsCommand(program: Command): void {
           maxTasks: opts.maxTasks,
           requireCoverage: opts.requireCoverage,
           negTransfer: opts.negTransfer,
+          trials: opts.trials,
         });
       },
       { supportsJsonOutput: true },

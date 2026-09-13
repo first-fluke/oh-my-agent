@@ -21,6 +21,7 @@ import {
   JUDGE_DEFAULT_RUBRIC,
   type JudgeDispatchFn,
   judgeScore,
+  judgeVerdict,
   type LiveDispatchFn,
   loadRolloutEntries,
   loadTaskFixtures,
@@ -29,6 +30,8 @@ import {
   NEG_TRANSFER_FAIL,
   type NegativeTransfer,
   negativeTransferRecordDir,
+  pairedLiftInterval,
+  parseJudgeVerdict,
   REGEX_OUTPUT_MAX_LEN,
   REGEX_PATTERN_MAX_LEN,
   type RolloutEntry,
@@ -203,6 +206,30 @@ function makePassingScenario(n = MIN_TASKS): {
 // --- Tests ---
 
 describe("scoreChecker", () => {
+  it("scores the answer inside a vendor envelope, not the envelope fields", () => {
+    const envelope = JSON.stringify({
+      type: "result",
+      is_error: false,
+      session_id: "abc",
+      result: "use --force-with-lease",
+    });
+    expect(
+      scoreChecker(
+        { type: "assert", expect_contains: ["force-with-lease"] },
+        envelope,
+      ),
+    ).toBe(1);
+    expect(
+      scoreChecker(
+        { type: "assert", expect_contains: ["session_id"] },
+        envelope,
+      ),
+    ).toBe(0);
+    expect(
+      scoreChecker({ type: "regex", pattern: "^use --force" }, envelope),
+    ).toBe(1);
+  });
+
   it("assert: returns 1 when all strings are present", () => {
     const checker = {
       type: "assert" as const,
@@ -1472,6 +1499,61 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
         makeMockDispatch("FAIL — but almost PASS"),
       ),
     ).toBe(0);
+  });
+
+  it("reads the verdict from a Claude JSON envelope instead of its bookkeeping fields", () => {
+    // A real envelope: "subagent_stats":{"failed":0} precedes "result":"PASS".
+    const envelope = (result: string): string =>
+      JSON.stringify({
+        type: "result",
+        subtype: "success",
+        is_error: false,
+        subagent_stats: { spawned: 0, completed: 0, failed: 0 },
+        permission_denials: [],
+        result,
+      });
+    expect(
+      judgeScore(
+        "task",
+        "output",
+        "rubric",
+        makeMockDispatch(envelope("PASS")),
+      ),
+    ).toBe(1);
+    expect(
+      judgeScore(
+        "task",
+        "output",
+        "rubric",
+        makeMockDispatch(envelope("FAIL")),
+      ),
+    ).toBe(0);
+  });
+
+  it("grades the unwrapped candidate answer and records the judge text", () => {
+    const seen: string[] = [];
+    const dispatch: JudgeDispatchFn = vi.fn((prompt: string) => {
+      seen.push(prompt);
+      return JSON.stringify({ type: "result", result: "PASS" });
+    });
+    const candidate = JSON.stringify({
+      type: "result",
+      is_error: false,
+      subagent_stats: { failed: 0 },
+      result: "One commit, grounded in the logical-change rule.",
+    });
+    const verdict = judgeVerdict("task", candidate, "rubric", dispatch);
+    expect(verdict).toEqual({ score: 1, response: "PASS" });
+    expect(seen[0]).toContain(
+      "One commit, grounded in the logical-change rule.",
+    );
+    expect(seen[0]).not.toContain("subagent_stats");
+  });
+
+  it("lets the leading token decide before falling back to first occurrence", () => {
+    expect(parseJudgeVerdict("PASS. Note: it does not FAIL any rule.")).toBe(1);
+    expect(parseJudgeVerdict("FAIL: the answer would PASS only if …")).toBe(0);
+    expect(parseJudgeVerdict("Verdict: pass")).toBe(1);
   });
 
   it("dispatch is called exactly once per judgeScore call", () => {
@@ -2970,5 +3052,190 @@ describe("isolation status in report", () => {
     const printed = logSpy.mock.calls.map((c: unknown[]) => String(c[0]));
     expect(printed.some((s) => s.includes("isolation:"))).toBe(false);
     logSpy.mockRestore();
+  });
+});
+
+describe("computeUtility — repeated trials and paired interval", () => {
+  const trialEntry = (
+    taskId: string,
+    arm: "baseline" | "treatment",
+    trial: number,
+    output: string,
+  ): RolloutEntry => ({ taskId, arm, trial, output });
+
+  it("averages per-task scores over trials and downgrades an unstable pass to warn", () => {
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`),
+    );
+    // Trial 0: every treatment passes. Trial 1: treatments fail on 3 tasks.
+    const rollouts = tasks.flatMap((t, i) => [
+      trialEntry(t.id, "baseline", 0, "NO"),
+      trialEntry(t.id, "treatment", 0, "EXPECTED"),
+      trialEntry(t.id, "baseline", 1, "NO"),
+      trialEntry(t.id, "treatment", 1, i < 3 ? "NO" : "EXPECTED"),
+    ]);
+    const report = computeUtility("oma-test", { tasks, rollouts });
+    expect(report.coverage).toBe("ok");
+    expect(report.findings[0]).toMatchObject({
+      baseline: 0,
+      treatment: 0.5,
+      lift: 0.5,
+      trials: 2,
+    });
+    expect(report.findings[0]?.liftStdDev).toBeGreaterThan(0);
+    expect(report.findings[4]).toMatchObject({
+      treatment: 1,
+      lift: 1,
+      trials: 2,
+    });
+    expect(report.utilityLift).toBeCloseTo(0.7);
+    expect(report.repeatability?.trials).toBe(2);
+    expect(report.repeatability?.withinTaskStdDev).toBeGreaterThan(0);
+    expect(report.repeatability?.liftCi95?.lower).toBeGreaterThan(0);
+    expect(report.repeatability?.status).toBe("stable");
+    expect(report.decision).toBe("pass");
+  });
+
+  it("marks a lift whose paired interval includes zero as unstable and not a pass", () => {
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`),
+    );
+    // Only one task improves, and only on one trial: mean lift is positive but noisy.
+    const rollouts = tasks.flatMap((t, i) => [
+      trialEntry(t.id, "baseline", 0, "NO"),
+      trialEntry(t.id, "treatment", 0, i === 0 ? "EXPECTED" : "NO"),
+      trialEntry(t.id, "baseline", 1, "NO"),
+      trialEntry(t.id, "treatment", 1, "NO"),
+    ]);
+    const report = computeUtility("oma-test", { tasks, rollouts });
+    expect(report.utilityLift).toBeCloseTo(0.1);
+    expect(report.repeatability?.status).toBe("unstable");
+    expect(report.repeatability?.liftCi95?.lower).toBeLessThan(0);
+    expect(report.decision).toBe("warn");
+  });
+
+  it("reports single-trial status with a task-level interval when nothing was repeated", () => {
+    const { tasks, rollouts } = makePassingScenario();
+    const report = computeUtility("oma-test", { tasks, rollouts });
+    expect(report.repeatability).toEqual({
+      trials: 1,
+      liftCi95: { lower: 1, upper: 1 },
+      withinTaskStdDev: null,
+      status: "single-trial",
+    });
+    expect(
+      report.findings.every((f) => f.trials === 1 && f.liftStdDev === 0),
+    ).toBe(true);
+  });
+
+  it("pairs trials by index and ignores an unpaired extra trial", () => {
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`),
+    );
+    const rollouts = tasks.flatMap((t) => [
+      trialEntry(t.id, "baseline", 0, "NO"),
+      trialEntry(t.id, "treatment", 0, "EXPECTED"),
+      trialEntry(t.id, "treatment", 1, "NO"), // no baseline for trial 1
+    ]);
+    const report = computeUtility("oma-test", { tasks, rollouts });
+    expect(report.findings[0]).toMatchObject({ trials: 1, lift: 1 });
+    expect(report.repeatability?.trials).toBe(1);
+  });
+
+  it("computes a paired t-interval over task lifts", () => {
+    expect(pairedLiftInterval([1, 1, 1])).toEqual({ lower: 1, upper: 1 });
+    expect(pairedLiftInterval([0.5])).toBeNull();
+    const wide = pairedLiftInterval([1, 0, 1, 0]);
+    expect(wide?.lower).toBeLessThan(0);
+    expect(wide?.upper).toBeGreaterThan(1);
+  });
+});
+
+describe("collectLiveRollouts — repeated trials", () => {
+  it("runs each arm per trial with alternating order and grades every trial", () => {
+    const task = makeTaskFixture("t1", {
+      checker: { type: "judge", rubric: "r" },
+    });
+    const calls: string[] = [];
+    const dispatch: LiveDispatchFn = (arm) => {
+      calls.push(arm);
+      return `${arm} answer`;
+    };
+    const judge = vi.fn(() => "PASS");
+    const { rollouts, cleanupTmp } = collectLiveRollouts(
+      [task],
+      "body",
+      dispatch,
+      tmpdir(),
+      judge,
+      2,
+    );
+    cleanupTmp();
+    expect(calls).toEqual(["baseline", "treatment", "treatment", "baseline"]);
+    expect(rollouts).toHaveLength(4);
+    expect(rollouts.map((r) => [r.arm, r.trial])).toEqual([
+      ["baseline", 0],
+      ["treatment", 0],
+      ["baseline", 1],
+      ["treatment", 1],
+    ]);
+    expect(
+      rollouts.every((r) => r.score === 1 && r.judgeResponse === "PASS"),
+    ).toBe(true);
+    expect(judge).toHaveBeenCalledTimes(4);
+  });
+
+  it("omits the trial field for a single trial and rejects out-of-range counts", () => {
+    const task = makeTaskFixture("t1");
+    const { rollouts, cleanupTmp } = collectLiveRollouts(
+      [task],
+      "body",
+      () => "EXPECTED",
+      tmpdir(),
+    );
+    cleanupTmp();
+    expect(rollouts.every((r) => r.trial === undefined)).toBe(true);
+    expect(() =>
+      collectLiveRollouts([task], "body", () => "x", tmpdir(), undefined, 0),
+    ).toThrow(/trials/);
+    expect(() =>
+      collectLiveRollouts([task], "body", () => "x", tmpdir(), undefined, 11),
+    ).toThrow(/trials/);
+  });
+});
+
+describe("fixture group and trial fields", () => {
+  it("loads an optional group label and rejects a non-string group", () => {
+    const dir = mkdtempSync(join(tmpdir(), "oma-eval-group-"));
+    writeFileSync(
+      join(dir, "a.yaml"),
+      "id: a\nskill: s\ndomain: d\nprompt: p\nweight: 1\ngroup: fam\nchecker:\n  type: assert\n  expect_contains: [x]\n",
+    );
+    writeFileSync(
+      join(dir, "b.yaml"),
+      "id: b\nskill: s\ndomain: d\nprompt: p\nweight: 1\ngroup: 3\nchecker:\n  type: assert\n  expect_contains: [x]\n",
+    );
+    const { fixtures, skippedFiles } = loadTaskFixtures(dir);
+    expect(fixtures.map((f) => [f.id, f.group])).toEqual([["a", "fam"]]);
+    expect(skippedFiles).toEqual(["b.yaml"]);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("keeps recorded trial indexes and drops entries with an invalid trial", () => {
+    const dir = mkdtempSync(join(tmpdir(), "oma-eval-trial-"));
+    mkdirSync(join(dir, "_rollouts"));
+    writeFileSync(
+      join(dir, "_rollouts", "r.json"),
+      JSON.stringify([
+        { taskId: "t", arm: "baseline", output: "o", trial: 1 },
+        { taskId: "t", arm: "treatment", output: "o", trial: -1 },
+        { taskId: "t", arm: "treatment", output: "o", trial: "1" },
+      ]),
+    );
+    const entries = loadRolloutEntries(dir);
+    expect(entries).toEqual([
+      { taskId: "t", arm: "baseline", output: "o", trial: 1 },
+    ]);
+    rmSync(dir, { recursive: true, force: true });
   });
 });

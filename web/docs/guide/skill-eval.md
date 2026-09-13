@@ -72,6 +72,7 @@ weight: 1
 | `prompt` | Yes | The task prompt dispatched to both arms |
 | `checker` | No | How to score arm output. Defaults to `{ type: judge }` when omitted. |
 | `weight` | Yes | Relative weight for the weighted mean score (use `1` unless tasks have different importance) |
+| `group` | No | Family label. `oma skill optimize` keeps fixtures that share a group in the same train/validation/final-test partition so a near-duplicate cannot leak across the split. |
 
 ### Checker types
 
@@ -165,6 +166,7 @@ The other controls are useful in CI and coverage investigations:
 | --- | --- |
 | `--task-dir <path>` | Evaluate fixtures from a directory other than `.agents/eval/<skill>`. |
 | `--max-tasks <n>` | Cap the number of fixtures for a bounded live run. |
+| `--trials <n>` | Repeat every arm `n` times (1-10). Arm order alternates between trials, per-task scores are averaged, and the report gains within-task variance. Neighbor tasks from `--neg-transfer` run once. |
 | `--neg-transfer` | Measure the candidate skill on same-domain tasks belonging to other skills; off by default. |
 | `--require-coverage` | Exit non-zero when fewer than five scoreable paired tasks remain, or a requested negative-transfer check is incomplete. |
 
@@ -218,6 +220,10 @@ Each entry carries provenance so a later replay can tell whether it still applie
 | `skillBodyHash` | `treatment` only | the SKILL.md body being evaluated |
 | `promptHash` | both arms | the fixture's current `prompt` |
 | `taskHash` | both arms | full task, effective checker/default judge rubric, and `SKILL_EVAL_PROTOCOL_REVISION` |
+| `trial` | both arms (`--trials` > 1) | pairs the baseline and treatment of one repetition; absent for a single trial |
+| `judgeResponse` | judge tasks | the judge's unwrapped verdict text (bounded), kept so a stored `score` can be audited |
+
+Arm outputs are recorded as the answer text. When a vendor CLI returns a JSON result envelope, the `result` field is stored and scored; envelope bookkeeping is never matched by `assert`/`regex` checkers or read by the judge parser.
 
 The baseline arm withholds the skill, so editing SKILL.md alone does not invalidate its recording. Changes to the task or evaluator contract invalidate both arms. Live recording runs both arms again.
 
@@ -309,8 +315,14 @@ Skill utility eval  (skill: oma-scholar)
   "treatmentScore": 0.7143,
   "utilityLift": 0.2857,
   "utilityStdDev": 0.1429,
+  "repeatability": {
+    "trials": 1,
+    "liftCi95": { "lower": 0.0918, "upper": 0.4796 },
+    "withinTaskStdDev": null,
+    "status": "single-trial"
+  },
   "findings": [
-    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0 }
+    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0, "trials": 1, "liftStdDev": 0 }
   ],
   "negativeTransfer": [],
   "negativeTransferCoverage": { "status": "not-requested", "expected": 0, "scored": 0 },
@@ -318,6 +330,8 @@ Skill utility eval  (skill: oma-scholar)
   "isolationVendor": "claude"
 }
 ```
+
+`repeatability` separates task-level variation from rerun variation. `liftCi95` is a paired 95% t-interval over the per-task lifts (null below two scored tasks). With `--trials` of two or more, `withinTaskStdDev` is the mean per-task standard deviation of the per-trial lift, and `status` is `stable` only when the interval excludes zero on the lift's side; otherwise it is `unstable` and a `pass` is downgraded to `warn`. A single-trial run reports `single-trial`: it can show lift, but it cannot show that the lift repeats.
 
 `ok` is `true` only when `coverage === "ok"`, `decision === "pass"`, and any requested negative-transfer check has sufficient coverage. The `isolation` field reports whether the
 baseline arm was genuinely run without the target skill (see [Skill isolation](#skill-isolation-keeping-the-baseline-honest));

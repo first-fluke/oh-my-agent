@@ -32,7 +32,7 @@ Replay and suite-scoped knowledge are tied to the full task/evaluator contract, 
 
 ## How it works
 
-Fixtures are sorted by task ID and split deterministically into **train**, **held-out validation**, and **runner-owned final-test** sets. With at least five fixtures, the target proportions are 60/20/20 and every partition has at least one task. For example, eight fixtures produce four train, one validation, and three final-test tasks after rounding. The final-test tasks come from this local fixture set and are withheld from the Maintainer and Proposer. Duplicate final-test task IDs and overlap with a development split are rejected.
+Fixtures are sorted by task ID and split deterministically into **train**, **held-out validation**, and **runner-owned final-test** sets. With at least five fixtures, the target proportions are 60/20/20 and every partition has at least one task. For example, eight fixtures produce four train, one validation, and three final-test tasks after rounding. Fixtures that declare the same `group` are assigned together, so a rephrased sibling cannot sit in train while the original sits in the final test; with fewer than three groups the split falls back to task IDs and warns. The final-test tasks come from this local fixture set and are withheld from the Maintainer and Proposer. Duplicate final-test task IDs and overlap with a development split are rejected.
 
 For each epoch (up to `--max-epochs`, default 8):
 

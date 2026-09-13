@@ -49,11 +49,46 @@ export function splitTrainValTest(tasks: TaskFixture[]): {
   const trainEnd = Math.max(1, Math.floor(sorted.length * OPT_TRAIN_SPLIT));
   const valSize = Math.max(1, Math.floor(sorted.length * OPT_VALIDATION_SPLIT));
   const valEnd = Math.min(sorted.length - 1, trainEnd + valSize);
-  return {
-    train: sorted.slice(0, trainEnd),
-    val: sorted.slice(trainEnd, valEnd),
-    test: sorted.slice(valEnd),
-  };
+
+  // Group-aware assignment: fixtures sharing a `group` stay together so a
+  // near-duplicate cannot sit in train while its sibling sits in the held-out
+  // test. Groups are ordered by their first (sorted) member; each group goes to
+  // the earliest partition that has not yet reached its size target, and the
+  // last two partitions are never left empty.
+  const groups = new Map<string, TaskFixture[]>();
+  for (const task of sorted) {
+    const key = task.group ?? `\u0000${task.id}`;
+    const members = groups.get(key);
+    if (members) members.push(task);
+    else groups.set(key, [task]);
+  }
+  if (groups.size < 3) {
+    if (groups.size < sorted.length) {
+      console.warn(
+        "[oma skill opt] fewer than three fixture groups; group boundaries cannot be honored and the split falls back to task ids.",
+      );
+    }
+    return {
+      train: sorted.slice(0, trainEnd),
+      val: sorted.slice(trainEnd, valEnd),
+      test: sorted.slice(valEnd),
+    };
+  }
+  const train: TaskFixture[] = [];
+  const val: TaskFixture[] = [];
+  const test: TaskFixture[] = [];
+  const ordered = [...groups.values()];
+  for (const [index, members] of ordered.entries()) {
+    const remainingGroups = ordered.length - index;
+    if (train.length < trainEnd && remainingGroups > 2) train.push(...members);
+    else if (val.length < valSize && remainingGroups > 1) val.push(...members);
+    else if (test.length === 0 || remainingGroups > 0) test.push(...members);
+  }
+  if (val.length === 0) {
+    const moved = train.length > 1 ? train.pop() : undefined;
+    if (moved) val.push(moved);
+  }
+  return { train, val, test };
 }
 
 // --- Edit application (T3) ---

@@ -12,7 +12,7 @@ import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
 import {
   buildRolloutExpectation,
   contentHash,
-  judgeScore,
+  judgeVerdict,
   taskFixtureHash,
   writeRolloutRecord,
 } from "./rollouts.js";
@@ -196,12 +196,14 @@ function collectNeighborPair(
         taskHash: negativeTransferTaskHash(task),
       };
       if (task.checker.type === "judge" && judgeDispatchFn) {
-        entry.score = judgeScore(
+        const verdict = judgeVerdict(
           task.prompt,
           output,
           task.checker.rubric ?? JUDGE_DEFAULT_RUBRIC,
           judgeDispatchFn,
         );
+        entry.score = verdict.score;
+        entry.judgeResponse = verdict.response;
       }
       rollouts.push(entry);
     }

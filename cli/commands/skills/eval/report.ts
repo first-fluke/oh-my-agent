@@ -25,11 +25,28 @@ export function serializeSkillUtilityReport(
       treatmentScore: Number(report.treatmentScore.toFixed(4)),
       utilityLift: Number(report.utilityLift.toFixed(4)),
       utilityStdDev: Number(report.utilityStdDev.toFixed(4)),
+      repeatability: report.repeatability
+        ? {
+            ...report.repeatability,
+            liftCi95: report.repeatability.liftCi95
+              ? {
+                  lower: Number(report.repeatability.liftCi95.lower.toFixed(4)),
+                  upper: Number(report.repeatability.liftCi95.upper.toFixed(4)),
+                }
+              : null,
+            withinTaskStdDev:
+              report.repeatability.withinTaskStdDev === null
+                ? null
+                : Number(report.repeatability.withinTaskStdDev.toFixed(4)),
+          }
+        : undefined,
       findings: report.findings.map((f) => ({
         taskId: f.taskId,
-        baseline: f.baseline,
-        treatment: f.treatment,
+        baseline: Number(f.baseline.toFixed(4)),
+        treatment: Number(f.treatment.toFixed(4)),
         lift: Number(f.lift.toFixed(4)),
+        trials: f.trials ?? 1,
+        liftStdDev: Number((f.liftStdDev ?? 0).toFixed(4)),
       })),
       negativeTransfer: report.negativeTransfer,
       negativeTransferCoverage: report.negativeTransferCoverage,
@@ -86,6 +103,22 @@ export function renderSkillUtilityReport(report: SkillUtilityReport): void {
     `  baseline: ${(report.baselineScore * 100).toFixed(1)}%  treatment: ${(report.treatmentScore * 100).toFixed(1)}%`,
   );
   console.log(`  utilityLift: ${liftPct}  (stddev: ${stdDevPct})`);
+  const rep = report.repeatability ?? {
+    trials: 1,
+    liftCi95: null,
+    withinTaskStdDev: null,
+    status: "single-trial" as const,
+  };
+  const ci = rep.liftCi95
+    ? `[${(rep.liftCi95.lower * 100).toFixed(1)}%, ${(rep.liftCi95.upper * 100).toFixed(1)}%]`
+    : "n/a";
+  const within =
+    rep.withinTaskStdDev === null
+      ? "n/a"
+      : `${(rep.withinTaskStdDev * 100).toFixed(1)}%`;
+  console.log(
+    `  repeatability: ${rep.status}  trials: ${rep.trials}  lift 95% CI: ${ci}  within-task stddev: ${within}`,
+  );
 
   const tag = report.decision.toUpperCase();
   console.log(`  [${tag}]`);

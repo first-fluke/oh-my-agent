@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { INSTALLED_SKILLS_DIR } from "../../../constants/vendors.js";
+import { unwrapVendorEnvelope } from "./envelope.js";
 import {
   JUDGE_DEFAULT_RUBRIC,
   type JudgeDispatchFn,
@@ -103,24 +104,46 @@ export function taskSetHash(taskIds: string[]): string {
     .slice(0, 16);
 }
 
+/** Judge responses are kept for audit; a verdict alone cannot be reviewed. */
+export const JUDGE_RESPONSE_LIMIT = 2_000;
+
+export interface JudgeVerdict {
+  score: 0 | 1;
+  /** Unwrapped judge text, bounded to JUDGE_RESPONSE_LIMIT characters. */
+  response: string;
+}
+
 /**
- * Grade a single arm's output using an LLM judge.
- * Returns 1 (PASS) or 0 (FAIL/ambiguous). Deterministic for a fixed
- * dispatchFn — the grading prompt is structured to elicit exactly "PASS"
- * or "FAIL".
+ * Parse a PASS/FAIL verdict from judge text. The leading token decides when
+ * present; otherwise the first occurrence wins; anything else is a FAIL.
+ */
+export function parseJudgeVerdict(text: string): 0 | 1 {
+  const upper = unwrapVendorEnvelope(text).trim().toUpperCase();
+  if (upper.startsWith("PASS")) return 1;
+  if (upper.startsWith("FAIL")) return 0;
+  const passIdx = upper.indexOf("PASS");
+  const failIdx = upper.indexOf("FAIL");
+  if (passIdx === -1) return 0;
+  if (failIdx === -1) return 1;
+  return passIdx < failIdx ? 1 : 0;
+}
+
+/**
+ * Grade a single arm's output using an LLM judge and keep the judge's text.
  *
  * Judge prompt format (design 016):
  *   task prompt + candidate output + rubric + "Answer with exactly PASS or FAIL"
  *
- * Verdict parsing: first occurrence of PASS → 1; FAIL → 0; ambiguous → 0.
- * When both appear, whichever is first wins.
+ * The candidate output and the judge response are unwrapped from vendor
+ * envelopes first, so grading and parsing see answers rather than JSON
+ * bookkeeping. Deterministic for a fixed dispatchFn.
  */
-export function judgeScore(
+export function judgeVerdict(
   taskPrompt: string,
   output: string,
   rubric: string,
   dispatchFn: JudgeDispatchFn,
-): 0 | 1 {
+): JudgeVerdict {
   const gradingPrompt = [
     "You are a grading judge. Evaluate whether the following output correctly answers the task.",
     "",
@@ -128,7 +151,7 @@ export function judgeScore(
     taskPrompt,
     "",
     "## Candidate output",
-    output,
+    unwrapVendorEnvelope(output),
     "",
     "## Grading rubric",
     rubric,
@@ -136,16 +159,21 @@ export function judgeScore(
     "Answer with exactly PASS or FAIL (no other text).",
   ].join("\n");
 
-  const response = dispatchFn(gradingPrompt);
-  // Parse verdict: PASS → 1, FAIL → 0, ambiguous → 0
-  const upper = response.toUpperCase();
-  const passIdx = upper.indexOf("PASS");
-  const failIdx = upper.indexOf("FAIL");
-  if (passIdx === -1 && failIdx === -1) return 0;
-  if (passIdx !== -1 && failIdx === -1) return 1;
-  if (failIdx !== -1 && passIdx === -1) return 0;
-  // Both present: whichever appears first in the response wins
-  return passIdx < failIdx ? 1 : 0;
+  const response = unwrapVendorEnvelope(dispatchFn(gradingPrompt));
+  return {
+    score: parseJudgeVerdict(response),
+    response: response.slice(0, JUDGE_RESPONSE_LIMIT),
+  };
+}
+
+/** Verdict only; see judgeVerdict for the recorded response. */
+export function judgeScore(
+  taskPrompt: string,
+  output: string,
+  rubric: string,
+  dispatchFn: JudgeDispatchFn,
+): 0 | 1 {
+  return judgeVerdict(taskPrompt, output, rubric, dispatchFn).score;
 }
 
 /**
@@ -163,13 +191,18 @@ export function judgeScore(
  * Every arm runs in its own empty directory under a session temp directory.
  * cleanupTmp() removes all of them, including failed comparisons.
  */
+export const MAX_TRIALS = 10;
+
 export function collectLiveRollouts(
   tasks: TaskFixture[],
   skillMdBody: string,
   dispatchFn: LiveDispatchFn,
   workspace: string,
   judgeDispatchFn?: JudgeDispatchFn,
+  trials = 1,
 ): { rollouts: RolloutEntry[]; cleanupTmp: () => void } {
+  if (!Number.isInteger(trials) || trials < 1 || trials > MAX_TRIALS)
+    throw new Error(`trials must be an integer between 1 and ${MAX_TRIALS}`);
   // Create a throwaway temp workspace so arms cannot modify project files
   const tmpBase = mkdtempSync(join(tmpdir(), "oma-eval-live-"));
   const cleanupTmp = () => {
@@ -190,63 +223,61 @@ export function collectLiveRollouts(
     const pairStart = rollouts.length;
     try {
       const promptHash = contentHash(task.prompt);
+      const taskHash = taskFixtureHash(task);
       const isJudgeTask = task.checker.type === "judge";
       const rubric = isJudgeTask
         ? ((task.checker as TaskCheckerJudge).rubric ?? JUDGE_DEFAULT_RUBRIC)
         : JUDGE_DEFAULT_RUBRIC;
-
-      // --- Baseline arm: prompt alone (no skill context) ---
-      const baselineDir = mkdtempSync(join(tmpBase, "baseline-"));
-      const baselineOutput = dispatchFn("baseline", task.prompt, baselineDir);
-      const baselineEntry: RolloutEntry = {
-        taskId: task.id,
-        arm: "baseline",
-        output: baselineOutput,
-        // No skillBodyHash: the baseline withholds the skill, so editing SKILL.md
-        // does not invalidate this arm and re-recording it would waste a dispatch.
-        promptHash,
-        taskHash: taskFixtureHash(task),
-      };
-      if (isJudgeTask && judgeDispatchFn) {
-        baselineEntry.score = judgeScore(
-          task.prompt,
-          baselineOutput,
-          rubric,
-          judgeDispatchFn,
-        );
-      }
-      rollouts.push(baselineEntry);
-
-      // --- Treatment arm: SKILL.md prepended to the prompt ---
       // Trust boundary: both skillMdBody (SKILL.md) and task.prompt are user-authored
       // content from the local workspace. The --live flag is an explicit opt-in; this
       // concat does not introduce external/untrusted input beyond what the user controls.
       const treatmentPrompt = skillMdBody
         ? `${skillMdBody}\n\n---\n\n${task.prompt}`
         : task.prompt;
-      const treatmentDir = mkdtempSync(join(tmpBase, "treatment-"));
-      const treatmentOutput = dispatchFn(
-        "treatment",
-        treatmentPrompt,
-        treatmentDir,
-      );
-      const treatmentEntry: RolloutEntry = {
-        taskId: task.id,
-        arm: "treatment",
-        output: treatmentOutput,
-        skillBodyHash: bodyHash,
-        promptHash,
-        taskHash: taskFixtureHash(task),
-      };
-      if (isJudgeTask && judgeDispatchFn) {
-        treatmentEntry.score = judgeScore(
-          task.prompt,
-          treatmentOutput,
-          rubric,
-          judgeDispatchFn,
+
+      const runArm = (
+        arm: "baseline" | "treatment",
+        trial: number,
+      ): RolloutEntry => {
+        const armDir = mkdtempSync(join(tmpBase, `${arm}-`));
+        const output = dispatchFn(
+          arm,
+          arm === "baseline" ? task.prompt : treatmentPrompt,
+          armDir,
         );
+        const entry: RolloutEntry = {
+          taskId: task.id,
+          arm,
+          output,
+          // No skillBodyHash on the baseline: it withholds the skill, so editing
+          // SKILL.md does not invalidate that arm.
+          ...(arm === "treatment" ? { skillBodyHash: bodyHash } : {}),
+          promptHash,
+          taskHash,
+          ...(trials > 1 ? { trial } : {}),
+        };
+        if (isJudgeTask && judgeDispatchFn) {
+          const verdict = judgeVerdict(
+            task.prompt,
+            output,
+            rubric,
+            judgeDispatchFn,
+          );
+          entry.score = verdict.score;
+          entry.judgeResponse = verdict.response;
+        }
+        return entry;
+      };
+
+      for (let trial = 0; trial < trials; trial += 1) {
+        // Alternate arm order across trials so position cannot favor one arm.
+        const order: Array<"baseline" | "treatment"> =
+          trial % 2 === 0
+            ? ["baseline", "treatment"]
+            : ["treatment", "baseline"];
+        const pair = order.map((arm) => runArm(arm, trial));
+        rollouts.push(...pair.sort((a, b) => a.arm.localeCompare(b.arm)));
       }
-      rollouts.push(treatmentEntry);
     } catch (error) {
       rollouts.splice(pairStart);
       console.warn(
@@ -284,7 +315,9 @@ export function writeRolloutRecord(
   const sorted = [...rollouts].sort((a, b) => {
     const idCmp = a.taskId.localeCompare(b.taskId);
     if (idCmp !== 0) return idCmp;
-    return a.arm.localeCompare(b.arm);
+    const armCmp = a.arm.localeCompare(b.arm);
+    if (armCmp !== 0) return armCmp;
+    return (a.trial ?? 0) - (b.trial ?? 0);
   });
 
   const filePath = join(rolloutsDir, `${hash}.json`);

@@ -25,15 +25,20 @@ export const JUDGE_DEFAULT_RUBRIC =
   "Does the answer correctly and completely satisfy the task prompt?";
 
 /** Bump when scorer semantics, judge prompt/parsing, or implicit evaluator behavior changes. */
-export const SKILL_EVAL_PROTOCOL_REVISION = "1";
+export const SKILL_EVAL_PROTOCOL_REVISION = "2";
 
 // --- Interfaces (design 016) ---
 
 export interface SkillUtilityFinding {
   taskId: string;
+  /** Mean over trials; a single-trial arm is its own mean. */
   baseline: number;
   treatment: number;
   lift: number;
+  /** Complete paired trials behind this finding; absent means one. */
+  trials?: number;
+  /** Standard deviation of the per-trial lift; absent or 0 for a single trial. */
+  liftStdDev?: number;
   /**
    * Observable evidence for skill evolution. Present only when the scorer is
    * explicitly asked for it; public eval serialization intentionally omits it.
@@ -85,6 +90,25 @@ export type IsolationStatus =
   | "unavailable"
   | "n/a";
 
+/**
+ * Whether the measured lift is repeatable. Task-level variation gives the
+ * paired confidence interval; repeated trials give within-task variation.
+ */
+export interface SkillRepeatability {
+  /** Complete paired trials common to every scored task. */
+  trials: number;
+  /** Paired 95% t-interval over task-level lifts; null below two scored tasks. */
+  liftCi95: { lower: number; upper: number } | null;
+  /** Mean per-task standard deviation of per-trial lift; null for a single trial. */
+  withinTaskStdDev: number | null;
+  /**
+   * `single-trial`: no rerun evidence. `stable`: repeated trials and the
+   * interval excludes zero on the lift's side. `unstable`: repeated trials but
+   * the interval includes zero. `unavailable`: insufficient coverage.
+   */
+  status: "single-trial" | "stable" | "unstable" | "unavailable";
+}
+
 export interface SkillUtilityReport {
   skill: string;
   taskCount: number;
@@ -93,6 +117,8 @@ export interface SkillUtilityReport {
   treatmentScore: number;
   utilityLift: number;
   utilityStdDev: number;
+  /** Always set by computeUtility; absent only on hand-built reports. */
+  repeatability?: SkillRepeatability;
   findings: SkillUtilityFinding[];
   negativeTransfer: NegativeTransfer[];
   /** A requested check is measured only when every selected neighbor was scored. */
@@ -139,6 +165,11 @@ export interface TaskFixture {
   prompt: string;
   checker: TaskChecker;
   weight: number;
+  /**
+   * Optional family label. Fixtures sharing a group are kept in the same
+   * optimization partition so a near-duplicate cannot leak from train to test.
+   */
+  group?: string;
 }
 
 // --- Rollout fixture schema ---
@@ -147,6 +178,8 @@ export interface RolloutEntry {
   taskId: string;
   arm: "baseline" | "treatment";
   output: string;
+  /** Zero-based repetition index when an arm ran more than once; absent means 0. */
+  trial?: number;
   /**
    * Recorded judge verdict for this arm (0 = FAIL, 1 = PASS).
    * Written when the task uses a judge checker and `--live --record` is set.
@@ -154,6 +187,8 @@ export interface RolloutEntry {
    * deterministic and fully offline (design 016 amendment 2026-06-04).
    */
   score?: 0 | 1;
+  /** Judge text behind `score`, unwrapped and bounded; absent for non-judge tasks. */
+  judgeResponse?: string;
   /**
    * Provenance: `contentHash` of the SKILL.md body prepended to the treatment
    * prompt at record time. Recorded on `arm: "treatment"` only — the baseline
@@ -253,6 +288,11 @@ export interface SkillsEvalOptions {
    * When set in --mock, uses recorded neighbor rollout scores (deterministic, no LLM).
    */
   negTransfer?: boolean;
+  /**
+   * Repeat every arm this many times (1-10) in --live. Trials alternate arm
+   * order; scores are averaged per task and reported with a paired interval.
+   */
+  trials?: number;
   /** Injectable live dispatch function for testing. When absent, buildLiveDispatchFn is used. */
   _liveDispatchFn?: LiveDispatchFn;
   /** Injectable judge dispatch function for testing. When absent, buildJudgeDispatchFn is used in --live. */

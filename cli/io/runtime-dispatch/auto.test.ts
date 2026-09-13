@@ -204,3 +204,33 @@ describe("auto dispatch integration", () => {
     expect(content).toContain('language: "ko"');
   });
 });
+
+describe("resolveAgentPlanFromConfig — dispatch ids with an -agent suffix", () => {
+  it("applies the bare-key override for eval-agent and opt-agent", () => {
+    const config = {
+      model_preset: "auto",
+      agents: {
+        eval: { model: "anthropic/claude-sonnet-4-6" },
+        opt: { model: "anthropic/claude-sonnet-4-6" },
+      },
+    } as never;
+    const env = { OMA_RUNTIME_VENDOR: "claude" } as NodeJS.ProcessEnv;
+    expect(
+      resolveAgentPlanFromConfig("eval-agent", config, undefined, env),
+    ).toMatchObject({
+      cli: "claude",
+      cliModel: "claude-sonnet-4-6",
+    });
+    expect(
+      resolveAgentPlanFromConfig("opt-agent", config, undefined, env),
+    ).toMatchObject({
+      cli: "claude",
+      cliModel: "claude-sonnet-4-6",
+    });
+    // No override for the bare key: auto mode keeps the vendor session model.
+    expect(
+      resolveAgentPlanFromConfig("judge-agent", config, undefined, env)
+        .cliModel,
+    ).toBeUndefined();
+  });
+});

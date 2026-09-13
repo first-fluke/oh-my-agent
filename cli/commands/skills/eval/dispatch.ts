@@ -26,6 +26,7 @@ import {
   resolvePromptFlag,
   resolveVendor,
 } from "../../../platform/agent-config.js";
+import { unwrapVendorEnvelope } from "./envelope.js";
 import type {
   IsolationStatus,
   JudgeDispatchFn,
@@ -125,7 +126,8 @@ export function runEvalDispatch(
         text,
       );
     }
-    return text;
+    // Record and score the answer, not the vendor's JSON bookkeeping.
+    return invocation.outputKind === "text" ? text : unwrapVendorEnvelope(text);
   } catch (err) {
     if (err instanceof EvalDispatchError) throw err;
     const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
