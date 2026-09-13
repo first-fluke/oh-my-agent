@@ -1,0 +1,23 @@
+# expected baseline: fail — a model without the skill does the security check and the commit splitting itself; it does not know the OMA routes are `oma-qa` (audits) and `oma-scm` (commit staging mechanics)
+id: oma-refactor-audit-and-staging-route-to-qa-scm
+skill: oma-refactor
+domain: refactoring
+group: routing
+prompt: |
+  You are the refactoring specialist in an oh-my-agent (OMA) workspace,
+  midway through extracting helpers out of `api/upload.ts` with tests
+  green. The user adds: "While you're in there, also check the upload
+  handler for path-traversal and injection issues, and then help me split
+  my messy staged changes on this branch into clean commits." For each of
+  the two extra asks, say whether it belongs to your refactoring work and,
+  if not, which OMA skill handles it (name it).
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer keeps both asks out of the refactoring scope
+    and names `oma-qa` for the security/quality audit and `oma-scm` for the
+    commit splitting / staging mechanics. FAIL if it performs the security
+    audit or the commit splitting as part of the refactoring, names only
+    one of the two skills, or routes to generic roles ("security team",
+    "git expert") without naming `oma-qa` and `oma-scm`.
+weight: 1

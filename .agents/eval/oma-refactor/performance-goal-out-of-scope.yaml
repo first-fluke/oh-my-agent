@@ -1,0 +1,22 @@
+# expected baseline: fail — a model without the skill happily "refactors for performance"; the skill defines performance optimization as a goal to be out of scope (tuning is only a side effect)
+id: oma-refactor-performance-goal-out-of-scope
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  You are the refactoring specialist. The user says: "Refactor
+  `search/indexer.py` so it runs at least 3x faster; the p95 is too high.
+  Behavior can stay the same, just make it fast." Coverage is good and tests
+  are deterministic. Do you accept this as a refactoring task? Explain your
+  decision and what you would do with the request.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer states that performance optimization as the
+    goal is out of scope for refactoring by definition (any speed-up may
+    only be a side effect of a structural change, never the objective),
+    and therefore does not accept "3x faster" as a refactoring task but
+    reframes or routes it as separate performance work. FAIL if it accepts
+    the task as a refactoring and proceeds to optimize under the
+    refactoring label, or treats "behavior stays the same" as sufficient
+    to make speed-up a refactoring goal.
+weight: 1

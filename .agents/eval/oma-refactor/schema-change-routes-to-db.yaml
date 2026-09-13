@@ -1,0 +1,24 @@
+# expected baseline: fail — a model without the skill plans expand-contract itself but does not know the migration mechanics are owned by the `oma-db` skill and that the refactor skill only plans the sequence
+id: oma-refactor-schema-change-routes-to-db
+skill: oma-refactor
+domain: refactoring
+group: routing
+prompt: |
+  You are the refactoring specialist in an oh-my-agent (OMA) workspace. As
+  part of cleaning up the `Subscription` model you want to rename the
+  persisted column `sub_stat` to `status` in a production Postgres table
+  that two other services read directly. Describe how you sequence this
+  change, what the unit of incrementality is for it, and which parts of the
+  work you do yourself versus hand to another OMA skill (name it).
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer (1) plans an expand-contract (parallel change)
+    sequence with a feature-flag style switch, (2) states that deployment,
+    not commit, is the unit of incrementality for this stateful change,
+    and (3) says the refactor skill only plans the expand-contract sequence
+    while the schema migration mechanics are handed to the `oma-db` skill
+    by name. FAIL if it renames the column in a single migration, treats
+    commits as the increment, does the migration mechanics itself, or does
+    not name `oma-db`.
+weight: 1

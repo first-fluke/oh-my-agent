@@ -1,0 +1,20 @@
+# expected baseline: fail — a model without the skill answers `pip install radon`/`lizard`, ESLint complexity rules, or SonarQube; it does not know the skill mandates `uvx lizard` / `uvx radon` with no pre-install
+id: oma-refactor-complexity-metrics-uvx
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  You need a before/after cyclomatic-complexity baseline for a mixed
+  TypeScript and Python repository before you start restructuring. The CI
+  image has Python and git but you are not allowed to add permanent
+  dependencies or run an install step. Give the exact command(s) you run
+  to collect the complexity numbers for both languages.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer runs lizard and/or radon through `uvx` (for
+    example `uvx lizard <path>` for the TypeScript and Python files and/or
+    `uvx radon cc <path>` for Python) and notes that no pre-install is
+    needed. FAIL if it uses `pip install`, `pipx install`, `npm install`,
+    ESLint `complexity` rules, SonarQube, or any other tool as the primary
+    answer, or names lizard/radon without invoking them via `uvx`.
+weight: 1

@@ -1,0 +1,24 @@
+# expected baseline: likely pass — hotspot prioritisation is widely known, but a model without the skill often still picks the most complex file or the one with the loudest TODOs
+id: oma-refactor-cold-code-not-a-target
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  You have refactoring budget for exactly one module this sprint. Three
+  candidates: (a) `legacy/pricing_rules.py`, 1,800 lines with the highest
+  complexity in the repo, last modified three years ago; (b)
+  `export/csv_writer.py`, medium complexity, full of angry FIXME comments,
+  scheduled to be deleted next quarter when the new export service ships;
+  (c) `orders/fulfilment.py`, medium complexity, changed in 40 commits over
+  the last year by five different people. Which do you pick, and why are
+  the other two rejected?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer picks (c) on the grounds that it is the hotspot
+    (complexity x change frequency / churn), rejects (a) because cold,
+    low-churn code is not a refactoring target regardless of its
+    complexity, and rejects (b) because code slated for deletion has no
+    refactoring value regardless of its self-admitted debt comments. FAIL
+    if it picks (a) or (b), or rejects them for reasons other than churn
+    (for (a)) and imminent deletion (for (b)).
+weight: 1

@@ -1,0 +1,24 @@
+# expected baseline: fail — the orchestrated result-file convention `.agents/results/result-refactor[-{sessionId}].md` exists only in the skill; a model without it guesses `.agents/results/refactor/...` or an agent-named file
+id: oma-refactor-orchestrated-result-path
+skill: oma-refactor
+domain: refactoring
+group: report-path
+prompt: |
+  You were dispatched by the oh-my-agent (OMA) orchestrator as the
+  refactor-engineer subagent, with session id `s42`, to decompose a god
+  class. The work is done and verified. The orchestrator will read your
+  result file. What is the exact path of that file? Contrast it with where
+  you would have written the report in a plain, non-orchestrated run.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer gives the orchestrated result file as
+    `.agents/results/result-refactor-s42.md` (the base form
+    `.agents/results/result-refactor.md` is also acceptable) AND says the
+    standalone/non-orchestrated report would instead go under
+    `.agents/results/refactor/`. FAIL if the orchestrated path is placed
+    under `.agents/results/refactor/`, uses a different filename pattern
+    (for example `refactor-engineer-s42.md`, `result-s42.md`,
+    `results/refactor-engineer/`), or the two locations are not
+    distinguished.
+weight: 1

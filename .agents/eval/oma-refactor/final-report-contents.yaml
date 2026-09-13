@@ -1,0 +1,24 @@
+# expected baseline: likely pass — before/after metrics are generic, but the skill additionally requires an explicit readability verdict and a list of discovered-but-deferred follow-ups
+id: oma-refactor-final-report-contents
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  You have finished a six-commit refactoring of `payments/ledger.ts`: two
+  extractions, three renames, one move. All tests passed unchanged after
+  every step. While working you noticed two more smells in neighbouring
+  files that you deliberately left alone. List the required sections of
+  the before/after report you hand back, and state what would make the
+  refactoring count as a failure even if every metric improved.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the report contains all three of: (1) a before/after
+    metric delta naming at least complexity (cyclomatic or cognitive),
+    size, and coupling; (2) an explicit readability verdict / judgment that
+    is separate from the metrics; (3) a list of follow-ups discovered but
+    deliberately not done (the two neighbouring smells); AND it states that
+    the refactoring is a failure if readability worsened even though
+    metrics improved (metric improvement alone is not success). FAIL if any
+    of the three sections is missing, or if success is judged by metric
+    improvement alone.
+weight: 1

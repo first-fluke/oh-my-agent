@@ -1,0 +1,23 @@
+# expected baseline: fail — the standalone report directory `.agents/results/refactor/` exists only in the skill; a model without it guesses docs/, reports/, or the `.agents/results/` root
+id: oma-refactor-standalone-report-path
+skill: oma-refactor
+domain: refactoring
+group: report-path
+prompt: |
+  You are working directly with a user in an oh-my-agent (OMA) workspace, not
+  under any orchestrator. They ask: "Give me a ranked list of where we should
+  refactor first in this repo." You have computed the hotspot ranking and
+  written a short prioritized plan. Where in the repository do you save that
+  plan? Give the exact directory and file type, and say whether saving it is
+  mandatory.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer saves the plan as a Markdown file directly under
+    `.agents/results/refactor/` (for example
+    `.agents/results/refactor/<name>.md`) and treats the file as optional
+    (not required). FAIL if it names any other location (`docs/`,
+    `reports/`, the repository root, the `.agents/results/` root,
+    `.agents/results/result-refactor.md`, `.agents/state/`), gives no
+    concrete directory, or says the report file is mandatory.
+weight: 1

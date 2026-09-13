@@ -1,0 +1,22 @@
+# expected baseline: likely pass — separating test cleanup from production cleanup is common practice, but the skill's "one side frozen at a time" symmetry rule is stricter than most models apply
+id: oma-refactor-one-side-frozen
+skill: oma-refactor
+domain: refactoring
+prompt: |
+  The user says: "Both `inventory/reserve.ts` and its test file
+  `reserve.test.ts` are a mess. Clean them both up: the tests have huge
+  duplicated setup blocks, and the production function has a 120-line
+  method to split." Coverage on the module is high and tests are
+  deterministic. How do you sequence the work and what is allowed to
+  change during each phase?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer refactors one side at a time: during the
+    production refactoring the tests are frozen (unchanged and re-run
+    after every step), and during the test refactoring the production code
+    is frozen, with the two phases in separate commits. FAIL if it changes
+    tests and production code in the same phase or commit, adjusts tests
+    to make a production step pass, or does not state that the untouched
+    side is frozen during each phase.
+weight: 1

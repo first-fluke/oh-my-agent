@@ -1,21 +1,24 @@
+# expected baseline: fail — a model without the skill usually keeps the fix out of the refactor commit, but it does not know the bug is routed to the `oma-debug` skill by name
 id: oma-refactor-bug-found-mid-refactor
 skill: oma-refactor
 domain: refactoring
-group: two-hats
+group: routing
 prompt: |
+  You are the refactoring specialist in an oh-my-agent (OMA) workspace.
   Halfway through extracting `computeDiscount()` out of a 300-line checkout
-  function, you notice the original code applies a percentage discount
+  function, you notice the original code applies the percentage discount
   before the fixed-amount coupon, which contradicts the pricing spec in the
   README. The existing tests do not cover that branch. It is a one-line
-  swap to fix. What do you do about the bug right now, and what does your
-  refactor commit contain?
+  swap to fix. What do you do about the bug right now, what does your
+  refactor commit contain, and which OMA skill takes the bug (name it)?
 checker:
   type: judge
   rubric: |
-    PASS only if the answer does NOT fix the ordering bug inside the
-    refactor commit, records or reports the bug so it is handled through
-    the separate bug-fix / debug path, and keeps the extraction commit
-    behavior-preserving (the extracted code reproduces the current, buggy
-    ordering). FAIL if it swaps the order as part of the refactoring, fixes
-    it "while it's there", or leaves the bug unreported.
+    PASS only if the answer (1) does NOT fix the ordering bug inside the
+    refactor commit and keeps the extraction behavior-preserving (the
+    extracted code reproduces the current, buggy ordering), (2) records the
+    bug, and (3) routes it to the `oma-debug` skill by name. FAIL if it
+    swaps the order as part of the refactoring, fixes it "while it's
+    there", leaves the bug unreported, or routes to a generic "bug ticket"
+    without naming `oma-debug`.
 weight: 1
