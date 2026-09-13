@@ -4,6 +4,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import { registerHarnessIncidentCommands } from "./incident-command.js";
 import { runHarnessEval } from "./run.js";
 
 export function registerHarnessCommand(program: Command): void {
@@ -24,7 +25,20 @@ export function registerHarnessCommand(program: Command): void {
         "--candidate <path>",
         "Candidate root containing .agents/",
       )
-      .option("--mock", "Replay a matching recorded run (default)")
+      .option(
+        "--partition <name>",
+        "validation (default) or final-test",
+        "validation",
+      )
+      .option(
+        "--mock",
+        "Inspect matching recorded verdicts (default; no agent replay)",
+      )
+      .option("--action <mode>", "inspect, rescore, fixture-replay, or rerun")
+      .option(
+        "--transcript <path>",
+        "Tool fixture transcript for fixture-replay",
+      )
       .option(
         "--live",
         "Run baseline and candidate arms through the target agent",
@@ -49,10 +63,15 @@ export function registerHarnessCommand(program: Command): void {
         const options = rawOptions as Parameters<typeof runHarnessEval>[1] & {
           json?: boolean;
           output?: string;
+          transcript?: string;
         };
-        await runHarnessEval(resolveJsonMode(options), options);
+        await runHarnessEval(resolveJsonMode(options), {
+          ...options,
+          transcriptFile: options.transcript,
+        });
       },
       { supportsJsonOutput: true },
     ),
   );
+  registerHarnessIncidentCommands(harness);
 }

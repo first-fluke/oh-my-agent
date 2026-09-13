@@ -60,6 +60,7 @@ const sidebars: SidebarsConfig = {
       items: [
         "guide/scheduled-agents",
         "guide/harness-eval",
+        "guide/harness-incidents",
         "guide/skill-eval",
         "guide/skill-opt",
       ],

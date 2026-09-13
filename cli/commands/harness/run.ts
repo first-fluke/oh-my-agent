@@ -5,22 +5,47 @@ import { CLI_SKILLS_DIR } from "../../constants/index.js";
 import { resolveVendor } from "../../platform/agent-config.js";
 import { buildHarnessDispatch } from "./dispatch.js";
 import { validateCandidateOverlay } from "./overlay.js";
-import { isPathInside } from "./paths.js";
-import { computeBaselineHash, computeSuiteHash } from "./provenance.js";
-import { loadHarnessRecord, writeHarnessRecord } from "./records.js";
+import { assertExistingPathInside, isPathInside } from "./paths.js";
+import {
+  computeBaselineHash,
+  computeEvaluatorHash,
+  computeSuiteHash,
+} from "./provenance.js";
+import {
+  inspectHarnessRecord,
+  loadHarnessRecord,
+  writeHarnessRecord,
+} from "./records.js";
+import {
+  fixtureReplayHarnessRecord,
+  type HarnessFixtureTranscript,
+  initialSnapshotsFromHarnessRecord,
+  loadHarnessFixtureTranscripts,
+  rescoreHarnessRecord,
+  scoreHarnessReplay,
+} from "./replay.js";
 import {
   renderHarnessEvaluation,
   serializeHarnessEvaluation,
 } from "./report.js";
-import { runHarnessLive } from "./runner.js";
+import { harnessEvaluationTrust, runHarnessLive } from "./runner.js";
 import { scoreHarnessRuns } from "./scoring.js";
-import { loadHarnessSuite } from "./suite.js";
-import type { HarnessDispatchFn, HarnessEvaluation } from "./types.js";
+import { loadHarnessSuite, selectHarnessTasks } from "./suite.js";
+import { snapshotTrustedCheckers } from "./trusted-checks.js";
+import type {
+  HarnessDispatchFn,
+  HarnessEvaluation,
+  HarnessPartition,
+  HarnessReplayAction,
+} from "./types.js";
 
 export interface HarnessEvalOptions {
   suite: string;
   candidate: string;
+  partition?: HarnessPartition;
   live?: boolean;
+  action?: HarnessReplayAction;
+  transcriptFile?: string;
   mock?: boolean;
   record?: boolean;
   recordFile?: string;
@@ -32,6 +57,7 @@ export interface HarnessEvalOptions {
   _vendor?: string;
   _materializeVendor?: (workspace: string, vendor: string) => void;
   _confirm?: () => Promise<boolean>;
+  _sourceLimitations?: string[];
 }
 
 function confirmRun(): Promise<boolean> {
@@ -52,11 +78,12 @@ function recordPath(
   suiteId: string,
   baselineHash: string,
   candidateHash: string,
+  partition: string,
 ): string {
   return join(
     dirname(suitePath),
     "_runs",
-    `${suiteId}-${baselineHash.slice(0, 12)}-${candidateHash.slice(0, 12)}.json`,
+    `${suiteId}-${partition}-${baselineHash.slice(0, 12)}-${candidateHash.slice(0, 12)}.json`,
   );
 }
 
@@ -76,10 +103,28 @@ export async function runHarnessEval(
   };
   if (options.live && options.mock)
     throw new Error("Choose either --live or --mock");
-  if (options.record && !options.live)
-    throw new Error("--record requires --live");
+  if (
+    options.action !== undefined &&
+    !["inspect", "rescore", "fixture-replay", "rerun"].includes(options.action)
+  )
+    throw new Error(
+      "Unknown harness action; choose inspect, rescore, fixture-replay, or rerun",
+    );
+  const action = options.action ?? (options.live ? "live" : "inspect");
+  const live = action === "live" || action === "rerun";
+  if (options.live && !live)
+    throw new Error("--live conflicts with a recorded-evidence action");
+  if (options.mock && action !== "inspect")
+    throw new Error("--mock is an alias for --action inspect");
+  if (options.record && !live)
+    throw new Error("--record requires --live or --action rerun");
+  if (options.transcriptFile && action !== "fixture-replay")
+    throw new Error("--transcript requires --action fixture-replay");
+  if (action === "fixture-replay" && !options.transcriptFile)
+    throw new Error("--action fixture-replay requires --transcript");
   const projectRoot = resolve(options._projectRoot ?? process.cwd());
   const suite = loadHarnessSuite(options.suite, projectRoot);
+  const tasks = selectHarnessTasks(suite, options.partition);
   const candidate = validateCandidateOverlay(options.candidate, projectRoot);
   if (
     candidate.root === projectRoot ||
@@ -101,35 +146,161 @@ export async function runHarnessEval(
   }
   const baselineHash = computeBaselineHash(projectRoot);
   const suiteHash = computeSuiteHash(suite);
+  const checkers = snapshotTrustedCheckers(suite, projectRoot, candidate);
+  const evaluatorHash = computeEvaluatorHash(suite, checkers);
+  const trust = harnessEvaluationTrust(suite, options.partition, evaluatorHash);
   const resolvedRecordPath = resolve(
     projectRoot,
     options.recordFile ??
-      recordPath(suite.sourcePath, suite.id, baselineHash, candidate.hash),
+      recordPath(
+        suite.sourcePath,
+        suite.id,
+        baselineHash,
+        candidate.hash,
+        trust.partition,
+      ),
   );
   assertRecordPath(resolvedRecordPath, projectRoot);
+  assertExistingPathInside(
+    projectRoot,
+    resolvedRecordPath,
+    "Harness record path",
+  );
+  const recordExclusions = [
+    candidate.root,
+    ...suite.tasks.map((task) => task.workspace),
+    ...["agents", "config", "rules", "skills", "workflows"].map((name) =>
+      join(projectRoot, ".agents", name),
+    ),
+    join(projectRoot, ".agents", "oma-config.yaml"),
+    suite.sourcePath,
+    ...[...checkers.values()].map((checker) => checker.sourcePath),
+  ];
+  if (recordExclusions.some((path) => isPathInside(path, resolvedRecordPath))) {
+    throw new Error(
+      "Harness recording must be separate from candidate, fixture, and evaluator inputs",
+    );
+  }
 
   let evaluation: HarnessEvaluation;
-  if (!options.live) {
-    if (!existsSync(resolvedRecordPath)) {
-      throw new Error(
-        `No matching harness recording found: ${resolvedRecordPath}. Run --live --record first.`,
-      );
+  const record =
+    action === "live"
+      ? undefined
+      : (() => {
+          if (!existsSync(resolvedRecordPath))
+            throw new Error(
+              `No matching harness recording found: ${resolvedRecordPath}. Run --live --record first.`,
+            );
+          return inspectHarnessRecord(resolvedRecordPath);
+        })();
+  const initialSnapshots =
+    action === "rerun"
+      ? initialSnapshotsFromHarnessRecord(
+          record ?? resolvedRecordPath,
+          tasks,
+          suite.id,
+        )
+      : undefined;
+  if (!live) {
+    if (!record) throw new Error("Harness recording is missing");
+    if (action === "inspect") {
+      const runs = loadHarnessRecord(resolvedRecordPath, {
+        suiteHash,
+        baselineHash,
+        candidateHash: candidate.hash,
+        partition: trust.partition,
+        evaluatorHash,
+      });
+      evaluation = {
+        suiteId: suite.id,
+        suiteHash,
+        baselineHash,
+        candidateHash: candidate.hash,
+        vendor: "recorded",
+        executionMode: "inspect",
+        evidenceStatus:
+          record.schemaVersion === 1
+            ? "legacy"
+            : runs.length === tasks.length * 2 &&
+                runs.every(
+                  (run) =>
+                    !run.dispatchError &&
+                    run.evidence?.initialWorkspace.complete &&
+                    run.evidence.artifacts.complete,
+                )
+              ? "complete"
+              : "insufficient",
+        sourceRecordHash: record.recordHash,
+        replayLimitations: [
+          "Recorded verdicts are inspected and aggregated; no checks or agents were rerun",
+        ],
+        runs,
+        score: scoreHarnessRuns(tasks, runs),
+        ...trust,
+        promotionBlockers: [
+          ...trust.promotionBlockers,
+          "Inspection is not a new evaluation of agent behavior",
+        ],
+      };
+    } else {
+      if (
+        record.baselineHash !== baselineHash ||
+        record.candidateHash !== candidate.hash ||
+        record.partition !== trust.partition
+      )
+        throw new Error(
+          "Recorded evidence belongs to a different baseline, candidate, or partition",
+        );
+      let transcripts: HarnessFixtureTranscript[] = [];
+      if (action === "fixture-replay") {
+        if (!options.transcriptFile)
+          throw new Error("Fixture transcript is missing");
+        const transcriptPath = resolve(projectRoot, options.transcriptFile);
+        assertRecordPath(transcriptPath, projectRoot);
+        assertExistingPathInside(
+          projectRoot,
+          transcriptPath,
+          "Harness transcript path",
+        );
+        transcripts = loadHarnessFixtureTranscripts(transcriptPath);
+      }
+      const result =
+        action === "rescore"
+          ? rescoreHarnessRecord(record, {
+              suite,
+              partition: options.partition,
+            })
+          : fixtureReplayHarnessRecord(record, {
+              suite,
+              partition: options.partition,
+              transcripts,
+            });
+      evaluation = {
+        suiteId: suite.id,
+        suiteHash,
+        baselineHash,
+        candidateHash: candidate.hash,
+        vendor: action === "rescore" ? "recorded-output" : "tool-fixture",
+        executionMode: action,
+        evidenceStatus: result.evidenceStatus,
+        sourceRecordHash: result.sourceRecordHash,
+        replayLimitations: result.limitations,
+        runs: result.runs,
+        score: scoreHarnessReplay(tasks, result),
+        ...trust,
+        promotionBlockers: [...trust.promotionBlockers, ...result.limitations],
+      };
     }
-    const runs = loadHarnessRecord(resolvedRecordPath, {
-      suiteHash,
-      baselineHash,
-      candidateHash: candidate.hash,
-    });
-    evaluation = {
-      suiteId: suite.id,
-      suiteHash,
-      baselineHash,
-      candidateHash: candidate.hash,
-      vendor: "recorded",
-      runs,
-      score: scoreHarnessRuns(suite.tasks, runs),
-    };
   } else {
+    const destinationRecordPath =
+      action === "rerun"
+        ? resolvedRecordPath.replace(/\.json$/, "") +
+          `-rerun-${Date.now()}.json`
+        : resolvedRecordPath;
+    if (options.record && existsSync(destinationRecordPath))
+      throw new Error(
+        "Harness recording is immutable; choose a new --record-file before dispatch",
+      );
     const resolved = resolveVendor(suite.agent);
     const vendor = options._vendor ?? resolved.vendor;
     const spec = CLI_SKILLS_DIR[vendor as keyof typeof CLI_SKILLS_DIR];
@@ -142,14 +313,14 @@ export async function runHarnessEval(
     if (!Number.isFinite(timeoutMinutes) || timeoutMinutes <= 0) {
       throw new Error("--timeout-minutes must be a positive number");
     }
-    info("\nHarness eval live run preview:");
-    info(`  suite: ${suite.id}`);
+    info(`\nHarness eval ${action} run preview:`);
+    info(`  suite: ${suite.id}  partition: ${trust.partition}`);
     info(`  candidate: ${candidate.root}`);
-    info(
-      `  tasks: ${suite.tasks.length}  dispatches: ${suite.tasks.length * 2}`,
-    );
+    info(`  tasks: ${tasks.length}  dispatches: ${tasks.length * 2}`);
     info(`  vendor/model route: ${vendor} / ${suite.agent}`);
-    info(`  workspace: fresh temporary checkout per arm`);
+    info(
+      `  workspace: fresh temporary checkout per arm${initialSnapshots ? " from recorded initial snapshot" : ""}`,
+    );
     info(`  timeout: ${timeoutMinutes} minutes per arm\n`);
     if (!options.yes && !(await (options._confirm ?? confirmRun)())) {
       info("Aborted by user. No dispatches issued.");
@@ -171,13 +342,30 @@ export async function runHarnessEval(
       vendor,
       dispatch,
       materializeVendor: options._materializeVendor,
+      partition: options.partition,
+      initialSnapshots,
     });
+    if (record) evaluation.sourceRecordHash = record.recordHash;
     if (options.record) {
-      writeHarnessRecord(resolvedRecordPath, evaluation);
-      info(`Harness recording written: ${resolvedRecordPath}`);
+      writeHarnessRecord(destinationRecordPath, evaluation);
+      info(`Harness recording written: ${destinationRecordPath}`);
     }
   }
 
+  if (options._sourceLimitations?.length) {
+    evaluation.replayLimitations = [
+      ...new Set([
+        ...(evaluation.replayLimitations ?? []),
+        ...options._sourceLimitations,
+      ]),
+    ];
+    evaluation.promotionBlockers = [
+      ...new Set([
+        ...evaluation.promotionBlockers,
+        ...options._sourceLimitations,
+      ]),
+    ];
+  }
   if (jsonMode) console.log(serializeHarnessEvaluation(evaluation));
   else renderHarnessEvaluation(evaluation);
   if (

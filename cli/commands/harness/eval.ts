@@ -1,10 +1,31 @@
 export { evaluateChecks } from "./checks.js";
 export {
+  captureHarnessSnapshot,
+  materializeHarnessSnapshot,
+  validateHarnessSnapshot,
+} from "./evidence.js";
+export {
+  captureHarnessIncident,
+  exportHarnessIncident,
+  readHarnessIncident,
+} from "./incident.js";
+export { reproduceHarnessIncident } from "./incident-command.js";
+export {
   applyCandidateOverlay,
   validateCandidateOverlay,
 } from "./overlay.js";
 export { computeBaselineHash, computeSuiteHash } from "./provenance.js";
-export { loadHarnessRecord, writeHarnessRecord } from "./records.js";
+export {
+  inspectHarnessRecord,
+  loadHarnessRecord,
+  writeHarnessRecord,
+} from "./records.js";
+export {
+  fixtureReplayHarnessRecord,
+  initialSnapshotsFromHarnessRecord,
+  loadHarnessFixtureTranscripts,
+  rescoreHarnessRecord,
+} from "./replay.js";
 export {
   renderHarnessEvaluation,
   serializeHarnessEvaluation,
@@ -12,7 +33,7 @@ export {
 export { runHarnessEval } from "./run.js";
 export { runHarnessLive } from "./runner.js";
 export { scoreHarnessRuns } from "./scoring.js";
-export { loadHarnessSuite } from "./suite.js";
+export { loadHarnessSuite, selectHarnessTasks } from "./suite.js";
 export type {
   CandidateOverlayManifest,
   HarnessArmRun,
@@ -21,6 +42,8 @@ export type {
   HarnessDispatchFn,
   HarnessDispatchInput,
   HarnessEvaluation,
+  HarnessJsonValue,
+  HarnessPartition,
   HarnessScore,
   HarnessSuite,
   HarnessTask,

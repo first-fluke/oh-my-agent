@@ -13,6 +13,14 @@ export function serializeHarnessEvaluation(
 export function renderHarnessEvaluation(evaluation: HarnessEvaluation): void {
   const { score } = evaluation;
   console.log(`\nHarness evaluation: ${evaluation.suiteId}`);
+  console.log(`  mode: ${evaluation.executionMode ?? "legacy"}`);
+  console.log(`  evidence: ${evaluation.evidenceStatus ?? "legacy"}`);
+  for (const limitation of evaluation.replayLimitations ?? [])
+    console.log(`  replay limitation: ${limitation}`);
+  console.log(`  partition: ${evaluation.partition}`);
+  console.log(`  promotion ready: ${evaluation.promotionReady}`);
+  for (const blocker of evaluation.promotionBlockers)
+    console.log(`  limitation: ${blocker}`);
   console.log(`  vendor: ${evaluation.vendor}`);
   console.log(`  tasks: ${score.scoredTaskCount}/${score.taskCount}`);
   console.log(`  baseline: ${percentage(score.baselineScore)}`);

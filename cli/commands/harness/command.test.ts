@@ -20,6 +20,7 @@ describe("registerHarnessCommand", () => {
     expect(flags).toContain("--candidate");
     expect(flags).toContain("--live");
     expect(flags).toContain("--mock");
+    expect(flags).toContain("--partition");
     expect(flags).toContain("--record");
     expect(flags).toContain("--require-coverage");
     expect(flags).toContain("--json");

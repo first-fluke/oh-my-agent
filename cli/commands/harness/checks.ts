@@ -1,6 +1,17 @@
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { isDeepStrictEqual } from "node:util";
+import { sha256Hex } from "../../utils/hash.js";
 import { assertExistingPathInside, resolveInside } from "./paths.js";
+import {
+  evaluateTrustedCommand,
+  type TrustedCheckers,
+} from "./trusted-checks.js";
 import type { HarnessCheck, HarnessCheckResult } from "./types.js";
+
+export const checksImplementationHash = sha256Hex(
+  readFileSync(fileURLToPath(import.meta.url)),
+);
 
 const MAX_CHECK_FILE_BYTES = 5 * 1024 * 1024;
 
@@ -20,7 +31,50 @@ function evaluateCheck(
   workspace: string,
   output: string,
   check: HarnessCheck,
+  trustedCheckers?: TrustedCheckers,
 ): HarnessCheckResult {
+  if (check.type === "command") {
+    return evaluateTrustedCommand(
+      workspace,
+      check,
+      trustedCheckers?.get(JSON.stringify(check)),
+    );
+  }
+  if (
+    check.type === "file_json_equals" ||
+    check.type === "output_json_equals"
+  ) {
+    try {
+      let actual: unknown = JSON.parse(
+        check.type === "output_json_equals"
+          ? output
+          : readCheckedFile(workspace, check.path),
+      );
+      for (const part of (check.pointer ?? "").split("/").slice(1)) {
+        const key = part.replaceAll("~1", "/").replaceAll("~0", "~");
+        if (
+          actual === null ||
+          typeof actual !== "object" ||
+          !Object.hasOwn(actual, key)
+        ) {
+          return { check, passed: false, message: "JSON pointer is missing" };
+        }
+        actual = (actual as Record<string, unknown>)[key];
+      }
+      const passed = isDeepStrictEqual(actual, check.value);
+      return {
+        check,
+        passed,
+        message: passed ? "JSON state matched" : "JSON state did not match",
+      };
+    } catch (error) {
+      return {
+        check,
+        passed: false,
+        message: `JSON check failed: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  }
   if (
     check.type === "output_contains" ||
     check.type === "output_not_contains"
@@ -61,6 +115,9 @@ export function evaluateChecks(
   workspace: string,
   output: string,
   checks: HarnessCheck[],
+  trustedCheckers?: TrustedCheckers,
 ): HarnessCheckResult[] {
-  return checks.map((check) => evaluateCheck(workspace, output, check));
+  return checks.map((check) =>
+    evaluateCheck(workspace, output, check, trustedCheckers),
+  );
 }

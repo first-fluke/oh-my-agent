@@ -7,7 +7,12 @@ import {
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { sha256Hex } from "../../utils/hash.js";
+import { checksImplementationHash } from "./checks.js";
 import { isPathInside } from "./paths.js";
+import {
+  type TrustedCheckers,
+  trustedCheckerImplementationHash,
+} from "./trusted-checks.js";
 import type { HarnessSuite } from "./types.js";
 
 function hashTree(root: string): string {
@@ -54,6 +59,8 @@ function hashTree(root: string): string {
 export function computeSuiteHash(suite: HarnessSuite): string {
   const taskInputs = suite.tasks.map((task) => ({
     id: task.id,
+    incident: task.incident,
+    partition: task.partition,
     prompt: task.prompt,
     weight: task.weight,
     checks: task.checks,
@@ -82,4 +89,28 @@ export function computeBaselineHash(projectRoot: string): string {
       ],
     ]);
   return sha256Hex(JSON.stringify(inputs));
+}
+
+export function computeEvaluatorHash(
+  suite: HarnessSuite,
+  checkers: TrustedCheckers,
+): string {
+  return sha256Hex(
+    JSON.stringify({
+      implementation: [
+        checksImplementationHash,
+        trustedCheckerImplementationHash,
+      ],
+      tasks: suite.tasks.map((task) => ({
+        id: task.id,
+        partition: task.partition,
+        checks: task.checks,
+      })),
+      checkers: [...checkers].map(([check, snapshot]) => ({
+        check,
+        hash: snapshot.hash,
+        executableHash: snapshot.executableHash,
+      })),
+    }),
+  );
 }

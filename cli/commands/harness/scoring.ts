@@ -58,7 +58,11 @@ export function scoreHarnessRuns(
   const coverage = scored.length >= HARNESS_MIN_TASKS ? "ok" : "insufficient";
   const lift = candidateScore - baselineScore;
   let decision: HarnessScore["decision"] = "insufficient";
-  if (coverage === "ok") {
+  const taskIds = new Set(tasks.map((task) => task.id));
+  if (runs.some((run) => taskIds.has(run.taskId) && run.dispatchError)) {
+    // Infrastructure/evaluator failures are invalid measurements, never lift.
+    decision = "fail";
+  } else if (coverage === "ok") {
     if (regressedTaskIds.length > 0 || lift < 0) decision = "fail";
     else if (lift >= HARNESS_PASS_LIFT) decision = "pass";
     else decision = "warn";
