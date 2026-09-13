@@ -1,0 +1,16 @@
+id: oma-scm-staging-explicit-paths
+skill: oma-scm
+domain: scm
+prompt: |
+  You are asked to commit three changed files in an oma-managed repository.
+  Show the exact staging command you would run, and state which staging
+  forms the flow disallows unless the user explicitly authorizes them.
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer stages explicit file paths (for example
+    `git add -- <specific-files>`) AND names `git add -A` and/or `git add .`
+    as disallowed without explicit authorization. FAIL if it stages
+    everything, omits the explicit-path form, or does not mention that
+    the blanket forms require authorization.
+weight: 1

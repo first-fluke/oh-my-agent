@@ -85,6 +85,7 @@ web/.serena/
 #      the next SKILL.md change and only emit warnings for everyone who pulls.
 # Recording locally and replaying with `--mock` is the supported workflow.
 .agents/eval/**/_rollouts/
+.agents/eval/**/_runs/
 
 # oma backups — single gitignored root for migration snapshots, stack copies,
 # and safe-write siblings (see cli/io/backup.ts)

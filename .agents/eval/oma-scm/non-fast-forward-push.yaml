@@ -1,0 +1,15 @@
+id: oma-scm-non-fast-forward-push
+skill: oma-scm
+domain: scm
+prompt: |
+  Your `git push` was rejected as non-fast-forward. Per the oma SCM flow,
+  what is the recovery sequence, and what must you not do?
+checker:
+  type: judge
+  rubric: |
+    PASS only if the answer fetches, inspects the divergence, and integrates
+    the remote changes locally (merge or rebase) before pushing again, AND
+    explicitly says not to retry with a force push. FAIL if it recommends
+    `--force` or `--force-with-lease` as the first response, or skips
+    inspecting the divergence.
+weight: 1

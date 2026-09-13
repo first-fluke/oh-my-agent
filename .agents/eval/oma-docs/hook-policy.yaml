@@ -8,7 +8,7 @@ prompt: |
 checker:
   type: judge
   rubric: |
-    PASS only if the answer states that the hook is warn-only in v1 (a
+    PASS only if the answer states that the hook is warn-only (a
     non-zero verify exit does NOT block workflow completion) and that
     auto-verify is an explicit opt-in via `docs.auto_verify: true` in
     oma-config.yaml (default false/off). FAIL if it blocks completion or

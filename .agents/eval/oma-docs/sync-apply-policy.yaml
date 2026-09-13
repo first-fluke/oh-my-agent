@@ -2,17 +2,21 @@ id: oma-docs-sync-apply-policy
 skill: oma-docs
 domain: docs-drift
 prompt: |
-  You run oma docs sync after a refactor and it lists 4 candidate docs.
-  Describe the division of labor between the CLI and the host LLM for
-  producing the doc patches, and the policy for applying them.
+  The user asked you to "update the docs for my last commit". You run
+  oma docs sync and it lists 4 candidate docs. Describe the division of
+  labor between the CLI and the host LLM for producing the doc patches,
+  and the policy for applying them in this situation.
 checker:
   type: judge
   rubric: |
     PASS only if the answer states all three: (a) the CLI only emits the
-    structured candidate-doc list (git diff intake + reverse lookup) and
-    makes no LLM calls itself, (b) the host LLM drafts the patch proposals
-    from that list, and (c) patches are NEVER auto-applied — each doc
-    requires explicit interactive user confirmation before writing. FAIL if
-    it has the CLI generating patches via an LLM, or applies patches without
-    per-doc user approval.
+    structured candidate-doc list from the diff and makes no LLM calls
+    itself, (b) the host LLM reads the docs and diff and drafts the
+    patches, and (c) because the user already authorized a scoped edit
+    request, the host applies those corrections without asking for another
+    per-file confirmation, asking only about new scope or material missing
+    decisions (a review-only request would instead produce proposals).
+    FAIL if it has the CLI generating patches via an LLM, applies edits
+    beyond the authorized scope, or insists on per-doc interactive approval
+    for the already-authorized edits.
 weight: 2

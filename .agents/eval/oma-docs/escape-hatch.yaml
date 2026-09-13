@@ -2,12 +2,12 @@ id: oma-docs-escape-hatch
 skill: oma-docs
 domain: docs-drift
 prompt: |
-  A tutorial doc contains illustrative example paths (hypothetical project
-  files in inline code) that intentionally do not resolve, and oma docs
-  verify keeps flagging them. What is the supported way to exclude exactly
-  those regions from ref extraction? Give the concrete marker syntax.
+  A generated markdown file is full of illustrative paths that intentionally
+  do not resolve, and oma docs verify keeps flagging it. What per-file
+  marker does the flow honor to exclude that file from reference checks?
+  Give the exact marker text.
 checker:
   type: assert
   expect_contains:
-    - "oma-docs:ignore"
+    - "oma-docs: skip"
 weight: 1
