@@ -64,6 +64,7 @@ import { migrateUnifiedSerenaContext } from "./025-unify-serena-context.js";
 import { migrateGlobalCodexSerenaTransport } from "./026-global-codex-serena-transport.js";
 import { migrateAntigravityDesktopSerenaBridge } from "./027-antigravity-desktop-serena-bridge.js";
 import { migrateProfileSessions } from "./028-profile-sessions.js";
+import { migrateProjectSerenaBridge } from "./029-project-serena-bridge.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -93,6 +94,7 @@ const migrations: Migration[] = [
   migrateGlobalCodexSerenaTransport,
   migrateAntigravityDesktopSerenaBridge,
   migrateProfileSessions,
+  migrateProjectSerenaBridge,
 ];
 
 export function runMigrations(
