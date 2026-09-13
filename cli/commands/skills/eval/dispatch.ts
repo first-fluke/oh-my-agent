@@ -100,7 +100,7 @@ export function runEvalDispatchDetailed(
   prompt: string,
   promptFlag: string | null,
 ): { output: string; usage: DispatchUsage } {
-  const { command, args } = invocation;
+  const { args } = invocation;
   // Locate the prompt VALUE: the arg immediately after `promptFlag` (e.g. `-p`).
   // It is NOT always the trailing arg — plan-derived flags (e.g. `--model sonnet`)
   // can be appended after it, so search by the flag→value pair, not by position.
