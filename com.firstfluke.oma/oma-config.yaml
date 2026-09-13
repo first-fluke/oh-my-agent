@@ -65,8 +65,7 @@ telemetry: false
 
 # Capability providers (docs, web, code_intelligence, semantic_memory)
 providers:
-  code_intelligence: gortex
-
+  code_intelligence: serena
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. Model selection
 # ─────────────────────────────────────────────────────────────────────────────

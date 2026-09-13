@@ -4,13 +4,16 @@
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
     },
-    "gortex": {
-      "command": "gortex",
+    "serena": {
+      "command": "oma",
       "args": [
-        "mcp",
-        "--tools",
-        "compact"
-      ]
+        "bridge",
+        "--context",
+        "oma"
+      ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      }
     },
     "aside": {
       "command": "aside",

@@ -358,7 +358,7 @@ package config
 
 	// ── Provider integrations ──
 	providers: {
-		code_intelligence: "gortex"
+		code_intelligence: "serena"
 	}
 
 	// ── 2. Model selection ──

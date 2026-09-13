@@ -1,13 +1,16 @@
 {
   "mcpServers": {
-    "gortex": {
+    "serena": {
       "type": "local",
-      "command": "gortex",
+      "command": "oma",
       "args": [
-        "mcp",
-        "--tools",
-        "compact"
+        "bridge",
+        "--context",
+        "oma"
       ],
+      "env": {
+        "SERENA_LOG_LEVEL": "info"
+      },
       "tools": [
         "*"
       ]
