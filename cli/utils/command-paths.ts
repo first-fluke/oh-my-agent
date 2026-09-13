@@ -21,6 +21,7 @@ export const COMMAND_PATHS: Record<string, string> = {
   "skills promotions": "skill promotions",
   "skills rollback": "skill rollback",
   "skills procedure": "skill procedure",
+  "skills meta-optimize": "skill meta-optimize",
   "skills evolution-stats": "skill evolution-stats",
   "slide new": "slide create",
   "slide viewer": "slide preview",

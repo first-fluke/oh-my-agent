@@ -645,6 +645,7 @@ The following matrix is generated from the checked-in public command registry. I
 | `skill lint` | `--skill <id>, --json, --output <format>` | Detect per-skill authoring smells (frontmatter, structure, broken refs) |
 | `skill eval` | `--skill <id>, --mock, --live, --record, --yes, --task-dir <path>, --max-tasks <n>, --trials <n>, --require-coverage, --neg-transfer, --routing, --json, --output <format>` | Measure per-skill utility lift (treatment vs baseline on held-out tasks) |
 | `skill optimize` | `--skill <id>, --dry-run, --apply, --mock, --live, --max-epochs <n>, --edits-per-epoch <k>, --lr <chars>, --yes, --memory <mode>, --json, --output <format>` | Optimize a skill's SKILL.md to maximize measured held-out utility lift |
+| `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Propose and score changes to the evolution procedure on held-out skills |
 | `skill procedure` | `--export, --json, --output <format>` | Show the evolution procedure (optimizer/maintainer prompts, constitution) and its hashes |
 | `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Aggregate recorded optimization runs by outcome, memory mode, and procedure |
 | `skill promotions` | `--skill <id>, --json, --output <format>` | List recorded SKILL.md promotions and rollbacks for a skill |

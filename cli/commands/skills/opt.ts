@@ -138,7 +138,23 @@ import { backupSkillMd } from "./opt/skill-files.js";
 export async function runSkillsOpt(
   jsonMode: boolean,
   options: SkillsOptOptions = {},
-): Promise<void> {
+): Promise<SkillOptResult | undefined> {
+  if (!options._quiet) return runSkillsOptInner(jsonMode, options);
+  // Meta-optimization drives many inner runs; their reports are consumed
+  // programmatically, so console output is muted for the duration.
+  const log = console.log;
+  console.log = () => undefined;
+  try {
+    return await runSkillsOptInner(jsonMode, options);
+  } finally {
+    console.log = log;
+  }
+}
+
+async function runSkillsOptInner(
+  jsonMode: boolean,
+  options: SkillsOptOptions = {},
+): Promise<SkillOptResult | undefined> {
   const workspace = options._workspace ?? process.cwd();
   const skillId = options.skill ?? "_all";
 
@@ -409,7 +425,7 @@ export async function runSkillsOpt(
           ),
         );
       }
-      return;
+      return finalResult;
     }
 
     if (!passesFinalTest) {
@@ -438,7 +454,7 @@ export async function runSkillsOpt(
           ),
         );
       }
-      return;
+      return finalResult;
     }
 
     if (!validation.ok) {
@@ -467,7 +483,7 @@ export async function runSkillsOpt(
           ),
         );
       }
-      return;
+      return finalResult;
     }
 
     if (finalResult.promotion?.eligible !== true) {
@@ -484,7 +500,7 @@ export async function runSkillsOpt(
           ),
         );
       else renderSkillOptResult(finalResult);
-      return;
+      return finalResult;
     }
 
     // --- oma-owned guard ---
@@ -514,7 +530,7 @@ export async function runSkillsOpt(
           ),
         );
       }
-      return;
+      return finalResult;
     }
 
     // --- Write the improved SKILL.md ---
@@ -600,7 +616,7 @@ export async function runSkillsOpt(
         ),
       );
     }
-    return;
+    return finalResult;
   }
 
   // --- dry-run (default): print diff + lift, write nothing ---

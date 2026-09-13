@@ -193,6 +193,8 @@ export interface SkillsOptOptions {
    * same budget. Events and artifacts are recorded either way.
    */
   memory?: "recall" | "none";
+  /** Mute console output; the caller consumes the returned result (meta-optimization). */
+  _quiet?: boolean;
   /** Override task directory (for testing). */
   _taskDir?: string;
   /** Override workspace root (for testing). */

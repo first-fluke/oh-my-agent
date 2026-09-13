@@ -7,7 +7,14 @@ import {
 import { runSkillsAudit } from "./audit.js";
 import { runSkillsEval } from "./eval.js";
 import { runSkillsLint } from "./lint.js";
+import { estimateLiveDispatchCalls } from "./opt/cost-preview.js";
 import { readSkillPromotions, rollbackSkillPromotion } from "./opt/lineage.js";
+import {
+  buildLlmMetaProposer,
+  renderMetaReport,
+  runMetaOptimization,
+} from "./opt/meta.js";
+import { buildLiveInnerRunner } from "./opt/meta-runner.js";
 import {
   exportEvolutionProcedure,
   loadEvolutionProcedure,
@@ -217,6 +224,136 @@ export function registerSkillsCommand(program: Command): void {
         if (opts.memory && opts.memory !== "none" && opts.memory !== "recall")
           throw new Error("--memory must be recall or none");
         await runSkillsOpt(resolveJsonMode(opts), optOptions);
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    skills
+      .command("meta-optimize")
+      .description(
+        "Propose and score changes to the evolution procedure itself on held-out skills; promote only with a paired bootstrap interval above zero",
+      )
+      .option(
+        "--target <part>",
+        "Procedure part to optimize: optimizer or maintainer",
+        "optimizer",
+      )
+      .requiredOption(
+        "--skill <ids...>",
+        "Held-out skills the candidate procedure is scored on (space separated)",
+      )
+      .option(
+        "--anchor <ids...>",
+        "Skills never used for selection; reported before and after for drift",
+      )
+      .option(
+        "--repeats <n>",
+        "Inner runs per skill and procedure",
+        parseInt,
+        3,
+      )
+      .option(
+        "--candidates <n>",
+        "Procedure candidates to propose",
+        parseInt,
+        2,
+      )
+      .option(
+        "--max-epochs <n>",
+        "Inner-run epochs (same for every arm)",
+        parseInt,
+        1,
+      )
+      .option(
+        "--edits-per-epoch <k>",
+        "Inner-run edits per epoch (same for every arm)",
+        parseInt,
+        OPT_EDITS_PER_EPOCH,
+      )
+      .option("--live", "Required: inner runs call real models")
+      .option("--apply", "Write the winning procedure file with lineage")
+      .option(
+        "--memory <mode>",
+        "Inner-run memory mode: recall or none",
+        "none",
+      )
+      .option("--yes", "Skip the cost confirmation"),
+    "Output the meta report as JSON",
+  ).action(
+    runAction(
+      async (options) => {
+        const opts = options as {
+          json?: boolean;
+          output?: string;
+          target?: string;
+          skill: string[];
+          anchor?: string[];
+          repeats?: number;
+          candidates?: number;
+          maxEpochs?: number;
+          editsPerEpoch?: number;
+          live?: boolean;
+          apply?: boolean;
+          memory?: string;
+          yes?: boolean;
+        };
+        if (opts.target !== "optimizer" && opts.target !== "maintainer")
+          throw new Error("--target must be optimizer or maintainer");
+        if (!opts.live)
+          throw new Error(
+            "[oma skill meta-optimize] requires --live; there is no recorded inner-run source",
+          );
+        const workspace = process.cwd();
+        const procedure = loadEvolutionProcedure(workspace);
+        const budget = {
+          maxEpochs: opts.maxEpochs ?? 1,
+          editsPerEpoch: opts.editsPerEpoch ?? OPT_EDITS_PER_EPOCH,
+        };
+        const repeats = opts.repeats ?? 3;
+        const candidates = opts.candidates ?? 2;
+        const anchors = opts.anchor ?? [];
+        const innerRuns =
+          opts.skill.length * repeats * (1 + candidates) + anchors.length * 2;
+        const perRun = estimateLiveDispatchCalls(
+          budget.maxEpochs,
+          budget.editsPerEpoch,
+        );
+        const json = resolveJsonMode(opts);
+        const info = (message: string): void => {
+          if (json) console.error(message);
+          else console.log(message);
+        };
+        info(
+          `[oma skill meta-optimize] up to ${innerRuns} inner optimization runs × ~${perRun} model calls each (${innerRuns * perRun} calls upper bound). Final-test partitions and evaluator code stay frozen; only ${opts.target}.md may change${opts.apply ? " (--apply)" : " (dry-run)"}.`,
+        );
+        if (!opts.yes) {
+          const { promptConfirm } = await import("./eval.js");
+          if (!(await promptConfirm("Proceed? [y/N] "))) {
+            info("Aborted by user. No runs issued.");
+            return;
+          }
+        }
+        const report = await runMetaOptimization({
+          workspace,
+          procedure,
+          target: opts.target,
+          skills: opts.skill,
+          anchors,
+          repeats,
+          candidateCount: candidates,
+          budget,
+          proposer: buildLlmMetaProposer(),
+          innerRunner: buildLiveInnerRunner({
+            workspace,
+            memory: opts.memory === "recall" ? "recall" : "none",
+          }),
+          apply: opts.apply === true,
+          onProgress: (message) => info(`  ${message}`),
+        });
+        if (json) console.log(JSON.stringify(report, null, 2));
+        else renderMetaReport(report);
       },
       { supportsJsonOutput: true },
     ),
