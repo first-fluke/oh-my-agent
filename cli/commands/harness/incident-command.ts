@@ -14,6 +14,7 @@ import {
   type HarnessIncident,
   readHarnessIncident,
 } from "./incident.js";
+import { incidentSpecSkeleton, scanHarnessIncidents } from "./incident-scan.js";
 import { assertExistingPathInside } from "./paths.js";
 import { loadHarnessFixtureTranscripts } from "./replay.js";
 import { type HarnessEvalOptions, runHarnessEval } from "./run.js";
@@ -137,6 +138,63 @@ export function registerHarnessIncidentCommands(harness: Command): void {
           { ...summary(captured.incident), path: captured.path },
           resolveJsonMode(options),
         );
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+  addOutputOptions(
+    incident
+      .command("scan")
+      .description(
+        "List failed, blocked, or partial agent runs that no captured incident references yet",
+      )
+      .option("--limit <n>", "Maximum candidates to list", Number.parseInt)
+      .option(
+        "--skeleton <run-id>",
+        "Print an incident specification skeleton for one candidate run",
+      ),
+    "Output candidates as JSON",
+  ).action(
+    runAction(
+      async (raw) => {
+        const options = raw as {
+          limit?: number;
+          skeleton?: string;
+          json?: boolean;
+          output?: string;
+        };
+        const result = scanHarnessIncidents(process.cwd(), {
+          limit: options.limit,
+        });
+        const json = resolveJsonMode(options);
+        if (options.skeleton) {
+          const candidate = result.candidates.find(
+            (item) => item.runId === options.skeleton,
+          );
+          if (!candidate)
+            throw new Error(
+              `Run ${options.skeleton} is not an uncaptured failed run`,
+            );
+          console.log(JSON.stringify(incidentSpecSkeleton(candidate), null, 2));
+          return;
+        }
+        if (json) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        console.log(
+          `Scanned ${result.scannedRuns} runs: ${result.candidates.length} uncaptured failure${result.candidates.length === 1 ? "" : "s"}, ${result.alreadyCaptured} already captured.`,
+        );
+        for (const candidate of result.candidates) {
+          console.log(
+            `  ${candidate.runId}  ${candidate.status.padEnd(8)}  ${candidate.agentId}/${candidate.vendor}  ${candidate.taskId}  ${candidate.finishedAt ?? candidate.startedAt}` +
+              `${candidate.unresolved[0] ? `\n      ${candidate.unresolved[0]}` : ""}`,
+          );
+        }
+        if (result.candidates.length > 0)
+          console.log(
+            "  Next: oma harness incident scan --skeleton <run-id> > incident.json, fill expected_checks, then oma harness incident capture --spec incident.json --run <run-id>",
+          );
       },
       { supportsJsonOutput: true },
     ),

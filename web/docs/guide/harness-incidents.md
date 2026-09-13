@@ -8,6 +8,16 @@ description: Capture an observed agent failure, preserve its evidence, and evalu
 
 `oma harness incident` connects an observed failure to a regression case and the candidate evaluation that follows. It records observations separately from causal hypotheses. A failed process alone does not establish that the model caused the incident.
 
+## Find candidates
+
+```bash
+oma harness incident scan            # failed/blocked/partial runs with no captured incident
+oma harness incident scan --json
+oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
+```
+
+The scan reads `.agents/state/agent-runs/`, keeps runs whose status is `failed`, `blocked`, or `partial`, and drops any run a captured incident already references through `source.runId`. `--skeleton` prints a specification for one run with the id, agent, source run, observed failure, and exit code filled in; `expected_checks` is left as a `TODO` because the correct behavior is a decision the scan cannot make. Fill it in, then capture with `--run <run-id>` so the run's identity and workspace fingerprint are preserved.
+
 ## Capture an incident
 
 Save a JSON specification inside the project:
