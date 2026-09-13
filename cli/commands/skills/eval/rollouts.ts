@@ -11,9 +11,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { INSTALLED_SKILLS_DIR } from "../../../constants/vendors.js";
+import { evalConcurrency, mapWithLimit } from "./concurrency.js";
 import {
+  awaitDispatchResult,
   type DispatchUsage,
-  resolveDispatchResult,
   unwrapVendorEnvelope,
 } from "./envelope.js";
 import {
@@ -143,12 +144,12 @@ export function parseJudgeVerdict(text: string): 0 | 1 {
  * envelopes first, so grading and parsing see answers rather than JSON
  * bookkeeping. Deterministic for a fixed dispatchFn.
  */
-export function judgeVerdict(
+export async function judgeVerdict(
   taskPrompt: string,
   output: string,
   rubric: string,
   dispatchFn: JudgeDispatchFn,
-): JudgeVerdict {
+): Promise<JudgeVerdict> {
   const gradingPrompt = [
     "You are a grading judge. Evaluate whether the following output correctly answers the task.",
     "",
@@ -164,7 +165,7 @@ export function judgeVerdict(
     "Answer with exactly PASS or FAIL (no other text).",
   ].join("\n");
 
-  const result = resolveDispatchResult(dispatchFn(gradingPrompt));
+  const result = await awaitDispatchResult(dispatchFn(gradingPrompt));
   const response = unwrapVendorEnvelope(result.output);
   return {
     score: parseJudgeVerdict(response),
@@ -174,13 +175,13 @@ export function judgeVerdict(
 }
 
 /** Verdict only; see judgeVerdict for the recorded response. */
-export function judgeScore(
+export async function judgeScore(
   taskPrompt: string,
   output: string,
   rubric: string,
   dispatchFn: JudgeDispatchFn,
-): 0 | 1 {
-  return judgeVerdict(taskPrompt, output, rubric, dispatchFn).score;
+): Promise<0 | 1> {
+  return (await judgeVerdict(taskPrompt, output, rubric, dispatchFn)).score;
 }
 
 /**
@@ -200,14 +201,14 @@ export function judgeScore(
  */
 export const MAX_TRIALS = 10;
 
-export function collectLiveRollouts(
+export async function collectLiveRollouts(
   tasks: TaskFixture[],
   skillMdBody: string,
   dispatchFn: LiveDispatchFn,
   workspace: string,
   judgeDispatchFn?: JudgeDispatchFn,
   trials = 1,
-): { rollouts: RolloutEntry[]; cleanupTmp: () => void } {
+): Promise<{ rollouts: RolloutEntry[]; cleanupTmp: () => void }> {
   if (!Number.isInteger(trials) || trials < 1 || trials > MAX_TRIALS)
     throw new Error(`trials must be an integer between 1 and ${MAX_TRIALS}`);
   // Create a throwaway temp workspace so arms cannot modify project files
@@ -220,14 +221,12 @@ export function collectLiveRollouts(
     }
   };
 
-  const rollouts: RolloutEntry[] = [];
-
   // Provenance for staleness detection at replay time. The body hash is fixed
   // for the whole run; the prompt hash is per task.
   const bodyHash = contentHash(skillMdBody);
 
-  for (const task of tasks) {
-    const pairStart = rollouts.length;
+  const collectTask = async (task: TaskFixture): Promise<RolloutEntry[]> => {
+    const collected: RolloutEntry[] = [];
     try {
       const promptHash = contentHash(task.prompt);
       const taskHash = taskFixtureHash(task);
@@ -242,12 +241,12 @@ export function collectLiveRollouts(
         ? `${skillMdBody}\n\n---\n\n${task.prompt}`
         : task.prompt;
 
-      const runArm = (
+      const runArm = async (
         arm: "baseline" | "treatment",
         trial: number,
-      ): RolloutEntry => {
+      ): Promise<RolloutEntry> => {
         const armDir = mkdtempSync(join(tmpBase, `${arm}-`));
-        const { output, usage } = resolveDispatchResult(
+        const { output, usage } = await awaitDispatchResult(
           dispatchFn(
             arm,
             arm === "baseline" ? task.prompt : treatmentPrompt,
@@ -267,7 +266,7 @@ export function collectLiveRollouts(
           ...(trials > 1 ? { trial } : {}),
         };
         if (isJudgeTask && judgeDispatchFn) {
-          const verdict = judgeVerdict(
+          const verdict = await judgeVerdict(
             task.prompt,
             output,
             rubric,
@@ -282,21 +281,26 @@ export function collectLiveRollouts(
       };
 
       for (let trial = 0; trial < trials; trial += 1) {
-        // Alternate arm order across trials so position cannot favor one arm.
+        // Both arms of a trial run together in separate directories; the
+        // arm started first alternates so position cannot favor one arm.
         const order: Array<"baseline" | "treatment"> =
           trial % 2 === 0
             ? ["baseline", "treatment"]
             : ["treatment", "baseline"];
-        const pair = order.map((arm) => runArm(arm, trial));
-        rollouts.push(...pair.sort((a, b) => a.arm.localeCompare(b.arm)));
+        const pair = await Promise.all(order.map((arm) => runArm(arm, trial)));
+        collected.push(...pair.sort((a, b) => a.arm.localeCompare(b.arm)));
       }
+      return collected;
     } catch (error) {
-      rollouts.splice(pairStart);
       console.warn(
         `[oma skill eval] task ${task.id} could not be measured: ${error instanceof Error ? error.message : String(error)}. Excluding both arms.`,
       );
+      return [];
     }
-  }
+  };
+
+  const perTask = await mapWithLimit(tasks, evalConcurrency(), collectTask);
+  const rollouts: RolloutEntry[] = perTask.flat();
 
   // Pass tmpBase back as workspace context (unused after collection)
   void workspace;

@@ -166,7 +166,7 @@ The other controls are useful in CI and coverage investigations:
 | --- | --- |
 | `--task-dir <path>` | Evaluate fixtures from a directory other than `.agents/eval/<skill>`. |
 | `--max-tasks <n>` | Cap the number of fixtures for a bounded live run. |
-| `--trials <n>` | Repeat every arm `n` times (1-10). Arm order alternates between trials, per-task scores are averaged, and the report gains within-task variance. Neighbor tasks from `--neg-transfer` run once. |
+| `--trials <n>` | Repeat every arm `n` times (1-10). The arm started first alternates between trials, per-task scores are averaged, and the report gains within-task variance. Neighbor tasks from `--neg-transfer` run once. |
 | `--neg-transfer` | Measure the candidate skill on same-domain tasks belonging to other skills; off by default. |
 | `--routing` | Measure activation: for each task, ask which installed skill would be loaded given every skill's `description`. Live measures (one extra dispatch per task); mock replays a routing recording made under the same catalog. |
 | `--require-coverage` | Exit non-zero when fewer than five scoreable paired tasks remain, or a requested negative-transfer check is incomplete. |
@@ -245,7 +245,10 @@ After a successful live run, the report includes baseline and treatment counts, 
 
 ---
 
-### Dispatch timeouts
+### Concurrency and dispatch timeouts
+
+Live arms, neighbor arms, judge calls, and routing probes run through a bounded pool of `OMA_SKILL_EVAL_CONCURRENCY` subprocesses (default 4, at most 16). The two arms of a trial always run together in separate empty directories, with the arm started first alternating between trials, and results keep task order, so recordings and scores are the same as a serial run. Set the variable to 1 to serialize.
+
 
 Each live arm and judge call is killed after `OMA_SKILL_EVAL_TIMEOUT_MS` (default 120000). A timed-out dispatch is retried once before the task is excluded from the report, because one slow response is a transport failure rather than an answer; a second timeout excludes the task (and, in optimization, fails the split's coverage). Raise the limit for fixtures that legitimately need long answers.
 

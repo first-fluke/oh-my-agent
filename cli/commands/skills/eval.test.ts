@@ -40,6 +40,7 @@ import {
   renderSkillUtilityReport,
   resolveSkillIsolation,
   runEvalDispatch,
+  runEvalDispatchDetailedAsync,
   runSkillsEval,
   type ScoreSkillBodyOptions,
   type SkillsEvalOptions,
@@ -208,7 +209,7 @@ function makePassingScenario(n = MIN_TASKS): {
 // --- Tests ---
 
 describe("scoreChecker", () => {
-  it("scores the answer inside a vendor envelope, not the envelope fields", () => {
+  it("scores the answer inside a vendor envelope, not the envelope fields", async () => {
     const envelope = JSON.stringify({
       type: "result",
       is_error: false,
@@ -232,7 +233,7 @@ describe("scoreChecker", () => {
     ).toBe(1);
   });
 
-  it("assert: returns 1 when all strings are present", () => {
+  it("assert: returns 1 when all strings are present", async () => {
     const checker = {
       type: "assert" as const,
       expect_contains: ["foo", "bar"],
@@ -240,7 +241,7 @@ describe("scoreChecker", () => {
     expect(scoreChecker(checker, "foo bar baz")).toBe(1);
   });
 
-  it("assert: returns 0 when any string is missing", () => {
+  it("assert: returns 0 when any string is missing", async () => {
     const checker = {
       type: "assert" as const,
       expect_contains: ["foo", "missing"],
@@ -248,33 +249,33 @@ describe("scoreChecker", () => {
     expect(scoreChecker(checker, "foo bar")).toBe(0);
   });
 
-  it("assert: returns 1 for empty expect_contains (vacuously true)", () => {
+  it("assert: returns 1 for empty expect_contains (vacuously true)", async () => {
     const checker = { type: "assert" as const, expect_contains: [] };
     expect(scoreChecker(checker, "anything")).toBe(1);
   });
 
-  it("regex: returns 1 when pattern matches", () => {
+  it("regex: returns 1 when pattern matches", async () => {
     const checker = { type: "regex" as const, pattern: "section=\\w+" };
     expect(scoreChecker(checker, "result: section=statements")).toBe(1);
   });
 
-  it("regex: returns 0 when pattern does not match", () => {
+  it("regex: returns 0 when pattern does not match", async () => {
     const checker = { type: "regex" as const, pattern: "^NOPE" };
     expect(scoreChecker(checker, "output text")).toBe(0);
   });
 
-  it("regex: returns 0 for an invalid pattern (does not throw)", () => {
+  it("regex: returns 0 for an invalid pattern (does not throw)", async () => {
     const checker = { type: "regex" as const, pattern: "[invalid" };
     expect(scoreChecker(checker, "text")).toBe(0);
   });
 
-  it("judge: throws with M2 message", () => {
+  it("judge: throws with M2 message", async () => {
     const checker = { type: "judge" as const };
     expect(() => scoreChecker(checker, "output")).toThrow("M2");
   });
 
   // Fix 5 regression tests — ReDoS stop-gap
-  it("regex: scores 0 promptly for a catastrophic pattern (ReDoS stop-gap via pattern-length cap)", () => {
+  it("regex: scores 0 promptly for a catastrophic pattern (ReDoS stop-gap via pattern-length cap)", async () => {
     // A catastrophic pattern that exceeds REGEX_PATTERN_MAX_LEN is rejected
     // immediately (score 0) without any regex engine execution, so it cannot hang.
     // We use `(a+)+` repeated until the string exceeds the cap to guarantee the
@@ -295,7 +296,7 @@ describe("scoreChecker", () => {
     expect(score).toBe(0);
   });
 
-  it("regex: scores 0 for a pattern exceeding REGEX_PATTERN_MAX_LEN", () => {
+  it("regex: scores 0 for a pattern exceeding REGEX_PATTERN_MAX_LEN", async () => {
     const checker = {
       type: "regex" as const,
       pattern: "a".repeat(REGEX_PATTERN_MAX_LEN + 1),
@@ -303,7 +304,7 @@ describe("scoreChecker", () => {
     expect(scoreChecker(checker, "aaa")).toBe(0);
   });
 
-  it("regex: truncates output beyond REGEX_OUTPUT_MAX_LEN before matching", () => {
+  it("regex: truncates output beyond REGEX_OUTPUT_MAX_LEN before matching", async () => {
     // Pattern matches the letter 'Z' — only present past the output cap
     const checker = { type: "regex" as const, pattern: "Z" };
     const longOutput = `${"a".repeat(REGEX_OUTPUT_MAX_LEN)}Z`;
@@ -323,19 +324,19 @@ describe("loadTaskFixtures", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("returns empty fixtures for a non-existent directory", () => {
+  it("returns empty fixtures for a non-existent directory", async () => {
     const result = loadTaskFixtures(join(dir, "nonexistent"));
     expect(result.fixtures).toHaveLength(0);
     expect(result.skippedFiles).toHaveLength(0);
   });
 
-  it("returns empty fixtures for an empty directory", () => {
+  it("returns empty fixtures for an empty directory", async () => {
     const result = loadTaskFixtures(dir);
     expect(result.fixtures).toHaveLength(0);
     expect(result.skippedFiles).toHaveLength(0);
   });
 
-  it("loads valid task fixtures", () => {
+  it("loads valid task fixtures", async () => {
     writeTask(dir, makeTaskFixture("task-1"));
     writeTask(dir, makeTaskFixture("task-2"));
     const { fixtures } = loadTaskFixtures(dir);
@@ -344,7 +345,7 @@ describe("loadTaskFixtures", () => {
     expect(fixtures.map((f) => f.id)).toContain("task-2");
   });
 
-  it("skips malformed YAML files and reports them in skippedFiles", () => {
+  it("skips malformed YAML files and reports them in skippedFiles", async () => {
     writeTask(dir, makeTaskFixture("valid"));
     writeFileSync(join(dir, "broken.yaml"), "id: [\ninvalid yaml", "utf-8");
     const { fixtures, skippedFiles } = loadTaskFixtures(dir);
@@ -353,7 +354,7 @@ describe("loadTaskFixtures", () => {
     expect(skippedFiles).toContain("broken.yaml");
   });
 
-  it("skips schema-invalid YAML files and reports them in skippedFiles", () => {
+  it("skips schema-invalid YAML files and reports them in skippedFiles", async () => {
     writeTask(dir, makeTaskFixture("valid"));
     // YAML parses OK but fails isTaskFixture (missing required fields)
     writeFileSync(join(dir, "no-schema.yaml"), "foo: bar\nbaz: 42\n", "utf-8");
@@ -363,7 +364,7 @@ describe("loadTaskFixtures", () => {
   });
 
   // Fix 3 regression test: malformed double-quoted regex + 5 valid tasks
-  it("warns on double-quoted regex YAML (bad escape) and still loads 5 valid tasks", () => {
+  it("warns on double-quoted regex YAML (bad escape) and still loads 5 valid tasks", async () => {
     for (let i = 0; i < 5; i++) {
       writeTask(dir, makeTaskFixture(`task-${i}`));
     }
@@ -379,7 +380,7 @@ describe("loadTaskFixtures", () => {
     expect(skippedFiles[0]).toBe("bad-regex.yaml");
   });
 
-  it("skips files starting with underscore (_rollouts dir)", () => {
+  it("skips files starting with underscore (_rollouts dir)", async () => {
     writeTask(dir, makeTaskFixture("good-task"));
     mkdirSync(join(dir, "_rollouts"), { recursive: true });
     writeFileSync(join(dir, "_rollouts", "data.yaml"), "id: skip\n", "utf-8");
@@ -387,14 +388,14 @@ describe("loadTaskFixtures", () => {
     expect(fixtures).toHaveLength(1);
   });
 
-  it("skips non-yaml files", () => {
+  it("skips non-yaml files", async () => {
     writeTask(dir, makeTaskFixture("real"));
     writeFileSync(join(dir, "README.md"), "# docs", "utf-8");
     const { fixtures } = loadTaskFixtures(dir);
     expect(fixtures).toHaveLength(1);
   });
 
-  it("returns fixtures in deterministic (sorted) order", () => {
+  it("returns fixtures in deterministic (sorted) order", async () => {
     writeTask(dir, makeTaskFixture("z-task"));
     writeTask(dir, makeTaskFixture("a-task"));
     writeTask(dir, makeTaskFixture("m-task"));
@@ -414,11 +415,11 @@ describe("loadRolloutEntries", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("returns empty array when _rollouts dir does not exist", () => {
+  it("returns empty array when _rollouts dir does not exist", async () => {
     expect(loadRolloutEntries(dir)).toHaveLength(0);
   });
 
-  it("loads rollout entries from JSON files", () => {
+  it("loads rollout entries from JSON files", async () => {
     const entries = [
       { taskId: "t1", arm: "baseline" as const, output: "base out" },
       { taskId: "t1", arm: "treatment" as const, output: "treat out" },
@@ -430,7 +431,7 @@ describe("loadRolloutEntries", () => {
     expect(loaded.some((e) => e.arm === "treatment")).toBe(true);
   });
 
-  it("loads array rollout files", () => {
+  it("loads array rollout files", async () => {
     const rolloutsDir = join(dir, "_rollouts");
     mkdirSync(rolloutsDir, { recursive: true });
     writeFileSync(
@@ -445,7 +446,7 @@ describe("loadRolloutEntries", () => {
     expect(loaded).toHaveLength(2);
   });
 
-  it("skips malformed rollout files", () => {
+  it("skips malformed rollout files", async () => {
     const rolloutsDir = join(dir, "_rollouts");
     mkdirSync(rolloutsDir, { recursive: true });
     writeFileSync(
@@ -486,25 +487,25 @@ describe("assessRolloutStaleness", () => {
     ...over,
   });
 
-  it("accepts a treatment entry recorded under the same body and prompt", () => {
+  it("accepts a treatment entry recorded under the same body and prompt", async () => {
     expect(assessRolloutStaleness(treatment(), freshExpect())).toBeNull();
   });
 
-  it("rejects a treatment entry recorded under a different SKILL.md body", () => {
+  it("rejects a treatment entry recorded under a different SKILL.md body", async () => {
     const entry = treatment({ skillBodyHash: contentHash("# SKILL\nbody v2") });
     expect(assessRolloutStaleness(entry, freshExpect())).toBe(
       "skill-body-changed",
     );
   });
 
-  it("rejects a treatment entry with no body provenance as unverifiable", () => {
+  it("rejects a treatment entry with no body provenance as unverifiable", async () => {
     const entry = treatment({ skillBodyHash: undefined });
     expect(assessRolloutStaleness(entry, freshExpect())).toBe(
       "missing-provenance",
     );
   });
 
-  it("does NOT invalidate the baseline arm when the body changes", () => {
+  it("does NOT invalidate the baseline arm when the body changes", async () => {
     // The baseline withholds the skill, so its output cannot depend on the body.
     const expected = {
       skillBodyHash: contentHash("# SKILL\ntotally different"),
@@ -513,7 +514,7 @@ describe("assessRolloutStaleness", () => {
     expect(assessRolloutStaleness(baseline(), expected)).toBeNull();
   });
 
-  it("rejects either arm when the fixture prompt changed", () => {
+  it("rejects either arm when the fixture prompt changed", async () => {
     const expected = {
       skillBodyHash: contentHash(BODY),
       promptHashes: new Map([["t1", contentHash("a different prompt")]]),
@@ -524,14 +525,14 @@ describe("assessRolloutStaleness", () => {
     );
   });
 
-  it("rejects an entry with no prompt provenance as unverifiable", () => {
+  it("rejects an entry with no prompt provenance as unverifiable", async () => {
     const entry = baseline({ promptHash: undefined });
     expect(assessRolloutStaleness(entry, freshExpect())).toBe(
       "missing-provenance",
     );
   });
 
-  it("skips a dimension the caller left undefined", () => {
+  it("skips a dimension the caller left undefined", async () => {
     // No skillBodyHash supplied (e.g. the `_all` aggregate): a treatment entry
     // without body provenance is not rejected on that basis.
     const entry = treatment({ skillBodyHash: undefined });
@@ -544,7 +545,7 @@ describe("assessRolloutStaleness", () => {
     expect(assessRolloutStaleness(entry, {})).toBeNull();
   });
 
-  it("does not prompt-validate a taskId absent from the expectation map", () => {
+  it("does not prompt-validate a taskId absent from the expectation map", async () => {
     const entry = treatment({ taskId: "unknown", promptHash: undefined });
     expect(assessRolloutStaleness(entry, freshExpect())).toBeNull();
   });
@@ -564,14 +565,14 @@ describe("loadRolloutEntries — staleness validation", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("returns every well-formed entry when no expectation is supplied", () => {
+  it("returns every well-formed entry when no expectation is supplied", async () => {
     const task = makeTaskFixture("t1");
     writeTask(dir, task);
     writeRollout(dir, makeRolloutPair("t1", "b", "t"), "# body");
     expect(loadRolloutEntries(dir)).toHaveLength(2);
   });
 
-  it("discards the treatment arm recorded under a stale body, keeps the baseline", () => {
+  it("discards the treatment arm recorded under a stale body, keeps the baseline", async () => {
     const task = makeTaskFixture("t1");
     writeTask(dir, task);
     writeRollout(dir, makeRolloutPair("t1", "b", "t"), "# body v1");
@@ -585,7 +586,7 @@ describe("loadRolloutEntries — staleness validation", () => {
     expect(loaded[0]?.arm).toBe("baseline");
   });
 
-  it("warns once per file with the discarded count and reason", () => {
+  it("warns once per file with the discarded count and reason", async () => {
     const tasks = [makeTaskFixture("t1"), makeTaskFixture("t2")];
     for (const t of tasks) writeTask(dir, t);
     // One file holding both arms of both tasks — a single warning is expected.
@@ -629,7 +630,7 @@ describe("loadRolloutEntries — staleness validation", () => {
     expect(warnings[0]).toContain("--live --record");
   });
 
-  it("discards pre-provenance recordings rather than trusting them", () => {
+  it("discards pre-provenance recordings rather than trusting them", async () => {
     const task = makeTaskFixture("t1");
     writeTask(dir, task);
     // A recording made before provenance existed: no hashes at all.
@@ -653,7 +654,7 @@ describe("loadRolloutEntries — staleness validation", () => {
     expect(String(warnSpy.mock.calls[0]?.[0])).toContain("cannot be verified");
   });
 
-  it("rejects entries whose provenance fields are not strings", () => {
+  it("rejects entries whose provenance fields are not strings", async () => {
     const rolloutsDir = join(dir, "_rollouts");
     mkdirSync(rolloutsDir, { recursive: true });
     writeFileSync(
@@ -669,12 +670,12 @@ describe("loadRolloutEntries — staleness validation", () => {
     expect(loadRolloutEntries(dir)).toHaveLength(0);
   });
 
-  it("round-trips: recorded rollouts replay against the body they were recorded from", () => {
+  it("round-trips: recorded rollouts replay against the body they were recorded from", async () => {
     const tasks = [makeTaskFixture("rt-1"), makeTaskFixture("rt-2")];
     for (const t of tasks) writeTask(dir, t);
     const body = "# SKILL\nrecorded body";
 
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       tasks,
       body,
       (arm) => (arm === "treatment" ? "EXPECTED" : "no match"),
@@ -769,7 +770,7 @@ describe("runSkillsEval — mock replay refuses a stale SKILL.md body", () => {
 });
 
 describe("computeUtility", () => {
-  it("returns coverage:insufficient and decision:insufficient when taskCount < MIN_TASKS", () => {
+  it("returns coverage:insufficient and decision:insufficient when taskCount < MIN_TASKS", async () => {
     const tasks = [makeTaskFixture("t1")]; // only 1 task
     const report = computeUtility("oma-test", { tasks, rollouts: [] });
     expect(report.coverage).toBe("insufficient");
@@ -778,21 +779,21 @@ describe("computeUtility", () => {
     expect(report.taskCount).toBe(1);
   });
 
-  it("returns coverage:insufficient and decision:insufficient with 0 tasks", () => {
+  it("returns coverage:insufficient and decision:insufficient with 0 tasks", async () => {
     const report = computeUtility("oma-test", { tasks: [], rollouts: [] });
     expect(report.coverage).toBe("insufficient");
     expect(report.decision).toBe("insufficient");
     expect(report.taskCount).toBe(0);
   });
 
-  it("returns coverage:ok with MIN_TASKS tasks", () => {
+  it("returns coverage:ok with MIN_TASKS tasks", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const report = computeUtility("oma-test", { tasks, rollouts });
     expect(report.coverage).toBe("ok");
     expect(report.taskCount).toBe(MIN_TASKS);
   });
 
-  it("decision:pass when utilityLift >= UTILITY_WARN_LIFT", () => {
+  it("decision:pass when utilityLift >= UTILITY_WARN_LIFT", async () => {
     // All treatment pass, all baseline fail → lift = 1.0
     const { tasks, rollouts } = makePassingScenario();
     const report = computeUtility("oma-test", { tasks, rollouts });
@@ -800,7 +801,7 @@ describe("computeUtility", () => {
     expect(report.utilityLift).toBeGreaterThanOrEqual(UTILITY_WARN_LIFT);
   });
 
-  it("decision:fail when utilityLift <= UTILITY_FAIL_LIFT", () => {
+  it("decision:fail when utilityLift <= UTILITY_FAIL_LIFT", async () => {
     // Both arms fail → lift = 0
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
@@ -813,7 +814,7 @@ describe("computeUtility", () => {
     expect(report.utilityLift).toBeLessThanOrEqual(UTILITY_FAIL_LIFT);
   });
 
-  it("decision:warn when 0 < utilityLift < UTILITY_WARN_LIFT", () => {
+  it("decision:warn when 0 < utilityLift < UTILITY_WARN_LIFT", async () => {
     // 21 tasks: 1 has treatment lift, 20 both fail → mean = 1/21 ≈ 0.048 < 0.05 → warn.
     const taskCount = 21;
     const tasks = Array.from({ length: taskCount }, (_, i) =>
@@ -832,7 +833,7 @@ describe("computeUtility", () => {
     expect(report.decision).toBe("warn");
   });
 
-  it("is deterministic: identical inputs produce identical output", () => {
+  it("is deterministic: identical inputs produce identical output", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -846,7 +847,7 @@ describe("computeUtility", () => {
     );
   });
 
-  it("respects maxTasks cap deterministically", () => {
+  it("respects maxTasks cap deterministically", async () => {
     // 10 tasks but only 5 evaluated
     const tasks = Array.from({ length: 10 }, (_, i) =>
       makeTaskFixture(`task-${String(i).padStart(2, "0")}`),
@@ -866,7 +867,7 @@ describe("computeUtility", () => {
     expect(reportCapped.decision).toBe("pass");
   });
 
-  it("reports insufficient coverage when rollouts are missing entirely", () => {
+  it("reports insufficient coverage when rollouts are missing entirely", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
@@ -886,7 +887,7 @@ describe("computeUtility", () => {
     warnSpy.mockRestore();
   });
 
-  it("excludes a task missing only one arm, keeping fully-recorded tasks", () => {
+  it("excludes a task missing only one arm, keeping fully-recorded tasks", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
@@ -906,7 +907,7 @@ describe("computeUtility", () => {
     warnSpy.mockRestore();
   });
 
-  it("still scores an arm that genuinely produced an empty output", () => {
+  it("still scores an arm that genuinely produced an empty output", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -921,7 +922,7 @@ describe("computeUtility", () => {
     expect(report.decision).toBe("pass");
   });
 
-  it("reports utilityStdDev = 0 when all lifts are equal", () => {
+  it("reports utilityStdDev = 0 when all lifts are equal", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -932,7 +933,7 @@ describe("computeUtility", () => {
     expect(report.utilityStdDev).toBe(0);
   });
 
-  it("computes utilityStdDev > 0 for mixed lifts", () => {
+  it("computes utilityStdDev > 0 for mixed lifts", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -946,13 +947,13 @@ describe("computeUtility", () => {
     expect(report.utilityStdDev).toBeGreaterThan(0);
   });
 
-  it("negativeTransfer is always empty in M1", () => {
+  it("negativeTransfer is always empty in M1", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const report = computeUtility("oma-test", { tasks, rollouts });
     expect(report.negativeTransfer).toHaveLength(0);
   });
 
-  it("propagates skippedFiles into the report", () => {
+  it("propagates skippedFiles into the report", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const report = computeUtility("oma-test", {
       tasks,
@@ -963,7 +964,7 @@ describe("computeUtility", () => {
   });
 
   // Fix 6 regression test — weight-aware scoring
-  it("weighted mean: higher-weight tasks shift utilityLift", () => {
+  it("weighted mean: higher-weight tasks shift utilityLift", async () => {
     // 5 tasks: task-0 has weight=10 and passes treatment only.
     // tasks 1-4 have weight=1 and both arms fail (lift=0).
     // Unweighted mean lift = 1/5 = 0.2.
@@ -987,7 +988,7 @@ describe("computeUtility", () => {
     expect(report.decision).toBe("pass");
   });
 
-  it("uniform weights produce the same result as unweighted mean", () => {
+  it("uniform weights produce the same result as unweighted mean", async () => {
     // When all weights = 1, weighted mean = unweighted mean
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`, { weight: 1 }),
@@ -1002,7 +1003,7 @@ describe("computeUtility", () => {
 });
 
 describe("serializeSkillUtilityReport", () => {
-  it("produces valid JSON with required fields including ok and skippedFiles", () => {
+  it("produces valid JSON with required fields including ok and skippedFiles", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 5,
@@ -1031,7 +1032,7 @@ describe("serializeSkillUtilityReport", () => {
   });
 
   // Fix 2 regression: ok field semantics
-  it("ok is false when decision is warn", () => {
+  it("ok is false when decision is warn", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 21,
@@ -1053,7 +1054,7 @@ describe("serializeSkillUtilityReport", () => {
     expect(parsed.ok).toBe(false);
   });
 
-  it("ok is false when decision is fail", () => {
+  it("ok is false when decision is fail", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 5,
@@ -1076,7 +1077,7 @@ describe("serializeSkillUtilityReport", () => {
   });
 
   // Fix 1 regression: insufficient coverage must NOT expose decision:"fail"
-  it("insufficient coverage serializes decision:insufficient, not fail", () => {
+  it("insufficient coverage serializes decision:insufficient, not fail", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 1,
@@ -1101,7 +1102,7 @@ describe("serializeSkillUtilityReport", () => {
     expect(parsed.ok).toBe(false);
   });
 
-  it("ok is false when coverage is insufficient (even if decision were pass)", () => {
+  it("ok is false when coverage is insufficient (even if decision were pass)", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 0,
@@ -1123,7 +1124,7 @@ describe("serializeSkillUtilityReport", () => {
     expect(parsed.ok).toBe(false);
   });
 
-  it("produces byte-identical output on repeated calls", () => {
+  it("produces byte-identical output on repeated calls", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-demo",
       taskCount: 5,
@@ -1155,7 +1156,7 @@ describe("loadTaskFixtures + loadRolloutEntries + computeUtility integration", (
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("end-to-end pass: 5 tasks all improve in treatment", () => {
+  it("end-to-end pass: 5 tasks all improve in treatment", async () => {
     const tasks = Array.from({ length: 5 }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -1182,7 +1183,7 @@ describe("loadTaskFixtures + loadRolloutEntries + computeUtility integration", (
     expect(report.skippedFiles).toHaveLength(0);
   });
 
-  it("end-to-end fail: 5 tasks, no improvement", () => {
+  it("end-to-end fail: 5 tasks, no improvement", async () => {
     const tasks = Array.from({ length: 5 }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -1206,7 +1207,7 @@ describe("loadTaskFixtures + loadRolloutEntries + computeUtility integration", (
     expect(report.decision).toBe("fail");
   });
 
-  it("end-to-end insufficient: fewer than MIN_TASKS fixtures", () => {
+  it("end-to-end insufficient: fewer than MIN_TASKS fixtures", async () => {
     writeTask(dir, makeTaskFixture("only-one"));
     const { fixtures: loadedTasks } = loadTaskFixtures(dir);
     const report = computeUtility("oma-test", {
@@ -1218,7 +1219,7 @@ describe("loadTaskFixtures + loadRolloutEntries + computeUtility integration", (
     expect(report.decision).toBe("insufficient");
   });
 
-  it("is fully deterministic: same tmp dir yields byte-identical JSON twice", () => {
+  it("is fully deterministic: same tmp dir yields byte-identical JSON twice", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -1241,7 +1242,7 @@ describe("loadTaskFixtures + loadRolloutEntries + computeUtility integration", (
     expect(run()).toBe(run());
   });
 
-  it("regex checker end-to-end", () => {
+  it("regex checker end-to-end", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`, {
         checker: { type: "regex", pattern: "section=\\w+" },
@@ -1268,7 +1269,7 @@ describe("loadTaskFixtures + loadRolloutEntries + computeUtility integration", (
   });
 
   // Fix 3 integration: 1 malformed + 5 valid → skippedFiles populated, coverage ok
-  it("skippedFiles is populated and coverage ok when 1 bad file + 5 valid", () => {
+  it("skippedFiles is populated and coverage ok when 1 bad file + 5 valid", async () => {
     const tasks = Array.from({ length: 5 }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -1310,13 +1311,13 @@ describe("input validation", () => {
   // the path-traversal checks live in runSkillsEval. We import and call the
   // module-private helpers by re-testing through a thin harness pattern below.
 
-  it("scoreChecker with assert: does not throw on untrusted output", () => {
+  it("scoreChecker with assert: does not throw on untrusted output", async () => {
     const checker = { type: "assert" as const, expect_contains: ["ok"] };
     // Long output must not throw or hang
     expect(() => scoreChecker(checker, "x".repeat(100_000))).not.toThrow();
   });
 
-  it("regex: pattern at exactly MAX length is accepted and executes", () => {
+  it("regex: pattern at exactly MAX length is accepted and executes", async () => {
     // Build a pattern of exactly REGEX_PATTERN_MAX_LEN chars that matches its input.
     // Use "a" repeated 200 chars — then use input of 200 "a"s so the pattern matches.
     const checker = {
@@ -1327,7 +1328,7 @@ describe("input validation", () => {
     expect(scoreChecker(checker, "a".repeat(REGEX_PATTERN_MAX_LEN))).toBe(1);
   });
 
-  it("regex: pattern at MAX+1 length is rejected (score 0)", () => {
+  it("regex: pattern at MAX+1 length is rejected (score 0)", async () => {
     const checker = {
       type: "regex" as const,
       pattern: "a".repeat(REGEX_PATTERN_MAX_LEN + 1),
@@ -1337,17 +1338,17 @@ describe("input validation", () => {
 });
 
 describe("exported constants", () => {
-  it("MIN_TASKS is 5", () => expect(MIN_TASKS).toBe(5));
-  it("UTILITY_WARN_LIFT is 0.05", () =>
+  it("MIN_TASKS is 5", async () => expect(MIN_TASKS).toBe(5));
+  it("UTILITY_WARN_LIFT is 0.05", async () =>
     expect(UTILITY_WARN_LIFT).toBeCloseTo(0.05));
-  it("UTILITY_FAIL_LIFT is 0", () => expect(UTILITY_FAIL_LIFT).toBe(0));
-  it("NEG_TRANSFER_FAIL is -0.10", () =>
+  it("UTILITY_FAIL_LIFT is 0", async () => expect(UTILITY_FAIL_LIFT).toBe(0));
+  it("NEG_TRANSFER_FAIL is -0.10", async () =>
     expect(NEG_TRANSFER_FAIL).toBeCloseTo(-0.1));
-  it("REGEX_PATTERN_MAX_LEN is 200", () =>
+  it("REGEX_PATTERN_MAX_LEN is 200", async () =>
     expect(REGEX_PATTERN_MAX_LEN).toBe(200));
-  it("REGEX_OUTPUT_MAX_LEN is 10_000", () =>
+  it("REGEX_OUTPUT_MAX_LEN is 10_000", async () =>
     expect(REGEX_OUTPUT_MAX_LEN).toBe(10_000));
-  it("JUDGE_DEFAULT_RUBRIC is non-empty string", () => {
+  it("JUDGE_DEFAULT_RUBRIC is non-empty string", async () => {
     expect(typeof JUDGE_DEFAULT_RUBRIC).toBe("string");
     expect(JUDGE_DEFAULT_RUBRIC.length).toBeGreaterThan(0);
   });
@@ -1369,14 +1370,14 @@ describe("judge default resolution — loadTaskFixtures", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("fixture with no checker block at all defaults to type: judge", () => {
+  it("fixture with no checker block at all defaults to type: judge", async () => {
     writeTaskNoChecker(dir, "no-checker-task");
     const { fixtures } = loadTaskFixtures(dir);
     expect(fixtures).toHaveLength(1);
     expect(fixtures[0]?.checker.type).toBe("judge");
   });
 
-  it("fixture with no checker block uses JUDGE_DEFAULT_RUBRIC (no explicit rubric)", () => {
+  it("fixture with no checker block uses JUDGE_DEFAULT_RUBRIC (no explicit rubric)", async () => {
     writeTaskNoChecker(dir, "no-checker-rubric");
     const { fixtures } = loadTaskFixtures(dir);
     const checker = fixtures[0]?.checker;
@@ -1387,14 +1388,14 @@ describe("judge default resolution — loadTaskFixtures", () => {
     }
   });
 
-  it("fixture with checker block but no type defaults to type: judge", () => {
+  it("fixture with checker block but no type defaults to type: judge", async () => {
     writeTaskCheckerNoType(dir, "no-type-task");
     const { fixtures } = loadTaskFixtures(dir);
     expect(fixtures).toHaveLength(1);
     expect(fixtures[0]?.checker.type).toBe("judge");
   });
 
-  it("fixture with checker block, no type, but rubric field retains rubric", () => {
+  it("fixture with checker block, no type, but rubric field retains rubric", async () => {
     writeTaskCheckerNoType(
       dir,
       "with-rubric-task",
@@ -1409,7 +1410,7 @@ describe("judge default resolution — loadTaskFixtures", () => {
     }
   });
 
-  it("explicit type: judge fixture loads correctly", () => {
+  it("explicit type: judge fixture loads correctly", async () => {
     writeTask(dir, {
       id: "explicit-judge",
       skill: "oma-test",
@@ -1426,7 +1427,7 @@ describe("judge default resolution — loadTaskFixtures", () => {
     }
   });
 
-  it("assert and regex checkers are unaffected by judge default logic", () => {
+  it("assert and regex checkers are unaffected by judge default logic", async () => {
     writeTask(dir, makeTaskFixture("assert-task"));
     writeTask(
       dir,
@@ -1445,45 +1446,50 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
   const makeMockDispatch = (response: string): JudgeDispatchFn =>
     vi.fn(() => response);
 
-  it("returns 1 when LLM responds PASS", () => {
+  it("returns 1 when LLM responds PASS", async () => {
     expect(
-      judgeScore("task", "output", "rubric", makeMockDispatch("PASS")),
+      await judgeScore("task", "output", "rubric", makeMockDispatch("PASS")),
     ).toBe(1);
   });
 
-  it("returns 1 when PASS appears in mixed-case response", () => {
+  it("returns 1 when PASS appears in mixed-case response", async () => {
     expect(
-      judgeScore("task", "output", "rubric", makeMockDispatch("pass")),
+      await judgeScore("task", "output", "rubric", makeMockDispatch("pass")),
     ).toBe(1);
   });
 
-  it("returns 0 when LLM responds FAIL", () => {
+  it("returns 0 when LLM responds FAIL", async () => {
     expect(
-      judgeScore("task", "output", "rubric", makeMockDispatch("FAIL")),
+      await judgeScore("task", "output", "rubric", makeMockDispatch("FAIL")),
     ).toBe(0);
   });
 
-  it("returns 0 when LLM responds fail (lowercase)", () => {
+  it("returns 0 when LLM responds fail (lowercase)", async () => {
     expect(
-      judgeScore("task", "output", "rubric", makeMockDispatch("fail")),
+      await judgeScore("task", "output", "rubric", makeMockDispatch("fail")),
     ).toBe(0);
   });
 
-  it("returns 0 on ambiguous response (neither PASS nor FAIL)", () => {
+  it("returns 0 on ambiguous response (neither PASS nor FAIL)", async () => {
     expect(
-      judgeScore("task", "output", "rubric", makeMockDispatch("I don't know")),
+      await judgeScore(
+        "task",
+        "output",
+        "rubric",
+        makeMockDispatch("I don't know"),
+      ),
     ).toBe(0);
   });
 
-  it("returns 0 on empty response", () => {
-    expect(judgeScore("task", "output", "rubric", makeMockDispatch(""))).toBe(
-      0,
-    );
+  it("returns 0 on empty response", async () => {
+    expect(
+      await judgeScore("task", "output", "rubric", makeMockDispatch("")),
+    ).toBe(0);
   });
 
-  it("PASS wins when PASS appears before FAIL in response", () => {
+  it("PASS wins when PASS appears before FAIL in response", async () => {
     expect(
-      judgeScore(
+      await judgeScore(
         "task",
         "output",
         "rubric",
@@ -1492,9 +1498,9 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
     ).toBe(1);
   });
 
-  it("FAIL wins when FAIL appears before PASS in response", () => {
+  it("FAIL wins when FAIL appears before PASS in response", async () => {
     expect(
-      judgeScore(
+      await judgeScore(
         "task",
         "output",
         "rubric",
@@ -1503,7 +1509,7 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
     ).toBe(0);
   });
 
-  it("reads the verdict from a Claude JSON envelope instead of its bookkeeping fields", () => {
+  it("reads the verdict from a Claude JSON envelope instead of its bookkeeping fields", async () => {
     // A real envelope: "subagent_stats":{"failed":0} precedes "result":"PASS".
     const envelope = (result: string): string =>
       JSON.stringify({
@@ -1515,7 +1521,7 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
         result,
       });
     expect(
-      judgeScore(
+      await judgeScore(
         "task",
         "output",
         "rubric",
@@ -1523,7 +1529,7 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
       ),
     ).toBe(1);
     expect(
-      judgeScore(
+      await judgeScore(
         "task",
         "output",
         "rubric",
@@ -1532,7 +1538,7 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
     ).toBe(0);
   });
 
-  it("grades the unwrapped candidate answer and records the judge text", () => {
+  it("grades the unwrapped candidate answer and records the judge text", async () => {
     const seen: string[] = [];
     const dispatch: JudgeDispatchFn = vi.fn((prompt: string) => {
       seen.push(prompt);
@@ -1544,7 +1550,7 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
       subagent_stats: { failed: 0 },
       result: "One commit, grounded in the logical-change rule.",
     });
-    const verdict = judgeVerdict("task", candidate, "rubric", dispatch);
+    const verdict = await judgeVerdict("task", candidate, "rubric", dispatch);
     expect(verdict).toMatchObject({ score: 1, response: "PASS" });
     expect(verdict.usage.status).toBe("unknown");
     expect(seen[0]).toContain(
@@ -1553,21 +1559,21 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
     expect(seen[0]).not.toContain("subagent_stats");
   });
 
-  it("lets the leading token decide before falling back to first occurrence", () => {
+  it("lets the leading token decide before falling back to first occurrence", async () => {
     expect(parseJudgeVerdict("PASS. Note: it does not FAIL any rule.")).toBe(1);
     expect(parseJudgeVerdict("FAIL: the answer would PASS only if …")).toBe(0);
     expect(parseJudgeVerdict("Verdict: pass")).toBe(1);
   });
 
-  it("dispatch is called exactly once per judgeScore call", () => {
+  it("dispatch is called exactly once per judgeScore call", async () => {
     const dispatch = vi.fn(() => "PASS");
-    judgeScore("task", "output", "rubric", dispatch);
+    await judgeScore("task", "output", "rubric", dispatch);
     expect(dispatch).toHaveBeenCalledTimes(1);
   });
 
-  it("grading prompt includes task prompt, output, and rubric", () => {
+  it("grading prompt includes task prompt, output, and rubric", async () => {
     const dispatch = vi.fn((_prompt: string) => "PASS");
-    judgeScore("MY_TASK_PROMPT", "MY_OUTPUT", "MY_RUBRIC", dispatch);
+    await judgeScore("MY_TASK_PROMPT", "MY_OUTPUT", "MY_RUBRIC", dispatch);
     const calledWith = dispatch.mock.calls[0]?.[0] ?? "";
     expect(calledWith).toContain("MY_TASK_PROMPT");
     expect(calledWith).toContain("MY_OUTPUT");
@@ -1577,24 +1583,24 @@ describe("judgeScore — verdict parsing (mocked dispatch, no real LLM)", () => 
 });
 
 describe("scoreChecker — judge with recordedScore (mock replay)", () => {
-  it("returns recorded score 1 without calling any dispatch", () => {
+  it("returns recorded score 1 without calling any dispatch", async () => {
     const checker = { type: "judge" as const };
     expect(scoreChecker(checker, "any output", 1)).toBe(1);
   });
 
-  it("returns recorded score 0 without calling any dispatch", () => {
+  it("returns recorded score 0 without calling any dispatch", async () => {
     const checker = { type: "judge" as const };
     expect(scoreChecker(checker, "any output", 0)).toBe(0);
   });
 
-  it("throws when judge checker has no recorded score (mock mode guard)", () => {
+  it("throws when judge checker has no recorded score (mock mode guard)", async () => {
     const checker = { type: "judge" as const };
     expect(() => scoreChecker(checker, "output")).toThrow(/recorded/);
   });
 });
 
 describe("collectLiveRollouts — judge tasks get score field", () => {
-  it("populates score on both arms for a judge task when judgeDispatchFn is provided", () => {
+  it("populates score on both arms for a judge task when judgeDispatchFn is provided", async () => {
     const tasks: TaskFixture[] = [
       {
         id: "j1",
@@ -1613,7 +1619,7 @@ describe("collectLiveRollouts — judge tasks get score field", () => {
       return judgeCallCount === 1 ? "FAIL" : "PASS";
     });
 
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       tasks,
       "",
       liveFn as unknown as import("./eval.js").LiveDispatchFn,
@@ -1630,7 +1636,7 @@ describe("collectLiveRollouts — judge tasks get score field", () => {
     expect(judgeFn).toHaveBeenCalledTimes(2);
   });
 
-  it("does NOT call judgeDispatchFn for assert tasks", () => {
+  it("does NOT call judgeDispatchFn for assert tasks", async () => {
     const tasks: TaskFixture[] = [
       {
         id: "a1",
@@ -1644,7 +1650,7 @@ describe("collectLiveRollouts — judge tasks get score field", () => {
     const liveFn = vi.fn(() => "ok");
     const judgeFn = vi.fn(() => "PASS");
 
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       tasks,
       "",
       liveFn as unknown as import("./eval.js").LiveDispatchFn,
@@ -1684,7 +1690,7 @@ describe("--live --record writes judge score, --mock replays it (record/replay f
     }));
   }
 
-  it("writeRolloutRecord persists judge score field into JSON", () => {
+  it("writeRolloutRecord persists judge score field into JSON", async () => {
     const rollouts: RolloutEntry[] = [
       { taskId: "j1", arm: "baseline", output: "base out", score: 0 },
       { taskId: "j1", arm: "treatment", output: "treat out", score: 1 },
@@ -1697,7 +1703,7 @@ describe("--live --record writes judge score, --mock replays it (record/replay f
     expect(treatment?.score).toBe(1);
   });
 
-  it("loadRolloutEntries reads back the persisted score field", () => {
+  it("loadRolloutEntries reads back the persisted score field", async () => {
     const rollouts: RolloutEntry[] = [
       { taskId: "j1", arm: "baseline", output: "b", score: 0 },
       { taskId: "j1", arm: "treatment", output: "t", score: 1 },
@@ -1710,7 +1716,7 @@ describe("--live --record writes judge score, --mock replays it (record/replay f
     expect(treatment?.score).toBe(1);
   });
 
-  it("--mock replay of judge tasks produces identical report as live run (no judge dispatch called)", () => {
+  it("--mock replay of judge tasks produces identical report as live run (no judge dispatch called)", async () => {
     const tasks = makeJudgeTasks();
 
     // Simulate live rollouts with judge verdicts already recorded
@@ -1754,7 +1760,7 @@ describe("--live --record writes judge score, --mock replays it (record/replay f
     expect(judgeDispatch).not.toHaveBeenCalled();
   });
 
-  it("computeUtility excludes judge task and warns when rollout has no recorded score", () => {
+  it("computeUtility excludes judge task and warns when rollout has no recorded score", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // MIN_TASKS judge tasks but rollouts have NO score field — simulates
@@ -1780,7 +1786,7 @@ describe("--live --record writes judge score, --mock replays it (record/replay f
     warnSpy.mockRestore();
   });
 
-  it("computeUtility with mixed judge tasks: scored ones included, unscored excluded + warn", () => {
+  it("computeUtility with mixed judge tasks: scored ones included, unscored excluded + warn", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // 6 judge tasks (≥ MIN_TASKS). First 5 have scores, last 1 does not.
@@ -1823,14 +1829,14 @@ describe("--live --record writes judge score, --mock replays it (record/replay f
 });
 
 describe("scoreChecker — existing assert/regex tests still pass (regression guard)", () => {
-  it("assert: recordedScore param has no effect (ignored for assert)", () => {
+  it("assert: recordedScore param has no effect (ignored for assert)", async () => {
     const checker = { type: "assert" as const, expect_contains: ["EXPECTED"] };
     // assert scoring comes from output, not recordedScore
     expect(scoreChecker(checker, "EXPECTED", 0)).toBe(1);
     expect(scoreChecker(checker, "no match", 1)).toBe(0);
   });
 
-  it("regex: recordedScore param has no effect (ignored for regex)", () => {
+  it("regex: recordedScore param has no effect (ignored for regex)", async () => {
     const checker = { type: "regex" as const, pattern: "ok" };
     expect(scoreChecker(checker, "ok output", 0)).toBe(1);
     expect(scoreChecker(checker, "no match", 1)).toBe(0);
@@ -1890,7 +1896,7 @@ describe("discoverNeighborTasks", () => {
     rmSync(rootDir, { recursive: true, force: true });
   });
 
-  it("returns empty array when evalRoot does not exist", () => {
+  it("returns empty array when evalRoot does not exist", async () => {
     const result = discoverNeighborTasks(
       "skill-x",
       new Set(["research"]),
@@ -1899,7 +1905,7 @@ describe("discoverNeighborTasks", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("returns empty array when no other skills exist in evalRoot", () => {
+  it("returns empty array when no other skills exist in evalRoot", async () => {
     const evalRoot = buildEvalRoot(rootDir, [
       {
         skillId: "skill-x",
@@ -1914,7 +1920,7 @@ describe("discoverNeighborTasks", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("skips the skill under evaluation (self-exclusion)", () => {
+  it("skips the skill under evaluation (self-exclusion)", async () => {
     const evalRoot = buildEvalRoot(rootDir, [
       {
         skillId: "skill-x",
@@ -1936,7 +1942,7 @@ describe("discoverNeighborTasks", () => {
     expect(result[0]?.task.id).toBe("ty");
   });
 
-  it("only returns tasks whose domain is in the given domains set", () => {
+  it("only returns tasks whose domain is in the given domains set", async () => {
     const evalRoot = buildEvalRoot(rootDir, [
       {
         skillId: "skill-x",
@@ -1960,7 +1966,7 @@ describe("discoverNeighborTasks", () => {
     expect(result[0]?.task.domain).toBe("research");
   });
 
-  it("returns neighbors from multiple other skills", () => {
+  it("returns neighbors from multiple other skills", async () => {
     const evalRoot = buildEvalRoot(rootDir, [
       {
         skillId: "skill-x",
@@ -1985,7 +1991,7 @@ describe("discoverNeighborTasks", () => {
     expect(skills).toEqual(["skill-a", "skill-b"]);
   });
 
-  it("returns neighbors in deterministic (sorted) order", () => {
+  it("returns neighbors in deterministic (sorted) order", async () => {
     const evalRoot = buildEvalRoot(rootDir, [
       {
         skillId: "skill-x",
@@ -2044,10 +2050,10 @@ describe("candidate-specific negative transfer", () => {
     });
   }
 
-  it("re-measures a regressed neighbor once and reports whether it reproduced", () => {
+  it("re-measures a regressed neighbor once and reports whether it reproduced", async () => {
     // Treatment fails on the first comparison only: the flip is noise.
     let treatmentCalls = 0;
-    const flaky = measure("live", {
+    const flaky = await measure("live", {
       confirmRegressions: true,
       dispatchFn: (arm) => {
         if (arm === "baseline") return "EXPECTED";
@@ -2062,18 +2068,18 @@ describe("candidate-specific negative transfer", () => {
     expect(flaky.coverage).toMatchObject({ status: "measured", scored: 1 });
 
     // Treatment fails both times: the regression is confirmed.
-    const real = measure("live", { confirmRegressions: true });
+    const real = await measure("live", { confirmRegressions: true });
     expect(real.entries).toMatchObject([
       { taskId: task.id, delta: -1, trials: 2, confirmed: true },
     ]);
 
     // Without confirmation the single comparison stands as-is.
-    const single = measure("live");
+    const single = await measure("live");
     expect(single.entries).toMatchObject([{ delta: -1, trials: 1 }]);
     expect(single.entries[0]).not.toHaveProperty("confirmed");
   });
 
-  it("never treats a neighbor's own treatment as candidate-X evidence", () => {
+  it("never treats a neighbor's own treatment as candidate-X evidence", async () => {
     const neighborDir = join(evalRoot, "skill-y");
     writeRollout(
       neighborDir,
@@ -2084,7 +2090,7 @@ describe("candidate-specific negative transfer", () => {
       body,
     );
     expect(scoreNeighborInMock(task, neighborDir)).toBeNull();
-    const result = measure("mock");
+    const result = await measure("mock");
     expect(result.entries).toEqual([]);
     expect(result.coverage).toMatchObject({
       status: "insufficient",
@@ -2093,7 +2099,7 @@ describe("candidate-specific negative transfer", () => {
     });
   });
 
-  it("runs a fresh baseline and candidate treatment without prior recordings", () => {
+  it("runs a fresh baseline and candidate treatment without prior recordings", async () => {
     const calls: Array<{ arm: string; prompt: string; workspace: string }> = [];
     const dispatch: LiveDispatchFn = (arm, prompt, workspace) => {
       calls.push({ arm, prompt, workspace });
@@ -2102,7 +2108,7 @@ describe("candidate-specific negative transfer", () => {
         writeFileSync(join(workspace, "baseline-marker"), "state");
       return arm === "baseline" ? "EXPECTED" : "wrong";
     };
-    const result = scoreNeighborInLive(
+    const result = await scoreNeighborInLive(
       task,
       join(evalRoot, "skill-y"),
       body,
@@ -2119,7 +2125,7 @@ describe("candidate-specific negative transfer", () => {
     for (const call of calls) expect(existsSync(call.workspace)).toBe(false);
   });
 
-  it("ignores an old recorded baseline in live mode and judges both fresh arms", () => {
+  it("ignores an old recorded baseline in live mode and judges both fresh arms", async () => {
     const judgedTask = {
       ...task,
       checker: { type: "judge" as const, rubric: "Correct?" },
@@ -2135,7 +2141,7 @@ describe("candidate-specific negative transfer", () => {
       prompt.includes("FRESH_GOOD") ? "PASS" : "FAIL",
     );
     expect(
-      scoreNeighborInLive(
+      await scoreNeighborInLive(
         judgedTask,
         neighborDir,
         body,
@@ -2148,8 +2154,8 @@ describe("candidate-specific negative transfer", () => {
     expect(judge).toHaveBeenCalledTimes(2);
   });
 
-  it("records and replays only the same candidate, task and matched comparison", () => {
-    const live = measure("live", { record: true });
+  it("records and replays only the same candidate, task and matched comparison", async () => {
+    const live = await measure("live", { record: true });
     expect(live.coverage).toMatchObject({
       status: "measured",
       expected: 1,
@@ -2162,11 +2168,11 @@ describe("candidate-specific negative transfer", () => {
       skillBodyHash: contentHash(body),
       delta: -1,
     });
-    const mock = measure("mock");
+    const mock = await measure("mock");
     expect(mock).toEqual(live);
-    expect(measure("mock")).toEqual(mock);
+    expect(await measure("mock")).toEqual(mock);
     expect(
-      measure("mock", { body: "different candidate" }).coverage.status,
+      (await measure("mock", { body: "different candidate" })).coverage.status,
     ).toBe("insufficient");
     const recordDir = negativeTransferRecordDir(
       evalRoot,
@@ -2186,8 +2192,8 @@ describe("candidate-specific negative transfer", () => {
 
   it.each(["comparison", "checker", "missing-provenance"])(
     "rejects %s drift in a candidate recording",
-    (drift) => {
-      measure("live", { record: true });
+    async (drift) => {
+      await measure("live", { record: true });
       const recordDir = negativeTransferRecordDir(
         evalRoot,
         "skill-x",
@@ -2209,7 +2215,7 @@ describe("candidate-specific negative transfer", () => {
           checker: { type: "assert", expect_contains: ["new-check"] },
         });
       writeRolloutRecord(recordDir, entries);
-      expect(measure("mock").coverage).toMatchObject({
+      expect((await measure("mock")).coverage).toMatchObject({
         status: "insufficient",
         expected: 1,
         scored: 0,
@@ -2217,13 +2223,13 @@ describe("candidate-specific negative transfer", () => {
     },
   );
 
-  it("keeps the same task ID in two neighbor skills separate", () => {
+  it("keeps the same task ID in two neighbor skills separate", async () => {
     writeTask(join(evalRoot, "skill-z"), {
       ...task,
       skill: "skill-z",
       prompt: "second neighbor",
     });
-    const live = measure("live", {
+    const live = await measure("live", {
       record: true,
       dispatchFn: (arm, prompt) =>
         arm === "baseline" || prompt.includes("second neighbor")
@@ -2236,17 +2242,17 @@ describe("candidate-specific negative transfer", () => {
       scored: 2,
     });
     expect(live.entries.map((entry) => entry.delta)).toEqual([-1, 0]);
-    expect(measure("mock")).toEqual(live);
+    expect(await measure("mock")).toEqual(live);
   });
 
-  it("reports partial coverage if any neighbor arm fails", () => {
+  it("reports partial coverage if any neighbor arm fails", async () => {
     writeTask(join(evalRoot, "skill-z"), {
       ...task,
       id: "second",
       skill: "skill-z",
       prompt: "failed neighbor",
     });
-    const result = measure("live", {
+    const result = await measure("live", {
       dispatchFn: (arm, prompt) => {
         if (prompt.includes("failed neighbor") && arm === "treatment")
           throw new Error("dispatch failure");
@@ -2261,22 +2267,22 @@ describe("candidate-specific negative transfer", () => {
     expect(result.entries).toHaveLength(1);
   });
 
-  it("reports missing judge verdicts and missing live dispatch as unmeasured", () => {
+  it("reports missing judge verdicts and missing live dispatch as unmeasured", async () => {
     writeTask(join(evalRoot, "skill-y"), {
       ...task,
       checker: { type: "judge" },
     });
-    expect(measure("live").coverage.status).toBe("insufficient");
-    expect(measure("live", { dispatchFn: undefined }).coverage.status).toBe(
-      "insufficient",
-    );
+    expect((await measure("live")).coverage.status).toBe("insufficient");
+    expect(
+      (await measure("live", { dispatchFn: undefined })).coverage.status,
+    ).toBe("insufficient");
   });
 
-  it("reports zero neighbors as insufficient and applies the explicit sample cap", () => {
+  it("reports zero neighbors as insufficient and applies the explicit sample cap", async () => {
     // A domain with no neighbor falls back to a cross-domain sample, which in
     // mock mode has no recording yet and therefore stays insufficient.
     expect(
-      measure("mock", { domains: new Set(["other-domain"]) }).coverage,
+      (await measure("mock", { domains: new Set(["other-domain"]) })).coverage,
     ).toMatchObject({
       status: "insufficient",
       expected: 1,
@@ -2286,12 +2292,12 @@ describe("candidate-specific negative transfer", () => {
     rmSync(evalRoot, { recursive: true, force: true });
     mkdirSync(join(evalRoot, "skill-x"), { recursive: true });
     expect(
-      measure("mock", { domains: new Set(["other-domain"]) }).coverage,
+      (await measure("mock", { domains: new Set(["other-domain"]) })).coverage,
     ).toEqual({ status: "insufficient", expected: 0, scored: 0 });
     mkdirSync(join(evalRoot, "skill-y"), { recursive: true });
     writeTask(join(evalRoot, "skill-y"), task);
     writeTask(join(evalRoot, "skill-y"), { ...task, id: "second" });
-    const result = measure("live", { maxTasks: 1 });
+    const result = await measure("live", { maxTasks: 1 });
     expect(result.coverage).toMatchObject({
       status: "measured",
       expected: 1,
@@ -2307,18 +2313,20 @@ describe("candidate-specific negative transfer", () => {
     [1, "wrong", "EXPECTED"],
   ] as const)(
     "preserves the array API with candidate-specific delta %s",
-    (delta, baseline, treatment) => {
+    async (delta, baseline, treatment) => {
       expect(
-        computeNegativeTransfer(
-          "skill-x",
-          new Set(["test"]),
-          evalRoot,
-          "live",
-          undefined,
-          body,
-          (arm) => (arm === "baseline" ? baseline : treatment),
-          undefined,
-          rootDir,
+        (
+          await computeNegativeTransfer(
+            "skill-x",
+            new Set(["test"]),
+            evalRoot,
+            "live",
+            undefined,
+            body,
+            (arm) => (arm === "baseline" ? baseline : treatment),
+            undefined,
+            rootDir,
+          )
         )[0]?.delta,
       ).toBe(delta);
     },
@@ -2370,7 +2378,7 @@ describe("candidate-specific negative transfer", () => {
       expected: 1,
       scored: 0,
     });
-    measure("live", { record: true });
+    await measure("live", { record: true });
     const recorded = await scoreSkillBody({
       ...options,
       negativeTransfer: true,
@@ -2390,7 +2398,7 @@ describe("candidate-specific negative transfer", () => {
 });
 
 describe("computeUtility — negativeTransfer integration", () => {
-  it("passes through pre-computed negativeTransfer entries into the report", () => {
+  it("passes through pre-computed negativeTransfer entries into the report", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const negativeTransfer: NegativeTransfer[] = [
       { otherSkill: "skill-y", domain: "research", delta: -0.2 },
@@ -2404,13 +2412,13 @@ describe("computeUtility — negativeTransfer integration", () => {
     expect(report.negativeTransfer[0]?.delta).toBeCloseTo(-0.2);
   });
 
-  it("negativeTransfer is empty when no entries are passed (backward-compat with M1)", () => {
+  it("negativeTransfer is empty when no entries are passed (backward-compat with M1)", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const report = computeUtility("skill-x", { tasks, rollouts });
     expect(report.negativeTransfer).toHaveLength(0);
   });
 
-  it("decision downgrades from pass to warn when any delta <= NEG_TRANSFER_FAIL", () => {
+  it("decision downgrades from pass to warn when any delta <= NEG_TRANSFER_FAIL", async () => {
     const { tasks, rollouts } = makePassingScenario(); // lift = 1.0 → would be pass
     const negativeTransfer: NegativeTransfer[] = [
       { otherSkill: "skill-y", domain: "research", delta: NEG_TRANSFER_FAIL }, // exactly at threshold
@@ -2425,7 +2433,7 @@ describe("computeUtility — negativeTransfer integration", () => {
     expect(report.decision).toBe("warn");
   });
 
-  it("decision remains fail (not further changed) when utility already fails and neg-transfer regression present", () => {
+  it("decision remains fail (not further changed) when utility already fails and neg-transfer regression present", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -2444,7 +2452,7 @@ describe("computeUtility — negativeTransfer integration", () => {
     expect(report.decision).toBe("fail");
   });
 
-  it("decision is not downgraded when delta is above NEG_TRANSFER_FAIL", () => {
+  it("decision is not downgraded when delta is above NEG_TRANSFER_FAIL", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const negativeTransfer: NegativeTransfer[] = [
       { otherSkill: "skill-y", domain: "research", delta: -0.05 }, // above threshold (-0.10)
@@ -2460,7 +2468,7 @@ describe("computeUtility — negativeTransfer integration", () => {
 });
 
 describe("renderSkillUtilityReport — negativeTransfer render line", () => {
-  it("renders negative transfer section when entries exist", () => {
+  it("renders negative transfer section when entries exist", async () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const { tasks, rollouts } = makePassingScenario();
     const negativeTransfer: NegativeTransfer[] = [
@@ -2479,7 +2487,7 @@ describe("renderSkillUtilityReport — negativeTransfer render line", () => {
     logSpy.mockRestore();
   });
 
-  it("regression delta <= NEG_TRANSFER_FAIL is surfaced in the report", () => {
+  it("regression delta <= NEG_TRANSFER_FAIL is surfaced in the report", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const negativeTransfer: NegativeTransfer[] = [
       { otherSkill: "skill-z", domain: "writing", delta: -0.12 },
@@ -2572,7 +2580,7 @@ describe("runSkillsEval — neg-transfer flag (mock mode, no LLM)", () => {
       { taskId: "ny-t1", arm: "baseline", output: "no match" },
       { taskId: "ny-t1", arm: "treatment", output: "EXPECTED content" },
     ]);
-    measureNegativeTransfer({
+    await measureNegativeTransfer({
       skill: "skill-x",
       domains: new Set(["test"]),
       evalRoot,
@@ -2852,7 +2860,7 @@ describe("scoreSkillBody", () => {
 // --- Skill isolation (plan 013) ---
 
 describe("resolveSkillIsolation", () => {
-  it("returns 'unavailable' for a HOME-based vendor (antigravity)", () => {
+  it("returns 'unavailable' for a HOME-based vendor (antigravity)", async () => {
     // antigravity discovers skills from ~/.gemini/antigravity-cli/skills
     // (requiresHomeConsent) — a clean cwd cannot isolate it.
     const status: IsolationStatus = resolveSkillIsolation(
@@ -2862,18 +2870,18 @@ describe("resolveSkillIsolation", () => {
     expect(status).toBe("unavailable");
   });
 
-  it("returns 'best-effort' for an unknown vendor (cannot prove isolation)", () => {
+  it("returns 'best-effort' for an unknown vendor (cannot prove isolation)", async () => {
     expect(resolveSkillIsolation("grok", "oma-scholar")).toBe("best-effort");
   });
 
-  it("returns 'enforced' for the Claude confinement profile when the skill is absent from HOME", () => {
+  it("returns 'enforced' for the Claude confinement profile when the skill is absent from HOME", async () => {
     // A uniquely-named skill not installed under ~/.claude/skills.
     expect(
       resolveSkillIsolation("claude", "__oma_test_nonexistent_skill__"),
     ).toBe("enforced");
   });
 
-  it("returns enforced for the verified Codex text profile", () => {
+  it("returns enforced for the verified Codex text profile", async () => {
     expect(
       resolveSkillIsolation("codex", "__oma_test_nonexistent_skill__"),
     ).toBe("enforced");
@@ -2881,14 +2889,14 @@ describe("resolveSkillIsolation", () => {
 
   it.each(["qwen", "gemini", "cursor", "opencode"])(
     "does not claim enforced isolation for %s without a confinement profile",
-    (vendor) => {
+    async (vendor) => {
       expect(
         resolveSkillIsolation(vendor, "__oma_test_nonexistent_skill__"),
       ).toBe("best-effort");
     },
   );
 
-  it("returns 'best-effort' for a path-traversal id without probing the filesystem", () => {
+  it("returns 'best-effort' for a path-traversal id without probing the filesystem", async () => {
     // Even a supported runtime must not probe HOME using an unsafe skill id.
     expect(resolveSkillIsolation("claude", "../../etc/passwd")).toBe(
       "best-effort",
@@ -2916,7 +2924,7 @@ describe("runEvalDispatch (dash-leading prompt handling)", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("routes a dash-leading prompt through stdin, not argv (the SKILL.md '---' bug)", () => {
+  it("routes a dash-leading prompt through stdin, not argv (the SKILL.md '---' bug)", async () => {
     // Regression for plan-013 T4: a prompt starting with '-' (SKILL.md frontmatter)
     // was misparsed as a CLI option by `claude -p <prompt>` → empty output.
     const prompt = "--- name: oma-scholar frontmatter";
@@ -2934,7 +2942,7 @@ describe("runEvalDispatch (dash-leading prompt handling)", () => {
     expect(out).toBe(`STDIN[${prompt}]ARGV[-p]`);
   });
 
-  it("finds the prompt by flag→value pair even when trailing flags follow it", () => {
+  it("finds the prompt by flag→value pair even when trailing flags follow it", async () => {
     // Real eval invocations append plan flags (e.g. `--model sonnet`) AFTER `-p <prompt>`,
     // so the prompt is NOT the last arg. Only the prompt VALUE must move to stdin.
     const prompt = "--- frontmatter prompt";
@@ -2951,7 +2959,7 @@ describe("runEvalDispatch (dash-leading prompt handling)", () => {
     expect(out).toBe(`STDIN[${prompt}]ARGV[-p,--model,x]`);
   });
 
-  it("passes a non-dash prompt as an argv value (stdin unused)", () => {
+  it("passes a non-dash prompt as an argv value (stdin unused)", async () => {
     const prompt = "plain task prompt";
     const out = runEvalDispatch(
       {
@@ -2966,7 +2974,7 @@ describe("runEvalDispatch (dash-leading prompt handling)", () => {
     expect(out).toBe(`STDIN[]ARGV[-p,${prompt}]`);
   });
 
-  it("retries a timed-out dispatch once and surfaces the second timeout", () => {
+  it("retries a timed-out dispatch once and surfaces the second timeout", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.stubEnv("OMA_SKILL_EVAL_TIMEOUT_MS", "1000");
     const marker = join(dir, "first-attempt");
@@ -3007,7 +3015,36 @@ describe("runEvalDispatch (dash-leading prompt handling)", () => {
     }
   }, 20_000);
 
-  it("rejects captured stdout from a failed process instead of scoring it", () => {
+  it("retries a timed-out asynchronous dispatch once as well", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("OMA_SKILL_EVAL_TIMEOUT_MS", "1000");
+    const marker = join(dir, "first-async-attempt");
+    const slowOnce = join(dir, "slow-once-async.cjs");
+    writeFileSync(
+      slowOnce,
+      `const fs=require('fs');const m=${JSON.stringify(marker)};` +
+        "if(!fs.existsSync(m)){fs.writeFileSync(m,'1');setTimeout(()=>{},10000);}" +
+        "else{process.stdout.write('answer');}",
+    );
+    try {
+      const { output } = await runEvalDispatchDetailedAsync(
+        { command: process.execPath, args: [slowOnce], env: process.env },
+        dir,
+        "x",
+        null,
+      );
+      expect(output).toBe("answer");
+      expect(warnSpy.mock.calls.map((call) => String(call[0]))).toEqual([
+        "[oma skill eval] dispatch timed out after 1s.",
+        "[oma skill eval] retrying the timed-out dispatch once.",
+      ]);
+    } finally {
+      vi.unstubAllEnvs();
+      warnSpy.mockRestore();
+    }
+  }, 20_000);
+
+  it("rejects captured stdout from a failed process instead of scoring it", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const failer = join(dir, "fail.cjs");
     writeFileSync(failer, "process.stdout.write('partial');process.exit(3);");
@@ -3044,7 +3081,7 @@ describe("setupIsolatedSkillsDir", () => {
     rmSync(tmpBase, { recursive: true, force: true });
   });
 
-  it("mirrors every installed skill EXCEPT the target into tmpBase", () => {
+  it("mirrors every installed skill EXCEPT the target into tmpBase", async () => {
     setupIsolatedSkillsDir(tmpBase, "codex", workspace, "target-skill");
     const dest = join(tmpBase, ".codex", "skills");
     expect(existsSync(join(dest, "skill-a"))).toBe(true);
@@ -3053,7 +3090,7 @@ describe("setupIsolatedSkillsDir", () => {
     expect(existsSync(join(dest, "target-skill"))).toBe(false);
   });
 
-  it("does not mutate the source install (target stays installed)", () => {
+  it("does not mutate the source install (target stays installed)", async () => {
     setupIsolatedSkillsDir(tmpBase, "codex", workspace, "target-skill");
     const src = join(workspace, ".codex", "skills");
     expect(existsSync(join(src, "skill-a"))).toBe(true);
@@ -3062,7 +3099,7 @@ describe("setupIsolatedSkillsDir", () => {
 });
 
 describe("isolation status in report", () => {
-  it("computeUtility threads isolation + isolationVendor into the report", () => {
+  it("computeUtility threads isolation + isolationVendor into the report", async () => {
     const report = computeUtility("oma-test", {
       tasks: [],
       rollouts: [],
@@ -3073,12 +3110,12 @@ describe("isolation status in report", () => {
     expect(report.isolationVendor).toBe("codex");
   });
 
-  it("computeUtility defaults isolation to 'n/a' when not provided (mock)", () => {
+  it("computeUtility defaults isolation to 'n/a' when not provided (mock)", async () => {
     const report = computeUtility("oma-test", { tasks: [], rollouts: [] });
     expect(report.isolation).toBe("n/a");
   });
 
-  it("serializeSkillUtilityReport exposes isolation in the JSON", () => {
+  it("serializeSkillUtilityReport exposes isolation in the JSON", async () => {
     const report = computeUtility("oma-test", {
       tasks: [],
       rollouts: [],
@@ -3093,7 +3130,7 @@ describe("isolation status in report", () => {
     expect(parsed.isolationVendor).toBe("claude");
   });
 
-  it("renderSkillUtilityReport prints a low-confidence line for non-enforced isolation", () => {
+  it("renderSkillUtilityReport prints a low-confidence line for non-enforced isolation", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 5,
@@ -3119,7 +3156,7 @@ describe("isolation status in report", () => {
     logSpy.mockRestore();
   });
 
-  it("renderSkillUtilityReport omits the isolation line for 'n/a' (mock mode)", () => {
+  it("renderSkillUtilityReport omits the isolation line for 'n/a' (mock mode)", async () => {
     const report: SkillUtilityReport = {
       skill: "oma-test",
       taskCount: 5,
@@ -3150,7 +3187,7 @@ describe("computeUtility — repeated trials and paired interval", () => {
     output: string,
   ): RolloutEntry => ({ taskId, arm, trial, output });
 
-  it("averages per-task scores over trials and downgrades an unstable pass to warn", () => {
+  it("averages per-task scores over trials and downgrades an unstable pass to warn", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -3183,7 +3220,7 @@ describe("computeUtility — repeated trials and paired interval", () => {
     expect(report.decision).toBe("pass");
   });
 
-  it("marks a lift whose paired interval includes zero as unstable and not a pass", () => {
+  it("marks a lift whose paired interval includes zero as unstable and not a pass", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -3201,7 +3238,7 @@ describe("computeUtility — repeated trials and paired interval", () => {
     expect(report.decision).toBe("warn");
   });
 
-  it("reports single-trial status with a task-level interval when nothing was repeated", () => {
+  it("reports single-trial status with a task-level interval when nothing was repeated", async () => {
     const { tasks, rollouts } = makePassingScenario();
     const report = computeUtility("oma-test", { tasks, rollouts });
     expect(report.repeatability).toEqual({
@@ -3215,7 +3252,7 @@ describe("computeUtility — repeated trials and paired interval", () => {
     ).toBe(true);
   });
 
-  it("pairs trials by index and ignores an unpaired extra trial", () => {
+  it("pairs trials by index and ignores an unpaired extra trial", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`),
     );
@@ -3229,7 +3266,7 @@ describe("computeUtility — repeated trials and paired interval", () => {
     expect(report.repeatability?.trials).toBe(1);
   });
 
-  it("computes a paired t-interval over task lifts", () => {
+  it("computes a paired t-interval over task lifts", async () => {
     expect(pairedLiftInterval([1, 1, 1])).toEqual({ lower: 1, upper: 1 });
     expect(pairedLiftInterval([0.5])).toBeNull();
     const wide = pairedLiftInterval([1, 0, 1, 0]);
@@ -3239,7 +3276,7 @@ describe("computeUtility — repeated trials and paired interval", () => {
 });
 
 describe("collectLiveRollouts — repeated trials", () => {
-  it("runs each arm per trial with alternating order and grades every trial", () => {
+  it("runs each arm per trial with alternating order and grades every trial", async () => {
     const task = makeTaskFixture("t1", {
       checker: { type: "judge", rubric: "r" },
     });
@@ -3249,7 +3286,7 @@ describe("collectLiveRollouts — repeated trials", () => {
       return `${arm} answer`;
     };
     const judge = vi.fn(() => "PASS");
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       [task],
       "body",
       dispatch,
@@ -3272,9 +3309,9 @@ describe("collectLiveRollouts — repeated trials", () => {
     expect(judge).toHaveBeenCalledTimes(4);
   });
 
-  it("omits the trial field for a single trial and rejects out-of-range counts", () => {
+  it("omits the trial field for a single trial and rejects out-of-range counts", async () => {
     const task = makeTaskFixture("t1");
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       [task],
       "body",
       () => "EXPECTED",
@@ -3282,17 +3319,17 @@ describe("collectLiveRollouts — repeated trials", () => {
     );
     cleanupTmp();
     expect(rollouts.every((r) => r.trial === undefined)).toBe(true);
-    expect(() =>
+    await expect(
       collectLiveRollouts([task], "body", () => "x", tmpdir(), undefined, 0),
-    ).toThrow(/trials/);
-    expect(() =>
+    ).rejects.toThrow(/trials/);
+    await expect(
       collectLiveRollouts([task], "body", () => "x", tmpdir(), undefined, 11),
-    ).toThrow(/trials/);
+    ).rejects.toThrow(/trials/);
   });
 });
 
 describe("fixture group and trial fields", () => {
-  it("loads an optional group label and rejects a non-string group", () => {
+  it("loads an optional group label and rejects a non-string group", async () => {
     const dir = mkdtempSync(join(tmpdir(), "oma-eval-group-"));
     writeFileSync(
       join(dir, "a.yaml"),
@@ -3308,7 +3345,7 @@ describe("fixture group and trial fields", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("keeps recorded trial indexes and drops entries with an invalid trial", () => {
+  it("keeps recorded trial indexes and drops entries with an invalid trial", async () => {
     const dir = mkdtempSync(join(tmpdir(), "oma-eval-trial-"));
     mkdirSync(join(dir, "_rollouts"));
     writeFileSync(
@@ -3445,7 +3482,7 @@ describe("runSkillsEval — routing (activation) measurement", () => {
 });
 
 describe("usage accounting", () => {
-  it("parses tokens, cost, and the dominant model from a Claude envelope", () => {
+  it("parses tokens, cost, and the dominant model from a Claude envelope", async () => {
     const usage = parseVendorUsage(
       JSON.stringify({
         type: "result",
@@ -3475,7 +3512,7 @@ describe("usage accounting", () => {
     );
   });
 
-  it("sums arm and judge usage over scored entries and marks missing reports partial", () => {
+  it("sums arm and judge usage over scored entries and marks missing reports partial", async () => {
     const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
       makeTaskFixture(`task-${i}`, { checker: { type: "judge", rubric: "r" } }),
     );
@@ -3522,7 +3559,7 @@ describe("usage accounting", () => {
     });
   });
 
-  it("keeps usage returned by a live dispatch on the recorded entries", () => {
+  it("keeps usage returned by a live dispatch on the recorded entries", async () => {
     const task = makeTaskFixture("t1");
     const dispatch: LiveDispatchFn = (arm) => ({
       output: arm === "treatment" ? "EXPECTED" : "no",
@@ -3535,7 +3572,7 @@ describe("usage accounting", () => {
         model: "m",
       },
     });
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       [task],
       "body",
       dispatch,
@@ -3548,7 +3585,7 @@ describe("usage accounting", () => {
 });
 
 describe("discoverNeighborTasks — cross-domain fallback", () => {
-  it("uses a bounded cross-domain sample only when no same-domain neighbor exists", () => {
+  it("uses a bounded cross-domain sample only when no same-domain neighbor exists", async () => {
     const evalRoot = mkdtempSync(join(tmpdir(), "oma-eval-neighbors-"));
     const write = (skill: string, domain: string, count: number): void => {
       const dir = join(evalRoot, skill);

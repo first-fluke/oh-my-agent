@@ -56,7 +56,7 @@ const catalog = [
 ];
 
 describe("skill catalog", () => {
-  it("lists installed skills that declare a description, sorted by name", () => {
+  it("lists installed skills that declare a description, sorted by name", async () => {
     const root = workspaceWithSkills({
       zeta: { description: "Zeta things." },
       alpha: { description: "Alpha things.", name: "alpha-skill" },
@@ -73,7 +73,7 @@ describe("skill catalog", () => {
 });
 
 describe("routing prompt and choice parsing", () => {
-  it("lists every catalog entry and the request", () => {
+  it("lists every catalog entry and the request", async () => {
     const prompt = buildRoutingPrompt(catalog, "please do x");
     expect(prompt).toContain("- skill-x — Handle x requests.");
     expect(prompt).toContain("- skill-y — Handle y requests.");
@@ -81,7 +81,7 @@ describe("routing prompt and choice parsing", () => {
     expect(prompt).toContain("NONE");
   });
 
-  it("maps answers to target, other, none, or unparsed", () => {
+  it("maps answers to target, other, none, or unparsed", async () => {
     expect(parseRoutingChoice("skill-x", catalog, "skill-x")).toEqual({
       choice: "skill-x",
       outcome: "target",
@@ -117,7 +117,7 @@ describe("routing prompt and choice parsing", () => {
     );
   });
 
-  it("reads the choice from a vendor envelope", () => {
+  it("reads the choice from a vendor envelope", async () => {
     const envelope = JSON.stringify({
       type: "result",
       is_error: false,
@@ -131,7 +131,7 @@ describe("routing prompt and choice parsing", () => {
 });
 
 describe("measure, summarize, record, replay", () => {
-  it("dispatches one routing prompt per task through the baseline arm and summarizes", () => {
+  it("dispatches one routing prompt per task through the baseline arm and summarizes", async () => {
     const root = mkdtempSync(join(tmpdir(), "oma-routing-ws-"));
     roots.push(root);
     const arms: string[] = [];
@@ -144,7 +144,7 @@ describe("measure, summarize, record, replay", () => {
     });
     const tasks = [task("t1"), task("t2"), task("t3"), task("t4")];
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const entries = measureRouting({
+    const entries = await measureRouting({
       tasks,
       target: "skill-x",
       catalog,
@@ -172,12 +172,12 @@ describe("measure, summarize, record, replay", () => {
     });
   });
 
-  it("replays a recording only under the same catalog and tasks", () => {
+  it("replays a recording only under the same catalog and tasks", async () => {
     const taskDir = mkdtempSync(join(tmpdir(), "oma-routing-rec-"));
     roots.push(taskDir);
     const tasks = [task("t1"), task("t2")];
     const hash = catalogHash(catalog);
-    const entries = measureRouting({
+    const entries = await measureRouting({
       tasks,
       target: "skill-x",
       catalog,

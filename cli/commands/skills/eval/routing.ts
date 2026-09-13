@@ -8,7 +8,8 @@ import {
 import { join } from "node:path";
 import { INSTALLED_SKILLS_DIR } from "../../../constants/vendors.js";
 import { parseFrontmatter } from "../../../utils/frontmatter.js";
-import { resolveDispatchResult, unwrapVendorEnvelope } from "./envelope.js";
+import { evalConcurrency, mapWithLimit } from "./concurrency.js";
+import { awaitDispatchResult, unwrapVendorEnvelope } from "./envelope.js";
 import { contentHash, taskFixtureHash, taskSetHash } from "./rollouts.js";
 import type { LiveDispatchFn, TaskFixture } from "./types.js";
 
@@ -133,42 +134,45 @@ export function parseRoutingChoice(
   };
 }
 
-export function measureRouting(args: {
+export async function measureRouting(args: {
   tasks: TaskFixture[];
   target: string;
   catalog: SkillCatalogEntry[];
   dispatchFn: LiveDispatchFn;
   workspace: string;
-}): RoutingEntry[] {
-  const entries: RoutingEntry[] = [];
-  for (const task of args.tasks) {
-    const prompt = buildRoutingPrompt(args.catalog, task.prompt);
-    const dir = join(args.workspace, `routing-${entries.length}`);
-    mkdirSync(dir, { recursive: true });
-    let output: string;
-    try {
-      // The routing arm withholds the target body exactly like the baseline.
-      output = resolveDispatchResult(
-        args.dispatchFn("baseline", prompt, dir),
-      ).output;
-    } catch (error) {
-      console.warn(
-        `[oma skill eval] routing for task ${task.id} could not be measured: ${error instanceof Error ? error.message : String(error)}.`,
-      );
-      continue;
-    }
-    const parsed = parseRoutingChoice(output, args.catalog, args.target);
-    entries.push({
-      taskId: task.id,
-      arm: "routing",
-      output: unwrapVendorEnvelope(output),
-      choice: parsed.choice,
-      outcome: parsed.outcome,
-      promptHash: contentHash(task.prompt),
-      taskHash: taskFixtureHash(task),
-    });
-  }
-  return entries;
+}): Promise<RoutingEntry[]> {
+  const measured = await mapWithLimit(
+    args.tasks,
+    evalConcurrency(),
+    async (task, index): Promise<RoutingEntry | null> => {
+      const prompt = buildRoutingPrompt(args.catalog, task.prompt);
+      const dir = join(args.workspace, `routing-${index}`);
+      mkdirSync(dir, { recursive: true });
+      let output: string;
+      try {
+        // The routing arm withholds the target body exactly like the baseline.
+        output = (
+          await awaitDispatchResult(args.dispatchFn("baseline", prompt, dir))
+        ).output;
+      } catch (error) {
+        console.warn(
+          `[oma skill eval] routing for task ${task.id} could not be measured: ${error instanceof Error ? error.message : String(error)}.`,
+        );
+        return null;
+      }
+      const parsed = parseRoutingChoice(output, args.catalog, args.target);
+      return {
+        taskId: task.id,
+        arm: "routing",
+        output: unwrapVendorEnvelope(output),
+        choice: parsed.choice,
+        outcome: parsed.outcome,
+        promptHash: contentHash(task.prompt),
+        taskHash: taskFixtureHash(task),
+      };
+    },
+  );
+  return measured.filter((entry): entry is RoutingEntry => entry !== null);
 }
 
 export function summarizeRouting(

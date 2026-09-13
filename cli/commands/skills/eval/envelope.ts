@@ -105,6 +105,13 @@ export function resolveDispatchResult(value: DispatchResult): {
   return { output: value.output, usage: value.usage ?? UNKNOWN_USAGE };
 }
 
+/** Like resolveDispatchResult for a dispatch that may run asynchronously. */
+export async function awaitDispatchResult(
+  value: DispatchResult | Promise<DispatchResult>,
+): Promise<{ output: string; usage: DispatchUsage }> {
+  return resolveDispatchResult(await value);
+}
+
 export function sumUsage(entries: DispatchUsage[]): {
   status: "actual" | "partial" | "unknown";
   dispatches: number;

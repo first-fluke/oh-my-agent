@@ -172,7 +172,7 @@ export async function scoreSkillBody(
         }
       : baseJudgeFn;
 
-    const { rollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts, cleanupTmp } = await collectLiveRollouts(
       tasks,
       body,
       resolvedDispatchFn,
@@ -181,7 +181,7 @@ export async function scoreSkillBody(
     );
     try {
       const transfer = options.negativeTransfer
-        ? measureNegativeTransfer({
+        ? await measureNegativeTransfer({
             skill,
             domains,
             evalRoot,
@@ -227,7 +227,7 @@ export async function scoreSkillBody(
       : [];
 
   const transfer = options.negativeTransfer
-    ? measureNegativeTransfer({
+    ? await measureNegativeTransfer({
         skill,
         domains,
         evalRoot,

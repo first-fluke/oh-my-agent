@@ -300,13 +300,15 @@ export type LiveDispatchFn = (
   arm: "baseline" | "treatment",
   prompt: string,
   workspace: string,
-) => DispatchResult;
+) => DispatchResult | Promise<DispatchResult>;
 
 /**
  * Judge dispatch function type — injectable for tests.
  * Accepts a complete grading prompt and returns the raw LLM response string.
  */
-export type JudgeDispatchFn = (gradingPrompt: string) => DispatchResult;
+export type JudgeDispatchFn = (
+  gradingPrompt: string,
+) => DispatchResult | Promise<DispatchResult>;
 
 // --- Options for runSkillsEval ---
 

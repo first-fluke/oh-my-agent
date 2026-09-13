@@ -14,7 +14,7 @@ describe("warnOnErrorEnvelope", () => {
     vi.restoreAllMocks();
   });
 
-  it("warns on a claude error envelope that exited 0 (session limit 429)", () => {
+  it("warns on a claude error envelope that exited 0 (session limit 429)", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const envelope = JSON.stringify({
       is_error: true,
@@ -30,7 +30,7 @@ describe("warnOnErrorEnvelope", () => {
     );
   });
 
-  it("stays silent for a successful envelope", () => {
+  it("stays silent for a successful envelope", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const envelope = JSON.stringify({
       is_error: false,
@@ -42,14 +42,14 @@ describe("warnOnErrorEnvelope", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
-  it("stays silent for plain-text and malformed output", () => {
+  it("stays silent for plain-text and malformed output", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     expect(warnOnErrorEnvelope("plain text answer")).toBe(false);
     expect(warnOnErrorEnvelope("{not json")).toBe(false);
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
-  it("returns the answer text from a successful vendor envelope", () => {
+  it("returns the answer text from a successful vendor envelope", async () => {
     const output = runEvalDispatch(
       {
         command: process.execPath,
@@ -92,7 +92,7 @@ describe("warnOnErrorEnvelope", () => {
     });
   });
 
-  it("rejects an API error envelope even when the process exits successfully", () => {
+  it("rejects an API error envelope even when the process exits successfully", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     expect(() =>
       runEvalDispatch(
@@ -125,7 +125,12 @@ describe("warnOnErrorEnvelope", () => {
       if (arm === "treatment") throw new Error("runtime unavailable");
       return "EXPECTED";
     };
-    const collected = collectLiveRollouts([task], "body", dispatch, tmpdir());
+    const collected = await collectLiveRollouts(
+      [task],
+      "body",
+      dispatch,
+      tmpdir(),
+    );
     try {
       expect(collected.rollouts).toEqual([]);
     } finally {
@@ -141,7 +146,7 @@ describe("warnOnErrorEnvelope", () => {
     });
     expect(report.coverage).toBe("insufficient");
     expect(report.findings).toEqual([]);
-    const judged = collectLiveRollouts(
+    const judged = await collectLiveRollouts(
       [{ ...task, checker: { type: "judge" } }],
       "body",
       () => "EXPECTED",

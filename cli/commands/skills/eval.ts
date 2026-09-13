@@ -53,6 +53,7 @@ export {
   isolateEvalRuntime,
   resolveSkillIsolation,
   runEvalDispatch,
+  runEvalDispatchDetailedAsync,
   setupIsolatedSkillsDir,
 } from "./eval/dispatch.js";
 export {
@@ -342,7 +343,7 @@ export async function runSkillsEval(
 
     // Run both arms per task; judge tasks get their verdict computed inline
     console.log("Running live arms...");
-    const { rollouts: liveRollouts, cleanupTmp } = collectLiveRollouts(
+    const { rollouts: liveRollouts, cleanupTmp } = await collectLiveRollouts(
       tasks,
       skillMdBody,
       dispatchFn,
@@ -361,7 +362,7 @@ export async function runSkillsEval(
 
       const transfer =
         options.negTransfer && skillId !== "_all"
-          ? measureNegativeTransfer({
+          ? await measureNegativeTransfer({
               skill: skillId,
               domains: skillDomains,
               evalRoot,
@@ -403,7 +404,7 @@ export async function runSkillsEval(
           const routingBase = mkdtempSync(join(tmpdir(), "oma-eval-routing-"));
           let entries: RoutingEntry[] = [];
           try {
-            entries = measureRouting({
+            entries = await measureRouting({
               tasks,
               target: skillId,
               catalog,
@@ -475,7 +476,7 @@ export async function runSkillsEval(
 
   const transfer =
     options.negTransfer && skillId !== "_all"
-      ? measureNegativeTransfer({
+      ? await measureNegativeTransfer({
           skill: skillId,
           domains: skillDomains,
           evalRoot,

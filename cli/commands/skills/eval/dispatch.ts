@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -132,6 +132,138 @@ export function runEvalDispatchDetailed(
   }
 }
 
+/**
+ * Asynchronous form of runEvalDispatchDetailed with the same prompt routing,
+ * envelope handling, error mapping, and single retry on timeout. Live arms
+ * and judges use it so several subprocesses can be in flight at once.
+ */
+export async function runEvalDispatchDetailedAsync(
+  invocation: Parameters<typeof runEvalDispatchDetailed>[0],
+  cwd: string,
+  prompt: string,
+  promptFlag: string | null,
+): Promise<{ output: string; usage: DispatchUsage }> {
+  const { args } = invocation;
+  let promptIdx = -1;
+  if (promptFlag !== null) {
+    for (let i = 0; i < args.length - 1; i++) {
+      if (args[i] === promptFlag && args[i + 1] === prompt) {
+        promptIdx = i + 1;
+        break;
+      }
+    }
+  }
+  const viaStdin = promptIdx >= 0 && prompt.startsWith("-");
+  const execArgs = viaStdin ? args.filter((_, idx) => idx !== promptIdx) : args;
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await runEvalDispatchOnceAsync(
+        invocation,
+        cwd,
+        prompt,
+        viaStdin,
+        execArgs,
+      );
+    } catch (err) {
+      if (attempt === 0 && err instanceof EvalDispatchError && err.timedOut) {
+        console.warn("[oma skill eval] retrying the timed-out dispatch once.");
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+function runEvalDispatchOnceAsync(
+  invocation: Parameters<typeof runEvalDispatchDetailed>[0],
+  cwd: string,
+  prompt: string,
+  viaStdin: boolean,
+  execArgs: string[],
+): Promise<{ output: string; usage: DispatchUsage }> {
+  const prepared = prepareProtectedTextWorkspace(invocation);
+  const input = invocation.input ?? (viaStdin ? prompt : undefined);
+  return new Promise((resolve, reject) => {
+    const child = execFile(
+      invocation.command,
+      execArgs,
+      {
+        cwd,
+        env: prepared.invocation.env,
+        encoding: "utf-8",
+        maxBuffer: 64 * 1024 * 1024,
+        timeout: evalDispatchTimeoutMs() + 1_000,
+        killSignal: "SIGTERM",
+      },
+      (error, stdout, stderr) => {
+        prepared.cleanup();
+        if (error) {
+          reject(
+            mapDispatchFailure(
+              Object.assign(error, {
+                stdout: typeof stdout === "string" ? stdout : "",
+                stderr: typeof stderr === "string" ? stderr : "",
+              }),
+            ),
+          );
+          return;
+        }
+        try {
+          resolve(interpretDispatchOutput(invocation, String(stdout)));
+        } catch (err) {
+          reject(err);
+        }
+      },
+    );
+    if (input !== undefined) child.stdin?.end(input);
+    else child.stdin?.end();
+  });
+}
+
+function interpretDispatchOutput(
+  invocation: Parameters<typeof runEvalDispatchDetailed>[0],
+  text: string,
+): { output: string; usage: DispatchUsage } {
+  if (invocation.outputKind !== "text" && warnOnErrorEnvelope(text)) {
+    throw new EvalDispatchError(
+      "Evaluation dispatch returned an API error envelope",
+      text,
+    );
+  }
+  if (invocation.outputKind === "text")
+    return { output: text, usage: UNKNOWN_USAGE };
+  return { output: unwrapVendorEnvelope(text), usage: parseVendorUsage(text) };
+}
+
+/** Map a child-process failure to the typed dispatch error and warn once. */
+function mapDispatchFailure(err: unknown): EvalDispatchError {
+  if (err instanceof EvalDispatchError) return err;
+  const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
+  const stdout = typeof e.stdout === "string" ? e.stdout : "";
+  if (isDispatchTimeout(err)) {
+    const seconds = Math.round(evalDispatchTimeoutMs() / 1000);
+    console.warn(`[oma skill eval] dispatch timed out after ${seconds}s.`);
+    return new EvalDispatchError(
+      `Evaluation dispatch timed out after ${seconds}s`,
+      stdout,
+      true,
+    );
+  }
+  const stderrSnippet =
+    typeof e.stderr === "string"
+      ? e.stderr.replace(/\s+/g, " ").trim().slice(0, 200)
+      : "";
+  console.warn(
+    `[oma skill eval] dispatch failed (exit ${e.status ?? "?"})${
+      stderrSnippet ? `: ${stderrSnippet}` : ""
+    }`,
+  );
+  return new EvalDispatchError(
+    `Evaluation dispatch failed (exit ${e.status ?? "?"})`,
+    stdout,
+  );
+}
+
 function isDispatchTimeout(err: unknown): boolean {
   const e = err as {
     status?: number | null;
@@ -177,47 +309,12 @@ function runEvalDispatchOnce(
       maxBuffer: 64 * 1024 * 1024,
       timeout: evalDispatchTimeoutMs() + 1_000,
     });
-    const text = typeof output === "string" ? output : "";
-    if (invocation.outputKind !== "text" && warnOnErrorEnvelope(text)) {
-      throw new EvalDispatchError(
-        "Evaluation dispatch returned an API error envelope",
-        text,
-      );
-    }
-    // Record and score the answer, not the vendor's JSON bookkeeping; keep
-    // the bookkeeping that matters (tokens, cost) beside it.
-    if (invocation.outputKind === "text")
-      return { output: text, usage: UNKNOWN_USAGE };
-    return {
-      output: unwrapVendorEnvelope(text),
-      usage: parseVendorUsage(text),
-    };
+    return interpretDispatchOutput(
+      invocation,
+      typeof output === "string" ? output : "",
+    );
   } catch (err) {
-    if (err instanceof EvalDispatchError) throw err;
-    const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
-    const stdout = typeof e.stdout === "string" ? e.stdout : "";
-    if (isDispatchTimeout(err)) {
-      const seconds = Math.round(evalDispatchTimeoutMs() / 1000);
-      console.warn(`[oma skill eval] dispatch timed out after ${seconds}s.`);
-      throw new EvalDispatchError(
-        `Evaluation dispatch timed out after ${seconds}s`,
-        stdout,
-        true,
-      );
-    }
-    const stderrSnippet =
-      typeof e.stderr === "string"
-        ? e.stderr.replace(/\s+/g, " ").trim().slice(0, 200)
-        : "";
-    console.warn(
-      `[oma skill eval] dispatch failed (exit ${e.status ?? "?"})${
-        stderrSnippet ? `: ${stderrSnippet}` : ""
-      }`,
-    );
-    throw new EvalDispatchError(
-      `Evaluation dispatch failed (exit ${e.status ?? "?"})`,
-      stdout,
-    );
+    throw mapDispatchFailure(err);
   } finally {
     cleanup();
   }
@@ -474,7 +571,7 @@ export function buildLiveDispatchFn(
           vendor,
         );
 
-    return runEvalDispatchDetailed(invocation, cwd, prompt, promptFlag);
+    return runEvalDispatchDetailedAsync(invocation, cwd, prompt, promptFlag);
   };
 }
 
@@ -530,7 +627,7 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
         );
     const judgeWorkspace = mkdtempSync(join(tmpdir(), "oma-eval-judge-"));
     try {
-      return runEvalDispatchDetailed(
+      return runEvalDispatchDetailedAsync(
         invocation,
         judgeWorkspace,
         gradingPrompt,

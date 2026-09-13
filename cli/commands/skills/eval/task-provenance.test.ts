@@ -37,8 +37,8 @@ describe("task and evaluator provenance", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  function record() {
-    const capture = collectLiveRollouts(
+  async function record() {
+    const capture = await collectLiveRollouts(
       [task],
       body,
       (arm) => (arm === "baseline" ? "incorrect" : "correct answer"),
@@ -54,7 +54,7 @@ describe("task and evaluator provenance", () => {
   }
 
   it("records the task/evaluator contract on both arms and preserves offline replay", async () => {
-    const entries = record();
+    const entries = await record();
     expect(entries.map((entry) => entry.taskHash)).toEqual([
       taskFixtureHash(task),
       taskFixtureHash(task),
@@ -79,7 +79,7 @@ describe("task and evaluator provenance", () => {
   ])(
     "rejects cached judge verdicts after task/checker changes: %j",
     async (change) => {
-      const entries = record();
+      const entries = await record();
       const updated: TaskFixture = { ...task, ...change };
       const expected = buildRolloutExpectation([updated], body);
       expect(entries).toHaveLength(2);
@@ -99,7 +99,7 @@ describe("task and evaluator provenance", () => {
   );
 
   it("rejects legacy prompt/body-only recordings instead of inventing task provenance", async () => {
-    const entries = record().map((entry) => ({
+    const entries = (await record()).map((entry) => ({
       ...entry,
       taskHash: undefined,
     }));
@@ -115,8 +115,8 @@ describe("task and evaluator provenance", () => {
     expect(report.findings).toEqual([]);
   });
 
-  it("validates expectations that contain only the full task contract", () => {
-    record();
+  it("validates expectations that contain only the full task contract", async () => {
+    await record();
     const updated = { ...task, weight: 5 };
     expect(
       loadRolloutEntries(dir, {
@@ -125,7 +125,7 @@ describe("task and evaluator provenance", () => {
     ).toEqual([]);
   });
 
-  it("hashes effective default rubrics identically and shares the transfer contract", () => {
+  it("hashes effective default rubrics identically and shares the transfer contract", async () => {
     const explicit = {
       ...task,
       checker: { type: "judge" as const, rubric: JUDGE_DEFAULT_RUBRIC },
@@ -137,7 +137,7 @@ describe("task and evaluator provenance", () => {
   it.each(["SKILL_EVAL_PROTOCOL_REVISION", "JUDGE_DEFAULT_RUBRIC"] as const)(
     "invalidates recordings when the implicit %s changes",
     async (field) => {
-      record();
+      await record();
       vi.resetModules();
       vi.doMock("./types.js", async (importOriginal) => ({
         ...(await importOriginal<typeof import("./types.js")>()),

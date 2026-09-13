@@ -8,7 +8,8 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { resolveDispatchResult } from "./envelope.js";
+import { evalConcurrency, mapWithLimit } from "./concurrency.js";
+import { awaitDispatchResult } from "./envelope.js";
 import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
 import {
   buildRolloutExpectation,
@@ -196,13 +197,13 @@ export function scoreNeighborInMock(
 }
 
 /** Run both arms now, with the same dispatch and separate empty workspaces. */
-function collectNeighborPair(
+async function collectNeighborPair(
   task: TaskFixture,
   body: string,
   dispatchFn: LiveDispatchFn,
   judgeDispatchFn: JudgeDispatchFn | undefined,
   candidateSkill: string,
-): { scores: NeighborScores; rollouts: RolloutEntry[] } | null {
+): Promise<{ scores: NeighborScores; rollouts: RolloutEntry[] } | null> {
   if (task.checker.type === "judge" && !judgeDispatchFn) {
     console.warn(
       `[oma skill eval] neg-transfer: skipping judge neighbor task ${task.id}: no judge dispatch function.`,
@@ -220,7 +221,7 @@ function collectNeighborPair(
         arm === "treatment" && body
           ? `${body}\n\n---\n\n${task.prompt}`
           : task.prompt;
-      const { output, usage } = resolveDispatchResult(
+      const { output, usage } = await awaitDispatchResult(
         dispatchFn(arm, prompt, armDir),
       );
       const entry: RolloutEntry = {
@@ -235,7 +236,7 @@ function collectNeighborPair(
         taskHash: negativeTransferTaskHash(task),
       };
       if (task.checker.type === "judge" && judgeDispatchFn) {
-        const verdict = judgeVerdict(
+        const verdict = await judgeVerdict(
           task.prompt,
           output,
           task.checker.rubric ?? JUDGE_DEFAULT_RUBRIC,
@@ -268,11 +269,14 @@ export function scoreNeighborInLive(
   judgeDispatchFn: JudgeDispatchFn | undefined,
   _tmpBase: string,
   _expect?: RolloutExpectation,
-): NeighborScores | null {
-  return (
-    collectNeighborPair(task, skillXBody, dispatchFn, judgeDispatchFn, "")
-      ?.scores ?? null
-  );
+): Promise<NeighborScores | null> {
+  return collectNeighborPair(
+    task,
+    skillXBody,
+    dispatchFn,
+    judgeDispatchFn,
+    "",
+  ).then((comparison) => comparison?.scores ?? null);
 }
 
 export interface MeasureNegativeTransferOptions {
@@ -294,12 +298,12 @@ export interface MeasureNegativeTransferOptions {
 }
 
 /** Explicit coverage prevents an empty or partial result from meaning no regression. */
-export function measureNegativeTransfer(
+export async function measureNegativeTransfer(
   options: MeasureNegativeTransferOptions,
-): {
+): Promise<{
   entries: NegativeTransfer[];
   coverage: NegativeTransferCoverage;
-} {
+}> {
   const {
     skill,
     domains,
@@ -320,8 +324,10 @@ export function measureNegativeTransfer(
       `[oma skill eval] neg-transfer: ${neighbors.length} neighbor tasks found; capping at --max-tasks=${maxTasks} (${neighbors.length - sampled.length} dropped).`,
     );
   }
-  const entries: NegativeTransfer[] = [];
-  for (const { otherSkill, task } of sampled) {
+  const measureNeighbor = async ({
+    otherSkill,
+    task,
+  }: NeighborTask): Promise<NegativeTransfer | null> => {
     const recordDir = negativeTransferRecordDir(
       evalRoot,
       skill,
@@ -339,7 +345,7 @@ export function measureNegativeTransfer(
         skill,
       );
     } else if (dispatchFn) {
-      const comparison = collectNeighborPair(
+      const comparison = await collectNeighborPair(
         task,
         body,
         dispatchFn,
@@ -356,7 +362,7 @@ export function measureNegativeTransfer(
       ) {
         // One binary neighbor flip is indistinguishable from sampling noise;
         // only a reproduced regression rejects a candidate.
-        const repeat = collectNeighborPair(
+        const repeat = await collectNeighborPair(
           task,
           body,
           dispatchFn,
@@ -379,8 +385,8 @@ export function measureNegativeTransfer(
     } else {
       scored = null;
     }
-    if (!scored) continue;
-    entries.push({
+    if (!scored) return null;
+    return {
       otherSkill,
       domain: task.domain,
       taskId: task.id,
@@ -389,8 +395,16 @@ export function measureNegativeTransfer(
       delta: scored.scoreWithX - scored.scoreWithoutX,
       trials,
       ...(confirmed === undefined ? {} : { confirmed }),
-    });
-  }
+    };
+  };
+  const measured = await mapWithLimit(
+    sampled,
+    evalConcurrency(),
+    measureNeighbor,
+  );
+  const entries: NegativeTransfer[] = measured.filter(
+    (entry): entry is NegativeTransfer => entry !== null,
+  );
   return {
     entries,
     coverage: {
@@ -417,7 +431,7 @@ export function computeNegativeTransfer(
   judgeDispatchFn: JudgeDispatchFn | undefined,
   _tmpBase: string,
   _workspace?: string,
-): NegativeTransfer[] {
+): Promise<NegativeTransfer[]> {
   return measureNegativeTransfer({
     skill: skillId,
     domains: skillDomains,
@@ -427,5 +441,5 @@ export function computeNegativeTransfer(
     body: skillXBody,
     dispatchFn,
     judgeFn: judgeDispatchFn,
-  }).entries;
+  }).then((result) => result.entries);
 }

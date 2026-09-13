@@ -6,13 +6,43 @@ import {
   buildLiveDispatchFn,
   EvalDispatchError,
 } from "./dispatch.js";
-import { resolveDispatchResult } from "./envelope.js";
+import { awaitDispatchResult } from "./envelope.js";
 
 const { cleanupProtectedWorkspace } = vi.hoisted(() => ({
   cleanupProtectedWorkspace: vi.fn(),
 }));
 
-vi.mock("node:child_process", () => ({ execFileSync: vi.fn() }));
+vi.mock("node:child_process", () => {
+  const execFileSync = vi.fn();
+  // The async runner streams the prompt over stdin; replay it through the
+  // synchronous mock so existing assertions on `options.input` still hold.
+  const execFile = vi.fn(
+    (
+      command: string,
+      args: string[],
+      options: Record<string, unknown>,
+      callback: (error: unknown, stdout: string, stderr: string) => void,
+    ) => ({
+      stdin: {
+        end(data?: string) {
+          try {
+            const stdout = execFileSync(command, args, {
+              ...options,
+              input: data,
+            });
+            queueMicrotask(() => callback(null, String(stdout ?? ""), ""));
+          } catch (error) {
+            const failure = error as { stdout?: string; stderr?: string };
+            queueMicrotask(() =>
+              callback(error, failure.stdout ?? "", failure.stderr ?? ""),
+            );
+          }
+        },
+      },
+    }),
+  );
+  return { execFileSync, execFile };
+});
 vi.mock("../../../io/protected-text.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../../io/protected-text.js")>()),
   prepareProtectedTextWorkspace: vi.fn((invocation) => ({
@@ -44,19 +74,26 @@ vi.mock("../../../io/runtime-dispatch.js", () => ({
 describe("Codex protected evaluation dispatch", () => {
   afterEach(() => vi.clearAllMocks());
 
-  it("routes both live arms and judges through native protected text with the same model", () => {
+  it("routes both live arms and judges through native protected text with the same model", async () => {
     vi.mocked(execFileSync).mockReturnValue("completed answer");
     const live = buildLiveDispatchFn("/project");
     expect(
-      resolveDispatchResult(live("baseline", "baseline prompt", "/project"))
-        .output,
+      (
+        await awaitDispatchResult(
+          live("baseline", "baseline prompt", "/project"),
+        )
+      ).output,
     ).toBe("completed answer");
     expect(
-      resolveDispatchResult(live("treatment", "treatment prompt", "/project"))
-        .output,
+      (
+        await awaitDispatchResult(
+          live("treatment", "treatment prompt", "/project"),
+        )
+      ).output,
     ).toBe("completed answer");
     expect(
-      resolveDispatchResult(buildJudgeDispatchFn()("grading prompt")).output,
+      (await awaitDispatchResult(buildJudgeDispatchFn()("grading prompt")))
+        .output,
     ).toBe("completed answer");
     expect(planDispatch).toHaveBeenCalledTimes(3);
     const requests = vi
@@ -80,27 +117,31 @@ describe("Codex protected evaluation dispatch", () => {
       });
   });
 
-  it("preserves domain JSON after the transport has validated successful completion", () => {
+  it("preserves domain JSON after the transport has validated successful completion", async () => {
     const output = '{"is_error":true,"result":"domain data"}';
     vi.mocked(execFileSync).mockReturnValue(output);
     expect(
-      resolveDispatchResult(
-        buildLiveDispatchFn("/project")("baseline", "prompt", "/project"),
+      (
+        await awaitDispatchResult(
+          buildLiveDispatchFn("/project")("baseline", "prompt", "/project"),
+        )
       ).output,
     ).toBe(output);
   });
 
-  it("rejects failed protected calls even when stdout claims success", () => {
+  it("rejects failed protected calls even when stdout claims success", async () => {
     vi.mocked(execFileSync).mockImplementation(() => {
       throw Object.assign(new Error("failed"), {
         status: 1,
         stdout: "perfect answer",
       });
     });
-    expect(() =>
+    await expect(
       buildLiveDispatchFn("/project")("baseline", "prompt", "/project"),
-    ).toThrow(EvalDispatchError);
-    expect(() => buildJudgeDispatchFn()("prompt")).toThrow(EvalDispatchError);
+    ).rejects.toThrow(EvalDispatchError);
+    await expect(buildJudgeDispatchFn()("prompt")).rejects.toThrow(
+      EvalDispatchError,
+    );
     expect(cleanupProtectedWorkspace).toHaveBeenCalledTimes(2);
   });
 });
