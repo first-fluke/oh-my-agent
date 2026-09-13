@@ -13,8 +13,6 @@ import { createNoneMemoryProvider } from "../../state/memory-provider.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
 import { SKILL_EVAL_PROTOCOL_REVISION } from "./eval/types.js";
 import {
-  buildJudgeDispatchFn,
-  buildLiveDispatchFn,
   discoverNeighborTasks,
   loadTaskFixtures,
   MIN_TASKS,
@@ -282,13 +280,9 @@ async function runSkillsOptInner(
       buildLlmOptimizerFn(editsPerEpoch, procedure.optimizer.template),
   );
   const baseScoringFn: ScoringFn = options._scoringFn ?? scoreSkillBody;
-  const scoringFn: ScoringFn =
-    dispatchMeter && !options._scoringFn
-      ? meterScoringFn(baseScoringFn, dispatchMeter, {
-          dispatchFn: buildLiveDispatchFn(workspace, skillId),
-          judgeFn: buildJudgeDispatchFn(),
-        })
-      : baseScoringFn;
+  const scoringFn: ScoringFn = dispatchMeter
+    ? meterScoringFn(baseScoringFn, dispatchMeter)
+    : baseScoringFn;
   const maintainerFn = meterFn(
     options._maintainerFn ??
       (isLive

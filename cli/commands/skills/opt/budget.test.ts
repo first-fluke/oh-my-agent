@@ -58,24 +58,40 @@ describe("dispatch meter", () => {
     expect(meter.snapshot()).toEqual({ limit: null, used: 50 });
   });
 
-  it("meters the dispatch and judge functions handed to the scorer", async () => {
+  it("charges the meter through the scorer's beforeDispatch hook", async () => {
     const meter = createDispatchMeter(3);
-    const dispatchFn = vi.fn(() => "done");
-    const judgeFn = vi.fn(() => "PASS");
     const scorer: ScoringFn = async (options) => {
-      options.dispatchFn?.("baseline", "p", "/tmp/w");
-      options.dispatchFn?.("treatment", "p", "/tmp/w");
-      options.judgeFn?.("grade");
+      // Two arms and a judge call, as the live scorer would issue them.
+      options.beforeDispatch?.();
+      options.beforeDispatch?.();
+      options.beforeDispatch?.();
       return report(0);
     };
-    const metered = meterScoringFn(scorer, meter, { dispatchFn, judgeFn });
+    const metered = meterScoringFn(scorer, meter);
     await metered({ skill: "test", body: original, tasks: [task("a")] });
-    expect(dispatchFn).toHaveBeenCalledTimes(2);
-    expect(judgeFn).toHaveBeenCalledTimes(1);
+    expect(meter.snapshot()).toEqual({ limit: 3, used: 3 });
     await expect(
       metered({ skill: "test", body: original, tasks: [task("a")] }),
     ).rejects.toThrow(DispatchBudgetExceededError);
-    expect(meter.snapshot()).toEqual({ limit: 3, used: 3 });
+  });
+
+  it("keeps the real dispatch path (and its isolation status) when metered", async () => {
+    const { scoreSkillBody } = await import("../eval.js");
+    const calls: string[] = [];
+    const report = await scoreSkillBody({
+      skill: "test",
+      body: original,
+      tasks: [task("a")],
+      mode: "live",
+      minimumCoverage: 1,
+      dispatchFn: (arm) => {
+        calls.push(arm);
+        return "done";
+      },
+      beforeDispatch: () => calls.push("charge"),
+    });
+    expect(calls).toEqual(["charge", "baseline", "charge", "treatment"]);
+    expect(report.coverage).toBe("ok");
   });
 });
 

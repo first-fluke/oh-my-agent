@@ -72,6 +72,12 @@ export interface ScoreSkillBodyOptions {
   negativeTransfer?: boolean;
   /** Live only: re-measure a regressed neighbor once before it can reject a candidate. */
   confirmNegativeTransfer?: boolean;
+  /**
+   * Called before every live arm, neighbor arm, and judge call; may throw to
+   * refuse the call (dispatch budgets). The real dispatch path and its
+   * isolation status are unchanged.
+   */
+  beforeDispatch?: () => void;
   /** Neighbor fixtures and candidate recordings. Defaults to workspace/.agents/eval. */
   evalRoot?: string;
 }
@@ -150,9 +156,21 @@ export async function scoreSkillBody(
         `[oma skill eval] isolation: ${isolation} for vendor ${isolationVendor} — baseline may be contaminated; result is low-confidence.`,
       );
     }
-    const resolvedDispatchFn =
-      dispatchFn ?? buildLiveDispatchFn(workspace, skill);
-    const resolvedJudgeFn = judgeFn ?? buildJudgeDispatchFn();
+    const before = options.beforeDispatch;
+    const baseDispatchFn = dispatchFn ?? buildLiveDispatchFn(workspace, skill);
+    const baseJudgeFn = judgeFn ?? buildJudgeDispatchFn();
+    const resolvedDispatchFn: LiveDispatchFn = before
+      ? (arm, prompt, armWorkspace) => {
+          before();
+          return baseDispatchFn(arm, prompt, armWorkspace);
+        }
+      : baseDispatchFn;
+    const resolvedJudgeFn: JudgeDispatchFn = before
+      ? (gradingPrompt) => {
+          before();
+          return baseJudgeFn(gradingPrompt);
+        }
+      : baseJudgeFn;
 
     const { rollouts, cleanupTmp } = collectLiveRollouts(
       tasks,

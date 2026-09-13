@@ -1,4 +1,3 @@
-import type { JudgeDispatchFn, LiveDispatchFn } from "../eval.js";
 import type { ScoringFn } from "./types.js";
 
 /**
@@ -45,26 +44,6 @@ export function createDispatchMeter(limit: number | null): DispatchMeter {
   };
 }
 
-export function meterLiveDispatch(
-  fn: LiveDispatchFn,
-  meter: DispatchMeter,
-): LiveDispatchFn {
-  return (arm, prompt, workspace) => {
-    meter.charge();
-    return fn(arm, prompt, workspace);
-  };
-}
-
-export function meterJudgeDispatch(
-  fn: JudgeDispatchFn,
-  meter: DispatchMeter,
-): JudgeDispatchFn {
-  return (gradingPrompt) => {
-    meter.charge();
-    return fn(gradingPrompt);
-  };
-}
-
 /** Charge one unit per call of any async function (optimizer, maintainer). */
 export function meterCall<Args extends unknown[], Result>(
   fn: (...args: Args) => Result,
@@ -77,25 +56,14 @@ export function meterCall<Args extends unknown[], Result>(
 }
 
 /**
- * Route every scoring request through metered dispatch functions. The
- * dispatch builders run once so the meter sees all arms, neighbors, and
- * judge calls of the run.
+ * Charge the meter before every arm, neighbor, and judge call the scorer
+ * makes. The scorer keeps building its own real dispatch, so the isolation
+ * status it reports stays that of the real path.
  */
 export function meterScoringFn(
   scoringFn: ScoringFn,
   meter: DispatchMeter,
-  dispatch: { dispatchFn: LiveDispatchFn; judgeFn: JudgeDispatchFn },
 ): ScoringFn {
-  const dispatchFn = meterLiveDispatch(dispatch.dispatchFn, meter);
-  const judgeFn = meterJudgeDispatch(dispatch.judgeFn, meter);
   return (options) =>
-    scoringFn({
-      ...options,
-      dispatchFn: options.dispatchFn
-        ? meterLiveDispatch(options.dispatchFn, meter)
-        : dispatchFn,
-      judgeFn: options.judgeFn
-        ? meterJudgeDispatch(options.judgeFn, meter)
-        : judgeFn,
-    });
+    scoringFn({ ...options, beforeDispatch: () => meter.charge() });
 }
