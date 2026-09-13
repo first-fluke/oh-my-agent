@@ -70,7 +70,13 @@ function isRolloutEntry(value: unknown): value is RolloutEntry {
   }
   // Provenance fields are optional (absent in pre-provenance recordings) but
   // must be strings when present — a non-string cannot be compared safely.
-  for (const field of ["skillBodyHash", "promptHash"] as const) {
+  for (const field of [
+    "skillBodyHash",
+    "promptHash",
+    "candidateSkill",
+    "comparisonId",
+    "taskHash",
+  ] as const) {
     if (obj[field] !== undefined && typeof obj[field] !== "string") {
       return false;
     }
@@ -88,6 +94,8 @@ function isRolloutEntry(value: unknown): value is RolloutEntry {
  *   under a different body reports a stale score as a current measurement.
  * - Both arms must carry a `promptHash` matching the current fixture prompt when
  *   the caller supplied a hash for that taskId.
+ * - Both arms must match the full task/evaluator hash when supplied. This pins
+ *   effective judge rubrics and the scorer protocol, including implicit defaults.
  * - A recording that predates provenance tracking is unverifiable, so it is
  *   rejected rather than trusted. Re-run `--live --record` to replace it.
  *
@@ -111,6 +119,12 @@ export function assessRolloutStaleness(
     if (entry.promptHash !== expectedPromptHash) return "prompt-changed";
   }
 
+  const expectedTaskHash = expect.taskHashes?.get(entry.taskId);
+  if (expectedTaskHash !== undefined) {
+    if (entry.taskHash === undefined) return "missing-provenance";
+    if (entry.taskHash !== expectedTaskHash) return "task-changed";
+  }
+
   return null;
 }
 
@@ -119,6 +133,8 @@ const STALE_REASON_TEXT: Record<RolloutStaleReason, string> = {
     "recorded before provenance tracking, so it cannot be verified",
   "skill-body-changed": "recorded against a different SKILL.md body",
   "prompt-changed": "recorded against a different fixture prompt",
+  "task-changed":
+    "recorded against a different task/checker contract or evaluator protocol",
 };
 
 /**
@@ -188,7 +204,9 @@ export function loadRolloutEntries(
 
   const validating =
     expect !== undefined &&
-    (expect.skillBodyHash !== undefined || expect.promptHashes !== undefined);
+    (expect.skillBodyHash !== undefined ||
+      expect.promptHashes !== undefined ||
+      expect.taskHashes !== undefined);
 
   const rollouts: RolloutEntry[] = [];
   for (const entry of entries.sort()) {

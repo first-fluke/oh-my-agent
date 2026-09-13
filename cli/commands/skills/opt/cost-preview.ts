@@ -5,6 +5,7 @@ export interface LiveDispatchProfile {
   train: TaskFixture[];
   val: TaskFixture[];
   test: TaskFixture[];
+  neighbors?: TaskFixture[];
 }
 
 function scoreDispatchCalls(tasks: TaskFixture[]): number {
@@ -38,10 +39,12 @@ export function estimateLiveDispatchCalls(
   const trainCalls = scoreDispatchCalls(profile.train);
   const valCalls = scoreDispatchCalls(profile.val);
   const testCalls = scoreDispatchCalls(profile.test);
+  const neighborCalls = scoreDispatchCalls(profile.neighbors ?? []);
   return (
     valCalls +
     maxEpochs * (trainCalls + 2 + editsPerEpoch * valCalls) +
-    2 * testCalls
+    2 * testCalls +
+    (maxEpochs * editsPerEpoch + 1) * neighborCalls
   );
 }
 
@@ -68,6 +71,7 @@ export async function confirmLiveRun(
     `[oma skill opt] --live cost preview: up to ${calls} ${callUnit}` +
       ` (${maxEpochs} epochs; two arms per task, plus judge calls where configured).` +
       " Includes the initial validation baseline and 2 runner-owned final-test scores." +
+      " Candidate scores also include paired neighbor-task checks." +
       ` This incurs real model cost.`,
   );
 

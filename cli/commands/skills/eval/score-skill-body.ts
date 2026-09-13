@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { AGENTS_DIR } from "../../../constants/paths.js";
 import { resolveVendor } from "../../../platform/agent-config.js";
 import {
   buildJudgeDispatchFn,
@@ -5,12 +7,14 @@ import {
   resolveSkillIsolation,
 } from "./dispatch.js";
 import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
+import { measureNegativeTransfer } from "./negative-transfer.js";
 import { buildRolloutExpectation, collectLiveRollouts } from "./rollouts.js";
 import { computeUtility } from "./scoring.js";
 import type {
   IsolationStatus,
   JudgeDispatchFn,
   LiveDispatchFn,
+  NegativeTransferCoverage,
   SkillUtilityReport,
   TaskFixture,
 } from "./types.js";
@@ -64,6 +68,10 @@ export interface ScoreSkillBodyOptions {
   includeEvidence?: boolean;
   /** Override the public MIN_TASKS gate for an internal deterministic split. */
   minimumCoverage?: number;
+  /** Measure candidate interference on same-domain tasks belonging to other skills. */
+  negativeTransfer?: boolean;
+  /** Neighbor fixtures and candidate recordings. Defaults to workspace/.agents/eval. */
+  evalRoot?: string;
 }
 
 /**
@@ -116,6 +124,14 @@ export async function scoreSkillBody(
     tasks = tasks.slice(0, maxTasks);
   }
 
+  const evalRoot = options.evalRoot ?? join(workspace, AGENTS_DIR, "eval");
+  const domains = new Set(tasks.map((task) => task.domain));
+  const notRequested: NegativeTransferCoverage = {
+    status: "not-requested",
+    expected: 0,
+    scored: 0,
+  };
+
   if (mode === "live") {
     // Isolation status is only meaningful for the real dispatch path; an injected
     // dispatchFn (tests) bypasses runtime skill discovery entirely.
@@ -144,6 +160,18 @@ export async function scoreSkillBody(
       resolvedJudgeFn,
     );
     try {
+      const transfer = options.negativeTransfer
+        ? measureNegativeTransfer({
+            skill,
+            domains,
+            evalRoot,
+            mode,
+            maxTasks,
+            body,
+            dispatchFn: resolvedDispatchFn,
+            judgeFn: resolvedJudgeFn,
+          })
+        : { entries: [], coverage: notRequested };
       return computeUtility(skill, {
         tasks,
         rollouts,
@@ -153,6 +181,8 @@ export async function scoreSkillBody(
         isolationVendor,
         includeEvidence: options.includeEvidence,
         minimumCoverage: options.minimumCoverage,
+        negativeTransfer: transfer.entries,
+        negativeTransferCoverage: transfer.coverage,
       });
     } finally {
       cleanupTmp();
@@ -175,6 +205,16 @@ export async function scoreSkillBody(
         )
       : [];
 
+  const transfer = options.negativeTransfer
+    ? measureNegativeTransfer({
+        skill,
+        domains,
+        evalRoot,
+        mode,
+        maxTasks,
+        body,
+      })
+    : { entries: [], coverage: notRequested };
   return computeUtility(skill, {
     tasks,
     rollouts,
@@ -182,5 +222,7 @@ export async function scoreSkillBody(
     maxTasks,
     includeEvidence: options.includeEvidence,
     minimumCoverage: options.minimumCoverage,
+    negativeTransfer: transfer.entries,
+    negativeTransferCoverage: transfer.coverage,
   });
 }

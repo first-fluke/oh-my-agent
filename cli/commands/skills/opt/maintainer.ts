@@ -1,14 +1,10 @@
 import { createHash } from "node:crypto";
-import { planDispatch } from "../../../io/runtime-dispatch.js";
-import {
-  resolvePromptFlag,
-  resolveVendor,
-} from "../../../platform/agent-config.js";
-import { EVAL_DISPATCH_TIMEOUT_MS } from "../eval/dispatch.js";
 import type { SkillUtilityFinding, SkillUtilityReport } from "../eval.js";
 import { redactEvolutionText } from "./evolution-memory.js";
+import { evolutionErrorMessage, runEvolutionPrompt } from "./execution.js";
 import type {
   MaintainerFn,
+  MaintainerOutcome,
   SkillEvolutionKnowledge,
   SkillEvolutionPattern,
 } from "./types.js";
@@ -119,9 +115,9 @@ export function buildLlmMaintainerFn(): MaintainerFn {
     findings: SkillUtilityReport,
     knowledge: SkillEvolutionKnowledge,
     epoch: number,
-  ): Promise<SkillEvolutionPattern[]> => {
+  ): Promise<MaintainerOutcome> => {
     const evidence = evidencePayload(findings.findings);
-    if (evidence.length === 0) return [];
+    if (evidence.length === 0) return { status: "consolidated", patterns: [] };
     const prompt = [
       "You are the Wiki Maintainer for skill evolution.",
       "Consolidate observable evaluation evidence into concise, reusable root-cause or success patterns.",
@@ -144,35 +140,36 @@ export function buildLlmMaintainerFn(): MaintainerFn {
     ].join("\n");
 
     try {
-      const { vendor, config } = resolveVendor("opt-agent");
-      const vendorConfig = config?.vendors?.[vendor] ?? {};
-      const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
-      const dispatch = planDispatch(
-        "opt-agent",
-        vendor,
-        vendorConfig,
-        promptFlag,
-        prompt,
-        process.env,
-        { readOnly: true },
+      const output = runEvolutionPrompt(prompt);
+      const evidenceIds = new Set(
+        selectMaintainerEvidence(findings.findings).map(
+          (finding) => finding.taskId,
+        ),
       );
-      const { execFileSync } =
-        require("node:child_process") as typeof import("node:child_process");
-      const output = execFileSync(
-        dispatch.invocation.command,
-        dispatch.invocation.args,
-        {
-          cwd: process.cwd(),
-          env: dispatch.invocation.env,
-          encoding: "utf-8",
-          stdio: ["ignore", "pipe", "pipe"],
-          maxBuffer: 16 * 1024 * 1024,
-          timeout: EVAL_DISPATCH_TIMEOUT_MS,
-        },
+      const patterns = parseMaintainerPatterns(output).filter((pattern) =>
+        pattern.evidenceIds.every((id) => evidenceIds.has(id)),
       );
-      return parseMaintainerPatterns(typeof output === "string" ? output : "");
-    } catch {
-      return await buildHeuristicMaintainerFn()(findings, knowledge, epoch);
+      if (patterns.length > 0) return { status: "consolidated", patterns };
+      return {
+        status: "degraded",
+        reason: "parse-error",
+        patterns: [],
+        message:
+          "Maintainer response contained no patterns supported by the supplied evidence.",
+      };
+    } catch (error) {
+      // Heuristics are diagnostic suggestions, never silently promoted knowledge.
+      const fallback = await buildHeuristicMaintainerFn()(
+        findings,
+        knowledge,
+        epoch,
+      );
+      return {
+        status: "degraded",
+        reason: "dispatch-error",
+        patterns: Array.isArray(fallback) ? fallback : fallback.patterns,
+        message: evolutionErrorMessage(error),
+      };
     }
   };
 }

@@ -68,7 +68,7 @@ weight: 1
 |:------|:---------|:-----------|
 | `id` | Yes | Unique identifier for this task (used in rollout filenames and reports) |
 | `skill` | Yes | Skill being evaluated (matches the parent directory name) |
-| `domain` | Yes | Domain label (used for grouping and future negative-transfer detection) |
+| `domain` | Yes | Domain label used for grouping and selecting negative-transfer neighbor tasks |
 | `prompt` | Yes | The task prompt dispatched to both arms |
 | `checker` | No | How to score arm output. Defaults to `{ type: judge }` when omitted. |
 | `weight` | Yes | Relative weight for the weighted mean score (use `1` unless tasks have different importance) |
@@ -141,7 +141,7 @@ Replays recorded rollouts from `_rollouts/`. Fully deterministic and offline —
 
 If a judge task has no recorded score in `_rollouts/`, it is excluded from the report (with a console warning). This keeps mock mode strictly offline.
 
-Recordings are also checked for staleness before use. A treatment entry recorded under a different SKILL.md body, an entry whose fixture `prompt` has changed, and any entry predating provenance tracking are all discarded with a warning naming the file and the count. When that leaves fewer than `MIN_TASKS` scoreable tasks the run reports `coverage: "insufficient"` instead of a verdict — so an edited skill never inherits its previous score.
+Recordings are also checked for staleness before use. Changed skill bodies, prompts, task/checker contracts, effective judge rubrics, and evaluator protocol revisions invalidate the affected entries. Missing provenance is also discarded with a warning naming the file and count. When that leaves fewer than `MIN_TASKS` scoreable tasks the run reports `coverage: "insufficient"` instead of a verdict.
 
 :::note `oma skill optimize --mock`
 The optimizer scores candidate SKILL.md bodies. Because a recording is only valid for the body it was made from, candidate bodies have no matching rollouts and report as uncovered. Use `--live` to score candidates.
@@ -155,7 +155,7 @@ oma skill eval --skill oma-scholar
 
 ### --live
 
-Spawns real agent arms via `oma agent spawn --read-only`. Both arms run in a temporary workspace to prevent project file modification.
+Spawns real agent arms via `oma agent spawn --read-only`. Each task arm runs in its own temporary workspace, so files produced by one arm do not affect another. Process failures, API error envelopes, and judge failures exclude the entire paired comparison from scoring and recording; partial output is diagnostic data.
 
 Before dispatching, the command prints a cost preview listing the number of tasks, arm dispatches, judge dispatches, and the resolved vendor. Confirm with `y` or skip with `--yes`.
 
@@ -165,8 +165,8 @@ The other controls are useful in CI and coverage investigations:
 | --- | --- |
 | `--task-dir <path>` | Evaluate fixtures from a directory other than `.agents/eval/<skill>`. |
 | `--max-tasks <n>` | Cap the number of fixtures for a bounded live run. |
-| `--neg-transfer` | Sample same-domain neighbors to look for negative transfer; off by default. |
-| `--require-coverage` | Exit non-zero when fewer than five scoreable paired tasks remain. |
+| `--neg-transfer` | Measure the candidate skill on same-domain tasks belonging to other skills; off by default. |
+| `--require-coverage` | Exit non-zero when fewer than five scoreable paired tasks remain, or a requested negative-transfer check is incomplete. |
 
 ```bash
 # Preview and confirm
@@ -176,32 +176,34 @@ oma skill eval --skill oma-scholar --live
 oma skill eval --skill oma-scholar --live --yes
 ```
 
+#### Negative-transfer measurement
+
+With `--neg-transfer`, each selected neighbor task runs twice: a fresh baseline without the candidate, then a treatment with the exact candidate body injected. Both arms use the same evaluator and separate empty workspaces. The delta is treatment score minus baseline score; a negative value means the candidate harmed that neighbor task. The live preview includes these extra arm and judge dispatches. `--max-tasks` also caps the neighbor sample, with a warning when tasks are omitted.
+
+Use `--live --neg-transfer --record` to save candidate-specific comparisons under `.agents/eval/<candidate>/_negative-transfer/<neighbor>/<body-hash>/_rollouts/`. Mock replay requires matching candidate identity, body hash, full task/checker hash, and a shared comparison ID for both arms. A neighbor's ordinary evaluation recordings cannot substitute for this measurement.
+
+The report includes `negativeTransferCoverage` with `status`, `expected`, and `scored`. Status is `not-requested` when the flag is absent, `measured` when every selected neighbor has a valid paired result and the sample is nonempty, and `insufficient` for zero neighbors or any missing comparison. An empty `negativeTransfer` array therefore does not establish absence of regressions. JSON `ok` is false when requested negative-transfer coverage is insufficient.
+
 #### Skill isolation (keeping the baseline honest)
 
 `utilityLift` is only meaningful if the **baseline arm runs without the target skill**. The catch: a dispatched
 agent auto-loads every skill installed in its runtime, so a naive baseline would still pick up the skill it is
 supposed to be measured *without* — contaminating the comparison (baseline ≈ treatment, lift ≈ 0).
 
-To prevent this, `--live` runs **both arms in an isolated temporary workspace** whose skills directory contains
-every installed skill **except the target**. The treatment arm re-adds the target **only** via the injected
-`SKILL.md` (prepended to the prompt). The injection is therefore the single controlled variable: baseline = no
-skill, treatment = the candidate `SKILL.md`.
+To prevent this, `--live` runs **both arms in separate temporary workspaces**. Protected Claude and Codex profiles disable automatic skill/instruction discovery and agent tools. The treatment receives the target **only** through the injected `SKILL.md`. Exploratory profiles use a filtered skills directory without the target, but that alone does not prove isolation.
 
-This works because most vendors discover skills **relative to the working directory** (e.g.
-`<cwd>/.claude/skills`, `<cwd>/.codex/skills`) — a clean working directory genuinely hides the skill. The report
-declares how well isolation held via an `isolation` field:
+A clean working directory hides project-local skill discovery, but runtime isolation also depends on the vendor profile. The report declares the verified level through `isolation`:
 
 | Status | Meaning |
 |---|---|
-| `enforced` | cwd-relative vendor, target skill absent from the HOME path — fully isolated. |
-| `best-effort` | cwd-relative vendor, but a HOME copy of the skill also exists (or the vendor is unknown); the project copy is hidden but a HOME copy may still leak. Flagged low-confidence. |
+| `enforced` | Protected Claude with a valid target ID and no HOME copy, or native Codex with discovery/tool suppression and runtime thread checks. A failed runtime contract aborts dispatch. |
+| `best-effort` | A runtime without a protected text profile, invalid target ID, or a Claude HOME copy; isolation is not verified. |
 | `unavailable` | HOME-based vendor (e.g. **antigravity**, which reads `~/.gemini/antigravity-cli/skills`); a clean cwd cannot hide it. A warning is printed and the result is flagged low-confidence. |
 | n/a | mock mode — no live dispatch. |
 
-When isolation is not `enforced`, a one-line warning is printed and the result should be treated as
-low-confidence. For a clean signal, run the eval against a **cwd-relative, isolatable vendor** (claude / codex /
-qwen) rather than a HOME-based one — the eval vendor follows `model_preset` in `.agents/oma-config.yaml`, so
-select a preset whose default vendor is cwd-relative.
+Other runtime profiles remain available for exploratory evaluation, but `best-effort` and `unavailable` results block live optimization promotion. The eval vendor follows the project model configuration. Codex uses its native CLI login and configured model/provider through `app-server`; it does not silently switch to Claude or an API-key client. The protected Codex contract targets CLI 0.154.x on macOS/Linux with native file credential storage and an existing `auth.json`. A private temporary config home references the original config/auth files while excluding shared bootstrap state; credentials are not copied, and native refresh uses the original auth file. Keyring, auto, and ephemeral credential stores are currently unsupported. Unsupported versions, storage modes, and contract failures become dispatch errors.
+
+Judges run in fresh temporary directories with optimization memory disabled. Claude and Codex judges use the same protected text transport as the evaluation arms. The judge vendor configuration is fixed for the run.
 
 ### --live --record
 
@@ -215,9 +217,11 @@ Each entry carries provenance so a later replay can tell whether it still applie
 |---|---|---|
 | `skillBodyHash` | `treatment` only | the SKILL.md body being evaluated |
 | `promptHash` | both arms | the fixture's current `prompt` |
+| `taskHash` | both arms | full task, effective checker/default judge rubric, and `SKILL_EVAL_PROTOCOL_REVISION` |
 
-The baseline arm withholds the skill, so editing SKILL.md does not invalidate it —
-only the treatment arm is re-recorded.
+The baseline arm withholds the skill, so editing SKILL.md alone does not invalidate its recording. Changes to the task or evaluator contract invalidate both arms. Live recording runs both arms again.
+
+Recordings from before full task/evaluator provenance must be regenerated with `--live --record` (and `--neg-transfer` for neighbor comparisons); adding new hashes to old scores cannot verify them. The same contract participates in optimization suite identity, so prior suite-scoped knowledge is not reused under the updated contract. Maintain `SKILL_EVAL_PROTOCOL_REVISION` by bumping it when scorer behavior, judge prompts/verdict parsing, or other implicit evaluator behavior changes.
 
 :::caution `_rollouts/` is local-only — do not commit it
 A recording replays only for the exact SKILL.md body it was made from. Edit a
@@ -277,7 +281,7 @@ oma skill eval --skill oma-scholar --json
 ```
 Skill utility eval  (skill: oma-scholar)
   tasks: 7
-  isolation: enforced [codex]
+  isolation: enforced [claude]
 
   baseline: 42.9%  treatment: 71.4%
   utilityLift: 28.6%  (stddev: 14.3%)
@@ -309,12 +313,13 @@ Skill utility eval  (skill: oma-scholar)
     { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0 }
   ],
   "negativeTransfer": [],
+  "negativeTransferCoverage": { "status": "not-requested", "expected": 0, "scored": 0 },
   "isolation": "enforced",
-  "isolationVendor": "codex"
+  "isolationVendor": "claude"
 }
 ```
 
-`ok` is `true` only when `coverage === "ok"` and `decision === "pass"`. The `isolation` field reports whether the
+`ok` is `true` only when `coverage === "ok"`, `decision === "pass"`, and any requested negative-transfer check has sufficient coverage. The `isolation` field reports whether the
 baseline arm was genuinely run without the target skill (see [Skill isolation](#skill-isolation-keeping-the-baseline-honest));
 `isolation` is `"n/a"` in `--mock` mode.
 
@@ -329,7 +334,7 @@ oma skill eval --skill oma-scholar --json --require-coverage
 
 Exit codes:
 - `0` — pass or warn
-- `1` — fail, or insufficient coverage with `--require-coverage`
+- `1` — fail, or insufficient task/negative-transfer coverage with `--require-coverage`
 
 ---
 
@@ -341,7 +346,7 @@ Mock determinism is preserved by recording the judge's binary verdict (PASS/FAIL
 
 **Data egress:** During `--live`, the judge dispatches candidate arm output to the configured vendor for grading. A one-time warning is printed at the start of each live run.
 
-If a mock run reports insufficient coverage, inspect the warning for discarded or missing `_rollouts` entries, then run a live recording pass after fixing the fixture or skill. If isolation is `best-effort` or `unavailable`, choose a cwd-relative vendor such as Claude, Codex, or Qwen before treating a lift as a strong signal.
+If a mock run reports insufficient coverage, inspect the warning for discarded or missing `_rollouts` entries, then run a live recording pass after fixing the fixture or skill. Live promotion requires a working protected Claude or Codex profile with `isolation: "enforced"`; other profiles remain exploratory.
 
 ---
 

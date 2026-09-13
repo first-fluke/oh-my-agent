@@ -4,7 +4,8 @@ import type { SkillOptResult } from "./types.js";
 
 export function serializeSkillOptResult(result: SkillOptResult): string {
   const improved = result.finalLift > result.baselineLift;
-  const passedFinalTest = result.finalTest?.passed !== false;
+  const passedFinalTest =
+    result.finalTest?.passed === true && result.promotion?.eligible === true;
   return JSON.stringify(
     {
       ok: (result.applied || improved) && passedFinalTest,
@@ -16,6 +17,8 @@ export function serializeSkillOptResult(result: SkillOptResult): string {
       rejectedCount: result.rejectedCount,
       evolution: result.evolution,
       finalTest: result.finalTest,
+      promotion: result.promotion,
+      diagnostics: result.diagnostics,
       applied: result.applied,
       diff: result.diff,
     },
@@ -29,6 +32,12 @@ export function serializeSkillOptResult(result: SkillOptResult): string {
 export function renderSkillOptResult(result: SkillOptResult): void {
   console.log(`\nSkill opt  (skill: ${result.skill})`);
   console.log(`  applied: ${result.applied}`);
+  if (result.promotion && !result.promotion.eligible)
+    console.log(`  promotion blocked: ${result.promotion.reasons.join(", ")}`);
+  for (const diagnostic of result.diagnostics ?? [])
+    console.log(
+      `  ${diagnostic.stage} ${diagnostic.status}: ${diagnostic.message}`,
+    );
   console.log(
     `  baselineLift: ${(result.baselineLift * 100).toFixed(1)}%  finalLift: ${(result.finalLift * 100).toFixed(1)}%`,
   );

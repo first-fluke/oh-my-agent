@@ -1,5 +1,3 @@
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
 import { resolveVendor } from "../../platform/agent-config.js";
@@ -9,7 +7,10 @@ import {
   resolveSkillIsolation,
 } from "./eval/dispatch.js";
 import { loadRolloutEntries, loadTaskFixtures } from "./eval/fixtures.js";
-import { computeNegativeTransfer } from "./eval/negative-transfer.js";
+import {
+  discoverNeighborTasks,
+  measureNegativeTransfer,
+} from "./eval/negative-transfer.js";
 import {
   renderSkillUtilityReport,
   serializeSkillUtilityReport,
@@ -24,7 +25,7 @@ import {
 import { computeUtility } from "./eval/scoring.js";
 import type {
   IsolationStatus,
-  NegativeTransfer,
+  NegativeTransferCoverage,
   SkillsEvalOptions,
   SkillUtilityReport,
 } from "./eval/types.js";
@@ -48,6 +49,9 @@ export {
 export {
   computeNegativeTransfer,
   discoverNeighborTasks,
+  measureNegativeTransfer,
+  negativeTransferRecordDir,
+  negativeTransferTaskHash,
   scoreNeighborInLive,
   scoreNeighborInMock,
 } from "./eval/negative-transfer.js";
@@ -62,6 +66,7 @@ export {
   judgeScore,
   loadSkillMdBody,
   promptConfirm,
+  taskFixtureHash,
   taskSetHash,
   writeRolloutRecord,
 } from "./eval/rollouts.js";
@@ -75,6 +80,7 @@ export type {
   LiveDispatchFn,
   LoadTaskFixturesResult,
   NegativeTransfer,
+  NegativeTransferCoverage,
   RolloutEntry,
   RolloutExpectation,
   RolloutStaleReason,
@@ -93,6 +99,7 @@ export {
   NEG_TRANSFER_FAIL,
   REGEX_OUTPUT_MAX_LEN,
   REGEX_PATTERN_MAX_LEN,
+  SKILL_EVAL_PROTOCOL_REVISION,
   SKILLEVAL_MOCK_ENV,
   UTILITY_FAIL_LIFT,
   UTILITY_WARN_LIFT,
@@ -187,14 +194,31 @@ export async function runSkillsEval(
 
   // Collect the unique domains across the skill's own tasks
   const skillDomains = new Set(tasks.map((t) => t.domain));
+  const notRequested: NegativeTransferCoverage = {
+    status: "not-requested",
+    expected: 0,
+    scored: 0,
+  };
 
   // --- --live path (M2) ---
   if (options.live) {
     // Resolve vendor for cost preview
     const { vendor } = resolveVendor("eval-agent");
 
-    const armCount = tasks.length * 2;
-    const judgeTaskCount = tasks.filter(
+    const neighbors =
+      options.negTransfer && skillId !== "_all"
+        ? discoverNeighborTasks(skillId, skillDomains, evalRoot)
+        : [];
+    const sampledNeighbors =
+      options.maxTasks && options.maxTasks > 0
+        ? neighbors.slice(0, options.maxTasks)
+        : neighbors;
+    const previewTasks = [
+      ...tasks,
+      ...sampledNeighbors.map((neighbor) => neighbor.task),
+    ];
+    const armCount = previewTasks.length * 2;
+    const judgeTaskCount = previewTasks.filter(
       (t) => t.checker.type === "judge",
     ).length;
     const judgeDispatchCount = judgeTaskCount * 2;
@@ -280,32 +304,25 @@ export async function runSkillsEval(
         console.log(`Rollouts recorded: ${recordedPath}`);
       }
 
-      // Negative-transfer sampling (--neg-transfer, live mode)
-      let negativeTransfer: NegativeTransfer[] = [];
-      if (options.negTransfer && skillId !== "_all") {
-        // Create a temp base for neighbor dispatch (reuse cleanupTmp scope)
-        const neighborTmpBase = mkdtempSync(join(tmpdir(), "oma-eval-negtx-"));
-        try {
-          negativeTransfer = computeNegativeTransfer(
-            skillId,
-            skillDomains,
-            evalRoot,
-            "live",
-            options.maxTasks,
-            skillMdBody,
-            dispatchFn,
-            judgeDispatchFn,
-            neighborTmpBase,
-            workspace,
-          );
-        } finally {
-          try {
-            rmSync(neighborTmpBase, { recursive: true, force: true });
-          } catch {
-            // best-effort cleanup
-          }
-        }
-      }
+      const transfer =
+        options.negTransfer && skillId !== "_all"
+          ? measureNegativeTransfer({
+              skill: skillId,
+              domains: skillDomains,
+              evalRoot,
+              mode: "live",
+              maxTasks: options.maxTasks,
+              body: skillMdBody,
+              dispatchFn,
+              judgeFn: judgeDispatchFn,
+              record: options.record,
+            })
+          : {
+              entries: [],
+              coverage: options.negTransfer
+                ? { status: "insufficient" as const, expected: 0, scored: 0 }
+                : notRequested,
+            };
 
       // Score via computeUtility (judge tasks consume entry.score from liveRollouts)
       report = computeUtility(skillId, {
@@ -313,7 +330,8 @@ export async function runSkillsEval(
         rollouts: liveRollouts,
         skippedFiles,
         maxTasks: options.maxTasks,
-        negativeTransfer,
+        negativeTransfer: transfer.entries,
+        negativeTransferCoverage: transfer.coverage,
         isolation,
         isolationVendor,
       });
@@ -334,6 +352,12 @@ export async function runSkillsEval(
       return;
     }
 
+    if (
+      options.requireCoverage &&
+      report.negativeTransferCoverage?.status === "insufficient"
+    ) {
+      process.exit(1);
+    }
     if (report.decision === "fail") {
       process.exit(1);
     }
@@ -346,7 +370,7 @@ export async function runSkillsEval(
 
   // Replay is only sound while the recorded inputs still match what is on disk.
   // `_all` has no single SKILL.md body, so body validation is skipped there and
-  // only prompt drift is checked.
+  // task/evaluator contracts and prompt drift are still checked.
   const mockSkillMdBody =
     options.skillMdOverride !== undefined
       ? options.skillMdOverride
@@ -358,30 +382,30 @@ export async function runSkillsEval(
     buildRolloutExpectation(tasks, mockSkillMdBody),
   );
 
-  // Negative-transfer sampling (--neg-transfer, mock mode)
-  // Uses recorded neighbor rollout scores — no LLM dispatch; fully deterministic.
-  let negativeTransfer: NegativeTransfer[] = [];
-  if (options.negTransfer && skillId !== "_all") {
-    negativeTransfer = computeNegativeTransfer(
-      skillId,
-      skillDomains,
-      evalRoot,
-      "mock",
-      options.maxTasks,
-      /* skillXBody */ "",
-      /* dispatchFn */ undefined,
-      /* judgeDispatchFn */ undefined,
-      /* tmpBase */ "",
-      workspace,
-    );
-  }
+  const transfer =
+    options.negTransfer && skillId !== "_all"
+      ? measureNegativeTransfer({
+          skill: skillId,
+          domains: skillDomains,
+          evalRoot,
+          mode: "mock",
+          maxTasks: options.maxTasks,
+          body: mockSkillMdBody ?? "",
+        })
+      : {
+          entries: [],
+          coverage: options.negTransfer
+            ? { status: "insufficient" as const, expected: 0, scored: 0 }
+            : notRequested,
+        };
 
   const report = computeUtility(skillId, {
     tasks,
     rollouts,
     skippedFiles,
     maxTasks: options.maxTasks,
-    negativeTransfer,
+    negativeTransfer: transfer.entries,
+    negativeTransferCoverage: transfer.coverage,
   });
 
   if (jsonMode) {
@@ -399,6 +423,12 @@ export async function runSkillsEval(
     return;
   }
 
+  if (
+    options.requireCoverage &&
+    report.negativeTransferCoverage?.status === "insufficient"
+  ) {
+    process.exit(1);
+  }
   if (report.decision === "fail") {
     process.exit(1);
   }

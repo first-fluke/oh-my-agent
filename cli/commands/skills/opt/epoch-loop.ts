@@ -1,8 +1,4 @@
-import {
-  NEG_TRANSFER_FAIL,
-  type SkillUtilityReport,
-  type TaskFixture,
-} from "../eval.js";
+import type { SkillUtilityReport, TaskFixture } from "../eval.js";
 import { unifiedDiff } from "./diff.js";
 import {
   applyEdit,
@@ -10,7 +6,9 @@ import {
   editNetChange,
   validateCandidate,
 } from "./edits.js";
+import { evaluationBlocker } from "./promotion.js";
 import {
+  type EvolutionDiagnostic,
   type MaintainerFn,
   OPT_EARLY_STOP_PATIENCE,
   type OptEpoch,
@@ -36,6 +34,8 @@ async function scoreOnSplit(
   mode: "mock" | "live",
   scoringFn: ScoringFn,
   includeEvidence = false,
+  negativeTransfer = false,
+  workspace?: string,
 ): Promise<{ lift: number; report: SkillUtilityReport }> {
   const report = await scoringFn({
     skill,
@@ -44,7 +44,9 @@ async function scoreOnSplit(
     taskDir,
     mode,
     includeEvidence,
-    minimumCoverage: 1,
+    minimumCoverage: Math.max(1, tasks.length),
+    negativeTransfer,
+    workspace,
   });
   return {
     lift: report.coverage === "ok" ? report.utilityLift : 0,
@@ -63,7 +65,7 @@ async function scoreOnSplit(
  *    b. enforce LR budget (skip if net change > lrMaxChars)
  *    c. score candidate on the HELD-OUT VAL split → deltaLift
  * 4. Accept the BEST candidate IFF deltaLift > 0 AND no negativeTransfer entry <= NEG_TRANSFER_FAIL.
- *    Otherwise add all proposed edits to the rejected buffer.
+ *    Record incomplete evaluations separately from rejected edits.
  * 5. On accept: update best body + record OptEpoch; on no-accept: increment patience.
  * 6. Early-stop after OPT_EARLY_STOP_PATIENCE consecutive no-accept epochs.
  *
@@ -83,6 +85,7 @@ export async function runOptEpochLoop(options: {
   scoringFn: ScoringFn;
   maintainerFn?: MaintainerFn;
   evolutionRecorder?: SkillEvolutionRecorder;
+  workspace?: string;
 }): Promise<SkillOptResult> {
   const {
     skillId,
@@ -98,17 +101,43 @@ export async function runOptEpochLoop(options: {
     scoringFn,
     maintainerFn,
     evolutionRecorder,
+    workspace,
   } = options;
 
+  const developmentIds = new Set(
+    [...trainTasks, ...valTasks].map((task) => task.id),
+  );
+  const finalIds = new Set<string>();
+  for (const task of testTasks ?? []) {
+    if (developmentIds.has(task.id) || finalIds.has(task.id)) {
+      throw new Error(
+        `[oma skill opt] final-test task ${task.id} is duplicated or overlaps a development split.`,
+      );
+    }
+    finalIds.add(task.id);
+  }
+
   // Baseline: score the original body on the VAL split
-  const { lift: baselineLift } = await scoreOnSplit(
+  const { lift: baselineLift, report: baselineReport } = await scoreOnSplit(
     originalBody,
     skillId,
     valTasks,
     taskDir,
     mode,
     scoringFn,
+    false,
+    false,
+    workspace,
   );
+
+  const diagnostics: EvolutionDiagnostic[] = [];
+  const baselineBlocker = evaluationBlocker(baselineReport, mode);
+  if (baselineBlocker)
+    diagnostics.push({
+      stage: "validation",
+      status: baselineBlocker,
+      message: "The validation baseline is not valid promotion evidence.",
+    });
 
   let bestBody = originalBody;
   let curValLift = baselineLift;
@@ -121,7 +150,7 @@ export async function runOptEpochLoop(options: {
   let totalRejected = 0;
   let patience = 0;
 
-  for (let epochIdx = 0; epochIdx < maxEpochs; epochIdx++) {
+  for (let epochIdx = 0; epochIdx < maxEpochs && !baselineBlocker; epochIdx++) {
     // Early-stop check
     if (patience >= OPT_EARLY_STOP_PATIENCE) {
       break;
@@ -136,10 +165,22 @@ export async function runOptEpochLoop(options: {
       mode,
       scoringFn,
       true,
+      false,
+      workspace,
     );
 
+    const trainBlocker = evaluationBlocker(trainReport, mode);
+    if (trainBlocker) {
+      diagnostics.push({
+        stage: "validation",
+        status: trainBlocker,
+        message: "Training evaluation failed; optimization stopped.",
+      });
+      break;
+    }
+
     await evolutionRecorder?.recordEvidence(epochIdx, trainReport);
-    const patterns = maintainerFn
+    const maintained = maintainerFn
       ? await maintainerFn(
           trainReport,
           evolutionRecorder?.knowledge ?? {
@@ -152,10 +193,23 @@ export async function runOptEpochLoop(options: {
           epochIdx,
         )
       : [];
+    const degraded =
+      !Array.isArray(maintained) && maintained.status === "degraded";
+    const patterns = Array.isArray(maintained)
+      ? maintained
+      : degraded
+        ? []
+        : maintained.patterns;
+    if (degraded)
+      diagnostics.push({
+        stage: "maintainer",
+        status: maintained.reason,
+        message: maintained.message,
+      });
     await evolutionRecorder?.recordPatterns(epochIdx, patterns);
 
     // 2. Optimizer proposes K edits, filtered by rejected buffer
-    const rawEdits = await optimizerFn(bestBody, trainReport, {
+    const optimized = await optimizerFn(bestBody, trainReport, {
       epoch: epochIdx,
       knowledge: evolutionRecorder?.knowledge ?? {
         skillId,
@@ -166,6 +220,12 @@ export async function runOptEpochLoop(options: {
       },
       patterns,
     });
+    if (!Array.isArray(optimized) && !("edits" in optimized)) {
+      throw new Error(
+        `[oma skill opt] optimizer ${optimized.status}: ${optimized.message}`,
+      );
+    }
+    const rawEdits = Array.isArray(optimized) ? optimized : optimized.edits;
     const candidateEdits = rawEdits.filter(
       (e) => !rejectedBuffer.has(editKey(e)),
     );
@@ -182,11 +242,7 @@ export async function runOptEpochLoop(options: {
       report: SkillUtilityReport;
     }> = [];
 
-    const allProposedKeys: string[] = [];
-
     for (const edit of candidateEdits) {
-      allProposedKeys.push(editKey(edit));
-
       // LR budget check
       const netChange = editNetChange(bestBody, edit);
       if (netChange > lrMaxChars) {
@@ -230,6 +286,9 @@ export async function runOptEpochLoop(options: {
         taskDir,
         mode,
         scoringFn,
+        false,
+        true,
+        workspace,
       );
 
       const deltaLift = candValLift - curValLift;
@@ -240,7 +299,10 @@ export async function runOptEpochLoop(options: {
         report: candReport,
       });
 
-      if (deltaLift > bestCandidateDeltaLift) {
+      if (
+        !evaluationBlocker(candReport, mode, true) &&
+        deltaLift > bestCandidateDeltaLift
+      ) {
         bestCandidateDeltaLift = deltaLift;
         bestCandidateEdit = edit;
         bestCandidateBody = candidateBody;
@@ -258,12 +320,10 @@ export async function runOptEpochLoop(options: {
       bestCandidateDeltaLift > 0
     ) {
       // Check negative transfer gate
-      const negTransferEntries = bestCandidateReport?.negativeTransfer ?? [];
-      const tripsNegTransfer = negTransferEntries.some(
-        (nt) => nt.delta <= NEG_TRANSFER_FAIL,
-      );
-
-      if (!tripsNegTransfer) {
+      if (
+        bestCandidateReport &&
+        !evaluationBlocker(bestCandidateReport, mode, true)
+      ) {
         // Accept
         const newValLift = curValLift + bestCandidateDeltaLift;
         const epochRecord: OptEpoch = {
@@ -284,16 +344,6 @@ export async function runOptEpochLoop(options: {
     }
 
     if (!accepted) {
-      // Add all proposed edit keys to rejected buffer
-      for (const key of allProposedKeys) {
-        if (!rejectedBuffer.has(key)) {
-          rejectedBuffer.add(key);
-          totalRejected++;
-        }
-      }
-
-      // Also count candidates that were already rejected (LR, invalid) in this epoch
-      // (those were already added above)
       const epochRecord: OptEpoch = {
         epoch: epochIdx,
         proposed: epochProposed,
@@ -308,15 +358,19 @@ export async function runOptEpochLoop(options: {
     const acceptedKey =
       accepted && bestCandidateEdit ? editKey(bestCandidateEdit) : undefined;
     for (const candidate of evaluatedCandidates) {
-      const tripsNegativeTransfer = candidate.report.negativeTransfer.some(
-        (entry) => entry.delta <= NEG_TRANSFER_FAIL,
-      );
+      const blocker = evaluationBlocker(candidate.report, mode, true);
       let reason: SkillProposalGateRecord["reason"];
       if (candidate.key === acceptedKey) reason = "accepted";
-      else if (tripsNegativeTransfer) reason = "negative-transfer";
+      else if (blocker) reason = blocker;
       else if (candidate.deltaLift <= 0) reason = "no-validation-lift";
       else reason = "not-best-candidate";
-      if (candidate.key !== acceptedKey && !rejectedBuffer.has(candidate.key)) {
+      const inconclusive =
+        blocker !== undefined && blocker !== "negative-transfer";
+      if (
+        candidate.key !== acceptedKey &&
+        !inconclusive &&
+        !rejectedBuffer.has(candidate.key)
+      ) {
         rejectedBuffer.add(candidate.key);
         totalRejected++;
       }
@@ -324,10 +378,31 @@ export async function runOptEpochLoop(options: {
         epoch: epochIdx,
         edit: candidate.edit,
         editKey: candidate.key,
-        outcome: candidate.key === acceptedKey ? "accepted" : "rejected",
+        outcome:
+          candidate.key === acceptedKey
+            ? "accepted"
+            : inconclusive
+              ? "inconclusive"
+              : "rejected",
         reason,
         deltaLift: candidate.deltaLift,
       });
+    }
+
+    if (
+      !accepted &&
+      evaluatedCandidates.some((candidate) => {
+        const blocker = evaluationBlocker(candidate.report, mode, true);
+        return blocker && blocker !== "negative-transfer";
+      })
+    ) {
+      diagnostics.push({
+        stage: "validation",
+        status: "inconclusive",
+        message:
+          "Candidate evaluation is incomplete; retry after repairing the evaluation conditions.",
+      });
+      break;
     }
 
     // Suppress unused variable warning
@@ -337,7 +412,9 @@ export async function runOptEpochLoop(options: {
   // Final diff: original → bestBody
   const diff = unifiedDiff(originalBody, bestBody);
   let finalTest: SkillOptResult["finalTest"];
-  if (testTasks && testTasks.length > 0) {
+  if (baselineBlocker) {
+    finalTest = { baselineLift: 0, candidateLift: 0, passed: false };
+  } else if (testTasks && testTasks.length > 0) {
     if (bestBody === originalBody) {
       const { lift } = await scoreOnSplit(
         originalBody,
@@ -346,28 +423,57 @@ export async function runOptEpochLoop(options: {
         taskDir,
         mode,
         scoringFn,
+        false,
+        false,
+        workspace,
       );
       finalTest = { baselineLift: lift, candidateLift: lift, passed: false };
     } else {
-      const [{ lift: finalTestBaseline }, { lift: finalTestCandidate }] =
-        await Promise.all([
-          scoreOnSplit(
-            originalBody,
-            skillId,
-            testTasks,
-            taskDir,
-            mode,
-            scoringFn,
-          ),
-          scoreOnSplit(bestBody, skillId, testTasks, taskDir, mode, scoringFn),
-        ]);
+      const [
+        { lift: finalTestBaseline, report: finalBaselineReport },
+        { lift: finalTestCandidate, report: finalCandidateReport },
+      ] = await Promise.all([
+        scoreOnSplit(
+          originalBody,
+          skillId,
+          testTasks,
+          taskDir,
+          mode,
+          scoringFn,
+          false,
+          false,
+          workspace,
+        ),
+        scoreOnSplit(
+          bestBody,
+          skillId,
+          testTasks,
+          taskDir,
+          mode,
+          scoringFn,
+          false,
+          true,
+          workspace,
+        ),
+      ]);
+      const finalBlocker =
+        evaluationBlocker(finalBaselineReport, mode) ??
+        evaluationBlocker(finalCandidateReport, mode, true);
       finalTest = {
         baselineLift: finalTestBaseline,
         candidateLift: finalTestCandidate,
-        passed: finalTestCandidate > finalTestBaseline,
+        passed: finalTestCandidate > finalTestBaseline && !finalBlocker,
+        ...(finalBlocker ? { blocker: finalBlocker } : {}),
       };
     }
   }
+
+  const reasons = diagnostics.map(
+    (diagnostic) => `${diagnostic.stage}:${diagnostic.status}`,
+  );
+  if (!finalTest) reasons.push("final-test-missing");
+  else if (!finalTest.passed) reasons.push("final-test-failed");
+  if (acceptedEdits.length === 0) reasons.push("no-validated-candidate");
 
   const result: SkillOptResult = {
     skill: skillId,
@@ -380,6 +486,8 @@ export async function runOptEpochLoop(options: {
     diff,
     applied: false,
     finalTest,
+    diagnostics,
+    promotion: { eligible: reasons.length === 0, reasons },
     ...(evolutionRecorder
       ? {
           evolution: {

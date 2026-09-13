@@ -3,16 +3,24 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
+  rmSync,
   symlinkSync,
 } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, sep } from "node:path";
 import {
   CLI_SKILLS_DIR,
   INSTALLED_SKILLS_DIR,
   type SkillTargetSpec,
 } from "../../../constants/vendors.js";
+import {
+  getProtectedTextCapability,
+  prepareProtectedTextWorkspace,
+  protectTextInvocation,
+  resolveProtectedTextEffort,
+} from "../../../io/protected-text.js";
 import { planDispatch } from "../../../io/runtime-dispatch.js";
 import {
   resolvePromptFlag,
@@ -25,6 +33,17 @@ import type {
 } from "./types.js";
 
 export const EVAL_DISPATCH_TIMEOUT_MS = 120_000;
+
+/** A failed process or API envelope is missing evaluation data, not an answer. */
+export class EvalDispatchError extends Error {
+  constructor(
+    message: string,
+    readonly output: string = "",
+  ) {
+    super(message);
+    this.name = "EvalDispatchError";
+  }
+}
 
 function evalDispatchTimeoutMs(): number {
   const configured = Number.parseInt(
@@ -47,16 +66,23 @@ function evalDispatchTimeoutMs(): number {
  * (keeping the bare flag) so it is never parsed as an option. Non-dash prompts keep
  * the existing arg path unchanged.
  *
- * On non-zero exit we return any captured stdout (possibly "") AND warn once, so a
- * failed dispatch is no longer silently indistinguishable from a real empty answer.
+ * Failed processes and API error envelopes throw. Captured stdout is diagnostic
+ * data on the error and must never be scored or recorded as a completed answer.
  */
 export function runEvalDispatch(
-  invocation: { command: string; args: string[]; env: NodeJS.ProcessEnv },
+  invocation: {
+    command: string;
+    args: string[];
+    env: NodeJS.ProcessEnv;
+    input?: string;
+    outputKind?: "text" | "vendor-envelope";
+    protectedProfile?: string;
+  },
   cwd: string,
   prompt: string,
   promptFlag: string | null,
 ): string {
-  const { command, args, env } = invocation;
+  const { command, args } = invocation;
   // Locate the prompt VALUE: the arg immediately after `promptFlag` (e.g. `-p`).
   // It is NOT always the trailing arg — plan-derived flags (e.g. `--model sonnet`)
   // can be appended after it, so search by the flag→value pair, not by position.
@@ -72,24 +98,36 @@ export function runEvalDispatch(
   const viaStdin = promptIdx >= 0 && prompt.startsWith("-");
   // Drop only the prompt VALUE, keeping the bare flag (claude `-p` then reads stdin).
   const execArgs = viaStdin ? args.filter((_, idx) => idx !== promptIdx) : args;
+  let cleanup = () => {};
   try {
+    const prepared = prepareProtectedTextWorkspace(invocation);
+    cleanup = prepared.cleanup;
     const output = execFileSync(command, execArgs, {
       cwd,
-      env,
+      env: prepared.invocation.env,
       encoding: "utf-8",
-      input: viaStdin ? prompt : undefined,
+      input: invocation.input ?? (viaStdin ? prompt : undefined),
       // stdin: pipe the prompt when via-stdin; otherwise ignore. stdout captured;
       // stderr inherited to the parent.
-      stdio: viaStdin ? ["pipe", "pipe", "pipe"] : ["ignore", "pipe", "pipe"],
+      stdio:
+        invocation.input !== undefined || viaStdin
+          ? ["pipe", "pipe", "pipe"]
+          : ["ignore", "pipe", "pipe"],
       // Generous buffer: agent JSON transcripts can be large; default 1 MB can
       // overflow (ENOBUFS) and look like an empty answer.
       maxBuffer: 64 * 1024 * 1024,
-      timeout: evalDispatchTimeoutMs(),
+      timeout: evalDispatchTimeoutMs() + 1_000,
     });
     const text = typeof output === "string" ? output : "";
-    warnOnErrorEnvelope(text);
+    if (invocation.outputKind !== "text" && warnOnErrorEnvelope(text)) {
+      throw new EvalDispatchError(
+        "Evaluation dispatch returned an API error envelope",
+        text,
+      );
+    }
     return text;
   } catch (err) {
+    if (err instanceof EvalDispatchError) throw err;
     const e = err as { status?: number; stderr?: unknown; stdout?: unknown };
     const stderrSnippet =
       typeof e.stderr === "string"
@@ -100,15 +138,18 @@ export function runEvalDispatch(
         stderrSnippet ? `: ${stderrSnippet}` : ""
       }`,
     );
-    // Return captured stdout so checkers can still score it (likely 0).
-    return typeof e.stdout === "string" ? e.stdout : "";
+    throw new EvalDispatchError(
+      `Evaluation dispatch failed (exit ${e.status ?? "?"})`,
+      typeof e.stdout === "string" ? e.stdout : "",
+    );
+  } finally {
+    cleanup();
   }
 }
 
 /**
- * Prevent an evaluated Claude arm from escaping its throwaway workspace or
- * discovering the withheld skill through HOME tools, slash commands, or MCP.
- * The skill under test is supplied only through the treatment prompt.
+ * Legacy exploratory invocation shaping. Protected live arms and judges use
+ * protectTextInvocation instead; this helper alone is not a capability proof.
  */
 export function isolateEvalRuntime(
   invocation: { command: string; args: string[]; env: NodeJS.ProcessEnv },
@@ -156,7 +197,7 @@ export function warnOnErrorEnvelope(output: string): boolean {
         ? `: ${parsed.result.replace(/\s+/g, " ").trim().slice(0, 160)}`
         : "";
     console.warn(
-      `[oma skill eval] dispatch returned an API error envelope${status}${reason} — this arm will score 0; do not trust or --record this run.`,
+      `[oma skill eval] dispatch returned an API error envelope${status}${reason} — excluding this arm from evaluation.`,
     );
     return true;
   } catch {
@@ -166,15 +207,14 @@ export function warnOnErrorEnvelope(output: string): boolean {
 
 /**
  * Determine the isolation status for a live eval run of `skillId` via `vendor`
- * (plan 013). Isolation works by running the dispatch in a clean tmpBase cwd whose
- * skills dir excludes the target skill — but that only hides skills the vendor CLI
- * discovers cwd-relative.
+ * (plan 013). A filtered temporary cwd controls automatic skill discovery, but
+ * does not prevent tools from reading the original project outside that cwd.
+ * Protected text capabilities disable discovery and tools before model input.
  *
- * - `enforced`    — cwd-relative vendor and the target skill is NOT present in the
- *                   vendor's HOME skills path; a clean tmpBase cwd fully hides it.
- * - `best-effort` — cwd-relative vendor but a HOME copy of the skill also exists
- *                   (tmpBase hides the project copy; the HOME copy stays visible),
- *                   or the vendor is unknown so isolation cannot be proven.
+ * - `enforced`    — an implemented text-only profile; runtime profile or protocol
+ *                   failures abort evaluation before evidence can be accepted.
+ * - `best-effort` — a HOME copy remains visible, the skill id is unsafe, or the
+ *                   vendor lacks an implemented evaluation confinement profile.
  * - `unavailable` — HOME-based vendor (`requiresHomeConsent`, e.g. antigravity)
  *                   where cwd cannot isolate; baseline may be contaminated.
  */
@@ -197,6 +237,10 @@ export function resolveSkillIsolation(
   ) {
     return "best-effort";
   }
+  if (!getProtectedTextCapability(vendor).supported) return "best-effort";
+  // Codex's app-server profile suppresses all instruction discovery and verifies
+  // instructionSources before the turn. Claude retains its existing HOME check.
+  if (vendor === "codex") return "enforced";
   const homeSkill = join(homedir(), spec.homePath, skillId);
   return existsSync(homeSkill) ? "best-effort" : "enforced";
 }
@@ -302,7 +346,9 @@ export function isolateEvalMemory(invocation: {
  * controlled variable. Without a per-call workspace (legacy/tests), cwd falls back
  * to `workspace` (repo root) and no isolation is applied.
  *
- * Both arms: readOnly: true (constrained profile), temp workspace per run.
+ * Supported vendors use the shared protected text profile, which suppresses all
+ * discovery and supplies the skill only through the treatment prompt. Other
+ * vendors retain exploratory dispatch and cannot claim enforced isolation.
  */
 export function buildLiveDispatchFn(
   workspace: string,
@@ -311,8 +357,8 @@ export function buildLiveDispatchFn(
   const { vendor, config } = resolveVendor("eval-agent");
   const vendorConfig = config?.vendors?.[vendor] ?? {};
   const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
-  // Memoize isolation setup per tmpBase: one run reuses a single tmpBase across all
-  // tasks/arms, so the filtered skills dir is built exactly once.
+  // Each arm has its own directory. Repeated calls using one directory may reuse
+  // its filtered skill discovery setup.
   const isolatedBases = new Set<string>();
 
   return (_arm, prompt, perCallWorkspace) => {
@@ -339,10 +385,18 @@ export function buildLiveDispatchFn(
       process.env,
       { readOnly: true },
     );
-    const invocation = isolateEvalRuntime(
-      stripUndefinedEvalAgentFlag(dispatch.invocation, vendor, workspace),
-      vendor,
-    );
+    const invocation = getProtectedTextCapability(vendor).supported
+      ? protectTextInvocation(
+          dispatch.invocation,
+          vendor,
+          prompt,
+          evalDispatchTimeoutMs(),
+          resolveProtectedTextEffort("eval-agent"),
+        )
+      : isolateEvalRuntime(
+          stripUndefinedEvalAgentFlag(dispatch.invocation, vendor, workspace),
+          vendor,
+        );
 
     return runEvalDispatch(invocation, cwd, prompt, promptFlag);
   };
@@ -358,6 +412,9 @@ export function buildLiveDispatchFn(
  * console.warn is emitted on the FIRST judge dispatch within a --live run.
  */
 export function buildJudgeDispatchFn(): JudgeDispatchFn {
+  const { vendor, config } = resolveVendor("eval-agent");
+  const vendorConfig = config?.vendors?.[vendor] ?? {};
+  const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
   // Warned flag is scoped to this invocation so each runSkillsEval call warns
   // independently. A module-level flag would suppress the warning in subsequent
   // calls within the same process (e.g. tests, long-running shells).
@@ -370,10 +427,6 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
       judgeEgressWarned = true;
     }
 
-    const { vendor, config } = resolveVendor("eval-agent");
-    const vendorConfig = config?.vendors?.[vendor] ?? {};
-    const promptFlag = resolvePromptFlag(vendor, vendorConfig.prompt_flag);
-
     const dispatch = planDispatch(
       "eval-agent",
       vendor,
@@ -383,15 +436,32 @@ export function buildJudgeDispatchFn(): JudgeDispatchFn {
       process.env,
       { readOnly: true },
     );
-    const invocation = isolateEvalMemory(
-      stripUndefinedEvalAgentFlag(dispatch.invocation, vendor, process.cwd()),
-    );
-
-    return runEvalDispatch(
-      invocation,
-      process.cwd(),
-      gradingPrompt,
-      promptFlag,
-    );
+    const invocation = getProtectedTextCapability(vendor).supported
+      ? protectTextInvocation(
+          dispatch.invocation,
+          vendor,
+          gradingPrompt,
+          evalDispatchTimeoutMs(),
+          resolveProtectedTextEffort("eval-agent"),
+        )
+      : isolateEvalRuntime(
+          stripUndefinedEvalAgentFlag(
+            dispatch.invocation,
+            vendor,
+            process.cwd(),
+          ),
+          vendor,
+        );
+    const judgeWorkspace = mkdtempSync(join(tmpdir(), "oma-eval-judge-"));
+    try {
+      return runEvalDispatch(
+        invocation,
+        judgeWorkspace,
+        gradingPrompt,
+        promptFlag,
+      );
+    } finally {
+      rmSync(judgeWorkspace, { recursive: true, force: true });
+    }
   };
 }

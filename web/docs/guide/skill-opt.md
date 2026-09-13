@@ -6,9 +6,11 @@ description: How to use oma skill optimize for persistent, evidence-driven skill
 
 # Skill Optimization
 
-`oma skill optimize` evolves a skill's `SKILL.md` to maximize its measured `utilityLift` as produced by `oma skill eval`. It separates raw rollout evidence, persistent scoped knowledge, and the executable skill. A Wiki Maintainer consolidates observable successes and failures; a Proposer uses that knowledge to emit bounded add/delete/replace edits. Candidates must improve held-out validation utility, and `--apply` additionally requires improvement on a runner-owned holdout split. At deployment there is no extra inference-time wiki lookup: the output remains a `SKILL.md`.
+`oma skill optimize` evolves a skill's `SKILL.md` to maximize its measured `utilityLift` as produced by `oma skill eval`. It separates raw rollout evidence, persistent scoped knowledge, and the executable skill. A Wiki Maintainer consolidates observable successes and failures; a Proposer uses that knowledge to emit bounded add/delete/replace edits. Candidates must improve validation utility with complete task and negative-transfer measurements. `--apply` also requires an improved, fully measured runner-owned final test and verified live isolation. At deployment there is no extra inference-time wiki lookup: the output remains a `SKILL.md`.
 
 Research basis: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C., & Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
+
+CLI optimization currently requires `--live` and incurs model calls. The default/non-live path and `--mock` cannot generate or replay proposals because a recorded-proposal loader is not implemented; they stop before evaluation. Use `oma skill eval --mock` for offline replay. Injected optimizer/scorer APIs remain available for offline tests. Passing both `--live` and `--mock` is an error.
 
 ---
 
@@ -22,36 +24,41 @@ Research basis: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C.
 
 See the [Skill Utility Eval guide](/docs/guide/skill-eval) for the `.agents/eval/<skill>/` directory convention, fixture schema, checker types, and how to seed rollouts for mock replay.
 
+Promotion also requires a nonempty set of same-domain neighbor tasks belonging to other skills. Every candidate validation score and the final candidate score must measure the neighbors of its evaluated split with the exact candidate body. Missing neighbors or incomplete paired recordings cannot establish absence of negative transfer. Offline evaluation can replay only matching candidate recordings; use live optimization to generate and evaluate new candidates.
+
+Replay and suite-scoped knowledge are tied to the full task/evaluator contract, including the effective default judge rubric and scorer protocol revision. Older recordings and prior knowledge scopes require fresh evidence after this provenance upgrade; relabeling old scores with new hashes does not establish a valid measurement.
+
 ---
 
 ## How it works
 
-Fixtures are sorted by task ID and split deterministically into **train**, **held-out validation**, and **runner-owned final-test** sets. With at least five fixtures, the target proportions are 60/20/20 and every partition has at least one task. The final-test tasks come from this local fixture set; they are held out from the Maintainer and Proposer during the loop, not fetched from a hidden external suite.
+Fixtures are sorted by task ID and split deterministically into **train**, **held-out validation**, and **runner-owned final-test** sets. With at least five fixtures, the target proportions are 60/20/20 and every partition has at least one task. For example, eight fixtures produce four train, one validation, and three final-test tasks after rounding. The final-test tasks come from this local fixture set and are withheld from the Maintainer and Proposer. Duplicate final-test task IDs and overlap with a development split are rejected.
 
 For each epoch (up to `--max-epochs`, default 8):
 
-1. **Score current best `SKILL.md` on the TRAIN split** — `oma skill eval` returns observable per-task prompts, outputs, and lift.
+1. **Score current best `SKILL.md` on the TRAIN split** — `oma skill eval` returns observable per-task prompts, outputs, and lift. Every task in an internal split must have both scored arms; failed or missing comparisons cannot shrink the denominator.
 2. **Wiki Maintainer consolidates evidence** — up to five failures and three successes become evidence-linked patterns. Scoped patterns and prior gate outcomes are recalled from OMA's L1/L2/L3 memory system.
 3. **Proposer emits K candidate edits** (up to `--edits-per-epoch`, default 4). Exact edits already in persistent rejection history are skipped.
 4. **For each candidate edit:**
    - Apply the edit to an in-memory copy of `SKILL.md`.
    - Validate the candidate (frontmatter `name`/`description` must survive; body must parse).
    - Enforce the textual learning-rate budget: discard edits whose net character change exceeds `--lr` (default 600 chars).
-   - Re-score the candidate on the **held-out validation split**.
-5. **Accept the best validation candidate IFF** the validation lift strictly improves (`Δlift > 0`) AND no negative-transfer entry breaches the regression floor (`NEG_TRANSFER_FAIL = -0.1`). Every proposal gate is persisted.
+   - Re-score every task in the **held-out validation split**, and run paired baseline/candidate comparisons on same-domain neighbor tasks.
+5. **Accept the best valid candidate** only when validation lift strictly improves (`Δlift > 0`), task coverage is complete, the nonempty negative-transfer sample is fully measured, and every neighbor delta is greater than `NEG_TRANSFER_FAIL = -0.1`. Live reports must declare `isolation: "enforced"`. Proposal gate outcomes are recorded.
 6. **Early stop** after 2 consecutive epochs with no accepted edit (`OPT_EARLY_STOP_PATIENCE = 2`).
-7. **Run the runner-owned final test after evolution.** The Maintainer and Proposer never see these tasks during the loop. A failed final test prevents `--apply` and records the validation winner as rejected knowledge.
+7. **Run the runner-owned final test after evolution.** Both the original body and the validation winner must cover every final-test task. The candidate must improve final-test lift and pass another complete, candidate-specific negative-transfer check. Missing, incomplete, or failed final tests prevent promotion. Measured final failures remain audit records and do not become rejection knowledge for later optimization.
 
-The optimizer never edits the live `SKILL.md` during the loop — it always works on an in-memory candidate copy.
+The optimizer works on an in-memory candidate copy during the loop.
+
+Unmeasured candidates are recorded as `inconclusive`, with reasons such as `insufficient-coverage`, `negative-transfer-unmeasured`, or `unverified-isolation`. They are excluded from learned rejection history and remain eligible for a retry after the evaluation conditions are repaired. A measured regression or lack of validation improvement is a rejection. Diagnostics that indicate incomplete evaluation or degraded maintenance block promotion.
 
 ---
 
 ## Usage
 
 ```
-oma skill optimize --skill <id>
+oma skill optimize --skill <id> --live
                [--dry-run | --apply]
-               [--mock | --live]
                [--max-epochs <n>] [--edits-per-epoch <k>] [--lr <chars>]
                [--yes]
                [--json] [--output <format>]
@@ -63,13 +70,13 @@ oma skill optimize --skill <id>
 |:-----|:--------|:-----------|
 | `--skill <id>` | `_all` | Skill ID to optimize (simple name, no path separators). |
 | `--dry-run` | **yes (default)** | Propose edits and print the diff without changing `SKILL.md`; generated evidence and evolution events still persist. |
-| `--apply` | — | Apply accepted edits to `SKILL.md` — backs up the original before an atomic write. Only runs when validation and runner-owned final-test gates pass; an OMA-owned skill also requires `--yes`. |
-| `--mock` | **yes (default)** | Replay recorded optimizer edits and eval verdicts from `_rollouts/`. Deterministic, offline. Safe for CI. |
-| `--live` | — | Live LLM optimizer dispatch — incurs real model calls per epoch. Prints a cost preview and asks for confirmation unless `--yes`. |
+| `--apply` | — | Write the validated candidate after all promotion gates pass, including complete final-test and negative-transfer evidence; backs up the original before an atomic write. An OMA-owned skill also requires `--yes`. |
+| `--mock` | Non-live default | CLI proposal replay is not implemented, so this path stops before evaluation. Use `oma skill eval --mock` for offline evaluation replay. |
+| `--live` | — | Required for current CLI optimization. Incurs real model calls; prints a cost preview and asks for confirmation unless `--yes`. |
 | `--max-epochs <n>` | `8` | Maximum optimization epochs. |
 | `--edits-per-epoch <k>` | `4` | Candidate edits the optimizer LLM proposes per epoch. |
 | `--lr <chars>` | `600` | Textual learning-rate budget: maximum net character change per accepted edit. |
-| `--yes` | — | Skip the cost-preview confirmation. Only meaningful with `--live`. |
+| `--yes` | — | Skip the live cost-preview confirmation and acknowledge overwrite behavior when applying an OMA-owned skill. |
 | `--json` | — | Output as JSON for CI/CD. |
 | `--output <format>` | `text` | Output format (`text` or `json`). |
 
@@ -78,19 +85,20 @@ oma skill optimize --skill <id>
 ## Minimal end-to-end example
 
 ```bash
-# Propose edits (dry-run, mock mode — does not change SKILL.md, fully offline)
-oma skill optimize --skill oma-scholar --mock --dry-run
+# Evaluate one epoch and print a candidate diff without applying it
+oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1
 ```
 
-Example output:
+Illustrative output for eight fixtures and a candidate that passes all promotion gates:
 
 ```
-[oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 4), dry-run: true
+[oma skill opt] skill: oma-scholar, tasks: 8 (train: 4, val: 1, test: 3), dry-run: true
 
 Skill opt  (skill: oma-scholar)
   applied: false
-  baselineLift: 18.5%  finalLift: 32.0%
-  epochs: 3  acceptedEdits: 2  rejected: 6
+  baselineLift: 0.0%  finalLift: 100.0%
+  epochs: 1  acceptedEdits: 1  rejected: 0
+  finalTest: pass baseline=0.0000 candidate=0.3333
 
   diff:
 --- a/SKILL.md
@@ -112,16 +120,18 @@ When you are satisfied with the proposed diff, re-run with `--apply`:
 
 ```bash
 # Apply accepted edits (backs up the original first)
-oma skill optimize --skill oma-scholar --mock --apply
+oma skill optimize --skill oma-scholar --live --apply --yes
 ```
 
-`--apply` writes only when the optimization found a strictly positive improvement on validation and the runner-owned final-test candidate lift is greater than its baseline lift. A backup of the original `SKILL.md` is created before the atomic write. The diff is always printed so you can review what changed.
+`--apply` requires a strictly positive validation improvement, `finalTest.passed: true`, and `promotion.eligible: true`. These gates require complete internal task coverage, a nonempty and fully measured candidate-specific negative-transfer sample, and enforced live isolation. A missing final test, incomplete measurements, or degraded compiler diagnostics prevent the write. A backup of the original `SKILL.md` is created before the atomic write, and the diff is printed for review.
+
+Live evaluation can satisfy the isolation gate through the protected Claude or native Codex profile. Claude retains the HOME/target checks. Codex verifies that the ephemeral app-server thread has no instruction sources or tool environments before submitting the prompt. Other runtime profiles remain exploratory.
 
 ---
 
 ## Live mode
 
-Live mode calls the real Maintainer and Proposer and re-runs live eval arms per epoch. It is expensive: every scored task has baseline and treatment calls, judge fixtures add grading calls, and the final test scores the original and candidate bodies. The preview reports an upper bound of underlying model calls from the actual split. Each call has a 120-second timeout; Claude eval arms run restricted with ambient tools, skills, MCP, and AgentMemory disabled.
+Live mode calls the real Maintainer and Proposer and re-runs live eval arms per epoch. It is expensive: every scored task has baseline and treatment calls, judge fixtures add grading calls, and the final test scores the original and candidate bodies. The preview reports an upper bound from the actual split, including the initial validation baseline, training and compiler calls, candidate validation calls, two final-test scores, and paired neighbor checks for every candidate plus the final candidate. Each call has a 120-second timeout. Protected Claude and Codex arms disable tools, automatic instruction discovery, MCP, and optimization memory.
 
 ```bash
 # Cost preview + confirm
@@ -136,34 +146,64 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 The cost preview lists the upper bound of underlying model calls before any LLM call is made.
 
+The Maintainer, Proposer, evaluation arms, and judges share a protected text transport in fresh temporary directories. Claude uses its restricted CLI profile. Codex uses the native `codex app-server` with the existing CLI login, selected model/provider, and reasoning effort; it does not substitute an API-key client or fall back to Claude. The Codex profile targets CLI 0.154.x on macOS/Linux with native file credential storage and an existing `auth.json`. Each call stages a private temporary `CODEX_HOME` that references the original config/auth files without copying credential contents. Native token refresh still uses the original auth file. Shared bootstrap state is excluded, and temporary state is cleaned up afterward. Keyring, auto, and ephemeral credential stores are currently unsupported. The thread contract is checked before sending model input; unsupported versions, storage modes, and protocol failures terminate the dispatch. Tools, startup instruction discovery, MCP access, and session persistence are disabled so compiler processes cannot read withheld fixtures through agent tools. Other compiler vendors fail explicitly until they have a verified transport.
+
+The optimizer reports `proposed` for valid edits and `no-action` only for an explicit `NO_ACTION` response. Process/API failures become `dispatch-error`; malformed responses without valid edits become `parse-error`. These errors cannot become empty edit lists. If the Maintainer cannot provide validated patterns, it reports `degraded` with a dispatch or parsing reason; fallback patterns are excluded from persistent knowledge, and the run cannot promote a candidate. Evaluation failures appear in `diagnostics` and proposal gate records rather than learned rejection history.
+
 ---
 
 ## JSON output
 
 ```bash
-oma skill optimize --skill oma-scholar --json
+oma skill optimize --skill oma-scholar --live --dry-run --max-epochs 1 --json
 ```
 
 ```json
 {
   "ok": true,
   "skill": "oma-scholar",
-  "baselineLift": 0.1850,
-  "finalLift": 0.3200,
-  "epochCount": 3,
+  "baselineLift": 0.0,
+  "finalLift": 1.0,
+  "epochCount": 1,
   "acceptedEdits": [
     { "op": "add", "anchor": "### When to use", "after": "\n- User asks for a summary of arxiv abstracts or DOI-linked documents." }
   ],
-  "rejectedCount": 6,
+  "rejectedCount": 0,
   "applied": false,
   "diff": "--- a/SKILL.md\n+++ b/SKILL.md\n...",
   "_dryRun": true,
-  "finalTest": { "baselineLift": 0.10, "candidateLift": 0.25, "passed": true },
+  "finalTest": { "baselineLift": 0.0, "candidateLift": 0.3333, "passed": true },
+  "promotion": { "eligible": true, "reasons": [] },
+  "diagnostics": [],
   "_split": { "trainCount": 4, "valCount": 1, "testCount": 3 }
 }
 ```
 
-`ok` is `true` only when the candidate improves validation and the runner-owned final test does not fail (or the candidate was applied). The `_split` counts show the actual local fixture partition used for the run.
+`ok` requires `(applied || finalLift > baselineLift)`, `finalTest.passed === true`, and `promotion.eligible === true`. A missing final test or promotion object cannot produce `ok: true`. The `_split` counts show the actual local fixture partition used for the run.
+
+For example, an unmeasured candidate may produce this report excerpt:
+
+```json
+{
+  "ok": false,
+  "acceptedEdits": [],
+  "rejectedCount": 0,
+  "finalTest": { "baselineLift": 0.0, "candidateLift": 0.0, "passed": false },
+  "promotion": {
+    "eligible": false,
+    "reasons": ["validation:inconclusive", "final-test-failed", "no-validated-candidate"]
+  },
+  "diagnostics": [
+    {
+      "stage": "validation",
+      "status": "inconclusive",
+      "message": "Candidate evaluation is incomplete; retry after repairing the evaluation conditions."
+    }
+  ]
+}
+```
+
+Inspect `diagnostics`, `promotion.reasons`, and any `finalTest.blocker` before retrying. `rejectedCount` does not increase for an inconclusive proposal. A measured final-test failure can increase the run's audit rejection count while remaining excluded from persistent rejection knowledge.
 
 ---
 
@@ -181,21 +221,25 @@ The command prints a warning when the target skill is oma-owned:
 
 ## Overfitting guard
 
-The Maintainer and Proposer see only TRAIN rollout evidence. Candidate selection uses the held-out VALIDATION split, while the runner-owned TEST split remains unavailable to them until evolution ends. A validation winner that fails to improve the final test is not applied and is added to persistent rejection history.
+The Maintainer and Proposer receive TRAIN rollout evidence. Candidate selection uses the held-out VALIDATION split, and the runner owns the separate TEST split. Tool-free compiler execution prevents workspace access to those withheld fixtures and evaluators.
+
+A final-test failure prevents application. Its outcome remains available for auditing, but neither final-test gate outcomes nor inconclusive proposals feed persistent optimization knowledge. The recorder, history reload, and semantic recall paths also exclude legacy final-test outcomes, so a later run cannot use prior final-test success or failure as training feedback.
 
 ---
 
 ## CI integration
 
-In `--mock` mode, `oma skill optimize` is fully deterministic and offline — no LLM is called. Use it in CI to verify that a proposed skill diff still shows lift over the recorded rollouts:
+Use evaluation replay for an offline CI check of existing candidate-specific recordings:
 
 ```bash
-oma skill optimize --skill oma-scholar --mock --json
+oma skill eval --skill oma-scholar --mock --neg-transfer --require-coverage --json
 ```
 
-Exit codes:
+CLI optimization itself requires `--live`; it has no recorded-proposal replay adapter yet. Earlier guidance describing `oma skill optimize --mock` as a complete offline optimizer was incorrect. Move offline replay jobs to `oma skill eval --mock`, or explicitly enable live optimization and its model cost. For optimization runs, inspect JSON `ok` and `promotion.eligible`: exit zero also covers completed runs that found no promotable candidate.
+
+Optimization exit codes:
 - `0` — optimization completed (with or without improvement)
-- `1` — fewer than `MIN_TASKS` fixtures, or invalid `--skill` argument
+- `1` — invalid input or execution failure, including non-live CLI optimization, conflicting `--live --mock` flags, insufficient fixture count, unsupported compiler vendor, optimizer dispatch failure, or malformed optimizer output
 
 ---
 

@@ -24,6 +24,9 @@ export const REGEX_OUTPUT_MAX_LEN = 10_000;
 export const JUDGE_DEFAULT_RUBRIC =
   "Does the answer correctly and completely satisfy the task prompt?";
 
+/** Bump when scorer semantics, judge prompt/parsing, or implicit evaluator behavior changes. */
+export const SKILL_EVAL_PROTOCOL_REVISION = "1";
+
 // --- Interfaces (design 016) ---
 
 export interface SkillUtilityFinding {
@@ -48,6 +51,15 @@ export interface NegativeTransfer {
   otherSkill: string;
   domain: string;
   delta: number;
+  taskId?: string;
+  candidateSkill?: string;
+  skillBodyHash?: string;
+}
+
+export interface NegativeTransferCoverage {
+  status: "measured" | "insufficient" | "not-requested";
+  expected: number;
+  scored: number;
 }
 
 /**
@@ -83,6 +95,8 @@ export interface SkillUtilityReport {
   utilityStdDev: number;
   findings: SkillUtilityFinding[];
   negativeTransfer: NegativeTransfer[];
+  /** A requested check is measured only when every selected neighbor was scored. */
+  negativeTransferCoverage?: NegativeTransferCoverage;
   decision: "pass" | "warn" | "fail" | "insufficient";
   coverage: "ok" | "insufficient";
   /**
@@ -156,6 +170,12 @@ export interface RolloutEntry {
    * prompt has since been edited.
    */
   promptHash?: string;
+  /** Skill whose interference was measured; distinct from the task's own skill. */
+  candidateSkill?: string;
+  /** Links the two arms of one fresh negative-transfer comparison. */
+  comparisonId?: string;
+  /** Hash of the task, effective checker/default rubric, and evaluator protocol revision. */
+  taskHash?: string;
 }
 
 /**
@@ -165,7 +185,7 @@ export interface RolloutEntry {
  *
  * Each field is independently optional: omit one to skip that dimension when
  * the caller genuinely cannot know it (e.g. the `_all` aggregate has no single
- * SKILL.md body). Omitting BOTH disables validation entirely and restores the
+ * SKILL.md body). Omitting all fields disables validation entirely and restores the
  * pre-provenance load behaviour.
  */
 export interface RolloutExpectation {
@@ -180,13 +200,16 @@ export interface RolloutExpectation {
    * that fixture, so it has nothing to compare against).
    */
   promptHashes?: Map<string, string>;
+  /** taskId → current full task/evaluator contract hash. Required for scored replay. */
+  taskHashes?: Map<string, string>;
 }
 
 /** Why a recorded rollout entry was rejected during replay. */
 export type RolloutStaleReason =
   | "missing-provenance"
   | "skill-body-changed"
-  | "prompt-changed";
+  | "prompt-changed"
+  | "task-changed";
 
 // --- Load result ---
 

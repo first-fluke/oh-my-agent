@@ -1,5 +1,9 @@
+import { tmpdir } from "node:os";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { warnOnErrorEnvelope } from "./dispatch.js";
+import { runEvalDispatch, warnOnErrorEnvelope } from "./dispatch.js";
+import { collectLiveRollouts } from "./rollouts.js";
+import { scoreSkillBody } from "./score-skill-body.js";
+import type { LiveDispatchFn, TaskFixture } from "./types.js";
 
 describe("warnOnErrorEnvelope", () => {
   afterEach(() => {
@@ -39,5 +43,70 @@ describe("warnOnErrorEnvelope", () => {
     expect(warnOnErrorEnvelope("plain text answer")).toBe(false);
     expect(warnOnErrorEnvelope("{not json")).toBe(false);
     expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it("rejects an API error envelope even when the process exits successfully", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(() =>
+      runEvalDispatch(
+        {
+          command: process.execPath,
+          args: [
+            "-e",
+            "process.stdout.write(JSON.stringify({is_error:true,result:'EXPECTED partial output',api_error_status:429}))",
+          ],
+          env: process.env,
+        },
+        tmpdir(),
+        "prompt",
+        null,
+      ),
+    ).toThrow("API error envelope");
+  });
+
+  it("excludes both arms when an answer or judge dispatch fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const task: TaskFixture = {
+      id: "dispatch-error",
+      skill: "skill-x",
+      domain: "test",
+      prompt: "Return EXPECTED",
+      checker: { type: "assert", expect_contains: ["EXPECTED"] },
+      weight: 1,
+    };
+    const dispatch: LiveDispatchFn = (arm) => {
+      if (arm === "treatment") throw new Error("runtime unavailable");
+      return "EXPECTED";
+    };
+    const collected = collectLiveRollouts([task], "body", dispatch, tmpdir());
+    try {
+      expect(collected.rollouts).toEqual([]);
+    } finally {
+      collected.cleanupTmp();
+    }
+    const report = await scoreSkillBody({
+      skill: "skill-x",
+      body: "body",
+      tasks: [task],
+      mode: "live",
+      minimumCoverage: 1,
+      dispatchFn: dispatch,
+    });
+    expect(report.coverage).toBe("insufficient");
+    expect(report.findings).toEqual([]);
+    const judged = collectLiveRollouts(
+      [{ ...task, checker: { type: "judge" } }],
+      "body",
+      () => "EXPECTED",
+      tmpdir(),
+      () => {
+        throw new Error("judge unavailable");
+      },
+    );
+    try {
+      expect(judged.rollouts).toEqual([]);
+    } finally {
+      judged.cleanupTmp();
+    }
   });
 });

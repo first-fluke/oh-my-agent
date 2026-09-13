@@ -1,10 +1,20 @@
-import { existsSync, readdirSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadRolloutEntries, loadTaskFixtures } from "./fixtures.js";
 import {
   buildRolloutExpectation,
+  contentHash,
   judgeScore,
-  loadSkillMdBody,
+  taskFixtureHash,
+  writeRolloutRecord,
 } from "./rollouts.js";
 import { scoreChecker } from "./scoring.js";
 import {
@@ -12,28 +22,13 @@ import {
   type JudgeDispatchFn,
   type LiveDispatchFn,
   type NegativeTransfer,
+  type NegativeTransferCoverage,
+  type RolloutEntry,
   type RolloutExpectation,
-  type TaskCheckerJudge,
   type TaskFixture,
 } from "./types.js";
 
-// --- Negative-transfer neighbor discovery ---
-
-/**
- * Discover neighbor tasks from OTHER skills whose `domain` overlaps with the
- * given `domains` set.
- *
- * Scans `.agents/eval/<otherSkill>/` for every installed skill directory
- * other than `skillId`. Any task whose `domain` is in `domains` is a
- * candidate neighbor. Returns a flat list of `{ otherSkill, task }` pairs.
- *
- * Only tasks with at least one recorded rollout arm score are usable in mock
- * mode; caller is responsible for filtering further.
- *
- * @param skillId  - The skill under evaluation (excluded from scan).
- * @param domains  - Set of domain strings from skillId's tasks.
- * @param evalRoot - Absolute path to `.agents/eval/`.
- */
+/** Find tasks belonging to other skills in the selected domains. */
 export function discoverNeighborTasks(
   skillId: string,
   domains: Set<string>,
@@ -71,181 +66,266 @@ export function discoverNeighborTasks(
   return neighbors;
 }
 
-/**
- * Score a single neighbor task in the "treatment with skill X" arm.
- *
- * - Mock mode: looks up the neighbor's recorded baseline score from its own
- *   `_rollouts/` as `scoreWithoutX`, and the recorded treatment score as
- *   `scoreWithX`. If either is missing, skip and warn (never calls LLM in mock).
- * - Live mode: uses the neighbor's recorded baseline score as `scoreWithoutX`,
- *   and runs the neighbor task WITH skillX's SKILL.md body prepended as
- *   `scoreWithX` via the provided live dispatch function.
- *
- * Returns `null` when the task cannot be scored (missing data).
- */
-export function scoreNeighborInMock(
+type NeighborScores = { scoreWithoutX: number; scoreWithX: number };
+
+/** Compatibility alias for the shared full task/evaluator contract hash. */
+export function negativeTransferTaskHash(task: TaskFixture): string {
+  return taskFixtureHash(task);
+}
+
+/** Candidate recordings are separate from the neighbor's own evaluation. */
+export function negativeTransferRecordDir(
+  evalRoot: string,
+  skillId: string,
+  otherSkill: string,
+  body: string,
+): string {
+  return join(
+    evalRoot,
+    skillId,
+    "_negative-transfer",
+    otherSkill,
+    contentHash(body),
+  );
+}
+
+function scorePair(
   task: TaskFixture,
-  neighborTaskDir: string,
-  expect?: RolloutExpectation,
-): { scoreWithoutX: number; scoreWithX: number } | null {
-  const rollouts = loadRolloutEntries(neighborTaskDir, expect);
-  // Find rollout entries for this specific task
-  const baselineEntry = rollouts.find(
-    (r) => r.taskId === task.id && r.arm === "baseline",
-  );
-  const treatmentEntry = rollouts.find(
-    (r) => r.taskId === task.id && r.arm === "treatment",
-  );
-
-  if (task.checker.type === "judge") {
-    // Judge tasks require recorded scores for deterministic mock
-    if (
-      baselineEntry?.score === undefined ||
-      treatmentEntry?.score === undefined
-    ) {
-      console.warn(
-        `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded judge score; run --live --record on ${task.skill} to populate.`,
-      );
-      return null;
-    }
-    // scoreWithoutX = baseline score of the neighbor (without ANY skill injection)
-    // scoreWithX = treatment score of the neighbor (was run WITH the neighbor's own skill)
-    // We approximate: if neighbor's own skill improved it, the treatment score is the
-    // "with neighbor-skill" score. For negative-transfer we use the neighbor's OWN
-    // baseline as scoreWithoutX and re-run with skill X for scoreWithX.
-    // In mock mode, we only have the neighbor's recorded scores — use treatment
-    // as the "neighbor's own baseline" (already-loaded context baseline),
-    // but design requires scoreWithoutX = neighbor's baseline (no skill injection).
-    return {
-      scoreWithoutX: baselineEntry.score,
-      scoreWithX: treatmentEntry.score,
-    };
-  }
-
-  // assert / regex: score deterministically from output
-  if (!baselineEntry || !treatmentEntry) {
-    console.warn(
-      `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded rollout arms.`,
-    );
-    return null;
-  }
-
+  entries: RolloutEntry[],
+): NeighborScores | null {
+  const baseline = entries.find((entry) => entry.arm === "baseline");
+  const treatment = entries.find((entry) => entry.arm === "treatment");
+  if (!baseline || !treatment) return null;
   try {
-    const scoreWithoutX = scoreChecker(task.checker, baselineEntry.output);
-    const scoreWithX = scoreChecker(task.checker, treatmentEntry.output);
+    const scoreWithoutX = scoreChecker(
+      task.checker,
+      baseline.output,
+      baseline.score,
+    );
+    const scoreWithX = scoreChecker(
+      task.checker,
+      treatment.output,
+      treatment.score,
+    );
+    if (!Number.isFinite(scoreWithoutX) || !Number.isFinite(scoreWithX))
+      return null;
     return { scoreWithoutX, scoreWithX };
   } catch {
+    console.warn(
+      `[oma skill eval] neg-transfer: skipping neighbor task ${task.id}: missing or invalid checker score.`,
+    );
     return null;
   }
 }
 
-/**
- * Score a neighbor task in live mode: run task WITH skillX SKILL.md injected
- * (treatment arm) and get scoreWithoutX from the neighbor's recorded baseline.
- *
- * Returns `null` when:
- * - The neighbor has no recorded baseline rollout (we need a prior --live --record run)
- * - The dispatch function throws
- */
+/** Replay only a paired comparison explicitly recorded for this candidate. */
+export function scoreNeighborInMock(
+  task: TaskFixture,
+  recordDir: string,
+  expect?: RolloutExpectation,
+  candidateSkill?: string,
+): NeighborScores | null {
+  if (!candidateSkill || !expect?.skillBodyHash) {
+    console.warn(
+      `[oma skill eval] neg-transfer: skipping neighbor task ${task.id}: candidate provenance is required.`,
+    );
+    return null;
+  }
+  const taskHash = negativeTransferTaskHash(task);
+  const rollouts = loadRolloutEntries(recordDir, expect).filter(
+    (entry) =>
+      entry.taskId === task.id &&
+      entry.candidateSkill === candidateSkill &&
+      entry.skillBodyHash === expect.skillBodyHash &&
+      entry.promptHash === contentHash(task.prompt) &&
+      entry.taskHash === taskHash &&
+      typeof entry.comparisonId === "string" &&
+      entry.comparisonId.length > 0,
+  );
+  const comparisons = new Map<string, RolloutEntry[]>();
+  for (const entry of rollouts) {
+    const id = entry.comparisonId as string;
+    comparisons.set(id, [...(comparisons.get(id) ?? []), entry]);
+  }
+  for (const pair of comparisons.values()) {
+    // Duplicate or unmatched arms cannot prove one matched comparison.
+    if (pair.length !== 2 || pair[0]?.arm === pair[1]?.arm) continue;
+    const scores = scorePair(task, pair);
+    if (scores) return scores;
+  }
+  console.warn(
+    `[oma skill eval] neg-transfer: skipping neighbor task ${task.id}: no matched candidate recording; run --live --neg-transfer --record.`,
+  );
+  return null;
+}
+
+/** Run both arms now, with the same dispatch and separate empty workspaces. */
+function collectNeighborPair(
+  task: TaskFixture,
+  body: string,
+  dispatchFn: LiveDispatchFn,
+  judgeDispatchFn: JudgeDispatchFn | undefined,
+  candidateSkill: string,
+): { scores: NeighborScores; rollouts: RolloutEntry[] } | null {
+  if (task.checker.type === "judge" && !judgeDispatchFn) {
+    console.warn(
+      `[oma skill eval] neg-transfer: skipping judge neighbor task ${task.id}: no judge dispatch function.`,
+    );
+    return null;
+  }
+  const comparisonDir = mkdtempSync(join(tmpdir(), "oma-eval-neighbor-"));
+  const comparisonId = randomUUID();
+  const rollouts: RolloutEntry[] = [];
+  try {
+    for (const arm of ["baseline", "treatment"] as const) {
+      const armDir = join(comparisonDir, arm);
+      mkdirSync(armDir);
+      const prompt =
+        arm === "treatment" && body
+          ? `${body}\n\n---\n\n${task.prompt}`
+          : task.prompt;
+      const output = dispatchFn(arm, prompt, armDir);
+      const entry: RolloutEntry = {
+        taskId: task.id,
+        arm,
+        output,
+        candidateSkill,
+        comparisonId,
+        skillBodyHash: contentHash(body),
+        promptHash: contentHash(task.prompt),
+        taskHash: negativeTransferTaskHash(task),
+      };
+      if (task.checker.type === "judge" && judgeDispatchFn) {
+        entry.score = judgeScore(
+          task.prompt,
+          output,
+          task.checker.rubric ?? JUDGE_DEFAULT_RUBRIC,
+          judgeDispatchFn,
+        );
+      }
+      rollouts.push(entry);
+    }
+    const scores = scorePair(task, rollouts);
+    return scores ? { scores, rollouts } : null;
+  } catch (error) {
+    console.warn(
+      `[oma skill eval] neg-transfer: neighbor task ${task.id} could not be measured: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return null;
+  } finally {
+    rmSync(comparisonDir, { recursive: true, force: true });
+  }
+}
+
+/** Compatibility facade: previous recordings are never used for a live baseline. */
 export function scoreNeighborInLive(
   task: TaskFixture,
-  neighborTaskDir: string,
+  _neighborTaskDir: string,
   skillXBody: string,
   dispatchFn: LiveDispatchFn,
   judgeDispatchFn: JudgeDispatchFn | undefined,
-  tmpBase: string,
-  expect?: RolloutExpectation,
-): { scoreWithoutX: number; scoreWithX: number } | null {
-  const rollouts = loadRolloutEntries(neighborTaskDir, expect);
-  const baselineEntry = rollouts.find(
-    (r) => r.taskId === task.id && r.arm === "baseline",
+  _tmpBase: string,
+  _expect?: RolloutExpectation,
+): NeighborScores | null {
+  return (
+    collectNeighborPair(task, skillXBody, dispatchFn, judgeDispatchFn, "")
+      ?.scores ?? null
   );
-
-  // We need a recorded baseline to establish the "without-X" score
-  if (!baselineEntry) {
-    console.warn(
-      `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): no recorded baseline; run --live --record on ${task.skill} first.`,
-    );
-    return null;
-  }
-
-  // scoreWithoutX: use the recorded baseline score or re-score from output
-  let scoreWithoutX: number;
-  if (task.checker.type === "judge") {
-    if (baselineEntry.score === undefined) {
-      console.warn(
-        `[oma skill eval] neg-transfer: skipping neighbor task ${task.id} (${task.skill}): baseline has no recorded judge score.`,
-      );
-      return null;
-    }
-    scoreWithoutX = baselineEntry.score;
-  } else {
-    try {
-      scoreWithoutX = scoreChecker(task.checker, baselineEntry.output);
-    } catch {
-      return null;
-    }
-  }
-
-  // scoreWithX: run task WITH skillX body prepended (treatment arm)
-  const treatmentPrompt = skillXBody
-    ? `${skillXBody}\n\n---\n\n${task.prompt}`
-    : task.prompt;
-
-  let treatmentOutput: string;
-  try {
-    treatmentOutput = dispatchFn("treatment", treatmentPrompt, tmpBase);
-  } catch {
-    return null;
-  }
-
-  let scoreWithX: number;
-  if (task.checker.type === "judge") {
-    if (!judgeDispatchFn) {
-      console.warn(
-        `[oma skill eval] neg-transfer: skipping judge neighbor task ${task.id}: no judge dispatch function.`,
-      );
-      return null;
-    }
-    const rubric =
-      (task.checker as TaskCheckerJudge).rubric ?? JUDGE_DEFAULT_RUBRIC;
-    scoreWithX = judgeScore(
-      task.prompt,
-      treatmentOutput,
-      rubric,
-      judgeDispatchFn,
-    );
-  } else {
-    try {
-      scoreWithX = scoreChecker(task.checker, treatmentOutput);
-    } catch {
-      return null;
-    }
-  }
-
-  return { scoreWithoutX, scoreWithX };
 }
 
-/**
- * Compute negative-transfer entries for skill X by running same-domain neighbor
- * tasks WITH skill X loaded and comparing to the neighbor's recorded baseline.
- *
- * delta = scoreWithX - scoreWithoutX
- * delta < 0 = regression (negative transfer)
- *
- * @param skillId        - Skill under evaluation.
- * @param skillDomains   - Set of domain strings from skillId's own tasks.
- * @param evalRoot       - Absolute path to `.agents/eval/`.
- * @param mode           - "mock" or "live".
- * @param maxTasks       - Max number of neighbor tasks to sample (hard cap).
- * @param skillXBody     - SKILL.md content of skill X (for live treatment arm).
- * @param dispatchFn     - Live dispatch function (for live mode).
- * @param judgeDispatchFn - Judge dispatch function (for live mode + judge tasks).
- * @param tmpBase        - Temp directory for live dispatch.
- * @param workspace      - Workspace root, used to load each neighbour's own
- *   SKILL.md so its recorded treatment arm can be checked for staleness. When
- *   omitted, neighbour rollouts are validated for prompt drift only.
- */
+export interface MeasureNegativeTransferOptions {
+  skill: string;
+  domains: Set<string>;
+  evalRoot: string;
+  mode: "mock" | "live";
+  maxTasks?: number;
+  body: string;
+  dispatchFn?: LiveDispatchFn;
+  judgeFn?: JudgeDispatchFn;
+  record?: boolean;
+}
+
+/** Explicit coverage prevents an empty or partial result from meaning no regression. */
+export function measureNegativeTransfer(
+  options: MeasureNegativeTransferOptions,
+): {
+  entries: NegativeTransfer[];
+  coverage: NegativeTransferCoverage;
+} {
+  const {
+    skill,
+    domains,
+    evalRoot,
+    mode,
+    maxTasks,
+    body,
+    dispatchFn,
+    judgeFn,
+  } = options;
+  const neighbors = discoverNeighborTasks(skill, domains, evalRoot);
+  const sampled =
+    maxTasks !== undefined && maxTasks > 0
+      ? neighbors.slice(0, maxTasks)
+      : neighbors;
+  if (sampled.length < neighbors.length) {
+    console.warn(
+      `[oma skill eval] neg-transfer: ${neighbors.length} neighbor tasks found; capping at --max-tasks=${maxTasks} (${neighbors.length - sampled.length} dropped).`,
+    );
+  }
+  const entries: NegativeTransfer[] = [];
+  for (const { otherSkill, task } of sampled) {
+    const recordDir = negativeTransferRecordDir(
+      evalRoot,
+      skill,
+      otherSkill,
+      body,
+    );
+    let scored: NeighborScores | null;
+    if (mode === "mock") {
+      scored = scoreNeighborInMock(
+        task,
+        recordDir,
+        buildRolloutExpectation([task], body),
+        skill,
+      );
+    } else if (dispatchFn) {
+      const comparison = collectNeighborPair(
+        task,
+        body,
+        dispatchFn,
+        judgeFn,
+        skill,
+      );
+      scored = comparison?.scores ?? null;
+      if (comparison && options.record)
+        writeRolloutRecord(recordDir, comparison.rollouts);
+    } else {
+      scored = null;
+    }
+    if (!scored) continue;
+    entries.push({
+      otherSkill,
+      domain: task.domain,
+      taskId: task.id,
+      candidateSkill: skill,
+      skillBodyHash: contentHash(body),
+      delta: scored.scoreWithX - scored.scoreWithoutX,
+    });
+  }
+  return {
+    entries,
+    coverage: {
+      status:
+        sampled.length > 0 && entries.length === sampled.length
+          ? "measured"
+          : "insufficient",
+      expected: sampled.length,
+      scored: entries.length,
+    },
+  };
+}
+
+/** Legacy array API; callers deciding adoption should use the coverage-aware API. */
 export function computeNegativeTransfer(
   skillId: string,
   skillDomains: Set<string>,
@@ -255,69 +335,17 @@ export function computeNegativeTransfer(
   skillXBody: string,
   dispatchFn: LiveDispatchFn | undefined,
   judgeDispatchFn: JudgeDispatchFn | undefined,
-  tmpBase: string,
-  workspace?: string,
+  _tmpBase: string,
+  _workspace?: string,
 ): NegativeTransfer[] {
-  const allNeighbors = discoverNeighborTasks(skillId, skillDomains, evalRoot);
-
-  // Apply maxTasks cap with logged warning (no silent truncation — design T1-c)
-  let sampledNeighbors = allNeighbors;
-  if (
-    maxTasks !== undefined &&
-    maxTasks > 0 &&
-    allNeighbors.length > maxTasks
-  ) {
-    const dropped = allNeighbors.length - maxTasks;
-    console.warn(
-      `[oma skill eval] neg-transfer: ${allNeighbors.length} neighbor tasks found; capping at --max-tasks=${maxTasks} (${dropped} dropped).`,
-    );
-    sampledNeighbors = allNeighbors.slice(0, maxTasks);
-  }
-
-  const entries: NegativeTransfer[] = [];
-
-  for (const { otherSkill, task } of sampledNeighbors) {
-    const neighborTaskDir = join(evalRoot, otherSkill);
-
-    // The neighbour's recorded treatment arm was produced by the neighbour's OWN
-    // SKILL.md, so that is the body its provenance must match — not skillXBody.
-    const neighborExpect: RolloutExpectation = buildRolloutExpectation(
-      [task],
-      workspace === undefined
-        ? undefined
-        : loadSkillMdBody(otherSkill, workspace),
-    );
-
-    let scored: { scoreWithoutX: number; scoreWithX: number } | null;
-    if (mode === "mock") {
-      scored = scoreNeighborInMock(task, neighborTaskDir, neighborExpect);
-    } else {
-      if (!dispatchFn) {
-        console.warn(
-          `[oma skill eval] neg-transfer: skipping neighbor task ${task.id}: no live dispatch function.`,
-        );
-        continue;
-      }
-      scored = scoreNeighborInLive(
-        task,
-        neighborTaskDir,
-        skillXBody,
-        dispatchFn,
-        judgeDispatchFn,
-        tmpBase,
-        neighborExpect,
-      );
-    }
-
-    if (scored === null) continue;
-
-    const delta = scored.scoreWithX - scored.scoreWithoutX;
-    entries.push({
-      otherSkill,
-      domain: task.domain,
-      delta,
-    });
-  }
-
-  return entries;
+  return measureNegativeTransfer({
+    skill: skillId,
+    domains: skillDomains,
+    evalRoot,
+    mode,
+    maxTasks,
+    body: skillXBody,
+    dispatchFn,
+    judgeFn: judgeDispatchFn,
+  }).entries;
 }

@@ -53,11 +53,31 @@ export interface SkillOptimizerContext {
   patterns: SkillEvolutionPattern[];
 }
 
+export type OptimizerOutcome =
+  | { status: "proposed"; edits: SkillEdit[] }
+  | { status: "no-action"; edits: [] }
+  | { status: "dispatch-error" | "parse-error"; message: string };
+
+export type MaintainerOutcome =
+  | { status: "consolidated"; patterns: SkillEvolutionPattern[] }
+  | {
+      status: "degraded";
+      patterns: SkillEvolutionPattern[];
+      reason: "dispatch-error" | "parse-error";
+      message: string;
+    };
+
+export interface EvolutionDiagnostic {
+  stage: "optimizer" | "maintainer" | "validation";
+  status: string;
+  message: string;
+}
+
 export interface SkillProposalGateRecord {
   epoch: number;
   edit: SkillEdit;
   editKey: string;
-  outcome: "accepted" | "rejected";
+  outcome: "accepted" | "rejected" | "inconclusive";
   reason:
     | "accepted"
     | "learning-rate"
@@ -65,6 +85,9 @@ export interface SkillProposalGateRecord {
     | "no-validation-lift"
     | "not-best-candidate"
     | "negative-transfer"
+    | "negative-transfer-unmeasured"
+    | "insufficient-coverage"
+    | "unverified-isolation"
     | "final-test";
   deltaLift: number;
 }
@@ -94,6 +117,8 @@ export interface SkillOptResult {
   finalSkillMd: string;
   diff: string;
   applied: boolean;
+  diagnostics?: EvolutionDiagnostic[];
+  promotion?: { eligible: boolean; reasons: string[] };
   evolution?: {
     suiteHash: string;
     persistentPatterns: number;
@@ -103,6 +128,7 @@ export interface SkillOptResult {
     baselineLift: number;
     candidateLift: number;
     passed: boolean;
+    blocker?: string;
   };
 }
 
@@ -119,13 +145,16 @@ export type OptimizerFn = (
   body: string,
   findings: SkillUtilityReport,
   context?: SkillOptimizerContext,
-) => SkillEdit[] | Promise<SkillEdit[]>;
+) => SkillEdit[] | OptimizerOutcome | Promise<SkillEdit[] | OptimizerOutcome>;
 
 export type MaintainerFn = (
   findings: SkillUtilityReport,
   knowledge: SkillEvolutionKnowledge,
   epoch: number,
-) => SkillEvolutionPattern[] | Promise<SkillEvolutionPattern[]>;
+) =>
+  | SkillEvolutionPattern[]
+  | MaintainerOutcome
+  | Promise<SkillEvolutionPattern[] | MaintainerOutcome>;
 
 // --- Scoring function type (T6 injectable) ---
 

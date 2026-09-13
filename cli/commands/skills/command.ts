@@ -135,7 +135,7 @@ export function registerSkillsCommand(program: Command): void {
       .option("--apply", "Apply accepted edits (backs up original first)")
       .option(
         "--mock",
-        "Replay recorded edits/eval verdicts (default; deterministic)",
+        "Offline scoring mode; CLI proposal replay is unavailable (use skill eval --mock)",
       )
       .option(
         "--live",

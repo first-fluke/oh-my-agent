@@ -31,10 +31,11 @@ function report(lift: number): SkillUtilityReport {
     utilityLift: lift,
     utilityStdDev: 0,
     findings: [],
-    negativeTransfer: [],
+    negativeTransfer: [{ otherSkill: "neighbor", domain: "test", delta: 0 }],
+    negativeTransferCoverage: { status: "measured", expected: 1, scored: 1 },
     decision: lift > 0 ? "pass" : "fail",
     coverage: "ok",
-    isolation: "n/a",
+    isolation: "enforced",
   };
 }
 

@@ -12,7 +12,10 @@ export function serializeSkillUtilityReport(
 ): string {
   return JSON.stringify(
     {
-      ok: report.coverage === "ok" && report.decision === "pass",
+      ok:
+        report.coverage === "ok" &&
+        report.decision === "pass" &&
+        report.negativeTransferCoverage?.status !== "insufficient",
       skill: report.skill,
       taskCount: report.taskCount,
       skippedFiles: report.skippedFiles,
@@ -29,6 +32,7 @@ export function serializeSkillUtilityReport(
         lift: Number(f.lift.toFixed(4)),
       })),
       negativeTransfer: report.negativeTransfer,
+      negativeTransferCoverage: report.negativeTransferCoverage,
       isolation: report.isolation,
       isolationVendor: report.isolationVendor,
     },
@@ -42,6 +46,12 @@ export function serializeSkillUtilityReport(
 export function renderSkillUtilityReport(report: SkillUtilityReport): void {
   console.log(`\nSkill utility eval  (skill: ${report.skill})`);
   console.log(`  tasks: ${report.taskCount}`);
+  const transferCoverage = report.negativeTransferCoverage;
+  if (transferCoverage && transferCoverage.status !== "not-requested") {
+    console.log(
+      `  negative-transfer coverage: ${transferCoverage.status} (${transferCoverage.scored}/${transferCoverage.expected})`,
+    );
+  }
   if (report.isolation && report.isolation !== "n/a") {
     const vendorTag = report.isolationVendor
       ? ` [${report.isolationVendor}]`

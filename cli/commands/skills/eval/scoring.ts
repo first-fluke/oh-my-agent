@@ -3,6 +3,7 @@ import {
   MIN_TASKS,
   NEG_TRANSFER_FAIL,
   type NegativeTransfer,
+  type NegativeTransferCoverage,
   REGEX_OUTPUT_MAX_LEN,
   REGEX_PATTERN_MAX_LEN,
   type RolloutEntry,
@@ -97,6 +98,7 @@ export interface ComputeUtilityOptions {
   maxTasks?: number;
   /** Pre-computed negative-transfer entries (populated by computeNegativeTransfer). */
   negativeTransfer?: NegativeTransfer[];
+  negativeTransferCoverage?: NegativeTransferCoverage;
   /** Isolation status from the live dispatch path. Defaults to `"n/a"` (mock mode). */
   isolation?: IsolationStatus;
   /** Vendor resolved for live dispatch. */
@@ -151,6 +153,7 @@ export function computeUtility(
       utilityStdDev: 0,
       findings: [],
       negativeTransfer: negativeTransferInput,
+      negativeTransferCoverage: options.negativeTransferCoverage,
       decision: "insufficient",
       coverage: "insufficient",
       isolation,
@@ -283,6 +286,7 @@ export function computeUtility(
       utilityStdDev: 0,
       findings,
       negativeTransfer: negativeTransferInput,
+      negativeTransferCoverage: options.negativeTransferCoverage,
       decision: "insufficient",
       coverage: "insufficient",
       isolation,
@@ -323,6 +327,7 @@ export function computeUtility(
     utilityStdDev,
     findings,
     negativeTransfer: negativeTransferInput,
+    negativeTransferCoverage: options.negativeTransferCoverage,
     decision,
     coverage: "ok",
     isolation,

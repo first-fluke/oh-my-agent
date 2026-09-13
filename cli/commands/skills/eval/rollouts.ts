@@ -17,6 +17,7 @@ import {
   type LiveDispatchFn,
   type RolloutEntry,
   type RolloutExpectation,
+  SKILL_EVAL_PROTOCOL_REVISION,
   type TaskCheckerJudge,
   type TaskFixture,
 } from "./types.js";
@@ -51,13 +52,32 @@ export function contentHash(text: string): string {
   return createHash("sha256").update(text).digest("hex").slice(0, 16);
 }
 
+/** Pin the effective checker and protocol so cached judge scores cannot survive evaluator changes. */
+export function taskFixtureHash(task: TaskFixture): string {
+  const checker =
+    task.checker.type === "judge"
+      ? { type: "judge", rubric: task.checker.rubric ?? JUDGE_DEFAULT_RUBRIC }
+      : task.checker;
+  return contentHash(
+    JSON.stringify({
+      protocolRevision: SKILL_EVAL_PROTOCOL_REVISION,
+      id: task.id,
+      skill: task.skill,
+      domain: task.domain,
+      prompt: task.prompt,
+      checker,
+      weight: task.weight,
+    }),
+  );
+}
+
 /**
  * Build the {@link RolloutExpectation} describing the inputs currently on disk,
  * for `loadRolloutEntries` to validate recorded rollouts against.
  *
  * Pass `skillMdBody: undefined` when there is no single body to compare — the
  * `_all` aggregate spans many skills — which skips body validation while still
- * checking prompt drift.
+ * checking the task/evaluator contract and prompt drift.
  */
 export function buildRolloutExpectation(
   tasks: TaskFixture[],
@@ -67,6 +87,7 @@ export function buildRolloutExpectation(
     skillBodyHash:
       skillMdBody === undefined ? undefined : contentHash(skillMdBody),
     promptHashes: new Map(tasks.map((t) => [t.id, contentHash(t.prompt)])),
+    taskHashes: new Map(tasks.map((task) => [task.id, taskFixtureHash(task)])),
   };
 }
 
@@ -139,8 +160,8 @@ export function judgeScore(
  * entry.score. This enables deterministic --mock replay without re-calling
  * the LLM (design 016 amendment 2026-06-04).
  *
- * Both arms run in a per-session temp directory for isolation; the temp dir
- * is cleaned up when cleanupTmp() is called (returned from this function).
+ * Every arm runs in its own empty directory under a session temp directory.
+ * cleanupTmp() removes all of them, including failed comparisons.
  */
 export function collectLiveRollouts(
   tasks: TaskFixture[],
@@ -166,56 +187,72 @@ export function collectLiveRollouts(
   const bodyHash = contentHash(skillMdBody);
 
   for (const task of tasks) {
-    const promptHash = contentHash(task.prompt);
-    const isJudgeTask = task.checker.type === "judge";
-    const rubric = isJudgeTask
-      ? ((task.checker as TaskCheckerJudge).rubric ?? JUDGE_DEFAULT_RUBRIC)
-      : JUDGE_DEFAULT_RUBRIC;
+    const pairStart = rollouts.length;
+    try {
+      const promptHash = contentHash(task.prompt);
+      const isJudgeTask = task.checker.type === "judge";
+      const rubric = isJudgeTask
+        ? ((task.checker as TaskCheckerJudge).rubric ?? JUDGE_DEFAULT_RUBRIC)
+        : JUDGE_DEFAULT_RUBRIC;
 
-    // --- Baseline arm: prompt alone (no skill context) ---
-    const baselineOutput = dispatchFn("baseline", task.prompt, tmpBase);
-    const baselineEntry: RolloutEntry = {
-      taskId: task.id,
-      arm: "baseline",
-      output: baselineOutput,
-      // No skillBodyHash: the baseline withholds the skill, so editing SKILL.md
-      // does not invalidate this arm and re-recording it would waste a dispatch.
-      promptHash,
-    };
-    if (isJudgeTask && judgeDispatchFn) {
-      baselineEntry.score = judgeScore(
-        task.prompt,
-        baselineOutput,
-        rubric,
-        judgeDispatchFn,
+      // --- Baseline arm: prompt alone (no skill context) ---
+      const baselineDir = mkdtempSync(join(tmpBase, "baseline-"));
+      const baselineOutput = dispatchFn("baseline", task.prompt, baselineDir);
+      const baselineEntry: RolloutEntry = {
+        taskId: task.id,
+        arm: "baseline",
+        output: baselineOutput,
+        // No skillBodyHash: the baseline withholds the skill, so editing SKILL.md
+        // does not invalidate this arm and re-recording it would waste a dispatch.
+        promptHash,
+        taskHash: taskFixtureHash(task),
+      };
+      if (isJudgeTask && judgeDispatchFn) {
+        baselineEntry.score = judgeScore(
+          task.prompt,
+          baselineOutput,
+          rubric,
+          judgeDispatchFn,
+        );
+      }
+      rollouts.push(baselineEntry);
+
+      // --- Treatment arm: SKILL.md prepended to the prompt ---
+      // Trust boundary: both skillMdBody (SKILL.md) and task.prompt are user-authored
+      // content from the local workspace. The --live flag is an explicit opt-in; this
+      // concat does not introduce external/untrusted input beyond what the user controls.
+      const treatmentPrompt = skillMdBody
+        ? `${skillMdBody}\n\n---\n\n${task.prompt}`
+        : task.prompt;
+      const treatmentDir = mkdtempSync(join(tmpBase, "treatment-"));
+      const treatmentOutput = dispatchFn(
+        "treatment",
+        treatmentPrompt,
+        treatmentDir,
+      );
+      const treatmentEntry: RolloutEntry = {
+        taskId: task.id,
+        arm: "treatment",
+        output: treatmentOutput,
+        skillBodyHash: bodyHash,
+        promptHash,
+        taskHash: taskFixtureHash(task),
+      };
+      if (isJudgeTask && judgeDispatchFn) {
+        treatmentEntry.score = judgeScore(
+          task.prompt,
+          treatmentOutput,
+          rubric,
+          judgeDispatchFn,
+        );
+      }
+      rollouts.push(treatmentEntry);
+    } catch (error) {
+      rollouts.splice(pairStart);
+      console.warn(
+        `[oma skill eval] task ${task.id} could not be measured: ${error instanceof Error ? error.message : String(error)}. Excluding both arms.`,
       );
     }
-    rollouts.push(baselineEntry);
-
-    // --- Treatment arm: SKILL.md prepended to the prompt ---
-    // Trust boundary: both skillMdBody (SKILL.md) and task.prompt are user-authored
-    // content from the local workspace. The --live flag is an explicit opt-in; this
-    // concat does not introduce external/untrusted input beyond what the user controls.
-    const treatmentPrompt = skillMdBody
-      ? `${skillMdBody}\n\n---\n\n${task.prompt}`
-      : task.prompt;
-    const treatmentOutput = dispatchFn("treatment", treatmentPrompt, tmpBase);
-    const treatmentEntry: RolloutEntry = {
-      taskId: task.id,
-      arm: "treatment",
-      output: treatmentOutput,
-      skillBodyHash: bodyHash,
-      promptHash,
-    };
-    if (isJudgeTask && judgeDispatchFn) {
-      treatmentEntry.score = judgeScore(
-        task.prompt,
-        treatmentOutput,
-        rubric,
-        judgeDispatchFn,
-      );
-    }
-    rollouts.push(treatmentEntry);
   }
 
   // Pass tmpBase back as workspace context (unused after collection)
@@ -230,9 +267,9 @@ export function collectLiveRollouts(
  * Entries are sorted by (taskId, arm) for byte-identical output on repeated runs.
  * Judge verdicts (entry.score) are included so --mock replay is fully offline.
  *
- * Entries carry provenance (`skillBodyHash` on treatment, `promptHash` on both)
- * so a later `--mock` run can detect that SKILL.md or the fixture prompt changed
- * since recording. See `loadRolloutEntries`.
+ * Entries carry provenance (`skillBodyHash` on treatment; `promptHash` and full
+ * `taskHash` on both) so replay rejects changed skill bodies, task/checker
+ * contracts, or evaluator protocol revisions. See `loadRolloutEntries`.
  */
 export function writeRolloutRecord(
   taskDir: string,

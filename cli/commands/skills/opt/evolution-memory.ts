@@ -15,6 +15,7 @@ import {
   sessionDir,
 } from "../../../state/events.js";
 import type { MemoryProvider } from "../../../types/memory.js";
+import { taskFixtureHash } from "../eval/rollouts.js";
 import type { SkillUtilityReport, TaskFixture } from "../eval.js";
 import type {
   SkillEvolutionKnowledge,
@@ -49,13 +50,7 @@ export function redactEvolutionText(value: string): string {
 export function skillEvolutionSuiteHash(tasks: TaskFixture[]): string {
   const canonical = [...tasks]
     .sort((a, b) => a.id.localeCompare(b.id))
-    .map((task) => ({
-      id: task.id,
-      domain: task.domain,
-      prompt: task.prompt,
-      checker: task.checker,
-      weight: task.weight,
-    }));
+    .map(taskFixtureHash);
   return hash(JSON.stringify(canonical)).slice(0, 16);
 }
 
@@ -153,8 +148,6 @@ export function loadLocalSkillEvolutionKnowledge(
   }
 
   for (const sid of entries) {
-    const sessionAcceptedKeys: string[] = [];
-    let finalTestFailed = false;
     for (const event of readEvents(workspace, sid)) {
       if (!matchesScope(event, base)) continue;
       if (event.kind === "skill.pattern.consolidated") {
@@ -164,24 +157,16 @@ export function loadLocalSkillEvolutionKnowledge(
         }
       }
       if (event.kind === "skill.proposal.gated") {
+        // Final verdicts are audit-only, including history written by older versions.
+        if (event.payload?.reason === "final-test") continue;
         const key = event.payload?.editKey;
         const outcome = event.payload?.outcome;
         if (typeof key !== "string") continue;
         if (outcome === "accepted") {
           acceptedEditKeys.push(key);
-          sessionAcceptedKeys.push(key);
         }
         if (outcome === "rejected") rejectedEditKeys.push(key);
       }
-      if (
-        event.kind === "skill.evolution.completed" &&
-        event.payload?.finalTestPassed === false
-      ) {
-        finalTestFailed = true;
-      }
-    }
-    if (finalTestFailed) {
-      rejectedEditKeys.push(...sessionAcceptedKeys);
     }
   }
 
@@ -206,7 +191,12 @@ async function enrichWithSemanticRecall(
     limit: HISTORY_LIMIT,
   });
   const scoped = recalled
-    .filter((fact) => fact.text.includes(tag))
+    .filter(
+      (fact) =>
+        fact.text.includes(tag) &&
+        !/Reason: final-test(?:\s|$)/.test(fact.text) &&
+        !fact.text.includes("Proposal inconclusive:"),
+    )
     .map((fact) => fact.text.slice(0, 4_000));
   return {
     ...knowledge,
@@ -281,7 +271,12 @@ export async function createSkillEvolutionRecorder(args: {
     kind: string,
     payload: Record<string, unknown>,
   ): Promise<OmaEvent> => {
-    if (args.provider.name === "none") {
+    if (
+      args.provider.name === "none" ||
+      kind === "skill.evolution.completed" ||
+      (kind === "skill.proposal.gated" &&
+        (payload.reason === "final-test" || payload.outcome === "inconclusive"))
+    ) {
       return emitEvent(args.workspace, sid, { kind, payload });
     }
     return emitEventWithMemory(
@@ -351,11 +346,14 @@ export async function createSkillEvolutionRecorder(args: {
           editKey: record.editKey,
         });
       }
-      if (record.outcome === "accepted") {
+      if (record.reason !== "final-test" && record.outcome === "accepted") {
         knowledge.acceptedEditKeys = [
           ...new Set([...knowledge.acceptedEditKeys, record.editKey]),
         ];
-      } else {
+      } else if (
+        record.reason !== "final-test" &&
+        record.outcome === "rejected"
+      ) {
         knowledge.rejectedEditKeys = [
           ...new Set([...knowledge.rejectedEditKeys, record.editKey]),
         ];
@@ -386,6 +384,9 @@ export async function createSkillEvolutionRecorder(args: {
         acceptedEdits: result.acceptedEdits.length,
         rejectedEdits: result.rejectedCount,
         applied: result.applied,
+        promotionEligible: result.promotion?.eligible,
+        diagnostics: result.diagnostics,
+        finalTestBlocker: result.finalTest?.blocker,
         finalTestPassed: result.finalTest?.passed,
         artifact: artifactRelative,
       });

@@ -7,10 +7,16 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
+import { getProtectedTextCapability } from "../../io/protected-text.js";
 import { resolveVendor } from "../../platform/agent-config.js";
 import { createNoneMemoryProvider } from "../../state/memory-provider.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
-import { loadTaskFixtures, MIN_TASKS, scoreSkillBody } from "./eval.js";
+import {
+  discoverNeighborTasks,
+  loadTaskFixtures,
+  MIN_TASKS,
+  scoreSkillBody,
+} from "./eval.js";
 import { confirmLiveRun } from "./opt/cost-preview.js";
 import { editKey, splitTrainValTest, validateCandidate } from "./opt/edits.js";
 import { runOptEpochLoop } from "./opt/epoch-loop.js";
@@ -83,7 +89,9 @@ export {
   resolveSkillMdPath,
 } from "./opt/skill-files.js";
 export {
+  type EvolutionDiagnostic,
   type MaintainerFn,
+  type MaintainerOutcome,
   OPT_EARLY_STOP_PATIENCE,
   OPT_EDITS_PER_EPOCH,
   OPT_LR_MAX_CHARS,
@@ -93,6 +101,7 @@ export {
   OPT_VALIDATION_SPLIT,
   type OptEpoch,
   type OptimizerFn,
+  type OptimizerOutcome,
   type ScoringFn,
   type SkillEdit,
   type SkillEvolutionKnowledge,
@@ -171,6 +180,23 @@ export async function runSkillsOpt(
   const yes = options.yes === true;
   const mode: "mock" | "live" = isLive ? "live" : "mock";
 
+  if (options.live && options.mock)
+    throw new Error("Choose either --live or --mock");
+  if (!isLive && !options._optimizerFn) {
+    throw new Error(
+      "[oma skill opt] mock optimization has no recorded proposal source. Use skill eval --mock to replay evaluations, or --live to generate edits.",
+    );
+  }
+  if (isLive && !options._optimizerFn) {
+    const compilerVendor = resolveVendor("opt-agent").vendor;
+    const capability = getProtectedTextCapability(compilerVendor);
+    if (!capability.supported) {
+      throw new Error(
+        `[oma skill opt] protected compiler is unavailable for ${compilerVendor}: ${capability.reason}`,
+      );
+    }
+  }
+
   const maxEpochs = options.maxEpochs ?? OPT_MAX_EPOCHS;
   const editsPerEpoch = options.editsPerEpoch ?? OPT_EDITS_PER_EPOCH;
   const lrMaxChars = options.lr ?? OPT_LR_MAX_CHARS;
@@ -182,7 +208,16 @@ export async function runSkillsOpt(
       editsPerEpoch,
       yes,
       options._readline,
-      { train, val, test },
+      {
+        train,
+        val,
+        test,
+        neighbors: discoverNeighborTasks(
+          skillId,
+          new Set(fixtures.map((task) => task.domain)),
+          dirname(taskDir),
+        ).map(({ task }) => task),
+      },
     );
     if (!proceed) {
       if (!jsonMode) {
@@ -260,6 +295,7 @@ export async function runSkillsOpt(
       scoringFn,
       maintainerFn,
       evolutionRecorder,
+      workspace,
     });
   } catch (error) {
     await evolutionRecorder?.fail?.(error);
@@ -271,6 +307,8 @@ export async function runSkillsOpt(
   let finalResult: SkillOptResult = { ...loopResult, applied: false };
   if (
     loopResult.finalTest?.passed === false &&
+    (!loopResult.finalTest.blocker ||
+      loopResult.finalTest.blocker === "negative-transfer") &&
     loopResult.acceptedEdits.length > 0
   ) {
     const finalDelta =
@@ -304,13 +342,15 @@ export async function runSkillsOpt(
 
   if (apply) {
     const hasImprovement = loopResult.finalLift > loopResult.baselineLift;
-    const passesFinalTest = loopResult.finalTest?.passed !== false;
+    const passesFinalTest = loopResult.finalTest?.passed === true;
     const validation = validateCandidate(loopResult.finalSkillMd);
 
     if (!hasImprovement) {
       await evolutionRecorder?.complete(finalResult);
-      // No real improvement — write nothing
-      const noImpMsg = `[oma skill opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} <= baselineLift ${loopResult.baselineLift.toFixed(4)}); nothing written.`;
+      const evaluationBlocked = (loopResult.diagnostics?.length ?? 0) > 0;
+      const noImpMsg = evaluationBlocked
+        ? "[oma skill opt] evaluation was incomplete or degraded; no improvement decision could be made; nothing written."
+        : `[oma skill opt] no improving edit found (finalLift ${loopResult.finalLift.toFixed(4)} <= baselineLift ${loopResult.baselineLift.toFixed(4)}); nothing written.`;
       if (!jsonMode) {
         console.log(noImpMsg);
         renderSkillOptResult(finalResult);
@@ -320,7 +360,9 @@ export async function runSkillsOpt(
             {
               ...JSON.parse(serializeSkillOptResult(finalResult)),
               _dryRun: false,
-              _noImprovement: true,
+              ...(evaluationBlocked
+                ? { _evaluationBlocked: true }
+                : { _noImprovement: true }),
               _split: {
                 trainCount: train.length,
                 valCount: val.length,
@@ -337,7 +379,9 @@ export async function runSkillsOpt(
 
     if (!passesFinalTest) {
       await evolutionRecorder?.complete(finalResult);
-      const finalTestMsg = `[oma skill opt] candidate failed runner-owned final test (${loopResult.finalTest?.candidateLift.toFixed(4)} <= ${loopResult.finalTest?.baselineLift.toFixed(4)}); nothing written.`;
+      const finalTestMsg = loopResult.finalTest?.blocker
+        ? `[oma skill opt] runner-owned final-test gate blocked promotion: ${loopResult.finalTest.blocker}; nothing written.`
+        : `[oma skill opt] candidate did not pass the runner-owned final test (baseline ${loopResult.finalTest?.baselineLift.toFixed(4) ?? "missing"}, candidate ${loopResult.finalTest?.candidateLift.toFixed(4) ?? "missing"}); nothing written.`;
       if (!jsonMode) {
         console.log(finalTestMsg);
         renderSkillOptResult(finalResult);
@@ -388,6 +432,23 @@ export async function runSkillsOpt(
           ),
         );
       }
+      return;
+    }
+
+    if (finalResult.promotion?.eligible !== true) {
+      await evolutionRecorder?.complete(finalResult);
+      if (jsonMode)
+        console.log(
+          JSON.stringify(
+            {
+              ...JSON.parse(serializeSkillOptResult(finalResult)),
+              _promotionBlocked: true,
+            },
+            null,
+            2,
+          ),
+        );
+      else renderSkillOptResult(finalResult);
       return;
     }
 

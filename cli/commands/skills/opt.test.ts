@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { taskFixtureHash } from "./eval/rollouts.js";
 import {
   contentHash,
   MIN_TASKS,
@@ -126,10 +127,18 @@ function makeMockReport(
     utilityLift: lift,
     utilityStdDev: 0,
     findings: [],
-    negativeTransfer: negTransfer,
+    negativeTransfer:
+      negTransfer.length > 0
+        ? negTransfer
+        : [{ otherSkill: "neighbor", domain: "test", delta: 0 }],
+    negativeTransferCoverage: {
+      status: "measured",
+      expected: Math.max(1, negTransfer.length),
+      scored: Math.max(1, negTransfer.length),
+    },
     decision: lift > 0.05 ? "pass" : lift > 0 ? "warn" : "fail",
     coverage: "ok",
-    isolation: "n/a",
+    isolation: "enforced",
   };
 }
 
@@ -1061,6 +1070,38 @@ describe("validateCandidate frontmatter loss", () => {
 // --- runSkillsOpt ---
 
 describe("runSkillsOpt", () => {
+  it("does not start evaluation or paid proposal generation in default mock mode", async () => {
+    const taskDir = join(tmpDir, "eval", "offline");
+    writeNTasks(taskDir, MIN_TASKS);
+    const scoringFn = vi.fn<ScoringFn>();
+    await expect(
+      runSkillsOpt(true, {
+        skill: "offline",
+        _workspace: tmpDir,
+        _taskDir: taskDir,
+        _scoringFn: scoringFn,
+      }),
+    ).rejects.toThrow("mock optimization has no recorded proposal source");
+    expect(scoringFn).not.toHaveBeenCalled();
+  });
+
+  it("rejects conflicting live/mock modes before evaluating", async () => {
+    const taskDir = join(tmpDir, "eval", "conflicting-mode");
+    writeNTasks(taskDir, MIN_TASKS);
+    const scoringFn = vi.fn<ScoringFn>();
+    await expect(
+      runSkillsOpt(true, {
+        skill: "conflicting-mode",
+        live: true,
+        mock: true,
+        _workspace: tmpDir,
+        _taskDir: taskDir,
+        _scoringFn: scoringFn,
+      }),
+    ).rejects.toThrow("Choose either --live or --mock");
+    expect(scoringFn).not.toHaveBeenCalled();
+  });
+
   it("exits non-zero and prints error when < MIN_TASKS fixtures exist", async () => {
     const taskDir = join(tmpDir, "eval", "oma-test");
     // Write fewer than MIN_TASKS fixtures
@@ -1338,12 +1379,14 @@ describe("runOptEpochLoop with rollout-based mock scoring (no LLM)", () => {
         arm: "baseline" as const,
         output: "no match",
         promptHash: contentHash(f.prompt),
+        taskHash: taskFixtureHash(f),
       },
       {
         taskId: f.id,
         arm: "treatment" as const,
         output: "EXPECTED",
         promptHash: contentHash(f.prompt),
+        taskHash: taskFixtureHash(f),
         skillBodyHash: contentHash(body),
       },
     ]);
@@ -1724,70 +1767,85 @@ describe("runSkillsOpt OUTPUT layer: --apply with improving result", () => {
     consoleSpy.mockRestore();
   });
 
-  it("does not write a validation winner that regresses on the hidden final test", async () => {
-    const skillId = "user-final-test-regression";
-    const taskDir = join(tmpDir, "eval", skillId);
-    writeNTasks(taskDir, MIN_TASKS * 2);
-    const originalContent = makeValidSkillBody("## Overview\n\nOriginal.");
-    const skillMdPath = join(tmpDir, "skills", skillId, "SKILL.md");
-    writeSkillMd(skillMdPath, originalContent);
-    const edit: SkillEdit = {
-      op: "add",
-      anchor: "## Overview",
-      after: "\n\n- Overfit rule.",
-    };
-    const candidateBody = applyEdit(originalContent, edit);
-    const scoringFn: ScoringFn = async (options) => {
-      const firstTask = options.tasks?.[0]?.id ?? "";
-      const isFinalTest = firstTask >= "task-008";
-      const isCandidate = options.body === candidateBody;
-      return makeMockReport(isCandidate ? (isFinalTest ? -0.2 : 0.2) : 0);
-    };
-    const logs: string[] = [];
-    const recordProposal = vi.fn();
-    const evolutionRecorder: SkillEvolutionRecorder = {
-      knowledge: {
-        skillId,
-        suiteHash: "suite",
-        patterns: [],
-        rejectedEditKeys: [],
-        acceptedEditKeys: [],
-      },
-      recordEvidence: vi.fn(),
-      recordPatterns: vi.fn(),
-      recordProposal,
-      complete: vi.fn(),
-    };
-    const consoleSpy = vi
-      .spyOn(console, "log")
-      .mockImplementation((...args: unknown[]) => logs.push(String(args[0])));
+  it.each(["utility", "negative-transfer", "incomplete"])(
+    "blocks final-test %s without treating incomplete evidence as an audit rejection",
+    async (failure) => {
+      const skillId = "user-final-test-regression";
+      const taskDir = join(tmpDir, "eval", skillId);
+      writeNTasks(taskDir, MIN_TASKS * 2);
+      const originalContent = makeValidSkillBody("## Overview\n\nOriginal.");
+      const skillMdPath = join(tmpDir, "skills", skillId, "SKILL.md");
+      writeSkillMd(skillMdPath, originalContent);
+      const edit: SkillEdit = {
+        op: "add",
+        anchor: "## Overview",
+        after: "\n\n- Overfit rule.",
+      };
+      const candidateBody = applyEdit(originalContent, edit);
+      const scoringFn: ScoringFn = async (options) => {
+        const firstTask = options.tasks?.[0]?.id ?? "";
+        const isFinalTest = firstTask >= "task-008";
+        const isCandidate = options.body === candidateBody;
+        const report = makeMockReport(
+          isCandidate ? (isFinalTest && failure === "utility" ? -0.2 : 0.2) : 0,
+        );
+        if (isCandidate && isFinalTest && failure === "negative-transfer") {
+          report.negativeTransfer = [
+            { otherSkill: "neighbor", domain: "test", delta: -1 },
+          ];
+        }
+        if (isCandidate && isFinalTest && failure === "incomplete") {
+          report.negativeTransferCoverage = {
+            status: "insufficient",
+            expected: 2,
+            scored: 1,
+          };
+        }
+        return report;
+      };
+      const logs: string[] = [];
+      const recordProposal = vi.fn();
+      const evolutionRecorder: SkillEvolutionRecorder = {
+        knowledge: {
+          skillId,
+          suiteHash: "suite",
+          patterns: [],
+          rejectedEditKeys: [],
+          acceptedEditKeys: [],
+        },
+        recordEvidence: vi.fn(),
+        recordPatterns: vi.fn(),
+        recordProposal,
+        complete: vi.fn(),
+      };
+      const consoleSpy = vi
+        .spyOn(console, "log")
+        .mockImplementation((...args: unknown[]) => logs.push(String(args[0])));
 
-    await runSkillsOpt(true, {
-      skill: skillId,
-      apply: true,
-      _workspace: tmpDir,
-      _taskDir: taskDir,
-      _skillMdPath: skillMdPath,
-      _optimizerFn: makeMockOptimizerFn([[edit]]),
-      _scoringFn: scoringFn,
-      _evolutionRecorder: evolutionRecorder,
-    });
+      await runSkillsOpt(true, {
+        skill: skillId,
+        apply: true,
+        _workspace: tmpDir,
+        _taskDir: taskDir,
+        _skillMdPath: skillMdPath,
+        _optimizerFn: makeMockOptimizerFn([[edit]]),
+        _scoringFn: scoringFn,
+        _evolutionRecorder: evolutionRecorder,
+      });
 
-    expect(readFileSync(skillMdPath, "utf-8")).toBe(originalContent);
-    expect(existsSync(`${skillMdPath}.bak`)).toBe(false);
-    const output = JSON.parse(logs.join("\n")) as {
-      _finalTestFailed?: boolean;
-    };
-    expect(output._finalTestFailed).toBe(true);
-    expect(recordProposal).toHaveBeenCalledWith(
-      expect.objectContaining({
-        edit,
-        outcome: "rejected",
-        reason: "final-test",
-      }),
-    );
-    consoleSpy.mockRestore();
-  });
+      expect(readFileSync(skillMdPath, "utf-8")).toBe(originalContent);
+      expect(existsSync(`${skillMdPath}.bak`)).toBe(false);
+      const output = JSON.parse(logs.join("\n")) as {
+        _finalTestFailed?: boolean;
+      };
+      expect(output._finalTestFailed).toBe(true);
+      const finalRejections = recordProposal.mock.calls.filter(
+        ([gate]) => gate.reason === "final-test",
+      );
+      expect(finalRejections).toHaveLength(failure === "incomplete" ? 0 : 1);
+      consoleSpy.mockRestore();
+    },
+  );
 });
 
 // --- runSkillsOpt OUTPUT layer: --apply with NO improvement ---
