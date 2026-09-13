@@ -37,7 +37,7 @@ Fixtures are sorted by task ID and split deterministically into **train**, **hel
 For each epoch (up to `--max-epochs`, default 8):
 
 1. **Score current best `SKILL.md` on the TRAIN split** — `oma skill eval` returns observable per-task prompts, outputs, and lift. Every task in an internal split must have both scored arms; failed or missing comparisons cannot shrink the denominator.
-2. **Wiki Maintainer consolidates evidence** — up to five failures and three successes become evidence-linked patterns. Scoped patterns and prior gate outcomes are recalled from OMA's L1/L2/L3 memory system.
+2. **Wiki Maintainer consolidates evidence** — up to five failures and three successes become evidence-linked patterns. Failures are chosen by learning value: regressions first, then the deepest shared failures; tasks both arms already pass are left out because they say nothing about the next edit. Successes are ranked by lift. Scoped patterns and prior gate outcomes are recalled from OMA's L1/L2/L3 memory system.
 3. **Proposer emits K candidate edits** (up to `--edits-per-epoch`, default 4). Exact edits already in persistent rejection history are skipped.
 4. **For each candidate edit:**
    - Apply the edit to an in-memory copy of `SKILL.md`.

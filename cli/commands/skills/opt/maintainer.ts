@@ -22,14 +22,23 @@ function cap(value: string): string {
   return redactEvolutionText(value).slice(0, EVIDENCE_FIELD_LIMIT);
 }
 
+/**
+ * Pick the evidence with learning value. A regression (lift < 0) explains
+ * harm; a shared failure (both arms short of full score) explains a gap the
+ * skill does not close; a task both arms already pass explains nothing about
+ * the next edit and is left out. Regressions come first, then the deepest
+ * shared failures; successes are ranked by lift.
+ */
 export function selectMaintainerEvidence(
   findings: SkillUtilityFinding[],
 ): SkillUtilityFinding[] {
   const failures = findings
-    .filter((finding) => finding.lift <= 0)
+    .filter((finding) => finding.lift <= 0 && finding.treatment < 1)
+    .sort((a, b) => a.lift - b.lift || a.treatment - b.treatment)
     .slice(0, MAX_FAILURES);
   const successes = findings
     .filter((finding) => finding.lift > 0)
+    .sort((a, b) => b.lift - a.lift)
     .slice(0, MAX_SUCCESSES);
   return [...failures, ...successes];
 }
