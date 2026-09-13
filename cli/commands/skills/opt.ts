@@ -11,6 +11,7 @@ import { getProtectedTextCapability } from "../../io/protected-text.js";
 import { resolveVendor } from "../../platform/agent-config.js";
 import { createNoneMemoryProvider } from "../../state/memory-provider.js";
 import { createMemoryProvider } from "../../state/semantic-memory.js";
+import { SKILL_EVAL_PROTOCOL_REVISION } from "./eval/types.js";
 import {
   discoverNeighborTasks,
   loadTaskFixtures,
@@ -24,6 +25,7 @@ import {
   createSkillEvolutionRecorder,
   skillEvolutionEnvironmentHash,
 } from "./opt/evolution-memory.js";
+import { recordSkillPromotion } from "./opt/lineage.js";
 import { buildLlmOptimizerFn } from "./opt/llm-optimizer.js";
 import {
   buildHeuristicMaintainerFn,
@@ -491,9 +493,9 @@ export async function runSkillsOpt(
     mkdirSync(skillDir, { recursive: true });
 
     // Backup original BEFORE touching the live file
-    if (existsSync(skillMdPath)) {
-      backupSkillMd(skillMdPath);
-    }
+    const backupPath = existsSync(skillMdPath)
+      ? backupSkillMd(skillMdPath)
+      : null;
 
     // Atomic write: write to a sibling .tmp file on the SAME filesystem,
     // then rename into place. On POSIX, rename(2) is atomic — the live
@@ -506,9 +508,38 @@ export async function runSkillsOpt(
     finalResult = { ...loopResult, applied: true };
     await evolutionRecorder?.complete(finalResult);
 
+    // Lineage: what was written, from what, on which evidence, and how to undo it.
+    const promotion = recordSkillPromotion({
+      workspace,
+      skillId,
+      omaOwned: isOmaOwnedSkill(skillId),
+      skillMdPath,
+      backupPath,
+      originalBody,
+      finalBody: loopResult.finalSkillMd,
+      evidence: {
+        baselineLift: loopResult.baselineLift,
+        finalLift: loopResult.finalLift,
+        ...(loopResult.finalTest
+          ? {
+              finalTest: {
+                baselineLift: loopResult.finalTest.baselineLift,
+                candidateLift: loopResult.finalTest.candidateLift,
+                passed: loopResult.finalTest.passed,
+              },
+            }
+          : {}),
+        promotionEligible: loopResult.promotion?.eligible ?? null,
+        suiteHash: loopResult.evolution?.suiteHash,
+        protocolRevision: SKILL_EVAL_PROTOCOL_REVISION,
+        sourceRuntime: evolutionRecorder?.knowledge.sourceRuntime,
+        targetRuntime: evolutionRecorder?.knowledge.targetRuntime,
+      },
+    });
+
     if (!jsonMode) {
       console.log(
-        `[oma skill opt] applied: wrote ${skillMdPath} (backup created).`,
+        `[oma skill opt] applied: wrote ${skillMdPath} (backup created; lineage ${promotion.record.patchPath}).`,
       );
       renderSkillOptResult(finalResult);
     } else {
@@ -517,6 +548,12 @@ export async function runSkillsOpt(
           {
             ...JSON.parse(serializeSkillOptResult(finalResult)),
             _dryRun: false,
+            _promotion: {
+              parentHash: promotion.record.parentHash,
+              candidateHash: promotion.record.candidateHash,
+              patchPath: promotion.record.patchPath,
+              backupPath: promotion.record.backupPath,
+            },
             _split: {
               trainCount: train.length,
               valCount: val.length,

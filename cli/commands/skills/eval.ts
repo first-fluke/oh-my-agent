@@ -1,3 +1,5 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
 import { resolveVendor } from "../../platform/agent-config.js";
@@ -23,12 +25,23 @@ import {
   promptConfirm,
   writeRolloutRecord,
 } from "./eval/rollouts.js";
+import {
+  catalogHash,
+  loadRoutingRecord,
+  loadSkillCatalog,
+  measureRouting,
+  type RoutingEntry,
+  type SkillRoutingSummary,
+  summarizeRouting,
+  writeRoutingRecord,
+} from "./eval/routing.js";
 import { computeUtility } from "./eval/scoring.js";
 import type {
   IsolationStatus,
   NegativeTransferCoverage,
   SkillsEvalOptions,
   SkillUtilityReport,
+  TaskFixture,
 } from "./eval/types.js";
 
 // --- Re-exports (module facade; original public API surface) ---
@@ -150,6 +163,21 @@ function resolveAndAssertTaskDir(taskDir: string, workspace: string): string {
 
 // --- Main entry point (async for --live prompt) ---
 
+function attachRouting(
+  report: SkillUtilityReport,
+  tasks: TaskFixture[],
+  entries: RoutingEntry[],
+  status: SkillRoutingSummary["status"],
+  catalogSize: number,
+): void {
+  report.routing = summarizeRouting(tasks, entries, status, catalogSize);
+  const byTask = new Map(entries.map((entry) => [entry.taskId, entry]));
+  for (const finding of report.findings) {
+    const entry = byTask.get(finding.taskId);
+    if (entry) finding.routing = entry.outcome;
+  }
+}
+
 export async function runSkillsEval(
   jsonMode: boolean,
   options: SkillsEvalOptions = {},
@@ -240,13 +268,16 @@ export async function runSkillsEval(
       (judgeTaskCount -
         tasks.filter((t) => t.checker.type === "judge").length) *
         2;
-    const totalDispatches = armCount + judgeDispatchCount;
+    const routingDispatchCount =
+      options.routing && skillId !== "_all" ? tasks.length : 0;
+    const totalDispatches =
+      armCount + judgeDispatchCount + routingDispatchCount;
 
     // Cost preview (task 7)
     console.log("\nSkill eval live run preview:");
     console.log(`  skill: ${skillId}`);
     console.log(
-      `  tasks: ${tasks.length}  trials: ${trials}  spawns: ${armCount} arm + ${judgeDispatchCount} judge = ${totalDispatches} dispatches`,
+      `  tasks: ${tasks.length}  trials: ${trials}  spawns: ${armCount} arm + ${judgeDispatchCount} judge${routingDispatchCount ? ` + ${routingDispatchCount} routing` : ""} = ${totalDispatches} dispatches`,
     );
     console.log(`  vendor/model: ${vendor}`);
     console.log(`  read-only: enforced (all spawns use readOnly: true)`);
@@ -354,6 +385,42 @@ export async function runSkillsEval(
         isolation,
         isolationVendor,
       });
+
+      // Routing (activation): which skill would be loaded for each task, given
+      // every installed description. Measured with the baseline dispatch so the
+      // target body stays withheld.
+      if (options.routing) {
+        if (skillId === "_all") {
+          attachRouting(report, tasks, [], "unavailable", 0);
+        } else {
+          const catalog = loadSkillCatalog(workspace);
+          const hash = catalogHash(catalog);
+          const routingBase = mkdtempSync(join(tmpdir(), "oma-eval-routing-"));
+          let entries: RoutingEntry[] = [];
+          try {
+            entries = measureRouting({
+              tasks,
+              target: skillId,
+              catalog,
+              dispatchFn,
+              workspace: routingBase,
+            });
+          } finally {
+            rmSync(routingBase, { recursive: true, force: true });
+          }
+          if (options.record)
+            console.log(
+              `Routing recorded: ${writeRoutingRecord(taskDir, skillId, hash, entries)}`,
+            );
+          attachRouting(
+            report,
+            tasks,
+            entries,
+            entries.length === tasks.length ? "measured" : "stale",
+            catalog.length,
+          );
+        }
+      }
     } finally {
       cleanupTmp();
     }
@@ -426,6 +493,26 @@ export async function runSkillsEval(
     negativeTransfer: transfer.entries,
     negativeTransferCoverage: transfer.coverage,
   });
+  if (options.routing) {
+    if (skillId === "_all") {
+      attachRouting(report, tasks, [], "unavailable", 0);
+    } else {
+      const catalog = loadSkillCatalog(workspace);
+      const recorded = loadRoutingRecord(
+        taskDir,
+        skillId,
+        catalogHash(catalog),
+        tasks,
+      );
+      attachRouting(
+        report,
+        tasks,
+        recorded.entries,
+        recorded.status,
+        catalog.length,
+      );
+    }
+  }
 
   if (jsonMode) {
     console.log(serializeSkillUtilityReport(report));

@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -3237,5 +3238,122 @@ describe("fixture group and trial fields", () => {
       { taskId: "t", arm: "baseline", output: "o", trial: 1 },
     ]);
     rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe("runSkillsEval — routing (activation) measurement", () => {
+  let rootDir: string;
+  beforeEach(() => {
+    rootDir = mkdtempSync(join(tmpdir(), "oma-eval-routing-"));
+  });
+  afterEach(() => {
+    rmSync(rootDir, { recursive: true, force: true });
+  });
+
+  function installSkill(id: string, description: string): void {
+    const dir = join(rootDir, ".agents", "skills", id);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, "SKILL.md"),
+      `---\nname: ${id}\ndescription: "${description}"\n---\n\n# ${id}\n\nEXPECTED guidance.\n`,
+    );
+  }
+
+  it("measures routing live, records it, and replays it in mock mode", async () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    installSkill("skill-x", "Handle x tasks.");
+    installSkill("skill-y", "Handle y tasks.");
+    const evalRoot = join(rootDir, ".agents", "eval");
+    const taskDir = join(evalRoot, "skill-x");
+    mkdirSync(taskDir, { recursive: true });
+    const tasks = Array.from({ length: MIN_TASKS }, (_, i) =>
+      makeTaskFixture(`task-${i}`, { skill: "skill-x" }),
+    );
+    for (const t of tasks) writeTask(taskDir, t);
+
+    let routingPrompts = 0;
+    const dispatch: LiveDispatchFn = (arm, prompt) => {
+      if (prompt.includes("## Available skills")) {
+        routingPrompts += 1;
+        expect(arm).toBe("baseline");
+        expect(prompt).toContain("- skill-x — Handle x tasks.");
+        return prompt.includes("task-0") ? "skill-y" : "skill-x";
+      }
+      return arm === "treatment" ? "EXPECTED" : "no";
+    };
+
+    await runSkillsEval(true, {
+      skill: "skill-x",
+      taskDir,
+      live: true,
+      yes: true,
+      record: true,
+      routing: true,
+      _evalRoot: evalRoot,
+      _workspace: rootDir,
+      _liveDispatchFn: dispatch,
+    });
+    expect(routingPrompts).toBe(MIN_TASKS);
+    const liveJson = JSON.parse(
+      logSpy.mock.calls
+        .map((c: unknown[]) => String(c[0]))
+        .find((s) => s.trimStart().startsWith("{")) ?? "{}",
+    ) as {
+      routing?: Record<string, unknown>;
+      findings: Array<{ taskId: string; routing?: string }>;
+    };
+    expect(liveJson.routing).toMatchObject({
+      status: "measured",
+      measured: MIN_TASKS,
+      activated: MIN_TASKS - 1,
+      misrouted: 1,
+      misroutedTo: { "skill-y": 1 },
+      catalogSize: 2,
+    });
+    expect(liveJson.findings.find((f) => f.taskId === "task-0")?.routing).toBe(
+      "other",
+    );
+    expect(existsSync(join(taskDir, "_rollouts"))).toBe(true);
+    expect(
+      readdirSync(join(taskDir, "_rollouts")).some((f) =>
+        f.endsWith(".routing.json"),
+      ),
+    ).toBe(true);
+
+    logSpy.mockClear();
+    await runSkillsEval(true, {
+      skill: "skill-x",
+      taskDir,
+      routing: true,
+      _evalRoot: evalRoot,
+      _workspace: rootDir,
+    });
+    const mockJson = JSON.parse(
+      logSpy.mock.calls
+        .map((c: unknown[]) => String(c[0]))
+        .find((s) => s.trimStart().startsWith("{")) ?? "{}",
+    ) as { routing?: { status: string; activated: number } };
+    expect(mockJson.routing).toMatchObject({
+      status: "measured",
+      activated: MIN_TASKS - 1,
+    });
+
+    // A changed description invalidates the routing recording.
+    installSkill("skill-y", "Handle y and also x tasks.");
+    logSpy.mockClear();
+    await runSkillsEval(true, {
+      skill: "skill-x",
+      taskDir,
+      routing: true,
+      _evalRoot: evalRoot,
+      _workspace: rootDir,
+    });
+    const staleJson = JSON.parse(
+      logSpy.mock.calls
+        .map((c: unknown[]) => String(c[0]))
+        .find((s) => s.trimStart().startsWith("{")) ?? "{}",
+    ) as { routing?: { status: string; measured: number } };
+    expect(staleJson.routing).toMatchObject({ status: "stale", measured: 0 });
   });
 });

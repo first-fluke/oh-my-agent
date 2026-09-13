@@ -47,7 +47,16 @@ export function serializeSkillUtilityReport(
         lift: Number(f.lift.toFixed(4)),
         trials: f.trials ?? 1,
         liftStdDev: Number((f.liftStdDev ?? 0).toFixed(4)),
+        ...(f.routing ? { routing: f.routing } : {}),
       })),
+      ...(report.routing
+        ? {
+            routing: {
+              ...report.routing,
+              activationRate: Number(report.routing.activationRate.toFixed(4)),
+            },
+          }
+        : {}),
       negativeTransfer: report.negativeTransfer,
       negativeTransferCoverage: report.negativeTransferCoverage,
       isolation: report.isolation,
@@ -119,6 +128,15 @@ export function renderSkillUtilityReport(report: SkillUtilityReport): void {
   console.log(
     `  repeatability: ${rep.status}  trials: ${rep.trials}  lift 95% CI: ${ci}  within-task stddev: ${within}`,
   );
+  if (report.routing) {
+    const r = report.routing;
+    const misrouted = Object.entries(r.misroutedTo)
+      .map(([name, count]) => `${name}×${count}`)
+      .join(", ");
+    console.log(
+      `  routing: ${r.status}  activated ${r.activated}/${r.measured} (${(r.activationRate * 100).toFixed(0)}%)  misrouted ${r.misrouted}${misrouted ? ` [${misrouted}]` : ""}  none ${r.none}  unparsed ${r.unparsed}  catalog ${r.catalogSize}`,
+    );
+  }
 
   const tag = report.decision.toUpperCase();
   console.log(`  [${tag}]`);

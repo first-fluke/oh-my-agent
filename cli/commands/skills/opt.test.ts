@@ -11,6 +11,7 @@ import {
   type SkillUtilityReport,
   type TaskFixture,
 } from "./eval.js";
+import { readSkillPromotions, rollbackSkillPromotion } from "./opt/lineage.js";
 import {
   applyEdit,
   backupSkillMd,
@@ -2436,5 +2437,69 @@ describe("splitTrainValTest — fixture groups", () => {
     expect(split.train).toHaveLength(6);
     expect(split.val).toHaveLength(2);
     expect(split.test).toHaveLength(2);
+  });
+});
+
+describe("runSkillsOpt — promotion lineage on --apply", () => {
+  it("records the promotion with a patch and supports rollback", async () => {
+    const skillId = "user-lineage";
+    const taskDir = join(tmpDir, "eval", skillId);
+    writeNTasks(taskDir, MIN_TASKS * 2);
+    const originalContent = makeValidSkillBody(
+      "## Overview\n\nFor lineage test.",
+    );
+    const skillMdPath = join(tmpDir, "skills", skillId, "SKILL.md");
+    writeSkillMd(skillMdPath, originalContent);
+    const logs: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
+      logs.push(String(args[0]));
+    });
+    const edit: SkillEdit = {
+      op: "add",
+      anchor: "## Overview",
+      after: "\n\n- Lineage improvement.",
+    };
+    const candidateBody = applyEdit(originalContent, edit);
+    await runSkillsOpt(true, {
+      skill: skillId,
+      apply: true,
+      _workspace: tmpDir,
+      _taskDir: taskDir,
+      _skillMdPath: skillMdPath,
+      _optimizerFn: makeMockOptimizerFn([[edit]]),
+      _scoringFn: makeMockScoringFn(
+        new Map([
+          [originalContent, 0],
+          [candidateBody, 0.3],
+        ]),
+        0,
+      ),
+    });
+    const parsed = JSON.parse(logs.find((l) => l.startsWith("{")) ?? "{}") as {
+      applied?: boolean;
+      _promotion?: { patchPath: string; backupPath: string | null };
+    };
+    expect(parsed.applied).toBe(true);
+    expect(parsed._promotion?.patchPath).toMatch(
+      /^\.agents\/results\/skill-evolution\/user-lineage\/promotions\/[a-f0-9]{16}\.patch$/,
+    );
+    expect(parsed._promotion?.backupPath).toBe(
+      `skills/${skillId}/SKILL.md.bak`,
+    );
+    const records = readSkillPromotions(tmpDir, skillId);
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      action: "apply",
+      omaOwned: false,
+      evidence: { baselineLift: 0, finalLift: 0.3, protocolRevision: "2" },
+    });
+    expect(
+      readFileSync(join(tmpDir, parsed._promotion?.patchPath ?? ""), "utf-8"),
+    ).toContain("+- Lineage improvement.");
+
+    const rollback = rollbackSkillPromotion(tmpDir, skillId);
+    expect(rollback.record.action).toBe("rollback");
+    expect(readFileSync(skillMdPath, "utf-8")).toBe(originalContent);
+    expect(readSkillPromotions(tmpDir, skillId)).toHaveLength(2);
   });
 });

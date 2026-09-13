@@ -7,6 +7,7 @@ import {
 import { runSkillsAudit } from "./audit.js";
 import { runSkillsEval } from "./eval.js";
 import { runSkillsLint } from "./lint.js";
+import { readSkillPromotions, rollbackSkillPromotion } from "./opt/lineage.js";
 import {
   OPT_EDITS_PER_EPOCH,
   OPT_LR_MAX_CHARS,
@@ -92,6 +93,10 @@ export function registerSkillsCommand(program: Command): void {
       .option(
         "--neg-transfer",
         "Sample same-domain neighbor tasks to detect negative transfer (off by default)",
+      )
+      .option(
+        "--routing",
+        "Measure activation: which installed skill the model would load per task (live measures, mock replays)",
       ),
     "Output as JSON for CI/CD",
   ).action(
@@ -110,6 +115,7 @@ export function registerSkillsCommand(program: Command): void {
           requireCoverage?: boolean;
           negTransfer?: boolean;
           trials?: number;
+          routing?: boolean;
         };
         await runSkillsEval(resolveJsonMode(opts), {
           skill: opts.skill,
@@ -122,6 +128,7 @@ export function registerSkillsCommand(program: Command): void {
           requireCoverage: opts.requireCoverage,
           negTransfer: opts.negTransfer,
           trials: opts.trials,
+          routing: opts.routing,
         });
       },
       { supportsJsonOutput: true },
@@ -196,6 +203,72 @@ export function registerSkillsCommand(program: Command): void {
           yes: opts.yes,
         };
         await runSkillsOpt(resolveJsonMode(opts), optOptions);
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    skills
+      .command("promotions")
+      .description(
+        "List recorded SKILL.md promotions and rollbacks for a skill",
+      )
+      .requiredOption("--skill <id>", "Skill ID"),
+    "Output as JSON",
+  ).action(
+    runAction(
+      async (options) => {
+        const opts = options as {
+          json?: boolean;
+          output?: string;
+          skill: string;
+        };
+        const records = readSkillPromotions(process.cwd(), opts.skill);
+        if (resolveJsonMode(opts)) {
+          console.log(JSON.stringify({ skill: opts.skill, records }, null, 2));
+          return;
+        }
+        if (records.length === 0) {
+          console.log(`No recorded promotions for ${opts.skill}.`);
+          return;
+        }
+        for (const record of records) {
+          console.log(
+            `${record.ts}  ${record.action.padEnd(8)}  ${record.parentHash} → ${record.candidateHash}` +
+              `  lift ${record.evidence.baselineLift.toFixed(3)}→${record.evidence.finalLift.toFixed(3)}` +
+              `${record.patchPath ? `  patch ${record.patchPath}` : ""}`,
+          );
+        }
+      },
+      { supportsJsonOutput: true },
+    ),
+  );
+
+  addOutputOptions(
+    skills
+      .command("rollback")
+      .description(
+        "Restore the SKILL.md body replaced by the most recent recorded promotion",
+      )
+      .requiredOption("--skill <id>", "Skill ID"),
+    "Output as JSON",
+  ).action(
+    runAction(
+      async (options) => {
+        const opts = options as {
+          json?: boolean;
+          output?: string;
+          skill: string;
+        };
+        const result = rollbackSkillPromotion(process.cwd(), opts.skill);
+        if (resolveJsonMode(opts)) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        console.log(
+          `[oma skill rollback] restored ${result.record.skillMdPath} from ${result.restoredFrom} (reverses ${result.record.reverses}).`,
+        );
       },
       { supportsJsonOutput: true },
     ),

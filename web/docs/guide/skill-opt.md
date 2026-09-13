@@ -123,6 +123,12 @@ When you are satisfied with the proposed diff, re-run with `--apply`:
 oma skill optimize --skill oma-scholar --live --apply --yes
 ```
 
+### Promotion lineage
+
+Every `--apply` write appends a record to `.agents/results/skill-evolution/<skill>/promotions.jsonl` and writes a reviewable unified diff to `promotions/<candidate-hash>.patch` beside it. The record names the parent and candidate body hashes, the installed path, the backup path, and the evidence behind the write: validation and final-test lifts, the promotion decision, the fixture suite hash, the evaluator protocol revision, and the source/target runtimes. `oma skill promotions --skill <id>` lists the log.
+
+`oma skill rollback --skill <id>` restores the body the most recent apply replaced. It refuses when the installed file no longer matches that apply's candidate (a later hand edit would be discarded), when the backup does not match the recorded parent, or when that apply was already rolled back; a successful rollback is appended to the same log with `reverses` pointing at the apply. For an OMA-owned skill the patch is the artifact to carry into the source repository or a user overlay, because `oma update` overwrites the installed copy; the record marks `omaOwned: true` so a later update is not mistaken for a regression.
+
 `--apply` requires a strictly positive validation improvement, `finalTest.passed: true`, and `promotion.eligible: true`. These gates require complete internal task coverage, a nonempty and fully measured candidate-specific negative-transfer sample, and enforced live isolation. A missing final test, incomplete measurements, or degraded compiler diagnostics prevent the write. A backup of the original `SKILL.md` is created before the atomic write, and the diff is printed for review.
 
 Live evaluation can satisfy the isolation gate through the protected Claude or native Codex profile. Claude retains the HOME/target checks. Codex verifies that the ephemeral app-server thread has no instruction sources or tool environments before submitting the prompt. Other runtime profiles remain exploratory.

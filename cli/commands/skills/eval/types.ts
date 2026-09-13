@@ -1,3 +1,4 @@
+import type { RoutingOutcome, SkillRoutingSummary } from "./routing.js";
 // --- Constants (design 016, T1-a) ---
 
 export const MIN_TASKS = 5;
@@ -39,6 +40,8 @@ export interface SkillUtilityFinding {
   trials?: number;
   /** Standard deviation of the per-trial lift; absent or 0 for a single trial. */
   liftStdDev?: number;
+  /** Which skill the routing arm chose for this task, when routing was measured. */
+  routing?: RoutingOutcome;
   /**
    * Observable evidence for skill evolution. Present only when the scorer is
    * explicitly asked for it; public eval serialization intentionally omits it.
@@ -119,6 +122,8 @@ export interface SkillUtilityReport {
   utilityStdDev: number;
   /** Always set by computeUtility; absent only on hand-built reports. */
   repeatability?: SkillRepeatability;
+  /** Description-level activation measurement; absent unless --routing. */
+  routing?: SkillRoutingSummary;
   findings: SkillUtilityFinding[];
   negativeTransfer: NegativeTransfer[];
   /** A requested check is measured only when every selected neighbor was scored. */
@@ -293,6 +298,12 @@ export interface SkillsEvalOptions {
    * order; scores are averaged per task and reported with a paired interval.
    */
   trials?: number;
+  /**
+   * Measure activation: ask the model which installed skill it would load for
+   * each task given every skill's description. Live measures; mock replays a
+   * routing recording made under the same catalog.
+   */
+  routing?: boolean;
   /** Injectable live dispatch function for testing. When absent, buildLiveDispatchFn is used. */
   _liveDispatchFn?: LiveDispatchFn;
   /** Injectable judge dispatch function for testing. When absent, buildJudgeDispatchFn is used in --live. */

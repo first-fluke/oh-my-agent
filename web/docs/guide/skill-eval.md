@@ -168,6 +168,7 @@ The other controls are useful in CI and coverage investigations:
 | `--max-tasks <n>` | Cap the number of fixtures for a bounded live run. |
 | `--trials <n>` | Repeat every arm `n` times (1-10). Arm order alternates between trials, per-task scores are averaged, and the report gains within-task variance. Neighbor tasks from `--neg-transfer` run once. |
 | `--neg-transfer` | Measure the candidate skill on same-domain tasks belonging to other skills; off by default. |
+| `--routing` | Measure activation: for each task, ask which installed skill would be loaded given every skill's `description`. Live measures (one extra dispatch per task); mock replays a routing recording made under the same catalog. |
 | `--require-coverage` | Exit non-zero when fewer than five scoreable paired tasks remain, or a requested negative-transfer check is incomplete. |
 
 ```bash
@@ -243,6 +244,18 @@ oma skill eval --skill oma-scholar --live --record --yes
 After a successful live run, the report includes baseline and treatment counts, `utilityLift`, `coverage: "ok"`, the isolation status, and a pass/warn/fail decision. A later mock run reuses only recordings whose task prompts and treatment skill body still match.
 
 ---
+
+## Routing: does the skill get selected?
+
+Utility lift measures what the body does once it is loaded. Vendors decide whether to load a skill from its frontmatter `description`, so a better body that is never selected is not an improvement. `--routing` sends each task prompt, together with the name and description of every installed skill, to the same protected model and asks for the single skill it would load (or `NONE`). The target being chosen is an activation; another skill is a misroute; `NONE` is a miss.
+
+```text
+  routing: measured  activated 5/6 (83%)  misrouted 1 [oma-docs×1]  none 0  unparsed 0  catalog 33
+```
+
+The JSON report carries `routing` with `status`, counts, `activationRate`, `misroutedTo`, and `catalogSize`; each finding carries `routing: target | other | none | unparsed`. With `--record`, the choices are saved to `_rollouts/<hash>.routing.json` together with a hash of the catalog. A later `--mock --routing` replays them only while every description and task is unchanged; otherwise `status` is `stale` and nothing is counted.
+
+This measures the description against the catalog through the protected transport. It does not exercise the vendor's own discovery mechanism, which the protected profile deliberately disables, and it does not measure whether the loaded skill's procedure is followed; that remains the utility measurement.
 
 ## A minimal working fixture set
 
@@ -322,8 +335,9 @@ Skill utility eval  (skill: oma-scholar)
     "status": "single-trial"
   },
   "findings": [
-    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0, "trials": 1, "liftStdDev": 0 }
+    { "taskId": "claims-only", "baseline": 0, "treatment": 1, "lift": 1.0, "trials": 1, "liftStdDev": 0, "routing": "target" }
   ],
+  "routing": { "status": "measured", "measured": 7, "activated": 6, "misrouted": 1, "none": 0, "unparsed": 0, "activationRate": 0.8571, "misroutedTo": { "oma-search": 1 }, "catalogSize": 33 },
   "negativeTransfer": [],
   "negativeTransferCoverage": { "status": "not-requested", "expected": 0, "scored": 0 },
   "isolation": "enforced",
