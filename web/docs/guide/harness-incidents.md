@@ -16,7 +16,7 @@ oma harness incident scan --json
 oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
 ```
 
-The scan reads `.agents/state/agent-runs/`, keeps runs whose status is `failed`, `blocked`, or `partial`, and drops any run a captured incident already references through `source.runId`. `--skeleton` prints a specification for one run with the id, agent, source run, observed failure, and exit code filled in; `expected_checks` is left as a `TODO` because the correct behavior is a decision the scan cannot make. Fill it in, then capture with `--run <run-id>` so the run's identity and workspace fingerprint are preserved.
+The scan reads `.agents/state/agent-runs/`, keeps runs whose status is `failed`, `blocked`, or `partial`, and drops any run a captured incident already references through `source.runId`. `--skeleton` prints a specification for one run with the id, agent, source run, observed failure, exit code, and, when the runner preserved it, the tail of the agent's output filled in; `expected_checks` is left as a `TODO` because the correct behavior is a decision the scan cannot make. `oma agent spawn` and `oma agent parallel` keep the last 64 KiB of each run's log as `.agents/state/agent-runs/<run-id>.output.txt` and reference it from the run record, so `capture --run` imports that output as the observation when the specification omits one and `incident promote` can validate the derived fixture against it. Fill it in, then capture with `--run <run-id>` so the run's identity and workspace fingerprint are preserved.
 
 ## Capture an incident
 

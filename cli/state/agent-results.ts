@@ -6,6 +6,7 @@ import {
   readdirSync,
   readFileSync,
   readlinkSync,
+  writeFileSync,
 } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { z } from "zod";
@@ -61,6 +62,12 @@ export interface AgentRun {
   contract?: TaskContract;
   dispatch?: { prompt: string; readOnly?: boolean };
   resumedFrom?: string;
+  /**
+   * Tail of the agent's captured stdout/stderr, kept beside the run so a
+   * failure can become an incident with its observed output. Absent when the
+   * runner had no log to preserve.
+   */
+  output?: { path: string; bytes: number; truncated: boolean };
 }
 
 const hashSchema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -102,6 +109,13 @@ const RunSchema = z.object({
     .object({ prompt: z.string(), readOnly: z.boolean().optional() })
     .optional(),
   resumedFrom: z.string().uuid().optional(),
+  output: z
+    .object({
+      path: z.string().min(1),
+      bytes: z.number().int().nonnegative(),
+      truncated: z.boolean(),
+    })
+    .optional(),
 });
 
 const generated =
@@ -384,11 +398,43 @@ export function readOnlyClaim(log: string): unknown {
   }
 }
 
+/** Bytes of captured agent output kept beside the run record. */
+export const RUN_OUTPUT_LIMIT = 64 * 1024;
+
+export function runOutputPath(root: string, runId: string): string {
+  return join(root, ".agents/state/agent-runs", `${runId}.output.txt`);
+}
+
+/** Preserve the tail of a runner log as the run's observed output. */
+function preserveRunOutput(
+  root: string,
+  runId: string,
+  logPath: string,
+): AgentRun["output"] | undefined {
+  let log: string;
+  try {
+    log = readFileSync(logPath, "utf8");
+  } catch {
+    return undefined;
+  }
+  if (!log.trim()) return undefined;
+  const truncated = Buffer.byteLength(log) > RUN_OUTPUT_LIMIT;
+  const kept = truncated ? log.slice(-RUN_OUTPUT_LIMIT) : log;
+  const path = runOutputPath(root, runId);
+  writeFileSync(path, kept, "utf8");
+  return {
+    path: relative(root, path),
+    bytes: Buffer.byteLength(kept),
+    truncated,
+  };
+}
+
 export function finishAgentRun(
   root: string,
   runId: string,
   exitCode: number | null,
   claim?: unknown,
+  options: { logPath?: string } = {},
 ): AgentRun {
   const after = runFingerprint(readAgentRun(root, runId));
   return withStateIndexLock(root, () => {
@@ -397,6 +443,10 @@ export function finishAgentRun(
     run.exitCode = exitCode;
     run.finishedAt = new Date().toISOString();
     run.after = after;
+    if (options.logPath) {
+      const output = preserveRunOutput(root, runId, options.logPath);
+      if (output) run.output = output;
+    }
     try {
       const parsed = AgentClaimSchema.parse(
         claim ?? JSON.parse(readFileSync(claimPath(root, runId), "utf8")),

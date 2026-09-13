@@ -520,7 +520,9 @@ export async function spawnAgent(
         readOnly && fs.existsSync(logFile)
           ? readOnlyClaim(fs.readFileSync(logFile, "utf8"))
           : undefined;
-      const result = finishAgentRun(runRoot, run.runId, code, claim);
+      const result = finishAgentRun(runRoot, run.runId, code, claim, {
+        logPath: logFile,
+      });
       fs.writeFileSync(statusFile, `${result.status}\n`);
 
       if (code !== 0 && fs.existsSync(logFile)) {

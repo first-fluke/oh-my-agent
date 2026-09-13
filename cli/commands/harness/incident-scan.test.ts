@@ -92,16 +92,33 @@ describe("incident scan", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-incident-scan-"));
     roots.push(root);
     const a = "11111111-1111-4111-8111-111111111111";
-    run(root, a, "failed", { exitCode: 2, unresolved: ["boom"] });
+    run(root, a, "failed", {
+      exitCode: 2,
+      unresolved: ["boom"],
+      output: {
+        path: `.agents/state/agent-runs/${a}.output.txt`,
+        bytes: 22,
+        truncated: false,
+      },
+    });
+    writeFileSync(
+      join(root, ".agents", "state", "agent-runs", `${a}.output.txt`),
+      "I pushed with --force.",
+    );
     const candidate = scanHarnessIncidents(root).candidates[0];
     if (!candidate) throw new Error("expected one candidate");
+    expect(candidate.hasOutput).toBe(true);
     const skeleton = incidentSpecSkeleton(candidate);
     expect(skeleton).toMatchObject({
       schema_version: 1,
       id: "task-a-11111111",
       agent: "backend",
       source: { run_id: a },
-      observed: { failure: "boom", exit_code: 2 },
+      observed: {
+        failure: "boom",
+        exit_code: 2,
+        output: "I pushed with --force.",
+      },
     });
     expect(JSON.stringify(skeleton.expected_checks)).toContain("TODO");
   });

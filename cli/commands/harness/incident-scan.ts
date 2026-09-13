@@ -2,6 +2,17 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { type AgentRun, listAgentRuns } from "../../state/agent-results.js";
 
+/** Characters of preserved output quoted into a specification skeleton. */
+const SKELETON_OUTPUT_LIMIT = 4_000;
+
+/** The preserved tail of a run's output, when the runner kept one. */
+export function readRunOutput(root: string, run: AgentRun): string | undefined {
+  if (!run.output) return undefined;
+  const path = join(root, run.output.path);
+  if (!existsSync(path)) return undefined;
+  return readFileSync(path, "utf-8");
+}
+
 /**
  * Deployment feedback entry point.
  *
@@ -25,6 +36,9 @@ export interface IncidentCandidate {
   exitCode?: number | null;
   unresolved: string[];
   hasPrompt: boolean;
+  hasOutput: boolean;
+  /** Tail of the preserved output, for a skeleton's observed.output. */
+  output?: string;
   resumedFrom?: string;
 }
 
@@ -76,6 +90,7 @@ export function scanHarnessIncidents(
       alreadyCaptured += 1;
       continue;
     }
+    const output = readRunOutput(root, run);
     candidates.push({
       runId: run.runId,
       taskId: run.taskId,
@@ -89,6 +104,10 @@ export function scanHarnessIncidents(
         String(item).slice(0, 200),
       ),
       hasPrompt: typeof run.dispatch?.prompt === "string",
+      hasOutput: output !== undefined,
+      ...(output === undefined
+        ? {}
+        : { output: output.slice(-SKELETON_OUTPUT_LIMIT) }),
       resumedFrom: run.resumedFrom,
     });
   }
@@ -122,6 +141,7 @@ export function incidentSpecSkeleton(
         candidate.unresolved[0] ??
         `Run ended ${candidate.status}${candidate.exitCode === undefined || candidate.exitCode === null ? "" : ` (exit ${candidate.exitCode})`}`,
       exit_code: candidate.exitCode ?? null,
+      ...(candidate.output === undefined ? {} : { output: candidate.output }),
     },
     expected_checks: [
       {

@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -15,6 +16,8 @@ import {
   finishAgentRun,
   hasCurrentChecks,
   listAgentRuns,
+  RUN_OUTPUT_LIMIT,
+  readAgentRun,
   resultEvidenceValid,
   verifyAgentRun,
   workspaceFingerprint,
@@ -69,6 +72,28 @@ describe("agent execution evidence", () => {
     });
     expect(result.status).toBe("failed");
     expect(resultEvidenceValid(result)).toBe(false);
+  });
+  it("preserves the tail of the runner log as the run's observed output", () => {
+    const run = start();
+    const logPath = join(root, "runner.log");
+    const big = `${"x".repeat(RUN_OUTPUT_LIMIT)}TAIL`;
+    writeFileSync(logPath, big);
+    const result = finishAgentRun(root, run.runId, 1, claim, { logPath });
+    expect(result.output).toMatchObject({
+      bytes: RUN_OUTPUT_LIMIT,
+      truncated: true,
+    });
+    const kept = readFileSync(join(root, result.output?.path ?? ""), "utf8");
+    expect(kept.endsWith("TAIL")).toBe(true);
+    expect(kept.length).toBe(RUN_OUTPUT_LIMIT);
+    expect(readAgentRun(root, run.runId).output).toEqual(result.output);
+    // A missing or empty log leaves the record without an output field.
+    const silent = start();
+    expect(
+      finishAgentRun(root, silent.runId, 1, claim, {
+        logPath: join(root, "absent.log"),
+      }).output,
+    ).toBeUndefined();
   });
   it("marks a signaled process failed rather than treating null as zero", () => {
     expect(finishAgentRun(root, start().runId, null, claim).status).toBe(

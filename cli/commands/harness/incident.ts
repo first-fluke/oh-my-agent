@@ -18,6 +18,7 @@ import {
   materializeHarnessSnapshot,
   validateHarnessSnapshot,
 } from "./evidence.js";
+import { readRunOutput } from "./incident-scan.js";
 import { assertExistingPathInside, isPathInside } from "./paths.js";
 import { computeBaselineHash } from "./provenance.js";
 import { loadHarnessSuite } from "./suite.js";
@@ -169,6 +170,10 @@ export function captureHarnessIncident(
     throw new Error(
       "Incident requires the original prompt; no prompt was captured by the source run",
     );
+  // A run that preserved its output supplies the observation the spec omits,
+  // so the incident can be validated against what the agent actually said.
+  const observedOutput =
+    spec.observed.output ?? (run ? readRunOutput(root, run) : undefined);
   const limitations: string[] = [];
   if (run && spec.agent && spec.agent !== run.agentId)
     limitations.push(
@@ -176,8 +181,7 @@ export function captureHarnessIncident(
     );
   if (
     clean(prompt) !== prompt ||
-    (spec.observed.output &&
-      clean(spec.observed.output) !== spec.observed.output)
+    (observedOutput && clean(observedOutput) !== observedOutput)
   )
     limitations.push(
       "Sensitive text was redacted; exact original-input replay is unavailable",
@@ -251,10 +255,7 @@ export function captureHarnessIncident(
       : { kind: "report", traceId: spec.source?.trace_id },
     observed: {
       failure: clean(spec.observed.failure),
-      output:
-        spec.observed.output === undefined
-          ? undefined
-          : clean(spec.observed.output),
+      output: observedOutput === undefined ? undefined : clean(observedOutput),
       exitCode:
         spec.observed.exit_code === undefined
           ? run?.exitCode

@@ -197,7 +197,9 @@ export async function parallelRun(
         if (settled) return;
         settled = true;
         fs.closeSync(logStream);
-        const result = finishAgentRun(runRoot, run.runId, code);
+        const result = finishAgentRun(runRoot, run.runId, code, undefined, {
+          logPath: logFile,
+        });
         resolve(result.status === "completed" ? 0 : code || 3);
       };
       (child as unknown as NodeJS.EventEmitter).on("exit", finish);

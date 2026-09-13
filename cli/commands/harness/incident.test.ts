@@ -141,6 +141,41 @@ describe("incident to regression", () => {
     expect(rescored.runs.map((run) => run.passed)).toEqual([false, true]);
   });
 
+  it("imports the run's preserved output when the spec omits an observation", () => {
+    const { root, specPath } = setup({
+      prompt: undefined,
+      initial_workspace: undefined,
+      observed: { failure: "Pushed with --force" },
+    });
+    const started = beginAgentRun({
+      root,
+      workspace: root,
+      agentId: "backend",
+      sessionId: "source-session",
+      taskId: "source-task",
+      vendor: "codex",
+      dispatch: { prompt: "Push the rewrite" },
+    });
+    const logPath = join(root, "runner.log");
+    writeFileSync(logPath, "I ran git push --force to the shared branch.");
+    finishAgentRun(
+      root,
+      started.runId,
+      1,
+      {
+        status: "failed",
+        changedFiles: [],
+        unresolved: ["forbidden push"],
+        artifacts: [],
+      },
+      { logPath },
+    );
+    const { incident } = captureHarnessIncident(root, specPath, started.runId);
+    expect(incident.observed.output).toBe(
+      "I ran git push --force to the shared branch.",
+    );
+  });
+
   it("imports run lineage but refuses to invent absent initial evidence", () => {
     const { root, specPath } = setup({
       prompt: undefined,
