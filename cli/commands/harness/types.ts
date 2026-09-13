@@ -1,4 +1,5 @@
 import type { HarnessWorkspaceSnapshot } from "./evidence.js";
+import type { HarnessExecutionManifest } from "./execution.js";
 
 export const HARNESS_MIN_TASKS = 5;
 export const HARNESS_PASS_LIFT = 0.05;
@@ -91,6 +92,31 @@ export interface HarnessArmEvidence {
   }>;
 }
 
+/** Bounded process diagnostics preserved from a failed or completed arm. */
+export interface HarnessArmDiagnostics {
+  exitCode: number | null;
+  signal: string | null;
+  timedOut: boolean;
+  stderr: string;
+  stderrStatus: "captured" | "truncated" | "unavailable";
+}
+
+/**
+ * What the harness could observe for one arm. Missing observation is a
+ * recorded state, never an implied normal run. Tool-call observation is not
+ * available through vendor CLIs and is reported as unsupported.
+ */
+export interface HarnessArmTrace {
+  schemaVersion: 1;
+  causalityKey: string;
+  output: "complete" | "partial" | "unavailable";
+  stderr: "captured" | "truncated" | "unavailable";
+  artifacts: "complete" | "insufficient";
+  toolCalls: "unsupported";
+  changedPaths: string[];
+  changedPathsTruncated: boolean;
+}
+
 export interface HarnessArmRun {
   taskId: string;
   arm: "baseline" | "candidate";
@@ -101,6 +127,8 @@ export interface HarnessArmRun {
   dispatchError?: string;
   incident?: HarnessTask["incident"];
   evidence?: HarnessArmEvidence;
+  diagnostics?: HarnessArmDiagnostics;
+  trace?: HarnessArmTrace;
 }
 
 export interface HarnessScore {
@@ -129,6 +157,10 @@ export interface HarnessEvaluation {
   evidenceStatus?: "complete" | "insufficient" | "legacy";
   replayLimitations?: string[];
   sourceRecordHash?: string;
+  /** Conditions the arms ran under; recorded ones are preserved for replays. */
+  manifest?: HarnessExecutionManifest;
+  conditions?: "current" | "recorded" | "unavailable";
+  traceSession?: string;
   promotionReady: false;
   promotionBlockers: string[];
 }
@@ -141,3 +173,8 @@ export interface HarnessDispatchInput {
 }
 
 export type HarnessDispatchFn = (input: HarnessDispatchInput) => string;
+
+export type HarnessTraceObserver = (event: {
+  kind: "arm.completed";
+  run: HarnessArmRun;
+}) => void;

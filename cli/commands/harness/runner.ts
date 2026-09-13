@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256Hex } from "../../utils/hash.js";
 import { evaluateChecks } from "./checks.js";
+import { HARNESS_STDERR_LIMIT } from "./dispatch.js";
 import {
   captureHarnessSnapshot,
   type HarnessWorkspaceSnapshot,
@@ -24,13 +25,16 @@ import {
 } from "./trusted-checks.js";
 import type {
   CandidateOverlayManifest,
+  HarnessArmDiagnostics,
   HarnessArmRun,
+  HarnessArmTrace,
   HarnessCheckResult,
   HarnessDispatchFn,
   HarnessEvaluation,
   HarnessPartition,
   HarnessSuite,
   HarnessTask,
+  HarnessTraceObserver,
 } from "./types.js";
 import {
   materializeVendorHarness,
@@ -46,19 +50,122 @@ export interface RunHarnessLiveOptions {
   partition?: HarnessPartition;
   materializeVendor?: (workspace: string, vendor: string) => void;
   initialSnapshots?: ReadonlyMap<string, HarnessWorkspaceSnapshot>;
+  /** Links every arm trace to one evaluation; defaults to the input hashes. */
+  causalityKey?: string;
+  observer?: HarnessTraceObserver;
 }
+
+const CHANGED_PATH_LIMIT = 200;
 
 function diagnosticOutput(error: unknown): string {
   let current = error;
   for (let depth = 0; depth < 3; depth++) {
     if (!current || typeof current !== "object") return "";
-    const failure = current as { stdout?: unknown; cause?: unknown };
+    const failure = current as {
+      stdout?: unknown;
+      output?: unknown;
+      cause?: unknown;
+    };
+    if (typeof failure.output === "string") return failure.output;
     if (typeof failure.stdout === "string") return failure.stdout;
     if (Buffer.isBuffer(failure.stdout))
       return failure.stdout.toString("utf-8");
     current = failure.cause;
   }
   return "";
+}
+
+/** Process remains found on the error or its causes; absence is explicit. */
+function diagnosticsFromError(error: unknown): HarnessArmDiagnostics {
+  let stderr: string | undefined;
+  let stderrTruncated = false;
+  let exitCode: number | null = null;
+  let signal: string | null = null;
+  let timedOut = false;
+  let current = error;
+  for (
+    let depth = 0;
+    depth < 3 && current && typeof current === "object";
+    depth++
+  ) {
+    const failure = current as {
+      stderr?: unknown;
+      stderrTruncated?: unknown;
+      exitCode?: unknown;
+      status?: unknown;
+      signal?: unknown;
+      timedOut?: unknown;
+      killed?: unknown;
+      code?: unknown;
+      cause?: unknown;
+    };
+    if (stderr === undefined) {
+      if (typeof failure.stderr === "string") stderr = failure.stderr;
+      else if (Buffer.isBuffer(failure.stderr))
+        stderr = failure.stderr.toString("utf-8");
+      if (stderr !== undefined && failure.stderrTruncated === true)
+        stderrTruncated = true;
+    }
+    if (exitCode === null) {
+      if (typeof failure.exitCode === "number") exitCode = failure.exitCode;
+      else if (typeof failure.status === "number") exitCode = failure.status;
+    }
+    if (signal === null && typeof failure.signal === "string")
+      signal = failure.signal;
+    if (
+      failure.timedOut === true ||
+      failure.killed === true ||
+      failure.code === "ETIMEDOUT"
+    )
+      timedOut = true;
+    current = failure.cause;
+  }
+  if (stderr !== undefined && stderr.length > HARNESS_STDERR_LIMIT) {
+    stderr = stderr.slice(-HARNESS_STDERR_LIMIT);
+    stderrTruncated = true;
+  }
+  return {
+    exitCode,
+    signal,
+    timedOut,
+    stderr: stderr ?? "",
+    stderrStatus:
+      stderr === undefined
+        ? "unavailable"
+        : stderrTruncated
+          ? "truncated"
+          : "captured",
+  };
+}
+
+function changedPaths(
+  initial: HarnessWorkspaceSnapshot,
+  final: HarnessWorkspaceSnapshot,
+): { paths: string[]; truncated: boolean } {
+  const excluded = (path: string): boolean =>
+    final.excludedPaths.some(
+      (control) => path === control || path.startsWith(`${control}/`),
+    );
+  const digest = (snapshot: HarnessWorkspaceSnapshot): Map<string, string> =>
+    new Map(
+      snapshot.entries
+        .filter((entry) => entry.kind === "file" && !excluded(entry.path))
+        .map((entry) => [
+          entry.path,
+          entry.sha256 ?? entry.contentBase64 ?? "",
+        ]),
+    );
+  const before = digest(initial);
+  const after = digest(final);
+  const changed = new Set<string>();
+  for (const [path, hash] of after)
+    if (before.get(path) !== hash) changed.add(path);
+  for (const path of before.keys()) if (!after.has(path)) changed.add(path);
+  const paths = [...changed].sort();
+  return {
+    paths: paths.slice(0, CHANGED_PATH_LIMIT),
+    truncated: paths.length > CHANGED_PATH_LIMIT,
+  };
 }
 
 function runArm(
@@ -68,6 +175,7 @@ function runArm(
   checkers: TrustedCheckers,
   suiteSourceHash: string,
   initialWorkspace: HarnessWorkspaceSnapshot,
+  causalityKey: string,
 ): HarnessArmRun {
   const workspace = mkdtempSync(join(tmpdir(), `oma-harness-${arm}-`));
   try {
@@ -83,6 +191,14 @@ function runArm(
     const started = performance.now();
     let output = "";
     let dispatchError: string | undefined;
+    let diagnostics: HarnessArmDiagnostics = {
+      exitCode: null,
+      signal: null,
+      timedOut: false,
+      stderr: "",
+      stderrStatus: "unavailable",
+    };
+    let outputStatus: HarnessArmTrace["output"] = "complete";
     try {
       output = options.dispatch({
         agent: options.suite.agent,
@@ -93,6 +209,8 @@ function runArm(
     } catch (error) {
       dispatchError = error instanceof Error ? error.message : String(error);
       output = diagnosticOutput(error);
+      diagnostics = diagnosticsFromError(error);
+      outputStatus = output ? "partial" : "unavailable";
     }
     const durationMs = Math.round(performance.now() - started);
     try {
@@ -122,7 +240,8 @@ function runArm(
       const message = `Current checks could not complete: ${error instanceof Error ? error.message : String(error)}`;
       dispatchError = dispatchError ? `${dispatchError}; ${message}` : message;
     }
-    return {
+    const changes = changedPaths(initialWorkspace, artifacts);
+    const run: HarnessArmRun = {
       taskId: task.id,
       incident: task.incident,
       evidence: {
@@ -151,7 +270,20 @@ function runArm(
       output,
       checks,
       dispatchError,
+      diagnostics,
+      trace: {
+        schemaVersion: 1,
+        causalityKey,
+        output: outputStatus,
+        stderr: diagnostics.stderrStatus,
+        artifacts: artifacts.complete ? "complete" : "insufficient",
+        toolCalls: "unsupported",
+        changedPaths: changes.paths,
+        changedPathsTruncated: changes.truncated,
+      },
     };
+    options.observer?.({ kind: "arm.completed", run });
+    return run;
   } finally {
     rmSync(workspace, { recursive: true, force: true });
   }
@@ -218,14 +350,24 @@ function executeHarnessLive(options: RunHarnessLiveOptions): HarnessEvaluation {
         }),
     ]),
   );
+  const causalityKey =
+    options.causalityKey ??
+    `harness:${suiteHash.slice(0, 12)}:${options.candidate.hash.slice(0, 12)}`;
   const runs = tasks.flatMap((task) => {
     const snapshot = initialSnapshots.get(task.id);
     if (!snapshot)
       throw new Error(`Initial workspace evidence missing for ${task.id}`);
-    return [
-      runArm(execution, task, "baseline", checkers, suiteSourceHash, snapshot),
-      runArm(execution, task, "candidate", checkers, suiteSourceHash, snapshot),
-    ];
+    return (["baseline", "candidate"] as const).map((arm) =>
+      runArm(
+        execution,
+        task,
+        arm,
+        checkers,
+        suiteSourceHash,
+        snapshot,
+        `${causalityKey}:${task.id}:${arm}`,
+      ),
+    );
   });
   return {
     suiteId: frozenSuite.id,

@@ -154,6 +154,29 @@ Task snapshots are bounded to 5 MiB per file, 32 MiB total, and 2,000 entries. S
 
 Records have their own integrity hash. A changed record or artifact hash is rejected. These hashes identify evidence; they do not attest process confinement or make a result promotion-ready.
 
+### Execution conditions
+
+Every live or rerun evaluation resolves an execution manifest before the first dispatch and stores it in the record as `manifest`. It names the conditions a verdict describes so a stored score is never mistaken for evidence about a different model, CLI, or OMA build:
+
+| Field | Meaning |
+|---|---|
+| `vendor`, `dispatchMode`, `runtimeVendor`, `command` | Resolved dispatch route and CLI executable name. |
+| `model`, `modelSource` | The model OMA resolved from the agent plan or vendor default. `vendor-session` means the vendor's own session configuration selects the model and OMA did not pin it. |
+| `effort`, `thinking` | Reasoning settings taken from the agent plan when present. |
+| `cliVersion`, `cliVersionStatus` | First line of `<command> --version` (`probed`), or `unavailable` when the probe failed. |
+| `omaVersion`, `platform`, `arch`, `node` | Host and OMA build. |
+| `environmentPolicy` | Names of the environment variables the arms received, the forced entries, and how many were dropped. Values are never recorded. |
+| `memory`, `confinement` | `memory: disabled` for every arm; `confinement` states what the dispatch does and does not restrict (temporary workspace, unrestricted network, inherited credentials, vendor-default tools). |
+| `manifestHash` | Identity of the conditions above. |
+
+The manifest is a description, not an attestation: it records what OMA resolved, and the confinement fields say explicitly that network and credential isolation are not enforced. `promotionReady` stays `false`.
+
+### Environment policy
+
+Both arms receive the same allowlisted environment. Base variables (`PATH`, `HOME`, locale, temp, proxy, and certificate settings), every `OMA_*` variable, and the credential and runtime-detection prefixes of the target vendor pass through; entries a dispatch builder adds for the invocation are kept. Everything else is dropped so a candidate cannot reach a deploy token or another provider's key by accident. `OMA_NO_AGENTMEMORY=1` is forced so vendor memory cannot carry context between the baseline and candidate arms.
+
+Set `OMA_HARNESS_ENV_PASSTHROUGH=NAME1,NAME2` to pass additional variables a task genuinely needs. The names appear in the manifest under `environmentPolicy.extra`. For a vendor without a known prefix set, the manifest reports `vendorKnown: false` and only base, `OMA_*`, and passthrough entries reach the process.
+
 ## Reuse a recording
 
 The command separates four actions:
@@ -253,9 +276,38 @@ Reruns have the same dispatch preview, confirmation, and timeout behavior as liv
 
 Pinned files do not reproduce external service state, clock behavior, or model sampling. A rerun is fresh behavioral evidence under the stated conditions, not a claim that the original agent trajectory was deterministically reproduced.
 
+### Recorded conditions on replay
+
+`inspect`, `rescore`, and `fixture-replay` report the manifest stored in the record with `conditions: "recorded"`, or `conditions: "unavailable"` for a record that predates manifests. OMA also resolves the current conditions and lists every difference in vendor, dispatch mode, model, effort, thinking, CLI version, OMA version, or host as a replay limitation and promotion blocker:
+
+```text
+replay limitation: Recorded conditions differ from current: model: recorded "gpt-5.4", current "gpt-5.5"
+```
+
+The CLI version is probed on replay only when the record itself carries a probed version; an unprobed pair is reported as not comparable rather than as equal. Recorded verdicts stay viewable under their original conditions. They are not evidence for the candidate under the current conditions until a live or rerun evaluation produces a record whose manifest matches.
+
 ### Report labels
 
-Reports include `executionMode`, `evidenceStatus` (`complete`, `insufficient`, or `legacy`), `replayLimitations`, and a `sourceRecordHash` when available. Evidence completeness describes what the current action can inspect or evaluate. Inherited incident limitations remain visible even when the current file capture is complete. `promotionReady` remains `false` in every mode.
+Reports include `executionMode`, `evidenceStatus` (`complete`, `insufficient`, or `legacy`), `replayLimitations`, and a `sourceRecordHash` when available. Live and rerun reports add `manifest`, `conditions: "current"`, and `traceSession`. Evidence completeness describes what the current action can inspect or evaluate. Inherited incident limitations remain visible even when the current file capture is complete. `promotionReady` remains `false` in every mode.
+
+## Trace events
+
+Each live or rerun evaluation writes linked events to the local session `oma-harness-<suite-id>`:
+
+| Event | Payload |
+|---|---|
+| `harness.eval.started` | Action, suite/baseline/candidate/evaluator hashes, partition, manifest hash, resolved vendor, model, CLI version, and task count. |
+| `harness.arm.completed` | One per arm: task, arm, pass state, duration, output hash, dispatch error, exit code, timeout flag, and the arm trace. `parentEventId` points at the started event. |
+| `harness.eval.completed` | Decision, lift, evidence status, and the record path and hash when `--record` was used. |
+
+All events of one evaluation share a `causalityKey`. When an event cannot be written, the report lists `Trace event <kind> was not recorded` as a replay limitation instead of silently omitting it.
+
+Each arm run also stores `diagnostics` and `trace` in the record:
+
+- `diagnostics`: exit code, signal, timeout flag, and the last 8 KiB of stderr with `stderrStatus` (`captured`, `truncated`, or `unavailable`).
+- `trace`: what the harness could observe. `output` is `complete`, `partial` (a failed process still produced stdout), or `unavailable`; `artifacts` says whether the final snapshot is complete; `changedPaths` lists files the arm added, modified, or removed relative to the pinned initial workspace (capped at 200 with `changedPathsTruncated`); `toolCalls` is always `unsupported` because vendor CLIs do not expose per-tool observations to the harness.
+
+A failed arm therefore keeps its partial output, stderr tail, exit status, and file changes, so the last error can be traced back to what the arm changed. Missing observation is recorded as a state; it never reads as a clean run.
 
 ## Metrics and decision gate
 
@@ -277,4 +329,4 @@ A passing score does not establish promotion eligibility. Reports include the pa
 
 ## Current boundary
 
-Candidate overlays are produced externally; this command does not implement a builder or an automated `harness opt` loop. Artifact capture, offline rescoring, tool fixture replay, pinned-file reruns, partition selection, and snapshotted evaluators are available, but OS-level secrecy for held-out data, repeated stochastic trials, token accounting, and forced model pinning for nested subagent calls are not established. Until nested-call pinning exists, suites intended to measure one fixed model should avoid candidate workflows that spawn other configured agent roles.
+Candidate overlays are produced externally; this command does not implement a builder or an automated `harness opt` loop. Artifact capture, offline rescoring, tool fixture replay, pinned-file reruns, partition selection, snapshotted evaluators, execution manifests, an environment allowlist, and linked trace events are available, but OS-level secrecy for held-out data, network or credential confinement, repeated stochastic trials, token accounting, and forced model pinning for nested subagent calls are not established. The environment allowlist limits which variables a vendor process inherits; it does not stop a vendor CLI from reading its own credential store or reaching the network. Until nested-call pinning exists, suites intended to measure one fixed model should avoid candidate workflows that spawn other configured agent roles.

@@ -1,9 +1,17 @@
 import { existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { CLI_SKILLS_DIR } from "../../constants/index.js";
 import { resolveVendor } from "../../platform/agent-config.js";
+import { emitEvent } from "../../state/events.js";
 import { buildHarnessDispatch } from "./dispatch.js";
+import {
+  type CliVersionProbe,
+  type HarnessExecutionManifest,
+  harnessManifestDifferences,
+  probeCliVersion,
+  resolveHarnessExecutionManifest,
+} from "./execution.js";
 import { validateCandidateOverlay } from "./overlay.js";
 import { assertExistingPathInside, isPathInside } from "./paths.js";
 import {
@@ -58,6 +66,25 @@ export interface HarnessEvalOptions {
   _materializeVendor?: (workspace: string, vendor: string) => void;
   _confirm?: () => Promise<boolean>;
   _sourceLimitations?: string[];
+  /** Replace or disable the `<cli> --version` probe (tests, offline use). */
+  _probeVersion?: CliVersionProbe | false;
+}
+
+function applyConditionDifferences(
+  evaluation: HarnessEvaluation,
+  recorded: HarnessExecutionManifest | undefined,
+  current: HarnessExecutionManifest,
+): void {
+  const differences = harnessManifestDifferences(recorded, current);
+  if (differences.length === 0) return;
+  const limitation = recorded
+    ? `Recorded conditions differ from current: ${differences.join("; ")}`
+    : (differences[0] ?? "");
+  evaluation.replayLimitations = [
+    ...(evaluation.replayLimitations ?? []),
+    limitation,
+  ];
+  evaluation.promotionBlockers = [...evaluation.promotionBlockers, limitation];
 }
 
 function confirmRun(): Promise<boolean> {
@@ -182,6 +209,10 @@ export async function runHarnessEval(
     );
   }
 
+  const resolvedVendor = options._vendor ? null : resolveVendor(suite.agent);
+  const vendor = options._vendor ?? resolvedVendor?.vendor ?? "";
+  const vendorConfig = resolvedVendor?.config?.vendors?.[vendor] ?? {};
+
   let evaluation: HarnessEvaluation;
   const record =
     action === "live"
@@ -242,6 +273,25 @@ export async function runHarnessEval(
           "Inspection is not a new evaluation of agent behavior",
         ],
       };
+      evaluation.manifest = record.manifest;
+      evaluation.conditions = record.manifest ? "recorded" : "unavailable";
+      applyConditionDifferences(
+        evaluation,
+        record.manifest,
+        resolveHarnessExecutionManifest({
+          agent: suite.agent,
+          vendor,
+          vendorConfig,
+          injected:
+            Boolean(options._dispatch) ||
+            record.manifest?.dispatchMode === "injected",
+          probeVersion:
+            options._probeVersion ??
+            (record.manifest?.cliVersionStatus === "probed"
+              ? probeCliVersion
+              : false),
+        }),
+      );
     } else {
       if (
         record.baselineHash !== baselineHash ||
@@ -290,6 +340,25 @@ export async function runHarnessEval(
         ...trust,
         promotionBlockers: [...trust.promotionBlockers, ...result.limitations],
       };
+      evaluation.manifest = record.manifest;
+      evaluation.conditions = record.manifest ? "recorded" : "unavailable";
+      applyConditionDifferences(
+        evaluation,
+        record.manifest,
+        resolveHarnessExecutionManifest({
+          agent: suite.agent,
+          vendor,
+          vendorConfig,
+          injected:
+            Boolean(options._dispatch) ||
+            record.manifest?.dispatchMode === "injected",
+          probeVersion:
+            options._probeVersion ??
+            (record.manifest?.cliVersionStatus === "probed"
+              ? probeCliVersion
+              : false),
+        }),
+      );
     }
   } else {
     const destinationRecordPath =
@@ -301,8 +370,6 @@ export async function runHarnessEval(
       throw new Error(
         "Harness recording is immutable; choose a new --record-file before dispatch",
       );
-    const resolved = resolveVendor(suite.agent);
-    const vendor = options._vendor ?? resolved.vendor;
     const spec = CLI_SKILLS_DIR[vendor as keyof typeof CLI_SKILLS_DIR];
     if (!options._materializeVendor && (!spec || spec.requiresHomeConsent)) {
       throw new Error(
@@ -313,11 +380,27 @@ export async function runHarnessEval(
     if (!Number.isFinite(timeoutMinutes) || timeoutMinutes <= 0) {
       throw new Error("--timeout-minutes must be a positive number");
     }
+    const manifest = resolveHarnessExecutionManifest({
+      agent: suite.agent,
+      vendor,
+      vendorConfig,
+      injected: Boolean(options._dispatch),
+      probeVersion:
+        options._probeVersion ?? (options._dispatch ? false : probeCliVersion),
+    });
     info(`\nHarness eval ${action} run preview:`);
     info(`  suite: ${suite.id}  partition: ${trust.partition}`);
     info(`  candidate: ${candidate.root}`);
     info(`  tasks: ${tasks.length}  dispatches: ${tasks.length * 2}`);
     info(`  vendor/model route: ${vendor} / ${suite.agent}`);
+    info(
+      `  conditions: ${manifest.dispatchMode} model=${manifest.model ?? "vendor-session"}` +
+        ` cli=${manifest.cliVersion ?? manifest.cliVersionStatus} oma=${manifest.omaVersion}`,
+    );
+    info(
+      `  environment: allowlist passed=${manifest.environmentPolicy.passed.length}` +
+        ` dropped=${manifest.environmentPolicy.dropped} memory=disabled`,
+    );
     info(
       `  workspace: fresh temporary checkout per arm${initialSnapshots ? " from recorded initial snapshot" : ""}`,
     );
@@ -326,7 +409,6 @@ export async function runHarnessEval(
       info("Aborted by user. No dispatches issued.");
       return undefined;
     }
-    const vendorConfig = resolved.config?.vendors?.[vendor] ?? {};
     const dispatch =
       options._dispatch ??
       buildHarnessDispatch(
@@ -335,6 +417,45 @@ export async function runHarnessEval(
         vendorConfig,
         timeoutMinutes * 60_000,
       );
+    // Trace events: one session per suite, one causality key per evaluation.
+    // A trace that cannot be written is a recorded limitation, not a silent gap.
+    const traceSession = `oma-harness-${suite.id}`;
+    const causalityKey = `harness:${suiteHash.slice(0, 12)}:${candidate.hash.slice(0, 12)}:${Date.now().toString(36)}`;
+    const traceLimitations: string[] = [];
+    let parentEventId: string | undefined;
+    const trace = (
+      kind: string,
+      payload: Record<string, unknown>,
+    ): string | undefined => {
+      try {
+        return emitEvent(projectRoot, traceSession, {
+          kind,
+          payload,
+          parentEventId,
+          causalityKey,
+        }).eventId;
+      } catch (error) {
+        traceLimitations.push(
+          `Trace event ${kind} was not recorded: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return undefined;
+      }
+    };
+    parentEventId = trace("harness.eval.started", {
+      action,
+      suiteId: suite.id,
+      suiteHash,
+      baselineHash,
+      candidateHash: candidate.hash,
+      partition: trust.partition,
+      evaluatorHash,
+      manifestHash: manifest.manifestHash,
+      vendor: manifest.vendor,
+      dispatchMode: manifest.dispatchMode,
+      model: manifest.model,
+      cliVersion: manifest.cliVersion,
+      tasks: tasks.length,
+    });
     evaluation = runHarnessLive({
       projectRoot,
       suite,
@@ -344,11 +465,54 @@ export async function runHarnessEval(
       materializeVendor: options._materializeVendor,
       partition: options.partition,
       initialSnapshots,
+      causalityKey,
+      observer: ({ run }) => {
+        trace("harness.arm.completed", {
+          taskId: run.taskId,
+          arm: run.arm,
+          passed: run.passed,
+          durationMs: run.durationMs,
+          outputHash: run.evidence?.outputHash,
+          dispatchError: run.dispatchError,
+          exitCode: run.diagnostics?.exitCode ?? null,
+          timedOut: run.diagnostics?.timedOut ?? false,
+          trace: run.trace
+            ? {
+                output: run.trace.output,
+                stderr: run.trace.stderr,
+                artifacts: run.trace.artifacts,
+                toolCalls: run.trace.toolCalls,
+                changedPaths: run.trace.changedPaths,
+                changedPathsTruncated: run.trace.changedPathsTruncated,
+              }
+            : undefined,
+        });
+      },
     });
+    evaluation.manifest = manifest;
+    evaluation.conditions = "current";
+    evaluation.traceSession = traceSession;
     if (record) evaluation.sourceRecordHash = record.recordHash;
+    let recordHash: string | undefined;
     if (options.record) {
       writeHarnessRecord(destinationRecordPath, evaluation);
+      recordHash = inspectHarnessRecord(destinationRecordPath).recordHash;
       info(`Harness recording written: ${destinationRecordPath}`);
+    }
+    trace("harness.eval.completed", {
+      decision: evaluation.score.decision,
+      lift: evaluation.score.lift,
+      evidenceStatus: evaluation.evidenceStatus,
+      recordPath: options.record
+        ? relative(projectRoot, destinationRecordPath)
+        : undefined,
+      recordHash,
+    });
+    if (traceLimitations.length) {
+      evaluation.replayLimitations = [
+        ...(evaluation.replayLimitations ?? []),
+        ...traceLimitations,
+      ];
     }
   }
 

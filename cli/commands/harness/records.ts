@@ -4,6 +4,10 @@ import { z } from "zod";
 import { sha256Hex } from "../../utils/hash.js";
 import { harnessCheckSchema } from "./check-schema.js";
 import { harnessSnapshotSchema, validateHarnessSnapshot } from "./evidence.js";
+import {
+  type HarnessExecutionManifest,
+  harnessExecutionManifestSchema,
+} from "./execution.js";
 import type {
   HarnessArmRun,
   HarnessEvaluation,
@@ -23,6 +27,7 @@ export interface HarnessRecordInput extends HarnessRecordIdentity {
   vendor?: string;
   executionMode?: HarnessEvaluation["executionMode"];
   sourceRecordHash?: string;
+  manifest?: HarnessExecutionManifest;
 }
 const incidentSchema = z.object({
   id: z.string(),
@@ -63,6 +68,27 @@ const armRunSchema = z.object({
   dispatchError: z.string().optional(),
   incident: incidentSchema.optional(),
   evidence: evidenceSchema.optional(),
+  diagnostics: z
+    .object({
+      exitCode: z.number().int().nullable(),
+      signal: z.string().nullable(),
+      timedOut: z.boolean(),
+      stderr: z.string(),
+      stderrStatus: z.enum(["captured", "truncated", "unavailable"]),
+    })
+    .optional(),
+  trace: z
+    .object({
+      schemaVersion: z.literal(1),
+      causalityKey: z.string(),
+      output: z.enum(["complete", "partial", "unavailable"]),
+      stderr: z.enum(["captured", "truncated", "unavailable"]),
+      artifacts: z.enum(["complete", "insufficient"]),
+      toolCalls: z.literal("unsupported"),
+      changedPaths: z.array(z.string()),
+      changedPathsTruncated: z.boolean(),
+    })
+    .optional(),
 });
 const recordPayloadSchema = z.object({
   suiteHash: z.string(),
@@ -76,6 +102,7 @@ const recordPayloadSchema = z.object({
     .enum(["live", "inspect", "rescore", "fixture-replay", "rerun"])
     .optional(),
   sourceRecordHash: z.string().optional(),
+  manifest: harnessExecutionManifestSchema.optional(),
   runs: z.array(armRunSchema),
 });
 const recordSchema = recordPayloadSchema.extend({

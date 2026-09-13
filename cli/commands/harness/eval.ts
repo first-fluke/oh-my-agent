@@ -5,6 +5,12 @@ export {
   validateHarnessSnapshot,
 } from "./evidence.js";
 export {
+  buildHarnessEnvironment,
+  type HarnessExecutionManifest,
+  harnessManifestDifferences,
+  resolveHarnessExecutionManifest,
+} from "./execution.js";
+export {
   captureHarnessIncident,
   exportHarnessIncident,
   readHarnessIncident,
@@ -36,7 +42,9 @@ export { scoreHarnessRuns } from "./scoring.js";
 export { loadHarnessSuite, selectHarnessTasks } from "./suite.js";
 export type {
   CandidateOverlayManifest,
+  HarnessArmDiagnostics,
   HarnessArmRun,
+  HarnessArmTrace,
   HarnessCheck,
   HarnessCheckResult,
   HarnessDispatchFn,

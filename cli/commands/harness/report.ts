@@ -22,6 +22,23 @@ export function renderHarnessEvaluation(evaluation: HarnessEvaluation): void {
   for (const blocker of evaluation.promotionBlockers)
     console.log(`  limitation: ${blocker}`);
   console.log(`  vendor: ${evaluation.vendor}`);
+  const manifest = evaluation.manifest;
+  if (manifest) {
+    console.log(
+      `  conditions (${evaluation.conditions ?? "current"}): ${manifest.vendor} ${manifest.dispatchMode}` +
+        ` model=${manifest.model ?? "vendor-session"} cli=${manifest.cliVersion ?? manifest.cliVersionStatus}` +
+        ` oma=${manifest.omaVersion}`,
+    );
+    console.log(
+      `  environment: allowlist passed=${manifest.environmentPolicy.passed.length}` +
+        ` dropped=${manifest.environmentPolicy.dropped} forced=${manifest.environmentPolicy.forced.join(",")}` +
+        `${manifest.environmentPolicy.vendorKnown ? "" : " (vendor prefixes unknown)"}`,
+    );
+  } else {
+    console.log("  conditions: unavailable");
+  }
+  if (evaluation.traceSession)
+    console.log(`  trace session: ${evaluation.traceSession}`);
   console.log(`  tasks: ${score.scoredTaskCount}/${score.taskCount}`);
   console.log(`  baseline: ${percentage(score.baselineScore)}`);
   console.log(`  candidate: ${percentage(score.candidateScore)}`);
@@ -38,5 +55,12 @@ export function renderHarnessEvaluation(evaluation: HarnessEvaluation): void {
   const errors = evaluation.runs.filter((run) => run.dispatchError);
   for (const run of errors) {
     console.warn(`  ${run.taskId}/${run.arm}: ${run.dispatchError}`);
+    if (run.diagnostics && run.trace) {
+      console.warn(
+        `    exit=${run.diagnostics.exitCode ?? "?"} timedOut=${run.diagnostics.timedOut}` +
+          ` output=${run.trace.output} stderr=${run.trace.stderr} artifacts=${run.trace.artifacts}` +
+          ` changed=${run.trace.changedPaths.length}${run.trace.changedPathsTruncated ? "+" : ""}`,
+      );
+    }
   }
 }
