@@ -29,6 +29,8 @@ export interface EvolutionRunSummary {
   finalTestPassed?: boolean;
   promotionEligible?: boolean;
   applied?: boolean;
+  /** Model calls charged against the constitution budget (live runs). */
+  callsUsed?: number;
   status: "completed" | "failed" | "incomplete";
 }
 
@@ -48,11 +50,27 @@ export interface EvolutionStats {
   applied: number;
   rollbacks: number;
   meanFinalLift: number | null;
+  /** Model calls summed over runs that reported usage. */
+  callsUsed: number;
+  runsWithUsage: number;
+  /**
+   * Cost of the process, not of a run: calls spent per verified improvement.
+   * Null until at least one verified improvement has usage behind it.
+   */
+  callsPerVerifiedImprovement: number | null;
   byMemory: Record<
     string,
-    { runs: number; verifiedImprovements: number; meanFinalLift: number | null }
+    {
+      runs: number;
+      verifiedImprovements: number;
+      meanFinalLift: number | null;
+      callsUsed: number;
+    }
   >;
-  byProcedure: Record<string, { runs: number; verifiedImprovements: number }>;
+  byProcedure: Record<
+    string,
+    { runs: number; verifiedImprovements: number; callsUsed: number }
+  >;
   runsDetail: EvolutionRunSummary[];
 }
 
@@ -119,6 +137,13 @@ export function readEvolutionRun(path: string): EvolutionRunSummary {
           : undefined;
       summary.applied =
         typeof record.applied === "boolean" ? record.applied : undefined;
+      const budget = record.budget;
+      summary.callsUsed =
+        budget !== null &&
+        typeof budget === "object" &&
+        typeof (budget as { used?: unknown }).used === "number"
+          ? (budget as { used: number }).used
+          : undefined;
       summary.status = record.status === "failed" ? "failed" : "completed";
     }
   }
@@ -151,6 +176,9 @@ export function computeEvolutionStats(
       (record) => record.action === "rollback",
     ).length,
     meanFinalLift: null,
+    callsUsed: 0,
+    runsWithUsage: 0,
+    callsPerVerifiedImprovement: null,
     byMemory: {},
     byProcedure: {},
     runsDetail: runs,
@@ -167,16 +195,23 @@ export function computeEvolutionStats(
     if (verified) stats.verifiedImprovements += 1;
     if (run.applied) stats.applied += 1;
     if (typeof run.finalLift === "number") finalLifts.push(run.finalLift);
+    const calls = run.callsUsed ?? 0;
+    if (typeof run.callsUsed === "number") {
+      stats.callsUsed += calls;
+      stats.runsWithUsage += 1;
+    }
     const memoryKey = run.memory ?? "unknown";
     if (!stats.byMemory[memoryKey]) {
       stats.byMemory[memoryKey] = {
         runs: 0,
         verifiedImprovements: 0,
         meanFinalLift: null,
+        callsUsed: 0,
       };
     }
     const byMemory = stats.byMemory[memoryKey];
     byMemory.runs += 1;
+    byMemory.callsUsed += calls;
     if (verified) byMemory.verifiedImprovements += 1;
     if (typeof run.finalLift === "number") {
       if (!memoryLifts[memoryKey]) memoryLifts[memoryKey] = [];
@@ -184,16 +219,24 @@ export function computeEvolutionStats(
     }
     const procedureKey = run.procedureHash ?? "unknown";
     if (!stats.byProcedure[procedureKey]) {
-      stats.byProcedure[procedureKey] = { runs: 0, verifiedImprovements: 0 };
+      stats.byProcedure[procedureKey] = {
+        runs: 0,
+        verifiedImprovements: 0,
+        callsUsed: 0,
+      };
     }
     const byProcedure = stats.byProcedure[procedureKey];
     byProcedure.runs += 1;
+    byProcedure.callsUsed += calls;
     if (verified) byProcedure.verifiedImprovements += 1;
   }
   const decided = stats.proposals.accepted + stats.proposals.rejected;
   stats.acceptanceRate =
     decided > 0 ? stats.proposals.accepted / decided : null;
   stats.meanFinalLift = mean(finalLifts);
+  if (stats.verifiedImprovements > 0 && stats.callsUsed > 0)
+    stats.callsPerVerifiedImprovement =
+      stats.callsUsed / stats.verifiedImprovements;
   for (const [key, entry] of Object.entries(stats.byMemory))
     entry.meanFinalLift = mean(memoryLifts[key] ?? []);
   return stats;
@@ -212,14 +255,18 @@ export function renderEvolutionStats(stats: EvolutionStats): void {
     `  verified improvements: ${stats.verifiedImprovements}  applied: ${stats.applied}  rollbacks: ${stats.rollbacks}` +
       `  mean final lift: ${stats.meanFinalLift === null ? "n/a" : `${(stats.meanFinalLift * 100).toFixed(1)}%`}`,
   );
+  console.log(
+    `  model calls: ${stats.callsUsed} over ${stats.runsWithUsage} metered runs` +
+      `  per verified improvement: ${stats.callsPerVerifiedImprovement === null ? "n/a" : stats.callsPerVerifiedImprovement.toFixed(0)}`,
+  );
   for (const [memory, entry] of Object.entries(stats.byMemory)) {
     console.log(
-      `  memory=${memory}: runs ${entry.runs}, verified ${entry.verifiedImprovements}, mean final lift ${entry.meanFinalLift === null ? "n/a" : `${(entry.meanFinalLift * 100).toFixed(1)}%`}`,
+      `  memory=${memory}: runs ${entry.runs}, verified ${entry.verifiedImprovements}, mean final lift ${entry.meanFinalLift === null ? "n/a" : `${(entry.meanFinalLift * 100).toFixed(1)}%`}, calls ${entry.callsUsed}`,
     );
   }
   for (const [procedure, entry] of Object.entries(stats.byProcedure)) {
     console.log(
-      `  procedure=${procedure}: runs ${entry.runs}, verified ${entry.verifiedImprovements}`,
+      `  procedure=${procedure}: runs ${entry.runs}, verified ${entry.verifiedImprovements}, calls ${entry.callsUsed}`,
     );
   }
 }

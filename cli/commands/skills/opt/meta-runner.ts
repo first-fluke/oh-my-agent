@@ -47,6 +47,7 @@ export function buildLiveInnerRunner(options: {
       ),
       promotionEligible: result.promotion?.eligible === true,
       acceptedEdits: result.acceptedEdits.length,
+      ...(result.budget ? { callsUsed: result.budget.used } : {}),
     };
   };
 }

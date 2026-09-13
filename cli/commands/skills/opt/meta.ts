@@ -58,6 +58,8 @@ export interface InnerRunOutcome {
   gain: number;
   promotionEligible: boolean;
   acceptedEdits: number;
+  /** Model calls the inner run charged against its budget, when metered. */
+  callsUsed?: number;
   error?: string;
 }
 
@@ -85,6 +87,8 @@ export interface InnerDiagnostics {
   meanGain: number;
   eligibleRuns: number;
   acceptedEdits: number;
+  /** Mean model calls per completed metered run; null when none was metered. */
+  meanCalls: number | null;
 }
 
 export type MetaProposer = (args: {
@@ -167,7 +171,15 @@ export function summarizeInnerRuns(runs: InnerRunOutcome[]): InnerDiagnostics {
       : 0,
     eligibleRuns: completed.filter((run) => run.promotionEligible).length,
     acceptedEdits: completed.reduce((s, run) => s + run.acceptedEdits, 0),
+    meanCalls: meanCallsUsed(completed),
   };
+}
+
+function meanCallsUsed(runs: InnerRunOutcome[]): number | null {
+  const metered = runs.filter((run) => typeof run.callsUsed === "number");
+  return metered.length
+    ? metered.reduce((s, run) => s + (run.callsUsed ?? 0), 0) / metered.length
+    : null;
 }
 
 function meanGainBySkill(runs: InnerRunOutcome[]): Map<string, number> {
@@ -566,6 +578,12 @@ export async function runMetaOptimization(
   return { ...base, applied };
 }
 
+function callsSuffix(summary: InnerDiagnostics): string {
+  return summary.meanCalls === null
+    ? ""
+    : `  ~${summary.meanCalls.toFixed(0)} calls/run`;
+}
+
 export function renderMetaReport(report: MetaReport): void {
   console.log(`\nSkill meta-optimization  (target: ${report.target})`);
   console.log(
@@ -573,7 +591,7 @@ export function renderMetaReport(report: MetaReport): void {
   );
   const base = summarizeInnerRuns(report.baselineRuns);
   console.log(
-    `  current ${report.currentHash}: mean gain ${(base.meanGain * 100).toFixed(1)}%  eligible ${base.eligibleRuns}/${base.runs}  failed ${base.failed}`,
+    `  current ${report.currentHash}: mean gain ${(base.meanGain * 100).toFixed(1)}%  eligible ${base.eligibleRuns}/${base.runs}  failed ${base.failed}${callsSuffix(base)}`,
   );
   for (const decision of report.candidates) {
     const cand = summarizeInnerRuns(decision.runs);
@@ -581,7 +599,7 @@ export function renderMetaReport(report: MetaReport): void {
       ? `[${(decision.ci95.lower * 100).toFixed(1)}%, ${(decision.ci95.upper * 100).toFixed(1)}%]`
       : "n/a";
     console.log(
-      `  candidate ${decision.candidate.hash.slice(0, 8)}: ${decision.decision}  mean gain ${(cand.meanGain * 100).toFixed(1)}%  Δ ${(decision.meanDiff * 100).toFixed(1)}%  CI ${ci}  pairs ${decision.pairs}  ${decision.reasons.join(", ")}`,
+      `  candidate ${decision.candidate.hash.slice(0, 8)}: ${decision.decision}  mean gain ${(cand.meanGain * 100).toFixed(1)}%  Δ ${(decision.meanDiff * 100).toFixed(1)}%  CI ${ci}  pairs ${decision.pairs}${callsSuffix(cand)}  ${decision.reasons.join(", ")}`,
     );
   }
   if (report.anchorCheck) {

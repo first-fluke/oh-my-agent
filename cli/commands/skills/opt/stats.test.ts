@@ -54,6 +54,7 @@ describe("evolution stats", () => {
         finalTestPassed: true,
         promotionEligible: true,
         applied: true,
+        budget: { limit: null, used: 120 },
       },
     ]);
     writeRun(dir, "run-b", [
@@ -69,6 +70,7 @@ describe("evolution stats", () => {
         finalTestPassed: false,
         promotionEligible: false,
         applied: false,
+        budget: { limit: 200, used: 80 },
       },
     ]);
     writeRun(dir, "run-c", [
@@ -114,10 +116,13 @@ describe("evolution stats", () => {
       verifiedImprovements: 1,
       applied: 1,
       rollbacks: 1,
+      callsUsed: 200,
+      runsWithUsage: 2,
+      callsPerVerifiedImprovement: 200,
       byProcedure: {
-        p1: { runs: 2, verifiedImprovements: 1 },
-        p2: { runs: 1, verifiedImprovements: 0 },
-        unknown: { runs: 1, verifiedImprovements: 0 },
+        p1: { runs: 2, verifiedImprovements: 1, callsUsed: 200 },
+        p2: { runs: 1, verifiedImprovements: 0, callsUsed: 0 },
+        unknown: { runs: 1, verifiedImprovements: 0, callsUsed: 0 },
       },
     });
     expect(stats.meanFinalLift).toBeCloseTo(0.3);
@@ -125,6 +130,7 @@ describe("evolution stats", () => {
       runs: 2,
       verifiedImprovements: 1,
       meanFinalLift: 0.5,
+      callsUsed: 120,
     });
     expect(stats.byMemory.none).toMatchObject({
       runs: 1,

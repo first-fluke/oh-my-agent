@@ -195,6 +195,7 @@ describe("procedure candidates", () => {
         meanGain: 0.1,
         eligibleRuns: 1,
         acceptedEdits: 2,
+        meanCalls: 40,
       },
       candidates: 2,
     });
@@ -210,6 +211,7 @@ describe("procedure candidates", () => {
         meanGain: 0,
         eligibleRuns: 0,
         acceptedEdits: 0,
+        meanCalls: null,
       },
       candidates: 1,
     });
@@ -369,3 +371,31 @@ describe("meta-optimization run", () => {
     expect(existsSync(join(root, EVOLUTION_DIR, "optimizer.md"))).toBe(false);
   });
 });
+
+describe("inner-run cost summary", () => {
+  it("averages model calls over metered completed runs only", async () => {
+    const { summarizeInnerRuns } = await import("./meta.js");
+    const base: Omit<InnerRunOutcome, "status"> = {
+      skill: "a",
+      repeat: 0,
+      procedureHash: "p",
+      baselineLift: 0,
+      finalLift: 0,
+      gain: 0,
+      promotionEligible: false,
+      acceptedEdits: 0,
+    };
+    expect(
+      summarizeInnerRuns([{ ...base, status: "completed" }]).meanCalls,
+    ).toBeNull();
+    expect(
+      summarizeInnerRuns([
+        { ...base, status: "completed", callsUsed: 30 },
+        { ...base, status: "completed", callsUsed: 50 },
+        { ...base, status: "completed" },
+        { ...base, status: "failed", callsUsed: 999 },
+      ]).meanCalls,
+    ).toBe(40);
+  });
+});
+

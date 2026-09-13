@@ -144,7 +144,7 @@ The optimizer's reply is read leniently for formatting only: code fences and bla
 
 `--memory none` starts a run from empty knowledge (no recalled patterns or gate history) while still recording it. Comparing runs under `--memory recall` (default) and `--memory none` at the same budget is the test of whether persistent knowledge helps; a claim that the loop learns from experience needs that comparison, not the presence of a memory.
 
-`oma skill evolution-stats --skill <id>` aggregates every recorded run for a skill from `.agents/results/skill-evolution/<id>/*.jsonl`: runs by status, proposals by gate outcome and the acceptance rate, verified improvements (final test passed and promotion eligible), applies and rollbacks, mean final lift, and the same figures split by memory mode and by procedure hash.
+`oma skill evolution-stats --skill <id>` aggregates every recorded run for a skill from `.agents/results/skill-evolution/<id>/*.jsonl`: runs by status, proposals by gate outcome and the acceptance rate, verified improvements (final test passed and promotion eligible), applies and rollbacks, mean final lift, model calls over metered runs and calls per verified improvement (the cost of the process rather than of a run), and the same figures split by memory mode and by procedure hash. The meta-optimization report shows mean calls per inner run for the current procedure and each candidate, so a procedure that wins on gain by spending more is visible as such.
 
 ### Meta-optimization: the procedure as the candidate
 
