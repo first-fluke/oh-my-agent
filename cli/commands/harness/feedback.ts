@@ -1,7 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { AGENTS_DIR } from "../../constants/paths.js";
-import { buildJudgeDispatchFn } from "../skills/eval.js";
+import type { LiveDispatchFn } from "../skills/eval.js";
+import { buildJudgeDispatchFn, buildLiveDispatchFn } from "../skills/eval.js";
 import { runEvolutionPrompt } from "../skills/opt/execution.js";
 import type { SkillOptResult } from "../skills/opt/types.js";
 import { runSkillsOpt } from "../skills/opt.js";
@@ -76,6 +77,8 @@ export async function runHarnessFeedback(options: {
   optimizer?: FeedbackOptimizer;
   drafter?: (prompt: string) => string | Promise<string>;
   judge?: ReturnType<typeof buildJudgeDispatchFn>;
+  /** Routes incident prompts to skills; defaults to the real eval dispatch. */
+  router?: LiveDispatchFn | null;
   incidentIds?: string[];
   /** Also capture uncaptured failed runs from their task contracts first. */
   scanRuns?: boolean;
@@ -140,6 +143,10 @@ export async function runHarnessFeedback(options: {
         id: incident.id,
         drafter: options.drafter ?? runEvolutionPrompt,
         judge: options.judge ?? buildJudgeDispatchFn(),
+        router:
+          options.router === null
+            ? undefined
+            : (options.router ?? buildLiveDispatchFn(root)),
       });
       report.promoted.push(promotion);
       bySkill.set(promotion.skill, [
@@ -223,7 +230,7 @@ export function renderFeedbackReport(report: FeedbackReport): void {
   );
   for (const promotion of report.promoted)
     console.log(
-      `  ${promotion.incidentId} → ${promotion.fixturePath} [${promotion.derivation}${promotion.validatedAgainstObserved ? ", validated" : ""}]`,
+      `  ${promotion.incidentId} → ${promotion.fixturePath} [${promotion.derivation}, ${promotion.attribution ?? "explicit"}${promotion.validatedAgainstObserved ? ", validated" : ""}]`,
     );
   for (const skipped of report.skipped)
     console.log(`  ${skipped.incidentId}: skipped — ${skipped.reason}`);

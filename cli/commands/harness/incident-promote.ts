@@ -1,17 +1,27 @@
 import {
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
 import { AGENTS_DIR } from "../../constants/paths.js";
 import { INSTALLED_SKILLS_DIR } from "../../constants/vendors.js";
 import { parseFrontmatter } from "../../utils/frontmatter.js";
+import { awaitDispatchResult } from "../skills/eval/envelope.js";
+import {
+  buildRoutingPrompt,
+  loadSkillCatalog,
+  parseRoutingChoice,
+} from "../skills/eval/routing.js";
 import type {
   JudgeDispatchFn,
+  LiveDispatchFn,
   TaskChecker,
   TaskFixture,
 } from "../skills/eval.js";
@@ -38,6 +48,8 @@ export interface IncidentPromotion {
   fixturePath: string;
   fixtureId: string;
   derivation: "assert" | "regex" | "judge" | "judge-draft";
+  /** How the skill was chosen. */
+  attribution?: "explicit" | "routing" | "agent-declaration";
   validatedAgainstObserved: boolean;
   limitations: string[];
 }
@@ -101,6 +113,29 @@ export function resolveIncidentSkill(
   if (existsSync(join(root, INSTALLED_SKILLS_DIR, direct, "SKILL.md")))
     return direct;
   return undefined;
+}
+
+/**
+ * Which installed skill governs the incident's prompt, by the same
+ * description-level routing probe the skill evaluator measures. An agent's
+ * declared skill is its toolbox, not necessarily the skill the task
+ * exercised, so routing decides and the declaration is the fallback.
+ */
+export async function attributeIncidentSkill(
+  root: string,
+  incident: HarnessIncident,
+  router: LiveDispatchFn,
+  workspace: string,
+): Promise<string | undefined> {
+  const catalog = loadSkillCatalog(root);
+  if (catalog.length === 0) return undefined;
+  const { output } = await awaitDispatchResult(
+    router("baseline", buildRoutingPrompt(catalog, incident.prompt), workspace),
+  );
+  const { choice } = parseRoutingChoice(output, catalog, "");
+  return choice && catalog.some((entry) => entry.name === choice)
+    ? choice
+    : undefined;
 }
 
 export function draftRubricPrompt(incident: HarnessIncident): string {
@@ -175,12 +210,33 @@ export async function promoteHarnessIncident(options: {
   judge?: JudgeDispatchFn;
   /** Admit a fixture that could not be validated against the observed output. */
   force?: boolean;
+  /** Routes the incident prompt to a skill; the agent's declaration is the fallback. */
+  router?: LiveDispatchFn;
 }): Promise<{ promotion: IncidentPromotion; fixture: TaskFixture }> {
   const { root, id } = options;
   const incident = readHarnessIncident(root, id);
   if (readIncidentPromotion(root, id))
     throw new Error(`Incident ${id} was already promoted to a fixture.`);
-  const skill = options.skill ?? resolveIncidentSkill(root, incident.agent);
+  let attribution: IncidentPromotion["attribution"] = "explicit";
+  let skill = options.skill;
+  if (!skill && options.router) {
+    const routingDir = mkdtempSync(join(tmpdir(), "oma-incident-route-"));
+    try {
+      skill = await attributeIncidentSkill(
+        root,
+        incident,
+        options.router,
+        routingDir,
+      );
+    } finally {
+      rmSync(routingDir, { recursive: true, force: true });
+    }
+    if (skill) attribution = "routing";
+  }
+  if (!skill) {
+    skill = resolveIncidentSkill(root, incident.agent);
+    if (skill) attribution = "agent-declaration";
+  }
   if (!skill)
     throw new Error(
       `Cannot attribute incident ${id} to a skill: agent "${incident.agent}" declares no skills and no oma-${incident.agent} skill is installed. Pass --skill.`,
@@ -304,6 +360,7 @@ export async function promoteHarnessIncident(options: {
     fixturePath: fixturePath.slice(root.length + 1),
     fixtureId,
     derivation,
+    attribution,
     validatedAgainstObserved: validated,
     limitations,
   };

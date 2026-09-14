@@ -103,7 +103,7 @@ describe("incident scan", () => {
     });
     writeFileSync(
       join(root, ".agents", "state", "agent-runs", `${a}.output.txt`),
-      "I pushed with --force.",
+      `${JSON.stringify({ type: "result", is_error: false, result: "I pushed with --force." })}\n`,
     );
     const candidate = scanHarnessIncidents(root).candidates[0];
     if (!candidate) throw new Error("expected one candidate");

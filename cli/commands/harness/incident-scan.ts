@@ -11,6 +11,7 @@ import {
   listAgentRuns,
   readAgentRun,
 } from "../../state/agent-results.js";
+import { unwrapVendorEnvelope } from "../skills/eval/envelope.js";
 import type { JudgeDispatchFn } from "../skills/eval.js";
 import { judgeVerdict } from "../skills/eval.js";
 import { captureHarnessIncident, type HarnessIncident } from "./incident.js";
@@ -23,7 +24,16 @@ export function readRunOutput(root: string, run: AgentRun): string | undefined {
   if (!run.output) return undefined;
   const path = join(root, run.output.path);
   if (!existsSync(path)) return undefined;
-  return readFileSync(path, "utf-8");
+  const raw = readFileSync(path, "utf-8");
+  // A vendor that prints a JSON result envelope leaves it as the last line;
+  // the observation is the answer inside it, not the bookkeeping around it.
+  const lines = raw.split("\n").filter((line) => line.trim());
+  const last = lines.at(-1) ?? "";
+  if (last.trimStart().startsWith("{")) {
+    const unwrapped = unwrapVendorEnvelope(last);
+    if (unwrapped !== last) return unwrapped;
+  }
+  return unwrapVendorEnvelope(raw);
 }
 
 /**

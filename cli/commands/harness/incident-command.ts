@@ -234,13 +234,18 @@ export function registerHarnessIncidentCommands(harness: Command): void {
         const { runEvolutionPrompt } = await import(
           "../skills/opt/execution.js"
         );
-        const { buildJudgeDispatchFn } = await import("../skills/eval.js");
+        const { buildJudgeDispatchFn, buildLiveDispatchFn } = await import(
+          "../skills/eval.js"
+        );
         const { promotion } = await promoteHarnessIncident({
           root: process.cwd(),
           id,
           skill: options.skill,
           drafter: options.draft ? runEvolutionPrompt : undefined,
           judge: options.draft ? buildJudgeDispatchFn() : undefined,
+          router: options.skill
+            ? undefined
+            : buildLiveDispatchFn(process.cwd()),
           force: options.force,
         });
         print({ ...promotion }, resolveJsonMode(options));

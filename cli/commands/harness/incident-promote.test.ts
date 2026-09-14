@@ -124,6 +124,40 @@ describe("incident promotion", () => {
     ).rejects.toThrow(/already promoted/);
   });
 
+  it("attributes the fixture by routing the prompt, falling back to the agent's declaration", async () => {
+    const root = workspace();
+    mkdirSync(join(root, ".agents", "skills", "oma-docs"), { recursive: true });
+    writeFileSync(
+      join(root, ".agents", "skills", "oma-docs", "SKILL.md"),
+      "---\nname: oma-docs\ndescription: docs drift\n---\n",
+    );
+    capture(root, "routed", { agent: "docs-curator" });
+    const router = vi.fn((_arm: string, _prompt: string) => "oma-scm");
+    const { promotion } = await promoteHarnessIncident({
+      root,
+      id: "routed",
+      router,
+    });
+    expect(promotion).toMatchObject({
+      skill: "oma-scm",
+      attribution: "routing",
+    });
+    const prompt = String(router.mock.calls[0]?.[1]);
+    expect(prompt).toContain("Which push flag");
+    expect(prompt).toContain("oma-scm");
+
+    capture(root, "declared", { agent: "docs-curator" });
+    const undecided = await promoteHarnessIncident({
+      root,
+      id: "declared",
+      router: () => "none",
+    });
+    expect(undecided.promotion).toMatchObject({
+      skill: "oma-docs",
+      attribution: "agent-declaration",
+    });
+  });
+
   it("refuses a fixture the observed failure already passes", async () => {
     const root = workspace();
     capture(root, "not-a-regression", {
