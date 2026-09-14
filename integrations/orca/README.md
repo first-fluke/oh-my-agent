@@ -55,6 +55,41 @@ verification. There is no live result dashboard in this release.
 
 ## Capabilities and boundaries
 
+### CLI subagents in the parent agent list
+
+The OMA CLI changes add subprocess reporting through the native child hooks
+available to Claude and Codex parents in Orca 1.4.201. The spawned vendor is
+unrestricted. This integration does not require the sidebar plugin or create
+an orchestration Run or worker.
+
+Other parent vendors require receiver support in Orca itself. An experimental
+sender for `/hook/subagent` is gated by the endpoint capability
+`ORCA_AGENT_HOOK_SUBAGENTS=1`. That receiver is a separate, unmerged Orca source
+proposal, not a released Orca feature or part of the OMA distribution. Installing
+OMA does not enable all-parent support. Do not set the capability manually.
+
+Upstream tracks the related plugin/subagent API request in
+[Orca #6168](https://github.com/stablyai/orca/issues/6168). It is still an API
+proposal; it does not establish support for OMA's experimental endpoint.
+
+Each run gets a distinct ID and a `vendor:agent` label. The runner refreshes
+its child every two seconds and re-reads the endpoint to follow Orca restarts.
+Child CLIs do not inherit the parent's hook identity. Exit and SIGINT/SIGTERM
+cleanup drain Stop before the runner exits. Without a compatible Orca context,
+spawn continues silently. Network errors do not fail the task.
+`OMA_ORCA_SUBAGENTS=0` disables reporting.
+
+Existing processes are not retroactively attached. SIGKILL or an unavailable
+listener during shutdown can leave a stale row until Orca clears the parent
+state. Nested CLI spawns do not inherit this parent's hook identity. Rows report
+process activity; use OMA result evidence to verify task completion.
+
+The existing Orca 1.4.201 native-hook path was smoke-tested with a short-lived
+process and its persisted registration/removal. Tests for the experimental
+protocol do not establish compatibility with released Orca versions.
+
+### Sidebar plugin permissions
+
 | Capability | Purpose |
 | --- | --- |
 | `workspace:read` | Read focused worktree display name, branch and terminal IDs |

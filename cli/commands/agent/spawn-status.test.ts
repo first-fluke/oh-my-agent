@@ -1,6 +1,7 @@
 import * as child_process from "node:child_process";
 import type * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as orca from "../../io/orca-subagent.js";
 import * as agentConfig from "../../platform/agent-config.js";
 import * as events from "../../state/events.js";
 import { spawnAgent } from "./spawn-status.js";
@@ -61,12 +62,56 @@ describe("agent/spawn-status.ts", () => {
     vi.stubEnv("CODEX_CI", "");
     vi.stubEnv("CODEX_THREAD_ID", "");
     vi.stubEnv("CLAUDECODE", "");
+    vi.stubEnv("OMA_ORCA_SUBAGENTS", "0");
     vi.spyOn(process, "kill").mockImplementation(() => true);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
+  });
+
+  it("starts Orca tracking after spawn and drains Stop before runner exit", async () => {
+    mockFsFunctions.existsSync.mockReturnValue(false);
+    mockFsFunctions.readFileSync.mockReturnValue("");
+    mockFsFunctions.openSync.mockReturnValue(123);
+    const start = vi.fn();
+    let completeStop!: () => void;
+    const pendingStop = new Promise<void>((resolve) => {
+      completeStop = resolve;
+    });
+    const stop = vi.fn(() => pendingStop);
+    vi.spyOn(orca, "createOrcaSubagent").mockReturnValue({
+      childEnv: { PATH: "/isolated/bin" },
+      start,
+      stop,
+    });
+    let exitHandler: ((code: number | null) => void) | undefined;
+    vi.mocked(child_process.spawn).mockImplementation(() => {
+      expect(start).not.toHaveBeenCalled();
+      return {
+        pid: 12345,
+        on: vi.fn((event, handler) => {
+          if (event === "exit") exitHandler = handler;
+        }),
+      } as unknown as child_process.ChildProcess;
+    });
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    await spawnAgent("agent1", "work", "session1", "/tmp");
+    expect(start).toHaveBeenCalledOnce();
+    expect(child_process.spawn).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Array),
+      expect.objectContaining({ env: { PATH: "/isolated/bin" } }),
+    );
+    exitHandler?.(0);
+    expect(stop).toHaveBeenCalled();
+    expect(exitSpy).not.toHaveBeenCalled();
+    completeStop();
+    await pendingStop;
+    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   it("exits if spawn returns no pid", async () => {

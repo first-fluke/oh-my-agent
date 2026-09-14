@@ -8,6 +8,7 @@ import {
   getCoordinationStorePath,
   resolveCoordinationFile,
 } from "../../io/memory.js";
+import { createOrcaSubagent } from "../../io/orca-subagent.js";
 import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch/detect.js";
 import {
@@ -450,12 +451,18 @@ export async function spawnAgent(
     }
   }
   const { command, args, env } = invocation;
+  const orcaSubagent = createOrcaSubagent(
+    dispatch.runtimeVendor,
+    agentId,
+    dispatch.targetVendor,
+    env,
+  );
 
   const child = spawnProcess(command, args, {
     cwd: resolvedWorkspace,
     stdio: ["ignore", logStream, stderrStream],
     detached: false,
-    env,
+    env: orcaSubagent?.childEnv ?? env,
   });
 
   if (!child.pid) {
@@ -481,10 +488,24 @@ export async function spawnAgent(
     // ignore
   }
   console.log(color.green(`[${agentId}] Started with PID ${child.pid}`));
+  orcaSubagent?.start();
+
+  const exitAfterOrca = (code: number) => {
+    if (orcaSubagent) {
+      void orcaSubagent.stop().then(() => process.exit(code));
+    } else {
+      process.exit(code);
+    }
+  };
 
   // Remove the PID file but preserve the log for post-run inspection (#583).
   // Also drop the temporary OpenCode wrapper agent, if one was created.
+  let cleaned = false;
+  let terminating = false;
   const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    void orcaSubagent?.stop();
     fs.closeSync(logStream);
     if (stderrStream !== logStream) fs.closeSync(stderrStream);
     try {
@@ -496,13 +517,15 @@ export async function spawnAgent(
   };
 
   const cleanAndExit = () => {
+    if (terminating) return;
+    terminating = true;
     if (child.pid && isProcessRunning(child.pid)) {
       process.kill(child.pid, "SIGTERM");
     }
     unregisterSignalCleanup();
     finishAgentRun(runRoot, run.runId, null);
     cleanup();
-    process.exit(130);
+    exitAfterOrca(130);
   };
 
   const unregisterSignalCleanup = registerSignalCleanup(
@@ -513,6 +536,9 @@ export async function spawnAgent(
   (child as unknown as NodeJS.EventEmitter).on(
     "exit",
     (code: number | null) => {
+      // Signal cleanup can wait briefly for Orca; do not finalize twice if the
+      // child exits while that Stop request is draining.
+      if (terminating) return;
       unregisterSignalCleanup();
       console.log(color.blue(`[${agentId}] Exited with code ${code}`));
 
@@ -669,7 +695,7 @@ export async function spawnAgent(
 
       cleanup();
       // A clean process exit is insufficient when the task result is incomplete.
-      process.exit(result.status === "completed" ? 0 : code || 3);
+      exitAfterOrca(result.status === "completed" ? 0 : code || 3);
     },
   );
 }
