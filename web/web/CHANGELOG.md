@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.6.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.5.0...web-v6.6.0) (2026-09-14)
+
+
+### Features
+
+* **hooks:** announce harness changes once at session start ([e289ff2](https://github.com/first-fluke/oh-my-agent/commit/e289ff2f871d98d335b02081de5db59a22f98783))
+* **skills:** adopt the meta-optimized procedure and surface harness evolution ([3388a33](https://github.com/first-fluke/oh-my-agent/commit/3388a33edcd004a5a83fdc4dca6d5e9901e0f788))
+* **skills:** narrate promotions and show the evolution loop in doctor ([27907b1](https://github.com/first-fluke/oh-my-agent/commit/27907b1d64b653ba595a0f1d679347a9ebbd25c6))
+
+
+### Bug Fixes
+
+* **skills:** keep evolution procedure out of the eval fixtures updates clear ([1680ef7](https://github.com/first-fluke/oh-my-agent/commit/1680ef7e3664ae2aa1e3f40b39e5b6126749d21e))
+
 ## [6.5.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.4.0...web-v6.5.0) (2026-09-14)
 
 
