@@ -1,5 +1,49 @@
 # Changelog
 
+## [6.5.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.4.0...web-v6.5.0) (2026-09-14)
+
+
+### Features
+
+* **agent:** preserve run output so failures can become incidents ([c77e405](https://github.com/first-fluke/oh-my-agent/commit/c77e4059bb92c04075ca5062798908322f58b15a))
+* **eval:** account vendor-reported tokens and cost per dispatch ([d949f97](https://github.com/first-fluke/oh-my-agent/commit/d949f973455dd2b2d87b06de051e90e6057fadf8))
+* **harness:** add incident regression capture and evidence replay ([6617108](https://github.com/first-fluke/oh-my-agent/commit/6617108258c1067fa4fc591ad5c4d1c153984c6b))
+* **harness:** capture failed runs as incidents from their task contracts ([26d2632](https://github.com/first-fluke/oh-my-agent/commit/26d26325e1899ccdb91b97fedb90c61d7c18db34))
+* **harness:** promote incidents to skill fixtures and close the feedback loop ([5809e63](https://github.com/first-fluke/oh-my-agent/commit/5809e633f00f8ee29d2e340ac3715bc2b94cb5de))
+* **harness:** record execution conditions, env allowlist, and arm traces ([815339f](https://github.com/first-fluke/oh-my-agent/commit/815339f2fb869f5cdcab39193c564b71d7c86c3c))
+* **harness:** scan failed agent runs for uncaptured incidents ([cec500c](https://github.com/first-fluke/oh-my-agent/commit/cec500ca73c01abd9d8d521ea183094203843afd))
+* **skills:** declare default meta-optimization anchors in the constitution ([25eb649](https://github.com/first-fluke/oh-my-agent/commit/25eb6492b02f389655e2e596cf0717ca781fc645))
+* **skills:** enforce protected eval isolation and promotion gates ([929de1a](https://github.com/first-fluke/oh-my-agent/commit/929de1aa7fe6b11aefe7e27cd6d063a872c64340))
+* **skills:** final test as non-regression with per-task evidence ([d333b7b](https://github.com/first-fluke/oh-my-agent/commit/d333b7bc6664cd363649c223db4dd9186eaa90b8))
+* **skills:** held-in/held-out acceptance and confirmed negative transfer ([5a286ca](https://github.com/first-fluke/oh-my-agent/commit/5a286caf044922ae508f56ff4e48e4205efe8ad6))
+* **skills:** make the evolution procedure an artifact with a constitution ([c31d95b](https://github.com/first-fluke/oh-my-agent/commit/c31d95b49935ba1eb667b529383d888c961a7288))
+* **skills:** measure skill routing and record promotion lineage ([f1e021f](https://github.com/first-fluke/oh-my-agent/commit/f1e021ff4865e44bf07c180d28baabdabe274325))
+* **skills:** meta-optimize the evolution procedure on held-out skills ([cd89010](https://github.com/first-fluke/oh-my-agent/commit/cd89010213ba3cb214614535431f710bf5162106))
+* **skills:** meter live optimization against the constitution budget ([1734db2](https://github.com/first-fluke/oh-my-agent/commit/1734db22091e09acd80cad21cb19b9653d51f0d1))
+* **skills:** repeated eval trials with paired intervals and grouped splits ([027eced](https://github.com/first-fluke/oh-my-agent/commit/027eced346974ec0c4f3b4a2d6906d2c1fe342f4))
+* **skills:** report model calls per verified improvement ([31faf4c](https://github.com/first-fluke/oh-my-agent/commit/31faf4cac877ce69f856eaecaf1d8e676f9a6bd7))
+* **skills:** select maintainer evidence by learning value ([0c35866](https://github.com/first-fluke/oh-my-agent/commit/0c3586646328361d63c6e00b667144c263308e33))
+
+
+### Bug Fixes
+
+* **harness:** read the answer out of preserved run envelopes and route incidents to skills ([1a48496](https://github.com/first-fluke/oh-my-agent/commit/1a4849646ae18b1bbabf7da2000aa64856a58893))
+* **skills:** allow 180s per eval dispatch ([cca995d](https://github.com/first-fluke/oh-my-agent/commit/cca995de938aae3e5c374f1a66c25018e1f212be))
+* **skills:** fall back to a cross-domain neighbor sample for negative transfer ([356710e](https://github.com/first-fluke/oh-my-agent/commit/356710ea16c996166ca6ea78af2d17674c769fdf))
+* **skills:** retry a timed-out eval dispatch once ([c4695b5](https://github.com/first-fluke/oh-my-agent/commit/c4695b5e81b1157d3fc161b9614e57f4473d6f4c))
+
+
+### Performance
+
+* **skills:** run live eval dispatches through a bounded parallel pool ([e539eb1](https://github.com/first-fluke/oh-my-agent/commit/e539eb17e0d8c57b4d156605a0c844ea87beb70f))
+
+
+### Documentation
+
+* **cli:** list skill promotions, rollback, --trials, and --routing ([01b0e91](https://github.com/first-fluke/oh-my-agent/commit/01b0e91a3445a7517551d574204238eb4663303a))
+* **skills:** document meta-optimization concurrency ([09200a9](https://github.com/first-fluke/oh-my-agent/commit/09200a94efa0fa4450889614339a61ba7267d65e))
+* **skills:** note blocked inner runs and headroom in meta-optimization ([b8b917b](https://github.com/first-fluke/oh-my-agent/commit/b8b917bd43fe927b2ce7be51b26c9e78bcefe114))
+
 ## [6.4.0](https://github.com/first-fluke/oh-my-agent/compare/web-v6.3.6...web-v6.4.0) (2026-09-12)
 
 
