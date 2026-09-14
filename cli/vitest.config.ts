@@ -15,6 +15,7 @@ export default defineConfig({
     setupFiles: [
       "./test/setup-install-context.ts",
       "./test/setup-session-storage.ts",
+      "./test/setup-orca-context.ts",
     ],
     // The suite spawns many `bun cli.ts …` subprocesses (hook e2e, vendor
     // probes, install flows). Under full parallel load those routinely blow

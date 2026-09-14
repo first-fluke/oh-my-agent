@@ -257,6 +257,7 @@ describe("incident promotion", () => {
       root,
       optimize: true,
       optimizer,
+      router: null,
     });
     expect(report.promoted.map((p) => p.incidentId)).toEqual(["one"]);
     expect(report.skipped).toEqual([
@@ -376,6 +377,7 @@ describe("incident promotion", () => {
       root,
       optimize: true,
       optimizer,
+      router: null,
       scanRuns: true,
       drafter,
       judge: () => "FAIL",
