@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.8.1",
-  "releaseDate": "2026-09-14T10:33:05.260Z",
+  "releaseDate": "2026-09-14T11:26:29.185Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -425,6 +425,11 @@
       "size": 2957
     },
     {
+      "path": ".agents/skills/_shared/core/anti-ai-prose.md",
+      "sha256": "dc30f0a8833e09d1c4d41785b85ee5f5b860b1e2906987759f2da70b454d75a2",
+      "size": 7544
+    },
+    {
       "path": ".agents/skills/_shared/core/api-contracts/README.md",
       "sha256": "45332842e906e31be4ac9c23d4649784c706812b5441c64d0f193e54b7fca5e8",
       "size": 2446
@@ -581,8 +586,8 @@
     },
     {
       "path": ".agents/skills/oma-academic-writing/SKILL.md",
-      "sha256": "ca03370bf870d6569be47ecdb573a0fdfbc295230de98cdc85f3557cb700e1bb",
-      "size": 13465
+      "sha256": "49e94976dbf62373922b2f4d7e13cf6b2ff0771277d0359ba18f98ff409fc71d",
+      "size": 13370
     },
     {
       "path": ".agents/skills/oma-academic-writing/resources/academic-verb-tiers.md",
@@ -591,8 +596,8 @@
     },
     {
       "path": ".agents/skills/oma-academic-writing/resources/anti-ai-checklist.md",
-      "sha256": "fcf036aba5e7ce9ed6cc1a44e67b55bdc3fd2f5a5e64af5ad0f2c78f64c7bfe9",
-      "size": 10756
+      "sha256": "3d28f3035a8d292aa2464b248f6208b815e89fc76c1d69d9f85b3f4437a3e2b1",
+      "size": 2885
     },
     {
       "path": ".agents/skills/oma-academic-writing/resources/hedging-guide.md",
@@ -601,8 +606,8 @@
     },
     {
       "path": ".agents/skills/oma-academic-writing/resources/sentence-structure-reference.md",
-      "sha256": "584ee7aff2d7a839a50a6a39be55d04eb96d9e94db96b61155c41b37e00ab6ed",
-      "size": 7856
+      "sha256": "71fcec771c258cecb56696aea8f76548657db39ec9c6f381605ce0661f3873f2",
+      "size": 7919
     },
     {
       "path": ".agents/skills/oma-architecture/SKILL.md",
@@ -1896,43 +1901,43 @@
     },
     {
       "path": ".agents/skills/oma-translation/SKILL.md",
-      "sha256": "b91a0d64d459bd47ffa2f0bff7a79493ed0162de838a0744422bca17439e04ab",
-      "size": 11061
+      "sha256": "6a7d77d7e6d6672cd1d129e711628b508277899b3e1cf0498c7b394771ebf29a",
+      "size": 11471
     },
     {
       "path": ".agents/skills/oma-translation/resources/anti-ai-patterns.md",
-      "sha256": "d1995c8099b67df0134cdb8f707a13df3780614cf3e1075b72f5cc02c9bc4bac",
-      "size": 16807
+      "sha256": "718f37929b1413ece367f29708a1d91984f78f2760d42caf009f93e50da4de84",
+      "size": 4743
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/_template.md",
-      "sha256": "4c4514bb98ca25baeb3aa6670fbad9ba25742bcf9bd964da026414b72bc1d54d",
-      "size": 2912
+      "sha256": "7c2abfd7291e1abe1b75fa6e8365542be9ae4da004153531530f57b82143adc2",
+      "size": 3090
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/en.md",
-      "sha256": "3d6b2c7266cf63554e5742e4aa70626783f8151be5bd813f8f495f6048cb3302",
-      "size": 7831
+      "sha256": "313d8ba73e1e68722d1220f954bb3b92fd56032c9afd480b572e1a27935276ca",
+      "size": 8434
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/ja.md",
-      "sha256": "fa3c8ce4a13e4ca02e8296a05a37ac7c6738a7d95ff000067871204be86a2c20",
-      "size": 9059
+      "sha256": "6ace6ccee61438e0d541d37b29c0d8d76f4dc269e618939b9635e0e79b541ce3",
+      "size": 10163
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/ko.md",
-      "sha256": "eceb036ffd0061d4f1d838ebf288f48894d7a3ae1cedd180162b4533539200b6",
-      "size": 14237
+      "sha256": "5b2cad940977d7c340989df75c782818745e3d23cdd8778d9c6a0ea7ed01e586",
+      "size": 15476
     },
     {
       "path": ".agents/skills/oma-translation/resources/lang/zh.md",
-      "sha256": "9a3fa6dd075d38990f2c1cc1afa928122386b00ca85f7f5595e0039d86121270",
-      "size": 8247
+      "sha256": "c04bc2972b19ecf7810d143b1b4fabf245bd3fc772b6f5bfb2dedea20c5f1855",
+      "size": 9327
     },
     {
       "path": ".agents/skills/oma-translation/resources/translation-rubric.md",
-      "sha256": "94d7e25fefa6751a04f23c1070db6702bfefe23b89cc23288b108bd727bba3ae",
-      "size": 4891
+      "sha256": "57bb0dc78362b3487cd337d8a906c16b31fb96babf9a48d28fc278be8b34226c",
+      "size": 4864
     },
     {
       "path": ".agents/skills/oma-video/SKILL.md",
@@ -2166,6 +2171,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 431
+    "totalFiles": 432
   }
 }
