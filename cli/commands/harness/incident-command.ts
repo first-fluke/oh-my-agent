@@ -7,6 +7,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import { integerOption } from "../../utils/option-parsers.js";
 import {
   buildLiveFeedbackOptimizer,
   renderFeedbackReport,
@@ -154,7 +155,7 @@ export function registerHarnessIncidentCommands(harness: Command): void {
       .description(
         "List failed, blocked, or partial agent runs that no captured incident references yet",
       )
-      .option("--limit <n>", "Maximum candidates to list", Number.parseInt)
+      .option("--limit <n>", "Maximum candidates to list", integerOption)
       .option(
         "--skeleton <run-id>",
         "Print an incident specification skeleton for one candidate run",
@@ -267,7 +268,12 @@ export function registerHarnessIncidentCommands(harness: Command): void {
         "--apply",
         "Write accepted edits that pass every gate (implies --live)",
       )
-      .option("--max-epochs <n>", "Optimization epochs per skill", parseInt, 1)
+      .option(
+        "--max-epochs <n>",
+        "Optimization epochs per skill",
+        integerOption,
+        1,
+      )
       .option("--incident <ids...>", "Only these incident IDs")
       .option(
         "--scan-runs",

@@ -4,6 +4,7 @@ import {
   resolveJsonMode,
   runAction,
 } from "../../utils/cli-framework.js";
+import { integerOption } from "../../utils/option-parsers.js";
 import { runSkillsAudit } from "./audit.js";
 import { runSkillsEval } from "./eval.js";
 import { runSkillsLint } from "./lint.js";
@@ -92,11 +93,11 @@ export function registerSkillsCommand(program: Command): void {
         "Skip the cost-preview confirmation prompt (only with --live)",
       )
       .option("--task-dir <path>", "Override task fixture directory")
-      .option("--max-tasks <n>", "Cap number of tasks evaluated", parseInt)
+      .option("--max-tasks <n>", "Cap number of tasks evaluated", integerOption)
       .option(
         "--trials <n>",
         "Repeat every arm n times with alternating order (only with --live; 1-10)",
-        parseInt,
+        integerOption,
       )
       .option(
         "--require-coverage",
@@ -170,19 +171,19 @@ export function registerSkillsCommand(program: Command): void {
       .option(
         "--max-epochs <n>",
         "Maximum optimization epochs",
-        parseInt,
+        integerOption,
         OPT_MAX_EPOCHS,
       )
       .option(
         "--edits-per-epoch <k>",
         "Candidate edits proposed per epoch",
-        parseInt,
+        integerOption,
         OPT_EDITS_PER_EPOCH,
       )
       .option(
         "--lr <chars>",
         "Textual learning-rate budget: max chars changed per edit",
-        parseInt,
+        integerOption,
         OPT_LR_MAX_CHARS,
       )
       .option("--yes", "Skip cost-preview confirmation (only with --live)")
@@ -251,25 +252,25 @@ export function registerSkillsCommand(program: Command): void {
       .option(
         "--repeats <n>",
         "Inner runs per skill and procedure",
-        parseInt,
+        integerOption,
         3,
       )
       .option(
         "--candidates <n>",
         "Procedure candidates to propose",
-        parseInt,
+        integerOption,
         2,
       )
       .option(
         "--max-epochs <n>",
         "Inner-run epochs (same for every arm)",
-        parseInt,
+        integerOption,
         1,
       )
       .option(
         "--edits-per-epoch <k>",
         "Inner-run edits per epoch (same for every arm)",
-        parseInt,
+        integerOption,
         OPT_EDITS_PER_EPOCH,
       )
       .option("--live", "Required: inner runs call real models")

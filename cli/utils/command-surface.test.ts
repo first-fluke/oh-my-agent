@@ -56,6 +56,11 @@ function fixture() {
     .command("api:search <query>")
     .option("--timeout <seconds>")
     .action(action);
+  program
+    .command("skill:meta-optimize")
+    .option("--skill <ids...>")
+    .option("--json")
+    .action(action);
   const image = program.command("image").alias("img");
   image
     .command("generate <prompt...>")
@@ -137,6 +142,26 @@ describe("canonical command surface", () => {
       "sid",
       "--root=C:\\my repo",
       "--model=codex",
+    ]);
+  });
+
+  it("lets a variadic option own every value up to the next flag", () => {
+    const { surface } = fixture();
+    expect(
+      surface.normalize([
+        "skill",
+        "meta-optimize",
+        "--skill",
+        "oma-docs",
+        "oma-refactor",
+        "--json",
+      ]),
+    ).toEqual([
+      "skill:meta-optimize",
+      "--skill",
+      "oma-docs",
+      "oma-refactor",
+      "--json",
     ]);
   });
 

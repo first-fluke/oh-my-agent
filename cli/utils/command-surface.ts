@@ -171,7 +171,13 @@ function positionalIndices(tokens: string[], command: Command): number[] {
     const option = options.find(
       (o) => o.long === token.split("=")[0] || o.short === token,
     );
-    if (option?.required && !token.includes("=")) i++;
+    if (option?.required && !token.includes("=")) {
+      i++;
+      // A variadic option owns every following value up to the next flag.
+      if (option.variadic)
+        while (tokens[i + 1] !== undefined && !tokens[i + 1]?.startsWith("-"))
+          i++;
+    }
   }
   return indices;
 }

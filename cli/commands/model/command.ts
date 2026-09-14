@@ -6,6 +6,7 @@ import {
   loadInlineUserModels,
 } from "../../platform/model-registry.js";
 import { runAction } from "../../utils/cli-framework.js";
+import { integerOption } from "../../utils/option-parsers.js";
 import { computeDiff, formatHumanReadable, formatJson } from "./check.js";
 import { describeProbeStatus, probeSlug, resolveProbeTarget } from "./probe.js";
 import { proposeMissingSlugs, writeProposalToFile } from "./propose.js";
@@ -208,7 +209,7 @@ export function registerModelCommands(program: Command): void {
     .option(
       "--timeout <ms>",
       "Probe timeout in milliseconds (default: 30000)",
-      Number.parseInt,
+      integerOption,
     )
     .action(
       runAction(
@@ -266,7 +267,7 @@ export function registerModelCommands(program: Command): void {
     .option(
       "--timeout <ms>",
       "Per-probe timeout in milliseconds (default: 30000)",
-      Number.parseInt,
+      integerOption,
     )
     .action(
       runAction(
