@@ -357,6 +357,33 @@ describe("meta-optimization run", () => {
     );
   });
 
+  it("keeps the baseline arm and reports a proposer failure instead of throwing", async () => {
+    const root = workspace();
+    const procedure = loadEvolutionProcedure(root);
+    const { runner, requests } = fakeRunner(() => 0.1);
+    const report = await runMetaOptimization({
+      workspace: root,
+      procedure,
+      target: "optimizer",
+      skills: ["a"],
+      anchors: [],
+      repeats: 2,
+      candidateCount: 2,
+      budget: { maxEpochs: 1, editsPerEpoch: 1 },
+      proposer: () => {
+        throw new Error("Command failed: claude --print");
+      },
+      innerRunner: runner,
+      apply: true,
+    });
+    expect(requests).toHaveLength(2);
+    expect(report.baselineRuns).toHaveLength(2);
+    expect(report.candidates).toEqual([]);
+    expect(report.winner).toBeNull();
+    expect(report.applied).toBeNull();
+    expect(report.proposerError).toContain("Command failed");
+  });
+
   it("writes nothing on a dry run or when no candidate is promotable", async () => {
     const root = workspace();
     const procedure = loadEvolutionProcedure(root);

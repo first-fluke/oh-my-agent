@@ -129,6 +129,8 @@ export interface MetaReport {
     winner: InnerRunOutcome[];
   } | null;
   applied: { path: string; backupPath: string; patchPath: string } | null;
+  /** Set when the proposer failed; the baseline arm is still reported. */
+  proposerError?: string;
 }
 
 /** Deterministic PRNG so a bootstrap interval is reproducible from a seed. */
@@ -570,12 +572,22 @@ export async function runMetaOptimization(
   };
   const baselineRuns = await runArm(options, current, options.skills, repeats);
   const diagnostics = summarizeInnerRuns(baselineRuns);
-  const proposed = await options.proposer({
-    target: options.target,
-    template: currentTemplate,
-    diagnostics,
-    candidates: candidateCount,
-  });
+  // The baseline arm is the expensive part; a proposer outage (rate limit,
+  // parse failure) must not discard it. The report then carries no
+  // candidates and says why.
+  let proposed: ProcedureCandidate[] = [];
+  let proposerError: string | undefined;
+  try {
+    proposed = await options.proposer({
+      target: options.target,
+      template: currentTemplate,
+      diagnostics,
+      candidates: candidateCount,
+    });
+  } catch (error) {
+    proposerError = error instanceof Error ? error.message : String(error);
+    options.onProgress?.(`proposer failed: ${proposerError}`);
+  }
   const decisions: CandidateDecision[] = [];
   for (const candidate of proposed) {
     const runs = await runArm(options, candidate, options.skills, repeats);
@@ -605,6 +617,7 @@ export async function runMetaOptimization(
     candidates: decisions,
     winner,
     anchorCheck,
+    ...(proposerError ? { proposerError } : {}),
   };
   const applied =
     options.apply && winner ? applyWinner(options, winner, base) : null;
@@ -643,8 +656,10 @@ export function renderMetaReport(report: MetaReport): void {
     );
   }
   console.log(
-    report.applied
-      ? `  applied: ${report.applied.path} (backup ${report.applied.backupPath}, patch ${report.applied.patchPath})`
-      : `  applied: false${report.winner ? " (dry-run)" : " (no promotable candidate)"}`,
+    report.proposerError
+      ? `  proposer failed: ${report.proposerError}`
+      : report.applied
+        ? `  applied: ${report.applied.path} (backup ${report.applied.backupPath}, patch ${report.applied.patchPath})`
+        : `  applied: false${report.winner ? " (dry-run)" : " (no promotable candidate)"}`,
   );
 }
