@@ -336,9 +336,12 @@ describe("incident promotion", () => {
       ],
       observed: { output: "I ran git push --force." },
     });
-    expect(drafter.mock.calls[0]?.[0]).toContain(
-      "Fixture acceptance condition",
-    );
+    const draftPrompt = String(drafter.mock.calls[0]?.[0]);
+    expect(draftPrompt).toContain("Fixture acceptance condition");
+    // The rubric is grounded in criteria, never in run bookkeeping: a run
+    // whose only failure was a broken check must not become a regression case.
+    expect(draftPrompt).toContain("do not mention run status");
+    expect(draftPrompt).not.toContain("Unresolved items reported by the run");
 
     const { promotion, fixture } = await promoteHarnessIncident({
       root,

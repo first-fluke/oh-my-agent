@@ -216,13 +216,17 @@ export function draftRunRubricPrompt(
     "An agent run did not meet its acceptance criteria. Write ONE rubric",
     "paragraph a judge can apply to a written answer alone (no files, no",
     "commands). It must start with 'PASS only if' and restate the unmet",
-    "criteria as concrete observable statements, then 'FAIL if' naming what",
-    "the observed output did instead. Output the rubric only.",
+    "criteria below as concrete observable statements about the task, then",
+    "'FAIL if' naming answers that contradict or omit them.",
+    "Ground the rubric ONLY in the acceptance criteria and the task prompt:",
+    "do not mention run status, verification commands, exit codes, check",
+    "scripts, or who should fix what; a correct answer that satisfies every",
+    "criterion must PASS even if the run's bookkeeping failed for another",
+    "reason. Output the rubric only.",
     "",
     `## Task prompt\n${run.dispatch?.prompt ?? ""}`,
     `## Unmet acceptance criteria\n${criteria.map((c) => `- ${c.id}: ${c.description}`).join("\n")}`,
-    `## Unresolved items reported by the run\n${run.unresolved.map((u) => `- ${u}`).join("\n") || "- none"}`,
-    `## Observed output (failing)\n${output.slice(-4_000)}`,
+    `## Observed output (context only; do not tailor the rubric to it)\n${output.slice(-4_000)}`,
   ].join("\n\n");
 }
 
