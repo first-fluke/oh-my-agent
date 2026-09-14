@@ -74,11 +74,13 @@ never retried automatically.
 
 Checked against the public source at Orca `v1.4.197`:
 
+<!-- oma-docs:ignore-start -->
 - `src/shared/plugins/plugin-manifest.ts`
 - `src/shared/plugins/plugin-host-api.ts`
 - `src/shared/plugins/plugin-panel-bridge.ts`
 - `src/main/plugins/plugin-host-runtime.ts`
 - `src/shared/plugins/plugin-marketplace.ts`
+<!-- oma-docs:ignore-end -->
 
 The official workflow-skills example still declares `contributes.skills`, but
 this Orca version rejects that field and hides the `skills` marketplace category.

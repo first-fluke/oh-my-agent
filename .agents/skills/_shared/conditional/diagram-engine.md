@@ -57,8 +57,10 @@ OMA execution policy; vendor guidance does not expand authorization. The oma-spe
 - Type router: architecture/container view → `architecture`; call chain →
   `sequence`; pipeline/lineage → `dataflow`; state machine → `lifecycle`;
   process/CI → `workflow`. When unsure: `oma diagram archify guide "<scenario>" --json`.
+<!-- oma-docs:ignore-start -->
 - Read only `schemas/common.schema.json`, the one matching `schemas/<type>.schema.json`,
   and one matching example under `examples/`. Do not read renderer internals.
+<!-- oma-docs:ignore-end -->
 - Translate the Mermaid topology semantically (archify's "Mermaid input" rule):
   same nodes, same edges, same labels; fresh stable IDs; ≤ 12 primary nodes,
   one main path. Split into two diagrams rather than exceeding that.
@@ -78,9 +80,11 @@ oma diagram archify validate <type> <stem>.archify.json --quality <quality> --js
 oma diagram archify deliver  <type> <stem>.archify.json <stem>.archify.html --quality <quality> --json [--open]
 ```
 
+<!-- oma-docs:ignore-start -->
 `oma diagram archify …` runs the resolved `bin/archify.mjs` with
 `ARCHIFY_UPDATE_CHECK_DISABLED=1` and propagates the exit code — a non-zero
 exit is never success.
+<!-- oma-docs:ignore-end -->
 
 Repair loop rules:
 

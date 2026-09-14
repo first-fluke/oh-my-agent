@@ -75,7 +75,9 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 
 ## Step 5: Compositor Render
 
+<!-- oma-docs:ignore-start -->
 - **Remotion (default, live)**: `oma video generate` stops after `render-spec.json` with `composition pending` and a scaffolded `<runDir>/remotion/` (latest Remotion toolchain, remotion-dev/skills at HEAD). Read `<runDir>/remotion/AUTHORING.md` + the listed skills + `resources/remotion-authoring/<mode>.md`, author `src/Root.tsx`, then `oma video render <runDir> --output json` — it typechecks, spawns `npx remotion render src/index.ts <CompId> <mode>-<slug>.mp4 --props=render-spec.json --public-dir=<runDir>`, and ffprobes the output. Non-zero exit = fix the composition and re-render.
+<!-- oma-docs:ignore-end -->
 - **Failure**: a missing toolchain, render failure, missing video stream, or non-positive duration is a failure with diagnostics. Keep the run directory and recovery artifacts; do not write a placeholder MP4. `OMA_VIDEO_MOCK=1` permits deterministic placeholders for tests only.
 - **MPT (`--compositor mpt`)**: inject the agent-written script (custom-script mode); keys env-only + log masking. It requires the installed checkout, venv, and ffmpeg; setup or render failures fail with diagnostics.
 

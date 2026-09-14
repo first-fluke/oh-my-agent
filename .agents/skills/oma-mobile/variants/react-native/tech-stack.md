@@ -85,7 +85,9 @@ See `snippets.md §2` for QueryClient + MMKV persister setup, `snippets.md §5` 
 
 **MMKV** is a C++-backed key-value store (the same one WeChat uses) that is 30× faster than `AsyncStorage` on both platforms. Use it for all non-secret durable state. Use `expo-secure-store` (Expo projects) or `react-native-keychain` (bare RN) for anything that must live in the platform secure enclave (iOS Keychain / Android Keystore).
 
+<!-- oma-docs:ignore-start -->
 Never store secrets in MMKV — it stores plain text unless an `encryptionKey` is passed. The access token lives in an in-memory Zustand `authStore` (`src/store/authStore.ts`) that is hydrated from the Keychain at app start; the axios request interceptor reads it synchronously via `useAuthStore.getState().accessToken`, and a 401 clears both the Keychain and the store. See `snippets.md §10`.
+<!-- oma-docs:ignore-end -->
 
 ## Testing
 

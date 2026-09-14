@@ -1,10 +1,12 @@
 # Remotion authoring — per-run compositions on the latest Remotion
 
+<!-- oma-docs:ignore-start -->
 oma-video does **not** ship Remotion composition code. Every run gets its own
 project at `<runDir>/remotion/` (scaffolded by `oma video compose`) on the
 **latest** npm Remotion, linked to a shared toolchain cache, and the agent
 authors `src/Root.tsx` (+ components) for that run using
 [remotion-dev/skills](https://github.com/remotion-dev/skills) at HEAD.
+<!-- oma-docs:ignore-end -->
 
 Why: owning compositions meant pinning Remotion and chasing every upstream
 change ourselves. Remotion's own answer is agent-authored code guided by their
@@ -28,9 +30,11 @@ write.
 
 ## Contract (also written to `<runDir>/remotion/AUTHORING.md`)
 
+<!-- oma-docs:ignore-start -->
 - One `<Composition id={spec.composition}>`; `schema={RenderSpecSchema}` from the
   generated `src/render-spec.ts`; `calculateMetadata` derives width/height/fps/
   durationInFrames from the props.
+<!-- oma-docs:ignore-end -->
 - `render-spec.json` is the only input; asset paths are run-dir relative and
   resolve via `staticFile()` (`--public-dir=<runDir>`).
 - Deterministic: no network, no `Math.random` / `Date.now`; every frame is a
@@ -40,8 +44,10 @@ write.
   `cancelRender`).
 - Captions: show the single active SRT cue per frame (`@remotion/captions`
   `parseSrt`), never merged TikTok pages.
+<!-- oma-docs:ignore-start -->
 - Never edit `src/render-spec.ts`, `src/index.ts`, `remotion.config.ts`,
   `tsconfig.json`, `package.json` — `compose` regenerates them.
+<!-- oma-docs:ignore-end -->
 
 ## Mode specs
 

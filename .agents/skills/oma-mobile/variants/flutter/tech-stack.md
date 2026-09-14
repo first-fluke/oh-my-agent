@@ -186,11 +186,15 @@ Each `features/<name>/` folder is a vertical slice owning its domain, data, and 
 
 The `@riverpod` notifier calls the repository directly — there is no use-case/interactor layer in this stack. Add a `usecases/` class only when a single user action coordinates multiple repositories or carries non-trivial orchestration logic; a straight pass-through to one repository method does not warrant one.
 
+<!-- oma-docs:ignore-start -->
 **Sanctioned layering exception (Drift).** `core/database/app_database.dart` imports the feature DAOs (e.g. `features/todos/data/local/todos_dao.dart`) to register them on `@DriftDatabase(daos: [...])`. This is a `core → features` upward import, the reverse of the normal dependency direction. It is the single allowed exception: Drift requires the database class to reference its tables and DAOs for code generation. No other `core` code may import from `features/`.
+<!-- oma-docs:ignore-end -->
 
 ## Navigation: GoRouter with Typed Routes
 
+<!-- oma-docs:ignore-start -->
 `go_router` 17.x with `go_router_builder` (typed route classes generated at build time via `build_runner`) is the navigation layer. Define route classes annotated with `@TypedGoRoute`; the generator emits `.g.dart` files with `push()` / `go()` helpers. `go_router_builder` is a dev-only builder — the `@TypedGoRoute` annotation and `GoRouteData` base class are imported from `package:go_router/go_router.dart`, never from `go_router_builder`.
+<!-- oma-docs:ignore-end -->
 
 Route guards (auth checks, onboarding redirects) are handled by `GoRouter.redirect` callbacks, not inside screens. Deep links are declared in `GoRoute.path` and handled by the platform-level `AndroidManifest.xml` / `Info.plist` intent filters.
 

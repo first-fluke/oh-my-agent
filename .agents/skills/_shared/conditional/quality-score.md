@@ -6,7 +6,9 @@ Load when the task or active workflow needs a measured baseline or experiment co
 
 Tests, authorization/security requirements, and project acceptance criteria remain independent gates. A performance improvement cannot offset a correctness or security failure. Do not assign default weights, convert checklist completion into a security score, or trigger rollback from an arbitrary grade.
 
+<!-- oma-docs:ignore-start -->
 OMA does not implement a loader for `.agents/config/quality-score.yaml` or a universal composite scorer. If a project already provides a scoring command, record its formula, inputs, applicability, and output; do not infer configuration support from a sample path. A project composite may supplement the evidence but cannot waive mandatory checks.
+<!-- oma-docs:ignore-end -->
 
 ## Measure a comparable baseline
 

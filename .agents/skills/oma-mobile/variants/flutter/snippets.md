@@ -1303,8 +1303,10 @@ void main() {
 
 ## §11. Maestro E2E Flow
 
+<!-- oma-docs:ignore-start -->
 End-to-end UI test driven by Maestro. Lives at `maestro/todos_flow.yaml` (project
 root, see tech-stack `Testing`). Run with `maestro test maestro/todos_flow.yaml`.
+<!-- oma-docs:ignore-end -->
 
 ```yaml
 # maestro/todos_flow.yaml

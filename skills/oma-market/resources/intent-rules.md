@@ -19,7 +19,9 @@ Korean / Japanese / Chinese prompts are classified by reading the prompt directl
 
 ## Intent → engine invocation → frameworks
 
+<!-- oma-docs:ignore-start -->
 The engine is `oma market run` (= upstream `scripts/last30days.py`). Flags below are additive to whatever the upstream SKILL.md resolves in its Steps 0.5–0.75 (`--plan`, `--subreddits`, `--x-handle`, …).
+<!-- oma-docs:ignore-end -->
 
 | Intent | Topic shaping / engine flags | Frameworks (`--frameworks auto`) |
 |---|---|---|
