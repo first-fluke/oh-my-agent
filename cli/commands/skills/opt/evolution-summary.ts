@@ -1,8 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { AGENTS_DIR } from "../../../constants/paths.js";
-import { listUnpromotedIncidents } from "../../harness/incident-promote.js";
-import { scanHarnessIncidents } from "../../harness/incident-scan.js";
 import { readSkillPromotions, type SkillPromotionRecord } from "./lineage.js";
 import { procedurePromotionsLog } from "./meta.js";
 
@@ -10,9 +8,17 @@ import { procedurePromotionsLog } from "./meta.js";
  * What a user can see of the evolution loop without opening artifact
  * files: which skills changed, when, why, whether the procedure itself
  * changed, and what is waiting to be fed back in. Every figure here comes
- * from the append-only lineage logs and the incident store, never from a
- * claim.
+ * from the append-only lineage logs, never from a claim. The feedback
+ * backlog (incidents without a fixture, failed runs not yet captured) is
+ * owned by the harness slice; a caller that has it passes it in.
  */
+
+export interface EvolutionBacklog {
+  /** Captured incidents with no fixture yet. */
+  pendingIncidents: number;
+  /** Failed runs with preserved output that no incident references. */
+  uncapturedFailedRuns: number;
+}
 
 export interface ProcedurePromotionRecord {
   schemaVersion: 1;
@@ -54,10 +60,8 @@ export interface EvolutionSummary {
     lastTarget?: string;
     lastSummary?: string;
   };
-  /** Captured incidents with no fixture yet. */
-  pendingIncidents: number;
-  /** Failed runs with preserved output that no incident references. */
-  uncapturedFailedRuns: number;
+  /** Present only when the caller supplied the harness feedback backlog. */
+  backlog?: EvolutionBacklog;
   lastChangeAt?: string;
   records: SkillPromotionRecord[];
   procedureRecords: ProcedurePromotionRecord[];
@@ -139,7 +143,10 @@ export function describeProcedurePromotion(
   return `${record.target} procedure ${record.parentHash.slice(0, 8)} → ${record.candidateHash.slice(0, 8)} (${stats})`;
 }
 
-export function collectEvolutionSummary(root: string): EvolutionSummary {
+export function collectEvolutionSummary(
+  root: string,
+  backlog?: EvolutionBacklog,
+): EvolutionSummary {
   const records = readAllSkillPromotions(root);
   const procedureRecords = readProcedurePromotions(root);
   const bySkill = new Map<string, EvolutionSummary["skills"][number]>();
@@ -157,20 +164,6 @@ export function collectEvolutionSummary(root: string): EvolutionSummary {
     bySkill.set(record.skillId, entry);
   }
   const lastProcedure = procedureRecords.at(-1);
-  let pendingIncidents = 0;
-  let uncapturedFailedRuns = 0;
-  try {
-    pendingIncidents = listUnpromotedIncidents(root).length;
-  } catch {
-    // An unreadable incident store is reported by `incident show`.
-  }
-  try {
-    uncapturedFailedRuns = scanHarnessIncidents(root).candidates.filter(
-      (candidate) => candidate.hasOutput && candidate.hasPrompt,
-    ).length;
-  } catch {
-    // A damaged run record is reported by `agent results`.
-  }
   const stamps = [
     ...records.map((r) => r.ts),
     ...procedureRecords.map((r) => r.ts),
@@ -189,8 +182,7 @@ export function collectEvolutionSummary(root: string): EvolutionSummary {
         ? describeProcedurePromotion(lastProcedure)
         : undefined,
     },
-    pendingIncidents,
-    uncapturedFailedRuns,
+    ...(backlog ? { backlog } : {}),
     lastChangeAt: stamps.at(-1),
     records,
     procedureRecords,
@@ -211,11 +203,13 @@ export function renderEvolutionLines(
   lines.push(
     `Procedure promotions: ${summary.procedure.promotions}${summary.procedure.lastSummary ? `\n  ${summary.procedure.lastAt?.slice(0, 16)}  ${summary.procedure.lastSummary}` : ""}`,
   );
-  lines.push(
-    `Waiting for feedback: ${summary.pendingIncidents} captured incident${summary.pendingIncidents === 1 ? "" : "s"} without a fixture, ${summary.uncapturedFailedRuns} failed run${summary.uncapturedFailedRuns === 1 ? "" : "s"} not yet captured` +
-      (summary.pendingIncidents + summary.uncapturedFailedRuns > 0
-        ? "  → oma harness feedback --scan-runs --live"
-        : ""),
-  );
+  const backlog = summary.backlog;
+  if (backlog)
+    lines.push(
+      `Waiting for feedback: ${backlog.pendingIncidents} captured incident${backlog.pendingIncidents === 1 ? "" : "s"} without a fixture, ${backlog.uncapturedFailedRuns} failed run${backlog.uncapturedFailedRuns === 1 ? "" : "s"} not yet captured` +
+        (backlog.pendingIncidents + backlog.uncapturedFailedRuns > 0
+          ? "  → oma harness feedback --scan-runs --live"
+          : ""),
+    );
   return lines;
 }

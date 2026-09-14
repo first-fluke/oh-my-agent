@@ -12,6 +12,7 @@ import {
 } from "../../platform/skills-installer.js";
 import { evaluateSelfHealingGate } from "../../state/self-healing.js";
 import type { SkillCheck } from "../../types/index.js";
+import { collectFeedbackBacklog } from "../harness/feedback.js";
 import { auditSkills } from "../skills/audit.js";
 import { MIN_TASKS } from "../skills/eval.js";
 import { collectEvolutionSummary } from "../skills/opt/evolution-summary.js";
@@ -169,7 +170,7 @@ export async function collectDoctorReport(
     records: _records,
     procedureRecords: _procedureRecords,
     ...evolution
-  } = collectEvolutionSummary(root);
+  } = collectEvolutionSummary(root, collectFeedbackBacklog(root));
   const hookWrappers = collectHookWrapperChecks(root);
   const selfHealing = options.healCheckAgent
     ? evaluateSelfHealingGate({

@@ -16,7 +16,7 @@ import {
   finishAgentRun,
   readAgentRun as readRun,
 } from "../../state/agent-results.js";
-import { runHarnessFeedback } from "./feedback.js";
+import { collectFeedbackBacklog, runHarnessFeedback } from "./feedback.js";
 import { captureHarnessIncident } from "./incident.js";
 import {
   listUnpromotedIncidents,
@@ -226,6 +226,18 @@ describe("incident promotion", () => {
       rubric: expect.stringMatching(/^PASS only if/),
     });
     expect(drafter.mock.calls[0]?.[0]).toContain("file_contains");
+  });
+
+  it("counts captured incidents without a fixture as feedback backlog", async () => {
+    const root = workspace();
+    expect(collectFeedbackBacklog(root)).toEqual({
+      pendingIncidents: 0,
+      uncapturedFailedRuns: 0,
+    });
+    capture(root, "one");
+    expect(collectFeedbackBacklog(root).pendingIncidents).toBe(1);
+    await promoteHarnessIncident({ root, id: "one" });
+    expect(collectFeedbackBacklog(root).pendingIncidents).toBe(0);
   });
 
   it("runs the feedback chain: promote, then optimize each affected skill, and writes a report", async () => {

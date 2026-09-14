@@ -26,10 +26,18 @@ const ALLOWED_SHARED = new Set(["migrations"]);
 //   market -> search : market MUST route fetches through oma-search per
 //     .claude/rules/market.md ("Reuse oma-search") — apiKeywordSearch and
 //     FetchContext are that contract.
+//   harness -> skills : the harness runner reuses the skill evaluator's
+//     dispatch envelope and judge, and the deployment-feedback loop turns
+//     captured incidents into skill regression fixtures and runs the skill
+//     optimizer (incident-promote, incident-scan, feedback).
+//   doctor -> harness : doctor's Evolution note reports the feedback backlog
+//     (captured incidents without a fixture, uncaptured failed runs).
 const ALLOWED_EDGES = new Set([
   "doctor->skills",
   "doctor->memory",
   "doctor->hook",
+  "doctor->harness",
+  "harness->skills",
   "install->link",
   "update->link",
   "memory->recap",

@@ -13,6 +13,33 @@ import {
 } from "./incident-promote.js";
 import { captureRunAsIncident, scanHarnessIncidents } from "./incident-scan.js";
 
+/** What is waiting to be fed back into skill evolution. */
+export interface FeedbackBacklog {
+  /** Captured incidents with no fixture yet. */
+  pendingIncidents: number;
+  /** Failed runs with preserved output and prompt that no incident references. */
+  uncapturedFailedRuns: number;
+}
+
+/** Counts from the incident store and run records; a damaged store counts as empty here and is reported by `incident show` / `agent results`. */
+export function collectFeedbackBacklog(root: string): FeedbackBacklog {
+  let pendingIncidents = 0;
+  let uncapturedFailedRuns = 0;
+  try {
+    pendingIncidents = listUnpromotedIncidents(root).length;
+  } catch {
+    // Reported by `oma harness incident show`.
+  }
+  try {
+    uncapturedFailedRuns = scanHarnessIncidents(root).candidates.filter(
+      (candidate) => candidate.hasOutput && candidate.hasPrompt,
+    ).length;
+  } catch {
+    // Reported by `oma agent results`.
+  }
+  return { pendingIncidents, uncapturedFailedRuns };
+}
+
 /**
  * Deployment feedback, whole chain: every captured incident that has no
  * fixture yet becomes one, and each affected skill is optimized against its

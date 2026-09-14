@@ -153,4 +153,4 @@ __pycache__/
 .qwen/tmp/
 
 # meta-optimization backups of procedure files
-.agents/eval/_evolution/*.bak
+.agents/evolution/*.bak

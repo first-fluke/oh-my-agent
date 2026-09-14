@@ -45,6 +45,8 @@ const EXCLUDED_PATTERNS = [
   // Generated at install time with machine-local absolute paths (gitignored).
   ".agents/hooks.json",
   ".agents/eval/",
+  // User-owned skill-evolution procedure files (see skills/opt/procedure.ts).
+  ".agents/evolution/",
 ];
 
 export function isExcluded(fullPath: string): boolean {

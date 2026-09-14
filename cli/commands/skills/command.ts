@@ -368,7 +368,7 @@ export function registerSkillsCommand(program: Command): void {
       )
       .option(
         "--export",
-        "Write default procedure files under .agents/eval/_evolution/ (existing files are kept)",
+        "Write default procedure files under .agents/evolution/ (existing files are kept)",
       ),
     "Output as JSON",
   ).action(

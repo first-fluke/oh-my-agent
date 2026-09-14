@@ -39,6 +39,24 @@ describe("evolution procedure", () => {
     );
   });
 
+  it("keeps procedure files outside the eval fixtures that updates clear", () => {
+    expect(EVOLUTION_DIR.replace(/\\/g, "/")).toBe(".agents/evolution");
+    expect(EVOLUTION_DIR).not.toContain("eval");
+  });
+
+  it("ships the meta-optimizer's promoted rules in the default optimizer", () => {
+    // Promoted 2026-09-14 (mean gain diff +0.27, 95% CI [0.04, 0.54]).
+    expect(DEFAULT_OPTIMIZER_TEMPLATE).toContain(
+      "visible in at least two train tasks",
+    );
+    expect(DEFAULT_OPTIMIZER_TEMPLATE).toContain(
+      "do not embed task-specific names",
+    );
+    expect(DEFAULT_OPTIMIZER_TEMPLATE).toContain(
+      "Do not narrow the skill's stated scope",
+    );
+  });
+
   it("falls back to the built-in defaults with a stable hash", () => {
     const root = workspace();
     const first = loadEvolutionProcedure(root);
