@@ -167,7 +167,10 @@ export interface DoctorReport {
   dualInstall: DualInstallReport;
   state: StateDoctorCheck;
   /** What the evolution loop has changed and what is waiting to be fed back. */
-  evolution: import("../skills/opt/evolution-summary.js").EvolutionSummary;
+  evolution: Omit<
+    import("../skills/opt/evolution-summary.js").EvolutionSummary,
+    "records" | "procedureRecords"
+  >;
   selfHealing?: SelfHealingGateResult;
   hookWrappers: HookWrapperCheck[];
 }

@@ -163,7 +163,13 @@ export async function collectDoctorReport(
   const serenaReap = collectSerenaReapCheck(cwd);
   const serenaDaemons = collectSerenaDaemonCheck();
   const state = collectStateDoctorCheck(root);
-  const evolution = collectEvolutionSummary(root);
+  // The full lineage stays in `oma skill promotions --all`; doctor keeps the
+  // figures and the latest line per skill.
+  const {
+    records: _records,
+    procedureRecords: _procedureRecords,
+    ...evolution
+  } = collectEvolutionSummary(root);
   const hookWrappers = collectHookWrapperChecks(root);
   const selfHealing = options.healCheckAgent
     ? evaluateSelfHealingGate({

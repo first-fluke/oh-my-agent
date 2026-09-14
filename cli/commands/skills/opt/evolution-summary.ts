@@ -198,7 +198,9 @@ export function collectEvolutionSummary(root: string): EvolutionSummary {
 }
 
 /** Lines for `oma doctor` and the session snapshot; empty when nothing evolved. */
-export function renderEvolutionLines(summary: EvolutionSummary): string[] {
+export function renderEvolutionLines(
+  summary: Omit<EvolutionSummary, "records" | "procedureRecords">,
+): string[] {
   const lines: string[] = [];
   lines.push(
     `Skill edits applied: ${summary.appliedEdits} across ${summary.skills.length} skill${summary.skills.length === 1 ? "" : "s"}${summary.rollbacks ? `, rolled back ${summary.rollbacks}` : ""}`,

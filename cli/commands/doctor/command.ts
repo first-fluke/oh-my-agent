@@ -26,7 +26,9 @@ export async function doctor(
   const report = await collectDoctorReport({ healCheckAgent });
   if (jsonMode) {
     console.log(serializeReportAsJson(report));
-    process.exit(report.totalIssues === 0 ? 0 : 1);
+    // Let stdout drain: process.exit() truncates a piped report past 64 KiB.
+    process.exitCode = report.totalIssues === 0 ? 0 : 1;
+    return;
   }
   await renderDoctorReport(report);
 }
