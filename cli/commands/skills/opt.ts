@@ -273,6 +273,10 @@ async function runSkillsOptInner(
   const procedure = loadEvolutionProcedure(workspace);
   const memoryMode: "recall" | "none" =
     options.memory === "none" ? "none" : "recall";
+  // Injected procedures (meta-optimization candidates) record their own hash
+  // so their evidence is never attributed to the procedure on disk.
+  const effectiveProcedureHash =
+    options._procedureHash ?? procedure.procedureHash;
 
   // Resolve injectable functions (for test / mock determinism). Live runs
   // meter every model call against the constitution budget; injected
@@ -331,7 +335,7 @@ async function runSkillsOptInner(
           targetRuntime: resolveVendor("eval-agent").vendor,
           environmentHash: skillEvolutionEnvironmentHash(mode),
           recall: memoryMode === "recall",
-          procedureHash: procedure.procedureHash,
+          procedureHash: effectiveProcedureHash,
         })
       : undefined);
 
@@ -339,7 +343,7 @@ async function runSkillsOptInner(
   let loopResult: SkillOptResult;
   const provenance = {
     procedure: {
-      hash: procedure.procedureHash,
+      hash: effectiveProcedureHash,
       optimizer: {
         source: procedure.optimizer.source,
         hash: procedure.optimizer.hash,
@@ -618,7 +622,7 @@ async function runSkillsOptInner(
         protocolRevision: SKILL_EVAL_PROTOCOL_REVISION,
         sourceRuntime: evolutionRecorder?.knowledge.sourceRuntime,
         targetRuntime: evolutionRecorder?.knowledge.targetRuntime,
-        procedureHash: procedure.procedureHash,
+        procedureHash: effectiveProcedureHash,
         memory: memoryMode,
       },
     });

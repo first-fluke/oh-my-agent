@@ -1223,6 +1223,22 @@ describe("runSkillsOpt", () => {
     expect(consoleLogSpy).not.toHaveBeenCalled();
   });
 
+  it("records an injected procedure hash instead of the one on disk", async () => {
+    const taskDir = join(tmpDir, "eval", "oma-injected");
+    writeNTasks(taskDir, MIN_TASKS);
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const result = await runSkillsOpt(true, {
+      skill: "oma-injected",
+      _workspace: tmpDir,
+      _taskDir: taskDir,
+      _optimizerFn: makeMockOptimizerFn([[]]),
+      _scoringFn: makeMockScoringFn(new Map(), 0),
+      _quiet: true,
+      _procedureHash: "candidate-hash",
+    });
+    expect(result?.procedure?.hash).toBe("candidate-hash");
+  });
+
   it("dry-run is the default: _dryRun is true in JSON output", async () => {
     const taskDir = join(tmpDir, "eval", "oma-dryrun");
     writeNTasks(taskDir, MIN_TASKS);

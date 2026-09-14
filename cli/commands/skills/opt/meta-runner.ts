@@ -24,6 +24,7 @@ export function buildLiveInnerRunner(options: {
       editsPerEpoch: request.budget.editsPerEpoch,
       memory: options.memory,
       _quiet: true,
+      _procedureHash: request.procedureHash,
       _optimizerFn: buildLlmOptimizerFn(
         request.budget.editsPerEpoch,
         request.optimizerTemplate,

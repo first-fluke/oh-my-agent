@@ -223,6 +223,11 @@ export interface SkillsOptOptions {
   memory?: "recall" | "none";
   /** Mute console output; the caller consumes the returned result (meta-optimization). */
   _quiet?: boolean;
+  /**
+   * Procedure hash to record instead of the one loaded from disk, for runs
+   * whose optimizer/maintainer were injected (meta-optimization candidates).
+   */
+  _procedureHash?: string;
   /** Override task directory (for testing). */
   _taskDir?: string;
   /** Override workspace root (for testing). */
