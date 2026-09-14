@@ -14,6 +14,8 @@ export interface StateSnapshotRenderInput {
   reason: string;
   recentEvents: OmaEvent[];
   facts?: MemoryFact[];
+  /** Harness changes promoted since the last session that showed them. */
+  evolution?: string[];
 }
 
 function renderRecentEvents(events: OmaEvent[]): string[] {
@@ -47,6 +49,12 @@ function renderClaudeSnapshot(input: StateSnapshotRenderInput): string {
     `reason: ${input.reason}`,
     ...(events.length ? ["recent events:", ...events] : []),
     ...(facts.length ? ["memory facts:", ...renderMemoryFacts(facts)] : []),
+    ...(input.evolution?.length
+      ? [
+          "harness evolved since your last session (oma skill promotions --all):",
+          ...input.evolution,
+        ]
+      : []),
   ].join("\n");
 }
 
