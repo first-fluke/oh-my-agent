@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { AGENTS_DIR } from "../../../constants/paths.js";
+import { mapWithLimit } from "../eval/concurrency.js";
 import { contentHash } from "../eval/rollouts.js";
 import { unifiedDiff } from "./diff.js";
 import { applyEdit } from "./edits.js";
@@ -369,57 +370,75 @@ function combinedHash(
   );
 }
 
+/** Inner runs of one arm overlap across skills; repeats of a skill stay serial. */
+export function metaConcurrency(skillCount: number): number {
+  const configured = Number.parseInt(
+    process.env.OMA_META_CONCURRENCY ?? "",
+    10,
+  );
+  const limit = Number.isFinite(configured) && configured >= 1 ? configured : 4;
+  return Math.max(1, Math.min(limit, skillCount));
+}
+
 async function runArm(
   options: RunMetaOptimizationOptions,
   candidate: ProcedureCandidate,
   skills: string[],
   repeats: number,
 ): Promise<InnerRunOutcome[]> {
-  const outcomes: InnerRunOutcome[] = [];
   const procedureHash = combinedHash(
     options.procedure,
     options.target,
     candidate.hash,
   );
-  for (const skill of skills) {
-    for (let repeat = 0; repeat < repeats; repeat += 1) {
-      options.onProgress?.(
-        `${candidate.origin} ${candidate.hash.slice(0, 8)} · ${skill} · repeat ${repeat + 1}/${repeats}`,
-      );
-      try {
-        outcomes.push(
-          await options.innerRunner({
+  // Each skill's evidence lands in its own artifact file, so skills may run
+  // side by side; repeats of one skill append to the same file and stay
+  // serial.
+  const perSkill = await mapWithLimit(
+    skills,
+    metaConcurrency(skills.length),
+    async (skill) => {
+      const outcomes: InnerRunOutcome[] = [];
+      for (let repeat = 0; repeat < repeats; repeat += 1) {
+        options.onProgress?.(
+          `${candidate.origin} ${candidate.hash.slice(0, 8)} · ${skill} · repeat ${repeat + 1}/${repeats}`,
+        );
+        try {
+          outcomes.push(
+            await options.innerRunner({
+              skill,
+              repeat,
+              optimizerTemplate:
+                options.target === "optimizer"
+                  ? candidate.template
+                  : options.procedure.optimizer.template,
+              maintainerTemplate:
+                options.target === "maintainer"
+                  ? candidate.template
+                  : options.procedure.maintainer.template,
+              procedureHash,
+              budget: options.budget,
+            }),
+          );
+        } catch (error) {
+          outcomes.push({
             skill,
             repeat,
-            optimizerTemplate:
-              options.target === "optimizer"
-                ? candidate.template
-                : options.procedure.optimizer.template,
-            maintainerTemplate:
-              options.target === "maintainer"
-                ? candidate.template
-                : options.procedure.maintainer.template,
             procedureHash,
-            budget: options.budget,
-          }),
-        );
-      } catch (error) {
-        outcomes.push({
-          skill,
-          repeat,
-          procedureHash,
-          status: "failed",
-          baselineLift: 0,
-          finalLift: 0,
-          gain: 0,
-          promotionEligible: false,
-          acceptedEdits: 0,
-          error: error instanceof Error ? error.message : String(error),
-        });
+            status: "failed",
+            baselineLift: 0,
+            finalLift: 0,
+            gain: 0,
+            promotionEligible: false,
+            acceptedEdits: 0,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
-    }
-  }
-  return outcomes;
+      return outcomes;
+    },
+  );
+  return perSkill.flat();
 }
 
 export function procedurePromotionsLog(workspace: string): string {

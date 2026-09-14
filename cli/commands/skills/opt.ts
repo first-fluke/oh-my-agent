@@ -146,16 +146,24 @@ export async function runSkillsOpt(
   options: SkillsOptOptions = {},
 ): Promise<SkillOptResult | undefined> {
   if (!options._quiet) return runSkillsOptInner(jsonMode, options);
-  // Meta-optimization drives many inner runs; their reports are consumed
-  // programmatically, so console output is muted for the duration.
-  const log = console.log;
-  console.log = () => undefined;
+  // Meta-optimization drives many inner runs, possibly overlapping; their
+  // reports are consumed programmatically, so console output is muted while
+  // any quiet run is in flight.
+  if (quietDepth === 0) {
+    unmutedLog = console.log;
+    console.log = () => undefined;
+  }
+  quietDepth += 1;
   try {
     return await runSkillsOptInner(jsonMode, options);
   } finally {
-    console.log = log;
+    quietDepth -= 1;
+    if (quietDepth === 0 && unmutedLog) console.log = unmutedLog;
   }
 }
+
+let quietDepth = 0;
+let unmutedLog: typeof console.log | undefined;
 
 async function runSkillsOptInner(
   jsonMode: boolean,

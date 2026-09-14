@@ -247,6 +247,49 @@ describe("meta-optimization run", () => {
     return { runner, requests };
   }
 
+  it("overlaps inner runs across skills while keeping a skill's repeats serial", async () => {
+    const root = workspace();
+    const procedure = loadEvolutionProcedure(root);
+    let inFlight = 0;
+    let peak = 0;
+    const order: string[] = [];
+    const runner: InnerRunner = async (request) => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      order.push(`${request.skill}:${request.repeat}`);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      inFlight -= 1;
+      return {
+        skill: request.skill,
+        repeat: request.repeat,
+        procedureHash: request.procedureHash,
+        status: "completed",
+        baselineLift: 0,
+        finalLift: 0,
+        gain: 0,
+        promotionEligible: false,
+        acceptedEdits: 0,
+      };
+    };
+    await runMetaOptimization({
+      workspace: root,
+      procedure,
+      target: "optimizer",
+      skills: ["a", "b"],
+      anchors: [],
+      repeats: 2,
+      candidateCount: 0,
+      budget: { maxEpochs: 1, editsPerEpoch: 1 },
+      proposer: () => [],
+      innerRunner: runner,
+      apply: false,
+    });
+    expect(peak).toBe(2);
+    // Within a skill, repeat 1 never starts before repeat 0 finished.
+    expect(order.indexOf("a:1")).toBeGreaterThan(order.indexOf("a:0"));
+    expect(order.indexOf("b:1")).toBeGreaterThan(order.indexOf("b:0"));
+  });
+
   it("runs the current procedure and every candidate on each skill and repeat, then applies the winner with lineage", async () => {
     const root = workspace();
     const procedure = loadEvolutionProcedure(root);
