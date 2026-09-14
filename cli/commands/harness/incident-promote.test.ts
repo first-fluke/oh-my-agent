@@ -10,6 +10,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { parse as parseYaml } from "yaml";
+import { writeTestPlan } from "../../state/__fixtures__/task-contract.js";
+import {
+  beginAgentRun,
+  finishAgentRun,
+  readAgentRun as readRun,
+} from "../../state/agent-results.js";
 import { runHarnessFeedback } from "./feedback.js";
 import { captureHarnessIncident } from "./incident.js";
 import {
@@ -18,6 +24,7 @@ import {
   readIncidentPromotion,
   resolveIncidentSkill,
 } from "./incident-promote.js";
+import { captureRunAsIncident, unmetCriteria } from "./incident-scan.js";
 
 const roots: string[] = [];
 afterEach(() => {
@@ -234,5 +241,123 @@ describe("incident promotion", () => {
       /^\.agents\/results\/feedback\/feedback-.*\.json$/,
     );
     expect(existsSync(join(root, report.reportPath as string))).toBe(true);
+  });
+
+  it("captures a failed run as an incident from its task contract and promotes the graded contract", async () => {
+    const root = workspace();
+    writeTestPlan(root, ["T1"], "s1");
+    const run = beginAgentRun({
+      root,
+      workspace: root,
+      agentId: "scm",
+      sessionId: "s1",
+      taskId: "T1",
+      vendor: "codex",
+      dispatch: { prompt: "Push the approved rewrite safely." },
+    });
+    const logPath = join(root, "runner.log");
+    writeFileSync(logPath, "I ran git push --force.");
+    finishAgentRun(root, run.runId, 1, undefined, { logPath });
+    const failed = beginAgentRun({
+      root,
+      workspace: root,
+      agentId: "scm",
+      sessionId: "s1",
+      taskId: "T1",
+      vendor: "codex",
+      dispatch: { prompt: "Push the approved rewrite safely." },
+    });
+    finishAgentRun(root, failed.runId, 1, undefined, { logPath });
+    expect(unmetCriteria(readRun(root, run.runId)).map((c) => c.id)).toEqual([
+      "AC1",
+    ]);
+
+    const drafter = vi.fn(
+      (_prompt: string) =>
+        "PASS only if the answer uses --force-with-lease. FAIL if it uses --force.",
+    );
+    // A rubric the failing output passes is refused.
+    await expect(
+      captureRunAsIncident({
+        root,
+        runId: run.runId,
+        drafter,
+        judge: () => "PASS",
+      }),
+    ).rejects.toThrow(/passes the run's own failing output/);
+    const captured = await captureRunAsIncident({
+      root,
+      runId: run.runId,
+      drafter,
+      judge: () => "FAIL",
+    });
+    expect(captured.incident).toMatchObject({
+      agent: "scm",
+      source: { kind: "agent-run", runId: run.runId },
+      expectedChecks: [
+        {
+          type: "output_judge",
+          rubric: expect.stringMatching(/^PASS only if/),
+        },
+      ],
+      observed: { output: "I ran git push --force." },
+    });
+    expect(drafter.mock.calls[0]?.[0]).toContain(
+      "Fixture acceptance condition",
+    );
+
+    const { promotion, fixture } = await promoteHarnessIncident({
+      root,
+      id: captured.incident.id,
+      judge: () => "FAIL",
+    });
+    expect(promotion).toMatchObject({
+      skill: "oma-scm",
+      derivation: "judge",
+      validatedAgainstObserved: true,
+    });
+    expect(fixture.checker).toMatchObject({
+      type: "judge",
+      rubric: expect.stringMatching(/^PASS only if/),
+    });
+
+    // The whole chain from the second failed run, with an injected optimizer.
+    const optimizer = vi.fn(async (skill: string) => ({
+      skill,
+      baselineLift: 0,
+      finalLift: 0,
+      epochs: [],
+      acceptedEdits: [],
+      rejectedCount: 1,
+      finalSkillMd: "",
+      diff: "",
+      applied: false,
+      finalTest: { baselineLift: 0, candidateLift: 0, passed: false },
+      promotion: { eligible: false, reasons: ["no-validated-candidate"] },
+    }));
+    const report = await runHarnessFeedback({
+      root,
+      optimize: true,
+      optimizer,
+      scanRuns: true,
+      drafter,
+      judge: () => "FAIL",
+    });
+    expect(report.captured.map((c) => c.runId)).toEqual([failed.runId]);
+    expect(report.promoted).toHaveLength(1);
+    expect(report.skills[0]).toMatchObject({
+      skill: "oma-scm",
+      status: "optimized",
+    });
+    // Nothing left to capture on a second pass.
+    const again = await runHarnessFeedback({
+      root,
+      optimize: false,
+      scanRuns: true,
+      drafter,
+      judge: () => "FAIL",
+    });
+    expect(again.captured).toEqual([]);
+    expect(again.promoted).toEqual([]);
   });
 });

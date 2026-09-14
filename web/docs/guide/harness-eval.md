@@ -107,6 +107,7 @@ Generated dependency directories such as `node_modules` and `.venv` are not copi
 | `file_not_contains` | `path`, `value` | The file exists and does not contain the value. |
 | `output_contains` | `value` | Captured agent output contains the value. |
 | `output_not_contains` | `value` | Captured agent output does not contain the value. |
+| `output_judge` | `rubric` | Graded contract carried on incidents; the mechanical evaluator reports it as not evaluated (see [Incident Regression Cases](./harness-incidents.md)). |
 | `file_json_equals` | `path`, `value`, optional `pointer` | Parsed file JSON equals `value`, optionally at a JSON Pointer. |
 | `output_json_equals` | `value`, optional `pointer` | Captured output is valid JSON and equals `value`, optionally at a JSON Pointer. |
 | `command` | `argv`, `checker`, `timeout_ms`, `expected_exit_code` | The trusted subprocess completes within its timeout and returns the specified exit code. |

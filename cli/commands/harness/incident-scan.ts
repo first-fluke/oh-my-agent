@@ -1,6 +1,19 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
-import { type AgentRun, listAgentRuns } from "../../state/agent-results.js";
+import {
+  type AgentRun,
+  listAgentRuns,
+  readAgentRun,
+} from "../../state/agent-results.js";
+import type { JudgeDispatchFn } from "../skills/eval.js";
+import { judgeVerdict } from "../skills/eval.js";
+import { captureHarnessIncident, type HarnessIncident } from "./incident.js";
 
 /** Characters of preserved output quoted into a specification skeleton. */
 const SKELETON_OUTPUT_LIMIT = 4_000;
@@ -151,4 +164,143 @@ export function incidentSpecSkeleton(
     ],
     dependencies: [],
   };
+}
+
+// --- Automatic capture from a failed run ---
+
+export type RubricDrafter = (prompt: string) => string | Promise<string>;
+
+/**
+ * The acceptance criteria a failed run did not meet. Criteria covered by a
+ * failing verification receipt are the precise set; a run that never
+ * verified leaves every criterion unmet.
+ */
+export function unmetCriteria(
+  run: AgentRun,
+): Array<{ id: string; description: string }> {
+  const contract = run.contract;
+  if (!contract) return [];
+  const failedCheckIds = new Set(
+    run.checks
+      .filter((receipt) => receipt.exitCode !== 0 && receipt.checkId)
+      .map((receipt) => receipt.checkId as string),
+  );
+  if (failedCheckIds.size === 0) return contract.acceptance_criteria;
+  const unmet = new Set(
+    contract.required_checks
+      .filter((check) => failedCheckIds.has(check.id))
+      .flatMap((check) => check.criteria),
+  );
+  return contract.acceptance_criteria.filter((criterion) =>
+    unmet.has(criterion.id),
+  );
+}
+
+export function draftRunRubricPrompt(
+  run: AgentRun,
+  output: string,
+  criteria: Array<{ id: string; description: string }>,
+): string {
+  return [
+    "You write grading rubrics for regression tests of an agent skill.",
+    "An agent run did not meet its acceptance criteria. Write ONE rubric",
+    "paragraph a judge can apply to a written answer alone (no files, no",
+    "commands). It must start with 'PASS only if' and restate the unmet",
+    "criteria as concrete observable statements, then 'FAIL if' naming what",
+    "the observed output did instead. Output the rubric only.",
+    "",
+    `## Task prompt\n${run.dispatch?.prompt ?? ""}`,
+    `## Unmet acceptance criteria\n${criteria.map((c) => `- ${c.id}: ${c.description}`).join("\n")}`,
+    `## Unresolved items reported by the run\n${run.unresolved.map((u) => `- ${u}`).join("\n") || "- none"}`,
+    `## Observed output (failing)\n${output.slice(-4_000)}`,
+  ].join("\n\n");
+}
+
+/**
+ * Capture a failed run as an incident without a hand-written specification.
+ * The expected behavior comes from the task contract's acceptance criteria,
+ * which were decided before the run; a model rewrites the unmet ones as a
+ * judge rubric, and the rubric is admitted only when it fails the run's own
+ * observed output.
+ */
+export async function captureRunAsIncident(options: {
+  root: string;
+  runId: string;
+  drafter: RubricDrafter;
+  judge: JudgeDispatchFn;
+}): Promise<{ incident: HarnessIncident; specPath: string; rubric: string }> {
+  const { root, runId } = options;
+  const run = readAgentRun(root, runId);
+  if (!FAILURE_STATUSES.has(run.status))
+    throw new Error(
+      `Run ${runId} ended ${run.status}; only failed, blocked, or partial runs are captured.`,
+    );
+  const prompt = run.dispatch?.prompt;
+  if (!prompt) throw new Error(`Run ${runId} recorded no prompt.`);
+  const output = readRunOutput(root, run);
+  if (!output)
+    throw new Error(
+      `Run ${runId} preserved no output to validate a rubric against.`,
+    );
+  const criteria = unmetCriteria(run);
+  if (criteria.length === 0)
+    throw new Error(
+      `Run ${runId} has no task contract; acceptance criteria are required to derive the expected behavior.`,
+    );
+  const rubric = String(
+    await options.drafter(draftRunRubricPrompt(run, output, criteria)),
+  ).trim();
+  if (!/^PASS only if/i.test(rubric))
+    throw new Error(
+      `Drafted rubric for run ${runId} does not start with "PASS only if": ${rubric.slice(0, 120)}`,
+    );
+  const verdict = await judgeVerdict(prompt, output, rubric, options.judge);
+  if (verdict.score !== 0)
+    throw new Error(
+      `Drafted rubric for run ${runId} passes the run's own failing output; it does not capture the failure.`,
+    );
+  const id = `run-${run.taskId}-${run.runId.slice(0, 8)}`
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-");
+  const specDir = join(root, ".agents", "results", "incidents", "_specs");
+  mkdirSync(specDir, { recursive: true });
+  const specPath = join(specDir, `${id}.json`);
+  const failure =
+    run.unresolved[0] ??
+    `Run ended ${run.status}; unmet: ${criteria.map((c) => c.id).join(", ")}`;
+  writeFileSync(
+    specPath,
+    `${JSON.stringify(
+      {
+        schema_version: 1,
+        id,
+        summary:
+          `Unmet acceptance criteria: ${criteria.map((c) => c.description).join("; ")}`.slice(
+            0,
+            4000,
+          ),
+        agent: run.agentId,
+        source: { run_id: run.runId },
+        observed: {
+          failure: failure.slice(0, 4000),
+          exit_code: run.exitCode ?? null,
+        },
+        expected_checks: [{ type: "output_judge", rubric }],
+        cause: {
+          category: "unknown",
+          hypothesis: "Derived from the task contract; cause not established",
+          confidence: 0,
+          evidence: [
+            `acceptance criteria ${criteria.map((c) => c.id).join(", ")} unmet`,
+          ],
+        },
+        dependencies: [],
+      },
+      null,
+      2,
+    )}\n`,
+    "utf-8",
+  );
+  const captured = captureHarnessIncident(root, specPath, run.runId);
+  return { incident: captured.incident, specPath, rubric };
 }

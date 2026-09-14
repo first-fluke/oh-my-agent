@@ -21,6 +21,15 @@ export const harnessCheckSchema = z.union([
     value: z.string(),
   }),
   z.object({
+    /**
+     * A graded acceptance contract for the captured output. The mechanical
+     * harness evaluator cannot run it; it is carried on incidents so a skill
+     * regression fixture can be derived with the same rubric.
+     */
+    type: z.literal("output_judge"),
+    rubric: z.string().min(1).max(4000),
+  }),
+  z.object({
     type: z.literal("file_json_equals"),
     path: z.string().min(1),
     pointer,

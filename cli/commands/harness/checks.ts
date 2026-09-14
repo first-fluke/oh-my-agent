@@ -75,6 +75,14 @@ function evaluateCheck(
       };
     }
   }
+  if (check.type === "output_judge") {
+    return {
+      check,
+      passed: false,
+      message:
+        "output_judge is a graded contract; the mechanical harness evaluator does not run it (derive a skill fixture with `oma harness incident promote`)",
+    };
+  }
   if (
     check.type === "output_contains" ||
     check.type === "output_not_contains"

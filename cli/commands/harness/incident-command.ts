@@ -263,7 +263,11 @@ export function registerHarnessIncidentCommands(harness: Command): void {
         "Write accepted edits that pass every gate (implies --live)",
       )
       .option("--max-epochs <n>", "Optimization epochs per skill", parseInt, 1)
-      .option("--incident <ids...>", "Only these incident IDs"),
+      .option("--incident <ids...>", "Only these incident IDs")
+      .option(
+        "--scan-runs",
+        "First capture uncaptured failed runs as incidents from their task contracts",
+      ),
     "Output the feedback report as JSON",
   ).action(
     runAction(
@@ -273,6 +277,7 @@ export function registerHarnessIncidentCommands(harness: Command): void {
           apply?: boolean;
           maxEpochs?: number;
           incident?: string[];
+          scanRuns?: boolean;
           json?: boolean;
         };
         const json = resolveJsonMode(options);
@@ -287,6 +292,7 @@ export function registerHarnessIncidentCommands(harness: Command): void {
               })
             : undefined,
           incidentIds: options.incident,
+          scanRuns: options.scanRuns,
           onProgress: (message) => {
             if (json) console.error(message);
             else console.log(message);

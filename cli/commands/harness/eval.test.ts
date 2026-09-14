@@ -270,6 +270,15 @@ describe("evaluateChecks", () => {
     expect(results.every((result) => result.passed)).toBe(true);
   });
 
+  it("reports a graded contract as not evaluated rather than passed", () => {
+    const workspace = makeTempDir();
+    const [result] = evaluateChecks(workspace, "finished", [
+      { type: "output_judge", rubric: "PASS only if the answer is complete." },
+    ]);
+    expect(result?.passed).toBe(false);
+    expect(result?.message).toContain("graded contract");
+  });
+
   it("does not allow a check path to escape the evaluated workspace", () => {
     const workspace = makeTempDir();
     expect(() =>

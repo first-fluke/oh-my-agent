@@ -1991,7 +1991,7 @@ oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
 Promote every unpromoted incident and, with `--live` or `--apply`, optimize each affected skill against its enlarged suite.
 
 ```
-oma harness feedback [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
+oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]
 ```
 
 See the [Incident Regression Cases guide](../guide/harness-incidents.md).

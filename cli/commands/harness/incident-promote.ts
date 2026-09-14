@@ -37,7 +37,7 @@ export interface IncidentPromotion {
   skill: string;
   fixturePath: string;
   fixtureId: string;
-  derivation: "assert" | "regex" | "judge-draft";
+  derivation: "assert" | "regex" | "judge" | "judge-draft";
   validatedAgainstObserved: boolean;
   limitations: string[];
 }
@@ -128,7 +128,19 @@ export function draftRubricPrompt(incident: HarnessIncident): string {
 /** Mechanical translation when every check is an output assertion. */
 export function checkerFromChecks(
   checks: HarnessIncident["expectedChecks"],
-): { checker: TaskChecker; derivation: "assert" | "regex" } | undefined {
+):
+  | { checker: TaskChecker; derivation: "assert" | "regex" | "judge" }
+  | undefined {
+  const judged = checks.filter((c) => c.type === "output_judge");
+  if (judged.length === 1 && checks.length === 1) {
+    return {
+      checker: {
+        type: "judge",
+        rubric: (judged[0] as { rubric: string }).rubric,
+      },
+      derivation: "judge",
+    };
+  }
   const contains = checks.filter((c) => c.type === "output_contains");
   if (contains.length === checks.length && contains.length > 0) {
     return {
@@ -186,7 +198,27 @@ export async function promoteHarnessIncident(options: {
   let validated = false;
 
   const mechanical = checkerFromChecks(incident.expectedChecks);
-  if (mechanical) {
+  if (mechanical?.derivation === "judge") {
+    checker = mechanical.checker;
+    derivation = "judge";
+    if (observed !== undefined && options.judge) {
+      const verdict = await judgeVerdict(
+        incident.prompt,
+        observed,
+        (checker as { rubric: string }).rubric,
+        options.judge,
+      );
+      validated = verdict.score === 0;
+      if (!validated)
+        throw new Error(
+          `Incident ${id}: the graded contract passes the observed failing output; it is not a regression case.`,
+        );
+    } else if (observed !== undefined) {
+      limitations.push(
+        "Graded contract was not checked against the observed output (no judge).",
+      );
+    }
+  } else if (mechanical) {
     checker = mechanical.checker;
     derivation = mechanical.derivation;
     if (observed !== undefined) {

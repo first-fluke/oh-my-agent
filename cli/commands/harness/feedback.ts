@@ -10,6 +10,7 @@ import {
   listUnpromotedIncidents,
   promoteHarnessIncident,
 } from "./incident-promote.js";
+import { captureRunAsIncident, scanHarnessIncidents } from "./incident-scan.js";
 
 /**
  * Deployment feedback, whole chain: every captured incident that has no
@@ -40,6 +41,9 @@ export interface FeedbackSkillOutcome {
 
 export interface FeedbackReport {
   ts: string;
+  /** Failed runs captured as incidents from their task contracts. */
+  captured: Array<{ runId: string; incidentId: string; rubric: string }>;
+  uncapturable: Array<{ runId: string; reason: string }>;
   promoted: IncidentPromotion[];
   skipped: Array<{ incidentId: string; reason: string }>;
   skills: FeedbackSkillOutcome[];
@@ -73,16 +77,57 @@ export async function runHarnessFeedback(options: {
   drafter?: (prompt: string) => string | Promise<string>;
   judge?: ReturnType<typeof buildJudgeDispatchFn>;
   incidentIds?: string[];
+  /** Also capture uncaptured failed runs from their task contracts first. */
+  scanRuns?: boolean;
   onProgress?: (message: string) => void;
 }): Promise<FeedbackReport> {
   const { root } = options;
   const progress = options.onProgress ?? (() => {});
   const report: FeedbackReport = {
     ts: new Date().toISOString(),
+    captured: [],
+    uncapturable: [],
     promoted: [],
     skipped: [],
     skills: [],
   };
+  if (options.scanRuns) {
+    const drafter = options.drafter ?? runEvolutionPrompt;
+    const judge = options.judge ?? buildJudgeDispatchFn();
+    for (const candidate of scanHarnessIncidents(root).candidates) {
+      if (!candidate.hasOutput || !candidate.hasPrompt) {
+        report.uncapturable.push({
+          runId: candidate.runId,
+          reason: candidate.hasOutput
+            ? "no prompt recorded"
+            : "no output preserved",
+        });
+        continue;
+      }
+      try {
+        const captured = await captureRunAsIncident({
+          root,
+          runId: candidate.runId,
+          drafter,
+          judge,
+        });
+        report.captured.push({
+          runId: candidate.runId,
+          incidentId: captured.incident.id,
+          rubric: captured.rubric,
+        });
+        progress(
+          `[oma harness feedback] run ${candidate.runId.slice(0, 8)} → incident ${captured.incident.id}`,
+        );
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        report.uncapturable.push({ runId: candidate.runId, reason });
+        progress(
+          `[oma harness feedback] run ${candidate.runId.slice(0, 8)} not captured: ${reason}`,
+        );
+      }
+    }
+  }
   const pending = listUnpromotedIncidents(root).filter(
     (incident) =>
       !options.incidentIds || options.incidentIds.includes(incident.id),
@@ -163,6 +208,16 @@ export async function runHarnessFeedback(options: {
 
 export function renderFeedbackReport(report: FeedbackReport): void {
   console.log(`\nHarness feedback  (${report.ts})`);
+  if (report.captured.length || report.uncapturable.length)
+    console.log(
+      `  runs captured: ${report.captured.length}  not captured: ${report.uncapturable.length}`,
+    );
+  for (const captured of report.captured)
+    console.log(
+      `  run ${captured.runId.slice(0, 8)} → incident ${captured.incidentId}`,
+    );
+  for (const item of report.uncapturable)
+    console.log(`  run ${item.runId.slice(0, 8)}: ${item.reason}`);
   console.log(
     `  incidents promoted: ${report.promoted.length}  skipped: ${report.skipped.length}`,
   );

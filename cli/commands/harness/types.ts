@@ -21,6 +21,7 @@ export type HarnessCheck =
   | { type: "file_not_contains"; path: string; value: string }
   | { type: "output_contains"; value: string }
   | { type: "output_not_contains"; value: string }
+  | { type: "output_judge"; rubric: string }
   | {
       type: "file_json_equals";
       path: string;

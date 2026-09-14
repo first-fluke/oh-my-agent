@@ -18,6 +18,17 @@ oma harness incident scan --skeleton <run-id> > incidents/run-failure.json
 
 The scan reads `.agents/state/agent-runs/`, keeps runs whose status is `failed`, `blocked`, or `partial`, and drops any run a captured incident already references through `source.runId`. `--skeleton` prints a specification for one run with the id, agent, source run, observed failure, exit code, and, when the runner preserved it, the tail of the agent's output filled in; `expected_checks` is left as a `TODO` because the correct behavior is a decision the scan cannot make. `oma agent spawn` and `oma agent parallel` keep the last 64 KiB of each run's log as `.agents/state/agent-runs/<run-id>.output.txt` and reference it from the run record, so `capture --run` imports that output as the observation when the specification omits one and `incident promote` can validate the derived fixture against it. Fill it in, then capture with `--run <run-id>` so the run's identity and workspace fingerprint are preserved.
 
+## Capture a failed run automatically
+
+```bash
+oma harness feedback --scan-runs            # capture, promote, report
+oma harness feedback --scan-runs --live     # and optimize the affected skills
+```
+
+A failed, blocked, or partial run whose task had a contract needs no hand-written specification. The expected behavior is the contract's acceptance criteria, decided before the run; the criteria covered by a failing verification receipt are the unmet set, or every criterion when the run never verified. The opt-agent rewrites the unmet criteria as a judge rubric (`PASS only if …`), the judge grades the run's own preserved output against it, and the incident is captured only when that output fails: a rubric the failure passes did not capture the failure. The specification is written under `.agents/results/incidents/_specs/<id>.json` and captured with the run's identity, carrying the rubric as an `output_judge` acceptance check. Runs without a preserved output, a prompt, or a contract are listed as not capturable with the reason.
+
+`output_judge` is a graded contract. The mechanical harness evaluator reports it as not evaluated; its purpose is the skill regression fixture that `incident promote` derives from it with the same rubric.
+
 ## Capture an incident
 
 Save a JSON specification inside the project:
@@ -82,9 +93,9 @@ oma harness feedback --live          # also run one optimization epoch per affec
 oma harness feedback --apply --json  # write edits that pass every gate
 ```
 
-`feedback` is the deployment feedback loop in one command: every captured incident without a fixture is promoted (drafting rubrics when needed), affected skills are grouped, and with `--live` each is optimized once against its enlarged suite under the normal gates (held-in/held-out acceptance, confirmed negative transfer, runner-owned final test). The report under `.agents/results/feedback/feedback-<ts>.json` lists promotions, skipped incidents with reasons, and each skill's outcome with the diff, so the chain from an observed failure to a candidate edit is one auditable record. Run it after failed agent runs have been captured, from a scheduler or a post-run hook.
+`feedback` is the deployment feedback loop in one command: with `--scan-runs` every uncaptured failed run with a contract is captured first (see above), then every captured incident without a fixture is promoted (drafting rubrics when needed), affected skills are grouped, and with `--live` each is optimized once against its enlarged suite under the normal gates (held-in/held-out acceptance, confirmed negative transfer, runner-owned final test). The report under `.agents/results/feedback/feedback-<ts>.json` lists promotions, skipped incidents with reasons, and each skill's outcome with the diff, so the chain from an observed failure to a candidate edit is one auditable record. Run it after failed agent runs have been captured, from a scheduler or a post-run hook.
 
-What it does not do yet: failed runs under `.agents/state/agent-runs/` are not captured automatically. They lack the agent's output, and `expected_checks` remain a human decision; `incident scan` lists them and `--skeleton` drafts the specification.
+What stays a human decision: a run without a task contract has no recorded expected behavior, so it is listed by `incident scan` and captured only through a specification; `--skeleton` drafts one.
 
 ## Export and evaluate
 
