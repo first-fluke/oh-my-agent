@@ -1,5 +1,21 @@
 # Changelog
 
+## [14.10.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.9.0...cli-v14.10.0) (2026-09-14)
+
+
+### Features
+
+* **hooks:** announce harness changes once at session start ([e289ff2](https://github.com/first-fluke/oh-my-agent/commit/e289ff2f871d98d335b02081de5db59a22f98783))
+* **skills:** adopt the meta-optimized optimizer procedure ([e3f7e90](https://github.com/first-fluke/oh-my-agent/commit/e3f7e9077506438db9fc67a38c38a93e4bd42058))
+* **skills:** adopt the meta-optimized procedure and surface harness evolution ([3388a33](https://github.com/first-fluke/oh-my-agent/commit/3388a33edcd004a5a83fdc4dca6d5e9901e0f788))
+* **skills:** narrate promotions and show the evolution loop in doctor ([27907b1](https://github.com/first-fluke/oh-my-agent/commit/27907b1d64b653ba595a0f1d679347a9ebbd25c6))
+
+
+### Bug Fixes
+
+* **doctor:** keep the evolution note slim and let JSON output drain before exit ([d4be3d8](https://github.com/first-fluke/oh-my-agent/commit/d4be3d81b9ef9456390798e57d7d8541a66df9f7))
+* **skills:** keep evolution procedure out of the eval fixtures updates clear ([1680ef7](https://github.com/first-fluke/oh-my-agent/commit/1680ef7e3664ae2aa1e3f40b39e5b6126749d21e))
+
 ## [14.9.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v14.8.1...cli-v14.9.0) (2026-09-14)
 
 
