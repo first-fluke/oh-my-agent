@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.8.1",
-  "releaseDate": "2026-09-13T08:17:34.111Z",
+  "releaseDate": "2026-09-14T10:33:05.260Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -406,8 +406,8 @@
     },
     {
       "path": ".agents/skills/_shared/conditional/diagram-engine.md",
-      "sha256": "e76e25d152875179b557644415fd59c2e12a3eba887978b84d4fc3df8b5f0d45",
-      "size": 6688
+      "sha256": "7bf1c5c0aff55573c9604640c8fa2965d0438539c2a239a859698cf3f4d07f5c",
+      "size": 6808
     },
     {
       "path": ".agents/skills/_shared/conditional/experiment-ledger.md",
@@ -421,8 +421,8 @@
     },
     {
       "path": ".agents/skills/_shared/conditional/quality-score.md",
-      "sha256": "4e2f1e4549c843d84bbf4088df1496c3a5d596edcfdcaa9b942ea78fd35daeae",
-      "size": 2897
+      "sha256": "a1441225be18811ae4cdecb6e6845a25623664c5ffb097ddf0dc4e61549e8e76",
+      "size": 2957
     },
     {
       "path": ".agents/skills/_shared/core/api-contracts/README.md",
@@ -1016,8 +1016,8 @@
     },
     {
       "path": ".agents/skills/oma-docs/SKILL.md",
-      "sha256": "b7ff1b22f41db25c626c14e191fb1f4a18bebffc61916630eedc3d892c94fb5a",
-      "size": 4559
+      "sha256": "8afa7518de1cd08e7ea043ef979392761d0ce99f6cb58cba53cadd5a31e046bf",
+      "size": 4924
     },
     {
       "path": ".agents/skills/oma-docs/resources/commands.md",
@@ -1201,8 +1201,8 @@
     },
     {
       "path": ".agents/skills/oma-market/resources/intent-rules.md",
-      "sha256": "8d04bb9c0deabad8c42d3203064206d0184d438ba4be4c3afe5ce036e3bb4e76",
-      "size": 2494
+      "sha256": "2a6411cbdb65fc27b148b65f14e787303bdb8a1a5cf1aa35403b2e17919e2850",
+      "size": 2554
     },
     {
       "path": ".agents/skills/oma-market/resources/output-laws.md",
@@ -1261,8 +1261,8 @@
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/snippets.md",
-      "sha256": "ba8c1dfe661894bd920d756323bdd10caf419430b65728d78025317cce87b125",
-      "size": 42346
+      "sha256": "ae722fa874d10132133bd21358993f22d00689db9104a18b5169ec23a352935b",
+      "size": 42406
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/stack.yaml",
@@ -1271,8 +1271,8 @@
     },
     {
       "path": ".agents/skills/oma-mobile/variants/flutter/tech-stack.md",
-      "sha256": "ebf07d89ff9778eeee901b5e392ac76173034133a2f7ad85ed9ab4eca71b306f",
-      "size": 11554
+      "sha256": "d245d54b5179e4387ad9f6fdab26dc95971130b4c9b12048a2aca04173284c39",
+      "size": 11674
     },
     {
       "path": ".agents/skills/oma-mobile/variants/react-native/api-template.ts",
@@ -1291,8 +1291,8 @@
     },
     {
       "path": ".agents/skills/oma-mobile/variants/react-native/tech-stack.md",
-      "sha256": "ab74b46122f38510ecb7a151fb75e30a3bae6df7d5b09a82eba2699487837690",
-      "size": 11420
+      "sha256": "c72db241abe08e693ee6cfee12d1017d569b8f653d311e648167c7a86c4a8ba3",
+      "size": 11480
     },
     {
       "path": ".agents/skills/oma-mobile/variants/stack.schema.json",
@@ -1951,8 +1951,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/execution-protocol.md",
-      "sha256": "acac72e8e0f143892423335845b71555e143e951ac2844553845815a98453a76",
-      "size": 8039
+      "sha256": "97f0080eda558ec503a2ce4430f77be18098631a8b58e9a78ac0217c1640b815",
+      "size": 8099
     },
     {
       "path": ".agents/skills/oma-video/resources/mpt/driver.py",
@@ -1966,8 +1966,8 @@
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion-authoring/README.md",
-      "sha256": "606f08d1ae04fb2fed5855d9d0a70845feffd0f430af9a60b7f47427ea4f94a0",
-      "size": 2966
+      "sha256": "fdc3e4d8f9be86d612c9c82b7ee50e5227db785add7cd1feed590ef894d21e13",
+      "size": 3146
     },
     {
       "path": ".agents/skills/oma-video/resources/remotion-authoring/demo.md",
