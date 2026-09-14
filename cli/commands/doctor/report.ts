@@ -12,8 +12,10 @@ import {
 } from "../../platform/skills-installer.js";
 import { evaluateSelfHealingGate } from "../../state/self-healing.js";
 import type { SkillCheck } from "../../types/index.js";
+import { collectFeedbackBacklog } from "../harness/feedback.js";
 import { auditSkills } from "../skills/audit.js";
 import { MIN_TASKS } from "../skills/eval.js";
+import { collectEvolutionSummary } from "../skills/opt/evolution-summary.js";
 import { collectAgentMemoryCheck } from "./agent-memory.js";
 import { checkDualInstall } from "./dual-install.js";
 import {
@@ -162,6 +164,13 @@ export async function collectDoctorReport(
   const serenaReap = collectSerenaReapCheck(cwd);
   const serenaDaemons = collectSerenaDaemonCheck();
   const state = collectStateDoctorCheck(root);
+  // The full lineage stays in `oma skill promotions --all`; doctor keeps the
+  // figures and the latest line per skill.
+  const {
+    records: _records,
+    procedureRecords: _procedureRecords,
+    ...evolution
+  } = collectEvolutionSummary(root, collectFeedbackBacklog(root));
   const hookWrappers = collectHookWrapperChecks(root);
   const selfHealing = options.healCheckAgent
     ? evaluateSelfHealingGate({
@@ -235,6 +244,7 @@ export async function collectDoctorReport(
     skillEval,
     dualInstall,
     state,
+    evolution,
     selfHealing,
     hookWrappers,
   };

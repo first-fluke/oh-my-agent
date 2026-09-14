@@ -100,6 +100,8 @@ export function shouldCopyProjectAsset(src: string): boolean {
   const normalized = src.replace(/\\/g, "/");
   return (
     !normalized.includes(".agents/eval") &&
+    // User-owned procedure overrides and constitution; never shipped or reset.
+    !normalized.includes(".agents/evolution") &&
     !LOCAL_CONFIG_NAMES.some((name) =>
       normalized.endsWith(`/.agents/${name}`),
     ) &&

@@ -126,7 +126,7 @@ oma skill optimize --skill oma-scholar --live --apply --yes
 
 ### The procedure as an artifact
 
-The optimizer and maintainer prompts are the improvement procedure. They ship as built-in defaults and can be overridden by files under `.agents/eval/_evolution/` (preserved by `oma update`):
+The optimizer and maintainer prompts are the improvement procedure. They ship as built-in defaults and can be overridden by files under `.agents/evolution/` (user-owned: never copied by the install manifest nor removed by `oma update`, unlike `.agents/eval/`):
 
 | File | Role | Required placeholders |
 |---|---|---|
@@ -150,7 +150,7 @@ The optimizer's reply is read leniently for formatting only: code fences and bla
 
 `oma skill meta-optimize --target optimizer --skill <a> <b> ... --live` treats the optimizer (or maintainer) prompt as the thing under test. It runs the inner loop (`oma skill optimize --dry-run`) on each named held-out skill, `--repeats` times, under the current procedure; asks a proposer for up to `--candidates` small edits to the template; runs the inner loop again under each candidate with the same `--max-epochs` and `--edits-per-epoch` budget; and compares each candidate to the current procedure pairwise by (skill, repeat) on the validation-lift gain the inner loop achieved.
 
-A candidate is promoted only when the paired bootstrap 95% interval of its gain difference lies above zero (seeded, 1000 resamples), at least three pairs exist, and no skill that improved under the current procedure loses more than half of that gain under the candidate. An inner run whose evaluation was blocked (insufficient coverage, unverified isolation, exhausted budget) is reported as failed and excluded from the pairs, so an outage cannot count as zero gain for one arm. Held-out skills must have headroom: a skill the current body already scores perfectly on can show no gain under any procedure. `--anchor` names skills that are never used for selection but are run once under the current and winning procedure to show drift; without the flag the constitution's `anchors` list applies, so a ground-truth set declared once is checked on every meta run. With `--apply` the winning template is written to `.agents/eval/_evolution/<target>.md` with a timestamped backup, a unified-diff patch, and a record in `.agents/results/skill-evolution/_procedure/promotions.jsonl` carrying the parent and candidate hashes, the constitution hash, and the evidence (skills, repeats, budget, pairs, interval). Without `--apply` nothing is written.
+A candidate is promoted only when the paired bootstrap 95% interval of its gain difference lies above zero (seeded, 1000 resamples), at least three pairs exist, and no skill that improved under the current procedure loses more than half of that gain under the candidate. An inner run whose evaluation was blocked (insufficient coverage, unverified isolation, exhausted budget) is reported as failed and excluded from the pairs, so an outage cannot count as zero gain for one arm. Held-out skills must have headroom: a skill the current body already scores perfectly on can show no gain under any procedure. `--anchor` names skills that are never used for selection but are run once under the current and winning procedure to show drift; without the flag the constitution's `anchors` list applies, so a ground-truth set declared once is checked on every meta run. With `--apply` the winning template is written to `.agents/evolution/<target>.md` with a timestamped backup, a unified-diff patch, and a record in `.agents/results/skill-evolution/_procedure/promotions.jsonl` carrying the parent and candidate hashes, the constitution hash, and the evidence (skills, repeats, budget, pairs, interval). Without `--apply` nothing is written.
 
 What stays frozen: the final-test partition of every skill is never read for selection (the metric is validation gain), the evaluator and optimization code are listed as immutable in the constitution, the constitution itself cannot be a target, and a target must appear in `meta_targets`. Inner runs default to `--memory none` so a procedure is judged on the edits it produces rather than on knowledge recalled from earlier runs. Inner runs of one arm overlap across skills (`OMA_META_CONCURRENCY`, default up to 4) while a skill's repeats stay serial, because each skill's evidence lands in its own artifact file. Every inner run records the combined procedure hash it ran under, so `oma skill evolution-stats` can attribute later results to the procedure that produced them.
 
@@ -165,6 +165,22 @@ Every `--apply` write appends a record to `.agents/results/skill-evolution/<skil
 `--apply` requires at least one accepted edit with no validation loss, `finalTest.passed: true`, and `promotion.eligible: true`. These gates require complete internal task coverage, a nonempty and fully measured candidate-specific negative-transfer sample, and enforced live isolation. A missing final test, incomplete measurements, or degraded compiler diagnostics prevent the write. A backup of the original `SKILL.md` is created before the atomic write, and the diff is printed for review.
 
 Live evaluation can satisfy the isolation gate through the protected Claude or native Codex profile. Claude retains the HOME/target checks. Codex verifies that the ephemeral app-server thread has no instruction sources or tool environments before submitting the prompt. Other runtime profiles remain exploratory.
+
+### Seeing what evolved
+
+The loop announces itself in three places, all read from the append-only lineage logs rather than from any claim:
+
+- `oma skill promotions --all` prints one sentence per change across every skill and the procedure: what was edited (the accepted edit's anchor and replacement), the held-in and held-out lifts before and after, whether the final test held, and for a procedure promotion the paired gain difference, its interval, and the skills it was measured on. `--skill <id>` narrows to one skill. Apply records written by this version carry the accepted edits and training lifts; older records fall back to hashes.
+- `oma doctor` shows an **Evolution** note: skill edits applied and rolled back, the latest change per skill, procedure promotions, and what is waiting to be fed back (captured incidents without a fixture, failed runs not yet captured), with the command that would process them.
+- At the start of a session, the state snapshot hooks inject a `harness evolved since your last session` block listing promotions recorded since the last session that showed one; each change is announced once. The marker lives at `.agents/state/evolution-notice.json`.
+
+To make the loop run without a person typing the commands, schedule the feedback step as an agent job, for example nightly:
+
+```bash
+oma schedule create docs-curator "Run \`oma harness feedback --scan-runs --live --json\` from the repository root and summarize the report" --cron "0 3 * * *"
+```
+
+With `--apply` instead of `--live` the job writes edits that pass every gate; the session notice and `oma skill promotions --all` then show what it changed, and `oma skill rollback` undoes any of it.
 
 ---
 

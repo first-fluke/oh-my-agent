@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { recallFacts } from "./agentmemory-client.ts";
 import { agyConversationId, isAgyInput } from "./agy-input.ts";
+import { evolutionNoticeLines } from "./evolution-notice.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { writeInjectLog } from "./inject-log.ts";
 import { normalizePromptInput } from "./prompt-input.ts";
@@ -148,12 +149,19 @@ export async function onBoundary(
   const facts: MemoryFact[] = recallQuery
     ? await recallFacts(recallQuery, 5, projectDir)
     : [];
+  let evolution: string[] = [];
+  try {
+    evolution = evolutionNoticeLines(projectDir);
+  } catch {
+    // The notice is a courtesy; a damaged lineage log must not break the hook.
+  }
   const rendered = renderStateSnapshot({
     vendor,
     sid,
     reason: "vendor/session boundary",
     recentEvents,
     facts,
+    evolution,
   });
 
   // D52: forensic inject audit trail (best-effort, redacted, user-only perms).

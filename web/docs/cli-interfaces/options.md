@@ -650,7 +650,7 @@ The following matrix is generated from the checked-in public command registry. I
 | `skill meta-optimize` | `--target <part>, --skill <ids...>, --anchor <ids...>, --repeats <n>, --candidates <n>, --max-epochs <n>, --edits-per-epoch <k>, --live, --apply, --memory <mode>, --yes, --json, --output <format>` | Propose and score changes to the evolution procedure on held-out skills |
 | `skill procedure` | `--export, --json, --output <format>` | Show the evolution procedure (optimizer/maintainer prompts, constitution) and its hashes |
 | `skill evolution-stats` | `--skill <id>, --json, --output <format>` | Aggregate recorded optimization runs by outcome, memory mode, and procedure |
-| `skill promotions` | `--skill <id>, --json, --output <format>` | List recorded SKILL.md promotions and rollbacks for a skill |
+| `skill promotions` | `--skill <id>, --all, --json, --output <format>` | Narrate recorded SKILL.md promotions and rollbacks for a skill, or every skill and the procedure with `--all` |
 | `skill rollback` | `--skill <id>, --json, --output <format>` | Restore the SKILL.md body replaced by the most recent recorded promotion |
 | `schedule` | `—` |  |
 | `schedule create` | `--cron <expr>, --every <phrase>, --vendor <vendor>, -w, --workspace <path>, --once, --expires-after <duration>, --env <keys>, --dry-run, --accept-rounded` | Register a scheduled agent job |

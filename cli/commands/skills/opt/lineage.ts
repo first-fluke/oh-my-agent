@@ -50,6 +50,14 @@ export interface SkillPromotionRecord {
     sessionId?: string;
     procedureHash?: string;
     memory?: "recall" | "none";
+    /** The accepted edits, so the change can be read without the patch. */
+    edits?: Array<{
+      op: "add" | "delete" | "replace";
+      anchor: string;
+      after?: string;
+    }>;
+    /** Held-in and held-out lifts before and after, when the loop measured them. */
+    gains?: { train?: [number, number] };
   };
   /** For a rollback: the apply record it reverses. */
   reverses?: string;

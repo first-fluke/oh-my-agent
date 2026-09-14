@@ -51,6 +51,14 @@ describe("excluded patterns", () => {
     expect(isExcluded(".agents/state/skill-sessions.json")).toBe(true);
   });
 
+  it("should exclude skill eval fixtures and user-owned evolution files", () => {
+    expect(isExcluded(".agents/eval/oma-docs/docs-broken-link.yaml")).toBe(
+      true,
+    );
+    expect(isExcluded(".agents/evolution/optimizer.md")).toBe(true);
+    expect(isExcluded(".agents/evolution/constitution.yaml")).toBe(true);
+  });
+
   it("should exclude safe-write backups written at run time", () => {
     expect(
       isExcluded(

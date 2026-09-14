@@ -368,7 +368,7 @@ export function registerSkillsCommand(program: Command): void {
       )
       .option(
         "--export",
-        "Write default procedure files under .agents/eval/_evolution/ (existing files are kept)",
+        "Write default procedure files under .agents/evolution/ (existing files are kept)",
       ),
     "Output as JSON",
   ).action(
@@ -462,9 +462,10 @@ export function registerSkillsCommand(program: Command): void {
     skills
       .command("promotions")
       .description(
-        "List recorded SKILL.md promotions and rollbacks for a skill",
+        "List recorded SKILL.md promotions and rollbacks for a skill, or every skill and the procedure with --all",
       )
-      .requiredOption("--skill <id>", "Skill ID"),
+      .option("--skill <id>", "Skill ID")
+      .option("--all", "Every skill's lineage plus procedure promotions"),
     "Output as JSON",
   ).action(
     runAction(
@@ -472,9 +473,39 @@ export function registerSkillsCommand(program: Command): void {
         const opts = options as {
           json?: boolean;
           output?: string;
-          skill: string;
+          skill?: string;
+          all?: boolean;
         };
-        const records = readSkillPromotions(process.cwd(), opts.skill);
+        if (!opts.skill && !opts.all)
+          throw new Error("Pass --skill <id> or --all.");
+        const {
+          collectEvolutionSummary,
+          describeProcedurePromotion,
+          describeSkillPromotion,
+        } = await import("./opt/evolution-summary.js");
+        if (opts.all) {
+          const summary = collectEvolutionSummary(process.cwd());
+          if (resolveJsonMode(opts)) {
+            console.log(JSON.stringify(summary, null, 2));
+            return;
+          }
+          if (
+            summary.records.length === 0 &&
+            summary.procedureRecords.length === 0
+          ) {
+            console.log("Nothing has been promoted yet.");
+            return;
+          }
+          for (const record of summary.records)
+            console.log(`${record.ts}  ${describeSkillPromotion(record)}`);
+          for (const record of summary.procedureRecords)
+            console.log(`${record.ts}  ${describeProcedurePromotion(record)}`);
+          return;
+        }
+        const records = readSkillPromotions(
+          process.cwd(),
+          opts.skill as string,
+        );
         if (resolveJsonMode(opts)) {
           console.log(JSON.stringify({ skill: opts.skill, records }, null, 2));
           return;
@@ -485,8 +516,7 @@ export function registerSkillsCommand(program: Command): void {
         }
         for (const record of records) {
           console.log(
-            `${record.ts}  ${record.action.padEnd(8)}  ${record.parentHash} → ${record.candidateHash}` +
-              `  lift ${record.evidence.baselineLift.toFixed(3)}→${record.evidence.finalLift.toFixed(3)}` +
+            `${record.ts}  ${describeSkillPromotion(record)}` +
               `${record.patchPath ? `  patch ${record.patchPath}` : ""}`,
           );
         }

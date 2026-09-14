@@ -34,6 +34,15 @@ describe("project asset copy filter", () => {
     expect(shouldCopyProjectAsset(path)).toBe(false);
   });
 
+  it("never copies release-development fixtures or user-owned evolution files", () => {
+    expect(
+      shouldCopyProjectAsset("/tmp/release/.agents/eval/oma-docs/task.yaml"),
+    ).toBe(false);
+    expect(
+      shouldCopyProjectAsset("/tmp/release/.agents/evolution/optimizer.md"),
+    ).toBe(false);
+  });
+
   it("copies ordinary managed assets", () => {
     expect(
       shouldCopyProjectAsset("/tmp/release/.agents/skills/oma-video/SKILL.md"),
