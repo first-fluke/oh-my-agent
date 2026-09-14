@@ -32,6 +32,30 @@ export function buildLiveInnerRunner(options: {
       _maintainerFn: buildLlmMaintainerFn(request.maintainerTemplate),
     });
     if (!result) throw new Error("inner optimization returned no result");
+    // A run whose evaluation was blocked (coverage, isolation, budget) has no
+    // measurement; counting it as zero gain would let an outage decide the
+    // comparison. It is reported as failed and excluded from the pairs.
+    const blocked = (result.diagnostics ?? []).filter(
+      (diagnostic) =>
+        diagnostic.stage === "validation" || diagnostic.stage === "budget",
+    );
+    if (blocked.length > 0) {
+      return {
+        skill: request.skill,
+        repeat: request.repeat,
+        procedureHash: request.procedureHash,
+        status: "failed",
+        baselineLift: result.baselineLift,
+        finalLift: result.finalLift,
+        gain: 0,
+        promotionEligible: false,
+        acceptedEdits: result.acceptedEdits.length,
+        ...(result.budget ? { callsUsed: result.budget.used } : {}),
+        error: blocked
+          .map((diagnostic) => `${diagnostic.stage}:${diagnostic.status}`)
+          .join(", "),
+      };
+    }
     return {
       skill: request.skill,
       repeat: request.repeat,
