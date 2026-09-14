@@ -61,6 +61,8 @@ export interface InnerRunOutcome {
   acceptedEdits: number;
   /** Model calls the inner run charged against its budget, when metered. */
   callsUsed?: number;
+  /** Proposal gate outcomes by reason for this inner run. */
+  gateOutcomes?: Record<string, number>;
   error?: string;
 }
 
@@ -90,6 +92,8 @@ export interface InnerDiagnostics {
   acceptedEdits: number;
   /** Mean model calls per completed metered run; null when none was metered. */
   meanCalls: number | null;
+  /** Proposal gate outcomes summed over completed runs, by reason. */
+  gateOutcomes: Record<string, number>;
 }
 
 export type MetaProposer = (args: {
@@ -173,7 +177,16 @@ export function summarizeInnerRuns(runs: InnerRunOutcome[]): InnerDiagnostics {
     eligibleRuns: completed.filter((run) => run.promotionEligible).length,
     acceptedEdits: completed.reduce((s, run) => s + run.acceptedEdits, 0),
     meanCalls: meanCallsUsed(completed),
+    gateOutcomes: sumGateOutcomes(completed),
   };
+}
+
+function sumGateOutcomes(runs: InnerRunOutcome[]): Record<string, number> {
+  const totals: Record<string, number> = {};
+  for (const run of runs)
+    for (const [reason, count] of Object.entries(run.gateOutcomes ?? {}))
+      totals[reason] = (totals[reason] ?? 0) + count;
+  return totals;
 }
 
 function meanCallsUsed(runs: InnerRunOutcome[]): number | null {
@@ -312,6 +325,7 @@ export function buildLlmMetaProposer(
       "```json",
       JSON.stringify(diagnostics, null, 2),
       "```",
+      "`gateOutcomes` counts what happened to the edits this template proposed: `accepted`; `split-regression` (lost on the training or validation split); `no-validation-lift` (changed nothing); `negative-transfer` (hurt a neighboring skill's task); `learning-rate` (too large); `invalid-candidate` (anchor not found or frontmatter broken); `not-best-candidate`; `final-test` (accepted, then lost on the frozen test). Aim the edits at the dominant failure.",
       "",
       "## Instructions",
       `Propose up to ${candidates} independent edits to the template that would make the inner loop produce better-grounded, more targeted skill edits. Each edit must be a single JSON object on its own line prefixed with 'EDIT:'.`,

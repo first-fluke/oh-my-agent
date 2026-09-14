@@ -51,6 +51,7 @@ export function buildLiveInnerRunner(options: {
         promotionEligible: false,
         acceptedEdits: result.acceptedEdits.length,
         ...(result.budget ? { callsUsed: result.budget.used } : {}),
+        ...(result.gateOutcomes ? { gateOutcomes: result.gateOutcomes } : {}),
         error: blocked
           .map((diagnostic) => `${diagnostic.stage}:${diagnostic.status}`)
           .join(", "),
@@ -73,6 +74,7 @@ export function buildLiveInnerRunner(options: {
       promotionEligible: result.promotion?.eligible === true,
       acceptedEdits: result.acceptedEdits.length,
       ...(result.budget ? { callsUsed: result.budget.used } : {}),
+      ...(result.gateOutcomes ? { gateOutcomes: result.gateOutcomes } : {}),
     };
   };
 }

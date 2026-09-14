@@ -187,6 +187,12 @@ export async function runOptEpochLoop(options: {
   );
   let totalRejected = 0;
   let patience = 0;
+  // Why proposals were gated, for the meta loop's proposer: a procedure that
+  // keeps proposing edits the gates reject needs to know which gate.
+  const gateOutcomes: Record<string, number> = {};
+  const countGate = (reason: string): void => {
+    gateOutcomes[reason] = (gateOutcomes[reason] ?? 0) + 1;
+  };
 
   try {
     for (
@@ -302,6 +308,7 @@ export async function runOptEpochLoop(options: {
         if (anchorMissing || netChange > lrMaxChars) {
           totalRejected++;
           rejectedBuffer.add(editKey(edit));
+          countGate(anchorMissing ? "invalid-candidate" : "learning-rate");
           await evolutionRecorder?.recordProposal({
             epoch: epochIdx,
             edit,
@@ -321,6 +328,7 @@ export async function runOptEpochLoop(options: {
         if (!validation.ok) {
           totalRejected++;
           rejectedBuffer.add(editKey(edit));
+          countGate("invalid-candidate");
           await evolutionRecorder?.recordProposal({
             epoch: epochIdx,
             edit,
@@ -444,6 +452,7 @@ export async function runOptEpochLoop(options: {
           rejectedBuffer.add(candidate.key);
           totalRejected++;
         }
+        countGate(reason);
         await evolutionRecorder?.recordProposal({
           epoch: epochIdx,
           edit: candidate.edit,
@@ -592,6 +601,7 @@ export async function runOptEpochLoop(options: {
     epochs,
     acceptedEdits,
     rejectedCount: totalRejected,
+    gateOutcomes,
     finalSkillMd: bestBody,
     diff,
     applied: false,

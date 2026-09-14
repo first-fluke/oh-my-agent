@@ -333,6 +333,7 @@ describe("held-in/held-out acceptance", () => {
     );
     expect(lost.finalTest).toMatchObject({ passed: false });
     expect(lost.promotion?.reasons).toContain("final-test-failed");
+    expect(held.gateOutcomes).toEqual({ accepted: 1 });
   });
 
   it("rejects a candidate that trades a training loss for a validation gain", async () => {

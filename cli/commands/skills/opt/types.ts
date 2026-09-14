@@ -140,6 +140,8 @@ export interface SkillOptResult {
   epochs: OptEpoch[];
   acceptedEdits: SkillEdit[];
   rejectedCount: number;
+  /** Proposal gate outcomes by reason (accepted, split-regression, …). */
+  gateOutcomes?: Record<string, number>;
   finalSkillMd: string;
   diff: string;
   applied: boolean;

@@ -196,12 +196,14 @@ describe("procedure candidates", () => {
         eligibleRuns: 1,
         acceptedEdits: 2,
         meanCalls: 40,
+        gateOutcomes: { "split-regression": 3 },
       },
       candidates: 2,
     });
     expect(result).toHaveLength(1);
     expect(seen[0]).toContain("Inner-loop diagnostics");
     expect(seen[0]).toContain('"meanGain": 0.1');
+    expect(seen[0]).toContain('"split-regression": 3');
     const none = buildLlmMetaProposer(() => "NO_ACTION")({
       target: "maintainer",
       template: "x {{evidence}} {{priorFacts}}",
@@ -212,6 +214,7 @@ describe("procedure candidates", () => {
         eligibleRuns: 0,
         acceptedEdits: 0,
         meanCalls: null,
+        gateOutcomes: {},
       },
       candidates: 1,
     });
@@ -439,5 +442,20 @@ describe("inner-run cost summary", () => {
         { ...base, status: "failed", callsUsed: 999 },
       ]).meanCalls,
     ).toBe(40);
+    expect(
+      summarizeInnerRuns([
+        {
+          ...base,
+          status: "completed",
+          gateOutcomes: { "split-regression": 2, accepted: 1 },
+        },
+        {
+          ...base,
+          status: "completed",
+          gateOutcomes: { "split-regression": 1 },
+        },
+        { ...base, status: "failed", gateOutcomes: { "learning-rate": 9 } },
+      ]).gateOutcomes,
+    ).toEqual({ "split-regression": 3, accepted: 1 });
   });
 });
