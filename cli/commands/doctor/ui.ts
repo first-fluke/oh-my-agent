@@ -4,6 +4,7 @@ import type { DoctorReport } from "./types.js";
 import { renderFooter } from "./ui/footer.js";
 import {
   renderAgentMemory,
+  renderEvolution,
   renderHookWrappers,
   renderSelfHealing,
   renderStateHealth,
@@ -52,6 +53,7 @@ export async function renderDoctorReport(report: DoctorReport): Promise<void> {
       );
     }
     renderStateHealth(report);
+    renderEvolution(report);
     renderHookWrappers(report);
     renderSelfHealing(report);
     await promptRepair(report);

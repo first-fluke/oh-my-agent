@@ -624,6 +624,22 @@ async function runSkillsOptInner(
         targetRuntime: evolutionRecorder?.knowledge.targetRuntime,
         procedureHash: effectiveProcedureHash,
         memory: memoryMode,
+        edits: loopResult.acceptedEdits.map((edit) => ({
+          op: edit.op,
+          anchor: edit.anchor,
+          ...(edit.after === undefined ? {} : { after: edit.after }),
+        })),
+        ...(loopResult.baselineTrainLift !== undefined &&
+        loopResult.finalTrainLift !== undefined
+          ? {
+              gains: {
+                train: [
+                  loopResult.baselineTrainLift,
+                  loopResult.finalTrainLift,
+                ],
+              },
+            }
+          : {}),
       },
     });
 

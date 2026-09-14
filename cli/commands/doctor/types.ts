@@ -166,6 +166,8 @@ export interface DoctorReport {
   skillEval: SkillEvalCoverage;
   dualInstall: DualInstallReport;
   state: StateDoctorCheck;
+  /** What the evolution loop has changed and what is waiting to be fed back. */
+  evolution: import("../skills/opt/evolution-summary.js").EvolutionSummary;
   selfHealing?: SelfHealingGateResult;
   hookWrappers: HookWrapperCheck[];
 }

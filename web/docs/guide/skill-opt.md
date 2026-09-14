@@ -166,6 +166,22 @@ Every `--apply` write appends a record to `.agents/results/skill-evolution/<skil
 
 Live evaluation can satisfy the isolation gate through the protected Claude or native Codex profile. Claude retains the HOME/target checks. Codex verifies that the ephemeral app-server thread has no instruction sources or tool environments before submitting the prompt. Other runtime profiles remain exploratory.
 
+### Seeing what evolved
+
+The loop announces itself in three places, all read from the append-only lineage logs rather than from any claim:
+
+- `oma skill promotions --all` prints one sentence per change across every skill and the procedure: what was edited (the accepted edit's anchor and replacement), the held-in and held-out lifts before and after, whether the final test held, and for a procedure promotion the paired gain difference, its interval, and the skills it was measured on. `--skill <id>` narrows to one skill. Apply records written by this version carry the accepted edits and training lifts; older records fall back to hashes.
+- `oma doctor` shows an **Evolution** note: skill edits applied and rolled back, the latest change per skill, procedure promotions, and what is waiting to be fed back (captured incidents without a fixture, failed runs not yet captured), with the command that would process them.
+- At the start of a session, the state snapshot hooks inject a `harness evolved since your last session` block listing promotions recorded since the last session that showed one; each change is announced once. The marker lives at `.agents/state/evolution-notice.json`.
+
+To make the loop run without a person typing the commands, schedule the feedback step as an agent job, for example nightly:
+
+```bash
+oma schedule create docs-curator "Run \`oma harness feedback --scan-runs --live --json\` from the repository root and summarize the report" --cron "0 3 * * *"
+```
+
+With `--apply` instead of `--live` the job writes edits that pass every gate; the session notice and `oma skill promotions --all` then show what it changed, and `oma skill rollback` undoes any of it.
+
 ---
 
 ## Live mode

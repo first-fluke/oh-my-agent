@@ -1,6 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { renderSelfHealingGateResult } from "../../../state/self-healing.js";
+import { renderEvolutionLines } from "../../skills/opt/evolution-summary.js";
 import type { DoctorReport } from "../types.js";
 
 export function renderAgentMemory(report: DoctorReport): void {
@@ -117,4 +118,16 @@ export function renderHookWrappers(report: DoctorReport): void {
 export function renderSelfHealing(report: DoctorReport): void {
   if (!report.selfHealing) return;
   p.note(renderSelfHealingGateResult(report.selfHealing), "Self-Healing Gate");
+}
+
+/** The self-improvement loop's record: what changed, on what evidence, what waits. */
+export function renderEvolution(report: DoctorReport): void {
+  const summary = report.evolution;
+  if (!summary) return;
+  const lines = renderEvolutionLines(summary).map((line, index) =>
+    index === 0 || line.startsWith("Procedure") || line.startsWith("Waiting")
+      ? line
+      : pc.dim(line),
+  );
+  p.note(lines.join("\n"), "Evolution");
 }
