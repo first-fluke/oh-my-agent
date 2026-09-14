@@ -38,7 +38,7 @@ import type {
   LiveDispatchFn,
 } from "./types.js";
 
-export const EVAL_DISPATCH_TIMEOUT_MS = 120_000;
+export const EVAL_DISPATCH_TIMEOUT_MS = 180_000;
 
 /** A failed process or API envelope is missing evaluation data, not an answer. */
 export class EvalDispatchError extends Error {

@@ -250,7 +250,7 @@ After a successful live run, the report includes baseline and treatment counts, 
 Live arms, neighbor arms, judge calls, and routing probes run through a bounded pool of `OMA_SKILL_EVAL_CONCURRENCY` subprocesses (default 4, at most 16). The two arms of a trial always run together in separate empty directories, with the arm started first alternating between trials, and results keep task order, so recordings and scores are the same as a serial run. Set the variable to 1 to serialize.
 
 
-Each live arm and judge call is killed after `OMA_SKILL_EVAL_TIMEOUT_MS` (default 120000). A timed-out dispatch is retried once before the task is excluded from the report, because one slow response is a transport failure rather than an answer; a second timeout excludes the task (and, in optimization, fails the split's coverage). Raise the limit for fixtures that legitimately need long answers.
+Each live arm and judge call is killed after `OMA_SKILL_EVAL_TIMEOUT_MS` (default 180000). A timed-out dispatch is retried once before the task is excluded from the report, because one slow response is a transport failure rather than an answer; a second timeout excludes the task (and, in optimization, fails the split's coverage). Raise the limit for fixtures that legitimately need long answers.
 
 ## Routing: does the skill get selected?
 
