@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "14.9.0",
-  "releaseDate": "2026-09-14T12:34:57.185Z",
+  "releaseDate": "2026-09-14T14:15:47.983Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -130,6 +130,11 @@
       "size": 2497
     },
     {
+      "path": ".agents/hooks/core/evolution-notice.ts",
+      "sha256": "ec0ed33a4bad542ceacc22ad3d24ad401cae1f92d84bdbb72b7d91e8ade2a626",
+      "size": 4971
+    },
+    {
       "path": ".agents/hooks/core/filter-test-output.sh",
       "sha256": "b03fd019a4ab095f2eaf717d368be00825ce43be39942c5620a7cdf9192355e7",
       "size": 1564
@@ -201,8 +206,8 @@
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "3ec086e9b8ac0bc6ce0fd24b70cafc8c3063ee38e8e7e72816bde9154abdddd9",
-      "size": 8245
+      "sha256": "eee2e929ae3a95e4da7d531b66ae2e3570d8a190fb616fcf2535a818064fceb4",
+      "size": 8508
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
@@ -246,8 +251,8 @@
     },
     {
       "path": ".agents/hooks/core/vendor-renderer.ts",
-      "sha256": "994304f142bd2fe15d07c5b5d91cb9fa80713dd4b51a88dc6b308ccb6da3b72b",
-      "size": 1783
+      "sha256": "cf62531a0dcb4893fce41f611d164a11edb687a85cffb1abfdd3afacae9f7647",
+      "size": 2060
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
@@ -2171,6 +2176,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 24,
-    "totalFiles": 432
+    "totalFiles": 433
   }
 }
