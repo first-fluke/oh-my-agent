@@ -384,4 +384,26 @@ describe("held-in/held-out acceptance", () => {
     const singleTrial = await run(scorerFor(undefined));
     expect(singleTrial.acceptedEdits).toEqual([]);
   });
+
+  it("rejects an edit whose anchor is missing without scoring it", async () => {
+    const scorer = vi.fn<ScoringFn>(async (options) =>
+      report(options.body === original ? 0 : 0.3),
+    );
+    const { records, recorder } = gateRecorder();
+    const result = await run(scorer, {
+      optimizerFn: () => [
+        { op: "add", anchor: "## Not in the body", after: "x" },
+      ],
+      evolutionRecorder: recorder,
+    });
+    expect(result.acceptedEdits).toEqual([]);
+    expect(records[0]).toMatchObject({
+      outcome: "rejected",
+      reason: "invalid-candidate",
+    });
+    const candidateScores = scorer.mock.calls.filter(
+      ([options]) => options.body !== original,
+    );
+    expect(candidateScores).toHaveLength(0);
+  });
 });

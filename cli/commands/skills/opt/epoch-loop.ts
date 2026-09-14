@@ -293,9 +293,13 @@ export async function runOptEpochLoop(options: {
       }> = [];
 
       for (const edit of candidateEdits) {
+        // An edit whose anchor is not in the current body cannot apply; it is
+        // recorded as invalid rather than as a learning-rate overflow, and it
+        // is never scored.
+        const anchorMissing = !bestBody.includes(edit.anchor);
         // LR budget check
         const netChange = editNetChange(bestBody, edit);
-        if (netChange > lrMaxChars) {
+        if (anchorMissing || netChange > lrMaxChars) {
           totalRejected++;
           rejectedBuffer.add(editKey(edit));
           await evolutionRecorder?.recordProposal({
@@ -303,7 +307,7 @@ export async function runOptEpochLoop(options: {
             edit,
             editKey: editKey(edit),
             outcome: "rejected",
-            reason: "learning-rate",
+            reason: anchorMissing ? "invalid-candidate" : "learning-rate",
             deltaLift: 0,
           });
           continue;
